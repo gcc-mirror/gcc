@@ -765,11 +765,38 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Allocator_Expression
 
    begin
-      --  WOuld be nice to comment the branches of this very long if ???
+      --  Messy???
 
-      if Is_Tagged_Type (T)
-        or else Needs_Finalization (T)
-      then
+      --  In the case of an Ada2012 allocator whose initial value comes from a
+      --  function call, pass "the accessibility level determined by the point
+      --  of call" (AI05-0234) to the function. Conceptually, this belongs in
+      --  Expand_Call but it couldn't be done there (because the Etype of the
+      --  allocator wasn't set then) so we generate the parameter here. See
+      --  the Boolean variable Defer in (a block within) Expand_Call.
+
+      if Ada_Version >= Ada_2012 and then Nkind (Exp) = N_Function_Call then
+         declare
+            Subp : Entity_Id;
+
+         begin
+            if Nkind (Name (Exp)) = N_Explicit_Dereference then
+               Subp := Designated_Type (Etype (Prefix (Name (Exp))));
+            else
+               Subp := Entity (Name (Exp));
+            end if;
+
+            if Present (Extra_Accessibility_Of_Result (Subp)) then
+               Add_Extra_Actual_To_Call
+                 (Subprogram_Call => Exp,
+                  Extra_Formal    => Extra_Accessibility_Of_Result (Subp),
+                  Extra_Actual    => Dynamic_Accessibility_Level (PtrT));
+            end if;
+         end;
+      end if;
+
+      --  Would be nice to comment the branches of this very long if ???
+
+      if Is_Tagged_Type (T) or else Needs_Finalization (T) then
          if Is_CPP_Constructor_Call (Exp) then
 
             --  Generate:
@@ -811,10 +838,10 @@ package body Exp_Ch4 is
 
                Insert_List_After_And_Analyze (P,
                  Build_Initialization_Call (Loc,
-                   Id_Ref =>
+                   Id_Ref          =>
                      Make_Explicit_Dereference (Loc,
                        Prefix => New_Reference_To (Temp, Loc)),
-                   Typ => Etype (Exp),
+                   Typ             => Etype (Exp),
                    Constructor_Ref => Exp));
             end;
 

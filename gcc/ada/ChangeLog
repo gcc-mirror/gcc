@@ -1,3 +1,60 @@
+2011-09-06  Steve Baird  <baird@adacore.com>
+
+	* einfo.ads (Extra_Accessibility_Of_Result): New function; in the
+	(Ada2012) cases described in AI05-0234 where the accessibility
+	level of a function result is "determined by the point of
+	call", an implicit parameter representing that accessibility
+	level is passed in. Extra_Accessibilty_Of_Result yields this
+	additional formal parameter. Extra_Accessibility_Of_Result
+	is analogous to the existing Extra_Accessibility
+	function used in the implementation of access parameters.
+	(Set_Extra_Accessibility_Of_Result): New procedure; sets
+	Extra_Accessibility_Of_Result attribute.
+	* einfo.adb (Extra_Accessibility_Of_Result): New function.
+	(Set_Extra_Accessibility_Of_Result): New procedure.
+	(Write_Field19_Name): Display Extra_Accessibilty_Of_Result attribute.
+	* sem_util.adb (Dynamic_Accessibility_Level): Set Etype of
+	an accessibility level literal to Natural; introduce a nested
+	function, Make_Level_Literal, to do this.
+	* exp_ch6.ads (Needs_Result_Accessibility_Level): New function;
+	determines whether a given function (or access-to-function
+	type) needs to have an implicitly-declared accessibility-level
+	parameter added to its profile.
+	(Add_Extra_Actual_To_Call): Export an existing procedure which was
+	previously declared in the body of Exp_Ch6.
+	* exp_ch6.adb (Add_Extra_Actual_To_Call): Export declaration by moving
+	it to exp_ch6.ads.
+	(Has_Unconstrained_Access_Discriminants): New Function; a
+	predicate on subtype entities which returns True if the given
+	subtype is unconstrained and has one or more access discriminants.
+	(Expand_Call): When expanding a call to a function which takes an
+	Extra_Accessibility_Of_Result parameter, pass in the appropriate
+	actual parameter value. In the case of a function call which is
+	used to initialize an allocator, this may not be possible because
+	the Etype of the allocator may not have been set yet. In this
+	case, we defer passing in the parameter and handle it later in
+	Expand_Allocator_Expression.
+	(Expand_Simple_Function_Return): When returning from a function which
+	returns an unconstrained subtype having at least one access
+	discriminant, generate the accessibility check needed to ensure that
+	the function result will not outlive any objects designated by its
+	discriminants.
+	(Needs_Result_Accessibility_Level): New function; see exp_ch6.ads
+	description.
+	* exp_ch4.adb (Expand_Allocator_Expression): When a function call
+	is used to initialize an allocator, we may need to pass in "the
+	accessibility level determined by the point of call" (AI05-0234)
+	to the function. Expand_Call, where such actual parameters are
+	usually generated, is too early in this case because the Etype of
+	the allocator (which is used in determining the level to be passed
+	in) may not have been set yet when Expand_Call executes. Instead,
+	we generate code to pass in the appropriate actual parameter
+	in Expand_Allocator_Expression.
+	* sem_ch6.adb (Create_Extra_Formals): Create
+	the new Extra_Accessibility_Of_Result formal if
+	Needs_Result_Accessibility_Level returns True. This includes the
+	introduction of a nested procedure, Check_Against_Result_Level.
+
 2011-09-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in (X86_TARGET_PAIRS): Remove duplicate

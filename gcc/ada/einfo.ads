@@ -1131,6 +1131,15 @@ package Einfo is
 --       must be retrieved through the entity designed by this field instead of
 --       being computed.
 
+--    Extra_Accessibility_Of_Result (Node19)
+--       Present in (non-generic) Function, Operator, and Subprogram_Type
+--       entities if expansion is active. Normally Empty, but if a function is
+--       one for which "the accessibility level of the result ... determined
+--       by the point of call" (AI05-0234) is needed, then an extra formal of
+--       subtype Natural is created (see description of field Extra_Formal),
+--       and the Extra_Accessibility_Of_Result field of the function points to
+--       the entity for this extra formal.
+
 --    Extra_Constrained (Node23)
 --       Present in formal parameters in the non-generic case if expansion is
 --       active. Normally Empty, but if a parameter is one for which a dynamic
@@ -5235,6 +5244,7 @@ package Einfo is
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)   (non-generic case only)
    --    Renamed_Entity                      (Node18)   (generic case only)
+   --    Extra_Accessibility_Of_Result       (Node19)   (non-generic case only)
    --    Last_Entity                         (Node20)
    --    Interface_Name                      (Node21)
    --    Scope_Depth_Value                   (Uint22)
@@ -5389,6 +5399,7 @@ package Einfo is
    --  E_Operator
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)
+   --    Extra_Accessibility_Of_Result       (Node19)
    --    Last_Entity                         (Node20)
    --    Overridden_Operation                (Node26)
    --    Subprograms_For_Type                (Node29)
@@ -5680,6 +5691,7 @@ package Einfo is
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
+   --    Extra_Accessibility_Of_Result       (Node19)
    --    Directly_Designated_Type            (Node20)
    --    Extra_Formals                       (Node28)
    --    First_Formal                        (synth)
@@ -6068,6 +6080,7 @@ package Einfo is
    function Esize                               (Id : E) return U;
    function Exception_Code                      (Id : E) return U;
    function Extra_Accessibility                 (Id : E) return E;
+   function Extra_Accessibility_Of_Result       (Id : E) return E;
    function Extra_Constrained                   (Id : E) return E;
    function Extra_Formal                        (Id : E) return E;
    function Extra_Formals                       (Id : E) return E;
@@ -6656,6 +6669,7 @@ package Einfo is
    procedure Set_Esize                           (Id : E; V : U);
    procedure Set_Exception_Code                  (Id : E; V : U);
    procedure Set_Extra_Accessibility             (Id : E; V : E);
+   procedure Set_Extra_Accessibility_Of_Result   (Id : E; V : E);
    procedure Set_Extra_Constrained               (Id : E; V : E);
    procedure Set_Extra_Formal                    (Id : E; V : E);
    procedure Set_Extra_Formals                   (Id : E; V : E);

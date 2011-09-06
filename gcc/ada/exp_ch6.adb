@@ -104,13 +104,6 @@ package body Exp_Ch6 is
    --  present, then use it, otherwise pass a literal corresponding to the
    --  Alloc_Form parameter (which must not be Unspecified in that case).
 
-   procedure Add_Extra_Actual_To_Call
-     (Subprogram_Call : Node_Id;
-      Extra_Formal    : Entity_Id;
-      Extra_Actual    : Node_Id);
-   --  Adds Extra_Actual as a named parameter association for the formal
-   --  Extra_Formal in Subprogram_Call.
-
    procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
      (Func_Call  : Node_Id;
       Func_Id    : Entity_Id;
@@ -195,6 +188,11 @@ package body Exp_Ch6 is
    --  as a regular call. The list of actuals must be expanded to contain a
    --  reference to the object itself, and the call becomes a call to the
    --  corresponding protected subprogram.
+
+   function Has_Unconstrained_Access_Discriminants
+     (Subtyp : Entity_Id) return Boolean;
+   --  Returns True if the given subtype is unconstrained and has one
+   --  or more access discriminants.
 
    procedure Expand_Simple_Function_Return (N : Node_Id);
    --  Expand simple return from function. In the case where we are returning
@@ -2750,6 +2748,108 @@ package body Exp_Ch6 is
          Next_Actual (Actual);
          Next_Formal (Formal);
       end loop;
+
+      --  If we are calling an Ada2012 function which needs to have the
+      --  "accessibility level determined by the point of call" (AI05-0234)
+      --  passed in to it, then pass it in.
+
+      if Ada_Version >= Ada_2012
+         and then Ekind_In (Subp, E_Function, E_Operator, E_Subprogram_Type)
+         and then Present (Extra_Accessibility_Of_Result (Subp))
+      then
+         declare
+            Ancestor : Node_Id := Parent (Call_Node);
+            Level    : Node_Id := Empty;
+            Defer    : Boolean := False;
+
+         begin
+            --  Unimplemented: if Subp returns an anonymous access type, then
+            --    a) if the call is the operand of an explict conversion, then
+            --       the target type of the conversion (a named access type)
+            --       determines the accessibility level pass in;
+            --    b) if the call defines an access discriminant of an object
+            --       (e.g., the discriminant of an object being created by an
+            --       allocator, or the discriminant of a function result),
+            --       then the accessibility level to pass in is that of the
+            --       discriminated object being initialized).
+
+            while Nkind (Ancestor) = N_Qualified_Expression
+            loop
+               Ancestor := Parent (Ancestor);
+            end loop;
+
+            case Nkind (Ancestor) is
+               when N_Allocator =>
+                  --  Messy.
+                  --
+                  --  At this point, we'd like to assign
+                  --    Level := Dynamic_Accessibility_Level (Ancestor);
+                  --  but Etype of Ancestor may not have been set yet,
+                  --  so that doesn't work.
+                  --  Handle this later in Expand_Allocator_Expression.
+
+                  Defer := True;
+
+               when N_Object_Declaration | N_Object_Renaming_Declaration =>
+                  declare
+                     Def_Id : constant Entity_Id :=
+                                Defining_Identifier (Ancestor);
+                  begin
+                     if Is_Return_Object (Def_Id) then
+                        if Present (Extra_Accessibility_Of_Result
+                                     (Return_Applies_To (Scope (Def_Id))))
+                        then
+                           --  Pass along value that was passed in if the
+                           --  routine we are returning from also has an
+                           --  Accessibility_Of_Result formal.
+
+                           Level :=
+                             New_Occurrence_Of
+                              (Extra_Accessibility_Of_Result
+                                 (Return_Applies_To (Scope (Def_Id))), Loc);
+                        end if;
+                     else
+                        Level := Make_Integer_Literal (Loc,
+                                   Object_Access_Level (Def_Id));
+                     end if;
+                  end;
+
+               when N_Simple_Return_Statement =>
+                  if Present (Extra_Accessibility_Of_Result
+                    (Return_Applies_To (Return_Statement_Entity (Ancestor))))
+                  then
+                     --  Pass along value that was passed in if the routine
+                     --  we are returning from also has an
+                     --  Accessibility_Of_Result formal.
+
+                     Level :=
+                       New_Occurrence_Of
+                         (Extra_Accessibility_Of_Result
+                            (Return_Applies_To
+                               (Return_Statement_Entity (Ancestor))), Loc);
+                  end if;
+
+               when others =>
+                  null;
+            end case;
+
+            if not Defer then
+               if not Present (Level) then
+                  --  The "innermost master that evaluates the function call".
+                  --
+                  --  ??? -  Shuld we use Integer'Last here instead
+                  --  in order to deal with (some of) the problems
+                  --  associated with calls to subps whose enclosing
+                  --  scope is unknown (e.g., Anon_Access_To_Subp_Param.all)?
+
+                  Level := Make_Integer_Literal (Loc,
+                             Scope_Depth (Current_Scope) + 1);
+               end if;
+
+               Add_Extra_Actual (Level, Extra_Accessibility_Of_Result (Subp));
+            end if;
+         end;
+      end if;
 
       --  If we are expanding a rhs of an assignment we need to check if tag
       --  propagation is needed. You might expect this processing to be in
@@ -6146,6 +6246,31 @@ package body Exp_Ch6 is
       end if;
    end Expand_Protected_Subprogram_Call;
 
+   --------------------------------------------
+   -- Has_Unconstrained_Access_Discriminants --
+   --------------------------------------------
+
+   function Has_Unconstrained_Access_Discriminants
+     (Subtyp : Entity_Id) return Boolean
+   is
+      Discr : Entity_Id;
+
+   begin
+      if Has_Discriminants (Subtyp)
+        and then not Is_Constrained (Subtyp)
+      then
+         Discr := First_Discriminant (Subtyp);
+         while Present (Discr) loop
+            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
+               return True;
+            end if;
+
+            Next_Discriminant (Discr);
+         end loop;
+      end if;
+      return False;
+   end Has_Unconstrained_Access_Discriminants;
+
    -----------------------------------
    -- Expand_Simple_Function_Return --
    -----------------------------------
@@ -6602,6 +6727,216 @@ package body Exp_Ch6 is
                        Attribute_Name => Name_Tag))),
              Reason    => CE_Tag_Check_Failed),
              Suppress  => All_Checks);
+      end if;
+
+      --  AI05-0234: RM 6.5(21/3). Check access discriminants to
+      --  ensure that the function result does not outlive an
+      --  object designated by one of it discriminants.
+
+      if Ada_Version >= Ada_2012
+        and then Has_Unconstrained_Access_Discriminants (R_Type)
+      then
+         declare
+            Discrim_Source : Node_Id := Exp;
+
+            procedure Check_Against_Result_Level (Level : Node_Id);
+            --  Check the given accessibility level against the
+            --  level determined by the point of call" (AI05-0234).
+
+            --------------------------------
+            -- Check_Against_Result_Level --
+            --------------------------------
+
+            procedure Check_Against_Result_Level (Level : Node_Id) is
+            begin
+               Insert_Action (N,
+                 Make_Raise_Program_Error (Loc,
+                   Condition =>
+                     Make_Op_Gt (Loc,
+                       Left_Opnd  => Level,
+                       Right_Opnd =>
+                         New_Occurrence_Of
+                           (Extra_Accessibility_Of_Result (Scope_Id), Loc)),
+                       Reason => PE_Accessibility_Check_Failed));
+            end Check_Against_Result_Level;
+         begin
+            while Nkind (Discrim_Source) = N_Qualified_Expression loop
+               Discrim_Source := Expression (Discrim_Source);
+            end loop;
+
+            if Nkind (Discrim_Source) = N_Identifier
+              and then Is_Return_Object (Entity (Discrim_Source))
+            then
+
+               Discrim_Source := Entity (Discrim_Source);
+
+               if Is_Constrained (Etype (Discrim_Source)) then
+                  Discrim_Source := Etype (Discrim_Source);
+               else
+                  Discrim_Source := Expression (Parent (Discrim_Source));
+               end if;
+
+            elsif Nkind (Discrim_Source) = N_Identifier
+              and then Nkind_In (Original_Node (Discrim_Source),
+                                 N_Aggregate, N_Extension_Aggregate)
+            then
+
+               Discrim_Source := Original_Node (Discrim_Source);
+
+            elsif Nkind (Discrim_Source) = N_Explicit_Dereference and then
+              Nkind (Original_Node (Discrim_Source)) = N_Function_Call
+            then
+
+               Discrim_Source := Original_Node (Discrim_Source);
+
+            end if;
+
+            while Nkind_In (Discrim_Source, N_Qualified_Expression,
+                                            N_Type_Conversion,
+                                            N_Unchecked_Type_Conversion)
+            loop
+
+               Discrim_Source := Expression (Discrim_Source);
+            end loop;
+
+            case Nkind (Discrim_Source) is
+               when N_Defining_Identifier =>
+
+                  pragma Assert (Is_Composite_Type (Discrim_Source) and then
+                                 Has_Discriminants (Discrim_Source) and then
+                                 Is_Constrained (Discrim_Source));
+
+                  declare
+                     Discrim   : Entity_Id :=
+                                   First_Discriminant (Base_Type (R_Type));
+                     Disc_Elmt : Elmt_Id   :=
+                                   First_Elmt (Discriminant_Constraint
+                                                 (Discrim_Source));
+                  begin
+                     loop
+                        if Ekind (Etype (Discrim)) =
+                          E_Anonymous_Access_Type then
+
+                           Check_Against_Result_Level
+                             (Dynamic_Accessibility_Level (Node (Disc_Elmt)));
+                        end if;
+
+                        Next_Elmt (Disc_Elmt);
+                        Next_Discriminant (Discrim);
+                        exit when not Present (Discrim);
+                     end loop;
+                  end;
+
+               when N_Aggregate | N_Extension_Aggregate =>
+
+                  --  Unimplemented: extension aggregate case where
+                  --  discrims come from ancestor part, not extension part.
+
+                  declare
+                     Discrim  : Entity_Id :=
+                                  First_Discriminant (Base_Type (R_Type));
+
+                     Disc_Exp : Node_Id   := Empty;
+
+                     Positionals_Exhausted
+                              : Boolean   := not Present (Expressions
+                                                            (Discrim_Source));
+
+                     function Associated_Expr
+                       (Comp_Id : Entity_Id;
+                        Associations : List_Id) return Node_Id;
+
+                     --  Given a component and a component associations list,
+                     --  locate the expression for that component; returns
+                     --  Empty if no such expression is found.
+
+                     ---------------------
+                     -- Associated_Expr --
+                     ---------------------
+
+                     function Associated_Expr
+                       (Comp_Id : Entity_Id;
+                        Associations : List_Id) return Node_Id
+                     is
+                        Assoc  : Node_Id := First (Associations);
+                        Choice : Node_Id;
+                     begin
+                        --  Simple linear search seems ok here
+
+                        while Present (Assoc) loop
+                           Choice := First (Choices (Assoc));
+
+                           while Present (Choice) loop
+                              if (Nkind (Choice) = N_Identifier
+                                  and then Chars (Choice) = Chars (Comp_Id))
+                                 or else (Nkind (Choice) = N_Others_Choice)
+                              then
+                                 return Expression (Assoc);
+                              end if;
+
+                              Next (Choice);
+                           end loop;
+
+                           Next (Assoc);
+                        end loop;
+
+                        return Empty;
+                     end Associated_Expr;
+
+                  --  Start of processing for Expand_Simple_Function_Return
+
+                  begin
+                     if not Positionals_Exhausted then
+                        Disc_Exp := First (Expressions (Discrim_Source));
+                     end if;
+
+                     loop
+                        if Positionals_Exhausted then
+                           Disc_Exp := Associated_Expr (Discrim,
+                             Component_Associations (Discrim_Source));
+                        end if;
+
+                        if Ekind (Etype (Discrim)) =
+                          E_Anonymous_Access_Type then
+
+                           Check_Against_Result_Level
+                             (Dynamic_Accessibility_Level (Disc_Exp));
+                        end if;
+
+                        Next_Discriminant (Discrim);
+                        exit when not Present (Discrim);
+
+                        if not Positionals_Exhausted then
+                           Next (Disc_Exp);
+                           Positionals_Exhausted := not Present (Disc_Exp);
+                        end if;
+                     end loop;
+                  end;
+
+               when N_Function_Call =>
+                  --  No check needed; check performed by callee.
+                  null;
+
+               when others =>
+
+                  declare
+                     Level : constant Node_Id :=
+                        Make_Integer_Literal (Loc,
+                          Object_Access_Level (Discrim_Source));
+                  begin
+                     --  Unimplemented: check for name prefix that includes
+                     --  a dereference of an access value with a dynamic
+                     --  accessibility level (e.g., an access param or a
+                     --  saooaaat) and use dynamic level in that case. For
+                     --  example:
+                     --    return Access_Param.all(Some_Index).Some_Component;
+
+                     Set_Etype (Level, Standard_Natural);
+                     Check_Against_Result_Level (Level);
+                  end;
+
+            end case;
+         end;
       end if;
 
       --  If we are returning an object that may not be bit-aligned, then copy
@@ -7922,5 +8257,117 @@ package body Exp_Ch6 is
    begin
       return not Is_Constrained (Func_Typ) or else Is_Tagged_Type (Func_Typ);
    end Needs_BIP_Alloc_Form;
+
+   --------------------------------------
+   -- Needs_Result_Accessibility_Level --
+   --------------------------------------
+
+   function Needs_Result_Accessibility_Level
+     (Func_Id : Entity_Id) return Boolean
+   is
+      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+
+      function Has_Unconstrained_Access_Discriminant_Component
+        (Comp_Typ :  Entity_Id) return Boolean;
+      --  Returns True if any component of the type has
+      --  an unconstrained access discriminant.
+
+      -----------------------------------------------------
+      -- Has_Unconstrained_Access_Discriminant_Component --
+      -----------------------------------------------------
+
+      function Has_Unconstrained_Access_Discriminant_Component
+        (Comp_Typ :  Entity_Id) return Boolean
+      is
+      begin
+         if not Is_Limited_Type (Comp_Typ) then
+            return False;
+            --  Only limited types can have access discriminants with
+            --  defaults.
+
+         elsif Has_Unconstrained_Access_Discriminants (Comp_Typ) then
+            return True;
+
+         elsif Is_Array_Type (Comp_Typ) then
+            return Has_Unconstrained_Access_Discriminant_Component
+                     (Underlying_Type (Component_Type (Comp_Typ)));
+
+         elsif Is_Record_Type (Comp_Typ) then
+            declare
+               Comp : Entity_Id := First_Component (Comp_Typ);
+            begin
+               while Present (Comp) loop
+                  if Has_Unconstrained_Access_Discriminant_Component
+                       (Underlying_Type (Etype (Comp)))
+                  then
+                     return True;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Has_Unconstrained_Access_Discriminant_Component;
+
+   --  Start of processing for Needs_Result_Accessibility_Level
+
+   begin
+      if not Present (Func_Typ) --  ??? completion unavailable
+
+        or else Func_Typ = Standard_Void_Type --  not a function
+
+        or else Is_Scalar_Type (Func_Typ) --  handle enum-lit renames
+      then
+         return False;
+      end if;
+
+      if Present (Alias (Func_Id)) then
+         --  Handle a corner case, a cross-dialect subp renaming. For example,
+         --  an Ada2012 renaming of an Ada05 subprogram. This can occur when
+         --  a non-Ada2012 unit references predefined runtime units.
+         --
+         --  Unimplemented: a cross-dialect subp renaming which does not set
+         --  the Alias attribute (e.g., a rename of a dereference of an access
+         --  to subprogram value).
+
+         return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
+      end if;
+
+      if Ada_Version < Ada_2012 then
+         return False;
+      end if;
+
+      if Ekind (Func_Typ) = E_Anonymous_Access_Type
+        or else Is_Tagged_Type (Func_Typ)
+      then
+         --  In the case of, say, a null tagged record result type, the need
+         --  for this extra parameter might not be obvious. This function
+         --  returns True for all tagged types for compatibility reasons.
+         --  A function with, say, a tagged null controlling result type might
+         --  be overridden by a primitive of an extension having an access
+         --  discriminant and the overrider and overridden must have compatible
+         --  calling conventions (including implicitly declared parameters).
+         --  Similarly, values of one access-to-subprogram type might designate
+         --  both a primitive subprogram of a given type and a function
+         --  which is, for example, not a primitive subprogram of any type.
+         --  Again, this requires calling convention compatibility.
+         --  It might be possible to solve these issues by introducing
+         --  wrappers, but that is not the approach that was chosen.
+
+         return True;
+      end if;
+
+      if Has_Unconstrained_Access_Discriminants (Func_Typ) then
+         return True;
+      end if;
+
+      if Has_Unconstrained_Access_Discriminant_Component (Func_Typ) then
+         return True;
+      end if;
+
+      return False;
+   end Needs_Result_Accessibility_Level;
 
 end Exp_Ch6;

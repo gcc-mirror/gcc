@@ -2878,6 +2878,22 @@ package body Sem_Util is
    function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id is
       E : Entity_Id;
       Loc : constant Source_Ptr := Sloc (Expr);
+
+      function Make_Level_Literal (Level : Uint) return Node_Id;
+      --  Construct an integer literal representing an accessibility level.
+
+      ---------------------------------
+      -- function Make_Level_Literal --
+      ---------------------------------
+
+      function Make_Level_Literal (Level : Uint) return Node_Id is
+         Result : constant Node_Id :=
+                    Make_Integer_Literal (Loc, Level);
+      begin
+         Set_Etype (Result, Standard_Natural);
+         return Result;
+      end Make_Level_Literal;
+
    begin
       if Is_Entity_Name (Expr) then
          E := Entity (Expr);
@@ -2903,7 +2919,7 @@ package body Sem_Util is
               and then Ekind (Etype (Entity (Selector_Name (Expr)))) =
               E_Anonymous_Access_Type then
 
-               return Make_Integer_Literal (Loc, Object_Access_Level (Expr));
+               return Make_Level_Literal (Object_Access_Level (Expr));
             end if;
 
          when N_Attribute_Reference =>
@@ -2912,15 +2928,14 @@ package body Sem_Util is
                --  For X'Access, the level of the prefix X
 
                when Attribute_Access =>
-                  return Make_Integer_Literal (Loc,
-                    Object_Access_Level (Prefix (Expr)));
+                  return Make_Level_Literal
+                           (Object_Access_Level (Prefix (Expr)));
 
                --  Treat the unchecked attributes as library-level
 
                when Attribute_Unchecked_Access |
                  Attribute_Unrestricted_Access =>
-                  return Make_Integer_Literal (Loc,
-                    Scope_Depth (Standard_Standard));
+                  return Make_Level_Literal (Scope_Depth (Standard_Standard));
 
                --  No other access-valued attributes
 
@@ -2947,7 +2962,7 @@ package body Sem_Util is
             null;
       end case;
 
-      return Make_Integer_Literal (Loc, Type_Access_Level (Etype (Expr)));
+      return Make_Level_Literal (Type_Access_Level (Etype (Expr)));
    end Dynamic_Accessibility_Level;
 
    -----------------------------------
