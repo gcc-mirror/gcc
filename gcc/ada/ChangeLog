@@ -1,3 +1,38 @@
+2011-09-06  Steve Baird  <baird@adacore.com>
+
+	* einfo.ads (Extra_Accessibility): Update associated comment to use
+	the term "present" correctly ("present" just means that it is not
+	an error to query the value of the attribute - it does not imply
+	that the value must be non-null).
+	(Extra_Constrained): Ditto.
+	(Is_Visible_Formal): Ditto.
+	(Extra_Accessibility_Of_Result) Ditto; also add Inline pragma.
+	(Set_Extra_Accessibility_Of_Result): Add Inline pragma.
+	* exp_ch4.adb (Expand_Allocator_Expression): Improve a comment.
+	* exp_ch6.adb (Expand_Call): The callee may require an
+	Extra_Accessibility_Of_Result actual parameter even if Ada_Version
+	< Ada_2012. This can occur if the callee is exported from a Gnat
+	runtimes unit. Also improve a comment.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb: Add with and use clauses for Get_Targ.
+	(Alignment_Of): Rename formal parameter Some_Typ
+	to Typ, update related comment. Use the allocator alignment on
+	strict alignment targets such as SPARC.
+	(Double_Alignment_Of): Rename formal parameter Some_Typ to Typ, update
+	related comment.
+
+2011-09-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch9.adb (Check_Interfaces): Test
+	Is_Limited_Type rather than Is_Limited_Record when checking that
+	the partial view of a synchronized full view must be limited.
+
+2011-09-06  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Free): Fix memory leak.
+
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, exp_ch6.adb: Minor reformatting and code reorganization.

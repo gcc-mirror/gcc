@@ -2982,6 +2982,7 @@ package body GNAT.Command_Line is
          Free (Config.Sections);
          Free (Config.Usage);
          Free (Config.Help);
+         Free (Config.Help_Msg);
 
          if Config.Aliases /= null then
             for A in Config.Aliases'Range loop
@@ -3037,6 +3038,8 @@ package body GNAT.Command_Line is
       end if;
 
       Free (Config.Usage);
+      Free (Config.Help);
+      Free (Config.Help_Msg);
       Config.Usage    := new String'(Usage);
       Config.Help     := new String'(Help);
       Config.Help_Msg := new String'(Help_Msg);

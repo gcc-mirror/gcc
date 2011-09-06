@@ -2753,8 +2753,7 @@ package body Exp_Ch6 is
       --  "accessibility level determined by the point of call" (AI05-0234)
       --  passed in to it, then pass it in.
 
-      if Ada_Version >= Ada_2012
-         and then Ekind_In (Subp, E_Function, E_Operator, E_Subprogram_Type)
+      if Ekind_In (Subp, E_Function, E_Operator, E_Subprogram_Type)
          and then Present (Extra_Accessibility_Of_Result (Subp))
       then
          declare
@@ -2780,8 +2779,6 @@ package body Exp_Ch6 is
 
             case Nkind (Ancestor) is
                when N_Allocator =>
-
-                  --  Messy code, could use a cleanup???
 
                   --  At this point, we'd like to assign
 

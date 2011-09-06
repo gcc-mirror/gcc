@@ -1120,9 +1120,9 @@ package Einfo is
 --       or entry. Returns Empty if there are no extra formals.
 
 --    Extra_Accessibility (Node13)
---       Present in formal parameters in the non-generic case if expansion is
---       active. Normally Empty, but if a parameter is one for which a dynamic
---       accessibility check is required, then an extra formal of type
+--       Present in formal parameters in the non-generic case. Normally Empty,
+--       but if expansion is active, and a parameter is one for which a
+--       dynamic accessibility check is required, then an extra formal of type
 --       Natural is created (see description of field Extra_Formal), and the
 --       Extra_Accessibility field of the formal parameter points to the entity
 --       for this extra formal. Also present in variables when compiling
@@ -1133,16 +1133,16 @@ package Einfo is
 
 --    Extra_Accessibility_Of_Result (Node19)
 --       Present in (non-generic) Function, Operator, and Subprogram_Type
---       entities if expansion is active. Normally Empty, but if a function is
---       one for which "the accessibility level of the result ... determined
+--       entities. Normally Empty, but if expansion is active, and a function
+--       is one for which "the accessibility level of the result ... determined
 --       by the point of call" (AI05-0234) is needed, then an extra formal of
 --       subtype Natural is created (see description of field Extra_Formal),
 --       and the Extra_Accessibility_Of_Result field of the function points to
 --       the entity for this extra formal.
 
 --    Extra_Constrained (Node23)
---       Present in formal parameters in the non-generic case if expansion is
---       active. Normally Empty, but if a parameter is one for which a dynamic
+--       Present in formal parameters in the non-generic case. Normally Empty,
+--       but if expansion is active and a parameter is one for which a dynamic
 --       indication of its constrained status is required, then an extra formal
 --       of type Boolean is created (see description of field Extra_Formal),
 --       and the Extra_Constrained field of the formal parameter points to the
@@ -2853,11 +2853,10 @@ package Einfo is
 --       visible by selected notation, or not.
 
 --    Is_Visible_Formal (Flag206)
---       Present in all entities. Set for instances of the formals of a formal
---       package. Indicates that the entity must be made visible in the body
---       of the instance, to reproduce the visibility of the generic. This
---       simplifies visibility settings in instance bodies.
---       ??? confusion in above comments between being present and being set
+--       Present in all entities. Set True for instances of the formals of a
+--       formal package. Indicates that the entity must be made visible in the
+--       body of the instance, to reproduce the visibility of the generic.
+--       This simplifies visibility settings in instance bodies.
 
 --    Is_VMS_Exception (Flag133)
 --       Present in all entities. Set only for exception entities where the
@@ -7373,6 +7372,7 @@ package Einfo is
    pragma Inline (Esize);
    pragma Inline (Exception_Code);
    pragma Inline (Extra_Accessibility);
+   pragma Inline (Extra_Accessibility_Of_Result);
    pragma Inline (Extra_Constrained);
    pragma Inline (Extra_Formal);
    pragma Inline (Extra_Formals);
@@ -7817,6 +7817,7 @@ package Einfo is
    pragma Inline (Set_Esize);
    pragma Inline (Set_Exception_Code);
    pragma Inline (Set_Extra_Accessibility);
+   pragma Inline (Set_Extra_Accessibility_Of_Result);
    pragma Inline (Set_Extra_Constrained);
    pragma Inline (Set_Extra_Formal);
    pragma Inline (Set_Extra_Formals);
