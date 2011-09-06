@@ -161,6 +161,7 @@ package body Einfo is
 
    --    Body_Entity                     Node19
    --    Corresponding_Discriminant      Node19
+   --    Extra_Accessibility_Of_Result   Node19
    --    Parent_Subtype                  Node19
    --    Related_Array_Object            Node19
    --    Size_Check_Code                 Node19
@@ -1042,6 +1043,12 @@ package body Einfo is
         (Is_Formal (Id) or else Ekind_In (Id, E_Variable, E_Constant));
       return Node13 (Id);
    end Extra_Accessibility;
+
+   function Extra_Accessibility_Of_Result (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Operator, E_Subprogram_Type));
+      return Node19 (Id);
+   end Extra_Accessibility_Of_Result;
 
    function Extra_Constrained (Id : E) return E is
    begin
@@ -3518,6 +3525,12 @@ package body Einfo is
         (Is_Formal (Id) or else Ekind_In (Id, E_Variable, E_Constant));
       Set_Node13 (Id, V);
    end Set_Extra_Accessibility;
+
+   procedure Set_Extra_Accessibility_Of_Result (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Operator, E_Subprogram_Type));
+      Set_Node19 (Id, V);
+   end Set_Extra_Accessibility_Of_Result;
 
    procedure Set_Extra_Constrained (Id : E; V : E) is
    begin
@@ -8311,6 +8324,9 @@ package body Einfo is
 
          when Private_Kind                                 =>
             Write_Str ("Underlying_Full_View");
+
+         when E_Function | E_Operator | E_Subprogram_Type =>
+            Write_Str ("Extra_Accessibility_Of_Result");
 
          when others                                       =>
             Write_Str ("Field19??");
