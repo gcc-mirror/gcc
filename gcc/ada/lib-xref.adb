@@ -512,6 +512,16 @@ package body Lib.Xref is
                      return False;
                   end if;
                end if;
+
+            --  A reference to a formal in a named parameter association does
+            --  not make the formal referenced. Formals that are unused in the
+            --  subprogram body are properly flagged as such, even if calls
+            --  elsewhere use named notation.
+
+            elsif Nkind (P) = N_Parameter_Association
+              and then N = Selector_Name (P)
+            then
+               return False;
             end if;
          end if;
 

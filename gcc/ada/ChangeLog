@@ -1,3 +1,14 @@
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (OK_To_Set_Referenced): A reference to a formal
+	in a parameter association must not set the Referenced flag on
+	the formal.
+	* prj-nmsc.adb (Check_File_Naming_Schemes): Remove useless formal
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat_rm.texi: Add a section on attribute Descriptor_Size
+
 2011-09-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in (common-tools, gnatmake-re,
