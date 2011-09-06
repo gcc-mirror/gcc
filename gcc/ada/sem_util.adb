@@ -12139,7 +12139,30 @@ package body Sem_Util is
       Nod        : Node_Id;
 
    begin
+      --  Unconditionally set the entity
+
       Set_Entity (N, Val);
+
+      --  Check for No_Implementation_Identifiers
+
+      if Restriction_Check_Required (No_Implementation_Identifiers) then
+
+         --  We have an implementation defined entity if it is marked as
+         --  implementation defined, or is defined in a package marked as
+         --  implementation defined. However, library packages themselves
+         --  are excluded (we don't want to flag Interfaces itself, just
+         --  the entities within it).
+
+         if (Is_Implementation_Defined (Val)
+              and then not (Ekind_In (Val, E_Package, E_Generic_Package)
+                              and then Is_Library_Level_Entity (Val)))
+           or else Is_Implementation_Defined (Scope (Val))
+         then
+            Check_Restriction (No_Implementation_Identifiers, N);
+         end if;
+      end if;
+
+      --  Do the style check
 
       if Style_Check
         and then not Suppress_Style_Checks (Val)

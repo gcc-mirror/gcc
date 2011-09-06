@@ -2292,6 +2292,12 @@ package Einfo is
 --       Present in all entities. Set if entity is immediately visible, i.e.
 --       is defined in some currently open scope (RM 8.3(4)).
 
+--    Is_Implementation_Defined (Flag254)
+--       Present in all entities. Set if a pragma Implementation_Defined is
+--       applied to the pragma. Used to mark all implementation defined
+--       identifiers in standard library packages, and to implement the
+--       restriction No_Implementation_Identifiers.
+
 --    Is_Imported (Flag24)
 --       Present in all entities. Set if the entity is imported. For now we
 --       only allow the import of exceptions, functions, procedures, packages.
@@ -4804,6 +4810,7 @@ package Einfo is
    --    Is_Hidden                           (Flag57)
    --    Is_Hidden_Open_Scope                (Flag171)
    --    Is_Immediately_Visible              (Flag7)
+   --    Is_Implementation_Defined           (Flag254)
    --    Is_Imported                         (Flag24)
    --    Is_Inlined                          (Flag11)
    --    Is_Internal                         (Flag17)
@@ -6226,6 +6233,7 @@ package Einfo is
    function Is_Hidden                           (Id : E) return B;
    function Is_Hidden_Open_Scope                (Id : E) return B;
    function Is_Immediately_Visible              (Id : E) return B;
+   function Is_Implementation_Defined           (Id : E) return B;
    function Is_Imported                         (Id : E) return B;
    function Is_Inlined                          (Id : E) return B;
    function Is_Interface                        (Id : E) return B;
@@ -6820,6 +6828,7 @@ package Einfo is
    procedure Set_Is_Hidden                       (Id : E; V : B := True);
    procedure Set_Is_Hidden_Open_Scope            (Id : E; V : B := True);
    procedure Set_Is_Immediately_Visible          (Id : E; V : B := True);
+   procedure Set_Is_Implementation_Defined       (Id : E; V : B := True);
    procedure Set_Is_Imported                     (Id : E; V : B := True);
    procedure Set_Is_Inlined                      (Id : E; V : B := True);
    procedure Set_Is_Interface                    (Id : E; V : B := True);
@@ -7545,6 +7554,7 @@ package Einfo is
    pragma Inline (Is_Hidden);
    pragma Inline (Is_Hidden_Open_Scope);
    pragma Inline (Is_Immediately_Visible);
+   pragma Inline (Is_Implementation_Defined);
    pragma Inline (Is_Imported);
    pragma Inline (Is_Incomplete_Or_Private_Type);
    pragma Inline (Is_Incomplete_Type);
@@ -7967,6 +7977,7 @@ package Einfo is
    pragma Inline (Set_Is_Hidden);
    pragma Inline (Set_Is_Hidden_Open_Scope);
    pragma Inline (Set_Is_Immediately_Visible);
+   pragma Inline (Set_Is_Implementation_Defined);
    pragma Inline (Set_Is_Imported);
    pragma Inline (Set_Is_Inlined);
    pragma Inline (Set_Is_Interface);

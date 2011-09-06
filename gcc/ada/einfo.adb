@@ -523,8 +523,7 @@ package body Einfo is
    --    Has_Implicit_Dereference        Flag251
    --    Is_Processed_Transient          Flag252
    --    Has_Anonymous_Master            Flag253
-
-   --    (unused)                        Flag254
+   --    Is_Implementation_Defined       Flag254
 
    -----------------------
    -- Local subprograms --
@@ -1879,6 +1878,11 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       return Flag7 (Id);
    end Is_Immediately_Visible;
+
+   function Is_Implementation_Defined (Id : E) return B is
+   begin
+      return Flag254 (Id);
+   end Is_Implementation_Defined;
 
    function Is_Imported (Id : E) return B is
    begin
@@ -4407,6 +4411,11 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       Set_Flag7 (Id, V);
    end Set_Is_Immediately_Visible;
+
+   procedure Set_Is_Implementation_Defined (Id : E; V : B := True) is
+   begin
+      Set_Flag254 (Id, V);
+   end Set_Is_Implementation_Defined;
 
    procedure Set_Is_Imported (Id : E; V : B := True) is
    begin
@@ -7564,6 +7573,7 @@ package body Einfo is
       W ("Is_Hidden",                       Flag57  (Id));
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
+      W ("Is_Implementation_Defined",       Flag254 (Id));
       W ("Is_Imported",                     Flag24  (Id));
       W ("Is_Inlined",                      Flag11  (Id));
       W ("Is_Instantiated",                 Flag126 (Id));

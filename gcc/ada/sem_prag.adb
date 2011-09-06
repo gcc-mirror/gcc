@@ -1052,6 +1052,7 @@ package body Sem_Prag is
                if Is_Compilation_Unit (Ent) then
                   declare
                      Decl : constant Node_Id := Unit_Declaration_Node (Ent);
+
                   begin
                      --  Case of pragma placed immediately after spec
 
@@ -4885,7 +4886,8 @@ package body Sem_Prag is
 
                   --  For the pragma case, climb homonym chain. This is
                   --  what implements allowing the pragma in the renaming
-                  --  case, with the result applying to the ancestors.
+                  --  case, with the result applying to the ancestors, and
+                  --  also allows Inline to apply to all previous homonyms.
 
                   if not From_Aspect_Specification (N) then
                      while Present (Homonym (Subp))
@@ -9120,6 +9122,42 @@ package body Sem_Prag is
             end;
          end Ident;
 
+         ----------------------------
+         -- Implementation_Defined --
+         ----------------------------
+
+         --  pragma Implementation_Defined (local_NAME);
+
+         --  Marks previously declared entity as implementation defined. For
+         --  an overloaded entity, applies to the most recent homonym.
+
+         --  pragma Implementation_Defined;
+
+         --  The form with no arguments appears anywhere within a scope, most
+         --  typically a package spec, and indicates that all entities that are
+         --  defined within the package spec are Implementation_Defined.
+
+         when Pragma_Implementation_Defined => Implementation_Defined : declare
+            Ent : Entity_Id;
+
+         begin
+            Check_No_Identifiers;
+
+            --  Form with no arguments
+
+            if Arg_Count = 0 then
+               Set_Is_Implementation_Defined (Current_Scope);
+
+            --  Form with one argument
+
+            else
+               Check_Arg_Count (1);
+               Check_Arg_Is_Local_Name (Arg1);
+               Ent := Entity (Get_Pragma_Arg (Arg1));
+               Set_Is_Implementation_Defined (Ent);
+            end if;
+         end Implementation_Defined;
+
          -----------------
          -- Implemented --
          -----------------
@@ -10092,8 +10130,8 @@ package body Sem_Prag is
             --  private part of a package spec and apply to a completion.
 
             elsif Ekind_In (Typ, E_Private_Type,
-                                     E_Record_Type_With_Private,
-                                     E_Limited_Private_Type)
+                                 E_Record_Type_With_Private,
+                                 E_Limited_Private_Type)
             then
                null;
 
@@ -12160,12 +12198,21 @@ package body Sem_Prag is
 
             declare
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
+
             begin
                if Chars (Argx) = Name_Ravenscar then
                   Set_Ravenscar_Profile (N);
+
                elsif Chars (Argx) = Name_Restricted then
                   Set_Profile_Restrictions
-                    (Restricted, N, Warn => Treat_Restrictions_As_Warnings);
+                    (Restricted,
+                     N, Warn => Treat_Restrictions_As_Warnings);
+
+               elsif Chars (Argx) = Name_No_Implementation_Extensions then
+                  Set_Profile_Restrictions
+                    (No_Implementation_Extensions,
+                     N, Warn => Treat_Restrictions_As_Warnings);
+
                else
                   Error_Pragma_Arg ("& is not a valid profile", Argx);
                end if;
@@ -12187,11 +12234,18 @@ package body Sem_Prag is
 
             declare
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
+
             begin
                if Chars (Argx) = Name_Ravenscar then
                   Set_Profile_Restrictions (Ravenscar, N, Warn => True);
+
                elsif Chars (Argx) = Name_Restricted then
                   Set_Profile_Restrictions (Restricted, N, Warn => True);
+
+               elsif Chars (Argx) = Name_No_Implementation_Extensions then
+                  Set_Profile_Restrictions
+                    (No_Implementation_Extensions, N, Warn => True);
+
                else
                   Error_Pragma_Arg ("& is not a valid profile", Argx);
                end if;
@@ -14648,6 +14702,7 @@ package body Sem_Prag is
       Pragma_Finalize_Storage_Only         =>  0,
       Pragma_Float_Representation          =>  0,
       Pragma_Ident                         => -1,
+      Pragma_Implementation_Defined        => -1,
       Pragma_Implemented                   => -1,
       Pragma_Implicit_Packing              =>  0,
       Pragma_Import                        => +2,

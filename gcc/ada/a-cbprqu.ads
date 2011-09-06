@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -53,6 +53,10 @@ generic
 
 package Ada.Containers.Bounded_Priority_Queues is
    pragma Preelaborate;
+
+   --  All identifiers in this unit are implementation defined
+
+   pragma Implementation_Defined;
 
    package Implementation is
 
@@ -111,7 +115,6 @@ package Ada.Containers.Bounded_Priority_Queues is
       function Peak_Use return Count_Type;
 
    private
-
       List : Implementation.List_Type (Capacity);
 
    end Queue;
