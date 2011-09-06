@@ -6913,7 +6913,6 @@ package body Prj.Nmsc is
                         Name_Loc.Source.Unit.Name,
                         Name_Loc.Source.Unit);
                   end if;
-
                end if;
             end if;
          end if;
@@ -7103,7 +7102,8 @@ package body Prj.Nmsc is
             exit when Last = 0;
 
             if Name (1 .. Last) /= "."
-              and then Name (1 .. Last) /= ".."
+                 and then
+               Name (1 .. Last) /= ".."
             then
                declare
                   Path_Name : constant String :=
@@ -7256,6 +7256,7 @@ package body Prj.Nmsc is
          end if;
 
          if not Has_Error then
+
             --  Links have been resolved if necessary, and Path_Name
             --  always ends with a directory separator.
 
@@ -7368,7 +7369,6 @@ package body Prj.Nmsc is
 
                   loop
                      Read (Dir, Name, Last);
-
                      exit when Last = 0;
 
                      --  In fast project loading mode (without -eL), the user
