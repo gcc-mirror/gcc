@@ -1906,7 +1906,7 @@ package body Sem_Attr is
          end if;
       end Validate_Non_Static_Attribute_Function_Call;
 
-   --   Start of processing for Analyze_Attribute
+   --  Start of processing for Analyze_Attribute
 
    begin
       --  Immediate return if unrecognized attribute (already diagnosed
@@ -3021,19 +3021,10 @@ package body Sem_Attr is
       when Attribute_Descriptor_Size =>
          Check_E0;
 
-         --  Attribute Descriptor_Size is relevant only in the context of an
-         --  unconstrained array type.
-
-         --  Shouldn't it just return zero for types other than arrays or
-         --  constrained arrays ???
-
-         if Is_Entity_Name (P)
-           and then Is_Array_Type (Entity (P))
-           and then not Is_Constrained (Entity (P))
+         if not Is_Entity_Name (P)
+           or else not Is_Type (Entity (P))
          then
-            null;
-         else
-            Error_Attr_P ("invalid prefix for % attribute");
+            Error_Attr_P ("prefix of attribute % must denote a type");
          end if;
 
          Set_Etype (N, Universal_Integer);

@@ -1,3 +1,13 @@
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Rewrite the
+	processing for Descriptor_Size.
+	* gnat_rm.texi: Rephrase the wording for attribute Descriptor_Size
+	to account for its broader usage.
+	* sem_attr.adb (Analyze_Attribute): Change the error detection
+	circuitry for Descriptor_Size as the attribute is now applicable
+	to all types.
+
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb, prj-nmsc.adb, exp_aggr.adb: Minor reformatting.

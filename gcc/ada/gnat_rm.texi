@@ -5941,9 +5941,10 @@ as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @findex Descriptor_Size
 @noindent
 Attribute @code{Descriptor_Size} returns the size in bits of the descriptor
-allocated for an unconstrained array type. An array descriptor contains bounds
-information and is located immediately before the first element of the array.
-The value of attribute @code{Descriptor_Size} is of type universal integer.
+allocated for a type.  The result is non-zero only for unconstrained array
+types and the returned value is of type universal integer.  In GNAT, an array
+descriptor contains bounds information and is located immediately before the
+first element of the array.
 
 @smallexample @c ada
 type Unconstr_Array is array (Positive range <>) of Boolean;
@@ -5953,7 +5954,7 @@ Put_Line ("Descriptor size = " & Unconstr_Array'Descriptor_Size'Img);
 @noindent
 The attribute takes into account any additional padding due to type alignment.
 In the example above, the descriptor contains two values of type
-@code{Positive} representing the low and high bound. Since @code{Positive} has
+@code{Positive} representing the low and high bound.  Since @code{Positive} has
 a size of 31 bits and an alignment of 4, the descriptor size is @code{2 *
 Positive'Size + 2} or 64 bits.
 
