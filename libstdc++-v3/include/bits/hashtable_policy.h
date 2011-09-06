@@ -427,8 +427,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Prime_rehash_policy::
   _M_next_bkt(std::size_t __n) const
   {
-    const unsigned long __p = *std::lower_bound(__prime_list, __prime_list
-						+ _S_n_primes, __n);
+    // Optimize lookups involving the first elements of __prime_list.
+    // (useful to speed-up, eg, constructors)
+    static const unsigned char __fastbkt[12]
+      = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11 };
+
+    const unsigned long __p
+      = __n <= 11 ? __fastbkt[__n]
+                  : *std::lower_bound(__prime_list + 5,
+				      __prime_list + _S_n_primes, __n);
     _M_next_resize =
       static_cast<std::size_t>(__builtin_floor(__p * _M_max_load_factor));
     return __p;
