@@ -707,7 +707,8 @@ package System.OS_Lib is
    --
    --  This function will always set Success to False under VxWorks and other
    --  similar operating systems which have no notion of the concept of
-   --  dynamically executable file.
+   --  dynamically executable file. Otherwise Success is set True if the exit
+   --  status of the spawned process is zero.
 
    function Spawn
      (Program_Name : String;
