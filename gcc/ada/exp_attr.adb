@@ -1803,10 +1803,23 @@ package body Exp_Attr is
       -- Descriptor_Size --
       ---------------------
 
-      --  This attribute is handled entirely by the back end
-
       when Attribute_Descriptor_Size =>
-         Apply_Universal_Integer_Attribute_Checks (N);
+
+         --  Attribute Descriptor_Size is handled by the back end when applied
+         --  to an unconstrained array type.
+
+         if Is_Array_Type (Ptyp)
+           and then not Is_Constrained (Ptyp)
+         then
+            Apply_Universal_Integer_Attribute_Checks (N);
+
+         --  For any other type, the descriptor size is 0 because there is no
+         --  actual descriptor.
+
+         else
+            Rewrite (N, Make_Integer_Literal (Loc, 0));
+            Analyze (N);
+         end if;
 
       ---------------
       -- Elab_Body --
