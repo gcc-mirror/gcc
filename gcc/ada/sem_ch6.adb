@@ -2346,7 +2346,12 @@ package body Sem_Ch6 is
             --  expansion has generated an equivalent type that is used when
             --  elaborating the body.
 
-            if No (Spec_Id) then
+            --  An exception in the case of Ada2012, AI05-177: The bodies
+            --  created for expression functions do not freeze.
+
+            if No (Spec_Id)
+              and then Nkind (Original_Node (N)) /= N_Expression_Function
+            then
                Freeze_Before (N, Body_Id);
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit then
