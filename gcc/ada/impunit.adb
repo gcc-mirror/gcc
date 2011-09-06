@@ -826,11 +826,11 @@ package body Impunit is
          return False;
    end Is_Known_Unit;
 
-   ------------------------
-   -- Is_RM_Defined_Unit --
-   ------------------------
+   ---------------------------
+   -- Not_Impl_Defined_Unit --
+   ---------------------------
 
-   function Is_RM_Defined_Unit (U : Unit_Number_Type) return Boolean is
+   function Not_Impl_Defined_Unit (U : Unit_Number_Type) return Boolean is
       Fname : constant File_Name_Type := Unit_File_Name (U);
 
    begin
@@ -848,21 +848,22 @@ package body Impunit is
          return True;
       end if;
 
-      --  If length of file name is greater than 12, not RM-defined. The value
-      --  12 here is an 8 char name with extension .ads.
+      --  If length of file name is greater than 12, then it's a user unit
+      --  and not a GNAT implementation defined unit.
 
       if Name_Len > 12 then
+         return True;
+      end if;
+
+      --  Implementation defined if unit in the gnat hierarchy
+
+      if (Name_Len = 8 and then Name_Buffer (1 .. 8) = "gnat.ads")
+        or else (Name_Len > 2 and then Name_Buffer (1 .. 2) = "g-")
+      then
          return False;
       end if;
 
-      --  Not RM-defined if length of name greater than 12 (12 is 8 characters
-      --  plus 4 for ".ads" appended at the end).
-
-      if Length_Of_Name (Fname) > 12 then
-         return False;
-      end if;
-
-      --  Not RM defined if file name does not start with a- s- i-
+      --  Not implementation defined if file name does not start with a- s- i-
 
       if Name_Len < 3
         or else Name_Buffer (2) /= '-'
@@ -872,14 +873,14 @@ package body Impunit is
                    and then
                  Name_Buffer (1) /= 's')
       then
-         return False;
+         return True;
       end if;
 
-      --  Not RM defined if file name does not end in .ads. This can happen
+      --  Not impl-defined if file name does not end in .ads. This can happen
       --  when non-standard file names are being used.
 
       if Name_Buffer (Name_Len - 3 .. Name_Len) /= ".ads" then
-         return False;
+         return True;
       end if;
 
       --  Otherwise normalize file name to 8 characters
@@ -891,7 +892,8 @@ package body Impunit is
       end loop;
 
       --  Check our lists of names, if we find a match, return corresponding
-      --  indication of whether the file is RM defined.
+      --  indication of whether the file is RM defined, respecting the RM
+      --  version in which it is defined.
 
       for J in Non_Imp_File_Names_95'Range loop
          if Name_Buffer (1 .. 8) = Non_Imp_File_Names_95 (J).Fname then
@@ -913,9 +915,11 @@ package body Impunit is
          end if;
       end loop;
 
-      --  If no match in any of the lists, not RM defined
+      --  If unit is in System, Ada or Interfaces hierarchies and did not match
+      --  any entry in the list, means it is an internal implementation defined
+      --  unit which the restriction should definition forbid.
 
-      return False;
-   end Is_RM_Defined_Unit;
+      return True;
+   end Not_Impl_Defined_Unit;
 
 end Impunit;
