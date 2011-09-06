@@ -17,4 +17,4 @@ constexpr int b = A<B>().f();	// { dg-error "non-constexpr function" }
 
 template <class T>
 constexpr int f (T t) { return 42; } // { dg-error "parameter" }
-constexpr int x = f(B());	     // { dg-error "constexpr function" }
+constexpr int x = f(B());	     // { dg-error "constexpr" }

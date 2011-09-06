@@ -5485,7 +5485,6 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    }
 	}
 
-      /* Check this again here for cxx_eval_call_expression.  */
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
 	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
 	{
@@ -5500,29 +5499,6 @@ is_valid_constexpr_fn (tree fun, bool complain)
     }
 
   return ret;
-}
-
-/* Return non-null if FUN certainly designates a valid constexpr function
-   declaration.  Otherwise return NULL.  Issue appropriate diagnostics
-   if necessary.  Note that we only check the declaration, not the body
-   of the function.  */
-
-tree
-validate_constexpr_fundecl (tree fun)
-{
-  if (processing_template_decl || !DECL_DECLARED_CONSTEXPR_P (fun))
-    return NULL;
-  else if (DECL_CLONED_FUNCTION_P (fun))
-    /* We already checked the original function.  */
-    return fun;
-
-  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun)))
-    {
-      DECL_DECLARED_CONSTEXPR_P (fun) = false;
-      return NULL;
-    }
-
-  return fun;
 }
 
 /* Subroutine of  build_constexpr_constructor_member_initializers.
@@ -5799,17 +5775,27 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
       else
 	{
 	  index = CONSTRUCTOR_ELT (body, i)->index;
-	  /* Skip base vtable inits.  */
-	  if (TREE_CODE (index) == COMPONENT_REF)
+	  /* Skip base and vtable inits.  */
+	  if (TREE_CODE (index) != FIELD_DECL)
 	    continue;
 	}
       for (; field != index; field = DECL_CHAIN (field))
 	{
+	  tree ftype;
 	  if (TREE_CODE (field) != FIELD_DECL
 	      || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field)))
 	    continue;
 	  if (!complain)
 	    return true;
+	  ftype = strip_array_types (TREE_TYPE (field));
+	  if (type_has_constexpr_default_constructor (ftype))
+	    {
+	      /* It's OK to skip a member with a trivial constexpr ctor.
+	         A constexpr ctor that isn't trivial should have been
+	         added in by now.  */
+	      gcc_checking_assert (!TYPE_HAS_COMPLEX_DFLT (ftype));
+	      continue;
+	    }
 	  error ("uninitialized member %qD in %<constexpr%> constructor",
 		 field);
 	  bad = true;
@@ -5833,6 +5819,9 @@ register_constexpr_fundef (tree fun, tree body)
 {
   constexpr_fundef entry;
   constexpr_fundef **slot;
+
+  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun)))
+    return NULL;
 
   body = massage_constexpr_body (fun, body);
   if (body == NULL_TREE || body == error_mark_node)

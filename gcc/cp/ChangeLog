@@ -1,3 +1,12 @@
+2011-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50296
+	* semantics.c (register_constexpr_fundef): Call is_valid_constexpr_fn.
+	(cx_check_missing_mem_inits): Handle bases and empty trivial members.
+	(validate_constexpr_fundecl): Remove.
+	* decl.c (start_preparsed_function): Don't call it.
+	* cp-tree.h: Don't declare it.
+
 2011-09-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49267
