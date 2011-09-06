@@ -1,3 +1,13 @@
+2011-09-06  Ira Rosen  <ira.rosen@linaro.org>
+
+	 * config/arm/arm.c (arm_preferred_simd_mode): Check
+	TARGET_NEON_VECTORIZE_DOUBLE instead of
+	TARGET_NEON_VECTORIZE_QUAD.
+	(arm_autovectorize_vector_sizes): Likewise.
+	* config/arm/arm.opt (mvectorize-with-neon-quad): Make inverse
+	mask of mvectorize-with-neon-double.  Add RejectNegative.
+	(mvectorize-with-neon-double): New.
+
 2011-09-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (visit_use): CSE stmt pieces and simplify

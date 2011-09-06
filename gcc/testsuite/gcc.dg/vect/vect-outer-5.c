@@ -1,5 +1,4 @@
 /* { dg-require-effective-target vect_float } */
-/* { dg-add-options quad_vectors } */
 
 #include <stdarg.h>
 #include <signal.h>

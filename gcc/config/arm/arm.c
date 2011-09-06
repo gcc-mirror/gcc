@@ -23026,7 +23026,7 @@ arm_array_mode_supported_p (enum machine_mode mode,
   return false;
 }
 
-/* Use the option -mvectorize-with-neon-quad to override the use of doubleword
+/* Use the option -mvectorize-with-neon-double to override the use of quardword
    registers when autovectorizing for Neon, at least until multiple vector
    widths are supported properly by the middle-end.  */
 
@@ -23037,15 +23037,15 @@ arm_preferred_simd_mode (enum machine_mode mode)
     switch (mode)
       {
       case SFmode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V4SFmode : V2SFmode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V2SFmode : V4SFmode;
       case SImode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V4SImode : V2SImode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V2SImode : V4SImode;
       case HImode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V8HImode : V4HImode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V4HImode : V8HImode;
       case QImode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V16QImode : V8QImode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V8QImode : V16QImode;
       case DImode:
-	if (TARGET_NEON_VECTORIZE_QUAD)
+	if (!TARGET_NEON_VECTORIZE_DOUBLE)
 	  return V2DImode;
 	break;
 
@@ -24268,7 +24268,7 @@ arm_expand_sync (enum machine_mode mode,
 static unsigned int
 arm_autovectorize_vector_sizes (void)
 {
-  return TARGET_NEON_VECTORIZE_QUAD ? 16 | 8 : 0;
+  return TARGET_NEON_VECTORIZE_DOUBLE ? 0 : (16 | 8);
 }
 
 static bool
