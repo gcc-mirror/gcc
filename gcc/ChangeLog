@@ -1,3 +1,17 @@
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47025
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): BUILT_IN_VA_END
+	uses nothing.
+	(call_may_clobber_ref_p_1): BUILT_IN_VA_END is a barrier like
+	BUILT_IN_FREE.
+	(stmt_kills_ref_p_1): BUILT_IN_VA_END kills what its argument
+	definitely points to.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	BUILT_IN_VA_START doesn't let its va_list argument escape.
+	* tree-ssa-dce.c (propagate_necessity): BUILT_IN_VA_END does
+	not make any previous stores necessary.
+
 2011-09-06  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-inline.h (struct inline_summary): Move versionable flag...
