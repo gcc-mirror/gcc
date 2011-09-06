@@ -1,3 +1,8 @@
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_use): CSE stmt pieces and simplify
+	matching.
+
 2011-09-06  Tom de Vries  <tom@codesourcery.com>
 
 	* recog.c (asm_labels_ok): New function.

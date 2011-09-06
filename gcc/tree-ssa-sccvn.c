@@ -3043,16 +3043,17 @@ visit_use (tree use)
 	changed = defs_to_varying (stmt);
       else if (is_gimple_assign (stmt))
 	{
+	  enum tree_code code = gimple_assign_rhs_code (stmt);
 	  tree lhs = gimple_assign_lhs (stmt);
+	  tree rhs1 = gimple_assign_rhs1 (stmt);
 	  tree simplified;
 
 	  /* Shortcut for copies. Simplifying copies is pointless,
 	     since we copy the expression and value they represent.  */
-	  if (gimple_assign_copy_p (stmt)
-	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+	  if (code == SSA_NAME
 	      && TREE_CODE (lhs) == SSA_NAME)
 	    {
-	      changed = visit_copy (lhs, gimple_assign_rhs1 (stmt));
+	      changed = visit_copy (lhs, rhs1);
 	      goto done;
 	    }
 	  simplified = try_to_simplify (stmt);
@@ -3119,24 +3120,22 @@ visit_use (tree use)
 	       /* We can substitute SSA_NAMEs that are live over
 		  abnormal edges with their constant value.  */
 	       && !(gimple_assign_copy_p (stmt)
-		    && is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
+		    && is_gimple_min_invariant (rhs1))
 	       && !(simplified
 		    && is_gimple_min_invariant (simplified))
 	       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	      /* Stores or copies from SSA_NAMEs that are live over
 		 abnormal edges are a problem.  */
-	      || (gimple_assign_single_p (stmt)
-		  && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
-		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs1 (stmt))))
+	      || (code == SSA_NAME
+		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
 	    changed = defs_to_varying (stmt);
-	  else if (REFERENCE_CLASS_P (lhs) || DECL_P (lhs))
-	    {
-	      changed = visit_reference_op_store (lhs, gimple_assign_rhs1 (stmt), stmt);
-	    }
+	  else if (REFERENCE_CLASS_P (lhs)
+		   || DECL_P (lhs))
+	    changed = visit_reference_op_store (lhs, rhs1, stmt);
 	  else if (TREE_CODE (lhs) == SSA_NAME)
 	    {
 	      if ((gimple_assign_copy_p (stmt)
-		   && is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
+		   && is_gimple_min_invariant (rhs1))
 		  || (simplified
 		      && is_gimple_min_invariant (simplified)))
 		{
@@ -3144,11 +3143,11 @@ visit_use (tree use)
 		  if (simplified)
 		    changed = set_ssa_val_to (lhs, simplified);
 		  else
-		    changed = set_ssa_val_to (lhs, gimple_assign_rhs1 (stmt));
+		    changed = set_ssa_val_to (lhs, rhs1);
 		}
 	      else
 		{
-		  switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
+		  switch (get_gimple_rhs_class (code))
 		    {
 		    case GIMPLE_UNARY_RHS:
 		    case GIMPLE_BINARY_RHS:
@@ -3156,25 +3155,24 @@ visit_use (tree use)
 		      changed = visit_nary_op (lhs, stmt);
 		      break;
 		    case GIMPLE_SINGLE_RHS:
-		      switch (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)))
+		      switch (TREE_CODE_CLASS (code))
 			{
 			case tcc_reference:
 			  /* VOP-less references can go through unary case.  */
-			  if ((gimple_assign_rhs_code (stmt) == REALPART_EXPR
-			       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR
-			       || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
-			      && TREE_CODE (TREE_OPERAND (gimple_assign_rhs1 (stmt), 0)) == SSA_NAME)
+			  if ((code == REALPART_EXPR
+			       || code == IMAGPART_EXPR
+			       || code == VIEW_CONVERT_EXPR)
+			      && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
 			    {
 			      changed = visit_nary_op (lhs, stmt);
 			      break;
 			    }
 			  /* Fallthrough.  */
 			case tcc_declaration:
-			  changed = visit_reference_op_load
-			      (lhs, gimple_assign_rhs1 (stmt), stmt);
+			  changed = visit_reference_op_load (lhs, rhs1, stmt);
 			  break;
 			case tcc_expression:
-			  if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+			  if (code == ADDR_EXPR)
 			    {
 			      changed = visit_nary_op (lhs, stmt);
 			      break;
