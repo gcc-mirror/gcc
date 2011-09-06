@@ -376,8 +376,7 @@ package body Prj.Nmsc is
    --  otherwise only those currently set in the Source_Names hash table.
 
    procedure Check_File_Naming_Schemes
-     (In_Tree               : Project_Tree_Ref;
-      Project               : Project_Processing_Data;
+     (Project               : Project_Processing_Data;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Language_List;
       Language              : out Language_Ptr;
@@ -6619,8 +6618,7 @@ package body Prj.Nmsc is
    -------------------------------
 
    procedure Check_File_Naming_Schemes
-     (In_Tree               : Project_Tree_Ref;
-      Project               : Project_Processing_Data;
+     (Project               : Project_Processing_Data;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Language_List;
       Language              : out Language_Ptr;
@@ -6923,8 +6921,7 @@ package body Prj.Nmsc is
 
       if Check_Name then
          Check_File_Naming_Schemes
-           (In_Tree               => Data.Tree,
-            Project               => Project,
+           (Project               => Project,
             File_Name             => File_Name,
             Alternate_Languages   => Alternate_Languages,
             Language              => Language,
