@@ -2780,12 +2780,16 @@ package body Exp_Ch6 is
 
             case Nkind (Ancestor) is
                when N_Allocator =>
-                  --  Messy.
-                  --
+
+                  --  Messy code, could use a cleanup???
+
                   --  At this point, we'd like to assign
+
                   --    Level := Dynamic_Accessibility_Level (Ancestor);
+
                   --  but Etype of Ancestor may not have been set yet,
                   --  so that doesn't work.
+
                   --  Handle this later in Expand_Allocator_Expression.
 
                   Defer := True;
@@ -2794,6 +2798,7 @@ package body Exp_Ch6 is
                   declare
                      Def_Id : constant Entity_Id :=
                                 Defining_Identifier (Ancestor);
+
                   begin
                      if Is_Return_Object (Def_Id) then
                         if Present (Extra_Accessibility_Of_Result
@@ -2806,17 +2811,19 @@ package body Exp_Ch6 is
                            Level :=
                              New_Occurrence_Of
                               (Extra_Accessibility_Of_Result
-                                 (Return_Applies_To (Scope (Def_Id))), Loc);
+                                (Return_Applies_To (Scope (Def_Id))), Loc);
                         end if;
                      else
-                        Level := Make_Integer_Literal (Loc,
-                                   Object_Access_Level (Def_Id));
+                        Level :=
+                          Make_Integer_Literal (Loc,
+                            Intval => Object_Access_Level (Def_Id));
                      end if;
                   end;
 
                when N_Simple_Return_Statement =>
                   if Present (Extra_Accessibility_Of_Result
-                    (Return_Applies_To (Return_Statement_Entity (Ancestor))))
+                               (Return_Applies_To
+                                 (Return_Statement_Entity (Ancestor))))
                   then
                      --  Pass along value that was passed in if the routine
                      --  we are returning from also has an
@@ -2835,9 +2842,10 @@ package body Exp_Ch6 is
 
             if not Defer then
                if not Present (Level) then
+
                   --  The "innermost master that evaluates the function call".
-                  --
-                  --  ??? -  Shuld we use Integer'Last here instead
+
+                  --  ??? -  Shpuld we use Integer'Last here instead
                   --  in order to deal with (some of) the problems
                   --  associated with calls to subps whose enclosing
                   --  scope is unknown (e.g., Anon_Access_To_Subp_Param.all)?
@@ -6268,6 +6276,7 @@ package body Exp_Ch6 is
             Next_Discriminant (Discr);
          end loop;
       end if;
+
       return False;
    end Has_Unconstrained_Access_Discriminants;
 
@@ -6715,16 +6724,19 @@ package body Exp_Ch6 is
                    Make_Op_Ne (Loc,
                      Left_Opnd  => Duplicate_Subexpr (Exp),
                      Right_Opnd => Make_Null (Loc)),
+
                  Right_Opnd => Make_Op_Ne (Loc,
                    Left_Opnd  =>
                      Make_Selected_Component (Loc,
                        Prefix        => Duplicate_Subexpr (Exp),
                        Selector_Name => Make_Identifier (Loc, Name_uTag)),
+
                    Right_Opnd =>
                      Make_Attribute_Reference (Loc,
                        Prefix         =>
                          New_Occurrence_Of (Designated_Type (R_Type), Loc),
                        Attribute_Name => Name_Tag))),
+
              Reason    => CE_Tag_Check_Failed),
              Suppress  => All_Checks);
       end if;
@@ -6737,11 +6749,11 @@ package body Exp_Ch6 is
         and then Has_Unconstrained_Access_Discriminants (R_Type)
       then
          declare
-            Discrim_Source : Node_Id := Exp;
+            Discrim_Source : Node_Id;
 
             procedure Check_Against_Result_Level (Level : Node_Id);
-            --  Check the given accessibility level against the
-            --  level determined by the point of call" (AI05-0234).
+            --  Check the given accessibility level against the level
+            --  determined by the point of call. (AI05-0234).
 
             --------------------------------
             -- Check_Against_Result_Level --
@@ -6759,7 +6771,9 @@ package body Exp_Ch6 is
                            (Extra_Accessibility_Of_Result (Scope_Id), Loc)),
                        Reason => PE_Accessibility_Check_Failed));
             end Check_Against_Result_Level;
+
          begin
+            Discrim_Source := Exp;
             while Nkind (Discrim_Source) = N_Qualified_Expression loop
                Discrim_Source := Expression (Discrim_Source);
             end loop;
@@ -6767,7 +6781,6 @@ package body Exp_Ch6 is
             if Nkind (Discrim_Source) = N_Identifier
               and then Is_Return_Object (Entity (Discrim_Source))
             then
-
                Discrim_Source := Entity (Discrim_Source);
 
                if Is_Constrained (Etype (Discrim_Source)) then
@@ -6780,22 +6793,18 @@ package body Exp_Ch6 is
               and then Nkind_In (Original_Node (Discrim_Source),
                                  N_Aggregate, N_Extension_Aggregate)
             then
-
                Discrim_Source := Original_Node (Discrim_Source);
 
             elsif Nkind (Discrim_Source) = N_Explicit_Dereference and then
               Nkind (Original_Node (Discrim_Source)) = N_Function_Call
             then
-
                Discrim_Source := Original_Node (Discrim_Source);
-
             end if;
 
             while Nkind_In (Discrim_Source, N_Qualified_Expression,
                                             N_Type_Conversion,
                                             N_Unchecked_Type_Conversion)
             loop
-
                Discrim_Source := Expression (Discrim_Source);
             end loop;
 
@@ -8268,9 +8277,9 @@ package body Exp_Ch6 is
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
       function Has_Unconstrained_Access_Discriminant_Component
-        (Comp_Typ :  Entity_Id) return Boolean;
-      --  Returns True if any component of the type has
-      --  an unconstrained access discriminant.
+        (Comp_Typ : Entity_Id) return Boolean;
+      --  Returns True if any component of the type has an unconstrained access
+      --  discriminant.
 
       -----------------------------------------------------
       -- Has_Unconstrained_Access_Discriminant_Component --
@@ -8282,6 +8291,7 @@ package body Exp_Ch6 is
       begin
          if not Is_Limited_Type (Comp_Typ) then
             return False;
+
             --  Only limited types can have access discriminants with
             --  defaults.
 
@@ -8294,8 +8304,10 @@ package body Exp_Ch6 is
 
          elsif Is_Record_Type (Comp_Typ) then
             declare
-               Comp : Entity_Id := First_Component (Comp_Typ);
+               Comp : Entity_Id;
+
             begin
+               Comp := First_Component (Comp_Typ);
                while Present (Comp) loop
                   if Has_Unconstrained_Access_Discriminant_Component
                        (Underlying_Type (Etype (Comp)))
@@ -8314,32 +8326,36 @@ package body Exp_Ch6 is
    --  Start of processing for Needs_Result_Accessibility_Level
 
    begin
-      if not Present (Func_Typ) --  ??? completion unavailable
+      --  False if completion unavailable (how does this happen???)
 
-        or else Func_Typ = Standard_Void_Type --  not a function
+      if not Present (Func_Typ) then
+         return False;
 
-        or else Is_Scalar_Type (Func_Typ) --  handle enum-lit renames
+      --  False if not a function, also handle enum-lit renames case
+
+      elsif Func_Typ = Standard_Void_Type
+        or else Is_Scalar_Type (Func_Typ)
       then
          return False;
-      end if;
 
-      if Present (Alias (Func_Id)) then
-         --  Handle a corner case, a cross-dialect subp renaming. For example,
-         --  an Ada2012 renaming of an Ada05 subprogram. This can occur when
-         --  a non-Ada2012 unit references predefined runtime units.
-         --
+      --  Handle a corner case, a cross-dialect subp renaming. For example,
+      --  an Ada2012 renaming of an Ada05 subprogram. This can occur when a
+      --  non-Ada2012 unit references predefined runtime units.
+
+      elsif Present (Alias (Func_Id)) then
+
          --  Unimplemented: a cross-dialect subp renaming which does not set
          --  the Alias attribute (e.g., a rename of a dereference of an access
          --  to subprogram value).
 
          return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
-      end if;
 
-      if Ada_Version < Ada_2012 then
+      --  Remaining cases require Ada 2012 mode
+
+      elsif Ada_Version < Ada_2012 then
          return False;
-      end if;
 
-      if Ekind (Func_Typ) = E_Anonymous_Access_Type
+      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type
         or else Is_Tagged_Type (Func_Typ)
       then
          --  In the case of, say, a null tagged record result type, the need
@@ -8357,17 +8373,18 @@ package body Exp_Ch6 is
          --  wrappers, but that is not the approach that was chosen.
 
          return True;
-      end if;
 
-      if Has_Unconstrained_Access_Discriminants (Func_Typ) then
+      elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then
          return True;
-      end if;
 
-      if Has_Unconstrained_Access_Discriminant_Component (Func_Typ) then
+      elsif Has_Unconstrained_Access_Discriminant_Component (Func_Typ) then
          return True;
-      end if;
 
-      return False;
+      --  False for all other cases
+
+      else
+         return False;
+      end if;
    end Needs_Result_Accessibility_Level;
 
 end Exp_Ch6;
