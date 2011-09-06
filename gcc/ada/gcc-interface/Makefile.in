@@ -590,7 +590,7 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
 endif
 
 # vxworks 653
-ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
+ifeq ($(strip $(filter-out powerpc% e500v2 wrs vxworksae,$(targ))),)
   # target pairs for vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
