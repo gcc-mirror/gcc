@@ -1807,10 +1807,10 @@ package body Exp_Ch7 is
                             (Available_View (Designated_Type (Obj_Typ)))
                  and then Present (Expr)
                  and then
-                     (Is_Null_Access_BIP_Func_Call (Expr)
-                   or else
-                     (Is_Non_BIP_Func_Call (Expr)
-                        and then not Is_Related_To_Func_Return (Obj_Id)))
+                   (Is_Null_Access_BIP_Func_Call (Expr)
+                     or else
+                       (Is_Non_BIP_Func_Call (Expr)
+                         and then not Is_Related_To_Func_Return (Obj_Id)))
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -7035,17 +7035,14 @@ package body Exp_Ch7 is
 
       function Alignment_Of (Typ : Entity_Id) return Node_Id;
       --  Subsidiary routine, generate the following attribute reference:
-      --
       --    Typ'Alignment
 
       function Size_Of (Typ : Entity_Id) return Node_Id;
       --  Subsidiary routine, generate the following attribute reference:
-      --
       --    Typ'Size / Storage_Unit
 
       function Double_Size_Of (Typ : Entity_Id) return Node_Id;
       --  Subsidiary routine, generate the following expression:
-      --
       --    2 * Typ'Size / Storage_Unit
 
       ------------------

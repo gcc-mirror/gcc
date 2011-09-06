@@ -1847,8 +1847,10 @@ package body Exp_Ch6 is
             if No (Prev) then
                if No (Parameter_Associations (Call_Node)) then
                   Set_Parameter_Associations (Call_Node, New_List);
-                  Append (Insert_Param, Parameter_Associations (Call_Node));
                end if;
+
+               Append (Insert_Param, Parameter_Associations (Call_Node));
+
             else
                Insert_After (Prev, Insert_Param);
             end if;
@@ -2754,7 +2756,8 @@ package body Exp_Ch6 is
       --  passed in to it, then pass it in.
 
       if Ekind_In (Subp, E_Function, E_Operator, E_Subprogram_Type)
-         and then Present (Extra_Accessibility_Of_Result (Subp))
+        and then
+          Present (Extra_Accessibility_Of_Result (Ultimate_Alias (Subp)))
       then
          declare
             Ancestor : Node_Id := Parent (Call_Node);
@@ -2763,14 +2766,18 @@ package body Exp_Ch6 is
 
          begin
             --  Unimplemented: if Subp returns an anonymous access type, then
+
             --    a) if the call is the operand of an explict conversion, then
             --       the target type of the conversion (a named access type)
             --       determines the accessibility level pass in;
+
             --    b) if the call defines an access discriminant of an object
             --       (e.g., the discriminant of an object being created by an
             --       allocator, or the discriminant of a function result),
             --       then the accessibility level to pass in is that of the
             --       discriminated object being initialized).
+
+            --  ???
 
             while Nkind (Ancestor) = N_Qualified_Expression
             loop
@@ -2851,7 +2858,9 @@ package body Exp_Ch6 is
                              Scope_Depth (Current_Scope) + 1);
                end if;
 
-               Add_Extra_Actual (Level, Extra_Accessibility_Of_Result (Subp));
+               Add_Extra_Actual
+                 (Level,
+                  Extra_Accessibility_Of_Result (Ultimate_Alias (Subp)));
             end if;
          end;
       end if;
@@ -6742,7 +6751,7 @@ package body Exp_Ch6 is
       --  ensure that the function result does not outlive an
       --  object designated by one of it discriminants.
 
-      if Ada_Version >= Ada_2012
+      if Present (Extra_Accessibility_Of_Result (Scope_Id))
         and then Has_Unconstrained_Access_Discriminants (R_Type)
       then
          declare
@@ -8320,12 +8329,18 @@ package body Exp_Ch6 is
          return False;
       end Has_Unconstrained_Access_Discriminant_Component;
 
+      Feature_Disabled : constant Boolean := True;
+      --  Temporary
+
    --  Start of processing for Needs_Result_Accessibility_Level
 
    begin
       --  False if completion unavailable (how does this happen???)
 
       if not Present (Func_Typ) then
+         return False;
+
+      elsif Feature_Disabled then
          return False;
 
       --  False if not a function, also handle enum-lit renames case

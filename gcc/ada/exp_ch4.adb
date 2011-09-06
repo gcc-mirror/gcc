@@ -783,6 +783,8 @@ package body Exp_Ch4 is
                Subp := Entity (Name (Exp));
             end if;
 
+            Subp := Ultimate_Alias (Subp);
+
             if Present (Extra_Accessibility_Of_Result (Subp)) then
                Add_Extra_Actual_To_Call
                  (Subprogram_Call => Exp,
