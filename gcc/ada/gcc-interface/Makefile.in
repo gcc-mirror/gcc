@@ -434,14 +434,6 @@ X86_TARGET_PAIRS = \
   g-bytswa.adb<g-bytswa-x86.adb \
   s-atocou.adb<s-atocou-x86.adb
 
-# Special version of units for x86 and x86-64 platforms.
-
-X86_TARGET_PAIRS = \
-  a-numaux.ads<a-numaux-x86.ads \
-  a-numaux.adb<a-numaux-x86.adb \
-  g-bytswa.adb<g-bytswa-x86.adb \
-  s-atocou.adb<s-atocou-x86.adb
-
 X86_64_TARGET_PAIRS = \
   a-numaux.ads<a-numaux-x86.ads \
   a-numaux.adb<a-numaux-x86.adb \
