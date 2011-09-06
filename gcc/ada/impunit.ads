@@ -72,10 +72,14 @@ package Impunit is
    --  the known library units, and if so, returns True. If the name does not
    --  match any known library unit, False is returned.
 
-   function Is_RM_Defined_Unit (U : Unit_Number_Type) return Boolean;
-   --  This function returns True if U represents a unit that is defined in
-   --  the RM, as defined by the No_Implementation_Units restriction rules.
-   --  It is used to implement this restriction, so if False is returned, it
-   --  means that with'ing the unit violates the restriction.
+   function Not_Impl_Defined_Unit (U : Unit_Number_Type) return Boolean;
+   --  This function returns True if U represents a unit that is permitted by
+   --  the restriction No_Implementation_Units (i.e. a unit in the Ada, System,
+   --  and Interfaces hierarchies that is defined in the RM, or a user defined
+   --  unit. It returns False if U represents a unit that is not permitted by
+   --  this restriction, which includes units in these three hierarchies that
+   --  are GNAT implementation defined. It also returns False for any units in
+   --  the GNAT hierarchy, which is not strictly conforming, but so obviously
+   --  useful that it is a reasonable deviation from the standard.
 
 end Impunit;

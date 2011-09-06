@@ -2380,7 +2380,9 @@ package body Sem_Ch10 is
       --  Check No_Implementation_Units violation
 
       if Restriction_Check_Required (No_Implementation_Units) then
-         if not Is_RM_Defined_Unit (Get_Source_Unit (U)) then
+         if Not_Impl_Defined_Unit (Get_Source_Unit (U)) then
+            null;
+         else
             Check_Restriction (No_Implementation_Units, Nam);
             Restriction_Violation := True;
          end if;

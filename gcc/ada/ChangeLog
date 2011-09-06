@@ -1,5 +1,10 @@
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch10.adb, impunit.ads, impunit.adb (Not_Impl_Defined_Unit): New
+	name for Is_RM_Defined_Unit. Also several fixes to this unit.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
 	* impunit.ads, impunit.adb (Is_RM_Defined_Unit): New function.
 	* s-rident.ads: New restriction No_Implementation_Units
 	(this restriction is also part of the profile
