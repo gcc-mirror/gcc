@@ -1923,6 +1923,9 @@ vn_nary_op_eq (const void *p1, const void *p2)
   if (vno1->hashcode != vno2->hashcode)
     return false;
 
+  if (vno1->length != vno2->length)
+    return false;
+
   if (vno1->opcode != vno2->opcode
       || !types_compatible_p (vno1->type, vno2->type))
     return false;
@@ -1938,22 +1941,12 @@ vn_nary_op_eq (const void *p1, const void *p2)
 
 static void
 init_vn_nary_op_from_pieces (vn_nary_op_t vno, unsigned int length,
-			     enum tree_code code, tree type, tree op0,
-			     tree op1, tree op2, tree op3)
+			     enum tree_code code, tree type, tree *ops)
 {
   vno->opcode = code;
   vno->length = length;
   vno->type = type;
-  switch (length)
-    {
-      /* The fallthrus here are deliberate.  */
-    case 4: vno->op[3] = op3;
-    case 3: vno->op[2] = op2;
-    case 2: vno->op[1] = op1;
-    case 1: vno->op[0] = op0;
-    default:
-      break;
-    }
+  memcpy (&vno->op[0], ops, sizeof (tree) * length);
 }
 
 /* Initialize VNO from OP.  */
@@ -1970,6 +1963,26 @@ init_vn_nary_op_from_op (vn_nary_op_t vno, tree op)
     vno->op[i] = TREE_OPERAND (op, i);
 }
 
+/* Return the number of operands for a vn_nary ops structure from STMT.  */
+
+static unsigned int
+vn_nary_length_from_stmt (gimple stmt)
+{
+  switch (gimple_assign_rhs_code (stmt))
+    {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
+      return 1;
+
+    case CONSTRUCTOR:
+      return CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt));
+
+    default:
+      return gimple_num_ops (stmt) - 1;
+    }
+}
+
 /* Initialize VNO from STMT.  */
 
 static void
@@ -1978,14 +1991,27 @@ init_vn_nary_op_from_stmt (vn_nary_op_t vno, gimple stmt)
   unsigned i;
 
   vno->opcode = gimple_assign_rhs_code (stmt);
-  vno->length = gimple_num_ops (stmt) - 1;
   vno->type = gimple_expr_type (stmt);
-  for (i = 0; i < vno->length; ++i)
-    vno->op[i] = gimple_op (stmt, i + 1);
-  if (vno->opcode == REALPART_EXPR
-      || vno->opcode == IMAGPART_EXPR
-      || vno->opcode == VIEW_CONVERT_EXPR)
-    vno->op[0] = TREE_OPERAND (vno->op[0], 0);
+  switch (vno->opcode)
+    {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
+      vno->length = 1;
+      vno->op[0] = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+      break;
+
+    case CONSTRUCTOR:
+      vno->length = CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt));
+      for (i = 0; i < vno->length; ++i)
+	vno->op[i] = CONSTRUCTOR_ELT (gimple_assign_rhs1 (stmt), i)->value;
+      break;
+
+    default:
+      vno->length = gimple_num_ops (stmt) - 1;
+      for (i = 0; i < vno->length; ++i)
+	vno->op[i] = gimple_op (stmt, i + 1);
+    }
 }
 
 /* Compute the hashcode for VNO and look for it in the hash table;
@@ -2023,12 +2049,12 @@ vn_nary_op_lookup_1 (vn_nary_op_t vno, vn_nary_op_t *vnresult)
 
 tree
 vn_nary_op_lookup_pieces (unsigned int length, enum tree_code code,
-			  tree type, tree op0, tree op1, tree op2,
-			  tree op3, vn_nary_op_t *vnresult)
+			  tree type, tree *ops, vn_nary_op_t *vnresult)
 {
-  struct vn_nary_op_s vno1;
-  init_vn_nary_op_from_pieces (&vno1, length, code, type, op0, op1, op2, op3);
-  return vn_nary_op_lookup_1 (&vno1, vnresult);
+  vn_nary_op_t vno1 = XALLOCAVAR (struct vn_nary_op_s,
+				  sizeof_vn_nary_op (length));
+  init_vn_nary_op_from_pieces (vno1, length, code, type, ops);
+  return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
 /* Lookup OP in the current hash table, and return the resulting value
@@ -2040,9 +2066,11 @@ vn_nary_op_lookup_pieces (unsigned int length, enum tree_code code,
 tree
 vn_nary_op_lookup (tree op, vn_nary_op_t *vnresult)
 {
-  struct vn_nary_op_s vno1;
-  init_vn_nary_op_from_op (&vno1, op);
-  return vn_nary_op_lookup_1 (&vno1, vnresult);
+  vn_nary_op_t vno1
+    = XALLOCAVAR (struct vn_nary_op_s,
+		  sizeof_vn_nary_op (TREE_CODE_LENGTH (TREE_CODE (op))));
+  init_vn_nary_op_from_op (vno1, op);
+  return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
 /* Lookup the rhs of STMT in the current hash table, and return the resulting
@@ -2053,17 +2081,11 @@ vn_nary_op_lookup (tree op, vn_nary_op_t *vnresult)
 tree
 vn_nary_op_lookup_stmt (gimple stmt, vn_nary_op_t *vnresult)
 {
-  struct vn_nary_op_s vno1;
-  init_vn_nary_op_from_stmt (&vno1, stmt);
-  return vn_nary_op_lookup_1 (&vno1, vnresult);
-}
-
-/* Return the size of a vn_nary_op_t with LENGTH operands.  */
-
-static size_t
-sizeof_vn_nary_op (unsigned int length)
-{
-  return sizeof (struct vn_nary_op_s) - sizeof (tree) * (4 - length);
+  vn_nary_op_t vno1
+    = XALLOCAVAR (struct vn_nary_op_s,
+		  sizeof_vn_nary_op (vn_nary_length_from_stmt (stmt)));
+  init_vn_nary_op_from_stmt (vno1, stmt);
+  return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
 /* Allocate a vn_nary_op_t with LENGTH operands on STACK.  */
@@ -2114,15 +2136,11 @@ vn_nary_op_insert_into (vn_nary_op_t vno, htab_t table, bool compute_hash)
 
 vn_nary_op_t
 vn_nary_op_insert_pieces (unsigned int length, enum tree_code code,
-			  tree type, tree op0,
-			  tree op1, tree op2, tree op3,
-			  tree result,
-			  unsigned int value_id)
+			  tree type, tree *ops,
+			  tree result, unsigned int value_id)
 {
-  vn_nary_op_t vno1;
-
-  vno1 = alloc_vn_nary_op (length, result, value_id);
-  init_vn_nary_op_from_pieces (vno1, length, code, type, op0, op1, op2, op3);
+  vn_nary_op_t vno1 = alloc_vn_nary_op (length, result, value_id);
+  init_vn_nary_op_from_pieces (vno1, length, code, type, ops);
   return vn_nary_op_insert_into (vno1, current_info->nary, true);
 }
 
@@ -2147,10 +2165,9 @@ vn_nary_op_insert (tree op, tree result)
 vn_nary_op_t
 vn_nary_op_insert_stmt (gimple stmt, tree result)
 {
-  unsigned length = gimple_num_ops (stmt) - 1;
-  vn_nary_op_t vno1;
-
-  vno1 = alloc_vn_nary_op (length, result, VN_INFO (result)->value_id);
+  vn_nary_op_t vno1
+    = alloc_vn_nary_op (vn_nary_length_from_stmt (stmt),
+			result, VN_INFO (result)->value_id);
   init_vn_nary_op_from_stmt (vno1, stmt);
   return vn_nary_op_insert_into (vno1, current_info->nary, true);
 }
@@ -3171,14 +3188,17 @@ visit_use (tree use)
 			case tcc_declaration:
 			  changed = visit_reference_op_load (lhs, rhs1, stmt);
 			  break;
-			case tcc_expression:
+			default:
 			  if (code == ADDR_EXPR)
 			    {
 			      changed = visit_nary_op (lhs, stmt);
 			      break;
 			    }
-			  /* Fallthrough.  */
-			default:
+			  else if (code == CONSTRUCTOR)
+			    {
+			      changed = visit_nary_op (lhs, stmt);
+			      break;
+			    }
 			  changed = defs_to_varying (stmt);
 			}
 		      break;

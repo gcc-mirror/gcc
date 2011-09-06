@@ -1,3 +1,8 @@
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48317
+	* gcc.dg/tree-ssa/ssa-fre-31.c: New testcase.
+
 2011-09-06  Ira Rosen  <ira.rosen@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_vect_multiple_sizes):
