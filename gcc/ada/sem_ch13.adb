@@ -1295,7 +1295,7 @@ package body Sem_Ch13 is
                   --  part it applies to a completion.
 
                   if Nkind_In (N, N_Private_Type_Declaration,
-                                      N_Private_Extension_Declaration)
+                                  N_Private_Extension_Declaration)
                   then
                      null;
 

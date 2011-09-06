@@ -1,5 +1,14 @@
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
+	* ali.adb, sem_ch13.adb, lib-xref.adb: Minor reformatting.
+
+2011-09-06  Pascal Obry  <obry@adacore.com>
+
+	* s-osinte-linux.ads, s-oscons-tmplt.c: Use oscons to define sigset_t
+	types.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
 	* g-socket.adb: Minor reformatting
 
 2011-09-06  Javier Miranda  <miranda@adacore.com>

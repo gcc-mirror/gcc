@@ -165,6 +165,7 @@ pragma Style_Checks ("M32766");
 
 #ifdef __linux__
 # include <pthread.h>
+# include <signal.h>
 #endif
 
 #ifdef NATIVE
@@ -1267,6 +1268,11 @@ CND(SIZEOF_struct_hostent, "struct hostent");
 
 #define SIZEOF_struct_servent (sizeof (struct servent))
 CND(SIZEOF_struct_servent, "struct servent");
+
+#if defined (__linux__)
+#define SIZEOF_sigset (sizeof (sigset_t))
+CND(SIZEOF_sigset, "sigset");
+#endif
 /*
 
    --  Fields of struct msghdr
