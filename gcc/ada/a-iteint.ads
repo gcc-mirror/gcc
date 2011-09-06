@@ -26,8 +26,8 @@ package Ada.Iterator_Interfaces is
    function Next
      (Object   : Forward_Iterator;
       Position : Cursor) return Cursor is abstract;
-   type Reversible_Iterator is limited interface and Forward_Iterator;
 
+   type Reversible_Iterator is limited interface and Forward_Iterator;
    function Last (Object : Reversible_Iterator) return Cursor is abstract;
    function Previous
      (Object   : Reversible_Iterator;

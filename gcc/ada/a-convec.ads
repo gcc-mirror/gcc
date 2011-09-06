@@ -358,7 +358,7 @@ package Ada.Containers.Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    function Iterate (Container : Vector; Start : Cursor)
-      return Vector_Iterator_Interfaces.Reversible_Iterator'class;
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
