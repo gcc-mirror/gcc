@@ -2405,6 +2405,7 @@ package body ALI is
 
                            pragma Assert (Nextc = '>');
                            Skipc;
+
                         else
                            XR.Imported_Lang := No_Name;
                            XR.Imported_Name := No_Name;

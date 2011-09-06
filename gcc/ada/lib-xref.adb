@@ -1163,7 +1163,7 @@ package body Lib.Xref is
 
       procedure Output_Import_Export_Info (Ent : Entity_Id);
       --  Output language and external name information for an interfaced
-      --  entity, using the format <language, external_name>
+      --  entity, using the format <language, external_name>.
 
       ------------------------
       -- Get_Type_Reference --
