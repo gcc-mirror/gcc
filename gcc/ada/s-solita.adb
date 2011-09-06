@@ -150,9 +150,10 @@ package body System.Soft_Links.Tasking is
       EO      : Ada.Exceptions.Exception_Occurrence;
 
    begin
-      --  We can only be here because we are terminating the environment task.
-      --  Task termination for the rest of the tasks is handled in the
-      --  Task_Wrapper.
+      --  We can only be here because we are terminating the environment
+      --  task. Task termination for the rest of the tasks is handled in
+      --  the Task_Wrapper.
+
       --  We do not want to enable this check and e.g. call System.OS_Lib.Abort
       --  here because some restricted run-times may not have system.os_lib
       --  (e.g. JVM), and calling abort may do more harm than good to the
@@ -179,9 +180,9 @@ package body System.Soft_Links.Tasking is
          Ada.Exceptions.Save_Occurrence (EO, Excep);
       end if;
 
-      --  There is no need for explicit protection against race conditions
-      --  for this part because it can only be executed by the environment
-      --  task after all the other tasks have been finalized.
+      --  There is no need for explicit protection against race conditions for
+      --  this part because it can only be executed by the environment task
+      --  after all the other tasks have been finalized.
 
       if Self_Id.Common.Specific_Handler /= null then
          Self_Id.Common.Specific_Handler.all (Cause, Self_Id, EO);
