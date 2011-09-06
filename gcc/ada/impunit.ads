@@ -72,4 +72,10 @@ package Impunit is
    --  the known library units, and if so, returns True. If the name does not
    --  match any known library unit, False is returned.
 
+   function Is_RM_Defined_Unit (U : Unit_Number_Type) return Boolean;
+   --  This function returns True if U represents a unit that is defined in
+   --  the RM, as defined by the No_Implementation_Units restriction rules.
+   --  It is used to implement this restriction, so if False is returned, it
+   --  means that with'ing the unit violates the restriction.
+
 end Impunit;
