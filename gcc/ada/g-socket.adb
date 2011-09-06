@@ -594,8 +594,10 @@ package body GNAT.Sockets is
       Socket : Socket_Type)
    is
       Last : aliased C.int := C.int (Item.Last);
+
    begin
       Check_For_Fd_Set (Socket);
+
       if Item.Last /= No_Socket then
          Remove_Socket_From_Set (Item.Set'Access, C.int (Socket));
          Last_Socket_In_Set (Item.Set'Access, Last'Unchecked_Access);
@@ -1473,6 +1475,7 @@ package body GNAT.Sockets is
    is
    begin
       Check_For_Fd_Set (Socket);
+
       return Item.Last /= No_Socket
         and then Socket <= Item.Last
         and then Is_Socket_In_Set (Item.Set'Access, C.int (Socket)) /= 0;
@@ -2120,6 +2123,7 @@ package body GNAT.Sockets is
    procedure Set (Item : in out Socket_Set_Type; Socket : Socket_Type) is
    begin
       Check_For_Fd_Set (Socket);
+
       if Item.Last = No_Socket then
 
          --  Uninitialized socket set, make sure it is properly zeroed out
