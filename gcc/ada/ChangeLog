@@ -1,3 +1,22 @@
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Actions created for the
+	expression in a given case alternative must be attached to the
+	statement list of the ccrresponding case statement alternative
+	They cannot be propagated ahead of the case statement, because
+	the validity of the expression that generated the action may
+	hold only for that alternative.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb: Remove with and use clauses for Get_Targ.
+	(Alignment_Of): Remove the code for strict alignment targets.
+	(Double_Alignment_Of): Removed.
+	(Double_Size_Of): New routine.
+	(Make_Finalize_Address_Stmts): Change the
+	calculation of the dope's size.  Update relevant comments.
+	(Size_Of): New routine.
+
 2011-09-06  Steve Baird  <baird@adacore.com>
 
 	* einfo.ads (Extra_Accessibility): Update associated comment to use
