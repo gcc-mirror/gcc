@@ -1,3 +1,11 @@
+2011-09-06  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	* gcc.dg/tree-ssa/pr38533.c (dg-options): Added option
+	--param tree-reassoc-width=1.
+
+	* gcc.dg/tree-ssa/reassoc-24.c: New test.
+	* gcc.dg/tree-ssa/reassoc-25.c: Likewise.
+
 2011-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48149

@@ -1,3 +1,46 @@
+2011-09-06  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	PR middle-end/44382
+	* target.def (reassociation_width): New hook.
+
+	* doc/tm.texi.in (reassociation_width): Likewise.
+
+	* doc/tm.texi (reassociation_width): Likewise.
+
+	* doc/invoke.texi (tree-reassoc-width): New param documented.
+
+	* hooks.h (hook_int_uint_mode_1): New default hook.
+
+	* hooks.c (hook_int_uint_mode_1): Likewise.
+
+	* config/i386/i386.h (ix86_tune_indices): Add
+	X86_TUNE_REASSOC_INT_TO_PARALLEL and
+	X86_TUNE_REASSOC_FP_TO_PARALLEL.
+
+	(TARGET_REASSOC_INT_TO_PARALLEL): New.
+	(TARGET_REASSOC_FP_TO_PARALLEL): Likewise.
+
+	* config/i386/i386.c (initial_ix86_tune_features): Add
+	X86_TUNE_REASSOC_INT_TO_PARALLEL and
+	X86_TUNE_REASSOC_FP_TO_PARALLEL.
+
+	(ix86_reassociation_width) implementation of
+	new hook for i386 target.
+
+	* params.def (PARAM_TREE_REASSOC_WIDTH): New param added.
+
+	* tree-ssa-reassoc.c (get_required_cycles): New function.
+	(get_reassociation_width): Likewise.
+	(swap_ops_for_binary_stmt): Likewise.
+	(rewrite_expr_tree_parallel): Likewise.
+
+	(rewrite_expr_tree): Refactored. Part of code moved into
+	swap_ops_for_binary_stmt.
+
+	(reassociate_bb): Now checks reassociation width to be used
+	and call rewrite_expr_tree_parallel instead of rewrite_expr_tree
+	if needed.
+
 2011-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47025

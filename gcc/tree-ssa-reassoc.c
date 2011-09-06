@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "cfgloop.h"
 #include "flags.h"
+#include "target.h"
+#include "params.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -1617,6 +1619,62 @@ remove_visited_stmt_chain (tree var)
     }
 }
 
+/* This function checks three consequtive operands in
+   passed operands vector OPS starting from OPINDEX and
+   swaps two operands if it is profitable for binary operation
+   consuming OPINDEX + 1 abnd OPINDEX + 2 operands.
+
+   We pair ops with the same rank if possible.
+
+   The alternative we try is to see if STMT is a destructive
+   update style statement, which is like:
+   b = phi (a, ...)
+   a = c + b;
+   In that case, we want to use the destructive update form to
+   expose the possible vectorizer sum reduction opportunity.
+   In that case, the third operand will be the phi node. This
+   check is not performed if STMT is null.
+
+   We could, of course, try to be better as noted above, and do a
+   lot of work to try to find these opportunities in >3 operand
+   cases, but it is unlikely to be worth it.  */
+
+static void
+swap_ops_for_binary_stmt (VEC(operand_entry_t, heap) * ops,
+			  unsigned int opindex, gimple stmt)
+{
+  operand_entry_t oe1, oe2, oe3;
+
+  oe1 = VEC_index (operand_entry_t, ops, opindex);
+  oe2 = VEC_index (operand_entry_t, ops, opindex + 1);
+  oe3 = VEC_index (operand_entry_t, ops, opindex + 2);
+
+  if ((oe1->rank == oe2->rank
+       && oe2->rank != oe3->rank)
+      || (stmt && is_phi_for_stmt (stmt, oe3->op)
+	  && !is_phi_for_stmt (stmt, oe1->op)
+	  && !is_phi_for_stmt (stmt, oe2->op)))
+    {
+      struct operand_entry temp = *oe3;
+      oe3->op = oe1->op;
+      oe3->rank = oe1->rank;
+      oe1->op = temp.op;
+      oe1->rank= temp.rank;
+    }
+  else if ((oe1->rank == oe3->rank
+	    && oe2->rank != oe3->rank)
+	   || (stmt && is_phi_for_stmt (stmt, oe2->op)
+	       && !is_phi_for_stmt (stmt, oe1->op)
+	       && !is_phi_for_stmt (stmt, oe3->op)))
+    {
+      struct operand_entry temp = *oe2;
+      oe2->op = oe1->op;
+      oe2->rank = oe1->rank;
+      oe1->op = temp.op;
+      oe1->rank= temp.rank;
+    }
+}
+
 /* Recursively rewrite our linearized statements so that the operators
    match those in OPS[OPINDEX], putting the computation in rank
    order.  */
@@ -1629,53 +1687,10 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
   tree rhs2 = gimple_assign_rhs2 (stmt);
   operand_entry_t oe;
 
-  /* If we have three operands left, then we want to make sure the one
-     that gets the double binary op are the ones with the same rank.
-
-     The alternative we try is to see if this is a destructive
-     update style statement, which is like:
-     b = phi (a, ...)
-     a = c + b;
-     In that case, we want to use the destructive update form to
-     expose the possible vectorizer sum reduction opportunity.
-     In that case, the third operand will be the phi node.
-
-     We could, of course, try to be better as noted above, and do a
-     lot of work to try to find these opportunities in >3 operand
-     cases, but it is unlikely to be worth it.  */
+  /* If we have three operands left, then we want to make sure the ones
+     that get the double binary op are chosen wisely.  */
   if (opindex + 3 == VEC_length (operand_entry_t, ops))
-    {
-      operand_entry_t oe1, oe2, oe3;
-
-      oe1 = VEC_index (operand_entry_t, ops, opindex);
-      oe2 = VEC_index (operand_entry_t, ops, opindex + 1);
-      oe3 = VEC_index (operand_entry_t, ops, opindex + 2);
-
-      if ((oe1->rank == oe2->rank
-	   && oe2->rank != oe3->rank)
-	  || (is_phi_for_stmt (stmt, oe3->op)
-	      && !is_phi_for_stmt (stmt, oe1->op)
-	      && !is_phi_for_stmt (stmt, oe2->op)))
-	{
-	  struct operand_entry temp = *oe3;
-	  oe3->op = oe1->op;
-	  oe3->rank = oe1->rank;
-	  oe1->op = temp.op;
-	  oe1->rank= temp.rank;
-	}
-      else if ((oe1->rank == oe3->rank
-		&& oe2->rank != oe3->rank)
-	       || (is_phi_for_stmt (stmt, oe2->op)
-		   && !is_phi_for_stmt (stmt, oe1->op)
-		   && !is_phi_for_stmt (stmt, oe3->op)))
-	{
-	  struct operand_entry temp = *oe2;
-	  oe2->op = oe1->op;
-	  oe2->rank = oe1->rank;
-	  oe1->op = temp.op;
-	  oe1->rank= temp.rank;
-	}
-    }
+    swap_ops_for_binary_stmt (ops, opindex, stmt);
 
   /* The final recursion case for this function is that you have
      exactly two operations left.
@@ -1758,6 +1773,178 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
   /* Recurse on the LHS of the binary operator, which is guaranteed to
      be the non-leaf side.  */
   rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), opindex + 1, ops, moved);
+}
+
+/* Find out how many cycles we need to compute statements chain.
+   OPS_NUM holds number os statements in a chain.  CPU_WIDTH is a
+   maximum number of independent statements we may execute per cycle.  */
+
+static int
+get_required_cycles (int ops_num, int cpu_width)
+{
+  int res;
+  int elog;
+  unsigned int rest;
+
+  /* While we have more than 2 * cpu_width operands
+     we may reduce number of operands by cpu_width
+     per cycle.  */
+  res = ops_num / (2 * cpu_width);
+
+  /* Remained operands count may be reduced twice per cycle
+     until we have only one operand.  */
+  rest = (unsigned)(ops_num - res * cpu_width);
+  elog = exact_log2 (rest);
+  if (elog >= 0)
+    res += elog;
+  else
+    res += floor_log2 (rest) + 1;
+
+  return res;
+}
+
+/* Returns an optimal number of registers to use for computation of
+   given statements.  */
+
+static int
+get_reassociation_width (int ops_num, enum tree_code opc,
+			 enum machine_mode mode)
+{
+  int param_width = PARAM_VALUE (PARAM_TREE_REASSOC_WIDTH);
+  int width;
+  int width_min;
+  int cycles_best;
+
+  if (param_width > 0)
+    width = param_width;
+  else
+    width = targetm.sched.reassociation_width (opc, mode);
+
+  if (width == 1)
+    return width;
+
+  /* Get the minimal time required for sequence computation.  */
+  cycles_best = get_required_cycles (ops_num, width);
+
+  /* Check if we may use less width and still compute sequence for
+     the same time.  It will allow us to reduce registers usage.
+     get_required_cycles is monotonically increasing with lower width
+     so we can perform a binary search for the minimal width that still
+     results in the optimal cycle count.  */
+  width_min = 1;
+  while (width > width_min)
+    {
+      int width_mid = (width + width_min) / 2;
+
+      if (get_required_cycles (ops_num, width_mid) == cycles_best)
+	width = width_mid;
+      else if (width_min < width_mid)
+	width_min = width_mid;
+      else
+	break;
+    }
+
+  return width;
+}
+
+/* Recursively rewrite our linearized statements so that the operators
+   match those in OPS[OPINDEX], putting the computation in rank
+   order and trying to allow operations to be executed in
+   parallel.  */
+
+static void
+rewrite_expr_tree_parallel (gimple stmt, int width,
+			    VEC(operand_entry_t, heap) * ops)
+{
+  enum tree_code opcode = gimple_assign_rhs_code (stmt);
+  int op_num = VEC_length (operand_entry_t, ops);
+  int stmt_num = op_num - 1;
+  gimple *stmts = XALLOCAVEC (gimple, stmt_num);
+  int op_index = op_num - 1;
+  int stmt_index = 0;
+  int ready_stmts_end = 0;
+  int i = 0;
+  tree last_rhs1 = gimple_assign_rhs1 (stmt);
+  tree lhs_var;
+
+  /* We start expression rewriting from the top statements.
+     So, in this loop we create a full list of statements
+     we will work with.  */
+  stmts[stmt_num - 1] = stmt;
+  for (i = stmt_num - 2; i >= 0; i--)
+    stmts[i] = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmts[i+1]));
+
+  lhs_var = create_tmp_reg (TREE_TYPE (last_rhs1), NULL);
+  add_referenced_var (lhs_var);
+
+  for (i = 0; i < stmt_num; i++)
+    {
+      tree op1, op2;
+
+      /* Determine whether we should use results of
+	 already handled statements or not.  */
+      if (ready_stmts_end == 0
+	  && (i - stmt_index >= width || op_index < 1))
+	ready_stmts_end = i;
+
+      /* Now we choose operands for the next statement.  Non zero
+	 value in ready_stmts_end means here that we should use
+	 the result of already generated statements as new operand.  */
+      if (ready_stmts_end > 0)
+	{
+	  op1 = gimple_assign_lhs (stmts[stmt_index++]);
+	  if (ready_stmts_end > stmt_index)
+	    op2 = gimple_assign_lhs (stmts[stmt_index++]);
+	  else if (op_index >= 0)
+	    op2 = VEC_index (operand_entry_t, ops, op_index--)->op;
+	  else
+	    {
+	      gcc_assert (stmt_index < i);
+	      op2 = gimple_assign_lhs (stmts[stmt_index++]);
+	    }
+
+	  if (stmt_index >= ready_stmts_end)
+	    ready_stmts_end = 0;
+	}
+      else
+	{
+	  if (op_index > 1)
+	    swap_ops_for_binary_stmt (ops, op_index - 2, NULL);
+	  op2 = VEC_index (operand_entry_t, ops, op_index--)->op;
+	  op1 = VEC_index (operand_entry_t, ops, op_index--)->op;
+	}
+
+      /* If we emit the last statement then we should put
+	 operands into the last statement.  It will also
+	 break the loop.  */
+      if (op_index < 0 && stmt_index == i)
+	i = stmt_num - 1;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Transforming ");
+	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
+	}
+
+      /* We keep original statement only for the last one.  All
+	 others are recreated.  */
+      if (i == stmt_num - 1)
+	{
+	  gimple_assign_set_rhs1 (stmts[i], op1);
+	  gimple_assign_set_rhs2 (stmts[i], op2);
+	  update_stmt (stmts[i]);
+	}
+      else
+	stmts[i] = build_and_add_sum (lhs_var, op1, op2, opcode);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, " into ");
+	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
+	}
+    }
+
+  remove_visited_stmt_chain (last_rhs1);
 }
 
 /* Transform STMT, which is really (A +B) + (C + D) into the left
@@ -2282,7 +2469,21 @@ reassociate_bb (basic_block bb)
 		    }
 		}
 	      else
-		rewrite_expr_tree (stmt, 0, ops, false);
+		{
+		  enum machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+		  int ops_num = VEC_length (operand_entry_t, ops);
+		  int width = get_reassociation_width (ops_num, rhs_code, mode);
+
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "Width = %d was chosen for reassociation\n", width);
+
+		  if (width > 1
+		      && VEC_length (operand_entry_t, ops) > 3)
+		    rewrite_expr_tree_parallel (stmt, width, ops);
+		  else
+		    rewrite_expr_tree (stmt, 0, ops, false);
+		}
 
 	      VEC_free (operand_entry_t, heap, ops);
 	    }
