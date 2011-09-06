@@ -10088,10 +10088,21 @@ package body Sem_Prag is
             if Typ = Any_Type then
                return;
 
-            elsif not Ekind_In (Typ, E_Private_Type,
+            --  An invariant must apply to a private type, or appear in the
+            --  private part of a package spec and apply to a completion.
+
+            elsif Ekind_In (Typ, E_Private_Type,
                                      E_Record_Type_With_Private,
                                      E_Limited_Private_Type)
             then
+               null;
+
+            elsif In_Private_Part (Current_Scope)
+              and then Has_Private_Declaration (Typ)
+            then
+               null;
+
+            else
                Error_Pragma_Arg
                  ("pragma% only allowed for private type", Arg1);
             end if;

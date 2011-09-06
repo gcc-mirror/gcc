@@ -1,5 +1,27 @@
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
+	* g-socket.adb: Minor reformatting
+
+2011-09-06  Javier Miranda  <miranda@adacore.com>
+
+	* ali.adb (Scan_ALI): Add missing support to load references of
+	entities imported from other languages.
+	* ali.ads (Xref_Record): Adding new fields to store the language and
+	name of an imported entity.
+	* lib-xref.adb (Output_Import_Export_Info): Fix typo
+	in comment.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Type_Invariant): A type invariant
+	is allowed on a full type declaration if it is the completion of
+	a private declarations.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): An invariant
+	aspect is allowed on a full type declaration in the private part
+	of a package.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch8.ads: Minor reformatting
 
 2011-09-06  Thomas Quinot  <quinot@adacore.com>

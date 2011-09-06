@@ -975,6 +975,10 @@ package ALI is
       --     ref1 is a reference to an entity that was instantied at ref2.
       --     ref2 itself is also the result of an instantiation, that took
       --     place at ref3
+
+      Imported_Lang : Name_Id := No_Name;
+      Imported_Name : Name_Id := No_Name;
+      --  Language and name of imported entity reference
    end record;
 
    package Xref is new Table.Table (
