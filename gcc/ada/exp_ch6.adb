@@ -2849,10 +2849,10 @@ package body Exp_Ch6 is
 
                   --  The "innermost master that evaluates the function call".
 
-                  --  ??? -  Shpuld we use Integer'Last here instead
-                  --  in order to deal with (some of) the problems
-                  --  associated with calls to subps whose enclosing
-                  --  scope is unknown (e.g., Anon_Access_To_Subp_Param.all)?
+                  --  ??? - Should we use Integer'Last here instead in order
+                  --  to deal with (some of) the problems associated with
+                  --  calls to subps whose enclosing scope is unknown (e.g.,
+                  --  Anon_Access_To_Subp_Param.all)?
 
                   Level := Make_Integer_Literal (Loc,
                              Scope_Depth (Current_Scope) + 1);

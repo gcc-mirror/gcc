@@ -80,18 +80,18 @@ package body Exp_Ch7 is
    --  unconstrained or tagged values) may appear in 3 different contexts which
    --  lead to 3 different kinds of transient scope expansion:
 
-   --   1. In a simple statement (procedure call, assignment, ...). In
-   --      this case the instruction is wrapped into a transient block.
-   --      (See Wrap_Transient_Statement for details)
+   --   1. In a simple statement (procedure call, assignment, ...). In this
+   --      case the instruction is wrapped into a transient block. See
+   --      Wrap_Transient_Statement for details.
 
    --   2. In an expression of a control structure (test in a IF statement,
-   --      expression in a CASE statement, ...).
-   --      (See Wrap_Transient_Expression for details)
+   --      expression in a CASE statement, ...). See Wrap_Transient_Expression
+   --      for details.
 
    --   3. In a expression of an object_declaration. No wrapping is possible
    --      here, so the finalization actions, if any, are done right after the
    --      declaration and the secondary stack deallocation is done in the
-   --      proper enclosing scope (see Wrap_Transient_Declaration for details)
+   --      proper enclosing scope. See Wrap_Transient_Declaration for details.
 
    --  Note about functions returning tagged types: it has been decided to
    --  always allocate their result in the secondary stack, even though is not
@@ -185,11 +185,10 @@ package body Exp_Ch7 is
    --  access type definition otherwise, this is the chain of the current
    --  scope.
 
-   --  Adjust Calls: They are generated on 2 occasions: (1) for
-   --  declarations or dynamic allocations of Controlled objects with an
-   --  initial value. (2) after an assignment. In the first case they are
-   --  followed by an attachment to the final chain, in the second case
-   --  they are not.
+   --  Adjust Calls: They are generated on 2 occasions: (1) for declarations
+   --  or dynamic allocations of Controlled objects with an initial value.
+   --  (2) after an assignment. In the first case they are followed by an
+   --  attachment to the final chain, in the second case they are not.
 
    --  Finalization Calls: They are generated on (1) scope exit, (2)
    --  assignments, (3) unchecked deallocations. In case (3) they have to
@@ -226,6 +225,7 @@ package body Exp_Ch7 is
    --       end record;
    --       W : R;
    --       Z : R := (C => X);
+
    --    begin
    --       X := Y;
    --       W := Z;
@@ -499,7 +499,7 @@ package body Exp_Ch7 is
       --  has entries, call the entry service routine.
 
       --  NOTE: The generated code references _object, a parameter to the
-      --        procedure.
+      --  procedure.
 
       elsif Is_Protected_Body then
          declare
@@ -1060,7 +1060,6 @@ package body Exp_Ch7 is
       Components_Built : Boolean := False;
       --  A flag used to avoid double initialization of entities and lists. If
       --  the flag is set then the following variables have been initialized:
-      --
       --    Counter_Id
       --    Finalizer_Decls
       --    Finalizer_Stmts
@@ -1080,8 +1079,7 @@ package body Exp_Ch7 is
       Finalizer_Decls : List_Id := No_List;
       --  Local variable declarations. This list holds the label declarations
       --  of all jump block alternatives as well as the declaration of the
-      --  local exception occurence and the raised flag.
-      --
+      --  local exception occurence and the raised flag:
       --     E : Exception_Occurrence;
       --     Raised : Boolean := False;
       --     L<counter value> : label;
@@ -1537,12 +1535,10 @@ package body Exp_Ch7 is
 
          Fin_Body :=
            Make_Subprogram_Body (Loc,
-             Specification =>
+             Specification              =>
                Make_Procedure_Specification (Loc,
                  Defining_Unit_Name => Body_Id),
-
-             Declarations => Finalizer_Decls,
-
+             Declarations               => Finalizer_Decls,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc, Finalizer_Stmts));
 
@@ -1775,15 +1771,15 @@ package body Exp_Ch7 is
                   null;
 
                --  Transient variables are treated separately in order to
-               --  minimize the size of the generated code. See Process_
-               --  Transient_Objects.
+               --  minimize the size of the generated code. For details, see
+               --  Process_Transient_Objects.
 
                elsif Is_Processed_Transient (Obj_Id) then
                   null;
 
                --  The object is of the form:
                --    Obj : Typ [:= Expr];
-               --
+
                --  Do not process the incomplete view of a deferred constant.
                --  Do not consider tag-to-class-wide conversions.
 
@@ -1797,7 +1793,7 @@ package body Exp_Ch7 is
 
                --  The object is of the form:
                --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
-               --
+
                --    Obj : Access_Typ :=
                --            BIP_Function_Call
                --              (..., BIPaccess => null, ...)'reference;
@@ -1841,11 +1837,11 @@ package body Exp_Ch7 is
                --        protected Prot is
                --           procedure Do_Something (Obj : in out Ctrl);
                --        end Prot;
-               --
+
                --        protected body Prot is
                --           procedure Do_Something (Obj : in out Ctrl) is ...
                --        end Prot;
-               --
+
                --        procedure Finalize (Obj : in out Ctrl) is
                --        begin
                --           Prot.Do_Something (Obj);
@@ -2056,7 +2052,6 @@ package body Exp_Ch7 is
          --          type Ptr_Typ is access Obj_Typ;
          --          for Ptr_Typ'Storage_Pool
          --            use Base_Pool (BIPfinalizationmaster);
-         --
          --       begin
          --          Free (Ptr_Typ (Temp));
          --       end;
@@ -2273,11 +2268,9 @@ package body Exp_Ch7 is
                      end if;
 
                      return
-                         (Present (Deep_Init)
-                           and then Call_Ent = Deep_Init)
-                       or else
-                         (Present (Init)
-                           and then Call_Ent = Init);
+                       (Present (Deep_Init) and then Call_Ent = Deep_Init)
+                         or else
+                       (Present (Init)      and then Call_Ent = Init);
                   end;
                end if;
 
@@ -2446,8 +2439,8 @@ package body Exp_Ch7 is
 
          Label_Id :=
            Make_Identifier (Loc, New_External_Name ('L', Counter_Val));
-         Set_Entity (Label_Id,
-                     Make_Defining_Identifier (Loc, Chars (Label_Id)));
+         Set_Entity
+           (Label_Id, Make_Defining_Identifier (Loc, Chars (Label_Id)));
          Label := Make_Label (Loc, Label_Id);
 
          Prepend_To (Finalizer_Decls,
@@ -2482,6 +2475,7 @@ package body Exp_Ch7 is
 
             if Is_Simple_Protected_Type (Obj_Typ) then
                Fin_Call := Cleanup_Protected_Object (Decl, Obj_Ref);
+
                if Present (Fin_Call) then
                   Fin_Stmts := New_List (Fin_Call);
                end if;
@@ -2489,7 +2483,6 @@ package body Exp_Ch7 is
             elsif Has_Simple_Protected_Object (Obj_Typ) then
                if Is_Record_Type (Obj_Typ) then
                   Fin_Stmts := Cleanup_Record (Decl, Obj_Ref, Obj_Typ);
-
                elsif Is_Array_Type (Obj_Typ) then
                   Fin_Stmts := Cleanup_Array (Decl, Obj_Ref, Obj_Typ);
                end if;
@@ -2499,7 +2492,7 @@ package body Exp_Ch7 is
             --    begin
             --       System.Tasking.Protected_Objects.Finalize_Protection
             --         (Obj._object);
-            --
+
             --    exception
             --       when others =>
             --          null;
@@ -2529,7 +2522,7 @@ package body Exp_Ch7 is
 
             --    begin                   --  Exception handlers allowed
             --       [Deep_]Finalize (Obj);
-            --
+
             --    exception
             --       when Id : others =>
             --          if not Raised then
@@ -2565,7 +2558,7 @@ package body Exp_Ch7 is
 
             --  If we are dealing with a return object of a build-in-place
             --  function, generate the following cleanup statements:
-            --
+
             --    if BIPallocfrom > Secondary_Stack'Pos
             --      and then BIPfinalizationmaster /= null
             --    then
@@ -2573,7 +2566,6 @@ package body Exp_Ch7 is
             --          type Ptr_Typ is access Obj_Typ;
             --          for Ptr_Typ'Storage_Pool use
             --                Base_Pool (BIPfinalizationmaster.all).all;
-            --
             --       begin
             --          Free (Ptr_Typ (Temp));
             --       end;
@@ -2601,7 +2593,7 @@ package body Exp_Ch7 is
                --  Return objects use a flag to aid their potential
                --  finalization when the enclosing function fails to return
                --  properly. Generate:
-               --
+
                --    if not Flag then
                --       <object finalization statements>
                --    end if;
@@ -2684,7 +2676,7 @@ package body Exp_Ch7 is
 
          Append_To (Tagged_Type_Stmts,
            Make_Procedure_Call_Statement (Loc,
-             Name =>
+             Name                   =>
                New_Reference_To (RTE (RE_Unregister_Tag), Loc),
              Parameter_Associations => New_List (
                New_Reference_To (DT_Ptr, Loc))));
@@ -2872,14 +2864,14 @@ package body Exp_Ch7 is
       --  finalizer call needs to be associated with the block which wraps the
       --  unprotected version of the subprogram. The following illustrates this
       --  scenario:
-      --
+
       --     procedure Prot_SubpP is
       --        procedure finalizer is
       --        begin
       --           Service_Entries (Prot_Obj);
       --           Abort_Undefer;
       --        end finalizer;
-      --
+
       --     begin
       --        . . .
       --        begin
@@ -3988,10 +3980,9 @@ package body Exp_Ch7 is
             when N_Pragma =>
                return The_Parent;
 
-            --  Usually assignments are good candidate for wrapping
-            --  except when they have been generated as part of a
-            --  controlled aggregate where the wrapping should take
-            --  place more globally.
+            --  Usually assignments are good candidate for wrapping except
+            --  when they have been generated as part of a controlled aggregate
+            --  where the wrapping should take place more globally.
 
             when N_Assignment_Statement =>
                if No_Ctrl_Actions (The_Parent) then
@@ -4000,9 +3991,9 @@ package body Exp_Ch7 is
                   return The_Parent;
                end if;
 
-            --  An entry call statement is a special case if it occurs in
-            --  the context of a Timed_Entry_Call. In this case we wrap
-            --  the entire timed entry call.
+            --  An entry call statement is a special case if it occurs in the
+            --  context of a Timed_Entry_Call. In this case we wrap the entire
+            --  timed entry call.
 
             when N_Entry_Call_Statement     |
                  N_Procedure_Call_Statement =>
@@ -4017,8 +4008,8 @@ package body Exp_Ch7 is
                end if;
 
             --  Object declarations are also a boundary for the transient scope
-            --  even if they are not really wrapped
-            --  (see Wrap_Transient_Declaration)
+            --  even if they are not really wrapped. For further details, see
+            --  Wrap_Transient_Declaration.
 
             when N_Object_Declaration          |
                  N_Object_Renaming_Declaration |
@@ -4067,8 +4058,8 @@ package body Exp_Ch7 is
             when N_Loop_Parameter_Specification =>
                return Parent (The_Parent);
 
-            --  The following nodes contains "dummy calls" which don't
-            --  need to be wrapped.
+            --  The following nodes contains "dummy calls" which don't need to
+            --  be wrapped.
 
             when N_Parameter_Specification     |
                  N_Discriminant_Specification  |
@@ -4103,7 +4094,7 @@ package body Exp_Ch7 is
                  N_Block_Statement     =>
                return Empty;
 
-            --  otherwise continue the search
+            --  Otherwise continue the search
 
             when others =>
                null;
@@ -4117,11 +4108,11 @@ package body Exp_Ch7 is
 
    function Get_Global_Pool_For_Access_Type (T : Entity_Id) return Entity_Id is
    begin
-      --  Access types whose size is smaller than System.Address size can
-      --  exist only on VMS. We can't use the usual global pool which returns
-      --  an object of type Address as truncation will make it invalid.
-      --  To handle this case, VMS has a dedicated global pool that returns
-      --  addresses that fit into 32 bit accesses.
+      --  Access types whose size is smaller than System.Address size can exist
+      --  only on VMS. We can't use the usual global pool which returns an
+      --  object of type Address as truncation will make it invalid. To handle
+      --  this case, VMS has a dedicated global pool that returns addresses
+      --  that fit into 32 bit accesses.
 
       if Opt.True_VMS_Target and then Esize (T) = 32 then
          return RTE (RE_Global_Pool_32_Object);
@@ -4386,9 +4377,7 @@ package body Exp_Ch7 is
                end if;
 
                Append_To (Stmts,
-                 Make_Final_Call
-                   (Obj_Ref => Obj_Ref,
-                    Typ     => Desig_Typ));
+                 Make_Final_Call (Obj_Ref => Obj_Ref, Typ => Desig_Typ));
 
                --  Generate:
                --    [Temp := null;]
@@ -4426,8 +4415,9 @@ package body Exp_Ch7 is
             --  the loop.
 
             elsif Nkind (Related_Node) = N_Object_Declaration
-              and then Is_Array_Type (Base_Type
-                         (Etype (Defining_Identifier (Related_Node))))
+              and then Is_Array_Type
+                         (Base_Type
+                           (Etype (Defining_Identifier (Related_Node))))
               and then Nkind (Stmt) = N_Loop_Statement
             then
                declare
@@ -4841,11 +4831,11 @@ package body Exp_Ch7 is
       --                         ...
       --                      end loop;
       --                   end;
-
+      --
       --                   if Raised and then not Abort then
       --                      Raise_From_Controlled_Operation (E);
       --                   end if;
-
+      --
       --                   raise;
       --             end;
       --          end loop;
@@ -5911,27 +5901,27 @@ package body Exp_Ch7 is
 
          --  A derived record type must adjust all inherited components. This
          --  action poses the following problem:
-         --
+
          --    procedure Deep_Adjust (Obj : in out Parent_Typ) is
          --    begin
          --       Adjust (Obj);
          --       ...
-         --
+
          --    procedure Deep_Adjust (Obj : in out Derived_Typ) is
          --    begin
          --       Deep_Adjust (Obj._parent);
          --       ...
          --       Adjust (Obj);
          --       ...
-         --
+
          --  Adjusting the derived type will invoke Adjust of the parent and
          --  then that of the derived type. This is undesirable because both
          --  routines may modify shared components. Only the Adjust of the
          --  derived type should be invoked.
-         --
+
          --  To prevent this double adjustment of shared components,
          --  Deep_Adjust uses a flag to control the invocation of Adjust:
-         --
+
          --    procedure Deep_Adjust
          --      (Obj  : in out Some_Type;
          --       Flag : Boolean := True)
@@ -5941,10 +5931,10 @@ package body Exp_Ch7 is
          --          Adjust (Obj);
          --       end if;
          --       ...
-         --
+
          --  When Deep_Adjust is invokes for field _parent, a value of False is
          --  provided for the flag:
-         --
+
          --    Deep_Adjust (Obj._parent, False);
 
          if Is_Tagged_Type (Typ) and then Is_Derived_Type (Typ) then
@@ -5989,8 +5979,7 @@ package body Exp_Ch7 is
                               Make_Handled_Sequence_Of_Statements (Loc,
                                 Statements         => New_List (Adj_Stmt),
                                 Exception_Handlers => New_List (
-                                  Build_Exception_Handler
-                                    (Finalizer_Data))));
+                                  Build_Exception_Handler (Finalizer_Data))));
                      end if;
 
                      Prepend_To (Bod_Stmts, Adj_Stmt);
@@ -6489,27 +6478,27 @@ package body Exp_Ch7 is
 
          --  A derived record type must finalize all inherited components. This
          --  action poses the following problem:
-         --
+
          --    procedure Deep_Finalize (Obj : in out Parent_Typ) is
          --    begin
          --       Finalize (Obj);
          --       ...
-         --
+
          --    procedure Deep_Finalize (Obj : in out Derived_Typ) is
          --    begin
          --       Deep_Finalize (Obj._parent);
          --       ...
          --       Finalize (Obj);
          --       ...
-         --
+
          --  Finalizing the derived type will invoke Finalize of the parent and
          --  then that of the derived type. This is undesirable because both
          --  routines may modify shared components. Only the Finalize of the
          --  derived type should be invoked.
-         --
+
          --  To prevent this double adjustment of shared components,
          --  Deep_Finalize uses a flag to control the invocation of Finalize:
-         --
+
          --    procedure Deep_Finalize
          --      (Obj  : in out Some_Type;
          --       Flag : Boolean := True)
@@ -6519,10 +6508,10 @@ package body Exp_Ch7 is
          --          Finalize (Obj);
          --       end if;
          --       ...
-         --
+
          --  When Deep_Finalize is invokes for field _parent, a value of False
          --  is provided for the flag:
-         --
+
          --    Deep_Finalize (Obj._parent, False);
 
          if Is_Tagged_Type (Typ)
@@ -6537,7 +6526,7 @@ package body Exp_Ch7 is
                if Needs_Finalization (Par_Typ) then
                   Call :=
                     Make_Final_Call
-                      (Obj_Ref =>
+                      (Obj_Ref    =>
                          Make_Selected_Component (Loc,
                            Prefix        => Make_Identifier (Loc, Name_V),
                            Selector_Name =>
@@ -6858,7 +6847,7 @@ package body Exp_Ch7 is
          Set_Assignment_OK (Ref);
       end if;
 
-      --  Select the appropriate version of finalize
+      --  Select the appropriate version of Finalize
 
       if For_Parent then
          if Has_Controlled_Component (Utyp) then
@@ -6971,8 +6960,8 @@ package body Exp_Ch7 is
         or else Present (TSS (Typ, TSS_Finalize_Address))
         or else
           (Is_Class_Wide_Type (Typ)
-             and then Ekind (Root_Type (Typ)) = E_Record_Subtype
-             and then not Comes_From_Source (Root_Type (Typ)))
+            and then Ekind (Root_Type (Typ)) = E_Record_Subtype
+            and then not Comes_From_Source (Root_Type (Typ)))
       then
          return;
       end if;
@@ -6982,10 +6971,11 @@ package body Exp_Ch7 is
           Make_TSS_Name (Typ, TSS_Finalize_Address));
 
       --  Generate:
+
       --    procedure <Typ>FD (V : System.Address) is
       --    begin
       --       null;                            --  for tasks
-      --
+
       --       declare                          --  for all other types
       --          type Pnn is access all Typ;
       --          for Pnn'Storage_Size use 0;
@@ -7033,45 +7023,19 @@ package body Exp_Ch7 is
       Desg_Typ : Entity_Id;
       Obj_Expr : Node_Id;
 
-      function Alignment_Of (Typ : Entity_Id) return Node_Id;
-      --  Subsidiary routine, generate the following attribute reference:
-      --    Typ'Alignment
+      function Double_Size_Of (Typ : Entity_Id) return Node_Id;
+      --  Subsidiary routine, produces an expression which calculates double
+      --  the size of Typ as the nearest multiple of its alignment rounded up.
+
+      function Nearest_Multiple_Rounded_Up
+        (Size_Expr : Node_Id;
+         Typ       : Entity_Id) return Node_Id;
+      --  Subsidiary routine, generate the following expression:
+      --    ((Size_Expr + Typ'Alignment - 1) / Typ'Alignment) * Typ'Alignment
 
       function Size_Of (Typ : Entity_Id) return Node_Id;
-      --  Subsidiary routine, generate the following attribute reference:
-      --    Typ'Size / Storage_Unit
-
-      function Double_Size_Of (Typ : Entity_Id) return Node_Id;
-      --  Subsidiary routine, generate the following expression:
-      --    2 * Typ'Size / Storage_Unit
-
-      ------------------
-      -- Alignment_Of --
-      ------------------
-
-      function Alignment_Of (Typ : Entity_Id) return Node_Id is
-      begin
-         return
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Reference_To (Typ, Loc),
-             Attribute_Name => Name_Alignment);
-      end Alignment_Of;
-
-      -------------
-      -- Size_Of --
-      -------------
-
-      function Size_Of (Typ : Entity_Id) return Node_Id is
-      begin
-         return
-           Make_Op_Divide (Loc,
-             Left_Opnd  =>
-               Make_Attribute_Reference (Loc,
-                 Prefix         => New_Reference_To (Typ, Loc),
-                 Attribute_Name => Name_Size),
-             Right_Opnd =>
-               Make_Integer_Literal (Loc, System_Storage_Unit));
-      end Size_Of;
+      --  Subsidiary routine, produces an expression which calculates the size
+      --  of Typ as the nearest multiple of its alignment rounded up.
 
       --------------------
       -- Double_Size_Of --
@@ -7084,6 +7048,71 @@ package body Exp_Ch7 is
              Left_Opnd  => Make_Integer_Literal (Loc, 2),
              Right_Opnd => Size_Of (Typ));
       end Double_Size_Of;
+
+      ---------------------------------
+      -- Nearest_Multiple_Rounded_Up --
+      ---------------------------------
+
+      function Nearest_Multiple_Rounded_Up
+        (Size_Expr : Node_Id;
+         Typ       : Entity_Id) return Node_Id
+      is
+         function Alignment_Of (Typ : Entity_Id) return Node_Id;
+         --  Subsidiary routine, generate the following attribute reference:
+         --    Typ'Alignment
+
+         ------------------
+         -- Alignment_Of --
+         ------------------
+
+         function Alignment_Of (Typ : Entity_Id) return Node_Id is
+         begin
+            return
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Reference_To (Typ, Loc),
+                Attribute_Name => Name_Alignment);
+         end Alignment_Of;
+
+      --  Start of processing for Nearest_Multiple_Rounded_Up
+
+      begin
+         --  Generate:
+         --    ((Size_Expr + Typ'Alignment - 1) / Typ'Alignment) *
+         --                                           Typ'Alignment
+
+         return
+           Make_Op_Multiply (Loc,
+             Left_Opnd  =>
+               Make_Op_Divide (Loc,
+                 Left_Opnd  =>
+                   Make_Op_Add (Loc,
+                     Left_Opnd  => Size_Expr,
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => Alignment_Of (Typ),
+                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                 Right_Opnd => Alignment_Of (Typ)),
+             Right_Opnd => Alignment_Of (Typ));
+      end Nearest_Multiple_Rounded_Up;
+
+      -------------
+      -- Size_Of --
+      -------------
+
+      function Size_Of (Typ : Entity_Id) return Node_Id is
+      begin
+         return
+           Nearest_Multiple_Rounded_Up
+             (Size_Expr =>
+                Make_Op_Divide (Loc,
+                  Left_Opnd  =>
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Reference_To (Typ, Loc),
+                      Attribute_Name => Name_Size),
+                  Right_Opnd =>
+                    Make_Integer_Literal (Loc, System_Storage_Unit)),
+              Typ => Typ);
+      end Size_Of;
 
    --  Start of processing for Make_Finalize_Address_Stmts
 
@@ -7103,11 +7132,12 @@ package body Exp_Ch7 is
           Is_Empty_Elmt_List (Discriminant_Constraint (Root_Type (Typ)))
       then
          declare
-            Parent_Typ : Entity_Id := Root_Type (Typ);
+            Parent_Typ : Entity_Id;
 
          begin
             --  Climb the parent type chain looking for a non-constrained type
 
+            Parent_Typ := Root_Type (Typ);
             while Parent_Typ /= Etype (Parent_Typ)
               and then Has_Discriminants (Parent_Typ)
               and then not
@@ -7168,7 +7198,6 @@ package body Exp_Ch7 is
 
          begin
             --  Ensure that Ptr_Typ a thin pointer, generate:
-            --
             --    for Ptr_Typ'Size use System.Address'Size;
 
             Append_To (Decls,
@@ -7190,16 +7219,9 @@ package body Exp_Ch7 is
 
                if For_First then
                   For_First := False;
-
-                  --  Generate:
-                  --    2 * Index_Typ'Size / Storage_Unit
-
                   Dope_Expr := Double_Size_Of (Index_Typ);
 
                else
-                  --  Generate:
-                  --    Dope_Expr + 2 * Index_Typ'Size / Storage_Unit
-
                   Dope_Expr :=
                     Make_Op_Add (Loc,
                       Left_Opnd  => Dope_Expr,
@@ -7209,28 +7231,13 @@ package body Exp_Ch7 is
                Next_Index (Index);
             end loop;
 
-            --  Dope_Expr calculates the optimum size of the dope, as if the
-            --  dope was "packed". Since the alignment of the component type
-            --  dictates the underlying layout of the array, round the size
-            --  of the dope to the next higher multiple of the component
-            --  alignment. Generate:
+            --  Dope_Expr calculates the size of the dope, acounting for
+            --  individual alignment holes on the index type level. Since the
+            --  alignment of the component type dictates the underlying layout
+            --  of the array, round the size of the dope to the next higher
+            --  multiple of the component alignment.
 
-            --    ((Dope_Expr + Typ'Alignment - 1) / Typ'Alignment) *
-            --        Typ'Alignment
-
-            Dope_Expr :=
-              Make_Op_Multiply (Loc,
-                Left_Opnd  =>
-                  Make_Op_Divide (Loc,
-                    Left_Opnd  =>
-                      Make_Op_Add (Loc,
-                        Left_Opnd  => Dope_Expr,
-                        Right_Opnd =>
-                          Make_Op_Subtract (Loc,
-                            Left_Opnd  => Alignment_Of (Typ),
-                            Right_Opnd => Make_Integer_Literal (Loc, 1))),
-                    Right_Opnd => Alignment_Of (Typ)),
-                Right_Opnd => Alignment_Of (Typ));
+            Dope_Expr := Nearest_Multiple_Rounded_Up (Dope_Expr, Typ);
 
             --  Generate:
             --    Dnn : Storage_Offset := Dope_Expr;
@@ -7592,10 +7599,9 @@ package body Exp_Ch7 is
                   Set_Uses_Sec_Stack (Current_Scope, False);
                   exit;
 
-               --  In a function, only release the sec stack if the
-               --  function does not return on the sec stack otherwise
-               --  the result may be lost. The caller is responsible for
-               --  releasing.
+               --  In a function, only release the sec stack if the function
+               --  does not return on the sec stack otherwise the result may
+               --  be lost. The caller is responsible for releasing.
 
                elsif Ekind (S) = E_Function then
                   Set_Uses_Sec_Stack (Current_Scope, False);
@@ -7652,10 +7658,10 @@ package body Exp_Ch7 is
          Freeze_All (First_Entity (Current_Scope), Insert);
       end if;
 
-      --  When the transient scope was established, we pushed the entry for
-      --  the transient scope onto the scope stack, so that the scope was
-      --  active for the installation of finalizable entities etc. Now we
-      --  must remove this entry, since we have constructed a proper block.
+      --  When the transient scope was established, we pushed the entry for the
+      --  transient scope onto the scope stack, so that the scope was active
+      --  for the installation of finalizable entities etc. Now we must remove
+      --  this entry, since we have constructed a proper block.
 
       Pop_Scope;
 
