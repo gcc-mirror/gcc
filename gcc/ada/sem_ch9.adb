@@ -2381,7 +2381,7 @@ package body Sem_Ch9 is
          --  declaration must be limited.
 
          if Present (Interface_List (N))
-           and then not Is_Limited_Record (Priv_T)
+           and then not Is_Limited_Type (Priv_T)
          then
             Error_Msg_Sloc := Sloc (Priv_T);
             Error_Msg_N ("(Ada 2005) limited type declaration expected for " &

@@ -41,6 +41,7 @@ with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Get_Targ; use Get_Targ;
 with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -7033,38 +7034,46 @@ package body Exp_Ch7 is
       Desg_Typ : Entity_Id;
       Obj_Expr : Node_Id;
 
-      function Alignment_Of (Some_Typ : Entity_Id) return Node_Id;
+      function Alignment_Of (Typ : Entity_Id) return Node_Id;
       --  Subsidiary routine, generate the following attribute reference:
       --
-      --    Some_Typ'Alignment
+      --    Typ'Alignment
 
-      function Double_Alignment_Of (Some_Typ : Entity_Id) return Node_Id;
+      function Double_Alignment_Of (Typ : Entity_Id) return Node_Id;
       --  Subsidiary routine, generate the following expression:
       --
-      --    2 * Some_Typ'Alignment
+      --    2 * Typ'Alignment
 
       ------------------
       -- Alignment_Of --
       ------------------
 
-      function Alignment_Of (Some_Typ : Entity_Id) return Node_Id is
+      function Alignment_Of (Typ : Entity_Id) return Node_Id is
       begin
-         return
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Reference_To (Some_Typ, Loc),
-             Attribute_Name => Name_Alignment);
+         --  Strict alignment targets such as SPARC ignore the alignment of the
+         --  index type and use the system allocator alignment instead.
+
+         if Target_Strict_Alignment then
+            return Make_Integer_Literal (Loc, Get_System_Allocator_Alignment);
+
+         else
+            return
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Reference_To (Typ, Loc),
+                Attribute_Name => Name_Alignment);
+         end if;
       end Alignment_Of;
 
       -------------------------
       -- Double_Alignment_Of --
       -------------------------
 
-      function Double_Alignment_Of (Some_Typ : Entity_Id) return Node_Id is
+      function Double_Alignment_Of (Typ : Entity_Id) return Node_Id is
       begin
          return
            Make_Op_Multiply (Loc,
              Left_Opnd  => Make_Integer_Literal (Loc, 2),
-             Right_Opnd => Alignment_Of (Some_Typ));
+             Right_Opnd => Alignment_Of (Typ));
       end Double_Alignment_Of;
 
    --  Start of processing for Make_Finalize_Address_Stmts
