@@ -744,6 +744,7 @@ package Snames is
    Name_Definite                       : constant Name_Id := N + $;
    Name_Delta                          : constant Name_Id := N + $;
    Name_Denorm                         : constant Name_Id := N + $;
+   Name_Descriptor_Size                : constant Name_Id := N + $;
    Name_Digits                         : constant Name_Id := N + $;
    Name_Elaborated                     : constant Name_Id := N + $; -- GNAT
    Name_Emax                           : constant Name_Id := N + $; -- Ada 83
@@ -1298,6 +1299,7 @@ package Snames is
       Attribute_Definite,
       Attribute_Delta,
       Attribute_Denorm,
+      Attribute_Descriptor_Size,
       Attribute_Digits,
       Attribute_Elaborated,
       Attribute_Emax,

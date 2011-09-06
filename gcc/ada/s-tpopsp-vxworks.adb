@@ -70,7 +70,9 @@ package body Specific is
       Result : STATUS;
 
    begin
-      --  If Self_Id is null, delete task specific data
+      --  If argument is null, destroy task specific data, to make API
+      --  consistent with other platforms, and thus compatible with the
+      --  shared version of s-tpoaal.adb.
 
       if Self_Id = null then
          Result := taskVarDelete (taskIdSelf, ATCB_Key'Access);

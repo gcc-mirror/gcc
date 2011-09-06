@@ -109,15 +109,12 @@ package body Exp_Aggr is
    function Build_Record_Aggr_Code
      (N                             : Node_Id;
       Typ                           : Entity_Id;
-      Lhs                           : Node_Id;
-      Is_Limited_Ancestor_Expansion : Boolean   := False) return List_Id;
+      Lhs                           : Node_Id) return List_Id;
    --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of the
    --  aggregate. Target is an expression containing the location on which the
    --  component by component assignments will take place. Returns the list of
    --  assignments plus all other adjustments needed for tagged and controlled
-   --  types. Is_Limited_Ancestor_Expansion indicates that the function has
-   --  been called recursively to expand the limited ancestor to avoid copying
-   --  it.
+   --  types.
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id);
    --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of the
@@ -1734,8 +1731,7 @@ package body Exp_Aggr is
    function Build_Record_Aggr_Code
      (N                             : Node_Id;
       Typ                           : Entity_Id;
-      Lhs                           : Node_Id;
-      Is_Limited_Ancestor_Expansion : Boolean := False) return List_Id
+      Lhs                           : Node_Id) return List_Id
    is
       Loc     : constant Source_Ptr := Sloc (N);
       L       : constant List_Id    := New_List;
@@ -2338,8 +2334,7 @@ package body Exp_Aggr is
                   Build_Record_Aggr_Code (
                     N   => Unqualify (Ancestor),
                     Typ => Etype (Unqualify (Ancestor)),
-                    Lhs => Target,
-                    Is_Limited_Ancestor_Expansion => True));
+                    Lhs => Target));
 
             --  If the ancestor part is an expression "E", we generate
 

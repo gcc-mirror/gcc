@@ -1878,6 +1878,20 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       prefix_unused = true;
       break;
 
+    case Attr_Descriptor_Size:
+      gnu_type = TREE_TYPE (gnu_prefix);
+      gcc_assert (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
+
+      /* What we want is the offset of the ARRAY field in the record that the
+        thin pointer designates, but the components have been shifted so this
+        is actually the opposite of the offset of the BOUNDS field.  */
+      gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
+      gnu_result = size_binop (MINUS_EXPR, bitsize_zero_node,
+                               bit_position (TYPE_FIELDS (gnu_type)));
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      prefix_unused = true;
+      break;
+
     case Attr_Null_Parameter:
       /* This is just a zero cast to the pointer type for our prefix and
 	 dereferenced.  */

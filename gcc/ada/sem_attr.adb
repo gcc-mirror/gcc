@@ -3014,6 +3014,28 @@ package body Sem_Attr is
          Check_Floating_Point_Type_0;
          Set_Etype (N, Standard_Boolean);
 
+      ---------------------
+      -- Descriptor_Size --
+      ---------------------
+
+      when Attribute_Descriptor_Size =>
+         Check_E0;
+
+         --  Attribute Descriptor_Size is relevant only in the context of an
+         --  unconstrained array type.
+
+         if Is_Entity_Name (P)
+           and then Is_Type (Entity (P))
+           and then Is_Array_Type (Entity (P))
+           and then not Is_Constrained (Entity (P))
+         then
+            null;
+         else
+            Error_Attr_P ("invalid prefix for % attribute");
+         end if;
+
+         Set_Etype (N, Universal_Integer);
+
       ------------
       -- Digits --
       ------------
@@ -6245,6 +6267,13 @@ package body Sem_Attr is
       when Attribute_Denorm =>
          Fold_Uint
            (N, UI_From_Int (Boolean'Pos (Denorm_On_Target)), True);
+
+      ---------------------
+      -- Descriptor_Size --
+      ---------------------
+
+      when Attribute_Descriptor_Size =>
+         null;
 
       ------------
       -- Digits --
