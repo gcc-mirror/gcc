@@ -1,5 +1,9 @@
 2011-09-07  Martin Jambor  <mjambor@suse.cz>
 
+	* g++.dg/tree-ssa/pr49911.C: Added flag -fstrict-enums.
+
+2011-09-07  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/49911
 	* g++.dg/tree-ssa/pr49911.C: New test.
 

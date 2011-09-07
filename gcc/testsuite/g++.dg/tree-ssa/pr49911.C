@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-rtti -fno-exceptions -fno-strict-aliasing -fdump-tree-vrp2" } */
+/* { dg-options "-O2 -fstrict-enums -fno-rtti -fno-exceptions -fno-strict-aliasing -fdump-tree-vrp2" } */
 
 
 extern  void JS_Assert();
