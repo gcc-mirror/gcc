@@ -104,7 +104,7 @@ test30 ()
       if (__alignof (c_a[0].addr) != EXPECTED_PTS_ALIGN)
 	{
 	  fprintf (stderr,
-		   "Error: PTS represntation field of a struct\n"
+		   "Error: PTS representation field of a struct\n"
 		   "       has different alignment (%d)\n"
 		   "       than the expected alignment of a PTS (%d)\n",
 		   (int) __alignof (c_a[0].addr), (int) EXPECTED_PTS_ALIGN);

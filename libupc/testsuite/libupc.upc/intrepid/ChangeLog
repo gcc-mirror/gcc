@@ -1,5 +1,9 @@
 2011-09-07  Gary Funck  <gary@intrepid.com>
 
+	* test30.upc: Fix spelling error in diagnostic message.
+
+2011-09-07  Gary Funck  <gary@intrepid.com>
+
 	* test30.upc: New.  Missed in previous commit.
 	Print "pass" even when compiled with packed
 	UPC pointer-to-shared configuration.
