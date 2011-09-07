@@ -1,3 +1,10 @@
+2011-09-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50288
+	* gfortran.dg/class_4c.f03: Modified ("dg-do link" and "dg-final").
+	* gfortran.dg/class_4d.f03: Deleted.
+	* gfortran.dg/class_45b.f03: Modififed ("dg-do link").
+
 2011-09-07  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/forwprop-16.c: New testcase.
