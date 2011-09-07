@@ -1,5 +1,8 @@
 2011-09-07  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (type_unification_real): Correct complain arg for tsubsting
+	default template args.
+
 	* pt.c (tsubst_aggr_type): Check TYPE_P before tsubsting.
 
 2011-09-06  Jason Merrill  <jason@redhat.com>
