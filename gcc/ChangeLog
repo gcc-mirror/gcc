@@ -1,5 +1,12 @@
 2011-09-07  Martin Jambor  <mjambor@suse.cz>
 
+	PR middle-end/50301
+	* ipa-cp.c (find_more_values_for_callers_subset): Check jump
+	function index bounds.
+	(perhaps_add_new_callers): Likewise.
+
+2011-09-07  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/49911
 	* tree-sra.c (analyze_access_subtree): Change type of to-be-replaced
 	enumerations to the corresponding plain integer type.
