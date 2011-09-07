@@ -1,3 +1,9 @@
+2011-09-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/48571
+	* gcc.c-torture/execute/pr48571-1.c (bar): Use offsets sizeof(int)
+	instead of 4.
+	
 2011-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50309
