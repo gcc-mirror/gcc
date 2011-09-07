@@ -1,3 +1,12 @@
+2011-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50213
+	* tree-flow.h (simple_iv_increment_p): Declare.
+	* tree-ssa-dom.c (simple_iv_increment_p): Export.  Also handle
+	POINTER_PLUS_EXPR.
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Do
+	not propagate simple IV counter increments.
+
 2011-09-07  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 

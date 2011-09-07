@@ -597,6 +597,7 @@ extern void dump_dominator_optimization_stats (FILE *);
 extern void debug_dominator_optimization_stats (void);
 int loop_depth_of_name (tree);
 tree degenerate_phi_result (gimple);
+bool simple_iv_increment_p (gimple);
 
 /* In tree-ssa-copy.c  */
 extern void propagate_value (use_operand_p, tree);

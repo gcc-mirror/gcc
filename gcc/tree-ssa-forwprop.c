@@ -2377,21 +2377,23 @@ ssa_forward_propagate_and_combine (void)
 	      else
 		gsi_next (&gsi);
 	    }
-	  else if (code == POINTER_PLUS_EXPR && can_propagate_from (stmt))
+	  else if (code == POINTER_PLUS_EXPR)
 	    {
-	      if (TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
+	      tree off = gimple_assign_rhs2 (stmt);
+	      if (TREE_CODE (off) == INTEGER_CST
+		  && can_propagate_from (stmt)
+		  && !simple_iv_increment_p (stmt)
 		  /* ???  Better adjust the interface to that function
 		     instead of building new trees here.  */
 		  && forward_propagate_addr_expr
-		  (lhs,
-		   build1 (ADDR_EXPR,
-			   TREE_TYPE (rhs),
-			   fold_build2 (MEM_REF,
-					TREE_TYPE (TREE_TYPE (rhs)),
-					rhs,
-					fold_convert
-					(ptr_type_node,
-					 gimple_assign_rhs2 (stmt))))))
+		       (lhs,
+			build1_loc (gimple_location (stmt),
+				    ADDR_EXPR, TREE_TYPE (rhs),
+				    fold_build2 (MEM_REF,
+						 TREE_TYPE (TREE_TYPE (rhs)),
+						 rhs,
+						 fold_convert (ptr_type_node,
+							       off)))))
 		{
 		  release_defs (stmt);
 		  todoflags |= TODO_remove_unused_locals;
