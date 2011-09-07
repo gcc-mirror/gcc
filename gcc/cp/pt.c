@@ -14804,6 +14804,10 @@ type_unification_real (tree tparms,
 
   if (!subr)
     {
+      tsubst_flags_t complain = (explain_p
+				 ? tf_warning_or_error
+				 : tf_none);
+
       /* Check to see if we need another pass before we start clearing
 	 ARGUMENT_PACK_INCOMPLETE_P.  */
       for (i = 0; i < ntparms; i++)
@@ -14854,11 +14858,8 @@ type_unification_real (tree tparms,
 	    {
 	      tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
 	      tree arg = TREE_PURPOSE (TREE_VEC_ELT (tparms, i));
-	      arg = tsubst_template_arg (arg, targs, tf_none, NULL_TREE);
-	      arg = convert_template_argument (parm, arg, targs,
-					       (explain_p
-						? tf_warning_or_error
-						: tf_none),
+	      arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
+	      arg = convert_template_argument (parm, arg, targs, complain,
 					       i, NULL_TREE);
 	      if (arg == error_mark_node)
 		return 1;

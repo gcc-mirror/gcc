@@ -29,8 +29,8 @@ int inc(int& i) { return ++i; }
 void test01()
 {
   const int dummy = 0;
-  std::bind(&inc, _1)(0);               // { dg-error  "no match" }
-  std::bind(&inc, std::ref(dummy))();	// { dg-error  "no match" }
+  std::bind(&inc, _1)(0);               // { dg-error  "no match|rvalue" }
+  std::bind(&inc, std::ref(dummy))();	// { dg-error  "no match|const" }
 }
 
 struct Inc

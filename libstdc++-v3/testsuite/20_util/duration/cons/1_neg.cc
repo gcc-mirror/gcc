@@ -26,7 +26,7 @@
 void
 test01()
 {
-  std::chrono::duration<int> d1(1.0); // { dg-error "no matching" }
+  std::chrono::duration<int> d1(1.0); // { dg-error "no matching|no type" }
 }
 
 void
@@ -35,6 +35,6 @@ test02()
   using namespace std::chrono;
   
   duration<int, std::micro> d2(8);
-  duration<int, std::milli> d2_copy(d2); // { dg-error "no matching" }
+  duration<int, std::milli> d2_copy(d2); // { dg-error "no matching|no type" }
 }
 
