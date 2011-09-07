@@ -7157,7 +7157,15 @@ build_pointer_type (tree to_type)
 					      : TYPE_ADDR_SPACE (to_type);
   enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
   if (upc_shared_type_p (to_type))
-    pointer_mode = TYPE_MODE (upc_pts_rep_type_node);
+    {
+      tree upc_pts_type;
+      pointer_mode = TYPE_MODE (upc_pts_rep_type_node);
+      upc_pts_type = build_pointer_type_for_mode (to_type, pointer_mode,
+                                                  false);
+      TYPE_USER_ALIGN (upc_pts_type) = TYPE_USER_ALIGN (upc_pts_rep_type_node);
+      TYPE_ALIGN (upc_pts_type) = TYPE_ALIGN (upc_pts_rep_type_node);
+      return upc_pts_type;
+    }
   return build_pointer_type_for_mode (to_type, pointer_mode, false);
 }
 

@@ -1,3 +1,12 @@
+2011-09-07  Gary Funck  <gary@intrepid.com>
+
+	Ensure that UPC pointer-to-shared type alignment is
+	propagated to the final type.  Revert to long-standing
+	alignment policy: twice the size of a "C" pointer.
+	* tree.c (build_pointer_type): Propagate the alignment
+	of the UPC pointer-to-shared representation type
+	into the newly built pointer type.
+
 2011-08-30  Gary Funck  <gary@intrepid.com>
 
 	* tree.h (check_qualified_type): Change 'const_tree'

@@ -169,12 +169,9 @@ upc_cpp_builtins (cpp_reader * pfile)
   cpp_define (pfile, def_buf);
   (void) sprintf (def_buf, "__UPC_PHASE_TYPE__=%s", UPC_PTS_PHASE_TYPE);
   cpp_define (pfile, def_buf);
-  if (STRICT_ALIGNMENT)
-    {
-      (void) sprintf (def_buf, "__UPC_PTS_ALIGN__=%d",
-                               (2 * POINTER_SIZE) / BITS_PER_UNIT);
-      cpp_define (pfile, def_buf);
-    }
+  (void) sprintf (def_buf, "__UPC_PTS_ALIGN__=%d",
+			   (2 * POINTER_SIZE) / BITS_PER_UNIT);
+  cpp_define (pfile, def_buf);
 #else
 #error cannot determine UPC pointer-to-shared representation
 #endif

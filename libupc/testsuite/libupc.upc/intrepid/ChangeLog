@@ -1,3 +1,8 @@
+2011-09-07  Gary Funck  <gary@intrepid.com>
+
+	* test30.upc: New. Test UPC pointer-to-shared alignment
+	for struct PTS.
+
 2011-02-08  Gary Funck  <gary@intrepid.com>
 
 	* test00.upc, test01.upc, test02.upc, test03.upc, test04.upc,
