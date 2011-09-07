@@ -1,3 +1,15 @@
+2011-09-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/49030
+	* config/arm/arm-protos.h (maybe_get_arm_condition_code): Declare.
+	* config/arm/arm.c (maybe_get_arm_condition_code): New function,
+	reusing the old code from get_arm_condition_code.  Return ARM_NV
+	for invalid comparison codes.
+	(get_arm_condition_code): Redefine in terms of
+	maybe_get_arm_condition_code.
+	* config/arm/predicates.md (arm_comparison_operator): Use
+	maybe_get_arm_condition_code.
+
 2011-09-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond):
