@@ -1013,7 +1013,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
 	  && (comp->attr.allocatable || cons->expr->rank))
 	{
-	  gfc_error ("The rank of the element in the derived type "
+	  gfc_error ("The rank of the element in the structure "
 		     "constructor at %L does not match that of the "
 		     "component (%d/%d)", &cons->expr->where,
 		     cons->expr->rank, rank);
@@ -1035,7 +1035,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	      t = SUCCESS;
 	    }
 	  else if (comp->attr.pointer && cons->expr->ts.type != BT_UNKNOWN)
-	    gfc_error ("The element in the derived type constructor at %L, "
+	    gfc_error ("The element in the structure constructor at %L, "
 		       "for pointer component '%s', is %s but should be %s",
 		       &cons->expr->where, comp->name,
 		       gfc_basic_typename (cons->expr->ts.type),
@@ -1113,10 +1113,44 @@ resolve_structure_cons (gfc_expr *expr, int init)
 		       || CLASS_DATA (comp)->attr.allocatable))))
 	{
 	  t = FAILURE;
-	  gfc_error ("The NULL in the derived type constructor at %L is "
+	  gfc_error ("The NULL in the structure constructor at %L is "
 		     "being applied to component '%s', which is neither "
 		     "a POINTER nor ALLOCATABLE", &cons->expr->where,
 		     comp->name);
+	}
+
+      if (comp->attr.proc_pointer && comp->ts.interface)
+	{
+	  /* Check procedure pointer interface.  */
+	  gfc_symbol *s2 = NULL;
+	  gfc_component *c2;
+	  const char *name;
+	  char err[200];
+
+	  if (gfc_is_proc_ptr_comp (cons->expr, &c2))
+	    {
+	      s2 = c2->ts.interface;
+	      name = c2->name;
+	    }
+	  else if (cons->expr->expr_type == EXPR_FUNCTION)
+	    {
+	      s2 = cons->expr->symtree->n.sym->result;
+	      name = cons->expr->symtree->n.sym->result->name;
+	    }
+	  else if (cons->expr->expr_type != EXPR_NULL)
+	    {
+	      s2 = cons->expr->symtree->n.sym;
+	      name = cons->expr->symtree->n.sym->name;
+	    }
+
+	  if (s2 && !gfc_compare_interfaces (comp->ts.interface, s2, name, 0, 1,
+					     err, sizeof (err)))
+	    {
+	      gfc_error ("Interface mismatch for procedure-pointer component "
+			 "'%s' in structure constructor at %L: %s",
+			 comp->name, &cons->expr->where, err);
+	      return FAILURE;
+	    }
 	}
 
       if (!comp->attr.pointer || comp->attr.proc_pointer
@@ -1128,7 +1162,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
       if (!a.pointer && !a.target)
 	{
 	  t = FAILURE;
-	  gfc_error ("The element in the derived type constructor at %L, "
+	  gfc_error ("The element in the structure constructor at %L, "
 		     "for pointer component '%s' should be a POINTER or "
 		     "a TARGET", &cons->expr->where, comp->name);
 	}
@@ -1156,7 +1190,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	      || gfc_is_coindexed (cons->expr)))
 	{
 	  t = FAILURE;
-	  gfc_error ("Invalid expression in the derived type constructor for "
+	  gfc_error ("Invalid expression in the structure constructor for "
 		     "pointer component '%s' at %L in PURE procedure",
 		     comp->name, &cons->expr->where);
 	}
