@@ -1,5 +1,9 @@
 2011-09-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50298
+	* parser.c (cp_parser_member_declaration): Don't require a constant
+	rvalue here in C++0x.
+
 	* pt.c (type_unification_real): Correct complain arg for tsubsting
 	default template args.
 
