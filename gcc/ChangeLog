@@ -1,3 +1,14 @@
+2011-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50319
+	* tree-if-conv.c (set_bb_predicate): Assert we only set
+	canonical predicates.
+	(add_to_predicate_list): Simplify.  Allow TRUTH_NOT_EXPR
+	around canonical predicates.
+	(predicate_bbs): Do not re-gimplify already canonical
+	predicates.  Properly unshare them though.
+	(find_phi_replacement_condition): Simplify.
+
 2011-09-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/49030
