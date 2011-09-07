@@ -29,6 +29,12 @@
 	static inline functions.
 	* vec.h (FOR_EACH_VEC_ELT_FROM): New macro.
 
+	* bb-reorder.c (insert_section_boundary_note): Don't check
+	optimize_function_for_speed_p.
+	(gate_handle_partition_blocks): Do it here instead.
+	(gate_handle_reorder_blocks): Move preliminary checks here ...
+	(rest_of_handle_reorder_blocks): ... from here.
+
 2011-09-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/50301
