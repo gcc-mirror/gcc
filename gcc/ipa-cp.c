@@ -2052,8 +2052,12 @@ find_more_values_for_callers_subset (struct cgraph_node *node,
 	  struct ipa_jump_func *jump_func;
 	  tree t;
 
+          if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs)))
+            {
+              newval = NULL_TREE;
+              break;
+            }
 	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-
 	  t = ipa_value_from_jfunc (IPA_NODE_REF (cs->caller), jump_func);
 	  if (!t
 	      || (newval
@@ -2123,6 +2127,11 @@ perhaps_add_new_callers (struct cgraph_node *node, struct ipcp_value *val)
 		  if (!val)
 		    continue;
 
+		  if (i >= ipa_get_cs_argument_count (args))
+		    {
+		      insufficient = true;
+		      break;
+		    }
 		  jump_func = ipa_get_ith_jump_func (args, i);
 		  t = ipa_value_from_jfunc (caller_info, jump_func);
 		  if (!t || !values_equal_for_ipcp_p (val, t))
