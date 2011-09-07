@@ -1,3 +1,9 @@
+2011-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50191
+	* dwarf2out.c (mem_loc_descriptor) <case MEM>: Try
+	avoid_constant_pool_reference first instead of last.
+
 2011-09-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* doc/configfiles.texi (Configuration Files): Update documentation

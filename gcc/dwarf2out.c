@@ -11695,12 +11695,22 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case MEM:
+      {
+	rtx new_rtl = avoid_constant_pool_reference (rtl);
+	if (new_rtl != rtl)
+	  {
+	    mem_loc_result = mem_loc_descriptor (new_rtl, mode, mem_mode,
+						 initialized);
+	    if (mem_loc_result != NULL)
+	      return mem_loc_result;
+	  }
+      }
       mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0),
 					   get_address_mode (rtl), mode,
 					   VAR_INIT_STATUS_INITIALIZED);
       if (mem_loc_result == NULL)
 	mem_loc_result = tls_mem_loc_descriptor (rtl);
-      if (mem_loc_result != 0)
+      if (mem_loc_result != NULL)
 	{
 	  if (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
 	      || GET_MODE_CLASS (mode) != MODE_INT)
@@ -11727,12 +11737,6 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	    add_loc_descr (&mem_loc_result,
 			   new_loc_descr (DW_OP_deref_size,
 					  GET_MODE_SIZE (mode), 0));
-	}
-      else
-	{
-	  rtx new_rtl = avoid_constant_pool_reference (rtl);
-	  if (new_rtl != rtl)
-	    return mem_loc_descriptor (new_rtl, mode, mem_mode, initialized);
 	}
       break;
 
