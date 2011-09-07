@@ -143,7 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Head&       
       _M_head() noexcept { return *this; }
 
-      const _Head& 
+      constexpr const _Head& 
       _M_head() const noexcept { return *this; }
     };
 
@@ -189,7 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Head&       
       _M_head() noexcept { return _M_head_impl; }
 
-      const _Head& 
+      constexpr const _Head& 
       _M_head() const noexcept { return _M_head_impl; }        
 
       _Head _M_head_impl; 
@@ -248,13 +248,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Head&            
       _M_head() noexcept { return _Base::_M_head(); }
 
-      const _Head&      
+      constexpr const _Head&      
       _M_head() const noexcept { return _Base::_M_head(); }
 
       _Inherited&       
       _M_tail() noexcept { return *this; }
 
-      const _Inherited& 
+      constexpr const _Inherited& 
       _M_tail() const noexcept { return *this; }
 
       constexpr _Tuple_impl()
@@ -280,7 +280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Base(std::forward<_Head>(__in._M_head())) { }
 
       template<typename... _UElements>
-        _Tuple_impl(const _Tuple_impl<_Idx, _UElements...>& __in)
+        constexpr _Tuple_impl(const _Tuple_impl<_Idx, _UElements...>& __in)
 	: _Inherited(__in._M_tail()), _Base(__in._M_head()) { }
 
       template<typename _UHead, typename... _UTails>
@@ -409,7 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr tuple(const tuple&) = default;
 
-      tuple(tuple&&) = default;
+      constexpr tuple(tuple&&) = default; 
 
       template<typename... _UElements, typename = typename
 	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
@@ -417,7 +417,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 __all_convertible<__conv_types<const _UElements&...>,
 					   __conv_types<_Elements...>>
                          >::value>::type>
-        tuple(const tuple<_UElements...>& __in)
+        constexpr tuple(const tuple<_UElements...>& __in)
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
@@ -427,7 +427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 __all_convertible<__conv_types<_UElements...>,
 					   __conv_types<_Elements...>>
 			 >::value>::type>
-        tuple(tuple<_UElements...>&& __in)
+        constexpr tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
       // Allocator-extended constructors.
@@ -548,18 +548,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr tuple(const tuple&) = default;
 
-      tuple(tuple&&) = default;
+      constexpr tuple(tuple&&) = default;
 
       template<typename _U1, typename _U2, typename = typename
 	enable_if<__and_<is_convertible<const _U1&, _T1>,
 			 is_convertible<const _U2&, _T2>>::value>::type>
-        tuple(const tuple<_U1, _U2>& __in)
+        constexpr tuple(const tuple<_U1, _U2>& __in)
 	: _Inherited(static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in)) { }
 
       template<typename _U1, typename _U2, typename = typename
 	       enable_if<__and_<is_convertible<_U1, _T1>,
 				is_convertible<_U2, _T2>>::value>::type>
-        tuple(tuple<_U1, _U2>&& __in)
+        constexpr tuple(tuple<_U1, _U2>&& __in)
 	: _Inherited(static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in)) { }
 
       template<typename _U1, typename _U2, typename = typename
@@ -571,7 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _U1, typename _U2, typename = typename
 	       enable_if<__and_<is_convertible<_U1, _T1>,
 				is_convertible<_U2, _T2>>::value>::type>
-         tuple(pair<_U1, _U2>&& __in)
+         constexpr tuple(pair<_U1, _U2>&& __in)
 	: _Inherited(std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
@@ -752,7 +752,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __t._M_head(); }
 
   template<std::size_t __i, typename _Head, typename... _Tail>
-    inline typename __add_c_ref<_Head>::type
+    inline constexpr typename __add_c_ref<_Head>::type
     __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return __t._M_head(); }
 
@@ -767,7 +767,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __get_helper<__i>(__t); }
 
   template<std::size_t __i, typename... _Elements>
-    inline typename __add_c_ref<
+    inline constexpr typename __add_c_ref<
                       typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
     get(const tuple<_Elements...>& __t) noexcept
@@ -789,13 +789,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t __i, std::size_t __j, typename _Tp, typename _Up>
     struct __tuple_compare<0, __i, __j, _Tp, _Up>
     {
-      static bool __eq(const _Tp& __t, const _Up& __u)
+      static bool 
+      __eq(const _Tp& __t, const _Up& __u)
       {
 	return (get<__i>(__t) == get<__i>(__u) &&
 		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__eq(__t, __u));
       }
      
-      static bool __less(const _Tp& __t, const _Up& __u)
+      static bool 
+      __less(const _Tp& __t, const _Up& __u)
       {
 	return ((get<__i>(__t) < get<__i>(__u))
 		|| !(get<__i>(__u) < get<__i>(__t)) &&
@@ -806,11 +808,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t __i, typename _Tp, typename _Up>
     struct __tuple_compare<0, __i, __i, _Tp, _Up>
     {
-      static bool __eq(const _Tp&, const _Up&)
-      { return true; }
+      static bool 
+      __eq(const _Tp&, const _Up&) { return true; }
      
-      static bool __less(const _Tp&, const _Up&)
-      { return false; }
+      static bool 
+      __less(const _Tp&, const _Up&) { return false; }
     };
 
   template<typename... _TElements, typename... _UElements>
@@ -899,7 +901,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     
   template<typename... _TElements, std::size_t... _TIdx,
 	   typename... _UElements, std::size_t... _UIdx> 
-    inline tuple<_TElements..., _UElements...> 
+    inline constexpr tuple<_TElements..., _UElements...> 
     __tuple_cat_helper(const tuple<_TElements...>& __t,
 		       const __index_holder<_TIdx...>&,
                        const tuple<_UElements...>& __u,
@@ -939,7 +941,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 std::forward<_UElements>(get<_UIdx>(__u))...); }
 
   template<typename... _TElements, typename... _UElements>
-    inline tuple<_TElements..., _UElements...> 
+    inline constexpr tuple<_TElements..., _UElements...> 
     tuple_cat(const tuple<_TElements...>& __t, const tuple<_UElements...>& __u)
     {
       return __tuple_cat_helper(__t, typename
@@ -1032,8 +1034,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<class _T1, class _T2>
     template<typename _Tp, typename... _Args>
       inline _Tp
-      pair<_T1, _T2>::
-      __cons(tuple<_Args...>&& __tuple)
+      pair<_T1, _T2>::__cons(tuple<_Args...>&& __tuple)
       {
 	typedef typename _Build_index_tuple<sizeof...(_Args)>::__type
 	  _Indexes;
@@ -1043,9 +1044,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<class _T1, class _T2>
     template<typename _Tp, typename... _Args, int... _Indexes>
       inline _Tp
-      pair<_T1, _T2>::
-      __do_cons(tuple<_Args...>&& __tuple,
-		const _Index_tuple<_Indexes...>&)
+      pair<_T1, _T2>::__do_cons(tuple<_Args...>&& __tuple,
+				const _Index_tuple<_Indexes...>&)
       { return _Tp(std::forward<_Args>(get<_Indexes>(__tuple))...); }
 
 _GLIBCXX_END_NAMESPACE_VERSION

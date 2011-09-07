@@ -1,3 +1,20 @@
+2011-09-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/tuple (_Tuple_impl::_M_head, _M_tail): Mark constexpr.
+	(tuple(tuple&&)): Same.
+	(tuple(const tuple<_UElements...>& __in)): Same.
+	(tuple(tuple<_UElements...>&& __in)): Same.
+	(tuple_cat(const tuple<_TElements...>&, const tuple<_UElements...>&)):
+	Same.
+	(get): Same.
+	* include/std/array: Consolidate array::data usage.
+	* testsuite/23_containers/array/requirements/constexpr_functions.cc:
+	Remove extra include.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: New.
+	* testsuite/20_util/tuple/cons/constexpr-2.cc: Add tests.
+	* testsuite/20_util/tuple/cons/constexpr-3.cc: Same.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust line numbers.
+
 2011-09-06  François Dumont  <fdumont@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

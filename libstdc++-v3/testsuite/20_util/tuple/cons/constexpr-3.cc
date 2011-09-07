@@ -53,8 +53,8 @@ int main()
   constexpr tuple_type t8(i5, i6, i7);
 
   // 06: different-tuple-type conversion constructor
-  // test2.operator()<tuple_type, std::tuple<short, short, short>>();
-  // test2.operator()<std::tuple<short, short, short>, tuple_type>();
+  test2.operator()<tuple_type, std::tuple<short, short, short>>();
+  test2.operator()<std::tuple<short, short, short>, tuple_type>();
 
   return 0;
 }
