@@ -61,8 +61,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct array
     {
       typedef _Tp 	    			      value_type;
-      typedef _Tp*                                    pointer;
-      typedef const _Tp*                              const_pointer;
+      typedef value_type*			      pointer;
+      typedef const value_type*                       const_pointer;
       typedef value_type&                   	      reference;
       typedef const value_type&             	      const_reference;
       typedef value_type*          		      iterator;
@@ -90,19 +90,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Iterators.
       iterator
       begin() noexcept
-      { return iterator(std::__addressof(_M_instance[0])); }
+      { return iterator(data()); }
 
       const_iterator
       begin() const noexcept
-      { return const_iterator(std::__addressof(_M_instance[0])); }
+      { return const_iterator(data()); }
 
       iterator
       end() noexcept
-      { return iterator(std::__addressof(_M_instance[_Nm])); }
+      { return iterator(data() + _Nm); }
 
       const_iterator
       end() const noexcept
-      { return const_iterator(std::__addressof(_M_instance[_Nm])); }
+      { return const_iterator(data() + _Nm); }
 
       reverse_iterator 
       rbegin() noexcept
@@ -195,11 +195,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       back() const
       { return _Nm ? *(end() - 1) : *end(); }
 
-      _Tp*
+      pointer
       data() noexcept
       { return std::__addressof(_M_instance[0]); }
 
-      const _Tp*
+      const_pointer
       data() const noexcept
       { return std::__addressof(_M_instance[0]); }
     };
