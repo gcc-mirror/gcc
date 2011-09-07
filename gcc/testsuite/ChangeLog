@@ -1,4 +1,8 @@
 2011-09-07  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* gcc.dg/section1.c: Don't xfail for avr.
+	
+2011-09-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR tree-optimization/50322
 	* gcc.dg/tree-ssa/ivopts-lt.c: Add xfails for avr.
