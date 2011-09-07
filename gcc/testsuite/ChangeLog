@@ -1,3 +1,7 @@
+2011-09-07  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-16.c: New testcase.
+
 2011-09-07  Jiangning Liu  <jiangning.liu@arm.com>
 
 	PR tree-optimization/46021

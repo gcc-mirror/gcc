@@ -1,5 +1,11 @@
 2011-09-07  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond):
+	Canonicalize negated predicates by swapping edges.
+	(forward_propagate_into_cond): Likewise.
+
+2011-09-07  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50213
 	* tree-flow.h (simple_iv_increment_p): Declare.
 	* tree-ssa-dom.c (simple_iv_increment_p): Export.  Also handle
