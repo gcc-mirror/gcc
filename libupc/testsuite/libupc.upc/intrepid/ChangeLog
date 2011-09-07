@@ -1,5 +1,11 @@
 2011-09-07  Gary Funck  <gary@intrepid.com>
 
+	* test30.upc: New.  Missed in previous commit.
+	Print "pass" even when compiled with packed
+	UPC pointer-to-shared configuration.
+
+2011-09-07  Gary Funck  <gary@intrepid.com>
+
 	* test30.upc: New. Test UPC pointer-to-shared alignment
 	for struct PTS.
 
