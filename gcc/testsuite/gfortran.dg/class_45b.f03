@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do link }
 ! { dg-additional-sources class_45a.f03 }
 !
 ! PR 50227: [4.7 Regression] [OOP] ICE-on-valid with allocatable class variable
