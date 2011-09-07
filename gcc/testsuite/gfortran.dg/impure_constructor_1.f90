@@ -23,7 +23,7 @@ contains
    y = t2(x) ! Note: F2003, C1272 (3) and (4) do not apply
    
    ! Variant which is invalid as C1272 (3) applies
-   z = t3(x) ! { dg-error "Invalid expression in the derived type constructor" }
+   z = t3(x) ! { dg-error "Invalid expression in the structure constructor" }
  end subroutine foo
 end module m
 

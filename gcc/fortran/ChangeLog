@@ -1,3 +1,11 @@
+2011-09-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48095
+	* primary.c (gfc_match_structure_constructor): Handle parsing of
+	procedure pointers components in structure constructors.
+	* resolve.c (resolve_structure_cons): Check interface of procedure
+	pointer components. Changed wording of some error messages.
+
 2011-09-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50227

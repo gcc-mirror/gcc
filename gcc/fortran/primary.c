@@ -2418,7 +2418,10 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
 	    }
 
 	  /* Match the current initializer expression.  */
+	  if (this_comp->attr.proc_pointer)
+	    gfc_matching_procptr_assignment = 1;
 	  m = gfc_match_expr (&comp_tail->val);
+	  gfc_matching_procptr_assignment = 0;
 	  if (m == MATCH_NO)
 	    goto syntax;
 	  if (m == MATCH_ERROR)

@@ -1,3 +1,10 @@
+2011-09-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48095
+	* gfortran.dg/derived_constructor_comps_2.f90: Modified.
+	* gfortran.dg/impure_constructor_1.f90: Modified.
+	* gfortran.dg/proc_ptr_comp_33.f90: New.
+
 2011-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50310

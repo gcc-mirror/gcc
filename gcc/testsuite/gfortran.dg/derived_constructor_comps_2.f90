@@ -23,5 +23,5 @@ subroutine foo
   type (ByteType) :: bytes(4)
 
   print *, size(bytes)
-  bytes = ByteType((/'H', 'i', '!', ' '/)) ! { dg-error "rank of the element in the derived type constructor" }
+  bytes = ByteType((/'H', 'i', '!', ' '/)) ! { dg-error "rank of the element in the structure constructor" }
 end subroutine foo
