@@ -1409,9 +1409,10 @@ record_equality (tree x, tree y)
    i_1 = phi (..., i_2)
    i_2 = i_1 +/- ...  */
 
-static bool
+bool
 simple_iv_increment_p (gimple stmt)
 {
+  enum tree_code code;
   tree lhs, preinc;
   gimple phi;
   size_t i;
@@ -1423,12 +1424,13 @@ simple_iv_increment_p (gimple stmt)
   if (TREE_CODE (lhs) != SSA_NAME)
     return false;
 
-  if (gimple_assign_rhs_code (stmt) != PLUS_EXPR
-      && gimple_assign_rhs_code (stmt) != MINUS_EXPR)
+  code = gimple_assign_rhs_code (stmt);
+  if (code != PLUS_EXPR
+      && code != MINUS_EXPR
+      && code != POINTER_PLUS_EXPR)
     return false;
 
   preinc = gimple_assign_rhs1 (stmt);
-
   if (TREE_CODE (preinc) != SSA_NAME)
     return false;
 
