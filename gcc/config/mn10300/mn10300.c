@@ -3150,6 +3150,7 @@ mn10300_insert_setlb_lcc (rtx label, rtx branch)
 
   lcc = emit_jump_insn_before (lcc, branch);
   mark_jump_label (XVECEXP (PATTERN (lcc), 0, 0), lcc, 0);
+  JUMP_LABEL (lcc) = label;
   DUMP ("Replacing branch insn...", branch);
   DUMP ("... with Lcc insn:", lcc);  
   delete_insn (branch);
