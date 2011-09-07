@@ -229,7 +229,7 @@
    (V16QI "TI") (V8HI "TI") (V4SI "TI") (V2DI "TI") (V1TI "TI")
    (V8SF "V8SF") (V4DF "V4DF")
    (V4SF "V4SF") (V2DF "V2DF")
-   (TI "TI") (V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI")])
+   (TI "TI")])
 
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr sseintvecmode
@@ -6340,14 +6340,13 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex")
    (set (attr "mode")
-     (cond [(match_test "TARGET_AVX2")
-	      (const_string "OI")
-	    (match_test "GET_MODE_SIZE (<MODE>mode) > 128")
+     (cond [(and (not (match_test "TARGET_AVX2"))
+		 (match_test "GET_MODE_SIZE (<MODE>mode) > 16"))
 	      (const_string "V8SF")
-	    (match_test "TARGET_SSE2")
-	      (const_string "TI")
+	    (not (match_test "TARGET_SSE2"))
+	      (const_string "V4SF")
 	   ]
-	   (const_string "V4SF")))])
+	   (const_string "<sseinsnmode>")))])
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI 0 "register_operand" "")
@@ -6416,14 +6415,13 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex")
    (set (attr "mode")
-     (cond [(match_test "TARGET_AVX2")
-	      (const_string "OI")
-	    (match_test "GET_MODE_SIZE (<MODE>mode) > 128")
+     (cond [(and (not (match_test "TARGET_AVX2"))
+		 (match_test "GET_MODE_SIZE (<MODE>mode) > 16"))
 	      (const_string "V8SF")
-	    (match_test "TARGET_SSE2")
-	      (const_string "TI")
+	    (not (match_test "TARGET_SSE2"))
+	      (const_string "V4SF")
 	   ]
-	   (const_string "V4SF")))])
+	   (const_string "<sseinsnmode>")))])
 
 (define_insn "*andnottf3"
   [(set (match_operand:TF 0 "register_operand" "=x,x")
