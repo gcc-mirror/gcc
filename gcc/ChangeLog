@@ -1,3 +1,10 @@
+2011-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (compute_save_world_info): Test
+	cfun->has_nonlocal_label to determine if the out-of-line save
+	world call may be used.
+
 2011-09-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Set the jump
