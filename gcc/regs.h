@@ -397,4 +397,48 @@ overlaps_hard_reg_set_p (const HARD_REG_SET regs, enum machine_mode mode,
   return false;
 }
 
+/* Like add_to_hard_reg_set, but use a REGNO/NREGS range instead of
+   REGNO and MODE.  */
+
+static inline void
+add_range_to_hard_reg_set (HARD_REG_SET *regs, unsigned int regno,
+			   int nregs)
+{
+  while (nregs-- > 0)
+    SET_HARD_REG_BIT (*regs, regno + nregs);
+}
+
+/* Likewise, but remove the registers.  */
+
+static inline void
+remove_range_from_hard_reg_set (HARD_REG_SET *regs, unsigned int regno,
+				int nregs)
+{
+  while (nregs-- > 0)
+    CLEAR_HARD_REG_BIT (*regs, regno + nregs);
+}
+
+/* Like overlaps_hard_reg_set_p, but use a REGNO/NREGS range instead of
+   REGNO and MODE.  */
+static inline bool
+range_overlaps_hard_reg_set_p (const HARD_REG_SET set, unsigned regno,
+			       int nregs)
+{
+  while (nregs-- > 0)
+    if (TEST_HARD_REG_BIT (set, regno + nregs))
+      return true;
+  return false;
+}
+
+/* Like in_hard_reg_set_p, but use a REGNO/NREGS range instead of
+   REGNO and MODE.  */
+static inline bool
+range_in_hard_reg_set_p (const HARD_REG_SET set, unsigned regno, int nregs)
+{
+  while (nregs-- > 0)
+    if (!TEST_HARD_REG_BIT (set, regno + nregs))
+      return false;
+  return true;
+}
+
 #endif /* GCC_REGS_H */

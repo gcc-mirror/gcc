@@ -1,3 +1,34 @@
+2011-09-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* regrename.c (struct du_head): Make nregs signed.
+	(closed_chains): Remove.
+	(create_new_chain): Return the new chain.
+	(chain_from_id): New static function.
+	(dump_def_use_chain): Change argument to be an int, indicating
+	the first ID to print.  All callers changed.
+	(merge_overlapping_regs): Use chain_from_id.  Assert that
+	chains don't conflict with themselves.
+	(rename_chains): Take no argument.  Iterate over id_to_chain
+	rather to find chains to rename.  Clear tick before the main
+	loop.
+	(struct incoming_reg_info): New struct.
+	(struct bb_rename_info): New struct.
+	(init_rename_info, set_incoming_from_chain, merge_chains): New
+	static functions.
+	(regrename_analyze): New static function, broken out of
+	regrename_optimize.  Record and make use of open chain information
+	at basic block boundaries, and merge chains where possible.
+	(scan_rtx_reg): Make this_nregs signed.  Don't update
+	closed_chains.
+	(build_def_use): Return a bool to indicate success.  All callers
+	changed.  Don't initialize global data here.
+	(regrename_optimize): Move most code out of here into
+	regrename_analyze.
+	* regs.h (add_range_to_hard_reg_set, remove_range_from_hard_reg_set,
+	range_overlaps_hard_reg_set_p, range_in_hard_reg_set_p): New
+	static inline functions.
+	* vec.h (FOR_EACH_VEC_ELT_FROM): New macro.
+
 2011-09-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/50301
