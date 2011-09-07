@@ -1,3 +1,8 @@
+2011-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50310
+	* gcc.dg/pr50310-1.c: New test.
+
 2011-09-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR middle-end/48571

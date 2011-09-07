@@ -1,3 +1,12 @@
+2011-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (sseinsnmode): Remove 32-byte integer vector
+	duplicates.
+
+	PR target/50310
+	* config/i386/sse.md (*andnot<mode>3, *<code><mode>3): Fix up
+	"mode" attribute computation.
+
 2011-09-07  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* regrename.c (struct du_head): Make nregs signed.
