@@ -1,3 +1,8 @@
+2011-09-07  Jiangning Liu  <jiangning.liu@arm.com>
+
+	PR tree-optimization/46021
+	* gcc.dg/tree-ssa/20040204-1.c: Don't XFAIL on arm*-*-*.
+
 2011-09-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* g++.dg/ext/altivec-17.C: Fix dg-error to match current compiler.
