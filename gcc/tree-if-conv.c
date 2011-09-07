@@ -137,6 +137,9 @@ bb_predicate (basic_block bb)
 static inline void
 set_bb_predicate (basic_block bb, tree cond)
 {
+  gcc_assert ((TREE_CODE (cond) == TRUTH_NOT_EXPR
+	       && is_gimple_condexpr (TREE_OPERAND (cond, 0)))
+	      || is_gimple_condexpr (cond));
   ((bb_predicate_p) bb->aux)->predicate = cond;
 }
 
@@ -328,7 +331,7 @@ fold_or_predicates (location_t loc, tree c1, tree c2)
 static inline void
 add_to_predicate_list (basic_block bb, tree nc)
 {
-  tree bc;
+  tree bc, *tp;
 
   if (is_true_predicate (nc))
     return;
@@ -339,19 +342,25 @@ add_to_predicate_list (basic_block bb, tree nc)
     {
       bc = bb_predicate (bb);
       bc = fold_or_predicates (EXPR_LOCATION (bc), nc, bc);
+      if (is_true_predicate (bc))
+	{
+	  reset_bb_predicate (bb);
+	  return;
+	}
     }
 
-  if (!is_gimple_condexpr (bc))
+  /* Allow a TRUTH_NOT_EXPR around the main predicate.  */
+  if (TREE_CODE (bc) == TRUTH_NOT_EXPR)
+    tp = &TREE_OPERAND (bc, 0);
+  else
+    tp = &bc;
+  if (!is_gimple_condexpr (*tp))
     {
       gimple_seq stmts;
-      bc = force_gimple_operand (bc, &stmts, true, NULL_TREE);
+      *tp = force_gimple_operand_1 (*tp, &stmts, is_gimple_condexpr, NULL_TREE);
       add_bb_predicate_gimplified_stmts (bb, stmts);
     }
-
-  if (is_true_predicate (bc))
-    reset_bb_predicate (bb);
-  else
-    set_bb_predicate (bb, bc);
+  set_bb_predicate (bb, bc);
 }
 
 /* Add the condition COND to the previous condition PREV_COND, and add
@@ -944,14 +953,6 @@ predicate_bbs (loop_p loop)
 	}
 
       cond = bb_predicate (bb);
-      if (cond
-	  && bb != loop->header)
-	{
-	  gimple_seq stmts;
-
-	  cond = force_gimple_operand (cond, &stmts, true, NULL_TREE);
-	  add_bb_predicate_gimplified_stmts (bb, stmts);
-	}
 
       for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
 	{
@@ -980,14 +981,17 @@ predicate_bbs (loop_p loop)
 						     &true_edge, &false_edge);
 
 		/* If C is true, then TRUE_EDGE is taken.  */
-		add_to_dst_predicate_list (loop, true_edge, cond, unshare_expr (c));
+		add_to_dst_predicate_list (loop, true_edge,
+					   unshare_expr (cond),
+					   unshare_expr (c));
 
 		/* If C is false, then FALSE_EDGE is taken.  */
 		c2 = invert_truthvalue_loc (loc, unshare_expr (c));
 		tem = canonicalize_cond_expr_cond (c2);
 		if (tem)
 		  c2 = tem;
-		add_to_dst_predicate_list (loop, false_edge, cond, c2);
+		add_to_dst_predicate_list (loop, false_edge,
+					   unshare_expr (cond), c2);
 
 		cond = NULL_TREE;
 		break;
@@ -1237,7 +1241,7 @@ find_phi_replacement_condition (struct loop *loop,
       *cond = bb_predicate (second_edge->src);
 
       if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
-	*cond = invert_truthvalue (*cond);
+	*cond = TREE_OPERAND (*cond, 0);
       else
 	/* Select non loop header bb.  */
 	first_edge = second_edge;
@@ -1245,18 +1249,10 @@ find_phi_replacement_condition (struct loop *loop,
   else
     *cond = bb_predicate (first_edge->src);
 
-  /* Gimplify the condition: the vectorizer prefers to have gimple
-     values as conditions.  Various targets use different means to
-     communicate conditions in vector compare operations.  Using a
-     gimple value allows the compiler to emit vector compare and
-     select RTL without exposing compare's result.  */
-  *cond = force_gimple_operand_gsi (gsi, unshare_expr (*cond),
-				    false, NULL_TREE,
-				    true, GSI_SAME_STMT);
-  if (!is_gimple_reg (*cond) && !is_gimple_condexpr (*cond))
-    *cond = ifc_temp_var (TREE_TYPE (*cond), unshare_expr (*cond), gsi);
-
-  gcc_assert (*cond);
+  /* Gimplify the condition to a valid cond-expr conditonal operand.  */
+  *cond = force_gimple_operand_gsi_1 (gsi, unshare_expr (*cond),
+				      is_gimple_condexpr, NULL_TREE,
+				      true, GSI_SAME_STMT);
 
   return first_edge->src;
 }
