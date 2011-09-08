@@ -2386,9 +2386,9 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 
   /* Handle constants.  */
   if (TREE_CODE (mult_rhs1) == INTEGER_CST)
-    rhs1 = fold_convert (type1, mult_rhs1);
+    mult_rhs1 = fold_convert (type1, mult_rhs1);
   if (TREE_CODE (mult_rhs2) == INTEGER_CST)
-    rhs2 = fold_convert (type2, mult_rhs2);
+    mult_rhs2 = fold_convert (type2, mult_rhs2);
 
   gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
 				    add_rhs);
