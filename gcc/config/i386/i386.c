@@ -8241,7 +8241,10 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	}
 
     case 2:
-      return "%vpcmpeqd\t%0, %0, %0";
+      if (TARGET_AVX)
+	return "vpcmpeqd\t%0, %0, %0";
+      else
+	return "pcmpeqd\t%0, %0";
 
     default:
       break;
