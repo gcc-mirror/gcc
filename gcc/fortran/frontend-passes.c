@@ -1103,6 +1103,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      }
 
 	    case EXEC_FORALL:
+	    case EXEC_DO_CONCURRENT:
 	      {
 		gfc_forall_iterator *fa;
 		for (fa = co->ext.forall_iterator; fa; fa = fa->next)

@@ -5248,6 +5248,7 @@ gfc_match_entry (void)
 		       "an IF-THEN block");
 	    break;
 	  case COMP_DO:
+	  case COMP_DO_CONCURRENT:
 	    gfc_error ("ENTRY statement at %C cannot appear within "
 		       "a DO block");
 	    break;
@@ -5853,6 +5854,7 @@ gfc_match_end (gfc_statement *st)
       break;
 
     case COMP_DO:
+    case COMP_DO_CONCURRENT:
       *st = ST_ENDDO;
       target = " do";
       eos_ok = 0;

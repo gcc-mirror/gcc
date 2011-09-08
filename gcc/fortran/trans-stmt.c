@@ -3514,6 +3514,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   tree maskindex;
   tree mask;
   tree pmask;
+  tree cycle_label = NULL_TREE;
   int n;
   int nvar;
   int need_temp;
@@ -3703,6 +3704,26 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       gfc_add_expr_to_block (&block, tmp);
     }
 
+  if (code->op == EXEC_DO_CONCURRENT)
+    {
+      gfc_init_block (&body);
+      cycle_label = gfc_build_label_decl (NULL_TREE);
+      code->cycle_label = cycle_label;
+      tmp = gfc_trans_code (code->block->next);
+      gfc_add_expr_to_block (&body, tmp);
+
+      if (TREE_USED (cycle_label))
+	{
+	  tmp = build1_v (LABEL_EXPR, cycle_label);
+	  gfc_add_expr_to_block (&body, tmp);
+	}
+
+      tmp = gfc_finish_block (&body);
+      tmp = gfc_trans_nested_forall_loop (nested_forall_info, tmp, 1);
+      gfc_add_expr_to_block (&block, tmp);
+      goto done;
+    }
+
   c = code->block->next;
 
   /* TODO: loop merging in FORALL statements.  */
@@ -3783,6 +3804,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       c = c->next;
     }
 
+done:
   /* Restore the original index variables.  */
   for (fa = code->ext.forall_iterator, n = 0; fa; fa = fa->next, n++)
     gfc_restore_sym (fa->var->symtree->n.sym, &saved_vars[n]);
@@ -3824,6 +3846,14 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 /* Translate the FORALL statement or construct.  */
 
 tree gfc_trans_forall (gfc_code * code)
+{
+  return gfc_trans_forall_1 (code, NULL);
+}
+
+
+/* Translate the DO CONCURRENT construct.  */
+
+tree gfc_trans_do_concurrent (gfc_code * code)
 {
   return gfc_trans_forall_1 (code, NULL);
 }
