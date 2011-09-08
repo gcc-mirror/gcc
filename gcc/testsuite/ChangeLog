@@ -1,3 +1,8 @@
+2011-09-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19831
+	* gcc.dg/tree-ssa/ssa-dce-8.c: New testcase.
+
 2011-09-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44646

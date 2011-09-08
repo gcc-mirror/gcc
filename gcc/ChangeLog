@@ -1,3 +1,9 @@
+2011-09-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19831
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Do not mark
+	allocation functions as necessary.
+
 2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
 
 	*config/darwin-driver.c (darwin_find_version_from_kernel): New routine 
