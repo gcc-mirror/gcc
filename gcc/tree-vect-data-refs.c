@@ -1493,6 +1493,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
 
+      if (!STMT_VINFO_RELEVANT (stmt_info))
+	continue;
+
       /* For interleaving, only the alignment of the first access
          matters.  */
       if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
