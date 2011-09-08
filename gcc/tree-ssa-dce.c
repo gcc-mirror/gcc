@@ -309,6 +309,8 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 	    case BUILT_IN_CALLOC:
 	    case BUILT_IN_ALLOCA:
 	      return;
+
+	    default:;
 	    }
 	/* Most, but not all function calls are required.  Function calls that
 	   produce no result and have no side effects (i.e. const pure
@@ -625,6 +627,25 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	return false;
     }
 
+  /* We want to skip statments that do not constitute stores but have
+     a virtual definition.  */
+  if (is_gimple_call (def_stmt))
+    {
+      tree callee = gimple_call_fndecl (def_stmt);
+      if (callee != NULL_TREE
+	  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+	switch (DECL_FUNCTION_CODE (callee))
+	  {
+	  case BUILT_IN_MALLOC:
+	  case BUILT_IN_CALLOC:
+	  case BUILT_IN_ALLOCA:
+	  case BUILT_IN_FREE:
+	    return false;
+
+	  default:;
+	  }
+    }
+
   mark_operand_necessary (vdef);
 
   return false;
@@ -804,6 +825,25 @@ propagate_necessity (struct edge_list *el)
 	     which feed this statement's uses as necessary.  */
 	  ssa_op_iter iter;
 	  tree use;
+
+	  /* If this is a call to free which is directly fed by an
+	     allocation function do not mark that necessary through
+	     processing the argument.  */
+	  if (gimple_call_builtin_p (stmt, BUILT_IN_FREE))
+	    {
+	      tree ptr = gimple_call_arg (stmt, 0);
+	      gimple def_stmt;
+	      tree def_callee;
+	      /* If the pointer we free is defined by an allocation
+		 function do not add the call to the worklist.  */
+	      if (TREE_CODE (ptr) == SSA_NAME
+		  && is_gimple_call (def_stmt = SSA_NAME_DEF_STMT (ptr))
+		  && (def_callee = gimple_call_fndecl (def_stmt))
+		  && DECL_BUILT_IN_CLASS (def_callee) == BUILT_IN_NORMAL
+		  && (DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
+		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
+		continue;
+	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	    mark_operand_necessary (use);
@@ -1217,6 +1257,29 @@ eliminate_unnecessary_stmts (void)
 	  gsi_prev (&psi);
 
 	  stats.total++;
+
+	  /* We can mark a call to free as not necessary if the
+	     defining statement of its argument is an allocation
+	     function and that is not necessary itself.  */
+	  if (gimple_call_builtin_p (stmt, BUILT_IN_FREE))
+	    {
+	      tree ptr = gimple_call_arg (stmt, 0);
+	      tree callee2;
+	      gimple def_stmt;
+	      if (TREE_CODE (ptr) != SSA_NAME)
+		continue;
+	      def_stmt = SSA_NAME_DEF_STMT (ptr);
+	      if (!is_gimple_call (def_stmt)
+		  || gimple_plf (def_stmt, STMT_NECESSARY))
+		continue;
+	      callee2 = gimple_call_fndecl (def_stmt);
+	      if (callee2 == NULL_TREE
+		  || DECL_BUILT_IN_CLASS (callee2) != BUILT_IN_NORMAL
+		  || (DECL_FUNCTION_CODE (callee2) != BUILT_IN_MALLOC
+		      && DECL_FUNCTION_CODE (callee2) != BUILT_IN_CALLOC))
+		continue;
+	      gimple_set_plf (stmt, STMT_NECESSARY, false);
+	    }
 
 	  /* If GSI is not necessary then remove it.  */
 	  if (!gimple_plf (stmt, STMT_NECESSARY))
