@@ -1,5 +1,13 @@
 2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.h (gfc_get_temp_ss): New prototype.
+	* trans-array.c (gfc_get_temp_ss): New function.
+	(gfc_conv_resolve_dependencies): Re-use gfc_get_temp_ss.
+	(gfc_conv_expr_descriptor): Ditto.
+	* trans-expr.c (gfc_conv_subref_array_arg): Ditto.
+
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.h (gfc_get_array_ss): New prototype.
 	* trans-array.c (gfc_get_array_ss): New function.
 	(gfc_walk_variable_expr, gfc_walk_function_expr,
