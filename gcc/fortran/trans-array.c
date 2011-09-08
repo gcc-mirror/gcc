@@ -1882,7 +1882,6 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
       info->start[i] = gfc_index_zero_node;
       info->end[i] = gfc_index_zero_node;
       info->stride[i] = gfc_index_one_node;
-      info->dim[i] = i;
     }
 
   if (info->dimen > loop->temp_dim)
@@ -1961,7 +1960,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
       first_len = true;
     }
 
-  ss->data.info.dimen = loop->dimen;
+  gcc_assert (ss->data.info.dimen == loop->dimen);
 
   c = ss->expr->value.constructor;
   if (ss->expr->ts.type == BT_CHARACTER)
@@ -5915,7 +5914,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 				      loop.dimen);
 
       se->string_length = loop.temp_ss->string_length;
-      loop.temp_ss->data.temp.dimen = loop.dimen;
+      gcc_assert (loop.temp_ss->data.temp.dimen == loop.dimen);
       loop.temp_ss->data.temp.codimen = loop.codimen;
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
