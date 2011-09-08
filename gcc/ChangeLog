@@ -1,3 +1,32 @@
+2011-09-08  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	* config/i386/i386-protos.h (ix86_lea_outperforms): New.
+	(ix86_avoid_lea_for_add): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(ix86_split_lea_for_addr): Likewise.
+
+	* config/i386/i386.c (LEA_MAX_STALL): New.
+	(increase_distance): Likewise.
+	(insn_defines_reg): Likewise.
+	(insn_uses_reg_mem): Likewise.
+	(distance_non_agu_define_in_bb): Likewise.
+	(distance_agu_use_in_bb): Likewise.
+	(ix86_lea_outperforms): Likewise.
+	(ix86_ok_to_clobber_flags): Likewise.
+	(ix86_avoid_lea_for_add): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(ix86_split_lea_for_addr): Likewise.
+	(distance_non_agu_define): Search in pred BBs added.
+	(distance_agu_use): Search in succ BBs added.
+	(IX86_LEA_PRIORITY): Value changed from 2 to 0.
+	(LEA_SEARCH_THRESHOLD): Now depends on LEA_MAX_STALL.
+	(ix86_lea_for_add_ok): Use ix86_lea_outperforms to make decision.
+
+	* config/i386/i386.md: Split added to transform non destructive
+	add into move and add.
+	(lea_1): transformed into insn_and_split to avoid AGU stalls.
+	(lea<mode>_2): Likewise.
+
 2011-09-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50287
