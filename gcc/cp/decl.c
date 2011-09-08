@@ -13392,6 +13392,10 @@ finish_function (int flags)
       unused_but_set_errorcount = errorcount;
     }
 
+  /* Complain about locally defined typedefs that are not used in this
+     function.  */
+  maybe_warn_unused_local_typedefs ();
+
   /* Genericize before inlining.  */
   if (!processing_template_decl)
     {

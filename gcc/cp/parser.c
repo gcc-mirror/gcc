@@ -19587,6 +19587,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   if (DECL_P (decl))
     check_accessibility_of_qualified_id (decl, object_type, parser->scope);
 
+  maybe_record_typedef_use (decl);
+
   return decl;
 }
 

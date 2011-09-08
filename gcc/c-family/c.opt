@@ -653,6 +653,10 @@ Wunsuffixed-float-constants
 C ObjC Var(warn_unsuffixed_float_constants) Warning
 Warn about unsuffixed float constants
 
+Wunused-local-typedefs
+C ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning
+Warn about
+
 Wunused-macros
 C ObjC C++ ObjC++ Warning
 Warn about macros defined in the main file that are not used

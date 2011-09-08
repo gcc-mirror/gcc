@@ -1,3 +1,13 @@
+2011-09-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/33255 - Support -Wunused-local-typedefs warning
+	* include/ext/bitmap_allocator.h
+    	(__detail::__mini_vector::__lower_bound): Remove unused typedef.
+	* src/istream.cc (std::operator>>(basic_istream<char>& __in,
+    	basic_string<char>& __str)): Likewise.
+    	(std::getline): Likewise.
+	* src/valarray.cc (__valarray_product): Likewise.
+
 2011-09-07  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/23_containers/array/at.cc: Revert to...
