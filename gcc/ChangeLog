@@ -1,3 +1,10 @@
+2011-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50310
+	* config/i386/i386.c (ix86_prepare_sse_fp_compare_args): Return
+	code early if TARGET_AVX.
+	(ix86_expand_fp_vcond): Handle LTGT and UNEQ.
+
 2011-09-06  Martin Jambor  <mjambor@suse.cz>
 
 	Revert
