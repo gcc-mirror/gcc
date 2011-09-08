@@ -1303,6 +1303,10 @@ trans_code (gfc_code * code, tree cond)
 	  res = gfc_trans_do (code, cond);
 	  break;
 
+	case EXEC_DO_CONCURRENT:
+	  res = gfc_trans_do_concurrent (code);
+	  break;
+
 	case EXEC_DO_WHILE:
 	  res = gfc_trans_do_while (code);
 	  break;

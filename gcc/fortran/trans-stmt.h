@@ -51,6 +51,7 @@ tree gfc_trans_if (gfc_code *);
 tree gfc_trans_arithmetic_if (gfc_code *);
 tree gfc_trans_block_construct (gfc_code *);
 tree gfc_trans_do (gfc_code *, tree);
+tree gfc_trans_do_concurrent (gfc_code *);
 tree gfc_trans_do_while (gfc_code *);
 tree gfc_trans_select (gfc_code *);
 tree gfc_trans_sync (gfc_code *, gfc_exec_op);

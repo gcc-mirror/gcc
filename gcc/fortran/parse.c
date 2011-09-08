@@ -3154,7 +3154,7 @@ check_do_closure (void)
     return 0;
 
   for (p = gfc_state_stack; p; p = p->previous)
-    if (p->state == COMP_DO)
+    if (p->state == COMP_DO || p->state == COMP_DO_CONCURRENT)
       break;
 
   if (p == NULL)
@@ -3172,7 +3172,8 @@ check_do_closure (void)
   /* At this point, the label doesn't terminate the innermost loop.
      Make sure it doesn't terminate another one.  */
   for (; p; p = p->previous)
-    if (p->state == COMP_DO && p->ext.end_do_label == gfc_statement_label)
+    if ((p->state == COMP_DO || p->state == COMP_DO_CONCURRENT)
+	&& p->ext.end_do_label == gfc_statement_label)
       {
 	gfc_error ("End of nonblock DO statement at %C is interwoven "
 		   "with another DO loop");
@@ -3387,7 +3388,9 @@ parse_do_block (void)
   gfc_code *top;
   gfc_state_data s;
   gfc_symtree *stree;
+  gfc_exec_op do_op;
 
+  do_op = new_st.op;
   s.ext.end_do_label = new_st.label1;
 
   if (new_st.ext.iterator != NULL)
@@ -3398,7 +3401,8 @@ parse_do_block (void)
   accept_statement (ST_DO);
 
   top = gfc_state_stack->tail;
-  push_state (&s, COMP_DO, gfc_new_block);
+  push_state (&s, do_op == EXEC_DO_CONCURRENT ? COMP_DO_CONCURRENT : COMP_DO,
+	      gfc_new_block);
 
   s.do_variable = stree;
 
