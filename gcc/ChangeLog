@@ -1,3 +1,25 @@
+2011-09-08  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-05-05  Michael Matz  <matz@suse.de>
+
+	* config/alpha/elf.h (ENDFILE_SPEC): Add Ofast.
+	* config/alpha/osf5.h (ENDFILE_SPEC): Add Ofast.
+	* config/alpha/netbsd.h (ENDFILE_SPEC): Add Ofast.
+	* config/sparc/linux.h (ENDFILE_SPEC): Add Ofast.
+	* config/sparc/sp64-elf.h (ENDFILE_SPEC): Add Ofast.
+	* config/sparc/sp-elf.h (ENDFILE_SPEC): Add Ofast.
+	* config/sparc/linux64.h (ENDFILE_SPEC): Add Ofast.
+	* config/sparc/freebsd.h (ENDFILE_SPEC): Add Ofast.
+	* config/sparc/sol2.h (ENDFILE_SPEC): Add Ofast.
+	* config/i386/cygwin.h (ENDFILE_SPEC): Add Ofast.
+	* config/i386/linux.h (ENDFILE_SPEC): Add Ofast.
+	* config/i386/linux64.h (ENDFILE_SPEC): Add Ofast.
+	* config/i386/darwin.h (ENDFILE_SPEC): Add Ofast.
+	* config/i386/mingw32.h (ENDFILE_SPEC): Add Ofast.
+	* config/ia64/linux.h (ENDFILE_SPEC): Add Ofast.
+	* config/mips/linux.h (ENDFILE_SPEC): Add Ofast.
+
 2011-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 

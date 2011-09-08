@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}\
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}\
    crtend.o%s"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we

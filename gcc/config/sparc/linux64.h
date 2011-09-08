@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s\
-   %{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+   %{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64 GNU/Linux with ELF)");
