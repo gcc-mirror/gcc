@@ -8176,7 +8176,7 @@ standard_80387_constant_rtx (int idx)
 }
 
 /* Return 1 if X is all 0s and 2 if x is all 1s
-   in supported SSE vector mode.  */
+   in supported SSE/AVX vector mode.  */
 
 int
 standard_sse_constant_p (rtx x)
@@ -8193,6 +8193,12 @@ standard_sse_constant_p (rtx x)
       case V4SImode:
       case V2DImode:
 	if (TARGET_SSE2)
+	  return 2;
+      case V32QImode:
+      case V16HImode:
+      case V8SImode:
+      case V4DImode:
+	if (TARGET_AVX2)
 	  return 2;
       default:
 	break;
@@ -8235,7 +8241,8 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	}
 
     case 2:
-      return "%vpcmpeqd\t%0, %d0";
+      return "%vpcmpeqd\t%0, %0, %0";
+
     default:
       break;
     }
