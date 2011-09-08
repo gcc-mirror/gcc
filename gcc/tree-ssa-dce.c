@@ -299,17 +299,29 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
       return;
 
     case GIMPLE_CALL:
-      /* Most, but not all function calls are required.  Function calls that
-	 produce no result and have no side effects (i.e. const pure
-	 functions) are unnecessary.  */
-      if (gimple_has_side_effects (stmt))
-	{
-	  mark_stmt_necessary (stmt, true);
+      {
+	tree callee = gimple_call_fndecl (stmt);
+	if (callee != NULL_TREE
+	    && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+	  switch (DECL_FUNCTION_CODE (callee))
+	    {
+	    case BUILT_IN_MALLOC:
+	    case BUILT_IN_CALLOC:
+	    case BUILT_IN_ALLOCA:
+	      return;
+	    }
+	/* Most, but not all function calls are required.  Function calls that
+	   produce no result and have no side effects (i.e. const pure
+	   functions) are unnecessary.  */
+	if (gimple_has_side_effects (stmt))
+	  {
+	    mark_stmt_necessary (stmt, true);
+	    return;
+	  }
+	if (!gimple_call_lhs (stmt))
 	  return;
-	}
-      if (!gimple_call_lhs (stmt))
-        return;
-      break;
+	break;
+      }
 
     case GIMPLE_DEBUG:
       /* Debug temps without a value are not useful.  ??? If we could
