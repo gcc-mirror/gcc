@@ -1946,18 +1946,14 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
      care of this task, because we don't have a gfc_expr at hand.
      Build one manually, as in gfc_trans_subarray_assign.  */
 
-  ss = gfc_get_ss ();
-  ss->type = GFC_SS_COMPONENT;
-  ss->expr = NULL;
+  ss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
+			 GFC_SS_COMPONENT);
   ss->shape = gfc_get_shape (cm->as->rank);
-  ss->next = gfc_ss_terminator;
-  ss->data.info.dimen = cm->as->rank;
   ss->data.info.descriptor = expr;
   ss->data.info.data = gfc_conv_array_data (expr);
   ss->data.info.offset = gfc_conv_array_offset (expr);
   for (n = 0; n < cm->as->rank; n++)
     {
-      ss->data.info.dim[n] = n;
       ss->data.info.start[n] = gfc_conv_array_lbound (expr, n);
       ss->data.info.stride[n] = gfc_index_one_node;
 

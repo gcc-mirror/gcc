@@ -1,3 +1,14 @@
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.h (gfc_get_array_ss): New prototype.
+	* trans-array.c (gfc_get_array_ss): New function.
+	(gfc_walk_variable_expr, gfc_walk_function_expr,
+	gfc_walk_array_constructor): Re-use gfc_get_array_ss.
+	* trans-expr.c (gfc_trans_subarray_assign): Ditto.
+	* trans-intrinsic.c (gfc_walk_intrinsic_bound,
+	gfc_walk_intrinsic_libfunc): Ditto.
+	* trans-io.c (transfer_array_component): Ditto.
+
 2011-09-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44646

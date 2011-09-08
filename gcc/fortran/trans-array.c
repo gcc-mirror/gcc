@@ -511,6 +511,29 @@ gfc_free_ss (gfc_ss * ss)
 }
 
 
+/* Creates and initializes an array type gfc_ss struct.  */
+
+gfc_ss *
+gfc_get_array_ss (gfc_ss *next, gfc_expr *expr, int dimen, gfc_ss_type type)
+{
+  gfc_ss *ss;
+  gfc_ss_info *info;
+  int i;
+
+  ss = gfc_get_ss ();
+  ss->next = next;
+  ss->type = type;
+  ss->expr = expr;
+  info = &ss->data.info;
+  info->dimen = dimen;
+  info->codimen = 0;
+  for (i = 0; i < info->dimen; i++)
+    info->dim[i] = i;
+
+  return ss;
+}
+
+
 /* Free all the SS associated with a loop.  */
 
 void
@@ -7605,12 +7628,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  break;
 
 	case AR_FULL:
-	  newss = gfc_get_ss ();
-	  newss->type = GFC_SS_SECTION;
-	  newss->expr = expr;
-	  newss->next = ss;
-	  newss->data.info.dimen = ar->as->rank;
-	  newss->data.info.codimen = 0;
+	  newss = gfc_get_array_ss (ss, expr, ar->as->rank, GFC_SS_SECTION);
 	  newss->data.info.ref = ref;
 
 	  /* Make sure array is the same as array(:,:), this way
@@ -7619,7 +7637,6 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  ar->codimen = 0;
 	  for (n = 0; n < ar->dimen; n++)
 	    {
-	      newss->data.info.dim[n] = n;
 	      ar->dimen_type[n] = DIMEN_RANGE;
 
 	      gcc_assert (ar->start[n] == NULL);
@@ -7638,15 +7655,10 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  break;
 
 	case AR_SECTION:
-	  newss = gfc_get_ss ();
-	  newss->type = GFC_SS_SECTION;
-	  newss->expr = expr;
-	  newss->next = ss;
-	  newss->data.info.dimen = 0;
-	  newss->data.info.codimen = 0;
+	  newss = gfc_get_array_ss (ss, expr, 0, GFC_SS_SECTION);
 	  newss->data.info.ref = ref;
 
-          /* We add SS chains for all the subscripts in the section.  */
+	  /* We add SS chains for all the subscripts in the section.  */
 	  for (n = 0; n < ar->dimen + ar->codimen; n++)
 	    {
 	      gfc_ss *indexss;
@@ -7678,10 +7690,8 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 		case DIMEN_VECTOR:
 		  /* Create a GFC_SS_VECTOR index in which we can store
 		     the vector's descriptor.  */
-		  indexss = gfc_get_ss ();
-		  indexss->type = GFC_SS_VECTOR;
-		  indexss->expr = ar->start[n];
-		  indexss->next = gfc_ss_terminator;
+		  indexss = gfc_get_array_ss (gfc_ss_terminator, ar->start[n],
+					      1, GFC_SS_VECTOR);
 		  indexss->loop_chain = gfc_ss_terminator;
 		  newss->data.info.subscript[n] = indexss;
 		  newss->data.info.dim[newss->data.info.dimen
@@ -7852,11 +7862,9 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 static gfc_ss *
 gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 {
-  gfc_ss *newss;
   gfc_intrinsic_sym *isym;
   gfc_symbol *sym;
   gfc_component *comp = NULL;
-  int n;
 
   isym = expr->value.function.isym;
 
@@ -7872,16 +7880,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   gfc_is_proc_ptr_comp (expr, &comp);
   if ((!comp && gfc_return_by_reference (sym) && sym->result->attr.dimension)
       || (comp && comp->attr.dimension))
-    {
-      newss = gfc_get_ss ();
-      newss->type = GFC_SS_FUNCTION;
-      newss->expr = expr;
-      newss->next = ss;
-      newss->data.info.dimen = expr->rank;
-      for (n = 0; n < newss->data.info.dimen; n++)
-	newss->data.info.dim[n] = n;
-      return newss;
-    }
+    return gfc_get_array_ss (ss, expr, expr->rank, GFC_SS_FUNCTION);
 
   /* Walk the parameters of an elemental function.  For now we always pass
      by reference.  */
@@ -7900,18 +7899,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 static gfc_ss *
 gfc_walk_array_constructor (gfc_ss * ss, gfc_expr * expr)
 {
-  gfc_ss *newss;
-  int n;
-
-  newss = gfc_get_ss ();
-  newss->type = GFC_SS_CONSTRUCTOR;
-  newss->expr = expr;
-  newss->next = ss;
-  newss->data.info.dimen = expr->rank;
-  for (n = 0; n < expr->rank; n++)
-    newss->data.info.dim[n] = n;
-
-  return newss;
+  return gfc_get_array_ss (ss, expr, expr->rank, GFC_SS_CONSTRUCTOR);
 }
 
 
