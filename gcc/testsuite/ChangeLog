@@ -1,3 +1,8 @@
+2011-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50324
+	* g++.dg/cpp0x/sfinae28.C: New.
+
 2011-09-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/33255 - Support -Wunused-local-typedefs warning
