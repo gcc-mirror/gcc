@@ -2173,8 +2173,15 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     a-numaux.ads<a-numaux-darwin.ads \
     a-numaux.adb<a-numaux-darwin.adb \
     g-trasym.ads<g-trasym-unimplemented.ads \
-    g-trasym.adb<g-trasym-unimplemented.adb \
-    system.ads<system-darwin-ppc.ads
+    g-trasym.adb<g-trasym-unimplemented.adb
+    ifeq ($(strip $(MULTISUBDIR)),/ppc64)
+      LIBGNAT_TARGET_PAIRS += \
+        system.ads<system-darwin-ppc64.ads
+      SO_OPTS += -m64
+    else
+      LIBGNAT_TARGET_PAIRS += \
+        system.ads<system-darwin-ppc.ads
+    endif
   endif
 
   TOOLS_TARGET_PAIRS =  \

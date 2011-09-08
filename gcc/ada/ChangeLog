@@ -1,5 +1,13 @@
+2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Backport from mainline (restore powerpc-darwin Ada bootstrap).
+	* gcc-interface/Makefile.in (darwin): Provide powerpc64 system 
+	implementation.
+	* system-darwin-ppc64.ads: New file.
+
 2011-09-06  Iain Sandoe  <iains@gcc.gnu.org>
 
+	Backport from mainline.
 	* gcc-interface/Makefile.in (darwin, SO_OPTS): Provide architecture
 	size switches to the link phase for shared libs.
 
