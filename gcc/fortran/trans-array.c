@@ -534,6 +534,24 @@ gfc_get_array_ss (gfc_ss *next, gfc_expr *expr, int dimen, gfc_ss_type type)
 }
 
 
+/* Creates and initializes a temporary type gfc_ss struct.  */
+
+gfc_ss *
+gfc_get_temp_ss (tree type, tree string_length, int dimen)
+{
+  gfc_ss *ss;
+
+  ss = gfc_get_ss ();
+  ss->next = gfc_ss_terminator;
+  ss->type = GFC_SS_TEMP;
+  ss->string_length = string_length;
+  ss->data.temp.dimen = dimen;
+  ss->data.temp.type = type;
+
+  return ss;
+}
+
+
 /* Free all the SS associated with a loop.  */
 
 void
@@ -3821,13 +3839,9 @@ temporary:
       if (GFC_ARRAY_TYPE_P (base_type)
 	  || GFC_DESCRIPTOR_TYPE_P (base_type))
 	base_type = gfc_get_element_type (base_type);
-      loop->temp_ss = gfc_get_ss ();
-      loop->temp_ss->type = GFC_SS_TEMP;
-      loop->temp_ss->data.temp.type = base_type;
-      loop->temp_ss->string_length = dest->string_length;
-      loop->temp_ss->data.temp.dimen = loop->dimen;
+      loop->temp_ss = gfc_get_temp_ss (base_type, dest->string_length,
+				       loop->dimen);
       loop->temp_ss->data.temp.codimen = loop->codimen;
-      loop->temp_ss->next = gfc_ss_terminator;
       gfc_add_ss_to_loop (loop, loop->temp_ss);
     }
   else
@@ -5874,21 +5888,15 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
   if (need_tmp)
     {
-      /* Tell the scalarizer to make a temporary.  */
-      loop.temp_ss = gfc_get_ss ();
-      loop.temp_ss->type = GFC_SS_TEMP;
-      loop.temp_ss->next = gfc_ss_terminator;
-
-      if (expr->ts.type == BT_CHARACTER
-	    && !expr->ts.u.cl->backend_decl)
+      if (expr->ts.type == BT_CHARACTER && !expr->ts.u.cl->backend_decl)
 	get_array_charlen (expr, se);
 
-      loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
-
-      if (expr->ts.type == BT_CHARACTER)
-	loop.temp_ss->string_length = expr->ts.u.cl->backend_decl;
-      else
-	loop.temp_ss->string_length = NULL;
+      /* Tell the scalarizer to make a temporary.  */
+      loop.temp_ss = gfc_get_temp_ss (gfc_typenode_for_spec (&expr->ts),
+				      ((expr->ts.type == BT_CHARACTER)
+				       ? expr->ts.u.cl->backend_decl
+				       : NULL),
+				      loop.dimen);
 
       se->string_length = loop.temp_ss->string_length;
       loop.temp_ss->data.temp.dimen = loop.dimen;

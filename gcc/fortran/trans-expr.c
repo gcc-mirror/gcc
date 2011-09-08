@@ -2395,18 +2395,12 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
 		|| GFC_DESCRIPTOR_TYPE_P (base_type))
     base_type = gfc_get_element_type (base_type);
 
-  loop.temp_ss = gfc_get_ss ();;
-  loop.temp_ss->type = GFC_SS_TEMP;
-  loop.temp_ss->data.temp.type = base_type;
-
-  if (expr->ts.type == BT_CHARACTER)
-    loop.temp_ss->string_length = expr->ts.u.cl->backend_decl;
-  else
-    loop.temp_ss->string_length = NULL;
+  loop.temp_ss = gfc_get_temp_ss (base_type, ((expr->ts.type == BT_CHARACTER)
+					      ? expr->ts.u.cl->backend_decl
+					      : NULL),
+				  loop.dimen);
 
   parmse->string_length = loop.temp_ss->string_length;
-  loop.temp_ss->data.temp.dimen = loop.dimen;
-  loop.temp_ss->next = gfc_ss_terminator;
 
   /* Associate the SS with the loop.  */
   gfc_add_ss_to_loop (&loop, loop.temp_ss);
