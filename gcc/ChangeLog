@@ -1,3 +1,9 @@
+2011-09-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/arm/arm.md (push_multi): Emit predicates.
+	(push_fp_multi): Likewise.
+	* config/arm/arm.c (vfp_output_fstmd): Likewise.
+
 2011-09-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/33255 - Support -Wunused-local-typedefs warning

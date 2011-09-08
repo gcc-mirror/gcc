@@ -13084,7 +13084,7 @@ vfp_output_fstmd (rtx * operands)
   int base;
   int i;
 
-  strcpy (pattern, "fstmfdd\t%m0!, {%P1");
+  strcpy (pattern, "fstmfdd%?\t%m0!, {%P1");
   p = strlen (pattern);
 
   gcc_assert (GET_CODE (operands[1]) == REG);
