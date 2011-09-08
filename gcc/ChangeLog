@@ -1,3 +1,8 @@
+2011-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (standard_sse_constant_p): Handle AVX2 modes.
+	(standard_sse_constant_opcode) <case 2>: Change vpcmpeqd template.
+
 2011-09-08  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/arm/arm.md (push_multi): Emit predicates.
@@ -8,19 +13,16 @@
 
 	PR c++/33255 - Support -Wunused-local-typedefs warning
 	* c-decl.c (lookup_name): Use the new maybe_record_typedef_use.
-    	(pushdecl): Use the new
-    	record_locally_defined_typedef.
-    	(store_parm_decls): Allocate cfun->language.
-    	(finish_function): Use the new maybe_warn_unused_local_typedefs,
-    	and free cfun->language.
-    	(c_push_function_context): Allocate cfun->language here only if
-    	needed.
-    	(c_pop_function_context): Likewise, mark cfun->language
-    	for collection only when it should be done.
-    	* c-common.c (handle_used_attribute): Don't ignore TYPE_DECL
-    	nodes.
-    	* c-typeck.c (c_expr_sizeof_type, c_cast_expr): Use the new
-    	maybe_record_local_typedef_use.
+	(pushdecl): Use the new record_locally_defined_typedef.
+	(store_parm_decls): Allocate cfun->language.
+	(finish_function): Use the new maybe_warn_unused_local_typedefs,
+	and free cfun->language.
+	(c_push_function_context): Allocate cfun->language here only if needed.
+	(c_pop_function_context): Likewise, mark cfun->language
+	for collection only when it should be done.
+	* c-common.c (handle_used_attribute): Don't ignore TYPE_DECL nodes.
+	* c-typeck.c (c_expr_sizeof_type, c_cast_expr): Use the new
+	maybe_record_local_typedef_use.
 	* doc/invoke.texi: Update documentation for
 	-Wunused-local-typedefs.
 
@@ -78,8 +80,9 @@
 
 2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
 
-	*config/darwin-driver.c (darwin_find_version_from_kernel): New routine 
-	cut from ... (darwin_default_min_version): Amended to provide defaults
+	* config/darwin-driver.c (darwin_find_version_from_kernel): New routine
+	cut from ...
+	(darwin_default_min_version): Amended to provide defaults
 	for the cross directory case.
 	(darwin_driver_init): call darwin_default_min_version unconditionally.
 	* config/darwin.h (DEF_MIN_OSX_VERSION): New.
@@ -114,8 +117,7 @@
 	(merge_overlapping_regs): Use chain_from_id.  Assert that
 	chains don't conflict with themselves.
 	(rename_chains): Take no argument.  Iterate over id_to_chain
-	rather to find chains to rename.  Clear tick before the main
-	loop.
+	rather to find chains to rename.  Clear tick before the main loop.
 	(struct incoming_reg_info): New struct.
 	(struct bb_rename_info): New struct.
 	(init_rename_info, set_incoming_from_chain, merge_chains): New
@@ -239,18 +241,15 @@
 	* hooks.c (hook_int_uint_mode_1): Likewise.
 
 	* config/i386/i386.h (ix86_tune_indices): Add
-	X86_TUNE_REASSOC_INT_TO_PARALLEL and
-	X86_TUNE_REASSOC_FP_TO_PARALLEL.
+	X86_TUNE_REASSOC_INT_TO_PARALLEL and X86_TUNE_REASSOC_FP_TO_PARALLEL.
 
 	(TARGET_REASSOC_INT_TO_PARALLEL): New.
 	(TARGET_REASSOC_FP_TO_PARALLEL): Likewise.
 
 	* config/i386/i386.c (initial_ix86_tune_features): Add
-	X86_TUNE_REASSOC_INT_TO_PARALLEL and
-	X86_TUNE_REASSOC_FP_TO_PARALLEL.
+	X86_TUNE_REASSOC_INT_TO_PARALLEL and X86_TUNE_REASSOC_FP_TO_PARALLEL.
 
-	(ix86_reassociation_width) implementation of
-	new hook for i386 target.
+	(ix86_reassociation_width): New function.
 
 	* params.def (PARAM_TREE_REASSOC_WIDTH): New param added.
 
@@ -259,12 +258,11 @@
 	(swap_ops_for_binary_stmt): Likewise.
 	(rewrite_expr_tree_parallel): Likewise.
 
-	(rewrite_expr_tree): Refactored. Part of code moved into
+	(rewrite_expr_tree): Refactored.  Part of code moved into
 	swap_ops_for_binary_stmt.
 
-	(reassociate_bb): Now checks reassociation width to be used
-	and call rewrite_expr_tree_parallel instead of rewrite_expr_tree
-	if needed.
+	(reassociate_bb): Now checks reassociation width to be used and
+	call rewrite_expr_tree_parallel instead of rewrite_expr_tree if needed.
 
 2011-09-06  Richard Guenther  <rguenther@suse.de>
 
@@ -342,8 +340,7 @@
 
 2011-09-06  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-sccvn.c (visit_use): CSE stmt pieces and simplify
-	matching.
+	* tree-ssa-sccvn.c (visit_use): CSE stmt pieces and simplify matching.
 
 2011-09-06  Tom de Vries  <tom@codesourcery.com>
 
@@ -401,11 +398,9 @@
 	* config/sparc/sparc.md: Add to "cpu" attribute.
 	* config/sparc/sparc.h (TARGET_CPU_niagara3,
 	TARGET_CPU_niagara4): New, treat as niagara2.
-	* config/sparc/linux64.h: Handle niagara3 and niagara4
-	like niagara2.
+	* config/sparc/linux64.h: Handle niagara3 and niagara4 like niagara2.
 	* config/sparc/sol2.h: Likewise.
-	* config/sparc/niagara2.md: Schedule niagara3 like
-	niagara2.
+	* config/sparc/niagara2.md: Schedule niagara3 like niagara2.
 	* config/sparc/sparc.c (sparc_option_override): Add
 	niagara3 and niagara4 handling.
 	(sparc32_initialize_trampoline): Likewise.
@@ -712,8 +707,7 @@
 	* gimple-fold.c (fold_gimple_assign): Move COND_EXPR folding.
 	* tree-object-size.c (cond_expr_object_size): Adjust.
 	(collect_object_sizes_for): Likewise.
-	* tree-scalar-evolution.c (interpret_expr): Don't handle
-	ternary RHSs.
+	* tree-scalar-evolution.c (interpret_expr): Don't handle ternary RHSs.
 	* tree-ssa-forwprop.c (forward_propagate_into_cond): Fix and simplify.
 	(ssa_forward_propagate_and_combine): Adjust.
 	* tree-ssa-loop-im.c (move_computations_stmt): Build the COND_EXPR
