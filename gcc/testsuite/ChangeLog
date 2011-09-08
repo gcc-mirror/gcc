@@ -1,3 +1,8 @@
+2011-09-08  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR tree-optimization/50318
+	* gcc.target/arm/pr50318-1.c: New file.
+
 2011-09-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/all_one_m256i.c: New test.

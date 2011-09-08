@@ -1,3 +1,9 @@
+2011-09-08  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR tree-optimization/50318
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Correct
+	typo in use of mult_rhs1 and mult_rhs2.
+
 2011-09-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (standard_sse_constant_p): Handle AVX2 modes.
