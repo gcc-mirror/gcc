@@ -1,11 +1,16 @@
+2011-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (unchecked_convert): Use a field of the right
+	precision when converting to or from an integral type whose precision
+	is not equal to its size.
+
 2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* traceback.c (Darwin) USE_GCC_UNWINDER for Darwin
-	versions >= 8.
+	* traceback.c (Darwin) USE_GCC_UNWINDER for Darwin versions >= 8.
 
 2011-09-07  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* gcc-interface/Makefile.in (darwin): Provide powerpc64 system 
+	* gcc-interface/Makefile.in (darwin): Provide powerpc64 system
 	implementation.
 	* system-darwin-ppc64.ads: New file.
 
@@ -21,7 +26,7 @@
 
 2011-09-06  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* gcc-interface/Makefile.in (x86_64 darwin arch): Adjust 
+	* gcc-interface/Makefile.in (x86_64 darwin arch): Adjust
 	LIBGNAT_TARGET_PAIRS for x86 and x86_64 variants.
 
 2011-09-06  Arnaud Charlet  <charlet@adacore.com>
