@@ -4367,18 +4367,14 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
     }
 
   /* Create a SS for the destination.  */
-  lss = gfc_get_ss ();
-  lss->type = GFC_SS_COMPONENT;
-  lss->expr = NULL;
+  lss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
+			  GFC_SS_COMPONENT);
   lss->shape = gfc_get_shape (cm->as->rank);
-  lss->next = gfc_ss_terminator;
-  lss->data.info.dimen = cm->as->rank;
   lss->data.info.descriptor = dest;
   lss->data.info.data = gfc_conv_array_data (dest);
   lss->data.info.offset = gfc_conv_array_offset (dest);
   for (n = 0; n < cm->as->rank; n++)
     {
-      lss->data.info.dim[n] = n;
       lss->data.info.start[n] = gfc_conv_array_lbound (dest, n);
       lss->data.info.stride[n] = gfc_index_one_node;
 
