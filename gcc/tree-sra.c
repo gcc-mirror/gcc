@@ -1992,13 +1992,25 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
 	  || ((root->grp_scalar_read || root->grp_assignment_read)
 	      && (root->grp_scalar_write || root->grp_assignment_write))))
     {
+      bool new_integer_type;
+      if (TREE_CODE (root->type) == ENUMERAL_TYPE)
+	{
+	  tree rt = root->type;
+	  root->type = build_nonstandard_integer_type (TYPE_PRECISION (rt),
+						       TYPE_UNSIGNED (rt));
+	  new_integer_type = true;
+	}
+      else
+	new_integer_type = false;
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Marking ");
 	  print_generic_expr (dump_file, root->base, 0);
-	  fprintf (dump_file, " offset: %u, size: %u: ",
+	  fprintf (dump_file, " offset: %u, size: %u ",
 		   (unsigned) root->offset, (unsigned) root->size);
-	  fprintf (dump_file, " to be replaced.\n");
+	  fprintf (dump_file, " to be replaced%s.\n",
+		   new_integer_type ? " with an integer": "");
 	}
 
       root->grp_to_be_replaced = 1;

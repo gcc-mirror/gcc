@@ -1,3 +1,11 @@
+2011-09-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2011-09-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/49911
+	* g++.dg/tree-ssa/pr49911.C: New test.
+
 2011-09-08  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

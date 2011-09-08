@@ -1,3 +1,12 @@
+2011-09-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2011-09-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/49911
+	* tree-sra.c (analyze_access_subtree): Change type of to-be-replaced
+	enumerations to the corresponding plain integer type.
+
 2011-09-08  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
