@@ -35,9 +35,11 @@ int ATSYM(fn_vars) (void) {
 #undef AT
 #define AT used
 
-typedef int ATSYM(type) ATTR; /* { dg-warning "attribute ignored" "" } */
+typedef int ATSYM(type) ATTR; /* used attribute is no longer
+				 ignored.  */
 
-typedef int (*ATSYM(fntype))(void) ATTR; /* { dg-warning "attribute ignored" "" } */
+typedef int (*ATSYM(fntype))(void) ATTR; /* used attribute is no
+					    longer ignored.  */
 
 struct ATSYM(struct) {
   char dummy ATTR; /* { dg-warning "attribute ignored" "" } */
