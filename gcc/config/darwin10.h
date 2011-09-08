@@ -27,3 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 "%:version-compare(>= 10.6 mmacosx-version-min= -no_compact_unwind) \
    %{!static:%{!static-libgcc: \
       %:version-compare(>= 10.6 mmacosx-version-min= -lSystem) } } %G %L"
+
+#undef DEF_MIN_OSX_VERSION
+#define DEF_MIN_OSX_VERSION "10.6"

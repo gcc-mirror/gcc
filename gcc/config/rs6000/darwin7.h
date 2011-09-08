@@ -28,3 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #define LIB_SPEC "%{!static:\
   %:version-compare(!< 10.3 mmacosx-version-min= -lmx)\
   -lSystem}"
+
+#undef DEF_MIN_OSX_VERSION
+#define DEF_MIN_OSX_VERSION "10.3.9"

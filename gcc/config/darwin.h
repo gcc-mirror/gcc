@@ -945,4 +945,8 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
 
+/* When building cross-compilers (and native crosses) we shall default to 
+   providing an osx-version-min of this unless overridden by the User.  */
+#define DEF_MIN_OSX_VERSION "10.4"
+
 #endif /* CONFIG_DARWIN_H */
