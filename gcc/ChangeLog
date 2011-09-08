@@ -1,3 +1,14 @@
+2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
+
+	*config/darwin-driver.c (darwin_find_version_from_kernel): New routine 
+	cut from ... (darwin_default_min_version): Amended to provide defaults
+	for the cross directory case.
+	(darwin_driver_init): call darwin_default_min_version unconditionally.
+	* config/darwin.h (DEF_MIN_OSX_VERSION): New.
+	* config/darwin9.h: Likewise.
+	* config/darwin10.h: Likewise.
+	* config/rs6000/darwin7.h: Likewise.
+
 2011-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50310
