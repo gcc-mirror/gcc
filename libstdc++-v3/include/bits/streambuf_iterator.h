@@ -51,7 +51,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
-		      _CharT*, _CharT&>
+                      _CharT*,
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    // LWG 445.
+		      _CharT>
+#else
+		      _CharT&>
+#endif
     {
     public:
       // Types:
