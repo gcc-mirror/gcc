@@ -1,5 +1,16 @@
 2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.h (gfc_get_scalar_ss): New prototype.
+	* trans-array.c (gfc_get_scalar_ss): New function.
+	(gfc_walk_variable_expr, gfc_walk_op_expr,
+	gfc_walk_elemental_function_args): Re-use gfc_get_scalar_ss.
+	* trans-expr.c (gfc_trans_subarray_assign): Ditto.
+	(gfc_trans_assignment_1): Ditto.
+	* trans-stmt.c (compute_inner_temp_size, gfc_trans_where_assign,
+	gfc_trans_where_3): Ditto.
+
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.h (gfc_get_temp_ss): New prototype.
 	* trans-array.c (gfc_get_temp_ss): New function.
 	(gfc_conv_resolve_dependencies): Re-use gfc_get_temp_ss.

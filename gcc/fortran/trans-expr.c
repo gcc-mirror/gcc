@@ -4352,13 +4352,8 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   /* Walk the rhs.  */
   rss = gfc_walk_expr (expr);
   if (rss == gfc_ss_terminator)
-    {
-      /* The rhs is scalar.  Add a ss for the expression.  */
-      rss = gfc_get_ss ();
-      rss->next = gfc_ss_terminator;
-      rss->type = GFC_SS_SCALAR;
-      rss->expr = expr;
-    }
+    /* The rhs is scalar.  Add a ss for the expression.  */
+    rss = gfc_get_scalar_ss (gfc_ss_terminator, expr);
 
   /* Create a SS for the destination.  */
   lss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
@@ -6158,13 +6153,9 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       /* Walk the rhs.  */
       rss = gfc_walk_expr (expr2);
       if (rss == gfc_ss_terminator)
-	{
-	  /* The rhs is scalar.  Add a ss for the expression.  */
-	  rss = gfc_get_ss ();
-	  rss->next = gfc_ss_terminator;
-	  rss->type = GFC_SS_SCALAR;
-	  rss->expr = expr2;
-	}
+	/* The rhs is scalar.  Add a ss for the expression.  */
+	rss = gfc_get_scalar_ss (gfc_ss_terminator, expr2);
+
       /* Associate the SS with the loop.  */
       gfc_add_ss_to_loop (&loop, lss);
       gfc_add_ss_to_loop (&loop, rss);
