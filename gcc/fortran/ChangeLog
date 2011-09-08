@@ -1,5 +1,13 @@
 2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c (gfc_trans_constant_array_constructor): Remove
+	superfluous initialisation of DIM field.
+	(gfc_trans_array_constructor): Assert that DIMEN field is properly set.
+	(gfc_conv_expr_descriptor): Ditto.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.h (gfc_get_scalar_ss): New prototype.
 	* trans-array.c (gfc_get_scalar_ss): New function.
 	(gfc_walk_variable_expr, gfc_walk_op_expr,
