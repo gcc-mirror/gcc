@@ -868,6 +868,13 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      && TYPE_NAME (type)
 	      && TYPE_IDENTIFIER (type))
 	    set_identifier_type_value (DECL_NAME (x), x);
+
+	  /* If this is a locally defined typedef in a function that
+	     is not a template instantation, record it to implement
+	     -Wunused-local-typedefs.  */
+	  if (current_instantiation () == NULL
+	      || (current_instantiation ()->decl != current_function_decl))
+	  record_locally_defined_typedef (x);
 	}
 
       /* Multiple external decls of the same identifier ought to match.

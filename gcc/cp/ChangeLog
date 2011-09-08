@@ -1,3 +1,13 @@
+2011-09-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/33255 - Support -Wunused-local-typedefs warning
+	* name-lookup.c (pushdecl_maybe_friend_1): Use the new
+	record_locally_defined_typedef.
+    	* decl.c (finish_function): Use the new
+    	maybe_warn_unused_local_typedefs.
+    	(grokfield): Use the new record_locally_defined_typedef.
+	* parser.c (lookup_name): Use the new maybe_record_typedef_use.
+
 2011-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50309

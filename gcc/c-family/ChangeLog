@@ -1,3 +1,15 @@
+2011-09-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/33255 - Support -Wunused-local-typedefs warning
+	* c-common.h (struct c_language_function::local_typedefs): New
+	field.
+    	(record_locally_defined_typedef, maybe_record_typedef_use)
+    	(maybe_warn_unused_local_typedefs): Declare new functions.
+	* c-common.c (record_locally_defined_typedef)
+    	(maybe_record_typedef_use)
+    	(maybe_warn_unused_local_typedefs): Define new functions.
+	* c.opt: Declare new -Wunused-local-typedefs flag.
+
 2011-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/50266

@@ -268,8 +268,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
--Wunused-label  -Wunused-parameter -Wno-unused-result -Wunused-value @gol
--Wunused-variable -Wunused-but-set-parameter -Wunused-but-set-variable @gol
+-Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
+-Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
+-Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wvariadic-macros -Wvla -Wvolatile-register-var  -Wwrite-strings}
 
 @item C and Objective-C-only Warning Options
@@ -3500,6 +3501,10 @@ This warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
+
+@item -Wunused-local-typedefs @r{(C, Objective-C, C++ and Objective-C++ only)}
+@opindex Wunused-local-typedefs
+Warn when a typedef locally defined in a function is not used.
 
 @item -Wunused-parameter
 @opindex Wunused-parameter

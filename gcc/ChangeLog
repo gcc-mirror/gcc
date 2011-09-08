@@ -1,3 +1,23 @@
+2011-09-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/33255 - Support -Wunused-local-typedefs warning
+	* c-decl.c (lookup_name): Use the new maybe_record_typedef_use.
+    	(pushdecl): Use the new
+    	record_locally_defined_typedef.
+    	(store_parm_decls): Allocate cfun->language.
+    	(finish_function): Use the new maybe_warn_unused_local_typedefs,
+    	and free cfun->language.
+    	(c_push_function_context): Allocate cfun->language here only if
+    	needed.
+    	(c_pop_function_context): Likewise, mark cfun->language
+    	for collection only when it should be done.
+    	* c-common.c (handle_used_attribute): Don't ignore TYPE_DECL
+    	nodes.
+    	* c-typeck.c (c_expr_sizeof_type, c_cast_expr): Use the new
+    	maybe_record_local_typedef_use.
+	* doc/invoke.texi: Update documentation for
+	-Wunused-local-typedefs.
+
 2011-09-08  Enkovich Ilya  <ilya.enkovich@intel.com>
 
 	* config/i386/i386-protos.h (ix86_lea_outperforms): New.
