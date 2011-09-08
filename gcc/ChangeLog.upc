@@ -1,3 +1,7 @@
+2011-09-08  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 178557 into gupc branch.
+
 2011-09-07  Gary Funck  <gary@intrepid.com>
 
 	Ensure that UPC pointer-to-shared type alignment is

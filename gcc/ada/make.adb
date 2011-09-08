@@ -671,7 +671,12 @@ package body Make is
    -- Compiler, Binder & Linker Data and Subprograms --
    ----------------------------------------------------
 
-   Gcc      : String_Access := Program_Name ("gcc", "gnatmake");
+   Gcc          : String_Access := Program_Name ("gcc", "gnatmake");
+   Original_Gcc : constant String_Access := Gcc;
+   --  Original_Gcc is used to check if Gcc has been modified by a switch
+   --  --GCC=, so that for VM platforms, it is not modified again, as it can
+   --  result in incorrect error messages if the compiler cannot be found.
+
    Gnatbind : String_Access := Program_Name ("gnatbind", "gnatmake");
    Gnatlink : String_Access := Program_Name ("gnatlink", "gnatmake");
    --  Default compiler, binder, linker programs
@@ -5908,7 +5913,7 @@ package body Make is
          --  are not supposed to change.
 
          Osint.Source_File_Data (Cache => True);
-         Osint.Add_Default_Search_Dirs;
+
          Queue_Library_Project_Sources;
       end if;
 
@@ -5929,40 +5934,6 @@ package body Make is
       then
          Make_Failed
            ("nothing to do for a main project that is externally built");
-      end if;
-
-      --  Get the target parameters, which are only needed for a couple of
-      --  cases in gnatmake. Protect against an exception, such as the case of
-      --  system.ads missing from the library, and fail gracefully.
-
-      begin
-         Targparm.Get_Target_Parameters;
-      exception
-         when Unrecoverable_Error =>
-            Make_Failed ("*** make failed.");
-      end;
-
-      --  Special processing for VM targets
-
-      if Targparm.VM_Target /= No_VM then
-
-         --  Set proper processing commands
-
-         case Targparm.VM_Target is
-            when Targparm.JVM_Target =>
-
-               --  Do not check for an object file (".o") when compiling to
-               --  JVM machine since ".class" files are generated instead.
-
-               Check_Object_Consistency := False;
-               Gcc := new String'("jvm-gnatcompile");
-
-            when Targparm.CLI_Target =>
-               Gcc := new String'("dotnet-gnatcompile");
-
-            when Targparm.No_VM =>
-               raise Program_Error;
-         end case;
       end if;
 
       --  If no project file is used, we just put the gcc switches
@@ -6006,58 +5977,6 @@ package body Make is
       if Saved_Gnatlink /= null then
          Gnatlink := Saved_Gnatlink;
       end if;
-
-      Gcc_Path       := GNAT.OS_Lib.Locate_Exec_On_Path (Gcc.all);
-      Gnatbind_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);
-      Gnatlink_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatlink.all);
-
-      --  If we have specified -j switch both from the project file
-      --  and on the command line, the one from the command line takes
-      --  precedence.
-
-      if Saved_Maximum_Processes = 0 then
-         Saved_Maximum_Processes := Maximum_Processes;
-      end if;
-
-      if Debug.Debug_Flag_M then
-         Write_Line ("Maximum number of simultaneous compilations =" &
-                     Saved_Maximum_Processes'Img);
-      end if;
-
-      --  Allocate as many temporary mapping file names as the maximum number
-      --  of compilations processed, for each possible project.
-
-      declare
-         Data : Project_Compilation_Access;
-         Proj : Project_List;
-
-      begin
-         Proj := Project_Tree.Projects;
-         while Proj /= null loop
-            Data := new Project_Compilation_Data'
-              (Mapping_File_Names        => new Temp_Path_Names
-                                              (1 .. Saved_Maximum_Processes),
-               Last_Mapping_File_Names   => 0,
-               Free_Mapping_File_Indexes => new Free_File_Indexes
-                                              (1 .. Saved_Maximum_Processes),
-               Last_Free_Indexes         => 0);
-
-            Project_Compilation_Htable.Set
-              (Project_Compilation, Proj.Project, Data);
-            Proj := Proj.Next;
-         end loop;
-
-         Data := new Project_Compilation_Data'
-           (Mapping_File_Names        => new Temp_Path_Names
-                                           (1 .. Saved_Maximum_Processes),
-            Last_Mapping_File_Names   => 0,
-            Free_Mapping_File_Indexes => new Free_File_Indexes
-                                           (1 .. Saved_Maximum_Processes),
-            Last_Free_Indexes         => 0);
-
-         Project_Compilation_Htable.Set
-           (Project_Compilation, No_Project, Data);
-      end;
 
       Bad_Compilation.Init;
 
@@ -6116,7 +6035,114 @@ package body Make is
             Compute_Builder  => Is_First_Main,
             Current_Work_Dir => Current_Work_Dir.all);
 
-         Is_First_Main := False;
+         if Is_First_Main then
+
+            --  Put the default source dirs in the source path only now, so
+            --  that we take the correct ones in the case where --RTS= is
+            --  specified in the Builder switches.
+
+            Osint.Add_Default_Search_Dirs;
+
+            --  Get the target parameters, which are only needed for a couple
+            --  of cases in gnatmake. Protect against an exception, such as the
+            --  case of system.ads missing from the library, and fail
+            --  gracefully.
+
+            begin
+               Targparm.Get_Target_Parameters;
+            exception
+               when Unrecoverable_Error =>
+                  Make_Failed ("*** make failed.");
+            end;
+
+            --  Special processing for VM targets
+
+            if Targparm.VM_Target /= No_VM then
+
+               --  Set proper processing commands
+
+               case Targparm.VM_Target is
+                  when Targparm.JVM_Target =>
+
+                     --  Do not check for an object file (".o") when compiling
+                     --  to JVM machine since ".class" files are generated
+                     --  instead.
+
+                     Check_Object_Consistency := False;
+
+                     --  Do not modify Gcc is --GCC= was specified
+
+                     if Gcc = Original_Gcc then
+                        Gcc := new String'("jvm-gnatcompile");
+                     end if;
+
+                  when Targparm.CLI_Target =>
+                     --  Do not modify Gcc is --GCC= was specified
+
+                     if Gcc = Original_Gcc then
+                        Gcc := new String'("dotnet-gnatcompile");
+                     end if;
+
+                  when Targparm.No_VM =>
+                     raise Program_Error;
+               end case;
+            end if;
+
+            Gcc_Path       := GNAT.OS_Lib.Locate_Exec_On_Path (Gcc.all);
+            Gnatbind_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);
+            Gnatlink_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatlink.all);
+
+            --  If we have specified -j switch both from the project file
+            --  and on the command line, the one from the command line takes
+            --  precedence.
+
+            if Saved_Maximum_Processes = 0 then
+               Saved_Maximum_Processes := Maximum_Processes;
+            end if;
+
+            if Debug.Debug_Flag_M then
+               Write_Line ("Maximum number of simultaneous compilations =" &
+                           Saved_Maximum_Processes'Img);
+            end if;
+
+            --  Allocate as many temporary mapping file names as the maximum
+            --  number of compilations processed, for each possible project.
+
+            declare
+               Data : Project_Compilation_Access;
+               Proj : Project_List;
+
+            begin
+               Proj := Project_Tree.Projects;
+               while Proj /= null loop
+                  Data := new Project_Compilation_Data'
+                    (Mapping_File_Names        => new Temp_Path_Names
+                       (1 .. Saved_Maximum_Processes),
+                     Last_Mapping_File_Names   => 0,
+                     Free_Mapping_File_Indexes => new Free_File_Indexes
+                       (1 .. Saved_Maximum_Processes),
+                     Last_Free_Indexes         => 0);
+
+                  Project_Compilation_Htable.Set
+                    (Project_Compilation, Proj.Project, Data);
+                  Proj := Proj.Next;
+               end loop;
+
+               Data := new Project_Compilation_Data'
+                 (Mapping_File_Names        => new Temp_Path_Names
+                    (1 .. Saved_Maximum_Processes),
+                  Last_Mapping_File_Names   => 0,
+                  Free_Mapping_File_Indexes => new Free_File_Indexes
+                    (1 .. Saved_Maximum_Processes),
+                  Last_Free_Indexes         => 0);
+
+               Project_Compilation_Htable.Set
+                 (Project_Compilation, No_Project, Data);
+            end;
+
+            Is_First_Main := False;
+         end if;
+
          Executable_Obsolete := False;
 
          Compute_Executable
@@ -6609,7 +6635,7 @@ package body Make is
          Add_Object_Directories (Main_Project, Project_Tree);
 
          Recursive_Compute_Depth (Main_Project);
-         Compute_All_Imported_Projects (Project_Tree);
+         Compute_All_Imported_Projects (Main_Project, Project_Tree);
 
       else
 
@@ -7361,15 +7387,15 @@ package body Make is
 
          end if;
 
-      --  Then check if we are dealing with -cargs/-bargs/-largs/-margs
+      --  Then check if we are dealing with -cargs/-bargs/-largs/-margs. These
+      --  options are taken as is when found in package Compiler, Binder or
+      --  Linker of the main project file.
 
-      elsif Argv = "-bargs"
-              or else
-            Argv = "-cargs"
-              or else
-            Argv = "-largs"
-              or else
-            Argv = "-margs"
+      elsif (And_Save or else Program_Args = None)
+        and then (Argv = "-bargs" or else
+                  Argv = "-cargs" or else
+                  Argv = "-largs" or else
+                  Argv = "-margs")
       then
          case Argv (2) is
             when 'c' => Program_Args := Compiler;

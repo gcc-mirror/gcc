@@ -56,6 +56,26 @@
 #include <avxintrin.h>
 #endif
 
+#ifdef __AVX2__
+#include <avx2intrin.h>
+#endif
+
+#ifdef __LZCNT__
+#include <lzcntintrin.h>
+#endif
+
+#ifdef __BMI__
+#include <bmiintrin.h>
+#endif
+
+#ifdef __BMI2__
+#include <bmi2intrin.h>
+#endif
+
+#ifdef __FMA__
+#include <fmaintrin.h>
+#endif
+
 #ifdef __RDRND__
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

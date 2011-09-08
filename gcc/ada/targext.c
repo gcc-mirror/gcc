@@ -31,7 +31,9 @@
 
 /*  This file contains target-specific parameters describing the file
     extension for object and executable files.  It is used by the compiler,
-    binder and tools.  */
+    binder, library and tools.
+    Note that, in order to have access to the TARGET_* macros used below,
+    the file must be compiled with IN_GCC defined, even for the library.  */
 
 #ifdef __cplusplus
 extern "C" {

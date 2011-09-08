@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ pragma Compiler_Unit;
 
 with System.Soft_Links;
 with System.Parameters;
+
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
@@ -44,7 +45,7 @@ package body System.Secondary_Stack is
    use type System.Parameters.Size_Type;
 
    SS_Ratio_Dynamic : constant Boolean :=
-                        Parameters.Sec_Stack_Ratio = Parameters.Dynamic;
+                        Parameters.Sec_Stack_Percentage = Parameters.Dynamic;
    --  There are two entirely different implementations of the secondary
    --  stack mechanism in this unit, and this Boolean is used to select
    --  between them (at compile time, so the generated code will contain

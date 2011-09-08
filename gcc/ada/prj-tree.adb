@@ -144,9 +144,9 @@ package body Prj.Tree is
 
             --  Create new N_Comment node
 
-            if (Where = After or else Where = After_End) and then
-              Token /= Tok_EOF and then
-              Comments.Table (J).Follows_Empty_Line
+            if (Where = After or else Where = After_End)
+              and then Token /= Tok_EOF
+              and then Comments.Table (J).Follows_Empty_Line
             then
                Comments.Table (1 .. Comments.Last - J + 1) :=
                  Comments.Table (J .. Comments.Last);

@@ -85,8 +85,6 @@ struct du_head
   /* Conflicts with untracked hard registers.  */
   HARD_REG_SET hard_conflicts;
 
-  /* Nonzero if the chain is finished; zero if it is still open.  */
-  unsigned int terminated:1;
   /* Nonzero if the chain crosses a call.  */
   unsigned int need_caller_save_reg:1;
   /* Nonzero if the register is used in a way that prevents renaming,
@@ -132,22 +130,62 @@ static const char * const scan_actions_name[] =
   "mark_access"
 };
 
+/* TICK and THIS_TICK are used to record the last time we saw each
+   register.  */
+static int tick[FIRST_PSEUDO_REGISTER];
+static int this_tick = 0;
+
 static struct obstack rename_obstack;
 
 static void do_replace (struct du_head *, int);
-static void scan_rtx_reg (rtx, rtx *, enum reg_class,
-			  enum scan_actions, enum op_type);
-static void scan_rtx_address (rtx, rtx *, enum reg_class,
-			      enum scan_actions, enum machine_mode);
 static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
 		      enum op_type);
-static struct du_head *build_def_use (basic_block);
-static void dump_def_use_chain (struct du_head *);
 
 typedef struct du_head *du_head_p;
 DEF_VEC_P (du_head_p);
 DEF_VEC_ALLOC_P (du_head_p, heap);
+
+/* The id to be given to the next opened chain.  */
+static unsigned current_id;
+
+/* A mapping of unique id numbers to chains.  */
 static VEC(du_head_p, heap) *id_to_chain;
+
+/* List of currently open chains, and closed chains that can be renamed.  */
+static struct du_head *open_chains;
+static struct du_head *closed_chains;
+
+/* Bitmap of open chains.  The bits set always match the list found in
+   open_chains.  */
+static bitmap_head open_chains_set;
+
+/* Record the registers being tracked in open_chains.  */
+static HARD_REG_SET live_in_chains;
+
+/* Record the registers that are live but not tracked.  The intersection
+   between this and live_in_chains is empty.  */
+static HARD_REG_SET live_hard_regs;
+
+/* Dump all def/use chains in CHAINS to DUMP_FILE.  */
+
+static void
+dump_def_use_chain (struct du_head *head)
+{
+  while (head)
+    {
+      struct du_chain *this_du = head->first;
+      fprintf (dump_file, "Register %s (%d):",
+	       reg_names[head->regno], head->nregs);
+      while (this_du)
+	{
+	  fprintf (dump_file, " %d [%s]", INSN_UID (this_du->insn),
+		   reg_class_names[this_du->cl]);
+	  this_du = this_du->next_use;
+	}
+      fprintf (dump_file, "\n");
+      head = head->next_chain;
+    }
+}
 
 static void
 free_chain_data (void)
@@ -158,6 +196,84 @@ free_chain_data (void)
     bitmap_clear (&ptr->conflicts);
 
   VEC_free (du_head_p, heap, id_to_chain);
+}
+
+/* Walk all chains starting with CHAINS and record that they conflict with
+   another chain whose id is ID.  */
+
+static void
+mark_conflict (struct du_head *chains, unsigned id)
+{
+  while (chains)
+    {
+      bitmap_set_bit (&chains->conflicts, id);
+      chains = chains->next_chain;
+    }
+}
+
+/* Create a new chain for THIS_NREGS registers starting at THIS_REGNO,
+   and record its occurrence in *LOC, which is being written to in INSN.
+   This access requires a register of class CL.  */
+
+static void
+create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
+		  rtx insn, enum reg_class cl)
+{
+  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
+  struct du_chain *this_du;
+  int nregs;
+
+  head->next_chain = open_chains;
+  open_chains = head;
+  head->regno = this_regno;
+  head->nregs = this_nregs;
+  head->need_caller_save_reg = 0;
+  head->cannot_rename = 0;
+
+  VEC_safe_push (du_head_p, heap, id_to_chain, head);
+  head->id = current_id++;
+
+  bitmap_initialize (&head->conflicts, &bitmap_default_obstack);
+  bitmap_copy (&head->conflicts, &open_chains_set);
+  mark_conflict (open_chains, head->id);
+
+  /* Since we're tracking this as a chain now, remove it from the
+     list of conflicting live hard registers and track it in
+     live_in_chains instead.  */
+  nregs = head->nregs;
+  while (nregs-- > 0)
+    {
+      SET_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+      CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+    }
+
+  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
+  bitmap_set_bit (&open_chains_set, head->id);
+
+  open_chains = head;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Creating chain %s (%d)",
+	       reg_names[head->regno], head->id);
+      if (insn != NULL_RTX)
+	fprintf (dump_file, " at insn %d", INSN_UID (insn));
+      fprintf (dump_file, "\n");
+    }
+
+  if (insn == NULL_RTX)
+    {
+      head->first = head->last = NULL;
+      return;
+    }
+
+  this_du = XOBNEW (&rename_obstack, struct du_chain);
+  head->first = head->last = this_du;
+
+  this_du->next_use = 0;
+  this_du->loc = loc;
+  this_du->insn = insn;
+  this_du->cl = cl;
 }
 
 /* For a def-use chain HEAD, find which registers overlap its lifetime and
@@ -225,206 +341,151 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
   return true;
 }
 
-/* Perform register renaming on the current function.  */
-
-static unsigned int
-regrename_optimize (void)
+/* Process the closed chains starting with ALL_CHAINS and rename
+   registers if possible.  */
+static void
+rename_chains (du_head_p all_chains)
 {
-  int tick[FIRST_PSEUDO_REGISTER];
-  int this_tick = 0;
-  basic_block bb;
-  char *first_obj;
+  HARD_REG_SET unavailable;
 
-  df_set_flags (DF_LR_RUN_DCE);
-  df_note_add_problem ();
-  df_analyze ();
-  df_set_flags (DF_DEFER_INSN_RESCAN);
-
-  memset (tick, 0, sizeof tick);
-
-  gcc_obstack_init (&rename_obstack);
-  first_obj = XOBNEWVAR (&rename_obstack, char, 0);
-
-  FOR_EACH_BB (bb)
+  CLEAR_HARD_REG_SET (unavailable);
+  /* Don't clobber traceback for noreturn functions.  */
+  if (frame_pointer_needed)
     {
-      struct du_head *all_chains = 0;
-      HARD_REG_SET unavailable;
-#if 0
-      HARD_REG_SET regs_seen;
-      CLEAR_HARD_REG_SET (regs_seen);
-#endif
-
-      id_to_chain = VEC_alloc (du_head_p, heap, 0);
-
-      CLEAR_HARD_REG_SET (unavailable);
-
-      if (dump_file)
-	fprintf (dump_file, "\nBasic block %d:\n", bb->index);
-
-      all_chains = build_def_use (bb);
-
-      if (dump_file)
-	dump_def_use_chain (all_chains);
-
-      CLEAR_HARD_REG_SET (unavailable);
-      /* Don't clobber traceback for noreturn functions.  */
-      if (frame_pointer_needed)
-	{
-	  add_to_hard_reg_set (&unavailable, Pmode, FRAME_POINTER_REGNUM);
+      add_to_hard_reg_set (&unavailable, Pmode, FRAME_POINTER_REGNUM);
 #if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-	  add_to_hard_reg_set (&unavailable, Pmode, HARD_FRAME_POINTER_REGNUM);
+      add_to_hard_reg_set (&unavailable, Pmode, HARD_FRAME_POINTER_REGNUM);
 #endif
-	}
-
-      while (all_chains)
-	{
-	  int new_reg, best_new_reg, best_nregs;
-	  int n_uses;
-	  struct du_head *this_head = all_chains;
-	  struct du_chain *tmp;
-	  HARD_REG_SET this_unavailable;
-	  int reg = this_head->regno;
-	  int pass;
-	  enum reg_class super_class = NO_REGS;
-	  enum reg_class preferred_class;
-	  bool has_preferred_class;
-
-	  all_chains = this_head->next_chain;
-
-	  if (this_head->cannot_rename)
-	    continue;
-
-	  best_new_reg = reg;
-	  best_nregs = this_head->nregs;
-
-#if 0 /* This just disables optimization opportunities.  */
-	  /* Only rename once we've seen the reg more than once.  */
-	  if (! TEST_HARD_REG_BIT (regs_seen, reg))
-	    {
-	      SET_HARD_REG_BIT (regs_seen, reg);
-	      continue;
-	    }
-#endif
-
-	  if (fixed_regs[reg] || global_regs[reg]
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-	      || (frame_pointer_needed && reg == HARD_FRAME_POINTER_REGNUM)
-#else
-	      || (frame_pointer_needed && reg == FRAME_POINTER_REGNUM)
-#endif
-	      )
-	    continue;
-
-	  COPY_HARD_REG_SET (this_unavailable, unavailable);
-
-	  /* Iterate over elements in the chain in order to:
-	     1. Count number of uses, and narrow the set of registers we can
-		use for renaming.
-	     2. Compute the superunion of register classes in this chain.  */
-	  n_uses = 0;
-	  super_class = NO_REGS;
-	  for (tmp = this_head->first; tmp; tmp = tmp->next_use)
-	    {
-	      if (DEBUG_INSN_P (tmp->insn))
-		continue;
-	      n_uses++;
-	      IOR_COMPL_HARD_REG_SET (this_unavailable,
-				      reg_class_contents[tmp->cl]);
-	      super_class
-		= reg_class_superunion[(int) super_class][(int) tmp->cl];
-	    }
-
-	  if (n_uses < 2)
-	    continue;
-
-	  /* Further narrow the set of registers we can use for renaming.
-	     If the chain needs a call-saved register, mark the call-used
-	     registers as unavailable.  */
-	  if (this_head->need_caller_save_reg)
-	    IOR_HARD_REG_SET (this_unavailable, call_used_reg_set);
-
-	  /* And mark registers that overlap its lifetime as unavailable.  */
-	  merge_overlapping_regs (&this_unavailable, this_head);
-
-	  /* Compute preferred rename class of super union of all the classes
-	     in the chain.  */
-	  preferred_class
-	    = (enum reg_class) targetm.preferred_rename_class (super_class);
-
-	  /* If PREFERRED_CLASS is not NO_REGS, we iterate in the first pass
-	     over registers that belong to PREFERRED_CLASS and try to find the
-	     best register within the class.  If that failed, we iterate in
-	     the second pass over registers that don't belong to the class.
-	     If PREFERRED_CLASS is NO_REGS, we iterate over all registers in
-	     ascending order without any preference.  */
-	  has_preferred_class = (preferred_class != NO_REGS);
-	  for (pass = (has_preferred_class ? 0 : 1); pass < 2; pass++)
-	    {
-	      for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
-		{
-		  if (has_preferred_class
-		      && (pass == 0)
-			 != TEST_HARD_REG_BIT
-			    (reg_class_contents[preferred_class], new_reg))
-		    continue;
-
-		  /* In the first pass, we force the renaming of registers that
-		     don't belong to PREFERRED_CLASS to registers that do, even
-		     though the latters were used not very long ago.  */
-		  if (check_new_reg_p (reg, new_reg, this_head,
-				       this_unavailable)
-		      && ((pass == 0
-			   && !TEST_HARD_REG_BIT
-			       (reg_class_contents[preferred_class],
-			        best_new_reg))
-			  || tick[best_new_reg] > tick[new_reg]))
-		    {
-		      enum machine_mode mode
-			= GET_MODE (*this_head->first->loc);
-		      best_new_reg = new_reg;
-		      best_nregs = hard_regno_nregs[new_reg][mode];
-		    }
-		}
-	      if (pass == 0 && best_new_reg != reg)
-		break;
-	    }
-
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Register %s in insn %d",
-		       reg_names[reg], INSN_UID (this_head->first->insn));
-	      if (this_head->need_caller_save_reg)
-		fprintf (dump_file, " crosses a call");
-	    }
-
-	  if (best_new_reg == reg)
-	    {
-	      tick[reg] = ++this_tick;
-	      if (dump_file)
-		fprintf (dump_file, "; no available better choice\n");
-	      continue;
-	    }
-
-	  if (dump_file)
-	    fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
-
-	  do_replace (this_head, best_new_reg);
-	  this_head->regno = best_new_reg;
-	  this_head->nregs = best_nregs;
-	  tick[best_new_reg] = ++this_tick;
-	  df_set_regs_ever_live (best_new_reg, true);
-	}
-
-      free_chain_data ();
-      obstack_free (&rename_obstack, first_obj);
     }
 
-  obstack_free (&rename_obstack, NULL);
+  while (all_chains)
+    {
+      int new_reg, best_new_reg, best_nregs;
+      int n_uses;
+      struct du_head *this_head = all_chains;
+      struct du_chain *tmp;
+      HARD_REG_SET this_unavailable;
+      int reg = this_head->regno;
+      int pass;
+      enum reg_class super_class = NO_REGS;
+      enum reg_class preferred_class;
+      bool has_preferred_class;
 
-  if (dump_file)
-    fputc ('\n', dump_file);
+      all_chains = this_head->next_chain;
 
-  return 0;
+      if (this_head->cannot_rename)
+	continue;
+
+      best_new_reg = reg;
+      best_nregs = this_head->nregs;
+
+      if (fixed_regs[reg] || global_regs[reg]
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
+	  || (frame_pointer_needed && reg == HARD_FRAME_POINTER_REGNUM)
+#else
+	  || (frame_pointer_needed && reg == FRAME_POINTER_REGNUM)
+#endif
+	  )
+	continue;
+
+      COPY_HARD_REG_SET (this_unavailable, unavailable);
+
+      /* Iterate over elements in the chain in order to:
+	 1. Count number of uses, and narrow the set of registers we can
+	    use for renaming.
+	 2. Compute the superunion of register classes in this chain.  */
+      n_uses = 0;
+      super_class = NO_REGS;
+      for (tmp = this_head->first; tmp; tmp = tmp->next_use)
+	{
+	  if (DEBUG_INSN_P (tmp->insn))
+	    continue;
+	  n_uses++;
+	  IOR_COMPL_HARD_REG_SET (this_unavailable,
+				  reg_class_contents[tmp->cl]);
+	  super_class
+	    = reg_class_superunion[(int) super_class][(int) tmp->cl];
+	}
+
+      if (n_uses < 2)
+	continue;
+
+      /* Further narrow the set of registers we can use for renaming.
+	 If the chain needs a call-saved register, mark the call-used
+	 registers as unavailable.  */
+      if (this_head->need_caller_save_reg)
+	IOR_HARD_REG_SET (this_unavailable, call_used_reg_set);
+
+      /* And mark registers that overlap its lifetime as unavailable.  */
+      merge_overlapping_regs (&this_unavailable, this_head);
+
+      /* Compute preferred rename class of super union of all the classes
+	 in the chain.  */
+      preferred_class
+	= (enum reg_class) targetm.preferred_rename_class (super_class);
+
+      /* If PREFERRED_CLASS is not NO_REGS, we iterate in the first pass
+	 over registers that belong to PREFERRED_CLASS and try to find the
+	 best register within the class.  If that failed, we iterate in
+	 the second pass over registers that don't belong to the class.
+	 If PREFERRED_CLASS is NO_REGS, we iterate over all registers in
+	 ascending order without any preference.  */
+      has_preferred_class = (preferred_class != NO_REGS);
+      for (pass = (has_preferred_class ? 0 : 1); pass < 2; pass++)
+	{
+	  for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
+	    {
+	      if (has_preferred_class
+		  && ((pass == 0) != TEST_HARD_REG_BIT
+		      (reg_class_contents[preferred_class], new_reg)))
+		continue;
+
+	      /* In the first pass, we force the renaming of registers that
+		 don't belong to PREFERRED_CLASS to registers that do, even
+		 though the latters were used not very long ago.  */
+	      if (check_new_reg_p (reg, new_reg, this_head,
+				   this_unavailable)
+		  && ((pass == 0
+		       && (!TEST_HARD_REG_BIT
+			   (reg_class_contents[preferred_class],
+			    best_new_reg)))
+		      || tick[best_new_reg] > tick[new_reg]))
+		{
+		  enum machine_mode mode
+		    = GET_MODE (*this_head->first->loc);
+		  best_new_reg = new_reg;
+		  best_nregs = hard_regno_nregs[new_reg][mode];
+		}
+	    }
+	  if (pass == 0 && best_new_reg != reg)
+	    break;
+	}
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Register %s in insn %d",
+		   reg_names[reg], INSN_UID (this_head->first->insn));
+	  if (this_head->need_caller_save_reg)
+	    fprintf (dump_file, " crosses a call");
+	}
+
+      if (best_new_reg == reg)
+	{
+	  tick[reg] = ++this_tick;
+	  if (dump_file)
+	    fprintf (dump_file, "; no available better choice\n");
+	  continue;
+	}
+
+      if (dump_file)
+	fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
+
+      do_replace (this_head, best_new_reg);
+      this_head->regno = best_new_reg;
+      this_head->nregs = best_nregs;
+      tick[best_new_reg] = ++this_tick;
+      df_set_regs_ever_live (best_new_reg, true);
+    }
 }
 
 static void
@@ -457,41 +518,10 @@ do_replace (struct du_head *head, int reg)
 }
 
 
-/* Walk all chains starting with CHAINS and record that they conflict with
-   another chain whose id is ID.  */
-
-static void
-mark_conflict (struct du_head *chains, unsigned id)
-{
-  while (chains)
-    {
-      bitmap_set_bit (&chains->conflicts, id);
-      chains = chains->next_chain;
-    }
-}
-
 /* True if we found a register with a size mismatch, which means that we
    can't track its lifetime accurately.  If so, we abort the current block
    without renaming.  */
 static bool fail_current_block;
-
-/* The id to be given to the next opened chain.  */
-static unsigned current_id;
-
-/* List of currently open chains, and closed chains that can be renamed.  */
-static struct du_head *open_chains;
-static struct du_head *closed_chains;
-
-/* Bitmap of open chains.  The bits set always match the list found in
-   open_chains.  */
-static bitmap_head open_chains_set;
-
-/* Record the registers being tracked in open_chains.  */
-static HARD_REG_SET live_in_chains;
-
-/* Record the registers that are live but not tracked.  The intersection
-   between this and live_in_chains is empty.  */
-static HARD_REG_SET live_hard_regs;
 
 /* Return true if OP is a reg for which all bits are set in PSET, false
    if all bits are clear.
@@ -553,72 +583,6 @@ note_sets_clobbers (rtx x, const_rtx set, void *data)
     add_to_hard_reg_set (&chain->hard_conflicts, GET_MODE (x), REGNO (x));
 }
 
-/* Create a new chain for THIS_NREGS registers starting at THIS_REGNO,
-   and record its occurrence in *LOC, which is being written to in INSN.
-   This access requires a register of class CL.  */
-
-static void
-create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
-		  rtx insn, enum reg_class cl)
-{
-  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
-  struct du_chain *this_du;
-  int nregs;
-
-  head->next_chain = open_chains;
-  open_chains = head;
-  head->regno = this_regno;
-  head->nregs = this_nregs;
-  head->need_caller_save_reg = 0;
-  head->cannot_rename = 0;
-  head->terminated = 0;
-
-  VEC_safe_push (du_head_p, heap, id_to_chain, head);
-  head->id = current_id++;
-
-  bitmap_initialize (&head->conflicts, &bitmap_default_obstack);
-  bitmap_copy (&head->conflicts, &open_chains_set);
-  mark_conflict (open_chains, head->id);
-
-  /* Since we're tracking this as a chain now, remove it from the
-     list of conflicting live hard registers and track it in
-     live_in_chains instead.  */
-  nregs = head->nregs;
-  while (nregs-- > 0)
-    {
-      SET_HARD_REG_BIT (live_in_chains, head->regno + nregs);
-      CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
-    }
-
-  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
-  bitmap_set_bit (&open_chains_set, head->id);
-
-  open_chains = head;
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "Creating chain %s (%d)",
-	       reg_names[head->regno], head->id);
-      if (insn != NULL_RTX)
-	fprintf (dump_file, " at insn %d", INSN_UID (insn));
-      fprintf (dump_file, "\n");
-    }
-
-  if (insn == NULL_RTX)
-    {
-      head->first = head->last = NULL;
-      return;
-    }
-
-  this_du = XOBNEW (&rename_obstack, struct du_chain);
-  head->first = head->last = this_du;
-
-  this_du->next_use = 0;
-  this_du->loc = loc;
-  this_du->insn = insn;
-  this_du->cl = cl;
-}
-
 static void
 scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	      enum op_type type)
@@ -650,7 +614,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
       int subset = (this_regno >= head->regno
 		      && this_regno + this_nregs <= head->regno + head->nregs);
 
-      if (head->terminated
+      if (!bitmap_bit_p (&open_chains_set, head->id)
 	  || head->regno + head->nregs <= this_regno
 	  || this_regno + this_nregs <= head->regno)
 	{
@@ -725,7 +689,6 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	{
 	  unsigned nregs;
 
-	  head->terminated = 1;
 	  if (subset && !superset)
 	    head->cannot_rename = 1;
 	  head->next_chain = closed_chains;
@@ -1384,29 +1347,52 @@ build_def_use (basic_block bb)
      is still open lives past the basic block, so it can't be renamed.  */
   return closed_chains;
 }
+
+/* Perform register renaming on the current function.  */
 
-/* Dump all def/use chains in CHAINS to DUMP_FILE.  They are
-   printed in reverse order as that's how we build them.  */
-
-static void
-dump_def_use_chain (struct du_head *head)
+static unsigned int
+regrename_optimize (void)
 {
-  while (head)
-    {
-      struct du_chain *this_du = head->first;
-      fprintf (dump_file, "Register %s (%d):",
-	       reg_names[head->regno], head->nregs);
-      while (this_du)
-	{
-	  fprintf (dump_file, " %d [%s]", INSN_UID (this_du->insn),
-		   reg_class_names[this_du->cl]);
-	  this_du = this_du->next_use;
-	}
-      fprintf (dump_file, "\n");
-      head = head->next_chain;
-    }
-}
+  basic_block bb;
+  char *first_obj;
 
+  df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
+  df_analyze ();
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  memset (tick, 0, sizeof tick);
+
+  gcc_obstack_init (&rename_obstack);
+  first_obj = XOBNEWVAR (&rename_obstack, char, 0);
+
+  FOR_EACH_BB (bb)
+    {
+      struct du_head *all_chains = 0;
+
+      id_to_chain = VEC_alloc (du_head_p, heap, 0);
+
+      if (dump_file)
+	fprintf (dump_file, "\nBasic block %d:\n", bb->index);
+
+      all_chains = build_def_use (bb);
+
+      if (dump_file)
+	dump_def_use_chain (all_chains);
+
+      rename_chains (all_chains);
+
+      free_chain_data ();
+      obstack_free (&rename_obstack, first_obj);
+    }
+
+  obstack_free (&rename_obstack, NULL);
+
+  if (dump_file)
+    fputc ('\n', dump_file);
+
+  return 0;
+}
 
 static bool
 gate_handle_regrename (void)

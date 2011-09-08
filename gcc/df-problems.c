@@ -3376,7 +3376,7 @@ df_note_bb_compute (unsigned int bb_index,
       while (*mws_rec)
 	{
 	  struct df_mw_hardreg *mws = *mws_rec;
-	  if ((DF_MWS_REG_DEF_P (mws))
+	  if (DF_MWS_REG_USE_P (mws)
 	      && !df_ignore_stack_reg (mws->start_regno))
 	    {
 	      bool really_add_notes = debug_insn != 0;

@@ -1241,4 +1241,17 @@ package body System.Task_Primitives.Operations is
    --  this difference is that sigwait doesn't work when some critical
    --  signals (SIGABRT, SIGPIPE) are masked.
 
+   -----------------------
+   -- Set_Task_Affinity --
+   -----------------------
+
+   procedure Set_Task_Affinity (T : ST.Task_Id) is
+      pragma Unreferenced (T);
+
+   begin
+      --  Setting task affinity is not supported by the underlying system
+
+      null;
+   end Set_Task_Affinity;
+
 end System.Task_Primitives.Operations;

@@ -1,5 +1,5 @@
 # Makefile for libada.
-#   Copyright 2003, 2004, 2009, 2010 Free Software Foundation, Inc.
+#   Copyright 2003, 2004, 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,15 +56,13 @@ LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 GCC_WARN_CFLAGS = $(LOOSE_WARN)
 WARN_CFLAGS = @warn_cflags@
 
-TARGET_LIBGCC2_CFLAGS=
+PICFLAG = @PICFLAG@
 GNATLIBCFLAGS= -g -O2
-GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -fexceptions \
+GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(PICFLAG) -fexceptions \
 	-DIN_RTS @have_getipinfo@
 
-# Get target-specific overrides for TARGET_LIBGCC2_CFLAGS.
 host_subdir = @host_subdir@
 GCC_DIR=$(MULTIBUILDTOP)../../$(host_subdir)/gcc
-include $(GCC_DIR)/libgcc.mvars
 
 target_noncanonical:=@target_noncanonical@
 version := $(shell cat $(srcdir)/../gcc/BASE-VER)
@@ -83,7 +81,7 @@ LIBADA_FLAGS_TO_PASS = \
         "GNATLIBFLAGS=$(GNATLIBFLAGS) $(MULTIFLAGS)" \
         "GNATLIBCFLAGS=$(GNATLIBCFLAGS) $(MULTIFLAGS)" \
         "GNATLIBCFLAGS_FOR_C=$(GNATLIBCFLAGS_FOR_C) $(MULTIFLAGS)" \
-        "TARGET_LIBGCC2_CFLAGS=$(TARGET_LIBGCC2_CFLAGS)" \
+        "PICFLAG_FOR_TARGET=$(PICFLAG)" \
         "THREAD_KIND=$(THREAD_KIND)" \
         "TRACE=$(TRACE)" \
         "MULTISUBDIR=$(MULTISUBDIR)" \

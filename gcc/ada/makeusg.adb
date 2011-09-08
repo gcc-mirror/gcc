@@ -26,6 +26,7 @@
 with Makeutl;
 with Osint;   use Osint;
 with Output;  use Output;
+with Switch;  use Switch;
 with Usage;
 
 procedure Makeusg is
@@ -50,6 +51,8 @@ begin
 
    Write_Str ("gnatmake switches:");
    Write_Eol;
+
+   Display_Usage_Version_And_Help;
 
    --  Line for -a
 

@@ -1097,8 +1097,9 @@ package body Exp_Ch11 is
                   --  any case this entire handling is relevant only if aborts
                   --  are allowed!
 
-               elsif Abort_Allowed then
-
+               elsif Abort_Allowed
+                 and then Exception_Mechanism /= Back_End_Exceptions
+               then
                   --  There are some special cases in which we do not do the
                   --  undefer. In particular a finalization (AT END) handler
                   --  wants to operate with aborts still deferred.
@@ -1122,7 +1123,6 @@ package body Exp_Ch11 is
                       (Others_Choice
                         and then
                           All_Others (First (Exception_Choices (Handler))))
-                    and then Abort_Allowed
                   then
                      Prepend_Call_To_Handler (RE_Abort_Undefer);
                   end if;
@@ -1665,6 +1665,19 @@ package body Exp_Ch11 is
       --  does not have a choice parameter specification, then we provide one.
 
       else
+         --  Bypass expansion to a run-time call when back-end exception
+         --  handling is active, unless the target is a VM, CodePeer or
+         --  GNATprove. In CodePeer, raising an exception is treated as an
+         --  error, while in GNATprove all code with exceptions falls outside
+         --  the subset of code which can be formally analyzed.
+
+         if VM_Target = No_VM
+           and then not CodePeer_Mode
+           and then Exception_Mechanism = Back_End_Exceptions
+         then
+            return;
+         end if;
+
          --  Find innermost enclosing exception handler (there must be one,
          --  since the semantics has already verified that this raise statement
          --  is valid, and a raise with no arguments is only permitted in the

@@ -952,23 +952,14 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
       goto bad;
     }
 
-  if (constexpr_p)
+  if (constexpr_p && !DECL_DECLARED_CONSTEXPR_P (fn))
     {
-      /* If this is a specialization of a constexpr template, we need to
-	 force the instantiation now so that we know whether or not it's
-	 really constexpr.  */
-      if (DECL_DECLARED_CONSTEXPR_P (fn) && DECL_TEMPLATE_INSTANTIATION (fn)
-	  && !DECL_TEMPLATE_INSTANTIATED (fn))
-	instantiate_decl (fn, /*defer_ok*/false, /*expl_class*/false);
-      if (!DECL_DECLARED_CONSTEXPR_P (fn))
+      *constexpr_p = false;
+      if (msg)
 	{
-	  *constexpr_p = false;
-	  if (msg)
-	    {
-	      inform (0, "defaulted constructor calls non-constexpr "
-		      "%q+D", fn);
-	      explain_invalid_constexpr_fn (fn);
-	    }
+	  inform (0, "defaulted constructor calls non-constexpr "
+		  "%q+D", fn);
+	  explain_invalid_constexpr_fn (fn);
 	}
     }
 
@@ -1196,7 +1187,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       && (!copy_arg_p || cxx_dialect < cxx0x))
     {
       if (constexpr_p && sfk == sfk_constructor)
-	*constexpr_p = synthesized_default_constructor_is_constexpr (ctype);
+	*constexpr_p = trivial_default_constructor_is_constexpr (ctype);
       return;
     }
 

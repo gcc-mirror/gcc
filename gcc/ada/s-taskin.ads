@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -375,6 +375,66 @@ package System.Tasking is
    --  terminates.
 
    ------------------------------------
+   -- Dispatching domain definitions --
+   ------------------------------------
+
+   --  We need to redefine here these types (already defined in
+   --  System.Multiprocessor.Dispatching_Domains) for avoiding circular
+   --  dependencies.
+
+   type Dispatching_Domain is
+     array (System.Multiprocessors.CPU range <>) of Boolean;
+   --  A dispatching domain needs to contain the set of processors belonging
+   --  to it. This is a processor mask where a True indicates that the
+   --  processor belongs to the dispatching domain.
+   --  Do not use the full range of CPU_Range because it would create a very
+   --  long array. This way we can use the exact range of processors available
+   --  in the system.
+
+   type Dispatching_Domain_Access is access Dispatching_Domain;
+
+   System_Domain : Dispatching_Domain_Access;
+   --  All processors belong to default system dispatching domain at start up.
+   --  We use a pointer which creates the actual variable for the reasons
+   --  explained bellow in Dispatching_Domain_Tasks.
+
+   Dispatching_Domains_Frozen : Boolean := False;
+   --  True when the main procedure has been called. Hence, no new dispatching
+   --  domains can be created when this flag is True.
+
+   type Array_Allocated_Tasks is
+     array (System.Multiprocessors.CPU range <>) of Natural;
+   --  At start-up time, we need to store the number of tasks attached to
+   --  concrete processors within the system domain (we can only create
+   --  dispatching domains with processors belonging to the system domain and
+   --  without tasks allocated).
+
+   type Array_Allocated_Tasks_Access is access Array_Allocated_Tasks;
+
+   Dispatching_Domain_Tasks : Array_Allocated_Tasks_Access;
+   --  We need to store whether there are tasks allocated to concrete
+   --  processors in the default system dispatching domain because we need to
+   --  check it before creating a new dispatching domain. Two comments about
+   --  why we use a pointer here and not in package Dispatching_Domains:
+   --
+   --    1) We use an array created dynamically in procedure Initialize which
+   --    is called at the beginning of the initialization of the run-time
+   --    library. Declaring a static array here in the spec would not work
+   --    across different installations because it would get the value of
+   --    Number_Of_CPUs from the machine where the run-time library is built,
+   --    and not from the machine where the application is executed. That is
+   --    the reason why we create the array (CPU'First .. Number_Of_CPUs) at
+   --    execution time in the procedure body, ensuring that the function
+   --    Number_Of_CPUs is executed at execution time (the same trick as we
+   --    use for System_Domain).
+   --
+   --    2) We have moved this declaration from package Dispatching_Domains
+   --    because when we use a pragma CPU, the affinity is passed through the
+   --    call to Create_Task. Hence, at this point, we may need to update the
+   --    number of tasks associated to the processor, but we do not want to
+   --    force a dependency from this package on Dispatching_Domains.
+
+   ------------------------------------
    -- Task related other definitions --
    ------------------------------------
 
@@ -396,9 +456,8 @@ package System.Tasking is
 
    function Storage_Size (T : Task_Id) return System.Parameters.Size_Type;
    --  Retrieve from the TCB of the task the allocated size of its stack,
-   --  either the system default or the size specified by a pragma. This
-   --  is in general a non-static value that can depend on discriminants
-   --  of the task.
+   --  either the system default or the size specified by a pragma. This is in
+   --  general a non-static value that can depend on discriminants of the task.
 
    type Bit_Array is array (Integer range <>) of Boolean;
    pragma Pack (Bit_Array);
@@ -406,8 +465,8 @@ package System.Tasking is
    subtype Debug_Event_Array is Bit_Array (1 .. 16);
 
    Global_Task_Debug_Event_Set : Boolean := False;
-   --  Set True when running under debugger control and a task debug
-   --  event signal has been requested.
+   --  Set True when running under debugger control and a task debug event
+   --  signal has been requested.
 
    ----------------------------------------------
    -- Ada_Task_Control_Block (ATCB) definition --
@@ -566,7 +625,7 @@ package System.Tasking is
       --  Protection: Set by Activator before Self is activated, and only read
       --  and modified by Self after that.
 
-      Wait_Count : Integer;
+      Wait_Count : Natural;
       --  This count is used by a task that is waiting for other tasks. At all
       --  other times, the value should be zero. It is used differently in
       --  several different states. Since a task cannot be in more than one of
@@ -585,8 +644,8 @@ package System.Tasking is
       --  Master_Completion_Sleep (phase 1)
 
       --  This is the number dependent tasks of a master being completed by
-      --  Self that are not activated, not terminated, and not waiting on a
-      --  terminate alternative.
+      --  Self that are activated, but have not yet terminated, and are not
+      --  waiting on a terminate alternative.
 
       --  Master_Completion_2_Sleep (phase 2)
 
@@ -637,6 +696,16 @@ package System.Tasking is
       Debug_Events : Debug_Event_Array;
       --  Word length array of per task debug events, of which 11 kinds are
       --  currently defined in System.Tasking.Debugging package.
+
+      Domain : Dispatching_Domain_Access;
+      --  Domain is the dispatching domain to which the task belongs. It is
+      --  only changed via dispatching domains package. This field is made
+      --  part of the Common_ATCB, even when restricted run-times (namely
+      --  Ravenscar) do not use it, because this way the field is always
+      --  available to the underlying layers to set the affinity and we do not
+      --  need to do different things depending on the situation.
+      --
+      --  Protection: Self.L
    end record;
 
    ---------------------------------------
@@ -942,13 +1011,13 @@ package System.Tasking is
       --  not write this field until the master is complete, the
       --  synchronization should be adequate to prevent races.
 
-      Alive_Count : Integer := 0;
+      Alive_Count : Natural := 0;
       --  Number of tasks directly dependent on this task (including itself)
       --  that are still "alive", i.e. not terminated.
       --
       --  Protection: Self.L
 
-      Awake_Count : Integer := 0;
+      Awake_Count : Natural := 0;
       --  Number of tasks directly dependent on this task (including itself)
       --  still "awake", i.e., are not terminated and not waiting on a
       --  terminate alternative.
@@ -1105,6 +1174,7 @@ package System.Tasking is
       Elaborated       : Access_Boolean;
       Base_Priority    : System.Any_Priority;
       Base_CPU         : System.Multiprocessors.CPU_Range;
+      Domain           : Dispatching_Domain_Access;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;

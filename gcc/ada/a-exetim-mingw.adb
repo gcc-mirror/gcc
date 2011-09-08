@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2007-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 2007-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,6 +128,19 @@ package body Ada.Execution_Time is
                 ((Long_Long_Float (K_Time) / Hundreds_Nano_In_Sec)
                  + (Long_Long_Float (U_Time) / Hundreds_Nano_In_Sec))));
    end Clock;
+
+   --------------------------
+   -- Clock_For_Interrupts --
+   --------------------------
+
+   function Clock_For_Interrupts return CPU_Time is
+   begin
+      --  According to AI 0170-1, D.14(18.1/3), if Interrupt_Clocks_Supported
+      --  is set to False the function raises Program_Error.
+
+      raise Program_Error;
+      return CPU_Time_First;
+   end Clock_For_Interrupts;
 
    -----------
    -- Split --

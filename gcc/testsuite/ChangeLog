@@ -1,3 +1,838 @@
+2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/49606
+	* gcc.target/mips/abi-main.h: New file.
+	* gcc.target/mips/abi-o32-long32.c: New test.
+	* gcc.target/mips/abi-o32-long64.c: Likewise.
+	* gcc.target/mips/abi-o64-long32.c: Likewise.
+	* gcc.target/mips/abi-o64-long64.c: Likewise.
+	* gcc.target/mips/abi-n32-long32.c: Likewise.
+	* gcc.target/mips/abi-n32-long64.c: Likewise.
+	* gcc.target/mips/abi-n64-long32.c: Likewise.
+	* gcc.target/mips/abi-n64-long64.c: Likewise.
+	* gcc.target/mips/abi-o32-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o32-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o64-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o64-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n32-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n32-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n64-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n64-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o32-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-o32-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-o64-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-o64-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-n32-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-n32-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-n64-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-n64-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-eabi32-long32.c: Likewise.
+	* gcc.target/mips/abi-eabi32-long64.c: Likewise.
+	* gcc.target/mips/abi-eabi64-long32.c: Likewise.
+	* gcc.target/mips/abi-eabi64-long64.c: Likewise.
+	* gcc.target/mips/mips.exp: Make -mshared implied -mabicalls.
+	* gcc.target/mips/branch-2.c: Remove -mabicalls.
+	* gcc.target/mips/branch-3.c: Likewise.
+	* gcc.target/mips/branch-4.c: Likewise.
+	* gcc.target/mips/branch-5.c: Likewise.
+	* gcc.target/mips/branch-6.c: Likewise.
+	* gcc.target/mips/branch-7.c: Likewise.
+	* gcc.target/mips/branch-8.c: Likewise.
+	* gcc.target/mips/branch-9.c: Likewise.
+	* gcc.target/mips/branch-10.c: Likewise.
+	* gcc.target/mips/branch-11.c: Likewise.
+	* gcc.target/mips/branch-12.c: Likewise.
+	* gcc.target/mips/branch-13.c: Likewise.
+	* gcc.target/mips/lazy-binding-1.c: Likewise.
+
+2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/ipa/ipcp-3.c (mark_cell): Use mask 1 << 14 instead of 1
+	<< 18 to avoid warning on int=16 platforms..
+
+2011-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/compat/struct-layout-1_test.h: Decrease bitfield size
+	to work even with -fshort-enums.
+
+2011-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/20110902.c: new testcase.
+
+2011-09-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49267
+	* g++.dg/cpp0x/rv-conv1.C: New.
+
+	DR 1328
+	* g++.dg/cpp0x/rv-func3.C: New.
+
+	* g++.dg/cpp0x/constexpr-default-ctor.C: New.
+
+	PR c++/50248
+	Core 1358
+	* g++.dg/cpp0x/constexpr-template1.C: New.
+	* g++.dg/cpp0x/constexpr-template2.C: New.
+	* g++.dg/cpp0x/constexpr-48089.C: Adjust error markup.
+	* g++.dg/cpp0x/constexpr-ex1.C: Adjust error markup.
+
+2011-09-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/debug1.ads: Tweak pattern.
+
+2011-09-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50227
+	* gfortran.dg/class_45a.f03: New.
+	* gfortran.dg/class_45b.f03: New.
+
+2011-09-04  Jakub Jelinek  <jakub@redhat.com>
+	    Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50208
+	* gcc.dg/vect/no-fre-pre-pr50208.c: New test.
+	* gcc.dg/vect/vect.exp: Run no-fre-pre-*.c tests with
+	-fno-tree-fre -fno-tree-pre.
+
+2011-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-3.c: New test.
+
+2011-09-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27460
+	PR middle-end/29269
+	* gcc.dg/vect/vect-cond-7.c: New testcase.
+
+2011-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/devirt-3.C: Added a distraction method.
+	* g++.dg/ipa/ivinline-7.C: Added a test for direct call discovery,
+	xfailed test for inlining.
+	* g++.dg/ipa/ivinline-9.C: Likewise.
+
+2011-09-01  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50178
+	* gfortran.dg/vect/pr50178.f90: New test.
+
+2011-08-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49886
+	* gcc.c-torture/execute/pr49886.c: New testcase.
+
+2011-08-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43513
+	* gcc.dg/pr43513.c: New test.
+
+2011-08-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45044
+	* gfortran.dg/common_14.f90: New.
+	* gfortran.dg/common_resize_1.f: Add two dg-warning.
+
+2011-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50084
+	* g++.dg/cpp0x/decltype33.C: New.
+
+	PR c++/50089
+	* g++.dg/cpp0x/lambda/lambda-qualified.C: New.
+
+	PR c++/50114
+	* g++.dg/cpp0x/lambda/lambda-for.C: New.
+
+2011-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/fma-compile.c: Escape [ and ] in scan strings.
+
+2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr3.ads: New test.
+	* gnat.dg/specs/aggr3_pkg.ads: New helper.
+
+	* gnat.dg/specs/aggr1.ads: Remove superfluous space.
+	* gnat.dg/specs/aggr2.ads: Likewise.
+
+2011-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/45170
+	* gfortran.dg/allocate_with_source_2.f90: New test
+
+2011-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50220
+	* g++.dg/cpp0x/lambda/lambda-50220.C: New.
+
+	PR c++/50234
+	* g++.dg/cpp0x/constexpr-value3.C: New.
+
+2011-08-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48571
+	* gcc.c-torture/execute/pr48571-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-ccp-25.c: Remove.
+	* gcc.dg/tree-ssa/ssa-ccp-26.c: Likewise.
+	* gcc.dg/pr36902.c: XFAIL.
+
+2011-08-30  Ilya Tocar <ilya.tocar@intel.com>
+
+	* gcc.target/i386/fma-check.h: New.
+	* gcc.target/i386/fma-256-fmaddXX.c: New testcase.
+	* gcc.target/i386/fma-256-fmaddsubXX.c: Likewise.
+	* gcc.target/i386/fma-256-fmsubXX.c: Likewise.
+	* gcc.target/i386/fma-256-fmsubaddXX.c: Likewise.
+	* gcc.target/i386/fma-256-fnmaddXX.c: Likewise.
+	* gcc.target/i386/fma-256-fnmsubXX.c: Likewise.
+	* gcc.target/i386/fma-fmaddXX.c: Likewise.
+	* gcc.target/i386/fma-fmaddsubXX.c: Likewise.
+	* gcc.target/i386/fma-fmsubXX.c: Likewise.
+	* gcc.target/i386/fma-fmsubaddXX.c: Likewise.
+	* gcc.target/i386/fma-fnmaddXX.c: Likewise.
+	* gcc.target/i386/fma-fnmsubXX.c: Likewise.
+	* gcc.target/i386/fma-compile.c: Likewise.
+	* gcc.target/i386/i386.exp (check_effective_target_fma): New.
+	* gcc.target/i386/sse-12.c: Add -mfma.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* g++.dg/other/i386-2.C: Likewise.
+	* g++.dg/other/i386-3.C: Likewise.
+
+2011-08-30  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR testsuite/50185
+	* gcc.target/i386/avx2-vmovmskb-2.c: Rename to ...
+	* gcc.target/i386/avx2-vpmovmskb-2.c: ... this. Update.
+
+2011-08-30  Christian Bruel  <christian.bruel@st.com>
+
+	* g++.dg/bprob/bprob.exp (feedback_options): Set
+	-fbranch-probabilities.
+	* gcc.misc-tests/bprob.exp (feedback_options): Likewise.
+
+2011-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50224
+	* g++.dg/cpp0x/lambda/lambda-use2.C: New.
+
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/dfp/base.C: New test.
+
+2011-08-29  Jason Merrill  <jason@redhat.com>
+
+	Core DR 994
+	PR c++/50209
+	* g++.dg/cpp0x/initlist58.C: New.
+
+2011-08-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50225
+	* gfortran.dg/class_result_1.f03: New.
+
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48722
+	* gcc.target/i386/pr48722.c: New test.
+
+2011-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/50192
+	* gfortran.dg/widechar_compare_1.f90:  New test.
+
+2011-08-26  Jason Merrill  <jason@redhat.com>
+
+	Core DR 342
+	PR c++/48582
+	* g++.dg/abi/mangle50.C: New.
+
+2011-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50202
+	* gcc.target/i386/pr50202.c: New test.
+
+2011-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse_4_1-round-vec.c: New test.
+	* gcc.target/i386/sse_4_1-roundf-vec.c: New test.
+	* gcc.target/i386/avx-round-vec.c: New test.
+	* gcc.target/i386/avx-roundf-vec.c: New test.
+
+2011-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/cmpxchg16b-1.c: Match also space after the
+	instruction.
+
+	PR c/50179
+	* c-c++-common/Wunused-var-14.c: New test.
+
+2011-08-26  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/ivopts-lt.c: New test.
+
+2011-08-26  Jiangning Liu  <jiangning.liu@arm.com>
+
+	* gcc.target/arm/thumb2-cond-cmp-1.c: New.
+	* gcc.target/arm/thumb2-cond-cmp-2.c: Likewise.
+	* gcc.target/arm/thumb2-cond-cmp-3.c: Likewise.
+	* gcc.target/arm/thumb2-cond-cmp-4.c: Likewise.
+
+2011-08-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/thumb2-replicated-constant1.c: New file.
+	* gcc.target/arm/thumb2-replicated-constant2.c: New file.
+	* gcc.target/arm/thumb2-replicated-constant3.c: New file.
+	* gcc.target/arm/thumb2-replicated-constant4.c: New file.
+
+2011-08-25  Mikael Morin  <mikael.morin@gcc.gnu.org>
+
+	PR fortran/50050
+	* gfortran.dg/pointer_comp_init_1.f90: New test.
+
+2011-08-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50157
+	* g++.dg/cpp0x/sfinae27.C: New.
+
+2011-08-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_lib_token_4.f90: New.
+
+2011-08-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/alloc_comp_1.f90: New.
+
+2011-08-25  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/Wshadow-3.c: Restore original content destroyed by r148442.
+
+2011-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50163
+	* gfortran.dg/initialization_28.f90: New.
+
+2011-08-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50067
+	* gcc.dg/torture/pr50067-3.c: New testcase.
+	* gcc.dg/torture/pr50067-4.c: Likewise.
+	* gcc.dg/torture/pr50067-5.c: Likewise.
+
+2011-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mavx2 check.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/avx-1.c: Add AVX2.
+	* gcc.target/i386/avx-2.c: Likewise.
+	* gcc.target/i386/funcspec-5.c: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* gcc.target/i386/i386.exp (check_effective_target_avx2): Likewise.
+	* gcc.target/i386/avx2-check.h: New.
+	* gcc.target/i386/avx2-i32gatherd-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherd-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherd-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherd-4.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherd256-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherd256-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherd256-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherd256-4.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd-4.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd256-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd256-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd256-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherpd256-4.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps-4.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps256-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps256-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps256-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherps256-4.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq-4.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq256-1.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq256-2.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq256-3.c: Likewise.
+	* gcc.target/i386/avx2-i32gatherq256-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd256-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd256-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd256-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherd256-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd256-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd256-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd256-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd256-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps256-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps256-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps256-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherps256-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq256-1.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq256-2.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq256-3.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq256-4.c: Likewise.
+	* gcc.target/i386/avx2-mpsadbw-1.c: Likewise.
+	* gcc.target/i386/avx2-mpsadbw-2.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastsd_pd-1.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastsd_pd-2.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastsi128-2.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastss_ps-1.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastss_ps-2.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastss_ps256-1.c: Likewise.
+	* gcc.target/i386/avx2-vbroadcastss_ps256-2.c: Likewise.
+	* gcc.target/i386/avx2-vextracti128-1.c: Likewise.
+	* gcc.target/i386/avx2-vextracti128-2.c: Likewise.
+	* gcc.target/i386/avx2-vinserti128-1.c: Likewise.
+	* gcc.target/i386/avx2-vinserti128-2.c: Likewise.
+	* gcc.target/i386/avx2-vmovmskb-2.c: Likewise.
+	* gcc.target/i386/avx2-vmovntdqa-1.c: Likewise.
+	* gcc.target/i386/avx2-vmovntdqa-2.c: Likewise.
+	* gcc.target/i386/avx2-vpabsb256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpabsb256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpabsd256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpabsd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpabsw256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpabsw256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpackssdw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpackssdw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpacksswb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpacksswb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpackusdw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpackusdw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpackuswb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpackuswb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddsb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddsb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddusb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddusb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddusw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddusw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpaddw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpaddw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpalignr256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpalignr256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpand-1.c: Likewise.
+	* gcc.target/i386/avx2-vpand-2.c: Likewise.
+	* gcc.target/i386/avx2-vpandn-1.c: Likewise.
+	* gcc.target/i386/avx2-vpandn-2.c: Likewise.
+	* gcc.target/i386/avx2-vpavgb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpavgb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpavgw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpavgw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpblendd128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpblendd128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpblendd256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpblendd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpblendvb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpblendvb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpblendw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpblendw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastb128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastb128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastb256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastb256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastd128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastd128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastd256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastq128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastq128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastq256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastq256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastw128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastw128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastw256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpbroadcastw256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpeqw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpcmpgtw-2.c: Likewise.
+	* gcc.target/i386/avx2-vperm2i128-1.c: Likewise.
+	* gcc.target/i386/avx2-vperm2i128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpermd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpermd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpermpd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpermpd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpermps-1.c: Likewise.
+	* gcc.target/i386/avx2-vpermps-2.c: Likewise.
+	* gcc.target/i386/avx2-vpermq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpermq-2.c: Likewise.
+	* gcc.target/i386/avx2-vphaddd-1.c: Likewise.
+	* gcc.target/i386/avx2-vphaddd-2.c: Likewise.
+	* gcc.target/i386/avx2-vphaddsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vphaddsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vphaddw-1.c: Likewise.
+	* gcc.target/i386/avx2-vphaddw-2.c: Likewise.
+	* gcc.target/i386/avx2-vphsubd-1.c: Likewise.
+	* gcc.target/i386/avx2-vphsubd-2.c: Likewise.
+	* gcc.target/i386/avx2-vphsubsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vphsubsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vphsubw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaddubsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaddubsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaddwd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaddwd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadd256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadq256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskloadq256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstored-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstored-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstored256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstored256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstoreq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstoreq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstoreq256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaskstoreq256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxsb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxsb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxsd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxsd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxub-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxub-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxud-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxud-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxuw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmaxuw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpminsb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpminsb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpminsd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpminsd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpminsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpminsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpminub-1.c: Likewise.
+	* gcc.target/i386/avx2-vpminub-2.c: Likewise.
+	* gcc.target/i386/avx2-vpminud-1.c: Likewise.
+	* gcc.target/i386/avx2-vpminud-2.c: Likewise.
+	* gcc.target/i386/avx2-vpminuw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpminuw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovmskb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxbd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxbd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxbq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxbq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxbw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxbw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxdq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxdq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxwd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxwd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxwq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovsxwq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxbd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxbd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxbq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxbq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxbw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxbw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxdq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxdq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxwd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxwd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxwq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmovzxwq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmuldq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmuldq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmulhrsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmulhrsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmulhuw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmulhuw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmulhw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmulhw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmulld-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmulld-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmullw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmullw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpmuludq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpmuludq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpor-1.c: Likewise.
+	* gcc.target/i386/avx2-vpor-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsadbw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsadbw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpshufb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpshufb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpshufd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpshufd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpshufhw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpshufhw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpshuflw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpshuflw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsignb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsignb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsignd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsignd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsignw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsignw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpslld-1.c: Likewise.
+	* gcc.target/i386/avx2-vpslld-2.c: Likewise.
+	* gcc.target/i386/avx2-vpslldi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpslldi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpslldq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpslldq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllqi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllqi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvd128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvd128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvd256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvq128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvq128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvq256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllvq256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsllwi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsllwi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrad-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrad-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsradi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsradi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsravd128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsravd128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsravd256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsravd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsraw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsraw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrawi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrawi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrld-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrld-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrldi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrldi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrldq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrldq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlqi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlqi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvd128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvd128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvd256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvq128-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvq128-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvq256-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlvq256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlwi-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsrlwi-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsubb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsubb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsubd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsubd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsubq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsubq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsubsb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsubsb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsubsw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsubsw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsubusb-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsubusb-2.c: Likewise.
+	* gcc.target/i386/avx2-vpsubusw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpsubusw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhbw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhbw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhdq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhdq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhqdq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhqdq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhwd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckhwd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpcklbw-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpcklbw-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckldq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpckldq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpcklqdq-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpcklqdq-2.c: Likewise.
+	* gcc.target/i386/avx2-vpunpcklwd-1.c: Likewise.
+	* gcc.target/i386/avx2-vpunpcklwd-2.c: Likewise.
+	* gcc.target/i386/avx2-vpxor-1.c: Likewise.
+	* gcc.target/i386/avx2-vpxor-2.c: Likewise.
+	* gcc.target/i386/testimm-9.c: Likewise.
+
+2011-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mbmi2 check.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/bmi2-bzhi32-1.c: New testcase.
+	* gcc.target/i386/bmi2-bzhi32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-bzhi64-1.c: Likewise.
+	* gcc.target/i386/bmi2-bzhi64-1a.c: Likewise.
+	* gcc.target/i386/bmi2-mulx32-1.c: Likewise.
+	* gcc.target/i386/bmi2-mulx32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-mulx64-1.c: Likewise.
+	* gcc.target/i386/bmi2-mulx64-1a.c: Likewise.
+	* gcc.target/i386/bmi2-pdep32-1.c: Likewise.
+	* gcc.target/i386/bmi2-pdep32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-pdep64-1.c: Likewise.
+	* gcc.target/i386/bmi2-pdep64-1a.c: Likewise.
+	* gcc.target/i386/bmi2-pext32-1.c: Likewise.
+	* gcc.target/i386/bmi2-pext32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-pext64-1.c: Likewise.
+	* gcc.target/i386/bmi2-pext64-1a.c: Likewise.
+	* gcc.target/i386/bmi2-rorx32-1.c: Likewise.
+	* gcc.target/i386/bmi2-rorx32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-rorx64-1.c: Likewise.
+	* gcc.target/i386/bmi2-rorx64-1a.c: Likewise.
+	* gcc.target/i386/bmi2-sarx32-1.c: Likewise.
+	* gcc.target/i386/bmi2-sarx32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-sarx64-1.c: Likewise.
+	* gcc.target/i386/bmi2-sarx64-1a.c: Likewise.
+	* gcc.target/i386/bmi2-shlx32-1.c: Likewise.
+	* gcc.target/i386/bmi2-shlx32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-shlx64-1.c: Likewise.
+	* gcc.target/i386/bmi2-shlx64-1a.c: Likewise.
+	* gcc.target/i386/bmi2-shrx32-1.c: Likewise.
+	* gcc.target/i386/bmi2-shrx32-1a.c: Likewise.
+	* gcc.target/i386/bmi2-shrx64-1.c: Likewise.
+	* gcc.target/i386/bmi2-shrx64-1a.c: Likewise.
+	* gcc.target/i386/i386.exp (check_effective_target_bmi2): New.
+	* gcc.target/i386/sse-12.c: Add BMI2.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/crash7.C: Adjust expected errors.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49045
+	Core 1321
+	* g++.dg/cpp0x/overload2.C: New.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	Core 903
+	* g++.dg/cpp0x/constexpr-nullptr.C: Now ill-formed.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	Core 975
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg2.C: Now accepted.
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-deduce2.C: Test returning overload.
+	* g++.dg/cpp0x/lambda/lambda-deduce-neg.C: Remove #include.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50024
+	* g++.dg/cpp0x/constexpr-initlist5.C: New.
+
+2011-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/50158
+	* g++.dg/warn/Wunused-var-16.C: New test.
+
+	PR middle-end/50161
+	* gcc.dg/pr50161.c: New test.
+
+2011-08-23  Siddhesh Poyarekar  <siddhesh.poyarekar@gmail.com>
+
+	PR c++/50055
+	* g++.dg/gcov/gcov-7.C: New test.
+
+2011-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46862
+	* g++.dg/dfp/nofields.C: New test.
+
+2011-08-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31600
+	* gfortran.dg/use_16.f90: New.
+
+2011-08-22  Uros Bizjak  <ubizjak@gmail.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/50155
+	* gcc.target/i386/pr50155.c: New test.
+
+2011-08-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50133
+	* gcc.dg/pr50133.c: New test.
+
+	PR middle-end/50141
+	* c-c++-common/cxxbitfields-6.c: New test.
+
+2011-08-22  Mikael Morin  <mikael.morin@gcc.gnu.org>
+
+	PR fortran/50050
+	* gfortran.dg/alloc_comp_initializer_3.f90: New test.
+
+2011-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/pr49994-2.c: Add dg-require-effective-target scheduling.
+	* gcc.dg/pr49994-3.c: Ditto.
+
+2011-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/50145
+	* gcc.dg/torture/pr50067-1.c: Run on little-endian systems only.
+	* gcc.dg/torture/pr50067-2.c: Likewise.
+
 2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47659
@@ -231,7 +1066,7 @@
 	* gcc.target/i386/conversion.c: Ditto.
 
 2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
-            Brian Hackett  <bhackett1024@gmail.com>
+	    Brian Hackett  <bhackett1024@gmail.com>
 
 	* g++.dg/plugin/decl_plugin.c: New.
 	* g++.dg/plugin/decl-plugin-test.C: New.
@@ -412,7 +1247,7 @@
 	* gcc.dg/pr49860.c: New.
 
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	PR libobjc/49882
 	* objc.dg/gnu-api-2-class.m (main): Test class_getSuperclass()
 	with classes that are in construction.
@@ -3065,7 +3900,7 @@
 	* gcc.dg/pie-link.c: Use target pie.
 
 2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
-	    Laurent Rougé  <laurent.rouge@menta.fr>
+	    Laurent Rougï¿½  <laurent.rouge@menta.fr>
 
 	* gcc.dg/20020503-1.c: Add back -mflat option on the SPARC.
 	* gcc.target/sparc/sparc-ret.c: Skip if -mflat is passed.

@@ -7,7 +7,7 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c                     Copyright (C) 1992-2011, AdaCore                       o
+@c           Copyright (C) 1992-2011, Free Software Foundation, Inc.          o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
@@ -4130,11 +4130,11 @@ Display full source path name in brief error messages.
 @cindex @option{-gnateG} (@command{gcc})
 Save result of preprocessing in a text file.
 
-@item -gnateInnn
+@item ^-gnateI^/MULTI_UNIT_INDEX=^@var{nnn}
 @cindex @option{-gnateI} (@command{gcc})
 Indicates that the source is a multi-unit source and that the index of the
-unit to compile is nnn. nnn needs to be a positive number and need to
-be a valid index in the multi-unit source.
+unit to compile is @var{nnn}. @var{nnn} needs to be a positive number and need
+to be a valid index in the multi-unit source.
 
 @item -gnatem=@var{path}
 @cindex @option{-gnatem} (@command{gcc})
@@ -5732,7 +5732,7 @@ as shown in the following example.
 @emph{Activate warnings on unnecessary Warnings Off pragmas}
 @cindex @option{-gnatw.w} (@command{gcc})
 @cindex Warnings Off control
-This switch activates warnings for use of @code{pragma Warnings (Off, entity}
+This switch activates warnings for use of @code{pragma Warnings (Off, entity)}
 where either the pragma is entirely useless (because it suppresses no
 warnings), or it could be replaced by @code{pragma Unreferenced} or
 @code{pragma Unmodified}.The default is that these warnings are not given.
@@ -5742,7 +5742,7 @@ activated explicitly.
 @item -gnatw.W
 @emph{Suppress warnings on unnecessary Warnings Off pragmas}
 @cindex @option{-gnatw.W} (@command{gcc})
-This switch suppresses warnings for use of @code{pragma Warnings (Off, entity}.
+This switch suppresses warnings for use of @code{pragma Warnings (Off, entity)}.
 
 @item -gnatwx
 @emph{Activate warnings on Export/Import pragmas.}
@@ -5780,12 +5780,14 @@ This switch disables warnings for exception usage when pragma Restrictions
 (No_Exception_Propagation) is in effect.
 
 @item -gnatwy
-@emph{Activate warnings for Ada 2005 compatibility issues.}
+@emph{Activate warnings for Ada compatibility issues.}
 @cindex @option{-gnatwy} (@command{gcc})
-@cindex Ada 2005 compatibility issues warnings
-For the most part Ada 2005 is upwards compatible with Ada 95,
-but there are some exceptions (for example the fact that
-@code{interface} is now a reserved word in Ada 2005). This
+@cindex Ada compatibility issues warnings
+For the most part, newer versions of Ada are upwards compatible
+with older versions. For example, Ada 2005 programs will almost
+always work when compiled as Ada 2012.
+However there are some exceptions (for example the fact that
+@code{some} is now a reserved word in Ada 2012). This
 switch activates several warnings to help in identifying
 and correcting such incompatibilities. The default is that
 these warnings are generated. Note that at one point Ada 2005
@@ -5793,11 +5795,11 @@ was called Ada 0Y, hence the choice of character.
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwY
-@emph{Disable warnings for Ada 2005 compatibility issues.}
+@emph{Disable warnings for Ada compatibility issues.}
 @cindex @option{-gnatwY} (@command{gcc})
-@cindex Ada 2005 compatibility issues warnings
-This switch suppresses several warnings intended to help in identifying
-incompatibilities between Ada 95 and Ada 2005.
+@cindex Ada compatibility issues warnings
+This switch suppresses the warnings intended to help in identifying
+incompatibilities between Ada language versions.
 
 @item -gnatwz
 @emph{Activate warnings on unchecked conversions.}
@@ -7636,7 +7638,10 @@ preprocessing is triggered and parameterized.
 @cindex @option{-gnatep} (@command{gcc})
 This switch indicates to the compiler the file name (without directory
 information) of the preprocessor data file to use. The preprocessor data file
-should be found in the source directories.
+should be found in the source directories. Note that when the compiler is
+called by a builder (@command{gnatmake} or @command{gprbuild}) with a project
+file, if the object directory is not also a source directory, the builder needs
+to be called with @option{-x}.
 
 @noindent
 A preprocessing data file is a text file with significant lines indicating
@@ -7758,11 +7763,11 @@ found in the GCC documentation.
 Use of these @option{-m} switches may in some cases result in improved
 code performance.
 
-The GNAT Pro technology is tested and qualified without any
+The @value{EDITION} technology is tested and qualified without any
 @option{-m} switches,
 so generally the most reliable approach is to avoid the use of these
 switches. However, we generally expect most of these switches to work
-successfully with GNAT Pro, and many customers have reported successful
+successfully with @value{EDITION}, and many customers have reported successful
 use of these options.
 
 Our general advice is to avoid the use of @option{-m} switches unless
@@ -13066,8 +13071,6 @@ Reformat comment blocks
 @item ^-c5^/COMMENTS_LAYOUT=KEEP_SPECIAL^
 Keep unchanged special form comments
 
-Reformat comment blocks
-
 @cindex @option{^-l@var{n}^/CONSTRUCT_LAYOUT^} (@command{gnatpp})
 @item ^-l1^/CONSTRUCT_LAYOUT=GNAT^
 GNAT-style layout (this is the default)
@@ -17262,6 +17265,15 @@ A consequence of the @option{/p0image} qualifier is also to makes RMS buffers
 be placed in P0 space.  Refer to @cite{HP OpenVMS Linker Utility Manual} for
 more details about the @option{/p0image} qualifier and the @option{stack}
 option.
+
+@noindent
+On Itanium platforms, you can instead assign the @samp{GNAT_STACK_SIZE} and
+@samp{GNAT_RBS_SIZE} logicals to the size of the primary and register
+stack in kilobytes.  For example:
+
+@smallexample
+$ define GNAT_RBS_SIZE 1024 ! Limit the RBS size to 1MB.
+@end smallexample
 @end ifset
 
 @node Static Stack Usage Analysis
@@ -18944,7 +18956,7 @@ program, in which case the execution of that program is simply suspended
 until the connection between the debugger and gdbserver is established.
 
 For more information on how to use gdbserver, @ref{Top, Server, Using
-the gdbserver Program, gdb, Debugging with GDB}.  GNAT Pro provides support
+the gdbserver Program, gdb, Debugging with GDB}.  @value{EDITION} provides support
 for gdbserver on x86-linux, x86-windows and x86_64-linux.
 
 @node GNAT Abnormal Termination or Failure to Terminate
@@ -21110,7 +21122,7 @@ of the DECset package.
    &\cr
 \+\it Tool
    &\it Product with HP Ada
-   & \it Product with GNAT Pro\cr
+   & \it Product with @value{EDITION}\cr
 \smallskip
 \+Code Management System
    &HP CMS
@@ -21167,7 +21179,7 @@ of the DECset package.
 @c the TeX version above for the printed version
 @flushleft
 @c @multitable @columnfractions .3 .4 .4
-@multitable {Source Code Analyzer /}{Tool with HP Ada}{Tool with GNAT Pro}
+@multitable {Source Code Analyzer /}{Tool with HP Ada}{Tool with @value{EDITION}}
 @item @i{Tool}
 @tab @i{Tool with HP Ada}
 @tab @i{Tool with @value{EDITION}}
@@ -21319,6 +21331,10 @@ information about several specific platforms.
 @item @b{ppc-aix}
 @item @code{@ @ }@i{rts-native (default)}
 @item @code{@ @ @ @ }Tasking    @tab native AIX threads
+@item @code{@ @ @ @ }Exceptions @tab ZCX
+@*
+@item @code{@ @ }@i{rts-sjlj}
+@item @code{@ @ @ @ }Tasking    @tab native AIX threads
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*
 @item @b{ppc-darwin}
@@ -21361,6 +21377,10 @@ information about several specific platforms.
 @item @b{x86-solaris}
 @item @code{@ @ }@i{rts-native (default)}
 @item @code{@ @ @ @ }Tasking    @tab native Solaris threads
+@item @code{@ @ @ @ }Exceptions @tab ZCX
+@*
+@item @code{@ @ }@i{rts-sjlj}
+@item @code{@ @ @ @ }Tasking    @tab native Solaris threads library
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*
 @item @b{x86-windows}
@@ -21368,7 +21388,7 @@ information about several specific platforms.
 @item @code{@ @ @ @ }Tasking    @tab native Win32 threads
 @item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
-@item @code{@ @ }@i{rts-sjlj (default)}
+@item @code{@ @ }@i{rts-sjlj}
 @item @code{@ @ @ @ }Tasking    @tab native Win32 threads
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*
@@ -26435,7 +26455,7 @@ in 64-bit address space are acceptable.
 @noindent
 64-bit @value{EDITION} for Open VMS takes advantage of the freedom given in the
 Ada standard with respect to the type of @code{System.Address}. Previous
-versions of GNAT Pro have defined this type as private and implemented it as a
+versions of @value{EDITION} have defined this type as private and implemented it as a
 modular type.
 
 In order to allow defining @code{System.Short_Address} as a proper subtype,

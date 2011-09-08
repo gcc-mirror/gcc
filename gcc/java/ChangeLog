@@ -1,3 +1,10 @@
+2011-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (CFLAGS-java/jcf-io.o, CFLAGS-java/jcf-path.o):
+	New.
+	(java/jcf-io.o, java/jcf-path.o): Remove explicit compilation
+	rules.
+
 2011-08-18  Peter Collingbourne  <peter@pcc.me.uk>
 
 	* expr.c (expand_invoke) Use the type of the method rewrite

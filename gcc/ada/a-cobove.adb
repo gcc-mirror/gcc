@@ -28,9 +28,27 @@
 ------------------------------------------------------------------------------
 
 with Ada.Containers.Generic_Array_Sort;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Vectors is
+
+   type Iterator is new
+     Vector_Iterator_Interfaces.Reversible_Iterator with record
+        Container : Vector_Access;
+        Index     : Index_Type;
+     end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -626,18 +644,18 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
+      else
+         return Container.Elements (To_Array_Index (Index));
       end if;
-
-      return Container.Elements (To_Array_Index (Index));
    end Element;
 
    function Element (Position : Cursor) return Element_Type is
    begin
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
+      else
+         return Position.Container.Element (Position.Index);
       end if;
-
-      return Position.Container.Element (Position.Index);
    end Element;
 
    ----------
@@ -696,9 +714,18 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       if Is_Empty (Container) then
          return No_Element;
+      else
+         return (Container'Unrestricted_Access, Index_Type'First);
       end if;
+   end First;
 
-      return (Container'Unrestricted_Access, Index_Type'First);
+   function First (Object : Iterator) return Cursor is
+   begin
+      if Is_Empty (Object.Container.all) then
+         return No_Element;
+      else
+         return  Cursor'(Object.Container, Index_Type'First);
+      end if;
    end First;
 
    -------------------
@@ -709,9 +736,9 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       if Container.Last = No_Index then
          raise Constraint_Error with "Container is empty";
+      else
+         return Container.Elements (To_Array_Index (Index_Type'First));
       end if;
-
-      return Container.Elements (To_Array_Index (Index_Type'First));
    end First_Element;
 
    -----------------
@@ -1589,6 +1616,23 @@ package body Ada.Containers.Bounded_Vectors is
       B := B - 1;
    end Iterate;
 
+   function Iterate
+     (Container : Vector)
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+   begin
+      return Iterator'(Container'Unrestricted_Access, Index_Type'First);
+   end Iterate;
+
+   function Iterate
+     (Container : Vector;
+      Start     : Cursor)
+      return Vector_Iterator_Interfaces.Reversible_Iterator'class
+   is
+   begin
+      return Iterator'(Container'Unrestricted_Access, Start.Index);
+   end Iterate;
+
    ----------
    -- Last --
    ----------
@@ -1597,9 +1641,18 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       if Is_Empty (Container) then
          return No_Element;
+      else
+         return (Container'Unrestricted_Access, Container.Last);
       end if;
+   end Last;
 
-      return (Container'Unrestricted_Access, Container.Last);
+   function Last (Object : Iterator) return Cursor is
+   begin
+      if Is_Empty (Object.Container.all) then
+         return No_Element;
+      else
+         return Cursor'(Object.Container, Object.Container.Last);
+      end if;
    end Last;
 
    ------------------
@@ -1610,9 +1663,9 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       if Container.Last = No_Index then
          raise Constraint_Error with "Container is empty";
+      else
+         return Container.Elements (Container.Length);
       end if;
-
-      return Container.Elements (Container.Length);
    end Last_Element;
 
    ----------------
@@ -1713,9 +1766,14 @@ package body Ada.Containers.Bounded_Vectors is
       return No_Element;
    end Next;
 
-   ----------
-   -- Next --
-   ----------
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position.Index = Object.Container.Last then
+         return  No_Element;
+      else
+         return (Object.Container, Position.Index + 1);
+      end if;
+   end Next;
 
    procedure Next (Position : in out Cursor) is
    begin
@@ -1779,6 +1837,15 @@ package body Ada.Containers.Bounded_Vectors is
       end if;
 
       return No_Element;
+   end Previous;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position.Index > Index_Type'First then
+         return (Object.Container, Position.Index - 1);
+      else
+         return No_Element;
+      end if;
    end Previous;
 
    -------------------
@@ -1859,6 +1926,88 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       raise Program_Error with "attempt to stream vector cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference
+     (Container : Vector; Position : Cursor)    --  SHOULD BE ALIASED
+   return Constant_Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Index > Position.Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      return
+       (Element =>
+          Position.Container.Elements
+            (To_Array_Index (Position.Index))'Access);
+   end Constant_Reference;
+
+   function Constant_Reference
+     (Container : Vector; Position : Index_Type)
+   return Constant_Reference_Type is
+   begin
+      if (Position) > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      return (Element =>
+                Container.Elements (To_Array_Index (Position))'Access);
+   end Constant_Reference;
+
+   function Reference (Container : Vector; Position : Cursor)
+   return Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Index > Position.Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      return
+        (Element =>
+           Position.Container.Elements
+             (To_Array_Index (Position.Index))'Access);
+   end Reference;
+
+   function Reference (Container : Vector; Position : Index_Type)
+   return Reference_Type is
+   begin
+      if Position > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      else
+         return (Element =>
+           Container.Elements (To_Array_Index (Position))'Unrestricted_Access);
+      end if;
+   end Reference;
 
    ---------------------
    -- Replace_Element --
@@ -2129,7 +2278,7 @@ package body Ada.Containers.Bounded_Vectors is
       --    Index >= Index_Type'First
       --  hence we also know that
       --    Index - Index_Type'First >= 0
-      --
+
       --  The issue is that even though 0 is guaranteed to be a value
       --  in the type Index_Type'Base, there's no guarantee that the
       --  difference is a value in that type. To prevent overflow we
@@ -2232,6 +2381,7 @@ package body Ada.Containers.Bounded_Vectors is
          end if;
 
       elsif Index_Type'First <= 0 then
+
          --  Here we can compute Last directly, in the normal way. We know that
          --  No_Index is less than 0, so there is no danger of overflow when
          --  adding the (positive) value of Length.
@@ -2291,6 +2441,7 @@ package body Ada.Containers.Bounded_Vectors is
       --  create a Last index value greater than Index_Type'Last.
 
       if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+
          --  We perform a two-part test. First we determine whether the
          --  computed Last value lies in the base range of the type, and then
          --  determine whether it lies in the range of the index (sub)type.
@@ -2319,6 +2470,7 @@ package body Ada.Containers.Bounded_Vectors is
          end if;
 
       elsif Index_Type'First <= 0 then
+
          --  Here we can compute Last directly, in the normal way. We know that
          --  No_Index is less than 0, so there is no danger of overflow when
          --  adding the (positive) value of Length.
@@ -2434,6 +2586,22 @@ package body Ada.Containers.Bounded_Vectors is
    is
    begin
       raise Program_Error with "attempt to stream vector cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Bounded_Vectors;

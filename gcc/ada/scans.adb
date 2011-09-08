@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,13 +118,6 @@ package body Scans is
       Set_Reserved (Name_Reverse,   Tok_Reverse);
       Set_Reserved (Name_Select,    Tok_Select);
       Set_Reserved (Name_Separate,  Tok_Separate);
-
-      --  We choose to make Some into a non-reserved word, so it is handled
-      --  like a regular identifier in most contexts. Uncomment the following
-      --  line if a pedantic Ada2012 mode is required.
-
-      --  Set_Reserved (Name_Some,      Tok_Some);
-
       Set_Reserved (Name_Subtype,   Tok_Subtype);
       Set_Reserved (Name_Tagged,    Tok_Tagged);
       Set_Reserved (Name_Task,      Tok_Task);
@@ -140,9 +133,13 @@ package body Scans is
 
       --  Ada 2005 reserved words
 
-      Set_Reserved (Name_Interface,     Tok_Interface);
-      Set_Reserved (Name_Overriding,    Tok_Overriding);
-      Set_Reserved (Name_Synchronized,  Tok_Synchronized);
+      Set_Reserved (Name_Interface,    Tok_Interface);
+      Set_Reserved (Name_Overriding,   Tok_Overriding);
+      Set_Reserved (Name_Synchronized, Tok_Synchronized);
+
+      --  Ada 2012 reserved words
+
+      Set_Reserved (Name_Some, Tok_Some);
 
    end Initialize_Ada_Keywords;
 

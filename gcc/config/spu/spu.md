@@ -3874,7 +3874,7 @@ selb\t%0,%4,%0,%3"
 
 
 ;; vector conditional compare patterns
-(define_expand "vcond<mode>"
+(define_expand "vcond<mode><mode>"
   [(set (match_operand:VCMP 0 "spu_reg_operand" "=r")
         (if_then_else:VCMP
           (match_operator 3 "comparison_operator"
@@ -3891,7 +3891,7 @@ selb\t%0,%4,%0,%3"
     FAIL;
   })
 
-(define_expand "vcondu<mode>"
+(define_expand "vcondu<mode><mode>"
   [(set (match_operand:VCMPU 0 "spu_reg_operand" "=r")
         (if_then_else:VCMPU
           (match_operator 3 "comparison_operator"

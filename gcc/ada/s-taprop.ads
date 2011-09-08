@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -542,5 +542,14 @@ package System.Task_Primitives.Operations is
    --  Continue a specific task when the underlying thread library provides
    --  such functionality. Such functionality is needed by gdb on some targets
    --  (e.g VxWorks) Return True is the operation is successful
+
+   -------------------
+   -- Task affinity --
+   -------------------
+
+   procedure Set_Task_Affinity (T : ST.Task_Id);
+   --  Enforce at the operating system level the task affinity defined in the
+   --  Ada Task Control Block. Has no effect if the underlying operating system
+   --  does not support this capability.
 
 end System.Task_Primitives.Operations;

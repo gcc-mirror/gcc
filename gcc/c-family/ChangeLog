@@ -1,3 +1,23 @@
+2011-09-05  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (complete_array_type): Use ssize_int (-1) instead
+	of integer_minus_one_node for empty array upper bounds.
+
+2011-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* c-pch.c (c_common_read_pch): Call linemap_add with LC_ENTER as
+	it's the first time it's being called on this main TU.
+
+2011-08-24  Richard Guenther  <rguenther@suse.de>
+
+	PR c/49396
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Fix conditional.
+
+2011-08-22  Gabriel Charette  <gchare@google.com>
+
+	* c-opts.c (c_finish_options): Force BUILTINS_LOCATION for tokens
+	defined in cpp_init_builtins and c_cpp_builtins.
+
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_common_reswords): Add __builtin_complex.

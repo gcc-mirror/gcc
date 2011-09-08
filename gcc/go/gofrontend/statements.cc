@@ -308,11 +308,11 @@ Variable_declaration_statement::do_dump_statement(
     Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->print_indent();
-  
+
   go_assert(var_->is_variable());
   ast_dump_context->ostream() << "var " << this->var_->name() <<  " ";
   Variable* var = this->var_->var_value();
-  if (var->has_type()) 
+  if (var->has_type())
     {
       ast_dump_context->dump_type(var->type());
       ast_dump_context->ostream() << " ";
@@ -478,7 +478,6 @@ Temporary_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
     {
       ast_dump_context->ostream() << " ";
       ast_dump_context->dump_type(this->type_);
-      
     }
   if (this->init_ != NULL)
     {
@@ -797,7 +796,7 @@ Assignment_operation_statement::do_dump_statement(
 {
   ast_dump_context->print_indent();
   ast_dump_context->dump_expression(this->lhs_);
-  ast_dump_context->dump_operator(this->op_); 
+  ast_dump_context->dump_operator(this->op_);
   ast_dump_context->dump_expression(this->rhs_);
   ast_dump_context->ostream() << std::endl;
 }
@@ -1548,7 +1547,7 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
 
 // Dump the AST representation for a tuple type guard statement.
 
-void 
+void
 Tuple_type_guard_assignment_statement::do_dump_statement(
     Ast_dump_context* ast_dump_context) const
 {
@@ -1652,7 +1651,7 @@ Expression_statement::do_get_backend(Translate_context* context)
 
 // Dump the AST representation for an expression statement
 
-void 
+void
 Expression_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
     const
 {
@@ -1809,10 +1808,6 @@ Statement::make_dec_statement(Expression* expr)
 // Class Thunk_statement.  This is the base class for go and defer
 // statements.
 
-const char* const Thunk_statement::thunk_field_fn = "fn";
-
-const char* const Thunk_statement::thunk_field_receiver = "receiver";
-
 // Constructor.
 
 Thunk_statement::Thunk_statement(Statement_classification classification,
@@ -1863,8 +1858,7 @@ Thunk_statement::is_simple(Function_type* fntype) const
   // If this calls something which is not a simple function, then we
   // need a thunk.
   Expression* fn = this->call_->call_expression()->fn();
-  if (fn->bound_method_expression() != NULL
-      || fn->interface_field_reference_expression() != NULL)
+  if (fn->interface_field_reference_expression() != NULL)
     return false;
 
   return true;
@@ -1918,14 +1912,6 @@ Thunk_statement::do_check_types(Gogo*)
       if (!this->call_->is_error_expression())
 	this->report_error("expected call expression");
       return;
-    }
-  Function_type* fntype = ce->get_function_type();
-  if (fntype != NULL && fntype->is_method())
-    {
-      Expression* fn = ce->fn();
-      if (fn->bound_method_expression() == NULL
-	  && fn->interface_field_reference_expression() == NULL)
-	this->report_error(_("no object for method call"));
     }
 }
 
@@ -1992,6 +1978,29 @@ Gogo::simplify_thunk_statements()
   this->traverse(&thunk_traverse);
 }
 
+// Return true if the thunk function is a constant, which means that
+// it does not need to be passed to the thunk routine.
+
+bool
+Thunk_statement::is_constant_function() const
+{
+  Call_expression* ce = this->call_->call_expression();
+  Function_type* fntype = ce->get_function_type();
+  if (fntype == NULL)
+    {
+      go_assert(saw_errors());
+      return false;
+    }
+  if (fntype->is_builtin())
+    return true;
+  Expression* fn = ce->fn();
+  if (fn->func_expression() != NULL)
+    return fn->func_expression()->closure() == NULL;
+  if (fn->interface_field_reference_expression() != NULL)
+    return true;
+  return false;
+}
+
 // Simplify complex thunk statements into simple ones.  A complicated
 // thunk statement is one which takes anything other than zero
 // parameters or a single pointer parameter.  We rewrite it into code
@@ -2029,17 +2038,15 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
     return false;
 
   Expression* fn = ce->fn();
-  Bound_method_expression* bound_method = fn->bound_method_expression();
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
-  const bool is_method = bound_method != NULL || interface_method != NULL;
 
   source_location location = this->location();
 
   std::string thunk_name = Gogo::thunk_name();
 
   // Build the thunk.
-  this->build_thunk(gogo, thunk_name, fntype);
+  this->build_thunk(gogo, thunk_name);
 
   // Generate code to call the thunk.
 
@@ -2047,38 +2054,11 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   // argument to the thunk.
 
   Expression_list* vals = new Expression_list();
-  if (fntype->is_builtin())
-    ;
-  else if (!is_method)
+  if (!this->is_constant_function())
     vals->push_back(fn);
-  else if (interface_method != NULL)
+
+  if (interface_method != NULL)
     vals->push_back(interface_method->expr());
-  else if (bound_method != NULL)
-    {
-      vals->push_back(bound_method->method());
-      Expression* first_arg = bound_method->first_argument();
-
-      // We always pass a pointer when calling a method.
-      if (first_arg->type()->points_to() == NULL)
-	first_arg = Expression::make_unary(OPERATOR_AND, first_arg, location);
-
-      // If we are calling a method which was inherited from an
-      // embedded struct, and the method did not get a stub, then the
-      // first type may be wrong.
-      Type* fatype = bound_method->first_argument_type();
-      if (fatype != NULL)
-	{
-	  if (fatype->points_to() == NULL)
-	    fatype = Type::make_pointer_type(fatype);
-	  Type* unsafe = Type::make_pointer_type(Type::make_void_type());
-	  first_arg = Expression::make_cast(unsafe, first_arg, location);
-	  first_arg = Expression::make_cast(fatype, first_arg, location);
-	}
-
-      vals->push_back(first_arg);
-    }
-  else
-    go_unreachable();
 
   if (ce->args() != NULL)
     {
@@ -2153,43 +2133,31 @@ Thunk_statement::build_struct(Function_type* fntype)
   Call_expression* ce = this->call_->call_expression();
   Expression* fn = ce->fn();
 
+  if (!this->is_constant_function())
+    {
+      // The function to call.
+      fields->push_back(Struct_field(Typed_identifier("fn", fntype,
+						      location)));
+    }
+
+  // If this thunk statement calls a method on an interface, we pass
+  // the interface object to the thunk.
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
   if (interface_method != NULL)
     {
-      // If this thunk statement calls a method on an interface, we
-      // pass the interface object to the thunk.
-      Typed_identifier tid(Thunk_statement::thunk_field_fn,
-			   interface_method->expr()->type(),
+      Typed_identifier tid("object", interface_method->expr()->type(),
 			   location);
       fields->push_back(Struct_field(tid));
     }
-  else if (!fntype->is_builtin())
+
+  // The predeclared recover function has no argument.  However, we
+  // add an argument when building recover thunks.  Handle that here.
+  if (ce->is_recover_call())
     {
-      // The function to call.
-      Typed_identifier tid(Go_statement::thunk_field_fn, fntype, location);
-      fields->push_back(Struct_field(tid));
-    }
-  else if (ce->is_recover_call())
-    {
-      // The predeclared recover function has no argument.  However,
-      // we add an argument when building recover thunks.  Handle that
-      // here.
       fields->push_back(Struct_field(Typed_identifier("can_recover",
 						      Type::lookup_bool_type(),
 						      location)));
-    }
-
-  if (fn->bound_method_expression() != NULL)
-    {
-      go_assert(fntype->is_method());
-      Type* rtype = fntype->receiver()->type();
-      // We always pass the receiver as a pointer.
-      if (rtype->points_to() == NULL)
-	rtype = Type::make_pointer_type(rtype);
-      Typed_identifier tid(Thunk_statement::thunk_field_receiver, rtype,
-			   location);
-      fields->push_back(Struct_field(tid));
     }
 
   const Expression_list* args = ce->args();
@@ -2214,8 +2182,7 @@ Thunk_statement::build_struct(Function_type* fntype)
 // artificial, function.
 
 void
-Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
-			     Function_type* fntype)
+Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 {
   source_location location = this->location();
 
@@ -2269,7 +2236,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
   // For a defer statement, start with a call to
   // __go_set_defer_retaddr.  */
-  Label* retaddr_label = NULL; 
+  Label* retaddr_label = NULL;
   if (may_call_recover)
     {
       retaddr_label = gogo->add_label_reference("retaddr");
@@ -2302,43 +2269,33 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
   thunk_parameter = Expression::make_unary(OPERATOR_MULT, thunk_parameter,
 					   location);
 
-  Bound_method_expression* bound_method = ce->fn()->bound_method_expression();
   Interface_field_reference_expression* interface_method =
     ce->fn()->interface_field_reference_expression();
 
   Expression* func_to_call;
   unsigned int next_index;
-  if (!fntype->is_builtin())
+  if (this->is_constant_function())
+    {
+      func_to_call = ce->fn();
+      next_index = 0;
+    }
+  else
     {
       func_to_call = Expression::make_field_reference(thunk_parameter,
 						      0, location);
       next_index = 1;
     }
-  else
-    {
-      go_assert(bound_method == NULL && interface_method == NULL);
-      func_to_call = ce->fn();
-      next_index = 0;
-    }
 
-  if (bound_method != NULL)
-    {
-      Expression* r = Expression::make_field_reference(thunk_parameter, 1,
-						       location);
-      // The main program passes in a function pointer from the
-      // interface expression, so here we can make a bound method in
-      // all cases.
-      func_to_call = Expression::make_bound_method(r, func_to_call,
-						   location);
-      next_index = 2;
-    }
-  else if (interface_method != NULL)
+  if (interface_method != NULL)
     {
       // The main program passes the interface object.
+      go_assert(next_index == 0);
+      Expression* r = Expression::make_field_reference(thunk_parameter, 0,
+						       location);
       const std::string& name(interface_method->name());
-      func_to_call = Expression::make_interface_field_reference(func_to_call,
-								name,
+      func_to_call = Expression::make_interface_field_reference(r, name,
 								location);
+      next_index = 1;
     }
 
   Expression_list* call_params = new Expression_list();
@@ -2374,6 +2331,13 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
   Call_expression* call = Expression::make_call(func_to_call, call_params,
 						false, location);
+
+  // This call expression was already lowered before entering the
+  // thunk statement.  Don't try to lower varargs again, as that will
+  // cause confusion for, e.g., method calls which already have a
+  // receiver parameter.
+  call->set_varargs_are_lowered();
+
   Statement* call_statement = Statement::make_statement(call);
 
   gogo->add_statement(call_statement);
@@ -2757,12 +2721,12 @@ Bc_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << (this->is_break_ ? "break" : "continue");
-  if (this->label_ != NULL) 
+  if (this->label_ != NULL)
     {
-      ast_dump_context->ostream() << " "; 
+      ast_dump_context->ostream() << " ";
       ast_dump_context->dump_label_name(this->label_);
     }
-  ast_dump_context->ostream() << std::endl; 
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a break statement.
@@ -3098,12 +3062,15 @@ If_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
   ast_dump_context->ostream() << "if ";
   ast_dump_context->dump_expression(this->cond_);
   ast_dump_context->ostream() << std::endl;
-  ast_dump_context->dump_block(this->then_block_);
-  if (this->else_block_ != NULL) 
+  if (ast_dump_context->dump_subblocks())
     {
-      ast_dump_context->print_indent();
-      ast_dump_context->ostream() << "else" << std::endl;
-      ast_dump_context->dump_block(this->else_block_);
+      ast_dump_context->dump_block(this->then_block_);
+      if (this->else_block_ != NULL)
+	{
+	  ast_dump_context->print_indent();
+	  ast_dump_context->ostream() << "else" << std::endl;
+	  ast_dump_context->dump_block(this->else_block_);
+	}
     }
 }
 
@@ -3401,7 +3368,7 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 // Dump the AST representation for a case clause
 
 void
-Case_clauses::Case_clause::dump_clause(Ast_dump_context* ast_dump_context) 
+Case_clauses::Case_clause::dump_clause(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->print_indent();
@@ -3508,7 +3475,6 @@ Case_clauses::lower(Block* b, Temporary_statement* val_temp,
   if (default_case != NULL)
     default_case->lower(b, val_temp, default_start_label,
 			default_finish_label);
-      
 }
 
 // Determine types.
@@ -3592,7 +3558,7 @@ Case_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
 {
   for (Clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)    
+       ++p)
     p->dump_clause(ast_dump_context);
 }
 
@@ -3716,9 +3682,15 @@ Constant_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << "switch ";
   ast_dump_context->dump_expression(this->val_);
-  ast_dump_context->ostream() << " {" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->ostream() << "}" << std::endl;
+
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
+
+   ast_dump_context->ostream() << std::endl;
 }
 
 // Class Switch_statement.
@@ -3806,12 +3778,15 @@ Switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
   if (this->val_ != NULL)
     {
       ast_dump_context->dump_expression(this->val_);
-      ast_dump_context->ostream() << " ";
     }
-  ast_dump_context->ostream() << "{" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "}" << std::endl;
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a switch statement.
@@ -3951,7 +3926,7 @@ Type_case_clauses::Type_case_clause::dump_clause(
     }
   else
     {
-      ast_dump_context->ostream() << "case "; 
+      ast_dump_context->ostream() << "case ";
       ast_dump_context->dump_type(this->type_);
       ast_dump_context->ostream() << ":" ;
     }
@@ -4040,7 +4015,7 @@ Type_case_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
 {
   for (Type_clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)    
+       ++p)
     p->dump_clause(ast_dump_context);
 }
 
@@ -4150,15 +4125,20 @@ Type_switch_statement::break_label()
 // Dump the AST representation for a type switch statement
 
 void
-Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) 
+Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << "switch " << this->var_->name() << " = ";
   ast_dump_context->dump_expression(this->expr_);
-  ast_dump_context->ostream() << " .(type) {" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->ostream() << "}" << std::endl;
+  ast_dump_context->ostream() << " .(type)";
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a type switch statement.
@@ -4554,7 +4534,7 @@ Select_clauses::Select_clause::dump_clause(
           ast_dump_context->ostream() << " <- " ;
           ast_dump_context->dump_expression(this->val_);
         }
-      else 
+      else
         {
 	  if (this->val_ != NULL)
 	    ast_dump_context->dump_expression(this->val_);
@@ -4567,7 +4547,7 @@ Select_clauses::Select_clause::dump_clause(
           if (this->closedvar_ != NULL ||
               this->var_ != NULL)
             ast_dump_context->ostream() << " := " ;
-            
+
           ast_dump_context->ostream() << " <- " ;
           ast_dump_context->dump_expression(this->channel_);
         }
@@ -4842,7 +4822,7 @@ Select_clauses::add_clause_backend(
 			  ? clause->location()
 			  : clause->statements()->end_location());
   Bstatement* g = bottom_label->get_goto(context, gloc);
-				
+
   if (s == NULL)
     (*clauses)[index] = g;
   else
@@ -4856,7 +4836,7 @@ Select_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
 {
   for (Clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)    
+       ++p)
     p->dump_clause(ast_dump_context);
 }
 
@@ -4902,13 +4882,18 @@ Select_statement::do_get_backend(Translate_context* context)
 
 // Dump the AST representation for a select statement.
 
-void 
+void
 Select_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "select {" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->ostream() << "}" << std::endl;
+  ast_dump_context->ostream() << "select";
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a select statement.
@@ -5051,7 +5036,7 @@ For_statement::set_break_continue_labels(Unnamed_label* break_label,
 void
 For_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
-  if (this->init_ != NULL)
+  if (this->init_ != NULL && ast_dump_context->dump_subblocks())
     {
       ast_dump_context->print_indent();
       ast_dump_context->indent();
@@ -5063,19 +5048,24 @@ For_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
   ast_dump_context->ostream() << "for ";
   if (this->cond_ != NULL)
     ast_dump_context->dump_expression(this->cond_);
-  ast_dump_context->ostream() << " {" << std::endl;
-  ast_dump_context->indent();
 
-  ast_dump_context->dump_block(this->statements_);
-  if (this->init_ != NULL)
+  if (ast_dump_context->dump_subblocks())
     {
+      ast_dump_context->ostream() << " {" << std::endl;
+      ast_dump_context->dump_block(this->statements_);
+      if (this->init_ != NULL)
+	{
+	  ast_dump_context->print_indent();
+	  ast_dump_context->ostream() << "// POST " << std::endl;
+	  ast_dump_context->dump_block(this->post_);
+	}
+      ast_dump_context->unindent();
+
       ast_dump_context->print_indent();
-      ast_dump_context->ostream() << "// POST " << std::endl;
-      ast_dump_context->dump_block(this->post_);
+      ast_dump_context->ostream() << "}";
     }
-  ast_dump_context->unindent();
-  ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "}" << std::endl;
+
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a for statement.
@@ -5701,7 +5691,7 @@ For_range_statement::continue_label()
 void
 For_range_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
-  
+
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << "for ";
   ast_dump_context->dump_expression(this->index_var_);
@@ -5710,17 +5700,22 @@ For_range_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
       ast_dump_context->ostream() << ", ";
       ast_dump_context->dump_expression(this->value_var_);
     }
-    
-  ast_dump_context->ostream() << " = range ";      
+
+  ast_dump_context->ostream() << " = range ";
   ast_dump_context->dump_expression(this->range_);
-  ast_dump_context->ostream() << " {" << std::endl;
-  ast_dump_context->indent();
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
 
-  ast_dump_context->dump_block(this->statements_);
+      ast_dump_context->indent();
 
-  ast_dump_context->unindent();
-  ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "}" << std::endl;
+      ast_dump_context->dump_block(this->statements_);
+
+      ast_dump_context->unindent();
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a for statement with a range clause.

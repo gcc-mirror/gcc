@@ -154,8 +154,7 @@ vect_print_dump_info (enum vect_verbosity_levels vl)
 	     DECL_SOURCE_FILE (current_function_decl),
 	     DECL_SOURCE_LINE (current_function_decl));
   else
-    fprintf (vect_dump, "\n%s:%d: note: ",
-	     LOC_FILE (vect_location), LOC_LINE (vect_location));
+    fprintf (vect_dump, "\n%d: ", LOC_LINE (vect_location));
 
   return true;
 }
@@ -196,11 +195,21 @@ vectorize_loops (void)
 	loop_vec_info loop_vinfo;
 
 	vect_location = find_loop_location (loop);
+        if (vect_location != UNKNOWN_LOC
+            && vect_verbosity_level > REPORT_NONE)
+	  fprintf (vect_dump, "\nAnalyzing loop at %s:%d\n",
+            LOC_FILE (vect_location), LOC_LINE (vect_location));
+
 	loop_vinfo = vect_analyze_loop (loop);
 	loop->aux = loop_vinfo;
 
 	if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
 	  continue;
+
+        if (vect_location != UNKNOWN_LOC
+            && vect_verbosity_level > REPORT_NONE)
+          fprintf (vect_dump, "\n\nVectorizing loop at %s:%d\n",
+            LOC_FILE (vect_location), LOC_LINE (vect_location));
 
 	vect_transform_loop (loop_vinfo);
 	num_vectorized_loops++;

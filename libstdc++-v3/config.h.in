@@ -60,6 +60,9 @@
 /* Define if ECANCELED exists. */
 #undef HAVE_ECANCELED
 
+/* Define if ECHILD exists. */
+#undef HAVE_ECHILD
+
 /* Define if EIDRM exists. */
 #undef HAVE_EIDRM
 
@@ -71,6 +74,9 @@
 
 /* Define if ENOLINK exists. */
 #undef HAVE_ENOLINK
+
+/* Define if ENOSPC exists. */
+#undef HAVE_ENOSPC
 
 /* Define if ENOSR exists. */
 #undef HAVE_ENOSR
@@ -90,14 +96,23 @@
 /* Define if EOWNERDEAD exists. */
 #undef HAVE_EOWNERDEAD
 
+/* Define if EPERM exists. */
+#undef HAVE_EPERM
+
 /* Define if EPROTO exists. */
 #undef HAVE_EPROTO
 
 /* Define if ETIME exists. */
 #undef HAVE_ETIME
 
+/* Define if ETIMEDOUT exists. */
+#undef HAVE_ETIMEDOUT
+
 /* Define if ETXTBSY exists. */
 #undef HAVE_ETXTBSY
+
+/* Define if EWOULDBLOCK exists. */
+#undef HAVE_EWOULDBLOCK
 
 /* Define to 1 if you have the <execinfo.h> header file. */
 #undef HAVE_EXECINFO_H
@@ -825,6 +840,21 @@
 
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK
+
+/* Define if all C++ overloads are available in <math.h>.  */
+#if __cplusplus >= 199711L
+#undef __CORRECT_ISO_CPP_MATH_H_PROTO1
+#endif
+
+/* Define if only double std::abs(double) is available in <math.h>.  */
+#if __cplusplus >= 199711L
+#undef __CORRECT_ISO_CPP_MATH_H_PROTO2
+#endif
+
+/* Define if all C++ overloads are available in <stdlib.h>.  */
+#if __cplusplus >= 199711L
+#undef __CORRECT_ISO_CPP_STDLIB_H_PROTO
+#endif
 
 #if defined (HAVE__ACOSF) && ! defined (HAVE_ACOSF)
 # define HAVE_ACOSF 1

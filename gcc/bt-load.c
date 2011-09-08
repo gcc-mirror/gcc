@@ -558,7 +558,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 		      /* Check for sibcall.  */
 		      if (GET_CODE (pat) == PARALLEL)
 			for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
-			  if (GET_CODE (XVECEXP (pat, 0, i)) == RETURN)
+			  if (ANY_RETURN_P (XVECEXP (pat, 0, i)))
 			    {
 			      COMPL_HARD_REG_SET (call_saved,
 						  call_used_reg_set);

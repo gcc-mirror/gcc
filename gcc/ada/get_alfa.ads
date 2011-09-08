@@ -23,8 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the function used to read ALFA information from an
---  ALI file and populate the tables defined in package ALFA with the result.
+--  This package contains the function used to read Alfa information from an
+--  ALI file and populate the tables defined in package Alfa with the result.
 
 generic
    --  These subprograms provide access to the ALI file. Locating, opening and
@@ -46,12 +46,12 @@ generic
    --  and position to the next character, which will be returned by the next
    --  call to Getc or Nextc.
 
-procedure Get_ALFA;
---  Load ALFA information from ALI file text format into internal ALFA tables
---  (ALFA.ALFA_Xref_Table, ALFA.ALFA_Scope_Table and ALFA.ALFA_File_Table). On
---  entry the input file is positioned to the initial 'F' of the first ALFA
+procedure Get_Alfa;
+--  Load Alfa information from ALI file text format into internal Alfa tables
+--  (Alfa.Alfa_Xref_Table, Alfa.Alfa_Scope_Table and Alfa.Alfa_File_Table). On
+--  entry the input file is positioned to the initial 'F' of the first Alfa
 --  line in the ALI file. On return, the file is positioned either to the end
---  of file, or to the first character of the line following the ALFA
+--  of file, or to the first character of the line following the Alfa
 --  information (which will never start with an 'F').
 --
 --  If a format error is detected in the input, then an exception is raised

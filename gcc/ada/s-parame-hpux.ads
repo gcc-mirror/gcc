@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,7 +62,7 @@ package System.Parameters is
    Unspecified_Size : constant Size_Type := Size_Type'First;
    --  Value used to indicate that no size type is set
 
-   subtype Ratio is Size_Type range -1 .. 100;
+   subtype Percentage is Size_Type range -1 .. 100;
    Dynamic : constant Size_Type := -1;
    --  The secondary stack ratio is a constant between 0 and 100 which
    --  determines the percentage of the allocated task stack that is
@@ -70,10 +70,10 @@ package System.Parameters is
    --  The special value of minus one indicates that the secondary
    --  stack is to be allocated from the heap instead.
 
-   Sec_Stack_Ratio : constant Ratio := Dynamic;
+   Sec_Stack_Percentage : constant Percentage := Dynamic;
    --  This constant defines the handling of the secondary stack
 
-   Sec_Stack_Dynamic : constant Boolean := Sec_Stack_Ratio = Dynamic;
+   Sec_Stack_Dynamic : constant Boolean := Sec_Stack_Percentage = Dynamic;
    --  Convenient Boolean for testing for dynamic secondary stack
 
    function Default_Stack_Size return Size_Type;

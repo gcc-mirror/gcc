@@ -2126,15 +2126,15 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
           return NULL;
         }
 
-      op3 = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
+      op3 = gimple_assign_rhs1 (def_stmt);
       if (COMPARISON_CLASS_P (op3))
         {
           op4 = TREE_OPERAND (op3, 1);
           op3 = TREE_OPERAND (op3, 0);
         }
 
-      op1 = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 1);
-      op2 = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 2);
+      op1 = gimple_assign_rhs2 (def_stmt);
+      op2 = gimple_assign_rhs3 (def_stmt);
 
       if (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op2) != SSA_NAME)
         {

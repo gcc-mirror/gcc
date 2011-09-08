@@ -172,6 +172,20 @@ proc check_effective_target_fma4 { } {
     } "-O2 -mfma4" ]
 }
 
+# Return 1 if fma instructions can be compiled.
+proc check_effective_target_fma { } {
+    return [check_no_compiler_messages fma object {
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
+	{
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
+	}
+    } "-O2 -mfma" ]
+}
+
 # Return 1 if xop instructions can be compiled.
 proc check_effective_target_xop { } {
     return [check_no_compiler_messages xop object {
@@ -196,6 +210,18 @@ proc check_effective_target_lzcnt { } {
     } "-mlzcnt" ]
 }
 
+# Return 1 if avx2 instructions can be compiled.
+proc check_effective_target_avx2 { } {
+    return [check_no_compiler_messages avx2 object {
+	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	mm256_is32_andnotsi256  (__v4di __X, __v4di __Y)
+        {
+	   return __builtin_ia32_andnotsi256 (__X, __Y);
+	}
+    } "-O0 -mavx2" ]
+}
+
 # Return 1 if bmi instructions can be compiled.
 proc check_effective_target_bmi { } {
     return [check_no_compiler_messages bmi object {
@@ -204,6 +230,17 @@ proc check_effective_target_bmi { } {
 	  return __builtin_ia32_bextr_u32 (__X, __Y);
 	}
     } "-mbmi" ]
+}
+
+# Return 1 if bmi2 instructions can be compiled.
+proc check_effective_target_bmi2 { } {
+    return [check_no_compiler_messages bmi2 object {
+	unsigned int
+	_bzhi_u32 (unsigned int __X, unsigned int __Y)
+	{
+	    return __builtin_ia32_bzhi_si (__X, __Y);
+	}
+    } "-mbmi2" ]
 }
 
 # If the linker used understands -M <mapfile>, pass it to clear hardware

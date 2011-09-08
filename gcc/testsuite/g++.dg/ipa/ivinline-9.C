@@ -89,5 +89,6 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "B::foo\[^\\n\]*inline copy in int main"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "Discovered a virtual call to a known target.*B::.*foo"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "B::foo\[^\\n\]*inline copy in int main"  "inline"  { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */

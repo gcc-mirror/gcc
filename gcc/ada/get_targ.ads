@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,6 +94,10 @@ package Get_Targ is
 
    function Get_Strict_Alignment return Nat;
    pragma Import (C, Get_Strict_Alignment, "get_target_strict_alignment");
+
+   function Get_System_Allocator_Alignment return Nat;
+   pragma Import (C, Get_System_Allocator_Alignment,
+                  "get_target_system_allocator_alignment");
 
    function Get_Double_Float_Alignment return Nat;
    pragma Import (C, Get_Double_Float_Alignment,

@@ -14,7 +14,7 @@ struct s {
   int v;
 };
 
-constexpr s bang;		// { dg-error "" }
+constexpr s bang;		// { dg-message "" }
 
 struct R {
   int i,j;
@@ -33,7 +33,7 @@ struct T {
 
 constexpr T t1;
 // Ill-formed (diagnostic required)
-constexpr T t2(t1);		// { dg-error "" }
+constexpr T t2(t1);		// { dg-message "" }
 
 // Well-formed
 struct U {

@@ -1,6 +1,7 @@
 @set gprconfig GPRconfig
 
 @c ------ projects.texi
+@c Copyright (C) 2002-2011, Free Software Foundation, Inc.
 @c This file is shared between the GNAT user's guide and gprbuild. It is not
 @c compilable on its own, you should instead compile the other two manuals.
 @c For that reason, there is no toplevel @menu
@@ -19,6 +20,7 @@
 * Library Projects::
 * Project Extension::
 * Aggregate Projects::
+* Aggregate Library Projects::
 * Project File Reference::
 @end menu
 
@@ -985,7 +987,6 @@ The following attributes can be defined in package @code{Naming}:
   other than Ada. They are indexed on the language name, and contain
   a list of file names respectively for headers and source code.
 
-
 @end table
 
 @ifclear vms
@@ -1315,7 +1316,6 @@ There are two main approaches to avoiding this duplication:
   more qualifiers).
 @end itemize
 
-
 @c ---------------------------------------------
 @node Global Attributes
 @subsection Global Attributes
@@ -1526,10 +1526,11 @@ front of the @code{project} keyword.
 @item @b{Library_Name}:
 @cindex @code{Library_Name}
   This attribute is the name of the library to be built. There is no
-  restriction on the name of a library imposed by the project manager;
-  however, there may be system specific restrictions on the name.
-  In general, it is recommended to stick to alphanumeric characters
-  (and possibly underscores) to help portability.
+  restriction on the name of a library imposed by the project manager, except
+  for stand-alone libraries whose names must follow the syntax of Ada
+  identifiers; however, there may be system specific restrictions on the name.
+  In general, it is recommended to stick to alphanumeric characters (and
+  possibly single underscores) to help portability.
 
 @item @b{Library_Dir}:
 @cindex @code{Library_Dir}
@@ -1649,7 +1650,6 @@ Other library-related attributes can be used to change the defaults:
   upon this subsystem.
 @end table
 
-
 @c ---------------------------------------------
 @node Using Library Projects
 @subsection Using Library Projects
@@ -1750,6 +1750,9 @@ whose main is not in Ada since it makes the elaboration of the Ada part mostly
 transparent. However, stand-alone libraries are also useful when the main is in
 Ada: they provide a means for minimizing relinking & redeployment of complex
 systems when localized changes are made.
+
+The name of a stand-alone library, specified with attribute
+@code{Library_Name}, must have the syntax of an Ada identifier.
 
 The most prominent characteristic of a stand-alone library is that it offers a
 distinction between interface units and implementation units. Only the former
@@ -1872,7 +1875,6 @@ included in the library.
   such as VMS. When symbol policy is "direct", then a file with this name
   must exist in the object directory.
 @end table
-
 
 @c ---------------------------------------------
 @node Installing a library with project files
@@ -2270,7 +2272,6 @@ aggregate project Agg is
     for Project_Files use ("myproject.gpr");
 end Agg;
 
-
 with "prj.gpr";  --  searched on Agg'Project_Path
 project MyProject is
    ...
@@ -2312,7 +2313,7 @@ attributes and packages are forbidden in an aggregate project. Here is the
 
 @itemize @bullet
 @item Languages
-@item Source_files, Source_List_File and other attributes dealing with
+@item Source_Files, Source_List_File and other attributes dealing with
   list of sources.
 @item Source_Dirs, Exec_Dir and Object_Dir
 @item Library_Dir, Library_Name and other library-related attributes
@@ -2322,7 +2323,7 @@ attributes and packages are forbidden in an aggregate project. Here is the
 @item Inherit_Source_Path
 @item Excluded_Source_Dirs
 @item Locally_Removed_Files
-@item Excluded_Source_Fies
+@item Excluded_Source_Files
 @item Excluded_Source_List_File
 @item Interfaces
 @end itemize
@@ -2613,6 +2614,105 @@ name of the executables resulting from the link of the main units, and
 for the Executable_Suffix.
 
 @c ---------------------------------------------
+@node Aggregate Library Projects
+@section Aggregate Library Projects
+@c ---------------------------------------------
+
+@noindent
+
+Aggregate library projects make it possible to build a single library
+using object files built using other standard or library
+projects. This gives the flexibility to describe an application as
+having multiple modules (a GUI, database access, ...) using different
+project files (so possibly built with different compiler options) and
+yet create a single library (static or relocatable) out of the
+corresponding object files.
+
+@subsection Building aggregate library projects
+
+For example, we can define an aggregate project Agg that groups A, B
+and C:
+
+@smallexample @c projectfile
+   aggregate library project Agg is
+      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
+      for Library_Name use ("agg");
+      for Library_Dir use ("lagg");
+   end Agg;
+@end smallexample
+
+Then, when you build with:
+
+@smallexample
+    gprbuild agg.gpr
+@end smallexample
+
+This will build all units from projects A, B and C and will create a
+static library named @file{libagg.a} into the @file{lagg}
+directory. An aggregate library project has the same set of
+restriction as a standard library project.
+
+Note that a shared aggregate library project cannot aggregates a
+static library project. In platforms where a compiler option is
+required to create relocatable object files, a Builder package in the
+aggregate library project may be used:
+
+@smallexample @c projectfile
+   aggregate library project Agg is
+      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
+      for Library_Name use ("agg");
+      for Library_Dir use ("lagg");
+      for Library_Kind use "relocatable";
+
+      package Builder is
+         for Global_Compilation_Switches ("Ada") use ("-fPIC");
+      end Builder;
+   end Agg;
+@end smallexample
+
+With the above aggregate library Builder package, the @code{-fPIC}
+option will be passed to the compiler when building any source code
+from projects @file{a.gpr}, @file{b.gpr} and @file{c.gpr}.
+
+@subsection Syntax of aggregate library projects
+
+An aggregate library project follows the general syntax of project
+files. The recommended extension is still @file{.gpr}. However, a special
+@code{aggregate library} qualifier must be put before the keyword
+@code{project}.
+
+An aggregate library project cannot @code{with} any other project
+(standard or aggregate), except an abstract project which can be used
+to share attribute values.
+
+An aggregate library project does not have any source files directly (only
+through other standard projects). Therefore a number of the standard
+attributes and packages are forbidden in an aggregate library
+project. Here is the (non exhaustive) list:
+
+@itemize @bullet
+@item Languages
+@item Source_Files, Source_List_File and other attributes dealing with
+  list of sources.
+@item Source_Dirs, Exec_Dir and Object_Dir
+@item Main
+@item Roots
+@item Externally_Built
+@item Inherit_Source_Path
+@item Excluded_Source_Dirs
+@item Locally_Removed_Files
+@item Excluded_Source_Files
+@item Excluded_Source_List_File
+@item Interfaces
+@end itemize
+
+The only package that is authorized (albeit optional) is Builder.
+
+The Project_Files attribute (See @pxref{Aggregate Projects}) is used to
+described the aggregated projects whose object files have to be
+included into the aggregate library.
+
+@c ---------------------------------------------
 @node Project File Reference
 @section Project File Reference
 @c ---------------------------------------------
@@ -2776,7 +2876,6 @@ The current list of qualifiers is:
 @item @b{configuration}: a configuration project cannot be in a project tree.
   It describes compilers and other tools to @code{gprbuild}.
 @end table
-
 
 @c ---------------------------------------------
 @node Declarations
@@ -3226,7 +3325,6 @@ A @b{context} may be one of the following:
   whose selector is a package name in that project.
 @end itemize
 
-
 @c ---------------------------------------------
 @node Attributes
 @subsection Attributes
@@ -3546,7 +3644,6 @@ end MyProj;
 @c ---------------------------------------------
 
 @noindent
-
 
 @menu
 * gnatmake and Project Files::
@@ -4049,7 +4146,6 @@ When a library project file is specified, switches ^-b^/ACTION=BIND^ and
   (in the case of a stand-alone library) and that the library should be built.
 @end itemize
 
-
 @c ---------------------------------------------
 @node The GNAT Driver and Project Files
 @section The GNAT Driver and Project Files
@@ -4490,6 +4586,3 @@ The switches for GPRclean are:
 @item @option{-Xnm=val} : Specify an external reference for Project Files.
 
 @end itemize
-
-
-

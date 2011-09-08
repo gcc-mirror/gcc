@@ -135,6 +135,8 @@ GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 GLIBCXX_ENABLE_EXTERN_TEMPLATE([yes])
 
 # Checks for operating systems support that doesn't require linking.
+GLIBCXX_CHECK_MATH_PROTO
+GLIBCXX_CHECK_STDLIB_PROTO
 GLIBCXX_CHECK_SYSTEM_ERROR
 
 # For the streamoff typedef.

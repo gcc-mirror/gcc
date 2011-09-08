@@ -541,22 +541,33 @@ null_ptr_cst_p (tree t)
     return true;
   if (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)))
     {
-      if (cxx_dialect >= cxx0x)
-	{
-	  t = fold_non_dependent_expr (t);
-	  t = maybe_constant_value (t);
-	  if (TREE_CONSTANT (t) && integer_zerop (t))
-	    return true;
-	}
-      else
+      /* Core issue 903 says only literal 0 is a null pointer constant.  */
+      if (cxx_dialect < cxx0x)
 	{
 	  t = integral_constant_value (t);
 	  STRIP_NOPS (t);
-	  if (integer_zerop (t) && !TREE_OVERFLOW (t))
-	    return true;
 	}
+      if (integer_zerop (t) && !TREE_OVERFLOW (t))
+	return true;
     }
   return false;
+}
+
+/* Returns true iff T is a null member pointer value (4.11).  */
+
+bool
+null_member_pointer_value_p (tree t)
+{
+  tree type = TREE_TYPE (t);
+  if (!type)
+    return false;
+  else if (TYPE_PTRMEMFUNC_P (type))
+    return (TREE_CODE (t) == CONSTRUCTOR
+	    && integer_zerop (CONSTRUCTOR_ELT (t, 0)->value));
+  else if (TYPE_PTRMEM_P (type))
+    return integer_all_onesp (t);
+  else
+    return false;
 }
 
 /* Returns nonzero if PARMLIST consists of only default parms,
@@ -1565,9 +1576,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 
   if (TREE_CODE (from) == REFERENCE_TYPE)
     {
-      /* Anything with reference type is an lvalue.  */
-      is_lvalue = clk_ordinary;
       from = TREE_TYPE (from);
+      if (!TYPE_REF_IS_RVALUE (rfrom)
+	  || TREE_CODE (from) == FUNCTION_TYPE)
+	is_lvalue = clk_ordinary;
     }
 
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
@@ -1641,6 +1653,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	/* The top-level caller requested that we pretend that the lvalue
 	   be treated as an rvalue.  */
 	conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
+      else if (TREE_CODE (rfrom) == REFERENCE_TYPE)
+	/* Handle rvalue reference to function properly.  */
+	conv->rvaluedness_matches_p
+	  = (TYPE_REF_IS_RVALUE (rto) == TYPE_REF_IS_RVALUE (rfrom));
       else
 	conv->rvaluedness_matches_p 
           = (TYPE_REF_IS_RVALUE (rto) == !is_lvalue);
@@ -5648,6 +5664,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   diagnostic_t diag_kind;
   int flags;
 
+  if (convs->bad_p && !(complain & tf_error))
+    return error_mark_node;
+
   if (convs->bad_p
       && convs->kind != ck_user
       && convs->kind != ck_list
@@ -5694,15 +5713,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else if (t->kind == ck_identity)
 	    break;
 	}
-      if (complain & tf_error)
-	{
-	  permerror (input_location, "invalid conversion from %qT to %qT", TREE_TYPE (expr), totype);
-	  if (fn)
-	    permerror (DECL_SOURCE_LOCATION (fn),
-		       "  initializing argument %P of %qD", argnum, fn);
-	}
-      else
-	return error_mark_node;
+
+      permerror (input_location, "invalid conversion from %qT to %qT",
+		 TREE_TYPE (expr), totype);
+      if (fn)
+	permerror (DECL_SOURCE_LOCATION (fn),
+		   "  initializing argument %P of %qD", argnum, fn);
 
       return cp_convert (totype, expr);
     }
@@ -5739,11 +5755,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	       empty list, since that is handled separately in 8.5.4.  */
 	    && cand->num_convs > 0)
 	  {
-	    if (complain & tf_error)
-	      error ("converting to %qT from initializer list would use "
-		     "explicit constructor %qD", totype, convfn);
-	    else
-	      return error_mark_node;
+	    error ("converting to %qT from initializer list would use "
+		   "explicit constructor %qD", totype, convfn);
 	  }
 
 	/* Set user_conv_p on the argument conversions, so rvalue/base
@@ -5795,6 +5808,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
         }
       return expr;
     case ck_ambig:
+      /* We leave bad_p off ck_ambig because overload resolution considers
+	 it valid, it just fails when we try to perform it.  So we need to
+         check complain here, too.  */
       if (complain & tf_error)
 	{
 	  /* Call build_user_type_conversion again for the error.  */
@@ -5905,14 +5921,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	/* Copy-list-initialization doesn't actually involve a copy.  */
 	return expr;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
-      if (diag_kind && fn)
-	{
-	  if ((complain & tf_error))
-	    emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (fn), 0,
-			     "  initializing argument %P of %qD", argnum, fn);
-	  else if (diag_kind == DK_ERROR)
-	    return error_mark_node;
-	}
+      if (diag_kind && fn && complain)
+	emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (fn), 0,
+			 "  initializing argument %P of %qD", argnum, fn);
       return build_cplus_new (totype, expr, complain);
 
     case ck_ref_bind:
@@ -5922,13 +5933,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (convs->bad_p && TYPE_REF_IS_RVALUE (ref_type)
 	    && real_lvalue_p (expr))
 	  {
-	    if (complain & tf_error)
-	      {
-		error ("cannot bind %qT lvalue to %qT",
-		       TREE_TYPE (expr), totype);
-		if (fn)
-		  error ("  initializing argument %P of %q+D", argnum, fn);
-	      }
+	    error ("cannot bind %qT lvalue to %qT",
+		   TREE_TYPE (expr), totype);
+	    if (fn)
+	      error ("  initializing argument %P of %q+D", argnum, fn);
 	    return error_mark_node;
 	  }
 
@@ -5954,19 +5962,16 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    if (!CP_TYPE_CONST_NON_VOLATILE_P (type)
 		&& !TYPE_REF_IS_RVALUE (ref_type))
 	      {
-		if (complain & tf_error)
-		  {
-		    /* If the reference is volatile or non-const, we
-		       cannot create a temporary.  */
-		    if (lvalue & clk_bitfield)
-		      error ("cannot bind bitfield %qE to %qT",
-			     expr, ref_type);
-		    else if (lvalue & clk_packed)
-		      error ("cannot bind packed field %qE to %qT",
-			     expr, ref_type);
-		    else
-		      error ("cannot bind rvalue %qE to %qT", expr, ref_type);
-		  }
+		/* If the reference is volatile or non-const, we
+		   cannot create a temporary.  */
+		if (lvalue & clk_bitfield)
+		  error ("cannot bind bitfield %qE to %qT",
+			 expr, ref_type);
+		else if (lvalue & clk_packed)
+		  error ("cannot bind packed field %qE to %qT",
+			 expr, ref_type);
+		else
+		  error ("cannot bind rvalue %qE to %qT", expr, ref_type);
 		return error_mark_node;
 	      }
 	    /* If the source is a packed field, and we must use a copy
@@ -5979,9 +5984,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		&& CLASS_TYPE_P (type)
 		&& type_has_nontrivial_copy_init (type))
 	      {
-		if (complain & tf_error)
-		  error ("cannot bind packed field %qE to %qT",
-			 expr, ref_type);
+		error ("cannot bind packed field %qE to %qT",
+		       expr, ref_type);
 		return error_mark_node;
 	      }
 	    if (lvalue & clk_bitfield)
@@ -7961,13 +7965,13 @@ compare_ics (conversion *ics1, conversion *ics2)
 
   if (ref_conv1 && ref_conv2)
     {
-      if (!ref_conv1->this_p && !ref_conv2->this_p
-	  && (TYPE_REF_IS_RVALUE (ref_conv1->type)
-	      != TYPE_REF_IS_RVALUE (ref_conv2->type)))
+      if (!ref_conv1->this_p && !ref_conv2->this_p)
 	{
-	  if (ref_conv1->rvaluedness_matches_p)
+	  if (ref_conv1->rvaluedness_matches_p
+	      > ref_conv2->rvaluedness_matches_p)
 	    return 1;
-	  if (ref_conv2->rvaluedness_matches_p)
+	  if (ref_conv2->rvaluedness_matches_p
+	      > ref_conv1->rvaluedness_matches_p)
 	    return -1;
 	}
 

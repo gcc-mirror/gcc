@@ -23,15 +23,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALFA; use ALFA;
+with Alfa; use Alfa;
 
-procedure Put_ALFA is
+procedure Put_Alfa is
 begin
-   --  Loop through entries in ALFA_File_Table
+   --  Loop through entries in Alfa_File_Table
 
-   for J in 1 .. ALFA_File_Table.Last loop
+   for J in 1 .. Alfa_File_Table.Last loop
       declare
-         F     : ALFA_File_Record renames ALFA_File_Table.Table (J);
+         F     : Alfa_File_Record renames Alfa_File_Table.Table (J);
          Start : Scope_Index;
          Stop  : Scope_Index;
 
@@ -39,19 +39,17 @@ begin
          Start := F.From_Scope;
          Stop  := F.To_Scope;
 
-         if Start <= Stop then
-            Write_Info_Initiate ('F');
-            Write_Info_Char ('D');
-            Write_Info_Char (' ');
-            Write_Info_Nat (F.File_Num);
-            Write_Info_Char (' ');
+         Write_Info_Initiate ('F');
+         Write_Info_Char ('D');
+         Write_Info_Char (' ');
+         Write_Info_Nat (F.File_Num);
+         Write_Info_Char (' ');
 
-            for N in F.File_Name'Range loop
-               Write_Info_Char (F.File_Name (N));
-            end loop;
+         for N in F.File_Name'Range loop
+            Write_Info_Char (F.File_Name (N));
+         end loop;
 
-            Write_Info_Terminate;
-         end if;
+         Write_Info_Terminate;
 
          --  Loop through scope entries for this file
 
@@ -60,7 +58,7 @@ begin
             pragma Assert (Start <= Stop);
 
             declare
-               S : ALFA_Scope_Record renames ALFA_Scope_Table.Table (Start);
+               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Start);
 
             begin
                Write_Info_Initiate ('F');
@@ -98,11 +96,11 @@ begin
       end;
    end loop;
 
-   --  Loop through entries in ALFA_File_Table
+   --  Loop through entries in Alfa_File_Table
 
-   for J in 1 .. ALFA_File_Table.Last loop
+   for J in 1 .. Alfa_File_Table.Last loop
       declare
-         F           : ALFA_File_Record renames ALFA_File_Table.Table (J);
+         F           : Alfa_File_Record renames Alfa_File_Table.Table (J);
          Start       : Scope_Index;
          Stop        : Scope_Index;
          File        : Nat;
@@ -121,7 +119,7 @@ begin
             pragma Assert (Start <= Stop);
 
             Output_One_Scope : declare
-               S : ALFA_Scope_Record renames ALFA_Scope_Table.Table (Start);
+               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Start);
 
                XStart : Xref_Index;
                XStop  : Xref_Index;
@@ -153,8 +151,11 @@ begin
                   Write_Info_Char (S.Scope_Name (N));
                end loop;
 
+               --  Default value of (0,0) is used for the special __HEAP
+               --  variable so use another default value.
+
                Entity_Line := 0;
-               Entity_Col  := 0;
+               Entity_Col  := 1;
 
                --  Loop through cross reference entries for this scope
 
@@ -163,8 +164,8 @@ begin
                   pragma Assert (XStart <= XStop);
 
                   Output_One_Xref : declare
-                     R : ALFA_Xref_Record renames
-                           ALFA_Xref_Table.Table (XStart);
+                     R : Alfa_Xref_Record renames
+                           Alfa_Xref_Table.Table (XStart);
 
                   begin
                      if R.Entity_Line /= Entity_Line
@@ -226,4 +227,4 @@ begin
          end loop;
       end;
    end loop;
-end Put_ALFA;
+end Put_Alfa;

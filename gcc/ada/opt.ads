@@ -537,8 +537,8 @@ package Opt is
                            Front_End_Setjmp_Longjmp_Exceptions;
    --  GNAT
    --  Set to the appropriate value depending on the default as given in
-   --  system.ads (ZCX_By_Default, GCC_ZCX_Support). The C convention is there
-   --  to make this variable accessible to gigi.
+   --  system.ads (ZCX_By_Default). The C convention is there to make this
+   --  variable accessible to gigi.
 
    Exception_Tracebacks : Boolean := False;
    --  GNATBIND
@@ -1550,6 +1550,12 @@ package Opt is
    --  clauses that are affected by non-standard bit-order. The default is
    --  that this warning is enabled.
 
+   Warn_On_Suspicious_Contract : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for suspicious contracts expressed as
+   --  pragmas or aspects precondition and postcondition. The default is that
+   --  this warning is disabled.
+
    Warn_On_Suspicious_Modulus_Value : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for suspicious modulus values. The
@@ -1868,16 +1874,23 @@ package Opt is
    --  Used to store the ASIS version number read from a tree file to check if
    --  it is the same as stored in the ASIS version number in Tree_IO.
 
-   ----------------------------------
-   -- Mode for Formal Verification --
-   ----------------------------------
+   -----------------------------------
+   -- Modes for Formal Verification --
+   -----------------------------------
 
-   --  This mode is currently defined through a debug flag
-
-   ALFA_Mode : Boolean := False;
+   Alfa_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
-   --  the ALFA subset of Ada. Set by debuf flag -gnatd.F.
+   --  the Alfa subset of Ada. Set by debug flag -gnatd.F.
+
+   function Full_Expander_Active return Boolean;
+   pragma Inline (Full_Expander_Active);
+   --  Returns the value of (Expander_Active and not Alfa_Mode). This "flag"
+   --  indicates that expansion is fully active, that is, not in the reduced
+   --  mode for Alfa (True) or that expansion is either deactivated, or active
+   --  in the reduced mode for Alfa (False). For more information on full
+   --  expansion, see package Expander. For more information on reduced
+   --  Alfa expansion, see package Exp_Alfa.
 
 private
 

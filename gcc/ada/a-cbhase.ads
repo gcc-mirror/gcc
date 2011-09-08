@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -429,9 +429,15 @@ private
    type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
 
+   --  Note: If a Cursor object has no explicit initialization expression,
+   --  it must default initialize to the same value as constant No_Element.
+   --  The Node component of type Cursor has scalar type Count_Type, so it
+   --  requires an explicit initialization expression of its own declaration,
+   --  in order for objects of record type Cursor to properly initialize.
+
    type Cursor is record
       Container : Set_Access;
-      Node      : Count_Type;
+      Node      : Count_Type := 0;
    end record;
 
    procedure Write

@@ -67,6 +67,7 @@
 #define bit_FSGSBASE	(1 << 0)
 #define bit_BMI		(1 << 3)
 #define bit_AVX2	(1 << 5)
+#define bit_BMI2	(1 << 8)
 
 #if defined(__i386__) && defined(__PIC__)
 /* %ebx may be the PIC register.  */

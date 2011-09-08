@@ -755,6 +755,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	 && !sym->attr.contained;
 
   if (sym->attr.codimension && gfc_option.coarray == GFC_FCOARRAY_LIB
+      && sym->as->type != AS_ASSUMED_SHAPE
       && GFC_TYPE_ARRAY_CAF_TOKEN (type) == NULL_TREE)
     {
       tree token;
@@ -1533,6 +1534,11 @@ get_proc_pointer_decl (gfc_symbol *sym)
 						  false, true);
     }
 
+  /* Handle threadprivate procedure pointers.  */
+  if (sym->attr.threadprivate
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+
   attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
   decl_attributes (&decl, attributes, 0);
 
@@ -2104,12 +2110,11 @@ create_function_arglist (gfc_symbol * sym)
 
       f->sym->backend_decl = parm;
 
-      /* Coarrays which do not use a descriptor pass with -fcoarray=lib the
-	 token and the offset as hidden arguments.  */
+      /* Coarrays which are descriptorless or assumed-shape pass with
+	 -fcoarray=lib the token and the offset as hidden arguments.  */
       if (f->sym->attr.codimension
 	  && gfc_option.coarray == GFC_FCOARRAY_LIB
-	  && !f->sym->attr.allocatable
-	  && f->sym->as->type != AS_ASSUMED_SHAPE)
+	  && !f->sym->attr.allocatable)
 	{
 	  tree caf_type;
 	  tree token;
@@ -2119,12 +2124,24 @@ create_function_arglist (gfc_symbol * sym)
 		      && !sym->attr.is_bind_c);
 	  caf_type = TREE_TYPE (f->sym->backend_decl);
 
-	  gcc_assert (GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) == NULL_TREE);
 	  token = build_decl (input_location, PARM_DECL,
 			      create_tmp_var_name ("caf_token"),
 			      build_qualified_type (pvoid_type_node,
 						    TYPE_QUAL_RESTRICT));
-	  GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) = token;
+	  if (f->sym->as->type == AS_ASSUMED_SHAPE)
+	    {
+	      gcc_assert (DECL_LANG_SPECIFIC (f->sym->backend_decl) == NULL
+			  || GFC_DECL_TOKEN (f->sym->backend_decl) == NULL_TREE);
+	      if (DECL_LANG_SPECIFIC (f->sym->backend_decl) == NULL)
+		gfc_allocate_lang_decl (f->sym->backend_decl);
+	      GFC_DECL_TOKEN (f->sym->backend_decl) = token;
+	    }
+          else
+	    {
+	      gcc_assert (GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) == NULL_TREE);
+	      GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) = token;
+	    }
+	    
 	  DECL_CONTEXT (token) = fndecl;
 	  DECL_ARTIFICIAL (token) = 1;
 	  DECL_ARG_TYPE (token) = TREE_VALUE (typelist);
@@ -2132,12 +2149,21 @@ create_function_arglist (gfc_symbol * sym)
 	  hidden_arglist = chainon (hidden_arglist, token);
 	  gfc_finish_decl (token);
 
-	  gcc_assert (GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) == NULL_TREE);
 	  offset = build_decl (input_location, PARM_DECL,
 			       create_tmp_var_name ("caf_offset"),
 			       gfc_array_index_type);
 
-	  GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) = offset;
+	  if (f->sym->as->type == AS_ASSUMED_SHAPE)
+	    {
+	      gcc_assert (GFC_DECL_CAF_OFFSET (f->sym->backend_decl)
+					       == NULL_TREE);
+	      GFC_DECL_CAF_OFFSET (f->sym->backend_decl) = offset;
+	    }
+	  else
+	    {
+	      gcc_assert (GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) == NULL_TREE);
+	      GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) = offset;
+	    }
 	  DECL_CONTEXT (offset) = fndecl;
 	  DECL_ARTIFICIAL (offset) = 1;
 	  DECL_ARG_TYPE (offset) = TREE_VALUE (typelist);
@@ -4215,7 +4241,7 @@ generate_coarray_sym_init (gfc_symbol *sym)
 
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_register, 6, size,
 			     build_int_cst (integer_type_node,
-					    GFC_CAF_COARRAY_ALLOC), /* type.  */
+					    GFC_CAF_COARRAY_STATIC), /* type.  */
 			     token, null_pointer_node, /* token, stat.  */
 			     null_pointer_node, /* errgmsg, errmsg_len.  */
 			     build_int_cst (integer_type_node, 0));
@@ -5189,17 +5215,25 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       tree result = get_proc_result (sym);
 
-      if (result != NULL_TREE
-	    && sym->attr.function
-	    && !sym->attr.pointer)
+      if (result != NULL_TREE && sym->attr.function && !sym->attr.pointer)
 	{
 	  if (sym->attr.allocatable && sym->attr.dimension == 0
 	      && sym->result == sym)
 	    gfc_add_modify (&init, result, fold_convert (TREE_TYPE (result),
 							 null_pointer_node));
+	  else if (sym->ts.type == BT_CLASS
+		   && CLASS_DATA (sym)->attr.allocatable
+		   && sym->attr.dimension == 0 && sym->result == sym)
+	    {
+	      tmp = CLASS_DATA (sym)->backend_decl;
+	      tmp = fold_build3_loc (input_location, COMPONENT_REF,
+				     TREE_TYPE (tmp), result, tmp, NULL_TREE);
+	      gfc_add_modify (&init, tmp, fold_convert (TREE_TYPE (tmp),
+							null_pointer_node));
+	    }
 	  else if (sym->ts.type == BT_DERIVED
-	      && sym->ts.u.derived->attr.alloc_comp
-	      && !sym->attr.allocatable)
+		   && sym->ts.u.derived->attr.alloc_comp
+		   && !sym->attr.allocatable)
 	    {
 	      rank = sym->as ? sym->as->rank : 0;
 	      tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, result, rank);

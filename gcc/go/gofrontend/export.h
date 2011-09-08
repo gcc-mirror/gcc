@@ -7,6 +7,8 @@
 #ifndef GO_EXPORT_H
 #define GO_EXPORT_H
 
+#include "string-dump.h"
+
 struct sha1_ctx;
 class Gogo;
 class Import_init;
@@ -45,7 +47,7 @@ enum Builtin_code
 // loop of exporting.  A pointer to this class is also passed to the
 // various specific export implementations.
 
-class Export
+class Export : public String_dump
 {
  public:
   // The Stream class is an interface used to output the exported
@@ -57,12 +59,12 @@ class Export
     Stream();
     virtual ~Stream();
 
-    // Write a string.
+    // Write a string. Implements the String_dump interface.
     void
     write_string(const std::string& s)
     { this->write_and_sum_bytes(s.data(), s.length()); }
 
-    // Write a nul terminated string.
+    // Write a nul terminated string. Implements the String_dump interface.
     void
     write_c_string(const char* s)
     { this->write_and_sum_bytes(s, strlen(s)); }

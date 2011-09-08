@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -471,6 +471,10 @@ package System.OS_Interface is
    pragma Import (C, pthread_key_create, "pthread_key_create");
 
    CPU_SETSIZE : constant := 1_024;
+   --  Size of the cpu_set_t mask on most linux systems (SUSE 11 uses 4_096).
+   --  This is kept for backward compatibility (System.Task_Info uses it), but
+   --  the run-time library does no longer rely on static masks, using
+   --  dynamically allocated masks instead.
 
    type bit_field is array (1 .. CPU_SETSIZE) of Boolean;
    for bit_field'Size use CPU_SETSIZE;
@@ -482,10 +486,36 @@ package System.OS_Interface is
    end record;
    pragma Convention (C, cpu_set_t);
 
+   type cpu_set_t_ptr is access all cpu_set_t;
+   --  In the run-time library we use this pointer because the size of type
+   --  cpu_set_t varies depending on the glibc version. Hence, objects of type
+   --  cpu_set_t are allocated dynamically using the number of processors
+   --  available in the target machine (value obtained at execution time).
+
+   function CPU_ALLOC (count : size_t) return cpu_set_t_ptr;
+   pragma Import (C, CPU_ALLOC, "__gnat_cpu_alloc");
+   --  Wrapper around the CPU_ALLOC C macro
+
+   function CPU_ALLOC_SIZE (count : size_t) return size_t;
+   pragma Import (C, CPU_ALLOC_SIZE, "__gnat_cpu_alloc_size");
+   --  Wrapper around the CPU_ALLOC_SIZE C macro
+
+   procedure CPU_FREE (cpuset : cpu_set_t_ptr);
+   pragma Import (C, CPU_FREE, "__gnat_cpu_free");
+   --  Wrapper around the CPU_FREE C macro
+
+   procedure CPU_ZERO (count : size_t; cpuset : cpu_set_t_ptr);
+   pragma Import (C, CPU_ZERO, "__gnat_cpu_zero");
+   --  Wrapper around the CPU_ZERO_S C macro
+
+   procedure CPU_SET (cpu : int; count : size_t; cpuset : cpu_set_t_ptr);
+   pragma Import (C, CPU_SET, "__gnat_cpu_set");
+   --  Wrapper around the CPU_SET_S C macro
+
    function pthread_setaffinity_np
      (thread     : pthread_t;
       cpusetsize : size_t;
-      cpuset     : access cpu_set_t) return int;
+      cpuset     : cpu_set_t_ptr) return int;
    pragma Import (C, pthread_setaffinity_np, "pthread_setaffinity_np");
    pragma Weak_External (pthread_setaffinity_np);
    --  Use a weak symbol because this function may be available or not,
@@ -494,7 +524,7 @@ package System.OS_Interface is
    function pthread_attr_setaffinity_np
      (attr       : access pthread_attr_t;
       cpusetsize : size_t;
-      cpuset     : access cpu_set_t) return int;
+      cpuset     : cpu_set_t_ptr) return int;
    pragma Import (C, pthread_attr_setaffinity_np,
                     "pthread_attr_setaffinity_np");
    pragma Weak_External (pthread_attr_setaffinity_np);

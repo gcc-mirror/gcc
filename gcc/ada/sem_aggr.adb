@@ -1053,7 +1053,14 @@ package body Sem_Aggr is
 
       --  Ada 2005 (AI-287): Limited aggregates allowed
 
-      if Is_Limited_Type (Typ) and then Ada_Version < Ada_2005 then
+      --  In an instance, ignore aggregate subcomponents tnat may be limited,
+      --  because they originate in view conflicts. If the original aggregate
+      --  is legal and the actuals are legal, the aggregate itself is legal.
+
+      if Is_Limited_Type (Typ)
+        and then Ada_Version < Ada_2005
+        and then not In_Instance
+      then
          Error_Msg_N ("aggregate type cannot be limited", N);
          Explain_Limited_Type (Typ, N);
 
@@ -1222,7 +1229,7 @@ package body Sem_Aggr is
 
       elsif Is_Private_Type (Typ)
         and then Present (Full_View (Typ))
-        and then In_Inlined_Body
+        and then (In_Inlined_Body or In_Instance_Body)
         and then Is_Composite_Type (Full_View (Typ))
       then
          Resolve (N, Full_View (Typ));
@@ -1309,6 +1316,10 @@ package body Sem_Aggr is
       --  for discrete choices such as "L .. H => Expr" or the OTHERS choice).
       --  In this event we do not resolve Expr unless expansion is disabled.
       --  To know why, see the DELAYED COMPONENT RESOLUTION note above.
+      --
+      --  NOTE: In the case of "... => <>", we pass the in the
+      --  N_Component_Association node as Expr, since there is no Expression in
+      --  that case, and we need a Sloc for the error message.
 
       ---------
       -- Add --
@@ -1635,6 +1646,13 @@ package body Sem_Aggr is
                end if;
             end if;
 
+            --  If it's "... => <>", nothing to resolve
+
+            if Nkind (Expr) = N_Component_Association then
+               pragma Assert (Box_Present (Expr));
+               return Success;
+            end if;
+
             --  Ada 2005 (AI-231): Propagate the type to the nested aggregate.
             --  Required to check the null-exclusion attribute (if present).
             --  This value may be overridden later on.
@@ -1644,19 +1662,29 @@ package body Sem_Aggr is
             Resolution_OK := Resolve_Array_Aggregate
               (Expr, Nxt_Ind, Nxt_Ind_Constr, Component_Typ, Others_Allowed);
 
-         --  Do not resolve the expressions of discrete or others choices
-         --  unless the expression covers a single component, or the expander
-         --  is inactive.
+         else
 
-         elsif Single_Elmt
-           or else not Expander_Active
-           or else In_Spec_Expression
-         then
-            Analyze_And_Resolve (Expr, Component_Typ);
-            Check_Expr_OK_In_Limited_Aggregate (Expr);
-            Check_Non_Static_Context (Expr);
-            Aggregate_Constraint_Checks (Expr, Component_Typ);
-            Check_Unset_Reference (Expr);
+            --  If it's "... => <>", nothing to resolve
+
+            if Nkind (Expr) = N_Component_Association then
+               pragma Assert (Box_Present (Expr));
+               return Success;
+            end if;
+
+            --  Do not resolve the expressions of discrete or others choices
+            --  unless the expression covers a single component, or the
+            --  expander is inactive.
+
+            if Single_Elmt
+              or else not Expander_Active
+              or else In_Spec_Expression
+            then
+               Analyze_And_Resolve (Expr, Component_Typ);
+               Check_Expr_OK_In_Limited_Aggregate (Expr);
+               Check_Non_Static_Context (Expr);
+               Aggregate_Constraint_Checks (Expr, Component_Typ);
+               Check_Unset_Reference (Expr);
+            end if;
          end if;
 
          if Raises_Constraint_Error (Expr)
@@ -1988,9 +2016,15 @@ package body Sem_Aggr is
 
                   --  Ada 2005 (AI-287): In case of default initialization of a
                   --  component the expander will generate calls to the
-                  --  corresponding initialization subprogram.
+                  --  corresponding initialization subprogram. We need to call
+                  --  Resolve_Aggr_Expr to check the rules about
+                  --  dimensionality.
 
-                  null;
+                  if not Resolve_Aggr_Expr (Assoc,
+                                            Single_Elmt => Single_Choice)
+                  then
+                     return Failure;
+                  end if;
 
                elsif not Resolve_Aggr_Expr (Expression (Assoc),
                                             Single_Elmt => Single_Choice)
@@ -2321,9 +2355,13 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-287): In case of default initialization of a
                --  component the expander will generate calls to the
-               --  corresponding initialization subprogram.
+               --  corresponding initialization subprogram. We need to call
+               --  Resolve_Aggr_Expr to check the rules about
+               --  dimensionality.
 
-               null;
+               if not Resolve_Aggr_Expr (Assoc, Single_Elmt => False) then
+                  return Failure;
+               end if;
 
             elsif not Resolve_Aggr_Expr (Expression (Assoc),
                                          Single_Elmt => False)

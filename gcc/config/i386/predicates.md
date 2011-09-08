@@ -565,7 +565,7 @@
 (define_predicate "call_insn_operand"
   (ior (match_operand 0 "constant_call_address_operand")
        (match_operand 0 "call_register_no_elim_operand")
-       (and (match_test "!TARGET_X32")
+       (and (not (match_test "TARGET_X32"))
 	    (match_operand 0 "memory_operand"))))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
@@ -609,6 +609,14 @@
 {
   HOST_WIDE_INT i = INTVAL (op);
   return i == 2 || i == 4 || i == 8;
+})
+
+;; Match 1, 2, 4, or 8
+(define_predicate "const1248_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT i = INTVAL (op);
+  return i == 1 || i == 2 || i == 4 || i == 8;
 })
 
 ;; Match 3, 5, or 9.  Used for leal multiplicands.

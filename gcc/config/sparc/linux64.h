@@ -35,7 +35,9 @@ along with GCC; see the file COPYING3.  If not see
     || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
     || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3 \
     || TARGET_CPU_DEFAULT == TARGET_CPU_niagara \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara2
+    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara2 \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara3 \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara4
 /* A 64 bit v9 compiler with stack-bias,
    in a Medium/Low code model environment.  */
 
@@ -141,6 +143,22 @@ along with GCC; see the file COPYING3.  If not see
 %{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
 "
+
+/* -mcpu=native handling only makes sense with compiler running on
+   a SPARC chip.  */
+#if defined(__sparc__)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+# define EXTRA_SPEC_FUNCTIONS						\
+  { "local_cpu_detect", host_detect_local_cpu },
+
+# define MCPU_MTUNE_NATIVE_SPECS					\
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
+   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#else
+# define MCPU_MTUNE_NATIVE_SPECS ""
+#endif
+
+#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
 
 #undef	CC1_SPEC
 #if DEFAULT_ARCH32_P

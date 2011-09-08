@@ -1503,7 +1503,7 @@ ira_init_register_move_cost (enum machine_mode mode)
     {
       /* Some subclasses are to small to have enough registers to hold
 	 a value of MODE.  Just ignore them.  */
-      if (! contains_reg_of_mode[cl1][mode])
+      if (ira_reg_class_max_nregs[cl1][mode] > ira_available_class_regs[cl1])
 	continue;
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl1]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);

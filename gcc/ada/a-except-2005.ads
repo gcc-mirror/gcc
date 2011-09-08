@@ -50,8 +50,6 @@ with System.Parameters;
 with System.Standard_Library;
 with System.Traceback_Entries;
 
-with Ada.Unchecked_Conversion;
-
 package Ada.Exceptions is
    pragma Warnings (Off);
    pragma Preelaborate_05;
@@ -230,16 +228,13 @@ private
    --  system to return here rather than to the original location.
 
    procedure Raise_From_Controlled_Operation
-     (X          : Ada.Exceptions.Exception_Occurrence;
-      From_Abort : Boolean);
+     (X : Ada.Exceptions.Exception_Occurrence);
    pragma No_Return (Raise_From_Controlled_Operation);
    pragma Export
      (Ada, Raise_From_Controlled_Operation,
            "__gnat_raise_from_controlled_operation");
    --  Raise Program_Error, providing information about X (an exception raised
-   --  during a controlled operation) in the exception message. However, if the
-   --  finalization was triggered by abort, keep aborting instead of raising
-   --  Program_Error.
+   --  during a controlled operation) in the exception message.
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
@@ -254,6 +249,10 @@ private
    --  before the call and the parameter X is known not to be the null
    --  occurrence. This is used in generated code when it is known that abort
    --  is already deferred.
+
+   function Triggered_By_Abort return Boolean;
+   --  Determine whether the current exception (if it exists) is an instance of
+   --  Standard'Abort_Signal.
 
    -----------------------
    -- Polling Interface --
@@ -306,13 +305,6 @@ private
       Msg : String (1 .. Exception_Msg_Max_Length);
       --  Characters of message
 
-      Cleanup_Flag : Boolean := False;
-      --  The cleanup flag is normally False, it is set True for an exception
-      --  occurrence passed to a cleanup routine, and will still be set True
-      --  when the cleanup routine does a Reraise_Occurrence call using this
-      --  exception occurrence. This is used to avoid recording a bogus trace
-      --  back entry from this reraise call.
-
       Exception_Raised : Boolean := False;
       --  Set to true to indicate that this exception occurrence has actually
       --  been raised. When an exception occurrence is first created, this is
@@ -330,11 +322,6 @@ private
 
       Tracebacks : Tracebacks_Array;
       --  Stored tracebacks (in Tracebacks (1 .. Num_Tracebacks))
-
-      Private_Data : System.Address := System.Null_Address;
-      --  Field used by low level exception mechanism to store specific data.
-      --  Currently used by the GCC exception mechanism to store a pointer to
-      --  a GNAT_GCC_Exception.
    end record;
 
    function "=" (Left, Right : Exception_Occurrence) return Boolean
@@ -352,25 +339,9 @@ private
      Id               => null,
      Msg_Length       => 0,
      Msg              => (others => ' '),
-     Cleanup_Flag     => False,
      Exception_Raised => False,
      Pid              => 0,
      Num_Tracebacks   => 0,
-     Tracebacks       => (others => TBE.Null_TB_Entry),
-     Private_Data     => System.Null_Address);
-
-   --  Common binding to __builtin_longjmp for sjlj variants.
-
-   --  The builtin expects a pointer type for the jmpbuf address argument, and
-   --  System.Address doesn't work because this is really an integer type.
-
-   type Jmpbuf_Address is access Character;
-
-   function To_Jmpbuf_Address is new
-     Ada.Unchecked_Conversion (System.Address, Jmpbuf_Address);
-
-   procedure builtin_longjmp (buffer : Jmpbuf_Address; Flag : Integer);
-   pragma No_Return (builtin_longjmp);
-   pragma Import (Intrinsic, builtin_longjmp, "__builtin_longjmp");
+     Tracebacks       => (others => TBE.Null_TB_Entry));
 
 end Ada.Exceptions;

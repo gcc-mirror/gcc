@@ -377,6 +377,9 @@ AC_CACHE_CHECK(for .preinit_array/.init_array/.fini_array support,
 		 gcc_cv_initfini_array, [dnl
   if test "x${build}" = "x${target}" && test "x${build}" = "x${host}"; then
     AC_RUN_IFELSE([AC_LANG_SOURCE([
+#ifndef __ELF__
+#error Not an ELF OS
+#endif
 #ifdef __ia64__
 /* We turn on .preinit_array/.init_array/.fini_array support for ia64
    if it can be used.  */
@@ -474,6 +477,8 @@ void (*const dtors65535[]) ()
 int
 main ()
 {
+  if (count != 65535)
+    abort ();
   return 0;
 }
 #endif

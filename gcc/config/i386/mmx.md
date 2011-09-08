@@ -66,9 +66,9 @@
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*mov<mode>_internal_rex64"
   [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
-	 "=rm,r,!?y,!y,!?y,m  ,!y ,*Y2,x,x ,m,r ,Yi")
+	 "=rm,r,!?y,!y,!?y,m  ,!y ,*x,x,x ,m,r ,Yi")
 	(match_operand:MMXMODEI8 1 "vector_move_operand"
-	 "Cr ,m,C  ,!y,m  ,!?y,*Y2,!y ,C,xm,x,Yi,r"))]
+	 "Cr ,m,C  ,!y,m  ,!?y,*x,!y ,C,xm,x,Yi,r"))]
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -113,9 +113,9 @@
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
-	 "=!?y,!y,!?y,m  ,!y ,*Y2,*Y2,*Y2 ,m  ,*x,*x,*x,m ,r  ,m")
+	 "=!?y,!y,!?y,m  ,!y,*x,*x,*x ,m ,*x,*x,*x,m ,r  ,m")
 	(match_operand:MMXMODEI8 1 "vector_move_operand"
-	 "C   ,!y,m  ,!?y,*Y2,!y ,C  ,*Y2m,*Y2,C ,*x,m ,*x,irm,r"))]
+	 "C   ,!y,m  ,!?y,*x,!y,C ,*xm,*x,C ,*x,m ,*x,irm,r"))]
   "!TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -135,9 +135,12 @@
     #
     #"
   [(set (attr "isa")
-     (if_then_else (eq_attr "alternative" "9,10,11,12")
-       (const_string "noavx")
-       (const_string "*")))
+     (cond [(eq_attr "alternative" "4,5,6,7,8")
+	      (const_string "sse2")
+	    (eq_attr "alternative" "9,10,11,12")
+	      (const_string "noavx")
+	   ]
+           (const_string "*")))
    (set (attr "type")
      (cond [(eq_attr "alternative" "0")
 	      (const_string "mmx")
@@ -156,13 +159,13 @@
      (if_then_else
        (ior (eq_attr "alternative" "4,5")
 	    (and (eq_attr "alternative" "7")
-		 (eq (symbol_ref "TARGET_AVX") (const_int 0))))
+		 (not (match_test "TARGET_AVX"))))
        (const_string "1")
        (const_string "*")))
    (set (attr "prefix_data16")
      (if_then_else
        (and (eq_attr "alternative" "8")
-	    (eq (symbol_ref "TARGET_AVX") (const_int 0)))
+	    (not (match_test "TARGET_AVX")))
        (const_string "1")
        (const_string "*")))
    (set (attr "prefix")
@@ -183,9 +186,9 @@
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*movv2sf_internal_rex64"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
-	 "=rm,r,!?y,!y,!?y,m  ,!y ,*Y2,x,x,x,m,r ,Yi")
+	 "=rm,r,!?y,!y,!?y,m  ,!y,*x,x,x,x,m,r ,Yi")
         (match_operand:V2SF 1 "vector_move_operand"
-	 "Cr ,m,C  ,!y,m  ,!?y,*Y2,!y ,C,x,m,x,Yi,r"))]
+	 "Cr ,m,C  ,!y,m  ,!?y,*x,!y,C,x,m,x,Yi,r"))]
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -221,7 +224,7 @@
    (set (attr "length_vex")
      (if_then_else
        (and (eq_attr "alternative" "12,13")
-	    (ne (symbol_ref "TARGET_AVX") (const_int 0)))
+	    (match_test "TARGET_AVX"))
        (const_string "4")
        (const_string "*")))
    (set (attr "prefix")
@@ -232,9 +235,9 @@
 
 (define_insn "*movv2sf_internal"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
-	 "=!?y,!y,!?y,m  ,!y ,*Y2,*x,*x,*x,m ,r  ,m")
+	 "=!?y,!y,!?y,m  ,!y,*x,*x,*x,*x,m ,r  ,m")
         (match_operand:V2SF 1 "vector_move_operand"
-	 "C   ,!y,m  ,!?y,*Y2,!y ,C ,*x,m ,*x,irm,r"))]
+	 "C   ,!y,m  ,!?y,*x,!y,C ,*x,m ,*x,irm,r"))]
   "!TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -250,7 +253,11 @@
     %vmovlps\t{%1, %0|%0, %1}
     #
     #"
-  [(set (attr "type")
+  [(set (attr "isa")
+     (if_then_else (eq_attr "alternative" "4,5")
+       (const_string "sse2")
+       (const_string "*")))
+   (set (attr "type")
      (cond [(eq_attr "alternative" "0")
 	      (const_string "mmx")
 	    (eq_attr "alternative" "1,2,3")
@@ -1388,9 +1395,9 @@
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "*vec_extractv2si_1"
-  [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,Y2,Y2,x,y,x,r")
+  [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,x,x,x,y,x,r")
 	(vec_select:SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,0 ,Y2,0,o,o,o")
+	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,0,x,0,o,o,o")
 	  (parallel [(const_int 1)])))]
   "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -1401,7 +1408,11 @@
    #
    #
    #"
-  [(set_attr "type" "mmxcvt,sselog1,sselog1,sselog1,mmxmov,ssemov,imov")
+  [(set (attr "isa")
+     (if_then_else (eq_attr "alternative" "1,2")
+       (const_string "sse2")
+       (const_string "*")))
+   (set_attr "type" "mmxcvt,sselog1,sselog1,sselog1,mmxmov,ssemov,imov")
    (set_attr "length_immediate" "*,*,1,*,*,*,*")
    (set_attr "mode" "DI,TI,TI,V4SF,SI,SI,SI")])
 
@@ -1552,7 +1563,8 @@
   [(set_attr "type" "mmxshft")
    (set (attr "prefix_extra")
      (if_then_else
-       (eq (symbol_ref "(TARGET_SSE || TARGET_3DNOW_A)") (const_int 0))
+       (not (ior (match_test "TARGET_SSE")
+		 (match_test "TARGET_3DNOW_A")))
        (const_string "1")
        (const_string "*")))
    (set_attr "mode" "DI")])

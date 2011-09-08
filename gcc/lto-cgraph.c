@@ -1501,22 +1501,9 @@ input_cgraph (void)
 /* True when we need optimization summary for NODE.  */
 
 static int
-output_cgraph_opt_summary_p (struct cgraph_node *node, cgraph_node_set set)
+output_cgraph_opt_summary_p (struct cgraph_node *node,
+			     cgraph_node_set set ATTRIBUTE_UNUSED)
 {
-  struct cgraph_edge *e;
-
-  if (cgraph_node_in_set_p (node, set))
-    {
-      for (e = node->callees; e; e = e->next_callee)
-	if (e->indirect_info
-	    && e->indirect_info->thunk_delta != 0)
-	  return true;
-
-      for (e = node->indirect_calls; e; e = e->next_callee)
-	if (e->indirect_info->thunk_delta != 0)
-	  return true;
-    }
-
   return (node->clone_of
 	  && (node->clone.tree_map
 	      || node->clone.args_to_skip
@@ -1525,13 +1512,9 @@ output_cgraph_opt_summary_p (struct cgraph_node *node, cgraph_node_set set)
 
 /* Output optimization summary for EDGE to OB.  */
 static void
-output_edge_opt_summary (struct output_block *ob,
-			 struct cgraph_edge *edge)
+output_edge_opt_summary (struct output_block *ob ATTRIBUTE_UNUSED,
+			 struct cgraph_edge *edge ATTRIBUTE_UNUSED)
 {
-  if (edge->indirect_info)
-    streamer_write_hwi (ob, edge->indirect_info->thunk_delta);
-  else
-    streamer_write_hwi (ob, 0);
 }
 
 /* Output optimization summary for NODE to OB.  */
@@ -1631,17 +1614,9 @@ output_cgraph_opt_summary (cgraph_node_set set)
 /* Input optimisation summary of EDGE.  */
 
 static void
-input_edge_opt_summary (struct cgraph_edge *edge,
-			struct lto_input_block *ib_main)
+input_edge_opt_summary (struct cgraph_edge *edge ATTRIBUTE_UNUSED,
+			struct lto_input_block *ib_main ATTRIBUTE_UNUSED)
 {
-  HOST_WIDE_INT thunk_delta;
-  thunk_delta = streamer_read_hwi (ib_main);
-  if (thunk_delta != 0)
-    {
-      gcc_assert (!edge->indirect_info);
-      edge->indirect_info = cgraph_allocate_init_indirect_info ();
-      edge->indirect_info->thunk_delta = thunk_delta;
-    }
 }
 
 /* Input optimisation summary of NODE.  */

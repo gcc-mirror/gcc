@@ -32,7 +32,7 @@
 with Ada.Calendar;               use Ada.Calendar;
 with Ada.Calendar.Formatting;    use Ada.Calendar.Formatting;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
-with Ada.Strings.Maps;
+with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Conversion;
@@ -61,8 +61,7 @@ package body Ada.Directories is
    pragma Import (C, Dir_Separator, "__gnat_dir_separator");
    --  Running system default directory separator
 
-   Dir_Seps : constant Ada.Strings.Maps.Character_Set :=
-                Ada.Strings.Maps.To_Set ("/\");
+   Dir_Seps : constant Character_Set := Strings.Maps.To_Set ("/\");
    --  UNIX and DOS style directory separators
 
    Max_Path : Integer;
@@ -175,7 +174,7 @@ package body Ada.Directories is
 
          --  Add a directory separator if needed
 
-         if Last /= 0 and then Result (Last) /= Dir_Separator then
+         if Last /= 0 and then not Is_In (Result (Last), Dir_Seps) then
             Last := Last + 1;
             Result (Last) := Dir_Separator;
          end if;
@@ -436,6 +435,7 @@ package body Ada.Directories is
 
       New_Dir : String (1 .. New_Directory'Length + 1);
       Last    : Positive := 1;
+      Start   : Positive := 1;
 
    begin
       --  First, the invalid case
@@ -451,23 +451,35 @@ package body Ada.Directories is
          New_Dir (1 .. New_Directory'Length) := New_Directory;
          New_Dir (New_Dir'Last) := Directory_Separator;
 
+         --  If host is windows, and the first two characters are directory
+         --  separators, we have an UNC path. Skip it.
+
+         if Directory_Separator = '\'
+           and then New_Dir'Length > 2
+           and then Is_In (New_Dir (1), Dir_Seps)
+           and then Is_In (New_Dir (2), Dir_Seps)
+         then
+            Start := 2;
+            loop
+               Start := Start + 1;
+               exit when Start = New_Dir'Last
+                 or else Is_In (New_Dir (Start), Dir_Seps);
+            end loop;
+         end if;
+
          --  Create, if necessary, each directory in the path
 
-         for J in 2 .. New_Dir'Last loop
+         for J in Start + 1 .. New_Dir'Last loop
 
             --  Look for the end of an intermediate directory
 
-            if New_Dir (J) /= Dir_Separator and then
-               New_Dir (J) /= '/'
-            then
+            if not Is_In (New_Dir (J), Dir_Seps) then
                Last := J;
 
             --  We have found a new intermediate directory each time we find
             --  a first directory separator.
 
-            elsif New_Dir (J - 1) /= Dir_Separator and then
-                  New_Dir (J - 1) /= '/'
-            then
+            elsif not Is_In (New_Dir (J - 1), Dir_Seps) then
 
                --  No need to create the directory if it already exists
 
@@ -664,7 +676,7 @@ package body Ada.Directories is
             --  If a directory separator is found before a dot, there is no
             --  extension.
 
-            if Name (Pos) = Dir_Separator then
+            if Is_In (Name (Pos), Dir_Seps) then
                return Empty_String;
 
             elsif Name (Pos) = '.' then

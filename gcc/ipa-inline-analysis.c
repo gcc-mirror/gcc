@@ -1187,6 +1187,8 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
       || gimple_call_num_args (set_stmt) != 1)
     return;
   op2 = gimple_call_arg (set_stmt, 0);
+  if (TREE_CODE (op2) != SSA_NAME)
+    return;
   if (!SSA_NAME_IS_DEFAULT_DEF (op2))
     return;
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op2));
@@ -1660,18 +1662,28 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   /* Can this function be inlined at all?  */
   info->inlinable = tree_inlinable_function_p (node->decl);
 
-  /* Inlinable functions always can change signature.  */
-  if (info->inlinable)
-    node->local.can_change_signature = true;
+  /* Type attributes can use parameter indices to describe them.  */
+  if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
+    node->local.can_change_signature = false;
   else
     {
-      /* Functions calling builtin_apply can not change signature.  */
-      for (e = node->callees; e; e = e->next_callee)
-	if (DECL_BUILT_IN (e->callee->decl)
-	    && DECL_BUILT_IN_CLASS (e->callee->decl) == BUILT_IN_NORMAL
-	    && DECL_FUNCTION_CODE (e->callee->decl) == BUILT_IN_APPLY_ARGS)
-	  break;
-      node->local.can_change_signature = !e;
+      /* Otherwise, inlinable functions always can change signature.  */
+      if (info->inlinable)
+	node->local.can_change_signature = true;
+      else
+	{
+	  /* Functions calling builtin_apply can not change signature.  */
+	  for (e = node->callees; e; e = e->next_callee)
+	    {
+	      tree cdecl = e->callee->decl;
+	      if (DECL_BUILT_IN (cdecl)
+		  && DECL_BUILT_IN_CLASS (cdecl) == BUILT_IN_NORMAL
+		  && (DECL_FUNCTION_CODE (cdecl) == BUILT_IN_APPLY_ARGS
+		      || DECL_FUNCTION_CODE (cdecl) == BUILT_IN_VA_START))
+		break;
+	    }
+	  node->local.can_change_signature = !e;
+	}
     }
   estimate_function_body_sizes (node, early);
 

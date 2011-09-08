@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -808,6 +808,7 @@ package body GPrep is
       Write_Line ("  deffile    Name of the definition file");
       Write_Eol;
       Write_Line ("gnatprep switches:");
+      Display_Usage_Version_And_Help;
       Write_Line ("   -b  Replace preprocessor lines by blank lines");
       Write_Line ("   -c  Keep preprocessor lines as comments");
       Write_Line ("   -C  Do symbol replacements within comments");

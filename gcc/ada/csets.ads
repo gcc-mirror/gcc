@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,7 @@ package Csets is
    --  This table has True entries for all characters that can legally appear
    --  in identifiers, including digits, the underline character, all letters
    --  including upper and lower case and extended letters (as controlled by
-   --  the setting of Opt.Identifier_Character_Set, left bracket for brackets
+   --  the setting of Opt.Identifier_Character_Set), left bracket for brackets
    --  notation wide characters and also ESC if wide characters are permitted
    --  in identifiers using escape sequences starting with ESC.
 

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (Compiler Version)                            --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -123,11 +123,11 @@ private
    -- System Implementation Parameters --
    --------------------------------------
 
-   --  These parameters provide information about the target that is used
-   --  by the compiler. They are in the private part of System, where they
-   --  can be accessed using the special circuitry in the Targparm unit
-   --  whose source should be consulted for more detailed descriptions
-   --  of the individual switch values.
+   --  These parameters provide information about the target that is used by
+   --  the compiler. They are in the private part of System, where they can be
+   --  accessed using the special circuitry in the Targparm unit whose source
+   --  should be consulted for more detailed descriptions of the individual
+   --  switch values.
 
    --  This version of system.ads is used only for building the compiler.
    --  We really ought to use the proper target system (i.e. the one that
@@ -154,7 +154,6 @@ private
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
    Stack_Check_Limits        : constant Boolean := False;
-   Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
@@ -163,7 +162,6 @@ private
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := False;
-   GCC_ZCX_Support           : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)
 
@@ -171,5 +169,7 @@ private
    High_Integrity_Mode       : constant Boolean := False;
    Long_Shifts_Inlined       : constant Boolean := True;
    Functions_Return_By_DSP   : constant Boolean := False;
+   Support_64_Bit_Divides    : constant Boolean := True;
+   GCC_ZCX_Support           : constant Boolean := False;
 
 end System;

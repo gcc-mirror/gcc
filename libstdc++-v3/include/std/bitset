@@ -52,10 +52,12 @@
 #include <iosfwd>
 #include <bits/cxxabi_forced.h>
 
-#define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * sizeof(unsigned long))
+#define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * __SIZEOF_LONG__)
 #define _GLIBCXX_BITSET_WORDS(__n) \
   ((__n) / _GLIBCXX_BITSET_BITS_PER_WORD + \
    ((__n) % _GLIBCXX_BITSET_BITS_PER_WORD == 0 ? 0 : 1))
+
+#define _GLIBCXX_BITSET_BITS_PER_ULL (__CHAR_BIT__ * __SIZEOF_LONG_LONG__)
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -92,19 +94,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbyte(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       _WordT&
@@ -183,15 +185,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return true;
       }
 
-      size_t
-      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
-      {
-	for (size_t __i = 0; __i < _Nw - 1; __i++)
-	  if (_M_w[__i] != ~static_cast<_WordT>(0))
-	    return 0;
-	return ((_Nw - 1) * _GLIBCXX_BITSET_BITS_PER_WORD
-		+ __builtin_popcountl(_M_hiword()));
-      }
+      template<size_t _Nb>
+        bool
+        _M_are_all() const _GLIBCXX_NOEXCEPT
+        {
+	  for (size_t __i = 0; __i < _Nw - 1; __i++)
+	    if (_M_w[__i] != ~static_cast<_WordT>(0))
+	      return false;
+	  return _M_hiword() == (~static_cast<_WordT>(0)
+				 >> (_Nw * _GLIBCXX_BITSET_BITS_PER_WORD
+				     - _Nb));
+	}
 
       bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
@@ -385,19 +389,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbyte(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbit(size_t __pos) _GLIBCXX_NOEXCEPT
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       _WordT&
@@ -458,9 +462,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_is_equal(const _Base_bitset<1>& __x) const _GLIBCXX_NOEXCEPT
       { return _M_w == __x._M_w; }
 
-      size_t
-      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
-      { return __builtin_popcountl(_M_w); }
+      template<size_t _Nb>
+        bool
+        _M_are_all() const _GLIBCXX_NOEXCEPT
+        { return _M_w == (~static_cast<_WordT>(0)
+			  >> (_GLIBCXX_BITSET_BITS_PER_WORD - _Nb)); }
 
       bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
@@ -527,19 +533,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbyte(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbit(size_t __pos) _GLIBCXX_NOEXCEPT
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       // This would normally give access to the data.  The bounds-checking
@@ -603,9 +609,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_is_equal(const _Base_bitset<0>&) const _GLIBCXX_NOEXCEPT
       { return true; }
 
-      size_t
-      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
-      { return 0; }
+      template<size_t _Nb>
+        bool
+        _M_are_all() const _GLIBCXX_NOEXCEPT
+        { return true; }
 
       bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
@@ -643,19 +650,37 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       typedef unsigned long _WordT;
 
-      static void 
+      static void
       _S_do_sanitize(_WordT& __val) _GLIBCXX_NOEXCEPT
       { __val &= ~((~static_cast<_WordT>(0)) << _Extrabits); }
     };
 
   template<>
     struct _Sanitize<0>
-    { 
+    {
       typedef unsigned long _WordT;
 
-      static void 
+      static void
       _S_do_sanitize(_WordT) _GLIBCXX_NOEXCEPT { } 
     };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<size_t _Nb, bool = _Nb < _GLIBCXX_BITSET_BITS_PER_ULL>
+    struct _Sanitize_val
+    {
+      static constexpr unsigned long long
+      _S_do_sanitize_val(unsigned long long __val)
+      { return __val; }
+    };
+
+  template<size_t _Nb>
+    struct _Sanitize_val<_Nb, true>
+    {
+      static constexpr unsigned long long
+      _S_do_sanitize_val(unsigned long long __val)
+      { return __val & ~((~static_cast<unsigned long long>(0)) << _Nb); }
+    };
+#endif
 
   /**
    *  @brief  The %bitset class represents a @e fixed-size sequence of bits.
@@ -822,7 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Initial bits bitwise-copied from a single word (others set to zero).
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       constexpr bitset(unsigned long long __val) noexcept
-      : _Base(__val) { }
+      : _Base(_Sanitize_val<_Nb>::_S_do_sanitize_val(__val)) { }
 #else
       bitset(unsigned long __val)
       : _Base(__val)
@@ -1292,7 +1317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       bool
       all() const _GLIBCXX_NOEXCEPT
-      { return this->_M_are_all_aux() == _Nb; }
+      { return this->template _M_are_all<_Nb>(); }
 
       /**
        *  @brief Tests whether any of the bits are on.
@@ -1339,7 +1364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @sa  _Find_first
        */
       size_t
-      _Find_next(size_t __prev ) const _GLIBCXX_NOEXCEPT
+      _Find_next(size_t __prev) const _GLIBCXX_NOEXCEPT
       { return this->_M_do_find_next(__prev, _Nb); }
     };
 
@@ -1513,6 +1538,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
+#undef _GLIBCXX_BITSET_BITS_PER_ULL
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 

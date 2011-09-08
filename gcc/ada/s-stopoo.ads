@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -44,14 +44,14 @@ package System.Storage_Pools is
 
    procedure Allocate
      (Pool                     : in out Root_Storage_Pool;
-      Storage_Address          : out Address;
+      Storage_Address          : out System.Address;
       Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
       Alignment                : System.Storage_Elements.Storage_Count)
    is abstract;
 
    procedure Deallocate
      (Pool                     : in out Root_Storage_Pool;
-      Storage_Address          : Address;
+      Storage_Address          : System.Address;
       Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
       Alignment                : System.Storage_Elements.Storage_Count)
    is abstract;
@@ -62,6 +62,13 @@ package System.Storage_Pools is
    is abstract;
 
 private
+   type Root_Storage_Pool is abstract
+     new Ada.Finalization.Limited_Controlled with null record;
+
+   --  ??? Are these two still needed? It might be possible to use Subpools.
+   --  Allocate_Any_Controlled / Deallocate_Any_Controlled for non-controlled
+   --  objects.
+
    --  The following two procedures support the use of class-wide pool
    --  objects in storage pools. When a local type is given a class-wide
    --  storage pool, allocation and deallocation for the type must dispatch
@@ -71,16 +78,14 @@ private
 
    procedure Allocate_Any
     (Pool                     : in out Root_Storage_Pool'Class;
-     Storage_Address          : out Address;
+     Storage_Address          : out System.Address;
      Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
      Alignment                : System.Storage_Elements.Storage_Count);
 
    procedure Deallocate_Any
     (Pool                     : in out Root_Storage_Pool'Class;
-     Storage_Address          : Address;
+     Storage_Address          : System.Address;
      Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
      Alignment                : System.Storage_Elements.Storage_Count);
 
-   type Root_Storage_Pool is abstract
-     new Ada.Finalization.Limited_Controlled with null record;
 end System.Storage_Pools;

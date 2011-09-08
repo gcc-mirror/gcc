@@ -37,6 +37,7 @@ extern "C"
    interface.  */
 
 extern int go_enable_dump (const char*);
+extern int go_enable_optimize (const char*);
 extern void go_set_prefix (const char*);
 
 extern void go_add_search_path (const char*);

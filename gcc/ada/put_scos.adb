@@ -25,15 +25,23 @@
 
 with Par_SCO; use Par_SCO;
 with SCOs;    use SCOs;
+with Snames;  use Snames;
 
 procedure Put_SCOs is
-   Ctr : Nat;
+   Current_SCO_Unit : SCO_Unit_Index := 0;
+   --  Initial value must not be a valid unit index
+
+   procedure Write_SCO_Initiate (SU : SCO_Unit_Index);
+   --  Start SCO line for unit SU, also emitting SCO unit header if necessary
 
    procedure Output_Range (T : SCO_Table_Entry);
    --  Outputs T.From and T.To in line:col-line:col format
 
    procedure Output_Source_Location (Loc : Source_Location);
    --  Output source location in line:col format
+
+   procedure Output_String (S : String);
+   --  Output S
 
    ------------------
    -- Output_Range --
@@ -57,10 +65,46 @@ procedure Put_SCOs is
       Write_Info_Nat  (Nat (Loc.Col));
    end Output_Source_Location;
 
+   -------------------
+   -- Output_String --
+   -------------------
+
+   procedure Output_String (S : String) is
+   begin
+      for J in S'Range loop
+         Write_Info_Char (S (J));
+      end loop;
+   end Output_String;
+
+   ------------------------
+   -- Write_SCO_Initiate --
+   ------------------------
+
+   procedure Write_SCO_Initiate (SU : SCO_Unit_Index) is
+      SUT : SCO_Unit_Table_Entry renames SCO_Unit_Table.Table (SU);
+
+   begin
+      if Current_SCO_Unit /= SU then
+         Write_Info_Initiate ('C');
+         Write_Info_Char (' ');
+         Write_Info_Nat (SUT.Dep_Num);
+         Write_Info_Char (' ');
+
+         Output_String (SUT.File_Name.all);
+
+         Write_Info_Terminate;
+
+         Current_SCO_Unit := SU;
+      end if;
+
+      Write_Info_Initiate ('C');
+   end Write_SCO_Initiate;
+
 --  Start of processing for Put_SCOs
 
 begin
-   --  Loop through entries in SCO_Unit_Table
+   --  Loop through entries in SCO_Unit_Table. Note that entry 0 is by
+   --  convention present but unused.
 
    for U in 1 .. SCO_Unit_Table.Last loop
       declare
@@ -73,21 +117,6 @@ begin
          Start := SUT.From;
          Stop  := SUT.To;
 
-         --  Write unit header (omitted if no SCOs are generated for this unit)
-
-         if Start <= Stop then
-            Write_Info_Initiate ('C');
-            Write_Info_Char (' ');
-            Write_Info_Nat (SUT.Dep_Num);
-            Write_Info_Char (' ');
-
-            for N in SUT.File_Name'Range loop
-               Write_Info_Char (SUT.File_Name (N));
-            end loop;
-
-            Write_Info_Terminate;
-         end if;
-
          --  Loop through SCO entries for this unit
 
          loop
@@ -97,6 +126,9 @@ begin
             Output_SCO_Line : declare
                T            : SCO_Table_Entry renames SCO_Table.Table (Start);
                Continuation : Boolean;
+
+               Ctr : Nat;
+               --  Counter for statement entries
 
             begin
                case T.C1 is
@@ -114,7 +146,7 @@ begin
                         end if;
 
                         if Ctr = 0 then
-                           Write_Info_Initiate ('C');
+                           Write_SCO_Initiate (U);
                            if not Continuation then
                               Write_Info_Char ('S');
                               Continuation := True;
@@ -125,11 +157,30 @@ begin
 
                         Write_Info_Char (' ');
 
-                        if SCO_Table.Table (Start).C2 /= ' ' then
-                           Write_Info_Char (SCO_Table.Table (Start).C2);
-                        end if;
+                        declare
+                           Sent : SCO_Table_Entry
+                                    renames SCO_Table.Table (Start);
+                        begin
+                           if Sent.C2 /= ' ' then
+                              Write_Info_Char (Sent.C2);
+                              if Sent.C2 = 'P'
+                                   and then Sent.Pragma_Name /= Unknown_Pragma
+                              then
+                                 declare
+                                    Pnam : constant String :=
+                                             Sent.Pragma_Name'Img;
+                                 begin
+                                    --  Strip leading "PRAGMA_"
 
-                        Output_Range (SCO_Table.Table (Start));
+                                    Output_String
+                                      (Pnam (Pnam'First + 7 .. Pnam'Last));
+                                    Write_Info_Char (':');
+                                 end;
+                              end if;
+                           end if;
+
+                           Output_Range (Sent);
+                        end;
 
                         --  Increment entry counter (up to 6 entries per line,
                         --  continuation lines are marked Cs).
@@ -146,7 +197,9 @@ begin
                         pragma Assert (SCO_Table.Table (Start).C1 = 's');
                      end loop;
 
-                     Write_Info_Terminate;
+                     if Ctr > 0 then
+                        Write_Info_Terminate;
+                     end if;
 
                   --  Statement continuations should not occur since they
                   --  are supposed to have been handled in the loop above.
@@ -156,7 +209,7 @@ begin
 
                   --  Decision
 
-                  when 'I' | 'E' | 'G' | 'P' | 'W' | 'X' =>
+                  when 'E' | 'G' | 'I' | 'P' | 'W' | 'X' =>
                      Start := Start + 1;
 
                      --  For disabled pragma, or nested decision therein, skip
@@ -170,7 +223,7 @@ begin
                      --  For all other cases output decision line
 
                      else
-                        Write_Info_Initiate ('C');
+                        Write_SCO_Initiate (U);
                         Write_Info_Char (T.C1);
 
                         if T.C1 /= 'X' then

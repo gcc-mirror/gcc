@@ -853,43 +853,14 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  tree ptr = TREE_OPERAND (*tp, 0);
 	  tree type = remap_type (TREE_TYPE (*tp), id);
 	  tree old = *tp;
-	  tree tem;
 
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
 	     that can happen when a pointer argument is an ADDR_EXPR.
 	     Recurse here manually to allow that.  */
 	  walk_tree (&ptr, remap_gimple_op_r, data, NULL);
-	  if ((tem = maybe_fold_offset_to_reference (EXPR_LOCATION (*tp),
-						     ptr,
-						     TREE_OPERAND (*tp, 1),
-						     type))
-	      && TREE_THIS_VOLATILE (tem) == TREE_THIS_VOLATILE (old))
-	    {
-	      tree *tem_basep = &tem;
-	      while (handled_component_p (*tem_basep))
-		tem_basep = &TREE_OPERAND (*tem_basep, 0);
-	      if (TREE_CODE (*tem_basep) == MEM_REF)
-		*tem_basep
-		    = build2 (MEM_REF, TREE_TYPE (*tem_basep),
-			      TREE_OPERAND (*tem_basep, 0),
-			      fold_convert (TREE_TYPE (TREE_OPERAND (*tp, 1)),
-					    TREE_OPERAND (*tem_basep, 1)));
-	      else
-		*tem_basep
-		    = build2 (MEM_REF, TREE_TYPE (*tem_basep),
-			      build_fold_addr_expr (*tem_basep),
-			      build_int_cst
-			      (TREE_TYPE (TREE_OPERAND (*tp, 1)), 0));
-	      *tp = tem;
-	      TREE_THIS_VOLATILE (*tem_basep) = TREE_THIS_VOLATILE (old);
-	      TREE_THIS_NOTRAP (*tem_basep) = TREE_THIS_NOTRAP (old);
-	    }
-	  else
-	    {
-	      *tp = fold_build2 (MEM_REF, type,
-				 ptr, TREE_OPERAND (*tp, 1));
-	      TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
-	    }
+	  *tp = fold_build2 (MEM_REF, type,
+			     ptr, TREE_OPERAND (*tp, 1));
+	  TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
 	  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
 	  *walk_subtrees = 0;
@@ -4869,6 +4840,8 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
     if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
       {
         tree new_tree = remap_decl (arg, id);
+	if (TREE_CODE (new_tree) != PARM_DECL)
+	  new_tree = id->copy_decl (arg, id);
         lang_hooks.dup_lang_specific_decl (new_tree);
         *parg = new_tree;
 	parg = &DECL_CHAIN (new_tree);

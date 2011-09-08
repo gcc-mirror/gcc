@@ -46,11 +46,6 @@ package body System.Soft_Links is
 
    package SST renames System.Secondary_Stack;
 
-   NT_Exc_Stack : array (0 .. 8192) of aliased Character;
-   for NT_Exc_Stack'Alignment use Standard'Maximum_Alignment;
-   --  Allocate an exception stack for the main program to use.
-   --  This is currently only used under VMS.
-
    NT_TSD : TSD;
    --  Note: we rely on the default initialization of NT_TSD
 
@@ -125,11 +120,8 @@ package body System.Soft_Links is
    ----------------
 
    procedure Create_TSD (New_TSD : in out TSD) is
-      use type Parameters.Size_Type;
-
-      SS_Ratio_Dynamic : constant Boolean :=
-                           Parameters.Sec_Stack_Ratio = Parameters.Dynamic;
-
+      use Parameters;
+      SS_Ratio_Dynamic : constant Boolean := Sec_Stack_Percentage = Dynamic;
    begin
       if SS_Ratio_Dynamic then
          SST.SS_Init
@@ -172,24 +164,6 @@ package body System.Soft_Links is
    begin
       return NT_TSD.Current_Excep'Access;
    end Get_Current_Excep_NT;
-
-   ---------------------------
-   -- Get_Exc_Stack_Addr_NT --
-   ---------------------------
-
-   function Get_Exc_Stack_Addr_NT return Address is
-   begin
-      return NT_Exc_Stack (NT_Exc_Stack'Last)'Address;
-   end Get_Exc_Stack_Addr_NT;
-
-   -----------------------------
-   -- Get_Exc_Stack_Addr_Soft --
-   -----------------------------
-
-   function Get_Exc_Stack_Addr_Soft return Address is
-   begin
-      return Get_Exc_Stack_Addr.all;
-   end Get_Exc_Stack_Addr_Soft;
 
    ------------------------
    -- Get_GNAT_Exception --

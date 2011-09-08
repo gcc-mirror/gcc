@@ -46,6 +46,7 @@ pragma Polling (Off);
 
 with System;                  use System;
 with System.Exceptions;       use System.Exceptions;
+with System.Exceptions_Debug; use System.Exceptions_Debug;
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links;       use System.Soft_Links;
 with System.WCh_Con;          use System.WCh_Con;
@@ -239,25 +240,7 @@ package body Ada.Exceptions is
       -- Exception propagation routines --
       ------------------------------------
 
-      procedure Setup_Exception
-        (Excep    : EOA;
-         Current  : EOA;
-         Reraised : Boolean := False);
-      --  Perform the necessary operations to prepare the propagation of Excep
-      --  in a task where Current is the current occurrence. Excep is assumed
-      --  to be a valid (non null) pointer.
-      --
-      --  This should be called before any (re-)setting of the current
-      --  occurrence. Any such (re-)setting shall take care *not* to clobber
-      --  the Private_Data component.
-      --
-      --  Having Current provided as an argument (instead of retrieving it via
-      --  Get_Current_Excep internally) is required to allow one task to setup
-      --  an exception for another task, which is used by Transfer_Occurrence.
-
-      procedure Propagate_Exception
-        (E                   : Exception_Id;
-         From_Signal_Handler : Boolean);
+      procedure Propagate_Exception;
       pragma No_Return (Propagate_Exception);
       --  This procedure propagates the exception represented by the occurrence
       --  referenced by Current_Excep in the TSD for the current task.
@@ -284,8 +267,7 @@ package body Ada.Exceptions is
    procedure Raise_Current_Excep (E : Exception_Id);
    pragma No_Return (Raise_Current_Excep);
    pragma Export (C, Raise_Current_Excep, "__gnat_raise_nodefer_with_msg");
-   --  This is a simple wrapper to Exception_Propagation.Propagate_Exception
-   --  setting the From_Signal_Handler argument to False.
+   --  This is a simple wrapper to Exception_Propagation.Propagate_Exception.
    --
    --  This external name for Raise_Current_Excep is historical, and probably
    --  should be changed but for now we keep it, because gdb and gigi know
@@ -399,18 +381,6 @@ package body Ada.Exceptions is
    --  the TSD (all fields of this exception occurrence are set). Abort
    --  is deferred before the reraise operation.
 
-   --  Save_Occurrence variations: As the management of the private data
-   --  attached to occurrences is delicate, whether or not pointers to such
-   --  data has to be copied in various situations is better made explicit.
-   --  The following procedures provide an internal interface to help making
-   --  this explicit.
-
-   procedure Save_Occurrence_No_Private
-     (Target : out Exception_Occurrence;
-      Source : Exception_Occurrence);
-   --  Copy all the components of Source to Target, except the
-   --  Private_Data pointer.
-
    procedure Transfer_Occurrence
      (Target : Exception_Occurrence_Access;
       Source : Exception_Occurrence);
@@ -452,7 +422,6 @@ package body Ada.Exceptions is
    procedure Rcheck_19 (File : System.Address; Line : Integer);
    procedure Rcheck_20 (File : System.Address; Line : Integer);
    procedure Rcheck_21 (File : System.Address; Line : Integer);
-   procedure Rcheck_22 (File : System.Address; Line : Integer);
    procedure Rcheck_23 (File : System.Address; Line : Integer);
    procedure Rcheck_24 (File : System.Address; Line : Integer);
    procedure Rcheck_25 (File : System.Address; Line : Integer);
@@ -474,6 +443,14 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer);
    procedure Rcheck_12_Ext
      (File : System.Address; Line, Column, Index, First, Last : Integer);
+
+   procedure Rcheck_22 (File : System.Address; Line : Integer);
+   --  This routine is separated out because it has quite different behavior
+   --  from the others. This is the "finalize/adjust raised exception". This
+   --  subprogram is always called with abort deferred, unlike all other
+   --  Rcheck_* routines, it needs to call Raise_Exception_No_Defer.
+   --
+   --  It should probably have a distinguished name ???
 
    pragma Export (C, Rcheck_00, "__gnat_rcheck_00");
    pragma Export (C, Rcheck_01, "__gnat_rcheck_01");
@@ -792,6 +769,20 @@ package body Ada.Exceptions is
    --  in case we do not want any exception tracing support. This is
    --  why this package is separated.
 
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Index : Integer) return String is
+      Result : constant String := Integer'Image (Index);
+   begin
+      if Result (1) = ' ' then
+         return Result (2 .. Result'Last);
+      else
+         return Result;
+      end if;
+   end Image;
+
    -----------------------
    -- Stream Attributes --
    -----------------------
@@ -831,8 +822,7 @@ package body Ada.Exceptions is
    procedure Raise_Current_Excep (E : Exception_Id) is
    begin
       Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
-      Exception_Propagation.Propagate_Exception
-        (E => E, From_Signal_Handler => False);
+      Exception_Propagation.Propagate_Exception;
    end Raise_Current_Excep;
 
    ---------------------
@@ -855,7 +845,11 @@ package body Ada.Exceptions is
       --  Go ahead and raise appropriate exception
 
       Exception_Data.Set_Exception_Msg (EF, Message);
-      Abort_Defer.all;
+
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
+
       Raise_Current_Excep (EF);
    end Raise_Exception;
 
@@ -869,66 +863,68 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_Msg (E, Message);
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Raise_Current_Excep (E);
    end Raise_Exception_Always;
+
+   ------------------------------
+   -- Raise_Exception_No_Defer --
+   ------------------------------
+
+   procedure Raise_Exception_No_Defer
+     (E       : Exception_Id;
+      Message : String := "")
+   is
+   begin
+      Exception_Data.Set_Exception_Msg (E, Message);
+
+      --  Do not call Abort_Defer.all, as specified by the spec
+
+      Raise_Current_Excep (E);
+   end Raise_Exception_No_Defer;
 
    -------------------------------------
    -- Raise_From_Controlled_Operation --
    -------------------------------------
 
    procedure Raise_From_Controlled_Operation
-     (X          : Ada.Exceptions.Exception_Occurrence;
-      From_Abort : Boolean)
+     (X : Ada.Exceptions.Exception_Occurrence)
    is
+      Prefix             : constant String := "adjust/finalize raised ";
+      Orig_Msg           : constant String := Exception_Message (X);
+      Orig_Prefix_Length : constant Natural :=
+                             Integer'Min (Prefix'Length, Orig_Msg'Length);
+      Orig_Prefix        : String renames Orig_Msg
+                             (Orig_Msg'First ..
+                              Orig_Msg'First + Orig_Prefix_Length - 1);
    begin
-      --  When finalization was triggered by an abort, keep propagating the
-      --  abort signal rather than raising Program_Error.
+      --  Message already has the proper prefix, just re-raise
 
-      if From_Abort then
-         raise Standard'Abort_Signal;
-
-      --  Otherwise, raise Program_Error
+      if Orig_Prefix = Prefix then
+         Raise_Exception_No_Defer
+           (E       => Program_Error'Identity,
+            Message => Orig_Msg);
 
       else
          declare
-            Prefix             : constant String := "adjust/finalize raised ";
-            Orig_Msg           : constant String := Exception_Message (X);
-            Orig_Prefix_Length : constant Natural :=
-                                   Integer'Min
-                                     (Prefix'Length, Orig_Msg'Length);
-            Orig_Prefix        : String renames Orig_Msg
-                                   (Orig_Msg'First ..
-                                    Orig_Msg'First + Orig_Prefix_Length - 1);
+            New_Msg  : constant String := Prefix & Exception_Name (X);
 
          begin
-            --  Message already has the proper prefix, just re-raise
+            --  No message present, just provide our own
 
-            if Orig_Prefix = Prefix then
+            if Orig_Msg = "" then
                Raise_Exception_No_Defer
                  (E       => Program_Error'Identity,
-                  Message => Orig_Msg);
+                  Message => New_Msg);
+
+            --  Message present, add informational prefix
 
             else
-               declare
-                  New_Msg  : constant String := Prefix & Exception_Name (X);
-
-               begin
-                  --  No message present, just provide our own
-
-                  if Orig_Msg = "" then
-                     Raise_Exception_No_Defer
-                       (E       => Program_Error'Identity,
-                        Message => New_Msg);
-
-                  --  Message present, add informational prefix
-
-                  else
-                     Raise_Exception_No_Defer
-                       (E       => Program_Error'Identity,
-                        Message => New_Msg & ": " & Orig_Msg);
-                  end if;
-               end;
+               Raise_Exception_No_Defer
+                 (E       => Program_Error'Identity,
+                  Message => New_Msg & ": " & Orig_Msg);
             end if;
          end;
       end if;
@@ -944,10 +940,12 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, M);
-      Abort_Defer.all;
-      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
-      Exception_Propagation.Propagate_Exception
-        (E => E, From_Signal_Handler => True);
+
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
+
+      Raise_Current_Excep (E);
    end Raise_From_Signal_Handler;
 
    -------------------------
@@ -1015,7 +1013,11 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, F, L, C, M);
-      Abort_Defer.all;
+
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
+
       Raise_Current_Excep (E);
    end Raise_With_Location_And_Msg;
 
@@ -1027,30 +1029,20 @@ package body Ada.Exceptions is
       Excep : constant EOA := Get_Current_Excep.all;
 
    begin
-      Exception_Propagation.Setup_Exception (Excep, Excep);
-
       Excep.Exception_Raised := False;
       Excep.Id               := E;
       Excep.Num_Tracebacks   := 0;
-      Excep.Cleanup_Flag     := False;
       Excep.Pid              := Local_Partition_ID;
-      Abort_Defer.all;
+
+      --  The following is a common pattern, should be abstracted
+      --  into a procedure call ???
+
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
+
       Raise_Current_Excep (E);
    end Raise_With_Msg;
-
-   -----------
-   -- Image --
-   -----------
-
-   function Image (Index : Integer) return String is
-      Result : constant String := Integer'Image (Index);
-   begin
-      if Result (1) = ' ' then
-         return Result (2 .. Result'Last);
-      else
-         return Result;
-      end if;
-   end Image;
 
    --------------------------------------
    -- Calls to Run-Time Check Routines --
@@ -1166,11 +1158,6 @@ package body Ada.Exceptions is
       Raise_Program_Error_Msg (File, Line, Rmsg_21'Address);
    end Rcheck_21;
 
-   procedure Rcheck_22 (File : System.Address; Line : Integer) is
-   begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_22'Address);
-   end Rcheck_22;
-
    procedure Rcheck_23 (File : System.Address; Line : Integer) is
    begin
       Raise_Program_Error_Msg (File, Line, Rmsg_23'Address);
@@ -1269,6 +1256,24 @@ package body Ada.Exceptions is
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_12_Ext;
 
+   ---------------
+   -- Rcheck_22 --
+   ---------------
+
+   procedure Rcheck_22 (File : System.Address; Line : Integer) is
+      E : constant Exception_Id := Program_Error_Def'Access;
+
+   begin
+      --  This is "finalize/adjust raised exception". This subprogram is always
+      --  called with abort deferred, unlike all other Rcheck_* routines, it
+      --  needs to call Raise_Exception_No_Defer.
+
+      --  This is consistent with Raise_From_Controlled_Operation
+
+      Exception_Data.Set_Exception_C_Msg (E, File, Line, 0, Rmsg_22'Address);
+      Raise_Current_Excep (E);
+   end Rcheck_22;
+
    -------------
    -- Reraise --
    -------------
@@ -1276,8 +1281,9 @@ package body Ada.Exceptions is
    procedure Reraise is
       Excep : constant EOA := Get_Current_Excep.all;
    begin
-      Abort_Defer.all;
-      Exception_Propagation.Setup_Exception (Excep, Excep, Reraised => True);
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Raise_Current_Excep (Excep.Id);
    end Reraise;
 
@@ -1288,10 +1294,11 @@ package body Ada.Exceptions is
    procedure Reraise_Occurrence (X : Exception_Occurrence) is
    begin
       if X.Id /= null then
-         Abort_Defer.all;
-         Exception_Propagation.Setup_Exception
-           (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
-         Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
+         if not ZCX_By_Default then
+            Abort_Defer.all;
+         end if;
+
+         Save_Occurrence (Get_Current_Excep.all.all, X);
          Raise_Current_Excep (X.Id);
       end if;
    end Reraise_Occurrence;
@@ -1302,10 +1309,11 @@ package body Ada.Exceptions is
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence) is
    begin
-      Abort_Defer.all;
-      Exception_Propagation.Setup_Exception
-        (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
-      Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
+
+      Save_Occurrence (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_Always;
 
@@ -1315,9 +1323,7 @@ package body Ada.Exceptions is
 
    procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence) is
    begin
-      Exception_Propagation.Setup_Exception
-        (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
-      Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
+      Save_Occurrence (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_No_Defer;
 
@@ -1330,7 +1336,16 @@ package body Ada.Exceptions is
       Source : Exception_Occurrence)
    is
    begin
-      Save_Occurrence_No_Private (Target, Source);
+      Target.Id             := Source.Id;
+      Target.Msg_Length     := Source.Msg_Length;
+      Target.Num_Tracebacks := Source.Num_Tracebacks;
+      Target.Pid            := Source.Pid;
+
+      Target.Msg (1 .. Target.Msg_Length) :=
+        Source.Msg (1 .. Target.Msg_Length);
+
+      Target.Tracebacks (1 .. Target.Num_Tracebacks) :=
+        Source.Tracebacks (1 .. Target.Num_Tracebacks);
    end Save_Occurrence;
 
    function Save_Occurrence (Source : Exception_Occurrence) return EOA is
@@ -1339,47 +1354,6 @@ package body Ada.Exceptions is
       Save_Occurrence (Target.all, Source);
       return Target;
    end Save_Occurrence;
-
-   --------------------------------
-   -- Save_Occurrence_No_Private --
-   --------------------------------
-
-   procedure Save_Occurrence_No_Private
-     (Target : out Exception_Occurrence;
-      Source : Exception_Occurrence)
-   is
-   begin
-      Target.Id             := Source.Id;
-      Target.Msg_Length     := Source.Msg_Length;
-      Target.Num_Tracebacks := Source.Num_Tracebacks;
-      Target.Pid            := Source.Pid;
-      Target.Cleanup_Flag   := Source.Cleanup_Flag;
-
-      Target.Msg (1 .. Target.Msg_Length) :=
-        Source.Msg (1 .. Target.Msg_Length);
-
-      Target.Tracebacks (1 .. Target.Num_Tracebacks) :=
-        Source.Tracebacks (1 .. Target.Num_Tracebacks);
-   end Save_Occurrence_No_Private;
-
-   -------------------------
-   -- Transfer_Occurrence --
-   -------------------------
-
-   procedure Transfer_Occurrence
-     (Target : Exception_Occurrence_Access;
-      Source : Exception_Occurrence)
-   is
-   begin
-      --  Setup Target as an exception to be propagated in the calling task
-      --  (rendezvous-wise), taking care not to clobber the associated private
-      --  data.  Target is expected to be a pointer to the calling task's
-      --  fixed TSD occurrence, which is very different from Get_Current_Excep
-      --  here because this subprogram is called from the called task.
-
-      Exception_Propagation.Setup_Exception (Target, Target);
-      Save_Occurrence_No_Private (Target.all, Source);
-   end Transfer_Occurrence;
 
    -------------------
    -- String_To_EId --
@@ -1394,22 +1368,6 @@ package body Ada.Exceptions is
 
    function String_To_EO (S : String) return Exception_Occurrence
      renames Stream_Attributes.String_To_EO;
-
-   ------------------------------
-   -- Raise_Exception_No_Defer --
-   ------------------------------
-
-   procedure Raise_Exception_No_Defer
-     (E       : Exception_Id;
-      Message : String := "")
-   is
-   begin
-      Exception_Data.Set_Exception_Msg (E, Message);
-
-      --  Do not call Abort_Defer.all, as specified by the spec
-
-      Raise_Current_Excep (E);
-   end Raise_Exception_No_Defer;
 
    ---------------
    -- To_Stderr --
@@ -1433,6 +1391,30 @@ package body Ada.Exceptions is
          end if;
       end loop;
    end To_Stderr;
+
+   -------------------------
+   -- Transfer_Occurrence --
+   -------------------------
+
+   procedure Transfer_Occurrence
+     (Target : Exception_Occurrence_Access;
+      Source : Exception_Occurrence)
+   is
+   begin
+      Save_Occurrence (Target.all, Source);
+   end Transfer_Occurrence;
+
+   ------------------------
+   -- Triggered_By_Abort --
+   ------------------------
+
+   function Triggered_By_Abort return Boolean is
+      Ex : constant Exception_Occurrence_Access := Get_Current_Excep.all;
+
+   begin
+      return Ex /= null
+        and then Exception_Identity (Ex.all) = Standard'Abort_Signal'Identity;
+   end Triggered_By_Abort;
 
    -------------------------
    -- Wide_Exception_Name --

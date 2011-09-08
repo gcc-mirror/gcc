@@ -1056,7 +1056,7 @@ coverage_init (const char *filename)
   strcpy (bbg_file_name, filename);
   strcat (bbg_file_name, GCOV_NOTE_SUFFIX);
 
-  if (flag_profile_use)
+  if (flag_branch_probabilities)
     read_counts_file ();
 }
 

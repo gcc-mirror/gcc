@@ -1240,6 +1240,23 @@ __gnat_tmp_name (char *tmp_filename)
     sprintf (tmp_filename, "%s/gnat-XXXXXX", tmpdir);
 
   close (mkstemp(tmp_filename));
+#elif defined (__vxworks) && !(defined (__RTP__) || defined (VTHREADS))
+  int             index;
+  char *          pos;
+  ushort_t        t;
+  static ushort_t seed = 0; /* used to generate unique name */
+
+  /* generate unique name */
+  strcpy (tmp_filename, "tmp");
+
+  /* fill up the name buffer from the last position */
+  index = 5;
+  pos = tmp_filename + strlen (tmp_filename) + index;
+  *pos = '\0';
+
+  seed++;
+  for (t = seed; 0 <= --index; t >>= 3)
+      *--pos = '0' + (t & 07);
 #else
   tmpnam (tmp_filename);
 #endif
@@ -3770,6 +3787,75 @@ void *__gnat_lwp_self (void)
 {
    return (void *) syscall (__NR_gettid);
 }
+
+#include <sched.h>
+
+/* glibc versions earlier than 2.7 do not define the routines to handle
+   dynamically allocated CPU sets. For these targets, we use the static
+   versions. */
+
+#ifdef CPU_ALLOC
+
+/* Dynamic cpu sets */
+
+cpu_set_t *__gnat_cpu_alloc (size_t count)
+{
+  return CPU_ALLOC (count);
+}
+
+size_t __gnat_cpu_alloc_size (size_t count)
+{
+  return CPU_ALLOC_SIZE (count);
+}
+
+void __gnat_cpu_free (cpu_set_t *set)
+{
+  CPU_FREE (set);
+}
+
+void __gnat_cpu_zero (size_t count, cpu_set_t *set)
+{
+  CPU_ZERO_S (count, set);
+}
+
+void __gnat_cpu_set (int cpu, size_t count, cpu_set_t *set)
+{
+  /* Ada handles CPU numbers starting from 1, while C identifies the first
+     CPU by a 0, so we need to adjust. */
+  CPU_SET_S (cpu - 1, count, set);
+}
+
+#else
+
+/* Static cpu sets */
+
+cpu_set_t *__gnat_cpu_alloc (size_t count ATTRIBUTE_UNUSED)
+{
+  return (cpu_set_t *) xmalloc (sizeof (cpu_set_t));
+}
+
+size_t __gnat_cpu_alloc_size (size_t count ATTRIBUTE_UNUSED)
+{
+  return sizeof (cpu_set_t);
+}
+
+void __gnat_cpu_free (cpu_set_t *set)
+{
+  free (set);
+}
+
+void __gnat_cpu_zero (size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
+{
+  CPU_ZERO (set);
+}
+
+void __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
+{
+  /* Ada handles CPU numbers starting from 1, while C identifies the first
+     CPU by a 0, so we need to adjust. */
+  CPU_SET (cpu - 1, set);
+}
+#endif
 #endif
 
 #ifdef __cplusplus

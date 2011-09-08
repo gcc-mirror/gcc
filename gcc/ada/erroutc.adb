@@ -955,12 +955,12 @@ package body Erroutc is
       if Name_Len = 2 and then Name_Buffer (1 .. 2) = "RM" then
          Set_Msg_Name_Buffer;
 
-      --  We make a similar exception for ALFA
+      --  We make a similar exception for Alfa
 
-      elsif Name_Len = 4 and then Name_Buffer (1 .. 4) = "ALFA" then
+      elsif Name_Len = 4 and then Name_Buffer (1 .. 4) = "Alfa" then
          Set_Msg_Name_Buffer;
 
-      --  Neither RM nor ALFA: case appropriately and add surrounding quotes
+      --  Neither RM nor Alfa: case appropriately and add surrounding quotes
 
       else
          Set_Casing (Keyword_Casing (Flag_Source), All_Lower_Case);

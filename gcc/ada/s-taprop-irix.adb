@@ -164,7 +164,7 @@ package body System.Task_Primitives.Operations is
       --  cases (e.g. shutdown of the Server_Task in System.Interrupts) we
       --  need to send the Abort signal to a task.
 
-      if ZCX_By_Default and then GCC_ZCX_Support then
+      if ZCX_By_Default then
          return;
       end if;
 
@@ -1341,5 +1341,18 @@ package body System.Task_Primitives.Operations is
          Abort_Handler_Installed := True;
       end if;
    end Initialize;
+
+   -----------------------
+   -- Set_Task_Affinity --
+   -----------------------
+
+   procedure Set_Task_Affinity (T : ST.Task_Id) is
+      pragma Unreferenced (T);
+
+   begin
+      --  Setting task affinity is not supported by the underlying system
+
+      null;
+   end Set_Task_Affinity;
 
 end System.Task_Primitives.Operations;

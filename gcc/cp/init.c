@@ -330,7 +330,7 @@ build_value_init (tree type, tsubst_flags_t complain)
      constructor.  */
 
   /* The AGGR_INIT_EXPR tweaking below breaks in templates.  */
-  gcc_assert (!processing_template_decl);
+  gcc_assert (!processing_template_decl || SCALAR_TYPE_P (type));
 
   if (CLASS_TYPE_P (type))
     {
@@ -605,15 +605,6 @@ perform_member_init (tree member, tree init)
 		       member, type);
 
 	  core_type = strip_array_types (type);
-
-	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
-	      && !type_has_constexpr_default_constructor (core_type))
-	    {
-	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
-		error ("uninitialized member %qD in %<constexpr%> constructor",
-		       member);
-	      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
-	    }
 
 	  if (CLASS_TYPE_P (core_type)
 	      && (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
@@ -962,16 +953,6 @@ emit_mem_initializers (tree mem_inits)
 			OPT_Wextra, "base class %q#T should be explicitly "
 			"initialized in the copy constructor",
 			BINFO_TYPE (subobject));
-
-	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
-	      && !(type_has_constexpr_default_constructor
-		   (BINFO_TYPE (subobject))))
-	    {
-	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
-		error ("uninitialized base %qT in %<constexpr%> constructor",
-		       BINFO_TYPE (subobject));
-	      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
-	    }
 	}
 
       /* Initialize the base.  */

@@ -54,9 +54,14 @@ extern "C" {
 #undef stdout
 #endif
 
-#ifdef VTHREADS
-#undef putchar
+/* Don't use macros versions of this functions on VxWorks since they cause
+   imcompatible changes in some VxWorks versions */
+#ifdef __vxworks
 #undef getchar
+#undef putchar
+#undef feof
+#undef ferror
+#undef fileno
 #endif
 
 #ifdef RTX

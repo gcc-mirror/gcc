@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -427,14 +427,14 @@ package GNAT.Sockets is
 
    --  Timeval_Duration is a subtype of Standard.Duration because the full
    --  range of Standard.Duration cannot be represented in the equivalent C
-   --  structure. Moreover, negative values are not allowed to avoid system
-   --  incompatibilities.
+   --  structure (struct timeval). Moreover, negative values are not allowed
+   --  to avoid system incompatibilities.
 
    Immediate : constant Duration := 0.0;
 
-   Timeval_Forever : constant := 2.0 ** (SOSC.SIZEOF_tv_sec * 8 - 1) - 1.0;
    Forever         : constant Duration :=
-                       Duration'Min (Duration'Last, Timeval_Forever);
+                       Duration'Min (Duration'Last, 1.0 * SOSC.MAX_tv_sec);
+   --  Largest possible Duration that is also a valid value for struct timeval
 
    subtype Timeval_Duration is Duration range Immediate .. Forever;
 

@@ -5,10 +5,11 @@
 // PR c++/10108: ICE in tsubst_decl for error due to non-existence
 // nested type.
 
-template <typename> struct A	// { dg-message "A.void.::A.const A" }
+template <typename> struct A
 {
     template <typename> A(typename A::X) {} // { dg-error "no type" }
 };
 
-A<void> a;	// { dg-error "required|no match" }
-// { dg-prune-output "note" }
+// We currently don't give the "no match" error because we don't add the
+// invalid constructor template to TYPE_METHODS.
+A<void> a;			// { dg-message "required" }

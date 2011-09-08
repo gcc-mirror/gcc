@@ -6,8 +6,8 @@
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
    mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
-   tbmintrin.h, lwpintrin.h, popcntintrin.h and mm_malloc.h that
-   reference the proper builtin functions.
+   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h and mm_malloc.h 
+   that reference the proper builtin functions.
 
    Defining away "extern" and "__inline" results in all of them being
    compiled as proper functions.  */
@@ -147,7 +147,40 @@
 #define __builtin_ia32_bextri_u32(X, Y) __builtin_ia32_bextr_u32 (X, 1)
 #define __builtin_ia32_bextri_u64(X, Y) __builtin_ia32_bextr_u64 (X, 1)
 
-#pragma GCC target ("sse4a,3dnow,avx,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,tbm,lwp,fsgsbase,rdrnd,f16c")
+/* avx2intrin.h */
+#define __builtin_ia32_mpsadbw256(X, Y, Z) __builtin_ia32_mpsadbw256 (X, Y, 1)
+#define __builtin_ia32_palignr256(X, Y, Z) __builtin_ia32_palignr256 (X, Y, 8)
+#define __builtin_ia32_pblendw256(X, Y, Z) __builtin_ia32_pblendw256 (X, Y, 1)
+#define __builtin_ia32_pshufd256(X, Y) __builtin_ia32_pshufd256(X, 1)
+#define __builtin_ia32_pshufhw256(X, Y) __builtin_ia32_pshufhw256(X, 1)
+#define __builtin_ia32_pshuflw256(X, Y) __builtin_ia32_pshuflw256(X, 1)
+#define __builtin_ia32_pslldqi256(X, Y) __builtin_ia32_pslldqi256(X, 8)
+#define __builtin_ia32_psrldqi256(X, Y) __builtin_ia32_psrldqi256(X, 8)
+#define __builtin_ia32_pblendd128(X, Y, Z) __builtin_ia32_pblendd128(X, Y, 1)
+#define __builtin_ia32_pblendd256(X, Y, Z) __builtin_ia32_pblendd256(X, Y, 1)
+#define __builtin_ia32_permdf256(X, Y) __builtin_ia32_permdf256(X, 1)
+#define __builtin_ia32_permdi256(X, Y) __builtin_ia32_permdi256(X, 1)
+#define __builtin_ia32_permti256(X, Y, Z) __builtin_ia32_permti256(X, Y, 1)
+#define __builtin_ia32_extract128i256(X, Y) __builtin_ia32_extract128i256(X, 1)
+#define __builtin_ia32_insert128i256(X, Y, Z) __builtin_ia32_insert128i256(X, Y, 1)
+#define __builtin_ia32_gathersiv2df(X, Y, Z, K, M) __builtin_ia32_gathersiv2df(X, Y, Z, K, 1)
+#define __builtin_ia32_gathersiv4df(X, Y, Z, K, M) __builtin_ia32_gathersiv4df(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv2df(X, Y, Z, K, M) __builtin_ia32_gatherdiv2df(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv4df(X, Y, Z, K, M) __builtin_ia32_gatherdiv4df(X, Y, Z, K, 1)
+#define __builtin_ia32_gathersiv4sf(X, Y, Z, K, M) __builtin_ia32_gathersiv4sf(X, Y, Z, K, 1)
+#define __builtin_ia32_gathersiv8sf(X, Y, Z, K, M) __builtin_ia32_gathersiv8sf(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv4sf(X, Y, Z, K, M) __builtin_ia32_gatherdiv4sf(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv4sf256(X, Y, Z, K, M) __builtin_ia32_gatherdiv4sf256(X, Y, Z, K, 1)
+#define __builtin_ia32_gathersiv2di(X, Y, Z, K, M) __builtin_ia32_gathersiv2di(X, Y, Z, K, 1)
+#define __builtin_ia32_gathersiv4di(X, Y, Z, K, M) __builtin_ia32_gathersiv4di(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv2di(X, Y, Z, K, M) __builtin_ia32_gatherdiv2di(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv4di(X, Y, Z, K, M) __builtin_ia32_gatherdiv4di(X, Y, Z, K, 1)
+#define __builtin_ia32_gathersiv4si(X, Y, Z, K, M) __builtin_ia32_gathersiv4si(X, Y, Z, K, 1)
+#define __builtin_ia32_gathersiv8si(X, Y, Z, K, M) __builtin_ia32_gathersiv8si(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv4si(X, Y, Z, K, M) __builtin_ia32_gatherdiv4si(X, Y, Z, K, 1)
+#define __builtin_ia32_gatherdiv4si256(X, Y, Z, K, M) __builtin_ia32_gatherdiv4si256(X, Y, Z, K, 1)
+
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

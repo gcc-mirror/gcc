@@ -1081,11 +1081,20 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
   /* ??? Do not allow cross-jumping between different stack levels.  */
   p1 = find_reg_note (i1, REG_ARGS_SIZE, NULL);
   p2 = find_reg_note (i2, REG_ARGS_SIZE, NULL);
-  if (p1)
-    p1 = XEXP (p1, 0);
-  if (p2)
-    p2 = XEXP (p2, 0);
-  if (!rtx_equal_p (p1, p2))
+  if (p1 && p2)
+    {
+      p1 = XEXP (p1, 0);
+      p2 = XEXP (p2, 0);
+      if (!rtx_equal_p (p1, p2))
+        return dir_none;
+
+      /* ??? Worse, this adjustment had better be constant lest we
+         have differing incoming stack levels.  */
+      if (!frame_pointer_needed
+          && find_args_size_adjust (i1) == HOST_WIDE_INT_MIN)
+	return dir_none;
+    }
+  else if (p1 || p2)
     return dir_none;
 
   p1 = PATTERN (i1);

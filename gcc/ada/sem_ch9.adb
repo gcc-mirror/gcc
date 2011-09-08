@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -727,7 +726,7 @@ package body Sem_Ch9 is
       --  for the discriminals and privals and finally a declaration for the
       --  entry family index (if applicable).
 
-      if Expander_Active
+      if Full_Expander_Active
         and then Is_Protected_Type (P_Type)
       then
          Install_Private_Data_Declarations
@@ -1274,11 +1273,15 @@ package body Sem_Ch9 is
          end if;
 
          --  Create corresponding record now, because some private dependents
-         --  may be subtypes of the partial view. Skip if errors are present,
-         --  to prevent cascaded messages.
+         --  may be subtypes of the partial view.
+
+         --  Skip if errors are present, to prevent cascaded messages
 
          if Serious_Errors_Detected = 0
-           and then Expander_Active
+
+           --  Also skip if expander is not active
+
+           and then Full_Expander_Active
          then
             Expand_N_Protected_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
@@ -1722,7 +1725,6 @@ package body Sem_Ch9 is
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc,  Chars (T)));
 
-      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);
@@ -1792,7 +1794,6 @@ package body Sem_Ch9 is
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc, Chars (T)));
 
-      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);
@@ -2000,10 +2001,18 @@ package body Sem_Ch9 is
 
       --  In the case of an incomplete type, use the full view, unless it's not
       --  present (as can occur for an incomplete view from a limited with).
+      --  Initialize the Corresponding_Record_Type (which overlays the Private
+      --  Dependents field of the incomplete view).
 
-      if Ekind (T) = E_Incomplete_Type and then Present (Full_View (T)) then
-         T := Full_View (T);
-         Set_Completion_Referenced (T);
+      if Ekind (T) = E_Incomplete_Type then
+         if Present (Full_View (T)) then
+            T := Full_View (T);
+            Set_Completion_Referenced (T);
+
+         else
+            Set_Ekind (T, E_Task_Type);
+            Set_Corresponding_Record_Type (T, Empty);
+         end if;
       end if;
 
       Set_Ekind              (T, E_Task_Type);
@@ -2077,11 +2086,15 @@ package body Sem_Ch9 is
          end if;
 
          --  Create corresponding record now, because some private dependents
-         --  may be subtypes of the partial view. Skip if errors are present,
-         --  to prevent cascaded messages.
+         --  may be subtypes of the partial view.
+
+         --  Skip if errors are present, to prevent cascaded messages
 
          if Serious_Errors_Detected = 0
-           and then Expander_Active
+
+           --  Also skip if expander is not active
+
+           and then Full_Expander_Active
          then
             Expand_N_Task_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);

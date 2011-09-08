@@ -37,9 +37,10 @@
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)     \
   avr_asm_declare_function_name ((FILE), (NAME), (DECL))
 
+/* Output alignment 2**1 for jump tables.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  switch_to_section (progmem_section);
+  fprintf (FILE, "\t.p2align\t1\n");
 
 /* Be conservative in crtstuff.c.  */
 #undef INIT_SECTION_ASM_OP

@@ -39,7 +39,7 @@ package Restrict is
    --  consistency, restrictions found in any with'ed units, parent specs
    --  etc., since we may as well check as much as we can at compile time.
    --  These variables should not be referenced directly by clients. Instead
-   --  use Check_Restrictions to record a violation of a restriction, and
+   --  use Check_Restriction to record a violation of a restriction, and
    --  Restriction_Active to test if a given restriction is active.
 
    Restrictions_Loc : array (All_Restrictions) of Source_Ptr :=

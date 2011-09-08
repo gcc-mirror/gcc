@@ -183,11 +183,14 @@ package body Prj.Attr is
    --  Configuration - Compiling
 
    "Sadriver#" &
+   "Salanguage_kind#" &
+   "Sadependency_kind#" &
    "Larequired_switches#" &
    "Laleading_required_switches#" &
    "Latrailing_required_switches#" &
    "Lapic_option#" &
    "Sapath_syntax#" &
+   "Lasource_file_switches#" &
    "Saobject_file_suffix#" &
    "Laobject_file_switches#" &
    "Lamulti_unit_switches#" &

@@ -64,6 +64,11 @@ typedef struct minipool_fixup   Mfix;
 
 void (*arm_lang_output_object_attributes_hook)(void);
 
+struct four_ints
+{
+  int i[4];
+};
+
 /* Forward function declarations.  */
 static bool arm_needs_doubleword_align (enum machine_mode, const_tree);
 static int arm_compute_static_chain_stack_bytes (void);
@@ -82,7 +87,6 @@ inline static int thumb1_index_register_rtx_p (rtx, int);
 static bool arm_legitimate_address_p (enum machine_mode, rtx, bool);
 static int thumb_far_jump_used_p (void);
 static bool thumb_force_lr_save (void);
-static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_sfm (int, int);
 static unsigned arm_size_return_regs (void);
 static bool arm_assemble_integer (rtx, unsigned int, int);
@@ -129,7 +133,13 @@ static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
 static void arm_set_default_type_attributes (tree);
 static int arm_adjust_cost (rtx, rtx, rtx, int);
-static int count_insns_for_constant (HOST_WIDE_INT, int);
+static int optimal_immediate_sequence (enum rtx_code code,
+				       unsigned HOST_WIDE_INT val,
+				       struct four_ints *return_sequence);
+static int optimal_immediate_sequence_1 (enum rtx_code code,
+					 unsigned HOST_WIDE_INT val,
+					 struct four_ints *return_sequence,
+					 int i);
 static int arm_get_strip_length (int);
 static bool arm_function_ok_for_sibcall (tree, tree);
 static enum machine_mode arm_promote_function_mode (const_tree,
@@ -2375,7 +2385,7 @@ const_ok_for_arm (HOST_WIDE_INT i)
 }
 
 /* Return true if I is a valid constant for the operation CODE.  */
-static int
+int
 const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
 {
   if (const_ok_for_arm (i))
@@ -2392,6 +2402,13 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
 	return const_ok_for_arm (ARM_SIGN_EXTEND (~i));
 
     case PLUS:
+      /* See if we can use addw or subw.  */
+      if (TARGET_THUMB2
+	  && ((i & 0xfffff000) == 0
+	      || ((-i) & 0xfffff000) == 0))
+	return 1;
+      /* else fall through.  */
+
     case COMPARE:
     case EQ:
     case NE:
@@ -2507,68 +2524,41 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode, rtx insn,
 			   1);
 }
 
-/* Return the number of instructions required to synthesize the given
-   constant, if we start emitting them from bit-position I.  */
+/* Return a sequence of integers, in RETURN_SEQUENCE that fit into
+   ARM/THUMB2 immediates, and add up to VAL.
+   Thr function return value gives the number of insns required.  */
 static int
-count_insns_for_constant (HOST_WIDE_INT remainder, int i)
-{
-  HOST_WIDE_INT temp1;
-  int step_size = TARGET_ARM ? 2 : 1;
-  int num_insns = 0;
-
-  gcc_assert (TARGET_ARM || i == 0);
-
-  do
-    {
-      int end;
-
-      if (i <= 0)
-	i += 32;
-      if (remainder & (((1 << step_size) - 1) << (i - step_size)))
-	{
-	  end = i - 8;
-	  if (end < 0)
-	    end += 32;
-	  temp1 = remainder & ((0x0ff << end)
-				    | ((i < end) ? (0xff >> (32 - end)) : 0));
-	  remainder &= ~temp1;
-	  num_insns++;
-	  i -= 8 - step_size;
-	}
-      i -= step_size;
-    } while (remainder);
-  return num_insns;
-}
-
-static int
-find_best_start (unsigned HOST_WIDE_INT remainder)
+optimal_immediate_sequence (enum rtx_code code, unsigned HOST_WIDE_INT val,
+			    struct four_ints *return_sequence)
 {
   int best_consecutive_zeros = 0;
   int i;
   int best_start = 0;
+  int insns1, insns2;
+  struct four_ints tmp_sequence;
 
   /* If we aren't targetting ARM, the best place to start is always at
-     the bottom.  */
-  if (! TARGET_ARM)
-    return 0;
-
-  for (i = 0; i < 32; i += 2)
+     the bottom, otherwise look more closely.  */
+  if (TARGET_ARM)
     {
-      int consecutive_zeros = 0;
-
-      if (!(remainder & (3 << i)))
+      for (i = 0; i < 32; i += 2)
 	{
-	  while ((i < 32) && !(remainder & (3 << i)))
+	  int consecutive_zeros = 0;
+
+	  if (!(val & (3 << i)))
 	    {
-	      consecutive_zeros += 2;
-	      i += 2;
+	      while ((i < 32) && !(val & (3 << i)))
+		{
+		  consecutive_zeros += 2;
+		  i += 2;
+		}
+	      if (consecutive_zeros > best_consecutive_zeros)
+		{
+		  best_consecutive_zeros = consecutive_zeros;
+		  best_start = i - consecutive_zeros;
+		}
+	      i -= 2;
 	    }
-	  if (consecutive_zeros > best_consecutive_zeros)
-	    {
-	      best_consecutive_zeros = consecutive_zeros;
-	      best_start = i - consecutive_zeros;
-	    }
-	  i -= 2;
 	}
     }
 
@@ -2595,13 +2585,161 @@ find_best_start (unsigned HOST_WIDE_INT remainder)
      the constant starting from `best_start', and also starting from
      zero (i.e. with bit 31 first to be output).  If `best_start' doesn't
      yield a shorter sequence, we may as well use zero.  */
+  insns1 = optimal_immediate_sequence_1 (code, val, return_sequence, best_start);
   if (best_start != 0
-      && ((((unsigned HOST_WIDE_INT) 1) << best_start) < remainder)
-      && (count_insns_for_constant (remainder, 0) <=
-	  count_insns_for_constant (remainder, best_start)))
-    best_start = 0;
+      && ((((unsigned HOST_WIDE_INT) 1) << best_start) < val))
+    {
+      insns2 = optimal_immediate_sequence_1 (code, val, &tmp_sequence, 0);
+      if (insns2 <= insns1)
+	{
+	  *return_sequence = tmp_sequence;
+	  insns1 = insns2;
+	}
+    }
 
-  return best_start;
+  return insns1;
+}
+
+/* As for optimal_immediate_sequence, but starting at bit-position I.  */
+static int
+optimal_immediate_sequence_1 (enum rtx_code code, unsigned HOST_WIDE_INT val,
+			     struct four_ints *return_sequence, int i)
+{
+  int remainder = val & 0xffffffff;
+  int insns = 0;
+
+  /* Try and find a way of doing the job in either two or three
+     instructions.
+     
+     In ARM mode we can use 8-bit constants, rotated to any 2-bit aligned
+     location.  We start at position I.  This may be the MSB, or
+     optimial_immediate_sequence may have positioned it at the largest block 
+     of zeros that are aligned on a 2-bit boundary. We then fill up the temps,
+     wrapping around to the top of the word when we drop off the bottom.
+     In the worst case this code should produce no more than four insns.
+
+     In Thumb2 mode, we can use 32/16-bit replicated constants, and 8-bit
+     constants, shifted to any arbitrary location.  We should always start
+     at the MSB.  */
+  do
+    {
+      int end;
+      unsigned int b1, b2, b3, b4;
+      unsigned HOST_WIDE_INT result;
+      int loc;
+
+      gcc_assert (insns < 4);
+
+      if (i <= 0)
+	i += 32;
+
+      /* First, find the next normal 12/8-bit shifted/rotated immediate.  */
+      if (remainder & ((TARGET_ARM ? (3 << (i - 2)) : (1 << (i - 1)))))
+	{
+	  loc = i;
+	  if (i <= 12 && TARGET_THUMB2 && code == PLUS)
+	    /* We can use addw/subw for the last 12 bits.  */
+	    result = remainder;
+	  else
+	    {
+	      /* Use an 8-bit shifted/rotated immediate.  */
+	      end = i - 8;
+	      if (end < 0)
+		end += 32;
+	      result = remainder & ((0x0ff << end)
+				   | ((i < end) ? (0xff >> (32 - end))
+						: 0));
+	      i -= 8;
+	    }
+	}
+      else
+	{
+	  /* Arm allows rotates by a multiple of two. Thumb-2 allows
+	     arbitrary shifts.  */
+	  i -= TARGET_ARM ? 2 : 1;
+	  continue;
+	}
+
+      /* Next, see if we can do a better job with a thumb2 replicated
+	 constant.
+       
+         We do it this way around to catch the cases like 0x01F001E0 where
+	 two 8-bit immediates would work, but a replicated constant would
+	 make it worse.
+       
+         TODO: 16-bit constants that don't clear all the bits, but still win.
+         TODO: Arithmetic splitting for set/add/sub, rather than bitwise.  */
+      if (TARGET_THUMB2)
+	{
+	  b1 = (remainder & 0xff000000) >> 24;
+	  b2 = (remainder & 0x00ff0000) >> 16;
+	  b3 = (remainder & 0x0000ff00) >> 8;
+	  b4 = remainder & 0xff;
+
+	  if (loc > 24)
+	    {
+	      /* The 8-bit immediate already found clears b1 (and maybe b2),
+		 but must leave b3 and b4 alone.  */
+
+	      /* First try to find a 32-bit replicated constant that clears
+		 almost everything.  We can assume that we can't do it in one,
+		 or else we wouldn't be here.  */
+	      unsigned int tmp = b1 & b2 & b3 & b4;
+	      unsigned int tmp2 = tmp + (tmp << 8) + (tmp << 16)
+				  + (tmp << 24);
+	      unsigned int matching_bytes = (tmp == b1) + (tmp == b2)
+					    + (tmp == b3) + (tmp == b4);
+	      if (tmp
+		  && (matching_bytes >= 3
+		      || (matching_bytes == 2
+			  && const_ok_for_op (remainder & ~tmp2, code))))
+		{
+		  /* At least 3 of the bytes match, and the fourth has at 
+		     least as many bits set, or two of the bytes match
+		     and it will only require one more insn to finish.  */
+		  result = tmp2;
+		  i = tmp != b1 ? 32
+		      : tmp != b2 ? 24
+		      : tmp != b3 ? 16
+		      : 8;
+		}
+
+	      /* Second, try to find a 16-bit replicated constant that can
+		 leave three of the bytes clear.  If b2 or b4 is already
+		 zero, then we can.  If the 8-bit from above would not
+		 clear b2 anyway, then we still win.  */
+	      else if (b1 == b3 && (!b2 || !b4
+			       || (remainder & 0x00ff0000 & ~result)))
+		{
+		  result = remainder & 0xff00ff00;
+		  i = 24;
+		}
+	    }
+	  else if (loc > 16)
+	    {
+	      /* The 8-bit immediate already found clears b2 (and maybe b3)
+		 and we don't get here unless b1 is alredy clear, but it will
+		 leave b4 unchanged.  */
+
+	      /* If we can clear b2 and b4 at once, then we win, since the
+		 8-bits couldn't possibly reach that far.  */
+	      if (b2 == b4)
+		{
+		  result = remainder & 0x00ff00ff;
+		  i = 16;
+		}
+	    }
+	}
+
+      return_sequence->i[insns++] = result;
+      remainder &= ~result;
+
+      if (code == SET || code == MINUS)
+	code = PLUS;
+    }
+  while (remainder);
+
+  return insns;
 }
 
 /* Emit an instruction with the indicated PATTERN.  If COND is
@@ -2618,7 +2756,6 @@ emit_constant_insn (rtx cond, rtx pattern)
 
 /* As above, but extra parameter GENERATE which, if clear, suppresses
    RTL generation.  */
-/* ??? This needs more work for thumb2.  */
 
 static int
 arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
@@ -2629,15 +2766,15 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
   int can_negate = 0;
   int final_invert = 0;
   int i;
-  int num_bits_set = 0;
   int set_sign_bit_copies = 0;
   int clear_sign_bit_copies = 0;
   int clear_zero_bit_copies = 0;
   int set_zero_bit_copies = 0;
-  int insns = 0;
+  int insns = 0, neg_insns, inv_insns;
   unsigned HOST_WIDE_INT temp1, temp2;
   unsigned HOST_WIDE_INT remainder = val & 0xffffffff;
-  int step_size = TARGET_ARM ? 2 : 1;
+  struct four_ints *immediates;
+  struct four_ints pos_immediates, neg_immediates, inv_immediates;
 
   /* Find out which operations are safe for a given CODE.  Also do a quick
      check for degenerate cases; these can occur when DImode operations
@@ -2646,7 +2783,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
     {
     case SET:
       can_invert = 1;
-      can_negate = 1;
       break;
 
     case PLUS:
@@ -2714,6 +2850,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 					     gen_rtx_NOT (mode, source)));
 	  return 1;
 	}
+      final_invert = 1;
       break;
 
     case MINUS:
@@ -2736,7 +2873,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 							    source)));
 	  return 1;
 	}
-      can_negate = 1;
 
       break;
 
@@ -3148,120 +3284,97 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
       break;
     }
 
-  for (i = 0; i < 32; i++)
-    if (remainder & (1 << i))
-      num_bits_set++;
+  /* Calculate what the instruction sequences would be if we generated it
+     normally, negated, or inverted.  */
+  if (code == AND)
+    /* AND cannot be split into multiple insns, so invert and use BIC.  */
+    insns = 99;
+  else
+    insns = optimal_immediate_sequence (code, remainder, &pos_immediates);
 
-  if ((code == AND) || (can_invert && num_bits_set > 16))
-    remainder ^= 0xffffffff;
-  else if (code == PLUS && num_bits_set > 16)
-    remainder = (-remainder) & 0xffffffff;
+  if (can_negate)
+    neg_insns = optimal_immediate_sequence (code, (-remainder) & 0xffffffff,
+					    &neg_immediates);
+  else
+    neg_insns = 99;
 
-  /* For XOR, if more than half the bits are set and there's a sequence
-     of more than 8 consecutive ones in the pattern then we can XOR by the
-     inverted constant and then invert the final result; this may save an
-     instruction and might also lead to the final mvn being merged with
-     some other operation.  */
-  else if (code == XOR && num_bits_set > 16
-	   && (count_insns_for_constant (remainder ^ 0xffffffff,
-					 find_best_start
-					 (remainder ^ 0xffffffff))
-	       < count_insns_for_constant (remainder,
-					   find_best_start (remainder))))
+  if (can_invert || final_invert)
+    inv_insns = optimal_immediate_sequence (code, remainder ^ 0xffffffff,
+					    &inv_immediates);
+  else
+    inv_insns = 99;
+
+  immediates = &pos_immediates;
+
+  /* Is the negated immediate sequence more efficient?  */
+  if (neg_insns < insns && neg_insns <= inv_insns)
     {
-      remainder ^= 0xffffffff;
-      final_invert = 1;
+      insns = neg_insns;
+      immediates = &neg_immediates;
+    }
+  else
+    can_negate = 0;
+
+  /* Is the inverted immediate sequence more efficient?
+     We must allow for an extra NOT instruction for XOR operations, although
+     there is some chance that the final 'mvn' will get optimized later.  */
+  if ((inv_insns + 1) < insns || (!final_invert && inv_insns < insns))
+    {
+      insns = inv_insns;
+      immediates = &inv_immediates;
     }
   else
     {
       can_invert = 0;
-      can_negate = 0;
+      final_invert = 0;
     }
 
-  /* Now try and find a way of doing the job in either two or three
-     instructions.
-     We start by looking for the largest block of zeros that are aligned on
-     a 2-bit boundary, we then fill up the temps, wrapping around to the
-     top of the word when we drop off the bottom.
-     In the worst case this code should produce no more than four insns.
-     Thumb-2 constants are shifted, not rotated, so the MSB is always the
-     best place to start.  */
+  /* Now output the chosen sequence as instructions.  */
+  if (generate)
+    {
+      for (i = 0; i < insns; i++)
+	{
+	  rtx new_src, temp1_rtx;
 
-  /* ??? Use thumb2 replicated constants when the high and low halfwords are
-     the same.  */
-  {
-    /* Now start emitting the insns.  */
-    i = find_best_start (remainder);
-    do
-      {
-	int end;
+	  temp1 = immediates->i[i];
 
-	if (i <= 0)
-	  i += 32;
-	if (remainder & (3 << (i - 2)))
-	  {
-	    end = i - 8;
-	    if (end < 0)
-	      end += 32;
-	    temp1 = remainder & ((0x0ff << end)
-				 | ((i < end) ? (0xff >> (32 - end)) : 0));
-	    remainder &= ~temp1;
+	  if (code == SET || code == MINUS)
+	    new_src = (subtargets ? gen_reg_rtx (mode) : target);
+	  else if ((final_invert || i < (insns - 1)) && subtargets)
+	    new_src = gen_reg_rtx (mode);
+	  else
+	    new_src = target;
 
-	    if (generate)
-	      {
-		rtx new_src, temp1_rtx;
+	  if (can_invert)
+	    temp1 = ~temp1;
+	  else if (can_negate)
+	    temp1 = -temp1;
 
-		if (code == SET || code == MINUS)
-		  {
-		    new_src = (subtargets ? gen_reg_rtx (mode) : target);
-		    if (can_invert && code != MINUS)
-		      temp1 = ~temp1;
-		  }
-		else
-		  {
-		    if ((final_invert || remainder) && subtargets)
-		      new_src = gen_reg_rtx (mode);
-		    else
-		      new_src = target;
-		    if (can_invert)
-		      temp1 = ~temp1;
-		    else if (can_negate)
-		      temp1 = -temp1;
-		  }
+	  temp1 = trunc_int_for_mode (temp1, mode);
+	  temp1_rtx = GEN_INT (temp1);
 
-		temp1 = trunc_int_for_mode (temp1, mode);
-		temp1_rtx = GEN_INT (temp1);
+	  if (code == SET)
+	    ;
+	  else if (code == MINUS)
+	    temp1_rtx = gen_rtx_MINUS (mode, temp1_rtx, source);
+	  else
+	    temp1_rtx = gen_rtx_fmt_ee (code, mode, source, temp1_rtx);
 
-		if (code == SET)
-		  ;
-		else if (code == MINUS)
-		  temp1_rtx = gen_rtx_MINUS (mode, temp1_rtx, source);
-		else
-		  temp1_rtx = gen_rtx_fmt_ee (code, mode, source, temp1_rtx);
+	  emit_constant_insn (cond,
+			      gen_rtx_SET (VOIDmode, new_src,
+					   temp1_rtx));
+	  source = new_src;
 
-		emit_constant_insn (cond,
-				    gen_rtx_SET (VOIDmode, new_src,
-						 temp1_rtx));
-		source = new_src;
-	      }
-
-	    if (code == SET)
-	      {
-		can_invert = 0;
-		code = PLUS;
-	      }
-	    else if (code == MINUS)
+	  if (code == SET)
+	    {
+	      can_negate = can_invert;
+	      can_invert = 0;
 	      code = PLUS;
-
-	    insns++;
-	    i -= 8 - step_size;
-	  }
-	/* Arm allows rotates by a multiple of two. Thumb-2 allows arbitrary
-	   shifts.  */
-	i -= step_size;
-      }
-    while (remainder);
-  }
+	    }
+	  else if (code == MINUS)
+	    code = PLUS;
+	}
+    }
 
   if (final_invert)
     {
@@ -17723,6 +17836,7 @@ arm_final_prescan_insn (rtx insn)
 
   /* If we start with a return insn, we only succeed if we find another one.  */
   int seeking_return = 0;
+  enum rtx_code return_code = UNKNOWN;
 
   /* START_INSN will hold the insn from where we start looking.  This is the
      first insn after the following code_label if REVERSE is true.  */
@@ -17761,7 +17875,7 @@ arm_final_prescan_insn (rtx insn)
 	  else
 	    return;
 	}
-      else if (GET_CODE (body) == RETURN)
+      else if (ANY_RETURN_P (body))
         {
 	  start_insn = next_nonnote_insn (start_insn);
 	  if (GET_CODE (start_insn) == BARRIER)
@@ -17772,6 +17886,7 @@ arm_final_prescan_insn (rtx insn)
 	    {
 	      reverse = TRUE;
 	      seeking_return = 1;
+	      return_code = GET_CODE (body);
 	    }
 	  else
 	    return;
@@ -17812,11 +17927,15 @@ arm_final_prescan_insn (rtx insn)
 	  label = XEXP (XEXP (SET_SRC (body), 2), 0);
 	  then_not_else = FALSE;
 	}
-      else if (GET_CODE (XEXP (SET_SRC (body), 1)) == RETURN)
-	seeking_return = 1;
-      else if (GET_CODE (XEXP (SET_SRC (body), 2)) == RETURN)
+      else if (ANY_RETURN_P (XEXP (SET_SRC (body), 1)))
+	{
+	  seeking_return = 1;
+	  return_code = GET_CODE (XEXP (SET_SRC (body), 1));
+	}
+      else if (ANY_RETURN_P (XEXP (SET_SRC (body), 2)))
         {
 	  seeking_return = 1;
+	  return_code = GET_CODE (XEXP (SET_SRC (body), 2));
 	  then_not_else = FALSE;
         }
       else
@@ -17913,12 +18032,11 @@ arm_final_prescan_insn (rtx insn)
 		}
 	      /* Fail if a conditional return is undesirable (e.g. on a
 		 StrongARM), but still allow this if optimizing for size.  */
-	      else if (GET_CODE (scanbody) == RETURN
+	      else if (GET_CODE (scanbody) == return_code
 		       && !use_return_insn (TRUE, NULL)
 		       && !optimize_size)
 		fail = TRUE;
-	      else if (GET_CODE (scanbody) == RETURN
-		       && seeking_return)
+	      else if (GET_CODE (scanbody) == return_code)
 	        {
 		  arm_ccfsm_state = 2;
 		  succeed = TRUE;

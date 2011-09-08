@@ -57,26 +57,42 @@ package body Exp_Sel is
               Statements =>
                 New_List (
                   Make_Implicit_Label_Declaration (Loc,
-                    Defining_Identifier =>
-                      Cln_Blk_Ent,
-                    Label_Construct =>
-                      Blk),
+                    Defining_Identifier => Cln_Blk_Ent,
+                    Label_Construct     => Blk),
                   Blk),
 
               Exception_Handlers =>
-                New_List (
-                  Make_Implicit_Exception_Handler (Loc,
-                    Exception_Choices =>
-                      New_List (
-                        New_Reference_To (Stand.Abort_Signal, Loc)),
-                    Statements =>
-                      New_List (
-                        Make_Procedure_Call_Statement (Loc,
-                          Name =>
-                            New_Reference_To (RTE (
-                              RE_Abort_Undefer), Loc),
-                          Parameter_Associations => No_List))))));
+                New_List (Build_Abort_Block_Handler (Loc))));
    end Build_Abort_Block;
+
+   -------------------------------
+   -- Build_Abort_Block_Handler --
+   -------------------------------
+
+   function Build_Abort_Block_Handler (Loc : Source_Ptr) return Node_Id is
+      Stmt : Node_Id;
+
+   begin
+      if Exception_Mechanism = Back_End_Exceptions then
+
+         --  With ZCX, aborts are not defered in handlers
+
+         Stmt := Make_Null_Statement (Loc);
+      else
+         --  With FE SJLJ, aborts are defered at the beginning of Abort_Signal
+         --  handlers.
+
+         Stmt :=
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc),
+             Parameter_Associations => No_List);
+      end if;
+
+      return Make_Implicit_Exception_Handler (Loc,
+        Exception_Choices =>
+          New_List (New_Reference_To (Stand.Abort_Signal, Loc)),
+        Statements        => New_List (Stmt));
+   end Build_Abort_Block_Handler;
 
    -------------
    -- Build_B --
@@ -125,8 +141,9 @@ package body Exp_Sel is
    is
       Cleanup_Block : constant Node_Id :=
                         Make_Block_Statement (Loc,
-                          Identifier   => New_Reference_To (Blk_Ent, Loc),
-                          Declarations => No_List,
+                          Identifier                 =>
+                            New_Reference_To (Blk_Ent, Loc),
+                          Declarations               => No_List,
                           Handled_Statement_Sequence =>
                             Make_Handled_Sequence_Of_Statements (Loc,
                               Statements => Stmts),

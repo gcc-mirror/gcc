@@ -2281,9 +2281,7 @@ gfc_array_ref_shape (gfc_array_ref *ar, mpz_t *shape)
     }
 
 cleanup:
-  for (d--; d >= 0; d--)
-    mpz_clear (shape[d]);
-
+  gfc_clear_shape (shape, d);
   return FAILURE;
 }
 

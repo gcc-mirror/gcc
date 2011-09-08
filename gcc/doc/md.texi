@@ -4017,6 +4017,17 @@ and input vectors should have the same modes (@code{N} elements). The low
 Initialize the vector to given values.  Operand 0 is the vector to initialize
 and operand 1 is parallel containing values for individual fields.
 
+@cindex @code{vcond@var{m}@var{n}} instruction pattern
+@item @samp{vcond@var{m}@var{n}}
+Output a conditional vector move.  Operand 0 is the destination to
+receive a combination of operand 1 and operand 2, which are of mode @var{m},
+dependent on the outcome of the predicate in operand 3 which is a
+vector comparison with operands of mode @var{n} in operands 4 and 5.  The
+modes @var{m} and @var{n} should have the same size.  Operand 0
+will be set to the value @var{op1} & @var{msk} | @var{op2} & ~@var{msk}
+where @var{msk} is computed by element-wise evaluation of the vector
+comparison with a truth value of all-ones and a false value of all-zeros.
+
 @cindex @code{push@var{m}1} instruction pattern
 @item @samp{push@var{m}1}
 Output a push instruction.  Operand 0 is value to push.  Used only when
@@ -4991,6 +5002,20 @@ multiple instructions are usually needed to return from a function, but
 some class of functions only requires one instruction to implement a
 return.  Normally, the applicable functions are those which do not need
 to save any registers or allocate stack space.
+
+It is valid for this pattern to expand to an instruction using
+@code{simple_return} if no epilogue is required.
+
+@cindex @code{simple_return} instruction pattern
+@item @samp{simple_return}
+Subroutine return instruction.  This instruction pattern name should be
+defined only if a single instruction can do all the work of returning
+from a function on a path where no epilogue is required.  This pattern
+is very similar to the @code{return} instruction pattern, but it is emitted
+only by the shrink-wrapping optimization on paths where the function
+prologue has not been executed, and a function return should occur without
+any of the effects of the epilogue.  Additional uses may be introduced on
+paths where both the prologue and the epilogue have executed.
 
 @findex reload_completed
 @findex leaf_function_p
@@ -7031,6 +7056,30 @@ string).
 
 The @var{constraints} operand is ignored and should be the null string.
 
+@cindex @code{match_test} and attributes
+@item (match_test @var{c-expr})
+The test is true if C expression @var{c-expr} is true.  In non-constant
+attributes, @var{c-expr} has access to the following variables:
+
+@table @var
+@item insn
+The rtl instruction under test.
+@item which_alternative
+The @code{define_insn} alternative that @var{insn} matches.
+@xref{Output Statement}.
+@item operands
+An array of @var{insn}'s rtl operands.
+@end table
+
+@var{c-expr} behaves like the condition in a C @code{if} statement,
+so there is no need to explicitly convert the expression into a boolean
+0 or 1 value.  For example, the following two tests are equivalent:
+
+@smallexample
+(match_test "x & 2")
+(match_test "(x & 2) != 0")
+@end smallexample
+
 @cindex @code{le} and attributes
 @cindex @code{leu} and attributes
 @cindex @code{lt} and attributes
@@ -7954,12 +8003,29 @@ verification and debugging.
 non-critical errors.
 
 @item
+@dfn{no-comb-vect} prevents the automaton generator from generating
+two data structures and comparing them for space efficiency.  Using
+a comb vector to represent transitions may be better, but it can be
+very expensive to construct.  This option is useful if the build
+process spends an unacceptably long time in genautomata.
+
+@item
 @dfn{ndfa} makes nondeterministic finite state automata.  This affects
 the treatment of operator @samp{|} in the regular expressions.  The
 usual treatment of the operator is to try the first alternative and,
 if the reservation is not possible, the second alternative.  The
 nondeterministic treatment means trying all alternatives, some of them
 may be rejected by reservations in the subsequent insns.
+
+@item
+@dfn{collapse-ndfa} modifies the behaviour of the generator when
+producing an automaton.  An additional state transition to collapse a
+nondeterministic @acronym{NDFA} state to a deterministic @acronym{DFA}
+state is generated.  It can be triggered by passing @code{const0_rtx} to
+state_transition.  In such an automaton, cycle advance transitions are
+available only for these collapsed states.  This option is useful for
+ports that want to use the @code{ndfa} option, but also want to use
+@code{define_query_cpu_unit} to assign units to insns issued in a cycle.
 
 @item
 @dfn{progress} means output of a progress bar showing how many states

@@ -1,4 +1,4 @@
---  { dg-do compile }
+-- { dg-do compile }
 
 package Aggr2 is
 

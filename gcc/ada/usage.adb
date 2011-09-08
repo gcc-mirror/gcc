@@ -484,6 +484,8 @@ begin
    Write_Line ("        .S*  turn off warnings for overridden size clause");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
+   Write_Line ("        .t+  turn on warnings for suspicious contract");
+   Write_Line ("        .T*  turn off warnings for suspicious contract");
    Write_Line ("        u+   turn on warnings for unused entity");
    Write_Line ("        U*   turn off warnings for unused entity");
    Write_Line ("        .u   turn on warnings for unordered enumeration");
@@ -501,8 +503,8 @@ begin
    Write_Line ("        X    turn off warnings for export/import");
    Write_Line ("        .x+  turn on warnings for non-local exception");
    Write_Line ("        .X*  turn off warnings for non-local exception");
-   Write_Line ("        y*+  turn on warnings for Ada 2005 incompatibility");
-   Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
+   Write_Line ("        y*+  turn on warnings for Ada compatibility issues");
+   Write_Line ("        Y    turn off warnings for Ada compatibility issues");
    Write_Line ("        z*+  turn on warnings for suspicious " &
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off warnings for suspicious " &

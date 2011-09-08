@@ -44,6 +44,7 @@ with Stand;    use Stand;
 with Table;    use Table;
 
 with GNAT.Heap_Sort_G;
+with GNAT.HTable;
 
 package body Lib.Xref is
 
@@ -56,15 +57,12 @@ package body Lib.Xref is
 
    subtype Xref_Entry_Number is Int;
 
-   type Xref_Entry is record
+   type Xref_Key is record
+      --  These are the components of Xref_Entry that participate in hash
+      --  lookups.
+
       Ent : Entity_Id;
       --  Entity referenced (E parameter to Generate_Reference)
-
-      Def : Source_Ptr;
-      --  Original source location for entity being referenced. Note that these
-      --  values are used only during the output process, they are not set when
-      --  the entries are originally built. This is because private entities
-      --  can be swapped when the initial call is made.
 
       Loc : Source_Ptr;
       --  Location of reference (Original_Location (Sloc field of N parameter
@@ -81,7 +79,7 @@ package body Lib.Xref is
       --  Unit number corresponding to Loc. Value is undefined and not
       --  referenced if Loc is set to No_Location.
 
-      --  The following components are only used for ALFA cross-references
+      --  The following components are only used for Alfa cross-references
 
       Ref_Scope : Entity_Id;
       --  Entity of the closest subprogram or package enclosing the reference
@@ -89,9 +87,22 @@ package body Lib.Xref is
       Ent_Scope : Entity_Id;
       --  Entity of the closest subprogram or package enclosing the definition,
       --  which should be located in the same file as the definition itself.
+   end record;
+
+   type Xref_Entry is record
+      Key : Xref_Key;
 
       Ent_Scope_File : Unit_Number_Type;
       --  File for entity Ent_Scope
+
+      Def : Source_Ptr;
+      --  Original source location for entity being referenced. Note that these
+      --  values are used only during the output process, they are not set when
+      --  the entries are originally built. This is because private entities
+      --  can be swapped when the initial call is made.
+
+      HTable_Next : Xref_Entry_Number;
+      --  For use only by Static_HTable
    end record;
 
    package Xrefs is new Table.Table (
@@ -102,18 +113,53 @@ package body Lib.Xref is
      Table_Increment      => Alloc.Xrefs_Increment,
      Table_Name           => "Xrefs");
 
+   --------------
+   -- Xref_Set --
+   --------------
+
+   --  We keep a set of xref entries, in order to avoid inserting duplicate
+   --  entries into the above Xrefs table. An entry is in Xref_Set if and only
+   --  if it is in Xrefs.
+
+   Num_Buckets : constant := 2**16;
+
+   subtype Header_Num is Integer range 0 .. Num_Buckets - 1;
+   type Null_Type is null record;
+   pragma Unreferenced (Null_Type);
+
+   function Hash (F : Xref_Entry_Number) return Header_Num;
+
+   function Equal (F1, F2 : Xref_Entry_Number) return Boolean;
+
+   procedure HT_Set_Next (E : Xref_Entry_Number; Next : Xref_Entry_Number);
+
+   function  HT_Next (E : Xref_Entry_Number) return Xref_Entry_Number;
+
+   function Get_Key (E : Xref_Entry_Number) return Xref_Entry_Number;
+
+   pragma Inline (Hash, Equal, HT_Set_Next, HT_Next, Get_Key);
+
+   package Xref_Set is new GNAT.HTable.Static_HTable (
+     Header_Num,
+     Element    => Xref_Entry,
+     Elmt_Ptr   => Xref_Entry_Number,
+     Null_Ptr   => 0,
+     Set_Next   => HT_Set_Next,
+     Next       => HT_Next,
+     Key        => Xref_Entry_Number,
+     Get_Key    => Get_Key,
+     Hash       => Hash,
+     Equal      => Equal);
+
    ----------------------
-   -- ALFA Information --
+   -- Alfa Information --
    ----------------------
 
-   package body ALFA is separate;
+   package body Alfa is separate;
 
    ------------------------
    --  Local Subprograms --
    ------------------------
-
-   function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id;
-   --  Return the closest enclosing subprogram of package
 
    procedure Generate_Prim_Op_References (Typ : Entity_Id);
    --  For a tagged type, generate implicit references to its primitive
@@ -124,92 +170,51 @@ package body Lib.Xref is
    function Lt (T1, T2 : Xref_Entry) return Boolean;
    --  Order cross-references
 
-   -------------------------------------
-   -- Enclosing_Subprogram_Or_Package --
-   -------------------------------------
+   procedure Add_Entry (Key : Xref_Key; Ent_Scope_File : Unit_Number_Type);
+   --  Add an entry to the tables of Xref_Entries, avoiding duplicates
 
-   function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id is
-      Result : Entity_Id;
+   ---------------
+   -- Add_Entry --
+   ---------------
 
+   procedure Add_Entry (Key : Xref_Key; Ent_Scope_File : Unit_Number_Type) is
    begin
-      --  If N is the defining identifier for a subprogram, then return the
-      --  enclosing subprogram or package, not this subprogram.
+      Xrefs.Increment_Last; -- tentative
+      Xrefs.Table (Xrefs.Last).Key := Key;
 
-      if Nkind_In (N, N_Defining_Identifier, N_Defining_Operator_Symbol)
-        and then Nkind (Parent (N)) in N_Subprogram_Specification
-      then
-         Result := Parent (Parent (Parent (N)));
+      --  Set the entry in Xref_Set, and if newly set, keep the above
+      --  tentative increment.
+
+      if Xref_Set.Set_If_Not_Present (Xrefs.Last) then
+         Xrefs.Table (Xrefs.Last).Ent_Scope_File := Ent_Scope_File;
+         --  Leave Def and HTable_Next uninitialized
+
+         Set_Has_Xref_Entry (Key.Ent);
+
+      --  It was already in Xref_Set, so throw away the tentatively-added
+      --  entry
+
       else
-         Result := N;
+         Xrefs.Decrement_Last;
       end if;
+   end Add_Entry;
 
-      loop
-         exit when No (Result);
+   -----------
+   -- Equal --
+   -----------
 
-         case Nkind (Result) is
-            when N_Package_Specification =>
-               Result := Defining_Unit_Name (Result);
-               exit;
-
-            when N_Package_Body =>
-               Result := Defining_Unit_Name (Result);
-               exit;
-
-            when N_Subprogram_Specification =>
-               Result := Defining_Unit_Name (Result);
-               exit;
-
-            when N_Subprogram_Declaration =>
-               Result := Defining_Unit_Name (Specification (Result));
-               exit;
-
-            when N_Subprogram_Body =>
-               Result := Defining_Unit_Name (Specification (Result));
-               exit;
-
-            --  The enclosing subprogram for a pre- or postconditions should be
-            --  the subprogram to which the pragma is attached. This is not
-            --  always the case in the AST, as the pragma may be declared after
-            --  the declaration of the subprogram. Return Empty in this case.
-
-            when N_Pragma =>
-               if Get_Pragma_Id (Result) = Pragma_Precondition
-                    or else
-                  Get_Pragma_Id (Result) = Pragma_Postcondition
-               then
-                  return Empty;
-               else
-                  Result := Parent (Result);
-               end if;
-
-            when others =>
-               Result := Parent (Result);
-         end case;
-      end loop;
-
-      if Nkind (Result) = N_Defining_Program_Unit_Name then
-         Result := Defining_Identifier (Result);
-      end if;
-
-      --  Do no return a scope without a proper location
-
-      if Present (Result)
-        and then Sloc (Result) = No_Location
-      then
-         return Empty;
-      end if;
-
+   function Equal (F1, F2 : Xref_Entry_Number) return Boolean is
+      Result : constant Boolean :=
+                 Xrefs.Table (F1).Key = Xrefs.Table (F2).Key;
+   begin
       return Result;
-   end Enclosing_Subprogram_Or_Package;
+   end Equal;
 
    -------------------------
    -- Generate_Definition --
    -------------------------
 
    procedure Generate_Definition (E : Entity_Id) is
-      Loc  : Source_Ptr;
-      Indx : Nat;
-
    begin
       pragma Assert (Nkind (E) in N_Entity);
 
@@ -240,22 +245,15 @@ package body Lib.Xref is
          and then In_Extended_Main_Source_Unit (E)
          and then not Is_Internal_Name (Chars (E))
       then
-         Xrefs.Increment_Last;
-         Indx := Xrefs.Last;
-         Loc  := Original_Location (Sloc (E));
-
-         Xrefs.Table (Indx).Ent := E;
-         Xrefs.Table (Indx).Typ := ' ';
-         Xrefs.Table (Indx).Def := No_Location;
-         Xrefs.Table (Indx).Loc := No_Location;
-
-         Xrefs.Table (Indx).Eun := Get_Source_Unit (Loc);
-
-         Xrefs.Table (Indx).Ref_Scope      := Empty;
-         Xrefs.Table (Indx).Ent_Scope      := Empty;
-         Xrefs.Table (Indx).Ent_Scope_File := No_Unit;
-
-         Set_Has_Xref_Entry (E);
+         Add_Entry
+           ((Ent => E,
+             Loc => No_Location,
+             Typ => ' ',
+             Eun => Get_Source_Unit (Original_Location (Sloc (E))),
+             Lun => No_Unit,
+             Ref_Scope => Empty,
+             Ent_Scope => Empty),
+            Ent_Scope_File => No_Unit);
 
          if In_Inlined_Body then
             Set_Referenced (E);
@@ -375,14 +373,16 @@ package body Lib.Xref is
       Set_Ref : Boolean   := True;
       Force   : Boolean   := False)
    is
-      Indx : Nat;
-      Nod  : Node_Id;
-      Ref  : Source_Ptr;
-      Def  : Source_Ptr;
-      Ent  : Entity_Id;
+      Nod : Node_Id;
+      Ref : Source_Ptr;
+      Def : Source_Ptr;
+      Ent : Entity_Id;
 
-      Ref_Scope     : Entity_Id;
-      Ent_Scope     : Entity_Id;
+      Actual_Typ : Character := Typ;
+
+      Ref_Scope      : Entity_Id;
+      Ent_Scope      : Entity_Id;
+      Ent_Scope_File : Unit_Number_Type;
 
       Call   : Node_Id;
       Formal : Entity_Id;
@@ -946,34 +946,33 @@ package body Lib.Xref is
          Ref := Original_Location (Sloc (Nod));
          Def := Original_Location (Sloc (Ent));
 
-         Ref_Scope := Enclosing_Subprogram_Or_Package (N);
-         Ent_Scope := Enclosing_Subprogram_Or_Package (Ent);
-
-         Xrefs.Increment_Last;
-         Indx := Xrefs.Last;
-
-         Xrefs.Table (Indx).Loc := Ref;
-
-         --  Overriding operations are marked with 'P'
-
-         if Typ = 'p'
+         if Actual_Typ = 'p'
            and then Is_Subprogram (N)
            and then Present (Overridden_Operation (N))
          then
-            Xrefs.Table (Indx).Typ := 'P';
-         else
-            Xrefs.Table (Indx).Typ := Typ;
+            Actual_Typ := 'P';
          end if;
 
-         Xrefs.Table (Indx).Eun := Get_Source_Unit (Def);
-         Xrefs.Table (Indx).Lun := Get_Source_Unit (Ref);
-         Xrefs.Table (Indx).Ent := Ent;
+         if Alfa_Mode then
+            Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (N);
+            Ent_Scope := Alfa.Enclosing_Subprogram_Or_Package (Ent);
+            Ent_Scope_File := Get_Source_Unit (Ent_Scope);
 
-         Xrefs.Table (Indx).Ref_Scope      := Ref_Scope;
-         Xrefs.Table (Indx).Ent_Scope      := Ent_Scope;
-         Xrefs.Table (Indx).Ent_Scope_File := Get_Source_Unit (Ent_Scope);
+         else
+            Ref_Scope := Empty;
+            Ent_Scope := Empty;
+            Ent_Scope_File := No_Unit;
+         end if;
 
-         Set_Has_Xref_Entry (Ent);
+         Add_Entry
+           ((Ent => Ent,
+             Loc => Ref,
+             Typ => Actual_Typ,
+             Eun => Get_Source_Unit (Def),
+             Lun => Get_Source_Unit (Ref),
+             Ref_Scope => Ref_Scope,
+             Ent_Scope => Ent_Scope),
+            Ent_Scope_File => Ent_Scope_File);
       end if;
    end Generate_Reference;
 
@@ -1038,6 +1037,58 @@ package body Lib.Xref is
       end loop;
    end Generate_Reference_To_Generic_Formals;
 
+   -------------
+   -- Get_Key --
+   -------------
+
+   function Get_Key (E : Xref_Entry_Number) return Xref_Entry_Number is
+   begin
+      return E;
+   end Get_Key;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (F : Xref_Entry_Number) return Header_Num is
+      --  It is unlikely to have two references to the same entity at the same
+      --  source location, so the hash function depends only on the Ent and Loc
+      --  fields.
+
+      XE : Xref_Entry renames Xrefs.Table (F);
+      type M is mod 2**32;
+
+      H : constant M := M (XE.Key.Ent) + 2 ** 7 * M (abs XE.Key.Loc);
+      --  It would be more natural to write:
+      --
+      --    H : constant M := M'Mod (XE.Key.Ent) + 2**7 * M'Mod (XE.Key.Loc);
+      --
+      --  But we can't use M'Mod, because it prevents bootstrapping with older
+      --  compilers. Loc can be negative, so we do "abs" before converting.
+      --  One day this can be cleaned up ???
+
+   begin
+      return Header_Num (H mod Num_Buckets);
+   end Hash;
+
+   -----------------
+   -- HT_Set_Next --
+   -----------------
+
+   procedure HT_Set_Next (E : Xref_Entry_Number; Next : Xref_Entry_Number) is
+   begin
+      Xrefs.Table (E).HTable_Next := Next;
+   end HT_Set_Next;
+
+   -------------
+   -- HT_Next --
+   -------------
+
+   function HT_Next (E : Xref_Entry_Number) return Xref_Entry_Number is
+   begin
+      return Xrefs.Table (E).HTable_Next;
+   end HT_Next;
+
    ----------------
    -- Initialize --
    ----------------
@@ -1055,8 +1106,8 @@ package body Lib.Xref is
    begin
       --  First test: if entity is in different unit, sort by unit
 
-      if T1.Eun /= T2.Eun then
-         return Dependency_Num (T1.Eun) < Dependency_Num (T2.Eun);
+      if T1.Key.Eun /= T2.Key.Eun then
+         return Dependency_Num (T1.Key.Eun) < Dependency_Num (T2.Key.Eun);
 
       --  Second test: within same unit, sort by entity Sloc
 
@@ -1065,21 +1116,21 @@ package body Lib.Xref is
 
       --  Third test: sort definitions ahead of references
 
-      elsif T1.Loc = No_Location then
+      elsif T1.Key.Loc = No_Location then
          return True;
 
-      elsif T2.Loc = No_Location then
+      elsif T2.Key.Loc = No_Location then
          return False;
 
       --  Fourth test: for same entity, sort by reference location unit
 
-      elsif T1.Lun /= T2.Lun then
-         return Dependency_Num (T1.Lun) < Dependency_Num (T2.Lun);
+      elsif T1.Key.Lun /= T2.Key.Lun then
+         return Dependency_Num (T1.Key.Lun) < Dependency_Num (T2.Key.Lun);
 
       --  Fifth test: order of location within referencing unit
 
-      elsif T1.Loc /= T2.Loc then
-         return T1.Loc < T2.Loc;
+      elsif T1.Key.Loc /= T2.Key.Loc then
+         return T1.Key.Loc < T2.Key.Loc;
 
       --  Finally, for two locations at the same address, we prefer
       --  the one that does NOT have the type 'r' so that a modification
@@ -1089,7 +1140,7 @@ package body Lib.Xref is
       --  the modify reference.
 
       else
-         return T2.Typ = 'r';
+         return T2.Key.Typ = 'r';
       end if;
    end Lt;
 
@@ -1326,7 +1377,7 @@ package body Lib.Xref is
 
       begin
          for J in 1 .. Xrefs.Last loop
-            Ent := Xrefs.Table (J).Ent;
+            Ent := Xrefs.Table (J).Key.Ent;
 
             if Is_Type (Ent)
               and then Is_Tagged_Type (Ent)
@@ -1364,9 +1415,7 @@ package body Lib.Xref is
       Handle_Orphan_Type_References : declare
          J    : Nat;
          Tref : Entity_Id;
-         Indx : Nat;
          Ent  : Entity_Id;
-         Loc  : Source_Ptr;
 
          L, R : Character;
          pragma Warnings (Off, L);
@@ -1383,18 +1432,20 @@ package body Lib.Xref is
 
          procedure New_Entry (E : Entity_Id) is
          begin
-            if Present (E)
-              and then not Has_Xref_Entry (E)
+            pragma Assert (Present (E));
+
+            if not Has_Xref_Entry (Implementation_Base_Type (E))
               and then Sloc (E) > No_Location
             then
-               Xrefs.Increment_Last;
-               Indx := Xrefs.Last;
-               Loc  := Original_Location (Sloc (E));
-               Xrefs.Table (Indx).Ent := E;
-               Xrefs.Table (Indx).Loc := No_Location;
-               Xrefs.Table (Indx).Eun := Get_Source_Unit (Loc);
-               Xrefs.Table (Indx).Lun := No_Unit;
-               Set_Has_Xref_Entry (E);
+               Add_Entry
+                 ((Ent => E,
+                   Loc => No_Location,
+                   Typ => Character'First,
+                   Eun => Get_Source_Unit (Original_Location (Sloc (E))),
+                   Lun => No_Unit,
+                   Ref_Scope => Empty,
+                   Ent_Scope => Empty),
+                  Ent_Scope_File => No_Unit);
             end if;
          end New_Entry;
 
@@ -1407,7 +1458,7 @@ package body Lib.Xref is
 
          J := 1;
          while J <= Xrefs.Last loop
-            Ent := Xrefs.Table (J).Ent;
+            Ent := Xrefs.Table (J).Key.Ent;
             Get_Type_Reference (Ent, Tref, L, R);
 
             if Present (Tref)
@@ -1474,15 +1525,15 @@ package body Lib.Xref is
                      Prim := Parent_Op (Node (Op));
 
                      if Present (Prim) then
-                        Xrefs.Increment_Last;
-                        Indx := Xrefs.Last;
-                        Loc  := Original_Location (Sloc (Prim));
-                        Xrefs.Table (Indx).Ent := Prim;
-                        Xrefs.Table (Indx).Loc := No_Location;
-                        Xrefs.Table (Indx).Eun :=
-                          Get_Source_Unit (Sloc (Prim));
-                        Xrefs.Table (Indx).Lun := No_Unit;
-                        Set_Has_Xref_Entry (Prim);
+                        Add_Entry
+                          ((Ent => Prim,
+                            Loc => No_Location,
+                            Typ => Character'First,
+                            Eun => Get_Source_Unit (Sloc (Prim)),
+                            Lun => No_Unit,
+                            Ref_Scope => Empty,
+                            Ent_Scope => Empty),
+                           Ent_Scope_File => No_Unit);
                      end if;
 
                      Next_Elmt (Op);
@@ -1499,9 +1550,8 @@ package body Lib.Xref is
 
       Output_Refs : declare
 
-         Nrefs : Nat := Xrefs.Last;
-         --  Number of references in table. This value may get reset (reduced)
-         --  when we eliminate duplicate reference entries.
+         Nrefs : constant Nat := Xrefs.Last;
+         --  Number of references in table
 
          Rnums : array (0 .. Nrefs) of Nat;
          --  This array contains numbers of references in the Xrefs table.
@@ -1604,36 +1654,12 @@ package body Lib.Xref is
          for J in 1 .. Nrefs loop
             Rnums (J) := J;
             Xrefs.Table (J).Def :=
-              Original_Location (Sloc (Xrefs.Table (J).Ent));
+              Original_Location (Sloc (Xrefs.Table (J).Key.Ent));
          end loop;
 
          --  Sort the references
 
          Sorting.Sort (Integer (Nrefs));
-
-         --  Eliminate duplicate entries
-
-         declare
-            NR : constant Nat := Nrefs;
-
-         begin
-            --  We need this test for NR because if we force ALI file
-            --  generation in case of errors detected, it may be the case
-            --  that Nrefs is 0, so we should not reset it here
-
-            if NR >= 2 then
-               Nrefs := 1;
-
-               for J in 2 .. NR loop
-                  if Xrefs.Table (Rnums (J)) /=
-                     Xrefs.Table (Rnums (Nrefs))
-                  then
-                     Nrefs := Nrefs + 1;
-                     Rnums (Nrefs) := Rnums (J);
-                  end if;
-               end loop;
-            end if;
-         end;
 
          --  Initialize loop through references
 
@@ -1854,7 +1880,7 @@ package body Lib.Xref is
             --  Start of processing for Output_One_Ref
 
             begin
-               Ent := XE.Ent;
+               Ent := XE.Key.Ent;
                Ctyp := Xref_Entity_Letters (Ekind (Ent));
 
                --  Skip reference if it is the only reference to an entity,
@@ -1863,12 +1889,12 @@ package body Lib.Xref is
                --  consisting only of packages with END lines, where no
                --  entity from the package is actually referenced.
 
-               if XE.Typ = 'e'
+               if XE.Key.Typ = 'e'
                  and then Ent /= Curent
-                 and then (Refno = Nrefs or else
-                             Ent /= Xrefs.Table (Rnums (Refno + 1)).Ent)
-                 and then
-                   not In_Extended_Main_Source_Unit (Ent)
+                 and then (Refno = Nrefs
+                            or else
+                              Ent /= Xrefs.Table (Rnums (Refno + 1)).Key.Ent)
+                 and then not In_Extended_Main_Source_Unit (Ent)
                then
                   goto Continue;
                end if;
@@ -1876,7 +1902,7 @@ package body Lib.Xref is
                --  For private type, get full view type
 
                if Ctyp = '+'
-                 and then Present (Full_View (XE.Ent))
+                 and then Present (Full_View (XE.Key.Ent))
                then
                   Ent := Underlying_Type (Ent);
 
@@ -1894,15 +1920,15 @@ package body Lib.Xref is
                --  For variable reference, get corresponding type
 
                if Ctyp = '*' then
-                  Ent := Etype (XE.Ent);
+                  Ent := Etype (XE.Key.Ent);
                   Ctyp := Fold_Lower (Xref_Entity_Letters (Ekind (Ent)));
 
                   --  If variable is private type, get full view type
 
                   if Ctyp = '+'
-                    and then Present (Full_View (Etype (XE.Ent)))
+                    and then Present (Full_View (Etype (XE.Key.Ent)))
                   then
-                     Ent := Underlying_Type (Etype (XE.Ent));
+                     Ent := Underlying_Type (Etype (XE.Key.Ent));
 
                      if Present (Ent) then
                         Ctyp := Fold_Lower (Xref_Entity_Letters (Ekind (Ent)));
@@ -1920,13 +1946,13 @@ package body Lib.Xref is
                   --  Special handling for access parameters and objects of
                   --  an anonymous access type.
 
-                  if Ekind_In (Etype (XE.Ent),
+                  if Ekind_In (Etype (XE.Key.Ent),
                                E_Anonymous_Access_Type,
                                E_Anonymous_Access_Subprogram_Type,
                                E_Anonymous_Access_Protected_Subprogram_Type)
                   then
-                     if Is_Formal (XE.Ent)
-                       or else Ekind_In (XE.Ent, E_Variable, E_Constant)
+                     if Is_Formal (XE.Key.Ent)
+                       or else Ekind_In (XE.Key.Ent, E_Variable, E_Constant)
                      then
                         Ctyp := 'p';
                      end if;
@@ -1940,8 +1966,8 @@ package body Lib.Xref is
 
                --  Special handling for abstract types and operations
 
-               if Is_Overloadable (XE.Ent)
-                 and then Is_Abstract_Subprogram (XE.Ent)
+               if Is_Overloadable (XE.Key.Ent)
+                 and then Is_Abstract_Subprogram (XE.Key.Ent)
                then
                   if Ctyp = 'U' then
                      Ctyp := 'x';            --  Abstract procedure
@@ -1950,10 +1976,10 @@ package body Lib.Xref is
                      Ctyp := 'y';            --  Abstract function
                   end if;
 
-               elsif Is_Type (XE.Ent)
-                 and then Is_Abstract_Type (XE.Ent)
+               elsif Is_Type (XE.Key.Ent)
+                 and then Is_Abstract_Type (XE.Key.Ent)
                then
-                  if Is_Interface (XE.Ent) then
+                  if Is_Interface (XE.Key.Ent) then
                      Ctyp := 'h';
 
                   elsif Ctyp = 'R' then
@@ -1968,41 +1994,42 @@ package body Lib.Xref is
                --  Suppress references to object definitions, used for local
                --  references.
 
-                 or else XE.Typ = 'D'
-                 or else XE.Typ = 'I'
+                 or else XE.Key.Typ = 'D'
+                 or else XE.Key.Typ = 'I'
 
                --  Suppress self references, except for bodies that act as
                --  specs.
 
-                 or else (XE.Loc = XE.Def
+                 or else (XE.Key.Loc = XE.Def
                            and then
-                             (XE.Typ /= 'b'
-                               or else not Is_Subprogram (XE.Ent)))
+                             (XE.Key.Typ /= 'b'
+                               or else not Is_Subprogram (XE.Key.Ent)))
 
                --  Also suppress definitions of body formals (we only
                --  treat these as references, and the references were
                --  separately recorded).
 
-                 or else (Is_Formal (XE.Ent)
-                           and then Present (Spec_Entity (XE.Ent)))
+                 or else (Is_Formal (XE.Key.Ent)
+                           and then Present (Spec_Entity (XE.Key.Ent)))
                then
                   null;
 
                else
                   --  Start new Xref section if new xref unit
 
-                  if XE.Eun /= Curxu then
+                  if XE.Key.Eun /= Curxu then
                      if Write_Info_Col > 1 then
                         Write_Info_EOL;
                      end if;
 
-                     Curxu := XE.Eun;
+                     Curxu := XE.Key.Eun;
 
                      Write_Info_Initiate ('X');
                      Write_Info_Char (' ');
-                     Write_Info_Nat (Dependency_Num (XE.Eun));
+                     Write_Info_Nat (Dependency_Num (XE.Key.Eun));
                      Write_Info_Char (' ');
-                     Write_Info_Name (Reference_Name (Source_Index (XE.Eun)));
+                     Write_Info_Name
+                       (Reference_Name (Source_Index (XE.Key.Eun)));
                   end if;
 
                   --  Start new Entity line if new entity. Note that we
@@ -2013,14 +2040,14 @@ package body Lib.Xref is
 
                   if No (Curent)
                     or else
-                      (XE.Ent /= Curent
+                      (XE.Key.Ent /= Curent
                          and then
-                           (Name_Change (XE.Ent) or else XE.Def /= Curdef))
+                           (Name_Change (XE.Key.Ent) or else XE.Def /= Curdef))
                   then
-                     Curent := XE.Ent;
+                     Curent := XE.Key.Ent;
                      Curdef := XE.Def;
 
-                     Get_Unqualified_Name_String (Chars (XE.Ent));
+                     Get_Unqualified_Name_String (Chars (XE.Key.Ent));
                      Curlen := Name_Len;
                      Curnam (1 .. Curlen) := Name_Buffer (1 .. Curlen);
 
@@ -2132,7 +2159,7 @@ package body Lib.Xref is
 
                      declare
                         Ent_Name : constant String :=
-                                     Exact_Source_Name (Sloc (XE.Ent));
+                                     Exact_Source_Name (Sloc (XE.Key.Ent));
                      begin
                         for C in Ent_Name'Range loop
                            Write_Info_Char (Ent_Name (C));
@@ -2141,22 +2168,22 @@ package body Lib.Xref is
 
                      --  See if we have a renaming reference
 
-                     if Is_Object (XE.Ent)
-                       and then Present (Renamed_Object (XE.Ent))
+                     if Is_Object (XE.Key.Ent)
+                       and then Present (Renamed_Object (XE.Key.Ent))
                      then
-                        Rref := Renamed_Object (XE.Ent);
+                        Rref := Renamed_Object (XE.Key.Ent);
 
-                     elsif Is_Overloadable (XE.Ent)
-                       and then Nkind (Parent (Declaration_Node (XE.Ent))) =
-                                            N_Subprogram_Renaming_Declaration
+                     elsif Is_Overloadable (XE.Key.Ent)
+                       and then Nkind (Parent (Declaration_Node (XE.Key.Ent)))
+                                           = N_Subprogram_Renaming_Declaration
                      then
-                        Rref := Name (Parent (Declaration_Node (XE.Ent)));
+                        Rref := Name (Parent (Declaration_Node (XE.Key.Ent)));
 
-                     elsif Ekind (XE.Ent) = E_Package
-                       and then Nkind (Declaration_Node (XE.Ent)) =
+                     elsif Ekind (XE.Key.Ent) = E_Package
+                       and then Nkind (Declaration_Node (XE.Key.Ent)) =
                                          N_Package_Renaming_Declaration
                      then
-                        Rref := Name (Declaration_Node (XE.Ent));
+                        Rref := Name (Declaration_Node (XE.Key.Ent));
 
                      else
                         Rref := Empty;
@@ -2209,12 +2236,13 @@ package body Lib.Xref is
                      --  Write out information about generic parent, if entity
                      --  is an instance.
 
-                     if  Is_Generic_Instance (XE.Ent) then
+                     if  Is_Generic_Instance (XE.Key.Ent) then
                         declare
                            Gen_Par : constant Entity_Id :=
                                        Generic_Parent
                                          (Specification
-                                            (Unit_Declaration_Node (XE.Ent)));
+                                            (Unit_Declaration_Node
+                                               (XE.Key.Ent)));
                            Loc     : constant Source_Ptr := Sloc (Gen_Par);
                            Gen_U   : constant Unit_Number_Type :=
                                        Get_Source_Unit (Loc);
@@ -2235,15 +2263,16 @@ package body Lib.Xref is
 
                      --  See if we have a type reference and if so output
 
-                     Check_Type_Reference (XE.Ent, False);
+                     Check_Type_Reference (XE.Key.Ent, False);
 
                      --  Additional information for types with progenitors
 
-                     if Is_Record_Type (XE.Ent)
-                       and then Present (Interfaces (XE.Ent))
+                     if Is_Record_Type (XE.Key.Ent)
+                       and then Present (Interfaces (XE.Key.Ent))
                      then
                         declare
-                           Elmt : Elmt_Id := First_Elmt (Interfaces (XE.Ent));
+                           Elmt : Elmt_Id :=
+                                    First_Elmt (Interfaces (XE.Key.Ent));
                         begin
                            while Present (Elmt) loop
                               Check_Type_Reference (Node (Elmt), True);
@@ -2254,11 +2283,11 @@ package body Lib.Xref is
                      --  For array types, list index types as well. (This is
                      --  not C, indexes have distinct types).
 
-                     elsif Is_Array_Type (XE.Ent) then
+                     elsif Is_Array_Type (XE.Key.Ent) then
                         declare
                            Indx : Node_Id;
                         begin
-                           Indx := First_Index (XE.Ent);
+                           Indx := First_Index (XE.Key.Ent);
                            while Present (Indx) loop
                               Check_Type_Reference
                                 (First_Subtype (Etype (Indx)), True);
@@ -2270,10 +2299,11 @@ package body Lib.Xref is
                      --  If the entity is an overriding operation, write info
                      --  on operation that was overridden.
 
-                     if Is_Subprogram (XE.Ent)
-                       and then Present (Overridden_Operation (XE.Ent))
+                     if Is_Subprogram (XE.Key.Ent)
+                       and then Present (Overridden_Operation (XE.Key.Ent))
                      then
-                        Output_Overridden_Op (Overridden_Operation (XE.Ent));
+                        Output_Overridden_Op
+                          (Overridden_Operation (XE.Key.Ent));
                      end if;
 
                      --  End of processing for entity output
@@ -2285,13 +2315,13 @@ package body Lib.Xref is
                   --  as the previous one, or it is a read-reference that
                   --  indicates that the entity is an in-out actual in a call.
 
-                  if XE.Loc /= No_Location
+                  if XE.Key.Loc /= No_Location
                     and then
-                      (XE.Loc /= Crloc
-                        or else (Prevt = 'm' and then  XE.Typ = 'r'))
+                      (XE.Key.Loc /= Crloc
+                        or else (Prevt = 'm' and then  XE.Key.Typ = 'r'))
                   then
-                     Crloc := XE.Loc;
-                     Prevt := XE.Typ;
+                     Crloc := XE.Key.Loc;
+                     Prevt := XE.Key.Typ;
 
                      --  Start continuation if line full, else blank
 
@@ -2304,25 +2334,26 @@ package body Lib.Xref is
 
                      --  Output file number if changed
 
-                     if XE.Lun /= Curru then
-                        Curru := XE.Lun;
+                     if XE.Key.Lun /= Curru then
+                        Curru := XE.Key.Lun;
                         Write_Info_Nat (Dependency_Num (Curru));
                         Write_Info_Char ('|');
                      end if;
 
-                     Write_Info_Nat  (Int (Get_Logical_Line_Number (XE.Loc)));
-                     Write_Info_Char (XE.Typ);
+                     Write_Info_Nat
+                       (Int (Get_Logical_Line_Number (XE.Key.Loc)));
+                     Write_Info_Char (XE.Key.Typ);
 
-                     if Is_Overloadable (XE.Ent)
-                       and then Is_Imported (XE.Ent)
-                       and then XE.Typ = 'b'
+                     if Is_Overloadable (XE.Key.Ent)
+                       and then Is_Imported (XE.Key.Ent)
+                       and then XE.Key.Typ = 'b'
                      then
-                        Output_Import_Export_Info (XE.Ent);
+                        Output_Import_Export_Info (XE.Key.Ent);
                      end if;
 
-                     Write_Info_Nat (Int (Get_Column_Number (XE.Loc)));
+                     Write_Info_Nat (Int (Get_Column_Number (XE.Key.Loc)));
 
-                     Output_Instantiation_Refs (Sloc (XE.Ent));
+                     Output_Instantiation_Refs (Sloc (XE.Key.Ent));
                   end if;
                end if;
             end Output_One_Ref;
@@ -2335,4 +2366,9 @@ package body Lib.Xref is
       end Output_Refs;
    end Output_References;
 
+begin
+   --  Reset is necessary because Elmt_Ptr does not default to Null_Ptr,
+   --  because it's not an access type.
+
+   Xref_Set.Reset;
 end Lib.Xref;

@@ -466,14 +466,23 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  control heuristic error recovery actions.
 
       Labl : Node_Id;
-      --  This field is used only for the LOOP and BEGIN cases, and is the
-      --  Node_Id value of the label name. For all cases except child units,
-      --  this value is an entity whose Chars field contains the name pointer
-      --  that identifies the label uniquely. For the child unit case the Labl
-      --  field references an N_Defining_Program_Unit_Name node for the name.
-      --  For cases other than LOOP or BEGIN, the Label field is set to Error,
-      --  indicating that it is an error to have a label on the end line.
-      --  (this is really a misuse of Error since there is no Error ???)
+      --  This field is used to provide the name of the construct being parsed
+      --  and indirectly its kind. For loops and blocks, the field contains the
+      --  source name or the generated one. For package specifications, bodies,
+      --  subprogram specifications and bodies the field holds the correponding
+      --  program unit name. For task declarations and bodies, protected types
+      --  and bodies, and accept statements the field hold the name of the type
+      --  or operation. For if-statements, case-statements, and selects, the
+      --  field is initialized to Error.
+
+      --  Note: this is a bit of an odd (mis)use of Error, since there is no
+      --  Error, but we use this value as a place holder to indicate that it
+      --  is an error to have a label on the end line.
+
+      --  Whenever the field is a name, it is attached to the parent node of
+      --  the construct being parsed. Thus the parent node indicates the kind
+      --  of construct whose parse tree is being built. This is used in error
+      --  recovery.
 
       Decl : List_Id;
       --  Points to the list of declarations (i.e. the declarative part)
@@ -691,8 +700,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  semicolon or comma, but does not consume this terminating token.
 
       function P_Expression_If_OK return Node_Id;
-      --  Scans out an expression in a context where a conditional expression
-      --  is permitted to appear without surrounding parentheses.
+      --  Scans out an expression allowing an unparenthesized case expression,
+      --  conditional expression, or quantified expression to appear without
+      --  enclosing parentheses. However, if such an expression is not preceded
+      --  by a left paren, and followed by a right paren, an error message will
+      --  be output noting that parenthesization is required.
 
       function P_Expression_No_Right_Paren return Node_Id;
       --  Scans out an expression in contexts where the expression cannot be
@@ -702,6 +714,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Expression_Or_Range_Attribute_If_OK return Node_Id;
       --  Scans out an expression or range attribute where a conditional
       --  expression is permitted to appear without surrounding parentheses.
+      --  However, if such an expression is not preceded by a left paren, and
+      --  followed by a right paren, an error message will be output noting
+      --  that parenthesization is required.
 
       function P_Qualified_Expression (Subtype_Mark : Node_Id) return Node_Id;
       --  This routine scans out a qualified expression when the caller has

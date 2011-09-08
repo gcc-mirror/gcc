@@ -2592,6 +2592,12 @@ decode_addr_const (tree exp, struct addr_const *value)
 		     * tree_low_cst (TREE_OPERAND (target, 1), 0));
 	  target = TREE_OPERAND (target, 0);
 	}
+      else if (TREE_CODE (target) == MEM_REF
+	       && TREE_CODE (TREE_OPERAND (target, 0)) == ADDR_EXPR)
+	{
+	  offset += mem_ref_offset (target).low;
+	  target = TREE_OPERAND (TREE_OPERAND (target, 0), 0);
+	}
       else if (TREE_CODE (target) == INDIRECT_REF
 	       && TREE_CODE (TREE_OPERAND (target, 0)) == NOP_EXPR
 	       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (target, 0), 0))
@@ -6722,7 +6728,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   bool resolved_to_local_def = false;
 
   /* With resolution file in hands, take look into resolutions.
-     We can't just return true for resolved_localy symbols,
+     We can't just return true for resolved_locally symbols,
      because dynamic linking might overwrite symbols
      in shared libraries.  */
   if (TREE_CODE (exp) == VAR_DECL && TREE_PUBLIC (exp)
@@ -6831,7 +6837,7 @@ decl_binds_to_current_def_p (tree decl)
 	return resolution_to_local_definition_p (node->resolution);
     }
   /* Otherwise we have to assume the worst for DECL_WEAK (hidden weaks
-     binds localy but still can be overwritten).
+     binds locally but still can be overwritten).
      This rely on fact that binds_local_p behave as decl_replaceable_p
      for all other declaration types.  */
   return !DECL_WEAK (decl);

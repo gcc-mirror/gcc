@@ -106,7 +106,7 @@ do {							 \
 
 /* Nonzero in an arithmetic subtype if this is a subtype not known to the
    front-end.  */
-#define TYPE_EXTRA_SUBTYPE_P(NODE) TYPE_LANG_FLAG_2 (NODE)
+#define TYPE_EXTRA_SUBTYPE_P(NODE) TYPE_LANG_FLAG_2 (INTEGER_TYPE_CHECK (NODE))
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is the
    type for an object whose type includes its template in addition to

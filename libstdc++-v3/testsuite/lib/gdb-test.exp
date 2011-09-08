@@ -1,0 +1,198 @@
+#   Copyright (C) 2009, 2011 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+global gdb_tests
+set gdb_tests {}
+
+# Scan a file for markers and fill in the gdb_marker array for that
+# file.  Any error in this script is simply thrown; errors here are
+# programming errors in the test suite itself and should not be
+# caught.
+proc scan_gdb_markers {filename} {
+    global gdb_markers
+
+    if {[info exists gdb_markers($filename,-)]} {
+	return
+    }
+
+    set fd [open $filename]
+    set lineno 1
+    while {! [eof $fd]} {
+	set line [gets $fd]
+	if {[regexp -- "Mark (\[a-zA-Z0-9\]+)" $line ignore marker]} {
+	    set gdb_markers($filename,$marker) $lineno
+	}
+	incr lineno
+    }
+    close $fd
+
+    set gdb_markers($filename,-) {}
+}
+
+# Find a marker in a source file, and return the marker's line number.
+proc get_line_number {filename marker} {
+    global gdb_markers
+
+    scan_gdb_markers $filename
+    return $gdb_markers($filename,$marker)
+}
+
+# Make note of a gdb test.  A test consists of a variable name and an
+# expected result.
+proc note-test {var result} {
+    global gdb_tests
+
+    lappend gdb_tests $var $result
+}
+
+# Utility for testing variable values using gdb, invoked via dg-final.
+# Tests all tests indicated by note-test.
+#
+# Argument 0 is the marker on which to put a breakpoint
+# Argument 2 handles expected failures and the like
+proc gdb-test { marker {selector {}} } {
+    if { ![isnative] || [is_remote target] } { return }
+
+    if {[string length $selector] > 0} {
+	switch [dg-process-target $selector] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # This assumes that we are three frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    upvar 2 prog prog
+
+    set line [get_line_number $prog $marker]
+
+    set gdb_name $::env(GUALITY_GDB_NAME)
+    set testname "$testcase"
+    set output_file "[file rootname [file tail $prog]].exe"
+    set cmd_file "[file rootname [file tail $prog]].gdb"
+
+    global srcdir
+    set pycode [file join $srcdir .. python libstdcxx v6 printers.py]
+
+    global gdb_tests
+
+    set fd [open $cmd_file "w"]
+    puts $fd "source $pycode"
+    puts $fd "python register_libstdcxx_printers(None)"
+    puts $fd "break $line"
+    puts $fd "run"
+
+    set count 0
+    foreach {var result} $gdb_tests {
+	puts $fd "print $var"
+	incr count
+	set gdb_var($count) $var
+	set gdb_expected($count) $result
+    }
+    set gdb_tests {}
+
+    puts $fd "quit"
+    close $fd
+
+    send_log "Spawning: $gdb_name -nx -nw -quiet -batch -x $cmd_file ./$output_file\n"
+    set res [remote_spawn target "$gdb_name -nx -nw -quiet -batch -x $cmd_file ./$output_file"]
+    if { $res < 0 || $res == "" } {
+	unsupported "$testname"
+	return
+    }
+
+    remote_expect target [timeout_value] {
+	-re {^\$([0-9]+) = ([^\n\r]*)[\n\r]+} {
+	    set num $expect_out(1,string)
+	    set first $expect_out(2,string)
+	    if { ![string compare $first $gdb_expected($num)] } {
+		pass "$testname print $gdb_var($num)"
+	    } else {
+		fail "$testname print $gdb_var($num)"
+		verbose "     got =>$first<="
+		verbose "expected =>$gdb_expected($num)<="
+	    }
+
+	    if {$num == $count} {
+		remote_close target
+		return
+	    } else {
+		exp_continue
+	    }
+	}
+
+	-re {Python scripting is not supported in this copy of GDB.[\n\r]+} {
+	    unsupported "$testname"
+	    remote_close target
+	    return
+	}
+
+	-re {^[^$][^\n\r]*[\n\r]+} {
+	    verbose "skipping: $expect_out(buffer)"
+	    exp_continue
+	}
+
+	timeout {
+	    unsupported "$testname"
+	    remote_close target
+	    return
+	}
+    }
+
+    remote_close target
+    unsupported "$testname"
+    return
+}
+
+# Check for a new-enough version of gdb.  The pretty-printer tests
+# require gdb 7.3, but we don't want to test versions, so instead we
+# check for the python "lookup_global_symbol" method, which is in 7.3
+# but not earlier versions.
+# Return 1 if the version is ok, 0 otherwise.
+proc gdb_version_check {} {
+    global gdb_version
+
+    set gdb_name $::env(GUALITY_GDB_NAME)
+    set cmd "$gdb_name -nw -nx -quiet -batch -ex \"python print gdb.lookup_global_symbol\""
+    send_log "Spawning: $cmd\n"
+    set res [remote_spawn target "$cmd"]
+    if { $res < 0 || $res == "" } {
+	return 0
+    }
+
+    remote_expect target [timeout_value] {
+	-re "<built-in function lookup_global_symbol>" {
+	    return 1
+	}
+
+	-re {^[^\n\r]*[\n\r]+} {
+	    verbose "skipping: $expect_out(buffer)"
+	    exp_continue
+	}
+
+	timeout {
+	    remote_close target
+	    return 0
+	}
+    }
+
+    remote_close target
+    return 0
+}

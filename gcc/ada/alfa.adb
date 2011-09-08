@@ -24,9 +24,9 @@
 ------------------------------------------------------------------------------
 
 with Output;   use Output;
-with Put_ALFA;
+with Put_Alfa;
 
-package body ALFA is
+package body Alfa is
 
    -----------
    -- dalfa --
@@ -34,14 +34,14 @@ package body ALFA is
 
    procedure dalfa is
    begin
-      --  Dump ALFA file table
+      --  Dump Alfa file table
 
-      Write_Line ("ALFA File Table");
+      Write_Line ("Alfa File Table");
       Write_Line ("---------------");
 
-      for Index in 1 .. ALFA_File_Table.Last loop
+      for Index in 1 .. Alfa_File_Table.Last loop
          declare
-            AFR : ALFA_File_Record renames ALFA_File_Table.Table (Index);
+            AFR : Alfa_File_Record renames Alfa_File_Table.Table (Index);
 
          begin
             Write_Str ("  ");
@@ -63,15 +63,15 @@ package body ALFA is
          end;
       end loop;
 
-      --  Dump ALFA scope table
+      --  Dump Alfa scope table
 
       Write_Eol;
-      Write_Line ("ALFA Scope Table");
+      Write_Line ("Alfa Scope Table");
       Write_Line ("----------------");
 
-      for Index in 1 .. ALFA_Scope_Table.Last loop
+      for Index in 1 .. Alfa_Scope_Table.Last loop
          declare
-            ASR : ALFA_Scope_Record renames ALFA_Scope_Table.Table (Index);
+            ASR : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
 
          begin
             Write_Str ("  ");
@@ -103,15 +103,15 @@ package body ALFA is
          end;
       end loop;
 
-      --  Dump ALFA cross-reference table
+      --  Dump Alfa cross-reference table
 
       Write_Eol;
-      Write_Line ("ALFA Xref Table");
+      Write_Line ("Alfa Xref Table");
       Write_Line ("---------------");
 
-      for Index in 1 .. ALFA_Xref_Table.Last loop
+      for Index in 1 .. Alfa_Xref_Table.Last loop
          declare
-            AXR : ALFA_Xref_Record renames ALFA_Xref_Table.Table (Index);
+            AXR : Alfa_Xref_Record renames Alfa_Xref_Table.Table (Index);
 
          begin
             Write_Str  ("  ");
@@ -146,12 +146,12 @@ package body ALFA is
    -- Initialize --
    ----------------
 
-   procedure Initialize_ALFA_Tables is
+   procedure Initialize_Alfa_Tables is
    begin
-      ALFA_File_Table.Init;
-      ALFA_Scope_Table.Init;
-      ALFA_Xref_Table.Init;
-   end Initialize_ALFA_Tables;
+      Alfa_File_Table.Init;
+      Alfa_Scope_Table.Init;
+      Alfa_Xref_Table.Init;
+   end Initialize_Alfa_Tables;
 
    -----------
    -- palfa --
@@ -192,12 +192,12 @@ package body ALFA is
          Write_Int (N);
       end Write_Info_Nat;
 
-      procedure Debug_Put_ALFA is new Put_ALFA;
+      procedure Debug_Put_Alfa is new Put_Alfa;
 
    --  Start of processing for palfa
 
    begin
-      Debug_Put_ALFA;
+      Debug_Put_Alfa;
    end palfa;
 
-end ALFA;
+end Alfa;

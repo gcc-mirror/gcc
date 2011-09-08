@@ -324,11 +324,7 @@ procedure Gnat1drv is
       --  Set and check exception mechanism
 
       if Targparm.ZCX_By_Default_On_Target then
-         if Targparm.GCC_ZCX_Support_On_Target then
-            Exception_Mechanism := Back_End_Exceptions;
-         else
-            Osint.Fail ("Zero Cost Exceptions not supported on this target");
-         end if;
+         Exception_Mechanism := Back_End_Exceptions;
       end if;
 
       --  Set proper status for overflow checks. We turn on overflow checks if
@@ -394,7 +390,7 @@ procedure Gnat1drv is
 
       if Debug_Flag_Dot_FF then
 
-         ALFA_Mode := True;
+         Alfa_Mode := True;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.
@@ -410,7 +406,7 @@ procedure Gnat1drv is
 
          --  Enable some restrictions systematically to simplify the generated
          --  code (and ease analysis). Note that restriction checks are also
-         --  disabled in ALFA mode, see Restrict.Check_Restriction, and user
+         --  disabled in Alfa mode, see Restrict.Check_Restriction, and user
          --  specified Restrictions pragmas are ignored, see
          --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
 
@@ -439,14 +435,27 @@ procedure Gnat1drv is
 
          Polling_Required := False;
 
-         --  Set operating mode to Generate_Code to benefit from full front-end
-         --  expansion (e.g. default arguments).
+         --  Set operating mode to Generate_Code, but full front-end expansion
+         --  is not desirable in Alfa mode, so a light expansion is performed
+         --  instead.
 
          Operating_Mode := Generate_Code;
 
          --  Skip call to gigi
 
          Debug_Flag_HH := True;
+
+         --  Disable Expressions_With_Actions nodes
+
+         --  The gnat2why backend does not deal with Expressions_With_Actions
+         --  in all places (in particular assertions). It is difficult to
+         --  determine in the frontend which cases are allowed, so we disable
+         --  Expressions_With_Actions entirely. Even in the cases where
+         --  gnat2why deals with Expressions_With_Actions, it is easier to
+         --  deal with the original constructs (quantified, conditional and
+         --  case expressions) instead of the rewritten ones.
+
+         Use_Expression_With_Actions := False;
 
          --  Enable assertions and debug pragmas, since they give valuable
          --  extra information for formal verification.
@@ -455,12 +464,12 @@ procedure Gnat1drv is
          Debug_Pragmas_Enabled := True;
 
          --  Turn off style check options since we are not interested in any
-         --  front-end warnings when we are getting ALFA output.
+         --  front-end warnings when we are getting Alfa output.
 
          Reset_Style_Check_Options;
 
-         --  Suppress compiler warnings, since what we are
-         --  interested in here is what formal verification can find out.
+         --  Suppress compiler warnings, since what we are interested in here
+         --  is what formal verification can find out.
 
          Warning_Mode := Suppress;
 
@@ -468,11 +477,12 @@ procedure Gnat1drv is
 
          Global_Discard_Names := True;
 
-         --  Always perform semantics and generate ALI files in ALFA mode,
-         --  so that a gnatmake -c -k will proceed further when possible.
+         --  We would prefer to suppress the expansion of tagged types and
+         --  dispatching calls, so that one day GNATprove can handle them
+         --  directly. Unfortunately, this is causing problems in some cases,
+         --  so keep this expansion for the time being. To be investigated ???
 
-         Force_ALI_Tree_File := True;
-         Try_Semantics := True;
+         Tagged_Type_Expansion := True;
       end if;
    end Adjust_Global_Switches;
 
@@ -776,9 +786,34 @@ begin
       Original_Operating_Mode := Operating_Mode;
       Frontend;
 
-      --  Exit with errors if the main source could not be parsed
+      --  Exit with errors if the main source could not be parsed. Also, when
+      --  -gnatd.H is present, the source file is not set.
 
       if Sinput.Main_Source_File = No_Source_File then
+
+         --  Handle -gnatd.H debug mode
+
+         if Debug_Flag_Dot_HH then
+
+            --  For -gnatd.H, lock all the tables to keep the convention that
+            --  the backend needs to unlock the tables it wants to touch.
+
+            Atree.Lock;
+            Elists.Lock;
+            Fname.UF.Lock;
+            Inline.Lock;
+            Lib.Lock;
+            Nlists.Lock;
+            Sem.Lock;
+            Sinput.Lock;
+            Namet.Lock;
+            Stringt.Lock;
+
+            --  And all we need to do is to call the back end
+
+            Back_End.Call_Back_End (Back_End.Generate_Object);
+         end if;
+
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Exit_Program (E_Errors);
@@ -805,6 +840,12 @@ begin
          if Opt.Force_ALI_Tree_File then
             Write_ALI (Object => False);
             Tree_Gen;
+         end if;
+
+         --  In CodePeer mode we delete SCIL files if there is an error
+
+         if CodePeer_Mode then
+            Comperr.Delete_SCIL_Files;
          end if;
 
          Errout.Finalize (Last_Call => True);

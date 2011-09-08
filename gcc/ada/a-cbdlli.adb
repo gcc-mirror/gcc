@@ -30,6 +30,22 @@
 with System;  use type System.Address;
 
 package body Ada.Containers.Bounded_Doubly_Linked_Lists is
+   type Iterator is new
+     List_Iterator_Interfaces.Reversible_Iterator with record
+        Container : List_Access;
+        Node      : Count_Type;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -524,6 +540,15 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       end if;
 
       return Cursor'(Container'Unrestricted_Access, Container.First);
+   end First;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      if Object.Container = null then
+         return No_Element;
+      else
+         return (Object.Container, Object.Container.First);
+      end if;
    end First;
 
    -------------------
@@ -1021,6 +1046,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
             Process (Cursor'(Container'Unrestricted_Access, Node));
             Node := Container.Nodes (Node).Next;
          end loop;
+
       exception
          when others =>
             B := B - 1;
@@ -1028,6 +1054,28 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       end;
 
       B := B - 1;
+   end Iterate;
+
+   function Iterate
+     (Container : List)
+      return List_Iterator_Interfaces.Reversible_Iterator'class
+   is
+   begin
+      if Container.Length = 0 then
+         return Iterator'(null, Count_Type'First);
+      else
+         return Iterator'(Container'Unrestricted_Access, Container.First);
+      end if;
+   end Iterate;
+
+   function Iterate
+     (Container : List;
+      Start     : Cursor)
+      return List_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator := (Container'Unrestricted_Access, Start.Node);
+   begin
+      return It;
    end Iterate;
 
    ----------
@@ -1041,6 +1089,15 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       end if;
 
       return Cursor'(Container'Unrestricted_Access, Container.Last);
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      if Object.Container = null then
+         return No_Element;
+      else
+         return (Object.Container, Object.Container.Last);
+      end if;
    end Last;
 
    ------------------
@@ -1133,6 +1190,20 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       end;
    end Next;
 
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+      Nodes : Node_Array renames Position.Container.Nodes;
+      Node  : constant Count_Type := Nodes (Position.Node).Next;
+   begin
+      if Position.Node = Object.Container.Last then
+         return No_Element;
+      else
+         return (Object.Container, Node);
+      end if;
+   end Next;
+
    -------------
    -- Prepend --
    -------------
@@ -1173,6 +1244,20 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
 
          return Cursor'(Position.Container, Node);
       end;
+   end Previous;
+
+   function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+      Nodes : Node_Array renames Position.Container.Nodes;
+      Node  : constant Count_Type := Nodes (Position.Node).Prev;
+   begin
+      if Position.Node = 0 then
+         return No_Element;
+      else
+         return (Object.Container, Node);
+      end if;
    end Previous;
 
    -------------------
@@ -1256,6 +1341,52 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
    begin
       raise Program_Error with "attempt to stream list cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference (Container : List; Position : Cursor)
+   return Constant_Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element =>
+         Position.Container.Nodes (Position.Node).Element'Unrestricted_Access);
+   end Constant_Reference;
+
+   function Reference (Container : List; Position : Cursor)
+   return Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element =>
+         Position.Container.Nodes (Position.Node).Element'Unrestricted_Access);
+   end Reference;
 
    ---------------------
    -- Replace_Element --
@@ -1999,6 +2130,22 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
    is
    begin
       raise Program_Error with "attempt to stream list cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Bounded_Doubly_Linked_Lists;

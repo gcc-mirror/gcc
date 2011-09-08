@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2009, Free Software Foundation, Inc.            --
+--         Copyright (C) 2009-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,11 @@ package System.Win32.Ext is
      (hThread          : HANDLE;
       dwIdealProcessor : ProcessorId) return DWORD;
    pragma Import (Stdcall, SetThreadIdealProcessor, "SetThreadIdealProcessor");
+
+   function SetThreadAffinityMask
+     (hThread              : HANDLE;
+      dwThreadAffinityMask : DWORD) return DWORD;
+   pragma Import (Stdcall, SetThreadAffinityMask, "SetThreadAffinityMask");
 
    --------------
    -- Com Port --

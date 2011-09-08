@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,24 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Free is
      new Ada.Unchecked_Deallocation (Element_Type, Element_Access);
+
+   type Iterator is new
+     Vector_Iterator_Interfaces.Reversible_Iterator with record
+      Container : Vector_Access;
+      Index     : Index_Type;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Last (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    ---------
    -- "&" --
@@ -1073,6 +1091,12 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       return (Container'Unchecked_Access, Index_Type'First);
+   end First;
+
+   function First (Object : Iterator) return Cursor is
+      C : constant Cursor := (Object.Container, Index_Type'First);
+   begin
+      return C;
    end First;
 
    -------------------
@@ -2406,6 +2430,25 @@ package body Ada.Containers.Indefinite_Vectors is
       B := B - 1;
    end Iterate;
 
+   function Iterate (Container : Vector)
+      return Vector_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator := (Container'Unchecked_Access, Index_Type'First);
+   begin
+      return It;
+   end Iterate;
+
+   function Iterate
+     (Container : Vector;
+      Start     : Cursor)
+      return Vector_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator :=
+             (Container'Unchecked_Access, Start.Index);
+   begin
+      return It;
+   end Iterate;
+
    ----------
    -- Last --
    ----------
@@ -2417,6 +2460,12 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       return (Container'Unchecked_Access, Container.Last);
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+      C : constant Cursor := (Object.Container, Object.Container.Last);
+   begin
+      return C;
    end Last;
 
    -----------------
@@ -2533,9 +2582,14 @@ package body Ada.Containers.Indefinite_Vectors is
       return No_Element;
    end Next;
 
-   ----------
-   -- Next --
-   ----------
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position.Index = Object.Container.Last then
+         return  No_Element;
+      else
+         return (Object.Container, Position.Index + 1);
+      end if;
+   end Next;
 
    procedure Next (Position : in out Cursor) is
    begin
@@ -2599,6 +2653,15 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       return No_Element;
+   end Previous;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position.Index > Index_Type'First then
+         return (Object.Container, Position.Index - 1);
+      else
+         return No_Element;
+      end if;
    end Previous;
 
    -------------------
@@ -2694,6 +2757,83 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       raise Program_Error with "attempt to stream vector cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference
+     (Container : Vector; Position : Cursor)    --  SHOULD BE ALIASED
+   return Constant_Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Index > Position.Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      return
+       (Element => Position.Container.Elements.EA (Position.Index).all'Access);
+   end Constant_Reference;
+
+   function Constant_Reference
+     (Container : Vector; Position : Index_Type)
+   return Constant_Reference_Type is
+   begin
+      if (Position) > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      return (Element => Container.Elements.EA (Position).all'Access);
+   end Constant_Reference;
+
+   function Reference (Container : Vector; Position : Cursor)
+   return Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Index > Position.Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      return
+        (Element =>
+           Position.Container.Elements.EA (Position.Index).all'Access);
+   end Reference;
+
+   function Reference (Container : Vector; Position : Index_Type)
+   return Reference_Type is
+   begin
+      if Position > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      return (Element => Container.Elements.EA (Position).all'Access);
+   end Reference;
 
    ---------------------
    -- Replace_Element --
@@ -3577,6 +3717,22 @@ package body Ada.Containers.Indefinite_Vectors is
    is
    begin
       raise Program_Error with "attempt to stream vector cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Indefinite_Vectors;

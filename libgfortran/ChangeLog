@@ -1,3 +1,194 @@
+2011-09-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* generated/bessel_r4.c: Regenerated.
+	* generated/bessel_r8.c: Regenerated.
+	* generated/bessel_r10.c: Regenerated.
+	* generated/bessel_r16.c: Regenerated.
+
+2011-08-29  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_deregister): Update prototype.
+	* caf/mpi.c (_gfortran_caf_deregister): Modify prototype,
+	actually free memory and add error diagnostic.
+	(_gfortran_caf_finalize): Add additional free calls.
+	* caf/single.c (_gfortran_caf_deregister): Modify prototype,
+	actually free memory and add error diagnostic.
+	(_gfortran_caf_finalize): Add additional free calls.
+
+2011-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/50192
+	* intrinsics/string_intrinsics.c (memcmp_char4):  New function.
+	* intrinsics/string_intrinsics_inc.c:  New macro MEMCMP, either
+	set to memcmp or memcmp_char4.
+	(compare_string):  Use MEMCMP, with correct size for it.
+	* libgfortran.h:  Add prototype for memcmp_char4.
+
+2011-08-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/40866
+	* generated/iall_i1.c: Regenerated.
+	* generated/iall_i16.c: Regenerated.
+	* generated/iall_i2.c: Regenerated.
+	* generated/iall_i4.c: Regenerated.
+	* generated/iall_i8.c: Regenerated.
+	* generated/iany_i1.c: Regenerated.
+	* generated/iany_i16.c: Regenerated.
+	* generated/iany_i2.c: Regenerated.
+	* generated/iany_i4.c: Regenerated.
+	* generated/iany_i8.c: Regenerated.
+	* generated/iparity_i1.c: Regenerated.
+	* generated/iparity_i16.c: Regenerated.
+	* generated/iparity_i2.c: Regenerated.
+	* generated/iparity_i4.c: Regenerated.
+	* generated/iparity_i8.c: Regenerated.
+	* generated/norm2_r10.c: Regenerated.
+	* generated/norm2_r16.c: Regenerated.
+	* generated/norm2_r4.c: Regenerated.
+	* generated/norm2_r8.c: Regenerated.
+	* generated/parity_l1.c: Regenerated.
+	* generated/parity_l16.c: Regenerated.
+	* generated/parity_l2.c: Regenerated.
+	* generated/parity_l4.c: Regenerated.
+	* generated/parity_l8.c: Regenerated.
+	* generated/misc_specifics.F90: Regenerated (comment change).
+	* generated/_abs_c10.F90: Regenerated (comment change).
+	* generated/_abs_c16.F90: Regenerated (comment change).
+	* generated/_abs_c4.F90: Regenerated (comment change).
+	* generated/_abs_c8.F90: Regenerated (comment change).
+	* generated/_abs_i16.F90: Regenerated (comment change).
+	* generated/_abs_i4.F90: Regenerated (comment change).
+	* generated/_abs_i8.F90: Regenerated (comment change).
+	* generated/_abs_r10.F90: Regenerated (comment change).
+	* generated/_abs_r16.F90: Regenerated (comment change).
+	* generated/_abs_r4.F90: Regenerated (comment change).
+	* generated/_abs_r8.F90: Regenerated (comment change).
+	* generated/_acosh_r10.F90: Regenerated (comment change).
+	* generated/_acosh_r16.F90: Regenerated (comment change).
+	* generated/_acosh_r4.F90: Regenerated (comment change).
+	* generated/_acosh_r8.F90: Regenerated (comment change).
+	* generated/_acos_r10.F90: Regenerated (comment change).
+	* generated/_acos_r16.F90: Regenerated (comment change).
+	* generated/_acos_r4.F90: Regenerated (comment change).
+	* generated/_acos_r8.F90: Regenerated (comment change).
+	* generated/_aimag_c10.F90: Regenerated (comment change).
+	* generated/_aimag_c16.F90: Regenerated (comment change).
+	* generated/_aimag_c4.F90: Regenerated (comment change).
+	* generated/_aimag_c8.F90: Regenerated (comment change).
+	* generated/_aint_r10.F90: Regenerated (comment change).
+	* generated/_aint_r16.F90: Regenerated (comment change).
+	* generated/_aint_r4.F90: Regenerated (comment change).
+	* generated/_aint_r8.F90: Regenerated (comment change).
+	* generated/_anint_r10.F90: Regenerated (comment change).
+	* generated/_anint_r16.F90: Regenerated (comment change).
+	* generated/_anint_r4.F90: Regenerated (comment change).
+	* generated/_anint_r8.F90: Regenerated (comment change).
+	* generated/_asinh_r10.F90: Regenerated (comment change).
+	* generated/_asinh_r16.F90: Regenerated (comment change).
+	* generated/_asinh_r4.F90: Regenerated (comment change).
+	* generated/_asinh_r8.F90: Regenerated (comment change).
+	* generated/_asin_r10.F90: Regenerated (comment change).
+	* generated/_asin_r16.F90: Regenerated (comment change).
+	* generated/_asin_r4.F90: Regenerated (comment change).
+	* generated/_asin_r8.F90: Regenerated (comment change).
+	* generated/_atan2_r10.F90: Regenerated (comment change).
+	* generated/_atan2_r16.F90: Regenerated (comment change).
+	* generated/_atan2_r4.F90: Regenerated (comment change).
+	* generated/_atan2_r8.F90: Regenerated (comment change).
+	* generated/_atanh_r10.F90: Regenerated (comment change).
+	* generated/_atanh_r16.F90: Regenerated (comment change).
+	* generated/_atanh_r4.F90: Regenerated (comment change).
+	* generated/_atanh_r8.F90: Regenerated (comment change).
+	* generated/_atan_r10.F90: Regenerated (comment change).
+	* generated/_atan_r16.F90: Regenerated (comment change).
+	* generated/_atan_r4.F90: Regenerated (comment change).
+	* generated/_atan_r8.F90: Regenerated (comment change).
+	* generated/_conjg_c10.F90: Regenerated (comment change).
+	* generated/_conjg_c16.F90: Regenerated (comment change).
+	* generated/_conjg_c4.F90: Regenerated (comment change).
+	* generated/_conjg_c8.F90: Regenerated (comment change).
+	* generated/_cosh_r10.F90: Regenerated (comment change).
+	* generated/_cosh_r16.F90: Regenerated (comment change).
+	* generated/_cosh_r4.F90: Regenerated (comment change).
+	* generated/_cosh_r8.F90: Regenerated (comment change).
+	* generated/_cos_c10.F90: Regenerated (comment change).
+	* generated/_cos_c16.F90: Regenerated (comment change).
+	* generated/_cos_c4.F90: Regenerated (comment change).
+	* generated/_cos_c8.F90: Regenerated (comment change).
+	* generated/_cos_r10.F90: Regenerated (comment change).
+	* generated/_cos_r16.F90: Regenerated (comment change).
+	* generated/_cos_r4.F90: Regenerated (comment change).
+	* generated/_cos_r8.F90: Regenerated (comment change).
+	* generated/_dim_i16.F90: Regenerated (comment change).
+	* generated/_dim_i4.F90: Regenerated (comment change).
+	* generated/_dim_i8.F90: Regenerated (comment change).
+	* generated/_dim_r10.F90: Regenerated (comment change).
+	* generated/_dim_r16.F90: Regenerated (comment change).
+	* generated/_dim_r4.F90: Regenerated (comment change).
+	* generated/_dim_r8.F90: Regenerated (comment change).
+	* generated/_exp_c10.F90: Regenerated (comment change).
+	* generated/_exp_c16.F90: Regenerated (comment change).
+	* generated/_exp_c4.F90: Regenerated (comment change).
+	* generated/_exp_c8.F90: Regenerated (comment change).
+	* generated/_exp_r10.F90: Regenerated (comment change).
+	* generated/_exp_r16.F90: Regenerated (comment change).
+	* generated/_exp_r4.F90: Regenerated (comment change).
+	* generated/_exp_r8.F90: Regenerated (comment change).
+	* generated/_log10_r10.F90: Regenerated (comment change).
+	* generated/_log10_r16.F90: Regenerated (comment change).
+	* generated/_log10_r4.F90: Regenerated (comment change).
+	* generated/_log10_r8.F90: Regenerated (comment change).
+	* generated/_log_c10.F90: Regenerated (comment change).
+	* generated/_log_c16.F90: Regenerated (comment change).
+	* generated/_log_c4.F90: Regenerated (comment change).
+	* generated/_log_c8.F90: Regenerated (comment change).
+	* generated/_log_r10.F90: Regenerated (comment change).
+	* generated/_log_r16.F90: Regenerated (comment change).
+	* generated/_log_r4.F90: Regenerated (comment change).
+	* generated/_log_r8.F90: Regenerated (comment change).
+	* generated/_mod_i16.F90: Regenerated (comment change).
+	* generated/_mod_i4.F90: Regenerated (comment change).
+	* generated/_mod_i8.F90: Regenerated (comment change).
+	* generated/_mod_r10.F90: Regenerated (comment change).
+	* generated/_mod_r16.F90: Regenerated (comment change).
+	* generated/_mod_r4.F90: Regenerated (comment change).
+	* generated/_mod_r8.F90: Regenerated (comment change).
+	* generated/_sign_i16.F90: Regenerated (comment change).
+	* generated/_sign_i4.F90: Regenerated (comment change).
+	* generated/_sign_i8.F90: Regenerated (comment change).
+	* generated/_sign_r10.F90: Regenerated (comment change).
+	* generated/_sign_r16.F90: Regenerated (comment change).
+	* generated/_sign_r4.F90: Regenerated (comment change).
+	* generated/_sign_r8.F90: Regenerated (comment change).
+	* generated/_sinh_r10.F90: Regenerated (comment change).
+	* generated/_sinh_r16.F90: Regenerated (comment change).
+	* generated/_sinh_r4.F90: Regenerated (comment change).
+	* generated/_sinh_r8.F90: Regenerated (comment change).
+	* generated/_sin_c10.F90: Regenerated (comment change).
+	* generated/_sin_c16.F90: Regenerated (comment change).
+	* generated/_sin_c4.F90: Regenerated (comment change).
+	* generated/_sin_c8.F90: Regenerated (comment change).
+	* generated/_sin_r10.F90: Regenerated (comment change).
+	* generated/_sin_r16.F90: Regenerated (comment change).
+	* generated/_sin_r4.F90: Regenerated (comment change).
+	* generated/_sin_r8.F90: Regenerated (comment change).
+	* generated/_sqrt_c10.F90: Regenerated (comment change).
+	* generated/_sqrt_c16.F90: Regenerated (comment change).
+	* generated/_sqrt_c4.F90: Regenerated (comment change).
+	* generated/_sqrt_c8.F90: Regenerated (comment change).
+	* generated/_sqrt_r10.F90: Regenerated (comment change).
+	* generated/_sqrt_r16.F90: Regenerated (comment change).
+	* generated/_sqrt_r4.F90: Regenerated (comment change).
+	* generated/_sqrt_r8.F90: Regenerated (comment change).
+	* generated/_tanh_r10.F90: Regenerated (comment change).
+	* generated/_tanh_r16.F90: Regenerated (comment change).
+	* generated/_tanh_r4.F90: Regenerated (comment change).
+	* generated/_tanh_r8.F90: Regenerated (comment change).
+	* generated/_tan_r10.F90: Regenerated (comment change).
+	* generated/_tan_r16.F90: Regenerated (comment change).
+	* generated/_tan_r4.F90: Regenerated (comment change).
+	* generated/_tan_r8.F90: Regenerated (comment change).
+
 2011-08-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50109

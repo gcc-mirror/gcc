@@ -902,7 +902,7 @@ package body GNAT.Command_Line is
                  Parser.Section (Parser.Current_Argument);
             end if;
 
-            --  Until we have the start of another section
+            --  Exit from loop if we have the start of another section
 
             if Index = Parser.Section'Last
                or else Parser.Section (Index + 1) /= 0
@@ -3026,9 +3026,10 @@ package body GNAT.Command_Line is
    ---------------
 
    procedure Set_Usage
-     (Config : in out Command_Line_Configuration;
-      Usage  : String := "[switches] [arguments]";
-      Help   : String := "")
+     (Config   : in out Command_Line_Configuration;
+      Usage    : String := "[switches] [arguments]";
+      Help     : String := "";
+      Help_Msg : String := "")
    is
    begin
       if Config = null then
@@ -3036,8 +3037,9 @@ package body GNAT.Command_Line is
       end if;
 
       Free (Config.Usage);
-      Config.Usage := new String'(Usage);
-      Config.Help  := new String'(Help);
+      Config.Usage    := new String'(Usage);
+      Config.Help     := new String'(Help);
+      Config.Help_Msg := new String'(Help_Msg);
    end Set_Usage;
 
    ------------------
@@ -3222,12 +3224,15 @@ package body GNAT.Command_Line is
                    & " [switches] [arguments]");
       end if;
 
-      Display_Section_Help ("");
-
-      if Config.Sections /= null and then Config.Switches /= null then
-         for S in Config.Sections'Range loop
-            Display_Section_Help (Config.Sections (S).all);
-         end loop;
+      if Config.Help_Msg /= null and then Config.Help_Msg.all /= "" then
+         Put_Line (Config.Help_Msg.all);
+      else
+         Display_Section_Help ("");
+         if Config.Sections /= null and then Config.Switches /= null then
+            for S in Config.Sections'Range loop
+               Display_Section_Help (Config.Sections (S).all);
+            end loop;
+         end if;
       end if;
    end Display_Help;
 
@@ -3236,9 +3241,10 @@ package body GNAT.Command_Line is
    ------------
 
    procedure Getopt
-     (Config   : Command_Line_Configuration;
-      Callback : Switch_Handler := null;
-      Parser   : Opt_Parser     := Command_Line_Parser)
+     (Config      : Command_Line_Configuration;
+      Callback    : Switch_Handler := null;
+      Parser      : Opt_Parser := Command_Line_Parser;
+      Concatenate : Boolean := True)
    is
       Getopt_Switches : String_Access;
       C               : Character := ASCII.NUL;
@@ -3291,10 +3297,14 @@ package body GNAT.Command_Line is
                             & Switch & "'";
                   end;
 
+                  return;
+
                when Switch_String =>
                   Free (Config.Switches (Index).String_Output.all);
                   Config.Switches (Index).String_Output.all :=
                     new String'(Parameter);
+                  return;
+
             end case;
          end if;
 
@@ -3370,7 +3380,7 @@ package body GNAT.Command_Line is
 
       loop
          C := Getopt (Switches    => Getopt_Switches.all,
-                      Concatenate => True,
+                      Concatenate => Concatenate,
                       Parser      => Parser);
 
          if C = '*' then

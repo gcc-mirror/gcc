@@ -10,4 +10,4 @@ void test(TItype x_128)
   m_128 = __sync_val_compare_and_swap (&m_128, x_128, m_128);
 }
 
-/* { dg-final { scan-assembler "cmpxchg16b" } } */
+/* { dg-final { scan-assembler "cmpxchg16b\[ \\t]" } } */

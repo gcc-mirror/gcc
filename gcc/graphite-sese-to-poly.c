@@ -1720,7 +1720,7 @@ write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
 
   FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
-      if (dr_may_alias_p (dr1, dr2))
+      if (dr_may_alias_p (dr1, dr2, true))
 	edge_num++;
 
   fprintf (file, "$\n");
@@ -1732,7 +1732,7 @@ write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
 
   FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
-      if (dr_may_alias_p (dr1, dr2))
+      if (dr_may_alias_p (dr1, dr2, true))
 	fprintf (file, "e %d %d\n", i + 1, j + 1);
 
   return true;
@@ -1762,7 +1762,7 @@ write_alias_graph_to_ascii_dot (FILE *file, char *comment,
 
   FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
-      if (dr_may_alias_p (dr1, dr2))
+      if (dr_may_alias_p (dr1, dr2, true))
 	fprintf (file, "n%d n%d\n", i, j);
 
   return true;
@@ -1788,7 +1788,7 @@ write_alias_graph_to_ascii_ecc (FILE *file, char *comment,
 
   FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
-      if (dr_may_alias_p (dr1, dr2))
+      if (dr_may_alias_p (dr1, dr2, true))
 	fprintf (file, "%d %d\n", i, j);
 
   return true;
@@ -1824,7 +1824,7 @@ build_alias_set_optimal_p (VEC (data_reference_p, heap) *drs)
 
   FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i+1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
-      if (dr_may_alias_p (dr1, dr2))
+      if (dr_may_alias_p (dr1, dr2, true))
 	{
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);

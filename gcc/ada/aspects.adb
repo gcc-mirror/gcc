@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Einfo;    use Einfo;
 with Nlists;   use Nlists;
 with Sinfo;    use Sinfo;
 with Tree_IO;  use Tree_IO;
@@ -118,6 +119,32 @@ package body Aspects is
       return Aspect_Id_Hash_Table.Get (Name);
    end Get_Aspect_Id;
 
+   -----------------
+   -- Find_Aspect --
+   -----------------
+
+   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id is
+      Ritem : Node_Id;
+
+   begin
+      Ritem := First_Rep_Item (Ent);
+      while Present (Ritem) loop
+         if Nkind (Ritem) = N_Aspect_Specification
+           and then Get_Aspect_Id (Chars (Identifier (Ritem))) = A
+         then
+            if A = Aspect_Default_Iterator then
+               return Expression (Aspect_Rep_Item (Ritem));
+            else
+               return Expression (Ritem);
+            end if;
+         end if;
+
+         Next_Rep_Item (Ritem);
+      end loop;
+
+      return Empty;
+   end Find_Aspect;
+
    ------------------
    -- Move_Aspects --
    ------------------
@@ -185,21 +212,29 @@ package body Aspects is
     Aspect_Ada_2012                     => Aspect_Ada_2005,
     Aspect_Address                      => Aspect_Address,
     Aspect_Alignment                    => Aspect_Alignment,
+    Aspect_Asynchronous                 => Aspect_Asynchronous,
     Aspect_Atomic                       => Aspect_Atomic,
     Aspect_Atomic_Components            => Aspect_Atomic_Components,
+    Aspect_Attach_Handler               => Aspect_Attach_Handler,
     Aspect_Bit_Order                    => Aspect_Bit_Order,
     Aspect_Component_Size               => Aspect_Component_Size,
     Aspect_Constant_Indexing            => Aspect_Constant_Indexing,
+    Aspect_CPU                          => Aspect_CPU,
     Aspect_Default_Component_Value      => Aspect_Default_Component_Value,
     Aspect_Default_Iterator             => Aspect_Default_Iterator,
     Aspect_Default_Value                => Aspect_Default_Value,
     Aspect_Discard_Names                => Aspect_Discard_Names,
+    Aspect_Dispatching_Domain           => Aspect_Dispatching_Domain,
     Aspect_Dynamic_Predicate            => Aspect_Predicate,
     Aspect_External_Tag                 => Aspect_External_Tag,
     Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,
     Aspect_Implicit_Dereference         => Aspect_Implicit_Dereference,
+    Aspect_Independent                  => Aspect_Independent,
+    Aspect_Independent_Components       => Aspect_Independent_Components,
     Aspect_Inline                       => Aspect_Inline,
     Aspect_Inline_Always                => Aspect_Inline,
+    Aspect_Interrupt_Handler            => Aspect_Interrupt_Handler,
+    Aspect_Interrupt_Priority           => Aspect_Interrupt_Priority,
     Aspect_Iterator_Element             => Aspect_Iterator_Element,
     Aspect_All_Calls_Remote             => Aspect_All_Calls_Remote,
     Aspect_Compiler_Unit                => Aspect_Compiler_Unit,
@@ -226,10 +261,12 @@ package body Aspects is
     Aspect_Precondition                 => Aspect_Pre,
     Aspect_Predicate                    => Aspect_Predicate,
     Aspect_Preelaborable_Initialization => Aspect_Preelaborable_Initialization,
+    Aspect_Priority                     => Aspect_Priority,
     Aspect_Pure_Function                => Aspect_Pure_Function,
     Aspect_Read                         => Aspect_Read,
     Aspect_Shared                       => Aspect_Atomic,
     Aspect_Size                         => Aspect_Size,
+    Aspect_Small                        => Aspect_Small,
     Aspect_Static_Predicate             => Aspect_Predicate,
     Aspect_Storage_Pool                 => Aspect_Storage_Pool,
     Aspect_Storage_Size                 => Aspect_Storage_Size,

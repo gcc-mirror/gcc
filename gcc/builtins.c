@@ -6096,7 +6096,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_FREE:
-      maybe_emit_free_warning (exp);
+      if (warn_free_nonheap_object)
+	maybe_emit_free_warning (exp);
       break;
 
     default:	/* just do library call, if unknown builtin */
@@ -11915,11 +11916,11 @@ maybe_emit_free_warning (tree exp)
     return;
 
   if (SSA_VAR_P (arg))
-    warning_at (tree_nonartificial_location (exp),
-		0, "%Kattempt to free a non-heap object %qD", exp, arg);
+    warning_at (tree_nonartificial_location (exp), OPT_Wfree_nonheap_object,
+		"%Kattempt to free a non-heap object %qD", exp, arg);
   else
-    warning_at (tree_nonartificial_location (exp),
-		0, "%Kattempt to free a non-heap object", exp);
+    warning_at (tree_nonartificial_location (exp), OPT_Wfree_nonheap_object,
+		"%Kattempt to free a non-heap object", exp);
 }
 
 /* Fold a call to __builtin_object_size with arguments PTR and OST,

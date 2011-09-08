@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,6 +73,16 @@ package body Ch2 is
                         and then Prev_Token /= Tok_Pragma)
             then
                Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
+            end if;
+         end if;
+
+         --  Similarly, warn about Ada 2012 reserved words
+
+         if Ada_Version in Ada_95 .. Ada_2005
+           and then Warn_On_Ada_2012_Compatibility
+         then
+            if Token_Name = Name_Some then
+               Error_Msg_N ("& is a reserved word in Ada 2012?", Token_Node);
             end if;
          end if;
 

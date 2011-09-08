@@ -1801,6 +1801,11 @@ package body Sprint is
 
             Write_Str_With_Col_Check_Sloc ("private");
 
+         when N_Formal_Incomplete_Type_Definition =>
+            if Tagged_Present (Node) then
+               Write_Str_With_Col_Check ("is tagged ");
+            end if;
+
          when N_Formal_Signed_Integer_Type_Definition =>
             Write_Str_With_Col_Check_Sloc ("range <>");
 
@@ -1814,7 +1819,12 @@ package body Sprint is
                Write_Str_With_Col_Check ("(<>)");
             end if;
 
-            Write_Str_With_Col_Check (" is ");
+            if Nkind (Formal_Type_Definition (Node)) /=
+                N_Formal_Incomplete_Type_Definition
+            then
+               Write_Str_With_Col_Check (" is ");
+            end if;
+
             Sprint_Node (Formal_Type_Definition (Node));
             Write_Char (';');
 
@@ -2699,7 +2709,12 @@ package body Sprint is
                Write_Str (" some ");
             end if;
 
-            Sprint_Node (Loop_Parameter_Specification (Node));
+            if Present (Iterator_Specification (Node)) then
+               Sprint_Node (Iterator_Specification (Node));
+            else
+               Sprint_Node (Loop_Parameter_Specification (Node));
+            end if;
+
             Write_Str (" => ");
             Sprint_Node (Condition (Node));
 

@@ -1,3 +1,106 @@
+2011-09-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50227
+	* trans-types.c (gfc_sym_type): Check for proc_name.
+
+2011-08-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45044
+	* trans-common.c (build_common_decl): Warn if named common
+	block's size is not everywhere the same.
+
+2011-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/45170
+	* trans-stmt.c (gfc_trans_allocate): Evaluate the substring.
+
+2011-08-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50225
+	* trans-decl.c (gfc_generate_function_code): Nullify polymorphic
+	allocatable function results.
+
+2011-08-29  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (generate_coarray_sym_init): Use
+	GFC_CAF_COARRAY_STATIC for static coarrays.
+
+2011-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* scanner.c (load_file): Don't abuse LC_RENAME reason while
+	(indirectly) calling linemap_add.
+
+2011-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (get_proc_pointer_decl): Set DECL_TLS_MODEL
+	if threadprivate.
+	* symbol.c (check_conflict): Allow threadprivate attribute with
+	FL_PROCEDURE if proc_pointer.
+
+2011-08-25  Mikael Morin  <mikael.morin@gcc.gnu.org>
+
+	PR fortran/50050
+	* expr.c (gfc_free_shape): Do nothing if shape is NULL.
+	(free_expr0): Remove redundant NULL shape check.
+	* resolve.c (check_host_association): Ditto.
+	* trans-expr.c (gfc_trans_subarray_assign): Assert that shape is
+	non-NULL.
+	* trans-io.c (transfer_array_component): Ditto.
+
+2011-08-25  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (gfc_conv_descriptor_token): Add assert.
+	* trans-decl.c (gfc_build_qualified_array,
+	create_function_arglist): Handle assumed-shape arrays.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-types.c (gfc_get_array_descriptor_base): Ditto, don't
+	add "caf_token" to assumed-shape descriptors, new akind argument.
+	(gfc_get_array_type_bounds): Pass akind.
+	* trans.h (lang_decl): New elements caf_offset and token.
+	(GFC_DECL_TOKEN, GFC_DECL_CAF_OFFSET): New macros.
+
+2011-08-25  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (structure_alloc_comps): Fix for allocatable
+	scalar coarray components.
+	* trans-expr.c (gfc_conv_component_ref): Ditto.
+	* trans-type.c (gfc_get_derived_type): Ditto.
+
+2011-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50163
+	* expr.c (check_init_expr): Return when an error occured.
+
+2011-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (fortran/cpp.o): Remove explicit compilation rule.
+
+2011-08-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31600
+	* symbol.c (gfc_add_type): Better diagnostic if redefining
+	use-associated symbol.
+	* module.c (gfc_use_module): Use module name as locus.
+
+2011-08-22  Gabriel Charette  <gchare@google.com>
+
+	* cpp.c (gfc_cpp_init): Force BUILTINS_LOCATION for tokens
+	defined in cpp_define_builtins.
+
+2011-08-22  Mikael Morin  <mikael.morin@gcc.gnu.org>
+
+	PR fortran/50050
+	* gfortran.h (gfc_clear_shape, gfc_free_shape): New prototypes.
+	* expr.c (gfc_clear_shape, gfc_free_shape): New functions.
+	(free_expr0): Re-use gfc_free_shape.
+	* trans-expr.c (gfc_trans_subarray_assign): Ditto.
+	* trans-io.c (transfer_array_component): Ditto.
+	* resolve.c (check_host_association): Ditto.
+	(gfc_expr_to_initialize): Don't force the rank value and free the shape
+	after updating the expression. Recalculate shape and rank.
+	(resolve_where_shape): Re-use gfc_clear_shape.
+	* array.c (gfc_array_ref_shape): Ditto.
+
 2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47659
@@ -18,7 +121,7 @@
 	* dependency.c (gfc_dep_compare_expr): Add new result value "-3".
 	(gfc_check_element_vs_section,gfc_check_element_vs_element): Handle
 	result value "-3".
-        * frontend-passes.c (optimize_comparison): Ditto.
+	* frontend-passes.c (optimize_comparison): Ditto.
 	* interface.c (gfc_check_typebound_override): Ditto.
 
 2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>

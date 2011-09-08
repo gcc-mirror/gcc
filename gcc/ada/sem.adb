@@ -674,6 +674,7 @@ package body Sem is
            N_Formal_Modular_Type_Definition         |
            N_Formal_Ordinary_Fixed_Point_Definition |
            N_Formal_Private_Type_Definition         |
+           N_Formal_Incomplete_Type_Definition      |
            N_Formal_Signed_Integer_Type_Definition  |
            N_Function_Specification                 |
            N_Generic_Association                    |

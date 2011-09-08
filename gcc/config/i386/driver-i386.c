@@ -396,7 +396,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_popcnt = 0, has_aes = 0, has_avx = 0, has_avx2 = 0;
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
   unsigned int has_fma = 0, has_fma4 = 0, has_xop = 0;
-  unsigned int has_bmi = 0, has_tbm = 0, has_lzcnt = 0;
+  unsigned int has_bmi = 0, has_bmi2 = 0, has_tbm = 0, has_lzcnt = 0;
 
   bool arch;
 
@@ -475,6 +475,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
       has_bmi = ebx & bit_BMI;
       has_avx2 = ebx & bit_AVX2;
+      has_bmi2 = ebx & bit_BMI2;
     }
 
   if (!arch)
@@ -715,6 +716,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *fma4 = has_fma4 ? " -mfma4" : " -mno-fma4";
       const char *xop = has_xop ? " -mxop" : " -mno-xop";
       const char *bmi = has_bmi ? " -mbmi" : " -mno-bmi";
+      const char *bmi2 = has_bmi2 ? " -mbmi2" : " -mno-bmi2";
       const char *tbm = has_tbm ? " -mtbm" : " -mno-tbm";
       const char *avx = has_avx ? " -mavx" : " -mno-avx";
       const char *avx2 = has_avx2 ? " -mavx2" : " -mno-avx2";
@@ -723,8 +725,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *lzcnt = has_lzcnt ? " -mlzcnt" : " -mno-lzcnt";
 
       options = concat (options, cx16, sahf, movbe, ase, pclmul,
-			popcnt, abm, lwp, fma, fma4, xop, bmi, tbm,
-			avx2, avx, sse4_2, sse4_1, lzcnt, NULL);
+			popcnt, abm, lwp, fma, fma4, xop, bmi, bmi2,
+			tbm, avx, avx2, sse4_2, sse4_1, lzcnt, NULL);
     }
 
 done:

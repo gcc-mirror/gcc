@@ -198,25 +198,16 @@ package Exp_Util is
      (N           : Node_Id;
       Is_Allocate : Boolean);
    --  Create a custom Allocate/Deallocate to be associated with an allocation
-   --  or deallocation of a controlled or class-wide object. In the case of
-   --  allocation, N is the declaration of the temporary variable which
+   --  or deallocation:
+   --
+   --    1) controlled objects
+   --    2) class-wide objects
+   --    3) any kind of object on a subpool
+   --
+   --  N must be an allocator or the declaration of a temporary variable which
    --  represents the expression of the original allocator node, otherwise N
    --  must be a free statement. If flag Is_Allocate is set, the generated
-   --  routine is allocate, deallocate otherwise. The generated routine is:
-   --
-   --     F : constant Boolean :=                          --  CW case
-   --           Ada.Tags.Needs_Finalization (<Expr>'Tag);  --  CW case
-   --
-   --     procedure Allocate / Deallocate
-   --       (P : Storage_Pool;
-   --        A : [out] Address;  --  out is present for Allocate
-   --        S : Storage_Count;
-   --        L : Storage_Count)
-   --     is
-   --     begin
-   --        Allocate / Deallocate
-   --          (<Ptr_Typ collection>, A, S, L, [Needs_Header => F]);
-   --     end Allocate;
+   --  routine is allocate, deallocate otherwise.
 
    function Build_Runtime_Call (Loc : Source_Ptr; RE : RE_Id) return Node_Id;
    --  Build an N_Procedure_Call_Statement calling the given runtime entity.

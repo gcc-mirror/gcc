@@ -1975,8 +1975,11 @@ _cpp_lex_direct (cpp_reader *pfile)
     }
   c = *buffer->cur++;
 
-  result->src_loc = linemap_position_for_column (pfile->line_table,
-			                                    CPP_BUF_COLUMN (buffer, buffer->cur));
+  if (pfile->forced_token_location_p)
+    result->src_loc = *pfile->forced_token_location_p;
+  else
+    result->src_loc = linemap_position_for_column (pfile->line_table,
+					  CPP_BUF_COLUMN (buffer, buffer->cur));
 
   switch (c)
     {
@@ -2838,4 +2841,22 @@ cpp_token_val_index (cpp_token *tok)
     default:
       return CPP_TOKEN_FLD_NONE;
     }
+}
+
+/* All tokens lexed in R after calling this function will be forced to have
+   their source_location the same as the location referenced by P, until
+   cpp_stop_forcing_token_locations is called for R.  */
+
+void
+cpp_force_token_locations (cpp_reader *r, source_location *p)
+{
+  r->forced_token_location_p = p;
+}
+
+/* Go back to assigning locations naturally for lexed tokens.  */
+
+void
+cpp_stop_forcing_token_locations (cpp_reader *r)
+{
+  r->forced_token_location_p = NULL;
 }

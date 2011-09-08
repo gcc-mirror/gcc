@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,6 +182,14 @@ package System.HTable is
       function Get (K : Key) return Elmt_Ptr;
       --  Returns the latest inserted element pointer with the given Key
       --  or null if none.
+
+      function Present (K : Key) return Boolean;
+      --  True if an element whose Get_Key is K is in the table
+
+      function Set_If_Not_Present (E : Elmt_Ptr) return Boolean;
+      --  If Present (Get_Key (E)), returns False. Otherwise, does Set (E), and
+      --  then returns True. Present (Get_Key (E)) is always True afterward,
+      --  and the result True indicates E is newly Set.
 
       procedure Remove (K : Key);
       --  Removes the latest inserted element pointer associated with the

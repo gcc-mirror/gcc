@@ -124,7 +124,8 @@ package body Par_SCO is
       From        : Source_Ptr;
       To          : Source_Ptr;
       Last        : Boolean;
-      Pragma_Sloc : Source_Ptr := No_Location);
+      Pragma_Sloc : Source_Ptr := No_Location;
+      Pragma_Name : Pragma_Id  := Unknown_Pragma);
    --  Append an entry to SCO_Table with fields set as per arguments
 
    procedure Traverse_Declarations_Or_Statements  (L : List_Id);
@@ -916,7 +917,8 @@ package body Par_SCO is
       From        : Source_Ptr;
       To          : Source_Ptr;
       Last        : Boolean;
-      Pragma_Sloc : Source_Ptr := No_Location)
+      Pragma_Sloc : Source_Ptr := No_Location;
+      Pragma_Name : Pragma_Id  := Unknown_Pragma)
    is
       function To_Source_Location (S : Source_Ptr) return Source_Location;
       --  Converts Source_Ptr value to Source_Location (line/col) format
@@ -939,13 +941,14 @@ package body Par_SCO is
    --  Start of processing for Set_Table_Entry
 
    begin
-      Add_SCO
-        (C1          => C1,
-         C2          => C2,
-         From        => To_Source_Location (From),
-         To          => To_Source_Location (To),
-         Last        => Last,
-         Pragma_Sloc => Pragma_Sloc);
+      SCO_Table.Append
+        ((C1          => C1,
+          C2          => C2,
+          From        => To_Source_Location (From),
+          To          => To_Source_Location (To),
+          Last        => Last,
+          Pragma_Sloc => Pragma_Sloc,
+          Pragma_Name => Pragma_Name));
    end Set_Table_Entry;
 
    -----------------------------------------
@@ -957,6 +960,7 @@ package body Par_SCO is
    --  since they are shared by recursive calls to this procedure.
 
    type SC_Entry is record
+      N    : Node_Id;
       From : Source_Ptr;
       To   : Source_Ptr;
       Typ  : Character;
@@ -1080,9 +1084,10 @@ package body Par_SCO is
             declare
                SCE         : SC_Entry renames SC.Table (J);
                Pragma_Sloc : Source_Ptr := No_Location;
+               Pragma_Name : Pragma_Id  := Unknown_Pragma;
             begin
                --  For the case of a statement SCO for a pragma controlled by
-               --  Set_SCO_Pragma_Enable, set Pragma_Sloc so that the SCO (and
+               --  Set_SCO_Pragma_Enabled, set Pragma_Sloc so that the SCO (and
                --  those of any nested decision) is emitted only if the pragma
                --  is enabled.
 
@@ -1090,6 +1095,10 @@ package body Par_SCO is
                   Pragma_Sloc := SCE.From;
                   Condition_Pragma_Hash_Table.Set
                     (Pragma_Sloc, SCO_Table.Last + 1);
+                  Pragma_Name := Get_Pragma_Id (Sinfo.Pragma_Name (SCE.N));
+
+               elsif SCE.Typ = 'P' then
+                  Pragma_Name := Get_Pragma_Id (Sinfo.Pragma_Name (SCE.N));
                end if;
 
                Set_Table_Entry
@@ -1098,7 +1107,8 @@ package body Par_SCO is
                   From        => SCE.From,
                   To          => SCE.To,
                   Last        => (J = SC_Last),
-                  Pragma_Sloc => Pragma_Sloc);
+                  Pragma_Sloc => Pragma_Sloc,
+                  Pragma_Name => Pragma_Name);
             end;
          end loop;
 
@@ -1134,7 +1144,7 @@ package body Par_SCO is
          T : Source_Ptr;
       begin
          Sloc_Range (N, F, T);
-         SC.Append ((F, T, Typ));
+         SC.Append ((N, F, T, Typ));
       end Extend_Statement_Sequence;
 
       procedure Extend_Statement_Sequence
@@ -1147,7 +1157,7 @@ package body Par_SCO is
       begin
          Sloc_Range (From, F, Dummy);
          Sloc_Range (To, Dummy, T);
-         SC.Append ((F, T, Typ));
+         SC.Append ((From, F, T, Typ));
       end Extend_Statement_Sequence;
 
       -----------------------------
@@ -1204,7 +1214,6 @@ package body Par_SCO is
                when N_Subprogram_Declaration =>
                   Process_Decisions_Defer
                     (Parameter_Specifications (Specification (N)), 'X');
-                  Set_Statement_Entry;
 
                --  Generic subprogram declaration
 
@@ -1213,7 +1222,6 @@ package body Par_SCO is
                     (Generic_Formal_Declarations (N), 'X');
                   Process_Decisions_Defer
                     (Parameter_Specifications (Specification (N)), 'X');
-                  Set_Statement_Entry;
 
                --  Task or subprogram body
 
@@ -1423,9 +1431,8 @@ package body Par_SCO is
                            --  must generate a P entry for the decision. Note
                            --  that this is done unconditionally at this stage.
                            --  Output for disabled pragmas is suppressed later
-                           --  on, when we output the decision line in
-                           --  Put_SCOs, depending on marker sets by
-                           --  Set_SCO_Pragma_Disabled.
+                           --  on when we output the decision line in Put_SCOs,
+                           --  depending on setting by Set_SCO_Pragma_Enabled.
 
                            if Nam = Name_Check then
                               Next (Arg);

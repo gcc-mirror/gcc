@@ -165,6 +165,14 @@ case ${host} in
 	;;
     esac
     ;;
+  sparc*-*-linux*)
+    case ${target} in
+      sparc*-*-linux*)
+	host_extra_gcc_objs="driver-sparc.o"
+	host_xmake_file="${host_xmake_file} sparc/x-sparc"
+	;;
+    esac
+    ;;
 esac
 
 # Machine-specific settings.

@@ -17188,6 +17188,127 @@ $as_echo "$enable_extern_template" >&6; }
 # Checks for operating systems support that doesn't require linking.
 
 
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  case "$host" in
+    *-*-solaris2.*)
+      # Solaris 8 FCS only had an overload for double std::abs(double) in
+      # <iso/math_iso.h>.  Patches 111721-04 (SPARC) and 112757-01 (x86)
+      # introduced the full set also found from Solaris 9 onwards.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for float std::abs(float) overload" >&5
+$as_echo_n "checking for float std::abs(float) overload... " >&6; }
+      if test "${glibcxx_cv_abs_float+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+	   namespace std {
+	     inline float abs(float __x)
+	     {  return __builtin_fabsf(__x); }
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_abs_float=no
+else
+  glibcxx_cv_abs_float=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+      # autoheader cannot handle indented templates.
+
+
+
+      if test $glibcxx_cv_abs_float = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO1 1" >>confdefs.h
+
+      else
+        $as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO2 1" >>confdefs.h
+
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_abs_float" >&5
+$as_echo "$glibcxx_cv_abs_float" >&6; }
+      ;;
+  esac
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  case "$host" in
+    *-*-solaris2.*)
+      # Solaris 8 FCS lacked the overloads for long std::abs(long) and
+      # ldiv_t std::div(long, long) in <iso/stdlib_iso.h>.  Patches 109607-02
+      # (SPARC) and 109608-02 (x86) introduced them.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for long std::abs(long) overload" >&5
+$as_echo_n "checking for long std::abs(long) overload... " >&6; }
+      if test "${glibcxx_cv_abs_long+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+	   namespace std {
+	     inline long
+	     abs(long __i) { return labs(__i); }
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_abs_long=no
+else
+  glibcxx_cv_abs_long=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+      # autoheader cannot handle indented templates.
+
+      if test $glibcxx_cv_abs_long = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP_STDLIB_H_PROTO 1" >>confdefs.h
+
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_abs_long" >&5
+$as_echo "$glibcxx_cv_abs_long" >&6; }
+      ;;
+  esac
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EOWNERDEAD" >&5
 $as_echo_n "checking for EOWNERDEAD... " >&6; }
 if test "${glibcxx_cv_system_error1+set}" = set; then :
@@ -17648,6 +17769,171 @@ $as_echo "$glibcxx_cv_system_error14" >&6; }
 if test x"$glibcxx_cv_system_error14" = x"yes"; then
 
 $as_echo "#define HAVE_ETXTBSY 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ECHILD" >&5
+$as_echo_n "checking for ECHILD... " >&6; }
+if test "${glibcxx_cv_system_error15+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+int i = ECHILD;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_system_error15=yes
+else
+  glibcxx_cv_system_error15=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_system_error15" >&5
+$as_echo "$glibcxx_cv_system_error15" >&6; }
+if test x"$glibcxx_cv_system_error15" = x"yes"; then
+
+$as_echo "#define HAVE_ECHILD 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ENOSPC" >&5
+$as_echo_n "checking for ENOSPC... " >&6; }
+if test "${glibcxx_cv_system_error16+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+int i = ENOSPC;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_system_error16=yes
+else
+  glibcxx_cv_system_error16=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_system_error16" >&5
+$as_echo "$glibcxx_cv_system_error16" >&6; }
+if test x"$glibcxx_cv_system_error16" = x"yes"; then
+
+$as_echo "#define HAVE_ENOSPC 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EPERM" >&5
+$as_echo_n "checking for EPERM... " >&6; }
+if test "${glibcxx_cv_system_error17+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+int i = EPERM;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_system_error17=yes
+else
+  glibcxx_cv_system_error17=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_system_error17" >&5
+$as_echo "$glibcxx_cv_system_error17" >&6; }
+if test x"$glibcxx_cv_system_error17" = x"yes"; then
+
+$as_echo "#define HAVE_EPERM 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ETIMEDOUT" >&5
+$as_echo_n "checking for ETIMEDOUT... " >&6; }
+if test "${glibcxx_cv_system_error18+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+int i = ETIMEDOUT;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_system_error18=yes
+else
+  glibcxx_cv_system_error18=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_system_error18" >&5
+$as_echo "$glibcxx_cv_system_error18" >&6; }
+if test x"$glibcxx_cv_system_error18" = x"yes"; then
+
+$as_echo "#define HAVE_ETIMEDOUT 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EWOULDBLOCK" >&5
+$as_echo_n "checking for EWOULDBLOCK... " >&6; }
+if test "${glibcxx_cv_system_error19+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+int i = EWOULDBLOCK;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_system_error19=yes
+else
+  glibcxx_cv_system_error19=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_system_error19" >&5
+$as_echo "$glibcxx_cv_system_error19" >&6; }
+if test x"$glibcxx_cv_system_error19" = x"yes"; then
+
+$as_echo "#define HAVE_EWOULDBLOCK 1" >>confdefs.h
 
 fi
 

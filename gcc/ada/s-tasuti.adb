@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -504,12 +504,14 @@ package body System.Tasking.Utilities is
            (Debug.Trace
             (Self_ID, "Make_Passive: Phase 1, parent waiting", 'M'));
 
-         --  If parent is in Master_Completion_Sleep, it
-         --  cannot be on a terminate alternative, hence
-         --  it cannot have Awake_Count of zero.
+         --  If parent is in Master_Completion_Sleep, it cannot be on a
+         --  terminate alternative, hence it cannot have Wait_Count of
+         --  zero. ???Except that the race condition in Make_Independent can
+         --  cause Wait_Count to be zero, so we need to check for that.
 
-         pragma Assert (P.Common.Wait_Count > 0);
-         P.Common.Wait_Count := P.Common.Wait_Count - 1;
+         if P.Common.Wait_Count > 0 then
+            P.Common.Wait_Count := P.Common.Wait_Count - 1;
+         end if;
 
          if P.Common.Wait_Count = 0 then
             Wakeup (P, Master_Completion_Sleep);

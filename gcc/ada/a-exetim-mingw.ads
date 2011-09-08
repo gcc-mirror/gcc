@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009  Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -80,6 +80,11 @@ package Ada.Execution_Time is
       (SC : Ada.Real_Time.Seconds_Count;
        TS : Ada.Real_Time.Time_Span := Ada.Real_Time.Time_Span_Zero)
        return CPU_Time;
+
+   Interrupt_Clocks_Supported          : constant Boolean := False;
+   Separate_Interrupt_Clocks_Supported : constant Boolean := False;
+
+   function Clock_For_Interrupts return CPU_Time;
 
 private
 

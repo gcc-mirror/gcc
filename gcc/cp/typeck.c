@@ -1331,8 +1331,8 @@ structural_comptypes (tree t1, tree t2, int strict)
           != DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t2)
 	  || (DECLTYPE_FOR_LAMBDA_CAPTURE (t1)
 	      != DECLTYPE_FOR_LAMBDA_CAPTURE (t2))
-	  || (DECLTYPE_FOR_LAMBDA_RETURN (t1)
-	      != DECLTYPE_FOR_LAMBDA_RETURN (t2))
+	  || (DECLTYPE_FOR_LAMBDA_PROXY (t1)
+	      != DECLTYPE_FOR_LAMBDA_PROXY (t2))
           || !cp_tree_equal (DECLTYPE_TYPE_EXPR (t1), 
                              DECLTYPE_TYPE_EXPR (t2)))
         return false;
@@ -6692,6 +6692,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	     side effect associated with any single compound assignment
 	     operator. -- end note ]  */
 	  lhs = stabilize_reference (lhs);
+	  if (TREE_SIDE_EFFECTS (rhs))
+	    rhs = mark_rvalue_use (rhs);
 	  rhs = stabilize_expr (rhs, &init);
 	  newrhs = cp_build_binary_op (input_location,
 				       modifycode, lhs, rhs,
@@ -7655,15 +7657,14 @@ check_return_expr (tree retval, bool *no_warning)
 	  tree type = lambda_return_type (retval);
 	  tree oldtype = LAMBDA_EXPR_RETURN_TYPE (lambda);
 
-	  if (VOID_TYPE_P (type))
-	    { /* Nothing.  */ }
-	  else if (oldtype == NULL_TREE)
-	    {
-	      pedwarn (input_location, OPT_pedantic, "lambda return type "
-		       "can only be deduced when the return statement is "
-		       "the only statement in the function body");
-	      apply_lambda_return_type (lambda, type);
-	    }
+	  if (oldtype == NULL_TREE)
+	    apply_lambda_return_type (lambda, type);
+	  /* If one of the answers is type-dependent, we can't do any
+	     better until instantiation time.  */
+	  else if (oldtype == dependent_lambda_return_type_node)
+	    /* Leave it.  */;
+	  else if (type == dependent_lambda_return_type_node)
+	    apply_lambda_return_type (lambda, type);
 	  else if (!same_type_p (type, oldtype))
 	    error ("inconsistent types %qT and %qT deduced for "
 		   "lambda return type", type, oldtype);

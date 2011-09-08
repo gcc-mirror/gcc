@@ -822,41 +822,13 @@ procedure Gnatls is
    --------------------------------
 
    procedure Output_License_Information is
-      Params_File_Name : constant String := "gnatlic.adl";
-      --  Name of license file
-
-      Lo   : constant Source_Ptr := 1;
-      Hi   : Source_Ptr;
-      Text : Source_Buffer_Ptr;
-
    begin
-      Name_Len := 0;
-      Add_Str_To_Name_Buffer (Params_File_Name);
-      Read_Source_File (Name_Find, Lo, Hi, Text);
-
-      if Text /= null then
-
-         --  Omit last character (end-of-file marker) in output
-
-         Write_Str (String (Text (Lo .. Hi - 1)));
-         Write_Eol;
-
-         --  The following condition is determined at compile time: disable
-         --  "condition is always true/false" warning.
-
-         pragma Warnings (Off);
-      elsif Build_Type /= GPL and then Build_Type /= FSF then
-         pragma Warnings (On);
-
-         Write_Str ("License file missing, please contact AdaCore.");
-         Write_Eol;
-
-      else
-         Write_Str ("Please refer to file COPYING in your distribution"
-                  & " for license terms.");
-         Write_Eol;
-
-      end if;
+      case Build_Type is
+         when others =>
+            Write_Str ("Please refer to file COPYING in your distribution"
+                     & " for license terms.");
+            Write_Eol;
+      end case;
 
       Exit_Program (E_Success);
    end Output_License_Information;
@@ -1413,6 +1385,8 @@ procedure Gnatls is
 
       Write_Str ("switches:");
       Write_Eol;
+
+      Display_Usage_Version_And_Help;
 
       --  Line for -a
 

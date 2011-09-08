@@ -103,8 +103,12 @@ _gfortran_caf_finalize (void)
 {
   while (caf_static_list != NULL)
     {
-      free(caf_static_list->token[caf_this_image-1]);
-      caf_static_list = caf_static_list->prev;
+      caf_static_t *tmp = caf_static_list->prev;
+
+      free (caf_static_list->token[caf_this_image-1]);
+      free (caf_static_list->token);
+      free (caf_static_list);
+      caf_static_list = tmp;
     }
 
   if (!caf_mpi_initialized)
@@ -187,10 +191,37 @@ error:
 }
 
 
-int
-_gfortran_caf_deregister (void **token __attribute__ ((unused)))
+void
+_gfortran_caf_deregister (void **token, int *stat, char *errmsg, int errmsg_len)
 {
-  return 0;
+  if (unlikely (caf_is_finalized))
+    {
+      const char msg[] = "Failed to deallocate coarray - "
+			  "there are stopped images";
+      if (stat)
+	{
+	  *stat = STAT_STOPPED_IMAGE;
+	
+	  if (errmsg_len > 0)
+	    {
+	      int len = ((int) sizeof (msg) - 1 > errmsg_len)
+			? errmsg_len : (int) sizeof (msg) - 1;
+	      memcpy (errmsg, msg, len);
+	      if (errmsg_len > len)
+		memset (&errmsg[len], ' ', errmsg_len-len);
+	    }
+	  return;
+	}
+      caf_runtime_error (msg);
+    }
+
+  _gfortran_caf_sync_all (NULL, NULL, 0);
+
+  if (stat)
+    *stat = 0;
+
+  free (token[caf_this_image-1]);
+  free (token);
 }
 
 
@@ -267,7 +298,7 @@ _gfortran_caf_sync_images (int count, int images[], int *stat, char *errmsg,
     }
 
   /* Handle SYNC IMAGES(*).  */
-  if (unlikely(caf_is_finalized))
+  if (unlikely (caf_is_finalized))
     ierr = STAT_STOPPED_IMAGE;
   else
     ierr = MPI_Barrier (MPI_COMM_WORLD);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,6 +100,10 @@ package body System.Task_Primitives.Operations is
 
    Abort_Handler_Installed : Boolean := False;
    --  True if a handler for the abort signal is installed
+
+   Null_Thread_Id : constant Thread_Id := Thread_Id'Last;
+   --  Constant to indicate that the thread identifier has not yet been
+   --  initialized.
 
    ----------------------
    -- Priority Support --
@@ -265,7 +269,7 @@ package body System.Task_Primitives.Operations is
       --  cases (e.g. shutdown of the Server_Task in System.Interrupts) we
       --  need to send the Abort signal to a task.
 
-      if ZCX_By_Default and then GCC_ZCX_Support then
+      if ZCX_By_Default then
          return;
       end if;
 
@@ -862,68 +866,12 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Enter_Task (Self_ID : Task_Id) is
-      Result    : Interfaces.C.int;
-      Proc      : processorid_t;  --  User processor #
-      Last_Proc : processorid_t;  --  Last processor #
-
-      use System.Task_Info;
-      use type System.Multiprocessors.CPU_Range;
-
    begin
       Self_ID.Common.LL.Thread := thr_self;
 
       Self_ID.Common.LL.LWP := lwp_self;
 
-      --  pragma CPU
-
-      if Self_ID.Common.Base_CPU /=
-         System.Multiprocessors.Not_A_Specific_CPU
-      then
-         --  The CPU numbering in pragma CPU starts at 1 while the subprogram
-         --  to set the affinity starts at 0, therefore we must subtract 1.
-
-         Result :=
-           processor_bind
-             (P_LWPID, P_MYID, processorid_t (Self_ID.Common.Base_CPU) - 1,
-              null);
-         pragma Assert (Result = 0);
-
-      --  Task_Info
-
-      elsif Self_ID.Common.Task_Info /= null then
-         if Self_ID.Common.Task_Info.New_LWP
-           and then Self_ID.Common.Task_Info.CPU /= CPU_UNCHANGED
-         then
-            Last_Proc := Num_Procs - 1;
-
-            if Self_ID.Common.Task_Info.CPU = ANY_CPU then
-               Result := 0;
-               Proc := 0;
-               while Proc < Last_Proc loop
-                  Result := p_online (Proc, PR_STATUS);
-                  exit when Result = PR_ONLINE;
-                  Proc := Proc + 1;
-               end loop;
-
-               Result := processor_bind (P_LWPID, P_MYID, Proc, null);
-               pragma Assert (Result = 0);
-
-            else
-               --  Use specified processor
-
-               if Self_ID.Common.Task_Info.CPU < 0
-                 or else Self_ID.Common.Task_Info.CPU > Last_Proc
-               then
-                  raise Invalid_CPU_Number;
-               end if;
-
-               Result :=
-                 processor_bind
-                   (P_LWPID, P_MYID, Self_ID.Common.Task_Info.CPU, null);
-               pragma Assert (Result = 0);
-            end if;
-         end if;
-      end if;
+      Set_Task_Affinity (Self_ID);
 
       Specific.Set (Self_ID);
 
@@ -973,7 +921,7 @@ package body System.Task_Primitives.Operations is
       Next_Serial_Number := Next_Serial_Number + 1;
       pragma Assert (Next_Serial_Number /= 0);
 
-      Self_ID.Common.LL.Thread := To_thread_t (-1);
+      Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
          Result :=
@@ -1026,8 +974,23 @@ package body System.Task_Primitives.Operations is
       --  actual use.
 
       use System.Task_Info;
+      use type System.Multiprocessors.CPU_Range;
 
    begin
+      --  Check whether both Dispatching_Domain and CPU are specified for the
+      --  task, and the CPU value is not contained within the range of
+      --  processors for the domain.
+
+      if T.Common.Domain /= null
+        and then T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU
+        and then
+          (T.Common.Base_CPU not in T.Common.Domain'Range
+            or else not T.Common.Domain (T.Common.Base_CPU))
+      then
+         Succeeded := False;
+         return;
+      end if;
+
       Adjusted_Stack_Size := Interfaces.C.size_t (Stack_Size + Page_Size);
 
       --  Since the initial signal mask of a thread is inherited from the
@@ -1077,7 +1040,7 @@ package body System.Task_Primitives.Operations is
         Ada.Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
 
    begin
-      T.Common.LL.Thread := To_thread_t (0);
+      T.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
          Result := mutex_destroy (T.Common.LL.L.L'Access);
@@ -1986,5 +1949,117 @@ package body System.Task_Primitives.Operations is
    begin
       return False;
    end Continue_Task;
+
+   -----------------------
+   -- Set_Task_Affinity --
+   -----------------------
+
+   procedure Set_Task_Affinity (T : ST.Task_Id) is
+      Result    : Interfaces.C.int;
+      Proc      : processorid_t;  --  User processor #
+      Last_Proc : processorid_t;  --  Last processor #
+
+      use System.Task_Info;
+      use type System.Multiprocessors.CPU_Range;
+
+   begin
+      --  Do nothing if the underlying thread has not yet been created. If the
+      --  thread has not yet been created then the proper affinity will be set
+      --  during its creation.
+
+      if T.Common.LL.Thread = Null_Thread_Id then
+         null;
+
+      --  pragma CPU
+
+      elsif T.Common.Base_CPU /=
+           System.Multiprocessors.Not_A_Specific_CPU
+      then
+         --  The CPU numbering in pragma CPU starts at 1 while the subprogram
+         --  to set the affinity starts at 0, therefore we must substract 1.
+
+         Result :=
+           processor_bind
+             (P_LWPID, id_t (T.Common.LL.LWP),
+              processorid_t (T.Common.Base_CPU) - 1, null);
+         pragma Assert (Result = 0);
+
+      --  Task_Info
+
+      elsif T.Common.Task_Info /= null then
+         if T.Common.Task_Info.New_LWP
+           and then T.Common.Task_Info.CPU /= CPU_UNCHANGED
+         then
+            Last_Proc := Num_Procs - 1;
+
+            if T.Common.Task_Info.CPU = ANY_CPU then
+               Result := 0;
+
+               Proc := 0;
+               while Proc < Last_Proc loop
+                  Result := p_online (Proc, PR_STATUS);
+                  exit when Result = PR_ONLINE;
+                  Proc := Proc + 1;
+               end loop;
+
+               Result :=
+                 processor_bind
+                   (P_LWPID, id_t (T.Common.LL.LWP), Proc, null);
+               pragma Assert (Result = 0);
+
+            else
+               --  Use specified processor
+
+               if T.Common.Task_Info.CPU < 0
+                 or else T.Common.Task_Info.CPU > Last_Proc
+               then
+                  raise Invalid_CPU_Number;
+               end if;
+
+               Result :=
+                 processor_bind
+                   (P_LWPID, id_t (T.Common.LL.LWP),
+                    T.Common.Task_Info.CPU, null);
+               pragma Assert (Result = 0);
+            end if;
+         end if;
+
+      --  Handle dispatching domains
+
+      elsif T.Common.Domain /= null
+        and then (T.Common.Domain /= ST.System_Domain
+                   or else T.Common.Domain.all /=
+                             (Multiprocessors.CPU'First ..
+                              Multiprocessors.Number_Of_CPUs => True))
+      then
+         declare
+            CPU_Set : aliased psetid_t;
+            Result  : int;
+
+         begin
+            Result := pset_create (CPU_Set'Access);
+            pragma Assert (Result = 0);
+
+            --  Set the affinity to all the processors belonging to the
+            --  dispatching domain.
+
+            for Proc in T.Common.Domain'Range loop
+
+               --  The Ada CPU numbering starts at 1 while the subprogram to
+               --  set the affinity starts at 0, therefore we must substract 1.
+
+               if T.Common.Domain (Proc) then
+                  Result :=
+                    pset_assign (CPU_Set, processorid_t (Proc) - 1, null);
+                  pragma Assert (Result = 0);
+               end if;
+            end loop;
+
+            Result :=
+              pset_bind (CPU_Set, P_LWPID, id_t (T.Common.LL.LWP), null);
+            pragma Assert (Result = 0);
+         end;
+      end if;
+   end Set_Task_Affinity;
 
 end System.Task_Primitives.Operations;

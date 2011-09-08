@@ -176,6 +176,7 @@ struct cost_pair
   tree value;		/* For final value elimination, the expression for
 			   the final value of the iv.  For iv elimination,
 			   the new bound to compare with.  */
+  enum tree_code comp;	/* For iv elimination, the comparison.  */
   int inv_expr_id;      /* Loop invariant expression id.  */
 };
 
@@ -297,6 +298,9 @@ struct ivopts_data
 
   /* Whether the loop body includes any function calls.  */
   bool body_includes_call;
+
+  /* Whether the loop body can only be exited via single exit.  */
+  bool loop_single_exit_p;
 };
 
 /* An assignment of iv candidates to uses.  */
@@ -770,15 +774,13 @@ contains_abnormal_ssa_name_p (tree expr)
   return false;
 }
 
-/*  Returns tree describing number of iterations determined from
+/*  Returns the structure describing number of iterations determined from
     EXIT of DATA->current_loop, or NULL if something goes wrong.  */
 
-static tree
-niter_for_exit (struct ivopts_data *data, edge exit,
-                struct tree_niter_desc **desc_p)
+static struct tree_niter_desc *
+niter_for_exit (struct ivopts_data *data, edge exit)
 {
-  struct tree_niter_desc* desc = NULL;
-  tree niter;
+  struct tree_niter_desc *desc;
   void **slot;
 
   if (!data->niters)
@@ -791,37 +793,31 @@ niter_for_exit (struct ivopts_data *data, edge exit,
 
   if (!slot)
     {
-      /* Try to determine number of iterations.  We must know it
-	 unconditionally (i.e., without possibility of # of iterations
-	 being zero).  Also, we cannot safely work with ssa names that
-	 appear in phi nodes on abnormal edges, so that we do not create
-	 overlapping life ranges for them (PR 27283).  */
+      /* Try to determine number of iterations.  We cannot safely work with ssa
+         names that appear in phi nodes on abnormal edges, so that we do not
+         create overlapping life ranges for them (PR 27283).  */
       desc = XNEW (struct tree_niter_desc);
-      if (number_of_iterations_exit (data->current_loop,
-				     exit, desc, true)
-	  && integer_zerop (desc->may_be_zero)
-     	  && !contains_abnormal_ssa_name_p (desc->niter))
-	niter = desc->niter;
-      else
-	niter = NULL_TREE;
-
-      desc->niter = niter;
+      if (!number_of_iterations_exit (data->current_loop,
+				      exit, desc, true)
+     	  || contains_abnormal_ssa_name_p (desc->niter))
+	{
+	  XDELETE (desc);
+	  desc = NULL;
+	}
       slot = pointer_map_insert (data->niters, exit);
       *slot = desc;
     }
   else
-    niter = ((struct tree_niter_desc *) *slot)->niter;
+    desc = (struct tree_niter_desc *) *slot;
 
-  if (desc_p)
-    *desc_p = (struct tree_niter_desc *) *slot;
-  return niter;
+  return desc;
 }
 
-/* Returns tree describing number of iterations determined from
+/* Returns the structure describing number of iterations determined from
    single dominating exit of DATA->current_loop, or NULL if something
    goes wrong.  */
 
-static tree
+static struct tree_niter_desc *
 niter_for_single_dom_exit (struct ivopts_data *data)
 {
   edge exit = single_dom_exit (data->current_loop);
@@ -829,7 +825,7 @@ niter_for_single_dom_exit (struct ivopts_data *data)
   if (!exit)
     return NULL;
 
-  return niter_for_exit (data, exit, NULL);
+  return niter_for_exit (data, exit);
 }
 
 /* Hash table equality function for expressions.  */
@@ -1174,12 +1170,17 @@ find_induction_variables (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      tree niter = niter_for_single_dom_exit (data);
+      struct tree_niter_desc *niter = niter_for_single_dom_exit (data);
 
       if (niter)
 	{
 	  fprintf (dump_file, "  number of iterations ");
-	  print_generic_expr (dump_file, niter, TDF_SLIM);
+	  print_generic_expr (dump_file, niter->niter, TDF_SLIM);
+	  if (!integer_zerop (niter->may_be_zero))
+	    {
+	      fprintf (dump_file, "; zero if ");
+	      print_generic_expr (dump_file, niter->may_be_zero, TDF_SLIM);
+	    }
 	  fprintf (dump_file, "\n\n");
     	};
 
@@ -2217,7 +2218,10 @@ add_candidate_1 (struct ivopts_data *data,
   struct iv_cand *cand = NULL;
   tree type, orig_type;
 
-  if (base)
+  /* For non-original variables, make sure their values are computed in a type
+     that does not invoke undefined behavior on overflows (since in general,
+     we cannot prove that these induction variables are non-wrapping).  */
+  if (pos != IP_ORIGINAL)
     {
       orig_type = TREE_TYPE (base);
       type = generic_type_for (orig_type);
@@ -2663,13 +2667,13 @@ infinite_cost_p (comp_cost cost)
 
 /* Sets cost of (USE, CANDIDATE) pair to COST and record that it depends
    on invariants DEPENDS_ON and that the value used in expressing it
-   is VALUE.  */
+   is VALUE, and in case of iv elimination the comparison operator is COMP.  */
 
 static void
 set_use_iv_cost (struct ivopts_data *data,
 		 struct iv_use *use, struct iv_cand *cand,
 		 comp_cost cost, bitmap depends_on, tree value,
-                 int inv_expr_id)
+		 enum tree_code comp, int inv_expr_id)
 {
   unsigned i, s;
 
@@ -2685,6 +2689,7 @@ set_use_iv_cost (struct ivopts_data *data,
       use->cost_map[cand->id].cost = cost;
       use->cost_map[cand->id].depends_on = depends_on;
       use->cost_map[cand->id].value = value;
+      use->cost_map[cand->id].comp = comp;
       use->cost_map[cand->id].inv_expr_id = inv_expr_id;
       return;
     }
@@ -2705,6 +2710,7 @@ found:
   use->cost_map[i].cost = cost;
   use->cost_map[i].depends_on = depends_on;
   use->cost_map[i].value = value;
+  use->cost_map[i].comp = comp;
   use->cost_map[i].inv_expr_id = inv_expr_id;
 }
 
@@ -4257,14 +4263,15 @@ determine_use_iv_cost_generic (struct ivopts_data *data,
   if (cand->pos == IP_ORIGINAL
       && cand->incremented_at == use->stmt)
     {
-      set_use_iv_cost (data, use, cand, zero_cost, NULL, NULL_TREE, -1);
+      set_use_iv_cost (data, use, cand, zero_cost, NULL, NULL_TREE,
+                       ERROR_MARK, -1);
       return true;
     }
 
   cost = get_computation_cost (data, use, cand, false, &depends_on,
                                NULL, &inv_expr_id);
 
-  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE,
+  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE, ERROR_MARK,
                    inv_expr_id);
 
   return !infinite_cost_p (cost);
@@ -4292,7 +4299,7 @@ determine_use_iv_cost_address (struct ivopts_data *data,
       else if (cand->pos == IP_AFTER_USE || cand->pos == IP_BEFORE_USE)
 	cost = infinite_cost;
     }
-  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE,
+  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE, ERROR_MARK,
                    inv_expr_id);
 
   return !infinite_cost_p (cost);
@@ -4368,16 +4375,261 @@ iv_elimination_compare (struct ivopts_data *data, struct iv_use *use)
   return (exit->flags & EDGE_TRUE_VALUE ? EQ_EXPR : NE_EXPR);
 }
 
+static tree
+strip_wrap_conserving_type_conversions (tree exp)
+{
+  while (tree_ssa_useless_type_conversion (exp)
+	 && (nowrap_type_p (TREE_TYPE (exp))
+	     == nowrap_type_p (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+    exp = TREE_OPERAND (exp, 0);
+  return exp;
+}
+
+/* Walk the SSA form and check whether E == WHAT.  Fairly simplistic, we
+   check for an exact match.  */
+
+static bool
+expr_equal_p (tree e, tree what)
+{
+  gimple stmt;
+  enum tree_code code;
+
+  e = strip_wrap_conserving_type_conversions (e);
+  what = strip_wrap_conserving_type_conversions (what);
+
+  code = TREE_CODE (what);
+  if (TREE_TYPE (e) != TREE_TYPE (what))
+    return false;
+
+  if (operand_equal_p (e, what, 0))
+    return true;
+
+  if (TREE_CODE (e) != SSA_NAME)
+    return false;
+
+  stmt = SSA_NAME_DEF_STMT (e);
+  if (gimple_code (stmt) != GIMPLE_ASSIGN
+      || gimple_assign_rhs_code (stmt) != code)
+    return false;
+
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_BINARY_RHS:
+      if (!expr_equal_p (gimple_assign_rhs2 (stmt), TREE_OPERAND (what, 1)))
+	return false;
+      /* Fallthru.  */
+
+    case GIMPLE_UNARY_RHS:
+    case GIMPLE_SINGLE_RHS:
+      return expr_equal_p (gimple_assign_rhs1 (stmt), TREE_OPERAND (what, 0));
+    default:
+      return false;
+    }
+}
+
+/* Returns true if we can prove that BASE - OFFSET does not overflow.  For now,
+   we only detect the situation that BASE = SOMETHING + OFFSET, where the
+   calculation is performed in non-wrapping type.
+
+   TODO: More generally, we could test for the situation that
+	 BASE = SOMETHING + OFFSET' and OFFSET is between OFFSET' and zero.
+	 This would require knowing the sign of OFFSET.
+
+	 Also, we only look for the first addition in the computation of BASE.
+	 More complex analysis would be better, but introducing it just for
+	 this optimization seems like an overkill.  */
+
+static bool
+difference_cannot_overflow_p (tree base, tree offset)
+{
+  enum tree_code code;
+  tree e1, e2;
+
+  if (!nowrap_type_p (TREE_TYPE (base)))
+    return false;
+
+  base = expand_simple_operations (base);
+
+  if (TREE_CODE (base) == SSA_NAME)
+    {
+      gimple stmt = SSA_NAME_DEF_STMT (base);
+
+      if (gimple_code (stmt) != GIMPLE_ASSIGN)
+	return false;
+
+      code = gimple_assign_rhs_code (stmt);
+      if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS)
+	return false;
+
+      e1 = gimple_assign_rhs1 (stmt);
+      e2 = gimple_assign_rhs2 (stmt);
+    }
+  else
+    {
+      code = TREE_CODE (base);
+      if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS)
+	return false;
+      e1 = TREE_OPERAND (base, 0);
+      e2 = TREE_OPERAND (base, 1);
+    }
+
+  /* TODO: deeper inspection may be necessary to prove the equality.  */
+  switch (code)
+    {
+    case PLUS_EXPR:
+      return expr_equal_p (e1, offset) || expr_equal_p (e2, offset);
+    case POINTER_PLUS_EXPR:
+      return expr_equal_p (e2, offset);
+
+    default:
+      return false;
+    }
+}
+
+/* Tries to replace loop exit by one formulated in terms of a LT_EXPR
+   comparison with CAND.  NITER describes the number of iterations of
+   the loops.  If successful, the comparison in COMP_P is altered accordingly.
+
+   We aim to handle the following situation:
+
+   sometype *base, *p;
+   int a, b, i;
+
+   i = a;
+   p = p_0 = base + a;
+
+   do
+     {
+       bla (*p);
+       p++;
+       i++;
+     }
+   while (i < b);
+
+   Here, the number of iterations of the loop is (a + 1 > b) ? 0 : b - a - 1.
+   We aim to optimize this to
+
+   p = p_0 = base + a;
+   do
+     {
+       bla (*p);
+       p++;
+     }
+   while (p < p_0 - a + b);
+
+   This preserves the correctness, since the pointer arithmetics does not
+   overflow.  More precisely:
+
+   1) if a + 1 <= b, then p_0 - a + b is the final value of p, hence there is no
+      overflow in computing it or the values of p.
+   2) if a + 1 > b, then we need to verify that the expression p_0 - a does not
+      overflow.  To prove this, we use the fact that p_0 = base + a.  */
+
+static bool
+iv_elimination_compare_lt (struct ivopts_data *data,
+                           struct iv_cand *cand, enum tree_code *comp_p,
+			   struct tree_niter_desc *niter)
+{
+  tree cand_type, a, b, mbz, nit_type = TREE_TYPE (niter->niter), offset;
+  struct affine_tree_combination nit, tmpa, tmpb;
+  enum tree_code comp;
+  HOST_WIDE_INT step;
+
+  /* We need to know that the candidate induction variable does not overflow.
+     While more complex analysis may be used to prove this, for now just
+     check that the variable appears in the original program and that it
+     is computed in a type that guarantees no overflows.  */
+  cand_type = TREE_TYPE (cand->iv->base);
+  if (cand->pos != IP_ORIGINAL || !nowrap_type_p (cand_type))
+    return false;
+
+  /* Make sure that the loop iterates till the loop bound is hit, as otherwise
+     the calculation of the BOUND could overflow, making the comparison
+     invalid.  */
+  if (!data->loop_single_exit_p)
+    return false;
+
+  /* We need to be able to decide whether candidate is increasing or decreasing
+     in order to choose the right comparison operator.  */
+  if (!cst_and_fits_in_hwi (cand->iv->step))
+    return false;
+  step = int_cst_value (cand->iv->step);
+
+  /* Check that the number of iterations matches the expected pattern:
+     a + 1 > b ? 0 : b - a - 1.  */
+  mbz = niter->may_be_zero;
+  if (TREE_CODE (mbz) == GT_EXPR)
+    {
+      /* Handle a + 1 > b.  */
+      tree op0 = TREE_OPERAND (mbz, 0);
+      if (TREE_CODE (op0) == PLUS_EXPR && integer_onep (TREE_OPERAND (op0, 1)))
+	{
+	  a = TREE_OPERAND (op0, 0);
+	  b = TREE_OPERAND (mbz, 1);
+	}
+      else
+	return false;
+    }
+  else if (TREE_CODE (mbz) == LT_EXPR)
+    {
+      tree op1 = TREE_OPERAND (mbz, 1);
+
+      /* Handle b < a + 1.  */
+      if (TREE_CODE (op1) == PLUS_EXPR && integer_onep (TREE_OPERAND (op1, 1)))
+        {
+          a = TREE_OPERAND (op1, 0);
+          b = TREE_OPERAND (mbz, 0);
+        }
+      else
+	return false;
+    }
+  else
+    return false;
+
+  /* Expected number of iterations is B - A - 1.  Check that it matches
+     the actual number, i.e., that B - A - NITER = 1.  */
+  tree_to_aff_combination (niter->niter, nit_type, &nit);
+  tree_to_aff_combination (fold_convert (nit_type, a), nit_type, &tmpa);
+  tree_to_aff_combination (fold_convert (nit_type, b), nit_type, &tmpb);
+  aff_combination_scale (&nit, double_int_minus_one);
+  aff_combination_scale (&tmpa, double_int_minus_one);
+  aff_combination_add (&tmpb, &tmpa);
+  aff_combination_add (&tmpb, &nit);
+  if (tmpb.n != 0 || !double_int_equal_p (tmpb.offset, double_int_one))
+    return false;
+
+  /* Finally, check that CAND->IV->BASE - CAND->IV->STEP * A does not
+     overflow.  */
+  offset = fold_build2 (MULT_EXPR, TREE_TYPE (cand->iv->step),
+			cand->iv->step,
+			fold_convert (TREE_TYPE (cand->iv->step), a));
+  if (!difference_cannot_overflow_p (cand->iv->base, offset))
+    return false;
+
+  /* Determine the new comparison operator.  */
+  comp = step < 0 ? GT_EXPR : LT_EXPR;
+  if (*comp_p == NE_EXPR)
+    *comp_p = comp;
+  else if (*comp_p == EQ_EXPR)
+    *comp_p = invert_tree_comparison (comp, false);
+  else
+    gcc_unreachable ();
+
+  return true;
+}
+
 /* Check whether it is possible to express the condition in USE by comparison
-   of candidate CAND.  If so, store the value compared with to BOUND.  */
+   of candidate CAND.  If so, store the value compared with to BOUND, and the
+   comparison operator to COMP.  */
 
 static bool
 may_eliminate_iv (struct ivopts_data *data,
-		  struct iv_use *use, struct iv_cand *cand, tree *bound)
+		  struct iv_use *use, struct iv_cand *cand, tree *bound,
+		  enum tree_code *comp)
 {
   basic_block ex_bb;
   edge exit;
-  tree nit, period;
+  tree period;
   struct loop *loop = data->current_loop;
   aff_tree bnd;
   struct tree_niter_desc *desc = NULL;
@@ -4399,8 +4651,8 @@ may_eliminate_iv (struct ivopts_data *data,
   if (flow_bb_inside_loop_p (loop, exit->dest))
     return false;
 
-  nit = niter_for_exit (data, exit, &desc);
-  if (!nit)
+  desc = niter_for_exit (data, exit);
+  if (!desc)
     return false;
 
   /* Determine whether we can use the variable to test the exit condition.
@@ -4409,17 +4661,17 @@ may_eliminate_iv (struct ivopts_data *data,
   period = iv_period (cand->iv);
 
   /* If the number of iterations is constant, compare against it directly.  */
-  if (TREE_CODE (nit) == INTEGER_CST)
+  if (TREE_CODE (desc->niter) == INTEGER_CST)
     {
       /* See cand_value_at.  */
       if (stmt_after_increment (loop, cand, use->stmt))
         {
-          if (!tree_int_cst_lt (nit, period))
+          if (!tree_int_cst_lt (desc->niter, period))
             return false;
         }
       else
         {
-          if (tree_int_cst_lt (period, nit))
+          if (tree_int_cst_lt (period, desc->niter))
             return false;
         }
     }
@@ -4438,7 +4690,7 @@ may_eliminate_iv (struct ivopts_data *data,
       if (double_int_ucmp (max_niter, period_value) > 0)
         {
           /* See if we can take advantage of infered loop bound information.  */
-          if (loop_only_exit_p (loop, exit))
+          if (data->loop_single_exit_p)
             {
               if (!estimated_loop_iterations (loop, true, &max_niter))
                 return false;
@@ -4451,13 +4703,26 @@ may_eliminate_iv (struct ivopts_data *data,
         }
     }
 
-  cand_value_at (loop, cand, use->stmt, nit, &bnd);
+  cand_value_at (loop, cand, use->stmt, desc->niter, &bnd);
 
   *bound = aff_combination_to_tree (&bnd);
+  *comp = iv_elimination_compare (data, use);
+
   /* It is unlikely that computing the number of iterations using division
      would be more profitable than keeping the original induction variable.  */
   if (expression_expensive_p (*bound))
     return false;
+
+  /* Sometimes, it is possible to handle the situation that the number of
+     iterations may be zero unless additional assumtions by using <
+     instead of != in the exit condition.
+
+     TODO: we could also calculate the value MAY_BE_ZERO ? 0 : NITER and
+	   base the exit condition on it.  However, that is often too
+	   expensive.  */
+  if (!integer_zerop (desc->may_be_zero))
+    return iv_elimination_compare_lt (data, cand, comp, desc);
+
   return true;
 }
 
@@ -4492,16 +4757,18 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   bool ok;
   int elim_inv_expr_id = -1, express_inv_expr_id = -1, inv_expr_id;
   tree *control_var, *bound_cst;
+  enum tree_code comp = ERROR_MARK;
 
   /* Only consider real candidates.  */
   if (!cand->iv)
     {
-      set_use_iv_cost (data, use, cand, infinite_cost, NULL, NULL_TREE, -1);
+      set_use_iv_cost (data, use, cand, infinite_cost, NULL, NULL_TREE,
+		       ERROR_MARK, -1);
       return false;
     }
 
   /* Try iv elimination.  */
-  if (may_eliminate_iv (data, use, cand, &bound))
+  if (may_eliminate_iv (data, use, cand, &bound, &comp))
     {
       elim_cost = force_var_cost (data, bound, &depends_on_elim);
       if (elim_cost.cost == 0)
@@ -4572,10 +4839,11 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       depends_on = depends_on_express;
       depends_on_express = NULL;
       bound = NULL_TREE;
+      comp = ERROR_MARK;
       inv_expr_id = express_inv_expr_id;
     }
 
-  set_use_iv_cost (data, use, cand, cost, depends_on, bound, inv_expr_id);
+  set_use_iv_cost (data, use, cand, cost, depends_on, bound, comp, inv_expr_id);
 
   if (depends_on_elim)
     BITMAP_FREE (depends_on_elim);
@@ -6215,7 +6483,7 @@ rewrite_use_compare (struct ivopts_data *data,
           fprintf (dump_file, "Replacing exit test: ");
           print_gimple_stmt (dump_file, use->stmt, 0, TDF_SLIM);
         }
-      compare = iv_elimination_compare (data, use);
+      compare = cp->comp;
       bound = unshare_expr (fold_convert (var_type, bound));
       op = force_gimple_operand (bound, &stmts, true, NULL_TREE);
       if (stmts)
@@ -6445,7 +6713,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 {
   bool changed = false;
   struct iv_ca *iv_ca;
-  edge exit;
+  edge exit = single_dom_exit (loop);
   basic_block *body;
 
   gcc_assert (!data->niters);
@@ -6456,7 +6724,6 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
     {
       fprintf (dump_file, "Processing loop %d\n", loop->num);
 
-      exit = single_dom_exit (loop);
       if (exit)
 	{
 	  fprintf (dump_file, "  single exit %d -> %d, exit condition ",
@@ -6472,6 +6739,8 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   data->body_includes_call = loop_body_includes_call (body, loop->num_nodes);
   renumber_gimple_stmt_uids_in_blocks (body, loop->num_nodes);
   free (body);
+
+  data->loop_single_exit_p = exit != NULL && loop_only_exit_p (loop, exit);
 
   /* For each ssa name determines whether it behaves as an induction variable
      in some loop.  */

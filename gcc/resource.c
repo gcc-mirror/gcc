@@ -492,7 +492,7 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 	  if (jump_count++ < 10)
 	    {
 	      if (any_uncondjump_p (this_jump_insn)
-		  || GET_CODE (PATTERN (this_jump_insn)) == RETURN)
+		  || ANY_RETURN_P (PATTERN (this_jump_insn)))
 		{
 		  next = JUMP_LABEL (this_jump_insn);
 		  if (ANY_RETURN_P (next))
@@ -829,7 +829,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 static bool
 return_insn_p (const_rtx insn)
 {
-  if (JUMP_P (insn) && GET_CODE (PATTERN (insn)) == RETURN)
+  if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
     return true;
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)

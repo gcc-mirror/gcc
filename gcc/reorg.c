@@ -161,8 +161,11 @@ static rtx *unfilled_firstobj;
 #define unfilled_slots_next	\
   ((rtx *) obstack_next_free (&unfilled_slots_obstack))
 
-/* Points to the label before the end of the function.  */
-static rtx end_of_function_label;
+/* Points to the label before the end of the function, or before a
+   return insn.  */
+static rtx function_return_label;
+/* Likewise for a simple_return.  */
+static rtx function_simple_return_label;
 
 /* Mapping between INSN_UID's and position in the code since INSN_UID's do
    not always monotonically increase.  */
@@ -175,7 +178,7 @@ static int stop_search_p (rtx, int);
 static int resource_conflicts_p (struct resources *, struct resources *);
 static int insn_references_resource_p (rtx, struct resources *, bool);
 static int insn_sets_resource_p (rtx, struct resources *, bool);
-static rtx find_end_label (void);
+static rtx find_end_label (rtx);
 static rtx emit_delay_sequence (rtx, rtx, int);
 static rtx add_to_delay_list (rtx, rtx);
 static rtx delete_from_delay_slot (rtx);
@@ -229,6 +232,15 @@ first_active_target_insn (rtx insn)
   if (ANY_RETURN_P (insn))
     return insn;
   return next_active_insn (insn);
+}
+
+/* Return true iff INSN is a simplejump, or any kind of return insn.  */
+
+static bool
+simplejump_or_return_p (rtx insn)
+{
+  return (JUMP_P (insn)
+	  && (simplejump_p (insn) || ANY_RETURN_P (PATTERN (insn))));
 }
 
 /* Return TRUE if this insn should stop the search for insn to fill delay
@@ -346,23 +358,34 @@ insn_sets_resource_p (rtx insn, struct resources *res,
 
    ??? There may be a problem with the current implementation.  Suppose
    we start with a bare RETURN insn and call find_end_label.  It may set
-   end_of_function_label just before the RETURN.  Suppose the machinery
+   function_return_label just before the RETURN.  Suppose the machinery
    is able to fill the delay slot of the RETURN insn afterwards.  Then
-   end_of_function_label is no longer valid according to the property
+   function_return_label is no longer valid according to the property
    described above and find_end_label will still return it unmodified.
    Note that this is probably mitigated by the following observation:
-   once end_of_function_label is made, it is very likely the target of
+   once function_return_label is made, it is very likely the target of
    a jump, so filling the delay slot of the RETURN will be much more
-   difficult.  */
+   difficult.
+   KIND is either simple_return_rtx or ret_rtx, indicating which type of
+   return we're looking for.  */
 
 static rtx
-find_end_label (void)
+find_end_label (rtx kind)
 {
   rtx insn;
+  rtx *plabel;
+
+  if (kind == ret_rtx)
+    plabel = &function_return_label;
+  else
+    {
+      gcc_assert (kind == simple_return_rtx);
+      plabel = &function_simple_return_label;
+    }
 
   /* If we found one previously, return it.  */
-  if (end_of_function_label)
-    return end_of_function_label;
+  if (*plabel)
+    return *plabel;
 
   /* Otherwise, see if there is a label at the end of the function.  If there
      is, it must be that RETURN insns aren't needed, so that is our return
@@ -377,44 +400,45 @@ find_end_label (void)
 
   /* When a target threads its epilogue we might already have a
      suitable return insn.  If so put a label before it for the
-     end_of_function_label.  */
+     function_return_label.  */
   if (BARRIER_P (insn)
       && JUMP_P (PREV_INSN (insn))
-      && GET_CODE (PATTERN (PREV_INSN (insn))) == RETURN)
+      && PATTERN (PREV_INSN (insn)) == kind)
     {
       rtx temp = PREV_INSN (PREV_INSN (insn));
-      end_of_function_label = gen_label_rtx ();
-      LABEL_NUSES (end_of_function_label) = 0;
+      rtx label = gen_label_rtx ();
+      LABEL_NUSES (label) = 0;
 
-      /* Put the label before an USE insns that may precede the RETURN insn.  */
+      /* Put the label before any USE insns that may precede the RETURN
+	 insn.  */
       while (GET_CODE (temp) == USE)
 	temp = PREV_INSN (temp);
 
-      emit_label_after (end_of_function_label, temp);
+      emit_label_after (label, temp);
+      *plabel = label;
     }
 
   else if (LABEL_P (insn))
-    end_of_function_label = insn;
+    *plabel = insn;
   else
     {
-      end_of_function_label = gen_label_rtx ();
-      LABEL_NUSES (end_of_function_label) = 0;
+      rtx label = gen_label_rtx ();
+      LABEL_NUSES (label) = 0;
       /* If the basic block reorder pass moves the return insn to
 	 some other place try to locate it again and put our
-	 end_of_function_label there.  */
-      while (insn && ! (JUMP_P (insn)
-		        && (GET_CODE (PATTERN (insn)) == RETURN)))
+	 function_return_label there.  */
+      while (insn && ! (JUMP_P (insn) && (PATTERN (insn) == kind)))
 	insn = PREV_INSN (insn);
       if (insn)
 	{
 	  insn = PREV_INSN (insn);
 
-	  /* Put the label before an USE insns that may proceed the
+	  /* Put the label before any USE insns that may precede the
 	     RETURN insn.  */
 	  while (GET_CODE (insn) == USE)
 	    insn = PREV_INSN (insn);
 
-	  emit_label_after (end_of_function_label, insn);
+	  emit_label_after (label, insn);
 	}
       else
 	{
@@ -424,19 +448,16 @@ find_end_label (void)
 	      && ! HAVE_return
 #endif
 	      )
-	    {
-	      /* The RETURN insn has its delay slot filled so we cannot
-		 emit the label just before it.  Since we already have
-		 an epilogue and cannot emit a new RETURN, we cannot
-		 emit the label at all.  */
-	      end_of_function_label = NULL_RTX;
-	      return end_of_function_label;
-	    }
+	    /* The RETURN insn has its delay slot filled so we cannot
+	       emit the label just before it.  Since we already have
+	       an epilogue and cannot emit a new RETURN, we cannot
+	       emit the label at all.  */
+	    return NULL_RTX;
 #endif /* HAVE_epilogue */
 
 	  /* Otherwise, make a new label and emit a RETURN and BARRIER,
 	     if needed.  */
-	  emit_label (end_of_function_label);
+	  emit_label (label);
 #ifdef HAVE_return
 	  /* We don't bother trying to create a return insn if the
 	     epilogue has filled delay-slots; we would have to try and
@@ -455,13 +476,14 @@ find_end_label (void)
 	    }
 #endif
 	}
+      *plabel = label;
     }
 
   /* Show one additional use for this label so it won't go away until
      we are done.  */
-  ++LABEL_NUSES (end_of_function_label);
+  ++LABEL_NUSES (*plabel);
 
-  return end_of_function_label;
+  return *plabel;
 }
 
 /* Put INSN and LIST together in a SEQUENCE rtx of LENGTH, and replace
@@ -809,10 +831,8 @@ optimize_skip (rtx insn)
   if ((next_trial == next_active_insn (JUMP_LABEL (insn))
        && ! (next_trial == 0 && crtl->epilogue_delay_list != 0))
       || (next_trial != 0
-	  && JUMP_P (next_trial)
-	  && JUMP_LABEL (insn) == JUMP_LABEL (next_trial)
-	  && (simplejump_p (next_trial)
-	      || GET_CODE (PATTERN (next_trial)) == RETURN)))
+	  && simplejump_or_return_p (next_trial)
+	  && JUMP_LABEL (insn) == JUMP_LABEL (next_trial)))
     {
       if (eligible_for_annul_false (insn, 0, trial, flags))
 	{
@@ -831,13 +851,11 @@ optimize_skip (rtx insn)
 	 branch, thread our jump to the target of that branch.  Don't
 	 change this into a RETURN here, because it may not accept what
 	 we have in the delay slot.  We'll fix this up later.  */
-      if (next_trial && JUMP_P (next_trial)
-	  && (simplejump_p (next_trial)
-	      || GET_CODE (PATTERN (next_trial)) == RETURN))
+      if (next_trial && simplejump_or_return_p (next_trial))
 	{
 	  rtx target_label = JUMP_LABEL (next_trial);
 	  if (ANY_RETURN_P (target_label))
-	    target_label = find_end_label ();
+	    target_label = find_end_label (target_label);
 
 	  if (target_label)
 	    {
@@ -951,7 +969,7 @@ rare_destination (rtx insn)
 	     return.  */
 	  return 2;
 	case JUMP_INSN:
-	  if (GET_CODE (PATTERN (insn)) == RETURN)
+	  if (ANY_RETURN_P (PATTERN (insn)))
 	    return 1;
 	  else if (simplejump_p (insn)
 		   && jump_count++ < 10)
@@ -1368,8 +1386,7 @@ steal_delay_list_from_fallthrough (rtx insn, rtx condition, rtx seq,
   /* We can't do anything if SEQ's delay insn isn't an
      unconditional branch.  */
 
-  if (! simplejump_p (XVECEXP (seq, 0, 0))
-      && GET_CODE (PATTERN (XVECEXP (seq, 0, 0))) != RETURN)
+  if (! simplejump_or_return_p (XVECEXP (seq, 0, 0)))
     return delay_list;
 
   for (i = 1; i < XVECLEN (seq, 0); i++)
@@ -2383,7 +2400,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	      if (new_label != 0)
 		new_label = get_label_before (new_label);
 	      else
-		new_label = find_end_label ();
+		new_label = find_end_label (simple_return_rtx);
 
 	      if (new_label)
 	        {
@@ -2515,7 +2532,8 @@ fill_simple_delay_slots (int non_jumps_p)
 
 /* Follow any unconditional jump at LABEL;
    return the ultimate label reached by any such chain of jumps.
-   Return ret_rtx if the chain ultimately leads to a return instruction.
+   Return a suitable return rtx if the chain ultimately leads to a
+   return instruction.
    If LABEL is not followed by a jump, return LABEL.
    If the chain loops or we can't find end, return LABEL,
    since that tells caller to avoid changing the insn.  */
@@ -2536,7 +2554,7 @@ follow_jumps (rtx label)
 	&& JUMP_P (insn)
 	&& JUMP_LABEL (insn) != NULL_RTX
 	&& ((any_uncondjump_p (insn) && onlyjump_p (insn))
-	    || GET_CODE (PATTERN (insn)) == RETURN)
+	    || ANY_RETURN_P (PATTERN (insn)))
 	&& (next = NEXT_INSN (insn))
 	&& BARRIER_P (next));
        depth++)
@@ -3003,16 +3021,14 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 
       gcc_assert (thread_if_true);
 
-      if (new_thread && JUMP_P (new_thread)
-	  && (simplejump_p (new_thread)
-	      || GET_CODE (PATTERN (new_thread)) == RETURN)
+      if (new_thread && simplejump_or_return_p (new_thread)
 	  && redirect_with_delay_list_safe_p (insn,
 					      JUMP_LABEL (new_thread),
 					      delay_list))
 	new_thread = follow_jumps (JUMP_LABEL (new_thread));
 
       if (ANY_RETURN_P (new_thread))
-	label = find_end_label ();
+	label = find_end_label (new_thread);
       else if (LABEL_P (new_thread))
 	label = new_thread;
       else
@@ -3362,7 +3378,7 @@ relax_delay_slots (rtx first)
 	{
 	  target_label = skip_consecutive_labels (follow_jumps (target_label));
 	  if (ANY_RETURN_P (target_label))
-	    target_label = find_end_label ();
+	    target_label = find_end_label (target_label);
 
 	  if (target_label && next_active_insn (target_label) == next
 	      && ! condjump_in_parallel_p (insn))
@@ -3377,9 +3393,8 @@ relax_delay_slots (rtx first)
 	  /* See if this jump conditionally branches around an unconditional
 	     jump.  If so, invert this jump and point it to the target of the
 	     second jump.  */
-	  if (next && JUMP_P (next)
+	  if (next && simplejump_or_return_p (next)
 	      && any_condjump_p (insn)
-	      && (simplejump_p (next) || GET_CODE (PATTERN (next)) == RETURN)
 	      && target_label
 	      && next_active_insn (target_label) == next_active_insn (next)
 	      && no_labels_between_p (insn, next))
@@ -3421,8 +3436,7 @@ relax_delay_slots (rtx first)
 	 Don't do this if we expect the conditional branch to be true, because
 	 we would then be making the more common case longer.  */
 
-      if (JUMP_P (insn)
-	  && (simplejump_p (insn) || GET_CODE (PATTERN (insn)) == RETURN)
+      if (simplejump_or_return_p (insn)
 	  && (other = prev_active_insn (insn)) != 0
 	  && any_condjump_p (other)
 	  && no_labels_between_p (other, insn)
@@ -3463,10 +3477,10 @@ relax_delay_slots (rtx first)
 	 Only do so if optimizing for size since this results in slower, but
 	 smaller code.  */
       if (optimize_function_for_size_p (cfun)
-	  && GET_CODE (PATTERN (delay_insn)) == RETURN
+	  && ANY_RETURN_P (PATTERN (delay_insn))
 	  && next
 	  && JUMP_P (next)
-	  && GET_CODE (PATTERN (next)) == RETURN)
+	  && PATTERN (next) == PATTERN (delay_insn))
 	{
 	  rtx after;
 	  int i;
@@ -3505,73 +3519,71 @@ relax_delay_slots (rtx first)
 	continue;
 
       target_label = JUMP_LABEL (delay_insn);
+      if (target_label && ANY_RETURN_P (target_label))
+	continue;
 
-      if (!ANY_RETURN_P (target_label))
+      /* If this jump goes to another unconditional jump, thread it, but
+	 don't convert a jump into a RETURN here.  */
+      trial = skip_consecutive_labels (follow_jumps (target_label));
+      if (ANY_RETURN_P (trial))
+	trial = find_end_label (trial);
+
+      if (trial && trial != target_label
+	  && redirect_with_delay_slots_safe_p (delay_insn, trial, insn))
 	{
-	  /* If this jump goes to another unconditional jump, thread it, but
-	     don't convert a jump into a RETURN here.  */
-	  trial = skip_consecutive_labels (follow_jumps (target_label));
-	  if (ANY_RETURN_P (trial))
-	    trial = find_end_label ();
+	  reorg_redirect_jump (delay_insn, trial);
+	  target_label = trial;
+	}
 
-	  if (trial && trial != target_label
-	      && redirect_with_delay_slots_safe_p (delay_insn, trial, insn))
+      /* If the first insn at TARGET_LABEL is redundant with a previous
+	 insn, redirect the jump to the following insn and process again.
+	 We use next_real_insn instead of next_active_insn so we
+	 don't skip USE-markers, or we'll end up with incorrect
+	 liveness info.  */
+      trial = next_real_insn (target_label);
+      if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
+	  && redundant_insn (trial, insn, 0)
+	  && ! can_throw_internal (trial))
+	{
+	  /* Figure out where to emit the special USE insn so we don't
+	     later incorrectly compute register live/death info.  */
+	  rtx tmp = next_active_insn (trial);
+	  if (tmp == 0)
+	    tmp = find_end_label (simple_return_rtx);
+
+	  if (tmp)
 	    {
-	      reorg_redirect_jump (delay_insn, trial);
-	      target_label = trial;
+	      /* Insert the special USE insn and update dataflow info.  */
+	      update_block (trial, tmp);
+	      
+	      /* Now emit a label before the special USE insn, and
+		 redirect our jump to the new label.  */
+	      target_label = get_label_before (PREV_INSN (tmp));
+	      reorg_redirect_jump (delay_insn, target_label);
+	      next = insn;
+	      continue;
 	    }
+	}
 
-	  /* If the first insn at TARGET_LABEL is redundant with a previous
-	     insn, redirect the jump to the following insn and process again.
-	     We use next_real_insn instead of next_active_insn so we
-	     don't skip USE-markers, or we'll end up with incorrect
-	     liveness info.  */
-	  trial = next_real_insn (target_label);
-	  if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
-	      && redundant_insn (trial, insn, 0)
-	      && ! can_throw_internal (trial))
+      /* Similarly, if it is an unconditional jump with one insn in its
+	 delay list and that insn is redundant, thread the jump.  */
+      if (trial && GET_CODE (PATTERN (trial)) == SEQUENCE
+	  && XVECLEN (PATTERN (trial), 0) == 2
+	  && JUMP_P (XVECEXP (PATTERN (trial), 0, 0))
+	  && simplejump_or_return_p (XVECEXP (PATTERN (trial), 0, 0))
+	  && redundant_insn (XVECEXP (PATTERN (trial), 0, 1), insn, 0))
+	{
+	  target_label = JUMP_LABEL (XVECEXP (PATTERN (trial), 0, 0));
+	  if (ANY_RETURN_P (target_label))
+	    target_label = find_end_label (target_label);
+	  
+	  if (target_label
+	      && redirect_with_delay_slots_safe_p (delay_insn, target_label,
+						   insn))
 	    {
-	      /* Figure out where to emit the special USE insn so we don't
-		 later incorrectly compute register live/death info.  */
-	      rtx tmp = next_active_insn (trial);
-	      if (tmp == 0)
-		tmp = find_end_label ();
-
-	      if (tmp)
-	        {
-		  /* Insert the special USE insn and update dataflow info.  */
-		  update_block (trial, tmp);
-
-		  /* Now emit a label before the special USE insn, and
-		     redirect our jump to the new label.  */
-		  target_label = get_label_before (PREV_INSN (tmp));
-		  reorg_redirect_jump (delay_insn, target_label);
-		  next = insn;
-		  continue;
-		}
-	    }
-
-	  /* Similarly, if it is an unconditional jump with one insn in its
-	     delay list and that insn is redundant, thread the jump.  */
-	  if (trial && GET_CODE (PATTERN (trial)) == SEQUENCE
-	      && XVECLEN (PATTERN (trial), 0) == 2
-	      && JUMP_P (XVECEXP (PATTERN (trial), 0, 0))
-	      && (simplejump_p (XVECEXP (PATTERN (trial), 0, 0))
-		  || GET_CODE (PATTERN (XVECEXP (PATTERN (trial), 0, 0))) == RETURN)
-	      && redundant_insn (XVECEXP (PATTERN (trial), 0, 1), insn, 0))
-	    {
-	      target_label = JUMP_LABEL (XVECEXP (PATTERN (trial), 0, 0));
-	      if (ANY_RETURN_P (target_label))
-		target_label = find_end_label ();
-
-	      if (target_label
-	          && redirect_with_delay_slots_safe_p (delay_insn, target_label,
-						       insn))
-		{
-		  reorg_redirect_jump (delay_insn, target_label);
-		  next = insn;
-		  continue;
-		}
+	      reorg_redirect_jump (delay_insn, target_label);
+	      next = insn;
+	      continue;
 	    }
 	}
 
@@ -3640,8 +3652,7 @@ relax_delay_slots (rtx first)
 	 a RETURN here.  */
       if (! INSN_ANNULLED_BRANCH_P (delay_insn)
 	  && any_condjump_p (delay_insn)
-	  && next && JUMP_P (next)
-	  && (simplejump_p (next) || GET_CODE (PATTERN (next)) == RETURN)
+	  && next && simplejump_or_return_p (next)
 	  && next_active_insn (target_label) == next_active_insn (next)
 	  && no_labels_between_p (insn, next))
 	{
@@ -3649,7 +3660,7 @@ relax_delay_slots (rtx first)
 	  rtx old_label = JUMP_LABEL (delay_insn);
 
 	  if (ANY_RETURN_P (label))
-	    label = find_end_label ();
+	    label = find_end_label (label);
 
 	  /* find_end_label can generate a new label. Check this first.  */
 	  if (label
@@ -3710,7 +3721,8 @@ static void
 make_return_insns (rtx first)
 {
   rtx insn, jump_insn, pat;
-  rtx real_return_label = end_of_function_label;
+  rtx real_return_label = function_return_label;
+  rtx real_simple_return_label = function_simple_return_label;
   int slots, i;
 
 #ifdef DELAY_SLOTS_FOR_EPILOGUE
@@ -3728,15 +3740,22 @@ make_return_insns (rtx first)
      made for END_OF_FUNCTION_LABEL.  If so, set up anything we can't change
      into a RETURN to jump to it.  */
   for (insn = first; insn; insn = NEXT_INSN (insn))
-    if (JUMP_P (insn) && GET_CODE (PATTERN (insn)) == RETURN)
+    if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
       {
-	real_return_label = get_label_before (insn);
+	rtx t = get_label_before (insn);
+	if (PATTERN (insn) == ret_rtx)
+	  real_return_label = t;
+	else
+	  real_simple_return_label = t;
 	break;
       }
 
   /* Show an extra usage of REAL_RETURN_LABEL so it won't go away if it
      was equal to END_OF_FUNCTION_LABEL.  */
-  LABEL_NUSES (real_return_label)++;
+  if (real_return_label)
+    LABEL_NUSES (real_return_label)++;
+  if (real_simple_return_label)
+    LABEL_NUSES (real_simple_return_label)++;
 
   /* Clear the list of insns to fill so we can use it.  */
   obstack_free (&unfilled_slots_obstack, unfilled_firstobj);
@@ -3744,13 +3763,27 @@ make_return_insns (rtx first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       int flags;
+      rtx kind, real_label;
 
       /* Only look at filled JUMP_INSNs that go to the end of function
 	 label.  */
       if (!NONJUMP_INSN_P (insn)
 	  || GET_CODE (PATTERN (insn)) != SEQUENCE
-	  || !JUMP_P (XVECEXP (PATTERN (insn), 0, 0))
-	  || JUMP_LABEL (XVECEXP (PATTERN (insn), 0, 0)) != end_of_function_label)
+	  || !jump_to_label_p (XVECEXP (PATTERN (insn), 0, 0)))
+	continue;
+
+      if (JUMP_LABEL (XVECEXP (PATTERN (insn), 0, 0)) == function_return_label)
+	{
+	  kind = ret_rtx;
+	  real_label = real_return_label;
+	}
+      else if (JUMP_LABEL (XVECEXP (PATTERN (insn), 0, 0))
+	       == function_simple_return_label)
+	{
+	  kind = simple_return_rtx;
+	  real_label = real_simple_return_label;
+	}
+      else
 	continue;
 
       pat = PATTERN (insn);
@@ -3758,14 +3791,12 @@ make_return_insns (rtx first)
 
       /* If we can't make the jump into a RETURN, try to redirect it to the best
 	 RETURN and go on to the next insn.  */
-      if (! reorg_redirect_jump (jump_insn, ret_rtx))
+      if (!reorg_redirect_jump (jump_insn, kind))
 	{
 	  /* Make sure redirecting the jump will not invalidate the delay
 	     slot insns.  */
-	  if (redirect_with_delay_slots_safe_p (jump_insn,
-						real_return_label,
-						insn))
-	    reorg_redirect_jump (jump_insn, real_return_label);
+	  if (redirect_with_delay_slots_safe_p (jump_insn, real_label, insn))
+	    reorg_redirect_jump (jump_insn, real_label);
 	  continue;
 	}
 
@@ -3805,7 +3836,7 @@ make_return_insns (rtx first)
 	 RETURN, delete the SEQUENCE and output the individual insns,
 	 followed by the RETURN.  Then set things up so we try to find
 	 insns for its delay slots, if it needs some.  */
-      if (GET_CODE (PATTERN (jump_insn)) == RETURN)
+      if (ANY_RETURN_P (PATTERN (jump_insn)))
 	{
 	  rtx prev = PREV_INSN (insn);
 
@@ -3822,13 +3853,16 @@ make_return_insns (rtx first)
       else
 	/* It is probably more efficient to keep this with its current
 	   delay slot as a branch to a RETURN.  */
-	reorg_redirect_jump (jump_insn, real_return_label);
+	reorg_redirect_jump (jump_insn, real_label);
     }
 
   /* Now delete REAL_RETURN_LABEL if we never used it.  Then try to fill any
      new delay slots we have created.  */
-  if (--LABEL_NUSES (real_return_label) == 0)
+  if (real_return_label != NULL_RTX && --LABEL_NUSES (real_return_label) == 0)
     delete_related_insns (real_return_label);
+  if (real_simple_return_label != NULL_RTX
+      && --LABEL_NUSES (real_simple_return_label) == 0)
+    delete_related_insns (real_simple_return_label);
 
   fill_simple_delay_slots (1);
   fill_simple_delay_slots (0);
@@ -3842,6 +3876,7 @@ dbr_schedule (rtx first)
 {
   rtx insn, next, epilogue_insn = 0;
   int i;
+  bool need_return_insns;
 
   /* If the current function has no insns other than the prologue and
      epilogue, then do not try to fill any delay slots.  */
@@ -3897,7 +3932,7 @@ dbr_schedule (rtx first)
   init_resource_info (epilogue_insn);
 
   /* Show we haven't computed an end-of-function label yet.  */
-  end_of_function_label = 0;
+  function_return_label = function_simple_return_label = NULL_RTX;
 
   /* Initialize the statistics for this function.  */
   memset (num_insns_needing_delays, 0, sizeof num_insns_needing_delays);
@@ -3919,13 +3954,21 @@ dbr_schedule (rtx first)
   /* If we made an end of function label, indicate that it is now
      safe to delete it by undoing our prior adjustment to LABEL_NUSES.
      If it is now unused, delete it.  */
-  if (end_of_function_label && --LABEL_NUSES (end_of_function_label) == 0)
-    delete_related_insns (end_of_function_label);
+  if (function_return_label && --LABEL_NUSES (function_return_label) == 0)
+    delete_related_insns (function_return_label);
+  if (function_simple_return_label
+      && --LABEL_NUSES (function_simple_return_label) == 0)
+    delete_related_insns (function_simple_return_label);
 
+  need_return_insns = false;
 #ifdef HAVE_return
-  if (HAVE_return && end_of_function_label != 0)
-    make_return_insns (first);
+  need_return_insns |= HAVE_return && function_return_label != 0;
 #endif
+#ifdef HAVE_simple_return
+  need_return_insns |= HAVE_simple_return && function_simple_return_label != 0;
+#endif
+  if (need_return_insns)
+    make_return_insns (first);
 
   /* Delete any USE insns made by update_block; subsequent passes don't need
      them or know how to deal with them.  */

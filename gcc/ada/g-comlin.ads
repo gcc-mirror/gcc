@@ -492,11 +492,12 @@ package GNAT.Command_Line is
 
    Invalid_Parameter : exception;
    --  Raised when a parameter is missing, or an attempt is made to obtain a
-   --  parameter for a switch that does not allow a parameter
+   --  parameter for a switch that does not allow a parameter.
 
    -----------------------------------------
    -- Expansion of command line arguments --
    -----------------------------------------
+
    --  These subprograms take care of of expanding globbing patterns on the
    --  command line. On Unix, such expansion is done by the shell before your
    --  application is called. But on Windows you must do this expansion
@@ -663,11 +664,14 @@ package GNAT.Command_Line is
    --  Output is always initialized to the empty string.
 
    procedure Set_Usage
-     (Config : in out Command_Line_Configuration;
-      Usage  : String := "[switches] [arguments]";
-      Help   : String := "");
+     (Config   : in out Command_Line_Configuration;
+      Usage    : String := "[switches] [arguments]";
+      Help     : String := "";
+      Help_Msg : String := "");
    --  Defines the general format of the call to the application, and a short
-   --  help text. These are both displayed by Display_Help
+   --  help text. These are both displayed by Display_Help. When a non-empty
+   --  Help_Msg is given, it is used by Display_Help instead of the
+   --  automatically generated list of supported switches.
 
    procedure Display_Help (Config : Command_Line_Configuration);
    --  Display the help for the tool (ie its usage, and its supported switches)
@@ -702,11 +706,13 @@ package GNAT.Command_Line is
    --  switch.
 
    procedure Getopt
-     (Config   : Command_Line_Configuration;
-      Callback : Switch_Handler := null;
-      Parser   : Opt_Parser := Command_Line_Parser);
-   --  Similar to the standard Getopt function.
-   --  For each switch found on the command line, this calls Callback.
+     (Config      : Command_Line_Configuration;
+      Callback    : Switch_Handler := null;
+      Parser      : Opt_Parser := Command_Line_Parser;
+      Concatenate : Boolean := True);
+   --  Similar to the standard Getopt function. For each switch found on the
+   --  command line, this calls Callback, if the switch is not handled
+   --  automatically.
    --
    --  The list of valid switches are the ones from the configuration. The
    --  switches that were declared through Define_Switch with an Output
@@ -714,18 +720,24 @@ package GNAT.Command_Line is
    --  variable). This function will in fact never call [Callback] if all
    --  switches were handled automatically and there is nothing left to do.
    --
+   --  The option Concatenate is identical to the one of the standard Getopt
+   --  function.
+   --
    --  This procedure automatically adds -h and --help to the valid switches,
    --  to display the help message and raises Exit_From_Command_Line.
    --  If an invalid switch is specified on the command line, this procedure
    --  will display an error message and raises Invalid_Switch again.
    --
    --  This function automatically expands switches:
-   --   * If Define_Prefix was called (for instance "-gnaty") and the user
-   --     specifies "-gnatycb" on the command line, then Getopt returns
-   --     "-gnatyc" and "-gnatyb" separately.
-   --   * If Define_Alias was called (for instance "-gnatya = -gnatycb") then
-   --     the latter is returned (in this case it also expands -gnaty as per
-   --     the above.
+   --
+   --    If Define_Prefix was called (for instance "-gnaty") and the user
+   --    specifies "-gnatycb" on the command line, then Getopt returns
+   --    "-gnatyc" and "-gnatyb" separately.
+   --
+   --    If Define_Alias was called (for instance "-gnatya = -gnatycb") then
+   --    the latter is returned (in this case it also expands -gnaty as per
+   --    the above.
+   --
    --  The goal is to make handling as easy as possible by leaving as much
    --  work as possible to this package.
    --
@@ -747,15 +759,17 @@ package GNAT.Command_Line is
    --  way to remove a switch from an existing command line.
 
    --  For instance:
+
    --      declare
    --         Config : Command_Line_Configuration;
    --         Line : Command_Line;
    --         Args : Argument_List_Access;
+
    --      begin
    --         Define_Switch (Config, "-gnatyc");
    --         Define_Switch (Config, ...);  --  for all valid switches
    --         Define_Prefix (Config, "-gnaty");
-   --
+
    --         Set_Configuration (Line, Config);
    --         Add_Switch (Line, "-O2");
    --         Add_Switch (Line, "-gnatyc");
@@ -1123,6 +1137,7 @@ private
       Aliases  : Alias_Definitions_List;
       Usage    : GNAT.OS_Lib.String_Access;
       Help     : GNAT.OS_Lib.String_Access;
+      Help_Msg : GNAT.OS_Lib.String_Access;
       Switches : Switch_Definitions_List;
       --  List of expected switches (Used when expanding switch groups)
    end record;

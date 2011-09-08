@@ -1567,13 +1567,14 @@ static bool
 assign_hard_reg (ira_allocno_t a, bool retry_p)
 {
   HARD_REG_SET conflicting_regs[2], profitable_hard_regs[2];
-  int i, j, hard_regno, best_hard_regno, class_size, saved_nregs;
+  int i, j, hard_regno, best_hard_regno, class_size;
   int cost, mem_cost, min_cost, full_cost, min_full_cost, nwords, word;
   int *a_costs;
   enum reg_class aclass;
   enum machine_mode mode;
   static int costs[FIRST_PSEUDO_REGISTER], full_costs[FIRST_PSEUDO_REGISTER];
 #ifndef HONOR_REG_ALLOC_ORDER
+  int saved_nregs;
   enum reg_class rclass;
   int add_cost;
 #endif

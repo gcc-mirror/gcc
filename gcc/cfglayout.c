@@ -767,6 +767,7 @@ fixup_reorder_chain (void)
     {
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
+      rtx ret_label = NULL_RTX;
       basic_block nb, src_bb;
       edge_iterator ei;
 
@@ -786,6 +787,7 @@ fixup_reorder_chain (void)
       bb_end_insn = BB_END (bb);
       if (JUMP_P (bb_end_insn))
 	{
+	  ret_label = JUMP_LABEL (bb_end_insn);
 	  if (any_condjump_p (bb_end_insn))
 	    {
 	      /* This might happen if the conditional jump has side
@@ -899,7 +901,7 @@ fixup_reorder_chain (void)
 	 Note force_nonfallthru can delete E_FALL and thus we have to
 	 save E_FALL->src prior to the call to force_nonfallthru.  */
       src_bb = e_fall->src;
-      nb = force_nonfallthru_and_redirect (e_fall, e_fall->dest);
+      nb = force_nonfallthru_and_redirect (e_fall, e_fall->dest, ret_label);
       if (nb)
 	{
 	  nb->il.rtl->visited = 1;

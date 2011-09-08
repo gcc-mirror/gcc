@@ -701,11 +701,6 @@ write_ts_binfo_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   stream_write_tree (ob, BINFO_OFFSET (expr), ref_p);
   stream_write_tree (ob, BINFO_VTABLE (expr), ref_p);
-  /* BINFO_VIRTUALS is used to drive type based devirtualizatoin.  It often links
-     together large portions of programs making it harder to partition.  Becuase
-     devirtualization is interesting before inlining, only, there is no real
-     need to ship it into ltrans partition.  */
-  stream_write_tree (ob, flag_wpa ? NULL : BINFO_VIRTUALS (expr), ref_p);
   stream_write_tree (ob, BINFO_VPTR_FIELD (expr), ref_p);
 
   streamer_write_uhwi (ob, VEC_length (tree, BINFO_BASE_ACCESSES (expr)));

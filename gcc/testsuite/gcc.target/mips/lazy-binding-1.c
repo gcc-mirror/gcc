@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mabicalls -mshared -mexplicit-relocs -O2 -fno-delayed-branch" } */
+/* { dg-options "-mshared -mexplicit-relocs -O2 -fno-delayed-branch" } */
 
 void bar (void);
 

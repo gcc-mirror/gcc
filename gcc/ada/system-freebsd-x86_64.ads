@@ -5,9 +5,9 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                        (FreeBSD/x86_64 Version)                          --
+--                         (FreeBSD/x86_64 Version)                         --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -116,7 +116,7 @@ private
    --  of the individual switch values.
 
    Backend_Divide_Checks     : constant Boolean := False;
-   Backend_Overflow_Checks   : constant Boolean := False;
+   Backend_Overflow_Checks   : constant Boolean := True;
    Command_Line_Args         : constant Boolean := True;
    Configurable_Run_Time     : constant Boolean := False;
    Denorm                    : constant Boolean := True;
@@ -131,7 +131,6 @@ private
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := True;
    Stack_Check_Limits        : constant Boolean := False;
-   Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
@@ -140,6 +139,5 @@ private
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
-   GCC_ZCX_Support           : constant Boolean := True;
 
 end System;

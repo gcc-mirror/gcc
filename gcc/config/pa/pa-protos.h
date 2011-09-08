@@ -93,6 +93,7 @@ extern int and_mask_p (unsigned HOST_WIDE_INT);
 extern int cint_ok_for_move (HOST_WIDE_INT);
 extern void hppa_expand_prologue (void);
 extern void hppa_expand_epilogue (void);
+extern bool pa_can_use_return_insn (void);
 extern int ior_mask_p (unsigned HOST_WIDE_INT);
 extern void compute_zdepdi_operands (unsigned HOST_WIDE_INT,
 				     unsigned *);

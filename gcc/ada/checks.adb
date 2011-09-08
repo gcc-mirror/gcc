@@ -479,11 +479,27 @@ package body Checks is
       Insert_Node : Node_Id)
    is
       Loc         : constant Source_Ptr := Sloc (N);
-      Param_Ent   : constant Entity_Id  := Param_Entity (N);
+      Param_Ent   : Entity_Id           := Param_Entity (N);
       Param_Level : Node_Id;
       Type_Level  : Node_Id;
 
    begin
+      if Ada_Version >= Ada_2012
+         and then not Present (Param_Ent)
+         and then Is_Entity_Name (N)
+         and then Ekind_In (Entity (N), E_Constant, E_Variable)
+         and then Present (Effective_Extra_Accessibility (Entity (N)))
+      then
+         Param_Ent := Entity (N);
+         while Present (Renamed_Object (Param_Ent)) loop
+
+            --  Renamed_Object must return an Entity_Name here
+            --  because of preceding "Present (E_E_A (...))" test.
+
+            Param_Ent := Entity (Renamed_Object (Param_Ent));
+         end loop;
+      end if;
+
       if Inside_A_Generic then
          return;
 
@@ -494,7 +510,8 @@ package body Checks is
 
       elsif Present (Param_Ent)
          and then Present (Extra_Accessibility (Param_Ent))
-         and then UI_Gt (Object_Access_Level (N), Type_Access_Level (Typ))
+         and then UI_Gt (Object_Access_Level (N),
+                         Deepest_Type_Access_Level (Typ))
          and then not Accessibility_Checks_Suppressed (Param_Ent)
          and then not Accessibility_Checks_Suppressed (Typ)
       then
@@ -502,7 +519,7 @@ package body Checks is
            New_Occurrence_Of (Extra_Accessibility (Param_Ent), Loc);
 
          Type_Level :=
-           Make_Integer_Literal (Loc, Type_Access_Level (Typ));
+           Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
 
          --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.
@@ -1545,7 +1562,7 @@ package body Checks is
    --          Lo_OK be True.
    --      (3) If I'Last < 0, then let Hi be F'Succ (I'Last) and let Hi_OK
    --          be False. Otherwise let Hi be F'Pred (I'Last + 1) and let
-   --          Hi_OK be False
+   --          Hi_OK be True.
 
    procedure Apply_Float_Conversion_Check
      (Ck_Node    : Node_Id;
@@ -2325,7 +2342,11 @@ package body Checks is
       Target_Type : constant Entity_Id := Etype (N);
       Target_Base : constant Entity_Id := Base_Type (Target_Type);
       Expr        : constant Node_Id   := Expression (N);
-      Expr_Type   : constant Entity_Id := Etype (Expr);
+
+      Expr_Type : constant Entity_Id := Underlying_Type (Etype (Expr));
+      --  Note: if Etype (Expr) is a private type without discriminants, its
+      --  full view might have discriminants with defaults, so we need the
+      --  full view here to retrieve the constraints.
 
    begin
       if Inside_A_Generic then
@@ -2383,7 +2404,7 @@ package body Checks is
         and then not Is_Constrained (Target_Type)
         and then Present (Stored_Constraint (Target_Type))
       then
-         --  An unconstrained derived type may have inherited discriminant
+         --  An unconstrained derived type may have inherited discriminant.
          --  Build an actual discriminant constraint list using the stored
          --  constraint, to verify that the expression of the parent type
          --  satisfies the constraints imposed by the (unconstrained!)
@@ -3458,10 +3479,11 @@ package body Checks is
       --  to restrict the possible range of results.
 
       --  If one of the computed bounds is outside the range of the base type,
-      --  the expression may raise an exception and we better indicate that
+      --  the expression may raise an exception and we had better indicate that
       --  the evaluation has failed, at least if checks are enabled.
 
-      if Enable_Overflow_Checks
+      if OK1
+        and then Enable_Overflow_Checks
         and then not Is_Entity_Name (N)
         and then (Lor < Lo or else Hir > Hi)
       then

@@ -33,6 +33,8 @@ with Opt;
 with Osint;
 with Prj;      use Prj;
 with Prj.Tree;
+with Snames;   use Snames;
+with Table;
 with Types;    use Types;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
@@ -64,6 +66,16 @@ package Makeutl is
 
    Create_Map_File_Switch : constant String := "--create-map-file";
    --  Switch to create a map file when an executable is linked
+
+   package Directories is new Table.Table
+     (Table_Component_Type => Path_Name_Type,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 200,
+      Table_Increment      => 100,
+      Table_Name           => "Makegpr.Directories");
+   --  Table of all the source or object directories, filled up by
+   --  Get_Directories.
 
    procedure Add
      (Option : String_Access;
@@ -158,6 +170,31 @@ package Makeutl is
    --  followed by N1 and S1. If N2 /= No_Name then N2 is printed after S1. S2
    --  is printed last. Both N1 and N2 are printed in quotation marks. The two
    --  forms differ only in taking Name_Id or File_name_Type arguments.
+
+   type Name_Ids is array (Positive range <>) of Name_Id;
+   No_Names : constant Name_Ids := (1 .. 0 => No_Name);
+   --  Name_Ids is used for list of language names in procedure Get_Directories
+   --  below.
+
+   Ada_Only : constant Name_Ids := (1 => Name_Ada);
+   --  Used to invoke Get_Directories in gnatmake
+
+   type Activity_Type is (Compilation, Executable_Binding, SAL_Binding);
+
+   procedure Get_Directories
+     (Project_Tree : Project_Tree_Ref;
+      For_Project  : Project_Id;
+      Activity     : Activity_Type;
+      Languages    : Name_Ids);
+   --  Put in table Directories the source (when Sources is True) or
+   --  object/library (when Sources is False) directories of project
+   --  For_Project and of all the project it imports directly or indirectly.
+   --  The source directories of imported projects are only included if one
+   --  of the declared languages is in the list Languages.
+
+   procedure Write_Path_File (FD : File_Descriptor);
+   --  Write in the specified open path file the directories in table
+   --  Directories, then closed the path file.
 
    procedure Get_Switches
      (Source       : Source_Id;
@@ -299,7 +336,7 @@ package Makeutl is
       Need_Compilation : Boolean := True;
       Need_Binding     : Boolean := True;
       Need_Linking     : Boolean := True;
-      --  Which of the compilation phases are needed for this project tree.
+      --  Which of the compilation phases are needed for this project tree
    end record;
    type Builder_Data_Access is access all Builder_Project_Tree_Data;
 
@@ -422,10 +459,10 @@ package Makeutl is
                   Id   : Source_Id        := null;
 
                when Format_Gnatmake =>
-                  File      : File_Name_Type := No_File;
-                  Unit      : Unit_Name_Type := No_Unit_Name;
-                  Index     : Int            := 0;
-                  Project   : Project_Id     := No_Project;
+                  File    : File_Name_Type := No_File;
+                  Unit    : Unit_Name_Type := No_Unit_Name;
+                  Index   : Int            := 0;
+                  Project : Project_Id     := No_Project;
             end case;
          end record;
       --  Information about files stored in the queue. The exact information
@@ -436,8 +473,9 @@ package Makeutl is
 
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;
-         Force : Boolean := False);
-      --  Initialize the queue.
+         Force             : Boolean := False);
+      --  Initialize the queue
+      --
       --  Queue_Per_Obj_Dir matches the --single-compile-per-obj-dir switch:
       --  when True, there cannot be simultaneous compilations with the object
       --  files in the same object directory when project files are used.
@@ -446,11 +484,10 @@ package Makeutl is
       --  initialized.
 
       procedure Remove_Marks;
-      --  Remove all marks set for the files.
-      --  This means that the files will be handed to the compiler if they are
-      --  added to the queue, and is mostly useful when recompiling several
-      --  executables in non-project mode, as the switches may be different
-      --  and -s may be in use.
+      --  Remove all marks set for the files. This means that the files will be
+      --  handed to the compiler if they are added to the queue, and is mostly
+      --  useful when recompiling several executables in non-project mode, as
+      --  the switches may be different and -s may be in use.
 
       function Is_Empty return Boolean;
       --  Returns True if the queue is empty

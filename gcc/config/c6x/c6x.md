@@ -242,21 +242,27 @@
 	]
 	(const_string "unknown")))
 
-(define_automaton "c6x_1,c6x_w1,c6x_2,c6x_w2,c6x_m1,c6x_m2,c6x_t1,c6x_t2,c6x_branch")
+(define_automaton "c6x_1,c6x_2,c6x_m1,c6x_m2,c6x_t1,c6x_t2,c6x_branch")
+(automata_option "no-comb-vect")
 (automata_option "ndfa")
+(automata_option "collapse-ndfa")
 
-(define_cpu_unit "d1,l1,s1" "c6x_1")
+(define_query_cpu_unit "d1,l1,s1" "c6x_1")
 (define_cpu_unit "x1" "c6x_1")
-(define_cpu_unit "l1w,s1w" "c6x_w1")
-(define_cpu_unit "m1" "c6x_m1")
+(define_cpu_unit "l1w,s1w" "c6x_1")
+(define_query_cpu_unit "m1" "c6x_m1")
 (define_cpu_unit "m1w" "c6x_m1")
 (define_cpu_unit "t1" "c6x_t1")
-(define_cpu_unit "d2,l2,s2" "c6x_2")
+(define_query_cpu_unit "d2,l2,s2" "c6x_2")
 (define_cpu_unit "x2" "c6x_2")
-(define_cpu_unit "l2w,s2w" "c6x_w2")
-(define_cpu_unit "m2" "c6x_m2")
+(define_cpu_unit "l2w,s2w" "c6x_2")
+(define_query_cpu_unit "m2" "c6x_m2")
 (define_cpu_unit "m2w" "c6x_m2")
 (define_cpu_unit "t2" "c6x_t2")
+;; A special set of units used to identify specific reservations, rather than
+;; just units.
+(define_query_cpu_unit "fps1,fpl1,adddps1,adddpl1" "c6x_1")
+(define_query_cpu_unit "fps2,fpl2,adddps2,adddpl2" "c6x_2")
 
 ;; There can be up to two branches in one cycle (on the .s1 and .s2
 ;; units), but some instructions must not be scheduled in parallel
@@ -1427,8 +1433,10 @@
    (set_attr "cross" "y,n")
    (set_attr "dest_regfile" "b")])
 
+;; computed_jump_p returns true if it finds a constant; so use one in the
+;; unspec.
 (define_insn "indirect_jump_shadow"
-  [(set (pc) (unspec [(pc)] UNSPEC_JUMP_SHADOW))]
+  [(set (pc) (unspec [(const_int 1)] UNSPEC_JUMP_SHADOW))]
   ""
   ";; indirect jump occurs"
   [(set_attr "type" "shadow")])
@@ -2012,7 +2020,7 @@
 
 (define_expand "ctzdi2"
   [(set (match_operand:DI 0 "register_operand" "")
-	(ctz:SI (match_operand:DI 1 "register_operand" "")))]
+	(ctz:DI (match_operand:DI 1 "register_operand" "")))]
   "TARGET_INSNS_64"
 {
   rtx tmpreg = gen_reg_rtx (DImode);

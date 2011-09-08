@@ -71,6 +71,13 @@ package body Bindgen is
    --  to do this unconditionally, since it drags in the System.Restrictions
    --  unit unconditionally, which is unpleasand, especially for ZFP etc.)
 
+   Dispatching_Domains_Used : Boolean;
+   --  Flag indicating whether multiprocessor dispatching domains are used in
+   --  the closure of the partition. This is set by
+   --  Check_Dispatching_Domains_Used, and is used to call the routine to
+   --  disallow the creation of new dispatching domains just before calling
+   --  the main procedure from the environment task.
+
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
 
@@ -233,9 +240,20 @@ package body Bindgen is
    -- Local Subprograms --
    -----------------------
 
+   procedure Check_File_In_Partition
+     (File_Name : String;
+      Flag      : out Boolean);
+   --  If the file indicated by File_Name is in the partition the Flag is set
+   --  to True, False otherwise.
+
    procedure Check_System_Restrictions_Used;
    --  Sets flag System_Restrictions_Used (Set to True if and only if the unit
    --  System.Restrictions is present in the partition, otherwise False).
+
+   procedure Check_Dispatching_Domains_Used;
+   --  Sets flag Dispatching_Domains_Used to True when using the unit
+   --  System.Multiprocessors.Dispatching_Domains is present in the partition,
+   --  otherwise set to False.
 
    procedure Gen_Adainit;
    --  Generates the Adainit procedure
@@ -372,19 +390,40 @@ package body Bindgen is
    --  contents of statement buffer up to Last, and reset Last to 0
 
    ------------------------------------
+   -- Check_Dispatching_Domains_Used --
+   ------------------------------------
+
+   procedure Check_Dispatching_Domains_Used is
+   begin
+      Check_File_In_Partition ("s-mudido.ads", Dispatching_Domains_Used);
+   end Check_Dispatching_Domains_Used;
+
+   -----------------------------
+   -- Check_File_In_Partition --
+   -----------------------------
+
+   procedure Check_File_In_Partition
+     (File_Name : String;
+      Flag      : out Boolean)
+   is
+   begin
+      for J in Units.First .. Units.Last loop
+         if Get_Name_String (Units.Table (J).Sfile) = File_Name then
+            Flag := True;
+            return;
+         end if;
+      end loop;
+
+      Flag := False;
+   end Check_File_In_Partition;
+
+   ------------------------------------
    -- Check_System_Restrictions_Used --
    ------------------------------------
 
    procedure Check_System_Restrictions_Used is
    begin
-      for J in Units.First .. Units.Last loop
-         if Get_Name_String (Units.Table (J).Sfile) = "s-restri.ads" then
-            System_Restrictions_Used := True;
-            return;
-         end if;
-      end loop;
-
-      System_Restrictions_Used := False;
+      Check_File_In_Partition ("s-restri.ads", System_Restrictions_Used);
    end Check_System_Restrictions_Used;
 
    ------------------
@@ -664,6 +703,16 @@ package body Bindgen is
                  & Get_Main_Unit_Name (Name_Buffer (1 .. Name_Len)) & """);");
          end if;
 
+         --  When dispatching domains are used then we need to signal it
+         --  before calling the main procedure.
+
+         if Dispatching_Domains_Used then
+            WBI ("      procedure Freeze_Dispatching_Domains;");
+            WBI ("      pragma Import");
+            WBI ("        (Ada, Freeze_Dispatching_Domains, " &
+                 """__gnat_freeze_dispatching_domains"");");
+         end if;
+
          WBI ("   begin");
          WBI ("      if Is_Elaborated then");
          WBI ("         return;");
@@ -900,6 +949,12 @@ package body Bindgen is
 
       Gen_Elab_Calls;
 
+      --  From this point, no new dispatching domain can be created.
+
+      if Dispatching_Domains_Used then
+         WBI ("      Freeze_Dispatching_Domains;");
+      end if;
+
       --  Case of main program is CIL function or procedure
 
       if VM_Target = CLI_Target
@@ -984,7 +1039,16 @@ package body Bindgen is
 
             --  Case of no elaboration code
 
-            elsif U.No_Elab then
+            --  In CodePeer mode, we special case subprogram bodies which
+            --  are handled in the 'else' part below, and lead to a call to
+            --  <subp>'Elab_Subp_Body.
+
+            elsif U.No_Elab
+              and then (not CodePeer_Mode
+                         or else U.Utype = Is_Spec
+                         or else U.Utype = Is_Spec_Only
+                         or else U.Unit_Kind /= 's')
+            then
 
                --  The only case in which we have to do something is if this
                --  is a body, with a separate spec, where the separate spec
@@ -1019,10 +1083,10 @@ package body Bindgen is
             --  The uname_E increment is skipped if this is a separate spec,
             --  since it will be done when we process the body.
 
-            --  Ignore subprograms in CodePeer mode, since no useful
-            --  elaboration subprogram is needed by CodePeer.
+            --  In CodePeer mode, we do not generate any reference to xxx_E
+            --  variables, only calls to 'Elab* subprograms.
 
-            elsif U.Unit_Kind /= 's' or else not CodePeer_Mode then
+            else
                Check_Elab_Flag :=
                  not CodePeer_Mode
                    and then (Force_Checking_Of_Elaboration_Flags
@@ -1055,12 +1119,22 @@ package body Bindgen is
                   if Name_Buffer (Name_Len) = 's' then
                      Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
                        "'elab_spec";
+                     Name_Len := Name_Len + 8;
+
+                  --  Special case in CodePeer mode for subprogram bodies
+                  --  which correspond to CodePeer 'Elab_Subp_Body special
+                  --  init procedure.
+
+                  elsif U.Unit_Kind = 's' and CodePeer_Mode then
+                     Name_Buffer (Name_Len - 1 .. Name_Len + 13) :=
+                       "'elab_subp_body";
+                     Name_Len := Name_Len + 13;
+
                   else
                      Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
                        "'elab_body";
+                     Name_Len := Name_Len + 8;
                   end if;
-
-                  Name_Len := Name_Len + 8;
                end if;
 
                Set_Casing (U.Icasing);
@@ -1436,9 +1510,8 @@ package body Bindgen is
             Write_Statement_Buffer;
 
             Set_String ("            procedure Raise_From_Controlled_");
-            Set_String ("Operation ");
-            Set_String ("(X : Ada.Exceptions.Exception_Occurrence; ");
-            Set_String (" From_Abort : Boolean);");
+            Set_String ("Operation (X : Ada.Exceptions.Exception_");
+            Set_String ("Occurrence);");
             Write_Statement_Buffer;
 
             Set_String ("            pragma Import (Ada, Raise_From_");
@@ -1447,7 +1520,7 @@ package body Bindgen is
             Write_Statement_Buffer;
 
             WBI ("         begin");
-            WBI ("            Raise_From_Controlled_Operation (LE, False);");
+            WBI ("            Raise_From_Controlled_Operation (LE);");
             WBI ("         end;");
 
          --  VM-specific code, use regular Ada to produce the desired behavior
@@ -2019,6 +2092,7 @@ package body Bindgen is
       --  Generate output file in appropriate language
 
       Check_System_Restrictions_Used;
+      Check_Dispatching_Domains_Used;
 
       Gen_Output_File_Ada (Filename);
    end Gen_Output_File;

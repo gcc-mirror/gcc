@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1219,6 +1219,26 @@ CND(IP_PKTINFO, "Get datagram info")
 CND(SIZEOF_tv_sec, "tv_sec")
 #define SIZEOF_tv_usec (sizeof tv.tv_usec)
 CND(SIZEOF_tv_usec, "tv_usec")
+/*
+
+   --  Maximum allowed value for tv_sec
+*/
+
+/**
+ ** On Solaris and IRIX, field tv_sec in struct timeval has an undocumented
+ ** hard-wired limit of 100 million.
+ ** On IA64 HP-UX the limit is 2**31 - 1.
+ **/
+#if defined (sun) || (defined (__mips) && defined (__sgi))
+# define MAX_tv_sec "100_000_000"
+
+#elif defined (__hpux__)
+# define MAX_tv_sec "16#7fffffff#"
+
+#else
+# define MAX_tv_sec "2 ** (SIZEOF_tv_sec * 8 - 1) - 1"
+#endif
+CNS(MAX_tv_sec, "")
 }
 /*
 

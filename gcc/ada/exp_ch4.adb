@@ -31,6 +31,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Atag; use Exp_Atag;
+with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -57,6 +58,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -91,12 +93,11 @@ package body Exp_Ch4 is
    --  If a boolean array assignment can be done in place, build call to
    --  corresponding library procedure.
 
-   procedure Complete_Controlled_Allocation (Temp_Decl : Node_Id);
-   --  Subsidiary to Expand_N_Allocator and Expand_Allocator_Expression. Formal
-   --  Temp_Decl is the declaration of a temporary which hold the value of the
-   --  original allocator. Create a custom Allocate routine for the expression
-   --  of Temp_Decl. The routine does special processing for anonymous access
-   --  types.
+   function Current_Anonymous_Master return Entity_Id;
+   --  Return the entity of the heterogeneous finalization master belonging to
+   --  the current unit (either function, package or procedure). This master
+   --  services all anonymous access-to-controlled types. If the current unit
+   --  does not have such master, create one.
 
    procedure Displace_Allocator_Pointer (N : Node_Id);
    --  Ada 2005 (AI-251): Subsidiary procedure to Expand_N_Allocator and
@@ -374,119 +375,180 @@ package body Exp_Ch4 is
          return;
    end Build_Boolean_Array_Proc_Call;
 
-   ------------------------------------
-   -- Complete_Controlled_Allocation --
-   ------------------------------------
+   ------------------------------
+   -- Current_Anonymous_Master --
+   ------------------------------
 
-   procedure Complete_Controlled_Allocation (Temp_Decl : Node_Id) is
-      pragma Assert (Nkind (Temp_Decl) = N_Object_Declaration);
-
-      Ptr_Typ : constant Entity_Id := Etype (Defining_Identifier (Temp_Decl));
-
-      function First_Declaration_Of_Current_Unit return Node_Id;
-      --  Return the current unit's first declaration. If the declaration list
-      --  is empty, the routine generates a null statement and returns it.
-
-      ---------------------------------------
-      -- First_Declaration_Of_Current_Unit --
-      ---------------------------------------
-
-      function First_Declaration_Of_Current_Unit return Node_Id is
-         Sem_U : Node_Id := Unit (Cunit (Current_Sem_Unit));
-         Decl  : Node_Id;
-         Decls : List_Id;
-
-      begin
-         if Nkind (Sem_U) = N_Package_Declaration then
-            Sem_U := Specification (Sem_U);
-            Decls := Visible_Declarations (Sem_U);
-
-            if No (Decls) then
-               Decl  := Make_Null_Statement (Sloc (Sem_U));
-               Decls := New_List (Decl);
-               Set_Visible_Declarations (Sem_U, Decls);
-            else
-               Decl := First (Decls);
-            end if;
-
-         else
-            Decls := Declarations (Sem_U);
-
-            if No (Decls) then
-               Decl  := Make_Null_Statement (Sloc (Sem_U));
-               Decls := New_List (Decl);
-               Set_Declarations (Sem_U, Decls);
-            else
-               Decl := First (Decls);
-            end if;
-         end if;
-
-         return Decl;
-      end First_Declaration_Of_Current_Unit;
-
-   --  Start of processing for Complete_Controlled_Allocation
+   function Current_Anonymous_Master return Entity_Id is
+      Decls     : List_Id;
+      Loc       : Source_Ptr;
+      Subp_Body : Node_Id;
+      Unit_Decl : Node_Id;
+      Unit_Id   : Entity_Id;
 
    begin
-      --  Certain run-time configurations and targets do not provide support
-      --  for controlled types.
+      Unit_Id := Cunit_Entity (Current_Sem_Unit);
 
-      if Restriction_Active (No_Finalization) then
-         return;
+      --  Find the entity of the current unit
 
-      --  Do nothing if the access type may never allocate an object
+      if Ekind (Unit_Id) = E_Subprogram_Body then
 
-      elsif No_Pool_Assigned (Ptr_Typ) then
-         return;
+         --  When processing subprogram bodies, the proper scope is always that
+         --  of the spec.
 
-      --  Access-to-controlled types are not supported on .NET/JVM
+         Subp_Body := Unit_Id;
+         while Present (Subp_Body)
+           and then Nkind (Subp_Body) /= N_Subprogram_Body
+         loop
+            Subp_Body := Parent (Subp_Body);
+         end loop;
 
-      elsif VM_Target /= No_VM then
-         return;
+         Unit_Id := Corresponding_Spec (Subp_Body);
       end if;
 
-      --  Processing for anonymous access-to-controlled types. These access
-      --  types receive a special collection which appears on the declarations
-      --  of the enclosing semantic unit.
+      Loc := Sloc (Unit_Id);
+      Unit_Decl := Unit (Cunit (Current_Sem_Unit));
 
-      if Ekind (Ptr_Typ) = E_Anonymous_Access_Type
-        and then No (Associated_Collection (Ptr_Typ))
-        and then
-          (not Restriction_Active (No_Nested_Finalization)
-             or else Is_Library_Level_Entity (Ptr_Typ))
-      then
+      --  Find the declarations list of the current unit
+
+      if Nkind (Unit_Decl) = N_Package_Declaration then
+         Unit_Decl := Specification (Unit_Decl);
+         Decls := Visible_Declarations (Unit_Decl);
+
+         if No (Decls) then
+            Decls := New_List (Make_Null_Statement (Loc));
+            Set_Visible_Declarations (Unit_Decl, Decls);
+
+         elsif Is_Empty_List (Decls) then
+            Append_To (Decls, Make_Null_Statement (Loc));
+         end if;
+
+      else
+         Decls := Declarations (Unit_Decl);
+
+         if No (Decls) then
+            Decls := New_List (Make_Null_Statement (Loc));
+            Set_Declarations (Unit_Decl, Decls);
+
+         elsif Is_Empty_List (Decls) then
+            Append_To (Decls, Make_Null_Statement (Loc));
+         end if;
+      end if;
+
+      --  The current unit has an existing anonymous master, traverse its
+      --  declarations and locate the entity.
+
+      if Has_Anonymous_Master (Unit_Id) then
          declare
-            Pool_Id : constant Entity_Id :=
-                        Get_Global_Pool_For_Access_Type (Ptr_Typ);
-            Scop    : Node_Id := Cunit_Entity (Current_Sem_Unit);
+            Decl       : Node_Id;
+            Fin_Mas_Id : Entity_Id;
 
          begin
-            --  Use the scope of the current semantic unit when analyzing
+            Decl := First (Decls);
+            while Present (Decl) loop
 
-            if Ekind (Scop) = E_Subprogram_Body then
-               Scop := Corresponding_Spec (Parent (Parent (Parent (Scop))));
+               --  Look for the first variable in the declarations whole type
+               --  is Finalization_Master.
+
+               if Nkind (Decl) = N_Object_Declaration then
+                  Fin_Mas_Id := Defining_Identifier (Decl);
+
+                  if Ekind (Fin_Mas_Id) = E_Variable
+                    and then Etype (Fin_Mas_Id) = RTE (RE_Finalization_Master)
+                  then
+                     return Fin_Mas_Id;
+                  end if;
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            --  The master was not found even though the unit was labeled as
+            --  having one.
+
+            raise Program_Error;
+         end;
+
+      --  Create a new anonymous master
+
+      else
+         declare
+            First_Decl : constant Node_Id := First (Decls);
+            Action     : Node_Id;
+            Fin_Mas_Id : Entity_Id;
+
+         begin
+            --  Since the master and its associated initialization is inserted
+            --  at top level, use the scope of the unit when analyzing.
+
+            Push_Scope (Unit_Id);
+
+            --  Create the finalization master
+
+            Fin_Mas_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Unit_Id), "AM"));
+
+            --  Generate:
+            --    <Fin_Mas_Id> : Finalization_Master;
+
+            Action :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Fin_Mas_Id,
+                Object_Definition =>
+                  New_Reference_To (RTE (RE_Finalization_Master), Loc));
+
+            Insert_Before_And_Analyze (First_Decl, Action);
+
+            --  Mark the unit to prevent the generation of multiple masters
+
+            Set_Has_Anonymous_Master (Unit_Id);
+
+            --  Do not set the base pool and mode of operation on .NET/JVM
+            --  since those targets do not support pools and all VM masters
+            --  are heterogeneous by default.
+
+            if VM_Target = No_VM then
+
+               --  Generate:
+               --    Set_Base_Pool
+               --      (<Fin_Mas_Id>, Global_Pool_Object'Unrestricted_Access);
+
+               Action :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>
+                     New_Reference_To (RTE (RE_Set_Base_Pool), Loc),
+
+                   Parameter_Associations => New_List (
+                     New_Reference_To (Fin_Mas_Id, Loc),
+                     Make_Attribute_Reference (Loc,
+                       Prefix =>
+                         New_Reference_To (RTE (RE_Global_Pool_Object), Loc),
+                       Attribute_Name => Name_Unrestricted_Access)));
+
+               Insert_Before_And_Analyze (First_Decl, Action);
+
+               --  Generate:
+               --    Set_Is_Heterogeneous (<Fin_Mas_Id>);
+
+               Action :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>
+                     New_Reference_To (RTE (RE_Set_Is_Heterogeneous), Loc),
+                   Parameter_Associations => New_List (
+                     New_Reference_To (Fin_Mas_Id, Loc)));
+
+               Insert_Before_And_Analyze (First_Decl, Action);
             end if;
 
-            Build_Finalization_Collection
-              (Typ        => Ptr_Typ,
-               Ins_Node   => First_Declaration_Of_Current_Unit,
-               Encl_Scope => Scop);
+            --  Restore the original state of the scope stack
 
-            --  Decorate the anonymous access type and the allocator node
+            Pop_Scope;
 
-            Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
-            Set_Storage_Pool (Expression (Temp_Decl), Pool_Id);
+            return Fin_Mas_Id;
          end;
       end if;
-
-      --  Since the temporary object reuses the original allocator, generate a
-      --  custom Allocate routine for the temporary.
-
-      if Present (Associated_Collection (Ptr_Typ)) then
-         Build_Allocate_Deallocate_Proc
-           (N           => Temp_Decl,
-            Is_Allocate => True);
-      end if;
-   end Complete_Controlled_Allocation;
+   end Current_Anonymous_Master;
 
    --------------------------------
    -- Displace_Allocator_Pointer --
@@ -703,6 +765,8 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Allocator_Expression
 
    begin
+      --  WOuld be nice to comment the branches of this very long if ???
+
       if Is_Tagged_Type (T)
         or else Needs_Finalization (T)
       then
@@ -774,14 +838,13 @@ package body Exp_Ch4 is
             return;
          end if;
 
-         --    Actions inserted before:
-         --              Temp : constant ptr_T := new T'(Expression);
-         --   <no CW>    Temp._tag := T'tag;
-         --   <CTRL>     Adjust (Finalizable (Temp.all));
-         --   <CTRL>     Attach_To_Final_List (Finalizable (Temp.all));
+         --  Actions inserted before:
+         --    Temp : constant ptr_T := new T'(Expression);
+         --    Temp._tag = T'tag;  --  when not class-wide
+         --    [Deep_]Adjust (Temp.all);
 
-         --  We analyze by hand the new internal allocator to avoid
-         --  any recursion and inappropriate call to Initialize
+         --  We analyze by hand the new internal allocator to avoid any
+         --  recursion and inappropriate call to Initialize
 
          --  We don't want to remove side effects when the expression must be
          --  built in place. In the case of a build-in-place function call,
@@ -855,17 +918,17 @@ package body Exp_Ch4 is
                Set_No_Initialization (Expression (Temp_Decl));
                Insert_Action (N, Temp_Decl);
 
-               Complete_Controlled_Allocation (Temp_Decl);
+               Build_Allocate_Deallocate_Proc (Temp_Decl, True);
                Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
 
-               --  Attach the object to the associated finalization collection.
+               --  Attach the object to the associated finalization master.
                --  This is done manually on .NET/JVM since those compilers do
                --  no support pools and can't benefit from internally generated
                --  Allocate / Deallocate procedures.
 
                if VM_Target /= No_VM
                  and then Is_Controlled (DesigT)
-                 and then Present (Associated_Collection (PtrT))
+                 and then Present (Finalization_Master (PtrT))
                then
                   Insert_Action (N,
                     Make_Attach_Call (
@@ -886,16 +949,16 @@ package body Exp_Ch4 is
                    Expression          => Node);
 
                Insert_Action (N, Temp_Decl);
-               Complete_Controlled_Allocation (Temp_Decl);
+               Build_Allocate_Deallocate_Proc (Temp_Decl, True);
 
-               --  Attach the object to the associated finalization collection.
+               --  Attach the object to the associated finalization master.
                --  This is done manually on .NET/JVM since those compilers do
                --  no support pools and can't benefit from internally generated
                --  Allocate / Deallocate procedures.
 
                if VM_Target /= No_VM
                  and then Is_Controlled (DesigT)
-                 and then Present (Associated_Collection (PtrT))
+                 and then Present (Finalization_Master (PtrT))
                then
                   Insert_Action (N,
                     Make_Attach_Call (
@@ -931,8 +994,7 @@ package body Exp_Ch4 is
                --  Inherit the allocation-related attributes from the original
                --  access type.
 
-               Set_Associated_Collection (Def_Id,
-                 Associated_Collection (PtrT));
+               Set_Finalization_Master (Def_Id, Finalization_Master (PtrT));
 
                Set_Associated_Storage_Pool (Def_Id,
                  Associated_Storage_Pool (PtrT));
@@ -959,7 +1021,7 @@ package body Exp_Ch4 is
                   Set_No_Initialization (Expression (Temp_Decl));
                   Insert_Action (N, Temp_Decl);
 
-                  Complete_Controlled_Allocation (Temp_Decl);
+                  Build_Allocate_Deallocate_Proc (Temp_Decl, True);
                   Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
 
                else
@@ -974,7 +1036,7 @@ package body Exp_Ch4 is
                       Expression          => Node);
 
                   Insert_Action (N, Temp_Decl);
-                  Complete_Controlled_Allocation (Temp_Decl);
+                  Build_Allocate_Deallocate_Proc (Temp_Decl, True);
                end if;
 
                --  Generate an additional object containing the address of the
@@ -1085,19 +1147,28 @@ package body Exp_Ch4 is
             end if;
 
             --  Generate:
-            --    Set_Finalize_Address_Ptr
-            --      (Collection, <Finalize_Address>'Unrestricted_Access)
+            --    Set_Finalize_Address (<PtrT>FM, <T>FD'Unrestricted_Access);
 
-            --  Since .NET/JVM compilers do not support address arithmetic,
-            --  this call is skipped. The same is done for CodePeer because
-            --  Finalize_Address is never generated.
+            --  Do not generate this call in the following cases:
+
+            --    * .NET/JVM - these targets do not support address arithmetic
+            --    and unchecked conversion, key elements of Finalize_Address.
+
+            --    * Alfa mode - the call is useless and results in unwanted
+            --    expansion.
+
+            --    * CodePeer mode - TSS primitive Finalize_Address is not
+            --    created in this mode.
 
             if VM_Target = No_VM
+              and then not Alfa_Mode
               and then not CodePeer_Mode
-              and then Present (Associated_Collection (PtrT))
+              and then Present (Finalization_Master (PtrT))
+              and then Present (Temp_Decl)
+              and then Nkind (Expression (Temp_Decl)) = N_Allocator
             then
                Insert_Action (N,
-                 Make_Set_Finalize_Address_Ptr_Call
+                 Make_Set_Finalize_Address_Call
                    (Loc     => Loc,
                     Typ     => T,
                     Ptr_Typ => PtrT));
@@ -1136,17 +1207,17 @@ package body Exp_Ch4 is
          Set_No_Initialization (Expression (Temp_Decl));
          Insert_Action (N, Temp_Decl);
 
-         Complete_Controlled_Allocation (Temp_Decl);
+         Build_Allocate_Deallocate_Proc (Temp_Decl, True);
          Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
 
-         --  Attach the object to the associated finalization collection. This
-         --  is done manually on .NET/JVM since those compilers do no support
+         --  Attach the object to the associated finalization master. Thisis
+         --  done manually on .NET/JVM since those compilers do no support
          --  pools and cannot benefit from internally generated Allocate and
          --  Deallocate procedures.
 
          if VM_Target /= No_VM
            and then Is_Controlled (DesigT)
-           and then Present (Associated_Collection (PtrT))
+           and then Present (Finalization_Master (PtrT))
          then
             Insert_Action (N,
               Make_Attach_Call
@@ -1178,7 +1249,10 @@ package body Exp_Ch4 is
 
             Rewrite (Exp, New_Copy (Expression (Exp)));
          end if;
+
       else
+         Build_Allocate_Deallocate_Proc (N, True);
+
          --  If we have:
          --    type A is access T1;
          --    X : A := new T2'(...);
@@ -1225,7 +1299,8 @@ package body Exp_Ch4 is
                Insert_Action (Exp,
                  Make_Subtype_Declaration (Loc,
                    Defining_Identifier => ConstrT,
-                   Subtype_Indication  => Make_Subtype_From_Expr (Exp, T)));
+                   Subtype_Indication  =>
+                     Make_Subtype_From_Expr (Internal_Exp, T)));
                Freeze_Itype (ConstrT, Exp);
                Rewrite (Exp, OK_Convert_To (ConstrT, Internal_Exp));
             end;
@@ -3267,8 +3342,9 @@ package body Exp_Ch4 is
       Etyp  : constant Entity_Id  := Etype (Expression (N));
       Loc   : constant Source_Ptr := Sloc (N);
       Desig : Entity_Id;
-      Temp  : Entity_Id;
       Nod   : Node_Id;
+      Pool  : Entity_Id;
+      Temp  : Entity_Id;
 
       procedure Rewrite_Coextension (N : Node_Id);
       --  Static coextensions have the same lifetime as the entity they
@@ -3391,22 +3467,55 @@ package body Exp_Ch4 is
 
       Validate_Remote_Access_To_Class_Wide_Type (N);
 
-      --  Set the Storage Pool
+      --  Processing for anonymous access-to-controlled types. These access
+      --  types receive a special finalization master which appears in the
+      --  declarations of the enclosing semantic unit. This expansion is done
+      --  now to ensure that any additional types generated by this routine
+      --  or Expand_Allocator_Expression inherit the proper type attributes.
 
-      Set_Storage_Pool (N, Associated_Storage_Pool (Root_Type (PtrT)));
+      if Ekind (PtrT) = E_Anonymous_Access_Type
+        and then Needs_Finalization (Dtyp)
+      then
+         --  Anonymous access-to-controlled types allocate on the global pool.
+         --  Do not set this attribute on .NET/JVM since those targets do not
+         --  support pools.
 
-      if Present (Storage_Pool (N)) then
-         if Is_RTE (Storage_Pool (N), RE_SS_Pool) then
+         if No (Associated_Storage_Pool (PtrT))
+           and then VM_Target = No_VM
+         then
+            Set_Associated_Storage_Pool
+              (PtrT, Get_Global_Pool_For_Access_Type (PtrT));
+         end if;
+
+         --  The finalization master must be inserted and analyzed as part of
+         --  the current semantic unit. This form of expansion is not carried
+         --  out in Alfa mode because it is useless.
+
+         if No (Finalization_Master (PtrT))
+           and then not Alfa_Mode
+         then
+            Set_Finalization_Master (PtrT, Current_Anonymous_Master);
+         end if;
+      end if;
+
+      --  Set the storage pool and find the appropriate version of Allocate to
+      --  call.
+
+      Pool := Associated_Storage_Pool (Root_Type (PtrT));
+      Set_Storage_Pool (N, Pool);
+
+      if Present (Pool) then
+         if Is_RTE (Pool, RE_SS_Pool) then
             if VM_Target = No_VM then
                Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
             end if;
 
-         elsif Is_Class_Wide_Type (Etype (Storage_Pool (N))) then
+         elsif Is_Class_Wide_Type (Etype (Pool)) then
             Set_Procedure_To_Call (N, RTE (RE_Allocate_Any));
 
          else
             Set_Procedure_To_Call (N,
-              Find_Prim_Op (Etype (Storage_Pool (N)), Name_Allocate));
+              Find_Prim_Op (Etype (Pool), Name_Allocate));
          end if;
       end if;
 
@@ -3564,10 +3673,10 @@ package body Exp_Ch4 is
             --  do not support pools, this step is skipped.
 
             if VM_Target = No_VM
-              and then Present (Associated_Collection (PtrT))
+              and then Present (Finalization_Master (PtrT))
             then
                Build_Allocate_Deallocate_Proc
-                 (N           => Parent (N),
+                 (N           => N,
                   Is_Allocate => True);
             end if;
 
@@ -3805,14 +3914,13 @@ package body Exp_Ch4 is
                Nod := Relocate_Node (N);
 
                --  Here is the transformation:
-               --    input:  new T
-               --    output: Temp : constant ptr_T := new T;
-               --            Init (Temp.all, ...);
-               --    <CTRL>  Attach_To_Final_List (Finalizable (Temp.all));
-               --    <CTRL>  Initialize (Finalizable (Temp.all));
+               --    input:  new Ctrl_Typ
+               --    output: Temp : constant Ctrl_Typ_Ptr := new Ctrl_Typ;
+               --            Ctrl_TypIP (Temp.all, ...);
+               --            [Deep_]Initialize (Temp.all);
 
-               --  Here ptr_T is the pointer type for the allocator, and is the
-               --  subtype of the allocator.
+               --  Here Ctrl_Typ_Ptr is the pointer type for the allocator, and
+               --  is the subtype of the allocator.
 
                Temp_Decl :=
                  Make_Object_Declaration (Loc,
@@ -3824,7 +3932,7 @@ package body Exp_Ch4 is
                Set_Assignment_OK (Temp_Decl);
                Insert_Action (N, Temp_Decl, Suppress => All_Checks);
 
-               Complete_Controlled_Allocation (Temp_Decl);
+               Build_Allocate_Deallocate_Proc (Temp_Decl, True);
 
                --  If the designated type is a task type or contains tasks,
                --  create block to activate created tasks, and insert
@@ -3858,12 +3966,12 @@ package body Exp_Ch4 is
                       (Obj_Ref => New_Copy_Tree (Init_Arg1),
                        Typ     => T));
 
-                  if Present (Associated_Collection (PtrT)) then
+                  if Present (Finalization_Master (PtrT)) then
 
                      --  Special processing for .NET/JVM, the allocated object
-                     --  is attached to the finalization collection. Generate:
+                     --  is attached to the finalization master. Generate:
 
-                     --    Attach (<PtrT>FC, Root_Controlled_Ptr (Init_Arg1));
+                     --    Attach (<PtrT>FM, Root_Controlled_Ptr (Init_Arg1));
 
                      --  Types derived from [Limited_]Controlled are the only
                      --  ones considered since they have fields Prev and Next.
@@ -3878,15 +3986,22 @@ package body Exp_Ch4 is
 
                      --  Default case, generate:
 
-                     --    Set_Finalize_Address_Ptr
-                     --      (Pool, <Finalize_Address>'Unrestricted_Access)
+                     --    Set_Finalize_Address
+                     --      (<PtrT>FM, <T>FD'Unrestricted_Access);
 
-                     --  Do not generate the above for CodePeer compilations
-                     --  because Finalize_Address is never built.
+                     --  Do not generate this call in the following cases:
+                     --
+                     --    * Alfa mode - the call is useless and results in
+                     --    unwanted expansion.
+                     --
+                     --    * CodePeer mode - TSS primitive Finalize_Address is
+                     --    not created in this mode.
 
-                     elsif not CodePeer_Mode then
+                     elsif not Alfa_Mode
+                       and then not CodePeer_Mode
+                     then
                         Insert_Action (N,
-                          Make_Set_Finalize_Address_Ptr_Call
+                          Make_Set_Finalize_Address_Call
                             (Loc     => Loc,
                              Typ     => T,
                              Ptr_Typ => PtrT));
@@ -4102,8 +4217,8 @@ package body Exp_Ch4 is
 
          if Present (Actions) then
 
-            --  If we are not allowed to use Expression_With_Actions, just
-            --  skip the optimization, it is not critical for correctness.
+            --  If we are not allowed to use Expression_With_Actions, just skip
+            --  the optimization, it is not critical for correctness.
 
             if not Use_Expression_With_Actions then
                goto Skip_Optimization;
@@ -4334,10 +4449,35 @@ package body Exp_Ch4 is
       ------------------------------
 
       procedure Process_Transient_Object (Decl : Node_Id) is
-         Ins_Nod : constant Node_Id := Parent (N);
-         --  To avoid the insertion of generated code in the list of Actions,
-         --  Insert_Action must look at the parent field of the EWA.
 
+         function Find_Insertion_Node return Node_Id;
+         --  Complex conditions in if statements may be converted into nested
+         --  EWAs. In this case, any generated code must be inserted before the
+         --  if statement to ensure proper visibility of the hook objects. This
+         --  routine returns the top most short circuit operator or the parent
+         --  of the EWA if no nesting was detected.
+
+         -------------------------
+         -- Find_Insertion_Node --
+         -------------------------
+
+         function Find_Insertion_Node return Node_Id is
+            Par : Node_Id;
+
+         begin
+            --  Climb up the branches of a complex condition
+
+            Par := N;
+            while Nkind_In (Parent (Par), N_And_Then, N_Op_Not, N_Or_Else) loop
+               Par := Parent (Par);
+            end loop;
+
+            return Par;
+         end Find_Insertion_Node;
+
+         --  Local variables
+
+         Ins_Node  : constant Node_Id    := Find_Insertion_Node;
          Loc       : constant Source_Ptr := Sloc (Decl);
          Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
          Obj_Typ   : constant Entity_Id  := Etype (Obj_Id);
@@ -4348,9 +4488,11 @@ package body Exp_Ch4 is
          Temp_Decl : Node_Id;
          Temp_Id   : Node_Id;
 
+      --  Start of processing for Process_Transient_Object
+
       begin
-         --  Step 1: Create the access type which provides a reference to
-         --  the transient object.
+         --  Step 1: Create the access type which provides a reference to the
+         --  transient object.
 
          if Is_Access_Type (Obj_Typ) then
             Desig_Typ := Directly_Designated_Type (Obj_Typ);
@@ -4366,13 +4508,13 @@ package body Exp_Ch4 is
          Ptr_Decl :=
            Make_Full_Type_Declaration (Loc,
              Defining_Identifier => Ptr_Id,
-               Type_Definition =>
-                 Make_Access_To_Object_Definition (Loc,
-                   All_Present        =>
-                     Ekind (Obj_Typ) = E_General_Access_Type,
-                   Subtype_Indication => New_Reference_To (Desig_Typ, Loc)));
+             Type_Definition     =>
+               Make_Access_To_Object_Definition (Loc,
+                 All_Present        =>
+                   Ekind (Obj_Typ) = E_General_Access_Type,
+                 Subtype_Indication => New_Reference_To (Desig_Typ, Loc)));
 
-         Insert_Action (Ins_Nod, Ptr_Decl);
+         Insert_Action (Ins_Node, Ptr_Decl);
          Analyze (Ptr_Decl);
 
          --  Step 2: Create a temporary which acts as a hook to the transient
@@ -4387,16 +4529,16 @@ package body Exp_Ch4 is
              Defining_Identifier => Temp_Id,
              Object_Definition   => New_Reference_To (Ptr_Id, Loc));
 
-         Insert_Action (Ins_Nod, Temp_Decl);
+         Insert_Action (Ins_Node, Temp_Decl);
          Analyze (Temp_Decl);
 
-         --  Mark this temporary as created for the purposes of "exporting" the
+         --  Mark this temporary as created for the purposes of exporting the
          --  transient declaration out of the Actions list. This signals the
          --  machinery in Build_Finalizer to recognize this special case.
 
          Set_Return_Flag_Or_Transient_Decl (Temp_Id, Decl);
 
-         --  Step 3: "Hook" the transient object to the temporary
+         --  Step 3: Hook the transient object to the temporary
 
          if Is_Access_Type (Obj_Typ) then
             Expr := Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
@@ -4417,6 +4559,8 @@ package body Exp_Ch4 is
              Name       => New_Reference_To (Temp_Id, Loc),
              Expression => Expr));
       end Process_Transient_Object;
+
+      --  Local variables
 
       Decl : Node_Id;
 
@@ -4957,6 +5101,124 @@ package body Exp_Ch4 is
 
                Rewrite (N, Cond);
                Analyze_And_Resolve (N, Restyp);
+            end if;
+
+            --  Ada 2012 (AI05-0149): Handle membership tests applied to an
+            --  expression of an anonymous access type. This can involve an
+            --  accessibility test and a tagged type membership test in the
+            --  case of tagged designated types.
+
+            if Ada_Version >= Ada_2012
+              and then Is_Acc
+              and then Ekind (Ltyp) = E_Anonymous_Access_Type
+            then
+               declare
+                  Expr_Entity : Entity_Id := Empty;
+                  New_N       : Node_Id;
+                  Param_Level : Node_Id;
+                  Type_Level  : Node_Id;
+
+               begin
+                  if Is_Entity_Name (Lop) then
+                     Expr_Entity := Param_Entity (Lop);
+
+                     if not Present (Expr_Entity) then
+                        Expr_Entity := Entity (Lop);
+                     end if;
+                  end if;
+
+                  --  If a conversion of the anonymous access value to the
+                  --  tested type would be illegal, then the result is False.
+
+                  if not Valid_Conversion
+                           (Lop, Rtyp, Lop, Report_Errs => False)
+                  then
+                     Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+                     Analyze_And_Resolve (N, Restyp);
+
+                  --  Apply an accessibility check if the access object has an
+                  --  associated access level and when the level of the type is
+                  --  less deep than the level of the access parameter. This
+                  --  only occur for access parameters and stand-alone objects
+                  --  of an anonymous access type.
+
+                  else
+                     if Present (Expr_Entity)
+                       and then
+                         Present
+                           (Effective_Extra_Accessibility (Expr_Entity))
+                       and then UI_Gt (Object_Access_Level (Lop),
+                                       Type_Access_Level (Rtyp))
+                     then
+                        Param_Level :=
+                          New_Occurrence_Of
+                            (Effective_Extra_Accessibility (Expr_Entity), Loc);
+
+                        Type_Level :=
+                          Make_Integer_Literal (Loc, Type_Access_Level (Rtyp));
+
+                        --  Return True only if the accessibility level of the
+                        --  expression entity is not deeper than the level of
+                        --  the tested access type.
+
+                        Rewrite (N,
+                          Make_And_Then (Loc,
+                            Left_Opnd  => Relocate_Node (N),
+                            Right_Opnd => Make_Op_Le (Loc,
+                                            Left_Opnd  => Param_Level,
+                                            Right_Opnd => Type_Level)));
+
+                        Analyze_And_Resolve (N);
+                     end if;
+
+                     --  If the designated type is tagged, do tagged membership
+                     --  operation.
+
+                     --  *** NOTE: we have to check not null before doing the
+                     --  tagged membership test (but maybe that can be done
+                     --  inside Tagged_Membership?).
+
+                     if Is_Tagged_Type (Typ) then
+                        Rewrite (N,
+                          Make_And_Then (Loc,
+                            Left_Opnd  => Relocate_Node (N),
+                            Right_Opnd =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  => Obj,
+                                Right_Opnd => Make_Null (Loc))));
+
+                        --  No expansion will be performed when VM_Target, as
+                        --  the VM back-ends will handle the membership tests
+                        --  directly (tags are not explicitly represented in
+                        --  Java objects, so the normal tagged membership
+                        --  expansion is not what we want).
+
+                        if Tagged_Type_Expansion then
+
+                           --  Note that we have to pass Original_Node, because
+                           --  the membership test might already have been
+                           --  rewritten by earlier parts of membership test.
+
+                           Tagged_Membership
+                             (Original_Node (N), SCIL_Node, New_N);
+
+                           --  Update decoration of relocated node referenced
+                           --  by the SCIL node.
+
+                           if Generate_SCIL and then Present (SCIL_Node) then
+                              Set_SCIL_Node (New_N, SCIL_Node);
+                           end if;
+
+                           Rewrite (N,
+                             Make_And_Then (Loc,
+                               Left_Opnd  => Relocate_Node (N),
+                               Right_Opnd => New_N));
+
+                           Analyze_And_Resolve (N, Restyp);
+                        end if;
+                     end if;
+                  end if;
+               end;
             end if;
          end;
       end if;
@@ -5544,25 +5806,6 @@ package body Exp_Ch4 is
 
       elsif Is_Integer_Type (Typ) then
          Apply_Divide_Check (N);
-
-         --  Check for 64-bit division available, or long shifts if the divisor
-         --  is a small power of 2 (since such divides will be converted into
-         --  long shifts).
-
-         if Esize (Ltyp) > 32
-           and then not Support_64_Bit_Divides_On_Target
-           and then
-             (not Rknow
-                or else not Support_Long_Shifts_On_Target
-                or else (Rval /= Uint_2  and then
-                         Rval /= Uint_4  and then
-                         Rval /= Uint_8  and then
-                         Rval /= Uint_16 and then
-                         Rval /= Uint_32 and then
-                         Rval /= Uint_64))
-         then
-            Error_Msg_CRT ("64-bit division", N);
-         end if;
 
       --  Deal with Vax_Float
 
@@ -6193,6 +6436,12 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
+
+      if CodePeer_Mode or Alfa_Mode then
+         return;
+      end if;
+
       --  If either operand is of a private type, then we have the use of an
       --  intrinsic operator, and we get rid of the privateness, by using root
       --  types of underlying types for the actual operation. Otherwise the
@@ -6201,12 +6450,9 @@ package body Exp_Ch4 is
       --  different from the base type.
 
       if Is_Private_Type (Etype (Base))
-           or else
-         Is_Private_Type (Typ)
-           or else
-         Is_Private_Type (Exptyp)
-           or else
-         Rtyp /= Root_Type (Bastyp)
+        or else Is_Private_Type (Typ)
+        or else Is_Private_Type (Exptyp)
+        or else Rtyp /= Root_Type (Bastyp)
       then
          declare
             Bt : constant Entity_Id := Root_Type (Underlying_Type (Bastyp));
@@ -7664,11 +7910,6 @@ package body Exp_Ch4 is
           Statements       => New_List (Test),
           End_Label        => Empty));
 
-      --  The components of the scheme have already been analyzed, and the loop
-      --  parameter declaration has been processed.
-
-      Set_Analyzed (Iteration_Scheme (Last (Actions)));
-
       Rewrite (N,
         Make_Expression_With_Actions (Loc,
           Expression => New_Occurrence_Of (Tnn, Loc),
@@ -7742,6 +7983,12 @@ package body Exp_Ch4 is
       --  Insert explicit dereference if required
 
       if Is_Access_Type (Ptyp) then
+
+         --  First set prefix type to proper access type, in case it currently
+         --  has a private (non-access) view of this type.
+
+         Set_Etype (P, Ptyp);
+
          Insert_Explicit_Dereference (P);
          Analyze_And_Resolve (P, Designated_Type (Ptyp));
 
@@ -8174,6 +8421,10 @@ package body Exp_Ch4 is
       procedure Real_Range_Check;
       --  Handles generation of range check for real target value
 
+      function Has_Extra_Accessibility (Id : Entity_Id) return Boolean;
+      --  True iff Present (Effective_Extra_Accessibility (Id)) successfully
+      --  evaluates to True.
+
       -----------------------------------
       -- Handle_Changed_Representation --
       -----------------------------------
@@ -8473,6 +8724,22 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Btyp);
       end Real_Range_Check;
 
+      -----------------------------
+      -- Has_Extra_Accessibility --
+      -----------------------------
+
+      --  Returns true for a formal of an anonymous access type or for
+      --  an Ada 2012-style stand-alone object of an anonymous access type.
+
+      function Has_Extra_Accessibility (Id : Entity_Id) return Boolean is
+      begin
+         if Is_Formal (Id) or else Ekind_In (Id, E_Constant, E_Variable) then
+            return Present (Effective_Extra_Accessibility (Id));
+         else
+            return False;
+         end if;
+      end Has_Extra_Accessibility;
+
    --  Start of processing for Expand_N_Type_Conversion
 
    begin
@@ -8631,13 +8898,7 @@ package body Exp_Ch4 is
          --  as tagged type checks).
 
          if Is_Entity_Name (Operand)
-           and then
-             (Is_Formal (Entity (Operand))
-               or else
-                 (Present (Renamed_Object (Entity (Operand)))
-                   and then Is_Entity_Name (Renamed_Object (Entity (Operand)))
-                   and then Is_Formal
-                              (Entity (Renamed_Object (Entity (Operand))))))
+           and then Has_Extra_Accessibility (Entity (Operand))
            and then Ekind (Etype (Operand)) = E_Anonymous_Access_Type
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
@@ -10919,6 +11180,15 @@ package body Exp_Ch4 is
 
       Left_Type  := Available_View (Etype (Left));
       Right_Type := Available_View (Etype (Right));
+
+      --  In the case where the type is an access type, the test is applied
+      --  using the designated types (needed in Ada 2012 for implicit anonymous
+      --  access conversions, for AI05-0149).
+
+      if Is_Access_Type (Right_Type) then
+         Left_Type  := Designated_Type (Left_Type);
+         Right_Type := Designated_Type (Right_Type);
+      end if;
 
       if Is_Class_Wide_Type (Left_Type) then
          Left_Type := Root_Type (Left_Type);

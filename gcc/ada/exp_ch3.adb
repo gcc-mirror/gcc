@@ -2616,7 +2616,7 @@ package body Exp_Ch3 is
                      Make_Raise_Statement (Loc)))));
             end;
          else
-            Set_Exception_Handlers (Handled_Stmt_Node, Empty_List);
+            Set_Exception_Handlers (Handled_Stmt_Node, No_List);
          end if;
 
          Set_Handled_Statement_Sequence (Body_Node, Handled_Stmt_Node);
@@ -4841,11 +4841,11 @@ package body Exp_Ch3 is
             return;
 
          --  Ada 2005 (AI-251): Rewrite the expression that initializes a
-         --  class-wide object to ensure that we copy the full object,
-         --  unless we are targetting a VM where interfaces are handled by
-         --  VM itself. Note that if the root type of Typ is an ancestor
-         --  of Expr's type, both types share the same dispatch table and
-         --  there is no need to displace the pointer.
+         --  class-wide interface object to ensure that we copy the full
+         --  object, unless we are targetting a VM where interfaces are handled
+         --  by VM itself. Note that if the root type of Typ is an ancestor of
+         --  Expr's type, both types share the same dispatch table and there is
+         --  no need to displace the pointer.
 
          elsif Comes_From_Source (N)
            and then Is_Interface (Typ)
@@ -4978,13 +4978,30 @@ package body Exp_Ch3 is
 
                      --  Copy the object
 
-                     Insert_Action (N,
-                       Make_Object_Declaration (Loc,
-                         Defining_Identifier => Obj_Id,
-                         Object_Definition =>
-                           New_Occurrence_Of
-                             (Etype (Object_Definition (N)), Loc),
-                         Expression => New_Expr));
+                     if not Is_Limited_Record (Expr_Typ) then
+                        Insert_Action (N,
+                          Make_Object_Declaration (Loc,
+                            Defining_Identifier => Obj_Id,
+                            Object_Definition   =>
+                              New_Occurrence_Of
+                                (Etype (Object_Definition (N)), Loc),
+                            Expression => New_Expr));
+
+                     --  Rename limited type object since they cannot be copied
+                     --  This case occurs when the initialization expression
+                     --  has been previously expanded into a temporary object.
+
+                     else pragma Assert (not Comes_From_Source (Expr_Q));
+                        Insert_Action (N,
+                          Make_Object_Renaming_Declaration (Loc,
+                            Defining_Identifier => Obj_Id,
+                            Subtype_Mark        =>
+                              New_Occurrence_Of
+                                (Etype (Object_Definition (N)), Loc),
+                            Name                =>
+                              Unchecked_Convert_To
+                                (Etype (Object_Definition (N)), New_Expr)));
+                     end if;
 
                      --  Dynamically reference the tag associated with the
                      --  interface.
@@ -5108,31 +5125,34 @@ package body Exp_Ch3 is
 
                begin
                   --  The re-assignment of the tag has to be done even if the
-                  --  object is a constant.
+                  --  object is a constant. The assignment must be analyzed
+                  --  after the declaration.
 
                   New_Ref :=
                     Make_Selected_Component (Loc,
-                       Prefix => New_Reference_To (Def_Id, Loc),
+                       Prefix => New_Occurrence_Of (Def_Id, Loc),
                        Selector_Name =>
                          New_Reference_To (First_Tag_Component (Full_Typ),
                                            Loc));
                   Set_Assignment_OK (New_Ref);
 
-                  Insert_After (Init_After,
+                  Insert_Action_After (Init_After,
                     Make_Assignment_Statement (Loc,
-                      Name => New_Ref,
+                      Name       => New_Ref,
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
                           New_Reference_To
-                            (Node
-                              (First_Elmt
-                                (Access_Disp_Table (Full_Typ))),
+                            (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
                              Loc))));
                end;
 
-            elsif Is_Tagged_Type (Typ)
-              and then Is_CPP_Constructor_Call (Expr)
-            then
+            --  Handle C++ constructor calls. Note that we do not check that
+            --  Typ is a tagged type since the equivalent Ada type of a C++
+            --  class that has no virtual methods is a non-tagged limited
+            --  record type.
+
+            elsif Is_CPP_Constructor_Call (Expr) then
+
                --  The call to the initialization procedure does NOT freeze the
                --  object being initialized.
 
@@ -5196,10 +5216,6 @@ package body Exp_Ch3 is
          if (Is_Possibly_Unaligned_Slice (Expr)
                or else (Is_Possibly_Unaligned_Object (Expr)
                           and then not Represented_As_Scalar (Etype (Expr))))
-
-            --  The exclusion of the unconstrained case is wrong, but for now
-            --  it is too much trouble ???
-
            and then not (Is_Array_Type (Etype (Expr))
                            and then not Is_Constrained (Etype (Expr)))
          then
@@ -5266,6 +5282,52 @@ package body Exp_Ch3 is
          end if;
       end if;
 
+      if Nkind (N) = N_Object_Declaration
+        and then Nkind (Object_Definition (N)) = N_Access_Definition
+        and then not Is_Local_Anonymous_Access (Etype (Def_Id))
+      then
+         --  An Ada 2012 stand-alone object of an anonymous access type
+
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+
+            Level : constant Entity_Id :=
+                      Make_Defining_Identifier (Sloc (N),
+                        Chars =>
+                          New_External_Name (Chars (Def_Id), Suffix => "L"));
+
+            Level_Expr : Node_Id;
+            Level_Decl : Node_Id;
+
+         begin
+            Set_Ekind (Level, Ekind (Def_Id));
+            Set_Etype (Level, Standard_Natural);
+            Set_Scope (Level, Scope (Def_Id));
+
+            if No (Expr) then
+
+               --  Set accessibility level of null
+
+               Level_Expr :=
+                 Make_Integer_Literal (Loc, Scope_Depth (Standard_Standard));
+
+            else
+               Level_Expr := Dynamic_Accessibility_Level (Expr);
+            end if;
+
+            Level_Decl := Make_Object_Declaration (Loc,
+             Defining_Identifier => Level,
+             Object_Definition => New_Occurrence_Of (Standard_Natural, Loc),
+             Expression => Level_Expr,
+             Constant_Present => Constant_Present (N),
+             Has_Init_Expression => True);
+
+            Insert_Action_After (Init_After, Level_Decl);
+
+            Set_Extra_Accessibility (Def_Id, Level);
+         end;
+      end if;
+
    --  Exception on library entity not available
 
    exception
@@ -5302,7 +5364,7 @@ package body Exp_Ch3 is
 
    --  If the last variant does not contain the Others choice, replace it with
    --  an N_Others_Choice node since Gigi always wants an Others. Note that we
-   --  do not bother to call Analyze on the modified variant part, since it's
+   --  do not bother to call Analyze on the modified variant part, since its
    --  only effect would be to compute the Others_Discrete_Choices node
    --  laboriously, and of course we already know the list of choices that
    --  corresponds to the others choice (it's the list we are replacing!)
@@ -5486,13 +5548,18 @@ package body Exp_Ch3 is
                then
                   Build_Slice_Assignment (Typ);
                end if;
+            end if;
 
-            --  ??? This may not be necessary after all
+            --  Create a finalization master to service the anonymous access
+            --  components of the array.
 
-            elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
-              and then Needs_Finalization (Directly_Designated_Type (Comp_Typ))
+            if Ekind (Comp_Typ) = E_Anonymous_Access_Type
+              and then Needs_Finalization (Designated_Type (Comp_Typ))
             then
-               Build_Finalization_Collection (Comp_Typ);
+               Build_Finalization_Master
+                 (Typ        => Comp_Typ,
+                  Ins_Node   => Parent (Typ),
+                  Encl_Scope => Scope (Typ));
             end if;
          end if;
 
@@ -5584,10 +5651,16 @@ package body Exp_Ch3 is
 
       elsif CodePeer_Mode then
          return;
+
+      --  Do not create TSS routine Finalize_Address when compiling in Alfa
+      --  mode because it is not necessary and results in useless expansion.
+
+      elsif Alfa_Mode then
+         return;
       end if;
 
-      --  Generate the body of Finalize_Address. This routine is accessible
-      --  through the TSS mechanism.
+      --  Create the body of TSS primitive Finalize_Address. This automatically
+      --  sets the TSS entry for the class-wide type.
 
       Make_Finalize_Address_Body (Typ);
    end Expand_Freeze_Class_Wide_Type;
@@ -5906,6 +5979,7 @@ package body Exp_Ch3 is
       Type_Decl   : constant Node_Id := Parent (Def_Id);
       Comp        : Entity_Id;
       Comp_Typ    : Entity_Id;
+      Has_AACC    : Boolean;
       Predef_List : List_Id;
 
       Renamed_Eq : Node_Id := Empty;
@@ -5974,7 +6048,9 @@ package body Exp_Ch3 is
 
       --  Update task and controlled component flags, because some of the
       --  component types may have been private at the point of the record
-      --  declaration.
+      --  declaration. Detect anonymous access-to-controlled components.
+
+      Has_AACC := False;
 
       Comp := First_Component (Def_Id);
       while Present (Comp) loop
@@ -5992,6 +6068,14 @@ package body Exp_Ch3 is
                                 and then Is_Controlled (Comp_Typ)))
          then
             Set_Has_Controlled_Component (Def_Id);
+
+         --  Non-self-referential anonymous access-to-controlled component
+
+         elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
+           and then Needs_Finalization (Designated_Type (Comp_Typ))
+           and then Designated_Type (Comp_Typ) /= Def_Id
+         then
+            Has_AACC := True;
          end if;
 
          Next_Component (Comp);
@@ -6315,13 +6399,20 @@ package body Exp_Ch3 is
          --  compiling a CPP tagged type.
 
          elsif not Restriction_Active (No_Dispatching_Calls) then
+
+            --  Create the body of TSS primitive Finalize_Address. This must
+            --  be done before the bodies of all predefined primitives are
+            --  created. If Def_Id is limited, Stream_Input and Stream_Read
+            --  may produce build-in-place allocations and for those the
+            --  expander needs Finalize_Address. Do not create the body of
+            --  Finalize_Address in Alfa mode since it is not needed.
+
+            if not Alfa_Mode then
+               Make_Finalize_Address_Body (Def_Id);
+            end if;
+
             Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
             Append_Freeze_Actions (Def_Id, Predef_List);
-
-            --  Create the body of Finalize_Address, a helper routine used in
-            --  conjunction with controlled objects on the heap.
-
-            Make_Finalize_Address_Body (Def_Id);
          end if;
 
          --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
@@ -6355,28 +6446,103 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      --  Processing for components of anonymous access type that designate
-      --  a controlled type.
+      --  Create a heterogeneous finalization master to service the anonymous
+      --  access-to-controlled components of the record type.
 
-      Comp := First_Component (Def_Id);
-      while Present (Comp) loop
-         Comp_Typ := Etype (Comp);
+      if Has_AACC then
+         declare
+            Encl_Scope : constant Entity_Id  := Scope (Def_Id);
+            Ins_Node   : constant Node_Id    := Parent (Def_Id);
+            Loc        : constant Source_Ptr := Sloc (Def_Id);
+            Fin_Mas_Id : Entity_Id;
 
-         if Ekind (Comp_Typ) = E_Anonymous_Access_Type
-           and then Needs_Finalization (Directly_Designated_Type (Comp_Typ))
+            Attributes_Set : Boolean := False;
+            Master_Built   : Boolean := False;
+            --  Two flags which control the creation and initialization of a
+            --  common heterogeneous master.
 
-            --  Avoid self-references
+         begin
+            Comp := First_Component (Def_Id);
+            while Present (Comp) loop
+               Comp_Typ := Etype (Comp);
 
-           and then Directly_Designated_Type (Comp_Typ) /= Def_Id
-         then
-            Build_Finalization_Collection
-             (Typ        => Comp_Typ,
-              Ins_Node   => Parent (Def_Id),
-              Encl_Scope => Scope (Def_Id));
-         end if;
+               --  A non-self-referential anonymous access-to-controlled
+               --  component.
 
-         Next_Component (Comp);
-      end loop;
+               if Ekind (Comp_Typ) = E_Anonymous_Access_Type
+                 and then Needs_Finalization (Designated_Type (Comp_Typ))
+                 and then Designated_Type (Comp_Typ) /= Def_Id
+               then
+                  if VM_Target = No_VM then
+
+                     --  Build a homogeneous master for the first anonymous
+                     --  access-to-controlled component. This master may be
+                     --  converted into a heterogeneous collection if more
+                     --  components are to follow.
+
+                     if not Master_Built then
+                        Master_Built := True;
+
+                        --  All anonymous access-to-controlled types allocate
+                        --  on the global pool.
+
+                        Set_Associated_Storage_Pool (Comp_Typ,
+                          Get_Global_Pool_For_Access_Type (Comp_Typ));
+
+                        Build_Finalization_Master
+                          (Typ        => Comp_Typ,
+                           Ins_Node   => Ins_Node,
+                           Encl_Scope => Encl_Scope);
+
+                        Fin_Mas_Id := Finalization_Master (Comp_Typ);
+
+                     --  Subsequent anonymous access-to-controlled components
+                     --  reuse the already available master.
+
+                     else
+                        --  All anonymous access-to-controlled types allocate
+                        --  on the global pool.
+
+                        Set_Associated_Storage_Pool (Comp_Typ,
+                          Get_Global_Pool_For_Access_Type (Comp_Typ));
+
+                        --  Shared the master among multiple components
+
+                        Set_Finalization_Master (Comp_Typ, Fin_Mas_Id);
+
+                        --  Convert the master into a heterogeneous collection.
+                        --  Generate:
+                        --
+                        --    Set_Is_Heterogeneous (<Fin_Mas_Id>);
+
+                        if not Attributes_Set then
+                           Attributes_Set := True;
+
+                           Insert_Action (Ins_Node,
+                             Make_Procedure_Call_Statement (Loc,
+                               Name =>
+                                 New_Reference_To
+                                   (RTE (RE_Set_Is_Heterogeneous), Loc),
+                               Parameter_Associations => New_List (
+                                 New_Reference_To (Fin_Mas_Id, Loc))));
+                        end if;
+                     end if;
+
+                  --  Since .NET/JVM targets do not support heterogeneous
+                  --  masters, each component must have its own master.
+
+                  else
+                     Build_Finalization_Master
+                       (Typ        => Comp_Typ,
+                        Ins_Node   => Ins_Node,
+                        Encl_Scope => Encl_Scope);
+                  end if;
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+         end;
+      end if;
    end Expand_Freeze_Record_Type;
 
    ------------------------------
@@ -6605,59 +6771,110 @@ package body Exp_Ch3 is
             --    Rep Clause "for Def_Id'Storage_Pool use a_Pool_Object"
             --    ---> Storage Pool is the specified one
 
-            elsif Present (Associated_Storage_Pool (Def_Id)) then
+            --  When compiling in Ada 2012 mode, ensure that the accessibility
+            --  level of the subpool access type is not deeper than that of the
+            --  pool_with_subpools. This check is not performed on .NET/JVM
+            --  since those targets do not support pools.
 
-               --  Nothing to do the associated storage pool has been attached
-               --  when analyzing the representation clause.
+            elsif Ada_Version >= Ada_2012
+              and then Present (Associated_Storage_Pool (Def_Id))
+              and then VM_Target = No_VM
+            then
+               declare
+                  Loc   : constant Source_Ptr := Sloc (Def_Id);
+                  Pool  : constant Entity_Id :=
+                            Associated_Storage_Pool (Def_Id);
+                  RSPWS : constant Entity_Id :=
+                            RTE (RE_Root_Storage_Pool_With_Subpools);
 
-               null;
+               begin
+                  --  It is known that the accessibility level of the access
+                  --  type is deeper than that of the pool.
+
+                  if Type_Access_Level (Def_Id) > Object_Access_Level (Pool)
+                    and then not Accessibility_Checks_Suppressed (Def_Id)
+                    and then not Accessibility_Checks_Suppressed (Pool)
+                  then
+                     --  Static case: the pool is known to be a descendant of
+                     --  Root_Storage_Pool_With_Subpools.
+
+                     if Is_Ancestor (RSPWS, Etype (Pool)) then
+                        Error_Msg_N
+                          ("?subpool access type has deeper accessibility " &
+                           "level than pool", Def_Id);
+
+                        Append_Freeze_Action (Def_Id,
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Accessibility_Check_Failed));
+
+                     --  Dynamic case: when the pool is of a class-wide type,
+                     --  it may or may not support subpools depending on the
+                     --  path of derivation. Generate:
+
+                     --    if Def_Id in RSPWS'Class then
+                     --       raise Program_Error;
+                     --    end if;
+
+                     elsif Is_Class_Wide_Type (Etype (Pool)) then
+                        Append_Freeze_Action (Def_Id,
+                          Make_If_Statement (Loc,
+                            Condition =>
+                              Make_In (Loc,
+                                Left_Opnd =>
+                                  New_Reference_To (Pool, Loc),
+                                Right_Opnd =>
+                                  New_Reference_To
+                                    (Class_Wide_Type (RSPWS), Loc)),
+
+                            Then_Statements => New_List (
+                              Make_Raise_Program_Error (Loc,
+                                Reason => PE_Accessibility_Check_Failed))));
+                     end if;
+                  end if;
+               end;
             end if;
 
             --  For access-to-controlled types (including class-wide types and
-            --  Taft-amendment types which potentially have controlled
+            --  Taft-amendment types, which potentially have controlled
             --  components), expand the list controller object that will store
-            --  the dynamically allocated objects. Do not do this
-            --  transformation for expander-generated access types, but do it
-            --  for types that are the full view of types derived from other
-            --  private types. Also suppress the list controller in the case
-            --  of a designated type with convention Java, since this is used
-            --  when binding to Java API specs, where there's no equivalent of
-            --  a finalization list and we don't want to pull in the
-            --  finalization support if not needed.
+            --  the dynamically allocated objects. Don't do this transformation
+            --  for expander-generated access types, but do it for types that
+            --  are the full view of types derived from other private types.
+            --  Also suppress the list controller in the case of a designated
+            --  type with convention Java, since this is used when binding to
+            --  Java API specs, where there's no equivalent of a finalization
+            --  list and we don't want to pull in the finalization support if
+            --  not needed.
 
             if not Comes_From_Source (Def_Id)
-               and then not Has_Private_Declaration (Def_Id)
+              and then not Has_Private_Declaration (Def_Id)
             then
                null;
 
-            elsif (Needs_Finalization (Desig_Type)
-                    and then Convention (Desig_Type) /= Convention_Java
-                    and then Convention (Desig_Type) /= Convention_CIL)
+            --  An exception is made for types defined in the run-time because
+            --  Ada.Tags.Tag itself is such a type and cannot afford this
+            --  unnecessary overhead that would generates a loop in the
+            --  expansion scheme. Another exception is if Restrictions
+            --  (No_Finalization) is active, since then we know nothing is
+            --  controlled.
+
+            elsif Restriction_Active (No_Finalization)
+              or else In_Runtime (Def_Id)
+            then
+               null;
+
+            --  Assume that incomplete and private types are always completed
+            --  by a controlled full view.
+
+            elsif Needs_Finalization (Desig_Type)
               or else
                 (Is_Incomplete_Or_Private_Type (Desig_Type)
-                  and then No (Full_View (Desig_Type))
-
-                  --  An exception is made for types defined in the run-time
-                  --  because Ada.Tags.Tag itself is such a type and cannot
-                  --  afford this unnecessary overhead that would generates a
-                  --  loop in the expansion scheme...
-
-                   and then not In_Runtime (Def_Id)
-
-                  --  Another exception is if Restrictions (No_Finalization)
-                  --  is active, since then we know nothing is controlled.
-
-                   and then not Restriction_Active (No_Finalization))
-
-               --  If the designated type is not frozen yet, its controlled
-               --  status must be retrieved explicitly.
-
+                  and then No (Full_View (Desig_Type)))
               or else
                 (Is_Array_Type (Desig_Type)
-                  and then not Is_Frozen (Desig_Type)
                   and then Needs_Finalization (Component_Type (Desig_Type)))
             then
-               Build_Finalization_Collection (Def_Id);
+               Build_Finalization_Master (Def_Id);
             end if;
          end;
 
@@ -6838,7 +7055,7 @@ package body Exp_Ch3 is
                (Get_Rep_Item_For_Entity
                  (First_Subtype (T), Name_Default_Value)));
 
-      --  Othersie, for scalars, we must have normalize/initialize scalars
+      --  Otherwise, for scalars, we must have normalize/initialize scalars
       --  case, or if the node N is an 'Invalid_Value attribute node.
 
       elsif Is_Scalar_Type (T) then
@@ -6854,8 +7071,8 @@ package body Exp_Ch3 is
             Size_To_Use := Size;
          end if;
 
-         --  Maximum size to use is 64 bits, since we will create values
-         --  of type Unsigned_64 and the range must fit this type.
+         --  Maximum size to use is 64 bits, since we will create values of
+         --  type Unsigned_64 and the range must fit this type.
 
          if Size_To_Use /= No_Uint and then Size_To_Use > Uint_64 then
             Size_To_Use := Uint_64;
@@ -6883,7 +7100,7 @@ package body Exp_Ch3 is
 
             --  For signed integer types that have no negative values, either
             --  there is room for negative values, or there is not. If there
-            --  is, then all 1 bits may be interpreted as minus one, which is
+            --  is, then all 1-bits may be interpreted as minus one, which is
             --  certainly invalid. Alternatively it is treated as the largest
             --  positive value, in which case the observation for modular types
             --  still applies.
@@ -6897,8 +7114,8 @@ package body Exp_Ch3 is
             then
                Val := Make_Integer_Literal (Loc, 2 ** Size_To_Use - 1);
 
-               --  Resolve as Unsigned_64, because the largest number we
-               --  can generate is out of range of universal integer.
+               --  Resolve as Unsigned_64, because the largest number we can
+               --  generate is out of range of universal integer.
 
                Analyze_And_Resolve (Val, RTE (RE_Unsigned_64));
 
@@ -6910,10 +7127,10 @@ package body Exp_Ch3 is
                                   UI_Min (Uint_63, Size_To_Use - 1);
 
                begin
-                  --  Normally we like to use the most negative number. The
-                  --  one exception is when this number is in the known
-                  --  subtype range and the largest positive number is not in
-                  --  the known subtype range.
+                  --  Normally we like to use the most negative number. The one
+                  --  exception is when this number is in the known subtype
+                  --  range and the largest positive number is not in the known
+                  --  subtype range.
 
                   --  For this exceptional case, use largest positive value
 
@@ -6923,7 +7140,7 @@ package body Exp_Ch3 is
                   then
                      Val := Make_Integer_Literal (Loc, 2 ** Signed_Size - 1);
 
-                     --  Normal case of largest negative value
+                  --  Normal case of largest negative value
 
                   else
                      Val := Make_Integer_Literal (Loc, -(2 ** Signed_Size));
@@ -6992,14 +7209,14 @@ package body Exp_Ch3 is
 
          --  The final expression is obtained by doing an unchecked conversion
          --  of this result to the base type of the required subtype. We use
-         --  the base type to avoid the unchecked conversion from chopping
+         --  the base type to prevent the unchecked conversion from chopping
          --  bits, and then we set Kill_Range_Check to preserve the "bad"
          --  value.
 
          Result := Unchecked_Convert_To (Base_Type (T), Val);
 
-         --  Ensure result is not truncated, since we want the "bad" bits
-         --  and also kill range check on result.
+         --  Ensure result is not truncated, since we want the "bad" bits, and
+         --  also kill range check on result.
 
          if Nkind (Result) = N_Unchecked_Type_Conversion then
             Set_No_Truncation (Result);
@@ -7031,12 +7248,11 @@ package body Exp_Ch3 is
       --  Access type is initialized to null
 
       elsif Is_Access_Type (T) then
-         return
-           Make_Null (Loc);
+         return Make_Null (Loc);
 
-      --  No other possibilities should arise, since we should only be
-      --  calling Get_Simple_Init_Val if Needs_Simple_Initialization
-      --  returned True, indicating one of the above cases held.
+      --  No other possibilities should arise, since we should only be calling
+      --  Get_Simple_Init_Val if Needs_Simple_Initialization returned True,
+      --  indicating one of the above cases held.
 
       else
          raise Program_Error;
@@ -7085,7 +7301,7 @@ package body Exp_Ch3 is
          S1 := Scope (S1);
       end loop;
 
-      return Chars (S1) = Name_System or else Chars (S1) = Name_Ada;
+      return Is_RTU (S1, System) or else Is_RTU (S1, Ada);
    end In_Runtime;
 
    ----------------------------
@@ -7949,14 +8165,20 @@ package body Exp_Ch3 is
             Field_Name := Chars (Defining_Identifier (C));
 
             --  The tags must not be compared: they are not part of the value.
-            --  Ditto for the controller component, if present.
+            --  Ditto for parent interfaces because their equality operator is
+            --  abstract.
 
             --  Note also that in the following, we use Make_Identifier for
             --  the component names. Use of New_Reference_To to identify the
             --  components would be incorrect because the wrong entities for
             --  discriminants could be picked up in the private type case.
 
-            if Field_Name /= Name_uTag then
+            if Field_Name = Name_uParent
+              and then Is_Interface (Etype (Defining_Identifier (C)))
+            then
+               null;
+
+            elsif Field_Name /= Name_uTag then
                Evolve_Or_Else (Cond,
                  Make_Op_Ne (Loc,
                    Left_Opnd =>
@@ -8405,7 +8627,7 @@ package body Exp_Ch3 is
       end if;
 
       --  All tagged types receive their own Deep_Adjust and Deep_Finalize
-      --  regardless of whether they are controlled or contain controlled
+      --  regardless of whether they are controlled or may contain controlled
       --  components.
 
       --  Do not generate the routines if finalization is disabled
@@ -8420,12 +8642,10 @@ package body Exp_Ch3 is
 
       else
          if not Is_Limited_Type (Tag_Typ) then
-            Append_To (Res,
-              Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust));
+            Append_To (Res, Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust));
          end if;
 
-         Append_To (Res,
-           Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize));
+         Append_To (Res, Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize));
       end if;
 
       Predef_List := Res;
@@ -9034,9 +9254,9 @@ package body Exp_Ch3 is
       --  to be (implicitly) inherited in that case because it can lead to a VM
       --  exception.
 
-      --  Do not generate stream routines for type Finalization_Collection
-      --  because collection may never appear in types and therefore cannot be
-      --  read or written.
+      --  Do not generate stream routines for type Finalization_Master because
+      --  a master may never appear in types and therefore cannot be read or
+      --  written.
 
       return
           (not Is_Limited_Type (Typ)
@@ -9059,7 +9279,7 @@ package body Exp_Ch3 is
         and then RTE_Available (RE_Tag)
         and then No (Type_Without_Stream_Operation (Typ))
         and then RTE_Available (RE_Root_Stream_Type)
-        and then not Is_RTE (Typ, RE_Finalization_Collection);
+        and then not Is_RTE (Typ, RE_Finalization_Master);
    end Stream_Operation_OK;
 
 end Exp_Ch3;

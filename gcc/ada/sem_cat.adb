@@ -1391,6 +1391,10 @@ package body Sem_Cat is
       if Ekind (Subp) = E_Function then
          Rtyp := Etype (Subp);
 
+         --  AI05-0101 (Binding Interpretation): The result type of a remote
+         --  function must either support external streaming or be a
+         --  controlling access result type.
+
          if Has_Controlling_Result (Subp) then
             null;
 
@@ -1406,19 +1410,16 @@ package body Sem_Cat is
                  ("limited return type must have Read and Write attributes",
                      Parent (Subp));
                Explain_Limited_Type (Rtyp, Parent (Subp));
-
-            --  Check that the return type supports external streaming.
-            --  Note that the language of the standard (E.2.2(14)) does not
-            --  explicitly mention that case, but it really does not make
-            --  sense to return a value containing a local access type.
-
-            elsif No_External_Streaming (Rtyp)
-                    and then not Error_Posted (Rtyp)
-            then
-               Illegal_Remote_Subp ("return type containing non-remote access "
-                 & "must have Read and Write attributes",
-                 Parent (Subp));
             end if;
+
+         --  Check that the return type supports external streaming
+
+         elsif No_External_Streaming (Rtyp)
+                 and then not Error_Posted (Rtyp)
+         then
+            Illegal_Remote_Subp ("return type containing non-remote access "
+              & "must have Read and Write attributes",
+              Parent (Subp));
          end if;
       end if;
 
@@ -1674,13 +1675,8 @@ package body Sem_Cat is
          then
             return True;
 
-         --  A limited interface is not currently a legal ancestor for the
-         --  designated type of an RACW type, because a type that implements
-         --  such an interface need not be limited. However, the ARG seems to
-         --  incline towards allowing an access to classwide limited interface
-         --  type as a remote access type, as resolved in AI05-060. But note
-         --  that the expansion circuitry for RACWs that designate classwide
-         --  interfaces is not complete yet.
+         --  AI05-0060 (Binding Interpretation): A limited interface is a legal
+         --  ancestor for the designated type of an RACW type.
 
          elsif Is_Limited_Record (E) and then Is_Limited_Interface (E) then
             return True;

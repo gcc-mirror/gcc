@@ -1,3 +1,204 @@
+2011-09-02  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_allocator.h (tracker_allocator_counter::
+	allocate): Update allocation count only if allocation succeeded.
+
+2011-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset: Trivial formatting fixes.
+
+2011-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Marc Glisse  <marc.glisse@normalesup.org>
+
+	* include/std/bitset (_Base_bitset<>::_M_are_all_aux): Remove.
+	(_Base_bitset<>::_M_are_all): Add.
+	(bitset<>::all): Use the latter, improve implementation.
+
+2011-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++/50268
+	* include/std/bitset (struct _Sanitize_val): Add.
+	(bitset<>::bitset(unsigned long long)): Fix.
+	* testsuite/23_containers/bitset/cons/50268.cc: New.
+
+2011-09-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable.h (_Hashtable<>::_Hashtable(_Hashtable&&)):
+	Remove noexcept, the move constructor allocates memory; rearrange
+	the code in the body to consistently update __ht._M_rehash_policy
+	before using _M_next_bkt on it.
+	* include/debug/unordered_map: Adjust.
+	* include/debug/unordered_set: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* testsuite/23_containers/unordered_map/cons/
+	noexcept_move_construct.cc: Remove.
+	* testsuite/23_containers/unordered_set/cons/
+	noexcept_move_construct.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/
+	noexcept_move_construct.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/
+	noexcept_move_construct.cc: Likewise.
+
+2011-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/chrono (operator*(const _Rep1&, const duration<>&)):
+	Fix order of template parameters per LWG 2004.
+
+2011-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_iterator.h (make_move_iterator): Implement DR2061.
+	* testsuite/24_iterators/move_iterator/dr2061.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-warning
+	line numbers.
+
+2011-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/os/mingw32/error_constants.h: Fix commas.
+
+2011-08-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/duration/arithmetic/constexpr.cc: Add.
+
+2011-08-29  Kai Tietz  <ktietz@redhat.com>
+
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR)  Add
+	checks for ECHILD, ENOSPC, EPERM, ETIMEDOUT, and
+	EWOULDBLOCK.
+	* config/os/mingw32/error_constants.h (errc): Add
+	enumerator values no_child_process, no_space_on_device,
+	not_supported, operation_not_permitted, operation_would_block,
+	timed_out, and value_too_large,
+
+2011-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50118
+	* include/bits/stl_list.h (_List_base<>::
+	_List_base(const allocator_type&)): Remove.
+	(_List_base<>::_List_base(const _Node_alloc_type&)): Add.
+	(list<>:list(const allocator_type&), list(size_type, const
+	value_type&, const allocator_type&),
+	list(initializer_list<, const allocator_type&),
+	list(_InputIterator, _InputIterator, const allocator_type&),
+	insert(iterator, size_type, const value_type&),
+	insert(iterator, _InputIterator, _InputIterator)): Adjust.
+	* include/bits/stl_tree.h (_Rb_tree<>::_Rb_tree(const _Compare&,
+	const allocator_type&)): Fix.
+	* include/bits/stl_map.h (map<>::map(const _Compare&,
+ 	const allocator_type&), map(initializer_list<>,
+	const _Compare&, const allocator_type&), map(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Adjust.
+	* include/bits/stl_set.h (set<>::set(const _Compare&,
+ 	const allocator_type&), set(initializer_list<>,
+	const _Compare&, const allocator_type&), set(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Likewise.
+	* include/bits/stl_multimap.h (multimap<>::multimap(const _Compare&,
+ 	const allocator_type&), multimap(initializer_list<>,
+	const _Compare&, const allocator_type&), multimap(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Likewise.
+	* include/bits/stl_multiset.h (multiset<>::multiset(const _Compare&,
+ 	const allocator_type&), multiset(initializer_list<>,
+	const _Compare&, const allocator_type&), multiset(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Likewise.
+	* include/bits/forward_list.h (_Fwd_list_base<>::
+	_Fwd_list_base(const _Alloc&), _Fwd_list_base(const _Fwd_list_base&,
+	const _Alloc&), _Fwd_list_base(_Fwd_list_base&&, const _Alloc&)):
+	Remove.
+	(_Fwd_list_base<>::_Fwd_list_base(const _Node_alloc_type&),
+	_Fwd_list_base(const _Fwd_list_base&,
+	const _Node_alloc_type&), _Fwd_list_base(_Fwd_list_base&&,
+	const _Node_alloc_type&)): Add.
+	(forward_list<>::forward_list(const _Alloc&),
+	forward_list(const forward_list&, const _Alloc&),
+	forward_list(forward_list&&, const _Alloc&),
+	forward_list(size_type, const _Tp&, const _Alloc&),
+	forward_list(_InputIterator, _InputIterator, const _Alloc&),
+	forward_list(std::initializer_list<>, const _Alloc&),
+	get_allocator): Adjust.
+	* include/bits/forward_list.tcc: Adjust.
+	* testsuite/util/testsuite_allocator.h (ExplicitConsAlloc): Add.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/5.cc: New.
+	* testsuite/23_containers/multimap/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/
+	explicit_instantiation/5_c++0x.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/
+	explicit_instantiation/5_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2011-08-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_CHECK_MATH_PROTO)
+	(GLIBCXX_CHECK_STDLIB_PROTO): New tests.
+	* configure.ac (GLIBCXX_CHECK_MATH_PROTO)
+	(GLIBCXX_CHECK_STDLIB_PROTO): Call them.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* config/os/solaris/solaris2.8/os_defines.h
+	(__CORRECT_ISO_CPP_MATH_H_PROTO2): Don't define.
+	* config/os/solaris/solaris2.9: Remove.
+	* configure.host (solaris2.8): Merge with ...
+	(solaris2.9, solaris2.1[0-9]): ... this.
+	Always use os/solaris/solaris2.8.
+
+2011-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (swap(_Tp(&)[_Nm], _Tp(&)[_Nm])): Remove
+	workaround for c++/49045.
+	* include/bits/algorithmfwd.h: Likewise.
+
+2011-08-25  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/simple.cc: New file.
+	* testsuite/lib/gdb-test.exp: New file.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: New
+	file.
+
 2011-08-18  Marc Glisse  <marc.glisse@normalesup.org>
 
 	* include/tr1/cmath: Extend/update comment.

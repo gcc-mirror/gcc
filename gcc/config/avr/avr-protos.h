@@ -86,16 +86,12 @@ extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);
 extern const char *output_reload_inhi (rtx insn, rtx *operands, int *len);
 extern const char *output_reload_insisf (rtx insn, rtx *operands, rtx clobber, int *len);
-extern enum reg_class secondary_input_reload_class (enum reg_class,
-						    enum machine_mode,
-						    rtx);
 extern void notice_update_cc (rtx body, rtx insn);
 extern void print_operand (FILE *file, rtx x, int code);
 extern void print_operand_address (FILE *file, rtx addr);
 extern int reg_unused_after (rtx insn, rtx reg);
 extern int _reg_unused_after (rtx insn, rtx reg);
 extern int avr_jump_mode (rtx x, rtx insn);
-extern int byte_immediate_operand (rtx op, enum machine_mode mode);
 extern int test_hard_reg_class (enum reg_class rclass, rtx x);
 extern int jump_over_one_insn_p (rtx insn, rtx dest);
 

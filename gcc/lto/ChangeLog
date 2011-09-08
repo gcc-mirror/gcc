@@ -1,3 +1,8 @@
+2011-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* lto-lang.c (lto_init): Likewise.  Also, avoid calling
+	linemap_add twice.
+
 2011-08-11  Martin Jambor  <mjambor@suse.cz>
 
 	* lto.c (uniquify_nodes): Use main variant's BINFO too.

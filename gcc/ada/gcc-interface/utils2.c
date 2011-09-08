@@ -544,7 +544,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
     operation_type = TREE_TYPE (TYPE_FIELDS (operation_type));
 
   if (operation_type
-      && !AGGREGATE_TYPE_P (operation_type)
+      && TREE_CODE (operation_type) == INTEGER_TYPE
       && TYPE_EXTRA_SUBTYPE_P (operation_type))
     operation_type = get_base_type (operation_type);
 
@@ -1002,7 +1002,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
     operation_type = TREE_TYPE (TYPE_FIELDS (operation_type));
 
   if (operation_type
-      && !AGGREGATE_TYPE_P (operation_type)
+      && TREE_CODE (operation_type) == INTEGER_TYPE
       && TYPE_EXTRA_SUBTYPE_P (operation_type))
     operation_type = get_base_type (operation_type);
 
@@ -1907,13 +1907,13 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
      stored just in front.  */
 
   unsigned int data_align = TYPE_ALIGN (data_type);
-  unsigned int default_allocator_alignment
-      = get_target_default_allocator_alignment () * BITS_PER_UNIT;
+  unsigned int system_allocator_alignment
+      = get_target_system_allocator_alignment () * BITS_PER_UNIT;
 
   tree aligning_type
-    = ((data_align > default_allocator_alignment)
+    = ((data_align > system_allocator_alignment)
        ? make_aligning_type (data_type, data_align, data_size,
-			     default_allocator_alignment,
+			     system_allocator_alignment,
 			     POINTER_SIZE / BITS_PER_UNIT)
        : NULL_TREE);
 
@@ -1986,12 +1986,12 @@ maybe_wrap_free (tree data_ptr, tree data_type)
      return value, stored in front of the data block at allocation time.  */
 
   unsigned int data_align = TYPE_ALIGN (data_type);
-  unsigned int default_allocator_alignment
-      = get_target_default_allocator_alignment () * BITS_PER_UNIT;
+  unsigned int system_allocator_alignment
+      = get_target_system_allocator_alignment () * BITS_PER_UNIT;
 
   tree free_ptr;
 
-  if (data_align > default_allocator_alignment)
+  if (data_align > system_allocator_alignment)
     {
       /* DATA_FRONT_PTR (void *)
 	 = (void *)DATA_PTR - (void *)sizeof (void *))  */

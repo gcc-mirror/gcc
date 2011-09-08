@@ -1345,7 +1345,13 @@ Func_expression::do_get_tree(Translate_context* context)
 void
 Func_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  ast_dump_context->ostream() << this->function_->name() ;
+  ast_dump_context->ostream() << this->function_->name();
+  if (this->closure_ != NULL)
+    {
+      ast_dump_context->ostream() << " {closure =  ";
+      this->closure_->dump_expression(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
 }
 
 // Make a reference to a function in an expression.
@@ -1423,7 +1429,6 @@ Unknown_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->ostream() << "_Unknown_(" << this->named_object_->name()
 			      << ")";
-   
 }
 
 // Make a reference to an unknown name.
@@ -1563,16 +1568,17 @@ String_expression::do_get_tree(Translate_context* context)
   return context->gogo()->go_string_constant_tree(this->val_);
 }
 
-// Export a string expression.
+ // Write string literal to string dump.
 
 void
-String_expression::do_export(Export* exp) const
+String_expression::export_string(String_dump* exp,
+				 const String_expression* str)
 {
   std::string s;
-  s.reserve(this->val_.length() * 4 + 2);
+  s.reserve(str->val_.length() * 4 + 2);
   s += '"';
-  for (std::string::const_iterator p = this->val_.begin();
-       p != this->val_.end();
+  for (std::string::const_iterator p = str->val_.begin();
+       p != str->val_.end();
        ++p)
     {
       if (*p == '\\' || *p == '"')
@@ -1598,6 +1604,14 @@ String_expression::do_export(Export* exp) const
     }
   s += '"';
   exp->write_string(s);
+}
+
+// Export a string expression.
+
+void
+String_expression::do_export(Export* exp) const
+{
+  String_expression::export_string(exp, this);
 }
 
 // Import a string expression.
@@ -1647,8 +1661,7 @@ String_expression::do_import(Import* imp)
 void
 String_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  // FIXME: Do proper backshlash quoting for this->val_
-  ast_dump_context->ostream() << "\"" << this->val_ << "\"";
+  String_expression::export_string(ast_dump_context, this);
 }
 
 // Make a string expression.
@@ -1676,9 +1689,9 @@ class Integer_expression : public Expression
   static bool
   check_constant(mpz_t val, Type*, source_location);
 
-  // Write VAL to export data.
+  // Write VAL to string dump.
   static void
-  export_integer(Export* exp, const mpz_t val);
+  export_integer(String_dump* exp, const mpz_t val);
 
   // Write VAL to dump context.
   static void
@@ -1861,7 +1874,7 @@ Integer_expression::do_get_tree(Translate_context* context)
 // Write VAL to export data.
 
 void
-Integer_expression::export_integer(Export* exp, const mpz_t val)
+Integer_expression::export_integer(String_dump* exp, const mpz_t val)
 {
   char* s = mpz_get_str(NULL, 10, val);
   exp->write_c_string(s);
@@ -1962,27 +1975,12 @@ Integer_expression::do_import(Import* imp)
       return ret;
     }
 }
-
-// Write integer to dump context.
-
-void
-Integer_expression::dump_integer(Ast_dump_context* ast_dump_context, 
-                                 const mpz_t val)
-{
-  // FIXME: refactor this code so that is used both by dump and export. Extract
-  // a common interface for Ast_dump_context and Export.
-  char* s = mpz_get_str(NULL, 10, val);
-  ast_dump_context->ostream() << s ;
-  free(s);
-}
-
-
 // Ast dump for integer expression.
 
 void
 Integer_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  Integer_expression::dump_integer(ast_dump_context, this->val_);
+  Integer_expression::export_integer(ast_dump_context, this->val_);
 }
 
 // Build a new integer value.
@@ -2016,8 +2014,8 @@ class Float_expression : public Expression
 
   // Write VAL to export data.
   static void
-  export_float(Export* exp, const mpfr_t val);
-  
+  export_float(String_dump* exp, const mpfr_t val);
+
   // Write VAL to dump file.
   static void
   dump_float(Ast_dump_context* ast_dump_context, const mpfr_t val);
@@ -2203,10 +2201,10 @@ Float_expression::do_get_tree(Translate_context* context)
   return Expression::float_constant_tree(this->val_, type);
 }
 
-// Write a floating point number to export data.
+// Write a floating point number to a string dump.
 
 void
-Float_expression::export_float(Export *exp, const mpfr_t val)
+Float_expression::export_float(String_dump *exp, const mpfr_t val)
 {
   mp_exp_t exponent;
   char* s = mpfr_get_str(NULL, &exponent, 10, 0, val, GMP_RNDN);
@@ -2230,33 +2228,12 @@ Float_expression::do_export(Export* exp) const
   exp->write_c_string(" ");
 }
 
-// Write  a floating point number to a dump context.
-
-void
-Float_expression::dump_float(Ast_dump_context* ast_dump_context, 
-                                  const mpfr_t val)
-{
-  // FIXME: this code should be refactored so that the same code is used here
-  // and in export_float.
-
-  mp_exp_t exponent;
-  char* s = mpfr_get_str(NULL, &exponent, 10, 0, val, GMP_RNDN);
-  if (*s == '-')
-    ast_dump_context->ostream() << "-";
-  ast_dump_context->ostream() << "0.";
-  ast_dump_context->ostream() << (*s == '-' ? s + 1 : s);
-  mpfr_free_str(s);
-  char buf[30];
-  snprintf(buf, sizeof buf, "E%ld", exponent);
-  ast_dump_context->ostream()  << buf;
-}
-
 // Dump a floating point number to the dump file.
 
 void
 Float_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  Float_expression::dump_float(ast_dump_context, this->val_);
+  Float_expression::export_float(ast_dump_context, this->val_);
 }
 
 // Make a float expression.
@@ -2289,9 +2266,9 @@ class Complex_expression : public Expression
   static bool
   check_constant(mpfr_t real, mpfr_t imag, Type*, source_location);
 
-  // Write REAL/IMAG to export data.
+  // Write REAL/IMAG to string dump.
   static void
-  export_complex(Export* exp, const mpfr_t real, const mpfr_t val);
+  export_complex(String_dump* exp, const mpfr_t real, const mpfr_t val);
 
   // Write REAL/IMAG to dump context.
   static void
@@ -2477,7 +2454,7 @@ Complex_expression::do_get_tree(Translate_context* context)
 // Write REAL/IMAG to export data.
 
 void
-Complex_expression::export_complex(Export* exp, const mpfr_t real,
+Complex_expression::export_complex(String_dump* exp, const mpfr_t real,
 				   const mpfr_t imag)
 {
   if (!mpfr_zero_p(real))
@@ -2500,30 +2477,12 @@ Complex_expression::do_export(Export* exp) const
   exp->write_c_string(" ");
 }
 
-// Write a complex number to a dump context.
-
-void
-Complex_expression::dump_complex(Ast_dump_context* ast_dump_context,
-                                    const mpfr_t real, const mpfr_t imag) 
-{
-  // FIXME: this code should be refactored so that it is used both here
-  // and by export _complex
-  if (!mpfr_zero_p(real))
-    {
-      Float_expression::dump_float(ast_dump_context, real);
-      if (mpfr_sgn(imag) > 0)
-        ast_dump_context->ostream() << "+";
-    }
-  Float_expression::dump_float(ast_dump_context, imag);
-  ast_dump_context->ostream() << "i";
-}
-
 // Dump a complex expression to the dump file.
 
 void
 Complex_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  Complex_expression::dump_complex(ast_dump_context, 
+  Complex_expression::export_complex(ast_dump_context,
                                       this->real_,
                                       this->imag_);
 }
@@ -3886,7 +3845,7 @@ Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
     go_assert((et->points_to() != NULL
 		&& et->points_to()->channel_type() != NULL)
 	       || et->is_nil_type());
-  else if (t->is_unsafe_pointer_type())
+  else if (t->points_to() != NULL)
     go_assert(et->points_to() != NULL || et->is_nil_type());
   else if (et->is_unsafe_pointer_type())
     go_assert(t->points_to() != NULL);
@@ -3949,7 +3908,7 @@ class Unary_expression : public Expression
  public:
   Unary_expression(Operator op, Expression* expr, source_location location)
     : Expression(EXPRESSION_UNARY, location),
-      op_(op), escapes_(true), expr_(expr)
+      op_(op), escapes_(true), create_temp_(false), expr_(expr)
   { }
 
   // Return the operator.
@@ -3968,6 +3927,15 @@ class Unary_expression : public Expression
   {
     go_assert(this->op_ == OPERATOR_AND);
     this->escapes_ = false;
+  }
+
+  // Record that this is an address expression which should create a
+  // temporary variable if necessary.  This is used for method calls.
+  void
+  set_create_temp()
+  {
+    go_assert(this->op_ == OPERATOR_AND);
+    this->create_temp_ = true;
   }
 
   // Apply unary opcode OP to UVAL, setting VAL.  Return true if this
@@ -4045,6 +4013,9 @@ class Unary_expression : public Expression
   // Normally true.  False if this is an address expression which does
   // not escape the current function.
   bool escapes_;
+  // True if this is an address expression which should create a
+  // temporary variable if necessary.
+  bool create_temp_;
   // The operand.
   Expression* expr_;
 };
@@ -4469,7 +4440,10 @@ Unary_expression::do_check_types(Gogo*)
 
     case OPERATOR_AND:
       if (!this->expr_->is_addressable())
-	this->report_error(_("invalid operand for unary %<&%>"));
+	{
+	  if (!this->create_temp_)
+	    this->report_error(_("invalid operand for unary %<&%>"));
+	}
       else
 	this->expr_->address_taken(this->escapes_);
       break;
@@ -4527,12 +4501,15 @@ Unary_expression::do_get_tree(Translate_context* context)
       return fold_build1_loc(loc, BIT_NOT_EXPR, TREE_TYPE(expr), expr);
 
     case OPERATOR_AND:
-      // We should not see a non-constant constructor here; cases
-      // where we would see one should have been moved onto the heap
-      // at parse time.  Taking the address of a nonconstant
-      // constructor will not do what the programmer expects.
-      go_assert(TREE_CODE(expr) != CONSTRUCTOR || TREE_CONSTANT(expr));
-      go_assert(TREE_CODE(expr) != ADDR_EXPR);
+      if (!this->create_temp_)
+	{
+	  // We should not see a non-constant constructor here; cases
+	  // where we would see one should have been moved onto the
+	  // heap at parse time.  Taking the address of a nonconstant
+	  // constructor will not do what the programmer expects.
+	  go_assert(TREE_CODE(expr) != CONSTRUCTOR || TREE_CONSTANT(expr));
+	  go_assert(TREE_CODE(expr) != ADDR_EXPR);
+	}
 
       // Build a decl for a constant constructor.
       if (TREE_CODE(expr) == CONSTRUCTOR && TREE_CONSTANT(expr))
@@ -4549,6 +4526,22 @@ Unary_expression::do_get_tree(Translate_context* context)
 	  DECL_INITIAL(decl) = expr;
 	  rest_of_decl_compilation(decl, 1, 0);
 	  expr = decl;
+	}
+
+      if (this->create_temp_
+	  && !TREE_ADDRESSABLE(TREE_TYPE(expr))
+	  && !DECL_P(expr)
+	  && TREE_CODE(expr) != INDIRECT_REF
+	  && TREE_CODE(expr) != COMPONENT_REF)
+	{
+	  tree tmp = create_tmp_var(TREE_TYPE(expr), get_name(expr));
+	  DECL_IGNORED_P(tmp) = 1;
+	  DECL_INITIAL(tmp) = expr;
+	  TREE_ADDRESSABLE(tmp) = 1;
+	  return build2_loc(loc, COMPOUND_EXPR,
+			    build_pointer_type(TREE_TYPE(expr)),
+			    build1_loc(loc, DECL_EXPR, void_type_node, tmp),
+			    build_fold_addr_expr_loc(loc, tmp));
 	}
 
       return build_fold_addr_expr_loc(loc, expr);
@@ -6839,9 +6832,7 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 int
 Bound_method_expression::do_traverse(Traverse* traverse)
 {
-  if (Expression::traverse(&this->expr_, traverse) == TRAVERSE_EXIT)
-    return TRAVERSE_EXIT;
-  return Expression::traverse(&this->method_, traverse);
+  return Expression::traverse(&this->expr_, traverse);
 }
 
 // Return the type of a bound method expression.  The type of this
@@ -6852,7 +6843,12 @@ Bound_method_expression::do_traverse(Traverse* traverse)
 Type*
 Bound_method_expression::do_type()
 {
-  return this->method_->type();
+  if (this->method_->is_function())
+    return this->method_->func_value()->type();
+  else if (this->method_->is_function_declaration())
+    return this->method_->func_declaration_value()->type();
+  else
+    return Type::make_error_type();
 }
 
 // Determine the types of a method expression.
@@ -6860,9 +6856,7 @@ Bound_method_expression::do_type()
 void
 Bound_method_expression::do_determine_type(const Type_context*)
 {
-  this->method_->determine_type_no_context();
-  Type* mtype = this->method_->type();
-  Function_type* fntype = mtype == NULL ? NULL : mtype->function_type();
+  Function_type* fntype = this->type()->function_type();
   if (fntype == NULL || !fntype->is_method())
     this->expr_->determine_type_no_context();
   else
@@ -6877,14 +6871,12 @@ Bound_method_expression::do_determine_type(const Type_context*)
 void
 Bound_method_expression::do_check_types(Gogo*)
 {
-  Type* type = this->method_->type()->deref();
-  if (type == NULL
-      || type->function_type() == NULL
-      || !type->function_type()->is_method())
+  if (!this->method_->is_function()
+      && !this->method_->is_function_declaration())
     this->report_error(_("object is not a method"));
   else
     {
-      Type* rtype = type->function_type()->receiver()->type()->deref();
+      Type* rtype = this->type()->function_type()->receiver()->type()->deref();
       Type* etype = (this->expr_type_ != NULL
 		     ? this->expr_type_
 		     : this->expr_->type());
@@ -6922,14 +6914,13 @@ Bound_method_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
       ast_dump_context->ostream() << ")";
     }
     
-  ast_dump_context->ostream() << ".";
-  ast_dump_context->dump_expression(method_);
+  ast_dump_context->ostream() << "." << this->method_->name();
 }
 
 // Make a method expression.
 
 Bound_method_expression*
-Expression::make_bound_method(Expression* expr, Expression* method,
+Expression::make_bound_method(Expression* expr, Named_object* method,
 			      source_location location)
 {
   return new Bound_method_expression(expr, method, location);
@@ -7266,7 +7257,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	  this->set_is_error();
 	  return this;
 	}
-      return this->lower_varargs(gogo, function, inserter, slice_type, 2);
+      this->lower_varargs(gogo, function, inserter, slice_type, 2);
     }
 
   return this;
@@ -8848,12 +8839,14 @@ Expression*
 Call_expression::do_lower(Gogo* gogo, Named_object* function,
 			  Statement_inserter* inserter, int)
 {
+  source_location loc = this->location();
+
   // A type cast can look like a function call.
   if (this->fn_->is_type_expression()
       && this->args_ != NULL
       && this->args_->size() == 1)
     return Expression::make_cast(this->fn_->type(), this->args_->front(),
-				 this->location());
+				 loc);
 
   // Recognize a call to a builtin function.
   Func_expression* fne = this->fn_->func_expression();
@@ -8861,7 +8854,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       && fne->named_object()->is_function_declaration()
       && fne->named_object()->func_declaration_value()->type()->is_builtin())
     return new Builtin_call_expression(gogo, this->fn_, this->args_,
-				       this->is_varargs_, this->location());
+				       this->is_varargs_, loc);
 
   // Handle an argument which is a call to a function which returns
   // multiple results.
@@ -8905,8 +8898,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	   ++p)
 	{
 	  Temporary_statement* temp = Statement::make_temporary(p->type(),
-								NULL,
-								p->location());
+								NULL, loc);
 	  inserter->insert(temp);
 	  temps->push_back(temp);
 	}
@@ -8922,8 +8914,58 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       const Typed_identifier_list* parameters = fntype->parameters();
       go_assert(parameters != NULL && !parameters->empty());
       Type* varargs_type = parameters->back().type();
-      return this->lower_varargs(gogo, function, inserter, varargs_type,
-				 parameters->size());
+      this->lower_varargs(gogo, function, inserter, varargs_type,
+			  parameters->size());
+    }
+
+  // If this is call to a method, call the method directly passing the
+  // object as the first parameter.
+  Bound_method_expression* bme = this->fn_->bound_method_expression();
+  if (bme != NULL)
+    {
+      Named_object* method = bme->method();
+      Expression* first_arg = bme->first_argument();
+
+      // We always pass a pointer when calling a method.
+      if (first_arg->type()->points_to() == NULL
+	  && !first_arg->type()->is_error())
+	{
+	  first_arg = Expression::make_unary(OPERATOR_AND, first_arg, loc);
+	  // We may need to create a temporary variable so that we can
+	  // take the address.  We can't do that here because it will
+	  // mess up the order of evaluation.
+	  Unary_expression* ue = static_cast<Unary_expression*>(first_arg);
+	  ue->set_create_temp();
+	}
+
+      // If we are calling a method which was inherited from an
+      // embedded struct, and the method did not get a stub, then the
+      // first type may be wrong.
+      Type* fatype = bme->first_argument_type();
+      if (fatype != NULL)
+	{
+	  if (fatype->points_to() == NULL)
+	    fatype = Type::make_pointer_type(fatype);
+	  first_arg = Expression::make_unsafe_cast(fatype, first_arg, loc);
+	}
+
+      Expression_list* new_args = new Expression_list();
+      new_args->push_back(first_arg);
+      if (this->args_ != NULL)
+	{
+	  for (Expression_list::const_iterator p = this->args_->begin();
+	       p != this->args_->end();
+	       ++p)
+	    new_args->push_back(*p);
+	}
+
+      // We have to change in place because this structure may be
+      // referenced by Call_result_expressions.  We can't delete the
+      // old arguments, because we may be traversing them up in some
+      // caller.  FIXME.
+      this->args_ = new_args;
+      this->fn_ = Expression::make_func_reference(method, NULL,
+						  bme->location());
     }
 
   return this;
@@ -8936,13 +8978,13 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 // calling; the last of these parameters will be the varargs
 // parameter.
 
-Expression*
+void
 Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 			       Statement_inserter* inserter,
 			       Type* varargs_type, size_t param_count)
 {
   if (this->varargs_are_lowered_)
-    return this;
+    return;
 
   source_location loc = this->location();
 
@@ -8953,7 +8995,7 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   if (arg_count < param_count - 1)
     {
       // Not enough arguments; will be caught in check_types.
-      return this;
+      return;
     }
 
   Expression_list* old_args = this->args_;
@@ -8985,7 +9027,7 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
       else if (this->is_varargs_)
 	{
 	  this->report_error(_("too many arguments"));
-	  return this;
+	  return;
 	}
       else
 	{
@@ -9003,6 +9045,7 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 	    }
 	  Expression* val =
 	    Expression::make_slice_composite_literal(varargs_type, vals, loc);
+	  gogo->lower_expression(function, inserter, &val);
 	  new_args->push_back(val);
 	}
     }
@@ -9016,12 +9059,6 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   // Builtin_call_expression which refer to them.  FIXME.
   this->args_ = new_args;
   this->varargs_are_lowered_ = true;
-
-  // Lower all the new subexpressions.
-  Expression* ret = this;
-  gogo->lower_expression(function, inserter, &ret);
-  go_assert(ret == this);
-  return ret;
 }
 
 // Get the function type.  This can return NULL in error cases.
@@ -9145,10 +9182,28 @@ Call_expression::do_determine_type(const Type_context*)
       Typed_identifier_list::const_iterator pt;
       if (parameters != NULL)
 	pt = parameters->begin();
+      bool first = true;
       for (Expression_list::const_iterator pa = this->args_->begin();
 	   pa != this->args_->end();
 	   ++pa)
 	{
+	  if (first)
+	    {
+	      first = false;
+	      // If this is a method, the first argument is the
+	      // receiver.
+	      if (fntype != NULL && fntype->is_method())
+		{
+		  Type* rtype = fntype->receiver()->type();
+		  // The receiver is always passed as a pointer.
+		  if (rtype->points_to() == NULL)
+		    rtype = Type::make_pointer_type(rtype);
+		  Type_context subcontext(rtype, false);
+		  (*pa)->determine_type(&subcontext);
+		  continue;
+		}
+	    }
+
 	  if (parameters != NULL && pt != parameters->end())
 	    {
 	      Type_context subcontext(pt->type(), false);
@@ -9215,35 +9270,28 @@ Call_expression::do_check_types(Gogo*)
       return;
     }
 
-  if (fntype->is_method())
+  bool is_method = fntype->is_method();
+  if (is_method)
     {
-      // We don't support pointers to methods, so the function has to
-      // be a bound method expression.
-      Bound_method_expression* bme = this->fn_->bound_method_expression();
-      if (bme == NULL)
+      go_assert(this->args_ != NULL && !this->args_->empty());
+      Type* rtype = fntype->receiver()->type();
+      Expression* first_arg = this->args_->front();
+      // The language permits copying hidden fields for a method
+      // receiver.  We dereference the values since receivers are
+      // always passed as pointers.
+      std::string reason;
+      if (!Type::are_assignable_hidden_ok(rtype->deref(),
+					  first_arg->type()->deref(),
+					  &reason))
 	{
-	  this->report_error(_("method call without object"));
-	  return;
-	}
-      Type* first_arg_type = bme->first_argument()->type();
-      if (first_arg_type->points_to() == NULL)
-	{
-	  // When passing a value, we need to check that we are
-	  // permitted to copy it.  The language permits copying
-	  // hidden fields for a method receiver.
-	  std::string reason;
-	  if (!Type::are_assignable_hidden_ok(fntype->receiver()->type(),
-					      first_arg_type, &reason))
+	  if (reason.empty())
+	    this->report_error(_("incompatible type for receiver"));
+	  else
 	    {
-	      if (reason.empty())
-		this->report_error(_("incompatible type for receiver"));
-	      else
-		{
-		  error_at(this->location(),
-			   "incompatible type for receiver (%s)",
-			   reason.c_str());
-		  this->set_is_error();
-		}
+	      error_at(this->location(),
+		       "incompatible type for receiver (%s)",
+		       reason.c_str());
+	      this->set_is_error();
 	    }
 	}
     }
@@ -9258,25 +9306,30 @@ Call_expression::do_check_types(Gogo*)
 	this->report_error(_("not enough arguments"));
     }
   else if (parameters == NULL)
-    this->report_error(_("too many arguments"));
+    {
+      if (!is_method || this->args_->size() > 1)
+	this->report_error(_("too many arguments"));
+    }
   else
     {
       int i = 0;
-      Typed_identifier_list::const_iterator pt = parameters->begin();
-      for (Expression_list::const_iterator pa = this->args_->begin();
-	   pa != this->args_->end();
-	   ++pa, ++pt, ++i)
+      Expression_list::const_iterator pa = this->args_->begin();
+      if (is_method)
+	++pa;
+      for (Typed_identifier_list::const_iterator pt = parameters->begin();
+	   pt != parameters->end();
+	   ++pt, ++pa, ++i)
 	{
-	  if (pt == parameters->end())
+	  if (pa == this->args_->end())
 	    {
-	      this->report_error(_("too many arguments"));
+	      this->report_error(_("not enough arguments"));
 	      return;
 	    }
 	  this->check_argument_type(i + 1, pt->type(), (*pa)->type(),
 				    (*pa)->location(), false);
 	}
-      if (pt != parameters->end())
-	this->report_error(_("not enough arguments"));
+      if (pa != this->args_->end())
+	this->report_error(_("too many arguments"));
     }
 }
 
@@ -9288,65 +9341,6 @@ bool
 Call_expression::do_must_eval_in_order() const
 {
   return this->result_count() > 0;
-}
-
-// Get the function and the first argument to use when calling a bound
-// method.
-
-tree
-Call_expression::bound_method_function(Translate_context* context,
-				       Bound_method_expression* bound_method,
-				       tree* first_arg_ptr)
-{
-  Expression* first_argument = bound_method->first_argument();
-  tree first_arg = first_argument->get_tree(context);
-  if (first_arg == error_mark_node)
-    return error_mark_node;
-
-  // We always pass a pointer to the first argument when calling a
-  // method.
-  if (first_argument->type()->points_to() == NULL)
-    {
-      tree pointer_to_arg_type = build_pointer_type(TREE_TYPE(first_arg));
-      if (TREE_ADDRESSABLE(TREE_TYPE(first_arg))
-	  || DECL_P(first_arg)
-	  || TREE_CODE(first_arg) == INDIRECT_REF
-	  || TREE_CODE(first_arg) == COMPONENT_REF)
-	{
-	  first_arg = build_fold_addr_expr(first_arg);
-	  if (DECL_P(first_arg))
-	    TREE_ADDRESSABLE(first_arg) = 1;
-	}
-      else
-	{
-	  tree tmp = create_tmp_var(TREE_TYPE(first_arg),
-				    get_name(first_arg));
-	  DECL_IGNORED_P(tmp) = 0;
-	  DECL_INITIAL(tmp) = first_arg;
-	  first_arg = build2(COMPOUND_EXPR, pointer_to_arg_type,
-			     build1(DECL_EXPR, void_type_node, tmp),
-			     build_fold_addr_expr(tmp));
-	  TREE_ADDRESSABLE(tmp) = 1;
-	}
-      if (first_arg == error_mark_node)
-	return error_mark_node;
-    }
-
-  Type* fatype = bound_method->first_argument_type();
-  if (fatype != NULL)
-    {
-      if (fatype->points_to() == NULL)
-	fatype = Type::make_pointer_type(fatype);
-      Btype* bfatype = fatype->get_backend(context->gogo());
-      first_arg = fold_convert(type_to_tree(bfatype), first_arg);
-      if (first_arg == error_mark_node
-	  || TREE_TYPE(first_arg) == error_mark_node)
-	return error_mark_node;
-    }
-
-  *first_arg_ptr = first_arg;
-
-  return bound_method->method()->get_tree(context);
 }
 
 // Get the function and the first argument to use when calling an
@@ -9388,35 +9382,46 @@ Call_expression::do_get_tree(Translate_context* context)
   source_location location = this->location();
 
   Func_expression* func = this->fn_->func_expression();
-  Bound_method_expression* bound_method = this->fn_->bound_method_expression();
   Interface_field_reference_expression* interface_method =
     this->fn_->interface_field_reference_expression();
   const bool has_closure = func != NULL && func->closure() != NULL;
-  const bool is_method = bound_method != NULL || interface_method != NULL;
-  go_assert(!fntype->is_method() || is_method);
+  const bool is_interface_method = interface_method != NULL;
 
   int nargs;
   tree* args;
   if (this->args_ == NULL || this->args_->empty())
     {
-      nargs = is_method ? 1 : 0;
+      nargs = is_interface_method ? 1 : 0;
       args = nargs == 0 ? NULL : new tree[nargs];
+    }
+  else if (fntype->parameters() == NULL || fntype->parameters()->empty())
+    {
+      // Passing a receiver parameter.
+      go_assert(!is_interface_method
+		&& fntype->is_method()
+		&& this->args_->size() == 1);
+      nargs = 1;
+      args = new tree[nargs];
+      args[0] = this->args_->front()->get_tree(context);
     }
   else
     {
       const Typed_identifier_list* params = fntype->parameters();
-      go_assert(params != NULL);
 
       nargs = this->args_->size();
-      int i = is_method ? 1 : 0;
+      int i = is_interface_method ? 1 : 0;
       nargs += i;
       args = new tree[nargs];
 
       Typed_identifier_list::const_iterator pp = params->begin();
-      Expression_list::const_iterator pe;
-      for (pe = this->args_->begin();
-	   pe != this->args_->end();
-	   ++pe, ++pp, ++i)
+      Expression_list::const_iterator pe = this->args_->begin();
+      if (!is_interface_method && fntype->is_method())
+	{
+	  args[i] = (*pe)->get_tree(context);
+	  ++pe;
+	  ++i;
+	}
+      for (; pe != this->args_->end(); ++pe, ++pp, ++i)
 	{
 	  go_assert(pp != params->end());
 	  tree arg_val = (*pe)->get_tree(context);
@@ -9445,14 +9450,10 @@ Call_expression::do_get_tree(Translate_context* context)
   tree fn;
   if (has_closure)
     fn = func->get_tree_without_closure(gogo);
-  else if (!is_method)
+  else if (!is_interface_method)
     fn = this->fn_->get_tree(context);
-  else if (bound_method != NULL)
-    fn = this->bound_method_function(context, bound_method, &args[0]);
-  else if (interface_method != NULL)
-    fn = this->interface_method_function(context, interface_method, &args[0]);
   else
-    go_unreachable();
+    fn = this->interface_method_function(context, interface_method, &args[0]);
 
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
     {
@@ -11622,7 +11623,6 @@ void
 Struct_construction_expression::do_dump_expression(
     Ast_dump_context* ast_dump_context) const
 {
-
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << "{";
   ast_dump_context->dump_expression_list(this->vals_);
@@ -11875,6 +11875,15 @@ void
 Array_construction_expression::do_dump_expression(
     Ast_dump_context* ast_dump_context) const
 {
+  Expression* length = this->type_->array_type() != NULL ?
+			 this->type_->array_type()->length() : NULL;
+
+  ast_dump_context->ostream() << "[" ;
+  if (length != NULL)
+    {
+      ast_dump_context->dump_expression(length);
+    }
+  ast_dump_context->ostream() << "]" ;
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << "{" ;
   ast_dump_context->dump_expression_list(this->vals_);
@@ -11910,6 +11919,9 @@ class Fixed_array_construction_expression :
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*);
 };
 
 // Return a tree for constructing a fixed array.
@@ -11922,6 +11934,22 @@ Fixed_array_construction_expression::do_get_tree(Translate_context* context)
   return this->get_constructor_tree(context, type_to_tree(btype));
 }
 
+// Dump ast representation of an array construction expressin.
+
+void
+Fixed_array_construction_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context)
+{
+
+  ast_dump_context->ostream() << "[";
+  ast_dump_context->dump_expression (this->type()->array_type()->length());
+  ast_dump_context->ostream() << "]";
+  ast_dump_context->dump_type(this->type());
+  ast_dump_context->ostream() << "{";
+  ast_dump_context->dump_expression_list(this->vals());
+  ast_dump_context->ostream() << "}";
+
+}
 // Construct an open array.
 
 class Open_array_construction_expression : public Array_construction_expression
@@ -12410,9 +12438,8 @@ void
 Map_construction_expression::do_dump_expression(
     Ast_dump_context* ast_dump_context) const
 {
-  // FIXME: We should print key:value pairs here.
   ast_dump_context->ostream() << "{" ;
-  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->dump_expression_list(this->vals_, true);
   ast_dump_context->ostream() << "}";
 }
 
@@ -12866,11 +12893,10 @@ void
 Composite_literal_expression::do_dump_expression(
                                Ast_dump_context* ast_dump_context) const
 {
-  // FIXME: We should print colons if this->has_keys_ is true
-  ast_dump_context->ostream() << "composite_literal(" ;
+  ast_dump_context->ostream() << "composite(";
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << ", {";
-  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->dump_expression_list(this->vals_, this->has_keys_);
   ast_dump_context->ostream() << "})";
 }
 

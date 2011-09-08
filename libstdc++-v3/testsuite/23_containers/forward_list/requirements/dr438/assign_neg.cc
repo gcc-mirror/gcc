@@ -1,8 +1,8 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
-// { dg-error "no matching" "" { target *-*-* } 1210 }
+// { dg-error "no matching" "" { target *-*-* } 1211 }
 
-// Copyright (C) 2009, 2010 Free Software Foundation
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

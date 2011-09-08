@@ -2611,19 +2611,19 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == TRUTH_OR_EXPR						    \
       || (SYM) == TRUTH_XOR_EXPR) ? GIMPLE_BINARY_RHS			    \
    : (SYM) == TRUTH_NOT_EXPR ? GIMPLE_UNARY_RHS				    \
-   : ((SYM) == WIDEN_MULT_PLUS_EXPR					    \
+   : ((SYM) == COND_EXPR						    \
+      || (SYM) == WIDEN_MULT_PLUS_EXPR					    \
       || (SYM) == WIDEN_MULT_MINUS_EXPR					    \
       || (SYM) == DOT_PROD_EXPR						    \
       || (SYM) == REALIGN_LOAD_EXPR					    \
+      || (SYM) == VEC_COND_EXPR						    \
       || (SYM) == FMA_EXPR) ? GIMPLE_TERNARY_RHS			    \
-   : ((SYM) == COND_EXPR						    \
-      || (SYM) == CONSTRUCTOR						    \
+   : ((SYM) == CONSTRUCTOR						    \
       || (SYM) == OBJ_TYPE_REF						    \
       || (SYM) == ASSERT_EXPR						    \
       || (SYM) == ADDR_EXPR						    \
       || (SYM) == WITH_SIZE_EXPR					    \
-      || (SYM) == SSA_NAME						    \
-      || (SYM) == VEC_COND_EXPR) ? GIMPLE_SINGLE_RHS			    \
+      || (SYM) == SSA_NAME) ? GIMPLE_SINGLE_RHS				    \
    : GIMPLE_INVALID_RHS),
 #define END_OF_BASE_TREE_CODES (unsigned char) GIMPLE_INVALID_RHS,
 

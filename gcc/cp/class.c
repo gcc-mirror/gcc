@@ -1,6 +1,6 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -2726,7 +2726,8 @@ add_implicitly_declared_members (tree t,
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
       if (cxx_dialect >= cxx0x)
 	TYPE_HAS_CONSTEXPR_CTOR (t)
-	  = synthesized_default_constructor_is_constexpr (t);
+	  /* This might force the declaration.  */
+	  = type_has_constexpr_default_constructor (t);
     }
 
   /* [class.ctor]
@@ -4355,15 +4356,15 @@ type_has_user_provided_default_constructor (tree t)
   return false;
 }
 
-/* Returns true iff for class T, a synthesized default constructor
+/* Returns true iff for class T, a trivial synthesized default constructor
    would be constexpr.  */
 
 bool
-synthesized_default_constructor_is_constexpr (tree t)
+trivial_default_constructor_is_constexpr (tree t)
 {
-  /* A defaulted default constructor is constexpr
+  /* A defaulted trivial default constructor is constexpr
      if there is nothing to initialize.  */
-  /* FIXME adjust for non-static data member initializers.  */
+  gcc_assert (!TYPE_HAS_COMPLEX_DFLT (t));
   return is_really_empty_class (t);
 }
 
@@ -4381,7 +4382,12 @@ type_has_constexpr_default_constructor (tree t)
       return false;
     }
   if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
-    return synthesized_default_constructor_is_constexpr (t);
+    {
+      if (!TYPE_HAS_COMPLEX_DFLT (t))
+	return trivial_default_constructor_is_constexpr (t);
+      /* Non-trivial, we need to check subobject constructors.  */
+      lazily_declare_fn (sfk_constructor, t);
+    }
   fns = locate_ctor (t);
   return (fns && DECL_DECLARED_CONSTEXPR_P (fns));
 }
@@ -4608,9 +4614,14 @@ explain_non_literal_class (tree t)
   else if (CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
-    inform (0, "  %q+T is not an aggregate, does not have a trivial "
-	    "default constructor, and has no constexpr constructor that "
-	    "is not a copy or move constructor", t);
+    {
+      inform (0, "  %q+T is not an aggregate, does not have a trivial "
+	      "default constructor, and has no constexpr constructor that "
+	      "is not a copy or move constructor", t);
+      if (TYPE_HAS_DEFAULT_CONSTRUCTOR (t)
+	  && !type_has_user_provided_default_constructor (t))
+	explain_invalid_constexpr_fn (locate_ctor (t));
+    }
   else
     {
       tree binfo, base_binfo, field; int i;
@@ -5794,6 +5805,27 @@ finish_struct_1 (tree t)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, ! LOCAL_CLASS_P (t));
+
+  if (TYPE_TRANSPARENT_AGGR (t))
+    {
+      tree field = first_field (t);
+      if (field == NULL_TREE || error_operand_p (field))
+	{
+	  error ("type transparent class %qT does not have any fields", t);
+	  TYPE_TRANSPARENT_AGGR (t) = 0;
+	}
+      else if (DECL_ARTIFICIAL (field))
+	{
+	  if (DECL_FIELD_IS_BASE (field))
+	    error ("type transparent class %qT has base classes", t);
+	  else
+	    {
+	      gcc_checking_assert (DECL_VIRTUAL_P (field));
+	      error ("type transparent class %qT has virtual functions", t);
+	    }
+	  TYPE_TRANSPARENT_AGGR (t) = 0;
+	}
+    }
 }
 
 /* When T was built up, the member declarations were added in reverse

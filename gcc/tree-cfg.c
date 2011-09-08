@@ -1566,9 +1566,11 @@ replace_uses_by (tree name, tree val)
 
       if (gimple_code (stmt) != GIMPLE_PHI)
 	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 	  size_t i;
 
-	  fold_stmt_inplace (stmt);
+	  fold_stmt (&gsi);
+	  stmt = gsi_stmt (gsi);
 	  if (cfgcleanup_altered_bbs && !is_gimple_debug (stmt))
 	    bitmap_set_bit (cfgcleanup_altered_bbs, gimple_bb (stmt)->index);
 
@@ -3193,22 +3195,52 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
      effective type the comparison is carried out in.  Instead
      we require that either the first operand is trivially
      convertible into the second, or the other way around.
-     The resulting type of a comparison may be any integral type.
      Because we special-case pointers to void we allow
      comparisons of pointers with the same mode as well.  */
-  if ((!useless_type_conversion_p (op0_type, op1_type)
-       && !useless_type_conversion_p (op1_type, op0_type)
-       && (!POINTER_TYPE_P (op0_type)
-	   || !POINTER_TYPE_P (op1_type)
-	   || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
-      || !INTEGRAL_TYPE_P (type)
-      || (TREE_CODE (type) != BOOLEAN_TYPE
-	  && TYPE_PRECISION (type) != 1))
+  if (!useless_type_conversion_p (op0_type, op1_type)
+      && !useless_type_conversion_p (op1_type, op0_type)
+      && (!POINTER_TYPE_P (op0_type)
+	  || !POINTER_TYPE_P (op1_type)
+	  || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
     {
-      error ("type mismatch in comparison expression");
-      debug_generic_expr (type);
+      error ("mismatching comparison operand types");
       debug_generic_expr (op0_type);
       debug_generic_expr (op1_type);
+      return true;
+    }
+
+  /* The resulting type of a comparison may be an effective boolean type.  */
+  if (INTEGRAL_TYPE_P (type)
+      && (TREE_CODE (type) == BOOLEAN_TYPE
+	  || TYPE_PRECISION (type) == 1))
+    ;
+  /* Or an integer vector type with the same size and element count
+     as the comparison operand types.  */
+  else if (TREE_CODE (type) == VECTOR_TYPE
+	   && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
+    {
+      if (TREE_CODE (op0_type) != VECTOR_TYPE
+	  || TREE_CODE (op1_type) != VECTOR_TYPE)
+        {
+          error ("non-vector operands in vector comparison");
+          debug_generic_expr (op0_type);
+          debug_generic_expr (op1_type);
+          return true;
+        }
+
+      if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type)
+	  || (GET_MODE_SIZE (TYPE_MODE (type))
+	      != GET_MODE_SIZE (TYPE_MODE (op0_type))))
+        {
+          error ("invalid vector comparison resulting type");
+          debug_generic_expr (type);
+          return true;
+        }
+    }
+  else
+    {
+      error ("bogus comparison result type");
+      debug_generic_expr (type);
       return true;
     }
 
@@ -3638,7 +3670,8 @@ verify_gimple_assign_ternary (gimple stmt)
       return true;
     }
 
-  if (!is_gimple_val (rhs1)
+  if (((rhs_code == VEC_COND_EXPR || rhs_code == COND_EXPR)
+       ? !is_gimple_condexpr (rhs1) : !is_gimple_val (rhs1))
       || !is_gimple_val (rhs2)
       || !is_gimple_val (rhs3))
     {
@@ -3675,6 +3708,19 @@ verify_gimple_assign_ternary (gimple stmt)
 	  error ("type mismatch in fused multiply-add expression");
 	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+      break;
+
+    case COND_EXPR:
+    case VEC_COND_EXPR:
+      if (!useless_type_conversion_p (lhs_type, rhs2_type)
+	  || !useless_type_conversion_p (lhs_type, rhs3_type))
+	{
+	  error ("type mismatch in conditional expression");
+	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs2_type);
 	  debug_generic_expr (rhs3_type);
 	  return true;
@@ -3797,26 +3843,10 @@ verify_gimple_assign_single (gimple stmt)
 	}
       return res;
 
-    case COND_EXPR:
-      if (!is_gimple_reg (lhs)
-	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 0))
-	      && !COMPARISON_CLASS_P (TREE_OPERAND (rhs1, 0)))
-	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 1))
-	      && !is_gimple_min_invariant (TREE_OPERAND (rhs1, 1)))
-	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 2))
-	      && !is_gimple_min_invariant (TREE_OPERAND (rhs1, 2))))
-	{
-	  error ("invalid COND_EXPR in gimple assignment");
-	  debug_generic_stmt (rhs1);
-	  return true;
-	}
-      return res;
-
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
     case ASSERT_EXPR:
     case WITH_SIZE_EXPR:
-    case VEC_COND_EXPR:
       /* FIXME.  */
       return res;
 

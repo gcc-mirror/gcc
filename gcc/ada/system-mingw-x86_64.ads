@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -131,7 +131,6 @@ private
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := True;
    Stack_Check_Limits        : constant Boolean := False;
-   Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
@@ -140,7 +139,6 @@ private
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
-   GCC_ZCX_Support           : constant Boolean := True;
 
    ---------------------------
    -- Underlying Priorities --

@@ -1,3 +1,174 @@
+2011-09-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49267
+	* call.c (reference_binding): Don't set is_lvalue for an rvalue
+	reference rfrom.
+
+	PR c++/49267
+	PR c++/49458
+	DR 1328
+	* call.c (reference_binding): Set rvaluedness_matches_p properly
+	for reference to function conversion ops.
+	(compare_ics): Adjust.
+
+	* class.c (trivial_default_constructor_is_constexpr): Rename from
+	synthesized_default_constructor_is_constexpr.
+	(type_has_constexpr_default_constructor): Adjust.
+	(add_implicitly_declared_members): Call it instead.
+	(explain_non_literal_class): Explain about non-constexpr default ctor.
+	* cp-tree.h: Adjust.
+	* method.c (synthesized_method_walk): Adjust.
+	* semantics.c (explain_invalid_constexpr_fn): Handle defaulted
+	functions, too.
+
+	PR c++/50248
+	Core 1358
+	* init.c (perform_member_init): Don't diagnose missing inits here.
+	(emit_mem_initializers): Or here.
+	* method.c (process_subob_fn): Don't instantiate constexpr ctors.
+	* semantics.c (cx_check_missing_mem_inits): New.
+	(explain_invalid_constexpr_fn): Call it.
+	(register_constexpr_fundef): Likewise.  Leave
+	DECL_DECLARED_CONSTEXPR_P set when the body is unsuitable.
+	(cxx_eval_call_expression): Adjust diagnostics.
+	(cxx_eval_constant_expression): Catch use of 'this' in a constructor.
+
+2011-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50084
+	* cp-tree.h (cp_decl_specifier_seq): Rename user_defined_type_p
+	to type_definition_p.
+	* parser.c (cp_parser_set_decl_spec_type): Likewise.
+	* decl.c (grokdeclarator): Check it.
+
+	PR c++/50089
+	* semantics.c (finish_id_expression): Use
+	current_nonlambda_class_type for qualified-ids.
+
+	PR c++/50114
+	* decl.c (poplevel): Disable for scope compatibility hack
+	in C++11 mode.
+
+	PR c++/50220
+	* semantics.c (add_capture): Call complete_type for copy.
+
+	PR c++/50234
+	* semantics.c (cxx_eval_component_reference): Handle
+	value-initialization for omitted initializers.
+
+2011-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50224
+	* semantics.c (finish_id_expression): Mark captured variables used.
+
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/50207
+	* class.c (finish_struct_1): Complain if the first field is
+	artificial.
+
+2011-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50209
+	Core DR 994
+	* parser.c (cp_parser_default_argument): Use
+	cp_parser_initializer_clause.
+	(cp_parser_late_parsing_default_args): Likewise.
+
+2011-08-26  Jason Merrill  <jason@redhat.com>
+
+	Core DR 342
+	PR c++/48582
+	* pt.c (check_valid_ptrmem_cst_expr): A null member pointer value
+	is valid in C++11.
+	(convert_nontype_argument): Likewise.  Implicitly convert nullptr
+	and do constant folding.
+	* mangle.c (write_template_arg_literal): Mangle null member
+	pointer values as 0.
+	* call.c (null_member_pointer_value_p): New.
+	* cp-tree.h: Declare it.
+
+2011-08-25  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_like_real): Remove redundant complain checks.
+
+	PR c++/50157
+	* call.c (convert_like_real): Exit early if bad and !tf_error.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (build_functional_cast): Don't try to avoid calling
+	build_value_init.
+	* pt.c (instantiate_class_template_1): Don't copy TYPE_HAS_* flags.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49045
+	Core 1321
+	* tree.c (dependent_name): New.
+	(cp_tree_equal): Two calls with the same dependent name are
+	equivalent even if the overload sets are different.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_target_expr): Set TREE_CONSTANT on
+	literal TARGET_EXPR if the value is constant.
+	* typeck2.c (build_functional_cast): Don't set it here.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	Core 903 (partial)
+	* call.c (null_ptr_cst_p): Only 0 qualifies in C++11.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	Core 975
+	* decl.c (cxx_init_decl_processing): Initialize
+	dependent_lambda_return_type_node.
+	* cp-tree.h (cp_tree_index): Add CPTI_DEPENDENT_LAMBDA_RETURN_TYPE.
+	(dependent_lambda_return_type_node): Define.
+	(DECLTYPE_FOR_LAMBDA_RETURN): Remove.
+	* semantics.c (lambda_return_type): Handle overloaded function.
+	Use dependent_lambda_return_type_node instead of
+	DECLTYPE_FOR_LAMBDA_RETURN.
+	(apply_lambda_return_type): Don't check dependent_type_p.
+	* pt.c (tsubst_copy_and_build): Handle lambda return type deduction.
+	(instantiate_class_template_1): Likewise.
+	(tsubst): Don't use DECLTYPE_FOR_LAMBDA_RETURN.
+	* mangle.c (write_type): Likewise.
+	* typeck.c (structural_comptypes): Likewise.
+	(check_return_expr): Handle dependent_lambda_return_type_node.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50024
+	* semantics.c (maybe_constant_value): Don't try to fold { }.
+	* pt.c (build_non_dependent_expr): Don't wrap { }.
+	* init.c (build_value_init): Allow scalar value-init in templates.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (potential_constant_expression_1): Allow 'this'.
+
+2011-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/50158
+	* typeck.c (cp_build_modify_expr): Call mark_rvalue_use on rhs
+	if it has side-effects and needs to be preevaluated.
+
+2011-08-23  Siddhesh Poyarekar  <siddhesh.poyarekar@gmail.com>
+
+	PR c++/50055
+	* except.c (begin_eh_spec_block): Build EH_SPEC block on the
+	same line as the function.
+
+2011-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46862
+	* class.c (finish_struct_1): If TYPE_TRANSPARENT_AGGR is set on a type
+	which doesn't have any fields, clear it and diagnose.
+
 2011-08-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Marc Glisse  <marc.glisse@normalesup.org>
 

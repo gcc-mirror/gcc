@@ -704,7 +704,10 @@ DEFTREECODE (TRUTH_NOT_EXPR, "truth_not_expr", tcc_expression, 1)
    The others are allowed only for integer (or pointer or enumeral)
    or real types.
    In all cases the operands will have the same type,
-   and the value is always the type used by the language for booleans.  */
+   and the value is either the type used by the language for booleans
+   or an integer vector type of the same size and with the same number
+   of elements as the comparison operands.  True for a vector of
+   comparison results has all bits set while false is equal to zero.  */
 DEFTREECODE (LT_EXPR, "lt_expr", tcc_comparison, 2)
 DEFTREECODE (LE_EXPR, "le_expr", tcc_comparison, 2)
 DEFTREECODE (GT_EXPR, "gt_expr", tcc_comparison, 2)

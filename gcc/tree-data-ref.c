@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 #include "langhooks.h"
+#include "tree-affine.h"
 
 static struct datadep_stats
 {
@@ -837,64 +838,84 @@ static void
 dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 {
   VEC (tree, heap) *access_fns = NULL;
-  tree ref = unshare_expr (DR_REF (dr)), aref = ref, op;
-  tree base, off, access_fn = NULL_TREE;
-  basic_block before_loop = NULL;
+  tree ref, aref, op;
+  tree base, off, access_fn;
+  basic_block before_loop;
 
-  if (nest)
-    before_loop = block_before_loop (nest);
+  /* If analyzing a basic-block there are no indices to analyze
+     and thus no access functions.  */
+  if (!nest)
+    {
+      DR_BASE_OBJECT (dr) = DR_REF (dr);
+      DR_ACCESS_FNS (dr) = NULL;
+      return;
+    }
 
+  ref = unshare_expr (DR_REF (dr));
+  before_loop = block_before_loop (nest);
+
+  /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
+     into a two element array with a constant index.  The base is
+     then just the immediate underlying object.  */
+  if (TREE_CODE (ref) == REALPART_EXPR)
+    {
+      ref = TREE_OPERAND (ref, 0);
+      VEC_safe_push (tree, heap, access_fns, integer_zero_node);
+    }
+  else if (TREE_CODE (ref) == IMAGPART_EXPR)
+    {
+      ref = TREE_OPERAND (ref, 0);
+      VEC_safe_push (tree, heap, access_fns, integer_one_node);
+    }
+
+  /* Analyze access functions of dimensions we know to be independent.  */
+  aref = ref;
   while (handled_component_p (aref))
     {
       if (TREE_CODE (aref) == ARRAY_REF)
 	{
 	  op = TREE_OPERAND (aref, 1);
-	  if (nest)
-	    {
-  	      access_fn = analyze_scalar_evolution (loop, op);
-	      access_fn = instantiate_scev (before_loop, loop, access_fn);
-	      VEC_safe_push (tree, heap, access_fns, access_fn);
-	    }
-
-	  TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
+	  access_fn = analyze_scalar_evolution (loop, op);
+	  access_fn = instantiate_scev (before_loop, loop, access_fn);
+	  VEC_safe_push (tree, heap, access_fns, access_fn);
+	  /* For ARRAY_REFs the base is the reference with the index replaced
+	     by zero if we can not strip it as the outermost component.  */
+	  if (aref == ref)
+	    ref = TREE_OPERAND (ref, 0);
+	  else
+	    TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
 	}
 
       aref = TREE_OPERAND (aref, 0);
     }
 
-  if (nest
-      && TREE_CODE (aref) == MEM_REF)
+  /* If the address operand of a MEM_REF base has an evolution in the
+     analyzed nest, add it as an additional independent access-function.  */
+  if (TREE_CODE (aref) == MEM_REF)
     {
       op = TREE_OPERAND (aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (before_loop, loop, access_fn);
-      base = initial_condition (access_fn);
-      split_constant_offset (base, &base, &off);
-      if (!integer_zerop (TREE_OPERAND (aref, 1)))
+      if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
-	  off = size_binop (PLUS_EXPR, off,
-			    fold_convert (ssizetype, TREE_OPERAND (aref, 1)));
-	  TREE_OPERAND (aref, 1)
-	    = build_int_cst (TREE_TYPE (TREE_OPERAND (aref, 1)), 0);
+	  base = initial_condition (access_fn);
+	  split_constant_offset (base, &base, &off);
+	  /* Fold the MEM_REF offset into the evolutions initial
+	     value to make more bases comparable.  */
+	  if (!integer_zerop (TREE_OPERAND (aref, 1)))
+	    {
+	      off = size_binop (PLUS_EXPR, off,
+				fold_convert (ssizetype,
+					      TREE_OPERAND (aref, 1)));
+	      TREE_OPERAND (aref, 1)
+		= build_int_cst (TREE_TYPE (TREE_OPERAND (aref, 1)), 0);
+	    }
+	  access_fn = chrec_replace_initial_condition
+	      (access_fn, fold_convert (TREE_TYPE (base), off));
+	  TREE_OPERAND (aref, 0) = base;
+	  VEC_safe_push (tree, heap, access_fns, access_fn);
 	}
-      access_fn = chrec_replace_initial_condition (access_fn,
-			fold_convert (TREE_TYPE (base), off));
-
-      TREE_OPERAND (aref, 0) = base;
-      VEC_safe_push (tree, heap, access_fns, access_fn);
     }
-
-  if (TREE_CODE (ref) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR
-      && integer_zerop (TREE_OPERAND (ref, 1)))
-    ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
-
-  /* For canonicalization purposes we'd like to strip all outermost
-     zero-offset component-refs.
-     ???  For now simply handle zero-index array-refs.  */
-  while (TREE_CODE (ref) == ARRAY_REF
-	 && integer_zerop (TREE_OPERAND (ref, 1)))
-    ref = TREE_OPERAND (ref, 0);
 
   DR_BASE_OBJECT (dr) = ref;
   DR_ACCESS_FNS (dr) = access_fns;
@@ -956,6 +977,7 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
+      unsigned i;
       fprintf (dump_file, "\tbase_address: ");
       print_generic_expr (dump_file, DR_BASE_ADDRESS (dr), TDF_SLIM);
       fprintf (dump_file, "\n\toffset from base address: ");
@@ -969,6 +991,11 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
       fprintf (dump_file, "\n\tbase_object: ");
       print_generic_expr (dump_file, DR_BASE_OBJECT (dr), TDF_SLIM);
       fprintf (dump_file, "\n");
+      for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
+	{
+	  fprintf (dump_file, "\tAccess function %d: ", i);
+	  print_generic_stmt (dump_file, DR_ACCESS_FN (dr, i), TDF_SLIM);
+	}
     }
 
   return dr;
@@ -1265,13 +1292,32 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
 }
 
 /* Returns false if we can prove that data references A and B do not alias,
-   true otherwise.  */
+   true otherwise.  If LOOP_NEST is false no cross-iteration aliases are
+   considered.  */
 
 bool
-dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
+dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
+		bool loop_nest)
 {
   tree addr_a = DR_BASE_OBJECT (a);
   tree addr_b = DR_BASE_OBJECT (b);
+
+  /* If we are not processing a loop nest but scalar code we
+     do not need to care about possible cross-iteration dependences
+     and thus can process the full original reference.  Do so,
+     similar to how loop invariant motion applies extra offset-based
+     disambiguation.  */
+  if (!loop_nest)
+    {
+      aff_tree off1, off2;
+      double_int size1, size2;
+      get_inner_reference_aff (DR_REF (a), &off1, &size1);
+      get_inner_reference_aff (DR_REF (b), &off2, &size2);
+      aff_combination_scale (&off1, double_int_minus_one);
+      aff_combination_add (&off2, &off1);
+      if (aff_comb_cannot_overlap_p (&off2, size1, size2))
+	return false;
+    }
 
   if (DR_IS_WRITE (a) && DR_IS_WRITE (b))
     return refs_output_dependent_p (addr_a, addr_b);
@@ -1310,7 +1356,7 @@ initialize_data_dependence_relation (struct data_reference *a,
     }
 
   /* If the data references do not alias, then they are independent.  */
-  if (!dr_may_alias_p (a, b))
+  if (!dr_may_alias_p (a, b, loop_nest != NULL))
     {
       DDR_ARE_DEPENDENT (res) = chrec_known;
       return res;

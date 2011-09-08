@@ -1,0 +1,51 @@
+#   Copyright (C) 2011 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib gdb-test.exp
+
+dg-init
+v3-build_support
+
+global GDB
+if ![info exists ::env(GUALITY_GDB_NAME)] {
+    if [info exists GDB] {
+	set guality_gdb_name "$GDB"
+    } else {
+	set guality_gdb_name "[transform gdb]"
+    }
+    setenv GUALITY_GDB_NAME "$guality_gdb_name"
+}
+
+if {! [gdb_version_check]} {
+    unsupported "prettyprinters.exp"
+    return
+}
+
+# This can be used to keep the .exe around.  dg-test has an option for
+# this but there is no way to pass it through dg-runtest.
+global dg-interpreter-batch-mode
+set dg-interpreter-batch-mode 1
+
+global DEFAULT_CXXFLAGS
+global PCH_CXXFLAGS
+dg-runtest [lsort [glob $srcdir/$subdir/*.cc]] \
+  "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
+
+if [info exists guality_gdb_name] {
+    unsetenv GUALITY_GDB_NAME
+}
+
+dg-finish

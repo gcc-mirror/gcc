@@ -23,41 +23,41 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package defines tables used to store information needed for the ALFA
---  mode. It is used by procedures in Lib.Xref.ALFA to build the ALFA
---  information before writing it out to the ALI file, and by Get_ALFA/Put_ALFA
+--  This package defines tables used to store information needed for the Alfa
+--  mode. It is used by procedures in Lib.Xref.Alfa to build the Alfa
+--  information before writing it out to the ALI file, and by Get_Alfa/Put_Alfa
 --  to read and write the text form that is used in the ALI file.
 
 with Types;      use Types;
 with GNAT.Table;
 
-package ALFA is
+package Alfa is
 
-   --  ALFA information can exist in one of two forms. In the ALI file, it is
+   --  Alfa information can exist in one of two forms. In the ALI file, it is
    --  represented using a text format that is described in this specification.
-   --  Internally it is stored using three tables ALFA_Xref_Table,
-   --  ALFA_Scope_Table and ALFA_File_Table, which are also defined in this
+   --  Internally it is stored using three tables Alfa_Xref_Table,
+   --  Alfa_Scope_Table and Alfa_File_Table, which are also defined in this
    --  unit.
 
-   --  Lib.Xref.ALFA is part of the compiler. It extracts ALFA information from
+   --  Lib.Xref.Alfa is part of the compiler. It extracts Alfa information from
    --  the complete set of cross-references generated during compilation.
 
-   --  Get_ALFA reads the text lines in ALI format and populates the internal
+   --  Get_Alfa reads the text lines in ALI format and populates the internal
    --  tables with corresponding information.
 
-   --  Put_ALFA reads the internal tables and generates text lines in the ALI
+   --  Put_Alfa reads the internal tables and generates text lines in the ALI
    --  format.
 
    ---------------------
-   -- ALFA ALI Format --
+   -- Alfa ALI Format --
    ---------------------
 
-   --  ALFA information is generated on a unit-by-unit basis in the ALI file,
+   --  Alfa information is generated on a unit-by-unit basis in the ALI file,
    --  using lines that start with the identifying character F ("Formal").
    --  These lines are generated if one of the -gnatd.E (SPARK generation mode)
    --  or gnatd.F (Why generation mode) switches is set.
 
-   --  The ALFA information follows the cross-reference information, so it
+   --  The Alfa information follows the cross-reference information, so it
    --  needs not be read by tools like gnatbind, gnatmake etc.
 
    --  -------------------
@@ -86,13 +86,12 @@ package ALFA is
 
    --      Note: the filename is redundant in that it could be deduced from the
    --      corresponding D line, but it is convenient at least for human
-   --      reading of the ALFA information, and means that the ALFA information
+   --      reading of the Alfa information, and means that the Alfa information
    --      can stand on its own without needing other parts of the ALI file.
 
    --    FS . scope line type col entity (-> spec-file . spec-scope)?
 
-   --      What is the ? marke here, is it part of the actual syntax, or is
-   --      it a query about a problem, in which case it should be ???
+   --      (The ? mark stands for an optional entry in the syntax)
 
    --      scope is the ones-origin scope number for the current file (e.g. 2 =
    --      reference to the second FS line in this FD block).
@@ -175,19 +174,24 @@ package ALFA is
    --        r = reference
    --        s = subprogram reference in a static call
 
+   --  Special entries for reads and writes to memory reference a special
+   --  variable called "__HEAP". These special entries are present in every
+   --  scope where reads and writes to memory are present. Line and column for
+   --  this special variable are always 0.
+
    --    Examples: ??? add examples here
 
    ----------------
    -- Xref Table --
    ----------------
 
-   --  The following table records ALFA cross-references
+   --  The following table records Alfa cross-references
 
    type Xref_Index is new Int;
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
-   type ALFA_Xref_Record is record
+   type Alfa_Xref_Record is record
       Entity_Name : String_Ptr;
       --  Pointer to entity name in ALI file
 
@@ -227,8 +231,8 @@ package ALFA is
       --  Column number for the reference
    end record;
 
-   package ALFA_Xref_Table is new GNAT.Table (
-     Table_Component_Type => ALFA_Xref_Record,
+   package Alfa_Xref_Table is new GNAT.Table (
+     Table_Component_Type => Alfa_Xref_Record,
      Table_Index_Type     => Xref_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 2000,
@@ -245,7 +249,7 @@ package ALFA is
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
-   type ALFA_Scope_Record is record
+   type Alfa_Scope_Record is record
       Scope_Name : String_Ptr;
       --  Pointer to scope name in ALI file
 
@@ -288,8 +292,8 @@ package ALFA is
       --  Entity (subprogram or package) for the scope
    end record;
 
-   package ALFA_Scope_Table is new GNAT.Table (
-     Table_Component_Type => ALFA_Scope_Record,
+   package Alfa_Scope_Table is new GNAT.Table (
+     Table_Component_Type => Alfa_Scope_Record,
      Table_Index_Type     => Scope_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 200,
@@ -306,7 +310,7 @@ package ALFA is
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
-   type ALFA_File_Record is record
+   type Alfa_File_Record is record
       File_Name : String_Ptr;
       --  Pointer to file name in ALI file
 
@@ -320,26 +324,34 @@ package ALFA is
       --  Ending index in Scope table for this unit
    end record;
 
-   package ALFA_File_Table is new GNAT.Table (
-     Table_Component_Type => ALFA_File_Record,
+   package Alfa_File_Table is new GNAT.Table (
+     Table_Component_Type => Alfa_File_Record,
      Table_Index_Type     => File_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 20,
      Table_Increment      => 200);
 
+   ---------------
+   -- Constants --
+   ---------------
+
+   Name_Of_Heap_Variable : constant String := "__HEAP";
+   --  Name of special variable used in effects to denote reads and writes
+   --  through explicit dereference.
+
    -----------------
    -- Subprograms --
    -----------------
 
-   procedure Initialize_ALFA_Tables;
+   procedure Initialize_Alfa_Tables;
    --  Reset tables for a new compilation
 
    procedure dalfa;
-   --  Debug routine to dump internal ALFA tables. This is a raw format dump
+   --  Debug routine to dump internal Alfa tables. This is a raw format dump
    --  showing exactly what the tables contain.
 
    procedure palfa;
-   --  Debugging procedure to output contents of ALFA binary tables in the
+   --  Debugging procedure to output contents of Alfa binary tables in the
    --  format in which they appear in an ALI file.
 
-end ALFA;
+end Alfa;

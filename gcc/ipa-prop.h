@@ -119,7 +119,7 @@ struct GTY(()) ipa_member_ptr_cst
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite. See enum jump_func_type for the various
    types of jump functions supported.  */
-struct GTY (()) ipa_jump_func
+typedef struct GTY (()) ipa_jump_func
 {
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
@@ -133,7 +133,10 @@ struct GTY (()) ipa_jump_func
     struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
     struct ipa_ancestor_jf_data GTY ((tag ("IPA_JF_ANCESTOR"))) ancestor;
   } GTY ((desc ("%1.type"))) value;
-};
+} ipa_jump_func_t;
+
+DEF_VEC_O (ipa_jump_func_t);
+DEF_VEC_ALLOC_O (ipa_jump_func_t, gc);
 
 /* Summary describing a single formal parameter.  */
 
@@ -168,11 +171,6 @@ struct ipa_node_params
   /* If this node is an ipa-cp clone, these are the known values that describe
      what it has been specialized for.  */
   VEC (tree, heap) *known_vals;
-  /* Whether this function is called with variable number of actual
-     arguments.  */
-  unsigned called_with_var_arguments : 1;
-  /* Set when it is possible to create specialized versions of this node.  */
-  unsigned node_versionable : 1;
   /* Whether the param uses analysis has already been performed.  */
   unsigned uses_analysis_done : 1;
   /* Whether the function is enqueued in ipa-cp propagation stack.  */
@@ -224,51 +222,23 @@ ipa_is_param_used (struct ipa_node_params *info, int i)
   return VEC_index (ipa_param_descriptor_t, info->descriptors, i)->used;
 }
 
-/* Flag this node as having callers with variable number of arguments.  */
-
-static inline void
-ipa_set_called_with_variable_arg (struct ipa_node_params *info)
-{
-  info->called_with_var_arguments = 1;
-}
-
-/* Have we detected this node was called with variable number of arguments? */
-
-static inline bool
-ipa_is_called_with_var_arguments (struct ipa_node_params *info)
-{
-  return info->called_with_var_arguments;
-}
-
 /* ipa_edge_args stores information related to a callsite and particularly its
    arguments.  It can be accessed by the IPA_EDGE_REF macro.  */
 typedef struct GTY(()) ipa_edge_args
 {
-  /* Number of actual arguments in this callsite.  When set to 0,
-     this callsite's parameters would not be analyzed by the different
-     stages of IPA CP.  */
-  int argument_count;
-  /* Array of the callsite's jump function of each parameter.  */
-  struct ipa_jump_func GTY ((length ("%h.argument_count"))) *jump_functions;
+  /* Vector of the callsite's jump function of each parameter.  */
+  VEC (ipa_jump_func_t, gc) *jump_functions;
 } ipa_edge_args_t;
 
 /* ipa_edge_args access functions.  Please use these to access fields that
    are or will be shared among various passes.  */
-
-/* Set the number of actual arguments. */
-
-static inline void
-ipa_set_cs_argument_count (struct ipa_edge_args *args, int count)
-{
-  args->argument_count = count;
-}
 
 /* Return the number of actual arguments. */
 
 static inline int
 ipa_get_cs_argument_count (struct ipa_edge_args *args)
 {
-  return args->argument_count;
+  return VEC_length (ipa_jump_func_t, args->jump_functions);
 }
 
 /* Returns a pointer to the jump function for the ith argument.  Please note
@@ -278,8 +248,7 @@ ipa_get_cs_argument_count (struct ipa_edge_args *args)
 static inline struct ipa_jump_func *
 ipa_get_ith_jump_func (struct ipa_edge_args *args, int i)
 {
-  gcc_assert (i >= 0 && i <= args->argument_count);
-  return &args->jump_functions[i];
+  return VEC_index (ipa_jump_func_t, args->jump_functions, i);
 }
 
 /* Vectors need to have typedefs of structures.  */
@@ -367,8 +336,7 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					VEC (cgraph_edge_p, heap) **new_edges);
 
 /* Indirect edge and binfo processing.  */
-struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
-						    tree);
+struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree);
 
 /* Functions related to both.  */
 void ipa_analyze_node (struct cgraph_node *);

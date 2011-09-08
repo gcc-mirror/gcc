@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,18 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    procedure Free_Element is
       new Ada.Unchecked_Deallocation (Element_Type, Element_Access);
+
+   type Iterator is new
+     Map_Iterator_Interfaces.Forward_Iterator with record
+        Container : Map_Access;
+        Node      : Node_Access;
+     end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -398,6 +410,17 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       return Cursor'(Container'Unchecked_Access, Node);
    end First;
 
+   function First (Object : Iterator) return Cursor is
+      M : constant Map_Access  := Object.Container;
+      N : constant Node_Access := HT_Ops.First (M.HT);
+   begin
+      if N = null then
+         return No_Element;
+      else
+         return Cursor'(Object.Container.all'Unchecked_Access, N);
+      end if;
+   end First;
+
    ----------
    -- Free --
    ----------
@@ -405,6 +428,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    procedure Free (X : in out Node_Access) is
       procedure Deallocate is
          new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+
    begin
       if X = null then
          return;
@@ -626,6 +650,15 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       B := B - 1;
    end Iterate;
 
+   function Iterate (Container : Map)
+      return Map_Iterator_Interfaces.Forward_Iterator'class
+   is
+      Node : constant Node_Access := HT_Ops.First (Container.HT);
+      It   : constant Iterator := (Container'Unrestricted_Access, Node);
+   begin
+      return It;
+   end Iterate;
+
    ---------
    -- Key --
    ---------
@@ -709,6 +742,15 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       end;
    end Next;
 
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position.Node = null then
+         return No_Element;
+      else
+         return (Object.Container, Next (Position).Node);
+      end if;
+   end Next;
+
    -------------------
    -- Query_Element --
    -------------------
@@ -784,6 +826,22 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       raise Program_Error with "attempt to stream map cursor";
    end Read;
 
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
    ---------------
    -- Read_Node --
    ---------------
@@ -813,6 +871,28 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       return Node;
    end Read_Node;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type) return Constant_Reference_Type
+   is
+   begin
+      return (Element =>
+        Container.Find (Key).Node.Element.all'Unrestricted_Access);
+   end Constant_Reference;
+
+   function Reference
+     (Container : Map;
+      Key       : Key_Type) return Reference_Type
+   is
+   begin
+      return (Element =>
+         Container.Find (Key).Node.Element.all'Unrestricted_Access);
+   end Reference;
 
    -------------
    -- Replace --
@@ -1062,6 +1142,22 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    is
    begin
       raise Program_Error with "attempt to stream map cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
    ----------------

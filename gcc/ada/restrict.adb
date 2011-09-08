@@ -117,7 +117,7 @@ package body Restrict is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
    begin
-      if Force or else Comes_From_Source (N) then
+      if Force or else Comes_From_Source (Original_Node (N)) then
 
          if Restriction_Check_Required (SPARK)
            and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
@@ -145,7 +145,7 @@ package body Restrict is
    begin
       pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
 
-      if Comes_From_Source (N) then
+      if Comes_From_Source (Original_Node (N)) then
 
          if Restriction_Check_Required (SPARK)
            and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
@@ -375,12 +375,12 @@ package body Restrict is
    begin
       Msg_Issued := False;
 
-      --  In CodePeer and ALFA mode, we do not want to check for any
+      --  In CodePeer and Alfa mode, we do not want to check for any
       --  restriction, or set additional restrictions other than those already
       --  set in gnat1drv.adb so that we have consistency between each
       --  compilation.
 
-      if CodePeer_Mode or ALFA_Mode then
+      if CodePeer_Mode or Alfa_Mode then
          return;
       end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -914,10 +914,12 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if abs X < Sqrt_Epsilon then
          return X;
-
-      elsif abs X = Pi / 2.0 then
-         raise Constraint_Error;
       end if;
+
+      --  Note: if X is exactly pi/2, then we should raise an exception, since
+      --  the result would overflow. But for all floating-point formats we deal
+      --  with, it is impossible for X to be exactly pi/2, and the result is
+      --  always in range.
 
       return Float_Type'Base (Aux.Tan (Double (X)));
    end Tan;

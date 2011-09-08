@@ -98,21 +98,22 @@ canon_file_name (const char *string)
 {
   void **slot;
   struct string_slot s_slot;
+  size_t len = strlen (string);
+
   s_slot.s = string;
-  s_slot.len = strlen (string);
+  s_slot.len = len;
 
   slot = htab_find_slot (file_name_hash_table, &s_slot, INSERT);
   if (*slot == NULL)
     {
-      size_t len;
       char *saved_string;
       struct string_slot *new_slot;
 
-      len = strlen (string);
       saved_string = (char *) xmalloc (len + 1);
       new_slot = XCNEW (struct string_slot);
-      strcpy (saved_string, string);
+      memcpy (saved_string, string, len + 1);
       new_slot->s = saved_string;
+      new_slot->len = len;
       *slot = new_slot;
       return saved_string;
     }

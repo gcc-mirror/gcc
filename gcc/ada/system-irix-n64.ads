@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                           (SGI Irix, n64 ABI)                            --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -152,7 +152,6 @@ private
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
-   GCC_ZCX_Support           : constant Boolean := True;
 
    --  Note: Denorm is False because denormals are not supported on the
    --  R10000, and we want the code to be valid for this processor.

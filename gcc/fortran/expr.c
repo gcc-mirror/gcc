@@ -396,6 +396,28 @@ gfc_copy_expr (gfc_expr *p)
 }
 
 
+void
+gfc_clear_shape (mpz_t *shape, int rank)
+{
+  int i;
+
+  for (i = 0; i < rank; i++)
+    mpz_clear (shape[i]);
+}
+
+
+void
+gfc_free_shape (mpz_t **shape, int rank)
+{
+  if (*shape == NULL)
+    return;
+
+  gfc_clear_shape (*shape, rank);
+  free (*shape);
+  *shape = NULL;
+}
+
+
 /* Workhorse function for gfc_free_expr() that frees everything
    beneath an expression node, but not the node itself.  This is
    useful when we want to simplify a node and replace it with
@@ -404,8 +426,6 @@ gfc_copy_expr (gfc_expr *p)
 static void
 free_expr0 (gfc_expr *e)
 {
-  int n;
-
   switch (e->expr_type)
     {
     case EXPR_CONSTANT:
@@ -473,13 +493,7 @@ free_expr0 (gfc_expr *e)
     }
 
   /* Free a shape array.  */
-  if (e->shape != NULL)
-    {
-      for (n = 0; n < e->rank; n++)
-	mpz_clear (e->shape[n]);
-
-      free (e->shape);
-    }
+  gfc_free_shape (&e->shape, e->rank);
 
   gfc_free_ref_list (e->ref);
 
@@ -2468,6 +2482,9 @@ check_init_expr (gfc_expr *e)
 		       e->symtree->n.sym->name, &e->where);
 	    m = MATCH_ERROR;
 	  }
+
+	if (m == MATCH_ERROR)
+	  return FAILURE;
 
 	/* Try to scalarize an elemental intrinsic function that has an
 	   array argument.  */

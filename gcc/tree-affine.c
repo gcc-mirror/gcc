@@ -887,3 +887,30 @@ get_inner_reference_aff (tree ref, aff_tree *addr, double_int *size)
   *size = shwi_to_double_int ((bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
 }
 
+/* Returns true if a region of size SIZE1 at position 0 and a region of
+   size SIZE2 at position DIFF cannot overlap.  */
+
+bool
+aff_comb_cannot_overlap_p (aff_tree *diff, double_int size1, double_int size2)
+{
+  double_int d, bound;
+
+  /* Unless the difference is a constant, we fail.  */
+  if (diff->n != 0)
+    return false;
+
+  d = diff->offset;
+  if (double_int_negative_p (d))
+    {
+      /* The second object is before the first one, we succeed if the last
+	 element of the second object is before the start of the first one.  */
+      bound = double_int_add (d, double_int_add (size2, double_int_minus_one));
+      return double_int_negative_p (bound);
+    }
+  else
+    {
+      /* We succeed if the second object starts after the first one ends.  */
+      return double_int_scmp (size1, d) <= 0;
+    }
+}
+

@@ -55,10 +55,24 @@ static const struct cpu_names {
   { "UltraSPARC-T2",	"niagara2" },
   { "UltraSPARC-T2",	"niagara2" },
   { "UltraSPARC-T2+",	"niagara2" },
-  { "SPARC-T3",		"niagara2" },
-  { "SPARC-T4",		"niagara2" },
+  { "SPARC-T3",		"niagara3" },
+  { "SPARC-T4",		"niagara4" },
 #else
-  /* FIXME: Provide Linux/SPARC values.  */
+  { "SuperSPARC",	"supersparc" },
+  { "HyperSparc",	"hypersparc" },
+  { "SpitFire",		"ultrasparc" },
+  { "BlackBird",	"ultrasparc" },
+  { "Sabre",		"ultrasparc" },
+  { "Hummingbird",	"ultrasparc" },
+  { "Cheetah",		"ultrasparc3" },
+  { "Jalapeno",		"ultrasparc3" },
+  { "Jaguar",		"ultrasparc3" },
+  { "Panther",		"ultrasparc3" },
+  { "Serrano",		"ultrasparc3" },
+  { "UltraSparc T1",	"niagara" },
+  { "UltraSparc T2",	"niagara2" },
+  { "UltraSparc T3",	"niagara3" },
+  { "UltraSparc T4",	"niagara4" },
 #endif
   { NULL,	NULL }
   };
@@ -137,7 +151,7 @@ host_detect_local_cpu (int argc, const char **argv)
     return NULL;
 
   while (fgets (buf, sizeof (buf), f) != NULL)
-    if (strncmp (buf, "cpu model", sizeof ("cpu model") - 1) == 0)
+    if (strncmp (buf, "cpu\t\t:", sizeof ("cpu\t\t:") - 1) == 0)
       {
         for (i = 0; cpu_names [i].name; i++)
           if (strstr (buf, cpu_names [i].name) != NULL)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2006-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 2006-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,27 @@ package body System.Generic_Array_Operations is
       First : Integer) return Integer;
    pragma Inline_Always (Check_Unit_Last);
 
+   --------------
+   -- Diagonal --
+   --------------
+
+   function Diagonal (A : Matrix) return Vector is
+
+      N : constant Natural := Natural'Min (A'Length (1), A'Length (2));
+      R : Vector (A'First (1) .. A'First (1) + N - 1);
+
+   begin
+      for J in 0 .. N - 1 loop
+         R (R'First + J) := A (A'First (1) + J, A'First (2) + J);
+      end loop;
+
+      return R;
+   end Diagonal;
+
+   --------------------------
+   -- Square_Matrix_Length --
+   --------------------------
+
    function Square_Matrix_Length (A : Matrix) return Natural is
    begin
       if A'Length (1) /= A'Length (2) then
@@ -73,6 +94,213 @@ package body System.Generic_Array_Operations is
       return First + (Order - 1);
    end Check_Unit_Last;
 
+   ---------------------
+   -- Back_Substitute --
+   ---------------------
+
+   procedure Back_Substitute (M, N : in out Matrix) is
+      pragma Assert (M'First (1) = N'First (1) and then
+                     M'Last  (1) = N'Last (1));
+
+      Max_Col : Integer := M'Last (2);
+
+      procedure Sub_Row
+        (M      : in out Matrix;
+         Target : Integer;
+         Source : Integer;
+         Factor : Scalar);
+      --  Needs comments ???
+
+      procedure Sub_Row
+        (M      : in out Matrix;
+         Target : Integer;
+         Source : Integer;
+         Factor : Scalar)
+      is
+      begin
+         for J in M'Range (2) loop
+            M (Target, J) := M (Target, J) - Factor * M (Source, J);
+         end loop;
+      end Sub_Row;
+
+   --  Start of processing for Back_Substitute
+
+   begin
+      for Row in reverse M'Range (1) loop
+         Find_Non_Zero : for Col in M'First (2) .. Max_Col loop
+            if Is_Non_Zero (M (Row, Col)) then
+
+               --  Found first non-zero element, so subtract a multiple
+               --  of this row from all higher rows, to reduce all other
+               --  elements in this column to zero.
+
+               for J in M'First (1) .. Row - 1 loop
+                  Sub_Row (N, J, Row, (M (J, Col) / M (Row, Col)));
+                  Sub_Row (M, J, Row, (M (J, Col) / M (Row, Col)));
+               end loop;
+
+               Max_Col := Col - 1;
+               exit Find_Non_Zero;
+            end if;
+         end loop Find_Non_Zero;
+      end loop;
+   end Back_Substitute;
+
+   -----------------------
+   -- Forward_Eliminate --
+   -----------------------
+
+   procedure Forward_Eliminate
+     (M   : in out Matrix;
+      N   : in out Matrix;
+      Det : out Scalar)
+   is
+      pragma Assert (M'First (1) = N'First (1) and then
+                     M'Last  (1) = N'Last (1));
+
+      function "abs" (X : Scalar) return Scalar is
+        (if X < Zero then Zero - X else X);
+
+      procedure Sub_Row
+        (M : in out Matrix;
+         Target : Integer;
+         Source : Integer;
+         Factor : Scalar);
+      --  Needs commenting ???
+
+      procedure Divide_Row
+        (M, N  : in out Matrix;
+         Row   : Integer;
+         Scale : Scalar);
+      --  Needs commenting ???
+
+      procedure Switch_Row
+        (M, N  : in out Matrix;
+         Row_1 : Integer;
+         Row_2 : Integer);
+      --  Needs commenting ???
+
+      -------------
+      -- Sub_Row --
+      -------------
+
+      procedure Sub_Row
+        (M      : in out Matrix;
+         Target : Integer;
+         Source : Integer;
+         Factor : Scalar)
+         is
+      begin
+         for J in M'Range (2) loop
+            M (Target, J) := M (Target, J) - Factor * M (Source, J);
+         end loop;
+      end Sub_Row;
+
+      ----------------
+      -- Divide_Row --
+      ----------------
+
+      procedure Divide_Row
+        (M, N  : in out Matrix;
+         Row   : Integer;
+         Scale : Scalar)
+      is
+      begin
+         Det := Det * Scale;
+
+         for J in M'Range (2) loop
+            M (Row, J) := M (Row, J) / Scale;
+         end loop;
+
+         for J in N'Range (2) loop
+            N (Row - M'First (1) + N'First (1), J)
+               := N (Row - M'First (1) + N'First (1), J) / Scale;
+         end loop;
+      end Divide_Row;
+
+      ----------------
+      -- Switch_Row --
+      ----------------
+
+      procedure Switch_Row
+        (M, N  : in out Matrix;
+         Row_1 : Integer;
+         Row_2 : Integer)
+      is
+         procedure Swap (X, Y : in out Scalar);
+         --  Exchange the values of X and Y
+
+         procedure Swap (X, Y : in out Scalar) is
+            T : constant Scalar := X;
+         begin
+            X := Y;
+            Y := T;
+         end Swap;
+
+      --  Start of processing for Switch_Row
+
+      begin
+         if Row_1 /= Row_2 then
+            Det := Zero - Det;
+
+            for J in M'Range (2) loop
+               Swap (M (Row_1, J), M (Row_2, J));
+            end loop;
+
+            for J in N'Range (2) loop
+               Swap (N (Row_1 - M'First (1) + N'First (1), J),
+                     N (Row_2 - M'First (1) + N'First (1), J));
+            end loop;
+         end if;
+      end Switch_Row;
+
+      I : Integer := M'First (1);
+      --  Avoid use of I ???
+
+   --  Start of processing for Forward_Eliminate
+
+   begin
+      Det := One;
+
+      for J in M'Range (2) loop
+         declare
+            Max_I   : Integer := I;
+            Max_Abs : Scalar := Zero;
+
+         begin
+            --  Find best pivot in column J, starting in row I
+
+            for K in I .. M'Last (1) loop
+               declare
+                  New_Abs : constant Scalar := abs M (K, J);
+               begin
+                  if Max_Abs < New_Abs then
+                     Max_Abs := New_Abs;
+                     Max_I := K;
+                  end if;
+               end;
+            end loop;
+
+            if Zero < Max_Abs then
+               Switch_Row (M, N, I, Max_I);
+               Divide_Row (M, N, I, M (I, J));
+
+               for U in I + 1 .. M'Last (1) loop
+                  Sub_Row (N, U, I, M (U, J));
+                  Sub_Row (M, U, I, M (U, J));
+               end loop;
+
+               exit when I >= M'Last (1);
+
+               I := I + 1;
+
+            else
+               Det := Zero; --  Zero, but we don't have literals
+            end if;
+         end;
+      end loop;
+   end Forward_Eliminate;
+
    -------------------
    -- Inner_Product --
    -------------------
@@ -96,6 +324,15 @@ package body System.Generic_Array_Operations is
 
       return R;
    end Inner_Product;
+
+   -------------
+   -- L2_Norm --
+   -------------
+
+   function L2_Norm (X : Vector) return Scalar is
+   begin
+      return Sqrt (Inner_Product (X, X));
+   end L2_Norm;
 
    ----------------------------------
    -- Matrix_Elementwise_Operation --
@@ -139,6 +376,7 @@ package body System.Generic_Array_Operations is
       return Result_Matrix
    is
       R : Result_Matrix (Left'Range (1), Left'Range (2));
+
    begin
       if Left'Length (1) /= Right'Length (1)
         or else Left'Length (2) /= Right'Length (2)
@@ -337,6 +575,7 @@ package body System.Generic_Array_Operations is
          for K in R'Range (2) loop
             declare
                S : Result_Scalar := Zero;
+
             begin
                for M in Left'Range (2) loop
                   S := S + Left (J, M)
@@ -370,6 +609,7 @@ package body System.Generic_Array_Operations is
       for J in Left'Range (1) loop
          declare
             S : Result_Scalar := Zero;
+
          begin
             for K in Left'Range (2) loop
                S := S + Left (J, K) * Right (K - Left'First (2) + Right'First);
@@ -401,6 +641,20 @@ package body System.Generic_Array_Operations is
 
       return R;
    end Outer_Product;
+
+   -----------------
+   -- Swap_Column --
+   -----------------
+
+   procedure Swap_Column (A : in out Matrix; Left, Right : Integer) is
+      Temp : Scalar;
+   begin
+      for J in A'Range (1) loop
+         Temp := A (J, Left);
+         A (J, Left) := A (J, Right);
+         A (J, Right) := Temp;
+      end loop;
+   end Swap_Column;
 
    ---------------
    -- Transpose --

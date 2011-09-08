@@ -128,8 +128,8 @@ package body Prj.Util is
    ---------------
 
    procedure Duplicate
-     (This    : in out Name_List_Index;
-      Shared  : Shared_Project_Tree_Data_Access)
+     (This   : in out Name_List_Index;
+      Shared : Shared_Project_Tree_Data_Access)
    is
       Old_Current : Name_List_Index;
       New_Current : Name_List_Index;
@@ -757,8 +757,11 @@ package body Prj.Util is
                elsif Name_Buffer (1 .. 2) = "I=" then
                   Info.Info.Index := Int'Value (Name_Buffer (3 .. Name_Len));
 
-               elsif Name_Buffer (1 .. Name_Len) = "N=T" then
-                  Info.Info.Naming_Exception := True;
+               elsif Name_Buffer (1 .. Name_Len) = "N=Y" then
+                  Info.Info.Naming_Exception := Yes;
+
+               elsif Name_Buffer (1 .. Name_Len) = "N=I" then
+                  Info.Info.Naming_Exception := Inherited;
 
                else
                   Report_Error;
@@ -1116,8 +1119,11 @@ package body Prj.Util is
 
             --  Naming exception ("N=T");
 
-            if Source.Naming_Exception then
-               Put_Line (File, "N=T");
+            if Source.Naming_Exception = Yes then
+               Put_Line (File, "N=Y");
+
+            elsif Source.Naming_Exception = Inherited then
+               Put_Line (File, "N=I");
             end if;
 
             --  Empty line to indicate end of info on this source

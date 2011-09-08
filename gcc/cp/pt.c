@@ -5240,6 +5240,8 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
   STRIP_NOPS (expr);
   if (expr && (null_ptr_cst_p (expr) || TREE_CODE (expr) == PTRMEM_CST))
     return true;
+  if (cxx_dialect >= cxx0x && null_member_pointer_value_p (expr))
+    return true;
   if (complain & tf_error)
     {
       error ("%qE is not a valid template argument for type %qT",
@@ -5550,6 +5552,17 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   else
     expr = mark_rvalue_use (expr);
 
+  /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
+     to a non-type argument of "nullptr".  */
+  if (expr == nullptr_node
+      && (TYPE_PTR_P (type) || TYPE_PTR_TO_MEMBER_P (type)))
+    expr = convert (type, expr);
+
+  /* In C++11, non-type template arguments can be arbitrary constant
+     expressions.  But don't fold a PTRMEM_CST to a CONSTRUCTOR yet.  */
+  if (cxx_dialect >= cxx0x && TREE_CODE (expr) != PTRMEM_CST)
+    expr = maybe_constant_value (expr);
+
   /* HACK: Due to double coercion, we can get a
      NOP_EXPR<REFERENCE_TYPE>(ADDR_EXPR<POINTER_TYPE> (arg)) here,
      which is the tree that we built on the first call (see
@@ -5658,6 +5671,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       if (DECL_P (expr) && DECL_TEMPLATE_PARM_P (expr))
 	/* Non-type template parameters are OK.  */
 	;
+      else if (cxx_dialect >= cxx0x && integer_zerop (expr))
+	/* Null pointer values are OK in C++11.  */;
       else if (TREE_CODE (expr) != ADDR_EXPR
 	       && TREE_CODE (expr_type) != ARRAY_TYPE)
 	{
@@ -5784,6 +5799,10 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  if (expr == error_mark_node)
 	    return error_mark_node;
 	}
+
+      if (cxx_dialect >= cxx0x && integer_zerop (expr))
+	/* Null pointer values are OK in C++11.  */
+	return perform_qualification_conversions (type, expr);
 
       expr = convert_nontype_argument_function (type, expr);
       if (!expr || expr == error_mark_node)
@@ -8503,16 +8522,6 @@ instantiate_class_template_1 (tree type)
   input_location = DECL_SOURCE_LOCATION (TYPE_NAME (type)) =
     DECL_SOURCE_LOCATION (typedecl);
 
-  TYPE_HAS_USER_CONSTRUCTOR (type) = TYPE_HAS_USER_CONSTRUCTOR (pattern);
-  TYPE_HAS_NEW_OPERATOR (type) = TYPE_HAS_NEW_OPERATOR (pattern);
-  TYPE_HAS_ARRAY_NEW_OPERATOR (type) = TYPE_HAS_ARRAY_NEW_OPERATOR (pattern);
-  TYPE_GETS_DELETE (type) = TYPE_GETS_DELETE (pattern);
-  TYPE_HAS_COPY_ASSIGN (type) = TYPE_HAS_COPY_ASSIGN (pattern);
-  TYPE_HAS_CONST_COPY_ASSIGN (type) = TYPE_HAS_CONST_COPY_ASSIGN (pattern);
-  TYPE_HAS_COPY_CTOR (type) = TYPE_HAS_COPY_CTOR (pattern);
-  TYPE_HAS_CONST_COPY_CTOR (type) = TYPE_HAS_CONST_COPY_CTOR (pattern);
-  TYPE_HAS_DEFAULT_CONSTRUCTOR (type) = TYPE_HAS_DEFAULT_CONSTRUCTOR (pattern);
-  TYPE_HAS_CONVERSION (type) = TYPE_HAS_CONVERSION (pattern);
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
   TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
   TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (pattern);
@@ -8887,7 +8896,16 @@ instantiate_class_template_1 (tree type)
     }
 
   if (CLASSTYPE_LAMBDA_EXPR (type))
-    maybe_add_lambda_conv_op (type);
+    {
+      tree lambda = CLASSTYPE_LAMBDA_EXPR (type);
+      if (LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda))
+	{
+	  apply_lambda_return_type (lambda, void_type_node);
+	  LAMBDA_EXPR_RETURN_TYPE (lambda) = NULL_TREE;
+	}
+      instantiate_decl (lambda_function (type), false, false);
+      maybe_add_lambda_conv_op (type);
+    }
 
   /* Set the file and line number information to whatever is given for
      the class itself.  This puts error messages involving generated
@@ -11420,8 +11438,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (DECLTYPE_FOR_LAMBDA_CAPTURE (t))
 	  type = lambda_capture_field_type (type);
-	else if (DECLTYPE_FOR_LAMBDA_RETURN (t))
-	  type = lambda_return_type (type);
 	else if (DECLTYPE_FOR_LAMBDA_PROXY (t))
 	  type = lambda_proxy_type (type);
 	else
@@ -13882,10 +13898,17 @@ tsubst_copy_and_build (tree t,
 	LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
 	LAMBDA_EXPR_DISCRIMINATOR (r)
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
-	LAMBDA_EXPR_CAPTURE_LIST (r)
-	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
 	LAMBDA_EXPR_EXTRA_SCOPE (r)
 	  = RECUR (LAMBDA_EXPR_EXTRA_SCOPE (t));
+	if (LAMBDA_EXPR_RETURN_TYPE (t) == dependent_lambda_return_type_node)
+	  {
+	    LAMBDA_EXPR_RETURN_TYPE (r) = dependent_lambda_return_type_node;
+	    LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (r) = true;
+	  }
+	else
+	  LAMBDA_EXPR_RETURN_TYPE (r)
+	    = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
+
 	gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 		    && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
 
@@ -13895,9 +13918,10 @@ tsubst_copy_and_build (tree t,
 	   declaration of the op() for later calls to lambda_function.  */
 	complete_type (type);
 
-	type = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
-	if (type)
-	  apply_lambda_return_type (r, type);
+	/* The capture list refers to closure members, so this needs to
+	   wait until after we finish instantiating the type.  */
+	LAMBDA_EXPR_CAPTURE_LIST (r)
+	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
 
 	return build_lambda_object (r);
       }
@@ -19667,6 +19691,10 @@ build_non_dependent_expr (tree expr)
      expression, there are special rules if the second or third
      argument is a throw-expression.  */
   if (TREE_CODE (expr) == THROW_EXPR)
+    return expr;
+
+  /* Don't wrap an initializer list, we need to be able to look inside.  */
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr))
     return expr;
 
   if (TREE_CODE (expr) == COND_EXPR)

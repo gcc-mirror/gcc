@@ -223,6 +223,10 @@ go_langhook_handle_option (
       ret = go_enable_dump (arg) ? true : false;
       break;
 
+    case OPT_fgo_optimize_:
+      ret = go_enable_optimize (arg) ? true : false;
+      break;
+
     case OPT_fgo_prefix_:
       go_set_prefix (arg);
       break;

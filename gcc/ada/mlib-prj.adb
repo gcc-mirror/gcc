@@ -25,6 +25,7 @@
 
 with ALI;      use ALI;
 with Gnatvsn;  use Gnatvsn;
+with Makeutl;  use Makeutl;
 with MLib.Fil; use MLib.Fil;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl; use MLib.Utl;
@@ -802,6 +803,9 @@ package body MLib.Prj is
          end loop;
       end Process_Imported_Libraries;
 
+      Path_FD : File_Descriptor := Invalid_FD;
+      --  Used for setting the source and object paths
+
    --  Start of processing for Build_Library
 
    begin
@@ -1044,10 +1048,54 @@ package body MLib.Prj is
 
             --  Set the paths
 
-            Set_Ada_Paths
-              (Project             => For_Project,
-               In_Tree             => In_Tree,
-               Including_Libraries => True);
+            --  First the source path
+
+            if For_Project.Include_Path_File = No_Path then
+               Get_Directories
+                 (Project_Tree => In_Tree,
+                  For_Project  => For_Project,
+                  Activity     => Compilation,
+                  Languages    => Ada_Only);
+
+               Create_New_Path_File
+                 (In_Tree.Shared, Path_FD, For_Project.Include_Path_File);
+
+               Write_Path_File (Path_FD);
+               Path_FD := Invalid_FD;
+            end if;
+
+            if Current_Source_Path_File_Of (In_Tree.Shared) /=
+                                                For_Project.Include_Path_File
+            then
+               Set_Current_Source_Path_File_Of
+                 (In_Tree.Shared, For_Project.Include_Path_File);
+               Set_Path_File_Var
+                 (Project_Include_Path_File,
+                  Get_Name_String (For_Project.Include_Path_File));
+            end if;
+
+            --  Then, the object path
+
+            Get_Directories
+              (Project_Tree => In_Tree,
+               For_Project  => For_Project,
+               Activity     => SAL_Binding,
+               Languages    => Ada_Only);
+
+            declare
+               Path_File_Name : Path_Name_Type;
+
+            begin
+               Create_New_Path_File (In_Tree.Shared, Path_FD, Path_File_Name);
+
+               Write_Path_File (Path_FD);
+               Path_FD := Invalid_FD;
+
+               Set_Path_File_Var
+                 (Project_Objects_Path_File, Get_Name_String (Path_File_Name));
+               Set_Current_Source_Path_File_Of
+                 (In_Tree.Shared, Path_File_Name);
+            end;
 
             --  Display the gnatbind command, if not in quiet output
 
@@ -1066,9 +1114,9 @@ package body MLib.Prj is
                   Arguments (1 .. Argument_Number),
                   Success);
 
-            else
-               --  Otherwise create a temporary response file
+            --  Otherwise create a temporary response file
 
+            else
                declare
                   FD            : File_Descriptor;
                   Path          : Path_Name_Type;

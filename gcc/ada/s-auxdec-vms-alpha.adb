@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/Or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,26 +218,26 @@ package body System.Aux_DEC is
    begin
       System.Machine_Code.Asm
         (
-         "lda $16, %3"      & LF & HT &
+         "lda $16, %3"      & LF & HT &  --  Address of Bit
          "mb"               & LF & HT &
-         "sll $16, 3, $18 " & LF & HT &
-         "bis $31, 1, %1"   & LF & HT &
-         "and $18, 63, $19" & LF & HT &
-         "bic $18, 63, $18" & LF & HT &
-         "sra $18, 3, $18"  & LF & HT &
-         "bis $31, %4, $17" & LF & HT &
-         "sll %1, $19, $19" & LF & HT &
+         "sll $16, 3, $18 " & LF & HT &  --  Byte address to bit address
+         "bis $31, 1, %1"   & LF & HT &  --  Set temp to 1 for the sll
+         "and $18, 63, $19" & LF & HT &  --  Quadword bit offset
+         "bic $18, 63, $18" & LF & HT &  --  Quadword bit address
+         "sra $18, 3, $18"  & LF & HT &  --  Quadword address
+         "bis $31, %4, $17" & LF & HT &  --  Retry_Count -> $17
+         "sll %1, $19, $19" & LF &       --  $19 = 1 << bit_offset
          "1:"               & LF & HT &
-         "ldq_l %2, 0($18)" & LF & HT &
-         "and %2, $19, %1"  & LF & HT &
-         "bis %2, $19, %2"  & LF & HT &
-         "stq_c %2, 0($18)" & LF & HT &
-         "beq %2, 2f"       & LF & HT &
-         "cmovne %1, 1, %1" & LF & HT &
-         "br 3f"            & LF & HT &
+         "ldq_l %2, 0($18)" & LF & HT &  --  Load & lock
+         "and %2, $19, %1"  & LF & HT &  --  Previous value -> %1
+         "bis %2, $19, %2"  & LF & HT &  --  Set Bit
+         "stq_c %2, 0($18)" & LF & HT &  --  Store conditional
+         "beq %2, 2f"       & LF & HT &  --  Goto 2: if failed
+         "cmovne %1, 1, %1" & LF & HT &  --  Set Old_Bit
+         "br 3f"            & LF &
          "2:"               & LF & HT &
-         "subq $17, 1, $17" & LF & HT &
-         "bgt $17, 1b"      & LF & HT &
+         "subq $17, 1, $17" & LF & HT &  --  Retry_Count - 1
+         "bgt $17, 1b"      & LF &       --  Retry ?
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "trapb",
@@ -331,7 +331,7 @@ package body System.Aux_DEC is
    begin
       System.Machine_Code.Asm
         (
-         "mb"              & LF & HT &
+         "mb"              & LF &
          "1:"              & LF & HT &
          "ldl_l $1, %0"    & LF & HT &
          "addl $1, %2, $0" & LF & HT &
@@ -358,21 +358,21 @@ package body System.Aux_DEC is
       System.Machine_Code.Asm
         (
          "mb"               & LF & HT &
-         "bis $31, %5, $17" & LF & HT &
+         "bis $31, %5, $17" & LF &
          "1:"               & LF & HT &
          "ldl_l $1, %0"     & LF & HT &
          "addl $1, %4, $0"  & LF & HT &
          "stl_c $0, %3"     & LF & HT &
-         "beq $0, 2f"       & LF & HT &
+         "beq $0, 2f"       & LF &
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "stq $0, %2"       & LF & HT &
          "stl $1, %1"       & LF & HT &
-         "br 4f"            & LF & HT &
+         "br 4f"            & LF &
          "2:"               & LF & HT &
          "subq $17, 1, $17" & LF & HT &
          "bgt $17, 1b"      & LF & HT &
-         "br 3b"            & LF & HT &
+         "br 3b"            & LF &
          "4:",
          Outputs  => (Aligned_Integer'Asm_Output ("=m", To),
                       Integer'Asm_Output ("=m", Old_Value),
@@ -393,7 +393,7 @@ package body System.Aux_DEC is
    begin
       System.Machine_Code.Asm
         (
-         "mb"              & LF & HT &
+         "mb"              & LF &
          "1:"              & LF & HT &
          "ldq_l $1, %0"    & LF & HT &
          "addq $1, %2, $0" & LF & HT &
@@ -420,21 +420,21 @@ package body System.Aux_DEC is
       System.Machine_Code.Asm
         (
          "mb"               & LF & HT &
-         "bis $31, %5, $17" & LF & HT &
+         "bis $31, %5, $17" & LF &
          "1:"               & LF & HT &
          "ldq_l $1, %0"     & LF & HT &
          "addq $1, %4, $0"  & LF & HT &
          "stq_c $0, %3"     & LF & HT &
-         "beq $0, 2f"       & LF & HT &
+         "beq $0, 2f"       & LF &
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "stq $0, %2"       & LF & HT &
          "stq $1, %1"       & LF & HT &
-         "br 4f"            & LF & HT &
+         "br 4f"            & LF &
          "2:"               & LF & HT &
          "subq $17, 1, $17" & LF & HT &
          "bgt $17, 1b"      & LF & HT &
-         "br 3b"            & LF & HT &
+         "br 3b"            & LF &
          "4:",
          Outputs  => (Aligned_Long_Integer'Asm_Output ("=m", To),
                       Long_Integer'Asm_Output ("=m", Old_Value),
@@ -459,7 +459,7 @@ package body System.Aux_DEC is
    begin
       System.Machine_Code.Asm
         (
-         "mb"             & LF & HT &
+         "mb"             & LF &
          "1:"             & LF & HT &
          "ldl_l $1, %0"   & LF & HT &
          "and $1, %2, $0" & LF & HT &
@@ -486,21 +486,21 @@ package body System.Aux_DEC is
       System.Machine_Code.Asm
         (
          "mb"               & LF & HT &
-         "bis $31, %5, $17" & LF & HT &
+         "bis $31, %5, $17" & LF &
          "1:"               & LF & HT &
          "ldl_l $1, %0"     & LF & HT &
          "and $1, %4, $0"   & LF & HT &
          "stl_c $0, %3"     & LF & HT &
-         "beq $0, 2f"       & LF & HT &
+         "beq $0, 2f"       & LF &
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "stq $0, %2"       & LF & HT &
          "stl $1, %1"       & LF & HT &
-         "br 4f"            & LF & HT &
+         "br 4f"            & LF &
          "2:"               & LF & HT &
          "subq $17, 1, $17" & LF & HT &
          "bgt $17, 1b"      & LF & HT &
-         "br 3b"            & LF & HT &
+         "br 3b"            & LF &
          "4:",
          Outputs  => (Aligned_Integer'Asm_Output ("=m", To),
                       Integer'Asm_Output ("=m", Old_Value),
@@ -521,7 +521,7 @@ package body System.Aux_DEC is
    begin
       System.Machine_Code.Asm
         (
-         "mb"             & LF & HT &
+         "mb"             & LF &
          "1:"             & LF & HT &
          "ldq_l $1, %0"   & LF & HT &
          "and $1, %2, $0" & LF & HT &
@@ -548,21 +548,21 @@ package body System.Aux_DEC is
       System.Machine_Code.Asm
         (
          "mb"               & LF & HT &
-         "bis $31, %5, $17" & LF & HT &
+         "bis $31, %5, $17" & LF &
          "1:"               & LF & HT &
          "ldq_l $1, %0"     & LF & HT &
          "and $1, %4, $0"   & LF & HT &
          "stq_c $0, %3"     & LF & HT &
-         "beq $0, 2f"       & LF & HT &
+         "beq $0, 2f"       & LF &
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "stq $0, %2"       & LF & HT &
          "stq $1, %1"       & LF & HT &
-         "br 4f"            & LF & HT &
+         "br 4f"            & LF &
          "2:"               & LF & HT &
          "subq $17, 1, $17" & LF & HT &
          "bgt $17, 1b"      & LF & HT &
-         "br 3b"            & LF & HT &
+         "br 3b"            & LF &
          "4:",
          Outputs  => (Aligned_Long_Integer'Asm_Output ("=m", To),
                       Long_Integer'Asm_Output ("=m", Old_Value),
@@ -587,7 +587,7 @@ package body System.Aux_DEC is
    begin
       System.Machine_Code.Asm
         (
-         "mb"             & LF & HT &
+         "mb"             & LF &
          "1:"             & LF & HT &
          "ldl_l $1, %0"   & LF & HT &
          "bis $1, %2, $0" & LF & HT &
@@ -614,21 +614,21 @@ package body System.Aux_DEC is
       System.Machine_Code.Asm
         (
          "mb"               & LF & HT &
-         "bis $31, %5, $17" & LF & HT &
+         "bis $31, %5, $17" & LF &
          "1:"               & LF & HT &
          "ldl_l $1, %0"     & LF & HT &
          "bis $1, %4, $0"   & LF & HT &
          "stl_c $0, %3"     & LF & HT &
-         "beq $0, 2f"       & LF & HT &
+         "beq $0, 2f"       & LF &
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "stq $0, %2"       & LF & HT &
          "stl $1, %1"       & LF & HT &
-         "br 4f"            & LF & HT &
+         "br 4f"            & LF &
          "2:"               & LF & HT &
          "subq $17, 1, $17" & LF & HT &
          "bgt $17, 1b"      & LF & HT &
-         "br 3b"            & LF & HT &
+         "br 3b"            & LF &
          "4:",
          Outputs  => (Aligned_Integer'Asm_Output ("=m", To),
                       Integer'Asm_Output ("=m", Old_Value),
@@ -649,7 +649,7 @@ package body System.Aux_DEC is
    begin
       System.Machine_Code.Asm
         (
-         "mb"             & LF & HT &
+         "mb"             & LF &
          "1:"             & LF & HT &
          "ldq_l $1, %0"   & LF & HT &
          "bis $1, %2, $0" & LF & HT &
@@ -676,21 +676,21 @@ package body System.Aux_DEC is
       System.Machine_Code.Asm
         (
          "mb"               & LF & HT &
-         "bis $31, %5, $17" & LF & HT &
+         "bis $31, %5, $17" & LF &
          "1:"               & LF & HT &
          "ldq_l $1, %0"     & LF & HT &
          "bis $1, %4, $0"   & LF & HT &
          "stq_c $0, %3"     & LF & HT &
-         "beq $0, 2f"       & LF & HT &
+         "beq $0, 2f"       & LF &
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "stq $0, %2"       & LF & HT &
          "stq $1, %1"       & LF & HT &
-         "br 4f"            & LF & HT &
+         "br 4f"            & LF &
          "2:"               & LF & HT &
          "subq $17, 1, $17" & LF & HT &
          "bgt $17, 1b"      & LF & HT &
-         "br 3b"            & LF & HT &
+         "br 3b"            & LF &
          "4:",
          Outputs  => (Aligned_Long_Integer'Asm_Output ("=m", To),
                       Long_Integer'Asm_Output ("=m", Old_Value),

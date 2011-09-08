@@ -63,6 +63,7 @@ gcc -c          ^ GNAT COMPILE
 -gnateD         ^ /SYMBOL_PREPROCESSING
 -gnatef         ^ /FULL_PATH_IN_BRIEF_MESSAGES
 -gnateG         ^ /GENERATE_PROCESSED_SOURCE
+-gnateI         ^ /MULTI_UNIT_INDEX=
 -gnatem         ^ /MAPPING_FILE
 -gnatep         ^ /DATA_PREPROCESSING
 -gnateP         ^ /CATEGORIZATION_WARNINGS
@@ -229,3 +230,4 @@ stderr          ^ SYS$ERROR
 -O3             ^ /OPTIMIZE=INLINING
 -H32            ^ /32_MALLOC
 -H64            ^ /64_MALLOC
+-Wall           ^ /WARNINGS=ALL_GCC

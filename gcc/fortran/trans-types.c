@@ -1614,10 +1614,12 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   return type;
 }
 
+
 /* Return or create the base type for an array descriptor.  */
 
 static tree
-gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
+gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
+			       enum gfc_array_kind akind)
 {
   tree fat_type, decl, arraytype, *chain = NULL;
   char name[16 + 2*GFC_RANK_DIGITS + 1 + 1];
@@ -1671,7 +1673,8 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 				    arraytype, &chain);
   TREE_NO_WARNING (decl) = 1;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen)
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen
+      && akind == GFC_ARRAY_ALLOCATABLE)
     {
       decl = gfc_add_field_to_struct_1 (fat_type,
 					get_identifier ("token"),
@@ -1683,13 +1686,15 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
   gfc_finish_type (fat_type);
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (fat_type)) = 1;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen)
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen
+      && akind == GFC_ARRAY_ALLOCATABLE)
     gfc_array_descriptor_base_caf[idx] = fat_type;
   else
     gfc_array_descriptor_base[idx] = fat_type;
 
   return fat_type;
 }
+
 
 /* Build an array (descriptor) type with given bounds.  */
 
@@ -1703,11 +1708,11 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   const char *type_name;
   int n;
 
-  base_type = gfc_get_array_descriptor_base (dimen, codimen, restricted);
+  base_type = gfc_get_array_descriptor_base (dimen, codimen, restricted, akind);
   fat_type = build_distinct_type_copy (base_type);
   /* Make sure that nontarget and target array type have the same canonical
      type (and same stub decl for debug info).  */
-  base_type = gfc_get_array_descriptor_base (dimen, codimen, false);
+  base_type = gfc_get_array_descriptor_base (dimen, codimen, false, akind);
   TYPE_CANONICAL (fat_type) = base_type;
   TYPE_STUB_DECL (fat_type) = TYPE_STUB_DECL (base_type);
 
@@ -2104,7 +2109,8 @@ gfc_sym_type (gfc_symbol * sym)
     {
       /* We must use pointer types for potentially absent variables.  The
 	 optimizers assume a reference type argument is never NULL.  */
-      if (sym->attr.optional || sym->ns->proc_name->attr.entry_master)
+      if (sym->attr.optional
+	  || (sym->ns->proc_name && sym->ns->proc_name->attr.entry_master))
 	type = build_pointer_type (type);
       else
 	{
@@ -2395,7 +2401,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 
       /* This returns an array descriptor type.  Initialization may be
          required.  */
-      if (c->attr.dimension && !c->attr.proc_pointer)
+      if ((c->attr.dimension || c->attr.codimension) && !c->attr.proc_pointer )
 	{
 	  if (c->attr.pointer || c->attr.allocatable)
 	    {

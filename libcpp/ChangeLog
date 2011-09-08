@@ -1,3 +1,16 @@
+2011-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* line-map.c (linemap_add): Assert that reason must not be
+	LC_RENAME when called for the first time on a "main input file".
+
+2011-08-22  Gabriel Charette  <gchare@google.com>
+
+	* init.c (cpp_create_reader): Inititalize forced_token_location_p.
+	* internal.h (struct cpp_reader): Add field forced_token_location_p.
+	* lex.c (_cpp_lex_direct): Use forced_token_location_p.
+	(cpp_force_token_locations): New.
+	(cpp_stop_forcing_token_locations): New.
+
 2011-08-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/1773

@@ -570,6 +570,44 @@ package body Sem_Type is
       H            : Entity_Id;
       First_Interp : Interp_Index;
 
+      function Within_Instance (E : Entity_Id) return Boolean;
+      --  Within an instance there can be spurious ambiguities between a local
+      --  entity and one declared outside of the instance. This can only happen
+      --  for subprograms, because otherwise the local entity hides the outer
+      --  one. For an overloadable entity, this predicate determines whether it
+      --  is a candidate within the instance, or must be ignored.
+
+      ---------------------
+      -- Within_Instance --
+      ---------------------
+
+      function Within_Instance (E : Entity_Id) return Boolean is
+         Inst : Entity_Id;
+         Scop : Entity_Id;
+
+      begin
+         if not In_Instance then
+            return False;
+         end if;
+
+         Inst := Current_Scope;
+         while Present (Inst) and then not Is_Generic_Instance (Inst) loop
+            Inst := Scope (Inst);
+         end loop;
+
+         Scop := Scope (E);
+         while Present (Scop) and then Scop /= Standard_Standard loop
+            if Scop = Inst then
+               return True;
+            end if;
+            Scop := Scope (Scop);
+         end loop;
+
+         return False;
+      end Within_Instance;
+
+   --  Start of processing for Collect_Interps
+
    begin
       New_Interps (N);
 
@@ -621,11 +659,14 @@ package body Sem_Type is
 
                      --  A homograph in the same scope can occur within an
                      --  instantiation, the resulting ambiguity has to be
-                     --  resolved later.
+                     --  resolved later. The homographs may both be local
+                     --  functions or actuals, or may be declared at different
+                     --  levels within the instance. The renaming of an actual
+                     --  within the instance must not be included.
 
-                     if Scope (H) = Scope (Ent)
-                        and then In_Instance
-                        and then not Is_Inherited_Operation (H)
+                     if Within_Instance (H)
+                       and then H /= Renamed_Entity (Ent)
+                       and then not Is_Inherited_Operation (H)
                      then
                         All_Interp.Table (All_Interp.Last) :=
                           (H, Etype (H), Empty);
@@ -923,6 +964,19 @@ package body Sem_Type is
       elsif Ekind (BT1) = E_Anonymous_Access_Type
         and then Is_Access_Type (T2)
         and then Covers (Designated_Type (T1), Designated_Type (T2))
+      then
+         return True;
+
+      --  Ada 2012 (AI05-0149): Allow an anonymous access type in the context
+      --  of a named general access type. An implicit conversion will be
+      --  applied. For the resolution, one designated type must cover the
+      --  other.
+
+      elsif Ada_Version >= Ada_2012
+        and then Ekind (BT1) = E_General_Access_Type
+        and then Ekind (BT2) = E_Anonymous_Access_Type
+        and then (Covers (Designated_Type (T1), Designated_Type (T2))
+                   or else Covers (Designated_Type (T2), Designated_Type (T1)))
       then
          return True;
 

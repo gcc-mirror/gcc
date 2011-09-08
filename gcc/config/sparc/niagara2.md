@@ -1,5 +1,5 @@
-;; Scheduling description for Niagara-2.
-;;   Copyright (C) 2007 Free Software Foundation, Inc.
+;; Scheduling description for Niagara-2 and Niagara-3.
+;;   Copyright (C) 2007, 2011 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -17,74 +17,74 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>. 
 
-;; Niagara-2 is a single-issue processor.
+;; Niagara-2 and Niagara-3 are single-issue processors.
 
 (define_automaton "niagara2_0")
 
 (define_cpu_unit "niag2_pipe" "niagara2_0")
 
 (define_insn_reservation "niag2_25cycle" 25
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "flushw"))
   "niag2_pipe*25")
 
 (define_insn_reservation "niag2_5cycle" 5
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "multi,flushw,iflush,trap"))
   "niag2_pipe*5")
 
 (define_insn_reservation "niag2_6cycle" 4
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "savew"))
   "niag2_pipe*4")
 
 /* Most basic operations are single-cycle. */
 (define_insn_reservation "niag2_ialu" 1
- (and (eq_attr "cpu" "niagara2")
+ (and (eq_attr "cpu" "niagara2,niagara3")
    (eq_attr "type" "ialu,shift,compare,cmove"))
  "niag2_pipe")
 
 (define_insn_reservation "niag2_imul" 5
- (and (eq_attr "cpu" "niagara2")
+ (and (eq_attr "cpu" "niagara2,niagara3")
    (eq_attr "type" "imul"))
  "niag2_pipe*5")
 
 (define_insn_reservation "niag2_idiv" 31
- (and (eq_attr "cpu" "niagara2")
+ (and (eq_attr "cpu" "niagara2,niagara3")
    (eq_attr "type" "idiv"))
  "niag2_pipe*31")
 
 (define_insn_reservation "niag2_branch" 5
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "call,sibcall,call_no_delay_slot,uncond_branch,branch"))
   "niag2_pipe*5")
 
 (define_insn_reservation "niag2_3cycle_load" 3
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "load,fpload"))
   "niag2_pipe*3")
 
 (define_insn_reservation "niag2_1cycle_store" 1
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "store,fpstore"))
   "niag2_pipe")
 
 (define_insn_reservation "niag2_fp" 3
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "fpmove,fpcmove,fpcrmove,fpcmp,fpmul"))
   "niag2_pipe*3")
 
 (define_insn_reservation "niag2_fdivs" 19
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "fpdivs"))
   "niag2_pipe*19")
 
 (define_insn_reservation "niag2_fdivd" 33
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "fpdivd"))
   "niag2_pipe*33")
 
 (define_insn_reservation "niag2_vis" 6
-  (and (eq_attr "cpu" "niagara2")
+  (and (eq_attr "cpu" "niagara2,niagara3")
     (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist"))
   "niag2_pipe*6")

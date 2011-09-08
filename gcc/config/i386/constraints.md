@@ -87,23 +87,14 @@
 
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  z	First SSE register.
-;;  2	SSE2 enabled
 ;;  i	SSE2 inter-unit moves enabled
 ;;  m	MMX inter-unit moves enabled
+;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  d	Integer register when integer DFmode moves are enabled
 ;;  x	Integer register when integer XFmode moves are enabled
 
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
  "First SSE register (@code{%xmm0}).")
-
-(define_register_constraint "Y2" "TARGET_SSE2 ? SSE_REGS : NO_REGS"
- "@internal Any SSE register, when SSE2 is enabled.")
-
-(define_register_constraint "Y3" "TARGET_SSE3 ? SSE_REGS : NO_REGS"
- "@internal Any SSE register, when SSE3 is enabled.")
-
-(define_register_constraint "Y4" "TARGET_SSE4_1 ? SSE_REGS : NO_REGS"
- "@internal Any SSE register, when SSE4_1 is enabled.")
 
 (define_register_constraint "Yi"
  "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES ? SSE_REGS : NO_REGS"
@@ -112,6 +103,10 @@
 (define_register_constraint "Ym"
  "TARGET_MMX && TARGET_INTER_UNIT_MOVES ? MMX_REGS : NO_REGS"
  "@internal Any MMX register, when inter-unit moves are enabled.")
+
+(define_register_constraint "Yp"
+ "TARGET_PARTIAL_REG_STALL ? NO_REGS : GENERAL_REGS"
+ "@internal Any integer register when TARGET_PARTIAL_REG_STALL is disabled.")
 
 (define_register_constraint "Yd"
  "(TARGET_64BIT
@@ -129,7 +124,7 @@
 
 (define_constraint "w"
   "@internal Call memory operand."
-  (and (match_test "!TARGET_X32")
+  (and (not (match_test "TARGET_X32"))
        (match_operand 0 "memory_operand")))
 
 ;; Integer constant constraints.

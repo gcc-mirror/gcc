@@ -341,10 +341,13 @@ package body Inline is
                if Is_Generic_Instance (Pack) then
                   null;
 
+               --  Do not inline the package if the subprogram is an init proc
+               --  or other internally generated subprogram, because in that
+               --  case the subprogram body appears in the same unit that
+               --  declares the type, and that body is visible to the back end.
+
                elsif not Is_Inlined (Pack)
-                 and then
-                   (not Has_Completion (E)
-                     or else Is_Expression_Function (E))
+                 and then Comes_From_Source (E)
                then
                   Set_Is_Inlined (Pack);
                   Inlined_Bodies.Increment_Last;
@@ -496,8 +499,10 @@ package body Inline is
          return;
       end if;
 
-      --  If the instance appears within a generic subprogram there is nothing
-      --  to finalize either.
+      --  If the instance is within a generic unit, no finalization code
+      --  can be generated. Note that at this point all bodies have been
+      --  analyzed, and the scope stack itself is not present, and the flag
+      --  Inside_A_Generic is not set.
 
       declare
          S : Entity_Id;
@@ -505,7 +510,7 @@ package body Inline is
       begin
          S := Scope (Inst);
          while Present (S) and then S /= Standard_Standard loop
-            if Is_Generic_Subprogram (S) then
+            if Is_Generic_Unit (S) then
                return;
             end if;
 

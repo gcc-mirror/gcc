@@ -540,12 +540,9 @@ forward_propagate_into_gimple_cond (gimple stmt)
 
 /* Propagate from the ssa name definition statements of COND_EXPR
    in the rhs of statement STMT into the conditional if that simplifies it.
-   Returns zero if no statement was changed, one if there were
-   changes and two if cfg_cleanup needs to run.
+   Returns true zero if the stmt was changed.  */
 
-   This must be kept in sync with forward_propagate_into_gimple_cond.  */
-
-static int
+static bool
 forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
 {
   gimple stmt = gsi_stmt (*gsi_p);
@@ -560,15 +557,17 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
 					       TREE_OPERAND (cond, 1));
   else if (TREE_CODE (cond) == SSA_NAME)
     {
-      tree name = cond, rhs0;
+      tree name = cond;
       gimple def_stmt = get_prop_source_stmt (name, true, NULL);
       if (!def_stmt || !can_propagate_from (def_stmt))
 	return 0;
 
-      rhs0 = gimple_assign_rhs1 (def_stmt);
-      tmp = combine_cond_expr_cond (stmt, NE_EXPR, boolean_type_node, rhs0,
-				    build_int_cst (TREE_TYPE (rhs0), 0),
-				    false);
+      if (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt)) == tcc_comparison)
+	tmp = fold_build2_loc (gimple_location (def_stmt),
+			       gimple_assign_rhs_code (def_stmt),
+			       boolean_type_node,
+			       gimple_assign_rhs1 (def_stmt),
+			       gimple_assign_rhs2 (def_stmt));
     }
 
   if (tmp)
@@ -582,11 +581,16 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
 	  fprintf (dump_file, "'\n");
 	}
 
-      gimple_assign_set_rhs_from_tree (gsi_p, unshare_expr (tmp));
+      if (integer_onep (tmp))
+	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs2 (stmt));
+      else if (integer_zerop (tmp))
+	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs3 (stmt));
+      else
+	gimple_assign_set_rhs1 (stmt, unshare_expr (tmp));
       stmt = gsi_stmt (*gsi_p);
       update_stmt (stmt);
 
-      return is_gimple_min_invariant (tmp) ? 2 : 1;
+      return true;
     }
 
   return 0;
@@ -1002,31 +1006,21 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
     return false;
 
   rhs2 = gimple_assign_rhs2 (use_stmt);
-  /* Try to optimize &x[C1] p+ C2 where C2 is a multiple of the size
-     of the elements in X into &x[C1 + C2/element size].  */
+  /* Optimize &x[C1] p+ C2 to  &x p+ C3 with C3 = C1 * element_size + C2.  */
   if (TREE_CODE (rhs2) == INTEGER_CST)
     {
-      tree new_rhs = maybe_fold_stmt_addition (gimple_location (use_stmt),
-	  				       TREE_TYPE (def_rhs),
-					       def_rhs, rhs2);
-      if (new_rhs)
-	{
-	  tree type = TREE_TYPE (gimple_assign_lhs (use_stmt));
-	  new_rhs = unshare_expr (new_rhs);
-	  if (!useless_type_conversion_p (type, TREE_TYPE (new_rhs)))
-	    {
-	      if (!is_gimple_min_invariant (new_rhs))
-		new_rhs = force_gimple_operand_gsi (use_stmt_gsi, new_rhs,
-						    true, NULL_TREE,
-						    true, GSI_SAME_STMT);
-	      new_rhs = fold_convert (type, new_rhs);
-	    }
-	  gimple_assign_set_rhs_from_tree (use_stmt_gsi, new_rhs);
-	  use_stmt = gsi_stmt (*use_stmt_gsi);
-	  update_stmt (use_stmt);
-	  tidy_after_forward_propagate_addr (use_stmt);
-	  return true;
-	}
+      tree new_rhs = build1_loc (gimple_location (use_stmt),
+				 ADDR_EXPR, TREE_TYPE (def_rhs),
+				 fold_build2 (MEM_REF,
+					      TREE_TYPE (TREE_TYPE (def_rhs)),
+					      unshare_expr (def_rhs),
+					      fold_convert (ptr_type_node,
+							    rhs2)));
+      gimple_assign_set_rhs_from_tree (use_stmt_gsi, new_rhs);
+      use_stmt = gsi_stmt (*use_stmt_gsi);
+      update_stmt (use_stmt);
+      tidy_after_forward_propagate_addr (use_stmt);
+      return true;
     }
 
   /* Try to optimize &x[0] p+ OFFSET where OFFSET is defined by
@@ -2446,12 +2440,8 @@ ssa_forward_propagate_and_combine (void)
 		else if (code == COND_EXPR)
 		  {
 		    /* In this case the entire COND_EXPR is in rhs1. */
-		    int did_something;
-		    did_something = forward_propagate_into_cond (&gsi);
+		    changed |= forward_propagate_into_cond (&gsi);
 		    stmt = gsi_stmt (gsi);
-		    if (did_something == 2)
-		      cfg_changed = true;
-		    changed = did_something != 0;
 		  }
 		else if (TREE_CODE_CLASS (code) == tcc_comparison)
 		  {

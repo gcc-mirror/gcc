@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -32,7 +32,9 @@
 ------------------------------------------------------------------------------
 
 private with Ada.Containers.Red_Black_Trees;
-private with Ada.Streams;
+
+with Ada.Streams; use Ada.Streams;
+with Ada.Iterator_Interfaces;
 
 generic
    type Key_Type is private;
@@ -47,7 +49,12 @@ package Ada.Containers.Bounded_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
-   type Map (Capacity : Count_Type) is tagged private;
+   type Map (Capacity : Count_Type) is tagged private with
+      constant_Indexing => Constant_Reference,
+      Variable_Indexing => Reference,
+      Default_Iterator  => Iterate,
+      Iterator_Element  => Element_Type;
+
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -56,6 +63,11 @@ package Ada.Containers.Bounded_Ordered_Maps is
    Empty_Map : constant Map;
 
    No_Element : constant Cursor;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package Map_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : Map) return Boolean;
 
@@ -83,7 +95,7 @@ package Ada.Containers.Bounded_Ordered_Maps is
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
-                   procedure (Key : Key_Type; Element : in out Element_Type));
+                    procedure (Key : Key_Type; Element : in out Element_Type));
 
    procedure Assign (Target : in out Map; Source : Map);
 
@@ -159,8 +171,6 @@ package Ada.Containers.Bounded_Ordered_Maps is
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 
-   function Has_Element (Position : Cursor) return Boolean;
-
    function "<" (Left, Right : Cursor) return Boolean;
 
    function ">" (Left, Right : Cursor) return Boolean;
@@ -173,9 +183,57 @@ package Ada.Containers.Bounded_Ordered_Maps is
 
    function ">" (Left : Key_Type; Right : Cursor) return Boolean;
 
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   type Reference_Type (Element : not null access Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type)    --  SHOULD BE ALIASED ???
+      return Constant_Reference_Type;
+
+   function Reference (Container : Map; Key : Key_Type) return Reference_Type;
+
    procedure Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
+
+   function Iterate
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class;
+
+   function Iterate
+     (Container : Map;
+      Start     : Cursor)
+      return Map_Iterator_Interfaces.Reversible_Iterator'class;
 
    procedure Reverse_Iterate
      (Container : Map;
@@ -206,11 +264,10 @@ private
 
    use Red_Black_Trees;
    use Tree_Types;
-   use Ada.Streams;
 
    type Cursor is record
       Container : Map_Access;
-      Node      : Count_Type;
+      Node      : Count_Type := 0;
    end record;
 
    procedure Write
@@ -238,6 +295,12 @@ private
       Container : out Map);
 
    for Map'Read use Read;
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is null record;
+
+   type Reference_Type
+      (Element : not null access Element_Type) is null record;
 
    Empty_Map : constant Map := Map'(Tree_Type with Capacity => 0);
 

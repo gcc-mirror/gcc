@@ -1419,7 +1419,6 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  gimple_stmt_iterator si;
 
   gcc_assert (gimple_code (stmt) != GIMPLE_LABEL);
 
@@ -1434,13 +1433,7 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
       print_gimple_stmt (vect_dump, vec_stmt, 0, TDF_SLIM);
     }
 
-  si = *gsi;
-  if (is_gimple_debug (gsi_stmt (si)))
-    {
-      gsi_next_nondebug (&si);
-      gcc_assert (!gsi_end_p (si));
-    }
-  gimple_set_location (vec_stmt, gimple_location (gsi_stmt (si)));
+  gimple_set_location (vec_stmt, gimple_location (stmt));
 }
 
 /* Checks if CALL can be vectorized in type VECTYPE.  Returns
@@ -1704,7 +1697,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 		}
 	      else
 		{
-		  vec_oprnd1 = gimple_call_arg (new_stmt, 2*i);
+		  vec_oprnd1 = gimple_call_arg (new_stmt, 2*i + 1);
 		  vec_oprnd0
 		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd1);
 		  vec_oprnd1
@@ -4687,15 +4680,19 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
    LOOP - the loop that is being vectorized.
    COND - Condition that is checked for simple use.
 
+   Output:
+   *COMP_VECTYPE - the vector type for the comparison.
+
    Returns whether a COND can be vectorized.  Checks whether
    condition operands are supportable using vec_is_simple_use.  */
 
 static bool
-vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo)
+vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo, tree *comp_vectype)
 {
   tree lhs, rhs;
   tree def;
   enum vect_def_type dt;
+  tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
 
   if (!COMPARISON_CLASS_P (cond))
     return false;
@@ -4706,8 +4703,8 @@ vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo)
   if (TREE_CODE (lhs) == SSA_NAME)
     {
       gimple lhs_def_stmt = SSA_NAME_DEF_STMT (lhs);
-      if (!vect_is_simple_use (lhs, loop_vinfo, NULL, &lhs_def_stmt, &def,
-                               &dt))
+      if (!vect_is_simple_use_1 (lhs, loop_vinfo, NULL, &lhs_def_stmt, &def,
+				 &dt, &vectype1))
 	return false;
     }
   else if (TREE_CODE (lhs) != INTEGER_CST && TREE_CODE (lhs) != REAL_CST
@@ -4717,14 +4714,15 @@ vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo)
   if (TREE_CODE (rhs) == SSA_NAME)
     {
       gimple rhs_def_stmt = SSA_NAME_DEF_STMT (rhs);
-      if (!vect_is_simple_use (rhs, loop_vinfo, NULL, &rhs_def_stmt, &def,
-                               &dt))
+      if (!vect_is_simple_use_1 (rhs, loop_vinfo, NULL, &rhs_def_stmt, &def,
+				 &dt, &vectype2))
 	return false;
     }
   else if (TREE_CODE (rhs) != INTEGER_CST  && TREE_CODE (rhs) != REAL_CST
 	   && TREE_CODE (rhs) != FIXED_CST)
     return false;
 
+  *comp_vectype = vectype1 ? vectype1 : vectype2;
   return true;
 }
 
@@ -4747,16 +4745,15 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 {
   tree scalar_dest = NULL_TREE;
   tree vec_dest = NULL_TREE;
-  tree op = NULL_TREE;
   tree cond_expr, then_clause, else_clause;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree comp_vectype;
   tree vec_cond_lhs = NULL_TREE, vec_cond_rhs = NULL_TREE;
   tree vec_then_clause = NULL_TREE, vec_else_clause = NULL_TREE;
   tree vec_compare, vec_cond_expr;
   tree new_temp;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  enum machine_mode vec_mode;
   tree def;
   enum vect_def_type dt, dts[4];
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -4801,19 +4798,12 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   if (code != COND_EXPR)
     return false;
 
-  gcc_assert (gimple_assign_single_p (stmt));
-  op = gimple_assign_rhs1 (stmt);
-  cond_expr = TREE_OPERAND (op, 0);
-  then_clause = TREE_OPERAND (op, 1);
-  else_clause = TREE_OPERAND (op, 2);
+  cond_expr = gimple_assign_rhs1 (stmt);
+  then_clause = gimple_assign_rhs2 (stmt);
+  else_clause = gimple_assign_rhs3 (stmt);
 
-  if (!vect_is_simple_cond (cond_expr, loop_vinfo))
-    return false;
-
-  /* We do not handle two different vector types for the condition
-     and the values.  */
-  if (!types_compatible_p (TREE_TYPE (TREE_OPERAND (cond_expr, 0)),
-			   TREE_TYPE (vectype)))
+  if (!vect_is_simple_cond (cond_expr, loop_vinfo, &comp_vectype)
+      || !comp_vectype)
     return false;
 
   if (TREE_CODE (then_clause) == SSA_NAME)
@@ -4840,13 +4830,10 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 	   && TREE_CODE (else_clause) != FIXED_CST)
     return false;
 
-
-  vec_mode = TYPE_MODE (vectype);
-
   if (!vec_stmt)
     {
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-      return expand_vec_cond_expr_p (TREE_TYPE (op), vec_mode);
+      return expand_vec_cond_expr_p (vectype, comp_vectype);
     }
 
   /* Transform */

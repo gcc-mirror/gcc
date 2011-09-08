@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,7 +31,8 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-private with Ada.Streams;
+with Ada.Streams; use Ada.Streams;
+with Ada.Iterator_Interfaces;
 
 generic
    type Element_Type is private;
@@ -43,7 +44,12 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
    pragma Pure;
    pragma Remote_Types;
 
-   type List (Capacity : Count_Type) is tagged private;
+   type List (Capacity : Count_Type) is tagged private with
+      Constant_Indexing => Constant_Reference,
+      Variable_Indexing => Reference,
+      Default_Iterator  => Iterate,
+      Iterator_Element  => Element_Type;
+
    pragma Preelaborable_Initialization (List);
 
    type Cursor is private;
@@ -52,6 +58,11 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package List_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : List) return Boolean;
 
@@ -129,6 +140,15 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
 
    procedure Reverse_Elements (Container : in out List);
 
+   function Iterate
+     (Container : List)
+      return List_Iterator_Interfaces.Reversible_Iterator'class;
+
+   function Iterate
+     (Container : List;
+      Start     : Cursor)
+      return List_Iterator_Interfaces.Reversible_Iterator'class;
+
    procedure Swap
      (Container : in out List;
       I, J      : Cursor);
@@ -183,8 +203,6 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
      (Container : List;
       Item      : Element_Type) return Boolean;
 
-   function Has_Element (Position : Cursor) return Boolean;
-
    procedure Iterate
      (Container : List;
       Process   : not null access procedure (Position : Cursor));
@@ -204,6 +222,48 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
       procedure Merge (Target, Source : in out List);
 
    end Generic_Sorting;
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   type Reference_Type (Element : not null access Element_Type) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   function Constant_Reference
+     (Container : List; Position : Cursor)    --  SHOULD BE ALIASED
+   return Constant_Reference_Type;
+
+   function Reference
+     (Container : List; Position : Cursor)    --  SHOULD BE ALIASED
+   return Reference_Type;
 
 private
 
@@ -227,8 +287,6 @@ private
       Busy   : Natural := 0;
       Lock   : Natural := 0;
    end record;
-
-   use Ada.Streams;
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;
@@ -262,6 +320,12 @@ private
       Item   : Cursor);
 
    for Cursor'Write use Write;
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is null record;
+
+   type Reference_Type
+      (Element : not null access Element_Type) is null record;
 
    Empty_List : constant List := (Capacity => 0, others => <>);
 

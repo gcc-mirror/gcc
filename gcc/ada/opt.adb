@@ -38,6 +38,15 @@ package body Opt is
    SU : constant := Storage_Unit;
    --  Shorthand for System.Storage_Unit
 
+   --------------------------
+   -- Full_Expander_Active --
+   --------------------------
+
+   function Full_Expander_Active return Boolean is
+   begin
+      return Expander_Active and not Alfa_Mode;
+   end Full_Expander_Active;
+
    ----------------------------------
    -- Register_Opt_Config_Switches --
    ----------------------------------

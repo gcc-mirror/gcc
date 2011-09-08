@@ -37,6 +37,36 @@ package Exp_Ch6 is
    procedure Expand_N_Subprogram_Body_Stub      (N : Node_Id);
    procedure Expand_N_Subprogram_Declaration    (N : Node_Id);
 
+   procedure Expand_Actuals (N : Node_Id; Subp : Entity_Id);
+   --  For each actual of an in-out or out parameter which is a numeric
+   --  (view) conversion of the form T (A), where A denotes a variable,
+   --  we insert the declaration:
+   --
+   --    Temp : T[ := T (A)];
+   --
+   --  prior to the call. Then we replace the actual with a reference to Temp,
+   --  and append the assignment:
+   --
+   --    A := TypeA (Temp);
+   --
+   --  after the call. Here TypeA is the actual type of variable A. For out
+   --  parameters, the initial declaration has no expression. If A is not an
+   --  entity name, we generate instead:
+   --
+   --    Var  : TypeA renames A;
+   --    Temp : T := Var;       --  omitting expression for out parameter.
+   --    ...
+   --    Var := TypeA (Temp);
+   --
+   --  For other in-out parameters, we emit the required constraint checks
+   --  before and/or after the call.
+   --
+   --  For all parameter modes, actuals that denote components and slices of
+   --  packed arrays are expanded into suitable temporaries.
+   --
+   --  For non-scalar objects that are possibly unaligned, add call by copy
+   --  code (copy in for IN and IN OUT, copy out for OUT and IN OUT).
+
    procedure Expand_Call (N : Node_Id);
    --  This procedure contains common processing for Expand_N_Function_Call,
    --  Expand_N_Procedure_Statement, and Expand_N_Entry_Call.
@@ -68,9 +98,9 @@ package Exp_Ch6 is
       --  caller or callee, and if the callee, whether to use the secondary
       --  stack or the heap. See Create_Extra_Formals.
 
-      BIP_Collection,
+      BIP_Finalization_Master,
       --  Present if result type needs finalization. Pointer to caller's
-      --  finalization collection.
+      --  finalization master.
 
       BIP_Master,
       --  Present if result type contains tasks. Master associated with
@@ -119,6 +149,10 @@ package Exp_Ch6 is
    --  that requires handling as a build-in-place call or is a qualified
    --  expression applied to such a call; otherwise returns False.
 
+   function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
+   --  Predicate to recognize stubbed procedures and null procedures, which
+   --  can be inlined unconditionally in all cases.
+
    procedure Make_Build_In_Place_Call_In_Allocator
      (Allocator     : Node_Id;
       Function_Call : Node_Id);
@@ -163,8 +197,12 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
-   function Needs_BIP_Collection (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Return True if the function needs a finalization
-   --  collection implicit parameter.
+   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
+   --  finalization master implicit parameter.
+
+   function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
+   --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
 
 end Exp_Ch6;

@@ -377,6 +377,7 @@ enum standard_datatypes
   ADT_longjmp_decl,
   ADT_update_setjmp_buf_decl,
   ADT_raise_nodefer_decl,
+  ADT_reraise_zcx_decl,
   ADT_begin_handler_decl,
   ADT_end_handler_decl,
   ADT_others_decl,
@@ -422,6 +423,7 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define longjmp_decl gnat_std_decls[(int) ADT_longjmp_decl]
 #define update_setjmp_buf_decl gnat_std_decls[(int) ADT_update_setjmp_buf_decl]
 #define raise_nodefer_decl gnat_std_decls[(int) ADT_raise_nodefer_decl]
+#define reraise_zcx_decl gnat_std_decls[(int) ADT_reraise_zcx_decl]
 #define begin_handler_decl gnat_std_decls[(int) ADT_begin_handler_decl]
 #define others_decl gnat_std_decls[(int) ADT_others_decl]
 #define all_others_decl gnat_std_decls[(int) ADT_all_others_decl]
@@ -954,7 +956,7 @@ extern Pos get_target_double_size (void);
 extern Pos get_target_long_double_size (void);
 extern Pos get_target_pointer_size (void);
 extern Pos get_target_maximum_default_alignment (void);
-extern Pos get_target_default_allocator_alignment (void);
+extern Pos get_target_system_allocator_alignment (void);
 extern Pos get_target_maximum_allowed_alignment (void);
 extern Pos get_target_maximum_alignment (void);
 extern Nat get_float_words_be (void);

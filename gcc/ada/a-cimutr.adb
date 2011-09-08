@@ -164,21 +164,21 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    -------------------
 
    function Ancestor_Find
-     (Container : Tree;
-      Item      : Element_Type;
-      Position  : Cursor) return Cursor
+     (Position : Cursor;
+      Item     : Element_Type) return Cursor
    is
-      R : constant Tree_Node_Access := Root_Node (Container);
-      N : Tree_Node_Access;
+      R, N : Tree_Node_Access;
 
    begin
       if Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error with "Position cursor not in container";
-      end if;
+      --  Commented-out pending ARG ruling.  ???
+
+      --  if Position.Container /= Container'Unrestricted_Access then
+      --     raise Program_Error with "Position cursor not in container";
+      --  end if;
 
       --  AI-0136 says to raise PE if Position equals the root node. This does
       --  not seem correct, as this value is just the limiting condition of the
@@ -188,10 +188,11 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       --     raise Program_Error with "Position cursor designates root";
       --  end if;
 
+      R := Root_Node (Position.Container.all);
       N := Position.Node;
       while N /= R loop
          if N.Element.all = Item then
-            return Cursor'(Container'Unrestricted_Access, N);
+            return Cursor'(Position.Container, N);
          end if;
 
          N := N.Parent;
@@ -303,9 +304,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    begin
       if Parent = No_Element then
          return 0;
+      else
+         return Child_Count (Parent.Node.Children);
       end if;
-
-      return Child_Count (Parent.Node.Children);
    end Child_Count;
 
    function Child_Count (Children : Children_Type) return Count_Type is
@@ -974,9 +975,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    ---------------------
 
    function Find_In_Subtree
-     (Container : Tree;
-      Item      : Element_Type;
-      Position  : Cursor) return Cursor
+     (Position : Cursor;
+      Item     : Element_Type) return Cursor
    is
       Result : Tree_Node_Access;
 
@@ -985,9 +985,11 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error with "Position cursor not in container";
-      end if;
+      --  Commented-out pending ruling from ARG.  ???
+
+      --  if Position.Container /= Container'Unrestricted_Access then
+      --     raise Program_Error with "Position cursor not in container";
+      --  end if;
 
       if Is_Root (Position) then
          Result := Find_In_Children (Position.Node, Item);
@@ -1000,7 +1002,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unrestricted_Access, Result);
+      return Cursor'(Position.Container, Result);
    end Find_In_Subtree;
 
    function Find_In_Subtree
@@ -2101,10 +2103,14 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       if Target'Address = Source'Address then
-         if Position.Node = Before.Node
-           or else Position.Node.Next = Before.Node
-         then
-            return;
+         if Position.Node.Parent = Parent.Node then
+            if Position.Node = Before.Node then
+               return;
+            end if;
+
+            if Position.Node.Next = Before.Node then
+               return;
+            end if;
          end if;
 
          if Target.Busy > 0 then
@@ -2199,10 +2205,14 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          raise Constraint_Error with "Position cursor designates root";
       end if;
 
-      if Position.Node = Before.Node
-        or else Position.Node.Next = Before.Node
-      then
-         return;
+      if Position.Node.Parent = Parent.Node then
+         if Position.Node = Before.Node then
+            return;
+         end if;
+
+         if Position.Node.Next = Before.Node then
+            return;
+         end if;
       end if;
 
       if Container.Busy > 0 then

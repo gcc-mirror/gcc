@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -531,9 +531,38 @@ package body Ch12 is
            (Decl_Node, P_Known_Discriminant_Part_Opt);
       end if;
 
-      T_Is;
+      if Token = Tok_Semicolon then
+
+         --  Ada 2012: Incomplete formal type
+
+         Scan; -- past semicolon
+
+         if Ada_Version < Ada_2012 then
+            Error_Msg_N
+              ("`formal incomplete type` is an Ada 2012 feature", Decl_Node);
+            Error_Msg_N
+              ("\unit must be compiled with -gnat2012 switch", Decl_Node);
+         end if;
+
+         Set_Formal_Type_Definition
+           (Decl_Node,
+            New_Node (N_Formal_Incomplete_Type_Definition, Token_Ptr));
+         return Decl_Node;
+
+      else
+         T_Is;
+      end if;
 
       Def_Node := P_Formal_Type_Definition;
+
+      if Nkind (Def_Node) = N_Formal_Incomplete_Type_Definition
+        and then Ada_Version < Ada_2012
+      then
+         Error_Msg_N
+           ("`formal incomplete type` is an Ada 2012 feature", Decl_Node);
+         Error_Msg_N
+           ("\unit must be compiled with -gnat2012 switch", Decl_Node);
+      end if;
 
       if Def_Node /= Error then
          Set_Formal_Type_Definition (Decl_Node, Def_Node);
@@ -563,6 +592,7 @@ package body Ch12 is
 
    --  FORMAL_TYPE_DEFINITION ::=
    --    FORMAL_PRIVATE_TYPE_DEFINITION
+   --  | FORMAL_INCOMPLETE_TYPE_DEFINITION
    --  | FORMAL_DERIVED_TYPE_DEFINITION
    --  | FORMAL_DISCRETE_TYPE_DEFINITION
    --  | FORMAL_SIGNED_INTEGER_TYPE_DEFINITION
@@ -704,9 +734,21 @@ package body Ch12 is
                return Error;
             end if;
 
-         when Tok_Private |
-              Tok_Tagged  =>
+         when Tok_Private  =>
             return P_Formal_Private_Type_Definition;
+
+         when  Tok_Tagged  =>
+            if Next_Token_Is (Tok_Semicolon) then
+               Typedef_Node :=
+                 New_Node (N_Formal_Incomplete_Type_Definition, Token_Ptr);
+               Set_Tagged_Present (Typedef_Node);
+
+               Scan;  --  past tagged
+               return Typedef_Node;
+
+            else
+               return P_Formal_Private_Type_Definition;
+            end if;
 
          when Tok_Range =>
             return P_Formal_Signed_Integer_Type_Definition;

@@ -1,3 +1,15 @@
+2011-09-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR libffi/49594
+	* src/powerpc/darwin_closure.S (stubs): Make the stub binding
+	helper reference track the architecture pointer size.
+
+2011-08-25  Andrew Haley  <aph@redhat.com>
+
+	* src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Remove hard-coded assembly
+	instructions.
+	* src/arm/sysv.S (ffi_arm_trampoline): Put them here instead.
+
 2011-07-11  Andrew Haley  <aph@redhat.com>
 
         * src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Clear icache.

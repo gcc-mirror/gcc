@@ -208,9 +208,9 @@ package Prj.Util is
       Kind                : Source_Kind;
       Display_Path_Name   : Name_Id;
       Path_Name           : Name_Id;
-      Unit_Name           : Name_Id := No_Name;
-      Index               : Int := 0;
-      Naming_Exception    : Boolean := False;
+      Unit_Name           : Name_Id               := No_Name;
+      Index               : Int                   := 0;
+      Naming_Exception    : Naming_Exception_Type := No;
    end record;
    --  Data read from a source info file for a single source
 

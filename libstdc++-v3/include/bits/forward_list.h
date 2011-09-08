@@ -314,12 +314,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Fwd_list_base()
       : _M_impl() { }
 
-      _Fwd_list_base(const _Alloc& __a)
+      _Fwd_list_base(const _Node_alloc_type& __a)
       : _M_impl(__a) { }
 
-      _Fwd_list_base(const _Fwd_list_base& __lst, const _Alloc& __a);
+      _Fwd_list_base(const _Fwd_list_base& __lst, const _Node_alloc_type& __a);
 
-      _Fwd_list_base(_Fwd_list_base&& __lst, const _Alloc& __a)
+      _Fwd_list_base(_Fwd_list_base&& __lst, const _Node_alloc_type& __a)
       : _M_impl(__a)
       {
 	this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
@@ -416,6 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Fwd_list_node<_Tp>                          _Node;
       typedef _Fwd_list_node_base                          _Node_base;
       typedef typename _Base::_Tp_alloc_type               _Tp_alloc_type;
+      typedef typename _Base::_Node_alloc_type             _Node_alloc_type;
 
     public:
       // types:
@@ -439,7 +440,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       forward_list(const _Alloc& __al = _Alloc())
-      : _Base(__al)
+      : _Base(_Node_alloc_type(__al))
       { }
 
       /**
@@ -448,7 +449,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __al    An allocator object.
        */
       forward_list(const forward_list& __list, const _Alloc& __al)
-      : _Base(__list, __al)
+      : _Base(__list, _Node_alloc_type(__al))
       { }
 
       /**
@@ -457,7 +458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __al    An allocator object.
        */
       forward_list(forward_list&& __list, const _Alloc& __al)
-      : _Base(std::move(__list), __al)
+      : _Base(std::move(__list), _Node_alloc_type(__al))
       { }
 
       /**
@@ -483,7 +484,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       forward_list(size_type __n, const _Tp& __value,
                    const _Alloc& __al = _Alloc())
-      : _Base(__al)
+      : _Base(_Node_alloc_type(__al))
       { _M_fill_initialize(__n, __value); }
 
       /**
@@ -499,7 +500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
         forward_list(_InputIterator __first, _InputIterator __last,
                      const _Alloc& __al = _Alloc())
-        : _Base(__al)
+	: _Base(_Node_alloc_type(__al))
         {
           // Check whether it's an integral type.  If so, it's not an iterator.
           typedef typename std::__is_integer<_InputIterator>::__type _Integral;
@@ -540,7 +541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       forward_list(std::initializer_list<_Tp> __il,
                    const _Alloc& __al = _Alloc())
-      : _Base(__al)
+      : _Base(_Node_alloc_type(__al))
       { _M_initialize_dispatch(__il.begin(), __il.end(), __false_type()); }
 
       /**
@@ -649,7 +650,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Get a copy of the memory allocation object.
       allocator_type
       get_allocator() const noexcept
-      { return this->_M_get_Node_allocator(); }
+      { return allocator_type(this->_M_get_Node_allocator()); }
 
       // 23.2.3.2 iterators:
 

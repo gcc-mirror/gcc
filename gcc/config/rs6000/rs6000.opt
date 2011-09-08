@@ -526,5 +526,5 @@ Target Report Var(TARGET_POINTERS_TO_NESTED_FUNCTIONS) Init(1) Save
 Use/do not use r11 to hold the static link in calls to functions via pointers.
 
 msave-toc-indirect
-Target Undocumented Var(TARGET_SAVE_TOC_INDIRECT) Save Init(1)
-; Control whether we save the TOC in the prologue for indirect calls or generate the save inline
+Target Report Var(TARGET_SAVE_TOC_INDIRECT) Save
+Control whether we save the TOC in the prologue for indirect calls or generate the save inline

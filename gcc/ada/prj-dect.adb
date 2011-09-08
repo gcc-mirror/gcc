@@ -23,11 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Err_Vars; use Err_Vars;
-
-with GNAT.Case_Util;        use GNAT.Case_Util;
-with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
-
+with Err_Vars;    use Err_Vars;
 with Opt;         use Opt;
 with Prj.Attr;    use Prj.Attr;
 with Prj.Attr.PM; use Prj.Attr.PM;
@@ -37,34 +33,34 @@ with Prj.Tree;    use Prj.Tree;
 with Snames;
 with Uintp;       use Uintp;
 
+with GNAT;                  use GNAT;
+with GNAT.Case_Util;        use GNAT.Case_Util;
+with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 with GNAT.Strings;
 
 package body Prj.Dect is
 
-   use GNAT;
-
    type Zone is (In_Project, In_Package, In_Case_Construction);
-   --  Used to indicate if we are parsing a package (In_Package),
-   --  a case construction (In_Case_Construction) or none of those two
-   --  (In_Project).
+   --  Used to indicate if we are parsing a package (In_Package), a case
+   --  construction (In_Case_Construction) or none of those two (In_Project).
 
    procedure Rename_Obsolescent_Attributes
      (In_Tree         : Project_Node_Tree_Ref;
       Attribute       : Project_Node_Id;
       Current_Package : Project_Node_Id);
-   --  Rename obsolescent attributes in the tree.
-   --  When the attribute has been renamed since its initial introduction in
-   --  the design of projects, we replace the old name in the tree with the
-   --  new name, so that the code does not have to check both names forever.
+   --  Rename obsolescent attributes in the tree. When the attribute has been
+   --  renamed since its initial introduction in the design of projects, we
+   --  replace the old name in the tree with the new name, so that the code
+   --  does not have to check both names forever.
 
    procedure Check_Attribute_Allowed
-     (In_Tree         : Project_Node_Tree_Ref;
-      Project         : Project_Node_Id;
-      Attribute       : Project_Node_Id;
-      Flags           : Processing_Flags);
-   --  Check whether the attribute is valid in this project.
-   --  In particular, depending on the type of project (qualifier), some
-   --  attributes might be disabled.
+     (In_Tree   : Project_Node_Tree_Ref;
+      Project   : Project_Node_Id;
+      Attribute : Project_Node_Id;
+      Flags     : Processing_Flags);
+   --  Check whether the attribute is valid in this project. In particular,
+   --  depending on the type of project (qualifier), some attributes might
+   --  be disabled.
 
    procedure Check_Package_Allowed
      (In_Tree         : Project_Node_Tree_Ref;
@@ -186,20 +182,20 @@ package body Prj.Dect is
         and then Expression_Kind_Of (Current_Package, In_Tree) /= Ignored
       then
          case Name_Of (Attribute, In_Tree) is
-         when Snames.Name_Specification =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec);
+            when Snames.Name_Specification =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec);
 
-         when Snames.Name_Specification_Suffix =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec_Suffix);
+            when Snames.Name_Specification_Suffix =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec_Suffix);
 
-         when Snames.Name_Implementation =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body);
+            when Snames.Name_Implementation =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body);
 
-         when Snames.Name_Implementation_Suffix =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body_Suffix);
+            when Snames.Name_Implementation_Suffix =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body_Suffix);
 
-         when others =>
-            null;
+            when others =>
+               null;
          end case;
       end if;
    end Rename_Obsolescent_Attributes;
@@ -218,7 +214,7 @@ package body Prj.Dect is
                  Project_Qualifier_Of (Project, In_Tree);
       Name   : constant Name_Id := Name_Of (Current_Package, In_Tree);
    begin
-      if Qualif = Aggregate
+      if Qualif in Aggregate_Project
         and then Name /= Snames.Name_Builder
       then
          Error_Msg_Name_1 := Name;
@@ -234,10 +230,10 @@ package body Prj.Dect is
    -----------------------------
 
    procedure Check_Attribute_Allowed
-     (In_Tree         : Project_Node_Tree_Ref;
-      Project         : Project_Node_Id;
-      Attribute       : Project_Node_Id;
-      Flags           : Processing_Flags)
+     (In_Tree   : Project_Node_Tree_Ref;
+      Project   : Project_Node_Id;
+      Attribute : Project_Node_Id;
+      Flags     : Processing_Flags)
    is
       Qualif : constant Project_Qualifier :=
                  Project_Qualifier_Of (Project, In_Tree);
@@ -245,8 +241,8 @@ package body Prj.Dect is
 
    begin
       case Qualif is
-         when Aggregate =>
-            if Name = Snames.Name_Languages
+         when Aggregate | Aggregate_Library =>
+            if        Name = Snames.Name_Languages
               or else Name = Snames.Name_Source_Files
               or else Name = Snames.Name_Source_List_File
               or else Name = Snames.Name_Locally_Removed_Files

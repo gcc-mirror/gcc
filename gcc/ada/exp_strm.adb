@@ -25,11 +25,11 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
-with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -222,23 +222,11 @@ package body Exp_Strm is
             Make_Identifier (Loc, Name_S),
             Make_Identifier (Loc, Name_V)));
 
-      if Ada_Version >= Ada_2005 then
-         Stms := New_List (
-            Make_Extended_Return_Statement (Loc,
-              Return_Object_Declarations => New_List (Odecl),
-              Handled_Statement_Sequence =>
-                Make_Handled_Sequence_Of_Statements (Loc, New_List (Rstmt))));
-      else
-         --  pragma Assert (not Is_Limited_Type (Typ));
-         --  Returning a local object, shouldn't happen in the case of a
-         --  limited type, but currently occurs in DSA stubs in Ada 95 mode???
-
-         Stms := New_List (
-                   Odecl,
-                   Rstmt,
-                   Make_Simple_Return_Statement (Loc,
-                     Expression => Make_Identifier (Loc, Name_V)));
-      end if;
+      Stms := New_List (
+         Make_Extended_Return_Statement (Loc,
+           Return_Object_Declarations => New_List (Odecl),
+           Handled_Statement_Sequence =>
+             Make_Handled_Sequence_Of_Statements (Loc, New_List (Rstmt))));
 
       Fnam :=
         Make_Defining_Identifier (Loc,
@@ -867,7 +855,7 @@ package body Exp_Strm is
       Dcls : constant List_Id := New_List;
       --  Declarations for the 'Read body
 
-      Stms : List_Id := New_List;
+      Stms : constant List_Id := New_List;
       --  Statements for the 'Read body
 
       Disc : Entity_Id;
@@ -895,15 +883,29 @@ package body Exp_Strm is
       --  Statements within the block where we have the constrained temporary
 
    begin
-
-      Disc := First_Discriminant (Typ);
-
       --  A mutable type cannot be a tagged type, so we generate a new name
       --  for the stream procedure.
 
       Pnam :=
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Read));
+
+      if Is_Unchecked_Union (Typ) then
+
+         --  If this is an unchecked union, the stream procedure is erroneous,
+         --  because there are no discriminants to read.
+
+         --  This should generate a warning ???
+
+         Append_To (Stms,
+           Make_Raise_Program_Error (Loc,
+             Reason => PE_Unchecked_Union_Restriction));
+
+         Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => True);
+         return;
+      end if;
+
+      Disc := First_Discriminant (Typ);
 
       Out_Formal :=
         Make_Selected_Component (Loc,
@@ -957,6 +959,14 @@ package body Exp_Strm is
 
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
 
+      --  Save original statement sequence for component assignments, and
+      --  replace it with Stms.
+
+      Constrained_Stms := Statements (Handled_Statement_Sequence (Decl));
+      Set_Handled_Statement_Sequence (Decl,
+        Make_Handled_Sequence_Of_Statements (Loc,
+          Statements => Stms));
+
       --  If Typ has controlled components (i.e. if it is classwide
       --  or Has_Controlled), or components constrained using the discriminants
       --  of Typ, then we need to ensure that all component assignments
@@ -974,13 +984,10 @@ package body Exp_Strm is
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => Cstr))));
 
-      Constrained_Stms := Statements (Handled_Statement_Sequence (Decl));
-      Append_To (Stms,
-        Make_Block_Statement (Loc,
-          Declarations               => Dcls,
-          Handled_Statement_Sequence => Parent (Constrained_Stms)));
+      --  AI05-023-1: Insert discriminant check prior to initialization of the
+      --  constrained temporary.
 
-      Append_To (Constrained_Stms,
+      Append_To (Stms,
         Make_Implicit_If_Statement (Pnam,
           Condition =>
             Make_Attribute_Reference (Loc,
@@ -988,28 +995,20 @@ package body Exp_Strm is
               Attribute_Name => Name_Constrained),
           Then_Statements => Discriminant_Checks));
 
+      --  Now insert back original component assignments, wrapped in a block
+      --  in which V is the constrained temporary.
+
+      Append_To (Stms,
+        Make_Block_Statement (Loc,
+          Declarations               => Dcls,
+          Handled_Statement_Sequence => Parent (Constrained_Stms)));
+
       Append_To (Constrained_Stms,
         Make_Assignment_Statement (Loc,
           Name       => Out_Formal,
           Expression => Make_Identifier (Loc, Name_V)));
 
-      if Is_Unchecked_Union (Typ) then
-
-         --  If this is an unchecked union, the stream procedure is erroneous,
-         --  because there are no discriminants to read.
-
-         --  This should generate a warning ???
-
-         Stms :=
-           New_List (
-             Make_Raise_Program_Error (Loc,
-               Reason => PE_Unchecked_Union_Restriction));
-      end if;
-
       Set_Declarations (Decl, Tmps_For_Discs);
-      Set_Handled_Statement_Sequence (Decl,
-        Make_Handled_Sequence_Of_Statements (Loc,
-          Statements => Stms));
    end Build_Mutable_Record_Read_Procedure;
 
    ------------------------------------------
@@ -1108,14 +1107,16 @@ package body Exp_Strm is
       Decl : out Node_Id;
       Fnam : out Entity_Id)
    is
-      Cn       : Name_Id;
-      J        : Pos;
-      Decls    : List_Id;
-      Constr   : List_Id;
-      Obj_Decl : Node_Id;
-      Stms     : List_Id;
-      Discr    : Entity_Id;
-      Odef     : Node_Id;
+      B_Typ      : constant Entity_Id := Base_Type (Typ);
+      Cn         : Name_Id;
+      Constr     : List_Id;
+      Decls      : List_Id;
+      Discr      : Entity_Id;
+      Discr_Elmt : Elmt_Id            := No_Elmt;
+      J          : Pos;
+      Obj_Decl   : Node_Id;
+      Odef       : Node_Id;
+      Stms       : List_Id;
 
    begin
       Decls  := New_List;
@@ -1123,8 +1124,15 @@ package body Exp_Strm is
 
       J := 1;
 
-      if Has_Discriminants (Typ) then
-         Discr := First_Discriminant (Typ);
+      if Has_Discriminants (B_Typ) then
+         Discr := First_Discriminant (B_Typ);
+
+         --  If the prefix subtype is constrained, then retrieve the first
+         --  element of its constraint.
+
+         if Is_Constrained (Typ) then
+            Discr_Elmt := First_Elmt (Discriminant_Constraint (Typ));
+         end if;
 
          while Present (Discr) loop
             Cn := New_External_Name ('C', J);
@@ -1155,13 +1163,30 @@ package body Exp_Strm is
 
             Append_To (Constr, Make_Identifier (Loc, Cn));
 
+            --  If the prefix subtype imposes a discriminant constraint, then
+            --  check that each discriminant value equals the value read.
+
+            if Present (Discr_Elmt) then
+               Append_To (Decls,
+                 Make_Raise_Constraint_Error (Loc,
+                   Condition => Make_Op_Ne (Loc,
+                                  Left_Opnd  =>
+                                    New_Reference_To
+                                      (Defining_Identifier (Decl), Loc),
+                                  Right_Opnd =>
+                                    New_Copy_Tree (Node (Discr_Elmt))),
+                   Reason    => CE_Discriminant_Check_Failed));
+
+               Next_Elmt (Discr_Elmt);
+            end if;
+
             Next_Discriminant (Discr);
             J := J + 1;
          end loop;
 
          Odef :=
            Make_Subtype_Indication (Loc,
-             Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+             Subtype_Mark => New_Occurrence_Of (B_Typ, Loc),
              Constraint =>
                Make_Index_Or_Discriminant_Constraint (Loc,
                  Constraints => Constr));
@@ -1169,15 +1194,13 @@ package body Exp_Strm is
       --  If no discriminants, then just use the type with no constraint
 
       else
-         Odef := New_Occurrence_Of (Typ, Loc);
+         Odef := New_Occurrence_Of (B_Typ, Loc);
       end if;
 
-      --  For Ada 2005 we create an extended return statement encapsulating
-      --  the result object and 'Read call, which is needed in general for
-      --  proper handling of build-in-place results (such as when the result
-      --  type is inherently limited).
-
-      --  Perhaps we should just generate an extended return in all cases???
+      --  Create an extended return statement encapsulating the result object
+      --  and 'Read call, which is needed in general for proper handling of
+      --  build-in-place results (such as when the result type is inherently
+      --  limited).
 
       Obj_Decl :=
         Make_Object_Declaration (Loc,
@@ -1188,41 +1211,26 @@ package body Exp_Strm is
       --  The object is about to get its value from Read, and if the type is
       --  null excluding we do not want spurious warnings on an initial null.
 
-      if Is_Access_Type (Typ) then
+      if Is_Access_Type (B_Typ) then
          Set_No_Initialization (Obj_Decl);
       end if;
 
-      if Ada_Version >= Ada_2005 then
-         Stms := New_List (
-           Make_Extended_Return_Statement (Loc,
-             Return_Object_Declarations => New_List (Obj_Decl),
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Typ, Loc),
-                     Attribute_Name => Name_Read,
-                     Expressions    => New_List (
-                       Make_Identifier (Loc, Name_S),
-                       Make_Identifier (Loc, Name_V)))))));
-      else
-         Append_To (Decls, Obj_Decl);
+      Stms := New_List (
+        Make_Extended_Return_Statement (Loc,
+          Return_Object_Declarations => New_List (Obj_Decl),
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (B_Typ, Loc),
+                  Attribute_Name => Name_Read,
+                  Expressions    => New_List (
+                    Make_Identifier (Loc, Name_S),
+                    Make_Identifier (Loc, Name_V)))))));
 
-         Stms := New_List (
-            Make_Attribute_Reference (Loc,
-              Prefix => New_Occurrence_Of (Typ, Loc),
-              Attribute_Name => Name_Read,
-              Expressions => New_List (
-                Make_Identifier (Loc, Name_S),
-                Make_Identifier (Loc, Name_V))),
+      Fnam := Make_Stream_Subprogram_Name (Loc, B_Typ, TSS_Stream_Input);
 
-            Make_Simple_Return_Statement (Loc,
-              Expression => Make_Identifier (Loc, Name_V)));
-      end if;
-
-      Fnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Input);
-
-      Build_Stream_Function (Loc, Typ, Decl, Fnam, Decls, Stms);
+      Build_Stream_Function (Loc, B_Typ, Decl, Fnam, Decls, Stms);
    end Build_Record_Or_Elementary_Input_Function;
 
    -------------------------------------------------

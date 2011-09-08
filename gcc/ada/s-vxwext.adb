@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---           Copyright (C) 2009-2010, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2011, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,5 +41,15 @@ package body System.VxWorks.Ext is
    begin
       return ERROR;
    end taskCpuAffinitySet;
+
+   -------------------------
+   -- taskMaskAffinitySet --
+   -------------------------
+
+   function taskMaskAffinitySet (tid : t_id; CPU_Set : unsigned) return int is
+      pragma Unreferenced (tid, CPU_Set);
+   begin
+      return ERROR;
+   end taskMaskAffinitySet;
 
 end System.VxWorks.Ext;

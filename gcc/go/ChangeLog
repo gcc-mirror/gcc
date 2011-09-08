@@ -1,3 +1,23 @@
+2011-08-24  Roberto Lublinerman  <rluble@gmail.com>
+
+	* lang.opt: Add fgo-optimize-.
+	* go-lang.c (go_langhook_handle_option): Handle OPT_fgo_optimize.
+	* go-c.h (go_enable_optimize): Declare.
+	* Make-lang.in (GO_OBJS): Add go/go-optimize.o.
+	(GO_EXPORT_H): Define.
+	(GO_IMPORT_H): Add $(GO_EXPORT_H).
+	(GO_AST_DUMP_H): Define.
+	(go/ast-dump.o, go/statements.o): Use GO_AST_DUMP_H.
+	(go/export.o, go/gogo.o, go/import.o): Use GO_EXPORT_H.
+	(go/types.o): Likewise.
+	(go/expressions.o): Use GO_AST_DUMP_H and GO_EXPORT_H.
+	(go/go-optimize.o): New target.
+
+2011-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (CFLAGS-go/go-lang.o): New.
+	(go/go-lang.o): Remove explicit compilation rule.
+
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (gccgo$(exeext)): Add $(EXTRA_GCC_LIBS).

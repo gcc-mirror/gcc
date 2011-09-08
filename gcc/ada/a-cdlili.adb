@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,22 @@ with System;  use type System.Address;
 with Ada.Unchecked_Deallocation;
 
 package body Ada.Containers.Doubly_Linked_Lists is
+   type Iterator is new
+     List_Iterator_Interfaces.Reversible_Iterator with record
+        Container : List_Access;
+        Node      : Node_Access;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -393,6 +409,15 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end if;
 
       return Cursor'(Container'Unchecked_Access, Container.First);
+   end First;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      if Object.Container = null then
+         return No_Element;
+      else
+         return (Object.Container, Object.Container.First);
+      end if;
    end First;
 
    -------------------
@@ -794,6 +819,25 @@ package body Ada.Containers.Doubly_Linked_Lists is
       B := B - 1;
    end Iterate;
 
+   function Iterate (Container : List)
+     return List_Iterator_Interfaces.Reversible_Iterator'class
+   is
+   begin
+      if Container.Length = 0 then
+         return Iterator'(null, null);
+      else
+         return Iterator'(Container'Unchecked_Access, Container.First);
+      end if;
+   end Iterate;
+
+   function Iterate (Container : List; Start : Cursor)
+     return List_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator := (Container'Unchecked_Access, Start.Node);
+   begin
+      return It;
+   end Iterate;
+
    ----------
    -- Last --
    ----------
@@ -805,6 +849,15 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end if;
 
       return Cursor'(Container'Unchecked_Access, Container.Last);
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      if Object.Container = null then
+         return No_Element;
+      else
+         return (Object.Container, Object.Container.Last);
+      end if;
    end Last;
 
    ------------------
@@ -878,6 +931,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       declare
          Next_Node : constant Node_Access := Position.Node.Next;
+
       begin
          if Next_Node = null then
             return No_Element;
@@ -885,6 +939,18 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
          return Cursor'(Position.Container, Next_Node);
       end;
+   end Next;
+
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+      if Position.Node = Object.Container.Last then
+         return No_Element;
+      else
+         return (Object.Container, Position.Node.Next);
+      end if;
    end Next;
 
    -------------
@@ -919,6 +985,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       declare
          Prev_Node : constant Node_Access := Position.Node.Prev;
+
       begin
          if Prev_Node = null then
             return No_Element;
@@ -926,6 +993,18 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
          return Cursor'(Position.Container, Prev_Node);
       end;
+   end Previous;
+
+   function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+      if Position.Node = Position.Container.First then
+         return No_Element;
+      else
+         return (Object.Container, Position.Node.Prev);
+      end if;
    end Previous;
 
    -------------------
@@ -1026,6 +1105,50 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       raise Program_Error with "attempt to stream list cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference (Container : List; Position : Cursor)
+   return Constant_Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element => Position.Node.Element'Access);
+   end Constant_Reference;
+
+   function Reference (Container : List; Position : Cursor)
+   return Reference_Type is
+   begin
+      pragma Unreferenced (Container);
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element => Position.Node.Element'Access);
+   end Reference;
 
    ---------------------
    -- Replace_Element --
@@ -1830,6 +1953,22 @@ package body Ada.Containers.Doubly_Linked_Lists is
    is
    begin
       raise Program_Error with "attempt to stream list cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Doubly_Linked_Lists;

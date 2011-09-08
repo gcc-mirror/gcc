@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 pragma Compiler_Unit;
 
 with Ada.Exceptions;
-with System.Exceptions;
+with System.Exceptions_Debug;
 
 package body System.Assertions is
 
@@ -42,7 +42,7 @@ package body System.Assertions is
 
    procedure Raise_Assert_Failure (Msg : String) is
    begin
-      System.Exceptions.Debug_Raise_Assert_Failure;
+      System.Exceptions_Debug.Debug_Raise_Assert_Failure;
       Ada.Exceptions.Raise_Exception (Assert_Failure'Identity, Msg);
    end Raise_Assert_Failure;
 

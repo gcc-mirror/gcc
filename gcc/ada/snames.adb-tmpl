@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -306,7 +306,11 @@ package body Snames is
 
    function Is_Attribute_Name (N : Name_Id) return Boolean is
    begin
-      return N in First_Attribute_Name .. Last_Attribute_Name;
+      --  Don't consider Name_Elab_Subp_Body to be a valid attribute name
+      --  unless we are working in CodePeer mode.
+
+      return N in First_Attribute_Name .. Last_Attribute_Name
+        and then (CodePeer_Mode or else N /= Name_Elab_Subp_Body);
    end Is_Attribute_Name;
 
    ----------------------------------
@@ -373,9 +377,11 @@ package body Snames is
    begin
       return Get_Name_Table_Byte (N) /= 0
         and then (Ada_Version >= Ada_95
-                  or else N not in Ada_95_Reserved_Words)
+                   or else N not in Ada_95_Reserved_Words)
         and then (Ada_Version >= Ada_2005
-                  or else N not in Ada_2005_Reserved_Words);
+                   or else N not in Ada_2005_Reserved_Words)
+        and then (Ada_Version >= Ada_2012
+                   or else N not in Ada_2012_Reserved_Words);
    end Is_Keyword_Name;
 
    ----------------------------

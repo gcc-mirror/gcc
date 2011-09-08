@@ -507,7 +507,7 @@
   DONE;
 })
 
-(define_expand "vcondv2sf"
+(define_expand "vcondv2sfv2sf"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
         (if_then_else:V2SF
          (match_operator 3 "gpc_reg_operand"

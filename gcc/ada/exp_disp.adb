@@ -695,13 +695,14 @@ package body Exp_Disp is
       end if;
 
       --  Expand_Dispatching_Call is called directly from the semantics,
-      --  so we need a check to see whether expansion is active before
-      --  proceeding. In addition, there is no need to expand the call
-      --  if we are compiling under restriction No_Dispatching_Calls;
-      --  the semantic analyzer has previously notified the violation
-      --  of this restriction.
+      --  so we only proceed if the expander is active.
 
-      if not Expander_Active
+      if not Full_Expander_Active
+
+        --  And there is no need to expand the call if we are compiling under
+        --  restriction No_Dispatching_Calls; the semantic analyzer has
+        --  previously notified the violation of this restriction.
+
         or else Restriction_Active (No_Dispatching_Calls)
       then
          return;
@@ -2051,7 +2052,8 @@ package body Exp_Disp is
    --        F : out Boolean)
    --     is
    --     begin
-   --        null;
+   --        F := False;
+   --        C := Ada.Tags.POK_Function;
    --     end _Disp_Asynchronous_Select;
 
    --  For protected types, generate:
@@ -2116,13 +2118,13 @@ package body Exp_Disp is
       if Is_Interface (Typ) then
          return
            Make_Subprogram_Body (Loc,
-             Specification =>
-               Make_Disp_Asynchronous_Select_Spec (Typ),
-             Declarations =>
-               New_List,
+             Specification => Make_Disp_Asynchronous_Select_Spec (Typ),
+             Declarations  => New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Null_Statement (Loc))));
+                 New_List (Make_Assignment_Statement (Loc,
+                   Name       => Make_Identifier (Loc, Name_uF),
+                   Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
       if Is_Concurrent_Record_Type (Typ) then
@@ -2262,6 +2264,14 @@ package body Exp_Disp is
                     Expression =>
                       New_Reference_To (Com_Block, Loc))));
 
+            --  Generate:
+            --    F := False;
+
+            Append_To (Stmts,
+              Make_Assignment_Statement (Loc,
+                Name       => Make_Identifier (Loc, Name_uF),
+                Expression => New_Reference_To (Standard_False, Loc)));
+
          else
             pragma Assert (Ekind (Conc_Typ) = E_Task_Type);
 
@@ -2300,15 +2310,17 @@ package body Exp_Disp is
       else
          --  Ensure that the statements list is non-empty
 
-         Append_To (Stmts, Make_Null_Statement (Loc));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name       => Make_Identifier (Loc, Name_uF),
+             Expression => New_Reference_To (Standard_False, Loc)));
       end if;
 
       return
         Make_Subprogram_Body (Loc,
-          Specification =>
+          Specification              =>
             Make_Disp_Asynchronous_Select_Spec (Typ),
-          Declarations =>
-            Decls,
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Stmts));
    end Make_Disp_Asynchronous_Select_Body;
@@ -2391,7 +2403,8 @@ package body Exp_Disp is
    --        F : out Boolean)
    --     is
    --     begin
-   --        null;
+   --        F := False;
+   --        C := Ada.Tags.POK_Function;
    --     end _Disp_Conditional_Select;
 
    --  For protected types, generate:
@@ -2474,7 +2487,9 @@ package body Exp_Disp is
                No_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Null_Statement (Loc))));
+                 New_List (Make_Assignment_Statement (Loc,
+                   Name       => Make_Identifier (Loc, Name_uF),
+                   Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
       if Is_Concurrent_Record_Type (Typ) then
@@ -2675,17 +2690,23 @@ package body Exp_Disp is
          end if;
 
       else
-         --  Ensure that the statements list is non-empty
+         --  Initialize out parameters
 
-         Append_To (Stmts, Make_Null_Statement (Loc));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name       => Make_Identifier (Loc, Name_uF),
+             Expression => New_Reference_To (Standard_False, Loc)));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name       => Make_Identifier (Loc, Name_uC),
+             Expression => New_Reference_To (RTE (RE_POK_Function), Loc)));
       end if;
 
       return
         Make_Subprogram_Body (Loc,
-          Specification =>
+          Specification              =>
             Make_Disp_Conditional_Select_Spec (Typ),
-          Declarations =>
-            Decls,
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Stmts));
    end Make_Disp_Conditional_Select_Body;
@@ -3235,7 +3256,8 @@ package body Exp_Disp is
    --        F : out Boolean)
    --     is
    --     begin
-   --        null;
+   --        F := False;
+   --        C := Ada.Tags.POK_Function;
    --     end _Disp_Timed_Select;
 
    --  For protected types, generate:
@@ -3294,7 +3316,7 @@ package body Exp_Disp is
    --           P,
    --           D,
    --           M,
-   --           D);
+   --           F);
    --     end _Disp_Time_Select;
 
    function Make_Disp_Timed_Select_Body
@@ -3321,7 +3343,10 @@ package body Exp_Disp is
                New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Null_Statement (Loc))));
+                 New_List (
+                   Make_Assignment_Statement (Loc,
+                     Name       => Make_Identifier (Loc, Name_uF),
+                     Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
       if Is_Concurrent_Record_Type (Typ) then
@@ -3335,10 +3360,8 @@ package body Exp_Disp is
 
          Append_To (Decls,
            Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uI),
-             Object_Definition =>
-               New_Reference_To (Standard_Integer, Loc)));
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_uI),
+             Object_Definition   => New_Reference_To (Standard_Integer, Loc)));
 
          --  Generate:
          --    C := Get_Prim_Op_Kind (tag! (<type>VP), S);
@@ -3367,7 +3390,7 @@ package body Exp_Disp is
          else
             Tag_Node :=
               Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (Typ, Loc),
+                Prefix         => New_Reference_To (Typ, Loc),
                 Attribute_Name => Name_Tag);
          end if;
 
@@ -3376,8 +3399,7 @@ package body Exp_Disp is
              Name       => Make_Identifier (Loc, Name_uI),
              Expression =>
                Make_Function_Call (Loc,
-                 Name =>
-                   New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
+                 Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                  Parameter_Associations =>
                    New_List (
                      Tag_Node,
@@ -3500,17 +3522,22 @@ package body Exp_Disp is
          end if;
 
       else
-         --  Ensure that the statements list is non-empty
+         --  Initialize out parameters
 
-         Append_To (Stmts, Make_Null_Statement (Loc));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name       => Make_Identifier (Loc, Name_uF),
+             Expression => New_Reference_To (Standard_False, Loc)));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name       => Make_Identifier (Loc, Name_uC),
+             Expression => New_Reference_To (RTE (RE_POK_Function), Loc)));
       end if;
 
       return
         Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Disp_Timed_Select_Spec (Typ),
-          Declarations =>
-            Decls,
+          Specification              => Make_Disp_Timed_Select_Spec (Typ),
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Stmts));
    end Make_Disp_Timed_Select_Body;
@@ -3699,6 +3726,50 @@ package body Exp_Disp is
       is
          Comp : Entity_Id;
 
+         function Is_Actual_For_Formal_Incomplete_Type
+           (T : Entity_Id) return Boolean;
+         --  In Ada 2012, if a nested generic has an incomplete formal type,
+         --  the actual may be (and usually is) a private type whose completion
+         --  appears later. It is safe to build the dispatch table in this
+         --  case, gigi will have full views available.
+
+         ------------------------------------------
+         -- Is_Actual_For_Formal_Incomplete_Type --
+         ------------------------------------------
+
+         function Is_Actual_For_Formal_Incomplete_Type
+           (T : Entity_Id) return Boolean
+         is
+            Gen_Par : Entity_Id;
+            F       : Node_Id;
+
+         begin
+            if not Is_Generic_Instance (Current_Scope)
+              or else not Used_As_Generic_Actual (T)
+            then
+               return False;
+
+            else
+               Gen_Par := Generic_Parent (Parent (Current_Scope));
+            end if;
+
+            F :=
+              First
+                (Generic_Formal_Declarations
+                     (Unit_Declaration_Node (Gen_Par)));
+            while Present (F) loop
+               if Ekind (Defining_Identifier (F)) = E_Incomplete_Type then
+                  return True;
+               end if;
+
+               Next (F);
+            end loop;
+
+            return False;
+         end Is_Actual_For_Formal_Incomplete_Type;
+
+      --  Start of processing for Check_Premature_Freezing
+
       begin
          if Present (N)
            and then Is_Private_Type (Typ)
@@ -3720,6 +3791,8 @@ package body Exp_Disp is
             if not Is_Tagged_Type (Typ)
               and then Present (Comp)
               and then not Is_Frozen (Comp)
+              and then
+                not Is_Actual_For_Formal_Incomplete_Type (Comp)
             then
                Error_Msg_Sloc := Sloc (Subp);
                Error_Msg_Node_2 := Subp;

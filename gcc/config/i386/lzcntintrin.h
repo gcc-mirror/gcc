@@ -21,7 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef _X86INTRIN_H_INCLUDED
+#if !defined _X86INTRIN_H_INCLUDED && !defined _IMMINTRIN_H_INCLUDED
 # error "Never use <lzcntintrin.h> directly; include <x86intrin.h> instead."
 #endif
 

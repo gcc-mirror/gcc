@@ -32,6 +32,7 @@ with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Util; use Exp_Util;
 with Exp_Ch3;  use Exp_Ch3;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
@@ -1984,10 +1985,23 @@ package body Exp_Aggr is
       --------------------------------
 
       function Get_Constraint_Association (T : Entity_Id) return Node_Id is
-         Typ_Def : constant Node_Id := Type_Definition (Parent (T));
-         Indic   : constant Node_Id := Subtype_Indication (Typ_Def);
+         Indic : Node_Id;
+         Typ   : Entity_Id;
 
       begin
+         Typ := T;
+
+         --  Handle private types in instances
+
+         if In_Instance
+           and then Is_Private_Type (Typ)
+           and then Present (Full_View (Typ))
+         then
+            Typ := Full_View (Typ);
+         end if;
+
+         Indic := Subtype_Indication (Type_Definition (Parent (Typ)));
+
          --  ??? Also need to cover case of a type mark denoting a subtype
          --  with constraint.
 
@@ -2154,7 +2168,7 @@ package body Exp_Aggr is
                Rewrite (Expr,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Unrestricted_Access,
-                   Prefix         => New_Copy_Tree (Prefix (Lhs))));
+                   Prefix         => New_Copy_Tree (Lhs)));
                Set_Analyzed (Parent (Expr), False);
 
             else
@@ -4591,6 +4605,21 @@ package body Exp_Aggr is
         or else Is_RTE (Ctyp, RE_Asm_Output_Operand)
       then
          return;
+
+      --  Do not expand an aggregate for an array type which contains tasks if
+      --  the aggregate is associated with an unexpanded return statement of a
+      --  build-in-place function. The aggregate is expanded when the related
+      --  return statement (rewritten into an extended return) is processed.
+      --  This delay ensures that any temporaries and initialization code
+      --  generated for the aggregate appear in the proper return block and
+      --  use the correct _chain and _master.
+
+      elsif Has_Task (Base_Type (Etype (N)))
+        and then Nkind (Parent (N)) = N_Simple_Return_Statement
+        and then Is_Build_In_Place_Function
+                   (Return_Applies_To (Return_Statement_Entity (Parent (N))))
+      then
+         return;
       end if;
 
       --  If the semantic analyzer has determined that aggregate N will raise
@@ -5093,6 +5122,16 @@ package body Exp_Aggr is
       --  semantics of Ada complicate the analysis and lead to anomalies in
       --  the gcc back-end if the aggregate is not expanded into assignments.
 
+      function Has_Visible_Private_Ancestor (Id : E) return Boolean;
+      --  If any ancestor of the current type is private, the aggregate
+      --  cannot be built in place. We canot rely on Has_Private_Ancestor,
+      --  because it will not be set when type and its parent are in the
+      --  same scope, and the parent component needs expansion.
+
+      function Top_Level_Aggregate (N : Node_Id) return Node_Id;
+      --  For nested aggregates return the ultimate enclosing aggregate; for
+      --  non-nested aggregates return N.
+
       ----------------------------------
       -- Component_Not_OK_For_Backend --
       ----------------------------------
@@ -5172,18 +5211,6 @@ package body Exp_Aggr is
          return False;
       end Component_Not_OK_For_Backend;
 
-      --  Remaining Expand_Record_Aggregate variables
-
-      Tag_Value : Node_Id;
-      Comp      : Entity_Id;
-      New_Comp  : Node_Id;
-
-      function Has_Visible_Private_Ancestor (Id : E) return Boolean;
-      --  If any ancestor of the current type is private, the aggregate
-      --  cannot be built in place. We canot rely on Has_Private_Ancestor,
-      --  because it will not be set when type and its parent are in the
-      --  same scope, and the parent component needs expansion.
-
       -----------------------------------
       --  Has_Visible_Private_Ancestor --
       -----------------------------------
@@ -5191,6 +5218,7 @@ package body Exp_Aggr is
       function Has_Visible_Private_Ancestor (Id : E) return Boolean is
          R  : constant Entity_Id := Root_Type (Id);
          T1 : Entity_Id := Id;
+
       begin
          loop
             if Is_Private_Type (T1) then
@@ -5204,6 +5232,32 @@ package body Exp_Aggr is
             end if;
          end loop;
       end Has_Visible_Private_Ancestor;
+
+      -------------------------
+      -- Top_Level_Aggregate --
+      -------------------------
+
+      function Top_Level_Aggregate (N : Node_Id) return Node_Id is
+         Aggr : Node_Id;
+
+      begin
+         Aggr := N;
+         while Present (Parent (Aggr))
+           and then Nkind_In (Parent (Aggr), N_Component_Association,
+                                             N_Aggregate)
+         loop
+            Aggr := Parent (Aggr);
+         end loop;
+
+         return Aggr;
+      end Top_Level_Aggregate;
+
+      --  Local variables
+
+      Top_Level_Aggr : constant Node_Id := Top_Level_Aggregate (N);
+      Tag_Value      : Node_Id;
+      Comp           : Entity_Id;
+      New_Comp       : Node_Id;
 
    --  Start of processing for Expand_Record_Aggregate
 
@@ -5311,8 +5365,8 @@ package body Exp_Aggr is
 
       elsif Has_Mutable_Components (Typ)
         and then
-          (Nkind (Parent (N)) /= N_Object_Declaration
-            or else not Constant_Present (Parent (N)))
+          (Nkind (Parent (Top_Level_Aggr)) /= N_Object_Declaration
+            or else not Constant_Present (Parent (Top_Level_Aggr)))
       then
          Convert_To_Assignments (N, Typ);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,19 +86,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;             use Ada.Calendar;
 with Ada.Unchecked_Conversion;
+
+with System.Random_Seed;
 
 with Interfaces; use Interfaces;
 
 use Ada;
 
 package body System.Random_Numbers is
-
-   Y2K : constant Calendar.Time :=
-           Calendar.Time_Of
-             (Year => 2000, Month => 1, Day => 1, Seconds => 0.0);
-   --  First day of Year 2000 (what is this for???)
 
    Image_Numeral_Length : constant := Max_Image_Width / N;
    subtype Image_String is String (1 .. Max_Image_Width);
@@ -484,11 +480,9 @@ package body System.Random_Numbers is
    -----------
 
    procedure Reset (Gen : Generator) is
-      Clock              : constant Time := Calendar.Clock;
-      Duration_Since_Y2K : constant Duration := Clock - Y2K;
-
       X : constant Unsigned_32 :=
-            Unsigned_32'Mod (Unsigned_64 (Duration_Since_Y2K) * 64);
+            Unsigned_32'Mod (Unsigned_64 (Random_Seed.Get_Seed) * 64);
+      --  Why * 64 ???
 
    begin
       Init (Gen, X);

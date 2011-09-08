@@ -206,7 +206,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_Definition
-        or else NT (N).Nkind = N_Object_Declaration);
+        or else NT (N).Nkind = N_Object_Declaration
+        or else NT (N).Nkind = N_Parameter_Specification);
       return Flag4 (N);
    end Aliased_Present;
 
@@ -1471,6 +1472,14 @@ package body Sinfo is
       return Flag14 (N);
    end Has_Pragma_CPU;
 
+   function Has_Pragma_Dispatching_Domain
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Task_Definition);
+      return Flag15 (N);
+   end Has_Pragma_Dispatching_Domain;
+
    function Has_Pragma_Priority
       (N : Node_Id) return Boolean is
    begin
@@ -2450,6 +2459,14 @@ package body Sinfo is
       return Node3 (N);
    end Prefix;
 
+   function Premature_Use
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Incomplete_Type_Declaration);
+      return Node5 (N);
+   end Premature_Use;
+
    function Present_Expr
       (N : Node_Id) return Uint is
    begin
@@ -2930,6 +2947,7 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Formal_Incomplete_Type_Definition
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
         or else NT (N).Nkind = N_Incomplete_Type_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration
@@ -3103,15 +3121,6 @@ package body Sinfo is
       return Node1 (N);
    end Withed_Body;
 
-   function Zero_Cost_Handling
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Exception_Handler
-        or else NT (N).Nkind = N_Handled_Sequence_Of_Statements);
-      return Flag5 (N);
-   end Zero_Cost_Handling;
-
    --------------------------
    -- Field Set Procedures --
    --------------------------
@@ -3265,7 +3274,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_Definition
-        or else NT (N).Nkind = N_Object_Declaration);
+        or else NT (N).Nkind = N_Object_Declaration
+        or else NT (N).Nkind = N_Parameter_Specification);
       Set_Flag4 (N, Val);
    end Set_Aliased_Present;
 
@@ -4521,6 +4531,14 @@ package body Sinfo is
       Set_Flag14 (N, Val);
    end Set_Has_Pragma_CPU;
 
+   procedure Set_Has_Pragma_Dispatching_Domain
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Task_Definition);
+      Set_Flag15 (N, Val);
+   end Set_Has_Pragma_Dispatching_Domain;
+
    procedure Set_Has_Pragma_Priority
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5500,6 +5518,14 @@ package body Sinfo is
       Set_Node3_With_Parent (N, Val);
    end Set_Prefix;
 
+   procedure Set_Premature_Use
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Incomplete_Type_Declaration);
+      Set_Node5 (N, Val);
+   end Set_Premature_Use;
+
    procedure Set_Present_Expr
       (N : Node_Id; Val : Uint) is
    begin
@@ -5980,6 +6006,7 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Formal_Incomplete_Type_Definition
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
         or else NT (N).Nkind = N_Incomplete_Type_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration
@@ -6152,15 +6179,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_With_Clause);
       Set_Node1 (N, Val);
    end Set_Withed_Body;
-
-   procedure Set_Zero_Cost_Handling
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Exception_Handler
-        or else NT (N).Nkind = N_Handled_Sequence_Of_Statements);
-      Set_Flag5 (N, Val);
-   end Set_Zero_Cost_Handling;
 
    -------------------------
    -- Iterator Procedures --

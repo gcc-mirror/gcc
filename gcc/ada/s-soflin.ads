@@ -243,9 +243,6 @@ package System.Soft_Links is
    Get_Sec_Stack_Addr : Get_Address_Call := Get_Sec_Stack_Addr_NT'Access;
    Set_Sec_Stack_Addr : Set_Address_Call := Set_Sec_Stack_Addr_NT'Access;
 
-   function Get_Exc_Stack_Addr_NT return Address;
-   Get_Exc_Stack_Addr : Get_Address_Call := Get_Exc_Stack_Addr_NT'Access;
-
    function Get_Current_Excep_NT return EOA;
 
    Get_Current_Excep : Get_EOA_Call := Get_Current_Excep_NT'Access;
@@ -388,8 +385,6 @@ package System.Soft_Links is
    procedure Set_Sec_Stack_Addr_Soft (Addr : Address);
    pragma Inline (Get_Sec_Stack_Addr_Soft);
    pragma Inline (Set_Sec_Stack_Addr_Soft);
-
-   function Get_Exc_Stack_Addr_Soft return Address;
 
    --  The following is a dummy record designed to mimic Communication_Block as
    --  defined in s-tpobop.ads:

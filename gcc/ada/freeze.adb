@@ -1259,6 +1259,13 @@ package body Freeze is
 
                End_Package_Scope (E);
 
+               if Is_Generic_Instance (E)
+                 and then Has_Delayed_Freeze (E)
+               then
+                  Set_Has_Delayed_Freeze (E, False);
+                  Expand_N_Package_Declaration (Unit_Declaration_Node (E));
+               end if;
+
             elsif Ekind (E) in Task_Kind
               and then
                 (Nkind (Parent (E)) = N_Task_Type_Declaration
@@ -1432,27 +1439,24 @@ package body Freeze is
                end loop;
             end;
 
-         --  We add finalization collections to access types whose designated
-         --  types require finalization. This is normally done when freezing
-         --  the type, but this misses recursive type definitions where the
-         --  later members of the recursion introduce controlled components
-         --  (such as can happen when incomplete types are involved), as well
-         --  cases where a component type is private and the controlled full
-         --  type occurs after the access type is frozen. Cases that don't
-         --  need a finalization collection are generic formal types (the
-         --  actual type will have it) and types with Java and CIL conventions,
-         --  since those are used for API bindings. (Are there any other cases
-         --  that should be excluded here???)
+         --  We add finalization masters to access types whose designated types
+         --  require finalization. This is normally done when freezing the
+         --  type, but this misses recursive type definitions where the later
+         --  members of the recursion introduce controlled components (such as
+         --  can happen when incomplete types are involved), as well cases
+         --  where a component type is private and the controlled full type
+         --  occurs after the access type is frozen. Cases that don't need a
+         --  finalization master are generic formal types (the actual type will
+         --  have it) and types with Java and CIL conventions, since those are
+         --  used for API bindings. (Are there any other cases that should be
+         --  excluded here???)
 
          elsif Is_Access_Type (E)
            and then Comes_From_Source (E)
            and then not Is_Generic_Type (E)
            and then Needs_Finalization (Designated_Type (E))
-           and then No (Associated_Collection (E))
-           and then Convention (Designated_Type (E)) /= Convention_Java
-           and then Convention (Designated_Type (E)) /= Convention_CIL
          then
-            Build_Finalization_Collection (E);
+            Build_Finalization_Master (E);
          end if;
 
          Next_Entity (E);
@@ -1836,10 +1840,16 @@ package body Freeze is
                   --  if it is variable length. We omit this test in a generic
                   --  context, it will be applied at instantiation time.
 
+                  --  We also omit this test in CodePeer mode, since we do not
+                  --  have sufficient info on size and representation clauses.
+
                   if Present (CC) then
                      Placed_Component := True;
 
                      if Inside_A_Generic then
+                        null;
+
+                     elsif CodePeer_Mode then
                         null;
 
                      elsif not
@@ -2029,7 +2039,7 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         --  Deal with pragma Bit_Order setting non-standard bit order
+         --  Deal with Bit_Order aspect specifying a non-default bit order
 
          if Reverse_Bit_Order (Rec) and then Base_Type (Rec) = Rec then
             if not Placed_Component then
@@ -2242,12 +2252,13 @@ package body Freeze is
 
            and then RM_Size (Rec) >= Scalar_Component_Total_RM_Size
 
-           --  Never do implicit packing in CodePeer mode since we don't do
-           --  any packing in this mode, since this generates over-complex
-           --  code that confuses CodePeer, and in general, CodePeer does not
-           --  care about the internal representation of objects.
+           --  Never do implicit packing in CodePeer or Alfa modes since
+           --  we don't do any packing in these modes, since this generates
+           --  over-complex code that confuses static analysis, and in
+           --  general, neither CodePeer not GNATprove care about the
+           --  internal representation of objects.
 
-           and then not CodePeer_Mode
+           and then not (CodePeer_Mode or Alfa_Mode)
          then
             --  If implicit packing enabled, do it
 
@@ -2295,6 +2306,16 @@ package body Freeze is
       --  be frozen in the proper scope after the current generic is analyzed.
 
       elsif Inside_A_Generic and then External_Ref_In_Generic (Test_E) then
+         return No_List;
+
+      --  AI05-0213: A formal incomplete type does not freeze the actual. In
+      --  the instance, the same applies to the subtype renaming the actual.
+
+      elsif Is_Private_Type (E)
+        and then Is_Generic_Actual_Type (E)
+        and then No (Full_View (Base_Type (E)))
+        and then Ada_Version >= Ada_2012
+      then
          return No_List;
 
       --  Do not freeze a global entity within an inner scope created during
@@ -2385,6 +2406,7 @@ package body Freeze is
                if Nkind (Ritem) = N_Aspect_Specification
                  and then Entity (Ritem) = E
                  and then Is_Delayed_Aspect (Ritem)
+                 and then Scope (E) = Current_Scope
                then
                   Aitem := Aspect_Rep_Item (Ritem);
 
@@ -2804,7 +2826,7 @@ package body Freeze is
 
                --  Note: we inhibit this check for objects that do not come
                --  from source because there is at least one case (the
-               --  expansion of x'class'input where x is abstract) where we
+               --  expansion of x'Class'Input where x is abstract) where we
                --  legitimately generate an abstract object.
 
                if Is_Abstract_Type (Etype (E))
@@ -3050,7 +3072,7 @@ package body Freeze is
                     and then not Is_Limited_Composite (E)
                     and then not Is_Packed (Root_Type (E))
                     and then not Has_Component_Size_Clause (Root_Type (E))
-                    and then not CodePeer_Mode
+                    and then not (CodePeer_Mode or Alfa_Mode)
                   then
                      Get_Index_Bounds (First_Index (E), Lo, Hi);
 
@@ -3696,7 +3718,7 @@ package body Freeze is
             --     package Pkg is
             --        type T is tagged private;
             --        type DT is new T with private;
-            --        procedure Prim (X : in out T; Y : in out DT'class);
+            --        procedure Prim (X : in out T; Y : in out DT'Class);
             --     private
             --        type T is tagged null record;
             --        Obj : T;

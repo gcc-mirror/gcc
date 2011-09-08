@@ -54,7 +54,7 @@ package body System.Atomic_Counters is
              & "sete %1",
          Outputs  =>
            (Unsigned_32'Asm_Output ("=m", Item.Value),
-            Boolean'Asm_Output ("=rm", Aux)),
+            Boolean'Asm_Output ("=qm", Aux)),
          Inputs   => Unsigned_32'Asm_Input ("m", Item.Value),
          Volatile => True);
 

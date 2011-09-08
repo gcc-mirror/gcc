@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,46 +102,55 @@ package Ttypes is
    --  example, on some machines, Short_Float may be the same as Float, and
    --  Long_Long_Float may be the same as Long_Float.
 
-   Standard_Short_Short_Integer_Size   : constant Pos := Get_Char_Size;
-   Standard_Short_Short_Integer_Width  : constant Pos :=
-                           Width_From_Size (Standard_Short_Short_Integer_Size);
+   Standard_Short_Short_Integer_Size  : constant Pos := Get_Char_Size;
+   Standard_Short_Short_Integer_Width : constant Pos :=
+                                          Width_From_Size
+                                           (Standard_Short_Short_Integer_Size);
 
-   Standard_Short_Integer_Size         : constant Pos := Get_Short_Size;
-   Standard_Short_Integer_Width        : constant Pos :=
-                           Width_From_Size (Standard_Short_Integer_Size);
+   Standard_Short_Integer_Size        : constant Pos := Get_Short_Size;
+   Standard_Short_Integer_Width       : constant Pos :=
+                                          Width_From_Size
+                                            (Standard_Short_Integer_Size);
 
-   Standard_Integer_Size               : constant Pos := Get_Int_Size;
-   Standard_Integer_Width              : constant Pos :=
-                           Width_From_Size (Standard_Integer_Size);
+   Standard_Integer_Size              : constant Pos := Get_Int_Size;
+   Standard_Integer_Width             : constant Pos :=
+                                          Width_From_Size
+                                            (Standard_Integer_Size);
 
-   Standard_Long_Integer_Size          : constant Pos := Get_Long_Size;
-   Standard_Long_Integer_Width         : constant Pos :=
-                           Width_From_Size (Standard_Long_Integer_Size);
+   Standard_Long_Integer_Size         : constant Pos := Get_Long_Size;
+   Standard_Long_Integer_Width        : constant Pos :=
+                                          Width_From_Size
+                                            (Standard_Long_Integer_Size);
 
-   Standard_Long_Long_Integer_Size     : constant Pos := Get_Long_Long_Size;
-   Standard_Long_Long_Integer_Width    : constant Pos :=
-                           Width_From_Size (Standard_Long_Long_Integer_Size);
+   Standard_Long_Long_Integer_Size    : constant Pos := Get_Long_Long_Size;
+   Standard_Long_Long_Integer_Width   : constant Pos :=
+                                          Width_From_Size
+                                            (Standard_Long_Long_Integer_Size);
 
-   Standard_Short_Float_Size           : constant Pos := Get_Float_Size;
-   Standard_Short_Float_Digits         : constant Pos :=
-                           Digits_From_Size (Standard_Short_Float_Size);
+   Standard_Short_Float_Size          : constant Pos := Get_Float_Size;
+   Standard_Short_Float_Digits        : constant Pos :=
+                                          Digits_From_Size
+                                            (Standard_Short_Float_Size);
 
-   Standard_Float_Size                 : constant Pos := Get_Float_Size;
-   Standard_Float_Digits               : constant Pos :=
-                           Digits_From_Size (Standard_Float_Size);
+   Standard_Float_Size                : constant Pos := Get_Float_Size;
+   Standard_Float_Digits              : constant Pos :=
+                                          Digits_From_Size
+                                            (Standard_Float_Size);
 
-   Standard_Long_Float_Size            : constant Pos := Get_Double_Size;
-   Standard_Long_Float_Digits          : constant Pos :=
-                           Digits_From_Size (Standard_Long_Float_Size);
+   Standard_Long_Float_Size           : constant Pos := Get_Double_Size;
+   Standard_Long_Float_Digits         : constant Pos :=
+                                          Digits_From_Size
+                                            (Standard_Long_Float_Size);
 
-   Standard_Long_Long_Float_Size       : constant Pos := Get_Long_Double_Size;
-   Standard_Long_Long_Float_Digits     : constant Pos :=
-                           Digits_From_Size (Standard_Long_Long_Float_Size);
+   Standard_Long_Long_Float_Size      : constant Pos := Get_Long_Double_Size;
+   Standard_Long_Long_Float_Digits    : constant Pos :=
+                                          Digits_From_Size
+                                            (Standard_Long_Long_Float_Size);
 
-   Standard_Character_Size             : constant Pos := Get_Char_Size;
+   Standard_Character_Size            : constant Pos := Get_Char_Size;
 
-   Standard_Wide_Character_Size        : constant Pos := 16;
-   Standard_Wide_Wide_Character_Size   : constant Pos := 32;
+   Standard_Wide_Character_Size       : constant Pos := 16;
+   Standard_Wide_Wide_Character_Size  : constant Pos := 32;
    --  Standard wide character sizes
 
    --  Note: there is no specific control over the representation of
@@ -185,8 +194,12 @@ package Ttypes is
    ----------------------------------------
 
    Maximum_Alignment : constant Pos := Get_Maximum_Alignment;
-   --  The maximum alignment, in storage units, that an object or
-   --  type may require on the target machine.
+   --  The maximum alignment, in storage units, that an object or type may
+   --  require on the target machine.
+
+   System_Allocator_Alignment : constant Pos :=
+                                  Get_System_Allocator_Alignment;
+   --  The alignment in storage units of addresses returned by malloc
 
    Max_Unaligned_Field : constant Pos := Get_Max_Unaligned_Field;
    --  The maximum supported size in bits for a field that is not aligned

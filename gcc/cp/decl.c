@@ -643,6 +643,9 @@ poplevel (int keep, int reverse, int functionbody)
   for (link = decls; link; link = TREE_CHAIN (link))
     {
       if (leaving_for_scope && TREE_CODE (link) == VAR_DECL
+	  /* It's hard to make this ARM compatibility hack play nicely with
+	     lambdas, and it really isn't necessary in C++11 mode.  */
+	  && cxx_dialect < cxx0x
 	  && DECL_NAME (link))
 	{
 	  tree name = DECL_NAME (link);
@@ -3596,6 +3599,10 @@ cxx_init_decl_processing (void)
 
   init_list_type_node = make_node (LANG_TYPE);
   record_unknown_type (init_list_type_node, "init list");
+
+  dependent_lambda_return_type_node = make_node (LANG_TYPE);
+  record_unknown_type (dependent_lambda_return_type_node,
+		       "undeduced lambda return type");
 
   {
     /* Make sure we get a unique function type, so we can give
@@ -9636,6 +9643,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_ANONYMOUS_P (type)
+	  && declspecs->type_definition_p
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
 	{
 	  tree t;

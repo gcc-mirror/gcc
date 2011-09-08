@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,6 +75,8 @@ package body Debug_A is
 
       --  Now push the new element
 
+      --  Why is this done unconditionally???
+
       Debug_A_Depth := Debug_A_Depth + 1;
 
       if Debug_A_Depth <= Max_Node_Ids then
@@ -100,6 +102,8 @@ package body Debug_A is
 
       --  We look down the stack to find something with a decent Sloc. (If
       --  we find nothing, just leave it unchanged which is not so terrible)
+
+      --  This seems nasty overhead for the normal case ???
 
       for J in reverse 1 .. Integer'Min (Max_Node_Ids, Debug_A_Depth) loop
          if Sloc (Node_Ids (J)) > No_Location then

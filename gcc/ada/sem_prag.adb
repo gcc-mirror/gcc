@@ -39,6 +39,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Dist; use Exp_Dist;
 with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Lib.Writ; use Lib.Writ;
 with Lib.Xref; use Lib.Xref;
@@ -260,6 +261,104 @@ package body Sem_Prag is
 
       Preanalyze_Spec_Expression
         (Get_Pragma_Arg (Arg1), Standard_Boolean);
+
+      --  For a class-wide condition, a reference to a controlling formal must
+      --  be interpreted as having the class-wide type (or an access to such)
+      --  so that the inherited condition can be properly applied to any
+      --  overriding operation (see ARM12 6.6.1 (7)).
+
+      if Class_Present (N) then
+         declare
+            T   : constant Entity_Id := Find_Dispatching_Type (S);
+
+            ACW : Entity_Id := Empty;
+            --  Access to T'class, created if there is a controlling formal
+            --  that is an access parameter.
+
+            function Get_ACW return Entity_Id;
+            --  If the expression has a reference to an controlling access
+            --  parameter, create an access to T'class for the necessary
+            --  conversions if one does not exist.
+
+            function Process (N : Node_Id) return Traverse_Result;
+            --  ARM 6.1.1: Within the expression for a Pre'Class or Post'Class
+            --  aspect for a primitive subprogram of a tagged type T, a name
+            --  that denotes a formal parameter of type T is interpreted as
+            --  having type T'Class. Similarly, a name that denotes a formal
+            --  accessparameter of type access-to-T is interpreted as having
+            --  type access-to-T'Class. This ensures the expression is well-
+            --  defined for a primitive subprogram of a type descended from T.
+
+            -------------
+            -- Get_ACW --
+            -------------
+
+            function Get_ACW return Entity_Id is
+               Loc  : constant Source_Ptr := Sloc (N);
+               Decl : Node_Id;
+
+            begin
+               if No (ACW) then
+                  Decl := Make_Full_Type_Declaration (Loc,
+                    Defining_Identifier => Make_Temporary (Loc, 'T'),
+                    Type_Definition =>
+                       Make_Access_To_Object_Definition (Loc,
+                       Subtype_Indication =>
+                         New_Occurrence_Of (Class_Wide_Type (T), Loc),
+                       All_Present => True));
+
+                  Insert_Before (Unit_Declaration_Node (S), Decl);
+                  Analyze (Decl);
+                  ACW := Defining_Identifier (Decl);
+                  Freeze_Before (Unit_Declaration_Node (S), ACW);
+               end if;
+
+               return ACW;
+            end Get_ACW;
+
+            -------------
+            -- Process --
+            -------------
+
+            function Process (N : Node_Id) return Traverse_Result is
+               Loc : constant Source_Ptr := Sloc (N);
+               Typ : Entity_Id;
+
+            begin
+               if Is_Entity_Name (N)
+                 and then Is_Formal (Entity (N))
+                 and then Nkind (Parent (N)) /= N_Type_Conversion
+               then
+                  if Etype (Entity (N)) = T then
+                     Typ := Class_Wide_Type (T);
+
+                  elsif Is_Access_Type (Etype (Entity (N)))
+                    and then Designated_Type (Etype (Entity (N))) = T
+                  then
+                     Typ := Get_ACW;
+                  else
+                     Typ := Empty;
+                  end if;
+
+                  if Present (Typ) then
+                     Rewrite (N,
+                       Make_Type_Conversion (Loc,
+                         Subtype_Mark =>
+                           New_Occurrence_Of (Typ, Loc),
+                         Expression  => New_Occurrence_Of (Entity (N), Loc)));
+                     Set_Etype (N, Typ);
+                  end if;
+               end if;
+
+               return OK;
+            end Process;
+
+            procedure Replace_Type is new Traverse_Proc (Process);
+
+         begin
+            Replace_Type (Get_Pragma_Arg (Arg1));
+         end;
+      end if;
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the precondition/postcondition is done.
@@ -500,24 +599,13 @@ package body Sem_Prag is
 
       procedure Check_Test_Case;
       --  Called to process a test-case pragma. The treatment is similar to the
-      --  one for pre- and postcondition in Check_Precondition_Postcondition.
-      --  There are three cases:
-      --
-      --    The pragma appears after a subprogram spec
-      --
-      --      The first step is to analyze the pragma, but this is skipped if
-      --      the subprogram spec appears within a package specification
-      --      (because this is the case where we delay analysis till the end of
-      --      the spec). Then (whether or not it was analyzed), the pragma is
-      --      chained to the subprogram in question (using Spec_TC_List and
-      --      Next_Pragma).
-      --
-      --    The pragma appears at the start of subprogram body declarations
-      --
-      --      In this case an immediate return to the caller is made, and the
-      --      pragma is NOT analyzed.
-      --
-      --    In all other cases, an error message for bad placement is given
+      --  one for pre- and postcondition in Check_Precondition_Postcondition,
+      --  except the placement rules for the test-case pragma are stricter.
+      --  This pragma may only occur after a subprogram spec declared directly
+      --  in a package spec unit. In this case, the pragma is chained to the
+      --  subprogram in question (using Spec_TC_List and Next_Pragma) and
+      --  analysis of the pragma is delayed till the end of the spec. In
+      --  all other cases, an error message for bad placement is given.
 
       procedure Check_Valid_Configuration_Pragma;
       --  Legality checks for placement of a configuration pragma
@@ -1849,6 +1937,12 @@ package body Sem_Prag is
                   Chain_PPC (PO);
                   return;
 
+               elsif Nkind (PO) = N_Subprogram_Declaration
+                 and then In_Instance
+               then
+                  Chain_PPC (PO);
+                  return;
+
                --  For all other cases of non source code, do nothing
 
                else
@@ -1884,6 +1978,15 @@ package body Sem_Prag is
          --  See if it is in the pragmas after a library level subprogram
 
          elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
+
+            --  In formal verification mode, analyze pragma expression for
+            --  correctness, as it is not expanded later.
+
+            if Alfa_Mode then
+               Analyze_PPC_In_Decl_Part
+                 (N, Defining_Entity (Unit (Parent (Parent (N)))));
+            end if;
+
             Chain_PPC (Unit (Parent (Parent (N))));
             return;
          end if;
@@ -1963,9 +2066,9 @@ package body Sem_Prag is
          PO : Node_Id;
 
          procedure Chain_TC (PO : Node_Id);
-         --  If PO is an entry or a [generic] subprogram declaration node, then
-         --  the test-case applies to this subprogram and the processing for
-         --  the pragma is completed. Otherwise the pragma is misplaced.
+         --  If PO is a [generic] subprogram declaration node, then the
+         --  test-case applies to this subprogram and the processing for the
+         --  pragma is completed. Otherwise the pragma is misplaced.
 
          --------------
          -- Chain_TC --
@@ -1984,20 +2087,22 @@ package body Sem_Prag is
                     ("pragma% cannot be applied to abstract subprogram");
                end if;
 
+            elsif Nkind (PO) = N_Entry_Declaration then
+               if From_Aspect_Specification (N) then
+                  Error_Pragma ("aspect% cannot be applied to entry");
+               else
+                  Error_Pragma ("pragma% cannot be applied to entry");
+               end if;
+
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
-                                    N_Generic_Subprogram_Declaration,
-                                    N_Entry_Declaration)
+                                    N_Generic_Subprogram_Declaration)
             then
                Pragma_Misplaced;
             end if;
 
-            --  Here if we have [generic] subprogram or entry declaration
+            --  Here if we have [generic] subprogram declaration
 
-            if Nkind (PO) = N_Entry_Declaration then
-               S := Defining_Entity (PO);
-            else
-               S := Defining_Unit_Name (Specification (PO));
-            end if;
+            S := Defining_Unit_Name (Specification (PO));
 
             --  Note: we do not analyze the pragma at this point. Instead we
             --  delay this analysis until the end of the declarative part in
@@ -2045,6 +2150,16 @@ package body Sem_Prag is
             Pragma_Misplaced;
          end if;
 
+         --  Test cases should only appear in package spec unit
+
+         if Get_Source_Unit (N) = No_Unit
+           or else not Nkind_In (Sinfo.Unit (Cunit (Get_Source_Unit (N))),
+                                 N_Package_Declaration,
+                                 N_Generic_Package_Declaration)
+         then
+            Pragma_Misplaced;
+         end if;
+
          --  Search prior declarations
 
          P := N;
@@ -2073,21 +2188,24 @@ package body Sem_Prag is
             elsif not Comes_From_Source (PO) then
                null;
 
-            --  Only remaining possibility is subprogram declaration
+            --  Only remaining possibility is subprogram declaration. First
+            --  check that it is declared directly in a package declaration.
+            --  This may be either the package declaration for the current unit
+            --  being defined or a local package declaration.
+
+            elsif not Present (Parent (Parent (PO)))
+              or else not Present (Parent (Parent (Parent (PO))))
+              or else not Nkind_In (Parent (Parent (PO)),
+                                    N_Package_Declaration,
+                                    N_Generic_Package_Declaration)
+            then
+               Pragma_Misplaced;
 
             else
                Chain_TC (PO);
                return;
             end if;
          end loop;
-
-         --  If we fall through loop, pragma is at start of list, so see if it
-         --  is in the pragmas after a library level subprogram.
-
-         if Nkind (Parent (N)) = N_Compilation_Unit_Aux then
-            Chain_TC (Unit (Parent (Parent (N))));
-            return;
-         end if;
 
          --  If we fall through, pragma was misplaced
 
@@ -4681,9 +4799,12 @@ package body Sem_Prag is
 
                   --  Inline is a program unit pragma (RM 10.1.5) and cannot
                   --  appear in a formal part to apply to a formal subprogram.
+                  --  Do not apply check within an instance or a formal package
+                  --  the test will have been applied to the original generic.
 
                   elsif Nkind (Decl) in N_Formal_Subprogram_Declaration
                     and then List_Containing (Decl) = List_Containing (N)
+                    and then not In_Instance
                   then
                      Error_Msg_N
                        ("Inline cannot apply to a formal subprogram", N);
@@ -5074,9 +5195,9 @@ package body Sem_Prag is
       --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
 
       begin
-         --  Ignore all Restrictions pragma in CodePeer and ALFA modes
+         --  Ignore all Restrictions pragma in CodePeer mode
 
-         if CodePeer_Mode or ALFA_Mode then
+         if CodePeer_Mode then
             return;
          end if;
 
@@ -5298,11 +5419,11 @@ package body Sem_Prag is
       --  Start of processing for Process_Suppress_Unsuppress
 
       begin
-         --  Ignore pragma Suppress/Unsuppress in CodePeer and ALFA modes on
+         --  Ignore pragma Suppress/Unsuppress in CodePeer and Alfa modes on
          --  user code: we want to generate checks for analysis purposes, as
          --  set respectively by -gnatC and -gnatd.F
 
-         if (CodePeer_Mode or ALFA_Mode)
+         if (CodePeer_Mode or Alfa_Mode)
            and then Comes_From_Source (N)
          then
             return;
@@ -7850,6 +7971,54 @@ package body Sem_Prag is
             end if;
          end Discard_Names;
 
+         ------------------------
+         -- Dispatching_Domain --
+         ------------------------
+
+         --  pragma Dispatching_Domain (EXPRESSION);
+
+         when Pragma_Dispatching_Domain => Dispatching_Domain : declare
+            P   : constant Node_Id := Parent (N);
+            Arg : Node_Id;
+
+         begin
+            Ada_2012_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            --  This pragma is born obsolete, but not the aspect
+
+            if not From_Aspect_Specification (N) then
+               Check_Restriction
+                 (No_Obsolescent_Features, Pragma_Identifier (N));
+            end if;
+
+            if Nkind (P) = N_Task_Definition then
+               Arg := Get_Pragma_Arg (Arg1);
+
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               Preanalyze_Spec_Expression (Arg, RTE (RE_Dispatching_Domain));
+
+            --  Anything else is incorrect
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            if Has_Pragma_Dispatching_Domain (P) then
+               Error_Pragma ("duplicate pragma% not allowed");
+            else
+               Set_Has_Pragma_Dispatching_Domain (P, True);
+
+               if Nkind (P) = N_Task_Definition then
+                  Record_Rep_Item (Defining_Identifier (Parent (P)), N);
+               end if;
+            end if;
+         end Dispatching_Domain;
+
          ---------------
          -- Elaborate --
          ---------------
@@ -9485,11 +9654,11 @@ package body Sem_Prag is
             Check_Restriction (No_Initialize_Scalars, N);
 
             --  Initialize_Scalars creates false positives in CodePeer, and
-            --  incorrect negative results in ALFA mode, so ignore this pragma
+            --  incorrect negative results in Alfa mode, so ignore this pragma
             --  in these modes.
 
             if not Restriction_Active (No_Initialize_Scalars)
-              and then not (CodePeer_Mode or ALFA_Mode)
+              and then not (CodePeer_Mode or Alfa_Mode)
             then
                Init_Or_Norm_Scalars := True;
                Initialize_Scalars := True;
@@ -9516,10 +9685,10 @@ package body Sem_Prag is
          when Pragma_Inline_Always =>
             GNAT_Pragma;
 
-            --  Pragma always active unless in CodePeer or ALFA mode, since
+            --  Pragma always active unless in CodePeer or Alfa mode, since
             --  this causes walk order issues.
 
-            if not (CodePeer_Mode or ALFA_Mode) then
+            if not (CodePeer_Mode or Alfa_Mode) then
                Process_Inline (True);
             end if;
 
@@ -10959,10 +11128,10 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
 
             --  Normalize_Scalars creates false positives in CodePeer, and
-            --  incorrect negative results in ALFA mode, so ignore this pragma
+            --  incorrect negative results in Alfa mode, so ignore this pragma
             --  in these modes.
 
-            if not (CodePeer_Mode or ALFA_Mode) then
+            if not (CodePeer_Mode or Alfa_Mode) then
                Normalize_Scalars := True;
                Init_Or_Norm_Scalars := True;
             end if;
@@ -11331,7 +11500,7 @@ package body Sem_Prag is
                   --  complex front-end expansions related to pragma Pack,
                   --  so disable handling of pragma Pack in these cases.
 
-                  if CodePeer_Mode or ALFA_Mode then
+                  if CodePeer_Mode or Alfa_Mode then
                      null;
 
                   --  Don't attempt any packing for VM targets. We possibly
@@ -13292,12 +13461,12 @@ package body Sem_Prag is
          --                  [, Requires =>  Boolean_EXPRESSION]
          --                  [, Ensures  =>  Boolean_EXPRESSION]);
 
-         --  MODE_TYPE ::= Normal | Robustness
+         --  MODE_TYPE ::= Nominal | Robustness
 
          when Pragma_Test_Case => Test_Case : declare
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (3);
+            Check_At_Least_N_Arguments (2);
             Check_At_Most_N_Arguments (4);
             Check_Arg_Order
                  ((Name_Name, Name_Mode, Name_Requires, Name_Ensures));
@@ -13305,12 +13474,13 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Name);
             Check_Arg_Is_Static_Expression (Arg1, Standard_String);
             Check_Optional_Identifier (Arg2, Name_Mode);
-            Check_Arg_Is_One_Of (Arg2, Name_Normal, Name_Robustness);
+            Check_Arg_Is_One_Of (Arg2, Name_Nominal, Name_Robustness);
 
             if Arg_Count = 4 then
                Check_Identifier (Arg3, Name_Requires);
                Check_Identifier (Arg4, Name_Ensures);
-            else
+
+            elsif Arg_Count = 3 then
                Check_Identifier_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
             end if;
 
@@ -14445,6 +14615,7 @@ package body Sem_Prag is
       Pragma_Default_Storage_Pool          => -1,
       Pragma_Dimension                     => -1,
       Pragma_Discard_Names                 =>  0,
+      Pragma_Dispatching_Domain            => -1,
       Pragma_Elaborate                     => -1,
       Pragma_Elaborate_All                 => -1,
       Pragma_Elaborate_Body                => -1,

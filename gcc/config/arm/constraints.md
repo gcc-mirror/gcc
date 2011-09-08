@@ -31,7 +31,7 @@
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv, Dy, Di, Dz
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd
-;; in Thumb-2 state: Ps, Pt, Pu, Pv, Pw, Px, Py
+;; in Thumb-2 state: Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py
 
 ;; The following memory constraints have been used:
 ;; in ARM/Thumb-2 state: Q, Ut, Uv, Uy, Un, Um, Us
@@ -74,6 +74,18 @@
       (ior (match_code "high")
 	   (and (match_code "const_int")
                 (match_test "(ival & 0xffff0000) == 0")))))
+
+(define_constraint "Pj"
+ "@internal A 12-bit constant suitable for an ADDW or SUBW instruction. (Thumb-2)"
+ (and (match_code "const_int")
+      (and (match_test "TARGET_THUMB2")
+	   (match_test "(ival & 0xfffff000) == 0"))))
+
+(define_constraint "PJ"
+ "@internal A constant that satisfies the Pj constrant if negated."
+ (and (match_code "const_int")
+      (and (match_test "TARGET_THUMB2")
+	   (match_test "((-ival) & 0xfffff000) == 0"))))
 
 (define_register_constraint "k" "STACK_REG"
  "@internal The stack register.")

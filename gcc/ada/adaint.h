@@ -245,8 +245,23 @@ extern int    __gnat_number_of_cpus                (void);
 
 extern void   __gnat_os_filename                   (char *, char *, char *,
 						    int *, char *, int *);
+
+extern char * __gnat_locate_executable_file        (char *, char *);
+extern char * __gnat_locate_file_with_predicate    (char *, char *,
+						    int (*)(char*));
+
 #if defined (linux)
 extern void   *__gnat_lwp_self			   (void);
+
+/* Routines for interface to required CPU set primitives */
+
+#include <sched.h>
+
+extern cpu_set_t *__gnat_cpu_alloc                 (size_t);
+extern size_t __gnat_cpu_alloc_size                (size_t);
+extern void   __gnat_cpu_free                  (cpu_set_t *);
+extern void   __gnat_cpu_zero                      (size_t, cpu_set_t *);
+extern void   __gnat_cpu_set                       (int, size_t, cpu_set_t *);
 #endif
 
 #if defined (_WIN32)

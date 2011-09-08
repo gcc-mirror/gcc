@@ -850,9 +850,15 @@ package body Sem_Disp is
                   Typ := Etype (Subp);
                end if;
 
-               if not Is_Class_Wide_Type (Typ)
+               --  The following should be better commented, especially since
+               --  we just added several new conditions here ???
+
+               if Comes_From_Source (Subp)
                  and then Is_Interface (Typ)
+                 and then not Is_Class_Wide_Type (Typ)
                  and then not Is_Derived_Type (Typ)
+                 and then not Is_Generic_Type (Typ)
+                 and then not In_Instance
                then
                   Error_Msg_N ("?declaration of& is too late!", Subp);
                   Error_Msg_NE
@@ -1150,11 +1156,14 @@ package body Sem_Disp is
             --  Ada 2005 (AI-251): In case of late overriding of a primitive
             --  that covers abstract interface subprograms we must register it
             --  in all the secondary dispatch tables associated with abstract
-            --  interfaces. We do this now only if not building static tables.
-            --  Otherwise the patch code is emitted after those tables are
-            --  built, to prevent access_before_elaboration in gigi.
+            --  interfaces. We do this now only if not building static tables,
+            --  nor when the expander is inactive (we avoid trying to register
+            --  primitives in semantics-only mode, since the type may not have
+            --  an associated dispatch table). Otherwise the patch code is
+            --  emitted after those tables are built, to prevent access before
+            --  elaboration in gigi.
 
-            if Body_Is_Last_Primitive then
+            if Body_Is_Last_Primitive and then Full_Expander_Active then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
                   Elmt      : Elmt_Id;
@@ -1606,6 +1615,32 @@ package body Sem_Disp is
         and then Has_Controlling_Result (Entity (Name (Orig_Node)))
       then
          return Controlling_Argument (Orig_Node);
+
+      --  Type conversions are dynamically tagged if the target type, or its
+      --  designated type, are classwide. An interface conversion expands into
+      --  a dereference, so test must be performed on the original node.
+
+      elsif Nkind (Orig_Node) = N_Type_Conversion
+        and then Nkind (N) = N_Explicit_Dereference
+        and then Is_Controlling_Actual (N)
+      then
+         declare
+            Target_Type : constant Entity_Id :=
+                             Entity (Subtype_Mark (Orig_Node));
+
+         begin
+            if Is_Class_Wide_Type (Target_Type) then
+               return N;
+
+            elsif Is_Access_Type (Target_Type)
+              and then Is_Class_Wide_Type (Designated_Type (Target_Type))
+            then
+               return N;
+
+            else
+               return Empty;
+            end if;
+         end;
 
       --  Normal case
 
@@ -2254,6 +2289,14 @@ package body Sem_Disp is
       elsif Nkind (Actual) = N_Explicit_Dereference
         and then Nkind (Original_Node (Prefix (Actual))) = N_Function_Call
       then
+         return;
+
+      --  When expansion is suppressed, an unexpanded call to 'Input can occur,
+      --  and in that case we can simply return.
+
+      elsif Nkind (Actual) = N_Attribute_Reference then
+         pragma Assert (Attribute_Name (Actual) = Name_Input);
+
          return;
 
       --  Only other possibilities are parenthesized or qualified expression,

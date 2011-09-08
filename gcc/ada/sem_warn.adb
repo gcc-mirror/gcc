@@ -211,18 +211,6 @@ package body Sem_Warn is
            ("?code statement with no outputs should usually be Volatile!", N);
          return;
       end if;
-
-      --  Check multiple code statements in a row
-
-      if Is_List_Member (N)
-        and then Present (Prev (N))
-        and then Nkind (Prev (N)) = N_Code_Statement
-      then
-         Error_Msg_F
-           ("?code statements in sequence should usually be Volatile!", N);
-         Error_Msg_F
-           ("\?(suggest using template with multiple instructions)!", N);
-      end if;
    end Check_Code_Statement;
 
    ---------------------------------
@@ -1760,14 +1748,15 @@ package body Sem_Warn is
                      SE : constant Entity_Id := Scope (E);
 
                      function Within_Postcondition return Boolean;
-                     --  Returns True iff N is within a Precondition
+                     --  Returns True iff N is within a Postcondition or
+                     --  Ensures component in a Test_Case.
 
                      --------------------------
                      -- Within_Postcondition --
                      --------------------------
 
                      function Within_Postcondition return Boolean is
-                        Nod : Node_Id;
+                        Nod, P : Node_Id;
 
                      begin
                         Nod := Parent (N);
@@ -1776,6 +1765,17 @@ package body Sem_Warn is
                              and then Pragma_Name (Nod) = Name_Postcondition
                            then
                               return True;
+
+                           elsif Present (Parent (Nod)) then
+                              P := Parent (Nod);
+
+                              if Nkind (P) = N_Pragma
+                                and then Pragma_Name (P) = Name_Test_Case
+                                and then
+                                  Nod = Get_Ensures_From_Test_Case_Pragma (P)
+                              then
+                                 return True;
+                              end if;
                            end if;
 
                            Nod := Parent (Nod);
@@ -1905,8 +1905,8 @@ package body Sem_Warn is
                      end if;
 
                      --  One more check, don't bother if we are within a
-                     --  postcondition pragma, since the expression occurs
-                     --  in a place unrelated to the actual test.
+                     --  postcondition, since the expression occurs in a
+                     --  place unrelated to the actual test.
 
                      if not Within_Postcondition then
 
@@ -3352,12 +3352,12 @@ package body Sem_Warn is
                         if Is_Elementary_Type (Etype (Act1))
                           and then Ekind (Form2) = E_In_Parameter
                         then
-                           null;  --  no real aliasing.
+                           null;  --  No real aliasing
 
                         elsif Is_Elementary_Type (Etype (Act2))
                           and then Ekind (Form2) = E_In_Parameter
                         then
-                           null;  --  ditto
+                           null;  --  Ditto
 
                         --  If the call was written in prefix notation, and
                         --  thus its prefix before rewriting was a selected

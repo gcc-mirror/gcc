@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fsched2-use-superblocks -g" } */
+/* { dg-require-effective-target scheduling } */
 
 void *
 foo (int offset)

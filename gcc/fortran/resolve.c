@@ -5198,13 +5198,7 @@ check_host_association (gfc_expr *e)
 	      && sym->attr.contained)
 	{
 	  /* Clear the shape, since it might not be valid.  */
-	  if (e->shape != NULL)
-	    {
-	      for (n = 0; n < e->rank; n++)
-		mpz_clear (e->shape[n]);
-
-	      free (e->shape);
-	    }
+	  gfc_free_shape (&e->shape, e->rank);
 
 	  /* Give the expression the right symtree!  */
 	  gfc_find_sym_tree (e->symtree->name, NULL, 1, &st);
@@ -6559,10 +6553,13 @@ gfc_expr_to_initialize (gfc_expr *e)
 	for (i = 0; i < ref->u.ar.dimen; i++)
 	  ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
 
-	result->rank = ref->u.ar.dimen;
 	break;
       }
 
+  gfc_free_shape (&result->shape, result->rank);
+
+  /* Recalculate rank, shape, etc.  */
+  gfc_resolve_expr (result);
   return result;
 }
 
@@ -8429,11 +8426,8 @@ ignore:
   result = SUCCESS;
 
 over:
-  for (i--; i >= 0; i--)
-    {
-      mpz_clear (shape[i]);
-      mpz_clear (shape2[i]);
-    }
+  gfc_clear_shape (shape, i);
+  gfc_clear_shape (shape2, i);
   return result;
 }
 

@@ -876,23 +876,23 @@ package body Exp_Intr is
    --  structures to find and terminate those components.
 
    procedure Expand_Unc_Deallocation (N : Node_Id) is
-      Arg     : constant Node_Id    := First_Actual (N);
-      Loc     : constant Source_Ptr := Sloc (N);
-      Typ     : constant Entity_Id  := Etype (Arg);
-      Desig_T : constant Entity_Id  := Designated_Type (Typ);
-      Rtyp    : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
-      Pool    : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
-      Stmts   : constant List_Id    := New_List;
+      Arg       : constant Node_Id    := First_Actual (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Typ       : constant Entity_Id  := Etype (Arg);
+      Desig_T   : constant Entity_Id  := Designated_Type (Typ);
+      Rtyp      : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
+      Pool      : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
+      Stmts     : constant List_Id    := New_List;
+      Needs_Fin : constant Boolean    := Needs_Finalization (Desig_T);
 
-      Abort_Id   : Entity_Id := Empty;
+      Finalizer_Data  : Finalization_Exception_Data;
+
       Blk        : Node_Id := Empty;
       Deref      : Node_Id;
-      E_Id       : Entity_Id := Empty;
       Final_Code : List_Id;
       Free_Arg   : Node_Id;
       Free_Node  : Node_Id;
       Gen_Code   : Node_Id;
-      Raised_Id  : Entity_Id := Empty;
 
       Arg_Known_Non_Null : constant Boolean := Known_Non_Null (N);
       --  This captures whether we know the argument to be non-null so that
@@ -909,7 +909,7 @@ package body Exp_Intr is
 
       --  Processing for pointer to controlled type
 
-      if Needs_Finalization (Desig_T) then
+      if Needs_Fin then
          Deref :=
            Make_Explicit_Dereference (Loc,
              Prefix => Duplicate_Subexpr_No_Checks (Arg));
@@ -958,52 +958,21 @@ package body Exp_Intr is
          --          Save_Occurrence (E, Get_Current_Excep.all.all);
          --    end;
 
-         Abort_Id  := Make_Temporary (Loc, 'A');
-         E_Id      := Make_Temporary (Loc, 'E');
-         Raised_Id := Make_Temporary (Loc, 'R');
-
-         Append_List_To (Stmts,
-            Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id));
+         Build_Object_Declarations (Finalizer_Data, Stmts, Loc);
 
          Final_Code := New_List (
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Final_Call (
-                     Obj_Ref => Deref,
-                     Typ     => Desig_T)),
+                 Statements         => New_List (
+                   Make_Final_Call (Obj_Ref => Deref, Typ => Desig_T)),
                  Exception_Handlers => New_List (
-                   Make_Exception_Handler (Loc,
-                     Exception_Choices => New_List (
-                       Make_Others_Choice (Loc)),
-                     Statements => New_List (
-                       Make_Assignment_Statement (Loc,
-                         Name =>
-                           New_Reference_To (Raised_Id, Loc),
-                         Expression =>
-                           New_Reference_To (Standard_True, Loc)),
-                       Make_Procedure_Call_Statement (Loc,
-                         Name =>
-                           New_Reference_To (RTE (RE_Save_Occurrence), Loc),
-                         Parameter_Associations => New_List (
-                           New_Reference_To (E_Id, Loc),
-                           Make_Explicit_Dereference (Loc,
-                             Prefix =>
-                               Make_Function_Call (Loc,
-                                 Name =>
-                                   Make_Explicit_Dereference (Loc,
-                                     Prefix =>
-                                       New_Reference_To
-                                         (RTE (RE_Get_Current_Excep),
-                                          Loc))))))))))));
+                   Build_Exception_Handler (Finalizer_Data)))));
 
          --  For .NET/JVM, detach the object from the containing finalization
          --  collection before finalizing it.
 
-         if VM_Target /= No_VM
-           and then Is_Controlled (Desig_T)
-         then
+         if VM_Target /= No_VM and then Is_Controlled (Desig_T) then
             Prepend_To (Final_Code,
               Make_Detach_Call (New_Copy_Tree (Arg)));
          end if;
@@ -1037,9 +1006,8 @@ package body Exp_Intr is
             Nam2 : Node_Id;
 
          begin
-            --  An Abort followed by a Free will not do what the user
-            --  expects, because the abort is not immediate. This is
-            --  worth a friendly warning.
+            --  An Abort followed by a Free will not do what the user expects,
+            --  because the abort is not immediate. This is worth a warning.
 
             while Present (Stat)
               and then not Comes_From_Source (Original_Node (Stat))
@@ -1132,9 +1100,9 @@ package body Exp_Intr is
 
       if Present (Procedure_To_Call (Free_Node)) then
 
-         --  For all cases of a Deallocate call, the back-end needs to be
-         --  able to compute the size of the object being freed. This may
-         --  require some adjustments for objects of dynamic size.
+         --  For all cases of a Deallocate call, the back-end needs to be able
+         --  to compute the size of the object being freed. This may require
+         --  some adjustments for objects of dynamic size.
          --
          --  If the type is class wide, we generate an implicit type with the
          --  right dynamic size, so that the deallocate call gets the right
@@ -1206,8 +1174,8 @@ package body Exp_Intr is
          Set_Expression (Free_Node, Free_Arg);
       end if;
 
-      --  Only remaining step is to set result to null, or generate a
-      --  raise of constraint error if the target object is "not null".
+      --  Only remaining step is to set result to null, or generate a raise of
+      --  Constraint_Error if the target object is "not null".
 
       if Can_Never_Be_Null (Etype (Arg)) then
          Append_To (Stmts,
@@ -1229,18 +1197,17 @@ package body Exp_Intr is
       --  Generate a test of whether any earlier finalization raised an
       --  exception, and in that case raise Program_Error with the previous
       --  exception occurrence.
-      --
+
       --  Generate:
-      --    if Raised then
-      --       Reraise_Occurrence (E);                      --  for .NET and
-      --                                                    --  restricted RTS
+      --    if Raised and then not Abort then
+      --       raise Program_Error;                  --  for .NET and
+      --                                             --  restricted RTS
       --         <or>
-      --       Raise_From_Controlled_Operation (E, Abort);  --  all other cases
+      --       Raise_From_Controlled_Operation (E);  --  all other cases
       --    end if;
 
-      if Present (Raised_Id) then
-         Append_To (Stmts,
-           Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
+      if Needs_Fin then
+         Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
       end if;
 
       --  If we know the argument is non-null, then make a block statement

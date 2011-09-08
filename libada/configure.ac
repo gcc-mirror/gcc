@@ -1,5 +1,5 @@
 # Configure script for libada.
-#   Copyright 2003, 2004, 2009 Free Software Foundation, Inc.
+#   Copyright 2003, 2004, 2009, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 sinclude(../config/acx.m4)
 sinclude(../config/multi.m4)
 sinclude(../config/override.m4)
+sinclude(../config/picflag.m4)
 sinclude(../config/unwind_ipinfo.m4)
 
 AC_INIT
@@ -117,6 +118,9 @@ case $enable_shared in
 esac
 ], [enable_shared=yes])
 AC_SUBST([enable_shared])
+
+GCC_PICFLAG
+AC_SUBST([PICFLAG])
 
 # These must be passed down, or are needed by gcc/libgcc.mvars
 AC_PROG_AWK

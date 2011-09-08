@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,15 +136,27 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
      (HT : in out Hash_Table_Type'Class;
       X  : Count_Type)
    is
-      pragma Assert (X > 0);
+      N : Nodes_Type renames HT.Nodes;
+
+   begin
+      --  This subprogram "deallocates" a node by relinking the node off of the
+      --  active list and onto the free list. Previously it would flag index
+      --  value 0 as an error. The precondition was weakened, so that index
+      --  value 0 is now allowed, and this value is interpreted to mean "do
+      --  nothing". This makes its behavior analogous to the behavior of
+      --  Ada.Unchecked_Deallocation, and allows callers to avoid having to add
+      --  special-case checks at the point of call.
+
+      if X = 0 then
+         return;
+      end if;
+
       pragma Assert (X <= HT.Capacity);
 
-      N : Nodes_Type renames HT.Nodes;
       --  pragma Assert (N (X).Prev >= 0);  -- node is active
       --  Find a way to mark a node as active vs. inactive; we could
       --  use a special value in Color_Type for this.  ???
 
-   begin
       --  The hash table actually contains two data structures: a list for
       --  the "active" nodes that contain elements that have been inserted
       --  onto the container, and another for the "inactive" nodes of the free
@@ -296,7 +308,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
       --  Find the first node of hash table L
 
-      L_Index := 0;
+      L_Index := L.Buckets'First;
       loop
          L_Node := L.Buckets (L_Index);
          exit when L_Node /= 0;
@@ -314,7 +326,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
          N := N - 1;
 
-         L_Node := Next (L, L_Node);
+         L_Node := Next (L.Nodes (L_Node));
 
          if L_Node = 0 then
             --  We have exhausted the nodes in this bucket
@@ -350,7 +362,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          Node := HT.Buckets (Indx);
          while Node /= 0 loop
             Process (Node);
-            Node := Next (HT, Node);
+            Node := Next (HT.Nodes (Node));
          end loop;
       end loop;
    end Generic_Iteration;

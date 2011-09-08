@@ -113,22 +113,36 @@ package Ada.Containers.Bounded_Multiway_Trees is
       Item      : Element_Type) return Cursor;
 
    --  This version of the AI:
-
-   --    10-06-02  AI05-0136-1/07
-
-   --  declares Find_In_Subtree with a Container parameter, but this seems
-   --  incorrect. We need a ruling from the ARG about whether this really was
-   --  intended. ???
+   --   10-06-02  AI05-0136-1/07
+   --  declares Find_In_Subtree this way:
+   --
+   --  function Find_In_Subtree
+   --    (Container : Tree;
+   --     Item      : Element_Type;
+   --     Position  : Cursor) return Cursor;
+   --
+   --  It seems that the Container parameter is there by mistake, but we need
+   --  an official ruling from the ARG. ???
 
    function Find_In_Subtree
-     (Container : Tree;
-      Item      : Element_Type;
-      Position  : Cursor) return Cursor;
+     (Position : Cursor;
+      Item     : Element_Type) return Cursor;
+
+   --  This version of the AI:
+   --   10-06-02  AI05-0136-1/07
+   --  declares Ancestor_Find this way:
+   --
+   --  function Ancestor_Find
+   --    (Container : Tree;
+   --     Item      : Element_Type;
+   --     Position  : Cursor) return Cursor;
+   --
+   --  It seems that the Container parameter is there by mistake, but we need
+   --  an official ruling from the ARG. ???
 
    function Ancestor_Find
-     (Container : Tree;
-      Item      : Element_Type;
-      Position  : Cursor) return Cursor;
+     (Position : Cursor;
+      Item     : Element_Type) return Cursor;
 
    function Contains
      (Container : Tree;

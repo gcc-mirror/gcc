@@ -244,7 +244,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-y2k @gol
--Wframe-larger-than=@var{len} -Wjump-misses-init -Wignored-qualifiers @gol
+-Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
+-Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline -Wmaybe-uninitialized @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
@@ -607,7 +608,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -mavx2 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mlwp -mthreads  -mno-align-stringops  -minline-all-stringops @gol
+-mbmi2 -mlwp -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
@@ -813,7 +814,8 @@ See RS/6000 and PowerPC Options.
 -mrecip -mrecip=@var{opt} -mno-recip -mrecip-precision @gol
 -mno-recip-precision @gol
 -mveclibabi=@var{type} -mfriz -mno-friz @gol
--mpointers-to-nested-functions -mno-pointers-to-nested-functions}
+-mpointers-to-nested-functions -mno-pointers-to-nested-functions @gol
+-msave-toc-indirect -mno-save-toc-indirect}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -3959,6 +3961,12 @@ even if you do not get a warning.  In addition, any space allocated
 via @code{alloca}, variable-length arrays, or related constructs
 is not included by the compiler when determining
 whether or not to issue a warning.
+
+@item -Wno-free-nonheap-object
+@opindex Wno-free-nonheap-object
+@opindex Wfree-nonheap-object
+Do not warn when attempting to free an object which was not allocated
+on the heap.
 
 @item -Wstack-usage=@var{len}
 @opindex Wstack-usage
@@ -12697,7 +12705,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mabm
 @itemx -mno-abm
 @itemx -mbmi
+@itemx -mbmi2
 @itemx -mno-bmi
+@itemx -mno-bmi2
 @itemx -mlzcnt
 @itemx -mno-lzcnt
 @itemx -mtbm
@@ -12709,8 +12719,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex m3dnow
 @opindex mno-3dnow
 These switches enable or disable the use of instructions in the MMX, SSE,
-SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA,
-SSE4A, FMA4, XOP, LWP, ABM, BMI, LZCNT or 3DNow!@: extended instruction sets.
+SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, F16C,
+FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2, LZCNT or 3DNow!
+@: extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
 disabled by these switches.
@@ -16428,6 +16439,15 @@ static chain value to be loaded in register @var{r11}.  The
 not be able to call through pointers to nested functions or pointers
 to functions compiled in other languages that use the static chain if
 you use the @option{-mno-pointers-to-nested-functions}.
+
+@item -msave-toc-indirect
+@itemx -mno-save-toc-indirect
+@opindex msave-toc-indirect
+Generate (do not generate) code to save the TOC value in the reserved
+stack location in the function prologue if the function calls through
+a pointer on AIX and 64-bit Linux systems.  If the TOC value is not
+saved in the prologue, it is saved just before the call through the
+pointer.  The @option{-mno-save-toc-indirect} option is the default.
 @end table
 
 @node RX Options
@@ -17263,9 +17283,10 @@ for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{hypersparc},
 @samp{leon}, @samp{sparclite}, @samp{f930}, @samp{f934}, @samp{sparclite86x},
 @samp{sparclet}, @samp{tsc701}, @samp{v9}, @samp{ultrasparc},
-@samp{ultrasparc3}, @samp{niagara} and @samp{niagara2}.
+@samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
+and @samp{niagara4}.
 
-Native Solaris toolchains also support the value @samp{native},
+Native Solaris and Linux toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
 @option{-mcpu=native} has no effect if GCC does not recognize
 the processor.
@@ -17282,7 +17303,7 @@ implementations.
     v8:             supersparc, hypersparc, leon
     sparclite:      f930, f934, sparclite86x
     sparclet:       tsc701
-    v9:             ultrasparc, ultrasparc3, niagara, niagara2
+    v9:             ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4
 @end smallexample
 
 By default (unless configured otherwise), GCC generates code for the V7
@@ -17321,7 +17342,10 @@ optimizes it for the Sun UltraSPARC I/II/IIi chips.  With
 Sun UltraSPARC III/III+/IIIi/IIIi+/IV/IV+ chips.  With
 @option{-mcpu=niagara}, the compiler additionally optimizes it for
 Sun UltraSPARC T1 chips.  With @option{-mcpu=niagara2}, the compiler
-additionally optimizes it for Sun UltraSPARC T2 chips.
+additionally optimizes it for Sun UltraSPARC T2 chips. With
+@option{-mcpu=niagara3}, the compiler additionally optimizes it for Sun
+UltraSPARC T3 chips.  With @option{-mcpu=niagara4}, the compiler
+additionally optimizes it for Sun UltraSPARC T4 chips.
 
 @item -mtune=@var{cpu_type}
 @opindex mtune
@@ -17334,8 +17358,8 @@ The same values for @option{-mcpu=@var{cpu_type}} can be used for
 that select a particular CPU implementation.  Those are @samp{cypress},
 @samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{f930}, @samp{f934},
 @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, @samp{ultrasparc3},
-@samp{niagara}, and @samp{niagara2}.  With native Solaris toolchains,
-@samp{native} can also be used.
+@samp{niagara}, @samp{niagara2}, @samp{niagara3} and @samp{niagara4}.  With
+native Solaris and Linux toolchains, @samp{native} can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,6 +113,10 @@ package Sem_Ch6 is
    --  type-conformant subprogram that becomes hidden by the new subprogram.
    --  Is_Primitive indicates whether the subprogram is primitive.
 
+   procedure Check_Subprogram_Contract (Spec_Id : Entity_Id);
+   --  Spec_Id is the spec entity for a subprogram. This routine issues
+   --  warnings on suspicious contracts if Warn_On_Suspicious_Contract is set.
+
    procedure Check_Subtype_Conformant
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;
@@ -174,6 +178,9 @@ package Sem_Ch6 is
        Given_S2 : Node_Id) return Boolean;
    --  Determines if two subtype definitions are fully conformant. Used
    --  for entry family conformance checks (RM 6.3.1 (24)).
+
+   procedure Install_Entity (E : Entity_Id);
+   --  Place a single entity on the visibility chain
 
    procedure Install_Formals (Id : Entity_Id);
    --  On entry to a subprogram body, make the formals visible. Note that

@@ -432,8 +432,9 @@ struct GTY((variable_size)) rtvec_def {
   (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
 		     GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC))
 
-/* Predicate yielding nonzero iff X is a return.  */
-#define ANY_RETURN_P(X) ((X) == ret_rtx)
+/* Predicate yielding nonzero iff X is a return or simple_return.  */
+#define ANY_RETURN_P(X) \
+  (GET_CODE (X) == RETURN || GET_CODE (X) == SIMPLE_RETURN)
 
 /* 1 if X is a unary operator.  */
 
@@ -2111,6 +2112,7 @@ enum global_rtl_index
   GR_PC,
   GR_CC0,
   GR_RETURN,
+  GR_SIMPLE_RETURN,
   GR_STACK_POINTER,
   GR_FRAME_POINTER,
 /* For register elimination to work properly these hard_frame_pointer_rtx,
@@ -2206,6 +2208,7 @@ extern struct target_rtl *this_target_rtl;
 /* Standard pieces of rtx, to be substituted directly into things.  */
 #define pc_rtx                  (global_rtl[GR_PC])
 #define ret_rtx                 (global_rtl[GR_RETURN])
+#define simple_return_rtx       (global_rtl[GR_SIMPLE_RETURN])
 #define cc0_rtx                 (global_rtl[GR_CC0])
 
 /* All references to certain hard regs, except those created
@@ -2508,6 +2511,7 @@ extern void emit_jump (rtx);
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
+extern HOST_WIDE_INT find_args_size_adjust (rtx);
 extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */

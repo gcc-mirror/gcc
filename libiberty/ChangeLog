@@ -1,3 +1,10 @@
+2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* aclocal.m4: Include ../config/picflag.m4.
+	* configure.ac (GCC_PICFLAG): Call it.
+	(enable_shared): Clear PICFLAG unless shared.
+	* configure: Regenerate.
+
 2011-08-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* md5.c (md5_read_ctx): Handle mis-aligned resbuf pointer.

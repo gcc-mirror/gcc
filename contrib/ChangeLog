@@ -1,3 +1,7 @@
+2011-08-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc_update: Determine svn branch from hg convert_revision.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config-list.mk (i586-netware): Remove.

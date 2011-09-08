@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,6 +99,7 @@ package body System.Tasking is
       Elaborated       : Access_Boolean;
       Base_Priority    : System.Any_Priority;
       Base_CPU         : System.Multiprocessors.CPU_Range;
+      Domain           : Dispatching_Domain_Access;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;
@@ -121,6 +122,7 @@ package body System.Tasking is
       T.Common.Parent                   := Parent;
       T.Common.Base_Priority            := Base_Priority;
       T.Common.Base_CPU                 := Base_CPU;
+      T.Common.Domain                   := Domain;
       T.Common.Current_Priority         := 0;
       T.Common.Protected_Action_Nesting := 0;
       T.Common.Call                     := null;
@@ -187,6 +189,8 @@ package body System.Tasking is
       Base_CPU      : System.Multiprocessors.CPU_Range;
       Success       : Boolean;
 
+      use type System.Multiprocessors.CPU_Range;
+
    begin
       if Initialized then
          return;
@@ -209,7 +213,7 @@ package body System.Tasking is
       T := STPO.New_ATCB (0);
       Initialize_ATCB
         (null, null, Null_Address, Null_Task, null, Base_Priority, Base_CPU,
-         Task_Info.Unspecified_Task_Info, 0, T, Success);
+         null, Task_Info.Unspecified_Task_Info, 0, T, Success);
       pragma Assert (Success);
 
       STPO.Initialize (T);
@@ -217,6 +221,34 @@ package body System.Tasking is
       T.Common.State := Runnable;
       T.Common.Task_Image_Len := Main_Task_Image'Length;
       T.Common.Task_Image (Main_Task_Image'Range) := Main_Task_Image;
+
+      --  At program start-up the environment task is allocated to the default
+      --  system dispatching domain.
+      --  Make sure that the processors which are not available are not taken
+      --  into account. Use Number_Of_CPUs to know the exact number of
+      --  processors in the system at execution time.
+
+      System_Domain :=
+        new Dispatching_Domain'
+          (Multiprocessors.CPU'First .. Multiprocessors.Number_Of_CPUs =>
+             True);
+
+      T.Common.Domain := System_Domain;
+
+      Dispatching_Domain_Tasks :=
+        new Array_Allocated_Tasks'
+          (Multiprocessors.CPU'First .. Multiprocessors.Number_Of_CPUs => 0);
+
+      --  Signal that this task is being allocated to a processor
+
+      if Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+
+         --  Increase the number of tasks attached to the CPU to which this
+         --  task is allocated.
+
+         Dispatching_Domain_Tasks (Base_CPU) :=
+           Dispatching_Domain_Tasks (Base_CPU) + 1;
+      end if;
 
       --  Only initialize the first element since others are not relevant
       --  in ravenscar mode. Rest of the initialization is done in Init_RTS.

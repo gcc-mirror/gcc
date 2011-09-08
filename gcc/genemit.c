@@ -169,6 +169,9 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     case RETURN:
       printf ("ret_rtx");
       return;
+    case SIMPLE_RETURN:
+      printf ("simple_return_rtx");
+      return;
     case CLOBBER:
       if (REG_P (XEXP (x, 0)))
 	{
@@ -489,8 +492,8 @@ gen_expand (rtx expand)
 	  || (GET_CODE (next) == PARALLEL
 	      && ((GET_CODE (XVECEXP (next, 0, 0)) == SET
 		   && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
-		  || GET_CODE (XVECEXP (next, 0, 0)) == RETURN))
-	  || GET_CODE (next) == RETURN)
+		  || ANY_RETURN_P (XVECEXP (next, 0, 0))))
+	  || ANY_RETURN_P (next))
 	printf ("  emit_jump_insn (");
       else if ((GET_CODE (next) == SET && GET_CODE (SET_SRC (next)) == CALL)
 	       || GET_CODE (next) == CALL
@@ -607,7 +610,7 @@ gen_split (rtx split)
 	  || (GET_CODE (next) == PARALLEL
 	      && GET_CODE (XVECEXP (next, 0, 0)) == SET
 	      && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
-	  || GET_CODE (next) == RETURN)
+	  || ANY_RETURN_P (next))
 	printf ("  emit_jump_insn (");
       else if ((GET_CODE (next) == SET && GET_CODE (SET_SRC (next)) == CALL)
 	       || GET_CODE (next) == CALL

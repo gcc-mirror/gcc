@@ -1677,16 +1677,10 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
      void type, creates an rvalue of the specified type, which is
      value-initialized.  */
 
-  if (parms == NULL_TREE
-      /* If there's a user-defined constructor, value-initialization is
-	 just calling the constructor, so fall through.  */
-      && !TYPE_HAS_USER_CONSTRUCTOR (type))
+  if (parms == NULL_TREE)
     {
       exp = build_value_init (type, complain);
       exp = get_target_expr_sfinae (exp, complain);
-      /* FIXME this is wrong */
-      if (literal_type_p (type))
-	TREE_CONSTANT (exp) = true;
       return exp;
     }
 

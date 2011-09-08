@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,51 +29,151 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This version of Generic_Real_Arrays avoids the use of BLAS and LAPACK. One
+--  reason for this is new Ada 2012 requirements that prohibit algorithms such
+--  as Strassen's algorithm, which may be used by some BLAS implementations. In
+--  addition, some platforms lacked suitable compilers to compile the reference
+--  BLAS/LAPACK implementation. Finally, on many platforms there may be more
+--  floating point types than supported by BLAS/LAPACK.
+
+with Ada.Containers.Generic_Anonymous_Array_Sort; use Ada.Containers;
+
 with System; use System;
-with System.Generic_Real_BLAS;
-with System.Generic_Real_LAPACK;
 with System.Generic_Array_Operations; use System.Generic_Array_Operations;
 
 package body Ada.Numerics.Generic_Real_Arrays is
 
-   --  Operations involving inner products use BLAS library implementations.
-   --  This allows larger matrices and vectors to be computed efficiently,
-   --  taking into account memory hierarchy issues and vector instructions
-   --  that vary widely between machines.
+   package Ops renames System.Generic_Array_Operations;
 
-   --  Operations that are defined in terms of operations on the type Real,
-   --  such as addition, subtraction and scaling, are computed in the canonical
-   --  way looping over all elements.
+   function Is_Non_Zero (X : Real'Base) return Boolean is (X /= 0.0);
 
-   --  Operations for solving linear systems and computing determinant,
-   --  eigenvalues, eigensystem and inverse, are implemented using the
-   --  LAPACK library.
+   procedure Back_Substitute is new Ops.Back_Substitute
+     (Scalar        => Real'Base,
+      Matrix        => Real_Matrix,
+      Is_Non_Zero   => Is_Non_Zero);
 
-   package BLAS is
-      new Generic_Real_BLAS (Real'Base, Real_Vector, Real_Matrix);
+   function Diagonal is new Ops.Diagonal
+     (Scalar       => Real'Base,
+      Vector       => Real_Vector,
+      Matrix       => Real_Matrix);
 
-   package LAPACK is
-      new Generic_Real_LAPACK (Real'Base, Real_Vector, Real_Matrix);
+   procedure Forward_Eliminate is new Ops.Forward_Eliminate
+    (Scalar        => Real'Base,
+     Matrix        => Real_Matrix,
+     Zero          => 0.0,
+     One           => 1.0);
 
-   use BLAS, LAPACK;
+   procedure Swap_Column is new Ops.Swap_Column
+    (Scalar        => Real'Base,
+     Matrix        => Real_Matrix);
 
-   --  Procedure versions of functions returning unconstrained values.
-   --  This allows for inlining the function wrapper.
-
-   procedure Eigenvalues (A : Real_Matrix; Values : out Real_Vector);
-   procedure Inverse   (A : Real_Matrix; R : out Real_Matrix);
-   procedure Solve     (A : Real_Matrix; X : Real_Vector; B : out Real_Vector);
-   procedure Solve     (A : Real_Matrix; X : Real_Matrix; B : out Real_Matrix);
-
-   procedure Transpose is new
-     Generic_Array_Operations.Transpose
+   procedure Transpose is new  Ops.Transpose
        (Scalar        => Real'Base,
         Matrix        => Real_Matrix);
 
+   function Is_Symmetric (A : Real_Matrix) return Boolean is
+     (Transpose (A) = A);
+   --  Return True iff A is symmetric, see RM G.3.1 (90).
+
+   function Is_Tiny (Value, Compared_To : Real) return Boolean is
+     (abs Compared_To + 100.0 * abs (Value) = abs Compared_To);
+   --  Return True iff the Value is much smaller in magnitude than the least
+   --  significant digit of Compared_To.
+
+   procedure Jacobi
+     (A               : Real_Matrix;
+      Values          : out Real_Vector;
+      Vectors         : out Real_Matrix;
+      Compute_Vectors : Boolean := True);
+   --  Perform Jacobi's eigensystem algorithm on real symmetric matrix A
+
+   function Length is new Square_Matrix_Length (Real'Base, Real_Matrix);
    --  Helper function that raises a Constraint_Error is the argument is
    --  not a square matrix, and otherwise returns its length.
 
-   function Length is new Square_Matrix_Length (Real'Base, Real_Matrix);
+   procedure Rotate (X, Y : in out Real; Sin, Tau : Real);
+   --  Perform a Givens rotation
+
+   procedure Sort_Eigensystem
+     (Values  : in out Real_Vector;
+      Vectors : in out Real_Matrix);
+   --  Sort Values and associated Vectors by decreasing absolute value
+
+   procedure Swap (Left, Right : in out Real);
+   --  Exchange Left and Right
+
+   function Sqrt (X : Real) return Real;
+   --  Sqrt is implemented locally here, in order to avoid dragging in all of
+   --  the elementary functions. Speed of the square root is not a big concern
+   --  here. This also avoids depending on a specific floating point type.
+
+   ------------
+   -- Rotate --
+   ------------
+
+   procedure Rotate (X, Y : in out Real; Sin, Tau : Real) is
+      Old_X : constant Real := X;
+      Old_Y : constant Real := Y;
+   begin
+      X := Old_X - Sin * (Old_Y + Old_X * Tau);
+      Y := Old_Y + Sin * (Old_X - Old_Y * Tau);
+   end Rotate;
+
+   ----------
+   -- Sqrt --
+   ----------
+
+   function Sqrt (X : Real) return Real is
+      Root, Next : Real;
+
+   begin
+      --  Be defensive: any comparisons with NaN values will yield False.
+
+      if not (X > 0.0) then
+         if X = 0.0 then
+            return X;
+         else
+            raise Argument_Error;
+         end if;
+      end if;
+
+      --  Compute an initial estimate based on:
+
+      --     X = M * R**E and Sqrt (X) = Sqrt (M) * R**(E / 2.0),
+
+      --  where M is the mantissa, R is the radix and E the exponent.
+
+      --  By ignoring the mantissa and ignoring the case of an odd
+      --  exponent, we get a final error that is at most R. In other words,
+      --  the result has about a single bit precision.
+
+      Root := Real (Real'Machine_Radix) ** (Real'Exponent (X) / 2);
+
+      --  Because of the poor initial estimate, use the Babylonian method of
+      --  computing the square root, as it is stable for all inputs. Every step
+      --  will roughly double the precision of the result. Just a few steps
+      --  suffice in most cases. Eight iterations should give about 2**8 bits
+      --  of precision.
+
+      for J in 1 .. 8 loop
+         Next := (Root + X / Root) / 2.0;
+         exit when Root = Next;
+         Root := Next;
+      end loop;
+
+      return Root;
+   end Sqrt;
+
+   ----------
+   -- Swap --
+   ----------
+
+   procedure Swap (Left, Right : in out Real) is
+      Temp : constant Real := Left;
+   begin
+      Left := Right;
+      Right := Temp;
+   end Swap;
 
    --  Instantiating the following subprograms directly would lead to
    --  name clashes, so use a local package.
@@ -197,6 +297,45 @@ package body Ada.Numerics.Generic_Real_Arrays is
            Right_Vector  => Real_Vector,
            Matrix        => Real_Matrix);
 
+      function "*" is new
+        Inner_Product
+          (Left_Scalar   => Real'Base,
+           Right_Scalar  => Real'Base,
+           Result_Scalar => Real'Base,
+           Left_Vector   => Real_Vector,
+           Right_Vector  => Real_Vector,
+           Zero          => 0.0);
+
+      function "*" is new
+        Matrix_Vector_Product
+          (Left_Scalar   => Real'Base,
+           Right_Scalar  => Real'Base,
+           Result_Scalar => Real'Base,
+           Matrix        => Real_Matrix,
+           Right_Vector  => Real_Vector,
+           Result_Vector => Real_Vector,
+           Zero          => 0.0);
+
+      function "*" is new
+        Vector_Matrix_Product
+          (Left_Scalar   => Real'Base,
+           Right_Scalar  => Real'Base,
+           Result_Scalar => Real'Base,
+           Left_Vector   => Real_Vector,
+           Matrix        => Real_Matrix,
+           Result_Vector => Real_Vector,
+           Zero          => 0.0);
+
+      function "*" is new
+        Matrix_Matrix_Product
+          (Left_Scalar   => Real'Base,
+           Right_Scalar  => Real'Base,
+           Result_Scalar => Real'Base,
+           Left_Matrix   => Real_Matrix,
+           Right_Matrix  => Real_Matrix,
+           Result_Matrix => Real_Matrix,
+           Zero          => 0.0);
+
       function "/" is new
         Vector_Scalar_Elementwise_Operation
           (Left_Scalar   => Real'Base,
@@ -214,6 +353,13 @@ package body Ada.Numerics.Generic_Real_Arrays is
            Left_Matrix   => Real_Matrix,
            Result_Matrix => Real_Matrix,
            Operation     => "/");
+
+      function "abs" is new
+        L2_Norm
+          (Scalar        => Real'Base,
+           Vector        => Real_Vector,
+           Inner_Product => "*",
+           Sqrt          => Sqrt);
 
       function "abs" is new
         Vector_Elementwise_Operation
@@ -252,29 +398,29 @@ package body Ada.Numerics.Generic_Real_Arrays is
    ---------
 
    function "+" (Right : Real_Vector) return Real_Vector
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    function "+" (Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    function "+" (Left, Right : Real_Vector) return Real_Vector
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    function "+" (Left, Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    ---------
    -- "-" --
    ---------
 
    function "-" (Right : Real_Vector) return Real_Vector
-      renames Instantiations."-";
+     renames Instantiations."-";
 
    function "-" (Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."-";
+     renames Instantiations."-";
 
    function "-" (Left, Right : Real_Vector) return Real_Vector
-      renames Instantiations."-";
+     renames Instantiations."-";
 
    function "-" (Left, Right : Real_Matrix) return Real_Matrix
       renames Instantiations."-";
@@ -286,157 +432,70 @@ package body Ada.Numerics.Generic_Real_Arrays is
    --  Scalar multiplication
 
    function "*" (Left : Real'Base; Right : Real_Vector) return Real_Vector
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real_Vector; Right : Real'Base) return Real_Vector
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real'Base; Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real_Matrix; Right : Real'Base) return Real_Matrix
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    --  Vector multiplication
 
-   function "*" (Left, Right : Real_Vector) return Real'Base is
-   begin
-      if Left'Length /= Right'Length then
-         raise Constraint_Error with
-            "vectors are of different length in inner product";
-      end if;
-
-      return dot (Left'Length, X => Left, Y => Right);
-   end "*";
+   function "*" (Left, Right : Real_Vector) return Real'Base
+     renames Instantiations."*";
 
    function "*" (Left, Right : Real_Vector) return Real_Matrix
-      renames Instantiations."*";
+     renames Instantiations."*";
 
-   function "*"
-     (Left : Real_Vector;
-      Right : Real_Matrix) return Real_Vector
-   is
-      R : Real_Vector (Right'Range (2));
+   function "*" (Left : Real_Vector; Right : Real_Matrix) return Real_Vector
+     renames Instantiations."*";
 
-   begin
-      if Left'Length /= Right'Length (1) then
-         raise Constraint_Error with
-           "incompatible dimensions in vector-matrix multiplication";
-      end if;
-
-      gemv (Trans => No_Trans'Access,
-            M     => Right'Length (2),
-            N     => Right'Length (1),
-            A     => Right,
-            Ld_A  => Right'Length (2),
-            X     => Left,
-            Y     => R);
-
-      return R;
-   end "*";
-
-   function "*"
-     (Left : Real_Matrix;
-      Right : Real_Vector) return Real_Vector
-   is
-      R : Real_Vector (Left'Range (1));
-
-   begin
-      if Left'Length (2) /= Right'Length then
-         raise Constraint_Error with
-            "incompatible dimensions in matrix-vector multiplication";
-      end if;
-
-      gemv (Trans => Trans'Access,
-            M     => Left'Length (2),
-            N     => Left'Length (1),
-            A     => Left,
-            Ld_A  => Left'Length (2),
-            X     => Right,
-            Y     => R);
-
-      return R;
-   end "*";
+   function "*" (Left : Real_Matrix; Right : Real_Vector) return Real_Vector
+     renames Instantiations."*";
 
    --  Matrix Multiplication
 
-   function "*" (Left, Right : Real_Matrix) return Real_Matrix is
-      R : Real_Matrix (Left'Range (1), Right'Range (2));
-
-   begin
-      if Left'Length (2) /= Right'Length (1) then
-         raise Constraint_Error with
-            "incompatible dimensions in matrix-matrix multiplication";
-      end if;
-
-      gemm (Trans_A => No_Trans'Access,
-            Trans_B => No_Trans'Access,
-            M       => Right'Length (2),
-            N       => Left'Length (1),
-            K       => Right'Length (1),
-            A       => Right,
-            Ld_A    => Right'Length (2),
-            B       => Left,
-            Ld_B    => Left'Length (2),
-            C       => R,
-            Ld_C    => R'Length (2));
-
-      return R;
-   end "*";
+   function "*" (Left, Right : Real_Matrix) return Real_Matrix
+     renames Instantiations."*";
 
    ---------
    -- "/" --
    ---------
 
    function "/" (Left : Real_Vector; Right : Real'Base) return Real_Vector
-      renames Instantiations."/";
+     renames Instantiations."/";
 
    function "/" (Left : Real_Matrix; Right : Real'Base) return Real_Matrix
-      renames Instantiations."/";
+     renames Instantiations."/";
 
    -----------
    -- "abs" --
    -----------
 
-   function "abs" (Right : Real_Vector) return Real'Base is
-   begin
-      return nrm2 (Right'Length, Right);
-   end "abs";
+   function "abs" (Right : Real_Vector) return Real'Base
+     renames Instantiations."abs";
 
    function "abs" (Right : Real_Vector) return Real_Vector
-      renames Instantiations."abs";
+     renames Instantiations."abs";
 
    function "abs" (Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."abs";
+     renames Instantiations."abs";
 
    -----------------
    -- Determinant --
    -----------------
 
    function Determinant (A : Real_Matrix) return Real'Base is
-      N    : constant Integer := Length (A);
-      LU   : Real_Matrix (1 .. N, 1 .. N) := A;
-      Piv  : Integer_Vector (1 .. N);
-      Info : aliased Integer := -1;
-      Det  : Real := 1.0;
-
+      M : Real_Matrix := A;
+      B : Real_Matrix (A'Range (1), 1 .. 0);
+      R : Real'Base;
    begin
-      getrf (M     => N,
-             N     => N,
-             A     => LU,
-             Ld_A  => N,
-             I_Piv => Piv,
-             Info  => Info'Access);
-
-      if Info /= 0 then
-         raise Constraint_Error with "ill-conditioned matrix";
-      end if;
-
-      for J in 1 .. N loop
-         Det := (if Piv (J) /= J then -Det * LU (J, J) else Det * LU (J, J));
-      end loop;
-
-      return Det;
+      Forward_Eliminate (M, B, R);
+      return R;
    end Determinant;
 
    -----------------
@@ -448,306 +507,317 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Values  : out Real_Vector;
       Vectors : out Real_Matrix)
    is
-      N      : constant Natural := Length (A);
-      Tau    : Real_Vector (1 .. N);
-      L_Work : Real_Vector (1 .. 1);
-      Info   : aliased Integer;
-
-      E : Real_Vector (1 .. N);
-      pragma Warnings (Off, E);
-
    begin
-      if Values'Length /= N then
-         raise Constraint_Error with "wrong length for output vector";
-      end if;
-
-      if N = 0 then
-         return;
-      end if;
-
-      --  Initialize working matrix and check for symmetric input matrix
-
-      Transpose (A, Vectors);
-
-      if A /= Vectors then
-         raise Argument_Error with "matrix not symmetric";
-      end if;
-
-      --  Compute size of additional working space
-
-      sytrd (Uplo   => Lower'Access,
-             N      => N,
-             A      => Vectors,
-             Ld_A   => N,
-             D      => Values,
-             E      => E,
-             Tau    => Tau,
-             Work   => L_Work,
-             L_Work => -1,
-             Info   => Info'Access);
-
-      declare
-         Work : Real_Vector (1 .. Integer'Max (Integer (L_Work (1)), 2 * N));
-         pragma Warnings (Off, Work);
-
-         Comp_Z : aliased constant Character := 'V';
-
-      begin
-         --  Reduce matrix to tridiagonal form
-
-         sytrd (Uplo   => Lower'Access,
-                N      => N,
-                A      => Vectors,
-                Ld_A   => A'Length (1),
-                D      => Values,
-                E      => E,
-                Tau    => Tau,
-                Work   => Work,
-                L_Work => Work'Length,
-                Info   => Info'Access);
-
-         if Info /= 0 then
-            raise Program_Error;
-         end if;
-
-         --  Generate the real orthogonal matrix determined by sytrd
-
-         orgtr (Uplo   => Lower'Access,
-                N      => N,
-                A      => Vectors,
-                Ld_A   => N,
-                Tau    => Tau,
-                Work   => Work,
-                L_Work => Work'Length,
-                Info   => Info'Access);
-
-         if Info /= 0 then
-            raise Program_Error;
-         end if;
-
-         --  Compute all eigenvalues and eigenvectors using QR algorithm
-
-         steqr (Comp_Z => Comp_Z'Access,
-                N      => N,
-                D      => Values,
-                E      => E,
-                Z      => Vectors,
-                Ld_Z   => N,
-                Work   => Work,
-                Info   => Info'Access);
-
-         if Info /= 0 then
-            raise Constraint_Error with
-               "eigensystem computation failed to converge";
-         end if;
-      end;
+      Jacobi (A, Values, Vectors, Compute_Vectors => True);
+      Sort_Eigensystem (Values, Vectors);
    end Eigensystem;
 
    -----------------
    -- Eigenvalues --
    -----------------
 
-   procedure Eigenvalues
-     (A      : Real_Matrix;
-      Values : out Real_Vector)
-   is
-      N      : constant Natural := Length (A);
-      L_Work : Real_Vector (1 .. 1);
-      Info   : aliased Integer;
-
-      B   : Real_Matrix (1 .. N, 1 .. N);
-      Tau : Real_Vector (1 .. N);
-      E   : Real_Vector (1 .. N);
-      pragma Warnings (Off, B);
-      pragma Warnings (Off, Tau);
-      pragma Warnings (Off, E);
-
-   begin
-      if Values'Length /= N then
-         raise Constraint_Error with "wrong length for output vector";
-      end if;
-
-      if N = 0 then
-         return;
-      end if;
-
-      --  Initialize working matrix and check for symmetric input matrix
-
-      Transpose (A, B);
-
-      if A /= B then
-         raise Argument_Error with "matrix not symmetric";
-      end if;
-
-      --  Find size of work area
-
-      sytrd (Uplo   => Lower'Access,
-             N      => N,
-             A      => B,
-             Ld_A   => N,
-             D      => Values,
-             E      => E,
-             Tau    => Tau,
-             Work   => L_Work,
-             L_Work => -1,
-             Info   => Info'Access);
-
-      declare
-         Work : Real_Vector (1 .. Integer'Min (Integer (L_Work (1)), 4 * N));
-         pragma Warnings (Off, Work);
-
-      begin
-         --  Reduce matrix to tridiagonal form
-
-         sytrd (Uplo   => Lower'Access,
-                N      => N,
-                A      => B,
-                Ld_A   => A'Length (1),
-                D      => Values,
-                E      => E,
-                Tau    => Tau,
-                Work   => Work,
-                L_Work => Work'Length,
-                Info   => Info'Access);
-
-         if Info /= 0 then
-            raise Constraint_Error;
-         end if;
-
-         --  Compute all eigenvalues using QR algorithm
-
-         sterf (N      => N,
-                D      => Values,
-                E      => E,
-                Info   => Info'Access);
-
-         if Info /= 0 then
-            raise Constraint_Error with
-               "eigenvalues computation failed to converge";
-         end if;
-      end;
-   end Eigenvalues;
-
    function Eigenvalues (A : Real_Matrix) return Real_Vector is
-      R : Real_Vector (A'Range (1));
+      Values  : Real_Vector (A'Range (1));
+      Vectors : Real_Matrix (1 .. 0, 1 .. 0);
    begin
-      Eigenvalues (A, R);
-      return R;
+      Jacobi (A, Values, Vectors, Compute_Vectors => False);
+      Sort_Eigensystem (Values, Vectors);
+      return Values;
    end Eigenvalues;
 
    -------------
    -- Inverse --
    -------------
 
-   procedure Inverse (A : Real_Matrix; R : out Real_Matrix) is
-      N      : constant Integer := Length (A);
-      Piv    : Integer_Vector (1 .. N);
-      L_Work : Real_Vector (1 .. 1);
-      Info   : aliased Integer := -1;
+   function Inverse (A : Real_Matrix) return Real_Matrix is
+     (Solve (A, Unit_Matrix (Length (A))));
 
-   begin
-      --  All computations are done using column-major order, but this works
-      --  out fine, because Transpose (Inverse (Transpose (A))) = Inverse (A).
+   ------------
+   -- Jacobi --
+   ------------
 
-      R := A;
+   procedure Jacobi
+     (A               : Real_Matrix;
+      Values          : out Real_Vector;
+      Vectors         : out Real_Matrix;
+      Compute_Vectors : Boolean := True)
+   is
+      --  This subprogram uses Carl Gustav Jacob Jacobi's iterative method
+      --  for computing eigenvalues and eigenvectors and is based on
+      --  Rutishauser's implementation.
 
-      --  Compute LU decomposition
+      --  The given real symmetric matrix is transformed iteratively to
+      --  diagonal form through a sequence of appropriately chosen elementary
+      --  orthogonal transformations, called Jacobi rotations here.
 
-      getrf (M      => N,
-             N      => N,
-             A      => R,
-             Ld_A   => N,
-             I_Piv  => Piv,
-             Info   => Info'Access);
+      --  The Jacobi method produces a systematic decrease of the sum of the
+      --  squares of off-diagonal elements. Convergence to zero is quadratic,
+      --  both for this implementation, as for the classic method that doesn't
+      --  use row-wise scanning for pivot selection.
 
-      if Info /= 0 then
-         raise Constraint_Error with "inverting singular matrix";
-      end if;
+      --  The numerical stability and accuracy of Jacobi's method make it the
+      --  best choice here, even though for large matrices other methods will
+      --  be significantly more efficient in both time and space.
 
-      --  Determine size of work area
+      --  While the eigensystem computations are absolutely foolproof for all
+      --  real symmetric matrices, in presence of invalid values, or similar
+      --  exceptional situations it might not. In such cases the results cannot
+      --  be trusted and Constraint_Error is raised.
 
-      getri (N      => N,
-             A      => R,
-             Ld_A   => N,
-             I_Piv  => Piv,
-             Work   => L_Work,
-             L_Work => -1,
-             Info   => Info'Access);
+      --  Note: this implementation needs temporary storage for 2 * N + N**2
+      --        values of type Real.
 
-      if Info /= 0 then
-         raise Constraint_Error;
-      end if;
+      Max_Iterations  : constant := 50;
+      N               : constant Natural := Length (A);
 
-      declare
-         Work : Real_Vector (1 .. Integer (L_Work (1)));
-         pragma Warnings (Off, Work);
+      subtype Square_Matrix is Real_Matrix (1 .. N, 1 .. N);
+
+      --  In order to annihilate the M (Row, Col) element, the
+      --  rotation parameters Cos and Sin are computed as
+      --  follows:
+
+      --    Theta = Cot (2.0 * Phi)
+      --          = (Diag (Col) - Diag (Row)) / (2.0 * M (Row, Col))
+
+      --  Then Tan (Phi) as the smaller root (in modulus) of
+
+      --    T**2 + 2 * T * Theta = 1 (or 0.5 / Theta, if Theta is large)
+
+      function Compute_Tan (Theta : Real) return Real is
+         (Real'Copy_Sign (1.0 / (abs Theta + Sqrt (1.0 + Theta**2)), Theta));
+
+      function Compute_Tan (P, H : Real) return Real is
+         (if Is_Tiny (P, Compared_To => H) then P / H
+          else Compute_Tan (Theta => H / (2.0 * P)));
+
+      function Sum_Strict_Upper (M : Square_Matrix) return Real;
+      --  Return the sum of all elements in the strict upper triangle of M
+
+      ----------------------
+      -- Sum_Strict_Upper --
+      ----------------------
+
+      function Sum_Strict_Upper (M : Square_Matrix) return Real is
+         Sum : Real := 0.0;
 
       begin
-         --  Compute inverse from LU decomposition
+         for Row in 1 .. N - 1 loop
+            for Col in Row + 1 .. N loop
+               Sum := Sum + abs M (Row, Col);
+            end loop;
+         end loop;
 
-         getri (N      => N,
-                A      => R,
-                Ld_A   => N,
-                I_Piv  => Piv,
-                Work   => Work,
-                L_Work => Work'Length,
-                Info   => Info'Access);
+         return Sum;
+      end Sum_Strict_Upper;
 
-         if Info /= 0 then
-            raise Constraint_Error with "inverting singular matrix";
-         end if;
+      M         : Square_Matrix := A; --  Work space for solving eigensystem
+      Threshold : Real;
+      Sum       : Real;
+      Diag      : Real_Vector (1 .. N);
+      Diag_Adj  : Real_Vector (1 .. N);
 
-         --  ??? Should iterate with gerfs, based on implementation advice
-      end;
-   end Inverse;
+      --  The vector Diag_Adj indicates the amount of change in each value,
+      --  while Diag tracks the value itself and Values holds the values as
+      --  they were at the beginning. As the changes typically will be small
+      --  compared to the absolute value of Diag, at the end of each iteration
+      --  Diag is computed as Diag + Diag_Adj thus avoiding accumulating
+      --  rounding errors. This technique is due to Rutishauser.
 
-   function Inverse (A : Real_Matrix) return Real_Matrix is
-      R : Real_Matrix (A'Range (2), A'Range (1));
    begin
-      Inverse (A, R);
-      return R;
-   end Inverse;
+      if Compute_Vectors
+         and then (Vectors'Length (1) /= N or else Vectors'Length (2) /= N)
+      then
+         raise Constraint_Error with "incompatible matrix dimensions";
+
+      elsif Values'Length /= N then
+         raise Constraint_Error with "incompatible vector length";
+
+      elsif not Is_Symmetric (M) then
+         raise Constraint_Error with "matrix not symmetric";
+      end if;
+
+      --  Note: Only the locally declared matrix M and vectors (Diag, Diag_Adj)
+      --        have lower bound equal to 1. The Vectors matrix may have
+      --        different bounds, so take care indexing elements. Assignment
+      --        as a whole is fine as sliding is automatic in that case.
+
+      Vectors := (if not Compute_Vectors then (1 .. 0 => (1 .. 0 => 0.0))
+                  else Unit_Matrix (Vectors'Length (1), Vectors'Length (2)));
+      Values := Diagonal (M);
+
+      Sweep : for Iteration in 1 .. Max_Iterations loop
+
+         --  The first three iterations, perform rotation for any non-zero
+         --  element. After this, rotate only for those that are not much
+         --  smaller than the average off-diagnal element. After the fifth
+         --  iteration, additionally zero out off-diagonal elements that are
+         --  very small compared to elements on the diagonal with the same
+         --  column or row index.
+
+         Sum := Sum_Strict_Upper (M);
+
+         exit Sweep when Sum = 0.0;
+
+         Threshold := (if Iteration < 4 then 0.2 * Sum / Real (N**2) else 0.0);
+
+         --  Iterate over all off-diagonal elements, rotating any that have
+         --  an absolute value that exceeds the threshold.
+
+         Diag := Values;
+         Diag_Adj := (others => 0.0); -- Accumulates adjustments to Diag
+
+         for Row in 1 .. N - 1 loop
+            for Col in Row + 1 .. N loop
+
+               --  If, before the rotation M (Row, Col) is tiny compared to
+               --  Diag (Row) and Diag (Col), rotation is skipped. This is
+               --  meaningful, as it produces no larger error than would be
+               --  produced anyhow if the rotation had been performed.
+               --  Suppress this optimization in the first four sweeps, so
+               --  that this procedure can be used for computing eigenvectors
+               --  of perturbed diagonal matrices.
+
+               if Iteration > 4
+                  and then Is_Tiny (M (Row, Col), Compared_To => Diag (Row))
+                  and then Is_Tiny (M (Row, Col), Compared_To => Diag (Col))
+               then
+                  M (Row, Col) := 0.0;
+
+               elsif abs M (Row, Col) > Threshold then
+                  Perform_Rotation : declare
+                     Tan : constant Real := Compute_Tan (M (Row, Col),
+                                               Diag (Col) - Diag (Row));
+                     Cos : constant Real := 1.0 / Sqrt (1.0 + Tan**2);
+                     Sin : constant Real := Tan * Cos;
+                     Tau : constant Real := Sin / (1.0 + Cos);
+                     Adj : constant Real := Tan * M (Row, Col);
+
+                  begin
+                     Diag_Adj (Row) := Diag_Adj (Row) - Adj;
+                     Diag_Adj (Col) := Diag_Adj (Col) + Adj;
+                     Diag (Row) := Diag (Row) - Adj;
+                     Diag (Col) := Diag (Col) + Adj;
+
+                     M (Row, Col) := 0.0;
+
+                     for J in 1 .. Row - 1 loop        --  1 <= J < Row
+                        Rotate (M (J, Row), M (J, Col), Sin, Tau);
+                     end loop;
+
+                     for J in Row + 1 .. Col - 1 loop  --  Row < J < Col
+                        Rotate (M (Row, J), M (J, Col), Sin, Tau);
+                     end loop;
+
+                     for J in Col + 1 .. N loop        --  Col < J <= N
+                        Rotate (M (Row, J), M (Col, J), Sin, Tau);
+                     end loop;
+
+                     for J in Vectors'Range (1) loop
+                        Rotate (Vectors (J, Row - 1 + Vectors'First (2)),
+                                Vectors (J, Col - 1 + Vectors'First (2)),
+                                Sin, Tau);
+                     end loop;
+                  end Perform_Rotation;
+               end if;
+            end loop;
+         end loop;
+
+         Values := Values + Diag_Adj;
+      end loop Sweep;
+
+      --  All normal matrices with valid values should converge perfectly.
+
+      if Sum /= 0.0 then
+         raise Constraint_Error with "eigensystem solution does not converge";
+      end if;
+   end Jacobi;
 
    -----------
    -- Solve --
    -----------
 
-   procedure Solve (A : Real_Matrix; X : Real_Vector; B : out Real_Vector) is
-   begin
-      if Length (A) /= X'Length then
-         raise Constraint_Error with
-           "incompatible matrix and vector dimensions";
-      end if;
-
-      --  ??? Should solve directly, is faster and more accurate
-
-      B := Inverse (A) * X;
-   end Solve;
-
-   procedure Solve (A : Real_Matrix; X : Real_Matrix; B : out Real_Matrix) is
-   begin
-      if Length (A) /= X'Length (1) then
-         raise Constraint_Error with "incompatible matrix dimensions";
-      end if;
-
-      --  ??? Should solve directly, is faster and more accurate
-
-      B := Inverse (A) * X;
-   end Solve;
-
    function Solve (A : Real_Matrix; X : Real_Vector) return Real_Vector is
-      B : Real_Vector (A'Range (2));
+      N   : constant Natural := Length (A);
+      MA  : Real_Matrix := A;
+      MX  : Real_Matrix (A'Range (1), 1 .. 1);
+      R   : Real_Vector (A'Range (2));
+      Det : Real'Base;
+
    begin
-      Solve (A, X, B);
-      return B;
+      if X'Length /= N then
+         raise Constraint_Error with "incompatible vector length";
+      end if;
+
+      for J in 0 .. MX'Length (1) - 1 loop
+         MX (MX'First (1) + J, 1) := X (X'First + J);
+      end loop;
+
+      Forward_Eliminate (MA, MX, Det);
+      Back_Substitute (MA, MX);
+
+      for J in 0 .. R'Length - 1 loop
+         R (R'First + J) := MX (MX'First (1) + J, 1);
+      end loop;
+
+      return R;
    end Solve;
 
    function Solve (A, X : Real_Matrix) return Real_Matrix is
-      B : Real_Matrix (A'Range (2), X'Range (2));
+      N  : constant Natural := Length (A);
+      MA : Real_Matrix (A'Range (2), A'Range (2));
+      MB : Real_Matrix (A'Range (2), X'Range (2));
+      Det : Real'Base;
+
    begin
-      Solve (A, X, B);
-      return B;
+      if X'Length (1) /= N then
+         raise Constraint_Error with "matrices have unequal number of rows";
+      end if;
+
+      for J in 0 .. A'Length (1) - 1 loop
+         for K in MA'Range (2) loop
+            MA (MA'First (1) + J, K) := A (A'First (1) + J, K);
+         end loop;
+
+         for K in MB'Range (2) loop
+            MB (MB'First (1) + J, K) := X (X'First (1) + J, K);
+         end loop;
+      end loop;
+
+      Forward_Eliminate (MA, MB, Det);
+      Back_Substitute (MA, MB);
+
+      return MB;
    end Solve;
+
+   ----------------------
+   -- Sort_Eigensystem --
+   ----------------------
+
+   procedure Sort_Eigensystem
+     (Values  : in out Real_Vector;
+      Vectors : in out Real_Matrix)
+   is
+      procedure Swap (Left, Right : Integer);
+      --  Swap Values (Left) with Values (Right), and also swap the
+      --  corresponding eigenvectors. Note that lowerbounds may differ.
+
+      function Less (Left, Right : Integer) return Boolean is
+        (Values (Left) > Values (Right));
+      --  Sort by decreasing eigenvalue, see RM G.3.1 (76).
+
+      procedure Sort is new Generic_Anonymous_Array_Sort (Integer);
+      --  Sorts eigenvalues and eigenvectors by decreasing value
+
+      procedure Swap (Left, Right : Integer) is
+      begin
+         Swap (Values (Left), Values (Right));
+         Swap_Column (Vectors, Left - Values'First + Vectors'First (2),
+                               Right - Values'First + Vectors'First (2));
+      end Swap;
+
+   begin
+      Sort (Values'First, Values'Last);
+   end Sort_Eigensystem;
 
    ---------------
    -- Transpose --
@@ -757,7 +827,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
       R : Real_Matrix (X'Range (2), X'Range (1));
    begin
       Transpose (X, R);
-
       return R;
    end Transpose;
 

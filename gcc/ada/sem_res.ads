@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,6 +121,18 @@ package Sem_Res is
 
    procedure Preanalyze_And_Resolve (N : Node_Id);
    --  Same, but use type of node because context does not impose a single type
+
+   function Valid_Conversion
+     (N           : Node_Id;
+      Target      : Entity_Id;
+      Operand     : Node_Id;
+      Report_Errs : Boolean := True) return Boolean;
+   --  Verify legality rules given in 4.6 (8-23). Target is the target type
+   --  of the conversion, which may be an implicit conversion of an actual
+   --  parameter to an anonymous access type (in which case N denotes the
+   --  actual parameter and N = Operand). Returns a Boolean result indicating
+   --  whether the conversion is legal. Reports errors in the case of illegal
+   --  conversions, unless Report_Errs is False.
 
 private
    procedure Resolve_Implicit_Type (N : Node_Id) renames Resolve;

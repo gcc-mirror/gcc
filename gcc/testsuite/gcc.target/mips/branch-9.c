@@ -1,4 +1,4 @@
-/* { dg-options "-mabicalls -mshared -mabi=32" } */
+/* { dg-options "-mshared -mabi=32" } */
 /* { dg-final { scan-assembler "\t\\.cpload\t\\\$25\n" } } */
 /* { dg-final { scan-assembler "\t\\.cprestore\t16\n" } } */
 /* { dg-final { scan-assembler "\tlw\t\\\$1,16\\(\\\$fp\\)\n" } } */
