@@ -91,6 +91,8 @@ void gfc_free_ss_chain (gfc_ss *);
 gfc_ss *gfc_get_array_ss (gfc_ss *, gfc_expr *, int, gfc_ss_type);
 /* Allocate a new temporary type ss.  */
 gfc_ss *gfc_get_temp_ss (tree, tree, int);
+/* Allocate a new scalar type ss.  */
+gfc_ss *gfc_get_scalar_ss (gfc_ss *, gfc_expr *);
 
 /* Calculates the lower bound and stride of array sections.  */
 void gfc_conv_ss_startstride (gfc_loopinfo *);

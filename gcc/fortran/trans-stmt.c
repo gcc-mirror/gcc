@@ -3023,13 +3023,8 @@ compute_inner_temp_size (gfc_expr *expr1, gfc_expr *expr2,
       /* Walk the RHS of the expression.  */
       *rss = gfc_walk_expr (expr2);
       if (*rss == gfc_ss_terminator)
-        {
-          /* The rhs is scalar.  Add a ss for the expression.  */
-          *rss = gfc_get_ss ();
-          (*rss)->next = gfc_ss_terminator;
-          (*rss)->type = GFC_SS_SCALAR;
-          (*rss)->expr = expr2;
-        }
+	/* The rhs is scalar.  Add a ss for the expression.  */
+	*rss = gfc_get_scalar_ss (gfc_ss_terminator, expr2);
 
       /* Associate the SS with the loop.  */
       gfc_add_ss_to_loop (&loop, *lss);
@@ -4064,13 +4059,10 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
   /* Walk the rhs.  */
   rss = gfc_walk_expr (expr2);
   if (rss == gfc_ss_terminator)
-   {
-     /* The rhs is scalar.  Add a ss for the expression.  */
-     rss = gfc_get_ss ();
-     rss->where = 1;
-     rss->next = gfc_ss_terminator;
-     rss->type = GFC_SS_SCALAR;
-     rss->expr = expr2;
+    {
+      /* The rhs is scalar.  Add a ss for the expression.  */
+      rss = gfc_get_scalar_ss (gfc_ss_terminator, expr2);
+      rss->where = 1;
     }
 
   /* Associate the SS with the loop.  */
@@ -4508,11 +4500,8 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
   tsss = gfc_walk_expr (tsrc);
   if (tsss == gfc_ss_terminator)
     {
-      tsss = gfc_get_ss ();
+      tsss = gfc_get_scalar_ss (gfc_ss_terminator, tsrc);
       tsss->where = 1;
-      tsss->next = gfc_ss_terminator;
-      tsss->type = GFC_SS_SCALAR;
-      tsss->expr = tsrc;
     }
   gfc_add_ss_to_loop (&loop, tdss);
   gfc_add_ss_to_loop (&loop, tsss);
@@ -4526,11 +4515,8 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
       esss = gfc_walk_expr (esrc);
       if (esss == gfc_ss_terminator)
 	{
-	  esss = gfc_get_ss ();
+	  esss = gfc_get_scalar_ss (gfc_ss_terminator, esrc);
 	  esss->where = 1;
-	  esss->next = gfc_ss_terminator;
-	  esss->type = GFC_SS_SCALAR;
-	  esss->expr = esrc;
 	}
       gfc_add_ss_to_loop (&loop, edss);
       gfc_add_ss_to_loop (&loop, esss);
