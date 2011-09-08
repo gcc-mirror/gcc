@@ -4403,39 +4403,60 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
     }
 
   /* If we are converting to an integral type whose precision is not equal
-     to its size, first unchecked convert to a record that contains an
-     object of the output type.  Then extract the field. */
+     to its size, first unchecked convert to a record type that contains an
+     field of the given precision.  Then extract the field.  */
   else if (INTEGRAL_TYPE_P (type)
 	   && TYPE_RM_SIZE (type)
 	   && 0 != compare_tree_int (TYPE_RM_SIZE (type),
 				     GET_MODE_BITSIZE (TYPE_MODE (type))))
     {
       tree rec_type = make_node (RECORD_TYPE);
-      tree field = create_field_decl (get_identifier ("OBJ"), type, rec_type,
-				      NULL_TREE, NULL_TREE, 1, 0);
+      unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (type));
+      tree field_type, field;
+
+      if (TYPE_UNSIGNED (type))
+	field_type = make_unsigned_type (prec);
+      else
+	field_type = make_signed_type (prec);
+      SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (type));
+
+      field = create_field_decl (get_identifier ("OBJ"), field_type, rec_type,
+				 NULL_TREE, NULL_TREE, 1, 0);
 
       TYPE_FIELDS (rec_type) = field;
       layout_type (rec_type);
 
       expr = unchecked_convert (rec_type, expr, notrunc_p);
       expr = build_component_ref (expr, NULL_TREE, field, false);
+      expr = fold_build1 (NOP_EXPR, type, expr);
     }
 
-  /* Similarly if we are converting from an integral type whose precision
-     is not equal to its size.  */
+  /* Similarly if we are converting from an integral type whose precision is
+     not equal to its size, first copy into a field of the given precision
+     and unchecked convert the record type.  */
   else if (INTEGRAL_TYPE_P (etype)
 	   && TYPE_RM_SIZE (etype)
 	   && 0 != compare_tree_int (TYPE_RM_SIZE (etype),
 				     GET_MODE_BITSIZE (TYPE_MODE (etype))))
     {
       tree rec_type = make_node (RECORD_TYPE);
-      tree field = create_field_decl (get_identifier ("OBJ"), etype, rec_type,
-				      NULL_TREE, NULL_TREE, 1, 0);
+      unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (etype));
       VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 1);
+      tree field_type, field;
+
+      if (TYPE_UNSIGNED (etype))
+	field_type = make_unsigned_type (prec);
+      else
+	field_type = make_signed_type (prec);
+      SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (etype));
+
+      field = create_field_decl (get_identifier ("OBJ"), field_type, rec_type,
+				 NULL_TREE, NULL_TREE, 1, 0);
 
       TYPE_FIELDS (rec_type) = field;
       layout_type (rec_type);
 
+      expr = fold_build1 (NOP_EXPR, field_type, expr);
       CONSTRUCTOR_APPEND_ELT (v, field, expr);
       expr = gnat_build_constructor (rec_type, v);
       expr = unchecked_convert (type, expr, notrunc_p);
