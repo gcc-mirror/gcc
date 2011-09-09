@@ -1,3 +1,8 @@
+2011-09-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49030
+	* gcc.dg/torture/pr49030.c: Run only if target int32plus.
+
 2011-09-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/49614
