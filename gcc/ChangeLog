@@ -1,3 +1,9 @@
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50333
+	* tree-data-ref.c (split_constant_offset): Do not try to handle
+	ternary ops.
+
 2011-09-08  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR tree-optimization/50318
