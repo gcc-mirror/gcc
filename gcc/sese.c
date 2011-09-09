@@ -620,7 +620,10 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 
       if (rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map,
 		       gloog_error))
-	fold_stmt_inplace (copy);
+	{
+	  gcc_assert (gsi_stmt (gsi_tgt) == copy);
+	  fold_stmt_inplace (&gsi_tgt);
+	}
 
       update_stmt (copy);
     }

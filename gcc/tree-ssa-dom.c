@@ -2656,7 +2656,10 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
              GIMPLE_ASSIGN, and there is no way to effect such a
              transformation in-place.  We might want to consider
              using the more general fold_stmt here.  */
-	  fold_stmt_inplace (use_stmt);
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	      fold_stmt_inplace (&gsi);
+	    }
 
 	  /* Sometimes propagation can expose new operands to the
 	     renamer.  */

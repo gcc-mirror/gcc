@@ -1,3 +1,20 @@
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (fold_stmt_inplace): Adjust to take a gimple_stmt_iterator
+	instead of a statement.
+	* gimple-fold.c (fold_stmt_inplace): Likewise.
+	* sese.c (graphite_copy_stmts_from_block): Adjust.
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_comparison): Use
+	fold_stmt.
+	(forward_propagate_addr_into_variable_array_index): Likewise.
+	(forward_propagate_addr_expr_1): adjust.
+	(associate_plusminus): Likewise.
+	(ssa_forward_propagate_and_combine): Likewise.
+	* tree-ssa-mathopts.c (replace_reciprocal): Adjust.
+	(execute_cse_reciprocals): Likewise.
+	* tree-ssa.c (insert_debug_temp_for_var_def): Adjust.
+
 2011-09-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_split_and_operand_count):

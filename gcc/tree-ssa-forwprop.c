@@ -477,8 +477,8 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
   if (tmp)
     {
       gimple_assign_set_rhs_from_tree (gsi, tmp);
-      fold_stmt_inplace (stmt);
-      update_stmt (stmt);
+      fold_stmt (gsi);
+      update_stmt (gsi_stmt (*gsi));
 
       if (TREE_CODE (rhs1) == SSA_NAME)
 	cfg_changed |= remove_prop_source_from_use (rhs1);
@@ -764,12 +764,8 @@ forward_propagate_addr_into_variable_array_index (tree offset,
 	}
     }
   gimple_assign_set_rhs_from_tree (use_stmt_gsi, new_rhs);
-  use_stmt = gsi_stmt (*use_stmt_gsi);
-
-  /* That should have created gimple, so there is no need to
-     record information to undo the propagation.  */
-  fold_stmt_inplace (use_stmt);
-  tidy_after_forward_propagate_addr (use_stmt);
+  fold_stmt (use_stmt_gsi);
+  tidy_after_forward_propagate_addr (gsi_stmt (*use_stmt_gsi));
   return true;
 }
 
@@ -982,7 +978,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  TREE_OPERAND (rhs, 0) = new_ptr;
 	  TREE_OPERAND (rhs, 1)
 	    = double_int_to_tree (TREE_TYPE (TREE_OPERAND (rhs, 1)), off);
-	  fold_stmt_inplace (use_stmt);
+	  fold_stmt_inplace (use_stmt_gsi);
 	  tidy_after_forward_propagate_addr (use_stmt);
 	  return res;
 	}
@@ -1018,7 +1014,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  gimple_assign_set_rhs1 (use_stmt,
 				  unshare_expr (TREE_OPERAND (def_rhs, 0)));
 	  *def_rhs_basep = saved;
-	  fold_stmt_inplace (use_stmt);
+	  fold_stmt_inplace (use_stmt_gsi);
 	  tidy_after_forward_propagate_addr (use_stmt);
 	  return res;
 	}
@@ -1906,12 +1902,12 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
    always permitted.  Returns true if the CFG was changed.  */
 
 static bool
-associate_plusminus (gimple stmt)
+associate_plusminus (gimple_stmt_iterator *gsi)
 {
+  gimple stmt = gsi_stmt (*gsi);
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  gimple_stmt_iterator gsi;
   bool changed;
 
   /* We can't reassociate at all for saturating types.  */
@@ -1986,7 +1982,6 @@ associate_plusminus (gimple stmt)
      via commutating the addition and contracting operations to zero
      by reassociation.  */
 
-  gsi = gsi_for_stmt (stmt);
   if (TREE_CODE (rhs1) == SSA_NAME)
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (rhs1);
@@ -2006,8 +2001,8 @@ associate_plusminus (gimple stmt)
 			  ? TREE_CODE (def_rhs2) : NEGATE_EXPR);
 		  rhs1 = def_rhs2;
 		  rhs2 = NULL_TREE;
-		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
-		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
+		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	      else if (operand_equal_p (def_rhs2, rhs2, 0)
@@ -2017,8 +2012,8 @@ associate_plusminus (gimple stmt)
 		  code = TREE_CODE (def_rhs1);
 		  rhs1 = def_rhs1;
 		  rhs2 = NULL_TREE;
-		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
-		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
+		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	      else if (TREE_CODE (rhs2) == INTEGER_CST
@@ -2068,8 +2063,8 @@ associate_plusminus (gimple stmt)
 		  code = INTEGER_CST;
 		  rhs1 = build_int_cst_type (TREE_TYPE (rhs2), -1);
 		  rhs2 = NULL_TREE;
-		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
-		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
+		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	      else if (code == PLUS_EXPR
@@ -2079,8 +2074,8 @@ associate_plusminus (gimple stmt)
 		  code = NEGATE_EXPR;
 		  rhs1 = def_rhs1;
 		  rhs2 = NULL_TREE;
-		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
-		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
+		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	    }
@@ -2106,8 +2101,8 @@ associate_plusminus (gimple stmt)
 			  ? NEGATE_EXPR : TREE_CODE (def_rhs2));
 		  rhs1 = def_rhs2;
 		  rhs2 = NULL_TREE;
-		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
-		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
+		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	      else if (operand_equal_p (def_rhs2, rhs1, 0)
@@ -2118,8 +2113,8 @@ associate_plusminus (gimple stmt)
 			  ? TREE_CODE (def_rhs1) : NEGATE_EXPR);
 		  rhs1 = def_rhs1;
 		  rhs2 = NULL_TREE;
-		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
-		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
+		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	      else if (TREE_CODE (rhs1) == INTEGER_CST
@@ -2168,8 +2163,8 @@ associate_plusminus (gimple stmt)
 		  code = INTEGER_CST;
 		  rhs1 = build_int_cst_type (TREE_TYPE (rhs1), -1);
 		  rhs2 = NULL_TREE;
-		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
-		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
+		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	    }
@@ -2179,7 +2174,7 @@ associate_plusminus (gimple stmt)
 out:
   if (gimple_modified_p (stmt))
     {
-      fold_stmt_inplace (stmt);
+      fold_stmt_inplace (gsi);
       update_stmt (stmt);
       if (maybe_clean_or_replace_eh_stmt (stmt, stmt)
 	  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
@@ -2438,7 +2433,7 @@ ssa_forward_propagate_and_combine (void)
 	      else if (is_gimple_min_invariant (rhs))
 		{
 		  /* Make sure to fold &a[0] + off_1 here.  */
-		  fold_stmt_inplace (stmt);
+		  fold_stmt_inplace (&gsi);
 		  update_stmt (stmt);
 		  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
 		    gsi_next (&gsi);
@@ -2495,7 +2490,7 @@ ssa_forward_propagate_and_combine (void)
 		  changed = simplify_bitwise_binary (&gsi);
 		else if (code == PLUS_EXPR
 			 || code == MINUS_EXPR)
-		  changed = associate_plusminus (stmt);
+		  changed = associate_plusminus (&gsi);
 		else if (CONVERT_EXPR_CODE_P (code)
 			 || code == FLOAT_EXPR
 			 || code == FIX_TRUNC_EXPR)
