@@ -13,7 +13,7 @@
 #define DO_INLINE __attribute__ ((always_inline))
 #define DONT_INLINE __attribute__ ((noinline))
 
-static DO_INLINE int inline_me(vector signed short data) 
+static inline DO_INLINE int inline_me(vector signed short data) 
 {
   union {vector signed short v; signed short s[8];} u;
   u.v = data;
