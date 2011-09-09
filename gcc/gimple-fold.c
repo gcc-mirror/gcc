@@ -1286,20 +1286,20 @@ fold_stmt (gimple_stmt_iterator *gsi)
   return fold_stmt_1 (gsi, false);
 }
 
-/* Perform the minimal folding on statement STMT.  Only operations like
+/* Perform the minimal folding on statement *GSI.  Only operations like
    *&x created by constant propagation are handled.  The statement cannot
    be replaced with a new one.  Return true if the statement was
    changed, false otherwise.
-   The statement STMT should be in valid gimple form but may
+   The statement *GSI should be in valid gimple form but may
    be in unfolded state as resulting from for example constant propagation
    which can produce *&x = 0.  */
 
 bool
-fold_stmt_inplace (gimple stmt)
+fold_stmt_inplace (gimple_stmt_iterator *gsi)
 {
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  bool changed = fold_stmt_1 (&gsi, true);
-  gcc_assert (gsi_stmt (gsi) == stmt);
+  gimple stmt = gsi_stmt (*gsi);
+  bool changed = fold_stmt_1 (gsi, true);
+  gcc_assert (gsi_stmt (*gsi) == stmt);
   return changed;
 }
 
