@@ -10329,6 +10329,10 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
+@option{-mcpu=generic-@var{arch}} is also permissible, and is
+equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
+See @option{-mtune} for more information.
+
 @item -mtune=@var{name}
 @opindex mtune
 This option is very similar to the @option{-mcpu=} option, except that
@@ -10339,6 +10343,13 @@ specified in this option, but still choosing the instructions that it
 will generate based on the CPU specified by a @option{-mcpu=} option.
 For some ARM implementations better performance can be obtained by using
 this option.
+
+@option{-mtune=generic-@var{arch}} specifies that GCC should tune the
+performance for a blend of processors within architecture @var{arch}.
+The aim is to generate code that run well on the current most popular
+processors, balancing between optimizations that benefit some CPUs in the
+range, and avoiding performance pitfalls of other CPUs.  The effects of
+this option may change in future GCC versions as CPU models come and go.
 
 @item -march=@var{name}
 @opindex march

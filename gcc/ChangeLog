@@ -1,3 +1,18 @@
+2011-09-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm-cores.def (generic-armv7-a): New architecture.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm.c (arm_file_start): Output .arch directive when
+	user passes -mcpu=generic-*.
+	(arm_issue_rate): Add genericv7a support.
+	* config/arm/arm.h (EXTRA_SPECS): Add asm_cpu_spec.
+	(ASM_CPU_SPEC): New define.
+	* config/arm/elf.h (ASM_SPEC): Use %(asm_cpu_spec).
+	* config/arm/semi.h (ASM_SPEC): Likewise.
+	* doc/invoke.texi (ARM Options): Document -mcpu=generic-*
+	and -mtune=generic-*.
+
 2011-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50328

@@ -61,8 +61,7 @@
 #define ASM_SPEC "\
 %{fpic|fpie: -k} %{fPIC|fPIE: -k} \
 %{mbig-endian:-EB} \
-%{mcpu=*:-mcpu=%*} \
-%{march=*:-march=%*} \
+%(arm_cpu_spec) \
 %{mapcs-float:-mfloat} \
 %{mfloat-abi=*} %{mfpu=*} \
 %{mthumb-interwork:-mthumb-interwork} \
