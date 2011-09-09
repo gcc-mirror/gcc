@@ -3182,6 +3182,10 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   /* All the symbols in NEWEXPR should be put into SSA form.  */
   mark_symbols_for_renaming (newstmt);
 
+  /* Fold the last statement.  */
+  gsi = gsi_last (*stmts);
+  fold_stmt_inplace (&gsi);
+
   /* Add a value number to the temporary.
      The value may already exist in either NEW_SETS, or AVAIL_OUT, because
      we are creating the expression by pieces, and this particular piece of
