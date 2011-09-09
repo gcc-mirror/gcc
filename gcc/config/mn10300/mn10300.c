@@ -2878,6 +2878,23 @@ mn10300_match_ccmode (rtx insn, enum machine_mode cc_mode)
   return true;
 }
 
+/* This function is used to help split:
+   
+     (set (reg) (and (reg) (int)))
+     
+   into:
+   
+     (set (reg) (shift (reg) (int))
+     (set (reg) (shift (reg) (int))
+     
+   where the shitfs will be shorter than the "and" insn.
+
+   It returns the number of bits that should be shifted.  A positive
+   values means that the low bits are to be cleared (and hence the
+   shifts should be right followed by left) whereas a negative value
+   means that the high bits are to be cleared (left followed by right).
+   Zero is returned when it would not be economical to split the AND.  */
+
 int
 mn10300_split_and_operand_count (rtx op)
 {
@@ -2894,7 +2911,7 @@ mn10300_split_and_operand_count (rtx op)
 	 would be replacing 1 6-byte insn with 2 3-byte insns.  */
       if (count > (optimize_insn_for_speed_p () ? 2 : 4))
 	return 0;
-      return -count;
+      return count;
     }
   else
     {
