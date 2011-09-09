@@ -1,3 +1,5 @@
+/* { dg-require-effective-target int32plus } */
+
 void
 sample_move_d32u24_sS (char *dst, float *src, unsigned long nsamples,
 		       unsigned long dst_skip)
