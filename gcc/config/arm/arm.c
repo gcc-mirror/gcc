@@ -22209,6 +22209,8 @@ arm_file_start (void)
       const char *fpu_name;
       if (arm_selected_arch)
 	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_arch->name);
+      else if (strncmp (arm_selected_cpu->name, "generic", 7) == 0)
+	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_cpu->name + 8);
       else
 	asm_fprintf (asm_out_file, "\t.cpu %s\n", arm_selected_cpu->name);
 
@@ -23733,6 +23735,7 @@ arm_issue_rate (void)
     case cortexr4:
     case cortexr4f:
     case cortexr5:
+    case genericv7a:
     case cortexa5:
     case cortexa8:
     case cortexa9:
