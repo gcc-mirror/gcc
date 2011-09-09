@@ -1,5 +1,11 @@
 2011-09-09  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/50328
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Allow one
+	constant or default-def operand.
+
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (create_expression_by_pieces): Fold the
 	last statement.
 
