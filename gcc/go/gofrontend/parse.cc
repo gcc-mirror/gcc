@@ -2445,7 +2445,9 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
 // LiteralValue  = "{" [ ElementList [ "," ] ] "}" .
 // ElementList   = Element { "," Element } .
 // Element       = [ Key ":" ] Value .
-// Key           = Expression .
+// Key           = FieldName | ElementIndex .
+// FieldName     = identifier .
+// ElementIndex  = Expression .
 // Value         = Expression | LiteralValue .
 
 // We have already seen the type if there is one, and we are now
@@ -2478,7 +2480,33 @@ Parse::composite_lit(Type* type, int depth, source_location location)
 
       const Token* token = this->peek_token();
 
-      if (!token->is_op(OPERATOR_LCURLY))
+      if (token->is_identifier())
+	{
+	  std::string identifier = token->identifier();
+	  bool is_exported = token->is_identifier_exported();
+	  source_location location = token->location();
+
+	  if (this->advance_token()->is_op(OPERATOR_COLON))
+	    {
+	      // This may be a field name.  We don't know for sure--it
+	      // could also be an expression for an array index.  We
+	      // don't want to parse it as an expression because may
+	      // trigger various errors, e.g., if this identifier
+	      // happens to be the name of a package.
+	      Gogo* gogo = this->gogo_;
+	      val = this->id_to_expression(gogo->pack_hidden_name(identifier,
+								  is_exported),
+					   location);
+	    }
+	  else
+	    {
+	      this->unget_token(Token::make_identifier_token(identifier,
+							     is_exported,
+							     location));
+	      val = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
+	    }
+	}
+      else if (!token->is_op(OPERATOR_LCURLY))
 	val = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
       else
 	{
@@ -2921,6 +2949,12 @@ Parse::id_to_expression(const std::string& name, source_location location)
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
       return Expression::make_func_reference(named_object, NULL, location);
     case Named_object::NAMED_OBJECT_UNKNOWN:
+      return Expression::make_unknown_reference(named_object, location);
+    case Named_object::NAMED_OBJECT_PACKAGE:
+    case Named_object::NAMED_OBJECT_TYPE:
+    case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
+      // These cases can arise for a field name in a composite
+      // literal.
       return Expression::make_unknown_reference(named_object, location);
     default:
       error_at(this->location(), "unexpected type of identifier");
