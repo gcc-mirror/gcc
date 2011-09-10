@@ -1436,7 +1436,6 @@ Unknown_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 Expression*
 Expression::make_unknown_reference(Named_object* no, source_location location)
 {
-  go_assert(no->resolve()->is_unknown());
   return new Unknown_expression(no, location);
 }
 
