@@ -1,5 +1,12 @@
 2011-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/tuple: Use everywhere std::size_t... instead of int...
+	* include/std/functional: Likewise.
+	* include/std/scoped_allocator: Likewise.
+	* include/bits/stl_pair.h: Likewise.
+
+2011-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/50336
 	* include/bits/streambuf_iterator.h (class istreambuf_iterator):
 	Implement LWG 445 in C++0x mode.

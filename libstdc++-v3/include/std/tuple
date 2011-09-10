@@ -1011,7 +1011,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Stores a tuple of indices. Used by bind() to extract the elements
    * in a tuple. 
    */
-  template<int... _Indexes>
+  template<std::size_t... _Indexes>
     struct _Index_tuple
     {
       typedef _Index_tuple<_Indexes..., sizeof...(_Indexes)> __next;
@@ -1042,7 +1042,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
   template<class _T1, class _T2>
-    template<typename _Tp, typename... _Args, int... _Indexes>
+    template<typename _Tp, typename... _Args, std::size_t... _Indexes>
       inline _Tp
       pair<_T1, _T2>::__do_cons(tuple<_Args...>&& __tuple,
 				const _Index_tuple<_Indexes...>&)
