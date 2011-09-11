@@ -4241,22 +4241,44 @@ tree
 maybe_unconstrained_array (tree exp)
 {
   enum tree_code code = TREE_CODE (exp);
-  tree new_exp;
 
   switch (TREE_CODE (TREE_TYPE (exp)))
     {
     case UNCONSTRAINED_ARRAY_TYPE:
       if (code == UNCONSTRAINED_ARRAY_REF)
 	{
-	  new_exp = TREE_OPERAND (exp, 0);
-	  new_exp
-	    = build_unary_op (INDIRECT_REF, NULL_TREE,
-			      build_component_ref (new_exp, NULL_TREE,
-						   TYPE_FIELDS
-						   (TREE_TYPE (new_exp)),
-						   false));
-	  TREE_READONLY (new_exp) = TREE_READONLY (exp);
-	  return new_exp;
+	  const bool read_only = TREE_READONLY (exp);
+	  exp = TREE_OPERAND (exp, 0);
+	  if (TREE_CODE (exp) == COND_EXPR)
+	    {
+	      tree op1
+		= build_unary_op (INDIRECT_REF, NULL_TREE,
+				  build_component_ref (TREE_OPERAND (exp, 1),
+						       NULL_TREE,
+						       TYPE_FIELDS
+						       (TREE_TYPE (exp)),
+						       false));
+	      tree op2
+		= build_unary_op (INDIRECT_REF, NULL_TREE,
+				  build_component_ref (TREE_OPERAND (exp, 2),
+						       NULL_TREE,
+						       TYPE_FIELDS
+						       (TREE_TYPE (exp)),
+						       false));
+
+	      exp = build3 (COND_EXPR,
+			    TREE_TYPE (TREE_TYPE (TYPE_FIELDS
+					          (TREE_TYPE (exp)))),
+			    TREE_OPERAND (exp, 0), op1, op2);
+	    }
+	  else
+	    exp = build_unary_op (INDIRECT_REF, NULL_TREE,
+				  build_component_ref (exp, NULL_TREE,
+						       TYPE_FIELDS
+						       (TREE_TYPE (exp)),
+						       false));
+	  TREE_READONLY (exp) = read_only;
+	  return exp;
 	}
 
       else if (code == NULL_EXPR)
@@ -4270,7 +4292,8 @@ maybe_unconstrained_array (tree exp)
 	 it contains a template.  */
       if (TYPE_PADDING_P (TREE_TYPE (exp)))
 	{
-	  new_exp = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
+	  tree new_exp
+	    = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
 	  if (TREE_CODE (TREE_TYPE (new_exp)) == RECORD_TYPE
 	      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (new_exp)))
 	    return

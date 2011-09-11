@@ -1,5 +1,12 @@
 2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (maybe_unconstrained_array): In the reference
+	to unconstrained array case, deal with each branch of a COND_EXPR.
+	* gcc-interface/utils2.c (build_allocator): Deal with each branch of
+	a COND_EXPR in the initializer, if present.
+
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (maybe_pad_type): Do not try to change the form
 	of an addressable type.
 	* gcc-interface/trans.c (gnat_gimplify_expr) <VIEW_CONVERT_EXPR>: New.
