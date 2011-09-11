@@ -1,3 +1,20 @@
+2011-09-11  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	PR libstdc++/50159
+	* include/std/tuple (tuple_cat): Reimplement according to the
+	resolution of LWG 1385.
+	* include/std/type_traits: Define __and_ and __or_ for zero
+	arguments too; minor tweaks.
+	* testsuite/20_util/tuple/creation_functions/tuple_cat.cc: New.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Disable
+	for now tuple_cat test.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* doc/xml/manual/status_cxx200x.xml: Update.
+
 2011-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple: Use everywhere std::size_t... instead of int...

@@ -443,11 +443,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.4.2.4</entry>
       <entry>Tuple creation functions</entry>
-      <entry>Partial</entry>
-      <entry><code>tuple_cat</code> should be a single variadic signature (DR 1385)</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.2.5</entry>
