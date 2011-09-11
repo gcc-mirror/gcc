@@ -210,11 +210,11 @@
 ;; True if the main data type is twice the size of a word.
 (define_attr "dword_mode" "no,yes"
   (cond [(and (eq_attr "mode" "DI,DF")
-	      (eq (symbol_ref "TARGET_64BIT") (const_int 0)))
+	      (not (match_test "TARGET_64BIT")))
 	 (const_string "yes")
 
 	 (and (eq_attr "mode" "TI,TF")
-	      (ne (symbol_ref "TARGET_64BIT") (const_int 0)))
+	      (match_test "TARGET_64BIT"))
 	 (const_string "yes")]
 	(const_string "no")))
 
@@ -384,7 +384,7 @@
 ;; Length of instruction in bytes.
 (define_attr "length" ""
    (cond [(and (eq_attr "extended_mips16" "yes")
-	       (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
+	       (match_test "TARGET_MIPS16"))
 	  (const_int 8)
 
 	  ;; Direct branch instructions have a range of [-0x20000,0x1fffc],
@@ -423,7 +423,7 @@
 		   (const_int 4)
 
 		 ;; The non-PIC case: branch, first delay slot, and J.
-		 (ne (symbol_ref "TARGET_ABSOLUTE_JUMPS") (const_int 0))
+		 (match_test "TARGET_ABSOLUTE_JUMPS")
 		   (const_int 12)]
 
 		 ;; Use MAX_PIC_BRANCH_LENGTH as a (gross) overestimate.
@@ -439,7 +439,7 @@
 	  (const_int 0)
 
 	  (eq_attr "got" "load")
-	  (if_then_else (ne (symbol_ref "TARGET_MIPS16") (const_int 0))
+	  (if_then_else (match_test "TARGET_MIPS16")
 			(const_int 8)
 			(const_int 4))
 	  (eq_attr "got" "xgot_high")
@@ -456,7 +456,7 @@
 	  ;; SHIFT_SHIFTs are decomposed into two separate instructions.
 	  ;; They are extended instructions on MIPS16 targets.
 	  (eq_attr "move_type" "shift_shift")
-	  (if_then_else (ne (symbol_ref "TARGET_MIPS16") (const_int 0))
+	  (if_then_else (match_test "TARGET_MIPS16")
 			(const_int 16)
 			(const_int 8))
 
@@ -479,7 +479,7 @@
 	  (eq_attr "move_type" "load,fpload")
 	  (symbol_ref "mips_load_store_insns (operands[1], insn) * 4")
 	  (eq_attr "move_type" "store,fpstore")
-	  (cond [(eq (symbol_ref "TARGET_FIX_24K") (const_int 0))
+	  (cond [(not (match_test "TARGET_FIX_24K"))
 	         (symbol_ref "mips_load_store_insns (operands[0], insn) * 4")]
 	         (symbol_ref "mips_load_store_insns (operands[0], insn) * 4 + 4"))
 
@@ -500,7 +500,7 @@
 	  ;; instruction.  The assembler does this for us, so account for
 	  ;; the worst-case length here.
 	  (and (eq_attr "type" "imadd")
-	       (ne (symbol_ref "TARGET_FIX_VR4120") (const_int 0)))
+	       (match_test "TARGET_FIX_VR4120"))
 	  (const_int 8)
 
 	  ;; VR4120 errata MD(4): if there are consecutive dmult instructions,
@@ -508,7 +508,7 @@
 	  ;; around this by inserting a nop after the first dmult.
 	  (and (eq_attr "type" "imul,imul3")
 	       (and (eq_attr "mode" "DI")
-		    (ne (symbol_ref "TARGET_FIX_VR4120") (const_int 0))))
+		    (match_test "TARGET_FIX_VR4120")))
 	  (const_int 8)
 
 	  (eq_attr "type" "idiv,idiv3")
@@ -528,24 +528,24 @@
 ;; write to HI or LO.
 (define_attr "hazard" "none,delay,hilo"
   (cond [(and (eq_attr "type" "load,fpload,fpidxload")
-	      (ne (symbol_ref "ISA_HAS_LOAD_DELAY") (const_int 0)))
+	      (match_test "ISA_HAS_LOAD_DELAY"))
 	 (const_string "delay")
 
 	 (and (eq_attr "type" "mfc,mtc")
-	      (ne (symbol_ref "ISA_HAS_XFER_DELAY") (const_int 0)))
+	      (match_test "ISA_HAS_XFER_DELAY"))
 	 (const_string "delay")
 
 	 (and (eq_attr "type" "fcmp")
-	      (ne (symbol_ref "ISA_HAS_FCMP_DELAY") (const_int 0)))
+	      (match_test "ISA_HAS_FCMP_DELAY"))
 	 (const_string "delay")
 
 	 ;; The r4000 multiplication patterns include an mflo instruction.
 	 (and (eq_attr "type" "imul")
-	      (ne (symbol_ref "TARGET_FIX_R4000") (const_int 0)))
+	      (match_test "TARGET_FIX_R4000"))
 	 (const_string "hilo")
 
 	 (and (eq_attr "type" "mfhilo")
-	      (eq (symbol_ref "ISA_HAS_HILO_INTERLOCKS") (const_int 0)))
+	      (not (match_test "ISA_HAS_HILO_INTERLOCKS")))
 	 (const_string "hilo")]
 	(const_string "none")))
 
@@ -565,7 +565,7 @@
 ;; Attribute defining whether or not we can use the branch-likely
 ;; instructions.
 (define_attr "branch_likely" "no,yes"
-  (if_then_else (ne (symbol_ref "GENERATE_BRANCHLIKELY") (const_int 0))
+  (if_then_else (match_test "GENERATE_BRANCHLIKELY")
 		(const_string "yes")
 		(const_string "no")))
 
@@ -849,7 +849,7 @@
 ;; .........................
 
 (define_delay (and (eq_attr "type" "branch")
-		   (eq (symbol_ref "TARGET_MIPS16") (const_int 0))
+		   (not (match_test "TARGET_MIPS16"))
 		   (eq_attr "branch_likely" "yes"))
   [(eq_attr "can_delay" "yes")
    (nil)
@@ -857,7 +857,7 @@
 
 ;; Branches that don't have likely variants do not annul on false.
 (define_delay (and (eq_attr "type" "branch")
-		   (eq (symbol_ref "TARGET_MIPS16") (const_int 0))
+		   (not (match_test "TARGET_MIPS16"))
 		   (eq_attr "branch_likely" "no"))
   [(eq_attr "can_delay" "yes")
    (nil)
@@ -1783,7 +1783,7 @@
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")
    (set (attr "length")
-	(if_then_else (ne (symbol_ref "ISA_HAS_EXT_INS") (const_int 0))
+	(if_then_else (match_test "ISA_HAS_EXT_INS")
 		      (const_int 16)
 		      (const_int 28)))])
 
@@ -2287,7 +2287,7 @@
   [(set_attr "type" "fdiv")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
-        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+        (if_then_else (match_test "TARGET_FIX_SB1")
                       (const_int 8)
                       (const_int 4)))])
 
@@ -2305,7 +2305,7 @@
   [(set_attr "type" "frdiv")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
-        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+        (if_then_else (match_test "TARGET_FIX_SB1")
                       (const_int 8)
                       (const_int 4)))])
 
@@ -2409,7 +2409,7 @@
   [(set_attr "type" "fsqrt")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
-        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+        (if_then_else (match_test "TARGET_FIX_SB1")
                       (const_int 8)
                       (const_int 4)))])
 
@@ -2427,7 +2427,7 @@
   [(set_attr "type" "frsqrt")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
-        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+        (if_then_else (match_test "TARGET_FIX_SB1")
                       (const_int 8)
                       (const_int 4)))])
 
@@ -2445,7 +2445,7 @@
   [(set_attr "type" "frsqrt")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
-        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+        (if_then_else (match_test "TARGET_FIX_SB1")
                       (const_int 8)
                       (const_int 4)))])
 
