@@ -89,7 +89,7 @@ MODULE testmod
     ! For corresponding dummy arguments.
     PROCEDURE, PASS :: corresp1 => proc_tmeint ! Ok.
     PROCEDURE, PASS :: corresp2 => proc_tmeintx ! { dg-error "should be named 'a'" }
-    PROCEDURE, PASS :: corresp3 => proc_tmereal ! { dg-error "Types mismatch for dummy argument 'a'" }
+    PROCEDURE, PASS :: corresp3 => proc_tmereal ! { dg-error "Type/rank mismatch in argument 'a'" }
 
   END TYPE t
 
