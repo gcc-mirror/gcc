@@ -1,3 +1,10 @@
+2011-09-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50327
+	* frontend-passes.c (dummy_expr_callback):  New function.
+	(convert_do_while):  New function.
+	(optimize_namespace):  Call code walker to convert do while loops.
+
 2011-09-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/35831
