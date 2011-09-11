@@ -1,3 +1,13 @@
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (build_return_expr): Use void_type_node for
+	MODIFY_EXPR.
+	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Assert that
+	the result type is null if ENABLE_CHECKING.  Set operation_type at the
+	end unconditionally if not set in the previous cases.
+	Use build2 and void_type_node for MODIFY_EXPR.
+	(build_allocator): Use NULL_TREE for MODIFY_EXPR.
+
 2011-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (unchecked_convert): Use a field of the right

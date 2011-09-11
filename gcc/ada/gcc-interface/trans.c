@@ -2482,7 +2482,7 @@ build_return_expr (tree ret_obj, tree ret_val)
       if (operation_type != TREE_TYPE (ret_val))
 	ret_val = convert (operation_type, ret_val);
 
-      result_expr = build2 (MODIFY_EXPR, operation_type, ret_obj, ret_val);
+      result_expr = build2 (MODIFY_EXPR, void_type_node, ret_obj, ret_val);
     }
   else
     result_expr = ret_obj;

@@ -518,8 +518,9 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 
 /* Make a binary operation of kind OP_CODE.  RESULT_TYPE is the type
    desired for the result.  Usually the operation is to be performed
-   in that type.  For MODIFY_EXPR and ARRAY_REF, RESULT_TYPE may be 0
-   in which case the type to be used will be derived from the operands.
+   in that type.  For INIT_EXPR and MODIFY_EXPR, RESULT_TYPE must be
+   NULL_TREE.  For ARRAY_REF, RESULT_TYPE may be NULL_TREE, in which
+   case the type to be used will be derived from the operands.
 
    This function is very much unlike the ones for C and C++ since we
    have already done any type conversion and matching required.  All we
@@ -557,6 +558,9 @@ build_binary_op (enum tree_code op_code, tree result_type,
     {
     case INIT_EXPR:
     case MODIFY_EXPR:
+#ifdef ENABLE_CHECKING
+      gcc_assert (result_type == NULL_TREE);
+#endif
       /* If there were integral or pointer conversions on the LHS, remove
 	 them; we'll be putting them back below if needed.  Likewise for
 	 conversions between array and record types, except for justified
@@ -633,7 +637,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	operation_type = best_type;
 
       /* Otherwise use the LHS type.  */
-      else if (!operation_type)
+      else
 	operation_type = left_type;
 
       /* Ensure everything on the LHS is valid.  If we have a field reference,
@@ -955,6 +959,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
   else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
     result = fold (build4 (op_code, operation_type, left_operand,
 			   right_operand, NULL_TREE, NULL_TREE));
+  else if (op_code == INIT_EXPR || op_code == MODIFY_EXPR)
+    result = build2 (op_code, void_type_node, left_operand, right_operand);
   else
     result
       = fold_build2 (op_code, operation_type, left_operand, right_operand);
@@ -2114,7 +2120,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 	    (result_type,
 	     build2 (COMPOUND_EXPR, storage_ptr_type,
 		     build_binary_op
-		     (MODIFY_EXPR, storage_type,
+		     (MODIFY_EXPR, NULL_TREE,
 		      build_unary_op (INDIRECT_REF, NULL_TREE,
 				      convert (storage_ptr_type, storage)),
 		      gnat_build_constructor (storage_type, v)),
@@ -2124,7 +2130,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 	return build2
 	  (COMPOUND_EXPR, result_type,
 	   build_binary_op
-	   (MODIFY_EXPR, template_type,
+	   (MODIFY_EXPR, NULL_TREE,
 	    build_component_ref
 	    (build_unary_op (INDIRECT_REF, NULL_TREE,
 			     convert (storage_ptr_type, storage)),
