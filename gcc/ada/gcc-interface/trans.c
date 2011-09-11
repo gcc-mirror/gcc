@@ -2444,7 +2444,7 @@ establish_gnat_vms_condition_handler (void)
     return;
 
   establish_stmt
-    = build_call_1_expr (vms_builtin_establish_handler_decl,
+    = build_call_n_expr (vms_builtin_establish_handler_decl, 1,
 			 build_unary_op
 			 (ADDR_EXPR, NULL_TREE,
 			  gnat_vms_condition_handler_decl));
@@ -3528,11 +3528,11 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      the setjmp buf known for any decls in this block.  */
   if (setjmp_longjmp)
     {
-      gnu_jmpsave_decl = create_var_decl (get_identifier ("JMPBUF_SAVE"),
-					  NULL_TREE, jmpbuf_ptr_type,
-					  build_call_0_expr (get_jmpbuf_decl),
-					  false, false, false, false,
-					  NULL, gnat_node);
+      gnu_jmpsave_decl
+	= create_var_decl (get_identifier ("JMPBUF_SAVE"), NULL_TREE,
+			   jmpbuf_ptr_type,
+			   build_call_n_expr (get_jmpbuf_decl, 0),
+			   false, false, false, false, NULL, gnat_node);
       DECL_ARTIFICIAL (gnu_jmpsave_decl) = 1;
 
       /* The __builtin_setjmp receivers will immediately reinstall it.  Now
@@ -3540,16 +3540,17 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	 might be forward edges going to __builtin_setjmp receivers on which
 	 it is uninitialized, although they will never be actually taken.  */
       TREE_NO_WARNING (gnu_jmpsave_decl) = 1;
-      gnu_jmpbuf_decl = create_var_decl (get_identifier ("JMP_BUF"),
-					 NULL_TREE, jmpbuf_type, NULL_TREE,
-					 false, false, false, false,
-					 NULL, gnat_node);
+      gnu_jmpbuf_decl
+	= create_var_decl (get_identifier ("JMP_BUF"), NULL_TREE,
+			   jmpbuf_type,
+			   NULL_TREE,
+			   false, false, false, false, NULL, gnat_node);
       DECL_ARTIFICIAL (gnu_jmpbuf_decl) = 1;
 
       set_block_jmpbuf_decl (gnu_jmpbuf_decl);
 
       /* When we exit this block, restore the saved value.  */
-      add_cleanup (build_call_1_expr (set_jmpbuf_decl, gnu_jmpsave_decl),
+      add_cleanup (build_call_n_expr (set_jmpbuf_decl, 1, gnu_jmpsave_decl),
 		   End_Label (gnat_node));
     }
 
@@ -3557,7 +3558,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      to the binding level we made above.  Note that add_cleanup is FIFO
      so we must register this cleanup after the EH cleanup just above.  */
   if (at_end)
-    add_cleanup (build_call_0_expr (gnat_to_gnu (At_End_Proc (gnat_node))),
+    add_cleanup (build_call_n_expr (gnat_to_gnu (At_End_Proc (gnat_node)), 0),
 		 End_Label (gnat_node));
 
   /* Now build the tree for the declarations and statements inside this block.
@@ -3565,7 +3566,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   start_stmt_group ();
 
   if (setjmp_longjmp)
-    add_stmt (build_call_1_expr (set_jmpbuf_decl,
+    add_stmt (build_call_n_expr (set_jmpbuf_decl, 1,
 				 build_unary_op (ADDR_EXPR, NULL_TREE,
 						 gnu_jmpbuf_decl)));
 
@@ -3596,7 +3597,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       VEC_safe_push (tree, gc, gnu_except_ptr_stack,
 		     create_var_decl (get_identifier ("EXCEPT_PTR"), NULL_TREE,
 				      build_pointer_type (except_type_node),
-				      build_call_0_expr (get_excptr_decl),
+				      build_call_n_expr (get_excptr_decl, 0),
 				      false, false, false, false,
 				      NULL, gnat_node));
 
@@ -3621,7 +3622,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* If none of the exception handlers did anything, re-raise but do not
 	 defer abortion.  */
-      gnu_expr = build_call_1_expr (raise_nodefer_decl,
+      gnu_expr = build_call_n_expr (raise_nodefer_decl, 1,
 				    VEC_last (tree, gnu_except_ptr_stack));
       set_expr_location_from_node
 	(gnu_expr,
@@ -3641,7 +3642,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       /* If the setjmp returns 1, we restore our incoming longjmp value and
 	 then check the handlers.  */
       start_stmt_group ();
-      add_stmt_with_node (build_call_1_expr (set_jmpbuf_decl,
+      add_stmt_with_node (build_call_n_expr (set_jmpbuf_decl, 1,
 					     gnu_jmpsave_decl),
 			  gnat_node);
       add_stmt (gnu_handler);
@@ -3649,8 +3650,8 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* This block is now "if (setjmp) ... <handlers> else <block>".  */
       gnu_result = build3 (COND_EXPR, void_type_node,
-			   (build_call_1_expr
-			    (setjmp_decl,
+			   (build_call_n_expr
+			    (setjmp_decl, 1,
 			     build_unary_op (ADDR_EXPR, NULL_TREE,
 					     gnu_jmpbuf_decl))),
 			   gnu_handler, gnu_inner_block);
@@ -3861,11 +3862,11 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 					  false, false, false, false,
 					  NULL, gnat_node);
 
-  add_stmt_with_node (build_call_1_expr (begin_handler_decl,
+  add_stmt_with_node (build_call_n_expr (begin_handler_decl, 1,
 					 gnu_incoming_exc_ptr),
 		      gnat_node);
   /* ??? We don't seem to have an End_Label at hand to set the location.  */
-  add_cleanup (build_call_1_expr (end_handler_decl, gnu_incoming_exc_ptr),
+  add_cleanup (build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr),
 	       Empty);
   add_stmt_list (Statements (gnat_node));
   gnat_poplevel ();
@@ -5496,7 +5497,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
       add_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_incoming_exc_ptr,
 				 convert (ptr_type_node, integer_zero_node)));
-      add_stmt (build_call_1_expr (reraise_zcx_decl, gnu_expr));
+      add_stmt (build_call_n_expr (reraise_zcx_decl, 1, gnu_expr));
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
       break;
@@ -6976,7 +6977,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 	{
 	  tree int_64 = gnat_type_for_size (64, 0);
 
-	  return convert (gnu_type, build_call_2_expr (mulv64_decl,
+	  return convert (gnu_type, build_call_n_expr (mulv64_decl, 2,
 						       convert (int_64, lhs),
 						       convert (int_64, rhs)));
 	}

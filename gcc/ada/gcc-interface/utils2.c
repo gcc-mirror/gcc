@@ -1409,43 +1409,22 @@ build_compound_expr (tree result_type, tree stmt_operand, tree expr_operand)
   return result;
 }
 
-/* Build a CALL_EXPR to call FUNDECL with one argument, ARG.  Return
-   the CALL_EXPR.  */
+/* Conveniently construct a function call expression.  FNDECL names the
+   function to be called, N is the number of arguments, and the "..."
+   parameters are the argument expressions.  Unlike build_call_expr
+   this doesn't fold the call, hence it will always return a CALL_EXPR.  */
 
 tree
-build_call_1_expr (tree fundecl, tree arg)
+build_call_n_expr (tree fndecl, int n, ...)
 {
-  tree call = build_call_nary (TREE_TYPE (TREE_TYPE (fundecl)),
-			       build_unary_op (ADDR_EXPR, NULL_TREE, fundecl),
-			       1, arg);
-  TREE_SIDE_EFFECTS (call) = 1;
-  return call;
-}
+  va_list ap;
+  tree fntype = TREE_TYPE (fndecl);
+  tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
 
-/* Build a CALL_EXPR to call FUNDECL with two arguments, ARG1 & ARG2.  Return
-   the CALL_EXPR.  */
-
-tree
-build_call_2_expr (tree fundecl, tree arg1, tree arg2)
-{
-  tree call = build_call_nary (TREE_TYPE (TREE_TYPE (fundecl)),
-			       build_unary_op (ADDR_EXPR, NULL_TREE, fundecl),
-			       2, arg1, arg2);
-  TREE_SIDE_EFFECTS (call) = 1;
-  return call;
-}
-
-/* Likewise to call FUNDECL with no arguments.  */
-
-tree
-build_call_0_expr (tree fundecl)
-{
-  /* We rely on build_call_nary to compute TREE_SIDE_EFFECTS.  This makes
-     it possible to propagate DECL_IS_PURE on parameterless functions.  */
-  tree call = build_call_nary (TREE_TYPE (TREE_TYPE (fundecl)),
-			       build_unary_op (ADDR_EXPR, NULL_TREE, fundecl),
-			       0);
-  return call;
+  va_start (ap, n);
+  fn = build_call_valist (TREE_TYPE (fntype), fn, n, ap);
+  va_end (ap);
+  return fn;
 }
 
 /* Call a function that raises an exception and pass the line number and file
@@ -1483,7 +1462,7 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 	  tree gnu_exception_entity
 	    = gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, 0);
 	  tree gnu_call
-	    = build_call_1_expr (gnu_local_raise,
+	    = build_call_n_expr (gnu_local_raise, 1,
 				 build_unary_op (ADDR_EXPR, NULL_TREE,
 						 gnu_exception_entity));
 
@@ -1513,7 +1492,7 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 					   build_index_type (size_int (len)));
 
   return
-    build_call_2_expr (fndecl,
+    build_call_n_expr (fndecl, 2,
 		       build1 (ADDR_EXPR,
 			       build_pointer_type (unsigned_char_type_node),
 			       filename),
@@ -1528,7 +1507,6 @@ tree
 build_call_raise_range (int msg, Node_Id gnat_node,
 			tree index, tree first, tree last)
 {
-  tree call;
   tree fndecl = gnat_raise_decls_ext[msg];
   tree filename;
   int line_number, column_number;
@@ -1561,19 +1539,16 @@ build_call_raise_range (int msg, Node_Id gnat_node,
   TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
 					   build_index_type (size_int (len)));
 
-  call = build_call_nary (TREE_TYPE (TREE_TYPE (fndecl)),
-			  build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
-			  6,
-			  build1 (ADDR_EXPR,
-				  build_pointer_type (unsigned_char_type_node),
-				  filename),
-			  build_int_cst (NULL_TREE, line_number),
-			  build_int_cst (NULL_TREE, column_number),
-			  convert (integer_type_node, index),
-			  convert (integer_type_node, first),
-			  convert (integer_type_node, last));
-  TREE_SIDE_EFFECTS (call) = 1;
-  return call;
+  return
+    build_call_n_expr (fndecl, 6,
+		       build1 (ADDR_EXPR,
+			       build_pointer_type (unsigned_char_type_node),
+			       filename),
+		       build_int_cst (NULL_TREE, line_number),
+		       build_int_cst (NULL_TREE, column_number),
+		       convert (integer_type_node, index),
+		       convert (integer_type_node, first),
+		       convert (integer_type_node, last));
 }
 
 /* Similar to build_call_raise, with extra information about the column
@@ -1583,7 +1558,6 @@ tree
 build_call_raise_column (int msg, Node_Id gnat_node)
 {
   tree fndecl = gnat_raise_decls_ext[msg];
-  tree call;
   tree filename;
   int line_number, column_number;
   const char *str;
@@ -1615,16 +1589,13 @@ build_call_raise_column (int msg, Node_Id gnat_node)
   TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
 					   build_index_type (size_int (len)));
 
-  call = build_call_nary (TREE_TYPE (TREE_TYPE (fndecl)),
-			  build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
-			  3,
-			  build1 (ADDR_EXPR,
-				  build_pointer_type (unsigned_char_type_node),
-				  filename),
-			  build_int_cst (NULL_TREE, line_number),
-			  build_int_cst (NULL_TREE, column_number));
-  TREE_SIDE_EFFECTS (call) = 1;
-  return call;
+  return
+    build_call_n_expr (fndecl, 3,
+		       build1 (ADDR_EXPR,
+			       build_pointer_type (unsigned_char_type_node),
+			       filename),
+		       build_int_cst (NULL_TREE, line_number),
+		       build_int_cst (NULL_TREE, column_number));
 }
 
 /* qsort comparer for the bit positions of two constructor elements
@@ -1842,7 +1813,6 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 			       Entity_Id gnat_proc, Entity_Id gnat_pool)
 {
   tree gnu_proc = gnat_to_gnu (gnat_proc);
-  tree gnu_proc_addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_proc);
   tree gnu_call;
 
   /* The storage pools are obviously always tagged types, but the
@@ -1866,13 +1836,11 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 	 comes the address of the object, for a deallocator, then the
 	 size and alignment.  */
       if (gnu_obj)
-	gnu_call = build_call_nary (TREE_TYPE (TREE_TYPE (gnu_proc)),
-				    gnu_proc_addr, 4, gnu_pool_addr,
-				    gnu_obj, gnu_size, gnu_align);
+	gnu_call = build_call_n_expr (gnu_proc, 4, gnu_pool_addr, gnu_obj,
+				      gnu_size, gnu_align);
       else
-	gnu_call = build_call_nary (TREE_TYPE (TREE_TYPE (gnu_proc)),
-				    gnu_proc_addr, 3, gnu_pool_addr,
-				    gnu_size, gnu_align);
+	gnu_call = build_call_n_expr (gnu_proc, 3, gnu_pool_addr,
+				      gnu_size, gnu_align);
     }
 
   /* Secondary stack case.  */
@@ -1888,14 +1856,11 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
       /* The first arg is the address of the object, for a deallocator,
 	 then the size.  */
       if (gnu_obj)
-	gnu_call = build_call_nary (TREE_TYPE (TREE_TYPE (gnu_proc)),
-				    gnu_proc_addr, 2, gnu_obj, gnu_size);
+	gnu_call = build_call_n_expr (gnu_proc, 2, gnu_obj, gnu_size);
       else
-	gnu_call = build_call_nary (TREE_TYPE (TREE_TYPE (gnu_proc)),
-				    gnu_proc_addr, 1, gnu_size);
+	gnu_call = build_call_n_expr (gnu_proc, 1, gnu_size);
     }
 
-  TREE_SIDE_EFFECTS (gnu_call) = 1;
   return gnu_call;
 }
 
@@ -1935,9 +1900,9 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
       && Nkind (gnat_node) == N_Allocator
       && (UI_To_Int (Esize (Etype (gnat_node))) == 32
           || Convention (Etype (gnat_node)) == Convention_C))
-    malloc_ptr = build_call_1_expr (malloc32_decl, size_to_malloc);
+    malloc_ptr = build_call_n_expr (malloc32_decl, 1, size_to_malloc);
   else
-    malloc_ptr = build_call_1_expr (malloc_decl, size_to_malloc);
+    malloc_ptr = build_call_n_expr (malloc_decl, 1, size_to_malloc);
 
   if (aligning_type)
     {
@@ -2016,7 +1981,7 @@ maybe_wrap_free (tree data_ptr, tree data_type)
   else
     free_ptr = data_ptr;
 
-  return build_call_1_expr (free_decl, free_ptr);
+  return build_call_n_expr (free_decl, 1, free_ptr);
 }
 
 /* Build a GCC tree to call an allocation or deallocation function.
