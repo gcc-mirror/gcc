@@ -88,6 +88,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
       alloc_size = sizeof (rtype_name) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
+      retarray->data = internal_malloc_size (alloc_size);
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -95,8 +96,6 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	  return;
 
 	}
-      else
-	retarray->data = internal_malloc_size (alloc_size);
     }
   else
     {
