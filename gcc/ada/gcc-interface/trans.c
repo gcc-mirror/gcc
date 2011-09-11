@@ -2943,6 +2943,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       tree gnu_formal = present_gnu_tree (gnat_formal)
 			? get_gnu_tree (gnat_formal) : NULL_TREE;
       tree gnu_formal_type = gnat_to_gnu_type (Etype (gnat_formal));
+      const bool is_true_formal_parm
+	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
       /* In the Out or In Out case, we must suppress conversions that yield
 	 an lvalue but can nevertheless cause the creation of a temporary,
 	 because we need the real object in this case, either to pass its
@@ -2951,7 +2953,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	 We do it in the In case too, except for an unchecked conversion
 	 because it alone can cause the actual to be misaligned and the
 	 addressability test is applied to the real object.  */
-      bool suppress_type_conversion
+      const bool suppress_type_conversion
 	= ((Nkind (gnat_actual) == N_Unchecked_Type_Conversion
 	    && Ekind (gnat_formal) != E_In_Parameter)
 	   || (Nkind (gnat_actual) == N_Type_Conversion
@@ -2972,11 +2974,10 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       /* If we are passing a non-addressable parameter by reference, pass the
 	 address of a copy.  In the Out or In Out case, set up to copy back
 	 out after the call.  */
-      if (gnu_formal
+      if (is_true_formal_parm
 	  && (DECL_BY_REF_P (gnu_formal)
-	      || (TREE_CODE (gnu_formal) == PARM_DECL
-		  && (DECL_BY_COMPONENT_PTR_P (gnu_formal)
-		      || (DECL_BY_DESCRIPTOR_P (gnu_formal)))))
+	      || DECL_BY_COMPONENT_PTR_P (gnu_formal)
+	      || DECL_BY_DESCRIPTOR_P (gnu_formal))
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
 	  && !addressable_p (gnu_name, gnu_name_type))
 	{
@@ -3118,9 +3119,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       /* If we have not saved a GCC object for the formal, it means it is an
 	 Out parameter not passed by reference and that need not be copied in.
 	 Otherwise, first see if the parameter is passed by reference.  */
-      if (gnu_formal
-	  && TREE_CODE (gnu_formal) == PARM_DECL
-	  && DECL_BY_REF_P (gnu_formal))
+      if (is_true_formal_parm && DECL_BY_REF_P (gnu_formal))
 	{
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    {
@@ -3171,9 +3170,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
-      else if (gnu_formal
-	       && TREE_CODE (gnu_formal) == PARM_DECL
-	       && DECL_BY_COMPONENT_PTR_P (gnu_formal))
+      else if (is_true_formal_parm && DECL_BY_COMPONENT_PTR_P (gnu_formal))
 	{
 	  gnu_formal_type = TREE_TYPE (gnu_formal);
 	  gnu_actual = maybe_implicit_deref (gnu_actual);
@@ -3193,9 +3190,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	     but this is the most likely to work in all cases.  */
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
-      else if (gnu_formal
-	       && TREE_CODE (gnu_formal) == PARM_DECL
-	       && DECL_BY_DESCRIPTOR_P (gnu_formal))
+      else if (is_true_formal_parm && DECL_BY_DESCRIPTOR_P (gnu_formal))
 	{
 	  gnu_actual = convert (gnu_formal_type, gnu_actual);
 
@@ -3218,7 +3213,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
 
-	  if (!(gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL))
+	  if (!is_true_formal_parm)
 	    {
 	      /* Make sure side-effects are evaluated before the call.  */
 	      if (TREE_SIDE_EFFECTS (gnu_name))
