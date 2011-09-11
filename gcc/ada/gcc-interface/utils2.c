@@ -2046,6 +2046,16 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   if (init && TREE_CODE (init) == NULL_EXPR)
     return build1 (NULL_EXPR, result_type, TREE_OPERAND (init, 0));
 
+  /* If the initializer, if present, is a COND_EXPR, deal with each branch.  */
+  else if (init && TREE_CODE (init) == COND_EXPR)
+    return build3 (COND_EXPR, result_type, TREE_OPERAND (init, 0),
+		   build_allocator (type, TREE_OPERAND (init, 1), result_type,
+				    gnat_proc, gnat_pool, gnat_node,
+				    ignore_init_type),
+		   build_allocator (type, TREE_OPERAND (init, 2), result_type,
+				    gnat_proc, gnat_pool, gnat_node,
+				    ignore_init_type));
+
   /* If RESULT_TYPE is a fat or thin pointer, set SIZE to be the sum of the
      sizes of the object and its template.  Allocate the whole thing and
      fill in the parts that are known.  */

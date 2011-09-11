@@ -1,5 +1,9 @@
 2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/cond_expr2.ad[sb]: New test.
+
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/atomic5.ad[sb]: New test.
 
 2011-09-10  H.J. Lu  <hongjiu.lu@intel.com>
