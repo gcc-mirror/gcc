@@ -1,3 +1,12 @@
+2011-09-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	PR fortran/47978
+	* gfortran.dg/dynamic_dispatch_5.f03: Fix invalid test case.
+	* gfortran.dg/proc_decl_26.f90: New.
+	* gfortran.dg/typebound_override_2.f90: New.
+	* gfortran.dg/typebound_proc_6.f03: Changed wording in error message.
+
 2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/cond_expr2.ad[sb]: New test.
