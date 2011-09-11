@@ -1,3 +1,12 @@
+2011-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.md: Use match_test rather than eq/ne symbol_ref
+	throughout file.
+	* config/mips/sb1.md: Likewise.
+	* config/mips/predicates.md: Replace (match_test "!...")
+	with (not (match_test "..."))
+	* config/mips/constraints.md: Likewise.
+
 2011-09-09  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm-cores.def (generic-armv7-a): New architecture.
