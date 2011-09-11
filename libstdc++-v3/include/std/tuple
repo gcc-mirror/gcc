@@ -876,108 +876,184 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
-  template<std::size_t...> struct __index_holder { };    
 
-  template<std::size_t __i, typename _IdxHolder, typename... _Elements>
-    struct __index_holder_impl;
+  template<typename, std::size_t> struct array;
 
-  template<std::size_t __i, std::size_t... _Indexes, typename _IdxHolder,
-	   typename... _Elements>
-    struct __index_holder_impl<__i, __index_holder<_Indexes...>,
-			       _IdxHolder, _Elements...> 
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    _Tp& get(array<_Tp, _Nm>&) noexcept;
+
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    _Tp&& get(array<_Tp, _Nm>&&) noexcept;
+
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    const _Tp& get(const array<_Tp, _Nm>&) noexcept;
+
+  template<typename>
+    struct __is_tuple_like_impl : false_type
+    { };
+
+  template<typename... _Tps>
+    struct __is_tuple_like_impl<tuple<_Tps...>> : true_type
+    { };
+
+  template<typename _T1, typename _T2>
+    struct __is_tuple_like_impl<pair<_T1, _T2>> : true_type
+    { };
+
+  template<typename _Tp, std::size_t _Nm>
+    struct __is_tuple_like_impl<array<_Tp, _Nm>> : true_type
+    { };
+
+  // Internal type trait that allows us to sfinae-protect tuple_cat.
+  template<typename _Tp>
+    struct __is_tuple_like
+    : public __is_tuple_like_impl<typename std::remove_cv
+            <typename std::remove_reference<_Tp>::type>::type>::type
+    { };
+
+  // Stores a tuple of indices.  Also used by bind() to extract the elements
+  // in a tuple. 
+  template<std::size_t... _Indexes>
+    struct _Index_tuple
     {
-      typedef typename __index_holder_impl<__i + 1,
-					   __index_holder<_Indexes..., __i>,
-					   _Elements...>::type type;
+      typedef _Index_tuple<_Indexes..., sizeof...(_Indexes)> __next;
     };
- 
-  template<std::size_t __i, std::size_t... _Indexes>
-    struct __index_holder_impl<__i, __index_holder<_Indexes...> >
-    { typedef __index_holder<_Indexes...> type; };
 
-  template<typename... _Elements>
-    struct __make_index_holder 
-    : __index_holder_impl<0, __index_holder<>, _Elements...> { };
-    
-  template<typename... _TElements, std::size_t... _TIdx,
-	   typename... _UElements, std::size_t... _UIdx> 
-    inline constexpr tuple<_TElements..., _UElements...> 
-    __tuple_cat_helper(const tuple<_TElements...>& __t,
-		       const __index_holder<_TIdx...>&,
-                       const tuple<_UElements...>& __u,
-		       const __index_holder<_UIdx...>&)
-    { return tuple<_TElements..., _UElements...>(get<_TIdx>(__t)...,
-						 get<_UIdx>(__u)...); }
-
-  template<typename... _TElements, std::size_t... _TIdx,
-	   typename... _UElements, std::size_t... _UIdx> 
-    inline tuple<_TElements..., _UElements...> 
-    __tuple_cat_helper(tuple<_TElements...>&& __t,
-		       const __index_holder<_TIdx...>&, 
-		       const tuple<_UElements...>& __u,
-		       const __index_holder<_UIdx...>&)
-    { return tuple<_TElements..., _UElements...>
-	(std::forward<_TElements>(get<_TIdx>(__t))..., get<_UIdx>(__u)...); }
-
-  template<typename... _TElements, std::size_t... _TIdx,
-	   typename... _UElements, std::size_t... _UIdx>
-    inline tuple<_TElements..., _UElements...> 
-    __tuple_cat_helper(const tuple<_TElements...>& __t,
-		       const __index_holder<_TIdx...>&, 
-		       tuple<_UElements...>&& __u,
-		       const __index_holder<_UIdx...>&)
-    { return tuple<_TElements..., _UElements...>
-	(get<_TIdx>(__t)..., std::forward<_UElements>(get<_UIdx>(__u))...); }
-
-  template<typename... _TElements, std::size_t... _TIdx,
-	   typename... _UElements, std::size_t... _UIdx> 
-    inline tuple<_TElements..., _UElements...> 
-    __tuple_cat_helper(tuple<_TElements...>&& __t,
-		       const __index_holder<_TIdx...>&, 
-		       tuple<_UElements...>&& __u,
-		       const __index_holder<_UIdx...>&)
-    { return tuple<_TElements..., _UElements...>
-	(std::forward<_TElements>(get<_TIdx>(__t))...,
-	 std::forward<_UElements>(get<_UIdx>(__u))...); }
-
-  template<typename... _TElements, typename... _UElements>
-    inline constexpr tuple<_TElements..., _UElements...> 
-    tuple_cat(const tuple<_TElements...>& __t, const tuple<_UElements...>& __u)
+  // Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
+  template<std::size_t _Num>
+    struct _Build_index_tuple
     {
-      return __tuple_cat_helper(__t, typename
-				__make_index_holder<_TElements...>::type(),
-				__u, typename
-				__make_index_holder<_UElements...>::type());
-    }
+      typedef typename _Build_index_tuple<_Num - 1>::__type::__next __type;
+    };
 
-  template<typename... _TElements, typename... _UElements>
-    inline tuple<_TElements..., _UElements...> 
-    tuple_cat(tuple<_TElements...>&& __t, const tuple<_UElements...>& __u)
+  template<>
+    struct _Build_index_tuple<0>
     {
-      return __tuple_cat_helper(std::move(__t), typename
-				 __make_index_holder<_TElements...>::type(),
-				 __u, typename
-				 __make_index_holder<_UElements...>::type());
-    }
+      typedef _Index_tuple<> __type;
+    };
 
-  template<typename... _TElements, typename... _UElements>
-    inline tuple<_TElements..., _UElements...> 
-    tuple_cat(const tuple<_TElements...>& __t, tuple<_UElements...>&& __u)
-    {
-      return __tuple_cat_helper(__t, typename
-				__make_index_holder<_TElements...>::type(),
-				std::move(__u), typename
-				__make_index_holder<_UElements...>::type());
-    }
+  template<std::size_t, typename, typename, std::size_t>
+    struct __make_tuple_impl;
 
-  template<typename... _TElements, typename... _UElements>
-    inline tuple<_TElements..., _UElements...>
-    tuple_cat(tuple<_TElements...>&& __t, tuple<_UElements...>&& __u)
+  template<std::size_t _Idx, typename _Tuple, typename... _Tp,
+           std::size_t _Nm>
+    struct __make_tuple_impl<_Idx, tuple<_Tp...>, _Tuple, _Nm>
     {
-      return __tuple_cat_helper(std::move(__t), typename
-				__make_index_holder<_TElements...>::type(),
-				std::move(__u), typename
-				__make_index_holder<_UElements...>::type());
+      typedef typename __make_tuple_impl<_Idx + 1, tuple<_Tp...,
+	typename std::tuple_element<_Idx, _Tuple>::type>, _Tuple, _Nm>::__type
+      __type;
+    };
+
+  template<std::size_t _Nm, typename _Tuple, typename... _Tp>
+    struct __make_tuple_impl<_Nm, tuple<_Tp...>, _Tuple, _Nm>
+    {
+      typedef tuple<_Tp...> __type;
+    };
+
+  template<typename _Tuple>
+    struct __do_make_tuple
+    : public __make_tuple_impl<0, tuple<>, _Tuple,
+                               std::tuple_size<_Tuple>::value>
+    { };
+
+  // Returns the std::tuple equivalent of a tuple-like type.
+  template<typename _Tuple>
+    struct __make_tuple
+    : public __do_make_tuple<typename std::remove_cv
+            <typename std::remove_reference<_Tuple>::type>::type>
+    { };
+
+  // Combines several std::tuple's into a single one.
+  template<typename...>
+    struct __combine_tuples;
+
+  template<>
+    struct __combine_tuples<>
+    {
+      typedef tuple<> __type;
+    };
+
+  template<typename... _Ts>
+    struct __combine_tuples<tuple<_Ts...>>
+    {
+      typedef tuple<_Ts...> __type;
+    };
+
+  template<typename... _T1s, typename... _T2s, typename... _Rem>
+    struct __combine_tuples<tuple<_T1s...>, tuple<_T2s...>, _Rem...>
+    {
+      typedef typename __combine_tuples<tuple<_T1s..., _T2s...>,
+					_Rem...>::__type __type;
+    };
+
+  // Computes the result type of tuple_cat given a set of tuple-like types.
+  template<typename... _Tpls>
+    struct __tuple_cat_result
+    {
+      typedef typename __combine_tuples
+        <typename __make_tuple<_Tpls>::__type...>::__type __type;
+    };
+
+  // Helper to determine the index set for the first tuple-like
+  // type of a given set.
+  template<typename...>
+    struct __make_1st_indices;
+
+  template<>
+    struct __make_1st_indices<>
+    {
+      typedef std::_Index_tuple<> __type;
+    };
+
+  template<typename _Tp, typename... _Tpls>
+    struct __make_1st_indices<_Tp, _Tpls...>
+    {
+      typedef typename std::_Build_index_tuple<std::tuple_size<
+	typename std::remove_reference<_Tp>::type>::value>::__type __type;
+    };
+
+  // Performs the actual concatenation by step-wise expanding tuple-like
+  // objects into the elements,  which are finally forwarded into the
+  // result tuple.
+  template<typename _Ret, typename _Indices, typename... _Tpls>
+    struct __tuple_concater;
+
+  template<typename _Ret, std::size_t... _Is, typename _Tp, typename... _Tpls>
+    struct __tuple_concater<_Ret, std::_Index_tuple<_Is...>, _Tp, _Tpls...>
+    {
+      template<typename... _Us>
+        static _Ret
+        _S_do(_Tp&& __tp, _Tpls&&... __tps, _Us&&... __us)
+        {
+	  typedef typename __make_1st_indices<_Tpls...>::__type __idx;
+	  typedef __tuple_concater<_Ret, __idx, _Tpls...>      __next;
+	  return __next::_S_do(std::forward<_Tpls>(__tps)...,
+			       std::forward<_Us>(__us)...,
+			       std::get<_Is>(std::forward<_Tp>(__tp))...);
+	}
+    };
+
+  template<typename _Ret>
+    struct __tuple_concater<_Ret, std::_Index_tuple<>>
+    {
+      template<typename... _Us>
+	static _Ret
+	_S_do(_Us&&... __us)
+        {
+	  return _Ret(std::forward<_Us>(__us)...);
+	}
+    };
+
+  template<typename... _Tpls>
+    inline typename
+    std::enable_if<__and_<__is_tuple_like<_Tpls>...>::value,
+                   typename __tuple_cat_result<_Tpls...>::__type>::type
+    tuple_cat(_Tpls&&... __tpls)
+    {
+      typedef typename __tuple_cat_result<_Tpls...>::__type __ret;
+      typedef typename __make_1st_indices<_Tpls...>::__type __idx;
+      typedef __tuple_concater<__ret, __idx, _Tpls...> __concater;
+      return __concater::_S_do(std::forward<_Tpls>(__tpls)...);
     }
 
   template<typename... _Elements>
@@ -1006,29 +1082,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Partial specialization for tuples
   template<typename... _Types, typename _Alloc>
     struct uses_allocator<tuple<_Types...>, _Alloc> : true_type { };
-
-  /**
-   * Stores a tuple of indices. Used by bind() to extract the elements
-   * in a tuple. 
-   */
-  template<std::size_t... _Indexes>
-    struct _Index_tuple
-    {
-      typedef _Index_tuple<_Indexes..., sizeof...(_Indexes)> __next;
-    };
-
-  /// Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
-  template<std::size_t _Num>
-    struct _Build_index_tuple
-    {
-      typedef typename _Build_index_tuple<_Num-1>::__type::__next __type;
-    };
-
-  template<>
-    struct _Build_index_tuple<0>
-    {
-      typedef _Index_tuple<> __type;
-    };
 
   // See stl_pair.h...
   template<class _T1, class _T2>

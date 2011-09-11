@@ -63,6 +63,7 @@ test_get()
 }
 
 // tuple_cat
+#if 0
 void
 test_tuple_cat()
 {
@@ -73,7 +74,7 @@ test_tuple_cat()
   constexpr tuple_type2 t2 { 55, 99, 77.77 };
   constexpr auto cat1 = std::tuple_cat(t1, t2);
 }
-
+#endif
 
 int
 main()
@@ -84,7 +85,9 @@ main()
 
   test_get();
 
+#if 0
   test_tuple_cat();
+#endif
 
   return 0;
 }
