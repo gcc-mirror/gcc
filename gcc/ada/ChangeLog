@@ -1,5 +1,28 @@
 2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (build_call_0_expr): Delete.
+	(build_call_1_expr): Likewise.
+	(build_call_2_expr): Likewise.
+	(build_call_n_expr): New prototype.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use build_call_n_expr.
+	* gcc-interface/trans.c (establish_gnat_vms_condition_handler): Ditto.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(Exception_Handler_to_gnu_zcx): Likewise.
+	(gnat_to_gnu): Likewise.
+	(build_binary_op_trapv): Likewise.
+	* gcc-interface/utils2.c (build_call_0_expr): Delete.
+	(build_call_1_expr): Likewise.
+	(build_call_2_expr): Likewise.
+	(build_call_n_expr): New function.
+	(build_call_raise): Use build_call_n_expr.
+	(build_call_raise_range): Likewise.
+	(build_call_raise_column): Likewise.
+	(build_call_alloc_dealloc_proc): Likewise.
+	(maybe_wrap_malloc): Likewise.
+	(maybe_wrap_free): Likewise.
+
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (build_return_expr): Use void_type_node for
 	MODIFY_EXPR.
 	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Assert that
