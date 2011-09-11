@@ -1,3 +1,10 @@
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (maybe_pad_type): Do not try to change the form
+	of an addressable type.
+	* gcc-interface/trans.c (gnat_gimplify_expr) <VIEW_CONVERT_EXPR>: New.
+	Deal with those cases for which creating a temporary is mandatory.
+
 2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Backport from mainline (restore powerpc-darwin Ada bootstrap).

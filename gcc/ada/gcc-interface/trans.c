@@ -6276,6 +6276,28 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
       return GS_UNHANDLED;
 
+    case VIEW_CONVERT_EXPR:
+      op = TREE_OPERAND (expr, 0);
+
+      /* If we are view-converting a CONSTRUCTOR or a call from an aggregate
+	 type to a scalar one, explicitly create the local temporary.  That's
+	 required if the type is passed by reference.  */
+      if ((TREE_CODE (op) == CONSTRUCTOR || TREE_CODE (op) == CALL_EXPR)
+	  && AGGREGATE_TYPE_P (TREE_TYPE (op))
+	  && !AGGREGATE_TYPE_P (TREE_TYPE (expr)))
+	{
+	  tree mod, new_var = create_tmp_var_raw (TREE_TYPE (op), "C");
+	  gimple_add_tmp_var (new_var);
+
+	  mod = build2 (INIT_EXPR, TREE_TYPE (new_var), new_var, op);
+	  gimplify_and_add (mod, pre_p);
+
+	  TREE_OPERAND (expr, 0) = new_var;
+	  return GS_OK;
+	}
+
+      return GS_UNHANDLED;
+
     case DECL_EXPR:
       op = DECL_EXPR_DECL (expr);
 

@@ -6422,6 +6422,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align != 0
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_MODE (type) == BLKmode
+      && !TREE_ADDRESSABLE (type)
       && TREE_CODE (orig_size) == INTEGER_CST
       && !TREE_OVERFLOW (orig_size)
       && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0
