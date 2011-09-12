@@ -1,5 +1,11 @@
 2011-09-12  Jason Merrill  <jason@redhat.com>
 
+	* call.c (initialize_reference): Add flags parm.
+	* decl.c (grok_reference_init): Likewise.
+	(check_initializer): Pass it.
+	* typeck.c (convert_for_initialization): Likewise.
+	* cp-tree.h: Adjust.
+
 	* cp-tree.h (LOOKUP_NO_RVAL_BIND): New.
 	* call.c (conditional_conversion): Use it.
 	(reference_binding): Fix handling of xvalues.
