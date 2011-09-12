@@ -1,5 +1,13 @@
 2011-09-12  Jason Merrill  <jason@redhat.com>
 
+	* call.c (merge_conversion_sequences): Set bad_p and user_conv_p
+	on all of the second conversion sequence.
+	(build_user_type_conversion_1): Set bad_p on the ck_user conv.
+	(convert_like_real): Handle bad ck_ref_bind with user_conv_p in the
+	first section.  Fix loop logic.
+	(initialize_reference): Call convert_like for diagnostics when
+	we have a (bad) conversion.
+
 	* call.c (convert_class_to_reference)
 	(convert_class_to_reference_1): Remove.
 	(reference_binding): Use build_user_type_conversion_1 instead.
