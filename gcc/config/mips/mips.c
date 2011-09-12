@@ -8365,20 +8365,22 @@ mips16e_collect_argument_saves (void)
 }
 
 /* Return a move between register REGNO and memory location SP + OFFSET.
-   Make the move a load if RESTORE_P, otherwise make it a frame-related
-   store.  */
+   REG_PARM_P is true if SP + OFFSET belongs to REG_PARM_STACK_SPACE.
+   Make the move a load if RESTORE_P, otherwise make it a store.  */
 
 static rtx
-mips16e_save_restore_reg (bool restore_p, HOST_WIDE_INT offset,
-			  unsigned int regno)
+mips16e_save_restore_reg (bool restore_p, bool reg_parm_p,
+			  HOST_WIDE_INT offset, unsigned int regno)
 {
   rtx reg, mem;
 
   mem = gen_frame_mem (SImode, plus_constant (stack_pointer_rtx, offset));
   reg = gen_rtx_REG (SImode, regno);
-  return (restore_p
-	  ? gen_rtx_SET (VOIDmode, reg, mem)
-	  : mips_frame_set (mem, reg));
+  if (restore_p)
+    return gen_rtx_SET (VOIDmode, reg, mem);
+  if (reg_parm_p)
+    return gen_rtx_SET (VOIDmode, mem, reg);
+  return mips_frame_set (mem, reg);
 }
 
 /* Return RTL for a MIPS16e SAVE or RESTORE instruction; RESTORE_P says which.
@@ -8440,7 +8442,8 @@ mips16e_build_save_restore (bool restore_p, unsigned int *mask_ptr,
   for (i = 0; i < nargs; i++)
     {
       offset = top_offset + i * UNITS_PER_WORD;
-      set = mips16e_save_restore_reg (restore_p, offset, GP_ARG_FIRST + i);
+      set = mips16e_save_restore_reg (restore_p, true, offset,
+				      GP_ARG_FIRST + i);
       XVECEXP (pattern, 0, n++) = set;
     }
 
@@ -8452,7 +8455,7 @@ mips16e_build_save_restore (bool restore_p, unsigned int *mask_ptr,
       if (BITSET_P (*mask_ptr, regno))
 	{
 	  offset -= UNITS_PER_WORD;
-	  set = mips16e_save_restore_reg (restore_p, offset, regno);
+	  set = mips16e_save_restore_reg (restore_p, false, offset, regno);
 	  XVECEXP (pattern, 0, n++) = set;
 	  *mask_ptr &= ~(1 << regno);
 	}
