@@ -1,3 +1,10 @@
+2011-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/50010
+	* dwarf2cfi.c (add_cfis_to_fde): Ignore non-active insns in between
+	NOTE_INSN_CFI notes, with the exception of
+	NOTE_INSN_SWITCH_TEXT_SECTIONS.
+
 2011-09-12  Bernd Schmidt  <bernds@codesourcery.com>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 
