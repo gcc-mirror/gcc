@@ -3242,20 +3242,22 @@ static conversion *
 merge_conversion_sequences (conversion *user_seq, conversion *std_seq)
 {
   conversion **t;
+  bool bad = user_seq->bad_p;
 
   gcc_assert (user_seq->kind == ck_user);
 
   /* Find the end of the second conversion sequence.  */
-  t = &(std_seq);
-  while ((*t)->kind != ck_identity)
-    t = &((*t)->u.next);
+  for (t = &std_seq; (*t)->kind != ck_identity; t = &((*t)->u.next))
+    {
+      /* The entire sequence is a user-conversion sequence.  */
+      (*t)->user_conv_p = true;
+      if (bad)
+	(*t)->bad_p = true;
+    }
 
   /* Replace the identity conversion with the user conversion
      sequence.  */
   *t = user_seq;
-
-  /* The entire sequence is a user-conversion sequence.  */
-  std_seq->user_conv_p = true;
 
   return std_seq;
 }
@@ -3533,6 +3535,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
      build_identity_conv (TREE_TYPE (expr), expr));
   conv->cand = cand;
+  if (cand->viable == -1)
+    conv->bad_p = true;
 
   /* Remember that this was a list-initialization.  */
   if (flags & LOOKUP_NO_NARROWING)
@@ -3541,9 +3545,6 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   /* Combine it with the second conversion sequence.  */
   cand->second_conv = merge_conversion_sequences (conv,
 						  cand->second_conv);
-
-  if (cand->viable == -1)
-    cand->second_conv->bad_p = true;
 
   return cand;
 }
@@ -5529,7 +5530,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       && convs->kind != ck_user
       && convs->kind != ck_list
       && convs->kind != ck_ambig
-      && convs->kind != ck_ref_bind
+      && (convs->kind != ck_ref_bind
+	  || convs->user_conv_p)
       && convs->kind != ck_rvalue
       && convs->kind != ck_base)
     {
@@ -5542,7 +5544,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && BRACE_ENCLOSED_INITIALIZER_P (CONSTRUCTOR_ELT (expr, 0)->value))
 	permerror (input_location, "too many braces around initializer for %qT", totype);
 
-      for (; t; t = convs->u.next)
+      for (; t; t = t->u.next)
 	{
 	  if (t->kind == ck_user && t->cand->reason)
 	    {
@@ -5553,7 +5555,11 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 					/*issue_conversion_warnings=*/false,
 					/*c_cast_p=*/false,
 					complain);
-	      return cp_convert (totype, expr);
+	      if (convs->kind == ck_ref_bind)
+		return convert_to_reference (totype, expr, CONV_IMPLICIT,
+					     LOOKUP_NORMAL, NULL_TREE);
+	      else
+		return cp_convert (totype, expr);
 	    }
 	  else if (t->kind == ck_user || !t->bad_p)
 	    {
@@ -5788,9 +5794,11 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	tree ref_type = totype;
 
-	if (convs->bad_p && TYPE_REF_IS_RVALUE (ref_type)
-	    && real_lvalue_p (expr))
+	if (convs->bad_p && !convs->u.next->bad_p)
 	  {
+	    gcc_assert (TYPE_REF_IS_RVALUE (ref_type)
+			&& real_lvalue_p (expr));
+
 	    error ("cannot bind %qT lvalue to %qT",
 		   TREE_TYPE (expr), totype);
 	    if (fn)
@@ -8581,9 +8589,11 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
     {
       if (complain & tf_error)
 	{
-	  if (!CP_TYPE_CONST_P (TREE_TYPE (type))
-	      && !TYPE_REF_IS_RVALUE (type)
-	      && !real_lvalue_p (expr))
+	  if (conv)
+	    convert_like (conv, expr, complain);
+	  else if (!CP_TYPE_CONST_P (TREE_TYPE (type))
+		   && !TYPE_REF_IS_RVALUE (type)
+		   && !real_lvalue_p (expr))
 	    error ("invalid initialization of non-const reference of "
 		   "type %qT from an rvalue of type %qT",
 		   type, TREE_TYPE (expr));
