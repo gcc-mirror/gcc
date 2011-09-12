@@ -1,5 +1,12 @@
 2011-09-12  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (type_unification_real): Fix handling of DEDUCE_CONV
+	with no deducible template parameters.
+	* call.c (rejection_reason_code): Add rr_template_conversion.
+	(print_z_candidate): Handle it.
+	(template_conversion_rejection): New.
+	(build_user_type_conversion_1): Use it.
+
 	* call.c (merge_conversion_sequences): Set bad_p and user_conv_p
 	on all of the second conversion sequence.
 	(build_user_type_conversion_1): Set bad_p on the ck_user conv.
