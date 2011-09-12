@@ -1,5 +1,7 @@
 2011-09-12  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/fntmpdefarg2.C: Add more tests.
+
 	* g++.dg/cpp0x/explicit7.C: New.
 
 2011-09-12  Jakub Jelinek  <jakub@redhat.com>

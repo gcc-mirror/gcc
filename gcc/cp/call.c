@@ -432,6 +432,7 @@ enum rejection_reason_code {
   rr_none,
   rr_arity,
   rr_explicit_conversion,
+  rr_template_conversion,
   rr_arg_conversion,
   rr_bad_arg_conversion,
   rr_template_unification,
@@ -647,6 +648,16 @@ static struct rejection_reason *
 explicit_conversion_rejection (tree from, tree to)
 {
   struct rejection_reason *r = alloc_rejection (rr_explicit_conversion);
+  r->u.conversion.n_arg = 0;
+  r->u.conversion.from_type = from;
+  r->u.conversion.to_type = to;
+  return r;
+}
+
+static struct rejection_reason *
+template_conversion_rejection (tree from, tree to)
+{
+  struct rejection_reason *r = alloc_rejection (rr_template_conversion);
   r->u.conversion.n_arg = 0;
   r->u.conversion.from_type = from;
   r->u.conversion.to_type = to;
@@ -3135,6 +3146,12 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
 		  "conversion", r->u.conversion.from_type,
 		  r->u.conversion.to_type);
 	  break;
+	case rr_template_conversion:
+	  inform (loc, "  conversion from return type %qT of template "
+		  "conversion function specialization to %qT is not an "
+		  "exact match", r->u.conversion.from_type,
+		  r->u.conversion.to_type);
+	  break;
 	case rr_template_unification:
 	  /* We use template_unification_error_rejection if unification caused
 	     actual non-SFINAE errors, in which case we don't need to repeat
@@ -3494,6 +3511,16 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 	      cand->reason
 		= bad_arg_conversion_rejection (NULL_TREE, -1,
 						rettype, totype);
+	    }
+	  else if (primary_template_instantiation_p (cand->fn)
+		   && ics->rank > cr_exact)
+	    {
+	      /* 13.3.3.1.2: If the user-defined conversion is specified by
+		 a specialization of a conversion function template, the
+		 second standard conversion sequence shall have exact match
+		 rank.  */
+	      cand->viable = -1;
+	      cand->reason = template_conversion_rejection (rettype, totype);
 	    }
 	}
     }

@@ -14709,10 +14709,18 @@ type_unification_real (tree tparms,
 
 	  if (same_type_p (parm, type))
 	    continue;
-	  if (strict != DEDUCE_EXACT
-	      && can_convert_arg (parm, type, TYPE_P (arg) ? NULL_TREE : arg,
-				  flags))
-	    continue;
+	  if (strict == DEDUCE_CONV)
+	    {
+	      if (can_convert_arg (type, parm, NULL_TREE, flags))
+		continue;
+	    }
+	  else if (strict != DEDUCE_EXACT)
+	    {
+	      if (can_convert_arg (parm, type,
+				   TYPE_P (arg) ? NULL_TREE : arg,
+				   flags))
+		continue;
+	    }
 
 	  if (strict == DEDUCE_EXACT)
 	    return unify_type_mismatch (explain_p, parm, arg);
