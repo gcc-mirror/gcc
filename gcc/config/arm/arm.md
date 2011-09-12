@@ -10633,7 +10633,7 @@
   {
     char pattern[100];
 
-    sprintf (pattern, \"sfm%(fd%)\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
+    sprintf (pattern, \"sfm%%(fd%%)\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
     output_asm_insn (pattern, operands);
     return \"\";
   }"
