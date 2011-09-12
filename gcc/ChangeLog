@@ -1,5 +1,9 @@
 2011-09-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/50212
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Skip also lps with NULL landing_pad or non-LABEL_P landing_pad.
+
 	PR debug/50299
 	* calls.c (load_register_parameters): Use use_reg_mode instead
 	of use_reg when adding a single register CALL_INSN_FUNCTION_USAGE

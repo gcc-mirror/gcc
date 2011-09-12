@@ -1,3 +1,8 @@
+2011-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/50212
+	* g++.dg/other/pr50212.C: New test.
+
 2011-09-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/43746
