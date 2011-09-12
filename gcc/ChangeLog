@@ -1,3 +1,10 @@
+2011-09-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50343
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Check
+	that the reduction is over an SSA name before checking its
+	definition.
+
 2011-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/cris/cris.md: Use match_test rather than eq/ne symbol_ref
