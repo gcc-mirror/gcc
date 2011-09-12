@@ -202,7 +202,6 @@ static struct z_candidate *add_candidate
 static tree source_type (conversion *);
 static void add_warning (struct z_candidate *, struct z_candidate *);
 static bool reference_compatible_p (tree, tree);
-static conversion *convert_class_to_reference (tree, tree, tree, int);
 static conversion *direct_reference_binding (tree, conversion *);
 static bool promoted_arithmetic_type_p (tree);
 static conversion *conditional_conversion (tree, tree);
@@ -1352,160 +1351,6 @@ reference_compatible_p (tree t1, tree t2)
 	  && at_least_as_qualified_p (t1, t2));
 }
 
-/* Determine whether or not the EXPR (of class type S) can be
-   converted to T as in [over.match.ref].  */
-
-static conversion *
-convert_class_to_reference_1 (tree reference_type, tree s, tree expr, int flags)
-{
-  tree conversions;
-  tree first_arg;
-  conversion *conv;
-  tree t;
-  struct z_candidate *candidates;
-  struct z_candidate *cand;
-  bool any_viable_p;
-
-  if (!expr)
-    return NULL;
-
-  conversions = lookup_conversions (s);
-  if (!conversions)
-    return NULL;
-
-  /* [over.match.ref]
-
-     Assuming that "cv1 T" is the underlying type of the reference
-     being initialized, and "cv S" is the type of the initializer
-     expression, with S a class type, the candidate functions are
-     selected as follows:
-
-     --The conversion functions of S and its base classes are
-       considered.  Those that are not hidden within S and yield type
-       "reference to cv2 T2", where "cv1 T" is reference-compatible
-       (_dcl.init.ref_) with "cv2 T2", are candidate functions.
-
-     The argument list has one argument, which is the initializer
-     expression.  */
-
-  candidates = 0;
-
-  /* Conceptually, we should take the address of EXPR and put it in
-     the argument list.  Unfortunately, however, that can result in
-     error messages, which we should not issue now because we are just
-     trying to find a conversion operator.  Therefore, we use NULL,
-     cast to the appropriate type.  */
-  first_arg = build_int_cst (build_pointer_type (s), 0);
-
-  t = TREE_TYPE (reference_type);
-
-  /* We're performing a user-defined conversion to a desired type, so set
-     this for the benefit of add_candidates.  */
-  flags |= LOOKUP_NO_CONVERSION;
-
-  for (; conversions; conversions = TREE_CHAIN (conversions))
-    {
-      tree fns = TREE_VALUE (conversions);
-      tree binfo = TREE_PURPOSE (conversions);
-      struct z_candidate *old_candidates = candidates;;
-
-      add_candidates (fns, first_arg, NULL, reference_type,
-		      NULL_TREE, false,
-		      binfo, TYPE_BINFO (s),
-		      flags, &candidates);
-
-      for (cand = candidates; cand != old_candidates; cand = cand->next)
-	{
-	  /* Now, see if the conversion function really returns
-	     an lvalue of the appropriate type.  From the
-	     point of view of unification, simply returning an
-	     rvalue of the right type is good enough.  */
-	  tree f = cand->fn;
-	  tree t2 = TREE_TYPE (TREE_TYPE (f));
-	  if (cand->viable == 0)
-	    /* Don't bother looking more closely.  */;
-	  else if (TREE_CODE (t2) != REFERENCE_TYPE
-		   || !reference_compatible_p (t, TREE_TYPE (t2)))
-	    {
-	      /* No need to set cand->reason here; this is most likely
-		 an ambiguous match.  If it's not, either this candidate
-		 will win, or we will have identified a reason for it
-		 losing already.  */
-	      cand->viable = 0;
-	    }
-	  else
-	    {
-	      conversion *identity_conv;
-	      /* Build a standard conversion sequence indicating the
-		 binding from the reference type returned by the
-		 function to the desired REFERENCE_TYPE.  */
-	      identity_conv
-		= build_identity_conv (TREE_TYPE (TREE_TYPE
-						  (TREE_TYPE (cand->fn))),
-				       NULL_TREE);
-	      cand->second_conv
-		= (direct_reference_binding
-		   (reference_type, identity_conv));
-	      cand->second_conv->rvaluedness_matches_p
-		= TYPE_REF_IS_RVALUE (TREE_TYPE (TREE_TYPE (cand->fn)))
-		  == TYPE_REF_IS_RVALUE (reference_type);
-	      cand->second_conv->bad_p |= cand->convs[0]->bad_p;
-
-              /* Don't allow binding of lvalues to rvalue references.  */
-              if (TYPE_REF_IS_RVALUE (reference_type)
-                  /* Function lvalues are OK, though.  */
-                  && TREE_CODE (TREE_TYPE (reference_type)) != FUNCTION_TYPE
-                  && !TYPE_REF_IS_RVALUE (TREE_TYPE (TREE_TYPE (cand->fn))))
-                cand->second_conv->bad_p = true;
-	    }
-	}
-    }
-
-  candidates = splice_viable (candidates, pedantic, &any_viable_p);
-  /* If none of the conversion functions worked out, let our caller
-     know.  */
-  if (!any_viable_p)
-    return NULL;
-
-  cand = tourney (candidates);
-  if (!cand)
-    return NULL;
-
-  /* Now that we know that this is the function we're going to use fix
-     the dummy first argument.  */
-  gcc_assert (cand->first_arg == NULL_TREE
-	      || integer_zerop (cand->first_arg));
-  cand->first_arg = build_this (expr);
-
-  /* Build a user-defined conversion sequence representing the
-     conversion.  */
-  conv = build_conv (ck_user,
-		     TREE_TYPE (TREE_TYPE (cand->fn)),
-		     build_identity_conv (TREE_TYPE (expr), expr));
-  conv->cand = cand;
-
-  if (cand->viable == -1)
-    conv->bad_p = true;
-
-  /* Merge it with the standard conversion sequence from the
-     conversion function's return type to the desired type.  */
-  cand->second_conv = merge_conversion_sequences (conv, cand->second_conv);
-
-  return cand->second_conv;
-}
-
-/* Wrapper for above.  */
-
-static conversion *
-convert_class_to_reference (tree reference_type, tree s, tree expr, int flags)
-{
-  conversion *ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = convert_class_to_reference_1 (reference_type, s, expr, flags);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
-}
-
 /* A reference of the indicated TYPE is being bound directly to the
    expression represented by the implicit conversion sequence CONV.
    Return a conversion sequence for this binding.  */
@@ -1715,9 +1560,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 
 	the reference is bound to the lvalue result of the conversion
 	in the second case.  */
-      conv = convert_class_to_reference (rto, from, expr, flags);
-      if (conv)
-	return conv;
+      z_candidate *cand = build_user_type_conversion_1 (rto, expr, flags);
+      if (cand)
+	return cand->second_conv;
     }
 
   /* From this point on, we conceptually need temporaries, even if we
@@ -3477,7 +3322,7 @@ add_list_candidates (tree fns, tree first_arg,
 /* Returns the best overload candidate to perform the requested
    conversion.  This function is used for three the overloading situations
    described in [over.match.copy], [over.match.conv], and [over.match.ref].
-   If TOTYPE is a REFERENCE_TYPE, we're trying to find an lvalue binding as
+   If TOTYPE is a REFERENCE_TYPE, we're trying to find a direct binding as
    per [dcl.init.ref], so we ignore temporary bindings.  */
 
 static struct z_candidate *
@@ -3636,6 +3481,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 		 yield type T or a type that can be converted to type T
 		 with a qualification conversion (4.4) are also candidate
 		 functions.  */
+	      /* 13.3.1.6 doesn't have a parallel restriction, but it should;
+		 I've raised this issue with the committee. --jason 9/2011 */
 	      cand->viable = -1;
 	      cand->reason = explicit_conversion_rejection (rettype, totype);
 	    }
