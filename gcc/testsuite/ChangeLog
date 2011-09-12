@@ -1,3 +1,9 @@
+2011-09-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp (mips_option_groups): Add debug options.
+	* gcc.target/mips/interrupt_handler-2.c: New test.
+	* gcc.target/mips/interrupt_handler-3.c: Likewise.
+
 2011-09-12  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/fntmpdefarg2.C: Add more tests.
