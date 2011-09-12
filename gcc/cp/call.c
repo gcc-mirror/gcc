@@ -1564,7 +1564,8 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
   tree tfrom;
   bool related_p;
   bool compatible_p;
-  cp_lvalue_kind is_lvalue = clk_none;
+  cp_lvalue_kind gl_kind;
+  bool is_lvalue;
 
   if (TREE_CODE (to) == FUNCTION_TYPE && expr && type_unknown_p (expr))
     {
@@ -1572,14 +1573,6 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
       if (expr == error_mark_node)
 	return NULL;
       from = TREE_TYPE (expr);
-    }
-
-  if (TREE_CODE (from) == REFERENCE_TYPE)
-    {
-      from = TREE_TYPE (from);
-      if (!TYPE_REF_IS_RVALUE (rfrom)
-	  || TREE_CODE (from) == FUNCTION_TYPE)
-	is_lvalue = clk_ordinary;
     }
 
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
@@ -1597,11 +1590,28 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	}
     }
 
-  if (is_lvalue == clk_none && expr)
-    is_lvalue = real_lvalue_p (expr);
+  if (TREE_CODE (from) == REFERENCE_TYPE)
+    {
+      from = TREE_TYPE (from);
+      if (!TYPE_REF_IS_RVALUE (rfrom)
+	  || TREE_CODE (from) == FUNCTION_TYPE)
+	gl_kind = clk_ordinary;
+      else
+	gl_kind = clk_rvalueref;
+    }
+  else if (expr)
+    {
+      gl_kind = lvalue_kind (expr);
+      if (gl_kind & clk_class)
+	/* A class prvalue is not a glvalue.  */
+	gl_kind = clk_none;
+    }
+  else
+    gl_kind = clk_none;
+  is_lvalue = gl_kind && !(gl_kind & clk_rvalueref);
 
   tfrom = from;
-  if ((is_lvalue & clk_bitfield) != 0)
+  if ((gl_kind & clk_bitfield) != 0)
     tfrom = unlowered_expr_type (expr);
 
   /* Figure out whether or not the types are reference-related and
@@ -1619,16 +1629,16 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
      the reference and expression is an lvalue. In DR391, the wording in
      [8.5.3/5 dcl.init.ref] is changed to also require direct bindings for
      const and rvalue references to rvalues of compatible class type.
-     We should also do direct bindings for non-class "rvalues" derived from
-     rvalue references.  */
+     We should also do direct bindings for non-class xvalues.  */
   if (compatible_p
       && (is_lvalue
 	  || (((CP_TYPE_CONST_NON_VOLATILE_P (to)
-		&& !(flags & LOOKUP_NO_TEMP_BIND))
+		&& !(flags & LOOKUP_NO_RVAL_BIND))
 	       || TYPE_REF_IS_RVALUE (rto))
-	      && (CLASS_TYPE_P (from)
-		  || TREE_CODE (from) == ARRAY_TYPE
-		  || (expr && lvalue_p (expr))))))
+	      && (gl_kind
+		  || (!(flags & LOOKUP_NO_TEMP_BIND)
+		      && (CLASS_TYPE_P (from)
+			  || TREE_CODE (from) == ARRAY_TYPE))))))
     {
       /* [dcl.init.ref]
 
@@ -1661,8 +1671,8 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	conv->rvaluedness_matches_p 
           = (TYPE_REF_IS_RVALUE (rto) == !is_lvalue);
 
-      if ((is_lvalue & clk_bitfield) != 0
-	  || ((is_lvalue & clk_packed) != 0 && !TYPE_PACKED (to)))
+      if ((gl_kind & clk_bitfield) != 0
+	  || ((gl_kind & clk_packed) != 0 && !TYPE_PACKED (to)))
 	/* For the purposes of overload resolution, we ignore the fact
 	   this expression is a bitfield or packed field. (In particular,
 	   [over.ics.ref] says specifically that a function with a
@@ -3575,8 +3585,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
       struct z_candidate *old_candidates;
 
       /* If we are called to convert to a reference type, we are trying to
-	 find an lvalue binding, so don't even consider temporaries.  If
-	 we don't find an lvalue binding, the caller will try again to
+	 find a direct binding, so don't even consider temporaries.  If
+	 we don't find a direct binding, the caller will try again to
 	 look for a temporary binding.  */
       if (TREE_CODE (totype) == REFERENCE_TYPE)
 	convflags |= LOOKUP_NO_TEMP_BIND;
@@ -4297,16 +4307,17 @@ conditional_conversion (tree e1, tree e2)
   /* [expr.cond]
 
      If E2 is an lvalue: E1 can be converted to match E2 if E1 can be
-     implicitly converted (clause _conv_) to the type "reference to
+     implicitly converted (clause _conv_) to the type "lvalue reference to
      T2", subject to the constraint that in the conversion the
-     reference must bind directly (_dcl.init.ref_) to E1.  */
+     reference must bind directly (_dcl.init.ref_) to an lvalue.  */
   if (real_lvalue_p (e2))
     {
       conv = implicit_conversion (build_reference_type (t2),
 				  t1,
 				  e1,
 				  /*c_cast_p=*/false,
-				  LOOKUP_NO_TEMP_BIND|LOOKUP_ONLYCONVERTING);
+				  LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND
+				  |LOOKUP_ONLYCONVERTING);
       if (conv)
 	return conv;
     }

@@ -1,3 +1,9 @@
+2011-09-12  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (LOOKUP_NO_RVAL_BIND): New.
+	* call.c (conditional_conversion): Use it.
+	(reference_binding): Fix handling of xvalues.
+
 2011-09-09  Jason Merrill  <jason@redhat.com>
 
 	* call.c (implicit_conversion): Check BRACE_ENCLOSED_INITIALIZER_P
