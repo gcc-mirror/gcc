@@ -1,3 +1,21 @@
+2011-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50299
+	* calls.c (load_register_parameters): Use use_reg_mode instead
+	of use_reg when adding a single register CALL_INSN_FUNCTION_USAGE
+	entry.
+	(expand_call): Set EXPR_LIST mode to TYPE_MODE of the argument
+	for stack CALL_INSN_FUNCTION_USAGE uses.
+	* expr.h (use_reg_mode): New prototype.
+	(use_reg): Changed into inline around use_reg_mode.
+	* expr.c (use_reg): Renamed to...
+	(use_reg_mode): ... this.  Added MODE argument, set EXPR_LIST
+	mode to that mode instead of VOIDmode.
+	* var-tracking.c (prepare_call_arguments): Don't track parameters
+	whose EXPR_LIST mode is VOIDmode, BLKmode or X mode isn't convertible
+	to it using lowpart_subreg.  Convert VALUE and REG/MEM to the
+	EXPR_LIST mode.
+
 2011-09-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/43746
