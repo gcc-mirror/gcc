@@ -289,12 +289,6 @@ copy_rtx (rtx orig)
      walks over the RTL.  */
   RTX_FLAG (copy, used) = 0;
 
-  /* We do not copy FRAME_RELATED for INSNs.  */
-  if (INSN_P (orig))
-    RTX_FLAG (copy, frame_related) = 0;
-  RTX_FLAG (copy, jump) = RTX_FLAG (orig, jump);
-  RTX_FLAG (copy, call) = RTX_FLAG (orig, call);
-
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
