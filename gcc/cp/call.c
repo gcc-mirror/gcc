@@ -8717,7 +8717,7 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
 
 tree
 initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
-		      tsubst_flags_t complain)
+		      int flags, tsubst_flags_t complain)
 {
   conversion *conv;
   void *p;
@@ -8729,7 +8729,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
   p = conversion_obstack_alloc (0);
 
   conv = reference_binding (type, TREE_TYPE (expr), expr, /*c_cast_p=*/false,
-			    LOOKUP_NORMAL);
+			    flags);
   if (!conv || conv->bad_p)
     {
       if (complain & tf_error)

@@ -4757,7 +4757,8 @@ extern tree type_passed_as			(tree);
 extern tree convert_for_arg_passing		(tree, tree);
 extern bool is_properly_derived_from		(tree, tree);
 extern tree set_up_extended_ref_temp		(tree, tree, tree *, tree *);
-extern tree initialize_reference		(tree, tree, tree, tree *, tsubst_flags_t);
+extern tree initialize_reference		(tree, tree, tree, tree *, int,
+						 tsubst_flags_t);
 extern tree make_temporary_var_for_ref_to_temp	(tree, tree);
 extern tree strip_top_quals			(tree);
 extern bool reference_related_p			(tree, tree);
