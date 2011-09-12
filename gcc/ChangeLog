@@ -1,3 +1,17 @@
+2011-09-12  Bernd Schmidt  <bernds@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_epilogue): New structure.
+	(mips16e_save_restore_reg): Queue REG_CFA_RESTORE notes when
+	restoring registers.
+	(mips_epilogue_emit_cfa_restores): New function.
+	(mips_epilogue_set_cfa): Likewise.
+	(mips_restore_reg): Queue REG_CFA_RESTORE notes.  When restoring
+	the current CFA register from the stack, redefine the CFA in terms
+	of the stack pointer.
+	(mips_expand_epilogue): Set up mips_epilogue.  Attach CFA information
+	to the epilogue instructions.
+
 2011-09-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips16e_save_restore_reg): Add a reg_parm_p
