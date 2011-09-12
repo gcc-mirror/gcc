@@ -1848,8 +1848,8 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 				|LOOKUP_NO_NARROWING));
 
       if (CLASS_TYPE_P (to)
-	  && !CLASSTYPE_NON_AGGREGATE (complete_type (to))
-	  && BRACE_ENCLOSED_INITIALIZER_P (expr))
+	  && BRACE_ENCLOSED_INITIALIZER_P (expr)
+	  && !CLASSTYPE_NON_AGGREGATE (complete_type (to)))
 	return build_aggr_conv (to, expr, flags);
 
       cand = build_user_type_conversion_1 (to, expr, convflags);
