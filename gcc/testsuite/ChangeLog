@@ -1,3 +1,10 @@
+2011-09-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/43746
+	* testsuite/gcc.target/avr/torture/avr-torture.exp
+	(AVR_TORTURE_OPTIONS): Add test cases "-O2 -fdata-sections" and
+	"-O2 -fmerge-all-constants".
+
 2011-09-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50327

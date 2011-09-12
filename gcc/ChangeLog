@@ -1,3 +1,19 @@
+2011-09-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/43746
+	* config/avr/avr.c (AVR_SECTION_PROGMEM): New Define.
+	(progmem_section): New Variable.
+	(avr_asm_init_sections): Initialize it.
+	(TARGET_ASM_SELECT_SECTION): Define to...
+	(avr_asm_select_section): ... this new Function.
+	(avr_replace_prefix): New Function.
+	(avr_asm_function_rodata_section): Use it.
+	(avr_insert_attributes): Don't add section attribute for PROGMEM.
+	(avr_section_type_flags): Use avr_progmem_p instead of section
+	name to detect if object is in PROGMEM.
+	(avr_asm_named_section): Set section name prefix for objects in
+	PROGMEM.
+
 2011-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/50352
