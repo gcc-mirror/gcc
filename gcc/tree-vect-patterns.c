@@ -256,6 +256,8 @@ vect_recog_dot_prod_pattern (VEC (gimple, heap) **stmts, tree *type_in,
      we know that oprnd1 is the reduction variable (defined by a loop-header
      phi), and oprnd0 is an ssa-name defined by a stmt in the loop body.
      Left to check that oprnd0 is defined by a (widen_)mult_expr  */
+  if (TREE_CODE (oprnd0) != SSA_NAME)
+    return NULL;
 
   prod_type = half_type;
   stmt = SSA_NAME_DEF_STMT (oprnd0);
