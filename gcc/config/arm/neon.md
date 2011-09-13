@@ -5665,3 +5665,32 @@
   emit_insn (gen_neon_vec_pack_trunc_<V_double> (operands[0], tempreg));
   DONE;
 })
+
+(define_insn "neon_vabd<mode>_2"
+ [(set (match_operand:VDQ 0 "s_register_operand" "=w")
+       (abs:VDQ (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
+                           (match_operand:VDQ 2 "s_register_operand" "w"))))]
+ "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ "vabd.<V_s_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set (attr "neon_type")
+       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+                     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
+                     (const_string "neon_int_5")))]
+)
+
+(define_insn "neon_vabd<mode>_3"
+ [(set (match_operand:VDQ 0 "s_register_operand" "=w")
+       (abs:VDQ (unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "w")
+                             (match_operand:VDQ 2 "s_register_operand" "w")]
+                 UNSPEC_VSUB)))]
+ "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ "vabd.<V_if_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set (attr "neon_type")
+       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+                     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
+                     (const_string "neon_int_5")))]
+)
