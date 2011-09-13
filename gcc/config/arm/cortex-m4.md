@@ -44,14 +44,14 @@
 (define_insn_reservation "cortex_m4_store1_1" 1
   (and (and (eq_attr "tune" "cortexm4")
 	    (eq_attr "type" "store1"))
-       (ne (symbol_ref ("arm_address_offset_is_imm (insn)")) (const_int 0)))
+       (match_test "arm_address_offset_is_imm (insn)"))
   "cortex_m4_a")
 
 ;; Other byte, half-word and word load is two cycles.
 (define_insn_reservation "cortex_m4_store1_2" 2
   (and (and (eq_attr "tune" "cortexm4")
 	    (eq_attr "type" "store1"))
-       (eq (symbol_ref ("arm_address_offset_is_imm (insn)")) (const_int 0)))
+       (not (match_test "arm_address_offset_is_imm (insn)")))
   "cortex_m4_a*2")
 
 (define_insn_reservation "cortex_m4_load2" 3
