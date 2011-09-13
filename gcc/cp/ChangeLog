@@ -1,3 +1,13 @@
+2011-09-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48320
+	* pt.c (template_parameter_pack_p):  Support TEMPLATE_PARM_INDEX
+	nodes.  Add a comment.
+	(arg_from_parm_pack_p): New static function, factorized out from
+	tsubst_pack_expansion and extended to support non-type parameter
+	packs represented with TEMPLATE_PARM_INDEX nodes.
+	(tsubst_pack_expansion): Use arg_from_parm_pack_p.
+
 2011-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/50255

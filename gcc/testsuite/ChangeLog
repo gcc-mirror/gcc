@@ -1,3 +1,8 @@
+2011-09-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48320
+	* g++.dg/cpp0x/variadic116.C: New test case.
+
 2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/atomic5.ad[sb]: New test.
