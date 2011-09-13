@@ -211,7 +211,7 @@ static int get_sched_window (partial_schedule_ptr, ddg_node_ptr,
 static bool try_scheduling_node_in_cycle (partial_schedule_ptr, ddg_node_ptr,
 					  int, int, sbitmap, int *, sbitmap,
 					  sbitmap);
-static bool remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
+static void remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
 
 #define SCHED_ASAP(x) (((node_sched_params_ptr)(x)->aux.info)->asap)
 #define SCHED_TIME(x) (((node_sched_params_ptr)(x)->aux.info)->time)
@@ -834,8 +834,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 	if (next_ps_i->node->cuid == g->closing_branch->cuid)
 	  break;
 
-      gcc_assert (next_ps_i);
-      gcc_assert (remove_node_from_ps (ps, next_ps_i));
+      remove_node_from_ps (ps, next_ps_i);
       success =
 	try_scheduling_node_in_cycle (ps, g->closing_branch,
 				      g->closing_branch->cuid, c,
@@ -1485,8 +1484,8 @@ sms_schedule (void)
           if (dump_file)
             {
 	      fprintf (dump_file,
-		       "SMS succeeded %d %d (with ii, sc)\n", ps->ii,
-		       stage_count);
+		       "%s:%d SMS succeeded %d %d (with ii, sc)\n",
+		       insn_file (tail), insn_line (tail), ps->ii, stage_count);
 	      print_partial_schedule (ps, dump_file);
 	    }
  
@@ -2719,22 +2718,18 @@ create_ps_insn (ddg_node_ptr node, int cycle)
 }
 
 
-/* Removes the given PS_INSN from the partial schedule.  Returns false if the
-   node is not found in the partial schedule, else returns true.  */
-static bool
+/* Removes the given PS_INSN from the partial schedule.  */  
+static void 
 remove_node_from_ps (partial_schedule_ptr ps, ps_insn_ptr ps_i)
 {
   int row;
 
-  if (!ps || !ps_i)
-    return false;
-
+  gcc_assert (ps && ps_i);
+  
   row = SMODULO (ps_i->cycle, ps->ii);
   if (! ps_i->prev_in_row)
     {
-      if (ps_i != ps->rows[row])
-	return false;
-
+      gcc_assert (ps_i == ps->rows[row]);
       ps->rows[row] = ps_i->next_in_row;
       if (ps->rows[row])
 	ps->rows[row]->prev_in_row = NULL;
@@ -2748,7 +2743,7 @@ remove_node_from_ps (partial_schedule_ptr ps, ps_insn_ptr ps_i)
    
   ps->rows_length[row] -= 1; 
   free (ps_i);
-  return true;
+  return;
 }
 
 /* Unlike what literature describes for modulo scheduling (which focuses
