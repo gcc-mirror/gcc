@@ -130,10 +130,10 @@ PERSONALITY_FUNCTION (int version,
 
   /* The dwarf unwinder assumes the context structure holds things like the
      function and LSDA pointers.  The ARM implementation caches these in
-     the exception header (UCB).  To avoid rewriting everything we make the
-     virtual IP register point at the UCB.  */
+     the exception header (UCB).  To avoid rewriting everything we make a
+     virtual scratch register point at the UCB.  */
   ip = (_Unwind_Ptr) ue_header;
-  _Unwind_SetGR (context, 12, ip);
+  _Unwind_SetGR (context, UNWIND_POINTER_REG, ip);
 #else
   if (version != 1)
     return _URC_FATAL_PHASE1_ERROR;

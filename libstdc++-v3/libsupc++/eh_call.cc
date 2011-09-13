@@ -73,6 +73,7 @@ __cxa_call_unexpected(void* exc_obj_in)
   int rtti_count = 0;
   _Unwind_Word rtti_stride = 0;
   _Unwind_Word* rtti_list = NULL;
+  _Unwind_Ptr rtti_base = 0;
   bool foreign_exception;
   std::unexpected_handler unexpectedHandler = NULL;
   std::terminate_handler terminateHandler = NULL;
@@ -84,7 +85,7 @@ __cxa_call_unexpected(void* exc_obj_in)
       unexpectedHandler = xh->unexpectedHandler;
       terminateHandler = xh->terminateHandler;
       rtti_count = exc_obj->barrier_cache.bitpattern[1];
-
+      rtti_base = (_Unwind_Ptr) exc_obj->barrier_cache.bitpattern[2];
       rtti_stride = exc_obj->barrier_cache.bitpattern[3];
       rtti_list = (_Unwind_Word*) exc_obj->barrier_cache.bitpattern[4];
       foreign_exception = false;
@@ -134,7 +135,7 @@ __cxa_call_unexpected(void* exc_obj_in)
 	  _Unwind_Word offset;
 
 	  offset = (_Unwind_Word) &rtti_list[n * (rtti_stride >> 2)];
-	  offset = _Unwind_decode_target2(offset);
+	  offset = _Unwind_decode_typeinfo_ptr(rtti_base, offset);
 	  catch_type = (const std::type_info*) (offset);
 
 	  if (__cxa_type_match(&new_xh->unwindHeader, catch_type, false,

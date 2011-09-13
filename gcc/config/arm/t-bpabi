@@ -28,3 +28,4 @@ LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/arm/fp16.c
 # Add the BPABI names.
 SHLIB_MAPFILES += $(srcdir)/config/arm/libgcc-bpabi.ver
 
+EXTRA_HEADERS += $(srcdir)/ginclude/unwind-arm-common.h

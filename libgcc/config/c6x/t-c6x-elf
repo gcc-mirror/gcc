@@ -1,0 +1,4 @@
+LIB2ADDEH = $(srcdir)/config/c6x/unwind-c6x.c \
+  $(srcdir)/config/c6x/libunwind.S \
+  $(srcdir)/config/c6x/pr-support.c $(srcdir)/unwind-c.c
+
