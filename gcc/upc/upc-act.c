@@ -265,7 +265,7 @@ upc_parse_init (void)
 }
 
 /* Return a UPC pointer-to-shared type with target type, TO_TYPE.
-   If the UPC pointer-to-shared representation has a "regsiter mode",
+   If the UPC pointer-to-shared representation has a "register mode",
    then build a pointer type with that mode.  If the UPC pointer-to-shared
    representation type has BLKmode, then calculate its size based
    upon the representation type.  */
@@ -281,7 +281,7 @@ upc_build_pointer_type (tree to_type)
   ptr_type = build_pointer_type_for_mode (to_type, pointer_mode, false);
   if (!integer_zerop (TYPE_SIZE (ptr_type)))
     return ptr_type;
-  /* If the UPC pointer-to-shared representation has a size of zoro,
+  /* If the UPC pointer-to-shared representation has a size of zero,
      then it must have BLKmode.  In that case, calculate the sizes
      and alignment from the underlying representation type.  This
      situation may arise when the 'struct PTS' representation is
@@ -630,7 +630,7 @@ upc_block_factor_insert (tree type,
    If LAYOUT_QUALIFIER is NULL and ELEM_BLOCK_FACTOR is non-null,
    then the ELEM_BLOCK_FACTOR will be used.  This situation occurs
    when the element type is a typedef, for example.  If both
-   LAYOUT_QUALIFIER and ELEM_BLOCK_FACTOR are non-NULL, then thye
+   LAYOUT_QUALIFIER and ELEM_BLOCK_FACTOR are non-NULL, then they
    must be equal.  */
 
 tree
@@ -1439,7 +1439,7 @@ upc_pts_is_valid_p (tree exp)
 }
 
 /* Build a function that will be called by the UPC runtime
-   to initilize UPC shared variables.  STMT_LIST is a
+   to initialize UPC shared variables.  STMT_LIST is a
    list of initialization statements.  */
 
 static void

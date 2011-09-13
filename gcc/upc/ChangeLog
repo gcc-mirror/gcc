@@ -1,3 +1,12 @@
+2011-09-13  Gary Funck  <gary@intrepid.com>
+
+	* upc-tree.def (UPC_FORALL_STMT): Fix spelling error in comments.
+	* upc-lang.c (upc_init_options): Ditto.
+	* upc-genericize.c (lookup_unshared_var, upc_shared_addr_rep,
+	upc_genericize_expr, upc_genericize_compound_expr): Ditto.
+	* upc-act.c (upc_parse_init, upc_build_pointer_type,
+	upc_block_factor_insert, upc_pts_is_valid_p): Ditto.
+
 2011-09-07  Gary Funck  <gary@intrepid.com>
 
 	Ensure that UPC pointer-to-shared type alignment is

@@ -487,7 +487,7 @@ lookup_unshared_var (const tree var)
 #define UNSHARE_PREFIX "_u_"
 
 /* Return an identifier that will be used to declare the "shadow variable"
-   which has the same type as VAR, but with all UPC shared qualfiers
+   which has the same type as VAR, but with all UPC shared qualifiers
    removed from the type.  The identifier has the same name as
    that of VAR, prefixed with the string given by the
    value of `UNSHARE_PREFIX'.  */
@@ -618,7 +618,7 @@ upc_shared_addr_rep (location_t loc, tree exp)
 {
   tree addr = upc_shared_addr (loc, exp);
   /* Convert to internal UPC pointer-to-shared representation,
-     possibly removing an unecessary chain of VIEW_CONVERT_EXPR's.  */
+     possibly removing an unnecessary chain of VIEW_CONVERT_EXPR's.  */
   addr = fold (build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, addr));
   return addr;
 }
@@ -1082,7 +1082,7 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
 	  && POINTER_TYPE_P (type1) && VOID_TYPE_P (TREE_TYPE (type1)))
 	{
 	  upc_strip_useless_generic_pts_cvt (&TREE_OPERAND (expr, 1));
-	  /* Recalculate op1 and type1 because TREE_OPERAND (expr, 1)
+	  /* Recalculate OP1 and TYPE1 because TREE_OPERAND (expr, 1)
 	     was rewritten, above.  */
 	  op1 = TREE_OPERAND (expr, 1);
 	  type1 = TREE_TYPE (op1);
@@ -1192,7 +1192,7 @@ upc_genericize_compound_expr (tree *expr_p, int want_value)
   upc_genericize_stmt (rhs_p, want_value);
 }
 
-/* Convert a comditional expression into GENERIC form.
+/* Convert a conditional expression into GENERIC form.
    A conditional expression contains three expressions
    and is of the form expression ( ... ? ... : ...  in C).
    The first operand is the condition, the second is

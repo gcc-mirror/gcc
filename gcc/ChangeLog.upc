@@ -1,3 +1,8 @@
+2011-09-13  Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 178795 into gupc branch.
+        Incorporates fix to PR bootstrap/50010 for x86-32.
+
 2011-09-08  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 178557 into gupc branch.

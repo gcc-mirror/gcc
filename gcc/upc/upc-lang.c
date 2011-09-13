@@ -131,7 +131,7 @@ upc_init_options (unsigned int decoded_options_count,
 
   /* UPC is based upon the C99 dialect. Assert it here.
    * We'll let the user override these options as he/she
-   * sees fit. For example, -traditional will deisable
+   * sees fit. For example, -traditional will disable
    * prototype checking */
   set_std_c99 ( 0 /* iso=0 */ );
 
