@@ -143,8 +143,7 @@
 	      (eq_attr "length" "4"))
 	   (const_string "true")
 	 (eq_attr "type" "uncond_branch")
-	   (if_then_else (ne (symbol_ref "TARGET_JUMP_IN_DELAY")
-			     (const_int 0))
+	   (if_then_else (match_test "TARGET_JUMP_IN_DELAY")
 			 (const_string "true")
 			 (const_string "false"))]
 	(const_string "false")))
@@ -181,8 +180,7 @@
 	(attr_flag "backward"))])
 
 (define_delay (and (eq_attr "type" "uncond_branch")
-		   (eq (symbol_ref "following_call (insn)")
-		       (const_int 0)))
+		   (not (match_test "following_call (insn)")))
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Memory. Disregarding Cache misses, the Mustang memory times are:
@@ -1348,9 +1346,9 @@
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1377,9 +1375,9 @@
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1404,9 +1402,9 @@
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1433,9 +1431,9 @@
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 (define_insn ""
@@ -1459,9 +1457,9 @@
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1488,9 +1486,9 @@
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1517,9 +1515,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1545,9 +1543,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1573,9 +1571,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1601,9 +1599,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1629,9 +1627,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1657,9 +1655,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1685,9 +1683,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1713,9 +1711,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1742,9 +1740,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1770,9 +1768,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1798,9 +1796,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1826,9 +1824,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1854,9 +1852,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1882,9 +1880,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1910,9 +1908,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1938,9 +1936,9 @@
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -1987,9 +1985,9 @@
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 32)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 28)]
 	  (const_int 36)))])
 
@@ -2031,9 +2029,9 @@
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 12)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 28)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 24)]
 	  (const_int 32)))])
 
@@ -2590,7 +2588,7 @@
 }"
   [(set_attr "type" "binary")
    (set (attr "length")
-      (if_then_else (eq (symbol_ref "TARGET_LONG_LOAD_STORE") (const_int 0))
+      (if_then_else (not (match_test "TARGET_LONG_LOAD_STORE"))
 		    (const_int 4)
 		    (const_int 8)))])
 
@@ -5997,8 +5995,7 @@
 }"
   [(set_attr "type" "multi")
    (set (attr "length")
-	(if_then_else (ne (symbol_ref "rtx_equal_p (operands[0], operands[1])")
-			  (const_int 0))
+	(if_then_else (match_test "rtx_equal_p (operands[0], operands[1])")
 	    (const_int 12)
 	    (const_int 16)))])
 
@@ -6816,7 +6813,7 @@
   [(set_attr "type" "uncond_branch")
    (set_attr "pa_combine_type" "uncond_branch")
    (set (attr "length")
-    (cond [(eq (symbol_ref "jump_in_call_delay (insn)") (const_int 1))
+    (cond [(match_test "jump_in_call_delay (insn)")
 	   (if_then_else (lt (abs (minus (match_dup 0)
 					 (plus (pc) (const_int 8))))
 			     (const_int MAX_12BIT_OFFSET))
@@ -6825,9 +6822,9 @@
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 4)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 20)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 16)]
 	  (const_int 24)))])
 
@@ -7013,7 +7010,7 @@
 {ldwx|ldw},s %0(%2),%3\;{addl|add,l} %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set (attr "length")
-     (if_then_else (ne (symbol_ref "TARGET_PA_20") (const_int 0))
+     (if_then_else (match_test "TARGET_PA_20")
 	(const_int 20)
 	(const_int 24)))])
 
@@ -8610,9 +8607,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28))
 
@@ -8626,9 +8623,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 28)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 44)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 40)]
 		  (const_int 48))
 	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
@@ -8637,9 +8634,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 28)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 44)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 40)]
 		  (const_int 48)))
 
@@ -8652,9 +8649,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 16)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 32)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 28)]
 		  (const_int 36))
 	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
@@ -8663,9 +8660,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 16)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 32)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 28)]
 		  (const_int 36))))))])
 
@@ -8693,9 +8690,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28))
 
@@ -8709,9 +8706,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 16)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 32)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 28)]
 		  (const_int 36))
 	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
@@ -8720,9 +8717,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 16)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 32)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 28)]
 		  (const_int 36)))
 
@@ -8734,9 +8731,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 		  (const_int MAX_17BIT_OFFSET))
 		(const_int 12)
-		(ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		(match_test "TARGET_PORTABLE_RUNTIME")
 		(const_int 28)
-		(eq (symbol_ref "flag_pic") (const_int 0))
+		(not (match_test "flag_pic"))
 		(const_int 24)]
 	      (const_int 32)))))])
 
@@ -8765,9 +8762,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28))
 
@@ -8781,9 +8778,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 16)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 32)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 28)]
 		  (const_int 36))
 	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
@@ -8792,9 +8789,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 		      (const_int MAX_17BIT_OFFSET))
 		    (const_int 16)
-		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (match_test "TARGET_PORTABLE_RUNTIME")
 		    (const_int 32)
-		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (not (match_test "flag_pic"))
 		    (const_int 28)]
 		  (const_int 36)))
 
@@ -8806,9 +8803,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 		(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 		  (const_int MAX_17BIT_OFFSET))
 		(const_int 12)
-		(ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		(match_test "TARGET_PORTABLE_RUNTIME")
 		(const_int 28)
-		(eq (symbol_ref "flag_pic") (const_int 0))
+		(not (match_test "flag_pic"))
 		(const_int 24)]
 	      (const_int 32)))))])
 
@@ -8830,9 +8827,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -8853,9 +8850,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -8876,9 +8873,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -8899,9 +8896,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
@@ -8922,9 +8919,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
-	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (match_test "TARGET_PORTABLE_RUNTIME")
 	   (const_int 24)
-	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (not (match_test "flag_pic"))
 	   (const_int 20)]
 	  (const_int 28)))])
 
