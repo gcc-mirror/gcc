@@ -1,3 +1,7 @@
+2011-09-13  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/compile/20110913-1.c: New test.
+
 2011-09-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50379
