@@ -1,3 +1,8 @@
+2011-09-13  Jan Hubicka  <jh@suse.cz>
+
+	other/49533
+	* ipa-inline-transform.c (can_remove_node_now_p): Fix thunkos.
+
 2011-09-13  Paul Brook  <paul@codesourcery.com>
  
 	* config/arm/arm.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.

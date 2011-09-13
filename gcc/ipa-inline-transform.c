@@ -120,8 +120,8 @@ can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
     return true;
   for (next = node->same_comdat_group;
        next != node; next = next->same_comdat_group)
-    if (node->callers && node->callers != e
-	&& !can_remove_node_now_p_1 (node))
+    if ((next->callers && next->callers != e)
+	|| !can_remove_node_now_p_1 (next))
       return false;
   return true;
 }
