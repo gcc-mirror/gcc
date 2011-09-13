@@ -1772,9 +1772,15 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
     if (ref->use == IPA_REF_ALIAS)
       {
 	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+        bool saved_written = TREE_ASM_WRITTEN (alias->thunk.alias);
+
+	/* Force assemble_alias to really output the alias this time instead
+	   of buffering it in same alias pairs.  */
+	TREE_ASM_WRITTEN (alias->thunk.alias) = 1;
 	assemble_alias (alias->decl,
 			DECL_ASSEMBLER_NAME (alias->thunk.alias));
 	assemble_thunks_and_aliases (alias);
+	TREE_ASM_WRITTEN (alias->thunk.alias) = saved_written;
       }
 }
 
