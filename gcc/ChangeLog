@@ -1,3 +1,22 @@
+2011-09-13  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/50358
+	* config/avr/predicates.md (const_1_to_6_operand): New predicate.
+	* config/avr/avr.md: (extend_s): New code attribute.
+	(mul_r_d): New code attribute.
+	(*maddqihi4, *umaddqihi4): New insns.
+	(*msubqihi4, *umsubqihi4): New insns.
+	(*usmaddqihi4, *sumaddqihi4): New insns.
+	(*usmsubqihi4, *susubdqihi4): New insns.
+	(*umaddqihi4.uconst, *maddqihi4.sconst): New insn-and-splits.
+	(*umsubqihi4.uconst, *msubqihi4.sconst): New insn-and-splits.
+	(*umsubqihi4.uconst.ashift): New insn-and-split.
+	(*msubqihi4.sconst.ashift): New insn-and-split.
+	(*sumaddqihi4.uconst): New insn-and-split.
+	(*sumsubqihi4.uconst): New insn-and-split.
+	* config/avr/avr.c (avr_rtx_costs): Report costs of above in case
+	PLUS:HI and MINUS:HI.
+
 2011-09-13  Revital Eres  <revital.eres@linaro.org>
 
 	modulo-sched.c (remove_node_from_ps): Return void instead of bool.

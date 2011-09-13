@@ -5576,6 +5576,16 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	  break;
 
 	case HImode:
+          if (AVR_HAVE_MUL
+              && (MULT == GET_CODE (XEXP (x, 0))
+                  || ASHIFT == GET_CODE (XEXP (x, 0)))
+              && register_operand (XEXP (x, 1), HImode)
+              && (ZERO_EXTEND == GET_CODE (XEXP (XEXP (x, 0), 0))
+                  || SIGN_EXTEND == GET_CODE (XEXP (XEXP (x, 0), 0))))
+            {
+              *total = COSTS_N_INSNS (speed ? 5 : 4);
+              return true;
+            }
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	    {
 	      *total = COSTS_N_INSNS (2);
@@ -5608,6 +5618,17 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
       return true;
 
     case MINUS:
+      if (AVR_HAVE_MUL
+          && HImode == mode
+          && register_operand (XEXP (x, 0), HImode)
+          && (MULT == GET_CODE (XEXP (x, 1))
+              || ASHIFT == GET_CODE (XEXP (x, 1)))
+          && (ZERO_EXTEND == GET_CODE (XEXP (XEXP (x, 1), 0))
+              || SIGN_EXTEND == GET_CODE (XEXP (XEXP (x, 1), 0))))
+        {
+          *total = COSTS_N_INSNS (speed ? 5 : 4);
+          return true;
+        }
     case AND:
     case IOR:
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
