@@ -490,8 +490,7 @@ class Temporary_statement : public Statement
   Type*
   type() const;
 
-  // Note that it is OK for this return statement to set hidden
-  // fields.
+  // Note that it is OK for this statement to set hidden fields.
   void
   set_hidden_fields_are_ok()
   { this->are_hidden_fields_ok_ = true; }
@@ -533,8 +532,8 @@ class Temporary_statement : public Statement
   Expression* init_;
   // The backend representation of the temporary variable.
   Bvariable* bvariable_;
-  // True if this statement may pass hidden fields in the return
-  // value.  This is used for generated method stubs.
+  // True if this statement may set hidden fields when assigning the
+  // value to the temporary.  This is used for generated method stubs.
   bool are_hidden_fields_ok_;
   // True if something takes the address of this temporary variable.
   bool is_address_taken_;

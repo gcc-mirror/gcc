@@ -7401,6 +7401,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
 						location);
+  call->set_hidden_fields_are_ok();
   size_t count = call->result_count();
   if (count == 0)
     gogo->add_statement(Statement::make_statement(call));
