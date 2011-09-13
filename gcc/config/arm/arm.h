@@ -825,6 +825,16 @@ extern int arm_arch_thumb_hwdiv;
 #define ARM_EH_STACKADJ_REGNUM	2
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (SImode, ARM_EH_STACKADJ_REGNUM)
 
+#ifndef ARM_TARGET2_DWARF_FORMAT
+#define ARM_TARGET2_DWARF_FORMAT DW_EH_PE_pcrel
+
+/* ttype entries (the only interesting data references used)
+   use TARGET2 relocations.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(code, data) \
+  (((code) == 0 && (data) == 1 && ARM_UNWIND_INFO) ? ARM_TARGET2_DWARF_FORMAT \
+			       : DW_EH_PE_absptr)
+#endif
+
 /* The native (Norcroft) Pascal compiler for the ARM passes the static chain
    as an invisible last argument (possible since varargs don't exist in
    Pascal), so the following is not true.  */

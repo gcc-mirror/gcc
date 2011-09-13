@@ -402,12 +402,19 @@ c6x_output_file_unwind (FILE * f)
   if (done_cfi_sections)
     return;
 
-  /* Output a .cfi_sections directive if we aren't
-     already doing so for debug info.  */
-  if (write_symbols != DWARF2_DEBUG && write_symbols != VMS_AND_DWARF2_DEBUG
-	    && dwarf2out_do_frame ())
+  /* Output a .cfi_sections directive.  */
+  if (dwarf2out_do_frame ())
     {
-      asm_fprintf (f, "\t.cfi_sections .c6xabi.exidx\n");
+      if (flag_unwind_tables || flag_exceptions)
+	{
+	  if (write_symbols == DWARF2_DEBUG
+	      || write_symbols == VMS_AND_DWARF2_DEBUG)
+	    asm_fprintf (f, "\t.cfi_sections .debug_frame, .c6xabi.exidx\n");
+	  else
+	    asm_fprintf (f, "\t.cfi_sections .c6xabi.exidx\n");
+	}
+      else
+	asm_fprintf (f, "\t.cfi_sections .debug_frame\n");
       done_cfi_sections = true;
     }
 }
@@ -5606,6 +5613,18 @@ c6x_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
   gcc_unreachable ();
 }
+
+/* Target unwind frame info is generated from dwarf CFI directives, so
+   always output dwarf2 unwind info.  */
+
+static enum unwind_info_type
+c6x_debug_unwind_info (void)
+{
+  if (flag_unwind_tables || flag_exceptions)
+    return UI_DWARF2;
+
+  return default_debug_unwind_info ();
+}
 
 /* Target Structure.  */
 
@@ -5745,6 +5764,13 @@ c6x_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 /* C6x unwinding tables use a different format for the typeinfo tables.  */
 #undef TARGET_ASM_TTYPE
 #define TARGET_ASM_TTYPE c6x_output_ttype
+
+/* The C6x ABI follows the ARM EABI exception handling rules.  */
+#undef TARGET_ARM_EABI_UNWINDER
+#define TARGET_ARM_EABI_UNWINDER true
+
+#undef TARGET_DEBUG_UNWIND_INFO
+#define TARGET_DEBUG_UNWIND_INFO  c6x_debug_unwind_info
 
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN c6x_dwarf_register_span

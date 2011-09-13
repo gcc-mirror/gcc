@@ -1,3 +1,15 @@
+2011-09-13  Paul Brook  <paul@codesourcery.com>
+ 
+	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Add C6X implementation.
+	* libsupc++/eh_call.cc (__cxa_call_unexpected): Set rtti_base.
+	* libsupc++/eh_personality.cc (NO_SIZE_OF_ENCODED_VALUE): Remove
+	__ARM_EABI_UNWINDER__ check.
+	(parse_lsda_header): Check _GLIBCXX_OVERRIDE_TTYPE_ENCODING.
+	(get_ttype_entry): Use generic implementation on ARM EABI.
+	(check_exception_spec): Use _Unwind_decode_typeinfo_ptr and
+	UNWIND_STACK_REG.
+	(PERSONALITY_FUNCTION): Set ttype_base.
+
 2011-09-12  Daniel Krugler  <daniel.kruegler@googlemail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

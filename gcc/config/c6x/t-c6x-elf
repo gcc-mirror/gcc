@@ -24,6 +24,7 @@ LIB1ASMFUNCS += _strasgi _strasgi_64plus _clzsi2 _clzdi2 _clz
 LIB1ASMFUNCS += _push_rts _pop_rts _call_stub
 
 LIB2FUNCS_EXCLUDE = _cmpdi2 _ucmpdi2 _gcc_bcmp _eprintf _clzsi _clzdi
+EXTRA_HEADERS += $(srcdir)/ginclude/unwind-arm-common.h
 
 LIB2FUNCS_EXTRA = $(srcdir)/config/c6x/gef.c \
                   $(srcdir)/config/c6x/gtf.c \

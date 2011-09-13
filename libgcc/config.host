@@ -790,7 +790,8 @@ spu-*-elf*)
 	tmake_file="t-fdpbit spu/t-elf"
 	;;
 tic6x-*-*)
-	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix"
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix c6x/t-c6x-elf"
+	unwind_header=config/c6x/unwind-c6x.h
 	;;
 v850*-*-*)
 	tmake_file=t-fdpbit

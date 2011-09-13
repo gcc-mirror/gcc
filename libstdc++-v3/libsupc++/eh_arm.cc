@@ -155,6 +155,49 @@ __gnu_end_cleanup(void)
   return &header->unwindHeader;
 }
 
+#ifdef __TMS320C6X__
+// Assembly wrapper to call __gnu_end_cleanup without clobbering
+// function arguments to _Unwind_Resume.
+asm (".global __cxa_end_cleanup\n"
+"	.type __cxa_end_cleanup, \"function\"\n"
+"__cxa_end_cleanup:\n"
+"	stw	.d2t2	B9, *B15--[10]\n"
+"	stw	.d2t2	B8, *+B15[9]\n"
+"	stw	.d2t2	B7, *+B15[8]\n"
+"	stw	.d2t2	B6, *+B15[7]\n"
+"	stw	.d2t2	B5, *+B15[6]\n"
+"	stw	.d2t2	B4, *+B15[5]\n"
+"	stw	.d2t1	A9, *+B15[4]\n"
+"	stw	.d2t1	A8, *+B15[3]\n"
+"	stw	.d2t1	A7, *+B15[2]\n"
+"	stw	.d2t1	A6, *+B15[1]\n"
+#ifdef _TMS320C6400_PLUS
+"	callp	.s2	(__gnu_end_cleanup), B3\n"
+#elif defined(_TMS320C6400)
+"	call	.s2	(__gnu_end_cleanup)\n"
+"	addkpc	.s2	1f, B3, 0\n"
+"	nop		4\n"
+"1:\n"
+#else
+"	call	.s2	(__gnu_end_cleanup)\n"
+"	mvkl	.s2	1f, B3\n"
+"	mvkh	.s2	1f, B3\n"
+"	nop		3\n"
+"1:\n"
+#endif
+"	ldw	.d2t1	*+B15[1], A6\n"
+"	ldw	.d2t1	*+B15[2], A7\n"
+"	ldw	.d2t1	*+B15[3], A8\n"
+"	ldw	.d2t1	*+B15[4], A9\n"
+"	ldw	.d2t2	*+B15[5], B4\n"
+"	ldw	.d2t2	*+B15[6], B5\n"
+"	ldw	.d2t2	*+B15[7], B6\n"
+"	ldw	.d2t2	*+B15[8], B7\n"
+"	ldw	.d2t2	*+B15[9], B8\n"
+"	ldw	.d2t2	*++B15[10], B9\n"
+"	b	.s2	_Unwind_Resume\n"
+"	nop		5\n");
+#else
 // Assembly wrapper to call __gnu_end_cleanup without clobbering r1-r3.
 // Also push r4 to preserve stack alignment.
 #ifdef __thumb__
@@ -178,6 +221,7 @@ asm ("  .pushsection .text.__cxa_end_cleanup\n"
 "	ldmfd\tsp!, {r1, r2, r3, r4}\n"
 "	bl\t_Unwind_Resume @ Never returns\n"
 "	.popsection\n");
+#endif
 #endif
 
 #endif

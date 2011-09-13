@@ -1,3 +1,17 @@
+2011-09-13  Paul Brook  <paul@codesourcery.com>
+ 
+	* config.host (tic6x-*-*): Add c6x/t-c6x-elf.  Set unwind_header.
+	* unwind-c.c (PERSONALITY_FUNCTION): Use UNWIND_POINTER_REG.
+	* unwind-arm-common.inc: New file.
+	* config/arm/unwind-arm.c: Use unwind-arm-common.inc.
+	* config/arm/unwind-arm.h: Use unwind-arm-common.h.
+	(_GLIBCXX_OVERRIDE_TTYPE_ENCODING): Define.
+	* config/c6x/libunwind.S: New file.
+	* config/c6x/pr-support.c: New file.
+	* config/c6x/unwind-c6x.c: New file.
+	* config/c6x/unwind-c6x.h: New file.
+	* config/c6x/t-c6x-elf: New file.
+
 2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/64/sfp-machine.h (ASM_INVALID): New define.

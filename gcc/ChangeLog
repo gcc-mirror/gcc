@@ -1,3 +1,22 @@
+2011-09-13  Paul Brook  <paul@codesourcery.com>
+ 
+	* config/arm/arm.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	(ARM_TARGET2_DWARF_FORMAT): Provide default definition.
+	* config/arm/linux-eabi.h (ARM_TARGET2_DWARF_FORMAT): Define.
+	* config/arm/symbian.h (ARM_TARGET2_DWARF_FORMAT): Define.
+	* config/arm/uclinux-eabi.h(ARM_TARGET2_DWARF_FORMAT): Define.
+	* config/arm/t-bpabi (EXTRA_HEADERS): Add unwind-arm-common.h.
+	* config/arm/t-symbian (EXTRA_HEADERS): Add unwind-arm-common.h.
+	* config/c6x/c6x.c (c6x_output_file_unwind): Don't rely on dwarf2 code
+	enabling unwind tables.
+	(c6x_debug_unwind_info): New function.
+	(TARGET_ARM_EABI_UNWINDER): Define.
+	(TARGET_DEBUG_UNWIND_INFO): Define.
+	* config/c6x/c6x.h (DWARF_FRAME_RETURN_COLUMN): Define.
+	(TARGET_EXTRA_CFI_SECTION): Remove.
+	* config/c6x/t-c6x-elf (EXTRA_HEADERS): Set.
+	* ginclude/unwind-arm-common.h: New file.
+
 2011-09-13  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/50358

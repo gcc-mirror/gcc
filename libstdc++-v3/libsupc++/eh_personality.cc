@@ -30,11 +30,8 @@
 #include <cxxabi.h>
 #include "unwind-cxx.h"
 
-using namespace __cxxabiv1;
 
-#ifdef __ARM_EABI_UNWINDER__
-#define NO_SIZE_OF_ENCODED_VALUE
-#endif
+using namespace __cxxabiv1;
 
 #include "unwind-pe.h"
 
@@ -70,6 +67,11 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
   info->ttype_encoding = *p++;
   if (info->ttype_encoding != DW_EH_PE_omit)
     {
+#if _GLIBCXX_OVERRIDE_TTYPE_ENCODING
+      /* Older ARM EABI toolchains set this value incorrectly, so use a
+	 hardcoded OS-specific format.  */
+      info->ttype_encoding = _GLIBCXX_OVERRIDE_TTYPE_ENCODING;
+#endif
       p = read_uleb128 (p, &tmp);
       info->TType = p + tmp;
     }
@@ -85,20 +87,21 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
   return p;
 }
 
-#ifdef __ARM_EABI_UNWINDER__
-
 // Return an element from a type table.
 
-static const std::type_info*
-get_ttype_entry(lsda_header_info* info, _uleb128_t i)
+static const std::type_info *
+get_ttype_entry (lsda_header_info *info, _uleb128_t i)
 {
   _Unwind_Ptr ptr;
 
-  ptr = (_Unwind_Ptr) (info->TType - (i * 4));
-  ptr = _Unwind_decode_target2(ptr);
-  
+  i *= size_of_encoded_value (info->ttype_encoding);
+  read_encoded_value_with_base (info->ttype_encoding, info->ttype_base,
+				info->TType - i, &ptr);
+
   return reinterpret_cast<const std::type_info *>(ptr);
 }
+
+#ifdef __ARM_EABI_UNWINDER__
 
 // The ABI provides a routine for matching exception object types.
 typedef _Unwind_Control_Block _throw_typet;
@@ -127,7 +130,7 @@ check_exception_spec(lsda_header_info* info, _throw_typet* throw_type,
       if (tmp == 0)
         return false;
 
-      tmp = _Unwind_decode_target2((_Unwind_Word) e);
+      tmp = _Unwind_decode_typeinfo_ptr(info->ttype_base, (_Unwind_Word) e);
 
       // Match a ttype entry.
       catch_type = reinterpret_cast<const std::type_info*>(tmp);
@@ -157,7 +160,7 @@ save_caught_exception(struct _Unwind_Exception* ue_header,
 		      const unsigned char* action_record
 			__attribute__((__unused__)))
 {
-    ue_header->barrier_cache.sp = _Unwind_GetGR(context, 13);
+    ue_header->barrier_cache.sp = _Unwind_GetGR(context, UNWIND_STACK_REG);
     ue_header->barrier_cache.bitpattern[0] = (_uw) thrown_ptr;
     ue_header->barrier_cache.bitpattern[1]
       = (_uw) handler_switch_value;
@@ -204,20 +207,6 @@ empty_exception_spec (lsda_header_info *info, _Unwind_Sword filter_value)
 #else
 typedef const std::type_info _throw_typet;
 
-
-// Return an element from a type table.
-
-static const std::type_info *
-get_ttype_entry (lsda_header_info *info, _uleb128_t i)
-{
-  _Unwind_Ptr ptr;
-
-  i *= size_of_encoded_value (info->ttype_encoding);
-  read_encoded_value_with_base (info->ttype_encoding, info->ttype_base,
-				info->TType - i, &ptr);
-
-  return reinterpret_cast<const std::type_info *>(ptr);
-}
 
 // Given the thrown type THROW_TYPE, pointer to a variable containing a
 // pointer to the exception object THROWN_PTR_P and a type CATCH_TYPE to
@@ -390,7 +379,8 @@ PERSONALITY_FUNCTION (int version,
     case _US_UNWIND_FRAME_STARTING:
       actions = _UA_CLEANUP_PHASE;
       if (!(state & _US_FORCE_UNWIND)
-	  && ue_header->barrier_cache.sp == _Unwind_GetGR(context, 13))
+	  && ue_header->barrier_cache.sp == _Unwind_GetGR(context,
+							  UNWIND_STACK_REG))
 	actions |= _UA_HANDLER_FRAME;
       break;
 
@@ -410,10 +400,10 @@ PERSONALITY_FUNCTION (int version,
 
   // The dwarf unwinder assumes the context structure holds things like the
   // function and LSDA pointers.  The ARM implementation caches these in
-  // the exception header (UCB).  To avoid rewriting everything we make the
-  // virtual IP register point at the UCB.
+  // the exception header (UCB).  To avoid rewriting everything we make a
+  // virtual scratch register point at the UCB.
   ip = (_Unwind_Ptr) ue_header;
-  _Unwind_SetGR(context, 12, ip);
+  _Unwind_SetGR(context, UNWIND_POINTER_REG, ip);
 #else
   __cxa_exception* xh = __get_exception_header_from_ue(ue_header);
 
@@ -679,6 +669,8 @@ PERSONALITY_FUNCTION (int version,
       if (handler_switch_value < 0)
 	{
 	  parse_lsda_header (context, language_specific_data, &info);
+	  info.ttype_base = base_of_encoded_value (info.ttype_encoding,
+						   context);
 
 #ifdef __ARM_EABI_UNWINDER__
 	  const _Unwind_Word* e;
@@ -692,8 +684,8 @@ PERSONALITY_FUNCTION (int version,
 
 	  // Count.
 	  ue_header->barrier_cache.bitpattern[1] = n;
-	  // Base (obsolete)
-	  ue_header->barrier_cache.bitpattern[2] = 0;
+	  // Base
+	  ue_header->barrier_cache.bitpattern[2] = info.ttype_base;
 	  // Stride.
 	  ue_header->barrier_cache.bitpattern[3] = 4;
 	  // List head.

@@ -101,3 +101,5 @@
    is used.  */
 #undef  CLEAR_INSN_CACHE
 #define CLEAR_INSN_CACHE(BEG, END) not_used
+
+#define ARM_TARGET2_DWARF_FORMAT (DW_EH_PE_pcrel | DW_EH_PE_indirect)

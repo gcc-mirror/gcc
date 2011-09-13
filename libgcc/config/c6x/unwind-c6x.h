@@ -1,7 +1,6 @@
-/* Header file for the ARM EABI unwinder
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011
+/* Header file for the C6X EABI unwinder
+   Copyright (C) 2011
    Free Software Foundation, Inc.
-   Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -25,21 +24,24 @@
 /* Language-independent unwinder header public defines.  This contains both
    ABI defined objects, and GNU support routines.  */
 
-#ifndef UNWIND_ARM_H
-#define UNWIND_ARM_H
+#ifndef UNWIND_C6X_H
+#define UNWIND_C6X_H
 
+/* Not really the ARM EABI, but pretty close.  */
 #include "unwind-arm-common.h"
 
-#define UNWIND_STACK_REG 13
-/* Use IP as a scratch register within the personality routine.  */
-#define UNWIND_POINTER_REG 12
+#define UNWIND_STACK_REG 31
+/* Use A0 as a scratch register within the personality routine.  */
+#define UNWIND_POINTER_REG 0
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-  /* Decode an R_ARM_TARGET2 relocation.  */
+  _Unwind_Reason_Code __gnu_unwind_24bit (_Unwind_Context *, _uw, int);
+
+  /* Decode an EH table reference to a typeinfo object.  */
   static inline _Unwind_Word
-  _Unwind_decode_typeinfo_ptr (_Unwind_Word base, _Unwind_Word ptr)
+  _Unwind_decode_typeinfo_ptr (_Unwind_Ptr base, _Unwind_Word ptr)
     {
       _Unwind_Word tmp;
 
@@ -48,33 +50,19 @@ extern "C" {
       if (!tmp)
 	return 0;
 
-#if (defined(linux) && !defined(__uClinux__)) || defined(__NetBSD__)
-      /* Pc-relative indirect.  */
-#define _GLIBCXX_OVERRIDE_TTYPE_ENCODING (DW_EH_PE_pcrel | DW_EH_PE_indirect)
-      tmp += ptr;
-      tmp = *(_Unwind_Word *) tmp;
-#elif defined(__symbian__) || defined(__uClinux__)
-#define _GLIBCXX_OVERRIDE_TTYPE_ENCODING (DW_EH_PE_absptr)
-      /* Absolute pointer.  Nothing more to do.  */
-#else
-#define _GLIBCXX_OVERRIDE_TTYPE_ENCODING (DW_EH_PE_pcrel)
-      /* Pc-relative pointer.  */
-      tmp += ptr;
-#endif
+      /* SB-relative indirect.  Propagate the bottom 2 bits, which can
+	 contain referenceness information in gnu unwinding tables.  */
+      tmp += base;
+      tmp = *(_Unwind_Word *) (tmp & ~(_Unwind_Word)3) | (tmp & 3);
       return tmp;
     }
 
-  static inline _Unwind_Reason_Code
-  __gnu_unwind_24bit (_Unwind_Context * context, _uw data, int compact)
-    {
-      return _URC_FAILURE;
-    }
-  /* Return the address of the instruction, not the actual IP value.  */
 #define _Unwind_GetIP(context) \
-  (_Unwind_GetGR (context, 15) & ~(_Unwind_Word)1)
+  (_Unwind_GetGR (context, 33))
+
 
 #define _Unwind_SetIP(context, val) \
-  _Unwind_SetGR (context, 15, val | (_Unwind_GetGR (context, 15) & 1))
+  _Unwind_SetGR (context, 33, val)
 
 #ifdef __cplusplus
 }   /* extern "C" */
