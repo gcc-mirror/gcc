@@ -1,3 +1,8 @@
+2011-09-13  Sevak Sargsyan <sevak.sargsyan@ispras.ru>
+
+	* config/arm/neon.md (neon_vabd<mode>_2, neon_vabd<mode>_3): New
+	define_insn patterns for combine.
+
 2011-09-13  Giuseppe Scrivano  <gscrivano@gnu.org>
 
 	* reorg.c: Always define make_return_insns.
