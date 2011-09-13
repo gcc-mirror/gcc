@@ -2810,7 +2810,16 @@ package body Sem_Res is
          --  default expression mode (the Freeze_Expression routine tests this
          --  flag and only freezes static types if it is set).
 
-         Freeze_Expression (N);
+         --  AI05-177 (Ada2012): Expression functions do not freeze. Only
+         --  their use (in an expanded call) freezes.
+
+         if Ekind (Current_Scope) /= E_Function
+           or else
+             Nkind (Original_Node (Unit_Declaration_Node (Current_Scope))) /=
+                                                        N_Expression_Function
+         then
+            Freeze_Expression (N);
+         end if;
 
          --  Now we can do the expansion
 

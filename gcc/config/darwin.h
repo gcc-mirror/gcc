@@ -959,4 +959,8 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 #define UPC_INIT_SECTION_NAME "__TEXT,upc_init"
 #define UPC_INIT_ARRAY_SECTION_NAME "__DATA,upc_init_array"
 
+/* When building cross-compilers (and native crosses) we shall default to 
+   providing an osx-version-min of this unless overridden by the User.  */
+#define DEF_MIN_OSX_VERSION "10.4"
+
 #endif /* CONFIG_DARWIN_H */

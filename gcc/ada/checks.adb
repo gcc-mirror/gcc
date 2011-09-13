@@ -1877,6 +1877,10 @@ package body Checks is
       if Is_Subscr_Ref then
          Arr := Prefix (Parnt);
          Arr_Typ := Get_Actual_Subtype_If_Available (Arr);
+
+         if Is_Access_Type (Arr_Typ) then
+            Arr_Typ := Directly_Designated_Type (Arr_Typ);
+         end if;
       end if;
 
       if not Do_Range_Check (Expr) then

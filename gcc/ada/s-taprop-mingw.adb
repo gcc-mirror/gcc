@@ -38,8 +38,6 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
-with Ada.Unchecked_Deallocation;
-
 with Interfaces.C;
 with Interfaces.C.Strings;
 
@@ -175,6 +173,13 @@ package body System.Task_Primitives.Operations is
       end Set;
 
    end Specific;
+
+   ----------------------------------
+   -- ATCB allocation/deallocation --
+   ----------------------------------
+
+   package body ATCB_Allocation is separate;
+   --  The body of this package is shared across several targets
 
    ---------------------------------
    -- Support for foreign threads --
@@ -820,15 +825,6 @@ package body System.Task_Primitives.Operations is
          Self_ID.Common.Compiler_Data.Pri_Stack_Info.Limit'Address);
    end Enter_Task;
 
-   --------------
-   -- New_ATCB --
-   --------------
-
-   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_Id is
-   begin
-      return new Ada_Task_Control_Block (Entry_Num);
-   end New_ATCB;
-
    -------------------
    -- Is_Valid_Task --
    -------------------
@@ -987,13 +983,8 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Finalize_TCB (T : Task_Id) is
-      Self_ID   : Task_Id := T;
       Result    : DWORD;
       Succeeded : BOOL;
-      Is_Self   : constant Boolean := T = Self;
-
-      procedure Free is new
-        Ada.Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
 
    begin
       if not Single_Lock then
@@ -1006,7 +997,7 @@ package body System.Task_Primitives.Operations is
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
 
-      if Self_ID.Common.LL.Thread /= 0 then
+      if T.Common.LL.Thread /= 0 then
 
          --  This task has been activated. Wait for the thread to terminate
          --  then close it. This is needed to release system resources.
@@ -1017,11 +1008,7 @@ package body System.Task_Primitives.Operations is
          pragma Assert (Succeeded = Win32.TRUE);
       end if;
 
-      Free (Self_ID);
-
-      if Is_Self then
-         Specific.Set (null);
-      end if;
+      ATCB_Allocation.Free_ATCB (T);
    end Finalize_TCB;
 
    ---------------

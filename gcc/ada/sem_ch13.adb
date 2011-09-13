@@ -1146,6 +1146,7 @@ package body Sem_Ch13 is
                         New_List (Ent, Relocate_Node (Expr)));
 
                   Set_From_Aspect_Specification (Aitem, True);
+                  Set_Corresponding_Aspect (Aitem, Aspect);
 
                   pragma Assert (not Delay_Required);
 
@@ -1181,6 +1182,7 @@ package body Sem_Ch13 is
                                    Expression => Relocate_Node (Expr))));
 
                      Set_From_Aspect_Specification (Aitem, True);
+                     Set_Corresponding_Aspect (Aitem, Aspect);
 
                      pragma Assert (not Delay_Required);
                   end;
@@ -1259,6 +1261,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_From_Aspect_Specification (Aitem, True);
+                  Set_Corresponding_Aspect (Aitem, Aspect);
                   Set_Is_Delayed_Aspect (Aspect);
 
                   --  For Pre/Post cases, insert immediately after the entity
@@ -1289,14 +1292,9 @@ package body Sem_Ch13 is
                when Aspect_Invariant      |
                     Aspect_Type_Invariant =>
 
-                  --  Check placement legality
-
-                  if not Nkind_In (N, N_Private_Type_Declaration,
-                                      N_Private_Extension_Declaration)
-                  then
-                     Error_Msg_N
-                       ("invariant aspect must apply to a private type", N);
-                  end if;
+                  --  Analysis of the pragma will verify placement legality:
+                  --  an invariant must apply to a private type, or appear in
+                  --  the private part of a spec and apply to a completion.
 
                   --  Construct the pragma
 
@@ -1321,6 +1319,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_From_Aspect_Specification (Aitem, True);
+                  Set_Corresponding_Aspect (Aitem, Aspect);
                   Set_Is_Delayed_Aspect (Aspect);
 
                   --  For Invariant case, insert immediately after the entity
@@ -1350,14 +1349,7 @@ package body Sem_Ch13 is
                         Make_Identifier (Sloc (Id), Name_Predicate));
 
                   Set_From_Aspect_Specification (Aitem, True);
-
-                  --  Set special flags for dynamic/static cases
-
-                  if A_Id = Aspect_Dynamic_Predicate then
-                     Set_From_Dynamic_Predicate (Aitem);
-                  elsif A_Id = Aspect_Static_Predicate then
-                     Set_From_Static_Predicate (Aitem);
-                  end if;
+                  Set_Corresponding_Aspect (Aitem, Aspect);
 
                   --  Make sure we have a freeze node (it might otherwise be
                   --  missing in cases like subtype X is Y, and we would not
@@ -1431,6 +1423,7 @@ package body Sem_Ch13 is
                         Args);
 
                   Set_From_Aspect_Specification (Aitem, True);
+                  Set_Corresponding_Aspect (Aitem, Aspect);
                   Set_Is_Delayed_Aspect (Aspect);
 
                   --  Insert immediately after the entity declaration
@@ -1449,6 +1442,11 @@ package body Sem_Ch13 is
             if Delay_Required then
                if Present (Aitem) then
                   Set_From_Aspect_Specification (Aitem, True);
+
+                  if Nkind (Aitem) = N_Pragma then
+                     Set_Corresponding_Aspect (Aitem, Aspect);
+                  end if;
+
                   Set_Is_Delayed_Aspect (Aitem);
                   Set_Aspect_Rep_Item (Aspect, Aitem);
                end if;
@@ -1461,6 +1459,10 @@ package body Sem_Ch13 is
 
             else
                Set_From_Aspect_Specification (Aitem, True);
+
+               if Nkind (Aitem) = N_Pragma then
+                  Set_Corresponding_Aspect (Aitem, Aspect);
+               end if;
 
                --  If this is a compilation unit, we will put the pragma in
                --  the Pragmas_After list of the N_Compilation_Unit_Aux node.
@@ -4739,10 +4741,15 @@ package body Sem_Ch13 is
             if Nkind (Ritem) = N_Pragma
               and then Pragma_Name (Ritem) = Name_Predicate
             then
-               if From_Dynamic_Predicate (Ritem) then
-                  Dynamic_Predicate_Present := True;
-               elsif From_Static_Predicate (Ritem) then
-                  Static_Predicate_Present := Ritem;
+               if Present (Corresponding_Aspect (Ritem)) then
+                  case Chars (Identifier (Corresponding_Aspect (Ritem))) is
+                     when Name_Dynamic_Predicate =>
+                        Dynamic_Predicate_Present := True;
+                     when Name_Static_Predicate =>
+                        Static_Predicate_Present := Ritem;
+                     when others =>
+                        null;
+                  end case;
                end if;
 
                --  Acquire arguments

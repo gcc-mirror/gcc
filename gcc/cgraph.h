@@ -84,9 +84,12 @@ struct GTY(()) cgraph_local_info {
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  
+
   /* Set once it has been finalized so we consider it to be output.  */
   unsigned finalized : 1;
+
+  /* False when there is something makes versioning impossible.  */
+  unsigned versionable : 1;
 
   /* False when function calling convention and signature can not be changed.
      This is the case when __builtin_apply_args is used.  */

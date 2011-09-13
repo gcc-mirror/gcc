@@ -205,4 +205,17 @@ package Exp_Ch6 is
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
 
+   function Needs_Result_Accessibility_Level
+     (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
+   --  parameter to identify the accessibility level of the function result
+   --  "determined by the point of call".
+
+   procedure Add_Extra_Actual_To_Call
+     (Subprogram_Call : Node_Id;
+      Extra_Formal    : Entity_Id;
+      Extra_Actual    : Node_Id);
+   --  Adds Extra_Actual as a named parameter association for the formal
+   --  Extra_Formal in Subprogram_Call.
+
 end Exp_Ch6;

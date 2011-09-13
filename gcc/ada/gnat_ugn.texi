@@ -14235,7 +14235,23 @@ outermost unit and for each eligible local unit:
 
 @table @emph
 @item LSLOC (``Logical Source Lines Of Code'')
-The total number of declarations and the total number of statements
+The total number of declarations and the total number of statements. Note
+that the definition of declarations is the one given in the reference
+manual:
+
+@noindent
+``Each of the following is defined to be a declaration: any basic_declaration;
+an enumeration_literal_specification; a discriminant_specification;
+a component_declaration; a loop_parameter_specification; a
+parameter_specification; a subprogram_body; an entry_declaration;
+an entry_index_specification; a choice_parameter_specification;
+a generic_formal_parameter_declaration.''
+
+This means for example that each enumeration literal adds one to the count,
+as well as each subprogram parameter.
+
+Thus the results from this metric will be significantly greater than might
+be expected from a naive view of counting semicolons.
 
 @item Maximal static nesting level of inner program units
 According to

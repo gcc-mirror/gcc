@@ -29,6 +29,7 @@ with Sinfo;    use Sinfo;
 with Fname.UF; use Fname.UF;
 with Lib;      use Lib;
 with Namet;    use Namet;
+with Opt;      use Opt;
 with Uname;    use Uname;
 
 --  Note: this package body is used by GPS and GNATBench to supply a list of
@@ -37,7 +38,21 @@ with Uname;    use Uname;
 package body Impunit is
 
    subtype File_Name_8 is String (1 .. 8);
-   type File_List is array (Nat range <>) of File_Name_8;
+
+   type File_Name_Record is record
+      Fname : File_Name_8;
+      --  8 character name of unit
+
+      RMdef : Boolean;
+      --  True if unit is RM defined. False for any unit that is implementation
+      --  defined (and thus not with'able in No_Implementation_Units mode).
+   end record;
+
+   type File_List is array (Nat range <>) of File_Name_Record;
+
+   T : constant Boolean := True;
+   F : constant Boolean := False;
+   --  Short hand for RM_Defined values in lists below
 
    ------------------
    -- Ada 95 Units --
@@ -58,130 +73,133 @@ package body Impunit is
    -- Ada Hierarchy Units from Ada-95 Reference Manual --
    ------------------------------------------------------
 
-     "a-astaco",    -- Ada.Asynchronous_Task_Control
-     "a-calend",    -- Ada.Calendar
-     "a-chahan",    -- Ada.Characters.Handling
-     "a-charac",    -- Ada.Characters
-     "a-chlat1",    -- Ada.Characters.Latin_1
-     "a-comlin",    -- Ada.Command_Line
-     "a-decima",    -- Ada.Decimal
-     "a-direio",    -- Ada.Direct_IO
-     "a-dynpri",    -- Ada.Dynamic_Priorities
-     "a-except",    -- Ada.Exceptions
-     "a-finali",    -- Ada.Finalization
-     "a-flteio",    -- Ada.Float_Text_IO
-     "a-fwteio",    -- Ada.Float_Wide_Text_IO
-     "a-inteio",    -- Ada.Integer_Text_IO
-     "a-interr",    -- Ada.Interrupts
-     "a-intnam",    -- Ada.Interrupts.Names
-     "a-ioexce",    -- Ada.IO_Exceptions
-     "a-iwteio",    -- Ada.Integer_Wide_Text_IO
-     "a-ncelfu",    -- Ada.Numerics.Complex_Elementary_Functions
-     "a-ngcefu",    -- Ada.Numerics.Generic_Complex_Elementary_Functions
-     "a-ngcoty",    -- Ada.Numerics.Generic_Complex_Types
-     "a-ngelfu",    -- Ada.Numerics.Generic_Elementary_Functions
-     "a-nucoty",    -- Ada.Numerics.Complex_Types
-     "a-nudira",    -- Ada.Numerics.Discrete_Random
-     "a-nuelfu",    -- Ada.Numerics.Elementary_Functions
-     "a-nuflra",    -- Ada.Numerics.Float_Random
-     "a-numeri",    -- Ada.Numerics
-     "a-reatim",    -- Ada.Real_Time
-     "a-sequio",    -- Ada.Sequential_IO
-     "a-stmaco",    -- Ada.Strings.Maps.Constants
-     "a-storio",    -- Ada.Storage_IO
-     "a-strbou",    -- Ada.Strings.Bounded
-     "a-stream",    -- Ada.Streams
-     "a-strfix",    -- Ada.Strings.Fixed
-     "a-string",    -- Ada.Strings
-     "a-strmap",    -- Ada.Strings.Maps
-     "a-strunb",    -- Ada.Strings.Unbounded
-     "a-ststio",    -- Ada.Streams.Stream_IO
-     "a-stwibo",    -- Ada.Strings.Wide_Bounded
-     "a-stwifi",    -- Ada.Strings.Wide_Fixed
-     "a-stwima",    -- Ada.Strings.Wide_Maps
-     "a-stwiun",    -- Ada.Strings.Wide_Unbounded
-     "a-swmwco",    -- Ada.Strings.Wide_Maps.Wide_Constants
-     "a-sytaco",    -- Ada.Synchronous_Task_Control
-     "a-tags  ",    -- Ada.Tags
-     "a-tasatt",    -- Ada.Task_Attributes
-     "a-taside",    -- Ada.Task_Identification
-     "a-teioed",    -- Ada.Text_IO.Editing
-     "a-textio",    -- Ada.Text_IO
-     "a-ticoio",    -- Ada.Text_IO.Complex_IO
-     "a-titest",    -- Ada.Text_IO.Text_Streams
-     "a-unccon",    -- Ada.Unchecked_Conversion
-     "a-uncdea",    -- Ada.Unchecked_Deallocation
-     "a-witeio",    -- Ada.Wide_Text_IO
-     "a-wtcoio",    -- Ada.Wide_Text_IO.Complex_IO
-     "a-wtedit",    -- Ada.Wide_Text_IO.Editing
-     "a-wttest",    -- Ada.Wide_Text_IO.Text_Streams
+    ("a-astaco", T),  -- Ada.Asynchronous_Task_Control
+    ("a-calend", T),  -- Ada.Calendar
+    ("a-chahan", T),  -- Ada.Characters.Handling
+    ("a-charac", T),  -- Ada.Characters
+    ("a-chlat1", T),  -- Ada.Characters.Latin_1
+    ("a-comlin", T),  -- Ada.Command_Line
+    ("a-decima", T),  -- Ada.Decimal
+    ("a-direio", T),  -- Ada.Direct_IO
+    ("a-dynpri", T),  -- Ada.Dynamic_Priorities
+    ("a-except", T),  -- Ada.Exceptions
+    ("a-finali", T),  -- Ada.Finalization
+    ("a-flteio", T),  -- Ada.Float_Text_IO
+    ("a-fwteio", T),  -- Ada.Float_Wide_Text_IO
+    ("a-inteio", T),  -- Ada.Integer_Text_IO
+    ("a-interr", T),  -- Ada.Interrupts
+    ("a-intnam", T),  -- Ada.Interrupts.Names
+    ("a-ioexce", T),  -- Ada.IO_Exceptions
+    ("a-iwteio", T),  -- Ada.Integer_Wide_Text_IO
+    ("a-ncelfu", T),  -- Ada.Numerics.Complex_Elementary_Functions
+    ("a-ngcefu", T),  -- Ada.Numerics.Generic_Complex_Elementary_Functions
+    ("a-ngcoty", T),  -- Ada.Numerics.Generic_Complex_Types
+    ("a-ngelfu", T),  -- Ada.Numerics.Generic_Elementary_Functions
+    ("a-nucoty", T),  -- Ada.Numerics.Complex_Types
+    ("a-nudira", T),  -- Ada.Numerics.Discrete_Random
+    ("a-nuelfu", T),  -- Ada.Numerics.Elementary_Functions
+    ("a-nuflra", T),  -- Ada.Numerics.Float_Random
+    ("a-numeri", T),  -- Ada.Numerics
+    ("a-reatim", T),  -- Ada.Real_Time
+    ("a-sequio", T),  -- Ada.Sequential_IO
+    ("a-stmaco", T),  -- Ada.Strings.Maps.Constants
+    ("a-storio", T),  -- Ada.Storage_IO
+    ("a-strbou", T),  -- Ada.Strings.Bounded
+    ("a-stream", T),  -- Ada.Streams
+    ("a-strfix", T),  -- Ada.Strings.Fixed
+    ("a-string", T),  -- Ada.Strings
+    ("a-strmap", T),  -- Ada.Strings.Maps
+    ("a-strunb", T),  -- Ada.Strings.Unbounded
+    ("a-ststio", T),  -- Ada.Streams.Stream_IO
+    ("a-stwibo", T),  -- Ada.Strings.Wide_Bounded
+    ("a-stwifi", T),  -- Ada.Strings.Wide_Fixed
+    ("a-stwima", T),  -- Ada.Strings.Wide_Maps
+    ("a-stwiun", T),  -- Ada.Strings.Wide_Unbounded
+    ("a-swmwco", T),  -- Ada.Strings.Wide_Maps.Wide_Constants
+    ("a-sytaco", T),  -- Ada.Synchronous_Task_Control
+    ("a-tags  ", T),  -- Ada.Tags
+    ("a-tasatt", T),  -- Ada.Task_Attributes
+    ("a-taside", T),  -- Ada.Task_Identification
+    ("a-teioed", T),  -- Ada.Text_IO.Editing
+    ("a-textio", T),  -- Ada.Text_IO
+    ("a-ticoio", T),  -- Ada.Text_IO.Complex_IO
+    ("a-titest", T),  -- Ada.Text_IO.Text_Streams
+    ("a-unccon", T),  -- Ada.Unchecked_Conversion
+    ("a-uncdea", T),  -- Ada.Unchecked_Deallocation
+    ("a-witeio", T),  -- Ada.Wide_Text_IO
+    ("a-wtcoio", T),  -- Ada.Wide_Text_IO.Complex_IO
+    ("a-wtedit", T),  -- Ada.Wide_Text_IO.Editing
+    ("a-wttest", T),  -- Ada.Wide_Text_IO.Text_Streams
 
    -------------------------------------------------
    -- RM Required Additions to Ada for GNAT Types --
    -------------------------------------------------
 
-     "a-lfteio",    -- Ada.Long_Float_Text_IO
-     "a-lfwtio",    -- Ada.Long_Float_Wide_Text_IO
-     "a-liteio",    -- Ada.Long_Integer_Text_IO
-     "a-liwtio",    -- Ada.Long_Integer_Wide_Text_IO
-     "a-llftio",    -- Ada.Long_Long_Float_Text_IO
-     "a-llfwti",    -- Ada.Long_Long_Float_Wide_Text_IO
-     "a-llitio",    -- Ada.Long_Long_Integer_Text_IO
-     "a-lliwti",    -- Ada.Long_Long_Integer_Wide_Text_IO
-     "a-nlcefu",    -- Ada.Long_Complex_Elementary_Functions
-     "a-nlcoty",    -- Ada.Numerics.Long_Complex_Types
-     "a-nlelfu",    -- Ada.Numerics.Long_Elementary_Functions
-     "a-nllcef",    -- Ada.Long_Long_Complex_Elementary_Functions
-     "a-nllefu",    -- Ada.Numerics.Long_Long_Elementary_Functions
-     "a-nllcty",    -- Ada.Numerics.Long_Long_Complex_Types
-     "a-nscefu",    -- Ada.Short_Complex_Elementary_Functions
-     "a-nscoty",    -- Ada.Numerics.Short_Complex_Types
-     "a-nselfu",    -- Ada.Numerics.Short_Elementary_Functions
-     "a-sfteio",    -- Ada.Short_Float_Text_IO
-     "a-sfwtio",    -- Ada.Short_Float_Wide_Text_IO
-     "a-siteio",    -- Ada.Short_Integer_Text_IO
-     "a-siwtio",    -- Ada.Short_Integer_Wide_Text_IO
-     "a-ssitio",    -- Ada.Short_Short_Integer_Text_IO
-     "a-ssiwti",    -- Ada.Short_Short_Integer_Wide_Text_IO
+   --  Note: Long versions are considered RM defined, but not the Long Long,
+   --  Short, or Short_Short versions.
+
+    ("a-lfteio", T),  -- Ada.Long_Float_Text_IO
+    ("a-lfwtio", T),  -- Ada.Long_Float_Wide_Text_IO
+    ("a-liteio", T),  -- Ada.Long_Integer_Text_IO
+    ("a-liwtio", T),  -- Ada.Long_Integer_Wide_Text_IO
+    ("a-llftio", T),  -- Ada.Long_Long_Float_Text_IO
+    ("a-llfwti", T),  -- Ada.Long_Long_Float_Wide_Text_IO
+    ("a-llitio", T),  -- Ada.Long_Long_Integer_Text_IO
+    ("a-lliwti", F),  -- Ada.Long_Long_Integer_Wide_Text_IO
+    ("a-nlcefu", F),  -- Ada.Long_Complex_Elementary_Functions
+    ("a-nlcoty", T),  -- Ada.Numerics.Long_Complex_Types
+    ("a-nlelfu", T),  -- Ada.Numerics.Long_Elementary_Functions
+    ("a-nllcef", F),  -- Ada.Long_Long_Complex_Elementary_Functions
+    ("a-nllefu", F),  -- Ada.Numerics.Long_Long_Elementary_Functions
+    ("a-nllcty", F),  -- Ada.Numerics.Long_Long_Complex_Types
+    ("a-nscefu", F),  -- Ada.Short_Complex_Elementary_Functions
+    ("a-nscoty", F),  -- Ada.Numerics.Short_Complex_Types
+    ("a-nselfu", F),  -- Ada.Numerics.Short_Elementary_Functions
+    ("a-sfteio", F),  -- Ada.Short_Float_Text_IO
+    ("a-sfwtio", F),  -- Ada.Short_Float_Wide_Text_IO
+    ("a-siteio", F),  -- Ada.Short_Integer_Text_IO
+    ("a-siwtio", F),  -- Ada.Short_Integer_Wide_Text_IO
+    ("a-ssitio", F),  -- Ada.Short_Short_Integer_Text_IO
+    ("a-ssiwti", F),  -- Ada.Short_Short_Integer_Wide_Text_IO
 
    -----------------------------------
    -- GNAT Defined Additions to Ada --
    -----------------------------------
 
-     "a-calcon",    -- Ada.Calendar.Conversions
-     "a-chlat9",    -- Ada.Characters.Latin_9
-     "a-clrefi",    -- Ada.Command_Line.Response_File
-     "a-colien",    -- Ada.Command_Line.Environment
-     "a-colire",    -- Ada.Command_Line.Remove
-     "a-cwila1",    -- Ada.Characters.Wide_Latin_1
-     "a-cwila9",    -- Ada.Characters.Wide_Latin_9
-     "a-diocst",    -- Ada.Direct_IO.C_Streams
-     "a-einuoc",    -- Ada.Exceptions.Is_Null_Occurrence
-     "a-elchha",    -- Ada.Exceptions.Last_Chance_Handler
-     "a-exctra",    -- Ada.Exceptions.Traceback
-     "a-siocst",    -- Ada.Sequential_IO.C_Streams
-     "a-ssicst",    -- Ada.Streams.Stream_IO.C_Streams
-     "a-suteio",    -- Ada.Strings.Unbounded.Text_IO
-     "a-swuwti",    -- Ada.Strings.Wide_Unbounded.Wide_Text_IO
-     "a-tiocst",    -- Ada.Text_IO.C_Streams
-     "a-wtcstr",    -- Ada.Wide_Text_IO.C_Streams
+    ("a-calcon", F),  -- Ada.Calendar.Conversions
+    ("a-chlat9", F),  -- Ada.Characters.Latin_9
+    ("a-clrefi", F),  -- Ada.Command_Line.Response_File
+    ("a-colien", F),  -- Ada.Command_Line.Environment
+    ("a-colire", F),  -- Ada.Command_Line.Remove
+    ("a-cwila1", F),  -- Ada.Characters.Wide_Latin_1
+    ("a-cwila9", F),  -- Ada.Characters.Wide_Latin_9
+    ("a-diocst", F),  -- Ada.Direct_IO.C_Streams
+    ("a-einuoc", F),  -- Ada.Exceptions.Is_Null_Occurrence
+    ("a-elchha", F),  -- Ada.Exceptions.Last_Chance_Handler
+    ("a-exctra", F),  -- Ada.Exceptions.Traceback
+    ("a-siocst", F),  -- Ada.Sequential_IO.C_Streams
+    ("a-ssicst", F),  -- Ada.Streams.Stream_IO.C_Streams
+    ("a-suteio", F),  -- Ada.Strings.Unbounded.Text_IO
+    ("a-swuwti", F),  -- Ada.Strings.Wide_Unbounded.Wide_Text_IO
+    ("a-tiocst", F),  -- Ada.Text_IO.C_Streams
+    ("a-wtcstr", F),  -- Ada.Wide_Text_IO.C_Streams
 
       --  Note: strictly the next two should be Ada 2005 units, but it seems
       --  harmless (and useful) to make then available in Ada 95 mode, since
       --  they only deal with Wide_Character, not Wide_Wide_Character.
 
-     "a-wichun",    -- Ada.Wide_Characters.Unicode
-     "a-widcha",    -- Ada.Wide_Characters
+    ("a-wichun", F),  -- Ada.Wide_Characters.Unicode
+    ("a-widcha", F),  -- Ada.Wide_Characters
 
       --  Note: strictly the following should be Ada 2012 units, but it seems
       --  harmless (and useful) to make then available in Ada 95 mode, since
       --  they do not deal with Wide_Wide_Character.
 
-     "a-wichha",    -- Ada.Wide_Characters.Handling
-     "a-stuten",    -- Ada.Strings.UTF_Encoding
-     "a-suenco",    -- Ada.Strings.UTF_Encoding.Conversions
-     "a-suenst",    -- Ada.Strings.UTF_Encoding.Strings
-     "a-suewst",    -- Ada.Strings.UTF_Encoding.Wide_Strings
+    ("a-wichha", F),  -- Ada.Wide_Characters.Handling
+    ("a-stuten", F),  -- Ada.Strings.UTF_Encoding
+    ("a-suenco", F),  -- Ada.Strings.UTF_Encoding.Conversions
+    ("a-suenst", F),  -- Ada.Strings.UTF_Encoding.Strings
+    ("a-suewst", F),  -- Ada.Strings.UTF_Encoding.Wide_Strings
 
    ---------------------------
    -- GNAT Special IO Units --
@@ -195,167 +213,167 @@ package body Impunit is
    --  (if we did, then we would get a junk warning which would be confusing
    --  and unnecessary, given that we generate a clear error message).
 
-     "a-tideio",    -- Ada.Text_IO.Decimal_IO
-     "a-tienio",    -- Ada.Text_IO.Enumeration_IO
-     "a-tifiio",    -- Ada.Text_IO.Fixed_IO
-     "a-tiflio",    -- Ada.Text_IO.Float_IO
-     "a-tiinio",    -- Ada.Text_IO.Integer_IO
-     "a-tiinio",    -- Ada.Text_IO.Integer_IO
-     "a-timoio",    -- Ada.Text_IO.Modular_IO
-     "a-wtdeio",    -- Ada.Wide_Text_IO.Decimal_IO
-     "a-wtenio",    -- Ada.Wide_Text_IO.Enumeration_IO
-     "a-wtfiio",    -- Ada.Wide_Text_IO.Fixed_IO
-     "a-wtflio",    -- Ada.Wide_Text_IO.Float_IO
-     "a-wtinio",    -- Ada.Wide_Text_IO.Integer_IO
-     "a-wtmoio",    -- Ada.Wide_Text_IO.Modular_IO
+    ("a-tideio", F),  -- Ada.Text_IO.Decimal_IO
+    ("a-tienio", F),  -- Ada.Text_IO.Enumeration_IO
+    ("a-tifiio", F),  -- Ada.Text_IO.Fixed_IO
+    ("a-tiflio", F),  -- Ada.Text_IO.Float_IO
+    ("a-tiinio", F),  -- Ada.Text_IO.Integer_IO
+    ("a-tiinio", F),  -- Ada.Text_IO.Integer_IO
+    ("a-timoio", F),  -- Ada.Text_IO.Modular_IO
+    ("a-wtdeio", F),  -- Ada.Wide_Text_IO.Decimal_IO
+    ("a-wtenio", F),  -- Ada.Wide_Text_IO.Enumeration_IO
+    ("a-wtfiio", F),  -- Ada.Wide_Text_IO.Fixed_IO
+    ("a-wtflio", F),  -- Ada.Wide_Text_IO.Float_IO
+    ("a-wtinio", F),  -- Ada.Wide_Text_IO.Integer_IO
+    ("a-wtmoio", F),  -- Ada.Wide_Text_IO.Modular_IO
 
    ------------------------
    -- GNAT Library Units --
    ------------------------
 
-     "g-altive",    -- GNAT.Altivec
-     "g-altcon",    -- GNAT.Altivec.Conversions
-     "g-alveop",    -- GNAT.Altivec.Vector_Operations
-     "g-alvety",    -- GNAT.Altivec.Vector_Types
-     "g-alvevi",    -- GNAT.Altivec.Vector_Views
-     "g-arrspl",    -- GNAT.Array_Split
-     "g-awk   ",    -- GNAT.AWK
-     "g-boubuf",    -- GNAT.Bounded_Buffers
-     "g-boumai",    -- GNAT.Bounded_Mailboxes
-     "g-bubsor",    -- GNAT.Bubble_Sort
-     "g-busora",    -- GNAT.Bubble_Sort_A
-     "g-busorg",    -- GNAT.Bubble_Sort_G
-     "g-byorma",    -- GNAT.Byte_Order_Mark
-     "g-bytswa",    -- GNAT.Byte_Swapping
-     "g-calend",    -- GNAT.Calendar
-     "g-catiio",    -- GNAT.Calendar.Time_IO
-     "g-casuti",    -- GNAT.Case_Util
-     "g-cgi   ",    -- GNAT.CGI
-     "g-cgicoo",    -- GNAT.CGI.Cookie
-     "g-cgideb",    -- GNAT.CGI.Debug
-     "g-comlin",    -- GNAT.Command_Line
-     "g-comver",    -- GNAT.Compiler_Version
-     "g-crc32 ",    -- GNAT.CRC32
-     "g-ctrl_c",    -- GNAT.Ctrl_C
-     "g-curexc",    -- GNAT.Current_Exception
-     "g-debpoo",    -- GNAT.Debug_Pools
-     "g-debuti",    -- GNAT.Debug_Utilities
-     "g-decstr",    -- GNAT.Decode_String
-     "g-deutst",    -- GNAT.Decode_UTF8_String
-     "g-dirope",    -- GNAT.Directory_Operations
-     "g-diopit",    -- GNAT.Directory_Operations.Iteration
-     "g-dynhta",    -- GNAT.Dynamic_HTables
-     "g-dyntab",    -- GNAT.Dynamic_Tables
-     "g-encstr",    -- GNAT.Encode_String
-     "g-enutst",    -- GNAT.Encode_UTF8_String
-     "g-excact",    -- GNAT.Exception_Actions
-     "g-except",    -- GNAT.Exceptions
-     "g-exctra",    -- GNAT.Exception_Traces
-     "g-expect",    -- GNAT.Expect
-     "g-flocon",    -- GNAT.Float_Control
-     "g-heasor",    -- GNAT.Heap_Sort
-     "g-hesora",    -- GNAT.Heap_Sort_A
-     "g-hesorg",    -- GNAT.Heap_Sort_G
-     "g-htable",    -- GNAT.Htable
-     "g-io    ",    -- GNAT.IO
-     "g-io_aux",    -- GNAT.IO_Aux
-     "g-locfil",    -- GNAT.Lock_Files
-     "g-mbdira",    -- GNAT.MBBS_Discrete_Random
-     "g-mbflra",    -- GNAT.MBBS_Float_Random
-     "g-md5   ",    -- GNAT.MD5
-     "g-memdum",    -- GNAT.Memory_Dump
-     "g-moreex",    -- GNAT.Most_Recent_Exception
-     "g-os_lib",    -- GNAT.Os_Lib
-     "g-pehage",    -- GNAT.Perfect_Hash_Generators
-     "g-rannum",    -- GNAT.Random_Numbers
-     "g-regexp",    -- GNAT.Regexp
-     "g-regist",    -- GNAT.Registry
-     "g-regpat",    -- GNAT.Regpat
-     "g-semaph",    -- GNAT.Semaphores
-     "g-sercom",    -- GNAT.Serial_Communications
-     "g-sestin",    -- GNAT.Secondary_Stack_Info
-     "g-sha1  ",    -- GNAT.SHA1
-     "g-sha224",    -- GNAT.SHA224
-     "g-sha256",    -- GNAT.SHA256
-     "g-sha384",    -- GNAT.SHA384
-     "g-sha512",    -- GNAT.SHA512
-     "g-signal",    -- GNAT.Signals
-     "g-socket",    -- GNAT.Sockets
-     "g-souinf",    -- GNAT.Source_Info
-     "g-speche",    -- GNAT.Spell_Checker
-     "g-spchge",    -- GNAT.Spell_Checker_Generic
-     "g-spitbo",    -- GNAT.Spitbol
-     "g-spipat",    -- GNAT.Spitbol.Patterns
-     "g-sptabo",    -- GNAT.Spitbol.Table_Boolean
-     "g-sptain",    -- GNAT.Spitbol.Table_Integer
-     "g-sptavs",    -- GNAT.Spitbol.Table_Vstring
-     "g-string",    -- GNAT.Strings
-     "g-strspl",    -- GNAT.String_Split
-     "g-sse   ",    -- GNAT.SSE
-     "g-ssvety",    -- GNAT.SSE.Vector_Types
-     "g-table ",    -- GNAT.Table
-     "g-tasloc",    -- GNAT.Task_Lock
-     "g-tastus",    -- GNAT.Task_Stack_Usage
-     "g-thread",    -- GNAT.Threads
-     "g-timsta",    -- GNAT.Time_Stamp
-     "g-traceb",    -- GNAT.Traceback
-     "g-trasym",    -- GNAT.Traceback.Symbolic
-     "g-utf_32",    -- GNAT.UTF_32
-     "g-u3spch",    -- GNAT.UTF_32_Spelling_Checker
-     "g-wispch",    -- GNAT.Wide_Spelling_Checker
-     "g-wistsp",    -- GNAT.Wide_String_Split
+    ("g-altive", F),  -- GNAT.Altivec
+    ("g-altcon", F),  -- GNAT.Altivec.Conversions
+    ("g-alveop", F),  -- GNAT.Altivec.Vector_Operations
+    ("g-alvety", F),  -- GNAT.Altivec.Vector_Types
+    ("g-alvevi", F),  -- GNAT.Altivec.Vector_Views
+    ("g-arrspl", F),  -- GNAT.Array_Split
+    ("g-awk   ", F),  -- GNAT.AWK
+    ("g-boubuf", F),  -- GNAT.Bounded_Buffers
+    ("g-boumai", F),  -- GNAT.Bounded_Mailboxes
+    ("g-bubsor", F),  -- GNAT.Bubble_Sort
+    ("g-busora", F),  -- GNAT.Bubble_Sort_A
+    ("g-busorg", F),  -- GNAT.Bubble_Sort_G
+    ("g-byorma", F),  -- GNAT.Byte_Order_Mark
+    ("g-bytswa", F),  -- GNAT.Byte_Swapping
+    ("g-calend", F),  -- GNAT.Calendar
+    ("g-catiio", F),  -- GNAT.Calendar.Time_IO
+    ("g-casuti", F),  -- GNAT.Case_Util
+    ("g-cgi   ", F),  -- GNAT.CGI
+    ("g-cgicoo", F),  -- GNAT.CGI.Cookie
+    ("g-cgideb", F),  -- GNAT.CGI.Debug
+    ("g-comlin", F),  -- GNAT.Command_Line
+    ("g-comver", F),  -- GNAT.Compiler_Version
+    ("g-crc32 ", F),  -- GNAT.CRC32
+    ("g-ctrl_c", F),  -- GNAT.Ctrl_C
+    ("g-curexc", F),  -- GNAT.Current_Exception
+    ("g-debpoo", F),  -- GNAT.Debug_Pools
+    ("g-debuti", F),  -- GNAT.Debug_Utilities
+    ("g-decstr", F),  -- GNAT.Decode_String
+    ("g-deutst", F),  -- GNAT.Decode_UTF8_String
+    ("g-dirope", F),  -- GNAT.Directory_Operations
+    ("g-diopit", F),  -- GNAT.Directory_Operations.Iteration
+    ("g-dynhta", F),  -- GNAT.Dynamic_HTables
+    ("g-dyntab", F),  -- GNAT.Dynamic_Tables
+    ("g-encstr", F),  -- GNAT.Encode_String
+    ("g-enutst", F),  -- GNAT.Encode_UTF8_String
+    ("g-excact", F),  -- GNAT.Exception_Actions
+    ("g-except", F),  -- GNAT.Exceptions
+    ("g-exctra", F),  -- GNAT.Exception_Traces
+    ("g-expect", F),  -- GNAT.Expect
+    ("g-flocon", F),  -- GNAT.Float_Control
+    ("g-heasor", F),  -- GNAT.Heap_Sort
+    ("g-hesora", F),  -- GNAT.Heap_Sort_A
+    ("g-hesorg", F),  -- GNAT.Heap_Sort_G
+    ("g-htable", F),  -- GNAT.Htable
+    ("g-io    ", F),  -- GNAT.IO
+    ("g-io_aux", F),  -- GNAT.IO_Aux
+    ("g-locfil", F),  -- GNAT.Lock_Files
+    ("g-mbdira", F),  -- GNAT.MBBS_Discrete_Random
+    ("g-mbflra", F),  -- GNAT.MBBS_Float_Random
+    ("g-md5   ", F),  -- GNAT.MD5
+    ("g-memdum", F),  -- GNAT.Memory_Dump
+    ("g-moreex", F),  -- GNAT.Most_Recent_Exception
+    ("g-os_lib", F),  -- GNAT.Os_Lib
+    ("g-pehage", F),  -- GNAT.Perfect_Hash_Generators
+    ("g-rannum", F),  -- GNAT.Random_Numbers
+    ("g-regexp", F),  -- GNAT.Regexp
+    ("g-regist", F),  -- GNAT.Registry
+    ("g-regpat", F),  -- GNAT.Regpat
+    ("g-semaph", F),  -- GNAT.Semaphores
+    ("g-sercom", F),  -- GNAT.Serial_Communications
+    ("g-sestin", F),  -- GNAT.Secondary_Stack_Info
+    ("g-sha1  ", F),  -- GNAT.SHA1
+    ("g-sha224", F),  -- GNAT.SHA224
+    ("g-sha256", F),  -- GNAT.SHA256
+    ("g-sha384", F),  -- GNAT.SHA384
+    ("g-sha512", F),  -- GNAT.SHA512
+    ("g-signal", F),  -- GNAT.Signals
+    ("g-socket", F),  -- GNAT.Sockets
+    ("g-souinf", F),  -- GNAT.Source_Info
+    ("g-speche", F),  -- GNAT.Spell_Checker
+    ("g-spchge", F),  -- GNAT.Spell_Checker_Generic
+    ("g-spitbo", F),  -- GNAT.Spitbol
+    ("g-spipat", F),  -- GNAT.Spitbol.Patterns
+    ("g-sptabo", F),  -- GNAT.Spitbol.Table_Boolean
+    ("g-sptain", F),  -- GNAT.Spitbol.Table_Integer
+    ("g-sptavs", F),  -- GNAT.Spitbol.Table_Vstring
+    ("g-string", F),  -- GNAT.Strings
+    ("g-strspl", F),  -- GNAT.String_Split
+    ("g-sse   ", F),  -- GNAT.SSE
+    ("g-ssvety", F),  -- GNAT.SSE.Vector_Types
+    ("g-table ", F),  -- GNAT.Table
+    ("g-tasloc", F),  -- GNAT.Task_Lock
+    ("g-tastus", F),  -- GNAT.Task_Stack_Usage
+    ("g-thread", F),  -- GNAT.Threads
+    ("g-timsta", F),  -- GNAT.Time_Stamp
+    ("g-traceb", F),  -- GNAT.Traceback
+    ("g-trasym", F),  -- GNAT.Traceback.Symbolic
+    ("g-utf_32", F),  -- GNAT.UTF_32
+    ("g-u3spch", F),  -- GNAT.UTF_32_Spelling_Checker
+    ("g-wispch", F),  -- GNAT.Wide_Spelling_Checker
+    ("g-wistsp", F),  -- GNAT.Wide_String_Split
 
    -----------------------------------------------------
    -- Interface Hierarchy Units from Reference Manual --
    -----------------------------------------------------
 
-     "i-c     ",    -- Interfaces.C
-     "i-cobol ",    -- Interfaces.Cobol
-     "i-cpoint",    -- Interfaces.C.Pointers
-     "i-cstrin",    -- Interfaces.C.Strings
-     "i-fortra",    -- Interfaces.Fortran
+    ("i-c     ", T),  -- Interfaces.C
+    ("i-cobol ", T),  -- Interfaces.Cobol
+    ("i-cpoint", T),  -- Interfaces.C.Pointers
+    ("i-cstrin", T),  -- Interfaces.C.Strings
+    ("i-fortra", T),  -- Interfaces.Fortran
 
    ------------------------------------------
    -- GNAT Defined Additions to Interfaces --
    ------------------------------------------
 
-     "i-cexten",    -- Interfaces.C.Extensions
-     "i-cil   ",    -- Interfaces.CIL
-     "i-cilobj",    -- Interfaces.CIL.Object
-     "i-cpp   ",    -- Interfaces.CPP
-     "i-cstrea",    -- Interfaces.C.Streams
-     "i-java  ",    -- Interfaces.Java
-     "i-javjni",    -- Interfaces.Java.JNI
-     "i-pacdec",    -- Interfaces.Packed_Decimal
-     "i-vxwoio",    -- Interfaces.VxWorks.IO
-     "i-vxwork",    -- Interfaces.VxWorks
+    ("i-cexten", F),  -- Interfaces.C.Extensions
+    ("i-cil   ", F),  -- Interfaces.CIL
+    ("i-cilobj", F),  -- Interfaces.CIL.Object
+    ("i-cpp   ", F),  -- Interfaces.CPP
+    ("i-cstrea", F),  -- Interfaces.C.Streams
+    ("i-java  ", F),  -- Interfaces.Java
+    ("i-javjni", F),  -- Interfaces.Java.JNI
+    ("i-pacdec", F),  -- Interfaces.Packed_Decimal
+    ("i-vxwoio", F),  -- Interfaces.VxWorks.IO
+    ("i-vxwork", F),  -- Interfaces.VxWorks
 
    --------------------------------------------------
    -- System Hierarchy Units from Reference Manual --
    --------------------------------------------------
 
-     "s-atacco",    -- System.Address_To_Access_Conversions
-     "s-maccod",    -- System.Machine_Code
-     "s-rpc   ",    -- System.Rpc
-     "s-stoele",    -- System.Storage_Elements
-     "s-stopoo",    -- System.Storage_Pools
+    ("s-atacco", T),  -- System.Address_To_Access_Conversions
+    ("s-maccod", T),  -- System.Machine_Code
+    ("s-rpc   ", T),  -- System.Rpc
+    ("s-stoele", T),  -- System.Storage_Elements
+    ("s-stopoo", T),  -- System.Storage_Pools
 
    --------------------------------------
    -- GNAT Defined Additions to System --
    --------------------------------------
 
-     "s-addima",    -- System.Address_Image
-     "s-assert",    -- System.Assertions
-     "s-memory",    -- System.Memory
-     "s-parint",    -- System.Partition_Interface
-     "s-pooglo",    -- System.Pool_Global
-     "s-pooloc",    -- System.Pool_Local
-     "s-restri",    -- System.Restrictions
-     "s-rident",    -- System.Rident
-     "s-ststop",    -- System.Strings.Stream_Ops
-     "s-tasinf",    -- System.Task_Info
-     "s-wchcnv",    -- System.Wch_Cnv
-     "s-wchcon");   -- System.Wch_Con
+    ("s-addima", F),  -- System.Address_Image
+    ("s-assert", F),  -- System.Assertions
+    ("s-memory", F),  -- System.Memory
+    ("s-parint", F),  -- System.Partition_Interface
+    ("s-pooglo", F),  -- System.Pool_Global
+    ("s-pooloc", F),  -- System.Pool_Local
+    ("s-restri", F),  -- System.Restrictions
+    ("s-rident", F),  -- System.Rident
+    ("s-ststop", F),  -- System.Strings.Stream_Ops
+    ("s-tasinf", F),  -- System.Task_Info
+    ("s-wchcnv", F),  -- System.Wch_Cnv
+    ("s-wchcon", F)); -- System.Wch_Con
 
    --------------------
    -- Ada 2005 Units --
@@ -369,114 +387,117 @@ package body Impunit is
    -- Ada Hierarchy Units from Ada 2005 Reference Manual --
    --------------------------------------------------------
 
-     "a-assert",    -- Ada.Assertions
-     "a-calari",    -- Ada.Calendar.Arithmetic
-     "a-calfor",    -- Ada.Calendar.Formatting
-     "a-catizo",    -- Ada.Calendar.Time_Zones
-     "a-cdlili",    -- Ada.Containers.Doubly_Linked_Lists
-     "a-cgarso",    -- Ada.Containers.Generic_Array_Sort
-     "a-cgcaso",    -- Ada.Containers.Generic_Constrained_Array_Sort
-     "a-chacon",    -- Ada.Characters.Conversions
-     "a-cidlli",    -- Ada.Containers.Indefinite_Doubly_Linked_Lists
-     "a-cihama",    -- Ada.Containers.Indefinite_Hashed_Maps
-     "a-cihase",    -- Ada.Containers.Indefinite_Hashed_Sets
-     "a-ciorma",    -- Ada.Containers.Indefinite_Ordered_Maps
-     "a-ciorse",    -- Ada.Containers.Indefinite_Ordered_Sets
-     "a-cohama",    -- Ada.Containers.Hashed_Maps
-     "a-cohase",    -- Ada.Containers.Hashed_Sets
-     "a-coinve",    -- Ada.Containers.Indefinite_Vectors
-     "a-contai",    -- Ada.Containers
-     "a-convec",    -- Ada.Containers.Vectors
-     "a-coorma",    -- Ada.Containers.Ordered_Maps
-     "a-coorse",    -- Ada.Containers.Ordered_Sets
-     "a-coteio",    -- Ada.Complex_Text_IO
-     "a-direct",    -- Ada.Directories
-     "a-diroro",    -- Ada.Dispatching.Round_Robin
-     "a-disedf",    -- Ada.Dispatching.EDF
-     "a-dispat",    -- Ada.Dispatching
-     "a-envvar",    -- Ada.Environment_Variables
-     "a-etgrbu",    -- Ada.Execution_Time.Group_Budgets
-     "a-exetim",    -- Ada.Execution_Time
-     "a-extiti",    -- Ada.Execution_Time.Timers
-     "a-izteio",    -- Ada.Integer_Wide_Wide_Text_IO
-     "a-rttiev",    -- Ada.Real_Time.Timing_Events
-     "a-ngcoar",    -- Ada.Numerics.Generic_Complex_Arrays
-     "a-ngrear",    -- Ada.Numerics.Generic_Real_Arrays
-     "a-nucoar",    -- Ada.Numerics.Complex_Arrays
-     "a-nurear",    -- Ada.Numerics.Real_Arrays
-     "a-stboha",    -- Ada.Strings.Bounded.Hash
-     "a-stfiha",    -- Ada.Strings.Fixed.Hash
-     "a-strhas",    -- Ada.Strings.Hash
-     "a-stunha",    -- Ada.Strings.Unbounded.Hash
-     "a-stwiha",    -- Ada.Strings.Wide_Hash
-     "a-stzbou",    -- Ada.Strings.Wide_Wide_Bounded
-     "a-stzfix",    -- Ada.Strings.Wide_Wide_Fixed
-     "a-stzhas",    -- Ada.Strings.Wide_Wide_Hash
-     "a-stzmap",    -- Ada.Strings.Wide_Wide_Maps
-     "a-stzunb",    -- Ada.Strings.Wide_Wide_Unbounded
-     "a-swbwha",    -- Ada.Strings.Wide_Bounded.Wide_Hash
-     "a-swfwha",    -- Ada.Strings.Wide_Fixed.Wide_Hash
-     "a-swuwha",    -- Ada.Strings.Wide_Unbounded.Wide_Hash
-     "a-szbzha",    -- Ada.Strings.Wide_Wide_Bounded.Wide_Wide_Hash
-     "a-szfzha",    -- Ada.Strings.Wide_Wide_Fixed.Wide_Wide_Hash
-     "a-szmzco",    -- Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants
-     "a-szuzha",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Hash
-     "a-taster",    -- Ada.Task_Termination
-     "a-tgdico",    -- Ada.Tags.Generic_Dispatching_Constructor
-     "a-tiboio",    -- Ada.Text_IO.Bounded_IO
-     "a-tiunio",    -- Ada.Text_IO.Unbounded_IO
-     "a-wichun",    -- Ada.Wide_Characters.Unicode
-     "a-wwboio",    -- Ada.Wide_Text_IO.Wide_Bounded_IO
-     "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO
-     "a-zchara",    -- Ada.Wide_Wide_Characters
-     "a-zchhan",    -- Ada.Wide_Wide_Characters.Handling
-     "a-ztcoio",    -- Ada.Wide_Wide_Text_IO.Complex_IO
-     "a-ztedit",    -- Ada.Wide_Wide_Text_IO.Editing
-     "a-zttest",    -- Ada.Wide_Wide_Text_IO.Text_Streams
-     "a-ztexio",    -- Ada.Wide_Wide_Text_IO
-     "a-zzboio",    -- Ada.Wide_Wide_Text_IO.Wide_Wide_Bounded_IO
-     "a-zzunio",    -- Ada.Wide_Wide_Text_IO.Wide_Wide_Unbounded_IO
+    ("a-assert", T),  -- Ada.Assertions
+    ("a-calari", T),  -- Ada.Calendar.Arithmetic
+    ("a-calfor", T),  -- Ada.Calendar.Formatting
+    ("a-catizo", T),  -- Ada.Calendar.Time_Zones
+    ("a-cdlili", T),  -- Ada.Containers.Doubly_Linked_Lists
+    ("a-cgarso", T),  -- Ada.Containers.Generic_Array_Sort
+    ("a-cgcaso", T),  -- Ada.Containers.Generic_Constrained_Array_Sort
+    ("a-chacon", T),  -- Ada.Characters.Conversions
+    ("a-cidlli", T),  -- Ada.Containers.Indefinite_Doubly_Linked_Lists
+    ("a-cihama", T),  -- Ada.Containers.Indefinite_Hashed_Maps
+    ("a-cihase", T),  -- Ada.Containers.Indefinite_Hashed_Sets
+    ("a-ciorma", T),  -- Ada.Containers.Indefinite_Ordered_Maps
+    ("a-ciorse", T),  -- Ada.Containers.Indefinite_Ordered_Sets
+    ("a-cohama", T),  -- Ada.Containers.Hashed_Maps
+    ("a-cohase", T),  -- Ada.Containers.Hashed_Sets
+    ("a-coinve", T),  -- Ada.Containers.Indefinite_Vectors
+    ("a-contai", T),  -- Ada.Containers
+    ("a-convec", T),  -- Ada.Containers.Vectors
+    ("a-coorma", T),  -- Ada.Containers.Ordered_Maps
+    ("a-coorse", T),  -- Ada.Containers.Ordered_Sets
+    ("a-coteio", T),  -- Ada.Complex_Text_IO
+    ("a-direct", T),  -- Ada.Directories
+    ("a-diroro", T),  -- Ada.Dispatching.Round_Robin
+    ("a-disedf", T),  -- Ada.Dispatching.EDF
+    ("a-dispat", T),  -- Ada.Dispatching
+    ("a-envvar", T),  -- Ada.Environment_Variables
+    ("a-etgrbu", T),  -- Ada.Execution_Time.Group_Budgets
+    ("a-exetim", T),  -- Ada.Execution_Time
+    ("a-extiti", T),  -- Ada.Execution_Time.Timers
+    ("a-izteio", T),  -- Ada.Integer_Wide_Wide_Text_IO
+    ("a-rttiev", T),  -- Ada.Real_Time.Timing_Events
+    ("a-ngcoar", T),  -- Ada.Numerics.Generic_Complex_Arrays
+    ("a-ngrear", T),  -- Ada.Numerics.Generic_Real_Arrays
+    ("a-nucoar", T),  -- Ada.Numerics.Complex_Arrays
+    ("a-nurear", T),  -- Ada.Numerics.Real_Arrays
+    ("a-stboha", T),  -- Ada.Strings.Bounded.Hash
+    ("a-stfiha", T),  -- Ada.Strings.Fixed.Hash
+    ("a-strhas", T),  -- Ada.Strings.Hash
+    ("a-stunha", T),  -- Ada.Strings.Unbounded.Hash
+    ("a-stwiha", T),  -- Ada.Strings.Wide_Hash
+    ("a-stzbou", T),  -- Ada.Strings.Wide_Wide_Bounded
+    ("a-stzfix", T),  -- Ada.Strings.Wide_Wide_Fixed
+    ("a-stzhas", T),  -- Ada.Strings.Wide_Wide_Hash
+    ("a-stzmap", T),  -- Ada.Strings.Wide_Wide_Maps
+    ("a-stzunb", T),  -- Ada.Strings.Wide_Wide_Unbounded
+    ("a-swbwha", T),  -- Ada.Strings.Wide_Bounded.Wide_Hash
+    ("a-swfwha", T),  -- Ada.Strings.Wide_Fixed.Wide_Hash
+    ("a-swuwha", T),  -- Ada.Strings.Wide_Unbounded.Wide_Hash
+    ("a-szbzha", T),  -- Ada.Strings.Wide_Wide_Bounded.Wide_Wide_Hash
+    ("a-szfzha", T),  -- Ada.Strings.Wide_Wide_Fixed.Wide_Wide_Hash
+    ("a-szmzco", T),  -- Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants
+    ("a-szuzha", T),  -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Hash
+    ("a-taster", T),  -- Ada.Task_Termination
+    ("a-tgdico", T),  -- Ada.Tags.Generic_Dispatching_Constructor
+    ("a-tiboio", T),  -- Ada.Text_IO.Bounded_IO
+    ("a-tiunio", T),  -- Ada.Text_IO.Unbounded_IO
+    ("a-wichun", T),  -- Ada.Wide_Characters.Unicode
+    ("a-wwboio", T),  -- Ada.Wide_Text_IO.Wide_Bounded_IO
+    ("a-wwunio", T),  -- Ada.Wide_Text_IO.Wide_Unbounded_IO
+    ("a-zchara", T),  -- Ada.Wide_Wide_Characters
+    ("a-zchhan", T),  -- Ada.Wide_Wide_Characters.Handling
+    ("a-ztcoio", T),  -- Ada.Wide_Wide_Text_IO.Complex_IO
+    ("a-ztedit", T),  -- Ada.Wide_Wide_Text_IO.Editing
+    ("a-zttest", T),  -- Ada.Wide_Wide_Text_IO.Text_Streams
+    ("a-ztexio", T),  -- Ada.Wide_Wide_Text_IO
+    ("a-zzboio", T),  -- Ada.Wide_Wide_Text_IO.Wide_Wide_Bounded_IO
+    ("a-zzunio", T),  -- Ada.Wide_Wide_Text_IO.Wide_Wide_Unbounded_IO
 
    ------------------------------------------------------
    -- RM Required Additions to Ada 2005 for GNAT Types --
    ------------------------------------------------------
 
-     "a-lcteio",    -- Ada.Long_Complex_Text_IO
-     "a-lfztio",    -- Ada.Long_Float_Wide_Wide_Text_IO
-     "a-liztio",    -- Ada.Long_Integer_Wide_Wide_Text_IO
-     "a-llctio",    -- Ada.Long_Long_Complex_Text_IO
-     "a-llfzti",    -- Ada.Long_Long_Float_Wide_Wide_Text_IO
-     "a-llizti",    -- Ada.Long_Long_Integer_Wide_Wide_Text_IO
-     "a-nlcoar",    -- Ada.Numerics.Long_Complex_Arrays
-     "a-nllcar",    -- Ada.Numerics.Long_Long_Complex_Arrays
-     "a-nllrar",    -- Ada.Numerics.Long_Long_Real_Arrays
-     "a-nlrear",    -- Ada.Numerics.Long_Real_Arrays
-     "a-scteio",    -- Ada.Short_Complex_Text_IO
-     "a-sfztio",    -- Ada.Short_Float_Wide_Wide_Text_IO
-     "a-siztio",    -- Ada.Short_Integer_Wide_Wide_Text_IO
-     "a-ssizti",    -- Ada.Short_Short_Integer_Wide_Wide_Text_IO
-     "a-ztcstr",    -- Ada.Wide_Wide_Text_IO.C_Streams
+   --  Note: Long versions are considered RM defined, but not the Long Long,
+   --  Short, or Short_Short versions.
+
+    ("a-lcteio", T),  -- Ada.Long_Complex_Text_IO
+    ("a-lfztio", T),  -- Ada.Long_Float_Wide_Wide_Text_IO
+    ("a-liztio", T),  -- Ada.Long_Integer_Wide_Wide_Text_IO
+    ("a-llctio", T),  -- Ada.Long_Long_Complex_Text_IO
+    ("a-llfzti", T),  -- Ada.Long_Long_Float_Wide_Wide_Text_IO
+    ("a-llizti", T),  -- Ada.Long_Long_Integer_Wide_Wide_Text_IO
+    ("a-nlcoar", T),  -- Ada.Numerics.Long_Complex_Arrays
+    ("a-nllcar", T),  -- Ada.Numerics.Long_Long_Complex_Arrays
+    ("a-nllrar", T),  -- Ada.Numerics.Long_Long_Real_Arrays
+    ("a-nlrear", T),  -- Ada.Numerics.Long_Real_Arrays
+    ("a-scteio", F),  -- Ada.Short_Complex_Text_IO
+    ("a-sfztio", F),  -- Ada.Short_Float_Wide_Wide_Text_IO
+    ("a-siztio", F),  -- Ada.Short_Integer_Wide_Wide_Text_IO
+    ("a-ssizti", F),  -- Ada.Short_Short_Integer_Wide_Wide_Text_IO
 
    ----------------------------------------
    -- GNAT Defined Additions to Ada 2005 --
    ----------------------------------------
 
-     "a-cgaaso",    -- Ada.Containers.Generic_Anonymous_Array_Sort
-     "a-chzla1",    -- Ada.Characters.Wide_Wide_Latin_1
-     "a-chzla9",    -- Ada.Characters.Wide_Wide_Latin_9
-     "a-ciormu",    -- Ada.Containers.Indefinite_Ordered_Multisets
-     "a-coormu",    -- Ada.Containers.Ordered_Multisets
-     "a-crdlli",    -- Ada.Containers.Restricted_Doubly_Linked_Lists
-     "a-secain",    -- Ada.Strings.Equal_Case_Insensitive
-     "a-shcain",    -- Ada.Strings.Hash_Case_Insensitive
-     "a-slcain",    -- Ada.Strings.Less_Case_Insensitive
-     "a-szuzti",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO
-     "a-zchuni",    -- Ada.Wide_Wide_Characters.Unicode
+    ("a-cgaaso", F),  -- Ada.Containers.Generic_Anonymous_Array_Sort
+    ("a-chzla1", F),  -- Ada.Characters.Wide_Wide_Latin_1
+    ("a-chzla9", F),  -- Ada.Characters.Wide_Wide_Latin_9
+    ("a-ciormu", F),  -- Ada.Containers.Indefinite_Ordered_Multisets
+    ("a-coormu", F),  -- Ada.Containers.Ordered_Multisets
+    ("a-crdlli", F),  -- Ada.Containers.Restricted_Doubly_Linked_Lists
+    ("a-secain", F),  -- Ada.Strings.Equal_Case_Insensitive
+    ("a-shcain", F),  -- Ada.Strings.Hash_Case_Insensitive
+    ("a-slcain", F),  -- Ada.Strings.Less_Case_Insensitive
+    ("a-szuzti", F),  -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO
+    ("a-zchuni", F),  -- Ada.Wide_Wide_Characters.Unicode
+    ("a-ztcstr", F),  -- Ada.Wide_Wide_Text_IO.C_Streams
 
       --  Note: strictly the following should be Ada 2012 units, but it seems
       --  harmless (and useful) to make then available in Ada 2005 mode.
 
-     "a-suezst",    -- Ada.Strings.UTF_Encoding.Wide_Wide_Strings
+    ("a-suezst", T),  -- Ada.Strings.UTF_Encoding.Wide_Wide_Strings
 
    ---------------------------
    -- GNAT Special IO Units --
@@ -485,19 +506,19 @@ package body Impunit is
    --  See Ada 95 section for further information. These packages are for the
    --  implementation of the Wide_Wide_Text_IO generic packages.
 
-     "a-ztdeio",    -- Ada.Wide_Wide_Text_IO.Decimal_IO
-     "a-ztenio",    -- Ada.Wide_Wide_Text_IO.Enumeration_IO
-     "a-ztfiio",    -- Ada.Wide_Wide_Text_IO.Fixed_IO
-     "a-ztflio",    -- Ada.Wide_Wide_Text_IO.Float_IO
-     "a-ztinio",    -- Ada.Wide_Wide_Text_IO.Integer_IO
-     "a-ztmoio",    -- Ada.Wide_Wide_Text_IO.Modular_IO
+    ("a-ztdeio", F),  -- Ada.Wide_Wide_Text_IO.Decimal_IO
+    ("a-ztenio", F),  -- Ada.Wide_Wide_Text_IO.Enumeration_IO
+    ("a-ztfiio", F),  -- Ada.Wide_Wide_Text_IO.Fixed_IO
+    ("a-ztflio", F),  -- Ada.Wide_Wide_Text_IO.Float_IO
+    ("a-ztinio", F),  -- Ada.Wide_Wide_Text_IO.Integer_IO
+    ("a-ztmoio", F),  -- Ada.Wide_Wide_Text_IO.Modular_IO
 
    ------------------------
    -- GNAT Library Units --
    ------------------------
 
-     "g-zspche",    -- GNAT.Wide_Wide_Spelling_Checker
-     "g-zstspl");   -- GNAT.Wide_Wide_String_Split
+    ("g-zspche", F),  -- GNAT.Wide_Wide_Spelling_Checker
+    ("g-zstspl", F)); -- GNAT.Wide_Wide_String_Split
 
    --------------------
    -- Ada 2012 Units --
@@ -506,39 +527,39 @@ package body Impunit is
    --  The following units should be used only in Ada 2012 mode
 
    Non_Imp_File_Names_12 : constant File_List := (
-     "s-multip",    -- System.Multiprocessors
-     "s-mudido",    -- System.Multiprocessors.Dispatching_Domains
-     "s-stposu",    -- System.Storage_Pools.Subpools
-     "a-cobove",    -- Ada.Containers.Bounded_Vectors
-     "a-cbdlli",    -- Ada.Containers.Bounded_Doubly_Linked_Lists
-     "a-cborse",    -- Ada.Containers.Bounded_Ordered_Sets
-     "a-cborma",    -- Ada.Containers.Bounded_Ordered_Maps
-     "a-cbhase",    -- Ada.Containers.Bounded_Hashed_Sets
-     "a-cbhama",    -- Ada.Containers.Bounded_Hashed_Maps
-     "a-coinho",    -- Ada.Containers.Indefinite_Holders
-     "a-comutr",    -- Ada.Containers.Multiway_Trees
-     "a-cimutr",    -- Ada.Containers.Indefinite_Multiway_Trees
-     "a-cbmutr",    -- Ada.Containers.Bounded_Multiway_Trees
-     "a-csquin",    -- Ada.Containers.Synchronized_Queue_Interfaces
-     "a-cusyqu",    -- Ada.Containers.Unbounded_Synchronized_Queues
-     "a-cuprqu",    -- Ada.Containers.Unbounded_Priority_Queues
-     "a-cbsyqu",    -- Ada.Containers.Bounded_Synchronized_Queues
-     "a-cbprqu",    -- Ada.Containers.Bounded_Priority_Queues
-     "a-extiin",    -- Ada.Execution_Time.Interrupts
-     "a-iteint",    -- Ada.Iterator_Interfaces
-     "a-synbar",    -- Ada.Synchronous_Barriers
-     "a-undesu",    -- Ada.Unchecked_Deallocate_Subpool
+    ("s-multip", T),  -- System.Multiprocessors
+    ("s-mudido", T),  -- System.Multiprocessors.Dispatching_Domains
+    ("s-stposu", T),  -- System.Storage_Pools.Subpools
+    ("a-cobove", T),  -- Ada.Containers.Bounded_Vectors
+    ("a-cbdlli", T),  -- Ada.Containers.Bounded_Doubly_Linked_Lists
+    ("a-cborse", T),  -- Ada.Containers.Bounded_Ordered_Sets
+    ("a-cborma", T),  -- Ada.Containers.Bounded_Ordered_Maps
+    ("a-cbhase", T),  -- Ada.Containers.Bounded_Hashed_Sets
+    ("a-cbhama", T),  -- Ada.Containers.Bounded_Hashed_Maps
+    ("a-coinho", T),  -- Ada.Containers.Indefinite_Holders
+    ("a-comutr", T),  -- Ada.Containers.Multiway_Trees
+    ("a-cimutr", T),  -- Ada.Containers.Indefinite_Multiway_Trees
+    ("a-cbmutr", T),  -- Ada.Containers.Bounded_Multiway_Trees
+    ("a-csquin", T),  -- Ada.Containers.Synchronized_Queue_Interfaces
+    ("a-cusyqu", T),  -- Ada.Containers.Unbounded_Synchronized_Queues
+    ("a-cuprqu", T),  -- Ada.Containers.Unbounded_Priority_Queues
+    ("a-cbsyqu", T),  -- Ada.Containers.Bounded_Synchronized_Queues
+    ("a-cbprqu", T),  -- Ada.Containers.Bounded_Priority_Queues
+    ("a-extiin", T),  -- Ada.Execution_Time.Interrupts
+    ("a-iteint", T),  -- Ada.Iterator_Interfaces
+    ("a-synbar", T),  -- Ada.Synchronous_Barriers
+    ("a-undesu", T),  -- Ada.Unchecked_Deallocate_Subpool
 
    ----------------------------------------
    -- GNAT Defined Additions to Ada 2012 --
    ----------------------------------------
 
-     "a-cofove",    -- Ada.Containers.Formal_Vectors
-     "a-cfdlli",    -- Ada.Containers.Formal_Doubly_Linked_Lists
-     "a-cforse",    -- Ada.Containers.Formal_Ordered_Sets
-     "a-cforma",    -- Ada.Containers.Formal_Ordered_Maps
-     "a-cfhase",    -- Ada.Containers.Formal_Hashed_Sets
-     "a-cfhama");   -- Ada.Containers.Formal_Hashed_Maps
+    ("a-cofove", F),  -- Ada.Containers.Formal_Vectors
+    ("a-cfdlli", F),  -- Ada.Containers.Formal_Doubly_Linked_Lists
+    ("a-cforse", F),  -- Ada.Containers.Formal_Ordered_Sets
+    ("a-cforma", F),  -- Ada.Containers.Formal_Ordered_Maps
+    ("a-cfhase", F),  -- Ada.Containers.Formal_Hashed_Sets
+    ("a-cfhama", F)); -- Ada.Containers.Formal_Hashed_Maps
 
    -----------------------
    -- Alternative Units --
@@ -589,17 +610,25 @@ package body Impunit is
 
    begin
       Error_Msg_Strlen := 0;
+      Get_Name_String (Fname);
 
-      --  If length of file name is greater than 12, not predefined.
-      --  The value 12 here is an 8 char name with extension .ads.
+      --  Ada/System/Interfaces are all Ada 95 units
 
-      if Length_Of_Name (Fname) > 12 then
-         return Not_Predefined_Unit;
+      if (Name_Len =  7 and then Name_Buffer (1 ..  7) = "ada.ads")
+           or else
+         (Name_Len = 10 and then Name_Buffer (1 .. 10) = "system.ads")
+           or else
+         (Name_Len = 12 and then Name_Buffer (1 .. 12) = "interfac.ads")
+      then
+         return Ada_95_Unit;
       end if;
 
-      --  Otherwise test file name
+      --  If length of file name is greater than 12, not predefined. The value
+      --  12 here is an 8 char name with extension .ads.
 
-      Get_Name_String (Fname);
+      if Name_Len > 12 then
+         return Not_Predefined_Unit;
+      end if;
 
       --  Not predefined if file name does not start with a- g- s- i-
 
@@ -634,7 +663,7 @@ package body Impunit is
       --  See if name is in 95 list
 
       for J in Non_Imp_File_Names_95'Range loop
-         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_95 (J) then
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_95 (J).Fname then
             return Ada_95_Unit;
          end if;
       end loop;
@@ -642,7 +671,7 @@ package body Impunit is
       --  See if name is in 2005 list
 
       for J in Non_Imp_File_Names_05'Range loop
-         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J) then
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J).Fname then
             return Ada_2005_Unit;
          end if;
       end loop;
@@ -650,7 +679,7 @@ package body Impunit is
       --  See if name is in 2012 list
 
       for J in Non_Imp_File_Names_12'Range loop
-         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_12 (J) then
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_12 (J).Fname then
             return Ada_2012_Unit;
          end if;
       end loop;
@@ -726,9 +755,25 @@ package body Impunit is
       Fnam := Get_File_Name (Unam, Subunit => False);
       Get_Name_String (Fnam);
 
+      Error_Msg_Strlen := 0;
+
+      --  Ada/System/Interfaces are all Ada 95 units
+
+      if (Name_Len =  7 and then Name_Buffer (1 ..  7) = "ada.ads")
+           or else
+         (Name_Len = 10 and then Name_Buffer (1 .. 10) = "system.ads")
+           or else
+         (Name_Len = 12 and then Name_Buffer (1 .. 12) = "interfac.ads")
+      then
+         return True;
+      end if;
+
       --  Remove extension from file name
 
-      if Name_Buffer (Name_Len - 3 .. Name_Len) = ".adb" then
+      if Name_Buffer (Name_Len - 3 .. Name_Len) = ".adb"
+           or else
+         Name_Buffer (Name_Len - 3 .. Name_Len) = ".ads"
+      then
          Name_Len := Name_Len - 4;
       else
          return False;
@@ -750,13 +795,19 @@ package body Impunit is
       --  If length is 8, search our tables
 
       for J in Non_Imp_File_Names_95'Range loop
-         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_95 (J) then
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_95 (J).Fname then
             return True;
          end if;
       end loop;
 
       for J in Non_Imp_File_Names_05'Range loop
-         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J) then
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J).Fname then
+            return True;
+         end if;
+      end loop;
+
+      for J in Non_Imp_File_Names_12'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_12 (J).Fname then
             return True;
          end if;
       end loop;
@@ -774,5 +825,101 @@ package body Impunit is
       when others =>
          return False;
    end Is_Known_Unit;
+
+   ---------------------------
+   -- Not_Impl_Defined_Unit --
+   ---------------------------
+
+   function Not_Impl_Defined_Unit (U : Unit_Number_Type) return Boolean is
+      Fname : constant File_Name_Type := Unit_File_Name (U);
+
+   begin
+      Error_Msg_Strlen := 0;
+      Get_Name_String (Fname);
+
+      --  Ada/System/Interfaces are all RM-defined Ada 95 units
+
+      if (Name_Len =  7 and then Name_Buffer (1 ..  7) = "ada.ads")
+           or else
+         (Name_Len = 10 and then Name_Buffer (1 .. 10) = "system.ads")
+           or else
+         (Name_Len = 12 and then Name_Buffer (1 .. 12) = "interfac.ads")
+      then
+         return True;
+      end if;
+
+      --  If length of file name is greater than 12, then it's a user unit
+      --  and not a GNAT implementation defined unit.
+
+      if Name_Len > 12 then
+         return True;
+      end if;
+
+      --  Implementation defined if unit in the gnat hierarchy
+
+      if (Name_Len = 8 and then Name_Buffer (1 .. 8) = "gnat.ads")
+        or else (Name_Len > 2 and then Name_Buffer (1 .. 2) = "g-")
+      then
+         return False;
+      end if;
+
+      --  Not implementation defined if file name does not start with a- s- i-
+
+      if Name_Len < 3
+        or else Name_Buffer (2) /= '-'
+        or else (Name_Buffer (1) /= 'a'
+                   and then
+                 Name_Buffer (1) /= 'i'
+                   and then
+                 Name_Buffer (1) /= 's')
+      then
+         return True;
+      end if;
+
+      --  Not impl-defined if file name does not end in .ads. This can happen
+      --  when non-standard file names are being used.
+
+      if Name_Buffer (Name_Len - 3 .. Name_Len) /= ".ads" then
+         return True;
+      end if;
+
+      --  Otherwise normalize file name to 8 characters
+
+      Name_Len := Name_Len - 4;
+      while Name_Len < 8 loop
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := ' ';
+      end loop;
+
+      --  Check our lists of names, if we find a match, return corresponding
+      --  indication of whether the file is RM defined, respecting the RM
+      --  version in which it is defined.
+
+      for J in Non_Imp_File_Names_95'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_95 (J).Fname then
+            return Non_Imp_File_Names_95 (J).RMdef;
+         end if;
+      end loop;
+
+      for J in Non_Imp_File_Names_05'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J).Fname then
+            return Non_Imp_File_Names_05 (J).RMdef
+              and then Ada_Version >= Ada_2005;
+         end if;
+      end loop;
+
+      for J in Non_Imp_File_Names_12'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_12 (J).Fname then
+            return Non_Imp_File_Names_95 (J).RMdef
+              and then Ada_Version >= Ada_2012;
+         end if;
+      end loop;
+
+      --  If unit is in System, Ada or Interfaces hierarchies and did not match
+      --  any entry in the list, means it is an internal implementation defined
+      --  unit which the restriction should definition forbid.
+
+      return True;
+   end Not_Impl_Defined_Unit;
 
 end Impunit;

@@ -161,6 +161,7 @@ package body Einfo is
 
    --    Body_Entity                     Node19
    --    Corresponding_Discriminant      Node19
+   --    Extra_Accessibility_Of_Result   Node19
    --    Parent_Subtype                  Node19
    --    Related_Array_Object            Node19
    --    Size_Check_Code                 Node19
@@ -522,8 +523,7 @@ package body Einfo is
    --    Has_Implicit_Dereference        Flag251
    --    Is_Processed_Transient          Flag252
    --    Has_Anonymous_Master            Flag253
-
-   --    (unused)                        Flag254
+   --    Is_Implementation_Defined       Flag254
 
    -----------------------
    -- Local subprograms --
@@ -1042,6 +1042,12 @@ package body Einfo is
         (Is_Formal (Id) or else Ekind_In (Id, E_Variable, E_Constant));
       return Node13 (Id);
    end Extra_Accessibility;
+
+   function Extra_Accessibility_Of_Result (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Operator, E_Subprogram_Type));
+      return Node19 (Id);
+   end Extra_Accessibility_Of_Result;
 
    function Extra_Constrained (Id : E) return E is
    begin
@@ -1872,6 +1878,11 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       return Flag7 (Id);
    end Is_Immediately_Visible;
+
+   function Is_Implementation_Defined (Id : E) return B is
+   begin
+      return Flag254 (Id);
+   end Is_Implementation_Defined;
 
    function Is_Imported (Id : E) return B is
    begin
@@ -3519,6 +3530,12 @@ package body Einfo is
       Set_Node13 (Id, V);
    end Set_Extra_Accessibility;
 
+   procedure Set_Extra_Accessibility_Of_Result (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Operator, E_Subprogram_Type));
+      Set_Node19 (Id, V);
+   end Set_Extra_Accessibility_Of_Result;
+
    procedure Set_Extra_Constrained (Id : E; V : E) is
    begin
       pragma Assert (Is_Formal (Id) or else Ekind (Id) = E_Variable);
@@ -4394,6 +4411,11 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       Set_Flag7 (Id, V);
    end Set_Is_Immediately_Visible;
+
+   procedure Set_Is_Implementation_Defined (Id : E; V : B := True) is
+   begin
+      Set_Flag254 (Id, V);
+   end Set_Is_Implementation_Defined;
 
    procedure Set_Is_Imported (Id : E; V : B := True) is
    begin
@@ -7551,6 +7573,7 @@ package body Einfo is
       W ("Is_Hidden",                       Flag57  (Id));
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
+      W ("Is_Implementation_Defined",       Flag254 (Id));
       W ("Is_Imported",                     Flag24  (Id));
       W ("Is_Inlined",                      Flag11  (Id));
       W ("Is_Instantiated",                 Flag126 (Id));
@@ -8311,6 +8334,9 @@ package body Einfo is
 
          when Private_Kind                                 =>
             Write_Str ("Underlying_Full_View");
+
+         when E_Function | E_Operator | E_Subprogram_Type =>
+            Write_Str ("Extra_Accessibility_Of_Result");
 
          when others                                       =>
             Write_Str ("Field19??");

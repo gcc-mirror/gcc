@@ -1,3 +1,5 @@
+#define S (sizeof (int))
+
 unsigned int c[624];
 void __attribute__((noinline))
 bar (void)
@@ -5,9 +7,9 @@ bar (void)
   unsigned int i;
   /* Obfuscated c[i] = c[i-1] * 2.  */
   for (i = 1; i < 624; ++i)
-    *(unsigned int *)((void *)c + (__SIZE_TYPE__)i * 4)
+    *(unsigned int *)((void *)c + (__SIZE_TYPE__)i * S)
 	= 2 * *(unsigned int *)((void *)c + ((__SIZE_TYPE__)i +
-					     ((__SIZE_TYPE__)-4)/4) * 4);
+					     ((__SIZE_TYPE__)-S)/S) * S);
 }
 extern void abort (void);
 int

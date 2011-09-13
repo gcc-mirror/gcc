@@ -459,6 +459,7 @@ package Snames is
    Name_External                       : constant Name_Id := N + $; -- GNAT
    Name_Finalize_Storage_Only          : constant Name_Id := N + $; -- GNAT
    Name_Ident                          : constant Name_Id := N + $; -- VMS
+   Name_Implementation_Defined         : constant Name_Id := N + $; -- GNAT
    Name_Implemented                    : constant Name_Id := N + $; -- Ada 12
    Name_Import                         : constant Name_Id := N + $;
    Name_Import_Exception               : constant Name_Id := N + $; -- VMS
@@ -659,6 +660,7 @@ package Snames is
    Name_No_Dependence                  : constant Name_Id := N + $;
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
+   Name_No_Implementation_Extensions   : constant Name_Id := N + $;
    Name_No_Requeue                     : constant Name_Id := N + $;
    Name_No_Requeue_Statements          : constant Name_Id := N + $;
    Name_No_Task_Attributes             : constant Name_Id := N + $;
@@ -742,6 +744,7 @@ package Snames is
    Name_Definite                       : constant Name_Id := N + $;
    Name_Delta                          : constant Name_Id := N + $;
    Name_Denorm                         : constant Name_Id := N + $;
+   Name_Descriptor_Size                : constant Name_Id := N + $;
    Name_Digits                         : constant Name_Id := N + $;
    Name_Elaborated                     : constant Name_Id := N + $; -- GNAT
    Name_Emax                           : constant Name_Id := N + $; -- Ada 83
@@ -1296,6 +1299,7 @@ package Snames is
       Attribute_Definite,
       Attribute_Delta,
       Attribute_Denorm,
+      Attribute_Descriptor_Size,
       Attribute_Digits,
       Attribute_Elaborated,
       Attribute_Emax,
@@ -1612,6 +1616,7 @@ package Snames is
       Pragma_External,
       Pragma_Finalize_Storage_Only,
       Pragma_Ident,
+      Pragma_Implementation_Defined,
       Pragma_Implemented,
       Pragma_Import,
       Pragma_Import_Exception,

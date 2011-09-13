@@ -504,6 +504,10 @@ package body ALI is
                     or else Nextc = '<' or else Nextc = '>'
                     or else Nextc = '=';
 
+                  --  Terminate on comma
+
+                  exit when Nextc = ',';
+
                   --  Terminate if left bracket not part of wide char sequence
                   --  Note that we only recognize brackets notation so far ???
 
@@ -2389,12 +2393,22 @@ package body ALI is
 
                         --  Imported entities reference as in:
                         --    494b<c,__gnat_copy_attribs>25
-                        --  ??? Simply skipped for now
 
                         if Nextc = '<' then
-                           while Getc /= '>' loop
-                              null;
-                           end loop;
+                           Skipc;
+                           XR.Imported_Lang := Get_Name;
+
+                           pragma Assert (Nextc = ',');
+                           Skipc;
+
+                           XR.Imported_Name := Get_Name;
+
+                           pragma Assert (Nextc = '>');
+                           Skipc;
+
+                        else
+                           XR.Imported_Lang := No_Name;
+                           XR.Imported_Name := No_Name;
                         end if;
 
                         XR.Col   := Get_Nat;

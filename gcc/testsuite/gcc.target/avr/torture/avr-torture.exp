@@ -39,6 +39,8 @@ dg-init
 	{ -O1 } \
 	{ -O2 } \
 	{ -O2 -mcall-prologues } \
+	{ -O2 -fdata-sections } \
+	{ -O2 -fmerge-all-constants } \
 	{ -Os -fomit-frame-pointer } \
 	{ -Os -fomit-frame-pointer -finline-functions } \
 	{ -O3 -g } \

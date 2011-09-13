@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                           (No Tasking Version)                           --
 --                                                                          --
---          Copyright (C) 1991-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,10 @@
 --  interrupts available on the system.
 
 package Ada.Interrupts.Names is
+
+   --  All identifiers in this unit are implementation defined
+
+   pragma Implementation_Defined;
 
    DUMMY_INTERRUPT_1 : constant Interrupt_ID := 1;
    DUMMY_INTERRUPT_2 : constant Interrupt_ID := 2;

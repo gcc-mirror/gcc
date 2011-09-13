@@ -1,3 +1,90 @@
+2011-09-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50327
+	* frontend-passes.c (dummy_expr_callback):  New function.
+	(convert_do_while):  New function.
+	(optimize_namespace):  Call code walker to convert do while loops.
+
+2011-09-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	PR fortran/47978
+	* interface.c (check_dummy_characteristics): New function to check the
+	characteristics of dummy arguments.
+	(gfc_compare_interfaces,gfc_check_typebound_override): Call it here.
+
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_trans_constant_array_constructor): Remove
+	superfluous initialisation of DIM field.
+	(gfc_trans_array_constructor): Assert that DIMEN field is properly set.
+	(gfc_conv_expr_descriptor): Ditto.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.h (gfc_get_scalar_ss): New prototype.
+	* trans-array.c (gfc_get_scalar_ss): New function.
+	(gfc_walk_variable_expr, gfc_walk_op_expr,
+	gfc_walk_elemental_function_args): Re-use gfc_get_scalar_ss.
+	* trans-expr.c (gfc_trans_subarray_assign): Ditto.
+	(gfc_trans_assignment_1): Ditto.
+	* trans-stmt.c (compute_inner_temp_size, gfc_trans_where_assign,
+	gfc_trans_where_3): Ditto.
+
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.h (gfc_get_temp_ss): New prototype.
+	* trans-array.c (gfc_get_temp_ss): New function.
+	(gfc_conv_resolve_dependencies): Re-use gfc_get_temp_ss.
+	(gfc_conv_expr_descriptor): Ditto.
+	* trans-expr.c (gfc_conv_subref_array_arg): Ditto.
+
+2011-09-08  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.h (gfc_get_array_ss): New prototype.
+	* trans-array.c (gfc_get_array_ss): New function.
+	(gfc_walk_variable_expr, gfc_walk_function_expr,
+	gfc_walk_array_constructor): Re-use gfc_get_array_ss.
+	* trans-expr.c (gfc_trans_subarray_assign): Ditto.
+	* trans-intrinsic.c (gfc_walk_intrinsic_bound,
+	gfc_walk_intrinsic_libfunc): Ditto.
+	* trans-io.c (transfer_array_component): Ditto.
+
+2011-09-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44646
+	* decl.c (gfc_match_entry, gfc_match_end): Handle COMP_DO_CONCURRENT.
+	* dump-parse-tree.c (show_code_node): Handle EXEC_DO_CONCURRENT.
+	* gfortran.h (gfc_exec_op): Add EXEC_DO_CONCURRENT.
+	* match.c (gfc_match_critical, match_exit_cycle, gfc_match_stopcode,
+	lock_unlock_statement, sync_statement, gfc_match_allocate,
+	gfc_match_deallocate, gfc_match_return): Add DO CONCURRENT diagnostic.
+	(gfc_match_do): Match DO CONCURRENT.
+	(match_derived_type_spec, match_type_spec, gfc_free_forall_iterator,
+	match_forall_iterator, match_forall_header, match_simple_forall,
+	gfc_match_forall): Move up in the file.
+	* parse.c (check_do_closure, parse_do_block): Handle do concurrent.
+	* parse.h (gfc_compile_state): Add COMP_DO_CONCURRENT.
+	* resolve.c (do_concurrent_flag): New global variable.
+	(resolve_function, pure_subroutine, resolve_branch,
+	gfc_resolve_blocks, resolve_code, resolve_types): Add do concurrent
+	diagnostic.
+	* st.c (gfc_free_statement): Handle EXEC_DO_CONCURRENT.
+	* trans-stmt.c (gfc_trans_do_concurrent): New function.
+	(gfc_trans_forall_1): Handle do concurrent.
+	* trans-stmt.h (gfc_trans_do_concurrent): New function prototype.
+	* trans.c (trans_code): Call it.
+	* frontend-passes.c (gfc_code_walker): Handle EXEC_DO_CONCURRENT.
+
+2011-09-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48095
+	* primary.c (gfc_match_structure_constructor): Handle parsing of
+	procedure pointers components in structure constructors.
+	* resolve.c (resolve_structure_cons): Check interface of procedure
+	pointer components. Changed wording of some error messages.
+
 2011-09-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50227

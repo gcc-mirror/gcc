@@ -163,6 +163,11 @@ pragma Style_Checks ("M32766");
 # include <_types.h>
 #endif
 
+#ifdef __linux__
+# include <pthread.h>
+# include <signal.h>
+#endif
+
 #ifdef NATIVE
 #include <stdio.h>
 
@@ -1256,12 +1261,18 @@ CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
 
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set");
+CND(FD_SETSIZE, "Max fd value");
 
 #define SIZEOF_struct_hostent (sizeof (struct hostent))
 CND(SIZEOF_struct_hostent, "struct hostent");
 
 #define SIZEOF_struct_servent (sizeof (struct servent))
 CND(SIZEOF_struct_servent, "struct servent");
+
+#if defined (__linux__)
+#define SIZEOF_sigset (sizeof (sigset_t))
+CND(SIZEOF_sigset, "sigset");
+#endif
 /*
 
    --  Fields of struct msghdr
@@ -1351,43 +1362,51 @@ CND(WSAEDISCON,         "Disconnected")
    putchar ('\n');
 #endif
 
-#if defined (__APPLE__) || defined (DUMMY)
+#if defined (__APPLE__) || defined (__linux__) || defined (DUMMY)
 /*
 
-   -------------------------------
-   -- Darwin-specific constants --
-   -------------------------------
-
-   --  These constants may be used only within the Darwin version of the GNAT
-   --  runtime library.
+   --  Sizes of pthread data types (on Darwin these are padding)
 */
 
-#define PTHREAD_SIZE __PTHREAD_SIZE__
-CND(PTHREAD_SIZE, "Pad in pthread_t")
-
-#define PTHREAD_ATTR_SIZE __PTHREAD_ATTR_SIZE__
-CND(PTHREAD_ATTR_SIZE, "Pad in pthread_attr_t")
-
-#define PTHREAD_MUTEXATTR_SIZE __PTHREAD_MUTEXATTR_SIZE__
-CND(PTHREAD_MUTEXATTR_SIZE, "Pad in pthread_mutexattr_t")
-
-#define PTHREAD_MUTEX_SIZE __PTHREAD_MUTEX_SIZE__
-CND(PTHREAD_MUTEX_SIZE, "Pad in pthread_mutex_t")
-
-#define PTHREAD_CONDATTR_SIZE __PTHREAD_CONDATTR_SIZE__
-CND(PTHREAD_CONDATTR_SIZE, "Pad in pthread_condattr_t")
-
-#define PTHREAD_COND_SIZE __PTHREAD_COND_SIZE__
-CND(PTHREAD_COND_SIZE, "Pad in pthread_cond_t")
-
+#if defined (__APPLE__) || defined (DUMMY)
+#define PTHREAD_SIZE            __PTHREAD_SIZE__
+#define PTHREAD_ATTR_SIZE       __PTHREAD_ATTR_SIZE__
+#define PTHREAD_MUTEXATTR_SIZE  __PTHREAD_MUTEXATTR_SIZE__
+#define PTHREAD_MUTEX_SIZE      __PTHREAD_MUTEX_SIZE__
+#define PTHREAD_CONDATTR_SIZE   __PTHREAD_CONDATTR_SIZE__
+#define PTHREAD_COND_SIZE       __PTHREAD_COND_SIZE__
 #define PTHREAD_RWLOCKATTR_SIZE __PTHREAD_RWLOCKATTR_SIZE__
-CND(PTHREAD_RWLOCKATTR_SIZE, "Pad in pthread_rwlockattr_t")
+#define PTHREAD_RWLOCK_SIZE     __PTHREAD_RWLOCK_SIZE__
+#define PTHREAD_ONCE_SIZE       __PTHREAD_ONCE_SIZE__
+#else
+#define PTHREAD_SIZE            (sizeof (pthread_t))
+#define PTHREAD_ATTR_SIZE       (sizeof (pthread_attr_t))
+#define PTHREAD_MUTEXATTR_SIZE  (sizeof (pthread_mutexattr_t))
+#define PTHREAD_MUTEX_SIZE      (sizeof (pthread_mutex_t))
+#define PTHREAD_CONDATTR_SIZE   (sizeof (pthread_condattr_t))
+#define PTHREAD_COND_SIZE       (sizeof (pthread_cond_t))
+#define PTHREAD_RWLOCKATTR_SIZE (sizeof (pthread_rwlockattr_t))
+#define PTHREAD_RWLOCK_SIZE     (sizeof (pthread_rwlock_t))
+#define PTHREAD_ONCE_SIZE       (sizeof (pthread_once_t))
+#endif
 
-#define PTHREAD_RWLOCK_SIZE __PTHREAD_RWLOCK_SIZE__
-CND(PTHREAD_RWLOCK_SIZE, "Pad in pthread_rwlock_t")
+CND(PTHREAD_SIZE, "pthread_t")
 
-#define PTHREAD_ONCE_SIZE __PTHREAD_ONCE_SIZE__
-CND(PTHREAD_ONCE_SIZE, "Pad in pthread_once_t")
+CND(PTHREAD_ATTR_SIZE, "pthread_attr_t")
+
+CND(PTHREAD_MUTEXATTR_SIZE, "pthread_mutexattr_t")
+
+CND(PTHREAD_MUTEX_SIZE, "pthread_mutex_t")
+
+CND(PTHREAD_CONDATTR_SIZE, "pthread_condattr_t")
+
+CND(PTHREAD_COND_SIZE, "pthread_cond_t")
+
+CND(PTHREAD_RWLOCKATTR_SIZE, "pthread_rwlockattr_t")
+
+CND(PTHREAD_RWLOCK_SIZE, "pthread_rwlock_t")
+
+CND(PTHREAD_ONCE_SIZE, "pthread_once_t")
 
 #endif
 

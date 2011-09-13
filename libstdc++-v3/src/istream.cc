@@ -280,7 +280,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef basic_istream<char>       	__istream_type;
       typedef __istream_type::int_type		__int_type;
-      typedef __istream_type::char_type		__char_type;
       typedef __istream_type::traits_type	__traits_type;
       typedef __istream_type::__streambuf_type  __streambuf_type;
       typedef __istream_type::__ctype_type	__ctype_type;
@@ -364,7 +363,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __istream_type::char_type		__char_type;
       typedef __istream_type::traits_type	__traits_type;
       typedef __istream_type::__streambuf_type  __streambuf_type;
-      typedef __istream_type::__ctype_type	__ctype_type;
       typedef basic_string<char>        	__string_type;
       typedef __string_type::size_type		__size_type;
 
@@ -610,7 +608,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __istream_type::char_type		__char_type;
       typedef __istream_type::traits_type	__traits_type;
       typedef __istream_type::__streambuf_type  __streambuf_type;
-      typedef __istream_type::__ctype_type	__ctype_type;
       typedef basic_string<wchar_t>        	__string_type;
       typedef __string_type::size_type		__size_type;
 

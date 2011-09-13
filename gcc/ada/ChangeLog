@@ -1,3 +1,581 @@
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (maybe_unconstrained_array): In the reference
+	to unconstrained array case, deal with each branch of a COND_EXPR.
+	* gcc-interface/utils2.c (build_allocator): Deal with each branch of
+	a COND_EXPR in the initializer, if present.
+
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (maybe_pad_type): Do not try to change the form
+	of an addressable type.
+	* gcc-interface/trans.c (gnat_gimplify_expr) <VIEW_CONVERT_EXPR>: New.
+	Deal with those cases for which creating a temporary is mandatory.
+
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (call_to_gnu): Use local variable.  Make sure
+	this is a real formal parameter before testing whether it is by ref.
+
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (build_call_0_expr): Delete.
+	(build_call_1_expr): Likewise.
+	(build_call_2_expr): Likewise.
+	(build_call_n_expr): New prototype.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use build_call_n_expr.
+	* gcc-interface/trans.c (establish_gnat_vms_condition_handler): Ditto.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(Exception_Handler_to_gnu_zcx): Likewise.
+	(gnat_to_gnu): Likewise.
+	(build_binary_op_trapv): Likewise.
+	* gcc-interface/utils2.c (build_call_0_expr): Delete.
+	(build_call_1_expr): Likewise.
+	(build_call_2_expr): Likewise.
+	(build_call_n_expr): New function.
+	(build_call_raise): Use build_call_n_expr.
+	(build_call_raise_range): Likewise.
+	(build_call_raise_column): Likewise.
+	(build_call_alloc_dealloc_proc): Likewise.
+	(maybe_wrap_malloc): Likewise.
+	(maybe_wrap_free): Likewise.
+
+2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (build_return_expr): Use void_type_node for
+	MODIFY_EXPR.
+	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Assert that
+	the result type is null if ENABLE_CHECKING.  Set operation_type at the
+	end unconditionally if not set in the previous cases.
+	Use build2 and void_type_node for MODIFY_EXPR.
+	(build_allocator): Use NULL_TREE for MODIFY_EXPR.
+
+2011-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (unchecked_convert): Use a field of the right
+	precision when converting to or from an integral type whose precision
+	is not equal to its size.
+
+2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* traceback.c (Darwin) USE_GCC_UNWINDER for Darwin versions >= 8.
+
+2011-09-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (darwin): Provide powerpc64 system
+	implementation.
+	* system-darwin-ppc64.ads: New file.
+
+2011-09-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (gnatlib-shared-darwin): Remove
+	reference to "-lm".
+
+2011-09-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (darwin, SO_OPTS): Provide architecture
+	size switches to the link phase for shared libs.
+
+2011-09-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (x86_64 darwin arch): Adjust
+	LIBGNAT_TARGET_PAIRS for x86 and x86_64 variants.
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in
+	(gnattools, regnattools, cross-gnattools, canadian-gnattools,
+	gnatlib, gnatlib-sjlj, gnatlib-zcx, gnatlib-shared, gnatlib_and_tools):
+	New targets.
+	(TOOLS_FLAGS_TO_PASS): New.
+	(../stamp-tools): Reintroduce, to avoid merge conflicts.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch10.adb, impunit.ads, impunit.adb (Not_Impl_Defined_Unit): New
+	name for Is_RM_Defined_Unit. Also several fixes to this unit.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.ads, impunit.adb (Is_RM_Defined_Unit): New function.
+	* s-rident.ads: New restriction No_Implementation_Units
+	(this restriction is also part of the profile
+	No_Implementation_Extensions)
+	* sem_ch10.adb (Analyze_With_Clause): Add check for
+	No_Implementation_Units restriction.
+
+2011-09-06  Jerome Guitton  <guitton@adacore.com>
+
+	* sysdep.c (__gnat_get_task_options): Disable VX_SPE_TASK
+	on vThreads.
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-solita.adb: Minor reformatting.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): The body that
+	is a rewriting of an expression function does not freeze previous
+	entities.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb (Is_Known_Unit): Fix bad handling of Ada 2012 case
+
+2011-09-06  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/Makefile.in: Handle e500v2-wrs-vxworksae like
+	powerpc-wrs-vxworksae.
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-os_lib.ads (Spawn): Minor documentation clarification,
+	Success is True for a zero exit status.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Add message for common iterator error.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): If the target is a
+	selected component discriminated by a current instance, replace
+	the constraint with a reference to the target object, regardless
+	of whether the context is an init_proc.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Descriptor_Size is never static.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for LSLOC metric in gnatmetric
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat_rm.texi: Clarify that attribute Descriptor_Size is
+	non-static.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve): An expression that is the body of an
+	expression function does not freeze.
+
+2011-09-06  Matthew Heaney  <heaney@adacore.com>
+
+	* a-csquin.ads, a-cusyqu.adb, a-cbprqu.adb, a-cbsyqu.adb,
+	a-cuprqu.adb: Changed copyright notice to indicate current
+	year only.
+
+2011-09-06  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb: Minor spelling error fix in comment
+	* sem_res.adb: Minor reformatting
+
+2011-09-06  Pascal Obry  <obry@adacore.com>
+
+	* sysdep.c (winflush_nt): Removed as not needed anymore.
+	(winflush_95): Likewise.
+	(winflush_init): Likewise.
+	(winflush_function): Likewise.
+	(getc_immediate_common): Remove call to winflush_function.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Rewrite the
+	processing for Descriptor_Size.
+	* gnat_rm.texi: Rephrase the wording for attribute Descriptor_Size
+	to account for its broader usage.
+	* sem_attr.adb (Analyze_Attribute): Change the error detection
+	circuitry for Descriptor_Size as the attribute is now applicable
+	to all types.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb, prj-nmsc.adb, exp_aggr.adb: Minor reformatting.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (OK_To_Set_Referenced): A reference to a formal
+	in a parameter association must not set the Referenced flag on
+	the formal.
+	* prj-nmsc.adb (Check_File_Naming_Schemes): Remove useless formal
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat_rm.texi: Add a section on attribute Descriptor_Size
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in (common-tools, gnatmake-re,
+	gnatlink-re): Speed up by using -j0.
+
+2011-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Call
+	Set_Corresponding_Aspect when creating pragma from aspect.
+	(Add_Predicates): Use new field Corresponding_Aspect.
+	* sem_prag.adb (Analyze_Pragma): Make Pname hold source aspect
+	name when present, for the purpose of issuing error messages;
+	remove local procedure Error_Pragma_Arg_Alternate_Name.
+	* sinfo.adb, sinfo.ads (Corresponding_Aspect): New field in
+	N_Pragma node.
+	(From_Dynamic_Predicate, From_Static_Predicate): Remove fields from
+	N_Pragma node.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb, s-except.ads, g-socket.adb: Minor reformatting.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Build_Heap_Allocator): Add new
+	local variable Desig_Typ. Code and comment reformatting. Add
+	machinery to ensure that the allocation uses a fat pointer when
+	the type of the return object is a constrained array and the
+	function return type is an unconstrained array.
+
+2011-09-06  Vincent Celier  <celier@adacore.com>
+
+	* make.adb, prj-part.adb, prj-nmsc.adb: Remove unused formal
+	parameters in subprograms.
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-mingw.adb (Finalize_TCB): Fix typo.
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-taprop-vxworks.adb, s-tpoaal.adb, s-tpopsp-vxworks.adb
+	(System.Tasking.Primitive_Operations.Specific.Delete): Remove
+	subprogram.
+	(System.Tasking.Primitive_Operations.Specific.Set): If argument
+	is null, destroy task specific data, to make API consistent with
+	other platforms, and thus compatible with the shared version
+	of s-tpoaal.adb.
+	(System.Tasking.Primitive_Operations.ATCB_Allocation.Free_ATCB):
+	Document the above assumption.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): Fix use of uninitialized
+	variable for type of return value when return type is
+	unconstrained and context is an assignment.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Check_Class_Wide_Actual): Do not generate body of
+	class-wide operation if expansion is not enabled.
+
+2011-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Deal with access
+	type prefix.
+
+2011-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, case
+	Aspect_Invariant): Do not issue error at this point on illegal
+	pragma placement, as this is checked later on when analyzing
+	the corresponding pragma.
+	* sem_prag.adb (Error_Pragma_Arg_Alternate_Name): New procedure
+	similar to Error_Pragma_Arg, except the source name of the
+	aspect/pragma to use in warnings may be equal to parameter
+	Alt_Name (Analyze_Pragma, case Pragma_Invariant): refine error
+	message to distinguish source name of pragma/aspect, and whether
+	the illegality resides in the type being public, or being private
+	without a public declaration
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Check_For_Fd_Set): On Windows, no need for bitmap
+	size check (fd_set is implemented differently on that platform).
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-taprop-vxworks.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
+	s-tpoaal.adb, s-taprop-mingw.adb, s-taprop-linux.adb,
+	s-taprop-solaris.adb, s-taprop-irix.adb, s-taprop.ads,
+	s-taprop-hpux-dce.adb, s-taprop-dummy.adb, s-taprop-posix.adb
+	(ATCB_Allocation): New subpackage of
+	System.Tasking.Primitive_Operations, shared across all targets
+	with full tasking runtime.
+	(ATCB_Allocation.New_ATCB): Moved there (from target specific
+	s-taprop bodies).
+	(ATCB_Allocation.Free_ATCB): New subprogram. Deallocate an ATCB,
+	taking care of establishing a local temporary ATCB if the one
+	being deallocated is Self, to avoid a reference to the freed
+	ATCB in Abort_Undefer.
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-tassta.adb, s-taskin.ads (Free_Task): If the task is not
+	terminated, mark it for deallocation upon termination.
+	(Terminate_Task): Call Free_Task again if the task is marked
+	for automatic deallocation upon termination.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* a-cbprqu.ads, a-cbsyqu.ads, a-cuprqu.ads, a-cusyqu.ads,
+	a-intnam-aix.ads, a-intnam-darwin.ads, a-intnam-dummy.ads,
+	a-intnam-freebsd.ads, a-intnam-hpux.ads, a-intnam-irix.ads,
+	a-intnam-linux.ads, a-intnam-lynxos.ads, a-intnam-mingw.ads,
+	a-intnam-solaris.ads, a-intnam-tru64.ads,
+	a-intnam-vms.ads, a-intnam-vxworks.ads, a-intnam.ads, interfac.ads,
+	cstand.adb, s-maccod.ads: Mark all entities as Implementation_Defined
+	* einfo.ads, einfo.adb (Is_Implementation_Defined): New flag
+	* par-prag.adb: Add dummy entry for pragma Implementation_Defined
+	* s-rident.ads: Add new restriction No_Implementation_Identifiers
+	Add new profile No_Implementation_Extensions
+	* sem_prag.adb: Implement pragma Implementation_Defined Implement
+	profile No_Implementation_Extensions
+	* sem_util.adb: Minor reformatting (Set_Entity_With_Style_Check):
+	Check violation of restriction No_Implementation_Identifiers
+	* snames.ads-tmpl: Add entries for pragma Implementation_Defined
+	Add entry for Name_No_Implementation_Extensions
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.ads: Minor reformatting.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb, sem_ch13.adb, lib-xref.adb: Minor reformatting.
+
+2011-09-06  Pascal Obry  <obry@adacore.com>
+
+	* s-osinte-linux.ads, s-oscons-tmplt.c: Use oscons to define sigset_t
+	types.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* g-socket.adb: Minor reformatting
+
+2011-09-06  Javier Miranda  <miranda@adacore.com>
+
+	* ali.adb (Scan_ALI): Add missing support to load references of
+	entities imported from other languages.
+	* ali.ads (Xref_Record): Adding new fields to store the language and
+	name of an imported entity.
+	* lib-xref.adb (Output_Import_Export_Info): Fix typo
+	in comment.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Type_Invariant): A type invariant
+	is allowed on a full type declaration if it is the completion of
+	a private declarations.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): An invariant
+	aspect is allowed on a full type declaration in the private part
+	of a package.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.ads: Minor reformatting
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.adb (GNAT.Sockets.Clear,Set,Is_Set):
+	Guard against socket values that are not in [0;FD_SETSIZE[
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-osinte-linux.ads, a-iteint.ads, exp_ch6.adb, s-solita.adb: Minor
+	reformatting.
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-linux-alpha.ads: Minor reformatting
+	* s-oscons-tmplt.c: Fix generated comments in s-oscons template.
+	Use sizeof instead of corresponding C defines in s-oscons template.
+
+2011-09-06  Vadim Godunko  <godunko@adacore.com>
+
+	* a-convec.ads, a-iteint.ads: Minor reformatting.
+
+2011-09-06  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add menus and @node lines.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): Handle properly the case
+	where the return type is an unconstrained array and the context
+	is an assignment. Optimize the case when the target of the
+	assignment is a selected component.
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-solita.adb: Update comments.
+
+2011-09-06  Pascal Obry  <obry@adacore.com>
+
+	* s-linux.ads, s-linux-alpha.ads, s-linux-hppa.ads, s-linux-mipsel.ads,
+	s-linux-sparc.ads: Remove hard coded and now wrong definitions.
+	* s-oscons-tmplt.c: Add support for generating pthread related
+	types size on GNU/Linux as done for Darwin.
+	* s-osinte-linux.ads: Use s-oscons to define the pthread types.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Fix minor typo.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb: Remove with and use clauses for Get_Targ.
+	(Alignment_Of): Moved to the body of Nearest_Multiple_Rounded_Up.
+	(Double_Size_Of): Alphabetized. Update the comment on usage.
+	(Make_Finalize_Address_Stmts): Update comments and reformat code.
+	(Nearest_Multiple_Rounded_Up): New routine.
+	(Size_Of): Update comment on usage. The generated expression now
+	accounts for alignment gaps by rounding the size of the type to the
+	nearest multiple rounded up of the type's alignment.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, g-comlin.adb: Minor reformatting.
+
+2011-09-06  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Look through
+	derived subprograms in checking for presence of an
+	Extra_Accessibility_Of_Result formal parameter.
+	* exp_ch6.adb (Expand_Call): Look through derived subprograms in
+	checking for presence of an Extra_Accessibility_Of_Result formal
+	parameter.
+	(Expand_Call.Add_Actual_Parameter): Fix a bug in the
+	case where the Parameter_Associatiations attribute is already set,
+	but set to an empty list.
+	(Needs_Result_Accessibility_Level):
+	Unconditionally return False. This is a temporary
+	change, disabling the Extra_Accessibility_Of_Result
+	mechanism.
+	(Expand_Simple_Function_Return): Check for
+	Extra_Accessibility_Of_Result parameter's presence instead of
+	testing Ada_Version when generating a runtime accessibility
+	check which makes use of the parameter.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Actions created for the
+	expression in a given case alternative must be attached to the
+	statement list of the ccrresponding case statement alternative
+	They cannot be propagated ahead of the case statement, because
+	the validity of the expression that generated the action may
+	hold only for that alternative.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb: Remove with and use clauses for Get_Targ.
+	(Alignment_Of): Remove the code for strict alignment targets.
+	(Double_Alignment_Of): Removed.
+	(Double_Size_Of): New routine.
+	(Make_Finalize_Address_Stmts): Change the
+	calculation of the dope's size.  Update relevant comments.
+	(Size_Of): New routine.
+
+2011-09-06  Steve Baird  <baird@adacore.com>
+
+	* einfo.ads (Extra_Accessibility): Update associated comment to use
+	the term "present" correctly ("present" just means that it is not
+	an error to query the value of the attribute - it does not imply
+	that the value must be non-null).
+	(Extra_Constrained): Ditto.
+	(Is_Visible_Formal): Ditto.
+	(Extra_Accessibility_Of_Result) Ditto; also add Inline pragma.
+	(Set_Extra_Accessibility_Of_Result): Add Inline pragma.
+	* exp_ch4.adb (Expand_Allocator_Expression): Improve a comment.
+	* exp_ch6.adb (Expand_Call): The callee may require an
+	Extra_Accessibility_Of_Result actual parameter even if Ada_Version
+	< Ada_2012. This can occur if the callee is exported from a Gnat
+	runtimes unit. Also improve a comment.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb: Add with and use clauses for Get_Targ.
+	(Alignment_Of): Rename formal parameter Some_Typ
+	to Typ, update related comment. Use the allocator alignment on
+	strict alignment targets such as SPARC.
+	(Double_Alignment_Of): Rename formal parameter Some_Typ to Typ, update
+	related comment.
+
+2011-09-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch9.adb (Check_Interfaces): Test
+	Is_Limited_Type rather than Is_Limited_Record when checking that
+	the partial view of a synchronized full view must be limited.
+
+2011-09-06  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Free): Fix memory leak.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, exp_ch6.adb: Minor reformatting and code reorganization.
+
+2011-09-06  Steve Baird  <baird@adacore.com>
+
+	* einfo.ads (Extra_Accessibility_Of_Result): New function; in the
+	(Ada2012) cases described in AI05-0234 where the accessibility
+	level of a function result is "determined by the point of
+	call", an implicit parameter representing that accessibility
+	level is passed in. Extra_Accessibilty_Of_Result yields this
+	additional formal parameter. Extra_Accessibility_Of_Result
+	is analogous to the existing Extra_Accessibility
+	function used in the implementation of access parameters.
+	(Set_Extra_Accessibility_Of_Result): New procedure; sets
+	Extra_Accessibility_Of_Result attribute.
+	* einfo.adb (Extra_Accessibility_Of_Result): New function.
+	(Set_Extra_Accessibility_Of_Result): New procedure.
+	(Write_Field19_Name): Display Extra_Accessibilty_Of_Result attribute.
+	* sem_util.adb (Dynamic_Accessibility_Level): Set Etype of
+	an accessibility level literal to Natural; introduce a nested
+	function, Make_Level_Literal, to do this.
+	* exp_ch6.ads (Needs_Result_Accessibility_Level): New function;
+	determines whether a given function (or access-to-function
+	type) needs to have an implicitly-declared accessibility-level
+	parameter added to its profile.
+	(Add_Extra_Actual_To_Call): Export an existing procedure which was
+	previously declared in the body of Exp_Ch6.
+	* exp_ch6.adb (Add_Extra_Actual_To_Call): Export declaration by moving
+	it to exp_ch6.ads.
+	(Has_Unconstrained_Access_Discriminants): New Function; a
+	predicate on subtype entities which returns True if the given
+	subtype is unconstrained and has one or more access discriminants.
+	(Expand_Call): When expanding a call to a function which takes an
+	Extra_Accessibility_Of_Result parameter, pass in the appropriate
+	actual parameter value. In the case of a function call which is
+	used to initialize an allocator, this may not be possible because
+	the Etype of the allocator may not have been set yet. In this
+	case, we defer passing in the parameter and handle it later in
+	Expand_Allocator_Expression.
+	(Expand_Simple_Function_Return): When returning from a function which
+	returns an unconstrained subtype having at least one access
+	discriminant, generate the accessibility check needed to ensure that
+	the function result will not outlive any objects designated by its
+	discriminants.
+	(Needs_Result_Accessibility_Level): New function; see exp_ch6.ads
+	description.
+	* exp_ch4.adb (Expand_Allocator_Expression): When a function call
+	is used to initialize an allocator, we may need to pass in "the
+	accessibility level determined by the point of call" (AI05-0234)
+	to the function. Expand_Call, where such actual parameters are
+	usually generated, is too early in this case because the Etype of
+	the allocator (which is used in determining the level to be passed
+	in) may not have been set yet when Expand_Call executes. Instead,
+	we generate code to pass in the appropriate actual parameter
+	in Expand_Allocator_Expression.
+	* sem_ch6.adb (Create_Extra_Formals): Create
+	the new Extra_Accessibility_Of_Result formal if
+	Needs_Result_Accessibility_Level returns True. This includes the
+	introduction of a nested procedure, Check_Against_Result_Level.
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in (X86_TARGET_PAIRS): Remove duplicate
+	declaration.
+
 2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* s-finmas.adb (Set_Finalize_Address): Explain the reason

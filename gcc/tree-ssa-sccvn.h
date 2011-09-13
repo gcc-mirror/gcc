@@ -42,9 +42,17 @@ typedef struct vn_nary_op_s
   hashval_t hashcode;
   tree result;
   tree type;
-  tree op[4];
+  tree op[1];
 } *vn_nary_op_t;
 typedef const struct vn_nary_op_s *const_vn_nary_op_t;
+
+/* Return the size of a vn_nary_op_t with LENGTH operands.  */
+
+static inline size_t
+sizeof_vn_nary_op (unsigned int length)
+{
+  return sizeof (struct vn_nary_op_s) + sizeof (tree) * (length - 1);
+}
 
 /* Phi nodes in the hashtable consist of their non-VN_TOP phi
    arguments, and the basic block the phi is in. Result is the value
@@ -176,13 +184,11 @@ void free_scc_vn (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);
 tree vn_nary_op_lookup_stmt (gimple, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
-			       tree, tree, tree, tree, tree,
-			       vn_nary_op_t *);
+			       tree, tree *, vn_nary_op_t *);
 vn_nary_op_t vn_nary_op_insert (tree, tree);
 vn_nary_op_t vn_nary_op_insert_stmt (gimple, tree);
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
-				       tree, tree, tree, tree,
-				       tree, tree, unsigned int);
+				       tree, tree *, tree, unsigned int);
 void vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **,
 				 unsigned int *);
 void copy_reference_ops_from_ref (tree, VEC(vn_reference_op_s, heap) **);

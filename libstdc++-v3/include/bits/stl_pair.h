@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename...>
     class tuple;
 
-  template<int...>
+  template<std::size_t...>
     struct _Index_tuple;
 #endif
 
@@ -206,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static _Tp
 	__cons(tuple<_Args...>&&);
 
-      template<typename _Tp, typename... _Args, int... _Indexes>
+      template<typename _Tp, typename... _Args, std::size_t... _Indexes>
 	static _Tp
 	__do_cons(tuple<_Args...>&&, const _Index_tuple<_Indexes...>&);
 #endif

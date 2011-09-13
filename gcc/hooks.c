@@ -161,6 +161,13 @@ default_can_output_mi_thunk_no_vcall (const_tree a ATTRIBUTE_UNUSED,
 }
 
 int
+hook_int_uint_mode_1 (unsigned int a ATTRIBUTE_UNUSED,
+		      enum machine_mode b ATTRIBUTE_UNUSED)
+{
+  return 1;
+}
+
+int
 hook_int_const_tree_0 (const_tree a ATTRIBUTE_UNUSED)
 {
   return 0;

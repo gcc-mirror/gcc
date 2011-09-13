@@ -178,6 +178,7 @@ gfc_free_statement (gfc_code *p)
 	 be freed.  */
       break;
 
+    case EXEC_DO_CONCURRENT:
     case EXEC_FORALL:
       gfc_free_forall_iterator (p->ext.forall_iterator);
       break;

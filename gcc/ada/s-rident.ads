@@ -126,8 +126,10 @@ package System.Rident is
 
       Immediate_Reclamation,                   -- (RM H.4(10))
       No_Implementation_Attributes,            -- Ada 2005 AI-257
+      No_Implementation_Identifiers,           -- Ada 2012 AI-246
       No_Implementation_Pragmas,               -- Ada 2005 AI-257
       No_Implementation_Restrictions,          -- GNAT
+      No_Implementation_Units,                 -- Ada 2012 AI-242
       No_Implicit_Aliasing,                    -- GNAT
       No_Elaboration_Code,                     -- GNAT
       No_Obsolescent_Features,                 -- Ada 2005 AI-368
@@ -310,12 +312,21 @@ package System.Rident is
    -- Profile Definitions and Data --
    ----------------------------------
 
-   type Profile_Name is (No_Profile, Ravenscar, Restricted);
+   --  Note: to add a profile, modify the following declarations appropriately,
+   --  add Name_xxx to Snames, and add a branch to the conditions for pragmas
+   --  Profile and Profile_Warnings in the body of Sem_Prag.
+
+   type Profile_Name is
+     (No_Profile,
+      No_Implementation_Extensions,
+      Ravenscar,
+      Restricted);
    --  Names of recognized profiles. No_Profile is used to indicate that a
    --  restriction came from pragma Restrictions[_Warning], as opposed to
    --  pragma Profile[_Warning].
 
-   subtype Profile_Name_Actual is Profile_Name range Ravenscar .. Restricted;
+   subtype Profile_Name_Actual is Profile_Name
+     range No_Implementation_Extensions .. Restricted;
    --  Actual used profile names
 
    type Profile_Data is record
@@ -334,9 +345,24 @@ package System.Rident is
 
    Profile_Info : constant array (Profile_Name_Actual) of Profile_Data :=
 
+                    (No_Implementation_Extensions =>
+                        --  Restrictions for Restricted profile
+
+                       (Set   =>
+                          (No_Implementation_Attributes    => True,
+                           No_Implementation_Identifiers   => True,
+                           No_Implementation_Pragmas       => True,
+                           No_Implementation_Units         => True,
+                           others                          => False),
+
+                        --  Value settings for Restricted profile (none
+
+                        Value =>
+                          (others                          => 0)),
+
                      --  Restricted Profile
 
-                    (Restricted =>
+                     Restricted =>
 
                         --  Restrictions for Restricted profile
 

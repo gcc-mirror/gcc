@@ -49,5 +49,6 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "strided access in outer loop" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "strided access in outer loop" 2 "vect" { xfail vect_multiple_sizes } } } */
+/* { dg-final { scan-tree-dump-times "strided access in outer loop" 4 "vect" { target vect_multiple_sizes } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

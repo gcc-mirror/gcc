@@ -427,10 +427,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Prime_rehash_policy::
   _M_next_bkt(std::size_t __n) const
   {
-    const unsigned long __p = *std::lower_bound(__prime_list, __prime_list
-						+ _S_n_primes, __n);
-    _M_next_resize =
-      static_cast<std::size_t>(__builtin_floor(__p * _M_max_load_factor));
+    // Optimize lookups involving the first elements of __prime_list.
+    // (useful to speed-up, eg, constructors)
+    static const unsigned char __fast_bkt[12]
+      = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11 };
+
+    const unsigned long __p
+      = __n <= 11 ? __fast_bkt[__n]
+                  : *std::lower_bound(__prime_list + 5,
+				      __prime_list + _S_n_primes, __n);
+    _M_next_resize = __builtin_floor(__p * (long double)_M_max_load_factor);
     return __p;
   }
 
@@ -439,14 +445,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline std::size_t
   _Prime_rehash_policy::
   _M_bkt_for_elements(std::size_t __n) const
-  {
-    const float __min_bkts = __n / _M_max_load_factor;
-    const unsigned long __p = *std::lower_bound(__prime_list, __prime_list
-						+ _S_n_primes, __min_bkts);
-    _M_next_resize =
-      static_cast<std::size_t>(__builtin_floor(__p * _M_max_load_factor));
-    return __p;
-  }
+  { return _M_next_bkt(__builtin_ceil(__n / (long double)_M_max_load_factor)); }
 
   // Finds the smallest prime p such that alpha p > __n_elt + __n_ins.
   // If p > __n_bkt, return make_pair(true, p); otherwise return
@@ -464,22 +463,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     if (__n_elt + __n_ins > _M_next_resize)
       {
-	float __min_bkts = ((float(__n_ins) + float(__n_elt))
-			    / _M_max_load_factor);
+	long double __min_bkts = ((__n_elt + __n_ins)
+				  / (long double)_M_max_load_factor);
 	if (__min_bkts > __n_bkt)
 	  {
-	    __min_bkts = std::max(__min_bkts, _M_growth_factor * __n_bkt);
-	    const unsigned long __p =
-	      *std::lower_bound(__prime_list, __prime_list + _S_n_primes,
-				__min_bkts);
-	    _M_next_resize = static_cast<std::size_t>
-	      (__builtin_floor(__p * _M_max_load_factor));
-	    return std::make_pair(true, __p);
+	    __min_bkts = std::max(__min_bkts, (long double)_M_growth_factor
+				  * __n_bkt);
+	    return std::make_pair(true,
+				  _M_next_bkt(__builtin_ceil(__min_bkts)));
 	  }
 	else
 	  {
-	    _M_next_resize = static_cast<std::size_t>
-	      (__builtin_floor(__n_bkt * _M_max_load_factor));
+	    _M_next_resize
+	      = __builtin_floor(__n_bkt * (long double)_M_max_load_factor);
 	    return std::make_pair(false, 0);
 	  }
       }

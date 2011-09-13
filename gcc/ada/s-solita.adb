@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,8 +151,12 @@ package body System.Soft_Links.Tasking is
 
    begin
       --  We can only be here because we are terminating the environment task.
-      --  Task termination for the rest of the tasks is handled in the
-      --  Task_Wrapper.
+      --  Task termination for all other tasks is handled in the Task_Wrapper.
+
+      --  We do not want to enable this check and e.g. call System.OS_Lib.Abort
+      --  here because some restricted run-times may not have System.OS_Lib
+      --  (e.g. JVM), and calling abort may do more harm than good to the
+      --  main application.
 
       pragma Assert (Self_Id = STPO.Environment_Task);
 
@@ -175,9 +179,9 @@ package body System.Soft_Links.Tasking is
          Ada.Exceptions.Save_Occurrence (EO, Excep);
       end if;
 
-      --  There is no need for explicit protection against race conditions
-      --  for this part because it can only be executed by the environment
-      --  task after all the other tasks have been finalized.
+      --  There is no need for explicit protection against race conditions for
+      --  this part because it can only be executed by the environment task
+      --  after all the other tasks have been finalized.
 
       if Self_Id.Common.Specific_Handler /= null then
          Self_Id.Common.Specific_Handler.all (Cause, Self_Id, EO);
@@ -211,8 +215,8 @@ package body System.Soft_Links.Tasking is
          SSL.Timed_Delay              := Timed_Delay_T'Access;
          SSL.Task_Termination_Handler := Task_Termination_Handler_T'Access;
 
-         --  No need to create a new Secondary Stack, since we will use the
-         --  default one created in s-secsta.adb
+         --  No need to create a new secondary stack, since we will use the
+         --  default one created in s-secsta.adb.
 
          SSL.Set_Sec_Stack_Addr     (SSL.Get_Sec_Stack_Addr_NT);
          SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);

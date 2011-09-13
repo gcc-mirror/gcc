@@ -45,22 +45,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup metaprogramming
    * @{
    */
-  struct __sfinae_types
-  {
-    typedef char __one;
-    typedef struct { char __arr[2]; } __two;
-  };
+
+  /// integral_constant
+  template<typename _Tp, _Tp __v>
+    struct integral_constant
+    {
+      static constexpr _Tp                  value = __v;
+      typedef _Tp                           value_type;
+      typedef integral_constant<_Tp, __v>   type;
+      constexpr operator value_type() { return value; }
+    };
+  
+  /// typedef for true_type
+  typedef integral_constant<bool, true>     true_type;
+
+  /// typedef for false_type
+  typedef integral_constant<bool, false>    false_type;
+
+  template<typename _Tp, _Tp __v>
+    constexpr _Tp integral_constant<_Tp, __v>::value;
 
   // Meta programming helper types.
 
   template<bool, typename, typename>
     struct conditional;
 
-  template<typename _Tp, _Tp>
-    struct integral_constant;
-
   template<typename...>
     struct __or_;
+
+  template<>
+    struct __or_<>
+    : public false_type
+    { };
 
   template<typename _B1>
     struct __or_<_B1>
@@ -79,6 +95,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename...>
     struct __and_;
+
+  template<>
+    struct __and_<>
+    : public true_type
+    { };
 
   template<typename _B1>
     struct __and_<_B1>
@@ -100,26 +121,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, !_Pp::value>
     { };
 
-  // helper class.
-
-  /// integral_constant
-  template<typename _Tp, _Tp __v>
-    struct integral_constant
-    {
-      static constexpr _Tp                  value = __v;
-      typedef _Tp                           value_type;
-      typedef integral_constant<_Tp, __v>   type;
-      constexpr operator value_type() { return value; }
-    };
-  
-  /// typedef for true_type
-  typedef integral_constant<bool, true>     true_type;
-
-  /// typedef for false_type
-  typedef integral_constant<bool, false>    false_type;
-
-  template<typename _Tp, _Tp __v>
-    constexpr _Tp integral_constant<_Tp, __v>::value;
+  struct __sfinae_types
+  {
+    typedef char __one;
+    typedef struct { char __arr[2]; } __two;
+  };
 
   // primary type categories.
 

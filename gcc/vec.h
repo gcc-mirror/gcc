@@ -195,6 +195,11 @@ along with GCC; see the file COPYING3.  If not see
 #define FOR_EACH_VEC_ELT(T, V, I, P)		\
   for (I = 0; VEC_iterate (T, (V), (I), (P)); ++(I))
 
+/* Likewise, but start from FROM rather than 0.  */
+
+#define FOR_EACH_VEC_ELT_FROM(T, V, I, P, FROM)		\
+  for (I = (FROM); VEC_iterate (T, (V), (I), (P)); ++(I))
+
 /* Convenience macro for reverse iteration.  */
 
 #define FOR_EACH_VEC_ELT_REVERSE(T,V,I,P) \

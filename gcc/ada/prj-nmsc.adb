@@ -376,8 +376,7 @@ package body Prj.Nmsc is
    --  otherwise only those currently set in the Source_Names hash table.
 
    procedure Check_File_Naming_Schemes
-     (In_Tree               : Project_Tree_Ref;
-      Project               : Project_Processing_Data;
+     (Project               : Project_Processing_Data;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Language_List;
       Language              : out Language_Ptr;
@@ -426,8 +425,7 @@ package body Prj.Nmsc is
       Naming    : Lang_Naming_Data;
       Kind      : out Source_Kind;
       Unit      : out Name_Id;
-      Project   : Project_Processing_Data;
-      In_Tree   : Project_Tree_Ref);
+      Project   : Project_Processing_Data);
    --  Check whether the file matches the naming scheme. If it does,
    --  compute its unit name. If Unit is set to No_Name on exit, none of the
    --  other out parameters are relevant.
@@ -5627,8 +5625,7 @@ package body Prj.Nmsc is
       Naming    : Lang_Naming_Data;
       Kind      : out Source_Kind;
       Unit      : out Name_Id;
-      Project   : Project_Processing_Data;
-      In_Tree   : Project_Tree_Ref)
+      Project   : Project_Processing_Data)
    is
       Filename : constant String  := Get_Name_String (File_Name);
       Last     : Integer          := Filename'Last;
@@ -6621,8 +6618,7 @@ package body Prj.Nmsc is
    -------------------------------
 
    procedure Check_File_Naming_Schemes
-     (In_Tree               : Project_Tree_Ref;
-      Project               : Project_Processing_Data;
+     (Project               : Project_Processing_Data;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Language_List;
       Language              : out Language_Ptr;
@@ -6720,12 +6716,11 @@ package body Prj.Nmsc is
 
                if not Header_File then
                   Compute_Unit_Name
-                    (File_Name       => File_Name,
-                     Naming          => Config.Naming_Data,
-                     Kind            => Kind,
-                     Unit            => Unit,
-                     Project         => Project,
-                     In_Tree         => In_Tree);
+                    (File_Name => File_Name,
+                     Naming    => Config.Naming_Data,
+                     Kind      => Kind,
+                     Unit      => Unit,
+                     Project   => Project);
 
                   if Unit /= No_Name then
                      Language    := Tmp_Lang;
@@ -6918,7 +6913,6 @@ package body Prj.Nmsc is
                         Name_Loc.Source.Unit.Name,
                         Name_Loc.Source.Unit);
                   end if;
-
                end if;
             end if;
          end if;
@@ -6926,8 +6920,7 @@ package body Prj.Nmsc is
 
       if Check_Name then
          Check_File_Naming_Schemes
-           (In_Tree               => Data.Tree,
-            Project               => Project,
+           (Project               => Project,
             File_Name             => File_Name,
             Alternate_Languages   => Alternate_Languages,
             Language              => Language,
@@ -7109,7 +7102,8 @@ package body Prj.Nmsc is
             exit when Last = 0;
 
             if Name (1 .. Last) /= "."
-              and then Name (1 .. Last) /= ".."
+                 and then
+               Name (1 .. Last) /= ".."
             then
                declare
                   Path_Name : constant String :=
@@ -7262,6 +7256,7 @@ package body Prj.Nmsc is
          end if;
 
          if not Has_Error then
+
             --  Links have been resolved if necessary, and Path_Name
             --  always ends with a directory separator.
 
@@ -7374,7 +7369,6 @@ package body Prj.Nmsc is
 
                   loop
                      Read (Dir, Name, Last);
-
                      exit when Last = 0;
 
                      --  In fast project loading mode (without -eL), the user

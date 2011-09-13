@@ -13084,7 +13084,7 @@ vfp_output_fstmd (rtx * operands)
   int base;
   int i;
 
-  strcpy (pattern, "fstmfdd\t%m0!, {%P1");
+  strcpy (pattern, "fstmfdd%?\t%m0!, {%P1");
   p = strlen (pattern);
 
   gcc_assert (GET_CODE (operands[1]) == REG);
@@ -17595,10 +17595,10 @@ arm_elf_asm_destructor (rtx symbol, int priority)
    decremented/zeroed by arm_asm_output_opcode as the insns are output.  */
 
 /* Returns the index of the ARM condition code string in
-   `arm_condition_codes'.  COMPARISON should be an rtx like
-   `(eq (...) (...))'.  */
-static enum arm_cond_code
-get_arm_condition_code (rtx comparison)
+   `arm_condition_codes', or ARM_NV if the comparison is invalid.
+   COMPARISON should be an rtx like `(eq (...) (...))'.  */
+enum arm_cond_code
+maybe_get_arm_condition_code (rtx comparison)
 {
   enum machine_mode mode = GET_MODE (XEXP (comparison, 0));
   enum arm_cond_code code;
@@ -17622,11 +17622,11 @@ get_arm_condition_code (rtx comparison)
     case CC_DLTUmode: code = ARM_CC;
 
     dominance:
-      gcc_assert (comp_code == EQ || comp_code == NE);
-
       if (comp_code == EQ)
 	return ARM_INVERSE_CONDITION_CODE (code);
-      return code;
+      if (comp_code == NE)
+	return code;
+      return ARM_NV;
 
     case CC_NOOVmode:
       switch (comp_code)
@@ -17635,7 +17635,7 @@ get_arm_condition_code (rtx comparison)
 	case EQ: return ARM_EQ;
 	case GE: return ARM_PL;
 	case LT: return ARM_MI;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CC_Zmode:
@@ -17643,7 +17643,7 @@ get_arm_condition_code (rtx comparison)
 	{
 	case NE: return ARM_NE;
 	case EQ: return ARM_EQ;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CC_Nmode:
@@ -17651,7 +17651,7 @@ get_arm_condition_code (rtx comparison)
 	{
 	case NE: return ARM_MI;
 	case EQ: return ARM_PL;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CCFPEmode:
@@ -17676,7 +17676,7 @@ get_arm_condition_code (rtx comparison)
 	  /* UNEQ and LTGT do not have a representation.  */
 	case UNEQ: /* Fall through.  */
 	case LTGT: /* Fall through.  */
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CC_SWPmode:
@@ -17692,7 +17692,7 @@ get_arm_condition_code (rtx comparison)
 	case GTU: return ARM_CC;
 	case LEU: return ARM_CS;
 	case LTU: return ARM_HI;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CC_Cmode:
@@ -17700,7 +17700,7 @@ get_arm_condition_code (rtx comparison)
 	{
 	case LTU: return ARM_CS;
 	case GEU: return ARM_CC;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CC_CZmode:
@@ -17712,7 +17712,7 @@ get_arm_condition_code (rtx comparison)
 	case GTU: return ARM_HI;
 	case LEU: return ARM_LS;
 	case LTU: return ARM_CC;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CC_NCVmode:
@@ -17722,7 +17722,7 @@ get_arm_condition_code (rtx comparison)
 	case LT: return ARM_LT;
 	case GEU: return ARM_CS;
 	case LTU: return ARM_CC;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     case CCmode:
@@ -17738,11 +17738,20 @@ get_arm_condition_code (rtx comparison)
 	case GTU: return ARM_HI;
 	case LEU: return ARM_LS;
 	case LTU: return ARM_CC;
-	default: gcc_unreachable ();
+	default: return ARM_NV;
 	}
 
     default: gcc_unreachable ();
     }
+}
+
+/* Like maybe_get_arm_condition_code, but never return ARM_NV.  */
+static enum arm_cond_code
+get_arm_condition_code (rtx comparison)
+{
+  enum arm_cond_code code = maybe_get_arm_condition_code (comparison);
+  gcc_assert (code != ARM_NV);
+  return code;
 }
 
 /* Tell arm_asm_output_opcode to output IT blocks for conditionally executed
@@ -22200,6 +22209,8 @@ arm_file_start (void)
       const char *fpu_name;
       if (arm_selected_arch)
 	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_arch->name);
+      else if (strncmp (arm_selected_cpu->name, "generic", 7) == 0)
+	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_cpu->name + 8);
       else
 	asm_fprintf (asm_out_file, "\t.cpu %s\n", arm_selected_cpu->name);
 
@@ -23026,7 +23037,7 @@ arm_array_mode_supported_p (enum machine_mode mode,
   return false;
 }
 
-/* Use the option -mvectorize-with-neon-quad to override the use of doubleword
+/* Use the option -mvectorize-with-neon-double to override the use of quardword
    registers when autovectorizing for Neon, at least until multiple vector
    widths are supported properly by the middle-end.  */
 
@@ -23037,15 +23048,15 @@ arm_preferred_simd_mode (enum machine_mode mode)
     switch (mode)
       {
       case SFmode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V4SFmode : V2SFmode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V2SFmode : V4SFmode;
       case SImode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V4SImode : V2SImode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V2SImode : V4SImode;
       case HImode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V8HImode : V4HImode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V4HImode : V8HImode;
       case QImode:
-	return TARGET_NEON_VECTORIZE_QUAD ? V16QImode : V8QImode;
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V8QImode : V16QImode;
       case DImode:
-	if (TARGET_NEON_VECTORIZE_QUAD)
+	if (!TARGET_NEON_VECTORIZE_DOUBLE)
 	  return V2DImode;
 	break;
 
@@ -23724,6 +23735,7 @@ arm_issue_rate (void)
     case cortexr4:
     case cortexr4f:
     case cortexr5:
+    case genericv7a:
     case cortexa5:
     case cortexa8:
     case cortexa9:
@@ -24268,7 +24280,7 @@ arm_expand_sync (enum machine_mode mode,
 static unsigned int
 arm_autovectorize_vector_sizes (void)
 {
-  return TARGET_NEON_VECTORIZE_QUAD ? 16 | 8 : 0;
+  return TARGET_NEON_VECTORIZE_DOUBLE ? 0 : (16 | 8);
 }
 
 static bool

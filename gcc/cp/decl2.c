@@ -868,6 +868,7 @@ grokfield (const cp_declarator *declarator,
           && TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (value))) != value)
 	set_underlying_type (value);
 
+      record_locally_defined_typedef (value);
       return value;
     }
 

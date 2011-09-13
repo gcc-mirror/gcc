@@ -969,12 +969,11 @@ package body System.Tasking.Stages is
          Free_Entry_Names (T);
          System.Task_Primitives.Operations.Finalize_TCB (T);
 
-      --  If the task is not terminated, then we simply ignore the call. This
-      --  happens when a user program attempts an unchecked deallocation on
-      --  a non-terminated task.
-
       else
-         null;
+         --  If the task is not terminated, then mark the task as to be freed
+         --  upon termination.
+
+         T.Free_On_Termination := True;
       end if;
    end Free_Task;
 
@@ -1429,6 +1428,7 @@ package body System.Tasking.Stages is
    procedure Terminate_Task (Self_ID : Task_Id) is
       Environment_Task : constant Task_Id := STPO.Environment_Task;
       Master_of_Task   : Integer;
+      Deallocate       : Boolean;
 
    begin
       Debug.Task_Termination_Hook;
@@ -1474,6 +1474,7 @@ package body System.Tasking.Stages is
       Stack_Guard (Self_ID, False);
 
       Utilities.Make_Passive (Self_ID, Task_Completed => True);
+      Deallocate := Self_ID.Free_On_Termination;
 
       if Single_Lock then
          Unlock_RTS;
@@ -1485,7 +1486,12 @@ package body System.Tasking.Stages is
       Initialization.Final_Task_Unlock (Self_ID);
 
       --  WARNING: past this point, this thread must assume that the ATCB has
-      --  been deallocated. It should not be accessed again.
+      --  been deallocated, and can't access it anymore (which is why we have
+      --  saved the Free_On_Termination flag in a temporary variable).
+
+      if Deallocate then
+         Free_Task (Self_ID);
+      end if;
 
       if Master_of_Task > 0 then
          STPO.Exit_Task;

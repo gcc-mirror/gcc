@@ -189,6 +189,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    Do not define this macro if it does not need to do anything.  */
 #define EXTRA_SPECS						\
   { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC },           \
+  { "asm_cpu_spec",		ASM_CPU_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
 #ifndef SUBTARGET_EXTRA_SPECS
@@ -2222,5 +2223,9 @@ extern int making_const_table;
 /* The maximum number of parallel loads or stores we support in an ldm/stm
    instruction.  */
 #define MAX_LDM_STM_OPS 4
+
+#define ASM_CPU_SPEC \
+   " %{mcpu=generic-*:-march=%*;"				\
+   "   :%{mcpu=*:-mcpu=%*} %{march=*:-march=%*}}"
 
 #endif /* ! GCC_ARM_H */

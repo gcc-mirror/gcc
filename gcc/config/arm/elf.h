@@ -56,8 +56,7 @@
 #define ASM_SPEC "\
 %{mbig-endian:-EB} \
 %{mlittle-endian:-EL} \
-%{mcpu=*:-mcpu=%*} \
-%{march=*:-march=%*} \
+%(asm_cpu_spec) \
 %{mapcs-*:-mapcs-%*} \
 %(subtarget_asm_float_spec) \
 %{mthumb-interwork:-mthumb-interwork} \

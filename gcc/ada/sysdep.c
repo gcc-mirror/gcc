@@ -211,83 +211,9 @@ __gnat_ttyname (int filedes)
     return NULL;
 }
 
-/* This function is needed to fix a bug under Win95/98. Under these platforms
-   doing :
-                ch1 = getch();
-		ch2 = fgetc (stdin);
-
-   will put the same character into ch1 and ch2. It seem that the character
-   read by getch() is not correctly removed from the buffer. Even a
-   fflush(stdin) does not fix the bug. This bug does not appear under Window
-   NT. So we have two version of this routine below one for 95/98 and one for
-   NT/2000 version of Windows. There is also a special routine (winflushinit)
-   that will be called only the first time to check which version of Windows
-   we are running running on to set the right routine to use.
-
-   This problem occurs when using Text_IO.Get_Line after Text_IO.Get_Immediate
-   for example.
-
-   Calling FlushConsoleInputBuffer just after getch() fix the bug under
-   95/98. */
-
-#ifdef RTX
-
-static void winflush_nt (void);
-
-/* winflush_function will do nothing since we only have problems with Windows
-   95/98 which are not supported by RTX. */
-
-static void (*winflush_function) (void) = winflush_nt;
-
-static void
-winflush_nt (void)
-{
-  /* Does nothing as there is no problem under NT.  */
-}
-
-#else /* !RTX */
-
-static void winflush_init (void);
-
-static void winflush_95 (void);
-
-static void winflush_nt (void);
+#ifndef RTX
 
 int __gnat_is_windows_xp (void);
-
-/* winflusfunction is set first to the winflushinit function which will check
-   the OS version 95/98 or NT/2000 */
-
-static void (*winflush_function) (void) = winflush_init;
-
-/* This function does the runtime check of the OS version and then sets
-   winflush_function to the appropriate function and then call it. */
-
-static void
-winflush_init (void)
-{
-  DWORD dwVersion = GetVersion();
-
-  if (dwVersion < 0x80000000)                /* Windows NT/2000 */
-    winflush_function = winflush_nt;
-  else                                       /* Windows 95/98   */
-    winflush_function = winflush_95;
-
-  (*winflush_function)();      /* Perform the 'flush' */
-
-}
-
-static void
-winflush_95 (void)
-{
-  FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
-}
-
-static void
-winflush_nt (void)
-{
-  /* Does nothing as there is no problem under NT.  */
-}
 
 int
 __gnat_is_windows_xp (void)
@@ -311,7 +237,7 @@ __gnat_is_windows_xp (void)
   return is_win_xp;
 }
 
-#endif /* !RTX */
+#endif
 
 /* Get the bounds of the stack.  The stack pointer is supposed to be
    initialized to BASE when a thread is created and the stack can be extended
@@ -542,7 +468,6 @@ getc_immediate_common (FILE *stream,
       if (waiting)
 	{
 	  *ch = getch ();
-	  (*winflush_function) ();
 
 	  if (*ch == eot_ch)
 	    *end_of_file = 1;
@@ -559,7 +484,6 @@ getc_immediate_common (FILE *stream,
 	    {
 	      *avail = 1;
 	      *ch = getch ();
-	      (*winflush_function) ();
 
 	      if (*ch == eot_ch)
 		*end_of_file = 1;
@@ -987,7 +911,8 @@ __gnat_get_task_options (void)
 
   /* Force VX_FP_TASK because it is almost always required */
   options |= VX_FP_TASK;
-#if defined (__SPE__) && (! defined (__VXWORKSMILS__))
+#if defined (__SPE__) && (! defined (__VXWORKSMILS__)) \
+    && (! defined (VTHREADS))
   options |= VX_SPE_TASK;
 #endif
 

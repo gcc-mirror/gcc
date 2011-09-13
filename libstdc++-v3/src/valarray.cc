@@ -49,7 +49,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline size_t
   __valarray_product(const valarray<size_t>& __a)
   {
-    typedef const size_t* __restrict__ _Tp;
     const size_t __n = __a.size();
     // XXX: This ugly cast is necessary because
     //      valarray::operator[]() const return a VALUE!

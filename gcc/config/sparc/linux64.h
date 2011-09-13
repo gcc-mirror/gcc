@@ -31,20 +31,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3 \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara2 \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara3 \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara4
-/* A 64 bit v9 compiler with stack-bias,
-   in a Medium/Low code model environment.  */
-
+#ifdef TARGET_64BIT_DEFAULT
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ \
-   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_FPU + MASK_LONG_DOUBLE_128)
+  (MASK_V9 + MASK_PTR64 + MASK_64BIT + MASK_STACK_BIAS + \
+   MASK_APP_REGS + MASK_FPU + MASK_LONG_DOUBLE_128)
 #endif
 
 /* This must be v9a not just v9 because by default we enable

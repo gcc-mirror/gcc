@@ -1878,6 +1878,20 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       prefix_unused = true;
       break;
 
+    case Attr_Descriptor_Size:
+      gnu_type = TREE_TYPE (gnu_prefix);
+      gcc_assert (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
+
+      /* What we want is the offset of the ARRAY field in the record that the
+        thin pointer designates, but the components have been shifted so this
+        is actually the opposite of the offset of the BOUNDS field.  */
+      gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
+      gnu_result = size_binop (MINUS_EXPR, bitsize_zero_node,
+                               bit_position (TYPE_FIELDS (gnu_type)));
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      prefix_unused = true;
+      break;
+
     case Attr_Null_Parameter:
       /* This is just a zero cast to the pointer type for our prefix and
 	 dereferenced.  */
@@ -2430,7 +2444,7 @@ establish_gnat_vms_condition_handler (void)
     return;
 
   establish_stmt
-    = build_call_1_expr (vms_builtin_establish_handler_decl,
+    = build_call_n_expr (vms_builtin_establish_handler_decl, 1,
 			 build_unary_op
 			 (ADDR_EXPR, NULL_TREE,
 			  gnat_vms_condition_handler_decl));
@@ -2468,7 +2482,7 @@ build_return_expr (tree ret_obj, tree ret_val)
       if (operation_type != TREE_TYPE (ret_val))
 	ret_val = convert (operation_type, ret_val);
 
-      result_expr = build2 (MODIFY_EXPR, operation_type, ret_obj, ret_val);
+      result_expr = build2 (MODIFY_EXPR, void_type_node, ret_obj, ret_val);
     }
   else
     result_expr = ret_obj;
@@ -2929,6 +2943,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       tree gnu_formal = present_gnu_tree (gnat_formal)
 			? get_gnu_tree (gnat_formal) : NULL_TREE;
       tree gnu_formal_type = gnat_to_gnu_type (Etype (gnat_formal));
+      const bool is_true_formal_parm
+	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
       /* In the Out or In Out case, we must suppress conversions that yield
 	 an lvalue but can nevertheless cause the creation of a temporary,
 	 because we need the real object in this case, either to pass its
@@ -2937,7 +2953,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	 We do it in the In case too, except for an unchecked conversion
 	 because it alone can cause the actual to be misaligned and the
 	 addressability test is applied to the real object.  */
-      bool suppress_type_conversion
+      const bool suppress_type_conversion
 	= ((Nkind (gnat_actual) == N_Unchecked_Type_Conversion
 	    && Ekind (gnat_formal) != E_In_Parameter)
 	   || (Nkind (gnat_actual) == N_Type_Conversion
@@ -2958,11 +2974,10 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       /* If we are passing a non-addressable parameter by reference, pass the
 	 address of a copy.  In the Out or In Out case, set up to copy back
 	 out after the call.  */
-      if (gnu_formal
+      if (is_true_formal_parm
 	  && (DECL_BY_REF_P (gnu_formal)
-	      || (TREE_CODE (gnu_formal) == PARM_DECL
-		  && (DECL_BY_COMPONENT_PTR_P (gnu_formal)
-		      || (DECL_BY_DESCRIPTOR_P (gnu_formal)))))
+	      || DECL_BY_COMPONENT_PTR_P (gnu_formal)
+	      || DECL_BY_DESCRIPTOR_P (gnu_formal))
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
 	  && !addressable_p (gnu_name, gnu_name_type))
 	{
@@ -3104,9 +3119,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       /* If we have not saved a GCC object for the formal, it means it is an
 	 Out parameter not passed by reference and that need not be copied in.
 	 Otherwise, first see if the parameter is passed by reference.  */
-      if (gnu_formal
-	  && TREE_CODE (gnu_formal) == PARM_DECL
-	  && DECL_BY_REF_P (gnu_formal))
+      if (is_true_formal_parm && DECL_BY_REF_P (gnu_formal))
 	{
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    {
@@ -3157,9 +3170,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
-      else if (gnu_formal
-	       && TREE_CODE (gnu_formal) == PARM_DECL
-	       && DECL_BY_COMPONENT_PTR_P (gnu_formal))
+      else if (is_true_formal_parm && DECL_BY_COMPONENT_PTR_P (gnu_formal))
 	{
 	  gnu_formal_type = TREE_TYPE (gnu_formal);
 	  gnu_actual = maybe_implicit_deref (gnu_actual);
@@ -3179,9 +3190,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	     but this is the most likely to work in all cases.  */
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
-      else if (gnu_formal
-	       && TREE_CODE (gnu_formal) == PARM_DECL
-	       && DECL_BY_DESCRIPTOR_P (gnu_formal))
+      else if (is_true_formal_parm && DECL_BY_DESCRIPTOR_P (gnu_formal))
 	{
 	  gnu_actual = convert (gnu_formal_type, gnu_actual);
 
@@ -3204,7 +3213,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
 
-	  if (!(gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL))
+	  if (!is_true_formal_parm)
 	    {
 	      /* Make sure side-effects are evaluated before the call.  */
 	      if (TREE_SIDE_EFFECTS (gnu_name))
@@ -3514,11 +3523,11 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      the setjmp buf known for any decls in this block.  */
   if (setjmp_longjmp)
     {
-      gnu_jmpsave_decl = create_var_decl (get_identifier ("JMPBUF_SAVE"),
-					  NULL_TREE, jmpbuf_ptr_type,
-					  build_call_0_expr (get_jmpbuf_decl),
-					  false, false, false, false,
-					  NULL, gnat_node);
+      gnu_jmpsave_decl
+	= create_var_decl (get_identifier ("JMPBUF_SAVE"), NULL_TREE,
+			   jmpbuf_ptr_type,
+			   build_call_n_expr (get_jmpbuf_decl, 0),
+			   false, false, false, false, NULL, gnat_node);
       DECL_ARTIFICIAL (gnu_jmpsave_decl) = 1;
 
       /* The __builtin_setjmp receivers will immediately reinstall it.  Now
@@ -3526,16 +3535,17 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	 might be forward edges going to __builtin_setjmp receivers on which
 	 it is uninitialized, although they will never be actually taken.  */
       TREE_NO_WARNING (gnu_jmpsave_decl) = 1;
-      gnu_jmpbuf_decl = create_var_decl (get_identifier ("JMP_BUF"),
-					 NULL_TREE, jmpbuf_type, NULL_TREE,
-					 false, false, false, false,
-					 NULL, gnat_node);
+      gnu_jmpbuf_decl
+	= create_var_decl (get_identifier ("JMP_BUF"), NULL_TREE,
+			   jmpbuf_type,
+			   NULL_TREE,
+			   false, false, false, false, NULL, gnat_node);
       DECL_ARTIFICIAL (gnu_jmpbuf_decl) = 1;
 
       set_block_jmpbuf_decl (gnu_jmpbuf_decl);
 
       /* When we exit this block, restore the saved value.  */
-      add_cleanup (build_call_1_expr (set_jmpbuf_decl, gnu_jmpsave_decl),
+      add_cleanup (build_call_n_expr (set_jmpbuf_decl, 1, gnu_jmpsave_decl),
 		   End_Label (gnat_node));
     }
 
@@ -3543,7 +3553,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      to the binding level we made above.  Note that add_cleanup is FIFO
      so we must register this cleanup after the EH cleanup just above.  */
   if (at_end)
-    add_cleanup (build_call_0_expr (gnat_to_gnu (At_End_Proc (gnat_node))),
+    add_cleanup (build_call_n_expr (gnat_to_gnu (At_End_Proc (gnat_node)), 0),
 		 End_Label (gnat_node));
 
   /* Now build the tree for the declarations and statements inside this block.
@@ -3551,7 +3561,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   start_stmt_group ();
 
   if (setjmp_longjmp)
-    add_stmt (build_call_1_expr (set_jmpbuf_decl,
+    add_stmt (build_call_n_expr (set_jmpbuf_decl, 1,
 				 build_unary_op (ADDR_EXPR, NULL_TREE,
 						 gnu_jmpbuf_decl)));
 
@@ -3582,7 +3592,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       VEC_safe_push (tree, gc, gnu_except_ptr_stack,
 		     create_var_decl (get_identifier ("EXCEPT_PTR"), NULL_TREE,
 				      build_pointer_type (except_type_node),
-				      build_call_0_expr (get_excptr_decl),
+				      build_call_n_expr (get_excptr_decl, 0),
 				      false, false, false, false,
 				      NULL, gnat_node));
 
@@ -3607,7 +3617,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* If none of the exception handlers did anything, re-raise but do not
 	 defer abortion.  */
-      gnu_expr = build_call_1_expr (raise_nodefer_decl,
+      gnu_expr = build_call_n_expr (raise_nodefer_decl, 1,
 				    VEC_last (tree, gnu_except_ptr_stack));
       set_expr_location_from_node
 	(gnu_expr,
@@ -3627,7 +3637,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       /* If the setjmp returns 1, we restore our incoming longjmp value and
 	 then check the handlers.  */
       start_stmt_group ();
-      add_stmt_with_node (build_call_1_expr (set_jmpbuf_decl,
+      add_stmt_with_node (build_call_n_expr (set_jmpbuf_decl, 1,
 					     gnu_jmpsave_decl),
 			  gnat_node);
       add_stmt (gnu_handler);
@@ -3635,8 +3645,8 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* This block is now "if (setjmp) ... <handlers> else <block>".  */
       gnu_result = build3 (COND_EXPR, void_type_node,
-			   (build_call_1_expr
-			    (setjmp_decl,
+			   (build_call_n_expr
+			    (setjmp_decl, 1,
 			     build_unary_op (ADDR_EXPR, NULL_TREE,
 					     gnu_jmpbuf_decl))),
 			   gnu_handler, gnu_inner_block);
@@ -3847,11 +3857,11 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 					  false, false, false, false,
 					  NULL, gnat_node);
 
-  add_stmt_with_node (build_call_1_expr (begin_handler_decl,
+  add_stmt_with_node (build_call_n_expr (begin_handler_decl, 1,
 					 gnu_incoming_exc_ptr),
 		      gnat_node);
   /* ??? We don't seem to have an End_Label at hand to set the location.  */
-  add_cleanup (build_call_1_expr (end_handler_decl, gnu_incoming_exc_ptr),
+  add_cleanup (build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr),
 	       Empty);
   add_stmt_list (Statements (gnat_node));
   gnat_poplevel ();
@@ -5482,7 +5492,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
       add_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_incoming_exc_ptr,
 				 convert (ptr_type_node, integer_zero_node)));
-      add_stmt (build_call_1_expr (reraise_zcx_decl, gnu_expr));
+      add_stmt (build_call_n_expr (reraise_zcx_decl, 1, gnu_expr));
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
       break;
@@ -6436,6 +6446,28 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
       return GS_UNHANDLED;
 
+    case VIEW_CONVERT_EXPR:
+      op = TREE_OPERAND (expr, 0);
+
+      /* If we are view-converting a CONSTRUCTOR or a call from an aggregate
+	 type to a scalar one, explicitly create the local temporary.  That's
+	 required if the type is passed by reference.  */
+      if ((TREE_CODE (op) == CONSTRUCTOR || TREE_CODE (op) == CALL_EXPR)
+	  && AGGREGATE_TYPE_P (TREE_TYPE (op))
+	  && !AGGREGATE_TYPE_P (TREE_TYPE (expr)))
+	{
+	  tree mod, new_var = create_tmp_var_raw (TREE_TYPE (op), "C");
+	  gimple_add_tmp_var (new_var);
+
+	  mod = build2 (INIT_EXPR, TREE_TYPE (new_var), new_var, op);
+	  gimplify_and_add (mod, pre_p);
+
+	  TREE_OPERAND (expr, 0) = new_var;
+	  return GS_OK;
+	}
+
+      return GS_UNHANDLED;
+
     case DECL_EXPR:
       op = DECL_EXPR_DECL (expr);
 
@@ -6962,7 +6994,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 	{
 	  tree int_64 = gnat_type_for_size (64, 0);
 
-	  return convert (gnu_type, build_call_2_expr (mulv64_decl,
+	  return convert (gnu_type, build_call_n_expr (mulv64_decl, 2,
 						       convert (int_64, lhs),
 						       convert (int_64, rhs)));
 	}

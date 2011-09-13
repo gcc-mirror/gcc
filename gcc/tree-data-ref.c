@@ -686,7 +686,8 @@ split_constant_offset (tree exp, tree *var, tree *off)
   *off = ssize_int (0);
   STRIP_NOPS (exp);
 
-  if (tree_is_chrec (exp))
+  if (tree_is_chrec (exp)
+      || get_gimple_rhs_class (TREE_CODE (exp)) == GIMPLE_TERNARY_RHS)
     return;
 
   otype = TREE_TYPE (exp);

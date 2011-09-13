@@ -608,8 +608,6 @@ package body Make is
 
    procedure Compute_Switches_For_Main
      (Main_Source_File  : in out File_Name_Type;
-      Main_Index        : Int;
-      Project_Node_Tree : Project_Node_Tree_Ref;
       Root_Environment  : in out Prj.Tree.Environment;
       Compute_Builder   : Boolean;
       Current_Work_Dir  : String);
@@ -744,10 +742,8 @@ package body Make is
    procedure Add_Switches
      (The_Package                      : Package_Id;
       File_Name                        : String;
-      Index                            : Int;
       Program                          : Make_Program_Type;
       Unknown_Switches_To_The_Compiler : Boolean := True;
-      Project_Node_Tree                : Project_Node_Tree_Ref;
       Env                              : in out Prj.Tree.Environment);
    procedure Add_Switch
      (S             : String_Access;
@@ -769,7 +765,6 @@ package body Make is
 
    procedure Check
      (Source_File    : File_Name_Type;
-      Source_Index   : Int;
       Is_Main_Source : Boolean;
       The_Args       : Argument_List;
       Lib_File       : File_Name_Type;
@@ -1276,10 +1271,8 @@ package body Make is
    procedure Add_Switches
      (The_Package                      : Package_Id;
       File_Name                        : String;
-      Index                            : Int;
       Program                          : Make_Program_Type;
       Unknown_Switches_To_The_Compiler : Boolean := True;
-      Project_Node_Tree                : Project_Node_Tree_Ref;
       Env                              : in out Prj.Tree.Environment)
    is
       Switches    : Variable_Value;
@@ -1445,7 +1438,6 @@ package body Make is
 
    procedure Check
      (Source_File    : File_Name_Type;
-      Source_Index   : Int;
       Is_Main_Source : Boolean;
       The_Args       : Argument_List;
       Lib_File       : File_Name_Type;
@@ -3445,7 +3437,6 @@ package body Make is
 
                   if not Force_Compilations then
                      Check (Source_File    => Source.File,
-                            Source_Index   => Source.Index,
                             Is_Main_Source => Source.File = Main_Source,
                             The_Args       => Args,
                             Lib_File       => Lib_File,
@@ -5206,8 +5197,6 @@ package body Make is
 
    procedure Compute_Switches_For_Main
      (Main_Source_File  : in out File_Name_Type;
-      Main_Index        : Int;
-      Project_Node_Tree : Project_Node_Tree_Ref;
       Root_Environment  : in out Prj.Tree.Environment;
       Compute_Builder   : Boolean;
       Current_Work_Dir  : String)
@@ -5349,10 +5338,8 @@ package body Make is
                end if;
 
                Add_Switches
-                 (Project_Node_Tree => Project_Node_Tree,
-                  Env               => Root_Environment,
+                 (Env               => Root_Environment,
                   File_Name         => Main_Unit_File_Name,
-                  Index             => Main_Index,
                   The_Package       => Binder_Package,
                   Program           => Binder);
             end if;
@@ -5367,10 +5354,8 @@ package body Make is
                end if;
 
                Add_Switches
-                 (Project_Node_Tree => Project_Node_Tree,
-                  Env               => Root_Environment,
+                 (Env               => Root_Environment,
                   File_Name         => Main_Unit_File_Name,
-                  Index             => Main_Index,
                   The_Package       => Linker_Package,
                   Program           => Linker);
             end if;
@@ -6029,8 +6014,6 @@ package body Make is
 
          Compute_Switches_For_Main
            (Main_Source_File,
-            Main_Index,
-            Project_Node_Tree,
             Root_Environment,
             Compute_Builder  => Is_First_Main,
             Current_Work_Dir => Current_Work_Dir.all);

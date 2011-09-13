@@ -2153,11 +2153,18 @@ add_cfis_to_fde (void)
       if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_CFI)
 	{
 	  bool required = cfi_label_required_p (NOTE_CFI (insn));
-	  while (next && NOTE_P (next) && NOTE_KIND (next) == NOTE_INSN_CFI)
-	    {
-	      required |= cfi_label_required_p (NOTE_CFI (next));
+	  while (next)
+	    if (NOTE_P (next) && NOTE_KIND (next) == NOTE_INSN_CFI)
+	      {
+		required |= cfi_label_required_p (NOTE_CFI (next));
+		next = NEXT_INSN (next);
+	      }
+	    else if (active_insn_p (next)
+		     || (NOTE_P (next) && (NOTE_KIND (next)
+					   == NOTE_INSN_SWITCH_TEXT_SECTIONS)))
+	      break;
+	    else
 	      next = NEXT_INSN (next);
-	    }
 	  if (required)
 	    {
 	      int num = dwarf2out_cfi_label_num;
@@ -2178,7 +2185,9 @@ add_cfis_to_fde (void)
 
 	  do
 	    {
-	      VEC_safe_push (dw_cfi_ref, gc, fde->dw_fde_cfi, NOTE_CFI (insn));
+	      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_CFI)
+		VEC_safe_push (dw_cfi_ref, gc, fde->dw_fde_cfi,
+			       NOTE_CFI (insn));
 	      insn = NEXT_INSN (insn);
 	    }
 	  while (insn != next);

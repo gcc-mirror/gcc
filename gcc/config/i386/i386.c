@@ -2168,7 +2168,15 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
      the auto-vectorizer.  */
-  m_BDVER
+  m_BDVER,
+
+  /* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
+     during reassociation of integer computation.  */
+  m_ATOM,
+
+  /* X86_TUNE_REASSOC_FP_TO_PARALLEL: Try to produce parallel computations
+     during reassociation of fp computation.  */
+  m_ATOM
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -7016,7 +7024,7 @@ ix86_function_value_regno_p (const unsigned int regno)
 {
   switch (regno)
     {
-    case 0:
+    case AX_REG:
       return true;
 
     case FIRST_FLOAT_REG:
@@ -7054,18 +7062,18 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
      we normally prevent this case when mmx is not available.  However
      some ABIs may require the result to be returned like DImode.  */
   if (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 8)
-    regno = TARGET_MMX ? FIRST_MMX_REG : 0;
+    regno = FIRST_MMX_REG;
 
   /* 16-byte vector modes in %xmm0.  See ix86_return_in_memory for where
      we prevent this case when sse is not available.  However some ABIs
      may require the result to be returned like integer TImode.  */
   else if (mode == TImode
 	   || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
-    regno = TARGET_SSE ? FIRST_SSE_REG : 0;
+    regno = FIRST_SSE_REG;
 
   /* 32-byte vector modes in %ymm0.   */
   else if (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 32)
-    regno = TARGET_AVX ? FIRST_SSE_REG : 0;
+    regno = FIRST_SSE_REG;
 
   /* Floating point return values in %st(0) (unless -mno-fp-ret-in-387).  */
   else if (X87_FLOAT_MODE_P (mode) && TARGET_FLOAT_RETURNS_IN_80387)
@@ -7099,6 +7107,8 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
   /* Handle libcalls, which don't provide a type node.  */
   if (valtype == NULL)
     {
+      unsigned int regno;
+
       switch (mode)
 	{
 	case SFmode:
@@ -7109,15 +7119,19 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
 	case SDmode:
 	case DDmode:
 	case TDmode:
-	  return gen_rtx_REG (mode, FIRST_SSE_REG);
+	  regno = FIRST_SSE_REG;
+	  break;
 	case XFmode:
 	case XCmode:
-	  return gen_rtx_REG (mode, FIRST_FLOAT_REG);
+	  regno = FIRST_FLOAT_REG;
+	  break;
 	case TCmode:
 	  return NULL;
 	default:
-	  return gen_rtx_REG (mode, AX_REG);
+	  regno = AX_REG;
 	}
+
+      return gen_rtx_REG (mode, regno);
     }
   else if (POINTER_TYPE_P (valtype)
            && !upc_shared_type_p (TREE_TYPE (valtype)))
@@ -8177,7 +8191,7 @@ standard_80387_constant_rtx (int idx)
 }
 
 /* Return 1 if X is all 0s and 2 if x is all 1s
-   in supported SSE vector mode.  */
+   in supported SSE/AVX vector mode.  */
 
 int
 standard_sse_constant_p (rtx x)
@@ -8194,6 +8208,12 @@ standard_sse_constant_p (rtx x)
       case V4SImode:
       case V2DImode:
 	if (TARGET_SSE2)
+	  return 2;
+      case V32QImode:
+      case V16HImode:
+      case V8SImode:
+      case V4DImode:
+	if (TARGET_AVX2)
 	  return 2;
       default:
 	break;
@@ -8236,7 +8256,11 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	}
 
     case 2:
-      return "%vpcmpeqd\t%0, %d0";
+      if (TARGET_AVX)
+	return "vpcmpeqd\t%0, %0, %0";
+      else
+	return "pcmpeqd\t%0, %0";
+
     default:
       break;
     }
@@ -15970,12 +15994,125 @@ ix86_split_idivmod (enum machine_mode mode, rtx operands[],
   emit_label (end_label);
 }
 
-#define LEA_SEARCH_THRESHOLD 12
+#define LEA_MAX_STALL (3)
+#define LEA_SEARCH_THRESHOLD (LEA_MAX_STALL << 1)
+
+/* Increase given DISTANCE in half-cycles according to
+   dependencies between PREV and NEXT instructions.
+   Add 1 half-cycle if there is no dependency and
+   go to next cycle if there is some dependecy.  */
+
+static unsigned int
+increase_distance (rtx prev, rtx next, unsigned int distance)
+{
+  df_ref *use_rec;
+  df_ref *def_rec;
+
+  if (!prev || !next)
+    return distance + (distance & 1) + 2;
+
+  if (!DF_INSN_USES (next) || !DF_INSN_DEFS (prev))
+    return distance + 1;
+
+  for (use_rec = DF_INSN_USES (next); *use_rec; use_rec++)
+    for (def_rec = DF_INSN_DEFS (prev); *def_rec; def_rec++)
+      if (!DF_REF_IS_ARTIFICIAL (*def_rec)
+	  && DF_REF_REGNO (*use_rec) == DF_REF_REGNO (*def_rec))
+	return distance + (distance & 1) + 2;
+
+  return distance + 1;
+}
+
+/* Function checks if instruction INSN defines register number
+   REGNO1 or REGNO2.  */
+
+static bool
+insn_defines_reg (unsigned int regno1, unsigned int regno2,
+		  rtx insn)
+{
+  df_ref *def_rec;
+
+  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+    if (DF_REF_REG_DEF_P (*def_rec)
+	&& !DF_REF_IS_ARTIFICIAL (*def_rec)
+	&& (regno1 == DF_REF_REGNO (*def_rec)
+	    || regno2 == DF_REF_REGNO (*def_rec)))
+      {
+	return true;
+      }
+
+  return false;
+}
+
+/* Function checks if instruction INSN uses register number
+   REGNO as a part of address expression.  */
+
+static bool
+insn_uses_reg_mem (unsigned int regno, rtx insn)
+{
+  df_ref *use_rec;
+
+  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+    if (DF_REF_REG_MEM_P (*use_rec) && regno == DF_REF_REGNO (*use_rec))
+      return true;
+
+  return false;
+}
+
+/* Search backward for non-agu definition of register number REGNO1
+   or register number REGNO2 in basic block starting from instruction
+   START up to head of basic block or instruction INSN.
+
+   Function puts true value into *FOUND var if definition was found
+   and false otherwise.
+
+   Distance in half-cycles between START and found instruction or head
+   of BB is added to DISTANCE and returned.  */
+
+static int
+distance_non_agu_define_in_bb (unsigned int regno1, unsigned int regno2,
+			       rtx insn, int distance,
+			       rtx start, bool *found)
+{
+  basic_block bb = start ? BLOCK_FOR_INSN (start) : NULL;
+  rtx prev = start;
+  rtx next = NULL;
+  enum attr_type insn_type;
+
+  *found = false;
+
+  while (prev
+	 && prev != insn
+	 && distance < LEA_SEARCH_THRESHOLD)
+    {
+      if (NONDEBUG_INSN_P (prev) && NONJUMP_INSN_P (prev))
+	{
+	  distance = increase_distance (prev, next, distance);
+	  if (insn_defines_reg (regno1, regno2, prev))
+	    {
+	      insn_type = get_attr_type (prev);
+	      if (insn_type != TYPE_LEA)
+		{
+		  *found = true;
+		  return distance;
+		}
+	    }
+
+	  next = prev;
+	}
+      if (prev == BB_HEAD (bb))
+	break;
+
+      prev = PREV_INSN (prev);
+    }
+
+  return distance;
+}
 
 /* Search backward for non-agu definition of register number REGNO1
    or register number REGNO2 in INSN's basic block until
    1. Pass LEA_SEARCH_THRESHOLD instructions, or
-   2. Reach BB boundary, or
+   2. Reach neighbour BBs boundary, or
    3. Reach agu definition.
    Returns the distance between the non-agu definition point and INSN.
    If no definition point, returns -1.  */
@@ -15986,35 +16123,14 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   int distance = 0;
-  df_ref *def_rec;
-  enum attr_type insn_type;
+  bool found = false;
 
   if (insn != BB_HEAD (bb))
-    {
-      rtx prev = PREV_INSN (insn);
-      while (prev && distance < LEA_SEARCH_THRESHOLD)
-	{
-	  if (NONDEBUG_INSN_P (prev))
-	    {
-	      distance++;
-              for (def_rec = DF_INSN_DEFS (prev); *def_rec; def_rec++)
-                if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
-                    && !DF_REF_IS_ARTIFICIAL (*def_rec)
-                    && (regno1 == DF_REF_REGNO (*def_rec)
-			|| regno2 == DF_REF_REGNO (*def_rec)))
-		  {
-		    insn_type = get_attr_type (prev);
-		    if (insn_type != TYPE_LEA)
-		      goto done;
-		  }
-	    }
-	  if (prev == BB_HEAD (bb))
-	    break;
-	  prev = PREV_INSN (prev);
-	}
-    }
+    distance = distance_non_agu_define_in_bb (regno1, regno2, insn,
+					      distance, PREV_INSN (insn),
+					      &found);
 
-  if (distance < LEA_SEARCH_THRESHOLD)
+  if (!found && distance < LEA_SEARCH_THRESHOLD)
     {
       edge e;
       edge_iterator ei;
@@ -16028,38 +16144,100 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
 	  }
 
       if (simple_loop)
+	distance = distance_non_agu_define_in_bb (regno1, regno2,
+						  insn, distance,
+						  BB_END (bb), &found);
+      else
 	{
-	  rtx prev = BB_END (bb);
-	  while (prev
-		 && prev != insn
-		 && distance < LEA_SEARCH_THRESHOLD)
+	  int shortest_dist = -1;
+	  bool found_in_bb = false;
+
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      if (NONDEBUG_INSN_P (prev))
+	      int bb_dist = distance_non_agu_define_in_bb (regno1, regno2,
+							   insn, distance,
+							   BB_END (e->src),
+							   &found_in_bb);
+	      if (found_in_bb)
 		{
-		  distance++;
-		  for (def_rec = DF_INSN_DEFS (prev); *def_rec; def_rec++)
-		    if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
-			&& !DF_REF_IS_ARTIFICIAL (*def_rec)
-			&& (regno1 == DF_REF_REGNO (*def_rec)
-			    || regno2 == DF_REF_REGNO (*def_rec)))
-		      {
-			insn_type = get_attr_type (prev);
-			if (insn_type != TYPE_LEA)
-			  goto done;
-		      }
+		  if (shortest_dist < 0)
+		    shortest_dist = bb_dist;
+		  else if (bb_dist > 0)
+		    shortest_dist = MIN (bb_dist, shortest_dist);
 		}
-	      prev = PREV_INSN (prev);
+
+	      found = found || found_in_bb;
 	    }
+
+	  distance = shortest_dist;
 	}
     }
 
-  distance = -1;
-
-done:
   /* get_attr_type may modify recog data.  We want to make sure
      that recog data is valid for instruction INSN, on which
      distance_non_agu_define is called.  INSN is unchanged here.  */
   extract_insn_cached (insn);
+
+  if (!found)
+    distance = -1;
+  else
+    distance = distance >> 1;
+
+  return distance;
+}
+
+/* Return the distance in half-cycles between INSN and the next
+   insn that uses register number REGNO in memory address added
+   to DISTANCE.  Return -1 if REGNO0 is set.
+
+   Put true value into *FOUND if register usage was found and
+   false otherwise.
+   Put true value into *REDEFINED if register redefinition was
+   found and false otherwise.  */
+
+static int
+distance_agu_use_in_bb(unsigned int regno,
+		       rtx insn, int distance, rtx start,
+		       bool *found, bool *redefined)
+{
+  basic_block bb = start ? BLOCK_FOR_INSN (start) : NULL;
+  rtx next = start;
+  rtx prev = NULL;
+
+  *found = false;
+  *redefined = false;
+
+  while (next
+	 && next != insn
+	 && distance < LEA_SEARCH_THRESHOLD)
+    {
+      if (NONDEBUG_INSN_P (next) && NONJUMP_INSN_P (next))
+	{
+	  distance = increase_distance(prev, next, distance);
+	  if (insn_uses_reg_mem (regno, next))
+	    {
+	      /* Return DISTANCE if OP0 is used in memory
+		 address in NEXT.  */
+	      *found = true;
+	      return distance;
+	    }
+
+	  if (insn_defines_reg (regno, INVALID_REGNUM, next))
+	    {
+	      /* Return -1 if OP0 is set in NEXT.  */
+	      *redefined = true;
+	      return -1;
+	    }
+
+	  prev = next;
+	}
+
+      if (next == BB_END (bb))
+	break;
+
+      next = NEXT_INSN (next);
+    }
+
   return distance;
 }
 
@@ -16072,44 +16250,15 @@ distance_agu_use (unsigned int regno0, rtx insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   int distance = 0;
-  df_ref *def_rec;
-  df_ref *use_rec;
+  bool found = false;
+  bool redefined = false;
 
   if (insn != BB_END (bb))
-    {
-      rtx next = NEXT_INSN (insn);
-      while (next && distance < LEA_SEARCH_THRESHOLD)
-	{
-	  if (NONDEBUG_INSN_P (next))
-	    {
-	      distance++;
+    distance = distance_agu_use_in_bb (regno0, insn, distance,
+				       NEXT_INSN (insn),
+				       &found, &redefined);
 
-	      for (use_rec = DF_INSN_USES (next); *use_rec; use_rec++)
-		if ((DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_LOAD
-		     || DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_STORE)
-		    && regno0 == DF_REF_REGNO (*use_rec))
-		  {
-		    /* Return DISTANCE if OP0 is used in memory
-		       address in NEXT.  */
-		    return distance;
-		  }
-
-	      for (def_rec = DF_INSN_DEFS (next); *def_rec; def_rec++)
-		if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
-		    && !DF_REF_IS_ARTIFICIAL (*def_rec)
-		    && regno0 == DF_REF_REGNO (*def_rec))
-		  {
-		    /* Return -1 if OP0 is set in NEXT.  */
-		    return -1;
-		  }
-	    }
-	  if (next == BB_END (bb))
-	    break;
-	  next = NEXT_INSN (next);
-	}
-    }
-
-  if (distance < LEA_SEARCH_THRESHOLD)
+  if (!found && !redefined && distance < LEA_SEARCH_THRESHOLD)
     {
       edge e;
       edge_iterator ei;
@@ -16123,42 +16272,41 @@ distance_agu_use (unsigned int regno0, rtx insn)
 	  }
 
       if (simple_loop)
+	distance = distance_agu_use_in_bb (regno0, insn,
+					   distance, BB_HEAD (bb),
+					   &found, &redefined);
+      else
 	{
-	  rtx next = BB_HEAD (bb);
-	  while (next
-		 && next != insn
-		 && distance < LEA_SEARCH_THRESHOLD)
+	  int shortest_dist = -1;
+	  bool found_in_bb = false;
+	  bool redefined_in_bb = false;
+
+	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
-	      if (NONDEBUG_INSN_P (next))
+	      int bb_dist = distance_agu_use_in_bb (regno0, insn,
+						    distance, BB_HEAD (e->dest),
+						    &found_in_bb, &redefined_in_bb);
+	      if (found_in_bb)
 		{
-		  distance++;
-
-		  for (use_rec = DF_INSN_USES (next); *use_rec; use_rec++)
-		    if ((DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_LOAD
-			 || DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_STORE)
-			&& regno0 == DF_REF_REGNO (*use_rec))
-		      {
-			/* Return DISTANCE if OP0 is used in memory
-			   address in NEXT.  */
-			return distance;
-		      }
-
-		  for (def_rec = DF_INSN_DEFS (next); *def_rec; def_rec++)
-		    if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
-			&& !DF_REF_IS_ARTIFICIAL (*def_rec)
-			&& regno0 == DF_REF_REGNO (*def_rec))
-		      {
-			/* Return -1 if OP0 is set in NEXT.  */
-			return -1;
-		      }
-
+		  if (shortest_dist < 0)
+		    shortest_dist = bb_dist;
+		  else if (bb_dist > 0)
+		    shortest_dist = MIN (bb_dist, shortest_dist);
 		}
-	      next = NEXT_INSN (next);
+
+	      found = found || found_in_bb;
 	    }
+
+	  distance = shortest_dist;
 	}
     }
 
-  return -1;
+  if (!found || redefined)
+    distance = -1;
+  else
+    distance = distance >> 1;
+
+  return distance;
 }
 
 /* Define this macro to tune LEA priority vs ADD, it take effect when
@@ -16166,7 +16314,309 @@ distance_agu_use (unsigned int regno0, rtx insn)
    Negative value: ADD is more preferred than LEA
    Zero: Netrual
    Positive value: LEA is more preferred than ADD*/
-#define IX86_LEA_PRIORITY 2
+#define IX86_LEA_PRIORITY 0
+
+/* Return true if usage of lea INSN has performance advantage
+   over a sequence of instructions.  Instructions sequence has
+   SPLIT_COST cycles higher latency than lea latency.  */
+
+bool
+ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
+		      unsigned int regno2, unsigned int split_cost)
+{
+  int dist_define, dist_use;
+
+  dist_define = distance_non_agu_define (regno1, regno2, insn);
+  dist_use = distance_agu_use (regno0, insn);
+
+  if (dist_define < 0 || dist_define >= LEA_MAX_STALL)
+    {
+      /* If there is no non AGU operand definition, no AGU
+	 operand usage and split cost is 0 then both lea
+	 and non lea variants have same priority.  Currently
+	 we prefer lea for 64 bit code and non lea on 32 bit
+	 code.  */
+      if (dist_use < 0 && split_cost == 0)
+	return TARGET_64BIT || IX86_LEA_PRIORITY;
+      else
+	return true;
+    }
+
+  /* With longer definitions distance lea is more preferable.
+     Here we change it to take into account splitting cost and
+     lea priority.  */
+  dist_define += split_cost + IX86_LEA_PRIORITY;
+
+  /* If there is no use in memory addess then we just check
+     that split cost does not exceed AGU stall.  */
+  if (dist_use < 0)
+    return dist_define >= LEA_MAX_STALL;
+
+  /* If this insn has both backward non-agu dependence and forward
+     agu dependence, the one with short distance takes effect.  */
+  return dist_define >= dist_use;
+}
+
+/* Return true if it is legal to clobber flags by INSN and
+   false otherwise.  */
+
+static bool
+ix86_ok_to_clobber_flags(rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  df_ref *use;
+  bitmap live;
+
+  while (insn)
+    {
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  for (use = DF_INSN_USES (insn); *use; use++)
+	    if (DF_REF_REG_USE_P (*use) && DF_REF_REGNO (*use) == FLAGS_REG)
+	      return false;
+
+	  if (insn_defines_reg (FLAGS_REG, INVALID_REGNUM, insn))
+	    return true;
+	}
+
+      if (insn == BB_END (bb))
+	break;
+
+      insn = NEXT_INSN (insn);
+    }
+
+  live = df_get_live_out(bb);
+  return !REGNO_REG_SET_P (live, FLAGS_REG);
+}
+
+/* Return true if we need to split op0 = op1 + op2 into a sequence of
+   move and add to avoid AGU stalls.  */
+
+bool
+ix86_avoid_lea_for_add (rtx insn, rtx operands[])
+{
+  unsigned int regno0 = true_regnum (operands[0]);
+  unsigned int regno1 = true_regnum (operands[1]);
+  unsigned int regno2 = true_regnum (operands[2]);
+
+  /* Check if we need to optimize.  */
+  if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
+    return false;
+
+  /* Check it is correct to split here.  */
+  if (!ix86_ok_to_clobber_flags(insn))
+    return false;
+
+  /* We need to split only adds with non destructive
+     destination operand.  */
+  if (regno0 == regno1 || regno0 == regno2)
+    return false;
+  else
+    return !ix86_lea_outperforms (insn, regno0, regno1, regno2, 1);
+}
+
+/* Return true if we need to split lea into a sequence of
+   instructions to avoid AGU stalls. */
+
+bool
+ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
+{
+  unsigned int regno0 = true_regnum (operands[0]) ;
+  unsigned int regno1 = -1;
+  unsigned int regno2 = -1;
+  unsigned int split_cost = 0;
+  struct ix86_address parts;
+  int ok;
+
+  /* Check we need to optimize.  */
+  if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
+    return false;
+
+  /* Check it is correct to split here.  */
+  if (!ix86_ok_to_clobber_flags(insn))
+    return false;
+
+  ok = ix86_decompose_address (operands[1], &parts);
+  gcc_assert (ok);
+
+  /* We should not split into add if non legitimate pic
+     operand is used as displacement. */
+  if (parts.disp && flag_pic && !LEGITIMATE_PIC_OPERAND_P (parts.disp))
+    return false;
+
+  if (parts.base)
+    regno1 = true_regnum (parts.base);
+  if (parts.index)
+    regno2 = true_regnum (parts.index);
+
+  /* Compute how many cycles we will add to execution time
+     if split lea into a sequence of instructions.  */
+  if (parts.base || parts.index)
+    {
+      /* Have to use mov instruction if non desctructive
+	 destination form is used.  */
+      if (regno1 != regno0 && regno2 != regno0)
+	split_cost += 1;
+
+      /* Have to add index to base if both exist.  */
+      if (parts.base && parts.index)
+	split_cost += 1;
+
+      /* Have to use shift and adds if scale is 2 or greater.  */
+      if (parts.scale > 1)
+	{
+	  if (regno0 != regno1)
+	    split_cost += 1;
+	  else if (regno2 == regno0)
+	    split_cost += 4;
+	  else
+	    split_cost += parts.scale;
+	}
+
+      /* Have to use add instruction with immediate if
+	 disp is non zero.  */
+      if (parts.disp && parts.disp != const0_rtx)
+	split_cost += 1;
+
+      /* Subtract the price of lea.  */
+      split_cost -= 1;
+    }
+
+  return !ix86_lea_outperforms (insn, regno0, regno1, regno2, split_cost);
+}
+
+/* Split lea instructions into a sequence of instructions
+   which are executed on ALU to avoid AGU stalls.
+   It is assumed that it is allowed to clobber flags register
+   at lea position.  */
+
+extern void
+ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
+{
+  unsigned int regno0 = true_regnum (operands[0]) ;
+  unsigned int regno1 = INVALID_REGNUM;
+  unsigned int regno2 = INVALID_REGNUM;
+  struct ix86_address parts;
+  rtx tmp, clob;
+  rtvec par;
+  int ok, adds;
+
+  ok = ix86_decompose_address (operands[1], &parts);
+  gcc_assert (ok);
+
+  if (parts.base)
+    {
+      if (GET_MODE (parts.base) != mode)
+	parts.base = gen_rtx_SUBREG (mode, parts.base, 0);
+      regno1 = true_regnum (parts.base);
+    }
+
+  if (parts.index)
+    {
+      if (GET_MODE (parts.index) != mode)
+	parts.index = gen_rtx_SUBREG (mode, parts.index, 0);
+      regno2 = true_regnum (parts.index);
+    }
+
+  if (parts.scale > 1)
+    {
+      /* Case r1 = r1 + ...  */
+      if (regno1 == regno0)
+	{
+	  /* If we have a case r1 = r1 + C * r1 then we
+	     should use multiplication which is very
+	     expensive.  Assume cost model is wrong if we
+	     have such case here.  */
+	  gcc_assert (regno2 != regno0);
+
+	  for (adds = parts.scale; adds > 0; adds--)
+	    {
+	      tmp = gen_rtx_PLUS (mode, operands[0], parts.index);
+	      tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
+	      clob = gen_rtx_CLOBBER (VOIDmode,
+				      gen_rtx_REG (CCmode, FLAGS_REG));
+	      par = gen_rtvec (2, tmp, clob);
+	      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+	    }
+	}
+      else
+	{
+	  /* r1 = r2 + r3 * C case.  Need to move r3 into r1.  */
+	  if (regno0 != regno2)
+	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
+
+	  /* Use shift for scaling.  */
+	  tmp = gen_rtx_ASHIFT (mode, operands[0],
+				GEN_INT (exact_log2 (parts.scale)));
+	  tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
+	  clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+	  par = gen_rtvec (2, tmp, clob);
+	  emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+
+	  if (parts.base)
+	    {
+	      tmp = gen_rtx_PLUS (mode, operands[0], parts.base);
+	      tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
+	      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+	      par = gen_rtvec (2, tmp, clob);
+	      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+	    }
+
+	  if (parts.disp && parts.disp != const0_rtx)
+	    {
+	      tmp = gen_rtx_PLUS (mode, operands[0], parts.disp);
+	      tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
+	      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+	      par = gen_rtvec (2, tmp, clob);
+	      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+	    }
+	}
+    }
+  else if (!parts.base && !parts.index)
+    {
+      gcc_assert(parts.disp);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.disp));
+    }
+  else
+    {
+      if (!parts.base)
+      {
+        if (regno0 != regno2)
+	  emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
+      }
+      else if (!parts.index)
+      {
+        if (regno0 != regno1)
+          emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
+      }
+      else
+      {
+	if (regno0 == regno1)
+	  tmp = gen_rtx_PLUS (mode, operands[0], parts.index);
+	else if (regno0 == regno2)
+	  tmp = gen_rtx_PLUS (mode, operands[0], parts.base);
+	else
+	  {
+	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
+	    tmp = gen_rtx_PLUS (mode, operands[0], parts.index);
+	  }
+
+        tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
+	clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+	par = gen_rtvec (2, tmp, clob);
+	emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+      }
+
+      if (parts.disp && parts.disp != const0_rtx)
+      {
+        tmp = gen_rtx_PLUS (mode, operands[0], parts.disp);
+        tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
+	clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+	par = gen_rtvec (2, tmp, clob);
+	emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+      }
+    }
+}
 
 /* Return true if it is ok to optimize an ADD operation to LEA
    operation to avoid flag register consumation.  For most processors,
@@ -16187,26 +16637,8 @@ ix86_lea_for_add_ok (rtx insn, rtx operands[])
 
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
     return false;
-  else
-    {
-      int dist_define, dist_use;
 
-      /* Return false if REGNO0 isn't used in memory address. */
-      dist_use = distance_agu_use (regno0, insn);
-      if (dist_use <= 0)
-	return false;
-
-      dist_define = distance_non_agu_define (regno1, regno2, insn);
-      if (dist_define <= 0)
-        return true;
-
-      /* If this insn has both backward non-agu dependence and forward
-         agu dependence, the one with short distance take effect. */
-      if ((dist_define + IX86_LEA_PRIORITY) < dist_use)
-        return false;
-
-      return true;
-    }
+  return ix86_lea_outperforms (insn, regno0, regno1, regno2, 0);
 }
 
 /* Return true if destination reg of SET_BODY is shift count of
@@ -18319,6 +18751,11 @@ ix86_prepare_sse_fp_compare_args (rtx dest, enum rtx_code code,
 {
   rtx tmp;
 
+  /* AVX supports all the needed comparisons, no need to swap arguments
+     nor help reload.  */
+  if (TARGET_AVX)
+    return code;
+
   switch (code)
     {
     case LTGT:
@@ -18574,7 +19011,32 @@ ix86_expand_fp_vcond (rtx operands[])
   code = ix86_prepare_sse_fp_compare_args (operands[0], code,
 					   &operands[4], &operands[5]);
   if (code == UNKNOWN)
-    return false;
+    {
+      rtx temp;
+      switch (GET_CODE (operands[3]))
+	{
+	case LTGT:
+	  temp = ix86_expand_sse_cmp (operands[0], ORDERED, operands[4],
+				      operands[5], operands[0], operands[0]);
+	  cmp = ix86_expand_sse_cmp (operands[0], NE, operands[4],
+				     operands[5], operands[1], operands[2]);
+	  code = AND;
+	  break;
+	case UNEQ:
+	  temp = ix86_expand_sse_cmp (operands[0], UNORDERED, operands[4],
+				      operands[5], operands[0], operands[0]);
+	  cmp = ix86_expand_sse_cmp (operands[0], EQ, operands[4],
+				     operands[5], operands[1], operands[2]);
+	  code = IOR;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      cmp = expand_simple_binop (GET_MODE (cmp), code, temp, cmp, cmp, 1,
+				 OPTAB_DIRECT);
+      ix86_expand_sse_movcc (operands[0], cmp, operands[1], operands[2]);
+      return true;
+    }
 
   if (ix86_expand_sse_fp_minmax (operands[0], code, operands[4],
 				 operands[5], operands[1], operands[2]))
@@ -34858,6 +35320,8 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_SCHED_DISPATCH has_dispatch
 #undef TARGET_SCHED_DISPATCH_DO
 #define TARGET_SCHED_DISPATCH_DO do_dispatch
+#undef TARGET_SCHED_REASSOCIATION_WIDTH
+#define TARGET_SCHED_REASSOCIATION_WIDTH ix86_reassociation_width
 
 /* The size of the dispatch window is the total number of bytes of
    object code allowed in a window.  */
@@ -35653,6 +36117,32 @@ has_dispatch (rtx insn, int action)
       }
 
   return false;
+}
+
+/* Implementation of reassociation_width target hook used by
+   reassoc phase to identify parallelism level in reassociated
+   tree.  Statements tree_code is passed in OPC.  Arguments type
+   is passed in MODE.
+
+   Currently parallel reassociation is enabled for Atom
+   processors only and we set reassociation width to be 2
+   because Atom may issue up to 2 instructions per cycle.
+
+   Return value should be fixed if parallel reassociation is
+   enabled for other processors.  */
+
+static int
+ix86_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
+			  enum machine_mode mode)
+{
+  int res = 1;
+
+  if (INTEGRAL_MODE_P (mode) && TARGET_REASSOC_INT_TO_PARALLEL)
+    res = 2;
+  else if (FLOAT_MODE_P (mode) && TARGET_REASSOC_FP_TO_PARALLEL)
+    res = 2;
+
+  return res;
 }
 
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably

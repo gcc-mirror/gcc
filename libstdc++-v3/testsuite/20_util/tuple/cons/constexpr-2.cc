@@ -56,8 +56,8 @@ int main()
   test2.operator()<tuple_type, std::pair<short, short>>();
 
   // 07: different-tuple-type conversion constructor
-  // test2.operator()<tuple_type, std::tuple<short, short>>();
-  // test2.operator()<std::tuple<short, short>, tuple_type>();
+  test2.operator()<tuple_type, std::tuple<short, short>>();
+  test2.operator()<std::tuple<short, short>, tuple_type>();
 
   return 0;
 }

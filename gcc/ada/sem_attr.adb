@@ -1906,7 +1906,7 @@ package body Sem_Attr is
          end if;
       end Validate_Non_Static_Attribute_Function_Call;
 
-   --   Start of processing for Analyze_Attribute
+   --  Start of processing for Analyze_Attribute
 
    begin
       --  Immediate return if unrecognized attribute (already diagnosed
@@ -3013,6 +3013,21 @@ package body Sem_Attr is
       when Attribute_Denorm =>
          Check_Floating_Point_Type_0;
          Set_Etype (N, Standard_Boolean);
+
+      ---------------------
+      -- Descriptor_Size --
+      ---------------------
+
+      when Attribute_Descriptor_Size =>
+         Check_E0;
+
+         if not Is_Entity_Name (P)
+           or else not Is_Type (Entity (P))
+         then
+            Error_Attr_P ("prefix of attribute % must denote a type");
+         end if;
+
+         Set_Etype (N, Universal_Integer);
 
       ------------
       -- Digits --
@@ -6245,6 +6260,13 @@ package body Sem_Attr is
       when Attribute_Denorm =>
          Fold_Uint
            (N, UI_From_Int (Boolean'Pos (Denorm_On_Target)), True);
+
+      ---------------------
+      -- Descriptor_Size --
+      ---------------------
+
+      when Attribute_Descriptor_Size =>
+         null;
 
       ------------
       -- Digits --

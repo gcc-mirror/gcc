@@ -184,6 +184,7 @@ extern int is_called_in_ARM_mode (tree);
 #endif
 extern int thumb_shiftable_const (unsigned HOST_WIDE_INT);
 #ifdef RTX_CODE
+extern enum arm_cond_code maybe_get_arm_condition_code (rtx);
 extern void thumb1_final_prescan_insn (rtx);
 extern void thumb2_final_prescan_insn (rtx);
 extern const char *thumb_load_double_from_address (rtx *);

@@ -6801,19 +6801,11 @@ gfc_add_intrinsic_ss_code (gfc_loopinfo * loop ATTRIBUTE_UNUSED, gfc_ss * ss)
 static gfc_ss *
 gfc_walk_intrinsic_bound (gfc_ss * ss, gfc_expr * expr)
 {
-  gfc_ss *newss;
-
   /* The two argument version returns a scalar.  */
   if (expr->value.function.actual->next->expr)
     return ss;
 
-  newss = gfc_get_ss ();
-  newss->type = GFC_SS_INTRINSIC;
-  newss->expr = expr;
-  newss->next = ss;
-  newss->data.info.dimen = 1;
-
-  return newss;
+  return gfc_get_array_ss (ss, expr, 1, GFC_SS_INTRINSIC);
 }
 
 
@@ -6822,20 +6814,8 @@ gfc_walk_intrinsic_bound (gfc_ss * ss, gfc_expr * expr)
 static gfc_ss *
 gfc_walk_intrinsic_libfunc (gfc_ss * ss, gfc_expr * expr)
 {
-  gfc_ss *newss;
-  int n;
-
   gcc_assert (expr->rank > 0);
-
-  newss = gfc_get_ss ();
-  newss->type = GFC_SS_FUNCTION;
-  newss->expr = expr;
-  newss->next = ss;
-  newss->data.info.dimen = expr->rank;
-  for (n = 0; n < newss->data.info.dimen; n++)
-    newss->data.info.dim[n] = n;
-
-  return newss;
+  return gfc_get_array_ss (ss, expr, expr->rank, GFC_SS_FUNCTION);
 }
 
 

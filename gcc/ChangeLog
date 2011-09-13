@@ -1,3 +1,510 @@
+2011-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/50010
+	* dwarf2cfi.c (add_cfis_to_fde): Ignore non-active insns in between
+	NOTE_INSN_CFI notes, with the exception of
+	NOTE_INSN_SWITCH_TEXT_SECTIONS.
+
+2011-09-12  Bernd Schmidt  <bernds@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_epilogue): New structure.
+	(mips16e_save_restore_reg): Queue REG_CFA_RESTORE notes when
+	restoring registers.
+	(mips_epilogue_emit_cfa_restores): New function.
+	(mips_epilogue_set_cfa): Likewise.
+	(mips_restore_reg): Queue REG_CFA_RESTORE notes.  When restoring
+	the current CFA register from the stack, redefine the CFA in terms
+	of the stack pointer.
+	(mips_expand_epilogue): Set up mips_epilogue.  Attach CFA information
+	to the epilogue instructions.
+
+2011-09-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips16e_save_restore_reg): Add a reg_parm_p
+	argument.
+	(mips16e_build_save_restore): Update accordingly.
+
+2011-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/50212
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Skip also lps with NULL landing_pad or non-LABEL_P landing_pad.
+
+	PR debug/50299
+	* calls.c (load_register_parameters): Use use_reg_mode instead
+	of use_reg when adding a single register CALL_INSN_FUNCTION_USAGE
+	entry.
+	(expand_call): Set EXPR_LIST mode to TYPE_MODE of the argument
+	for stack CALL_INSN_FUNCTION_USAGE uses.
+	* expr.h (use_reg_mode): New prototype.
+	(use_reg): Changed into inline around use_reg_mode.
+	* expr.c (use_reg): Renamed to...
+	(use_reg_mode): ... this.  Added MODE argument, set EXPR_LIST
+	mode to that mode instead of VOIDmode.
+	* var-tracking.c (prepare_call_arguments): Don't track parameters
+	whose EXPR_LIST mode is VOIDmode, BLKmode or X mode isn't convertible
+	to it using lowpart_subreg.  Convert VALUE and REG/MEM to the
+	EXPR_LIST mode.
+
+2011-09-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/43746
+	* config/avr/avr.c (AVR_SECTION_PROGMEM): New Define.
+	(progmem_section): New Variable.
+	(avr_asm_init_sections): Initialize it.
+	(TARGET_ASM_SELECT_SECTION): Define to...
+	(avr_asm_select_section): ... this new Function.
+	(avr_replace_prefix): New Function.
+	(avr_asm_function_rodata_section): Use it.
+	(avr_insert_attributes): Don't add section attribute for PROGMEM.
+	(avr_section_type_flags): Use avr_progmem_p instead of section
+	name to detect if object is in PROGMEM.
+	(avr_asm_named_section): Set section name prefix for objects in
+	PROGMEM.
+
+2011-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/50352
+	* config/arm/arm.md (*push_fp_multi): Add % before %( and %) in the
+	sprintf format string.
+
+2011-09-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50343
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Check
+	that the reduction is over an SSA name before checking its
+	definition.
+
+2011-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/cris/cris.md: Use match_test rather than eq/ne symbol_ref
+	throughout file.
+
+2011-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.md: Use match_test rather than eq/ne symbol_ref
+	throughout file.
+	* config/mips/sb1.md: Likewise.
+	* config/mips/predicates.md: Replace (match_test "!...")
+	with (not (match_test "..."))
+	* config/mips/constraints.md: Likewise.
+
+2011-09-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm-cores.def (generic-armv7-a): New architecture.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm.c (arm_file_start): Output .arch directive when
+	user passes -mcpu=generic-*.
+	(arm_issue_rate): Add genericv7a support.
+	* config/arm/arm.h (EXTRA_SPECS): Add asm_cpu_spec.
+	(ASM_CPU_SPEC): New define.
+	* config/arm/elf.h (ASM_SPEC): Use %(asm_cpu_spec).
+	* config/arm/semi.h (ASM_SPEC): Likewise.
+	* doc/invoke.texi (ARM Options): Document -mcpu=generic-*
+	and -mtune=generic-*.
+
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50328
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Allow one
+	constant or default-def operand.
+
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (create_expression_by_pieces): Fold the
+	last statement.
+
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (fold_stmt_inplace): Adjust to take a gimple_stmt_iterator
+	instead of a statement.
+	* gimple-fold.c (fold_stmt_inplace): Likewise.
+	* sese.c (graphite_copy_stmts_from_block): Adjust.
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_comparison): Use
+	fold_stmt.
+	(forward_propagate_addr_into_variable_array_index): Likewise.
+	(forward_propagate_addr_expr_1): adjust.
+	(associate_plusminus): Likewise.
+	(ssa_forward_propagate_and_combine): Likewise.
+	* tree-ssa-mathopts.c (replace_reciprocal): Adjust.
+	(execute_cse_reciprocals): Likewise.
+	* tree-ssa.c (insert_debug_temp_for_var_def): Adjust.
+
+2011-09-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_split_and_operand_count):
+	Return a positive value to indicate that the bits at the
+	bottom of the register should be cleared.
+
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (swap_tree_operands): Always adjust
+	existing operand positions.
+
+2011-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50333
+	* tree-data-ref.c (split_constant_offset): Do not try to handle
+	ternary ops.
+
+2011-09-08  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR tree-optimization/50318
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Correct
+	typo in use of mult_rhs1 and mult_rhs2.
+
+2011-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (standard_sse_constant_p): Handle AVX2 modes.
+	(standard_sse_constant_opcode) <case 2>: Change vpcmpeqd template.
+
+2011-09-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/arm/arm.md (push_multi): Emit predicates.
+	(push_fp_multi): Likewise.
+	* config/arm/arm.c (vfp_output_fstmd): Likewise.
+
+2011-09-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/33255 - Support -Wunused-local-typedefs warning
+	* c-decl.c (lookup_name): Use the new maybe_record_typedef_use.
+	(pushdecl): Use the new record_locally_defined_typedef.
+	(store_parm_decls): Allocate cfun->language.
+	(finish_function): Use the new maybe_warn_unused_local_typedefs,
+	and free cfun->language.
+	(c_push_function_context): Allocate cfun->language here only if needed.
+	(c_pop_function_context): Likewise, mark cfun->language
+	for collection only when it should be done.
+	* c-common.c (handle_used_attribute): Don't ignore TYPE_DECL nodes.
+	* c-typeck.c (c_expr_sizeof_type, c_cast_expr): Use the new
+	maybe_record_local_typedef_use.
+	* doc/invoke.texi: Update documentation for
+	-Wunused-local-typedefs.
+
+2011-09-08  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	* config/i386/i386-protos.h (ix86_lea_outperforms): New.
+	(ix86_avoid_lea_for_add): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(ix86_split_lea_for_addr): Likewise.
+
+	* config/i386/i386.c (LEA_MAX_STALL): New.
+	(increase_distance): Likewise.
+	(insn_defines_reg): Likewise.
+	(insn_uses_reg_mem): Likewise.
+	(distance_non_agu_define_in_bb): Likewise.
+	(distance_agu_use_in_bb): Likewise.
+	(ix86_lea_outperforms): Likewise.
+	(ix86_ok_to_clobber_flags): Likewise.
+	(ix86_avoid_lea_for_add): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(ix86_split_lea_for_addr): Likewise.
+	(distance_non_agu_define): Search in pred BBs added.
+	(distance_agu_use): Search in succ BBs added.
+	(IX86_LEA_PRIORITY): Value changed from 2 to 0.
+	(LEA_SEARCH_THRESHOLD): Now depends on LEA_MAX_STALL.
+	(ix86_lea_for_add_ok): Use ix86_lea_outperforms to make decision.
+
+	* config/i386/i386.md: Split added to transform non destructive
+	add into move and add.
+	(lea_1): transformed into insn_and_split to avoid AGU stalls.
+	(lea<mode>_2): Likewise.
+
+2011-09-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50287
+	* ipa-split.c (split_function): Do not create SSA names for
+	non-gimple-registers.
+
+2011-09-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19831
+	* tree-ssa-dce.c (mark_all_reaching_defs_necessary_1): Also
+	skip builtins with vdefs that do not really store something.
+	(propagate_necessity): For calls to free that we can associate
+	with an allocation function do not mark the freed pointer
+	definition necessary.
+	(eliminate_unnecessary_stmts): Remove a call to free if
+	the associated call to an allocation function is not necessary.
+
+2011-09-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19831
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Do not mark
+	allocation functions as necessary.
+
+2011-09-08  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin-driver.c (darwin_find_version_from_kernel): New routine
+	cut from ...
+	(darwin_default_min_version): Amended to provide defaults
+	for the cross directory case.
+	(darwin_driver_init): call darwin_default_min_version unconditionally.
+	* config/darwin.h (DEF_MIN_OSX_VERSION): New.
+	* config/darwin9.h: Likewise.
+	* config/darwin10.h: Likewise.
+	* config/rs6000/darwin7.h: Likewise.
+
+2011-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50310
+	* config/i386/i386.c (ix86_prepare_sse_fp_compare_args): Return
+	code early if TARGET_AVX.
+	(ix86_expand_fp_vcond): Handle LTGT and UNEQ.
+
+2011-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (sseinsnmode): Remove 32-byte integer vector
+	duplicates.
+
+	PR target/50310
+	* config/i386/sse.md (*andnot<mode>3, *<code><mode>3): Fix up
+	"mode" attribute computation.
+
+2011-09-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* regrename.c (struct du_head): Make nregs signed.
+	(closed_chains): Remove.
+	(create_new_chain): Return the new chain.
+	(chain_from_id): New static function.
+	(dump_def_use_chain): Change argument to be an int, indicating
+	the first ID to print.  All callers changed.
+	(merge_overlapping_regs): Use chain_from_id.  Assert that
+	chains don't conflict with themselves.
+	(rename_chains): Take no argument.  Iterate over id_to_chain
+	rather to find chains to rename.  Clear tick before the main loop.
+	(struct incoming_reg_info): New struct.
+	(struct bb_rename_info): New struct.
+	(init_rename_info, set_incoming_from_chain, merge_chains): New
+	static functions.
+	(regrename_analyze): New static function, broken out of
+	regrename_optimize.  Record and make use of open chain information
+	at basic block boundaries, and merge chains where possible.
+	(scan_rtx_reg): Make this_nregs signed.  Don't update
+	closed_chains.
+	(build_def_use): Return a bool to indicate success.  All callers
+	changed.  Don't initialize global data here.
+	(regrename_optimize): Move most code out of here into
+	regrename_analyze.
+	* regs.h (add_range_to_hard_reg_set, remove_range_from_hard_reg_set,
+	range_overlaps_hard_reg_set_p, range_in_hard_reg_set_p): New
+	static inline functions.
+	* vec.h (FOR_EACH_VEC_ELT_FROM): New macro.
+
+	* bb-reorder.c (insert_section_boundary_note): Don't check
+	optimize_function_for_speed_p.
+	(gate_handle_partition_blocks): Do it here instead.
+	(gate_handle_reorder_blocks): Move preliminary checks here ...
+	(rest_of_handle_reorder_blocks): ... from here.
+
+2011-09-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/50301
+	* ipa-cp.c (find_more_values_for_callers_subset): Check jump
+	function index bounds.
+	(perhaps_add_new_callers): Likewise.
+
+2011-09-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/49911
+	* tree-sra.c (analyze_access_subtree): Change type of to-be-replaced
+	enumerations to the corresponding plain integer type.
+
+2011-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50319
+	* tree-if-conv.c (set_bb_predicate): Assert we only set
+	canonical predicates.
+	(add_to_predicate_list): Simplify.  Allow TRUTH_NOT_EXPR
+	around canonical predicates.
+	(predicate_bbs): Do not re-gimplify already canonical
+	predicates.  Properly unshare them though.
+	(find_phi_replacement_condition): Simplify.
+
+2011-09-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/49030
+	* config/arm/arm-protos.h (maybe_get_arm_condition_code): Declare.
+	* config/arm/arm.c (maybe_get_arm_condition_code): New function,
+	reusing the old code from get_arm_condition_code.  Return ARM_NV
+	for invalid comparison codes.
+	(get_arm_condition_code): Redefine in terms of
+	maybe_get_arm_condition_code.
+	* config/arm/predicates.md (arm_comparison_operator): Use
+	maybe_get_arm_condition_code.
+
+2011-09-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond):
+	Canonicalize negated predicates by swapping edges.
+	(forward_propagate_into_cond): Likewise.
+
+2011-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50213
+	* tree-flow.h (simple_iv_increment_p): Declare.
+	* tree-ssa-dom.c (simple_iv_increment_p): Export.  Also handle
+	POINTER_PLUS_EXPR.
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Do
+	not propagate simple IV counter increments.
+
+2011-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (compute_save_world_info): Test
+	cfun->has_nonlocal_label to determine if the out-of-line save
+	world call may be used.
+
+2011-09-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Set the jump
+	label on the parallel part of the insn.
+
+2011-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50191
+	* dwarf2out.c (mem_loc_descriptor) <case MEM>: Try
+	avoid_constant_pool_reference first instead of last.
+
+2011-09-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/configfiles.texi (Configuration Files): Update documentation
+	about tm_p.h and remove FIXME comment.
+
+2011-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_function_value_regno_p): Use AX_REG.
+	(function_value_32): Do not check TARGET_MMX, TARGET_SSE or TARGET_AVX.
+
+2011-09-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin10.h Remove duplicate LIB_SPEC.
+
+2011-09-06  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	PR middle-end/44382
+	* target.def (reassociation_width): New hook.
+
+	* doc/tm.texi.in (reassociation_width): Likewise.
+
+	* doc/tm.texi (reassociation_width): Likewise.
+
+	* doc/invoke.texi (tree-reassoc-width): New param documented.
+
+	* hooks.h (hook_int_uint_mode_1): New default hook.
+
+	* hooks.c (hook_int_uint_mode_1): Likewise.
+
+	* config/i386/i386.h (ix86_tune_indices): Add
+	X86_TUNE_REASSOC_INT_TO_PARALLEL and X86_TUNE_REASSOC_FP_TO_PARALLEL.
+
+	(TARGET_REASSOC_INT_TO_PARALLEL): New.
+	(TARGET_REASSOC_FP_TO_PARALLEL): Likewise.
+
+	* config/i386/i386.c (initial_ix86_tune_features): Add
+	X86_TUNE_REASSOC_INT_TO_PARALLEL and X86_TUNE_REASSOC_FP_TO_PARALLEL.
+
+	(ix86_reassociation_width): New function.
+
+	* params.def (PARAM_TREE_REASSOC_WIDTH): New param added.
+
+	* tree-ssa-reassoc.c (get_required_cycles): New function.
+	(get_reassociation_width): Likewise.
+	(swap_ops_for_binary_stmt): Likewise.
+	(rewrite_expr_tree_parallel): Likewise.
+
+	(rewrite_expr_tree): Refactored.  Part of code moved into
+	swap_ops_for_binary_stmt.
+
+	(reassociate_bb): Now checks reassociation width to be used and
+	call rewrite_expr_tree_parallel instead of rewrite_expr_tree if needed.
+
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47025
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): BUILT_IN_VA_END
+	uses nothing.
+	(call_may_clobber_ref_p_1): BUILT_IN_VA_END is a barrier like
+	BUILT_IN_FREE.
+	(stmt_kills_ref_p_1): BUILT_IN_VA_END kills what its argument
+	definitely points to.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	BUILT_IN_VA_START doesn't let its va_list argument escape.
+	* tree-ssa-dce.c (propagate_necessity): BUILT_IN_VA_END does
+	not make any previous stores necessary.
+
+2011-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline.h (struct inline_summary): Move versionable flag...
+	* cgraph.h (struct cgraph_local_info): ...here
+	* ipa-cp.c (determine_versionability): Use the new versionable flag.
+	(determine_versionability): Likewise.
+	(ipcp_versionable_function_p): Likewise.
+	(ipcp_generate_summary): Likewise.
+	* ipa-inline-analysis.c (dump_inline_summary): Do not dump the
+	versionable flag.
+	(compute_inline_parameters): Do not clear the versionable flag.
+	(inline_read_section): Do not stream the versionable flag.
+	(inline_write_summary): Likewise.
+	* lto-cgraph.c (lto_output_node): Stream the versionable flag.
+	(input_overwrite_node): Likewise.
+
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48149
+	* tree-ssa-sccvn.c (vn_get_expr_for): Simplify.  Fix tuplification bug.
+	(vn_valueize): Move earlier.
+	(valueize_expr): Use vn_valueize.
+	(simplify_binary_expression): Simplify, also combine COMPLEX_EXPR
+	operands.
+	(simplify_unary_expression): Simplify.
+
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48317
+	* tree-ssa-sccvn.h (struct vn_nary_op_s): Make op a true
+	trailing array.
+	(sizeof_vn_nary_op): New inline function.
+	(vn_nary_op_lookup_pieces): Adjust.
+	(vn_nary_op_insert_pieces): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_eq): Also compare the length.
+	(init_vn_nary_op_from_pieces): Adjust signature.  Deal with
+	any number of operands.
+	(vn_nary_length_from_stmt): New function.
+	(init_vn_nary_op_from_stmt): Adjust for CONSTRUCTOR handling.
+	(vn_nary_op_lookup_pieces): Adjust signature and allocate properly
+	sized temporary.
+	(vn_nary_op_lookup): Likewise.
+	(vn_nary_op_lookup_stmt): Likewise.
+	(vn_nary_op_insert_into): Likewise.
+	(vn_nary_op_insert_stmt): Likewise.
+	(visit_use): Handle CONSTRUCTOR as nary.
+	* tree-ssa-pre.c (phi_translate_1): Adjust.
+	(create_expression_by_pieces): Likewise.
+	(compute_avail): Likewise.
+
+2011-09-06  Ira Rosen  <ira.rosen@linaro.org>
+
+	 * config/arm/arm.c (arm_preferred_simd_mode): Check
+	TARGET_NEON_VECTORIZE_DOUBLE instead of
+	TARGET_NEON_VECTORIZE_QUAD.
+	(arm_autovectorize_vector_sizes): Likewise.
+	* config/arm/arm.opt (mvectorize-with-neon-quad): Make inverse
+	mask of mvectorize-with-neon-double.  Add RejectNegative.
+	(mvectorize-with-neon-double): New.
+
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_use): CSE stmt pieces and simplify matching.
+
+2011-09-06  Tom de Vries  <tom@codesourcery.com>
+
+	* recog.c (asm_labels_ok): New function.
+	(check_asm_operands): Use asm_labels_ok.
+
 2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/49606
@@ -49,11 +556,9 @@
 	* config/sparc/sparc.md: Add to "cpu" attribute.
 	* config/sparc/sparc.h (TARGET_CPU_niagara3,
 	TARGET_CPU_niagara4): New, treat as niagara2.
-	* config/sparc/linux64.h: Handle niagara3 and niagara4
-	like niagara2.
+	* config/sparc/linux64.h: Handle niagara3 and niagara4 like niagara2.
 	* config/sparc/sol2.h: Likewise.
-	* config/sparc/niagara2.md: Schedule niagara3 like
-	niagara2.
+	* config/sparc/niagara2.md: Schedule niagara3 like niagara2.
 	* config/sparc/sparc.c (sparc_option_override): Add
 	niagara3 and niagara4 handling.
 	(sparc32_initialize_trampoline): Likewise.
@@ -66,6 +571,14 @@
 	* doc/invoke.texi: Document new processor types.
 	* config.gcc: Recognize niagara3 and niagara4 in --with-cpu
 	and --with-tune options.
+
+	* config/sparc/sol2-64.h: Move ...
+	* config/sparc/default-64.h: ... to here.  Update comment.
+	* config.gcc: Update Solaris sparc to use default-64.h, also
+	prefix this header into the list on sparc64-*-linux.
+	* config/sparc/linux64.h (TARGET_DEFAULT): Only override if
+	TARGET_64BIT_DEFAULT is defined.  Remove commented out reference
+	to MASK_HARD_QUAD.
 
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -334,10 +847,8 @@
 
 2011-09-02  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Do not
-	fold alloca (0).
-	(ccp_fold_stmt): Continue replacing args when folding
-	alloca fails.
+	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Do not fold alloca (0).
+	(ccp_fold_stmt): Continue replacing args when folding alloca fails.
 
 2011-08-31  Richard Guenther  <rguenther@suse.de>
 
@@ -354,10 +865,8 @@
 	* gimple-fold.c (fold_gimple_assign): Move COND_EXPR folding.
 	* tree-object-size.c (cond_expr_object_size): Adjust.
 	(collect_object_sizes_for): Likewise.
-	* tree-scalar-evolution.c (interpret_expr): Don't handle
-	ternary RHSs.
-	* tree-ssa-forwprop.c (forward_propagate_into_cond): Fix and
-	simplify.
+	* tree-scalar-evolution.c (interpret_expr): Don't handle ternary RHSs.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Fix and simplify.
 	(ssa_forward_propagate_and_combine): Adjust.
 	* tree-ssa-loop-im.c (move_computations_stmt): Build the COND_EXPR
 	as ternary.
@@ -504,8 +1013,8 @@
 	* gthr-posix.h (__gthread_active_p): Do not use preprocessor
 	conditionals and comments inside macro arguments.
 
-20011-08-29  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
-	     Richard Guenther  <rguenther@suse.de>
+2011-08-29  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
+	    Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (constant_boolean_node): Adjust prototype.
 	* fold-const.c (fold_convert_loc): Move aggregate conversion

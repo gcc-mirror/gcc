@@ -9590,14 +9590,13 @@ tsubst_aggr_type (tree t,
 	  /* First, determine the context for the type we are looking
 	     up.  */
 	  context = TYPE_CONTEXT (t);
-	  if (context)
+	  if (context && TYPE_P (context))
 	    {
 	      context = tsubst_aggr_type (context, args, complain,
 					  in_decl, /*entering_scope=*/1);
 	      /* If context is a nested class inside a class template,
 	         it may still need to be instantiated (c++/33959).  */
-	      if (TYPE_P (context))
-		context = complete_type (context);
+	      context = complete_type (context);
 	    }
 
 	  /* Then, figure out what arguments are appropriate for the
@@ -14710,10 +14709,18 @@ type_unification_real (tree tparms,
 
 	  if (same_type_p (parm, type))
 	    continue;
-	  if (strict != DEDUCE_EXACT
-	      && can_convert_arg (parm, type, TYPE_P (arg) ? NULL_TREE : arg,
-				  flags))
-	    continue;
+	  if (strict == DEDUCE_CONV)
+	    {
+	      if (can_convert_arg (type, parm, NULL_TREE, flags))
+		continue;
+	    }
+	  else if (strict != DEDUCE_EXACT)
+	    {
+	      if (can_convert_arg (parm, type,
+				   TYPE_P (arg) ? NULL_TREE : arg,
+				   flags))
+		continue;
+	    }
 
 	  if (strict == DEDUCE_EXACT)
 	    return unify_type_mismatch (explain_p, parm, arg);
@@ -14805,6 +14812,10 @@ type_unification_real (tree tparms,
 
   if (!subr)
     {
+      tsubst_flags_t complain = (explain_p
+				 ? tf_warning_or_error
+				 : tf_none);
+
       /* Check to see if we need another pass before we start clearing
 	 ARGUMENT_PACK_INCOMPLETE_P.  */
       for (i = 0; i < ntparms; i++)
@@ -14855,11 +14866,8 @@ type_unification_real (tree tparms,
 	    {
 	      tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
 	      tree arg = TREE_PURPOSE (TREE_VEC_ELT (tparms, i));
-	      arg = tsubst_template_arg (arg, targs, tf_none, NULL_TREE);
-	      arg = convert_template_argument (parm, arg, targs,
-					       (explain_p
-						? tf_warning_or_error
-						: tf_none),
+	      arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
+	      arg = convert_template_argument (parm, arg, targs, complain,
 					       i, NULL_TREE);
 	      if (arg == error_mark_node)
 		return 1;

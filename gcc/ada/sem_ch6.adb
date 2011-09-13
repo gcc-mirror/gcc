@@ -2346,7 +2346,12 @@ package body Sem_Ch6 is
             --  expansion has generated an equivalent type that is used when
             --  elaborating the body.
 
-            if No (Spec_Id) then
+            --  An exception in the case of Ada2012, AI05-177: The bodies
+            --  created for expression functions do not freeze.
+
+            if No (Spec_Id)
+              and then Nkind (Original_Node (N)) /= N_Expression_Function
+            then
                Freeze_Before (N, Body_Id);
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit then
@@ -6296,7 +6301,7 @@ package body Sem_Ch6 is
       --  build-in-place formals are needed in some cases (limited 'Input).
 
       if Is_Predefined_Internal_Operation (E) then
-         goto Test_For_BIP_Extras;
+         goto Test_For_Func_Result_Extras;
       end if;
 
       Formal := First_Formal (E);
@@ -6395,7 +6400,15 @@ package body Sem_Ch6 is
          Next_Formal (Formal);
       end loop;
 
-      <<Test_For_BIP_Extras>>
+      <<Test_For_Func_Result_Extras>>
+
+      --  Ada 2012 (AI05-234): "the accessibility level of the result of a
+      --  function call is ... determined by the point of call ...".
+
+      if Needs_Result_Accessibility_Level (E) then
+         Set_Extra_Accessibility_Of_Result
+           (E, Add_Extra_Formal (E, Standard_Natural, E, "L"));
+      end if;
 
       --  Ada 2005 (AI-318-02): In the case of build-in-place functions, add
       --  appropriate extra formals. See type Exp_Ch6.BIP_Formal_Kind.

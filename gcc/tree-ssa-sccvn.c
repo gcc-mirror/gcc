@@ -217,6 +217,7 @@ vn_get_expr_for (tree name)
   vn_ssa_aux_t vn = VN_INFO (name);
   gimple def_stmt;
   tree expr = NULL_TREE;
+  enum tree_code code;
 
   if (vn->valnum == VN_TOP)
     return name;
@@ -241,37 +242,34 @@ vn_get_expr_for (tree name)
   /* Otherwise use the defining statement to build the expression.  */
   def_stmt = SSA_NAME_DEF_STMT (vn->valnum);
 
-  /* If the value number is a default-definition or a PHI result
-     use it directly.  */
-  if (gimple_nop_p (def_stmt)
-      || gimple_code (def_stmt) == GIMPLE_PHI)
-    return vn->valnum;
-
+  /* If the value number is not an assignment use it directly.  */
   if (!is_gimple_assign (def_stmt))
     return vn->valnum;
 
   /* FIXME tuples.  This is incomplete and likely will miss some
      simplifications.  */
-  switch (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt)))
+  code = gimple_assign_rhs_code (def_stmt);
+  switch (TREE_CODE_CLASS (code))
     {
     case tcc_reference:
-      if ((gimple_assign_rhs_code (def_stmt) == VIEW_CONVERT_EXPR
-	   || gimple_assign_rhs_code (def_stmt) == REALPART_EXPR
-	   || gimple_assign_rhs_code (def_stmt) == IMAGPART_EXPR)
-	  && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
-	expr = fold_build1 (gimple_assign_rhs_code (def_stmt),
+      if ((code == REALPART_EXPR
+	   || code == IMAGPART_EXPR
+	   || code == VIEW_CONVERT_EXPR)
+	  && TREE_CODE (TREE_OPERAND (gimple_assign_rhs1 (def_stmt),
+				      0)) == SSA_NAME)
+	expr = fold_build1 (code,
 			    gimple_expr_type (def_stmt),
 			    TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0));
       break;
 
     case tcc_unary:
-      expr = fold_build1 (gimple_assign_rhs_code (def_stmt),
+      expr = fold_build1 (code,
 			  gimple_expr_type (def_stmt),
 			  gimple_assign_rhs1 (def_stmt));
       break;
 
     case tcc_binary:
-      expr = fold_build2 (gimple_assign_rhs_code (def_stmt),
+      expr = fold_build2 (code,
 			  gimple_expr_type (def_stmt),
 			  gimple_assign_rhs1 (def_stmt),
 			  gimple_assign_rhs2 (def_stmt));
@@ -1923,6 +1921,9 @@ vn_nary_op_eq (const void *p1, const void *p2)
   if (vno1->hashcode != vno2->hashcode)
     return false;
 
+  if (vno1->length != vno2->length)
+    return false;
+
   if (vno1->opcode != vno2->opcode
       || !types_compatible_p (vno1->type, vno2->type))
     return false;
@@ -1938,22 +1939,12 @@ vn_nary_op_eq (const void *p1, const void *p2)
 
 static void
 init_vn_nary_op_from_pieces (vn_nary_op_t vno, unsigned int length,
-			     enum tree_code code, tree type, tree op0,
-			     tree op1, tree op2, tree op3)
+			     enum tree_code code, tree type, tree *ops)
 {
   vno->opcode = code;
   vno->length = length;
   vno->type = type;
-  switch (length)
-    {
-      /* The fallthrus here are deliberate.  */
-    case 4: vno->op[3] = op3;
-    case 3: vno->op[2] = op2;
-    case 2: vno->op[1] = op1;
-    case 1: vno->op[0] = op0;
-    default:
-      break;
-    }
+  memcpy (&vno->op[0], ops, sizeof (tree) * length);
 }
 
 /* Initialize VNO from OP.  */
@@ -1970,6 +1961,26 @@ init_vn_nary_op_from_op (vn_nary_op_t vno, tree op)
     vno->op[i] = TREE_OPERAND (op, i);
 }
 
+/* Return the number of operands for a vn_nary ops structure from STMT.  */
+
+static unsigned int
+vn_nary_length_from_stmt (gimple stmt)
+{
+  switch (gimple_assign_rhs_code (stmt))
+    {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
+      return 1;
+
+    case CONSTRUCTOR:
+      return CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt));
+
+    default:
+      return gimple_num_ops (stmt) - 1;
+    }
+}
+
 /* Initialize VNO from STMT.  */
 
 static void
@@ -1978,14 +1989,27 @@ init_vn_nary_op_from_stmt (vn_nary_op_t vno, gimple stmt)
   unsigned i;
 
   vno->opcode = gimple_assign_rhs_code (stmt);
-  vno->length = gimple_num_ops (stmt) - 1;
   vno->type = gimple_expr_type (stmt);
-  for (i = 0; i < vno->length; ++i)
-    vno->op[i] = gimple_op (stmt, i + 1);
-  if (vno->opcode == REALPART_EXPR
-      || vno->opcode == IMAGPART_EXPR
-      || vno->opcode == VIEW_CONVERT_EXPR)
-    vno->op[0] = TREE_OPERAND (vno->op[0], 0);
+  switch (vno->opcode)
+    {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
+      vno->length = 1;
+      vno->op[0] = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+      break;
+
+    case CONSTRUCTOR:
+      vno->length = CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt));
+      for (i = 0; i < vno->length; ++i)
+	vno->op[i] = CONSTRUCTOR_ELT (gimple_assign_rhs1 (stmt), i)->value;
+      break;
+
+    default:
+      vno->length = gimple_num_ops (stmt) - 1;
+      for (i = 0; i < vno->length; ++i)
+	vno->op[i] = gimple_op (stmt, i + 1);
+    }
 }
 
 /* Compute the hashcode for VNO and look for it in the hash table;
@@ -2023,12 +2047,12 @@ vn_nary_op_lookup_1 (vn_nary_op_t vno, vn_nary_op_t *vnresult)
 
 tree
 vn_nary_op_lookup_pieces (unsigned int length, enum tree_code code,
-			  tree type, tree op0, tree op1, tree op2,
-			  tree op3, vn_nary_op_t *vnresult)
+			  tree type, tree *ops, vn_nary_op_t *vnresult)
 {
-  struct vn_nary_op_s vno1;
-  init_vn_nary_op_from_pieces (&vno1, length, code, type, op0, op1, op2, op3);
-  return vn_nary_op_lookup_1 (&vno1, vnresult);
+  vn_nary_op_t vno1 = XALLOCAVAR (struct vn_nary_op_s,
+				  sizeof_vn_nary_op (length));
+  init_vn_nary_op_from_pieces (vno1, length, code, type, ops);
+  return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
 /* Lookup OP in the current hash table, and return the resulting value
@@ -2040,9 +2064,11 @@ vn_nary_op_lookup_pieces (unsigned int length, enum tree_code code,
 tree
 vn_nary_op_lookup (tree op, vn_nary_op_t *vnresult)
 {
-  struct vn_nary_op_s vno1;
-  init_vn_nary_op_from_op (&vno1, op);
-  return vn_nary_op_lookup_1 (&vno1, vnresult);
+  vn_nary_op_t vno1
+    = XALLOCAVAR (struct vn_nary_op_s,
+		  sizeof_vn_nary_op (TREE_CODE_LENGTH (TREE_CODE (op))));
+  init_vn_nary_op_from_op (vno1, op);
+  return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
 /* Lookup the rhs of STMT in the current hash table, and return the resulting
@@ -2053,17 +2079,11 @@ vn_nary_op_lookup (tree op, vn_nary_op_t *vnresult)
 tree
 vn_nary_op_lookup_stmt (gimple stmt, vn_nary_op_t *vnresult)
 {
-  struct vn_nary_op_s vno1;
-  init_vn_nary_op_from_stmt (&vno1, stmt);
-  return vn_nary_op_lookup_1 (&vno1, vnresult);
-}
-
-/* Return the size of a vn_nary_op_t with LENGTH operands.  */
-
-static size_t
-sizeof_vn_nary_op (unsigned int length)
-{
-  return sizeof (struct vn_nary_op_s) - sizeof (tree) * (4 - length);
+  vn_nary_op_t vno1
+    = XALLOCAVAR (struct vn_nary_op_s,
+		  sizeof_vn_nary_op (vn_nary_length_from_stmt (stmt)));
+  init_vn_nary_op_from_stmt (vno1, stmt);
+  return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
 /* Allocate a vn_nary_op_t with LENGTH operands on STACK.  */
@@ -2114,15 +2134,11 @@ vn_nary_op_insert_into (vn_nary_op_t vno, htab_t table, bool compute_hash)
 
 vn_nary_op_t
 vn_nary_op_insert_pieces (unsigned int length, enum tree_code code,
-			  tree type, tree op0,
-			  tree op1, tree op2, tree op3,
-			  tree result,
-			  unsigned int value_id)
+			  tree type, tree *ops,
+			  tree result, unsigned int value_id)
 {
-  vn_nary_op_t vno1;
-
-  vno1 = alloc_vn_nary_op (length, result, value_id);
-  init_vn_nary_op_from_pieces (vno1, length, code, type, op0, op1, op2, op3);
+  vn_nary_op_t vno1 = alloc_vn_nary_op (length, result, value_id);
+  init_vn_nary_op_from_pieces (vno1, length, code, type, ops);
   return vn_nary_op_insert_into (vno1, current_info->nary, true);
 }
 
@@ -2147,10 +2163,9 @@ vn_nary_op_insert (tree op, tree result)
 vn_nary_op_t
 vn_nary_op_insert_stmt (gimple stmt, tree result)
 {
-  unsigned length = gimple_num_ops (stmt) - 1;
-  vn_nary_op_t vno1;
-
-  vno1 = alloc_vn_nary_op (length, result, VN_INFO (result)->value_id);
+  vn_nary_op_t vno1
+    = alloc_vn_nary_op (vn_nary_length_from_stmt (stmt),
+			result, VN_INFO (result)->value_id);
   init_vn_nary_op_from_stmt (vno1, stmt);
   return vn_nary_op_insert_into (vno1, current_info->nary, true);
 }
@@ -2805,6 +2820,19 @@ stmt_has_constants (gimple stmt)
   return false;
 }
 
+/* Valueize NAME if it is an SSA name, otherwise just return it.  */
+
+static inline tree
+vn_valueize (tree name)
+{
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      tree tem = SSA_VAL (name);
+      return tem == VN_TOP ? name : tem;
+    }
+  return name;
+}
+
 /* Replace SSA_NAMES in expr with their value numbers, and return the
    result.
    This is performed in place. */
@@ -2814,21 +2842,13 @@ valueize_expr (tree expr)
 {
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
-    case tcc_unary:
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
-	  && SSA_VAL (TREE_OPERAND (expr, 0)) != VN_TOP)
-	TREE_OPERAND (expr, 0) = SSA_VAL (TREE_OPERAND (expr, 0));
-      break;
     case tcc_binary:
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
-	  && SSA_VAL (TREE_OPERAND (expr, 0)) != VN_TOP)
-	TREE_OPERAND (expr, 0) = SSA_VAL (TREE_OPERAND (expr, 0));
-      if (TREE_CODE (TREE_OPERAND (expr, 1)) == SSA_NAME
-	  && SSA_VAL (TREE_OPERAND (expr, 1)) != VN_TOP)
-	TREE_OPERAND (expr, 1) = SSA_VAL (TREE_OPERAND (expr, 1));
+      TREE_OPERAND (expr, 1) = vn_valueize (TREE_OPERAND (expr, 1));
+      /* Fallthru.  */
+    case tcc_unary:
+      TREE_OPERAND (expr, 0) = vn_valueize (TREE_OPERAND (expr, 0));
       break;
-    default:
-      break;
+    default:;
     }
   return expr;
 }
@@ -2842,6 +2862,7 @@ simplify_binary_expression (gimple stmt)
   tree result = NULL_TREE;
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
+  enum tree_code code = gimple_assign_rhs_code (stmt);
 
   /* This will not catch every single case we could combine, but will
      catch those with constants.  The goal here is to simultaneously
@@ -2850,23 +2871,25 @@ simplify_binary_expression (gimple stmt)
   if (TREE_CODE (op0) == SSA_NAME)
     {
       if (VN_INFO (op0)->has_constants
-	  || TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
+	  || TREE_CODE_CLASS (code) == tcc_comparison
+	  || code == COMPLEX_EXPR)
 	op0 = valueize_expr (vn_get_expr_for (op0));
-      else if (SSA_VAL (op0) != VN_TOP && SSA_VAL (op0) != op0)
-	op0 = SSA_VAL (op0);
+      else
+	op0 = vn_valueize (op0);
     }
 
   if (TREE_CODE (op1) == SSA_NAME)
     {
-      if (VN_INFO (op1)->has_constants)
+      if (VN_INFO (op1)->has_constants
+	  || code == COMPLEX_EXPR)
 	op1 = valueize_expr (vn_get_expr_for (op1));
-      else if (SSA_VAL (op1) != VN_TOP && SSA_VAL (op1) != op1)
-	op1 = SSA_VAL (op1);
+      else
+	op1 = vn_valueize (op1);
     }
 
   /* Pointer plus constant can be represented as invariant address.
      Do so to allow further propatation, see also tree forwprop.  */
-  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+  if (code == POINTER_PLUS_EXPR
       && host_integerp (op1, 1)
       && TREE_CODE (op0) == ADDR_EXPR
       && is_gimple_min_invariant (op0))
@@ -2881,8 +2904,7 @@ simplify_binary_expression (gimple stmt)
 
   fold_defer_overflow_warnings ();
 
-  result = fold_binary (gimple_assign_rhs_code (stmt),
-		        gimple_expr_type (stmt), op0, op1);
+  result = fold_binary (code, gimple_expr_type (stmt), op0, op1);
   if (result)
     STRIP_USELESS_TYPE_CONVERSION (result);
 
@@ -2907,12 +2929,13 @@ simplify_unary_expression (gimple stmt)
 {
   tree result = NULL_TREE;
   tree orig_op0, op0 = gimple_assign_rhs1 (stmt);
+  enum tree_code code = gimple_assign_rhs_code (stmt);
 
   /* We handle some tcc_reference codes here that are all
      GIMPLE_ASSIGN_SINGLE codes.  */
-  if (gimple_assign_rhs_code (stmt) == REALPART_EXPR
-      || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR
-      || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+  if (code == REALPART_EXPR
+      || code == IMAGPART_EXPR
+      || code == VIEW_CONVERT_EXPR)
     op0 = TREE_OPERAND (op0, 0);
 
   if (TREE_CODE (op0) != SSA_NAME)
@@ -2921,10 +2944,10 @@ simplify_unary_expression (gimple stmt)
   orig_op0 = op0;
   if (VN_INFO (op0)->has_constants)
     op0 = valueize_expr (vn_get_expr_for (op0));
-  else if (gimple_assign_cast_p (stmt)
-	   || gimple_assign_rhs_code (stmt) == REALPART_EXPR
-	   || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR
-	   || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+  else if (CONVERT_EXPR_CODE_P (code)
+	   || code == REALPART_EXPR
+	   || code == IMAGPART_EXPR
+	   || code == VIEW_CONVERT_EXPR)
     {
       /* We want to do tree-combining on conversion-like expressions.
          Make sure we feed only SSA_NAMEs or constants to fold though.  */
@@ -2941,8 +2964,7 @@ simplify_unary_expression (gimple stmt)
   if (op0 == orig_op0)
     return NULL_TREE;
 
-  result = fold_unary_ignore_overflow (gimple_assign_rhs_code (stmt),
-				       gimple_expr_type (stmt), op0);
+  result = fold_unary_ignore_overflow (code, gimple_expr_type (stmt), op0);
   if (result)
     {
       STRIP_USELESS_TYPE_CONVERSION (result);
@@ -2951,19 +2973,6 @@ simplify_unary_expression (gimple stmt)
     }
 
   return NULL_TREE;
-}
-
-/* Valueize NAME if it is an SSA name, otherwise just return it.  */
-
-static inline tree
-vn_valueize (tree name)
-{
-  if (TREE_CODE (name) == SSA_NAME)
-    {
-      tree tem = SSA_VAL (name);
-      return tem == VN_TOP ? name : tem;
-    }
-  return name;
 }
 
 /* Try to simplify RHS using equivalences and constant folding.  */
@@ -3043,16 +3052,17 @@ visit_use (tree use)
 	changed = defs_to_varying (stmt);
       else if (is_gimple_assign (stmt))
 	{
+	  enum tree_code code = gimple_assign_rhs_code (stmt);
 	  tree lhs = gimple_assign_lhs (stmt);
+	  tree rhs1 = gimple_assign_rhs1 (stmt);
 	  tree simplified;
 
 	  /* Shortcut for copies. Simplifying copies is pointless,
 	     since we copy the expression and value they represent.  */
-	  if (gimple_assign_copy_p (stmt)
-	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+	  if (code == SSA_NAME
 	      && TREE_CODE (lhs) == SSA_NAME)
 	    {
-	      changed = visit_copy (lhs, gimple_assign_rhs1 (stmt));
+	      changed = visit_copy (lhs, rhs1);
 	      goto done;
 	    }
 	  simplified = try_to_simplify (stmt);
@@ -3119,24 +3129,22 @@ visit_use (tree use)
 	       /* We can substitute SSA_NAMEs that are live over
 		  abnormal edges with their constant value.  */
 	       && !(gimple_assign_copy_p (stmt)
-		    && is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
+		    && is_gimple_min_invariant (rhs1))
 	       && !(simplified
 		    && is_gimple_min_invariant (simplified))
 	       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	      /* Stores or copies from SSA_NAMEs that are live over
 		 abnormal edges are a problem.  */
-	      || (gimple_assign_single_p (stmt)
-		  && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
-		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs1 (stmt))))
+	      || (code == SSA_NAME
+		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
 	    changed = defs_to_varying (stmt);
-	  else if (REFERENCE_CLASS_P (lhs) || DECL_P (lhs))
-	    {
-	      changed = visit_reference_op_store (lhs, gimple_assign_rhs1 (stmt), stmt);
-	    }
+	  else if (REFERENCE_CLASS_P (lhs)
+		   || DECL_P (lhs))
+	    changed = visit_reference_op_store (lhs, rhs1, stmt);
 	  else if (TREE_CODE (lhs) == SSA_NAME)
 	    {
 	      if ((gimple_assign_copy_p (stmt)
-		   && is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
+		   && is_gimple_min_invariant (rhs1))
 		  || (simplified
 		      && is_gimple_min_invariant (simplified)))
 		{
@@ -3144,11 +3152,11 @@ visit_use (tree use)
 		  if (simplified)
 		    changed = set_ssa_val_to (lhs, simplified);
 		  else
-		    changed = set_ssa_val_to (lhs, gimple_assign_rhs1 (stmt));
+		    changed = set_ssa_val_to (lhs, rhs1);
 		}
 	      else
 		{
-		  switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
+		  switch (get_gimple_rhs_class (code))
 		    {
 		    case GIMPLE_UNARY_RHS:
 		    case GIMPLE_BINARY_RHS:
@@ -3156,31 +3164,33 @@ visit_use (tree use)
 		      changed = visit_nary_op (lhs, stmt);
 		      break;
 		    case GIMPLE_SINGLE_RHS:
-		      switch (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)))
+		      switch (TREE_CODE_CLASS (code))
 			{
 			case tcc_reference:
 			  /* VOP-less references can go through unary case.  */
-			  if ((gimple_assign_rhs_code (stmt) == REALPART_EXPR
-			       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR
-			       || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
-			      && TREE_CODE (TREE_OPERAND (gimple_assign_rhs1 (stmt), 0)) == SSA_NAME)
+			  if ((code == REALPART_EXPR
+			       || code == IMAGPART_EXPR
+			       || code == VIEW_CONVERT_EXPR)
+			      && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
 			    {
 			      changed = visit_nary_op (lhs, stmt);
 			      break;
 			    }
 			  /* Fallthrough.  */
 			case tcc_declaration:
-			  changed = visit_reference_op_load
-			      (lhs, gimple_assign_rhs1 (stmt), stmt);
+			  changed = visit_reference_op_load (lhs, rhs1, stmt);
 			  break;
-			case tcc_expression:
-			  if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+			default:
+			  if (code == ADDR_EXPR)
 			    {
 			      changed = visit_nary_op (lhs, stmt);
 			      break;
 			    }
-			  /* Fallthrough.  */
-			default:
+			  else if (code == CONSTRUCTOR)
+			    {
+			      changed = visit_nary_op (lhs, stmt);
+			      break;
+			    }
 			  changed = defs_to_varying (stmt);
 			}
 		      break;

@@ -71,7 +71,7 @@ static void require_complete_types_for_parms (tree);
 static int ambi_op_p (enum tree_code);
 static int unary_op_p (enum tree_code);
 static void push_local_name (tree);
-static tree grok_reference_init (tree, tree, tree, tree *);
+static tree grok_reference_init (tree, tree, tree, tree *, int);
 static tree grokvardecl (tree, tree, const cp_decl_specifier_seq *,
 			 int, int, tree);
 static int check_static_variable_definition (tree, tree);
@@ -4574,7 +4574,8 @@ start_decl_1 (tree decl, bool initialized)
    Quotes on semantics can be found in ARM 8.4.3.  */
 
 static tree
-grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
+grok_reference_init (tree decl, tree type, tree init, tree *cleanup,
+		     int flags)
 {
   tree tmp;
 
@@ -4603,7 +4604,8 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
      DECL_INITIAL for local references (instead assigning to them
      explicitly); we need to allow the temporary to be initialized
      first.  */
-  tmp = initialize_reference (type, init, decl, cleanup, tf_warning_or_error);
+  tmp = initialize_reference (type, init, decl, cleanup, flags,
+			      tf_warning_or_error);
   if (DECL_DECLARED_CONSTEXPR_P (decl))
     {
       tmp = cxx_constant_value (tmp);
@@ -5468,7 +5470,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
   else if (!init && DECL_REALLY_EXTERN (decl))
     ;
   else if (TREE_CODE (type) == REFERENCE_TYPE)
-    init = grok_reference_init (decl, type, init, cleanup);
+    init = grok_reference_init (decl, type, init, cleanup, flags);
   else if (init || type_build_ctor_call (type))
     {
       if (!init)
@@ -9049,6 +9051,10 @@ grokdeclarator (const cp_declarator *declarator,
             virt_specifiers = declarator->u.function.virt_specifiers;
 	    /* Pick up the exception specifications.  */
 	    raises = declarator->u.function.exception_specification;
+	    /* If the exception-specification is ill-formed, let's pretend
+	       there wasn't one.  */
+	    if (raises == error_mark_node)
+	      raises = NULL_TREE;
 
 	    /* Say it's a definition only for the CALL_EXPR
 	       closest to the identifier.  */
@@ -12659,10 +12665,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	maybe_apply_pragma_weak (decl1);
     }
 
-  /* constexpr functions must have literal argument types and
-     literal return type.  */
-  validate_constexpr_fundecl (decl1);
-
   /* Reset this in case the call to pushdecl changed it.  */
   current_function_decl = decl1;
 
@@ -13391,6 +13393,10 @@ finish_function (int flags)
 		   "parameter %q+D set but not used", decl);
       unused_but_set_errorcount = errorcount;
     }
+
+  /* Complain about locally defined typedefs that are not used in this
+     function.  */
+  maybe_warn_unused_local_typedefs ();
 
   /* Genericize before inlining.  */
   if (!processing_template_decl)

@@ -1492,8 +1492,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		|| (flag_stack_check == GENERIC_STACK_CHECK
 		    && compare_tree_int (DECL_SIZE_UNIT (gnu_decl),
 					 STACK_CHECK_MAX_VAR_SIZE) > 0)))
-	  add_stmt_with_node (build_call_1_expr
-			      (update_setjmp_buf_decl,
+	  add_stmt_with_node (build_call_n_expr
+			      (update_setjmp_buf_decl, 1,
 			       build_unary_op (ADDR_EXPR, NULL_TREE,
 					       get_block_jmpbuf_decl ())),
 			      gnat_entity);
@@ -6521,6 +6521,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align != 0
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_MODE (type) == BLKmode
+      && !TREE_ADDRESSABLE (type)
       && TREE_CODE (orig_size) == INTEGER_CST
       && !TREE_OVERFLOW (orig_size)
       && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0

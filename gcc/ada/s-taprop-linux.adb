@@ -38,8 +38,6 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
-with Ada.Unchecked_Deallocation;
-
 with Interfaces.C;
 
 with System.Task_Info;
@@ -136,6 +134,13 @@ package body System.Task_Primitives.Operations is
 
    package body Specific is separate;
    --  The body of this package is target specific
+
+   ----------------------------------
+   -- ATCB allocation/deallocation --
+   ----------------------------------
+
+   package body ATCB_Allocation is separate;
+   --  The body of this package is shared across several targets
 
    ---------------------------------
    -- Support for foreign threads --
@@ -731,15 +736,6 @@ package body System.Task_Primitives.Operations is
       end if;
    end Enter_Task;
 
-   --------------
-   -- New_ATCB --
-   --------------
-
-   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_Id is
-   begin
-      return new Ada_Task_Control_Block (Entry_Num);
-   end New_ATCB;
-
    -------------------
    -- Is_Valid_Task --
    -------------------
@@ -978,12 +974,7 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Finalize_TCB (T : Task_Id) is
-      Result  : Interfaces.C.int;
-      Tmp     : Task_Id := T;
-      Is_Self : constant Boolean := T = Self;
-
-      procedure Free is new
-        Ada.Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
+      Result : Interfaces.C.int;
 
    begin
       if not Single_Lock then
@@ -999,11 +990,8 @@ package body System.Task_Primitives.Operations is
       end if;
 
       SC.Invalidate_Stack_Cache (T.Common.Compiler_Data.Pri_Stack_Info'Access);
-      Free (Tmp);
 
-      if Is_Self then
-         Specific.Set (null);
-      end if;
+      ATCB_Allocation.Free_ATCB (T);
    end Finalize_TCB;
 
    ---------------

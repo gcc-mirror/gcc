@@ -18187,6 +18187,17 @@ cp_parser_member_declaration (cp_parser* parser)
 		  initializer_token_start = cp_lexer_peek_token (parser->lexer);
 		  if (function_declarator_p (declarator))
 		    initializer = cp_parser_pure_specifier (parser);
+		  else if (cxx_dialect >= cxx0x)
+		    {
+		      bool nonconst;
+		      /* Don't require a constant rvalue in C++11, since we
+			 might want a reference constant.  We'll enforce
+		         constancy later.  */
+		      cp_lexer_consume_token (parser->lexer);
+		      /* Parse the initializer.  */
+		      initializer = cp_parser_initializer_clause (parser,
+								  &nonconst);
+		    }
 		  else
 		    /* Parse the initializer.  */
 		    initializer = cp_parser_constant_initializer (parser);
@@ -19575,6 +19586,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
      as per [temp.explicit].  */
   if (DECL_P (decl))
     check_accessibility_of_qualified_id (decl, object_type, parser->scope);
+
+  maybe_record_typedef_use (decl);
 
   return decl;
 }

@@ -985,15 +985,20 @@ split_function (struct split_point *split_point)
       bitmap_set_bit (args_to_skip, num);
     else
       {
-	arg = gimple_default_def (cfun, parm);
-	if (!arg)
+	/* This parm might not have been used up to now, but is going to be
+	   used, hence register it.  */
+	add_referenced_var (parm);
+	if (is_gimple_reg (parm))
 	  {
-	    /* This parm wasn't used up to now, but is going to be used,
-	       hence register it.  */
-	    add_referenced_var (parm);
-	    arg = make_ssa_name (parm, gimple_build_nop ());
-	    set_default_def (parm, arg);
+	    arg = gimple_default_def (cfun, parm);
+	    if (!arg)
+	      {
+		arg = make_ssa_name (parm, gimple_build_nop ());
+		set_default_def (parm, arg);
+	      }
 	  }
+	else
+	  arg = parm;
 
 	if (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm))
 	    != TYPE_MAIN_VARIANT (TREE_TYPE (arg)))

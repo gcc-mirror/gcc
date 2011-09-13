@@ -268,8 +268,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
--Wunused-label  -Wunused-parameter -Wno-unused-result -Wunused-value @gol
--Wunused-variable -Wunused-but-set-parameter -Wunused-but-set-variable @gol
+-Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
+-Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
+-Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wvariadic-macros -Wvla -Wvolatile-register-var  -Wwrite-strings}
 
 @item C and Objective-C-only Warning Options
@@ -3500,6 +3501,10 @@ This warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
+
+@item -Wunused-local-typedefs @r{(C, Objective-C, C++ and Objective-C++ only)}
+@opindex Wunused-local-typedefs
+Warn when a typedef locally defined in a function is not used.
 
 @item -Wunused-parameter
 @opindex Wunused-parameter
@@ -9076,6 +9081,11 @@ The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is
 0, use the default for the machine.  The default is 0.
 
+@item tree-reassoc-width
+Set the maximum number of instructions executed in parallel in
+reassociated tree. This parameter overrides target dependent
+heuristics used by default if has non zero value.
+
 @end table
 @end table
 
@@ -10319,6 +10329,10 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
+@option{-mcpu=generic-@var{arch}} is also permissible, and is
+equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
+See @option{-mtune} for more information.
+
 @item -mtune=@var{name}
 @opindex mtune
 This option is very similar to the @option{-mcpu=} option, except that
@@ -10329,6 +10343,13 @@ specified in this option, but still choosing the instructions that it
 will generate based on the CPU specified by a @option{-mcpu=} option.
 For some ARM implementations better performance can be obtained by using
 this option.
+
+@option{-mtune=generic-@var{arch}} specifies that GCC should tune the
+performance for a blend of processors within architecture @var{arch}.
+The aim is to generate code that run well on the current most popular
+processors, balancing between optimizations that benefit some CPUs in the
+range, and avoiding performance pitfalls of other CPUs.  The effects of
+this option may change in future GCC versions as CPU models come and go.
 
 @item -march=@var{name}
 @opindex march

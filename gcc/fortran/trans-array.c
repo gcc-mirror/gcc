@@ -511,6 +511,63 @@ gfc_free_ss (gfc_ss * ss)
 }
 
 
+/* Creates and initializes an array type gfc_ss struct.  */
+
+gfc_ss *
+gfc_get_array_ss (gfc_ss *next, gfc_expr *expr, int dimen, gfc_ss_type type)
+{
+  gfc_ss *ss;
+  gfc_ss_info *info;
+  int i;
+
+  ss = gfc_get_ss ();
+  ss->next = next;
+  ss->type = type;
+  ss->expr = expr;
+  info = &ss->data.info;
+  info->dimen = dimen;
+  info->codimen = 0;
+  for (i = 0; i < info->dimen; i++)
+    info->dim[i] = i;
+
+  return ss;
+}
+
+
+/* Creates and initializes a temporary type gfc_ss struct.  */
+
+gfc_ss *
+gfc_get_temp_ss (tree type, tree string_length, int dimen)
+{
+  gfc_ss *ss;
+
+  ss = gfc_get_ss ();
+  ss->next = gfc_ss_terminator;
+  ss->type = GFC_SS_TEMP;
+  ss->string_length = string_length;
+  ss->data.temp.dimen = dimen;
+  ss->data.temp.type = type;
+
+  return ss;
+}
+		
+
+/* Creates and initializes a scalar type gfc_ss struct.  */
+
+gfc_ss *
+gfc_get_scalar_ss (gfc_ss *next, gfc_expr *expr)
+{
+  gfc_ss *ss;
+
+  ss = gfc_get_ss ();
+  ss->next = next;
+  ss->type = GFC_SS_SCALAR;
+  ss->expr = expr;
+
+  return ss;
+}
+
+
 /* Free all the SS associated with a loop.  */
 
 void
@@ -1825,7 +1882,6 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
       info->start[i] = gfc_index_zero_node;
       info->end[i] = gfc_index_zero_node;
       info->stride[i] = gfc_index_one_node;
-      info->dim[i] = i;
     }
 
   if (info->dimen > loop->temp_dim)
@@ -1904,7 +1960,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
       first_len = true;
     }
 
-  ss->data.info.dimen = loop->dimen;
+  gcc_assert (ss->data.info.dimen == loop->dimen);
 
   c = ss->expr->value.constructor;
   if (ss->expr->ts.type == BT_CHARACTER)
@@ -3798,13 +3854,9 @@ temporary:
       if (GFC_ARRAY_TYPE_P (base_type)
 	  || GFC_DESCRIPTOR_TYPE_P (base_type))
 	base_type = gfc_get_element_type (base_type);
-      loop->temp_ss = gfc_get_ss ();
-      loop->temp_ss->type = GFC_SS_TEMP;
-      loop->temp_ss->data.temp.type = base_type;
-      loop->temp_ss->string_length = dest->string_length;
-      loop->temp_ss->data.temp.dimen = loop->dimen;
+      loop->temp_ss = gfc_get_temp_ss (base_type, dest->string_length,
+				       loop->dimen);
       loop->temp_ss->data.temp.codimen = loop->codimen;
-      loop->temp_ss->next = gfc_ss_terminator;
       gfc_add_ss_to_loop (loop, loop->temp_ss);
     }
   else
@@ -5851,24 +5903,18 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
   if (need_tmp)
     {
-      /* Tell the scalarizer to make a temporary.  */
-      loop.temp_ss = gfc_get_ss ();
-      loop.temp_ss->type = GFC_SS_TEMP;
-      loop.temp_ss->next = gfc_ss_terminator;
-
-      if (expr->ts.type == BT_CHARACTER
-	    && !expr->ts.u.cl->backend_decl)
+      if (expr->ts.type == BT_CHARACTER && !expr->ts.u.cl->backend_decl)
 	get_array_charlen (expr, se);
 
-      loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
-
-      if (expr->ts.type == BT_CHARACTER)
-	loop.temp_ss->string_length = expr->ts.u.cl->backend_decl;
-      else
-	loop.temp_ss->string_length = NULL;
+      /* Tell the scalarizer to make a temporary.  */
+      loop.temp_ss = gfc_get_temp_ss (gfc_typenode_for_spec (&expr->ts),
+				      ((expr->ts.type == BT_CHARACTER)
+				       ? expr->ts.u.cl->backend_decl
+				       : NULL),
+				      loop.dimen);
 
       se->string_length = loop.temp_ss->string_length;
-      loop.temp_ss->data.temp.dimen = loop.dimen;
+      gcc_assert (loop.temp_ss->data.temp.dimen == loop.dimen);
       loop.temp_ss->data.temp.codimen = loop.codimen;
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
@@ -7566,17 +7612,8 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
     {
       if (ref->type == REF_SUBSTRING)
 	{
-	  newss = gfc_get_ss ();
-	  newss->type = GFC_SS_SCALAR;
-	  newss->expr = ref->u.ss.start;
-	  newss->next = ss;
-	  ss = newss;
-
-	  newss = gfc_get_ss ();
-	  newss->type = GFC_SS_SCALAR;
-	  newss->expr = ref->u.ss.end;
-	  newss->next = ss;
-	  ss = newss;
+	  ss = gfc_get_scalar_ss (ss, ref->u.ss.start);
+	  ss = gfc_get_scalar_ss (ss, ref->u.ss.end);
 	}
 
       /* We're only interested in array sections from now on.  */
@@ -7595,22 +7632,11 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	{
 	case AR_ELEMENT:
 	  for (n = ar->dimen + ar->codimen - 1; n >= 0; n--)
-	    {
-	      newss = gfc_get_ss ();
-	      newss->type = GFC_SS_SCALAR;
-	      newss->expr = ar->start[n];
-	      newss->next = ss;
-	      ss = newss;
-	    }
+	    ss = gfc_get_scalar_ss (ss, ar->start[n]);
 	  break;
 
 	case AR_FULL:
-	  newss = gfc_get_ss ();
-	  newss->type = GFC_SS_SECTION;
-	  newss->expr = expr;
-	  newss->next = ss;
-	  newss->data.info.dimen = ar->as->rank;
-	  newss->data.info.codimen = 0;
+	  newss = gfc_get_array_ss (ss, expr, ar->as->rank, GFC_SS_SECTION);
 	  newss->data.info.ref = ref;
 
 	  /* Make sure array is the same as array(:,:), this way
@@ -7619,7 +7645,6 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  ar->codimen = 0;
 	  for (n = 0; n < ar->dimen; n++)
 	    {
-	      newss->data.info.dim[n] = n;
 	      ar->dimen_type[n] = DIMEN_RANGE;
 
 	      gcc_assert (ar->start[n] == NULL);
@@ -7638,15 +7663,10 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  break;
 
 	case AR_SECTION:
-	  newss = gfc_get_ss ();
-	  newss->type = GFC_SS_SECTION;
-	  newss->expr = expr;
-	  newss->next = ss;
-	  newss->data.info.dimen = 0;
-	  newss->data.info.codimen = 0;
+	  newss = gfc_get_array_ss (ss, expr, 0, GFC_SS_SECTION);
 	  newss->data.info.ref = ref;
 
-          /* We add SS chains for all the subscripts in the section.  */
+	  /* We add SS chains for all the subscripts in the section.  */
 	  for (n = 0; n < ar->dimen + ar->codimen; n++)
 	    {
 	      gfc_ss *indexss;
@@ -7658,10 +7678,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 		case DIMEN_ELEMENT:
 		  /* Add SS for elemental (scalar) subscripts.  */
 		  gcc_assert (ar->start[n]);
-		  indexss = gfc_get_ss ();
-		  indexss->type = GFC_SS_SCALAR;
-		  indexss->expr = ar->start[n];
-		  indexss->next = gfc_ss_terminator;
+		  indexss = gfc_get_scalar_ss (gfc_ss_terminator, ar->start[n]);
 		  indexss->loop_chain = gfc_ss_terminator;
 		  newss->data.info.subscript[n] = indexss;
 		  break;
@@ -7678,10 +7695,8 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 		case DIMEN_VECTOR:
 		  /* Create a GFC_SS_VECTOR index in which we can store
 		     the vector's descriptor.  */
-		  indexss = gfc_get_ss ();
-		  indexss->type = GFC_SS_VECTOR;
-		  indexss->expr = ar->start[n];
-		  indexss->next = gfc_ss_terminator;
+		  indexss = gfc_get_array_ss (gfc_ss_terminator, ar->start[n],
+					      1, GFC_SS_VECTOR);
 		  indexss->loop_chain = gfc_ss_terminator;
 		  newss->data.info.subscript[n] = indexss;
 		  newss->data.info.dim[newss->data.info.dimen
@@ -7718,7 +7733,6 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
 {
   gfc_ss *head;
   gfc_ss *head2;
-  gfc_ss *newss;
 
   head = gfc_walk_subexpr (ss, expr->value.op.op1);
   if (expr->value.op.op2 == NULL)
@@ -7736,8 +7750,6 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
 
   /* One of the operands needs scalarization, the other is scalar.
      Create a gfc_ss for the scalar expression.  */
-  newss = gfc_get_ss ();
-  newss->type = GFC_SS_SCALAR;
   if (head == ss)
     {
       /* First operand is scalar.  We build the chain in reverse order, so
@@ -7747,17 +7759,13 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
 	head = head->next;
       /* Check we haven't somehow broken the chain.  */
       gcc_assert (head);
-      newss->next = ss;
-      head->next = newss;
-      newss->expr = expr->value.op.op1;
+      head->next = gfc_get_scalar_ss (ss, expr->value.op.op1);
     }
   else				/* head2 == head */
     {
       gcc_assert (head2 == head);
       /* Second operand is scalar.  */
-      newss->next = head2;
-      head2 = newss;
-      newss->expr = expr->value.op.op2;
+      head2 = gfc_get_scalar_ss (head2, expr->value.op.op2);
     }
 
   return head2;
@@ -7812,10 +7820,9 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
       if (newss == head)
 	{
 	  /* Scalar argument.  */
-	  newss = gfc_get_ss ();
+	  gcc_assert (type == GFC_SS_SCALAR || type == GFC_SS_REFERENCE);
+	  newss = gfc_get_scalar_ss (head, arg->expr);
 	  newss->type = type;
-	  newss->expr = arg->expr;
-	  newss->next = head;
 	}
       else
 	scalar = 0;
@@ -7852,11 +7859,9 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 static gfc_ss *
 gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 {
-  gfc_ss *newss;
   gfc_intrinsic_sym *isym;
   gfc_symbol *sym;
   gfc_component *comp = NULL;
-  int n;
 
   isym = expr->value.function.isym;
 
@@ -7872,16 +7877,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   gfc_is_proc_ptr_comp (expr, &comp);
   if ((!comp && gfc_return_by_reference (sym) && sym->result->attr.dimension)
       || (comp && comp->attr.dimension))
-    {
-      newss = gfc_get_ss ();
-      newss->type = GFC_SS_FUNCTION;
-      newss->expr = expr;
-      newss->next = ss;
-      newss->data.info.dimen = expr->rank;
-      for (n = 0; n < newss->data.info.dimen; n++)
-	newss->data.info.dim[n] = n;
-      return newss;
-    }
+    return gfc_get_array_ss (ss, expr, expr->rank, GFC_SS_FUNCTION);
 
   /* Walk the parameters of an elemental function.  For now we always pass
      by reference.  */
@@ -7900,18 +7896,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 static gfc_ss *
 gfc_walk_array_constructor (gfc_ss * ss, gfc_expr * expr)
 {
-  gfc_ss *newss;
-  int n;
-
-  newss = gfc_get_ss ();
-  newss->type = GFC_SS_CONSTRUCTOR;
-  newss->expr = expr;
-  newss->next = ss;
-  newss->data.info.dimen = expr->rank;
-  for (n = 0; n < expr->rank; n++)
-    newss->data.info.dim[n] = n;
-
-  return newss;
+  return gfc_get_array_ss (ss, expr, expr->rank, GFC_SS_CONSTRUCTOR);
 }
 
 

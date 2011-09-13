@@ -501,6 +501,21 @@ int sdb_label_count;
 int mips_dbx_regno[FIRST_PSEUDO_REGISTER];
 int mips_dwarf_regno[FIRST_PSEUDO_REGISTER];
 
+/* Information about the current function's epilogue, used only while
+   expanding it.  */
+static struct {
+  /* A list of queued REG_CFA_RESTORE notes.  */
+  rtx cfa_restores;
+
+  /* The CFA is currently defined as CFA_REG + CFA_OFFSET.  */
+  rtx cfa_reg;
+  HOST_WIDE_INT cfa_offset;
+
+  /* The offset of the CFA from the stack pointer while restoring
+     registers.  */
+  HOST_WIDE_INT cfa_restore_sp_offset;
+} mips_epilogue;
+
 /* The nesting depth of the PRINT_OPERAND '%(', '%<' and '%[' constructs.  */
 struct mips_asm_switch mips_noreorder = { "reorder", 0 };
 struct mips_asm_switch mips_nomacro = { "macro", 0 };
@@ -8365,20 +8380,26 @@ mips16e_collect_argument_saves (void)
 }
 
 /* Return a move between register REGNO and memory location SP + OFFSET.
-   Make the move a load if RESTORE_P, otherwise make it a frame-related
-   store.  */
+   REG_PARM_P is true if SP + OFFSET belongs to REG_PARM_STACK_SPACE.
+   Make the move a load if RESTORE_P, otherwise make it a store.  */
 
 static rtx
-mips16e_save_restore_reg (bool restore_p, HOST_WIDE_INT offset,
-			  unsigned int regno)
+mips16e_save_restore_reg (bool restore_p, bool reg_parm_p,
+			  HOST_WIDE_INT offset, unsigned int regno)
 {
   rtx reg, mem;
 
   mem = gen_frame_mem (SImode, plus_constant (stack_pointer_rtx, offset));
   reg = gen_rtx_REG (SImode, regno);
-  return (restore_p
-	  ? gen_rtx_SET (VOIDmode, reg, mem)
-	  : mips_frame_set (mem, reg));
+  if (restore_p)
+    {
+      mips_epilogue.cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+						   mips_epilogue.cfa_restores);
+      return gen_rtx_SET (VOIDmode, reg, mem);
+    }
+  if (reg_parm_p)
+    return gen_rtx_SET (VOIDmode, mem, reg);
+  return mips_frame_set (mem, reg);
 }
 
 /* Return RTL for a MIPS16e SAVE or RESTORE instruction; RESTORE_P says which.
@@ -8440,7 +8461,8 @@ mips16e_build_save_restore (bool restore_p, unsigned int *mask_ptr,
   for (i = 0; i < nargs; i++)
     {
       offset = top_offset + i * UNITS_PER_WORD;
-      set = mips16e_save_restore_reg (restore_p, offset, GP_ARG_FIRST + i);
+      set = mips16e_save_restore_reg (restore_p, true, offset,
+				      GP_ARG_FIRST + i);
       XVECEXP (pattern, 0, n++) = set;
     }
 
@@ -8452,7 +8474,7 @@ mips16e_build_save_restore (bool restore_p, unsigned int *mask_ptr,
       if (BITSET_P (*mask_ptr, regno))
 	{
 	  offset -= UNITS_PER_WORD;
-	  set = mips16e_save_restore_reg (restore_p, offset, regno);
+	  set = mips16e_save_restore_reg (restore_p, false, offset, regno);
 	  XVECEXP (pattern, 0, n++) = set;
 	  *mask_ptr &= ~(1 << regno);
 	}
@@ -10219,7 +10241,47 @@ mips_expand_prologue (void)
     emit_insn (gen_blockage ());
 }
 
-/* Emit instructions to restore register REG from slot MEM.  */
+/* Attach all pending register saves to the previous instruction.
+   Return that instruction.  */
+
+static rtx
+mips_epilogue_emit_cfa_restores (void)
+{
+  rtx insn;
+
+  insn = get_last_insn ();
+  gcc_assert (insn && !REG_NOTES (insn));
+  if (mips_epilogue.cfa_restores)
+    {
+      RTX_FRAME_RELATED_P (insn) = 1;
+      REG_NOTES (insn) = mips_epilogue.cfa_restores;
+      mips_epilogue.cfa_restores = 0;
+    }
+  return insn;
+}
+
+/* Like mips_epilogue_emit_cfa_restores, but also record that the CFA is
+   now at REG + OFFSET.  */
+
+static void
+mips_epilogue_set_cfa (rtx reg, HOST_WIDE_INT offset)
+{
+  rtx insn;
+
+  insn = mips_epilogue_emit_cfa_restores ();
+  if (reg != mips_epilogue.cfa_reg || offset != mips_epilogue.cfa_offset)
+    {
+      RTX_FRAME_RELATED_P (insn) = 1;
+      REG_NOTES (insn) = alloc_reg_note (REG_CFA_DEF_CFA,
+					 plus_constant (reg, offset),
+					 REG_NOTES (insn));
+      mips_epilogue.cfa_reg = reg;
+      mips_epilogue.cfa_offset = offset;
+    }
+}
+
+/* Emit instructions to restore register REG from slot MEM.  Also update
+   the cfa_restores list.  */
 
 static void
 mips_restore_reg (rtx reg, rtx mem)
@@ -10228,8 +10290,17 @@ mips_restore_reg (rtx reg, rtx mem)
      $7 instead and adjust the return insn appropriately.  */
   if (TARGET_MIPS16 && REGNO (reg) == RETURN_ADDR_REGNUM)
     reg = gen_rtx_REG (GET_MODE (reg), GP_REG_FIRST + 7);
+  else
+    mips_epilogue.cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+						 mips_epilogue.cfa_restores);
 
   mips_emit_save_slot_move (reg, mem, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
+  if (REGNO (reg) == REGNO (mips_epilogue.cfa_reg))
+    /* The CFA is currently defined in terms of the register whose
+       value we have just restored.  Redefine the CFA in terms of
+       the stack pointer.  */
+    mips_epilogue_set_cfa (stack_pointer_rtx,
+			   mips_epilogue.cfa_restore_sp_offset);
 }
 
 /* Emit any instructions needed before a return.  */
@@ -10288,6 +10359,9 @@ mips_expand_epilogue (bool sibcall_p)
       base = hard_frame_pointer_rtx;
       step1 -= frame->hard_frame_pointer_offset;
     }
+  mips_epilogue.cfa_reg = base;
+  mips_epilogue.cfa_offset = step1;
+  mips_epilogue.cfa_restores = NULL_RTX;
 
   /* If we need to restore registers, deallocate as much stack as
      possible in the second step without going out of range.  */
@@ -10317,6 +10391,7 @@ mips_expand_epilogue (bool sibcall_p)
 	target = stack_pointer_rtx;
 
       emit_insn (gen_add3_insn (target, base, adjust));
+      mips_epilogue_set_cfa (target, step2);
     }
 
   /* Copy TARGET into the stack pointer.  */
@@ -10329,6 +10404,7 @@ mips_expand_epilogue (bool sibcall_p)
   if (TARGET_CALL_SAVED_GP && !TARGET_EXPLICIT_RELOCS)
     emit_insn (gen_blockage ());
 
+  mips_epilogue.cfa_restore_sp_offset = step2;
   if (GENERATE_MIPS16E_SAVE_RESTORE && frame->mask != 0)
     {
       unsigned int regno, mask;
@@ -10350,6 +10426,7 @@ mips_expand_epilogue (bool sibcall_p)
       /* Restore the remaining registers and deallocate the final bit
 	 of the frame.  */
       emit_insn (restore);
+      mips_epilogue_set_cfa (stack_pointer_rtx, 0);
     }
   else
     {
@@ -10385,9 +10462,15 @@ mips_expand_epilogue (bool sibcall_p)
 
 	  /* If we don't use shoadow register set, we need to update SP.  */
 	  if (!cfun->machine->use_shadow_register_set_p && step2 > 0)
-	    emit_insn (gen_add3_insn (stack_pointer_rtx,
-				      stack_pointer_rtx,
-				      GEN_INT (step2)));
+	    {
+	      emit_insn (gen_add3_insn (stack_pointer_rtx,
+					stack_pointer_rtx,
+					GEN_INT (step2)));
+	      mips_epilogue_set_cfa (stack_pointer_rtx, 0);
+	    }
+	  else
+	    /* The choice of position is somewhat arbitrary in this case.  */
+	    mips_epilogue_emit_cfa_restores ();
 
 	  /* Move to COP0 Status.  */
 	  emit_insn (gen_cop0_move (gen_rtx_REG (SImode, COP0_STATUS_REG_NUM),
@@ -10397,11 +10480,15 @@ mips_expand_epilogue (bool sibcall_p)
 	{
 	  /* Deallocate the final bit of the frame.  */
 	  if (step2 > 0)
-	    emit_insn (gen_add3_insn (stack_pointer_rtx,
-				      stack_pointer_rtx,
-				      GEN_INT (step2)));
+	    {
+	      emit_insn (gen_add3_insn (stack_pointer_rtx,
+					stack_pointer_rtx,
+					GEN_INT (step2)));
+	      mips_epilogue_set_cfa (stack_pointer_rtx, 0);
+	    }
 	}
     }
+  gcc_assert (!mips_epilogue.cfa_restores);
 
   /* Add in the __builtin_eh_return stack adjustment.  We need to
      use a temporary in MIPS16 code.  */

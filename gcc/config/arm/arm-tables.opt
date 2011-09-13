@@ -232,6 +232,9 @@ EnumValue
 Enum(processor_type) String(arm1156t2f-s) Value(arm1156t2fs)
 
 EnumValue
+Enum(processor_type) String(generic-armv7-a) Value(genericv7a)
+
+EnumValue
 Enum(processor_type) String(cortex-a5) Value(cortexa5)
 
 EnumValue

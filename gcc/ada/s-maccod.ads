@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,10 @@
 
 package System.Machine_Code is
    pragma Pure;
+
+   --  All identifiers in this unit are implementation defined
+
+   pragma Implementation_Defined;
 
    type Asm_Input_Operand  is private;
    type Asm_Output_Operand is private;

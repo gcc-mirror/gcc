@@ -1254,6 +1254,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_SINCOSF:
 	case BUILT_IN_SINCOSL:
 	case BUILT_IN_ASSUME_ALIGNED:
+	case BUILT_IN_VA_END:
 	  return false;
 	/* __sync_* builtins and some OpenMP builtins act as threading
 	   barriers.  */
@@ -1518,6 +1519,7 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	   the call has to serve as a barrier for moving loads and stores
 	   across it.  */
 	case BUILT_IN_FREE:
+	case BUILT_IN_VA_END:
 	  {
 	    tree ptr = gimple_call_arg (call, 0);
 	    return ptr_deref_may_alias_ref_p_1 (ptr, ref);
@@ -1763,10 +1765,23 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 			      / BITS_PER_UNIT)))
 		    return true;
 		}
+	      break;
 	    }
+
+	  case BUILT_IN_VA_END:
+	    {
+	      tree ptr = gimple_call_arg (stmt, 0);
+	      if (TREE_CODE (ptr) == ADDR_EXPR)
+		{
+		  tree base = ao_ref_base (ref);
+		  if (TREE_OPERAND (ptr, 0) == base)
+		    return true;
+		}
+	      break;
+	    }
+
 	  default:;
 	  }
-
     }
   return false;
 }

@@ -914,7 +914,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    * template handles the case where it is safe to use @c
    * tuple_element.
    */
-  template<int __i, typename _Tuple, bool _IsSafe>
+  template<std::size_t __i, typename _Tuple, bool _IsSafe>
     struct _Safe_tuple_element_impl
     : tuple_element<__i, _Tuple> { };
 
@@ -923,7 +923,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    * specialization handles the case where it is not safe to use @c
    * tuple_element. We just return @c _No_tuple_element.
    */
-  template<int __i, typename _Tuple>
+  template<std::size_t __i, typename _Tuple>
     struct _Safe_tuple_element_impl<__i, _Tuple, false>
     {
       typedef _No_tuple_element type;
@@ -933,10 +933,10 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    * Like tuple_element, but returns @c _No_tuple_element when
    * tuple_element would return an error.
    */
- template<int __i, typename _Tuple>
+ template<std::size_t __i, typename _Tuple>
    struct _Safe_tuple_element
    : _Safe_tuple_element_impl<__i, _Tuple,
-			      (__i >= 0 && __i < tuple_size<_Tuple>::value)>
+			      (__i < tuple_size<_Tuple>::value)>
    { };
 
   /**
@@ -999,7 +999,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     private:
       // Invokes the underlying function object __arg by unpacking all
       // of the arguments in the tuple.
-      template<typename _CVArg, typename... _Args, int... _Indexes>
+      template<typename _CVArg, typename... _Args, std::size_t... _Indexes>
 	auto
 	__call(_CVArg& __arg, tuple<_Args...>& __tuple,
 	       const _Index_tuple<_Indexes...>&) const volatile
@@ -1112,14 +1112,14 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     };
 
   // std::get<I> for volatile-qualified tuples
-  template<size_t _Ind, typename... _Tp>
+  template<std::size_t _Ind, typename... _Tp>
     inline auto
     __volget(volatile tuple<_Tp...>& __tuple)
     -> typename tuple_element<_Ind, tuple<_Tp...>>::type volatile&
     { return std::get<_Ind>(const_cast<tuple<_Tp...>&>(__tuple)); }
 
   // std::get<I> for const-volatile-qualified tuples
-  template<size_t _Ind, typename... _Tp>
+  template<std::size_t _Ind, typename... _Tp>
     inline auto
     __volget(const volatile tuple<_Tp...>& __tuple)
     -> typename tuple_element<_Ind, tuple<_Tp...>>::type const volatile&
@@ -1141,7 +1141,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       tuple<_Bound_args...> _M_bound_args;
 
       // Call unqualified
-      template<typename _Result, typename... _Args, int... _Indexes>
+      template<typename _Result, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
 	{
@@ -1150,7 +1150,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as const
-      template<typename _Result, typename... _Args, int... _Indexes>
+      template<typename _Result, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call_c(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
 	{
@@ -1159,7 +1159,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as volatile
-      template<typename _Result, typename... _Args, int... _Indexes>
+      template<typename _Result, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call_v(tuple<_Args...>&& __args,
 		 _Index_tuple<_Indexes...>) volatile
@@ -1169,7 +1169,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as const volatile
-      template<typename _Result, typename... _Args, int... _Indexes>
+      template<typename _Result, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call_c_v(tuple<_Args...>&& __args,
 		   _Index_tuple<_Indexes...>) const volatile
@@ -1272,7 +1272,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	struct __disable_if_void : enable_if<!is_void<_Res>::value, int> { };
 
       // Call unqualified
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
 	    typename __disable_if_void<_Res>::type = 0)
@@ -1282,7 +1282,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call unqualified, return void
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	void
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
 	    typename __enable_if_void<_Res>::type = 0)
@@ -1292,7 +1292,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as const
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
 	    typename __disable_if_void<_Res>::type = 0) const
@@ -1302,7 +1302,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as const, return void
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	void
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
 	    typename __enable_if_void<_Res>::type = 0) const
@@ -1312,7 +1312,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as volatile
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
 	    typename __disable_if_void<_Res>::type = 0) volatile
@@ -1322,7 +1322,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as volatile, return void
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	void
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
 	    typename __enable_if_void<_Res>::type = 0) volatile
@@ -1332,7 +1332,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as const volatile
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	_Result
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
 	    typename __disable_if_void<_Res>::type = 0) const volatile
@@ -1342,7 +1342,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	}
 
       // Call as const volatile, return void
-      template<typename _Res, typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, std::size_t... _Indexes>
 	void
 	__call(tuple<_Args...>&& __args,
 	       _Index_tuple<_Indexes...>,
@@ -1533,7 +1533,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
     private:
 
-      template<int... _Indices>
+      template<std::size_t... _Indices>
         typename result_of<_Callable(_Args...)>::type
         _M_invoke(_Index_tuple<_Indices...>)
         {

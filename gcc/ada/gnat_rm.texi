@@ -236,6 +236,7 @@ Implementation Defined Attributes
 * Compiler_Version::
 * Code_Address::
 * Default_Bit_Order::
+* Descriptor_Size::
 * Elaborated::
 * Elab_Body::
 * Elab_Spec::
@@ -5718,6 +5719,7 @@ consideration, you should minimize the use of these attributes.
 * Compiler_Version::
 * Code_Address::
 * Default_Bit_Order::
+* Descriptor_Size::
 * Elaborated::
 * Elab_Body::
 * Elab_Spec::
@@ -5931,6 +5933,30 @@ permissible prefix), provides the value @code{System.Default_Bit_Order}
 as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @code{Low_Order_First}).  This is used to construct the definition of
 @code{Default_Bit_Order} in package @code{System}.
+
+@node Descriptor_Size
+@unnumberedsec Descriptor_Size
+@cindex Descriptor
+@cindex Dope vector
+@findex Descriptor_Size
+@noindent
+Non-static attribute @code{Descriptor_Size} returns the size in bits of the
+descriptor allocated for a type.  The result is non-zero only for unconstrained
+array types and the returned value is of type universal integer.  In GNAT, an
+array descriptor contains bounds information and is located immediately before
+the first element of the array.
+
+@smallexample @c ada
+type Unconstr_Array is array (Positive range <>) of Boolean;
+Put_Line ("Descriptor size = " & Unconstr_Array'Descriptor_Size'Img);
+@end smallexample
+
+@noindent
+The attribute takes into account any additional padding due to type alignment.
+In the example above, the descriptor contains two values of type
+@code{Positive} representing the low and high bound.  Since @code{Positive} has
+a size of 31 bits and an alignment of 4, the descriptor size is @code{2 *
+Positive'Size + 2} or 64 bits.
 
 @node Elaborated
 @unnumberedsec Elaborated

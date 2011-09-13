@@ -10581,14 +10581,16 @@
        In Thumb mode always use push, and the assembler will pick
        something appropriate.  */
     if (num_saves == 1 && TARGET_ARM)
-      output_asm_insn (\"str\\t%1, [%m0, #-4]!\", operands);
+      output_asm_insn (\"str%?\\t%1, [%m0, #-4]!\", operands);
     else
       {
 	int i;
 	char pattern[100];
 
 	if (TARGET_ARM)
-	    strcpy (pattern, \"stmfd\\t%m0!, {%1\");
+	    strcpy (pattern, \"stm%(fd%)\\t%m0!, {%1\");
+	else if (TARGET_THUMB2)
+	    strcpy (pattern, \"push%?\\t{%1\");
 	else
 	    strcpy (pattern, \"push\\t{%1\");
 
@@ -10631,7 +10633,7 @@
   {
     char pattern[100];
 
-    sprintf (pattern, \"sfmfd\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
+    sprintf (pattern, \"sfm%%(fd%%)\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
     output_asm_insn (pattern, operands);
     return \"\";
   }"

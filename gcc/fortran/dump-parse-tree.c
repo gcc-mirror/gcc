@@ -1611,6 +1611,28 @@ show_code_node (int level, gfc_code *c)
       fputs ("END DO", dumpfile);
       break;
 
+    case EXEC_DO_CONCURRENT:
+      fputs ("DO CONCURRENT ", dumpfile);
+      for (fa = c->ext.forall_iterator; fa; fa = fa->next)
+        {
+          show_expr (fa->var);
+          fputc (' ', dumpfile);
+          show_expr (fa->start);
+          fputc (':', dumpfile);
+          show_expr (fa->end);
+          fputc (':', dumpfile);
+          show_expr (fa->stride);
+
+          if (fa->next != NULL)
+            fputc (',', dumpfile);
+        }
+      show_expr (c->expr1);
+
+      show_code (level + 1, c->block->next);
+      code_indent (level, c->label1);
+      fputs ("END DO", dumpfile);
+      break;
+
     case EXEC_DO_WHILE:
       fputs ("DO WHILE ", dumpfile);
       show_expr (c->expr1);

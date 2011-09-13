@@ -19,5 +19,5 @@ struct C
 
 constexpr int i = f(C<int>());
 constexpr int j = C<int>().m(C<int>());
-constexpr int k = C<double>().m(A()); // { dg-error "non-constexpr function" }
-constexpr int l = g(C<double>(),A()); // { dg-error "non-constexpr function" }
+constexpr int k = C<double>().m(A()); // { dg-error "constexpr" }
+constexpr int l = g(C<double>(),A()); // { dg-error "constexpr" }

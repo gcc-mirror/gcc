@@ -914,6 +914,13 @@ DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
 	  "Allow new data races on stores to be introduced",
 	  1, 0, 1)
 
+/* Reassociation width to be used by tree reassoc optimization.  */
+DEFPARAM (PARAM_TREE_REASSOC_WIDTH,
+	  "tree-reassoc-width",
+	  "Set the maximum number of instructions executed in parallel in "
+	  "reassociated tree. If 0, use the target dependent heuristic.",
+	  0, 0, 0)
+
 
 /*
 Local variables:

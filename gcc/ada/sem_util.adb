@@ -2878,6 +2878,24 @@ package body Sem_Util is
    function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id is
       E : Entity_Id;
       Loc : constant Source_Ptr := Sloc (Expr);
+
+      function Make_Level_Literal (Level : Uint) return Node_Id;
+      --  Construct an integer literal representing an accessibility level
+      --  with its type set to Natural.
+
+      ------------------------
+      -- Make_Level_Literal --
+      ------------------------
+
+      function Make_Level_Literal (Level : Uint) return Node_Id is
+         Result : constant Node_Id := Make_Integer_Literal (Loc, Level);
+      begin
+         Set_Etype (Result, Standard_Natural);
+         return Result;
+      end Make_Level_Literal;
+
+   --  Start of processing for Dynamic_Accessibility_Level
+
    begin
       if Is_Entity_Name (Expr) then
          E := Entity (Expr);
@@ -2893,17 +2911,18 @@ package body Sem_Util is
          end if;
       end if;
 
-      --  unimplemented: Ptr.all'Access, where Ptr has Extra_Accessibility ???
+      --  Unimplemented: Ptr.all'Access, where Ptr has Extra_Accessibility ???
 
       case Nkind (Expr) is
-         --  for access discriminant, the level of the enclosing object
+
+         --  For access discriminant, the level of the enclosing object
 
          when N_Selected_Component =>
             if Ekind (Entity (Selector_Name (Expr))) = E_Discriminant
               and then Ekind (Etype (Entity (Selector_Name (Expr)))) =
-              E_Anonymous_Access_Type then
-
-               return Make_Integer_Literal (Loc, Object_Access_Level (Expr));
+                                            E_Anonymous_Access_Type
+            then
+               return Make_Level_Literal (Object_Access_Level (Expr));
             end if;
 
          when N_Attribute_Reference =>
@@ -2912,15 +2931,14 @@ package body Sem_Util is
                --  For X'Access, the level of the prefix X
 
                when Attribute_Access =>
-                  return Make_Integer_Literal (Loc,
-                    Object_Access_Level (Prefix (Expr)));
+                  return Make_Level_Literal
+                           (Object_Access_Level (Prefix (Expr)));
 
                --  Treat the unchecked attributes as library-level
 
-               when Attribute_Unchecked_Access |
-                 Attribute_Unrestricted_Access =>
-                  return Make_Integer_Literal (Loc,
-                    Scope_Depth (Standard_Standard));
+               when Attribute_Unchecked_Access    |
+                    Attribute_Unrestricted_Access =>
+                  return Make_Level_Literal (Scope_Depth (Standard_Standard));
 
                --  No other access-valued attributes
 
@@ -2929,17 +2947,20 @@ package body Sem_Util is
             end case;
 
          when N_Allocator =>
-            --  Unimplemented: depends on context. As an actual
-            --  parameter where formal type is anonymous, use
+
+            --  Unimplemented: depends on context. As an actual parameter where
+            --  formal type is anonymous, use
             --    Scope_Depth (Current_Scope) + 1.
             --  For other cases, see 3.10.2(14/3) and following. ???
+
             null;
 
          when N_Type_Conversion =>
             if not Is_Local_Anonymous_Access (Etype (Expr)) then
-               --  Handle type conversions introduced for a
-               --  rename of an Ada2012 stand-alone object of an
-               --  anonymous access type.
+
+               --  Handle type conversions introduced for a rename of an
+               --  Ada2012 stand-alone object of an anonymous access type.
+
                return Dynamic_Accessibility_Level (Expression (Expr));
             end if;
 
@@ -2947,7 +2968,7 @@ package body Sem_Util is
             null;
       end case;
 
-      return Make_Integer_Literal (Loc, Type_Access_Level (Etype (Expr)));
+      return Make_Level_Literal (Type_Access_Level (Etype (Expr)));
    end Dynamic_Accessibility_Level;
 
    -----------------------------------
@@ -12118,7 +12139,30 @@ package body Sem_Util is
       Nod        : Node_Id;
 
    begin
+      --  Unconditionally set the entity
+
       Set_Entity (N, Val);
+
+      --  Check for No_Implementation_Identifiers
+
+      if Restriction_Check_Required (No_Implementation_Identifiers) then
+
+         --  We have an implementation defined entity if it is marked as
+         --  implementation defined, or is defined in a package marked as
+         --  implementation defined. However, library packages themselves
+         --  are excluded (we don't want to flag Interfaces itself, just
+         --  the entities within it).
+
+         if (Is_Implementation_Defined (Val)
+              and then not (Ekind_In (Val, E_Package, E_Generic_Package)
+                              and then Is_Library_Level_Entity (Val)))
+           or else Is_Implementation_Defined (Scope (Val))
+         then
+            Check_Restriction (No_Implementation_Identifiers, N);
+         end if;
+      end if;
+
+      --  Do the style check
 
       if Style_Check
         and then not Suppress_Style_Checks (Val)

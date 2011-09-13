@@ -1,3 +1,81 @@
+2011-09-12  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (type_unification_real): Fix handling of DEDUCE_CONV
+	with no deducible template parameters.
+	* call.c (rejection_reason_code): Add rr_template_conversion.
+	(print_z_candidate): Handle it.
+	(template_conversion_rejection): New.
+	(build_user_type_conversion_1): Use it.
+
+	* call.c (merge_conversion_sequences): Set bad_p and user_conv_p
+	on all of the second conversion sequence.
+	(build_user_type_conversion_1): Set bad_p on the ck_user conv.
+	(convert_like_real): Handle bad ck_ref_bind with user_conv_p in the
+	first section.  Fix loop logic.
+	(initialize_reference): Call convert_like for diagnostics when
+	we have a (bad) conversion.
+
+	* call.c (convert_class_to_reference)
+	(convert_class_to_reference_1): Remove.
+	(reference_binding): Use build_user_type_conversion_1 instead.
+
+	* call.c (initialize_reference): Add flags parm.
+	* decl.c (grok_reference_init): Likewise.
+	(check_initializer): Pass it.
+	* typeck.c (convert_for_initialization): Likewise.
+	* cp-tree.h: Adjust.
+
+	* cp-tree.h (LOOKUP_NO_RVAL_BIND): New.
+	* call.c (conditional_conversion): Use it.
+	(reference_binding): Fix handling of xvalues.
+
+2011-09-09  Jason Merrill  <jason@redhat.com>
+
+	* call.c (implicit_conversion): Check BRACE_ENCLOSED_INITIALIZER_P
+	before forcing instantiation.
+
+2011-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50324
+	* typeck2.c (digest_init_r): Call complete_type_or_maybe_complain
+	instead of complete_type_or_else.
+
+2011-09-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/33255 - Support -Wunused-local-typedefs warning
+	* name-lookup.c (pushdecl_maybe_friend_1): Use the new
+	record_locally_defined_typedef.
+    	* decl.c (finish_function): Use the new
+    	maybe_warn_unused_local_typedefs.
+    	(grokfield): Use the new record_locally_defined_typedef.
+	* parser.c (lookup_name): Use the new maybe_record_typedef_use.
+
+2011-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50309
+	* decl.c (grokdeclarator): Check u.function.exception_specification
+	for error_mark_node.
+
+2011-09-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50298
+	* parser.c (cp_parser_member_declaration): Don't require a constant
+	rvalue here in C++0x.
+
+	* pt.c (type_unification_real): Correct complain arg for tsubsting
+	default template args.
+
+	* pt.c (tsubst_aggr_type): Check TYPE_P before tsubsting.
+
+2011-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50296
+	* semantics.c (register_constexpr_fundef): Call is_valid_constexpr_fn.
+	(cx_check_missing_mem_inits): Handle bases and empty trivial members.
+	(validate_constexpr_fundecl): Remove.
+	* decl.c (start_preparsed_function): Don't call it.
+	* cp-tree.h: Don't declare it.
+
 2011-09-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49267

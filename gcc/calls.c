@@ -1756,7 +1756,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  if (GET_CODE (reg) == PARALLEL)
 	    use_group_regs (call_fusage, reg);
 	  else if (nregs == -1)
-	    use_reg (call_fusage, reg);
+	    use_reg_mode (call_fusage, reg,
+			  TYPE_MODE (TREE_TYPE (args[i].tree_value)));
 	  else if (nregs > 0)
 	    use_regs (call_fusage, REGNO (reg), nregs);
 	}
@@ -2815,10 +2816,10 @@ expand_call (tree exp, rtx target, int ignore)
 	      }
 
 	  if (args[i].stack)
-	    call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
-					     gen_rtx_USE (VOIDmode,
-							  args[i].stack),
-					     call_fusage);
+	    call_fusage
+	      = gen_rtx_EXPR_LIST (TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+				   gen_rtx_USE (VOIDmode, args[i].stack),
+				   call_fusage);
 	}
 
       /* If we have a parm that is passed in registers but not in memory

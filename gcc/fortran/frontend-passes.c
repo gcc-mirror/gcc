@@ -407,6 +407,85 @@ cfe_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+/* Dummy function for expression call back, for use when we
+   really don't want to do any walking.  */
+
+static int
+dummy_expr_callback (gfc_expr **e ATTRIBUTE_UNUSED, int *walk_subtrees,
+		     void *data ATTRIBUTE_UNUSED)
+{
+  *walk_subtrees = 0;
+  return 0;
+}
+
+/* Code callback function for converting
+   do while(a)
+   end do
+   into the equivalent
+   do
+     if (.not. a) exit
+   end do
+   This is because common function elimination would otherwise place the
+   temporary variables outside the loop.  */
+
+static int
+convert_do_while (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *co = *c;
+  gfc_code *c_if1, *c_if2, *c_exit;
+  gfc_code *loopblock;
+  gfc_expr *e_not, *e_cond;
+
+  if (co->op != EXEC_DO_WHILE)
+    return 0;
+
+  if (co->expr1 == NULL || co->expr1->expr_type == EXPR_CONSTANT)
+    return 0;
+
+  e_cond = co->expr1;
+
+  /* Generate the condition of the if statement, which is .not. the original
+     statement.  */
+  e_not = gfc_get_expr ();
+  e_not->ts = e_cond->ts;
+  e_not->where = e_cond->where;
+  e_not->expr_type = EXPR_OP;
+  e_not->value.op.op = INTRINSIC_NOT;
+  e_not->value.op.op1 = e_cond;
+
+  /* Generate the EXIT statement.  */
+  c_exit = XCNEW (gfc_code);
+  c_exit->op = EXEC_EXIT;
+  c_exit->ext.which_construct = co;
+  c_exit->loc = co->loc;
+
+  /* Generate the IF statement.  */
+  c_if2 = XCNEW (gfc_code);
+  c_if2->op = EXEC_IF;
+  c_if2->expr1 = e_not;
+  c_if2->next = c_exit;
+  c_if2->loc = co->loc;
+
+  /* ... plus the one to chain it to.  */
+  c_if1 = XCNEW (gfc_code);
+  c_if1->op = EXEC_IF;
+  c_if1->block = c_if2;
+  c_if1->loc = co->loc;
+
+  /* Make the DO WHILE loop into a DO block by replacing the condition
+     with a true constant.  */
+  co->expr1 = gfc_get_logical_expr (gfc_default_integer_kind, &co->loc, true);
+
+  /* Hang the generated if statement into the loop body.  */
+
+  loopblock = co->block->next;
+  co->block->next = c_if1;
+  c_if1->next = loopblock;
+
+  return 0;
+}
+
 /* Optimize a namespace, including all contained namespaces.  */
 
 static void
@@ -415,6 +494,7 @@ optimize_namespace (gfc_namespace *ns)
 
   current_ns = ns;
 
+  gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
   gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
 
@@ -1103,6 +1183,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      }
 
 	    case EXEC_FORALL:
+	    case EXEC_DO_CONCURRENT:
 	      {
 		gfc_forall_iterator *fa;
 		for (fa = co->ext.forall_iterator; fa; fa = fa->next)

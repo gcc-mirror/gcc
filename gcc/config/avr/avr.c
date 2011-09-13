@@ -54,6 +54,8 @@
 /* Return true if STR starts with PREFIX and false, otherwise.  */
 #define STR_PREFIX_P(STR,PREFIX) (0 == strncmp (STR, PREFIX, strlen (PREFIX)))
 
+#define AVR_SECTION_PROGMEM (SECTION_MACH_DEP << 0)
+
 static void avr_option_override (void);
 static int avr_naked_function_p (tree);
 static int interrupt_function_p (tree);
@@ -114,6 +116,7 @@ static bool avr_function_ok_for_sibcall (tree, tree);
 static void avr_asm_named_section (const char *name, unsigned int flags, tree decl);
 static void avr_encode_section_info (tree, rtx, int);
 static section* avr_asm_function_rodata_section (tree);
+static section* avr_asm_select_section (tree, int, unsigned HOST_WIDE_INT);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -138,6 +141,9 @@ const struct mcu_type_s *avr_current_device;
 
 /* Section to put switch tables in.  */
 static GTY(()) section *progmem_swtable_section;
+
+/* Unnamed section associated to __attribute__((progmem)) aka. PROGMEM.  */
+static GTY(()) section *progmem_section;
 
 /* To track if code will use .bss and/or .data.  */
 bool avr_need_clear_bss_p = false;
@@ -206,6 +212,8 @@ static const struct attribute_spec avr_attribute_table[] =
 #define TARGET_ASM_INIT_SECTIONS avr_asm_init_sections
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
+#undef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION avr_asm_select_section
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST avr_register_move_cost
@@ -270,6 +278,31 @@ static const struct attribute_spec avr_attribute_table[] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+
+/* Custom function to replace string prefix.
+
+   Return a ggc-allocated string with strlen (OLD_PREFIX) characters removed
+   from the start of OLD_STR and then prepended with NEW_PREFIX.  */
+
+static inline const char*
+avr_replace_prefix (const char *old_str,
+                    const char *old_prefix, const char *new_prefix)
+{
+  char *new_str;
+  size_t len = strlen (old_str) + strlen (new_prefix) - strlen (old_prefix);
+
+  gcc_assert (strlen (old_prefix) <= strlen (old_str));
+
+  /* Unfortunately, ggc_alloc_string returns a const char* and thus cannot be
+     used here.  */
+     
+  new_str = (char*) ggc_alloc_atomic (1 + len);
+
+  strcat (stpcpy (new_str, new_prefix), old_str + strlen (old_prefix));
+  
+  return (const char*) new_str;
+}
+
 static void
 avr_option_override (void)
 {
@@ -5034,15 +5067,7 @@ avr_insert_attributes (tree node, tree *attributes)
       if (error_mark_node == node0)
         return;
       
-      if (TYPE_READONLY (node0))
-        {
-          static const char dsec[] = ".progmem.data";
-
-          *attributes = tree_cons (get_identifier ("section"),
-                                   build_tree_list (NULL, build_string (strlen (dsec), dsec)),
-                                   *attributes);
-        }
-      else
+      if (!TYPE_READONLY (node0))
         {
           error ("variable %q+D must be const in order to be put into"
                  " read-only section by means of %<__attribute__((progmem))%>",
@@ -5119,6 +5144,10 @@ avr_asm_init_sections (void)
                                ",\"ax\",@progbits");
     }
 
+  progmem_section
+    = get_unnamed_section (0, output_section_asm_op,
+                           "\t.section\t.progmem.data,\"a\",@progbits");
+  
   /* Override section callbacks to keep track of `avr_need_clear_bss_p'
      resp. `avr_need_copy_data_p'.  */
   
@@ -5173,11 +5202,7 @@ avr_asm_function_rodata_section (tree decl)
 
           if (STR_PREFIX_P (name, old_prefix))
             {
-              char *rname = (char*) alloca (1 + strlen (name)
-                                            + strlen (new_prefix)
-                                            - strlen (old_prefix));
-              
-              strcat (stpcpy (rname, new_prefix), name + strlen (old_prefix));
+              const char *rname = avr_replace_prefix (name, old_prefix, new_prefix);
 
               flags &= ~SECTION_CODE;
               flags |= AVR_HAVE_JMP_CALL ? 0 : SECTION_CODE;
@@ -5197,6 +5222,22 @@ avr_asm_function_rodata_section (tree decl)
 static void
 avr_asm_named_section (const char *name, unsigned int flags, tree decl)
 {
+  if (flags & AVR_SECTION_PROGMEM)
+    {
+      const char *old_prefix = ".rodata";
+      const char *new_prefix = ".progmem.data";
+      const char *sname = new_prefix;
+      
+      if (STR_PREFIX_P (name, old_prefix))
+        {
+          sname = avr_replace_prefix (name, old_prefix, new_prefix);
+        }
+
+      default_elf_asm_named_section (sname, flags, decl);
+
+      return;
+    }
+  
   if (!avr_need_copy_data_p)
     avr_need_copy_data_p = (STR_PREFIX_P (name, ".data")
                             || STR_PREFIX_P (name, ".rodata")
@@ -5223,8 +5264,12 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 		 ".noinit section");
     }
 
-  if (STR_PREFIX_P (name, ".progmem.data"))
-    flags &= ~SECTION_WRITE;
+  if (decl && DECL_P (decl)
+      && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
+    {
+      flags &= ~SECTION_WRITE;
+      flags |= AVR_SECTION_PROGMEM;
+    }
   
   return flags;
 }
@@ -5253,6 +5298,36 @@ avr_encode_section_info (tree decl, rtx rtl,
   default_encode_section_info (decl, rtl, new_decl_p);
 }
 
+
+/* Implement `TARGET_ASM_SELECT_SECTION' */
+
+static section *
+avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
+{
+  section * sect = default_elf_select_section (decl, reloc, align);
+  
+  if (decl && DECL_P (decl)
+      && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
+    {
+      if (sect->common.flags & SECTION_NAMED)
+        {
+          const char * name = sect->named.name;
+          const char * old_prefix = ".rodata";
+          const char * new_prefix = ".progmem.data";
+
+          if (STR_PREFIX_P (name, old_prefix))
+            {
+              const char *sname = avr_replace_prefix (name, old_prefix, new_prefix);
+
+              return get_section (sname, sect->common.flags, sect->named.decl);
+            }
+        }
+          
+      return progmem_section;
+    }
+
+  return sect;
+}
 
 /* Implement `TARGET_ASM_FILE_START'.  */
 /* Outputs some appropriate text to go at the start of an assembler

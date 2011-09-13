@@ -1443,20 +1443,18 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	unsigned int i;
 	bool changed = false;
 	vn_nary_op_t nary = PRE_EXPR_NARY (expr);
-	struct vn_nary_op_s newnary;
-	/* The NARY structure is only guaranteed to have been
-	   allocated to the nary->length operands.  */
-	memcpy (&newnary, nary, (sizeof (struct vn_nary_op_s)
-				 - sizeof (tree) * (4 - nary->length)));
+	vn_nary_op_t newnary = XALLOCAVAR (struct vn_nary_op_s,
+					   sizeof_vn_nary_op (nary->length));
+	memcpy (newnary, nary, sizeof_vn_nary_op (nary->length));
 
-	for (i = 0; i < newnary.length; i++)
+	for (i = 0; i < newnary->length; i++)
 	  {
-	    if (TREE_CODE (newnary.op[i]) != SSA_NAME)
+	    if (TREE_CODE (newnary->op[i]) != SSA_NAME)
 	      continue;
 	    else
 	      {
                 pre_expr leader, result;
-		unsigned int op_val_id = VN_INFO (newnary.op[i])->value_id;
+		unsigned int op_val_id = VN_INFO (newnary->op[i])->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
                 result = phi_translate (leader, set1, set2, pred, phiblock);
 		if (result && result != leader)
@@ -1464,12 +1462,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		    tree name = get_representative_for (result);
 		    if (!name)
 		      return NULL;
-		    newnary.op[i] = name;
+		    newnary->op[i] = name;
 		  }
 		else if (!result)
 		  return NULL;
 
-		changed |= newnary.op[i] != nary->op[i];
+		changed |= newnary->op[i] != nary->op[i];
 	      }
 	  }
 	if (changed)
@@ -1477,13 +1475,10 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    pre_expr constant;
 	    unsigned int new_val_id;
 
-	    tree result = vn_nary_op_lookup_pieces (newnary.length,
-						    newnary.opcode,
-						    newnary.type,
-						    newnary.op[0],
-						    newnary.op[1],
-						    newnary.op[2],
-						    newnary.op[3],
+	    tree result = vn_nary_op_lookup_pieces (newnary->length,
+						    newnary->opcode,
+						    newnary->type,
+						    &newnary->op[0],
 						    &nary);
 	    if (result && is_gimple_min_invariant (result))
 	      return get_or_alloc_expr_for_constant (result);
@@ -1507,13 +1502,10 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		VEC_safe_grow_cleared (bitmap_set_t, heap,
 				       value_expressions,
 				       get_max_value_id() + 1);
-		nary = vn_nary_op_insert_pieces (newnary.length,
-						 newnary.opcode,
-						 newnary.type,
-						 newnary.op[0],
-						 newnary.op[1],
-						 newnary.op[2],
-						 newnary.op[3],
+		nary = vn_nary_op_insert_pieces (newnary->length,
+						 newnary->opcode,
+						 newnary->type,
+						 &newnary->op[0],
 						 result, new_val_id);
 		PRE_EXPR_NARY (expr) = nary;
 		constant = fully_constant_expression (expr);
@@ -1708,9 +1700,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 
 		nresult = vn_nary_op_lookup_pieces (1, TREE_CODE (result),
 						    TREE_TYPE (result),
-						    TREE_OPERAND (result, 0),
-						    NULL_TREE, NULL_TREE,
-						    NULL_TREE,
+						    &TREE_OPERAND (result, 0),
 						    &nary);
 		if (nresult && is_gimple_min_invariant (nresult))
 		  return get_or_alloc_expr_for_constant (nresult);
@@ -1734,9 +1724,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 					   get_max_value_id() + 1);
 		    nary = vn_nary_op_insert_pieces (1, TREE_CODE (result),
 						     TREE_TYPE (result),
-						     TREE_OPERAND (result, 0),
-						     NULL_TREE, NULL_TREE,
-						     NULL_TREE, NULL_TREE,
+						     &TREE_OPERAND (result, 0),
+						     NULL_TREE,
 						     new_val_id);
 		    PRE_EXPR_NARY (expr) = nary;
 		    constant = fully_constant_expression (expr);
@@ -3087,50 +3076,49 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
     case NARY:
       {
 	vn_nary_op_t nary = PRE_EXPR_NARY (expr);
-	switch (nary->length)
+	tree genop[4];
+	unsigned i;
+	for (i = 0; i < nary->length; ++i)
 	  {
-	  case 2:
-	    {
-	      pre_expr op1 = get_or_alloc_expr_for (nary->op[0]);
-	      pre_expr op2 = get_or_alloc_expr_for (nary->op[1]);
-	      tree genop1 = find_or_generate_expression (block, op1,
-							 stmts, domstmt);
-	      tree genop2 = find_or_generate_expression (block, op2,
-							 stmts, domstmt);
-	      if (!genop1 || !genop2)
-		return NULL_TREE;
-	      /* Ensure op2 is a ptrofftype for POINTER_PLUS_EXPR.  It
-		 may be a constant with the wrong type.  */
-	      if (nary->opcode == POINTER_PLUS_EXPR)
-		{
-		  genop1 = fold_convert (nary->type, genop1);
-		  genop2 = convert_to_ptrofftype (genop2);
-		}
-	      else
-		{
-		  genop1 = fold_convert (TREE_TYPE (nary->op[0]), genop1);
-		  genop2 = fold_convert (TREE_TYPE (nary->op[1]), genop2);
-		}
-
-	      folded = fold_build2 (nary->opcode, nary->type,
-				    genop1, genop2);
-	    }
-	    break;
-	  case 1:
-	    {
-	      pre_expr op1 = get_or_alloc_expr_for (nary->op[0]);
-	      tree genop1 = find_or_generate_expression (block, op1,
-							 stmts, domstmt);
-	      if (!genop1)
-		return NULL_TREE;
-	      genop1 = fold_convert (TREE_TYPE (nary->op[0]), genop1);
-
-	      folded = fold_build1 (nary->opcode, nary->type,
-				    genop1);
-	    }
-	    break;
-	  default:
-	    return NULL_TREE;
+	    pre_expr op = get_or_alloc_expr_for (nary->op[i]);
+	    genop[i] = find_or_generate_expression (block, op,
+						    stmts, domstmt);
+	    if (!genop[i])
+	      return NULL_TREE;
+	    /* Ensure genop[1] is a ptrofftype for POINTER_PLUS_EXPR.  It
+	       may be a constant with the wrong type.  */
+	    if (i == 1
+		&& nary->opcode == POINTER_PLUS_EXPR)
+	      genop[i] = convert_to_ptrofftype (genop[i]);
+	    else
+	      genop[i] = fold_convert (TREE_TYPE (nary->op[i]), genop[i]);
+	  }
+	if (nary->opcode == CONSTRUCTOR)
+	  {
+	    VEC(constructor_elt,gc) *elts = NULL;
+	    for (i = 0; i < nary->length; ++i)
+	      CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE, genop[i]);
+	    folded = build_constructor (nary->type, elts);
+	  }
+	else
+	  {
+	    switch (nary->length)
+	      {
+	      case 1:
+		folded = fold_build1 (nary->opcode, nary->type,
+				      genop[0]);
+		break;
+	      case 2:
+		folded = fold_build2 (nary->opcode, nary->type,
+				      genop[0], genop[1]);
+		break;
+	      case 3:
+		folded = fold_build3 (nary->opcode, nary->type,
+				      genop[0], genop[1], genop[3]);
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
 	  }
       }
       break;
@@ -3193,6 +3181,10 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
   /* All the symbols in NEWEXPR should be put into SSA form.  */
   mark_symbols_for_renaming (newstmt);
+
+  /* Fold the last statement.  */
+  gsi = gsi_last (*stmts);
+  fold_stmt_inplace (&gsi);
 
   /* Add a value number to the temporary.
      The value may already exist in either NEW_SETS, or AVAIL_OUT, because
@@ -4053,9 +4045,8 @@ compute_avail (void)
 		      vn_nary_op_lookup_pieces (gimple_num_ops (stmt) - 1,
 						gimple_assign_rhs_code (stmt),
 						gimple_expr_type (stmt),
-						gimple_assign_rhs1 (stmt),
-						gimple_assign_rhs2 (stmt),
-						NULL_TREE, NULL_TREE, &nary);
+						gimple_assign_rhs1_ptr (stmt),
+						&nary);
 
 		      if (!nary)
 			continue;

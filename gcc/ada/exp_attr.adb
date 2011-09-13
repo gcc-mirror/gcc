@@ -1799,6 +1799,29 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Count;
 
+      ---------------------
+      -- Descriptor_Size --
+      ---------------------
+
+      when Attribute_Descriptor_Size =>
+
+         --  Attribute Descriptor_Size is handled by the back end when applied
+         --  to an unconstrained array type.
+
+         if Is_Array_Type (Ptyp)
+           and then not Is_Constrained (Ptyp)
+         then
+            Apply_Universal_Integer_Attribute_Checks (N);
+
+         --  For any other type, the descriptor size is 0 because there is no
+         --  actual descriptor, but the result is not formally static.
+
+         else
+            Rewrite (N, Make_Integer_Literal (Loc, 0));
+            Analyze (N);
+            Set_Is_Static_Expression (N, False);
+         end if;
+
       ---------------
       -- Elab_Body --
       ---------------

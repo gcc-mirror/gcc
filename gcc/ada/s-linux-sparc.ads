@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--             Copyright (C) 2009-2011, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,12 +108,5 @@ package System.Linux is
 
    SA_SIGINFO  : constant := 16#200#;
    SA_ONSTACK  : constant := 16#001#;
-
-   type pthread_mutex_t is record
-      L1, L2, L3, L4 : Interfaces.C.long;
-      I1, I2 : Interfaces.C.int;
-   end record;
-   pragma Convention (C, pthread_mutex_t);
-   --  24 bytes for 32-bit and 40 bytes for 64-bit, aligned like 'long'
 
 end System.Linux;

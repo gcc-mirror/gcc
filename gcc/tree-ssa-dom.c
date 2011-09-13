@@ -1409,9 +1409,10 @@ record_equality (tree x, tree y)
    i_1 = phi (..., i_2)
    i_2 = i_1 +/- ...  */
 
-static bool
+bool
 simple_iv_increment_p (gimple stmt)
 {
+  enum tree_code code;
   tree lhs, preinc;
   gimple phi;
   size_t i;
@@ -1423,12 +1424,13 @@ simple_iv_increment_p (gimple stmt)
   if (TREE_CODE (lhs) != SSA_NAME)
     return false;
 
-  if (gimple_assign_rhs_code (stmt) != PLUS_EXPR
-      && gimple_assign_rhs_code (stmt) != MINUS_EXPR)
+  code = gimple_assign_rhs_code (stmt);
+  if (code != PLUS_EXPR
+      && code != MINUS_EXPR
+      && code != POINTER_PLUS_EXPR)
     return false;
 
   preinc = gimple_assign_rhs1 (stmt);
-
   if (TREE_CODE (preinc) != SSA_NAME)
     return false;
 
@@ -2654,7 +2656,10 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
              GIMPLE_ASSIGN, and there is no way to effect such a
              transformation in-place.  We might want to consider
              using the more general fold_stmt here.  */
-	  fold_stmt_inplace (use_stmt);
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	      fold_stmt_inplace (&gsi);
+	    }
 
 	  /* Sometimes propagation can expose new operands to the
 	     renamer.  */

@@ -23,6 +23,10 @@
 
 package Ada.Interrupts.Names is
 
+   --  All identifiers in this unit are implementation defined
+
+   pragma Implementation_Defined;
+
    DUMMY_INTERRUPT_1 : constant Interrupt_ID := 1;
    DUMMY_INTERRUPT_2 : constant Interrupt_ID := 2;
 

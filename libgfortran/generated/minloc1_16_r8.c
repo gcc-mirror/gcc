@@ -101,6 +101,7 @@ minloc1_16_r8 (gfc_array_i16 * const restrict retarray,
       alloc_size = sizeof (GFC_INTEGER_16) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
+      retarray->data = internal_malloc_size (alloc_size);
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -108,8 +109,6 @@ minloc1_16_r8 (gfc_array_i16 * const restrict retarray,
 	  return;
 
 	}
-      else
-	retarray->data = internal_malloc_size (alloc_size);
     }
   else
     {

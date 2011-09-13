@@ -237,8 +237,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
       __lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		    const _Tp& __val, _Compare __comp)
       {
-	typedef typename __mv_iter_traits<_ForwardIterator>::value_type
-	  _ValueType;
 	typedef typename __mv_iter_traits<_ForwardIterator>::difference_type
 	  _DistanceType;
 

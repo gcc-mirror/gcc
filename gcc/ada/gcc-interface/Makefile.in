@@ -434,14 +434,6 @@ X86_TARGET_PAIRS = \
   g-bytswa.adb<g-bytswa-x86.adb \
   s-atocou.adb<s-atocou-x86.adb
 
-# Special version of units for x86 and x86-64 platforms.
-
-X86_TARGET_PAIRS = \
-  a-numaux.ads<a-numaux-x86.ads \
-  a-numaux.adb<a-numaux-x86.adb \
-  g-bytswa.adb<g-bytswa-x86.adb \
-  s-atocou.adb<s-atocou-x86.adb
-
 X86_64_TARGET_PAIRS = \
   a-numaux.ads<a-numaux-x86.ads \
   a-numaux.adb<a-numaux-x86.adb \
@@ -598,7 +590,7 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
 endif
 
 # vxworks 653
-ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
+ifeq ($(strip $(filter-out powerpc% e500v2 wrs vxworksae,$(targ))),)
   # target pairs for vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
@@ -2172,6 +2164,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
 endif
 
 ifeq ($(strip $(filter-out darwin%,$(osys))),)
+  SO_OPTS = -Wl,-flat_namespace -shared-libgcc
   ifeq ($(strip $(filter-out %86,$(arch))),)
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
@@ -2192,6 +2185,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
       LIBGNAT_TARGET_PAIRS += \
         $(X86_64_TARGET_PAIRS) \
         system.ads<system-darwin-x86_64.ads
+      SO_OPTS += -m64
     else
       LIBGNAT_TARGET_PAIRS += \
         $(X86_TARGET_PAIRS) \
@@ -2213,15 +2207,17 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
     g-trasym.ads<g-trasym-unimplemented.ads \
     g-trasym.adb<g-trasym-unimplemented.adb \
-    $(ATOMICS_TARGET_PAIRS) \
-    $(X86_64_TARGET_PAIRS) \
-    system.ads<system-darwin-x86_64.ads
+    $(ATOMICS_TARGET_PAIRS)
+
     ifeq ($(strip $(MULTISUBDIR)),/i386)
       LIBGNAT_TARGET_PAIRS += \
-      system.ads<system-darwin-x86.ads
+        $(X86_TARGET_PAIRS) \
+        system.ads<system-darwin-x86.ads
+      SO_OPTS += -m32
     else
       LIBGNAT_TARGET_PAIRS += \
-      system.ads<system-darwin-x86_64.ads
+        $(X86_64_TARGET_PAIRS) \
+        system.ads<system-darwin-x86_64.ads
     endif
   endif
 
@@ -2240,8 +2236,16 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     a-numaux.ads<a-numaux-darwin.ads \
     a-numaux.adb<a-numaux-darwin.adb \
     g-trasym.ads<g-trasym-unimplemented.ads \
-    g-trasym.adb<g-trasym-unimplemented.adb \
-    system.ads<system-darwin-ppc.ads
+    g-trasym.adb<g-trasym-unimplemented.adb
+    
+    ifeq ($(strip $(MULTISUBDIR)),/ppc64)
+      LIBGNAT_TARGET_PAIRS += \
+        system.ads<system-darwin-ppc64.ads
+        SO_OPTS += -m64
+    else
+      LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-darwin-ppc.ads
+    endif
   endif
 
   TOOLS_TARGET_PAIRS =  \
@@ -2250,7 +2254,6 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
 
   EH_MECHANISM=-gcc
   GNATLIB_SHARED = gnatlib-shared-darwin
-  SO_OPTS = -Wl,-flat_namespace -shared-libgcc
   RANLIB = ranlib -c
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -2323,7 +2326,31 @@ ADA_INCLUDE_SRCS =\
 
 LIBGNAT=../$(RTSDIR)/libgnat.a
 
+TOOLS_FLAGS_TO_PASS=		\
+	"CC=$(CC)" 		\
+	"CFLAGS=$(CFLAGS)"	\
+	"LDFLAGS=$(LDFLAGS)"	\
+	"ADAFLAGS=$(ADAFLAGS)"	\
+	"INCLUDES=$(INCLUDES_FOR_SUBDIR)"\
+	"ADA_INCLUDES=$(ADA_INCLUDES) $(ADA_INCLUDES_FOR_SUBDIR)"\
+	"libsubdir=$(libsubdir)"	\
+	"exeext=$(exeext)"	\
+	"fsrcdir=$(fsrcdir)"	\
+	"srcdir=$(fsrcdir)"	\
+	"TOOLS_LIBS=$(TOOLS_LIBS) $(TGT_LIB)"	\
+	"GNATMAKE=$(GNATMAKE)"	\
+	"GNATLINK=$(GNATLINK)"	\
+	"GNATBIND=$(GNATBIND)"
+
 GCC_LINK=$(CC) $(GCC_LINK_FLAGS) $(ADA_INCLUDES)
+
+# Build directory for the tools. Let's copy the target-dependent
+# sources using the same mechanism as for gnatlib. The other sources are
+# accessed using the vpath directive below
+# Note: dummy target, stamp-tools is mainly handled by gnattools.
+
+../stamp-tools:
+	touch ../stamp-tools
 
 # when compiling the tools, the runtime has to be first on the path so that
 # it hides the runtime files lying with the rest of the sources
@@ -2343,8 +2370,39 @@ ifeq ($(TOOLSCASE),cross)
   vpath %.h   ../
 endif
 
-common-tools:
-	$(GNATMAKE) -c -b $(ADA_INCLUDES) \
+# gnatmake/link tools cannot always be built with gnatmake/link for bootstrap
+# reasons: gnatmake should be built with a recent compiler, a recent compiler
+# may not generate ALI files compatible with an old gnatmake so it is important
+# to be able to build gnatmake without a version of gnatmake around. Once
+# everything has been compiled once, gnatmake can be recompiled with itself
+# (see target gnattools1-re)
+gnattools1: ../stamp-tools ../stamp-gnatlib-$(RTSDIR)
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=native \
+	  ../../gnatmake$(exeext) ../../gnatlink$(exeext)
+
+# gnatmake/link can be built with recent gnatmake/link if they are available.
+# This is especially convenient for building cross tools or for rebuilding
+# the tools when the original bootstrap has already be done.
+gnattools1-re: ../stamp-tools
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=cross INCLUDES="" gnatmake-re gnatlink-re
+
+# these tools are built with gnatmake & are common to native and cross
+gnattools2: ../stamp-tools
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=native common-tools $(EXTRA_GNATTOOLS)
+
+# those tools are only built for the cross version
+gnattools4: ../stamp-tools
+ifeq ($(ENABLE_VXADDR2LINE),true)
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=cross top_buildir=../../.. \
+	  ../../vxaddr2line$(exeext)
+endif
+
+common-tools: ../stamp-tools
+	$(GNATMAKE) -j0 -c -b $(ADA_INCLUDES) \
 	  --GNATBIND="$(GNATBIND)" --GCC="$(CC) $(ALL_ADAFLAGS)" \
 	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatxref gnatfind gnatname \
 	  gnatclean -bargs $(ADA_INCLUDES) $(GNATBIND_FLAGS)
@@ -2367,32 +2425,34 @@ common-tools:
 	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../gnatsym$(exeext): 
+../../gnatsym$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatsym --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatsym
 	$(GNATLINK) -v gnatsym -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../gnatdll$(exeext): 
+../../gnatdll$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../vxaddr2line$(exeext): targext.o
+../../vxaddr2line$(exeext): ../stamp-tools targext.o
 	$(GNATMAKE) -c  $(ADA_INCLUDES) vxaddr2line --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line
 	$(GNATLINK) -v vxaddr2line -o $@ --GCC="$(GCC_LINK)" targext.o $(CLIB)
 
-gnatmake-re:  link.o targext.o
-	$(GNATMAKE) $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
+gnatmake-re: ../stamp-tools link.o targext.o
+	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
+	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake
 	$(GNATLINK) -v gnatmake -o ../../gnatmake$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
 # Note the use of the "mv" command in order to allow gnatlink to be linked with
 # with the former version of gnatlink itself which cannot override itself.
-gnatlink-re:  link.o targext.o
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
+# gnatlink-re cannot be run at the same time as gnatmake-re, hence the
+# dependency
+gnatlink-re: ../stamp-tools link.o targext.o gnatmake-re
+	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
 		    --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
@@ -2671,7 +2731,7 @@ gnatlib-shared-darwin:
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS) \
 		-Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
-		$(MISCLIB) -lm
+		$(MISCLIB)
 	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
                 | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -dynamiclib $(PICFLAG_FOR_TARGET) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \

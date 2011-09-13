@@ -1120,9 +1120,9 @@ package Einfo is
 --       or entry. Returns Empty if there are no extra formals.
 
 --    Extra_Accessibility (Node13)
---       Present in formal parameters in the non-generic case if expansion is
---       active. Normally Empty, but if a parameter is one for which a dynamic
---       accessibility check is required, then an extra formal of type
+--       Present in formal parameters in the non-generic case. Normally Empty,
+--       but if expansion is active, and a parameter is one for which a
+--       dynamic accessibility check is required, then an extra formal of type
 --       Natural is created (see description of field Extra_Formal), and the
 --       Extra_Accessibility field of the formal parameter points to the entity
 --       for this extra formal. Also present in variables when compiling
@@ -1131,9 +1131,18 @@ package Einfo is
 --       must be retrieved through the entity designed by this field instead of
 --       being computed.
 
+--    Extra_Accessibility_Of_Result (Node19)
+--       Present in (non-generic) Function, Operator, and Subprogram_Type
+--       entities. Normally Empty, but if expansion is active, and a function
+--       is one for which "the accessibility level of the result ... determined
+--       by the point of call" (AI05-0234) is needed, then an extra formal of
+--       subtype Natural is created (see description of field Extra_Formal),
+--       and the Extra_Accessibility_Of_Result field of the function points to
+--       the entity for this extra formal.
+
 --    Extra_Constrained (Node23)
---       Present in formal parameters in the non-generic case if expansion is
---       active. Normally Empty, but if a parameter is one for which a dynamic
+--       Present in formal parameters in the non-generic case. Normally Empty,
+--       but if expansion is active and a parameter is one for which a dynamic
 --       indication of its constrained status is required, then an extra formal
 --       of type Boolean is created (see description of field Extra_Formal),
 --       and the Extra_Constrained field of the formal parameter points to the
@@ -2283,6 +2292,12 @@ package Einfo is
 --       Present in all entities. Set if entity is immediately visible, i.e.
 --       is defined in some currently open scope (RM 8.3(4)).
 
+--    Is_Implementation_Defined (Flag254)
+--       Present in all entities. Set if a pragma Implementation_Defined is
+--       applied to the pragma. Used to mark all implementation defined
+--       identifiers in standard library packages, and to implement the
+--       restriction No_Implementation_Identifiers.
+
 --    Is_Imported (Flag24)
 --       Present in all entities. Set if the entity is imported. For now we
 --       only allow the import of exceptions, functions, procedures, packages.
@@ -2844,11 +2859,10 @@ package Einfo is
 --       visible by selected notation, or not.
 
 --    Is_Visible_Formal (Flag206)
---       Present in all entities. Set for instances of the formals of a formal
---       package. Indicates that the entity must be made visible in the body
---       of the instance, to reproduce the visibility of the generic. This
---       simplifies visibility settings in instance bodies.
---       ??? confusion in above comments between being present and being set
+--       Present in all entities. Set True for instances of the formals of a
+--       formal package. Indicates that the entity must be made visible in the
+--       body of the instance, to reproduce the visibility of the generic.
+--       This simplifies visibility settings in instance bodies.
 
 --    Is_VMS_Exception (Flag133)
 --       Present in all entities. Set only for exception entities where the
@@ -4796,6 +4810,7 @@ package Einfo is
    --    Is_Hidden                           (Flag57)
    --    Is_Hidden_Open_Scope                (Flag171)
    --    Is_Immediately_Visible              (Flag7)
+   --    Is_Implementation_Defined           (Flag254)
    --    Is_Imported                         (Flag24)
    --    Is_Inlined                          (Flag11)
    --    Is_Internal                         (Flag17)
@@ -5235,6 +5250,7 @@ package Einfo is
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)   (non-generic case only)
    --    Renamed_Entity                      (Node18)   (generic case only)
+   --    Extra_Accessibility_Of_Result       (Node19)   (non-generic case only)
    --    Last_Entity                         (Node20)
    --    Interface_Name                      (Node21)
    --    Scope_Depth_Value                   (Uint22)
@@ -5389,6 +5405,7 @@ package Einfo is
    --  E_Operator
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)
+   --    Extra_Accessibility_Of_Result       (Node19)
    --    Last_Entity                         (Node20)
    --    Overridden_Operation                (Node26)
    --    Subprograms_For_Type                (Node29)
@@ -5680,6 +5697,7 @@ package Einfo is
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
+   --    Extra_Accessibility_Of_Result       (Node19)
    --    Directly_Designated_Type            (Node20)
    --    Extra_Formals                       (Node28)
    --    First_Formal                        (synth)
@@ -6068,6 +6086,7 @@ package Einfo is
    function Esize                               (Id : E) return U;
    function Exception_Code                      (Id : E) return U;
    function Extra_Accessibility                 (Id : E) return E;
+   function Extra_Accessibility_Of_Result       (Id : E) return E;
    function Extra_Constrained                   (Id : E) return E;
    function Extra_Formal                        (Id : E) return E;
    function Extra_Formals                       (Id : E) return E;
@@ -6214,6 +6233,7 @@ package Einfo is
    function Is_Hidden                           (Id : E) return B;
    function Is_Hidden_Open_Scope                (Id : E) return B;
    function Is_Immediately_Visible              (Id : E) return B;
+   function Is_Implementation_Defined           (Id : E) return B;
    function Is_Imported                         (Id : E) return B;
    function Is_Inlined                          (Id : E) return B;
    function Is_Interface                        (Id : E) return B;
@@ -6656,6 +6676,7 @@ package Einfo is
    procedure Set_Esize                           (Id : E; V : U);
    procedure Set_Exception_Code                  (Id : E; V : U);
    procedure Set_Extra_Accessibility             (Id : E; V : E);
+   procedure Set_Extra_Accessibility_Of_Result   (Id : E; V : E);
    procedure Set_Extra_Constrained               (Id : E; V : E);
    procedure Set_Extra_Formal                    (Id : E; V : E);
    procedure Set_Extra_Formals                   (Id : E; V : E);
@@ -6807,6 +6828,7 @@ package Einfo is
    procedure Set_Is_Hidden                       (Id : E; V : B := True);
    procedure Set_Is_Hidden_Open_Scope            (Id : E; V : B := True);
    procedure Set_Is_Immediately_Visible          (Id : E; V : B := True);
+   procedure Set_Is_Implementation_Defined       (Id : E; V : B := True);
    procedure Set_Is_Imported                     (Id : E; V : B := True);
    procedure Set_Is_Inlined                      (Id : E; V : B := True);
    procedure Set_Is_Interface                    (Id : E; V : B := True);
@@ -7359,6 +7381,7 @@ package Einfo is
    pragma Inline (Esize);
    pragma Inline (Exception_Code);
    pragma Inline (Extra_Accessibility);
+   pragma Inline (Extra_Accessibility_Of_Result);
    pragma Inline (Extra_Constrained);
    pragma Inline (Extra_Formal);
    pragma Inline (Extra_Formals);
@@ -7531,6 +7554,7 @@ package Einfo is
    pragma Inline (Is_Hidden);
    pragma Inline (Is_Hidden_Open_Scope);
    pragma Inline (Is_Immediately_Visible);
+   pragma Inline (Is_Implementation_Defined);
    pragma Inline (Is_Imported);
    pragma Inline (Is_Incomplete_Or_Private_Type);
    pragma Inline (Is_Incomplete_Type);
@@ -7803,6 +7827,7 @@ package Einfo is
    pragma Inline (Set_Esize);
    pragma Inline (Set_Exception_Code);
    pragma Inline (Set_Extra_Accessibility);
+   pragma Inline (Set_Extra_Accessibility_Of_Result);
    pragma Inline (Set_Extra_Constrained);
    pragma Inline (Set_Extra_Formal);
    pragma Inline (Set_Extra_Formals);
@@ -7952,6 +7977,7 @@ package Einfo is
    pragma Inline (Set_Is_Hidden);
    pragma Inline (Set_Is_Hidden_Open_Scope);
    pragma Inline (Set_Is_Immediately_Visible);
+   pragma Inline (Set_Is_Implementation_Defined);
    pragma Inline (Set_Is_Imported);
    pragma Inline (Set_Is_Inlined);
    pragma Inline (Set_Is_Interface);

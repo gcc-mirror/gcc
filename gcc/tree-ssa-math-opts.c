@@ -398,9 +398,10 @@ replace_reciprocal (use_operand_p use_p)
   if (optimize_bb_for_speed_p (bb)
       && occ->recip_def && use_stmt != occ->recip_def_stmt)
     {
+      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
       gimple_assign_set_rhs_code (use_stmt, MULT_EXPR);
       SET_USE (use_p, occ->recip_def);
-      fold_stmt_inplace (use_stmt);
+      fold_stmt_inplace (&gsi);
       update_stmt (use_stmt);
     }
 }
@@ -610,8 +611,9 @@ execute_cse_reciprocals (void)
 
 		  FOR_EACH_IMM_USE_STMT (stmt, ui, arg1)
 		    {
+		      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 		      gimple_assign_set_rhs_code (stmt, MULT_EXPR);
-		      fold_stmt_inplace (stmt);
+		      fold_stmt_inplace (&gsi);
 		      update_stmt (stmt);
 		    }
 		}
@@ -2386,9 +2388,9 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 
   /* Handle constants.  */
   if (TREE_CODE (mult_rhs1) == INTEGER_CST)
-    rhs1 = fold_convert (type1, mult_rhs1);
+    mult_rhs1 = fold_convert (type1, mult_rhs1);
   if (TREE_CODE (mult_rhs2) == INTEGER_CST)
-    rhs2 = fold_convert (type2, mult_rhs2);
+    mult_rhs2 = fold_convert (type2, mult_rhs2);
 
   gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
 				    add_rhs);

@@ -238,8 +238,12 @@ Target Report RejectNegative Mask(LITTLE_WORDS)
 Assume big endian bytes, little endian words.  This option is deprecated.
 
 mvectorize-with-neon-quad
-Target Report Mask(NEON_VECTORIZE_QUAD)
+Target Report RejectNegative InverseMask(NEON_VECTORIZE_DOUBLE)
 Use Neon quad-word (rather than double-word) registers for vectorization
+
+mvectorize-with-neon-double
+Target Report RejectNegative Mask(NEON_VECTORIZE_DOUBLE)
+Use Neon double-word (rather than quad-word) registers for vectorization
 
 mword-relocations
 Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)

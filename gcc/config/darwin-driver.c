@@ -29,9 +29,74 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/sysctl.h>
 #include "xregex.h"
 
+static bool
+darwin_find_version_from_kernel (char *new_flag)
+{
+  char osversion[32];
+  size_t osversion_len = sizeof (osversion) - 1;
+  static int osversion_name[2] = { CTL_KERN, KERN_OSRELEASE };
+  int major_vers;
+  char minor_vers[6];
+  char * version_p;
+  char * version_pend;
+
+  /* Determine the version of the running OS.  If we can't, warn user,
+     and do nothing.  */
+  if (sysctl (osversion_name, ARRAY_SIZE (osversion_name), osversion,
+	      &osversion_len, NULL, 0) == -1)
+    {
+      warning (0, "sysctl for kern.osversion failed: %m");
+      return false;
+    }
+
+  /* Try to parse the first two parts of the OS version number.  Warn
+     user and return if it doesn't make sense.  */
+  if (! ISDIGIT (osversion[0]))
+    goto parse_failed;
+  major_vers = osversion[0] - '0';
+  version_p = osversion + 1;
+  if (ISDIGIT (*version_p))
+    major_vers = major_vers * 10 + (*version_p++ - '0');
+  if (major_vers > 4 + 9)
+    goto parse_failed;
+  if (*version_p++ != '.')
+    goto parse_failed;
+  version_pend = strchr(version_p, '.');
+  if (!version_pend)
+    goto parse_failed;
+  if (! ISDIGIT (*version_p))
+    goto parse_failed;
+  strncpy(minor_vers, version_p, version_pend - version_p);
+  minor_vers[version_pend - version_p] = '\0';
+  
+  /* The major kernel version number is 4 plus the second OS version
+     component.  */
+  if (major_vers - 4 <= 4)
+    /* On 10.4 and earlier, the old linker is used which does not
+       support three-component system versions.  */
+    sprintf (new_flag, "10.%d", major_vers - 4);
+  else
+    sprintf (new_flag, "10.%d.%s", major_vers - 4,
+	     minor_vers);
+
+  return true;
+
+ parse_failed:
+  warning (0, "couldn%'t understand kern.osversion %q.*s",
+	   (int) osversion_len, osversion);
+  return false;
+}
+
+#endif
+
 /* When running on a Darwin system and using that system's headers and
    libraries, default the -mmacosx-version-min flag to be the version
-   of the system on which the compiler is running.  */
+   of the system on which the compiler is running.  
+   
+   When building cross or native cross compilers, default to the OSX
+   version of the target (as provided by the most specific target header
+   included in tm.h).  This may be overidden by setting the flag explicitly
+   (or by the MACOSX_DEPLOYMENT_TARGET environment).  */
 
 static void
 darwin_default_min_version (unsigned int *decoded_options_count,
@@ -40,13 +105,6 @@ darwin_default_min_version (unsigned int *decoded_options_count,
   const unsigned int argc = *decoded_options_count;
   struct cl_decoded_option *const argv = *decoded_options;
   unsigned int i;
-  char osversion[32];
-  size_t osversion_len = sizeof (osversion) - 1;
-  static int osversion_name[2] = { CTL_KERN, KERN_OSRELEASE };
-  char * version_p;
-  char * version_pend;
-  int major_vers;
-  char minor_vers[6];
   static char new_flag[sizeof ("10.0.0") + 6];
 
   /* If the command-line is empty, just return.  */
@@ -82,44 +140,20 @@ darwin_default_min_version (unsigned int *decoded_options_count,
       }
   }
 
-  /* Determine the version of the running OS.  If we can't, warn user,
-     and do nothing.  */
-  if (sysctl (osversion_name, ARRAY_SIZE (osversion_name), osversion,
-	      &osversion_len, NULL, 0) == -1)
-    {
-      warning (0, "sysctl for kern.osversion failed: %m");
-      return;
-    }
+#ifndef CROSS_DIRECTORY_STRUCTURE
 
-  /* Try to parse the first two parts of the OS version number.  Warn
-     user and return if it doesn't make sense.  */
-  if (! ISDIGIT (osversion[0]))
-    goto parse_failed;
-  major_vers = osversion[0] - '0';
-  version_p = osversion + 1;
-  if (ISDIGIT (*version_p))
-    major_vers = major_vers * 10 + (*version_p++ - '0');
-  if (major_vers > 4 + 9)
-    goto parse_failed;
-  if (*version_p++ != '.')
-    goto parse_failed;
-  version_pend = strchr(version_p, '.');
-  if (!version_pend)
-    goto parse_failed;
-  if (! ISDIGIT (*version_p))
-    goto parse_failed;
-  strncpy(minor_vers, version_p, version_pend - version_p);
-  minor_vers[version_pend - version_p] = '\0';
-  
-  /* The major kernel version number is 4 plus the second OS version
-     component.  */
-  if (major_vers - 4 <= 4)
-    /* On 10.4 and earlier, the old linker is used which does not
-       support three-component system versions.  */
-    sprintf (new_flag, "10.%d", major_vers - 4);
-  else
-    sprintf (new_flag, "10.%d.%s", major_vers - 4,
-	     minor_vers);
+ /* Try to find the version from the kernel, if we fail - we print a message 
+    and give up.  */
+ if (!darwin_find_version_from_kernel (new_flag))
+   return;
+
+#else
+
+ /* For cross-compilers, default to the target OS version. */
+
+ strncpy (new_flag, DEF_MIN_OSX_VERSION, sizeof (new_flag));
+
+#endif /* CROSS_DIRECTORY_STRUCTURE */
 
   /* Add the new flag.  */
   ++*decoded_options_count;
@@ -132,13 +166,7 @@ darwin_default_min_version (unsigned int *decoded_options_count,
 	  (argc - 1) * sizeof (struct cl_decoded_option));
   return;
   
- parse_failed:
-  warning (0, "couldn%'t understand kern.osversion %q.*s",
-	   (int) osversion_len, osversion);
-  return;
 }
-
-#endif /* CROSS_DIRECTORY_STRUCTURE */
 
 /* Translate -filelist and -framework options in *DECODED_OPTIONS
    (size *DECODED_OPTIONS_COUNT) to use -Xlinker so that they are
@@ -192,7 +220,5 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	}
     }
 
-#ifndef CROSS_DIRECTORY_STRUCTURE
   darwin_default_min_version (decoded_options_count, decoded_options);
-#endif
 }
