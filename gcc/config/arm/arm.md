@@ -211,31 +211,31 @@
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "a")
-	      (ne (symbol_ref "TARGET_ARM") (const_int 0)))
+	      (match_test "TARGET_ARM"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "t")
-	      (ne (symbol_ref "TARGET_THUMB") (const_int 0)))
+	      (match_test "TARGET_THUMB"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "t1")
-	      (ne (symbol_ref "TARGET_THUMB1") (const_int 0)))
+	      (match_test "TARGET_THUMB1"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "t2")
-	      (ne (symbol_ref "TARGET_THUMB2") (const_int 0)))
+	      (match_test "TARGET_THUMB2"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "32")
-	      (ne (symbol_ref "TARGET_32BIT") (const_int 0)))
+	      (match_test "TARGET_32BIT"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "v6")
-	      (ne (symbol_ref "(TARGET_32BIT && arm_arch6)") (const_int 0)))
+	      (match_test "TARGET_32BIT && arm_arch6"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "nov6")
-	      (ne (symbol_ref "(TARGET_32BIT && !arm_arch6)") (const_int 0)))
+	      (match_test "TARGET_32BIT && !arm_arch6"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "onlya8")
@@ -7413,7 +7413,7 @@
    (set_attr "type" "branch")
    (set (attr "length")
 	(if_then_else
-	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
+	   (and (match_test "TARGET_THUMB2")
 		(and (ge (minus (match_dup 0) (pc)) (const_int -250))
 		     (le (minus (match_dup 0) (pc)) (const_int 256))))
 	   (const_int 2)
@@ -7439,7 +7439,7 @@
    (set_attr "type" "branch")
    (set (attr "length")
 	(if_then_else
-	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
+	   (and (match_test "TARGET_THUMB2")
 		(and (ge (minus (match_dup 0) (pc)) (const_int -250))
 		     (le (minus (match_dup 0) (pc)) (const_int 256))))
 	   (const_int 2)
@@ -7898,7 +7898,7 @@
   [(set_attr "predicable" "yes")
    (set (attr "length")
 	(if_then_else
-	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
+	   (and (match_test "TARGET_THUMB2")
 		(and (ge (minus (match_dup 0) (pc)) (const_int -2044))
 		     (le (minus (match_dup 0) (pc)) (const_int 2048))))
 	   (const_int 2)

@@ -951,7 +951,7 @@
         (if_then_else
 	    (and (ge (minus (match_dup 1) (pc)) (const_int 2))
 	         (le (minus (match_dup 1) (pc)) (const_int 128))
-	         (eq (symbol_ref ("which_alternative")) (const_int 0)))
+	         (not (match_test "which_alternative")))
 	    (const_int 2)
 	    (const_int 8)))]
 )
@@ -974,7 +974,7 @@
         (if_then_else
 	    (and (ge (minus (match_dup 1) (pc)) (const_int 2))
 	         (le (minus (match_dup 1) (pc)) (const_int 128))
-	         (eq (symbol_ref ("which_alternative")) (const_int 0)))
+	         (not (match_test "which_alternative")))
 	    (const_int 2)
 	    (const_int 8)))]
 )
