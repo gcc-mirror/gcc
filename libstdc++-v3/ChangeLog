@@ -1,3 +1,23 @@
+2011-09-12  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple (_Head_base<>::_M_head, _Head_base<>::_M_tail,
+	_Tuple_impl<>::_M_head, _Tuple_impl<>::_M_tail): Change to static
+	constexpr functions; adjust everywhere.
+	(__get_helper, get): Declare constexpr all three overloads.
+	(tuple_cat): Declare constexpr; use late return type to improve
+	error messages.
+	* include/std/utility (__pair_get<>::__get, __pair_get<>::__move_get,
+	__pair_get<>::__const_get, get): Declare all constexpr.
+	* include/std/array (get): Likewise.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Re-enable
+	tuple_cat test.
+	* testsuite/23_containers/array/constexpr_get.cc: New.
+	* testsuite/20_util/tuple/element_access/constexpr_get.cc: Likewise.
+	* testsuite/20_util/pair/constexpr_get.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line number.
+
 2011-09-12  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/is_constructible/value-2.cc: Adjust
