@@ -1,3 +1,8 @@
+2011-09-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48320
+	* g++.dg/cpp0x/variadic116.C: New test case.
+
 2011-09-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips.exp (mips_option_groups): Add debug options.
