@@ -7414,7 +7414,13 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
 	  for (size_t i = 0; i < count; ++i)
 	    retvals->push_back(Expression::make_call_result(call, i));
 	}
-      Statement* retstat = Statement::make_return_statement(retvals, location);
+      Return_statement* retstat = Statement::make_return_statement(retvals,
+								   location);
+
+      // We can return values with hidden fields from a stub.  This is
+      // necessary if the method is itself hidden.
+      retstat->set_hidden_fields_are_ok();
+
       gogo->add_statement(retstat);
     }
 }
