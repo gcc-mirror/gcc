@@ -17729,7 +17729,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
       specs = tsubst_exception_specification (TREE_TYPE (code_pattern),
 					      args, tf_error, NULL_TREE,
 					      /*defer_ok*/false);
-      if (specs)
+      if (specs && specs != error_mark_node)
 	TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl),
 						    specs);
 
