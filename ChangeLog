@@ -1,3 +1,7 @@
+2011-09-14  Tom de Vries  <tom@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2011-08-14  Yao Qi  <yao@codesourcery.com>
 
 	* configure.ac (tic6x-*-*): Remove gdb from noconfigdirs.
