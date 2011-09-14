@@ -8150,6 +8150,13 @@ resolve_transfer (gfc_code *code)
 	 && exp->value.op.op == INTRINSIC_PARENTHESES)
     exp = exp->value.op.op1;
 
+  if (exp && exp->expr_type == EXPR_NULL && exp->ts.type == BT_UNKNOWN)
+    {
+      gfc_error ("NULL intrinsic at %L in data transfer statement requires "
+		 "MOLD=", &exp->where);
+      return;
+    }
+
   if (exp == NULL || (exp->expr_type != EXPR_VARIABLE
 		      && exp->expr_type != EXPR_FUNCTION))
     return;

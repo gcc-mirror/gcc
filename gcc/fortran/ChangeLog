@@ -1,3 +1,14 @@
+2011-09-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34547
+	PR fortran/50375
+	* check.c (gfc_check_null): Allow allocatables as MOLD to NULL.
+	* resolve.c (resolve_transfer): Reject NULL without MOLD.
+	* interface.c (gfc_procedure_use): Reject NULL without MOLD
+	if no explicit interface is known.
+	(gfc_search_interface): Reject NULL without MOLD if it would
+	lead to ambiguity.
+
 2011-09-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50379

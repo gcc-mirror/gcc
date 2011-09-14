@@ -1,3 +1,10 @@
+2011-09-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34547
+	PR fortran/50375
+	* gfortran.dg/null_5.f90: New.
+	* gfortran.dg/null_6.f90: New.
+
 2011-09-13  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc.c-torture/compile/20110913-1.c: New test.
