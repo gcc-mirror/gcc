@@ -1297,28 +1297,28 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   if (!this->has_pointer())
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "Kind");
+  go_assert(p->is_field_name("Kind"));
   mpz_t iv;
   mpz_init_set_ui(iv, runtime_type_kind);
   vals->push_back(Expression::make_integer(&iv, p->type(), bloc));
 
   ++p;
-  go_assert(p->field_name() == "align");
+  go_assert(p->is_field_name("align"));
   Expression::Type_info type_info = Expression::TYPE_INFO_ALIGNMENT;
   vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
-  go_assert(p->field_name() == "fieldAlign");
+  go_assert(p->is_field_name("fieldAlign"));
   type_info = Expression::TYPE_INFO_FIELD_ALIGNMENT;
   vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
-  go_assert(p->field_name() == "size");
+  go_assert(p->is_field_name("size"));
   type_info = Expression::TYPE_INFO_SIZE;
   vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
-  go_assert(p->field_name() == "hash");
+  go_assert(p->is_field_name("hash"));
   mpz_set_ui(iv, this->hash_for_method(gogo));
   vals->push_back(Expression::make_integer(&iv, p->type(), bloc));
 
@@ -1327,7 +1327,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   this->type_functions(&hash_fn, &equal_fn);
 
   ++p;
-  go_assert(p->field_name() == "hashfn");
+  go_assert(p->is_field_name("hashfn"));
   Function_type* fntype = p->type()->function_type();
   Named_object* no = Named_object::make_function_declaration(hash_fn, NULL,
 							     fntype,
@@ -1336,14 +1336,14 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   vals->push_back(Expression::make_func_reference(no, NULL, bloc));
 
   ++p;
-  go_assert(p->field_name() == "equalfn");
+  go_assert(p->is_field_name("equalfn"));
   fntype = p->type()->function_type();
   no = Named_object::make_function_declaration(equal_fn, NULL, fntype, bloc);
   no->func_declaration_value()->set_asm_name(equal_fn);
   vals->push_back(Expression::make_func_reference(no, NULL, bloc));
 
   ++p;
-  go_assert(p->field_name() == "string");
+  go_assert(p->is_field_name("string"));
   Expression* s = Expression::make_string((name != NULL
 					   ? name->reflection(gogo)
 					   : this->reflection(gogo)),
@@ -1351,7 +1351,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 
   ++p;
-  go_assert(p->field_name() == "uncommonType");
+  go_assert(p->is_field_name("uncommonType"));
   if (name == NULL && methods == NULL)
     vals->push_back(Expression::make_nil(bloc));
   else
@@ -1365,7 +1365,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
     }
 
   ++p;
-  go_assert(p->field_name() == "ptrToThis");
+  go_assert(p->is_field_name("ptrToThis"));
   if (name == NULL)
     vals->push_back(Expression::make_nil(bloc));
   else
@@ -1402,10 +1402,10 @@ Type::uncommon_type_constructor(Gogo* gogo, Type* uncommon_type,
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "name");
+  go_assert(p->is_field_name("name"));
 
   ++p;
-  go_assert(p->field_name() == "pkgPath");
+  go_assert(p->is_field_name("pkgPath"));
 
   if (name == NULL)
     {
@@ -1444,7 +1444,7 @@ Type::uncommon_type_constructor(Gogo* gogo, Type* uncommon_type,
     }
 
   ++p;
-  go_assert(p->field_name() == "methods");
+  go_assert(p->is_field_name("methods"));
   vals->push_back(this->methods_constructor(gogo, p->type(), methods,
 					    only_value_methods));
 
@@ -1532,13 +1532,13 @@ Type::method_constructor(Gogo*, Type* method_type,
   vals->reserve(5);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "name");
+  go_assert(p->is_field_name("name"));
   const std::string n = Gogo::unpack_hidden_name(method_name);
   Expression* s = Expression::make_string(n, bloc);
   vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 
   ++p;
-  go_assert(p->field_name() == "pkgPath");
+  go_assert(p->is_field_name("pkgPath"));
   if (!Gogo::is_hidden_name(method_name))
     vals->push_back(Expression::make_nil(bloc));
   else
@@ -1560,11 +1560,11 @@ Type::method_constructor(Gogo*, Type* method_type,
   Type* nonmethod_type = mtype->copy_without_receiver();
 
   ++p;
-  go_assert(p->field_name() == "mtyp");
+  go_assert(p->is_field_name("mtyp"));
   vals->push_back(Expression::make_type_descriptor(nonmethod_type, bloc));
 
   ++p;
-  go_assert(p->field_name() == "typ");
+  go_assert(p->is_field_name("typ"));
   if (!only_value_methods && m->is_value_method())
     {
       // This is a value method on a pointer type.  Change the type of
@@ -1587,7 +1587,7 @@ Type::method_constructor(Gogo*, Type* method_type,
   vals->push_back(Expression::make_type_descriptor(mtype, bloc));
 
   ++p;
-  go_assert(p->field_name() == "tfn");
+  go_assert(p->is_field_name("tfn"));
   vals->push_back(Expression::make_func_reference(no, NULL, bloc));
 
   ++p;
@@ -2752,22 +2752,22 @@ Function_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(4);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "commonType");
+  go_assert(p->is_field_name("commonType"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_FUNC,
 						    name, NULL, true));
 
   ++p;
-  go_assert(p->field_name() == "dotdotdot");
+  go_assert(p->is_field_name("dotdotdot"));
   vals->push_back(Expression::make_boolean(this->is_varargs(), bloc));
 
   ++p;
-  go_assert(p->field_name() == "in");
+  go_assert(p->is_field_name("in"));
   vals->push_back(this->type_descriptor_params(p->type(), this->receiver(),
 					       this->parameters()));
 
   ++p;
-  go_assert(p->field_name() == "out");
+  go_assert(p->is_field_name("out"));
   vals->push_back(this->type_descriptor_params(p->type(), NULL,
 					       this->results()));
 
@@ -3159,13 +3159,13 @@ Pointer_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       vals->reserve(2);
 
       Struct_field_list::const_iterator p = fields->begin();
-      go_assert(p->field_name() == "commonType");
+      go_assert(p->is_field_name("commonType"));
       vals->push_back(this->type_descriptor_constructor(gogo,
 							RUNTIME_TYPE_KIND_PTR,
 							name, methods, false));
 
       ++p;
-      go_assert(p->field_name() == "elem");
+      go_assert(p->is_field_name("elem"));
       vals->push_back(Expression::make_type_descriptor(deref, bloc));
 
       return Expression::make_struct_composite_literal(ptr_tdt, vals, bloc);
@@ -3373,6 +3373,34 @@ Struct_field::field_name() const
     }
 }
 
+// Return whether this field is named NAME.
+
+bool
+Struct_field::is_field_name(const std::string& name) const
+{
+  const std::string& me(this->typed_identifier_.name());
+  if (!me.empty())
+    return me == name;
+  else
+    {
+      Type* t = this->typed_identifier_.type();
+      if (t->points_to() != NULL)
+	t = t->points_to();
+      Named_type* nt = t->named_type();
+      if (nt != NULL && nt->name() == name)
+	return true;
+
+      // This is a horrible hack caused by the fact that we don't pack
+      // the names of builtin types.  FIXME.
+      if (nt != NULL
+	  && nt->is_builtin()
+	  && nt->name() == Gogo::unpack_hidden_name(name))
+	return true;
+
+      return false;
+    }
+}
+
 // Class Struct_type.
 
 // Traversal.
@@ -3567,7 +3595,7 @@ Struct_type::find_local_field(const std::string& name,
        pf != fields->end();
        ++pf, ++i)
     {
-      if (pf->field_name() == name)
+      if (pf->is_field_name(name))
 	{
 	  if (pindex != NULL)
 	    *pindex = i;
@@ -3608,7 +3636,7 @@ Struct_type::field_reference_depth(Expression* struct_expr,
        pf != fields->end();
        ++pf, ++i)
     {
-      if (pf->field_name() == name)
+      if (pf->is_field_name(name))
 	{
 	  *depth = 0;
 	  return Expression::make_field_reference(struct_expr, i, location);
@@ -3854,13 +3882,13 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   go_assert(methods == NULL || name == NULL);
 
   Struct_field_list::const_iterator ps = fields->begin();
-  go_assert(ps->field_name() == "commonType");
+  go_assert(ps->is_field_name("commonType"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_STRUCT,
 						    name, methods, true));
 
   ++ps;
-  go_assert(ps->field_name() == "fields");
+  go_assert(ps->is_field_name("fields"));
 
   Expression_list* elements = new Expression_list();
   elements->reserve(this->fields_->size());
@@ -3875,7 +3903,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       fvals->reserve(5);
 
       Struct_field_list::const_iterator q = f->begin();
-      go_assert(q->field_name() == "name");
+      go_assert(q->is_field_name("name"));
       if (pf->is_anonymous())
 	fvals->push_back(Expression::make_nil(bloc));
       else
@@ -3886,7 +3914,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	}
 
       ++q;
-      go_assert(q->field_name() == "pkgPath");
+      go_assert(q->is_field_name("pkgPath"));
       if (!Gogo::is_hidden_name(pf->field_name()))
 	fvals->push_back(Expression::make_nil(bloc));
       else
@@ -3897,11 +3925,11 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	}
 
       ++q;
-      go_assert(q->field_name() == "typ");
+      go_assert(q->is_field_name("typ"));
       fvals->push_back(Expression::make_type_descriptor(pf->type(), bloc));
 
       ++q;
-      go_assert(q->field_name() == "tag");
+      go_assert(q->is_field_name("tag"));
       if (!pf->has_tag())
 	fvals->push_back(Expression::make_nil(bloc));
       else
@@ -3911,7 +3939,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	}
 
       ++q;
-      go_assert(q->field_name() == "offset");
+      go_assert(q->is_field_name("offset"));
       fvals->push_back(Expression::make_struct_field_offset(this, &*pf));
 
       Expression* v = Expression::make_struct_composite_literal(element_type,
@@ -4561,22 +4589,22 @@ Array_type::array_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "commonType");
+  go_assert(p->is_field_name("commonType"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_ARRAY,
 						    name, NULL, true));
 
   ++p;
-  go_assert(p->field_name() == "elem");
+  go_assert(p->is_field_name("elem"));
   vals->push_back(Expression::make_type_descriptor(this->element_type_, bloc));
 
   ++p;
-  go_assert(p->field_name() == "slice");
+  go_assert(p->is_field_name("slice"));
   Type* slice_type = Type::make_array_type(this->element_type_, NULL);
   vals->push_back(Expression::make_type_descriptor(slice_type, bloc));
 
   ++p;
-  go_assert(p->field_name() == "len");
+  go_assert(p->is_field_name("len"));
   vals->push_back(Expression::make_cast(p->type(), this->length_, bloc));
 
   ++p;
@@ -4600,13 +4628,13 @@ Array_type::slice_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(2);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "commonType");
+  go_assert(p->is_field_name("commonType"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_SLICE,
 						    name, NULL, true));
 
   ++p;
-  go_assert(p->field_name() == "elem");
+  go_assert(p->is_field_name("elem"));
   vals->push_back(Expression::make_type_descriptor(this->element_type_, bloc));
 
   ++p;
@@ -4810,17 +4838,17 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "commonType");
+  go_assert(p->is_field_name("commonType"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_MAP,
 						    name, NULL, true));
 
   ++p;
-  go_assert(p->field_name() == "key");
+  go_assert(p->is_field_name("key"));
   vals->push_back(Expression::make_type_descriptor(this->key_type_, bloc));
 
   ++p;
-  go_assert(p->field_name() == "elem");
+  go_assert(p->is_field_name("elem"));
   vals->push_back(Expression::make_type_descriptor(this->val_type_, bloc));
 
   ++p;
@@ -4883,27 +4911,27 @@ Map_type::map_descriptor(Gogo* gogo)
 
   Struct_field_list::const_iterator p = fields->begin();
 
-  go_assert(p->field_name() == "__map_descriptor");
+  go_assert(p->is_field_name("__map_descriptor"));
   vals->push_back(Expression::make_type_descriptor(this, bloc));
 
   ++p;
-  go_assert(p->field_name() == "__entry_size");
+  go_assert(p->is_field_name("__entry_size"));
   Expression::Type_info type_info = Expression::TYPE_INFO_SIZE;
   vals->push_back(Expression::make_type_info(map_entry_type, type_info));
 
   Struct_field_list::const_iterator pf = map_entry_type->fields()->begin();
   ++pf;
-  go_assert(pf->field_name() == "__key");
+  go_assert(pf->is_field_name("__key"));
 
   ++p;
-  go_assert(p->field_name() == "__key_offset");
+  go_assert(p->is_field_name("__key_offset"));
   vals->push_back(Expression::make_struct_field_offset(map_entry_type, &*pf));
 
   ++pf;
-  go_assert(pf->field_name() == "__val");
+  go_assert(pf->is_field_name("__val"));
 
   ++p;
-  go_assert(p->field_name() == "__val_offset");
+  go_assert(p->is_field_name("__val_offset"));
   vals->push_back(Expression::make_struct_field_offset(map_entry_type, &*pf));
 
   ++p;
@@ -5093,17 +5121,17 @@ Channel_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->field_name() == "commonType");
+  go_assert(p->is_field_name("commonType"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_CHAN,
 						    name, NULL, true));
 
   ++p;
-  go_assert(p->field_name() == "elem");
+  go_assert(p->is_field_name("elem"));
   vals->push_back(Expression::make_type_descriptor(this->element_type_, bloc));
 
   ++p;
-  go_assert(p->field_name() == "dir");
+  go_assert(p->is_field_name("dir"));
   // These bits must match the ones in libgo/runtime/go-type.h.
   int val = 0;
   if (this->may_receive_)
@@ -5771,13 +5799,13 @@ Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ivals->reserve(2);
 
   Struct_field_list::const_iterator pif = ifields->begin();
-  go_assert(pif->field_name() == "commonType");
+  go_assert(pif->is_field_name("commonType"));
   ivals->push_back(this->type_descriptor_constructor(gogo,
 						     RUNTIME_TYPE_KIND_INTERFACE,
 						     name, NULL, true));
 
   ++pif;
-  go_assert(pif->field_name() == "methods");
+  go_assert(pif->is_field_name("methods"));
 
   Expression_list* methods = new Expression_list();
   if (this->methods_ != NULL && !this->methods_->empty())
@@ -5795,13 +5823,13 @@ Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	  mvals->reserve(3);
 
 	  Struct_field_list::const_iterator pmf = mfields->begin();
-	  go_assert(pmf->field_name() == "name");
+	  go_assert(pmf->is_field_name("name"));
 	  std::string s = Gogo::unpack_hidden_name(pm->name());
 	  Expression* e = Expression::make_string(s, bloc);
 	  mvals->push_back(Expression::make_unary(OPERATOR_AND, e, bloc));
 
 	  ++pmf;
-	  go_assert(pmf->field_name() == "pkgPath");
+	  go_assert(pmf->is_field_name("pkgPath"));
 	  if (!Gogo::is_hidden_name(pm->name()))
 	    mvals->push_back(Expression::make_nil(bloc));
 	  else
@@ -5812,7 +5840,7 @@ Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	    }
 
 	  ++pmf;
-	  go_assert(pmf->field_name() == "typ");
+	  go_assert(pmf->is_field_name("typ"));
 	  mvals->push_back(Expression::make_type_descriptor(pm->type(), bloc));
 
 	  ++pmf;
@@ -7571,9 +7599,8 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
     {
       if (!ambig1.empty())
 	error_at(location, "%qs is ambiguous via %qs and %qs",
-		 Gogo::message_name(name).c_str(),
-		 Gogo::message_name(ambig1).c_str(),
-		 Gogo::message_name(ambig2).c_str());
+		 Gogo::message_name(name).c_str(), ambig1.c_str(),
+		 ambig2.c_str());
       else if (found_pointer_method)
 	error_at(location, "method requires a pointer");
       else if (nt == NULL && st == NULL && it == NULL)
@@ -7701,7 +7728,7 @@ Type::find_field_or_method(const Type* type,
        pf != fields->end();
        ++pf)
     {
-      if (pf->field_name() == name)
+      if (pf->is_field_name(name))
 	{
 	  *is_method = false;
 	  if (nt != NULL)
@@ -7744,8 +7771,10 @@ Type::find_field_or_method(const Type* type,
 	      // pass the ambiguity back to the caller.
 	      if (found_level == 0 || sublevel <= found_level)
 		{
-		  found_ambig1 = pf->field_name() + '.' + subambig1;
-		  found_ambig2 = pf->field_name() + '.' + subambig2;
+		  found_ambig1 = (Gogo::message_name(pf->field_name())
+				  + '.' + subambig1);
+		  found_ambig2 = (Gogo::message_name(pf->field_name())
+				  + '.' + subambig2);
 		  found_level = sublevel;
 		}
 	    }
@@ -7769,8 +7798,8 @@ Type::find_field_or_method(const Type* type,
 	    {
 	      // We found an ambiguity.
 	      go_assert(found_parent != NULL);
-	      found_ambig1 = found_parent->field_name();
-	      found_ambig2 = pf->field_name();
+	      found_ambig1 = Gogo::message_name(found_parent->field_name());
+	      found_ambig2 = Gogo::message_name(pf->field_name());
 	    }
 	  else
 	    {
