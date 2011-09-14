@@ -10521,7 +10521,7 @@ mips_expand_epilogue (bool sibcall_p)
 	}
       else
 	{
-	  unsigned int regno;
+	  rtx pat;
 
 	  /* When generating MIPS16 code, the normal
 	     mips_for_each_saved_gpr_and_fpr path will restore the return
@@ -10529,11 +10529,21 @@ mips_expand_epilogue (bool sibcall_p)
 	  if (TARGET_MIPS16
 	      && !GENERATE_MIPS16E_SAVE_RESTORE
 	      && BITSET_P (frame->mask, RETURN_ADDR_REGNUM))
-	    regno = GP_REG_FIRST + 7;
+	    {
+	      /* simple_returns cannot rely on values that are only available
+		 on paths through the epilogue (because return paths that do
+		 not pass through the epilogue may nevertheless reuse a
+		 simple_return that occurs at the end of the epilogue).
+		 Use a normal return here instead.  */
+	      rtx reg = gen_rtx_REG (Pmode, GP_REG_FIRST + 7);
+	      pat = gen_return_internal (reg);
+	    }
 	  else
-	    regno = RETURN_ADDR_REGNUM;
-	  emit_jump_insn (gen_simple_return_internal (gen_rtx_REG (Pmode,
-								   regno)));
+	    {
+	      rtx reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+	      pat = gen_simple_return_internal (reg);
+	    }
+	  emit_jump_insn (pat);
 	}
     }
 
