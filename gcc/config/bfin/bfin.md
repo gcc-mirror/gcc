@@ -237,14 +237,12 @@
 
 (define_insn_reservation "dsp32shiftimm" 1
   (and (eq_attr "type" "dsp32shiftimm")
-       (eq (symbol_ref "ENABLE_WA_05000074")
-	   (const_int 0)))
+       (not (match_test "ENABLE_WA_05000074")))
   "slot0")
 
 (define_insn_reservation "dsp32shiftimm_anomaly_05000074" 1
   (and (eq_attr "type" "dsp32shiftimm")
-       (ne (symbol_ref "ENABLE_WA_05000074")
-	   (const_int 0)))
+       (match_test "ENABLE_WA_05000074"))
   "slot0+anomaly_05000074")
 
 (define_insn_reservation "load32" 1
@@ -277,8 +275,7 @@
 	    (and (eq_attr "type" "mcst")
 		 (ior (eq_attr "addrtype" "preg")
 		      (eq_attr "addrtype" "spreg"))))
-       (ior (eq (symbol_ref "ENABLE_WA_05000074")
-		(const_int 0))
+       (ior (not (match_test "ENABLE_WA_05000074"))
 	    (eq_attr "storereg" "other")))
   "slot1+pregs+store")
 
@@ -287,24 +284,21 @@
 	    (and (eq_attr "type" "mcst")
 		 (ior (eq_attr "addrtype" "preg")
 		      (eq_attr "addrtype" "spreg"))))
-       (and (ne (symbol_ref "ENABLE_WA_05000074")
-		(const_int 0))
+       (and (match_test "ENABLE_WA_05000074")
 	    (eq_attr "storereg" "preg")))
   "slot1+anomaly_05000074+pregs+store")
 
 (define_insn_reservation "storei" 1
   (and (and (not (eq_attr "seq_insns" "multi"))
 	    (and (eq_attr "type" "mcst") (eq_attr "addrtype" "ireg")))
-       (ior (eq (symbol_ref "ENABLE_WA_05000074")
-		(const_int 0))
+       (ior (not (match_test "ENABLE_WA_05000074"))
 	    (eq_attr "storereg" "other")))
   "(slot1|slot2)+store")
 
 (define_insn_reservation "storei_anomaly_05000074" 1
   (and (and (not (eq_attr "seq_insns" "multi"))
 	    (and (eq_attr "type" "mcst") (eq_attr "addrtype" "ireg")))
-       (and (ne (symbol_ref "ENABLE_WA_05000074")
-		(const_int 0))
+       (and (match_test "ENABLE_WA_05000074")
 	    (eq_attr "storereg" "preg")))
   "((slot1+anomaly_05000074)|slot2)+store")
 
