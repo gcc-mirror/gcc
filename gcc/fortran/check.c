@@ -2732,13 +2732,19 @@ gfc_check_null (gfc_expr *mold)
 
   attr = gfc_variable_attr (mold, NULL);
 
-  if (!attr.pointer && !attr.proc_pointer)
+  if (!attr.pointer && !attr.proc_pointer && !attr.allocatable)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER",
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER, "
+		 "ALLOCATABLE or procedure pointer",
 		 gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &mold->where);
       return FAILURE;
     }
+
+  if (attr.allocatable
+      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: NULL intrinsic with "
+			 "allocatable MOLD at %L", &mold->where) == FAILURE)
+    return FAILURE;
 
   /* F2008, C1242.  */
   if (gfc_is_coindexed (mold))

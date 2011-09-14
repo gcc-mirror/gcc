@@ -2857,6 +2857,13 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 			"procedure '%s'", &a->expr->where, sym->name);
 	      break;
 	    }
+
+	  if (a->expr && a->expr->expr_type == EXPR_NULL
+	      && a->expr->ts.type == BT_UNKNOWN)
+	    {
+	      gfc_error ("MOLD argument to NULL required at %L", &a->expr->where);
+	      return;
+	    }
 	}
 
       return;
@@ -2949,6 +2956,20 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 		      gfc_actual_arglist **ap)
 {
   gfc_symbol *elem_sym = NULL;
+  gfc_symbol *null_sym = NULL;
+  locus null_expr_loc;
+  gfc_actual_arglist *a;
+  bool has_null_arg = false;
+
+  for (a = *ap; a; a = a->next)
+    if (a->expr && a->expr->expr_type == EXPR_NULL
+	&& a->expr->ts.type == BT_UNKNOWN)
+      {
+	has_null_arg = true;
+	null_expr_loc = a->expr->where;
+	break;
+      } 
+
   for (; intr; intr = intr->next)
     {
       if (sub_flag && intr->sym->attr.function)
@@ -2958,6 +2979,19 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 
       if (gfc_arglist_matches_symbol (ap, intr->sym))
 	{
+	  if (has_null_arg && null_sym)
+	    {
+	      gfc_error ("MOLD= required in NULL() argument at %L: Ambiguity "
+			 "between specific functions %s and %s",
+			 &null_expr_loc, null_sym->name, intr->sym->name);
+	      return NULL;
+	    }
+	  else if (has_null_arg)
+	    {
+	      null_sym = intr->sym;
+	      continue;
+	    }
+
 	  /* Satisfy 12.4.4.1 such that an elemental match has lower
 	     weight than a non-elemental match.  */ 
 	  if (intr->sym->attr.elemental)
@@ -2968,6 +3002,9 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 	  return intr->sym;
 	}
     }
+
+  if (null_sym)
+    return null_sym;
 
   return elem_sym ? elem_sym : NULL;
 }
