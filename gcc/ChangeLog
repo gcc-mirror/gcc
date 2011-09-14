@@ -1,3 +1,9 @@
+2011-09-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/50251
+	* explow.c (emit_stack_restore): Set crtl->need_drap if
+	stack_restore is emitted.
+
 2011-09-14  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (arm_override_options): Add unaligned_access
