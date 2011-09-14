@@ -1159,8 +1159,11 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 
 	  // If a function calls the predeclared recover function, we
 	  // can't inline it, because recover behaves differently in a
-	  // function passed directly to defer.
-	  if (this->calls_recover_ && !this->is_recover_thunk_)
+	  // function passed directly to defer.  If this is a recover
+	  // thunk that we built to test whether a function can be
+	  // recovered, we can't inline it, because that will mess up
+	  // our return address comparison.
+	  if (this->calls_recover_ || this->is_recover_thunk_)
 	    DECL_UNINLINABLE(decl) = 1;
 
 	  // If this is a thunk created to call a function which calls
