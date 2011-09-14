@@ -253,3 +253,7 @@ mfix-cortex-m3-ldrd
 Target Report Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions
 that may trigger Cortex-M3 errata.
+
+munaligned-access
+Target Report Var(unaligned_access) Init(2)
+Enable unaligned word and halfword accesses to packed data.

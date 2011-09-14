@@ -1915,6 +1915,28 @@ arm_option_override (void)
 	fix_cm3_ldrd = 0;
     }
 
+  /* Enable -munaligned-access by default for
+     - all ARMv6 architecture-based processors
+     - ARMv7-A, ARMv7-R, and ARMv7-M architecture-based processors.
+
+     Disable -munaligned-access by default for
+     - all pre-ARMv6 architecture-based processors
+     - ARMv6-M architecture-based processors.  */
+
+  if (unaligned_access == 2)
+    {
+      if (arm_arch6 && (arm_arch_notm || arm_arch7))
+	unaligned_access = 1;
+      else
+	unaligned_access = 0;
+    }
+  else if (unaligned_access == 1
+	   && !(arm_arch6 && (arm_arch_notm || arm_arch7)))
+    {
+      warning (0, "target CPU does not support unaligned accesses");
+      unaligned_access = 0;
+    }
+
   if (TARGET_THUMB1 && flag_schedule_insns)
     {
       /* Don't warn since it's on by default in -O2.  */
@@ -22273,6 +22295,10 @@ arm_file_start (void)
       else
 	val = 6;
       asm_fprintf (asm_out_file, "\t.eabi_attribute 30, %d\n", val);
+
+      /* Tag_CPU_unaligned_access.  */
+      asm_fprintf (asm_out_file, "\t.eabi_attribute 34, %d\n",
+		   unaligned_access);
 
       /* Tag_ABI_FP_16bit_format.  */
       if (arm_fp16_format)
