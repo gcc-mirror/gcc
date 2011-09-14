@@ -1732,6 +1732,10 @@ class Struct_field
   const std::string&
   field_name() const;
 
+  // Return whether this struct field is named NAME.
+  bool
+  is_field_name(const std::string& name) const;
+
   // The field type.
   Type*
   type() const
