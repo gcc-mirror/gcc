@@ -1062,6 +1062,20 @@ emit_stack_restore (enum save_level save_level, rtx sa)
   /* The default is that we use a move insn.  */
   rtx (*fcn) (rtx, rtx) = gen_move_insn;
 
+  /* If stack_realign_drap, the x86 backend emits a prologue that aligns both
+     STACK_POINTER and HARD_FRAME_POINTER.
+     If stack_realign_fp, the x86 backend emits a prologue that aligns only
+     STACK_POINTER. This renders the HARD_FRAME_POINTER unusable for accessing
+     aligned variables, which is reflected in ix86_can_eliminate.
+     We normally still have the realigned STACK_POINTER that we can use.
+     But if there is a stack restore still present at reload, it can trigger 
+     mark_not_eliminable for the STACK_POINTER, leaving no way to eliminate
+     FRAME_POINTER into a hard reg.
+     To prevent this situation, we force need_drap if we emit a stack
+     restore.  */
+  if (SUPPORTS_STACK_ALIGNMENT)
+    crtl->need_drap = true;
+
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
     {
