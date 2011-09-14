@@ -1,3 +1,8 @@
+2011-09-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/mips/mips.c (mips_expand_epilogue): Generate a
+	simple_return only if the return address is in r31.
+
 2011-09-13  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* cfgcleanup.c (try_head_merge_bb): If get_condition returns
