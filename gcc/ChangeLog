@@ -1,3 +1,8 @@
+2011-09-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/bfin/bfin.md: Use match_test rather than eq/ne symbol_ref
+	throughout file.
+
 2011-09-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/50251
