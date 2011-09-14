@@ -1,3 +1,17 @@
+2011-09-14  François Dumont  <fdumont@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable.h (_Hashtable<>::_M_rehash): Take and restore
+	hash policy _M_prev_resize on exception.
+	(_Hashtable<>::_M_insert_bucket): Capture hash policy next resize
+	before using it and use latter method to have it restored on exception.
+	(_Hashtable<>::_M_insert(_Arg&& __v, std::false_type): Likewise.
+	(_Hashtable<>::insert(_InputIterator, _InputIterator): Likewise.
+	(_Hashtable<>::rehash): Likewise.
+	* testsuite/23_containers/unordered_set/insert/hash_policy.cc: New.
+	* testsuite/23_containers/unordered_multiset/insert/hash_policy.cc:
+	Likewise.
+
 2011-09-13  Paul Brook  <paul@codesourcery.com>
  
 	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Add C6X implementation.
