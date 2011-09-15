@@ -126,6 +126,7 @@ proc gcc_target_compile { source dest type options } {
     global gluefile wrap_flags
     global GCC_UNDER_TEST
     global TOOL_OPTIONS
+    global TEST_ALWAYS_FLAGS
 	
     if {[target_info needs_status_wrapper] != "" && \
 	    [target_info needs_status_wrapper] != "0" && \
@@ -143,11 +144,20 @@ proc gcc_target_compile { source dest type options } {
     if [target_info exists gcc,no_label_values] {
 	lappend options "additional_flags=-DNO_LABEL_VALUES"
     }
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set options [concat "{additional_flags=$TEST_ALWAYS_FLAGS}" $options]
+    }
+
     # TOOL_OPTIONS must come first, so that it doesn't override testcase
     # specific options.
     if [info exists TOOL_OPTIONS] {
 	set options [concat "{additional_flags=$TOOL_OPTIONS}" $options]
     }
+
     lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GCC_UNDER_TEST"
     set options [dg-additional-files-options $options $source]
