@@ -1022,9 +1022,9 @@ package body Ada.Containers.Vectors is
 
       --  There are two constraints we need to satisfy. The first constraint is
       --  that a container cannot have more than Count_Type'Last elements, so
-      --  we must check the sum of the current length and the insertion
-      --  count. Note that we cannot simply add these values, because of the
-      --  possibility of overflow.
+      --  we must check the sum of the current length and the insertion count.
+      --  Note: we cannot simply add these values, because of the possibility
+      --  of overflow.
 
       if Old_Length > Count_Type'Last - Count then
          raise Constraint_Error with "Count is out of range";
@@ -1130,7 +1130,6 @@ package body Ada.Containers.Vectors is
 
       if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
          New_Last := No_Index + Index_Type'Base (New_Length);
-
       else
          New_Last := Index_Type'Base (Count_Type'Base (No_Index) + New_Length);
       end if;
@@ -1690,9 +1689,9 @@ package body Ada.Containers.Vectors is
 
       --  There are two constraints we need to satisfy. The first constraint is
       --  that a container cannot have more than Count_Type'Last elements, so
-      --  we must check the sum of the current length and the insertion
-      --  count. Note that we cannot simply add these values, because of the
-      --  possibility of overflow.
+      --  we must check the sum of the current length and the insertion count.
+      --  Note: we cannot simply add these values, because of the possibility
+      --  of overflow.
 
       if Old_Length > Count_Type'Last - Count then
          raise Constraint_Error with "Count is out of range";

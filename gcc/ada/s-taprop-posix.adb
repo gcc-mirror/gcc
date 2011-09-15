@@ -666,7 +666,7 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
    begin
       Result := clock_gettime
-        (clock_id => CLOCK_REALTIME, tp => TS'Unchecked_Access);
+        (clock_id => CLOCK_MONOTONIC, tp => TS'Unchecked_Access);
       pragma Assert (Result = 0);
       return To_Duration (TS);
    end Monotonic_Clock;

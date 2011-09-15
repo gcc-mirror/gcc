@@ -1890,21 +1890,23 @@ package body Ada.Containers.Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node = L.First then  -- eliminates earlier disjunct
+         --  Eliminate earlier disjunct
+
+         if Position.Node = L.First then
             return True;
          end if;
 
-         --  If we get here, we know, per disjunctive syllogism (modus
-         --  tollendo ponens), that this predicate is true:
-         --  Position.Node.Prev /= null
+         --  If we get here, we know (disjunctive syllogism) that this
+         --  predicate is true: Position.Node.Prev /= null
 
-         if Position.Node = L.Last then  -- eliminates earlier disjunct
+         --  Eliminate earlier disjunct
+
+         if Position.Node = L.Last then
             return True;
          end if;
 
-         --  If we get here, we know, per disjunctive syllogism (modus
-         --  tollendo ponens), that this predicate is true:
-         --  Position.Node.Next /= null
+         --  If we get here, we know (disjunctive syllogism) that this
+         --  predicate is true: Position.Node.Next /= null
 
          if Position.Node.Next.Prev /= Position.Node then
             return False;

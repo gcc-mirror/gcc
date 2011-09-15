@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -199,7 +199,8 @@ package System.OS_Interface is
 
    type clockid_t is private;
 
-   CLOCK_REALTIME : constant clockid_t;
+   CLOCK_REALTIME  : constant clockid_t;
+   CLOCK_MONOTONIC : constant clockid_t;
 
    function clock_gettime
      (clock_id : clockid_t;
@@ -539,7 +540,8 @@ private
    pragma Convention (C, timespec);
 
    type clockid_t is new int;
-   CLOCK_REALTIME : constant clockid_t := 0;
+   CLOCK_REALTIME  : constant clockid_t := 9;
+   CLOCK_MONOTONIC : constant clockid_t := 10;
 
    type pthread_attr_t is new System.Address;
    pragma Convention (C, pthread_attr_t);

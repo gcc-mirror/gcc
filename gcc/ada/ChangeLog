@@ -1,3 +1,31 @@
+2011-09-15  Robert Dewar  <dewar@adacore.com>
+
+	* a-cdlili.adb, a-coinve.adb, a-stzunb-shared.ads, a-suezst.adb,
+	a-suenco.adb, a-stwiun-shared.ads, a-cobove.adb, a-convec.adb,
+	a-btgbso.adb, a-cbdlli.adb, a-suewst.adb: Minor reformatting.
+
+2011-09-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Code cleanup:
+	if the expression function is not a completion, create a
+	new specification for the generated declaration, and keep the
+	original specification in the generated body. Shorter code also
+	ensures that proper warnings are generated for unused formals
+	in all cases.
+
+2011-09-15  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_io.ads: Update ASIS_Version_Number because of the changes
+	in the tree structures for expression functions.
+
+2011-09-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-aix.ads, s-osinte-darwin.ads, s-osinte-freebsd.ads,
+	s-osinte-hpux.ads, s-osinte-lynxos.ads, s-osinte-solaris-posix.ads,
+	s-taprop-posix.adb (CLOCK_MONOTONIC): New constant.
+	(CLOCK_REALTIME): Fix wrong value on some OSes.
+	* s-taprop-posix.adb (Monotonic_Clock): Use CLOCK_MONOTONIC.
+
 2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (maybe_unconstrained_array): In the reference
