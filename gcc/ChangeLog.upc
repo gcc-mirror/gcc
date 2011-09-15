@@ -1,3 +1,10 @@
+2011-09-15  Nenad Vukicevic <nenad@intrepid.com>
+
+	Add to FLAGS the flags needed to disable inlining of
+	UPC run-time access routines.
+	* testsuite/lib/target-supports.exp
+	(add_options_for_upc_library_calls): New.
+
 2011-09-15  Gary Funck  <gary@intrepid.com>
 
 	Fix ICE involving shared bit field accesses.

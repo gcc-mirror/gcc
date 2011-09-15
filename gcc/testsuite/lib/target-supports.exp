@@ -3786,6 +3786,13 @@ proc add_options_for_double_vectors { flags } {
     return $flags
 }
 
+# Add to FLAGS the flags needed to disable inlining of
+# UPC run-time access routines.
+
+proc add_options_for_upc_library_calls { flags } {
+    return "$flags -fno-upc-inline-lib"
+}
+
 # Return 1 if the target provides a full C99 runtime.
 
 proc check_effective_target_c99_runtime { } {
