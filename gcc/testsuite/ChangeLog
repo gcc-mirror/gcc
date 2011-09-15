@@ -78,7 +78,7 @@
 2011-09-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50327
-	* gfortran.dg/do_while_1.f90:  New test.
+	* gfortran.dg/do_while_1.f90: New test.
 
 2011-09-11  Janus Weil  <janus@gcc.gnu.org>
 
