@@ -1,3 +1,7 @@
+2011-09-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): New builtin macro.
+
 2011-09-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50361
