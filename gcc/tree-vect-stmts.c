@@ -4814,7 +4814,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
   bool is_store = false;
   gimple vec_stmt = NULL;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  gimple orig_stmt_in_pattern, orig_scalar_stmt = stmt;
+  gimple orig_stmt_in_pattern;
   bool done;
 
   switch (STMT_VINFO_TYPE (stmt_info))
