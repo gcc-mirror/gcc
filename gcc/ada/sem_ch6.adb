@@ -325,7 +325,14 @@ package body Sem_Ch6 is
          New_Decl :=
            Make_Subprogram_Declaration (Loc,
              Specification => Copy_Separate_Tree (Specification (N)));
+
+         --  Do rewrite setting Comes_From_Source on the result if the original
+         --  expression function came from source.
+
          Rewrite (N, New_Decl);
+         Set_Comes_From_Source
+           (Defining_Entity (N), Comes_From_Source (Def_Id));
+
          Analyze (N);
          Set_Is_Inlined (Defining_Entity (New_Decl));
 

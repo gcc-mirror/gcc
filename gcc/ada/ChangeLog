@@ -1,5 +1,19 @@
 2011-09-15  Robert Dewar  <dewar@adacore.com>
 
+	* tree_io.ads: Minor reformatting.
+	* a-intnam.ads: Fix bad header.
+
+2011-09-15  Thomas Quinot  <quinot@adacore.com>
+
+	* a-exexpr-gcc.adb: Minor reformatting.
+
+2011-09-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb: Propagate information that an expression function comes
+	from source (otherwise references to this entity are not stored).
+
+2011-09-15  Robert Dewar  <dewar@adacore.com>
+
 	* a-cdlili.adb, a-coinve.adb, a-stzunb-shared.ads, a-suezst.adb,
 	a-suenco.adb, a-stwiun-shared.ads, a-cobove.adb, a-convec.adb,
 	a-btgbso.adb, a-cbdlli.adb, a-suewst.adb: Minor reformatting.

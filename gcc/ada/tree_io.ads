@@ -54,7 +54,7 @@ package Tree_IO is
    --  format that would result in the compiler being incompatible with an
    --  older version of ASIS.
    --
-   --  27  2011-09-06  Changes in the tree structures for expression functions
+   --  27  Changes in the tree structures for expression functions
 
    procedure Tree_Read_Initialize (Desc : File_Descriptor);
    --  Called to initialize reading of a tree file. This call must be made

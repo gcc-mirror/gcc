@@ -441,8 +441,7 @@ package body Exception_Propagation is
    --  Unwind_RaiseException to actually do the raise, taking care of
    --  handling the two phase scheme it implements.
 
-   procedure Propagate_Exception
-   is
+   procedure Propagate_Exception is
       Excep         : constant EOA := Get_Current_Excep.all;
       GCC_Exception : GNAT_GCC_Exception_Access;
 
