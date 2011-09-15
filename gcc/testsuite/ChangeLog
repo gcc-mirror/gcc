@@ -1,3 +1,9 @@
+2011-09-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50401
+	PR fortran/50403
+	* gfortran.dg/function_types_3.f90: New.
+
 2011-09-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50365
