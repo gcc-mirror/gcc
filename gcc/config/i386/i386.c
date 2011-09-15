@@ -14900,21 +14900,16 @@ output_fp_compare (rtx insn, rtx *operands, bool eflags_p, bool unordered_p)
 
   if (is_sse)
     {
-      static const char ucomiss[] = "vucomiss\t{%1, %0|%0, %1}";
-      static const char ucomisd[] = "vucomisd\t{%1, %0|%0, %1}";
-      static const char comiss[] = "vcomiss\t{%1, %0|%0, %1}";
-      static const char comisd[] = "vcomisd\t{%1, %0|%0, %1}";
-
       if (GET_MODE (operands[0]) == SFmode)
 	if (unordered_p)
-	  return &ucomiss[TARGET_AVX ? 0 : 1];
+	  return "%vucomiss\t{%1, %0|%0, %1}";
 	else
-	  return &comiss[TARGET_AVX ? 0 : 1];
+	  return "%vcomiss\t{%1, %0|%0, %1}";
       else
 	if (unordered_p)
-	  return &ucomisd[TARGET_AVX ? 0 : 1];
+	  return "%vucomisd\t{%1, %0|%0, %1}";
 	else
-	  return &comisd[TARGET_AVX ? 0 : 1];
+	  return "%vcomisd\t{%1, %0|%0, %1}";
     }
 
   gcc_assert (STACK_TOP_P (cmp_op0));
