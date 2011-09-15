@@ -1,3 +1,17 @@
+2011-09-15  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (add_condition): Add conditions parameter;
+	simplify obviously true clauses.
+	(and_predicates, or_predicates): Add conditions parameter.
+	(inline_duplication_hoook): Update.
+	(mark_modified): New function.
+	(unmodified_parm): New function.
+	(eliminated_by_inlining_prob, (set_cond_stmt_execution_predicate,
+	set_switch_stmt_execution_predicate, will_be_nonconstant_predicate):
+	Use unmodified_parm.
+	(estimate_function_body_sizes): Update.
+	(remap_predicate): Update.
+
 2011-09-15  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Allow
