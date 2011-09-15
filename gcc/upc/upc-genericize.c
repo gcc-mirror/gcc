@@ -804,7 +804,8 @@ upc_genericize_field_ref (location_t loc, tree *expr_p)
   tree ref = upc_simplify_shared_ref (loc, *expr_p);
   if (TREE_CODE (ref) == BIT_FIELD_REF)
     {
-      error ("accesses to UPC shared bit fields are not yet implemented");
+      error_at (loc, "accesses to UPC shared bit fields "
+                     "are not yet implemented");
       ref = error_mark_node;
     }
   else

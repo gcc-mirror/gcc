@@ -3872,6 +3872,14 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   TREE_THIS_VOLATILE (t)
     = (TREE_CODE_CLASS (code) == tcc_reference
        && arg0 && TREE_THIS_VOLATILE (arg0));
+  TREE_SHARED (t)
+    = (TREE_CODE_CLASS (code) == tcc_reference
+       && arg0 && TREE_SHARED (arg0));
+  if (TREE_SHARED (t))
+    {
+      TREE_STRICT (t)  = TREE_STRICT (arg0);
+      TREE_RELAXED (t) = TREE_RELAXED (arg0);
+    }
 
   return t;
 }
