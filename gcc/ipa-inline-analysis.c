@@ -232,11 +232,12 @@ add_condition (struct inline_summary *summary, int operand_num,
 /* Add clause CLAUSE into the predicate P.  */
 
 static inline void
-add_clause (struct predicate *p, clause_t clause)
+add_clause (conditions conditions, struct predicate *p, clause_t clause)
 {
   int i;
   int i2;
   int insert_here = -1;
+  int c1, c2;
 
   /* True clause.  */
   if (!clause)
@@ -281,6 +282,28 @@ add_clause (struct predicate *p, clause_t clause)
       if ((p->clause[i] & clause) != clause)
 	i2++;
     }
+
+  /* Look for clauses that are obviously true.  I.e.
+     op0 == 5 || op0 != 5.  */
+  for (c1 = predicate_first_dynamic_condition; c1 < NUM_CONDITIONS; c1++)
+    for (c2 = c1 + 1; c2 <= NUM_CONDITIONS; c2++)
+      if ((clause & (1 << c1))
+	  && (clause & (1 << c2)))
+	{
+	  condition *cc1 = VEC_index (condition,
+				      conditions,
+				      c1 - predicate_first_dynamic_condition);
+	  condition *cc2 = VEC_index (condition,
+				      conditions,
+				      c2 - predicate_first_dynamic_condition);
+	  if (cc1->operand_num == cc2->operand_num
+	      && cc1->val == cc2->val
+	      && cc1->code == invert_tree_comparison (cc2->code,
+						      HONOR_NANS (TYPE_MODE (TREE_TYPE (cc1->val)))))
+	    return;
+	}
+	
+
   /* We run out of variants.  Be conservative in positive direction.  */
   if (i2 == MAX_CLAUSES)
     return;
@@ -298,7 +321,8 @@ add_clause (struct predicate *p, clause_t clause)
 /* Return P & P2.  */
 
 static struct predicate
-and_predicates (struct predicate *p, struct predicate *p2)
+and_predicates (conditions conditions,
+		struct predicate *p, struct predicate *p2)
 {
   struct predicate out = *p;
   int i;
@@ -319,7 +343,7 @@ and_predicates (struct predicate *p, struct predicate *p2)
   for (; p2->clause[i]; i++)
     {
       gcc_checking_assert (i < MAX_CLAUSES);
-      add_clause (&out, p2->clause[i]);
+      add_clause (conditions, &out, p2->clause[i]);
     }
   return out;
 }
@@ -346,7 +370,7 @@ predicates_equal_p (struct predicate *p, struct predicate *p2)
 /* Return P | P2.  */
 
 static struct predicate
-or_predicates (struct predicate *p, struct predicate *p2)
+or_predicates (conditions conditions, struct predicate *p, struct predicate *p2)
 {
   struct predicate out = true_predicate ();
   int i,j;
@@ -364,7 +388,7 @@ or_predicates (struct predicate *p, struct predicate *p2)
     for (j = 0; p2->clause[j]; j++)
       {
         gcc_checking_assert (i < MAX_CLAUSES && j < MAX_CLAUSES);
-        add_clause (&out, p->clause[i] | p2->clause[j]);
+        add_clause (conditions, &out, p->clause[i] | p2->clause[j]);
       }
   return out;
 }
@@ -753,7 +777,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 		break;
 	      }
 	    else
-	      add_clause (&new_predicate,
+	      add_clause (info->conds, &new_predicate,
 			  possible_truths & e->predicate.clause[j]);
 	  if (false_predicate_p (&new_predicate))
 	    {
@@ -781,7 +805,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 		break;
 	      }
 	    else
-	      add_clause (&new_predicate,
+	      add_clause (info->conds, &new_predicate,
 			  possible_truths & es->predicate->clause[j]);
 	  if (false_predicate_p (&new_predicate)
 	      && !false_predicate_p (es->predicate))
@@ -812,7 +836,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 		break;
 	      }
 	    else
-	      add_clause (&new_predicate,
+	      add_clause (info->conds, &new_predicate,
 			  possible_truths & es->predicate->clause[j]);
 	  if (false_predicate_p (&new_predicate)
 	      && !false_predicate_p (es->predicate))
@@ -1047,6 +1071,50 @@ initialize_inline_failed (struct cgraph_edge *e)
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
 }
 
+/* Callback of walk_aliased_vdefs.  Flags that it has been invoked to the
+   boolean variable pointed to by DATA.  */
+
+static bool
+mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
+		     void *data)
+{
+  bool *b = (bool *) data;
+  *b = true;
+  return true;
+}
+
+/* If OP reffers to value of function parameter, return 
+   the corresponding parameter.  */
+
+static tree
+unmodified_parm (gimple stmt, tree op)
+{
+  /* SSA_NAME referring to parm default def?  */
+  if (TREE_CODE (op) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (op)
+      && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
+    return SSA_NAME_VAR (op);
+  /* Non-SSA parm reference?  */
+  if (TREE_CODE (op) == PARM_DECL)
+    {
+      bool modified = false;
+
+      ao_ref refd;
+      ao_ref_init (&refd, op);
+      walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
+			  NULL);
+      if (!modified)
+	return op;
+    }
+  /* Assignment from a parameter?  */
+  if (TREE_CODE (op) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (op)
+      && gimple_assign_single_p (SSA_NAME_DEF_STMT (op)))
+    return unmodified_parm (SSA_NAME_DEF_STMT (op),
+			    gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op)));
+  return NULL;
+}
+
 /* See if statement might disappear after inlining.
    0 - means not eliminated
    1 - half of statements goes away
@@ -1058,6 +1126,10 @@ static int
 eliminated_by_inlining_prob (gimple stmt)
 {
   enum gimple_code code = gimple_code (stmt);
+
+  if (!optimize)
+    return 0;
+
   switch (code)
     {
       case GIMPLE_RETURN:
@@ -1090,11 +1162,7 @@ eliminated_by_inlining_prob (gimple stmt)
 		   || TREE_CODE (inner_rhs) == MEM_REF)
 	      inner_rhs = TREE_OPERAND (inner_rhs, 0);
 
-
-	    if (TREE_CODE (inner_rhs) == PARM_DECL
-	        || (TREE_CODE (inner_rhs) == SSA_NAME
-		    && SSA_NAME_IS_DEFAULT_DEF (inner_rhs)
-		    && TREE_CODE (SSA_NAME_VAR (inner_rhs)) == PARM_DECL))
+	    if (unmodified_parm (stmt, inner_rhs))
 	      rhs_free = true;
 	    if (rhs_free && is_gimple_reg (lhs))
 	      lhs_free = true;
@@ -1136,6 +1204,7 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
   edge_iterator ei;
   gimple set_stmt;
   tree op2;
+  tree parm;
 
   last = last_stmt (bb);
   if (!last
@@ -1147,11 +1216,10 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
   /* TODO: handle conditionals like
      var = op0 < 4;
      if (var != 0).  */
-  if (TREE_CODE (op) != SSA_NAME)
-    return;
-  if (SSA_NAME_IS_DEFAULT_DEF (op))
+  parm = unmodified_parm (last, op);
+  if (parm)
     {
-      index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op));
+      index = ipa_get_param_decl_index (info, parm);
       if (index == -1)
 	return;
       code = gimple_cond_code (last);
@@ -1170,6 +1238,8 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
 	}
     }
 
+  if (TREE_CODE (op) != SSA_NAME)
+    return;
   /* Special case
      if (builtin_constant_p (op))
        constant_code
@@ -1185,11 +1255,10 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
       || gimple_call_num_args (set_stmt) != 1)
     return;
   op2 = gimple_call_arg (set_stmt, 0);
-  if (TREE_CODE (op2) != SSA_NAME)
+  parm = unmodified_parm (set_stmt, op2);
+  if (!parm)
     return;
-  if (!SSA_NAME_IS_DEFAULT_DEF (op2))
-    return;
-  index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op2));
+  index = ipa_get_param_decl_index (info, parm);
   if (index == -1)
     return;
   if (gimple_cond_code (last) != NE_EXPR
@@ -1223,16 +1292,17 @@ set_switch_stmt_execution_predicate (struct ipa_node_params *info,
   edge_iterator ei;
   size_t n;
   size_t case_idx;
+  tree parm;
 
   last = last_stmt (bb);
   if (!last
       || gimple_code (last) != GIMPLE_SWITCH)
     return;
   op = gimple_switch_index (last);
-  if (TREE_CODE (op) != SSA_NAME
-      || !SSA_NAME_IS_DEFAULT_DEF (op))
+  parm = unmodified_parm (last, op);
+  if (!parm)
     return;
-  index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op));
+  index = ipa_get_param_decl_index (info, parm);
   if (index == -1)
     return;
 
@@ -1270,10 +1340,10 @@ set_switch_stmt_execution_predicate (struct ipa_node_params *info,
 	  p2 = add_condition (summary, index,
 			      LE_EXPR,
 			      max);
-	  p = and_predicates (&p1, &p2);
+	  p = and_predicates (summary->conds, &p1, &p2);
 	}
       *(struct predicate *)e->aux
-	= or_predicates (&p, (struct predicate *)e->aux);
+	= or_predicates (summary->conds, &p, (struct predicate *)e->aux);
     }
 }
 
@@ -1317,9 +1387,9 @@ compute_bb_predicates (struct cgraph_node *node,
 		{
 		  struct predicate this_bb_predicate = *(struct predicate *)e->src->aux;
 		  if (e->aux)
-		    this_bb_predicate = and_predicates (&this_bb_predicate,
+		    this_bb_predicate = and_predicates (summary->conds, &this_bb_predicate,
 							(struct predicate *)e->aux);
-		  p = or_predicates (&p, &this_bb_predicate);
+		  p = or_predicates (summary->conds, &p, &this_bb_predicate);
 		  if (true_predicate_p (&p))
 		    break;
 		}
@@ -1385,12 +1455,12 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
      adding conditionals.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
+      tree parm = unmodified_parm (stmt, use);
+      /* For arguments we can build a condition.  */
+      if (parm && ipa_get_param_decl_index (info, parm) >= 0)
+	continue;
       if (TREE_CODE (use) != SSA_NAME)
 	return p;
-      /* For arguments we can build a condition.  */
-      if (SSA_NAME_IS_DEFAULT_DEF (use)
-	  && ipa_get_param_decl_index (info, SSA_NAME_VAR (use)) >= 0)
-	continue;
       /* If we know when operand is constant,
 	 we still can say something useful.  */
       if (!true_predicate_p (VEC_index (predicate_t, nonconstant_names,
@@ -1401,15 +1471,15 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
   op_non_const = false_predicate ();
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      if (SSA_NAME_IS_DEFAULT_DEF (use)
-	  && ipa_get_param_decl_index (info, SSA_NAME_VAR (use)) >= 0)
+      tree parm = unmodified_parm (stmt, use);
+      if (parm && ipa_get_param_decl_index (info, parm) >= 0)
 	p = add_condition (summary,
-			   ipa_get_param_decl_index (info, SSA_NAME_VAR (use)),
+			   ipa_get_param_decl_index (info, parm),
 			   IS_NOT_CONSTANT, NULL);
       else
 	p = *VEC_index (predicate_t, nonconstant_names,
 			SSA_NAME_VERSION (use));
-      op_non_const = or_predicates (&p, &op_non_const);
+      op_non_const = or_predicates (summary->conds, &p, &op_non_const);
     }
   if (gimple_code (stmt) == GIMPLE_ASSIGN
       && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
@@ -1563,7 +1633,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		fprintf (dump_file, "\t\twill eliminated by inlining\n");
 
 	      if (parms_info)
-		p = and_predicates (&bb_predicate, &will_be_nonconstant);
+		p = and_predicates (info->conds, &bb_predicate, &will_be_nonconstant);
 	      else
 		p = true_predicate ();
 
@@ -1575,7 +1645,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		  if (prob)
 		    {
 		      struct predicate ip = not_inlined_predicate ();
-		      ip = and_predicates (&ip, &p);
+		      ip = and_predicates (info->conds, &ip, &p);
 		      account_size_time (info, this_size * prob,
 					 this_time * prob, &ip);
 		    }
@@ -1901,11 +1971,12 @@ remap_predicate (struct inline_summary *info, struct inline_summary *callee_info
 		cond_predicate.clause[0] = 1 << cond;
 		cond_predicate.clause[1] = 0;
 	      }
-	    clause_predicate = or_predicates (&clause_predicate, &cond_predicate);
+	    clause_predicate = or_predicates (info->conds, &clause_predicate,
+					      &cond_predicate);
 	  }
-      out = and_predicates (&out, &clause_predicate);
+      out = and_predicates (info->conds, &out, &clause_predicate);
     }
-  return and_predicates (&out, toplev_predicate);
+  return and_predicates (info->conds, &out, toplev_predicate);
 }
 
 
