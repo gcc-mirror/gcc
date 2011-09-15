@@ -268,6 +268,7 @@ package body Sem_Ch6 is
       Loc      : constant Source_Ptr := Sloc (N);
       LocX     : constant Source_Ptr := Sloc (Expression (N));
       Def_Id   : constant Entity_Id  := Defining_Entity (Specification (N));
+      Expr     : constant Node_Id    := Expression (N);
       New_Body : Node_Id;
       New_Decl : Node_Id;
 
@@ -315,31 +316,28 @@ package body Sem_Ch6 is
          Set_Is_Inlined (Prev);
          Analyze (N);
 
-      --  If this is not a completion, create both a declaration and a body,
-      --  so that the expression can be inlined whenever possible.
+      --  If this is not a completion, create both a declaration and a body, so
+      --  that the expression can be inlined whenever possible. The spec of the
+      --  new subprogram declaration is a copy of the original specification,
+      --  which is now part of the subprogram body.
 
       else
          New_Decl :=
            Make_Subprogram_Declaration (Loc,
-             Specification => Specification (N));
+             Specification => Copy_Separate_Tree (Specification (N)));
          Rewrite (N, New_Decl);
          Analyze (N);
          Set_Is_Inlined (Defining_Entity (New_Decl));
 
-         --  Create new set of formals for specification in body.
-
-         Set_Specification (New_Body,
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name =>
-               Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))),
-             Parameter_Specifications =>
-               Copy_Parameter_List (Defining_Entity (New_Decl)),
-             Result_Definition =>
-               New_Copy_Tree (Result_Definition (Specification (New_Decl)))));
-
          Insert_After (N, New_Body);
          Analyze (New_Body);
       end if;
+
+      --  If the return expression is a static constant, we suppress warning
+      --  messages on unused formals, which in most cases will be noise.
+
+      Set_Is_Trivial_Subprogram (Defining_Entity (New_Body),
+        Is_OK_Static_Expression (Expr));
    end Analyze_Expression_Function;
 
    ----------------------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2010, Free Software Foundation, Inc.           --
+--          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,10 +92,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       --  Output UTF-16 code
 
       procedure Get_Continuation;
-      --  Reads a continuation byte of the form 10xxxxxx, shifts R left
-      --  by 6 bits, and or's in the xxxxxx to the low order 6 bits. On
-      --  return Ptr is incremented. Raises exception if continuation
-      --  byte does not exist or is invalid.
+      --  Reads a continuation byte of the form 10xxxxxx, shifts R left by 6
+      --  bits, and or's in the xxxxxx to the low order 6 bits. On return Ptr
+      --  is incremented. Raises exception if continuation byte does not exist
+      --  or is invalid.
 
       ----------------------
       -- Get_Continuation --
@@ -114,8 +114,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                Raise_Encoding_Error (Iptr - 1);
 
             else
-               R := Shift_Left (R, 6) or
-                 Unsigned_16 (C and 2#00_111111#);
+               R :=
+                 Shift_Left (R, 6) or Unsigned_16 (C and 2#00_111111#);
             end if;
          end if;
       end Get_Continuation;

@@ -419,10 +419,10 @@ private
 
    type Shared_Wide_Wide_String (Max_Length : Natural) is limited record
       Counter : System.Atomic_Counters.Atomic_Counter;
-      --  Reference counter.
+      --  Reference counter
 
-      Last    : Natural                        := 0;
-      Data    : Wide_Wide_String (1 .. Max_Length);
+      Last : Natural := 0;
+      Data : Wide_Wide_String (1 .. Max_Length);
       --  Last is the index of last significant element of the Data. All
       --  elements with larger indices are just an extra room.
    end record;
@@ -466,22 +466,25 @@ private
 
    --  The Unbounded_Wide_Wide_String uses several techniques to increase speed
    --  of the application:
+
    --   - implicit sharing or copy-on-write. Unbounded_Wide_Wide_String
    --     contains only the reference to the data which is shared between
    --     several instances. The shared data is reallocated only when its value
    --     is changed and the object mutation can't be used or it is inefficient
    --     to use it;
+
    --   - object mutation. Shared data object can be reused without memory
    --     reallocation when all of the following requirements are meat:
    --      - shared data object don't used anywhere longer;
    --      - its size is sufficient to store new value;
    --      - the gap after reuse is less then some threshold.
+
    --   - memory preallocation. Most of used memory allocation algorithms
    --     aligns allocated segment on the some boundary, thus some amount of
    --     additional memory can be preallocated without any impact. Such
    --     preallocated memory can used later by Append/Insert operations
    --     without reallocation.
-   --
+
    --  Reference counting uses GCC builtin atomic operations, which allows to
    --  safely share internal data between Ada tasks. Nevertheless, this not
    --  make objects of Unbounded_Wide_Wide_String thread-safe, so each instance
@@ -502,8 +505,9 @@ private
      (Object : in out Unbounded_Wide_Wide_String);
 
    Null_Unbounded_Wide_Wide_String : constant Unbounded_Wide_Wide_String :=
-                             (AF.Controlled with
-                                Reference =>
-                                  Empty_Shared_Wide_Wide_String'Access);
+                                       (AF.Controlled with
+                                          Reference =>
+                                            Empty_Shared_Wide_Wide_String'
+                                              Access);
 
 end Ada.Strings.Wide_Wide_Unbounded;
