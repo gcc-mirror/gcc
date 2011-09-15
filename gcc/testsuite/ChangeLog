@@ -1,5 +1,8 @@
 2011-09-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50365
+	* g++.dg/cpp0x/trailing7.C: New.
+
 	PR c++/50361
 	* g++.dg/cpp0x/nullptr23.C: New.
 

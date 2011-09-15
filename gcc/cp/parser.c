@@ -15721,7 +15721,7 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
 
   type = cp_parser_trailing_type_id (parser);
 
-  if (current_class_type)
+  if (quals >= 0)
     current_class_ptr = current_class_ref = NULL_TREE;
 
   return type;
