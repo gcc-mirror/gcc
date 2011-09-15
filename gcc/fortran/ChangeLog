@@ -1,3 +1,11 @@
+2011-09-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50401
+	* resolve.c (resolve_transfer): Check if component 'ref' is defined.
+
+	PR fortran/50403
+	* symbol.c (gfc_use_derived): Check if argument 'sym' is defined.
+
 2011-09-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34547

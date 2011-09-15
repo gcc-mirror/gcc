@@ -8222,7 +8222,7 @@ resolve_transfer (gfc_code *code)
 	}
     }
 
-  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SIZE
+  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SIZE && exp->ref
       && exp->ref->type == REF_ARRAY && exp->ref->u.ar.type == AR_FULL)
     {
       gfc_error ("Data transfer element at %L cannot be a full reference to "
