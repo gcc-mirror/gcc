@@ -47,6 +47,8 @@ extern char arm_arch_name[];
     {							\
 	if (TARGET_DSP_MULTIPLY)			\
 	   builtin_define ("__ARM_FEATURE_DSP");	\
+	if (unaligned_access)				\
+	  builtin_define ("__ARM_FEATURE_UNALIGNED");	\
 	/* Define __arm__ even when in thumb mode, for	\
 	   consistency with armcc.  */			\
 	builtin_define ("__arm__");			\
