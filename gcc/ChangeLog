@@ -1,3 +1,13 @@
+2011-09-15   Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (SYSROOT_CFLAGS_FOR_TARGET): Define from
+	@SYSROOT_CFLAGS_FOR_TARGET@.
+	* configure.ac (SYSROOT_CFLAGS_FOR_TARGET): Set from
+	build-sysroot.
+	* configure: Regenerate.
+	(site.exp): Add definition of TEST_ALWAYS_FLAGS.
+	Remove setting of GCC_UNDER_TEST.
+
 2011-09-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (output_fp_compare): Return %v prefixed

@@ -384,6 +384,9 @@ USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
 # Don't use this as a dependency--use $(GCC_PASSES).
 GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld
 
+# Set if the compiler was configured with --with-build-sysroot.
+SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
+
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It specifies -B./.
 # It also specifies -isystem ./include to find, e.g., stddef.h.
@@ -4923,6 +4926,9 @@ site.exp: ./config.status Makefile
 	@echo "set CXXFLAGS \"\"" >> ./site.tmp
 	@echo "set HOSTCC \"$(CC)\"" >> ./site.tmp
 	@echo "set HOSTCFLAGS \"$(CFLAGS)\"" >> ./site.tmp
+# TEST_ALWAYS_FLAGS are flags that should be passed to every compilation.
+# They are passed first to allow individual tests to override them.
+	@echo "set TEST_ALWAYS_FLAGS \"$(SYSROOT_CFLAGS_FOR_TARGET)\"" >> ./site.tmp
 # When running the tests we set GCC_EXEC_PREFIX to the install tree so that
 # files that have already been installed there will be found.  The -B option
 # overrides it, so use of GCC_EXEC_PREFIX will not result in using GCC files

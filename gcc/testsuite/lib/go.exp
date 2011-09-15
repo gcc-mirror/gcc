@@ -139,6 +139,7 @@ proc go_init { args } {
     global TOOL_EXECUTABLE TOOL_OPTIONS
     global GOC_UNDER_TEST
     global TESTING_IN_BUILD_TREE
+    global TEST_ALWAYS_FLAGS
 
     # We set LC_ALL and LANG to C so that we get the same error messages as expected.
     setenv LC_ALL C
@@ -173,6 +174,13 @@ proc go_init { args } {
     go_maybe_build_wrapper "${tmpdir}/go-testglue.o"
 
     set ALWAYS_GOCFLAGS ""
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	lappend ALWAYS_GOCFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
+    }
 
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {

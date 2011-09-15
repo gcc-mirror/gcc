@@ -727,7 +727,12 @@ AC_SUBST(enable_shared)
 
 AC_ARG_WITH(build-sysroot, 
   [AS_HELP_STRING([--with-build-sysroot=sysroot],
-                  [use sysroot as the system root during the build])])
+                  [use sysroot as the system root during the build])],
+  [if test x"$withval" != x ; then
+     SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"
+   fi],
+  [SYSROOT_CFLAGS_FOR_TARGET=])
+AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
 
 AC_ARG_WITH(sysroot,
 [AS_HELP_STRING([[--with-sysroot[=DIR]]],

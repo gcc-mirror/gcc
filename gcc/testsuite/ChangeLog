@@ -1,3 +1,20 @@
+2011-09-15   Diego Novillo  <dnovillo@google.com>
+
+	* lib/g++.exp (g++_init): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_CXXFLAGS, if defined.
+	* lib/gfortran.exp (gfortran_init): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_GFORTRANFLAGS, if defined.
+	* lib/go.exp (go_target_compile): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_GOCFLAGS, if defined.
+	* lib/obj-c++.exp (obj-c++_init): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_OBJCXXFLAGS, if defined.
+	* lib/gcc.exp (gcc_target_compile): Add $TEST_ALWAYS_FLAGS to
+	additional_flags, if defined.
+	* lib/gnat.exp (gnat_target_compile): Likewise.
+	* lib/objc.exp (objc_target_compile): Likewise.
+	* lib/target-supports-dg.exp (dg-add-options): Handle
+	TEST_ALWAYS_FLAGS.
+
 2011-09-15  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/50322

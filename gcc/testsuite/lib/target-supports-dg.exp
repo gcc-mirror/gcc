@@ -262,6 +262,7 @@ proc dg-add-options { args } {
 proc check-flags { args } {
     global compiler_flags
     global TOOL_OPTIONS
+    global TEST_ALWAYS_FLAGS
 
     # The args are within another list; pull them out.
     set args [lindex $args 0]
@@ -272,6 +273,8 @@ proc check-flags { args } {
     append compiler_flags [current_compiler_flags]
     # If running a subset of the test suite, $TOOL_OPTIONS may not exist.
     catch {append compiler_flags " $TOOL_OPTIONS "}
+    # If running a subset of the test suite, $TEST_ALWAYS_FLAGS may not exist.
+    catch {append compiler_flags " $TEST_ALWAYS_FLAGS "}
     set dest [target_info name]
     if [board_info $dest exists multilib_flags] {
 	append compiler_flags "[board_info $dest multilib_flags] "

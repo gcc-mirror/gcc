@@ -764,6 +764,7 @@ CONFIGURE_SPECS
 CROSS_SYSTEM_HEADER_DIR
 TARGET_SYSTEM_ROOT_DEFINE
 TARGET_SYSTEM_ROOT
+SYSROOT_CFLAGS_FOR_TARGET
 enable_shared
 enable_fixed_point
 enable_decimal_float
@@ -7153,8 +7154,13 @@ fi
 
 # Check whether --with-build-sysroot was given.
 if test "${with_build_sysroot+set}" = set; then :
-  withval=$with_build_sysroot;
+  withval=$with_build_sysroot; if test x"$withval" != x ; then
+     SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"
+   fi
+else
+  SYSROOT_CFLAGS_FOR_TARGET=
 fi
+
 
 
 
@@ -17915,7 +17921,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17918 "configure"
+#line 17924 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18021,7 +18027,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18024 "configure"
+#line 18030 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

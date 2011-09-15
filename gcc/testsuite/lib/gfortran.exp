@@ -144,6 +144,7 @@ proc gfortran_init { args } {
     global TESTING_IN_BUILD_TREE
     global gcc_warning_prefix
     global gcc_error_prefix
+    global TEST_ALWAYS_FLAGS
 
     # We set LC_ALL and LANG to C so that we get the same error messages as expected.
     setenv LC_ALL C
@@ -193,6 +194,13 @@ proc gfortran_init { args } {
     gfortran_maybe_build_wrapper "${tmpdir}/gfortran-testglue.o"
 
     set ALWAYS_GFORTRANFLAGS ""
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	lappend ALWAYS_GFORTRANFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
+    }
 
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {
