@@ -607,6 +607,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       if (vect_check_interleaving (dra, drb))
          return false;
 
+      /* Read-read is OK (we need this check here, after checking for
+         interleaving).  */
+      if (DR_IS_READ (dra) && DR_IS_READ (drb))
+        return false;
+
       if (vect_print_dump_info (REPORT_DR_DETAILS))
         {
           fprintf (vect_dump, "can't determine dependence between ");
