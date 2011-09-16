@@ -3048,7 +3048,8 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
 
   if (TREE_CODE (v) != VAR_DECL
       || !DECL_VIRTUAL_P (v)
-      || !DECL_INITIAL (v))
+      || !DECL_INITIAL (v)
+      || DECL_INITIAL (v) == error_mark_node)
     return NULL_TREE;
   gcc_checking_assert (TREE_CODE (TREE_TYPE (v)) == ARRAY_TYPE);
   size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))), 1);
