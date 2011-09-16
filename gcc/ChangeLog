@@ -1,3 +1,9 @@
+2011-09-15   Jan Hubicka  <jh@suse.cz>
+
+	PR lto/50430
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Do not ICE on
+	error_mark_node in the DECL_INITIAL of vtable.
+
 2011-09-15   Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (SYSROOT_CFLAGS_FOR_TARGET): Define from
