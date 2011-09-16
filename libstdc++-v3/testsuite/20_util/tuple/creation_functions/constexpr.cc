@@ -34,12 +34,14 @@ test_make_tuple()
 {
   {
     typedef std::tuple<int, float> tuple_type;
-    constexpr tuple_type p1 = std::make_tuple(22, 22.222);
+    constexpr tuple_type p1 __attribute__((unused))
+      = std::make_tuple(22, 22.222);
   }
 
   {
     typedef std::tuple<int, float, int> tuple_type;
-    constexpr tuple_type p1 = std::make_tuple(22, 22.222, 77799);
+    constexpr tuple_type p1 __attribute__((unused))
+      = std::make_tuple(22, 22.222, 77799);
   }
 }
 
@@ -50,13 +52,15 @@ test_get()
   {
     typedef std::tuple<int, float> tuple_type;
     constexpr tuple_type t1 { 55, 77.77 };
-    constexpr auto var = std::get<1>(t1);
+    constexpr auto var __attribute__((unused))
+      = std::get<1>(t1);
   }
 
   {
     typedef std::tuple<int, float, int> tuple_type;
     constexpr tuple_type t1 { 55, 77.77, 99 };
-    constexpr auto var = std::get<2>(t1);
+    constexpr auto var __attribute__((unused))
+      = std::get<2>(t1);
   }
 }
 
@@ -69,7 +73,7 @@ test_tuple_cat()
 
   constexpr tuple_type1 t1 { 55, 77.77 };
   constexpr tuple_type2 t2 { 55, 99, 77.77 };
-  constexpr auto cat1 = std::tuple_cat(t1, t2);
+  constexpr auto cat1 __attribute__((unused)) = std::tuple_cat(t1, t2);
 }
 
 int
