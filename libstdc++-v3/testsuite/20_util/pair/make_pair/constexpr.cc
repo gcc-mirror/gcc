@@ -18,7 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 // NOTE: This makes use of the fact that we know how moveable
 // is implemented on pair, and also vector. If the implementation 
 // changes this test may begin to fail.
@@ -31,7 +30,7 @@ test1()
 {
   bool test __attribute__((unused)) = true;
   typedef std::pair<int, float> pair_type;
-  constexpr pair_type p1 = std::make_pair(22, 22.222);
+  constexpr pair_type p1 __attribute__((unused)) = std::make_pair(22, 22.222);
 }
 
 int 

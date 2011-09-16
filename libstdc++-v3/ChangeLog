@@ -1,3 +1,59 @@
+2011-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/array/comparison_operators/
+	less_or_equal.cc: New.
+	* testsuite/23_containers/array/comparison_operators/
+	greater_or_equal.cc: Likewise.
+	* testsuite/23_containers/array/comparison_operators/less.cc: Likewise.
+	* testsuite/23_containers/array/comparison_operators/equal.cc: Likewise.
+	* testsuite/23_containers/array/comparison_operators/not_equal.cc:
+	Likewise.
+	* testsuite/23_containers/array/comparison_operators/greater.cc:
+	Likewise.
+	* testsuite/23_containers/array/iterators/end_is_one_past.cc: Likewise.
+	* testsuite/23_containers/array/capacity/empty.cc: Likewise.
+	* testsuite/23_containers/array/capacity/max_size.cc: Likewise.
+	* testsuite/23_containers/array/capacity/size.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_size.cc:
+	Likewise.
+	* testsuite/23_containers/array/element_access/at_out_of_range.cc:
+	Likewise.
+	* testsuite/23_containers/array/element_access/back.cc: Likewise.
+	* testsuite/23_containers/array/element_access/front.cc: Likewise.
+	* testsuite/23_containers/array/element_access/data.cc: Likewise.
+	* testsuite/23_containers/array/cons/aggregate_initialization.cc:
+	Likewise.
+	* testsuite/23_containers/array/requirements/zero_sized_arrays.cc:
+	Likewise.
+	* testsuite/23_containers/array/requirements/contiguous.cc: Likewise.
+	* testsuite/23_containers/array/requirements/member_swap.cc: Likewise.
+	* testsuite/23_containers/array/specialized_algorithms/swap.cc:
+	Likewise.
+	* testsuite/23_containers/array/constexpr_get.cc: Move...
+	* testsuite/23_containers/array/tuple_interface/constexpr_get.cc:
+	... here.
+	* testsuite/23_containers/array/requirements/get.cc: Move...
+	* testsuite/23_containers/array/tuple_interface/get: ... here.
+	* testsuite/23_containers/array/at_neg.cc: Move...
+	* testsuite/23_containers/array/element_access: ... here.
+	* testsuite/23_containers/array/requirements/constexpr_functions.cc:
+	Move...
+	* testsuite/23_containers/array/capacity: ... here.
+	* testsuite/23_containers/array/requirements/
+	constexpr_element_access.cc: Move...
+	* testsuite/23_containers/array/element_access: ... here.
+
+	* testsuite/20_util/duration/cons/1_neg.cc: Avoid -Wall warnings.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Likewise.
+	* testsuite/20_util/pair/make_pair/constexpr.cc: Likewise.
+	* testsuite/20_util/time_point/nonmember/constexpr.cc: Likewise.
+	* testsuite/23_containers/bitset/operations/constexpr.cc: Likewise.
+
+	* testsuite/20_util/duration/cons/1_neg.cc: Discard bogus warning.
+	* testsuite/20_util/forward/1_neg.cc: Likewise.
+
 2011-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple (make_tuple, forward_as_tuple): Declare constexpr.
