@@ -32587,6 +32587,84 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       use_vec_extr = TARGET_SSE4_1;
       break;
 
+    case V8SFmode:
+      if (TARGET_AVX)
+	{
+	  tmp = gen_reg_rtx (V4SFmode);
+	  if (elt < 4)
+	    emit_insn (gen_vec_extract_lo_v8sf (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v8sf (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 3);
+	  return;
+	}
+      break;
+
+    case V4DFmode:
+      if (TARGET_AVX)
+	{
+	  tmp = gen_reg_rtx (V2DFmode);
+	  if (elt < 2)
+	    emit_insn (gen_vec_extract_lo_v4df (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v4df (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 1);
+	  return;
+	}
+      break;
+
+    case V32QImode:
+      if (TARGET_AVX)
+	{
+	  tmp = gen_reg_rtx (V16QImode);
+	  if (elt < 16)
+	    emit_insn (gen_vec_extract_lo_v32qi (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v32qi (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 15);
+	  return;
+	}
+      break;
+
+    case V16HImode:
+      if (TARGET_AVX)
+	{
+	  tmp = gen_reg_rtx (V8HImode);
+	  if (elt < 8)
+	    emit_insn (gen_vec_extract_lo_v16hi (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v16hi (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 7);
+	  return;
+	}
+      break;
+
+    case V8SImode:
+      if (TARGET_AVX)
+	{
+	  tmp = gen_reg_rtx (V4SImode);
+	  if (elt < 4)
+	    emit_insn (gen_vec_extract_lo_v8si (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v8si (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 3);
+	  return;
+	}
+      break;
+
+    case V4DImode:
+      if (TARGET_AVX)
+	{
+	  tmp = gen_reg_rtx (V2DImode);
+	  if (elt < 2)
+	    emit_insn (gen_vec_extract_lo_v4di (tmp, vec));
+	  else
+	    emit_insn (gen_vec_extract_hi_v4di (tmp, vec));
+	  ix86_expand_vector_extract (false, target, tmp, elt & 1);
+	  return;
+	}
+      break;
+
     case V8QImode:
       /* ??? Could extract the appropriate HImode element and shift.  */
     default:

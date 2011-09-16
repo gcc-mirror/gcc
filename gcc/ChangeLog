@@ -1,3 +1,16 @@
+2011-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (vec_extract_hi_<mode>,
+	vec_extract_hi_v16hi, vec_extract_hi_v32qi): Use
+	vextracti128 instead of vextractf128 for -mavx2 and
+	integer vectors.  For V4DFmode fix up mode attribute.
+	(VEC_EXTRACT_MODE): For TARGET_AVX add 32-byte vectors.
+	(vec_set_lo_<mode>, vec_set_hi_<mode>): For VI8F_256 modes use V4DF
+	instead of V8SF mode attribute.
+	(avx2_extracti128): Change into define_expand.
+	* config/i386/i386.c (ix86_expand_vector_extract): Handle
+	32-byte vector modes if TARGET_AVX.
+
 2011-09-16  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.md: (umulqihi3, mulqihi3): Write as one pattern.
