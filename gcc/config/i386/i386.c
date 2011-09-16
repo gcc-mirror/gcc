@@ -32696,24 +32696,45 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
     }
 }
 
-/* Expand a vector reduction on V4SFmode for SSE1.  FN is the binary
-   pattern to reduce; DEST is the destination; IN is the input vector.  */
+/* Expand a vector reduction.  FN is the binary pattern to reduce;
+   DEST is the destination; IN is the input vector.  */
 
 void
-ix86_expand_reduc_v4sf (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
+ix86_expand_reduc (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
 {
-  rtx tmp1, tmp2, tmp3;
+  rtx tmp1, tmp2, tmp3, tmp4, tmp5;
+  enum machine_mode mode = GET_MODE (in);
 
-  tmp1 = gen_reg_rtx (V4SFmode);
-  tmp2 = gen_reg_rtx (V4SFmode);
-  tmp3 = gen_reg_rtx (V4SFmode);
+  tmp1 = gen_reg_rtx (mode);
+  tmp2 = gen_reg_rtx (mode);
+  tmp3 = gen_reg_rtx (mode);
 
-  emit_insn (gen_sse_movhlps (tmp1, in, in));
-  emit_insn (fn (tmp2, tmp1, in));
-
-  emit_insn (gen_sse_shufps_v4sf (tmp3, tmp2, tmp2,
-				  const1_rtx, const1_rtx,
-				  GEN_INT (1+4), GEN_INT (1+4)));
+  switch (mode)
+    {
+    case V4SFmode:
+      emit_insn (gen_sse_movhlps (tmp1, in, in));
+      emit_insn (fn (tmp2, tmp1, in));
+      emit_insn (gen_sse_shufps_v4sf (tmp3, tmp2, tmp2,
+				      const1_rtx, const1_rtx,
+				      GEN_INT (1+4), GEN_INT (1+4)));
+      break;
+    case V8SFmode:
+      tmp4 = gen_reg_rtx (mode);
+      tmp5 = gen_reg_rtx (mode);
+      emit_insn (gen_avx_vperm2f128v8sf3 (tmp4, in, in, const1_rtx));
+      emit_insn (fn (tmp5, tmp4, in));
+      emit_insn (gen_avx_shufps256 (tmp1, tmp5, tmp5, GEN_INT (2+12)));
+      emit_insn (fn (tmp2, tmp1, tmp5));
+      emit_insn (gen_avx_shufps256 (tmp3, tmp2, tmp2, const1_rtx));
+      break;
+    case V4DFmode:
+      emit_insn (gen_avx_vperm2f128v4df3 (tmp1, in, in, const1_rtx));
+      emit_insn (fn (tmp2, tmp1, in));
+      emit_insn (gen_avx_shufpd256 (tmp3, tmp2, tmp2, const1_rtx));
+      break;
+    default:
+      gcc_unreachable ();
+    }
   emit_insn (fn (dest, tmp2, tmp3));
 }
 
