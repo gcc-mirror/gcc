@@ -145,7 +145,10 @@ void
 __go_send_small (struct __go_channel *channel, uint64_t val, _Bool for_select)
 {
   if (channel == NULL)
-    __go_panic_msg ("send to nil channel");
+    {
+      // Block forever.
+      __go_select (0, 0, NULL, NULL);
+    }
 
   __go_assert (channel->element_type->__size <= sizeof (uint64_t));
 

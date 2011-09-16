@@ -45,18 +45,13 @@ chansend (struct __go_channel_type *ct, uintptr_t ch, uintptr_t val_i,
   void *pv;
 
   __go_assert (ct->__common.__code == GO_CHAN);
-  __go_assert (__go_type_descriptors_equal (ct->__element_type,
-					    channel->element_type));
 
-  if (channel == NULL)
-    __go_panic_msg ("send to nil channel");
-
-  if (__go_is_pointer_type (channel->element_type))
+  if (__go_is_pointer_type (ct->__element_type))
     pv = &val_i;
   else
     pv = (void *) val_i;
 
-  element_size = channel->element_type->__size;
+  element_size = ct->__element_type->__size;
   if (element_size <= sizeof (uint64_t))
     {
       union
@@ -112,12 +107,10 @@ chanrecv (struct __go_channel_type *ct, uintptr_t ch, _Bool nb)
   struct chanrecv_ret ret;
 
   __go_assert (ct->__common.__code == GO_CHAN);
-  __go_assert (__go_type_descriptors_equal (ct->__element_type,
-					    channel->element_type));
 
-  element_size = channel->element_type->__size;
+  element_size = ct->__element_type->__size;
 
-  if (__go_is_pointer_type (channel->element_type))
+  if (__go_is_pointer_type (ct->__element_type))
     pv = &ret.val;
   else
     {

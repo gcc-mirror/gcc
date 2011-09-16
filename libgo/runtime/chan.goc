@@ -6,6 +6,8 @@ package runtime
 #include "config.h"
 #include "channel.h"
 
+#define nil NULL
+
 typedef _Bool bool;
 typedef unsigned char byte;
 typedef struct __go_channel chan;
@@ -13,7 +15,7 @@ typedef struct __go_channel chan;
 /* Do a channel receive with closed status.  */
 
 func chanrecv2(c *chan, val *byte) (received bool) {
-	uintptr_t element_size = c->element_type->__size;
+	uintptr_t element_size = c == nil ? 0 : c->element_type->__size;
 	if (element_size > 8) {
 		return __go_receive_big(c, val, 0);
 	} else {
