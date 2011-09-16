@@ -273,6 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr _Tuple_impl(const _Tuple_impl&) = default;
 
+      constexpr
       _Tuple_impl(_Tuple_impl&& __in)
       noexcept(__and_<is_nothrow_move_constructible<_Head>,
 	              is_nothrow_move_constructible<_Inherited>>::value)
@@ -285,9 +286,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Base(_Tuple_impl<_Idx, _UElements...>::_M_head(__in)) { }
 
       template<typename _UHead, typename... _UTails>
-        _Tuple_impl(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
-	  : _Inherited(std::move
-		       (_Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in))),
+        constexpr _Tuple_impl(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
+	: _Inherited(std::move
+		     (_Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in))),
 	  _Base(std::forward<_UHead>
 		(_Tuple_impl<_Idx, _UHead, _UTails...>::_M_head(__in))) { }
 
@@ -580,7 +581,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _U1, typename _U2, typename = typename
 	       enable_if<__and_<is_convertible<_U1, _T1>,
 				is_convertible<_U2, _T2>>::value>::type>
-         constexpr tuple(pair<_U1, _U2>&& __in)
+        constexpr tuple(pair<_U1, _U2>&& __in)
 	: _Inherited(std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
@@ -872,7 +873,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // NB: DR 705.
   template<typename... _Elements>
-    inline tuple<typename __decay_and_strip<_Elements>::__type...>
+    constexpr tuple<typename __decay_and_strip<_Elements>::__type...>
     make_tuple(_Elements&&... __args)
     {
       typedef tuple<typename __decay_and_strip<_Elements>::__type...>
@@ -881,7 +882,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename... _Elements>
-    inline tuple<_Elements&&...>
+    constexpr tuple<_Elements&&...>
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 

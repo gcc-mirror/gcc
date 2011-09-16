@@ -29,7 +29,6 @@ bool test __attribute__((unused)) = true;
 
 
 // make_tuple
-#if 0
 void
 test_make_tuple()
 {
@@ -43,7 +42,6 @@ test_make_tuple()
     constexpr tuple_type p1 = std::make_tuple(22, 22.222, 77799);
   }
 }
-#endif
 
 // get
 void
@@ -77,10 +75,7 @@ test_tuple_cat()
 int
 main()
 {
-#if 0
   test_make_tuple();
-#endif
-
   test_get();
   test_tuple_cat();
 
