@@ -1,3 +1,7 @@
+2011-09-16  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.dg/tree-ssa/foldconst-3.c: Don't use short enums.
+
 2011-09-15   Diego Novillo  <dnovillo@google.com>
 
 	* lib/g++.exp (g++_init): Add $TEST_ALWAYS_FLAGS to
