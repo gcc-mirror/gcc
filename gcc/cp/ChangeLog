@@ -1,3 +1,10 @@
+2011-09-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50424
+	* call.c (set_flags_from_callee): Split out from build_call_a.
+	* cp-tree.h: Declare it.
+	* tree.c (bot_manip): Call it.
+
 2011-09-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50365

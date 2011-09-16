@@ -306,11 +306,32 @@ build_call_n (tree function, int n, ...)
     }
 }
 
+/* Update various flags in cfun and the call itself based on what is being
+   called.  Split out of build_call_a so that bot_manip can use it too.  */
+
+void
+set_flags_from_callee (tree call)
+{
+  int nothrow;
+  tree decl = get_callee_fndecl (call);
+
+  /* We check both the decl and the type; a function may be known not to
+     throw without being declared throw().  */
+  nothrow = ((decl && TREE_NOTHROW (decl))
+	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (call)))));
+
+  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
+    cp_function_chain->can_throw = 1;
+
+  if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
+    current_function_returns_abnormally = 1;
+
+  TREE_NOTHROW (call) = nothrow;
+}
+
 tree
 build_call_a (tree function, int n, tree *argarray)
 {
-  int is_constructor = 0;
-  int nothrow;
   tree decl;
   tree result_type;
   tree fntype;
@@ -327,60 +348,45 @@ build_call_a (tree function, int n, tree *argarray)
   if (SCALAR_TYPE_P (result_type) || VOID_TYPE_P (result_type))
     result_type = cv_unqualified (result_type);
 
-  if (TREE_CODE (function) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL)
+  function = build_call_array_loc (input_location,
+				   result_type, function, n, argarray);
+  set_flags_from_callee (function);
+
+  decl = get_callee_fndecl (function);
+
+  if (decl && !TREE_USED (decl))
     {
-      decl = TREE_OPERAND (function, 0);
-      if (!TREE_USED (decl))
-	{
-	  /* We invoke build_call directly for several library
-	     functions.  These may have been declared normally if
-	     we're building libgcc, so we can't just check
-	     DECL_ARTIFICIAL.  */
-	  gcc_assert (DECL_ARTIFICIAL (decl)
-		      || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
-				   "__", 2));
-	  mark_used (decl);
-	}
+      /* We invoke build_call directly for several library
+	 functions.  These may have been declared normally if
+	 we're building libgcc, so we can't just check
+	 DECL_ARTIFICIAL.  */
+      gcc_assert (DECL_ARTIFICIAL (decl)
+		  || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
+			       "__", 2));
+      mark_used (decl);
     }
-  else
-    decl = NULL_TREE;
-
-  /* We check both the decl and the type; a function may be known not to
-     throw without being declared throw().  */
-  nothrow = ((decl && TREE_NOTHROW (decl))
-	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
-
-  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
-    cp_function_chain->can_throw = 1;
-
-  if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
-    current_function_returns_abnormally = 1;
 
   if (decl && TREE_DEPRECATED (decl))
     warn_deprecated_use (decl, NULL_TREE);
   require_complete_eh_spec_types (fntype, decl);
 
-  if (decl && DECL_CONSTRUCTOR_P (decl))
-    is_constructor = 1;
+  TREE_HAS_CONSTRUCTOR (function) = (decl && DECL_CONSTRUCTOR_P (decl));
 
   /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.
      We don't need to handle other cases of copying empty classes.  */
   if (! decl || ! DECL_BUILT_IN (decl))
     for (i = 0; i < n; i++)
-      if (is_empty_class (TREE_TYPE (argarray[i]))
-	  && ! TREE_ADDRESSABLE (TREE_TYPE (argarray[i])))
-	{
-	  tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (argarray[i]));
-	  argarray[i] = build2 (COMPOUND_EXPR, TREE_TYPE (t),
-				argarray[i], t);
-	}
-
-  function = build_call_array_loc (input_location,
-				   result_type, function, n, argarray);
-  TREE_HAS_CONSTRUCTOR (function) = is_constructor;
-  TREE_NOTHROW (function) = nothrow;
+      {
+	tree arg = CALL_EXPR_ARG (function, i);
+	if (is_empty_class (TREE_TYPE (arg))
+	    && ! TREE_ADDRESSABLE (TREE_TYPE (arg)))
+	  {
+	    tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (arg));
+	    arg = build2 (COMPOUND_EXPR, TREE_TYPE (t), arg, t);
+	    CALL_EXPR_ARG (function, i) = arg;
+	  }
+      }
 
   return function;
 }
@@ -6736,7 +6742,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
   fn = build_call_a (fn, nargs, argarray);
   SET_EXPR_LOCATION (fn, loc);
 
-  /* If this call might throw an exception, note that fact.  */
   fndecl = get_callee_fndecl (fn);
 
   /* Check that arguments to builtin functions match the expectations.  */
