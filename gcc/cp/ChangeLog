@@ -1,3 +1,8 @@
+2011-09-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50424
+	* tree.c (bot_manip): Set cp_function_chain->can_throw.
+
 2011-09-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48320
