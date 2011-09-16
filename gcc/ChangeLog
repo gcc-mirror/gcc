@@ -1,3 +1,8 @@
+2011-09-16  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/visintrin.h: New file.
+	* config.gcc: Add it to extra_headers on sparc.
+
 2011-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_reduc_v4sf): Rename to ...
@@ -19,7 +24,7 @@
 	32-byte vector modes if TARGET_AVX.
 
 2011-09-16  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.md: (umulqihi3, mulqihi3): Write as one pattern.
 	(umulqi3_highpart, smulqi3_highpart): Ditto.
 	(*maddqihi4.const, *umaddqihi4.uconst): Ditto.
