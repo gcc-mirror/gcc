@@ -1898,7 +1898,10 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
     }
 
   /* Make a copy of this node.  */
-  return copy_tree_r (tp, walk_subtrees, NULL);
+  t = copy_tree_r (tp, walk_subtrees, NULL);
+  if (TREE_CODE (*tp) == CALL_EXPR)
+    set_flags_from_callee (*tp);
+  return t;
 }
 
 /* Replace all remapped VAR_DECLs in T with their new equivalents.
