@@ -1528,7 +1528,7 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
       /* Insn doesn't leave CC in a usable state.  */
       CC_STATUS_INIT;
 
-      /* Correct CC for the ashrqi3 with the shift count as CONST_INT != 6 */
+      /* Correct CC for the ashrqi3 with the shift count as CONST_INT < 6 */
       set = single_set (insn);
       if (set)
 	{
@@ -5570,6 +5570,17 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
       switch (mode)
 	{
 	case QImode:
+          if (AVR_HAVE_MUL
+              && MULT == GET_CODE (XEXP (x, 0))
+              && register_operand (XEXP (x, 1), QImode))
+            {
+              /* multiply-add */
+              *total = COSTS_N_INSNS (speed ? 4 : 3);
+              /* multiply-add with constant: will be split and load constant. */
+              if (CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+                *total = COSTS_N_INSNS (1) + *total;
+              return true;
+            }
 	  *total = COSTS_N_INSNS (1);
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	    *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
@@ -5583,7 +5594,11 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
               && (ZERO_EXTEND == GET_CODE (XEXP (XEXP (x, 0), 0))
                   || SIGN_EXTEND == GET_CODE (XEXP (XEXP (x, 0), 0))))
             {
+              /* multiply-add */
               *total = COSTS_N_INSNS (speed ? 5 : 4);
+              /* multiply-add with constant: will be split and load constant. */
+              if (CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+                *total = COSTS_N_INSNS (1) + *total;
               return true;
             }
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
@@ -5619,6 +5634,18 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 
     case MINUS:
       if (AVR_HAVE_MUL
+          && QImode == mode
+          && register_operand (XEXP (x, 0), QImode)
+          && MULT == GET_CODE (XEXP (x, 1)))
+        {
+          /* multiply-sub */
+          *total = COSTS_N_INSNS (speed ? 4 : 3);
+          /* multiply-sub with constant: will be split and load constant. */
+          if (CONST_INT_P (XEXP (XEXP (x, 1), 1)))
+            *total = COSTS_N_INSNS (1) + *total;
+          return true;
+        }
+      if (AVR_HAVE_MUL
           && HImode == mode
           && register_operand (XEXP (x, 0), HImode)
           && (MULT == GET_CODE (XEXP (x, 1))
@@ -5626,7 +5653,11 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
           && (ZERO_EXTEND == GET_CODE (XEXP (XEXP (x, 1), 0))
               || SIGN_EXTEND == GET_CODE (XEXP (XEXP (x, 1), 0))))
         {
+          /* multiply-sub */
           *total = COSTS_N_INSNS (speed ? 5 : 4);
+          /* multiply-sub with constant: will be split and load constant. */
+          if (CONST_INT_P (XEXP (XEXP (x, 1), 1)))
+            *total = COSTS_N_INSNS (1) + *total;
           return true;
         }
     case AND:
@@ -5813,6 +5844,13 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
                   *total = COSTS_N_INSNS (!speed ? 4 : 6);
                   return true;
                 }
+            }
+          
+          if (const1_rtx == (XEXP (x, 1))
+              && SIGN_EXTEND == GET_CODE (XEXP (x, 0)))
+            {
+              *total = COSTS_N_INSNS (2);
+              return true;
             }
           
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
