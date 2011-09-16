@@ -443,6 +443,7 @@ sweep(void)
 			// Mark freed; restore block boundary bit.
 			*bitp = (*bitp & ~(bitMask<<shift)) | (bitBlockBoundary<<shift);
 
+			c = m->mcache;
 			if(s->sizeclass == 0) {
 				// Free large span.
 				runtime_unmarkspan(p, 1<<PageShift);
@@ -450,14 +451,13 @@ sweep(void)
 				runtime_MHeap_Free(&runtime_mheap, s, 1);
 			} else {
 				// Free small object.
-				c = m->mcache;
 				if(size > sizeof(uintptr))
 					((uintptr*)p)[1] = 1;	// mark as "needs to be zeroed"
-				mstats.by_size[s->sizeclass].nfree++;
+				c->local_by_size[s->sizeclass].nfree++;
 				runtime_MCache_Free(c, p, s->sizeclass, size);
 			}
-			mstats.alloc -= size;
-			mstats.nfree++;
+			c->local_alloc -= size;
+			c->local_nfree++;
 		}
 	}
 }
@@ -537,6 +537,7 @@ runtime_gc(int32 force __attribute__ ((unused)))
 	sweep();
 	t2 = runtime_nanotime();
 	__go_stealcache();
+	__go_cachestats();
 
 	mstats.next_gc = mstats.heap_alloc+mstats.heap_alloc*gcpercent/100;
 	m->gcing = 0;
@@ -584,6 +585,25 @@ runtime_gc(int32 force __attribute__ ((unused)))
 		runtime_gc(1);
 }
 
+void runtime_UpdateMemStats(void)
+  __asm__("libgo_runtime.runtime.UpdateMemStats");
+
+void
+runtime_UpdateMemStats(void)
+{
+	// Have to acquire gcsema to stop the world,
+	// because stoptheworld can only be used by
+	// one goroutine at a time, and there might be
+	// a pending garbage collection already calling it.
+	pthread_mutex_lock(&gcsema);
+	m->gcing = 1;
+	runtime_stoptheworld();
+	__go_cachestats();
+	m->gcing = 0;
+	pthread_mutex_unlock(&gcsema);
+	runtime_starttheworld();
+}
+
 static void
 runfinq(void* dummy)
 {
@@ -617,7 +637,7 @@ runfinq(void* dummy)
 	}
 }
 
-#define runtime_gomaxprocs 2
+#define runtime_singleproc 0
 
 // mark the block at v of size n as allocated.
 // If noptr is true, mark it as having no pointers.
@@ -641,11 +661,11 @@ runtime_markallocated(void *v, uintptr n, bool noptr)
 		bits = (obits & ~(bitMask<<shift)) | (bitAllocated<<shift);
 		if(noptr)
 			bits |= bitNoPointers<<shift;
-		if(runtime_gomaxprocs == 1) {
+		if(runtime_singleproc) {
 			*b = bits;
 			break;
 		} else {
-			// gomaxprocs > 1: use atomic op
+			// more than one goroutine is potentially running: use atomic op
 			if(runtime_casp((void**)b, (void*)obits, (void*)bits))
 				break;
 		}
@@ -671,11 +691,11 @@ runtime_markfreed(void *v, uintptr n)
 	for(;;) {
 		obits = *b;
 		bits = (obits & ~(bitMask<<shift)) | (bitBlockBoundary<<shift);
-		if(runtime_gomaxprocs == 1) {
+		if(runtime_singleproc) {
 			*b = bits;
 			break;
 		} else {
-			// gomaxprocs > 1: use atomic op
+			// more than one goroutine is potentially running: use atomic op
 			if(runtime_casp((void**)b, (void*)obits, (void*)bits))
 				break;
 		}
@@ -782,11 +802,11 @@ runtime_setblockspecial(void *v)
 	for(;;) {
 		obits = *b;
 		bits = obits | (bitSpecial<<shift);
-		if(runtime_gomaxprocs == 1) {
+		if(runtime_singleproc) {
 			*b = bits;
 			break;
 		} else {
-			// gomaxprocs > 1: use atomic op
+			// more than one goroutine is potentially running: use atomic op
 			if(runtime_casp((void**)b, (void*)obits, (void*)bits))
 				break;
 		}

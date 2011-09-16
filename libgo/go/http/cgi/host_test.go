@@ -12,24 +12,16 @@ import (
 	"fmt"
 	"http"
 	"http/httptest"
+	"io"
 	"os"
+	"net"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
+	"runtime"
 )
-
-var cgiScriptWorks = canRun("./testdata/test.cgi")
-
-func canRun(s string) bool {
-	c, err := exec.Run(s, []string{s}, nil, ".", exec.DevNull, exec.DevNull, exec.DevNull)
-	if err != nil {
-		return false
-	}
-	w, err := c.Wait(0)
-	if err != nil {
-		return false
-	}
-	return w.Exited() && w.ExitStatus() == 0
-}
 
 func newRequest(httpreq string) *http.Request {
 	buf := bufio.NewReader(strings.NewReader(httpreq))
@@ -60,7 +52,7 @@ readlines:
 		}
 		linesRead++
 		trimmedLine := strings.TrimRight(line, "\r\n")
-		split := strings.Split(trimmedLine, "=", 2)
+		split := strings.SplitN(trimmedLine, "=", 2)
 		if len(split) != 2 {
 			t.Fatalf("Unexpected %d parts from invalid line number %v: %q; existing map=%v",
 				len(split), linesRead, line, m)
@@ -76,8 +68,15 @@ readlines:
 	return rw
 }
 
+var cgiTested = false
+var cgiWorks bool
+
 func skipTest(t *testing.T) bool {
-	if !cgiScriptWorks {
+	if !cgiTested {
+		cgiTested = true
+		cgiWorks = exec.Command("./testdata/test.cgi").Run() == nil
+	}
+	if !cgiWorks {
 		// No Perl on Windows, needed by test.cgi
 		// TODO: make the child process be Go, not Perl.
 		t.Logf("Skipping test: test.cgi failed.")
@@ -85,7 +84,6 @@ func skipTest(t *testing.T) bool {
 	}
 	return false
 }
-
 
 func TestCGIBasicGet(t *testing.T) {
 	if skipTest(t) {
@@ -307,4 +305,145 @@ func TestInternalRedirect(t *testing.T) {
 		"remoteaddr": "1.2.3.4",
 	}
 	runCgiTest(t, h, "GET /test.cgi?loc=/foo HTTP/1.0\nHost: example.com\n\n", expectedMap)
+}
+
+// TestCopyError tests that we kill the process if there's an error copying
+// its output. (for example, from the client having gone away)
+func TestCopyError(t *testing.T) {
+	if skipTest(t) || runtime.GOOS == "windows" {
+		return
+	}
+	h := &Handler{
+		Path: "testdata/test.cgi",
+		Root: "/test.cgi",
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	conn, err := net.Dial("tcp", ts.Listener.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, _ := http.NewRequest("GET", "http://example.com/test.cgi?bigresponse=1", nil)
+	err = req.Write(conn)
+	if err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+
+	res, err := http.ReadResponse(bufio.NewReader(conn), req)
+	if err != nil {
+		t.Fatalf("ReadResponse: %v", err)
+	}
+
+	pidstr := res.Header.Get("X-CGI-Pid")
+	if pidstr == "" {
+		t.Fatalf("expected an X-CGI-Pid header in response")
+	}
+	pid, err := strconv.Atoi(pidstr)
+	if err != nil {
+		t.Fatalf("invalid X-CGI-Pid value")
+	}
+
+	var buf [5000]byte
+	n, err := io.ReadFull(res.Body, buf[:])
+	if err != nil {
+		t.Fatalf("ReadFull: %d bytes, %v", n, err)
+	}
+
+	childRunning := func() bool {
+		p, err := os.FindProcess(pid)
+		if err != nil {
+			return false
+		}
+		return p.Signal(os.UnixSignal(0)) == nil
+	}
+
+	if !childRunning() {
+		t.Fatalf("pre-conn.Close, expected child to be running")
+	}
+	conn.Close()
+
+	if tries := 0; childRunning() {
+		for tries < 15 && childRunning() {
+			time.Sleep(50e6 * int64(tries))
+			tries++
+		}
+		if childRunning() {
+			t.Fatalf("post-conn.Close, expected child to be gone")
+		}
+	}
+}
+
+func TestDirUnix(t *testing.T) {
+	if skipTest(t) || runtime.GOOS == "windows" {
+		return
+	}
+
+	cwd, _ := os.Getwd()
+	h := &Handler{
+		Path: "testdata/test.cgi",
+		Root: "/test.cgi",
+		Dir:  cwd,
+	}
+	expectedMap := map[string]string{
+		"cwd": cwd,
+	}
+	runCgiTest(t, h, "GET /test.cgi HTTP/1.0\nHost: example.com\n\n", expectedMap)
+
+	cwd, _ = os.Getwd()
+	cwd = filepath.Join(cwd, "testdata")
+	h = &Handler{
+		Path: "testdata/test.cgi",
+		Root: "/test.cgi",
+	}
+	expectedMap = map[string]string{
+		"cwd": cwd,
+	}
+	runCgiTest(t, h, "GET /test.cgi HTTP/1.0\nHost: example.com\n\n", expectedMap)
+}
+
+func TestDirWindows(t *testing.T) {
+	if skipTest(t) || runtime.GOOS != "windows" {
+		return
+	}
+
+	cgifile, _ := filepath.Abs("testdata/test.cgi")
+
+	var perl string
+	var err os.Error
+	perl, err = exec.LookPath("perl")
+	if err != nil {
+		return
+	}
+	perl, _ = filepath.Abs(perl)
+
+	cwd, _ := os.Getwd()
+	h := &Handler{
+		Path: perl,
+		Root: "/test.cgi",
+		Dir:  cwd,
+		Args: []string{cgifile},
+		Env:  []string{"SCRIPT_FILENAME=" + cgifile},
+	}
+	expectedMap := map[string]string{
+		"cwd": cwd,
+	}
+	runCgiTest(t, h, "GET /test.cgi HTTP/1.0\nHost: example.com\n\n", expectedMap)
+
+	// If not specify Dir on windows, working directory should be
+	// base directory of perl.
+	cwd, _ = filepath.Split(perl)
+	if cwd != "" && cwd[len(cwd)-1] == filepath.Separator {
+		cwd = cwd[:len(cwd)-1]
+	}
+	h = &Handler{
+		Path: perl,
+		Root: "/test.cgi",
+		Args: []string{cgifile},
+		Env:  []string{"SCRIPT_FILENAME=" + cgifile},
+	}
+	expectedMap = map[string]string{
+		"cwd": cwd,
+	}
+	runCgiTest(t, h, "GET /test.cgi HTTP/1.0\nHost: example.com\n\n", expectedMap)
 }

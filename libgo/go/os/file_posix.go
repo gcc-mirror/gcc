@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The os package provides a platform-independent interface to operating
-// system functionality.  The design is Unix-like.
 package os
 
 import (
@@ -21,26 +19,6 @@ func epipecheck(file *File, e int) {
 	} else {
 		file.nepipe = 0
 	}
-}
-
-
-// Pipe returns a connected pair of Files; reads from r return bytes written to w.
-// It returns the files and an Error, if any.
-func Pipe() (r *File, w *File, err Error) {
-	var p [2]int
-
-	// See ../syscall/exec.go for description of lock.
-	syscall.ForkLock.RLock()
-	e := syscall.Pipe(p[0:])
-	if iserror(e) {
-		syscall.ForkLock.RUnlock()
-		return nil, nil, NewSyscallError("pipe", e)
-	}
-	syscall.CloseOnExec(p[0])
-	syscall.CloseOnExec(p[1])
-	syscall.ForkLock.RUnlock()
-
-	return NewFile(p[0], "|0"), NewFile(p[1], "|1"), nil
 }
 
 // Stat returns a FileInfo structure describing the named file and an error, if any.

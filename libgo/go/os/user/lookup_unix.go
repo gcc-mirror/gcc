@@ -27,6 +27,10 @@ static int mygetpwuid_r(int uid, struct passwd *pwd,
 func libc_getpwnam_r(name *byte, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int __asm__ ("getpwnam_r")
 func libc_getpwuid_r(uid syscall.Uid_t, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int __asm__ ("getpwuid_r")
 
+func init() {
+	implemented = true
+}
+
 // Lookup looks up a user by username. If the user cannot be found,
 // the returned error is of type UnknownUserError.
 func Lookup(username string) (*User, os.Error) {

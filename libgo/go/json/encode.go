@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"unicode"
 	"utf8"
 )
@@ -36,11 +37,30 @@ import (
 // Array and slice values encode as JSON arrays, except that
 // []byte encodes as a base64-encoded string.
 //
-// Struct values encode as JSON objects.  Each struct field becomes
-// a member of the object.  By default the object's key name is the
-// struct field name.  If the struct field has a non-empty tag consisting
-// of only Unicode letters, digits, and underscores, that tag will be used
-// as the name instead.  Only exported fields will be encoded.
+// Struct values encode as JSON objects. Each exported struct field
+// becomes a member of the object unless the field is empty and its tag
+// specifies the "omitempty" option. The empty values are false, 0, any
+// nil pointer or interface value, and any array, slice, map, or string of
+// length zero. The object's default key string is the struct field name
+// but can be specified in the struct field's tag value. The "json" key in
+// struct field's tag value is the key name, followed by an optional comma
+// and options. Examples:
+//
+//   // Specifies that Field appears in JSON as key "myName"
+//   Field int `json:"myName"`
+//
+//   // Specifies that Field appears in JSON as key "myName" and
+//   // the field is omitted from the object if its value is empty,
+//   // as defined above.
+//   Field int `json:"myName,omitempty"`
+//
+//   // Field appears in JSON as key "Field" (the default), but
+//   // the field is skipped if empty.
+//   // Note the leading comma.
+//   Field int `json:",omitempty"`
+//
+// The key name will be used if it's a non-empty string consisting of
+// only Unicode letters, digits, dollar signs, hyphens, and underscores.
 //
 // Map values encode as JSON objects.
 // The map's key type must be string; the object keys are used directly
@@ -182,6 +202,24 @@ func (e *encodeState) error(err os.Error) {
 
 var byteSliceType = reflect.TypeOf([]byte(nil))
 
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
+}
+
 func (e *encodeState) reflectValue(v reflect.Value) {
 	if !v.IsValid() {
 		e.WriteString("null")
@@ -231,18 +269,30 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 			if f.PkgPath != "" {
 				continue
 			}
+			tag, omitEmpty := f.Name, false
+			if tv := f.Tag.Get("json"); tv != "" {
+				ss := strings.SplitN(tv, ",", 2)
+				if isValidTag(ss[0]) {
+					tag = ss[0]
+				}
+				if len(ss) > 1 {
+					// Currently the only option is omitempty,
+					// so parsing is trivial.
+					omitEmpty = ss[1] == "omitempty"
+				}
+			}
+			fieldValue := v.Field(i)
+			if omitEmpty && isEmptyValue(fieldValue) {
+				continue
+			}
 			if first {
 				first = false
 			} else {
 				e.WriteByte(',')
 			}
-			if isValidTag(f.Tag) {
-				e.string(f.Tag)
-			} else {
-				e.string(f.Name)
-			}
+			e.string(tag)
 			e.WriteByte(':')
-			e.reflectValue(v.Field(i))
+			e.reflectValue(fieldValue)
 		}
 		e.WriteByte('}')
 
@@ -314,7 +364,7 @@ func isValidTag(s string) bool {
 		return false
 	}
 	for _, c := range s {
-		if c != '_' && !unicode.IsLetter(c) && !unicode.IsDigit(c) {
+		if c != '$' && c != '-' && c != '_' && !unicode.IsLetter(c) && !unicode.IsDigit(c) {
 			return false
 		}
 	}
@@ -335,17 +385,28 @@ func (e *encodeState) string(s string) {
 	start := 0
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
-			if 0x20 <= b && b != '\\' && b != '"' {
+			if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' {
 				i++
 				continue
 			}
 			if start < i {
 				e.WriteString(s[start:i])
 			}
-			if b == '\\' || b == '"' {
+			switch b {
+			case '\\', '"':
 				e.WriteByte('\\')
 				e.WriteByte(b)
-			} else {
+			case '\n':
+				e.WriteByte('\\')
+				e.WriteByte('n')
+			case '\r':
+				e.WriteByte('\\')
+				e.WriteByte('r')
+			default:
+				// This encodes bytes < 0x20 except for \n and \r,
+				// as well as < and >. The latter are escaped because they
+				// can lead to security holes when user-controlled strings
+				// are rendered into JSON and served to some browsers.
 				e.WriteString(`\u00`)
 				e.WriteByte(hex[b>>4])
 				e.WriteByte(hex[b&0xF])

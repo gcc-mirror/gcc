@@ -8,8 +8,10 @@
 package main
 
 import (
-	"crypto/rsa"
+	"big"
+	"crypto/x509/pkix"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"flag"
@@ -32,8 +34,8 @@ func main() {
 	now := time.Seconds()
 
 	template := x509.Certificate{
-		SerialNumber: []byte{0},
-		Subject: x509.Name{
+		SerialNumber: new(big.Int).SetInt64(0),
+		Subject: pkix.Name{
 			CommonName:   *hostName,
 			Organization: []string{"Acme Co"},
 		},
@@ -59,7 +61,7 @@ func main() {
 	certOut.Close()
 	log.Print("written cert.pem\n")
 
-	keyOut, err := os.OpenFile("key.pem", os.O_WRONLY|os.O_CREAT|os.O_TRUNC, 0600)
+	keyOut, err := os.OpenFile("key.pem", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Print("failed to open key.pem for writing:", err)
 		return

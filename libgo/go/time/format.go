@@ -26,6 +26,12 @@ const (
 // replaced by a digit if the following number (a day) has two digits; for
 // compatibility with fixed-width Unix time formats.
 //
+// A decimal point followed by one or more zeros represents a fractional
+// second. When parsing (only), the input may contain a fractional second
+// field immediately after the seconds field, even if the layout does not
+// signify its presence. In that case a decimal point followed by a maximal
+// series of digits is parsed as a fractional second.
+//
 // Numeric time zone offsets format as follows:
 //	-0700  ±hhmm
 //	-07:00 ±hh:mm
@@ -45,6 +51,11 @@ const (
 	RFC1123 = "Mon, 02 Jan 2006 15:04:05 MST"
 	RFC3339 = "2006-01-02T15:04:05Z07:00"
 	Kitchen = "3:04PM"
+	// Handy time stamps.
+	Stamp      = "Jan _2 15:04:05"
+	StampMilli = "Jan _2 15:04:05.000"
+	StampMicro = "Jan _2 15:04:05.000000"
+	StampNano  = "Jan _2 15:04:05.000000000"
 )
 
 const (
@@ -154,6 +165,16 @@ func nextStdChunk(layout string) (prefix, std, suffix string) {
 			if len(layout) >= i+6 && layout[i:i+6] == stdISO8601ColonTZ {
 				return layout[0:i], layout[i : i+6], layout[i+6:]
 			}
+		case '.': // .000 - multiple digits of zeros (only) for fractional seconds.
+			numZeros := 0
+			var j int
+			for j = i + 1; j < len(layout) && layout[j] == '0'; j++ {
+				numZeros++
+			}
+			// String of digits must end here - only fractional second is all zeros.
+			if numZeros > 0 && !isDigit(layout, j) {
+				return layout[0:i], layout[i : i+1+numZeros], layout[i+1+numZeros:]
+			}
 		}
 	}
 	return layout, "", ""
@@ -230,6 +251,21 @@ func pad(i int, padding string) string {
 
 func zeroPad(i int) string { return pad(i, "0") }
 
+// formatNano formats a fractional second, as nanoseconds.
+func formatNano(nanosec, n int) string {
+	// User might give us bad data. Make sure it's positive and in range.
+	// They'll get nonsense output but it will have the right format.
+	s := strconv.Uitoa(uint(nanosec) % 1e9)
+	// Zero pad left without fmt.
+	if len(s) < 9 {
+		s = "000000000"[:9-len(s)] + s
+	}
+	if n > 9 {
+		n = 9
+	}
+	return "." + s[:n]
+}
+
 // Format returns a textual representation of the time value formatted
 // according to layout.  The layout defines the format by showing the
 // representation of a standard time, which is then used to describe
@@ -248,7 +284,7 @@ func (t *Time) Format(layout string) string {
 		var p string
 		switch std {
 		case stdYear:
-			p = strconv.Itoa64(t.Year % 100)
+			p = zeroPad(int(t.Year % 100))
 		case stdLongYear:
 			p = strconv.Itoa64(t.Year)
 		case stdMonth:
@@ -272,9 +308,19 @@ func (t *Time) Format(layout string) string {
 		case stdHour:
 			p = zeroPad(t.Hour)
 		case stdHour12:
-			p = strconv.Itoa(t.Hour % 12)
+			// Noon is 12PM, midnight is 12AM.
+			hr := t.Hour % 12
+			if hr == 0 {
+				hr = 12
+			}
+			p = strconv.Itoa(hr)
 		case stdZeroHour12:
-			p = zeroPad(t.Hour % 12)
+			// Noon is 12PM, midnight is 12AM.
+			hr := t.Hour % 12
+			if hr == 0 {
+				hr = 12
+			}
+			p = zeroPad(hr)
 		case stdMinute:
 			p = strconv.Itoa(t.Minute)
 		case stdZeroMinute:
@@ -330,6 +376,10 @@ func (t *Time) Format(layout string) string {
 				p += zeroPad(zone / 60)
 				p += zeroPad(zone % 60)
 			}
+		default:
+			if len(std) >= 2 && std[0:2] == ".0" {
+				p = formatNano(t.Nanosecond, len(std)-1)
+			}
 		}
 		b.WriteString(p)
 		layout = suffix
@@ -345,7 +395,7 @@ func (t *Time) String() string {
 	return t.Format(UnixDate)
 }
 
-var errBad = os.ErrorString("bad") // just a marker; not returned to user
+var errBad = os.NewError("bad value for field") // placeholder not passed to user
 
 // ParseError describes a problem parsing a time string.
 type ParseError struct {
@@ -369,14 +419,24 @@ func (e *ParseError) String() string {
 		strconv.Quote(e.Value) + e.Message
 }
 
+// isDigit returns true if s[i] is a decimal digit, false if not or
+// if s[i] is out of range.
+func isDigit(s string, i int) bool {
+	if len(s) <= i {
+		return false
+	}
+	c := s[i]
+	return '0' <= c && c <= '9'
+}
+
 // getnum parses s[0:1] or s[0:2] (fixed forces the latter)
 // as a decimal integer and returns the integer and the
 // remainder of the string.
 func getnum(s string, fixed bool) (int, string, os.Error) {
-	if len(s) == 0 || s[0] < '0' || s[0] > '9' {
+	if !isDigit(s, 0) {
 		return 0, s, errBad
 	}
-	if len(s) == 1 || s[1] < '0' || s[1] > '9' {
+	if !isDigit(s, 1) {
 		if fixed {
 			return 0, s, errBad
 		}
@@ -424,11 +484,12 @@ func skip(value, prefix string) (string, os.Error) {
 // structure.  Also, if the input string represents an inconsistent time
 // (such as having the wrong day of the week), the returned value will also
 // be inconsistent.  In any case, the elements of the returned time will be
-// sane: hours in 0..23, minutes in 0..59, day of month in 0..31, etc.
+// sane: hours in 0..23, minutes in 0..59, day of month in 1..31, etc.
 // Years must be in the range 0000..9999.
 func Parse(alayout, avalue string) (*Time, os.Error) {
 	var t Time
 	rangeErrString := "" // set if a value is out of range
+	amSet := false       // do we need to subtract 12 from the hour for midnight?
 	pmSet := false       // do we need to add 12 to the hour?
 	layout, value := alayout, avalue
 	// Each iteration processes one std value.
@@ -461,7 +522,7 @@ func Parse(alayout, avalue string) (*Time, os.Error) {
 				t.Year += 2000
 			}
 		case stdLongYear:
-			if len(value) < 4 || value[0] < '0' || value[0] > '9' {
+			if len(value) < 4 || !isDigit(value, 0) {
 				err = errBad
 				break
 			}
@@ -508,6 +569,21 @@ func Parse(alayout, avalue string) (*Time, os.Error) {
 			t.Second, value, err = getnum(value, std == stdZeroSecond)
 			if t.Second < 0 || 60 <= t.Second {
 				rangeErrString = "second"
+			}
+			// Special case: do we have a fractional second but no
+			// fractional second in the format?
+			if len(value) > 2 && value[0] == '.' && isDigit(value, 1) {
+				_, std, _ := nextStdChunk(layout)
+				if len(std) > 0 && std[0] == '.' && isDigit(std, 1) {
+					// Fractional second in the layout; proceed normally
+					break
+				}
+				// No fractional second in the layout but we have one in the input.
+				n := 2
+				for ; n < len(value) && isDigit(value, n); n++ {
+				}
+				rangeErrString, err = t.parseNanoseconds(value, n)
+				value = value[n:]
 			}
 		case stdISO8601TZ, stdISO8601ColonTZ, stdNumTZ, stdNumShortTZ, stdNumColonTZ:
 			if std[0] == 'Z' && len(value) >= 1 && value[0] == 'Z' {
@@ -558,9 +634,12 @@ func Parse(alayout, avalue string) (*Time, os.Error) {
 				break
 			}
 			p, value = value[0:2], value[2:]
-			if p == "PM" {
+			switch p {
+			case "PM":
 				pmSet = true
-			} else if p != "AM" {
+			case "AM":
+				amSet = true
+			default:
 				err = errBad
 			}
 		case stdpm:
@@ -569,9 +648,12 @@ func Parse(alayout, avalue string) (*Time, os.Error) {
 				break
 			}
 			p, value = value[0:2], value[2:]
-			if p == "pm" {
+			switch p {
+			case "pm":
 				pmSet = true
-			} else if p != "am" {
+			case "am":
+				amSet = true
+			default:
 				err = errBad
 			}
 		case stdTZ:
@@ -603,6 +685,15 @@ func Parse(alayout, avalue string) (*Time, os.Error) {
 			if offset, found := lookupByName(p); found {
 				t.ZoneOffset = offset
 			}
+		default:
+			if len(value) < len(std) {
+				err = errBad
+				break
+			}
+			if len(std) >= 2 && std[0:2] == ".0" {
+				rangeErrString, err = t.parseNanoseconds(value, len(std))
+				value = value[len(std):]
+			}
 		}
 		if rangeErrString != "" {
 			return nil, &ParseError{alayout, avalue, std, value, ": " + rangeErrString + " out of range"}
@@ -613,6 +704,31 @@ func Parse(alayout, avalue string) (*Time, os.Error) {
 	}
 	if pmSet && t.Hour < 12 {
 		t.Hour += 12
+	} else if amSet && t.Hour == 12 {
+		t.Hour = 0
 	}
 	return &t, nil
+}
+
+func (t *Time) parseNanoseconds(value string, nbytes int) (rangErrString string, err os.Error) {
+	if value[0] != '.' {
+		return "", errBad
+	}
+	var ns int
+	ns, err = strconv.Atoi(value[1:nbytes])
+	if err != nil {
+		return "", err
+	}
+	if ns < 0 || 1e9 <= ns {
+		return "fractional second", nil
+	}
+	// We need nanoseconds, which means scaling by the number
+	// of missing digits in the format, maximum length 10. If it's
+	// longer than 10, we won't scale.
+	scaleDigits := 10 - nbytes
+	for i := 0; i < scaleDigits; i++ {
+		ns *= 10
+	}
+	t.Nanosecond = ns
+	return
 }

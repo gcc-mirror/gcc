@@ -7,7 +7,10 @@ package elf
 import (
 	"debug/dwarf"
 	"encoding/binary"
+	"net"
+	"os"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -15,6 +18,7 @@ type fileTest struct {
 	file     string
 	hdr      FileHeader
 	sections []SectionHeader
+	progs    []ProgHeader
 }
 
 var fileTests = []fileTest{
@@ -52,6 +56,13 @@ var fileTests = []fileTest{
 			{".shstrtab", SHT_STRTAB, 0x0, 0x0, 0xa0d, 0xf8, 0x0, 0x0, 0x1, 0x0},
 			{".symtab", SHT_SYMTAB, 0x0, 0x0, 0xfb8, 0x4b0, 0x1d, 0x38, 0x4, 0x10},
 			{".strtab", SHT_STRTAB, 0x0, 0x0, 0x1468, 0x206, 0x0, 0x0, 0x1, 0x0},
+		},
+		[]ProgHeader{
+			{PT_PHDR, PF_R + PF_X, 0x34, 0x8048034, 0x8048034, 0xa0, 0xa0, 0x4},
+			{PT_INTERP, PF_R, 0xd4, 0x80480d4, 0x80480d4, 0x15, 0x15, 0x1},
+			{PT_LOAD, PF_R + PF_X, 0x0, 0x8048000, 0x8048000, 0x5fb, 0x5fb, 0x1000},
+			{PT_LOAD, PF_R + PF_W, 0x5fc, 0x80495fc, 0x80495fc, 0xd8, 0xf8, 0x1000},
+			{PT_DYNAMIC, PF_R + PF_W, 0x60c, 0x804960c, 0x804960c, 0x98, 0x98, 0x4},
 		},
 	},
 	{
@@ -96,6 +107,16 @@ var fileTests = []fileTest{
 			{".symtab", SHT_SYMTAB, 0x0, 0x0, 0x19a0, 0x6f0, 0x24, 0x39, 0x8, 0x18},
 			{".strtab", SHT_STRTAB, 0x0, 0x0, 0x2090, 0x1fc, 0x0, 0x0, 0x1, 0x0},
 		},
+		[]ProgHeader{
+			{PT_PHDR, PF_R + PF_X, 0x40, 0x400040, 0x400040, 0x1c0, 0x1c0, 0x8},
+			{PT_INTERP, PF_R, 0x200, 0x400200, 0x400200, 0x1c, 0x1c, 1},
+			{PT_LOAD, PF_R + PF_X, 0x0, 0x400000, 0x400000, 0x684, 0x684, 0x200000},
+			{PT_LOAD, PF_R + PF_W, 0x688, 0x600688, 0x600688, 0x210, 0x218, 0x200000},
+			{PT_DYNAMIC, PF_R + PF_W, 0x6b0, 0x6006b0, 0x6006b0, 0x1a0, 0x1a0, 0x8},
+			{PT_NOTE, PF_R, 0x21c, 0x40021c, 0x40021c, 0x20, 0x20, 0x4},
+			{PT_LOOS + 0x474E550, PF_R, 0x5b8, 0x4005b8, 0x4005b8, 0x24, 0x24, 0x4},
+			{PT_LOOS + 0x474E551, PF_R + PF_W, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8},
+		},
 	},
 }
 
@@ -121,10 +142,24 @@ func TestOpen(t *testing.T) {
 				t.Errorf("open %s, section %d:\n\thave %#v\n\twant %#v\n", tt.file, i, &s.SectionHeader, sh)
 			}
 		}
+		for i, p := range f.Progs {
+			if i >= len(tt.progs) {
+				break
+			}
+			ph := &tt.progs[i]
+			if !reflect.DeepEqual(&p.ProgHeader, ph) {
+				t.Errorf("open %s, program %d:\n\thave %#v\n\twant %#v\n", tt.file, i, &p.ProgHeader, ph)
+			}
+		}
 		tn := len(tt.sections)
 		fn := len(f.Sections)
 		if tn != fn {
 			t.Errorf("open %s: len(Sections) = %d, want %d", tt.file, fn, tn)
+		}
+		tn = len(tt.progs)
+		fn = len(f.Progs)
+		if tn != fn {
+			t.Errorf("open %s: len(Progs) = %d, want %d", tt.file, fn, tn)
 		}
 	}
 }
@@ -136,15 +171,15 @@ type relocationTest struct {
 
 var relocationTests = []relocationTest{
 	{
-		"testdata/go-relocation-test-gcc441-x86-64.o",
+		"testdata/go-relocation-test-gcc441-x86-64.obj",
 		&dwarf.Entry{Offset: 0xb, Tag: dwarf.TagCompileUnit, Children: true, Field: []dwarf.Field{{Attr: dwarf.AttrProducer, Val: "GNU C 4.4.1"}, {Attr: dwarf.AttrLanguage, Val: int64(1)}, {Attr: dwarf.AttrName, Val: "go-relocation-test.c"}, {Attr: dwarf.AttrCompDir, Val: "/tmp"}, {Attr: dwarf.AttrLowpc, Val: uint64(0x0)}, {Attr: dwarf.AttrHighpc, Val: uint64(0x6)}, {Attr: dwarf.AttrStmtList, Val: int64(0)}}},
 	},
 	{
-		"testdata/go-relocation-test-gcc441-x86.o",
+		"testdata/go-relocation-test-gcc441-x86.obj",
 		&dwarf.Entry{Offset: 0xb, Tag: dwarf.TagCompileUnit, Children: true, Field: []dwarf.Field{{Attr: dwarf.AttrProducer, Val: "GNU C 4.4.1"}, {Attr: dwarf.AttrLanguage, Val: int64(1)}, {Attr: dwarf.AttrName, Val: "t.c"}, {Attr: dwarf.AttrCompDir, Val: "/tmp"}, {Attr: dwarf.AttrLowpc, Val: uint64(0x0)}, {Attr: dwarf.AttrHighpc, Val: uint64(0x5)}, {Attr: dwarf.AttrStmtList, Val: int64(0)}}},
 	},
 	{
-		"testdata/go-relocation-test-gcc424-x86-64.o",
+		"testdata/go-relocation-test-gcc424-x86-64.obj",
 		&dwarf.Entry{Offset: 0xb, Tag: dwarf.TagCompileUnit, Children: true, Field: []dwarf.Field{{Attr: dwarf.AttrProducer, Val: "GNU C 4.2.4 (Ubuntu 4.2.4-1ubuntu4)"}, {Attr: dwarf.AttrLanguage, Val: int64(1)}, {Attr: dwarf.AttrName, Val: "go-relocation-test-gcc424.c"}, {Attr: dwarf.AttrCompDir, Val: "/tmp"}, {Attr: dwarf.AttrLowpc, Val: uint64(0x0)}, {Attr: dwarf.AttrHighpc, Val: uint64(0x6)}, {Attr: dwarf.AttrStmtList, Val: int64(0)}}},
 	},
 }
@@ -175,6 +210,35 @@ func TestDWARFRelocations(t *testing.T) {
 		if !reflect.DeepEqual(test.firstEntry, firstEntry) {
 			t.Errorf("#%d: mismatch: got:%#v want:%#v", i, firstEntry, test.firstEntry)
 			continue
+		}
+	}
+}
+
+func TestNoSectionOverlaps(t *testing.T) {
+	// Ensure 6l outputs sections without overlaps.
+	if runtime.GOOS != "linux" && runtime.GOOS != "freebsd" {
+		return // not ELF
+	}
+	_ = net.ResolveIPAddr // force dynamic linkage
+	f, err := Open(os.Args[0])
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	for i, si := range f.Sections {
+		sih := si.SectionHeader
+		if sih.Type == SHT_NOBITS {
+			continue
+		}
+		for j, sj := range f.Sections {
+			sjh := sj.SectionHeader
+			if i == j || sjh.Type == SHT_NOBITS || sih.Offset == sjh.Offset && sih.Size == 0 {
+				continue
+			}
+			if sih.Offset >= sjh.Offset && sih.Offset < sjh.Offset+sjh.Size {
+				t.Errorf("ld produced ELF with section %s within %s: 0x%x <= 0x%x..0x%x < 0x%x",
+					sih.Name, sjh.Name, sjh.Offset, sih.Offset, sih.Offset+sih.Size, sjh.Offset+sjh.Size)
+			}
 		}
 	}
 }

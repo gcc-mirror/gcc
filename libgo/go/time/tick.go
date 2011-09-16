@@ -88,7 +88,7 @@ func wakeLoop(wakeMeAt chan int64, wakeUp chan bool) {
 
 // A single tickerLoop serves all ticks to Tickers.  It waits for two events:
 // either the creation of a new Ticker or a tick from the alarm,
-// signalling a time to wake up one or more Tickers.
+// signaling a time to wake up one or more Tickers.
 func tickerLoop() {
 	// Represents the next alarm to be delivered.
 	var alarm alarmer
@@ -160,7 +160,7 @@ var onceStartTickerLoop sync.Once
 // ns must be greater than zero; if not, NewTicker will panic.
 func NewTicker(ns int64) *Ticker {
 	if ns <= 0 {
-		panic(os.ErrorString("non-positive interval for NewTicker"))
+		panic(os.NewError("non-positive interval for NewTicker"))
 	}
 	c := make(chan int64, 1) //  See comment on send in tickerLoop
 	t := &Ticker{

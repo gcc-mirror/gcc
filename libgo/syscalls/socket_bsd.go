@@ -72,3 +72,7 @@ type RawSockaddr struct {
 func BindToDevice(fd int, device string) (errno int) {
 	return ENOSYS
 }
+
+func anyToSockaddrOS(rsa *RawSockaddrAny) (Sockaddr, int) {
+	return nil, EAFNOSUPPORT;
+}

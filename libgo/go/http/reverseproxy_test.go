@@ -11,21 +11,29 @@ import (
 	"http/httptest"
 	"io/ioutil"
 	"testing"
+	"url"
 )
 
 func TestReverseProxy(t *testing.T) {
 	const backendResponse = "I am the backend"
 	const backendStatus = 404
 	backend := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if len(r.TransferEncoding) > 0 {
+			t.Errorf("backend got unexpected TransferEncoding: %v", r.TransferEncoding)
+		}
 		if r.Header.Get("X-Forwarded-For") == "" {
 			t.Errorf("didn't get X-Forwarded-For header")
 		}
+		if g, e := r.Host, "some-name"; g != e {
+			t.Errorf("backend got Host header %q, want %q", g, e)
+		}
 		w.Header().Set("X-Foo", "bar")
+		SetCookie(w, &Cookie{Name: "flavor", Value: "chocolateChip"})
 		w.WriteHeader(backendStatus)
 		w.Write([]byte(backendResponse))
 	}))
 	defer backend.Close()
-	backendURL, err := ParseURL(backend.URL)
+	backendURL, err := url.Parse(backend.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +41,9 @@ func TestReverseProxy(t *testing.T) {
 	frontend := httptest.NewServer(proxyHandler)
 	defer frontend.Close()
 
-	res, _, err := Get(frontend.URL)
+	getReq, _ := NewRequest("GET", frontend.URL, nil)
+	getReq.Host = "some-name"
+	res, err := DefaultClient.Do(getReq)
 	if err != nil {
 		t.Fatalf("Get: %v", err)
 	}
@@ -42,6 +52,12 @@ func TestReverseProxy(t *testing.T) {
 	}
 	if g, e := res.Header.Get("X-Foo"), "bar"; g != e {
 		t.Errorf("got X-Foo %q; expected %q", g, e)
+	}
+	if g, e := len(res.Header["Set-Cookie"]), 1; g != e {
+		t.Fatalf("got %d SetCookies, want %d", g, e)
+	}
+	if cookie := res.Cookies()[0]; cookie.Name != "flavor" {
+		t.Errorf("unexpected cookie %q", cookie.Name)
 	}
 	bodyBytes, _ := ioutil.ReadAll(res.Body)
 	if g, e := string(bodyBytes), backendResponse; g != e {

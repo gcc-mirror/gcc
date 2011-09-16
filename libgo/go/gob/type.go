@@ -67,7 +67,7 @@ func validUserType(rt reflect.Type) (ut *userTypeInfo, err os.Error) {
 		ut.base = pt.Elem()
 		if ut.base == slowpoke { // ut.base lapped slowpoke
 			// recursive pointer type.
-			return nil, os.ErrorString("can't represent recursive pointer type " + ut.base.String())
+			return nil, os.NewError("can't represent recursive pointer type " + ut.base.String())
 		}
 		if ut.indir%2 == 0 {
 			slowpoke = slowpoke.Elem()
@@ -80,14 +80,9 @@ func validUserType(rt reflect.Type) (ut *userTypeInfo, err os.Error) {
 	return
 }
 
-const (
-	gobEncodeMethodName = "GobEncode"
-	gobDecodeMethodName = "GobDecode"
-)
-
 var (
-	gobEncoderInterfaceType = reflect.TypeOf(new(GobEncoder)).Elem()
-	gobDecoderInterfaceType = reflect.TypeOf(new(GobDecoder)).Elem()
+	gobEncoderInterfaceType = reflect.TypeOf((*GobEncoder)(nil)).Elem()
+	gobDecoderInterfaceType = reflect.TypeOf((*GobDecoder)(nil)).Elem()
 )
 
 // implementsInterface reports whether the type implements the
@@ -508,7 +503,7 @@ func newTypeObject(name string, ut *userTypeInfo, rt reflect.Type) (gobType, os.
 		return st, nil
 
 	default:
-		return nil, os.ErrorString("gob NewTypeObject can't handle type: " + rt.String())
+		return nil, os.NewError("gob NewTypeObject can't handle type: " + rt.String())
 	}
 	return nil, nil
 }
@@ -673,7 +668,7 @@ func mustGetTypeInfo(rt reflect.Type) *typeInfo {
 // A type that implements GobEncoder and GobDecoder has complete
 // control over the representation of its data and may therefore
 // contain things such as private fields, channels, and functions,
-// which are not usually transmissable in gob streams.
+// which are not usually transmissible in gob streams.
 //
 // Note: Since gobs can be stored permanently, It is good design
 // to guarantee the encoding used by a GobEncoder is stable as the
@@ -767,7 +762,25 @@ func registerBasics() {
 	Register(float64(0))
 	Register(complex64(0i))
 	Register(complex128(0i))
+	Register(uintptr(0))
 	Register(false)
 	Register("")
 	Register([]byte(nil))
+	Register([]int(nil))
+	Register([]int8(nil))
+	Register([]int16(nil))
+	Register([]int32(nil))
+	Register([]int64(nil))
+	Register([]uint(nil))
+	Register([]uint8(nil))
+	Register([]uint16(nil))
+	Register([]uint32(nil))
+	Register([]uint64(nil))
+	Register([]float32(nil))
+	Register([]float64(nil))
+	Register([]complex64(nil))
+	Register([]complex128(nil))
+	Register([]uintptr(nil))
+	Register([]bool(nil))
+	Register([]string(nil))
 }

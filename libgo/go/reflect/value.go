@@ -11,7 +11,7 @@ import (
 	"unsafe"
 )
 
-const ptrSize = uintptr(unsafe.Sizeof((*byte)(nil)))
+const ptrSize = unsafe.Sizeof((*byte)(nil))
 const cannotSet = "cannot set value obtained from unexported struct field"
 
 // TODO: This will have to go away when
@@ -169,7 +169,7 @@ type nonEmptyInterface struct {
 // Regarding the implementation of Value:
 //
 // The Internal interface is a true interface value in the Go sense,
-// but it also serves as a (type, address) pair in whcih one cannot
+// but it also serves as a (type, address) pair in which one cannot
 // be changed separately from the other.  That is, it serves as a way
 // to prevent unsafe mutations of the Internal state even though
 // we cannot (yet?) hide the field while preserving the ability for
@@ -558,7 +558,16 @@ func (iv internalValue) call(method string, in []Value) []Value {
 		ret[i] = Indirect(v)
 	}
 
-	call(t, *(*unsafe.Pointer)(iv.addr), iv.method, first_pointer, &params[0], &results[0])
+	var pp *unsafe.Pointer
+	if len(params) > 0 {
+		pp = &params[0]
+	}
+	var pr *unsafe.Pointer
+	if len(results) > 0 {
+		pr = &results[0]
+	}
+
+	call(t, *(*unsafe.Pointer)(iv.addr), iv.method, first_pointer, pp, pr)
 
 	return ret
 }
@@ -839,6 +848,9 @@ func (v Value) Interface() interface{} {
 }
 
 func (iv internalValue) Interface() interface{} {
+	if iv.kind == 0 {
+		panic(&ValueError{"reflect.Value.Interface", iv.kind})
+	}
 	if iv.method {
 		panic("reflect.Value.Interface: cannot create interface value for method with bound receiver")
 	}
@@ -917,7 +929,7 @@ func (v Value) Kind() Kind {
 }
 
 // Len returns v's length.
-// It panics if v's Kind is not Array, Chan, Map, or Slice.
+// It panics if v's Kind is not Array, Chan, Map, Slice, or String.
 func (v Value) Len() int {
 	iv := v.internal()
 	switch iv.kind {
@@ -929,6 +941,8 @@ func (v Value) Len() int {
 		return int(maplen(*(*iword)(iv.addr)))
 	case Slice:
 		return (*SliceHeader)(iv.addr).Len
+	case String:
+		return (*StringHeader)(iv.addr).Len
 	}
 	panic(&ValueError{"reflect.Value.Len", iv.kind})
 }
@@ -956,7 +970,7 @@ func (v Value) MapIndex(key Value) Value {
 
 	flag := (iv.flag | ikey.flag) & flagRO
 	elemType := typ.Elem()
-	elemWord, ok := mapaccess(*(*iword)(iv.addr), ikey.word)
+	elemWord, ok := mapaccess(typ.runtimeType(), *(*iword)(iv.addr), ikey.word)
 	if !ok {
 		return Value{}
 	}
@@ -978,7 +992,7 @@ func (v Value) MapKeys() []Value {
 	if m != 0 {
 		mlen = maplen(m)
 	}
-	it := mapiterinit(m)
+	it := mapiterinit(iv.typ.runtimeType(), m)
 	a := make([]Value, mlen)
 	var i int
 	for i = 0; i < len(a); i++ {
@@ -1005,6 +1019,32 @@ func (v Value) Method(i int) Value {
 		panic("reflect: Method index out of range")
 	}
 	return Value{v.Internal, i + 1}
+}
+
+// NumMethod returns the number of methods in the value's method set.
+func (v Value) NumMethod() int {
+	iv := v.internal()
+	if iv.kind == Invalid {
+		panic(&ValueError{"reflect.Value.NumMethod", Invalid})
+	}
+	return iv.typ.NumMethod()
+}
+
+// MethodByName returns a function value corresponding to the method
+// of v with the given name.
+// The arguments to a Call on the returned function should not include
+// a receiver; the returned function will always use v as the receiver.
+// It returns the zero Value if no method was found.
+func (v Value) MethodByName(name string) Value {
+	iv := v.internal()
+	if iv.kind == Invalid {
+		panic(&ValueError{"reflect.Value.MethodByName", Invalid})
+	}
+	m, ok := iv.typ.MethodByName(name)
+	if ok {
+		return Value{v.Internal, m.Index + 1}
+	}
+	return Value{}
 }
 
 // NumField returns the number of fields in the struct v.
@@ -1120,7 +1160,7 @@ func (iv internalValue) recv(nb bool) (val Value, ok bool) {
 	if ch == 0 {
 		panic("recv on nil channel")
 	}
-	valWord, selected, ok := chanrecv(ch, nb)
+	valWord, selected, ok := chanrecv(iv.typ.runtimeType(), ch, nb)
 	if selected {
 		val = valueFromIword(0, t.Elem(), valWord)
 	}
@@ -1150,7 +1190,7 @@ func (iv internalValue) send(x Value, nb bool) (selected bool) {
 	if ch == 0 {
 		panic("send on nil channel")
 	}
-	return chansend(ch, ix.word, nb)
+	return chansend(iv.typ.runtimeType(), ch, ix.word, nb)
 }
 
 // Set assigns x to the value v.
@@ -1267,7 +1307,7 @@ func (v Value) SetMapIndex(key, val Value) {
 		ival = convertForAssignment("reflect.Value.SetMapIndex", nil, iv.typ.Elem(), ival)
 	}
 
-	mapassign(*(*iword)(iv.addr), ikey.word, ival.word, ival.kind != Invalid)
+	mapassign(iv.typ.runtimeType(), *(*iword)(iv.addr), ikey.word, ival.word, ival.kind != Invalid)
 }
 
 // SetUint sets v's underlying value to x.
@@ -1675,14 +1715,14 @@ func convertForAssignment(what string, addr unsafe.Pointer, dst Type, iv interna
 func chancap(ch iword) int32
 func chanclose(ch iword)
 func chanlen(ch iword) int32
-func chanrecv(ch iword, nb bool) (val iword, selected, received bool)
-func chansend(ch iword, val iword, nb bool) bool
+func chanrecv(t *runtime.Type, ch iword, nb bool) (val iword, selected, received bool)
+func chansend(t *runtime.Type, ch iword, val iword, nb bool) bool
 
 func makechan(typ *runtime.Type, size uint32) (ch iword)
 func makemap(t *runtime.Type) iword
-func mapaccess(m iword, key iword) (val iword, ok bool)
-func mapassign(m iword, key, val iword, ok bool)
-func mapiterinit(m iword) *byte
+func mapaccess(t *runtime.Type, m iword, key iword) (val iword, ok bool)
+func mapassign(t *runtime.Type, m iword, key, val iword, ok bool)
+func mapiterinit(t *runtime.Type, m iword) *byte
 func mapiterkey(it *byte) (key iword, ok bool)
 func mapiternext(it *byte)
 func maplen(m iword) int32

@@ -5,7 +5,6 @@
 package datafmt
 
 import (
-	"container/vector"
 	"go/scanner"
 	"go/token"
 	"os"
@@ -28,7 +27,6 @@ type parser struct {
 	rules map[string]expr   // RuleName -> Expression
 }
 
-
 func (p *parser) next() {
 	p.pos, p.tok, p.lit = p.scanner.Scan()
 	switch p.tok {
@@ -39,7 +37,6 @@ func (p *parser) next() {
 	}
 }
 
-
 func (p *parser) init(fset *token.FileSet, filename string, src []byte) {
 	p.ErrorVector.Reset()
 	p.file = fset.AddFile(filename, fset.Base(), len(src))
@@ -49,11 +46,9 @@ func (p *parser) init(fset *token.FileSet, filename string, src []byte) {
 	p.rules = make(map[string]expr)
 }
 
-
 func (p *parser) error(pos token.Pos, msg string) {
 	p.Error(p.file.Position(pos), msg)
 }
-
 
 func (p *parser) errorExpected(pos token.Pos, msg string) {
 	msg = "expected " + msg
@@ -68,7 +63,6 @@ func (p *parser) errorExpected(pos token.Pos, msg string) {
 	p.error(pos, msg)
 }
 
-
 func (p *parser) expect(tok token.Token) token.Pos {
 	pos := p.pos
 	if p.tok != tok {
@@ -78,13 +72,11 @@ func (p *parser) expect(tok token.Token) token.Pos {
 	return pos
 }
 
-
 func (p *parser) parseIdentifier() string {
 	name := p.lit
 	p.expect(token.IDENT)
 	return name
 }
-
 
 func (p *parser) parseTypeName() (string, bool) {
 	pos := p.pos
@@ -101,7 +93,6 @@ func (p *parser) parseTypeName() (string, bool) {
 	}
 	return name, isIdent
 }
-
 
 // Parses a rule name and returns it. If the rule name is
 // a package-qualified type name, the package name is resolved.
@@ -126,7 +117,6 @@ func (p *parser) parseRuleName() (string, bool) {
 	return name, isIdent
 }
 
-
 func (p *parser) parseString() string {
 	s := ""
 	if p.tok == token.STRING {
@@ -142,7 +132,6 @@ func (p *parser) parseString() string {
 	return s
 }
 
-
 func (p *parser) parseLiteral() literal {
 	s := []byte(p.parseString())
 
@@ -150,14 +139,14 @@ func (p *parser) parseLiteral() literal {
 	// and speed up printing of the literal, split it into segments
 	// that start with "%" possibly followed by a last segment that
 	// starts with some other character.
-	var list vector.Vector
+	var list []interface{}
 	i0 := 0
 	for i := 0; i < len(s); i++ {
 		if s[i] == '%' && i+1 < len(s) {
 			// the next segment starts with a % format
 			if i0 < i {
 				// the current segment is not empty, split it off
-				list.Push(s[i0:i])
+				list = append(list, s[i0:i])
 				i0 = i
 			}
 			i++ // skip %; let loop skip over char after %
@@ -165,17 +154,16 @@ func (p *parser) parseLiteral() literal {
 	}
 	// the final segment may start with any character
 	// (it is empty iff the string is empty)
-	list.Push(s[i0:])
+	list = append(list, s[i0:])
 
 	// convert list into a literal
-	lit := make(literal, list.Len())
-	for i := 0; i < list.Len(); i++ {
-		lit[i] = list.At(i).([]byte)
+	lit := make(literal, len(list))
+	for i := 0; i < len(list); i++ {
+		lit[i] = list[i].([]byte)
 	}
 
 	return lit
 }
-
 
 func (p *parser) parseField() expr {
 	var fname string
@@ -203,7 +191,6 @@ func (p *parser) parseField() expr {
 
 	return &field{fname, ruleName}
 }
-
 
 func (p *parser) parseOperand() (x expr) {
 	switch p.tok {
@@ -242,38 +229,36 @@ func (p *parser) parseOperand() (x expr) {
 	return x
 }
 
-
 func (p *parser) parseSequence() expr {
-	var list vector.Vector
+	var list []interface{}
 
 	for x := p.parseOperand(); x != nil; x = p.parseOperand() {
-		list.Push(x)
+		list = append(list, x)
 	}
 
 	// no need for a sequence if list.Len() < 2
-	switch list.Len() {
+	switch len(list) {
 	case 0:
 		return nil
 	case 1:
-		return list.At(0).(expr)
+		return list[0].(expr)
 	}
 
 	// convert list into a sequence
-	seq := make(sequence, list.Len())
-	for i := 0; i < list.Len(); i++ {
-		seq[i] = list.At(i).(expr)
+	seq := make(sequence, len(list))
+	for i := 0; i < len(list); i++ {
+		seq[i] = list[i].(expr)
 	}
 	return seq
 }
 
-
 func (p *parser) parseExpression() expr {
-	var list vector.Vector
+	var list []interface{}
 
 	for {
 		x := p.parseSequence()
 		if x != nil {
-			list.Push(x)
+			list = append(list, x)
 		}
 		if p.tok != token.OR {
 			break
@@ -282,21 +267,20 @@ func (p *parser) parseExpression() expr {
 	}
 
 	// no need for an alternatives if list.Len() < 2
-	switch list.Len() {
+	switch len(list) {
 	case 0:
 		return nil
 	case 1:
-		return list.At(0).(expr)
+		return list[0].(expr)
 	}
 
 	// convert list into a alternatives
-	alt := make(alternatives, list.Len())
-	for i := 0; i < list.Len(); i++ {
-		alt[i] = list.At(i).(expr)
+	alt := make(alternatives, len(list))
+	for i := 0; i < len(list); i++ {
+		alt[i] = list[i].(expr)
 	}
 	return alt
 }
-
 
 func (p *parser) parseFormat() {
 	for p.tok != token.EOF {
@@ -343,7 +327,6 @@ func (p *parser) parseFormat() {
 	p.expect(token.EOF)
 }
 
-
 func remap(p *parser, name string) string {
 	i := strings.Index(name, ".")
 	if i >= 0 {
@@ -358,7 +341,6 @@ func remap(p *parser, name string) string {
 	}
 	return name
 }
-
 
 // Parse parses a set of format productions from source src. Custom
 // formatters may be provided via a map of formatter functions. If

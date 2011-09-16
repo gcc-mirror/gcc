@@ -8,7 +8,6 @@
 package json
 
 import (
-	"container/vector"
 	"encoding/base64"
 	"os"
 	"reflect"
@@ -70,7 +69,6 @@ func Unmarshal(data []byte, v interface{}) os.Error {
 type Unmarshaler interface {
 	UnmarshalJSON([]byte) os.Error
 }
-
 
 // An UnmarshalTypeError describes a JSON value that was
 // not appropriate for a value of a specific Go type.
@@ -253,6 +251,12 @@ func (d *decodeState) value(v reflect.Value) {
 // if it encounters an Unmarshaler, indirect stops and returns that.
 // if wantptr is true, indirect stops at the last pointer.
 func (d *decodeState) indirect(v reflect.Value, wantptr bool) (Unmarshaler, reflect.Value) {
+	// If v is a named type and is addressable,
+	// start with its address, so that if the type has pointer methods,
+	// we find them.
+	if v.Kind() != reflect.Ptr && v.Type().Name() != "" && v.CanAddr() {
+		v = v.Addr()
+	}
 	for {
 		var isUnmarshaler bool
 		if v.Type().NumMethod() > 0 {
@@ -482,7 +486,7 @@ func (d *decodeState) object(v reflect.Value) {
 			if isValidTag(key) {
 				for i := 0; i < sv.NumField(); i++ {
 					f = st.Field(i)
-					if f.Tag == key {
+					if f.Tag.Get("json") == key {
 						ok = true
 						break
 					}
@@ -670,7 +674,7 @@ func (d *decodeState) valueInterface() interface{} {
 
 // arrayInterface is like array but returns []interface{}.
 func (d *decodeState) arrayInterface() []interface{} {
-	var v vector.Vector
+	var v []interface{}
 	for {
 		// Look ahead for ] - can only happen on first iteration.
 		op := d.scanWhile(scanSkipSpace)
@@ -682,7 +686,7 @@ func (d *decodeState) arrayInterface() []interface{} {
 		d.off--
 		d.scan.undo(op)
 
-		v.Push(d.valueInterface())
+		v = append(v, d.valueInterface())
 
 		// Next token must be , or ].
 		op = d.scanWhile(scanSkipSpace)
@@ -741,7 +745,6 @@ func (d *decodeState) objectInterface() map[string]interface{} {
 	}
 	return m
 }
-
 
 // literalInterface is like literal but returns an interface value.
 func (d *decodeState) literalInterface() interface{} {

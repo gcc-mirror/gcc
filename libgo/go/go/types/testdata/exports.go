@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This file is used to generate a .6 object file which
+// This file is used to generate an object file which
 // serves as test file for gcimporter_test.go.
 
 package exports
@@ -11,18 +11,16 @@ import (
 	"go/ast"
 )
 
-
 const (
 	C0 int = 0
-	C1 = 3.14159265
-	C2 = 2.718281828i
-	C3 = -123.456e-789
-	C4 = +123.456E+789
-	C5 = 1234i
-	C6 = "foo\n"
-	C7 = `bar\n`
+	C1     = 3.14159265
+	C2     = 2.718281828i
+	C3     = -123.456e-789
+	C4     = +123.456E+789
+	C5     = 1234i
+	C6     = "foo\n"
+	C7     = `bar\n`
 )
-
 
 type (
 	T1  int
@@ -38,7 +36,7 @@ type (
 	T9  struct {
 		a    int
 		b, c float32
-		d    []string "tag"
+		d    []string `go:"tag"`
 	}
 	T10 struct {
 		T8
@@ -72,18 +70,15 @@ type (
 	T28 func(T28) T28
 )
 
-
 var (
 	V0 int
 	V1 = -991.0
 )
-
 
 func F1()         {}
 func F2(x int)    {}
 func F3() int     { return 0 }
 func F4() float32 { return 0 }
 func F5(a, b, c int, u, v, w struct{ x, y T1 }, more ...interface{}) (p, q, r chan<- T10)
-
 
 func (p *T1) M1()

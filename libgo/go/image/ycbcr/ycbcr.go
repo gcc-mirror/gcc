@@ -142,7 +142,7 @@ func (p *YCbCr) Bounds() image.Rectangle {
 }
 
 func (p *YCbCr) At(x, y int) image.Color {
-	if !p.Rect.Contains(image.Point{x, y}) {
+	if !(image.Point{x, y}.In(p.Rect)) {
 		return YCbCrColor{}
 	}
 	switch p.SubsampleRatio {
@@ -167,6 +167,15 @@ func (p *YCbCr) At(x, y int) image.Color {
 		p.Cb[y*p.CStride+x],
 		p.Cr[y*p.CStride+x],
 	}
+}
+
+// SubImage returns an image representing the portion of the image p visible
+// through r. The returned value shares pixels with the original image.
+func (p *YCbCr) SubImage(r image.Rectangle) image.Image {
+	q := new(YCbCr)
+	*q = *p
+	q.Rect = q.Rect.Intersect(r)
+	return q
 }
 
 func (p *YCbCr) Opaque() bool {

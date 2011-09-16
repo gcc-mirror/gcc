@@ -44,7 +44,7 @@ func NewDecoder(r io.Reader) *Decoder {
 func (dec *Decoder) recvType(id typeId) {
 	// Have we already seen this type?  That's an error
 	if id < firstUserId || dec.wireType[id] != nil {
-		dec.err = os.ErrorString("gob: duplicate type received")
+		dec.err = os.NewError("gob: duplicate type received")
 		return
 	}
 
@@ -143,7 +143,7 @@ func (dec *Decoder) decodeTypeSequence(isInterface bool) typeId {
 		// will be absorbed by recvMessage.)
 		if dec.buf.Len() > 0 {
 			if !isInterface {
-				dec.err = os.ErrorString("extra data in buffer")
+				dec.err = os.NewError("extra data in buffer")
 				break
 			}
 			dec.nextUint()
@@ -155,8 +155,8 @@ func (dec *Decoder) decodeTypeSequence(isInterface bool) typeId {
 // Decode reads the next value from the connection and stores
 // it in the data represented by the empty interface value.
 // If e is nil, the value will be discarded. Otherwise,
-// the value underlying e must either be the correct type for the next
-// data item received, and must be a pointer.
+// the value underlying e must be a pointer to the
+// correct type for the next data item received.
 func (dec *Decoder) Decode(e interface{}) os.Error {
 	if e == nil {
 		return dec.DecodeValue(reflect.Value{})
@@ -165,7 +165,7 @@ func (dec *Decoder) Decode(e interface{}) os.Error {
 	// If e represents a value as opposed to a pointer, the answer won't
 	// get back to the caller.  Make sure it's a pointer.
 	if value.Type().Kind() != reflect.Ptr {
-		dec.err = os.ErrorString("gob: attempt to decode into a non-pointer")
+		dec.err = os.NewError("gob: attempt to decode into a non-pointer")
 		return dec.err
 	}
 	return dec.DecodeValue(value)
@@ -180,7 +180,7 @@ func (dec *Decoder) DecodeValue(v reflect.Value) os.Error {
 		if v.Kind() == reflect.Ptr && !v.IsNil() {
 			// That's okay, we'll store through the pointer.
 		} else if !v.CanSet() {
-			return os.ErrorString("gob: DecodeValue of unassignable value")
+			return os.NewError("gob: DecodeValue of unassignable value")
 		}
 	}
 	// Make sure we're single-threaded through here.

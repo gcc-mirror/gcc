@@ -62,7 +62,6 @@ func (h HostnameError) String() string {
 	return "certificate is valid for " + valid + ", not " + h.Host
 }
 
-
 // UnknownAuthorityError results when the certificate issuer is unknown
 type UnknownAuthorityError struct {
 	cert *Certificate
@@ -171,8 +170,14 @@ func (c *Certificate) buildChains(cache map[int][][]*Certificate, currentChain [
 		chains = append(chains, appendToFreshChain(currentChain, root))
 	}
 
+nextIntermediate:
 	for _, intermediateNum := range opts.Intermediates.findVerifiedParents(c) {
 		intermediate := opts.Intermediates.certs[intermediateNum]
+		for _, cert := range currentChain {
+			if cert == intermediate {
+				continue nextIntermediate
+			}
+		}
 		err = intermediate.isValid(intermediateCertificate, opts)
 		if err != nil {
 			continue
@@ -202,8 +207,8 @@ func matchHostnames(pattern, host string) bool {
 		return false
 	}
 
-	patternParts := strings.Split(pattern, ".", -1)
-	hostParts := strings.Split(host, ".", -1)
+	patternParts := strings.Split(pattern, ".")
+	hostParts := strings.Split(host, ".")
 
 	if len(patternParts) != len(hostParts) {
 		return false

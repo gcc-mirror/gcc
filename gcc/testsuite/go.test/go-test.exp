@@ -806,7 +806,7 @@ proc go-gc-tests { } {
 		$status $name
 	    } else {
 		verbose -log $comp_output
-		fali $name
+		fail $name
 	    }
 	    file delete $ofile1 $ofile2 $output_file
 	    set runtests $hold_runtests

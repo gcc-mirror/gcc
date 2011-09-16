@@ -9,6 +9,32 @@ import (
 	"syscall"
 )
 
+// File represents an open file descriptor.
+type File struct {
+	fd      int
+	name    string
+	dirinfo *dirInfo // nil unless directory being read
+	nepipe  int      // number of consecutive EPIPE in Write
+}
+
+// Fd returns the integer Unix file descriptor referencing the open file.
+func (file *File) Fd() int {
+	if file == nil {
+		return -1
+	}
+	return file.fd
+}
+
+// NewFile returns a new File with the given file descriptor and name.
+func NewFile(fd int, name string) *File {
+	if fd < 0 {
+		return nil
+	}
+	f := &File{fd: fd, name: name}
+	runtime.SetFinalizer(f, (*File).Close)
+	return f
+}
+
 // Auxiliary information if the File describes a directory
 type dirInfo struct {
 	buf  []byte // buffer for directory I/O
@@ -75,21 +101,27 @@ func (file *File) Stat() (fi *FileInfo, err Error) {
 }
 
 // Readdir reads the contents of the directory associated with file and
-// returns an array of up to count FileInfo structures, as would be returned
-// by Lstat, in directory order.  Subsequent calls on the same file will yield
+// returns an array of up to n FileInfo structures, as would be returned
+// by Lstat, in directory order. Subsequent calls on the same file will yield
 // further FileInfos.
-// A negative count means to read until EOF.
-// Readdir returns the array and an Error, if any.
-func (file *File) Readdir(count int) (fi []FileInfo, err Error) {
+//
+// If n > 0, Readdir returns at most n FileInfo structures. In this case, if
+// Readdir returns an empty slice, it will return a non-nil error
+// explaining why. At the end of a directory, the error is os.EOF.
+//
+// If n <= 0, Readdir returns all the FileInfo from the directory in
+// a single slice. In this case, if Readdir succeeds (reads all
+// the way to the end of the directory), it returns the slice and a
+// nil os.Error. If it encounters an error before the end of the
+// directory, Readdir returns the FileInfo read until that point
+// and a non-nil error.
+func (file *File) Readdir(n int) (fi []FileInfo, err Error) {
 	dirname := file.name
 	if dirname == "" {
 		dirname = "."
 	}
 	dirname += "/"
-	names, err1 := file.Readdirnames(count)
-	if err1 != nil {
-		return nil, err1
-	}
+	names, err := file.Readdirnames(n)
 	fi = make([]FileInfo, len(names))
 	for i, filename := range names {
 		fip, err := Lstat(dirname + filename)
@@ -160,4 +192,23 @@ func basename(name string) string {
 	}
 
 	return name
+}
+
+// Pipe returns a connected pair of Files; reads from r return bytes written to w.
+// It returns the files and an Error, if any.
+func Pipe() (r *File, w *File, err Error) {
+	var p [2]int
+
+	// See ../syscall/exec.go for description of lock.
+	syscall.ForkLock.RLock()
+	e := syscall.Pipe(p[0:])
+	if iserror(e) {
+		syscall.ForkLock.RUnlock()
+		return nil, nil, NewSyscallError("pipe", e)
+	}
+	syscall.CloseOnExec(p[0])
+	syscall.CloseOnExec(p[1])
+	syscall.ForkLock.RUnlock()
+
+	return NewFile(p[0], "|0"), NewFile(p[1], "|1"), nil
 }

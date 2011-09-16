@@ -57,12 +57,12 @@ func testFileListener(t *testing.T, net, laddr string) {
 }
 
 func TestFileListener(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return
 	}
 	testFileListener(t, "tcp", "127.0.0.1")
 	testFileListener(t, "tcp", "127.0.0.1")
-	if kernelSupportsIPv6() {
+	if supportsIPv6 && supportsIPv4map {
 		testFileListener(t, "tcp", "[::ffff:127.0.0.1]")
 		testFileListener(t, "tcp", "127.0.0.1")
 		testFileListener(t, "tcp", "[::ffff:127.0.0.1]")
@@ -116,13 +116,15 @@ func testFilePacketConnDial(t *testing.T, net, raddr string) {
 }
 
 func TestFilePacketConn(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return
 	}
 	testFilePacketConnListen(t, "udp", "127.0.0.1:0")
 	testFilePacketConnDial(t, "udp", "127.0.0.1:12345")
-	if kernelSupportsIPv6() {
+	if supportsIPv6 {
 		testFilePacketConnListen(t, "udp", "[::1]:0")
+	}
+	if supportsIPv6 && supportsIPv4map {
 		testFilePacketConnDial(t, "udp", "[::ffff:127.0.0.1]:12345")
 	}
 	if syscall.OS == "linux" {

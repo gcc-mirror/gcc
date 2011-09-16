@@ -352,8 +352,8 @@ func (d *Data) Type(off Offset) (Type, os.Error) {
 			}
 		}
 		if ndim == 0 {
-			err = DecodeError{"info", e.Offset, "missing dimension for array"}
-			goto Error
+			// LLVM generates this for x[].
+			t.Count = -1
 		}
 
 	case TagBaseType:
@@ -523,7 +523,7 @@ func (d *Data) Type(off Offset) (Type, os.Error) {
 		// Attributes:
 		//	AttrType: type of return value if any
 		//	AttrName: possible name of type [ignored]
-		//	AttrPrototyped: whether used ANSI C prototye [ignored]
+		//	AttrPrototyped: whether used ANSI C prototype [ignored]
 		// Children:
 		//	TagFormalParameter: typed parameter
 		//		AttrType: type of parameter
@@ -566,12 +566,13 @@ func (d *Data) Type(off Offset) (Type, os.Error) {
 		goto Error
 	}
 
-	b, ok := e.Val(AttrByteSize).(int64)
-	if !ok {
-		b = -1
+	{
+		b, ok := e.Val(AttrByteSize).(int64)
+		if !ok {
+			b = -1
+		}
+		typ.Common().ByteSize = b
 	}
-	typ.Common().ByteSize = b
-
 	return typ, nil
 
 Error:

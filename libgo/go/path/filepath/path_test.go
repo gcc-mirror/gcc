@@ -66,9 +66,27 @@ var cleantests = []PathTest{
 	{"abc/../../././../def", "../../def"},
 }
 
+var wincleantests = []PathTest{
+	{`c:`, `c:.`},
+	{`c:\`, `c:\`},
+	{`c:\abc`, `c:\abc`},
+	{`c:abc\..\..\.\.\..\def`, `c:..\..\def`},
+	{`c:\abc\def\..\..`, `c:\`},
+	{`c:..\abc`, `c:..\abc`},
+	{`\`, `\`},
+	{`/`, `\`},
+}
+
 func TestClean(t *testing.T) {
-	for _, test := range cleantests {
-		if s := filepath.ToSlash(filepath.Clean(test.path)); s != test.result {
+	tests := cleantests
+	if runtime.GOOS == "windows" {
+		for i, _ := range tests {
+			tests[i].result = filepath.FromSlash(tests[i].result)
+		}
+		tests = append(tests, wincleantests...)
+	}
+	for _, test := range tests {
+		if s := filepath.Clean(test.path); s != test.result {
 			t.Errorf("Clean(%q) = %q, want %q", test.path, s, test.result)
 		}
 	}
@@ -292,10 +310,6 @@ func (v *TestVisitor) VisitFile(path string, f *os.FileInfo) {
 }
 
 func TestWalk(t *testing.T) {
-	// TODO(brainman): enable test once Windows version is implemented.
-	if runtime.GOOS == "windows" {
-		return
-	}
 	makeTree(t)
 
 	// 1) ignore error handling, expect none
@@ -314,7 +328,10 @@ func TestWalk(t *testing.T) {
 	}
 	checkMarks(t)
 
-	if os.Getuid() > 0 {
+	// Test permission errors.  Only possible if we're not root
+	// and only on some file systems (AFS, FAT).  To avoid errors during
+	// all.bash on those file systems, skip during gotest -short.
+	if os.Getuid() > 0 && !testing.Short() {
 		// introduce 2 errors: chmod top-level directories to 0
 		os.Chmod(filepath.Join(tree.name, tree.entries[1].name), 0)
 		os.Chmod(filepath.Join(tree.name, tree.entries[3].name), 0)
@@ -399,16 +416,30 @@ var winisabstests = []IsAbsTest{
 	{`C:\`, true},
 	{`c\`, false},
 	{`c::`, false},
-	{`/`, true},
-	{`\`, true},
-	{`\Windows`, true},
+	{`c:`, false},
+	{`/`, false},
+	{`\`, false},
+	{`\Windows`, false},
+	{`c:a\b`, false},
 }
 
 func TestIsAbs(t *testing.T) {
+	var tests []IsAbsTest
 	if runtime.GOOS == "windows" {
-		isabstests = append(isabstests, winisabstests...)
+		tests = append(tests, winisabstests...)
+		// All non-windows tests should fail, because they have no volume letter.
+		for _, test := range isabstests {
+			tests = append(tests, IsAbsTest{test.path, false})
+		}
+		// All non-windows test should work as intended if prefixed with volume letter.
+		for _, test := range isabstests {
+			tests = append(tests, IsAbsTest{"c:" + test.path, test.isAbs})
+		}
+	} else {
+		tests = isabstests
 	}
-	for _, test := range isabstests {
+
+	for _, test := range tests {
 		if r := filepath.IsAbs(test.path); r != test.isAbs {
 			t.Errorf("IsAbs(%q) = %v, want %v", test.path, r, test.isAbs)
 		}
@@ -439,31 +470,48 @@ var EvalSymlinksTests = []EvalSymlinksTest{
 	{"test/link2/link3/test", "test"},
 }
 
-func TestEvalSymlinks(t *testing.T) {
-	// Symlinks are not supported under windows.
-	if runtime.GOOS == "windows" {
-		return
+var EvalSymlinksAbsWindowsTests = []EvalSymlinksTest{
+	{`c:\`, `c:\`},
+}
+
+func testEvalSymlinks(t *testing.T, tests []EvalSymlinksTest) {
+	for _, d := range tests {
+		if p, err := filepath.EvalSymlinks(d.path); err != nil {
+			t.Errorf("EvalSymlinks(%q) error: %v", d.path, err)
+		} else if filepath.Clean(p) != filepath.Clean(d.dest) {
+			t.Errorf("EvalSymlinks(%q)=%q, want %q", d.path, p, d.dest)
+		}
 	}
+}
+
+func TestEvalSymlinks(t *testing.T) {
 	defer os.RemoveAll("test")
 	for _, d := range EvalSymlinksTestDirs {
 		var err os.Error
 		if d.dest == "" {
 			err = os.Mkdir(d.path, 0755)
 		} else {
-			err = os.Symlink(d.dest, d.path)
+			if runtime.GOOS != "windows" {
+				err = os.Symlink(d.dest, d.path)
+			}
 		}
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
-	// relative
-	for _, d := range EvalSymlinksTests {
-		if p, err := filepath.EvalSymlinks(d.path); err != nil {
-			t.Errorf("EvalSymlinks(%q) error: %v", d.path, err)
-		} else if p != d.dest {
-			t.Errorf("EvalSymlinks(%q)=%q, want %q", d.path, p, d.dest)
+	var tests []EvalSymlinksTest
+	if runtime.GOOS == "windows" {
+		for _, d := range EvalSymlinksTests {
+			if d.path == d.dest {
+				// will test only real files and directories
+				tests = append(tests, d)
+			}
 		}
+	} else {
+		tests = EvalSymlinksTests
 	}
+	// relative
+	testEvalSymlinks(t, tests)
 	// absolute
 /* These tests do not work in the gccgo test environment.
 	goroot, err := filepath.EvalSymlinks(os.Getenv("GOROOT"))
@@ -471,17 +519,16 @@ func TestEvalSymlinks(t *testing.T) {
 		t.Fatalf("EvalSymlinks(%q) error: %v", os.Getenv("GOROOT"), err)
 	}
 	testroot := filepath.Join(goroot, "src", "pkg", "path", "filepath")
-	for _, d := range EvalSymlinksTests {
-		a := EvalSymlinksTest{
-			filepath.Join(testroot, d.path),
-			filepath.Join(testroot, d.dest),
-		}
-		if p, err := filepath.EvalSymlinks(a.path); err != nil {
-			t.Errorf("EvalSymlinks(%q) error: %v", a.path, err)
-		} else if p != a.dest {
-			t.Errorf("EvalSymlinks(%q)=%q, want %q", a.path, p, a.dest)
+	for i, d := range tests {
+		tests[i].path = filepath.Join(testroot, d.path)
+		tests[i].dest = filepath.Join(testroot, d.dest)
+	}
+	if runtime.GOOS == "windows" {
+		for _, d := range EvalSymlinksAbsWindowsTests {
+			tests = append(tests, d)
 		}
 	}
+	testEvalSymlinks(t, tests)
 */
 }
 
@@ -496,6 +543,7 @@ var abstests = []string{
 
 	// Already absolute
 	"$GOROOT/src/Make.pkg",
+	"$GOROOT/src/../src/Make.pkg",
 }
 
 func TestAbs(t *testing.T) {
@@ -523,6 +571,9 @@ func TestAbs(t *testing.T) {
 		}
 		if !filepath.IsAbs(abspath) {
 			t.Errorf("Abs(%q)=%q, not an absolute path", path, abspath)
+		}
+		if filepath.IsAbs(path) && abspath != filepath.Clean(path) {
+			t.Errorf("Abs(%q)=%q, isn't clean", path, abspath)
 		}
 	}
 }

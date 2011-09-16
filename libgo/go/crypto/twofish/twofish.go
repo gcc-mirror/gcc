@@ -116,7 +116,7 @@ func (c *Cipher) Reset() {
 		c.k[i] = 0
 	}
 	for i := range c.s {
-		for j := 0; j < 265; j++ {
+		for j := 0; j < 256; j++ {
 			c.s[i][j] = 0
 		}
 	}
@@ -269,7 +269,7 @@ func h(in, key []byte, offset int) uint32 {
 // Encrypt encrypts a 16-byte block from src to dst, which may overlap.
 // Note that for amounts of data larger than a block,
 // it is not safe to just call Encrypt on successive blocks;
-// instead, use an encryption mode like CBC (see crypto/block/cbc.go).
+// instead, use an encryption mode like CBC (see crypto/cipher/cbc.go).
 func (c *Cipher) Encrypt(dst, src []byte) {
 	S1 := c.s[0]
 	S2 := c.s[1]

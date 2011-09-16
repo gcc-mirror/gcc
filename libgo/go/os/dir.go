@@ -27,8 +27,19 @@ func clen(n []byte) int {
 
 var elen int;
 
-// Negative count means read until EOF.
-func (file *File) Readdirnames(count int) (names []string, err Error) {
+// Readdirnames reads and returns a slice of names from the directory f.
+//
+// If n > 0, Readdirnames returns at most n names. In this case, if
+// Readdirnames returns an empty slice, it will return a non-nil error
+// explaining why. At the end of a directory, the error is os.EOF.
+//
+// If n <= 0, Readdirnames returns all the names from the directory in
+// a single slice. In this case, if Readdirnames succeeds (reads all
+// the way to the end of the directory), it returns the slice and a
+// nil os.Error. If it encounters an error before the end of the
+// directory, Readdirnames returns the names read until that point and
+// a non-nil error.
+func (file *File) Readdirnames(n int) (names []string, err Error) {
 	if elen == 0 {
 		var dummy syscall.Dirent;
 		elen = (unsafe.Offsetof(dummy.Name) +
@@ -44,10 +55,12 @@ func (file *File) Readdirnames(count int) (names []string, err Error) {
 
 	entry_dirent := unsafe.Pointer(&file.dirinfo.buf[0]).(*syscall.Dirent)
 
-	size := count
+	size := n
 	if size < 0 {
 		size = 100
+		n = -1
 	}
+
 	names = make([]string, 0, size) // Empty with room to grow.
 
 	dir := file.dirinfo.dir
@@ -55,18 +68,24 @@ func (file *File) Readdirnames(count int) (names []string, err Error) {
 		return names, NewSyscallError("opendir", syscall.GetErrno())
 	}	
 
-	for count != 0 {
+	for n != 0 {
 		var result *syscall.Dirent
 		i := libc_readdir_r(dir, entry_dirent, &result)
+		if i != 0 {
+			return names, NewSyscallError("readdir_r", i)
+		}
 		if result == nil {
-			break
+			break // EOF
 		}
 		var name = string(result.Name[0:clen(result.Name[0:])])
 		if name == "." || name == ".." {	// Useless names
 			continue
 		}
-		count--
 		names = append(names, name)
+		n--
+	}
+	if n >= 0 && len(names) == 0 {
+		return names, EOF
 	}
 	return names, nil
 }

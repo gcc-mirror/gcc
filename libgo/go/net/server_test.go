@@ -92,15 +92,22 @@ func connect(t *testing.T, network, addr string, isEmpty bool) {
 }
 
 func doTest(t *testing.T, network, listenaddr, dialaddr string) {
-	t.Logf("Test %s %s %s\n", network, listenaddr, dialaddr)
+	t.Logf("Test %q %q %q\n", network, listenaddr, dialaddr)
+	switch listenaddr {
+	case "", "0.0.0.0", "[::]", "[::ffff:0.0.0.0]":
+		if testing.Short() || avoidMacFirewall {
+			t.Logf("skip wildcard listen during short test")
+			return
+		}
+	}
 	listening := make(chan string)
 	done := make(chan int)
-	if network == "tcp" {
+	if network == "tcp" || network == "tcp4" || network == "tcp6" {
 		listenaddr += ":0" // any available port
 	}
 	go runServe(t, network, listenaddr, listening, done)
 	addr := <-listening // wait for server to start
-	if network == "tcp" {
+	if network == "tcp" || network == "tcp4" || network == "tcp6" {
 		dialaddr += addr[strings.LastIndex(addr, ":"):]
 	}
 	connect(t, network, dialaddr, false)
@@ -108,16 +115,39 @@ func doTest(t *testing.T, network, listenaddr, dialaddr string) {
 }
 
 func TestTCPServer(t *testing.T) {
+	doTest(t, "tcp", "", "127.0.0.1")
+	doTest(t, "tcp", "0.0.0.0", "127.0.0.1")
 	doTest(t, "tcp", "127.0.0.1", "127.0.0.1")
-	if kernelSupportsIPv6() {
+	doTest(t, "tcp4", "", "127.0.0.1")
+	doTest(t, "tcp4", "0.0.0.0", "127.0.0.1")
+	doTest(t, "tcp4", "127.0.0.1", "127.0.0.1")
+	if supportsIPv6 {
+		doTest(t, "tcp", "", "[::1]")
+		doTest(t, "tcp", "[::]", "[::1]")
 		doTest(t, "tcp", "[::1]", "[::1]")
+		doTest(t, "tcp6", "", "[::1]")
+		doTest(t, "tcp6", "[::]", "[::1]")
+		doTest(t, "tcp6", "[::1]", "[::1]")
+	}
+	if supportsIPv6 && supportsIPv4map {
+		doTest(t, "tcp", "[::ffff:0.0.0.0]", "127.0.0.1")
+		doTest(t, "tcp", "[::]", "127.0.0.1")
+		doTest(t, "tcp4", "[::ffff:0.0.0.0]", "127.0.0.1")
+		doTest(t, "tcp6", "", "127.0.0.1")
+		doTest(t, "tcp6", "[::ffff:0.0.0.0]", "127.0.0.1")
+		doTest(t, "tcp6", "[::]", "127.0.0.1")
 		doTest(t, "tcp", "127.0.0.1", "[::ffff:127.0.0.1]")
+		doTest(t, "tcp", "[::ffff:127.0.0.1]", "127.0.0.1")
+		doTest(t, "tcp4", "127.0.0.1", "[::ffff:127.0.0.1]")
+		doTest(t, "tcp4", "[::ffff:127.0.0.1]", "127.0.0.1")
+		doTest(t, "tcp6", "127.0.0.1", "[::ffff:127.0.0.1]")
+		doTest(t, "tcp6", "[::ffff:127.0.0.1]", "127.0.0.1")
 	}
 }
 
 func TestUnixServer(t *testing.T) {
-	// "unix" sockets are not supported on windows.
-	if runtime.GOOS == "windows" {
+	// "unix" sockets are not supported on windows and Plan 9.
+	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return
 	}
 	os.Remove("/tmp/gotest.net")
@@ -186,7 +216,7 @@ func TestUDPServer(t *testing.T) {
 	for _, isEmpty := range []bool{false, true} {
 		doTestPacket(t, "udp", "0.0.0.0", "127.0.0.1", isEmpty)
 		doTestPacket(t, "udp", "", "127.0.0.1", isEmpty)
-		if kernelSupportsIPv6() {
+		if supportsIPv6 && supportsIPv4map {
 			doTestPacket(t, "udp", "[::]", "[::ffff:127.0.0.1]", isEmpty)
 			doTestPacket(t, "udp", "[::]", "127.0.0.1", isEmpty)
 			doTestPacket(t, "udp", "0.0.0.0", "[::ffff:127.0.0.1]", isEmpty)
@@ -195,8 +225,8 @@ func TestUDPServer(t *testing.T) {
 }
 
 func TestUnixDatagramServer(t *testing.T) {
-	// "unix" sockets are not supported on windows.
-	if runtime.GOOS == "windows" {
+	// "unix" sockets are not supported on windows and Plan 9.
+	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return
 	}
 	for _, isEmpty := range []bool{false} {

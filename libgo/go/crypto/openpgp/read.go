@@ -10,7 +10,6 @@ import (
 	"crypto/openpgp/armor"
 	"crypto/openpgp/error"
 	"crypto/openpgp/packet"
-	"crypto/rsa"
 	_ "crypto/sha256"
 	"hash"
 	"io"
@@ -44,7 +43,7 @@ type MessageDetails struct {
 	DecryptedWith            Key                 // the private key used to decrypt the message, if any.
 	IsSigned                 bool                // true if the message is signed.
 	SignedByKeyId            uint64              // the key id of the signer, if any.
-	SignedBy                 *Key                // the key of the signer, if availible.
+	SignedBy                 *Key                // the key of the signer, if available.
 	LiteralData              *packet.LiteralData // the metadata of the contents
 	UnverifiedBody           io.Reader           // the contents of the message.
 
@@ -57,7 +56,6 @@ type MessageDetails struct {
 	// been consumed. Once EOF has been seen, the following fields are
 	// valid. (An authentication code failure is reported as a
 	// SignatureError error when reading from UnverifiedBody.)
-
 	SignatureError os.Error          // nil if the signature is good.
 	Signature      *packet.Signature // the signature packet itself.
 
@@ -112,7 +110,10 @@ ParsePackets:
 		case *packet.EncryptedKey:
 			// This packet contains the decryption key encrypted to a public key.
 			md.EncryptedToKeyIds = append(md.EncryptedToKeyIds, p.KeyId)
-			if p.Algo != packet.PubKeyAlgoRSA && p.Algo != packet.PubKeyAlgoRSAEncryptOnly {
+			switch p.Algo {
+			case packet.PubKeyAlgoRSA, packet.PubKeyAlgoRSAEncryptOnly, packet.PubKeyAlgoElGamal:
+				break
+			default:
 				continue
 			}
 			var keys []Key
@@ -145,7 +146,7 @@ ParsePackets:
 	// function so that it can decrypt a key or give us a passphrase.
 FindKey:
 	for {
-		// See if any of the keys already have a private key availible
+		// See if any of the keys already have a private key available
 		candidates = candidates[:0]
 		candidateFingerprints := make(map[string]bool)
 
@@ -155,7 +156,7 @@ FindKey:
 			}
 			if !pk.key.PrivateKey.Encrypted {
 				if len(pk.encryptedKey.Key) == 0 {
-					pk.encryptedKey.DecryptRSA(pk.key.PrivateKey.PrivateKey.(*rsa.PrivateKey))
+					pk.encryptedKey.Decrypt(pk.key.PrivateKey)
 				}
 				if len(pk.encryptedKey.Key) == 0 {
 					continue
@@ -214,7 +215,7 @@ FindKey:
 	return readSignedMessage(packets, md, keyring)
 }
 
-// readSignedMessage reads a possibily signed message if mdin is non-zero then
+// readSignedMessage reads a possibly signed message if mdin is non-zero then
 // that structure is updated and returned. Otherwise a fresh MessageDetails is
 // used.
 func readSignedMessage(packets *packet.Reader, mdin *MessageDetails, keyring KeyRing) (md *MessageDetails, err os.Error) {
@@ -249,11 +250,12 @@ FindLiteralData:
 			md.IsSigned = true
 			md.SignedByKeyId = p.KeyId
 			keys := keyring.KeysById(p.KeyId)
-			for _, key := range keys {
+			for i, key := range keys {
 				if key.SelfSignature.FlagsValid && !key.SelfSignature.FlagSign {
 					continue
 				}
-				md.SignedBy = &key
+				md.SignedBy = &keys[i]
+				break
 			}
 		case *packet.LiteralData:
 			md.LiteralData = p
@@ -274,13 +276,13 @@ FindLiteralData:
 
 // hashForSignature returns a pair of hashes that can be used to verify a
 // signature. The signature may specify that the contents of the signed message
-// should be preprocessed (i.e. to normalise line endings). Thus this function
+// should be preprocessed (i.e. to normalize line endings). Thus this function
 // returns two hashes. The second should be used to hash the message itself and
 // performs any needed preprocessing.
 func hashForSignature(hashId crypto.Hash, sigType packet.SignatureType) (hash.Hash, hash.Hash, os.Error) {
 	h := hashId.New()
 	if h == nil {
-		return nil, nil, error.UnsupportedError("hash not availible: " + strconv.Itoa(int(hashId)))
+		return nil, nil, error.UnsupportedError("hash not available: " + strconv.Itoa(int(hashId)))
 	}
 
 	switch sigType {

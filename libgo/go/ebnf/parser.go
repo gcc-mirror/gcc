@@ -11,7 +11,6 @@ import (
 	"strconv"
 )
 
-
 type parser struct {
 	fset *token.FileSet
 	scanner.ErrorVector
@@ -20,7 +19,6 @@ type parser struct {
 	tok     token.Token // one token look-ahead
 	lit     string      // token literal
 }
-
 
 func (p *parser) next() {
 	p.pos, p.tok, p.lit = p.scanner.Scan()
@@ -31,11 +29,9 @@ func (p *parser) next() {
 	}
 }
 
-
 func (p *parser) error(pos token.Pos, msg string) {
 	p.Error(p.fset.Position(pos), msg)
 }
-
 
 func (p *parser) errorExpected(pos token.Pos, msg string) {
 	msg = "expected " + msg
@@ -50,7 +46,6 @@ func (p *parser) errorExpected(pos token.Pos, msg string) {
 	p.error(pos, msg)
 }
 
-
 func (p *parser) expect(tok token.Token) token.Pos {
 	pos := p.pos
 	if p.tok != tok {
@@ -60,14 +55,12 @@ func (p *parser) expect(tok token.Token) token.Pos {
 	return pos
 }
 
-
 func (p *parser) parseIdentifier() *Name {
 	pos := p.pos
 	name := p.lit
 	p.expect(token.IDENT)
 	return &Name{pos, name}
 }
-
 
 func (p *parser) parseToken() *Token {
 	pos := p.pos
@@ -84,7 +77,7 @@ func (p *parser) parseToken() *Token {
 	return &Token{pos, value}
 }
 
-
+// ParseTerm returns nil if no term was found.
 func (p *parser) parseTerm() (x Expression) {
 	pos := p.pos
 
@@ -95,7 +88,8 @@ func (p *parser) parseTerm() (x Expression) {
 	case token.STRING:
 		tok := p.parseToken()
 		x = tok
-		if p.tok == token.ELLIPSIS {
+		const ellipsis = "…" // U+2026, the horizontal ellipsis character
+		if p.tok == token.ILLEGAL && p.lit == ellipsis {
 			p.next()
 			x = &Range{tok, p.parseToken()}
 		}
@@ -119,7 +113,6 @@ func (p *parser) parseTerm() (x Expression) {
 	return x
 }
 
-
 func (p *parser) parseSequence() Expression {
 	var list Sequence
 
@@ -130,54 +123,51 @@ func (p *parser) parseSequence() Expression {
 	// no need for a sequence if list.Len() < 2
 	switch len(list) {
 	case 0:
-		return nil
+		p.errorExpected(p.pos, "term")
+		return &Bad{p.pos, "term expected"}
 	case 1:
 		return list[0]
 	}
 
 	return list
 }
-
 
 func (p *parser) parseExpression() Expression {
 	var list Alternative
 
 	for {
-		if x := p.parseSequence(); x != nil {
-			list = append(list, x)
-		}
+		list = append(list, p.parseSequence())
 		if p.tok != token.OR {
 			break
 		}
 		p.next()
 	}
+	// len(list) > 0
 
 	// no need for an Alternative node if list.Len() < 2
-	switch len(list) {
-	case 0:
-		return nil
-	case 1:
+	if len(list) == 1 {
 		return list[0]
 	}
 
 	return list
 }
 
-
 func (p *parser) parseProduction() *Production {
 	name := p.parseIdentifier()
 	p.expect(token.ASSIGN)
-	expr := p.parseExpression()
+	var expr Expression
+	if p.tok != token.PERIOD {
+		expr = p.parseExpression()
+	}
 	p.expect(token.PERIOD)
 	return &Production{name, expr}
 }
-
 
 func (p *parser) parse(fset *token.FileSet, filename string, src []byte) Grammar {
 	// initialize parser
 	p.fset = fset
 	p.ErrorVector.Reset()
-	p.scanner.Init(fset.AddFile(filename, fset.Base(), len(src)), src, p, 0)
+	p.scanner.Init(fset.AddFile(filename, fset.Base(), len(src)), src, p, scanner.AllowIllegalChars)
 	p.next() // initializes pos, tok, lit
 
 	grammar := make(Grammar)
@@ -193,7 +183,6 @@ func (p *parser) parse(fset *token.FileSet, filename string, src []byte) Grammar
 
 	return grammar
 }
-
 
 // Parse parses a set of EBNF productions from source src.
 // It returns a set of productions. Errors are reported

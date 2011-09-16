@@ -45,6 +45,7 @@ func doTestParallelReaders(numReaders, gomaxprocs int) {
 }
 
 func TestParallelReaders(t *testing.T) {
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	doTestParallelReaders(1, 4)
 	doTestParallelReaders(3, 4)
 	doTestParallelReaders(4, 2)
@@ -102,6 +103,7 @@ func HammerRWMutex(gomaxprocs, numReaders, num_iterations int) {
 }
 
 func TestRWMutex(t *testing.T) {
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	n := 1000
 	if testing.Short() {
 		n = 5
@@ -151,4 +153,85 @@ func TestRLocker(t *testing.T) {
 		}
 		wl.Unlock()
 	}
+}
+
+func BenchmarkRWMutexUncontended(b *testing.B) {
+	type PaddedRWMutex struct {
+		RWMutex
+		pad [32]uint32
+	}
+	const CallsPerSched = 1000
+	procs := runtime.GOMAXPROCS(-1)
+	N := int32(b.N / CallsPerSched)
+	c := make(chan bool, procs)
+	for p := 0; p < procs; p++ {
+		go func() {
+			var rwm PaddedRWMutex
+			for atomic.AddInt32(&N, -1) >= 0 {
+				runtime.Gosched()
+				for g := 0; g < CallsPerSched; g++ {
+					rwm.RLock()
+					rwm.RLock()
+					rwm.RUnlock()
+					rwm.RUnlock()
+					rwm.Lock()
+					rwm.Unlock()
+				}
+			}
+			c <- true
+		}()
+	}
+	for p := 0; p < procs; p++ {
+		<-c
+	}
+}
+
+func benchmarkRWMutex(b *testing.B, localWork, writeRatio int) {
+	const CallsPerSched = 1000
+	procs := runtime.GOMAXPROCS(-1)
+	N := int32(b.N / CallsPerSched)
+	c := make(chan bool, procs)
+	var rwm RWMutex
+	for p := 0; p < procs; p++ {
+		go func() {
+			foo := 0
+			for atomic.AddInt32(&N, -1) >= 0 {
+				runtime.Gosched()
+				for g := 0; g < CallsPerSched; g++ {
+					foo++
+					if foo%writeRatio == 0 {
+						rwm.Lock()
+						rwm.Unlock()
+					} else {
+						rwm.RLock()
+						for i := 0; i != localWork; i += 1 {
+							foo *= 2
+							foo /= 2
+						}
+						rwm.RUnlock()
+					}
+				}
+			}
+			c <- foo == 42
+		}()
+	}
+	for p := 0; p < procs; p++ {
+		<-c
+	}
+}
+
+func BenchmarkRWMutexWrite100(b *testing.B) {
+	benchmarkRWMutex(b, 0, 100)
+}
+
+func BenchmarkRWMutexWrite10(b *testing.B) {
+	benchmarkRWMutex(b, 0, 10)
+}
+
+func BenchmarkRWMutexWorkWrite100(b *testing.B) {
+	benchmarkRWMutex(b, 100, 100)
+}
+
+func BenchmarkRWMutexWorkWrite10(b *testing.B) {
+	benchmarkRWMutex(b, 100, 10)
 }
