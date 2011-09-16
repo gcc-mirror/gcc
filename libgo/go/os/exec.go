@@ -13,10 +13,11 @@ import (
 type Process struct {
 	Pid    int
 	handle int
+	done   bool // process has been successfuly waited on
 }
 
 func newProcess(pid, handle int) *Process {
-	p := &Process{pid, handle}
+	p := &Process{Pid: pid, handle: handle}
 	runtime.SetFinalizer(p, (*Process).Release)
 	return p
 }
@@ -37,6 +38,17 @@ type ProcAttr struct {
 	// depending on the underlying operating system.  A nil entry corresponds
 	// to that file being closed when the process starts.
 	Files []*File
+
+	// Operating system-specific process creation attributes.
+	// Note that setting this field means that your program
+	// may not execute properly or even compile on some
+	// operating systems.
+	Sys *syscall.SysProcAttr
+}
+
+// A Signal can represent any operating system signal.
+type Signal interface {
+	String() string
 }
 
 // Getpid returns the process id of the caller.

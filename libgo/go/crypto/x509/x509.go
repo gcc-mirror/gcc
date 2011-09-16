@@ -9,11 +9,12 @@ import (
 	"asn1"
 	"big"
 	"bytes"
-	"container/vector"
 	"crypto"
+	"crypto/dsa"
 	"crypto/rsa"
 	"crypto/sha1"
-	"hash"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"io"
 	"os"
 	"time"
@@ -22,30 +23,25 @@ import (
 // pkcs1PrivateKey is a structure which mirrors the PKCS#1 ASN.1 for an RSA private key.
 type pkcs1PrivateKey struct {
 	Version int
-	N       asn1.RawValue
+	N       *big.Int
 	E       int
-	D       asn1.RawValue
-	P       asn1.RawValue
-	Q       asn1.RawValue
+	D       *big.Int
+	P       *big.Int
+	Q       *big.Int
 	// We ignore these values, if present, because rsa will calculate them.
-	Dp   asn1.RawValue "optional"
-	Dq   asn1.RawValue "optional"
-	Qinv asn1.RawValue "optional"
+	Dp   *big.Int `asn1:"optional"`
+	Dq   *big.Int `asn1:"optional"`
+	Qinv *big.Int `asn1:"optional"`
 
-	AdditionalPrimes []pkcs1AddtionalRSAPrime "optional"
+	AdditionalPrimes []pkcs1AdditionalRSAPrime `asn1:"optional"`
 }
 
-type pkcs1AddtionalRSAPrime struct {
-	Prime asn1.RawValue
+type pkcs1AdditionalRSAPrime struct {
+	Prime *big.Int
 
 	// We ignore these values because rsa will calculate them.
-	Exp   asn1.RawValue
-	Coeff asn1.RawValue
-}
-
-// rawValueIsInteger returns true iff the given ASN.1 RawValue is an INTEGER type.
-func rawValueIsInteger(raw *asn1.RawValue) bool {
-	return raw.Class == 0 && raw.Tag == 2 && raw.IsCompound == false
+	Exp   *big.Int
+	Coeff *big.Int
 }
 
 // ParsePKCS1PrivateKey returns an RSA private key from its ASN.1 PKCS#1 DER encoded form.
@@ -61,32 +57,28 @@ func ParsePKCS1PrivateKey(der []byte) (key *rsa.PrivateKey, err os.Error) {
 	}
 
 	if priv.Version > 1 {
-		return nil, os.ErrorString("x509: unsupported private key version")
+		return nil, os.NewError("x509: unsupported private key version")
 	}
 
-	if !rawValueIsInteger(&priv.N) ||
-		!rawValueIsInteger(&priv.D) ||
-		!rawValueIsInteger(&priv.P) ||
-		!rawValueIsInteger(&priv.Q) {
-		err = asn1.StructuralError{"tags don't match"}
-		return
+	if priv.N.Sign() <= 0 || priv.D.Sign() <= 0 || priv.P.Sign() <= 0 || priv.Q.Sign() <= 0 {
+		return nil, os.NewError("private key contains zero or negative value")
 	}
 
 	key = new(rsa.PrivateKey)
 	key.PublicKey = rsa.PublicKey{
 		E: priv.E,
-		N: new(big.Int).SetBytes(priv.N.Bytes),
+		N: priv.N,
 	}
 
-	key.D = new(big.Int).SetBytes(priv.D.Bytes)
+	key.D = priv.D
 	key.Primes = make([]*big.Int, 2+len(priv.AdditionalPrimes))
-	key.Primes[0] = new(big.Int).SetBytes(priv.P.Bytes)
-	key.Primes[1] = new(big.Int).SetBytes(priv.Q.Bytes)
+	key.Primes[0] = priv.P
+	key.Primes[1] = priv.Q
 	for i, a := range priv.AdditionalPrimes {
-		if !rawValueIsInteger(&a.Prime) {
-			return nil, asn1.StructuralError{"tags don't match"}
+		if a.Prime.Sign() <= 0 {
+			return nil, os.NewError("private key contains zero or negative prime")
 		}
-		key.Primes[i+2] = new(big.Int).SetBytes(a.Prime.Bytes)
+		key.Primes[i+2] = a.Prime
 		// We ignore the other two values because rsa will calculate
 		// them as needed.
 	}
@@ -100,19 +92,6 @@ func ParsePKCS1PrivateKey(der []byte) (key *rsa.PrivateKey, err os.Error) {
 	return
 }
 
-// rawValueForBig returns an asn1.RawValue which represents the given integer.
-func rawValueForBig(n *big.Int) asn1.RawValue {
-	b := n.Bytes()
-	if n.Sign() >= 0 && len(b) > 0 && b[0]&0x80 != 0 {
-		// This positive number would be interpreted as a negative
-		// number in ASN.1 because the MSB is set.
-		padded := make([]byte, len(b)+1)
-		copy(padded[1:], b)
-		b = padded
-	}
-	return asn1.RawValue{Tag: 2, Bytes: b}
-}
-
 // MarshalPKCS1PrivateKey converts a private key to ASN.1 DER encoded form.
 func MarshalPKCS1PrivateKey(key *rsa.PrivateKey) []byte {
 	key.Precompute()
@@ -124,21 +103,21 @@ func MarshalPKCS1PrivateKey(key *rsa.PrivateKey) []byte {
 
 	priv := pkcs1PrivateKey{
 		Version: version,
-		N:       rawValueForBig(key.N),
+		N:       key.N,
 		E:       key.PublicKey.E,
-		D:       rawValueForBig(key.D),
-		P:       rawValueForBig(key.Primes[0]),
-		Q:       rawValueForBig(key.Primes[1]),
-		Dp:      rawValueForBig(key.Precomputed.Dp),
-		Dq:      rawValueForBig(key.Precomputed.Dq),
-		Qinv:    rawValueForBig(key.Precomputed.Qinv),
+		D:       key.D,
+		P:       key.Primes[0],
+		Q:       key.Primes[1],
+		Dp:      key.Precomputed.Dp,
+		Dq:      key.Precomputed.Dq,
+		Qinv:    key.Precomputed.Qinv,
 	}
 
-	priv.AdditionalPrimes = make([]pkcs1AddtionalRSAPrime, len(key.Precomputed.CRTValues))
+	priv.AdditionalPrimes = make([]pkcs1AdditionalRSAPrime, len(key.Precomputed.CRTValues))
 	for i, values := range key.Precomputed.CRTValues {
-		priv.AdditionalPrimes[i].Prime = rawValueForBig(key.Primes[2+i])
-		priv.AdditionalPrimes[i].Exp = rawValueForBig(values.Exp)
-		priv.AdditionalPrimes[i].Coeff = rawValueForBig(values.Coeff)
+		priv.AdditionalPrimes[i].Prime = key.Primes[2+i]
+		priv.AdditionalPrimes[i].Exp = values.Exp
+		priv.AdditionalPrimes[i].Coeff = values.Coeff
 	}
 
 	b, _ := asn1.Marshal(priv)
@@ -150,35 +129,30 @@ func MarshalPKCS1PrivateKey(key *rsa.PrivateKey) []byte {
 type certificate struct {
 	Raw                asn1.RawContent
 	TBSCertificate     tbsCertificate
-	SignatureAlgorithm algorithmIdentifier
+	SignatureAlgorithm pkix.AlgorithmIdentifier
 	SignatureValue     asn1.BitString
 }
 
 type tbsCertificate struct {
 	Raw                asn1.RawContent
-	Version            int "optional,explicit,default:1,tag:0"
-	SerialNumber       asn1.RawValue
-	SignatureAlgorithm algorithmIdentifier
-	Issuer             rdnSequence
+	Version            int `asn1:"optional,explicit,default:1,tag:0"`
+	SerialNumber       *big.Int
+	SignatureAlgorithm pkix.AlgorithmIdentifier
+	Issuer             pkix.RDNSequence
 	Validity           validity
-	Subject            rdnSequence
+	Subject            pkix.RDNSequence
 	PublicKey          publicKeyInfo
-	UniqueId           asn1.BitString "optional,tag:1"
-	SubjectUniqueId    asn1.BitString "optional,tag:2"
-	Extensions         []extension    "optional,explicit,tag:3"
+	UniqueId           asn1.BitString   `asn1:"optional,tag:1"`
+	SubjectUniqueId    asn1.BitString   `asn1:"optional,tag:2"`
+	Extensions         []pkix.Extension `asn1:"optional,explicit,tag:3"`
 }
 
-type algorithmIdentifier struct {
-	Algorithm asn1.ObjectIdentifier
+type dsaAlgorithmParameters struct {
+	P, Q, G *big.Int
 }
 
-type rdnSequence []relativeDistinguishedNameSET
-
-type relativeDistinguishedNameSET []attributeTypeAndValue
-
-type attributeTypeAndValue struct {
-	Type  asn1.ObjectIdentifier
-	Value interface{}
+type dsaSignature struct {
+	R, S *big.Int
 }
 
 type validity struct {
@@ -187,19 +161,13 @@ type validity struct {
 
 type publicKeyInfo struct {
 	Raw       asn1.RawContent
-	Algorithm algorithmIdentifier
+	Algorithm pkix.AlgorithmIdentifier
 	PublicKey asn1.BitString
-}
-
-type extension struct {
-	Id       asn1.ObjectIdentifier
-	Critical bool "optional"
-	Value    []byte
 }
 
 // RFC 5280,  4.2.1.1
 type authKeyId struct {
-	Id []byte "optional,tag:0"
+	Id []byte `asn1:"optional,tag:0"`
 }
 
 type SignatureAlgorithm int
@@ -212,6 +180,8 @@ const (
 	SHA256WithRSA
 	SHA384WithRSA
 	SHA512WithRSA
+	DSAWithSHA1
+	DSAWithSHA256
 )
 
 type PublicKeyAlgorithm int
@@ -219,133 +189,96 @@ type PublicKeyAlgorithm int
 const (
 	UnknownPublicKeyAlgorithm PublicKeyAlgorithm = iota
 	RSA
+	DSA
 )
 
-// Name represents an X.509 distinguished name. This only includes the common
-// elements of a DN.  Additional elements in the name are ignored.
-type Name struct {
-	Country, Organization, OrganizationalUnit []string
-	Locality, Province                        []string
-	StreetAddress, PostalCode                 []string
-	SerialNumber, CommonName                  string
-}
-
-func (n *Name) fillFromRDNSequence(rdns *rdnSequence) {
-	for _, rdn := range *rdns {
-		if len(rdn) == 0 {
-			continue
-		}
-		atv := rdn[0]
-		value, ok := atv.Value.(string)
-		if !ok {
-			continue
-		}
-
-		t := atv.Type
-		if len(t) == 4 && t[0] == 2 && t[1] == 5 && t[2] == 4 {
-			switch t[3] {
-			case 3:
-				n.CommonName = value
-			case 5:
-				n.SerialNumber = value
-			case 6:
-				n.Country = append(n.Country, value)
-			case 7:
-				n.Locality = append(n.Locality, value)
-			case 8:
-				n.Province = append(n.Province, value)
-			case 9:
-				n.StreetAddress = append(n.StreetAddress, value)
-			case 10:
-				n.Organization = append(n.Organization, value)
-			case 11:
-				n.OrganizationalUnit = append(n.OrganizationalUnit, value)
-			case 17:
-				n.PostalCode = append(n.PostalCode, value)
-			}
-		}
-	}
-}
-
+// OIDs for signature algorithms
+//
+// pkcs-1 OBJECT IDENTIFIER ::= {
+//    iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) 1 }
+// 
+// 
+// RFC 3279 2.2.1 RSA Signature Algorithms
+//
+// md2WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 2 }
+//
+// md5WithRSAEncryption OBJECT IDENTIFER ::= { pkcs-1 4 }
+//
+// sha-1WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 5 }
+// 
+// dsaWithSha1 OBJECT IDENTIFIER ::= {
+//    iso(1) member-body(2) us(840) x9-57(10040) x9cm(4) 3 } 
+//
+//
+// RFC 4055 5 PKCS #1 Version 1.5
+// 
+// sha256WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 11 }
+//
+// sha384WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 12 }
+//
+// sha512WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 13 }
+//
+//
+// RFC 5758 3.1 DSA Signature Algorithms
+//
+// dsaWithSha356 OBJECT IDENTIFER ::= {
+//    joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101)
+//    algorithms(4) id-dsa-with-sha2(3) 2}
+//
 var (
-	oidCountry            = []int{2, 5, 4, 6}
-	oidOrganization       = []int{2, 5, 4, 10}
-	oidOrganizationalUnit = []int{2, 5, 4, 11}
-	oidCommonName         = []int{2, 5, 4, 3}
-	oidSerialNumber       = []int{2, 5, 4, 5}
-	oidLocatity           = []int{2, 5, 4, 7}
-	oidProvince           = []int{2, 5, 4, 8}
-	oidStreetAddress      = []int{2, 5, 4, 9}
-	oidPostalCode         = []int{2, 5, 4, 17}
+	oidSignatureMD2WithRSA    = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 2}
+	oidSignatureMD5WithRSA    = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 4}
+	oidSignatureSHA1WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
+	oidSignatureSHA256WithRSA = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
+	oidSignatureSHA384WithRSA = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
+	oidSignatureSHA512WithRSA = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
+	oidSignatureDSAWithSHA1   = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
+	oidSignatureDSAWithSHA256 = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 4, 3, 2}
 )
 
-// appendRDNs appends a relativeDistinguishedNameSET to the given rdnSequence
-// and returns the new value. The relativeDistinguishedNameSET contains an
-// attributeTypeAndValue for each of the given values. See RFC 5280, A.1, and
-// search for AttributeTypeAndValue.
-func appendRDNs(in rdnSequence, values []string, oid asn1.ObjectIdentifier) rdnSequence {
-	if len(values) == 0 {
-		return in
+func getSignatureAlgorithmFromOID(oid asn1.ObjectIdentifier) SignatureAlgorithm {
+	switch {
+	case oid.Equal(oidSignatureMD2WithRSA):
+		return MD2WithRSA
+	case oid.Equal(oidSignatureMD5WithRSA):
+		return MD5WithRSA
+	case oid.Equal(oidSignatureSHA1WithRSA):
+		return SHA1WithRSA
+	case oid.Equal(oidSignatureSHA256WithRSA):
+		return SHA256WithRSA
+	case oid.Equal(oidSignatureSHA384WithRSA):
+		return SHA384WithRSA
+	case oid.Equal(oidSignatureSHA512WithRSA):
+		return SHA512WithRSA
+	case oid.Equal(oidSignatureDSAWithSHA1):
+		return DSAWithSHA1
+	case oid.Equal(oidSignatureDSAWithSHA256):
+		return DSAWithSHA256
 	}
-
-	s := make([]attributeTypeAndValue, len(values))
-	for i, value := range values {
-		s[i].Type = oid
-		s[i].Value = value
-	}
-
-	return append(in, s)
-}
-
-func (n Name) toRDNSequence() (ret rdnSequence) {
-	ret = appendRDNs(ret, n.Country, oidCountry)
-	ret = appendRDNs(ret, n.Organization, oidOrganization)
-	ret = appendRDNs(ret, n.OrganizationalUnit, oidOrganizationalUnit)
-	ret = appendRDNs(ret, n.Locality, oidLocatity)
-	ret = appendRDNs(ret, n.Province, oidProvince)
-	ret = appendRDNs(ret, n.StreetAddress, oidStreetAddress)
-	ret = appendRDNs(ret, n.PostalCode, oidPostalCode)
-	if len(n.CommonName) > 0 {
-		ret = appendRDNs(ret, []string{n.CommonName}, oidCommonName)
-	}
-	if len(n.SerialNumber) > 0 {
-		ret = appendRDNs(ret, []string{n.SerialNumber}, oidSerialNumber)
-	}
-
-	return ret
-}
-
-func getSignatureAlgorithmFromOID(oid []int) SignatureAlgorithm {
-	if len(oid) == 7 && oid[0] == 1 && oid[1] == 2 && oid[2] == 840 &&
-		oid[3] == 113549 && oid[4] == 1 && oid[5] == 1 {
-		switch oid[6] {
-		case 2:
-			return MD2WithRSA
-		case 4:
-			return MD5WithRSA
-		case 5:
-			return SHA1WithRSA
-		case 11:
-			return SHA256WithRSA
-		case 12:
-			return SHA384WithRSA
-		case 13:
-			return SHA512WithRSA
-		}
-	}
-
 	return UnknownSignatureAlgorithm
 }
 
-func getPublicKeyAlgorithmFromOID(oid []int) PublicKeyAlgorithm {
-	if len(oid) == 7 && oid[0] == 1 && oid[1] == 2 && oid[2] == 840 &&
-		oid[3] == 113549 && oid[4] == 1 && oid[5] == 1 {
-		switch oid[6] {
-		case 1:
-			return RSA
-		}
-	}
+// RFC 3279, 2.3 Public Key Algorithms
+//
+// pkcs-1 OBJECT IDENTIFIER ::== { iso(1) member-body(2) us(840)
+//    rsadsi(113549) pkcs(1) 1 }
+//
+// rsaEncryption OBJECT IDENTIFIER ::== { pkcs1-1 1 }
+//
+// id-dsa OBJECT IDENTIFIER ::== { iso(1) member-body(2) us(840)
+//    x9-57(10040) x9cm(4) 1 }
+var (
+	oidPublicKeyRsa = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	oidPublicKeyDsa = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
+)
 
+func getPublicKeyAlgorithmFromOID(oid asn1.ObjectIdentifier) PublicKeyAlgorithm {
+	switch {
+	case oid.Equal(oidPublicKeyRsa):
+		return RSA
+	case oid.Equal(oidPublicKeyDsa):
+		return DSA
+	}
 	return UnknownPublicKeyAlgorithm
 }
 
@@ -414,9 +347,9 @@ type Certificate struct {
 	PublicKey          interface{}
 
 	Version             int
-	SerialNumber        []byte
-	Issuer              Name
-	Subject             Name
+	SerialNumber        *big.Int
+	Issuer              pkix.Name
+	Subject             pkix.Name
 	NotBefore, NotAfter *time.Time // Validity bounds.
 	KeyUsage            KeyUsage
 
@@ -485,26 +418,58 @@ func (c *Certificate) CheckSignatureFrom(parent *Certificate) (err os.Error) {
 
 	// TODO(agl): don't ignore the path length constraint.
 
-	var h hash.Hash
+	return parent.CheckSignature(c.SignatureAlgorithm, c.RawTBSCertificate, c.Signature)
+}
+
+// CheckSignature verifies that signature is a valid signature over signed from
+// c's public key.
+func (c *Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature []byte) (err os.Error) {
 	var hashType crypto.Hash
 
-	switch c.SignatureAlgorithm {
-	case SHA1WithRSA:
-		h = sha1.New()
+	switch algo {
+	case SHA1WithRSA, DSAWithSHA1:
 		hashType = crypto.SHA1
+	case SHA256WithRSA, DSAWithSHA256:
+		hashType = crypto.SHA256
+	case SHA384WithRSA:
+		hashType = crypto.SHA384
+	case SHA512WithRSA:
+		hashType = crypto.SHA512
 	default:
 		return UnsupportedAlgorithmError{}
 	}
 
-	pub, ok := parent.PublicKey.(*rsa.PublicKey)
-	if !ok {
+	h := hashType.New()
+	if h == nil {
 		return UnsupportedAlgorithmError{}
 	}
 
-	h.Write(c.RawTBSCertificate)
+	h.Write(signed)
 	digest := h.Sum()
 
-	return rsa.VerifyPKCS1v15(pub, hashType, digest, c.Signature)
+	switch pub := c.PublicKey.(type) {
+	case *rsa.PublicKey:
+		return rsa.VerifyPKCS1v15(pub, hashType, digest, signature)
+	case *dsa.PublicKey:
+		dsaSig := new(dsaSignature)
+		if _, err := asn1.Unmarshal(signature, dsaSig); err != nil {
+			return err
+		}
+		if dsaSig.R.Sign() <= 0 || dsaSig.S.Sign() <= 0 {
+			return os.NewError("DSA signature contained zero or negative values")
+		}
+		if !dsa.Verify(pub, digest, dsaSig.R, dsaSig.S) {
+			return os.NewError("DSA verification failure")
+		}
+		return
+	}
+	return UnsupportedAlgorithmError{}
+}
+
+// CheckCRLSignature checks that the signature in crl is from c.
+func (c *Certificate) CheckCRLSignature(crl *pkix.CertificateList) (err os.Error) {
+	algo := getSignatureAlgorithmFromOID(crl.SignatureAlgorithm.Algorithm)
+	return c.CheckSignature(algo, crl.TBSCertList.Raw, crl.SignatureValue.RightAlign())
 }
 
 type UnhandledCriticalExtension struct{}
@@ -514,12 +479,12 @@ func (h UnhandledCriticalExtension) String() string {
 }
 
 type basicConstraints struct {
-	IsCA       bool "optional"
-	MaxPathLen int  "optional"
+	IsCA       bool `asn1:"optional"`
+	MaxPathLen int  `asn1:"optional"`
 }
 
 type rsaPublicKey struct {
-	N asn1.RawValue
+	N *big.Int
 	E int
 }
 
@@ -531,17 +496,18 @@ type policyInformation struct {
 
 // RFC 5280, 4.2.1.10
 type nameConstraints struct {
-	Permitted []generalSubtree "optional,tag:0"
-	Excluded  []generalSubtree "optional,tag:1"
+	Permitted []generalSubtree `asn1:"optional,tag:0"`
+	Excluded  []generalSubtree `asn1:"optional,tag:1"`
 }
 
 type generalSubtree struct {
-	Name string "tag:2,optional,ia5"
-	Min  int    "optional,tag:0"
-	Max  int    "optional,tag:1"
+	Name string `asn1:"tag:2,optional,ia5"`
+	Min  int    `asn1:"optional,tag:0"`
+	Max  int    `asn1:"optional,tag:1"`
 }
 
-func parsePublicKey(algo PublicKeyAlgorithm, asn1Data []byte) (interface{}, os.Error) {
+func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{}, os.Error) {
+	asn1Data := keyData.PublicKey.RightAlign()
 	switch algo {
 	case RSA:
 		p := new(rsaPublicKey)
@@ -550,19 +516,38 @@ func parsePublicKey(algo PublicKeyAlgorithm, asn1Data []byte) (interface{}, os.E
 			return nil, err
 		}
 
-		if !rawValueIsInteger(&p.N) {
-			return nil, asn1.StructuralError{"tags don't match"}
-		}
-
 		pub := &rsa.PublicKey{
 			E: p.E,
-			N: new(big.Int).SetBytes(p.N.Bytes),
+			N: p.N,
+		}
+		return pub, nil
+	case DSA:
+		var p *big.Int
+		_, err := asn1.Unmarshal(asn1Data, &p)
+		if err != nil {
+			return nil, err
+		}
+		paramsData := keyData.Algorithm.Parameters.FullBytes
+		params := new(dsaAlgorithmParameters)
+		_, err = asn1.Unmarshal(paramsData, params)
+		if err != nil {
+			return nil, err
+		}
+		if p.Sign() <= 0 || params.P.Sign() <= 0 || params.Q.Sign() <= 0 || params.G.Sign() <= 0 {
+			return nil, os.NewError("zero or negative DSA parameter")
+		}
+		pub := &dsa.PublicKey{
+			Parameters: dsa.Parameters{
+				P: params.P,
+				Q: params.Q,
+				G: params.G,
+			},
+			Y: p,
 		}
 		return pub, nil
 	default:
 		return nil, nil
 	}
-
 	panic("unreachable")
 }
 
@@ -579,15 +564,19 @@ func parseCertificate(in *certificate) (*Certificate, os.Error) {
 	out.PublicKeyAlgorithm =
 		getPublicKeyAlgorithmFromOID(in.TBSCertificate.PublicKey.Algorithm.Algorithm)
 	var err os.Error
-	out.PublicKey, err = parsePublicKey(out.PublicKeyAlgorithm, in.TBSCertificate.PublicKey.PublicKey.RightAlign())
+	out.PublicKey, err = parsePublicKey(out.PublicKeyAlgorithm, &in.TBSCertificate.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
+	if in.TBSCertificate.SerialNumber.Sign() < 0 {
+		return nil, os.NewError("negative serial number")
+	}
+
 	out.Version = in.TBSCertificate.Version + 1
-	out.SerialNumber = in.TBSCertificate.SerialNumber.Bytes
-	out.Issuer.fillFromRDNSequence(&in.TBSCertificate.Issuer)
-	out.Subject.fillFromRDNSequence(&in.TBSCertificate.Subject)
+	out.SerialNumber = in.TBSCertificate.SerialNumber
+	out.Issuer.FillFromRDNSequence(&in.TBSCertificate.Issuer)
+	out.Subject.FillFromRDNSequence(&in.TBSCertificate.Subject)
 	out.NotBefore = in.TBSCertificate.Validity.NotBefore
 	out.NotAfter = in.TBSCertificate.Validity.NotAfter
 
@@ -611,13 +600,13 @@ func parseCertificate(in *certificate) (*Certificate, os.Error) {
 				}
 			case 19:
 				// RFC 5280, 4.2.1.9
-				var constriants basicConstraints
-				_, err := asn1.Unmarshal(e.Value, &constriants)
+				var constraints basicConstraints
+				_, err := asn1.Unmarshal(e.Value, &constraints)
 
 				if err == nil {
 					out.BasicConstraintsValid = true
-					out.IsCA = constriants.IsCA
-					out.MaxPathLen = constriants.MaxPathLen
+					out.IsCA = constraints.IsCA
+					out.MaxPathLen = constraints.MaxPathLen
 					continue
 				}
 			case 17:
@@ -804,7 +793,7 @@ func ParseCertificate(asn1Data []byte) (*Certificate, os.Error) {
 // ParseCertificates parses one or more certificates from the given ASN.1 DER
 // data. The certificates must be concatenated with no intermediate padding.
 func ParseCertificates(asn1Data []byte) ([]*Certificate, os.Error) {
-	v := new(vector.Vector)
+	var v []*certificate
 
 	for len(asn1Data) > 0 {
 		cert := new(certificate)
@@ -813,12 +802,12 @@ func ParseCertificates(asn1Data []byte) ([]*Certificate, os.Error) {
 		if err != nil {
 			return nil, err
 		}
-		v.Push(cert)
+		v = append(v, cert)
 	}
 
-	ret := make([]*Certificate, v.Len())
-	for i := 0; i < v.Len(); i++ {
-		cert, err := parseCertificate(v.At(i).(*certificate))
+	ret := make([]*Certificate, len(v))
+	for i, ci := range v {
+		cert, err := parseCertificate(ci)
 		if err != nil {
 			return nil, err
 		}
@@ -845,8 +834,8 @@ var (
 	oidExtensionNameConstraints     = []int{2, 5, 29, 30}
 )
 
-func buildExtensions(template *Certificate) (ret []extension, err os.Error) {
-	ret = make([]extension, 7 /* maximum number of elements. */ )
+func buildExtensions(template *Certificate) (ret []pkix.Extension, err os.Error) {
+	ret = make([]pkix.Extension, 7 /* maximum number of elements. */ )
 	n := 0
 
 	if template.KeyUsage != 0 {
@@ -963,7 +952,7 @@ var (
 // The returned slice is the certificate in DER encoding.
 func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.PublicKey, priv *rsa.PrivateKey) (cert []byte, err os.Error) {
 	asn1PublicKey, err := asn1.Marshal(rsaPublicKey{
-		N: asn1.RawValue{Tag: 2, Bytes: pub.N.Bytes()},
+		N: pub.N,
 		E: pub.E,
 	})
 	if err != nil {
@@ -982,12 +971,12 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.P
 	encodedPublicKey := asn1.BitString{BitLength: len(asn1PublicKey) * 8, Bytes: asn1PublicKey}
 	c := tbsCertificate{
 		Version:            2,
-		SerialNumber:       asn1.RawValue{Bytes: template.SerialNumber, Tag: 2},
-		SignatureAlgorithm: algorithmIdentifier{oidSHA1WithRSA},
-		Issuer:             parent.Subject.toRDNSequence(),
+		SerialNumber:       template.SerialNumber,
+		SignatureAlgorithm: pkix.AlgorithmIdentifier{Algorithm: oidSHA1WithRSA},
+		Issuer:             parent.Subject.ToRDNSequence(),
 		Validity:           validity{template.NotBefore, template.NotAfter},
-		Subject:            template.Subject.toRDNSequence(),
-		PublicKey:          publicKeyInfo{nil, algorithmIdentifier{oidRSA}, encodedPublicKey},
+		Subject:            template.Subject.ToRDNSequence(),
+		PublicKey:          publicKeyInfo{nil, pkix.AlgorithmIdentifier{Algorithm: oidRSA}, encodedPublicKey},
 		Extensions:         extensions,
 	}
 
@@ -1010,8 +999,75 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.P
 	cert, err = asn1.Marshal(certificate{
 		nil,
 		c,
-		algorithmIdentifier{oidSHA1WithRSA},
+		pkix.AlgorithmIdentifier{Algorithm: oidSHA1WithRSA},
 		asn1.BitString{Bytes: signature, BitLength: len(signature) * 8},
 	})
 	return
+}
+
+// pemCRLPrefix is the magic string that indicates that we have a PEM encoded
+// CRL.
+var pemCRLPrefix = []byte("-----BEGIN X509 CRL")
+// pemType is the type of a PEM encoded CRL.
+var pemType = "X509 CRL"
+
+// ParseCRL parses a CRL from the given bytes. It's often the case that PEM
+// encoded CRLs will appear where they should be DER encoded, so this function
+// will transparently handle PEM encoding as long as there isn't any leading
+// garbage.
+func ParseCRL(crlBytes []byte) (certList *pkix.CertificateList, err os.Error) {
+	if bytes.HasPrefix(crlBytes, pemCRLPrefix) {
+		block, _ := pem.Decode(crlBytes)
+		if block != nil && block.Type == pemType {
+			crlBytes = block.Bytes
+		}
+	}
+	return ParseDERCRL(crlBytes)
+}
+
+// ParseDERCRL parses a DER encoded CRL from the given bytes.
+func ParseDERCRL(derBytes []byte) (certList *pkix.CertificateList, err os.Error) {
+	certList = new(pkix.CertificateList)
+	_, err = asn1.Unmarshal(derBytes, certList)
+	if err != nil {
+		certList = nil
+	}
+	return
+}
+
+// CreateCRL returns a DER encoded CRL, signed by this Certificate, that
+// contains the given list of revoked certificates.
+func (c *Certificate) CreateCRL(rand io.Reader, priv *rsa.PrivateKey, revokedCerts []pkix.RevokedCertificate, now, expiry *time.Time) (crlBytes []byte, err os.Error) {
+	tbsCertList := pkix.TBSCertificateList{
+		Version: 2,
+		Signature: pkix.AlgorithmIdentifier{
+			Algorithm: oidSignatureSHA1WithRSA,
+		},
+		Issuer:              c.Subject.ToRDNSequence(),
+		ThisUpdate:          now,
+		NextUpdate:          expiry,
+		RevokedCertificates: revokedCerts,
+	}
+
+	tbsCertListContents, err := asn1.Marshal(tbsCertList)
+	if err != nil {
+		return
+	}
+
+	h := sha1.New()
+	h.Write(tbsCertListContents)
+	digest := h.Sum()
+
+	signature, err := rsa.SignPKCS1v15(rand, priv, crypto.SHA1, digest)
+	if err != nil {
+		return
+	}
+
+	return asn1.Marshal(pkix.CertificateList{
+		TBSCertList: tbsCertList,
+		SignatureAlgorithm: pkix.AlgorithmIdentifier{
+			Algorithm: oidSignatureSHA1WithRSA,
+		},
+		SignatureValue: asn1.BitString{Bytes: signature, BitLength: len(signature) * 8},
+	})
 }

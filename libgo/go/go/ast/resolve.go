@@ -11,24 +11,21 @@ import (
 	"go/scanner"
 	"go/token"
 	"os"
+	"strconv"
 )
-
 
 type pkgBuilder struct {
 	scanner.ErrorVector
 	fset *token.FileSet
 }
 
-
 func (p *pkgBuilder) error(pos token.Pos, msg string) {
 	p.Error(p.fset.Position(pos), msg)
 }
 
-
 func (p *pkgBuilder) errorf(pos token.Pos, format string, args ...interface{}) {
 	p.error(pos, fmt.Sprintf(format, args...))
 }
-
 
 func (p *pkgBuilder) declare(scope, altScope *Scope, obj *Object) {
 	alt := scope.Insert(obj)
@@ -45,7 +42,6 @@ func (p *pkgBuilder) declare(scope, altScope *Scope, obj *Object) {
 	}
 }
 
-
 func resolve(scope *Scope, ident *Ident) bool {
 	for ; scope != nil; scope = scope.Outer {
 		if obj := scope.Lookup(ident.Name); obj != nil {
@@ -56,13 +52,16 @@ func resolve(scope *Scope, ident *Ident) bool {
 	return false
 }
 
-
-// NewPackage uses an Importer to resolve imports. Given an importPath,
-// an importer returns the imported package's name, its scope of exported
-// objects, and an error, if any.
-//
-type Importer func(path string) (name string, scope *Scope, err os.Error)
-
+// An Importer resolves import paths to package Objects.
+// The imports map records the packages already imported,
+// indexed by package id (canonical import path).
+// An Importer must determine the canonical import path and
+// check the map to see if it is already present in the imports map.
+// If so, the Importer can return the map entry.  Otherwise, the
+// Importer should load the package data for the given path into 
+// a new *Object (pkg), record pkg in the imports map, and then
+// return pkg.
+type Importer func(imports map[string]*Object, path string) (pkg *Object, err os.Error)
 
 // NewPackage creates a new Package node from a set of File nodes. It resolves
 // unresolved identifiers across files and updates each file's Unresolved list
@@ -70,7 +69,7 @@ type Importer func(path string) (name string, scope *Scope, err os.Error)
 // used to resolve identifiers not declared in any of the package files. Any
 // remaining unresolved identifiers are reported as undeclared. If the files
 // belong to different packages, one package name is selected and files with
-// different package name are reported and then ignored.
+// different package names are reported and then ignored.
 // The result is a package node and a scanner.ErrorList if there were errors.
 //
 func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, universe *Scope) (*Package, os.Error) {
@@ -96,14 +95,8 @@ func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, 
 		}
 	}
 
-	// imports maps import paths to package names and scopes
-	// TODO(gri): Eventually we like to get to the import scope from
-	//            a package object. Then we can have a map path -> Obj.
-	type importedPkg struct {
-		name  string
-		scope *Scope
-	}
-	imports := make(map[string]*importedPkg)
+	// package global mapping of imported package ids to package objects
+	imports := make(map[string]*Object)
 
 	// complete file scopes with imports and resolve identifiers
 	for _, file := range files {
@@ -117,42 +110,41 @@ func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, 
 		importErrors := false
 		fileScope := NewScope(pkgScope)
 		for _, spec := range file.Imports {
-			// add import to global map of imports
-			path := string(spec.Path.Value)
-			path = path[1 : len(path)-1] // strip ""'s
-			pkg := imports[path]
-			if pkg == nil {
-				if importer == nil {
-					importErrors = true
-					continue
-				}
-				name, scope, err := importer(path)
-				if err != nil {
-					p.errorf(spec.Path.Pos(), "could not import %s (%s)", path, err)
-					importErrors = true
-					continue
-				}
-				pkg = &importedPkg{name, scope}
-				imports[path] = pkg
-				// TODO(gri) If a local package name != "." is provided,
-				// global identifier resolution could proceed even if the
-				// import failed. Consider adjusting the logic here a bit.
+			if importer == nil {
+				importErrors = true
+				continue
 			}
+			path, _ := strconv.Unquote(string(spec.Path.Value))
+			pkg, err := importer(imports, path)
+			if err != nil {
+				p.errorf(spec.Path.Pos(), "could not import %s (%s)", path, err)
+				importErrors = true
+				continue
+			}
+			// TODO(gri) If a local package name != "." is provided,
+			// global identifier resolution could proceed even if the
+			// import failed. Consider adjusting the logic here a bit.
+
 			// local name overrides imported package name
-			name := pkg.name
+			name := pkg.Name
 			if spec.Name != nil {
 				name = spec.Name.Name
 			}
+
 			// add import to file scope
 			if name == "." {
 				// merge imported scope with file scope
-				for _, obj := range pkg.scope.Objects {
+				for _, obj := range pkg.Data.(*Scope).Objects {
 					p.declare(fileScope, pkgScope, obj)
 				}
 			} else {
 				// declare imported package object in file scope
+				// (do not re-use pkg in the file scope but create
+				// a new object instead; the Decl field is different
+				// for different files)
 				obj := NewObj(Pkg, name)
 				obj.Decl = spec
+				obj.Data = pkg.Data
 				p.declare(fileScope, pkgScope, obj)
 			}
 		}
@@ -161,8 +153,8 @@ func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, 
 		if importErrors {
 			// don't use the universe scope without correct imports
 			// (objects in the universe may be shadowed by imports;
-			// with missing imports identifiers might get resolved
-			// wrongly)
+			// with missing imports, identifiers might get resolved
+			// incorrectly to universe objects)
 			pkgScope.Outer = nil
 		}
 		i := 0
@@ -178,11 +170,5 @@ func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, 
 		pkgScope.Outer = universe // reset universe scope
 	}
 
-	// collect all import paths and respective package scopes
-	importedScopes := make(map[string]*Scope)
-	for path, pkg := range imports {
-		importedScopes[path] = pkg.scope
-	}
-
-	return &Package{pkgName, pkgScope, importedScopes, files}, p.GetError(scanner.Sorted)
+	return &Package{pkgName, pkgScope, imports, files}, p.GetError(scanner.Sorted)
 }

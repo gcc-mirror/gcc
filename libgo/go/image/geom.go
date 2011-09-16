@@ -38,6 +38,12 @@ func (p Point) Div(k int) Point {
 	return Point{p.X / k, p.Y / k}
 }
 
+// In returns whether p is in r.
+func (p Point) In(r Rectangle) bool {
+	return r.Min.X <= p.X && p.X < r.Max.X &&
+		r.Min.Y <= p.Y && p.Y < r.Max.Y
+}
+
 // Mod returns the point q in r such that p.X-q.X is a multiple of r's width
 // and p.Y-q.Y is a multiple of r's height.
 func (p Point) Mod(r Rectangle) Point {
@@ -190,10 +196,15 @@ func (r Rectangle) Overlaps(s Rectangle) bool {
 		r.Min.Y < s.Max.Y && s.Min.Y < r.Max.Y
 }
 
-// Contains returns whether r contains p.
-func (r Rectangle) Contains(p Point) bool {
-	return p.X >= r.Min.X && p.X < r.Max.X &&
-		p.Y >= r.Min.Y && p.Y < r.Max.Y
+// In returns whether every point in r is in s.
+func (r Rectangle) In(s Rectangle) bool {
+	if r.Empty() {
+		return true
+	}
+	// Note that r.Max is an exclusive bound for r, so that r.In(s)
+	// does not require that r.Max.In(s).
+	return s.Min.X <= r.Min.X && r.Max.X <= s.Max.X &&
+		s.Min.Y <= r.Min.Y && r.Max.Y <= s.Max.Y
 }
 
 // Canon returns the canonical version of r. The returned rectangle has minimum

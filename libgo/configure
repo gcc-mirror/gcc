@@ -617,7 +617,6 @@ USING_SPLIT_STACK_FALSE
 USING_SPLIT_STACK_TRUE
 SPLIT_STACK
 OSCFLAGS
-GO_DEBUG_PROC_REGS_OS_ARCH_FILE
 GO_SYSCALLS_SYSCALL_OS_ARCH_FILE
 GOARCH
 LIBGO_IS_X86_64_FALSE
@@ -10914,7 +10913,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10917 "configure"
+#line 10916 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11020,7 +11019,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11023 "configure"
+#line 11022 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13558,12 +13557,6 @@ if test -f ${srcdir}/syscalls/syscall_${GOOS}_${GOARCH}.go; then
 fi
 
 
-GO_DEBUG_PROC_REGS_OS_ARCH_FILE=
-if test -f ${srcdir}/go/debug/proc/regs_${GOOS}_${GOARCH}.go; then
-  GO_DEBUG_PROC_REGS_OS_ARCH_FILE=go/debug/proc/regs_${GOOS}_${GOARCH}.go
-fi
-
-
 case "$target" in
     mips-sgi-irix6.5*)
 	# IRIX 6 needs _XOPEN_SOURCE=500 for the XPG5 version of struct
@@ -14252,7 +14245,7 @@ no)
   ;;
 esac
 
-for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h
+for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -14265,6 +14258,26 @@ _ACEOF
 fi
 
 done
+
+
+for ac_header in linux/filter.h linux/netlink.h linux/rtnetlink.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+"
+eval as_val=\$$as_ac_Header
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
 
  if test "$ac_cv_header_sys_mman_h" = yes; then
   HAVE_SYS_MMAN_H_TRUE=

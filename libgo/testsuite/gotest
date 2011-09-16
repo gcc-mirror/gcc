@@ -34,6 +34,7 @@ prefix=
 dejagnu=no
 timeout=60
 testname=""
+trace=false
 while $loop; do
 	case "x$1" in
         x--srcdir)
@@ -101,6 +102,10 @@ while $loop; do
 		;;
 	x--testname=*)
 		testname=`echo $1 | sed -e 's/^--testname=//'`
+		shift
+		;;
+	x--trace)
+		trace=true
 		shift
 		;;
 	x-*)
@@ -288,10 +293,17 @@ if test -n "$prefix"; then
 	prefixarg="-fgo-prefix=$prefix"
 fi
 
+if test "$trace" = "true"; then
+  echo $GC -g $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofiles $pkgbasefiles
+fi
 $GC -g $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofiles $pkgbasefiles
+
 if $havex; then
 	mkdir -p `dirname $package`
 	cp _gotest_.o `dirname $package`/lib`basename $package`.a
+	if test "$trace" = "true"; then
+	    echo $GC -g -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
+	fi
 	$GC -g -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
 fi
 
@@ -375,9 +387,19 @@ func main() {
 
 case "x$dejagnu" in
 xno)
+	if test "$trace" = "true"; then
+	    echo ${GC} -g -c _testmain.go
+	fi
 	${GC} -g -c _testmain.go
+
+	if test "$trace" = "true"; then
+	    echo ${GL} *.o ${GOLIBS}
+	fi
 	${GL} *.o ${GOLIBS}
 
+	if test "$trace" = "true"; then
+	    echo ./a.out -test.short -test.timeout=$timeout "$@"
+	fi
 	./a.out -test.short -test.timeout=$timeout "$@" &
 	pid=$!
 	(sleep `expr $timeout + 10`

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "go-alloc.h"
+#include "go-assert.h"
 #include "go-panic.h"
 #include "go-type.h"
 #include "map.h"
@@ -21,11 +22,12 @@ struct mapaccess_ret
   _Bool pres;
 };
 
-extern struct mapaccess_ret mapaccess (uintptr_t, uintptr_t)
+extern struct mapaccess_ret mapaccess (struct __go_map_type *, uintptr_t,
+				       uintptr_t)
   asm ("libgo_reflect.reflect.mapaccess");
 
 struct mapaccess_ret
-mapaccess (uintptr_t m, uintptr_t key_i)
+mapaccess (struct __go_map_type *mt, uintptr_t m, uintptr_t key_i)
 {
   struct __go_map *map = (struct __go_map *) m;
   void *key;
@@ -36,18 +38,20 @@ mapaccess (uintptr_t m, uintptr_t key_i)
   void *val;
   void *pv;
 
-  if (map == NULL)
-    __go_panic_msg ("lookup in nil map");
+  __go_assert (mt->__common.__code == GO_MAP);
 
-  key_descriptor = map->__descriptor->__map_descriptor->__key_type;
+  key_descriptor = mt->__key_type;
   if (__go_is_pointer_type (key_descriptor))
     key = &key_i;
   else
     key = (void *) key_i;
 
-  p = __go_map_index (map, key, 0);
+  if (map == NULL)
+    p = NULL;
+  else
+    p = __go_map_index (map, key, 0);
 
-  val_descriptor = map->__descriptor->__map_descriptor->__val_type;
+  val_descriptor = mt->__val_type;
   if (__go_is_pointer_type (val_descriptor))
     {
       val = NULL;
@@ -71,20 +75,24 @@ mapaccess (uintptr_t m, uintptr_t key_i)
   return ret;
 }
 
-extern void mapassign (uintptr_t, uintptr_t, uintptr_t, _Bool)
+extern void mapassign (struct __go_map_type *, uintptr_t, uintptr_t,
+		       uintptr_t, _Bool)
   asm ("libgo_reflect.reflect.mapassign");
 
 void
-mapassign (uintptr_t m, uintptr_t key_i, uintptr_t val_i, _Bool pres)
+mapassign (struct __go_map_type *mt, uintptr_t m, uintptr_t key_i,
+	   uintptr_t val_i, _Bool pres)
 {
   struct __go_map *map = (struct __go_map *) m;
   const struct __go_type_descriptor *key_descriptor;
   void *key;
 
-  if (map == NULL)
-    __go_panic_msg ("lookup in nil map");
+  __go_assert (mt->__common.__code == GO_MAP);
 
-  key_descriptor = map->__descriptor->__map_descriptor->__key_type;
+  if (map == NULL)
+    __go_panic_msg ("assignment to entry in nil map");
+
+  key_descriptor = mt->__key_type;
   if (__go_is_pointer_type (key_descriptor))
     key = &key_i;
   else
@@ -100,7 +108,7 @@ mapassign (uintptr_t m, uintptr_t key_i, uintptr_t val_i, _Bool pres)
 
       p = __go_map_index (map, key, 1);
 
-      val_descriptor = map->__descriptor->__map_descriptor->__val_type;
+      val_descriptor = mt->__val_type;
       if (__go_is_pointer_type (val_descriptor))
 	pv = &val_i;
       else
@@ -122,14 +130,15 @@ maplen (uintptr_t m)
   return (int32_t) map->__element_count;
 }
 
-extern unsigned char *mapiterinit (uintptr_t)
+extern unsigned char *mapiterinit (struct __go_map_type *, uintptr_t)
   asm ("libgo_reflect.reflect.mapiterinit");
 
 unsigned char *
-mapiterinit (uintptr_t m)
+mapiterinit (struct __go_map_type *mt, uintptr_t m)
 {
   struct __go_hash_iter *it;
 
+  __go_assert (mt->__common.__code == GO_MAP);
   it = __go_alloc (sizeof (struct __go_hash_iter));
   __go_mapiterinit ((struct __go_map *) m, it);
   return (unsigned char *) it;

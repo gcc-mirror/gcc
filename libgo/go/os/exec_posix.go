@@ -4,28 +4,38 @@
 
 package os
 
-import "syscall"
+import (
+	"runtime"
+	"syscall"
+)
+
+type UnixSignal int32
+
+func (sig UnixSignal) String() string {
+	s := runtime.Signame(int32(sig))
+	if len(s) > 0 {
+		return s
+	}
+	return "UnixSignal"
+}
 
 // StartProcess starts a new process with the program, arguments and attributes
 // specified by name, argv and attr.
+//
+// StartProcess is a low-level interface. The exec package provides
+// higher-level interfaces.
 func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err Error) {
 	sysattr := &syscall.ProcAttr{
 		Dir: attr.Dir,
 		Env: attr.Env,
+		Sys: attr.Sys,
 	}
 	if sysattr.Env == nil {
 		sysattr.Env = Environ()
 	}
-	// Create array of integer (system) fds.
-	intfd := make([]int, len(attr.Files))
-	for i, f := range attr.Files {
-		if f == nil {
-			intfd[i] = -1
-		} else {
-			intfd[i] = f.Fd()
-		}
+	for _, f := range attr.Files {
+		sysattr.Files = append(sysattr.Files, f.Fd())
 	}
-	sysattr.Files = intfd
 
 	pid, h, e := syscall.StartProcess(name, argv, sysattr)
 	if iserror(e) {
@@ -34,10 +44,17 @@ func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err E
 	return newProcess(pid, h), nil
 }
 
+// Kill causes the Process to exit immediately.
+func (p *Process) Kill() Error {
+	return p.Signal(SIGKILL)
+}
+
 // Exec replaces the current process with an execution of the
 // named binary, with arguments argv and environment envv.
 // If successful, Exec never returns.  If it fails, it returns an Error.
-// StartProcess is almost always a better way to execute a program.
+//
+// To run a child process, see StartProcess (for a low-level interface)
+// or the exec package (for higher-level interfaces).
 func Exec(name string, argv []string, envv []string) Error {
 	if envv == nil {
 		envv = Environ()
@@ -104,7 +121,10 @@ func itod(i int) string {
 	return string(b[bp:])
 }
 
-func (w Waitmsg) String() string {
+func (w *Waitmsg) String() string {
+	if w == nil {
+		return "<nil>"
+	}
 	// TODO(austin) Use signal names when possible?
 	res := ""
 	switch {

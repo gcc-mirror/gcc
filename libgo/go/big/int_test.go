@@ -13,7 +13,6 @@ import (
 	"testing/quick"
 )
 
-
 func isNormalized(x *Int) bool {
 	if len(x.abs) == 0 {
 		return !x.neg
@@ -22,12 +21,10 @@ func isNormalized(x *Int) bool {
 	return x.abs[len(x.abs)-1] != 0
 }
 
-
 type funZZ func(z, x, y *Int) *Int
 type argZZ struct {
 	z, x, y *Int
 }
-
 
 var sumZZ = []argZZ{
 	{NewInt(0), NewInt(0), NewInt(0)},
@@ -38,7 +35,6 @@ var sumZZ = []argZZ{
 	{NewInt(-1111111110), NewInt(-123456789), NewInt(-987654321)},
 }
 
-
 var prodZZ = []argZZ{
 	{NewInt(0), NewInt(0), NewInt(0)},
 	{NewInt(0), NewInt(1), NewInt(0)},
@@ -46,7 +42,6 @@ var prodZZ = []argZZ{
 	{NewInt(-991 * 991), NewInt(991), NewInt(-991)},
 	// TODO(gri) add larger products
 }
-
 
 func TestSignZ(t *testing.T) {
 	var zero Int
@@ -58,7 +53,6 @@ func TestSignZ(t *testing.T) {
 		}
 	}
 }
-
 
 func TestSetZ(t *testing.T) {
 	for _, a := range sumZZ {
@@ -72,7 +66,6 @@ func TestSetZ(t *testing.T) {
 		}
 	}
 }
-
 
 func TestAbsZ(t *testing.T) {
 	var zero Int
@@ -90,7 +83,6 @@ func TestAbsZ(t *testing.T) {
 	}
 }
 
-
 func testFunZZ(t *testing.T, msg string, f funZZ, a argZZ) {
 	var z Int
 	f(&z, a.x, a.y)
@@ -101,7 +93,6 @@ func testFunZZ(t *testing.T, msg string, f funZZ, a argZZ) {
 		t.Errorf("%s%+v\n\tgot z = %v; want %v", msg, a, &z, a.z)
 	}
 }
-
 
 func TestSumZZ(t *testing.T) {
 	AddZZ := func(z, x, y *Int) *Int { return z.Add(x, y) }
@@ -121,7 +112,6 @@ func TestSumZZ(t *testing.T) {
 	}
 }
 
-
 func TestProdZZ(t *testing.T) {
 	MulZZ := func(z, x, y *Int) *Int { return z.Mul(x, y) }
 	for _, a := range prodZZ {
@@ -132,7 +122,6 @@ func TestProdZZ(t *testing.T) {
 		testFunZZ(t, "MulZZ symmetric", MulZZ, arg)
 	}
 }
-
 
 // mulBytes returns x*y via grade school multiplication. Both inputs
 // and the result are assumed to be in big-endian representation (to
@@ -166,7 +155,6 @@ func mulBytes(x, y []byte) []byte {
 	return z[i:]
 }
 
-
 func checkMul(a, b []byte) bool {
 	var x, y, z1 Int
 	x.SetBytes(a)
@@ -179,13 +167,11 @@ func checkMul(a, b []byte) bool {
 	return z1.Cmp(&z2) == 0
 }
 
-
 func TestMul(t *testing.T) {
 	if err := quick.Check(checkMul, nil); err != nil {
 		t.Error(err)
 	}
 }
-
 
 var mulRangesZ = []struct {
 	a, b int64
@@ -212,7 +198,6 @@ var mulRangesZ = []struct {
 	},
 }
 
-
 func TestMulRangeZ(t *testing.T) {
 	var tmp Int
 	// test entirely positive ranges
@@ -230,7 +215,6 @@ func TestMulRangeZ(t *testing.T) {
 		}
 	}
 }
-
 
 var stringTests = []struct {
 	in   string
@@ -280,7 +264,6 @@ var stringTests = []struct {
 	{"1001010111", "1001010111", 2, 0x257, true},
 }
 
-
 func format(base int) string {
 	switch base {
 	case 2:
@@ -292,7 +275,6 @@ func format(base int) string {
 	}
 	return "%d"
 }
-
 
 func TestGetString(t *testing.T) {
 	z := new(Int)
@@ -315,7 +297,6 @@ func TestGetString(t *testing.T) {
 		}
 	}
 }
-
 
 func TestSetString(t *testing.T) {
 	tmp := new(Int)
@@ -347,6 +328,212 @@ func TestSetString(t *testing.T) {
 	}
 }
 
+var formatTests = []struct {
+	input  string
+	format string
+	output string
+}{
+	{"<nil>", "%x", "<nil>"},
+	{"<nil>", "%#x", "<nil>"},
+	{"<nil>", "%#y", "%!y(big.Int=<nil>)"},
+
+	{"10", "%b", "1010"},
+	{"10", "%o", "12"},
+	{"10", "%d", "10"},
+	{"10", "%v", "10"},
+	{"10", "%x", "a"},
+	{"10", "%X", "A"},
+	{"-10", "%X", "-A"},
+	{"10", "%y", "%!y(big.Int=10)"},
+	{"-10", "%y", "%!y(big.Int=-10)"},
+
+	{"10", "%#b", "1010"},
+	{"10", "%#o", "012"},
+	{"10", "%#d", "10"},
+	{"10", "%#v", "10"},
+	{"10", "%#x", "0xa"},
+	{"10", "%#X", "0XA"},
+	{"-10", "%#X", "-0XA"},
+	{"10", "%#y", "%!y(big.Int=10)"},
+	{"-10", "%#y", "%!y(big.Int=-10)"},
+
+	{"1234", "%d", "1234"},
+	{"1234", "%3d", "1234"},
+	{"1234", "%4d", "1234"},
+	{"-1234", "%d", "-1234"},
+	{"1234", "% 5d", " 1234"},
+	{"1234", "%+5d", "+1234"},
+	{"1234", "%-5d", "1234 "},
+	{"1234", "%x", "4d2"},
+	{"1234", "%X", "4D2"},
+	{"-1234", "%3x", "-4d2"},
+	{"-1234", "%4x", "-4d2"},
+	{"-1234", "%5x", " -4d2"},
+	{"-1234", "%-5x", "-4d2 "},
+	{"1234", "%03d", "1234"},
+	{"1234", "%04d", "1234"},
+	{"1234", "%05d", "01234"},
+	{"1234", "%06d", "001234"},
+	{"-1234", "%06d", "-01234"},
+	{"1234", "%+06d", "+01234"},
+	{"1234", "% 06d", " 01234"},
+	{"1234", "%-6d", "1234  "},
+	{"1234", "%-06d", "1234  "},
+	{"-1234", "%-06d", "-1234 "},
+
+	{"1234", "%.3d", "1234"},
+	{"1234", "%.4d", "1234"},
+	{"1234", "%.5d", "01234"},
+	{"1234", "%.6d", "001234"},
+	{"-1234", "%.3d", "-1234"},
+	{"-1234", "%.4d", "-1234"},
+	{"-1234", "%.5d", "-01234"},
+	{"-1234", "%.6d", "-001234"},
+
+	{"1234", "%8.3d", "    1234"},
+	{"1234", "%8.4d", "    1234"},
+	{"1234", "%8.5d", "   01234"},
+	{"1234", "%8.6d", "  001234"},
+	{"-1234", "%8.3d", "   -1234"},
+	{"-1234", "%8.4d", "   -1234"},
+	{"-1234", "%8.5d", "  -01234"},
+	{"-1234", "%8.6d", " -001234"},
+
+	{"1234", "%+8.3d", "   +1234"},
+	{"1234", "%+8.4d", "   +1234"},
+	{"1234", "%+8.5d", "  +01234"},
+	{"1234", "%+8.6d", " +001234"},
+	{"-1234", "%+8.3d", "   -1234"},
+	{"-1234", "%+8.4d", "   -1234"},
+	{"-1234", "%+8.5d", "  -01234"},
+	{"-1234", "%+8.6d", " -001234"},
+
+	{"1234", "% 8.3d", "    1234"},
+	{"1234", "% 8.4d", "    1234"},
+	{"1234", "% 8.5d", "   01234"},
+	{"1234", "% 8.6d", "  001234"},
+	{"-1234", "% 8.3d", "   -1234"},
+	{"-1234", "% 8.4d", "   -1234"},
+	{"-1234", "% 8.5d", "  -01234"},
+	{"-1234", "% 8.6d", " -001234"},
+
+	{"1234", "%.3x", "4d2"},
+	{"1234", "%.4x", "04d2"},
+	{"1234", "%.5x", "004d2"},
+	{"1234", "%.6x", "0004d2"},
+	{"-1234", "%.3x", "-4d2"},
+	{"-1234", "%.4x", "-04d2"},
+	{"-1234", "%.5x", "-004d2"},
+	{"-1234", "%.6x", "-0004d2"},
+
+	{"1234", "%8.3x", "     4d2"},
+	{"1234", "%8.4x", "    04d2"},
+	{"1234", "%8.5x", "   004d2"},
+	{"1234", "%8.6x", "  0004d2"},
+	{"-1234", "%8.3x", "    -4d2"},
+	{"-1234", "%8.4x", "   -04d2"},
+	{"-1234", "%8.5x", "  -004d2"},
+	{"-1234", "%8.6x", " -0004d2"},
+
+	{"1234", "%+8.3x", "    +4d2"},
+	{"1234", "%+8.4x", "   +04d2"},
+	{"1234", "%+8.5x", "  +004d2"},
+	{"1234", "%+8.6x", " +0004d2"},
+	{"-1234", "%+8.3x", "    -4d2"},
+	{"-1234", "%+8.4x", "   -04d2"},
+	{"-1234", "%+8.5x", "  -004d2"},
+	{"-1234", "%+8.6x", " -0004d2"},
+
+	{"1234", "% 8.3x", "     4d2"},
+	{"1234", "% 8.4x", "    04d2"},
+	{"1234", "% 8.5x", "   004d2"},
+	{"1234", "% 8.6x", "  0004d2"},
+	{"1234", "% 8.7x", " 00004d2"},
+	{"1234", "% 8.8x", " 000004d2"},
+	{"-1234", "% 8.3x", "    -4d2"},
+	{"-1234", "% 8.4x", "   -04d2"},
+	{"-1234", "% 8.5x", "  -004d2"},
+	{"-1234", "% 8.6x", " -0004d2"},
+	{"-1234", "% 8.7x", "-00004d2"},
+	{"-1234", "% 8.8x", "-000004d2"},
+
+	{"1234", "%-8.3d", "1234    "},
+	{"1234", "%-8.4d", "1234    "},
+	{"1234", "%-8.5d", "01234   "},
+	{"1234", "%-8.6d", "001234  "},
+	{"1234", "%-8.7d", "0001234 "},
+	{"1234", "%-8.8d", "00001234"},
+	{"-1234", "%-8.3d", "-1234   "},
+	{"-1234", "%-8.4d", "-1234   "},
+	{"-1234", "%-8.5d", "-01234  "},
+	{"-1234", "%-8.6d", "-001234 "},
+	{"-1234", "%-8.7d", "-0001234"},
+	{"-1234", "%-8.8d", "-00001234"},
+
+	{"16777215", "%b", "111111111111111111111111"}, // 2**24 - 1
+
+	{"0", "%.d", ""},
+	{"0", "%.0d", ""},
+	{"0", "%3.d", ""},
+}
+
+func TestFormat(t *testing.T) {
+	for i, test := range formatTests {
+		var x *Int
+		if test.input != "<nil>" {
+			var ok bool
+			x, ok = new(Int).SetString(test.input, 0)
+			if !ok {
+				t.Errorf("#%d failed reading input %s", i, test.input)
+			}
+		}
+		output := fmt.Sprintf(test.format, x)
+		if output != test.output {
+			t.Errorf("#%d got %q; want %q, {%q, %q, %q}", i, output, test.output, test.input, test.format, test.output)
+		}
+	}
+}
+
+var scanTests = []struct {
+	input     string
+	format    string
+	output    string
+	remaining int
+}{
+	{"1010", "%b", "10", 0},
+	{"0b1010", "%v", "10", 0},
+	{"12", "%o", "10", 0},
+	{"012", "%v", "10", 0},
+	{"10", "%d", "10", 0},
+	{"10", "%v", "10", 0},
+	{"a", "%x", "10", 0},
+	{"0xa", "%v", "10", 0},
+	{"A", "%X", "10", 0},
+	{"-A", "%X", "-10", 0},
+	{"+0b1011001", "%v", "89", 0},
+	{"0xA", "%v", "10", 0},
+	{"0 ", "%v", "0", 1},
+	{"2+3", "%v", "2", 2},
+	{"0XABC 12", "%v", "2748", 3},
+}
+
+func TestScan(t *testing.T) {
+	var buf bytes.Buffer
+	for i, test := range scanTests {
+		x := new(Int)
+		buf.Reset()
+		buf.WriteString(test.input)
+		if _, err := fmt.Fscanf(&buf, test.format, x); err != nil {
+			t.Errorf("#%d error: %s", i, err.String())
+		}
+		if x.String() != test.output {
+			t.Errorf("#%d got %s; want %s", i, x.String(), test.output)
+		}
+		if buf.Len() != test.remaining {
+			t.Errorf("#%d got %d bytes remaining; want %d", i, buf.Len(), test.remaining)
+		}
+	}
+}
 
 // Examples from the Go Language Spec, section "Arithmetic operators"
 var divisionSignsTests = []struct {
@@ -361,7 +548,6 @@ var divisionSignsTests = []struct {
 	{1, 2, 0, 1, 0, 1},
 	{8, 4, 2, 0, 2, 0},
 }
-
 
 func TestDivisionSigns(t *testing.T) {
 	for i, test := range divisionSignsTests {
@@ -420,7 +606,6 @@ func TestDivisionSigns(t *testing.T) {
 	}
 }
 
-
 func checkSetBytes(b []byte) bool {
 	hex1 := hex.EncodeToString(new(Int).SetBytes(b).Bytes())
 	hex2 := hex.EncodeToString(b)
@@ -436,26 +621,22 @@ func checkSetBytes(b []byte) bool {
 	return hex1 == hex2
 }
 
-
 func TestSetBytes(t *testing.T) {
 	if err := quick.Check(checkSetBytes, nil); err != nil {
 		t.Error(err)
 	}
 }
 
-
 func checkBytes(b []byte) bool {
 	b2 := new(Int).SetBytes(b).Bytes()
 	return bytes.Compare(b, b2) == 0
 }
-
 
 func TestBytes(t *testing.T) {
 	if err := quick.Check(checkSetBytes, nil); err != nil {
 		t.Error(err)
 	}
 }
-
 
 func checkQuo(x, y []byte) bool {
 	u := new(Int).SetBytes(x)
@@ -479,7 +660,6 @@ func checkQuo(x, y []byte) bool {
 	return uprime.Cmp(u) == 0
 }
 
-
 var quoTests = []struct {
 	x, y string
 	q, r string
@@ -497,7 +677,6 @@ var quoTests = []struct {
 		"885443715537658812968",
 	},
 }
-
 
 func TestQuo(t *testing.T) {
 	if err := quick.Check(checkQuo, nil); err != nil {
@@ -519,7 +698,6 @@ func TestQuo(t *testing.T) {
 	}
 }
 
-
 func TestQuoStepD6(t *testing.T) {
 	// See Knuth, Volume 2, section 4.3.1, exercise 21. This code exercises
 	// a code path which only triggers 1 in 10^{-19} cases.
@@ -539,7 +717,6 @@ func TestQuoStepD6(t *testing.T) {
 	}
 }
 
-
 var bitLenTests = []struct {
 	in  string
 	out int
@@ -558,7 +735,6 @@ var bitLenTests = []struct {
 	{"-0x4000000000000000000000", 87},
 }
 
-
 func TestBitLen(t *testing.T) {
 	for i, test := range bitLenTests {
 		x, ok := new(Int).SetString(test.in, 0)
@@ -572,7 +748,6 @@ func TestBitLen(t *testing.T) {
 		}
 	}
 }
-
 
 var expTests = []struct {
 	x, y, m string
@@ -597,7 +772,6 @@ var expTests = []struct {
 		"23537740700184054162508175125554701713153216681790245129157191391322321508055833908509185839069455749219131480588829346291",
 	},
 }
-
 
 func TestExp(t *testing.T) {
 	for i, test := range expTests {
@@ -629,7 +803,6 @@ func TestExp(t *testing.T) {
 	}
 }
 
-
 func checkGcd(aBytes, bBytes []byte) bool {
 	a := new(Int).SetBytes(aBytes)
 	b := new(Int).SetBytes(bBytes)
@@ -646,14 +819,12 @@ func checkGcd(aBytes, bBytes []byte) bool {
 	return x.Cmp(d) == 0
 }
 
-
 var gcdTests = []struct {
 	a, b    int64
 	d, x, y int64
 }{
 	{120, 23, 1, -9, 47},
 }
-
 
 func TestGcd(t *testing.T) {
 	for i, test := range gcdTests {
@@ -680,7 +851,6 @@ func TestGcd(t *testing.T) {
 	quick.Check(checkGcd, nil)
 }
 
-
 var primes = []string{
 	"2",
 	"3",
@@ -706,14 +876,12 @@ var primes = []string{
 	"203956878356401977405765866929034577280193993314348263094772646453283062722701277632936616063144088173312372882677123879538709400158306567338328279154499698366071906766440037074217117805690872792848149112022286332144876183376326512083574821647933992961249917319836219304274280243803104015000563790123",
 }
 
-
 var composites = []string{
 	"21284175091214687912771199898307297748211672914763848041968395774954376176754",
 	"6084766654921918907427900243509372380954290099172559290432744450051395395951",
 	"84594350493221918389213352992032324280367711247940675652888030554255915464401",
 	"82793403787388584738507275144194252681",
 }
-
 
 func TestProbablyPrime(t *testing.T) {
 	nreps := 20
@@ -738,13 +906,11 @@ func TestProbablyPrime(t *testing.T) {
 	}
 }
 
-
 type intShiftTest struct {
 	in    string
 	shift uint
 	out   string
 }
-
 
 var rshTests = []intShiftTest{
 	{"0", 0, "0"},
@@ -773,7 +939,6 @@ var rshTests = []intShiftTest{
 	{"340282366920938463463374607431768211456", 128, "1"},
 }
 
-
 func TestRsh(t *testing.T) {
 	for i, test := range rshTests {
 		in, _ := new(Int).SetString(test.in, 10)
@@ -789,7 +954,6 @@ func TestRsh(t *testing.T) {
 	}
 }
 
-
 func TestRshSelf(t *testing.T) {
 	for i, test := range rshTests {
 		z, _ := new(Int).SetString(test.in, 10)
@@ -804,7 +968,6 @@ func TestRshSelf(t *testing.T) {
 		}
 	}
 }
-
 
 var lshTests = []intShiftTest{
 	{"0", 0, "0"},
@@ -828,7 +991,6 @@ var lshTests = []intShiftTest{
 	{"1", 128, "340282366920938463463374607431768211456"},
 }
 
-
 func TestLsh(t *testing.T) {
 	for i, test := range lshTests {
 		in, _ := new(Int).SetString(test.in, 10)
@@ -844,7 +1006,6 @@ func TestLsh(t *testing.T) {
 	}
 }
 
-
 func TestLshSelf(t *testing.T) {
 	for i, test := range lshTests {
 		z, _ := new(Int).SetString(test.in, 10)
@@ -859,7 +1020,6 @@ func TestLshSelf(t *testing.T) {
 		}
 	}
 }
-
 
 func TestLshRsh(t *testing.T) {
 	for i, test := range rshTests {
@@ -888,7 +1048,6 @@ func TestLshRsh(t *testing.T) {
 	}
 }
 
-
 var int64Tests = []int64{
 	0,
 	1,
@@ -902,7 +1061,6 @@ var int64Tests = []int64{
 	-9223372036854775808,
 }
 
-
 func TestInt64(t *testing.T) {
 	for i, testVal := range int64Tests {
 		in := NewInt(testVal)
@@ -913,7 +1071,6 @@ func TestInt64(t *testing.T) {
 		}
 	}
 }
-
 
 var bitwiseTests = []struct {
 	x, y                 string
@@ -958,7 +1115,6 @@ var bitwiseTests = []struct {
 	},
 }
 
-
 type bitFun func(z, x, y *Int) *Int
 
 func testBitFun(t *testing.T, msg string, f bitFun, x, y *Int, exp string) {
@@ -970,7 +1126,6 @@ func testBitFun(t *testing.T, msg string, f bitFun, x, y *Int, exp string) {
 		t.Errorf("%s: got %s want %s", msg, out, expected)
 	}
 }
-
 
 func testBitFunSelf(t *testing.T, msg string, f bitFun, x, y *Int, exp string) {
 	self := new(Int)
@@ -984,6 +1139,142 @@ func testBitFunSelf(t *testing.T, msg string, f bitFun, x, y *Int, exp string) {
 	}
 }
 
+func altBit(x *Int, i int) uint {
+	z := new(Int).Rsh(x, uint(i))
+	z = z.And(z, NewInt(1))
+	if z.Cmp(new(Int)) != 0 {
+		return 1
+	}
+	return 0
+}
+
+func altSetBit(z *Int, x *Int, i int, b uint) *Int {
+	one := NewInt(1)
+	m := one.Lsh(one, uint(i))
+	switch b {
+	case 1:
+		return z.Or(x, m)
+	case 0:
+		return z.AndNot(x, m)
+	}
+	panic("set bit is not 0 or 1")
+}
+
+func testBitset(t *testing.T, x *Int) {
+	n := x.BitLen()
+	z := new(Int).Set(x)
+	z1 := new(Int).Set(x)
+	for i := 0; i < n+10; i++ {
+		old := z.Bit(i)
+		old1 := altBit(z1, i)
+		if old != old1 {
+			t.Errorf("bitset: inconsistent value for Bit(%s, %d), got %v want %v", z1, i, old, old1)
+		}
+		z := new(Int).SetBit(z, i, 1)
+		z1 := altSetBit(new(Int), z1, i, 1)
+		if z.Bit(i) == 0 {
+			t.Errorf("bitset: bit %d of %s got 0 want 1", i, x)
+		}
+		if z.Cmp(z1) != 0 {
+			t.Errorf("bitset: inconsistent value after SetBit 1, got %s want %s", z, z1)
+		}
+		z.SetBit(z, i, 0)
+		altSetBit(z1, z1, i, 0)
+		if z.Bit(i) != 0 {
+			t.Errorf("bitset: bit %d of %s got 1 want 0", i, x)
+		}
+		if z.Cmp(z1) != 0 {
+			t.Errorf("bitset: inconsistent value after SetBit 0, got %s want %s", z, z1)
+		}
+		altSetBit(z1, z1, i, old)
+		z.SetBit(z, i, old)
+		if z.Cmp(z1) != 0 {
+			t.Errorf("bitset: inconsistent value after SetBit old, got %s want %s", z, z1)
+		}
+	}
+	if z.Cmp(x) != 0 {
+		t.Errorf("bitset: got %s want %s", z, x)
+	}
+}
+
+var bitsetTests = []struct {
+	x string
+	i int
+	b uint
+}{
+	{"0", 0, 0},
+	{"0", 200, 0},
+	{"1", 0, 1},
+	{"1", 1, 0},
+	{"-1", 0, 1},
+	{"-1", 200, 1},
+	{"0x2000000000000000000000000000", 108, 0},
+	{"0x2000000000000000000000000000", 109, 1},
+	{"0x2000000000000000000000000000", 110, 0},
+	{"-0x2000000000000000000000000001", 108, 1},
+	{"-0x2000000000000000000000000001", 109, 0},
+	{"-0x2000000000000000000000000001", 110, 1},
+}
+
+func TestBitSet(t *testing.T) {
+	for _, test := range bitwiseTests {
+		x := new(Int)
+		x.SetString(test.x, 0)
+		testBitset(t, x)
+		x = new(Int)
+		x.SetString(test.y, 0)
+		testBitset(t, x)
+	}
+	for i, test := range bitsetTests {
+		x := new(Int)
+		x.SetString(test.x, 0)
+		b := x.Bit(test.i)
+		if b != test.b {
+
+			t.Errorf("#%d want %v got %v", i, test.b, b)
+		}
+	}
+}
+
+func BenchmarkBitset(b *testing.B) {
+	z := new(Int)
+	z.SetBit(z, 512, 1)
+	b.ResetTimer()
+	b.StartTimer()
+	for i := b.N - 1; i >= 0; i-- {
+		z.SetBit(z, i&512, 1)
+	}
+}
+
+func BenchmarkBitsetNeg(b *testing.B) {
+	z := NewInt(-1)
+	z.SetBit(z, 512, 0)
+	b.ResetTimer()
+	b.StartTimer()
+	for i := b.N - 1; i >= 0; i-- {
+		z.SetBit(z, i&512, 0)
+	}
+}
+
+func BenchmarkBitsetOrig(b *testing.B) {
+	z := new(Int)
+	altSetBit(z, z, 512, 1)
+	b.ResetTimer()
+	b.StartTimer()
+	for i := b.N - 1; i >= 0; i-- {
+		altSetBit(z, z, i&512, 1)
+	}
+}
+
+func BenchmarkBitsetNegOrig(b *testing.B) {
+	z := NewInt(-1)
+	altSetBit(z, z, 512, 0)
+	b.ResetTimer()
+	b.StartTimer()
+	for i := b.N - 1; i >= 0; i-- {
+		altSetBit(z, z, i&512, 0)
+	}
+}
 
 func TestBitwise(t *testing.T) {
 	x := new(Int)
@@ -1002,7 +1293,6 @@ func TestBitwise(t *testing.T) {
 		testBitFunSelf(t, "xor", (*Int).Xor, x, y, test.xor)
 	}
 }
-
 
 var notTests = []struct {
 	in  string
@@ -1037,7 +1327,6 @@ func TestNot(t *testing.T) {
 	}
 }
 
-
 var modInverseTests = []struct {
 	element string
 	prime   string
@@ -1062,7 +1351,7 @@ func TestModInverse(t *testing.T) {
 	}
 }
 
-
+// used by TestIntGobEncoding and TestRatGobEncoding
 var gobEncodingTests = []string{
 	"0",
 	"1",
@@ -1073,7 +1362,7 @@ var gobEncodingTests = []string{
 	"298472983472983471903246121093472394872319615612417471234712061",
 }
 
-func TestGobEncoding(t *testing.T) {
+func TestIntGobEncoding(t *testing.T) {
 	var medium bytes.Buffer
 	enc := gob.NewEncoder(&medium)
 	dec := gob.NewDecoder(&medium)
@@ -1081,7 +1370,8 @@ func TestGobEncoding(t *testing.T) {
 		for j := 0; j < 2; j++ {
 			medium.Reset() // empty buffer for each test case (in case of failures)
 			stest := test
-			if j == 0 {
+			if j != 0 {
+				// negative numbers
 				stest = "-" + test
 			}
 			var tx Int

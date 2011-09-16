@@ -4,38 +4,16 @@
 
 // Package os provides a platform-independent interface to operating system
 // functionality.  The design is Unix-like.
+// The os interface is intended to be uniform across all operating systems.
+// Features not generally available appear in the system-specific package syscall.
 package os
 
 import (
-	"runtime"
-	"sync"
 	"syscall"
 )
 
-// File represents an open file descriptor.
-type File struct {
-	fd      int
-	name    string
-	dirinfo *dirInfo   // nil unless directory being read
-	nepipe  int        // number of consecutive EPIPE in Write
-	l       sync.Mutex // used to implement windows pread/pwrite
-}
-
-// Fd returns the integer Unix file descriptor referencing the open file.
-func (file *File) Fd() int { return file.fd }
-
 // Name returns the name of the file as presented to Open.
 func (file *File) Name() string { return file.name }
-
-// NewFile returns a new File with the given file descriptor and name.
-func NewFile(fd int, name string) *File {
-	if fd < 0 {
-		return nil
-	}
-	f := &File{fd: fd, name: name}
-	runtime.SetFinalizer(f, (*File).Close)
-	return f
-}
 
 // Stdin, Stdout, and Stderr are open Files pointing to the standard input,
 // standard output, and standard error file descriptors.
@@ -185,9 +163,7 @@ func (file *File) WriteString(s string) (ret int, err Error) {
 	if file == nil {
 		return 0, EINVAL
 	}
-	b := syscall.StringByteSlice(s)
-	b = b[0 : len(b)-1]
-	return file.Write(b)
+	return file.Write([]byte(s))
 }
 
 // Mkdir creates a new directory with the specified name and permission bits.

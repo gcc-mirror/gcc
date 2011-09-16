@@ -2,13 +2,12 @@
 //
 package main
 
-
 // The SZ struct; it is empty.
 type SZ struct{}
 
 // The S0 struct; no field is exported.
 type S0 struct {
-	// contains unexported fields
+	// contains filtered or unexported fields
 }
 
 // The S1 struct; some fields are not exported.
@@ -16,7 +15,7 @@ type S1 struct {
 	S0
 	A, B, C	float	// 3 exported fields
 	D	int	// 2 unexported fields
-	// contains unexported fields
+	// contains filtered or unexported fields
 }
 
 // The S2 struct; all fields are exported.
@@ -30,14 +29,14 @@ type SZ interface{}
 
 // The I0 interface; no method is exported.
 type I0 interface {
-	// contains unexported methods
+	// contains filtered or unexported methods
 }
 
 // The I1 interface; some methods are not exported.
 type I1 interface {
 	I0
 	F(x float) float	// exported methods
-	// contains unexported methods
+	// contains filtered or unexported methods
 }
 
 // The I2 interface; all methods are exported.
@@ -53,5 +52,5 @@ type S3 struct {
 	F1	int	// line comment for F1
 	// lead comment for F2
 	F2	int	// line comment for F2
-	// contains unexported fields
+	// contains filtered or unexported fields
 }

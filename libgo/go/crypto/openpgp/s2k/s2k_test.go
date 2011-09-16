@@ -7,6 +7,7 @@ package s2k
 import (
 	"bytes"
 	"crypto/sha1"
+	"crypto/rand"
 	"encoding/hex"
 	"testing"
 )
@@ -36,7 +37,6 @@ func TestSalted(t *testing.T) {
 	}
 }
 
-
 var iteratedTests = []struct {
 	in, out string
 }{
@@ -61,7 +61,6 @@ func TestIterated(t *testing.T) {
 		}
 	}
 }
-
 
 var parseTests = []struct {
 	spec, in, out string
@@ -93,5 +92,27 @@ func TestParse(t *testing.T) {
 		if testing.Short() {
 			break
 		}
+	}
+}
+
+func TestSerialize(t *testing.T) {
+	buf := bytes.NewBuffer(nil)
+	key := make([]byte, 16)
+	passphrase := []byte("testing")
+	err := Serialize(buf, key, rand.Reader, passphrase)
+	if err != nil {
+		t.Errorf("failed to serialize: %s", err)
+		return
+	}
+
+	f, err := Parse(buf)
+	if err != nil {
+		t.Errorf("failed to reparse: %s", err)
+		return
+	}
+	key2 := make([]byte, len(key))
+	f(key2, passphrase)
+	if !bytes.Equal(key2, key) {
+		t.Errorf("keys don't match: %x (serialied) vs %x (parsed)", key, key2)
 	}
 }

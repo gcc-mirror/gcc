@@ -38,11 +38,25 @@ func (p *Process) Wait(options int) (w *Waitmsg, err Error) {
 	if e != 0 {
 		return nil, NewSyscallError("wait", e)
 	}
+	if options&WSTOPPED == 0 {
+		p.done = true
+	}
 	w = new(Waitmsg)
 	w.Pid = pid1
 	w.WaitStatus = status
 	w.Rusage = rusage
 	return w, nil
+}
+
+// Signal sends a signal to the Process.
+func (p *Process) Signal(sig Signal) Error {
+	if p.done {
+		return NewError("os: process already finished")
+	}
+	if e := syscall.Kill(p.Pid, int(sig.(UnixSignal))); e != 0 {
+		return Errno(e)
+	}
+	return nil
 }
 
 // Release releases any resources associated with the Process.

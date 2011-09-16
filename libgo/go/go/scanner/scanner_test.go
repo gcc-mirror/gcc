@@ -12,9 +12,7 @@ import (
 	"testing"
 )
 
-
 var fset = token.NewFileSet()
-
 
 const /* class */ (
 	special = iota
@@ -22,7 +20,6 @@ const /* class */ (
 	operator
 	keyword
 )
-
 
 func tokenclass(tok token.Token) int {
 	switch {
@@ -36,13 +33,11 @@ func tokenclass(tok token.Token) int {
 	return special
 }
 
-
 type elt struct {
 	tok   token.Token
 	lit   string
 	class int
 }
-
 
 var tokens = [...]elt{
 	// Special tokens
@@ -89,7 +84,7 @@ var tokens = [...]elt{
 		literal,
 	},
 
-	// Operators and delimitors
+	// Operators and delimiters
 	{token.ADD, "+", operator},
 	{token.SUB, "-", operator},
 	{token.MUL, "*", operator},
@@ -178,7 +173,6 @@ var tokens = [...]elt{
 	{token.VAR, "var", keyword},
 }
 
-
 const whitespace = "  \t  \n\n\n" // to separate tokens
 
 type testErrorHandler struct {
@@ -189,7 +183,6 @@ func (h *testErrorHandler) Error(pos token.Position, msg string) {
 	h.t.Errorf("Error() called (msg = %s)", msg)
 }
 
-
 func newlineCount(s string) int {
 	n := 0
 	for i := 0; i < len(s); i++ {
@@ -199,7 +192,6 @@ func newlineCount(s string) int {
 	}
 	return n
 }
-
 
 func checkPos(t *testing.T, lit string, p token.Pos, expected token.Position) {
 	pos := fset.Position(p)
@@ -216,7 +208,6 @@ func checkPos(t *testing.T, lit string, p token.Pos, expected token.Position) {
 		t.Errorf("bad column for %q: got %d, expected %d", lit, pos.Column, expected.Column)
 	}
 }
-
 
 // Verify that calling Scan() provides the correct results.
 func TestScan(t *testing.T) {
@@ -271,7 +262,6 @@ func TestScan(t *testing.T) {
 	}
 }
 
-
 func checkSemi(t *testing.T, line string, mode uint) {
 	var S Scanner
 	file := fset.AddFile("TestSemis", fset.Base(), len(line))
@@ -304,7 +294,6 @@ func checkSemi(t *testing.T, line string, mode uint) {
 		pos, tok, lit = S.Scan()
 	}
 }
-
 
 var lines = []string{
 	// # indicates a semicolon present in the source
@@ -429,7 +418,6 @@ var lines = []string{
 	"package main$",
 }
 
-
 func TestSemis(t *testing.T) {
 	for _, line := range lines {
 		checkSemi(t, line, AllowIllegalChars|InsertSemis)
@@ -463,25 +451,31 @@ var segments = []segment{
 	{"\n //line foo:42\n  line44", filepath.Join("dir", "foo"), 44},           // bad line comment, ignored
 	{"\n//line foo 42\n  line46", filepath.Join("dir", "foo"), 46},            // bad line comment, ignored
 	{"\n//line foo:42 extra text\n  line48", filepath.Join("dir", "foo"), 48}, // bad line comment, ignored
-	{"\n//line /bar:42\n  line42", string(filepath.Separator) + "bar", 42},
 	{"\n//line ./foo:42\n  line42", filepath.Join("dir", "foo"), 42},
 	{"\n//line a/b/c/File1.go:100\n  line100", filepath.Join("dir", "a", "b", "c", "File1.go"), 100},
 }
 
+var unixsegments = []segment{
+	{"\n//line /bar:42\n  line42", "/bar", 42},
+}
+
 var winsegments = []segment{
+	{"\n//line c:\\bar:42\n  line42", "c:\\bar", 42},
 	{"\n//line c:\\dir\\File1.go:100\n  line100", "c:\\dir\\File1.go", 100},
 }
 
-
 // Verify that comments of the form "//line filename:line" are interpreted correctly.
 func TestLineComments(t *testing.T) {
+	segs := segments
 	if runtime.GOOS == "windows" {
-		segments = append(segments, winsegments...)
+		segs = append(segs, winsegments...)
+	} else {
+		segs = append(segs, unixsegments...)
 	}
 
 	// make source
 	var src string
-	for _, e := range segments {
+	for _, e := range segs {
 		src += e.srcline
 	}
 
@@ -489,7 +483,7 @@ func TestLineComments(t *testing.T) {
 	var S Scanner
 	file := fset.AddFile(filepath.Join("dir", "TestLineComments"), fset.Base(), len(src))
 	S.Init(file, []byte(src), nil, 0)
-	for _, s := range segments {
+	for _, s := range segs {
 		p, _, lit := S.Scan()
 		pos := file.Position(p)
 		checkPos(t, lit, p, token.Position{s.filename, pos.Offset, s.line, pos.Column})
@@ -499,7 +493,6 @@ func TestLineComments(t *testing.T) {
 		t.Errorf("found %d errors", S.ErrorCount)
 	}
 }
-
 
 // Verify that initializing the same scanner more then once works correctly.
 func TestInit(t *testing.T) {
@@ -536,7 +529,6 @@ func TestInit(t *testing.T) {
 	}
 }
 
-
 func TestIllegalChars(t *testing.T) {
 	var s Scanner
 
@@ -557,7 +549,6 @@ func TestIllegalChars(t *testing.T) {
 		t.Errorf("found %d errors", s.ErrorCount)
 	}
 }
-
 
 func TestStdErrorHander(t *testing.T) {
 	const src = "@\n" + // illegal character, cause an error
@@ -601,20 +592,17 @@ func TestStdErrorHander(t *testing.T) {
 	}
 }
 
-
 type errorCollector struct {
 	cnt int            // number of errors encountered
 	msg string         // last error message encountered
 	pos token.Position // last error position encountered
 }
 
-
 func (h *errorCollector) Error(pos token.Position, msg string) {
 	h.cnt++
 	h.msg = msg
 	h.pos = pos
 }
-
 
 func checkError(t *testing.T, src string, tok token.Token, pos int, err string) {
 	var s Scanner
@@ -643,14 +631,15 @@ func checkError(t *testing.T, src string, tok token.Token, pos int, err string) 
 	}
 }
 
-
 var errors = []struct {
 	src string
 	tok token.Token
 	pos int
 	err string
 }{
-	{`#`, token.ILLEGAL, 0, "illegal character '#' (U+23)"},
+	{"\a", token.ILLEGAL, 0, "illegal character U+0007"},
+	{`#`, token.ILLEGAL, 0, "illegal character U+0023 '#'"},
+	{`…`, token.ILLEGAL, 0, "illegal character U+2026 '…'"},
 	{`' '`, token.CHAR, 0, ""},
 	{`''`, token.CHAR, 0, "illegal character literal"},
 	{`'\8'`, token.CHAR, 2, "unknown escape sequence"},
@@ -670,10 +659,11 @@ var errors = []struct {
 	{"078e0", token.FLOAT, 0, ""},
 	{"078", token.INT, 0, "illegal octal number"},
 	{"07800000009", token.INT, 0, "illegal octal number"},
+	{"0x", token.INT, 0, "illegal hexadecimal number"},
+	{"0X", token.INT, 0, "illegal hexadecimal number"},
 	{"\"abc\x00def\"", token.STRING, 4, "illegal character NUL"},
 	{"\"abc\x80def\"", token.STRING, 4, "illegal UTF-8 encoding"},
 }
-
 
 func TestScanErrors(t *testing.T) {
 	for _, e := range errors {

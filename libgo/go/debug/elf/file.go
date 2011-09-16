@@ -81,7 +81,7 @@ func (s *Section) Data() ([]byte, os.Error) {
 // specified link value.
 func (f *File) stringTable(link uint32) ([]byte, os.Error) {
 	if link <= 0 || link >= uint32(len(f.Sections)) {
-		return nil, os.ErrorString("section has invalid string table link")
+		return nil, os.NewError("section has invalid string table link")
 	}
 	return f.Sections[link].Data()
 }
@@ -93,6 +93,7 @@ func (s *Section) Open() io.ReadSeeker { return io.NewSectionReader(s.sr, 0, 1<<
 type ProgHeader struct {
 	Type   ProgType
 	Flags  ProgFlag
+	Off    uint64
 	Vaddr  uint64
 	Paddr  uint64
 	Filesz uint64
@@ -224,6 +225,8 @@ func NewFile(r io.ReaderAt) (*File, os.Error) {
 	f.ABIVersion = ident[EI_ABIVERSION]
 
 	// Read ELF file header
+	var phoff int64
+	var phentsize, phnum int
 	var shoff int64
 	var shentsize, shnum, shstrndx int
 	shstrndx = -1
@@ -239,6 +242,9 @@ func NewFile(r io.ReaderAt) (*File, os.Error) {
 		if v := Version(hdr.Version); v != f.Version {
 			return nil, &FormatError{0, "mismatched ELF version", v}
 		}
+		phoff = int64(hdr.Phoff)
+		phentsize = int(hdr.Phentsize)
+		phnum = int(hdr.Phnum)
 		shoff = int64(hdr.Shoff)
 		shentsize = int(hdr.Shentsize)
 		shnum = int(hdr.Shnum)
@@ -254,6 +260,9 @@ func NewFile(r io.ReaderAt) (*File, os.Error) {
 		if v := Version(hdr.Version); v != f.Version {
 			return nil, &FormatError{0, "mismatched ELF version", v}
 		}
+		phoff = int64(hdr.Phoff)
+		phentsize = int(hdr.Phentsize)
+		phnum = int(hdr.Phnum)
 		shoff = int64(hdr.Shoff)
 		shentsize = int(hdr.Shentsize)
 		shnum = int(hdr.Shnum)
@@ -264,7 +273,47 @@ func NewFile(r io.ReaderAt) (*File, os.Error) {
 	}
 
 	// Read program headers
-	// TODO
+	f.Progs = make([]*Prog, phnum)
+	for i := 0; i < phnum; i++ {
+		off := phoff + int64(i)*int64(phentsize)
+		sr.Seek(off, os.SEEK_SET)
+		p := new(Prog)
+		switch f.Class {
+		case ELFCLASS32:
+			ph := new(Prog32)
+			if err := binary.Read(sr, f.ByteOrder, ph); err != nil {
+				return nil, err
+			}
+			p.ProgHeader = ProgHeader{
+				Type:   ProgType(ph.Type),
+				Flags:  ProgFlag(ph.Flags),
+				Off:    uint64(ph.Off),
+				Vaddr:  uint64(ph.Vaddr),
+				Paddr:  uint64(ph.Paddr),
+				Filesz: uint64(ph.Filesz),
+				Memsz:  uint64(ph.Memsz),
+				Align:  uint64(ph.Align),
+			}
+		case ELFCLASS64:
+			ph := new(Prog64)
+			if err := binary.Read(sr, f.ByteOrder, ph); err != nil {
+				return nil, err
+			}
+			p.ProgHeader = ProgHeader{
+				Type:   ProgType(ph.Type),
+				Flags:  ProgFlag(ph.Flags),
+				Off:    uint64(ph.Off),
+				Vaddr:  uint64(ph.Vaddr),
+				Paddr:  uint64(ph.Paddr),
+				Filesz: uint64(ph.Filesz),
+				Memsz:  uint64(ph.Memsz),
+				Align:  uint64(ph.Align),
+			}
+		}
+		p.sr = io.NewSectionReader(r, int64(p.Off), int64(p.Filesz))
+		p.ReaderAt = p.sr
+		f.Progs[i] = p
+	}
 
 	// Read section headers
 	f.Sections = make([]*Section, shnum)
@@ -341,27 +390,27 @@ func (f *File) getSymbols(typ SectionType) ([]Symbol, []byte, os.Error) {
 		return f.getSymbols32(typ)
 	}
 
-	return nil, nil, os.ErrorString("not implemented")
+	return nil, nil, os.NewError("not implemented")
 }
 
 func (f *File) getSymbols32(typ SectionType) ([]Symbol, []byte, os.Error) {
 	symtabSection := f.SectionByType(typ)
 	if symtabSection == nil {
-		return nil, nil, os.ErrorString("no symbol section")
+		return nil, nil, os.NewError("no symbol section")
 	}
 
 	data, err := symtabSection.Data()
 	if err != nil {
-		return nil, nil, os.ErrorString("cannot load symbol section")
+		return nil, nil, os.NewError("cannot load symbol section")
 	}
 	symtab := bytes.NewBuffer(data)
 	if symtab.Len()%Sym32Size != 0 {
-		return nil, nil, os.ErrorString("length of symbol section is not a multiple of SymSize")
+		return nil, nil, os.NewError("length of symbol section is not a multiple of SymSize")
 	}
 
 	strdata, err := f.stringTable(symtabSection.Link)
 	if err != nil {
-		return nil, nil, os.ErrorString("cannot load string table section")
+		return nil, nil, os.NewError("cannot load string table section")
 	}
 
 	// The first entry is all zeros.
@@ -390,21 +439,21 @@ func (f *File) getSymbols32(typ SectionType) ([]Symbol, []byte, os.Error) {
 func (f *File) getSymbols64(typ SectionType) ([]Symbol, []byte, os.Error) {
 	symtabSection := f.SectionByType(typ)
 	if symtabSection == nil {
-		return nil, nil, os.ErrorString("no symbol section")
+		return nil, nil, os.NewError("no symbol section")
 	}
 
 	data, err := symtabSection.Data()
 	if err != nil {
-		return nil, nil, os.ErrorString("cannot load symbol section")
+		return nil, nil, os.NewError("cannot load symbol section")
 	}
 	symtab := bytes.NewBuffer(data)
 	if symtab.Len()%Sym64Size != 0 {
-		return nil, nil, os.ErrorString("length of symbol section is not a multiple of Sym64Size")
+		return nil, nil, os.NewError("length of symbol section is not a multiple of Sym64Size")
 	}
 
 	strdata, err := f.stringTable(symtabSection.Link)
 	if err != nil {
-		return nil, nil, os.ErrorString("cannot load string table section")
+		return nil, nil, os.NewError("cannot load string table section")
 	}
 
 	// The first entry is all zeros.
@@ -462,12 +511,12 @@ func (f *File) applyRelocations(dst []byte, rels []byte) os.Error {
 		return f.applyRelocationsAMD64(dst, rels)
 	}
 
-	return os.ErrorString("not implemented")
+	return os.NewError("not implemented")
 }
 
 func (f *File) applyRelocationsAMD64(dst []byte, rels []byte) os.Error {
 	if len(rels)%Sym64Size != 0 {
-		return os.ErrorString("length of relocation section is not a multiple of Sym64Size")
+		return os.NewError("length of relocation section is not a multiple of Sym64Size")
 	}
 
 	symbols, _, err := f.getSymbols(SHT_SYMTAB)
@@ -544,6 +593,12 @@ func (f *File) DWARF() (*dwarf.Data, os.Error) {
 
 	abbrev, info, str := dat[0], dat[1], dat[2]
 	return dwarf.New(abbrev, nil, nil, info, nil, nil, nil, str)
+}
+
+// Symbols returns the symbol table for f.
+func (f *File) Symbols() ([]Symbol, os.Error) {
+	sym, _, err := f.getSymbols(SHT_SYMTAB)
+	return sym, err
 }
 
 type ImportedSymbol struct {

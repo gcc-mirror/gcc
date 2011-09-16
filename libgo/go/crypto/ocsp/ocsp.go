@@ -13,6 +13,7 @@ import (
 	"crypto/rsa"
 	_ "crypto/sha1"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"os"
 	"time"
 )
@@ -32,21 +33,8 @@ const (
 	ocspUnauthorized  = 5
 )
 
-type rdnSequence []relativeDistinguishedNameSET
-
-type relativeDistinguishedNameSET []attributeTypeAndValue
-
-type attributeTypeAndValue struct {
-	Type  asn1.ObjectIdentifier
-	Value interface{}
-}
-
-type algorithmIdentifier struct {
-	Algorithm asn1.ObjectIdentifier
-}
-
 type certID struct {
-	HashAlgorithm algorithmIdentifier
+	HashAlgorithm pkix.AlgorithmIdentifier
 	NameHash      []byte
 	IssuerKeyHash []byte
 	SerialNumber  asn1.RawValue
@@ -54,7 +42,7 @@ type certID struct {
 
 type responseASN1 struct {
 	Status   asn1.Enumerated
-	Response responseBytes "explicit,tag:0"
+	Response responseBytes `asn1:"explicit,tag:0"`
 }
 
 type responseBytes struct {
@@ -64,32 +52,32 @@ type responseBytes struct {
 
 type basicResponse struct {
 	TBSResponseData    responseData
-	SignatureAlgorithm algorithmIdentifier
+	SignatureAlgorithm pkix.AlgorithmIdentifier
 	Signature          asn1.BitString
-	Certificates       []asn1.RawValue "explicit,tag:0,optional"
+	Certificates       []asn1.RawValue `asn1:"explicit,tag:0,optional"`
 }
 
 type responseData struct {
 	Raw           asn1.RawContent
-	Version       int         "optional,default:1,explicit,tag:0"
-	RequestorName rdnSequence "optional,explicit,tag:1"
-	KeyHash       []byte      "optional,explicit,tag:2"
+	Version       int              `asn1:"optional,default:1,explicit,tag:0"`
+	RequestorName pkix.RDNSequence `asn1:"optional,explicit,tag:1"`
+	KeyHash       []byte           `asn1:"optional,explicit,tag:2"`
 	ProducedAt    *time.Time
 	Responses     []singleResponse
 }
 
 type singleResponse struct {
 	CertID     certID
-	Good       asn1.Flag   "explicit,tag:0,optional"
-	Revoked    revokedInfo "explicit,tag:1,optional"
-	Unknown    asn1.Flag   "explicit,tag:2,optional"
+	Good       asn1.Flag   `asn1:"explicit,tag:0,optional"`
+	Revoked    revokedInfo `asn1:"explicit,tag:1,optional"`
+	Unknown    asn1.Flag   `asn1:"explicit,tag:2,optional"`
 	ThisUpdate *time.Time
-	NextUpdate *time.Time "explicit,tag:0,optional"
+	NextUpdate *time.Time `asn1:"explicit,tag:0,optional"`
 }
 
 type revokedInfo struct {
 	RevocationTime *time.Time
-	Reason         int "explicit,tag:0,optional"
+	Reason         int `asn1:"explicit,tag:0,optional"`
 }
 
 // This is the exposed reflection of the internal OCSP structures.

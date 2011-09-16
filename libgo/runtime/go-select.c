@@ -533,7 +533,9 @@ mark_all_channels_waiting (struct select_channel* channels, uintptr_t count,
 	  uintptr_t j;
 
 	  /* A channel may be selected for both read and write.  */
-	  if (channels[channels[i].dup_index].is_send != is_send)
+	  if (channels[channels[i].dup_index].is_send == is_send)
+	    continue;
+	  else
 	    {
 	      for (j = channels[i].dup_index + 1; j < i; ++j)
 		{

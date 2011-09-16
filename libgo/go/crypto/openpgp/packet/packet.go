@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package packet implements parsing and serialisation of OpenPGP packets, as
+// Package packet implements parsing and serialization of OpenPGP packets, as
 // specified in RFC 4880.
 package packet
 
@@ -90,6 +90,46 @@ func (r *partialLengthReader) Read(p []byte) (n int, err os.Error) {
 		err = io.ErrUnexpectedEOF
 	}
 	return
+}
+
+// partialLengthWriter writes a stream of data using OpenPGP partial lengths.
+// See RFC 4880, section 4.2.2.4.
+type partialLengthWriter struct {
+	w          io.WriteCloser
+	lengthByte [1]byte
+}
+
+func (w *partialLengthWriter) Write(p []byte) (n int, err os.Error) {
+	for len(p) > 0 {
+		for power := uint(14); power < 32; power-- {
+			l := 1 << power
+			if len(p) >= l {
+				w.lengthByte[0] = 224 + uint8(power)
+				_, err = w.w.Write(w.lengthByte[:])
+				if err != nil {
+					return
+				}
+				var m int
+				m, err = w.w.Write(p[:l])
+				n += m
+				if err != nil {
+					return
+				}
+				p = p[l:]
+				break
+			}
+		}
+	}
+	return
+}
+
+func (w *partialLengthWriter) Close() os.Error {
+	w.lengthByte[0] = 0
+	_, err := w.w.Write(w.lengthByte[:])
+	if err != nil {
+		return err
+	}
+	return w.w.Close()
 }
 
 // A spanReader is an io.LimitReader, but it returns ErrUnexpectedEOF if the
@@ -192,6 +232,20 @@ func serializeHeader(w io.Writer, ptype packetType, length int) (err os.Error) {
 	}
 
 	_, err = w.Write(buf[:n])
+	return
+}
+
+// serializeStreamHeader writes an OpenPGP packet header to w where the
+// length of the packet is unknown. It returns a io.WriteCloser which can be
+// used to write the contents of the packet. See RFC 4880, section 4.2.
+func serializeStreamHeader(w io.WriteCloser, ptype packetType) (out io.WriteCloser, err os.Error) {
+	var buf [1]byte
+	buf[0] = 0x80 | 0x40 | byte(ptype)
+	_, err = w.Write(buf[:])
+	if err != nil {
+		return
+	}
+	out = &partialLengthWriter{w: w}
 	return
 }
 
@@ -301,12 +355,12 @@ type SignatureType uint8
 
 const (
 	SigTypeBinary        SignatureType = 0
-	SigTypeText          = 1
-	SigTypeGenericCert   = 0x10
-	SigTypePersonaCert   = 0x11
-	SigTypeCasualCert    = 0x12
-	SigTypePositiveCert  = 0x13
-	SigTypeSubkeyBinding = 0x18
+	SigTypeText                        = 1
+	SigTypeGenericCert                 = 0x10
+	SigTypePersonaCert                 = 0x11
+	SigTypeCasualCert                  = 0x12
+	SigTypePositiveCert                = 0x13
+	SigTypeSubkeyBinding               = 0x18
 )
 
 // PublicKeyAlgorithm represents the different public key system specified for
@@ -318,23 +372,43 @@ const (
 	PubKeyAlgoRSA            PublicKeyAlgorithm = 1
 	PubKeyAlgoRSAEncryptOnly PublicKeyAlgorithm = 2
 	PubKeyAlgoRSASignOnly    PublicKeyAlgorithm = 3
-	PubKeyAlgoElgamal        PublicKeyAlgorithm = 16
+	PubKeyAlgoElGamal        PublicKeyAlgorithm = 16
 	PubKeyAlgoDSA            PublicKeyAlgorithm = 17
 )
+
+// CanEncrypt returns true if it's possible to encrypt a message to a public
+// key of the given type.
+func (pka PublicKeyAlgorithm) CanEncrypt() bool {
+	switch pka {
+	case PubKeyAlgoRSA, PubKeyAlgoRSAEncryptOnly, PubKeyAlgoElGamal:
+		return true
+	}
+	return false
+}
+
+// CanSign returns true if it's possible for a public key of the given type to
+// sign a message.
+func (pka PublicKeyAlgorithm) CanSign() bool {
+	switch pka {
+	case PubKeyAlgoRSA, PubKeyAlgoRSASignOnly, PubKeyAlgoDSA:
+		return true
+	}
+	return false
+}
 
 // CipherFunction represents the different block ciphers specified for OpenPGP. See
 // http://www.iana.org/assignments/pgp-parameters/pgp-parameters.xhtml#pgp-parameters-13
 type CipherFunction uint8
 
 const (
-	CipherCAST5  = 3
-	CipherAES128 = 7
-	CipherAES192 = 8
-	CipherAES256 = 9
+	CipherCAST5  CipherFunction = 3
+	CipherAES128 CipherFunction = 7
+	CipherAES192 CipherFunction = 8
+	CipherAES256 CipherFunction = 9
 )
 
-// keySize returns the key size, in bytes, of cipher.
-func (cipher CipherFunction) keySize() int {
+// KeySize returns the key size, in bytes, of cipher.
+func (cipher CipherFunction) KeySize() int {
 	switch cipher {
 	case CipherCAST5:
 		return cast5.KeySize
@@ -383,6 +457,14 @@ func readMPI(r io.Reader) (mpi []byte, bitLength uint16, err os.Error) {
 	numBytes := (int(bitLength) + 7) / 8
 	mpi = make([]byte, numBytes)
 	_, err = readFull(r, mpi)
+	return
+}
+
+// mpiLength returns the length of the given *big.Int when serialized as an
+// MPI.
+func mpiLength(n *big.Int) (mpiLengthInBytes int) {
+	mpiLengthInBytes = 2 /* MPI length */
+	mpiLengthInBytes += (n.BitLen() + 7) / 8
 	return
 }
 

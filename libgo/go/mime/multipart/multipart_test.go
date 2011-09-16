@@ -25,7 +25,7 @@ func TestHorizontalWhitespace(t *testing.T) {
 }
 
 func TestBoundaryLine(t *testing.T) {
-	mr := NewReader(strings.NewReader(""), "myBoundary").(*multiReader)
+	mr := NewReader(strings.NewReader(""), "myBoundary")
 	if !mr.isBoundaryDelimiterLine([]byte("--myBoundary\r\n")) {
 		t.Error("expected")
 	}
@@ -81,7 +81,7 @@ func TestNameAccessors(t *testing.T) {
 
 var longLine = strings.Repeat("\n\n\r\r\r\n\r\000", (1<<20)/8)
 
-func testMultipartBody() string {
+func testMultipartBody(sep string) string {
 	testBody := `
 This is a multi-part message.  This line is ignored.
 --MyBoundary
@@ -112,21 +112,26 @@ never read data
 
 useless trailer
 `
-	testBody = strings.Replace(testBody, "\n", "\r\n", -1)
+	testBody = strings.Replace(testBody, "\n", sep, -1)
 	return strings.Replace(testBody, "[longline]", longLine, 1)
 }
 
 func TestMultipart(t *testing.T) {
-	bodyReader := strings.NewReader(testMultipartBody())
-	testMultipart(t, bodyReader)
+	bodyReader := strings.NewReader(testMultipartBody("\r\n"))
+	testMultipart(t, bodyReader, false)
+}
+
+func TestMultipartOnlyNewlines(t *testing.T) {
+	bodyReader := strings.NewReader(testMultipartBody("\n"))
+	testMultipart(t, bodyReader, true)
 }
 
 func TestMultipartSlowInput(t *testing.T) {
-	bodyReader := strings.NewReader(testMultipartBody())
-	testMultipart(t, &slowReader{bodyReader})
+	bodyReader := strings.NewReader(testMultipartBody("\r\n"))
+	testMultipart(t, &slowReader{bodyReader}, false)
 }
 
-func testMultipart(t *testing.T, r io.Reader) {
+func testMultipart(t *testing.T, r io.Reader, onlyNewlines bool) {
 	reader := NewReader(r, "MyBoundary")
 	buf := new(bytes.Buffer)
 
@@ -136,21 +141,28 @@ func testMultipart(t *testing.T, r io.Reader) {
 		t.Error("Expected part1")
 		return
 	}
-	if part.Header.Get("Header1") != "value1" {
-		t.Error("Expected Header1: value")
+	if x := part.Header.Get("Header1"); x != "value1" {
+		t.Errorf("part.Header.Get(%q) = %q, want %q", "Header1", x, "value1")
 	}
-	if part.Header.Get("foo-bar") != "baz" {
-		t.Error("Expected foo-bar: baz")
+	if x := part.Header.Get("foo-bar"); x != "baz" {
+		t.Errorf("part.Header.Get(%q) = %q, want %q", "foo-bar", x, "baz")
 	}
-	if part.Header.Get("Foo-Bar") != "baz" {
-		t.Error("Expected Foo-Bar: baz")
+	if x := part.Header.Get("Foo-Bar"); x != "baz" {
+		t.Errorf("part.Header.Get(%q) = %q, want %q", "Foo-Bar", x, "baz")
 	}
 	buf.Reset()
 	if _, err := io.Copy(buf, part); err != nil {
 		t.Errorf("part 1 copy: %v", err)
 	}
-	expectEq(t, "My value\r\nThe end.",
-		buf.String(), "Value of first part")
+
+	adjustNewlines := func(s string) string {
+		if onlyNewlines {
+			return strings.Replace(s, "\r\n", "\n", -1)
+		}
+		return s
+	}
+
+	expectEq(t, adjustNewlines("My value\r\nThe end."), buf.String(), "Value of first part")
 
 	// Part2
 	part, err = reader.NextPart()
@@ -187,7 +199,7 @@ func testMultipart(t *testing.T, r io.Reader) {
 	if _, err := io.Copy(buf, part); err != nil {
 		t.Errorf("part 3 copy: %v", err)
 	}
-	expectEq(t, "Line 1\r\nLine 2\r\nLine 3 ends in a newline, but just one.\r\n",
+	expectEq(t, adjustNewlines("Line 1\r\nLine 2\r\nLine 3 ends in a newline, but just one.\r\n"),
 		buf.String(), "body of part 3")
 
 	// Part4
@@ -203,7 +215,7 @@ func testMultipart(t *testing.T, r io.Reader) {
 		t.Error("Didn't expect a fifth part.")
 	}
 	if err != os.EOF {
-		t.Errorf("On  fifth part expected os.EOF; got %v", err)
+		t.Errorf("On fifth part expected os.EOF; got %v", err)
 	}
 }
 
@@ -307,6 +319,29 @@ Oh no, premature EOF!
 	}
 }
 
+func TestZeroLengthBody(t *testing.T) {
+	testBody := strings.Replace(`
+This is a multi-part message.  This line is ignored.
+--MyBoundary
+foo: bar
+
+
+--MyBoundary--
+`, "\n", "\r\n", -1)
+	r := NewReader(strings.NewReader(testBody), "MyBoundary")
+	part, err := r.NextPart()
+	if err != nil {
+		t.Fatalf("didn't get a part")
+	}
+	n, err := io.Copy(ioutil.Discard, part)
+	if err != nil {
+		t.Errorf("error reading part: %v", err)
+	}
+	if n != 0 {
+		t.Errorf("read %d bytes; expected 0", n)
+	}
+}
+
 type slowReader struct {
 	r io.Reader
 }
@@ -316,4 +351,30 @@ func (s *slowReader) Read(p []byte) (int, os.Error) {
 		return s.r.Read(p)
 	}
 	return s.r.Read(p[:1])
+}
+
+func TestLineContinuation(t *testing.T) {
+	// This body, extracted from an email, contains headers that span multiple
+	// lines.
+
+	// TODO: The original mail ended with a double-newline before the
+	// final delimiter; this was manually edited to use a CRLF.
+	testBody :=
+		"\n--Apple-Mail-2-292336769\nContent-Transfer-Encoding: 7bit\nContent-Type: text/plain;\n\tcharset=US-ASCII;\n\tdelsp=yes;\n\tformat=flowed\n\nI'm finding the same thing happening on my system (10.4.1).\n\n\n--Apple-Mail-2-292336769\nContent-Transfer-Encoding: quoted-printable\nContent-Type: text/html;\n\tcharset=ISO-8859-1\n\n<HTML><BODY>I'm finding the same thing =\nhappening on my system (10.4.1).=A0 But I built it with XCode =\n2.0.</BODY></=\nHTML>=\n\r\n--Apple-Mail-2-292336769--\n"
+
+	r := NewReader(strings.NewReader(testBody), "Apple-Mail-2-292336769")
+
+	for i := 0; i < 2; i++ {
+		part, err := r.NextPart()
+		if err != nil {
+			t.Fatalf("didn't get a part")
+		}
+		n, err := io.Copy(ioutil.Discard, part)
+		if err != nil {
+			t.Errorf("error reading part: %v", err)
+		}
+		if n <= 0 {
+			t.Errorf("read %d bytes; expected >0", n)
+		}
+	}
 }

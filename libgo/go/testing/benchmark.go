@@ -13,6 +13,7 @@ import (
 )
 
 var matchBenchmarks = flag.String("test.bench", "", "regular expression to select benchmarks to run")
+var benchTime = flag.Float64("test.benchtime", 1, "approximate run time for each benchmark, in seconds")
 
 // An internal type but exported because it is cross-package; part of the implementation
 // of gotest.
@@ -34,7 +35,11 @@ type B struct {
 // StartTimer starts timing a test.  This function is called automatically
 // before a benchmark starts, but it can also used to resume timing after
 // a call to StopTimer.
-func (b *B) StartTimer() { b.start = time.Nanoseconds() }
+func (b *B) StartTimer() {
+	if b.start == 0 {
+		b.start = time.Nanoseconds()
+	}
+}
 
 // StopTimer stops timing a test.  This can be used to pause the timer
 // while performing complex initialization that you don't
@@ -46,9 +51,12 @@ func (b *B) StopTimer() {
 	b.start = 0
 }
 
-// ResetTimer stops the timer and sets the elapsed benchmark time to zero.
+// ResetTimer sets the elapsed benchmark time to zero.
+// It does not affect whether the timer is running.
 func (b *B) ResetTimer() {
-	b.start = 0
+	if b.start > 0 {
+		b.start = time.Nanoseconds()
+	}
 	b.ns = 0
 }
 
@@ -125,14 +133,15 @@ func (b *B) run() BenchmarkResult {
 	// Run the benchmark for a single iteration in case it's expensive.
 	n := 1
 	b.runN(n)
-	// Run the benchmark for at least a second.
-	for b.ns < 1e9 && n < 1e9 {
+	// Run the benchmark for at least the specified amount of time.
+	time := int64(*benchTime * 1e9)
+	for b.ns < time && n < 1e9 {
 		last := n
 		// Predict iterations/sec.
 		if b.nsPerOp() == 0 {
 			n = 1e9
 		} else {
-			n = 1e9 / int(b.nsPerOp())
+			n = int(time / b.nsPerOp())
 		}
 		// Run more iterations than we think we'll need for a second (1.5x).
 		// Don't grow too fast in case we had timing errors previously.
@@ -143,14 +152,13 @@ func (b *B) run() BenchmarkResult {
 		b.runN(n)
 	}
 	return BenchmarkResult{b.N, b.ns, b.bytes}
-
 }
 
 // The results of a benchmark run.
 type BenchmarkResult struct {
 	N     int   // The number of iterations.
 	Ns    int64 // The total time taken.
-	Bytes int64 // The total number of bytes processed.
+	Bytes int64 // Bytes processed in one iteration.
 }
 
 func (r BenchmarkResult) NsPerOp() int64 {
@@ -160,13 +168,31 @@ func (r BenchmarkResult) NsPerOp() int64 {
 	return r.Ns / int64(r.N)
 }
 
-func (r BenchmarkResult) String() string {
-	ns := r.NsPerOp()
-	mb := ""
-	if ns > 0 && r.Bytes > 0 {
-		mb = fmt.Sprintf("\t%7.2f MB/s", (float64(r.Bytes)/1e6)/(float64(ns)/1e9))
+func (r BenchmarkResult) mbPerSec() float64 {
+	if r.Bytes <= 0 || r.Ns <= 0 || r.N <= 0 {
+		return 0
 	}
-	return fmt.Sprintf("%8d\t%10d ns/op%s", r.N, ns, mb)
+	return float64(r.Bytes) * float64(r.N) / float64(r.Ns) * 1e3
+}
+
+func (r BenchmarkResult) String() string {
+	mbs := r.mbPerSec()
+	mb := ""
+	if mbs != 0 {
+		mb = fmt.Sprintf("\t%7.2f MB/s", mbs)
+	}
+	nsop := r.NsPerOp()
+	ns := fmt.Sprintf("%10d ns/op", nsop)
+	if r.N > 0 && nsop < 100 {
+		// The format specifiers here make sure that
+		// the ones digits line up for all three possible formats.
+		if nsop < 10 {
+			ns = fmt.Sprintf("%13.2f ns/op", float64(r.Ns)/float64(r.N))
+		} else {
+			ns = fmt.Sprintf("%12.1f ns/op", float64(r.Ns)/float64(r.N))
+		}
+	}
+	return fmt.Sprintf("%8d\t%s%s", r.N, ns, mb)
 }
 
 // An internal function but exported because it is cross-package; part of the implementation
@@ -185,9 +211,20 @@ func RunBenchmarks(matchString func(pat, str string) (bool, os.Error), benchmark
 		if !matched {
 			continue
 		}
-		b := &B{benchmark: Benchmark}
-		r := b.run()
-		fmt.Printf("%s\t%v\n", Benchmark.Name, r)
+		for _, procs := range cpuList {
+			runtime.GOMAXPROCS(procs)
+			b := &B{benchmark: Benchmark}
+			benchName := Benchmark.Name
+			if procs != 1 {
+				benchName = fmt.Sprintf("%s-%d", Benchmark.Name, procs)
+			}
+			print(fmt.Sprintf("%s\t", benchName))
+			r := b.run()
+			print(fmt.Sprintf("%v\n", r))
+			if p := runtime.GOMAXPROCS(-1); p != procs {
+				print(fmt.Sprintf("%s left GOMAXPROCS set to %d\n", benchName, p))
+			}
+		}
 	}
 }
 

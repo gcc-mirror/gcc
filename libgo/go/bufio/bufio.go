@@ -15,15 +15,16 @@ import (
 	"utf8"
 )
 
-
 const (
 	defaultBufSize = 4096
 )
 
 // Errors introduced by this package.
 type Error struct {
-	os.ErrorString
+	ErrorString string
 }
+
+func (err *Error) String() string { return err.ErrorString }
 
 var (
 	ErrInvalidUnreadByte os.Error = &Error{"bufio: invalid use of UnreadByte"}
@@ -39,7 +40,6 @@ type BufSizeError int
 func (b BufSizeError) String() string {
 	return "bufio: bad buffer size " + strconv.Itoa(int(b))
 }
-
 
 // Buffered input.
 
@@ -101,6 +101,12 @@ func (b *Reader) fill() {
 	}
 }
 
+func (b *Reader) readErr() os.Error {
+	err := b.err
+	b.err = nil
+	return err
+}
+
 // Peek returns the next n bytes without advancing the reader. The bytes stop
 // being valid at the next read call. If Peek returns fewer than n bytes, it
 // also returns an error explaining why the read is short. The error is
@@ -119,7 +125,7 @@ func (b *Reader) Peek(n int) ([]byte, os.Error) {
 	if m > n {
 		m = n
 	}
-	err := b.err
+	err := b.readErr()
 	if m < n && err == nil {
 		err = ErrBufferFull
 	}
@@ -134,11 +140,11 @@ func (b *Reader) Peek(n int) ([]byte, os.Error) {
 func (b *Reader) Read(p []byte) (n int, err os.Error) {
 	n = len(p)
 	if n == 0 {
-		return 0, b.err
+		return 0, b.readErr()
 	}
 	if b.w == b.r {
 		if b.err != nil {
-			return 0, b.err
+			return 0, b.readErr()
 		}
 		if len(p) >= len(b.buf) {
 			// Large read, empty buffer.
@@ -148,11 +154,11 @@ func (b *Reader) Read(p []byte) (n int, err os.Error) {
 				b.lastByte = int(p[n-1])
 				b.lastRuneSize = -1
 			}
-			return n, b.err
+			return n, b.readErr()
 		}
 		b.fill()
 		if b.w == b.r {
-			return 0, b.err
+			return 0, b.readErr()
 		}
 	}
 
@@ -172,7 +178,7 @@ func (b *Reader) ReadByte() (c byte, err os.Error) {
 	b.lastRuneSize = -1
 	for b.w == b.r {
 		if b.err != nil {
-			return 0, b.err
+			return 0, b.readErr()
 		}
 		b.fill()
 	}
@@ -208,7 +214,7 @@ func (b *Reader) ReadRune() (rune int, size int, err os.Error) {
 	}
 	b.lastRuneSize = -1
 	if b.r == b.w {
-		return 0, 0, b.err
+		return 0, 0, b.readErr()
 	}
 	rune, size = int(b.buf[b.r]), 1
 	if rune >= 0x80 {
@@ -260,7 +266,7 @@ func (b *Reader) ReadSlice(delim byte) (line []byte, err os.Error) {
 		if b.err != nil {
 			line := b.buf[b.r:b.w]
 			b.r = b.w
-			return line, b.err
+			return line, b.readErr()
 		}
 
 		n := b.Buffered()
@@ -366,7 +372,6 @@ func (b *Reader) ReadString(delim byte) (line string, err os.Error) {
 	bytes, e := b.ReadBytes(delim)
 	return string(bytes), e
 }
-
 
 // buffered output
 

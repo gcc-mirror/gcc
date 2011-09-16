@@ -10,13 +10,18 @@ import (
 	"fmt"
 	"io"
 	"testing"
+	"url"
 )
 
 type reqTest struct {
-	Raw  string
-	Req  Request
-	Body string
+	Raw   string
+	Req   *Request
+	Body  string
+	Error string
 }
+
+var noError = ""
+var noBody = ""
 
 var reqTests = []reqTest{
 	// Baseline test; All Request fields included for template use
@@ -33,10 +38,10 @@ var reqTests = []reqTest{
 			"Proxy-Connection: keep-alive\r\n\r\n" +
 			"abcdef\n???",
 
-		Request{
+		&Request{
 			Method: "GET",
 			RawURL: "http://www.techcrunch.com/",
-			URL: &URL{
+			URL: &url.URL{
 				Raw:          "http://www.techcrunch.com/",
 				Scheme:       "http",
 				RawPath:      "/",
@@ -58,16 +63,43 @@ var reqTests = []reqTest{
 				"Keep-Alive":       {"300"},
 				"Proxy-Connection": {"keep-alive"},
 				"Content-Length":   {"7"},
+				"User-Agent":       {"Fake"},
 			},
 			Close:         false,
 			ContentLength: 7,
 			Host:          "www.techcrunch.com",
-			Referer:       "",
-			UserAgent:     "Fake",
-			Form:          map[string][]string{},
+			Form:          url.Values{},
 		},
 
 		"abcdef\n",
+
+		noError,
+	},
+
+	// GET request with no body (the normal case)
+	{
+		"GET / HTTP/1.1\r\n" +
+			"Host: foo.com\r\n\r\n",
+
+		&Request{
+			Method: "GET",
+			RawURL: "/",
+			URL: &url.URL{
+				Raw:     "/",
+				Path:    "/",
+				RawPath: "/",
+			},
+			Proto:         "HTTP/1.1",
+			ProtoMajor:    1,
+			ProtoMinor:    1,
+			Close:         false,
+			ContentLength: 0,
+			Host:          "foo.com",
+			Form:          url.Values{},
+		},
+
+		noBody,
+		noError,
 	},
 
 	// Tests that we don't parse a path that looks like a
@@ -76,10 +108,10 @@ var reqTests = []reqTest{
 		"GET //user@host/is/actually/a/path/ HTTP/1.1\r\n" +
 			"Host: test\r\n\r\n",
 
-		Request{
+		&Request{
 			Method: "GET",
 			RawURL: "//user@host/is/actually/a/path/",
-			URL: &URL{
+			URL: &url.URL{
 				Raw:          "//user@host/is/actually/a/path/",
 				Scheme:       "",
 				RawPath:      "//user@host/is/actually/a/path/",
@@ -95,14 +127,31 @@ var reqTests = []reqTest{
 			ProtoMinor:    1,
 			Header:        Header{},
 			Close:         false,
-			ContentLength: -1,
+			ContentLength: 0,
 			Host:          "test",
-			Referer:       "",
-			UserAgent:     "",
-			Form:          map[string][]string{},
+			Form:          url.Values{},
 		},
 
-		"",
+		noBody,
+		noError,
+	},
+
+	// Tests a bogus abs_path on the Request-Line (RFC 2616 section 5.1.2)
+	{
+		"GET ../../../../etc/passwd HTTP/1.1\r\n" +
+			"Host: test\r\n\r\n",
+		nil,
+		noBody,
+		"parse ../../../../etc/passwd: invalid URI for request",
+	},
+
+	// Tests missing URL:
+	{
+		"GET  HTTP/1.1\r\n" +
+			"Host: test\r\n\r\n",
+		nil,
+		noBody,
+		"parse : empty url",
 	},
 }
 
@@ -113,12 +162,14 @@ func TestReadRequest(t *testing.T) {
 		braw.WriteString(tt.Raw)
 		req, err := ReadRequest(bufio.NewReader(&braw))
 		if err != nil {
-			t.Errorf("#%d: %s", i, err)
+			if err.String() != tt.Error {
+				t.Errorf("#%d: error %q, want error %q", i, err.String(), tt.Error)
+			}
 			continue
 		}
 		rbody := req.Body
 		req.Body = nil
-		diff(t, fmt.Sprintf("#%d Request", i), req, &tt.Req)
+		diff(t, fmt.Sprintf("#%d Request", i), req, tt.Req)
 		var bout bytes.Buffer
 		if rbody != nil {
 			io.Copy(&bout, rbody)

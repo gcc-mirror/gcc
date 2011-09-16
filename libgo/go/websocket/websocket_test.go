@@ -15,6 +15,7 @@ import (
 	"net"
 	"sync"
 	"testing"
+	"url"
 )
 
 var serverAddr string
@@ -150,14 +151,14 @@ func TestHTTP(t *testing.T) {
 
 	// If the client did not send a handshake that matches the protocol
 	// specification, the server should abort the WebSocket connection.
-	_, _, err := http.Get(fmt.Sprintf("http://%s/echo", serverAddr))
+	_, err := http.Get(fmt.Sprintf("http://%s/echo", serverAddr))
 	if err == nil {
 		t.Error("Get: unexpected success")
 		return
 	}
-	urlerr, ok := err.(*http.URLError)
+	urlerr, ok := err.(*url.Error)
 	if !ok {
-		t.Errorf("Get: not URLError %#v", err)
+		t.Errorf("Get: not url.Error %#v", err)
 		return
 	}
 	if urlerr.Error != io.ErrUnexpectedEOF {
@@ -169,7 +170,7 @@ func TestHTTP(t *testing.T) {
 func TestHTTPDraft75(t *testing.T) {
 	once.Do(startServer)
 
-	r, _, err := http.Get(fmt.Sprintf("http://%s/echoDraft75", serverAddr))
+	r, err := http.Get(fmt.Sprintf("http://%s/echoDraft75", serverAddr))
 	if err != nil {
 		t.Errorf("Get: error %#v", err)
 		return

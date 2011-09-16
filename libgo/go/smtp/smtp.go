@@ -93,11 +93,11 @@ func (c *Client) ehlo() os.Error {
 		return err
 	}
 	ext := make(map[string]string)
-	extList := strings.Split(msg, "\n", -1)
+	extList := strings.Split(msg, "\n")
 	if len(extList) > 1 {
 		extList = extList[1:]
 		for _, line := range extList {
-			args := strings.Split(line, " ", 2)
+			args := strings.SplitN(line, " ", 2)
 			if len(args) > 1 {
 				ext[args[0]] = args[1]
 			} else {
@@ -106,7 +106,7 @@ func (c *Client) ehlo() os.Error {
 		}
 	}
 	if mechs, ok := ext["AUTH"]; ok {
-		c.auth = strings.Split(mechs, " ", -1)
+		c.auth = strings.Split(mechs, " ")
 	}
 	c.ext = ext
 	return err
@@ -151,8 +151,7 @@ func (c *Client) Auth(a Auth) os.Error {
 		var msg []byte
 		switch code {
 		case 334:
-			msg = make([]byte, encoding.DecodedLen(len(msg64)))
-			_, err = encoding.Decode(msg, []byte(msg64))
+			msg, err = encoding.DecodeString(msg64)
 		case 235:
 			// the last message isn't base64 because it isn't a challenge
 			msg = []byte(msg64)

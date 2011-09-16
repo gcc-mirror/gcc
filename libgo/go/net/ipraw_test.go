@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-
 // TODO(cw): ListenPacket test, Read() test, ipv6 test &
 // Dial()/Listen() level tests
 
@@ -75,15 +74,15 @@ func TestICMP(t *testing.T) {
 		err   os.Error
 	)
 	if *srchost != "" {
-		laddr, err = ResolveIPAddr(*srchost)
+		laddr, err = ResolveIPAddr("ip4", *srchost)
 		if err != nil {
-			t.Fatalf(`net.ResolveIPAddr("%v") = %v, %v`, *srchost, laddr, err)
+			t.Fatalf(`net.ResolveIPAddr("ip4", %v") = %v, %v`, *srchost, laddr, err)
 		}
 	}
 
-	raddr, err := ResolveIPAddr(*dsthost)
+	raddr, err := ResolveIPAddr("ip4", *dsthost)
 	if err != nil {
-		t.Fatalf(`net.ResolveIPAddr("%v") = %v, %v`, *dsthost, raddr, err)
+		t.Fatalf(`net.ResolveIPAddr("ip4", %v") = %v, %v`, *dsthost, raddr, err)
 	}
 
 	c, err := ListenIP("ip4:icmp", laddr)

@@ -9,13 +9,11 @@ package types
 
 import "go/ast"
 
-
 var (
-	scope, // current scope to use for initialization
-	Universe,
-	Unsafe *ast.Scope
+	scope    *ast.Scope // current scope to use for initialization
+	Universe *ast.Scope
+	Unsafe   *ast.Object // package unsafe
 )
-
 
 func define(kind ast.ObjKind, name string) *ast.Object {
 	obj := ast.NewObj(kind, name)
@@ -25,7 +23,6 @@ func define(kind ast.ObjKind, name string) *ast.Object {
 	return obj
 }
 
-
 func defType(name string) *Name {
 	obj := define(ast.Typ, name)
 	typ := &Name{Underlying: &Basic{}, Obj: obj}
@@ -33,18 +30,15 @@ func defType(name string) *Name {
 	return typ
 }
 
-
 func defConst(name string) {
 	obj := define(ast.Con, name)
 	_ = obj // TODO(gri) fill in other properties
 }
 
-
 func defFun(name string) {
 	obj := define(ast.Fun, name)
 	_ = obj // TODO(gri) fill in other properties
 }
-
 
 var (
 	Bool,
@@ -54,10 +48,9 @@ var (
 	String *Name
 )
 
-
 func init() {
-	Universe = ast.NewScope(nil)
-	scope = Universe
+	scope = ast.NewScope(nil)
+	Universe = scope
 
 	Bool = defType("bool")
 	defType("byte") // TODO(gri) should be an alias for uint8
@@ -98,8 +91,10 @@ func init() {
 	defFun("real")
 	defFun("recover")
 
-	Unsafe = ast.NewScope(nil)
-	scope = Unsafe
+	scope = ast.NewScope(nil)
+	Unsafe = ast.NewObj(ast.Pkg, "unsafe")
+	Unsafe.Data = scope
+
 	defType("Pointer")
 
 	defFun("Alignof")

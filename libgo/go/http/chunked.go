@@ -6,19 +6,30 @@ package http
 
 import (
 	"io"
+	"log"
 	"os"
 	"strconv"
+	"bufio"
 )
 
 // NewChunkedWriter returns a new writer that translates writes into HTTP
-// "chunked" format before writing them to w.  Closing the returned writer
+// "chunked" format before writing them to w. Closing the returned writer
 // sends the final 0-length chunk that marks the end of the stream.
+//
+// NewChunkedWriter is not needed by normal applications. The http
+// package adds chunking automatically if handlers don't set a
+// Content-Length header. Using NewChunkedWriter inside a handler
+// would result in double chunking or chunking with a Content-Length
+// length, both of which are wrong.
 func NewChunkedWriter(w io.Writer) io.WriteCloser {
+	if _, bad := w.(*response); bad {
+		log.Printf("warning: using NewChunkedWriter in an http.Handler; expect corrupt output")
+	}
 	return &chunkedWriter{w}
 }
 
 // Writing to ChunkedWriter translates to writing in HTTP chunked Transfer
-// Encoding wire format to the undering Wire writer.
+// Encoding wire format to the underlying Wire writer.
 type chunkedWriter struct {
 	Wire io.Writer
 }
@@ -53,4 +64,14 @@ func (cw *chunkedWriter) Write(data []byte) (n int, err os.Error) {
 func (cw *chunkedWriter) Close() os.Error {
 	_, err := io.WriteString(cw.Wire, "0\r\n")
 	return err
+}
+
+// NewChunkedReader returns a new reader that translates the data read from r
+// out of HTTP "chunked" format before returning it. 
+// The reader returns os.EOF when the final 0-length chunk is read.
+//
+// NewChunkedReader is not needed by normal applications. The http package
+// automatically decodes chunking when reading response bodies.
+func NewChunkedReader(r *bufio.Reader) io.Reader {
+	return &chunkedReader{r: r}
 }

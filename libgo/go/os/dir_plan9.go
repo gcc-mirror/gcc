@@ -9,35 +9,46 @@ import (
 )
 
 // Readdir reads the contents of the directory associated with file and
-// returns an array of up to count FileInfo structures, in directory order. 
-// Subsequent calls on the same file will yield further FileInfos.
-// A negative count means to read until EOF.
-// Readdir returns the array and an Error, if any.
-func (file *File) Readdir(count int) (fi []FileInfo, err Error) {
+// returns an array of up to n FileInfo structures, as would be returned
+// by Lstat, in directory order. Subsequent calls on the same file will yield
+// further FileInfos.
+//
+// If n > 0, Readdir returns at most n FileInfo structures. In this case, if
+// Readdirnames returns an empty slice, it will return a non-nil error
+// explaining why. At the end of a directory, the error is os.EOF.
+//
+// If n <= 0, Readdir returns all the FileInfo from the directory in
+// a single slice. In this case, if Readdir succeeds (reads all
+// the way to the end of the directory), it returns the slice and a
+// nil os.Error. If it encounters an error before the end of the
+// directory, Readdir returns the FileInfo read until that point
+// and a non-nil error.
+func (file *File) Readdir(n int) (fi []FileInfo, err Error) {
 	// If this file has no dirinfo, create one.
 	if file.dirinfo == nil {
 		file.dirinfo = new(dirInfo)
 	}
 	d := file.dirinfo
-	size := count
-	if size < 0 {
+	size := n
+	if size <= 0 {
 		size = 100
+		n = -1
 	}
 	result := make([]FileInfo, 0, size) // Empty with room to grow.
-	for count != 0 {
+	for n != 0 {
 		// Refill the buffer if necessary
 		if d.bufp >= d.nbuf {
 			d.bufp = 0
 			var e Error
 			d.nbuf, e = file.Read(d.buf[:])
 			if e != nil && e != EOF {
-				return nil, &PathError{"readdir", file.name, e}
+				return result, &PathError{"readdir", file.name, e}
 			}
 			if e == EOF {
 				break
 			}
 			if d.nbuf < syscall.STATFIXLEN {
-				return nil, &PathError{"readdir", file.name, Eshortstat}
+				return result, &PathError{"readdir", file.name, Eshortstat}
 			}
 		}
 
@@ -45,39 +56,44 @@ func (file *File) Readdir(count int) (fi []FileInfo, err Error) {
 		m, _ := gbit16(d.buf[d.bufp:])
 		m += 2
 		if m < syscall.STATFIXLEN {
-			return nil, &PathError{"readdir", file.name, Eshortstat}
+			return result, &PathError{"readdir", file.name, Eshortstat}
 		}
 		dir, e := UnmarshalDir(d.buf[d.bufp : d.bufp+int(m)])
 		if e != nil {
-			return nil, &PathError{"readdir", file.name, e}
+			return result, &PathError{"readdir", file.name, e}
 		}
 		var f FileInfo
 		fileInfoFromStat(&f, dir)
 		result = append(result, f)
 
 		d.bufp += int(m)
-		count--
+		n--
+	}
+
+	if n >= 0 && len(result) == 0 {
+		return result, EOF
 	}
 	return result, nil
 }
 
-// Readdirnames returns an array of up to count file names residing in the 
-// directory associated with file. A negative count will return all of them.
-// Readdir returns the array and an Error, if any.
-func (file *File) Readdirnames(count int) (names []string, err Error) {
-	fi, e := file.Readdir(count)
-
-	if e != nil {
-		return []string{}, e
-	}
-
+// Readdirnames reads and returns a slice of names from the directory f.
+//
+// If n > 0, Readdirnames returns at most n names. In this case, if
+// Readdirnames returns an empty slice, it will return a non-nil error
+// explaining why. At the end of a directory, the error is os.EOF.
+//
+// If n <= 0, Readdirnames returns all the names from the directory in
+// a single slice. In this case, if Readdirnames succeeds (reads all
+// the way to the end of the directory), it returns the slice and a
+// nil os.Error. If it encounters an error before the end of the
+// directory, Readdirnames returns the names read until that point and
+// a non-nil error.
+func (file *File) Readdirnames(n int) (names []string, err Error) {
+	fi, err := file.Readdir(n)
 	names = make([]string, len(fi))
-	err = nil
-
 	for i := range fi {
 		names[i] = fi[i].Name
 	}
-
 	return
 }
 
@@ -142,7 +158,7 @@ func pdir(b []byte, d *Dir) []byte {
 	return b
 }
 
-// UnmarshalDir reads a 9P Stat message from a 9P protocol message strored in b,
+// UnmarshalDir reads a 9P Stat message from a 9P protocol message stored in b,
 // returning the corresponding Dir struct.
 func UnmarshalDir(b []byte) (d *Dir, err Error) {
 	n := uint16(0)
@@ -172,7 +188,7 @@ func UnmarshalDir(b []byte) (d *Dir, err Error) {
 	return d, nil
 }
 
-// gqid reads the qid part of a 9P Stat message from a 9P protocol message strored in b,
+// gqid reads the qid part of a 9P Stat message from a 9P protocol message stored in b,
 // returning the corresponding Qid struct and the remaining slice of b.
 func gqid(b []byte) (Qid, []byte) {
 	var q Qid
@@ -190,25 +206,25 @@ func pqid(b []byte, q Qid) []byte {
 	return b
 }
 
-// gbit8 reads a byte-sized numeric value from a 9P protocol message strored in b,
+// gbit8 reads a byte-sized numeric value from a 9P protocol message stored in b,
 // returning the value and the remaining slice of b.
 func gbit8(b []byte) (uint8, []byte) {
 	return uint8(b[0]), b[1:]
 }
 
-// gbit16 reads a 16-bit numeric value from a 9P protocol message strored in b,
+// gbit16 reads a 16-bit numeric value from a 9P protocol message stored in b,
 // returning the value and the remaining slice of b.
 func gbit16(b []byte) (uint16, []byte) {
 	return uint16(b[0]) | uint16(b[1])<<8, b[2:]
 }
 
-// gbit32 reads a 32-bit numeric value from a 9P protocol message strored in b,
+// gbit32 reads a 32-bit numeric value from a 9P protocol message stored in b,
 // returning the value and the remaining slice of b.
 func gbit32(b []byte) (uint32, []byte) {
 	return uint32(b[0]) | uint32(b[1])<<8 | uint32(b[2])<<16 | uint32(b[3])<<24, b[4:]
 }
 
-// gbit64 reads a 64-bit numeric value from a 9P protocol message strored in b,
+// gbit64 reads a 64-bit numeric value from a 9P protocol message stored in b,
 // returning the value and the remaining slice of b.
 func gbit64(b []byte) (uint64, []byte) {
 	lo, b := gbit32(b)
@@ -216,7 +232,7 @@ func gbit64(b []byte) (uint64, []byte) {
 	return uint64(hi)<<32 | uint64(lo), b
 }
 
-// gstring reads a string from a 9P protocol message strored in b,
+// gstring reads a string from a 9P protocol message stored in b,
 // returning the value as a Go string and the remaining slice of b.
 func gstring(b []byte) (string, []byte) {
 	n, b := gbit16(b)

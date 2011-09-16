@@ -5,6 +5,7 @@
 package binary
 
 import (
+	"io"
 	"os"
 	"bytes"
 	"math"
@@ -158,5 +159,77 @@ func TestWriteT(t *testing.T) {
 		if err == nil {
 			t.Errorf("WriteT.%v: have nil, want non-nil", tv.Field(i).Type())
 		}
+	}
+}
+
+type byteSliceReader struct {
+	remain []byte
+}
+
+func (br *byteSliceReader) Read(p []byte) (int, os.Error) {
+	n := copy(p, br.remain)
+	br.remain = br.remain[n:]
+	return n, nil
+}
+
+func BenchmarkRead(b *testing.B) {
+	var ls Struct
+	bsr := &byteSliceReader{}
+	var r io.Reader = bsr
+
+	for i := 0; i < b.N; i++ {
+		bsr.remain = big
+		Read(r, BigEndian, &ls.Int8)
+		Read(r, BigEndian, &ls.Int16)
+		Read(r, BigEndian, &ls.Int32)
+		Read(r, BigEndian, &ls.Int64)
+		Read(r, BigEndian, &ls.Uint8)
+		Read(r, BigEndian, &ls.Uint16)
+		Read(r, BigEndian, &ls.Uint32)
+		Read(r, BigEndian, &ls.Uint64)
+	}
+
+	want := s
+	want.Float32 = 0
+	want.Float64 = 0
+	want.Complex64 = 0
+	want.Complex128 = 0
+	for i := range want.Array {
+		want.Array[i] = 0
+	}
+	if !reflect.DeepEqual(ls, want) {
+		panic("no match")
+	}
+}
+
+func BenchmarkWrite(b *testing.B) {
+	buf := new(bytes.Buffer)
+	var w io.Writer = buf
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		Write(w, BigEndian, &s.Int8)
+		Write(w, BigEndian, &s.Int16)
+		Write(w, BigEndian, &s.Int32)
+		Write(w, BigEndian, &s.Int64)
+		Write(w, BigEndian, &s.Uint8)
+		Write(w, BigEndian, &s.Uint16)
+		Write(w, BigEndian, &s.Uint32)
+		Write(w, BigEndian, &s.Uint64)
+		Write(w, BigEndian, s.Int8)
+		Write(w, BigEndian, s.Int16)
+		Write(w, BigEndian, s.Int32)
+		Write(w, BigEndian, s.Int64)
+		Write(w, BigEndian, s.Uint8)
+		Write(w, BigEndian, s.Uint16)
+		Write(w, BigEndian, s.Uint32)
+		Write(w, BigEndian, s.Uint64)
+	}
+
+	if !bytes.Equal(buf.Bytes()[:30], big[:30]) {
+		panic("first half doesn't match")
+	}
+	if !bytes.Equal(buf.Bytes()[30:], big[:30]) {
+		panic("second half doesn't match")
 	}
 }

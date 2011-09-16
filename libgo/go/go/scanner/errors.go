@@ -5,14 +5,12 @@
 package scanner
 
 import (
-	"container/vector"
 	"fmt"
 	"go/token"
 	"io"
 	"os"
 	"sort"
 )
-
 
 // An implementation of an ErrorHandler may be provided to the Scanner.
 // If a syntax error is encountered and a handler was installed, Error
@@ -22,7 +20,6 @@ import (
 type ErrorHandler interface {
 	Error(pos token.Position, msg string)
 }
-
 
 // ErrorVector implements the ErrorHandler interface. It maintains a list
 // of errors which can be retrieved with GetErrorList and GetError. The
@@ -34,17 +31,14 @@ type ErrorHandler interface {
 // error handling is obtained.
 //
 type ErrorVector struct {
-	errors vector.Vector
+	errors []*Error
 }
 
-
 // Reset resets an ErrorVector to no errors.
-func (h *ErrorVector) Reset() { h.errors.Resize(0, 0) }
-
+func (h *ErrorVector) Reset() { h.errors = h.errors[:0] }
 
 // ErrorCount returns the number of errors collected.
-func (h *ErrorVector) ErrorCount() int { return h.errors.Len() }
-
+func (h *ErrorVector) ErrorCount() int { return len(h.errors) }
 
 // Within ErrorVector, an error is represented by an Error node. The
 // position Pos, if valid, points to the beginning of the offending
@@ -55,7 +49,6 @@ type Error struct {
 	Msg string
 }
 
-
 func (e *Error) String() string {
 	if e.Pos.Filename != "" || e.Pos.IsValid() {
 		// don't print "<unknown position>"
@@ -65,15 +58,12 @@ func (e *Error) String() string {
 	return e.Msg
 }
 
-
 // An ErrorList is a (possibly sorted) list of Errors.
 type ErrorList []*Error
-
 
 // ErrorList implements the sort Interface.
 func (p ErrorList) Len() int      { return len(p) }
 func (p ErrorList) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
-
 
 func (p ErrorList) Less(i, j int) bool {
 	e := &p[i].Pos
@@ -95,7 +85,6 @@ func (p ErrorList) Less(i, j int) bool {
 	return false
 }
 
-
 func (p ErrorList) String() string {
 	switch len(p) {
 	case 0:
@@ -106,7 +95,6 @@ func (p ErrorList) String() string {
 	return fmt.Sprintf("%s (and %d more errors)", p[0].String(), len(p)-1)
 }
 
-
 // These constants control the construction of the ErrorList
 // returned by GetErrors.
 //
@@ -116,20 +104,17 @@ const (
 	NoMultiples        // sort error list and leave only the first error per line
 )
 
-
 // GetErrorList returns the list of errors collected by an ErrorVector.
 // The construction of the ErrorList returned is controlled by the mode
 // parameter. If there are no errors, the result is nil.
 //
 func (h *ErrorVector) GetErrorList(mode int) ErrorList {
-	if h.errors.Len() == 0 {
+	if len(h.errors) == 0 {
 		return nil
 	}
 
-	list := make(ErrorList, h.errors.Len())
-	for i := 0; i < h.errors.Len(); i++ {
-		list[i] = h.errors.At(i).(*Error)
-	}
+	list := make(ErrorList, len(h.errors))
+	copy(list, h.errors)
 
 	if mode >= Sorted {
 		sort.Sort(list)
@@ -151,25 +136,22 @@ func (h *ErrorVector) GetErrorList(mode int) ErrorList {
 	return list
 }
 
-
 // GetError is like GetErrorList, but it returns an os.Error instead
 // so that a nil result can be assigned to an os.Error variable and
 // remains nil.
 //
 func (h *ErrorVector) GetError(mode int) os.Error {
-	if h.errors.Len() == 0 {
+	if len(h.errors) == 0 {
 		return nil
 	}
 
 	return h.GetErrorList(mode)
 }
 
-
 // ErrorVector implements the ErrorHandler interface.
 func (h *ErrorVector) Error(pos token.Position, msg string) {
-	h.errors.Push(&Error{pos, msg})
+	h.errors = append(h.errors, &Error{pos, msg})
 }
-
 
 // PrintError is a utility function that prints a list of errors to w,
 // one error per line, if the err parameter is an ErrorList. Otherwise

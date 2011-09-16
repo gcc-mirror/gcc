@@ -234,11 +234,14 @@ func smallReaddirnames(file *File, length int, t *testing.T) []string {
 	count := 0
 	for {
 		d, err := file.Readdirnames(1)
+		if err == EOF {
+			break
+		}
 		if err != nil {
-			t.Fatalf("readdir %q failed: %v", file.Name(), err)
+			t.Fatalf("readdirnames %q failed: %v", file.Name(), err)
 		}
 		if len(d) == 0 {
-			break
+			t.Fatalf("readdirnames %q returned empty slice and no error", file.Name())
 		}
 		names[count] = d[0]
 		count++
@@ -281,9 +284,81 @@ func TestReaddirnamesOneAtATime(t *testing.T) {
 	}
 }
 
+func TestReaddirNValues(t *testing.T) {
+	if testing.Short() {
+		t.Logf("test.short; skipping")
+		return
+	}
+	dir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatalf("TempDir: %v", err)
+	}
+	defer RemoveAll(dir)
+	for i := 1; i <= 105; i++ {
+		f, err := Create(filepath.Join(dir, fmt.Sprintf("%d", i)))
+		if err != nil {
+			t.Fatalf("Create: %v", err)
+		}
+		f.Write([]byte(strings.Repeat("X", i)))
+		f.Close()
+	}
+
+	var d *File
+	openDir := func() {
+		var err Error
+		d, err = Open(dir)
+		if err != nil {
+			t.Fatalf("Open directory: %v", err)
+		}
+	}
+
+	readDirExpect := func(n, want int, wantErr Error) {
+		fi, err := d.Readdir(n)
+		if err != wantErr {
+			t.Fatalf("Readdir of %d got error %v, want %v", n, err, wantErr)
+		}
+		if g, e := len(fi), want; g != e {
+			t.Errorf("Readdir of %d got %d files, want %d", n, g, e)
+		}
+	}
+
+	readDirNamesExpect := func(n, want int, wantErr Error) {
+		fi, err := d.Readdirnames(n)
+		if err != wantErr {
+			t.Fatalf("Readdirnames of %d got error %v, want %v", n, err, wantErr)
+		}
+		if g, e := len(fi), want; g != e {
+			t.Errorf("Readdirnames of %d got %d files, want %d", n, g, e)
+		}
+	}
+
+	for _, fn := range []func(int, int, Error){readDirExpect, readDirNamesExpect} {
+		// Test the slurp case
+		openDir()
+		fn(0, 105, nil)
+		fn(0, 0, nil)
+		d.Close()
+
+		// Slurp with -1 instead
+		openDir()
+		fn(-1, 105, nil)
+		fn(-2, 0, nil)
+		fn(0, 0, nil)
+		d.Close()
+
+		// Test the bounded case
+		openDir()
+		fn(1, 1, nil)
+		fn(2, 2, nil)
+		fn(105, 102, nil) // and tests buffer >100 case
+		fn(3, 0, EOF)
+		d.Close()
+	}
+}
+
 func TestHardLink(t *testing.T) {
-	// Hardlinks are not supported under windows.
-	if syscall.OS == "windows" {
+	// Hardlinks are not supported under windows or Plan 9.
+	if syscall.OS == "windows" || syscall.OS == "plan9" {
 		return
 	}
 	from, to := "hardlinktestfrom", "hardlinktestto"
@@ -315,8 +390,8 @@ func TestHardLink(t *testing.T) {
 }
 
 func TestSymLink(t *testing.T) {
-	// Symlinks are not supported under windows.
-	if syscall.OS == "windows" {
+	// Symlinks are not supported under windows or Plan 9.
+	if syscall.OS == "windows" || syscall.OS == "plan9" {
 		return
 	}
 	from, to := "symlinktestfrom", "symlinktestto"
@@ -377,8 +452,8 @@ func TestSymLink(t *testing.T) {
 }
 
 func TestLongSymlink(t *testing.T) {
-	// Symlinks are not supported under windows.
-	if syscall.OS == "windows" {
+	// Symlinks are not supported under windows or Plan 9.
+	if syscall.OS == "windows" || syscall.OS == "plan9" {
 		return
 	}
 	s := "0123456789abcdef"
@@ -511,8 +586,9 @@ func checkUidGid(t *testing.T, path string, uid, gid int) {
 }
 
 func TestChown(t *testing.T) {
-	// Chown is not supported under windows.
-	if syscall.OS == "windows" {
+	// Chown is not supported under windows or Plan 9.
+	// Plan9 provides a native ChownPlan9 version instead.
+	if syscall.OS == "windows" || syscall.OS == "plan9" {
 		return
 	}
 	// Use TempDir() to make sure we're on a local file system,
@@ -631,7 +707,11 @@ func TestChtimes(t *testing.T) {
 		t.Fatalf("second Stat %s: %s", f.Name(), err)
 	}
 
-	if postStat.Atime_ns >= preStat.Atime_ns {
+	/* Plan 9:
+		Mtime is the time of the last change of content.  Similarly, atime is set whenever the
+	    contents are accessed; also, it is set whenever mtime is set.
+	*/
+	if postStat.Atime_ns >= preStat.Atime_ns && syscall.OS != "plan9" {
 		t.Errorf("Atime_ns didn't go backwards; was=%d, after=%d",
 			preStat.Atime_ns,
 			postStat.Atime_ns)
@@ -656,6 +736,10 @@ func TestChdirAndGetwd(t *testing.T) {
 	// These are chosen carefully not to be symlinks on a Mac
 	// (unlike, say, /var, /etc, and /tmp).
 	dirs := []string{"/", "/usr/bin"}
+	// /usr/bin does not usually exist on Plan 9.
+	if syscall.OS == "plan9" {
+		dirs = []string{"/", "/usr"}
+	}
 	for mode := 0; mode < 2; mode++ {
 		for _, d := range dirs {
 			if mode == 0 {
@@ -781,7 +865,15 @@ func TestOpenError(t *testing.T) {
 			t.Errorf("Open(%q, %d) returns error of %T type; want *os.PathError", tt.path, tt.mode, err)
 		}
 		if perr.Error != tt.error {
-			t.Errorf("Open(%q, %d) = _, %q; want %q", tt.path, tt.mode, perr.Error.String(), tt.error.String())
+			if syscall.OS == "plan9" {
+				syscallErrStr := perr.Error.String()
+				expectedErrStr := strings.Replace(tt.error.String(), "file ", "", 1)
+				if !strings.HasSuffix(syscallErrStr, expectedErrStr) {
+					t.Errorf("Open(%q, %d) = _, %q; want suffix %q", tt.path, tt.mode, syscallErrStr, expectedErrStr)
+				}
+			} else {
+				t.Errorf("Open(%q, %d) = _, %q; want %q", tt.path, tt.mode, perr.Error.String(), tt.error.String())
+			}
 		}
 	}
 }
@@ -801,7 +893,14 @@ func run(t *testing.T, cmd []string) string {
 
 	var b bytes.Buffer
 	io.Copy(&b, r)
-	p.Wait(0)
+	_, err = p.Wait(0)
+	if err != nil {
+		t.Fatalf("run hostname Wait: %v", err)
+	}
+	err = p.Kill()
+	if err == nil {
+		t.Errorf("expected an error from Kill running 'hostname'")
+	}
 	output := b.String()
 	if n := len(output); n > 0 && output[n-1] == '\n' {
 		output = output[0 : n-1]
@@ -813,10 +912,10 @@ func run(t *testing.T, cmd []string) string {
 	return output
 }
 
-
 func TestHostname(t *testing.T) {
 	// There is no other way to fetch hostname on windows, but via winapi.
-	if syscall.OS == "windows" {
+	// On Plan 9 it is can be taken from #c/sysname as Hostname() does.
+	if syscall.OS == "windows" || syscall.OS == "plan9" {
 		return
 	}
 	// Check internal Hostname() against the output of /bin/hostname.
@@ -913,7 +1012,15 @@ func TestAppend(t *testing.T) {
 	}
 	s = writeFile(t, f, O_CREATE|O_APPEND|O_RDWR, "new&append")
 	if s != "new&append" {
-		t.Fatalf("writeFile: have %q want %q", s, "new&append")
+		t.Fatalf("writeFile: after append have %q want %q", s, "new&append")
+	}
+	s = writeFile(t, f, O_CREATE|O_RDWR, "old")
+	if s != "old&append" {
+		t.Fatalf("writeFile: after create have %q want %q", s, "old&append")
+	}
+	s = writeFile(t, f, O_CREATE|O_TRUNC|O_RDWR, "new")
+	if s != "new" {
+		t.Fatalf("writeFile: after truncate have %q want %q", s, "new")
 	}
 }
 
@@ -937,5 +1044,13 @@ func TestStatDirWithTrailingSlash(t *testing.T) {
 	_, err = Stat(path + "/")
 	if err != nil {
 		t.Fatal("stat failed:", err)
+	}
+}
+
+func TestNilWaitmsgString(t *testing.T) {
+	var w *Waitmsg
+	s := w.String()
+	if s != "<nil>" {
+		t.Errorf("(*Waitmsg)(nil).String() = %q, want %q", s, "<nil>")
 	}
 }

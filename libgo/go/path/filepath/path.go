@@ -9,13 +9,14 @@ package filepath
 import (
 	"bytes"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 )
 
 const (
-	SeparatorString     = string(Separator)
-	ListSeparatorString = string(ListSeparator)
+	Separator     = os.PathSeparator
+	ListSeparator = os.PathListSeparator
 )
 
 // Clean returns the shortest path name equivalent to path
@@ -37,19 +38,19 @@ const (
 // Getting Dot-Dot right,''
 // http://plan9.bell-labs.com/sys/doc/lexnames.html
 func Clean(path string) string {
+	vol := VolumeName(path)
+	path = path[len(vol):]
 	if path == "" {
-		return "."
+		return vol + "."
 	}
 
-	rooted := IsAbs(path)
+	rooted := os.IsPathSeparator(path[0])
 
 	// Invariants:
 	//	reading from path; r is index of next byte to process.
 	//	writing to buf; w is index of next byte to write.
 	//	dotdot is index in buf where .. must stop, either because
 	//		it is the leading slash or it is a leading ../../.. prefix.
-	prefix := volumeName(path)
-	path = path[len(prefix):]
 	n := len(path)
 	buf := []byte(path)
 	r, w, dotdot := 0, 0, 0
@@ -60,20 +61,20 @@ func Clean(path string) string {
 
 	for r < n {
 		switch {
-		case isSeparator(path[r]):
+		case os.IsPathSeparator(path[r]):
 			// empty path element
 			r++
-		case path[r] == '.' && (r+1 == n || isSeparator(path[r+1])):
+		case path[r] == '.' && (r+1 == n || os.IsPathSeparator(path[r+1])):
 			// . element
 			r++
-		case path[r] == '.' && path[r+1] == '.' && (r+2 == n || isSeparator(path[r+2])):
+		case path[r] == '.' && path[r+1] == '.' && (r+2 == n || os.IsPathSeparator(path[r+2])):
 			// .. element: remove to last separator
 			r += 2
 			switch {
 			case w > dotdot:
 				// can backtrack
 				w--
-				for w > dotdot && !isSeparator(buf[w]) {
+				for w > dotdot && !os.IsPathSeparator(buf[w]) {
 					w--
 				}
 			case !rooted:
@@ -96,7 +97,7 @@ func Clean(path string) string {
 				w++
 			}
 			// copy element
-			for ; r < n && !isSeparator(path[r]); r++ {
+			for ; r < n && !os.IsPathSeparator(path[r]); r++ {
 				buf[w] = path[r]
 				w++
 			}
@@ -109,7 +110,7 @@ func Clean(path string) string {
 		w++
 	}
 
-	return prefix + string(buf[0:w])
+	return FromSlash(vol + string(buf[0:w]))
 }
 
 // ToSlash returns the result of replacing each separator character
@@ -118,7 +119,7 @@ func ToSlash(path string) string {
 	if Separator == '/' {
 		return path
 	}
-	return strings.Replace(path, SeparatorString, "/", -1)
+	return strings.Replace(path, string(Separator), "/", -1)
 }
 
 // FromSlash returns the result of replacing each slash ('/') character
@@ -127,7 +128,7 @@ func FromSlash(path string) string {
 	if Separator == '/' {
 		return path
 	}
-	return strings.Replace(path, "/", SeparatorString, -1)
+	return strings.Replace(path, "/", string(Separator), -1)
 }
 
 // SplitList splits a list of paths joined by the OS-specific ListSeparator.
@@ -135,16 +136,16 @@ func SplitList(path string) []string {
 	if path == "" {
 		return []string{}
 	}
-	return strings.Split(path, ListSeparatorString, -1)
+	return strings.Split(path, string(ListSeparator))
 }
 
 // Split splits path immediately following the final Separator,
-// partitioning it into a directory and a file name components.
-// If there are no separators in path, Split returns an empty base
+// separating it into a directory and file name component.
+// If there is no Separator in path, Split returns an empty dir
 // and file set to path.
 func Split(path string) (dir, file string) {
 	i := len(path) - 1
-	for i >= 0 && !isSeparator(path[i]) {
+	for i >= 0 && !os.IsPathSeparator(path[i]) {
 		i--
 	}
 	return path[:i+1], path[i+1:]
@@ -155,7 +156,7 @@ func Split(path string) (dir, file string) {
 func Join(elem ...string) string {
 	for i, e := range elem {
 		if e != "" {
-			return Clean(strings.Join(elem[i:], SeparatorString))
+			return Clean(strings.Join(elem[i:], string(Separator)))
 		}
 	}
 	return ""
@@ -166,7 +167,7 @@ func Join(elem ...string) string {
 // in the final element of path; it is empty if there is
 // no dot.
 func Ext(path string) string {
-	for i := len(path) - 1; i >= 0 && !isSeparator(path[i]); i-- {
+	for i := len(path) - 1; i >= 0 && !os.IsPathSeparator(path[i]); i-- {
 		if path[i] == '.' {
 			return path[i:]
 		}
@@ -178,6 +179,14 @@ func Ext(path string) string {
 // links.
 // If path is relative it will be evaluated relative to the current directory.
 func EvalSymlinks(path string) (string, os.Error) {
+	if runtime.GOOS == "windows" {
+		// Symlinks are not supported under windows.
+		_, err := os.Lstat(path)
+		if err != nil {
+			return "", err
+		}
+		return Clean(path), nil
+	}
 	const maxIter = 255
 	originalPath := path
 	// consume path by taking each frontmost path element,
@@ -225,7 +234,7 @@ func EvalSymlinks(path string) (string, os.Error) {
 		if IsAbs(dest) {
 			b.Reset()
 		}
-		path = dest + SeparatorString + path
+		path = dest + string(Separator) + path
 	}
 	return Clean(b.String()), nil
 }
@@ -236,7 +245,7 @@ func EvalSymlinks(path string) (string, os.Error) {
 // path name for a given file is not guaranteed to be unique.
 func Abs(path string) (string, os.Error) {
 	if IsAbs(path) {
-		return path, nil
+		return Clean(path), nil
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -330,12 +339,12 @@ func Base(path string) string {
 		return "."
 	}
 	// Strip trailing slashes.
-	for len(path) > 0 && isSeparator(path[len(path)-1]) {
+	for len(path) > 0 && os.IsPathSeparator(path[len(path)-1]) {
 		path = path[0 : len(path)-1]
 	}
 	// Find the last element
 	i := len(path) - 1
-	for i >= 0 && !isSeparator(path[i]) {
+	for i >= 0 && !os.IsPathSeparator(path[i]) {
 		i--
 	}
 	if i >= 0 {
@@ -343,7 +352,7 @@ func Base(path string) string {
 	}
 	// If empty now, it had only slashes.
 	if path == "" {
-		return SeparatorString
+		return string(Separator)
 	}
 	return path
 }

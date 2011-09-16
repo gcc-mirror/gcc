@@ -5,6 +5,7 @@
 package http
 
 import (
+	"bytes"
 	"bufio"
 	"io"
 	"io/ioutil"
@@ -17,7 +18,8 @@ import (
 // sanitizes them without changing the user object and provides methods for
 // writing the respective header, body and trailer in wire format.
 type transferWriter struct {
-	Body             io.ReadCloser
+	Body             io.Reader
+	BodyCloser       io.Closer
 	ResponseToHEAD   bool
 	ContentLength    int64
 	Close            bool
@@ -33,19 +35,43 @@ func newTransferWriter(r interface{}) (t *transferWriter, err os.Error) {
 	switch rr := r.(type) {
 	case *Request:
 		t.Body = rr.Body
+		t.BodyCloser = rr.Body
 		t.ContentLength = rr.ContentLength
 		t.Close = rr.Close
 		t.TransferEncoding = rr.TransferEncoding
 		t.Trailer = rr.Trailer
 		atLeastHTTP11 = rr.ProtoAtLeast(1, 1)
+		if t.Body != nil && len(t.TransferEncoding) == 0 && atLeastHTTP11 {
+			if t.ContentLength == 0 {
+				// Test to see if it's actually zero or just unset.
+				var buf [1]byte
+				n, _ := io.ReadFull(t.Body, buf[:])
+				if n == 1 {
+					// Oh, guess there is data in this Body Reader after all.
+					// The ContentLength field just wasn't set.
+					// Stich the Body back together again, re-attaching our
+					// consumed byte.
+					t.ContentLength = -1
+					t.Body = io.MultiReader(bytes.NewBuffer(buf[:]), t.Body)
+				} else {
+					// Body is actually empty.
+					t.Body = nil
+					t.BodyCloser = nil
+				}
+			}
+			if t.ContentLength < 0 {
+				t.TransferEncoding = []string{"chunked"}
+			}
+		}
 	case *Response:
 		t.Body = rr.Body
+		t.BodyCloser = rr.Body
 		t.ContentLength = rr.ContentLength
 		t.Close = rr.Close
 		t.TransferEncoding = rr.TransferEncoding
 		t.Trailer = rr.Trailer
 		atLeastHTTP11 = rr.ProtoAtLeast(1, 1)
-		t.ResponseToHEAD = noBodyExpected(rr.RequestMethod)
+		t.ResponseToHEAD = noBodyExpected(rr.Request.Method)
 	}
 
 	// Sanitize Body,ContentLength,TransferEncoding
@@ -95,7 +121,7 @@ func (t *transferWriter) WriteHeader(w io.Writer) (err os.Error) {
 		if err != nil {
 			return
 		}
-	} else if t.ContentLength > 0 || t.ResponseToHEAD {
+	} else if t.ContentLength > 0 || t.ResponseToHEAD || (t.ContentLength == 0 && isIdentity(t.TransferEncoding)) {
 		io.WriteString(w, "Content-Length: ")
 		_, err = io.WriteString(w, strconv.Itoa64(t.ContentLength)+"\r\n")
 		if err != nil {
@@ -144,7 +170,7 @@ func (t *transferWriter) WriteBody(w io.Writer) (err os.Error) {
 		if err != nil {
 			return err
 		}
-		if err = t.Body.Close(); err != nil {
+		if err = t.BodyCloser.Close(); err != nil {
 			return err
 		}
 	}
@@ -192,14 +218,16 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err os.Error) {
 	t := &transferReader{}
 
 	// Unify input
+	isResponse := false
 	switch rr := msg.(type) {
 	case *Response:
 		t.Header = rr.Header
 		t.StatusCode = rr.StatusCode
-		t.RequestMethod = rr.RequestMethod
+		t.RequestMethod = rr.Request.Method
 		t.ProtoMajor = rr.ProtoMajor
 		t.ProtoMinor = rr.ProtoMinor
 		t.Close = shouldClose(t.ProtoMajor, t.ProtoMinor, t.Header)
+		isResponse = true
 	case *Request:
 		t.Header = rr.Header
 		t.ProtoMajor = rr.ProtoMajor
@@ -208,6 +236,8 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err os.Error) {
 		// Responses with status code 200, responding to a GET method
 		t.StatusCode = 200
 		t.RequestMethod = "GET"
+	default:
+		panic("unexpected type")
 	}
 
 	// Default to HTTP/1.1
@@ -221,7 +251,7 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err os.Error) {
 		return err
 	}
 
-	t.ContentLength, err = fixLength(t.StatusCode, t.RequestMethod, t.Header, t.TransferEncoding)
+	t.ContentLength, err = fixLength(isResponse, t.StatusCode, t.RequestMethod, t.Header, t.TransferEncoding)
 	if err != nil {
 		return err
 	}
@@ -249,7 +279,7 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err os.Error) {
 	// or close connection when finished, since multipart is not supported yet
 	switch {
 	case chunked(t.TransferEncoding):
-		t.Body = &body{Reader: newChunkedReader(r), hdr: msg, r: r, closing: t.Close}
+		t.Body = &body{Reader: NewChunkedReader(r), hdr: msg, r: r, closing: t.Close}
 	case t.ContentLength >= 0:
 		// TODO: limit the Content-Length. This is an easy DoS vector.
 		t.Body = &body{Reader: io.LimitReader(r, t.ContentLength), closing: t.Close}
@@ -262,9 +292,6 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err os.Error) {
 			// Persistent connection (i.e. HTTP/1.1)
 			t.Body = &body{Reader: io.LimitReader(r, 0), closing: t.Close}
 		}
-		// TODO(petar): It may be a good idea, for extra robustness, to
-		// assume ContentLength=0 for GET requests (and other special
-		// cases?). This logic should be in fixLength().
 	}
 
 	// Unify output
@@ -289,6 +316,9 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err os.Error) {
 // Checks whether chunked is part of the encodings stack
 func chunked(te []string) bool { return len(te) > 0 && te[0] == "chunked" }
 
+// Checks whether the encoding is explicitly "identity".
+func isIdentity(te []string) bool { return len(te) == 1 && te[0] == "identity" }
+
 // Sanitize transfer encoding
 func fixTransferEncoding(requestMethod string, header Header) ([]string, os.Error) {
 	raw, present := header["Transfer-Encoding"]
@@ -304,7 +334,7 @@ func fixTransferEncoding(requestMethod string, header Header) ([]string, os.Erro
 		return nil, nil
 	}
 
-	encodings := strings.Split(raw[0], ",", -1)
+	encodings := strings.Split(raw[0], ",")
 	te := make([]string, 0, len(encodings))
 	// TODO: Even though we only support "identity" and "chunked"
 	// encodings, the loop below is designed with foresight. One
@@ -339,7 +369,7 @@ func fixTransferEncoding(requestMethod string, header Header) ([]string, os.Erro
 // Determine the expected body length, using RFC 2616 Section 4.4. This
 // function is not a method, because ultimately it should be shared by
 // ReadResponse and ReadRequest.
-func fixLength(status int, requestMethod string, header Header, te []string) (int64, os.Error) {
+func fixLength(isResponse bool, status int, requestMethod string, header Header, te []string) (int64, os.Error) {
 
 	// Logic based on response type or status
 	if noBodyExpected(requestMethod) {
@@ -368,6 +398,14 @@ func fixLength(status int, requestMethod string, header Header, te []string) (in
 		return n, nil
 	} else {
 		header.Del("Content-Length")
+	}
+
+	if !isResponse && requestMethod == "GET" {
+		// RFC 2616 doesn't explicitly permit nor forbid an
+		// entity-body on a GET request so we permit one if
+		// declared, but we default to 0 here (not -1 below)
+		// if there's no mention of a body.
+		return 0, nil
 	}
 
 	// Logic based on media type. The purpose of the following code is just
@@ -412,7 +450,7 @@ func fixTrailer(header Header, te []string) (Header, os.Error) {
 
 	header.Del("Trailer")
 	trailer := make(Header)
-	keys := strings.Split(raw, ",", -1)
+	keys := strings.Split(raw, ",")
 	for _, key := range keys {
 		key = CanonicalHeaderKey(strings.TrimSpace(key))
 		switch key {

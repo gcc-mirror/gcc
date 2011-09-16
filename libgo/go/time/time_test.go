@@ -6,6 +6,7 @@ package time_test
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"testing/quick"
@@ -37,21 +38,31 @@ type TimeTest struct {
 }
 
 var utctests = []TimeTest{
-	{0, Time{1970, 1, 1, 0, 0, 0, Thursday, 0, "UTC"}},
-	{1221681866, Time{2008, 9, 17, 20, 4, 26, Wednesday, 0, "UTC"}},
-	{-1221681866, Time{1931, 4, 16, 3, 55, 34, Thursday, 0, "UTC"}},
-	{-11644473600, Time{1601, 1, 1, 0, 0, 0, Monday, 0, "UTC"}},
-	{599529660, Time{1988, 12, 31, 0, 1, 0, Saturday, 0, "UTC"}},
-	{978220860, Time{2000, 12, 31, 0, 1, 0, Sunday, 0, "UTC"}},
-	{1e18, Time{31688740476, 10, 23, 1, 46, 40, Friday, 0, "UTC"}},
-	{-1e18, Time{-31688736537, 3, 10, 22, 13, 20, Tuesday, 0, "UTC"}},
-	{0x7fffffffffffffff, Time{292277026596, 12, 4, 15, 30, 7, Sunday, 0, "UTC"}},
-	{-0x8000000000000000, Time{-292277022657, 1, 27, 8, 29, 52, Sunday, 0, "UTC"}},
+	{0, Time{1970, 1, 1, 0, 0, 0, 0, Thursday, 0, "UTC"}},
+	{1221681866, Time{2008, 9, 17, 20, 4, 26, 0, Wednesday, 0, "UTC"}},
+	{-1221681866, Time{1931, 4, 16, 3, 55, 34, 0, Thursday, 0, "UTC"}},
+	{-11644473600, Time{1601, 1, 1, 0, 0, 0, 0, Monday, 0, "UTC"}},
+	{599529660, Time{1988, 12, 31, 0, 1, 0, 0, Saturday, 0, "UTC"}},
+	{978220860, Time{2000, 12, 31, 0, 1, 0, 0, Sunday, 0, "UTC"}},
+	{1e18, Time{31688740476, 10, 23, 1, 46, 40, 0, Friday, 0, "UTC"}},
+	{-1e18, Time{-31688736537, 3, 10, 22, 13, 20, 0, Tuesday, 0, "UTC"}},
+	{0x7fffffffffffffff, Time{292277026596, 12, 4, 15, 30, 7, 0, Sunday, 0, "UTC"}},
+	{-0x8000000000000000, Time{-292277022657, 1, 27, 8, 29, 52, 0, Sunday, 0, "UTC"}},
+}
+
+var nanoutctests = []TimeTest{
+	{0, Time{1970, 1, 1, 0, 0, 0, 1e8, Thursday, 0, "UTC"}},
+	{1221681866, Time{2008, 9, 17, 20, 4, 26, 2e8, Wednesday, 0, "UTC"}},
 }
 
 var localtests = []TimeTest{
-	{0, Time{1969, 12, 31, 16, 0, 0, Wednesday, -8 * 60 * 60, "PST"}},
-	{1221681866, Time{2008, 9, 17, 13, 4, 26, Wednesday, -7 * 60 * 60, "PDT"}},
+	{0, Time{1969, 12, 31, 16, 0, 0, 0, Wednesday, -8 * 60 * 60, "PST"}},
+	{1221681866, Time{2008, 9, 17, 13, 4, 26, 0, Wednesday, -7 * 60 * 60, "PDT"}},
+}
+
+var nanolocaltests = []TimeTest{
+	{0, Time{1969, 12, 31, 16, 0, 0, 1e8, Wednesday, -8 * 60 * 60, "PST"}},
+	{1221681866, Time{2008, 9, 17, 13, 4, 26, 3e8, Wednesday, -7 * 60 * 60, "PDT"}},
 }
 
 func same(t, u *Time) bool {
@@ -61,15 +72,16 @@ func same(t, u *Time) bool {
 		t.Hour == u.Hour &&
 		t.Minute == u.Minute &&
 		t.Second == u.Second &&
+		t.Nanosecond == u.Nanosecond &&
 		t.Weekday == u.Weekday &&
 		t.ZoneOffset == u.ZoneOffset &&
 		t.Zone == u.Zone
 }
 
 func TestSecondsToUTC(t *testing.T) {
-	for i := 0; i < len(utctests); i++ {
-		sec := utctests[i].seconds
-		golden := &utctests[i].golden
+	for _, test := range utctests {
+		sec := test.seconds
+		golden := &test.golden
 		tm := SecondsToUTC(sec)
 		newsec := tm.Seconds()
 		if newsec != sec {
@@ -83,10 +95,27 @@ func TestSecondsToUTC(t *testing.T) {
 	}
 }
 
+func TestNanosecondsToUTC(t *testing.T) {
+	for _, test := range nanoutctests {
+		golden := &test.golden
+		nsec := test.seconds*1e9 + int64(golden.Nanosecond)
+		tm := NanosecondsToUTC(nsec)
+		newnsec := tm.Nanoseconds()
+		if newnsec != nsec {
+			t.Errorf("NanosecondsToUTC(%d).Nanoseconds() = %d", nsec, newnsec)
+		}
+		if !same(tm, golden) {
+			t.Errorf("NanosecondsToUTC(%d):", nsec)
+			t.Errorf("  want=%+v", *golden)
+			t.Errorf("  have=%+v", *tm)
+		}
+	}
+}
+
 func TestSecondsToLocalTime(t *testing.T) {
-	for i := 0; i < len(localtests); i++ {
-		sec := localtests[i].seconds
-		golden := &localtests[i].golden
+	for _, test := range localtests {
+		sec := test.seconds
+		golden := &test.golden
 		tm := SecondsToLocalTime(sec)
 		newsec := tm.Seconds()
 		if newsec != sec {
@@ -94,6 +123,23 @@ func TestSecondsToLocalTime(t *testing.T) {
 		}
 		if !same(tm, golden) {
 			t.Errorf("SecondsToLocalTime(%d):", sec)
+			t.Errorf("  want=%+v", *golden)
+			t.Errorf("  have=%+v", *tm)
+		}
+	}
+}
+
+func TestNanoecondsToLocalTime(t *testing.T) {
+	for _, test := range nanolocaltests {
+		golden := &test.golden
+		nsec := test.seconds*1e9 + int64(golden.Nanosecond)
+		tm := NanosecondsToLocalTime(nsec)
+		newnsec := tm.Nanoseconds()
+		if newnsec != nsec {
+			t.Errorf("NanosecondsToLocalTime(%d).Seconds() = %d", nsec, newnsec)
+		}
+		if !same(tm, golden) {
+			t.Errorf("NanosecondsToLocalTime(%d):", nsec)
 			t.Errorf("  want=%+v", *golden)
 			t.Errorf("  have=%+v", *tm)
 		}
@@ -114,15 +160,30 @@ func TestSecondsToUTCAndBack(t *testing.T) {
 	}
 }
 
+func TestNanosecondsToUTCAndBack(t *testing.T) {
+	f := func(nsec int64) bool { return NanosecondsToUTC(nsec).Nanoseconds() == nsec }
+	f32 := func(nsec int32) bool { return f(int64(nsec)) }
+	cfg := &quick.Config{MaxCount: 10000}
+
+	// Try a small date first, then the large ones. (The span is only a few hundred years
+	// for nanoseconds in an int64.)
+	if err := quick.Check(f32, cfg); err != nil {
+		t.Fatal(err)
+	}
+	if err := quick.Check(f, cfg); err != nil {
+		t.Fatal(err)
+	}
+}
+
 type TimeFormatTest struct {
 	time           Time
 	formattedValue string
 }
 
 var rfc3339Formats = []TimeFormatTest{
-	{Time{2008, 9, 17, 20, 4, 26, Wednesday, 0, "UTC"}, "2008-09-17T20:04:26Z"},
-	{Time{1994, 9, 17, 20, 4, 26, Wednesday, -18000, "EST"}, "1994-09-17T20:04:26-05:00"},
-	{Time{2000, 12, 26, 1, 15, 6, Wednesday, 15600, "OTO"}, "2000-12-26T01:15:06+04:20"},
+	{Time{2008, 9, 17, 20, 4, 26, 0, Wednesday, 0, "UTC"}, "2008-09-17T20:04:26Z"},
+	{Time{1994, 9, 17, 20, 4, 26, 0, Wednesday, -18000, "EST"}, "1994-09-17T20:04:26-05:00"},
+	{Time{2000, 12, 26, 1, 15, 6, 0, Wednesday, 15600, "OTO"}, "2000-12-26T01:15:06+04:20"},
 }
 
 func TestRFC3339Conversion(t *testing.T) {
@@ -142,21 +203,27 @@ type FormatTest struct {
 }
 
 var formatTests = []FormatTest{
-	{"ANSIC", ANSIC, "Thu Feb  4 21:00:57 2010"},
-	{"UnixDate", UnixDate, "Thu Feb  4 21:00:57 PST 2010"},
-	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0800 2010"},
-	{"RFC822", RFC822, "04 Feb 10 2100 PST"},
-	{"RFC850", RFC850, "Thursday, 04-Feb-10 21:00:57 PST"},
-	{"RFC1123", RFC1123, "Thu, 04 Feb 2010 21:00:57 PST"},
-	{"RFC3339", RFC3339, "2010-02-04T21:00:57-08:00"},
+	{"ANSIC", ANSIC, "Wed Feb  4 21:00:57 2009"},
+	{"UnixDate", UnixDate, "Wed Feb  4 21:00:57 PST 2009"},
+	{"RubyDate", RubyDate, "Wed Feb 04 21:00:57 -0800 2009"},
+	{"RFC822", RFC822, "04 Feb 09 2100 PST"},
+	{"RFC850", RFC850, "Wednesday, 04-Feb-09 21:00:57 PST"},
+	{"RFC1123", RFC1123, "Wed, 04 Feb 2009 21:00:57 PST"},
+	{"RFC3339", RFC3339, "2009-02-04T21:00:57-08:00"},
 	{"Kitchen", Kitchen, "9:00PM"},
 	{"am/pm", "3pm", "9pm"},
 	{"AM/PM", "3PM", "9PM"},
+	{"two-digit year", "06 01 02", "09 02 04"},
+	// Time stamps, Fractional seconds.
+	{"Stamp", Stamp, "Feb  4 21:00:57"},
+	{"StampMilli", StampMilli, "Feb  4 21:00:57.012"},
+	{"StampMicro", StampMicro, "Feb  4 21:00:57.012345"},
+	{"StampNano", StampNano, "Feb  4 21:00:57.012345678"},
 }
 
 func TestFormat(t *testing.T) {
-	// The numeric time represents Thu Feb  4 21:00:57 PST 2010
-	time := SecondsToLocalTime(1265346057)
+	// The numeric time represents Thu Feb  4 21:00:57.012345678 PST 2010
+	time := NanosecondsToLocalTime(1233810057012345678)
 	for _, test := range formatTests {
 		result := time.Format(test.format)
 		if result != test.result {
@@ -166,25 +233,40 @@ func TestFormat(t *testing.T) {
 }
 
 type ParseTest struct {
-	name     string
-	format   string
-	value    string
-	hasTZ    bool  // contains a time zone
-	hasWD    bool  // contains a weekday
-	yearSign int64 // sign of year
+	name       string
+	format     string
+	value      string
+	hasTZ      bool  // contains a time zone
+	hasWD      bool  // contains a weekday
+	yearSign   int64 // sign of year
+	fracDigits int   // number of digits of fractional second
 }
 
 var parseTests = []ParseTest{
-	{"ANSIC", ANSIC, "Thu Feb  4 21:00:57 2010", false, true, 1},
-	{"UnixDate", UnixDate, "Thu Feb  4 21:00:57 PST 2010", true, true, 1},
-	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0800 2010", true, true, 1},
-	{"RFC850", RFC850, "Thursday, 04-Feb-10 21:00:57 PST", true, true, 1},
-	{"RFC1123", RFC1123, "Thu, 04 Feb 2010 21:00:57 PST", true, true, 1},
-	{"RFC3339", RFC3339, "2010-02-04T21:00:57-08:00", true, false, 1},
-	{"custom: \"2006-01-02 15:04:05-07\"", "2006-01-02 15:04:05-07", "2010-02-04 21:00:57-08", true, false, 1},
+	{"ANSIC", ANSIC, "Thu Feb  4 21:00:57 2010", false, true, 1, 0},
+	{"UnixDate", UnixDate, "Thu Feb  4 21:00:57 PST 2010", true, true, 1, 0},
+	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0800 2010", true, true, 1, 0},
+	{"RFC850", RFC850, "Thursday, 04-Feb-10 21:00:57 PST", true, true, 1, 0},
+	{"RFC1123", RFC1123, "Thu, 04 Feb 2010 21:00:57 PST", true, true, 1, 0},
+	{"RFC3339", RFC3339, "2010-02-04T21:00:57-08:00", true, false, 1, 0},
+	{"custom: \"2006-01-02 15:04:05-07\"", "2006-01-02 15:04:05-07", "2010-02-04 21:00:57-08", true, false, 1, 0},
+	// Optional fractional seconds.
+	{"ANSIC", ANSIC, "Thu Feb  4 21:00:57.0 2010", false, true, 1, 1},
+	{"UnixDate", UnixDate, "Thu Feb  4 21:00:57.01 PST 2010", true, true, 1, 2},
+	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57.012 -0800 2010", true, true, 1, 3},
+	{"RFC850", RFC850, "Thursday, 04-Feb-10 21:00:57.0123 PST", true, true, 1, 4},
+	{"RFC1123", RFC1123, "Thu, 04 Feb 2010 21:00:57.01234 PST", true, true, 1, 5},
+	{"RFC3339", RFC3339, "2010-02-04T21:00:57.012345678-08:00", true, false, 1, 9},
 	// Amount of white space should not matter.
-	{"ANSIC", ANSIC, "Thu Feb 4 21:00:57 2010", false, true, 1},
-	{"ANSIC", ANSIC, "Thu      Feb     4     21:00:57     2010", false, true, 1},
+	{"ANSIC", ANSIC, "Thu Feb 4 21:00:57 2010", false, true, 1, 0},
+	{"ANSIC", ANSIC, "Thu      Feb     4     21:00:57     2010", false, true, 1, 0},
+	// Fractional seconds.
+	{"millisecond", "Mon Jan _2 15:04:05.000 2006", "Thu Feb  4 21:00:57.012 2010", false, true, 1, 3},
+	{"microsecond", "Mon Jan _2 15:04:05.000000 2006", "Thu Feb  4 21:00:57.012345 2010", false, true, 1, 6},
+	{"nanosecond", "Mon Jan _2 15:04:05.000000000 2006", "Thu Feb  4 21:00:57.012345678 2010", false, true, 1, 9},
+	// Leading zeros in other places should not be taken as fractional seconds.
+	{"zero1", "2006.01.02.15.04.05.0", "2010.02.04.21.00.57.0", false, false, 1, 1},
+	{"zero2", "2006.01.02.15.04.05.00", "2010.02.04.21.00.57.01", false, false, 1, 2},
 }
 
 func TestParse(t *testing.T) {
@@ -199,11 +281,11 @@ func TestParse(t *testing.T) {
 }
 
 var rubyTests = []ParseTest{
-	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0800 2010", true, true, 1},
+	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0800 2010", true, true, 1, 0},
 	// Ignore the time zone in the test. If it parses, it'll be OK.
-	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0000 2010", false, true, 1},
-	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 +0000 2010", false, true, 1},
-	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 +1130 2010", false, true, 1},
+	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0000 2010", false, true, 1, 0},
+	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 +0000 2010", false, true, 1, 0},
+	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 +1130 2010", false, true, 1, 0},
 }
 
 // Problematic time zone format needs special tests.
@@ -237,6 +319,14 @@ func checkTime(time *Time, test *ParseTest, t *testing.T) {
 	}
 	if time.Second != 57 {
 		t.Errorf("%s: bad second: %d not %d", test.name, time.Second, 57)
+	}
+	// Nanoseconds must be checked against the precision of the input.
+	nanosec, err := strconv.Atoui("012345678"[:test.fracDigits] + "000000000"[:9-test.fracDigits])
+	if err != nil {
+		panic(err)
+	}
+	if time.Nanosecond != int(nanosec) {
+		t.Errorf("%s: bad nanosecond: %d not %d", test.name, time.Nanosecond, nanosec)
 	}
 	if test.hasTZ && time.ZoneOffset != -28800 {
 		t.Errorf("%s: bad tz offset: %d not %d", test.name, time.ZoneOffset, -28800)
@@ -284,11 +374,14 @@ type ParseErrorTest struct {
 }
 
 var parseErrorTests = []ParseErrorTest{
-	{ANSIC, "Feb  4 21:00:60 2010", "parse"}, // cannot parse Feb as Mon
-	{ANSIC, "Thu Feb  4 21:00:57 @2010", "parse"},
+	{ANSIC, "Feb  4 21:00:60 2010", "cannot parse"}, // cannot parse Feb as Mon
+	{ANSIC, "Thu Feb  4 21:00:57 @2010", "cannot parse"},
 	{ANSIC, "Thu Feb  4 21:00:60 2010", "second out of range"},
 	{ANSIC, "Thu Feb  4 21:61:57 2010", "minute out of range"},
 	{ANSIC, "Thu Feb  4 24:00:60 2010", "hour out of range"},
+	{"Mon Jan _2 15:04:05.000 2006", "Thu Feb  4 23:00:59x01 2010", "cannot parse"},
+	{"Mon Jan _2 15:04:05.000 2006", "Thu Feb  4 23:00:59.xxx 2010", "cannot parse"},
+	{"Mon Jan _2 15:04:05.000 2006", "Thu Feb  4 23:00:59.-123 2010", "fractional second out of range"},
 }
 
 func TestParseErrors(t *testing.T) {
@@ -299,6 +392,66 @@ func TestParseErrors(t *testing.T) {
 		} else if strings.Index(err.String(), test.expect) < 0 {
 			t.Errorf("expected error with %q for %q %q; got %s", test.expect, test.format, test.value, err)
 		}
+	}
+}
+
+func TestNoonIs12PM(t *testing.T) {
+	noon := Time{Hour: 12}
+	const expect = "12:00PM"
+	got := noon.Format("3:04PM")
+	if got != expect {
+		t.Errorf("got %q; expect %q", got, expect)
+	}
+	got = noon.Format("03:04PM")
+	if got != expect {
+		t.Errorf("got %q; expect %q", got, expect)
+	}
+}
+
+func TestMidnightIs12AM(t *testing.T) {
+	midnight := Time{Hour: 0}
+	expect := "12:00AM"
+	got := midnight.Format("3:04PM")
+	if got != expect {
+		t.Errorf("got %q; expect %q", got, expect)
+	}
+	got = midnight.Format("03:04PM")
+	if got != expect {
+		t.Errorf("got %q; expect %q", got, expect)
+	}
+}
+
+func Test12PMIsNoon(t *testing.T) {
+	noon, err := Parse("3:04PM", "12:00PM")
+	if err != nil {
+		t.Fatal("error parsing date:", err)
+	}
+	if noon.Hour != 12 {
+		t.Errorf("got %d; expect 12", noon.Hour)
+	}
+	noon, err = Parse("03:04PM", "12:00PM")
+	if err != nil {
+		t.Fatal("error parsing date:", err)
+	}
+	if noon.Hour != 12 {
+		t.Errorf("got %d; expect 12", noon.Hour)
+	}
+}
+
+func Test12AMIsMidnight(t *testing.T) {
+	midnight, err := Parse("3:04PM", "12:00AM")
+	if err != nil {
+		t.Fatal("error parsing date:", err)
+	}
+	if midnight.Hour != 0 {
+		t.Errorf("got %d; expect 0", midnight.Hour)
+	}
+	midnight, err = Parse("03:04PM", "12:00AM")
+	if err != nil {
+		t.Fatal("error parsing date:", err)
+	}
+	if midnight.Hour != 0 {
+		t.Errorf("got %d; expect 0", midnight.Hour)
 	}
 }
 

@@ -42,6 +42,7 @@ func AllocAndFree(size, count int) {
 	if *chatty {
 		fmt.Printf("size=%d count=%d ...\n", size, count)
 	}
+	runtime.UpdateMemStats()
 	n1 := stats.Alloc
 	for i := 0; i < count; i++ {
 		b[i] = runtime.Alloc(uintptr(size))
@@ -50,11 +51,13 @@ func AllocAndFree(size, count int) {
 			println("lookup failed: got", base, n, "for", b[i])
 			panic("fail")
 		}
-		if runtime.MemStats.Sys > 1e9 {
+		runtime.UpdateMemStats()
+		if stats.Sys > 1e9 {
 			println("too much memory allocated")
 			panic("fail")
 		}
 	}
+	runtime.UpdateMemStats()
 	n2 := stats.Alloc
 	if *chatty {
 		fmt.Printf("size=%d count=%d stats=%+v\n", size, count, *stats)
@@ -72,6 +75,7 @@ func AllocAndFree(size, count int) {
 			panic("fail")
 		}
 		runtime.Free(b[i])
+		runtime.UpdateMemStats()
 		if stats.Alloc != uint64(alloc-n) {
 			println("free alloc got", stats.Alloc, "expected", alloc-n, "after free of", n)
 			panic("fail")
@@ -81,6 +85,7 @@ func AllocAndFree(size, count int) {
 			panic("fail")
 		}
 	}
+	runtime.UpdateMemStats()
 	n4 := stats.Alloc
 
 	if *chatty {

@@ -6,23 +6,18 @@ package filepath
 
 import "strings"
 
-const (
-	Separator     = '/' // OS-specific path separator
-	ListSeparator = ':' // OS-specific path list separator
-)
-
-// isSeparator returns true if c is a directory separator character.
-func isSeparator(c uint8) bool {
-	return Separator == c
-}
-
 // IsAbs returns true if the path is absolute.
 func IsAbs(path string) bool {
 	return strings.HasPrefix(path, "/")
 }
 
-// volumeName returns the leading volume name on Windows.
+// VolumeName returns the leading volume name on Windows.
 // It returns "" elsewhere.
-func volumeName(path string) string {
+func VolumeName(path string) string {
 	return ""
+}
+
+// HasPrefix tests whether the path p begins with prefix.
+func HasPrefix(p, prefix string) bool {
+	return strings.HasPrefix(p, prefix)
 }

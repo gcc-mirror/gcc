@@ -127,17 +127,17 @@ var typeTests = []pair{
 	},
 	{struct {
 		x struct {
-			a int8 "hi there"
+			a int8 `reflect:"hi there"`
 		}
 	}{},
-		`struct { a int8 "hi there" }`,
+		`struct { a int8 "reflect:\"hi there\"" }`,
 	},
 	{struct {
 		x struct {
-			a int8 "hi \x00there\t\n\"\\"
+			a int8 `reflect:"hi \x00there\t\n\"\\"`
 		}
 	}{},
-		`struct { a int8 "hi \x00there\t\n\"\\" }`,
+		`struct { a int8 "reflect:\"hi \\x00there\\t\\n\\\"\\\\\"" }`,
 	},
 	{struct {
 		x struct {
@@ -380,7 +380,6 @@ func TestMapSetNil(t *testing.T) {
 	}
 }
 
-
 func TestAll(t *testing.T) {
 	testType(t, 1, TypeOf((int8)(0)), "int8")
 	testType(t, 2, TypeOf((*int8)(nil)).Elem(), "int8")
@@ -423,7 +422,7 @@ func TestAll(t *testing.T) {
 
 	// make sure tag strings are not part of element type
 	typ = TypeOf(struct {
-		d []uint32 "TAG"
+		d []uint32 `reflect:"TAG"`
 	}{}).Field(0).Type
 	testType(t, 14, typ, "[]uint32")
 }
@@ -744,7 +743,6 @@ func TestDeepEqualUnexportedMap(t *testing.T) {
 	}
 }
 
-
 func check2ndField(x interface{}, offs uintptr, t *testing.T) {
 	s := ValueOf(x)
 	f := s.Type().Field(1)
@@ -1050,6 +1048,12 @@ type Point struct {
 	x, y int
 }
 
+// This will be index 0.
+func (p Point) AnotherMethod(scale int) int {
+	return -1
+}
+
+// This will be index 1.
 func (p Point) Dist(scale int) int {
 	//	println("Point.Dist", p.x, p.y, scale)
 	return p.x*p.x*scale + p.y*p.y*scale
@@ -1058,26 +1062,52 @@ func (p Point) Dist(scale int) int {
 func TestMethod(t *testing.T) {
 	// Non-curried method of type.
 	p := Point{3, 4}
-	i := TypeOf(p).Method(0).Func.Call([]Value{ValueOf(p), ValueOf(10)})[0].Int()
+	i := TypeOf(p).Method(1).Func.Call([]Value{ValueOf(p), ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Type Method returned %d; want 250", i)
 	}
 
-	i = TypeOf(&p).Method(0).Func.Call([]Value{ValueOf(&p), ValueOf(10)})[0].Int()
+	m, ok := TypeOf(p).MethodByName("Dist")
+	if !ok {
+		t.Fatalf("method by name failed")
+	}
+	m.Func.Call([]Value{ValueOf(p), ValueOf(10)})[0].Int()
+	if i != 250 {
+		t.Errorf("Type MethodByName returned %d; want 250", i)
+	}
+
+	i = TypeOf(&p).Method(1).Func.Call([]Value{ValueOf(&p), ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Pointer Type Method returned %d; want 250", i)
 	}
 
+	m, ok = TypeOf(&p).MethodByName("Dist")
+	if !ok {
+		t.Fatalf("ptr method by name failed")
+	}
+	i = m.Func.Call([]Value{ValueOf(&p), ValueOf(10)})[0].Int()
+	if i != 250 {
+		t.Errorf("Pointer Type MethodByName returned %d; want 250", i)
+	}
+
 	// Curried method of value.
-	i = ValueOf(p).Method(0).Call([]Value{ValueOf(10)})[0].Int()
+	i = ValueOf(p).Method(1).Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Value Method returned %d; want 250", i)
 	}
+	i = ValueOf(p).MethodByName("Dist").Call([]Value{ValueOf(10)})[0].Int()
+	if i != 250 {
+		t.Errorf("Value MethodByName returned %d; want 250", i)
+	}
 
 	// Curried method of pointer.
-	i = ValueOf(&p).Method(0).Call([]Value{ValueOf(10)})[0].Int()
+	i = ValueOf(&p).Method(1).Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
-		t.Errorf("Value Method returned %d; want 250", i)
+		t.Errorf("Pointer Value Method returned %d; want 250", i)
+	}
+	i = ValueOf(&p).MethodByName("Dist").Call([]Value{ValueOf(10)})[0].Int()
+	if i != 250 {
+		t.Errorf("Pointer Value MethodByName returned %d; want 250", i)
 	}
 
 	// Curried method of interface value.
@@ -1093,6 +1123,10 @@ func TestMethod(t *testing.T) {
 	i = pv.Method(0).Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Interface Method returned %d; want 250", i)
+	}
+	i = pv.MethodByName("Dist").Call([]Value{ValueOf(10)})[0].Int()
+	if i != 250 {
+		t.Errorf("Interface MethodByName returned %d; want 250", i)
 	}
 }
 
@@ -1293,8 +1327,8 @@ func TestImportPath(t *testing.T) {
 	}
 }
 
-func TestDotDotDot(t *testing.T) {
-	// Test example from FuncType.DotDotDot documentation.
+func TestVariadicType(t *testing.T) {
+	// Test example from Type documentation.
 	var f func(x int, y ...float64)
 	typ := TypeOf(f)
 	if typ.NumIn() == 2 && typ.In(0) == TypeOf(int(0)) {
@@ -1453,7 +1487,9 @@ func noAlloc(t *testing.T, n int, f func(int)) {
 	for j := 0; j < n; j++ {
 		f(j)
 	}
-	if runtime.MemStats.Mallocs != 0 {
+	// A few allocs may happen in the testing package when GOMAXPROCS > 1, so don't
+	// require zero mallocs.
+	if runtime.MemStats.Mallocs > 5 {
 		t.Fatalf("%d mallocs after %d iterations", runtime.MemStats.Mallocs, n)
 	}
 }
@@ -1508,5 +1544,25 @@ func TestVariadic(t *testing.T) {
 	V(fmt.Fprintf).CallSlice([]Value{V(&b), V("%s, %d world"), V([]interface{}{"hello", 42})})
 	if b.String() != "hello, 42 world" {
 		t.Errorf("after Fprintf CallSlice: %q != %q", b.String(), "hello 42 world")
+	}
+}
+
+var tagGetTests = []struct {
+	Tag   StructTag
+	Key   string
+	Value string
+}{
+	{`protobuf:"PB(1,2)"`, `protobuf`, `PB(1,2)`},
+	{`protobuf:"PB(1,2)"`, `foo`, ``},
+	{`protobuf:"PB(1,2)"`, `rotobuf`, ``},
+	{`protobuf:"PB(1,2)" json:"name"`, `json`, `name`},
+	{`protobuf:"PB(1,2)" json:"name"`, `protobuf`, `PB(1,2)`},
+}
+
+func TestTagGet(t *testing.T) {
+	for _, tt := range tagGetTests {
+		if v := tt.Tag.Get(tt.Key); v != tt.Value {
+			t.Errorf("StructTag(%#q).Get(%#q) = %#q, want %#q", tt.Tag, tt.Key, v, tt.Value)
+		}
 	}
 }

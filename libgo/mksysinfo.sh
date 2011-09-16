@@ -42,6 +42,7 @@ cat > sysinfo.c <<EOF
 #endif
 #include <netinet/tcp.h>
 #include <signal.h>
+#include <sys/ioctl.h>
 #if defined(HAVE_SYSCALL_H)
 #include <syscall.h>
 #endif
@@ -76,11 +77,24 @@ cat > sysinfo.c <<EOF
 #include <unistd.h>
 #include <netdb.h>
 #include <pwd.h>
+#if defined(HAVE_LINUX_FILTER_H)
+#include <linux/filter.h>
+#endif
+#if defined(HAVE_LINUX_NETLINK_H)
+#include <linux/netlink.h>
+#endif
+#if defined(HAVE_LINUX_RTNETLINK_H)
+#include <linux/rtnetlink.h>
+#endif
+#if defined(HAVE_NET_IF_H)
+#include <net/if.h>
+#endif
 EOF
 
 ${CC} -fdump-go-spec=gen-sysinfo.go -std=gnu99 -S -o sysinfo.s sysinfo.c
 
 echo 'package syscall' > ${OUT}
+echo 'import "unsafe"' >> ${OUT}
 
 # Get all the consts and types, skipping ones which could not be
 # represented in Go and ones which we need to rewrite.  We also skip
@@ -449,7 +463,7 @@ echo $msghdr | \
 
 # The ip_mreq struct
 grep '^type _ip_mreq ' gen-sysinfo.go | \
-    sed -e 's/_ip_mreq/IpMreq/' \
+    sed -e 's/_ip_mreq/IPMreq/' \
       -e 's/imr_multiaddr/Multiaddr/' \
       -e 's/imr_interface/Interface/' \
       -e 's/_in_addr/[4]byte/g' \
@@ -478,5 +492,97 @@ grep '^type _passwd ' gen-sysinfo.go | \
     sed -e 's/_passwd/Passwd/' \
       -e 's/ pw_/ Pw_/g' \
     >> ${OUT}
+
+# The ioctl flags for the controlling TTY.
+grep '^const _TIOC' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(TIOC[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The nlmsghdr struct.
+grep '^type _nlmsghdr ' gen-sysinfo.go | \
+    sed -e 's/_nlmsghdr/NlMsghdr/' \
+      -e 's/nlmsg_len/Len/' \
+      -e 's/nlmsg_type/Type/' \
+      -e 's/nlmsg_flags/Flags/' \
+      -e 's/nlmsg_seq/Seq/' \
+      -e 's/nlmsg_pid/Pid/' \
+    >> ${OUT}
+
+# The nlmsg flags and operators.
+grep '^const _NLM' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(NLM[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# NLMSG_HDRLEN is defined as an expression using sizeof.
+if ! grep '^const NLMSG_HDRLEN' ${OUT} > /dev/null 2>&1; then
+  if grep '^type NlMsghdr ' ${OUT} > /dev/null 2>&1; then
+    echo 'var NLMSG_HDRLEN = int((unsafe.Sizeof(NlMsghdr{}) + (NLMSG_ALIGNTO-1)) &^ (NLMSG_ALIGNTO-1))' >> ${OUT}
+  fi
+fi
+
+# The rtgenmsg struct.
+grep '^type _rtgenmsg ' gen-sysinfo.go | \
+    sed -e 's/_rtgenmsg/RtGenmsg/' \
+      -e 's/rtgen_family/Family/' \
+    >> ${OUT}
+
+# The routing message flags.
+grep '^const _RTA' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RTM' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTM[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The size of the rtgenmsg struct.
+if grep 'type RtGenmsg ' ${OUT} > /dev/null 2>&1; then
+  echo 'var SizeofRtGenmsg = int(unsafe.Sizeof(RtGenmsg{}))' >> ${OUT}
+fi
+
+# The ifinfomsg struct.
+grep '^type _ifinfomsg ' gen-sysinfo.go | \
+    sed -e 's/_ifinfomsg/IfInfomsg/' \
+      -e 's/ifi_family/Family/' \
+      -e 's/ifi_type/Type/' \
+      -e 's/ifi_index/Index/' \
+      -e 's/ifi_flags/Flags/' \
+      -e 's/ifi_change/Change/' \
+    >> ${OUT}
+
+# The interface information types and flags.
+grep '^const _IFA' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(IFA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _IFLA' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(IFLA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _IFF' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(IFF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The size of the ifinfomsg struct.
+if grep 'type IfInfomsg ' ${OUT} > /dev/null 2>&1; then
+  echo 'var SizeofIfInfomsg = int(unsafe.Sizeof(IfInfomsg{}))' >> ${OUT}
+fi
+
+# The ifaddrmsg struct.
+grep '^type _ifaddrmsg ' gen-sysinfo.go | \
+    sed -e 's/_ifaddrmsg/IfAddrmsg/' \
+      -e 's/ifa_family/Family/' \
+      -e 's/ifa_prefixlen/Prefixlen/' \
+      -e 's/ifa_flags/Flags/' \
+      -e 's/ifa_scope/Scope/' \
+      -e 's/ifa_index/Index/' \
+    >> ${OUT}
+
+# The size of the ifaddrmsg struct.
+if grep 'type IfAddrmsg ' ${OUT} > /dev/null 2>&1; then
+  echo 'var SizeofIfAddrmsg = int(unsafe.Sizeof(IfAddrmsg{}))' >> ${OUT}
+fi
+
+# The rtattr struct.
+grep '^type _rtattr ' gen-sysinfo.go | \
+    sed -e 's/_rtattr/RtAttr/' \
+      -e 's/rta_len/Len/' \
+      -e 's/rta_type/Type/' \
+    >> ${OUT}
+
+# The size of the rtattr struct.
+if grep 'type RtAttr ' ${OUT} > /dev/null 2>&1; then
+  echo 'var SizeofRtAttr = int(unsafe.Sizeof(RtAttr{}))' >> ${OUT}
+fi
 
 exit $?
