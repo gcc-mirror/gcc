@@ -1,4 +1,12 @@
 2011-09-16  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.md: (umulqihi3, mulqihi3): Write as one pattern.
+	(umulqi3_highpart, smulqi3_highpart): Ditto.
+	(*maddqihi4.const, *umaddqihi4.uconst): Ditto.
+	(*msubqihi4.const, *umsubqihi4.uconst): Ditto.
+	(*muluqihi3.uconst, *mulsqihi3.sconst): Ditto.
+
+2011-09-16  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50358
 	* config/avr/avr.md (*ashiftqihi2.signx.1): New insn.
