@@ -97,6 +97,14 @@ __go_receive_nonblocking_small (struct __go_channel *channel)
   uintptr_t element_size;
   struct __go_receive_nonblocking_small ret;
 
+  if (channel == NULL)
+    {
+      ret.__val = 0;
+      ret.__success = 0;
+      ret.__closed = 0;
+      return ret;
+    }
+
   element_size = channel->element_type->__size;
   __go_assert (element_size <= sizeof (uint64_t));
 

@@ -270,7 +270,10 @@ __go_receive_small_closed (struct __go_channel *channel, _Bool for_select,
   uint64_t ret;
 
   if (channel == NULL)
-    __go_panic_msg ("receive from nil channel");
+    {
+      /* Block forever.  */
+      __go_select (0, 0, NULL, NULL);
+    }
 
   element_size = channel->element_type->__size;
   __go_assert (element_size <= sizeof (uint64_t));
