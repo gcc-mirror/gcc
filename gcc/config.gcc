@@ -422,6 +422,7 @@ score*-*-*)
 	;;
 sparc*-*-*)
 	cpu_type=sparc
+	extra_headers="visintrin.h"
 	need_64bit_hwint=yes
 	;;
 spu*-*-*)
