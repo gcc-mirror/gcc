@@ -1138,6 +1138,72 @@
    (set_attr "cc" "clobber")])
 
 ;******************************************************************************
+; multiply-add/sub QI: $0 = $3 +/- $1*$2
+;******************************************************************************
+
+(define_insn "*maddqi4"
+  [(set (match_operand:QI 0 "register_operand"                  "=r")
+        (plus:QI (mult:QI (match_operand:QI 1 "register_operand" "r")
+                          (match_operand:QI 2 "register_operand" "r"))
+                 (match_operand:QI 3 "register_operand"          "0")))]
+  
+  "AVR_HAVE_MUL"
+  "mul %1,%2
+	add %A0,r0
+	clr __zero_reg__"
+  [(set_attr "length" "4")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*msubqi4"
+  [(set (match_operand:QI 0 "register_operand"                   "=r")
+        (minus:QI (match_operand:QI 3 "register_operand"          "0")
+                  (mult:QI (match_operand:QI 1 "register_operand" "r")
+                           (match_operand:QI 2 "register_operand" "r"))))]
+  "AVR_HAVE_MUL"
+  "mul %1,%2
+	sub %A0,r0
+	clr __zero_reg__"
+  [(set_attr "length" "4")
+   (set_attr "cc" "clobber")])
+
+(define_insn_and_split "*maddqi4.const"
+  [(set (match_operand:QI 0 "register_operand"                   "=r")
+        (plus:QI (mult:QI (match_operand:QI 1 "register_operand"  "r")
+                          (match_operand:QI 2 "const_int_operand" "n"))
+                 (match_operand:QI 3 "register_operand"           "0")))
+   (clobber (match_scratch:QI 4                                 "=&d"))]
+  "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+        (match_dup 2))
+   ; *maddqi4
+   (set (match_dup 0)
+        (plus:QI (mult:QI (match_dup 1)
+                          (match_dup 4))
+                 (match_dup 3)))]
+  "")
+
+(define_insn_and_split "*msubqi4.const"
+  [(set (match_operand:QI 0 "register_operand"                    "=r")
+        (minus:QI (match_operand:QI 3 "register_operand"           "0")
+                  (mult:QI (match_operand:QI 1 "register_operand"  "r")
+                           (match_operand:QI 2 "const_int_operand" "n"))))
+   (clobber (match_scratch:QI 4                                  "=&d"))]
+  "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+        (match_dup 2))
+   ; *msubqi4
+   (set (match_dup 0)
+        (minus:QI (match_dup 3)
+                  (mult:QI (match_dup 1)
+                           (match_dup 4))))]
+  "")
+
+
+;******************************************************************************
 ; multiply-add/sub HI: $0 = $3 +/- $1*$2  with 8-bit values $1, $2
 ;******************************************************************************
 
@@ -1496,6 +1562,17 @@
 ;; The EXTEND of $1 only appears in combine, we don't see it in expand so that
 ;; expand decides to use ASHIFT instead of MUL because ASHIFT costs are cheaper
 ;; at that time.  Fix that.
+
+(define_insn "*ashiftqihi2.signx.1"
+  [(set (match_operand:HI 0 "register_operand"                           "=r,*r")
+        (ashift:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "0,r"))
+                   (const_int 1)))]
+  ""
+  "@
+	lsl %A0\;sbc %B0,%B0
+	mov %A0,%1\;lsl %A0\;sbc %B0,%B0"
+  [(set_attr "length" "2,3")
+   (set_attr "cc" "clobber")])
 
 (define_insn_and_split "*ashifthi3.signx.const"
   [(set (match_operand:HI 0 "register_operand"                           "=r")

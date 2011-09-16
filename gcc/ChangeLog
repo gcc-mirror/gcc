@@ -1,3 +1,14 @@
+2011-09-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50358
+	* config/avr/avr.md (*ashiftqihi2.signx.1): New insn.
+	(*maddqi4, *maddqi4.const): New insns.
+	(*msubqi4, *msubqi4.const): New insns.
+	* config/avr/avr.c (avr_rtx_costs): Record costs of above in cases
+	PLUS:QI and MINUS:QI.  Increase costs of multiply-add/-sub for
+	HImode by 1 in the case of multiplying with a CONST_INT.
+	Record cost of *ashiftqihi2.signx.1 in case ASHIFT:QI.
+
 2011-09-15   Jan Hubicka  <jh@suse.cz>
 
 	PR lto/50430
