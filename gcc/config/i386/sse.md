@@ -1253,7 +1253,7 @@
       emit_insn (gen_sse3_haddv4sf3 (operands[0], tmp, tmp));
     }
   else
-    ix86_expand_reduc_v4sf (gen_addv4sf3, operands[0], operands[1]);
+    ix86_expand_reduc (gen_addv4sf3, operands[0], operands[1]);
   DONE;
 })
 
@@ -1263,7 +1263,7 @@
    (match_operand:V4SF 1 "register_operand" "")]
   "TARGET_SSE"
 {
-  ix86_expand_reduc_v4sf (gen_smaxv4sf3, operands[0], operands[1]);
+  ix86_expand_reduc (gen_smaxv4sf3, operands[0], operands[1]);
   DONE;
 })
 
@@ -1272,7 +1272,43 @@
    (match_operand:V4SF 1 "register_operand" "")]
   "TARGET_SSE"
 {
-  ix86_expand_reduc_v4sf (gen_sminv4sf3, operands[0], operands[1]);
+  ix86_expand_reduc (gen_sminv4sf3, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_smax_v8sf"
+  [(match_operand:V8SF 0 "register_operand" "")
+   (match_operand:V8SF 1 "register_operand" "")]
+  "TARGET_AVX"
+{
+  ix86_expand_reduc (gen_smaxv8sf3, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_smin_v8sf"
+  [(match_operand:V8SF 0 "register_operand" "")
+   (match_operand:V8SF 1 "register_operand" "")]
+  "TARGET_AVX"
+{
+  ix86_expand_reduc (gen_sminv8sf3, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_smax_v4df"
+  [(match_operand:V4DF 0 "register_operand" "")
+   (match_operand:V4DF 1 "register_operand" "")]
+  "TARGET_AVX"
+{
+  ix86_expand_reduc (gen_smaxv4df3, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_smin_v4df"
+  [(match_operand:V4DF 0 "register_operand" "")
+   (match_operand:V4DF 1 "register_operand" "")]
+  "TARGET_AVX"
+{
+  ix86_expand_reduc (gen_sminv4df3, operands[0], operands[1]);
   DONE;
 })
 

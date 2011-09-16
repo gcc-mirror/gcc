@@ -1,5 +1,12 @@
 2011-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_reduc_v4sf): Rename to ...
+	(ix86_expand_reduc): ... this.  Handle also V8SFmode and V4DFmode.
+	* config/i386/sse.md (reduc_splus_v4sf, reduc_smax_v4sf,
+	reduc_smin_v4sf): Adjust callers.
+	(reduc_smax_v8sf, reduc_smin_v8sf, reduc_smax_v4df, reduc_smin_v4df):
+	New expanders.
+
 	* config/i386/sse.md (vec_extract_hi_<mode>,
 	vec_extract_hi_v16hi, vec_extract_hi_v32qi): Use
 	vextracti128 instead of vextractf128 for -mavx2 and

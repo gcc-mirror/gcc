@@ -1,5 +1,8 @@
 2011-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/vect/vect-reduc-10.c: New test.
+	* gcc.target/i386/avx-reduc-1.c: New test.
+
 	* gcc.target/i386/sse2-extract-1.c: New test.
 	* gcc.target/i386/avx-extract-1.c: New test.
 
