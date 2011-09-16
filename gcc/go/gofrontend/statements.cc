@@ -2539,11 +2539,10 @@ Return_statement::do_traverse_assignments(Traverse_assignments* tassign)
 
 // Lower a return statement.  If we are returning a function call
 // which returns multiple values which match the current function,
-// split up the call's results.  If the function has named result
-// variables, and the return statement lists explicit values, then
-// implement it by assigning the values to the result variables and
-// changing the statement to not list any values.  This lets
-// panic/recover work correctly.
+// split up the call's results.  If the return statement lists
+// explicit values, implement this statement by assigning the values
+// to the result variables and change this statement to a naked
+// return.  This lets panic/recover work correctly.
 
 Statement*
 Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing,

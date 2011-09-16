@@ -165,10 +165,10 @@ DEF_GO_RUNTIME(SET_DEFER_RETADDR, "__go_set_defer_retaddr", P1(POINTER),
 	       R1(BOOL))
 
 // Check for a deferred function in an exception handler.
-DEF_GO_RUNTIME(CHECK_DEFER, "__go_check_defer", P1(POINTER), R0())
+DEF_GO_RUNTIME(CHECK_DEFER, "__go_check_defer", P1(BOOLPTR), R0())
 
 // Run deferred functions.
-DEF_GO_RUNTIME(UNDEFER, "__go_undefer", P1(POINTER), R0())
+DEF_GO_RUNTIME(UNDEFER, "__go_undefer", P1(BOOLPTR), R0())
 
 // Panic with a runtime error.
 DEF_GO_RUNTIME(RUNTIME_ERROR, "__go_runtime_error", P1(INT), R0())
@@ -207,7 +207,7 @@ DEF_GO_RUNTIME(GO, "__go_go", P2(FUNC_PTR, POINTER), R0())
 
 
 // Defer a function.
-DEF_GO_RUNTIME(DEFER, "__go_defer", P3(POINTER, FUNC_PTR, POINTER), R0())
+DEF_GO_RUNTIME(DEFER, "__go_defer", P3(BOOLPTR, FUNC_PTR, POINTER), R0())
 
 
 // Run a select statement.

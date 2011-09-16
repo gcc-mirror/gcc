@@ -44,7 +44,7 @@ static const _Unwind_Exception_Class __go_exception_class =
    continue unwinding.  */
 
 void
-__go_check_defer (void *frame)
+__go_check_defer (_Bool *frame)
 {
   struct _Unwind_Exception *hdr;
 
@@ -103,8 +103,12 @@ __go_check_defer (void *frame)
       if (was_recovered)
 	{
 	  /* Just return and continue executing Go code.  */
+	  *frame = 1;
 	  return;
 	}
+
+      /* We are panicing through this function.  */
+      *frame = 0;
     }
   else if (__go_panic_defer->__defer != NULL
 	   && __go_panic_defer->__defer->__pfn == NULL
@@ -118,6 +122,10 @@ __go_check_defer (void *frame)
       d = __go_panic_defer->__defer;
       __go_panic_defer->__defer = d->__next;
       __go_free (d);
+
+      /* We are returning from this function.  */
+      *frame = 1;
+
       return;
     }
 
