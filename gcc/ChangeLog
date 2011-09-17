@@ -1,5 +1,19 @@
 2011-09-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (VIMAX_AVX2): Change V4DI to V2TI.
+	(sse2_avx, sseinsnmode): Add V2TI.
+	(REDUC_SMINMAX_MODE): New mode iterator.
+	(reduc_smax_v4sf, reduc_smin_v4sf, reduc_smax_v8sf,
+	reduc_smin_v8sf, reduc_smax_v4df, reduc_smin_v4df): Remove.
+	(reduc_<code>_<mode>): New smaxmin and umaxmin expanders.
+	(sse2_lshrv1ti3): Rename to...
+	(<sse2_avx2>_lshr<mode>3): ... this.  Use VIMAX_AVX2 mode
+	iterator.  Move before umaxmin expanders.
+	* config/i386/i386.h (VALID_AVX256_REG_MODE,
+	SSE_REG_MODE_P): Accept V2TImode.
+	* config/i386/i386.c (ix86_expand_reduc): Handle V32QImode,
+	V16HImode, V8SImode and V4DImode.
+
 	* config/i386/i386.c (ix86_build_const_vector): Handle V8SImode
 	and V4DImode.
 	(ix86_build_signbit_mask): Likewise.
@@ -19,7 +33,7 @@
 	VI8_AVX2 mode iterator.
 	(vcond<V_256:mode><VI_256:mode>, vcondu<V_256:mode><VI_256:mode>):
 	New expanders.
-	
+
 2011-09-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/ia64/itanium2.md: Use match_test rather than eq/ne symbol_ref
