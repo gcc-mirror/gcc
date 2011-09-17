@@ -11789,7 +11789,7 @@ Array_construction_expression::do_check_types(Gogo*)
     }
 
   Expression* length = at->length();
-  if (length != NULL)
+  if (length != NULL && !length->is_error_expression())
     {
       mpz_t val;
       mpz_init(val);
