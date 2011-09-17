@@ -710,294 +710,294 @@
 (define_insn_reservation "2_stop_bit" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "stop_bit"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_stop|2_m0_stop|2_m1_stop|2_mi0_stop|2_mi1_stop")
 
 (define_insn_reservation "2_br"      0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "br"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_B")
+       (not (match_test "bundling_p"))) "2_B")
 (define_insn_reservation "2_scall"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "scall"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_B")
+       (not (match_test "bundling_p"))) "2_B")
 (define_insn_reservation "2_fcmp"    2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fcmp"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_F")
+       (not (match_test "bundling_p"))) "2_F")
 (define_insn_reservation "2_fcvtfx"  4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fcvtfx"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_F")
+       (not (match_test "bundling_p"))) "2_F")
 (define_insn_reservation "2_fld"     6
   (and (and (and (and (eq_attr "cpu" "itanium2")
                       (eq_attr "itanium_class" "fld"))
                  (eq_attr "data_speculative" "no"))
             (eq_attr "check_load" "no"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M")
 (define_insn_reservation "2_flda"    6
   (and (and (and (eq_attr "cpu" "itanium2")
                  (eq_attr "itanium_class" "fld"))
             (eq_attr "data_speculative" "yes"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 (define_insn_reservation "2_fldc"    0
   (and (and (and (eq_attr "cpu" "itanium2")
                  (eq_attr "itanium_class" "fld"))
             (eq_attr "check_load" "yes"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 
 (define_insn_reservation "2_fldp"    6
   (and (and (and (eq_attr "cpu" "itanium2")
 		 (eq_attr "itanium_class" "fldp"))
 	    (eq_attr "check_load" "no"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 (define_insn_reservation "2_fldpc"   0
   (and (and (and (eq_attr "cpu" "itanium2")
 		 (eq_attr "itanium_class" "fldp"))
 	    (eq_attr "check_load" "yes"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 
 (define_insn_reservation "2_fmac"    4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fmac"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_F")
+       (not (match_test "bundling_p"))) "2_F")
 (define_insn_reservation "2_fmisc"   4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fmisc"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_F")
+       (not (match_test "bundling_p"))) "2_F")
 
 ;; There is only one insn `mov = ar.bsp' for frar_i:
 ;; Latency time ???
 (define_insn_reservation "2_frar_i" 13
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frar_i"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 ;; There is only two insns `mov = ar.unat' or `mov = ar.ccv' for frar_m:
 ;; Latency time ???
 (define_insn_reservation "2_frar_m"  6
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frar_m"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um2")
 (define_insn_reservation "2_frbr"    2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frbr"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 (define_insn_reservation "2_frfr"    5
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frfr"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um2")
 (define_insn_reservation "2_frpr"    2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frpr"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 
 (define_insn_reservation "2_ialu"      1
     (and (and (eq_attr "cpu" "itanium2")
               (eq_attr "itanium_class" "ialu"))
-         (eq (symbol_ref "bundling_p") (const_int 0)))
+         (not (match_test "bundling_p")))
     "2_A")
 (define_insn_reservation "2_icmp"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "icmp"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_A")
+       (not (match_test "bundling_p"))) "2_A")
 (define_insn_reservation "2_ilog"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ilog"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_A")
+       (not (match_test "bundling_p"))) "2_A")
 (define_insn_reservation "2_mmalua"  2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmalua"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_A")
+       (not (match_test "bundling_p"))) "2_A")
 ;; Latency time ???
 (define_insn_reservation "2_ishf"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ishf"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 
 (define_insn_reservation "2_ld"      1
   (and (and (and (eq_attr "cpu" "itanium2")
                  (eq_attr "itanium_class" "ld"))
             (eq_attr "check_load" "no"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 (define_insn_reservation "2_ldc"     0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "check_load" "yes"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 
 (define_insn_reservation "2_long_i"  1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "long_i"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_L")
+       (not (match_test "bundling_p"))) "2_L")
 
 (define_insn_reservation "2_mmmul"   2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmmul"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 ;; Latency time ???
 (define_insn_reservation "2_mmshf"   2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmshf"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_I")
+       (not (match_test "bundling_p"))) "2_I")
 ;; Latency time ???
 (define_insn_reservation "2_mmshfi"  1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmshfi"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_I")
+       (not (match_test "bundling_p"))) "2_I")
 
 ;; Now we have only one insn (flushrs) of such class.  We assume that flushrs
 ;; is the 1st syllable of the bundle after stop bit.
 (define_insn_reservation "2_rse_m"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "rse_m"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "(2_0m.ii|2_0m.mi|2_0m.fi|2_0m.mf|2_0m.bb\
     |2_0m.ib|2_0m.mb|2_0m.fb|2_0m.lx)+2_um0")
 (define_insn_reservation "2_sem"     0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "sem"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um23")
 
 (define_insn_reservation "2_stf"     1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "stf"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um23")
 (define_insn_reservation "2_st"      1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "st"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um23")
 (define_insn_reservation "2_syst_m0" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "syst_m0"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um2")
 (define_insn_reservation "2_syst_m"  0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "syst_m"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um0")
 ;; Reservation???
 (define_insn_reservation "2_tbit"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "tbit"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 
 ;; There is only ony insn `mov ar.pfs =' for toar_i:
 (define_insn_reservation "2_toar_i"  0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "toar_i"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 ;; There are only ony 2 insns `mov ar.ccv =' and `mov ar.unat =' for toar_m:
 ;; Latency time ???
 (define_insn_reservation "2_toar_m"  5
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "toar_m"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um2")
 ;; Latency time ???
 (define_insn_reservation "2_tobr"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "tobr"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 (define_insn_reservation "2_tofr"    5
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "tofr"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um23")
 ;; Latency time ???
 (define_insn_reservation "2_topr"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "topr"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I+2_only_ui0")
 
 (define_insn_reservation "2_xmpy"    4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "xmpy"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_F")
+       (not (match_test "bundling_p"))) "2_F")
 ;; Latency time ???
 (define_insn_reservation "2_xtd"     1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "xtd"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_I")
+       (not (match_test "bundling_p"))) "2_I")
 
 (define_insn_reservation "2_chk_s_i" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "chk_s_i"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_I|2_M_only_um23")
 (define_insn_reservation "2_chk_s_f" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "chk_s_f"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um23")
 (define_insn_reservation "2_chk_a"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "chk_a"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 
 (define_insn_reservation "2_lfetch"  0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "lfetch"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M_only_um01")
 
 (define_insn_reservation "2_nop_m"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_m"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_M0")
+       (not (match_test "bundling_p"))) "2_M0")
 (define_insn_reservation "2_nop_b"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_b"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_NB")
+       (not (match_test "bundling_p"))) "2_NB")
 (define_insn_reservation "2_nop_i"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_i"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_I0")
+       (not (match_test "bundling_p"))) "2_I0")
 (define_insn_reservation "2_nop_f"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_f"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_F0")
+       (not (match_test "bundling_p"))) "2_F0")
 (define_insn_reservation "2_nop_x"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_x"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_L0")
+       (not (match_test "bundling_p"))) "2_L0")
 
 (define_insn_reservation "2_unknown" 1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "unknown"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "2_empty")
+       (not (match_test "bundling_p"))) "2_empty")
 
 (define_insn_reservation "2_nop" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop"))
-       (eq (symbol_ref "bundling_p") (const_int 0)))
+       (not (match_test "bundling_p")))
   "2_M0|2_NB|2_I0|2_F0")
 
 (define_insn_reservation "2_ignore" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ignore"))
-       (eq (symbol_ref "bundling_p") (const_int 0))) "nothing")
+       (not (match_test "bundling_p"))) "nothing")
 
 (define_cpu_unit "2_m_cont_only, 2_b_cont_only" "two")
 (define_cpu_unit "2_mi_cont_only, 2_mm_cont_only, 2_mf_cont_only" "two")
@@ -1029,13 +1029,13 @@
 (define_insn_reservation "2_pre_cycle" 0
    (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "pre_cycle"))
-        (eq (symbol_ref "bundling_p") (const_int 0)))
+        (not (match_test "bundling_p")))
                          "nothing")
 
 ;;(define_insn_reservation "2_pre_cycle" 0
 ;;   (and (and (eq_attr "cpu" "itanium2")
 ;;             (eq_attr "itanium_class" "pre_cycle"))
-;;        (eq (symbol_ref "bundling_p") (const_int 0)))
+;;        (not (match_test "bundling_p")))
 ;;                         "(2_0m_bs, 2_m_cont)                     \
 ;;                          | (2_0mi_bs, (2_mi_cont|nothing))       \
 ;;                          | (2_0mm_bs, 2_mm_cont)                 \
@@ -1565,289 +1565,289 @@
 (define_insn_reservation "2b_stop_bit" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "stop_bit"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_stop|2b_m0_stop|2b_m1_stop|2b_mi0_stop|2b_mi1_stop")
 (define_insn_reservation "2b_br"      0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "br"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_B")
+       (match_test "bundling_p")) "2b_B")
 (define_insn_reservation "2b_scall"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "scall"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_B")
+       (match_test "bundling_p")) "2b_B")
 (define_insn_reservation "2b_fcmp"    2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fcmp"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_F")
+       (match_test "bundling_p")) "2b_F")
 (define_insn_reservation "2b_fcvtfx"  4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fcvtfx"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_F")
+       (match_test "bundling_p")) "2b_F")
 (define_insn_reservation "2b_fld"     6
   (and (and (and (and (eq_attr "cpu" "itanium2")
                       (eq_attr "itanium_class" "fld"))
                  (eq_attr "data_speculative" "no"))
             (eq_attr "check_load" "no"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M")
 (define_insn_reservation "2b_flda"    6
   (and (and (and (eq_attr "cpu" "itanium2")
                  (eq_attr "itanium_class" "fld"))
             (eq_attr "data_speculative" "yes"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 (define_insn_reservation "2b_fldc"    0
   (and (and (and (eq_attr "cpu" "itanium2")
                  (eq_attr "itanium_class" "fld"))
             (eq_attr "check_load" "yes"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 
 (define_insn_reservation "2b_fldp"    6
   (and (and (and (eq_attr "cpu" "itanium2")
 		 (eq_attr "itanium_class" "fldp"))
 	    (eq_attr "check_load" "no"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 (define_insn_reservation "2b_fldpc"   0
   (and (and (and (eq_attr "cpu" "itanium2")
 		 (eq_attr "itanium_class" "fldp"))
 	    (eq_attr "check_load" "yes"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 
 (define_insn_reservation "2b_fmac"    4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fmac"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_F")
+       (match_test "bundling_p")) "2b_F")
 (define_insn_reservation "2b_fmisc"   4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "fmisc"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_F")
+       (match_test "bundling_p")) "2b_F")
 
 ;; Latency time ???
 (define_insn_reservation "2b_frar_i" 13
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frar_i"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 ;; Latency time ???
 (define_insn_reservation "2b_frar_m"  6
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frar_m"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um2")
 (define_insn_reservation "2b_frbr"    2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frbr"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 (define_insn_reservation "2b_frfr"    5				  
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frfr"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um2")
 (define_insn_reservation "2b_frpr"    2				  
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "frpr"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 
 (define_insn_reservation "2b_ialu"      1
     (and (and (eq_attr "cpu" "itanium2")
               (eq_attr "itanium_class" "ialu"))
-         (ne (symbol_ref "bundling_p") (const_int 0)))
+         (match_test "bundling_p"))
     "2b_A")
 (define_insn_reservation "2b_icmp"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "icmp"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_A")
+       (match_test "bundling_p")) "2b_A")
 (define_insn_reservation "2b_ilog"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ilog"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_A")
+       (match_test "bundling_p")) "2b_A")
 (define_insn_reservation "2b_mmalua"  2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmalua"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_A")
+       (match_test "bundling_p")) "2b_A")
 ;; Latency time ???
 (define_insn_reservation "2b_ishf"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ishf"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 
 (define_insn_reservation "2b_ld"      1
   (and (and (and (eq_attr "cpu" "itanium2")
                  (eq_attr "itanium_class" "ld"))
             (eq_attr "check_load" "no"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 (define_insn_reservation "2b_ldc"     0
   (and (and (and (eq_attr "cpu" "itanium2")
                  (eq_attr "itanium_class" "ld"))
             (eq_attr "check_load" "yes"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 
 (define_insn_reservation "2b_long_i"  1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "long_i"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_L")
+       (match_test "bundling_p")) "2b_L")
 
 ;; Latency time ???
 (define_insn_reservation "2b_mmmul"   2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmmul"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 ;; Latency time ???
 (define_insn_reservation "2b_mmshf"   2
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmshf"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_I")
+       (match_test "bundling_p")) "2b_I")
 ;; Latency time ???
 (define_insn_reservation "2b_mmshfi"  1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "mmshfi"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_I")
+       (match_test "bundling_p")) "2b_I")
 
 (define_insn_reservation "2b_rse_m"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "rse_m"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
    "(2b_0m.ii|2b_0m.mi|2b_0m.fi|2b_0m.mf|2b_0m.bb\
      |2b_0m.ib|2b_0m.mb|2b_0m.fb|2b_0m.lx)+2_1+2b_um0")
 (define_insn_reservation "2b_sem"     0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "sem"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um23")
 
 (define_insn_reservation "2b_stf"     1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "stf"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um23")
 (define_insn_reservation "2b_st"      1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "st"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um23")
 (define_insn_reservation "2b_syst_m0" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "syst_m0"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um2")
 (define_insn_reservation "2b_syst_m"  0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "syst_m"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um0")
 ;; Reservation???
 (define_insn_reservation "2b_tbit"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "tbit"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 (define_insn_reservation "2b_toar_i"  0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "toar_i"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 ;; Latency time ???
 (define_insn_reservation "2b_toar_m"  5
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "toar_m"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um2")
 ;; Latency time ???
 (define_insn_reservation "2b_tobr"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "tobr"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 (define_insn_reservation "2b_tofr"    5
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "tofr"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um23")
 ;; Latency time ???
 (define_insn_reservation "2b_topr"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "topr"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I+2b_only_ui0")
 
 (define_insn_reservation "2b_xmpy"    4
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "xmpy"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_F")
+       (match_test "bundling_p")) "2b_F")
 ;; Latency time ???
 (define_insn_reservation "2b_xtd"     1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "xtd"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_I")
+       (match_test "bundling_p")) "2b_I")
 
 (define_insn_reservation "2b_chk_s_i" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "chk_s_i"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_I|2b_M_only_um23")
 (define_insn_reservation "2b_chk_s_f" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "chk_s_f"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um23")
 (define_insn_reservation "2b_chk_a"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "chk_a"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 
 (define_insn_reservation "2b_lfetch"  0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "lfetch"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M_only_um01")
 (define_insn_reservation "2b_nop_m"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_m"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_M")
+       (match_test "bundling_p")) "2b_M")
 (define_insn_reservation "2b_nop_b"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_b"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_NB")
+       (match_test "bundling_p")) "2b_NB")
 (define_insn_reservation "2b_nop_i"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_i"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_I")
+       (match_test "bundling_p")) "2b_I")
 (define_insn_reservation "2b_nop_f"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_f"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_F")
+       (match_test "bundling_p")) "2b_F")
 (define_insn_reservation "2b_nop_x"   0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop_x"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_L")
+       (match_test "bundling_p")) "2b_L")
 (define_insn_reservation "2b_unknown" 1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "unknown"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_empty")
+       (match_test "bundling_p")) "2b_empty")
 (define_insn_reservation "2b_nop" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "nop"))
-       (ne (symbol_ref "bundling_p") (const_int 0)))
+       (match_test "bundling_p"))
   "2b_M|2b_NB|2b_I|2b_F")
 (define_insn_reservation "2b_ignore" 0
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ignore"))
-       (ne (symbol_ref "bundling_p") (const_int 0))) "nothing")
+       (match_test "bundling_p")) "nothing")
 
 (define_insn_reservation "2b_pre_cycle" 0
    (and (and (eq_attr "cpu" "itanium2")
              (eq_attr "itanium_class" "pre_cycle"))
-        (ne (symbol_ref "bundling_p") (const_int 0)))
+        (match_test "bundling_p"))
                          "(2b_0m_bs, 2b_m_cont)     \
                           | (2b_0mi_bs, 2b_mi_cont) \
                           | (2b_0mm_bs, 2b_mm_cont) \
