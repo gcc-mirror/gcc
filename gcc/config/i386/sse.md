@@ -5806,7 +5806,7 @@
   operands[1] = gen_lowpart (V1TImode, operands[1]);
 })
 
-(define_expand "avx2_<code><mode>3"
+(define_expand "<code><mode>3"
   [(set (match_operand:VI124_256 0 "register_operand" "")
 	(umaxmin:VI124_256
 	  (match_operand:VI124_256 1 "nonimmediate_operand" "")
@@ -5853,7 +5853,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "avx2_<code><mode>3"
+(define_expand "<code><mode>3"
   [(set (match_operand:VI124_256 0 "register_operand" "")
 	(smaxmin:VI124_256
 	  (match_operand:VI124_256 1 "nonimmediate_operand" "")
@@ -5904,47 +5904,22 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "smax<mode>3"
+(define_expand "<code><mode>3"
   [(set (match_operand:VI14_128 0 "register_operand" "")
-	(smax:VI14_128 (match_operand:VI14_128 1 "register_operand" "")
-		       (match_operand:VI14_128 2 "register_operand" "")))]
+	(smaxmin:VI14_128 (match_operand:VI14_128 1 "register_operand" "")
+			  (match_operand:VI14_128 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (SMAX, <MODE>mode, operands);
+    ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);
   else
     {
       rtx xops[6];
       bool ok;
 
       xops[0] = operands[0];
-      xops[1] = operands[1];
-      xops[2] = operands[2];
-      xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-      xops[4] = operands[1];
-      xops[5] = operands[2];
-      ok = ix86_expand_int_vcond (xops);
-      gcc_assert (ok);
-      DONE;
-    }
-})
-
-(define_expand "smin<mode>3"
-  [(set (match_operand:VI14_128 0 "register_operand" "")
-	(smin:VI14_128 (match_operand:VI14_128 1 "register_operand" "")
-		       (match_operand:VI14_128 2 "register_operand" "")))]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (SMIN, <MODE>mode, operands);
-  else
-    {
-      rtx xops[6];
-      bool ok;
-
-      xops[0] = operands[0];
-      xops[1] = operands[2];
-      xops[2] = operands[1];
+      xops[1] = operands[<CODE> == SMAX ? 1 : 2];
+      xops[2] = operands[<CODE> == SMAX ? 2 : 1];
       xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
       xops[4] = operands[1];
       xops[5] = operands[2];
@@ -5962,38 +5937,18 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands_no_copy (<CODE>, V8HImode, operands);")
 
-(define_expand "smaxv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(smax:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
+(define_expand "<code><mode>3"
+  [(set (match_operand:VI8_AVX2 0 "register_operand" "")
+	(smaxmin:VI8_AVX2 (match_operand:VI8_AVX2 1 "register_operand" "")
+			  (match_operand:VI8_AVX2 2 "register_operand" "")))]
   "TARGET_SSE4_2"
 {
   rtx xops[6];
   bool ok;
 
   xops[0] = operands[0];
-  xops[1] = operands[1];
-  xops[2] = operands[2];
-  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-  ok = ix86_expand_int_vcond (xops);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "sminv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(smin:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
-  "TARGET_SSE4_2"
-{
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-  xops[1] = operands[2];
-  xops[2] = operands[1];
+  xops[1] = operands[<CODE> == SMAX ? 1 : 2];
+  xops[2] = operands[<CODE> == SMAX ? 2 : 1];
   xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
   xops[4] = operands[1];
   xops[5] = operands[2];
@@ -6110,38 +6065,18 @@
     }
 })
 
-(define_expand "umaxv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(umax:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
+(define_expand "<code><mode>3"
+  [(set (match_operand:VI8_AVX2 0 "register_operand" "")
+	(umaxmin:VI8_AVX2 (match_operand:VI8_AVX2 1 "register_operand" "")
+			  (match_operand:VI8_AVX2 2 "register_operand" "")))]
   "TARGET_SSE4_2"
 {
   rtx xops[6];
   bool ok;
 
   xops[0] = operands[0];
-  xops[1] = operands[1];
-  xops[2] = operands[2];
-  xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-  ok = ix86_expand_int_vcond (xops);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "uminv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(umin:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
-  "TARGET_SSE4_2"
-{
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-  xops[1] = operands[2];
-  xops[2] = operands[1];
+  xops[1] = operands[<CODE> == UMAX ? 1 : 2];
+  xops[2] = operands[<CODE> == UMAX ? 2 : 1];
   xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
   xops[4] = operands[1];
   xops[5] = operands[2];
@@ -6265,6 +6200,23 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
+(define_expand "vcond<V_256:mode><VI_256:mode>"
+  [(set (match_operand:V_256 0 "register_operand" "")
+	(if_then_else:V_256
+	  (match_operator 3 ""
+	    [(match_operand:VI_256 4 "nonimmediate_operand" "")
+	     (match_operand:VI_256 5 "nonimmediate_operand" "")])
+	  (match_operand:V_256 1 "general_operand" "")
+	  (match_operand:V_256 2 "general_operand" "")))]
+  "TARGET_AVX2
+   && (GET_MODE_NUNITS (<V_256:MODE>mode)
+       == GET_MODE_NUNITS (<VI_256:MODE>mode))"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "vcond<V_128:mode><VI124_128:mode>"
   [(set (match_operand:V_128 0 "register_operand" "")
 	(if_then_else:V_128
@@ -6291,6 +6243,23 @@
 	  (match_operand:VI8F_128 1 "general_operand" "")
 	  (match_operand:VI8F_128 2 "general_operand" "")))]
   "TARGET_SSE4_2"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcondu<V_256:mode><VI_256:mode>"
+  [(set (match_operand:V_256 0 "register_operand" "")
+	(if_then_else:V_256
+	  (match_operator 3 ""
+	    [(match_operand:VI_256 4 "nonimmediate_operand" "")
+	     (match_operand:VI_256 5 "nonimmediate_operand" "")])
+	  (match_operand:V_256 1 "general_operand" "")
+	  (match_operand:V_256 2 "general_operand" "")))]
+  "TARGET_AVX2
+   && (GET_MODE_NUNITS (<V_256:MODE>mode)
+       == GET_MODE_NUNITS (<VI_256:MODE>mode))"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);

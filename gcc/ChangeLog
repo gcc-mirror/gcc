@@ -1,3 +1,25 @@
+2011-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_build_const_vector): Handle V8SImode
+	and V4DImode.
+	(ix86_build_signbit_mask): Likewise.
+	(ix86_expand_int_vcond): Likewise.  Handle V16HImode and
+	V32QImode.
+	(bdesc_args): Use CODE_FOR_{s,u}m{ax,in}v{32q,16h,8s}i3
+	instead of CODE_FOR_avx2_{s,u}m{ax,in}v{32q,16h,8s}i3.
+	* config/i386/sse.md (avx2_<code><mode>3 umaxmin expand): Rename
+	to...
+	(<code><mode>3) ... this.
+	(avx2_<code><mode>3 smaxmin expand): Rename to...
+	(<code><mode>3) ... this.
+	(smax<mode>3, smin<mode>3): Macroize using smaxmin code iterator.
+	(smaxv2di3, sminv2di3): Macroize using smaxmin code iterator and
+	VI8_AVX2 mode iterator.
+	(umaxv2di3, uminv2di3): Macroize using umaxmin code iterator and
+	VI8_AVX2 mode iterator.
+	(vcond<V_256:mode><VI_256:mode>, vcondu<V_256:mode><VI_256:mode>):
+	New expanders.
+	
 2011-09-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/ia64/itanium2.md: Use match_test rather than eq/ne symbol_ref
