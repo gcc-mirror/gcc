@@ -2761,8 +2761,21 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
 	  else
 	    this->advance_token();
 	  if (expr->is_error_expression())
-	    return expr;
-	  ret = Expression::make_cast(ret->type(), expr, loc);
+	    ret = expr;
+	  else
+	    {
+	      Type* t = ret->type();
+	      if (t->classification() == Type::TYPE_ARRAY
+		  && t->array_type()->length() != NULL
+		  && t->array_type()->length()->is_nil_expression())
+		{
+		  error_at(ret->location(),
+			   "invalid use of %<...%> in type conversion");
+		  ret = Expression::make_error(loc);
+		}
+	      else
+		ret = Expression::make_cast(t, expr, loc);
+	    }
 	}
     }
 
