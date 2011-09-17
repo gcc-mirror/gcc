@@ -16946,7 +16946,9 @@ ix86_build_const_vector (enum machine_mode mode, bool vect, rtx value)
 
   switch (mode)
     {
+    case V8SImode:
     case V4SImode:
+    case V4DImode:
     case V2DImode:
       gcc_assert (vect);
     case V8SFmode:
@@ -16987,6 +16989,7 @@ ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
   /* Find the sign bit, sign extended to 2*HWI.  */
   switch (mode)
     {
+    case V8SImode:
     case V4SImode:
     case V8SFmode:
     case V4SFmode:
@@ -16996,6 +16999,7 @@ ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
       lo = 0x80000000, hi = lo < 0;
       break;
 
+    case V4DImode:
     case V2DImode:
     case V4DFmode:
     case V2DFmode:
@@ -19107,17 +19111,26 @@ ix86_expand_int_vcond (rtx operands[])
 
 	  switch (mode)
 	    {
+	    case V8SImode:
+	    case V4DImode:
 	    case V4SImode:
 	    case V2DImode:
 		{
 		  rtx t1, t2, mask;
 		  rtx (*gen_sub3) (rtx, rtx, rtx);
 
+		  switch (mode)
+		    {
+		    case V8SImode: gen_sub3 = gen_subv8si3; break;
+		    case V4DImode: gen_sub3 = gen_subv4di3; break;
+		    case V4SImode: gen_sub3 = gen_subv4si3; break;
+		    case V2DImode: gen_sub3 = gen_subv2di3; break;
+		    default:
+		      gcc_unreachable ();
+		    }
 		  /* Subtract (-(INT MAX) - 1) from both operands to make
 		     them signed.  */
 		  mask = ix86_build_signbit_mask (mode, true, false);
-		  gen_sub3 = (mode == V4SImode
-			      ? gen_subv4si3 : gen_subv2di3);
 		  t1 = gen_reg_rtx (mode);
 		  emit_insn (gen_sub3 (t1, cop0, mask));
 
@@ -19130,6 +19143,8 @@ ix86_expand_int_vcond (rtx operands[])
 		}
 	      break;
 
+	    case V32QImode:
+	    case V16HImode:
 	    case V16QImode:
 	    case V8HImode:
 	      /* Perform a parallel unsigned saturating subtraction.  */
@@ -25723,18 +25738,18 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_phsubswv16hi3, "__builtin_ia32_phsubsw256", IX86_BUILTIN_PHSUBSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_pmaddubsw256, "__builtin_ia32_pmaddubsw256", IX86_BUILTIN_PMADDUBSW256, UNKNOWN, (int) V16HI_FTYPE_V32QI_V32QI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_pmaddwd, "__builtin_ia32_pmaddwd256", IX86_BUILTIN_PMADDWD256, UNKNOWN, (int) V8SI_FTYPE_V16HI_V16HI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_smaxv32qi3, "__builtin_ia32_pmaxsb256", IX86_BUILTIN_PMAXSB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_smaxv16hi3, "__builtin_ia32_pmaxsw256", IX86_BUILTIN_PMAXSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_smaxv8si3 , "__builtin_ia32_pmaxsd256", IX86_BUILTIN_PMAXSD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umaxv32qi3, "__builtin_ia32_pmaxub256", IX86_BUILTIN_PMAXUB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umaxv16hi3, "__builtin_ia32_pmaxuw256", IX86_BUILTIN_PMAXUW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umaxv8si3 , "__builtin_ia32_pmaxud256", IX86_BUILTIN_PMAXUD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_sminv32qi3, "__builtin_ia32_pminsb256", IX86_BUILTIN_PMINSB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_sminv16hi3, "__builtin_ia32_pminsw256", IX86_BUILTIN_PMINSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_sminv8si3 , "__builtin_ia32_pminsd256", IX86_BUILTIN_PMINSD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_uminv32qi3, "__builtin_ia32_pminub256", IX86_BUILTIN_PMINUB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_uminv16hi3, "__builtin_ia32_pminuw256", IX86_BUILTIN_PMINUW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_uminv8si3 , "__builtin_ia32_pminud256", IX86_BUILTIN_PMINUD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_smaxv32qi3, "__builtin_ia32_pmaxsb256", IX86_BUILTIN_PMAXSB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_smaxv16hi3, "__builtin_ia32_pmaxsw256", IX86_BUILTIN_PMAXSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_smaxv8si3 , "__builtin_ia32_pmaxsd256", IX86_BUILTIN_PMAXSD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_umaxv32qi3, "__builtin_ia32_pmaxub256", IX86_BUILTIN_PMAXUB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_umaxv16hi3, "__builtin_ia32_pmaxuw256", IX86_BUILTIN_PMAXUW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_umaxv8si3 , "__builtin_ia32_pmaxud256", IX86_BUILTIN_PMAXUD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_sminv32qi3, "__builtin_ia32_pminsb256", IX86_BUILTIN_PMINSB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_sminv16hi3, "__builtin_ia32_pminsw256", IX86_BUILTIN_PMINSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_sminv8si3 , "__builtin_ia32_pminsd256", IX86_BUILTIN_PMINSD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_uminv32qi3, "__builtin_ia32_pminub256", IX86_BUILTIN_PMINUB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_uminv16hi3, "__builtin_ia32_pminuw256", IX86_BUILTIN_PMINUW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_uminv8si3 , "__builtin_ia32_pminud256", IX86_BUILTIN_PMINUD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_pmovmskb, "__builtin_ia32_pmovmskb256", IX86_BUILTIN_PMOVMSKB256, UNKNOWN, (int) INT_FTYPE_V32QI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_sign_extendv16qiv16hi2, "__builtin_ia32_pmovsxbw256", IX86_BUILTIN_PMOVSXBW256, UNKNOWN, (int) V16HI_FTYPE_V16QI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_sign_extendv8qiv8si2  , "__builtin_ia32_pmovsxbd256", IX86_BUILTIN_PMOVSXBD256, UNKNOWN, (int) V8SI_FTYPE_V16QI },
