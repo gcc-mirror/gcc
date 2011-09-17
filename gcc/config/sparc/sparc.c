@@ -9169,6 +9169,20 @@ sparc_vis_init_builtins (void)
   /* Pixel distance.  */
   def_builtin ("__builtin_vis_pdist", CODE_FOR_pdist_vis,
 	       di_ftype_v8qi_v8qi_di);
+
+  /* Edge handling.  */
+  def_builtin ("__builtin_vis_edge8", CODE_FOR_edge8_vis,
+               di_ftype_di_di);
+  def_builtin ("__builtin_vis_edge8l", CODE_FOR_edge8l_vis,
+               di_ftype_di_di);
+  def_builtin ("__builtin_vis_edge16", CODE_FOR_edge16_vis,
+               di_ftype_di_di);
+  def_builtin ("__builtin_vis_edge16l", CODE_FOR_edge16l_vis,
+               di_ftype_di_di);
+  def_builtin ("__builtin_vis_edge32", CODE_FOR_edge32_vis,
+               di_ftype_di_di);
+  def_builtin ("__builtin_vis_edge32l", CODE_FOR_edge32l_vis,
+               di_ftype_di_di);
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.

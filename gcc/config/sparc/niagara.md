@@ -114,5 +114,5 @@
  */
 (define_insn_reservation "niag_vis" 8
   (and (eq_attr "cpu" "niagara")
-    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist"))
+    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge"))
   "niag_pipe*8")
