@@ -741,10 +741,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     __rehash_policy(const _RehashPolicy& __pol)
     {
-      _M_rehash_policy = __pol;
       size_type __n_bkt = __pol._M_bkt_for_elements(_M_element_count);
       if (__n_bkt > _M_bucket_count)
-	_M_rehash(__n_bkt, __pol._M_next_resize);
+	_M_rehash(__n_bkt, _M_rehash_policy._M_next_resize);
+      _M_rehash_policy = __pol;
     }
 
   template<typename _Key, typename _Value,
