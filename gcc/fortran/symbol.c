@@ -1945,7 +1945,8 @@ gfc_use_derived (gfc_symbol *sym)
   gfc_symtree *st;
   int i;
 
-  if (!sym) return NULL;
+  if (!sym)
+    return NULL;
 
   if (sym->components != NULL || sym->attr.zero_comp)
     return sym;               /* Already defined.  */
