@@ -7545,13 +7545,13 @@ compare_ics (conversion *ics1, conversion *ics2)
 
   if (ref_conv1 && ref_conv2)
     {
-      if (!ref_conv1->this_p && !ref_conv2->this_p)
+      if (!ref_conv1->this_p && !ref_conv2->this_p
+	  && (TYPE_REF_IS_RVALUE (ref_conv1->type)
+	      != TYPE_REF_IS_RVALUE (ref_conv2->type)))
 	{
-	  if (ref_conv1->rvaluedness_matches_p
-	      > ref_conv2->rvaluedness_matches_p)
+	  if (ref_conv1->rvaluedness_matches_p)
 	    return 1;
-	  if (ref_conv2->rvaluedness_matches_p
-	      > ref_conv1->rvaluedness_matches_p)
+	  if (ref_conv2->rvaluedness_matches_p)
 	    return -1;
 	}
 
