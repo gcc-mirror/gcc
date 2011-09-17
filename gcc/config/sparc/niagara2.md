@@ -86,5 +86,5 @@
 
 (define_insn_reservation "niag2_vis" 6
   (and (eq_attr "cpu" "niagara2,niagara3")
-    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist"))
+    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge"))
   "niag2_pipe*6")

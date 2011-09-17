@@ -27,8 +27,8 @@
 typedef int __v2si __attribute__ ((__vector_size__ (8)));
 typedef short __v4hi __attribute__ ((__vector_size__ (8)));
 typedef short __v2hi __attribute__ ((__vector_size__ (4)));
-typedef char __v8qi __attribute__ ((__vector_size__ (8)));
-typedef char __v4qi __attribute__ ((__vector_size__ (4)));
+typedef unsigned char __v8qi __attribute__ ((__vector_size__ (8)));
+typedef unsigned char __v4qi __attribute__ ((__vector_size__ (4)));
 typedef int __i64 __attribute__ ((__mode__ (DI)));
 
 extern __inline void *
@@ -40,30 +40,30 @@ __vis_alignaddr (void *__A, long __B)
 
 extern __inline __i64
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_faligndatadi (__i64 __A)
+__vis_faligndatadi (__i64 __A, __i64 __B)
 {
-  return __builtin_vis_faligndatadi (__A);
+  return __builtin_vis_faligndatadi (__A, __B);
 }
 
 extern __inline __v2si
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_faligndatav2si (__v2si __A)
+__vis_faligndatav2si (__v2si __A, __v2si __B)
 {
-  return __builtin_vis_faligndatav2si (__A);
+  return __builtin_vis_faligndatav2si (__A, __B);
 }
 
 extern __inline __v4hi
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_faligndatav4hi (__v4hi __A)
+__vis_faligndatav4hi (__v4hi __A, __v4hi __B)
 {
-  return __builtin_vis_faligndatav4hi (__A);
+  return __builtin_vis_faligndatav4hi (__A, __B);
 }
 
 extern __inline __v8qi
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_faligndatav8qi (__v8qi __A)
+__vis_faligndatav8qi (__v8qi __A, __v8qi __B)
 {
-  return __builtin_vis_faligndatav8qi (__A);
+  return __builtin_vis_faligndatav8qi (__A, __B);
 }
 
 extern __inline __v4hi
@@ -82,14 +82,14 @@ __vis_fmul8x16 (__v4qi __A, __v4hi __B)
 
 extern __inline __v4hi
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_fmul8x16au (__v4qi __A, __v4hi __B)
+__vis_fmul8x16au (__v4qi __A, __v2hi __B)
 {
   return __builtin_vis_fmul8x16au (__A, __B);
 }
 
 extern __inline __v4hi
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_fmul8x16al (__v4qi __A, __v4hi __B)
+__vis_fmul8x16al (__v4qi __A, __v2hi __B)
 {
   return __builtin_vis_fmul8x16al (__A, __B);
 }
@@ -131,7 +131,7 @@ __vis_fpack16 (__v4hi __A)
 
 extern __inline __v8qi
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_fpack32 (__v2si __A, __v2si __B)
+__vis_fpack32 (__v2si __A, __v8qi __B)
 {
   return __builtin_vis_fpack32 (__A, __B);
 }
@@ -155,6 +155,48 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __vis_pdist (__v8qi __A, __v8qi __B, __i64 __C)
 {
   return __builtin_vis_pdist (__A, __B, __C);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge8 (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_edge8 (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge8l (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_edge8l (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge16 (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_edge16 (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge16l (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_edge16l (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge32 (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_edge32 (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge32l (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_edge32l (__A, __B);
 }
 
 #endif  /* _VISINTRIN_H_INCLUDED */

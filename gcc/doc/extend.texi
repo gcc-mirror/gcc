@@ -12957,6 +12957,13 @@ v2hi __builtin_vis_fpackfix (v2si);
 v8qi __builtin_vis_fpmerge (v4qi, v4qi);
 
 int64_t __builtin_vis_pdist (v8qi, v8qi, int64_t);
+
+int64_t __builtin_vis_edge8 (int64_t, int64_t);
+int64_t __builtin_vis_edge8l (int64_t, int64_t);
+int64_t __builtin_vis_edge16 (int64_t, int64_t);
+int64_t __builtin_vis_edge16l (int64_t, int64_t);
+int64_t __builtin_vis_edge32 (int64_t, int64_t);
+int64_t __builtin_vis_edge32l (int64_t, int64_t);
 @end smallexample
 
 @node SPU Built-in Functions
