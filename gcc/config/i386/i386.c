@@ -32719,6 +32719,7 @@ ix86_expand_reduc (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
 {
   rtx tmp1, tmp2, tmp3, tmp4, tmp5;
   enum machine_mode mode = GET_MODE (in);
+  int i;
 
   tmp1 = gen_reg_rtx (mode);
   tmp2 = gen_reg_rtx (mode);
@@ -32746,6 +32747,31 @@ ix86_expand_reduc (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
       emit_insn (gen_avx_vperm2f128v4df3 (tmp1, in, in, const1_rtx));
       emit_insn (fn (tmp2, tmp1, in));
       emit_insn (gen_avx_shufpd256 (tmp3, tmp2, tmp2, const1_rtx));
+      break;
+    case V32QImode:
+    case V16HImode:
+    case V8SImode:
+    case V4DImode:
+      emit_insn (gen_avx2_permv2ti (gen_lowpart (V4DImode, tmp1),
+				    gen_lowpart (V4DImode, in),
+				    gen_lowpart (V4DImode, in),
+				    const1_rtx));
+      tmp4 = in;
+      tmp5 = tmp1;
+      for (i = 64; i >= GET_MODE_BITSIZE (GET_MODE_INNER (mode)); i >>= 1)
+	{
+	  if (i != 64)
+	    {
+	      tmp2 = gen_reg_rtx (mode);
+	      tmp3 = gen_reg_rtx (mode);
+	    }
+	  emit_insn (fn (tmp2, tmp4, tmp5));
+	  emit_insn (gen_avx2_lshrv2ti3 (gen_lowpart (V2TImode, tmp3),
+					 gen_lowpart (V2TImode, tmp2),
+					 GEN_INT (i)));
+	  tmp4 = tmp2;
+	  tmp5 = tmp3;
+	}
       break;
     default:
       gcc_unreachable ();
