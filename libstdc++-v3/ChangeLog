@@ -1,3 +1,11 @@
+2011-09-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (_Hashtable<>::__rehash_policy(const
+	_RehashPolicy&)): Commit the modification of the policy only if no
+	exception occured.
+	* testsuite/23_containers/unordered_set/max_load_factor/robustness.cc:
+	New.
+
 2011-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/array/comparison_operators/
