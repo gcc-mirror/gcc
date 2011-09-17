@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // 2008-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,6 +50,16 @@ void test01()
   VERIFY( (test_category<is_integral, float>(false)) );
   VERIFY( (test_category<is_integral, double>(false)) );
   VERIFY( (test_category<is_integral, long double>(false)) );
+
+  // GNU Extensions.
+#ifdef _GLIBCXX_USE_INT128
+  VERIFY( (test_category<is_integral, __int128_t>(true)) );
+  VERIFY( (test_category<is_integral, __uint128_t>(true)) );
+#endif
+
+#ifdef _GLIBCXX_USE_FLOAT128
+  VERIFY( (test_category<is_integral, __float128>(false)) );
+#endif
 
   // Sanity check.
   VERIFY( (test_category<is_integral, ClassType>(false)) );
