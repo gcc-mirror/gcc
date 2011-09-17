@@ -15538,6 +15538,96 @@ $as_echo "$enable_dfp" >&6; }
     rm -f conftest*
 
 
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  # Fake what AC_TRY_COMPILE does, without linking as this is
+  # unnecessary for this test.
+
+    cat > conftest.$ac_ext << EOF
+#line 15554 "configure"
+template<typename T1, typename T2>
+  struct same
+  { typedef T2 type; };
+
+template<typename T>
+  struct same<T, T>;
+
+int main()
+{
+  typename same<long, __int128_t>::type                i1;
+  typename same<unsigned long, __uint128_t>::type      u1;
+  typename same<long long, __int128_t>::type           i2;
+  typename same<unsigned long long, __uint128_t>::type u2;
+}
+EOF
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __int128_t and __uint128_t" >&5
+$as_echo_n "checking for __int128_t and __uint128_t... " >&6; }
+    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+$as_echo "#define _GLIBCXX_USE_INT128 1" >>confdefs.h
+
+      enable_int128=yes
+    else
+      enable_int128=no
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_int128" >&5
+$as_echo "$enable_int128" >&6; }
+    rm -f conftest*
+
+    cat > conftest.$ac_ext << EOF
+#line 15590 "configure"
+template<typename T1, typename T2>
+  struct same
+  { typedef T2 type; };
+
+template<typename T>
+  struct same<T, T>;
+
+int main()
+{
+  typename same<double, __float128>::type      f1;
+  typename same<long double, __float128>::type f2;
+}
+EOF
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __float128" >&5
+$as_echo_n "checking for __float128... " >&6; }
+    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+$as_echo "#define _GLIBCXX_USE_FLOAT128 1" >>confdefs.h
+
+      enable_float128=yes
+    else
+      enable_float128=no
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_float128" >&5
+$as_echo "$enable_float128" >&6; }
+    rm -f conftest*
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
 # Checks for compiler support that doesn't require linking.
 
   # All these tests are for C++; save the language and the compiler flags.

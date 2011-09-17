@@ -213,6 +213,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_integral_helper<unsigned long long>
     : public true_type { };
 
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+  template<>
+    struct __is_integral_helper<__int128_t>
+    : public true_type { };
+
+  template<>
+    struct __is_integral_helper<__uint128_t>
+    : public true_type { };
+#endif
+
   /// is_integral
   template<typename _Tp>
     struct is_integral
@@ -235,6 +245,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_floating_point_helper<long double>
     : public true_type { };
+
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
+  template<>
+    struct __is_floating_point_helper<__float128>
+    : public true_type { };
+#endif
 
   /// is_floating_point
   template<typename _Tp>
@@ -1398,6 +1414,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<long long>
     { typedef unsigned long long __type; };
 
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+  template<>
+    struct __make_unsigned<__int128_t>
+    { typedef __uint128_t __type; };
+#endif
+
   // Select between integral and enum: not possible to be both.
   template<typename _Tp, 
 	   bool _IsInt = is_integral<_Tp>::value,
@@ -1473,6 +1495,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __make_signed<unsigned long long>
     { typedef signed long long __type; };
+
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+  template<>
+    struct __make_signed<__uint128_t>
+    { typedef __int128_t __type; };
+#endif
 
   // Select between integral and enum: not possible to be both.
   template<typename _Tp, 
