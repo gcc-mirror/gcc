@@ -19838,7 +19838,8 @@ output_probe_stack_range (rtx reg1, rtx reg2)
   output_asm_insn ("{cal %0,%1(%0)|addi %0,%0,%1}", xops);
 
   /* Probe at TEST_ADDR and branch.  */
-  output_asm_insn ("{st|stw} 0,0(%0)", xops);
+  xops[1] = gen_rtx_REG (Pmode, 0);
+  output_asm_insn ("{st|stw} %1,0(%0)", xops);
   fprintf (asm_out_file, "\tb ");
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
