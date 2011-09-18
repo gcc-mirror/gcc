@@ -9,7 +9,7 @@
 
 short src[N], dst[N];
 
-void foo (short * __restrict dst, short * __restrict src, int h, int stride)
+void foo (short * __restrict__ dst, short * __restrict__ src, int h, int stride, int dummy)
 {
   int i;
   h /= 16;
@@ -25,6 +25,8 @@ void foo (short * __restrict dst, short * __restrict src, int h, int stride)
       dst[7] += A*src[7] + src[7+stride];
       dst += 8;
       src += 8;
+      if (dummy == 32)
+        abort ();
    }
 }
 
@@ -41,7 +43,7 @@ int main (void)
        src[i] = i;
     }
 
-  foo (dst, src, N, 8);
+  foo (dst, src, N, 8, 0);
 
   for (i = 0; i < N/2; i++)
     {

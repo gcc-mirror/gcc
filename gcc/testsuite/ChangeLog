@@ -1,3 +1,10 @@
+2011-09-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Ira Rosen  <ira.rosen@linaro.org>
+
+	PR testsuite/50435
+	* gcc.dg/vect/bb-slp-25.c: Add an if to avoid loop vectorization.
+	Fix underscores around restrict.
+ 
 2011-09-18  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50414
