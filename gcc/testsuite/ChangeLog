@@ -1,5 +1,12 @@
 2011-09-18  Ira Rosen  <ira.rosen@linaro.org>
 
+	PR tree-optimization/50414
+	* gfortran.dg/vect/Ofast-pr50414.f90: New.
+	* gfortran.dg/vect/vect.exp: Run Ofast-* tests with -Ofast.
+	* gcc.dg/vect/no-scevccp-noreassoc-slp-reduc-7.c: New.
+
+2011-09-18  Ira Rosen  <ira.rosen@linaro.org>
+
 	PR tree-optimization/50412
 	* gfortran.dg/vect/pr50412.f90: New.
 
