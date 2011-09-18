@@ -45,12 +45,22 @@
  "niag2_pipe")
 
 (define_insn_reservation "niag2_imul" 5
- (and (eq_attr "cpu" "niagara2,niagara3")
+ (and (eq_attr "cpu" "niagara2")
    (eq_attr "type" "imul"))
  "niag2_pipe*5")
 
-(define_insn_reservation "niag2_idiv" 31
- (and (eq_attr "cpu" "niagara2,niagara3")
+(define_insn_reservation "niag3_imul" 9
+ (and (eq_attr "cpu" "niagara3")
+   (eq_attr "type" "imul"))
+ "niag2_pipe*9")
+
+(define_insn_reservation "niag2_idiv" 26
+ (and (eq_attr "cpu" "niagara2")
+   (eq_attr "type" "idiv"))
+ "niag2_pipe*26")
+
+(define_insn_reservation "niag3_idiv" 31
+ (and (eq_attr "cpu" "niagara3")
    (eq_attr "type" "idiv"))
  "niag2_pipe*31")
 
@@ -69,22 +79,42 @@
     (eq_attr "type" "store,fpstore"))
   "niag2_pipe")
 
-(define_insn_reservation "niag2_fp" 3
-  (and (eq_attr "cpu" "niagara2,niagara3")
+(define_insn_reservation "niag2_fp" 6
+  (and (eq_attr "cpu" "niagara2")
     (eq_attr "type" "fpmove,fpcmove,fpcrmove,fpcmp,fpmul"))
-  "niag2_pipe*3")
+  "niag2_pipe*6")
+
+(define_insn_reservation "niag3_fp" 9
+  (and (eq_attr "cpu" "niagara3")
+    (eq_attr "type" "fpmove,fpcmove,fpcrmove,fpcmp,fpmul"))
+  "niag2_pipe*9")
 
 (define_insn_reservation "niag2_fdivs" 19
-  (and (eq_attr "cpu" "niagara2,niagara3")
+  (and (eq_attr "cpu" "niagara2")
     (eq_attr "type" "fpdivs"))
   "niag2_pipe*19")
 
+(define_insn_reservation "niag3_fdivs" 23
+  (and (eq_attr "cpu" "niagara3")
+    (eq_attr "type" "fpdivs"))
+  "niag2_pipe*23")
+
 (define_insn_reservation "niag2_fdivd" 33
-  (and (eq_attr "cpu" "niagara2,niagara3")
+  (and (eq_attr "cpu" "niagara2")
     (eq_attr "type" "fpdivd"))
   "niag2_pipe*33")
 
+(define_insn_reservation "niag3_fdivd" 37
+  (and (eq_attr "cpu" "niagara3")
+    (eq_attr "type" "fpdivd"))
+  "niag2_pipe*37")
+
 (define_insn_reservation "niag2_vis" 6
-  (and (eq_attr "cpu" "niagara2,niagara3")
+  (and (eq_attr "cpu" "niagara2")
     (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge"))
   "niag2_pipe*6")
+
+(define_insn_reservation "niag3_vis" 9
+  (and (eq_attr "cpu" "niagara3")
+    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge"))
+  "niag2_pipe*9")
