@@ -84,6 +84,12 @@ lappend DEFAULT_VECTCFLAGS "-O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-*.\[fF\]{,90,95,03,08} ]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# With -Ofast
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-Ofast"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Ofast-*.\[fF\]{,90,95,03,08} ]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}
 
