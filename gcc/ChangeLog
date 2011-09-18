@@ -21,6 +21,13 @@
 	__vis_fpack32): Fix types.
 	* doc/extend.texi: Document new 'edge' VIS intrinsics.
 
+	* gcc/config/sparc/sparc.c (niagara2_costs): Adjust integer
+	divide costs.
+	(niagara3_costs): New.
+	(sparc_option_override): Use it.
+	* gcc/config/sparc/niagara2.md: Adjust with more accurate
+	Niagara-3 reservations.
+
 2011-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (VIMAX_AVX2): Change V4DI to V2TI.

@@ -269,8 +269,32 @@ struct processor_costs niagara2_costs = {
   COSTS_N_INSNS (5), /* imul */
   COSTS_N_INSNS (5), /* imulX */
   0, /* imul bit factor */
-  COSTS_N_INSNS (31), /* idiv, average of 12 - 41 cycle range */
-  COSTS_N_INSNS (31), /* idivX, average of 12 - 41 cycle range */
+  COSTS_N_INSNS (26), /* idiv, average of 12 - 41 cycle range */
+  COSTS_N_INSNS (26), /* idivX, average of 12 - 41 cycle range */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
+static const
+struct processor_costs niagara3_costs = {
+  COSTS_N_INSNS (3), /* int load */
+  COSTS_N_INSNS (3), /* int signed load */
+  COSTS_N_INSNS (3), /* int zeroed load */
+  COSTS_N_INSNS (3), /* float load */
+  COSTS_N_INSNS (9), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (9), /* fadd, fsub */
+  COSTS_N_INSNS (9), /* fcmp */
+  COSTS_N_INSNS (9), /* fmov, fmovr */
+  COSTS_N_INSNS (9), /* fmul */
+  COSTS_N_INSNS (23), /* fdivs */
+  COSTS_N_INSNS (37), /* fdivd */
+  COSTS_N_INSNS (23), /* fsqrts */
+  COSTS_N_INSNS (37), /* fsqrtd */
+  COSTS_N_INSNS (9), /* imul */
+  COSTS_N_INSNS (9), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (31), /* idiv, average of 17 - 45 cycle range */
+  COSTS_N_INSNS (30), /* idivX, average of 16 - 44 cycle range */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
 };
@@ -917,9 +941,11 @@ sparc_option_override (void)
       sparc_costs = &niagara_costs;
       break;
     case PROCESSOR_NIAGARA2:
+      sparc_costs = &niagara2_costs;
+      break;
     case PROCESSOR_NIAGARA3:
     case PROCESSOR_NIAGARA4:
-      sparc_costs = &niagara2_costs;
+      sparc_costs = &niagara3_costs;
       break;
     case PROCESSOR_NATIVE:
       gcc_unreachable ();
