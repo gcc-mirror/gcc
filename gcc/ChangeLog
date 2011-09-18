@@ -1,3 +1,9 @@
+2011-09-18  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50412
+	* tree-vect-data-refs.c (vect_analyze_group_access): Fail for
+	acceses that require epilogue loop if vectorizing outer loop.
+
 2011-09-17  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (UNSPEC_EDGE8, UNSPEC_EDGE8L,
