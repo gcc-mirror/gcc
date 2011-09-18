@@ -1,3 +1,8 @@
+2011-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/bmiintrin.h: Remove tmp.
+	* config/i386/tbmintrin.h: Likewise.
+
 2011-09-18  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50414
