@@ -42,8 +42,7 @@ __tzcnt_u16 (unsigned short __X)
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __andn_u32 (unsigned int __X, unsigned int __Y)
 {
-  unsigned int tmp = ~(__X) & (__Y);
-  return tmp;
+  return ~__X & __Y;
 }
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -55,22 +54,19 @@ __bextr_u32 (unsigned int __X, unsigned int __Y)
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __blsi_u32 (unsigned int __X)
 {
-  unsigned int tmp = (__X) & (-(__X));
-  return tmp;
+  return __X & -__X;
 }
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __blsmsk_u32 (unsigned int __X)
 {
-  unsigned int tmp = (__X) ^ (__X - 1);
-  return tmp;
+  return __X ^ (__X - 1);
 }
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __blsr_u32 (unsigned int __X)
 {
-  unsigned int tmp = (__X) & (__X - 1);
-  return tmp;
+  return __X & (__X - 1);
 }
 
 
@@ -85,8 +81,7 @@ __tzcnt_u32 (unsigned int __X)
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __andn_u64 (unsigned long long __X, unsigned long long __Y)
 {
-  unsigned long long tmp = ~(__X) & (__Y);
-  return tmp;
+  return ~__X & __Y;
 }
 
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -98,22 +93,19 @@ __bextr_u64 (unsigned long long __X, unsigned long long __Y)
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __blsi_u64 (unsigned long long __X)
 {
-  unsigned long long tmp = (__X) & (-(__X));
-  return tmp;
+  return __X & -__X;
 }
 
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __blsmsk_u64 (unsigned long long __X)
 {
-  unsigned long long tmp = (__X) ^ (__X - 1);
-  return tmp;
+  return __X ^ (__X - 1);
 }
 
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __blsr_u64 (unsigned long long __X)
 {
-  unsigned long long tmp = (__X) & (__X - 1);
-  return tmp;
+  return __X & (__X - 1);
 }
 
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
