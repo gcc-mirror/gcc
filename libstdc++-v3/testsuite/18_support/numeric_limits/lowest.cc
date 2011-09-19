@@ -72,6 +72,12 @@ void test01()
   do_test<long long>();
   do_test<unsigned long long>();
 
+  // GNU Extensions.
+#ifdef _GLIBCXX_USE_INT128
+  do_test<__int128_t>();
+  do_test<__uint128_t>();
+#endif
+
   do_test<float>();
   do_test<double>();
   do_test<long double>();

@@ -257,7 +257,7 @@ namespace __gnu_test
       typedef typename append<a1, a2>::type type;
     };
 
-  // A typelist of all integral types.
+  // A typelist of all standard integral types.
   struct integral_types
   {
     typedef bool 		a1;
@@ -282,6 +282,50 @@ namespace __gnu_test
 #else
     typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
 					   a10, a11, a12, a13)> type;
+#endif
+  };
+
+  // A typelist of all standard integral types + the GNU 128-bit types.
+  struct integral_types_gnu
+  {
+    typedef bool 		a1;
+    typedef char 		a2;
+    typedef signed char 	a3;
+    typedef unsigned char 	a4;
+    typedef short 		a5;
+    typedef unsigned short 	a6;
+    typedef int 		a7;
+    typedef unsigned int 	a8;
+    typedef long 		a9;
+    typedef unsigned long 	a10;
+    typedef long long 		a11;
+    typedef unsigned long long 	a12;
+    typedef wchar_t 		a13;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    typedef char16_t 		a14;
+    typedef char32_t 		a15;
+# if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+    typedef __int128_t          a16;
+    typedef __uint128_t         a17;
+
+    typedef node<_GLIBCXX_TYPELIST_CHAIN17(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+					   a10, a11, a12, a13, a14, a15,
+					   a16, a17)> type;
+# else
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+					   a10, a11, a12, a13, a14, a15)> type;
+# endif
+#else
+# if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+    typedef __int128_t          a14;
+    typedef __uint128_t         a15;
+
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+					   a10, a11, a12, a13, a14, a15)> type;
+# else
+   typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+					  a10, a11, a12, a13)> type;
+# endif
 #endif
   };
 
@@ -347,7 +391,7 @@ namespace __gnu_test
       typedef std::numeric_limits<value_type>	type;
     };
 
-  typedef transform<integral_types::type, numeric_limits>::type limits_tl;
+  typedef transform<integral_types_gnu::type, numeric_limits>::type limits_tl;
 
   struct has_increment_operators
   {

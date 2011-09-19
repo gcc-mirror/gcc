@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,16 +18,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <atomic>
-#include <testsuite_common_types.h>
+#include <limits>
 
-int main()
-{
-  __gnu_test::assignable test;
-  __gnu_cxx::typelist::apply_generator(test,
-				       __gnu_test::atomic_integrals::type());
-  return 0;
-}
-
-// { dg-error "deleted" "" { target *-*-* } 616 }
-// { dg-prune-output "include" }
+// libstdc++/40856 
+#ifdef _GLIBCXX_USE_INT128
+static_assert(std::numeric_limits<__int128_t>::is_specialized == true, "");
+static_assert(std::numeric_limits<__uint128_t>::is_specialized == true, "");
+#endif
