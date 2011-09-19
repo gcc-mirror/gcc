@@ -717,10 +717,6 @@ static void sched_remove_insn (rtx);
 static void clear_priorities (rtx, rtx_vec_t *);
 static void calc_priorities (rtx_vec_t);
 static void add_jump_dependencies (rtx, rtx);
-#ifdef ENABLE_CHECKING
-static int has_edge_p (VEC(edge,gc) *, int);
-static void check_cfg (rtx, rtx);
-#endif
 
 #endif /* INSN_SCHEDULING */
 
@@ -4303,13 +4299,6 @@ haifa_sched_init (void)
   sched_create_empty_bb = sched_create_empty_bb_1;
   haifa_recovery_bb_ever_added_p = false;
 
-#ifdef ENABLE_CHECKING
-  /* This is used preferably for finding bugs in check_cfg () itself.
-     We must call sched_bbs_init () before check_cfg () because check_cfg ()
-     assumes that the last insn in the last bb has a non-null successor.  */
-  check_cfg (0, 0);
-#endif
-
   nr_begin_data = nr_begin_control = nr_be_in_data = nr_be_in_control = 0;
   before_recovery = 0;
   after_recovery = 0;
@@ -4378,12 +4367,6 @@ sched_finish (void)
   regstat_free_calls_crossed ();
 
   dfa_finish ();
-
-#ifdef ENABLE_CHECKING
-  /* After reload ia64 backend clobbers CFG, so can't check anything.  */
-  if (!reload_completed)
-    check_cfg (0, 0);
-#endif
 }
 
 /* Free all delay_pair structures that were recorded.  */
@@ -5969,131 +5952,6 @@ bb_note (basic_block bb)
   gcc_assert (NOTE_INSN_BASIC_BLOCK_P (note));
   return note;
 }
-
-#ifdef ENABLE_CHECKING
-/* Helper function for check_cfg.
-   Return nonzero, if edge vector pointed to by EL has edge with TYPE in
-   its flags.  */
-static int
-has_edge_p (VEC(edge,gc) *el, int type)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, el)
-    if (e->flags & type)
-      return 1;
-  return 0;
-}
-
-/* Search back, starting at INSN, for an insn that is not a
-   NOTE_INSN_VAR_LOCATION.  Don't search beyond HEAD, and return it if
-   no such insn can be found.  */
-static inline rtx
-prev_non_location_insn (rtx insn, rtx head)
-{
-  while (insn != head && NOTE_P (insn)
-	 && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
-    insn = PREV_INSN (insn);
-
-  return insn;
-}
-
-/* Check few properties of CFG between HEAD and TAIL.
-   If HEAD (TAIL) is NULL check from the beginning (till the end) of the
-   instruction stream.  */
-static void
-check_cfg (rtx head, rtx tail)
-{
-  rtx next_tail;
-  basic_block bb = 0;
-  int not_first = 0, not_last;
-
-  if (head == NULL)
-    head = get_insns ();
-  if (tail == NULL)
-    tail = get_last_insn ();
-  next_tail = NEXT_INSN (tail);
-
-  do
-    {
-      not_last = head != tail;
-
-      if (not_first)
-	gcc_assert (NEXT_INSN (PREV_INSN (head)) == head);
-      if (not_last)
-	gcc_assert (PREV_INSN (NEXT_INSN (head)) == head);
-
-      if (LABEL_P (head)
-	  || (NOTE_INSN_BASIC_BLOCK_P (head)
-	      && (!not_first
-		  || (not_first && !LABEL_P (PREV_INSN (head))))))
-	{
-	  gcc_assert (bb == 0);
-	  bb = BLOCK_FOR_INSN (head);
-	  if (bb != 0)
-	    gcc_assert (BB_HEAD (bb) == head);
-	  else
-	    /* This is the case of jump table.  See inside_basic_block_p ().  */
-	    gcc_assert (LABEL_P (head) && !inside_basic_block_p (head));
-	}
-
-      if (bb == 0)
-	{
-	  gcc_assert (!inside_basic_block_p (head));
-	  head = NEXT_INSN (head);
-	}
-      else
-	{
-	  gcc_assert (inside_basic_block_p (head)
-		      || NOTE_P (head));
-	  gcc_assert (BLOCK_FOR_INSN (head) == bb);
-
-	  if (LABEL_P (head))
-	    {
-	      head = NEXT_INSN (head);
-	      gcc_assert (NOTE_INSN_BASIC_BLOCK_P (head));
-	    }
-	  else
-	    {
-	      if (control_flow_insn_p (head))
-		{
-		  gcc_assert (prev_non_location_insn (BB_END (bb), head)
-			      == head);
-
-		  if (any_uncondjump_p (head))
-		    gcc_assert (EDGE_COUNT (bb->succs) == 1
-				&& BARRIER_P (NEXT_INSN (head)));
-		  else if (any_condjump_p (head))
-		    gcc_assert (/* Usual case.  */
-                                (EDGE_COUNT (bb->succs) > 1
-                                 && !BARRIER_P (NEXT_INSN (head)))
-                                /* Or jump to the next instruction.  */
-                                || (EDGE_COUNT (bb->succs) == 1
-                                    && (BB_HEAD (EDGE_I (bb->succs, 0)->dest)
-                                        == JUMP_LABEL (head))));
-		}
-	      if (BB_END (bb) == head)
-		{
-		  if (EDGE_COUNT (bb->succs) > 1)
-		    gcc_assert (control_flow_insn_p (prev_non_location_insn
-						     (head, BB_HEAD (bb)))
-				|| has_edge_p (bb->succs, EDGE_COMPLEX));
-		  bb = 0;
-		}
-
-	      head = NEXT_INSN (head);
-	    }
-	}
-
-      not_first = 1;
-    }
-  while (head != next_tail);
-
-  gcc_assert (bb == 0);
-}
-
-#endif /* ENABLE_CHECKING */
 
 /* Extend data structures for logical insn UID.  */
 void
