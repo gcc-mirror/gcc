@@ -326,8 +326,9 @@ package body Sem_Ch6 is
            Make_Subprogram_Declaration (Loc,
              Specification => Copy_Separate_Tree (Specification (N)));
 
-         --  Do rewrite setting Comes_From_Source on the result if the original
-         --  expression function came from source.
+         --  Do rewrite propagating the information that an expression function
+         --  comes from source (otherwise references to this entity are not
+         --  stored).
 
          Rewrite (N, New_Decl);
          Set_Comes_From_Source

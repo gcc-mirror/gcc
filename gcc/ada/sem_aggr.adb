@@ -745,8 +745,8 @@ package body Sem_Aggr is
 
    begin
       --  All the components of List are matched against Component and a count
-      --  is maintained of possible misspellings. When at the end of the
-      --  the analysis there are one or two (not more!) possible misspellings,
+      --  is maintained of possible misspellings. When at the end of the the
+      --  analysis there are one or two (not more!) possible misspellings,
       --  these misspellings will be suggested as possible correction.
 
       Component_Elmt := First_Elmt (Elements);

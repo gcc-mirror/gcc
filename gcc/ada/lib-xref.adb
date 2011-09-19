@@ -951,6 +951,33 @@ package body Lib.Xref is
             return;
          end if;
 
+         --  In Alfa mode, consider the underlying entity renamed instead of
+         --  the renaming, which is needed to compute a valid set of effects
+         --  (reads, writes) for the enclosing subprogram.
+
+         if Alfa_Mode
+           and then Is_Object (Ent)
+           and then Present (Renamed_Object (Ent))
+         then
+            Ent := Get_Enclosing_Object (Renamed_Object (Ent));
+
+            --  If no enclosing object, then it could be a reference to any
+            --  location not tracked individually, like heap-allocated data.
+            --  Conservatively approximate this possibility by generating a
+            --  dereference, and return.
+
+            if No (Ent) then
+               if Actual_Typ = 'w' then
+                  Alfa.Generate_Dereference (Nod, 'r');
+                  Alfa.Generate_Dereference (Nod, 'w');
+               else
+                  Alfa.Generate_Dereference (Nod, 'r');
+               end if;
+
+               return;
+            end if;
+         end if;
+
          --  Record reference to entity
 
          Ref := Original_Location (Sloc (Nod));

@@ -4705,7 +4705,6 @@ package body Exp_Aggr is
         and then Static_Elaboration_Desired (Current_Scope)
       then
          Convert_To_Positional (N, Max_Others_Replicate => 100);
-
       else
          Convert_To_Positional (N);
       end if;
@@ -5971,7 +5970,7 @@ package body Exp_Aggr is
 
          if Present (Component_Associations (N)) then
             Convert_To_Positional
-             (N, Max_Others_Replicate => 64, Handle_Bit_Packed => True);
+              (N, Max_Others_Replicate => 64, Handle_Bit_Packed => True);
             return Nkind (N) /= N_Aggregate;
          end if;
 
