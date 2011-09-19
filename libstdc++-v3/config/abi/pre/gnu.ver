@@ -500,10 +500,14 @@ GLIBCXX_3.4 {
     _ZNSt21__numeric_limits_base1[0-7]mi*;
     _ZNSt21__numeric_limits_base1[0-7]max_e*;
 
-    _ZNSt14numeric_limitsI[^g]E[5-9]*;
-    _ZNSt14numeric_limitsI[^g]E1[0-7][hirt]*;
-    _ZNSt14numeric_limitsI[^g]E1[0-7]mi*;
-    _ZNSt14numeric_limitsI[^g]E1[0-7]max_e*;
+    _ZNSt14numeric_limitsI[a-m]E[5-9]*;
+    _ZNSt14numeric_limitsI[p-z]E[5-9]*;
+    _ZNSt14numeric_limitsI[a-m]E1[0-7][hirt]*;
+    _ZNSt14numeric_limitsI[p-z]E1[0-7][hirt]*;
+    _ZNSt14numeric_limitsI[a-m]E1[0-7]mi*;
+    _ZNSt14numeric_limitsI[p-z]E1[0-7]mi*;
+    _ZNSt14numeric_limitsI[a-m]E1[0-7]max_e*;
+    _ZNSt14numeric_limitsI[p-z]E1[0-7]max_e*;
 
     # std::_Rb_tree
     _ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base;
@@ -1185,7 +1189,8 @@ GLIBCXX_3.4.14 {
 
     # std::numeric_limits::max_digits10
     _ZNSt21__numeric_limits_base12max_digits10E;
-    _ZNSt14numeric_limitsI[^g]E12max_digits10E;
+    _ZNSt14numeric_limitsI[a-m]E12max_digits10E;
+    _ZNSt14numeric_limitsI[p-z]E12max_digits10E;
     _ZNSt14numeric_limitsID[is]E12max_digits10E;
 
 } GLIBCXX_3.4.13;
@@ -1292,6 +1297,11 @@ GLIBCXX_3.4.17 {
 
     # std::chrono::steady_clock::now()
     _ZNSt6chrono12steady_clock3nowEv;
+
+    # std::numeric_limits<__int128_t> and <__uint128_t>
+    _ZNSt14numeric_limitsInE*;
+    _ZNSt14numeric_limitsIoE*;
+
 } GLIBCXX_3.4.16;
 
 # Symbols in the support library (libsupc++) have their own tag.

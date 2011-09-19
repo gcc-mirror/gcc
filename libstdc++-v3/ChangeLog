@@ -1,3 +1,31 @@
+2011-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40856
+	* include/std/limits (numeric_limits<__int128_t>,
+	numeric_limits<__uint128_t>): Add.
+	* src/limits.cc:Define.
+	* config/abi/pre/gnu.ver: Export.
+	* include/ext/typelist.h (_GLIBCXX_TYPELIST_CHAIN16, 20): Add.
+	* testsuite/util/testsuite_common_types.h (integral_types_gnu): Add
+	(limits_tl): Use it.
+	* testsuite/18_support/numeric_limits/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/18_support/numeric_limits/40856.cc: New.
+	* testsuite/18_support/numeric_limits/dr559.cc: Extend.
+	* testsuite/18_support/numeric_limits/lowest.cc: Likewise.
+	* testsuite/18_support/numeric_limits/max_digits10.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+
 2011-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/50441

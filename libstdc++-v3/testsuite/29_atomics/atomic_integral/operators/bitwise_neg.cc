@@ -27,10 +27,10 @@ int main()
   return 0;
 }
 
-// { dg-error "deleted" "" { target *-*-* } 426 }
-// { dg-error "deleted" "" { target *-*-* } 427 }
-// { dg-error "operator" "" { target *-*-* } 428 }
-// { dg-error "operator" "" { target *-*-* } 429 }
-// { dg-error "operator" "" { target *-*-* } 430 }
+// { dg-error "deleted" "" { target *-*-* } 470 }
+// { dg-error "deleted" "" { target *-*-* } 471 }
+// { dg-error "operator" "" { target *-*-* } 472 }
+// { dg-error "operator" "" { target *-*-* } 473 }
+// { dg-error "operator" "" { target *-*-* } 474 }
 
 // { dg-prune-output "declared here" }
