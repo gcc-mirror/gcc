@@ -1,5 +1,53 @@
 2011-09-19  Robert Dewar  <dewar@adacore.com>
 
+	* err_vars.ads, errout.ads: Minor reformatting.
+
+2011-09-19  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads (Impl_Defined_Aspects): New array
+	* lib-writ.adb (No_Dependences): New name for No_Dependence
+	* restrict.adb (No_Dependences): New name for No_Dependence
+	(Check_Restriction_No_Specification_Of_Aspect): New
+	procedure.
+	(Set_Restriction_No_Specification_Of_Aspect): New procedure
+	(Restricted_Profile_Result): New variable
+	(No_Specification_Of_Aspects): New variable
+	(No_Specification_Of_Aspect_Warning): New variable
+	* restrict.ads (No_Dependences): New name for No_Dependence
+	(Check_Restriction_No_Specification_Of_Aspect): New procedure
+	(Set_Restriction_No_Specification_Of_Aspect): New procedure
+	* s-rident.ads: Add restriction
+	No_Implementation_Aspect_Specifications, this is also added to
+	the No_Implementation_Extensions profile.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Check
+	No_Implementation_Defined_Aspects
+	(Analyze_Aspect_Specifications): Check No_Specification_Of_Aspect
+	* sem_prag.adb (Analyze_Aspect_Specifications): Check
+	No_Implementation_Aspects
+	(Analyze_Aspect_Specifications): Check No_Specification_Of_Aspect
+	* snames.ads-tmpl (Name_No_Specification_Of_Aspect): New name
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Take into account multiple
+	renamings for Alfa refs.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-mingw.adb: Minor reformatting.
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Set tagged type
+	expansion to False in mode Alfa
+
+2011-09-19  Pascal Obry  <obry@adacore.com>
+
+	* mingw32.h: Remove obsolete code needed for old versions
+	of MingW.
+
+2011-09-19  Robert Dewar  <dewar@adacore.com>
+
 	* errout.ads: Minor reformatting.
 
 2011-09-19  Ed Schonberg  <schonberg@adacore.com>

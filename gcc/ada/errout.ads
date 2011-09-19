@@ -451,7 +451,9 @@ package Errout is
 
    Error_Msg_Warn : Boolean renames Err_Vars.Error_Msg_Warn;
    --  Used if current message contains a < insertion character to indicate
-   --  if the current message is a warning message. ??? who turns this off???
+   --  if the current message is a warning message. Must be set appropriately
+   --  before any call to Error_Msg_xxx with a < insertion character present.
+   --  Setting is irrelevant if no < insertion character is present.
 
    Error_Msg_String : String  renames Err_Vars.Error_Msg_String;
    Error_Msg_Strlen : Natural renames Err_Vars.Error_Msg_Strlen;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2002-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2002-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,28 +38,8 @@
 
 #include <_mingw.h>
 
-/* The unicode support is activated by default starting with the 3.9 MingW
-   version. It is not possible to use it with previous version due to a bug
-   in the MingW runtime.  */
-
-#if (((__MINGW32_MAJOR_VERSION == 3 \
-		   && __MINGW32_MINOR_VERSION >= 9) \
-     || (__MINGW32_MAJOR_VERSION >= 4) \
-     || defined (__MINGW64))	       \
-     && !defined (RTX))
+#ifndef RTX
 #define GNAT_UNICODE_SUPPORT
-
-#else
-
-/*  Older MingW versions have no definition for _tfreopen, add it here to have a
-    proper build without unicode support.  */
-#ifndef _tfreopen
-#define _tfreopen   freopen
-#endif
-
-#endif
-
-#ifdef GNAT_UNICODE_SUPPORT
 #define _UNICODE /* For C runtime */
 #define UNICODE  /* For Win32 API */
 #endif

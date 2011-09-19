@@ -663,6 +663,7 @@ package Snames is
    Name_No_Implementation_Extensions   : constant Name_Id := N + $;
    Name_No_Requeue                     : constant Name_Id := N + $;
    Name_No_Requeue_Statements          : constant Name_Id := N + $;
+   Name_No_Specification_Of_Aspect     : constant Name_Id := N + $;
    Name_No_Task_Attributes             : constant Name_Id := N + $;
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
