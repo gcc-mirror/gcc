@@ -1,3 +1,8 @@
+2011-09-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.dg/20100906-1.c: Use -fno-short-enums option for
+	"target arm_eabi".
+
 2011-09-19  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50413
