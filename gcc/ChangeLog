@@ -1,3 +1,16 @@
+2011-09-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (maxmin): New code iterator.
+	* config/i386/sse.md (<maxmin:code><mode>3): Macroize expander
+	from <umaxmin:code><mode>3 and <smaxmin:code><mode>3 using maxmin
+	code iterator.
+	(*avx2_<maxmin:code><mode>3): Macroize isn from
+	*avx2_<umaxmin:code><mode>3 and *avx2_<smaxmin:code><mode>3 using
+	maxmin code iterator.
+	(<smaxmin:code><VI124_128:mode>3): Merge with <smaxmin:code>v8hi3.
+	(<umaxmin:code><VI124_128:mode>3): Merge with umaxv4si3 and
+	<umaxmin:code>v16qi3.
+
 2011-09-19  Alan Modra  <amodra@gmail.com>
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -36,7 +49,6 @@
 
 2011-09-19  Paul Brook  <paul@codesourcery.com>
 
-	gcc/
 	* config/arm/predicates.md (shift_amount_operand): Check constant
 	shift count is in range.
 	(const_shift_operand): Remove.
@@ -114,12 +126,10 @@
 	* config/i386/i386.c (ix86_build_const_vector): Handle V8SImode
 	and V4DImode.
 	(ix86_build_signbit_mask): Likewise.
-	(ix86_expand_int_vcond): Likewise.  Handle V16HImode and
-	V32QImode.
+	(ix86_expand_int_vcond): Likewise.  Handle V16HImode and V32QImode.
 	(bdesc_args): Use CODE_FOR_{s,u}m{ax,in}v{32q,16h,8s}i3
 	instead of CODE_FOR_avx2_{s,u}m{ax,in}v{32q,16h,8s}i3.
-	* config/i386/sse.md (avx2_<code><mode>3 umaxmin expand): Rename
-	to...
+	* config/i386/sse.md (avx2_<code><mode>3 umaxmin expand): Rename to...
 	(<code><mode>3) ... this.
 	(avx2_<code><mode>3 smaxmin expand): Rename to...
 	(<code><mode>3) ... this.
@@ -190,8 +200,7 @@
 
 	* Makefile.in (SYSROOT_CFLAGS_FOR_TARGET): Define from
 	@SYSROOT_CFLAGS_FOR_TARGET@.
-	* configure.ac (SYSROOT_CFLAGS_FOR_TARGET): Set from
-	build-sysroot.
+	* configure.ac (SYSROOT_CFLAGS_FOR_TARGET): Set from build-sysroot.
 	* configure: Regenerate.
 	(site.exp): Add definition of TEST_ALWAYS_FLAGS.
 	Remove setting of GCC_UNDER_TEST.
