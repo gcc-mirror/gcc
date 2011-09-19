@@ -288,7 +288,7 @@ package body Sem_Ch6 is
 
       New_Body :=
         Make_Subprogram_Body (Loc,
-          Specification              => Specification (N),
+          Specification              => Copy_Separate_Tree (Specification (N)),
           Declarations               => Empty_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (LocX,
@@ -296,9 +296,8 @@ package body Sem_Ch6 is
                 Make_Simple_Return_Statement (LocX,
                   Expression => Expression (N)))));
 
-      if Present (Prev)
-        and then Ekind (Prev) = E_Generic_Function
-      then
+      if Present (Prev) and then Ekind (Prev) = E_Generic_Function then
+
          --  If the expression completes a generic subprogram, we must create a
          --  separate node for the body, because at instantiation the original
          --  node of the generic copy must be a generic subprogram body, and
@@ -311,34 +310,53 @@ package body Sem_Ch6 is
          Analyze (New_Body);
          Set_Is_Inlined (Prev);
 
-      elsif Present (Prev) then
+      elsif Present (Prev)
+        and then Comes_From_Source (Prev)
+      then
          Rewrite (N, New_Body);
-         Set_Is_Inlined (Prev);
          Analyze (N);
 
+         --  Prev is the previous entity with the same name, but it is can
+         --  be an unrelated spec that is not completed by the expression
+         --  function. In that case the relevant entity is the one in the body.
+         --  Not clear that the backend can inline it in this case ???
+
+         if Has_Completion (Prev) then
+            Set_Is_Inlined (Prev);
+         else
+            Set_Is_Inlined (Defining_Entity (New_Body));
+         end if;
+
       --  If this is not a completion, create both a declaration and a body, so
-      --  that the expression can be inlined whenever possible. The spec of the
-      --  new subprogram declaration is a copy of the original specification,
-      --  which is now part of the subprogram body.
+      --  that the expression can be inlined whenever possible.
 
       else
          New_Decl :=
            Make_Subprogram_Declaration (Loc,
-             Specification => Copy_Separate_Tree (Specification (N)));
-
-         --  Do rewrite propagating the information that an expression function
-         --  comes from source (otherwise references to this entity are not
-         --  stored).
+             Specification => Specification (N));
 
          Rewrite (N, New_Decl);
-         Set_Comes_From_Source
-           (Defining_Entity (N), Comes_From_Source (Def_Id));
-
          Analyze (N);
          Set_Is_Inlined (Defining_Entity (New_Decl));
 
-         Insert_After (N, New_Body);
-         Analyze (New_Body);
+         --  To prevent premature freeze action, insert the new body at the end
+         --  of the current declarations, or at the end of the package spec.
+
+         declare
+            Decls : List_Id          := List_Containing (N);
+            Par   : constant Node_Id := Parent (Decls);
+
+         begin
+            if Nkind (Par) = N_Package_Specification
+               and then Decls = Visible_Declarations (Par)
+               and then Present (Private_Declarations (Par))
+               and then not Is_Empty_List (Private_Declarations (Par))
+            then
+               Decls := Private_Declarations (Par);
+            end if;
+
+            Insert_After (Last (Decls), New_Body);
+         end;
       end if;
 
       --  If the return expression is a static constant, we suppress warning

@@ -2599,7 +2599,7 @@ both depend on C. Here is an extra for all of these projects:
 
       project C is
           package Compiler is
-             for Default_Switches ("Ada") use ("-O3, "-gnatn");
+             for Default_Switches ("Ada") use ("-O3", "-gnatn");
              for Switches ("c_file1.adb") use ("-O0", "-g");
           end Compiler;
       end C;
@@ -3687,7 +3687,6 @@ end MyProj;
 * gnatmake and Project Files::
 * The GNAT Driver and Project Files::
 * The Development Environments::
-* Cleaning up with GPRclean::
 @end menu
 
 @c ---------------------------------------------
@@ -4554,73 +4553,3 @@ will be relative to this path. The root project directory is used if
 this value is not defined.
 
 @end table
-
-@c ---------------------------------------------
-@node Cleaning up with GPRclean
-@section Cleaning up with GPRclean
-@c ---------------------------------------------
-
-@noindent
-The GPRclean tool removes the files created by GPRbuild.
-At a minimum, to invoke GPRclean you must specify a main project file
-in a command such as @code{gprclean proj.gpr} or @code{gprclean -P proj.gpr}.
-
-Examples of invocation of GPRclean:
-
-@smallexample
-   gprclean -r prj1.gpr
-   gprclean -c -P prj2.gpr
-@end smallexample
-
-@menu
-* Switches for GPRclean::
-@end menu
-
-@c ---------------------------------------------
-@node Switches for GPRclean
-@subsection Switches for GPRclean
-@c ---------------------------------------------
-
-@noindent
-The switches for GPRclean are:
-
-@itemize @bullet
-@item @option{--config=<main config project file name>} : Specify the
-  configuration project file name
-
-@item @option{--autoconf=<config project file name>}
-
-  This specifies a configuration project file name that already exists or will
-  be created automatically. Option @option{--autoconf=}
-  cannot be specified more than once. If the configuration project file
-  specified with @option{--autoconf=} exists, then it is used. Otherwise,
-  @value{gprconfig} is invoked to create it automatically.
-
-@item @option{-c} : Only delete compiler-generated files. Do not delete
-  executables and libraries.
-
-@item @option{-f} : Force deletions of unwritable files
-
-@item @option{-F} : Display full project path name in brief error messages
-
-@item @option{-h} : Display this message
-
-@item @option{-n} : Do not delete files, only list files to delete
-
-@item @option{-P<proj>} : Use Project File @emph{<proj>}.
-
-@item @option{-q} : Be quiet/terse. There is no output, except to report
-  problems.
-
-@item @option{-r} : (recursive) Clean all projects referenced by the main
-  project directly or indirectly. Without this switch, GPRclean only
-  cleans the main project.
-
-@item @option{-v}  : Verbose mode
-
-@item @option{-vPx} : Specify verbosity when parsing Project Files.
-  x = 0 (default), 1 or 2.
-
-@item @option{-Xnm=val} : Specify an external reference for Project Files.
-
-@end itemize
