@@ -1,3 +1,10 @@
+2011-09-19  Paul Brook  <paul@codesourcery.com>
+
+	gcc/
+	* config/arm/predicates.md (shift_amount_operand): Check constant
+	shift count is in range.
+	(const_shift_operand): Remove.
+
 2011-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <developer@sandoe-acoustics.co.uk>
 
