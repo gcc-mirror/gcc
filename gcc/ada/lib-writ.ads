@@ -350,7 +350,7 @@ package Lib.Writ is
 
    --  Subsequent R lines are present only if pragma Restriction No_Dependence
    --  is used. There is one such line for each such pragma appearing in the
-   --  extended main unit. The format is
+   --  extended main unit. The format is:
 
    --    R unit_name
 
