@@ -1,3 +1,8 @@
+2011-09-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc-interface/decl.c (annotate_value): Look up expression for
+	insertion in the cache at the end.
+
 2011-09-19  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

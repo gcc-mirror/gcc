@@ -7471,23 +7471,26 @@ annotate_value (tree gnu_size)
 {
   TCode tcode;
   Node_Ref_Or_Val ops[3], ret;
-  struct tree_int_map **h = NULL;
+  struct tree_int_map in;
   int i;
 
   /* See if we've already saved the value for this node.  */
   if (EXPR_P (gnu_size))
     {
-      struct tree_int_map in;
+      struct tree_int_map *e;
+
       if (!annotate_value_cache)
         annotate_value_cache = htab_create_ggc (512, tree_int_map_hash,
 					        tree_int_map_eq, 0);
       in.base.from = gnu_size;
-      h = (struct tree_int_map **)
-	    htab_find_slot (annotate_value_cache, &in, INSERT);
+      e = (struct tree_int_map *)
+	    htab_find (annotate_value_cache, &in);
 
-      if (*h)
-	return (Node_Ref_Or_Val) (*h)->to;
+      if (e)
+	return (Node_Ref_Or_Val) e->to;
     }
+  else
+    in.base.from = NULL_TREE;
 
   /* If we do not return inside this switch, TCODE will be set to the
      code to use for a Create_Node operand and LEN (set above) will be
@@ -7588,8 +7591,17 @@ annotate_value (tree gnu_size)
   ret = Create_Node (tcode, ops[0], ops[1], ops[2]);
 
   /* Save the result in the cache.  */
-  if (h)
+  if (in.base.from)
     {
+      struct tree_int_map **h;
+      /* We can't assume the hash table data hasn't moved since the
+	 initial look up, so we have to search again.  Allocating and
+	 inserting an entry at that point would be an alternative, but
+	 then we'd better discard the entry if we decided not to cache
+	 it.  */
+      h = (struct tree_int_map **)
+	    htab_find_slot (annotate_value_cache, &in, INSERT);
+      gcc_assert (!*h);
       *h = ggc_alloc_tree_int_map ();
       (*h)->base.from = gnu_size;
       (*h)->to = ret;
