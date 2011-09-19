@@ -1,3 +1,19 @@
+2011-09-19  Alan Modra  <amodra@gmail.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/50341
+	* config/rs6000/rs6000.md (call_indirect_aix<ptrsize>): Do not
+	split the load of the indirect function's TOC from the call to
+	prevent the compiler from moving the load of the new TOC above
+	code that references the current function's TOC.
+	(call_indirect_aix<ptrsize>_internal): Ditto.
+	(call_indirect_aix<ptrsize>_nor11): Ditto.
+	(call_indirect_aix<ptrsize>_internal2): Ditto.
+	(call_value_indirect_aix<ptrsize>): Ditto.
+	(call_value_indirect_aix<ptrsize>_internal): Ditto.
+	(call_value_indirect_aix<ptrsize>_nor11): Ditto.
+	(call_value_indirect_aix<ptrsize>_internal2): Ditto.
+
 2011-09-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (*sse4_1_extractps): Change into
