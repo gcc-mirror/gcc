@@ -361,10 +361,13 @@ package body Freeze is
 
       --  For simple renamings, subsequent calls can be expanded directly as
       --  calls to the renamed entity. The body must be generated in any case
-      --  for calls that may appear elsewhere.
+      --  for calls that may appear elsewhere. This is not done in the case
+      --  where the subprogram is an instantiation because the actual proper
+      --  body has not been built yet.
 
       if Ekind_In (Old_S, E_Function, E_Procedure)
         and then Nkind (Decl) = N_Subprogram_Declaration
+        and then not Is_Generic_Instance (Old_S)
       then
          Set_Body_To_Inline (Decl, Old_S);
       end if;

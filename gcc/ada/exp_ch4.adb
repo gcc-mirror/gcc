@@ -4630,68 +4630,6 @@ package body Exp_Ch4 is
       Ltyp  : Entity_Id;
       Rtyp  : Entity_Id;
 
-      procedure Expand_Set_Membership;
-      --  For each choice we create a simple equality or membership test.
-      --  The whole membership is rewritten connecting these with OR ELSE.
-
-      ---------------------------
-      -- Expand_Set_Membership --
-      ---------------------------
-
-      procedure Expand_Set_Membership is
-         Alt  : Node_Id;
-         Res  : Node_Id;
-
-         function Make_Cond (Alt : Node_Id) return Node_Id;
-         --  If the alternative is a subtype mark, create a simple membership
-         --  test. Otherwise create an equality test for it.
-
-         ---------------
-         -- Make_Cond --
-         ---------------
-
-         function Make_Cond (Alt : Node_Id) return Node_Id is
-            Cond : Node_Id;
-            L    : constant Node_Id := New_Copy (Lop);
-            R    : constant Node_Id := Relocate_Node (Alt);
-
-         begin
-            if (Is_Entity_Name (Alt) and then Is_Type (Entity (Alt)))
-              or else Nkind (Alt) = N_Range
-            then
-               Cond :=
-                 Make_In (Sloc (Alt),
-                   Left_Opnd  => L,
-                   Right_Opnd => R);
-            else
-               Cond :=
-                 Make_Op_Eq (Sloc (Alt),
-                   Left_Opnd  => L,
-                   Right_Opnd => R);
-            end if;
-
-            return Cond;
-         end Make_Cond;
-
-      --  Start of processing for Expand_Set_Membership
-
-      begin
-         Alt := Last (Alternatives (N));
-         Res := Make_Cond (Alt);
-
-         Prev (Alt);
-         while Present (Alt) loop
-            Res :=
-              Make_Or_Else (Sloc (Alt),
-                Left_Opnd  => Make_Cond (Alt),
-                Right_Opnd => Res);
-            Prev (Alt);
-         end loop;
-
-         Rewrite (N, Res);
-         Analyze_And_Resolve (N, Standard_Boolean);
-      end Expand_Set_Membership;
-
       procedure Substitute_Valid_Check;
       --  Replaces node N by Lop'Valid. This is done when we have an explicit
       --  test for the left operand being in range of its subtype.
@@ -4721,8 +4659,7 @@ package body Exp_Ch4 is
       --  If set membership case, expand with separate procedure
 
       if Present (Alternatives (N)) then
-         Remove_Side_Effects (Lop);
-         Expand_Set_Membership;
+         Expand_Set_Membership (N);
          return;
       end if;
 
@@ -9716,6 +9653,67 @@ package body Exp_Ch4 is
 
       return Result;
    end Expand_Record_Equality;
+
+   ---------------------------
+   -- Expand_Set_Membership --
+   ---------------------------
+
+   procedure Expand_Set_Membership (N : Node_Id) is
+      Lop : constant Node_Id := Left_Opnd (N);
+      Alt : Node_Id;
+      Res : Node_Id;
+
+      function Make_Cond (Alt : Node_Id) return Node_Id;
+      --  If the alternative is a subtype mark, create a simple membership
+      --  test. Otherwise create an equality test for it.
+
+      ---------------
+      -- Make_Cond --
+      ---------------
+
+      function Make_Cond (Alt : Node_Id) return Node_Id is
+         Cond : Node_Id;
+         L    : constant Node_Id := New_Copy (Lop);
+         R    : constant Node_Id := Relocate_Node (Alt);
+
+      begin
+         if (Is_Entity_Name (Alt) and then Is_Type (Entity (Alt)))
+           or else Nkind (Alt) = N_Range
+         then
+            Cond :=
+              Make_In (Sloc (Alt),
+                Left_Opnd  => L,
+                Right_Opnd => R);
+         else
+            Cond :=
+              Make_Op_Eq (Sloc (Alt),
+                Left_Opnd  => L,
+                Right_Opnd => R);
+         end if;
+
+         return Cond;
+      end Make_Cond;
+
+   --  Start of processing for Expand_Set_Membership
+
+   begin
+      Remove_Side_Effects (Lop);
+
+      Alt := Last (Alternatives (N));
+      Res := Make_Cond (Alt);
+
+      Prev (Alt);
+      while Present (Alt) loop
+         Res :=
+           Make_Or_Else (Sloc (Alt),
+             Left_Opnd  => Make_Cond (Alt),
+             Right_Opnd => Res);
+         Prev (Alt);
+      end loop;
+
+      Rewrite (N, Res);
+      Analyze_And_Resolve (N, Standard_Boolean);
+   end Expand_Set_Membership;
 
    -----------------------------------
    -- Expand_Short_Circuit_Operator --

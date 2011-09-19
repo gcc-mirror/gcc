@@ -108,7 +108,7 @@ package System.OS_Interface is
    SIGUSR1    : constant := 30; --  user defined signal 1
    SIGUSR2    : constant := 31; --  user defined signal 2
 
-   SIGADAABORT : constant := SIGTERM;
+   SIGADAABORT : constant := SIGABRT;
    --  Change this if you want to use another signal for task abort.
    --  SIGTERM might be a good one.
 

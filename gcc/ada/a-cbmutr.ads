@@ -31,6 +31,7 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
+with Ada.Iterator_Interfaces;
 private with Ada.Streams;
 
 generic
@@ -42,7 +43,11 @@ package Ada.Containers.Bounded_Multiway_Trees is
    pragma Pure;
    pragma Remote_Types;
 
-   type Tree (Capacity : Count_Type) is tagged private;
+   type Tree (Capacity : Count_Type) is tagged private
+     with Constant_Indexing => Constant_Reference,
+          Variable_Indexing => Reference,
+          Default_Iterator  => Iterate,
+          Iterator_Element  => Element_Type;
    pragma Preelaborable_Initialization (Tree);
 
    type Cursor is private;
@@ -51,6 +56,10 @@ package Ada.Containers.Bounded_Multiway_Trees is
    Empty_Tree : constant Tree;
 
    No_Element : constant Cursor;
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package Tree_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function Equal_Subtree
      (Left_Position  : Cursor;
@@ -89,6 +98,14 @@ package Ada.Containers.Bounded_Multiway_Trees is
      (Container : in out Tree;
       Position  : Cursor;
       Process   : not null access procedure (Element : in out Element_Type));
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is private
+        with Implicit_Dereference => Element;
+
+   type Reference_Type
+     (Element : not null access Element_Type) is private
+        with Implicit_Dereference => Element;
 
    procedure Assign (Target : in out Tree; Source : Tree);
 
@@ -148,8 +165,6 @@ package Ada.Containers.Bounded_Multiway_Trees is
      (Container : Tree;
       Item      : Element_Type) return Boolean;
 
-   function Has_Element (Position : Cursor) return Boolean;
-
    procedure Iterate
      (Container : Tree;
       Process   : not null access procedure (Position : Cursor));
@@ -157,6 +172,12 @@ package Ada.Containers.Bounded_Multiway_Trees is
    procedure Iterate_Subtree
      (Position  : Cursor;
       Process   : not null access procedure (Position : Cursor));
+
+   function Iterate (Container : Tree)
+     return Tree_Iterator_Interfaces.Forward_Iterator'Class;
+
+   function Iterate_Subtree (Position : Cursor)
+     return Tree_Iterator_Interfaces.Forward_Iterator'Class;
 
    function Child_Count (Parent : Cursor) return Count_Type;
 
@@ -273,6 +294,7 @@ package Ada.Containers.Bounded_Multiway_Trees is
       Process : not null access procedure (Position : Cursor));
 
 private
+   use Ada.Streams;
 
    type Children_Type is record
       First : Count_Type'Base;
@@ -287,7 +309,7 @@ private
    end record;
 
    type Tree_Node_Array is array (Count_Type range <>) of Tree_Node_Type;
-   type Element_Array is array (Count_Type range <>) of Element_Type;
+   type Element_Array is array (Count_Type range <>) of aliased Element_Type;
 
    type Tree (Capacity : Count_Type) is tagged record
       Nodes    : Tree_Node_Array (0 .. Capacity) := (others => <>);
@@ -297,8 +319,6 @@ private
       Lock     : Integer := 0;
       Count    : Count_Type := 0;
    end record;
-
-   use Ada.Streams;
 
    procedure Write
      (Stream    : not null access Root_Stream_Type'Class;
@@ -320,19 +340,52 @@ private
       Node      : Count_Type'Base := -1;
    end record;
 
+   procedure  Read
+     (Stream   : not null access Root_Stream_Type'Class;
+      Position : out Cursor);
+   for Cursor'Read use Read;
+
    procedure Write
      (Stream   : not null access Root_Stream_Type'Class;
       Position : Cursor);
-
    for Cursor'Write use Write;
 
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is null record;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+   for Constant_Reference_Type'Write use Write;
+
    procedure Read
-     (Stream   : not null access Root_Stream_Type'Class;
-      Position : out Cursor);
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+   for Constant_Reference_Type'Read use Read;
 
-   for Cursor'Read use Read;
+   type Reference_Type
+     (Element : not null access Element_Type) is null record;
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+   for Reference_Type'Write use Write;
 
-   Empty_Tree : constant Tree := Tree'(Capacity => 0, others => <>);
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+   for Reference_Type'Read use Read;
+
+   function Constant_Reference
+     (Container : aliased Tree;
+      Position  : Cursor)
+   return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased Tree;
+      Position  : Cursor)
+    return Reference_Type;
+
+   Empty_Tree : constant Tree := (Capacity => 0, others => <>);
 
    No_Element : constant Cursor := Cursor'(others => <>);
 

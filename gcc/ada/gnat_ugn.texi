@@ -5735,7 +5735,7 @@ as shown in the following example.
 This switch activates warnings for use of @code{pragma Warnings (Off, entity)}
 where either the pragma is entirely useless (because it suppresses no
 warnings), or it could be replaced by @code{pragma Unreferenced} or
-@code{pragma Unmodified}.The default is that these warnings are not given.
+@code{pragma Unmodified}. The default is that these warnings are not given.
 Note that this warning is not included in -gnatwa, it must be
 activated explicitly.
 
@@ -11591,6 +11591,7 @@ recognized by GNAT:
    Ada_2005
    Ada_12
    Ada_2012
+   Annotate
    Assertion_Policy
    Assume_No_Invalid_Values
    C_Pass_By_Copy
@@ -17578,7 +17579,7 @@ Same as @option{^-gnatyM^/MAX_LINE_LENGTH=^@var{n}}
 
 @item ^--no-exception^/NO_EXCEPTION^
 @cindex @option{^--no-exception^/NO_EXCEPTION^} (@command{gnatstub})
-void raising PROGRAM_ERROR in the generated bodies of program unit stubs.
+Avoid raising PROGRAM_ERROR in the generated bodies of program unit stubs.
 This is not always possible for function stubs.
 
 @item ^--no-local-header^/NO_LOCAL_HEADER^

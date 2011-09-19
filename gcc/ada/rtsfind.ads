@@ -1163,6 +1163,7 @@ package Rtsfind is
      RE_Get_RACW,                        -- System.Partition_Interface
      RE_Get_RCI_Package_Receiver,        -- System.Partition_Interface
      RE_Get_Unique_Remote_Pointer,       -- System.Partition_Interface
+     RE_RACW_Stub_Type,                  -- System.Partition_Interface
      RE_RACW_Stub_Type_Access,           -- System.Partition_Interface
      RE_RAS_Proxy_Type_Access,           -- System.Partition_Interface
      RE_Raise_Program_Error_Unknown_Tag, -- System.Partition_Interface
@@ -2357,6 +2358,7 @@ package Rtsfind is
      RE_Get_RACW                         => System_Partition_Interface,
      RE_Get_RCI_Package_Receiver         => System_Partition_Interface,
      RE_Get_Unique_Remote_Pointer        => System_Partition_Interface,
+     RE_RACW_Stub_Type                   => System_Partition_Interface,
      RE_RACW_Stub_Type_Access            => System_Partition_Interface,
      RE_RAS_Proxy_Type_Access            => System_Partition_Interface,
      RE_Raise_Program_Error_Unknown_Tag  => System_Partition_Interface,
