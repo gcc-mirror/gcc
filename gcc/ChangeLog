@@ -1,3 +1,9 @@
+2011-09-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* haifa-sched.c (has_edge_p, prev_non_location_insn, check_cfg):
+	Remove maintenance overhead.
+	(haifa_sched_init, sched_finish): Update.
+
 2011-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (*mov<mode>_internal_rex64): Use if_then_else RTX
