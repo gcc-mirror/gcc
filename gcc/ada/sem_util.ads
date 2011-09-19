@@ -272,6 +272,13 @@ package Sem_Util is
    --  of inlining, and for private protected ops. Also used to create bodies
    --  for stubbed subprograms.
 
+   function Copy_Component_List
+     (R_Typ : Entity_Id;
+      Loc   : Source_Ptr) return List_Id;
+   --  Copy components from record type R_Typ that come from source. Used to
+   --  create a new compatible record type. Loc is the source location assigned
+   --  to the created nodes.
+
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
    --  Find the currently visible definition for a given identifier, that is to

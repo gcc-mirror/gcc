@@ -1,3 +1,59 @@
+2011-09-19  Steve Baird  <baird@adacore.com>
+
+	* snames.ads-tmpl: Move declaration of Name_Annotate into range of
+	configuration pragma names so that Is_Configuration_Pragma_Name
+	will return True for Name_Annotate.  Make corresponding change in
+	Pragma_Id enumeration type.  This is needed to allow an Annotate
+	pragma to occur in a configuration pragma file (typically,
+	a gnat.adc file).
+	* gnat_ugn.texi: Add Annotate to the list of configuration pragmas.
+	* gnat_rm.texi: Note that pragma Annotate may be used as a
+	configuration pragma.
+
+2011-09-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbmutr.adb, a-cbmutr.ads, a-cimutr.adb, a-cimutr.ads,
+	a-comutr.adb, a-comutr.ads: Add iterator machinery for multiway trees.
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb, exp_alfa.ads (Expand_Alfa_N_In): New function
+	for expansion of set membership.
+	(Expand_Alfa): Call expansion for N_In and N_Not_In nodes.
+	* exp_ch4.adb, exp_ch4.ads (Expand_Set_Membership): Make procedure
+	visible for use in Alfa expansion.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Introduce loop
+	variable in Alfa mode.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* s-osinte-darwin.ads: Change SIGADAABRT on Darwin to SIGABRT.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting.
+
+2011-09-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Build_Renamed_Body): Generic subprograms
+	instantiations cannot be poperly inlined by the compiler, do
+	not set the Body_To_Inline attribute in such cases.
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Inherit all
+	inlining-related flags from the generic subprogram declaration.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb, rtsfind.ads, sem_util.adb, sem_util.ads
+	(Build_Stub_Type): Remove, instead copy components from
+	System.Partition_Interface.RACW_Stub_Type.
+	(RPC_Receiver_Decl): Remainder of code from old Build_Stub_Type routine.
+	(Copy_Component_List): New subprogram.
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Ignore references to
+	constants in Standard.
+
 2011-09-19  Robert Dewar  <dewar@adacore.com>
 
 	* err_vars.ads, errout.ads: Minor reformatting.

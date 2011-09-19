@@ -5219,7 +5219,7 @@ package body Exp_Ch9 is
 
       Comps := New_List (
         Make_Component_Declaration (Loc,
-          Defining_Identifier => Make_Temporary (Loc, 'P'),
+          Defining_Identifier  => Make_Temporary (Loc, 'P'),
           Component_Definition =>
             Make_Component_Definition (Loc,
               Aliased_Present => False,
@@ -5236,11 +5236,10 @@ package body Exp_Ch9 is
       Decl2 :=
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => E_T,
-          Type_Definition =>
+          Type_Definition     =>
             Make_Record_Definition (Loc,
               Component_List =>
-                Make_Component_List (Loc,
-                  Component_Items => Comps)));
+                Make_Component_List (Loc, Component_Items => Comps)));
 
       Insert_After (Decl1, Decl2);
       Analyze (Decl2);

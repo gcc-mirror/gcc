@@ -1010,8 +1010,17 @@ package body Lib.Xref is
          if Alfa_Mode then
             Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (N);
             Ent_Scope := Alfa.Enclosing_Subprogram_Or_Package (Ent);
-            Ent_Scope_File := Get_Source_Unit (Ent_Scope);
 
+            --  Since we are reaching through renamings in Alfa mode, we may
+            --  end up with standard constants. Ignore those.
+
+            if Sloc (Ent_Scope) <= Standard_Location
+              or else Def <= Standard_Location
+            then
+               return;
+            end if;
+
+            Ent_Scope_File := Get_Source_Unit (Ent_Scope);
          else
             Ref_Scope := Empty;
             Ent_Scope := Empty;

@@ -2265,6 +2265,39 @@ package body Sem_Util is
    end Conditional_Delay;
 
    -------------------------
+   -- Copy_Component_List --
+   -------------------------
+
+   function Copy_Component_List
+     (R_Typ : Entity_Id;
+      Loc   : Source_Ptr) return List_Id
+   is
+      Comp  : Node_Id;
+      Comps : constant List_Id := New_List;
+   begin
+      Comp := First_Component (Underlying_Type (R_Typ));
+
+      while Present (Comp) loop
+         if Comes_From_Source (Comp) then
+            declare
+               Comp_Decl : constant Node_Id := Declaration_Node (Comp);
+            begin
+               Append_To (Comps,
+                 Make_Component_Declaration (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Chars (Comp)),
+                   Component_Definition =>
+                     New_Copy_Tree
+                       (Component_Definition (Comp_Decl), New_Sloc => Loc)));
+            end;
+         end if;
+         Next_Component (Comp);
+      end loop;
+
+      return Comps;
+   end Copy_Component_List;
+
+   -------------------------
    -- Copy_Parameter_List --
    -------------------------
 

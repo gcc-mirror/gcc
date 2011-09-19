@@ -33,6 +33,18 @@ with System;  use type System.Address;
 
 package body Ada.Containers.Multiway_Trees is
 
+   type Iterator is new Tree_Iterator_Interfaces.Forward_Iterator with
+   record
+      Container : Tree_Access;
+      Position  : Cursor;
+      From_Root : Boolean;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Next
+     (Object : Iterator;
+      Position : Cursor) return Cursor;
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -891,6 +903,15 @@ package body Ada.Containers.Multiway_Trees is
       return Cursor'(Container'Unrestricted_Access, N);
    end Find;
 
+   -----------
+   -- First --
+   -----------
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return Object.Position;
+   end First;
+
    -----------------
    -- First_Child --
    -----------------
@@ -1323,6 +1344,23 @@ package body Ada.Containers.Multiway_Trees is
          raise;
    end Iterate;
 
+   function Iterate (Container : Tree)
+     return Tree_Iterator_Interfaces.Forward_Iterator'Class
+   is
+      Root_Cursor : constant Cursor :=
+        (Container'Unrestricted_Access, Root_Node (Container));
+   begin
+      return
+        Iterator'(Container'Unrestricted_Access,
+                     First_Child (Root_Cursor), From_Root => True);
+   end Iterate;
+
+   function Iterate_Subtree (Position : Cursor)
+     return Tree_Iterator_Interfaces.Forward_Iterator'Class is
+   begin
+      return Iterator'(Position.Container, Position, From_Root => False);
+   end Iterate_Subtree;
+
    ----------------------
    -- Iterate_Children --
    ----------------------
@@ -1489,6 +1527,71 @@ package body Ada.Containers.Multiway_Trees is
       Target.Count := Source.Count;
       Source.Count := 0;
    end Move;
+
+   ----------
+   -- Next --
+   ----------
+
+   function Next
+     (Object : Iterator;
+      Position : Cursor) return Cursor
+   is
+      T  : Tree renames Position.Container.all;
+      N  : constant Tree_Node_Access := Position.Node;
+
+   begin
+      if Is_Leaf (Position) then
+
+         --  If sibling is present, return it.
+
+         if N.Next /= null then
+            return (Object.Container, N.Next);
+
+         --  If this is the last sibling, go to sibling of first ancestor that
+         --  has a sibling, or terminate.
+
+         else
+            declare
+               Par : Tree_Node_Access := N.Parent;
+
+            begin
+               while Par.Next = null loop
+
+                  --  If we are back at the root the iteration is complete.
+
+                  if Par = Root_Node (T)  then
+                     return No_Element;
+
+                  --  If this is a subtree iterator and we are back at the
+                  --  starting node, iteration is complete.
+
+                  elsif Par = Object.Position.Node
+                    and then not Object.From_Root
+                  then
+                     return No_Element;
+
+                  else
+                     Par := Par.Parent;
+                  end if;
+               end loop;
+
+               if Par = Object.Position.Node
+                 and then not Object.From_Root
+               then
+                  return No_Element;
+               end if;
+
+               return (Object.Container, Par.Next);
+            end;
+         end if;
+
+      else
+
+         --  If an internal node, return its first child.
+
+         return (Object.Container, N.Children.First);
+      end if;
+   end Next;
 
    ------------------
    -- Next_Sibling --
@@ -1783,6 +1886,46 @@ package body Ada.Containers.Multiway_Trees is
    begin
       raise Program_Error with "attempt to read tree cursor from stream";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference
+     (Container : aliased Tree;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      pragma Unreferenced (Container);
+
+      return (Element => Position.Node.Element'Unrestricted_Access);
+   end Constant_Reference;
+
+   function Reference
+     (Container : aliased Tree;
+      Position  : Cursor) return Reference_Type
+   is
+   begin
+      pragma Unreferenced (Container);
+
+      return (Element => Position.Node.Element'Unrestricted_Access);
+   end Reference;
 
    --------------------
    -- Remove_Subtree --
@@ -2458,6 +2601,22 @@ package body Ada.Containers.Multiway_Trees is
    is
    begin
       raise Program_Error with "attempt to write tree cursor to stream";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Multiway_Trees;

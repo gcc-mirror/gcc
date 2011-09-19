@@ -347,6 +347,7 @@ package Snames is
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
    Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
+   Name_Annotate                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
@@ -418,7 +419,6 @@ package Snames is
 
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
    Name_All_Calls_Remote               : constant Name_Id := N + $;
-   Name_Annotate                       : constant Name_Id := N + $; -- GNAT
 
    --  Note: AST_Entry is not in this list because its name matches -- VMS
    --  the name of the corresponding attribute. However, it is
@@ -1520,6 +1520,7 @@ package Snames is
       Pragma_Ada_2005,
       Pragma_Ada_12,
       Pragma_Ada_2012,
+      Pragma_Annotate,
       Pragma_Assertion_Policy,
       Pragma_Assume_No_Invalid_Values,
       Pragma_C_Pass_By_Copy,
@@ -1583,7 +1584,6 @@ package Snames is
 
       Pragma_Abort_Defer,
       Pragma_All_Calls_Remote,
-      Pragma_Annotate,
       Pragma_Assert,
       Pragma_Asynchronous,
       Pragma_Atomic,
