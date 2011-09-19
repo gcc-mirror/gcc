@@ -5269,6 +5269,7 @@ copy_insn_1 (rtx orig)
   switch (code)
     {
     case REG:
+    case DEBUG_EXPR:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_FIXED:
