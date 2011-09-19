@@ -1,3 +1,15 @@
+2011-09-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): When the expression
+	function is transformed into a declaration and a body, insert
+	body at the end of the declarative part, to prevent premature
+	freeze actions, and preserve original specification in the
+	subprogram declaration.
+
+2011-09-19  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Minor editing.
+
 2011-09-19  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb, lib-writ.ads, s-restri.ads, sem_ch6.adb,
