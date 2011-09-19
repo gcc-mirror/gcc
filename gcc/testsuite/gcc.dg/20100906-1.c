@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-short-enums -Wl,--no-enum-size-warning" {target arm_eabi} } */
 
 /* This testcase got misoptimized by combine due to a wrong setting of
    subst_low_luid in try_combine.  */
