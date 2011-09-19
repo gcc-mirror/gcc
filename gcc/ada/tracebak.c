@@ -199,10 +199,24 @@ extern void (*Unlock_Task) (void);
 
   */
 
-/*--------------------------- PPC AIX/Darwin ----------------------------*/
+/*--------------------------- Darwin 8 or newer ----------------------------*/
+#if defined (__APPLE__) \
+    && defined (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) \
+    && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1040
+ 
+#define USE_GCC_UNWINDER
 
-#if ((defined (_POWER) && defined (_AIX)) || \
-(defined (__ppc__) && defined (__APPLE__)))
+#if defined (__i386__) || defined (__x86_64__)
+#define PC_ADJUST -2
+#elif defined (__ppc__) || defined (__ppc64__)
+#define PC_ADJUST -4
+#else
+#error Unhandled darwin architecture.
+#endif
+
+/*------------------------ PPC AIX/Older Darwin -------------------------*/
+#elif ((defined (_POWER) && defined (_AIX)) \
+       || (defined (__APPLE__)  && defined (__ppc__)))
 
 #define USE_GENERIC_UNWINDER
 
