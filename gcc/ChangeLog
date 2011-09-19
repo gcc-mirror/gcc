@@ -1,5 +1,17 @@
 2011-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Use if_then_else RTX
+	to calculate unit, prefix_rep and prefix_data16 attributes.
+	(*mov<mode>_internal): Ditto for unit attribute.
+	(*movv2sf_internal_rex64): Ditto for unit and prefix_rep attributes.
+	(*movv2sf_internal): Ditto.
+	* config/i386/sse.md (VI1248_256): Remove mode iterator.
+	(avx2_eq<mode>3): Use VI_256 instead of VI1248_256.
+	(*avx2_eq<mode>3): Ditto.
+	(avx2_gt<mode>3): Ditto.
+
+2011-09-19  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (maxmin): New code iterator.
 	* config/i386/sse.md (<maxmin:code><mode>3): Macroize expander
 	from <umaxmin:code><mode>3 and <smaxmin:code><mode>3 using maxmin
