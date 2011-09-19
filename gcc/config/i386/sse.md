@@ -191,7 +191,6 @@
 
 ;; Random 256bit vector integer mode combinations
 (define_mode_iterator VI124_256 [V32QI V16HI V8SI])
-(define_mode_iterator VI1248_256 [V32QI V16HI V8SI V4DI])
 (define_mode_iterator VI248_256 [V16HI V8SI V4DI])
 
 ;; Int-float size matches
@@ -6036,18 +6035,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "avx2_eq<mode>3"
-  [(set (match_operand:VI1248_256 0 "register_operand" "")
-	(eq:VI1248_256
-	  (match_operand:VI1248_256 1 "nonimmediate_operand" "")
-	  (match_operand:VI1248_256 2 "nonimmediate_operand" "")))]
+  [(set (match_operand:VI_256 0 "register_operand" "")
+	(eq:VI_256
+	  (match_operand:VI_256 1 "nonimmediate_operand" "")
+	  (match_operand:VI_256 2 "nonimmediate_operand" "")))]
   "TARGET_AVX2"
   "ix86_fixup_binary_operands_no_copy (EQ, <MODE>mode, operands);")
 
 (define_insn "*avx2_eq<mode>3"
-  [(set (match_operand:VI1248_256 0 "register_operand" "=x")
-	(eq:VI1248_256
-	  (match_operand:VI1248_256 1 "nonimmediate_operand" "%x")
-	  (match_operand:VI1248_256 2 "nonimmediate_operand" "xm")))]
+  [(set (match_operand:VI_256 0 "register_operand" "=x")
+	(eq:VI_256
+	  (match_operand:VI_256 1 "nonimmediate_operand" "%x")
+	  (match_operand:VI_256 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2 && ix86_binary_operator_ok (EQ, <MODE>mode, operands)"
   "vpcmpeq<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecmp")
@@ -6118,10 +6117,10 @@
    (set_attr "mode" "TI")])
 
 (define_insn "avx2_gt<mode>3"
-  [(set (match_operand:VI1248_256 0 "register_operand" "=x")
-	(gt:VI1248_256
-	  (match_operand:VI1248_256 1 "register_operand" "x")
-	  (match_operand:VI1248_256 2 "nonimmediate_operand" "xm")))]
+  [(set (match_operand:VI_256 0 "register_operand" "=x")
+	(gt:VI_256
+	  (match_operand:VI_256 1 "register_operand" "x")
+	  (match_operand:VI_256 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2"
   "vpcmpgt<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecmp")
