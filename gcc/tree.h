@@ -795,7 +795,7 @@ enum tree_node_structure_enum {
 			     (CODE1), (CODE2), (CODE3), (CODE4), 0);	\
     __t; })
 
-#define NON_TREE_CHECK4(T, CODE1, CODE2, CODE3, CODE4) __extension__	\
+#define TREE_NOT_CHECK4(T, CODE1, CODE2, CODE3, CODE4) __extension__	\
 ({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) == (CODE1)					\
 	|| TREE_CODE (__t) == (CODE2)					\

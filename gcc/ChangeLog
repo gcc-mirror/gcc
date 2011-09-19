@@ -1,5 +1,9 @@
 2011-09-19  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree.h (TREE_NOT_CHECK4): Rename from bogus NON_TREE_CHECK4.
+
+2011-09-19  Alexandre Oliva  <aoliva@redhat.com>
+
 	* emit-rtl.c (copy_insn_1): Do not copy DEBUG_EXPRs.
 
 2011-09-19  Ira Rosen  <ira.rosen@linaro.org>
