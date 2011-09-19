@@ -6251,22 +6251,22 @@ Named_type::message_name() const
 Type*
 Named_type::named_base()
 {
-  if (this->seen_ > 0)
+  if (this->seen_)
     return this;
-  ++this->seen_;
+  this->seen_ = true;
   Type* ret = this->type_->base();
-  --this->seen_;
+  this->seen_ = false;
   return ret;
 }
 
 const Type*
 Named_type::named_base() const
 {
-  if (this->seen_ > 0)
+  if (this->seen_)
     return this;
-  ++this->seen_;
+  this->seen_ = true;
   const Type* ret = this->type_->base();
-  --this->seen_;
+  this->seen_ = false;
   return ret;
 }
 
@@ -6276,11 +6276,11 @@ Named_type::named_base() const
 bool
 Named_type::is_named_error_type() const
 {
-  if (this->seen_ > 0)
+  if (this->seen_)
     return false;
-  ++this->seen_;
+  this->seen_ = true;
   bool ret = this->type_->is_error_type();
-  --this->seen_;
+  this->seen_ = false;
   return ret;
 }
 
@@ -6430,11 +6430,11 @@ Named_type::interface_method_table(Gogo* gogo, const Interface_type* interface,
 bool
 Named_type::named_type_has_hidden_fields(std::string* reason) const
 {
-  if (this->seen_ > 0)
+  if (this->seen_)
     return false;
-  ++this->seen_;
+  this->seen_ = true;
   bool ret = this->type_->has_hidden_fields(this, reason);
-  --this->seen_;
+  this->seen_ = false;
   return ret;
 }
 
@@ -6600,11 +6600,11 @@ Named_type::do_verify()
 bool
 Named_type::do_has_pointer() const
 {
-  if (this->seen_ > 0)
+  if (this->seen_)
     return false;
-  ++this->seen_;
+  this->seen_ = true;
   bool ret = this->type_->has_pointer();
-  --this->seen_;
+  this->seen_ = false;
   return ret;
 }
 
@@ -6906,14 +6906,14 @@ Named_type::do_get_backend(Gogo* gogo)
     case TYPE_FUNCTION:
       // Don't build a circular data structure.  GENERIC can't handle
       // it.
-      if (this->seen_ > 0)
+      if (this->seen_in_get_backend_)
 	{
 	  this->is_circular_ = true;
 	  return gogo->backend()->circular_pointer_type(bt, true);
 	}
-      ++this->seen_;
+      this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
-      --this->seen_;
+      this->seen_in_get_backend_ = false;
       if (this->is_circular_)
 	bt1 = gogo->backend()->circular_pointer_type(bt, true);
       if (!gogo->backend()->set_placeholder_function_type(bt, bt1))
@@ -6923,14 +6923,14 @@ Named_type::do_get_backend(Gogo* gogo)
     case TYPE_POINTER:
       // Don't build a circular data structure. GENERIC can't handle
       // it.
-      if (this->seen_ > 0)
+      if (this->seen_in_get_backend_)
 	{
 	  this->is_circular_ = true;
 	  return gogo->backend()->circular_pointer_type(bt, false);
 	}
-      ++this->seen_;
+      this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
-      --this->seen_;
+      this->seen_in_get_backend_ = false;
       if (this->is_circular_)
 	bt1 = gogo->backend()->circular_pointer_type(bt, false);
       if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))

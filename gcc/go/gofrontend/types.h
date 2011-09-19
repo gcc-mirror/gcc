@@ -2387,7 +2387,7 @@ class Named_type : public Type
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
       is_visible_(true), is_error_(false), is_converted_(false),
-      is_circular_(false), seen_(0)
+      is_circular_(false), seen_(false), seen_in_get_backend_(false)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -2647,7 +2647,9 @@ class Named_type : public Type
   // used to prevent infinite recursion when a type refers to itself.
   // This is mutable because it is always reset to false when the
   // function exits.
-  mutable int seen_;
+  mutable bool seen_;
+  // Like seen_, but used only by do_get_backend.
+  bool seen_in_get_backend_;
 };
 
 // A forward declaration.  This handles a type which has been declared
