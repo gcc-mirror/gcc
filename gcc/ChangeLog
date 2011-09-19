@@ -1,3 +1,9 @@
+2011-09-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49886
+	* ipa-split.c (split_function): Do not change signature if it is
+	not possible or there are attribute types.
+
 2011-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <developer@sandoe-acoustics.co.uk>
 

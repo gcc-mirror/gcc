@@ -1,8 +1,13 @@
-/* { dg-do run } */
+/* { dg-do compile } */
 
 struct PMC {
     unsigned flags;
 };
+
+struct PVC {
+  unsigned flags, other_stuff;
+};
+
 
 typedef struct Pcc_cell
 {
@@ -14,6 +19,8 @@ typedef struct Pcc_cell
 int gi;
 int cond;
 
+struct PVC g_pvc;
+
 extern void abort ();
 extern void never_ever(int interp, struct PMC *pmc)
   __attribute__((noinline,noclone));
@@ -23,48 +30,48 @@ void never_ever (int interp, struct PMC *pmc)
   abort ();
 }
 
-static void mark_cell(int * interp, Pcc_cell *c)
+static void mark_cell(int * interp, Pcc_cell *c, struct PVC pvc)
   __attribute__((__nonnull__(1)));
 
 static void
-mark_cell(int * interp, Pcc_cell *c)
+mark_cell(int * interp, Pcc_cell *c, struct PVC pvc)
 {
   if (!cond)
     return;
 
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<18)))
+      && !(c->p->flags & (1<<8)))
     never_ever(gi + 1, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<17)))
+      && !(c->p->flags & (1<<7)))
     never_ever(gi + 2, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<16)))
+      && !(c->p->flags & (1<<6)))
     never_ever(gi + 3, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<15)))
+      && !(c->p->flags & (1<<5)))
     never_ever(gi + 4, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<14)))
+      && !(c->p->flags & (1<<4)))
     never_ever(gi + 5, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<13)))
+      && !(c->p->flags & (1<<3)))
     never_ever(gi + 6, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<12)))
+      && !(c->p->flags & (1<<2)))
     never_ever(gi + 7, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<11)))
+      && !(c->p->flags & (1<<1)))
     never_ever(gi + 8, c->p);
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<10)))
+      && !(c->p->flags & (1<<9)))
     never_ever(gi + 9, c->p);
 }
 
 static void
 foo(int * interp, Pcc_cell *c)
 {
-  mark_cell(interp, c);
+  mark_cell(interp, c, g_pvc);
 }
 
 static struct Pcc_cell *
@@ -90,13 +97,13 @@ void
 bar_1 (int * interp, Pcc_cell *c)
 {
   c->bla += 1;
-  mark_cell(interp, c);
+  mark_cell(interp, c, g_pvc);
 }
 
 void
-bar_2 (int * interp, Pcc_cell *c)
+bar_2 (int * interp, Pcc_cell *c, struct PVC pvc)
 {
   c->bla += 2;
-  mark_cell(interp, c);
+  mark_cell(interp, c, pvc);
 }
 

@@ -946,7 +946,7 @@ split_function (struct split_point *split_point)
   bitmap args_to_skip = BITMAP_ALLOC (NULL);
   tree parm;
   int num = 0;
-  struct cgraph_node *node;
+  struct cgraph_node *node, *cur_node = cgraph_node (current_function_decl);
   basic_block return_bb = find_return_bb ();
   basic_block call_bb;
   gimple_stmt_iterator gsi;
@@ -966,17 +966,39 @@ split_function (struct split_point *split_point)
       dump_split_point (dump_file, split_point);
     }
 
+  if (cur_node->local.can_change_signature
+      && !TYPE_ATTRIBUTES (TREE_TYPE (cur_node->decl)))
+    args_to_skip = BITMAP_ALLOC (NULL);
+  else
+    args_to_skip = NULL;
+
   /* Collect the parameters of new function and args_to_skip bitmap.  */
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm; parm = DECL_CHAIN (parm), num++)
-    if (!is_gimple_reg (parm)
-	|| !gimple_default_def (cfun, parm)
-	|| !bitmap_bit_p (split_point->ssa_names_to_pass,
-			  SSA_NAME_VERSION (gimple_default_def (cfun, parm))))
+    if (args_to_skip
+	&& (!is_gimple_reg (parm)
+	    || !gimple_default_def (cfun, parm)
+	    || !bitmap_bit_p (split_point->ssa_names_to_pass,
+			      SSA_NAME_VERSION (gimple_default_def (cfun,
+								    parm)))))
       bitmap_set_bit (args_to_skip, num);
     else
       {
-	arg = gimple_default_def (cfun, parm);
+	/* This parm might not have been used up to now, but is going to be
+	   used, hence register it.  */
+	add_referenced_var (parm);
+	if (is_gimple_reg (parm))
+	  {
+	    arg = gimple_default_def (cfun, parm);
+	    if (!arg)
+	      {
+		arg = make_ssa_name (parm, gimple_build_nop ());
+		set_default_def (parm, arg);
+	      }
+	  }
+	else
+	  arg = parm;
+
 	if (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm))
 	    != TYPE_MAIN_VARIANT (TREE_TYPE (arg)))
 	  {
@@ -1057,9 +1079,7 @@ split_function (struct split_point *split_point)
 
   /* Now create the actual clone.  */
   rebuild_cgraph_edges ();
-  node = cgraph_function_versioning (cgraph_node (current_function_decl),
-				     NULL, NULL,
-				     args_to_skip,
+  node = cgraph_function_versioning (cur_node, NULL, NULL, args_to_skip,
 				     split_point->split_bbs,
 				     split_point->entry_bb, "part");
   /* For usual cloning it is enough to clear builtin only when signature
@@ -1070,7 +1090,7 @@ split_function (struct split_point *split_point)
       DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
       DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
     }
-  cgraph_node_remove_callees (cgraph_node (current_function_decl));
+  cgraph_node_remove_callees (cur_node);
   if (!split_part_return_p)
     TREE_THIS_VOLATILE (node->decl) = 1;
   if (dump_file)
