@@ -477,12 +477,9 @@ procedure Gnat1drv is
 
          Global_Discard_Names := True;
 
-         --  We would prefer to suppress the expansion of tagged types and
-         --  dispatching calls, so that one day GNATprove can handle them
-         --  directly. Unfortunately, this is causing problems in some cases,
-         --  so keep this expansion for the time being. To be investigated ???
+         --  Suppress the expansion of tagged types and dispatching calls
 
-         Tagged_Type_Expansion := True;
+         Tagged_Type_Expansion := False;
       end if;
    end Adjust_Global_Switches;
 

@@ -144,6 +144,31 @@ package Aspects is
                         Aspect_Post          => True,
                         others               => False);
 
+   --  The following array identifies all implementation defined aspects
+
+   Impl_Defined_Aspects : constant array (Aspect_Id) of Boolean :=
+                            (Aspect_Object_Size          => True,
+                             Aspect_Predicate            => True,
+                             Aspect_Test_Case            => True,
+                             Aspect_Value_Size           => True,
+                             Aspect_Compiler_Unit        => True,
+                             Aspect_Preelaborate_05      => True,
+                             Aspect_Pure_05              => True,
+                             Aspect_Universal_Data       => True,
+                             Aspect_Ada_2005             => True,
+                             Aspect_Ada_2012             => True,
+                             Aspect_Favor_Top_Level      => True,
+                             Aspect_Inline_Always        => True,
+                             Aspect_Persistent_BSS       => True,
+                             Aspect_Pure_Function        => True,
+                             Aspect_Shared               => True,
+                             Aspect_Suppress_Debug_Info  => True,
+                             Aspect_Universal_Aliasing   => True,
+                             Aspect_Unmodified           => True,
+                             Aspect_Unreferenced         => True,
+                             Aspect_Unreferenced_Objects => True,
+                             others                      => False);
+
    --  The following array indicates aspects for which multiple occurrences of
    --  the same aspect attached to the same declaration are allowed.
 

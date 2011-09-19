@@ -391,6 +391,10 @@ package body Lib.Xref is
       Kind : Entity_Kind;
       --  If Formal is non-Empty, then its Ekind, otherwise E_Void
 
+      function Get_Through_Renamings (E : Entity_Id) return Entity_Id;
+      --  Get the enclosing entity through renamings, which may come from
+      --  source or from the translation of generic instantiations.
+
       function Is_On_LHS (Node : Node_Id) return Boolean;
       --  Used to check if a node is on the left hand side of an assignment.
       --  The following cases are handled:
@@ -411,6 +415,22 @@ package body Lib.Xref is
       --  Returns True if the Referenced flag can be set. There are a few
       --  exceptions where we do not want to set this flag, see body for
       --  details of these exceptional cases.
+
+      ---------------------------
+      -- Get_Through_Renamings --
+      ---------------------------
+
+      function Get_Through_Renamings (E : Entity_Id) return Entity_Id is
+         Result : Entity_Id := E;
+      begin
+         while Present (Result)
+           and then Is_Object (Result)
+           and then Present (Renamed_Object (Result))
+         loop
+            Result := Get_Enclosing_Object (Renamed_Object (Result));
+         end loop;
+         return Result;
+      end Get_Through_Renamings;
 
       ---------------
       -- Is_On_LHS --
@@ -955,11 +975,8 @@ package body Lib.Xref is
          --  the renaming, which is needed to compute a valid set of effects
          --  (reads, writes) for the enclosing subprogram.
 
-         if Alfa_Mode
-           and then Is_Object (Ent)
-           and then Present (Renamed_Object (Ent))
-         then
-            Ent := Get_Enclosing_Object (Renamed_Object (Ent));
+         if Alfa_Mode then
+            Ent := Get_Through_Renamings (Ent);
 
             --  If no enclosing object, then it could be a reference to any
             --  location not tracked individually, like heap-allocated data.

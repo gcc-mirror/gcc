@@ -804,6 +804,19 @@ package body Sem_Ch13 is
                goto Continue;
             end if;
 
+            --  Check restriction No_Implementation_Aspect_Specifications
+
+            if Impl_Defined_Aspects (A_Id) then
+               Check_Restriction
+                 (No_Implementation_Aspect_Specifications, Aspect);
+            end if;
+
+            --  Check restriction No_Specification_Of_Aspect
+
+            Check_Restriction_No_Specification_Of_Aspect (Aspect);
+
+            --  Analyze this aspect
+
             Set_Analyzed (Aspect);
             Set_Entity (Aspect, E);
             Ent := New_Occurrence_Of (E, Sloc (Id));
