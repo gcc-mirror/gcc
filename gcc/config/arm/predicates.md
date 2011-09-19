@@ -132,7 +132,8 @@
 (define_predicate "shift_amount_operand"
   (ior (and (match_test "TARGET_ARM")
 	    (match_operand 0 "s_register_operand"))
-       (match_operand 0 "const_int_operand")))
+       (and (match_code "const_int")
+	    (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) < 32"))))
 
 (define_predicate "arm_add_operand"
   (ior (match_operand 0 "arm_rhs_operand")
@@ -343,12 +344,6 @@
   (ior (match_code "const_double")
        (and (match_code "reg,subreg,mem")
 	    (match_operand 0 "nonimmediate_soft_df_operand"))))
-
-(define_predicate "const_shift_operand"
-  (and (match_code "const_int")
-       (ior (match_operand 0 "power_of_two_operand")
-	    (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) < 32"))))
-
 
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")
