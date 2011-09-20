@@ -9730,7 +9730,10 @@ Call_result_expression::do_type()
   if (fntype == NULL)
     {
       if (ce->issue_error())
-	this->report_error(_("expected function"));    
+	{
+	  if (!ce->fn()->type()->is_error())
+	    this->report_error(_("expected function"));
+	}
       this->set_is_error();
       return Type::make_error_type();
     }
@@ -10043,7 +10046,9 @@ Array_index_expression::do_check_types(Gogo*)
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
       && this->end_->type()->integer_type() == NULL
-      && !this->end_->is_nil_expression())
+      && !this->end_->type()->is_error()
+      && !this->end_->is_nil_expression()
+      && !this->end_->is_error_expression())
     this->report_error(_("slice end must be integer"));
 
   Array_type* array_type = this->array_->type()->array_type();
