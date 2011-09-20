@@ -323,28 +323,31 @@ EnumValue
 Enum(arm_arch) String(armv6-m) Value(16)
 
 EnumValue
-Enum(arm_arch) String(armv7) Value(17)
+Enum(arm_arch) String(armv6s-m) Value(17)
 
 EnumValue
-Enum(arm_arch) String(armv7-a) Value(18)
+Enum(arm_arch) String(armv7) Value(18)
 
 EnumValue
-Enum(arm_arch) String(armv7-r) Value(19)
+Enum(arm_arch) String(armv7-a) Value(19)
 
 EnumValue
-Enum(arm_arch) String(armv7-m) Value(20)
+Enum(arm_arch) String(armv7-r) Value(20)
 
 EnumValue
-Enum(arm_arch) String(armv7e-m) Value(21)
+Enum(arm_arch) String(armv7-m) Value(21)
 
 EnumValue
-Enum(arm_arch) String(ep9312) Value(22)
+Enum(arm_arch) String(armv7e-m) Value(22)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt) Value(23)
+Enum(arm_arch) String(ep9312) Value(23)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt2) Value(24)
+Enum(arm_arch) String(iwmmxt) Value(24)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt2) Value(25)
 
 Enum
 Name(arm_fpu) Type(int)
