@@ -1,3 +1,8 @@
+2011-09-20 Roberto Agostino Vitillo <ravitillo@lbl.gov>
+
+	* call.c (build_new_method_call_1): Use non-virtual lookup
+	for final virtual functions.
+
 2011-09-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50424
