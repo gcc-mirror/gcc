@@ -12932,10 +12932,11 @@ switch, the VIS extension is exposed as the following built-in functions:
 typedef int v2si __attribute__ ((vector_size (8)));
 typedef short v4hi __attribute__ ((vector_size (8)));
 typedef short v2hi __attribute__ ((vector_size (4)));
-typedef char v8qi __attribute__ ((vector_size (8)));
-typedef char v4qi __attribute__ ((vector_size (4)));
+typedef unsigned char v8qi __attribute__ ((vector_size (8)));
+typedef unsigned char v4qi __attribute__ ((vector_size (4)));
 
 void * __builtin_vis_alignaddr (void *, long);
+void * __builtin_vis_alignaddrl (void *, long);
 int64_t __builtin_vis_faligndatadi (int64_t, int64_t);
 v2si __builtin_vis_faligndatav2si (v2si, v2si);
 v4hi __builtin_vis_faligndatav4hi (v4si, v4si);
@@ -12944,26 +12945,26 @@ v8qi __builtin_vis_faligndatav8qi (v8qi, v8qi);
 v4hi __builtin_vis_fexpand (v4qi);
 
 v4hi __builtin_vis_fmul8x16 (v4qi, v4hi);
-v4hi __builtin_vis_fmul8x16au (v4qi, v4hi);
-v4hi __builtin_vis_fmul8x16al (v4qi, v4hi);
+v4hi __builtin_vis_fmul8x16au (v4qi, v2hi);
+v4hi __builtin_vis_fmul8x16al (v4qi, v2hi);
 v4hi __builtin_vis_fmul8sux16 (v8qi, v4hi);
 v4hi __builtin_vis_fmul8ulx16 (v8qi, v4hi);
 v2si __builtin_vis_fmuld8sux16 (v4qi, v2hi);
 v2si __builtin_vis_fmuld8ulx16 (v4qi, v2hi);
 
 v4qi __builtin_vis_fpack16 (v4hi);
-v8qi __builtin_vis_fpack32 (v2si, v2si);
+v8qi __builtin_vis_fpack32 (v2si, v8qi);
 v2hi __builtin_vis_fpackfix (v2si);
 v8qi __builtin_vis_fpmerge (v4qi, v4qi);
 
 int64_t __builtin_vis_pdist (v8qi, v8qi, int64_t);
 
-int64_t __builtin_vis_edge8 (int64_t, int64_t);
-int64_t __builtin_vis_edge8l (int64_t, int64_t);
-int64_t __builtin_vis_edge16 (int64_t, int64_t);
-int64_t __builtin_vis_edge16l (int64_t, int64_t);
-int64_t __builtin_vis_edge32 (int64_t, int64_t);
-int64_t __builtin_vis_edge32l (int64_t, int64_t);
+int __builtin_vis_edge8 (void *, void *);
+int __builtin_vis_edge8l (void *, void *);
+int __builtin_vis_edge16 (void *, void *);
+int __builtin_vis_edge16l (void *, void *);
+int __builtin_vis_edge32 (void *, void *);
+int __builtin_vis_edge32l (void *, void *);
 @end smallexample
 
 @node SPU Built-in Functions

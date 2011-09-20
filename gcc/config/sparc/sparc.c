@@ -9149,6 +9149,9 @@ sparc_vis_init_builtins (void)
   tree ptr_ftype_ptr_di = build_function_type_list (ptr_type_node,
 		        			    ptr_type_node,
 					            intDI_type_node, 0);
+  tree si_ftype_ptr_ptr = build_function_type_list (intSI_type_node,
+		        			    ptr_type_node,
+					            ptr_type_node, 0);
 
   /* Packing and expanding vectors.  */
   def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis, v4qi_ftype_v4hi);
@@ -9186,29 +9189,55 @@ sparc_vis_init_builtins (void)
   def_builtin ("__builtin_vis_faligndatadi", CODE_FOR_faligndatadi_vis,
                di_ftype_di_di);
   if (TARGET_ARCH64)
-    def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrdi_vis,
-	         ptr_ftype_ptr_di);
+    {
+      def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrdi_vis,
+		   ptr_ftype_ptr_di);
+      def_builtin ("__builtin_vis_alignaddrl", CODE_FOR_alignaddrldi_vis,
+		   ptr_ftype_ptr_di);
+    }
   else
-    def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrsi_vis,
-	         ptr_ftype_ptr_si);
+    {
+      def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrsi_vis,
+		   ptr_ftype_ptr_si);
+      def_builtin ("__builtin_vis_alignaddrl", CODE_FOR_alignaddrlsi_vis,
+		   ptr_ftype_ptr_si);
+    }
 
   /* Pixel distance.  */
   def_builtin ("__builtin_vis_pdist", CODE_FOR_pdist_vis,
 	       di_ftype_v8qi_v8qi_di);
 
   /* Edge handling.  */
-  def_builtin ("__builtin_vis_edge8", CODE_FOR_edge8_vis,
-               di_ftype_di_di);
-  def_builtin ("__builtin_vis_edge8l", CODE_FOR_edge8l_vis,
-               di_ftype_di_di);
-  def_builtin ("__builtin_vis_edge16", CODE_FOR_edge16_vis,
-               di_ftype_di_di);
-  def_builtin ("__builtin_vis_edge16l", CODE_FOR_edge16l_vis,
-               di_ftype_di_di);
-  def_builtin ("__builtin_vis_edge32", CODE_FOR_edge32_vis,
-               di_ftype_di_di);
-  def_builtin ("__builtin_vis_edge32l", CODE_FOR_edge32l_vis,
-               di_ftype_di_di);
+  if (TARGET_ARCH64)
+    {
+      def_builtin ("__builtin_vis_edge8", CODE_FOR_edge8di_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge8l", CODE_FOR_edge8ldi_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge16", CODE_FOR_edge16di_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge16l", CODE_FOR_edge16ldi_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge32", CODE_FOR_edge32di_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge32l", CODE_FOR_edge32ldi_vis,
+		   si_ftype_ptr_ptr);
+    }
+  else
+    {
+      def_builtin ("__builtin_vis_edge8", CODE_FOR_edge8si_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge8l", CODE_FOR_edge8lsi_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge16", CODE_FOR_edge16si_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge16l", CODE_FOR_edge16lsi_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge32", CODE_FOR_edge32si_vis,
+		   si_ftype_ptr_ptr);
+      def_builtin ("__builtin_vis_edge32l", CODE_FOR_edge32lsi_vis,
+		   si_ftype_ptr_ptr);
+    }
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.

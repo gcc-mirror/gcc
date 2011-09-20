@@ -38,6 +38,13 @@ __vis_alignaddr (void *__A, long __B)
   return __builtin_vis_alignaddr (__A, __B);
 }
 
+extern __inline void *
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_alignaddrl (void *__A, long __B)
+{
+  return __builtin_vis_alignaddrl (__A, __B);
+}
+
 extern __inline __i64
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __vis_faligndatadi (__i64 __A, __i64 __B)
@@ -157,44 +164,44 @@ __vis_pdist (__v8qi __A, __v8qi __B, __i64 __C)
   return __builtin_vis_pdist (__A, __B, __C);
 }
 
-extern __inline __i64
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_edge8 (__i64 __A, __i64 __B)
+__vis_edge8 (void *__A, void *__B)
 {
   return __builtin_vis_edge8 (__A, __B);
 }
 
-extern __inline __i64
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_edge8l (__i64 __A, __i64 __B)
+__vis_edge8l (void *__A, void *__B)
 {
   return __builtin_vis_edge8l (__A, __B);
 }
 
-extern __inline __i64
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_edge16 (__i64 __A, __i64 __B)
+__vis_edge16 (void *__A, void *__B)
 {
   return __builtin_vis_edge16 (__A, __B);
 }
 
-extern __inline __i64
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_edge16l (__i64 __A, __i64 __B)
+__vis_edge16l (void *__A, void *__B)
 {
   return __builtin_vis_edge16l (__A, __B);
 }
 
-extern __inline __i64
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_edge32 (__i64 __A, __i64 __B)
+__vis_edge32 (void *__A, void *__B)
 {
   return __builtin_vis_edge32 (__A, __B);
 }
 
-extern __inline __i64
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__vis_edge32l (__i64 __A, __i64 __B)
+__vis_edge32l (void *__A, void *__B)
 {
   return __builtin_vis_edge32l (__A, __B);
 }
