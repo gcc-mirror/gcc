@@ -3489,7 +3489,7 @@ gfc_check_c_sizeof (gfc_expr *arg)
 {
   if (verify_c_interop (&arg->ts) != SUCCESS)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be be an "
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be an "
 		 "interoperable data entity",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where);
