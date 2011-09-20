@@ -3813,7 +3813,8 @@ Parse::return_stat()
   this->gogo_->add_statement(Statement::make_return_statement(vals, location));
 }
 
-// IfStmt    = "if" [ SimpleStmt ";" ] Expression Block [ "else" Statement ] .
+// IfStmt = "if" [ SimpleStmt ";" ] Expression Block
+//          [ "else" ( IfStmt | Block ) ] .
 
 void
 Parse::if_stat()
@@ -3883,10 +3884,17 @@ Parse::if_stat()
   Block* else_block = NULL;
   if (this->peek_token()->is_keyword(KEYWORD_ELSE))
     {
-      this->advance_token();
-      // We create a block to gather the statement.
       this->gogo_->start_block(this->location());
-      this->statement(NULL);
+      const Token* token = this->advance_token();
+      if (token->is_keyword(KEYWORD_IF))
+	this->if_stat();
+      else if (token->is_op(OPERATOR_LCURLY))
+	this->block();
+      else
+	{
+	  error_at(this->location(), "expected %<if%> or %<{%>");
+	  this->statement(NULL);
+	}
       else_block = this->gogo_->finish_block(this->location());
     }
 
@@ -4914,7 +4922,7 @@ Parse::break_stat()
 	{
 	  // If there is a label with this name, mark it as used to
 	  // avoid a useless error about an unused label.
-	  this->gogo_->add_label_reference(token->identifier());
+	  this->gogo_->add_label_reference(token->identifier(), 0, false);
 
 	  error_at(token->location(), "invalid break label %qs",
 		   Gogo::message_name(token->identifier()).c_str());
@@ -4969,7 +4977,7 @@ Parse::continue_stat()
 	{
 	  // If there is a label with this name, mark it as used to
 	  // avoid a useless error about an unused label.
-	  this->gogo_->add_label_reference(token->identifier());
+	  this->gogo_->add_label_reference(token->identifier(), 0, false);
 
 	  error_at(token->location(), "invalid continue label %qs",
 		   Gogo::message_name(token->identifier()).c_str());
@@ -5003,7 +5011,8 @@ Parse::goto_stat()
     error_at(this->location(), "expected label for goto");
   else
     {
-      Label* label = this->gogo_->add_label_reference(token->identifier());
+      Label* label = this->gogo_->add_label_reference(token->identifier(),
+						      location, true);
       Statement* s = Statement::make_goto_statement(label, location);
       this->gogo_->add_statement(s);
       this->advance_token();

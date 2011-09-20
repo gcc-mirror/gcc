@@ -231,6 +231,7 @@ var zeroSysProcAttr SysProcAttr
 
 func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err int) {
 	var p [2]int
+	var n Ssize_t
 	var r1 int
 	var err1 uintptr
 	var wstatus WaitStatus
@@ -283,20 +284,14 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err int) {
 	// Kick off child.
 	pid, err = forkAndExecInChild(argv0p, argvp, envvp, chroot, dir, attr, sys, p[1])
 	if err != 0 {
-	error:
-		if p[0] >= 0 {
-			Close(p[0])
-			Close(p[1])
-		}
-		ForkLock.Unlock()
-		return 0, err
+		goto error
 	}
 	ForkLock.Unlock()
 
 	// Read child error status from pipe.
 	Close(p[1])
-	n := libc_read(p[0], (*byte)(unsafe.Pointer(&err1)),
-		       Size_t(unsafe.Sizeof(err1)))
+	n = libc_read(p[0], (*byte)(unsafe.Pointer(&err1)),
+		      Size_t(unsafe.Sizeof(err1)))
 	err = 0
 	if n < 0 {
 		err = GetErrno()
@@ -321,6 +316,14 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err int) {
 
 	// Read got EOF, so pipe closed on exec, so exec succeeded.
 	return pid, 0
+
+error:
+	if p[0] >= 0 {
+		Close(p[0])
+		Close(p[1])
+	}
+	ForkLock.Unlock()
+	return 0, err
 }
 
 // Combination of fork and exec, careful to be thread safe.

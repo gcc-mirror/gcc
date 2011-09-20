@@ -22,6 +22,7 @@ class Temporary_statement;
 class Block;
 class Function;
 class Bindings;
+class Bindings_snapshot;
 class Package;
 class Variable;
 class Pointer_type;
@@ -246,6 +247,10 @@ class Gogo
   Named_object*
   current_function() const;
 
+  // Return the current block.
+  Block*
+  current_block();
+
   // Start a new block.  This is not initially associated with a
   // function.
   void
@@ -269,9 +274,16 @@ class Gogo
   Label*
   add_label_definition(const std::string&, source_location);
 
-  // Add a label reference.
+  // Add a label reference.  ISSUE_GOTO_ERRORS is true if we should
+  // report errors for a goto from the current location to the label
+  // location.
   Label*
-  add_label_reference(const std::string&);
+  add_label_reference(const std::string&, source_location,
+		      bool issue_goto_errors);
+
+  // Return a snapshot of the current binding state.
+  Bindings_snapshot*
+  bindings_snapshot(source_location);
 
   // Add a statement to the current block.
   void
@@ -551,10 +563,6 @@ class Gogo
   const Bindings*
   current_bindings() const;
 
-  // Return the current block.
-  Block*
-  current_block();
-
   // Get the name of the magic initialization function.
   const std::string&
   get_init_fn_name();
@@ -833,11 +841,14 @@ class Function
 
   // Add a label definition to the function.
   Label*
-  add_label_definition(const std::string& label_name, source_location);
+  add_label_definition(Gogo*, const std::string& label_name, source_location);
 
-  // Add a label reference to a function.
+  // Add a label reference to a function.  ISSUE_GOTO_ERRORS is true
+  // if we should report errors for a goto from the current location
+  // to the label location.
   Label*
-  add_label_reference(const std::string& label_name);
+  add_label_reference(Gogo*, const std::string& label_name,
+		      source_location, bool issue_goto_errors);
 
   // Warn about labels that are defined but not used.
   void
@@ -978,6 +989,40 @@ class Function
   bool is_recover_thunk_;
   // True if this function already has a recover thunk.
   bool has_recover_thunk_;
+};
+
+// A snapshot of the current binding state.
+
+class Bindings_snapshot
+{
+ public:
+  Bindings_snapshot(const Block*, source_location);
+
+  // Report any errors appropriate for a goto from the current binding
+  // state of B to this one.
+  void
+  check_goto_from(const Block* b, source_location);
+
+  // Report any errors appropriate for a goto from this binding state
+  // to the current state of B.
+  void
+  check_goto_to(const Block* b);
+
+ private:
+  bool
+  check_goto_block(source_location, const Block*, const Block*, size_t*);
+
+  void
+  check_goto_defs(source_location, const Block*, size_t, size_t);
+
+  // The current block.
+  const Block* block_;
+  // The number of names currently defined in each open block.
+  // Element 0 is this->block_, element 1 is
+  // this->block_->enclosing(), etc.
+  std::vector<size_t> counts_;
+  // The location where this snapshot was taken.
+  source_location location_;
 };
 
 // A function declaration.
@@ -2108,7 +2153,8 @@ class Label
 {
  public:
   Label(const std::string& name)
-    : name_(name), location_(0), is_used_(false), blabel_(NULL)
+    : name_(name), location_(0), snapshot_(NULL), refs_(), is_used_(false),
+      blabel_(NULL)
   { }
 
   // Return the label's name.
@@ -2136,12 +2182,36 @@ class Label
   location() const
   { return this->location_; }
 
-  // Define the label at LOCATION.
+  // Return the bindings snapshot.
+  Bindings_snapshot*
+  snapshot() const
+  { return this->snapshot_; }
+
+  // Add a snapshot of a goto which refers to this label.
   void
-  define(source_location location)
+  add_snapshot_ref(Bindings_snapshot* snapshot)
   {
     go_assert(this->location_ == 0);
+    this->refs_.push_back(snapshot);
+  }
+
+  // Return the list of snapshots of goto statements which refer to
+  // this label.
+  const std::vector<Bindings_snapshot*>&
+  refs() const
+  { return this->refs_; }
+
+  // Clear the references.
+  void
+  clear_refs();
+
+  // Define the label at LOCATION with the given bindings snapshot.
+  void
+  define(source_location location, Bindings_snapshot* snapshot)
+  {
+    go_assert(this->location_ == 0 && this->snapshot_ == NULL);
     this->location_ = location;
+    this->snapshot_ = snapshot;
   }
 
   // Return the backend representation for this label.
@@ -2160,6 +2230,11 @@ class Label
   // The location of the definition.  This is 0 if the label has not
   // yet been defined.
   source_location location_;
+  // A snapshot of the set of bindings defined at this label, used to
+  // issue errors about invalid goto statements.
+  Bindings_snapshot* snapshot_;
+  // A list of snapshots of goto statements which refer to this label.
+  std::vector<Bindings_snapshot*> refs_;
   // Whether the label has been used.
   bool is_used_;
   // The backend representation.

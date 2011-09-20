@@ -2291,7 +2291,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   Label* retaddr_label = NULL;
   if (may_call_recover)
     {
-      retaddr_label = gogo->add_label_reference("retaddr");
+      retaddr_label = gogo->add_label_reference("retaddr", location, false);
       Expression* arg = Expression::make_label_addr(retaddr_label, location);
       Expression* call = Runtime::make_call(Runtime::SET_DEFER_RETADDR,
 					    location, 1, arg);
