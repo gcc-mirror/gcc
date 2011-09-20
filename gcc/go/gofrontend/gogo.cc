@@ -857,7 +857,7 @@ Gogo::add_label_definition(const std::string& label_name,
 {
   go_assert(!this->functions_.empty());
   Function* func = this->functions_.back().function->func_value();
-  Label* label = func->add_label_definition(label_name, location);
+  Label* label = func->add_label_definition(this, label_name, location);
   this->add_statement(Statement::make_label_statement(label, location));
   return label;
 }
@@ -865,11 +865,21 @@ Gogo::add_label_definition(const std::string& label_name,
 // Add a label reference.
 
 Label*
-Gogo::add_label_reference(const std::string& label_name)
+Gogo::add_label_reference(const std::string& label_name,
+			  source_location location, bool issue_goto_errors)
 {
   go_assert(!this->functions_.empty());
   Function* func = this->functions_.back().function->func_value();
-  return func->add_label_reference(label_name);
+  return func->add_label_reference(this, label_name, location,
+				   issue_goto_errors);
+}
+
+// Return the current binding state.
+
+Bindings_snapshot*
+Gogo::bindings_snapshot(source_location location)
+{
+  return new Bindings_snapshot(this->current_block(), location);
 }
 
 // Add a statement.
@@ -2843,30 +2853,24 @@ Function::is_method() const
 // Add a label definition.
 
 Label*
-Function::add_label_definition(const std::string& label_name,
+Function::add_label_definition(Gogo* gogo, const std::string& label_name,
 			       source_location location)
 {
   Label* lnull = NULL;
   std::pair<Labels::iterator, bool> ins =
     this->labels_.insert(std::make_pair(label_name, lnull));
+  Label* label;
   if (ins.second)
     {
       // This is a new label.
-      Label* label = new Label(label_name);
-      label->define(location);
+      label = new Label(label_name);
       ins.first->second = label;
-      return label;
     }
   else
     {
       // The label was already in the hash table.
-      Label* label = ins.first->second;
-      if (!label->is_defined())
-	{
-	  label->define(location);
-	  return label;
-	}
-      else
+      label = ins.first->second;
+      if (label->is_defined())
 	{
 	  error_at(location, "label %qs already defined",
 		   Gogo::message_name(label_name).c_str());
@@ -2875,31 +2879,55 @@ Function::add_label_definition(const std::string& label_name,
 	  return new Label(label_name);
 	}
     }
+
+  label->define(location, gogo->bindings_snapshot(location));
+
+  // Issue any errors appropriate for any previous goto's to this
+  // label.
+  const std::vector<Bindings_snapshot*>& refs(label->refs());
+  for (std::vector<Bindings_snapshot*>::const_iterator p = refs.begin();
+       p != refs.end();
+       ++p)
+    (*p)->check_goto_to(gogo->current_block());
+  label->clear_refs();
+
+  return label;
 }
 
 // Add a reference to a label.
 
 Label*
-Function::add_label_reference(const std::string& label_name)
+Function::add_label_reference(Gogo* gogo, const std::string& label_name,
+			      source_location location, bool issue_goto_errors)
 {
   Label* lnull = NULL;
   std::pair<Labels::iterator, bool> ins =
     this->labels_.insert(std::make_pair(label_name, lnull));
+  Label* label;
   if (!ins.second)
     {
       // The label was already in the hash table.
-      Label* label = ins.first->second;
-      label->set_is_used();
-      return label;
+      label = ins.first->second;
     }
   else
     {
       go_assert(ins.first->second == NULL);
-      Label* label = new Label(label_name);
+      label = new Label(label_name);
       ins.first->second = label;
-      label->set_is_used();
-      return label;
     }
+
+  label->set_is_used();
+
+  if (issue_goto_errors)
+    {
+      Bindings_snapshot* snapshot = label->snapshot();
+      if (snapshot != NULL)
+	snapshot->check_goto_from(gogo->current_block(), location);
+      else
+	label->add_snapshot_ref(gogo->bindings_snapshot(location));
+    }
+
+  return label;
 }
 
 // Warn about labels that are defined but not used.
@@ -3405,6 +3433,92 @@ Block::get_backend(Translate_context* context)
   context->backend()->block_add_statements(ret, bstatements);
 
   return ret;
+}
+
+// Class Bindings_snapshot.
+
+Bindings_snapshot::Bindings_snapshot(const Block* b, source_location location)
+  : block_(b), counts_(), location_(location)
+{
+  while (b != NULL)
+    {
+      this->counts_.push_back(b->bindings()->size_definitions());
+      b = b->enclosing();
+    }
+}
+
+// Report errors appropriate for a goto from B to this.
+
+void
+Bindings_snapshot::check_goto_from(const Block* b, source_location loc)
+{
+  size_t dummy;
+  if (!this->check_goto_block(loc, b, this->block_, &dummy))
+    return;
+  this->check_goto_defs(loc, this->block_,
+			this->block_->bindings()->size_definitions(),
+			this->counts_[0]);
+}
+
+// Report errors appropriate for a goto from this to B.
+
+void
+Bindings_snapshot::check_goto_to(const Block* b)
+{
+  size_t index;
+  if (!this->check_goto_block(this->location_, this->block_, b, &index))
+    return;
+  this->check_goto_defs(this->location_, b, this->counts_[index],
+			b->bindings()->size_definitions());
+}
+
+// Report errors appropriate for a goto at LOC from BFROM to BTO.
+// Return true if all is well, false if we reported an error.  If this
+// returns true, it sets *PINDEX to the number of blocks BTO is above
+// BFROM.
+
+bool
+Bindings_snapshot::check_goto_block(source_location loc, const Block* bfrom,
+				    const Block* bto, size_t* pindex)
+{
+  // It is an error if BTO is not either BFROM or above BFROM.
+  size_t index = 0;
+  for (const Block* pb = bfrom; pb != bto; pb = pb->enclosing(), ++index)
+    {
+      if (pb == NULL)
+	{
+	  error_at(loc, "goto jumps into block");
+	  inform(bto->start_location(), "goto target block starts here");
+	  return false;
+	}
+    }
+  *pindex = index;
+  return true;
+}
+
+// Report errors appropriate for a goto at LOC ending at BLOCK, where
+// CFROM is the number of names defined at the point of the goto and
+// CTO is the number of names defined at the point of the label.
+
+void
+Bindings_snapshot::check_goto_defs(source_location loc, const Block* block,
+				   size_t cfrom, size_t cto)
+{
+  if (cfrom < cto)
+    {
+      Bindings::const_definitions_iterator p =
+	block->bindings()->begin_definitions();
+      for (size_t i = 0; i < cfrom; ++i)
+	{
+	  go_assert(p != block->bindings()->end_definitions());
+	  ++p;
+	}
+      go_assert(p != block->bindings()->end_definitions());
+
+      std::string n = (*p)->message_name();
+      error_at(loc, "goto jumps over declaration of %qs", n.c_str());
+      inform((*p)->location(), "%qs defined here", n.c_str());
+    }
 }
 
 // Class Variable.
@@ -4697,6 +4811,18 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 }
 
 // Class Label.
+
+// Clear any references to this label.
+
+void
+Label::clear_refs()
+{
+  for (std::vector<Bindings_snapshot*>::iterator p = this->refs_.begin();
+       p != this->refs_.end();
+       ++p)
+    delete *p;
+  this->refs_.clear();
+}
 
 // Get the backend representation for a label.
 
