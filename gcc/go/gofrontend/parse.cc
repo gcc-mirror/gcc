@@ -1839,7 +1839,7 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
       if (!type_from_init && init != NULL)
 	{
 	  if (!this->gogo_->in_global_scope())
-	    this->gogo_->add_statement(Statement::make_statement(init));
+	    this->gogo_->add_statement(Statement::make_statement(init, true));
 	  else
 	    return this->create_dummy_global(type, init, location);
 	}
@@ -3506,8 +3506,7 @@ Parse::statement_list_may_start_here()
 void
 Parse::expression_stat(Expression* exp)
 {
-  exp->discarding_value();
-  this->gogo_->add_statement(Statement::make_statement(exp));
+  this->gogo_->add_statement(Statement::make_statement(exp, false));
 }
 
 // SendStmt = Channel "&lt;-" Expression .

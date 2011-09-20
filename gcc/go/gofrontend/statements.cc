@@ -924,7 +924,7 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 
       if ((*plhs)->is_sink_expression())
 	{
-	  b->add_statement(Statement::make_statement(*prhs));
+	  b->add_statement(Statement::make_statement(*prhs, true));
 	  continue;
 	}
 
@@ -1240,7 +1240,7 @@ Map_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   Expression* p4 = Expression::make_temporary_reference(insert_temp, loc);
   Expression* call = Runtime::make_call(Runtime::MAPASSIGN2, loc, 4,
 					p1, p2, p3, p4);
-  Statement* s = Statement::make_statement(call);
+  Statement* s = Statement::make_statement(call, true);
   b->add_statement(s);
 
   return Statement::make_block_statement(b, loc);
@@ -1614,9 +1614,9 @@ Statement::make_tuple_type_guard_assignment(Expression* val, Expression* ok,
 class Expression_statement : public Statement
 {
  public:
-  Expression_statement(Expression* expr)
+  Expression_statement(Expression* expr, bool is_ignored)
     : Statement(STATEMENT_EXPRESSION, expr->location()),
-      expr_(expr)
+      expr_(expr), is_ignored_(is_ignored)
   { }
 
   Expression*
@@ -1632,6 +1632,9 @@ class Expression_statement : public Statement
   do_determine_types()
   { this->expr_->determine_type_no_context(); }
 
+  void
+  do_check_types(Gogo*);
+
   bool
   do_may_fall_through() const;
 
@@ -1643,7 +1646,20 @@ class Expression_statement : public Statement
 
  private:
   Expression* expr_;
+  // Whether the value of this expression is being explicitly ignored.
+  bool is_ignored_;
 };
+
+// Check the types of an expression statement.  The only check we do
+// is to possibly give an error about discarding the value of the
+// expression.
+
+void
+Expression_statement::do_check_types(Gogo*)
+{
+  if (!this->is_ignored_)
+    this->expr_->discarding_value();
+}
 
 // An expression statement may fall through unless it is a call to a
 // function which does not return.
@@ -1699,9 +1715,9 @@ Expression_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
 // Make an expression statement from an Expression.
 
 Statement*
-Statement::make_statement(Expression* expr)
+Statement::make_statement(Expression* expr, bool is_ignored)
 {
-  return new Expression_statement(expr);
+  return new Expression_statement(expr, is_ignored);
 }
 
 // A block statement--a list of statements which may include variable
@@ -2374,7 +2390,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   // receiver parameter.
   call->set_varargs_are_lowered();
 
-  Statement* call_statement = Statement::make_statement(call);
+  Statement* call_statement = Statement::make_statement(call, true);
 
   gogo->add_statement(call_statement);
 
@@ -3791,7 +3807,7 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       Expression* val = this->val_;
       if (val == NULL)
 	val = Expression::make_boolean(true, loc);
-      return Statement::make_statement(val);
+      return Statement::make_statement(val, true);
     }
 
   Temporary_statement* val_temp;
@@ -4516,7 +4532,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 	}
       else
 	{
-	  init->add_statement(Statement::make_statement(recv));
+	  init->add_statement(Statement::make_statement(recv, true));
 	}
     }
 
@@ -5593,7 +5609,7 @@ For_range_statement::lower_range_map(Gogo*,
   Expression* ref = Expression::make_temporary_reference(hiter, loc);
   Expression* p2 = Expression::make_unary(OPERATOR_AND, ref, loc);
   Expression* call = Runtime::make_call(Runtime::MAPITERINIT, loc, 2, p1, p2);
-  init->add_statement(Statement::make_statement(call));
+  init->add_statement(Statement::make_statement(call, true));
 
   *pinit = init;
 
@@ -5634,7 +5650,7 @@ For_range_statement::lower_range_map(Gogo*,
       Expression* p3 = Expression::make_unary(OPERATOR_AND, ref, loc);
       call = Runtime::make_call(Runtime::MAPITER2, loc, 3, p1, p2, p3);
     }
-  iter_init->add_statement(Statement::make_statement(call));
+  iter_init->add_statement(Statement::make_statement(call, true));
 
   *piter_init = iter_init;
 
@@ -5646,7 +5662,7 @@ For_range_statement::lower_range_map(Gogo*,
   ref = Expression::make_temporary_reference(hiter, loc);
   p1 = Expression::make_unary(OPERATOR_AND, ref, loc);
   call = Runtime::make_call(Runtime::MAPITERNEXT, loc, 1, p1);
-  post->add_statement(Statement::make_statement(call));
+  post->add_statement(Statement::make_statement(call, true));
 
   *ppost = post;
 }

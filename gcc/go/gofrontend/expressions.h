@@ -359,9 +359,9 @@ class Expression
   string_constant_value(std::string* val) const
   { return this->do_string_constant_value(val); }
 
-  // This is called by the parser if the value of this expression is
-  // being discarded.  This issues warnings about computed values
-  // being unused.
+  // This is called if the value of this expression is being
+  // discarded.  This issues warnings about computed values being
+  // unused.
   void
   discarding_value()
   { this->do_discarding_value(); }
@@ -725,9 +725,9 @@ class Expression
   virtual void
   do_export(Export*) const;
 
-  // For children to call to warn about an unused value.
+  // For children to call to give an error for an unused value.
   void
-  warn_about_unused_value();
+  unused_value_error();
 
   // For children to call when they detect that they are in error.
   void

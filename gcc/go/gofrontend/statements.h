@@ -178,9 +178,11 @@ class Statement
 				   Expression* expr, Type* type,
 				   source_location);
 
-  // Make an expression statement from an Expression.
+  // Make an expression statement from an Expression.  IS_IGNORED is
+  // true if the value is being explicitly ignored, as in an
+  // assignment to _.
   static Statement*
-  make_statement(Expression*);
+  make_statement(Expression*, bool is_ignored);
 
   // Make a block statement from a Block.  This is an embedded list of
   // statements which may also include variable definitions.

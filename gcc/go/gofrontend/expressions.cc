@@ -135,13 +135,13 @@ Expression::do_traverse(Traverse*)
 }
 
 // This virtual function is called by the parser if the value of this
-// expression is being discarded.  By default, we warn.  Expressions
-// with side effects override.
+// expression is being discarded.  By default, we give an error.
+// Expressions with side effects override.
 
 void
 Expression::do_discarding_value()
 {
-  this->warn_about_unused_value();
+  this->unused_value_error();
 }
 
 // This virtual function is called to export expressions.  This will
@@ -153,12 +153,12 @@ Expression::do_export(Export*) const
   go_unreachable();
 }
 
-// Warn that the value of the expression is not used.
+// Give an error saying that the value of the expression is not used.
 
 void
-Expression::warn_about_unused_value()
+Expression::unused_value_error()
 {
-  warning_at(this->location(), OPT_Wunused_value, "value computed is not used");
+  error_at(this->location(), "value computed is not used");
 }
 
 // Note that this expression is an error.  This is called by children
@@ -5832,7 +5832,7 @@ Binary_expression::do_discarding_value()
   if (this->op_ == OPERATOR_OROR || this->op_ == OPERATOR_ANDAND)
     this->right_->discarding_value();
   else
-    this->warn_about_unused_value();
+    this->unused_value_error();
 }
 
 // Get type.
@@ -6951,6 +6951,9 @@ class Builtin_call_expression : public Call_expression
   bool
   do_complex_constant_value(mpfr_t, mpfr_t, Type**) const;
 
+  void
+  do_discarding_value();
+
   Type*
   do_type();
 
@@ -7758,6 +7761,44 @@ Builtin_call_expression::do_complex_constant_value(mpfr_t real, mpfr_t imag,
     }
 
   return false;
+}
+
+// Give an error if we are discarding the value of an expression which
+// should not normally be discarded.  We don't give an error for
+// discarding the value of an ordinary function call, but we do for
+// builtin functions, purely for consistency with the gc compiler.
+
+void
+Builtin_call_expression::do_discarding_value()
+{
+  switch (this->code_)
+    {
+    case BUILTIN_INVALID:
+    default:
+      go_unreachable();
+
+    case BUILTIN_APPEND:
+    case BUILTIN_CAP:
+    case BUILTIN_COMPLEX:
+    case BUILTIN_IMAG:
+    case BUILTIN_LEN:
+    case BUILTIN_MAKE:
+    case BUILTIN_NEW:
+    case BUILTIN_REAL:
+    case BUILTIN_ALIGNOF:
+    case BUILTIN_OFFSETOF:
+    case BUILTIN_SIZEOF:
+      this->unused_value_error();
+      break;
+
+    case BUILTIN_CLOSE:
+    case BUILTIN_COPY:
+    case BUILTIN_PANIC:
+    case BUILTIN_PRINT:
+    case BUILTIN_PRINTLN:
+    case BUILTIN_RECOVER:
+      break;
+    }
 }
 
 // Return the type.
@@ -11241,7 +11282,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   size_t count = call->result_count();
   Statement* s;
   if (count == 0)
-    s = Statement::make_statement(call);
+    s = Statement::make_statement(call, true);
   else
     {
       Expression_list* retvals = new Expression_list();
