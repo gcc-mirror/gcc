@@ -131,6 +131,9 @@ class Parse
   // A set of Enclosing_var entries.
   typedef std::set<Enclosing_var, Enclosing_var_comparison> Enclosing_vars;
 
+  // Used to detect duplicate parameter/result names.
+  typedef std::map<std::string, const Typed_identifier*> Names;
+
   // Peek at the current token from the lexer.
   const Token*
   peek_token();
@@ -165,6 +168,7 @@ class Parse
   void field_decl(Struct_field_list*);
   Type* pointer_type();
   Type* channel_type();
+  void check_signature_names(const Typed_identifier_list*, Names*);
   Function_type* signature(Typed_identifier*, source_location);
   bool parameters(Typed_identifier_list**, bool* is_varargs);
   Typed_identifier_list* parameter_list(bool* is_varargs);

@@ -677,6 +677,32 @@ Parse::channel_type()
   return Type::make_channel_type(send, receive, element_type);
 }
 
+// Give an error for a duplicate parameter or receiver name.
+
+void
+Parse::check_signature_names(const Typed_identifier_list* params,
+			     Parse::Names* names)
+{
+  for (Typed_identifier_list::const_iterator p = params->begin();
+       p != params->end();
+       ++p)
+    {
+      if (p->name().empty() || Gogo::is_sink_name(p->name()))
+	continue;
+      std::pair<std::string, const Typed_identifier*> val =
+	std::make_pair(p->name(), &*p);
+      std::pair<Parse::Names::iterator, bool> ins = names->insert(val);
+      if (!ins.second)
+	{
+	  error_at(p->location(), "redefinition of %qs",
+		   Gogo::message_name(p->name()).c_str());
+	  inform(ins.first->second->location(),
+		 "previous definition of %qs was here",
+		 Gogo::message_name(p->name()).c_str());
+	}
+    }
+}
+
 // Signature      = Parameters [ Result ] .
 
 // RECEIVER is the receiver if there is one, or NULL.  LOCATION is the
@@ -691,18 +717,24 @@ Parse::signature(Typed_identifier* receiver, source_location location)
   Typed_identifier_list* params;
   bool params_ok = this->parameters(&params, &is_varargs);
 
-  Typed_identifier_list* result = NULL;
+  Typed_identifier_list* results = NULL;
   if (this->peek_token()->is_op(OPERATOR_LPAREN)
       || this->type_may_start_here())
     {
-      if (!this->result(&result))
+      if (!this->result(&results))
 	return NULL;
     }
 
   if (!params_ok)
     return NULL;
 
-  Function_type* ret = Type::make_function_type(receiver, params, result,
+  Parse::Names names;
+  if (params != NULL)
+    this->check_signature_names(params, &names);
+  if (results != NULL)
+    this->check_signature_names(results, &names);
+
+  Function_type* ret = Type::make_function_type(receiver, params, results,
 						location);
   if (is_varargs)
     ret->set_is_varargs();
