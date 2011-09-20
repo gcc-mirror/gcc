@@ -7282,8 +7282,11 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	    }
 	  else
 	    {
+	      /* Optimize away vtable lookup if we know that this function
+		 can't be overridden.  */
 	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
-		  && resolves_to_fixed_type_p (instance, 0))
+		  && (resolves_to_fixed_type_p (instance, 0)
+		      || DECL_FINAL_P (fn) || CLASSTYPE_FINAL (basetype)))
 		flags |= LOOKUP_NONVIRTUAL;
               if (explicit_targs)
                 flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
