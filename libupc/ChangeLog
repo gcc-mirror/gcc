@@ -1,3 +1,12 @@
+2011-09-19  Gary Funck  <gary@intrepid.com>
+
+	* libupc/smp/upc_access.c (__getstf2, __getsxf2):
+	Define temporary as "long double" rather than "double" to avoid
+	loss of precision.
+	* testsuite/libupc.upc/intrepid/test29.upc: Improve the test of
+	"long double" by adding checks that required accuracy
+	exceeds the accuracy of "double".
+
 2011-09-02  Gary Funck  <gary@intrepid.com>
 
 	Align UPC pointers-to-shared, only if the target enforces
@@ -236,9 +245,9 @@
 	* include/gcc-upc.h, smp/upc_main.c: Fix rand() implementation for
 	  pthreads run-time.
 
-	  For the pthreads implementation we keep a per-thread random seed number.
-	  This way, calls to rand() function will return the same value on
-	  each thread.
+	  For the pthreads implementation we keep a per-thread random seed
+	  number.  This way, calls to rand() function will return the same
+	  value on each thread.
 
 	  rand() and srand() functions are redefined as __upc_random and
 	  __upc_srandom.

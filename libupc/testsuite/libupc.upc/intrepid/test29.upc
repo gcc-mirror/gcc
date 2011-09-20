@@ -29,6 +29,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Test Assumptions
+   1. A "long double" has at least 64 bits of mantissa, which
+      offers 19 significant decimal digits.
+   2. The value of PI below has 15 digits of fraction
+      and one whole digit, thus 16 significant decimal digits.
+   3. There is some round-off in this calculation:
+          B[j] = A[j] + (xdouble) 100.0L;
+      Thus, we might expect that B[j] drops one significant
+      digit here/there.
+   4. By allowing for a comparison to 18 significant digits, we
+      force the comparison to require at least 4 more significant
+      digits than a regular "double" (14 digits), but leave some
+      room for accumulated round-off errors.  */
+
+#undef PI
+/* PI to 15 places */
+#define PI 3.141592653589793L
 typedef long double xdouble;
 
 #define N_PER_THREAD 10000
@@ -54,18 +71,18 @@ test29 ()
   int i;
   if (!MYTHREAD)
     {
-      xA1 = 100.0;
-      xB1 = 200.0;
+      xA1 = 100.0L * PI;
+      xB1 = 200.0L * PI;
     }
   for (i = MYTHREAD; i < N; i += THREADS)
     {
-      A[i] = 100 + i;
+      A[i] = 100.0L + (xdouble) i * PI;
     }
   upc_barrier;
   for (i = MYTHREAD; i < N; i += THREADS)
     {
-      int j = (i + 1) % N; 
-      B[j] = A[j] + 100.0;
+      int j = (i + 1) % N;
+      B[j] = A[j] + (xdouble) 100.0L;
     }
   if (!MYTHREAD)
     {
@@ -73,10 +90,10 @@ test29 ()
       xB2 = xB1;
     }
   upc_barrier;
-  if (xA1 != 100.0)
-    FAIL ("xA1 != 100.0");
-  if (xB1 != 200.0)
-    FAIL ("xB1 != 200.0");
+  if (xA1 != 100.0L * PI)
+    FAIL ("xA1 != 100.0 * PI");
+  if (xB1 != 200.0L * PI)
+    FAIL ("xB1 != 200.0 * PI");
   if (xA1 != xA2)
     FAIL ("xA1 != xA2");
   if (xB1 != xB2)
@@ -91,25 +108,35 @@ test29 ()
     FAIL ("xB2 <= xA2");
   for (i = MYTHREAD; i < N; i += THREADS)
     {
-      int expected = (100 + i);
+      xdouble expected = (100.0L + (xdouble) i * PI);
       xdouble got = A[i];
+      /* This comparison should be exact. */
       if (got != expected)
 	{
 	  char msg[1000];
-	  sprintf (msg, "A[%d] is: %0.1f expected: %0.1f",
-		   i, (float) got, (float) expected);
+	  xdouble rel_err;
+	  rel_err = got / expected - 1.0L;
+	  if (rel_err < 0.0)
+	    rel_err = -rel_err;
+	  sprintf (msg, "A[%d] is: %0.15Lf expected: %0.15Lf error: %0.2Le\n",
+		   i, got, expected, rel_err);
 	  FAIL (msg);
 	}
     }
   for (i = MYTHREAD; i < N; i += THREADS)
     {
-      int expected = (200 + i);
+      xdouble expected = (200.0L + (xdouble) i * PI);
       xdouble got = B[i];
-      if (got != expected)
+      xdouble rel_err;
+      rel_err = got / expected - 1.0L;
+      if (rel_err < 0.0)
+	rel_err = -rel_err;
+      /* This comparison should be within 18 (ie, 3+15) digits. */
+      if (rel_err > 1.0e-18)
 	{
 	  char msg[1000];
-	  sprintf (msg, "B[%d] is: %0.1f expected: %0.1f",
-		   i, (float) got, (float) expected);
+	  sprintf (msg, "B[%d] is: %0.15Lf expected: %0.15Lf error: %0.2Le\n",
+		   i, got, expected, rel_err);
 	  FAIL (msg);
 	}
     }

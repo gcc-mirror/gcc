@@ -310,7 +310,7 @@ long double
 __getstf2 (upc_shared_ptr_t p)
 {
   const long double *addr = (long double *) __upc_access_sptr_to_addr (p);
-  double result;
+  long double result;
   GUPCR_FENCE ();
   result = *addr;
   GUPCR_READ_FENCE ();
@@ -322,7 +322,7 @@ long double
 __getsxf2 (upc_shared_ptr_t p)
 {
   const long double *addr = (long double *) __upc_access_sptr_to_addr (p);
-  double result;
+  long double result;
   GUPCR_FENCE ();
   result = *addr;
   GUPCR_READ_FENCE ();
