@@ -335,10 +335,17 @@ Parse::type_name(bool issue_error)
   bool ok = true;
   if (named_object == NULL)
     {
-      if (package != NULL)
-	ok = false;
-      else
+      if (package == NULL)
 	named_object = this->gogo_->add_unknown_name(name, location);
+      else
+	{
+	  const std::string& packname(package->package_value()->name());
+	  error_at(location, "reference to undefined identifer %<%s.%s%>",
+		   Gogo::message_name(packname).c_str(),
+		   Gogo::message_name(name).c_str());
+	  issue_error = false;
+	  ok = false;
+	}
     }
   else if (named_object->is_type())
     {
