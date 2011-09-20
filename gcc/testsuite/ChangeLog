@@ -1,5 +1,7 @@
 2011-09-20  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-generated1.C: New.
+
 	PR c++/50442
 	* g++.dg/overload/ref-conv1.C: New.
 

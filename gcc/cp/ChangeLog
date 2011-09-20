@@ -1,5 +1,11 @@
 2011-09-20  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (DECL_TEMPLOID_INSTANTIATION): New.
+	(DECL_GENERATED_P): New.
+	* class.c (finalize_literal_type_property): Use them.
+	* semantics.c (is_instantiation_of_constexpr): Likewise.
+	(register_constexpr_fundef): Likewise.
+
 	* call.c (convert_default_arg): Avoid redundant copy.
 	* tree.c (bot_manip): Copy everything.
 
