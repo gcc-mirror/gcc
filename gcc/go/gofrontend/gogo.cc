@@ -4482,6 +4482,12 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
 
     case Named_object::NAMED_OBJECT_VAR:
     case Named_object::NAMED_OBJECT_RESULT_VAR:
+      // We have already given an error in the parser for cases where
+      // one parameter or result variable redeclares another one.
+      if ((new_object->is_variable()
+	   && new_object->var_value()->is_parameter())
+	  || new_object->is_result_variable())
+	return old_object;
       break;
 
     case Named_object::NAMED_OBJECT_SINK:
