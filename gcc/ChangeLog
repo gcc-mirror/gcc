@@ -1,3 +1,9 @@
+2011-09-20  Wei Guozhi  <carrot@google.com>
+
+	PR rtl-optimization/49452
+	* postreload.c (reload_combine): Invalidate use information when across
+	volatile insn.
+
 2011-09-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* haifa-sched.c (has_edge_p, prev_non_location_insn, check_cfg):
