@@ -1,3 +1,14 @@
+2011-09-20  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (UNSPEC_ALIGNADDRL): New unspec.
+	(aligneddrl<P:mode>_vis): New pattern.
+	(edge8_vis, edge8l_vis, edge16_vis, edge16l_vis, edge32_vis,
+	edge32l_vis): Adjust to take Pmode arguments, and return SImode.
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Handle new
+	alignaddrl insn, and adjust edge operations for updated types.
+	* config/sparc/visintrin.h: Likewise.
+	* doc/extend.texi: Make typing in VIS documentation match reality.
+
 2011-09-20  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm-arches.def: Add armv6s-m.

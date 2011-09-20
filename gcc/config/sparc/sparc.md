@@ -66,6 +66,7 @@
    (UNSPEC_EDGE16L		54)
    (UNSPEC_EDGE32		55)
    (UNSPEC_EDGE32L		56)
+   (UNSPEC_ALIGNADDRL		57)
 
    (UNSPEC_SP_SET		60)
    (UNSPEC_SP_TEST		61)
@@ -7798,6 +7799,14 @@
   "TARGET_VIS"
   "alignaddr\t%r1, %r2, %0")
 
+(define_insn "alignaddrl<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
+         UNSPEC_ALIGNADDRL))]
+  "TARGET_VIS"
+  "alignaddrl\t%r1, %r2, %0")
+
 (define_insn "pdist_vis"
   [(set (match_operand:DI 0 "register_operand" "=e")
         (unspec:DI [(match_operand:V8QI 1 "register_operand" "e")
@@ -7811,68 +7820,68 @@
 
 ;; Edge instructions produce condition codes equivalent to a 'subcc'
 ;; with the same operands.
-(define_insn "edge8_vis"
-  [(set (reg:CCX_NOOV 100)
-        (compare:CCX_NOOV (minus:DI (match_operand:DI 1 "register_operand" "rJ")
-			  	    (match_operand:DI 2 "register_operand" "rJ"))
-			  (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8))]
+(define_insn "edge8<P:mode>_vis"
+  [(set (reg:CC_NOOV 100)
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
+			  	  (match_operand:P 2 "register_operand" "rJ"))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8))]
   "TARGET_VIS"
   "edge8\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
 
-(define_insn "edge8l_vis"
-  [(set (reg:CCX_NOOV 100)
-        (compare:CCX_NOOV (minus:DI (match_operand:DI 1 "register_operand" "rJ")
-			  	    (match_operand:DI 2 "register_operand" "rJ"))
-			  (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8L))]
+(define_insn "edge8l<P:mode>_vis"
+  [(set (reg:CC_NOOV 100)
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
+			  	  (match_operand:P 2 "register_operand" "rJ"))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8L))]
   "TARGET_VIS"
   "edge8l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
 
-(define_insn "edge16_vis"
-  [(set (reg:CCX_NOOV 100)
-        (compare:CCX_NOOV (minus:DI (match_operand:DI 1 "register_operand" "rJ")
-			  	    (match_operand:DI 2 "register_operand" "rJ"))
-			  (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16))]
+(define_insn "edge16<P:mode>_vis"
+  [(set (reg:CC_NOOV 100)
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
+			  	  (match_operand:P 2 "register_operand" "rJ"))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16))]
   "TARGET_VIS"
   "edge16\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
 
-(define_insn "edge16l_vis"
-  [(set (reg:CCX_NOOV 100)
-        (compare:CCX_NOOV (minus:DI (match_operand:DI 1 "register_operand" "rJ")
-			  	    (match_operand:DI 2 "register_operand" "rJ"))
-			  (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16L))]
+(define_insn "edge16l<P:mode>_vis"
+  [(set (reg:CC_NOOV 100)
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
+			  	  (match_operand:P 2 "register_operand" "rJ"))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16L))]
   "TARGET_VIS"
   "edge16l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
 
-(define_insn "edge32_vis"
-  [(set (reg:CCX_NOOV 100)
-        (compare:CCX_NOOV (minus:DI (match_operand:DI 1 "register_operand" "rJ")
-			  	    (match_operand:DI 2 "register_operand" "rJ"))
-			  (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32))]
+(define_insn "edge32<P:mode>_vis"
+  [(set (reg:CC_NOOV 100)
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
+			  	  (match_operand:P 2 "register_operand" "rJ"))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32))]
   "TARGET_VIS"
   "edge32\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
 
-(define_insn "edge32l_vis"
-  [(set (reg:CCX_NOOV 100)
-        (compare:CCX_NOOV (minus:DI (match_operand:DI 1 "register_operand" "rJ")
-			  	    (match_operand:DI 2 "register_operand" "rJ"))
-			  (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32L))]
+(define_insn "edge32l<P:mode>_vis"
+  [(set (reg:CC_NOOV 100)
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
+			  	  (match_operand:P 2 "register_operand" "rJ"))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32L))]
   "TARGET_VIS"
   "edge32l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
