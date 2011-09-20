@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 
 typedef unsigned long long UInt64;
@@ -150,12 +151,6 @@ UInt128_BITMAP;
 
 UInt128_BITMAP V;
 
-template<typename CAST>
-unsigned char get_bit(CAST value, unsigned char pos)
-{
-    return ( value & (static_cast<CAST>(1) << pos) ) != 0;
-}
-
 void shift(unsigned char t)
 {
   V.uint128.uint64_lower = (V.uint128.uint64_lower >> 1);
@@ -163,21 +158,6 @@ void shift(unsigned char t)
   V.uint128.uint64_upper = (V.uint128.uint64_upper >> 1);
   
   V.bitmap.b96 = t;
-}
-
-int main()
-{
-   V.uint128.uint64_lower = 0;
-   V.uint128.uint64_upper = 0xd4004001;
-
-   UInt64 Kc = 0xDD1A1B8A8A5C2400;
- 
-  for (int i = 0; i < 64; i++ )
-  {
-    shift( get_bit( Kc, i) );
-  }
-
-   return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 0 "slp" } } */
