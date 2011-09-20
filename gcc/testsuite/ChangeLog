@@ -1,3 +1,9 @@
+2011-09-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/50469
+	* gfortran.dg/storage_size_2.f08: Replace "must be be" with
+	"must be".
+
 2011-09-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-generated1.C: New.
