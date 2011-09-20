@@ -2017,7 +2017,7 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
 	  // be handled specially.  We can't create a temporary
 	  // because there is no type to give it.  Any actual uses of
 	  // the values will be done via Call_result_expressions.
-	  s = Statement::make_statement(*pexpr);
+	  s = Statement::make_statement(*pexpr, true);
 	}
 
       block->insert_statement_before(*pindex, s);
@@ -2072,7 +2072,7 @@ Order_eval::variable(Named_object* no)
 	{
 	  // A call expression which returns multiple results needs to
 	  // be handled specially.
-	  s = Statement::make_statement(*pexpr);
+	  s = Statement::make_statement(*pexpr, true);
 	}
       var->add_preinit_statement(this->gogo_, s);
     }
@@ -2266,7 +2266,7 @@ Build_recover_thunks::function(Named_object* orig_no)
 
   Statement* s;
   if (orig_fntype->results() == NULL || orig_fntype->results()->empty())
-    s = Statement::make_statement(call);
+    s = Statement::make_statement(call, true);
   else
     {
       Expression_list* vals = new Expression_list();

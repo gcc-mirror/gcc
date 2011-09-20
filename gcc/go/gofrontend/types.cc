@@ -7432,7 +7432,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   call->set_hidden_fields_are_ok();
   size_t count = call->result_count();
   if (count == 0)
-    gogo->add_statement(Statement::make_statement(call));
+    gogo->add_statement(Statement::make_statement(call, true));
   else
     {
       Expression_list* retvals = new Expression_list();
