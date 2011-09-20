@@ -6130,6 +6130,8 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 
      we must not perform access checks here.  */
   push_deferring_access_checks (dk_no_check);
+  /* We must make a copy of ARG, in case subsequent processing
+     alters any part of it.  */
   arg = break_out_target_exprs (arg);
   if (TREE_CODE (arg) == CONSTRUCTOR)
     {
@@ -6140,14 +6142,6 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
     }
   else
     {
-      /* We must make a copy of ARG, in case subsequent processing
-	 alters any part of it.  For example, during gimplification a
-	 cast of the form (T) &X::f (where "f" is a member function)
-	 will lead to replacing the PTRMEM_CST for &X::f with a
-	 VAR_DECL.  We can avoid the copy for constants, since they
-	 are never modified in place.  */
-      if (!CONSTANT_CLASS_P (arg))
-	arg = unshare_expr (arg);
       arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);

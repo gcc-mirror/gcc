@@ -1,3 +1,8 @@
+2011-09-20  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_default_arg): Avoid redundant copy.
+	* tree.c (bot_manip): Copy everything.
+
 2011-09-20 Roberto Agostino Vitillo <ravitillo@lbl.gov>
 
 	* call.c (build_new_method_call_1): Use non-virtual lookup
