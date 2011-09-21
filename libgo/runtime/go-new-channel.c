@@ -33,7 +33,7 @@ __go_new_channel (const struct __go_type_descriptor *channel_type,
   ientries = (int) entries;
   if (ientries < 0
       || (uintptr_t) ientries != entries
-      || entries > (uintptr_t) -1 / element_size)
+      || (element_size > 0 && entries > (uintptr_t) -1 / element_size))
     __go_panic_msg ("chan size out of range");
 
   alloc_size = (element_size + sizeof (uint64_t) - 1) / sizeof (uint64_t);
