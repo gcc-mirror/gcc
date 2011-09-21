@@ -219,7 +219,7 @@ estimate_edge_time (struct cgraph_edge *edge)
   if ((int)VEC_length (edge_growth_cache_entry, edge_growth_cache) <= edge->uid
       || !(ret = VEC_index (edge_growth_cache_entry,
 			    edge_growth_cache,
-			    edge->uid)->size))
+			    edge->uid)->time))
     return do_estimate_edge_time (edge);
   return ret - (ret > 0);
 }

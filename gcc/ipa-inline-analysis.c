@@ -2164,10 +2164,9 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 			       evaluate_conditions_for_edge (edge, true),
 			       &size, &time);
 
-  ret = (((gcov_type)time - es->call_stmt_time) * edge->frequency
+  ret = (((gcov_type)time
+	   - es->call_stmt_time) * edge->frequency
 	 + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
-  if (ret > MAX_TIME)
-    ret = MAX_TIME;
 
   /* When caching, update the cache entry.  */
   if (edge_growth_cache)
