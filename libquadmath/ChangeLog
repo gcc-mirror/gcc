@@ -1,3 +1,8 @@
+2011-09-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.am (FLAGS_TO_PASS): Define.
+	* Makefile.in: Regenerate.
+
 2011-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* math/rem_pio2q.c (__quadmath_kernel_rem_pio2): Fix up fq to y
