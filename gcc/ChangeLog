@@ -1,5 +1,11 @@
 2011-09-21  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/45099
+	* config/avr/avr.c (avr_function_arg_advance): Change error to
+	warning if a fixed register is needed as function argument.
+
+2011-09-21  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/50449
 	PR target/50465
 	* config/avr/avr.md (adjust_len): New insn attribute.
