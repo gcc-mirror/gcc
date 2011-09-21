@@ -18909,24 +18909,80 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     }
   else
     {
-      op_true = force_reg (mode, op_true);
+      rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
+
       op_false = force_reg (mode, op_false);
 
-      t2 = gen_reg_rtx (mode);
-      if (optimize)
-	t3 = gen_reg_rtx (mode);
+      switch (mode)
+	{
+	case V4SFmode:
+	  if (TARGET_SSE4_1)
+	    gen = gen_sse4_1_blendvps;
+	  break;
+	case V2DFmode:
+	  if (TARGET_SSE4_1)
+	    gen = gen_sse4_1_blendvpd;
+	  break;
+	case V16QImode:
+	case V8HImode:
+	case V4SImode:
+	case V2DImode:
+	  if (TARGET_SSE4_1)
+	    {
+	      gen = gen_sse4_1_pblendvb;
+	      dest = gen_lowpart (V16QImode, dest);
+	      op_false = gen_lowpart (V16QImode, op_false);
+	      op_true = gen_lowpart (V16QImode, op_true);
+	      cmp = gen_lowpart (V16QImode, cmp);
+	    }
+	  break;
+	case V8SFmode:
+	  if (TARGET_AVX)
+	    gen = gen_avx_blendvps256;
+	  break;
+	case V4DFmode:
+	  if (TARGET_AVX)
+	    gen = gen_avx_blendvpd256;
+	  break;
+	case V32QImode:
+	case V16HImode:
+	case V8SImode:
+	case V4DImode:
+	  if (TARGET_AVX2)
+	    {
+	      gen = gen_avx2_pblendvb;
+	      dest = gen_lowpart (V32QImode, dest);
+	      op_false = gen_lowpart (V32QImode, op_false);
+	      op_true = gen_lowpart (V32QImode, op_true);
+	      cmp = gen_lowpart (V32QImode, cmp);
+	    }
+	  break;
+	default:
+	  break;
+	}
+
+      if (gen != NULL)
+	emit_insn (gen (dest, op_false, op_true, cmp));
       else
-	t3 = dest;
+	{
+	  op_true = force_reg (mode, op_true);
 
-      x = gen_rtx_AND (mode, op_true, cmp);
-      emit_insn (gen_rtx_SET (VOIDmode, t2, x));
+	  t2 = gen_reg_rtx (mode);
+	  if (optimize)
+	    t3 = gen_reg_rtx (mode);
+	  else
+	    t3 = dest;
 
-      x = gen_rtx_NOT (mode, cmp);
-      x = gen_rtx_AND (mode, x, op_false);
-      emit_insn (gen_rtx_SET (VOIDmode, t3, x));
+	  x = gen_rtx_AND (mode, op_true, cmp);
+	  emit_insn (gen_rtx_SET (VOIDmode, t2, x));
 
-      x = gen_rtx_IOR (mode, t3, t2);
-      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+	  x = gen_rtx_NOT (mode, cmp);
+	  x = gen_rtx_AND (mode, x, op_false);
+	  emit_insn (gen_rtx_SET (VOIDmode, t3, x));
+
+	  x = gen_rtx_IOR (mode, t3, t2);
+	  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+	}
     }
 }
 
