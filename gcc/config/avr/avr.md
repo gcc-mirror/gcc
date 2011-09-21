@@ -128,6 +128,17 @@
 		       (const_int 2))]
         (const_int 2)))
 
+;; Lengths of several insns are adjusted in avr.c:adjust_insn_length().
+;; Following insn attribute tells if and how the adjustment has to be
+;; done:
+;;     no     No adjustment needed; attribute "length" is fine.
+;;     yes    Analyse pattern in adjust_insn_length by hand.
+;; Otherwise do special processing depending on the attribute.
+
+(define_attr "adjust_len"
+  "yes,no,reload_in32"
+  (const_string "yes"))
+
 ;; Define mode iterators
 (define_mode_iterator QIHI  [(QI "") (HI "")])
 (define_mode_iterator QIHI2 [(QI "") (HI "")])
@@ -457,6 +468,7 @@
     return output_reload_insisf (insn, operands, operands[2], NULL);
   }
   [(set_attr "length" "8")
+   (set_attr "adjust_len" "reload_in32")
    (set_attr "cc" "clobber")])
 
 
@@ -466,7 +478,7 @@
   "(register_operand (operands[0],SImode)
     || register_operand (operands[1],SImode) || const0_rtx == operands[1])"
   {
-    return output_movsisf (insn, operands, NULL_RTX, NULL);
+    return output_movsisf (insn, operands, NULL);
   }
   [(set_attr "length" "4,4,8,9,4,10")
    (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
@@ -495,7 +507,7 @@
    || register_operand (operands[1], SFmode)
    || operands[1] == CONST0_RTX (SFmode)"
   {
-    return output_movsisf (insn, operands, NULL_RTX, NULL);
+    return output_movsisf (insn, operands, NULL);
   }
   [(set_attr "length" "4,4,8,9,4,10")
    (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
@@ -521,6 +533,7 @@
     return output_reload_insisf (insn, operands, operands[2], NULL);
   }
   [(set_attr "length" "8")
+   (set_attr "adjust_len" "reload_in32")
    (set_attr "cc" "clobber")])
 
 ;;=========================================================================

@@ -1819,7 +1819,7 @@ avr_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 
       for (regno = cum->regno; regno < cum->regno + bytes; regno++)
         if (fixed_regs[regno])
-          error ("Register %s is needed to pass a parameter but is fixed",
+          warning (0,"Register %s is needed to pass a parameter but is fixed",
                  reg_names[regno]);
     }
       
@@ -2673,7 +2673,7 @@ out_movsi_mr_r (rtx insn, rtx op[], int *l)
 }
 
 const char *
-output_movsisf (rtx insn, rtx operands[], rtx clobber_reg, int *l)
+output_movsisf (rtx insn, rtx operands[], int *l)
 {
   int dummy;
   rtx dest = operands[0];
@@ -2719,7 +2719,7 @@ output_movsisf (rtx insn, rtx operands[], rtx clobber_reg, int *l)
       else if (CONST_INT_P (src)
                || CONST_DOUBLE_P (src))
         {
-          return output_reload_insisf (insn, operands, clobber_reg, real_l);
+          return output_reload_insisf (insn, operands, NULL_RTX, real_l);
         }
       else if (CONSTANT_P (src))
 	{
@@ -4616,8 +4616,56 @@ avr_rotate_bytes (rtx operands[])
 int
 adjust_insn_length (rtx insn, int len)
 {
-  rtx patt = PATTERN (insn);
-  rtx set;
+  rtx patt, set;
+  enum attr_adjust_len adjust_len;
+
+  /* Some complex insns don't need length adjustment and therefore
+     the length need not/must not be adjusted for these insns.
+     It is easier to state this in an insn attribute "adjust_len" than
+     to clutter up code here...  */
+  
+  if (-1 == recog_memoized (insn))
+    {
+      return len;
+    }
+
+  /* Read from insn attribute "adjust_len" if/how length is to be adjusted.  */
+
+  adjust_len = get_attr_adjust_len (insn);
+
+  if (adjust_len != ADJUST_LEN_YES)
+    {
+      rtx *op = recog_data.operand;
+      
+      if (adjust_len == ADJUST_LEN_NO)
+        {
+          /* Nothing to adjust: The length from attribute "length" is fine.  */
+          
+          return len;
+        }
+
+      /* Extract insn's operands.  */
+      
+      extract_constrain_insn_cached (insn);
+
+      /* Dispatch to right function.  */
+      
+      switch (adjust_len)
+        {
+        case ADJUST_LEN_RELOAD_IN32:
+          output_reload_insisf (insn, op, op[2], &len);
+          break;
+          
+        default:
+          gcc_unreachable();
+        }
+      
+      return len;
+    } /* adjust_length != ADJUST_LEN_YES */
+
+  /* adjust_len == "yes": Analyse insn by hand.  */
+  
+  patt = PATTERN (insn);
 
   if (GET_CODE (patt) == SET)
     {
@@ -4637,7 +4685,7 @@ adjust_insn_length (rtx insn, int len)
 	      break;
 	    case SImode:
 	    case SFmode:
-	      output_movsisf (insn, op, NULL_RTX, &len);
+	      output_movsisf (insn, op, &len);
 	      break;
 	    default:
 	      break;
@@ -4708,7 +4756,8 @@ adjust_insn_length (rtx insn, int len)
 	      break;
 	    case SImode:
 	    case SFmode:
-	      output_reload_insisf (insn, op, XEXP (op[2], 0), &len);
+	      /* Handled by ADJUST_LEN_RELOAD_INSISF above.  */
+	      gcc_unreachable();
 	      break;
 	    default:
 	      break;
@@ -6698,21 +6747,17 @@ output_reload_inhi (rtx insn ATTRIBUTE_UNUSED, rtx *operands, int *len)
 }
 
 
-/* Reload a SI or SF compile time constant (OP[1]) into a GPR (OP[0]).
-   CLOBBER_REG is a QI clobber reg needed to move vast majority of consts
-   into a NO_LD_REGS.  If CLOBBER_REG is NULL_RTX we either don't need a
-   clobber reg or have to cook one up.
+/* A helper for `output_reload_insisf'.  */
+/* Set 32-bit register OP[0] to compile-time constant OP[1].
+   CLOBBER_REG is a QI clobber register or NULL_RTX.
+   LEN == NULL: output instructions.
+   LEN != NULL: set *LEN to the length of the instruction sequence
+                (in words) printed with LEN = NULL.
+   If CLEAR_P is true, OP[0] had been cleard to Zero already.
+   If CLEAR_P is false, nothing is known about OP[0].  */
 
-   LEN == NULL: Output instructions.
-   
-   LEN != NULL: Output nothing.  Increment *LEN by number of words occupied
-                by the insns printed.
-
-   Return "".  */
-
-const char *
-output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
-                      rtx *op, rtx clobber_reg, int *len)
+static void
+output_reload_insisf_1 (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 {
   rtx src = op[1];
   rtx dest = op[0];
@@ -6787,7 +6832,12 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
 
           if (INTVAL (lo16) == INTVAL (hi16))
             {
-              avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
+              if (0 != INTVAL (lo16)
+                  || !clear_p)
+                {
+                  avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
+                }
+              
               break;
             }
         }
@@ -6797,7 +6847,9 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
       
       if (ival[n] == 0)
         {
-          avr_asm_len ("clr %0", &xdest[n], len, 1);
+          if (!clear_p)
+            avr_asm_len ("clr %0", &xdest[n], len, 1);
+          
           continue;
         }
 
@@ -6837,8 +6889,18 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
       
       if (-1 == ival[n])
         {
-          avr_asm_len ("clr %0" CR_TAB
-                       "dec %0", &xdest[n], len, 2);
+          if (!clear_p)
+            avr_asm_len ("clr %0", &xdest[n], len, 1);
+          
+          avr_asm_len ("dec %0", &xdest[n], len, 1);
+          continue;
+        }
+      else if (1 == ival[n])
+        {
+          if (!clear_p)
+            avr_asm_len ("clr %0", &xdest[n], len, 1);
+          
+          avr_asm_len ("inc %0", &xdest[n], len, 1);
           continue;
         }
 
@@ -6848,13 +6910,6 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
       if (NULL_RTX == clobber_reg
           && single_one_operand (xval, QImode))
         {
-          if (1 == ival[n])
-            {
-              avr_asm_len ("clr %0" CR_TAB
-                           "inc %0", &xdest[n], len, 2);
-              continue;
-            }
-          
           xop[0] = xdest[n];
           xop[1] = GEN_INT (exact_log2 (ival[n] & GET_MODE_MASK (QImode)));
 
@@ -6866,8 +6921,10 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
               avr_asm_len ("set", xop, len, 1);
             }
 
-          avr_asm_len ("clr %0" CR_TAB
-                       "bld %0,%1", xop, len, 2);
+          if (!clear_p)
+            avr_asm_len ("clr %0", xop, len, 1);
+          
+          avr_asm_len ("bld %0,%1", xop, len, 1);
           continue;
         }
 
@@ -6890,7 +6947,68 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
     {
       avr_asm_len ("mov %0,__tmp_reg__", &clobber_reg, len, 1);
     }
-  
+}
+
+
+/* Reload a SI or SF compile time constant OP[1] into the register OP[0].
+   CLOBBER_REG is a QI clobber reg needed to move vast majority of consts
+   into a NO_LD_REGS register.  If CLOBBER_REG is NULL_RTX we either don't
+   need a clobber reg or have to cook one up.
+
+   LEN == NULL: Output instructions.
+   
+   LEN != NULL: Output nothing.  Increment *LEN by number of words occupied
+                by the insns printed.
+
+   Return "".  */
+
+const char *
+output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
+                      rtx *op, rtx clobber_reg, int *len)
+{
+  gcc_assert (REG_P (op[0])
+              && CONSTANT_P (op[1]));
+
+  if (AVR_HAVE_MOVW
+      && !test_hard_reg_class (LD_REGS, op[0]))
+    {
+      int len_clr, len_noclr;
+      
+      /* In some cases it is better to clear the destination beforehand, e.g.
+
+             CLR R2   CLR R3   MOVW R4,R2   INC R2
+
+         is shorther than
+
+             CLR R2   INC R2   CLR  R3      CLR R4   CLR R5
+
+         We find it too tedious to work that out in the print function.
+         Instead, we call the print function twice to get the lengths of
+         both methods and use the shortest one.  */
+         
+      output_reload_insisf_1 (op, clobber_reg, &len_clr, true);
+      output_reload_insisf_1 (op, clobber_reg, &len_noclr, false);
+      
+      if (len_noclr - len_clr == 4)
+        {
+          /* Default needs 4 CLR instructions: clear register beforehand.  */
+          
+          avr_asm_len ("clr %A0" CR_TAB
+                       "clr %B0" CR_TAB
+                       "movw %C0,%A0", &op[0], len, 3);
+          
+          output_reload_insisf_1 (op, clobber_reg, len, true);
+          
+          if (len)
+            *len += 3;
+
+          return "";
+        }
+    }
+
+  /* Default: destination not pre-cleared.  */
+
+  output_reload_insisf_1 (op, clobber_reg, len, false);
   return "";
 }
 
