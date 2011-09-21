@@ -1,3 +1,8 @@
+2011-09-21  Benjamin Kosnik  <bkoz@redhat.com
+
+	* doc/Makefile.am (stamp-epub-docbook): Fix image directory location.
+	* doc/Makefile.in: Regenerate.
+
 2011-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/limits.cc: Replace everywhere __int128_t -> __int128, and
