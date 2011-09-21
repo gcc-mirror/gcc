@@ -81,6 +81,12 @@ proc errchk { test opts } {
 	    set index [string first "dg-error" $out_line]
 	    regsub -all "\\\[\\.\\\]" $out_line "\\\\\[.\\\\\]" out_line
 	}
+	# Special case for bug332, in which the error message wants to
+	# match the file name, which is not what dg-error expects.
+	if [string match "*dg-error*bug332*" $out_line] {
+	    set index [string first "dg-error" $out_line]
+	    regsub -start $index "bug332" $out_line "undefined type" out_line
+	}
 	puts $fdout $out_line
     }
     close $fdin
@@ -256,6 +262,13 @@ proc go-gc-tests { } {
 		    untested "$name: has very high memory requirement"
 		    continue
 	    }
+	}
+
+	if { [string match "*bug347*" $test] \
+		 || [string match "*bug348*" $test] } {
+	    # These bugs rely on runtime.Caller which currently fails.
+	    untested $name
+	    continue
 	}
 
 	set fd [open $test r]
@@ -451,15 +464,23 @@ proc go-gc-tests { } {
 			$test_line] \
 		       || [string match \
 			       "// \$G \$D/\$F.dir/p1.go && \$G \$D/\$F.dir/p2.go" \
+			       $test_line] \
+		       || [string match \
+			       "// \$G \$D/\$F.dir/b.go && \$G \$D/\$F.dir/a.go" \
 			       $test_line] } {
 	    if { [string match \
+		      "// \$G \$D/\$F.dir/bug0.go && errchk \$G \$D/\$F.dir/bug1.go" \
+		      $test_line] } {
+		set name1 "bug0.go"
+		set name2 "bug1.go"
+	    } elseif { [string match \
 		      "// \$G \$D/\$F.dir/p1.go && \$G \$D/\$F.dir/p2.go" \
 		      $test_line] } {
 		set name1 "p1.go"
 		set name2 "p2.go"
 	    } else {
-		set name1 "bug0.go"
-		set name2 "bug1.go"
+		set name1 "b.go"
+		set name2 "a.go"
 	    }
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
