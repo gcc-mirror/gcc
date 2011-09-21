@@ -1,3 +1,8 @@
+2011-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50464
+	* g++.dg/other/pr50464.C: New test.
+
 2011-09-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/bmi2-mulx32-2.c: New test.

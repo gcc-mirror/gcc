@@ -10401,8 +10401,8 @@
   [(set (match_operand:V 0 "register_operand" "=x,x")
 	(if_then_else:V
 	  (match_operand:V 3 "nonimmediate_operand" "x,m")
-	  (match_operand:V 1 "vector_move_operand" "x,x")
-	  (match_operand:V 2 "vector_move_operand" "xm,x")))]
+	  (match_operand:V 1 "register_operand" "x,x")
+	  (match_operand:V 2 "nonimmediate_operand" "xm,x")))]
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
