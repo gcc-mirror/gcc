@@ -1,3 +1,8 @@
+2011-09-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/bmi2intrin.h (_mulx_u64): New.
+	(_mulx_u32): Ditto.
+
 2011-09-21  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/50433
