@@ -1,3 +1,11 @@
+2011-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (<code><mode>3 smaxmin:VI124_128 expander): Use
+	nonimmediate_operand instead of register_operand predicate for operands
+	1 and 2, force them into registers if expanding them as comparison.
+	(<code><mode>3 umaxmin:VI124_128 expander): Similarly.  For UMAX
+	V8HImode force into register just operand 1.
+
 2011-09-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/45099

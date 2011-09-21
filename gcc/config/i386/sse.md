@@ -5887,8 +5887,8 @@
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI124_128 0 "register_operand" "")
-	(smaxmin:VI124_128 (match_operand:VI124_128 1 "register_operand" "")
-			   (match_operand:VI124_128 2 "register_operand" "")))]
+	(smaxmin:VI124_128 (match_operand:VI124_128 1 "nonimmediate_operand" "")
+			   (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1 || <MODE>mode == V8HImode)
@@ -5899,6 +5899,8 @@
       bool ok;
 
       xops[0] = operands[0];
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+      operands[2] = force_reg (<MODE>mode, operands[2]);
 
       if (<CODE> == SMAX)
 	{
@@ -5954,8 +5956,8 @@
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI124_128 0 "register_operand" "")
-	(umaxmin:VI124_128 (match_operand:VI124_128 1 "register_operand" "")
-			   (match_operand:VI124_128 2 "register_operand" "")))]
+	(umaxmin:VI124_128 (match_operand:VI124_128 1 "nonimmediate_operand" "")
+			   (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1 || <MODE>mode == V16QImode)
@@ -5963,6 +5965,7 @@
   else if (<CODE> == UMAX && <MODE>mode == V8HImode)
     {
       rtx op0 = operands[0], op2 = operands[2], op3 = op0;
+      operands[1] = force_reg (<MODE>mode, operands[1]);
       if (rtx_equal_p (op3, op2))
 	op3 = gen_reg_rtx (V8HImode);
       emit_insn (gen_sse2_ussubv8hi3 (op3, operands[1], op2));
@@ -5973,6 +5976,9 @@
     {
       rtx xops[6];
       bool ok;
+
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+      operands[2] = force_reg (<MODE>mode, operands[2]);
 
       xops[0] = operands[0];
 
