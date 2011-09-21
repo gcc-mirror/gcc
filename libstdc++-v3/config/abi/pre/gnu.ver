@@ -1298,7 +1298,7 @@ GLIBCXX_3.4.17 {
     # std::chrono::steady_clock::now()
     _ZNSt6chrono12steady_clock3nowEv;
 
-    # std::numeric_limits<__int128_t> and <__uint128_t>
+    # std::numeric_limits<__int128> and <unsigned __int128>
     _ZNSt14numeric_limitsInE*;
     _ZNSt14numeric_limitsIoE*;
 

@@ -97,8 +97,8 @@ int main()
   do_test<unsigned long long>();
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
-  do_test<__int128_t>();
-  do_test<__uint128_t>();
+  do_test<__int128>();
+  do_test<unsigned __int128>();
 #endif
   do_test<float>();
   do_test<double>();

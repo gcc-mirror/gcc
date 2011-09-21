@@ -1400,27 +1400,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
-  /// numeric_limits<__int128_t> specialization.
+  /// numeric_limits<__int128> specialization.
   template<>
-    struct numeric_limits<__int128_t>
+    struct numeric_limits<__int128>
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR __int128_t
-      min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min (__int128_t); }
+      static _GLIBCXX_CONSTEXPR __int128
+      min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min (__int128); }
 
-      static _GLIBCXX_CONSTEXPR __int128_t
-      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max (__int128_t); }
+      static _GLIBCXX_CONSTEXPR __int128
+      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max (__int128); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      static constexpr __int128_t
+      static constexpr __int128
       lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits
-       = __glibcxx_digits (__int128_t);
+       = __glibcxx_digits (__int128);
       static _GLIBCXX_USE_CONSTEXPR int digits10
-       = __glibcxx_digits10 (__int128_t);
+       = __glibcxx_digits10 (__int128);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr int max_digits10 = 0;
 #endif
@@ -1429,10 +1429,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR __int128_t
+      static _GLIBCXX_CONSTEXPR __int128
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR __int128_t
+      static _GLIBCXX_CONSTEXPR __int128
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1447,21 +1447,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR __int128_t
+      static _GLIBCXX_CONSTEXPR __int128
       infinity() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__int128_t>(0); }
+      { return static_cast<__int128>(0); }
 
-      static _GLIBCXX_CONSTEXPR __int128_t
+      static _GLIBCXX_CONSTEXPR __int128
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__int128_t>(0); }
+      { return static_cast<__int128>(0); }
       
-      static _GLIBCXX_CONSTEXPR __int128_t
+      static _GLIBCXX_CONSTEXPR __int128
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__int128_t>(0); }
+      { return static_cast<__int128>(0); }
       
-      static _GLIBCXX_CONSTEXPR __int128_t
+      static _GLIBCXX_CONSTEXPR __int128
       denorm_min() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__int128_t>(0); }
+      { return static_cast<__int128>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -1474,27 +1474,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        = round_toward_zero;
     };
 
-  /// numeric_limits<__uint128_t> specialization.
+  /// numeric_limits<unsigned __int128> specialization.
   template<>
-    struct numeric_limits<__uint128_t>
+    struct numeric_limits<unsigned __int128>
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
+      static _GLIBCXX_CONSTEXPR unsigned __int128
       min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
-      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max (__uint128_t); }
+      static _GLIBCXX_CONSTEXPR unsigned __int128
+      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max (unsigned __int128); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      static constexpr __uint128_t
+      static constexpr unsigned __int128
       lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits
-       = __glibcxx_digits (__uint128_t);
+       = __glibcxx_digits (unsigned __int128);
       static _GLIBCXX_USE_CONSTEXPR int digits10
-       = __glibcxx_digits10 (__uint128_t);
+       = __glibcxx_digits10 (unsigned __int128);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr int max_digits10 = 0;
 #endif
@@ -1503,10 +1503,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
+      static _GLIBCXX_CONSTEXPR unsigned __int128
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
+      static _GLIBCXX_CONSTEXPR unsigned __int128
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1521,21 +1521,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
+      static _GLIBCXX_CONSTEXPR unsigned __int128
       infinity() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__uint128_t>(0); }
+      { return static_cast<unsigned __int128>(0); }
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
+      static _GLIBCXX_CONSTEXPR unsigned __int128
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__uint128_t>(0); }
+      { return static_cast<unsigned __int128>(0); }
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
+      static _GLIBCXX_CONSTEXPR unsigned __int128
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__uint128_t>(0); }
+      { return static_cast<unsigned __int128>(0); }
 
-      static _GLIBCXX_CONSTEXPR __uint128_t
+      static _GLIBCXX_CONSTEXPR unsigned __int128
       denorm_min() _GLIBCXX_USE_NOEXCEPT
-      { return static_cast<__uint128_t>(0); }
+      { return static_cast<unsigned __int128>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;

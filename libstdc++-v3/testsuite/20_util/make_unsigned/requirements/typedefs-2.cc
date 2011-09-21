@@ -53,16 +53,16 @@ void test01()
   VERIFY( (is_same<test23_type, volatile wchar_t>::value) );
 #endif
 
-  typedef make_unsigned<test_enum>::type  	test24_type;
+  typedef make_unsigned<test_enum>::type  	  test24_type;
   VERIFY( (is_same<test24_type, unsigned short>::value) );
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
-  typedef make_unsigned<__uint128_t>::type  	test25_type;
-  VERIFY( (is_same<test25_type, __uint128_t>::value) );
+  typedef make_unsigned<unsigned __int128>::type  test25_type;
+  VERIFY( (is_same<test25_type, unsigned __int128>::value) );
 
-  typedef make_unsigned<__int128_t>::type  	test26_type;
-  VERIFY( (is_same<test26_type, __uint128_t>::value) );
+  typedef make_unsigned<__int128>::type  	  test26_type;
+  VERIFY( (is_same<test26_type, unsigned __int128>::value) );
 #endif
 }
 

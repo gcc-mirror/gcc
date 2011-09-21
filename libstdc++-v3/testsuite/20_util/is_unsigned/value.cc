@@ -51,8 +51,8 @@ void test01()
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
-  VERIFY( (test_category<is_unsigned, __uint128_t>(true)) );
-  VERIFY( (test_category<is_unsigned, __int128_t>(false)) );
+  VERIFY( (test_category<is_unsigned, unsigned __int128>(true)) );
+  VERIFY( (test_category<is_unsigned, __int128>(false)) );
 #endif
 
 #ifdef _GLIBCXX_USE_FLOAT128

@@ -215,11 +215,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
   template<>
-    struct __is_integral_helper<__int128_t>
+    struct __is_integral_helper<__int128>
     : public true_type { };
 
   template<>
-    struct __is_integral_helper<__uint128_t>
+    struct __is_integral_helper<unsigned __int128>
     : public true_type { };
 #endif
 
@@ -1416,8 +1416,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
   template<>
-    struct __make_unsigned<__int128_t>
-    { typedef __uint128_t __type; };
+    struct __make_unsigned<__int128>
+    { typedef unsigned __int128 __type; };
 #endif
 
   // Select between integral and enum: not possible to be both.
@@ -1498,8 +1498,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
   template<>
-    struct __make_signed<__uint128_t>
-    { typedef __int128_t __type; };
+    struct __make_signed<unsigned __int128>
+    { typedef __int128 __type; };
 #endif
 
   // Select between integral and enum: not possible to be both.

@@ -59,11 +59,11 @@ void test01()
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
-  typedef make_signed<__uint128_t>::type  	test25_type;
-  VERIFY( (is_same<test25_type, __int128_t>::value) );
+  typedef make_signed<unsigned __int128>::type  test25_type;
+  VERIFY( (is_same<test25_type, __int128>::value) );
 
-  typedef make_signed<__int128_t>::type  	test26_type;
-  VERIFY( (is_same<test26_type, __int128_t>::value) );
+  typedef make_signed<__int128>::type  	        test26_type;
+  VERIFY( (is_same<test26_type, __int128>::value) );
 #endif
 }
 

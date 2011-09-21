@@ -15561,15 +15561,13 @@ template<typename T>
 
 int main()
 {
-  typename same<long, __int128_t>::type                i1;
-  typename same<unsigned long, __uint128_t>::type      u1;
-  typename same<long long, __int128_t>::type           i2;
-  typename same<unsigned long long, __uint128_t>::type u2;
+  typename same<long, __int128>::type                i1;
+  typename same<long long, __int128>::type           i2;
 }
 EOF
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __int128_t and __uint128_t" >&5
-$as_echo_n "checking for __int128_t and __uint128_t... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __int128" >&5
+$as_echo_n "checking for __int128... " >&6; }
     if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -15587,7 +15585,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15590 "configure"
+#line 15588 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };

@@ -53,8 +53,8 @@ void test01()
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
-  VERIFY( (test_category<is_integral, __int128_t>(true)) );
-  VERIFY( (test_category<is_integral, __uint128_t>(true)) );
+  VERIFY( (test_category<is_integral, __int128>(true)) );
+  VERIFY( (test_category<is_integral, unsigned __int128>(true)) );
 #endif
 
 #ifdef _GLIBCXX_USE_FLOAT128

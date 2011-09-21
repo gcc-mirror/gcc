@@ -2446,17 +2446,15 @@ template<typename T>
 
 int main()
 {
-  typename same<long, __int128_t>::type                i1;
-  typename same<unsigned long, __uint128_t>::type      u1;
-  typename same<long long, __int128_t>::type           i2;
-  typename same<unsigned long long, __uint128_t>::type u2;
+  typename same<long, __int128>::type                i1;
+  typename same<long long, __int128>::type           i2;
 }
 EOF
 
-    AC_MSG_CHECKING([for __int128_t and __uint128_t])
+    AC_MSG_CHECKING([for __int128])
     if AC_TRY_EVAL(ac_compile); then
       AC_DEFINE(_GLIBCXX_USE_INT128, 1,
-      [Define if __int128_t and __uint128_t types are supported on this host.])
+      [Define if __int128 is supported on this host.])
       enable_int128=yes
     else
       enable_int128=no

@@ -53,8 +53,8 @@ void test01()
 #endif
 
 #ifdef _GLIBCXX_USE_INT128
-  VERIFY( (test_category<is_floating_point, __int128_t>(false)) );
-  VERIFY( (test_category<is_floating_point, __uint128_t>(false)) );
+  VERIFY( (test_category<is_floating_point, __int128>(false)) );
+  VERIFY( (test_category<is_floating_point, unsigned __int128>(false)) );
 #endif
 
   // Sanity check.
