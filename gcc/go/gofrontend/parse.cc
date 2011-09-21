@@ -1299,6 +1299,13 @@ Parse::declaration_may_start_here()
 void
 Parse::decl(void (Parse::*pfn)(void*), void* varg)
 {
+  if (this->peek_token()->is_eof())
+    {
+      if (!saw_errors())
+	error_at(this->location(), "unexpected end of file");
+      return;
+    }
+
   if (!this->peek_token()->is_op(OPERATOR_LPAREN))
     (this->*pfn)(varg);
   else
