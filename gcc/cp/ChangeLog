@@ -1,3 +1,10 @@
+2011-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50454
+	* decl.c (grokdeclarator): Consistently handle both __int128
+	and unsigned __int128 with -pedantic; suppress diagnostic in
+	system headers.
+
 2011-09-20  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (DECL_TEMPLOID_INSTANTIATION): New.
