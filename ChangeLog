@@ -1,3 +1,7 @@
+2011-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* MAINTAINERS (sparc port): Remove myself.
+
 2011-09-14  Tom de Vries  <tom@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
