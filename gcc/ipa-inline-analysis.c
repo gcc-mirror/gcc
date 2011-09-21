@@ -1202,6 +1202,7 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
   gimple set_stmt;
   tree op2;
   tree parm;
+  tree base;
 
   last = last_stmt (bb);
   if (!last
@@ -1252,7 +1253,8 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
       || gimple_call_num_args (set_stmt) != 1)
     return;
   op2 = gimple_call_arg (set_stmt, 0);
-  parm = unmodified_parm (set_stmt, op2);
+  base = get_base_address (op2);
+  parm = unmodified_parm (set_stmt, base ? base : op2);
   if (!parm)
     return;
   index = ipa_get_param_decl_index (info, parm);
@@ -1433,6 +1435,7 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
   ssa_op_iter iter;
   tree use;
   struct predicate op_non_const;
+  bool is_load;
 
   /* What statments might be optimized away
      when their arguments are constant
@@ -1443,10 +1446,28 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
       && gimple_code (stmt) != GIMPLE_SWITCH)
     return p;
 
-  /* Stores and loads will stay anyway.
-     TODO: Constant memory accesses could be handled here, too.  */
-  if (gimple_vuse (stmt))
+  /* Stores will stay anyway.  */
+  if (gimple_vdef (stmt))
     return p;
+
+  is_load = gimple_vuse (stmt) != NULL;
+
+  /* Loads can be optimized when the value is known.  */
+  if (is_load)
+    {
+      tree op = gimple_assign_rhs1 (stmt);
+      tree base = get_base_address (op);
+      tree parm;
+
+      gcc_assert (gimple_assign_single_p (stmt));
+      if (!base)
+	return p;
+      parm = unmodified_parm (stmt, base);
+      if (!parm )
+	return p;
+      if (ipa_get_param_decl_index (info, parm) < 0)
+	return p;
+    }
 
   /* See if we understand all operands before we start
      adding conditionals.  */
@@ -1466,6 +1487,15 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
       return p;
     }
   op_non_const = false_predicate ();
+  if (is_load)
+    {
+      tree parm = unmodified_parm
+		    (stmt, get_base_address (gimple_assign_rhs1 (stmt)));
+      p = add_condition (summary,
+			 ipa_get_param_decl_index (info, parm),
+			 IS_NOT_CONSTANT, NULL);
+      op_non_const = or_predicates (summary->conds, &p, &op_non_const);
+    }
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
       tree parm = unmodified_parm (stmt, use);
@@ -1694,6 +1724,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   HOST_WIDE_INT self_stack_size;
   struct cgraph_edge *e;
   struct inline_summary *info;
+  tree old_decl = current_function_decl;
 
   gcc_assert (!node->global.inlined_to);
 
@@ -1717,6 +1748,10 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       account_size_time (info, 0, 0, &t);
       return;
     }
+
+  /* Even is_gimple_min_invariant rely on current_function_decl.  */
+  current_function_decl = node->decl;
+  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
   /* Estimate the stack size for the function if we're optimizing.  */
   self_stack_size = optimize ? estimated_stack_frame_size (node) : 0;
@@ -1757,6 +1792,8 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->size = info->self_size;
   info->stack_frame_offset = 0;
   info->estimated_stack_size = info->estimated_self_stack_size;
+  current_function_decl = old_decl;
+  pop_cfun ();
 }
 
 
