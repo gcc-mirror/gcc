@@ -98,7 +98,6 @@ sh port			Alexandre Oliva		aoliva@redhat.com
 sh port			Kaz Kojima		kkojima@gcc.gnu.org
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
-sparc port		Jakub Jelinek		jakub@redhat.com
 sparc port		Eric Botcazou		ebotcazou@libertysurf.fr
 spu port		Trevor Smigiel		trevor_smigiel@playstation.sony.com
 spu port		David Edelsohn		dje.gcc@gmail.com
