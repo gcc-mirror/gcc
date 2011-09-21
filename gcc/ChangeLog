@@ -1,3 +1,17 @@
+2011-09-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50449
+	PR target/50465
+	* config/avr/avr.md (adjust_len): New insn attribute.
+	(*reload_insi, *reload_insf): Use it.
+	(*movsi, *movsf): Use new interface of output_movsisf.
+	* config/avr/avr-protos.h (output_movsisf): Change prototype.
+	* config/avr/avr.c (output_movsisf): Ditto.
+	(adjust_insn_length): Use insn attribute "adjust_len" to adjust
+	lengths of insns *reload_insi, *reload_insf.
+	(output_reload_insisf_1): New static function.
+	(output_reload_insisf): Use it.
+
 2011-09-21  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (def_builtin): Change from macro into function.
