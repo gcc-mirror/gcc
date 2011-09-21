@@ -710,9 +710,8 @@ relative_time_benefit (struct inline_summary *callee_info,
   uninlined_call_time =
     ((gcov_type)
      (callee_info->time
-      + inline_edge_summary (edge)->call_stmt_time
-      + CGRAPH_FREQ_BASE / 2) * edge->frequency
-     / CGRAPH_FREQ_BASE);
+      + inline_edge_summary (edge)->call_stmt_time) * edge->frequency
+     + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
   /* Compute relative time benefit, i.e. how much the call becomes faster.
      ??? perhaps computing how much the caller+calle together become faster
      would lead to more realistic results.  */
