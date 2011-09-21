@@ -340,7 +340,7 @@ Parse::type_name(bool issue_error)
       else
 	{
 	  const std::string& packname(package->package_value()->name());
-	  error_at(location, "reference to undefined identifer %<%s.%s%>",
+	  error_at(location, "reference to undefined identifier %<%s.%s%>",
 		   Gogo::message_name(packname).c_str(),
 		   Gogo::message_name(name).c_str());
 	  issue_error = false;
