@@ -1,3 +1,10 @@
+2011-09-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/bmi2-mulx32-2.c: New test.
+	* gcc.target/i386/bmi2-mulx32-2a.c: Ditto.
+	* gcc.target/i386/bmi2-mulx64-2.c: Ditto.
+	* gcc.target/i386/bmi2-mulx64-2a.c: Ditto.
+
 2011-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt19.adb: New test.
