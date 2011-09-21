@@ -1,3 +1,10 @@
+2011-09-21  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.c (def_builtin): Change from macro into function.
+	(def_builtin_const): New.
+	(sparc_vis_init_builtins): Use def_builtin_const for all VIS builtins
+	other than alignaddr and falignaddr.
+
 2011-09-21  Tom de Vries  <tom@codesourcery.com>
 
 	* final.c (final): Handle if JUMP_LABEL is not LABEL_P.
