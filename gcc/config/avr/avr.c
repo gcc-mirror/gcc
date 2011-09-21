@@ -1819,7 +1819,7 @@ avr_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 
       for (regno = cum->regno; regno < cum->regno + bytes; regno++)
         if (fixed_regs[regno])
-          warning (0,"Register %s is needed to pass a parameter but is fixed",
+          error ("Register %s is needed to pass a parameter but is fixed",
                  reg_names[regno]);
     }
       
