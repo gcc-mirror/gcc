@@ -2,7 +2,6 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
 // { dg-options "-O2 -msse2" }
 // { dg-options "-O2 -msse2 -fpic" { target fpic } }
-// { dg-require-effective-target sse2 }
 
 #include <xmmintrin.h>
 
