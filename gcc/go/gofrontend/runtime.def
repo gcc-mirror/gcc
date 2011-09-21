@@ -87,8 +87,8 @@ DEF_GO_RUNTIME(MAP_INDEX, "__go_map_index", P3(MAP, POINTER, BOOL),
 	       R1(POINTER))
 
 // Look up a key in a map returning whether it is present.
-DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2", P3(MAP, POINTER, POINTER),
-	       R1(BOOL))
+DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2",
+	       P4(TYPE, MAP, POINTER, POINTER), R1(BOOL))
 
 // Tuple assignment to a map element.
 DEF_GO_RUNTIME(MAPASSIGN2, "runtime.mapassign2",

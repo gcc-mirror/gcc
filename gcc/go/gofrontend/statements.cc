@@ -1085,14 +1085,16 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
     Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
   b->add_statement(present_temp);
 
-  // present_temp = mapaccess2(MAP, &key_temp, &val_temp)
+  // present_temp = mapaccess2(DESCRIPTOR, MAP, &key_temp, &val_temp)
+  Expression* a1 = Expression::make_type_descriptor(map_type, loc);
+  Expression* a2 = map_index->map();
   Temporary_reference_expression* ref =
     Expression::make_temporary_reference(key_temp, loc);
-  Expression* a1 = Expression::make_unary(OPERATOR_AND, ref, loc);
+  Expression* a3 = Expression::make_unary(OPERATOR_AND, ref, loc);
   ref = Expression::make_temporary_reference(val_temp, loc);
-  Expression* a2 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* call = Runtime::make_call(Runtime::MAPACCESS2, loc, 3,
-					map_index->map(), a1, a2);
+  Expression* a4 = Expression::make_unary(OPERATOR_AND, ref, loc);
+  Expression* call = Runtime::make_call(Runtime::MAPACCESS2, loc, 4,
+					a1, a2, a3, a4);
 
   ref = Expression::make_temporary_reference(present_temp, loc);
   ref->set_is_lvalue();
