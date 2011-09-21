@@ -32,7 +32,7 @@ loop=true
 keep=false
 prefix=
 dejagnu=no
-timeout=60
+timeout=240
 testname=""
 trace=false
 while $loop; do
