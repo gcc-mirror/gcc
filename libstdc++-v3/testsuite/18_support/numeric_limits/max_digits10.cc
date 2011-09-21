@@ -49,8 +49,8 @@ test01()
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
-  VERIFY( std::numeric_limits<__int128_t>::max_digits10 == 0 );
-  VERIFY( std::numeric_limits<__uint128_t>::max_digits10 == 0 );
+  VERIFY( std::numeric_limits<__int128>::max_digits10 == 0 );
+  VERIFY( std::numeric_limits<unsigned __int128>::max_digits10 == 0 );
 #endif
 
   const int f_max_digits10 = (2 + std::numeric_limits<float>::digits

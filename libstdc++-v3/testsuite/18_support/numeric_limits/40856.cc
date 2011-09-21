@@ -22,6 +22,7 @@
 
 // libstdc++/40856 
 #ifdef _GLIBCXX_USE_INT128
-static_assert(std::numeric_limits<__int128_t>::is_specialized == true, "");
-static_assert(std::numeric_limits<__uint128_t>::is_specialized == true, "");
+static_assert(std::numeric_limits<__int128>::is_specialized == true, "");
+static_assert(std::numeric_limits<unsigned __int128>::is_specialized == true,
+	      "");
 #endif
