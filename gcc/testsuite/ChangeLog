@@ -1,3 +1,9 @@
+2011-09-21  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (errchk): Add special case for bug332.
+	(go-gc-tests): Add special cases for bug347 and bug348.  Recognize
+	some more test lines.
+
 2011-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/other/i386-3.C: Remove duplicated dg-options.
