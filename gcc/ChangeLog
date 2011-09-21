@@ -1,3 +1,13 @@
+2011-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50464
+	* config/i386/sse.md (xop_pcmov_<mode><avxsizesuffix>): Change
+	operand 1 predicate to register_operand and operand 2 predicate
+	to nonimmediate_operand.
+	* config/i386/i386.c (ix86_expand_sse_movcc): When generating
+	xop_pcmov, force op_true to register.  Also, force op_false to
+	register if it doesn't satisfy nonimmediate_operand predicate.
+
 2011-09-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/bmi2intrin.h (_mulx_u64): New.
@@ -6,7 +16,8 @@
 2011-09-21  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/50433
-	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Use get_base_address.
+	* ipa-inline-analysis.c (eliminated_by_inlining_prob):
+	Use get_base_address.
 
 2011-09-21  Jakub Jelinek  <jakub@redhat.com>
 
