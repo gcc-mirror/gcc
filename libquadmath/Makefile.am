@@ -107,6 +107,9 @@ AM_MAKEFLAGS = \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
+# Subdir rules rely on $(FLAGS_TO_PASS)
+FLAGS_TO_PASS = $(AM_MAKEFLAGS)
+
 MAKEOVERRIDES=
 
 # AM_CONDITIONAL on configure option --generated-files-in-srcdir
