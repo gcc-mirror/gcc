@@ -1149,18 +1149,15 @@ eliminated_by_inlining_prob (gimple stmt)
 	  {
 	    tree rhs = gimple_assign_rhs1 (stmt);
             tree lhs = gimple_assign_lhs (stmt);
-	    tree inner_rhs = rhs;
-	    tree inner_lhs = lhs;
+	    tree inner_rhs = get_base_address (rhs);
+	    tree inner_lhs = get_base_address (lhs);
 	    bool rhs_free = false;
 	    bool lhs_free = false;
 
- 	    while (handled_component_p (inner_lhs)
-		   || TREE_CODE (inner_lhs) == MEM_REF)
-	      inner_lhs = TREE_OPERAND (inner_lhs, 0);
- 	    while (handled_component_p (inner_rhs)
-	           || TREE_CODE (inner_rhs) == ADDR_EXPR
-		   || TREE_CODE (inner_rhs) == MEM_REF)
-	      inner_rhs = TREE_OPERAND (inner_rhs, 0);
+	    if (!inner_rhs)
+	      inner_rhs = rhs;
+	    if (!inner_lhs)
+	      inner_lhs = lhs;
 
 	    if (unmodified_parm (stmt, inner_rhs))
 	      rhs_free = true;
