@@ -8640,6 +8640,18 @@ grokdeclarator (const cp_declarator *declarator,
 
   ctype = NULL_TREE;
 
+  if (explicit_int128)
+    {
+      if (int128_integer_type_node == NULL_TREE)
+	{
+	  error ("%<__int128%> is not supported by this target");
+	  explicit_int128 = false;
+	}
+      else if (pedantic && ! in_system_header)
+	pedwarn (input_location, OPT_pedantic,
+		 "ISO C++ does not support %<__int128%> for %qs", name);
+    }
+
   /* Now process the modifiers that were specified
      and check for invalid combinations.  */
 
@@ -8663,8 +8675,6 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("%<signed%> and %<unsigned%> specified together for %qs", name);
       else if (longlong && TREE_CODE (type) != INTEGER_TYPE)
 	error ("%<long long%> invalid for %qs", name);
-      else if (explicit_int128 && TREE_CODE (type) != INTEGER_TYPE)
-	error ("%<__int128%> invalid for %qs", name);
       else if (long_p && TREE_CODE (type) == REAL_TYPE)
 	error ("%<long%> invalid for %qs", name);
       else if (short_p && TREE_CODE (type) == REAL_TYPE)
@@ -8695,22 +8705,6 @@ grokdeclarator (const cp_declarator *declarator,
 	      if (flag_pedantic_errors)
 		ok = 0;
 	    }
-	  if (explicit_int128)
-	    {
-	      if (int128_integer_type_node == NULL_TREE)
-	        {
-		  error ("%<__int128%> is not supported by this target");
-		  ok = 0;
-	        }
-	      else if (pedantic)
-		{
-		  pedwarn (input_location, OPT_pedantic,
-			   "ISO C++ does not support %<__int128%> for %qs",
-			   name);
-		  if (flag_pedantic_errors)
-		    ok = 0;
-		}
-	    }
 	}
 
       /* Discard the type modifiers if they are invalid.  */
@@ -8721,7 +8715,6 @@ grokdeclarator (const cp_declarator *declarator,
 	  long_p = false;
 	  short_p = false;
 	  longlong = 0;
-	  explicit_int128 = false;
 	}
     }
 
