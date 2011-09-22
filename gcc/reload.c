@@ -2825,6 +2825,13 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  /* Address operands are reloaded in their existing mode,
 	     no matter what is specified in the machine description.  */
 	  operand_mode[i] = GET_MODE (recog_data.operand[i]);
+
+	  /* If the address is a single CONST_INT pick address mode
+	     instead otherwise we will later not know in which mode
+	     the reload should be performed.  */
+	  if (operand_mode[i] == VOIDmode)
+	    operand_mode[i] = Pmode;
+
 	}
       else if (code == MEM)
 	{
