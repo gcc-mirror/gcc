@@ -11573,7 +11573,7 @@ arm_must_pass_in_stack (enum machine_mode mode, const_tree type)
    aggregate types are placed in the lowest memory address.  */
 
 bool
-arm_pad_arg_upward (enum machine_mode mode, const_tree type)
+arm_pad_arg_upward (enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
 {
   if (!TARGET_AAPCS_BASED)
     return DEFAULT_FUNCTION_ARG_PADDING(mode, type) == upward;
@@ -11581,36 +11581,38 @@ arm_pad_arg_upward (enum machine_mode mode, const_tree type)
   if (type && BYTES_BIG_ENDIAN && INTEGRAL_TYPE_P (type))
     return false;
 
-  /* Half-float values are only passed to libcalls, not regular functions.
-     They should be passed and returned as "short"s (see RTABI).  To achieve
-     that effect in big-endian mode, pad downwards so the value is passed in
-     the least-significant end of the register.  ??? This needs to be here
-     rather than in arm_pad_reg_upward due to peculiarity in the handling of
-     libcall arguments.  */
-  if (BYTES_BIG_ENDIAN && mode == HFmode)
-    return false;
-
   return true;
 }
 
 
 /* Similarly, for use by BLOCK_REG_PADDING (MODE, TYPE, FIRST).
-   For non-AAPCS, return !BYTES_BIG_ENDIAN if the least significant
-   byte of the register has useful data, and return the opposite if the
-   most significant byte does.
-   For AAPCS, small aggregates and small complex types are always padded
-   upwards.  */
+   Return !BYTES_BIG_ENDIAN if the least significant byte of the
+   register has useful data, and return the opposite if the most
+   significant byte does.  */
 
 bool
-arm_pad_reg_upward (enum machine_mode mode ATTRIBUTE_UNUSED,
+arm_pad_reg_upward (enum machine_mode mode,
                     tree type, int first ATTRIBUTE_UNUSED)
 {
-  if (TARGET_AAPCS_BASED
-      && BYTES_BIG_ENDIAN
-      && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE
-	  || FIXED_POINT_TYPE_P (type))
-      && int_size_in_bytes (type) <= 4)
-    return true;
+  if (TARGET_AAPCS_BASED && BYTES_BIG_ENDIAN)
+    {
+      /* For AAPCS, small aggregates, small fixed-point types,
+	 and small complex types are always padded upwards.  */
+      if (type)
+	{
+	  if ((AGGREGATE_TYPE_P (type)
+	       || TREE_CODE (type) == COMPLEX_TYPE
+	       || FIXED_POINT_TYPE_P (type))
+	      && int_size_in_bytes (type) <= 4)
+	    return true;
+	}
+      else
+	{
+	  if ((COMPLEX_MODE_P (mode) || ALL_FIXED_POINT_MODE_P (mode))
+	      && GET_MODE_SIZE (mode) <= 4)
+	    return true;
+	}
+    }
 
   /* Otherwise, use default padding.  */
   return !BYTES_BIG_ENDIAN;
