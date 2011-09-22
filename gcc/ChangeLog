@@ -1,3 +1,13 @@
+2011-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50464
+	* config/i386/sse.md (xop_pcmov_<mode>): Change operand 1 predicate
+	to register_operand and operand 2 predicate to nonimmediate_operand.
+	(xop_pcmov_<mode>256): Ditto.
+	* config/i386/i386.c (ix86_expand_sse_movcc): When generating
+	xop_pcmov, force op_true to register.  Also, force op_false to
+	register if it doesn't satisfy nonimmediate_operand predicate.
+
 2011-09-19  Alan Modra  <amodra@gmail.com>
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -104,9 +114,9 @@
 
 	Revert
 	2011-09-02  Martin Jambor  <mjambor@suse.cz>
-        PR middle-end/49886
-        * ipa-split.c (split_function): Do not skip any arguments if
-        can_change_signature is set or there are function type attributes.
+	PR middle-end/49886
+	* ipa-split.c (split_function): Do not skip any arguments if
+	can_change_signature is set or there are function type attributes.
 
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -450,7 +460,7 @@
 	Use the correct type for the new tree.
 
 2011-07-14  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49487
 	Backport from mainline r176276
 	2011-07-14  Georg-Johann Lay
@@ -474,7 +484,7 @@
 	(build_accesses_from_assign): Use it.
 
 2011-07-11  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/39633
 	Backport from mainline r176141
 	2011-07-11  Georg-Johann Lay
@@ -497,7 +507,7 @@
 	Likewise.
 
 2011-07-08  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/46779
 	Backport from mainline SVN 176053.
 	2011-07-08  Georg-Johann Lay  <avr@gjlay.de>
@@ -582,7 +592,7 @@
 
 	Backport from mainline
 	2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/44643
 	* config/avr/avr.c (avr_insert_attributes): Use TYPE_READONLY
 	instead of TREE_READONLY.

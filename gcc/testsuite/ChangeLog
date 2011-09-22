@@ -1,3 +1,8 @@
+2011-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50464
+	* g++.dg/other/pr50464.C: New test.
+
 2011-09-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/49886

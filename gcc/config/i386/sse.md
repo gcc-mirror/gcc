@@ -10465,8 +10465,8 @@
   [(set (match_operand:SSEMODE 0 "register_operand" "=x,x")
 	(if_then_else:SSEMODE
 	  (match_operand:SSEMODE 3 "nonimmediate_operand" "x,m")
-	  (match_operand:SSEMODE 1 "vector_move_operand" "x,x")
-	  (match_operand:SSEMODE 2 "vector_move_operand" "xm,x")))]
+	  (match_operand:SSEMODE 1 "register_operand" "x,x")
+	  (match_operand:SSEMODE 2 "nonimmediate_operand" "xm,x")))]
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
@@ -10475,8 +10475,8 @@
   [(set (match_operand:AVX256MODE 0 "register_operand" "=x,x")
 	(if_then_else:AVX256MODE
 	  (match_operand:AVX256MODE 3 "nonimmediate_operand" "x,m")
-	  (match_operand:AVX256MODE 1 "vector_move_operand" "x,x")
-	  (match_operand:AVX256MODE 2 "vector_move_operand" "xm,x")))]
+	  (match_operand:AVX256MODE 1 "register_operand" "x,x")
+	  (match_operand:AVX256MODE 2 "nonimmediate_operand" "xm,x")))]
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
