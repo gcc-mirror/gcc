@@ -96,6 +96,10 @@
 	* config/sparc/sparc.c (sparc_vis_init_builtins): Do not mark
 	fpack16, fpack32, fpackfix as const.
 
+	* config/sparc/sparc.md (G[0-7]_REG, O[0-7]_REG, L[0-7]_REG,
+	I[0-7]_REG, F[0-62]_REG, FCC[0-3]_REG, CC_REG, SFP_REG): New
+	constants.  Use them everywhere.
+
 2011-09-22  Oleg Endo  <oleg.endo@t-online.de>
 
 	* config/sh/sh.c (andcosts): Renamed to and_xor_ior_costs.
