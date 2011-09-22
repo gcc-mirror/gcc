@@ -18911,6 +18911,9 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     {
       rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
 
+      if (!nonimmediate_operand (op_true, mode))
+	op_true = force_reg (mode, op_true);
+
       op_false = force_reg (mode, op_false);
 
       switch (mode)

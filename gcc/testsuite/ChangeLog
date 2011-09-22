@@ -1,3 +1,8 @@
+2011-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50482
+	* gcc.target/i386/pr50482.c: New test.
+
 2011-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/i386/pad-2.c, gcc.target/i386/pad-3.c,
@@ -40,7 +45,7 @@
 2011-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/other/i386-3.C: Remove duplicated dg-options.
-	* g++.dg/other/i386-4.C: Remove dg-requre-effective-target directive.
+	* g++.dg/other/i386-4.C: Remove dg-require-effective-target directive.
 	* g++.dg/other/i386-8.C: Ditto.
 	* g++.dg/other/pr34435.C: Ditto.
 	* g++.dg/other/pr39496.C: Ditto.

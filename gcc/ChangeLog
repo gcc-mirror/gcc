@@ -1,3 +1,10 @@
+2011-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50482
+	* config/i386/i386.c (ix86_expand_sse_movcc): When generating
+	blendv, force op_true to register if it doesn't satisfy
+	nonimmediate_operand predicate.
+
 2011-09-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/50113
@@ -18,8 +25,7 @@
 	* ipa-inline.c (ipa_inline): Likewise; do not call
 	ipa_create_all_structures_for_iinln.
 	(ipa_inline): Always free jump functions.
-	* ipa-inline-analysis.c (evaluate_conditions_for_edge): Remove
-	hack.
+	* ipa-inline-analysis.c (evaluate_conditions_for_edge): Remove hack.
 	(remap_edge_predicates): Fix pasto.
 	(inline_merge_summary): Remove nlined edge predicate; remove hack.
 	(inline_analyze_function): Always initialize jump functions.
