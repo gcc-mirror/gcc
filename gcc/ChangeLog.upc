@@ -1,3 +1,9 @@
+2011-09-22  Gary Funck  <gary@intrepid.com>
+
+	* tree-pretty-print.c (dump_generic_node): Print UPC type qualifier
+	information.
+	(dump_upc_type_quals): New.
+
 2011-09-15  Nenad Vukicevic <nenad@intrepid.com>
 
 	Add to FLAGS the flags needed to disable inlining of
@@ -9,7 +15,7 @@
 
 	Fix ICE involving shared bit field accesses.
 	* tree.c (build3_stat): Propagate TEEE_SHARED()
-	and TREE_STRICT() and TREE_RELAXED() flags, if applicable.
+	TREE_STRICT() and TREE_RELAXED() flags, if applicable.
 
 2011-09-13  Gary Funck  <gary@intrepid.com>
 

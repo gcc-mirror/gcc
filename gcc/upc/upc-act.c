@@ -580,7 +580,7 @@ upc_get_block_factor (const tree type)
   tree block_factor = size_one_node;
   const tree elt_type = strip_array_types (type);
   if (elt_type && (TREE_CODE (elt_type) != ERROR_MARK)
-      && TYPE_BLOCK_FACTOR (elt_type))
+      && TYPE_HAS_BLOCK_FACTOR (elt_type))
     block_factor = TYPE_BLOCK_FACTOR (elt_type);
   return block_factor;
 }

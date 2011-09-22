@@ -590,6 +590,26 @@ dump_block_node (pretty_printer *buffer, tree block, int spc, int flags)
 }
 
 
+static void
+dump_upc_type_quals (pretty_printer *buffer, tree type, int quals)
+{
+  tree block_factor;
+  gcc_assert (type && TYPE_CHECK (type));
+  gcc_assert (quals & TYPE_QUAL_SHARED);
+  if (quals & TYPE_QUAL_STRICT)
+    pp_string (buffer, "strict ");
+  if (quals & TYPE_QUAL_RELAXED)
+    pp_string (buffer, "relaxed ");
+  pp_string (buffer, "shared ");
+  if (TYPE_HAS_BLOCK_FACTOR (type))
+    {
+      tree block_factor = TYPE_BLOCK_FACTOR (type);
+      pp_string (buffer, "[");
+      pp_wide_integer (buffer, TREE_INT_CST_LOW (block_factor));
+      pp_string (buffer, "] ");
+    }
+}
+
 /* Dump the node NODE on the pretty_printer BUFFER, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
    tree-pass.h).  If IS_STMT is true, the object printed is considered
@@ -684,8 +704,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_string (buffer, "volatile ");
 	else if (quals & TYPE_QUAL_RESTRICT)
 	  pp_string (buffer, "restrict ");
-	else if (upc_shared_type_p (node))
-	  pp_string (buffer, "shared ");
+	else if (quals & TYPE_QUAL_SHARED)
+          dump_upc_type_quals (buffer, node, quals);
 
 	if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))
 	  {
@@ -798,6 +818,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    pp_string (buffer, " volatile");
 	  if (quals & TYPE_QUAL_RESTRICT)
 	    pp_string (buffer, " restrict");
+          if (quals & TYPE_QUAL_SHARED)
+	    {
+	      if (quals & TYPE_QUAL_STRICT)
+		pp_string (buffer, " strict");
+	      if (quals & TYPE_QUAL_RELAXED)
+		pp_string (buffer, " relaxed");
+              pp_string (buffer, " shared");
+	    }
 
 	  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))
 	    {
@@ -955,6 +983,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_string (buffer, "const ");
 	if (quals & TYPE_QUAL_VOLATILE)
 	  pp_string (buffer, "volatile ");
+	if (quals & TYPE_QUAL_SHARED)
+          dump_upc_type_quals (buffer, node, quals);
 
         /* Print the name of the structure.  */
         if (TREE_CODE (node) == RECORD_TYPE)
@@ -962,7 +992,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
         else if (TREE_CODE (node) == UNION_TYPE)
 	  pp_string (buffer, "union ");
 
-        if (TYPE_NAME (node))
+	if (upc_pts_rep_type_node && node == upc_pts_rep_type_node)
+	  /* Normally, builtin types will not be printed.
+	     We short-circuit that check for the UPC "struct PTS"
+	     representation type.  */
+	  pp_string (buffer, "upc_shared_ptr_t");
+        else if (TYPE_NAME (node))
 	  dump_generic_node (buffer, TYPE_NAME (node), spc, flags, false);
 	else if (!(flags & TDF_SLIM))
 	  /* FIXME: If we eliminate the 'else' above and attempt

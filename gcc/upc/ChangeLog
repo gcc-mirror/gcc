@@ -1,3 +1,9 @@
+2011-09-22  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c (upc_get_block_factor): test TYPE_HAS_BLOCK_FACTOR()
+	before calling TYPE_BLOCK_FACTOR().  This fits better with
+	recent encoding of block factor values with a hash table.
+
 2011-09-15  Gary Funck  <gary@intrepid.com>
 
 	Fix ICE involving shared bit field accesses.
