@@ -1,6 +1,6 @@
 /* Help friends in C++.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2010  Free Software Foundation, Inc.
+   2007, 2008, 2010, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -236,6 +236,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		 "invalid type %qT declared %<friend%>", friend_type);
       return;
     }
+
+  friend_type = cv_unqualified (friend_type);
 
   if (friend_depth)
     /* If the TYPE is a template then it makes sense for it to be
