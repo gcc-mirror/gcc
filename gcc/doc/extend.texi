@@ -12965,6 +12965,15 @@ int __builtin_vis_edge16 (void *, void *);
 int __builtin_vis_edge16l (void *, void *);
 int __builtin_vis_edge32 (void *, void *);
 int __builtin_vis_edge32l (void *, void *);
+
+int __builtin_vis_fcmple16 (v4hi, v4hi);
+int __builtin_vis_fcmple32 (v2si, v2si);
+int __builtin_vis_fcmpne16 (v4hi, v4hi);
+int __builtin_vis_fcmpne32 (v2si, v2si);
+int __builtin_vis_fcmpgt16 (v4hi, v4hi);
+int __builtin_vis_fcmpgt32 (v2si, v2si);
+int __builtin_vis_fcmpeq16 (v4hi, v4hi);
+int __builtin_vis_fcmpeq32 (v2si, v2si);
 @end smallexample
 
 @node SPU Built-in Functions

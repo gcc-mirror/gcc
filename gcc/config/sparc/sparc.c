@@ -9164,6 +9164,10 @@ sparc_vis_init_builtins (void)
   tree si_ftype_ptr_ptr = build_function_type_list (intSI_type_node,
 		        			    ptr_type_node,
 					            ptr_type_node, 0);
+  tree si_ftype_v4hi_v4hi = build_function_type_list (intSI_type_node,
+						      v4hi, v4hi, 0);
+  tree si_ftype_v2si_v2si = build_function_type_list (intSI_type_node,
+						      v2si, v2si, 0);
 
   /* Packing and expanding vectors.  */
   def_builtin_const ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis,
@@ -9252,6 +9256,23 @@ sparc_vis_init_builtins (void)
       def_builtin_const ("__builtin_vis_edge32l", CODE_FOR_edge32lsi_vis,
 			 si_ftype_ptr_ptr);
     }
+
+  def_builtin_const ("__builtin_vis_fcmple16", CODE_FOR_fcmple16_vis,
+		     si_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fcmple32", CODE_FOR_fcmple32_vis,
+		     si_ftype_v2si_v2si);
+  def_builtin_const ("__builtin_vis_fcmpne16", CODE_FOR_fcmpne16_vis,
+		     si_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fcmpne32", CODE_FOR_fcmpne32_vis,
+		     si_ftype_v2si_v2si);
+  def_builtin_const ("__builtin_vis_fcmpgt16", CODE_FOR_fcmpgt16_vis,
+		     si_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fcmpgt32", CODE_FOR_fcmpgt32_vis,
+		     si_ftype_v2si_v2si);
+  def_builtin_const ("__builtin_vis_fcmpeq16", CODE_FOR_fcmpeq16_vis,
+		     si_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fcmpeq32_vis,
+		     si_ftype_v2si_v2si);
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.
