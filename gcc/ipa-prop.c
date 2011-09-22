@@ -195,9 +195,9 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 		   tree_code_name[(int)
 				  jump_func->value.pass_through.operation]);
 	  if (jump_func->value.pass_through.operation != NOP_EXPR)
-	    print_generic_expr (dump_file,
+	    print_generic_expr (f,
 				jump_func->value.pass_through.operand, 0);
-	  fprintf (dump_file, "\n");
+	  fprintf (f, "\n");
 	}
       else if (type == IPA_JF_ANCESTOR)
 	{
@@ -206,7 +206,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 		   jump_func->value.ancestor.formal_id,
 		   jump_func->value.ancestor.offset);
 	  print_generic_expr (f, jump_func->value.ancestor.type, 0);
-	  fprintf (dump_file, "\n");
+	  fprintf (f, "\n");
 	}
     }
 }
