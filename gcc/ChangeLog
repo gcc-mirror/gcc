@@ -1,3 +1,7 @@
+2011-09-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* ipa-prop.c (ipa_print_node_jump_functions): Fix typos.
+
 2011-09-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* reload.c (find_reloads): Set operand_mode to Pmode for address
