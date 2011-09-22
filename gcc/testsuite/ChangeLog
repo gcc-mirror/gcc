@@ -1,3 +1,8 @@
+2011-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/arm/cmp-1.c: New test.
+	* gcc.target/arm/cmp-2.c: Likewise.
+
 2011-09-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41733

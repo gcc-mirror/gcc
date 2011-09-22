@@ -1,3 +1,12 @@
+2011-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/predicates.md (expandable_comparison_operator): New
+	predicate, extracted from...
+	(arm_comparison_operator): ...here.
+	* config/arm/arm.md (cbranchsi4, cbranchsf4, cbranchdf4, cbranchdi4)
+	(cstoresi4, cstoresf4, cstoredf4, cstoredi4, movsicc, movsfcc)
+	(movdfcc): Use expandable_comparison_operator.
+
 2011-09-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50447

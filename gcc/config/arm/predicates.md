@@ -249,9 +249,14 @@
 
 ;; True for integer comparisons and, if FP is active, for comparisons
 ;; other than LTGT or UNEQ.
+(define_special_predicate "expandable_comparison_operator"
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,
+	       unordered,ordered,unlt,unle,unge,ungt"))
+
+;; Likewise, but only accept comparisons that are directly supported
+;; by ARM condition codes.
 (define_special_predicate "arm_comparison_operator"
-  (and (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,
-		    unordered,ordered,unlt,unle,unge,ungt")
+  (and (match_operand 0 "expandable_comparison_operator")
        (match_test "maybe_get_arm_condition_code (op) != ARM_NV")))
 
 (define_special_predicate "lt_ge_comparison_operator"
