@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=core2" } } */
 /* { dg-options "-O2 -ftree-vectorize -mfpmath=sse -march=core2 -fdump-tree-vect-stats" } */
 
 extern void abort (void);
