@@ -1,3 +1,8 @@
+2011-09-22  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Do not mark
+	fpack16, fpack32, fpackfix as const.
+
 2011-09-22  Oleg Endo  <oleg.endo@t-online.de>
 
 	* config/sh/sh.c (andcosts): Renamed to and_xor_ior_costs.

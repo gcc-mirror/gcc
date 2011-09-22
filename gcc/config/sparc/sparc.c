@@ -9170,12 +9170,12 @@ sparc_vis_init_builtins (void)
 						      v2si, v2si, 0);
 
   /* Packing and expanding vectors.  */
-  def_builtin_const ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis,
-		     v4qi_ftype_v4hi);
-  def_builtin_const ("__builtin_vis_fpack32", CODE_FOR_fpack32_vis,
-		     v8qi_ftype_v2si_v8qi);
-  def_builtin_const ("__builtin_vis_fpackfix", CODE_FOR_fpackfix_vis,
-		     v2hi_ftype_v2si);
+  def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis,
+	       v4qi_ftype_v4hi);
+  def_builtin ("__builtin_vis_fpack32", CODE_FOR_fpack32_vis,
+	       v8qi_ftype_v2si_v8qi);
+  def_builtin ("__builtin_vis_fpackfix", CODE_FOR_fpackfix_vis,
+	       v2hi_ftype_v2si);
   def_builtin_const ("__builtin_vis_fexpand", CODE_FOR_fexpand_vis,
 		     v4hi_ftype_v4qi);
   def_builtin_const ("__builtin_vis_fpmerge", CODE_FOR_fpmerge_vis,
