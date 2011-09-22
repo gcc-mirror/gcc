@@ -1905,14 +1905,9 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   gimple def_stmt;
   struct loop *loop;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
+      && reduc_index != -1)
     {
-      if (reduc_index == -1)
-        {
-          VEC_free (tree, heap, *vec_oprnds);
-          return;
-        }
-
       op_num = reduc_index - 1;
       op = gimple_op (stmt, reduc_index);
       /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
@@ -2164,7 +2159,7 @@ vect_get_slp_defs (tree op0, tree op1, slp_tree slp_node,
     return;
 
   code = gimple_assign_rhs_code (first_stmt);
-  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS || !vec_oprnds1)
+  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS || !vec_oprnds1 || !op1)
     return;
 
   /* The number of vector defs is determined by the number of vector statements
