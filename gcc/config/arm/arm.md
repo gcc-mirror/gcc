@@ -6791,7 +6791,7 @@
 
 (define_expand "cbranchsi4"
   [(set (pc) (if_then_else
-	      (match_operator 0 "arm_comparison_operator"
+	      (match_operator 0 "expandable_comparison_operator"
 	       [(match_operand:SI 1 "s_register_operand" "")
 	        (match_operand:SI 2 "nonmemory_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
@@ -6842,7 +6842,7 @@
 
 (define_expand "cbranchsf4"
   [(set (pc) (if_then_else
-	      (match_operator 0 "arm_comparison_operator"
+	      (match_operator 0 "expandable_comparison_operator"
 	       [(match_operand:SF 1 "s_register_operand" "")
 	        (match_operand:SF 2 "arm_float_compare_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
@@ -6854,7 +6854,7 @@
 
 (define_expand "cbranchdf4"
   [(set (pc) (if_then_else
-	      (match_operator 0 "arm_comparison_operator"
+	      (match_operator 0 "expandable_comparison_operator"
 	       [(match_operand:DF 1 "s_register_operand" "")
 	        (match_operand:DF 2 "arm_float_compare_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
@@ -6866,7 +6866,7 @@
 
 (define_expand "cbranchdi4"
   [(set (pc) (if_then_else
-	      (match_operator 0 "arm_comparison_operator"
+	      (match_operator 0 "expandable_comparison_operator"
 	       [(match_operand:DI 1 "cmpdi_operand" "")
 	        (match_operand:DI 2 "cmpdi_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
@@ -7721,7 +7721,7 @@
 
 (define_expand "cstoresi4"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(match_operator:SI 1 "arm_comparison_operator"
+	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "")
 	  (match_operand:SI 3 "reg_or_int_operand" "")]))]
   "TARGET_32BIT || TARGET_THUMB1"
@@ -7857,7 +7857,7 @@
 
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(match_operator:SI 1 "arm_comparison_operator"
+	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:SF 2 "s_register_operand" "")
 	  (match_operand:SF 3 "arm_float_compare_operand" "")]))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
@@ -7867,7 +7867,7 @@
 
 (define_expand "cstoredf4"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(match_operator:SI 1 "arm_comparison_operator"
+	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:DF 2 "s_register_operand" "")
 	  (match_operand:DF 3 "arm_float_compare_operand" "")]))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
@@ -7877,7 +7877,7 @@
 
 (define_expand "cstoredi4"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(match_operator:SI 1 "arm_comparison_operator"
+	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:DI 2 "cmpdi_operand" "")
 	  (match_operand:DI 3 "cmpdi_operand" "")]))]
   "TARGET_32BIT"
@@ -7997,7 +7997,7 @@
 
 (define_expand "movsicc"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(if_then_else:SI (match_operand 1 "arm_comparison_operator" "")
+	(if_then_else:SI (match_operand 1 "expandable_comparison_operator" "")
 			 (match_operand:SI 2 "arm_not_operand" "")
 			 (match_operand:SI 3 "arm_not_operand" "")))]
   "TARGET_32BIT"
@@ -8017,7 +8017,7 @@
 
 (define_expand "movsfcc"
   [(set (match_operand:SF 0 "s_register_operand" "")
-	(if_then_else:SF (match_operand 1 "arm_comparison_operator" "")
+	(if_then_else:SF (match_operand 1 "expandable_comparison_operator" "")
 			 (match_operand:SF 2 "s_register_operand" "")
 			 (match_operand:SF 3 "nonmemory_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
@@ -8043,7 +8043,7 @@
 
 (define_expand "movdfcc"
   [(set (match_operand:DF 0 "s_register_operand" "")
-	(if_then_else:DF (match_operand 1 "arm_comparison_operator" "")
+	(if_then_else:DF (match_operand 1 "expandable_comparison_operator" "")
 			 (match_operand:DF 2 "s_register_operand" "")
 			 (match_operand:DF 3 "arm_float_add_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
