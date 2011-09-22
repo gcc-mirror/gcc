@@ -1,3 +1,12 @@
+2011-09-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41733
+	* expr.c (gfc_check_pointer_assign): Check for nonintrinsic elemental
+	procedures.
+	* interface.c (gfc_compare_interfaces): Rename 'intent_flag'. Check
+	for PURE and ELEMENTAL attributes.
+	(compare_actual_formal): Remove pureness check here.
+
 2011-09-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* check.c (gfc_check_c_sizeof): Remove redundant word.

@@ -1087,12 +1087,12 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 /* 'Compare' two formal interfaces associated with a pair of symbols.
    We return nonzero if there exists an actual argument list that
    would be ambiguous between the two interfaces, zero otherwise.
-   'intent_flag' specifies whether INTENT and OPTIONAL of the arguments are
+   'strict_flag' specifies whether all the characteristics are
    required to match, which is not the case for ambiguity checks.*/
 
 int
 gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
-			int generic_flag, int intent_flag,
+			int generic_flag, int strict_flag,
 			char *errmsg, int err_len)
 {
   gfc_formal_arglist *f1, *f2;
@@ -1115,17 +1115,32 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
       return 0;
     }
 
-  /* If the arguments are functions, check type and kind
-     (only for dummy procedures and procedure pointer assignments).  */
-  if (!generic_flag && intent_flag && s1->attr.function && s2->attr.function)
+  /* Do strict checks on all characteristics
+     (for dummy procedures and procedure pointer assignments).  */
+  if (!generic_flag && strict_flag)
     {
-      if (s1->ts.type == BT_UNKNOWN)
-	return 1;
-      if ((s1->ts.type != s2->ts.type) || (s1->ts.kind != s2->ts.kind))
+      if (s1->attr.function && s2->attr.function)
 	{
-	  if (errmsg != NULL)
-	    snprintf (errmsg, err_len, "Type/kind mismatch in return value "
-		      "of '%s'", name2);
+	  /* If both are functions, check type and kind.  */
+	  if (s1->ts.type == BT_UNKNOWN)
+	    return 1;
+	  if ((s1->ts.type != s2->ts.type) || (s1->ts.kind != s2->ts.kind))
+	    {
+	      if (errmsg != NULL)
+		snprintf (errmsg, err_len, "Type/kind mismatch in return value "
+			  "of '%s'", name2);
+	      return 0;
+	    }
+	}
+
+      if (s1->attr.pure && !s2->attr.pure)
+	{
+	  snprintf (errmsg, err_len, "Mismatch in PURE attribute");
+	  return 0;
+	}
+      if (s1->attr.elemental && !s2->attr.elemental)
+	{
+	  snprintf (errmsg, err_len, "Mismatch in ELEMENTAL attribute");
 	  return 0;
 	}
     }
@@ -1166,7 +1181,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	    return 0;
 	  }
 
-	if (intent_flag)
+	if (strict_flag)
 	  {
 	    /* Check all characteristics.  */
 	    if (check_dummy_characteristics (f1->sym, f2->sym,
@@ -2272,16 +2287,6 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Expected a procedure for argument '%s' at %L",
-		       f->sym->name, &a->expr->where);
-	  return 0;
-	}
-
-      if (f->sym->attr.flavor == FL_PROCEDURE && f->sym->attr.pure
-	  && a->expr->ts.type == BT_PROCEDURE
-	  && !a->expr->symtree->n.sym->attr.pure)
-	{
-	  if (where)
-	    gfc_error ("Expected a PURE procedure for argument '%s' at %L",
 		       f->sym->name, &a->expr->where);
 	  return 0;
 	}
