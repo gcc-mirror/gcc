@@ -140,6 +140,7 @@ type decodeState struct {
 	scan       scanner
 	nextscan   scanner // for calls to nextValue
 	savedError os.Error
+	tempstr    string // scratch space to avoid some allocations
 }
 
 // errPhase is used for errors that should not happen unless
@@ -470,6 +471,8 @@ func (d *decodeState) object(v reflect.Value) {
 
 		// Figure out field corresponding to key.
 		var subv reflect.Value
+		destring := false // whether the value is wrapped in a string to be decoded first
+
 		if mv.IsValid() {
 			elemType := mv.Type().Elem()
 			if !mapElem.IsValid() {
@@ -486,7 +489,8 @@ func (d *decodeState) object(v reflect.Value) {
 			if isValidTag(key) {
 				for i := 0; i < sv.NumField(); i++ {
 					f = st.Field(i)
-					if f.Tag.Get("json") == key {
+					tagName, _ := parseTag(f.Tag.Get("json"))
+					if tagName == key {
 						ok = true
 						break
 					}
@@ -508,6 +512,8 @@ func (d *decodeState) object(v reflect.Value) {
 				} else {
 					subv = sv.FieldByIndex(f.Index)
 				}
+				_, opts := parseTag(f.Tag.Get("json"))
+				destring = opts.Contains("string")
 			}
 		}
 
@@ -520,8 +526,12 @@ func (d *decodeState) object(v reflect.Value) {
 		}
 
 		// Read value.
-		d.value(subv)
-
+		if destring {
+			d.value(reflect.ValueOf(&d.tempstr))
+			d.literalStore([]byte(d.tempstr), subv)
+		} else {
+			d.value(subv)
+		}
 		// Write value back to map;
 		// if using struct, subv points into struct already.
 		if mv.IsValid() {
@@ -550,8 +560,12 @@ func (d *decodeState) literal(v reflect.Value) {
 	// Scan read one byte too far; back up.
 	d.off--
 	d.scan.undo(op)
-	item := d.data[start:d.off]
 
+	d.literalStore(d.data[start:d.off], v)
+}
+
+// literalStore decodes a literal stored in item into v.
+func (d *decodeState) literalStore(item []byte, v reflect.Value) {
 	// Check for unmarshaler.
 	wantptr := item[0] == 'n' // null
 	unmarshaler, pv := d.indirect(v, wantptr)

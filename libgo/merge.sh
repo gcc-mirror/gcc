@@ -40,7 +40,7 @@ hg clone -r ${old_rev} ${repository} ${OLDDIR}
 rm -rf ${NEWDIR}
 hg clone -u release ${repository} ${NEWDIR}
 
-new_rev=`cd ${NEWDIR} && hg log | sed 1q | sed -e 's/.*://'`
+new_rev=`cd ${NEWDIR} && hg log -r release | sed 1q | sed -e 's/.*://'`
 
 merge() {
   name=$1
