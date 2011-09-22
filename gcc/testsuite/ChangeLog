@@ -1,3 +1,13 @@
+2011-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/pad-2.c, gcc.target/i386/pad-3.c,
+	gcc.target/i386/pad-4.c, gcc.target/i386/pad-5a.c,
+	gcc.target/i386/pad-5b.c, gcc.target/i386/pad-6a.c,
+	gcc.target/i386/pad-6b.c, gcc.target/i386/pad-7.c,
+	gcc.target/i386/pad-8.c, gcc.target/i386/pad-9.c,
+	gcc.target/i386/pad-10.cm gcc.target/i386/vect-double-1.c: Skip if
+	multilib options contain different -march= from dg-options.
+
 2011-09-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
