@@ -303,6 +303,46 @@ avr_replace_prefix (const char *old_str,
   return (const char*) new_str;
 }
 
+
+/* Custom function to count number of set bits.  */
+
+static inline int
+avr_popcount (unsigned int val)
+{
+  int pop = 0;
+
+  while (val)
+    {
+      val &= val-1;
+      pop++;
+    }
+
+  return pop;
+}
+
+
+/* Constraint helper function.  XVAL is an CONST_INT.  Return true if the least
+   significant N_BYTES bytes of XVAL all have a popcount in POP_MASK and false,
+   otherwise.  POP_MASK represents a subset of integers which contains an
+   integer N iff bit N of POP_MASK is set.  */
+   
+bool
+avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
+{
+  int i;
+
+  for (i = 0; i < n_bytes; i++)
+    {
+      rtx xval8 = simplify_gen_subreg (QImode, xval, SImode, i);
+      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+
+      if (0 == (pop_mask & (1 << avr_popcount (val8))))
+        return false;
+    }
+
+  return true;
+}
+
 static void
 avr_option_override (void)
 {
@@ -4462,6 +4502,157 @@ lshrsi3_out (rtx insn, rtx operands[], int *len)
   return "";
 }
 
+
+/* Output bit operation (IOR, AND, XOR) with register XOP[0] and compile
+   time constant XOP[2]:
+
+      XOP[0] = XOP[0] <op> XOP[2]
+
+   and return "".  If PLEN == NULL, print assembler instructions to perform the
+   operation; otherwise, set *PLEN to the length of the instruction sequence
+   (in words) printed with PLEN == NULL.  XOP[3] is either an 8-bit clobber
+   register or SCRATCH if no clobber register is needed for the operation.  */
+
+const char*
+avr_out_bitop (rtx insn, rtx *xop, int *plen)
+{
+  /* CODE and MODE of the operation.  */
+  enum rtx_code code = GET_CODE (SET_SRC (single_set (insn)));
+  enum machine_mode mode = GET_MODE (xop[0]);
+
+  /* Number of bytes to operate on.  */
+  int i, n_bytes = GET_MODE_SIZE (mode);
+
+  /* Value of T-flag (0 or 1) or -1 if unknow.  */
+  int set_t = -1;
+
+  /* Value (0..0xff) held in clobber register op[3] or -1 if unknown.  */
+  int clobber_val = -1;
+
+  /* op[0]: 8-bit destination register
+     op[1]: 8-bit const int
+     op[2]: 8-bit clobber register or SCRATCH
+     op[3]: 8-bit register containing 0xff or NULL_RTX  */
+  rtx op[4];
+
+  op[2] = xop[3];
+  op[3] = NULL_RTX;
+
+  if (plen)
+    *plen = 0;
+
+  for (i = 0; i < n_bytes; i++)
+    {
+      /* We operate byte-wise on the destination.  */
+      rtx reg8 = simplify_gen_subreg (QImode, xop[0], mode, i);
+      rtx xval8 = simplify_gen_subreg (QImode, xop[2], mode, i);
+
+      /* 8-bit value to operate with this byte. */
+      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+
+      /* Number of bits set in the current byte of the constant.  */
+      int pop8 = avr_popcount (val8);
+
+      /* Registers R16..R31 can operate with immediate.  */
+      bool ld_reg_p = test_hard_reg_class (LD_REGS, reg8);
+
+      op[0] = reg8;
+      op[1] = GEN_INT (val8);
+    
+      switch (code)
+        {
+        case IOR:
+
+          if (0 == pop8)
+            continue;
+          else if (ld_reg_p)
+            avr_asm_len ("ori %0,%1", op, plen, 1);
+          else if (1 == pop8)
+            {
+              if (set_t != 1)
+                avr_asm_len ("set", op, plen, 1);
+              set_t = 1;
+              
+              op[1] = GEN_INT (exact_log2 (val8));
+              avr_asm_len ("bld %0,%1", op, plen, 1);
+            }
+          else if (8 == pop8)
+            {
+              if (op[3] != NULL_RTX)
+                avr_asm_len ("mov %0,%3", op, plen, 1);
+              else
+                avr_asm_len ("clr %0" CR_TAB
+                             "dec %0", op, plen, 2);
+
+              op[3] = op[0];
+            }
+          else
+            {
+              if (clobber_val != (int) val8)
+                avr_asm_len ("ldi %2,%1", op, plen, 1);
+              clobber_val = (int) val8;
+              
+              avr_asm_len ("or %0,%2", op, plen, 1);
+            }
+
+          continue; /* IOR */
+
+        case AND:
+
+          if (8 == pop8)
+            continue;
+          else if (0 == pop8)
+            avr_asm_len ("clr %0", op, plen, 1);
+          else if (ld_reg_p)
+            avr_asm_len ("andi %0,%1", op, plen, 1);
+          else if (7 == pop8)
+            {
+              if (set_t != 0)
+                avr_asm_len ("clt", op, plen, 1);
+              set_t = 0;
+              
+              op[1] = GEN_INT (exact_log2 (GET_MODE_MASK (QImode) & ~val8));
+              avr_asm_len ("bld %0,%1", op, plen, 1);
+            }
+          else
+            {
+              if (clobber_val != (int) val8)
+                avr_asm_len ("ldi %2,%1", op, plen, 1);
+              clobber_val = (int) val8;
+              
+              avr_asm_len ("and %0,%2", op, plen, 1);
+            }
+
+          continue; /* AND */
+          
+        case XOR:
+
+          if (0 == pop8)
+            continue;
+          else if (8 == pop8)
+            avr_asm_len ("com %0", op, plen, 1);
+          else if (ld_reg_p && val8 == (1 << 7))
+            avr_asm_len ("subi %0,%1", op, plen, 1);
+          else
+            {
+              if (clobber_val != (int) val8)
+                avr_asm_len ("ldi %2,%1", op, plen, 1);
+              clobber_val = (int) val8;
+              
+              avr_asm_len ("eor %0,%2", op, plen, 1);
+            }
+
+          continue; /* XOR */
+          
+        default:
+          /* Unknown rtx_code */
+          gcc_unreachable();
+        }
+    } /* for all sub-bytes */
+
+  return "";
+}
+
 /* Create RTL split patterns for byte sized rotate expressions.  This
   produces a series of move instructions and considers overlap situations.
   Overlapping non-HImode operands need a scratch register.  */
@@ -4656,6 +4847,10 @@ adjust_insn_length (rtx insn, int len)
           output_reload_insisf (insn, op, op[2], &len);
           break;
           
+        case ADJUST_LEN_OUT_BITOP:
+          avr_out_bitop (insn, op, &len);
+          break;
+
         default:
           gcc_unreachable();
         }
@@ -4698,36 +4893,6 @@ adjust_insn_length (rtx insn, int len)
 	    case HImode: out_tsthi (insn, op[1], &len); break;
 	    case SImode: out_tstsi (insn, op[1], &len); break;
 	    default: break;
-	    }
-	}
-      else if (GET_CODE (op[1]) == AND)
-	{
-	  if (GET_CODE (XEXP (op[1],1)) == CONST_INT)
-	    {
-	      HOST_WIDE_INT mask = INTVAL (XEXP (op[1],1));
-	      if (GET_MODE (op[1]) == SImode)
-		len = (((mask & 0xff) != 0xff)
-		       + ((mask & 0xff00) != 0xff00)
-		       + ((mask & 0xff0000L) != 0xff0000L)
-		       + ((mask & 0xff000000L) != 0xff000000L));
-	      else if (GET_MODE (op[1]) == HImode)
-		len = (((mask & 0xff) != 0xff)
-		       + ((mask & 0xff00) != 0xff00));
-	    }
-	}
-      else if (GET_CODE (op[1]) == IOR)
-	{
-	  if (GET_CODE (XEXP (op[1],1)) == CONST_INT)
-	    {
-	      HOST_WIDE_INT mask = INTVAL (XEXP (op[1],1));
-	      if (GET_MODE (op[1]) == SImode)
-		len = (((mask & 0xff) != 0)
-		       + ((mask & 0xff00) != 0)
-		       + ((mask & 0xff0000L) != 0)
-		       + ((mask & 0xff000000L) != 0));
-	      else if (GET_MODE (op[1]) == HImode)
-		len = (((mask & 0xff) != 0)
-		       + ((mask & 0xff00) != 0));
 	    }
 	}
     }
