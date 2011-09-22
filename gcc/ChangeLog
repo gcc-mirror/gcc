@@ -1,3 +1,12 @@
+2011-09-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/50113
+	PR middle-end/50061
+	* calls.c (emit_library_call_value_1): Use BLOCK_REG_PADDING to
+	get the locate.where_pad value for register-only arguments.
+	* config/arm/arm.c (arm_pad_arg_upward): Remove HFmode handling.
+	(arm_pad_reg_upward): Handle null types.
+
 2011-09-22  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c: Fix overly long lines.
