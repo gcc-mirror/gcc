@@ -1,3 +1,32 @@
+2011-09-22  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c (inline_call): Always update jump functions
+	after inlining.
+	* ipa-inline.c (ipa_inline): Likewise; do not call
+	ipa_create_all_structures_for_iinln.
+	(ipa_inline): Always free jump functions.
+	* ipa-inline-analysis.c (evaluate_conditions_for_edge): Remove
+	hack.
+	(remap_edge_predicates): Fix pasto.
+	(inline_merge_summary): Remove nlined edge predicate; remove hack.
+	(inline_analyze_function): Always initialize jump functions.
+	(inline_generate_summary): Likewise.
+	(inline_write_summary): Always write jump functions when ipa-cp
+	is not doing that.
+	(inline_read_summary): Always read jump functions when ipa-cp
+	is not doing that.
+	* ipa-prop.c (iinlining_processed_edges): Remove.
+	(update_indirect_edges_after_inlining): Do not use
+	iinlining_processed_edges; instead set param_index to -1.
+	(propagate_info_to_inlined_callees): Only try to indirect inlining
+	when asked to do so; update jump functions of indirect calls, too;
+	remove jump functions of the inlined edge.
+	(ipa_edge_duplication_hook): Do not copy iinlining_processed_edges.
+	(ipa_create_all_structures_for_iinln): Remove.
+	(ipa_free_all_structures_after_iinln): Do not free
+	iinlining_processed_edges.
+	* ipa-prop.h (ipa_create_all_structures_for_iinln): Remove.
+
 2011-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/predicates.md (expandable_comparison_operator): New

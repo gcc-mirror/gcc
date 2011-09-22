@@ -56,10 +56,6 @@ VEC (ipa_node_params_t, heap) *ipa_node_params_vector;
 /* Vector where the parameter infos are actually stored. */
 VEC (ipa_edge_args_t, gc) *ipa_edge_args_vector;
 
-/* Bitmap with all UIDs of call graph edges that have been already processed
-   by indirect inlining.  */
-static bitmap iinlining_processed_edges;
-
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_edge_hook_list *edge_removal_hook_holder;
 static struct cgraph_node_hook_list *node_removal_hook_holder;
@@ -1699,18 +1695,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       struct ipa_jump_func *jfunc;
 
       next_ie = ie->next_callee;
-      if (bitmap_bit_p (iinlining_processed_edges, ie->uid))
-	continue;
 
-      /* If we ever use indirect edges for anything other than indirect
-	 inlining, we will need to skip those with negative param_indices. */
       if (ici->param_index == -1)
 	continue;
 
       /* We must check range due to calls with variable number of arguments:  */
       if (ici->param_index >= ipa_get_cs_argument_count (top))
 	{
-	  bitmap_set_bit (iinlining_processed_edges, ie->uid);
+	  ici->param_index = -1;
 	  continue;
 	}
 
@@ -1725,7 +1717,10 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	}
       else
 	/* Either we can find a destination for this edge now or never. */
-	bitmap_set_bit (iinlining_processed_edges, ie->uid);
+	ici->param_index = -1;
+
+      if (!flag_indirect_inlining)
+	continue;
 
       if (ici->polymorphic)
 	new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc);
@@ -1771,6 +1766,8 @@ propagate_info_to_inlined_callees (struct cgraph_edge *cs,
       res |= propagate_info_to_inlined_callees (cs, e->callee, new_edges);
     else
       update_jump_functions_after_inlining (cs, e);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    update_jump_functions_after_inlining (cs, e);
 
   return res;
 }
@@ -1785,13 +1782,19 @@ bool
 ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 				   VEC (cgraph_edge_p, heap) **new_edges)
 {
+  bool changed;
   /* Do nothing if the preparation phase has not been carried out yet
      (i.e. during early inlining).  */
   if (!ipa_node_params_vector)
     return false;
   gcc_assert (ipa_edge_args_vector);
 
-  return propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+  changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+
+  /* We do not keep jump functions of inlined edges up to date. Better to free
+     them so we do not access them accidentally.  */
+  ipa_free_edge_args_substructures (IPA_EDGE_REF (cs));
+  return changed;
 }
 
 /* Frees all dynamically allocated structures that the argument info points
@@ -1889,10 +1892,6 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 
   new_args->jump_functions = VEC_copy (ipa_jump_func_t, gc,
 				       old_args->jump_functions);
-
-  if (iinlining_processed_edges
-      && bitmap_bit_p (iinlining_processed_edges, src->uid))
-    bitmap_set_bit (iinlining_processed_edges, dst->uid);
 }
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
@@ -1963,21 +1962,13 @@ ipa_unregister_cgraph_hooks (void)
   function_insertion_hook_holder = NULL;
 }
 
-/* Allocate all necessary data structures necessary for indirect inlining.  */
-
-void
-ipa_create_all_structures_for_iinln (void)
-{
-  iinlining_processed_edges = BITMAP_ALLOC (NULL);
-}
-
 /* Free all ipa_node_params and all ipa_edge_args structures if they are no
    longer needed after ipa-cp.  */
 
 void
 ipa_free_all_structures_after_ipa_cp (void)
 {
-  if (!flag_indirect_inlining)
+  if (!optimize)
     {
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();
@@ -1993,8 +1984,6 @@ ipa_free_all_structures_after_ipa_cp (void)
 void
 ipa_free_all_structures_after_iinln (void)
 {
-  BITMAP_FREE (iinlining_processed_edges);
-
   ipa_free_all_edge_args ();
   ipa_free_all_node_params ();
   ipa_unregister_cgraph_hooks ();
