@@ -269,7 +269,8 @@ add_clause (conditions conditions, struct predicate *p, clause_t clause)
       /* If p->clause[i] implies clause, there is nothing to add.  */
       if ((p->clause[i] & clause) == p->clause[i])
 	{
-	  /* We had nothing to add, none of clauses should've become redundant.  */
+	  /* We had nothing to add, none of clauses should've become
+	     redundant.  */
 	  gcc_checking_assert (i == i2);
 	  return;
 	}
@@ -359,7 +360,8 @@ predicates_equal_p (struct predicate *p, struct predicate *p2)
     {
       gcc_checking_assert (i < MAX_CLAUSES);
       gcc_checking_assert (p->clause [i] > p->clause[i + 1]);
-      gcc_checking_assert (!p2->clause[i] || p2->clause [i] > p2->clause[i + 1]);
+      gcc_checking_assert (!p2->clause[i]
+			   || p2->clause [i] > p2->clause[i + 1]);
       if (p->clause[i] != p2->clause[i])
         return false;
     }
@@ -394,8 +396,8 @@ or_predicates (conditions conditions, struct predicate *p, struct predicate *p2)
 }
 
 
-/* Having partial truth assignment in POSSIBLE_TRUTHS, return false if predicate P
-   to be false.  */
+/* Having partial truth assignment in POSSIBLE_TRUTHS, return false
+   if predicate P is known to be false.  */
 
 static bool
 evaluate_predicate (struct predicate *p, clause_t possible_truths)
@@ -488,7 +490,8 @@ dump_predicate (FILE *f, conditions conds, struct predicate *pred)
 /* Record SIZE and TIME under condition PRED into the inline summary.  */
 
 static void
-account_size_time (struct inline_summary *summary, int size, int time, struct predicate *pred)
+account_size_time (struct inline_summary *summary, int size, int time,
+		   struct predicate *pred)
 {
   size_time_entry *e;
   bool found = false;
@@ -523,7 +526,8 @@ account_size_time (struct inline_summary *summary, int size, int time, struct pr
   if (dump_file && (dump_flags & TDF_DETAILS) && (time || size))
     {
       fprintf (dump_file, "\t\tAccounting size:%3.2f, time:%3.2f on %spredicate:",
-	       ((double)size) / INLINE_SIZE_SCALE, ((double)time) / INLINE_TIME_SCALE,
+	       ((double)size) / INLINE_SIZE_SCALE,
+	       ((double)time) / INLINE_TIME_SCALE,
 	       found ? "" : "new ");
       dump_predicate (dump_file, summary->conds, pred);
     }
@@ -679,7 +683,8 @@ inline_summary_alloc (void)
     VEC_safe_grow_cleared (inline_edge_summary_t, heap,
 			   inline_edge_summary_vec, cgraph_edge_max_uid + 1);
   if (!edge_predicate_pool)
-    edge_predicate_pool = create_alloc_pool ("edge predicates", sizeof (struct predicate),
+    edge_predicate_pool = create_alloc_pool ("edge predicates",
+					     sizeof (struct predicate),
 					     10);
 }
 
@@ -764,7 +769,8 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
       /* Remap size_time vectors.
 	 Simplify the predicate by prunning out alternatives that are known
 	 to be false.
-	 TODO: as on optimization, we can also eliminate conditions known to be true.  */
+	 TODO: as on optimization, we can also eliminate conditions known
+	 to be true.  */
       for (i = 0; VEC_iterate (size_time_entry, entry, i, e); i++)
 	{
 	  struct predicate new_predicate = true_predicate ();
@@ -786,7 +792,8 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	    account_size_time (info, e->size, e->time, &new_predicate);
 	}
 
-      /* Remap edge predicates with the same simplificaiton as above.  */
+      /* Remap edge predicates with the same simplification as above.
+	 Also copy constantness arrays.   */
       for (edge = dst->callees; edge; edge = edge->next_callee)
 	{
 	  struct predicate new_predicate = true_predicate ();
@@ -817,7 +824,8 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	  *es->predicate = new_predicate;
 	}
 
-      /* Remap indirect edge predicates with the same simplificaiton as above.  */
+      /* Remap indirect edge predicates with the same simplificaiton as above. 
+	 Also copy constantness arrays.   */
       for (edge = dst->indirect_calls; edge; edge = edge->next_callee)
 	{
 	  struct predicate new_predicate = true_predicate ();
@@ -977,7 +985,8 @@ dump_inline_edge_summary (FILE * f, int indent, struct cgraph_node *node,
   for (edge = node->indirect_calls; edge; edge = edge->next_callee)
     {
       struct inline_edge_summary *es = inline_edge_summary (edge);
-      fprintf (f, "%*sindirect call loop depth:%2i freq:%4i size:%2i time: %2i\n",
+      fprintf (f, "%*sindirect call loop depth:%2i freq:%4i size:%2i"
+	       " time: %2i\n",
 	       indent, "",
 	       es->loop_depth,	
                edge->frequency,
@@ -989,7 +998,7 @@ dump_inline_edge_summary (FILE * f, int indent, struct cgraph_node *node,
 	  dump_predicate (f, info->conds, es->predicate);
 	}
       else
-	  fprintf (f, "\n");
+	fprintf (f, "\n");
     }
 }
 
@@ -1219,8 +1228,9 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
       if (index == -1)
 	return;
       code = gimple_cond_code (last);
-      inverted_code = invert_tree_comparison (code,
-					      HONOR_NANS (TYPE_MODE (TREE_TYPE (op))));
+      inverted_code
+	 = invert_tree_comparison (code,
+				   HONOR_NANS (TYPE_MODE (TREE_TYPE (op))));
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
@@ -1364,7 +1374,8 @@ compute_bb_predicates (struct cgraph_node *node,
     }
 
   /* Entry block is always executable.  */
-  ENTRY_BLOCK_PTR_FOR_FUNCTION (my_function)->aux = pool_alloc (edge_predicate_pool);
+  ENTRY_BLOCK_PTR_FOR_FUNCTION (my_function)->aux
+    = pool_alloc (edge_predicate_pool);
   *(struct predicate *)ENTRY_BLOCK_PTR_FOR_FUNCTION (my_function)->aux
     = true_predicate ();
 
@@ -1382,10 +1393,12 @@ compute_bb_predicates (struct cgraph_node *node,
 	    {
 	      if (e->src->aux)
 		{
-		  struct predicate this_bb_predicate = *(struct predicate *)e->src->aux;
+		  struct predicate this_bb_predicate
+		     = *(struct predicate *)e->src->aux;
 		  if (e->aux)
-		    this_bb_predicate = and_predicates (summary->conds, &this_bb_predicate,
-							(struct predicate *)e->aux);
+		    this_bb_predicate
+		       = and_predicates (summary->conds, &this_bb_predicate,
+					 (struct predicate *)e->aux);
 		  p = or_predicates (summary->conds, &p, &this_bb_predicate);
 		  if (true_predicate_p (&p))
 		    break;
@@ -1419,8 +1432,8 @@ DEF_VEC_O (predicate_t);
 DEF_VEC_ALLOC_O (predicate_t, heap);
 
 
-/* Return predicate specifying when the STMT might have result that is not a compile
-   time constant.  */
+/* Return predicate specifying when the STMT might have result that is not
+   a compile time constant.  */
 
 static struct predicate
 will_be_nonconstant_predicate (struct ipa_node_params *info,
@@ -1625,9 +1638,9 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		 mismatches in argument or return types.  */
 	      if (edge->callee
 		  && cgraph_function_or_thunk_node (edge->callee, NULL)
-		  && !gimple_check_call_matching_types (stmt,
-							cgraph_function_or_thunk_node (edge->callee,
-										       NULL)->decl))
+		  && !gimple_check_call_matching_types
+		       (stmt, cgraph_function_or_thunk_node (edge->callee,
+			NULL)->decl))
 		{
 		  edge->call_stmt_cannot_inline_p = true;
 		  gimple_call_set_cannot_inline (stmt, true);
@@ -1658,7 +1671,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		fprintf (dump_file, "\t\twill eliminated by inlining\n");
 
 	      if (parms_info)
-		p = and_predicates (info->conds, &bb_predicate, &will_be_nonconstant);
+		p = and_predicates (info->conds, &bb_predicate,
+				    &will_be_nonconstant);
 	      else
 		p = true_predicate ();
 
@@ -2347,19 +2361,22 @@ do_estimate_growth (struct cgraph_node *node)
       if (!DECL_EXTERNAL (node->decl)
 	  && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
 	d.growth -= info->size;
-      /* COMDAT functions are very often not shared across multiple units since they
-	 come from various template instantiations.  Take this into account.  */
+      /* COMDAT functions are very often not shared across multiple units
+	 since they come from various template instantiations.
+	 Take this into account.  */
       else  if (DECL_COMDAT (node->decl)
 		&& cgraph_can_remove_if_no_direct_calls_p (node))
 	d.growth -= (info->size
-		     * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY)) + 50) / 100;
+		     * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY))
+		     + 50) / 100;
     }
 
   if (node_growth_cache)
     {
       if ((int)VEC_length (int, node_growth_cache) <= node->uid)
 	VEC_safe_grow_cleared (int, heap, node_growth_cache, cgraph_max_uid);
-      VEC_replace (int, node_growth_cache, node->uid, d.growth + (d.growth >= 0));
+      VEC_replace (int, node_growth_cache, node->uid,
+		   d.growth + (d.growth >= 0));
     }
   return d.growth;
 }

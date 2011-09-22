@@ -1,5 +1,9 @@
 2011-09-22  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-analysis.c: Fix overly long lines.
+
+2011-09-22  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline-transform.c (inline_call): Always update jump functions
 	after inlining.
 	* ipa-inline.c (ipa_inline): Likewise; do not call
