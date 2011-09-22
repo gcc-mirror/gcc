@@ -81,6 +81,8 @@ extern int avr_epilogue_uses (int regno);
 extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
+extern const char* avr_out_bitop (rtx, rtx*, int*);
+extern bool avr_popcount_each_byte (rtx, int, int);
 
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);

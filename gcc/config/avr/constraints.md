@@ -112,3 +112,33 @@
   "Constant integer 4."
   (and (match_code "const_int")
        (match_test "ival == 4")))
+
+(define_constraint "Ca2"
+  "Constant 2-byte integer that allows AND without clobber register."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 2, (1<<0) | (1<<7) | (1<<8))")))
+
+(define_constraint "Ca4"
+  "Constant 4-byte integer that allows AND without clobber register."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<7) | (1<<8))")))
+
+(define_constraint "Co2"
+  "Constant 2-byte integer that allows OR without clobber register."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 2, (1<<0) | (1<<1) | (1<<8))")))
+
+(define_constraint "Co4"
+  "Constant 4-byte integer that allows OR without clobber register."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<1) | (1<<8))")))
+
+(define_constraint "Cx2"
+  "Constant 2-byte integer that allows XOR without clobber register."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 2, (1<<0) | (1<<8))")))
+
+(define_constraint "Cx4"
+  "Constant 4-byte integer that allows XOR without clobber register."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<8))")))

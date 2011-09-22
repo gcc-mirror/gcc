@@ -1,3 +1,22 @@
+2011-09-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50447
+	PR target/50465
+	* config/avr/avr-protos.h (avr_out_bitop): New prototype.
+	(avr_popcount_each_byte): New prototype.
+	* config/avr/avr.c (avr_popcount): New static function.
+	(avr_popcount_each_byte): New function.
+	(avr_out_bitop): New function.
+	(adjust_insn_length): ADJUST_LEN_OUT_BITOP dispatches to
+	avr_out_bitop.  Cleanup code.
+	* config/avr/constraints.md (Ca2, Co2, Cx2): New constraints.
+	(Ca4, Co4, Cx4): New constraints.
+	* config/avr/avr.md (adjust_len): Add "out_bitop" insn attribute
+	alternative.
+	(andhi3, iorhi3, xorhi3): Rewrite insns using avr_out_bitop.
+	(andsi3, iorsi3, xorsi3): Ditto.
+	(*iorhi3_clobber, *iorsi3_clobber): Remove insns.
+
 2011-09-22  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50451

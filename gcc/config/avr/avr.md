@@ -136,7 +136,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "yes,no,reload_in32"
+  "yes,no,reload_in32,out_bitop"
   (const_string "yes"))
 
 ;; Define mode iterators
@@ -2238,71 +2238,41 @@
    (set_attr "cc" "set_zn,set_zn")])
 
 (define_insn "andhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,d,r")
-	  (and:HI (match_operand:HI 1 "register_operand" "%0,0,0")
-		  (match_operand:HI 2 "nonmemory_operand" "r,i,M")))
-   (clobber (match_scratch:QI 3 "=X,X,&d"))]
+  [(set (match_operand:HI 0 "register_operand"         "=r,d,d,r  ,r")
+        (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
+                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))]
   ""
-{
-  if (which_alternative==0)
-    return ("and %A0,%A2" CR_TAB
-	    "and %B0,%B2");
-  else if (which_alternative==1)
-    {
-      if (GET_CODE (operands[2]) == CONST_INT)
-        {
-	  int mask = INTVAL (operands[2]);
-	  if ((mask & 0xff) != 0xff)
-	    output_asm_insn (AS2 (andi,%A0,lo8(%2)), operands);
-	  if ((mask & 0xff00) != 0xff00)
-	    output_asm_insn (AS2 (andi,%B0,hi8(%2)), operands);
-	  return "";
-        }
-        return (AS2 (andi,%A0,lo8(%2)) CR_TAB
-	        AS2 (andi,%B0,hi8(%2)));
-     }
-  return (AS2 (ldi,%3,lo8(%2)) CR_TAB
-          "and %A0,%3"         CR_TAB
-          AS1 (clr,%B0));
-}
-  [(set_attr "length" "2,2,3")
-   (set_attr "cc" "set_n,clobber,set_n")])
+  {
+    if (which_alternative == 0)
+      return "and %A0,%A2\;and %B0,%B2";
+    else if (which_alternative == 1)
+      return "andi %A0,lo8(%2)\;andi %B0,hi8(%2)";
+
+    return avr_out_bitop (insn, operands, NULL);
+  }
+  [(set_attr "length" "2,2,2,4,4")
+   (set_attr "adjust_len" "no,no,out_bitop,out_bitop,out_bitop")
+   (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
 
 (define_insn "andsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,d")
-	(and:SI (match_operand:SI 1 "register_operand" "%0,0")
-		(match_operand:SI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:SI 0 "register_operand"         "=r,d,r  ,r")
+        (and:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,0")
+                (match_operand:SI 2 "nonmemory_operand" "r,n,Ca4,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X  ,&d"))]
   ""
-{
-  if (which_alternative==0)
-    return ("and %0,%2"   CR_TAB
-            "and %B0,%B2" CR_TAB
-            "and %C0,%C2" CR_TAB
-            "and %D0,%D2");
-  else if (which_alternative==1)
-    {
-      if (GET_CODE (operands[2]) == CONST_INT)
-        {
-	  HOST_WIDE_INT mask = INTVAL (operands[2]);
-	  if ((mask & 0xff) != 0xff)
-	    output_asm_insn (AS2 (andi,%A0,lo8(%2)), operands);
-	  if ((mask & 0xff00) != 0xff00)
-	    output_asm_insn (AS2 (andi,%B0,hi8(%2)), operands);
-	  if ((mask & 0xff0000L) != 0xff0000L)
-	    output_asm_insn (AS2 (andi,%C0,hlo8(%2)), operands);
-	  if ((mask & 0xff000000L) != 0xff000000L)
-	    output_asm_insn (AS2 (andi,%D0,hhi8(%2)), operands);
-	  return "";
-        }
-      return (AS2 (andi, %A0,lo8(%2))  CR_TAB
-              AS2 (andi, %B0,hi8(%2)) CR_TAB
-	      AS2 (andi, %C0,hlo8(%2)) CR_TAB
-	      AS2 (andi, %D0,hhi8(%2)));
-    }
-  return "bug";
-}
-  [(set_attr "length" "4,4")
-   (set_attr "cc" "set_n,clobber")])
+  {
+    if (which_alternative == 0)
+      return "and %0,%2"   CR_TAB
+             "and %B0,%B2" CR_TAB
+             "and %C0,%C2" CR_TAB
+             "and %D0,%D2";
+
+    return avr_out_bitop (insn, operands, NULL);
+  }
+  [(set_attr "length" "4,4,8,8")
+   (set_attr "adjust_len" "no,out_bitop,out_bitop,out_bitop")
+   (set_attr "cc" "set_n,clobber,clobber,clobber")])
 
 (define_peephole2 ; andi
   [(set (match_operand:QI 0 "d_register_operand" "")
@@ -2332,84 +2302,41 @@
    (set_attr "cc" "set_zn,set_zn")])
 
 (define_insn "iorhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,d")
-	(ior:HI (match_operand:HI 1 "register_operand" "%0,0")
-		(match_operand:HI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:HI 0 "register_operand"         "=r,d,d,r  ,r")
+        (ior:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
+                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Co2,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))]
   ""
-{
-  if (which_alternative==0)
-    return ("or %A0,%A2" CR_TAB
-	    "or %B0,%B2");
-  if (GET_CODE (operands[2]) == CONST_INT)
-     {
-	int mask = INTVAL (operands[2]);
-	if (mask & 0xff)
-	  output_asm_insn (AS2 (ori,%A0,lo8(%2)), operands);
-	if (mask & 0xff00)
-	  output_asm_insn (AS2 (ori,%B0,hi8(%2)), operands);
-	return "";
-      }
-   return (AS2 (ori,%0,lo8(%2)) CR_TAB
-	   AS2 (ori,%B0,hi8(%2)));
-}
-  [(set_attr "length" "2,2")
-   (set_attr "cc" "set_n,clobber")])
+  {
+    if (which_alternative == 0)
+      return "or %A0,%A2\;or %B0,%B2";
+    else if (which_alternative == 1)
+      return "ori %A0,lo8(%2)\;ori %B0,hi8(%2)";
 
-(define_insn "*iorhi3_clobber"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(ior:HI (match_operand:HI 1 "register_operand" "%0,0")
-		(match_operand:HI 2 "immediate_operand" "M,i")))
-   (clobber (match_scratch:QI 3 "=&d,&d"))]
-  ""
-  "@
-	ldi %3,lo8(%2)\;or %A0,%3
-	ldi %3,lo8(%2)\;or %A0,%3\;ldi %3,hi8(%2)\;or %B0,%3"
-  [(set_attr "length" "2,4")
-   (set_attr "cc" "clobber,set_n")])
+    return avr_out_bitop (insn, operands, NULL);
+  }
+  [(set_attr "length" "2,2,2,4,4")
+   (set_attr "adjust_len" "no,no,out_bitop,out_bitop,out_bitop")
+   (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
 
 (define_insn "iorsi3"
-  [(set (match_operand:SI 0 "register_operand"        "=r,d")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0,0")
-		(match_operand:SI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:SI 0 "register_operand"         "=r,d,r  ,r")
+        (ior:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,0")
+                (match_operand:SI 2 "nonmemory_operand" "r,n,Co4,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X  ,&d"))]
   ""
-{
-  if (which_alternative==0)
-    return ("or %0,%2"   CR_TAB
-	    "or %B0,%B2" CR_TAB
-	    "or %C0,%C2" CR_TAB
-	    "or %D0,%D2");
-  if (GET_CODE (operands[2]) == CONST_INT)
-     {
-	HOST_WIDE_INT mask = INTVAL (operands[2]);
-	if (mask & 0xff)
-	  output_asm_insn (AS2 (ori,%A0,lo8(%2)), operands);
-	if (mask & 0xff00)
-	  output_asm_insn (AS2 (ori,%B0,hi8(%2)), operands);
-	if (mask & 0xff0000L)
-	  output_asm_insn (AS2 (ori,%C0,hlo8(%2)), operands);
-	if (mask & 0xff000000L)
-	  output_asm_insn (AS2 (ori,%D0,hhi8(%2)), operands);
-	return "";
-      }
-  return (AS2 (ori, %A0,lo8(%2))  CR_TAB
-	  AS2 (ori, %B0,hi8(%2)) CR_TAB
-	  AS2 (ori, %C0,hlo8(%2)) CR_TAB
-	  AS2 (ori, %D0,hhi8(%2)));
-}
-  [(set_attr "length" "4,4")
-   (set_attr "cc" "set_n,clobber")])
+  {
+    if (which_alternative == 0)
+      return "or %0,%2"   CR_TAB
+             "or %B0,%B2" CR_TAB
+             "or %C0,%C2" CR_TAB
+             "or %D0,%D2";
 
-(define_insn "*iorsi3_clobber"
-  [(set (match_operand:SI 0 "register_operand"        "=r,r")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0,0")
-		(match_operand:SI 2 "immediate_operand" "M,i")))
-   (clobber (match_scratch:QI 3 "=&d,&d"))]
-  ""
-  "@
-	ldi %3,lo8(%2)\;or %A0,%3
-	ldi %3,lo8(%2)\;or %A0,%3\;ldi %3,hi8(%2)\;or %B0,%3\;ldi %3,hlo8(%2)\;or %C0,%3\;ldi %3,hhi8(%2)\;or %D0,%3"
-  [(set_attr "length" "2,8")
-   (set_attr "cc" "clobber,set_n")])
+    return avr_out_bitop (insn, operands, NULL);
+  }
+  [(set_attr "length" "4,4,8,8")
+   (set_attr "adjust_len" "no,out_bitop,out_bitop,out_bitop")
+   (set_attr "cc" "set_n,clobber,clobber,clobber")])
 
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;; xor
@@ -2424,26 +2351,39 @@
    (set_attr "cc" "set_zn")])
 
 (define_insn "xorhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-        (xor:HI (match_operand:HI 1 "register_operand" "%0")
-                (match_operand:HI 2 "register_operand" "r")))]
+  [(set (match_operand:HI 0 "register_operand"         "=r,r  ,r")
+        (xor:HI (match_operand:HI 1 "register_operand" "%0,0  ,0")
+                (match_operand:HI 2 "nonmemory_operand" "r,Cx2,n")))
+   (clobber (match_scratch:QI 3                        "=X,X  ,&d"))]
   ""
-  "eor %0,%2
-	eor %B0,%B2"
-  [(set_attr "length" "2")
-   (set_attr "cc" "set_n")])
+  {
+    if (which_alternative == 0)
+      return "eor %A0,%A2\;eor %B0,%B2";
+
+    return avr_out_bitop (insn, operands, NULL);
+  }
+  [(set_attr "length" "2,2,4")
+   (set_attr "adjust_len" "no,out_bitop,out_bitop")
+   (set_attr "cc" "set_n,clobber,clobber")])
 
 (define_insn "xorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (xor:SI (match_operand:SI 1 "register_operand" "%0")
-                (match_operand:SI 2 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "register_operand"         "=r,r  ,r")
+        (xor:SI (match_operand:SI 1 "register_operand" "%0,0  ,0")
+                (match_operand:SI 2 "nonmemory_operand" "r,Cx4,n")))
+   (clobber (match_scratch:QI 3                        "=X,X  ,&d"))]
   ""
-  "eor %0,%2
-	eor %B0,%B2
-	eor %C0,%C2
-	eor %D0,%D2"
-  [(set_attr "length" "4")
-   (set_attr "cc" "set_n")])
+  {
+    if (which_alternative == 0)
+      return "eor %0,%2"   CR_TAB
+             "eor %B0,%B2" CR_TAB
+             "eor %C0,%C2" CR_TAB
+             "eor %D0,%D2";
+
+    return avr_out_bitop (insn, operands, NULL);
+  }
+  [(set_attr "length" "4,8,8")
+   (set_attr "adjust_len" "no,out_bitop,out_bitop")
+   (set_attr "cc" "set_n,clobber,clobber")])
 
 ;; swap swap swap swap swap swap swap swap swap swap swap swap swap swap swap
 ;; swap
