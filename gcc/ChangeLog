@@ -76,6 +76,17 @@
 	(sparc_vis_init_builtins): Use def_builtin_const for all VIS builtins
 	other than alignaddr and falignaddr.
 
+	* config/sparc/sparc.md (UNSPEC_FCMPLE, UNSPEC_FCMPNE, UNSPEC_FCMPGT,
+	UNSPEC_FCMPEQ): New unspec codes.
+	(fcmple16_vis, fcmple32_vis, fcmpne16_vis, fcmpne32_vis, fcmpgt16_vis,
+	fcmpgt32_vis, fcmpeq16_vis, fcmpeq32_vis): New patterns.
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Create builtins for
+	new pixel compare VIS patterns.
+	* config/sparc/visintrin.h (__vis_fcmple16, __vis_fcmple32,
+	__vis_fcmpne16, __vis_fcmpne32, __vis_fcmpgt16, __vis_fcmpgt32,
+	__vis_fcmpeq16, __vis_fcmpeq32): New.
+	* doc/extend.texi: Document new pixel compare VIS intrinsics.
+
 2011-09-21  Tom de Vries  <tom@codesourcery.com>
 
 	* final.c (final): Handle if JUMP_LABEL is not LABEL_P.

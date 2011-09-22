@@ -70,6 +70,11 @@
 
    (UNSPEC_SP_SET		60)
    (UNSPEC_SP_TEST		61)
+
+   (UNSPEC_FCMPLE		70)
+   (UNSPEC_FCMPNE		71)
+   (UNSPEC_FCMPGT		72)
+   (UNSPEC_FCMPEQ		73)
   ])
 
 (define_constants
@@ -7885,5 +7890,85 @@
   "TARGET_VIS"
   "edge32l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
+
+(define_insn "fcmple16_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
+		    (match_operand:V4HI 2 "register_operand" "e")]
+	 UNSPEC_FCMPLE))]
+  "TARGET_VIS"
+  "fcmple16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fcmple32_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
+		    (match_operand:V2SI 2 "register_operand" "e")]
+	 UNSPEC_FCMPLE))]
+  "TARGET_VIS"
+  "fcmple32\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fcmpne16_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
+		    (match_operand:V4HI 2 "register_operand" "e")]
+	 UNSPEC_FCMPNE))]
+  "TARGET_VIS"
+  "fcmpne16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fcmpne32_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
+		    (match_operand:V2SI 2 "register_operand" "e")]
+	 UNSPEC_FCMPNE))]
+  "TARGET_VIS"
+  "fcmpne32\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fcmpgt16_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
+		    (match_operand:V4HI 2 "register_operand" "e")]
+	 UNSPEC_FCMPGT))]
+  "TARGET_VIS"
+  "fcmpgt16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fcmpgt32_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
+		    (match_operand:V2SI 2 "register_operand" "e")]
+	 UNSPEC_FCMPGT))]
+  "TARGET_VIS"
+  "fcmpgt32\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fcmpeq16_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
+		    (match_operand:V4HI 2 "register_operand" "e")]
+	 UNSPEC_FCMPEQ))]
+  "TARGET_VIS"
+  "fcmpeq16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fcmpeq32_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
+		    (match_operand:V2SI 2 "register_operand" "e")]
+	 UNSPEC_FCMPEQ))]
+  "TARGET_VIS"
+  "fcmpeq32\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
 
 (include "sync.md")

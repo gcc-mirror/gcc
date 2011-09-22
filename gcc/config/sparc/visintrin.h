@@ -206,4 +206,60 @@ __vis_edge32l (void *__A, void *__B)
   return __builtin_vis_edge32l (__A, __B);
 }
 
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmple16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fcmple16 (__A, __B);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmple32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fcmple32 (__A, __B);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmpne16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fcmpne16 (__A, __B);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmpne32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fcmpne32 (__A, __B);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmpgt16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fcmpgt16 (__A, __B);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmpgt32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fcmpgt32 (__A, __B);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmpeq16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fcmpeq16 (__A, __B);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fcmpeq32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fcmpeq32 (__A, __B);
+}
+
 #endif  /* _VISINTRIN_H_INCLUDED */
