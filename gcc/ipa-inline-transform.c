@@ -248,7 +248,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
-  if (flag_indirect_inlining && optimize)
+  if (optimize)
     return ipa_propagate_indirect_call_infos (curr, new_edges);
   else
     return false;

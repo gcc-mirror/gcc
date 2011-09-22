@@ -619,10 +619,7 @@ evaluate_conditions_for_edge (struct cgraph_edge *e, bool inline_p)
   struct inline_summary *info = inline_summary (callee);
   int i;
 
-  if (ipa_node_params_vector && info->conds
-      /* FIXME: it seems that we forget to get argument count in some cases,
-	 probaby for previously indirect edges or so.  */
-      && ipa_get_cs_argument_count (IPA_EDGE_REF (e)))
+  if (ipa_node_params_vector && info->conds)
     {
       struct ipa_node_params *parms_info;
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
@@ -634,7 +631,8 @@ evaluate_conditions_for_edge (struct cgraph_edge *e, bool inline_p)
       else
         parms_info = IPA_NODE_REF (e->caller);
 
-      VEC_safe_grow_cleared (tree, heap, known_vals, count);
+      if (count)
+        VEC_safe_grow_cleared (tree, heap, known_vals, count);
       for (i = 0; i < count; i++)
 	{
 	  tree cst = ipa_cst_from_jfunc (parms_info,
@@ -2062,26 +2060,29 @@ remap_edge_predicates (struct cgraph_node *node,
     {
       struct inline_edge_summary *es = inline_edge_summary (e);
       struct predicate p;
-      if (es->predicate)
+      if (e->inline_failed)
 	{
-	  p = remap_predicate (info, callee_info,
-			       es->predicate, operand_map, possible_truths,
-			       toplev_predicate);
-	  edge_set_predicate (e, &p);
-	  /* TODO: We should remove the edge for code that will be optimized out,
-	     but we need to keep verifiers and tree-inline happy.
-	     Make it cold for now.  */
-	  if (false_predicate_p (&p))
+	  if (es->predicate)
 	    {
-	      e->count = 0;
-	      e->frequency = 0;
+	      p = remap_predicate (info, callee_info,
+				   es->predicate, operand_map, possible_truths,
+				   toplev_predicate);
+	      edge_set_predicate (e, &p);
+	      /* TODO: We should remove the edge for code that will be optimized out,
+		 but we need to keep verifiers and tree-inline happy.
+		 Make it cold for now.  */
+	      if (false_predicate_p (&p))
+		{
+		  e->count = 0;
+		  e->frequency = 0;
+		}
 	    }
+	  else
+	    edge_set_predicate (e, toplev_predicate);
 	}
-      if (!e->inline_failed)
+      else
 	remap_edge_predicates (e->callee, info, callee_info, operand_map,
 			       possible_truths, toplev_predicate);
-      else
-	edge_set_predicate (e, toplev_predicate);
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
@@ -2122,6 +2123,7 @@ inline_merge_summary (struct cgraph_edge *edge)
   VEC (int, heap) *operand_map = NULL;
   int i;
   struct predicate toplev_predicate;
+  struct predicate true_p = true_predicate ();
   struct inline_edge_summary *es = inline_edge_summary (edge);
 
   if (es->predicate)
@@ -2129,18 +2131,15 @@ inline_merge_summary (struct cgraph_edge *edge)
   else
     toplev_predicate = true_predicate ();
 
-  if (ipa_node_params_vector && callee_info->conds
-      /* FIXME: it seems that we forget to get argument count in some cases,
-	 probaby for previously indirect edges or so.
-	 Removing the test leads to ICE on tramp3d.  */
-      && ipa_get_cs_argument_count (IPA_EDGE_REF (edge)))
+  if (ipa_node_params_vector && callee_info->conds)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (edge);
       int count = ipa_get_cs_argument_count (args);
       int i;
 
       clause = evaluate_conditions_for_edge (edge, true);
-      VEC_safe_grow_cleared (int, heap, operand_map, count);
+      if (count)
+        VEC_safe_grow_cleared (int, heap, operand_map, count);
       for (i = 0; i < count; i++)
 	{
 	  struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, i);
@@ -2175,6 +2174,9 @@ inline_merge_summary (struct cgraph_edge *edge)
 
   inline_update_callee_summaries (edge->callee,
 				  inline_edge_summary (edge)->loop_depth);
+
+  /* We do not maintain predicates of inlined edges, free it.  */
+  edge_set_predicate (edge, &true_p);
 
   info->time = (info->time + INLINE_TIME_SCALE / 2) / INLINE_TIME_SCALE;
   info->size = (info->size + INLINE_SIZE_SCALE / 2) / INLINE_SIZE_SCALE;
@@ -2389,9 +2391,7 @@ inline_analyze_function (struct cgraph_node *node)
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function: %s/%u\n",
 	     cgraph_node_name (node), node->uid);
-  /* FIXME: We should remove the optimize check after we ensure we never run
-     IPA passes when not optimizing.  */
-  if (flag_indirect_inlining && optimize && !node->thunk.thunk_p)
+  if (optimize && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
   compute_inline_parameters (node, false);
 
@@ -2419,8 +2419,7 @@ inline_generate_summary (void)
   function_insertion_hook_holder =
       cgraph_add_function_insertion_hook (&add_new_function, NULL);
 
-  if (flag_indirect_inlining)
-    ipa_register_cgraph_hooks ();
+  ipa_register_cgraph_hooks ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->alias)
@@ -2572,7 +2571,7 @@ inline_read_summary (void)
 	   this should never happen.  */
 	fatal_error ("ipa inline summary is missing in input file");
     }
-  if (flag_indirect_inlining)
+  if (optimize)
     {
       ipa_register_cgraph_hooks ();
       if (!flag_ipa_cp)
@@ -2676,7 +2675,7 @@ inline_write_summary (cgraph_node_set set,
   produce_asm (ob, NULL);
   destroy_output_block (ob);
 
-  if (flag_indirect_inlining && !flag_ipa_cp)
+  if (optimize && !flag_ipa_cp)
     ipa_prop_write_jump_functions (set);
 }
 

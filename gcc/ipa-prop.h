@@ -282,7 +282,6 @@ void ipa_free_edge_args_substructures (struct ipa_edge_args *);
 void ipa_free_node_params_substructures (struct ipa_node_params *);
 void ipa_free_all_node_params (void);
 void ipa_free_all_edge_args (void);
-void ipa_create_all_structures_for_iinln (void);
 void ipa_free_all_structures_after_ipa_cp (void);
 void ipa_free_all_structures_after_iinln (void);
 void ipa_register_cgraph_hooks (void);
