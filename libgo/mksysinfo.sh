@@ -43,6 +43,7 @@ cat > sysinfo.c <<EOF
 #include <netinet/tcp.h>
 #include <signal.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 #if defined(HAVE_SYSCALL_H)
 #include <syscall.h>
 #endif
