@@ -1,3 +1,8 @@
+2011-09-23  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add cortex-m arch 
+	and processors.
+
 2011-09-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* ipa-prop.c (ipa_print_node_jump_functions): Fix typos.
