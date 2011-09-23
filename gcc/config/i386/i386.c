@@ -18735,15 +18735,13 @@ ix86_prepare_sse_fp_compare_args (rtx dest, enum rtx_code code,
 {
   rtx tmp;
 
-  /* AVX supports all the needed comparisons, no need to swap arguments
-     nor help reload.  */
-  if (TARGET_AVX)
-    return code;
-
   switch (code)
     {
     case LTGT:
     case UNEQ:
+      /* AVX supports all the needed comparisons.  */
+      if (TARGET_AVX)
+	break;
       /* We have no LTGT as an operator.  We could implement it with
 	 NE & ORDERED, but this requires an extra temporary.  It's
 	 not clear that it's worth it.  */
@@ -18760,6 +18758,9 @@ ix86_prepare_sse_fp_compare_args (rtx dest, enum rtx_code code,
     case NE:
     case UNORDERED:
     case ORDERED:
+      /* AVX has 3 operand comparisons, no need to swap anything.  */
+      if (TARGET_AVX)
+	break;
       /* For commutative operators, try to canonicalize the destination
 	 operand to be first in the comparison - this helps reload to
 	 avoid extra moves.  */
@@ -18771,8 +18772,10 @@ ix86_prepare_sse_fp_compare_args (rtx dest, enum rtx_code code,
     case GT:
     case UNLE:
     case UNLT:
-      /* These are not supported directly.  Swap the comparison operands
-	 to transform into something that is supported.  */
+      /* These are not supported directly before AVX, and furthermore
+	 ix86_expand_sse_fp_minmax only optimizes LT/UNGE.  Swap the
+	 comparison operands to transform into something that is
+	 supported.  */
       tmp = *pop0;
       *pop0 = *pop1;
       *pop1 = tmp;

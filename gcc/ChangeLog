@@ -1,3 +1,8 @@
+2011-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_prepare_sse_fp_compare_args): For
+	GE/GT/UNLE/UNLT swap arguments and condition even for TARGET_AVX.
+
 2011-09-23  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_define): Treat a single character in single quotes,
