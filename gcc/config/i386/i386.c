@@ -13513,6 +13513,7 @@ get_some_local_dynamic_name (void)
    Y -- print condition for XOP pcom* instruction.
    + -- print a branch hint as 'cs' or 'ds' prefix
    ; -- print a semicolon (after prefixes due to bug in older gas).
+   ~ -- print "i" if TARGET_AVX2, "f" otherwise.
    @ -- print a segment register of thread base pointer load
  */
 
@@ -14006,6 +14007,10 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    fputs ("gs", file);
 	  return;
 
+	case '~':
+	  putc (TARGET_AVX2 ? 'i' : 'f', file);
+	  return;
+
 	default:
 	    output_operand_lossage ("invalid operand code '%c'", code);
 	}
@@ -14141,7 +14146,7 @@ static bool
 ix86_print_operand_punct_valid_p (unsigned char code)
 {
   return (code == '@' || code == '*' || code == '+'
-	  || code == '&' || code == ';');
+	  || code == '&' || code == ';' || code == '~');
 }
 
 /* Print a memory operand whose address is ADDR.  */
