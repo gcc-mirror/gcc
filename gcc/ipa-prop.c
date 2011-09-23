@@ -160,10 +160,12 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	fprintf (f, "UNKNOWN\n");
       else if (type == IPA_JF_KNOWN_TYPE)
 	{
-	  tree binfo_type = TREE_TYPE (jump_func->value.base_binfo);
-	  fprintf (f, "KNOWN TYPE, type in binfo is: ");
-	  print_generic_expr (f, binfo_type, 0);
-	  fprintf (f, " (%u)\n", TYPE_UID (binfo_type));
+	  fprintf (f, "KNOWN TYPE: base  ");
+	  print_generic_expr (f, jump_func->value.known_type.base_type, 0);
+	  fprintf (f, ", offset "HOST_WIDE_INT_PRINT_DEC", component ",
+		   jump_func->value.known_type.offset);
+	  print_generic_expr (f, jump_func->value.known_type.component_type, 0);
+	  fprintf (f, "\n");
 	}
       else if (type == IPA_JF_CONST)
 	{
@@ -634,7 +636,7 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
 			      gimple call)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree base, binfo;
+  tree base;
 
   if (!flag_devirtualize
       || TREE_CODE (op) != ADDR_EXPR
@@ -650,18 +652,14 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
       || is_global_var (base))
     return;
 
-  if (detect_type_change (op, base, call, jfunc, offset))
+  if (detect_type_change (op, base, call, jfunc, offset)
+      || !TYPE_BINFO (TREE_TYPE (base)))
     return;
 
-  binfo = TYPE_BINFO (TREE_TYPE (base));
-  if (!binfo)
-    return;
-  binfo = get_binfo_at_offset (binfo, offset, TREE_TYPE (op));
-  if (binfo)
-    {
-      jfunc->type = IPA_JF_KNOWN_TYPE;
-      jfunc->value.base_binfo = binfo;
-    }
+  jfunc->type = IPA_JF_KNOWN_TYPE;
+  jfunc->value.known_type.base_type = TREE_TYPE (base);
+  jfunc->value.known_type.offset = offset;
+  jfunc->value.known_type.component_type = TREE_TYPE (op);
 }
 
 
@@ -1500,18 +1498,16 @@ static void
 combine_known_type_and_ancestor_jfs (struct ipa_jump_func *src,
 				     struct ipa_jump_func *dst)
 {
-  tree new_binfo;
+  HOST_WIDE_INT combined_offset;
+  tree combined_type;
 
-  new_binfo = get_binfo_at_offset (src->value.base_binfo,
-				   dst->value.ancestor.offset,
-				   dst->value.ancestor.type);
-  if (new_binfo)
-    {
-      dst->type = IPA_JF_KNOWN_TYPE;
-      dst->value.base_binfo = new_binfo;
-    }
-  else
-    dst->type = IPA_JF_UNKNOWN;
+  combined_offset = src->value.known_type.offset + dst->value.ancestor.offset;
+  combined_type = dst->value.ancestor.type;
+
+  dst->type = IPA_JF_KNOWN_TYPE;
+  dst->value.known_type.base_type = src->value.known_type.base_type;
+  dst->value.known_type.offset = combined_offset;
+  dst->value.known_type.component_type = combined_type;
 }
 
 /* Update the jump functions associated with call graph edge E when the call
@@ -1646,22 +1642,19 @@ static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc)
 {
-  tree binfo, type, target;
-  HOST_WIDE_INT token;
+  tree binfo, target;
 
-  if (jfunc->type == IPA_JF_KNOWN_TYPE)
-    binfo = jfunc->value.base_binfo;
-  else
+  if (jfunc->type != IPA_JF_KNOWN_TYPE)
     return NULL;
 
-  if (!binfo)
-    return NULL;
-
-  token = ie->indirect_info->otr_token;
-  type = ie->indirect_info->otr_type;
-  binfo = get_binfo_at_offset (binfo, ie->indirect_info->anc_offset, type);
+  binfo = TYPE_BINFO (jfunc->value.known_type.base_type);
+  gcc_checking_assert (binfo);
+  binfo = get_binfo_at_offset (binfo, jfunc->value.known_type.offset
+			       + ie->indirect_info->anc_offset,
+			       ie->indirect_info->otr_type);
   if (binfo)
-    target = gimple_get_virt_method_for_binfo (token, binfo);
+    target = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
+					       binfo);
   else
     return NULL;
 
@@ -2578,7 +2571,9 @@ ipa_write_jump_function (struct output_block *ob,
     case IPA_JF_UNKNOWN:
       break;
     case IPA_JF_KNOWN_TYPE:
-      stream_write_tree (ob, jump_func->value.base_binfo, true);
+      streamer_write_uhwi (ob, jump_func->value.known_type.offset);
+      stream_write_tree (ob, jump_func->value.known_type.base_type, true);
+      stream_write_tree (ob, jump_func->value.known_type.component_type, true);
       break;
     case IPA_JF_CONST:
       stream_write_tree (ob, jump_func->value.constant, true);
@@ -2614,7 +2609,10 @@ ipa_read_jump_function (struct lto_input_block *ib,
     case IPA_JF_UNKNOWN:
       break;
     case IPA_JF_KNOWN_TYPE:
-      jump_func->value.base_binfo = stream_read_tree (ib, data_in);
+      jump_func->value.known_type.offset = streamer_read_uhwi (ib);
+      jump_func->value.known_type.base_type = stream_read_tree (ib, data_in);
+      jump_func->value.known_type.component_type = stream_read_tree (ib,
+								     data_in);
       break;
     case IPA_JF_CONST:
       jump_func->value.constant = stream_read_tree (ib, data_in);
