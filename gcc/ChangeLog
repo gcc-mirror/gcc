@@ -1,3 +1,17 @@
+2011-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_print_operand): Handle %~.
+	(ix86_print_operand_punct_valid_p): Return true also for '~'.
+	* config/i386/sse.md (i128): New mode_attr.
+	(vec_extract_hi_<mode>, vec_extract_hi_<mode>,
+	avx_vbroadcastf128_<mode>, *avx_vperm2f128<mode>_full,
+	*avx_vperm2f128<mode>_nozero, vec_set_lo_<mode>, 
+	vec_set_hi_<mode>, *vec_concat<mode>_avx): Use <i128> in the
+	patterns, use "<sseinsnmode>" for "mode" attribute.
+	(vec_extract_hi_v16hi, vec_extract_hi_v32qi, vec_set_lo_v16hi,
+	vec_set_hi_v16hi, vec_set_lo_v32qi, vec_set_hi_v32qi): Use
+	%~128 in the patterns, use "OI" for "mode" attribute.
+
 2011-09-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50447
