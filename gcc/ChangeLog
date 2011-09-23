@@ -1,3 +1,39 @@
+2011-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c (inline_call): Add comment.
+	* ipa-inline.h (inline_param_summary): New structure and vector.
+	(struct inline_edge_summary): Add param field.
+	* ipa-inline-analysis.c (CHANGED): New constant.
+	(add_clause): Handle CHANGED and NOT_CONSTANT.
+	(predicate_probability): New function.
+	(dump_condition): Dump CHANGED predicate.
+	(evaluate_conditions_for_known_args): Handle ERROR_MARK as marker
+	of unknown function wide invariant.
+	(evaluate_conditions_for_edge): Handle change probabilities.
+	(inline_edge_duplication_hook): Copy param summaries.
+	(inline_edge_removal_hook): Free param summaries.
+	(dump_inline_edge_summary): Fix dumping of indirect edges and callee sizes;
+	dump param summaries.
+	(will_be_nonconstant_predicate): Use CHANGED predicate.
+	(record_modified_bb_info): New structure.
+	(record_modified): New function.
+	(param_change_prob): New function.
+	(estimate_function_body_sizes): Compute param summaries.
+	(estimate_edge_size_and_time): Add probability argument.
+	(estimate_node_size_and_time): Add inline_param_summary argument;
+	handle predicate probabilities.
+	(remap_predicate): Fix formating.
+	(remap_edge_change_prob): New function.
+	(remap_edge_summaries): Rename from ...; use remap_edge_change_prob.
+	(remap_edge_predicates): ... this one.
+	(inline_merge_summary): Remap edge summaries; handle predicate probabilities;
+	remove param summaries after we are done.
+	(do_estimate_edge_time): Update.
+	(do_estimate_edge_growth): Update.
+	(read_inline_edge_summary): Read param info.
+	(inline_read_summary): Fix formating.
+	(write_inline_edge_summary): Write param summaries.
+
 2011-09-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_print_operand): Handle %~.

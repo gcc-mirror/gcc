@@ -248,6 +248,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
+  /* This must happen after inline_merge_summary that rely on jump
+     functions of callee to not be updated.  */
   if (optimize)
     return ipa_propagate_indirect_call_infos (curr, new_edges);
   else
