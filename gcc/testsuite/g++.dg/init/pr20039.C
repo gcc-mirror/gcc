@@ -10,6 +10,7 @@ struct M
 struct X
 {
   M m;
+  int i;
 };
 
 int mymain()

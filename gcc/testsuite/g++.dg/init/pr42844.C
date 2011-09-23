@@ -6,19 +6,19 @@ struct A
   A(){}
 };
 
-struct B : A {}; // { dg-message "user-provided default constructor" }
+struct B : A { int i; }; // { dg-message "user-provided default constructor" }
 
-struct C : A {}; // { dg-message "user-provided default constructor" }
+struct C : A { int i; }; // { dg-message "user-provided default constructor" }
 
 struct D : B { D() {} };
 
-struct E {}; // { dg-message "user-provided default constructor" }
+struct E { int i; }; // { dg-message "user-provided default constructor" }
 
 template <class T>
-struct F : A {}; // { dg-message "user-provided default constructor" }
+struct F : A { T t; }; // { dg-message "user-provided default constructor" }
 
 template <class T>
-struct G {}; // { dg-message "user-provided default constructor" }
+struct G { T t; }; // { dg-message "user-provided default constructor" }
 
 void f ()
 {
@@ -41,9 +41,9 @@ void f ()
   extern G<int> const gext;
 }
 
-struct H {}; // { dg-message "user-provided default constructor" }
+struct H { int i; }; // { dg-message "user-provided default constructor" }
 
-struct I : A {}; // { dg-message "user-provided default constructor" }
+struct I : A { int i; }; // { dg-message "user-provided default constructor" }
 
 template <class T>
 void g ()

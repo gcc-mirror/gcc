@@ -1,3 +1,13 @@
+2011-09-23  Jason Merrill  <jason@redhat.com>
+
+	Core 234
+	* g++.dg/init/const8.C: New.
+	* g++.dg/cpp0x/constexpr-object1.C: Add a data member.
+	* g++.dg/cpp0x/defaulted2.C: Likewise.
+	* g++.dg/cpp0x/pr42844-2.C: Likewise.
+	* g++.dg/init/pr20039.C: Likewise.
+	* g++.dg/init/pr42844.C: Likewise.
+
 2011-09-23  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/inline-1.c: new testcase.
