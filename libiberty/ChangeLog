@@ -1,3 +1,8 @@
+2011-09-23  Ian Lance Taylor  <iant@google.com>
+
+	* md5.c (md5_process_bytes): Correct handling of unaligned
+	buffer.
+
 2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* aclocal.m4: Include ../config/picflag.m4.
