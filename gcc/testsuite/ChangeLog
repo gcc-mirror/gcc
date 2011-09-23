@@ -1,3 +1,8 @@
+2011-09-23  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (errchk): Handle more cases of getting
+	correct Tcl backslash quoting in regular expressions in test file.
+
 2011-09-23  Jason Merrill  <jason@redhat.com>
 
 	Core 234
