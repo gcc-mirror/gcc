@@ -7751,6 +7751,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       /* We can see a FIELD_DECL in a pointer-to-member expression.  */
     case FIELD_DECL:
     case PARM_DECL:
+    case USING_DECL:
       return true;
 
     case AGGR_INIT_EXPR:

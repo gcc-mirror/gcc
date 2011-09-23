@@ -1,5 +1,10 @@
 2011-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/50491
+	* semantics.c (potential_constant_expression_1): Handle USING_DECL.
+
+2011-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/50371
 	* pt.c (invalid_nontype_parm_type_p): Handle NULLPTR_TYPE.
 
