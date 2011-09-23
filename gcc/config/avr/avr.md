@@ -136,7 +136,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "yes,no,reload_in32,out_bitop"
+  "yes,no,reload_in32,out_bitop,out_plus"
   (const_string "yes"))
 
 ;; Define mode iterators
@@ -909,31 +909,46 @@
    (set_attr "cc" "set_n,set_czn,set_czn,set_czn,set_n,set_n")])
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,!w,!w,d,r,r")
-	  (plus:SI
-	   (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
-	   (match_operand:SI 2 "nonmemory_operand" "r,I,J,i,P,N")))]
+  [(set (match_operand:SI 0 "register_operand"          "=r,!w,!w,d,l,l ,d,r")
+        (plus:SI (match_operand:SI 1 "register_operand" "%0,0 ,0 ,0,0,0 ,0,0")
+                 (match_operand:SI 2 "nonmemory_operand" "r,I ,J ,s,P,N ,n,n")))
+   (clobber (match_scratch:QI 3                         "=X,X ,X ,X,X,X ,X,&d"))]
   ""
-  "@
-	add %A0,%A2\;adc %B0,%B2\;adc %C0,%C2\;adc %D0,%D2
-	adiw %0,%2\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__
-	sbiw %0,%n2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__
-	subi %0,lo8(-(%2))\;sbci %B0,hi8(-(%2))\;sbci %C0,hlo8(-(%2))\;sbci %D0,hhi8(-(%2))
-	sec\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__
-	sec\;sbc %A0,__zero_reg__\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
-  [(set_attr "length" "4,3,3,4,5,5")
-   (set_attr "cc" "set_n,set_n,set_czn,set_czn,set_n,set_n")])
+  {
+    static const char * const asm_code[] =
+      {
+        "add %A0,%A2\;adc %B0,%B2\;adc %C0,%C2\;adc %D0,%D2",
+        "adiw %0,%2\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__",
+        "sbiw %0,%n2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__",
+        "subi %0,lo8(-(%2))\;sbci %B0,hi8(-(%2))\;sbci %C0,hlo8(-(%2))\;sbci %D0,hhi8(-(%2))",
+        "sec\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__",
+        "sec\;sbc %A0,__zero_reg__\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
+      };
+
+    if (which_alternative >= (signed) (sizeof (asm_code) / sizeof (*asm_code)))
+      return avr_out_plus (operands, NULL);
+
+    return asm_code [which_alternative];
+  }
+  [(set_attr "length" "4,3,3,4,5,5,8,8")
+   (set_attr "adjust_len" "no,no,no,no,no,no,out_plus,out_plus")
+   (set_attr "cc" "set_n,set_n,set_czn,set_czn,set_n,set_n,clobber,clobber")])
 
 (define_insn "*addsi3_zero_extend"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (zero_extend:SI
-		  (match_operand:QI 1 "register_operand" "r"))
-		 (match_operand:SI 2 "register_operand" "0")))]
+  [(set (match_operand:SI 0 "register_operand"                         "=r")
+        (plus:SI (zero_extend:SI (match_operand:QI 1 "register_operand" "r"))
+                 (match_operand:SI 2 "register_operand"                 "0")))]
   ""
-  "add %A0,%1
-	adc %B0,__zero_reg__
-	adc %C0,__zero_reg__
-	adc %D0,__zero_reg__"
+  "add %A0,%1\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
+  [(set_attr "length" "4")
+   (set_attr "cc" "set_n")])
+
+(define_insn "*addsi3_zero_extend.hi"
+  [(set (match_operand:SI 0 "register_operand"                         "=r")
+        (plus:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "r"))
+                 (match_operand:SI 2 "register_operand"                 "0")))]
+  ""
+  "add %A0,%1\;adc %B0,%B1\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
   [(set_attr "length" "4")
    (set_attr "cc" "set_n")])
 
@@ -962,39 +977,40 @@
    (set_attr "cc" "set_czn,set_czn")])
 
 (define_insn "*subhi3_zero_extend1"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(minus:HI (match_operand:HI 1 "register_operand" "0")
-		  (zero_extend:HI
-		   (match_operand:QI 2 "register_operand" "r"))))]
+  [(set (match_operand:HI 0 "register_operand"                          "=r")
+        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
+                  (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   ""
-  "sub %A0,%2
-	sbc %B0,__zero_reg__"
+  "sub %A0,%2\;sbc %B0,__zero_reg__"
   [(set_attr "length" "2")
-   (set_attr "cc" "set_n")])
+   (set_attr "cc" "set_czn")])
 
 (define_insn "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,d")
-        (minus:SI (match_operand:SI 1 "register_operand" "0,0")
-                 (match_operand:SI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:SI 0 "register_operand"          "=r")
+        (minus:SI (match_operand:SI 1 "register_operand" "0")
+                  (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "@
-	sub %0,%2\;sbc %B0,%B2\;sbc %C0,%C2\;sbc %D0,%D2
-	subi %A0,lo8(%2)\;sbci %B0,hi8(%2)\;sbci %C0,hlo8(%2)\;sbci %D0,hhi8(%2)"
-  [(set_attr "length" "4,4")
-   (set_attr "cc" "set_czn,set_czn")])
+  "sub %0,%2\;sbc %B0,%B2\;sbc %C0,%C2\;sbc %D0,%D2"
+  [(set_attr "length" "4")
+   (set_attr "cc" "set_czn")])
 
 (define_insn "*subsi3_zero_extend"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(minus:SI (match_operand:SI 1 "register_operand" "0")
-		  (zero_extend:SI
-		   (match_operand:QI 2 "register_operand" "r"))))]
+  [(set (match_operand:SI 0 "register_operand"                          "=r")
+        (minus:SI (match_operand:SI 1 "register_operand"                 "0")
+                  (zero_extend:SI (match_operand:QI 2 "register_operand" "r"))))]
   ""
-  "sub %A0,%2
-	sbc %B0,__zero_reg__
-	sbc %C0,__zero_reg__
-	sbc %D0,__zero_reg__"
+  "sub %A0,%2\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
   [(set_attr "length" "4")
-   (set_attr "cc" "set_n")])
+   (set_attr "cc" "set_czn")])
+
+(define_insn "*subsi3_zero_extend.hi"
+  [(set (match_operand:SI 0 "register_operand"                          "=r")
+        (minus:SI (match_operand:SI 1 "register_operand"                 "0")
+                  (zero_extend:SI (match_operand:HI 2 "register_operand" "r"))))]
+  ""
+  "sub %A0,%2\;sbc %B0,%B2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
+  [(set_attr "length" "4")
+   (set_attr "cc" "set_czn")])
 
 ;******************************************************************************
 ; mul
@@ -4093,42 +4109,44 @@
 ;; ************************* Peepholes ********************************
 
 (define_peephole
-  [(set (match_operand:SI 0 "d_register_operand" "")
-        (plus:SI (match_dup 0)
-                 (const_int -1)))
-   (parallel
-    [(set (cc0)
-          (compare (match_dup 0)
-		   (const_int -1)))
-     (clobber (match_operand:QI 1 "d_register_operand" ""))])
+  [(parallel [(set (match_operand:SI 0 "d_register_operand" "")
+                   (plus:SI (match_dup 0)
+                            (const_int -1)))
+              (clobber (scratch:QI))])
+   (parallel [(set (cc0)
+                   (compare (match_dup 0)
+                            (const_int -1)))
+              (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
-	(if_then_else (ne (cc0) (const_int 0))
-		      (label_ref (match_operand 2 "" ""))
-		      (pc)))]
+        (if_then_else (ne (cc0)
+                          (const_int 0))
+                      (label_ref (match_operand 2 "" ""))
+                      (pc)))]
   ""
-  "*
-{
-  CC_STATUS_INIT;
-  if (test_hard_reg_class (ADDW_REGS, operands[0]))
-    output_asm_insn (AS2 (sbiw,%0,1) CR_TAB
-		     AS2 (sbc,%C0,__zero_reg__) CR_TAB
-		     AS2 (sbc,%D0,__zero_reg__) \"\\n\", operands);
-  else
-    output_asm_insn (AS2 (subi,%A0,1) CR_TAB
-		     AS2 (sbc,%B0,__zero_reg__) CR_TAB
-		     AS2 (sbc,%C0,__zero_reg__) CR_TAB
-		     AS2 (sbc,%D0,__zero_reg__) \"\\n\", operands);
-  switch (avr_jump_mode (operands[2],insn))
   {
-    case 1:
-      return AS1 (brcc,%2);
-    case 2:
-      return (AS1 (brcs,.+2) CR_TAB
-              AS1 (rjmp,%2));
-  }
-  return (AS1 (brcs,.+4) CR_TAB
-          AS1 (jmp,%2));
-}")
+    CC_STATUS_INIT;
+    if (test_hard_reg_class (ADDW_REGS, operands[0]))
+      output_asm_insn (AS2 (sbiw,%0,1) CR_TAB
+                       AS2 (sbc,%C0,__zero_reg__) CR_TAB
+                       AS2 (sbc,%D0,__zero_reg__) "\n", operands);
+    else
+      output_asm_insn (AS2 (subi,%A0,1) CR_TAB
+                       AS2 (sbc,%B0,__zero_reg__) CR_TAB
+                       AS2 (sbc,%C0,__zero_reg__) CR_TAB
+                       AS2 (sbc,%D0,__zero_reg__) "\n", operands);
+
+    switch (avr_jump_mode (operands[2], insn))
+      {
+      case 1:
+        return AS1 (brcc,%2);
+      case 2:
+        return (AS1 (brcs,.+2) CR_TAB
+                AS1 (rjmp,%2));
+      }
+
+    return (AS1 (brcs,.+4) CR_TAB
+            AS1 (jmp,%2));
+  })
 
 (define_peephole
   [(set (match_operand:HI 0 "d_register_operand" "")
