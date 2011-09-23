@@ -301,17 +301,21 @@ go_define (unsigned int lineno, const char *buffer)
 	case '\'':
 	  {
 	    char quote;
+	    int count;
 
 	    if (saw_operand)
 	      goto unknown;
 	    quote = *p;
 	    *q++ = *p++;
+	    count = 0;
 	    while (*p != quote)
 	      {
 		int c;
 
 		if (*p == '\0')
 		  goto unknown;
+
+		++count;
 
 		if (*p != '\\')
 		  {
@@ -358,7 +362,15 @@ go_define (unsigned int lineno, const char *buffer)
 		    goto unknown;
 		  }
 	      }
+
 	    *q++ = *p++;
+
+	    if (quote == '\'' && count != 1)
+	      goto unknown;
+
+	    saw_operand = true;
+	    need_operand = false;
+
 	    break;
 	  }
 
