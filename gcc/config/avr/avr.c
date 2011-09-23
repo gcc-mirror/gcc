@@ -4503,6 +4503,167 @@ lshrsi3_out (rtx insn, rtx operands[], int *len)
 }
 
 
+/* Output addition of register XOP[0] and compile time constant XOP[2]:
+
+      XOP[0] = XOP[0] + XOP[2]
+
+   and return "".  If PLEN == NULL, print assembler instructions to perform the
+   addition; otherwise, set *PLEN to the length of the instruction sequence (in
+   words) printed with PLEN == NULL.  XOP[3] is an 8-bit scratch register.
+   CODE == PLUS:  perform addition by using ADD instructions.
+   CODE == MINUS: perform addition by using SUB instructions.  */
+
+static void
+avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code)
+{
+  /* MODE of the operation.  */
+  enum machine_mode mode = GET_MODE (xop[0]);
+
+  /* Number of bytes to operate on.  */
+  int i, n_bytes = GET_MODE_SIZE (mode);
+
+  /* Value (0..0xff) held in clobber register op[3] or -1 if unknown.  */
+  int clobber_val = -1;
+
+  /* op[0]: 8-bit destination register
+     op[1]: 8-bit const int
+     op[2]: 8-bit scratch register */
+  rtx op[3];
+
+  /* Started the operation?  Before starting the operation we may skip
+     adding 0.  This is no more true after the operation started because
+     carry must be taken into account.  */
+  bool started = false;
+
+  /* Value to add.  There are two ways to add VAL: R += VAL and R -= -VAL.  */
+  rtx xval = xop[2];
+
+  if (MINUS == code)
+    xval = gen_int_mode (-UINTVAL (xval), mode);
+
+  op[2] = xop[3];
+
+  if (plen)
+    *plen = 0;
+
+  for (i = 0; i < n_bytes; i++)
+    {
+      /* We operate byte-wise on the destination.  */
+      rtx reg8 = simplify_gen_subreg (QImode, xop[0], mode, i);
+      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
+
+      /* 8-bit value to operate with this byte. */
+      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+
+      /* Registers R16..R31 can operate with immediate.  */
+      bool ld_reg_p = test_hard_reg_class (LD_REGS, reg8);
+
+      op[0] = reg8;
+      op[1] = GEN_INT (val8);
+      
+      if (!started && i % 2 == 0
+          && test_hard_reg_class (ADDW_REGS, reg8))
+        {
+          rtx xval16 = simplify_gen_subreg (HImode, xval, mode, i);
+          unsigned int val16 = UINTVAL (xval16) & GET_MODE_MASK (HImode);
+
+          /* Registers R24, X, Y, Z can use ADIW/SBIW with constants < 64
+             i.e. operate word-wise.  */
+
+          if (val16 < 64)
+            {
+              if (val16 != 0)
+                {
+                  started = true;
+                  avr_asm_len (code == PLUS ? "adiw %0,%1" : "sbiw %0,%1",
+                               op, plen, 1);
+                }
+
+              i++;
+              continue;
+            }
+        }
+
+      if (val8 == 0)
+        {
+          if (started)
+            avr_asm_len (code == PLUS
+                         ? "adc %0,__zero_reg__" : "sbc %0,__zero_reg__",
+                         op, plen, 1);
+          continue;
+        }
+
+      switch (code)
+        {
+        case PLUS:
+
+          gcc_assert (plen != NULL || REG_P (op[2]));
+
+          if (clobber_val != (int) val8)
+            avr_asm_len ("ldi %2,%1", op, plen, 1);
+          clobber_val = (int) val8;
+              
+          avr_asm_len (started ? "adc %0,%2" : "add %0,%2", op, plen, 1);
+
+          break; /* PLUS */
+
+        case MINUS:
+
+          if (ld_reg_p)
+            avr_asm_len (started ? "sbci %0,%1" : "subi %0,%1", op, plen, 1);
+          else
+            {
+              gcc_assert (plen != NULL || REG_P (op[2]));
+
+              if (clobber_val != (int) val8)
+                avr_asm_len ("ldi %2,%1", op, plen, 1);
+              clobber_val = (int) val8;
+              
+              avr_asm_len (started ? "sbc %0,%2" : "sub %0,%2", op, plen, 1);
+            }
+
+          break; /* MINUS */
+          
+        default:
+          /* Unknown code */
+          gcc_unreachable();
+        }
+
+      started = true;
+
+    } /* for all sub-bytes */
+}
+
+
+/* Output addition of register XOP[0] and compile time constant XOP[2]:
+
+      XOP[0] = XOP[0] + XOP[2]
+
+   and return "".  If PLEN == NULL, print assembler instructions to perform the
+   addition; otherwise, set *PLEN to the length of the instruction sequence (in
+   words) printed with PLEN == NULL.  */
+
+const char*
+avr_out_plus (rtx *xop, int *plen)
+{
+  int len_plus, len_minus;
+
+  /* Work out if  XOP[0] += XOP[2]  is better or  XOP[0] -= -XOP[2].  */
+  
+  avr_out_plus_1 (xop, &len_plus, PLUS);
+  avr_out_plus_1 (xop, &len_minus, MINUS);
+
+  if (plen)
+    *plen = (len_minus <= len_plus) ? len_minus : len_plus;
+  else if (len_minus <= len_plus)
+    avr_out_plus_1 (xop, NULL, MINUS);
+  else
+    avr_out_plus_1 (xop, NULL, PLUS);
+
+  return "";
+}
+
+
 /* Output bit operation (IOR, AND, XOR) with register XOP[0] and compile
    time constant XOP[2]:
 
@@ -4849,6 +5010,10 @@ adjust_insn_length (rtx insn, int len)
           
         case ADJUST_LEN_OUT_BITOP:
           avr_out_bitop (insn, op, &len);
+          break;
+
+        case ADJUST_LEN_OUT_PLUS:
+          avr_out_plus (op, &len);
           break;
 
         default:
