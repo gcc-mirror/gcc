@@ -61,13 +61,17 @@ proc errchk { test opts } {
 	    # experimentation, not analysis.
 	    regsub -all "\\.\\*" $out_line "\\\\\[ -~\\\\\]*" out_line
 	}
+	if [string match "*dg-error*\\\[?\\\]*" $out_line] {
+	    set index [string first "dg-error" $out_line]
+	    regsub -all "\\\[\(.\)\\\]" $out_line "\\\\\[\\1\\\\\]" out_line
+	}
 	if [string match "*dg-error*\{*" $out_line] {
 	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\{" $out_line "\\\\\[\\\{\\\\\]" out_line
+	    regsub -start $index -all "\(\[^\\\\]\)\{" $out_line "\\1\\\\\[\\\{\\\\\]" out_line
 	}
 	if [string match "*dg-error*\}*\}" $out_line] {
 	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\}\(.\)" $out_line "\\\\\[\\\}\\\\\]\\1" out_line
+	    regsub -start $index -all "\(\[^\\\\]\)\}\(.\)" $out_line "\\1\\\\\[\\\}\\\\\]\\2" out_line
 	}
 	if [string match "*dg-error*\(*" $out_line] {
 	    set index [string first "dg-error" $out_line]
@@ -76,10 +80,6 @@ proc errchk { test opts } {
 	if [string match "*dg-error*\)*\}" $out_line] {
 	    set index [string first "dg-error" $out_line]
 	    regsub -start $index -all "\\\\\\\)\(.\)" $out_line "\\\\\[\\\)\\\\\]\\1" out_line
-	}
-	if [string match "*dg-error*\[.\]*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -all "\\\[\\.\\\]" $out_line "\\\\\[.\\\\\]" out_line
 	}
 	# Special case for bug332, in which the error message wants to
 	# match the file name, which is not what dg-error expects.
