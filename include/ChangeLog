@@ -1,3 +1,9 @@
+2011-09-23  Cary Coutant  <ccoutant@google.com>
+
+	PR 40831
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_CLONE.
+
 2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* xregex.h (regoff_t): Define.
