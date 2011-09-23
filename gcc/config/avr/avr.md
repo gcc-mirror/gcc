@@ -2390,23 +2390,38 @@
 
 (define_expand "rotlqi3"
   [(set (match_operand:QI 0 "register_operand" "")
-	(rotate:QI (match_operand:QI 1 "register_operand" "")
-		   (match_operand:QI 2 "const_int_operand" "")))]
+        (rotate:QI (match_operand:QI 1 "register_operand" "")
+                   (match_operand:QI 2 "const_0_to_7_operand" "")))]
   ""
-  "
-{
-  if (!CONST_INT_P (operands[2]) || (INTVAL (operands[2]) != 4))
-    FAIL;
-}")
+  {
+    if (!CONST_INT_P (operands[2]))
+      FAIL;
 
-(define_insn "rotlqi3_4"
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(rotate:QI (match_operand:QI 1 "register_operand" "0")
-		   (const_int 4)))]
+    operands[2] = gen_int_mode (INTVAL (operands[2]) & 7, QImode);
+  })
+
+;; Expander used by __builtin_avr_swap
+(define_expand "rotlqi3_4"
+  [(set (match_operand:QI 0 "register_operand" "")
+        (rotate:QI (match_operand:QI 1 "register_operand" "")
+                   (const_int 4)))])
+
+(define_insn "*rotlqi3"
+  [(set (match_operand:QI 0 "register_operand"               "=r,r,r  ,r  ,r  ,r  ,r  ,r")
+        (rotate:QI (match_operand:QI 1 "register_operand"     "0,0,0  ,0  ,0  ,0  ,0  ,0")
+                   (match_operand:QI 2 "const_0_to_7_operand" "P,K,C03,C04,C05,C06,C07,L")))]
   ""
-  "swap %0"
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  "@
+	lsl %0\;adc %0,__zero_reg__
+	lsl %0\;adc %0,__zero_reg__\;lsl %0\;adc %0,__zero_reg__
+	swap %0\;bst %0,0\;ror %0\;bld %0,7
+	swap %0
+	swap %0\;lsl %0\;adc %0,__zero_reg__
+	swap %0\;lsl %0\;adc %0,__zero_reg__\;lsl %0\;adc %0,__zero_reg__
+	bst %0,0\;ror %0\;bld %0,7
+	"
+  [(set_attr "length" "2,4,4,1,3,5,3,0")
+   (set_attr "cc" "set_n,set_n,clobber,none,set_n,set_n,clobber,none")])
 
 ;; Split all rotates of HI,SI and DImode registers where rotation is by
 ;; a whole number of bytes.  The split creates the appropriate moves and
@@ -2418,25 +2433,79 @@
 (define_mode_attr rotx [(DI "&r,&r,X") (SI "&r,&r,X") (HI "X,X,X")])
 (define_mode_attr rotsmode [(DI "QI") (SI "HI") (HI "QI")])
 
+;; "rotlhi3"
+;; "rotlsi3"
+;; "rotldi3"
 (define_expand "rotl<mode>3"
   [(parallel [(set (match_operand:HIDI 0 "register_operand" "")
-		   (rotate:HIDI (match_operand:HIDI 1 "register_operand" "")
-				(match_operand:VOID 2 "const_int_operand" "")))
-		(clobber (match_dup 3))])]
+                   (rotate:HIDI (match_operand:HIDI 1 "register_operand" "")
+                                (match_operand:VOID 2 "const_int_operand" "")))
+              (clobber (match_dup 3))])]
   ""
   {
-    if (CONST_INT_P (operands[2])
-        && 0 == INTVAL (operands[2]) % 8)
+    int offset;
+
+    if (!CONST_INT_P (operands[2]))
+      FAIL;
+
+    offset = INTVAL (operands[2]);
+ 
+    if (0 == offset % 8)
       {
-        if (AVR_HAVE_MOVW && 0 == INTVAL (operands[2]) % 16)
+        if (AVR_HAVE_MOVW && 0 == offset % 16)
           operands[3] = gen_rtx_SCRATCH (<rotsmode>mode);
         else
           operands[3] = gen_rtx_SCRATCH (QImode);
+      }
+    else if (<MODE>mode != DImode
+             && (offset == 1
+                 || offset == GET_MODE_BITSIZE (<MODE>mode) -1))
+      {
+        /*; Support rotate left/right by 1  */
+
+        emit_move_insn (operands[0],
+                        gen_rtx_ROTATE (<MODE>mode, operands[1], operands[2]));
+        DONE;
       }
     else
       FAIL;
   })
 
+(define_insn "*rotlhi2.1"
+  [(set (match_operand:HI 0 "register_operand"           "=r")
+        (rotate:HI (match_operand:HI 1 "register_operand" "0")
+                   (const_int 1)))]
+  ""
+  "lsl %A0\;rol %B0\;adc %A0,__zero_reg__"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*rotlhi2.15"
+  [(set (match_operand:HI 0 "register_operand"           "=r")
+        (rotate:HI (match_operand:HI 1 "register_operand" "0")
+                   (const_int 15)))]
+  ""
+  "bst %A0,0\;ror %B0\;ror %A0\;bld %B0,7"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*rotlsi2.1"
+  [(set (match_operand:SI 0 "register_operand"           "=r")
+        (rotate:SI (match_operand:SI 1 "register_operand" "0")
+                   (const_int 1)))]
+  ""
+  "lsl %A0\;rol %B0\;rol %C0\;rol %D0\;adc %A0,__zero_reg__"
+  [(set_attr "length" "5")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*rotlsi2.31"
+  [(set (match_operand:SI 0 "register_operand"           "=r")
+        (rotate:SI (match_operand:SI 1 "register_operand" "0")
+                   (const_int 31)))]
+  ""
+  "bst %A0,0\;ror %D0\;ror %C0\;ror %B0\;ror %A0\;bld %D0,7"
+  [(set_attr "length" "6")
+   (set_attr "cc" "clobber")])
 
 ;; Overlapping non-HImode registers often (but not always) need a scratch.
 ;; The best we can do is use early clobber alternative "#&r" so that
@@ -2444,7 +2513,11 @@
 ;; allocation does not prefer non-overlapping.
 
 
-; Split word aligned rotates using scratch that is mode dependent.
+;; Split word aligned rotates using scratch that is mode dependent.
+
+;; "*rotwhi"
+;; "*rotwsi"
+;; "*rotwdi"
 (define_insn_and_split "*rotw<mode>"
   [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
         (rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
@@ -2462,7 +2535,11 @@
   })
 
 
-; Split byte aligned rotates using scratch that is always QI mode.
+;; Split byte aligned rotates using scratch that is always QI mode.
+
+;; "*rotbhi"
+;; "*rotbsi"
+;; "*rotbdi"
 (define_insn_and_split "*rotb<mode>"
   [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
         (rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")

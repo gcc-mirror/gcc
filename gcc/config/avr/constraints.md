@@ -108,10 +108,30 @@
   (and (match_code "mem")
        (match_test "extra_constraint_Q (op)")))
 
+(define_constraint "C03"
+  "Constant integer 3."
+  (and (match_code "const_int")
+       (match_test "ival == 3")))
+
 (define_constraint "C04"
   "Constant integer 4."
   (and (match_code "const_int")
        (match_test "ival == 4")))
+
+(define_constraint "C05"
+  "Constant integer 5."
+  (and (match_code "const_int")
+       (match_test "ival == 5")))
+
+(define_constraint "C06"
+  "Constant integer 6."
+  (and (match_code "const_int")
+       (match_test "ival == 6")))
+
+(define_constraint "C07"
+  "Constant integer 7."
+  (and (match_code "const_int")
+       (match_test "ival == 7")))
 
 (define_constraint "Ca2"
   "Constant 2-byte integer that allows AND without clobber register."
