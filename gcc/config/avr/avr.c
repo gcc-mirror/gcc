@@ -446,7 +446,7 @@ signal_function_p (tree func)
   return avr_lookup_function_attribute1 (func, "signal");
 }
 
-/* Return nonzero if FUNC is a OS_task function.  */
+/* Return nonzero if FUNC is an OS_task function.  */
 
 static int
 avr_OS_task_function_p (tree func)
@@ -454,7 +454,7 @@ avr_OS_task_function_p (tree func)
   return avr_lookup_function_attribute1 (func, "OS_task");
 }
 
-/* Return nonzero if FUNC is a OS_main function.  */
+/* Return nonzero if FUNC is an OS_main function.  */
 
 static int
 avr_OS_main_function_p (tree func)
@@ -477,7 +477,7 @@ avr_regs_to_save (HARD_REG_SET *set)
   count = 0;
 
   /* No need to save any registers if the function never returns or 
-     is have "OS_task" or "OS_main" attribute.  */
+     has the "OS_task" or "OS_main" attribute.  */
   if (TREE_THIS_VOLATILE (current_function_decl)
       || cfun->machine->is_OS_task
       || cfun->machine->is_OS_main)
@@ -550,7 +550,7 @@ avr_return_addr_rtx (int count, rtx tem)
 {
   rtx r;
     
-  /* Can only return this functions return address. Others not supported.  */
+  /* Can only return this function's return address. Others not supported.  */
   if (count)
      return NULL;
 
@@ -828,7 +828,7 @@ expand_prologue (void)
                     fp=sp
                     fp-=size
                     sp=fp
-                OR
+                  OR
                     sp-=size
                     fp=sp
               the optimum method depends on function type, stack and frame size.
@@ -5084,7 +5084,7 @@ avr_rotate_bytes (rtx operands[])
 }
 
 /* Modifies the length assigned to instruction INSN
- LEN is the initially computed length of the insn.  */
+   LEN is the initially computed length of the insn.  */
 
 int
 adjust_insn_length (rtx insn, int len)
@@ -7403,7 +7403,7 @@ output_reload_insisf_1 (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
    LEN == NULL: Output instructions.
    
-   LEN != NULL: Output nothing.  Increment *LEN by number of words occupied
+   LEN != NULL: Output nothing.  Set *LEN to number of words occupied
                 by the insns printed.
 
    Return "".  */
