@@ -1,3 +1,19 @@
+2011-09-23  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (jump_func_type): Updated comments.
+	(ipa_known_type_data): New type.
+	(ipa_jump_func): Use it to describe known type jump functions.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Updated to
+	reflect the new known type jump function contents.
+	(compute_known_type_jump_func): Likewise.
+	(combine_known_type_and_ancestor_jfs): Likewise.
+	(try_make_edge_direct_virtual_call): Likewise.
+	(ipa_write_jump_function): Likewise.
+	(ipa_read_jump_function): Likewise.
+	* ipa-cp.c (ipa_value_from_known_type_jfunc): New function.
+	(ipa_value_from_jfunc): Use ipa_value_from_known_type_jfunc.
+	(propagate_accross_jump_function): Likewise.
+
 2011-09-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50446
