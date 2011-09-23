@@ -3506,7 +3506,21 @@ Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
   else if (return_exp != NULL)
     return this->verify_not_sink(exp);
   else
-    this->expression_stat(this->verify_not_sink(exp));
+    {
+      exp = this->verify_not_sink(exp);
+
+      if (token->is_op(OPERATOR_COLONEQ))
+	{
+	  if (!exp->is_error_expression())
+	    error_at(token->location(), "non-name on left side of %<:=%>");
+	  while (!token->is_op(OPERATOR_SEMICOLON)
+		 && !token->is_eof())
+	    token = this->advance_token();
+	  return NULL;
+	}
+
+      this->expression_stat(exp);
+    }
 
   return NULL;
 }
@@ -4287,8 +4301,19 @@ Parse::type_switch_case(std::vector<Type*>* types, bool* is_default)
       while (true)
 	{
 	  Type* t = this->type();
+
 	  if (!t->is_error_type())
 	    types->push_back(t);
+	  else
+	    {
+	      token = this->peek_token();
+	      while (!token->is_op(OPERATOR_COLON)
+		     && !token->is_op(OPERATOR_COMMA)
+		     && !token->is_op(OPERATOR_RCURLY)
+		     && !token->is_eof())
+		token = this->advance_token();
+	    }
+
 	  if (!this->peek_token()->is_op(OPERATOR_COMMA))
 	    break;
 	  this->advance_token();
