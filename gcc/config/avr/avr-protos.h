@@ -47,7 +47,6 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 
 #ifdef RTX_CODE
 extern void asm_output_external_libcall (FILE *file, rtx symref);
-extern int compare_diff_p (rtx insn);
 extern const char *output_movqi (rtx insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx insn, rtx operands[], int *l);
 extern const char *out_movqi_r_mr (rtx insn, rtx op[], int *l);
@@ -57,8 +56,9 @@ extern const char *out_movhi_mr_r (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_r_mr (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_mr_r (rtx insn, rtx op[], int *l);
 extern const char *output_movsisf (rtx insn, rtx operands[], int *l);
-extern const char *out_tstsi (rtx insn, rtx src, int *l);
-extern const char *out_tsthi (rtx insn, rtx src, int *l);
+extern const char *avr_out_tstsi (rtx, rtx*, int*);
+extern const char *avr_out_tsthi (rtx, rtx*, int*);
+extern const char *avr_out_compare (rtx, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 
 extern const char *ashlqi3_out (rtx insn, rtx operands[], int *len);
@@ -103,7 +103,6 @@ extern void final_prescan_insn (rtx insn, rtx *operand, int num_operands);
 extern int avr_simplify_comparison_p (enum machine_mode mode,
 				      RTX_CODE op, rtx x);
 extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
-extern int compare_eq_p (rtx insn);
 extern void out_shift_with_cnt (const char *templ, rtx insn,
 				rtx operands[], int *len, int t_len);
 extern rtx avr_incoming_return_addr_rtx (void);

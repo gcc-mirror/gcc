@@ -136,7 +136,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "yes,no,reload_in32,out_bitop,out_plus"
+  "yes,no,reload_in32,out_bitop,out_plus,tsthi,tstsi,compare"
   (const_string "yes"))
 
 ;; Define mode iterators
@@ -3344,125 +3344,62 @@
 
 (define_insn "*cmpqi_sign_extend"
   [(set (cc0)
-        (compare (sign_extend:HI
-		  (match_operand:QI 0 "register_operand"  "d"))
-		 (match_operand:HI 1 "const_int_operand" "n")))]
-  "INTVAL (operands[1]) >= -128 && INTVAL (operands[1]) <= 127"
+        (compare (sign_extend:HI (match_operand:QI 0 "register_operand" "d"))
+                 (match_operand:HI 1 "s8_operand"                       "n")))]
+  ""
   "cpi %0,lo8(%1)"
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])
 
 (define_insn "*cmphi"
   [(set (cc0)
-	(compare (match_operand:HI 0 "register_operand"  "!w,r,r,d,d,r,r")
-		 (match_operand:HI 1 "nonmemory_operand" "L,L,r,M,i,M,i")))
-   (clobber (match_scratch:QI 2 "=X,X,X,X,&d,&d,&d"))]
+        (compare (match_operand:HI 0 "register_operand"  "!w,r,r,d ,r  ,d,r")
+                 (match_operand:HI 1 "nonmemory_operand" "L ,L,r,s ,s  ,M,n")))
+   (clobber (match_scratch:QI 2                         "=X ,X,X,&d,&d ,X,&d"))]
   ""
-  "*{
-  switch (which_alternative)
-    {
-    case 0: case 1:
-      return out_tsthi (insn, operands[0], NULL);
+  {
+    switch (which_alternative)
+      {
+      case 0:
+      case 1:
+        return avr_out_tsthi (insn, operands, NULL);
+        
+      case 2:
+        return "cp %A0,%A1\;cpc %B0,%B1";
 
-    case 2:
-      return (AS2 (cp,%A0,%A1) CR_TAB
-              AS2 (cpc,%B0,%B1));
-    case 3:
-      if (reg_unused_after (insn, operands[0])
-          && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 63
-          && test_hard_reg_class (ADDW_REGS, operands[0]))
-        return AS2 (sbiw,%0,%1);
-       else
-        return (AS2 (cpi,%0,%1) CR_TAB
-                AS2 (cpc,%B0,__zero_reg__));
-    case 4:
-      if (reg_unused_after (insn, operands[0]))
-        return (AS2 (subi,%0,lo8(%1))  CR_TAB
-                AS2 (sbci,%B0,hi8(%1)));
-      else
-        return (AS2 (ldi, %2,hi8(%1))  CR_TAB
-	        AS2 (cpi, %A0,lo8(%1)) CR_TAB
-	        AS2 (cpc, %B0,%2));
-   case 5:
-      return (AS2 (ldi, %2,lo8(%1))  CR_TAB
-	      AS2 (cp, %A0,%2) CR_TAB
-	      AS2 (cpc, %B0,__zero_reg__));
-
-   case 6:
-      return (AS2 (ldi, %2,lo8(%1))  CR_TAB
-              AS2 (cp, %A0,%2)       CR_TAB
-              AS2 (ldi, %2,hi8(%1)) CR_TAB
-	      AS2 (cpc, %B0,%2));
-    }
-  return \"bug\";
-}" 
-  [(set_attr "cc" "compare,compare,compare,compare,compare,compare,compare")
-   (set_attr "length" "1,2,2,2,3,3,4")])
+      case 3:
+        return reg_unused_after (insn, operands[0])
+               ? "subi %A0,lo8(%1)\;sbci %B0,hi8(%1)"
+               : "ldi %2,hi8(%1)\;cpi %A0,lo8(%1)\;cpc %B0,%2";
+               
+      case 4:
+        return "ldi %2,lo8(%1)\;cp %A0,%2\;ldi %2,hi8(%1)\;cpc %B0,%2";
+      }
+      
+    return avr_out_compare (insn, operands, NULL);
+  } 
+  [(set_attr "cc" "compare")
+   (set_attr "length" "1,2,2,3,4,2,4")
+   (set_attr "adjust_len" "tsthi,tsthi,no,no,no,compare,compare")])
 
 
 (define_insn "*cmpsi"
   [(set (cc0)
-	(compare (match_operand:SI 0 "register_operand"  "r,r,d,d,r,r")
-		 (match_operand:SI 1 "nonmemory_operand" "L,r,M,i,M,i")))
-   (clobber (match_scratch:QI 2 "=X,X,X,&d,&d,&d"))]
+        (compare (match_operand:SI 0 "register_operand"  "r,r ,d,r ,r")
+                 (match_operand:SI 1 "nonmemory_operand" "L,r ,M,M ,n")))
+   (clobber (match_scratch:QI 2                         "=X,X ,X,&d,&d"))]
   ""
-  "*{
-  switch (which_alternative)
-    {
-    case 0:
-      return out_tstsi (insn, operands[0], NULL);
-
-    case 1:
-      return (AS2 (cp,%A0,%A1) CR_TAB
-              AS2 (cpc,%B0,%B1) CR_TAB
-	      AS2 (cpc,%C0,%C1) CR_TAB
-	      AS2 (cpc,%D0,%D1));
-    case 2:
-      if (reg_unused_after (insn, operands[0])
-          && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 63
-          && test_hard_reg_class (ADDW_REGS, operands[0]))
-        return (AS2 (sbiw,%0,%1) CR_TAB
-                AS2 (cpc,%C0,__zero_reg__) CR_TAB
-                AS2 (cpc,%D0,__zero_reg__));
-      else
-        return (AS2 (cpi,%A0,lo8(%1))  CR_TAB
-                AS2 (cpc,%B0,__zero_reg__) CR_TAB
-                AS2 (cpc,%C0,__zero_reg__) CR_TAB
-                AS2 (cpc,%D0,__zero_reg__));
-    case 3:
-      if (reg_unused_after (insn, operands[0]))
-        return (AS2 (subi,%A0,lo8(%1))  CR_TAB
-                AS2 (sbci,%B0,hi8(%1))  CR_TAB
-                AS2 (sbci,%C0,hlo8(%1))  CR_TAB
-                AS2 (sbci,%D0,hhi8(%1)));
-      else
-       return (AS2 (cpi, %A0,lo8(%1))   CR_TAB
-	       AS2 (ldi, %2,hi8(%1))  CR_TAB
-	       AS2 (cpc, %B0,%2)       CR_TAB
-	       AS2 (ldi, %2,hlo8(%1))  CR_TAB
-	       AS2 (cpc, %C0,%2)       CR_TAB
-	       AS2 (ldi, %2,hhi8(%1)) CR_TAB
-	       AS2 (cpc, %D0,%2));
-    case 4:
-        return (AS2 (ldi,%2,lo8(%1))        CR_TAB
-                AS2 (cp,%A0,%2)            CR_TAB
-                AS2 (cpc,%B0,__zero_reg__) CR_TAB
-                AS2 (cpc,%C0,__zero_reg__) CR_TAB
-                AS2 (cpc,%D0,__zero_reg__));
-    case 5:
-       return (AS2 (ldi, %2,lo8(%1))   CR_TAB
-               AS2 (cp, %A0,%2)        CR_TAB
-	       AS2 (ldi, %2,hi8(%1))  CR_TAB
-	       AS2 (cpc, %B0,%2)       CR_TAB
-	       AS2 (ldi, %2,hlo8(%1))  CR_TAB
-	       AS2 (cpc, %C0,%2)       CR_TAB
-	       AS2 (ldi, %2,hhi8(%1)) CR_TAB
-	       AS2 (cpc, %D0,%2));
-    }
-  return \"bug\";
-}"
-  [(set_attr "cc" "compare,compare,compare,compare,compare,compare")
-   (set_attr "length" "4,4,4,7,5,8")])
+  {
+    if (0 == which_alternative)
+      return avr_out_tstsi (insn, operands, NULL);
+    else if (1 == which_alternative)
+      return "cp %A0,%A1\;cpc %B0,%B1\;cpc %C0,%C1\;cpc %D0,%D1";
+      
+    return avr_out_compare (insn, operands, NULL);
+  }
+  [(set_attr "cc" "compare")
+   (set_attr "length" "4,4,4,5,8")
+   (set_attr "adjust_len" "tstsi,no,compare,compare,compare")])
 
 
 ;; ----------------------------------------------------------------------

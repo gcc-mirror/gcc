@@ -1,6 +1,27 @@
 2011-09-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50447
+	* config/avr/avr.md (adjust_len): Add alternatives "tsthi",
+	"tstsi", "compare".
+	(*cmpqi_sign_extend): Use s8_operand.
+	(*cmphi, *cmpsi): Rewrite using avr_out_compare.
+	* config/avr/avr-protos.h (compare_diff_p, compare_eq_p): Remove
+	prototypes.
+	(out_tsthi, out_tstsi): Remove prototypes.
+	(avr_out_tsthi, avr_out_tstsi): New prototypes.
+	* config/avr/avr.c (out_tsthi, out_tstsi): Remove functions.
+	(avr_asm_len): Negative length now sets *plen to -length.
+	(compare_sign_p): Return bool instead of int.
+	(compare_diff_p, compare_eq_p): Ditto and make static.
+	(avr_out_tsthi): New function.
+	(avr_out_tstsi): New function.
+	(avr_out_compare): New function.
+	(adjust_insn_length): Handle ADJUST_LEN_TSTHI, ADJUST_LEN_TSTSI,
+	ADJUST_LEN_COMPARE.
+
+2011-09-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50447
 	* config/avr/avr.md: (adjust_len): Add alternative "out_plus".
 	(addsi3): Rewrite using QI scratch register.  Adjust text
 	peepholes using plus:SI.

@@ -69,9 +69,7 @@ static const char *ptrreg_to_str (int);
 static const char *cond_string (enum rtx_code);
 static int avr_num_arg_regs (enum machine_mode, const_tree);
 
-static RTX_CODE compare_condition (rtx insn);
 static rtx avr_legitimize_address (rtx, rtx, enum machine_mode);
-static int compare_sign_p (rtx insn);
 static tree avr_handle_progmem_attribute (tree *, tree, tree, int, bool *);
 static tree avr_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree avr_handle_fntype_attribute (tree *, tree, tree, int, bool *);
@@ -1291,7 +1289,8 @@ avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
        by OPERANDS.  This is just forwarding to output_asm_insn.
    
    If PLEN != NULL:
-       Add N_WORDS to *PLEN.
+       If N_WORDS >= 0  Add N_WORDS to *PLEN.
+       If N_WORDS < 0   Set *PLEN to -N_WORDS.
        Don't output anything.
 */
 
@@ -1304,7 +1303,10 @@ avr_asm_len (const char* tpl, rtx* operands, int* plen, int n_words)
     }
   else
     {
-      *plen += n_words;
+      if (n_words < 0)
+        *plen = -n_words;
+      else
+        *plen += n_words;
     }
 }
 
@@ -3052,28 +3054,30 @@ compare_condition (rtx insn)
   return UNKNOWN;
 }
 
-/* Returns nonzero if INSN is a tst insn that only tests the sign.  */
 
-static int
+/* Returns true iff INSN is a tst insn that only tests the sign.  */
+
+static bool
 compare_sign_p (rtx insn)
 {
   RTX_CODE cond = compare_condition (insn);
   return (cond == GE || cond == LT);
 }
 
-/* Returns nonzero if the next insn is a JUMP_INSN with a condition
+
+/* Returns true iff the next insn is a JUMP_INSN with a condition
    that needs to be swapped (GT, GTU, LE, LEU).  */
 
-int
+static bool
 compare_diff_p (rtx insn)
 {
   RTX_CODE cond = compare_condition (insn);
   return (cond == GT || cond == GTU || cond == LE || cond == LEU) ? cond : 0;
 }
 
-/* Returns nonzero if INSN is a compare insn with the EQ or NE condition.  */
+/* Returns true iff INSN is a compare insn with the EQ or NE condition.  */
 
-int
+static bool
 compare_eq_p (rtx insn)
 {
   RTX_CODE cond = compare_condition (insn);
@@ -3081,56 +3085,173 @@ compare_eq_p (rtx insn)
 }
 
 
+/* Output compare instruction
+
+      compare (XOP[0], XOP[1])
+
+   for an HI/SI register XOP[0] and an integer XOP[1].  Return "".
+   XOP[2] is an 8-bit scratch register as needed.
+
+   PLEN == NULL:  Output instructions.
+   PLEN != NULL:  Set *PLEN to the length (in words) of the sequence.
+                  Don't output anything.  */
+
+const char*
+avr_out_compare (rtx insn, rtx *xop, int *plen)
+{
+  /* Register to compare and value to compare against. */
+  rtx xreg = xop[0];
+  rtx xval = xop[1];
+  
+  /* MODE of the comparison.  */
+  enum machine_mode mode = GET_MODE (xreg);
+
+  /* Number of bytes to operate on.  */
+  int i, n_bytes = GET_MODE_SIZE (mode);
+
+  /* Value (0..0xff) held in clobber register xop[2] or -1 if unknown.  */
+  int clobber_val = -1;
+
+  gcc_assert (REG_P (xreg)
+              && CONST_INT_P (xval));
+  
+  if (plen)
+    *plen = 0;
+
+  for (i = 0; i < n_bytes; i++)
+    {
+      /* We compare byte-wise.  */
+      rtx reg8 = simplify_gen_subreg (QImode, xreg, mode, i);
+      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
+
+      /* 8-bit value to compare with this byte.  */
+      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+
+      /* Registers R16..R31 can operate with immediate.  */
+      bool ld_reg_p = test_hard_reg_class (LD_REGS, reg8);
+
+      xop[0] = reg8;
+      xop[1] = gen_int_mode (val8, QImode);
+
+      /* Word registers >= R24 can use SBIW/ADIW with 0..63.  */
+
+      if (i == 0
+          && test_hard_reg_class (ADDW_REGS, reg8))
+        {
+          int val16 = trunc_int_for_mode (INTVAL (xval), HImode);
+          
+          if (IN_RANGE (val16, 0, 63)
+              && (val8 == 0
+                  || reg_unused_after (insn, xreg)))
+            {
+              avr_asm_len ("sbiw %0,%1", xop, plen, 1);
+              i++;
+              continue;
+            }
+
+          if (n_bytes == 2
+              && IN_RANGE (val16, -63, -1)
+              && compare_eq_p (insn)
+              && reg_unused_after (insn, xreg))
+            {
+              avr_asm_len ("adiw %0,%n1", xop, plen, 1);
+              break;
+            }
+        }
+
+      /* Comparing against 0 is easy.  */
+      
+      if (val8 == 0)
+        {
+          avr_asm_len (i == 0
+                       ? "cp %0,__zero_reg__"
+                       : "cpc %0,__zero_reg__", xop, plen, 1);
+          continue;
+        }
+
+      /* Upper registers can compare and subtract-with-carry immediates.
+         Notice that compare instructions do the same as respective subtract
+         instruction; the only difference is that comparisons don't write
+         the result back to the target register.  */
+
+      if (ld_reg_p)
+        {
+          if (i == 0)
+            {
+              avr_asm_len ("cpi %0,%1", xop, plen, 1);
+              continue;
+            }
+          else if (reg_unused_after (insn, xreg))
+            {
+              avr_asm_len ("sbci %0,%1", xop, plen, 1);
+              continue;
+            }
+        }
+
+      /* Must load the value into the scratch register.  */
+
+      gcc_assert (REG_P (xop[2]));
+              
+      if (clobber_val != (int) val8)
+        avr_asm_len ("ldi %2,%1", xop, plen, 1);
+      clobber_val = (int) val8;
+              
+      avr_asm_len (i == 0
+                   ? "cp %0,%2"
+                   : "cpc %0,%2", xop, plen, 1);
+    }
+
+  return "";
+}
+
+
 /* Output test instruction for HImode.  */
 
-const char *
-out_tsthi (rtx insn, rtx op, int *l)
+const char*
+avr_out_tsthi (rtx insn, rtx *op, int *plen)
 {
   if (compare_sign_p (insn))
     {
-      if (l) *l = 1;
-      return AS1 (tst,%B0);
+      avr_asm_len ("tst %B0", op, plen, -1);
     }
-  if (reg_unused_after (insn, op)
-      && compare_eq_p (insn))
+  else if (reg_unused_after (insn, op[0])
+           && compare_eq_p (insn))
     {
       /* Faster than sbiw if we can clobber the operand.  */
-      if (l) *l = 1;
-      return "or %A0,%B0";
+      avr_asm_len ("or %A0,%B0", op, plen, -1);
     }
-  if (test_hard_reg_class (ADDW_REGS, op))
+  else
     {
-      if (l) *l = 1;
-      return AS2 (sbiw,%0,0);
+      avr_out_compare (insn, op, plen);
     }
-  if (l) *l = 2;
-  return (AS2 (cp,%A0,__zero_reg__) CR_TAB
-          AS2 (cpc,%B0,__zero_reg__));
+
+  return "";
 }
 
 
 /* Output test instruction for SImode.  */
 
-const char *
-out_tstsi (rtx insn, rtx op, int *l)
+const char*
+avr_out_tstsi (rtx insn, rtx *op, int *plen)
 {
   if (compare_sign_p (insn))
     {
-      if (l) *l = 1;
-      return AS1 (tst,%D0);
+      avr_asm_len ("tst %D0", op, plen, -1);
     }
-  if (test_hard_reg_class (ADDW_REGS, op))
+  else if (reg_unused_after (insn, op[0])
+           && compare_eq_p (insn))
     {
-      if (l) *l = 3;
-      return (AS2 (sbiw,%A0,0) CR_TAB
-              AS2 (cpc,%C0,__zero_reg__) CR_TAB
-              AS2 (cpc,%D0,__zero_reg__));
+      /* Faster than sbiw if we can clobber the operand.  */
+      avr_asm_len ("or %A0,%B0" CR_TAB
+                   "or %A0,%C0" CR_TAB
+                   "or %A0,%D0", op, plen, -3);
     }
-  if (l) *l = 4;
-  return (AS2 (cp,%A0,__zero_reg__) CR_TAB
-          AS2 (cpc,%B0,__zero_reg__) CR_TAB
-          AS2 (cpc,%C0,__zero_reg__) CR_TAB
-          AS2 (cpc,%D0,__zero_reg__));
+  else
+    {
+      avr_out_compare (insn, op, plen);
+    }
+
+  return "";
 }
 
 
@@ -5016,6 +5137,10 @@ adjust_insn_length (rtx insn, int len)
           avr_out_plus (op, &len);
           break;
 
+        case ADJUST_LEN_TSTHI: avr_out_tsthi (insn, op, &len); break;
+        case ADJUST_LEN_TSTSI: avr_out_tstsi (insn, op, &len); break;
+        case ADJUST_LEN_COMPARE: avr_out_compare (insn, op, &len); break;
+          
         default:
           gcc_unreachable();
         }
@@ -5049,15 +5174,6 @@ adjust_insn_length (rtx insn, int len)
 	      break;
 	    default:
 	      break;
-	    }
-	}
-      else if (op[0] == cc0_rtx && REG_P (op[1]))
-	{
-	  switch (GET_MODE (op[1]))
-	    {
-	    case HImode: out_tsthi (insn, op[1], &len); break;
-	    case SImode: out_tstsi (insn, op[1], &len); break;
-	    default: break;
 	    }
 	}
     }
