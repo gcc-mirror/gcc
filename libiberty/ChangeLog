@@ -9,6 +9,7 @@
 	* testsuite/demangle-expected: Add new testcases.
 
 2011-09-23  Ian Lance Taylor  <iant@google.com>
+	    Pierre Vittet  <piervit@pvittet.com>
 
 	* md5.c (md5_process_bytes): Correct handling of unaligned
 	buffer.
