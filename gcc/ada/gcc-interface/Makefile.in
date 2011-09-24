@@ -2164,7 +2164,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
 endif
 
 ifeq ($(strip $(filter-out darwin%,$(osys))),)
-  SO_OPTS = -Wl,-flat_namespace -shared-libgcc
+  SO_OPTS = -shared-libgcc
   ifeq ($(strip $(filter-out %86,$(arch))),)
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \

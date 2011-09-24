@@ -57,15 +57,10 @@ package body MLib.Tgt.Specific is
 
    --  Local objects
 
-   Flat_Namespace : aliased String := "-Wl,-flat_namespace";
-   --  Instruct the linker to build the shared library as a flat
-   --  namespace image. The default is a two-level namespace image.
-
    Shared_Libgcc  : aliased String := "-shared-libgcc";
 
    Shared_Options : constant Argument_List :=
-                      (1 => Flat_Namespace'Access,
-                       2 => Shared_Libgcc'Access);
+                      (1 => Shared_Libgcc'Access);
 
    -----------------------------
    -- Archive_Indexer_Options --
