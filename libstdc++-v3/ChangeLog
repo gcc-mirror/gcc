@@ -1,5 +1,10 @@
 2011-09-24  John Salmon  <john.salmon@deshaw.com>
 
+	PR libstdc++/50510
+	* include/bits/random.tcc (seed_seq::generate): Fix computation.
+
+2011-09-24  John Salmon  <john.salmon@deshaw.com>
+
 	PR libstdc++/50509
 	* include/bits/random.tcc (seed_seq::generate): Fix computation.
 

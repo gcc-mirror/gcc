@@ -2796,8 +2796,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Type __r4 = __r3 - __k % __n;
 	  __r4 = __detail::__mod<_Type,
 	           __detail::_Shift<_Type, 32>::__value>(__r4);
-	  __begin[(__k + __p) % __n] ^= __r4;
-	  __begin[(__k + __q) % __n] ^= __r3;
+	  __begin[(__k + __p) % __n] ^= __r3;
+	  __begin[(__k + __q) % __n] ^= __r4;
 	  __begin[__k % __n] = __r4;
 	}
     }
