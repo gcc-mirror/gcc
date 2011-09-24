@@ -100,7 +100,8 @@ dfs_initialize_vtbl_ptrs (tree binfo, void *data)
     {
       tree base_ptr = TREE_VALUE ((tree) data);
 
-      base_ptr = build_base_path (PLUS_EXPR, base_ptr, binfo, /*nonnull=*/1);
+      base_ptr = build_base_path (PLUS_EXPR, base_ptr, binfo, /*nonnull=*/1,
+				  tf_warning_or_error);
 
       expand_virtual_init (binfo, base_ptr);
     }
@@ -963,7 +964,7 @@ emit_mem_initializers (tree mem_inits)
 	  tree base_addr;
 
 	  base_addr = build_base_path (PLUS_EXPR, current_class_ptr,
-				       subobject, 1);
+				       subobject, 1, tf_warning_or_error);
 	  expand_aggr_init_1 (subobject, NULL_TREE,
 			      cp_build_indirect_ref (base_addr, RO_NULL,
                                                      tf_warning_or_error),

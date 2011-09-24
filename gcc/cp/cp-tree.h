@@ -4790,7 +4790,7 @@ extern void validate_conversion_obstack		(void);
 /* in class.c */
 extern tree build_vfield_ref			(tree, tree);
 extern tree build_base_path			(enum tree_code, tree,
-						 tree, int);
+						 tree, int, tsubst_flags_t);
 extern tree convert_to_base			(tree, tree, bool, bool,
 						 tsubst_flags_t);
 extern tree convert_to_base_statically		(tree, tree);

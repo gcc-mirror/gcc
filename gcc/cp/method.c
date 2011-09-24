@@ -516,7 +516,8 @@ do_build_copy_constructor (tree fndecl)
       for (vbases = CLASSTYPE_VBASECLASSES (current_class_type), i = 0;
 	   VEC_iterate (tree, vbases, i, binfo); i++)
 	{
-	  init = build_base_path (PLUS_EXPR, parm, binfo, 1);
+	  init = build_base_path (PLUS_EXPR, parm, binfo, 1,
+				  tf_warning_or_error);
 	  if (move_p)
 	    init = move (init);
 	  member_init_list
@@ -531,7 +532,8 @@ do_build_copy_constructor (tree fndecl)
 	  if (BINFO_VIRTUAL_P (base_binfo))
 	    continue;
 
-	  init = build_base_path (PLUS_EXPR, parm, base_binfo, 1);
+	  init = build_base_path (PLUS_EXPR, parm, base_binfo, 1,
+				  tf_warning_or_error);
 	  if (move_p)
 	    init = move (init);
 	  member_init_list
@@ -624,7 +626,8 @@ do_build_copy_assign (tree fndecl)
 
 	  /* We must convert PARM directly to the base class
 	     explicitly since the base class may be ambiguous.  */
-	  converted_parm = build_base_path (PLUS_EXPR, parm, base_binfo, 1);
+	  converted_parm = build_base_path (PLUS_EXPR, parm, base_binfo, 1,
+					    tf_warning_or_error);
 	  if (move_p)
 	    converted_parm = move (converted_parm);
 	  /* Call the base class assignment operator.  */
