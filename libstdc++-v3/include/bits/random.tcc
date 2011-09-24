@@ -2768,7 +2768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Type __arg = (__begin[__k % __n]
 			 ^ __begin[(__k + __p) % __n]
 			 ^ __begin[(__k - 1) % __n]);
-	  _Type __r1 = __arg ^ (__arg << 27);
+	  _Type __r1 = __arg ^ (__arg >> 27);
 	  __r1 = __detail::__mod<_Type, __detail::_Shift<_Type, 32>::__value,
 	                         1664525u, 0u>(__r1);
 	  _Type __r2 = __r1;
@@ -2790,7 +2790,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Type __arg = (__begin[__k % __n]
 			 + __begin[(__k + __p) % __n]
 			 + __begin[(__k - 1) % __n]);
-	  _Type __r3 = __arg ^ (__arg << 27);
+	  _Type __r3 = __arg ^ (__arg >> 27);
 	  __r3 = __detail::__mod<_Type, __detail::_Shift<_Type, 32>::__value,
 	                         1566083941u, 0u>(__r3);
 	  _Type __r4 = __r3 - __k % __n;
