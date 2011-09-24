@@ -1398,7 +1398,8 @@ build_scoped_ref (tree datum, tree basetype, tree* binfo_p)
     }
 
   *binfo_p = binfo;
-  return build_base_path (PLUS_EXPR, datum, binfo, 1);
+  return build_base_path (PLUS_EXPR, datum, binfo, 1,
+			  tf_warning_or_error);
 }
 
 /* Build a reference to an object specified by the C++ `->' operator.
@@ -1565,7 +1566,8 @@ build_m_component_ref (tree datum, tree component)
 
       /* Convert object to the correct base.  */
       if (binfo)
-	datum = build_base_path (PLUS_EXPR, datum, binfo, 1);
+	datum = build_base_path (PLUS_EXPR, datum, binfo, 1,
+				 tf_warning_or_error);
 
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */

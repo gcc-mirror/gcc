@@ -1,3 +1,8 @@
+2011-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44267
+	* g++.dg/template/sfinae28.C: New.
+
 2011-09-23  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (errchk): Handle more cases of getting

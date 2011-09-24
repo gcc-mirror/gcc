@@ -1,7 +1,7 @@
 /* Language-level data type conversion for GNU C++.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -157,7 +157,8 @@ cp_convert_to_pointer (tree type, tree expr)
 	  if (binfo || same_p)
 	    {
 	      if (binfo)
-		expr = build_base_path (code, expr, binfo, 0);
+		expr = build_base_path (code, expr, binfo, 0,
+					tf_warning_or_error);
 	      /* Add any qualifier conversions.  */
 	      return build_nop (type, expr);
 	    }
@@ -275,7 +276,8 @@ convert_to_pointer_force (tree type, tree expr)
 	    return error_mark_node;
 	  if (binfo)
 	    {
-	      expr = build_base_path (code, expr, binfo, 0);
+	      expr = build_base_path (code, expr, binfo, 0,
+				      tf_warning_or_error);
 	      if (expr == error_mark_node)
 		 return error_mark_node;
 	      /* Add any qualifier conversions.  */
@@ -341,7 +343,8 @@ build_up_reference (tree type, tree arg, int flags, tree decl)
 	return error_mark_node;
       if (binfo == NULL_TREE)
 	return error_not_base_type (target_type, argtype);
-      rval = build_base_path (PLUS_EXPR, rval, binfo, 1);
+      rval = build_base_path (PLUS_EXPR, rval, binfo, 1,
+			      tf_warning_or_error);
     }
   else
     rval

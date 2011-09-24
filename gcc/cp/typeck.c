@@ -2221,7 +2221,7 @@ build_class_member_access_expr (tree object, tree member,
 
 	  /* Convert to the base.  */
 	  object = build_base_path (PLUS_EXPR, object, binfo,
-				    /*nonnull=*/1);
+				    /*nonnull=*/1, complain);
 	  /* If we found the base successfully then we should be able
 	     to convert to it successfully.  */
 	  gcc_assert (object != error_mark_node);
@@ -3073,7 +3073,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 	  basetype = lookup_base (TREE_TYPE (TREE_TYPE (instance_ptr)),
 				  basetype, ba_check, NULL);
 	  instance_ptr = build_base_path (PLUS_EXPR, instance_ptr, basetype,
-					  1);
+					  1, tf_warning_or_error);
 	  if (instance_ptr == error_mark_node)
 	    return error_mark_node;
 	}
@@ -5772,7 +5772,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       /* Convert from "B*" to "D*".  This function will check that "B"
 	 is not a virtual base of "D".  */
       expr = build_base_path (MINUS_EXPR, build_address (expr),
-			      base, /*nonnull=*/false);
+			      base, /*nonnull=*/false, complain);
       /* Convert the pointer to a reference -- but then remember that
 	 there are no expressions with reference type in C++.
 
@@ -5874,7 +5874,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
 			  c_cast_p ? ba_unique : ba_check,
 			  NULL);
-      expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false);
+      expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false,
+			      complain);
       return cp_fold_convert(type, expr);
     }
 

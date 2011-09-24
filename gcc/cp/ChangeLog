@@ -1,3 +1,19 @@
+2011-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44267
+	* class.c (build_base_path): Add a tsubst_flags_t parameter.
+	(convert_to_base): Adjust call.
+	* typeck.c (build_class_member_access_expr,
+	get_member_function_from_ptrfunc, build_static_cast_1): Likewise.
+	* init.c (dfs_initialize_vtbl_ptrs, emit_mem_initializers): Likewise.
+	* method.c (do_build_copy_constructor, do_build_copy_assign): Likewise.
+	* rtti.c (build_dynamic_cast_1): Likewise.
+	* typeck2.c (build_scoped_ref, build_m_component_ref): Likewise.
+	* call.c (build_over_call, build_special_member_call): Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference): Likewise.
+	* cp-tree.h (build_base_path): Adjust declaration.
+
 2011-09-23  Jason Merrill  <jason@redhat.com>
 
 	Core 253 - allow const objects with no initializer or

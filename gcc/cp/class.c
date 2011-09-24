@@ -235,7 +235,8 @@ tree
 build_base_path (enum tree_code code,
 		 tree expr,
 		 tree binfo,
-		 int nonnull)
+		 int nonnull,
+		 tsubst_flags_t complain)
 {
   tree v_binfo = NULL_TREE;
   tree d_binfo = NULL_TREE;
@@ -276,14 +277,16 @@ build_base_path (enum tree_code code,
 
   if (code == MINUS_EXPR && v_binfo)
     {
-      error ("cannot convert from base %qT to derived type %qT via virtual base %qT",
-	     BINFO_TYPE (binfo), BINFO_TYPE (d_binfo), BINFO_TYPE (v_binfo));
+      if (complain & tf_error)
+	error ("cannot convert from base %qT to derived type %qT via "
+	       "virtual base %qT", BINFO_TYPE (binfo), BINFO_TYPE (d_binfo),
+	       BINFO_TYPE (v_binfo));
       return error_mark_node;
     }
 
   if (!want_pointer)
     /* This must happen before the call to save_expr.  */
-    expr = cp_build_addr_expr (expr, tf_warning_or_error);
+    expr = cp_build_addr_expr (expr, complain);
   else
     expr = mark_rvalue_use (expr);
 
@@ -341,7 +344,7 @@ build_base_path (enum tree_code code,
 	 interesting to the optimizers anyway.  */
       && !has_empty)
     {
-      expr = cp_build_indirect_ref (expr, RO_NULL, tf_warning_or_error);
+      expr = cp_build_indirect_ref (expr, RO_NULL, complain);
       expr = build_simple_base_path (expr, binfo);
       if (want_pointer)
 	expr = build_address (expr);
@@ -366,19 +369,18 @@ build_base_path (enum tree_code code,
 	  t = TREE_TYPE (TYPE_VFIELD (current_class_type));
 	  t = build_pointer_type (t);
 	  v_offset = convert (t, current_vtt_parm);
-	  v_offset = cp_build_indirect_ref (v_offset, RO_NULL, 
-                                            tf_warning_or_error);
+	  v_offset = cp_build_indirect_ref (v_offset, RO_NULL, complain);
 	}
       else
 	v_offset = build_vfield_ref (cp_build_indirect_ref (expr, RO_NULL,
-                                                            tf_warning_or_error),
+                                                            complain),
 				     TREE_TYPE (TREE_TYPE (expr)));
 
       v_offset = fold_build_pointer_plus (v_offset, BINFO_VPTR_FIELD (v_binfo));
       v_offset = build1 (NOP_EXPR,
 			 build_pointer_type (ptrdiff_type_node),
 			 v_offset);
-      v_offset = cp_build_indirect_ref (v_offset, RO_NULL, tf_warning_or_error);
+      v_offset = cp_build_indirect_ref (v_offset, RO_NULL, complain);
       TREE_CONSTANT (v_offset) = 1;
 
       offset = convert_to_integer (ptrdiff_type_node,
@@ -418,7 +420,7 @@ build_base_path (enum tree_code code,
     null_test = NULL;
 
   if (!want_pointer)
-    expr = cp_build_indirect_ref (expr, RO_NULL, tf_warning_or_error);
+    expr = cp_build_indirect_ref (expr, RO_NULL, complain);
 
  out:
   if (null_test)
@@ -523,7 +525,7 @@ convert_to_base (tree object, tree type, bool check_access, bool nonnull,
   if (!binfo || binfo == error_mark_node)
     return error_mark_node;
 
-  return build_base_path (PLUS_EXPR, object, binfo, nonnull);
+  return build_base_path (PLUS_EXPR, object, binfo, nonnull, complain);
 }
 
 /* EXPR is an expression with unqualified class type.  BASE is a base

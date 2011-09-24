@@ -6449,7 +6449,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       converted_arg = build_base_path (PLUS_EXPR,
 				       arg,
 				       cand->conversion_path,
-				       1);
+				       1, complain);
       /* Check that the base class is accessible.  */
       if (!accessible_base_p (TREE_TYPE (argtype),
 			      BINFO_TYPE (cand->conversion_path), true))
@@ -6462,7 +6462,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
 				TREE_TYPE (parmtype), ba_unique, NULL);
       converted_arg = build_base_path (PLUS_EXPR, converted_arg,
-				       base_binfo, 1);
+				       base_binfo, 1, complain);
 
       argarray[j++] = converted_arg;
       parm = TREE_CHAIN (parm);
@@ -6706,7 +6706,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (TREE_DEPRECATED (fn))
 	warn_deprecated_use (fn, NULL_TREE);
 
-      argarray[0] = build_base_path (PLUS_EXPR, argarray[0], binfo, 1);
+      argarray[0] = build_base_path (PLUS_EXPR, argarray[0], binfo, 1,
+				     complain);
       if (TREE_SIDE_EFFECTS (argarray[0]))
 	argarray[0] = save_expr (argarray[0]);
       t = build_pointer_type (TREE_TYPE (fn));
@@ -6916,7 +6917,7 @@ build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
 	    /* However, for assignment operators, we must convert
 	       dynamically if the base is virtual.  */
 	    instance = build_base_path (PLUS_EXPR, instance,
-					binfo, /*nonnull=*/1);
+					binfo, /*nonnull=*/1, complain);
 	}
     }
 
