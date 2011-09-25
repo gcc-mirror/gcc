@@ -31,6 +31,20 @@ typedef unsigned char __v8qi __attribute__ ((__vector_size__ (8)));
 typedef unsigned char __v4qi __attribute__ ((__vector_size__ (4)));
 typedef int __i64 __attribute__ ((__mode__ (DI)));
 
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_write_gsr (__i64 __A)
+{
+  __builtin_vis_write_gsr (__A);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_read_gsr (void)
+{
+  return __builtin_vis_read_gsr ();
+}
+
 extern __inline void *
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __vis_alignaddr (void *__A, long __B)

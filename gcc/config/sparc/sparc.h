@@ -691,7 +691,7 @@ extern enum cmodel sparc_cmodel;
    Register 100 is used as the integer condition code register.
    Register 101 is used as the soft frame pointer register.  */
 
-#define FIRST_PSEUDO_REGISTER 102
+#define FIRST_PSEUDO_REGISTER 103
 
 #define SPARC_FIRST_FP_REG     32
 /* Additional V9 fp regs.  */
@@ -704,6 +704,7 @@ extern enum cmodel sparc_cmodel;
 #define SPARC_FCC_REG 96
 /* Integer CC reg.  We don't distinguish %icc from %xcc.  */
 #define SPARC_ICC_REG 100
+#define SPARC_GSR_REG 102
 
 /* Nonzero if REGNO is an fp reg.  */
 #define SPARC_FP_REG_P(REGNO) \
@@ -757,7 +758,7 @@ extern enum cmodel sparc_cmodel;
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
 				\
-  0, 0, 0, 0, 0, 1}
+  0, 0, 0, 0, 0, 1, 1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -782,7 +783,7 @@ extern enum cmodel sparc_cmodel;
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
 				\
-  1, 1, 1, 1, 1, 1}
+  1, 1, 1, 1, 1, 1, 1}
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -796,11 +797,12 @@ extern enum cmodel sparc_cmodel;
    included in the hard register count).  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
-  (TARGET_ARCH64							\
-   ? ((REGNO) < 32 || (REGNO) == FRAME_POINTER_REGNUM			\
-      ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD	\
-      : (GET_MODE_SIZE (MODE) + 3) / 4)					\
-   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+  ((REGNO) == SPARC_GSR_REG ? 1 :					\
+   (TARGET_ARCH64							\
+    ? ((REGNO) < 32 || (REGNO) == FRAME_POINTER_REGNUM			\
+       ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD	\
+       : (GET_MODE_SIZE (MODE) + 3) / 4)				\
+    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 
 /* Due to the ARCH64 discrepancy above we must override this next
    macro too.  */
@@ -985,7 +987,7 @@ enum reg_class { NO_REGS, FPCC_REGS, I64_REGS, GENERAL_REGS, FP_REGS,
    {0, -1, -1, 0},	/* EXTRA_FP_REGS */		\
    {-1, -1, 0, 0x20},	/* GENERAL_OR_FP_REGS */	\
    {-1, -1, -1, 0x20},	/* GENERAL_OR_EXTRA_FP_REGS */	\
-   {-1, -1, -1, 0x3f}}	/* ALL_REGS */
+   {-1, -1, -1, 0x7f}}	/* ALL_REGS */
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1046,7 +1048,7 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
   88, 89, 90, 91, 92, 93, 94, 95,	/* %f56-%f63 */ \
   39, 38, 37, 36, 35, 34, 33, 32,	/* %f7-%f0 */   \
   96, 97, 98, 99,			/* %fcc0-3 */   \
-  100, 0, 14, 30, 101}			/* %icc, %g0, %o6, %i6, %sfp */
+  100, 0, 14, 30, 101, 102 }		/* %icc, %g0, %o6, %i6, %sfp, %gsr */
 
 /* This is the order in which to allocate registers for
    leaf functions.  If all registers can fit in the global and
@@ -1085,7 +1087,7 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
   88, 89, 90, 91, 92, 93, 94, 95,	/* %f56-%f63 */	\
   39, 38, 37, 36, 35, 34, 33, 32,	/* %f7-%f0 */	\
   96, 97, 98, 99,			/* %fcc0-3 */	\
-  100, 0, 14, 30, 31, 101}		/* %icc, %g0, %o6, %i6, %i7, %sfp */
+  100, 0, 14, 30, 31, 101, 102 }	/* %icc, %g0, %o6, %i6, %i7, %sfp, %gsr */
 
 #define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
 
@@ -1724,7 +1726,7 @@ do {									   \
  "%f40", "%f41", "%f42", "%f43", "%f44", "%f45", "%f46", "%f47",	\
  "%f48", "%f49", "%f50", "%f51", "%f52", "%f53", "%f54", "%f55",	\
  "%f56", "%f57", "%f58", "%f59", "%f60", "%f61", "%f62", "%f63",	\
- "%fcc0", "%fcc1", "%fcc2", "%fcc3", "%icc", "%sfp" }
+ "%fcc0", "%fcc1", "%fcc2", "%fcc3", "%icc", "%sfp", "%gsr" }
 
 /* Define additional names for use in asm clobbers and asm declarations.  */
 

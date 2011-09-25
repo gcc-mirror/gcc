@@ -1,3 +1,42 @@
+2011-09-24  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.h (FIRST_PSEUDO_REGISTER): Bump to 103.
+	(SPARC_GSR_REG): Define.
+	(FIXED_REGISTERS): Mark GSR as fixed.
+	(CALL_USED_REGISTERS): Mark GSR as call used.
+	(HARD_REGNO_NREGS): GSR is always 1 register.
+	(REG_CLASS_CONTENTS): Add GSR to ALL_REGS.
+	(REG_ALLOC_ORDER, REG_LEAF_ALLOC_ORDER): Add GSR to the end.
+	(REGISTER_NAMES): Add "%gsr".
+	* config/sparc/sparc.md (UNSPEC_ALIGNADDR, UNSPEC_ALIGNADDRL):
+	Delete.
+	(UNSPEC_WRGSR): New unspec.
+	(GSR_REG): New constant.
+	(type): Add new insn type 'gsr'.
+	(fpack16_vis, fpackfix_vis, fpack32_vis,
+	faligndata<V64I:MODE>_vis)): Add use of GSR_REG.
+	(wrgsr_vis, *wrgsr_sp64, wrgsr_v8plus, rdgsr_vis, *rdgsr_sp64,
+	rdgsr_v8plus): New expanders and insns.
+	(alignaddr<P:mode>_vis, alignaddrl<P:mode>_vis): Reimplement
+	using patterns which show that this is a plus in addition to a
+	modification of GSR_REG, instead of an unspec.
+	* config/sparc/ultra1_2.md: Handle 'gsr'.
+	* config/sparc/ultra3.md: Likewise.
+	* config/sparc/niagara.md: Likewise.
+	* config/sparc/niagara2.md: Likewise.
+	* config/sparc/sparc.c (leaf_reg_remap, sparc_leaf_regs): Fill out
+	end of table.
+	(sparc_option_override): Make -mvis imply -mv8plus.
+	(hard_32bit_mode_classes, hard_64bit_mode_classes): Add entries
+	for %gsr.
+	(sparc_vis_init_builtins): Build __builtin_vis_write_gsr and
+	__builtin_vis_read_gsr.
+	(sparc_expand_buildin): Handle builtins that take one argument and
+	return void.
+	(sparc_fold_builtin): Never fold writes to %gsr.
+	* config/sparc/visintrin.h (__vis_write_gsr, __vis_read_gsr): New.
+	* doc/extend.texi: Document new VIS intrinsics.
+
 2011-09-23  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c (inline_call): Add comment.

@@ -58,7 +58,7 @@
    (UNSPEC_MUL8UL		46)
    (UNSPEC_MULDUL		47)
    (UNSPEC_ALIGNDATA		48)
-   (UNSPEC_ALIGNADDR		49)
+   (UNSPEC_WRGSR                49)
    (UNSPEC_PDIST		50)
    (UNSPEC_EDGE8		51)
    (UNSPEC_EDGE8L		52)
@@ -66,7 +66,6 @@
    (UNSPEC_EDGE16L		54)
    (UNSPEC_EDGE32		55)
    (UNSPEC_EDGE32L		56)
-   (UNSPEC_ALIGNADDRL		57)
 
    (UNSPEC_SP_SET		60)
    (UNSPEC_SP_TEST		61)
@@ -176,6 +175,7 @@
   (FCC3_REG			99)
   (CC_REG			100)
   (SFP_REG			101)
+  (GSR_REG			102)
  ])
 
 (define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
@@ -242,7 +242,7 @@
    fpcmp,
    fpmul,fpdivs,fpdivd,
    fpsqrts,fpsqrtd,
-   fga,fgm_pack,fgm_mul,fgm_pdist,fgm_cmp,edge,
+   fga,fgm_pack,fgm_mul,fgm_pdist,fgm_cmp,edge,gsr,
    cmove,
    ialuX,
    multi,savew,flushw,iflush,trap"
@@ -7752,7 +7752,8 @@
 (define_insn "fpack16_vis"
   [(set (match_operand:V4QI 0 "register_operand" "=f")
         (unspec:V4QI [(match_operand:V4HI 1 "register_operand" "e")]
-		      UNSPEC_FPACK16))]
+		      UNSPEC_FPACK16))
+   (use (reg:DI GSR_REG))]
   "TARGET_VIS"
   "fpack16\t%1, %0"
   [(set_attr "type" "fga")
@@ -7761,7 +7762,8 @@
 (define_insn "fpackfix_vis"
   [(set (match_operand:V2HI 0 "register_operand" "=f")
         (unspec:V2HI [(match_operand:V2SI 1 "register_operand" "e")]
-		      UNSPEC_FPACKFIX))]
+		      UNSPEC_FPACKFIX))
+   (use (reg:DI GSR_REG))]
   "TARGET_VIS"
   "fpackfix\t%1, %0"
   [(set_attr "type" "fga")
@@ -7771,7 +7773,8 @@
   [(set (match_operand:V8QI 0 "register_operand" "=e")
         (unspec:V8QI [(match_operand:V2SI 1 "register_operand" "e")
         	      (match_operand:V8QI 2 "register_operand" "e")]
-                     UNSPEC_FPACK32))]
+                     UNSPEC_FPACK32))
+   (use (reg:DI GSR_REG))]
   "TARGET_VIS"
   "fpack32\t%1, %2, %0"
   [(set_attr "type" "fga")
@@ -7871,6 +7874,66 @@
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
+(define_expand "wrgsr_vis"
+  [(set (reg:DI GSR_REG) (unspec:DI [(match_operand:DI 0 "arith_operand" "")]
+                                    UNSPEC_WRGSR))]
+  "TARGET_VIS"
+{
+  if (! TARGET_ARCH64)
+    {
+      emit_insn (gen_wrgsr_v8plus (operands[0]));
+      DONE;
+    }
+})
+
+(define_insn "*wrgsr_sp64"
+  [(set (reg:DI GSR_REG) (unspec:DI [(match_operand:DI 0 "arith_operand" "rI")]
+                                    UNSPEC_WRGSR))]
+  "TARGET_VIS && TARGET_ARCH64"
+  "wr\t%%g0, %0, %%gsr"
+  [(set_attr "type" "gsr")])
+
+(define_insn "wrgsr_v8plus"
+  [(set (reg:DI GSR_REG) (unspec:DI [(match_operand:DI 0 "arith_operand" "I,r")]
+                                    UNSPEC_WRGSR))
+   (clobber (match_scratch:SI 1 "=X,&h"))]
+  "TARGET_VIS && ! TARGET_ARCH64"
+{
+  if (GET_CODE (operands[0]) == CONST_INT
+      || sparc_check_64 (operands[0], insn))
+    return "wr\t%%g0, %0, %%gsr";
+
+  output_asm_insn("srl\t%L0, 0, %L0", operands);
+  return "sllx\t%H0, 32, %1\n\tor\t%L0, %1, %1\n\twr\t%%g0, %1, %%gsr";
+}
+  [(set_attr "type" "multi")])
+
+(define_expand "rdgsr_vis"
+  [(set (match_operand:DI 0 "register_operand" "") (reg:DI GSR_REG))]
+  "TARGET_VIS"
+{
+  if (! TARGET_ARCH64)
+    {
+      emit_insn (gen_rdgsr_v8plus (operands[0]));
+      DONE;
+    }
+})
+
+(define_insn "*rdgsr_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r") (reg:DI GSR_REG))]
+  "TARGET_VIS && TARGET_ARCH64"
+  "rd\t%%gsr, %0"
+  [(set_attr "type" "gsr")])
+
+(define_insn "rdgsr_v8plus"
+  [(set (match_operand:DI 0 "register_operand" "=r") (reg:DI GSR_REG))
+   (clobber (match_scratch:SI 1 "=&h"))]
+  "TARGET_VIS && ! TARGET_ARCH64"
+{
+  return "rd\t%%gsr, %1\n\tsrlx\t%1, 32, %H0\n\tmov %1, %L0";
+}
+  [(set_attr "type" "multi")])
+
 ;; Using faligndata only makes sense after an alignaddr since the choice of
 ;; bytes to take out of each operand is dependent on the results of the last
 ;; alignaddr.
@@ -7878,25 +7941,57 @@
   [(set (match_operand:V64I 0 "register_operand" "=e")
         (unspec:V64I [(match_operand:V64I 1 "register_operand" "e")
                       (match_operand:V64I 2 "register_operand" "e")]
-         UNSPEC_ALIGNDATA))]
+         UNSPEC_ALIGNDATA))
+   (use (reg:SI GSR_REG))]
   "TARGET_VIS"
   "faligndata\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "fptype" "double")])
 
-(define_insn "alignaddr<P:mode>_vis"
-  [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
-                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
-         UNSPEC_ALIGNADDR))]
+(define_insn "alignaddrsi_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (plus:SI (match_operand:SI 1 "register_or_zero_operand" "rJ")
+                 (match_operand:SI 2 "register_or_zero_operand" "rJ")))
+   (set (reg:SI GSR_REG)
+        (ior:SI (and:SI (reg:SI GSR_REG) (const_int -8))
+                (and:SI (plus:SI (match_dup 1) (match_dup 2))
+                        (const_int 7))))]
   "TARGET_VIS"
   "alignaddr\t%r1, %r2, %0")
 
-(define_insn "alignaddrl<P:mode>_vis"
-  [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
-                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
-         UNSPEC_ALIGNADDRL))]
+(define_insn "alignaddrdi_vis"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (plus:DI (match_operand:DI 1 "register_or_zero_operand" "rJ")
+                 (match_operand:DI 2 "register_or_zero_operand" "rJ")))
+   (set (reg:SI GSR_REG)
+        (ior:SI (and:SI (reg:SI GSR_REG) (const_int -8))
+                (and:SI (truncate:SI (plus:DI (match_dup 1) (match_dup 2)))
+                        (const_int 7))))]
+  "TARGET_VIS"
+  "alignaddr\t%r1, %r2, %0")
+
+(define_insn "alignaddrlsi_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (plus:SI (match_operand:SI 1 "register_or_zero_operand" "rJ")
+                 (match_operand:SI 2 "register_or_zero_operand" "rJ")))
+   (set (reg:SI GSR_REG)
+        (ior:SI (and:SI (reg:SI GSR_REG) (const_int -8))
+                (xor:SI (and:SI (plus:SI (match_dup 1) (match_dup 2))
+                                (const_int 7))
+                        (const_int 7))))]
+  "TARGET_VIS"
+  "alignaddrl\t%r1, %r2, %0")
+
+(define_insn "alignaddrldi_vis"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (plus:DI (match_operand:DI 1 "register_or_zero_operand" "rJ")
+                 (match_operand:DI 2 "register_or_zero_operand" "rJ")))
+   (set (reg:SI GSR_REG)
+        (ior:SI (and:SI (reg:SI GSR_REG) (const_int -8))
+                (xor:SI (and:SI (truncate:SI (plus:DI (match_dup 1)
+                                                      (match_dup 2)))
+                                (const_int 7))
+                        (const_int 7))))]
   "TARGET_VIS"
   "alignaddrl\t%r1, %r2, %0")
 
