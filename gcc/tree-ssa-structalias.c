@@ -5589,10 +5589,11 @@ intra_create_variable_infos (void)
       varinfo_t p;
 
       /* For restrict qualified pointers to objects passed by
-         reference build a real representative for the pointed-to object.  */
-      if (DECL_BY_REFERENCE (t)
-	  && POINTER_TYPE_P (TREE_TYPE (t))
-	  && TYPE_RESTRICT (TREE_TYPE (t)))
+         reference build a real representative for the pointed-to object.
+	 Treat restrict qualified references the same.  */
+      if (TYPE_RESTRICT (TREE_TYPE (t))
+	  && ((DECL_BY_REFERENCE (t) && POINTER_TYPE_P (TREE_TYPE (t)))
+	      || TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
 	{
 	  struct constraint_expr lhsc, rhsc;
 	  varinfo_t vi;
