@@ -1694,41 +1694,17 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
 
 /* Check if the basic block can be vectorized.  */
 
-bb_vec_info
-vect_slp_analyze_bb (basic_block bb)
+static bb_vec_info
+vect_slp_analyze_bb_1 (basic_block bb)
 {
   bb_vec_info bb_vinfo;
   VEC (ddr_p, heap) *ddrs;
   VEC (slp_instance, heap) *slp_instances;
   slp_instance instance;
-  int i, insns = 0;
-  gimple_stmt_iterator gsi;
+  int i;
   int min_vf = 2;
   int max_vf = MAX_VECTORIZATION_FACTOR;
   bool data_dependence_in_bb = false;
-
-  current_vector_size = 0;
-
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "===vect_slp_analyze_bb===\n");
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple stmt = gsi_stmt (gsi);
-      if (!is_gimple_debug (stmt)
-	  && !gimple_nop_p (stmt)
-	  && gimple_code (stmt) != GIMPLE_LABEL)
-	insns++;
-    }
-
-  if (insns > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
-    {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-        fprintf (vect_dump, "not vectorized: too many instructions in basic "
-                            "block.\n");
-
-      return NULL;
-    }
 
   bb_vinfo = new_bb_vec_info (bb);
   if (!bb_vinfo)
@@ -1846,6 +1822,61 @@ vect_slp_analyze_bb (basic_block bb)
     fprintf (vect_dump, "Basic block will be vectorized using SLP\n");
 
   return bb_vinfo;
+}
+
+
+bb_vec_info
+vect_slp_analyze_bb (basic_block bb)
+{
+  bb_vec_info bb_vinfo;
+  int insns = 0;
+  gimple_stmt_iterator gsi;
+  unsigned int vector_sizes;
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "===vect_slp_analyze_bb===\n");
+
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (!is_gimple_debug (stmt)
+          && !gimple_nop_p (stmt)
+          && gimple_code (stmt) != GIMPLE_LABEL)
+        insns++;
+    }
+
+  if (insns > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: too many instructions in basic "
+                            "block.\n");
+
+      return NULL;
+    }
+
+  /* Autodetect first vector size we try.  */
+  current_vector_size = 0;
+  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
+
+  while (1)
+    {
+      bb_vinfo = vect_slp_analyze_bb_1 (bb);
+      if (bb_vinfo)
+        return bb_vinfo;
+
+      destroy_bb_vec_info (bb_vinfo);
+
+      vector_sizes &= ~current_vector_size;
+      if (vector_sizes == 0
+          || current_vector_size == 0)
+        return NULL;
+
+      /* Try the next biggest vector size.  */
+      current_vector_size = 1 << floor_log2 (vector_sizes);
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "***** Re-trying analysis with "
+                 "vector size %d\n", current_vector_size);
+    }
 }
 
 

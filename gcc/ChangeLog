@@ -1,5 +1,11 @@
 2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
 
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Split out core part
+	of vect_analyze_bb here.
+	(vect_analyze_bb): Loop over vector sizes calling vect_analyze_bb_1.
+
+2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
+
 	* tree-data-ref.c (dr_analyze_innermost): Add new argument.
 	Allow not simple iv if analyzing basic block.
 	(create_data_ref): Update call to dr_analyze_innermost.
