@@ -1042,6 +1042,12 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		inform (0, "initializer for %q+#D is invalid", field);
 	      if (trivial_p)
 		*trivial_p = false;
+	      /* Core 1351: If the field has an NSDMI that could throw, the
+		 default constructor is noexcept(false).  FIXME this is
+	         broken by deferred parsing and 1360 saying we can't
+		 lazily declare a non-trivial default constructor.  */
+	      if (spec_p && !expr_noexcept_p (DECL_INITIAL (field), complain))
+		*spec_p = noexcept_false_spec;
 
 	      /* Don't do the normal processing.  */
 	      continue;

@@ -1,5 +1,9 @@
 2011-09-24  Jason Merrill  <jason@redhat.com>
 
+	* except.c (expr_noexcept_p): Split out from finish_noexcept_expr.
+	* cp-tree.h: Declare it.
+	* method.c (walk_field_subobs): Use it.
+
 	* init.c (perform_member_init): Instantiate NSDMI here.
 	* pt.c (tsubst_decl) [FIELD_DECL]: Not here.
 
