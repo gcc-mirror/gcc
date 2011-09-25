@@ -1,5 +1,20 @@
 2011-09-24  Jason Merrill  <jason@redhat.com>
 
+	Handle deferred parsing of NSDMIs.
+	* parser.h (cp_unparsed_functions_entry): Add nsdmis field.
+	* parser.c (unparsed_nsdmis, cp_parser_save_nsdmi): New.
+	(cp_parser_late_parse_one_default_arg): Split out from
+	cp_parser_late_parsing_default_args.
+	(cp_parser_late_parsing_nsdmi): New.
+	(push_unparsed_function_queues): Set it.
+	(cp_parser_parameter_declaration): Save the '=' token.
+	(cp_parser_template_parameter): Likewise.
+	(cp_parser_default_argument): Call cp_parser_initializer
+	rather than cp_parser_initializer_clause.
+	(cp_parser_class_specifier_1): Parse unparsed_nsdmis.
+	(cp_parser_member_declaration): Handle nsdmis.
+	* decl2.c (grokfield): Handle DEFAULT_ARG for a function.
+
 	Implement C++11 non-static data member initializers.
 	* cp-tree.h (enum cpp_warn_str): Add CPP0X_NSDMI.
 	* error.c (maybe_warn_cpp0x): Handle it.

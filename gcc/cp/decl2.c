@@ -902,6 +902,8 @@ grokfield (const cp_declarator *declarator,
 		  DECL_DECLARED_INLINE_P (value) = 1;
 		}
 	    }
+	  else if (TREE_CODE (init) == DEFAULT_ARG)
+	    error ("invalid initializer for member function %qD", value);
 	  else if (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE)
 	    {
 	      if (integer_zerop (init))
