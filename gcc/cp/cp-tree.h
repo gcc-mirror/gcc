@@ -394,7 +394,9 @@ typedef enum cpp0x_warn_str
   /* inline namespaces */
   CPP0X_INLINE_NAMESPACES,
   /* override controls, override/final */
-  CPP0X_OVERRIDE_CONTROLS
+  CPP0X_OVERRIDE_CONTROLS,
+  /* non-static data member initializers */
+  CPP0X_NSDMI
 } cpp0x_warn_str;
   
 /* The various kinds of operation used by composite_pointer_type. */

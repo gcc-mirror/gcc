@@ -1,3 +1,23 @@
+2011-09-24  Jason Merrill  <jason@redhat.com>
+
+	Implement C++11 non-static data member initializers.
+	* cp-tree.h (enum cpp_warn_str): Add CPP0X_NSDMI.
+	* error.c (maybe_warn_cpp0x): Handle it.
+	* call.c (convert_like_real) [ck_user]: Don't complain about
+	using an explicit constructor for direct-initialization.
+	* class.c (check_field_decl): Fix ancient typo.
+	(check_field_decls): NSDMIs make the default ctor non-trivial.
+	* decl.c (cp_finish_decl): Record NSDMI.
+	(grokdeclarator): Allow NSDMI.
+	* decl2.c (grokfield): Allow NSDMI.  Correct LOOKUP flags.
+	* init.c (perform_member_init): Use NSDMI.
+	* method.c (walk_field_subobs): Check for NSDMI.
+	* parser.c (cp_parser_member_declaration): Parse { } init.
+	* semantics.c (register_constexpr_fundef): Don't talk about
+	a return statement in a constexpr constructor.
+	(cxx_eval_call_expression): Check DECL_INITIAL instead of
+	DECL_SAVED_TREE.
+
 2011-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44267

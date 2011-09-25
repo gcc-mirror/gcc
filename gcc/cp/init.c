@@ -493,6 +493,11 @@ perform_member_init (tree member, tree init)
   tree decl;
   tree type = TREE_TYPE (member);
 
+  /* Use the non-static data member initializer if there was no
+     mem-initializer for this field.  */
+  if (init == NULL_TREE)
+    init = break_out_target_exprs (DECL_INITIAL (member));
+
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
   if (warn_ecpp && init == NULL_TREE && TREE_CODE (type) != ARRAY_TYPE)

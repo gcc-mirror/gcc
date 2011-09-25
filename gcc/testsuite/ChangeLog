@@ -1,3 +1,11 @@
+2011-09-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nsdmi1.C: New.
+	* g++.dg/cpp0x/nsdmi2.C: New.
+	* g++.dg/cpp0x/nsdmi3.C: New.
+	* g++.dg/cpp0x/nsdmi4.C: New.
+	* g++.old-deja/g++.other/init4.C: New.
+
 2011-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44267

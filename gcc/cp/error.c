@@ -3236,6 +3236,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "override controls (override/final) "
 		 "only available with -std=c++0x or -std=gnu++0x");
         break;
+      case CPP0X_NSDMI:
+	pedwarn (input_location, 0,
+		 "non-static data member initializers "
+		 "only available with -std=c++0x or -std=gnu++0x");
+        break;
       default:
 	gcc_unreachable();
       }

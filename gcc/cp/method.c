@@ -1036,10 +1036,20 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  if (bad && deleted_p)
 	    *deleted_p = true;
 
+	  if (DECL_INITIAL (field))
+	    {
+	      if (msg && DECL_INITIAL (field) == error_mark_node)
+		inform (0, "initializer for %q+#D is invalid", field);
+	      if (trivial_p)
+		*trivial_p = false;
+
+	      /* Don't do the normal processing.  */
+	      continue;
+	    }
+
 	  /* For an implicitly-defined default constructor to be constexpr,
-	     every member must have a user-provided default constructor.  */
-	  /* FIXME will need adjustment for non-static data member
-	     initializers.  */
+	     every member must have a user-provided default constructor or
+	     an explicit initializer.  */
 	  if (constexpr_p && !CLASS_TYPE_P (mem_type))
 	    {
 	      *constexpr_p = false;

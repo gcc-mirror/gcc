@@ -18202,6 +18202,12 @@ cp_parser_member_declaration (cp_parser* parser)
 		    /* Parse the initializer.  */
 		    initializer = cp_parser_constant_initializer (parser);
 		}
+	      else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
+		       && !function_declarator_p (declarator))
+		{
+		  bool x;
+		  initializer = cp_parser_initializer (parser, &x, &x);
+		}
 	      /* Otherwise, there is no initializer.  */
 	      else
 		initializer = NULL_TREE;
