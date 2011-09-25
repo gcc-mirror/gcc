@@ -386,7 +386,7 @@ DEF_VEC_O (data_ref_loc);
 DEF_VEC_ALLOC_O (data_ref_loc, heap);
 
 bool get_references_in_stmt (gimple, VEC (data_ref_loc, heap) **);
-bool dr_analyze_innermost (struct data_reference *);
+bool dr_analyze_innermost (struct data_reference *, struct loop *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (loop_p, heap) **,
 					       VEC (data_reference_p, heap) **,
