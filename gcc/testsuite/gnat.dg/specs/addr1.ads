@@ -15,7 +15,7 @@ package Addr1 is
   end record;
   for Rec2'Size use 64;
 
-  A: Arr (1 .. 12);
+  A: Arr (1 .. 4);
 
   Obj1: Rec1;
   for Obj1'Address use A'Address; -- { dg-bogus "alignment" }

@@ -1,3 +1,8 @@
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Do not promote
+	the alignment if this doesn't prevent BLKmode access to the object.
+
 2011-09-24  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* gcc-interface/Makefile.in (darwin): Do not issue the
