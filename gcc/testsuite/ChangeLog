@@ -1,5 +1,7 @@
 2011-09-24  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/nsdmi-defer3.C: New.
+
 	* g++.dg/cpp0x/nsdmi-defer1.C: New.
 	* g++.dg/cpp0x/nsdmi-defer2.C: New.
 
