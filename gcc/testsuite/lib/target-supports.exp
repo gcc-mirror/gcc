@@ -3393,6 +3393,24 @@ proc check_effective_target_vect_multiple_sizes { } {
     return $et_vect_multiple_sizes_saved
 }
 
+# Return 1 if the target supports vectors of 64 bits.
+
+proc check_effective_target_vect64 { } {
+    global et_vect64
+
+    if [info exists et_vect64_saved] {
+        verbose "check_effective_target_vect64: using cached result" 2
+    } else {
+        set et_vect64_saved 0
+        if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
+           set et_vect64_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect64: returning $et_vect64_saved" 2
+    return $et_vect64_saved
+}
+
 # Return 1 if the target supports section-anchors
 
 proc check_effective_target_section_anchors { } {
