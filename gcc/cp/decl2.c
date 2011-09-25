@@ -795,7 +795,7 @@ grokfield (const cp_declarator *declarator,
 {
   tree value;
   const char *asmspec = 0;
-  int flags = LOOKUP_ONLYCONVERTING;
+  int flags;
   tree name;
 
   if (init
@@ -919,9 +919,10 @@ grokfield (const cp_declarator *declarator,
 		     value);
 	    }
 	}
-      else if (pedantic && TREE_CODE (value) != VAR_DECL)
-	/* Already complained in grokdeclarator.  */
-	init = NULL_TREE;
+      else if (TREE_CODE (value) == FIELD_DECL)
+	/* C++11 NSDMI, keep going.  */;
+      else if (TREE_CODE (value) != VAR_DECL)
+	gcc_unreachable ();
       else if (!processing_template_decl)
 	{
 	  if (TREE_CODE (init) == CONSTRUCTOR)
@@ -955,6 +956,12 @@ grokfield (const cp_declarator *declarator,
   if (attrlist)
     cplus_decl_attributes (&value, attrlist, 0);
 
+  if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
+      && CONSTRUCTOR_IS_DIRECT_INIT (init))
+    flags = LOOKUP_NORMAL;
+  else
+    flags = LOOKUP_IMPLICIT;
+
   switch (TREE_CODE (value))
     {
     case VAR_DECL:
@@ -969,7 +976,6 @@ grokfield (const cp_declarator *declarator,
 	init = error_mark_node;
       cp_finish_decl (value, init, /*init_const_expr_p=*/false,
 		      NULL_TREE, flags);
-      DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
       return value;
 

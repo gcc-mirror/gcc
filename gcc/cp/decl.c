@@ -6075,6 +6075,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       return;
     }
 
+  /* Just store non-static data member initializers for later.  */
+  if (init && TREE_CODE (decl) == FIELD_DECL)
+    DECL_INITIAL (decl) = digest_init_flags (TREE_TYPE (decl), init, flags);
+
   /* Take care of TYPE_DECLs up front.  */
   if (TREE_CODE (decl) == TYPE_DECL)
     {
@@ -10087,36 +10091,6 @@ grokdeclarator (const cp_declarator *declarator,
 
 	if (decl == NULL_TREE)
 	  {
-	    if (initialized)
-	      {
-		if (!staticp)
-		  {
-		    /* An attempt is being made to initialize a non-static
-		       member.  But, from [class.mem]:
-
-		       4 A member-declarator can contain a
-		       constant-initializer only if it declares a static
-		       member (_class.static_) of integral or enumeration
-		       type, see _class.static.data_.
-
-		       This used to be relatively common practice, but
-		       the rest of the compiler does not correctly
-		       handle the initialization unless the member is
-		       static so we make it static below.  */
-		    if (cxx_dialect >= cxx0x)
-		      {
-			sorry ("non-static data member initializers");
-		      }
-		    else
-		      {
-			permerror (input_location, "ISO C++ forbids initialization of member %qD",
-				   unqualified_id);
-			permerror (input_location, "making %qD static", unqualified_id);
-			staticp = 1;
-		      }
-		  }
-	      }
-
 	    if (staticp)
 	      {
 		/* C++ allows static class members.  All other work
@@ -10157,6 +10131,11 @@ grokdeclarator (const cp_declarator *declarator,
 		    DECL_MUTABLE_P (decl) = 1;
 		    storage_class = sc_none;
 		  }
+
+		if (initialized)
+		  /* An attempt is being made to initialize a non-static
+		     member.  This is new in C++11.  */
+		  maybe_warn_cpp0x (CPP0X_NSDMI);
 	      }
 
 	    bad_specifiers (decl, BSP_FIELD, virtualp,

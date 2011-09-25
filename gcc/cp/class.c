@@ -2958,7 +2958,7 @@ check_field_decl (tree field,
     {
       /* `build_class_init_list' does not recognize
 	 non-FIELD_DECLs.  */
-      if (TREE_CODE (t) == UNION_TYPE && any_default_members != 0)
+      if (TREE_CODE (t) == UNION_TYPE && *any_default_members != 0)
 	error ("multiple fields in union %qT initialized", t);
       *any_default_members = 1;
     }
@@ -3254,6 +3254,14 @@ check_field_decls (tree t, tree *access_decls,
       else if (! TYPE_HAS_COPY_ASSIGN (t))
 	warning (OPT_Weffc__,
 		 "  but does not override %<operator=(const %T&)%>", t);
+    }
+
+  /* Non-static data member initializers make the default constructor
+     non-trivial.  */
+  if (any_default_members)
+    {
+      TYPE_NEEDS_CONSTRUCTING (t) = true;
+      TYPE_HAS_COMPLEX_DFLT (t) = true;
     }
 
   /* If any of the fields couldn't be packed, unset TYPE_PACKED.  */

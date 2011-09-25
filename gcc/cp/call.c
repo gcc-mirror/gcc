@@ -5648,6 +5648,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	/* When converting from an init list we consider explicit
 	   constructors, but actually trying to call one is an error.  */
 	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
+	    /* Unless this is for direct-list-initialization.  */
+	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
+		 && CONSTRUCTOR_IS_DIRECT_INIT (expr))
 	    /* Unless we're calling it for value-initialization from an
 	       empty list, since that is handled separately in 8.5.4.  */
 	    && cand->num_convs > 0)
