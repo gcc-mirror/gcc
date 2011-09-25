@@ -1303,10 +1303,10 @@
 })
 
 (define_insn "*movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,m,!f,!f,!m,d")
-	(match_operand:SI 1 "input_operand"   "rI,K,m,rJ,f,m,f,J"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,m,!f,!f,!m,d,d")
+	(match_operand:SI 1 "input_operand"   "rI,K,m,rJ,f,m,f,J,P"))]
   "(register_operand (operands[0], SImode)
-    || register_or_zero_operand (operands[1], SImode))"
+    || register_or_zero_or_all_ones_operand (operands[1], SImode))"
   "@
    mov\t%1, %0
    sethi\t%%hi(%a1), %0
@@ -1315,8 +1315,9 @@
    fmovs\t%1, %0
    ld\t%1, %0
    st\t%1, %0
-   fzeros\t%0"
-  [(set_attr "type" "*,*,load,store,fpmove,fpload,fpstore,fga")])
+   fzeros\t%0
+   fones\t%0"
+  [(set_attr "type" "*,*,load,store,fpmove,fpload,fpstore,fga,fga")])
 
 (define_insn "*movsi_lo_sum"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1505,11 +1506,11 @@
    (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*")])
 
 (define_insn "*movdi_insn_sp64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,?e,?e,?W,b")
-        (match_operand:DI 1 "input_operand"   "rI,N,m,rJ,e,W,e,J"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,?e,?e,?W,b,b")
+        (match_operand:DI 1 "input_operand"   "rI,N,m,rJ,e,W,e,J,P"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DImode)
-       || register_or_zero_operand (operands[1], DImode))"
+       || register_or_zero_or_all_ones_operand (operands[1], DImode))"
   "@
    mov\t%1, %0
    sethi\t%%hi(%a1), %0
@@ -1518,9 +1519,10 @@
    fmovd\t%1, %0
    ldd\t%1, %0
    std\t%1, %0
-   fzero\t%0"
-  [(set_attr "type" "*,*,load,store,fpmove,fpload,fpstore,fga")
-   (set_attr "fptype" "*,*,*,*,double,*,*,double")])
+   fzero\t%0
+   fone\t%0"
+  [(set_attr "type" "*,*,load,store,fpmove,fpload,fpstore,fga,fga")
+   (set_attr "fptype" "*,*,*,*,double,*,*,double,double")])
 
 (define_expand "movdi_pic_label_ref"
   [(set (match_dup 3) (high:DI
@@ -1918,16 +1920,16 @@
 })
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:V32 0 "nonimmediate_operand" "=d,f,*r,*r,*r,f,*r,m,m")
-	(match_operand:V32 1 "input_operand"        "GY,f,*rRY,Q,S,m,m,f,*rGY"))]
+  [(set (match_operand:V32 0 "nonimmediate_operand" "=d,d,f,*r,*r,*r,f,*r,m,m")
+	(match_operand:V32 1 "input_operand"        "GY,ZC,f,*rRY,Q,S,m,m,f,*rGY"))]
   "TARGET_FPU
    && (register_operand (operands[0], <V32:MODE>mode)
-       || register_or_zero_operand (operands[1], <V32:MODE>mode))"
+       || register_or_zero_or_all_ones_operand (operands[1], <V32:MODE>mode))"
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && (which_alternative == 2
-          || which_alternative == 3
-          || which_alternative == 4))
+      && (which_alternative == 3
+          || which_alternative == 4
+          || which_alternative == 5))
     {
       REAL_VALUE_TYPE r;
       long i;
@@ -1942,24 +1944,26 @@
     case 0:
       return "fzeros\t%0";
     case 1:
-      return "fmovs\t%1, %0";
+      return "fones\t%0";
     case 2:
-      return "mov\t%1, %0";
+      return "fmovs\t%1, %0";
     case 3:
-      return "sethi\t%%hi(%a1), %0";
+      return "mov\t%1, %0";
     case 4:
-      return "#";
+      return "sethi\t%%hi(%a1), %0";
     case 5:
+      return "#";
     case 6:
-      return "ld\t%1, %0";
     case 7:
+      return "ld\t%1, %0";
     case 8:
+    case 9:
       return "st\t%r1, %0";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "fga,fpmove,*,*,*,fpload,load,fpstore,store")])
+  [(set_attr "type" "fga,fga,fpmove,*,*,*,fpload,load,fpstore,store")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
@@ -2091,15 +2095,16 @@
 
 ;; We have available v9 double floats but not 64-bit integer registers.
 (define_insn "*movdf_insn_sp32_v9"
-  [(set (match_operand:V64 0 "nonimmediate_operand" "=b,e,e,T,W,U,T,f,*r,o")
-        (match_operand:V64 1 "input_operand" "GY,e,W#F,GY,e,T,U,o#F,*roGYDF,*rGYf"))]
+  [(set (match_operand:V64 0 "nonimmediate_operand" "=b,b,e,e,T,W,U,T,f,*r,o")
+        (match_operand:V64 1 "input_operand" "GY,ZC,e,W#F,GY,e,T,U,o#F,*roGYDF,*rGYf"))]
   "TARGET_FPU
    && TARGET_V9
    && ! TARGET_ARCH64
    && (register_operand (operands[0], <V64:MODE>mode)
-       || register_or_zero_operand (operands[1], <V64:MODE>mode))"
+       || register_or_zero_or_all_ones_operand (operands[1], <V64:MODE>mode))"
   "@
   fzero\t%0
+  fone\t%0
   fmovd\t%1, %0
   ldd\t%1, %0
   stx\t%r1, %0
@@ -2109,9 +2114,9 @@
   #
   #
   #"
-  [(set_attr "type" "fga,fpmove,load,store,store,load,store,*,*,*")
-   (set_attr "length" "*,*,*,*,*,*,*,2,2,2")
-   (set_attr "fptype" "double,double,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "fga,fga,fpmove,load,store,store,load,store,*,*,*")
+   (set_attr "length" "*,*,*,*,*,*,*,*,2,2,2")
+   (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdf_insn_sp32_v9_no_fpu"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=U,T,T,r,o")
@@ -2132,14 +2137,15 @@
 
 ;; We have available both v9 double floats and 64-bit integer registers.
 (define_insn "*movdf_insn_sp64"
-  [(set (match_operand:V64 0 "nonimmediate_operand" "=b,e,e,W,*r,*r,m,*r")
-        (match_operand:V64 1 "input_operand"    "GY,e,W#F,e,*rGY,m,*rGY,DF"))]
+  [(set (match_operand:V64 0 "nonimmediate_operand" "=b,b,e,e,W,*r,*r,m,*r")
+        (match_operand:V64 1 "input_operand"    "GY,ZC,e,W#F,e,*rGY,m,*rGY,DF"))]
   "TARGET_FPU
    && TARGET_ARCH64
    && (register_operand (operands[0], <V64:MODE>mode)
-       || register_or_zero_operand (operands[1], <V64:MODE>mode))"
+       || register_or_zero_or_all_ones_operand (operands[1], <V64:MODE>mode))"
   "@
   fzero\t%0
+  fone\t%0
   fmovd\t%1, %0
   ldd\t%1, %0
   std\t%1, %0
@@ -2147,9 +2153,9 @@
   ldx\t%1, %0
   stx\t%r1, %0
   #"
-  [(set_attr "type" "fga,fpmove,load,store,*,load,store,*")
-   (set_attr "length" "*,*,*,*,*,*,*,2")
-   (set_attr "fptype" "double,double,*,*,*,*,*,*")])
+  [(set_attr "type" "fga,fga,fpmove,load,store,*,load,store,*")
+   (set_attr "length" "*,*,*,*,*,*,*,*,2")
+   (set_attr "fptype" "double,double,double,*,*,*,*,*,*")])
 
 (define_insn "*movdf_insn_sp64_no_fpu"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")

@@ -1170,9 +1170,11 @@ sparc_expand_move (enum machine_mode mode, rtx *operands)
       if (operands [1] == const0_rtx)
 	operands[1] = CONST0_RTX (mode);
 
-      /* We can clear FP registers if TARGET_VIS, and always other regs.  */
+      /* We can clear or set to all-ones FP registers if TARGET_VIS, and
+	 always other regs.  */
       if ((TARGET_VIS || REGNO (operands[0]) < SPARC_FIRST_FP_REG)
-	  && const_zero_operand (operands[1], mode))
+	  && (const_zero_operand (operands[1], mode)
+	      || const_all_ones_operand (operands[1], mode)))
 	return false;
 
       if (REGNO (operands[0]) < SPARC_FIRST_FP_REG
@@ -3096,19 +3098,21 @@ sparc_legitimate_constant_p (enum machine_mode mode, rtx x)
         return true;
 
       /* Floating point constants are generally not ok.
-	 The only exception is 0.0 in VIS.  */
+	 The only exception is 0.0 and all-ones in VIS.  */
       if (TARGET_VIS
 	  && SCALAR_FLOAT_MODE_P (mode)
-	  && const_zero_operand (x, mode))
+	  && (const_zero_operand (x, mode)
+	      || const_all_ones_operand (x, mode)))
 	return true;
 
       return false;
 
     case CONST_VECTOR:
       /* Vector constants are generally not ok.
-	 The only exception is 0 in VIS.  */
+	 The only exception is 0 or -1 in VIS.  */
       if (TARGET_VIS
-	  && const_zero_operand (x, mode))
+	  && (const_zero_operand (x, mode)
+	      || const_all_ones_operand (x, mode)))
 	return true;
 
       return false;

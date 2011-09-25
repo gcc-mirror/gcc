@@ -1,3 +1,19 @@
+2011-09-25  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md (C, P, Z): New constraints for
+	const_doube, const_int, and const_vector "all ones" values.
+	Make unused constraint letters comment match reality.
+	* config/sparc/predicates.md (const_all_ones_operand,
+	register_or_zero_or_all_ones_operand): New predicates.
+	* config/sparc/sparc.c (sparc_expand_move): Allow all ones
+	as well as zero constants when VIS.
+	(sparc_legitimate_constant_p): Likewise.
+	* config/sparc/sparc.md (movsi_insn): Add fones alternative.
+	(movsf_insn): Likewise
+	(movdi_insn_sp64): Add fone alternative.
+	(movdf_insn_sp32_v9): Likewise.
+	(movdf_insn_sp64): Likewise.
+
 2011-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-structalias.c (intra_create_variable_infos): Treat

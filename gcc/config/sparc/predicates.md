@@ -29,6 +29,35 @@
   (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST1_RTX (mode)")))
 
+;; Return true if the integer representation of OP is
+;; all-ones.
+(define_predicate "const_all_ones_operand"
+  (match_code "const_int,const_double,const_vector")
+{
+  if (GET_CODE (op) == CONST_INT && INTVAL (op) == -1)
+    return true;
+#if HOST_BITS_PER_WIDE_INT == 32
+  if (GET_CODE (op) == CONST_DOUBLE
+      && GET_MODE (op) == VOIDmode
+      && CONST_DOUBLE_HIGH (op) == ~(HOST_WIDE_INT)0
+      && CONST_DOUBLE_LOW (op) == ~(HOST_WIDE_INT)0)
+    return true;
+#endif
+  if (GET_CODE (op) == CONST_VECTOR)
+    {
+      int i, num_elem = CONST_VECTOR_NUNITS (op);
+
+      for (i = 0; i < num_elem; i++)
+        {
+          rtx n = CONST_VECTOR_ELT (op, i);
+          if (! const_all_ones_operand (n, mode))
+            return false;
+        }
+      return true;
+    }
+  return false;
+})
+
 ;; Return true if OP is the integer constant 4096.
 (define_predicate "const_4096_operand"
   (and (match_code "const_int")
@@ -210,6 +239,12 @@
 (define_predicate "register_or_zero_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_zero_operand")))
+
+;; Return true if OP is either the zero constant, the all-ones
+;; constant, or a register.
+(define_predicate "register_or_zero_or_all_ones_operand"
+  (ior (match_operand 0 "register_or_zero_operand")
+       (match_operand 0 "const_all_ones_operand")))
 
 ;; Return true if OP is a register operand in a floating point register.
 (define_predicate "fp_register_operand"
