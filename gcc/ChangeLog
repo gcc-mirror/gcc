@@ -1,5 +1,11 @@
 2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
 
+	PR tree-optimization/50413
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Fail to vectorize
+	a basic block if one of its data-refs can't be analyzed.
+
+2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
+
 	PR tree-optimization/50412
 	* tree-vect-data-refs.c (vect_analyze_group_access): Fail for
 	accesses that require epilogue loop if vectorizing outer loop.

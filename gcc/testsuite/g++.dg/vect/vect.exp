@@ -40,8 +40,13 @@ global DEFAULT_VECTCFLAGS
 set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fno-vect-cost-model" \
-  "-ftree-vectorizer-verbose=4" "-fdump-tree-vect-stats"
+lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fno-vect-cost-model"
+
+set VECT_SLP_CFLAGS $DEFAULT_VECTCFLAGS
+
+lappend DEFAULT_VECTCFLAGS "-fdump-tree-vect-details"
+lappend VECT_SLP_CFLAGS "-fdump-tree-slp-details"
+
 
 # Skip these tests for targets that do not support generating vector
 # code.  Set additional target-dependent vector flags, which can be
@@ -54,8 +59,10 @@ if ![check_vect_support_and_set_flags] {
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{c,cc,S} ]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.{c,cc,S} ]] \
         "" $DEFAULT_VECTCFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/slp-pr*.{c,cc,S} ]] \
+        "" $VECT_SLP_CFLAGS
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS

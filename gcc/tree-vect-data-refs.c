@@ -2595,14 +2595,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
             }
 
-          if (bb_vinfo)
-            {
-              /* Mark the statement as not vectorizable.  */
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              continue;
-            }
-          else
-            return false;
+          return false;
         }
 
       if (TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
@@ -2610,14 +2603,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             fprintf (vect_dump, "not vectorized: base addr of dr is a "
                      "constant");
-          if (bb_vinfo)
-            {
-              /* Mark the statement as not vectorizable.  */
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              continue;
-            }
-          else
-            return false;
+          return false;
         }
 
       if (TREE_THIS_VOLATILE (DR_REF (dr)))

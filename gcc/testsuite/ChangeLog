@@ -1,5 +1,13 @@
 2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
 
+	PR tree-optimization/50413
+	* g++.dg/vect/vect.exp: Run slp-pr* tests with
+	-fdump-tree-slp-details.  Run other tests with
+	-fdump-tree-vect-details.
+	* g++.dg/vect/slp-pr50413.cc: New.
+
+2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
+
 	PR tree-optimization/50412
 	* gfortran.dg/vect/pr50412.f90: New.
 
