@@ -1,3 +1,17 @@
+2011-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert (no longer necessary post r179130):
+
+	2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+
+	* testsuite/util/testsuite_error.h: Add empty default constructor
+	to __gnu_test::test_category and
+	__gnu_test::test_derived_category.
+	* src/future.cc: Add empty default constructor to
+	future_error_category.
+	* src/system_error.cc: Add default ctor to generic_error_category
+	and system_error_category.
+
 2011-09-24  John Salmon  <john.salmon@deshaw.com>
 
 	PR libstdc++/50510
