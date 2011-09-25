@@ -14,6 +14,23 @@
 	(movdf_insn_sp32_v9): Likewise.
 	(movdf_insn_sp64): Likewise.
 
+	* configure.ac: Add feature check to make sure the assembler
+	supports the FMAF, HPC, and VIS 3.0 instructions found on
+	Niagara-3 and later cpus.
+	* configure: Rebuild.
+	* config.in: Likewise.
+	* config/sparc/sparc.opt: New option '-mfmaf'.
+	* config/sparc/sparc.md: Add float fused multiply-add patterns.
+	* config/sparc/sparc.h (AS_NIAGARA3_FLAG): New macro.
+	(ASM_CPU64_DEFAULT_SPEC, ASM_CPU_SPEC): Use it, as needed.
+	* config/sparc/sol2.h (ASM_CPU32_DEFAULT_SPEC,
+	ASM_CPU64_DEFAULT_SPEC, ASM_CPU_SPEC): Likewise.
+	* config/sparc/sparc.c (sparc_option_override): Turn MASK_FMAF on
+	by default for Niagara-3 and later.  Turn it off if TARGET_FPU is
+	disabled.
+	(sparc_rtx_costs): Handle 'FMA'.
+	* doc/invoke.texi: Document -mfmaf.
+
 2011-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-structalias.c (intra_create_variable_infos): Treat

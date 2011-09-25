@@ -5451,6 +5451,78 @@
   "fmuls\t%1, %2, %0"
   [(set_attr "type" "fpmul")])
 
+(define_insn "fmadf4"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+        (fma:DF (match_operand:DF 1 "register_operand" "e")
+		(match_operand:DF 2 "register_operand" "e")
+		(match_operand:DF 3 "register_operand" "e")))]
+  "TARGET_FMAF"
+  "fmaddd\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn "fmsdf4"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+        (fma:DF (match_operand:DF 1 "register_operand" "e")
+		(match_operand:DF 2 "register_operand" "e")
+		(neg:DF (match_operand:DF 3 "register_operand" "e"))))]
+  "TARGET_FMAF"
+  "fmsubd\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn "*nfmadf4"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+        (neg:DF (fma:DF (match_operand:DF 1 "register_operand" "e")
+			(match_operand:DF 2 "register_operand" "e")
+			(match_operand:DF 3 "register_operand" "e"))))]
+  "TARGET_FMAF"
+  "fnmaddd\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn "*nfmsdf4"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+        (neg:DF (fma:DF (match_operand:DF 1 "register_operand" "e")
+			(match_operand:DF 2 "register_operand" "e")
+			(neg:DF (match_operand:DF 3 "register_operand" "e")))))]
+  "TARGET_FMAF"
+  "fnmsubd\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn "fmasf4"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+        (fma:SF (match_operand:SF 1 "register_operand" "f")
+		(match_operand:SF 2 "register_operand" "f")
+		(match_operand:SF 3 "register_operand" "f")))]
+  "TARGET_FMAF"
+  "fmadds\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn "fmssf4"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+        (fma:SF (match_operand:SF 1 "register_operand" "f")
+		(match_operand:SF 2 "register_operand" "f")
+		(neg:SF (match_operand:SF 3 "register_operand" "f"))))]
+  "TARGET_FMAF"
+  "fmsubs\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn "*nfmasf4"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+        (neg:SF (fma:SF (match_operand:SF 1 "register_operand" "f")
+			(match_operand:SF 2 "register_operand" "f")
+			(match_operand:SF 3 "register_operand" "f"))))]
+  "TARGET_FMAF"
+  "fnmadds\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn "*nfmssf4"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+        (neg:SF (fma:SF (match_operand:SF 1 "register_operand" "f")
+			(match_operand:SF 2 "register_operand" "f")
+			(neg:SF (match_operand:SF 3 "register_operand" "f")))))]
+  "TARGET_FMAF"
+  "fnmsubs\t%1, %2, %3, %0"
+  [(set_attr "type" "fpmul")])
+
 (define_insn "*muldf3_extend"
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(mult:DF (float_extend:DF (match_operand:SF 1 "register_operand" "f"))

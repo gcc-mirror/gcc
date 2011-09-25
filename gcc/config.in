@@ -266,6 +266,12 @@
 #endif
 
 
+/* Define if your assembler supports FMAF, HPC, and VIS 3.0 instructions. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_FMAF_HPC_VIS3
+#endif
+
+
 /* Define if your assembler supports fprnd. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_FPRND
@@ -1044,12 +1050,6 @@
 /* Define to 1 if you have the `getc_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GETC_UNLOCKED
-#endif
-
-
-/* Define if _Unwind_GetIPInfo is available. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_GETIPINFO
 #endif
 
 
