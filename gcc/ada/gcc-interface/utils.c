@@ -3947,17 +3947,21 @@ convert (tree type, tree expr)
       break;
 
     case UNCONSTRAINED_ARRAY_REF:
-      /* Convert this to the type of the inner array by getting the address of
-	 the array from the template.  */
-      expr = TREE_OPERAND (expr, 0);
-      expr = build_unary_op (INDIRECT_REF, NULL_TREE,
-			     build_component_ref (expr, NULL_TREE,
-						  TYPE_FIELDS
-						  (TREE_TYPE (expr)),
-						  false));
-      etype = TREE_TYPE (expr);
-      ecode = TREE_CODE (etype);
-      break;
+      {
+	/* Convert this to the type of the inner array by getting the address
+	   of the array from the template.  */
+	const bool no_trap = TREE_THIS_NOTRAP (expr);
+	expr = TREE_OPERAND (expr, 0);
+	expr = build_unary_op (INDIRECT_REF, NULL_TREE,
+			       build_component_ref (expr, NULL_TREE,
+						    TYPE_FIELDS
+						    (TREE_TYPE (expr)),
+						    false));
+	TREE_THIS_NOTRAP (expr) = no_trap;
+	etype = TREE_TYPE (expr);
+	ecode = TREE_CODE (etype);
+	break;
+      }
 
     case VIEW_CONVERT_EXPR:
       {
@@ -3992,8 +3996,9 @@ convert (tree type, tree expr)
 		     && !TYPE_IS_FAT_POINTER_P (etype))
 	      return convert (type, op0);
 	  }
+
+	break;
       }
-      break;
 
     default:
       break;

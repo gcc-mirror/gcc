@@ -1,5 +1,16 @@
 2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TREE_THIS_NOTRAP): Redefine.
+	* gcc-interface/trans.c (Identifier_to_gnu): Factor out common code in
+	the by-ref case.  Do not set TREE_READONLY on a renamed object.  Set
+	TREE_THIS_NOTRAP on UNCONSTRAINED_ARRAY_REF nodes.
+	(Attribute_to_gnu) <Attr_Length>: Expand the use of the parameter cache
+	to the indirect case.
+	* gcc-interface/utils.c (convert) <UNCONSTRAINED_ARRAY_REF>: Preserve
+	the TREE_THIS_NOTRAP flag.
+
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): In the case of an
 	iteration scheme, always generate the do-while form if optimization
 	is enabled.  Use more straightforward test at the end.
