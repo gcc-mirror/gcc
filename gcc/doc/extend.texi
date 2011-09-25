@@ -12935,6 +12935,9 @@ typedef short v2hi __attribute__ ((vector_size (4)));
 typedef unsigned char v8qi __attribute__ ((vector_size (8)));
 typedef unsigned char v4qi __attribute__ ((vector_size (4)));
 
+void __builtin_vis_write_gsr (int64_t);
+int64_t __builtin_vis_read_gsr (void);
+
 void * __builtin_vis_alignaddr (void *, long);
 void * __builtin_vis_alignaddrl (void *, long);
 int64_t __builtin_vis_faligndatadi (int64_t, int64_t);

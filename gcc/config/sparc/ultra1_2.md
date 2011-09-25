@@ -79,7 +79,7 @@
 
 (define_insn_reservation "us1_single" 1
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "multi,savew,flushw,iflush,trap"))
+    (eq_attr "type" "multi,savew,flushw,iflush,trap,gsr"))
   "us1_single_issue")
 
 (define_insn_reservation "us1_simple_ieuN" 1

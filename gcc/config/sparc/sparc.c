@@ -329,7 +329,7 @@ char leaf_reg_remap[] =
   72, 73, 74, 75, 76, 77, 78, 79,
   80, 81, 82, 83, 84, 85, 86, 87,
   88, 89, 90, 91, 92, 93, 94, 95,
-  96, 97, 98, 99, 100};
+  96, 97, 98, 99, 100, 101, 102};
 
 /* Vector, indexed by hard register number, which contains 1
    for a register that is allowable in a candidate for leaf
@@ -347,7 +347,7 @@ char sparc_leaf_regs[] =
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1};
+  1, 1, 1, 1, 1, 1, 1};
 
 struct GTY(()) machine_function
 {
@@ -869,6 +869,10 @@ sparc_option_override (void)
       target_flags |= MASK_V9;
       target_flags &= ~(MASK_V8 | MASK_SPARCLET | MASK_SPARCLITE);
     }
+
+  /* -mvis also implies -mv8plus on 32-bit */
+  if (TARGET_VIS && ! TARGET_ARCH64)
+    target_flags |= MASK_V8PLUS;
 
   /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
   if (TARGET_V9 && TARGET_ARCH32)
@@ -4036,8 +4040,8 @@ static const int hard_32bit_mode_classes[] = {
   /* %fcc[0123] */
   CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
 
-  /* %icc */
-  CC_MODES
+  /* %icc, %sfp, %gsr */
+  CC_MODES, 0, D_MODES
 };
 
 static const int hard_64bit_mode_classes[] = {
@@ -4061,8 +4065,8 @@ static const int hard_64bit_mode_classes[] = {
   /* %fcc[0123] */
   CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
 
-  /* %icc */
-  CC_MODES
+  /* %icc, %sfp, %gsr */
+  CC_MODES, 0, D_MODES
 };
 
 int sparc_mode_class [NUM_MACHINE_MODES];
@@ -9168,6 +9172,10 @@ sparc_vis_init_builtins (void)
 						      v4hi, v4hi, 0);
   tree si_ftype_v2si_v2si = build_function_type_list (intSI_type_node,
 						      v2si, v2si, 0);
+  tree void_ftype_di = build_function_type_list (void_type_node,
+						 intDI_type_node, 0);
+  tree di_ftype_void = build_function_type_list (intDI_type_node,
+						 void_type_node, 0);
 
   /* Packing and expanding vectors.  */
   def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis,
@@ -9206,6 +9214,12 @@ sparc_vis_init_builtins (void)
 	       v2si_ftype_v2si_v2si);
   def_builtin ("__builtin_vis_faligndatadi", CODE_FOR_faligndatadi_vis,
 	       di_ftype_di_di);
+
+  def_builtin ("__builtin_vis_write_gsr", CODE_FOR_wrgsr_vis,
+	       void_ftype_di);
+  def_builtin ("__builtin_vis_read_gsr", CODE_FOR_rdgsr_vis,
+	       di_ftype_void);
+
   if (TARGET_ARCH64)
     {
       def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrdi_vis,
@@ -9289,32 +9303,47 @@ sparc_expand_builtin (tree exp, rtx target,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int icode = DECL_FUNCTION_CODE (fndecl);
   rtx pat, op[4];
-  enum machine_mode mode[4];
   int arg_count = 0;
+  bool nonvoid;
 
-  mode[0] = insn_data[icode].operand[0].mode;
-  if (!target
-      || GET_MODE (target) != mode[0]
-      || ! (*insn_data[icode].operand[0].predicate) (target, mode[0]))
-    op[0] = gen_reg_rtx (mode[0]);
-  else
-    op[0] = target;
+  nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
 
+  if (nonvoid)
+    {
+      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      if (!target
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	op[0] = gen_reg_rtx (tmode);
+      else
+	op[0] = target;
+    }
   FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
     {
+      const struct insn_operand_data *insn_op;
+
+      if (arg == error_mark_node)
+	return NULL_RTX;
+
       arg_count++;
-      mode[arg_count] = insn_data[icode].operand[arg_count].mode;
+      insn_op = &insn_data[icode].operand[arg_count - !nonvoid];
       op[arg_count] = expand_normal (arg);
 
       if (! (*insn_data[icode].operand[arg_count].predicate) (op[arg_count],
-							      mode[arg_count]))
-	op[arg_count] = copy_to_mode_reg (mode[arg_count], op[arg_count]);
+							      insn_op->mode))
+	op[arg_count] = copy_to_mode_reg (insn_op->mode, op[arg_count]);
     }
 
   switch (arg_count)
     {
+    case 0:
+      pat = GEN_FCN (icode) (op[0]);
+      break;
     case 1:
-      pat = GEN_FCN (icode) (op[0], op[1]);
+      if (nonvoid)
+	pat = GEN_FCN (icode) (op[0], op[1]);
+      else
+	pat = GEN_FCN (icode) (op[1]);
       break;
     case 2:
       pat = GEN_FCN (icode) (op[0], op[1], op[2]);
@@ -9331,7 +9360,10 @@ sparc_expand_builtin (tree exp, rtx target,
 
   emit_insn (pat);
 
-  return op[0];
+  if (nonvoid)
+    return op[0];
+  else
+    return const0_rtx;
 }
 
 static int
@@ -9416,7 +9448,8 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 
   if (ignore
       && icode != CODE_FOR_alignaddrsi_vis
-      && icode != CODE_FOR_alignaddrdi_vis)
+      && icode != CODE_FOR_alignaddrdi_vis
+      && icode != CODE_FOR_wrgsr_vis)
     return build_zero_cst (rtype);
 
   switch (icode)

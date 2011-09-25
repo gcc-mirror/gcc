@@ -111,10 +111,10 @@
 
 (define_insn_reservation "niag2_vis" 6
   (and (eq_attr "cpu" "niagara2")
-    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge"))
+    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge,gsr"))
   "niag2_pipe*6")
 
 (define_insn_reservation "niag3_vis" 9
   (and (eq_attr "cpu" "niagara3")
-    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge"))
+    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_cmp,fgm_pdist,edge,gsr"))
   "niag2_pipe*9")
