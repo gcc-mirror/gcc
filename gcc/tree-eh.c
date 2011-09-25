@@ -3863,8 +3863,15 @@ cleanup_empty_eh (eh_landing_pad lp)
       return cleanup_empty_eh_unsplit (bb, e_out, lp);
     }
 
-  /* The block should consist only of a single RESX statement.  */
+  /* The block should consist only of a single RESX statement, modulo a
+     preceding call to __builtin_stack_restore if there is no outgoing
+     edge, since the call can be eliminated in this case.  */
   resx = gsi_stmt (gsi);
+  if (!e_out && gimple_call_builtin_p (resx, BUILT_IN_STACK_RESTORE))
+    {
+      gsi_next (&gsi);
+      resx = gsi_stmt (gsi);
+    }
   if (!is_gimple_resx (resx))
     return false;
   gcc_assert (gsi_one_before_end_p (gsi));
