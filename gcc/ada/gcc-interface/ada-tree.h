@@ -426,6 +426,15 @@ do {						   \
   SET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE), X)
 
 
+/* Flags added to ref nodes.  */
+
+/* Nonzero means this node will not trap.  */
+#undef TREE_THIS_NOTRAP
+#define TREE_THIS_NOTRAP(NODE) \
+  (TREE_CHECK4 (NODE, INDIRECT_REF, ARRAY_REF, UNCONSTRAINED_ARRAY_REF, \
+		ARRAY_RANGE_REF)->base.nothrow_flag)
+
+
 /* Fields and macros for statements.  */
 #define IS_ADA_STMT(NODE) \
   (STATEMENT_CLASS_P (NODE) && TREE_CODE (NODE) >= STMT_STMT)

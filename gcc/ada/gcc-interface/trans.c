@@ -989,8 +989,8 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	      && DECL_BY_COMPONENT_PTR_P (gnu_result))))
     {
       const bool read_only = DECL_POINTS_TO_READONLY_P (gnu_result);
-      tree renamed_obj;
 
+      /* First do the first dereference if needed.  */
       if (TREE_CODE (gnu_result) == PARM_DECL
 	  && DECL_BY_DOUBLE_REF_P (gnu_result))
 	{
@@ -999,42 +999,37 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	    TREE_THIS_NOTRAP (gnu_result) = 1;
 	}
 
+      /* If it's a PARM_DECL to foreign convention subprogram, convert it.  */
       if (TREE_CODE (gnu_result) == PARM_DECL
 	  && DECL_BY_COMPONENT_PTR_P (gnu_result))
-	{
-	  gnu_result
-	    = build_unary_op (INDIRECT_REF, NULL_TREE,
-			      convert (build_pointer_type (gnu_result_type),
-				       gnu_result));
-	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
-	    TREE_THIS_NOTRAP (gnu_result) = 1;
-	}
+	gnu_result
+	  = convert (build_pointer_type (gnu_result_type), gnu_result);
+
+      /* If it's a CONST_DECL, return the underlying constant like below.  */
+      else if (TREE_CODE (gnu_result) == CONST_DECL)
+	gnu_result = DECL_INITIAL (gnu_result);
 
       /* If it's a renaming pointer and we are at the right binding level,
 	 we can reference the renamed object directly, since the renamed
 	 expression has been protected against multiple evaluations.  */
-      else if (TREE_CODE (gnu_result) == VAR_DECL
-	       && (renamed_obj = DECL_RENAMED_OBJECT (gnu_result))
-	       && (!DECL_RENAMING_GLOBAL_P (gnu_result)
-		   || global_bindings_p ()))
-	gnu_result = renamed_obj;
+      if (TREE_CODE (gnu_result) == VAR_DECL
+	  && DECL_RENAMED_OBJECT (gnu_result)
+	  && (!DECL_RENAMING_GLOBAL_P (gnu_result) || global_bindings_p ()))
+	gnu_result = DECL_RENAMED_OBJECT (gnu_result);
 
-      /* Return the underlying CST for a CONST_DECL like a few lines below,
-	 after dereferencing in this case.  */
-      else if (TREE_CODE (gnu_result) == CONST_DECL)
-	gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE,
-				     DECL_INITIAL (gnu_result));
-
+      /* Otherwise, do the final dereference.  */
       else
 	{
 	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
-	  if (TREE_CODE (gnu_result) == INDIRECT_REF
+
+	  if ((TREE_CODE (gnu_result) == INDIRECT_REF
+	       || TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF)
 	      && No (Address_Clause (gnat_temp)))
 	    TREE_THIS_NOTRAP (gnu_result) = 1;
-	}
 
-      if (read_only)
-	TREE_READONLY (gnu_result) = 1;
+	  if (read_only)
+	    TREE_READONLY (gnu_result) = 1;
+	}
     }
 
   /* The GNAT tree has the type of a function as the type of its result.  Also
@@ -1597,11 +1592,26 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	/* Make sure any implicit dereference gets done.  */
 	gnu_prefix = maybe_implicit_deref (gnu_prefix);
 	gnu_prefix = maybe_unconstrained_array (gnu_prefix);
+
 	/* We treat unconstrained array In parameters specially.  */
-	if (Nkind (Prefix (gnat_node)) == N_Identifier
-	    && !Is_Constrained (Etype (Prefix (gnat_node)))
-	    && Ekind (Entity (Prefix (gnat_node))) == E_In_Parameter)
-	  gnat_param = Entity (Prefix (gnat_node));
+	if (!Is_Constrained (Etype (Prefix (gnat_node))))
+	  {
+	    Node_Id gnat_prefix = Prefix (gnat_node);
+
+	    /* This is the direct case.  */
+	    if (Nkind (gnat_prefix) == N_Identifier
+		&& Ekind (Entity (gnat_prefix)) == E_In_Parameter)
+	      gnat_param = Entity (gnat_prefix);
+
+	    /* This is the indirect case.  Note that we need to be sure that
+	       the access value cannot be null as we'll hoist the load.  */
+	    if (Nkind (gnat_prefix) == N_Explicit_Dereference
+		&& Nkind (Prefix (gnat_prefix)) == N_Identifier
+		&& Ekind (Entity (Prefix (gnat_prefix))) == E_In_Parameter
+		&& Can_Never_Be_Null (Entity (Prefix (gnat_prefix))))
+	      gnat_param = Entity (Prefix (gnat_prefix));
+	  }
+
 	gnu_type = TREE_TYPE (gnu_prefix);
 	prefix_unused = true;
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
