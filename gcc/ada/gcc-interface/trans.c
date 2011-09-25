@@ -218,6 +218,7 @@ static bool set_end_locus_from_node (tree, Node_Id);
 static void set_gnu_expr_location_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, bool, bool, bool);
 static tree build_raise_check (int, enum exception_info_kind);
+static tree create_init_temporary (const char *, tree, tree *, Node_Id);
 
 /* Hooks for debug info back-ends, only supported and used in a restricted set
    of configurations.  */
@@ -2161,8 +2162,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
 			       NULL_TREE, NULL_TREE, NULL_TREE);
   tree gnu_loop_label = create_artificial_label (input_location);
-  tree gnu_loop_var = NULL_TREE, gnu_cond_expr = NULL_TREE;
-  tree gnu_result;
+  tree gnu_cond_expr = NULL_TREE, gnu_result;
 
   /* Set location information for statement and end label.  */
   set_expr_location_from_node (gnu_loop_stmt, gnat_node);
@@ -2196,9 +2196,9 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       tree gnu_high = TYPE_MAX_VALUE (gnu_type);
       tree gnu_base_type = get_base_type (gnu_type);
       tree gnu_one_node = convert (gnu_base_type, integer_one_node);
-      tree gnu_first, gnu_last;
+      tree gnu_loop_var, gnu_loop_iv, gnu_first, gnu_last, gnu_stmt;
       enum tree_code update_code, test_code, shift_code;
-      bool reverse = Reverse_Present (gnat_loop_spec), fallback = false;
+      bool reverse = Reverse_Present (gnat_loop_spec), use_iv = false;
 
       /* We must disable modulo reduction for the iteration variable, if any,
 	 in order for the loop comparison to be effective.  */
@@ -2222,8 +2222,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       /* We use two different strategies to translate the loop, depending on
 	 whether optimization is enabled.
 
-	 If it is, we try to generate the canonical form of loop expected by
-	 the loop optimizer, which is the do-while form:
+	 If it is, we generate the canonical loop form expected by the loop
+	 optimizer and the loop vectorizer, which is the do-while form:
 
 	     ENTRY_COND
 	   loop:
@@ -2232,10 +2232,12 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	     BOTTOM_COND
 	     GOTO loop
 
-	 This makes it possible to bypass loop header copying and to turn the
-	 BOTTOM_COND into an inequality test.  This should catch (almost) all
-	 loops with constant starting point.  If we cannot, we try to generate
-	 the default form, which is:
+	 This avoids an implicit dependency on loop header copying and makes
+	 it possible to turn BOTTOM_COND into an inequality test.
+
+	 If optimization is disabled, loop header copying doesn't come into
+	 play and we try to generate the loop form with the fewer conditional
+	 branches.  First, the default form, which is:
 
 	   loop:
 	     TOP_COND
@@ -2243,25 +2245,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	     BOTTOM_UPDATE
 	     GOTO loop
 
-	 It will be rotated during loop header copying and an entry test added
-	 to yield the do-while form.  This should catch (almost) all loops with
-	 constant ending point.  If we cannot, we generate the fallback form:
-
-	     ENTRY_COND
-	   loop:
-	     BODY
-	     BOTTOM_COND
-	     BOTTOM_UPDATE
-	     GOTO loop
-
-	 which works in all cases but for which loop header copying will copy
-	 the BOTTOM_COND, thus adding a third conditional branch.
-
-	 If optimization is disabled, loop header copying doesn't come into
-	 play and we try to generate the loop forms with the less conditional
-	 branches directly.  First, the default form, it should catch (almost)
-	 all loops with constant ending point.  Then, if we cannot, we try to
-	 generate the shifted form:
+	 It should catch most loops with constant ending point.  Then, if we
+	 cannot, we try to generate the shifted form:
 
 	   loop:
 	     TOP_COND
@@ -2270,26 +2255,44 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	     GOTO loop
 
 	 which should catch loops with constant starting point.  Otherwise, if
-	 we cannot, we generate the fallback form.  */
+	 we cannot, we generate the fallback form:
+
+	     ENTRY_COND
+	   loop:
+	     BODY
+	     BOTTOM_COND
+	     BOTTOM_UPDATE
+	     GOTO loop
+
+	 which works in all cases.  */
 
       if (optimize)
 	{
-	  /* We can use the do-while form if GNU_FIRST-1 doesn't overflow.  */
+	  /* We can use the do-while form directly if GNU_FIRST-1 doesn't
+	     overflow.  */
 	  if (!can_equal_min_val_p (gnu_first, gnu_base_type, reverse))
-	    {
-	      gnu_first = build_binary_op (shift_code, gnu_base_type,
-					   gnu_first, gnu_one_node);
-	      LOOP_STMT_TOP_UPDATE_P (gnu_loop_stmt) = 1;
-	      LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt) = 1;
-	    }
-
-	  /* Otherwise, we can use the default form if GNU_LAST+1 doesn't.  */
-	  else if (!can_equal_max_val_p (gnu_last, gnu_base_type, reverse))
 	    ;
 
-	  /* Otherwise, use the fallback form.  */
+	  /* Otherwise, use the do-while form with the help of a special
+	     induction variable in the (unsigned version of) the base
+	     type, in order to have wrap-around arithmetics for it.  */
 	  else
-	    fallback = true;
+	    {
+	      if (!TYPE_UNSIGNED (gnu_base_type))
+		{
+		  gnu_base_type = gnat_unsigned_type (gnu_base_type);
+		  gnu_first = convert (gnu_base_type, gnu_first);
+		  gnu_last = convert (gnu_base_type, gnu_last);
+		  gnu_one_node = convert (gnu_base_type, integer_one_node);
+		}
+	      use_iv = true;
+	    }
+
+	  gnu_first
+	    = build_binary_op (shift_code, gnu_base_type, gnu_first,
+			       gnu_one_node);
+	  LOOP_STMT_TOP_UPDATE_P (gnu_loop_stmt) = 1;
+	  LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt) = 1;
 	}
       else
 	{
@@ -2302,20 +2305,19 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	  else if (!can_equal_min_val_p (gnu_first, gnu_base_type, reverse)
 		   && !can_equal_min_val_p (gnu_last, gnu_base_type, reverse))
 	    {
-	      gnu_first = build_binary_op (shift_code, gnu_base_type,
-					   gnu_first, gnu_one_node);
-	      gnu_last = build_binary_op (shift_code, gnu_base_type,
-				          gnu_last, gnu_one_node);
+	      gnu_first
+		= build_binary_op (shift_code, gnu_base_type, gnu_first,
+				   gnu_one_node);
+	      gnu_last
+		= build_binary_op (shift_code, gnu_base_type, gnu_last,
+				   gnu_one_node);
 	      LOOP_STMT_TOP_UPDATE_P (gnu_loop_stmt) = 1;
 	    }
 
 	  /* Otherwise, use the fallback form.  */
 	  else
-	    fallback = true;
+	    LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt) = 1;
 	}
-
-      if (fallback)
-	LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt) = 1;
 
       /* If we use the BOTTOM_COND, we can turn the test into an inequality
 	 test but we may have to add ENTRY_COND to protect the empty loop.  */
@@ -2338,6 +2340,19 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       start_stmt_group ();
       gnat_pushlevel ();
 
+      /* If we use the special induction variable, create it and set it to
+	 its initial value.  Morever, the regular iteration variable cannot
+	 itself be initialized, lest the initial value wrapped around.  */
+      if (use_iv)
+	{
+	  gnu_loop_iv
+	    = create_init_temporary ("I", gnu_first, &gnu_stmt, gnat_loop_var);
+	  add_stmt (gnu_stmt);
+	  gnu_first = NULL_TREE;
+	}
+      else
+	gnu_loop_iv = NULL_TREE;
+
       /* Declare the iteration variable and set it to its initial value.  */
       gnu_loop_var = gnat_to_gnu_entity (gnat_loop_var, gnu_first, 1);
       if (DECL_BY_REF_P (gnu_loop_var))
@@ -2347,18 +2362,42 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       gnu_loop_var = convert (gnu_base_type, gnu_loop_var);
 
       /* Set either the top or bottom exit condition.  */
-      LOOP_STMT_COND (gnu_loop_stmt)
-	= build_binary_op (test_code, boolean_type_node, gnu_loop_var,
-			   gnu_last);
+      if (use_iv)
+        LOOP_STMT_COND (gnu_loop_stmt)
+	  = build_binary_op (test_code, boolean_type_node, gnu_loop_iv,
+			     gnu_last);
+      else
+        LOOP_STMT_COND (gnu_loop_stmt)
+	  = build_binary_op (test_code, boolean_type_node, gnu_loop_var,
+			     gnu_last);
 
       /* Set either the top or bottom update statement and give it the source
 	 location of the iteration for better coverage info.  */
-      LOOP_STMT_UPDATE (gnu_loop_stmt)
-	= build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_loop_var,
-			   build_binary_op (update_code, gnu_base_type,
-					    gnu_loop_var, gnu_one_node));
-      set_expr_location_from_node (LOOP_STMT_UPDATE (gnu_loop_stmt),
-				   gnat_iter_scheme);
+      if (use_iv)
+	{
+	  gnu_stmt
+	    = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_loop_iv,
+			       build_binary_op (update_code, gnu_base_type,
+						gnu_loop_iv, gnu_one_node));
+	  set_expr_location_from_node (gnu_stmt, gnat_iter_scheme);
+	  append_to_statement_list (gnu_stmt,
+				    &LOOP_STMT_UPDATE (gnu_loop_stmt));
+	  gnu_stmt
+	    = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_loop_var,
+			       gnu_loop_iv);
+	  set_expr_location_from_node (gnu_stmt, gnat_iter_scheme);
+	  append_to_statement_list (gnu_stmt,
+				    &LOOP_STMT_UPDATE (gnu_loop_stmt));
+	}
+      else
+	{
+	  gnu_stmt
+	    = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_loop_var,
+			       build_binary_op (update_code, gnu_base_type,
+						gnu_loop_var, gnu_one_node));
+	  set_expr_location_from_node (gnu_stmt, gnat_iter_scheme);
+	  LOOP_STMT_UPDATE (gnu_loop_stmt) = gnu_stmt;
+	}
     }
 
   /* If the loop was named, have the name point to this loop.  In this case,
@@ -2372,9 +2411,9 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
     = build_stmt_group (Statements (gnat_node), true);
   TREE_SIDE_EFFECTS (gnu_loop_stmt) = 1;
 
-  /* If we declared a variable, then we are in a statement group for that
-     declaration.  Add the LOOP_STMT to it and make that the "loop".  */
-  if (gnu_loop_var)
+  /* If we have an iteration scheme, then we are in a statement group.  Add
+     the LOOP_STMT to it, finish it and make it the "loop".  */
+  if (Present (gnat_iter_scheme) && No (Condition (gnat_iter_scheme)))
     {
       add_stmt (gnu_loop_stmt);
       gnat_poplevel ();
