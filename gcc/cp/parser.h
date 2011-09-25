@@ -169,6 +169,10 @@ typedef struct GTY(()) cp_unparsed_functions_entry_d {
   /* Functions with defintions that require post-processing.  Functions
      appear in this list in declaration order.  */
   VEC(tree,gc) *funs_with_definitions;
+
+  /* Non-static data members with initializers that require post-processing.
+     FIELD_DECLs appear in this list in declaration order.  */
+  VEC(tree,gc) *nsdmis;
 } cp_unparsed_functions_entry;
 
 DEF_VEC_O(cp_unparsed_functions_entry);

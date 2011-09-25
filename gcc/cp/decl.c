@@ -6077,7 +6077,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   /* Just store non-static data member initializers for later.  */
   if (init && TREE_CODE (decl) == FIELD_DECL)
-    DECL_INITIAL (decl) = digest_init_flags (TREE_TYPE (decl), init, flags);
+    DECL_INITIAL (decl) = init;
 
   /* Take care of TYPE_DECLs up front.  */
   if (TREE_CODE (decl) == TYPE_DECL)
