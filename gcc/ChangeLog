@@ -1,3 +1,13 @@
+2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-data-ref.c (dr_analyze_innermost): Add new argument.
+	Allow not simple iv if analyzing basic block.
+	(create_data_ref): Update call to dr_analyze_innermost.
+	(stmt_with_adjacent_zero_store_dr_p, ref_base_address): Likewise.
+	* tree-loop-distribution.c (generate_memset_zero): Likewise.
+	* tree-predcom.c (find_looparound_phi): Likewise.
+	* tree-data-ref.h (dr_analyze_innermost): Add new argument.
+
 2011-09-24  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.h (FIRST_PSEUDO_REGISTER): Bump to 103.

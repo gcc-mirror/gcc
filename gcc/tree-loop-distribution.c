@@ -268,7 +268,7 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
 
   DR_STMT (dr) = stmt;
   DR_REF (dr) = op0;
-  res = dr_analyze_innermost (dr);
+  res = dr_analyze_innermost (dr, loop_containing_stmt (stmt));
   gcc_assert (res && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (op0)));
 
   nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);

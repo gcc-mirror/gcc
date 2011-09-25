@@ -722,11 +722,11 @@ canonicalize_base_object_address (tree addr)
 }
 
 /* Analyzes the behavior of the memory reference DR in the innermost loop or
-   basic block that contains it. Returns true if analysis succeed or false
+   basic block that contains it.  Returns true if analysis succeed or false
    otherwise.  */
 
 bool
-dr_analyze_innermost (struct data_reference *dr)
+dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
 {
   gimple stmt = DR_STMT (dr);
   struct loop *loop = loop_containing_stmt (stmt);
@@ -769,14 +769,25 @@ dr_analyze_innermost (struct data_reference *dr)
     }
   else
     base = build_fold_addr_expr (base);
+
   if (in_loop)
     {
       if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv,
                       false))
         {
-          if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "failed: evolution of base is not affine.\n");
-          return false;
+          if (nest)
+            {
+              if (dump_file && (dump_flags & TDF_DETAILS))
+                fprintf (dump_file, "failed: evolution of base is not"
+                                    " affine.\n");
+              return false;
+            }
+          else
+            {
+              base_iv.base = base;
+              base_iv.step = ssize_int (0);
+              base_iv.no_overflow = true;
+            }
         }
     }
   else
@@ -801,10 +812,18 @@ dr_analyze_innermost (struct data_reference *dr)
       else if (!simple_iv (loop, loop_containing_stmt (stmt),
                            poffset, &offset_iv, false))
         {
-          if (dump_file && (dump_flags & TDF_DETAILS))
-            fprintf (dump_file, "failed: evolution of offset is not"
-                                " affine.\n");
-          return false;
+          if (nest)
+            {
+              if (dump_file && (dump_flags & TDF_DETAILS))
+                fprintf (dump_file, "failed: evolution of offset is not"
+                                    " affine.\n");
+              return false;
+            }
+          else
+            {
+              offset_iv.base = poffset;
+              offset_iv.step = ssize_int (0);
+            }
         }
     }
 
@@ -972,7 +991,7 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
   DR_REF (dr) = memref;
   DR_IS_READ (dr) = is_read;
 
-  dr_analyze_innermost (dr);
+  dr_analyze_innermost (dr, nest);
   dr_analyze_indices (dr, nest, loop);
   dr_analyze_alias (dr);
 
@@ -5150,7 +5169,7 @@ stmt_with_adjacent_zero_store_dr_p (gimple stmt)
   DR_STMT (dr) = stmt;
   DR_REF (dr) = op0;
 
-  res = dr_analyze_innermost (dr)
+  res = dr_analyze_innermost (dr, loop_containing_stmt (stmt))
     && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (op0));
 
   free_data_ref (dr);
@@ -5190,7 +5209,7 @@ ref_base_address (gimple stmt, data_ref_loc *ref)
 
   DR_STMT (dr) = stmt;
   DR_REF (dr) = *ref->pos;
-  dr_analyze_innermost (dr);
+  dr_analyze_innermost (dr, loop_containing_stmt (stmt));
   base_address = DR_BASE_ADDRESS (dr);
 
   if (!base_address)
