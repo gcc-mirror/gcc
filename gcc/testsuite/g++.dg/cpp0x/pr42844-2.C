@@ -4,6 +4,7 @@
 
 struct A // { dg-message "user-provided default constructor" }
 {
+    int i;
     A() = default; // { dg-message "not user-provided" }
 };
 
@@ -14,17 +15,20 @@ struct Base
 
 struct Derived : Base // { dg-message "user-provided default constructor" }
 {
+    int i;
     Derived() = default; // { dg-message "not user-provided" }
 };
 
 struct Derived2 : Base // { dg-message "user-provided default constructor" }
 {
+    int i;
     Derived2() = default; // { dg-message "not user-provided" }
     Derived2( Derived2 const& ) = default;
 };
 
 struct Derived3 : Base // { dg-message "user-provided default constructor" }
 {
+    int i;
     Derived3( Derived3 const& ) = default;
     Derived3() = default; // { dg-message "not user-provided" }
 };

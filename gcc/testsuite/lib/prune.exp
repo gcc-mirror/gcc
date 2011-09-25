@@ -30,6 +30,9 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)Please submit.*instructions\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[0-9\]\[0-9\]* errors\." $text "" text
 
+    # Ignore informational notes.
+    regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
+
     # Ignore harmless -fpic warnings.
     regsub -all "(^|\n)\[^\n\]*: warning: -f(pic|PIC) ignored for target\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*: warning: -f(pic|PIC)( and -fpic are| is)? not supported\[^\n\]*" $text "" text

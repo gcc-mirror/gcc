@@ -551,7 +551,7 @@ perform_member_init (tree member, tree init)
 	    flags |= LOOKUP_DEFAULTED;
 	  if (CP_TYPE_CONST_P (type)
 	      && init == NULL_TREE
-	      && !type_has_user_provided_default_constructor (type))
+	      && default_init_uninitialized_part (type))
 	    /* TYPE_NEEDS_CONSTRUCTING can be set just because we have a
 	       vtable; still give this diagnostic.  */
 	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
@@ -2084,7 +2084,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     }
 
   if (CP_TYPE_CONST_P (elt_type) && *init == NULL
-      && !type_has_user_provided_default_constructor (elt_type))
+      && default_init_uninitialized_part (elt_type))
     {
       if (complain & tf_error)
         error ("uninitialized const in %<new%> of %q#T", elt_type);

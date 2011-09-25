@@ -1,3 +1,14 @@
+2011-09-23  Jason Merrill  <jason@redhat.com>
+
+	Core 253
+	* g++.dg/init/const8.C: New.
+	* g++.dg/cpp0x/constexpr-object1.C: Add a data member.
+	* g++.dg/cpp0x/defaulted2.C: Likewise.
+	* g++.dg/cpp0x/pr42844-2.C: Likewise.
+	* g++.dg/init/pr42844.C: Likewise.
+
+	* lib/prune.exp: Prune "note"s.
+
 2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50413
