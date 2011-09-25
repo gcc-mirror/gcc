@@ -24043,6 +24043,42 @@ if test $gcc_cv_as_sparc_offsetable_lo10 = yes; then
 $as_echo "#define HAVE_AS_OFFSETABLE_LO10 1" >>confdefs.h
 
 fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for FMAF, HPC, and VIS 3.0 instructions" >&5
+$as_echo_n "checking assembler for FMAF, HPC, and VIS 3.0 instructions... " >&6; }
+if test "${gcc_cv_as_sparc_fmaf+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_sparc_fmaf=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text
+       .align 4
+       fmaddd %f0, %f2, %f4, %f6
+       addxccc %g1, %g2, %g3
+       fsrl32 %f2, %f4, %f8
+       fnaddd %f10, %f12, %f14' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -xarch=v9d -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_sparc_fmaf=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_sparc_fmaf" >&5
+$as_echo "$gcc_cv_as_sparc_fmaf" >&6; }
+if test $gcc_cv_as_sparc_fmaf = yes; then
+
+$as_echo "#define HAVE_AS_FMAF_HPC_VIS3 1" >>confdefs.h
+
+fi
     ;;
 
   i[34567]86-*-* | x86_64-*-*)

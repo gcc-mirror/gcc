@@ -879,7 +879,8 @@ See RS/6000 and PowerPC Options.
 -mlittle-endian @gol
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
--mv8plus  -mno-v8plus  -mvis  -mno-vis}
+-mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
+-mfmaf -mno-fmaf}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -17397,6 +17398,15 @@ mode for all SPARC-V9 processors.
 @opindex mno-vis
 With @option{-mvis}, GCC generates code that takes advantage of the UltraSPARC
 Visual Instruction Set extensions.  The default is @option{-mno-vis}.
+
+@item -mfmaf
+@itemx -mno-fmaf
+@opindex mfmaf
+@opindex mno-fmaf
+With @option{-mfmaf}, GCC generates code that takes advantage of the UltraSPARC
+Fused Multiply-Add Floating-point extensions.  The default is @option{-mfmaf}
+when targetting a cpu that supports such instructions, such as Niagara-3 and
+later.
 @end table
 
 These @samp{-m} options are supported in addition to the above

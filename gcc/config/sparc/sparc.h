@@ -287,11 +287,11 @@ extern enum cmodel sparc_cmodel;
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_niagara3
 #define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
-#define ASM_CPU64_DEFAULT_SPEC "-Av9b"
+#define ASM_CPU64_DEFAULT_SPEC "-Av9" AS_NIAGARA3_FLAG
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_niagara4
 #define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
-#define ASM_CPU64_DEFAULT_SPEC "-Av9b"
+#define ASM_CPU64_DEFAULT_SPEC "-Av9" AS_NIAGARA3_FLAG
 #endif
 
 #else
@@ -431,8 +431,8 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=ultrasparc3:%{!mv8plus:-Av9b}} \
 %{mcpu=niagara:%{!mv8plus:-Av9b}} \
 %{mcpu=niagara2:%{!mv8plus:-Av9b}} \
-%{mcpu=niagara3:%{!mv8plus:-Av9b}} \
-%{mcpu=niagara4:%{!mv8plus:-Av9b}} \
+%{mcpu=niagara3:%{!mv8plus:-Av9" AS_NIAGARA3_FLAG "}} \
+%{mcpu=niagara4:%{!mv8plus:-Av9" AS_NIAGARA3_FLAG "}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
@@ -1881,6 +1881,14 @@ extern int sparc_indent_opcode;
 
 #define TARGET_SUN_TLS TARGET_TLS
 #define TARGET_GNU_TLS 0
+
+#ifndef HAVE_AS_FMAF_HPC_VIS3
+#define AS_NIAGARA3_FLAG "b"
+#undef TARGET_FMAF
+#define TARGET_FMAF 0
+#else
+#define AS_NIAGARA3_FLAG "d"
+#endif
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 12

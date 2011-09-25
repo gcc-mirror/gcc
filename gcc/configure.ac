@@ -3478,6 +3478,18 @@ foo:
        fi],
        [AC_DEFINE(HAVE_AS_OFFSETABLE_LO10, 1,
 	         [Define if your assembler supports offsetable %lo().])])
+
+    gcc_GAS_CHECK_FEATURE([FMAF, HPC, and VIS 3.0 instructions],
+      gcc_cv_as_sparc_fmaf,,
+      [-xarch=v9d],
+      [.text
+       .align 4
+       fmaddd %f0, %f2, %f4, %f6
+       addxccc %g1, %g2, %g3
+       fsrl32 %f2, %f4, %f8
+       fnaddd %f10, %f12, %f14],,
+      [AC_DEFINE(HAVE_AS_FMAF_HPC_VIS3, 1,
+                [Define if your assembler supports FMAF, HPC, and VIS 3.0 instructions.])])
     ;;
 
 changequote(,)dnl

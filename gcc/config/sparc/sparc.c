@@ -776,9 +776,9 @@ sparc_option_override (void)
     /* UltraSPARC T2 */
     { MASK_ISA, MASK_V9},
     /* UltraSPARC T3 */
-    { MASK_ISA, MASK_V9},
+    { MASK_ISA, MASK_V9 | MASK_FMAF},
     /* UltraSPARC T4 */
-    { MASK_ISA, MASK_V9},
+    { MASK_ISA, MASK_V9 | MASK_FMAF},
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -857,9 +857,9 @@ sparc_option_override (void)
   if (target_flags_explicit & MASK_FPU)
     target_flags = (target_flags & ~MASK_FPU) | fpu;
 
-  /* Don't allow -mvis if FPU is disabled.  */
+  /* Don't allow -mvis or -mfmaf if FPU is disabled.  */
   if (! TARGET_FPU)
-    target_flags &= ~MASK_VIS;
+    target_flags &= ~(MASK_VIS | MASK_FMAF);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available.
@@ -9645,6 +9645,25 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       else
 	*total = COSTS_N_INSNS (1);
       return false;
+
+    case FMA:
+      {
+	rtx sub;
+
+	gcc_assert (float_mode_p);
+	*total = sparc_costs->float_mul;
+
+	sub = XEXP (x, 0);
+	if (GET_CODE (sub) == NEG)
+	  sub = XEXP (sub, 0);
+	*total += rtx_cost (sub, FMA, 0, speed);
+
+	sub = XEXP (x, 2);
+	if (GET_CODE (sub) == NEG)
+	  sub = XEXP (sub, 0);
+	*total += rtx_cost (sub, FMA, 2, speed);
+	return true;
+      }
 
     case MULT:
       if (float_mode_p)

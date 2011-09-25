@@ -61,6 +61,10 @@ mvis
 Target Report Mask(VIS)
 Use UltraSPARC Visual Instruction Set extensions
 
+mfmaf
+Target Report Mask(FMAF)
+Use UltraSPARC Fused Multiply-Add extensions
+
 mptr64
 Target Report RejectNegative Mask(PTR64)
 Pointers are 64-bit
