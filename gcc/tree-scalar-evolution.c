@@ -3172,8 +3172,8 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
   iv->no_overflow = false;
 
   type = TREE_TYPE (op);
-  if (TREE_CODE (type) != INTEGER_TYPE
-      && TREE_CODE (type) != POINTER_TYPE)
+  if (!POINTER_TYPE_P (type)
+      && !INTEGRAL_TYPE_P (type))
     return false;
 
   ev = analyze_scalar_evolution_in_loop (wrto_loop, use_loop, op,

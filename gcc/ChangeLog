@@ -1,3 +1,11 @@
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.c (cleanup_empty_eh): Allow a call to __builtin_stack_restore
+	if there is no outgoing edge.
+
+	* tree-scalar-evolution.c (simple_iv): Accept all kinds of pointer and
+	integral types.
+
 2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-slp.c (vect_slp_analyze_bb_1): Split out core part
