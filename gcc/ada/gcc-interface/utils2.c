@@ -1000,7 +1000,6 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
   tree base_type = get_base_type (type);
   tree operation_type = result_type;
   tree result;
-  bool side_effects = false;
 
   if (operation_type
       && TREE_CODE (operation_type) == RECORD_TYPE
@@ -1235,8 +1234,12 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	  TREE_READONLY (result) = TYPE_READONLY (TREE_TYPE (type));
 	}
 
-      side_effects
-	= (!TYPE_IS_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)));
+      if (!TYPE_IS_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)))
+	{
+	  TREE_SIDE_EFFECTS (result) = 1;
+	  if (TREE_CODE (result) == INDIRECT_REF)
+	    TREE_THIS_VOLATILE (result) = TYPE_VOLATILE (TREE_TYPE (result));
+	}
       break;
 
     case NEGATE_EXPR:
@@ -1320,13 +1323,6 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       gcc_assert (operation_type == base_type);
       result = fold_build1 (op_code, operation_type,
 			    convert (operation_type, operand));
-    }
-
-  if (side_effects)
-    {
-      TREE_SIDE_EFFECTS (result) = 1;
-      if (TREE_CODE (result) == INDIRECT_REF)
-	TREE_THIS_VOLATILE (result) = TYPE_VOLATILE (TREE_TYPE (result));
     }
 
   if (result_type && TREE_TYPE (result) != result_type)

@@ -5794,7 +5794,6 @@ gnat_to_gnu (Node_Id gnat_node)
       {
 	const int reason = UI_To_Int (Reason (gnat_node));
 	const Node_Id cond = Condition (gnat_node);
-	bool handled = false;
 
 	if (type_annotate_only)
 	  {
@@ -5807,65 +5806,58 @@ gnat_to_gnu (Node_Id gnat_node)
 	if (Exception_Extra_Info
 	    && !No_Exception_Handlers_Set ()
 	    && !get_exception_label (kind)
-	    && TREE_CODE (gnu_result_type) == VOID_TYPE
+	    && VOID_TYPE_P (gnu_result_type)
 	    && Present (cond))
-	  {
-	    if (reason == CE_Access_Check_Failed)
-	      {
-		gnu_result = build_call_raise_column (reason, gnat_node);
-		handled = true;
-	      }
-	    else if ((reason == CE_Index_Check_Failed
-		      || reason == CE_Range_Check_Failed
-		      || reason == CE_Invalid_Data)
-		     && Nkind (cond) == N_Op_Not
-		     && Nkind (Right_Opnd (cond)) == N_In
-		     && Nkind (Right_Opnd (Right_Opnd (cond))) == N_Range)
-	      {
-		Node_Id op = Right_Opnd (cond);  /* N_In node */
-		Node_Id index = Left_Opnd (op);
-		Node_Id type = Etype (index);
+	  switch (reason)
+	    {
+	    case CE_Access_Check_Failed:
+	      gnu_result = build_call_raise_column (reason, gnat_node);
+	      break;
 
-		if (Is_Type (type)
-		    && Known_Esize (type)
-		    && UI_To_Int (Esize (type)) <= 32)
-		  {
-		    Node_Id right_op = Right_Opnd (op);
+	    case CE_Index_Check_Failed:
+	    case CE_Range_Check_Failed:
+	    case CE_Invalid_Data:
+	      if (Nkind (cond) == N_Op_Not
+		  && Nkind (Right_Opnd (cond)) == N_In
+		  && Nkind (Right_Opnd (Right_Opnd (cond))) == N_Range)
+		{
+		  Node_Id op = Right_Opnd (cond);  /* N_In node */
+		  Node_Id index = Left_Opnd (op);
+		  Node_Id range = Right_Opnd (op);
+		  Node_Id type = Etype (index);
+		  if (Is_Type (type)
+		      && Known_Esize (type)
+		      && UI_To_Int (Esize (type)) <= 32)
 		    gnu_result
-		      = build_call_raise_range
-		        (reason, gnat_node,
-		         gnat_to_gnu (index),                  /* index */
-		         gnat_to_gnu (Low_Bound (right_op)),   /* first */
-		         gnat_to_gnu (High_Bound (right_op))); /* last  */
-		    handled = true;
-		  }
-	      }
+		      = build_call_raise_range (reason, gnat_node,
+						gnat_to_gnu (index),
+						gnat_to_gnu
+						(Low_Bound (range)),
+						gnat_to_gnu
+						(High_Bound (range)));
+	        }
+	      break;
+
+	    default:
+	      break;
 	  }
 
-	if (handled)
+	if (gnu_result == error_mark_node)
+	  gnu_result = build_call_raise (reason, gnat_node, kind);
+
+	set_expr_location_from_node (gnu_result, gnat_node);
+
+	/* If the type is VOID, this is a statement, so we need to generate
+	   the code for the call.  Handle a condition, if there is one.  */
+	if (VOID_TYPE_P (gnu_result_type))
 	  {
-	    set_expr_location_from_node (gnu_result, gnat_node);
-	    gnu_result = build3 (COND_EXPR, void_type_node,
-				 gnat_to_gnu (cond),
-				 gnu_result, alloc_stmt_list ());
+	    if (Present (cond))
+	      gnu_result
+		= build3 (COND_EXPR, void_type_node, gnat_to_gnu (cond),
+			  gnu_result, alloc_stmt_list ());
 	  }
 	else
-	  {
-	    gnu_result = build_call_raise (reason, gnat_node, kind);
-
-	    /* If the type is VOID, this is a statement, so we need to generate
-	       the code for the call.  Handle a Condition, if there is one.  */
-	    if (TREE_CODE (gnu_result_type) == VOID_TYPE)
-	      {
-		set_expr_location_from_node (gnu_result, gnat_node);
-		if (Present (cond))
-		  gnu_result = build3 (COND_EXPR, void_type_node,
-				       gnat_to_gnu (cond),
-				       gnu_result, alloc_stmt_list ());
-	      }
-	    else
-	      gnu_result = build1 (NULL_EXPR, gnu_result_type, gnu_result);
-	  }
+	  gnu_result = build1 (NULL_EXPR, gnu_result_type, gnu_result);
       }
       break;
 

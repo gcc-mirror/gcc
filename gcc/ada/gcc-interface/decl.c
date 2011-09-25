@@ -3512,8 +3512,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 fill it in later.  */
       if (!definition && defer_incomplete_level != 0)
 	{
-	  struct incomplete *p
-	    = (struct incomplete *) xmalloc (sizeof (struct incomplete));
+	  struct incomplete *p = XNEW (struct incomplete);
 
 	  gnu_type
 	    = build_pointer_type
@@ -3838,15 +3837,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Access_Subtype:
 
       /* We treat this as identical to its base type; any constraint is
-	 meaningful only to the front end.
+	 meaningful only to the front-end.
 
 	 The designated type must be elaborated as well, if it does
 	 not have its own freeze node.  Designated (sub)types created
 	 for constrained components of records with discriminants are
-	 not frozen by the front end and thus not elaborated by gigi,
+	 not frozen by the front-end and thus not elaborated by gigi,
 	 because their use may appear before the base type is frozen,
 	 and because it is not clear that they are needed anywhere in
-	 Gigi.  With the current model, there is no correct place where
+	 gigi.  With the current model, there is no correct place where
 	 they could be elaborated.  */
 
       gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
@@ -3860,20 +3859,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     elaborate it later.  */
 	  if (!definition && defer_incomplete_level != 0)
 	    {
-	      struct incomplete *p
-		= (struct incomplete *) xmalloc (sizeof (struct incomplete));
-	      tree gnu_ptr_type
-		= build_pointer_type
-		  (make_dummy_type (Directly_Designated_Type (gnat_entity)));
+	      struct incomplete *p = XNEW (struct incomplete);
 
-	      p->old_type = TREE_TYPE (gnu_ptr_type);
+	      p->old_type
+		= make_dummy_type (Directly_Designated_Type (gnat_entity));
 	      p->full_type = Directly_Designated_Type (gnat_entity);
 	      p->next = defer_incomplete_list;
 	      defer_incomplete_list = p;
 	    }
 	  else if (!IN (Ekind (Base_Type
-			      (Directly_Designated_Type (gnat_entity))),
-		       Incomplete_Or_Private_Kind))
+			       (Directly_Designated_Type (gnat_entity))),
+		        Incomplete_Or_Private_Kind))
 	    gnat_to_gnu_entity (Directly_Designated_Type (gnat_entity),
 				NULL_TREE, 0);
 	}
