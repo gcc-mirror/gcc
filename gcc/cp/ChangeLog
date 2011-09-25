@@ -1,5 +1,8 @@
 2011-09-24  Jason Merrill  <jason@redhat.com>
 
+	* init.c (perform_member_init): Instantiate NSDMI here.
+	* pt.c (tsubst_decl) [FIELD_DECL]: Not here.
+
 	Handle deferred parsing of NSDMIs.
 	* parser.h (cp_unparsed_functions_entry): Add nsdmis field.
 	* parser.c (unparsed_nsdmis, cp_parser_save_nsdmi): New.

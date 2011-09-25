@@ -496,7 +496,17 @@ perform_member_init (tree member, tree init)
   /* Use the non-static data member initializer if there was no
      mem-initializer for this field.  */
   if (init == NULL_TREE)
-    init = break_out_target_exprs (DECL_INITIAL (member));
+    {
+      if (CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (member)))
+	/* Do deferred instantiation of the NSDMI.  */
+	init = (tsubst_copy_and_build
+		(DECL_INITIAL (member),
+		 CLASSTYPE_TI_ARGS (DECL_CONTEXT (member)),
+		 tf_warning_or_error, member, /*function_p=*/false,
+		 /*integral_constant_expression_p=*/false));
+      else
+	init = break_out_target_exprs (DECL_INITIAL (member));
+    }
 
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
