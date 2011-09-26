@@ -1,3 +1,9 @@
+2011-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50472
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Do not fold
+	volatile references.
+
 2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50413
