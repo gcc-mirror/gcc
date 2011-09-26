@@ -319,19 +319,24 @@ avr_popcount (unsigned int val)
 }
 
 
-/* Constraint helper function.  XVAL is an CONST_INT.  Return true if the least
-   significant N_BYTES bytes of XVAL all have a popcount in POP_MASK and false,
-   otherwise.  POP_MASK represents a subset of integers which contains an
-   integer N iff bit N of POP_MASK is set.  */
+/* Constraint helper function.  XVAL is a CONST_INT or a CONST_DOUBLE.
+   Return true if the least significant N_BYTES bytes of XVAL all have a
+   popcount in POP_MASK and false, otherwise.  POP_MASK represents a subset
+   of integers which contains an integer N iff bit N of POP_MASK is set.  */
    
 bool
 avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 {
   int i;
 
+  enum machine_mode mode = GET_MODE (xval);
+
+  if (VOIDmode == mode)
+    mode = SImode;
+
   for (i = 0; i < n_bytes; i++)
     {
-      rtx xval8 = simplify_gen_subreg (QImode, xval, SImode, i);
+      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
       unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
 
       if (0 == (pop_mask & (1 << avr_popcount (val8))))
@@ -2077,84 +2082,9 @@ output_movhi (rtx insn, rtx operands[], int *l)
 	    }
 	}
       else if (CONSTANT_P (src))
-	{
-	  if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
-	    {
-	      *l = 2;
-	      return (AS2 (ldi,%A0,lo8(%1)) CR_TAB
-		      AS2 (ldi,%B0,hi8(%1)));
-	    }
-	  
-	  if (GET_CODE (src) == CONST_INT)
-	    {
-	      if (src == const0_rtx) /* mov r,L */
-		{
-		  *l = 2;
-		  return (AS1 (clr,%A0) CR_TAB
-			  AS1 (clr,%B0));
-		}
-	      else if (src == const1_rtx)
-		{
-		  *l = 3;
-		  return (AS1 (clr,%A0) CR_TAB
-			  AS1 (clr,%B0) CR_TAB
-			  AS1 (inc,%A0));
-		}
-	      else if (src == constm1_rtx)
-		{
-		  /* Immediate constants -1 to any register */
-		  *l = 3;
-		  return (AS1 (clr,%0)  CR_TAB
-			  AS1 (dec,%A0) CR_TAB
-			  AS2 (mov,%B0,%A0));
-		}
-	      else
-		{
-		  int bit_nr = exact_log2 (INTVAL (src));
-
-		  if (bit_nr >= 0)
-		    {
-		      *l = 4;
-		      if (!real_l)
-			output_asm_insn ((AS1 (clr,%A0) CR_TAB
-					  AS1 (clr,%B0) CR_TAB
-					  "set"), operands);
-		      if (!real_l)
-			avr_output_bld (operands, bit_nr);
-
-		      return "";
-		    }
-		}
-
-	      if ((INTVAL (src) & 0xff) == 0)
-		{
-		  *l = 5;
-		  return (AS2 (mov,__tmp_reg__,r31) CR_TAB
-			  AS1 (clr,%A0)             CR_TAB
-			  AS2 (ldi,r31,hi8(%1))     CR_TAB
-			  AS2 (mov,%B0,r31)         CR_TAB
-			  AS2 (mov,r31,__tmp_reg__));
-		}
-	      else if ((INTVAL (src) & 0xff00) == 0)
-		{
-		  *l = 5;
-		  return (AS2 (mov,__tmp_reg__,r31) CR_TAB
-			  AS2 (ldi,r31,lo8(%1))     CR_TAB
-			  AS2 (mov,%A0,r31)         CR_TAB
-			  AS1 (clr,%B0)             CR_TAB
-			  AS2 (mov,r31,__tmp_reg__));
-		}
-	    }
-	  
-	  /* Last resort, equal to loading from memory.  */
-	  *l = 6;
-	  return (AS2 (mov,__tmp_reg__,r31) CR_TAB
-		  AS2 (ldi,r31,lo8(%1))     CR_TAB
-		  AS2 (mov,%A0,r31)         CR_TAB
-		  AS2 (ldi,r31,hi8(%1))     CR_TAB
-		  AS2 (mov,%B0,r31)         CR_TAB
-		  AS2 (mov,r31,__tmp_reg__));
-	}
+        {
+          return output_reload_inhi (operands, NULL, real_l);
+        }
       else if (GET_CODE (src) == MEM)
 	return out_movhi_r_mr (insn, operands, real_l); /* mov r,m */
     }
@@ -5125,6 +5055,10 @@ adjust_insn_length (rtx insn, int len)
       
       switch (adjust_len)
         {
+        case ADJUST_LEN_RELOAD_IN16:
+          output_reload_inhi (op, op[2], &len);
+          break;
+          
         case ADJUST_LEN_RELOAD_IN32:
           output_reload_insisf (insn, op, op[2], &len);
           break;
@@ -5185,31 +5119,7 @@ adjust_insn_length (rtx insn, int len)
       op[1] = SET_SRC (set);
       op[0] = SET_DEST (set);
 
-      if (GET_CODE (patt) == PARALLEL
-	  && general_operand (op[1], VOIDmode)
-	  && general_operand (op[0], VOIDmode))
-	{
-	  if (XVECLEN (patt, 0) == 2)
-	    op[2] = XVECEXP (patt, 0, 1);
-
-	  switch (GET_MODE (op[0]))
-	    {
-	    case QImode:
-	      len = 2;
-	      break;
-	    case HImode:
-	      output_reload_inhi (insn, op, &len);
-	      break;
-	    case SImode:
-	    case SFmode:
-	      /* Handled by ADJUST_LEN_RELOAD_INSISF above.  */
-	      gcc_unreachable();
-	      break;
-	    default:
-	      break;
-	    }
-	}
-      else if (GET_CODE (op[1]) == ASHIFT
+      if (GET_CODE (op[1]) == ASHIFT
 	  || GET_CODE (op[1]) == ASHIFTRT
 	  || GET_CODE (op[1]) == LSHIFTRT)
 	{
@@ -7153,45 +7063,6 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
   return !(regno & 1);
 }
 
-const char *
-output_reload_inhi (rtx insn ATTRIBUTE_UNUSED, rtx *operands, int *len)
-{
-  int tmp;
-  if (!len)
-    len = &tmp;
-      
-  if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      int val = INTVAL (operands[1]);
-      if ((val & 0xff) == 0)
-	{
-	  *len = 3;
-	  return (AS2 (mov,%A0,__zero_reg__) CR_TAB
-		  AS2 (ldi,%2,hi8(%1))       CR_TAB
-		  AS2 (mov,%B0,%2));
-	}
-      else if ((val & 0xff00) == 0)
-	{
-	  *len = 3;
-	  return (AS2 (ldi,%2,lo8(%1)) CR_TAB
-		  AS2 (mov,%A0,%2)     CR_TAB
-		  AS2 (mov,%B0,__zero_reg__));
-	}
-      else if ((val & 0xff) == ((val & 0xff00) >> 8))
-	{
-	  *len = 3;
-	  return (AS2 (ldi,%2,lo8(%1)) CR_TAB
-		  AS2 (mov,%A0,%2)     CR_TAB
-		  AS2 (mov,%B0,%2));
-	}
-    }
-  *len = 4;
-  return (AS2 (ldi,%2,lo8(%1)) CR_TAB
-	  AS2 (mov,%A0,%2)     CR_TAB
-	  AS2 (ldi,%2,hi8(%1)) CR_TAB
-	  AS2 (mov,%B0,%2));
-}
-
 
 /* A helper for `output_reload_insisf'.  */
 /* Set 32-bit register OP[0] to compile-time constant OP[1].
@@ -7203,7 +7074,7 @@ output_reload_inhi (rtx insn ATTRIBUTE_UNUSED, rtx *operands, int *len)
    If CLEAR_P is false, nothing is known about OP[0].  */
 
 static void
-output_reload_insisf_1 (rtx *op, rtx clobber_reg, int *len, bool clear_p)
+output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 {
   rtx src = op[1];
   rtx dest = op[0];
@@ -7223,7 +7094,8 @@ output_reload_insisf_1 (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   /* (REG:SI 14) is special: It's neither in LD_REGS nor in NO_LD_REGS
      but has some subregs that are in LD_REGS.  Use the MSB (REG:QI 17).  */
   
-  if (14 == REGNO (dest))
+  if (14 == REGNO (dest)
+      && 4 == GET_MODE_SIZE (mode))
     {
       clobber_reg = gen_rtx_REG (QImode, 17);
     }
@@ -7233,25 +7105,16 @@ output_reload_insisf_1 (rtx *op, rtx clobber_reg, int *len, bool clear_p)
      a byte that is neither 0, -1 or a power of 2.  */
   
   if (NULL_RTX == clobber_reg
-      && !test_hard_reg_class (LD_REGS, dest))
+      && !test_hard_reg_class (LD_REGS, dest)
+      && !avr_popcount_each_byte (src, GET_MODE_SIZE (mode),
+                                  (1 << 0) | (1 << 1) | (1 << 8)))
     {
-      for (n = 0; n < GET_MODE_SIZE (mode); n++)
-        {
-          xval = simplify_gen_subreg (QImode, src, mode, n);
-
-          if (!(const0_rtx == xval
-                || constm1_rtx == xval
-                || single_one_operand (xval, QImode)))
-            {
-              /* We have no clobber reg but need one.  Cook one up.
-                 That's cheaper than loading from constant pool.  */
-              
-              cooked_clobber_p = true;
-              clobber_reg = gen_rtx_REG (QImode, REG_Z + 1);
-              avr_asm_len ("mov __tmp_reg__,%0", &clobber_reg, len, 1);
-              break;
-            }
-        }
+      /* We have no clobber register but need one.  Cook one up.
+         That's cheaper than loading from constant pool.  */
+      
+      cooked_clobber_p = true;
+      clobber_reg = gen_rtx_REG (QImode, REG_Z + 1);
+      avr_asm_len ("mov __tmp_reg__,%0", &clobber_reg, len, 1);
     }
 
   /* Now start filling DEST from LSB to MSB.  */
@@ -7396,6 +7259,63 @@ output_reload_insisf_1 (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 }
 
 
+/* Reload the constant OP[1] into the HI register OP[0].
+   CLOBBER_REG is a QI clobber reg needed to move vast majority of consts
+   into a NO_LD_REGS register.  If CLOBBER_REG is NULL_RTX we either don't
+   need a clobber reg or have to cook one up.
+
+   PLEN == NULL: Output instructions.
+   PLEN != NULL: Output nothing.  Set *PLEN to number of words occupied
+                 by the insns printed.
+
+   Return "".  */
+
+const char*
+output_reload_inhi (rtx *op, rtx clobber_reg, int *plen)
+{
+  if (CONST_INT_P (op[1]))
+    {
+      output_reload_in_const (op, clobber_reg, plen, false);
+    }
+  else if (test_hard_reg_class (LD_REGS, op[0]))
+    {
+      avr_asm_len ("ldi %A0,lo8(%1)" CR_TAB
+                   "ldi %B0,hi8(%1)", op, plen, -2);
+    }
+  else
+    {
+      rtx xop[3];
+
+      xop[0] = op[0];
+      xop[1] = op[1];
+      xop[2] = clobber_reg;
+      
+      if (plen)
+        *plen = 0;
+      
+      if (clobber_reg == NULL_RTX)
+        {
+          /* No scratch register provided: cook une up.  */
+          
+          xop[2] = gen_rtx_REG (QImode, REG_Z + 1);
+          avr_asm_len ("mov __tmp_reg__,%2", xop, plen, 1);
+        }
+      
+      avr_asm_len ("ldi %2,lo8(%1)" CR_TAB
+                   "mov %A0,%2"     CR_TAB
+                   "ldi %2,hi8(%1)" CR_TAB
+                   "mov %B0,%2", xop, plen, 4);
+
+      if (clobber_reg == NULL_RTX)
+        {
+          avr_asm_len ("mov %2,__tmp_reg__", xop, plen, 1);
+        }
+    }
+
+  return "";
+}
+
+
 /* Reload a SI or SF compile time constant OP[1] into the register OP[0].
    CLOBBER_REG is a QI clobber reg needed to move vast majority of consts
    into a NO_LD_REGS register.  If CLOBBER_REG is NULL_RTX we either don't
@@ -7432,8 +7352,8 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
          Instead, we call the print function twice to get the lengths of
          both methods and use the shortest one.  */
          
-      output_reload_insisf_1 (op, clobber_reg, &len_clr, true);
-      output_reload_insisf_1 (op, clobber_reg, &len_noclr, false);
+      output_reload_in_const (op, clobber_reg, &len_clr, true);
+      output_reload_in_const (op, clobber_reg, &len_noclr, false);
       
       if (len_noclr - len_clr == 4)
         {
@@ -7443,7 +7363,7 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
                        "clr %B0" CR_TAB
                        "movw %C0,%A0", &op[0], len, 3);
           
-          output_reload_insisf_1 (op, clobber_reg, len, true);
+          output_reload_in_const (op, clobber_reg, len, true);
           
           if (len)
             *len += 3;
@@ -7454,7 +7374,7 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
 
   /* Default: destination not pre-cleared.  */
 
-  output_reload_insisf_1 (op, clobber_reg, len, false);
+  output_reload_in_const (op, clobber_reg, len, false);
   return "";
 }
 

@@ -136,7 +136,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "yes,no,reload_in32,out_bitop,out_plus,tsthi,tstsi,compare"
+  "yes,no,reload_in16,reload_in32,out_bitop,out_plus,tsthi,tstsi,compare"
   (const_string "yes"))
 
 ;; Define mode iterators
@@ -387,18 +387,21 @@
         (match_operand:HI 1 "immediate_operand" "i"))
    (clobber (match_operand:QI 2 "register_operand" "=&d"))]
   "reload_completed"
-  "* return output_reload_inhi (insn, operands, NULL);"
+  {
+    return output_reload_inhi (operands, operands[2], NULL);
+  }
   [(set_attr "length" "4")
+   (set_attr "adjust_len" "reload_in16")
    (set_attr "cc" "none")])
 
 (define_insn "*movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,d,*r,q,r")
-        (match_operand:HI 1 "general_operand"       "rL,m,rL,i,i,r,q"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m,d,*r,q,r")
+        (match_operand:HI 1 "general_operand"       "r,L,m,rL,i,i,r,q"))]
   "(register_operand (operands[0],HImode)
     || register_operand (operands[1],HImode) || const0_rtx == operands[1])"
   "* return output_movhi (insn, operands, NULL);"
-  [(set_attr "length" "2,6,7,2,6,5,2")
-   (set_attr "cc" "none,clobber,clobber,none,clobber,none,none")])
+  [(set_attr "length" "2,2,6,7,2,6,5,2")
+   (set_attr "cc" "none,clobber,clobber,clobber,none,clobber,none,none")])
 
 (define_peephole2 ; movw
   [(set (match_operand:QI 0 "even_register_operand" "")

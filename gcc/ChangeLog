@@ -1,3 +1,20 @@
+2011-09-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (output_reload_inhi): Change prototype.
+	* config/avr/avr.md (adjust_len): Add "reload_in16" alternative.
+	(*reload_inhi): Use it.  Adapt call to output_reload_inhi to new
+	prototype.
+	(*movhi): Split constraint alternative "r,rL" into "r,r" and "r,L".
+	* config/avr/avr.c: Rename output_reload_insisf_1 to
+	output_reload_in_const.
+	(avr_popcount_each_byte): Handle SFmode, too.
+	(output_reload_in_const): Change so it can handle HI loads, too.
+	Use avr_popcount_each_byte to work out if scratch register must be
+	created on the fly.
+	(output_reload_inhi): Rewrite using output_reload_in_const and...
+	(output_movhi): ...use it to print constants' loads.
+	(adjust_insn_length): New case ADJUST_LEN_RELOAD_IN16. Cleanup code.
+
 2011-09-25  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md (C, P, Z): New constraints for
