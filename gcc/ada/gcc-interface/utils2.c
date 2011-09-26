@@ -2112,9 +2112,9 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, tree gnu_type,
     }
 }
 
-/* Build a GCC tree to correspond to allocating an object of TYPE whose
+/* Build a GCC tree that corresponds to allocating an object of TYPE whose
    initial value is INIT, if INIT is nonzero.  Convert the expression to
-   RESULT_TYPE, which must be some type of pointer.  Return the tree.
+   RESULT_TYPE, which must be some pointer type, and return the result.
 
    GNAT_PROC and GNAT_POOL optionally give the procedure to call and
    the storage pool to use.  GNAT_NODE is used to provide an error
@@ -2127,8 +2127,7 @@ tree
 build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
                  Entity_Id gnat_pool, Node_Id gnat_node, bool ignore_init_type)
 {
-  tree size = TYPE_SIZE_UNIT (type);
-  tree result;
+  tree size, storage, storage_deref, storage_init;
 
   /* If the initializer, if present, is a NULL_EXPR, just return a new one.  */
   if (init && TREE_CODE (init) == NULL_EXPR)
@@ -2154,19 +2153,19 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 					  get_identifier ("ALLOC"), false);
       tree template_type = TREE_TYPE (TYPE_FIELDS (storage_type));
       tree storage_ptr_type = build_pointer_type (storage_type);
-      tree storage;
 
       size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (storage_type),
 					     init);
 
-      /* If the size overflows, pass -1 so the allocator will raise
-	 storage error.  */
+      /* If the size overflows, pass -1 so Storage_Error will be raised.  */
       if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
 	size = ssize_int (-1);
 
       storage = build_call_alloc_dealloc (NULL_TREE, size, storage_type,
 					  gnat_proc, gnat_pool, gnat_node);
       storage = convert (storage_ptr_type, gnat_protect_expr (storage));
+      storage_deref = build_unary_op (INDIRECT_REF, NULL_TREE, storage);
+      TREE_THIS_NOTRAP (storage_deref) = 1;
 
       /* If there is an initializing expression, then make a constructor for
 	 the entire object including the bounds and copy it into the object.
@@ -2179,28 +2178,23 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 				  build_template (template_type, type, init));
 	  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (storage_type)),
 				  init);
-	  return convert
-	    (result_type,
-	     build2 (COMPOUND_EXPR, storage_ptr_type,
-		     build_binary_op
-		     (MODIFY_EXPR, NULL_TREE,
-		      build_unary_op (INDIRECT_REF, NULL_TREE,
-				      convert (storage_ptr_type, storage)),
-		      gnat_build_constructor (storage_type, v)),
-		     convert (storage_ptr_type, storage)));
+	  storage_init
+	    = build_binary_op (MODIFY_EXPR, NULL_TREE, storage_deref,
+			       gnat_build_constructor (storage_type, v));
 	}
       else
-	return build2
-	  (COMPOUND_EXPR, result_type,
-	   build_binary_op
-	   (MODIFY_EXPR, NULL_TREE,
-	    build_component_ref
-	    (build_unary_op (INDIRECT_REF, NULL_TREE,
-			     convert (storage_ptr_type, storage)),
-	     NULL_TREE, TYPE_FIELDS (storage_type), false),
-	    build_template (template_type, type, NULL_TREE)),
-	   convert (result_type, convert (storage_ptr_type, storage)));
+	storage_init
+	  = build_binary_op (MODIFY_EXPR, NULL_TREE,
+			     build_component_ref (storage_deref, NULL_TREE,
+						  TYPE_FIELDS (storage_type),
+						  false),
+			     build_template (template_type, type, NULL_TREE));
+
+      return build2 (COMPOUND_EXPR, result_type,
+		     storage_init, convert (result_type, storage));
     }
+
+  size = TYPE_SIZE_UNIT (type);
 
   /* If we have an initializing expression, see if its size is simpler
      than the size from the type.  */
@@ -2221,32 +2215,28 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 	size = max_size (size, true);
     }
 
-  /* If the size overflows, pass -1 so the allocator will raise
-     storage error.  */
+  /* If the size overflows, pass -1 so Storage_Error will be raised.  */
   if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
     size = ssize_int (-1);
 
-  result = convert (result_type,
-		    build_call_alloc_dealloc (NULL_TREE, size, type,
-					      gnat_proc, gnat_pool,
-					      gnat_node));
+  storage = convert (result_type,
+		     build_call_alloc_dealloc (NULL_TREE, size, type,
+					       gnat_proc, gnat_pool,
+					       gnat_node));
 
   /* If we have an initial value, protect the new address, assign the value
      and return the address with a COMPOUND_EXPR.  */
   if (init)
     {
-      result = gnat_protect_expr (result);
-      result
-	= build2 (COMPOUND_EXPR, TREE_TYPE (result),
-		  build_binary_op
-		  (MODIFY_EXPR, NULL_TREE,
-		   build_unary_op (INDIRECT_REF,
-				   TREE_TYPE (TREE_TYPE (result)), result),
-		   init),
-		  result);
+      storage = gnat_protect_expr (storage);
+      storage_deref = build_unary_op (INDIRECT_REF, NULL_TREE, storage);
+      TREE_THIS_NOTRAP (storage_deref) = 1;
+      storage_init
+	= build_binary_op (MODIFY_EXPR, NULL_TREE, storage_deref, init);
+      return build2 (COMPOUND_EXPR, result_type, storage_init, storage);
     }
 
-  return convert (result_type, result);
+  return storage;
 }
 
 /* Indicate that we need to take the address of T and that it therefore
