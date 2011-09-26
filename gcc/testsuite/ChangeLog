@@ -1,5 +1,8 @@
 2011-09-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50523
+	* g++.dg/overload/ref-conv2.C: New.
+
 	* g++.dg/cpp0x/nsdmi-template1.C: New.
 
 2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
