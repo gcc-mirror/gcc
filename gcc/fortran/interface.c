@@ -1121,13 +1121,13 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
     {
       if (s1->attr.function && s2->attr.function)
 	{
-	  /* If both are functions, check type and kind.  */
+	  /* If both are functions, check result type.  */
 	  if (s1->ts.type == BT_UNKNOWN)
 	    return 1;
-	  if ((s1->ts.type != s2->ts.type) || (s1->ts.kind != s2->ts.kind))
+	  if (!compare_type_rank (s1,s2))
 	    {
 	      if (errmsg != NULL)
-		snprintf (errmsg, err_len, "Type/kind mismatch in return value "
+		snprintf (errmsg, err_len, "Type/rank mismatch in return value "
 			  "of '%s'", name2);
 	      return 0;
 	    }
