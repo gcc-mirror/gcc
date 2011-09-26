@@ -1,3 +1,7 @@
+2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/nullptr25.C: New.
+
 2011-09-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50472

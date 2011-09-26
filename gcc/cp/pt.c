@@ -5951,6 +5951,16 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       if (expr == error_mark_node)
 	return expr;
     }
+  else if (NULLPTR_TYPE_P (type))
+    {
+      if (expr != nullptr_node)
+	{
+	  error ("%qE is not a valid template argument for type %qT "
+		 "because it is of type %qT", expr, type, TREE_TYPE (expr));
+	  return NULL_TREE;
+	}
+      return expr;
+    }
   /* A template non-type parameter must be one of the above.  */
   else
     gcc_unreachable ();
