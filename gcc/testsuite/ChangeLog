@@ -1,3 +1,16 @@
+2011-09-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50515
+	* gfortran.dg/common_15.f90: New.
+
+	PR fortran/50517
+	* gfortran.dg/dummy_procedure_5.f90: New.
+	* gfortran.dg/interface_26.f90: Modified error message.
+	* gfortran.dg/proc_ptr_11.f90: Ditto.
+	* gfortran.dg/proc_ptr_15.f90: Ditto.
+	* gfortran.dg/proc_ptr_comp_20.f90: Ditto.
+	* gfortran.dg/proc_ptr_result_5.f90: Ditto.
+
 2011-09-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50512

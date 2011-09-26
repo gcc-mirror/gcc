@@ -905,6 +905,10 @@ resolve_common_blocks (gfc_symtree *common_root)
     gfc_error ("COMMON block '%s' at %L is used as PARAMETER at %L",
 	       sym->name, &common_root->n.common->where, &sym->declared_at);
 
+  if (sym->attr.external)
+    gfc_error ("COMMON block '%s' at %L can not have the EXTERNAL attribute",
+	       sym->name, &common_root->n.common->where);
+
   if (sym->attr.intrinsic)
     gfc_error ("COMMON block '%s' at %L is also an intrinsic procedure",
 	       sym->name, &common_root->n.common->where);
