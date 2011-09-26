@@ -105,25 +105,7 @@ struct processor_costs {
 
 extern const struct processor_costs *sparc_costs;
 
-/* Target CPU builtins.  FIXME: Defining sparc is for the benefit of
-   Solaris only; otherwise just define __sparc__.  Sadly the headers
-   are such a mess there is no Solaris-specific header.  */
-#define TARGET_CPU_CPP_BUILTINS()		\
-  do						\
-    {						\
-	builtin_define_std ("sparc");		\
-	if (TARGET_64BIT)			\
-	  { 					\
-	    builtin_assert ("cpu=sparc64");	\
-	    builtin_assert ("machine=sparc64");	\
-	  }					\
-	else					\
-	  { 					\
-	    builtin_assert ("cpu=sparc");	\
-	    builtin_assert ("machine=sparc");	\
-	  }					\
-    }						\
-  while (0)
+#define TARGET_CPU_CPP_BUILTINS() sparc_target_macros ()
 
 /* Specify this in a cover file to provide bi-architecture (32/64) support.  */
 /* #define SPARC_BI_ARCH */
