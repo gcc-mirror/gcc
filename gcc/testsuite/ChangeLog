@@ -1,3 +1,8 @@
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array17.adb: New test.
+	* gnat.dg/array17_pkg.ads: New helper.
+
 2011-09-25  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/nsdmi-defer4.C: New.

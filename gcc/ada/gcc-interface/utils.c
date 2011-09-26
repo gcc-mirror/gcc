@@ -4264,8 +4264,9 @@ tree
 maybe_unconstrained_array (tree exp)
 {
   enum tree_code code = TREE_CODE (exp);
+  tree type = TREE_TYPE (exp);
 
-  switch (TREE_CODE (TREE_TYPE (exp)))
+  switch (TREE_CODE (type))
     {
     case UNCONSTRAINED_ARRAY_TYPE:
       if (code == UNCONSTRAINED_ARRAY_REF)
@@ -4274,68 +4275,66 @@ maybe_unconstrained_array (tree exp)
 	  const bool no_trap = TREE_THIS_NOTRAP (exp);
 
 	  exp = TREE_OPERAND (exp, 0);
+	  type = TREE_TYPE (exp);
+
 	  if (TREE_CODE (exp) == COND_EXPR)
 	    {
 	      tree op1
 		= build_unary_op (INDIRECT_REF, NULL_TREE,
 				  build_component_ref (TREE_OPERAND (exp, 1),
 						       NULL_TREE,
-						       TYPE_FIELDS
-						       (TREE_TYPE (exp)),
+						       TYPE_FIELDS (type),
 						       false));
 	      tree op2
 		= build_unary_op (INDIRECT_REF, NULL_TREE,
 				  build_component_ref (TREE_OPERAND (exp, 2),
 						       NULL_TREE,
-						       TYPE_FIELDS
-						       (TREE_TYPE (exp)),
+						       TYPE_FIELDS (type),
 						       false));
 
 	      exp = build3 (COND_EXPR,
-			    TREE_TYPE (TREE_TYPE (TYPE_FIELDS
-					          (TREE_TYPE (exp)))),
+			    TREE_TYPE (TREE_TYPE (TYPE_FIELDS (type))),
 			    TREE_OPERAND (exp, 0), op1, op2);
 	    }
 	  else
 	    {
 	      exp = build_unary_op (INDIRECT_REF, NULL_TREE,
 				    build_component_ref (exp, NULL_TREE,
-						         TYPE_FIELDS
-						         (TREE_TYPE (exp)),
+						         TYPE_FIELDS (type),
 						         false));
 	      TREE_READONLY (exp) = read_only;
 	      TREE_THIS_NOTRAP (exp) = no_trap;
 	    }
-
-	  return exp;
 	}
 
       else if (code == NULL_EXPR)
-	return build1 (NULL_EXPR,
-		       TREE_TYPE (TREE_TYPE (TYPE_FIELDS
-					     (TREE_TYPE (TREE_TYPE (exp))))),
-		       TREE_OPERAND (exp, 0));
+	exp = build1 (NULL_EXPR,
+		      TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (type)))),
+		      TREE_OPERAND (exp, 0));
+      break;
 
     case RECORD_TYPE:
-      /* If this is a padded type, convert to the unpadded type and see if
-	 it contains a template.  */
-      if (TYPE_PADDING_P (TREE_TYPE (exp)))
+      /* If this is a padded type and it contains a template, convert to the
+	 unpadded type first.  */
+      if (TYPE_PADDING_P (type)
+	  && TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == RECORD_TYPE
+	  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (TYPE_FIELDS (type))))
 	{
-	  tree new_exp
-	    = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
-	  if (TREE_CODE (TREE_TYPE (new_exp)) == RECORD_TYPE
-	      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (new_exp)))
-	    return
-	      build_component_ref (new_exp, NULL_TREE,
-				   DECL_CHAIN
-				   (TYPE_FIELDS (TREE_TYPE (new_exp))),
-				   false);
+	  exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
+	  type = TREE_TYPE (exp);
 	}
-      else if (TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (exp)))
-	return
-	  build_component_ref (exp, NULL_TREE,
-			       DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (exp))),
-			       false);
+
+      if (TYPE_CONTAINS_TEMPLATE_P (type))
+	{
+	  exp = build_component_ref (exp, NULL_TREE,
+				     DECL_CHAIN (TYPE_FIELDS (type)),
+				     false);
+	  type = TREE_TYPE (exp);
+
+	  /* If the array type is padded, convert to the unpadded type.  */
+	  if (TYPE_IS_PADDING_P (type))
+	    exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
+	}
       break;
 
     default:
