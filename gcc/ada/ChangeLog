@@ -1,4 +1,11 @@
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (assoc_to_constructor): Minor tweaks.
+	* gcc-interface/utils2.c (build_simple_component_ref): Fix formatting
+	issues.  Use COMPLETE_TYPE_P in assertion.  Also set TREE_READONLY if
+	the type of the record is TYPE_READONLY.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 	    Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb (Set_Formal_Mode): Set Can_Never_Be_Null on an IN or IN
