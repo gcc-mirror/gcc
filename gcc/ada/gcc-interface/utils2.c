@@ -420,6 +420,80 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 
   return result;
 }
+
+/* Return an expression tree representing an equality comparison of P1 and P2,
+   two objects of fat pointer type.  The result should be of type RESULT_TYPE.
+
+   Two fat pointers are equal in one of two ways: (1) if both have a null
+   pointer to the array or (2) if they contain the same couple of pointers.
+   We perform the comparison in as efficient a manner as possible.  */
+
+static tree
+compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
+{
+  tree p1_array, p2_array, p1_bounds, p2_bounds, same_array, same_bounds;
+  tree p1_array_is_null, p2_array_is_null;
+
+  /* If either operand has side-effects, they have to be evaluated only once
+     in spite of the multiple references to the operand in the comparison.  */
+  p1 = gnat_protect_expr (p1);
+  p2 = gnat_protect_expr (p2);
+
+  /* The constant folder doesn't fold fat pointer types so we do it here.  */
+  if (TREE_CODE (p1) == CONSTRUCTOR)
+    p1_array = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p1), 0)->value;
+  else
+    p1_array = build_component_ref (p1, NULL_TREE,
+				    TYPE_FIELDS (TREE_TYPE (p1)), true);
+
+  p1_array_is_null
+    = fold_build2_loc (loc, EQ_EXPR, result_type, p1_array,
+		       fold_convert_loc (loc, TREE_TYPE (p1_array),
+					 null_pointer_node));
+
+  if (TREE_CODE (p2) == CONSTRUCTOR)
+    p2_array = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p2), 0)->value;
+  else
+    p2_array = build_component_ref (p2, NULL_TREE,
+				    TYPE_FIELDS (TREE_TYPE (p2)), true);
+
+  p2_array_is_null
+    = fold_build2_loc (loc, EQ_EXPR, result_type, p2_array,
+		       fold_convert_loc (loc, TREE_TYPE (p2_array),
+					 null_pointer_node));
+
+  /* If one of the pointers to the array is null, just compare the other.  */
+  if (integer_zerop (p1_array))
+    return p2_array_is_null;
+  else if (integer_zerop (p2_array))
+    return p1_array_is_null;
+
+  /* Otherwise, do the fully-fledged comparison.  */
+  same_array
+    = fold_build2_loc (loc, EQ_EXPR, result_type, p1_array, p2_array);
+
+  if (TREE_CODE (p1) == CONSTRUCTOR)
+    p1_bounds = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p1), 1)->value;
+  else
+    p1_bounds
+      = build_component_ref (p1, NULL_TREE,
+			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p1))), true);
+
+  if (TREE_CODE (p2) == CONSTRUCTOR)
+    p2_bounds = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p2), 1)->value;
+  else
+    p2_bounds
+      = build_component_ref (p2, NULL_TREE,
+			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p2))), true);
+
+  same_bounds
+    = fold_build2_loc (loc, EQ_EXPR, result_type, p1_bounds, p2_bounds);
+
+  /* P1_ARRAY == P2_ARRAY && (P1_ARRAY == NULL || P1_BOUNDS == P2_BOUNDS).  */
+  return build_binary_op (TRUTH_ANDIF_EXPR, result_type, same_array,
+			  build_binary_op (TRUTH_ORIF_EXPR, result_type,
+					   p1_array_is_null, same_bounds));
+}
 
 /* Compute the result of applying OP_CODE to LHS and RHS, where both are of
    type TYPE.  We know that TYPE is a modular type with a nonbinary
@@ -848,19 +922,18 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  right_operand = convert (right_base_type, right_operand);
 	}
 
-      /* If we are comparing a fat pointer against zero, we just need to
-	 compare the data pointer.  */
-      if (TYPE_IS_FAT_POINTER_P (left_base_type)
-	  && TREE_CODE (right_operand) == CONSTRUCTOR
-	  && integer_zerop (VEC_index (constructor_elt,
-				       CONSTRUCTOR_ELTS (right_operand),
-				       0)->value))
+      /* If both objects are fat pointers, compare them specially.  */
+      if (TYPE_IS_FAT_POINTER_P (left_base_type))
 	{
-	  left_operand
-	    = build_component_ref (left_operand, NULL_TREE,
-				   TYPE_FIELDS (left_base_type), false);
-	  right_operand
-	    = convert (TREE_TYPE (left_operand), integer_zero_node);
+	  result
+	    = compare_fat_pointers (input_location,
+				    result_type, left_operand, right_operand);
+	  if (op_code == NE_EXPR)
+	    result = invert_truthvalue_loc (EXPR_LOCATION (result), result);
+	  else
+	    gcc_assert (op_code == EQ_EXPR);
+
+	  return result;
 	}
 
       modulus = NULL_TREE;

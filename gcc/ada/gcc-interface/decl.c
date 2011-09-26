@@ -2009,6 +2009,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_template_reference
 	  = build_unary_op (INDIRECT_REF, gnu_template_type, tem);
 	TREE_READONLY (gnu_template_reference) = 1;
+	TREE_THIS_NOTRAP (gnu_template_reference) = 1;
 
 	/* Now create the GCC type for each index and add the fields for that
 	   index to the template.  */

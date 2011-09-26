@@ -1391,10 +1391,14 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 		   bool static_flag, bool const_decl_allowed_p,
 		   struct attrib *attr_list, Node_Id gnat_node)
 {
+  /* Whether the initializer is a constant initializer.  At the global level
+     or for an external object or an object to be allocated in static memory,
+     we check that it is a valid constant expression for use in initializing
+     a static variable; otherwise, we only check that it is constant.  */
   bool init_const
     = (var_init != 0
        && gnat_types_compatible_p (type, TREE_TYPE (var_init))
-       && (global_bindings_p () || static_flag
+       && (global_bindings_p () || extern_flag || static_flag
 	   ? initializer_constant_valid_p (var_init, TREE_TYPE (var_init)) != 0
 	   : TREE_CONSTANT (var_init)));
 
@@ -1460,6 +1464,7 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
      section which runs afoul of the PE-COFF run-time relocation mechanism.  */
   if (extern_flag
       && constant_p
+      && var_init
       && initializer_constant_valid_p (var_init, TREE_TYPE (var_init))
 	   != null_pointer_node)
     DECL_IGNORED_P (var_decl) = 1;
@@ -3489,7 +3494,11 @@ update_pointer_to (tree old_type, tree new_type)
       /* Now adjust them.  */
       for (; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
 	for (t = TYPE_MAIN_VARIANT (ptr); t; t = TYPE_NEXT_VARIANT (t))
-	  TREE_TYPE (t) = new_type;
+	  {
+	    TREE_TYPE (t) = new_type;
+	    if (TYPE_NULL_BOUNDS (t))
+	      TREE_TYPE (TREE_OPERAND (TYPE_NULL_BOUNDS (t), 0)) = new_type;
+	  }
 
       /* If we have adjusted named types, finalize them.  This is necessary
 	 since we had forced a DWARF typedef for them in gnat_pushdecl.  */
@@ -3560,16 +3569,36 @@ convert_to_fat_pointer (tree type, tree expr)
   tree template_tree;
   VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 2);
 
-  /* If EXPR is null, make a fat pointer that contains null pointers to the
-     template and array.  */
+  /* If EXPR is null, make a fat pointer that contains a null pointer to the
+     array (compare_fat_pointers ensures that this is the full discriminant)
+     and a valid pointer to the bounds.  This latter property is necessary
+     since the compiler can hoist the load of the bounds done through it.  */
   if (integer_zerop (expr))
     {
+      tree ptr_template_type = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type)));
+      tree null_bounds, t;
+
+      if (TYPE_NULL_BOUNDS (ptr_template_type))
+	null_bounds = TYPE_NULL_BOUNDS (ptr_template_type);
+      else
+	{
+	  /* The template type can still be dummy at this point so we build an
+	     empty constructor.  The middle-end will fill it in with zeros.  */
+	  t = build_constructor (template_type, NULL);
+	  TREE_CONSTANT (t) = TREE_STATIC (t) = 1;
+	  null_bounds = build_unary_op (ADDR_EXPR, NULL_TREE, t);
+	  SET_TYPE_NULL_BOUNDS (ptr_template_type, null_bounds);
+	}
+
       CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
-			      convert (p_array_type, expr));
-      CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)),
-			      convert (build_pointer_type (template_type),
-				       expr));
-      return gnat_build_constructor (type, v);
+			      fold_convert (p_array_type, null_pointer_node));
+      CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)), null_bounds);
+      t = build_constructor (type, v);
+      /* Do not set TREE_CONSTANT so as to force T to static memory.  */
+      TREE_CONSTANT (t) = 0;
+      TREE_STATIC (t) = 1;
+
+      return t;
     }
 
   /* If EXPR is a thin pointer, make template and data from the record..  */

@@ -1,3 +1,20 @@
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_NULL_BOUNDS): New macro.
+	(SET_TYPE_NULL_BOUNDS): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Set again
+	TREE_THIS_NOTRAP on the INDIRECT_REF node built for the template.
+	* gcc-interface/trans.c (Identifier_to_gnu): Return initializers of fat
+	pointer types.
+	* gcc-interface/utils.c (create_var_decl_1): If the object is external,
+	check that the initializer is a valid constant expression for use in
+	initializing a static variable.  Add missing guard.
+	(update_pointer_to): Adjust TYPE_NULL_BOUNDS if set.
+	(convert_to_fat_pointer): In the null fat pointer case, build a valid
+	pointer for the bounds.
+	* gcc-interface/utils2.c (compare_fat_pointers): New function.
+	(build_binary_op) <EQ_EXPR>: Call it to compare fat pointers.
+
 2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (TREE_THIS_NOTRAP): Redefine.
