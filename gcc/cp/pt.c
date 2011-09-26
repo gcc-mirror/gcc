@@ -11750,6 +11750,13 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (r == NULL)
 	{
 	  tree c;
+
+	  /* We get here for a use of 'this' in an NSDMI.  */
+	  if (DECL_NAME (t) == this_identifier
+	      && at_function_scope_p ()
+	      && DECL_CONSTRUCTOR_P (current_function_decl))
+	    return current_class_ptr;
+
 	  /* This can happen for a parameter name used later in a function
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
