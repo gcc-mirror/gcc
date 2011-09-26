@@ -275,7 +275,8 @@ do {						   \
 
 /* For an INTEGER_TYPE with TYPE_MODULAR_P, this is the value of the
    modulus. */
-#define TYPE_MODULUS(NODE) GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+#define TYPE_MODULUS(NODE) \
+  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_MODULUS(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
@@ -300,6 +301,13 @@ do {						   \
   GET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE))
 #define SET_TYPE_ACTUAL_BOUNDS(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE), X)
+
+/* For a POINTER_TYPE that points to the template type of an unconstrained
+   array type, this is the address to be used in a null fat pointer.  */
+#define TYPE_NULL_BOUNDS(NODE) \
+  GET_TYPE_LANG_SPECIFIC (POINTER_TYPE_CHECK (NODE))
+#define SET_TYPE_NULL_BOUNDS(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC (POINTER_TYPE_CHECK (NODE), X)
 
 /* For a RECORD_TYPE that is a fat pointer, this is the type for the
    unconstrained object.  Likewise for a RECORD_TYPE that is pointed

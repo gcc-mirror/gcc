@@ -1052,6 +1052,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       && DECL_P (gnu_result)
       && DECL_INITIAL (gnu_result)
       && !(AGGREGATE_TYPE_P (TREE_TYPE (gnu_result))
+	   && !TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_result))
 	   && type_contains_placeholder_p (TREE_TYPE (gnu_result))))
     {
       bool constant_only = (TREE_CODE (gnu_result) == CONST_DECL
