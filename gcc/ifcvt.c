@@ -1519,9 +1519,9 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
     }
 
   /* ??? We could handle this if we knew that a load from A or B could
-     not fault.  This is also true if we've already loaded
+     not trap or fault.  This is also true if we've already loaded
      from the address along the path from ENTRY.  */
-  else if (may_trap_p (a) || may_trap_p (b))
+  else if (may_trap_or_fault_p (a) || may_trap_or_fault_p (b))
     return FALSE;
 
   /* if (test) x = a + b; else x = c - d;
