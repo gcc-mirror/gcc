@@ -1,6 +1,9 @@
 2011-09-26  David S. Miller  <davem@davemloft.net>
 
 	* gcc.target/sparc/wrgsr.c: New test.
+	* gcc.target/sparc/rdgsr.c: New test.
+	* gcc.target/sparc/edge.c: New test.
+	* gcc.target/sparc/fcmp.c: New test.
 
 2011-09-26  Janus Weil  <janus@gcc.gnu.org>
 
