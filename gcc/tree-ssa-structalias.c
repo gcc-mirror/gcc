@@ -5979,6 +5979,21 @@ pt_solution_empty_p (struct pt_solution *pt)
   return true;
 }
 
+/* Return true if the points-to solution *PT only point to a single var, and
+   return the var uid in *UID.  */
+
+bool
+pt_solution_singleton_p (struct pt_solution *pt, unsigned *uid)
+{
+  if (pt->anything || pt->nonlocal || pt->escaped || pt->ipa_escaped
+      || pt->null || pt->vars == NULL
+      || !bitmap_single_bit_set_p (pt->vars))
+    return false;
+
+  *uid = bitmap_first_set_bit (pt->vars);
+  return true;
+}
+
 /* Return true if the points-to solution *PT includes global memory.  */
 
 bool
