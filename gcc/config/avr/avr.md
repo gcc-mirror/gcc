@@ -4119,7 +4119,7 @@
    (parallel
     [(set (cc0)
           (compare (match_dup 0)
-		   (const_int 65535)))
+		   (const_int -1)))
      (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
 	(if_then_else (ne (cc0) (const_int 0))

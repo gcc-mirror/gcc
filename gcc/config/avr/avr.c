@@ -3048,6 +3048,37 @@ avr_out_compare (rtx insn, rtx *xop, int *plen)
   if (plen)
     *plen = 0;
 
+  /* Comparisons == +/-1 and != +/-1 can be done similar to camparing
+     against 0 by ORing the bytes.  This is one instruction shorter.  */
+
+  if (!test_hard_reg_class (LD_REGS, xreg)
+      && compare_eq_p (insn)
+      && reg_unused_after (insn, xreg))
+    {
+      if (xval == const1_rtx)
+        {
+          avr_asm_len ("dec %A0" CR_TAB
+                       "or %A0,%B0", xop, plen, 2);
+          
+          if (n_bytes == 4)
+            avr_asm_len ("or %A0,%C0" CR_TAB
+                         "or %A0,%D0", xop, plen, 2);
+
+          return "";
+        }
+      else if (xval == constm1_rtx)
+        {
+          if (n_bytes == 4)
+            avr_asm_len ("and %A0,%D0" CR_TAB
+                         "and %A0,%C0", xop, plen, 2);
+          
+          avr_asm_len ("and %A0,%B0" CR_TAB
+                       "com %A0", xop, plen, 2);
+          
+          return "";
+        }
+    }
+
   for (i = 0; i < n_bytes; i++)
     {
       /* We compare byte-wise.  */
