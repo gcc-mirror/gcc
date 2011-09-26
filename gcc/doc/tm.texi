@@ -10256,7 +10256,7 @@ hook is the same as the @code{TARGET_LEGITIMIZE_ADDRESS} target hook,
 except that it includes explicit named address space support.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_SUBSET_P (addr_space_t @var{superset}, addr_space_t @var{subset})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_SUBSET_P (addr_space_t @var{subset}, addr_space_t @var{superset})
 Define this to return whether the @var{subset} named address space is
 contained within the @var{superset} named address space.  Pointers to
 a named address space that is a subset of another named address space
