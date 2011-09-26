@@ -15690,6 +15690,31 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
   return virt_specifiers;
 }
 
+/* Used by handling of trailing-return-types and NSDMI, in which 'this'
+   is in scope even though it isn't real.  */
+
+static void
+inject_this_parameter (tree ctype, cp_cv_quals quals)
+{
+  tree this_parm;
+
+  if (current_class_ptr)
+    {
+      /* We don't clear this between NSDMIs.  Is it already what we want?  */
+      tree type = TREE_TYPE (TREE_TYPE (current_class_ptr));
+      if (same_type_ignoring_top_level_qualifiers_p (ctype, type)
+	  && cp_type_quals (type) == quals)
+	return;
+    }
+
+  this_parm = build_this_parm (ctype, quals);
+  /* Clear this first to avoid shortcut in cp_build_indirect_ref.  */
+  current_class_ptr = NULL_TREE;
+  current_class_ref
+    = cp_build_indirect_ref (this_parm, RO_NULL, tf_warning_or_error);
+  current_class_ptr = this_parm;
+}
+
 /* Parse a late-specified return type, if any.  This is not a separate
    non-terminal, but part of a function declarator, which looks like
 
@@ -15718,12 +15743,8 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
   if (quals >= 0)
     {
       /* DR 1207: 'this' is in scope in the trailing return type.  */
-      tree this_parm = build_this_parm (current_class_type, quals);
       gcc_assert (current_class_ptr == NULL_TREE);
-      current_class_ref
-	= cp_build_indirect_ref (this_parm, RO_NULL, tf_warning_or_error);
-      /* Set this second to avoid shortcut in cp_build_indirect_ref.  */
-      current_class_ptr = this_parm;
+      inject_this_parameter (current_class_type, quals);
     }
 
   type = cp_parser_trailing_type_id (parser);
@@ -17274,6 +17295,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       tree pushed_scope = NULL_TREE;
       unsigned ix;
       cp_default_arg_entry *e;
+      tree save_ccp, save_ccr;
 
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
@@ -17307,6 +17329,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	}
       VEC_truncate (cp_default_arg_entry, unparsed_funs_with_default_args, 0);
       /* Now parse any NSDMIs.  */
+      save_ccp = current_class_ptr;
+      save_ccr = current_class_ref;
       FOR_EACH_VEC_ELT (tree, unparsed_nsdmis, ix, decl)
 	{
 	  if (class_type != DECL_CONTEXT (decl))
@@ -17316,9 +17340,12 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	      class_type = DECL_CONTEXT (decl);
 	      pushed_scope = push_scope (class_type);
 	    }
+	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
 	  cp_parser_late_parsing_nsdmi (parser, decl);
 	}
       VEC_truncate (tree, unparsed_nsdmis, 0);
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
       /* Now parse the body of the functions.  */

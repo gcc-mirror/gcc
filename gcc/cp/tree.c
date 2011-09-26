@@ -1926,6 +1926,13 @@ bot_replace (tree* t,
       if (n)
 	*t = (tree) n->value;
     }
+  else if (TREE_CODE (*t) == PARM_DECL
+	   && DECL_NAME (*t) == this_identifier)
+    {
+      /* In an NSDMI we need to replace the 'this' parameter we used for
+	 parsing with the real one for this function.  */
+      *t = current_class_ptr;
+    }
 
   return NULL_TREE;
 }
