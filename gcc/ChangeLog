@@ -1,4 +1,11 @@
+2011-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50472
+	* gimple-fold.c (fold_const_aggregate_ref_1): Do not fold
+	volatile references.
+
 2011-09-26  Bingfeng Mei <bmei@broadcom.com>
+
 	* doc/tm.texi: Correct documentation for TARGET_ADDR_SPACE_SUBSET_P.
 	* target.def: (addr_space_subset_p): Likewise.
 
