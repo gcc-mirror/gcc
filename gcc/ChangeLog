@@ -1,3 +1,13 @@
+2011-09-26  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc-c.c: New file implementing sparc_target_macros,
+	which will now define __VIS and __VIS__ when -mvis is enabled.
+	* config/sparc/t-sparc: Likewise.
+	* config.gcc: Add sparc-c.o to c_target_objs and cxx_target_objs,
+	and add t-sparc to tmake_file for all sparc targets.
+	* config/sparc/sparc-protos.h (sparc_target_macros): Declare.
+	* config/sparc/sparc.h (TARGE_CPU_CPP_BUILTINS): Call it.
+
 2011-09-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (peephole casesi+2): Use -1 instead of 65536.

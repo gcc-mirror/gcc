@@ -422,6 +422,8 @@ score*-*-*)
 	;;
 sparc*-*-*)
 	cpu_type=sparc
+	c_target_objs="sparc-c.o"
+	cxx_target_objs="sparc-c.o"
 	extra_headers="visintrin.h"
 	need_64bit_hwint=yes
 	;;
@@ -2457,32 +2459,32 @@ sparc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp-elf.h"
 	case ${target} in
 	    *-leon-*)
-		tmake_file="sparc/t-leon"
+		tmake_file="sparc/t-sparc sparc/t-leon"
 		;;
 	    *-leon[3-9]*)
-		tmake_file="sparc/t-leon3"
+		tmake_file="sparc/t-sparc sparc/t-leon3"
 		;;
 	    *)
-		tmake_file="sparc/t-elf"
+		tmake_file="sparc/t-sparc sparc/t-elf"
 		;;
 	esac
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/sp-elf.h sparc/rtemself.h rtems.h newlib-stdint.h"
-	tmake_file="sparc/t-elf t-rtems"
+	tmake_file="sparc/t-sparc sparc/t-elf t-rtems"
 	;;
 sparc-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	case ${target} in
 	    *-leon-*)
-		tmake_file="${tmake_file} sparc/t-leon"
+		tmake_file="${tmake_file} sparc/t-sparc sparc/t-leon"
 		;;
 	    *-leon[3-9]*)
-		tmake_file="${tmake_file} sparc/t-leon3"
+		tmake_file="${tmake_file} sparc/t-sparc sparc/t-leon3"
 		;;
 	    *)
-		tmake_file="${tmake_file} sparc/t-linux"
+		tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux"
 		;;
 	esac
 	if test x$enable_targets = xall; then
@@ -2497,6 +2499,7 @@ sparc-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc*-*-solaris2*)
 	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h"
@@ -2508,25 +2511,26 @@ sparc*-*-solaris2*)
 		test x$with_cpu != x || with_cpu=v9
 		;;
 	esac
-	tmake_file="${tmake_file} sparc/t-sol2-64"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-sol2-64"
 	;;
 sparc-wrs-vxworks)
 	tm_file="${tm_file} elfos.h sparc/sysv4.h vx-common.h vxworks.h sparc/vxworks.h"
-	tmake_file="${tmake_file} sparc/t-vxworks"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-vxworks"
 	;;
 sparc64-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp64-elf.h"
 	extra_options="${extra_options} sparc/little-endian.opt"
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc64-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp64-elf.h sparc/rtemself.h rtems.h"
 	extra_options="${extra_options} sparc/little-endian.opt"
-	tmake_file="${tmake_file} t-rtems"
+	tmake_file="${tmake_file} sparc/t-sparc t-rtems"
 	;;
 sparc64-*-linux*)
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
-	tmake_file="${tmake_file} sparc/t-linux sparc/t-linux64"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux sparc/t-linux64"
 	extra_parts="${extra_parts} crtfastmath.o"
 	;;
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
@@ -2538,13 +2542,14 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 		*) echo "$with_cpu not supported for freebsd target"; exit 1 ;;
 	esac
 	extra_parts="${extra_parts} crtfastmath.o"
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc64-*-netbsd*)
 	tm_file="sparc/biarch64.h ${tm_file}"
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
-	tmake_file="${tmake_file} sparc/t-netbsd64"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-netbsd64"
 	;;
 sparc64-*-openbsd*)
 	tm_file="sparc/openbsd1-64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/sp64-elf.h"
@@ -2553,6 +2558,7 @@ sparc64-*-openbsd*)
 	extra_options="${extra_options} sparc/little-endian.opt"
 	gas=yes gnu_ld=yes
 	with_cpu=ultrasparc
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 spu-*-elf*)
 	tm_file="dbxelf.h elfos.h spu/spu-elf.h spu/spu.h newlib-stdint.h"
