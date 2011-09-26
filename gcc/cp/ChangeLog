@@ -1,3 +1,8 @@
+2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/26747
+	* cp-gimplify.c (get_bc_label): Remove obsolete diagnostics.
+
 2011-09-25  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (inject_this_parameter): Split out from
