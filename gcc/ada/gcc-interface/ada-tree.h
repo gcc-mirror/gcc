@@ -352,6 +352,9 @@ do {						   \
    is needed to access the object.  */
 #define DECL_BY_REF_P(NODE) DECL_LANG_FLAG_1 (NODE)
 
+/* Nonzero in a DECL if it is made for a pointer that can never be null.  */
+#define DECL_CAN_NEVER_BE_NULL_P(NODE) DECL_LANG_FLAG_2 (NODE)
+
 /* Nonzero in a FIELD_DECL that is a dummy built for some internal reason.  */
 #define DECL_INTERNAL_P(NODE) DECL_LANG_FLAG_3 (FIELD_DECL_CHECK (NODE))
 
@@ -364,7 +367,7 @@ do {						   \
   DECL_LANG_FLAG_3 (FUNCTION_DECL_CHECK (NODE))
 
 /* Nonzero in a DECL if it is made for a pointer that points to something which
-   is readonly.  Used mostly for fat pointers.  */
+   is readonly.  */
 #define DECL_POINTS_TO_READONLY_P(NODE) DECL_LANG_FLAG_4 (NODE)
 
 /* Nonzero in a PARM_DECL if we are to pass by descriptor.  */

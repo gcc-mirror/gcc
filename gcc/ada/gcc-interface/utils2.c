@@ -1276,44 +1276,60 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       break;
 
     case INDIRECT_REF:
-      /* If we want to refer to an unconstrained array, use the appropriate
-	 expression to do so.  This will never survive down to the back-end.
-	 But if TYPE is a thin pointer, first convert to a fat pointer.  */
-      if (TYPE_IS_THIN_POINTER_P (type)
-	  && TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)))
-	{
-	  operand
-	    = convert (TREE_TYPE (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type))),
+      {
+	bool can_never_be_null;
+	tree t = operand;
+
+	while (CONVERT_EXPR_P (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR)
+	  t = TREE_OPERAND (t, 0);
+
+	can_never_be_null = DECL_P (t) && DECL_CAN_NEVER_BE_NULL_P (t);
+
+	/* If TYPE is a thin pointer, first convert to the fat pointer.  */
+	if (TYPE_IS_THIN_POINTER_P (type)
+	    && TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)))
+	  {
+	    operand = convert
+		      (TREE_TYPE (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type))),
 		       operand);
-	  type = TREE_TYPE (operand);
-	}
+	    type = TREE_TYPE (operand);
+	  }
 
-      if (TYPE_IS_FAT_POINTER_P (type))
-	{
-	  result = build1 (UNCONSTRAINED_ARRAY_REF,
-			   TYPE_UNCONSTRAINED_ARRAY (type), operand);
-	  TREE_READONLY (result)
-	    = TYPE_READONLY (TYPE_UNCONSTRAINED_ARRAY (type));
-	}
+	/* If we want to refer to an unconstrained array, use the appropriate
+	   expression.  But this will never survive down to the back-end.  */
+	if (TYPE_IS_FAT_POINTER_P (type))
+	  {
+	    result = build1 (UNCONSTRAINED_ARRAY_REF,
+			     TYPE_UNCONSTRAINED_ARRAY (type), operand);
+	    TREE_READONLY (result)
+	      = TYPE_READONLY (TYPE_UNCONSTRAINED_ARRAY (type));
+	  }
 
-      /* If we are dereferencing an ADDR_EXPR, return its operand.  */
-      else if (TREE_CODE (operand) == ADDR_EXPR)
-	result = TREE_OPERAND (operand, 0);
+	/* If we are dereferencing an ADDR_EXPR, return its operand.  */
+	else if (TREE_CODE (operand) == ADDR_EXPR)
+	  result = TREE_OPERAND (operand, 0);
 
-      /* Otherwise, build and fold the indirect reference.  */
-      else
-	{
-	  result = build_fold_indirect_ref (operand);
-	  TREE_READONLY (result) = TYPE_READONLY (TREE_TYPE (type));
-	}
+	/* Otherwise, build and fold the indirect reference.  */
+	else
+	  {
+	    result = build_fold_indirect_ref (operand);
+	    TREE_READONLY (result) = TYPE_READONLY (TREE_TYPE (type));
+	  }
 
-      if (!TYPE_IS_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)))
-	{
-	  TREE_SIDE_EFFECTS (result) = 1;
-	  if (TREE_CODE (result) == INDIRECT_REF)
-	    TREE_THIS_VOLATILE (result) = TYPE_VOLATILE (TREE_TYPE (result));
-	}
-      break;
+	if (!TYPE_IS_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)))
+	  {
+	    TREE_SIDE_EFFECTS (result) = 1;
+	    if (TREE_CODE (result) == INDIRECT_REF)
+	      TREE_THIS_VOLATILE (result) = TYPE_VOLATILE (TREE_TYPE (result));
+	  }
+
+	if ((TREE_CODE (result) == INDIRECT_REF
+	     || TREE_CODE (result) == UNCONSTRAINED_ARRAY_REF)
+	    && can_never_be_null)
+	  TREE_THIS_NOTRAP (result) = 1;
+
+	break;
+      }
 
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
@@ -2442,7 +2458,10 @@ gnat_stabilize_reference_1 (tree e, bool force)
   TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (e);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
 
-  if (code == INDIRECT_REF || code == ARRAY_REF || code == ARRAY_RANGE_REF)
+  if (code == INDIRECT_REF
+      || code == UNCONSTRAINED_ARRAY_REF
+      || code == ARRAY_REF
+      || code == ARRAY_RANGE_REF)
     TREE_THIS_NOTRAP (result) = TREE_THIS_NOTRAP (e);
 
   return result;
@@ -2578,7 +2597,10 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
   TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (ref);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
 
-  if (code == INDIRECT_REF || code == ARRAY_REF || code == ARRAY_RANGE_REF)
+  if (code == INDIRECT_REF
+      || code == UNCONSTRAINED_ARRAY_REF
+      || code == ARRAY_REF
+      || code == ARRAY_RANGE_REF)
     TREE_THIS_NOTRAP (result) = TREE_THIS_NOTRAP (ref);
 
   return result;

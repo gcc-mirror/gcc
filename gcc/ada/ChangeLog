@@ -1,5 +1,18 @@
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (DECL_CAN_NEVER_BE_NULL_P): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Set the flag.
+	(gnat_to_gnu_param): Likewise.
+	* gcc-interface/utils.c (convert) <UNCONSTRAINED_ARRAY_REF>: Invoke
+	maybe_unconstrained_array instead of doing the work manually.
+	(maybe_unconstrained_array): Propagate the TREE_THIS_NOTRAP flag.
+	* gcc-interface/utils2.c (build_unary_op) <INDIRECT_REF>: If operand
+	is a DECL with the flag, set TREE_THIS_NOTRAP on the reference.
+	(gnat_stabilize_reference_1): Propagate the TREE_THIS_NOTRAP flag.
+	(gnat_stabilize_reference): Likewise.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_NULL_BOUNDS): New macro.
 	(SET_TYPE_NULL_BOUNDS): Likewise.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Set again

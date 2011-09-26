@@ -3819,8 +3819,7 @@ convert (tree type, tree expr)
       return gnat_build_constructor (type, v);
     }
 
-  /* There are some special cases of expressions that we process
-     specially.  */
+  /* There are some cases of expressions that we process specially.  */
   switch (TREE_CODE (expr))
     {
     case ERROR_MARK:
@@ -3976,21 +3975,11 @@ convert (tree type, tree expr)
       break;
 
     case UNCONSTRAINED_ARRAY_REF:
-      {
-	/* Convert this to the type of the inner array by getting the address
-	   of the array from the template.  */
-	const bool no_trap = TREE_THIS_NOTRAP (expr);
-	expr = TREE_OPERAND (expr, 0);
-	expr = build_unary_op (INDIRECT_REF, NULL_TREE,
-			       build_component_ref (expr, NULL_TREE,
-						    TYPE_FIELDS
-						    (TREE_TYPE (expr)),
-						    false));
-	TREE_THIS_NOTRAP (expr) = no_trap;
-	etype = TREE_TYPE (expr);
-	ecode = TREE_CODE (etype);
-	break;
-      }
+      /* First retrieve the underlying array.  */
+      expr = maybe_unconstrained_array (expr);
+      etype = TREE_TYPE (expr);
+      ecode = TREE_CODE (etype);
+      break;
 
     case VIEW_CONVERT_EXPR:
       {
@@ -4282,6 +4271,8 @@ maybe_unconstrained_array (tree exp)
       if (code == UNCONSTRAINED_ARRAY_REF)
 	{
 	  const bool read_only = TREE_READONLY (exp);
+	  const bool no_trap = TREE_THIS_NOTRAP (exp);
+
 	  exp = TREE_OPERAND (exp, 0);
 	  if (TREE_CODE (exp) == COND_EXPR)
 	    {
@@ -4306,12 +4297,16 @@ maybe_unconstrained_array (tree exp)
 			    TREE_OPERAND (exp, 0), op1, op2);
 	    }
 	  else
-	    exp = build_unary_op (INDIRECT_REF, NULL_TREE,
-				  build_component_ref (exp, NULL_TREE,
-						       TYPE_FIELDS
-						       (TREE_TYPE (exp)),
-						       false));
-	  TREE_READONLY (exp) = read_only;
+	    {
+	      exp = build_unary_op (INDIRECT_REF, NULL_TREE,
+				    build_component_ref (exp, NULL_TREE,
+						         TYPE_FIELDS
+						         (TREE_TYPE (exp)),
+						         false));
+	      TREE_READONLY (exp) = read_only;
+	      TREE_THIS_NOTRAP (exp) = no_trap;
+	    }
+
 	  return exp;
 	}
 

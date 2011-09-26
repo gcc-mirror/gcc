@@ -1417,6 +1417,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			     gnat_entity);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
 	DECL_POINTS_TO_READONLY_P (gnu_decl) = used_by_ref && inner_const_flag;
+	DECL_CAN_NEVER_BE_NULL_P (gnu_decl) = Can_Never_Be_Null (gnat_entity);
 
 	/* If we are defining an Out parameter and optimization isn't enabled,
 	   create a fake PARM_DECL for debugging purposes and make it point to
@@ -5568,6 +5569,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
                                       mech == By_Short_Descriptor);
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
+  DECL_CAN_NEVER_BE_NULL_P (gnu_param) = Can_Never_Be_Null (gnat_param);
 
   /* Save the alternate descriptor type, if any.  */
   if (gnu_param_type_alt)
