@@ -1,5 +1,10 @@
 2011-09-26  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.c (sparc_conditional_register_usage): When VIS
+	is enabled, mark %gsr as global.
+	* config/sparc/sparc.md (UNSPEC_WRGSR): Delete.
+	(wrgsr_vis, *wrgsr_sp64, wrgsr_v8plus): Don't wrap in an unspec.
+
 	* config/sparc/sparc-c.c: New file implementing sparc_target_macros,
 	which will now define __VIS and __VIS__ when -mvis is enabled.
 	* config/sparc/t-sparc: Likewise.

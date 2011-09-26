@@ -10426,6 +10426,8 @@ sparc_conditional_register_usage (void)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	leaf_reg_remap [regno] = regno;
     }
+  if (TARGET_VIS)
+    global_regs[SPARC_GSR_REG] = 1;
 }
 
 /* Implement TARGET_PREFERRED_RELOAD_CLASS

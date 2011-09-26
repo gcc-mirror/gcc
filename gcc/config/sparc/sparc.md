@@ -58,7 +58,7 @@
    (UNSPEC_MUL8UL		46)
    (UNSPEC_MULDUL		47)
    (UNSPEC_ALIGNDATA		48)
-   (UNSPEC_WRGSR                49)
+
    (UNSPEC_PDIST		50)
    (UNSPEC_EDGE8		51)
    (UNSPEC_EDGE8L		52)
@@ -7953,8 +7953,7 @@
    (set_attr "fptype" "double")])
 
 (define_expand "wrgsr_vis"
-  [(set (reg:DI GSR_REG) (unspec:DI [(match_operand:DI 0 "arith_operand" "")]
-                                    UNSPEC_WRGSR))]
+  [(set (reg:DI GSR_REG) (match_operand:DI 0 "arith_operand" ""))]
   "TARGET_VIS"
 {
   if (! TARGET_ARCH64)
@@ -7965,15 +7964,13 @@
 })
 
 (define_insn "*wrgsr_sp64"
-  [(set (reg:DI GSR_REG) (unspec:DI [(match_operand:DI 0 "arith_operand" "rI")]
-                                    UNSPEC_WRGSR))]
+  [(set (reg:DI GSR_REG) (match_operand:DI 0 "arith_operand" "rI"))]
   "TARGET_VIS && TARGET_ARCH64"
   "wr\t%%g0, %0, %%gsr"
   [(set_attr "type" "gsr")])
 
 (define_insn "wrgsr_v8plus"
-  [(set (reg:DI GSR_REG) (unspec:DI [(match_operand:DI 0 "arith_operand" "I,r")]
-                                    UNSPEC_WRGSR))
+  [(set (reg:DI GSR_REG) (match_operand:DI 0 "arith_operand" "I,r"))
    (clobber (match_scratch:SI 1 "=X,&h"))]
   "TARGET_VIS && ! TARGET_ARCH64"
 {
