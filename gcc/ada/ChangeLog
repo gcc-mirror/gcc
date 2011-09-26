@@ -1,5 +1,13 @@
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (maybe_unconstrained_array): Declare TYPE local
+	variable and use it throughout.
+	<UNCONSTRAINED_ARRAY_TYPE>: Add 'break' at the end.
+	<RECORD_TYPE>: Do not unconditionally convert to the unpadded type as a
+	first step.  Also convert to the unpadded type as a last step.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_subprog_decl): Replace TREE_CHAIN with
 	DECL_CHAIN in comment.
 	* gcc-interface/trans.c (gigi): Likewise.
