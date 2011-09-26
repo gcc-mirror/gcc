@@ -96,6 +96,7 @@ ${CC} -fdump-go-spec=gen-sysinfo.go -std=gnu99 -S -o sysinfo.s sysinfo.c
 
 echo 'package syscall' > ${OUT}
 echo 'import "unsafe"' >> ${OUT}
+echo 'type _ unsafe.Pointer' >> ${OUT}
 
 # Get all the consts and types, skipping ones which could not be
 # represented in Go and ones which we need to rewrite.  We also skip
