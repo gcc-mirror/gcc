@@ -2919,6 +2919,9 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
   HOST_WIDE_INT offset, size, max_size;
   tree tem;
 
+  if (TREE_THIS_VOLATILE (t))
+    return NULL_TREE;
+
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     return get_symbol_constant_value (t);
 
