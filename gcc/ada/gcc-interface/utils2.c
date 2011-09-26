@@ -1756,14 +1756,15 @@ build_simple_component_ref (tree record_variable, tree component,
   gcc_assert ((TREE_CODE (record_type) == RECORD_TYPE
 	       || TREE_CODE (record_type) == UNION_TYPE
 	       || TREE_CODE (record_type) == QUAL_UNION_TYPE)
-	      && TYPE_SIZE (record_type)
-	      && (component != 0) != (field != 0));
+	      && COMPLETE_TYPE_P (record_type)
+	      && (component == NULL_TREE) != (field == NULL_TREE));
 
-  /* If no field was specified, look for a field with the specified name
-     in the current record only.  */
+  /* If no field was specified, look for a field with the specified name in
+     the current record only.  */
   if (!field)
-    for (field = TYPE_FIELDS (record_type); field;
-	 field = TREE_CHAIN (field))
+    for (field = TYPE_FIELDS (record_type);
+	 field;
+	 field = DECL_CHAIN (field))
       if (DECL_NAME (field) == component)
 	break;
 
@@ -1777,7 +1778,8 @@ build_simple_component_ref (tree record_variable, tree component,
       tree new_field;
 
       /* First loop thru normal components.  */
-      for (new_field = TYPE_FIELDS (record_type); new_field;
+      for (new_field = TYPE_FIELDS (record_type);
+	   new_field;
 	   new_field = DECL_CHAIN (new_field))
 	if (SAME_FIELD_P (field, new_field))
 	  break;
@@ -1797,12 +1799,12 @@ build_simple_component_ref (tree record_variable, tree component,
 	    return ref;
 	}
 
-      /* Next, loop thru DECL_INTERNAL_P components if we haven't found
-         the component in the first search. Doing this search in 2 steps
-         is required to avoiding hidden homonymous fields in the
-         _Parent field.  */
+      /* Next, loop thru DECL_INTERNAL_P components if we haven't found the
+	 component in the first search.  Doing this search in two steps is
+	 required to avoid hidden homonymous fields in the _Parent field.  */
       if (!new_field)
-	for (new_field = TYPE_FIELDS (record_type); new_field;
+	for (new_field = TYPE_FIELDS (record_type);
+	     new_field;
 	     new_field = DECL_CHAIN (new_field))
 	  if (DECL_INTERNAL_P (new_field))
 	    {
@@ -1811,7 +1813,6 @@ build_simple_component_ref (tree record_variable, tree component,
 					      NULL_TREE, new_field, no_fold_p);
 	      ref = build_simple_component_ref (field_ref, NULL_TREE, field,
 						no_fold_p);
-
 	      if (ref)
 		return ref;
 	    }
@@ -1822,16 +1823,15 @@ build_simple_component_ref (tree record_variable, tree component,
   if (!field)
     return NULL_TREE;
 
-  /* If the field's offset has overflowed, do not attempt to access it
-     as doing so may trigger sanity checks deeper in the back-end.
-     Note that we don't need to warn since this will be done on trying
-     to declare the object.  */
+  /* If the field's offset has overflowed, do not try to access it, as doing
+     so may trigger sanity checks deeper in the back-end.  Note that we don't
+     need to warn since this will be done on trying to declare the object.  */
   if (TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST
       && TREE_OVERFLOW (DECL_FIELD_OFFSET (field)))
     return NULL_TREE;
 
-  /* Look through conversion between type variants.  Note that this
-     is transparent as far as the field is concerned.  */
+  /* Look through conversion between type variants.  This is transparent as
+     far as the field is concerned.  */
   if (TREE_CODE (record_variable) == VIEW_CONVERT_EXPR
       && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (record_variable, 0)))
 	 == record_type)
@@ -1842,9 +1842,13 @@ build_simple_component_ref (tree record_variable, tree component,
   ref = build3 (COMPONENT_REF, TREE_TYPE (field), inner_variable, field,
 		NULL_TREE);
 
-  if (TREE_READONLY (record_variable) || TREE_READONLY (field))
+  if (TREE_READONLY (record_variable)
+      || TREE_READONLY (field)
+      || TYPE_READONLY (record_type))
     TREE_READONLY (ref) = 1;
-  if (TREE_THIS_VOLATILE (record_variable) || TREE_THIS_VOLATILE (field)
+
+  if (TREE_THIS_VOLATILE (record_variable)
+      || TREE_THIS_VOLATILE (field)
       || TYPE_VOLATILE (record_type))
     TREE_THIS_VOLATILE (ref) = 1;
 
@@ -1853,8 +1857,8 @@ build_simple_component_ref (tree record_variable, tree component,
 
   /* The generic folder may punt in this case because the inner array type
      can be self-referential, but folding is in fact not problematic.  */
-  else if (TREE_CODE (record_variable) == CONSTRUCTOR
-	   && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (record_variable)))
+  if (TREE_CODE (record_variable) == CONSTRUCTOR
+      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (record_variable)))
     {
       VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (record_variable);
       unsigned HOST_WIDE_INT idx;
@@ -1865,8 +1869,7 @@ build_simple_component_ref (tree record_variable, tree component,
       return ref;
     }
 
-  else
-    return fold (ref);
+  return fold (ref);
 }
 
 /* Like build_simple_component_ref, except that we give an error if the

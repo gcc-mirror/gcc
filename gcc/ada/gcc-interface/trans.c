@@ -7728,24 +7728,21 @@ process_type (Entity_Id gnat_entity)
     }
 }
 
-/* GNAT_ENTITY is the type of the resulting constructors,
-   GNAT_ASSOC is the front of the Component_Associations of an N_Aggregate,
-   and GNU_TYPE is the GCC type of the corresponding record.
-
-   Return a CONSTRUCTOR to build the record.  */
+/* GNAT_ENTITY is the type of the resulting constructor, GNAT_ASSOC is the
+   front of the Component_Associations of an N_Aggregate and GNU_TYPE is the
+   GCC type of the corresponding record type.  Return the CONSTRUCTOR.  */
 
 static tree
 assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 {
-  tree gnu_list, gnu_result;
+  tree gnu_list = NULL_TREE, gnu_result;
 
   /* We test for GNU_FIELD being empty in the case where a variant
      was the last thing since we don't take things off GNAT_ASSOC in
      that case.  We check GNAT_ASSOC in case we have a variant, but it
      has no fields.  */
 
-  for (gnu_list = NULL_TREE; Present (gnat_assoc);
-       gnat_assoc = Next (gnat_assoc))
+  for (; Present (gnat_assoc); gnat_assoc = Next (gnat_assoc))
     {
       Node_Id gnat_field = First (Choices (gnat_assoc));
       tree gnu_field = gnat_to_gnu_field_decl (Entity (gnat_field));
@@ -7762,8 +7759,8 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 	continue;
 
       /* Also ignore discriminants of Unchecked_Unions.  */
-      else if (Is_Unchecked_Union (gnat_entity)
-	       && Ekind (Entity (gnat_field)) == E_Discriminant)
+      if (Is_Unchecked_Union (gnat_entity)
+	  && Ekind (Entity (gnat_field)) == E_Discriminant)
 	continue;
 
       /* Before assigning a value in an aggregate make sure range checks
@@ -7780,13 +7777,9 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
   gnu_result = extract_values (gnu_list, gnu_type);
 
 #ifdef ENABLE_CHECKING
-  {
-    tree gnu_field;
-
-    /* Verify every entry in GNU_LIST was used.  */
-    for (gnu_field = gnu_list; gnu_field; gnu_field = TREE_CHAIN (gnu_field))
-      gcc_assert (TREE_ADDRESSABLE (gnu_field));
-  }
+  /* Verify that every entry in GNU_LIST was used.  */
+  for (; gnu_list; gnu_list = TREE_CHAIN (gnu_list))
+    gcc_assert (TREE_ADDRESSABLE (gnu_list));
 #endif
 
   return gnu_result;
