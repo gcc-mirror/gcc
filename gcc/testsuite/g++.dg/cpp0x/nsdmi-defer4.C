@@ -1,4 +1,5 @@
 // { dg-options -std=c++0x }
+// { dg-do run }
 
 struct A
 {
