@@ -1546,7 +1546,7 @@ DEFHOOK
 DEFHOOK
 (subset_p,
  "",
- bool, (addr_space_t superset, addr_space_t subset),
+ bool, (addr_space_t subset, addr_space_t superset),
  default_addr_space_subset_p)
 
 /* Function to convert an rtl expression from one address space to another.  */
