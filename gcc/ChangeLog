@@ -1,3 +1,10 @@
+2011-09-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (peephole casesi+2): Use -1 instead of 65536.
+	* config/avr/avr.c (avr_out_compare): Print shorter sequence for
+	EQ/NE comparisons against +/-1 in the case of unused-after,
+	non-ld-regs target.
+
 2011-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-fold.c (gimplify_and_update_call_from_tree): Set
