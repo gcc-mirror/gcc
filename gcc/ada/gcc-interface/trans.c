@@ -540,7 +540,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 	  tree field
 	    = create_field_decl (NULL_TREE, ptr_void_ftype, fdesc_type_node,
 				 NULL_TREE, NULL_TREE, 0, 1);
-	  TREE_CHAIN (field) = field_list;
+	  DECL_CHAIN (field) = field_list;
 	  field_list = field;
 	  elt->index = field;
 	  elt->value = null_node;
@@ -1286,7 +1286,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 		 + TARGET_VTABLE_USES_DESCRIPTORS - 1);
 	  for (gnu_field = TYPE_FIELDS (gnu_result_type), i = 0;
 	       i < TARGET_VTABLE_USES_DESCRIPTORS;
-	       gnu_field = TREE_CHAIN (gnu_field), i++)
+	       gnu_field = DECL_CHAIN (gnu_field), i++)
 	    {
 	      if (build_descriptor)
 		{
@@ -1420,7 +1420,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	{
 	  gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
 	  if (attribute != Attr_Max_Size_In_Storage_Elements)
-	    gnu_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type)));
+	    gnu_type = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)));
 	}
 
       /* If we're looking for the size of a field, return the field size.
@@ -2567,8 +2567,8 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
   for (gnu_stub_param = DECL_ARGUMENTS (gnu_stub_decl),
        gnu_subprog_param = DECL_ARGUMENTS (gnu_subprog);
        gnu_stub_param;
-       gnu_stub_param = TREE_CHAIN (gnu_stub_param),
-       gnu_subprog_param = TREE_CHAIN (gnu_subprog_param))
+       gnu_stub_param = DECL_CHAIN (gnu_stub_param),
+       gnu_subprog_param = DECL_CHAIN (gnu_subprog_param))
     {
       if (DECL_BY_DESCRIPTOR_P (gnu_stub_param))
 	{
@@ -4695,7 +4695,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	if (TREE_CODE (gnu_result_type) == RECORD_TYPE
 	    && TYPE_CONTAINS_TEMPLATE_P (gnu_result_type))
 	  gnu_aggr_type
-	    = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_result_type)));
+	    = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_result_type)));
 	else if (TREE_CODE (gnu_result_type) == VECTOR_TYPE)
 	  gnu_aggr_type = TYPE_REPRESENTATIVE_ARRAY (gnu_result_type);
 
