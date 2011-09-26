@@ -120,3 +120,14 @@ extern unsigned int
 extern size_t
 	strlen(), strspn();
 #endif  /* SYSV68_STRING_CHECK */
+
+
+#if defined( VMS_USE_PRAGMA_EXTERN_MODEL_CHECK )
+#if defined(__DECC) || defined(__DECCXX) || defined(__GNUC__)
+# pragma extern_model __save
+# pragma extern_model strict_refdef
+   extern struct x zz;
+# pragma extern_model __restore
+#endif
+
+#endif  /* VMS_USE_PRAGMA_EXTERN_MODEL_CHECK */
