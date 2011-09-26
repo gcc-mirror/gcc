@@ -1,5 +1,8 @@
 2011-09-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50512
+	* g++.dg/overload/rvalue3.C: New.
+
 	PR c++/50523
 	* g++.dg/overload/ref-conv2.C: New.
 

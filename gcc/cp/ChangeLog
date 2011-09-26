@@ -1,5 +1,9 @@
 2011-09-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50512
+	* call.c (compare_ics): Only consider rvaluedness_matches_p
+	if the target type is the same or it too differs in rvalueness.
+
 	PR c++/50523
 	* call.c (implicit_conversion): Mask out inappropriate LOOKUP
 	flags at the top of the function.
