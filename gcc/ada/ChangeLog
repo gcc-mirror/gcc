@@ -1,4 +1,10 @@
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Set_Formal_Mode): Set Can_Never_Be_Null on an IN or IN
+	OUT formal parameter which is of an null-exclusion access subtype.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (DECL_CAN_NEVER_BE_NULL_P): New macro.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Set the flag.
