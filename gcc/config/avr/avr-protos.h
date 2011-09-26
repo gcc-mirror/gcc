@@ -88,7 +88,7 @@ extern bool avr_popcount_each_byte (rtx, int, int);
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);
 extern const char* output_reload_inhi (rtx*, rtx, int*);
-extern const char *output_reload_insisf (rtx insn, rtx *operands, rtx clobber, int *len);
+extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern void notice_update_cc (rtx body, rtx insn);
 extern void print_operand (FILE *file, rtx x, int code);
 extern void print_operand_address (FILE *file, rtx addr);

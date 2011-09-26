@@ -136,8 +136,13 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "yes,no,reload_in16,reload_in32,out_bitop,out_plus,tsthi,tstsi,compare"
-  (const_string "yes"))
+  "out_bitop, out_plus, tsthi, tstsi, compare,
+   mov8, mov16, mov32, reload_in16, reload_in32,
+   ashlqi, ashrqi, lshrqi,
+   ashlhi, ashrhi, lshrhi,
+   ashlsi, ashrsi, lshrsi,
+   no"
+  (const_string "no"))
 
 ;; Define mode iterators
 (define_mode_iterator QIHI  [(QI "") (HI "")])
@@ -297,6 +302,7 @@
     || register_operand (operands[1], QImode) || const0_rtx == operands[1])"
   "* return output_movqi (insn, operands, NULL);"
   [(set_attr "length" "1,1,5,5,1,1,4")
+   (set_attr "adjust_len" "mov8")
    (set_attr "cc" "none,none,clobber,clobber,none,none,clobber")])
 
 ;; This is used in peephole2 to optimize loading immediate constants
@@ -401,6 +407,7 @@
     || register_operand (operands[1],HImode) || const0_rtx == operands[1])"
   "* return output_movhi (insn, operands, NULL);"
   [(set_attr "length" "2,2,6,7,2,6,5,2")
+   (set_attr "adjust_len" "mov16")
    (set_attr "cc" "none,clobber,clobber,clobber,none,clobber,none,none")])
 
 (define_peephole2 ; movw
@@ -468,7 +475,7 @@
    (clobber (match_operand:QI 2 "register_operand" "=&d"))]
   "reload_completed"
   {
-    return output_reload_insisf (insn, operands, operands[2], NULL);
+    return output_reload_insisf (operands, operands[2], NULL);
   }
   [(set_attr "length" "8")
    (set_attr "adjust_len" "reload_in32")
@@ -484,6 +491,7 @@
     return output_movsisf (insn, operands, NULL);
   }
   [(set_attr "length" "4,4,8,9,4,10")
+   (set_attr "adjust_len" "mov32")
    (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
 
 ;; fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -513,6 +521,7 @@
     return output_movsisf (insn, operands, NULL);
   }
   [(set_attr "length" "4,4,8,9,4,10")
+   (set_attr "adjust_len" "mov32")
    (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
 
 (define_peephole2 ; *reload_insf
@@ -533,7 +542,7 @@
    (clobber (match_operand:QI 2 "register_operand" "=&d"))]
   "reload_completed"
   {
-    return output_reload_insisf (insn, operands, operands[2], NULL);
+    return output_reload_insisf (operands, operands[2], NULL);
   }
   [(set_attr "length" "8")
    (set_attr "adjust_len" "reload_in32")
@@ -934,7 +943,7 @@
     return asm_code [which_alternative];
   }
   [(set_attr "length" "4,3,3,4,5,5,8,8")
-   (set_attr "adjust_len" "no,no,no,no,no,no,out_plus,out_plus")
+   (set_attr "adjust_len" "*,*,*,*,*,*,out_plus,out_plus")
    (set_attr "cc" "set_n,set_n,set_czn,set_czn,set_n,set_n,clobber,clobber")])
 
 (define_insn "*addsi3_zero_extend"
@@ -2271,7 +2280,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "2,2,2,4,4")
-   (set_attr "adjust_len" "no,no,out_bitop,out_bitop,out_bitop")
+   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,out_bitop")
    (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
 
 (define_insn "andsi3"
@@ -2290,7 +2299,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "4,4,8,8")
-   (set_attr "adjust_len" "no,out_bitop,out_bitop,out_bitop")
+   (set_attr "adjust_len" "*,out_bitop,out_bitop,out_bitop")
    (set_attr "cc" "set_n,clobber,clobber,clobber")])
 
 (define_peephole2 ; andi
@@ -2335,7 +2344,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "2,2,2,4,4")
-   (set_attr "adjust_len" "no,no,out_bitop,out_bitop,out_bitop")
+   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,out_bitop")
    (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
 
 (define_insn "iorsi3"
@@ -2354,7 +2363,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "4,4,8,8")
-   (set_attr "adjust_len" "no,out_bitop,out_bitop,out_bitop")
+   (set_attr "adjust_len" "*,out_bitop,out_bitop,out_bitop")
    (set_attr "cc" "set_n,clobber,clobber,clobber")])
 
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2382,7 +2391,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "2,2,4")
-   (set_attr "adjust_len" "no,out_bitop,out_bitop")
+   (set_attr "adjust_len" "*,out_bitop,out_bitop")
    (set_attr "cc" "set_n,clobber,clobber")])
 
 (define_insn "xorsi3"
@@ -2401,7 +2410,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "4,8,8")
-   (set_attr "adjust_len" "no,out_bitop,out_bitop")
+   (set_attr "adjust_len" "*,out_bitop,out_bitop")
    (set_attr "cc" "set_n,clobber,clobber")])
 
 ;; swap swap swap swap swap swap swap swap swap swap swap swap swap swap swap
@@ -2623,6 +2632,7 @@
   ""
   "* return ashlqi3_out (insn, operands, NULL);"
   [(set_attr "length" "5,0,1,2,4,6,9")
+   (set_attr "adjust_len" "ashlqi")
    (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,set_czn,clobber")])
 
 (define_insn "ashlhi3"
@@ -2632,6 +2642,7 @@
   ""
   "* return ashlhi3_out (insn, operands, NULL);"
   [(set_attr "length" "6,0,2,2,4,10,10")
+   (set_attr "adjust_len" "ashlhi")
    (set_attr "cc" "clobber,none,set_n,clobber,set_n,clobber,clobber")])
 
 
@@ -2723,6 +2734,7 @@
   ""
   "* return ashlsi3_out (insn, operands, NULL);"
   [(set_attr "length" "8,0,4,4,8,10,12")
+   (set_attr "adjust_len" "ashlsi")
    (set_attr "cc" "clobber,none,set_n,clobber,set_n,clobber,clobber")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
@@ -2780,6 +2792,7 @@
   "reload_completed"
   "* return ashlhi3_out (insn, operands, NULL);"
   [(set_attr "length" "0,2,2,4,10")
+   (set_attr "adjust_len" "ashlhi")
    (set_attr "cc" "none,set_n,clobber,set_n,clobber")])
 
 (define_peephole2
@@ -2800,6 +2813,7 @@
   "reload_completed"
   "* return ashlsi3_out (insn, operands, NULL);"
   [(set_attr "length" "0,4,4,10")
+   (set_attr "adjust_len" "ashlsi")
    (set_attr "cc" "none,set_n,clobber,clobber")])
 
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
@@ -2812,6 +2826,7 @@
   ""
   "* return ashrqi3_out (insn, operands, NULL);"
   [(set_attr "length" "5,0,1,2,5,9")
+   (set_attr "adjust_len" "ashrqi")
    (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber")])
 
 (define_insn "ashrhi3"
@@ -2821,6 +2836,7 @@
   ""
   "* return ashrhi3_out (insn, operands, NULL);"
   [(set_attr "length" "6,0,2,4,4,10,10")
+   (set_attr "adjust_len" "ashrhi")
    (set_attr "cc" "clobber,none,clobber,set_n,clobber,clobber,clobber")])
 
 (define_insn "ashrsi3"
@@ -2830,6 +2846,7 @@
   ""
   "* return ashrsi3_out (insn, operands, NULL);"
   [(set_attr "length" "8,0,4,6,8,10,12")
+   (set_attr "adjust_len" "ashrsi")
    (set_attr "cc" "clobber,none,clobber,set_n,clobber,clobber,clobber")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
@@ -2852,6 +2869,7 @@
   "reload_completed"
   "* return ashrhi3_out (insn, operands, NULL);"
   [(set_attr "length" "0,2,4,4,10")
+   (set_attr "adjust_len" "ashrhi")
    (set_attr "cc" "none,clobber,set_n,clobber,clobber")])
 
 (define_peephole2
@@ -2872,6 +2890,7 @@
   "reload_completed"
   "* return ashrsi3_out (insn, operands, NULL);"
   [(set_attr "length" "0,4,4,10")
+   (set_attr "adjust_len" "ashrsi")
    (set_attr "cc" "none,clobber,set_n,clobber")])
 
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
@@ -2920,6 +2939,7 @@
   ""
   "* return lshrqi3_out (insn, operands, NULL);"
   [(set_attr "length" "5,0,1,2,4,6,9")
+   (set_attr "adjust_len" "lshrqi")
    (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,set_czn,clobber")])
 
 (define_insn "lshrhi3"
@@ -2929,6 +2949,7 @@
   ""
   "* return lshrhi3_out (insn, operands, NULL);"
   [(set_attr "length" "6,0,2,2,4,10,10")
+   (set_attr "adjust_len" "lshrhi")
    (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
 
 (define_insn "lshrsi3"
@@ -2938,6 +2959,7 @@
   ""
   "* return lshrsi3_out (insn, operands, NULL);"
   [(set_attr "length" "8,0,4,4,8,10,12")
+   (set_attr "adjust_len" "lshrsi")
    (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
@@ -2995,6 +3017,7 @@
   "reload_completed"
   "* return lshrhi3_out (insn, operands, NULL);"
   [(set_attr "length" "0,2,2,4,10")
+   (set_attr "adjust_len" "lshrhi")
    (set_attr "cc" "none,clobber,clobber,clobber,clobber")])
 
 (define_peephole2
@@ -3015,6 +3038,7 @@
   "reload_completed"
   "* return lshrsi3_out (insn, operands, NULL);"
   [(set_attr "length" "0,4,4,10")
+   (set_attr "adjust_len" "lshrsi")
    (set_attr "cc" "none,clobber,clobber,clobber")])
 
 ;; abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x)
@@ -3383,7 +3407,7 @@
   } 
   [(set_attr "cc" "compare")
    (set_attr "length" "1,2,2,3,4,2,4")
-   (set_attr "adjust_len" "tsthi,tsthi,no,no,no,compare,compare")])
+   (set_attr "adjust_len" "tsthi,tsthi,*,*,*,compare,compare")])
 
 
 (define_insn "*cmpsi"
@@ -3402,7 +3426,7 @@
   }
   [(set_attr "cc" "compare")
    (set_attr "length" "4,4,4,5,8")
-   (set_attr "adjust_len" "tstsi,no,compare,compare,compare")])
+   (set_attr "adjust_len" "tstsi,*,compare,compare,compare")])
 
 
 ;; ----------------------------------------------------------------------

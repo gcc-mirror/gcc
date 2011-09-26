@@ -1,3 +1,22 @@
+2011-09-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50465
+	* config/avr/avr-protos.h (output_reload_insisf): Don't pass insn.
+	* config/avr/avr.md (*reload_insi, *reload_insf): Change call to
+	output_reload_insisf.
+	(adjust_len): Set default to "no".
+	Remove alternative "yes".  Add alternatives: "mov8", "mov16",
+	"mov32", "ashlqi", "ashrqi", "lshrqi", "ashlhi", "ashrhi",
+	"lshrhi", "ashlsi, "ashrsi", "lshrsi".
+	(*movqi, *movhi, *movsi, *ashlqi3, ashlhi3, ashlsi3,
+	*ashlhi3_const, *ashlsi3_const, ashrqi3, ashrhi3, ashrsi3,
+	*ashrhi3_const, *ashrsi3_const, *lshrqi3, lshrhi3, *lshrhi3_const,
+	*lshrsi3_const): Set attribute "adjust_len".
+	* config/avr/avr.c (output_reload_insisf): Remove parameter "insn".
+	(output_movsisf): Don't pass insn to output_reload_insisf.
+	(adjust_insn_length): Handle new alternatives to adjust_len.
+	Remove handling of ADJUST_LEN_YES.  Clean-up code.
+
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ifcvt.c (noce_try_cmove_arith): Use may_trap_or_fault_p in lieu of

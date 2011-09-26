@@ -2691,7 +2691,7 @@ output_movsisf (rtx insn, rtx operands[], int *l)
       else if (CONST_INT_P (src)
                || CONST_DOUBLE_P (src))
         {
-          return output_reload_insisf (insn, operands, NULL_RTX, real_l);
+          return output_reload_insisf (operands, NULL_RTX, real_l);
         }
       else if (CONSTANT_P (src))
 	{
@@ -5019,7 +5019,7 @@ avr_rotate_bytes (rtx operands[])
 int
 adjust_insn_length (rtx insn, int len)
 {
-  rtx patt, set;
+  rtx *op = recog_data.operand;
   enum attr_adjust_len adjust_len;
 
   /* Some complex insns don't need length adjustment and therefore
@@ -5036,131 +5036,53 @@ adjust_insn_length (rtx insn, int len)
 
   adjust_len = get_attr_adjust_len (insn);
 
-  if (adjust_len != ADJUST_LEN_YES)
+  if (adjust_len == ADJUST_LEN_NO)
     {
-      rtx *op = recog_data.operand;
-      
-      if (adjust_len == ADJUST_LEN_NO)
-        {
-          /* Nothing to adjust: The length from attribute "length" is fine.  */
-          
-          return len;
-        }
-
-      /* Extract insn's operands.  */
-      
-      extract_constrain_insn_cached (insn);
-
-      /* Dispatch to right function.  */
-      
-      switch (adjust_len)
-        {
-        case ADJUST_LEN_RELOAD_IN16:
-          output_reload_inhi (op, op[2], &len);
-          break;
-          
-        case ADJUST_LEN_RELOAD_IN32:
-          output_reload_insisf (insn, op, op[2], &len);
-          break;
-          
-        case ADJUST_LEN_OUT_BITOP:
-          avr_out_bitop (insn, op, &len);
-          break;
-
-        case ADJUST_LEN_OUT_PLUS:
-          avr_out_plus (op, &len);
-          break;
-
-        case ADJUST_LEN_TSTHI: avr_out_tsthi (insn, op, &len); break;
-        case ADJUST_LEN_TSTSI: avr_out_tstsi (insn, op, &len); break;
-        case ADJUST_LEN_COMPARE: avr_out_compare (insn, op, &len); break;
-          
-        default:
-          gcc_unreachable();
-        }
+      /* Nothing to adjust: The length from attribute "length" is fine.
+         This is the default.  */
       
       return len;
-    } /* adjust_length != ADJUST_LEN_YES */
-
-  /* adjust_len == "yes": Analyse insn by hand.  */
+    }
   
-  patt = PATTERN (insn);
-
-  if (GET_CODE (patt) == SET)
+  /* Extract insn's operands.  */
+  
+  extract_constrain_insn_cached (insn);
+  
+  /* Dispatch to right function.  */
+  
+  switch (adjust_len)
     {
-      rtx op[10];
-      op[1] = SET_SRC (patt);
-      op[0] = SET_DEST (patt);
-      if (general_operand (op[1], VOIDmode)
-	  && general_operand (op[0], VOIDmode))
-	{
-	  switch (GET_MODE (op[0]))
-	    {
-	    case QImode:
-	      output_movqi (insn, op, &len);
-	      break;
-	    case HImode:
-	      output_movhi (insn, op, &len);
-	      break;
-	    case SImode:
-	    case SFmode:
-	      output_movsisf (insn, op, &len);
-	      break;
-	    default:
-	      break;
-	    }
-	}
-    }
-  set = single_set (insn);
-  if (set)
-    {
-      rtx op[10];
+    case ADJUST_LEN_RELOAD_IN16: output_reload_inhi (op, op[2], &len); break;
+    case ADJUST_LEN_RELOAD_IN32: output_reload_insisf (op, op[2], &len); break;
+      
+    case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
+      
+    case ADJUST_LEN_OUT_PLUS: avr_out_plus (op, &len); break;
+      
+    case ADJUST_LEN_MOV8:  output_movqi (insn, op, &len); break;
+    case ADJUST_LEN_MOV16: output_movhi (insn, op, &len); break;
+    case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
+      
+    case ADJUST_LEN_TSTHI: avr_out_tsthi (insn, op, &len); break;
+    case ADJUST_LEN_TSTSI: avr_out_tstsi (insn, op, &len); break;
+    case ADJUST_LEN_COMPARE: avr_out_compare (insn, op, &len); break;
 
-      op[1] = SET_SRC (set);
-      op[0] = SET_DEST (set);
+    case ADJUST_LEN_LSHRQI: lshrqi3_out (insn, op, &len); break;
+    case ADJUST_LEN_LSHRHI: lshrhi3_out (insn, op, &len); break;
+    case ADJUST_LEN_LSHRSI: lshrsi3_out (insn, op, &len); break;
 
-      if (GET_CODE (op[1]) == ASHIFT
-	  || GET_CODE (op[1]) == ASHIFTRT
-	  || GET_CODE (op[1]) == LSHIFTRT)
-	{
-	  rtx ops[10];
-	  ops[0] = op[0];
-	  ops[1] = XEXP (op[1],0);
-	  ops[2] = XEXP (op[1],1);
-	  switch (GET_CODE (op[1]))
-	    {
-	    case ASHIFT:
-	      switch (GET_MODE (op[0]))
-		{
-		case QImode: ashlqi3_out (insn,ops,&len); break;
-		case HImode: ashlhi3_out (insn,ops,&len); break;
-		case SImode: ashlsi3_out (insn,ops,&len); break;
-		default: break;
-		}
-	      break;
-	    case ASHIFTRT:
-	      switch (GET_MODE (op[0]))
-		{
-		case QImode: ashrqi3_out (insn,ops,&len); break;
-		case HImode: ashrhi3_out (insn,ops,&len); break;
-		case SImode: ashrsi3_out (insn,ops,&len); break;
-		default: break;
-		}
-	      break;
-	    case LSHIFTRT:
-	      switch (GET_MODE (op[0]))
-		{
-		case QImode: lshrqi3_out (insn,ops,&len); break;
-		case HImode: lshrhi3_out (insn,ops,&len); break;
-		case SImode: lshrsi3_out (insn,ops,&len); break;
-		default: break;
-		}
-	      break;
-	    default:
-	      break;
-	    }
-	}
+    case ADJUST_LEN_ASHRQI: ashrqi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHRHI: ashrhi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHRSI: ashrsi3_out (insn, op, &len); break;
+
+    case ADJUST_LEN_ASHLQI: ashlqi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHLHI: ashlhi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHLSI: ashlsi3_out (insn, op, &len); break;
+      
+    default:
+      gcc_unreachable();
     }
+  
   return len;
 }
 
@@ -7064,7 +6986,7 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 }
 
 
-/* A helper for `output_reload_insisf'.  */
+/* A helper for `output_reload_insisf' and `output_reload_inhi'.  */
 /* Set 32-bit register OP[0] to compile-time constant OP[1].
    CLOBBER_REG is a QI clobber register or NULL_RTX.
    LEN == NULL: output instructions.
@@ -7329,8 +7251,7 @@ output_reload_inhi (rtx *op, rtx clobber_reg, int *plen)
    Return "".  */
 
 const char *
-output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
-                      rtx *op, rtx clobber_reg, int *len)
+output_reload_insisf (rtx *op, rtx clobber_reg, int *len)
 {
   gcc_assert (REG_P (op[0])
               && CONSTANT_P (op[1]));
