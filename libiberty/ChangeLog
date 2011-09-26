@@ -1,3 +1,13 @@
+2011-09-23  Cary Coutant  <ccoutant@google.com>
+
+	PR 40831
+	* cp-demangle.c (d_make_comp): Add new component type.
+	(cplus_demangle_mangled_name): Check for clone suffixes.
+	(d_parmlist): Don't error out if we see '.'.
+	(d_clone_suffix): New function.
+	(d_print_comp): Print info for clone suffixes.
+	* testsuite/demangle-expected: Add new testcases.
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/test-expandargv.c (writeout_test): Check result of fwrite.

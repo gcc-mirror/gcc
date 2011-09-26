@@ -1,3 +1,9 @@
+2011-09-23  Cary Coutant  <ccoutant@google.com>
+
+	PR 40831
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_CLONE.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.

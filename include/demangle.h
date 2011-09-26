@@ -396,7 +396,9 @@ enum demangle_component_type
   /* An unnamed type.  */
   DEMANGLE_COMPONENT_UNNAMED_TYPE,
   /* A pack expansion.  */
-  DEMANGLE_COMPONENT_PACK_EXPANSION
+  DEMANGLE_COMPONENT_PACK_EXPANSION,
+  /* A cloned function.  */
+  DEMANGLE_COMPONENT_CLONE
 };
 
 /* Types which are only used internally.  */
