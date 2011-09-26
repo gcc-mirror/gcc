@@ -10267,6 +10267,16 @@ package body Sem_Ch6 is
         and then Can_Never_Be_Null (Etype (Formal_Id))
       then
          Set_Is_Known_Non_Null (Formal_Id);
+
+         --  We can also set Can_Never_Be_Null (thus preventing some junk
+         --  access checks) for the case of an IN parameter, which cannot
+         --  be changed, or for an IN OUT parameter, which can be changed but
+         --  not to a null value. But for an OUT parameter, the initial value
+         --  passed in can be null, so we can't set this flag in that case.
+
+         if Ekind (Formal_Id) /= E_Out_Parameter then
+            Set_Can_Never_Be_Null (Formal_Id);
+         end if;
       end if;
 
       Set_Mechanism (Formal_Id, Default_Mechanism);
