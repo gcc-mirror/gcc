@@ -1660,6 +1660,12 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
       || expr == error_mark_node)
     return NULL;
 
+  /* Other flags only apply to the primary function in overload
+     resolution, or after we've chosen one.  */
+  flags &= (LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION|LOOKUP_COPY_PARM
+	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_PREFER_RVALUE
+	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT);
+
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, c_cast_p, flags);
   else
@@ -1716,15 +1722,13 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
       && (flags & LOOKUP_NO_CONVERSION) == 0)
     {
       struct z_candidate *cand;
-      int convflags = (flags & (LOOKUP_NO_TEMP_BIND|LOOKUP_ONLYCONVERTING
-				|LOOKUP_NO_NARROWING));
 
       if (CLASS_TYPE_P (to)
 	  && BRACE_ENCLOSED_INITIALIZER_P (expr)
 	  && !CLASSTYPE_NON_AGGREGATE (complete_type (to)))
 	return build_aggr_conv (to, expr, flags);
 
-      cand = build_user_type_conversion_1 (to, expr, convflags);
+      cand = build_user_type_conversion_1 (to, expr, flags);
       if (cand)
 	conv = cand->second_conv;
 
