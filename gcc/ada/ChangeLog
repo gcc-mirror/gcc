@@ -1,5 +1,17 @@
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (create_subprog_decl): Replace TREE_CHAIN with
+	DECL_CHAIN in comment.
+	* gcc-interface/trans.c (gigi): Likewise.
+	(Attribute_to_gnu): Likewise.
+	(build_function_stub): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.c (create_subprog_decl): Likewise.
+	(convert_vms_descriptor64): Likewise.
+	(convert_vms_descriptor32): Likewise.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (assoc_to_constructor): Minor tweaks.
 	* gcc-interface/utils2.c (build_simple_component_ref): Fix formatting
 	issues.  Use COMPLETE_TYPE_P in assertion.  Also set TREE_READONLY if
