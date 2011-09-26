@@ -1,13 +1,13 @@
+2011-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* s-atocou-x86.adb (Decrement): Use %;.
+	(Increment): Likewise.
+
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_allocator): Set TREE_THIS_NOTRAP on the
 	dereference of the pointer to the storage area.  Remove useless type
 	conversions and factor out common code.
-
-2011-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
-
-	* s-atocou-x86.adb (Decrement): Use %;.
-	(Increment): Likewise.
 
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -11260,7 +11260,7 @@
 	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Use libcommon.a
 	instead of version.o.
 
-2011-05-18  Kai Tietz <ktietz@redhat.com>
+2011-05-18  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc-interface/trans.c (Exception_Handler_to_gnu_sjlj): Use
 	boolean_false_node instead of integer_zero_node.
@@ -14452,7 +14452,7 @@ notice and this notice are preserved.
 	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Use libcommon.a
 	instead of version.o.
 
-2011-05-18  Kai Tietz <ktietz@redhat.com>
+2011-05-18  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc-interface/trans.c (Exception_Handler_to_gnu_sjlj): Use
 	boolean_false_node instead of integer_zero_node.
