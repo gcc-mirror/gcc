@@ -4,6 +4,11 @@
 	dereference of the pointer to the storage area.  Remove useless type
 	conversions and factor out common code.
 
+2011-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* s-atocou-x86.adb (Decrement): Use %;.
+	(Increment): Likewise.
+
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (maybe_unconstrained_array): Declare TYPE local
