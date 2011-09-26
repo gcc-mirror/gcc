@@ -1,6 +1,7 @@
 /* Data structures and function declarations for the SSA value propagation
    engine.
-   Copyright (C) 2004, 2005, 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -72,6 +73,7 @@ typedef tree (*ssa_prop_get_value_fn) (tree);
 void ssa_propagate (ssa_prop_visit_stmt_fn, ssa_prop_visit_phi_fn);
 bool valid_gimple_rhs_p (tree);
 void move_ssa_defining_stmt_for_defs (gimple, gimple);
+bool update_gimple_call (gimple_stmt_iterator *, tree, int, ...);
 bool update_call_from_tree (gimple_stmt_iterator *, tree);
 bool stmt_makes_single_store (gimple);
 bool substitute_and_fold (ssa_prop_get_value_fn, ssa_prop_fold_stmt_fn, bool);

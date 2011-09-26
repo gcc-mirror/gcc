@@ -215,9 +215,10 @@ gimple_call_reset_alias_info (gimple s)
     pt_solution_reset (gimple_call_clobber_set (s));
 }
 
-/* Helper for gimple_build_call, gimple_build_call_vec and
-   gimple_build_call_from_tree.  Build the basic components of a
-   GIMPLE_CALL statement to function FN with NARGS arguments.  */
+/* Helper for gimple_build_call, gimple_build_call_valist,
+   gimple_build_call_vec and gimple_build_call_from_tree.  Build the basic
+   components of a GIMPLE_CALL statement to function FN with NARGS
+   arguments.  */
 
 static inline gimple
 gimple_build_call_1 (tree fn, unsigned nargs)
@@ -267,6 +268,26 @@ gimple_build_call (tree fn, unsigned nargs, ...)
   for (i = 0; i < nargs; i++)
     gimple_call_set_arg (call, i, va_arg (ap, tree));
   va_end (ap);
+
+  return call;
+}
+
+
+/* Build a GIMPLE_CALL statement to function FN.  NARGS is the number of
+   arguments.  AP contains the arguments.  */
+
+gimple
+gimple_build_call_valist (tree fn, unsigned nargs, va_list ap)
+{
+  gimple call;
+  unsigned i;
+
+  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL || is_gimple_call_addr (fn));
+
+  call = gimple_build_call_1 (fn, nargs);
+
+  for (i = 0; i < nargs; i++)
+    gimple_call_set_arg (call, i, va_arg (ap, tree));
 
   return call;
 }

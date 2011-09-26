@@ -1,3 +1,15 @@
+2011-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Set
+	gctx.into_ssa after push_gimplify_context.
+
+	* gimple.c (gimple_build_call_valist): New function.
+	* gimple.h (gimple_build_call_valist): New prototype.
+	* tree-ssa-propagate.c (finish_update_gimple_call): New function.
+	(update_gimple_call): Likewise.
+	(update_call_from_tree): Use finish_update_gimple_call.
+	* tree-ssa-propagate.h (update_gimple_call): New prototype.
+
 2011-09-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50472

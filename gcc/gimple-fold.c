@@ -551,6 +551,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   reaching_vuse = gimple_vuse (stmt);
 
   push_gimplify_context (&gctx);
+  gctx.into_ssa = gimple_in_ssa_p (cfun);
 
   if (lhs == NULL_TREE)
     {
