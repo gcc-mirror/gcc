@@ -1729,6 +1729,17 @@ fold_builtin_alloca_for_var (gimple stmt)
   array_type = build_array_type_nelts (elem_type, n_elem);
   var = create_tmp_var (array_type, NULL);
   DECL_ALIGN (var) = align;
+  {
+    struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
+    if (pi != NULL && !pi->pt.anything)
+      {
+	bool singleton_p;
+	unsigned uid;
+	singleton_p = pt_solution_singleton_p (&pi->pt, &uid);
+	gcc_assert (singleton_p);
+	SET_DECL_PT_UID (var, uid);
+      }
+  }
 
   /* Fold alloca to the address of the array.  */
   return fold_convert (TREE_TYPE (lhs), build_fold_addr_expr (var));

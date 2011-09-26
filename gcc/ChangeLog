@@ -1,3 +1,10 @@
+2011-09-26  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-alias.h (pt_solution_singleton_p): Declare.
+	* tree-ssa-structalias.c (pt_solution_singleton_p): New function.
+	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Set points-to solution
+	of new var.
+
 2011-09-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50465
