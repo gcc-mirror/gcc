@@ -16,7 +16,7 @@ export LC_CTYPE=C
 
 GC=${GC:-gccgo}
 GL=${GL:-${GC-gccgo}}
-GOLIBS=
+GOLIBS=${GOLIBS:-}
 export GC GL GOLIBS
 
 NM=${NM:-nm}
