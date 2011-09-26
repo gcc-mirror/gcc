@@ -1,5 +1,11 @@
 2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_allocator): Set TREE_THIS_NOTRAP on the
+	dereference of the pointer to the storage area.  Remove useless type
+	conversions and factor out common code.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (maybe_unconstrained_array): Declare TYPE local
 	variable and use it throughout.
 	<UNCONSTRAINED_ARRAY_TYPE>: Add 'break' at the end.
