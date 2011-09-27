@@ -24,6 +24,13 @@
 	* config/sparc/sparc-protos.h (sparc_target_macros): Declare.
 	* config/sparc/sparc.h (TARGE_CPU_CPP_BUILTINS): Call it.
 
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Add explicit
+	builtins for VIS vector addition and subtraction.
+	* config/sparc/visintrin.h (__vis_fpadd16, __vis_fpadd16s,
+	__vis_fpadd32, __vis_fpadd32s, __vis_fpsub16, __vis_fpsub16s,
+	__vis_fpsub32, __vis_fpsub32s): New.
+	* doc/extend.texi: Document new VIS intrinsics.
+
 2011-09-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (peephole casesi+2): Use -1 instead of 65536.

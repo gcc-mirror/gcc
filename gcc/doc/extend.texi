@@ -12929,6 +12929,7 @@ the SPARC Visual Instruction Set (VIS).  When you use the @option{-mvis}
 switch, the VIS extension is exposed as the following built-in functions:
 
 @smallexample
+typedef int v1si __attribute__ ((vector_size (4)));
 typedef int v2si __attribute__ ((vector_size (8)));
 typedef short v4hi __attribute__ ((vector_size (8)));
 typedef short v2hi __attribute__ ((vector_size (4)));
@@ -12977,6 +12978,15 @@ long __builtin_vis_fcmpgt16 (v4hi, v4hi);
 long __builtin_vis_fcmpgt32 (v2si, v2si);
 long __builtin_vis_fcmpeq16 (v4hi, v4hi);
 long __builtin_vis_fcmpeq32 (v2si, v2si);
+
+v4hi __builtin_vis_fpadd16 (v4hi, v4hi);
+v2hi __builtin_vis_fpadd16s (v2hi, v2hi);
+v2si __builtin_vis_fpadd32 (v2si, v2si);
+v1si __builtin_vis_fpadd32s (v1si, v1si);
+v4hi __builtin_vis_fpsub16 (v4hi, v4hi);
+v2hi __builtin_vis_fpsub16s (v2hi, v2hi);
+v2si __builtin_vis_fpsub32 (v2si, v2si);
+v1si __builtin_vis_fpsub32s (v1si, v1si);
 @end smallexample
 
 @node SPU Built-in Functions
