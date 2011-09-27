@@ -8088,8 +8088,8 @@
         (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
 			  	  (match_operand:P 2 "register_operand" "rJ"))
 			 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8))]
+   (set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8))]
   "TARGET_VIS"
   "edge8\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
@@ -8099,8 +8099,8 @@
         (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
 			  	  (match_operand:P 2 "register_operand" "rJ"))
 			 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8L))]
+   (set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8L))]
   "TARGET_VIS"
   "edge8l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
@@ -8110,8 +8110,8 @@
         (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
 			  	  (match_operand:P 2 "register_operand" "rJ"))
 			 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16))]
+   (set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16))]
   "TARGET_VIS"
   "edge16\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
@@ -8121,8 +8121,8 @@
         (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
 			  	  (match_operand:P 2 "register_operand" "rJ"))
 			 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16L))]
+   (set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16L))]
   "TARGET_VIS"
   "edge16l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
@@ -8132,8 +8132,8 @@
         (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
 			  	  (match_operand:P 2 "register_operand" "rJ"))
 			 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32))]
+   (set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32))]
   "TARGET_VIS"
   "edge32\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
@@ -8143,85 +8143,85 @@
         (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
 			  	  (match_operand:P 2 "register_operand" "rJ"))
 			 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32L))]
+   (set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32L))]
   "TARGET_VIS"
   "edge32l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
 
-(define_insn "fcmple16_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
-		    (match_operand:V4HI 2 "register_operand" "e")]
+(define_insn "fcmple16<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V4HI 1 "register_operand" "e")
+		   (match_operand:V4HI 2 "register_operand" "e")]
 	 UNSPEC_FCMPLE))]
   "TARGET_VIS"
   "fcmple16\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-(define_insn "fcmple32_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
-		    (match_operand:V2SI 2 "register_operand" "e")]
+(define_insn "fcmple32<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V2SI 1 "register_operand" "e")
+		   (match_operand:V2SI 2 "register_operand" "e")]
 	 UNSPEC_FCMPLE))]
   "TARGET_VIS"
   "fcmple32\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-(define_insn "fcmpne16_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
-		    (match_operand:V4HI 2 "register_operand" "e")]
+(define_insn "fcmpne16<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V4HI 1 "register_operand" "e")
+		   (match_operand:V4HI 2 "register_operand" "e")]
 	 UNSPEC_FCMPNE))]
   "TARGET_VIS"
   "fcmpne16\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-(define_insn "fcmpne32_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
-		    (match_operand:V2SI 2 "register_operand" "e")]
+(define_insn "fcmpne32<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V2SI 1 "register_operand" "e")
+		   (match_operand:V2SI 2 "register_operand" "e")]
 	 UNSPEC_FCMPNE))]
   "TARGET_VIS"
   "fcmpne32\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-(define_insn "fcmpgt16_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
-		    (match_operand:V4HI 2 "register_operand" "e")]
+(define_insn "fcmpgt16<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V4HI 1 "register_operand" "e")
+		   (match_operand:V4HI 2 "register_operand" "e")]
 	 UNSPEC_FCMPGT))]
   "TARGET_VIS"
   "fcmpgt16\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-(define_insn "fcmpgt32_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
-		    (match_operand:V2SI 2 "register_operand" "e")]
+(define_insn "fcmpgt32<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V2SI 1 "register_operand" "e")
+		   (match_operand:V2SI 2 "register_operand" "e")]
 	 UNSPEC_FCMPGT))]
   "TARGET_VIS"
   "fcmpgt32\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-(define_insn "fcmpeq16_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V4HI 1 "register_operand" "e")
-		    (match_operand:V4HI 2 "register_operand" "e")]
+(define_insn "fcmpeq16<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V4HI 1 "register_operand" "e")
+		   (match_operand:V4HI 2 "register_operand" "e")]
 	 UNSPEC_FCMPEQ))]
   "TARGET_VIS"
   "fcmpeq16\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-(define_insn "fcmpeq32_vis"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-  	(unspec:SI [(match_operand:V2SI 1 "register_operand" "e")
+(define_insn "fcmpeq32<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+  	(unspec:P [(match_operand:V2SI 1 "register_operand" "e")
 		    (match_operand:V2SI 2 "register_operand" "e")]
 	 UNSPEC_FCMPEQ))]
   "TARGET_VIS"
