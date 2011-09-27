@@ -1,3 +1,10 @@
+2011-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-types.c (gfc_type_for_size): Return wider type
+	if no suitable narrower type has been found.
+	(gfc_type_for_mode): Return NULL_TREE if gfc_type_for_size
+	returned type doesn't have expected TYPE_MODE.
+
 2011-09-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50515
