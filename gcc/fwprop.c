@@ -1232,20 +1232,23 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
 
   /* If def and use are subreg, check if they match.  */
   reg = DF_REF_REG (use);
-  if (GET_CODE (reg) == SUBREG
-      && GET_CODE (SET_DEST (def_set)) == SUBREG
-      && (SUBREG_BYTE (SET_DEST (def_set)) != SUBREG_BYTE (reg)
-	  || GET_MODE (SET_DEST (def_set)) != GET_MODE (reg)))
-    return false;
-
+  if (GET_CODE (reg) == SUBREG && GET_CODE (SET_DEST (def_set)) == SUBREG)
+    {
+      if (SUBREG_BYTE (SET_DEST (def_set)) != SUBREG_BYTE (reg))
+	return false;
+    }
   /* Check if the def had a subreg, but the use has the whole reg.  */
-  if (REG_P (reg) && GET_CODE (SET_DEST (def_set)) == SUBREG)
+  else if (REG_P (reg) && GET_CODE (SET_DEST (def_set)) == SUBREG)
     return false;
-
   /* Check if the use has a subreg, but the def had the whole reg.  Unlike the
      previous case, the optimization is possible and often useful indeed.  */
-  if (GET_CODE (reg) == SUBREG && REG_P (SET_DEST (def_set)))
+  else if (GET_CODE (reg) == SUBREG && REG_P (SET_DEST (def_set)))
     reg = SUBREG_REG (reg);
+
+  /* Make sure that we can treat REG as having the same mode as the
+     source of DEF_SET.  */
+  if (GET_MODE (SET_DEST (def_set)) != GET_MODE (reg))
+    return false;
 
   /* Check if the substitution is valid (last, because it's the most
      expensive check!).  */
