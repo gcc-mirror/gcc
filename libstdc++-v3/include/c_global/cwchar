@@ -136,6 +136,8 @@ namespace std
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   using ::wint_t;
 
   using ::btowc;
@@ -206,8 +208,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
   using ::wcsrchr;
   using ::wcsstr;
   using ::wmemchr;
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifndef __CORRECT_ISO_CPP_WCHAR_H_PROTO
   inline wchar_t*
