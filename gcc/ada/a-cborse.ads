@@ -31,8 +31,9 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
+with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
-private with Ada.Streams;
+with Ada.Streams; use Ada.Streams;
 
 generic
    type Element_Type is private;
@@ -46,7 +47,11 @@ package Ada.Containers.Bounded_Ordered_Sets is
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
-   type Set (Capacity : Count_Type) is tagged private;
+   type Set (Capacity : Count_Type) is tagged private
+   with Constant_Indexing => Constant_Reference,
+        Default_Iterator  => Iterate,
+        Iterator_Element  => Element_Type;
+
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
@@ -55,6 +60,20 @@ package Ada.Containers.Bounded_Ordered_Sets is
    Empty_Set : constant Set;
 
    No_Element : constant Cursor;
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package Ordered_Set_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : Set; Position : Cursor)
+   return Constant_Reference_Type;
 
    function "=" (Left, Right : Set) return Boolean;
 
@@ -171,8 +190,6 @@ package Ada.Containers.Bounded_Ordered_Sets is
 
    function Contains (Container : Set; Item : Element_Type) return Boolean;
 
-   function Has_Element (Position : Cursor) return Boolean;
-
    function "<" (Left, Right : Cursor) return Boolean;
 
    function ">" (Left, Right : Cursor) return Boolean;
@@ -192,6 +209,15 @@ package Ada.Containers.Bounded_Ordered_Sets is
    procedure Reverse_Iterate
      (Container : Set;
       Process   : not null access procedure (Position : Cursor));
+
+   function Iterate
+     (Container : Set)
+      return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
+
+   function Iterate
+     (Container : Set;
+      Start     : Cursor)
+      return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
 
    generic
       type Key_Type (<>) is private;
@@ -231,6 +257,34 @@ package Ada.Containers.Bounded_Ordered_Sets is
          Process   : not null access
                        procedure (Element : in out Element_Type));
 
+      type Reference_Type (Element : not null access Element_Type) is private
+      with
+         Implicit_Dereference => Element;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Constant_Reference_Type;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type;
+
+   private
+      type Reference_Type
+         (Element : not null access Element_Type) is null record;
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type);
+
+      for Reference_Type'Read use Read;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type);
+
+      for Reference_Type'Write use Write;
+
    end Generic_Keys;
 
 private
@@ -267,7 +321,6 @@ private
    end record;
 
    use Tree_Types;
-   use Ada.Streams;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
@@ -294,6 +347,21 @@ private
       Container : out Set);
 
    for Set'Read use Read;
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is null record;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
 
    Empty_Set : constant Set := Set'(Tree_Type with Capacity => 0);
 

@@ -50,11 +50,9 @@ package Ada.Containers.Ordered_Sets is
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
    type Set is tagged private
-   with
-     Constant_Indexing => Constant_Reference,
-     Variable_Indexing => Reference,
-     Default_Iterator  => Iterate,
-     Iterator_Element  => Element_Type;
+   with Constant_Indexing => Constant_Reference,
+        Default_Iterator  => Iterate,
+        Iterator_Element  => Element_Type;
 
    pragma Preelaborable_Initialization (Set);
 
@@ -66,18 +64,6 @@ package Ada.Containers.Ordered_Sets is
    Empty_Set : constant Set;
 
    No_Element : constant Cursor;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor);
-
-   for Cursor'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor);
-
-   for Cursor'Read use Read;
 
    package Ordered_Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
@@ -103,26 +89,6 @@ package Ada.Containers.Ordered_Sets is
       Item   : out Constant_Reference_Type);
 
    for Constant_Reference_Type'Read use Read;
-
-   type Reference_Type (Element : not null access Element_Type) is private
-   with
-      Implicit_Dereference => Element;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type);
-
-   for Reference_Type'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type);
-
-   for Reference_Type'Read use Read;
-
-   function Reference
-     (Container : Set; Position : Cursor)
-   return Reference_Type;
 
    function "=" (Left, Right : Set) return Boolean;
 
@@ -302,6 +268,33 @@ package Ada.Containers.Ordered_Sets is
          Process   : not null access
                        procedure (Element : in out Element_Type));
 
+      type Reference_Type (Element : not null access Element_Type) is private
+      with
+         Implicit_Dereference => Element;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Constant_Reference_Type;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type;
+
+   private
+      type Reference_Type
+         (Element : not null access Element_Type) is null record;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type);
+
+      for Reference_Type'Write use Write;
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type);
+
+      for Reference_Type'Read use Read;
    end Generic_Keys;
 
 private
@@ -343,6 +336,18 @@ private
       Node      : Node_Access;
    end record;
 
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Cursor);
+
+   for Cursor'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Cursor);
+
+   for Cursor'Read use Read;
+
    No_Element : constant Cursor := Cursor'(null, null);
 
    procedure Write
@@ -359,9 +364,6 @@ private
 
    type Constant_Reference_Type
       (Element : not null access constant Element_Type) is null record;
-
-   type Reference_Type
-      (Element : not null access Element_Type) is null record;
 
    Empty_Set : constant Set :=
                  (Controlled with Tree => (First  => null,

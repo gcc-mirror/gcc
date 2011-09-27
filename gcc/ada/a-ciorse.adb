@@ -926,6 +926,50 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          raise Program_Error with "key was modified";
       end Update_Element_Preserving_Key;
 
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Constant_Reference_Type
+      is
+         Position : constant Cursor := Find (Container, Key);
+
+      begin
+         if Position.Container = null then
+            raise Constraint_Error with "Position cursor has no element";
+         end if;
+
+         return (Element => Position.Node.Element);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type
+      is
+         Position : constant Cursor := Find (Container, Key);
+
+      begin
+         if Position.Container = null then
+            raise Constraint_Error with "Position cursor has no element";
+         end if;
+
+         return (Element => Position.Node.Element);
+      end Reference_Preserving_Key;
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type)
+      is
+      begin
+         raise Program_Error with "attempt to stream reference";
+      end Read;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type)
+      is
+      begin
+         raise Program_Error with "attempt to stream reference";
+      end Write;
+
    end Generic_Keys;
 
    -----------------
@@ -1500,14 +1544,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type)
-   is
-   begin
-      raise Program_Error with "attempt to stream reference";
-   end Read;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
       Item   : out Constant_Reference_Type)
    is
    begin
@@ -1529,18 +1565,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
       return (Element => Position.Node.Element.all'Access);
    end Constant_Reference;
-
-   function Reference (Container : Set; Position : Cursor)
-   return Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      if Position.Container = null then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      return (Element => Position.Node.Element.all'Access);
-   end Reference;
 
    -------------
    -- Replace --
@@ -1872,14 +1896,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    is
    begin
       raise Program_Error with "attempt to stream set cursor";
-   end Write;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type)
-   is
-   begin
-      raise Program_Error with "attempt to stream reference";
    end Write;
 
    procedure Write

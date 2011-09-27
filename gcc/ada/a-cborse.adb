@@ -42,6 +42,24 @@ with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Ordered_Sets is
 
+   type Iterator is new
+     Ordered_Set_Iterator_Interfaces.Reversible_Iterator with record
+        Container : access constant Set;
+        Node      : Count_Type;
+     end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Last (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
    ------------------------------
    -- Access to Fields of Node --
    ------------------------------
@@ -598,6 +616,18 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       return Cursor'(Container'Unrestricted_Access, Container.First);
    end First;
 
+   function First (Object : Iterator) return Cursor is
+   begin
+      if Object.Container.First = 0 then
+         return No_Element;
+      else
+         return
+           Cursor'(
+             Object.Container.all'Unrestricted_Access,
+             Object.Container.First);
+      end if;
+   end First;
+
    -------------------
    -- First_Element --
    -------------------
@@ -891,6 +921,53 @@ package body Ada.Containers.Bounded_Ordered_Sets is
          raise Program_Error with "key was modified";
       end Update_Element_Preserving_Key;
 
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Constant_Reference_Type
+      is
+         Position : constant Cursor := Find (Container, Key);
+
+      begin
+         if Position.Node = 0 then
+            raise Constraint_Error with "Position cursor has no element";
+         end if;
+
+         return
+           (Element =>
+              Container.Nodes (Position.Node).Element'Unrestricted_Access);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type
+      is
+         Position : constant Cursor := Find (Container, Key);
+
+      begin
+         if Position.Node = 0 then
+            raise Constraint_Error with "Position cursor has no element";
+         end if;
+
+         return
+           (Element =>
+              Container.Nodes (Position.Node).Element'Unrestricted_Access);
+      end Reference_Preserving_Key;
+
+      procedure  Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type)
+      is
+      begin
+         raise Program_Error with "attempt to stream reference";
+      end Read;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type)
+      is
+      begin
+         raise Program_Error with "attempt to stream reference";
+      end Write;
    end Generic_Keys;
 
    -----------------
@@ -1185,6 +1262,25 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       B := B - 1;
    end Iterate;
 
+   function Iterate (Container : Set)
+     return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class
+   is
+   begin
+      if Container.Length = 0 then
+         return Iterator'(null, 0);
+      else
+         return Iterator'(Container'Unchecked_Access, Container.First);
+      end if;
+   end Iterate;
+
+   function Iterate (Container : Set; Start : Cursor)
+     return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator := (Container'Unchecked_Access, Start.Node);
+   begin
+      return It;
+   end Iterate;
+
    ----------
    -- Last --
    ----------
@@ -1196,6 +1292,17 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       end if;
 
       return Cursor'(Container'Unrestricted_Access, Container.Last);
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      if Object.Container.Last = 0 then
+         return No_Element;
+      else
+         return Cursor'(
+           Object.Container.all'Unrestricted_Access,
+                        Object.Container.Last);
+      end if;
    end Last;
 
    ------------------
@@ -1279,6 +1386,13 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       Position := Next (Position);
    end Next;
 
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+
+   begin
+      return Next (Position);
+   end Next;
+
    -------------
    -- Overlap --
    -------------
@@ -1326,6 +1440,12 @@ package body Ada.Containers.Bounded_Ordered_Sets is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Previous (Position);
+   end Previous;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
    end Previous;
 
    -------------------
@@ -1407,6 +1527,30 @@ package body Ada.Containers.Bounded_Ordered_Sets is
    begin
       raise Program_Error with "attempt to stream set cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference (Container : Set; Position : Cursor)
+   return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element =>
+        Container.Nodes (Position.Node).Element'Unrestricted_Access);
+   end Constant_Reference;
 
    -------------
    -- Replace --
@@ -1714,6 +1858,14 @@ package body Ada.Containers.Bounded_Ordered_Sets is
    is
    begin
       raise Program_Error with "attempt to stream set cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Bounded_Ordered_Sets;

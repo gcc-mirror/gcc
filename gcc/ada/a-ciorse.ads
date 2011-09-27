@@ -50,7 +50,6 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    type Set is tagged private with
       Constant_Indexing => Constant_Reference,
-      Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type;
 
@@ -73,6 +72,10 @@ package Ada.Containers.Indefinite_Ordered_Sets is
    private with
       Implicit_Dereference => Element;
 
+   function Constant_Reference
+     (Container : Set;
+      Position  : Cursor) return Constant_Reference_Type;
+
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;
       Item   : out Constant_Reference_Type);
@@ -84,30 +87,6 @@ package Ada.Containers.Indefinite_Ordered_Sets is
       Item   : Constant_Reference_Type);
 
    for Constant_Reference_Type'Write use Write;
-
-   function Constant_Reference
-     (Container : Set;
-      Position  : Cursor) return Constant_Reference_Type;
-
-   type Reference_Type (Element : not null access Element_Type) is private
-   with
-      Implicit_Dereference => Element;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type);
-
-   for Reference_Type'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type);
-
-   for Reference_Type'Read use Read;
-
-   function Reference
-     (Container : Set; Position : Cursor)
-   return Reference_Type;
 
    function "=" (Left, Right : Set) return Boolean;
 
@@ -212,13 +191,21 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Previous (Position : in out Cursor);
 
-   function Find (Container : Set; Item : Element_Type) return Cursor;
+   function Find
+     (Container : Set;
+      Item      : Element_Type) return Cursor;
 
-   function Floor (Container : Set; Item : Element_Type) return Cursor;
+   function Floor
+     (Container : Set;
+      Item      : Element_Type) return Cursor;
 
-   function Ceiling (Container : Set; Item : Element_Type) return Cursor;
+   function Ceiling
+     (Container : Set;
+      Item      : Element_Type) return Cursor;
 
-   function Contains (Container : Set; Item : Element_Type) return Boolean;
+   function Contains
+     (Container : Set;
+      Item      : Element_Type) return Boolean;
 
    function "<" (Left, Right : Cursor) return Boolean;
 
@@ -295,10 +282,36 @@ package Ada.Containers.Indefinite_Ordered_Sets is
          Process   : not null access
                        procedure (Element : in out Element_Type));
 
+      type Reference_Type (Element : not null access Element_Type) is private
+      with
+         Implicit_Dereference => Element;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Constant_Reference_Type;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type;
+
+   private
+      type Reference_Type
+         (Element : not null access Element_Type) is null record;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type);
+
+      for Reference_Type'Write use Write;
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type);
+
+      for Reference_Type'Read use Read;
    end Generic_Keys;
 
 private
-
    pragma Inline (Next);
    pragma Inline (Previous);
 
@@ -367,9 +380,6 @@ private
 
    type Constant_Reference_Type
       (Element : not null access constant Element_Type) is null record;
-
-   type Reference_Type
-      (Element : not null access Element_Type) is null record;
 
    Empty_Set : constant Set :=
                  (Controlled with Tree => (First  => null,
