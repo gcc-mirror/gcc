@@ -499,6 +499,14 @@ grep '^type _passwd ' gen-sysinfo.go | \
 grep '^const _TIOC' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(TIOC[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
+# ioctl constants.  Might fall back to 0 if TIOCNXCL is missing, too, but
+# needs handling in syscalls.exec.go.
+if ! grep '^const _TIOCSCTTY ' gen-sysinfo.go >/dev/null 2>&1; then
+  if grep '^const _TIOCNXCL ' gen-sysinfo.go >/dev/null 2>&1; then
+    echo "const TIOCSCTTY = TIOCNXCL" >> ${OUT}
+  fi
+fi
+
 # The nlmsghdr struct.
 grep '^type _nlmsghdr ' gen-sysinfo.go | \
     sed -e 's/_nlmsghdr/NlMsghdr/' \
