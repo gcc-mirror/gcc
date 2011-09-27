@@ -1879,7 +1879,7 @@ package body Checks is
          Arr_Typ := Get_Actual_Subtype_If_Available (Arr);
 
          if Is_Access_Type (Arr_Typ) then
-            Arr_Typ := Directly_Designated_Type (Arr_Typ);
+            Arr_Typ := Designated_Type (Arr_Typ);
          end if;
       end if;
 
