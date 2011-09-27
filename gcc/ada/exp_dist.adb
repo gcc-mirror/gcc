@@ -11075,7 +11075,6 @@ package body Exp_Dist is
 
       function RPC_Receiver_Decl (RACW_Type : Entity_Id) return Node_Id is
          Loc : constant Source_Ptr := Sloc (RACW_Type);
-
       begin
          return
            Make_Object_Declaration (Loc,

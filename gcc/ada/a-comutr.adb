@@ -1348,18 +1348,13 @@ package body Ada.Containers.Multiway_Trees is
      return Tree_Iterator_Interfaces.Forward_Iterator'Class
    is
       Root_Cursor : constant Cursor :=
-        (Container'Unrestricted_Access, Root_Node (Container));
+                      (Container'Unrestricted_Access, Root_Node (Container));
    begin
       return
         Iterator'(Container'Unrestricted_Access,
-                     First_Child (Root_Cursor), From_Root => True);
+                  First_Child (Root_Cursor),
+                  From_Root => True);
    end Iterate;
-
-   function Iterate_Subtree (Position : Cursor)
-     return Tree_Iterator_Interfaces.Forward_Iterator'Class is
-   begin
-      return Iterator'(Position.Container, Position, From_Root => False);
-   end Iterate_Subtree;
 
    ----------------------
    -- Iterate_Children --
@@ -1421,6 +1416,14 @@ package body Ada.Containers.Multiway_Trees is
    -- Iterate_Subtree --
    ---------------------
 
+   function Iterate_Subtree
+     (Position : Cursor)
+      return Tree_Iterator_Interfaces.Forward_Iterator'Class
+   is
+   begin
+      return Iterator'(Position.Container, Position, From_Root => False);
+   end Iterate_Subtree;
+
    procedure Iterate_Subtree
      (Position  : Cursor;
       Process   : not null access procedure (Position : Cursor))
@@ -1438,7 +1441,6 @@ package body Ada.Containers.Multiway_Trees is
 
          if Is_Root (Position) then
             Iterate_Children (Position.Container, Position.Node, Process);
-
          else
             Iterate_Subtree (Position.Container, Position.Node, Process);
          end if;

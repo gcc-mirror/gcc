@@ -1737,18 +1737,13 @@ package body Ada.Containers.Bounded_Multiway_Trees is
      return Tree_Iterator_Interfaces.Forward_Iterator'Class
    is
       Root_Cursor : constant Cursor :=
-        (Container'Unrestricted_Access, Root_Node (Container));
+                      (Container'Unrestricted_Access, Root_Node (Container));
    begin
       return
         Iterator'(Container'Unrestricted_Access,
-                     First_Child (Root_Cursor), From_Root => True);
+                  First_Child (Root_Cursor),
+                  From_Root => True);
    end Iterate;
-
-   function Iterate_Subtree (Position : Cursor)
-     return Tree_Iterator_Interfaces.Forward_Iterator'Class is
-   begin
-      return Iterator'(Position.Container, Position, From_Root => False);
-   end Iterate_Subtree;
 
    ----------------------
    -- Iterate_Children --
@@ -1818,6 +1813,14 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    -- Iterate_Subtree --
    ---------------------
 
+   function Iterate_Subtree
+     (Position : Cursor)
+      return Tree_Iterator_Interfaces.Forward_Iterator'Class
+   is
+   begin
+      return Iterator'(Position.Container, Position, From_Root => False);
+   end Iterate_Subtree;
+
    procedure Iterate_Subtree
      (Position  : Cursor;
       Process   : not null access procedure (Position : Cursor))
@@ -1841,7 +1844,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
          if Is_Root (Position) then
             Iterate_Children (T, Position.Node, Process);
-
          else
             Iterate_Subtree (T, Position.Node, Process);
          end if;
@@ -1938,7 +1940,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    begin
       if Is_Leaf (Position) then
 
-         --  If sibling is present, return it.
+         --  If sibling is present, return it
 
          if N.Next /= 0 then
             return (Object.Container, N.Next);
@@ -1955,7 +1957,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
                while Par.Next = 0 loop
                   Pos := Par.Parent;
 
-                  --  If we are back at the root the iteration is complete.
+                  --  If we are back at the root the iteration is complete
 
                   if Pos = No_Node then
                      return No_Element;
@@ -1983,10 +1985,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
             end;
          end if;
 
+      --  If an internal node, return its first child
+
       else
-
-         --  If an internal node, return its first child.
-
          return (Object.Container, N.Children.First);
       end if;
    end Next;
@@ -2351,24 +2352,22 @@ package body Ada.Containers.Bounded_Multiway_Trees is
      (Container : aliased Tree;
       Position  : Cursor) return Constant_Reference_Type
    is
-   begin
       pragma Unreferenced (Container);
-
+   begin
       return
         (Element =>
-            Position.Container.Elements (Position.Node)'Unchecked_Access);
+           Position.Container.Elements (Position.Node)'Unchecked_Access);
    end Constant_Reference;
 
    function Reference
      (Container : aliased Tree;
       Position  : Cursor) return Reference_Type
    is
-   begin
       pragma Unreferenced (Container);
-
+   begin
       return
         (Element =>
-            Position.Container.Elements (Position.Node)'Unchecked_Access);
+           Position.Container.Elements (Position.Node)'Unchecked_Access);
    end Reference;
 
    --------------------
