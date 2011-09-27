@@ -171,8 +171,8 @@ package Ada.Containers.Multiway_Trees is
       Process   : not null access procedure (Position : Cursor));
 
    procedure Iterate_Subtree
-     (Position  : Cursor;
-      Process   : not null access procedure (Position : Cursor));
+     (Position : Cursor;
+      Process  : not null access procedure (Position : Cursor));
 
    function Iterate (Container : Tree)
      return Tree_Iterator_Interfaces.Forward_Iterator'Class;
@@ -183,7 +183,7 @@ package Ada.Containers.Multiway_Trees is
    function Iterate_Children
      (Container : Tree;
       Parent    : Cursor)
-     return Tree_Iterator_Interfaces.Reversible_Iterator'Class;
+      return Tree_Iterator_Interfaces.Reversible_Iterator'Class;
 
    function Child_Count (Parent : Cursor) return Count_Type;
 
