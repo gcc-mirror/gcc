@@ -413,6 +413,7 @@ extern struct gimple_opt_pass pass_diagnose_omp_blocks;
 extern struct gimple_opt_pass pass_expand_omp;
 extern struct gimple_opt_pass pass_expand_omp_ssa;
 extern struct gimple_opt_pass pass_object_sizes;
+extern struct gimple_opt_pass pass_strlen;
 extern struct gimple_opt_pass pass_fold_builtins;
 extern struct gimple_opt_pass pass_stdarg;
 extern struct gimple_opt_pass pass_early_warn_uninitialized;

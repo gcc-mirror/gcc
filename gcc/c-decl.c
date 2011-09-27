@@ -2369,7 +2369,21 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	  C_DECL_DECLARED_BUILTIN (newdecl) = 1;
 	  if (new_is_prototype)
-	    C_DECL_BUILTIN_PROTOTYPE (newdecl) = 0;
+	    {
+	      C_DECL_BUILTIN_PROTOTYPE (newdecl) = 0;
+	      if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
+		switch (DECL_FUNCTION_CODE (newdecl))
+		  {
+		  /* If a compatible prototype of these builtin functions
+		     is seen, assume the runtime implements it with the
+		     expected semantics.  */
+		  case BUILT_IN_STPCPY:
+		    implicit_built_in_decls[DECL_FUNCTION_CODE (newdecl)]
+		      = built_in_decls[DECL_FUNCTION_CODE (newdecl)];
+		  default:
+		    break;
+		  }
+	    }
 	  else
 	    C_DECL_BUILTIN_PROTOTYPE (newdecl)
 	      = C_DECL_BUILTIN_PROTOTYPE (olddecl);

@@ -1,3 +1,19 @@
+2011-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt: Add -foptimize-strlen option.
+	* Makefile.in (OBJS): Add tree-ssa-strlen.o.
+	(tree-sssa-strlen.o): Add dependencies.
+	* opts.c (default_options_table): Enable -foptimize-strlen
+	by default at -O2 if not -Os.
+	* passes.c (init_optimization_passes): Add pass_strlen
+	after pass_object_sizes.
+	* timevar.def (TV_TREE_STRLEN): New timevar.
+	* params.def (PARAM_MAX_TRACKED_STRLENS): New parameter.
+	* tree-pass.h (pass_strlen): Declare.
+	* tree-ssa-strlen.c: New file.
+	* c-decl.c (merge_decls): If compatible stpcpy prototype
+	is seen, set implicit_built_in_decls[BUILT_IN_STPCPY].
+
 2011-09-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/43864

@@ -1,3 +1,31 @@
+2011-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/strlenopt-1.c: New test.
+	* gcc.dg/strlenopt-1f.c: New test.
+	* gcc.dg/strlenopt-2.c: New test.
+	* gcc.dg/strlenopt-2f.c: New test.
+	* gcc.dg/strlenopt-3.c: New test.
+	* gcc.dg/strlenopt-4.c: New test.
+	* gcc.dg/strlenopt-4g.c: New test.
+	* gcc.dg/strlenopt-4gf.c: New test.
+	* gcc.dg/strlenopt-5.c: New test.
+	* gcc.dg/strlenopt-6.c: New test.
+	* gcc.dg/strlenopt-7.c: New test.
+	* gcc.dg/strlenopt-8.c: New test.
+	* gcc.dg/strlenopt-9.c: New test.
+	* gcc.dg/strlenopt-10.c: New test.
+	* gcc.dg/strlenopt-11.c: New test.
+	* gcc.dg/strlenopt-12.c: New test.
+	* gcc.dg/strlenopt-12g.c: New test.
+	* gcc.dg/strlenopt-13.c: New test.
+	* gcc.dg/strlenopt-14g.c: New test.
+	* gcc.dg/strlenopt-14gf.c: New test.
+	* gcc.dg/strlenopt-15.c: New test.
+	* gcc.dg/strlenopt-16g.c: New test.
+	* gcc.dg/strlenopt-17g.c: New test.
+	* gcc.dg/strlenopt-18g.c: New test.
+	* gcc.dg/strlenopt.h: New file.
+
 2011-09-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/43864

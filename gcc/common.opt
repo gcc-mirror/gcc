@@ -1961,6 +1961,10 @@ ftree-fre
 Common Report Var(flag_tree_fre) Optimization
 Enable Full Redundancy Elimination (FRE) on trees
 
+foptimize-strlen
+Common Report Var(flag_optimize_strlen) Optimization
+Enable string length optimizations on trees
+
 ftree-loop-distribution
 Common Report Var(flag_tree_loop_distribution) Optimization
 Enable loop distribution on trees
