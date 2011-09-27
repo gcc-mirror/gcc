@@ -569,40 +569,45 @@ compile_file (void)
       return;
     }
 
-  varpool_assemble_pending_decls ();
-  finish_aliases_2 ();
+  /* Compilation unit is finalized.  When producing non-fat LTO object, we are
+     basically finished.  */
+  if (in_lto_p || !flag_lto || flag_fat_lto_objects)
+    {
+      varpool_assemble_pending_decls ();
+      finish_aliases_2 ();
 
-  /* Likewise for mudflap static object registrations.  */
-  if (flag_mudflap)
-    mudflap_finish_file ();
+      /* Likewise for mudflap static object registrations.  */
+      if (flag_mudflap)
+	mudflap_finish_file ();
 
-  output_shared_constant_pool ();
-  output_object_blocks ();
+      output_shared_constant_pool ();
+      output_object_blocks ();
 
-  /* Write out any pending weak symbol declarations.  */
-  weak_finish ();
+      /* Write out any pending weak symbol declarations.  */
+      weak_finish ();
 
-  /* This must be at the end before unwind and debug info.
-     Some target ports emit PIC setup thunks here.  */
-  targetm.asm_out.code_end ();
+      /* This must be at the end before unwind and debug info.
+	 Some target ports emit PIC setup thunks here.  */
+      targetm.asm_out.code_end ();
 
-  /* Do dbx symbols.  */
-  timevar_push (TV_SYMOUT);
+      /* Do dbx symbols.  */
+      timevar_push (TV_SYMOUT);
 
-#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
-  if (dwarf2out_do_frame ())
-    dwarf2out_frame_finish ();
-#endif
+    #if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
+      if (dwarf2out_do_frame ())
+	dwarf2out_frame_finish ();
+    #endif
 
-  (*debug_hooks->finish) (main_input_filename);
-  timevar_pop (TV_SYMOUT);
+      (*debug_hooks->finish) (main_input_filename);
+      timevar_pop (TV_SYMOUT);
 
-  /* Output some stuff at end of file if nec.  */
+      /* Output some stuff at end of file if nec.  */
 
-  dw2_output_indirect_constants ();
+      dw2_output_indirect_constants ();
 
-  /* Flush any pending external directives.  */
-  process_pending_assemble_externals ();
+      /* Flush any pending external directives.  */
+      process_pending_assemble_externals ();
+   }
 
   /* Emit LTO marker if LTO info has been previously emitted.  This is
      used by collect2 to determine whether an object file contains IL.
@@ -623,6 +628,23 @@ compile_file (void)
 			 (unsigned HOST_WIDE_INT) 1,
 			 (unsigned HOST_WIDE_INT) 1);
 #endif
+      /* Let linker plugin know that this is a slim object and must be LTOed
+         even when user did not ask for it.  */
+      if (!flag_fat_lto_objects)
+        {
+#if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
+	  ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
+					  "__gnu_slim_lto",
+					  (unsigned HOST_WIDE_INT) 1, 8);
+#elif defined ASM_OUTPUT_ALIGNED_COMMON
+	  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_slim_lto",
+				     (unsigned HOST_WIDE_INT) 1, 8);
+#else
+	  ASM_OUTPUT_COMMON (asm_out_file, "__gnu_slim_lto",
+			     (unsigned HOST_WIDE_INT) 1,
+			     (unsigned HOST_WIDE_INT) 1);
+#endif
+        }
     }
 
   /* Attach a special .ident directive to the end of the file to identify

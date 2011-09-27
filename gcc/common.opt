@@ -1087,6 +1087,10 @@ Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
 ffast-math
 Common
 
+ffat-lto-objects
+Common Var(flag_fat_lto_objects) Init(1)
+Output lto objects containing both the intermediate language and binary output.
+
 ffinite-math-only
 Common Report Var(flag_finite_math_only) Optimization SetByCombined
 Assume no NaNs or infinities are generated

@@ -355,8 +355,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdce -fdelayed-branch @gol
 -fdelete-null-pointer-checks -fdse -fdevirtualize -fdse @gol
--fearly-inlining -fipa-sra -fexpensive-optimizations -ffast-math @gol
--ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
+-fearly-inlining -fipa-sra -fexpensive-optimizations -ffat-lto-objects @gol
+-ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
 -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm -fgraphite-identity @gol
 -fgcse-sm -fif-conversion -fif-conversion2 -findirect-inlining @gol
@@ -7891,6 +7891,22 @@ use it.
 Enabled by default when LTO support in GCC is enabled and GCC was compiled
 with a linker supporting plugins (GNU ld 2.21 or newer or gold).
 
+@item -ffat-lto-objects
+@opindex ffat-lto-objects
+Fat LTO objects are object files that contain both the intermediate language
+and the object code. This makes them useable for both LTO linking and normal
+linking. This option makes effect only with @option{-flto} and is ignored 
+at linktime.
+
+@option{-fno-fat-lto-objects} improves compilation time over plain LTO, but
+requires the complete toolchain to be aware of LTO. It requires a linker with
+linker plugin support for basic functionality.  Additionally, nm, ar and ranlib
+need to support linker plugins to allow a full-featured build environment
+(capable of building static libraries etc).
+
+The default is @option{-ffat-lto-objects} but this default is intended to
+change in future releases when linker plugin enabled environments become more
+common.
 @item -fcompare-elim
 @opindex fcompare-elim
 After register allocation and post-register allocation instruction splitting,
