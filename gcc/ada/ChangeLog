@@ -1,5 +1,22 @@
 2011-09-27  Pascal Obry  <obry@adacore.com>
 
+	* exp_ch9.adb, s-taspri-posix.ads: Minor reformatting.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* s-osinte-aix.ads, s-osinte-darwin.ads, s-osinte-freebsd.ads,
+	s-osinte-hpux.ads, s-osinte-irix.ads,
+	s-osinte-solaris-posix.ads (pthread_rwlock_t): New definition alias of
+	pthread_mutex_t.
+	(pthread_rwlockattr_t): New definition alias of pthread_mutexattr_t.
+	* s-osinte-linux.ads (pthread_rwlock_t, pthread_rwlockattr_t,
+	pthread_rwlockattr_init, pthread_rwlockattr_destroy,
+	pthread_rwlockattr_setkind_np, pthread_rwlock_init,
+	pthread_rwlock_destroy, pthread_rwlock_rdlock,
+	pthread_rwlock_wrlock, pthread_rwlock_unlock): New.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
 	* rtsfind.ads: Add RE_Lock_Read_Only into rtsfind circuitry.
 	(RE_Id): Add RE_Lock_Read_Only.
 	(RE_Unit_Table): Likewise.
