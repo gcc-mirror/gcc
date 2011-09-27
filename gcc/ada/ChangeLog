@@ -1,3 +1,28 @@
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, par-ch3.adb: Minor comment update: aspect specification
+	on subtype declarations.
+	* exp_aggr.adb: Minor comment update.
+
+2011-09-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Safe_Prefixed_Reference): Remove always-false
+	test in the N_Explicit_Dereference case.  Fold double logical
+	negation in the special loop case and conditionalize it on
+	Variable_Ref being true.
+
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): If the prefix is a
+	single protected object and the selector is a discriminant or an
+	entry family, this is a non-overloaded candidate interpretation,
+	and possible primitive operations of the type must not be
+	examined.
+
+2011-09-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taspri-posix-noaltstack.ads (Lock): Mark fields aliased.
+
 2011-09-27  Pascal Obry  <obry@adacore.com>
 
 	* s-osinte-hpux.ads, s-osinte-aix.ads, s-osinte-solaris-posix.ads,

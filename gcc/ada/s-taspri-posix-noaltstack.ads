@@ -79,8 +79,8 @@ package System.Task_Primitives is
 private
 
    type Lock is record
-      WO : System.OS_Interface.pthread_mutex_t;
-      RW : System.OS_Interface.pthread_rwlock_t;
+      WO : aliased System.OS_Interface.pthread_mutex_t;
+      RW : aliased System.OS_Interface.pthread_rwlock_t;
    end record;
 
    type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
