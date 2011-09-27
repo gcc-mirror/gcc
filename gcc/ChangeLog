@@ -1,3 +1,11 @@
+2011-09-27  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/neon.md (neon_vget_highv16qi, neon_vget_highv8hi)
+	(neon_vget_highv4si, neon_vget_highv4sf, neon_vget_highv2di)
+	(neon_vget_lowv16qi, neon_vget_lowv8hi, neon_vget_lowv4si)
+	(neon_vget_lowv4sf, neon_vget_lowv2di): Turn into define_expands
+	that produce subreg moves.  Define using VQX iterators.
+
 2011-09-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (ashrqi3): Split alternative "n"
