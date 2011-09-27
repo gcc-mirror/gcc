@@ -5917,13 +5917,68 @@ package body Exp_Util is
          then
             return False;
 
-         --  The following test is the simplest way of solving a complex
-         --  problem uncovered by B808-010: Side effect on loop bound that
-         --  is a subcomponent of a global variable:
+         --  Note: The following test is the simplest way of solving a complex
+         --  problem uncovered by the following test (Side effect on loop bound
+         --  that is a subcomponent of a global variable:
 
-         --    If a loop bound is a subcomponent of a global variable, a
-         --    modification of that variable within the loop may incorrectly
-         --    affect the execution of the loop.
+         --    with Text_Io; use Text_Io;
+         --    procedure Tloop is
+         --      type X is
+         --        record
+         --          V : Natural := 4;
+         --          S : String (1..5) := (others => 'a');
+         --        end record;
+         --      X1 : X;
+
+         --      procedure Modi;
+
+         --      generic
+         --        with procedure Action;
+         --      procedure Loop_G (Arg : X; Msg : String)
+
+         --      procedure Loop_G (Arg : X; Msg : String) is
+         --      begin
+         --        Put_Line ("begin loop_g " & Msg & " will loop till: "
+         --                  & Natural'Image (Arg.V));
+         --        for Index in 1 .. Arg.V loop
+         --          Text_Io.Put_Line
+         --            (Natural'Image (Index) & " " & Arg.S (Index));
+         --          if Index > 2 then
+         --            Modi;
+         --          end if;
+         --        end loop;
+         --        Put_Line ("end loop_g " & Msg);
+         --      end;
+
+         --      procedure Loop1 is new Loop_G (Modi);
+         --      procedure Modi is
+         --      begin
+         --        X1.V := 1;
+         --        Loop1 (X1, "from modi");
+         --      end;
+         --
+         --    begin
+         --      Loop1 (X1, "initial");
+         --    end;
+
+         --  The output of the above program should be:
+
+         --    begin loop_g initial will loop till:  4
+         --     1 a
+         --     2 a
+         --     3 a
+         --    begin loop_g from modi will loop till:  1
+         --     1 a
+         --    end loop_g from modi
+         --     4 a
+         --    begin loop_g from modi will loop till:  1
+         --     1 a
+         --    end loop_g from modi
+         --    end loop_g initial
+
+         --  If a loop bound is a subcomponent of a global variable, a
+         --  modification of that variable within the loop may incorrectly
+         --  affect the execution of the loop.
 
          elsif Nkind (Parent (Parent (N))) = N_Loop_Parameter_Specification
            and then Within_In_Parameter (Prefix (N))

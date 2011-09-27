@@ -4710,7 +4710,6 @@ package body Exp_Aggr is
         and then Static_Elaboration_Desired (Current_Scope)
       then
          Convert_To_Positional (N, Max_Others_Replicate => 100);
-
       else
          Convert_To_Positional (N);
       end if;
