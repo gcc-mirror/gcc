@@ -2791,18 +2791,29 @@ gfc_type_for_size (unsigned bits, int unsignedp)
       if (bits == TYPE_PRECISION (intTI_type_node))
 	return intTI_type_node;
 #endif
+
+      if (bits <= TYPE_PRECISION (intQI_type_node))
+	return intQI_type_node;
+      if (bits <= TYPE_PRECISION (intHI_type_node))
+	return intHI_type_node;
+      if (bits <= TYPE_PRECISION (intSI_type_node))
+	return intSI_type_node;
+      if (bits <= TYPE_PRECISION (intDI_type_node))
+	return intDI_type_node;
+      if (bits <= TYPE_PRECISION (intTI_type_node))
+	return intTI_type_node;
     }
   else
     {
-      if (bits == TYPE_PRECISION (unsigned_intQI_type_node))
+      if (bits <= TYPE_PRECISION (unsigned_intQI_type_node))
         return unsigned_intQI_type_node;
-      if (bits == TYPE_PRECISION (unsigned_intHI_type_node))
+      if (bits <= TYPE_PRECISION (unsigned_intHI_type_node))
 	return unsigned_intHI_type_node;
-      if (bits == TYPE_PRECISION (unsigned_intSI_type_node))
+      if (bits <= TYPE_PRECISION (unsigned_intSI_type_node))
 	return unsigned_intSI_type_node;
-      if (bits == TYPE_PRECISION (unsigned_intDI_type_node))
+      if (bits <= TYPE_PRECISION (unsigned_intDI_type_node))
 	return unsigned_intDI_type_node;
-      if (bits == TYPE_PRECISION (unsigned_intTI_type_node))
+      if (bits <= TYPE_PRECISION (unsigned_intTI_type_node))
 	return unsigned_intTI_type_node;
     }
 
@@ -2823,7 +2834,10 @@ gfc_type_for_mode (enum machine_mode mode, int unsignedp)
   else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
     base = gfc_complex_types;
   else if (SCALAR_INT_MODE_P (mode))
-    return gfc_type_for_size (GET_MODE_PRECISION (mode), unsignedp);
+    {
+      tree type = gfc_type_for_size (GET_MODE_PRECISION (mode), unsignedp);
+      return type != NULL_TREE && mode == TYPE_MODE (type) ? type : NULL_TREE;
+    }
   else if (VECTOR_MODE_P (mode))
     {
       enum machine_mode inner_mode = GET_MODE_INNER (mode);
