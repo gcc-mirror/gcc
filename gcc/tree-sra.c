@@ -1504,7 +1504,7 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
       offset -= TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (fld));
       exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
       t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
-      return fold_build3_loc (loc, COMPONENT_REF, model->type, t, fld,
+      return fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (fld), t, fld,
 			      TREE_OPERAND (model->expr, 2));
     }
   else
