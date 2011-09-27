@@ -1,3 +1,17 @@
+2011-09-27  Oleg Endo  <oleg.endo@t-online.de>
+
+	* gcc.target/sh/mfmovd.c: Extend list of supported targets.
+	* gcc.target/sh/struct-arg-dw2.c: Fix typo.
+	* gcc.target/sh/sh4a-sincos.c: Make test SH4A only.
+	* gcc.target/sh/sh4a-sincosf.c: Ditto.
+	* gcc.target/sh/sh4a-cos.c: Ditto.
+	* gcc.target/sh/sh4a-cosf.c: Ditto.
+	* gcc.target/sh/sh4a-sin.c: Ditto.
+	* gcc.target/sh/sh4a-sinf.c: Ditto.
+	* gcc.target/sh/sh4a-fsrra.c: Ditto.
+	* gcc.target/sh/sh4a-memmovua.c: Ditto.
+	* gcc.target/sh/sh4a-bitmovua.c: Ditto.
+
 2011-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/31489

@@ -1,4 +1,4 @@
-/* Verify that we don't generate fame related insn against stack adjustment
+/* Verify that we don't generate frame related insn against stack adjustment
    for the object sent partially in registers. */
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-g" } */
