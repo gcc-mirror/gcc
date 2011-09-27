@@ -92,7 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Estimate runtime of function can easilly run into huge numbers with many
    nested loops.  Be sure we can compute time * INLINE_SIZE_SCALE in integer.
    For anything larger we use gcov_type.  */
-#define MAX_TIME 1000000
+#define MAX_TIME 500000
 
 /* Number of bits in integer, but we really want to be stable across different
    hosts.  */
