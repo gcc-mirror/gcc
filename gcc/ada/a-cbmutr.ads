@@ -377,13 +377,11 @@ private
 
    function Constant_Reference
      (Container : aliased Tree;
-      Position  : Cursor)
-   return Constant_Reference_Type;
+      Position  : Cursor) return Constant_Reference_Type;
 
    function Reference
      (Container : aliased Tree;
-      Position  : Cursor)
-    return Reference_Type;
+      Position  : Cursor) return Reference_Type;
 
    Empty_Tree : constant Tree := (Capacity => 0, others => <>);
 

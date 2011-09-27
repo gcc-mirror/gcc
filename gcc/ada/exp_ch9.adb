@@ -1690,7 +1690,7 @@ package body Exp_Ch9 is
       --  The parameter that designates the synchronized object in the call
 
       Actuals : constant List_Id := New_List;
-      --  the actuals in the entry call
+      --  The actuals in the entry call
 
       Decls : constant List_Id := New_List;
 
@@ -8337,7 +8337,7 @@ package body Exp_Ch9 is
             Insert_After (Current_Node, Sub);
             Analyze (Sub);
 
-            --  build wrapper procedure for pre/postconditions
+            --  Build wrapper procedure for pre/postconditions
 
             Build_PPC_Wrapper (Comp_Id, N);
 
@@ -10618,28 +10618,31 @@ package body Exp_Ch9 is
       if Present (Taskdef)
         and then Has_Storage_Size_Pragma (Taskdef)
         and then
-          Is_Static_Expression (Expression (First (
-            Pragma_Argument_Associations (Find_Task_Or_Protected_Pragma (
-              Taskdef, Name_Storage_Size)))))
+          Is_Static_Expression
+            (Expression
+               (First (Pragma_Argument_Associations
+                         (Find_Task_Or_Protected_Pragma
+                            (Taskdef, Name_Storage_Size)))))
       then
          Size_Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Storage_Size_Variable (Tasktyp),
-             Object_Definition => New_Reference_To (RTE (RE_Size_Type), Loc),
-             Expression =>
+             Object_Definition   => New_Reference_To (RTE (RE_Size_Type), Loc),
+             Expression          =>
                Convert_To (RTE (RE_Size_Type),
-                 Relocate_Node (
-                   Expression (First (
-                     Pragma_Argument_Associations (
-                       Find_Task_Or_Protected_Pragma
-                         (Taskdef, Name_Storage_Size)))))));
+                 Relocate_Node
+                   (Expression (First (Pragma_Argument_Associations
+                                         (Find_Task_Or_Protected_Pragma
+                                            (Taskdef, Name_Storage_Size)))))));
 
       else
          Size_Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Storage_Size_Variable (Tasktyp),
-             Object_Definition => New_Reference_To (RTE (RE_Size_Type), Loc),
-             Expression => New_Reference_To (RTE (RE_Unspecified_Size), Loc));
+             Object_Definition   =>
+               New_Reference_To (RTE (RE_Size_Type), Loc),
+             Expression          =>
+               New_Reference_To (RTE (RE_Unspecified_Size), Loc));
       end if;
 
       Insert_After (Elab_Decl, Size_Decl);
@@ -10652,7 +10655,7 @@ package body Exp_Ch9 is
 
       Append_To (Cdecls,
         Make_Component_Declaration (Loc,
-          Defining_Identifier =>
+          Defining_Identifier  =>
             Make_Defining_Identifier (Loc, Name_uTask_Id),
           Component_Definition =>
             Make_Component_Definition (Loc,
@@ -10673,8 +10676,8 @@ package body Exp_Ch9 is
                Make_Component_Definition (Loc,
                  Aliased_Present     => True,
                  Subtype_Indication  => Make_Subtype_Indication (Loc,
-                   Subtype_Mark => New_Occurrence_Of
-                     (RTE (RE_Ada_Task_Control_Block), Loc),
+                   Subtype_Mark =>
+                     New_Occurrence_Of (RTE (RE_Ada_Task_Control_Block), Loc),
 
                    Constraint   =>
                      Make_Index_Or_Discriminant_Constraint (Loc,

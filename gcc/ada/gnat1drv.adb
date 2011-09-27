@@ -474,10 +474,12 @@ procedure Gnat1drv is
          Warning_Mode := Suppress;
 
          --  Suppress the generation of name tables for enumerations
+         --  why???
 
          Global_Discard_Names := True;
 
          --  Suppress the expansion of tagged types and dispatching calls
+         --  why???
 
          Tagged_Type_Expansion := False;
       end if;

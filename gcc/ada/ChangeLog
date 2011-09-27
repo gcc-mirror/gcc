@@ -1,5 +1,16 @@
 2011-09-27  Pascal Obry  <obry@adacore.com>
 
+	* s-taspri-posix-noaltstack.ads (RW_Lock): This type is now defined as
+	OS_Interface.pthread_rwlock_t.
+
+2011-09-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, a-cimutr.adb, a-cimutr.ads, gnat1drv.adb, a-comutr.adb,
+	a-comutr.ads, exp_dist.adb, a-cbmutr.adb, a-cbmutr.ads,
+	sem_ch5.adb, sem_util.adb: Minor reformatting.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
 	* s-taprop.ads (Initialize_Lock)[RW_Lock]: New spec for r/w lock.
 	(Finalize_Lock)[RW_Lock]: Likewise.
 	(Write_Lock)[RW_Lock]: Likewise.

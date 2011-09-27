@@ -2274,9 +2274,9 @@ package body Sem_Util is
    is
       Comp  : Node_Id;
       Comps : constant List_Id := New_List;
+
    begin
       Comp := First_Component (Underlying_Type (R_Typ));
-
       while Present (Comp) loop
          if Comes_From_Source (Comp) then
             declare
@@ -2291,6 +2291,7 @@ package body Sem_Util is
                        (Component_Definition (Comp_Decl), New_Sloc => Loc)));
             end;
          end if;
+
          Next_Component (Comp);
       end loop;
 

@@ -80,7 +80,7 @@ package System.Task_Primitives is
 private
 
    type Lock is new System.OS_Interface.pthread_mutex_t;
-   type RW_Lock is new Lock;
+   type RW_Lock is new System.OS_Interface.pthread_rwlock_t;
    type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
 
    type Suspension_Object is record
