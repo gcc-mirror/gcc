@@ -1,3 +1,13 @@
+2011-09-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/50249
+	* reload1.c (reload_reg_reaches_end_p): Accept a reloadnum argument
+	instead of opnum and type.  All callers changed.  Remove useless
+	declaration.
+	Search forward for other reloads of the same type for the same operand
+	using the same register; if any are found, return false.
+	(reload_regs_reach_end_p): Same argument changes; all callers changed.
+
 2011-09-27  Andi Kleen  <ak@linux.intel.com>
 	    Jan Hubicka  <jh@suse.cz>
 

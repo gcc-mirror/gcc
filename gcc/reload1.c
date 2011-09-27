@@ -396,7 +396,6 @@ static int reload_reg_free_for_value_p (int, int, int, enum reload_type,
 					rtx, rtx, int, int);
 static int free_for_value_p (int, enum machine_mode, int, enum reload_type,
 			     rtx, rtx, int, int);
-static int reload_reg_reaches_end_p (unsigned int, int, enum reload_type);
 static int allocate_reload_reg (struct insn_chain *, int, int);
 static int conflicts_with_override (rtx);
 static void failed_reload (rtx, int);
@@ -5346,19 +5345,37 @@ reload_reg_free_p (unsigned int regno, int opnum, enum reload_type type)
     }
 }
 
-/* Return 1 if the value in reload reg REGNO, as used by a reload
-   needed for the part of the insn specified by OPNUM and TYPE,
-   is still available in REGNO at the end of the insn.
+/* Return 1 if the value in reload reg REGNO, as used by the reload with
+   the number RELOADNUM, is still available in REGNO at the end of the insn.
 
    We can assume that the reload reg was already tested for availability
    at the time it is needed, and we should not check this again,
    in case the reg has already been marked in use.  */
 
 static int
-reload_reg_reaches_end_p (unsigned int regno, int opnum, enum reload_type type)
+reload_reg_reaches_end_p (unsigned int regno, int reloadnum)
 {
+  int opnum = rld[reloadnum].opnum;
+  enum reload_type type = rld[reloadnum].when_needed;
   int i;
 
+  /* See if there is a reload with the same type for this operand, using
+     the same register. This case is not handled by the code below.  */
+  for (i = reloadnum + 1; i < n_reloads; i++)
+    {
+      rtx reg;
+      int nregs;
+
+      if (rld[i].opnum != opnum || rld[i].when_needed != type)
+	continue;
+      reg = rld[i].reg_rtx;
+      if (reg == NULL_RTX)
+	continue;
+      nregs = hard_regno_nregs[REGNO (reg)][GET_MODE (reg)];
+      if (regno >= REGNO (reg) && regno < REGNO (reg) + nregs)
+	return 0;
+    }
+  
   switch (type)
     {
     case RELOAD_OTHER:
@@ -5485,13 +5502,12 @@ reload_reg_reaches_end_p (unsigned int regno, int opnum, enum reload_type type)
    every register in the range [REGNO, REGNO + NREGS).  */
 
 static bool
-reload_regs_reach_end_p (unsigned int regno, int nregs,
-			 int opnum, enum reload_type type)
+reload_regs_reach_end_p (unsigned int regno, int nregs, int reloadnum)
 {
   int i;
 
   for (i = 0; i < nregs; i++)
-    if (!reload_reg_reaches_end_p (regno + i, opnum, type))
+    if (!reload_reg_reaches_end_p (regno + i, reloadnum))
       return false;
   return true;
 }
@@ -8103,8 +8119,7 @@ emit_reload_insns (struct insn_chain *chain)
 	  /* For a multi register reload, we need to check if all or part
 	     of the value lives to the end.  */
 	  for (k = 0; k < nr; k++)
-	    if (reload_reg_reaches_end_p (i + k, rld[r].opnum,
-					  rld[r].when_needed))
+	    if (reload_reg_reaches_end_p (i + k, r))
 	      CLEAR_HARD_REG_BIT (reg_reloaded_valid, i + k);
 
 	  /* Maybe the spill reg contains a copy of reload_out.  */
@@ -8135,8 +8150,7 @@ emit_reload_insns (struct insn_chain *chain)
 	      mode = GET_MODE (reg);
 	      regno = REGNO (reg);
 	      nregs = hard_regno_nregs[regno][mode];
-	      if (reload_regs_reach_end_p (regno, nregs, rld[r].opnum,
-					   rld[r].when_needed))
+	      if (reload_regs_reach_end_p (regno, nregs, r))
 		{
 		  rtx out = (REG_P (rld[r].out)
 			     ? rld[r].out
@@ -8208,8 +8222,7 @@ emit_reload_insns (struct insn_chain *chain)
 	      mode = GET_MODE (reg);
 	      regno = REGNO (reg);
 	      nregs = hard_regno_nregs[regno][mode];
-	      if (reload_regs_reach_end_p (regno, nregs, rld[r].opnum,
-					   rld[r].when_needed))
+	      if (reload_regs_reach_end_p (regno, nregs, r))
 		{
 		  int in_regno;
 		  int in_nregs;
