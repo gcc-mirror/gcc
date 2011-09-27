@@ -1,5 +1,9 @@
 2011-09-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45102
+	* pt.c (tsubst_copy_and_build) [CONST_DECL]: Don't pull out
+	constant value if we're still in a template.
+
 	PR c++/46105
 	* typeck.c (structural_comptypes): Ignore cv-quals on typename scope.
 

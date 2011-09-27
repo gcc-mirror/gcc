@@ -13916,7 +13916,7 @@ tsubst_copy_and_build (tree t,
       t = tsubst_copy (t, args, complain, in_decl);
       /* As in finish_id_expression, we resolve enumeration constants
 	 to their underlying values.  */
-      if (TREE_CODE (t) == CONST_DECL)
+      if (TREE_CODE (t) == CONST_DECL && !processing_template_decl)
 	{
 	  used_types_insert (TREE_TYPE (t));
 	  return DECL_INITIAL (t);
