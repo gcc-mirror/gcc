@@ -9173,6 +9173,7 @@ sparc_vis_init_builtins (void)
   tree v4hi = build_vector_type (intHI_type_node, 4);
   tree v2hi = build_vector_type (intHI_type_node, 2);
   tree v2si = build_vector_type (intSI_type_node, 2);
+  tree v1si = build_vector_type (intSI_type_node, 1);
 
   tree v4qi_ftype_v4hi = build_function_type_list (v4qi, v4hi, 0);
   tree v8qi_ftype_v2si_v8qi = build_function_type_list (v8qi, v2si, v8qi, 0);
@@ -9186,6 +9187,8 @@ sparc_vis_init_builtins (void)
   tree v4hi_ftype_v4hi_v4hi = build_function_type_list (v4hi, v4hi, v4hi, 0);
   tree v2si_ftype_v2si_v2si = build_function_type_list (v2si, v2si, v2si, 0);
   tree v8qi_ftype_v8qi_v8qi = build_function_type_list (v8qi, v8qi, v8qi, 0);
+  tree v2hi_ftype_v2hi_v2hi = build_function_type_list (v2hi, v2hi, v2hi, 0);
+  tree v1si_ftype_v1si_v1si = build_function_type_list (v1si, v1si, v1si, 0);
   tree di_ftype_v8qi_v8qi_di = build_function_type_list (intDI_type_node,
 							 v8qi, v8qi,
 							 intDI_type_node, 0);
@@ -9350,6 +9353,24 @@ sparc_vis_init_builtins (void)
       def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fcmpeq32si_vis,
 			 si_ftype_v2si_v2si);
     }
+
+  /* Addition and subtraction.  */
+  def_builtin_const ("__builtin_vis_fpadd16", CODE_FOR_addv4hi3,
+		     v4hi_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fpadd16s", CODE_FOR_addv2hi3,
+		     v2hi_ftype_v2hi_v2hi);
+  def_builtin_const ("__builtin_vis_fpadd32", CODE_FOR_addv2si3,
+		     v2si_ftype_v2si_v2si);
+  def_builtin_const ("__builtin_vis_fpadd32s", CODE_FOR_addsi3,
+		     v1si_ftype_v1si_v1si);
+  def_builtin_const ("__builtin_vis_fpsub16", CODE_FOR_subv4hi3,
+		     v4hi_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fpsub16s", CODE_FOR_subv2hi3,
+		     v2hi_ftype_v2hi_v2hi);
+  def_builtin_const ("__builtin_vis_fpsub32", CODE_FOR_subv2si3,
+		     v2si_ftype_v2si_v2si);
+  def_builtin_const ("__builtin_vis_fpsub32s", CODE_FOR_subsi3,
+		     v1si_ftype_v1si_v1si);
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.
