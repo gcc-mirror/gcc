@@ -482,8 +482,8 @@ predicate_probability (conditions conds,
 				     i2 - predicate_first_dynamic_condition);
 		    if (c->code == CHANGED
 			&& (c->operand_num
-			    < VEC_length (inline_param_summary_t,
-					  inline_param_summary)))
+			    < (int) VEC_length (inline_param_summary_t,
+						inline_param_summary)))
 		      {
 			int iprob = VEC_index (inline_param_summary_t,
 					       inline_param_summary,
@@ -2353,8 +2353,8 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 	  struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, i);
 	  if (jfunc->type == IPA_JF_PASS_THROUGH
 	      && (jfunc->value.pass_through.formal_id
-		  < VEC_length (inline_param_summary_t,
-				inlined_es->param)))
+		  < (int) VEC_length (inline_param_summary_t,
+				      inlined_es->param)))
 	    {
 	      int prob1 = VEC_index (inline_param_summary_t,
 				     es->param, i)->change_prob;
