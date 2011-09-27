@@ -1,3 +1,11 @@
+2011-09-27  Bernd Schmidt  <bernds@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_add_cfa_restore): New function.
+	(mips16e_save_restore_reg): Use it.
+	(mips_restore_reg): Likewise.  Split double FPRs for
+	REG_CFA_RESTORE notes.
+
 2011-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/50386
