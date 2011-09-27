@@ -2042,7 +2042,7 @@ ipa_passes (void)
   if (flag_generate_lto)
     targetm.asm_out.lto_end ();
 
-  if (!flag_ltrans)
+  if (!flag_ltrans && (in_lto_p || !flag_lto || flag_fat_lto_objects))
     execute_ipa_pass_list (all_regular_ipa_passes);
   invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
@@ -2080,8 +2080,9 @@ cgraph_optimize (void)
   if (!seen_error ())
     ipa_passes ();
 
-  /* Do nothing else if any IPA pass found errors.  */
-  if (seen_error ())
+  /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */
+  if (seen_error ()
+      || (!in_lto_p && flag_lto && !flag_fat_lto_objects))
     {
       timevar_pop (TV_CGRAPHOPT);
       return;

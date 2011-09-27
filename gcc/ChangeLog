@@ -1,3 +1,15 @@
+2011-09-27  Andi Kleen  <ak@linux.intel.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (ffat-lto-objects): Document.
+	* toplev.c (compile_file): Do not output assembly when doing slim lto;
+	Output __gnu_slim_lto when doing slim lto.
+	* cgraphunit.c (ipa_passes): Do only analysis when producing slim lto.
+	(cgraph_optimize): Return early when doing slim lto.
+	* opts.c (finish_options): Complain about lack of linker plugin
+	when doing slim lto.
+	* common.opt (ffat-lto-objects): New.
+
 2011-09-27  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* ipa-inline-analysis.c (predicate_probability): Avoid comparison
