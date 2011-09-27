@@ -1290,18 +1290,65 @@ eliminated_by_inlining_prob (gimple stmt)
 	    if (!inner_lhs)
 	      inner_lhs = lhs;
 
+	    /* Reads of parameter are expected to be free.  */
 	    if (unmodified_parm (stmt, inner_rhs))
 	      rhs_free = true;
+
+	    /* When parameter is not SSA register because its address is taken
+	       and it is just copied into one, the statement will be completely
+	       free after inlining (we will copy propagate backward).   */
+	    if (rhs_free && is_gimple_reg (lhs))
+	      return 2;
+
+	    /* Reads of parameters passed by reference
+	       expected to be free (i.e. optimized out after inlining).  */
+	    if (TREE_CODE(inner_rhs) == MEM_REF
+	        && unmodified_parm (stmt, TREE_OPERAND (inner_rhs, 0)))
+	      rhs_free = true;
+
+	    /* Copying parameter passed by reference into gimple register is
+	       probably also going to copy propagate, but we can't be quite
+	       sure.  */
 	    if (rhs_free && is_gimple_reg (lhs))
 	      lhs_free = true;
-	    if (((TREE_CODE (inner_lhs) == PARM_DECL
-	          || (TREE_CODE (inner_lhs) == SSA_NAME
-		      && SSA_NAME_IS_DEFAULT_DEF (inner_lhs)
-		      && TREE_CODE (SSA_NAME_VAR (inner_lhs)) == PARM_DECL))
-		 && inner_lhs != lhs)
-	        || TREE_CODE (inner_lhs) == RESULT_DECL
-	        || (TREE_CODE (inner_lhs) == SSA_NAME
-		    && TREE_CODE (SSA_NAME_VAR (inner_lhs)) == RESULT_DECL))
+	   
+	    /* Writes to parameters, parameters passed by value and return value
+	       (either dirrectly or passed via invisible reference) are free.  
+
+	       TODO: We ought to handle testcase like
+	       struct a {int a,b;};
+	       struct a
+	       retrurnsturct (void)
+		 {
+		   struct a a ={1,2};
+		   return a;
+		 }
+
+	       This translate into:
+
+	       retrurnsturct ()
+		 {
+		   int a$b;
+		   int a$a;
+		   struct a a;
+		   struct a D.2739;
+
+		 <bb 2>:
+		   D.2739.a = 1;
+		   D.2739.b = 2;
+		   return D.2739;
+
+		 }
+	       For that we either need to copy ipa-split logic detecting writes
+	       to return value.  */
+	    if (TREE_CODE (inner_lhs) == PARM_DECL
+		|| TREE_CODE (inner_lhs) == RESULT_DECL
+	        || (TREE_CODE(inner_lhs) == MEM_REF
+		     && (unmodified_parm (stmt, TREE_OPERAND (inner_lhs, 0))
+			 || (TREE_CODE (TREE_OPERAND (inner_lhs, 0)) == SSA_NAME
+			     && TREE_CODE (SSA_NAME_VAR
+					    (TREE_OPERAND (inner_lhs, 0)))
+			     == RESULT_DECL))))
 	      lhs_free = true;
 	    if (lhs_free
 		&& (is_gimple_reg (rhs) || is_gimple_min_invariant (rhs)))
@@ -1919,7 +1966,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "\t\t50%% will be eliminated by inlining\n");
 	      if (prob == 2 && dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "\t\twill eliminated by inlining\n");
+		fprintf (dump_file, "\t\tWill be eliminated by inlining\n");
 
 	      if (parms_info)
 		p = and_predicates (info->conds, &bb_predicate,
