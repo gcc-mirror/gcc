@@ -229,6 +229,11 @@ package body Exp_Aggr is
    --  Packed_Array_Aggregate_Handled, we set this parameter to True, since
    --  these are cases we handle in there.
 
+   --  It would seem worthwhile to have a higher default value for Max_Others_
+   --  replicate, but aggregates in the compiler make this impossible: the
+   --  compiler bootstrap fails if Max_Others_Replicate is greater than 25.
+   --  This is unexpected ???
+
    procedure Expand_Array_Aggregate (N : Node_Id);
    --  This is the top-level routine to perform array aggregate expansion.
    --  N is the N_Aggregate node to be expanded.
@@ -4705,6 +4710,7 @@ package body Exp_Aggr is
         and then Static_Elaboration_Desired (Current_Scope)
       then
          Convert_To_Positional (N, Max_Others_Replicate => 100);
+
       else
          Convert_To_Positional (N);
       end if;

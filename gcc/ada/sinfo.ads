@@ -2191,7 +2191,8 @@ package Sinfo is
       --------------------------------
 
       --  SUBTYPE_DECLARATION ::=
-      --    subtype DEFINING_IDENTIFIER is [NULL_EXCLUSION] SUBTYPE_INDICATION;
+      --    subtype DEFINING_IDENTIFIER is [NULL_EXCLUSION] SUBTYPE_INDICATION
+      --      [ASPECT_SPECIFICATIONS];
 
       --  The subtype indication field is set to Empty for subtypes
       --  declared in package Standard (Positive, Natural).

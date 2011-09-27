@@ -5912,30 +5912,22 @@ package body Exp_Util is
          --  We do NOT exclude dereferences of access-to-constant types because
          --  we handle them as constant view of variables.
 
-         --  Exception is an access to an entity that is a constant or an
-         --  in-parameter.
-
          elsif Nkind (Prefix (N)) = N_Explicit_Dereference
            and then Variable_Ref
          then
-            declare
-               DDT : constant Entity_Id :=
-                       Designated_Type (Etype (Prefix (Prefix (N))));
-            begin
-               return Ekind_In (DDT, E_Constant, E_In_Parameter);
-            end;
+            return False;
 
          --  The following test is the simplest way of solving a complex
-         --  problem uncovered by BB08-010: Side effect on loop bound that
+         --  problem uncovered by B808-010: Side effect on loop bound that
          --  is a subcomponent of a global variable:
 
          --    If a loop bound is a subcomponent of a global variable, a
          --    modification of that variable within the loop may incorrectly
          --    affect the execution of the loop.
 
-         elsif not
-           (Nkind (Parent (Parent (N))) /= N_Loop_Parameter_Specification
-              or else not Within_In_Parameter (Prefix (N)))
+         elsif Nkind (Parent (Parent (N))) = N_Loop_Parameter_Specification
+           and then Within_In_Parameter (Prefix (N))
+           and then Variable_Ref
          then
             return False;
 
