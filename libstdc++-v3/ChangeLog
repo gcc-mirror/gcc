@@ -1,3 +1,8 @@
+2011-09-27  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* libsupc++/tinfo.cc (type_info::operator==): Test __name instead
+	of name().
+
 2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/50529
