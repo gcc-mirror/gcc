@@ -1,3 +1,13 @@
+2011-09-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43864
+	* gcc.dg/fold-compare-2.c (dg-options): Add -fno-tree-tail-merge.
+	* gcc/testsuite/gcc.dg/uninit-pred-2_c.c: Same.
+	* gcc.dg/pr43864.c: New test.
+	* gcc.dg/pr43864-2.c: Same.
+	* gcc.dg/pr43864-3.c: Same.
+	* gcc.dg/pr43864-4.c: Same.
+
 2011-09-27  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/inline-5.c: New testcase.
