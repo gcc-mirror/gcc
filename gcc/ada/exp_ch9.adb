@@ -1690,7 +1690,7 @@ package body Exp_Ch9 is
       --  The parameter that designates the synchronized object in the call
 
       Actuals : constant List_Id := New_List;
-      --  the actuals in the entry call.
+      --  the actuals in the entry call
 
       Decls : constant List_Id := New_List;
 
@@ -3008,7 +3008,7 @@ package body Exp_Ch9 is
                raise Program_Error;
          end case;
 
-         --  Establish link between subprogram body entity and source entry.
+         --  Establish link between subprogram body entity and source entry
 
          Set_Corresponding_Protected_Entry (Edef, Ent);
 
@@ -8337,7 +8337,7 @@ package body Exp_Ch9 is
             Insert_After (Current_Node, Sub);
             Analyze (Sub);
 
-            --  build wrapper procedure for pre/postconditions.
+            --  build wrapper procedure for pre/postconditions
 
             Build_PPC_Wrapper (Comp_Id, N);
 
@@ -10615,10 +10615,12 @@ package body Exp_Ch9 is
         Make_Defining_Identifier (Sloc (Tasktyp),
           Chars => New_External_Name (Tasknm, 'Z')));
 
-      if Present (Taskdef) and then Has_Storage_Size_Pragma (Taskdef) and then
-        Is_Static_Expression (Expression (First (
-          Pragma_Argument_Associations (Find_Task_Or_Protected_Pragma (
-            Taskdef, Name_Storage_Size)))))
+      if Present (Taskdef)
+        and then Has_Storage_Size_Pragma (Taskdef)
+        and then
+          Is_Static_Expression (Expression (First (
+            Pragma_Argument_Associations (Find_Task_Or_Protected_Pragma (
+              Taskdef, Name_Storage_Size)))))
       then
          Size_Decl :=
            Make_Object_Declaration (Loc,
