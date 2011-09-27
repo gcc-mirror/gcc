@@ -10834,16 +10834,23 @@ package body Sem_Prag is
          --  pragma Locking_Policy (policy_IDENTIFIER);
 
          when Pragma_Locking_Policy => declare
-            LP : Character;
-
+            subtype LP_Range is Name_Id
+              range First_Locking_Policy_Name .. Last_Locking_Policy_Name;
+            LP_Val : LP_Range;
+            LP     : Character;
          begin
             Check_Ada_83_Warning;
             Check_Arg_Count (1);
             Check_No_Identifiers;
             Check_Arg_Is_Locking_Policy (Arg1);
             Check_Valid_Configuration_Pragma;
-            Get_Name_String (Chars (Get_Pragma_Arg (Arg1)));
-            LP := Fold_Upper (Name_Buffer (1));
+            LP_Val := Chars (Get_Pragma_Arg (Arg1));
+
+            case LP_Val is
+               when Name_Ceiling_Locking            => LP := 'C';
+               when Name_Inheritance_Locking        => LP := 'I';
+               when Name_Concurrent_Readers_Locking => LP := 'R';
+            end case;
 
             if Locking_Policy /= ' '
               and then Locking_Policy /= LP

@@ -1653,6 +1653,7 @@ package Rtsfind is
      RE_Initialize_Protection,           -- System.Tasking.Protected_Objects
      RE_Finalize_Protection,             -- System.Tasking.Protected_Objects
      RE_Lock,                            -- System.Tasking.Protected_Objects
+     RE_Lock_Read_Only,                  -- System.Tasking.Protected_Objects
      RE_Get_Ceiling,                     -- System.Tasking.Protected_Objects
      RE_Set_Ceiling,                     -- System.Tasking.Protected_Objects
      RE_Unlock,                          -- System.Tasking.Protected_Objects
@@ -2883,6 +2884,7 @@ package Rtsfind is
      RE_Initialize_Protection            => System_Tasking_Protected_Objects,
      RE_Finalize_Protection              => System_Tasking_Protected_Objects,
      RE_Lock                             => System_Tasking_Protected_Objects,
+     RE_Lock_Read_Only                   => System_Tasking_Protected_Objects,
      RE_Get_Ceiling                      => System_Tasking_Protected_Objects,
      RE_Set_Ceiling                      => System_Tasking_Protected_Objects,
      RE_Unlock                           => System_Tasking_Protected_Objects,

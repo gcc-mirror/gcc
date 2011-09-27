@@ -909,13 +909,10 @@ package Snames is
 
    --  Names of recognized locking policy identifiers
 
-   --  Note: policies are identified by the first character of the
-   --  name (e.g. C for Ceiling_Locking). If new policy names are added,
-   --  the first character must be distinct.
-
    First_Locking_Policy_Name           : constant Name_Id := N + $;
    Name_Ceiling_Locking                : constant Name_Id := N + $;
    Name_Inheritance_Locking            : constant Name_Id := N + $;
+   Name_Concurrent_Readers_Locking     : constant Name_Id := N + $; -- GNAT
    Last_Locking_Policy_Name            : constant Name_Id := N + $;
 
    --  Names of recognized queuing policy identifiers
@@ -1500,7 +1497,8 @@ package Snames is
 
    type Locking_Policy_Id is (
       Locking_Policy_Inheritance_Locking,
-      Locking_Policy_Ceiling_Locking);
+      Locking_Policy_Ceiling_Locking,
+      Locking_Policy_Concurrent_Readers_Locking);
 
    ---------------------------
    -- Pragma ID Definitions --
