@@ -1,5 +1,26 @@
 2011-09-27  Pascal Obry  <obry@adacore.com>
 
+	* s-osinte-hpux.ads, s-taprop-vxworks.adb, s-taspri-vxworks.ads,
+	s-taprop-tru64.adb, s-osinte-aix.ads, s-taspri-posix-noaltstack.ads,
+	s-taspri-mingw.ads, s-taprop-vms.adb, s-tpoben.adb, s-tpoben.ads,
+	s-taprop-mingw.adb, s-taprob.adb, s-taprob.ads,
+	s-osinte-solaris-posix.ads, s-taprop-solaris.adb, s-taspri-solaris.ads,
+	s-osinte-irix.ads, s-taprop-irix.adb, s-osinte-darwin.ads,
+	s-taspri-dummy.ads, s-taspri-posix.ads, s-taprop.ads,
+	s-taspri-vms.ads, s-osinte-freebsd.ads, s-taprop-hpux-dce.adb,
+	s-taspri-hpux-dce.ads, s-taspri-tru64.ads, s-taprop-dummy.adb,
+	s-taprop-posix.adb: Revert previous changes.
+	(Lock): Now a record containing the two possible lock
+	(mutex and read/write) defined in OS_Interface.
+	* s-taprop-linux.adb (Finalize_Protection): Use r/w lock for
+	'R' locking policy.
+	(Initialize_Protection): Likewise.
+	(Lock): Likewise.
+	(Lock_Read_Only): Likewise.
+	(Unlock): Likewise.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
 	* s-taspri-posix-noaltstack.ads (RW_Lock): This type is now defined as
 	OS_Interface.pthread_rwlock_t.
 

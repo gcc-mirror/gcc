@@ -42,7 +42,6 @@ package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
-   type RW_Lock is limited private;
    --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
@@ -81,8 +80,6 @@ private
       Priority       : Integer;
       Owner_Priority : Integer;
    end record;
-
-   type RW_Lock is new Lock;
 
    type Condition_Variable is new System.Win32.HANDLE;
 

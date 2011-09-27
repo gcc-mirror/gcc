@@ -266,14 +266,6 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (Prio : System.Any_Priority;
-      L    : not null access RW_Lock)
-   is
-   begin
-      Initialize_Lock (Prio, Lock (L.all)'Unrestricted_Access);
-   end Initialize_Lock;
-
-   procedure Initialize_Lock
      (L     : not null access RTS_Lock;
       Level : Lock_Level)
    is
@@ -311,11 +303,6 @@ package body System.Task_Primitives.Operations is
    begin
       Result := pthread_mutex_destroy (L.L'Access);
       pragma Assert (Result = 0);
-   end Finalize_Lock;
-
-   procedure Finalize_Lock (L : not null access RW_Lock) is
-   begin
-      Finalize_Lock (Lock (L.all)'Unrestricted_Access);
    end Finalize_Lock;
 
    procedure Finalize_Lock (L : not null access RTS_Lock) is
@@ -363,14 +350,6 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L                 : not null access RW_Lock;
-      Ceiling_Violation : out Boolean)
-   is
-   begin
-      Write_Lock (Lock (L.all)'Unrestricted_Access, Ceiling_Violation);
-   end Write_Lock;
-
-   procedure Write_Lock
      (L           : not null access RTS_Lock;
       Global_Lock : Boolean := False)
    is
@@ -396,7 +375,7 @@ package body System.Task_Primitives.Operations is
    ---------------
 
    procedure Read_Lock
-     (L                 : not null access RW_Lock;
+     (L                 : not null access Lock;
       Ceiling_Violation : out Boolean)
    is
    begin
@@ -412,11 +391,6 @@ package body System.Task_Primitives.Operations is
    begin
       Result := pthread_mutex_unlock (L.L'Access);
       pragma Assert (Result = 0);
-   end Unlock;
-
-   procedure Unlock (L : not null access RW_Lock) is
-   begin
-      Unlock (Lock (L.all)'Unrestricted_Access);
    end Unlock;
 
    procedure Unlock

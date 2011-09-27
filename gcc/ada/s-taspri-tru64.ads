@@ -45,7 +45,6 @@ package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
-   type RW_Lock is limited private;
    --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
@@ -82,8 +81,6 @@ private
       L       : aliased System.OS_Interface.pthread_mutex_t;
       Ceiling : Interfaces.C.int;
    end record;
-
-   type RW_Lock is new Lock;
 
    type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
 

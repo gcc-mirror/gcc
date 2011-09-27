@@ -158,11 +158,6 @@ package body System.Task_Primitives.Operations is
       null;
    end Finalize_Lock;
 
-   procedure Finalize_Lock (L : not null access RW_Lock) is
-   begin
-      null;
-   end Finalize_Lock;
-
    procedure Finalize_Lock (L : not null access RTS_Lock) is
    begin
       null;
@@ -223,14 +218,6 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (Prio : System.Any_Priority;
-      L    : not null access RW_Lock)
-   is
-   begin
-      null;
-   end Initialize_Lock;
-
-   procedure Initialize_Lock
      (L : not null access RTS_Lock; Level : Lock_Level) is
    begin
       null;
@@ -277,7 +264,7 @@ package body System.Task_Primitives.Operations is
    ---------------
 
    procedure Read_Lock
-     (L                 : not null access RW_Lock;
+     (L                 : not null access Lock;
       Ceiling_Violation : out Boolean)
    is
    begin
@@ -472,11 +459,6 @@ package body System.Task_Primitives.Operations is
       null;
    end Unlock;
 
-   procedure Unlock (L : not null access RW_Lock) is
-   begin
-      null;
-   end Unlock;
-
    procedure Unlock
      (L           : not null access RTS_Lock;
       Global_Lock : Boolean := False)
@@ -513,14 +495,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock
      (L                 : not null access Lock;
-      Ceiling_Violation : out Boolean)
-   is
-   begin
-      Ceiling_Violation := False;
-   end Write_Lock;
-
-   procedure Write_Lock
-     (L                 : not null access RW_Lock;
       Ceiling_Violation : out Boolean)
    is
    begin

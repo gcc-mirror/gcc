@@ -57,11 +57,7 @@ package body System.Tasking.Protected_Objects is
 
    procedure Finalize_Protection (Object : in out Protection) is
    begin
-      if Locking_Policy = 'R' then
-         Finalize_Lock (Object.RWL'Unrestricted_Access);
-      else
-         Finalize_Lock (Object.L'Unrestricted_Access);
-      end if;
+      Finalize_Lock (Object.L'Unrestricted_Access);
    end Finalize_Protection;
 
    ---------------------------
@@ -79,11 +75,7 @@ package body System.Tasking.Protected_Objects is
          Init_Priority  := System.Priority'Last;
       end if;
 
-      if Locking_Policy = 'R' then
-         Initialize_Lock (Init_Priority, Object.RWL'Access);
-      else
-         Initialize_Lock (Init_Priority, Object.L'Access);
-      end if;
+      Initialize_Lock (Init_Priority, Object.L'Access);
       Object.Ceiling := System.Any_Priority (Init_Priority);
       Object.New_Ceiling := System.Any_Priority (Init_Priority);
       Object.Owner := Null_Task;
@@ -128,11 +120,7 @@ package body System.Tasking.Protected_Objects is
          raise Program_Error;
       end if;
 
-      if Locking_Policy = 'R' then
-         Write_Lock (Object.RWL'Access, Ceiling_Violation);
-      else
-         Write_Lock (Object.L'Access, Ceiling_Violation);
-      end if;
+      Write_Lock (Object.L'Access, Ceiling_Violation);
 
       if Parameters.Runtime_Traces then
          Send_Trace_Info (PO_Lock);
@@ -189,11 +177,7 @@ package body System.Tasking.Protected_Objects is
          raise Program_Error;
       end if;
 
-      if Locking_Policy = 'R' then
-         Read_Lock (Object.RWL'Access, Ceiling_Violation);
-      else
-         Write_Lock (Object.L'Access, Ceiling_Violation);
-      end if;
+      Read_Lock (Object.L'Access, Ceiling_Violation);
 
       if Parameters.Runtime_Traces then
          Send_Trace_Info (PO_Lock);
@@ -279,11 +263,7 @@ package body System.Tasking.Protected_Objects is
          Object.Ceiling := Object.New_Ceiling;
       end if;
 
-      if Locking_Policy = 'R' then
-         Unlock (Object.RWL'Access);
-      else
-         Unlock (Object.L'Access);
-      end if;
+      Unlock (Object.L'Access);
 
       if Parameters.Runtime_Traces then
          Send_Trace_Info (PO_Unlock);
