@@ -1,3 +1,9 @@
+2011-09-27  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49463
+	* gcc.c-torture/execute/builtins/strstr-asm-lib.c
+	(my_strstr): Mark used.
+
 2011-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/strlenopt-1.c: New test.

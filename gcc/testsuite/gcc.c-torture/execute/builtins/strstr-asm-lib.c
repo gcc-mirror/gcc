@@ -7,6 +7,7 @@ extern int strncmp(const char *, const char *, size_t);
 extern int inside_main;
 extern const char *p;
 
+__attribute__ ((used))
 char *
 my_strstr (const char *s1, const char *s2)
 {
