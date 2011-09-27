@@ -277,6 +277,34 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
+     (Prio : System.Any_Priority;
+      L    : not null access RW_Lock)
+   is
+      pragma Unreferenced (Prio);
+
+      RWlock_Attr : aliased pthread_rwlockattr_t;
+      Result      : Interfaces.C.int;
+
+   begin
+      --  Set the rwlock to prefer writer to avoid writers starvation
+
+      Result := pthread_rwlockattr_init (RWlock_Attr'Access);
+      pragma Assert (Result = 0);
+
+      Result := pthread_rwlockattr_setkind_np
+        (RWlock_Attr'Access, PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP);
+      pragma Assert (Result = 0);
+
+      Result := pthread_rwlock_init (L, RWlock_Attr'Access);
+
+      pragma Assert (Result = 0 or else Result = ENOMEM);
+
+      if Result = ENOMEM then
+         raise Storage_Error with "Failed to allocate a lock";
+      end if;
+   end Initialize_Lock;
+
+   procedure Initialize_Lock
      (L     : not null access RTS_Lock;
       Level : Lock_Level)
    is
@@ -309,6 +337,13 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0);
    end Finalize_Lock;
 
+   procedure Finalize_Lock (L : not null access RW_Lock) is
+      Result : Interfaces.C.int;
+   begin
+      Result := pthread_rwlock_destroy (L);
+      pragma Assert (Result = 0);
+   end Finalize_Lock;
+
    procedure Finalize_Lock (L : not null access RTS_Lock) is
       Result : Interfaces.C.int;
    begin
@@ -327,6 +362,20 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
    begin
       Result := pthread_mutex_lock (L);
+      Ceiling_Violation := Result = EINVAL;
+
+      --  Assume the cause of EINVAL is a priority ceiling violation
+
+      pragma Assert (Result = 0 or else Result = EINVAL);
+   end Write_Lock;
+
+   procedure Write_Lock
+     (L                 : not null access RW_Lock;
+      Ceiling_Violation : out Boolean)
+   is
+      Result : Interfaces.C.int;
+   begin
+      Result := pthread_rwlock_wrlock (L);
       Ceiling_Violation := Result = EINVAL;
 
       --  Assume the cause of EINVAL is a priority ceiling violation
@@ -360,11 +409,17 @@ package body System.Task_Primitives.Operations is
    ---------------
 
    procedure Read_Lock
-     (L                 : not null access Lock;
+     (L                 : not null access RW_Lock;
       Ceiling_Violation : out Boolean)
    is
+      Result : Interfaces.C.int;
    begin
-      Write_Lock (L, Ceiling_Violation);
+      Result := pthread_rwlock_rdlock (L);
+      Ceiling_Violation := Result = EINVAL;
+
+      --  Assume the cause of EINVAL is a priority ceiling violation
+
+      pragma Assert (Result = 0 or else Result = EINVAL);
    end Read_Lock;
 
    ------------
@@ -375,6 +430,13 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
    begin
       Result := pthread_mutex_unlock (L);
+      pragma Assert (Result = 0);
+   end Unlock;
+
+   procedure Unlock (L : not null access RW_Lock) is
+      Result : Interfaces.C.int;
+   begin
+      Result := pthread_rwlock_unlock (L);
       pragma Assert (Result = 0);
    end Unlock;
 

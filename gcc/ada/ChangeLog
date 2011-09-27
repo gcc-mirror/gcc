@@ -1,5 +1,44 @@
 2011-09-27  Pascal Obry  <obry@adacore.com>
 
+	* s-taprop.ads (Initialize_Lock)[RW_Lock]: New spec for r/w lock.
+	(Finalize_Lock)[RW_Lock]: Likewise.
+	(Write_Lock)[RW_Lock]: Likewise.
+	(Unlock)[RW_Lock]: Likewise.
+	(Read_Lock): Define L as RW_Lock (instead of Lock).
+	* s-taprop-linux.adb (Initialize_Lock)[RW_Lock]: New
+	routine for r/w lock.
+	(Finalize_Lock)[RW_Lock]: Likewise.
+	(Write_Lock)[RW_Lock]: Likewise.
+	(Unlock)[RW_Lock]: Likewise.
+	(Read_Lock): Define L as RW_Lock (instead of Lock).
+
+	* s-taprop-vxworks.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
+	s-taprop-mingw.adb, s-taprop-solaris.adb, s-taprop-irix.adb,
+	s-taprop-hpux-dce.adb, s-taprop-dummy.adb, s-taprop-posix.adb
+	(Initialize_Lock)[RW_Lock]: Same implementation as corresponding
+	routine for standard lock.
+	(Finalize_Lock)[RW_Lock]: Likewise.
+	(Write_Lock)[RW_Lock]: Likewise.
+	(Unlock)[RW_Lock]: Likewise.
+	(Read_Lock): Define L as RW_Lock (instead of Lock).
+	* s-taprob.ads, s-tpoben.ads (Protection): Add RWL (RW_Lock)
+	in the record definition.
+	* s-taprob.adb, s-taproben.adb (Finalize_Protection): Use r/w
+	lock for 'R' locking policy.
+	(Initialize_Protection): Likewise.
+	(Lock): Likewise.
+	(Lock_Read_Only): Likewise.
+	(Unlock): Likewise.
+	* s-taspri-posix.ads (RW_Lock): New type defined as
+	OS_Interface.pthread_rwlock_t.
+
+	* s-taspri-vxworks.ads, s-taspri-posix-noaltstack.ads,
+	s-taspri-mingw.ads, s-taspri-solaris.ads, s-taspri-dummy.ads,
+	s-taspri-posix.ads, s-taspri-vms.ads, s-taspri-hpux-dce.ads,
+	s-taspri-tru64.ads (RW_Lock): New type defined as alias to Lock.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
 	* exp_ch9.adb, s-taspri-posix.ads: Minor reformatting.
 
 2011-09-27  Pascal Obry  <obry@adacore.com>

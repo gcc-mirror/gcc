@@ -88,7 +88,11 @@ package body System.Tasking.Protected_Objects.Entries is
          return;
       end if;
 
-      STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
+      if Locking_Policy = 'R' then
+         STPO.Write_Lock (Object.RWL'Unrestricted_Access, Ceiling_Violation);
+      else
+         STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
+      end if;
 
       if Single_Lock then
          Lock_RTS;
@@ -109,7 +113,12 @@ package body System.Tasking.Protected_Objects.Entries is
             Unlock_RTS;
          end if;
 
-         STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
+         if Locking_Policy = 'R' then
+            STPO.Write_Lock
+              (Object.RWL'Unrestricted_Access, Ceiling_Violation);
+         else
+            STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
+         end if;
 
          if Ceiling_Violation then
             raise Program_Error with "Ceiling Violation";
@@ -149,9 +158,13 @@ package body System.Tasking.Protected_Objects.Entries is
          Unlock_RTS;
       end if;
 
-      STPO.Unlock (Object.L'Unrestricted_Access);
-
-      STPO.Finalize_Lock (Object.L'Unrestricted_Access);
+      if Locking_Policy = 'R' then
+         STPO.Unlock (Object.RWL'Unrestricted_Access);
+         STPO.Finalize_Lock (Object.RWL'Unrestricted_Access);
+      else
+         STPO.Unlock (Object.L'Unrestricted_Access);
+         STPO.Finalize_Lock (Object.L'Unrestricted_Access);
+      end if;
    end Finalize;
 
    ----------------------
@@ -234,7 +247,13 @@ package body System.Tasking.Protected_Objects.Entries is
       --  pragma Assert (Self_Id.Deferral_Level = 0);
 
       Initialization.Defer_Abort_Nestable (Self_ID);
-      Initialize_Lock (Init_Priority, Object.L'Access);
+
+      if Locking_Policy = 'R' then
+         Initialize_Lock (Init_Priority, Object.RWL'Access);
+      else
+         Initialize_Lock (Init_Priority, Object.L'Access);
+      end if;
+
       Initialization.Undefer_Abort_Nestable (Self_ID);
 
       Object.Ceiling          := System.Any_Priority (Init_Priority);
@@ -310,7 +329,11 @@ package body System.Tasking.Protected_Objects.Entries is
         (STPO.Self.Deferral_Level > 0
           or else not Restrictions.Abort_Allowed);
 
-      Write_Lock (Object.L'Access, Ceiling_Violation);
+      if Locking_Policy = 'R' then
+         Write_Lock (Object.RWL'Access, Ceiling_Violation);
+      else
+         Write_Lock (Object.L'Access, Ceiling_Violation);
+      end if;
 
       --  We are entering in a protected action, so that we increase the
       --  protected object nesting level (if pragma Detect_Blocking is
@@ -364,7 +387,11 @@ package body System.Tasking.Protected_Objects.Entries is
          raise Program_Error;
       end if;
 
-      Read_Lock (Object.L'Access, Ceiling_Violation);
+      if Locking_Policy = 'R' then
+         Read_Lock (Object.RWL'Access, Ceiling_Violation);
+      else
+         Write_Lock (Object.L'Access, Ceiling_Violation);
+      end if;
 
       if Ceiling_Violation then
          raise Program_Error with "Ceiling Violation";
@@ -460,7 +487,11 @@ package body System.Tasking.Protected_Objects.Entries is
          Object.Ceiling := Object.New_Ceiling;
       end if;
 
-      Unlock (Object.L'Access);
+      if Locking_Policy = 'R' then
+         Unlock (Object.RWL'Access);
+      else
+         Unlock (Object.L'Access);
+      end if;
    end Unlock_Entries;
 
 end System.Tasking.Protected_Objects.Entries;

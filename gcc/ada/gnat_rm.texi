@@ -9896,11 +9896,15 @@ The policy is the same as that of the underlying threads implementation.
 in a pragma @code{Locking_Policy}.  See D.3(4).
 @end cartouche
 @noindent
-The only implementation defined policy permitted in GNAT is
-@code{Inheritance_Locking}.  On targets that support this policy, locking
-is implemented by inheritance, i.e.@: the task owning the lock operates
+The two implementation defined policies permitted in GNAT are
+@code{Inheritance_Locking} and  @code{Conccurent_Readers_Locking}.  On
+targets that support the @code{Inheritance_Locking} policy, locking is
+implemented by inheritance, i.e.@: the task owning the lock operates
 at a priority equal to the highest priority of any task currently
-requesting the lock.
+requesting the lock.  On targets that support the
+@code{Conccurent_Readers_Locking} policy, locking is implemented with a
+read/write lock allowing multiple propected object functions to enter
+concurrently.
 
 @sp 1
 @cartouche

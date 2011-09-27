@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ package System.Task_Primitives is
 
    type Lock is limited private;
    type Lock_Ptr is access all Lock;
+   type RW_Lock is limited private;
    --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
@@ -106,6 +107,8 @@ private
       Buddy          : Owner_ID;
       Frozen         : Boolean := False;
    end record;
+
+   type RW_Lock is new Lock;
 
    type RTS_Lock is new Lock;
 

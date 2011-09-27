@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@ package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
+   type RW_Lock is limited private;
    --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
@@ -81,6 +82,8 @@ private
       L       : aliased System.OS_Interface.pthread_mutex_t;
       Ceiling : Interfaces.C.int;
    end record;
+
+   type RW_Lock is new Lock;
 
    type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
 
