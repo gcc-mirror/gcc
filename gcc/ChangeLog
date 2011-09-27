@@ -1,3 +1,9 @@
+2011-09-27  Sriraman Tallam  <tmsriram@google.com>
+
+	* output.h (SECTION_EXCLUDE): New macro.
+	* varasm.c (default_elf_asm_named_section): Check for
+	SECTION_EXCLUDE.	
+
 2011-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* fwprop.c (forward_propagate_and_simplify): After checking
