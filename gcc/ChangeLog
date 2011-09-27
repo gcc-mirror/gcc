@@ -1,3 +1,8 @@
+2011-09-27  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* ipa-inline-analysis.c (predicate_probability): Avoid comparison
+	between signed and unsigned.
+
 2011-09-27  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-stmts.c (vectorizable_type_demotion): Handle basic block
