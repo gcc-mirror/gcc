@@ -1164,7 +1164,7 @@ package body System.Tasking.Stages is
 
       if System.Stack_Usage.Is_Enabled then
          declare
-            Guard_Page_Size : constant := 12 * 1024;
+            Guard_Page_Size : constant := 16 * 1024;
             --  Part of the stack used as a guard page. This is an OS dependent
             --  value, so we need to use the maximum. This value is only used
             --  when the stack address is known, that is currently Windows.

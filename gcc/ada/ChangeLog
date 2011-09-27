@@ -1,5 +1,22 @@
 2011-09-27  Pascal Obry  <obry@adacore.com>
 
+	* s-osinte-hpux.ads, s-osinte-aix.ads, s-osinte-solaris-posix.ads,
+	s-osinte-irix.ads, s-osinte-darwin.ads, s-osinte-freebsd.ads:
+	Add dummy definitions for pthread_rwlock_t
+	and pthread_rwlockattr_t on all POSIX platforms.
+	* s-taprop-irix.adb, s-taprop-posix.adb (Initialize_Lock): Fix lock
+	reference.
+	(Finalize_Lock): Likewise.
+	(Write_Lock): Likewise.
+	(Unlock): Likewise.
+
+2011-09-27  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tassta.adb (Task_Wrapper): Increase Guard_Page_Size value for
+	windows 64.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
 	* s-osinte-hpux.ads, s-taprop-vxworks.adb, s-taspri-vxworks.ads,
 	s-taprop-tru64.adb, s-osinte-aix.ads, s-taspri-posix-noaltstack.ads,
 	s-taspri-mingw.ads, s-taprop-vms.adb, s-tpoben.adb, s-tpoben.ads,

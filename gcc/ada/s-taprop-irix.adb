@@ -255,7 +255,7 @@ package body System.Task_Primitives.Operations is
          pragma Assert (Result = 0);
       end if;
 
-      Result := pthread_mutex_init (L, Attributes'Access);
+      Result := pthread_mutex_init (L.WO'Access, Attributes'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = ENOMEM then
@@ -314,7 +314,7 @@ package body System.Task_Primitives.Operations is
    procedure Finalize_Lock (L : not null access Lock) is
       Result : Interfaces.C.int;
    begin
-      Result := pthread_mutex_destroy (L);
+      Result := pthread_mutex_destroy (L.WO'Access);
       pragma Assert (Result = 0);
    end Finalize_Lock;
 
@@ -335,7 +335,7 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
 
    begin
-      Result := pthread_mutex_lock (L);
+      Result := pthread_mutex_lock (L.WO'Access);
       Ceiling_Violation := Result = EINVAL;
 
       --  Assumes the cause of EINVAL is a priority ceiling violation
@@ -381,7 +381,7 @@ package body System.Task_Primitives.Operations is
    procedure Unlock (L : not null access Lock) is
       Result : Interfaces.C.int;
    begin
-      Result := pthread_mutex_unlock (L);
+      Result := pthread_mutex_unlock (L.WO'Access);
       pragma Assert (Result = 0);
    end Unlock;
 
