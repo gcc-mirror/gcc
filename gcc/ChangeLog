@@ -1,3 +1,19 @@
+2011-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* rtl.h (const_tiny_rtx): Change into array of 4 x MAX_MACHINE_MODE
+	from 3 x MAX_MACHINE_MODE.
+	(CONSTM1_RTX): Define.
+	* emit-rtl.c (const_tiny_rtx): Change into array of 4 x MAX_MACHINE_MODE
+        from 3 x MAX_MACHINE_MODE.
+	(gen_rtx_CONST_VECTOR): Use CONSTM1_RTX if all inner constants are
+	CONSTM1_RTX.
+	(init_emit_once): Initialize CONSTM1_RTX for MODE_INT and
+	MODE_VECTOR_INT modes.
+	* simplify-rtx.c (simplify_binary_operation_1) <case IOR, XOR, AND>:
+	Optimize if one operand is CONSTM1_RTX.
+	* config/i386/i386.c (ix86_expand_sse_movcc): Optimize mask ? -1 : x
+	into mask | x.
+
 2011-09-26  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (edge{8,16,32}{,l}): Return Pmode.

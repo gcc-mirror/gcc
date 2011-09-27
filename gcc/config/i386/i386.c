@@ -18903,6 +18903,12 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       x = gen_rtx_AND (mode, x, op_false);
       emit_insn (gen_rtx_SET (VOIDmode, dest, x));
     }
+  else if (INTEGRAL_MODE_P (mode) && op_true == CONSTM1_RTX (mode))
+    {
+      op_false = force_reg (mode, op_false);
+      x = gen_rtx_IOR (mode, cmp, op_false);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+    }
   else if (TARGET_XOP)
     {
       op_true = force_reg (mode, op_true);
