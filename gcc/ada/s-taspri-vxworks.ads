@@ -41,7 +41,6 @@ package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
-   type RW_Lock is limited private;
    --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
@@ -84,8 +83,6 @@ private
       Prio_Ceiling : System.OS_Interface.int;
       --  Priority ceiling of lock
    end record;
-
-   type RW_Lock is new Lock;
 
    type RTS_Lock is new Lock;
 

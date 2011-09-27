@@ -46,7 +46,6 @@ package System.Task_Primitives is
 
    type Lock is limited private;
    type Lock_Ptr is access all Lock;
-   type RW_Lock is limited private;
    --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
@@ -107,8 +106,6 @@ private
       Buddy          : Owner_ID;
       Frozen         : Boolean := False;
    end record;
-
-   type RW_Lock is new Lock;
 
    type RTS_Lock is new Lock;
 

@@ -250,14 +250,6 @@ package System.OS_Interface is
 
    PTHREAD_CREATE_DETACHED : constant := 1;
 
-   --  Read/Write lock not supported on SGI. To add support both types
-   --  pthread_rwlock_t and pthread_rwlockattr_t must properly be defined
-   --  with the associated routines pthread_rwlock_[init/destroy] and
-   --  pthread_rwlock_[rdlock/wrlock/unlock].
-
-   subtype pthread_rwlock_t     is pthread_mutex_t;
-   subtype pthread_rwlockattr_t is pthread_mutexattr_t;
-
    -----------
    -- Stack --
    -----------

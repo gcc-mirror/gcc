@@ -40,8 +40,6 @@ package System.Task_Primitives is
 
    type Lock is new Integer;
 
-   type RW_Lock is new Integer;
-
    type RTS_Lock is new Integer;
 
    type Suspension_Object is new Integer;
