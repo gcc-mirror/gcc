@@ -1,3 +1,9 @@
+2011-09-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* testsuite/lib/target-supports.exp (check_profiling_available):
+	Don't rely solely on TLS tests for -fprofile-generate, fall
+	through to the other code.
+
 2011-09-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50363
