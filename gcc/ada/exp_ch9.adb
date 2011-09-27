@@ -71,8 +71,7 @@ package body Exp_Ch9 is
    --  types with defaulted discriminant of an integer type, when the bound
    --  of some entry family depends on a discriminant. The limitation to
    --  entry families of 128K should be reasonable in all cases, and is a
-   --  documented implementation restriction. It will be lifted when protected
-   --  entry families are re-implemented as a single ordered queue.
+   --  documented implementation restriction.
 
    Entry_Family_Bound : constant Int := 2**16;
 
