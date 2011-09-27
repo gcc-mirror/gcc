@@ -2820,14 +2820,14 @@
 ;; arithmetic shift right
 
 (define_insn "ashrqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r,r")
-	(ashiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,L,P,K,n,Qm")))]
+  [(set (match_operand:QI 0 "register_operand"             "=r,r,r,r,r          ,r      ,r")
+        (ashiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0          ,0      ,0")
+                     (match_operand:QI 2 "general_operand"  "r,L,P,K,C03 C04 C05,C06 C07,Qm")))]
   ""
   "* return ashrqi3_out (insn, operands, NULL);"
-  [(set_attr "length" "5,0,1,2,5,9")
+  [(set_attr "length" "5,0,1,2,5,4,9")
    (set_attr "adjust_len" "ashrqi")
-   (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber")])
+   (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,clobber,clobber")])
 
 (define_insn "ashrhi3"
   [(set (match_operand:HI 0 "register_operand"             "=r,r,r,r,r,r,r")

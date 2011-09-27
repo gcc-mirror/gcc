@@ -1,3 +1,11 @@
+2011-09-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (ashrqi3): Split alternative "n"
+	into its remaining parts C03, C04, C05, C06, C07 and describe
+	impact in CC by attribute "cc" appropriately.
+	* config/avr/avr.c (notice_update_cc): Clean-up: Don't patch CC0
+	by digging RTX.
+
 2011-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* rtl.h (const_tiny_rtx): Change into array of 4 x MAX_MACHINE_MODE
