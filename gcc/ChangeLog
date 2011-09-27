@@ -1,3 +1,55 @@
+2011-09-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43864
+	* tree-ssa-tail-merge.c: New file.
+	(struct same_succ_def): Define.
+	(same_succ, const_same_succ): New typedef.
+	(struct bb_cluster_def): Define.
+	(bb_cluster, const_bb_cluster): New typedef.
+	(struct aux_bb_info): Define.
+	(BB_SIZE, BB_SAME_SUCC, BB_CLUSTER, BB_VOP_AT_EXIT): Define.
+	(gvn_uses_equal): New function.
+	(same_succ_print, same_succ_print_traverse, update_dep_bb)
+	(stmt_update_dep_bb, local_def, same_succ_hash)
+	(inverse_flags, same_succ_equal, same_succ_alloc, same_succ_delete)
+	(same_succ_reset): New function.
+	(same_succ_htab, same_succ_edge_flags)
+	(deleted_bbs, deleted_bb_preds): New var.
+	(debug_same_succ): New function.
+	(worklist): New var.
+	(print_worklist, add_to_worklist, find_same_succ_bb, find_same_succ)
+	(init_worklist, delete_worklist, delete_basic_block_same_succ)
+	(same_succ_flush_bbs, purge_bbs, update_worklist): New function.
+	(print_cluster, debug_cluster, update_rep_bb)
+	(add_bb_to_cluster, new_cluster, delete_cluster): New function.
+	(all_clusters): New var.
+	(alloc_cluster_vectors, reset_cluster_vectors, delete_cluster_vectors)
+	(merge_clusters, set_cluster): New function.
+	(gimple_equal_p, gsi_advance_bw_nondebug_nonlocal, find_duplicate)
+	(same_phi_alternatives_1, same_phi_alternatives, bb_has_non_vop_phi)
+	(deps_ok_for_redirect_from_bb_to_bb, deps_ok_for_redirect)
+	(find_clusters_1, find_clusters): New function.
+	(update_vuses, vop_phi, vop_at_entry, replace_block_by): New function.
+	(update_bbs): New var.
+	(apply_clusters): New function.
+	(update_debug_stmt, update_debug_stmts): New function.
+	(tail_merge_optimize): New function.
+	tree-pass.h (tail_merge_optimize): Declare.
+	* tree-ssa-pre.c (execute_pre): Use tail_merge_optimize.
+	* Makefile.in (OBJS-common): Add tree-ssa-tail-merge.o.
+	(tree-ssa-tail-merge.o): New rule.
+	* opts.c (default_options_table): Set OPT_ftree_tail_merge by default at
+	OPT_LEVELS_2_PLUS.
+	* tree-ssa-sccvn.c (vn_valueize): Move to ...
+	* tree-ssa-sccvn.h (vn_valueize): Here.
+	* timevar.def (TV_TREE_TAIL_MERGE): New timevar.
+	* common.opt (ftree-tail-merge): New switch.
+	* params.def (PARAM_MAX_TAIL_MERGE_COMPARISONS)
+	(PARAM_MAX_TAIL_MERGE_ITERATIONS): New parameter.
+	* doc/invoke.texi (Optimization Options, -O2): Add -ftree-tail-merge.
+	(-ftree-tail-merge, max-tail-merge-comparisons)
+	(max-tail-merge-iterations): New item.
+
 2011-09-27  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (MAX_TIME): Reduce to avoid overflows.

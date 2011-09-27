@@ -215,4 +215,18 @@ unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
 tree fully_constant_vn_reference_p (vn_reference_t);
+
+/* Valueize NAME if it is an SSA name, otherwise just return it.  */
+
+static inline tree
+vn_valueize (tree name)
+{
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      tree tem = VN_INFO (name)->valnum;
+      return tem == VN_TOP ? name : tem;
+    }
+  return name;
+}
+
 #endif /* TREE_SSA_SCCVN_H  */
