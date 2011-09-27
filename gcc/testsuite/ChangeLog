@@ -1,3 +1,8 @@
+2011-09-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50508
+	* g++.dg/cpp0x/constexpr-typedef1.C: New.
+
 2011-09-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50472

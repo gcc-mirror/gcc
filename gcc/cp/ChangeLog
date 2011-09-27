@@ -1,3 +1,9 @@
+2011-09-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50508
+	* semantics.c (cxx_eval_logical_expression): Use tree_int_cst_equal
+	rather than ==.
+
 2011-09-23  Jason Merrill  <jason@redhat.com>
 
 	Core 253 - allow const objects with no initializer or
