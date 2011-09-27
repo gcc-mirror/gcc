@@ -3085,11 +3085,15 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 						    stmts, domstmt);
 	    if (!genop[i])
 	      return NULL_TREE;
-	    /* Ensure genop[1] is a ptrofftype for POINTER_PLUS_EXPR.  It
-	       may be a constant with the wrong type.  */
-	    if (i == 1
-		&& nary->opcode == POINTER_PLUS_EXPR)
-	      genop[i] = convert_to_ptrofftype (genop[i]);
+	    /* Ensure genop[] is properly typed for POINTER_PLUS_EXPR.  It
+	       may have conversions stripped.  */
+	    if (nary->opcode == POINTER_PLUS_EXPR)
+	      {
+		if (i == 0)
+		  genop[i] = fold_convert (nary->type, genop[i]);
+		else if (i == 1)
+		  genop[i] = convert_to_ptrofftype (genop[i]);
+	      }
 	    else
 	      genop[i] = fold_convert (TREE_TYPE (nary->op[i]), genop[i]);
 	  }
