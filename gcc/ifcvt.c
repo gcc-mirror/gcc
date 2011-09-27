@@ -85,7 +85,7 @@ static int cond_exec_changed_p;
 
 /* Forward references.  */
 static int count_bb_insns (const_basic_block);
-static bool cheap_bb_rtx_cost_p (const_basic_block, int);
+static bool cheap_bb_rtx_cost_p (const_basic_block, int, int);
 static rtx first_active_insn (basic_block);
 static rtx last_active_insn (basic_block, int);
 static rtx find_active_insn_before (basic_block, rtx);
@@ -131,20 +131,31 @@ count_bb_insns (const_basic_block bb)
 
 /* Determine whether the total insn_rtx_cost on non-jump insns in
    basic block BB is less than MAX_COST.  This function returns
-   false if the cost of any instruction could not be estimated.  */
+   false if the cost of any instruction could not be estimated. 
+
+   The cost of the non-jump insns in BB is scaled by REG_BR_PROB_BASE
+   as those insns are being speculated.  MAX_COST is scaled with SCALE
+   plus a small fudge factor.  */
 
 static bool
-cheap_bb_rtx_cost_p (const_basic_block bb, int max_cost)
+cheap_bb_rtx_cost_p (const_basic_block bb, int scale, int max_cost)
 {
   int count = 0;
   rtx insn = BB_HEAD (bb);
   bool speed = optimize_bb_for_speed_p (bb);
 
+  /* Our branch probability/scaling factors are just estimates and don't
+     account for cases where we can get speculation for free and other
+     secondary benefits.  So we fudge the scale factor to make speculating
+     appear a little more profitable.  */
+  scale += REG_BR_PROB_BASE / 8;
+  max_cost *= scale;
+
   while (1)
     {
       if (NONJUMP_INSN_P (insn))
 	{
-	  int cost = insn_rtx_cost (PATTERN (insn), speed);
+	  int cost = insn_rtx_cost (PATTERN (insn), speed) * REG_BR_PROB_BASE;
 	  if (cost == 0)
 	    return false;
 
@@ -3796,8 +3807,8 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   basic_block new_bb;
+  int then_bb_index, then_prob;
   rtx else_target = NULL_RTX;
-  int then_bb_index;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -3840,8 +3851,14 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 	     "\nIF-CASE-1 found, start %d, then %d\n",
 	     test_bb->index, then_bb->index);
 
-  /* THEN is small.  */
-  if (! cheap_bb_rtx_cost_p (then_bb,
+  if (then_edge->probability)
+    then_prob = REG_BR_PROB_BASE - then_edge->probability;
+  else
+    then_prob = REG_BR_PROB_BASE / 2;
+
+  /* We're speculating from the THEN path, we want to make sure the cost
+     of speculation is within reason.  */
+  if (! cheap_bb_rtx_cost_p (then_bb, then_prob,
 	COSTS_N_INSNS (BRANCH_COST (optimize_bb_for_speed_p (then_edge->src),
 				    predictable_edge_p (then_edge)))))
     return FALSE;
@@ -3910,7 +3927,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   edge else_succ;
-  rtx note;
+  int then_prob, else_prob;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -3949,9 +3966,19 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   if (then_bb->index < NUM_FIXED_BLOCKS)
     return FALSE;
 
+  if (else_edge->probability)
+    {
+      else_prob = else_edge->probability;
+      then_prob = REG_BR_PROB_BASE - else_prob;
+    }
+  else
+    {
+      else_prob = REG_BR_PROB_BASE / 2;
+      then_prob = REG_BR_PROB_BASE / 2;
+    }
+
   /* ELSE is predicted or SUCC(ELSE) postdominates THEN.  */
-  note = find_reg_note (BB_END (test_bb), REG_BR_PROB, NULL_RTX);
-  if (note && INTVAL (XEXP (note, 0)) >= REG_BR_PROB_BASE / 2)
+  if (else_prob > then_prob)
     ;
   else if (else_succ->dest->index < NUM_FIXED_BLOCKS
 	   || dominated_by_p (CDI_POST_DOMINATORS, then_bb,
@@ -3966,8 +3993,9 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 	     "\nIF-CASE-2 found, start %d, else %d\n",
 	     test_bb->index, else_bb->index);
 
-  /* ELSE is small.  */
-  if (! cheap_bb_rtx_cost_p (else_bb,
+  /* We're speculating from the ELSE path, we want to make sure the cost
+     of speculation is within reason.  */
+  if (! cheap_bb_rtx_cost_p (else_bb, else_prob,
 	COSTS_N_INSNS (BRANCH_COST (optimize_bb_for_speed_p (else_edge->src),
 				    predictable_edge_p (else_edge)))))
     return FALSE;

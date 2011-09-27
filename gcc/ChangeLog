@@ -1,3 +1,12 @@
+2011-09-27  Jeff Law  <law@redhat.com>
+
+	* ifcvt.c (cheap_bb_rtx_cost_p): Add SCALE argument.  Scale
+	non-jumping insns by REG_BR_PROB_BASE and the maximum cost
+	by SCALE.
+	(find_if_case_1): Use the probability of the THEN clause when
+	determining if speculation is profitable.
+	(find_if_case_2): Similarly for the ELSE clause.
+
 2011-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* common.opt: Add -foptimize-strlen option.
