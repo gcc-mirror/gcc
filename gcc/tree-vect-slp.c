@@ -393,20 +393,15 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
           return false;
         }
 
-      ncopies = vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
-      if (ncopies != 1)
-        {
-	  if (vect_print_dump_info (REPORT_SLP))
-            fprintf (vect_dump, "SLP with multiple types ");
-
-          /* FORNOW: multiple types are unsupported in BB SLP.  */
-	  if (bb_vinfo)
-	    return false;
-        }
-
       /* In case of multiple types we need to detect the smallest type.  */
       if (*max_nunits < TYPE_VECTOR_SUBPARTS (vectype))
-        *max_nunits = TYPE_VECTOR_SUBPARTS (vectype);
+        {
+          *max_nunits = TYPE_VECTOR_SUBPARTS (vectype);
+          if (bb_vinfo)
+            vectorization_factor = *max_nunits;
+        }
+
+      ncopies = vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
 
       if (is_gimple_call (stmt))
 	rhs_code = CALL_EXPR;
@@ -1201,7 +1196,6 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   if (loop_vinfo)
     vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   else
-    /* No multitypes in BB SLP.  */
     vectorization_factor = nunits;
 
   /* Calculate the unrolling factor.  */
@@ -1257,16 +1251,23 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 			   &max_nunits, &load_permutation, &loads,
 			   vectorization_factor))
     {
-      /* Create a new SLP instance.  */
-      new_instance = XNEW (struct _slp_instance);
-      SLP_INSTANCE_TREE (new_instance) = node;
-      SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
-      /* Calculate the unrolling factor based on the smallest type in the
-         loop.  */
+      /* Calculate the unrolling factor based on the smallest type.  */
       if (max_nunits > nunits)
         unrolling_factor = least_common_multiple (max_nunits, group_size)
                            / group_size;
 
+      if (unrolling_factor != 1 && !loop_vinfo)
+        {
+          if (vect_print_dump_info (REPORT_SLP))
+            fprintf (vect_dump, "Build SLP failed: unrolling required in basic"
+                               " block SLP");
+          return false;
+        }
+
+      /* Create a new SLP instance.  */
+      new_instance = XNEW (struct _slp_instance);
+      SLP_INSTANCE_TREE (new_instance) = node;
+      SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
       SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
       SLP_INSTANCE_OUTSIDE_OF_LOOP_COST (new_instance) = outside_cost;
       SLP_INSTANCE_INSIDE_OF_LOOP_COST (new_instance) = inside_cost;
