@@ -11,6 +11,9 @@
 	* gcc.target/sparc/edge.c: New test.
 	* gcc.target/sparc/fcmp.c: New test.
 
+	* gcc.target/sparc/edge.c: Update for new return types.
+	* gcc.target/sparc/fcmp.c: Likewise.
+
 2011-09-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50515
