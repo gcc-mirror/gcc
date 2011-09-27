@@ -1,5 +1,24 @@
 2011-09-27  Robert Dewar  <dewar@adacore.com>
 
+	* a-comutr.ads: Minor reformatting.
+
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cimutr.adb, a-cimutr.ads, a-cbmutr.adb, a-cbmutr.ads: Add children
+	iterators to multiway trees.
+
+2011-09-27  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb (d.D): New option for strict Alfa mode.
+	* opt.ads (Strict_Alfa_Mode): New flag to interpret compiler
+	permissions as strictly as possible.
+	* sem_ch3.adb (Signed_Integer_Type_Declaration): In non-strict
+	Alfa mode, now, interpret ranges of base types like GNAT does; in
+	strict mode, simply change the range of the implicit base Itype.
+	* gnat1drv.adb: Update comments. Set Strict_Alfa_Mode.
+
+2011-09-27  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch9.adb: Minor comment fixes.
 
 2011-09-27  Ed Schonberg  <schonberg@adacore.com>

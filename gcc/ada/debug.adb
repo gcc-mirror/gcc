@@ -121,7 +121,7 @@ package body Debug is
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
-   --  d.D
+   --  d.D  Strict Alfa mode
    --  d.E  Force Alfa mode for gnat2why
    --  d.F  Alfa mode
    --  d.G  Precondition only mode for gnat2why
@@ -579,6 +579,9 @@ package body Debug is
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
+
+   --  d.D  Strict Alfa mode. Interpret compiler permissions as strictly as
+   --       possible in Alfa mode.
 
    --  d.E  Force Alfa mode for gnat2why. In this mode, errors are issued for
    --       all violations of Alfa in user code, and warnings are issued for

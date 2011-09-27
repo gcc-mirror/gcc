@@ -392,6 +392,12 @@ procedure Gnat1drv is
 
          Alfa_Mode := True;
 
+         --  Set strict standard interpretation of compiler permissions
+
+         if Debug_Flag_Dot_DD then
+            Strict_Alfa_Mode := True;
+         end if;
+
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.
 
@@ -428,6 +434,8 @@ procedure Gnat1drv is
          Debug_Generated_Code := False;
 
          --  Turn cross-referencing on in case it was disabled (e.g. by -gnatD)
+         --  as it is needed for computing effects of subprograms in the formal
+         --  verification backend.
 
          Xref_Active := True;
 
@@ -473,13 +481,15 @@ procedure Gnat1drv is
 
          Warning_Mode := Suppress;
 
-         --  Suppress the generation of name tables for enumerations
-         --  why???
+         --  Suppress the generation of name tables for enumerations, which are
+         --  not needed for formal verification, and fall outside the Alfa
+         --  subset (use of pointers).
 
          Global_Discard_Names := True;
 
-         --  Suppress the expansion of tagged types and dispatching calls
-         --  why???
+         --  Suppress the expansion of tagged types and dispatching calls,
+         --  which lead to the generation of non-Alfa code (use of pointers),
+         --  which is more complex to formally verify than the original source.
 
          Tagged_Type_Expansion := False;
       end if;

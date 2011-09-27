@@ -40,9 +40,28 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    end record;
 
    overriding function First (Object : Iterator) return Cursor;
+
    overriding function Next
      (Object : Iterator;
       Position : Cursor) return Cursor;
+
+   type Child_Iterator is new Tree_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : Tree_Access;
+      Position  : Cursor;
+   end record;
+
+   overriding function First (Object : Child_Iterator) return Cursor;
+
+   overriding function Next
+     (Object : Child_Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object : Child_Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Last (Object : Child_Iterator) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -1241,6 +1260,14 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       return Object.Position;
    end First;
 
+   function First (Object : Child_Iterator) return Cursor is
+      Node : Count_Type'Base;
+
+   begin
+      Node := Object.Container.Nodes (Object.Position.Node).Children.First;
+      return (Object.Container, Node);
+   end First;
+
    -----------------
    -- First_Child --
    -----------------
@@ -1809,6 +1836,16 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end loop;
    end Iterate_Children;
 
+   function Iterate_Children
+     (Container : Tree;
+      Parent    : Cursor)
+     return Tree_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      pragma Unreferenced (Container);
+   begin
+      return Child_Iterator'(Parent.Container, Parent);
+   end Iterate_Children;
+
    ---------------------
    -- Iterate_Subtree --
    ---------------------
@@ -1870,6 +1907,15 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Process (Cursor'(Container'Unrestricted_Access, Subtree));
       Iterate_Children (Container, Subtree, Process);
    end Iterate_Subtree;
+
+   ----------
+   -- Last --
+   ----------
+
+   overriding function Last (Object : Child_Iterator) return Cursor is
+   begin
+      return Last_Child (Object.Position);
+   end Last;
 
    ----------------
    -- Last_Child --
@@ -1990,6 +2036,19 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       else
          return (Object.Container, N.Children.First);
       end if;
+   end Next;
+
+   function Next
+     (Object : Child_Iterator;
+      Position : Cursor) return Cursor
+   is
+
+   begin
+      if Object.Container /= Position.Container then
+         raise Program_Error;
+      end if;
+
+      return Next_Sibling (Position);
    end Next;
 
    ------------------
@@ -2136,6 +2195,22 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
       Container.Count := Container.Count + Count;
    end Prepend_Child;
+
+   --------------
+   -- Previous --
+   --------------
+
+   overriding function Previous
+     (Object : Child_Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+      if Object.Container /= Position.Container then
+         raise Program_Error;
+      end if;
+
+      return Previous_Sibling (Position);
+   end Previous;
 
    ----------------------
    -- Previous_Sibling --
