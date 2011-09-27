@@ -1,3 +1,18 @@
+2011-09-27  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vect-stmts.c (vectorizable_type_demotion): Handle basic block
+	vectorization.
+	(vectorizable_type_promotion): Likewise.
+	(vect_analyze_stmt): Call vectorizable_type_demotion and
+	vectorizable_type_promotion for basic blocks.
+	(supportable_widening_operation): Don't assume loop vectorization.
+	* tree-vect-slp.c (vect_build_slp_tree): Allow multiple types for
+	basic blocks.  Update vectorization factor for basic block
+	vectorization.
+	(vect_analyze_slp_instance): Allow multiple types for basic block
+	vectorization.  Recheck unrolling factor after construction of SLP
+	instance.
+
 2011-09-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-object-size.c (compute_object_sizes): Fix dumping of
