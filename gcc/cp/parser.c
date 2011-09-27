@@ -13423,7 +13423,13 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
     }
 
   if (tag_type != enum_type)
-    cp_parser_check_class_key (tag_type, type);
+    {
+      /* Indicate whether this class was declared as a `class' or as a
+	 `struct'.  */
+      if (TREE_CODE (type) == RECORD_TYPE)
+	CLASSTYPE_DECLARED_CLASS (type) = (tag_type == class_type);
+      cp_parser_check_class_key (tag_type, type);
+    }
 
   /* A "<" cannot follow an elaborated type specifier.  If that
      happens, the user was probably trying to form a template-id.  */
