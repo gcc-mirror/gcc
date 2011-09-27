@@ -8202,6 +8202,15 @@ mips_frame_set (rtx mem, rtx reg)
 
   return set;
 }
+
+/* Record that the epilogue has restored call-saved register REG.  */
+
+static void
+mips_add_cfa_restore (rtx reg)
+{
+  mips_epilogue.cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					       mips_epilogue.cfa_restores);
+}
 
 /* If a MIPS16e SAVE or RESTORE instruction saves or restores register
    mips16e_s2_s8_regs[X], it must also save the registers in indexes
@@ -8393,8 +8402,7 @@ mips16e_save_restore_reg (bool restore_p, bool reg_parm_p,
   reg = gen_rtx_REG (SImode, regno);
   if (restore_p)
     {
-      mips_epilogue.cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-						   mips_epilogue.cfa_restores);
+      mips_add_cfa_restore (reg);
       return gen_rtx_SET (VOIDmode, reg, mem);
     }
   if (reg_parm_p)
@@ -10290,9 +10298,13 @@ mips_restore_reg (rtx reg, rtx mem)
      $7 instead and adjust the return insn appropriately.  */
   if (TARGET_MIPS16 && REGNO (reg) == RETURN_ADDR_REGNUM)
     reg = gen_rtx_REG (GET_MODE (reg), GP_REG_FIRST + 7);
+  else if (GET_MODE (reg) == DFmode && !TARGET_FLOAT64)
+    {
+      mips_add_cfa_restore (mips_subword (reg, true));
+      mips_add_cfa_restore (mips_subword (reg, false));
+    }
   else
-    mips_epilogue.cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-						 mips_epilogue.cfa_restores);
+    mips_add_cfa_restore (reg);
 
   mips_emit_save_slot_move (reg, mem, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
   if (REGNO (reg) == REGNO (mips_epilogue.cfa_reg))
