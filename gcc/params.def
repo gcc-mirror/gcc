@@ -931,6 +931,14 @@ DEFPARAM (PARAM_MAX_TAIL_MERGE_ITERATIONS,
           "Maximum amount of iterations of the pass over a function",
           2, 0, 0)
 
+/* Maximum number of strings for which strlen optimization pass will
+   track string lenths.  */
+DEFPARAM (PARAM_MAX_TRACKED_STRLENS,
+	  "max-tracked-strlens",
+	  "Maximum number of strings for which strlen optimization pass will "
+	  "track string lengths",
+	  1000, 0, 0)
+
 /*
 Local variables:
 mode:c
