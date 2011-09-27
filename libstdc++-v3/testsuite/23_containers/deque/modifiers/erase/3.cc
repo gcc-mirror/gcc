@@ -1,4 +1,4 @@
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,9 @@ void erase(size_t num_elm, size_t elm_strt, size_t elm_end)
   
   x.erase(x.begin() + elm_strt, x.begin() + elm_end);
   
-  const size_t min_num_cpy = std::min(elm_strt, num_elm - elm_end);
+  const size_t min_num_cpy
+    = elm_strt == elm_end ? 0 : std::min(elm_strt, num_elm - elm_end);
+
   VERIFY( assignment_operator::count() == min_num_cpy );
 }
 
