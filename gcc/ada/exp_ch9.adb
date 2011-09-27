@@ -3243,6 +3243,7 @@ package body Exp_Ch9 is
       Stmts        : List_Id;
       Object_Parm  : Node_Id;
       Exc_Safe     : Boolean;
+      Lock_Kind    : RE_Id;
 
       function Is_Exception_Safe (Subprogram : Node_Id) return Boolean;
       --  Tell whether a given subprogram cannot raise an exception
@@ -3389,12 +3390,16 @@ package body Exp_Ch9 is
                 Parameter_Associations => Uactuals));
          end if;
 
+         Lock_Kind := RE_Lock_Read_Only;
+
       else
          Unprot_Call :=
            Make_Procedure_Call_Statement (Loc,
              Name =>
                Make_Identifier (Loc, Chars (Defining_Unit_Name (N_Op_Spec))),
              Parameter_Associations => Uactuals);
+
+         Lock_Kind := RE_Lock;
       end if;
 
       --  Wrap call in block that will be covered by an at_end handler
@@ -3419,7 +3424,7 @@ package body Exp_Ch9 is
             Service_Name := New_Reference_To (RTE (RE_Service_Entry), Loc);
 
          when System_Tasking_Protected_Objects =>
-            Lock_Name := New_Reference_To (RTE (RE_Lock), Loc);
+            Lock_Name := New_Reference_To (RTE (Lock_Kind), Loc);
             Service_Name := New_Reference_To (RTE (RE_Unlock), Loc);
 
          when others =>

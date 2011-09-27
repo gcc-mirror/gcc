@@ -1,3 +1,19 @@
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* rtsfind.ads: Add RE_Lock_Read_Only into rtsfind circuitry.
+	(RE_Id): Add RE_Lock_Read_Only.
+	(RE_Unit_Table): Likewise.
+	* sem_prag.adb (Process_Convention): Change Pragma_Locking_Policy
+	to lift restriction on first character. Handle now the
+	Name_Concurrent_Readers_Locking where policy character is set to
+	'R'.
+	* snames.ads-tmpl (Name_Concurrent_Readers_Locking): New
+	constant.
+	* exp_ch9.adb (Build_Protected_Subprogram_Body): Generate a
+	read only lock for function in protected object.
+	* s-taprob.ads (Lock_Read_Only): Remove obsolete comment as
+	this routine is now used.
+
 2011-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* s-atocou-x86.adb (Decrement): Use %;.
