@@ -2431,9 +2431,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case IOR:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
-      if (CONST_INT_P (trueop1)
-	  && ((UINTVAL (trueop1) & GET_MODE_MASK (mode))
-	      == GET_MODE_MASK (mode)))
+      if (INTEGRAL_MODE_P (mode) && trueop1 == CONSTM1_RTX (mode))
 	return op1;
       if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0))
 	return op0;
@@ -2573,9 +2571,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case XOR:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
-      if (CONST_INT_P (trueop1)
-	  && ((UINTVAL (trueop1) & GET_MODE_MASK (mode))
-	      == GET_MODE_MASK (mode)))
+      if (INTEGRAL_MODE_P (mode) && trueop1 == CONSTM1_RTX (mode))
 	return simplify_gen_unary (NOT, mode, op0, mode);
       if (rtx_equal_p (trueop0, trueop1)
 	  && ! side_effects_p (op0)
@@ -2721,6 +2717,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case AND:
       if (trueop1 == CONST0_RTX (mode) && ! side_effects_p (op0))
 	return trueop1;
+      if (INTEGRAL_MODE_P (mode) && trueop1 == CONSTM1_RTX (mode))
+	return op0;
       if (HWI_COMPUTABLE_MODE_P (mode))
 	{
 	  HOST_WIDE_INT nzop0 = nonzero_bits (trueop0, mode);
