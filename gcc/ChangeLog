@@ -1,5 +1,9 @@
 2011-09-27  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-analysis.c (MAX_TIME): Reduce to avoid overflows.
+
+2011-09-27  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Handle parameters
 	passed by reference; handle loads from non-SSA scalars and update comments.
 
