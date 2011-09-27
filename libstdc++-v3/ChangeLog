@@ -1,3 +1,18 @@
+2011-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49559
+	* include/bits/stl_algo.h (__move_merge_backward): Remove.
+	(__move_merge_adaptive, __move_merge_adaptive_backward): New.
+	(__merge_adaptive): Use the latter two.
+	(__rotate_adaptive): Avoid self move-assignment.
+	* include/bits/stl_algobase.h (move_backward): Fix comment.
+	* testsuite/25_algorithms/stable_sort/49559.cc: New.
+	* testsuite/25_algorithms/inplace_merge/49559.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/moveable.cc: Extend.
+	* testsuite/25_algorithms/inplace_merge/moveable2.cc: Likewise.
+	* testsuite/util/testsuite_rvalref.h (rvalstruct::operator=
+	(rvalstruct&&)): Check for self move-assignment.
+
 2011-09-24  John Salmon  <john.salmon@deshaw.com>
 
 	PR libstdc++/50510
