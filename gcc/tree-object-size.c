@@ -1250,13 +1250,10 @@ compute_object_sizes (void)
 	  if (!update_call_from_tree (&i, result))
 	    gcc_unreachable ();
 
-          /* NOTE: In the pre-tuples code, we called update_stmt here.  This is
-             now handled by gsi_replace, called from update_call_from_tree.  */
-
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "to\n  ");
-	      print_gimple_stmt (dump_file, call, 0, dump_flags);
+	      print_gimple_stmt (dump_file, gsi_stmt (i), 0, dump_flags);
 	      fprintf (dump_file, "\n");
 	    }
 	}

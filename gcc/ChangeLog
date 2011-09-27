@@ -1,5 +1,10 @@
 2011-09-27  Richard Guenther  <rguenther@suse.de>
 
+	* tree-object-size.c (compute_object_sizes): Fix dumping of
+	folded statement.
+
+2011-09-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50363
 	* tree-ssa-pre.c (create_expression_by_pieces): Handle
 	pointer conversions in POINTER_PLUS_EXPRs properly.
