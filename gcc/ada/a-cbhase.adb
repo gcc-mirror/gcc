@@ -39,6 +39,17 @@ with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Hashed_Sets is
 
+   type Iterator is new Set_Iterator_Interfaces.Forward_Iterator with record
+      Container : Set_Access;
+      Position  : Cursor;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object : Iterator;
+      Position : Cursor) return Cursor;
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -593,6 +604,16 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       return Cursor'(Container'Unrestricted_Access, Node);
    end First;
 
+   overriding function First (Object : Iterator) return Cursor is
+      Node : constant Count_Type := HT_Ops.First (Object.Container.all);
+   begin
+      if Node = 0 then
+         return No_Element;
+      end if;
+
+      return Cursor'(Object.Container, Node);
+   end First;
+
    -----------------
    -- Has_Element --
    -----------------
@@ -899,6 +920,12 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       B := B - 1;
    end Iterate;
 
+   function Iterate (Container : Set)
+     return Set_Iterator_Interfaces.Forward_Iterator'Class is
+   begin
+      return Iterator'(Container'Unrestricted_Access, First (Container));
+   end Iterate;
+
    ------------
    -- Length --
    ------------
@@ -960,6 +987,23 @@ package body Ada.Containers.Bounded_Hashed_Sets is
    procedure Next (Position : in out Cursor) is
    begin
       Position := Next (Position);
+   end Next;
+
+   function Next
+     (Object : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor designates wrong set";
+      end if;
+
+      if Position.Node = 0 then
+         return No_Element;
+      end if;
+
+      return Next (Position);
    end Next;
 
    -------------
@@ -1082,6 +1126,31 @@ package body Ada.Containers.Bounded_Hashed_Sets is
    begin
       raise Program_Error with "attempt to stream set cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+      S : Set renames Position.Container.all;
+      N : Node_Type renames S.Nodes (Position.Node);
+
+   begin
+      pragma Unreferenced (Container);
+
+      return (Element => N.Element'Unrestricted_Access);
+   end Constant_Reference;
 
    -------------
    -- Replace --
@@ -1476,6 +1545,14 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       raise Program_Error with "attempt to stream set cursor";
    end Write;
 
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
    package body Generic_Keys is
 
       -----------------------
@@ -1730,6 +1807,29 @@ package body Ada.Containers.Bounded_Hashed_Sets is
 
          raise Program_Error with "key was modified";
       end Update_Element_Preserving_Key;
+
+      ------------------------------
+      -- Reference_Preserving_Key --
+      ------------------------------
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type
+      is
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Unrestricted_Access);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key  : Key_Type) return Reference_Type
+      is
+         Position : constant Cursor := Find (Container, Key);
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Unrestricted_Access);
+      end Reference_Preserving_Key;
 
    end Generic_Keys;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,6 +31,7 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
+with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Finalization;
 private with Ada.Streams;
@@ -48,7 +49,12 @@ package Ada.Containers.Indefinite_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
-   type Map is tagged private;
+   type Map is tagged private
+   with constant_Indexing => Constant_Reference,
+        Variable_Indexing => Reference,
+        Default_Iterator  => Iterate,
+        Iterator_Element  => Element_Type;
+
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -57,6 +63,10 @@ package Ada.Containers.Indefinite_Ordered_Maps is
    Empty_Map : constant Map;
 
    No_Element : constant Cursor;
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package Map_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : Map) return Boolean;
 
@@ -150,8 +160,6 @@ package Ada.Containers.Indefinite_Ordered_Maps is
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 
-   function Has_Element (Position : Cursor) return Boolean;
-
    function "<" (Left, Right : Cursor) return Boolean;
 
    function ">" (Left, Right : Cursor) return Boolean;
@@ -164,6 +172,23 @@ package Ada.Containers.Indefinite_Ordered_Maps is
 
    function ">" (Left : Key_Type; Right : Cursor) return Boolean;
 
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   type Reference_Type (Element : not null access Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type) return Constant_Reference_Type;
+
+   function Reference
+     (Container : Map;
+       Key      : Key_Type) return Reference_Type;
+
    procedure Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
@@ -171,6 +196,15 @@ package Ada.Containers.Indefinite_Ordered_Maps is
    procedure Reverse_Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
+
+   function Iterate
+     (Container : Map)
+      return Map_Iterator_Interfaces.Forward_Iterator'class;
+
+   function Iterate
+     (Container : Map;
+      Start     : Cursor)
+      return Map_Iterator_Interfaces.Reversible_Iterator'class;
 
 private
 
@@ -242,6 +276,36 @@ private
       Container : out Map);
 
    for Map'Read use Read;
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is null record;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   type Reference_Type
+      (Element : not null access Element_Type) is null record;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
 
    Empty_Map : constant Map :=
                  (Controlled with Tree => (First  => null,

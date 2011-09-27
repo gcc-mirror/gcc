@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,6 +31,7 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
+with Ada.Iterator_Interfaces;
 private with Ada.Containers.Hash_Tables;
 private with Ada.Streams;
 private with Ada.Finalization;
@@ -49,7 +50,11 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    pragma Preelaborate;
    pragma Remote_Types;
 
-   type Set is tagged private;
+   type Set is tagged private
+     with Constant_Indexing => Constant_Reference,
+          Default_Iterator  => Iterate,
+          Iterator_Element  => Element_Type;
+
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
@@ -62,6 +67,12 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    No_Element : constant Cursor;
    --  Cursor objects declared without an initialization expression are
    --  initialized to the value No_Element.
+
+   function Has_Element (Position : Cursor) return Boolean;
+   --  Equivalent to Position /= No_Element
+
+   package Set_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : Set) return Boolean;
    --  For each element in Left, set equality attempts to find the equal
@@ -131,7 +142,16 @@ package Ada.Containers.Indefinite_Hashed_Sets is
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type));
    --  Calls Process with the element (having only a constant view) of the node
-   --  designed by the cursor.
+   --  designated by the cursor.
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is private
+        with Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor)
+   return Constant_Reference_Type;
 
    procedure Move (Target : in out Set; Source : in out Set);
    --  Clears Target (if it's not empty), and then moves (not copies) the
@@ -297,9 +317,6 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    function Contains (Container : Set; Item : Element_Type) return Boolean;
    --  Equivalent to Find (Container, Item) /= No_Element
 
-   function Has_Element (Position : Cursor) return Boolean;
-   --  Equivalent to Position /= No_Element
-
    function Equivalent_Elements (Left, Right : Cursor) return Boolean;
    --  Returns the result of calling Equivalent_Elements with the elements of
    --  the nodes designated by cursors Left and Right.
@@ -320,6 +337,9 @@ package Ada.Containers.Indefinite_Hashed_Sets is
      (Container : Set;
       Process   : not null access procedure (Position : Cursor));
    --  Calls Process for each node in the set
+
+   function Iterate (Container : Set)
+     return Set_Iterator_Interfaces.Forward_Iterator'Class;
 
    generic
       type Key_Type (<>) is private;
@@ -389,6 +409,22 @@ package Ada.Containers.Indefinite_Hashed_Sets is
       --  completes. Otherwise, the node is removed from the map and
       --  Program_Error is raised.
 
+      type Reference_Type (Element : not null access Element_Type) is private
+        with Implicit_Dereference => Element;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Position  : Cursor)
+      return Reference_Type;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key  : Key_Type)
+      return Reference_Type;
+
+   private
+      type Reference_Type (Element : not null access Element_Type)
+         is null record;
    end Generic_Keys;
 
 private
@@ -453,6 +489,21 @@ private
       Container : out Set);
 
    for Set'Read use Read;
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is null record;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
 
    Empty_Set : constant Set := (Controlled with HT => (null, 0, 0, 0));
 

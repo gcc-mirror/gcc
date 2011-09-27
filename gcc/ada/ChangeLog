@@ -1,3 +1,17 @@
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbhase.adb, a-cbhase.ads, a-cborse.adb, a-cborse.ads,
+	a-cihase.adb, a-cihase.ads, a-ciorse.adb, a-ciorse.ads,
+	a-coorse.adb, a-coorse.ads: Add iterator machinery to bounded sets and
+	indefinite sets.
+	* a-coorma.ads: Minor reformmating.
+	* einfo.ads: Improve the comment describing the
+	Directly_Designated_Type function.
+	* a-ciorma.adb, a-ciorma.ads: Add iterator machinery to indefinite
+	ordered maps.
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update
+	dependencies.
+
 2011-09-27  Robert Dewar  <dewar@adacore.com>
 
 	* a-comutr.ads: Minor reformatting.

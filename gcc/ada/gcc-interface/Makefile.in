@@ -597,7 +597,6 @@ ifeq ($(strip $(filter-out powerpc% e500v2 wrs vxworksae,$(targ))),)
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
-  g-io.ads<g-io-vxworks-ppc-cert.ads \
   s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
@@ -660,7 +659,6 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworksmils,$(targ))),)
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
-  g-io.ads<g-io-vxworks-ppc-cert.ads \
   s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
@@ -715,7 +713,6 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(targ))),)
   a-sytaco.ads<1asytaco.ads \
   a-sytaco.adb<1asytaco.adb \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
-  g-io.ads<g-io-vxworks-ppc-cert.ads \
   s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
@@ -1115,61 +1112,35 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   s-intman.adb<s-intman-posix.adb \
   s-tpopsp.adb<s-tpopsp-tls.adb \
   g-sercom.adb<g-sercom-linux.adb \
+  a-exetim.adb<a-exetim-posix.adb \
+  a-exetim.ads<a-exetim-default.ads \
+  s-linux.ads<s-linux.ads \
+  s-osinte.adb<s-osinte-posix.adb \
+  system.ads<system-linux-x86.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS)
 
-  ifeq ($(strip $(filter-out marte,$(THREAD_KIND))),)
+  ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
-    a-exetim.adb<a-exetim-linux-marte.adb \
-    a-exetim.ads<a-exetim-linux-marte.ads \
-    a-extiti.adb<a-extiti-linux-marte.adb \
-    a-extiti.ads<a-extiti-linux-marte.ads \
-    a-rttiev.adb<a-rttiev-linux-marte.adb \
-    a-rttiev.ads<a-rttiev-linux-marte.ads \
-    s-osinte.adb<s-osinte-linux-marte.adb \
-    s-osinte.ads<s-osinte-linux-marte.ads \
-    s-osprim.adb<s-osprim-posix.adb \
-    s-taprop.adb<s-taprop-linux-marte.adb \
-    s-taspri.ads<s-taspri-posix.ads \
-    system.ads<system-linux-x86.ads
-
-    EXTRA_GNATRTL_TASKING_OBJS=a-exetim.o a-extiti.o
-
-    EH_MECHANISM=
-    THREADSLIB = -lmarte
+    s-osinte.ads<s-osinte-linux-xenomai.ads \
+    s-osprim.adb<s-osprim-linux-xenomai.adb \
+    s-taprop.adb<s-taprop-linux-xenomai.adb \
+    s-taspri.ads<s-taspri-linux-xenomai.ads
   else
     LIBGNAT_TARGET_PAIRS += \
-    a-exetim.adb<a-exetim-posix.adb \
-    a-exetim.ads<a-exetim-default.ads \
-    s-linux.ads<s-linux.ads \
-    s-osinte.adb<s-osinte-posix.adb \
-    system.ads<system-linux-x86.ads
-
-    ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
-      LIBGNAT_TARGET_PAIRS += \
-      s-osinte.ads<s-osinte-linux-xenomai.ads \
-      s-osprim.adb<s-osprim-linux-xenomai.adb \
-      s-taprop.adb<s-taprop-linux-xenomai.adb \
-      s-taspri.ads<s-taspri-linux-xenomai.ads
-
-      EH_MECHANISM=-gcc
-    else
-      LIBGNAT_TARGET_PAIRS += \
-      s-mudido.adb<s-mudido-affinity.adb \
-      s-osinte.ads<s-osinte-linux.ads \
-      s-osprim.adb<s-osprim-posix.adb \
-      s-taprop.adb<s-taprop-linux.adb \
-      s-tasinf.ads<s-tasinf-linux.ads \
-      s-tasinf.adb<s-tasinf-linux.adb \
-      s-taspri.ads<s-taspri-posix.ads
-
-      EH_MECHANISM=-gcc
-    endif
-
-    THREADSLIB = -lpthread -lrt
-    EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
-    EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
+    s-mudido.adb<s-mudido-affinity.adb \
+    s-osinte.ads<s-osinte-linux.ads \
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-linux.adb \
+    s-tasinf.ads<s-tasinf-linux.ads \
+    s-tasinf.adb<s-tasinf-linux.adb \
+    s-taspri.ads<s-taspri-posix.ads
   endif
+
+  EH_MECHANISM=-gcc
+  THREADSLIB = -lpthread -lrt
+  EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
@@ -2019,7 +1990,7 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-linux.adb
- 
+
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-gcc
   MISCLIB=
