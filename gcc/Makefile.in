@@ -1476,6 +1476,7 @@ OBJS = \
 	tree-ssa-sccvn.o \
 	tree-ssa-sink.o \
 	tree-ssa-structalias.o \
+	tree-ssa-tail-merge.o \
 	tree-ssa-ter.o \
 	tree-ssa-threadedge.o \
 	tree-ssa-threadupdate.o \
@@ -2382,6 +2383,13 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(PARAMS_H) $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) output.h $(RTL_H) \
    $(GGC_H) $(TM_P_H) $(TARGET_H) langhooks.h $(REGS_H) gt-stor-layout.h \
    $(DIAGNOSTIC_CORE_H) $(CGRAPH_H) $(TREE_INLINE_H) $(TREE_DUMP_H) $(GIMPLE_H)
+tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
+   $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
+   $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) output.h \
+   $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) \
+   $(GIMPLE_H) $(FUNCTION_H) \
+   $(TIMEVAR_H) tree-ssa-sccvn.h \
+   $(CGRAPH_H) gimple-pretty-print.h tree-pretty-print.h $(PARAMS_H)
 tree-ssa-structalias.o: tree-ssa-structalias.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(GGC_H) $(OBSTACK_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) output.h \

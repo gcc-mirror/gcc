@@ -2820,19 +2820,6 @@ stmt_has_constants (gimple stmt)
   return false;
 }
 
-/* Valueize NAME if it is an SSA name, otherwise just return it.  */
-
-static inline tree
-vn_valueize (tree name)
-{
-  if (TREE_CODE (name) == SSA_NAME)
-    {
-      tree tem = SSA_VAL (name);
-      return tem == VN_TOP ? name : tem;
-    }
-  return name;
-}
-
 /* Replace SSA_NAMES in expr with their value numbers, and return the
    result.
    This is performed in place. */

@@ -4915,7 +4915,6 @@ execute_pre (bool do_fre)
   statistics_counter_event (cfun, "Constified", pre_stats.constified);
 
   clear_expression_ids ();
-  free_scc_vn ();
   if (!do_fre)
     {
       remove_dead_inserted_code ();
@@ -4924,6 +4923,17 @@ execute_pre (bool do_fre)
 
   scev_finalize ();
   fini_pre (do_fre);
+
+  if (!do_fre)
+    /* TODO: tail_merge_optimize may merge all predecessors of a block, in which
+       case we can merge the block with the remaining predecessor of the block.
+       It should either:
+       - call merge_blocks after each tail merge iteration
+       - call merge_blocks after all tail merge iterations
+       - mark TODO_cleanup_cfg when necessary
+       - share the cfg cleanup with fini_pre.  */
+    todo |= tail_merge_optimize (todo);
+  free_scc_vn ();
 
   return todo;
 }

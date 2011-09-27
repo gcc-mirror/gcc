@@ -921,6 +921,15 @@ DEFPARAM (PARAM_TREE_REASSOC_WIDTH,
 	  "reassociated tree. If 0, use the target dependent heuristic.",
 	  0, 0, 0)
 
+DEFPARAM (PARAM_MAX_TAIL_MERGE_COMPARISONS,
+          "max-tail-merge-comparisons",
+          "Maximum amount of similar bbs to compare a bb with",
+          10, 0, 0)
+
+DEFPARAM (PARAM_MAX_TAIL_MERGE_ITERATIONS,
+          "max-tail-merge-iterations",
+          "Maximum amount of iterations of the pass over a function",
+          2, 0, 0)
 
 /*
 Local variables:
