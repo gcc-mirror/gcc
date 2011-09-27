@@ -2969,183 +2969,27 @@
    (set_attr "neon_type" "neon_bp_simple")]
 )
 
-(define_insn "neon_vget_highv16qi"
-  [(set (match_operand:V8QI 0 "s_register_operand" "=w")
-	(vec_select:V8QI (match_operand:V16QI 1 "s_register_operand" "w")
-                         (parallel [(const_int 8) (const_int 9)
-			            (const_int 10) (const_int 11)
-				    (const_int 12) (const_int 13)
-				    (const_int 14) (const_int 15)])))]
+(define_expand "neon_vget_high<mode>"
+  [(match_operand:<V_HALF> 0 "s_register_operand")
+   (match_operand:VQX 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
+  emit_move_insn (operands[0],
+		  simplify_gen_subreg (<V_HALF>mode, operands[1], <MODE>mode,
+				       GET_MODE_SIZE (<V_HALF>mode)));
+  DONE;
+})
 
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv8hi"
-  [(set (match_operand:V4HI 0 "s_register_operand" "=w")
-	(vec_select:V4HI (match_operand:V8HI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 4) (const_int 5)
-			            (const_int 6) (const_int 7)])))]
+(define_expand "neon_vget_low<mode>"
+  [(match_operand:<V_HALF> 0 "s_register_operand")
+   (match_operand:VQX 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv4si"
-  [(set (match_operand:V2SI 0 "s_register_operand" "=w")
-	(vec_select:V2SI (match_operand:V4SI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 2) (const_int 3)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv4sf"
-  [(set (match_operand:V2SF 0 "s_register_operand" "=w")
-	(vec_select:V2SF (match_operand:V4SF 1 "s_register_operand" "w")
-	                 (parallel [(const_int 2) (const_int 3)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv2di"
-  [(set (match_operand:DI 0 "s_register_operand" "=w")
-	(vec_select:DI (match_operand:V2DI 1 "s_register_operand" "w")
-	               (parallel [(const_int 1)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv16qi"
-  [(set (match_operand:V8QI 0 "s_register_operand" "=w")
-	(vec_select:V8QI (match_operand:V16QI 1 "s_register_operand" "w")
-                         (parallel [(const_int 0) (const_int 1)
-			            (const_int 2) (const_int 3)
-				    (const_int 4) (const_int 5)
-				    (const_int 6) (const_int 7)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv8hi"
-  [(set (match_operand:V4HI 0 "s_register_operand" "=w")
-	(vec_select:V4HI (match_operand:V8HI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 0) (const_int 1)
-			            (const_int 2) (const_int 3)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv4si"
-  [(set (match_operand:V2SI 0 "s_register_operand" "=w")
-	(vec_select:V2SI (match_operand:V4SI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv4sf"
-  [(set (match_operand:V2SF 0 "s_register_operand" "=w")
-	(vec_select:V2SF (match_operand:V4SF 1 "s_register_operand" "w")
-	                 (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv2di"
-  [(set (match_operand:DI 0 "s_register_operand" "=w")
-	(vec_select:DI (match_operand:V2DI 1 "s_register_operand" "w")
-	               (parallel [(const_int 0)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
+  emit_move_insn (operands[0],
+		  simplify_gen_subreg (<V_HALF>mode, operands[1],
+				       <MODE>mode, 0));
+  DONE;
+})
 
 (define_insn "neon_vcvt<mode>"
   [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
