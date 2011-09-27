@@ -1,3 +1,10 @@
+2011-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/50386
+	PR middle-end/50326
+	* tree-sra.c (build_ref_for_model): Use the type of the field as
+	the type of the COMPONENT_REF.
+
 2011-09-27  Jeff Law  <law@redhat.com>
 
 	* ifcvt.c (cheap_bb_rtx_cost_p): Add SCALE argument.  Scale
