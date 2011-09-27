@@ -149,6 +149,9 @@ package System.Task_Primitives.Operations is
      (Prio : System.Any_Priority;
       L    : not null access Lock);
    procedure Initialize_Lock
+     (Prio : System.Any_Priority;
+      L    : not null access RW_Lock);
+   procedure Initialize_Lock
      (L     : not null access RTS_Lock;
       Level : Lock_Level);
    pragma Inline (Initialize_Lock);
@@ -173,6 +176,7 @@ package System.Task_Primitives.Operations is
    --  These operations raise Storage_Error if a lack of storage is detected
 
    procedure Finalize_Lock (L : not null access Lock);
+   procedure Finalize_Lock (L : not null access RW_Lock);
    procedure Finalize_Lock (L : not null access RTS_Lock);
    pragma Inline (Finalize_Lock);
    --  Finalize a lock object, freeing any resources allocated by the
@@ -180,6 +184,9 @@ package System.Task_Primitives.Operations is
 
    procedure Write_Lock
      (L                 : not null access Lock;
+      Ceiling_Violation : out Boolean);
+   procedure Write_Lock
+     (L                 : not null access RW_Lock;
       Ceiling_Violation : out Boolean);
    procedure Write_Lock
      (L           : not null access RTS_Lock;
@@ -210,7 +217,7 @@ package System.Task_Primitives.Operations is
    --  per-task lock is implicit in Exit_Task.
 
    procedure Read_Lock
-     (L                 : not null access Lock;
+     (L                 : not null access RW_Lock;
       Ceiling_Violation : out Boolean);
    pragma Inline (Read_Lock);
    --  Lock a lock object for read access. After this operation returns,
@@ -235,6 +242,8 @@ package System.Task_Primitives.Operations is
 
    procedure Unlock
      (L : not null access Lock);
+   procedure Unlock
+     (L : not null access RW_Lock);
    procedure Unlock
      (L           : not null access RTS_Lock;
       Global_Lock : Boolean := False);

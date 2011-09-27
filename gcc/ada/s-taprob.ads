@@ -212,6 +212,9 @@ private
       L : aliased Task_Primitives.Lock;
       --  Lock used to ensure mutual exclusive access to the protected object
 
+      RWL : aliased Task_Primitives.RW_Lock;
+      --  Lock used to support conccurent readers to the protected object
+
       Ceiling : System.Any_Priority;
       --  Ceiling priority associated to the protected object
 

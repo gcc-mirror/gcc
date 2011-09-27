@@ -76,7 +76,8 @@ package System.Tasking.Protected_Objects.Entries is
    type Protection_Entries (Num_Entries : Protected_Entry_Index) is new
      Ada.Finalization.Limited_Controlled
    with record
-      L                 : aliased Task_Primitives.Lock;
+      L   : aliased Task_Primitives.Lock;
+      RWL : aliased Task_Primitives.RW_Lock;
       --  The underlying lock associated with a Protection_Entries.
       --  Note that you should never (un)lock Object.L directly, but instead
       --  use Lock_Entries/Unlock_Entries.

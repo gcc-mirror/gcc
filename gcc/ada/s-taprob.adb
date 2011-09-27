@@ -6,8 +6,8 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--            Copyright (C) 1991-1994, Florida State University             --
+--                     Copyright (C) 1995-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,11 @@ package body System.Tasking.Protected_Objects is
 
    procedure Finalize_Protection (Object : in out Protection) is
    begin
-      Finalize_Lock (Object.L'Unrestricted_Access);
+      if Locking_Policy = 'R' then
+         Finalize_Lock (Object.RWL'Unrestricted_Access);
+      else
+         Finalize_Lock (Object.L'Unrestricted_Access);
+      end if;
    end Finalize_Protection;
 
    ---------------------------
@@ -75,7 +79,11 @@ package body System.Tasking.Protected_Objects is
          Init_Priority  := System.Priority'Last;
       end if;
 
-      Initialize_Lock (Init_Priority, Object.L'Access);
+      if Locking_Policy = 'R' then
+         Initialize_Lock (Init_Priority, Object.RWL'Access);
+      else
+         Initialize_Lock (Init_Priority, Object.L'Access);
+      end if;
       Object.Ceiling := System.Any_Priority (Init_Priority);
       Object.New_Ceiling := System.Any_Priority (Init_Priority);
       Object.Owner := Null_Task;
@@ -120,7 +128,11 @@ package body System.Tasking.Protected_Objects is
          raise Program_Error;
       end if;
 
-      Write_Lock (Object.L'Access, Ceiling_Violation);
+      if Locking_Policy = 'R' then
+         Write_Lock (Object.RWL'Access, Ceiling_Violation);
+      else
+         Write_Lock (Object.L'Access, Ceiling_Violation);
+      end if;
 
       if Parameters.Runtime_Traces then
          Send_Trace_Info (PO_Lock);
@@ -177,7 +189,11 @@ package body System.Tasking.Protected_Objects is
          raise Program_Error;
       end if;
 
-      Read_Lock (Object.L'Access, Ceiling_Violation);
+      if Locking_Policy = 'R' then
+         Read_Lock (Object.RWL'Access, Ceiling_Violation);
+      else
+         Write_Lock (Object.L'Access, Ceiling_Violation);
+      end if;
 
       if Parameters.Runtime_Traces then
          Send_Trace_Info (PO_Lock);
@@ -263,7 +279,11 @@ package body System.Tasking.Protected_Objects is
          Object.Ceiling := Object.New_Ceiling;
       end if;
 
-      Unlock (Object.L'Access);
+      if Locking_Policy = 'R' then
+         Unlock (Object.RWL'Access);
+      else
+         Unlock (Object.L'Access);
+      end if;
 
       if Parameters.Runtime_Traces then
          Send_Trace_Info (PO_Unlock);
