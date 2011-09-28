@@ -484,6 +484,11 @@ i386_pe_asm_named_section (const char *name, unsigned int flags,
 {
   char flagchars[8], *f = flagchars;
 
+#if defined (HAVE_GAS_SECTION_EXCLUDE) && HAVE_GAS_SECTION_EXCLUDE == 1
+  if ((flags & SECTION_EXCLUDE) != 0)
+    *f++ = 'e';
+#endif
+
   if ((flags & (SECTION_CODE | SECTION_WRITE)) == 0)
     /* readonly data */
     {
@@ -498,6 +503,12 @@ i386_pe_asm_named_section (const char *name, unsigned int flags,
         *f++ = 'w';
       if (flags & SECTION_PE_SHARED)
         *f++ = 's';
+#if !defined (HAVE_GAS_SECTION_EXCLUDE) || HAVE_GAS_SECTION_EXCLUDE == 0
+      /* If attribute "e" isn't supported we mark this section as
+         never-load.  */
+      if ((flags & SECTION_EXCLUDE) != 0)
+	*f++ = 'n';
+#endif
     }
 
   /* LTO sections need 1-byte alignment to avoid confusing the
