@@ -1,3 +1,13 @@
+2011-09-28  Oleg Endo  <oleg.endo@t-online.de>
+
+	PR target/49486
+	* config/sh/sh.md (negdi2): Move expansion into split to
+	allow more combination options.  Add T_REG clobber.
+	(abssi2): New expander.
+	(*negdi2, *abssi2, *negabssi2): New insns.
+	(cneg): Change from insn to insn_and_split.  Rename to
+	negsi_cond.  Add alternative for non-SH4.
+
 2011-09-28  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/neon.md (neon_move_lo_quad_<mode>): Delete.

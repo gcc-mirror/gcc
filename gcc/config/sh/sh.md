@@ -4282,28 +4282,39 @@ label:
   "sub	r63, %1, %0"
   [(set_attr "type" "arith_media")])
 
+
+
+;; Don't expand immediately because otherwise neg:DI (abs:DI) will not be
+;; combined.
 (define_expand "negdi2"
-  [(set (match_operand:DI 0 "arith_reg_operand" "")
-	(neg:DI (match_operand:DI 1 "arith_reg_operand" "")))]
+  [(set (match_operand:DI 0 "arith_reg_dest" "")
+	(neg:DI (match_operand:DI 1 "arith_reg_operand" "")))
+   (clobber (reg:SI T_REG))]
   ""
+  "")
+
+(define_insn_and_split "*negdi2"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+	(neg:DI (match_operand:DI 1 "arith_reg_operand" "r")))]
+  "TARGET_SH1"
+  "#"
+  "TARGET_SH1"
+  [(const_int 0)]
   "
 {
-  if (TARGET_SH1)
-    {
-      int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
-      int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
+  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
+  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
 
-      rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
-      rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
+  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
 
-      rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
-      rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
+  rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
+  rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
 
-      emit_insn (gen_clrt ());
-      emit_insn (gen_negc (low_dst, low_src));
-      emit_insn (gen_negc (high_dst, high_src));
-      DONE;
-    }
+  emit_insn (gen_clrt ());
+  emit_insn (gen_negc (low_dst, low_src));
+  emit_insn (gen_negc (high_dst, high_src));
+  DONE;
 }")
 
 (define_insn "negsi2"
@@ -4326,27 +4337,77 @@ label:
 		(const_int -1)))]
   "TARGET_SHMEDIA" "")
 
-/* The SH4 202 can do zero-offset branches without pipeline stalls.
-   This can be used as some kind of conditional execution, which is useful
-   for abs.  */
-(define_split
+(define_expand "abssi2"
   [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(plus:SI (xor:SI (neg:SI (reg:SI T_REG))
-			 (match_operand:SI 1 "arith_reg_operand" ""))
-		 (reg:SI T_REG)))]
-  "TARGET_HARD_SH4"
-  [(const_int 0)]
-  "emit_insn (gen_movsi_i (operands[0], operands[1]));
-   emit_insn (gen_cneg (operands[0], operands[0], operands[0]));
-   DONE;")
+  	(abs:SI (match_operand:SI 1 "arith_reg_operand" "")))
+   (clobber (reg:SI T_REG))]
+  ""
+  "")
 
-(define_insn "cneg"
+(define_insn_and_split "*abssi2"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(if_then_else:SI (eq:SI (reg:SI T_REG) (const_int 0))
-		      (match_operand:SI 1 "arith_reg_operand" "0")
-		      (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  	(abs:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
+  "TARGET_SH1"
+  "#"
+  "TARGET_SH1"
+  [(const_int 0)]
+  "
+{
+  emit_insn (gen_cmpgesi_t (operands[1], const0_rtx));
+  emit_insn (gen_negsi_cond (operands[0], operands[1], operands[1],
+		 const1_rtx));
+  DONE;
+}")
+
+(define_insn_and_split "*negabssi2"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+  	(neg:SI (abs:SI (match_operand:SI 1 "arith_reg_operand" "r"))))]
+  "TARGET_SH1"
+  "#"
+  "TARGET_SH1"
+  [(const_int 0)]
+  "
+{
+  emit_insn (gen_cmpgesi_t (operands[1], const0_rtx));
+  emit_insn (gen_negsi_cond (operands[0], operands[1], operands[1],
+		 const0_rtx));
+  DONE;
+}")
+
+
+;; The SH4 202 can do zero-offset branches without pipeline stalls.
+;; This can be used as some kind of conditional execution, which is useful
+;; for abs.
+;; Actually the instruction scheduling should decide whether to use a
+;; zero-offset branch or not for any generic case involving a single
+;; instruction on SH4 202.
+
+(define_insn_and_split "negsi_cond"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(if_then_else:SI (eq:SI (reg:SI T_REG)
+			  (match_operand:SI 3 "const_int_operand" "M,N"))
+	 (match_operand:SI 1 "arith_reg_operand" "0,0")
+	 (neg:SI (match_operand:SI 2 "arith_reg_operand" "r,r"))))]
   "TARGET_HARD_SH4"
-  "bf 0f\;neg %2,%0\\n0:"
+  "@
+	bt\\t0f\;neg\\t%2,%0\\n0:
+	bf\\t0f\;neg\\t%2,%0\\n0:"
+  "!TARGET_HARD_SH4"
+  [(const_int 0)]
+  "
+{
+  rtx skip_neg_label = gen_label_rtx ();
+
+  emit_insn (gen_movsi (operands[0], operands[1]));
+
+  emit_jump_insn (INTVAL (operands[3])
+		  ? gen_branch_true (skip_neg_label)
+		  : gen_branch_false (skip_neg_label));
+
+  emit_label_after (skip_neg_label,
+		    emit_insn (gen_negsi2 (operands[0], operands[1])));
+  DONE;
+}"
   [(set_attr "type" "arith") ;; poor approximation
    (set_attr "length" "4")])
 
