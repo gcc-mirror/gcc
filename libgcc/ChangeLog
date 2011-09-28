@@ -1,5 +1,12 @@
+2011-09-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx-lib.h: Always restrict doubles to the SF type when
+	64-bit doubles are not enabled.
+	* config/rx/rx-abi.h: Fix extraneous renaming of the floatsisf
+	and floatunsisf functions.
+
 2011-09-13  Paul Brook  <paul@codesourcery.com>
- 
+
 	* config.host (tic6x-*-*): Add c6x/t-c6x-elf.  Set unwind_header.
 	* unwind-c.c (PERSONALITY_FUNCTION): Use UNWIND_POINTER_REG.
 	* unwind-arm-common.inc: New file.
