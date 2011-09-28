@@ -20,12 +20,12 @@
   </copyright>
   <legalnotice>
     <para>
-      <link linkend="manual.intro.status.license">License 
+      <link linkend="manual.intro.status.license">License
       </link>
     </para>
   </legalnotice>
 </info>
- 
+
 <para>
   The GNU C++ library sources have been specially formatted so that
   with the proper invocation of another tool (Doxygen), a set of
@@ -74,6 +74,12 @@
   <listitem>
     <para>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-api-4.5/index.html">for the 4.5 release
+      </link>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-api-4.6/index.html">for the 4.6 release
       </link>
     </para>
   </listitem>
