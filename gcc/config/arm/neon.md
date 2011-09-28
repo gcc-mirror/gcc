@@ -1251,66 +1251,14 @@
                     (const_string "neon_int_1") (const_string "neon_int_5")))]
 )
 
-; FIXME: We wouldn't need the following insns if we could write subregs of
-; vector registers. Make an attempt at removing unnecessary moves, though
-; we're really at the mercy of the register allocator.
-
-(define_insn "neon_move_lo_quad_<mode>"
-  [(set (match_operand:ANY128 0 "s_register_operand" "+w")
-        (vec_concat:ANY128
-          (match_operand:<V_HALF> 1 "s_register_operand" "w")
-          (vec_select:<V_HALF> 
-		(match_dup 0)
-	        (match_operand:ANY128 2 "vect_par_constant_high" ""))))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%e0, %P1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_move_hi_quad_<mode>"
-  [(set (match_operand:ANY128 0 "s_register_operand" "+w")
-        (vec_concat:ANY128
-          (vec_select:<V_HALF>
-		(match_dup 0)
-	        (match_operand:ANY128 2 "vect_par_constant_low" ""))
-          (match_operand:<V_HALF> 1 "s_register_operand" "w")))]
-	   
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%f0, %P1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
 (define_expand "move_hi_quad_<mode>"
  [(match_operand:ANY128 0 "s_register_operand" "")
   (match_operand:<V_HALF> 1 "s_register_operand" "")]
  "TARGET_NEON"
 {
-  rtvec v = rtvec_alloc (<V_mode_nunits>/2);
-  rtx t1;
-  int i;
-
-  for (i=0; i < (<V_mode_nunits>/2); i++)
-     RTVEC_ELT (v, i) = GEN_INT (i);
-
-  t1 = gen_rtx_PARALLEL (<MODE>mode, v);
-  emit_insn (gen_neon_move_hi_quad_<mode> (operands[0], operands[1], t1));
-
+  emit_move_insn (simplify_gen_subreg (<V_HALF>mode, operands[0], <MODE>mode,
+				       GET_MODE_SIZE (<V_HALF>mode)),
+		  operands[1]);
   DONE;
 })
 
@@ -1319,16 +1267,9 @@
   (match_operand:<V_HALF> 1 "s_register_operand" "")]
  "TARGET_NEON"
 {
-  rtvec v = rtvec_alloc (<V_mode_nunits>/2);
-  rtx t1;
-  int i;
-
-  for (i=0; i < (<V_mode_nunits>/2); i++)
-     RTVEC_ELT (v, i) = GEN_INT ((<V_mode_nunits>/2) + i);
-
-  t1 = gen_rtx_PARALLEL (<MODE>mode, v);
-  emit_insn (gen_neon_move_lo_quad_<mode> (operands[0], operands[1], t1));
-
+  emit_move_insn (simplify_gen_subreg (<V_HALF>mode, operands[0],
+				       <MODE>mode, 0),
+		  operands[1]);
   DONE;
 })
 
