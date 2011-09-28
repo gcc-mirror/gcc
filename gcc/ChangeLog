@@ -1,3 +1,12 @@
+2011-09-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/predicates.md (rx_minmax_operand): New predicate.
+	Accepts immediates and a restricted subset of MEMs.
+	* config/rx/rx.md (int_modes): New iterator.
+	(smaxsi3, sminsi3): Delete and replace with...
+	(smax<int_mode>3, smin<int_mode>3): New patterns.
+	(umax<>3_u, umax<>3_ur, umax<>3, umin<>3): New patterns.
+
 2011-09-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50460
@@ -29,7 +38,7 @@
 
 	* output.h (SECTION_EXCLUDE): New macro.
 	* varasm.c (default_elf_asm_named_section): Check for
-	SECTION_EXCLUDE.	
+	SECTION_EXCLUDE.
 
 2011-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
