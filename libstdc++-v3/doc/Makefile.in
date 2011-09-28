@@ -877,8 +877,9 @@ ${docbook_outdir}/fo:
 
 ${docbook_outdir}/html:
 	mkdir -p ${docbook_outdir}/html
+	mkdir -p ${docbook_outdir}/html/ext
 	mkdir -p ${docbook_outdir}/html/images
-	mkdir -p ${docbook_outdir}/html/manual/ext
+	mkdir -p ${docbook_outdir}/html/manual
 
 ${docbook_outdir}/pdf:
 	mkdir -p ${docbook_outdir}/pdf
@@ -907,7 +908,7 @@ stamp-html-docbook-images: stamp-html-docbook $(xml_images)
 	$(STAMP) stamp-html-docbook-images
 
 stamp-html-docbook-lwg: stamp-html-docbook $(xml_extra)
-	$(INSTALL_DATA)	$(xml_extra) ${docbook_outdir}/html/manual/ext
+	$(INSTALL_DATA)	$(xml_extra) ${docbook_outdir}/html/ext
 	$(STAMP) stamp-html-docbook-lwg
 
 stamp-html-docbook-data: stamp-html-docbook-images stamp-html-docbook-lwg

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Acknowledgments</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    "/><link rel="home" href="../index.html" title="The GNU C++ Library"/><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures"/><link rel="prev" href="policy_based_data_structures_test.html" title="Testing"/><link rel="next" href="ext_containers.html" title="Chapter 23. HP/SGI Extensions"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Acknowledgments</th></tr><tr><td align="left"><a accesskey="p" href="policy_based_data_structures_test.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td align="right"> <a accesskey="n" href="ext_containers.html">Next</a></td></tr></table><hr/></div><div class="section" title="Acknowledgments"><div class="titlepage"><div><div><h2 class="title"><a id="pbds.ack"/>Acknowledgments</h2></div></div></div><p>
+      Written by Ami Tavory and Vladimir Dreizin (IBM Haifa Research
+      Laboratories), and Benjamin Kosnik (Red Hat).
+    </p><p>
+      This library was partially written at
+      <a class="link" href="http://www.haifa.il.ibm.com/">IBM's Haifa Research Labs</a>.
+      It is based heavily on policy-based design and uses many useful
+      techniques from Modern C++ Design: Generic Programming and Design
+      Patterns Applied by Andrei Alexandrescu.
+    </p><p>
+      Two ideas are borrowed from the SGI-STL implementation:
+    </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+	  The prime-based resize policies use a list of primes taken from
+	  the SGI-STL implementation.
+	</p></li><li class="listitem"><p>
+	  The red-black trees contain both a root node and a header node
+	  (containing metadata), connected in a way that forward and
+	  reverse iteration can be performed efficiently.
+	</p></li></ol></div><p>
+      Some test utilities borrow ideas from
+      <a class="link" href="http://www.boost.org/doc/libs/release/libs/timer/index.html">boost::timer</a>.
+    </p><p>
+      We would like to thank Scott Meyers for useful comments (without
+      attributing to him any flaws in the design or implementation of the
+      library).
+    </p><p>We would like to thank Matt Austern for the suggestion to
+    include tries.</p></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="policy_based_data_structures_test.html">Prev</a> </td><td align="center"><a accesskey="u" href="policy_data_structures.html">Up</a></td><td align="right"> <a accesskey="n" href="ext_containers.html">Next</a></td></tr><tr><td align="left" valign="top">Testing </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Chapter 23. HP/SGI Extensions</td></tr></table></div></body></html>

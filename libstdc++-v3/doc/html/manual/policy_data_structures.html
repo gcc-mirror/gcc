@@ -1,0 +1,1312 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 22. Policy-Based Data Structures</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    "/><link rel="home" href="../index.html" title="The GNU C++ Library"/><link rel="up" href="extensions.html" title="Part III.  Extensions"/><link rel="prev" href="bk01pt03ch21s02.html" title="Implementation"/><link rel="next" href="policy_data_structures_using.html" title="Using"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 22. Policy-Based Data Structures</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch21s02.html">Prev</a> </td><th width="60%" align="center">Part III. 
+  Extensions
+  
+</th><td align="right"> <a accesskey="n" href="policy_data_structures_using.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 22. Policy-Based Data Structures"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.containers.pbds"/>Chapter 22. Policy-Based Data Structures</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro">Intro</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues">Performance Issues</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues.priority_queue">Priority Que</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation">Goals</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation.associative">Associative</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.policy">Policy Choices</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.underlying">Underlying Data Structures</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.iterators">Iterators</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.functions">Functional</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation.priority_queue">Priority Queues</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.policy">Policy Choices</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.underlying">Underlying Data Structures</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.binary_heap">Binary Heaps</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_using.html">Using</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.organization">Organization</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial">Tutorial</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.basic">Basic Use</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.configuring">
+	    Configuring via Template Parameters
+	  </a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.traits">
+	    Querying Container Attributes
+	  </a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.point_range_iteration">
+	    Point and Range Iteration
+	  </a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.examples">Examples</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.examples.basic">Intermediate Use</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.examples.query">Querying with <code class="classname">container_traits</code> </a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.examples.container">By Container Method</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.examples.container.hash">Hash-Based</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.examples.container.branch">Branch-Based</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.examples.container.priority_queue">Priority Queues</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html">Design</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.concepts">Concepts</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.concepts.null_type">Null Policy Classes</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.concepts.associative_semantics">Map and Set Semantics</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#concepts.associative_semantics.set_vs_map">
+	    Distinguishing Between Maps and Sets
+	  </a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#concepts.associative_semantics.multi">Alternatives to <code class="classname">std::multiset</code> and <code class="classname">std::multimap</code></a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.concepts.iterator_semantics">Iterator Semantics</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#concepts.iterator_semantics.point_and_range">Point and Range Iterators</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#concepts.iterator_semantics.both">Distinguishing Point and Range Iterators</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.concepts.invalidation">Invalidation Guarantees</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.concepts.genericity">Genericity</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#concepts.genericity.tag">Tag</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#concepts.genericity.traits">Traits</a></span></dt></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.container">By Container</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.container.hash">hash</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#container.hash.interface">Interface</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#container.hash.details">Details</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.container.tree">tree</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#container.tree.interface">Interface</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#container.tree.details">Details</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.container.trie">Trie</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#container.trie.interface">Interface</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#container.trie.details">Details</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.container.list">List</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#container.list.interface">Interface</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#container.list.details">Details</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures_design.html#pbds.design.container.priority_queue">Priority Queue</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_design.html#container.priority_queue.interface">Interface</a></span></dt><dt><span class="section"><a href="policy_data_structures_design.html#container.priority_queue.details">Details</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html">Testing</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#pbds.test.regression">Regression</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#pbds.test.performance">Performance</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.hash">Hash-Based</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.hash.text_find">
+	  Text <code class="function">find</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.hash.int_find">
+	  Integer <code class="function">find</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.hash.int_subscript_find">
+	  Integer Subscript <code class="function">find</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.hash.int_subscript_insert">
+	  Integer Subscript <code class="function">insert</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.hash.zlob_int_find">
+	  Integer <code class="function">find</code> with Skewed-Distribution
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.hash.erase_mem">
+	  Erase Memory Use
+	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.branch">Branch-Based</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.branch.text_insert">
+	  Text <code class="function">insert</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.branch.text_find">
+	  Text <code class="function">find</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.branch.text_lor_find">
+	  Text <code class="function">find</code> with Locality-of-Reference
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.branch.split_join">
+	  <code class="function">split</code> and <code class="function">join</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.branch.order_statistics">
+	  Order-Statistics
+	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.multimap">Multimap</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.multimap.text_find_small">
+	  Text <code class="function">find</code> with Small Secondary-to-Primary Key Ratios 
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.multimap.text_find_large">
+	  Text <code class="function">find</code> with Large Secondary-to-Primary Key Ratios 
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.multimap.text_insert_small">
+	  Text <code class="function">insert</code> with Small
+	  Secondary-to-Primary Key Ratios
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.multimap.text_insert_large">
+	  Text <code class="function">insert</code> with Small
+	  Secondary-to-Primary Key Ratios
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.multimap.text_insert_mem_small">
+	  Text <code class="function">insert</code> with Small
+	  Secondary-to-Primary Key Ratios Memory Use
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.multimap.text_insert_mem_large">
+	  Text <code class="function">insert</code> with Small
+	  Secondary-to-Primary Key Ratios Memory Use
+	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue">Priority Queue</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_push">
+	  Text <code class="function">push</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_push_pop">
+	  Text <code class="function">push</code> and <code class="function">pop</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.int_push">
+	  Integer <code class="function">push</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.int_push_pop">
+	  Integer <code class="function">push</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_pop">
+	  Text <code class="function">pop</code> Memory Use
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_join">
+	  Text <code class="function">join</code>
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_modify_up">
+	  Text <code class="function">modify</code> Up
+	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_modify_down">
+	  Text <code class="function">modify</code> Down
+	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#pbds.test.performance.observations">Observations</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.priority_queue">Priority_Queue</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_biblio.html">Acknowledgments</a></span></dt><dt><span class="bibliography"><a href="policy_data_structures.html#pbds.biblio">
+	Bibliography
+      </a></span></dt></dl></div><div class="section" title="Intro"><div class="titlepage"><div><div><h2 class="title"><a id="pbds.intro"/>Intro</h2></div></div></div><p>
+      This is a library of policy-based elementary data structures:
+      associative containers and priority queues. It is designed for
+      high-performance, flexibility, semantic safety, and conformance to
+      the corresponding containers in <code class="literal">std</code> and
+      <code class="literal">std::tr1</code> (except for some points where it differs
+      by design).
+    </p><p>
+    </p><div class="section" title="Performance Issues"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.intro.issues"/>Performance Issues</h3></div></div></div><p>
+      </p><p>
+	An attempt is made to categorize the wide variety of possible
+	container designs in terms of performance-impacting factors. These
+	performance factors are translated into design policies and
+	incorporated into container design.
+      </p><p>
+	There is tension between unravelling factors into a coherent set of
+	policies. Every attempt is made to make a minimal set of
+	factors. However, in many cases multiple factors make for long
+	template names. Every attempt is made to alias and use typedefs in
+	the source files, but the generated names for external symbols can
+	be large for binary files or debuggers.
+      </p><p>
+	In many cases, the longer names allow capabilities and behaviours
+	controlled by macros to also be unamibiguously emitted as distinct
+	generated names.
+      </p><p>
+	Specific issues found while unraveling performance factors in the
+	design of associative containers and priority queues follow.
+      </p><div class="section" title="Associative"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.issues.associative"/>Associative</h4></div></div></div><p>
+	  Associative containers depend on their composite policies to a very
+	  large extent. Implicitly hard-wiring policies can hamper their
+	  performance and limit their functionality. An efficient hash-based
+	  container, for example, requires policies for testing key
+	  equivalence, hashing keys, translating hash values into positions
+	  within the hash table, and determining when and how to resize the
+	  table internally. A tree-based container can efficiently support
+	  order statistics, i.e. the ability to query what is the order of
+	  each key within the sequence of keys in the container, but only if
+	  the container is supplied with a policy to internally update
+	  meta-data. There are many other such examples.
+	</p><p>
+	  Ideally, all associative containers would share the same
+	  interface. Unfortunately, underlying data structures and mapping
+	  semantics differentiate between different containers. For example,
+	  suppose one writes a generic function manipulating an associative
+	  container.
+	</p><pre class="programlisting">
+	  template&lt;typename Cntnr&gt;
+	  void
+	  some_op_sequence(Cntnr&amp; r_cnt)
+	  {
+	  ...
+	  }
+	</pre><p>
+	  Given this, then what can one assume about the instantiating
+	  container? The answer varies according to its underlying data
+	  structure. If the underlying data structure of
+	  <code class="literal">Cntnr</code> is based on a tree or trie, then the order
+	  of elements is well defined; otherwise, it is not, in general. If
+	  the underlying data structure of <code class="literal">Cntnr</code> is based
+	  on a collision-chaining hash table, then modifying
+	  r_<code class="literal">Cntnr</code> will not invalidate its iterators' order;
+	  if the underlying data structure is a probing hash table, then this
+	  is not the case. If the underlying data structure is based on a tree
+	  or trie, then a reference to the container can efficiently be split;
+	  otherwise, it cannot, in general. If the underlying data structure
+	  is a red-black tree, then splitting a reference to the container is
+	  exception-free; if it is an ordered-vector tree, exceptions can be
+	  thrown.
+	</p></div><div class="section" title="Priority Que"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.issues.priority_queue"/>Priority Que</h4></div></div></div><p>
+	  Priority queues are useful when one needs to efficiently access a
+	  minimum (or maximum) value as the set of values changes.
+	</p><p>
+	  Most useful data structures for priority queues have a relatively
+	  simple structure, as they are geared toward relatively simple
+	  requirements. Unfortunately, these structures do not support access
+	  to an arbitrary value, which turns out to be necessary in many
+	  algorithms. Say, decreasing an arbitrary value in a graph
+	  algorithm. Therefore, some extra mechanism is necessary and must be
+	  invented for accessing arbitrary values. There are at least two
+	  alternatives: embedding an associative container in a priority
+	  queue, or allowing cross-referencing through iterators. The first
+	  solution adds significant overhead; the second solution requires a
+	  precise definition of iterator invalidation. Which is the next
+	  point...
+	</p><p>
+	  Priority queues, like hash-based containers, store values in an
+	  order that is meaningless and undefined externally. For example, a
+	  <code class="code">push</code> operation can internally reorganize the
+	  values. Because of this characteristic, describing a priority
+	  queues' iterator is difficult: on one hand, the values to which
+	  iterators point can remain valid, but on the other, the logical
+	  order of iterators can change unpredictably.
+	</p><p>
+	  Roughly speaking, any element that is both inserted to a priority
+	  queue (e.g. through <code class="code">push</code>) and removed
+	  from it (e.g., through <code class="code">pop</code>), incurs a
+	  logarithmic overhead (in the amortized sense). Different underlying
+	  data structures place the actual cost differently: some are
+	  optimized for amortized complexity, whereas others guarantee that
+	  specific operations only have a constant cost. One underlying data
+	  structure might be chosen if modifying a value is frequent
+	  (Dijkstra's shortest-path algorithm), whereas a different one might
+	  be chosen otherwise. Unfortunately, an array-based binary heap - an
+	  underlying data structure that optimizes (in the amortized sense)
+	  <code class="code">push</code> and <code class="code">pop</code> operations, differs from the
+	  others in terms of its invalidation guarantees. Other design
+	  decisions also impact the cost and placement of the overhead, at the
+	  expense of more difference in the the kinds of operations that the
+	  underlying data structure can support. These differences pose a
+	  challenge when creating a uniform interface for priority queues.
+	</p></div></div><div class="section" title="Goals"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.intro.motivation"/>Goals</h3></div></div></div><p>
+	Many fine associative-container libraries were already written,
+	most notably, the C++ standard's associative containers. Why
+	then write another library? This section shows some possible
+	advantages of this library, when considering the challenges in
+	the introduction. Many of these points stem from the fact that
+	the ISO C++ process introduced associative-containers in a
+	two-step process (first standardizing tree-based containers,
+	only then adding hash-based containers, which are fundamentally
+	different), did not standardize priority queues as containers,
+	and (in our opinion) overloads the iterator concept.
+      </p><div class="section" title="Associative"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.motivation.associative"/>Associative</h4></div></div></div><p>
+	</p><div class="section" title="Policy Choices"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.policy"/>Policy Choices</h5></div></div></div><p>
+	    Associative containers require a relatively large number of
+	    policies to function efficiently in various settings. In some
+	    cases this is needed for making their common operations more
+	    efficient, and in other cases this allows them to support a
+	    larger set of operations
+	  </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		Hash-based containers, for example, support look-up and
+		insertion methods (<code class="function">find</code> and
+		<code class="function">insert</code>). In order to locate elements
+		quickly, they are supplied a hash functor, which instruct
+		how to transform a key object into some size type; a hash
+		functor might transform <code class="constant">"hello"</code>
+		into <code class="constant">1123002298</code>. A hash table, though,
+		requires transforming each key object into some size-type
+		type in some specific domain; a hash table with a 128-long
+		table might transform <code class="constant">"hello"</code> into
+		position <code class="constant">63</code>. The policy by which the
+		hash value is transformed into a position within the table
+		can dramatically affect performance.  Hash-based containers
+		also do not resize naturally (as opposed to tree-based
+		containers, for example). The appropriate resize policy is
+		unfortunately intertwined with the policy that transforms
+		hash value into a position within the table.
+	      </p></li><li class="listitem"><p>
+		Tree-based containers, for example, also support look-up and
+		insertion methods, and are primarily useful when maintaining
+		order between elements is important. In some cases, though,
+		one can utilize their balancing algorithms for completely
+		different purposes.
+	      </p><p>
+		Figure A shows a tree whose each node contains two entries:
+		a floating-point key, and some size-type
+		<span class="emphasis"><em>metadata</em></span> (in bold beneath it) that is
+		the number of nodes in the sub-tree. (The root has key 0.99,
+		and has 5 nodes (including itself) in its sub-tree.) A
+		container based on this data structure can obviously answer
+		efficiently whether 0.3 is in the container object, but it
+		can also answer what is the order of 0.3 among all those in
+		the container object: see <a class="xref" href="policy_data_structures.html#biblio.clrs2001" title="Introduction to Algorithms, 2nd edition">[biblio.clrs2001]</a>.
+
+	      </p><p>
+		As another example, Figure B shows a tree whose each node
+		contains two entries: a half-open geometric line interval,
+		and a number <span class="emphasis"><em>metadata</em></span> (in bold beneath
+		it) that is the largest endpoint of all intervals in its
+		sub-tree.  (The root describes the interval <code class="constant">[20,
+		36)</code>, and the largest endpoint in its sub-tree is
+		99.) A container based on this data structure can obviously
+		answer efficiently whether <code class="constant">[3, 41)</code> is
+		in the container object, but it can also answer efficiently
+		whether the container object has intervals that intersect
+		<code class="constant">[3, 41)</code>. These types of queries are
+		very useful in geometric algorithms and lease-management
+		algorithms.
+	      </p><p>
+		It is important to note, however, that as the trees are
+		modified, their internal structure changes. To maintain
+		these invariants, one must supply some policy that is aware
+		of these changes.  Without this, it would be better to use a
+		linked list (in itself very efficient for these purposes).
+	      </p></li></ol></div><div class="figure"><a id="id664217"/><p class="title"><strong>Figure 22.1. Node Invariants</strong></p><div class="figure-contents"><div class="mediaobject" style="text-align: center"><img src="../images/pbds_node_invariants.png" style="text-align: middle" alt="Node Invariants"/></div></div></div><br class="figure-break"/></div><div class="section" title="Underlying Data Structures"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.underlying"/>Underlying Data Structures</h5></div></div></div><p>
+	    The standard C++ library contains associative containers based on
+	    red-black trees and collision-chaining hash tables. These are
+	    very useful, but they are not ideal for all types of
+	    settings.
+	  </p><p>
+	    The figure below shows the different underlying data structures
+	    currently supported in this library.
+	  </p><div class="figure"><a id="id664273"/><p class="title"><strong>Figure 22.2. Underlying Associative Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" style="text-align: center"><img src="../images/pbds_different_underlying_dss_1.png" style="text-align: middle" alt="Underlying Associative Data Structures"/></div></div></div><br class="figure-break"/><p>
+	    A shows a collision-chaining hash-table, B shows a probing
+	    hash-table, C shows a red-black tree, D shows a splay tree, E shows
+	    a tree based on an ordered vector(implicit in the order of the
+	    elements), F shows a PATRICIA trie, and G shows a list-based
+	    container with update policies.
+	  </p><p>
+	    Each of these data structures has some performance benefits, in
+	    terms of speed, size or both. For now, note that vector-based trees
+	    and probing hash tables manipulate memory more efficiently than
+	    red-black trees and collision-chaining hash tables, and that
+	    list-based associative containers are very useful for constructing
+	    "multimaps".
+	  </p><p>
+	    Now consider a function manipulating a generic associative
+	    container,
+	  </p><pre class="programlisting">
+	    template&lt;class Cntnr&gt;
+	    int
+	    some_op_sequence(Cntnr &amp;r_cnt)
+	    {
+	    ...
+	    }
+	  </pre><p>
+	    Ideally, the underlying data structure
+	    of <code class="classname">Cntnr</code> would not affect what can be
+	    done with <code class="varname">r_cnt</code>.  Unfortunately, this is not
+	    the case.
+	  </p><p>
+	    For example, if <code class="classname">Cntnr</code>
+	    is <code class="classname">std::map</code>, then the function can
+	    use
+	  </p><pre class="programlisting">
+	    std::for_each(r_cnt.find(foo), r_cnt.find(bar), foobar)
+	  </pre><p>
+	    in order to apply <code class="classname">foobar</code> to all
+	    elements between <code class="classname">foo</code> and
+	    <code class="classname">bar</code>. If
+	    <code class="classname">Cntnr</code> is a hash-based container,
+	    then this call's results are undefined.
+	  </p><p>
+	    Also, if <code class="classname">Cntnr</code> is tree-based, the type
+	    and object of the comparison functor can be
+	    accessed. If <code class="classname">Cntnr</code> is hash based, these
+	    queries are nonsensical.
+	  </p><p>
+	    There are various other differences based on the container's
+	    underlying data structure. For one, they can be constructed by,
+	    and queried for, different policies. Furthermore:
+	  </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		Containers based on C, D, E and F store elements in a
+		meaningful order; the others store elements in a meaningless
+		(and probably time-varying) order. By implication, only
+		containers based on C, D, E and F can
+		support <code class="function">erase</code> operations taking an
+		iterator and returning an iterator to the following element
+		without performance loss.
+	      </p></li><li class="listitem"><p>
+		Containers based on C, D, E, and F can be split and joined
+		efficiently, while the others cannot. Containers based on C
+		and D, furthermore, can guarantee that this is exception-free;
+		containers based on E cannot guarantee this.
+	      </p></li><li class="listitem"><p>
+		Containers based on all but E can guarantee that
+		erasing an element is exception free; containers based on E
+		cannot guarantee this. Containers based on all but B and E
+		can guarantee that modifying an object of their type does
+		not invalidate iterators or references to their elements,
+		while containers based on B and E cannot. Containers based
+		on C, D, and E can furthermore make a stronger guarantee,
+		namely that modifying an object of their type does not
+		affect the order of iterators.
+	      </p></li></ol></div><p>
+	    A unified tag and traits system (as used for the C++ standard
+	    library iterators, for example) can ease generic manipulation of
+	    associative containers based on different underlying data
+	    structures.
+	  </p></div><div class="section" title="Iterators"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.iterators"/>Iterators</h5></div></div></div><p>
+	    Iterators are centric to the design of the standard library
+	    containers, because of the container/algorithm/iterator
+	    decomposition that allows an algorithm to operate on a range
+	    through iterators of some sequence.  Iterators, then, are useful
+	    because they allow going over a
+	    specific <span class="emphasis"><em>sequence</em></span>.  The standard library
+	    also uses iterators for accessing a
+	    specific <span class="emphasis"><em>element</em></span>: when an associative
+	    container returns one through <code class="function">find</code>. The
+	    standard library consistently uses the same types of iterators
+	    for both purposes: going over a range, and accessing a specific
+	    found element. Before the introduction of hash-based containers
+	    to the standard library, this made sense (with the exception of
+	    priority queues, which are discussed later).
+	  </p><p>
+	    Using the standard associative containers together with
+	    non-order-preserving associative containers (and also because of
+	    priority-queues container), there is a possible need for
+	    different types of iterators for self-organizing containers:
+	    the iterator concept seems overloaded to mean two different
+	    things (in some cases). <em><span class="remark"> XXX
+	    "ds_gen.html#find_range"&gt;Design::Associative
+	    Containers::Data-Structure Genericity::Point-Type and Range-Type
+	    Methods</span></em>.
+	  </p><div class="section" title="Using Point Iterators for Range Operations"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.using"/>Using Point Iterators for Range Operations</h6></div></div></div><p>
+	      Suppose <code class="classname">cntnr</code> is some associative
+	      container, and say <code class="varname">c</code> is an object of
+	      type <code class="classname">cntnr</code>. Then what will be the outcome
+	      of
+	    </p><pre class="programlisting">
+	      std::for_each(c.find(1), c.find(5), foo);
+	    </pre><p>
+	      If <code class="classname">cntnr</code> is a tree-based container
+	      object, then an in-order walk will
+	      apply <code class="classname">foo</code> to the relevant elements,
+	      as in the graphic below, label A. If <code class="varname">c</code> is
+	      a hash-based container, then the order of elements between any
+	      two elements is undefined (and probably time-varying); there is
+	      no guarantee that the elements traversed will coincide with the
+	      <span class="emphasis"><em>logical</em></span> elements between 1 and 5, as in
+	      label B.
+	    </p><div class="figure"><a id="id664536"/><p class="title"><strong>Figure 22.3. Range Iteration in Different Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" style="text-align: center"><img src="../images/pbds_point_iterators_range_ops_1.png" style="text-align: middle" alt="Node Invariants"/></div></div></div><br class="figure-break"/><p>
+	      In our opinion, this problem is not caused just because
+	      red-black trees are order preserving while
+	      collision-chaining hash tables are (generally) not - it
+	      is more fundamental. Most of the standard's containers
+	      order sequences in a well-defined manner that is
+	      determined by their <span class="emphasis"><em>interface</em></span>:
+	      calling <code class="function">insert</code> on a tree-based
+	      container modifies its sequence in a predictable way, as
+	      does calling <code class="function">push_back</code> on a list or
+	      a vector. Conversely, collision-chaining hash tables,
+	      probing hash tables, priority queues, and list-based
+	      containers (which are very useful for "multimaps") are
+	      self-organizing data structures; the effect of each
+	      operation modifies their sequences in a manner that is
+	      (practically) determined by their
+	      <span class="emphasis"><em>implementation</em></span>.
+	    </p><p>
+	      Consequently, applying an algorithm to a sequence obtained from most
+	      containers may or may not make sense, but applying it to a
+	      sub-sequence of a self-organizing container does not.
+	    </p></div><div class="section" title="Cost to Point Iterators to Enable Range Operations"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.cost"/>Cost to Point Iterators to Enable Range Operations</h6></div></div></div><p>
+	      Suppose <code class="varname">c</code> is some collision-chaining
+	      hash-based container object, and one calls
+	    </p><pre class="programlisting">c.find(3)</pre><p>
+	      Then what composes the returned iterator?
+	    </p><p>
+	      In the graphic below, label A shows the simplest (and
+	      most efficient) implementation of a collision-chaining
+	      hash table.  The little box marked
+	      <code class="classname">point_iterator</code> shows an object
+	      that contains a pointer to the element's node. Note that
+	      this "iterator" has no way to move to the next element (
+	      it cannot support
+	      <code class="function">operator++</code>). Conversely, the little
+	      box marked <code class="classname">iterator</code> stores both a
+	      pointer to the element, as well as some other
+	      information (the bucket number of the element). the
+	      second iterator, then, is "heavier" than the first one-
+	      it requires more time and space. If we were to use a
+	      different container to cross-reference into this
+	      hash-table using these iterators - it would take much
+	      more space. As noted above, nothing much can be done by
+	      incrementing these iterators, so why is this extra
+	      information needed?
+	    </p><p>
+	      Alternatively, one might create a collision-chaining hash-table
+	      where the lists might be linked, forming a monolithic total-element
+	      list, as in the graphic below, label B.  Here the iterators are as
+	      light as can be, but the hash-table's operations are more
+	      complicated.
+	    </p><div class="figure"><a id="id664661"/><p class="title"><strong>Figure 22.4. Point Iteration in Hash Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" style="text-align: center"><img src="../images/pbds_point_iterators_range_ops_2.png" style="text-align: middle" alt="Point Iteration in Hash Data Structures"/></div></div></div><br class="figure-break"/><p>
+	      It should be noted that containers based on collision-chaining
+	      hash-tables are not the only ones with this type of behavior;
+	      many other self-organizing data structures display it as well.
+	    </p></div><div class="section" title="Invalidation Guarantees"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.invalidation"/>Invalidation Guarantees</h6></div></div></div><p>Consider the following snippet:</p><pre class="programlisting">
+	      it = c.find(3);
+	      c.erase(5);
+	    </pre><p>
+	      Following the call to <code class="classname">erase</code>, what is the
+	      validity of <code class="classname">it</code>: can it be de-referenced?
+	      can it be incremented?
+	    </p><p>
+	      The answer depends on the underlying data structure of the
+	      container. The graphic below shows three cases: A1 and A2 show
+	      a red-black tree; B1 and B2 show a probing hash-table; C1 and C2
+	      show a collision-chaining hash table.
+	    </p><div class="figure"><a id="id664738"/><p class="title"><strong>Figure 22.5. Effect of erase in different underlying data structures</strong></p><div class="figure-contents"><div class="mediaobject" style="text-align: center"><img src="../images/pbds_invalidation_guarantee_erase.png" style="text-align: middle" alt="Effect of erase in different underlying data structures"/></div></div></div><br class="figure-break"/><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		  Erasing 5 from A1 yields A2. Clearly, an iterator to 3 can
+		  be de-referenced and incremented. The sequence of iterators
+		  changed, but in a way that is well-defined by the interface.
+		</p></li><li class="listitem"><p>
+		  Erasing 5 from B1 yields B2. Clearly, an iterator to 3 is
+		  not valid at all - it cannot be de-referenced or
+		  incremented; the order of iterators changed in a way that is
+		  (practically) determined by the implementation and not by
+		  the interface.
+		</p></li><li class="listitem"><p>
+		  Erasing 5 from C1 yields C2. Here the situation is more
+		  complicated. On the one hand, there is no problem in
+		  de-referencing <code class="classname">it</code>. On the other hand,
+		  the order of iterators changed in a way that is
+		  (practically) determined by the implementation and not by
+		  the interface.
+		</p></li></ol></div><p>
+	      So in the standard library containers, it is not always possible
+	      to express whether <code class="varname">it</code> is valid or not. This
+	      is true also for <code class="function">insert</code>. Again, the
+	      iterator concept seems overloaded.
+	    </p></div></div><div class="section" title="Functional"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.functions"/>Functional</h5></div></div></div><p>
+	  </p><p>
+	    The design of the functional overlay to the underlying data
+	    structures differs slightly from some of the conventions used in
+	    the C++ standard.  A strict public interface of methods that
+	    comprise only operations which depend on the class's internal
+	    structure; other operations are best designed as external
+	    functions. (See <a class="xref" href="policy_data_structures.html#biblio.meyers02both" title="Class Template, Member Template - or Both?">[biblio.meyers02both]</a>).With this
+	    rubric, the standard associative containers lack some useful
+	    methods, and provide other methods which would be better
+	    removed.
+	  </p><div class="section" title="erase"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.erase"/><code class="function">erase</code></h6></div></div></div><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		  Order-preserving standard associative containers provide the
+		  method
+		</p><pre class="programlisting">
+		  iterator
+		  erase(iterator it)
+		</pre><p>
+		  which takes an iterator, erases the corresponding
+		  element, and returns an iterator to the following
+		  element. Also standardd hash-based associative
+		  containers provide this method. This seemingly
+		  increasesgenericity between associative containers,
+		  since it is possible to use
+		</p><pre class="programlisting">
+		  typename C::iterator it = c.begin();
+		  typename C::iterator e_it = c.end();
+
+		  while(it != e_it)
+		  it = pred(*it)? c.erase(it) : ++it;
+		</pre><p>
+		  in order to erase from a container object <code class="varname">
+		  c</code> all element which match a
+		  predicate <code class="classname">pred</code>. However, in a
+		  different sense this actually decreases genericity: an
+		  integral implication of this method is that tree-based
+		  associative containers' memory use is linear in the total
+		  number of elements they store, while hash-based
+		  containers' memory use is unbounded in the total number of
+		  elements they store. Assume a hash-based container is
+		  allowed to decrease its size when an element is
+		  erased. Then the elements might be rehashed, which means
+		  that there is no "next" element - it is simply
+		  undefined. Consequently, it is possible to infer from the
+		  fact that the standard library's hash-based containers
+		  provide this method that they cannot downsize when
+		  elements are erased. As a consequence, different code is
+		  needed to manipulate different containers, assuming that
+		  memory should be conserved. Therefor, this library's
+		  non-order preserving associative containers omit this
+		  method.
+		</p></li><li class="listitem"><p>
+		  All associative containers include a conditional-erase method
+		</p><pre class="programlisting">
+		  template&lt;
+		  class Pred&gt;
+		  size_type
+		  erase_if
+		  (Pred pred)
+		</pre><p>
+		  which erases all elements matching a predicate. This is probably the
+		  only way to ensure linear-time multiple-item erase which can
+		  actually downsize a container.
+		</p></li><li class="listitem"><p>
+		  The standard associative containers provide methods for
+		  multiple-item erase of the form
+		</p><pre class="programlisting">
+		  size_type
+		  erase(It b, It e)
+		</pre><p>
+		  erasing a range of elements given by a pair of
+		  iterators. For tree-based or trie-based containers, this can
+		  implemented more efficiently as a (small) sequence of split
+		  and join operations. For other, unordered, containers, this
+		  method isn't much better than an external loop. Moreover,
+		  if <code class="varname">c</code> is a hash-based container,
+		  then
+		</p><pre class="programlisting">
+		  c.erase(c.find(2), c.find(5))
+		</pre><p>
+		  is almost certain to do something
+		  different than erasing all elements whose keys are between 2
+		  and 5, and is likely to produce other undefined behavior.
+		</p></li></ol></div></div><div class="section" title="split and join"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.split"/>
+		<code class="function">split</code> and <code class="function">join</code>
+	      </h6></div></div></div><p>
+	      It is well-known that tree-based and trie-based container
+	      objects can be efficiently split or joined (See
+	      <a class="xref" href="policy_data_structures.html#biblio.clrs2001" title="Introduction to Algorithms, 2nd edition">[biblio.clrs2001]</a>). Externally splitting or
+	      joining trees is super-linear, and, furthermore, can throw
+	      exceptions. Split and join methods, consequently, seem good
+	      choices for tree-based container methods, especially, since as
+	      noted just before, they are efficient replacements for erasing
+	      sub-sequences.
+	    </p></div><div class="section" title="insert"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.insert"/>
+		<code class="function">insert</code>
+	      </h6></div></div></div><p>
+	      The standard associative containers provide methods of the form
+	    </p><pre class="programlisting">
+	      template&lt;class It&gt;
+	      size_type
+	      insert(It b, It e);
+	    </pre><p>
+	      for inserting a range of elements given by a pair of
+	      iterators. At best, this can be implemented as an external loop,
+	      or, even more efficiently, as a join operation (for the case of
+	      tree-based or trie-based containers). Moreover, these methods seem
+	      similar to constructors taking a range given by a pair of
+	      iterators; the constructors, however, are transactional, whereas
+	      the insert methods are not; this is possibly confusing.
+	    </p></div><div class="section" title="operator== and operator&lt;="><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.compare"/>
+		<code class="function">operator==</code> and <code class="function">operator&lt;=</code>
+	      </h6></div></div></div><p>
+	      Associative containers are parametrized by policies allowing to
+	      test key equivalence: a hash-based container can do this through
+	      its equivalence functor, and a tree-based container can do this
+	      through its comparison functor. In addition, some standard
+	      associative containers have global function operators, like
+	      <code class="function">operator==</code> and <code class="function">operator&lt;=</code>,
+	      that allow comparing entire associative containers.
+	    </p><p>
+	      In our opinion, these functions are better left out. To begin
+	      with, they do not significantly improve over an external
+	      loop. More importantly, however, they are possibly misleading -
+	      <code class="function">operator==</code>, for example, usually checks for
+	      equivalence, or interchangeability, but the associative
+	      container cannot check for values' equivalence, only keys'
+	      equivalence; also, are two containers considered equivalent if
+	      they store the same values in different order? this is an
+	      arbitrary decision.
+	    </p></div></div></div><div class="section" title="Priority Queues"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.motivation.priority_queue"/>Priority Queues</h4></div></div></div><div class="section" title="Policy Choices"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.policy"/>Policy Choices</h5></div></div></div><p>
+	    Priority queues are containers that allow efficiently inserting
+	    values and accessing the maximal value (in the sense of the
+	    container's comparison functor). Their interface
+	    supports <code class="function">push</code>
+	    and <code class="function">pop</code>. The standard
+	    container <code class="classname">std::priorityqueue</code> indeed support
+	    these methods, but little else. For algorithmic and
+	    software-engineering purposes, other methods are needed:
+	  </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		Many graph algorithms (see
+		<a class="xref" href="policy_data_structures.html#biblio.clrs2001" title="Introduction to Algorithms, 2nd edition">[biblio.clrs2001]</a>) require increasing a
+		value in a priority queue (again, in the sense of the
+		container's comparison functor), or joining two
+		priority-queue objects.
+	      </p></li><li class="listitem"><p>The return type of <code class="classname">priority_queue</code>'s
+	      <code class="function">push</code> method is a point-type iterator, which can
+	      be used for modifying or erasing arbitrary values. For
+	      example:</p><pre class="programlisting">
+		priority_queue&lt;int&gt; p;
+		priority_queue&lt;int&gt;::point_iterator it = p.push(3);
+		p.modify(it, 4);
+	      </pre><p>These types of cross-referencing operations are necessary
+	      for making priority queues useful for different applications,
+	      especially graph applications.</p></li><li class="listitem"><p>
+		It is sometimes necessary to erase an arbitrary value in a
+		priority queue. For example, consider
+		the <code class="function">select</code> function for monitoring
+		file descriptors:
+	      </p><pre class="programlisting">
+		int
+		select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *errorfds,
+		struct timeval *timeout);
+	      </pre><p>
+		then, as the select documentation states:
+	      </p><p>
+		<span class="quote">“<span class="quote">
+		  The nfds argument specifies the range of file
+		  descriptors to be tested. The select() function tests file
+		descriptors in the range of 0 to nfds-1.</span>”</span>
+	      </p><p>
+		It stands to reason, therefore, that we might wish to
+		maintain a minimal value for <code class="varname">nfds</code>, and
+		priority queues immediately come to mind. Note, though, that
+		when a socket is closed, the minimal file description might
+		change; in the absence of an efficient means to erase an
+		arbitrary value from a priority queue, we might as well
+		avoid its use altogether.
+	      </p><p>
+		The standard containers typically support iterators. It is
+		somewhat unusual
+		for <code class="classname">std::priority_queue</code> to omit them
+		(See <a class="xref" href="policy_data_structures.html#biblio.meyers01stl" title="Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library">[biblio.meyers01stl]</a>). One might
+		ask why do priority queues need to support iterators, since
+		they are self-organizing containers with a different purpose
+		than abstracting sequences. There are several reasons:
+	      </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		    Iterators (even in self-organizing containers) are
+		    useful for many purposes: cross-referencing
+		    containers, serialization, and debugging code that uses
+		    these containers.
+		  </p></li><li class="listitem"><p>
+		    The standard library's hash-based containers support
+		    iterators, even though they too are self-organizing
+		    containers with a different purpose than abstracting
+		    sequences.
+		  </p></li><li class="listitem"><p>
+		    In standard-library-like containers, it is natural to specify the
+		    interface of operations for modifying a value or erasing
+		    a value (discussed previously) in terms of a iterators.
+		    It should be noted that the standard
+		    containers also use iterators for accessing and
+		    manipulating a specific value. In hash-based
+		    containers, one checks the existence of a key by
+		    comparing the iterator returned by <code class="function">find</code> to the
+		    iterator returned by <code class="function">end</code>, and not by comparing a
+		    pointer returned by <code class="function">find</code> to <span class="type">NULL</span>.
+		  </p></li></ol></div></li></ol></div></div><div class="section" title="Underlying Data Structures"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.underlying"/>Underlying Data Structures</h5></div></div></div><p>
+	    There are three main implementations of priority queues: the
+	    first employs a binary heap, typically one which uses a
+	    sequence; the second uses a tree (or forest of trees), which is
+	    typically less structured than an associative container's tree;
+	    the third simply uses an associative container. These are
+	    shown in the figure below with labels A1 and A2, B, and C.
+	  </p><div class="figure"><a id="id665301"/><p class="title"><strong>Figure 22.6. Underlying Priority Queue Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" style="text-align: center"><img src="../images/pbds_different_underlying_dss_2.png" style="text-align: middle" alt="Underlying Priority Queue Data Structures"/></div></div></div><br class="figure-break"/><p>
+	    No single implementation can completely replace any of the
+	    others. Some have better <code class="function">push</code>
+	    and <code class="function">pop</code> amortized performance, some have
+	    better bounded (worst case) response time than others, some
+	    optimize a single method at the expense of others, etc. In
+	    general the "best" implementation is dictated by the specific
+	    problem.
+	  </p><p>
+	    As with associative containers, the more implementations
+	    co-exist, the more necessary a traits mechanism is for handling
+	    generic containers safely and efficiently. This is especially
+	    important for priority queues, since the invalidation guarantees
+	    of one of the most useful data structures - binary heaps - is
+	    markedly different than those of most of the others.
+	  </p></div><div class="section" title="Binary Heaps"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.binary_heap"/>Binary Heaps</h5></div></div></div><p>
+	    Binary heaps are one of the most useful underlying
+	    data structures for priority queues. They are very efficient in
+	    terms of memory (since they don't require per-value structure
+	    metadata), and have the best amortized <code class="function">push</code> and
+	    <code class="function">pop</code> performance for primitive types like
+	    <span class="type">int</span>.
+	  </p><p>
+	    The standard library's <code class="classname">priority_queue</code>
+	    implements this data structure as an adapter over a sequence,
+	    typically
+	    <code class="classname">std::vector</code>
+	    or <code class="classname">std::deque</code>, which correspond to labels
+	    A1 and A2 respectively in the graphic above.
+	  </p><p>
+	    This is indeed an elegant example of the adapter concept and
+	    the algorithm/container/iterator decomposition. (See <a class="xref" href="policy_data_structures.html#biblio.nelson96stlpq" title="Priority Queues and the STL">[biblio.nelson96stlpq]</a>). There are
+	    several reasons why a binary-heap priority queue
+	    may be better implemented as a container instead of a
+	    sequence adapter:
+	  </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		<code class="classname">std::priority_queue</code> cannot erase values
+		from its adapted sequence (irrespective of the sequence
+		type). This means that the memory use of
+		an <code class="classname">std::priority_queue</code> object is always
+		proportional to the maximal number of values it ever contained,
+		and not to the number of values that it currently
+		contains. (See <code class="filename">performance/priority_queue_text_pop_mem_usage.cc</code>.)
+		This implementation of binary heaps acts very differently than
+		other underlying data structures (See also pairing heaps).
+	      </p></li><li class="listitem"><p>
+		Some combinations of adapted sequences and value types
+		are very inefficient or just don't make sense. If one uses
+		<code class="classname">std::priority_queue&lt;std::vector&lt;std::string&gt;
+		&gt; &gt;</code>, for example, then not only will each
+		operation perform a logarithmic number of
+		<code class="classname">std::string</code> assignments, but, furthermore, any
+		operation (including <code class="function">pop</code>) can render the container
+		useless due to exceptions. Conversely, if one uses
+		<code class="classname">std::priority_queue&lt;std::deque&lt;int&gt; &gt;
+		&gt;</code>, then each operation uses incurs a logarithmic
+		number of indirect accesses (through pointers) unnecessarily.
+		It might be better to let the container make a conservative
+		deduction whether to use the structure in the graphic above, labels A1 or A2.
+	      </p></li><li class="listitem"><p>
+		There does not seem to be a systematic way to determine
+		what exactly can be done with the priority queue.
+	      </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
+		    If <code class="classname">p</code> is a priority queue adapting an
+		    <code class="classname">std::vector</code>, then it is possible to iterate over
+		    all values by using <code class="function">&amp;p.top()</code> and
+		    <code class="function">&amp;p.top() + p.size()</code>, but this will not work
+		    if <code class="varname">p</code> is adapting an <code class="classname">std::deque</code>; in any
+		    case, one cannot use <code class="classname">p.begin()</code> and
+		    <code class="classname">p.end()</code>. If a different sequence is adapted, it
+		    is even more difficult to determine what can be
+		    done.
+		  </p></li><li class="listitem"><p>
+		    If <code class="varname">p</code> is a priority queue adapting an
+		    <code class="classname">std::deque</code>, then the reference return by
+		  </p><pre class="programlisting">
+		    p.top()
+		  </pre><p>
+		    will remain valid until it is popped,
+		    but if <code class="varname">p</code> adapts an <code class="classname">std::vector</code>, the
+		    next <code class="function">push</code> will invalidate it. If a different
+		    sequence is adapted, it is even more difficult to
+		    determine what can be done.
+		  </p></li></ol></div></li><li class="listitem"><p>
+		Sequence-based binary heaps can still implement
+		linear-time <code class="function">erase</code> and <code class="function">modify</code> operations.
+		This means that if one needs to erase a small
+		(say logarithmic) number of values, then one might still
+		choose this underlying data structure. Using
+		<code class="classname">std::priority_queue</code>, however, this will generally
+		change the order of growth of the entire sequence of
+		operations.
+	      </p></li></ol></div></div></div></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h2 class="title"><a id="pbds.biblio"/>
+	Bibliography
+      </h2></div></div></div><div class="biblioentry" title="STL Exception Handling Contract"><a id="biblio.abrahams97exception"/><p>[biblio.abrahams97exception] <span class="title"><em>
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1075.pdf">
+	  STL Exception Handling Contract
+	</a>
+      </em>. </span><span class="date">1997. </span><span class="author"><span class="firstname">
+	    Dave
+	  </span> <span class="surname">
+	    Abrahams
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  ISO SC22/WG21
+	. </span></span></p></div><div class="biblioentry" title="Modern C++ Design: Generic Programming and Design Patterns Applied"><a id="biblio.alexandrescu01modern"/><p>[biblio.alexandrescu01modern] <span class="title"><em>
+	Modern C++ Design: Generic Programming and Design Patterns Applied
+      </em>. </span><span class="date">
+	2001
+      . </span><span class="author"><span class="firstname">
+	    Andrei
+	  </span> <span class="surname">
+	    Alexandrescu
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="MTF, Bit, and COMB: A Guide to Deterministic and Randomized Algorithms for the List Update Problem"><a id="biblio.andrew04mtf"/><p>[biblio.andrew04mtf] <span class="title"><em>
+	MTF, Bit, and COMB: A Guide to Deterministic and Randomized
+	Algorithms for the List Update Problem
+      </em>. </span><span class="authorgroup"><span class="firstname">
+	      K.
+	    </span> <span class="surname">
+	      Andrew
+	    </span> and <span class="firstname">
+	      D.
+	    </span> <span class="surname">
+	      Gleich
+	    </span>. </span></p></div><div class="biblioentry" title="Why You Shouldn't Use set - and What You Should Use Instead"><a id="biblio.austern00noset"/><p>[biblio.austern00noset] <span class="title"><em>
+	Why You Shouldn't Use set - and What You Should Use Instead
+      </em>. </span><span class="date">
+	April, 2000
+      . </span><span class="author"><span class="firstname">
+	    Matthew
+	  </span> <span class="surname">
+	    Austern
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  C++ Report
+	. </span></span></p></div><div class="biblioentry" title="A Proposal to Add Hashtables to the Standard Library"><a id="biblio.austern01htprop"/><p>[biblio.austern01htprop] <span class="title"><em>
+	<a class="link" href="http://www.open-std.org/JTC1/sc22/wg21/docs/papers/2001/n1326.html">
+	  A Proposal to Add Hashtables to the Standard Library
+	</a>
+      </em>. </span><span class="date">
+	2001
+      . </span><span class="author"><span class="firstname">
+	    Matthew
+	  </span> <span class="surname">
+	    Austern
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  ISO SC22/WG21
+	. </span></span></p></div><div class="biblioentry" title="Segmented iterators and hierarchical algorithms"><a id="biblio.austern98segmentedit"/><p>[biblio.austern98segmentedit] <span class="title"><em>
+	Segmented iterators and hierarchical algorithms
+      </em>. </span><span class="date">
+	April, 1998
+      . </span><span class="author"><span class="firstname">
+	    Matthew
+	  </span> <span class="surname">
+	    Austern
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Generic Programming
+	. </span></span></p></div><div class="biblioentry" title="Boost Timer Library"><a id="biblio.dawestimer"/><p>[biblio.dawestimer] <span class="title"><em>
+	<a class="link" href="www.boost.org/doc/libs/release/libs/timer/">
+	  Boost Timer Library
+	</a>
+      </em>. </span><span class="author"><span class="firstname">
+	    Beeman
+	  </span> <span class="surname">
+	    Dawes
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Boost
+	. </span></span></p></div><div class="biblioentry" title="Boost Pool Library"><a id="biblio.clearypool"/><p>[biblio.clearypool] <span class="title"><em>
+	<a class="link" href="www.boost.org/doc/libs/release/libs/pool/">
+	  Boost Pool Library
+	</a>
+      </em>. </span><span class="author"><span class="firstname">
+	    Stephen
+	  </span> <span class="surname">
+	    Cleary
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Boost
+	. </span></span></p></div><div class="biblioentry" title="Boost Type Traits Library"><a id="biblio.maddocktraits"/><p>[biblio.maddocktraits] <span class="title"><em>
+	<a class="link" href="www.boost.org/doc/libs/release/libs/type_traits/">
+	  Boost Type Traits Library
+	</a>
+      </em>. </span><span class="authorgroup"><span class="firstname">
+	      Maddock
+	    </span> <span class="surname">
+	      John
+	    </span> and <span class="firstname">
+	      Stephen
+	    </span> <span class="surname">
+	      Cleary
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Boost
+	. </span></span></p></div><div class="biblioentry" title="Worst-case efficient priority queues"><a id="biblio.brodal96priority"/><p>[biblio.brodal96priority] <span class="title"><em>
+	<a class="link" href="http://portal.acm.org/citation.cfm?id=313883">
+	  Worst-case efficient priority queues
+	</a>
+      </em>. </span><span class="author"><span class="firstname">
+	    Gerth
+	  </span> <span class="surname">
+	    Stolting Brodal
+	  </span>. </span></p></div><div class="biblioentry" title="Efficient C++ Programming Techniques"><a id="biblio.bulkamayheweff"/><p>[biblio.bulkamayheweff] <span class="title"><em>
+	Efficient C++ Programming Techniques
+      </em>. </span><span class="date">
+	1997
+      . </span><span class="authorgroup"><span class="firstname">
+	      D.
+	    </span> <span class="surname">
+	      Bulka
+	    </span> and <span class="firstname">
+	      D.
+	    </span> <span class="surname">
+	      Mayhew
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="Introduction to Algorithms, 2nd edition"><a id="biblio.clrs2001"/><p>[biblio.clrs2001] <span class="title"><em>
+	Introduction to Algorithms, 2nd edition
+      </em>. </span><span class="date">
+	2001
+      . </span><span class="authorgroup"><span class="firstname">
+	      T. H.
+	    </span> <span class="surname">
+	      Cormen
+	    </span>, <span class="firstname">
+	      C. E.
+	    </span> <span class="surname">
+	      Leiserson
+	    </span>, <span class="firstname">
+	      R. L.
+	    </span> <span class="surname">
+	      Rivest
+	    </span>, and <span class="firstname">
+	      C.
+	    </span> <span class="surname">
+	      Stein
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  MIT Press
+	. </span></span></p></div><div class="biblioentry" title="Balls and bins: A study in negative dependence"><a id="biblio.dubhashi98neg"/><p>[biblio.dubhashi98neg] <span class="title"><em>
+	Balls and bins: A study in negative dependence
+      </em>. </span><span class="date">
+	1998
+      . </span><span class="authorgroup"><span class="firstname">
+	      D.
+	    </span> <span class="surname">
+	      Dubashi
+	    </span> and <span class="firstname">
+	      D.
+	    </span> <span class="surname">
+	      Ranjan
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Random Structures and Algorithms 13
+	. </span></span></p></div><div class="biblioentry" title="Extendible hashing - a fast access method for dynamic files"><a id="biblio.fagin79extendible"/><p>[biblio.fagin79extendible] <span class="title"><em>
+	Extendible hashing - a fast access method for dynamic files
+      </em>. </span><span class="date">
+	1979
+      . </span><span class="authorgroup"><span class="firstname">
+	      R.
+	    </span> <span class="surname">
+	      Fagin
+	    </span>, <span class="firstname">
+	      J.
+	    </span> <span class="surname">
+	      Nievergelt
+	    </span>, <span class="firstname">
+	      N.
+	    </span> <span class="surname">
+	      Pippenger
+	    </span>, and <span class="firstname">
+	      H. R.
+	    </span> <span class="surname">
+	      Strong
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  ACM Trans. Database Syst. 4
+	. </span></span></p></div><div class="biblioentry" title="Ptset: Sets of integers implemented as Patricia trees"><a id="biblio.filliatre2000ptset"/><p>[biblio.filliatre2000ptset] <span class="title"><em>
+	<a class="link" href="http://cristal.inria.fr/~frisch/icfp06_contest/advtr/applyOmatic/ptset.ml">
+	  Ptset: Sets of integers implemented as Patricia trees
+	</a>
+      </em>. </span><span class="date">
+	2000
+      . </span><span class="author"><span class="firstname">
+	    Jean-Christophe
+	  </span> <span class="surname">
+	    Filliatre
+	  </span>. </span></p></div><div class="biblioentry" title="The pairing heap: a new form of self-adjusting heap"><a id="biblio.fredman86pairing"/><p>[biblio.fredman86pairing] <span class="title"><em>
+	<a class="link" href="http://www.cs.cmu.edu/~sleator/papers/pairing-heaps.pdf">
+	  The pairing heap: a new form of self-adjusting heap
+	</a>
+      </em>. </span><span class="date">
+	1986
+      . </span><span class="authorgroup"><span class="firstname">
+	      M. L.
+	    </span> <span class="surname">
+	      Fredman
+	    </span>, <span class="firstname">
+	      R.
+	    </span> <span class="surname">
+	      Sedgewick
+	    </span>, <span class="firstname">
+	      D. D.
+	    </span> <span class="surname">
+	      Sleator
+	    </span>, and <span class="firstname">
+	      R. E.
+	    </span> <span class="surname">
+	      Tarjan
+	    </span>. </span></p></div><div class="biblioentry" title="Design Patterns - Elements of Reusable Object-Oriented Software"><a id="biblio.gof"/><p>[biblio.gof] <span class="title"><em>
+	Design Patterns - Elements of Reusable Object-Oriented Software
+      </em>. </span><span class="date">
+	1995
+      . </span><span class="authorgroup"><span class="firstname">
+	      E.
+	    </span> <span class="surname">
+	      Gamma
+	    </span>, <span class="firstname">
+	      R.
+	    </span> <span class="surname">
+	      Helm
+	    </span>, <span class="firstname">
+	      R.
+	    </span> <span class="surname">
+	      Johnson
+	    </span>, and <span class="firstname">
+	      J.
+	    </span> <span class="surname">
+	      Vlissides
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="Order-preserving key transformations"><a id="biblio.garg86order"/><p>[biblio.garg86order] <span class="title"><em>
+	Order-preserving key transformations
+      </em>. </span><span class="date">
+	1986
+      . </span><span class="authorgroup"><span class="firstname">
+	      A. K.
+	    </span> <span class="surname">
+	      Garg
+	    </span> and <span class="firstname">
+	      C. C.
+	    </span> <span class="surname">
+	      Gotlieb
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Trans. Database Syst. 11
+	. </span></span></p></div><div class="biblioentry" title="Making a real hash of things"><a id="biblio.hyslop02making"/><p>[biblio.hyslop02making] <span class="title"><em>
+	Making a real hash of things
+      </em>. </span><span class="date">
+	May 2002
+      . </span><span class="authorgroup"><span class="firstname">
+	      J.
+	    </span> <span class="surname">
+	      Hyslop
+	    </span> and <span class="firstname">
+	      Herb
+	    </span> <span class="surname">
+	      Sutter
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  C++ Report
+	. </span></span></p></div><div class="biblioentry" title="The C++ Standard Library - A Tutorial and Reference"><a id="biblio.jossutis01stl"/><p>[biblio.jossutis01stl] <span class="title"><em>
+	The C++ Standard Library - A Tutorial and Reference
+      </em>. </span><span class="date">
+	2001
+      . </span><span class="author"><span class="firstname">
+	    N. M.
+	  </span> <span class="surname">
+	    Jossutis
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="New Heap Data Structures"><a id="biblio.kt99fat_heaps"/><p>[biblio.kt99fat_heaps] <span class="title"><em>
+	<a class="link" href="http://www.cs.princeton.edu/research/techreps/TR-597-99">
+	  New Heap Data Structures
+	</a>
+      </em>. </span><span class="date">
+	1999
+      . </span><span class="authorgroup"><span class="firstname">
+	      Haim
+	    </span> <span class="surname">
+	      Kaplan
+	    </span> and <span class="firstname">
+	      Robert E.
+	    </span> <span class="surname">
+	      Tarjan
+	    </span>. </span></p></div><div class="biblioentry" title="Are Set Iterators Mutable or Immutable?"><a id="biblio.kleft00sets"/><p>[biblio.kleft00sets] <span class="title"><em>
+	Are Set Iterators Mutable or Immutable?
+      </em>. </span><span class="date">
+	October 2000
+      . </span><span class="authorgroup"><span class="firstname">
+	      Angelika
+	    </span> <span class="surname">
+	      Langer
+	    </span> and <span class="firstname">
+	      Klaus
+	    </span> <span class="surname">
+	      Kleft
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  C/C++ Users Jornal
+	. </span></span></p></div><div class="biblioentry" title="The Art of Computer Programming - Sorting and Searching"><a id="biblio.knuth98sorting"/><p>[biblio.knuth98sorting] <span class="title"><em>
+	The Art of Computer Programming - Sorting and Searching
+      </em>. </span><span class="date">
+	1998
+      . </span><span class="author"><span class="firstname">
+	    D. E.
+	  </span> <span class="surname">
+	    Knuth
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="Data abstraction and hierarchy"><a id="biblio.liskov98data"/><p>[biblio.liskov98data] <span class="title"><em>
+	Data abstraction and hierarchy
+      </em>. </span><span class="date">
+	May 1998
+      . </span><span class="author"><span class="firstname">
+	    B.
+	  </span> <span class="surname">
+	    Liskov
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  SIGPLAN Notices 23
+	. </span></span></p></div><div class="biblioentry" title="Linear hashing: A new tool for file and table addressing"><a id="biblio.litwin80lh"/><p>[biblio.litwin80lh] <span class="title"><em>
+	Linear hashing: A new tool for file and table addressing
+      </em>. </span><span class="date">
+	June 1980
+      . </span><span class="author"><span class="firstname">
+	    W.
+	  </span> <span class="surname">
+	    Litwin
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Proceedings of International Conference on Very Large Data Bases
+	. </span></span></p></div><div class="biblioentry" title="Deamortization - Part 2: Binomial Heaps"><a id="biblio.maverik_lowerbounds"/><p>[biblio.maverik_lowerbounds] <span class="title"><em>
+	<a class="link" href="http://magic.aladdin.cs.cmu.edu/2005/08/01/deamortization-part-2-binomial-heaps">
+	  Deamortization - Part 2: Binomial Heaps
+	</a>
+      </em>. </span><span class="date">
+	2005
+      . </span><span class="author"><span class="firstname">
+	    Maverik
+	  </span> <span class="surname">
+	    Woo
+	  </span>. </span></p></div><div class="biblioentry" title="More Effective C++: 35 New Ways to Improve Your Programs and Designs"><a id="biblio.meyers96more"/><p>[biblio.meyers96more] <span class="title"><em>
+	More Effective C++: 35 New Ways to Improve Your Programs and Designs
+      </em>. </span><span class="date">
+	1996
+      . </span><span class="author"><span class="firstname">
+	    Scott
+	  </span> <span class="surname">
+	    Meyers
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="How Non-Member Functions Improve Encapsulation"><a id="biblio.meyers00nonmember"/><p>[biblio.meyers00nonmember] <span class="title"><em>
+	How Non-Member Functions Improve Encapsulation
+      </em>. </span><span class="date">
+	2000
+      . </span><span class="author"><span class="firstname">
+	    Scott
+	  </span> <span class="surname">
+	    Meyers
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  C/C++ Users Journal
+	. </span></span></p></div><div class="biblioentry" title="Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library"><a id="biblio.meyers01stl"/><p>[biblio.meyers01stl] <span class="title"><em>
+	Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library
+      </em>. </span><span class="date">
+	2001
+      . </span><span class="author"><span class="firstname">
+	    Scott
+	  </span> <span class="surname">
+	    Meyers
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="Class Template, Member Template - or Both?"><a id="biblio.meyers02both"/><p>[biblio.meyers02both] <span class="title"><em>
+	Class Template, Member Template - or Both?
+      </em>. </span><span class="date">
+	2003
+      . </span><span class="author"><span class="firstname">
+	    Scott
+	  </span> <span class="surname">
+	    Meyers
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  C/C++ Users Journal
+	. </span></span></p></div><div class="biblioentry" title="Randomized Algorithms"><a id="biblio.motwani95random"/><p>[biblio.motwani95random] <span class="title"><em>
+	Randomized Algorithms
+      </em>. </span><span class="date">
+	2003
+      . </span><span class="authorgroup"><span class="firstname">
+	      R.
+	    </span> <span class="surname">
+	      Motwani
+	    </span> and <span class="firstname">
+	      P.
+	    </span> <span class="surname">
+	      Raghavan
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Cambridge University Press
+	. </span></span></p></div><div class="biblioentry" title="COM: Component Model Object Technologies"><a id="biblio.mscom"/><p>[biblio.mscom] <span class="title"><em>
+	<a class="link" href="http://www.microsoft.com/com">
+	  COM: Component Model Object Technologies
+	</a>
+      </em>. </span><span class="publisher"><span class="publishername">
+	  Microsoft
+	. </span></span></p></div><div class="biblioentry" title="Rationale for Adding Hash Tables to the C++ Standard Template Library"><a id="biblio.musser95rationale"/><p>[biblio.musser95rationale] <span class="title"><em>
+	Rationale for Adding Hash Tables to the C++ Standard Template Library
+      </em>. </span><span class="date">
+	1995
+      . </span><span class="author"><span class="firstname">
+	    David R.
+	  </span> <span class="surname">
+	    Musser
+	  </span>. </span></p></div><div class="biblioentry" title="STL Tutorial and Reference Guide"><a id="biblio.musser96stltutorial"/><p>[biblio.musser96stltutorial] <span class="title"><em>
+	STL Tutorial and Reference Guide
+      </em>. </span><span class="date">
+	1996
+      . </span><span class="authorgroup"><span class="firstname">
+	      David R.
+	    </span> <span class="surname">
+	      Musser
+	    </span> and <span class="firstname">
+	      A.
+	    </span> <span class="surname">
+	      Saini
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="Priority Queues and the STL"><a id="biblio.nelson96stlpq"/><p>[biblio.nelson96stlpq] <span class="title"><em>
+	<a class="link" href="http://www.dogma.net/markn/articles/pq_stl/priority.htm">Priority Queues and the STL
+	</a>
+      </em>. </span><span class="date">
+	January 1996
+      . </span><span class="author"><span class="firstname">
+	    Mark
+	  </span> <span class="surname">
+	    Nelson
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Dr. Dobbs Journal
+	. </span></span></p></div><div class="biblioentry" title="Fast mergeable integer maps"><a id="biblio.okasaki98mereable"/><p>[biblio.okasaki98mereable] <span class="title"><em>
+	Fast mergeable integer maps
+      </em>. </span><span class="date">
+	September 1998
+      . </span><span class="authorgroup"><span class="firstname">
+	      C.
+	    </span> <span class="surname">
+	      Okasaki
+	    </span> and <span class="firstname">
+	      A.
+	    </span> <span class="surname">
+	      Gill
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  In Workshop on ML
+	. </span></span></p></div><div class="biblioentry" title="Standard Template Library Programmer's Guide"><a id="biblio.sgi_stl"/><p>[biblio.sgi_stl] <span class="title"><em>
+	<a class="link" href="http://www.sgi.com/tech/stl">
+	  Standard Template Library Programmer's Guide
+	</a>
+      </em>. </span><span class="author"><span class="firstname">
+	    Matt
+	  </span> <span class="surname">
+	    Austern
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  SGI
+	. </span></span></p></div><div class="biblioentry" title="select"><a id="biblio.select_man"/><p>[biblio.select_man] <span class="title"><em>
+	<a class="link" href="http://www.scit.wlv.ac.uk/cgi-bin/mansec?3C+select">
+	  select
+	</a>
+      </em>. </span></p></div><div class="biblioentry" title="Amortized Efficiency of List Update Problems"><a id="biblio.sleator84amortized"/><p>[biblio.sleator84amortized] <span class="title"><em>
+	Amortized Efficiency of List Update Problems
+      </em>. </span><span class="date">
+	1984
+      . </span><span class="authorgroup"><span class="firstname">
+	      D. D.
+	    </span> <span class="surname">
+	      Sleator
+	    </span> and <span class="firstname">
+	      R. E.
+	    </span> <span class="surname">
+	      Tarjan
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  ACM Symposium on Theory of Computing
+	. </span></span></p></div><div class="biblioentry" title="Self-Adjusting Binary Search Trees"><a id="biblio.sleator85self"/><p>[biblio.sleator85self] <span class="title"><em>
+	Self-Adjusting Binary Search Trees
+      </em>. </span><span class="date">
+	1985
+      . </span><span class="authorgroup"><span class="firstname">
+	      D. D.
+	    </span> <span class="surname">
+	      Sleator
+	    </span> and <span class="firstname">
+	      R. E.
+	    </span> <span class="surname">
+	      Tarjan
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  ACM Symposium on Theory of Computing
+	. </span></span></p></div><div class="biblioentry" title="The Standard Template Library"><a id="biblio.stepanov94standard"/><p>[biblio.stepanov94standard] <span class="title"><em>
+	The Standard Template Library
+      </em>. </span><span class="date">
+	1984
+      . </span><span class="authorgroup"><span class="firstname">
+	      A. A.
+	    </span> <span class="surname">
+	      Stepanov
+	    </span> and <span class="firstname">
+	      M.
+	    </span> <span class="surname">
+	      Lee
+	    </span>. </span></p></div><div class="biblioentry" title="The C++ Programming Langugage"><a id="biblio.stroustrup97cpp"/><p>[biblio.stroustrup97cpp] <span class="title"><em>
+	The C++ Programming Langugage
+      </em>. </span><span class="date">
+	1997
+      . </span><span class="author"><span class="firstname">
+	    Bjarne
+	  </span> <span class="surname">
+	    Stroustrup
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="C++ Templates: The Complete Guide"><a id="biblio.vandevoorde2002cpptemplates"/><p>[biblio.vandevoorde2002cpptemplates] <span class="title"><em>
+	C++ Templates: The Complete Guide
+      </em>. </span><span class="date">
+	2002
+      . </span><span class="authorgroup"><span class="firstname">
+	      D.
+	    </span> <span class="surname">
+	      Vandevoorde
+	    </span> and <span class="firstname">
+	      N. M.
+	    </span> <span class="surname">
+	      Josuttis
+	    </span>. </span><span class="publisher"><span class="publishername">
+	  Addison-Wesley Publishing Company
+	. </span></span></p></div><div class="biblioentry" title="Thirty Years Among the Dead"><a id="biblio.wickland96thirty"/><p>[biblio.wickland96thirty] <span class="title"><em>
+	<a class="link" href="http://myweb.wvnet.edu/~gsa00121/books/amongdead30.zip">
+	  Thirty Years Among the Dead
+	</a>
+      </em>. </span><span class="date">
+	1996
+      . </span><span class="author"><span class="firstname">
+	    C. A.
+	  </span> <span class="surname">
+	    Wickland
+	  </span>. </span><span class="publisher"><span class="publishername">
+	  National Psychological Institute
+	. </span></span></p></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="bk01pt03ch21s02.html">Prev</a> </td><td align="center"><a accesskey="u" href="extensions.html">Up</a></td><td align="right"> <a accesskey="n" href="policy_data_structures_using.html">Next</a></td></tr><tr><td align="left" valign="top">Implementation </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Using</td></tr></table></div></body></html>
