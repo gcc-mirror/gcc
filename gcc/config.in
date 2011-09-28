@@ -1015,6 +1015,12 @@
 #endif
 
 
+/* Define if your assembler supports specifying the section flag e. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_SECTION_EXCLUDE
+#endif
+
+
 /* Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.
    */
 #ifndef USED_FOR_TARGET
