@@ -1,3 +1,8 @@
+2011-09-28  Oleg Endo  <oleg.endo@t-online.de>
+
+	PR target/49486
+	* gcc.target/sh/pr49468-si.c: New.
+
 2011-09-28  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/50485
