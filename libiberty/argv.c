@@ -492,6 +492,29 @@ expandargv (int *argcp, char ***argvp)
     }
 }
 
+/*
+
+@deftypefn Extension int countargv (char **@var{argv})
+
+Return the number of elements in @var{argv}.
+Returns zero if @var{argv} is NULL.
+
+@end deftypefn
+
+*/
+
+int
+countargv (char **argv)
+{
+  int argc;
+
+  if (argv == NULL)
+    return 0;
+  for (argc = 0; argv[argc] != NULL; argc++)
+    continue;
+  return argc;
+}
+
 #ifdef MAIN
 
 /* Simple little test driver. */

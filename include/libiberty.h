@@ -91,6 +91,10 @@ extern void expandargv PARAMS ((int *, char ***));
 
 extern int writeargv PARAMS ((char **, FILE *));
 
+/* Return the number of elements in argv.  */
+
+extern int countargv (char**);
+
 /* Return the last component of a path name.  Note that we can't use a
    prototype here because the parameter is declared inconsistently
    across different systems, sometimes as "char *" and sometimes as
