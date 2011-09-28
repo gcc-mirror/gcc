@@ -1,3 +1,9 @@
+2011-09-28  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/neon.md (neon_move_lo_quad_<mode>): Delete.
+	(neon_move_hi_quad_<mode>): Likewise.
+	(move_hi_quad_<mode>, move_lo_quad_<mode>): Use subreg moves.
+
 2011-09-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/predicates.md (rx_minmax_operand): New predicate.
