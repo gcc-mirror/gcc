@@ -1,5 +1,11 @@
 2011-09-28  Doug Evans  <dje@google.com>
 
+	* timeval-utils.c: New file.
+	* Makefile.in (CFILES): Add it.
+	(REQUIRED_OFILES): Add timeval-utils.$(objext).
+	(INSTALLED_HEADERS): Add timeval-utils.h.
+	(timeval-utils.$(objext)): Add rule.
+
 	* argv.c (countargv): New function.
 
 2011-09-23  Cary Coutant  <ccoutant@google.com>
