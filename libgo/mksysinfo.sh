@@ -36,9 +36,12 @@ cat > sysinfo.c <<EOF
 #include <netinet/in.h>
 /* <netinet/tcp.h> needs u_char/u_short, but <sys/bsd_types> is only
    included by <netinet/in.h> if _SGIAPI (i.e. _SGI_SOURCE
-   && !_XOPEN_SOURCE.  */
+   && !_XOPEN_SOURCE.
+   <sys/termios.h> only defines TIOCNOTTY if !_XOPEN_SOURCE, while
+   <sys/ttold.h> does so unconditionally.  */
 #ifdef __sgi__
 #include <sys/bsd_types.h>
+#include <sys/ttold.h>
 #endif
 #include <netinet/tcp.h>
 #include <signal.h>
