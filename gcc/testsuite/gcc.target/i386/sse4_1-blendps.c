@@ -14,6 +14,7 @@
 
 #include <smmintrin.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define NUM 20
 
@@ -65,6 +66,9 @@ TEST (void)
   int i;
 
   init_blendps (src1.f, src2.f);
+
+  for (i = 0; i < 4; i++)
+    src3.f[i] = (int) random ();
 
   /* Check blendps imm8, m128, xmm */
   for (i = 0; i < NUM; i++)

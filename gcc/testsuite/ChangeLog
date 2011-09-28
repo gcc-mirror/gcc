@@ -1,3 +1,11 @@
+2011-09-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/50485
+	* gcc.target/i386/sse4_1-blendps.c: Include <stdlib.h>.
+	(TEST): Initialize src3 with random floats.
+	* gcc.target/i386/sse4_1-blendps-2.c (sse4_1_test): Remove field i from
+	union src3.  Initialize src3 with random floats.
+
 2011-09-27  Oleg Endo  <oleg.endo@t-online.de>
 
 	* gcc.target/sh/mfmovd.c: Extend list of supported targets.
