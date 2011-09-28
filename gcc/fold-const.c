@@ -6870,6 +6870,60 @@ try_move_mult_to_index (location_t loc, tree addr, tree op1)
 
 	  break;
 	}
+      else if (TREE_CODE (ref) == COMPONENT_REF
+	       && TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE)
+	{
+	  tree domain;
+
+	  /* Remember if this was a multi-dimensional array.  */
+	  if (TREE_CODE (TREE_OPERAND (ref, 0)) == ARRAY_REF)
+	    mdim = true;
+
+	  domain = TYPE_DOMAIN (TREE_TYPE (ref));
+	  if (! domain)
+	    continue;
+	  itype = TREE_TYPE (domain);
+
+	  step = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ref)));
+	  if (TREE_CODE (step) != INTEGER_CST)
+	    continue;
+
+	  if (s)
+	    {
+	      if (! tree_int_cst_equal (step, s))
+                continue;
+	    }
+	  else
+	    {
+	      /* Try if delta is a multiple of step.  */
+	      tree tmp = div_if_zero_remainder (EXACT_DIV_EXPR, op1, step);
+	      if (! tmp)
+		continue;
+	      delta = tmp;
+	    }
+
+	  /* Only fold here if we can verify we do not overflow one
+	     dimension of a multi-dimensional array.  */
+	  if (mdim)
+	    {
+	      tree tmp;
+
+	      if (!TYPE_MIN_VALUE (domain)
+		  || !TYPE_MAX_VALUE (domain)
+		  || TREE_CODE (TYPE_MAX_VALUE (domain)) != INTEGER_CST)
+		continue;
+
+	      tmp = fold_binary_loc (loc, PLUS_EXPR, itype,
+				     fold_convert_loc (loc, itype,
+						       TYPE_MIN_VALUE (domain)),
+				     fold_convert_loc (loc, itype, delta));
+	      if (TREE_CODE (tmp) != INTEGER_CST
+		  || tree_int_cst_lt (TYPE_MAX_VALUE (domain), tmp))
+		continue;
+	    }
+
+	  break;
+	}
       else
 	mdim = false;
 
@@ -6892,12 +6946,29 @@ try_move_mult_to_index (location_t loc, tree addr, tree op1)
       pos = TREE_OPERAND (pos, 0);
     }
 
-  TREE_OPERAND (pos, 1) = fold_build2_loc (loc, PLUS_EXPR, itype,
-				       fold_convert_loc (loc, itype,
-							 TREE_OPERAND (pos, 1)),
-				       fold_convert_loc (loc, itype, delta));
-
-  return fold_build1_loc (loc, ADDR_EXPR, TREE_TYPE (addr), ret);
+  if (TREE_CODE (ref) == ARRAY_REF)
+    {
+      TREE_OPERAND (pos, 1)
+	= fold_build2_loc (loc, PLUS_EXPR, itype,
+			   fold_convert_loc (loc, itype, TREE_OPERAND (pos, 1)),
+			   fold_convert_loc (loc, itype, delta));
+      return fold_build1_loc (loc, ADDR_EXPR, TREE_TYPE (addr), ret);
+    }
+  else if (TREE_CODE (ref) == COMPONENT_REF)
+    {
+      gcc_assert (ret == pos);
+      ret = build4_loc (loc, ARRAY_REF, TREE_TYPE (TREE_TYPE (ref)), ret,
+			fold_build2_loc
+			  (loc, PLUS_EXPR, itype,
+			   fold_convert_loc (loc, itype,
+					     TYPE_MIN_VALUE
+					       (TYPE_DOMAIN (TREE_TYPE (ref)))),
+			   fold_convert_loc (loc, itype, delta)),
+			NULL_TREE, NULL_TREE);
+      return build_fold_addr_expr_loc (loc, ret);
+    }
+  else
+    gcc_unreachable ();
 }
 
 
