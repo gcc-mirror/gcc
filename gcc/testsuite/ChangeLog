@@ -1,5 +1,10 @@
 2011-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/40145
+	* g++.dg/ext/visibility/warn5.C: New.
+
+2011-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/45278
 	* g++.dg/warn/Wextra-3.C: New.
 
