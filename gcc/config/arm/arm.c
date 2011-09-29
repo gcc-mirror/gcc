@@ -18260,6 +18260,29 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 	  && regno <= LAST_FPA_REGNUM);
 }
 
+/* Implement MODES_TIEABLE_P.  */
+
+bool
+arm_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+{
+  if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
+    return true;
+
+  /* We specifically want to allow elements of "structure" modes to
+     be tieable to the structure.  This more general condition allows
+     other rarer situations too.  */
+  if (TARGET_NEON
+      && (VALID_NEON_DREG_MODE (mode1)
+	  || VALID_NEON_QREG_MODE (mode1)
+	  || VALID_NEON_STRUCT_MODE (mode1))
+      && (VALID_NEON_DREG_MODE (mode2)
+	  || VALID_NEON_QREG_MODE (mode2)
+	  || VALID_NEON_STRUCT_MODE (mode2)))
+    return true;
+
+  return false;
+}
+
 /* For efficiency and historical reasons LO_REGS, HI_REGS and CC_REGS are
    not used in arm mode.  */
 
