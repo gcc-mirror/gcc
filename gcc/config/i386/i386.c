@@ -18890,7 +18890,12 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
   enum machine_mode mode = GET_MODE (dest);
   rtx t2, t3, x;
 
-  if (op_false == CONST0_RTX (mode))
+  if (vector_all_ones_operand (op_true, GET_MODE (op_true))
+      && rtx_equal_p (op_false, CONST0_RTX (mode)))
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, dest, cmp));
+    }
+  else if (op_false == CONST0_RTX (mode))
     {
       op_true = force_reg (mode, op_true);
       x = gen_rtx_AND (mode, cmp, op_true);

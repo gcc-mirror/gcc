@@ -9910,6 +9910,31 @@ build_binary_op (location_t location, enum tree_code code,
 
     case EQ_EXPR:
     case NE_EXPR:
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+        {
+          tree intt;
+          if (TREE_TYPE (type0) != TREE_TYPE (type1))
+            {
+              error_at (location, "comparing vectors with different "
+                                  "element types");
+              return error_mark_node;
+            }
+
+          if (TYPE_VECTOR_SUBPARTS (type0) != TYPE_VECTOR_SUBPARTS (type1))
+            {
+              error_at (location, "comparing vectors with different "
+                                  "number of elements");
+              return error_mark_node;
+            }
+
+          /* Always construct signed integer vector type.  */
+          intt = c_common_type_for_size (GET_MODE_BITSIZE
+					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+          result_type = build_opaque_vector_type (intt,
+						  TYPE_VECTOR_SUBPARTS (type0));
+          converted = 1;
+          break;
+        }
       if (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1))
 	warning_at (location,
 		    OPT_Wfloat_equal,
@@ -10022,6 +10047,31 @@ build_binary_op (location_t location, enum tree_code code,
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+        {
+          tree intt;
+          if (TREE_TYPE (type0) != TREE_TYPE (type1))
+            {
+              error_at (location, "comparing vectors with different "
+                                  "element types");
+              return error_mark_node;
+            }
+
+          if (TYPE_VECTOR_SUBPARTS (type0) != TYPE_VECTOR_SUBPARTS (type1))
+            {
+              error_at (location, "comparing vectors with different "
+                                  "number of elements");
+              return error_mark_node;
+            }
+
+          /* Always construct signed integer vector type.  */
+          intt = c_common_type_for_size (GET_MODE_BITSIZE
+					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+          result_type = build_opaque_vector_type (intt,
+						  TYPE_VECTOR_SUBPARTS (type0));
+          converted = 1;
+          break;
+        }
       build_type = integer_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == FIXED_POINT_TYPE)
@@ -10428,6 +10478,10 @@ c_objc_common_truthvalue_conversion (location_t location, tree expr)
 
     case FUNCTION_TYPE:
       gcc_unreachable ();
+
+    case VECTOR_TYPE:
+      error_at (location, "used vector type where scalar is required");
+      return error_mark_node;
 
     default:
       break;

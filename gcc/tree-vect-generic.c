@@ -35,6 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "optabs.h"
 
+
+static void expand_vector_operations_1 (gimple_stmt_iterator *);
+
+
 /* Build a constant of type TYPE, made of VALUE's bits replicated
    every TYPE_SIZE (INNER_TYPE) bits to fit TYPE's precision.  */
 static tree
@@ -123,6 +127,31 @@ do_binop (gimple_stmt_iterator *gsi, tree inner_type, tree a, tree b,
   a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
   b = tree_vec_extract (gsi, inner_type, b, bitsize, bitpos);
   return gimplify_build2 (gsi, code, inner_type, a, b);
+}
+
+
+/* Construct expression (A[BITPOS] code B[BITPOS]) ? -1 : 0
+
+   INNER_TYPE is the type of A and B elements
+
+   returned expression is of signed integer type with the
+   size equal to the size of INNER_TYPE.  */
+static tree
+do_compare (gimple_stmt_iterator *gsi, tree inner_type, tree a, tree b,
+	  tree bitpos, tree bitsize, enum tree_code code)
+{
+  tree comp_type;
+
+  a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
+  b = tree_vec_extract (gsi, inner_type, b, bitsize, bitpos);
+
+  comp_type = build_nonstandard_integer_type
+		      (GET_MODE_BITSIZE (TYPE_MODE (inner_type)), 0);
+
+  return gimplify_build3 (gsi, COND_EXPR, comp_type,
+			  fold_build2 (code, boolean_type_node, a, b),
+			  build_int_cst (comp_type, -1),
+			  build_int_cst (comp_type, 0));
 }
 
 /* Expand vector addition to scalars.  This does bit twiddling
@@ -333,6 +362,24 @@ uniform_vector_p (tree vec)
   return NULL_TREE;
 }
 
+/* Try to expand vector comparison expression OP0 CODE OP1 by
+   querying optab if the following expression:
+	VEC_COND_EXPR< OP0 CODE OP1, {-1,...}, {0,...}>
+   can be expanded.  */
+static tree
+expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
+                          tree op1, enum tree_code code)
+{
+  tree t;
+  if (! expand_vec_cond_expr_p (type, TREE_TYPE (op0)))
+    t = expand_vector_piecewise (gsi, do_compare, type,
+				 TREE_TYPE (TREE_TYPE (op0)), op0, op1, code);
+  else
+    t = NULL_TREE;
+
+  return t;
+}
+
 static tree
 expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type,
 			 gimple assign, enum tree_code code)
@@ -375,8 +422,27 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
       case BIT_NOT_EXPR:
         return expand_vector_parallel (gsi, do_unop, type,
 		      		       gimple_assign_rhs1 (assign),
-				       NULL_TREE, code);
+        			       NULL_TREE, code);
+      case EQ_EXPR:
+      case NE_EXPR:
+      case GT_EXPR:
+      case LT_EXPR:
+      case GE_EXPR:
+      case LE_EXPR:
+      case UNEQ_EXPR:
+      case UNGT_EXPR:
+      case UNLT_EXPR:
+      case UNGE_EXPR:
+      case UNLE_EXPR:
+      case LTGT_EXPR:
+      case ORDERED_EXPR:
+      case UNORDERED_EXPR:
+	{
+	  tree rhs1 = gimple_assign_rhs1 (assign);
+	  tree rhs2 = gimple_assign_rhs2 (assign);
 
+	  return expand_vector_comparison (gsi, type, rhs1, rhs2, code);
+	}
       default:
 	break;
       }
@@ -450,11 +516,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 
   code = gimple_assign_rhs_code (stmt);
   rhs_class = get_gimple_rhs_class (code);
+  lhs = gimple_assign_lhs (stmt);
 
   if (rhs_class != GIMPLE_UNARY_RHS && rhs_class != GIMPLE_BINARY_RHS)
     return;
 
-  lhs = gimple_assign_lhs (stmt);
   rhs1 = gimple_assign_rhs1 (stmt);
   type = gimple_expr_type (stmt);
   if (rhs_class == GIMPLE_BINARY_RHS)
@@ -598,6 +664,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 
   gcc_assert (code != VEC_LSHIFT_EXPR && code != VEC_RSHIFT_EXPR);
   new_rhs = expand_vector_operation (gsi, type, compute_type, stmt, code);
+
+  /* Leave expression untouched for later expansion.  */
+  if (new_rhs == NULL_TREE)
+    return;
+
   if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (new_rhs)))
     new_rhs = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, TREE_TYPE (lhs),
                                new_rhs);
