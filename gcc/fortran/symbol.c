@@ -684,6 +684,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	{
 	case PROC_ST_FUNCTION:
 	  conf2 (dummy);
+	  conf2 (target);
 	  break;
 
 	case PROC_MODULE:
