@@ -1,3 +1,16 @@
+2011-09-26   Andi Kleen <ak@linux.intel.com>
+
+	* hwint.h (HOST_WIDE_INT_PRINT_HEX_PURE): Add.
+	* lto-streamer.c (lto_get_section_name): Remove crc32_string.
+ 	Handle numerical random seed.
+	* lto-streamer.h (lto_file_decl_data): Change id to unsigned HOST_WIDE_INT.
+	* toplev.c (random_seed): Add.
+	(init_random_seed): Change for numerical random seed.
+	(get_random_seed): Return as HOST_WIDE_INT.
+	(set_random_seed): Crc32 existing string.
+	* toplev.h (get_random_seed): Change to numercal return.
+	* tree.c (get_file_function_name): Remove CRC. Handle numerical random seed.
+
 2011-09-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50566

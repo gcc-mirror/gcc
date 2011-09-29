@@ -141,6 +141,9 @@ static const char *flag_random_seed;
    user has specified a particular random seed.  */
 unsigned local_tick;
 
+/* Random number for this compilation */
+HOST_WIDE_INT random_seed;
+
 /* -f flags.  */
 
 /* Generate code for GNU or NeXT Objective-C runtime environment.  */
@@ -251,7 +254,7 @@ announce_function (tree decl)
     }
 }
 
-/* Initialize local_tick with the time of day, or -1 if
+/* Initialize local_tick with a random number or -1 if
    flag_random_seed is set.  */
 
 static void
@@ -286,24 +289,28 @@ init_local_tick (void)
 static void
 init_random_seed (void)
 {
-  unsigned HOST_WIDE_INT value;
-  static char random_seed[HOST_BITS_PER_WIDE_INT / 4 + 3];
+  if (flag_random_seed)
+    {
+      char *endp;
 
-  value = local_tick ^ getpid ();
-
-  sprintf (random_seed, HOST_WIDE_INT_PRINT_HEX, value);
-  flag_random_seed = random_seed;
+      /* When the driver passed in a hex number don't crc it again */
+      random_seed = strtoul (flag_random_seed, &endp, 0);
+      if (!(endp > flag_random_seed && *endp == 0))
+        random_seed = crc32_string (0, flag_random_seed);
+    }
+  else if (!random_seed)
+    random_seed = local_tick ^ getpid ();  /* Old racey fallback method */
 }
 
-/* Obtain the random_seed string.  Unless NOINIT, initialize it if
+/* Obtain the random_seed.  Unless NOINIT, initialize it if
    it's not provided in the command line.  */
 
-const char *
+HOST_WIDE_INT
 get_random_seed (bool noinit)
 {
   if (!flag_random_seed && !noinit)
     init_random_seed ();
-  return flag_random_seed;
+  return random_seed;
 }
 
 /* Modify the random_seed string to VAL.  Return its previous

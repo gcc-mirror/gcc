@@ -976,9 +976,6 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 	}
 
       file_data = (struct lto_file_decl_data *)nd->value;
-      if (cgraph_dump_file)
-	fprintf (cgraph_dump_file, "Adding resolution %u %u to id %x\n",
-		 index, r, file_data->id);
       VEC_safe_grow_cleared (ld_plugin_symbol_resolution_t, heap, 
 			     file_data->resolutions,
 			     max_index + 1);
@@ -990,14 +987,14 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 /* Is the name for a id'ed LTO section? */
 
 static int 
-lto_section_with_id (const char *name, unsigned *id)
+lto_section_with_id (const char *name, unsigned HOST_WIDE_INT *id)
 {
   const char *s;
 
   if (strncmp (name, LTO_SECTION_NAME_PREFIX, strlen (LTO_SECTION_NAME_PREFIX)))
     return 0;
   s = strrchr (name, '.');
-  return s && sscanf (s, ".%x", id) == 1;
+  return s && sscanf (s, "." HOST_WIDE_INT_PRINT_HEX_PURE, id) == 1;
 }
 
 /* Create file_data of each sub file id */
@@ -1008,7 +1005,7 @@ create_subid_section_table (void **slot, void *data)
   struct lto_section_slot s_slot, *new_slot;
   struct lto_section_slot *ls = *(struct lto_section_slot **)slot;
   splay_tree file_ids = (splay_tree)data;
-  unsigned id;
+  unsigned HOST_WIDE_INT id;
   splay_tree_node nd;
   void **hash_slot;
   char *new_name;
@@ -1080,7 +1077,7 @@ static int lto_create_files_from_ids (splay_tree_node node, void *data)
 
   lto_file_finalize (file_data, lw->file);
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "Creating file %s with sub id %x\n", 
+    fprintf (cgraph_dump_file, "Creating file %s with sub id " HOST_WIDE_INT_PRINT_HEX "\n", 
 	     file_data->file_name, file_data->id);
   file_data->next = *lw->file_data;
   *lw->file_data = file_data;
