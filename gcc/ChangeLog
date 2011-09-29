@@ -1,3 +1,17 @@
+2011-09-29  Artjoms Sinkarovs <artyom.shinkaroff@gmail.com>
+
+	* expr.c (do_store_flag): Expand vector comparison by
+	building an appropriate VEC_COND_EXPR.
+	* c-typeck.c (build_binary_op): Typecheck vector comparisons.
+	(c_objc_common_truthvalue_conversion): Adjust.
+	* tree-vect-generic.c (do_compare): Helper function.
+	(expand_vector_comparison): Check if hardware supports
+	vector comparison of the given type or expand vector
+	piecewise.
+	(expand_vector_operation): Treat comparison as binary
+	operation of vector type.
+	(expand_vector_operations_1): Adjust.
+
 2011-09-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (build_opaque_vector_type): Make opaque vectors

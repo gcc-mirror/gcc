@@ -6561,6 +6561,29 @@ invoke undefined behavior at runtime.  Warnings for out of bound
 accesses for vector subscription can be enabled with
 @option{-Warray-bounds}.
 
+In GNU C vector comparison is supported within standard comparison
+operators: @code{==, !=, <, <=, >, >=}. Comparison operands can be
+vector expressions of integer-type or real-type. Comparison between
+integer-type vectors and real-type vectors are not supported.  The
+result of the comparison is a vector of the same width and number of
+elements as the comparison operands with a signed integral element
+type.
+
+Vectors are compared element-wise producing 0 when comparison is false
+and -1 (constant of the appropriate type where all bits are set)
+otherwise. Consider the following example.
+
+@smallexample
+typedef int v4si __attribute__ ((vector_size (16)));
+
+v4si a = @{1,2,3,4@};
+v4si b = @{3,2,1,4@};
+v4si c;
+
+c = a >  b;     /* The result would be @{0, 0,-1, 0@}  */
+c = a == b;     /* The result would be @{0,-1, 0,-1@}  */
+@end smallexample
+
 You can declare variables and use them in function calls and returns, as
 well as in assignments and some casts.  You can specify a vector type as
 a return type for a function.  Vector types can also be used as function

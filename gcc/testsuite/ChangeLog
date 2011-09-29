@@ -1,3 +1,10 @@
+2011-09-29  Artjoms Sinkarovs <artyom.shinkaroff@gmail.com>
+
+	* gcc.c-torture/execute/vector-compare-1.c: New testcase.
+	* gcc.c-torture/execute/vector-compare-2.c: Likewise.
+	* gcc.dg/vector-compare-1.c: Likewise.
+	* gcc.dg/vector-compare-2.c: Likewise.
+
 2011-09-29  David S. Miller  <davem@davemloft.net>
 
 	* gcc.target/sparc/array.c: New test.
