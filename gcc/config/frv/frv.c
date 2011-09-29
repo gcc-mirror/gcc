@@ -1424,6 +1424,8 @@ frv_function_contains_far_jump (void)
 static void
 frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
+  rtx insn, next, last_call;
+
   /* If no frame was created, check whether the function uses a call
      instruction to implement a far jump.  If so, save the link in gr3 and
      replace all returns to LR with returns to GR3.  GR3 is used because it
@@ -1464,6 +1466,32 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
   /* Allow the garbage collector to free the nops created by frv_reorg.  */
   memset (frv_nops, 0, sizeof (frv_nops));
+
+  /* Locate CALL_ARG_LOCATION notes that have been misplaced
+     and move them back to where they should be located.  */
+  last_call = NULL_RTX;
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+      if (CALL_P (insn)
+	  || (INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE
+	      && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
+	last_call = insn;
+
+      if (!NOTE_P (insn) || NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION)
+	continue;
+
+      if (NEXT_INSN (last_call) == insn)
+	continue;
+
+      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+      PREV_INSN (insn) = last_call;
+      NEXT_INSN (insn) = NEXT_INSN (last_call);
+      PREV_INSN (NEXT_INSN (insn)) = insn;
+      NEXT_INSN (PREV_INSN (insn)) = insn;
+      last_call = insn;
+    }
 }
 
 

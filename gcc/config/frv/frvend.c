@@ -25,7 +25,7 @@
 
 #include "defaults.h"
 #include <stddef.h>
-#include "unwind-dw2-fde.h"
+#include "../libgcc/unwind-dw2-fde.h"
 
 #ifdef __FRV_UNDERSCORE__
 #define UNDERSCORE "_"

@@ -1,3 +1,12 @@
+2011-09-29  Nick Clifton  <nickc@redhat.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/frv/frvbegin.c: Fix location of unwind-dw2-fde.h header
+	file.
+	* config/frv/frvend.c: Likewise.
+	* config/frv/frv.c (frv_function_prologue): Move misplaced
+	CALL_ARG_LOCATION notes back to their proper locations.
+
 2011-09-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50566
