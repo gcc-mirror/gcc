@@ -1,5 +1,9 @@
 2011-09-26   Andi Kleen <ak@linux.intel.com>
 
+	* toplev.c (init_local_tick): Try reading random seed from /dev/urandom
+
+2011-09-26   Andi Kleen <ak@linux.intel.com>
+
 	* hwint.h (HOST_WIDE_INT_PRINT_HEX_PURE): Add.
 	* lto-streamer.c (lto_get_section_name): Remove crc32_string.
  	Handle numerical random seed.
