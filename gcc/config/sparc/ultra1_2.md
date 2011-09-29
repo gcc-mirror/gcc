@@ -94,7 +94,7 @@
 
 (define_insn_reservation "us1_simple_ieu1" 1
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "compare,edge"))
+    (eq_attr "type" "compare,edge,array"))
   "us1_ieu1 + us1_slot012")
 
 (define_insn_reservation "us1_ialuX" 1

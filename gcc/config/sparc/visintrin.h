@@ -333,4 +333,25 @@ __vis_fpsub32s (__v1si __A, __v1si __B)
   return __builtin_vis_fpsub32s (__A, __B);
 }
 
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_array8 (long __A, long __B)
+{
+  return __builtin_vis_array8 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_array16 (long __A, long __B)
+{
+  return __builtin_vis_array16 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_array32 (long __A, long __B)
+{
+  return __builtin_vis_array32 (__A, __B);
+}
+
 #endif  /* _VISINTRIN_H_INCLUDED */
