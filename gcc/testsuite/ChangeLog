@@ -1,3 +1,12 @@
+2011-09-29  Jiangning Liu  <jiangning.liu@arm.com>
+
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-1.c: Explicitly turn on
+	loop unroll and set max unroll times to 8.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-2.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-3.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-4.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-5.c: Likewise.
+
 2011-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/40145
