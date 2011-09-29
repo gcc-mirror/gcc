@@ -111,3 +111,24 @@ extern rtx avr_incoming_return_addr_rtx (void);
 #ifdef REAL_VALUE_TYPE
 extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif
+
+/* From avr-log.c */
+
+#define avr_edump (avr_log_set_caller_e (__FUNCTION__))
+#define avr_fdump (avr_log_set_caller_f (__FUNCTION__))
+
+extern int (*avr_log_set_caller_e (const char*))(const char*, ...);
+extern int (*avr_log_set_caller_f (const char*))(FILE*, const char*, ...);
+
+extern void avr_log_set_avr_log (void);
+
+typedef struct
+{
+  unsigned rtx_costs :1;
+  unsigned legitimate_address_p :1;
+  unsigned legitimize_address :1;
+  unsigned legitimize_reload_address :1;
+  unsigned constraints :1;
+} avr_log_t;
+
+extern avr_log_t avr_log;

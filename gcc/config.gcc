@@ -939,14 +939,14 @@ avr-*-rtems*)
 	libgcc_tm_file="$libgcc_tm_file avr/avr-lib.h"
 	tmake_file="avr/t-avr t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
-	extra_objs="avr-devices.o"
+	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h newlib-stdint.h"
 	libgcc_tm_file="$libgcc_tm_file avr/avr-lib.h"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
-	extra_objs="avr-devices.o"
+	extra_objs="avr-devices.o avr-log.o"
 	;;
 bfin*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h bfin/elf.h"

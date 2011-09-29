@@ -29,6 +29,9 @@ Target RejectNegative Joined Var(avr_mcu_index) Init(0) Enum(avr_mcu)
 mdeb
 Target Report Undocumented Mask(ALL_DEBUG)
 
+mlog=
+Target RejectNegative Joined Undocumented Var(avr_log_details)
+
 mint8
 Target Report Mask(INT8)
 Use an 8-bit 'int' type
