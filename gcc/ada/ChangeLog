@@ -1,3 +1,8 @@
+2011-09-29  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (Darwin): Factor LIBGNAT_TARGET_PAIRS
+	across the port.
+
 2011-09-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* a-cbhase.adb, a-cbhase.ads, a-cborse.adb, a-cborse.ads,

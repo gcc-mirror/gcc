@@ -2136,21 +2136,23 @@ endif
 
 ifeq ($(strip $(filter-out darwin%,$(osys))),)
   SO_OPTS = -shared-libgcc
-  ifeq ($(strip $(filter-out %86,$(arch))),)
-    LIBGNAT_TARGET_PAIRS = \
+  LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
     i-forbla.adb<i-forbla-darwin.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
-    s-intman.adb<s-intman-susv3.adb \
     s-osinte.adb<s-osinte-darwin.adb \
     s-osinte.ads<s-osinte-darwin.ads \
-    s-osprim.adb<s-osprim-darwin.adb \
     s-taprop.adb<s-taprop-posix.adb \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
     g-trasym.ads<g-trasym-unimplemented.ads \
-    g-trasym.adb<g-trasym-unimplemented.adb \
-    $(ATOMICS_TARGET_PAIRS)
+    g-trasym.adb<g-trasym-unimplemented.adb
+  
+  ifeq ($(strip $(filter-out %86,$(arch))),)
+    LIBGNAT_TARGET_PAIRS += \
+      s-intman.adb<s-intman-susv3.adb \
+      s-osprim.adb<s-osprim-darwin.adb \
+      $(ATOMICS_TARGET_PAIRS)
 
     ifeq ($(strip $(MULTISUBDIR)),/x86_64)
       LIBGNAT_TARGET_PAIRS += \
@@ -2165,20 +2167,10 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   endif
 
   ifeq ($(strip $(filter-out %x86_64,$(arch))),)
-    LIBGNAT_TARGET_PAIRS = \
-    a-intnam.ads<a-intnam-darwin.ads \
-    i-forbla.adb<i-forbla-darwin.adb \
-    s-inmaop.adb<s-inmaop-posix.adb \
-    s-intman.adb<s-intman-susv3.adb \
-    s-osinte.adb<s-osinte-darwin.adb \
-    s-osinte.ads<s-osinte-darwin.ads \
-    s-osprim.adb<s-osprim-darwin.adb \
-    s-taprop.adb<s-taprop-posix.adb \
-    s-taspri.ads<s-taspri-posix.ads \
-    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    g-trasym.ads<g-trasym-unimplemented.ads \
-    g-trasym.adb<g-trasym-unimplemented.adb \
-    $(ATOMICS_TARGET_PAIRS)
+    LIBGNAT_TARGET_PAIRS += \
+      s-intman.adb<s-intman-susv3.adb \
+      s-osprim.adb<s-osprim-darwin.adb \
+      $(ATOMICS_TARGET_PAIRS)
 
     ifeq ($(strip $(MULTISUBDIR)),/i386)
       LIBGNAT_TARGET_PAIRS += \
@@ -2193,21 +2185,9 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   endif
 
   ifeq ($(strip $(filter-out powerpc%,$(arch))),)
-    LIBGNAT_TARGET_PAIRS = \
-    a-intnam.ads<a-intnam-darwin.ads \
-    i-forbla.adb<i-forbla-darwin.adb \
-    s-inmaop.adb<s-inmaop-posix.adb \
-    s-intman.adb<s-intman-posix.adb \
-    s-osinte.adb<s-osinte-darwin.adb \
-    s-osinte.ads<s-osinte-darwin.ads \
-    s-osprim.adb<s-osprim-posix.adb \
-    s-taprop.adb<s-taprop-posix.adb \
-    s-taspri.ads<s-taspri-posix.ads \
-    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    a-numaux.ads<a-numaux-darwin.ads \
-    a-numaux.adb<a-numaux-darwin.adb \
-    g-trasym.ads<g-trasym-unimplemented.ads \
-    g-trasym.adb<g-trasym-unimplemented.adb
+    LIBGNAT_TARGET_PAIRS += \
+      s-intman.adb<s-intman-posix.adb \
+      s-osprim.adb<s-osprim-posix.adb
     
     ifeq ($(strip $(MULTISUBDIR)),/ppc64)
       LIBGNAT_TARGET_PAIRS += \
