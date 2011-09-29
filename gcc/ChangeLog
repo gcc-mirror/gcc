@@ -1,3 +1,8 @@
+2011-09-29  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin9.h (STACK_CHECK_STATIC_BUILTIN): Enable for
+	Darwin >= 9.
+
 2011-09-28  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (UNSPEC_FCMPLE, UNSPEC_FCMPNE,
