@@ -28,7 +28,7 @@
 
 #include "defaults.h"
 #include <stddef.h>
-#include "unwind-dw2-fde.h"
+#include "../libgcc/unwind-dw2-fde.h"
 #include "gbl-ctors.h"
 
 /*  Declare a pointer to void function type.  */
