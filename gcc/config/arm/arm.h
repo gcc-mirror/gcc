@@ -975,12 +975,7 @@ extern int arm_arch_thumb_hwdiv;
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
   arm_hard_regno_mode_ok ((REGNO), (MODE))
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)  \
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
+#define MODES_TIEABLE_P(MODE1, MODE2) arm_modes_tieable_p (MODE1, MODE2)
 
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
