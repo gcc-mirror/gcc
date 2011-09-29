@@ -1,3 +1,18 @@
+2011-09-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50566
+	* config.gcc (extra_objs): Add avr-log.o for $target in:
+	avr-*-rtems*, avr-*-*.
+	* config/avr/t-avr (avr-log.o): New rule to compile...
+	* config/avr/avr-log.c: ...this new file.
+	* config/avr/avr.opt (mlog=): New option.
+	* config/avr/avr-protos.h (avr_edump, avr_fdump): New macros.
+	(avr_log_set_caller_e, avr_log_set_caller_f): New prototypes.
+	(avr_log_set_avr_log): New prototype.
+	(avr_log_t): New typedef.
+	(avr_log): New declaration.
+	* config/avr/avr.c (avr_option_override): Call avr_log_set_avr_log.
+
 2011-09-29  Artjoms Sinkarovs <artyom.shinkaroff@gmail.com>
 
 	* expr.c (do_store_flag): Expand vector comparison by

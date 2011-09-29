@@ -359,6 +359,8 @@ avr_option_override (void)
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
 
   init_machine_status = avr_init_machine_status;
+
+  avr_log_set_avr_log();
 }
 
 /* Function to set up the backend function structure.  */
