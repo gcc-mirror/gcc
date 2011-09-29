@@ -8151,13 +8151,13 @@
 (define_mode_iterator GCM [V4HI V2SI])
 (define_mode_attr gcm_name [(V4HI "16") (V2SI "32")])
 
-(define_insn "fcmp<gcond:code><gcm_name><P:mode>_vis"
+(define_insn "fcmp<code><GCM:gcm_name><P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
   	(unspec:P [(gcond:GCM (match_operand:GCM 1 "register_operand" "e")
 		              (match_operand:GCM 2 "register_operand" "e"))]
 	 UNSPEC_FCMP))]
   "TARGET_VIS"
-  "fcmp<gcond:code><gcm_name>\t%1, %2, %0"
+  "fcmp<code><GCM:gcm_name>\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
