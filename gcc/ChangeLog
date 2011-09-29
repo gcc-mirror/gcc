@@ -14,6 +14,9 @@
 	__vis_array32): New.
 	* doc/extend.texi: Document new VIS builtins.
 
+	* config/sparc/sparc.md (gcond_name): Delete unnecessary code attr.
+	(VIS pixel-compare insn): Just use <gcond:name>.
+
 2011-09-29  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin9.h (STACK_CHECK_STATIC_BUILTIN): Enable for
