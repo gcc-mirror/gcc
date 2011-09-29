@@ -33,7 +33,7 @@
 	forward declaration.
 	(remove_duplicate_close_phi): Detect and repair creation of
 	duplicate close-phis for a containing loop.
-	
+
 2011-09-27   Andi Kleen <ak@linux.intel.com>
 
 	* gcc.c (get_local_tick). Rename to get_random_number.
@@ -111,6 +111,10 @@
 
 	* config/sparc/sparc.md (gcond_name): Delete unnecessary code attr.
 	(VIS pixel-compare insn): Just use <gcond:name>.
+
+	* config/sparc/sparc.md (VIS pixel-compare insn): There is only one
+	code iterator used, so just use <code>.  There are two mode iterators
+	so explicitly use <GCM:gcm_name>.
 
 2011-09-29  Iain Sandoe  <iains@gcc.gnu.org>
 
