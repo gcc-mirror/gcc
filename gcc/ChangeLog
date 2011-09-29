@@ -72,8 +72,7 @@
 	* configure: Regenerated.
 	* config/i386/winnt.c (i386_pe_asm_named_section): Emit
 	new section flag "e" for excluded sections, if supported.
-	Otherwise we mark section withc SECTION_EXCLUDE flag
-	as never-load.
+	Otherwise we mark section withc SECTION_EXCLUDE flag as never-load.
 
 2011-09-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -88,8 +87,7 @@
 2011-09-27  Sriraman Tallam  <tmsriram@google.com>
 
 	* output.h (SECTION_EXCLUDE): New macro.
-	* varasm.c (default_elf_asm_named_section): Check for
-	SECTION_EXCLUDE.
+	* varasm.c (default_elf_asm_named_section): Check for SECTION_EXCLUDE.
 
 2011-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -114,8 +112,7 @@
 2011-09-27  Jeff Law  <law@redhat.com>
 
 	* ifcvt.c (cheap_bb_rtx_cost_p): Add SCALE argument.  Scale
-	non-jumping insns by REG_BR_PROB_BASE and the maximum cost
-	by SCALE.
+	non-jumping insns by REG_BR_PROB_BASE and the maximum cost by SCALE.
 	(find_if_case_1): Use the probability of the THEN clause when
 	determining if speculation is profitable.
 	(find_if_case_2): Similarly for the ELSE clause.
@@ -176,8 +173,8 @@
 	* tree-ssa-pre.c (execute_pre): Use tail_merge_optimize.
 	* Makefile.in (OBJS-common): Add tree-ssa-tail-merge.o.
 	(tree-ssa-tail-merge.o): New rule.
-	* opts.c (default_options_table): Set OPT_ftree_tail_merge by default at
-	OPT_LEVELS_2_PLUS.
+	* opts.c (default_options_table): Set OPT_ftree_tail_merge by
+	default at OPT_LEVELS_2_PLUS.
 	* tree-ssa-sccvn.c (vn_valueize): Move to ...
 	* tree-ssa-sccvn.h (vn_valueize): Here.
 	* timevar.def (TV_TREE_TAIL_MERGE): New timevar.
@@ -194,8 +191,9 @@
 
 2011-09-27  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Handle parameters
-	passed by reference; handle loads from non-SSA scalars and update comments.
+	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Handle
+	parameters passed by reference; handle loads from non-SSA scalars
+	and update comments.
 
 2011-09-27  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -271,8 +269,8 @@
 	* rtl.h (const_tiny_rtx): Change into array of 4 x MAX_MACHINE_MODE
 	from 3 x MAX_MACHINE_MODE.
 	(CONSTM1_RTX): Define.
-	* emit-rtl.c (const_tiny_rtx): Change into array of 4 x MAX_MACHINE_MODE
-        from 3 x MAX_MACHINE_MODE.
+	* emit-rtl.c (const_tiny_rtx): Change into array of
+	4 x MAX_MACHINE_MODE from 3 x MAX_MACHINE_MODE.
 	(gen_rtx_CONST_VECTOR): Use CONSTM1_RTX if all inner constants are
 	CONSTM1_RTX.
 	(init_emit_once): Initialize CONSTM1_RTX for MODE_INT and
@@ -466,8 +464,7 @@
 	(REG_CLASS_CONTENTS): Add GSR to ALL_REGS.
 	(REG_ALLOC_ORDER, REG_LEAF_ALLOC_ORDER): Add GSR to the end.
 	(REGISTER_NAMES): Add "%gsr".
-	* config/sparc/sparc.md (UNSPEC_ALIGNADDR, UNSPEC_ALIGNADDRL):
-	Delete.
+	* config/sparc/sparc.md (UNSPEC_ALIGNADDR, UNSPEC_ALIGNADDRL): Delete.
 	(UNSPEC_WRGSR): New unspec.
 	(GSR_REG): New constant.
 	(type): Add new insn type 'gsr'.
@@ -509,8 +506,8 @@
 	(evaluate_conditions_for_edge): Handle change probabilities.
 	(inline_edge_duplication_hook): Copy param summaries.
 	(inline_edge_removal_hook): Free param summaries.
-	(dump_inline_edge_summary): Fix dumping of indirect edges and callee sizes;
-	dump param summaries.
+	(dump_inline_edge_summary): Fix dumping of indirect edges and callee
+	sizes; dump param summaries.
 	(will_be_nonconstant_predicate): Use CHANGED predicate.
 	(record_modified_bb_info): New structure.
 	(record_modified): New function.
@@ -523,8 +520,8 @@
 	(remap_edge_change_prob): New function.
 	(remap_edge_summaries): Rename from ...; use remap_edge_change_prob.
 	(remap_edge_predicates): ... this one.
-	(inline_merge_summary): Remap edge summaries; handle predicate probabilities;
-	remove param summaries after we are done.
+	(inline_merge_summary): Remap edge summaries; handle predicate
+	probabilities; remove param summaries after we are done.
 	(do_estimate_edge_time): Update.
 	(do_estimate_edge_growth): Update.
 	(read_inline_edge_summary): Read param info.
@@ -538,7 +535,7 @@
 	* config/i386/sse.md (i128): New mode_attr.
 	(vec_extract_hi_<mode>, vec_extract_hi_<mode>,
 	avx_vbroadcastf128_<mode>, *avx_vperm2f128<mode>_full,
-	*avx_vperm2f128<mode>_nozero, vec_set_lo_<mode>, 
+	*avx_vperm2f128<mode>_nozero, vec_set_lo_<mode>,
 	vec_set_hi_<mode>, *vec_concat<mode>_avx): Use <i128> in the
 	patterns, use "<sseinsnmode>" for "mode" attribute.
 	(vec_extract_hi_v16hi, vec_extract_hi_v32qi, vec_set_lo_v16hi,
@@ -621,8 +618,7 @@
 
 2011-09-23  Bin Cheng  <bin.cheng@arm.com>
 
-	* config/arm/bpabi.h (BE8_LINK_SPEC): Add cortex-m arch 
-	and processors.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add cortex-m arch and processors.
 
 2011-09-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
