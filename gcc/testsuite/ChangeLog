@@ -1,3 +1,7 @@
+2011-09-29  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/array.c: New test.
+
 2011-09-29  Jiangning Liu  <jiangning.liu@arm.com>
 
 	* gcc/testsuite/gcc.dg/tree-ssa/predcom-1.c: Explicitly turn on

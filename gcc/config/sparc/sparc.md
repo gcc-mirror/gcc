@@ -66,6 +66,9 @@
    (UNSPEC_EDGE16L		54)
    (UNSPEC_EDGE32		55)
    (UNSPEC_EDGE32L		56)
+   (UNSPEC_ARRAY8		57)
+   (UNSPEC_ARRAY16		58)
+   (UNSPEC_ARRAY32		59)
 
    (UNSPEC_SP_SET		60)
    (UNSPEC_SP_TEST		61)
@@ -237,7 +240,7 @@
    fpcmp,
    fpmul,fpdivs,fpdivd,
    fpsqrts,fpsqrtd,
-   fga,fgm_pack,fgm_mul,fgm_pdist,fgm_cmp,edge,gsr,
+   fga,fgm_pack,fgm_mul,fgm_pdist,fgm_cmp,edge,gsr,array,
    cmove,
    ialuX,
    multi,savew,flushw,iflush,trap"
@@ -8158,5 +8161,32 @@
   "fcmp<gcond_name><gcm_name>\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
+
+(define_insn "array8<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+                   (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_ARRAY8))]
+  "TARGET_VIS"
+  "array8\t%r1, %r2, %0"
+  [(set_attr "type" "array")])
+
+(define_insn "array16<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+                   (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_ARRAY16))]
+  "TARGET_VIS"
+  "array16\t%r1, %r2, %0"
+  [(set_attr "type" "array")])
+
+(define_insn "array32<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+                   (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_ARRAY32))]
+  "TARGET_VIS"
+  "array32\t%r1, %r2, %0"
+  [(set_attr "type" "array")])
 
 (include "sync.md")

@@ -12987,6 +12987,10 @@ v4hi __builtin_vis_fpsub16 (v4hi, v4hi);
 v2hi __builtin_vis_fpsub16s (v2hi, v2hi);
 v2si __builtin_vis_fpsub32 (v2si, v2si);
 v1si __builtin_vis_fpsub32s (v1si, v1si);
+
+long __builtin_vis_array8 (long, long);
+long __builtin_vis_array16 (long, long);
+long __builtin_vis_array32 (long, long);
 @end smallexample
 
 @node SPU Built-in Functions

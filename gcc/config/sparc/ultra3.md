@@ -54,6 +54,11 @@
     (eq_attr "type" "cmove"))
   "us3_ms + us3_br + us3_slotany, nothing")
 
+(define_insn_reservation "us3_array" 2
+  (and (eq_attr "cpu" "ultrasparc3")
+    (eq_attr "type" "array"))
+  "us3_ms + us3_slotany, nothing")
+
 ;; ??? Not entirely accurate.
 ;; ??? It can run from 6 to 9 cycles.  The first cycle the MS pipe
 ;; ??? is needed, and the instruction group is broken right after

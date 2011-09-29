@@ -9195,6 +9195,9 @@ sparc_vis_init_builtins (void)
   tree di_ftype_di_di = build_function_type_list (intDI_type_node,
 						  intDI_type_node,
 						  intDI_type_node, 0);
+  tree si_ftype_si_si = build_function_type_list (intSI_type_node,
+						  intSI_type_node,
+						  intSI_type_node, 0);
   tree ptr_ftype_ptr_si = build_function_type_list (ptr_type_node,
 		        			    ptr_type_node,
 					            intSI_type_node, 0);
@@ -9371,6 +9374,26 @@ sparc_vis_init_builtins (void)
 		     v2si_ftype_v2si_v2si);
   def_builtin_const ("__builtin_vis_fpsub32s", CODE_FOR_subsi3,
 		     v1si_ftype_v1si_v1si);
+
+  /* Three-dimensional array addressing.  */
+  if (TARGET_ARCH64)
+    {
+      def_builtin_const ("__builtin_vis_array8", CODE_FOR_array8di_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_array16", CODE_FOR_array16di_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_array32", CODE_FOR_array32di_vis,
+			 di_ftype_di_di);
+    }
+  else
+    {
+      def_builtin_const ("__builtin_vis_array8", CODE_FOR_array8si_vis,
+			 si_ftype_si_si);
+      def_builtin_const ("__builtin_vis_array16", CODE_FOR_array16si_vis,
+			 si_ftype_si_si);
+      def_builtin_const ("__builtin_vis_array32", CODE_FOR_array32si_vis,
+			 si_ftype_si_si);
+  }
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.

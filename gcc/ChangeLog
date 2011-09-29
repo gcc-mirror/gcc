@@ -1,3 +1,19 @@
+2011-09-29  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (UNSPEC_ARRAY8, UNSPEC_ARRAY16,
+	UNSPEC_ARRAY32): New unspec.
+	(define_attr type): New type 'array'.
+	(array{8,16,32}<P:mode>_vis): New patterns.
+	* config/sparc/ultra1_2.md: Add reservations for 'array'.
+	* config/sparc/ultra3.md: Likewise.
+	* config/sparc/niagara.md: Likewise.
+	* config/sparc/niagara2.md: Likewise.
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Build new
+	array builtins.
+	* config/sparc/visintrin.h (__vis_array8, __vis_array16,
+	__vis_array32): New.
+	* doc/extend.texi: Document new VIS builtins.
+
 2011-09-29  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin9.h (STACK_CHECK_STATIC_BUILTIN): Enable for
