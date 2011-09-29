@@ -1,3 +1,10 @@
+2011-09-27   Andi Kleen <ak@linux.intel.com>
+
+	* gcc.c (get_local_tick). Rename to get_random_number.
+        Read from /dev/urandom.
+	Add getpid call.
+	(compare_debug_dump_opt_spec_function): Drop getpid call.
+
 2011-09-26   Andi Kleen <ak@linux.intel.com>
 
 	* toplev.c (init_local_tick): Try reading random seed from /dev/urandom
