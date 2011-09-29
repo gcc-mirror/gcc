@@ -8062,12 +8062,22 @@ print_asm_header_spec_function (int arg ATTRIBUTE_UNUSED,
   return NULL;
 }
 
-/* Compute a timestamp to initialize flag_random_seed.  */
+/* Get a random number for -frandom-seed */
 
-static unsigned
-get_local_tick (void)
+static unsigned HOST_WIDE_INT
+get_random_number (void)
 {
-  unsigned ret = 0;
+  unsigned HOST_WIDE_INT ret = 0;
+  int fd; 
+
+  fd = open ("/dev/urandom", O_RDONLY); 
+  if (fd >= 0)
+    {
+      read (fd, &ret, sizeof (HOST_WIDE_INT));
+      close (fd);
+      if (ret)
+        return ret;
+    }
 
   /* Get some more or less random data.  */
 #ifdef HAVE_GETTIMEOFDAY
@@ -8086,7 +8096,7 @@ get_local_tick (void)
   }
 #endif
 
-  return ret;
+  return ret ^ getpid();
 }
 
 /* %:compare-debug-dump-opt spec function.  Save the last argument,
@@ -8145,7 +8155,7 @@ compare_debug_dump_opt_spec_function (int arg,
 
   if (!which)
     {
-      unsigned HOST_WIDE_INT value = get_local_tick () ^ getpid ();
+      unsigned HOST_WIDE_INT value = get_random_number ();
 
       sprintf (random_seed, HOST_WIDE_INT_PRINT_HEX, value);
     }
