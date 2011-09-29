@@ -1,3 +1,11 @@
+2011-09-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50547
+	* gfortran.dg/pure_formal_proc_3.f90: New.
+
+	PR fortran/50553
+	* gfortran.dg/stfunc_7.f90: New.
+
 2011-09-29  Artjoms Sinkarovs <artyom.shinkaroff@gmail.com>
 
 	* gcc.c-torture/execute/vector-compare-1.c: New testcase.
