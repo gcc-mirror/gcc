@@ -8148,17 +8148,16 @@
   [(set_attr "type" "edge")])
 
 (define_code_iterator gcond [le ne gt eq])
-(define_code_attr gcond_name [(le "le") (ne "ne") (gt "gt") (eq "eq")])
 (define_mode_iterator GCM [V4HI V2SI])
 (define_mode_attr gcm_name [(V4HI "16") (V2SI "32")])
 
-(define_insn "fcmp<gcond_name><gcm_name><P:mode>_vis"
+(define_insn "fcmp<gcond:code><gcm_name><P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
   	(unspec:P [(gcond:GCM (match_operand:GCM 1 "register_operand" "e")
 		              (match_operand:GCM 2 "register_operand" "e"))]
 	 UNSPEC_FCMP))]
   "TARGET_VIS"
-  "fcmp<gcond_name><gcm_name>\t%1, %2, %0"
+  "fcmp<gcond:code><gcm_name>\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
