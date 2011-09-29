@@ -552,7 +552,7 @@ struct GTY(()) lto_file_decl_data
   struct lto_file_decl_data *next;
 
   /* Sub ID for merged objects. */
-  unsigned id;
+  unsigned HOST_WIDE_INT id;
 
   /* Symbol resolutions for this file */
   VEC(ld_plugin_symbol_resolution_t,heap) * GTY((skip)) resolutions;

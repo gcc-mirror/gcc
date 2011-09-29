@@ -263,7 +263,8 @@ finish_repo (void)
 	 anonymous namespaces will get the same mangling when this
 	 file is recompiled.  */
       if (!strstr (args, "'-frandom-seed="))
-	fprintf (repo_file, " '-frandom-seed=%s'", get_random_seed (false));
+	fprintf (repo_file, " '-frandom-seed=" HOST_WIDE_INT_PRINT_HEX_PURE "'", 
+		 get_random_seed (false));
       fprintf (repo_file, "\n");
     }
 
