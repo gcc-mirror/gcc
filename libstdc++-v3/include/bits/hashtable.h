@@ -213,10 +213,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Hashtable(const _Hashtable&);
 
-      _Hashtable(_Hashtable&&)
-      noexcept(__and_<is_nothrow_copy_constructible<_Equal>,
-	              is_nothrow_copy_constructible<_H1>>::value);
- 
+      _Hashtable(_Hashtable&&);
+
       _Hashtable&
       operator=(const _Hashtable& __ht)
       {
