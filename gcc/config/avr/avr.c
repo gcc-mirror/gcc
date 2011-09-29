@@ -1193,27 +1193,7 @@ avr_cannot_modify_jumps_p (void)
 bool
 avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
-  enum reg_class r = NO_REGS;
-  
-  if (TARGET_ALL_DEBUG)
-    {
-      fprintf (stderr, "mode: (%s) %s %s %s %s:",
-	       GET_MODE_NAME(mode),
-	       strict ? "(strict)": "",
-	       reload_completed ? "(reload_completed)": "",
-	       reload_in_progress ? "(reload_in_progress)": "",
-	       reg_renumber ? "(reg_renumber)" : "");
-      if (GET_CODE (x) == PLUS
-	  && REG_P (XEXP (x, 0))
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) >= 0
-	  && INTVAL (XEXP (x, 1)) <= MAX_LD_OFFSET (mode)
-	  && reg_renumber
-	  )
-	fprintf (stderr, "(r%d ---> r%d)", REGNO (XEXP (x, 0)),
-		 true_regnum (XEXP (x, 0)));
-      debug_rtx (x);
-    }
+  reg_class_t r = NO_REGS;
   
   if (REG_P (x) && (strict ? REG_OK_FOR_BASE_STRICT_P (x)
                     : REG_OK_FOR_BASE_NOSTRICT_P (x)))
@@ -1247,10 +1227,27 @@ avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
     {
       r = POINTER_REGS;
     }
-  if (TARGET_ALL_DEBUG)
+
+  if (avr_log.legitimate_address_p)
     {
-      fprintf (stderr, "   ret = %c\n", r + '0');
+      avr_edump ("\n%?: ret=%d=%R, mode=%m strict=%d "
+                 "reload_completed=%d reload_in_progress=%d %s:",
+                 !!r, r, mode, strict, reload_completed, reload_in_progress,
+                 reg_renumber ? "(reg_renumber)" : "");
+      
+      if (GET_CODE (x) == PLUS
+          && REG_P (XEXP (x, 0))
+          && CONST_INT_P (XEXP (x, 1))
+          && IN_RANGE (INTVAL (XEXP (x, 1)), 0, MAX_LD_OFFSET (mode))
+          && reg_renumber)
+        {
+          avr_edump ("(r%d ---> r%d)", REGNO (XEXP (x, 0)),
+                     true_regnum (XEXP (x, 0)));
+        }
+      
+      avr_edump ("\n%r\n", x);
     }
+  
   return r == NO_REGS ? 0 : (int)r;
 }
 
@@ -1260,30 +1257,35 @@ avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 rtx
 avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 {
+  bool big_offset_p = false;
+  
   x = oldx;
-  if (TARGET_ALL_DEBUG)
-    {
-      fprintf (stderr, "legitimize_address mode: %s", GET_MODE_NAME(mode));
-      debug_rtx (oldx);
-    }
   
   if (GET_CODE (oldx) == PLUS
-      && REG_P (XEXP (oldx,0)))
+      && REG_P (XEXP (oldx, 0)))
     {
-      if (REG_P (XEXP (oldx,1)))
-	x = force_reg (GET_MODE (oldx), oldx);
-      else if (GET_CODE (XEXP (oldx, 1)) == CONST_INT)
-	{
-	  int offs = INTVAL (XEXP (oldx,1));
-	  if (frame_pointer_rtx != XEXP (oldx,0))
-	    if (offs > MAX_LD_OFFSET (mode))
-	      {
-		if (TARGET_ALL_DEBUG)
-		  fprintf (stderr, "force_reg (big offset)\n");
-		x = force_reg (GET_MODE (oldx), oldx);
-	      }
-	}
+      if (REG_P (XEXP (oldx, 1)))
+        x = force_reg (GET_MODE (oldx), oldx);
+      else if (CONST_INT_P (XEXP (oldx, 1)))
+        {
+	  int offs = INTVAL (XEXP (oldx, 1));
+          if (frame_pointer_rtx != XEXP (oldx, 0)
+              && offs > MAX_LD_OFFSET (mode))
+            {
+              big_offset_p = true;
+              x = force_reg (GET_MODE (oldx), oldx);
+            }
+        }
     }
+  
+  if (avr_log.legitimize_address)
+    {
+      avr_edump ("\n%?: mode=%m\n %r\n", mode, oldx);
+
+      if (x != oldx)
+        avr_edump (" %s --> %r\n", big_offset_p ? "(big offset)" : "", x);
+    }
+
   return x;
 }
 
@@ -1711,7 +1713,7 @@ void
 final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
                     int num_operands ATTRIBUTE_UNUSED)
 {
-  if (TARGET_ALL_DEBUG)
+  if (avr_log.rtx_costs)
     {
       rtx set = single_set (insn);
 
@@ -5825,14 +5827,15 @@ avr_operand_rtx_cost (rtx x, enum machine_mode mode, enum rtx_code outer,
   return total;
 }
 
-/* The AVR backend's rtx_cost function.  X is rtx expression whose cost
-   is to be calculated.  Return true if the complete cost has been
-   computed, and false if subexpressions should be scanned.  In either
-   case, *TOTAL contains the cost result.  */
+/* Worker function for AVR backend's rtx_cost function.
+   X is rtx expression whose cost is to be calculated.
+   Return true if the complete cost has been computed.
+   Return false if subexpressions should be scanned.
+   In either case, *TOTAL contains the cost result.  */
 
 static bool
-avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
-	       int opno ATTRIBUTE_UNUSED, int *total, bool speed)
+avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
+                 int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
   enum rtx_code code = (enum rtx_code) codearg;
   enum machine_mode mode = GET_MODE (x);
@@ -6551,6 +6554,25 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
   return false;
 }
 
+
+/* Implement `TARGET_RTX_COSTS'.  */
+
+static bool
+avr_rtx_costs (rtx x, int codearg, int outer_code,
+	       int opno, int *total, bool speed)
+{
+  bool done = avr_rtx_costs_1 (x, codearg, outer_code,
+                               opno, total, speed);
+
+  if (avr_log.rtx_costs)
+    {
+      avr_edump ("\n%?=%b (%s) total=%d, outer=%C:\n%r\n",
+                 done, speed ? "speed" : "size", *total, outer_code, x);
+    }
+
+  return done;
+}
+
 /* Calculate the cost of a memory address.  */
 
 static int
@@ -6576,6 +6598,8 @@ avr_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 int
 extra_constraint_Q (rtx x)
 {
+  int ok = 0;
+  
   if (GET_CODE (XEXP (x,0)) == PLUS
       && REG_P (XEXP (XEXP (x,0), 0))
       && GET_CODE (XEXP (XEXP (x,0), 1)) == CONST_INT
@@ -6584,23 +6608,21 @@ extra_constraint_Q (rtx x)
     {
       rtx xx = XEXP (XEXP (x,0), 0);
       int regno = REGNO (xx);
-      if (TARGET_ALL_DEBUG)
-	{
-	  fprintf (stderr, ("extra_constraint:\n"
-			    "reload_completed: %d\n"
-			    "reload_in_progress: %d\n"),
-		   reload_completed, reload_in_progress);
-	  debug_rtx (x);
-	}
-      if (regno >= FIRST_PSEUDO_REGISTER)
-	return 1;		/* allocate pseudos */
-      else if (regno == REG_Z || regno == REG_Y)
-	return 1;		/* strictly check */
-      else if (xx == frame_pointer_rtx
-	       || xx == arg_pointer_rtx)
-	return 1;		/* XXX frame & arg pointer checks */
+      
+      ok = (/* allocate pseudos */
+            regno >= FIRST_PSEUDO_REGISTER
+            /* strictly check */
+            || regno == REG_Z || regno == REG_Y
+            /* XXX frame & arg pointer checks */
+            || xx == frame_pointer_rtx
+            || xx == arg_pointer_rtx);
+      
+      if (avr_log.constraints)
+        avr_edump ("\n%?=%d reload_completed=%d reload_in_progress=%d\n %r\n",
+                   ok, reload_completed, reload_in_progress, x);
     }
-  return 0;
+
+  return ok;
 }
 
 /* Convert condition code CONDITION to the valid AVR condition code.  */

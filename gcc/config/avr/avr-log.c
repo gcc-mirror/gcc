@@ -42,6 +42,7 @@
 
   == known %-codes ==
   
+  b: bool  
   r: rtx
   t: tree
   T: tree (brief)
@@ -132,7 +133,7 @@ avr_log_set_caller_f (const char *caller)
   return avr_log_fdump_f;
 }
 
-/* Worker function implementing the %-codes and forwarning to
+/* Worker function implementing the %-codes and forwarding to
    respective print/dump function.  */
 
 static void
@@ -188,6 +189,10 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
               
             case 'x':
               fprintf (file, "%x", va_arg (ap, int));
+              break;
+                        
+            case 'b':
+              fprintf (file, "%s", va_arg (ap, int) ? "true" : "false");
               break;
                         
             case 'c':
