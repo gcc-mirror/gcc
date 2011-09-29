@@ -262,7 +262,17 @@ init_local_tick (void)
 {
   if (!flag_random_seed)
     {
-      /* Get some more or less random data.  */
+      /* Try urandom first. Time of day is too likely to collide. 
+	 In case of any error we just use the local tick. */
+
+      int fd = open ("/dev/urandom", O_RDONLY);
+      if (fd >= 0)
+        {
+          read (fd, &random_seed, sizeof (random_seed));
+          close (fd);
+        }
+
+      /* Now get the tick anyways  */
 #ifdef HAVE_GETTIMEOFDAY
       {
 	struct timeval tv;
