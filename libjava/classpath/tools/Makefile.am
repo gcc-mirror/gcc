@@ -371,6 +371,7 @@ endif
 ## BEGIN GCJ LOCAL
 	cp -pR $(srcdir)/asm .
 	cp -pR $(srcdir)/classes .
+	find asm classes -type d -exec chmod u+w \{\} \;
 	if [ -d asm/.svn ]; then \
 	  find asm classes -depth -type d -name .svn -exec rm -rf \{\} \;; \
 	fi
