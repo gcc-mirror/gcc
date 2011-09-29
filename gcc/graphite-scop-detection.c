@@ -36,6 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-poly.h"
 #include "graphite-scop-detection.h"
 
+/* Forward declarations.  */
+static void make_close_phi_nodes_unique (basic_block);
+
 /* The type of the analyzed basic block.  */
 
 typedef enum gbb_type {
@@ -1231,6 +1234,13 @@ remove_duplicate_close_phi (gimple phi, gimple_stmt_iterator *gsi)
 	SET_USE (use_p, res);
 
       update_stmt (use_stmt);
+      
+      /* It is possible that we just created a duplicate close-phi
+	 for an already-processed containing loop.  Check for this
+	 case and clean it up.  */
+      if (gimple_code (use_stmt) == GIMPLE_PHI
+	  && gimple_phi_num_args (use_stmt) == 1)
+	make_close_phi_nodes_unique (gimple_bb (use_stmt));
     }
 
   remove_phi_node (gsi, true);
