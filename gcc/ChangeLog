@@ -1,3 +1,9 @@
+2011-09-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (build_opaque_vector_type): Make opaque vectors
+	variant types of the corresponding non-opaque type.  Make
+	sure to share opaque vector types properly.
+
 2011-09-29  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (UNSPEC_ARRAY8, UNSPEC_ARRAY16,
