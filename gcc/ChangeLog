@@ -1,3 +1,16 @@
+2011-09-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50566
+	* config/avr/avr-log.c (avr_log_vadump): Use %b to print bool.
+	* config/avr/avr.c (avr_rtx_costs_1): New static function, renamed
+	from avr_rtx_costs.
+	(avr_legitimate_address_p): Use avr_edump to print log information
+	filtered by avr_log.
+	(extra_constraint_Q): Ditto.
+	(avr_legitimize_address): Ditto.
+	(avr_rtx_costs): Ditto.  Rewrite as wrapper for avr_rtx_costs_1.
+	(final_prescan_insn): Use avr_log.rtx_costs as filter.
+
 2011-09-29  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/arm-protos.h (arm_modes_tieable_p): Declare.
