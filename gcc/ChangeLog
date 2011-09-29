@@ -1,3 +1,14 @@
+2011-09-28  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (UNSPEC_FCMPLE, UNSPEC_FCMPNE,
+	UNSPEC_FCMPGT, UNSPEC_FCMPEQ): Delete and reduce to...
+	(UNSPEC_FCMP): New unspec.
+	(gcond): New code iterator.
+	(gcond_name): New code attr.
+	(GCM): New mode iterator.
+	(gcm_name): New mode attr.
+	(fcmp{le,ne,gt,eq}{16,32}_vis): Reimplement using iterators.
+
 2011-09-28  Oleg Endo  <oleg.endo@t-online.de>
 
 	PR target/49486
