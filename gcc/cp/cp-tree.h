@@ -2989,10 +2989,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TYPENAME_IS_RESOLVING_P(NODE) \
   (TREE_LANG_FLAG_2 (TYPENAME_TYPE_CHECK (NODE)))
 
-/* Nonzero in INTEGER_CST means that this int is negative by dint of
-   using a twos-complement negated operand.  */
-#define TREE_NEGATED_INT(NODE) TREE_LANG_FLAG_0 (INTEGER_CST_CHECK (NODE))
-
 /* [class.virtual]
 
    A class that declares or inherits a virtual function is called a
