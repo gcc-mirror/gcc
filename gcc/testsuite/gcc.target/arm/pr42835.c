@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mthumb -Os" }  */
+/* { dg-options "-mthumb -Os -fno-tree-tail-merge" }  */
 /* { dg-require-effective-target arm_thumb2_ok } */
 
 int foo(int *p, int i)
