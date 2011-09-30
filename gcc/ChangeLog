@@ -1,3 +1,13 @@
+2011-09-30  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call): Handle
+	BUILT_IN_STRDUP and BUILT_IN_STRNDUP.
+	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Likewise.  Fix
+	handling of BUILT_IN_STRNCAT and BUILT_IN_STRNCAT_CHK.
+	(ref_maybe_used_by_call_p_1): Fix handling of BUILT_IN_STRCAT,
+	BUILT_IN_STRNCAT, BUILT_IN_STRCAT_CHK and BUILT_IN_STRNCAT_CHK.
+
 2011-09-30  Jan Beulich  <jbeulich@suse.com>
 
 	* lto-cgraph.c (output_cgraph): Remove processing of
