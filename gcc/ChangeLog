@@ -1,3 +1,34 @@
+2011-09-30  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.opt (VIS2): New option.
+	* doc/invoke.texi: Document it.
+	* config/sparc/sparc.md (UNSPEC_EDGE8N, UNSPEC_EDGE8LN,
+	UNSPEC_EDGE16N, UNSPEC_EDGE16LN, UNSPEC_EDGE32N,
+	UNSPEC_EDGE32LN, UNSPEC_BSHUFFLE): New unspecs.
+	(define_attr type): New insn type 'edgen'.
+	(bmask<P:mode>_vis, bshuffle<V64I:mode>_vis, edge8n<P:mode>_vis,
+	edge8ln<P:mode>_vis, edge16n<P:mode>_vis, edge16ln<P:mode>_vis,
+	edge32n<P:mode>_vis, edge32ln<P:mode>_vis): New insn VIS 2.0
+	patterns.
+	* niagara.md: Handle edgen.
+	* niagara2.md: Likewise.
+	* ultra1_2.md: Likewise.
+	* ultra3.md: Likewise.
+	* config/sparc/sparc-c.c (sparc_target_macros): Define __VIS__
+	to 0x200 when TARGET_VIS2.
+	* config/sparc/sparc.c (sparc_option_override): Set MASK_VIS2 by
+	default when targetting capable cpus.  TARGET_VIS2 implies
+	TARGET_VIS, clear and it when TARGET_FPU is disabled.
+	(sparc_vis_init_builtins): Emit new VIS 2.0 builtins.
+	(sparc_expand_builtin): Fix predicate indexing when builtin returns
+	void.
+	(sparc_fold_builtin): Do not eliminate bmask when result is ignored.
+	* config/sparc/visintrin.h (__vis_bmask, __vis_bshuffledi,
+	__vis_bshufflev2si, __vis_bshufflev4hi, __vis_bshufflev8qi,
+	__vis_edge8n, __vis_edge8ln, __vis_edge16n, __vis_edge16ln,
+	__vis_edge32n, __vis_edge32ln): New VIS 2.0 interfaces.
+	* doc/extend.texi: Document new VIS 2.0 builtins.
+
 2011-09-29  Nick Clifton  <nickc@redhat.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 

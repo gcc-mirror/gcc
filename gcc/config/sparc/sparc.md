@@ -72,6 +72,14 @@
 
    (UNSPEC_SP_SET		60)
    (UNSPEC_SP_TEST		61)
+
+   (UNSPEC_EDGE8N		70)
+   (UNSPEC_EDGE8LN		71)
+   (UNSPEC_EDGE16N		72)
+   (UNSPEC_EDGE16LN		73)
+   (UNSPEC_EDGE32N		74)
+   (UNSPEC_EDGE32LN		75)
+   (UNSPEC_BSHUFFLE		76)
   ])
 
 (define_constants
@@ -240,7 +248,7 @@
    fpcmp,
    fpmul,fpdivs,fpdivd,
    fpsqrts,fpsqrtd,
-   fga,fgm_pack,fgm_mul,fgm_pdist,fgm_cmp,edge,gsr,array,
+   fga,fgm_pack,fgm_mul,fgm_pdist,fgm_cmp,edge,edgen,gsr,array,
    cmove,
    ialuX,
    multi,savew,flushw,iflush,trap"
@@ -8187,5 +8195,80 @@
   "TARGET_VIS"
   "array32\t%r1, %r2, %0"
   [(set_attr "type" "array")])
+
+(define_insn "bmask<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (plus:P (match_operand:P 1 "register_operand" "rJ")
+                (match_operand:P 2 "register_operand" "rJ")))
+   (clobber (reg:SI GSR_REG))]
+  "TARGET_VIS2"
+  "bmask\t%r1, %r2, %0"
+  [(set_attr "type" "array")])
+
+(define_insn "bshuffle<V64I:mode>_vis"
+  [(set (match_operand:V64I 0 "register_operand" "=e")
+        (unspec:V64I [(match_operand:V64I 1 "register_operand" "e")
+	              (match_operand:V64I 2 "register_operand" "e")]
+                     UNSPEC_BSHUFFLE))
+   (use (reg:SI GSR_REG))]
+  "TARGET_VIS2"
+  "bshuffle\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+;; VIS 2.0 adds edge variants which do not set the condition codes
+(define_insn "edge8n<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+	           (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_EDGE8N))]
+  "TARGET_VIS2"
+  "edge8n\t%r1, %r2, %0"
+  [(set_attr "type" "edgen")])
+
+(define_insn "edge8ln<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+	           (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_EDGE8LN))]
+  "TARGET_VIS2"
+  "edge8ln\t%r1, %r2, %0"
+  [(set_attr "type" "edgen")])
+
+(define_insn "edge16n<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+                   (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_EDGE16N))]
+  "TARGET_VIS2"
+  "edge16n\t%r1, %r2, %0"
+  [(set_attr "type" "edgen")])
+
+(define_insn "edge16ln<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+                   (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_EDGE16LN))]
+  "TARGET_VIS2"
+  "edge16ln\t%r1, %r2, %0"
+  [(set_attr "type" "edgen")])
+
+(define_insn "edge32n<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+                   (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_EDGE32N))]
+  "TARGET_VIS2"
+  "edge32n\t%r1, %r2, %0"
+  [(set_attr "type" "edgen")])
+
+(define_insn "edge32ln<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
+                   (match_operand:P 2 "register_operand" "rJ")]
+                  UNSPEC_EDGE32LN))]
+  "TARGET_VIS2"
+  "edge32ln\t%r1, %r2, %0"
+  [(set_attr "type" "edge")])
 
 (include "sync.md")

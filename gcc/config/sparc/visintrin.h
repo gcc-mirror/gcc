@@ -354,4 +354,81 @@ __vis_array32 (long __A, long __B)
   return __builtin_vis_array32 (__A, __B);
 }
 
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_bmask (long __A, long __B)
+{
+  return __builtin_vis_bmask (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_bshuffledi (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_bshuffledi (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_bshufflev2si (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_bshufflev2si (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_bshufflev4hi (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_bshufflev4hi (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_bshufflev8qi (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_bshufflev8qi (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge8n (void *__A, void *__B)
+{
+  return __builtin_vis_edge8n (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge8ln (void *__A, void *__B)
+{
+  return __builtin_vis_edge8ln (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge16n (void *__A, void *__B)
+{
+  return __builtin_vis_edge16n (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge16ln (void *__A, void *__B)
+{
+  return __builtin_vis_edge16ln (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge32n (void *__A, void *__B)
+{
+  return __builtin_vis_edge32n (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_edge32ln (void *__A, void *__B)
+{
+  return __builtin_vis_edge32ln (__A, __B);
+}
+
 #endif  /* _VISINTRIN_H_INCLUDED */

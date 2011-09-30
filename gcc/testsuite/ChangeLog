@@ -1,3 +1,8 @@
+2011-09-30  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/bmaskbshuf.c: New test.
+	* gcc.target/sparc/edgen.c: New test.
+
 2011-09-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50547
