@@ -142,7 +142,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LTO_SECTION_NAME_PREFIX         ".gnu.lto_"
 
 #define LTO_major_version 2
-#define LTO_minor_version 0
+#define LTO_minor_version 1
 
 typedef unsigned char	lto_decl_flags_t;
 
@@ -238,6 +238,7 @@ enum lto_section_type
   LTO_section_cgraph,
   LTO_section_varpool,
   LTO_section_refs,
+  LTO_section_asm,
   LTO_section_jump_functions,
   LTO_section_ipa_pure_const,
   LTO_section_ipa_reference,
@@ -378,6 +379,23 @@ struct lto_decl_header
 
   /* Number of nodes in globals stream.  */
   int32_t num_nodes;
+
+  /* Size of region for expressions, decls, types, etc. */
+  int32_t main_size;
+
+  /* Size of the string table.  */
+  int32_t string_size;
+};
+
+
+/* Structure describing top level asm()s.  */
+struct lto_asm_header
+{
+  /* The header for all types of sections. */
+  struct lto_header lto_header;
+
+  /* Size compressed or 0 if not compressed.  */
+  int32_t compressed_size;
 
   /* Size of region for expressions, decls, types, etc. */
   int32_t main_size;
@@ -789,6 +807,7 @@ extern void lto_input_function_body (struct lto_file_decl_data *, tree,
 				     const char *);
 extern void lto_input_constructors_and_inits (struct lto_file_decl_data *,
 					      const char *);
+extern void lto_input_toplevel_asms (struct lto_file_decl_data *);
 extern struct data_in *lto_data_in_create (struct lto_file_decl_data *,
 				    const char *, unsigned,
 				    VEC(ld_plugin_symbol_resolution_t,heap) *);
@@ -807,6 +826,7 @@ extern void lto_register_decl_definition (tree, struct lto_file_decl_data *);
 extern struct output_block *create_output_block (enum lto_section_type);
 extern void destroy_output_block (struct output_block *);
 extern void lto_output_tree (struct output_block *, tree, bool);
+extern void lto_output_toplevel_asms (void);
 extern void produce_asm (struct output_block *ob, tree fn);
 void lto_output_decl_state_streams (struct output_block *,
 				    struct lto_out_decl_state *);

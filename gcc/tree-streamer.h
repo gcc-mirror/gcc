@@ -75,6 +75,8 @@ tree streamer_read_integer_cst (struct lto_input_block *, struct data_in *);
 struct bitpack_d streamer_read_tree_bitfields (struct lto_input_block *, tree);
 
 /* In tree-streamer-out.c.  */
+void streamer_write_string_cst (struct output_block *,
+				struct lto_output_stream *, tree);
 void streamer_write_chain (struct output_block *, tree, bool);
 void streamer_write_tree_header (struct output_block *, tree);
 void streamer_pack_tree_bitfields (struct bitpack_d *, tree);
