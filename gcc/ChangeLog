@@ -1,5 +1,10 @@
 2011-09-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/50571
+	* gimple-fold.c (fold_stmt_1) <case GIMPLE_ASM>: If
+	input constraints allow mem and not reg, pass true instead of
+	false as second argument to maybe_fold_reference.
+
 	PR tree-optimization/46309
 	* fold-const.c (make_range, merge_ranges): Remove prototypes.
 	(make_range_step): New function.
