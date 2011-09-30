@@ -1,3 +1,13 @@
+2011-09-30  H.J. Lu  <hongjiu.lu@intel.com>
+	    Andi Kleen  <ak@linux.intel.com>
+
+	PR lto/50568
+	* lto-plugin.c (sym_aux): Change id to unsigned long long.
+	(plugin_symtab): Likewise.
+	(dump_symtab): Likewise.
+	(resolve_conflicts): Likewise.
+	(process_symtab): Likewise.
+
 2011-08-10  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/49907

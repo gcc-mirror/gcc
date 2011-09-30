@@ -80,12 +80,13 @@ along with this program; see the file COPYING3.  If not see
 
 /* The part of the symbol table the plugin has to keep track of. Note that we
    must keep SYMS until all_symbols_read is called to give the linker time to
-   copy the symbol information. */
+   copy the symbol information. 
+   The id must be 64bit to minimze collisions. */
 
 struct sym_aux
 {
   uint32_t slot;
-  unsigned id;
+  unsigned long long id;
   unsigned next_conflict;
 };
 
@@ -94,7 +95,7 @@ struct plugin_symtab
   int nsyms;
   struct sym_aux *aux;
   struct ld_plugin_symbol *syms;
-  unsigned id;
+  unsigned long long id;
 };
 
 /* Encapsulates object file data during symbol scan.  */
@@ -359,7 +360,8 @@ dump_symtab (FILE *f, struct plugin_symtab *symtab)
       
       assert (resolution != LDPR_UNKNOWN);
 
-      fprintf (f, "%u %x %s %s\n", (unsigned int) slot, symtab->aux[j].id,
+      fprintf (f, "%u %llx %s %s\n",
+               (unsigned int) slot, symtab->aux[j].id,
 	       lto_resolution_str[resolution], 
 	       symtab->syms[j].name);
     }
@@ -759,7 +761,7 @@ resolve_conflicts (struct plugin_symtab *t, struct plugin_symtab *conflicts)
 	    {
 	      SWAP (struct ld_plugin_symbol, *orig, *s);
 	      SWAP (uint32_t, orig_aux->slot, aux->slot);
-	      SWAP (unsigned, orig_aux->id, aux->id);
+	      SWAP (unsigned long long, orig_aux->id, aux->id);
 	      /* Don't swap conflict chain pointer */
 	    } 
 
@@ -809,7 +811,7 @@ process_symtab (void *data, const char *name, off_t offset, off_t length)
 
   s = strrchr (name, '.');
   if (s)
-    sscanf (s, ".%x", &obj->out->id);
+    sscanf (s, ".%llx", &obj->out->id);
   secdata = xmalloc (length);
   offset += obj->file->offset;
   if (offset != lseek (obj->file->fd, offset, SEEK_SET)
