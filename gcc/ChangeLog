@@ -1,3 +1,33 @@
+2011-09-30  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* haifa-sched.c (modulo_ii, modulo_max_states, modulo_n_insns,
+	modulo_insns_scheduled, modulo_iter0_max_uid, modulo_backtracks_left,
+	modulo_last_stage): New static variables.
+	(set_modulo_params, discard_delay_pairs_above): New functions.
+	(struct delay_pair): New member stages.
+	(htab_i2_traverse, htab_i1_traverse): New static functions.
+	(record_delay_slot_pair): New arg stages.  All callers changed.
+	Record it.
+	(pair_delay): Take stages into account.
+	(add_delay_dependencies): Don't do so for stage pairs.
+	(struct sched_block_state): New member modulo_epilogue.
+	(save_backtrack_point): Don't set SHADOW_P for stage pairs.
+	(unschedule_insns_until): Decrease modulo_insns_scheduled.
+	Set HARD_DEP without using or.
+	(resolve_dependencies): New static function.
+	(prune_ready_list): New arg modulo_epilogue_p.  All callers changed.
+	If it is true, allow only insns with INSN_EXACT_TICK set.
+	(schedule_block): Return bool, always true for normal scheduling,
+	true or false depending on modulo scheduling success otherwise.
+	Add bookkeeping for modulo scheduling, and call resolve_dependencies
+	on everything left over after a modulo schedule.
+	(haifa_sched_init): Remove check_cfg call.  Clear modulo_ii.
+	* sched-int.h (schedule_block, record_delay_slot_pair): Adjust
+	declarations.
+	(set_modulo_params, discard_delay_pairs_above): Declare.
+	* params.def (PARAM_MAX_MODULO_BACKTRACK_ATTEMPS): New.
+	* doc/invoke.texi (--param): Document it.
+
 2011-09-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50574

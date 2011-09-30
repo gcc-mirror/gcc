@@ -8474,6 +8474,11 @@ before flushing the current state and starting over.  Large functions
 with few branches or calls can create excessively large lists which
 needlessly consume memory and resources.
 
+@item max-modulo-backtrack-attempts
+The maximum number of backtrack attempts the scheduler should make
+when modulo scheduling a loop.  Larger values can exponentially increase
+compile time.
+
 @item max-inline-insns-single
 Several parameters control the tree inliner used in gcc.
 This number sets the maximum number of instructions (counted in GCC's
