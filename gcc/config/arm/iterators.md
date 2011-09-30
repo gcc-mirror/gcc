@@ -390,10 +390,14 @@
 (define_mode_attr qhs_zextenddi_cond [(SI "") (HI "&& arm_arch6") (QI "")])
 (define_mode_attr qhs_sextenddi_cond [(SI "") (HI "&& arm_arch6")
 				      (QI "&& arm_arch6")])
-(define_mode_attr qhs_extenddi_op [(SI "s_register_operand")
+(define_mode_attr qhs_zextenddi_op [(SI "s_register_operand")
 				   (HI "nonimmediate_operand")
 				   (QI "nonimmediate_operand")])
-(define_mode_attr qhs_extenddi_cstr [(SI "r") (HI "rm") (QI "rm")])
+(define_mode_attr qhs_extenddi_op [(SI "s_register_operand")
+				   (HI "nonimmediate_operand")
+				   (QI "arm_reg_or_extendqisi_mem_op")])
+(define_mode_attr qhs_extenddi_cstr [(SI "r") (HI "rm") (QI "rUq")])
+(define_mode_attr qhs_zextenddi_cstr [(SI "r") (HI "rm") (QI "rm")])
 
 ;; Mode attributes used for fixed-point support.
 (define_mode_attr qaddsub_suf [(V4UQQ "8") (V2UHQ "16") (UQQ "8") (UHQ "16")

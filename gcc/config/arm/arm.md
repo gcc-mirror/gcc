@@ -4389,8 +4389,8 @@
 
 (define_insn "zero_extend<mode>di2"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
-        (zero_extend:DI (match_operand:QHSI 1 "<qhs_extenddi_op>"
-					    "<qhs_extenddi_cstr>")))]
+        (zero_extend:DI (match_operand:QHSI 1 "<qhs_zextenddi_op>"
+					    "<qhs_zextenddi_cstr>")))]
   "TARGET_32BIT <qhs_zextenddi_cond>"
   "#"
   [(set_attr "length" "8")
