@@ -1,3 +1,12 @@
+2011-09-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+        PR target/50099
+	* config/arm/iterators.md (qhs_zextenddi_cstr): New.
+	(qhs_zextenddi_op): New.
+	* config/arm/arm.md ("zero_extend<mode>di2"): Use them.
+	* config/arm/predicates.md ("arm_extendqisi_mem_op"):
+	Distinguish between ARM and Thumb2 states.
+
 2011-09-30  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.opt (VIS2): New option.
