@@ -123,7 +123,7 @@ scan_loop (hwloop_info loop)
 	  df_ref *def_rec;
 	  HARD_REG_SET set_this_insn;
 
-	  if (!INSN_P (insn))
+	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
 
 	  if (recog_memoized (insn) < 0
