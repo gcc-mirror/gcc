@@ -2187,7 +2187,9 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   ifeq ($(strip $(filter-out powerpc%,$(arch))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<s-intman-posix.adb \
-      s-osprim.adb<s-osprim-posix.adb
+      s-osprim.adb<s-osprim-posix.adb \
+      a-numaux.ads<a-numaux-darwin.ads \
+      a-numaux.adb<a-numaux-darwin.adb
     
     ifeq ($(strip $(MULTISUBDIR)),/ppc64)
       LIBGNAT_TARGET_PAIRS += \
