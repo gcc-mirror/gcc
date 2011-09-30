@@ -1,3 +1,7 @@
+2011-09-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/extend.texi: Add missing ','.
+
 2011-09-30  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* common/config/c6x/c6x-common.c (c6x_option_optimization_table):
