@@ -1,3 +1,14 @@
+2011-09-30  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR c++/44473
+	* g++.dg/dfp/44473-1.C: New test.
+	* g++.dg/dfp/44473-2.C: New test.
+	* g++.dg/dfp/mangle-1.C: New test.
+	* g++.dg/dfp/mangle-2.C: New test.
+	* g++.dg/dfp/mangle-3.C: New test.
+	* g++.dg/dfp/mangle-4.C: New test.
+	* g++.dg/dfp/mangle-5.C: New test.
+
 2011-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/50571
