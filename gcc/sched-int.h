@@ -1257,7 +1257,7 @@ extern int dep_cost (dep_t);
 extern int set_priorities (rtx, rtx);
 
 extern void sched_setup_bb_reg_pressure_info (basic_block, rtx);
-extern void schedule_block (basic_block *);
+extern bool schedule_block (basic_block *);
 
 extern int cycle_issued_insns;
 extern int issue_rate;
@@ -1330,7 +1330,9 @@ extern int current_blocks;
 extern int target_bb;
 extern bool sched_no_dce;
 
-extern void record_delay_slot_pair (rtx, rtx, int);
+extern void set_modulo_params (int, int, int, int);
+extern void record_delay_slot_pair (rtx, rtx, int, int);
+extern void discard_delay_pairs_above (int);
 extern void free_delay_pairs (void);
 extern void add_delay_dependencies (rtx);
 extern bool sched_is_disabled_for_current_region_p (void);

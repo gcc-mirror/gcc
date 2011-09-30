@@ -165,6 +165,13 @@ DEFPARAM(PARAM_MAX_PENDING_LIST_LENGTH,
 	 "The maximum length of scheduling's pending operations list",
 	 32, 0, 0)
 
+/* This parameter limits the number of backtracking attempts when using the
+   haifa scheduler for modulo scheduling.  */
+DEFPARAM(PARAM_MAX_MODULO_BACKTRACK_ATTEMPTS,
+	 "max-modulo-backtrack-attempts",
+	 "The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop",
+	 40, 0, 0)
+
 DEFPARAM(PARAM_LARGE_FUNCTION_INSNS,
 	 "large-function-insns",
 	 "The size of function body to be considered large",

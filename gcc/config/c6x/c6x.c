@@ -4810,7 +4810,7 @@ split_delayed_branch (rtx insn)
   i1 = emit_insn_before (pat, insn);
   PATTERN (insn) = newpat;
   INSN_CODE (insn) = -1;
-  record_delay_slot_pair (i1, insn, 5);
+  record_delay_slot_pair (i1, insn, 5, 0);
 }
 
 /* Split every insn (i.e. jumps and calls) which can have delay slots into

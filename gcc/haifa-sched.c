@@ -163,6 +163,31 @@ int issue_rate;
    enable a DCE pass.  */
 bool sched_no_dce;
 
+/* The current initiation interval used when modulo scheduling.  */
+static int modulo_ii;
+
+/* The maximum number of stages we are prepared to handle.  */
+static int modulo_max_stages;
+
+/* The number of insns that exist in each iteration of the loop.  We use this
+   to detect when we've scheduled all insns from the first iteration.  */
+static int modulo_n_insns;
+
+/* The current count of insns in the first iteration of the loop that have
+   already been scheduled.  */
+static int modulo_insns_scheduled;
+
+/* The maximum uid of insns from the first iteration of the loop.  */
+static int modulo_iter0_max_uid;
+
+/* The number of times we should attempt to backtrack when modulo scheduling.
+   Decreased each time we have to backtrack.  */
+static int modulo_backtracks_left;
+
+/* The stage in which the last insn from the original loop was
+   scheduled.  */
+static int modulo_last_stage;
+
 /* sched-verbose controls the amount of debugging output the
    scheduler prints.  It is controlled by -fsched-verbose=N:
    N>0 and no -DSR : the output is directed to stderr.
@@ -507,6 +532,29 @@ haifa_classify_insn (const_rtx insn)
 {
   return haifa_classify_rtx (PATTERN (insn));
 }
+
+/* After the scheduler initialization function has been called, this function
+   can be called to enable modulo scheduling.  II is the initiation interval
+   we should use, it affects the delays for delay_pairs that were recorded as
+   separated by a given number of stages.
+
+   MAX_STAGES provides us with a limit
+   after which we give up scheduling; the caller must have unrolled at least
+   as many copies of the loop body and recorded delay_pairs for them.
+   
+   INSNS is the number of real (non-debug) insns in one iteration of
+   the loop.  MAX_UID can be used to test whether an insn belongs to
+   the first iteration of the loop; all of them have a uid lower than
+   MAX_UID.  */
+void
+set_modulo_params (int ii, int max_stages, int insns, int max_uid)
+{
+  modulo_ii = ii;
+  modulo_max_stages = max_stages;
+  modulo_n_insns = insns;
+  modulo_iter0_max_uid = max_uid;
+  modulo_backtracks_left = PARAM_VALUE (PARAM_MAX_MODULO_BACKTRACK_ATTEMPTS);
+}
 
 /* A structure to record a pair of insns where the first one is a real
    insn that has delay slots, and the second is its delayed shadow.
@@ -518,12 +566,72 @@ struct delay_pair
   struct delay_pair *next_same_i1;
   rtx i1, i2;
   int cycles;
+  /* When doing modulo scheduling, we a delay_pair can also be used to
+     show that I1 and I2 are the same insn in a different stage.  If that
+     is the case, STAGES will be nonzero.  */
+  int stages;
 };
 
 /* Two hash tables to record delay_pairs, one indexed by I1 and the other
    indexed by I2.  */
 static htab_t delay_htab;
 static htab_t delay_htab_i2;
+
+/* Called through htab_traverse.  Walk the hashtable using I2 as
+   index, and delete all elements involving an UID higher than
+   that pointed to by *DATA.  */
+static int
+htab_i2_traverse (void **slot, void *data)
+{
+  int maxuid = *(int *)data;
+  struct delay_pair *p = *(struct delay_pair **)slot;
+  if (INSN_UID (p->i2) >= maxuid || INSN_UID (p->i1) >= maxuid)
+    {
+      htab_clear_slot (delay_htab_i2, slot);
+    }
+  return 1;
+}
+
+/* Called through htab_traverse.  Walk the hashtable using I2 as
+   index, and delete all elements involving an UID higher than
+   that pointed to by *DATA.  */
+static int
+htab_i1_traverse (void **slot, void *data)
+{
+  int maxuid = *(int *)data;
+  struct delay_pair **pslot = (struct delay_pair **)slot;
+  struct delay_pair *p, *first, **pprev;
+
+  if (INSN_UID ((*pslot)->i1) >= maxuid)
+    {
+      htab_clear_slot (delay_htab, slot);
+      return 1;
+    }
+  pprev = &first;
+  for (p = *pslot; p; p = p->next_same_i1)
+    {
+      if (INSN_UID (p->i2) < maxuid)
+	{
+	  *pprev = p;
+	  pprev = &p->next_same_i1;
+	}
+    }
+  *pprev = NULL;
+  if (first == NULL)
+    htab_clear_slot (delay_htab, slot);
+  else
+    *pslot = first;
+  return 1;
+}
+
+/* Discard all delay pairs which involve an insn with an UID higher
+   than MAX_UID.  */
+void
+discard_delay_pairs_above (int max_uid)
+{
+  htab_traverse (delay_htab, htab_i1_traverse, &max_uid);
+  htab_traverse (delay_htab_i2, htab_i2_traverse, &max_uid);
+}
 
 /* Returns a hash value for X (which really is a delay_pair), based on
    hashing just I1.  */
@@ -555,18 +663,24 @@ delay_i2_eq (const void *x, const void *y)
   return ((const struct delay_pair *) x)->i2 == y;
 }
 
-/* This function can be called by a port just before it starts the
-   final scheduling pass.  It records the fact that an instruction
-   with delay slots has been split into two insns, I1 and I2.  The
-   first one will be scheduled normally and initiates the operation.
-   The second one is a shadow which must follow a specific number of
-   CYCLES after I1; its only purpose is to show the side effect that
-   occurs at that cycle in the RTL.  If a JUMP_INSN or a CALL_INSN has
-   been split, I1 should be a normal INSN, while I2 retains the
-   original insn type.  */
+/* This function can be called by a port just before it starts the final
+   scheduling pass.  It records the fact that an instruction with delay
+   slots has been split into two insns, I1 and I2.  The first one will be
+   scheduled normally and initiates the operation.  The second one is a
+   shadow which must follow a specific number of cycles after I1; its only
+   purpose is to show the side effect that occurs at that cycle in the RTL.
+   If a JUMP_INSN or a CALL_INSN has been split, I1 should be a normal INSN,
+   while I2 retains the original insn type.
+
+   There are two ways in which the number of cycles can be specified,
+   involving the CYCLES and STAGES arguments to this function.  If STAGES
+   is zero, we just use the value of CYCLES.  Otherwise, STAGES is a factor
+   which is multiplied by MODULO_II to give the number of cycles.  This is
+   only useful if the caller also calls set_modulo_params to enable modulo
+   scheduling.  */
 
 void
-record_delay_slot_pair (rtx i1, rtx i2, int cycles)
+record_delay_slot_pair (rtx i1, rtx i2, int cycles, int stages)
 {
   struct delay_pair *p = XNEW (struct delay_pair);
   struct delay_pair **slot;
@@ -574,6 +688,7 @@ record_delay_slot_pair (rtx i1, rtx i2, int cycles)
   p->i1 = i1;
   p->i2 = i2;
   p->cycles = cycles;
+  p->stages = stages;
 
   if (!delay_htab)
     {
@@ -596,7 +711,10 @@ record_delay_slot_pair (rtx i1, rtx i2, int cycles)
 static int
 pair_delay (struct delay_pair *p)
 {
-  return p->cycles;
+  if (p->stages == 0)
+    return p->cycles;
+  else
+    return p->stages * modulo_ii;
 }
 
 /* Given an insn INSN, add a dependence on its delayed shadow if it
@@ -619,6 +737,8 @@ add_delay_dependencies (rtx insn)
   if (!pair)
     return;
   add_dependence (insn, pair->i1, REG_DEP_ANTI);
+  if (pair->stages)
+    return;
 
   FOR_EACH_DEP (pair->i2, SD_LIST_BACK, sd_it, dep)
     {
@@ -626,7 +746,7 @@ add_delay_dependencies (rtx insn)
       struct delay_pair *other_pair
 	= (struct delay_pair *)htab_find_with_hash (delay_htab_i2, pro,
 						    htab_hash_pointer (pro));
-      if (!other_pair)
+      if (!other_pair || other_pair->stages)
 	continue;
       if (pair_delay (other_pair) >= pair_delay (pair))
 	{
@@ -1851,6 +1971,9 @@ struct sched_block_state
   /* True if a shadow insn has been scheduled in the current cycle, which
      means that no more normal insns can be issued.  */
   bool shadows_only_p;
+  /* True if we're winding down a modulo schedule, which means that we only
+     issue insns with INSN_EXACT_TICK set.  */
+  bool modulo_epilogue;
   /* Initialized with the machine's issue rate every cycle, and updated
      by calls to the variable_issue hook.  */
   int can_issue_more;
@@ -2223,7 +2346,7 @@ save_backtrack_point (struct delay_pair *pair,
       mark_backtrack_feeds (pair->i2, 1);
       INSN_TICK (pair->i2) = INVALID_TICK;
       INSN_EXACT_TICK (pair->i2) = clock_var + pair_delay (pair);
-      SHADOW_P (pair->i2) = true;
+      SHADOW_P (pair->i2) = pair->stages == 0;
       pair = pair->next_same_i1;
     }
 }
@@ -2249,11 +2372,14 @@ unschedule_insns_until (rtx insn)
       if (last != insn)
 	INSN_TICK (last) = INVALID_TICK;
 
+      if (modulo_ii > 0 && INSN_UID (last) < modulo_iter0_max_uid)
+	modulo_insns_scheduled--;
+
       for (sd_it = sd_iterator_start (last, SD_LIST_RES_FORW);
 	   sd_iterator_cond (&sd_it, &dep);)
 	{
 	  rtx con = DEP_CON (dep);
-	  TODO_SPEC (con) |= HARD_DEP;
+	  TODO_SPEC (con) = HARD_DEP;
 	  INSN_TICK (con) = INVALID_TICK;
 	  sd_unresolve_dep (sd_it);
 	}
@@ -2466,6 +2592,56 @@ estimate_shadow_tick (struct delay_pair *p)
     return t;
   return 0;
 }
+
+/* If INSN has no unresolved backwards dependencies, add it to the schedule and
+   recursively resolve all its forward dependencies.  */
+static void
+resolve_dependencies (rtx insn)
+{
+  sd_iterator_def sd_it;
+  dep_t dep;
+
+  /* Don't use sd_lists_empty_p; it ignores debug insns.  */
+  if (DEPS_LIST_FIRST (INSN_HARD_BACK_DEPS (insn)) != NULL
+      || DEPS_LIST_FIRST (INSN_SPEC_BACK_DEPS (insn)) != NULL)
+    return;
+
+  if (sched_verbose >= 4)
+    fprintf (sched_dump, ";;\tquickly resolving %d\n", INSN_UID (insn));
+
+  if (QUEUE_INDEX (insn) >= 0)
+    queue_remove (insn);
+
+  VEC_safe_push (rtx, heap, scheduled_insns, insn);
+
+  /* Update dependent instructions.  */
+  for (sd_it = sd_iterator_start (insn, SD_LIST_FORW);
+       sd_iterator_cond (&sd_it, &dep);)
+    {
+      rtx next = DEP_CON (dep);
+
+      if (sched_verbose >= 4)
+	fprintf (sched_dump, ";;\t\tdep %d against %d\n", INSN_UID (insn),
+		 INSN_UID (next));
+
+      /* Resolve the dependence between INSN and NEXT.
+	 sd_resolve_dep () moves current dep to another list thus
+	 advancing the iterator.  */
+      sd_resolve_dep (sd_it);
+
+      if (!IS_SPECULATION_BRANCHY_CHECK_P (insn))
+	{
+	  resolve_dependencies (next);
+	}
+      else
+	/* Check always has only one forward dependence (to the first insn in
+	   the recovery block), therefore, this will be executed only once.  */
+	{
+	  gcc_assert (sd_lists_empty_p (insn, SD_LIST_FORW));
+	}
+    }
+}
+
 
 /* Return the head and tail pointers of ebb starting at BEG and ending
    at END.  */
@@ -3448,15 +3624,12 @@ commit_schedule (rtx prev_head, rtx tail, basic_block *target_bb)
    issue an asm statement.
 
    If SHADOWS_ONLY_P is true, we eliminate all real insns and only
-   leave those for which SHADOW_P is true.
-
-   Return the number of cycles we must
-   advance to find the next ready instruction, or zero if there remain
-   insns on the ready list.  */
+   leave those for which SHADOW_P is true.  If MODULO_EPILOGUE is true,
+   we only leave insns which have an INSN_EXACT_TICK.  */
 
 static void
 prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
-		  bool shadows_only_p)
+		  bool shadows_only_p, bool modulo_epilogue_p)
 {
   int i;
 
@@ -3467,6 +3640,12 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
       int cost = 0;
       const char *reason = "resource conflict";
 
+      if (modulo_epilogue_p && !DEBUG_INSN_P (insn)
+	  && INSN_EXACT_TICK (insn) == INVALID_TICK)
+	{
+	  cost = max_insn_queue_index;
+	  reason = "not an epilogue insn";
+	}
       if (shadows_only_p && !DEBUG_INSN_P (insn) && !SHADOW_P (insn))
 	{
 	  cost = 1;
@@ -3580,10 +3759,11 @@ verify_shadows (void)
    TARGET_BB, possibly bringing insns from subsequent blocks in the same
    region.  */
 
-void
+bool
 schedule_block (basic_block *target_bb)
 {
   int i;
+  bool success = modulo_ii == 0;
   struct sched_block_state ls;
   state_t temp_state = NULL;  /* It is used for multipass scheduling.  */
   int sort_p, advance, start_clock_var;
@@ -3704,6 +3884,9 @@ schedule_block (basic_block *target_bb)
   gcc_assert (VEC_length (rtx, scheduled_insns) == 0);
   sort_p = TRUE;
   must_backtrack = false;
+  modulo_insns_scheduled = 0;
+
+  ls.modulo_epilogue = false;
 
   /* Loop until all the insns in BB are scheduled.  */
   while ((*current_sched_info->schedule_more_p) ())
@@ -3733,8 +3916,41 @@ schedule_block (basic_block *target_bb)
 	}
       while (advance > 0);
 
-      if (ready.n_ready > 0)
-	prune_ready_list (temp_state, true, false);
+      if (ls.modulo_epilogue)
+	{
+	  int stage = clock_var / modulo_ii;
+	  if (stage > modulo_last_stage * 2 + 2)
+	    {
+	      if (sched_verbose >= 2)
+		fprintf (sched_dump,
+			 ";;\t\tmodulo scheduled succeeded at II %d\n",
+			 modulo_ii);
+	      success = true;
+	      goto end_schedule;
+	    }
+	}
+      else if (modulo_ii > 0)
+	{
+	  int stage = clock_var / modulo_ii;
+	  if (stage > modulo_max_stages)
+	    {
+	      if (sched_verbose >= 2)
+		fprintf (sched_dump,
+			 ";;\t\tfailing schedule due to excessive stages\n");
+	      goto end_schedule;
+	    }
+	  if (modulo_n_insns == modulo_insns_scheduled
+	      && stage > modulo_last_stage)
+	    {
+	      if (sched_verbose >= 2)
+		fprintf (sched_dump,
+			 ";;\t\tfound kernel after %d stages, II %d\n",
+			 stage, modulo_ii);
+	      ls.modulo_epilogue = true;
+	    }
+	}
+
+      prune_ready_list (temp_state, true, false, ls.modulo_epilogue);
       if (ready.n_ready == 0)
 	continue;
       if (must_backtrack)
@@ -3912,6 +4128,11 @@ schedule_block (basic_block *target_bb)
 
 	  /* DECISION is made.  */
 
+	  if (modulo_ii > 0 && INSN_UID (insn) < modulo_iter0_max_uid)
+	    {
+	      modulo_insns_scheduled++;
+	      modulo_last_stage = clock_var / modulo_ii;
+	    }
           if (TODO_SPEC (insn) & SPECULATIVE)
             generate_recovery_code (insn);
 
@@ -3964,7 +4185,8 @@ schedule_block (basic_block *target_bb)
 
 	  ls.first_cycle_insn_p = false;
 	  if (ready.n_ready > 0)
-	    prune_ready_list (temp_state, false, ls.shadows_only_p);
+	    prune_ready_list (temp_state, false, ls.shadows_only_p,
+			      ls.modulo_epilogue);
 	}
 
     do_backtrack:
@@ -3979,6 +4201,12 @@ schedule_block (basic_block *target_bb)
 		break;
 	      }
 	  }
+      if (must_backtrack && modulo_ii > 0)
+	{
+	  if (modulo_backtracks_left == 0)
+	    goto end_schedule;
+	  modulo_backtracks_left--;
+	}
       while (must_backtrack)
 	{
 	  struct haifa_saved_data *failed;
@@ -4012,7 +4240,48 @@ schedule_block (basic_block *target_bb)
 	    }
 	}
     }
+  if (ls.modulo_epilogue)
+    success = true;
  end_schedule:
+  if (modulo_ii > 0)
+    {
+      /* Once again, debug insn suckiness: they can be on the ready list
+	 even if they have unresolved dependencies.  To make our view
+	 of the world consistent, remove such "ready" insns.  */
+    restart_debug_insn_loop:
+      for (i = ready.n_ready - 1; i >= 0; i--)
+	{
+	  rtx x;
+
+	  x = ready_element (&ready, i);
+	  if (DEPS_LIST_FIRST (INSN_HARD_BACK_DEPS (x)) != NULL
+	      || DEPS_LIST_FIRST (INSN_SPEC_BACK_DEPS (x)) != NULL)
+	    {
+	      ready_remove (&ready, i);
+	      goto restart_debug_insn_loop;
+	    }
+	}
+      for (i = ready.n_ready - 1; i >= 0; i--)
+	{
+	  rtx x;
+
+	  x = ready_element (&ready, i);
+	  resolve_dependencies (x);
+	}
+      for (i = 0; i <= max_insn_queue_index; i++)
+	{
+	  rtx link;
+	  while ((link = insn_queue[i]) != NULL)
+	    {
+	      rtx x = XEXP (link, 0);
+	      insn_queue[i] = XEXP (link, 1);
+	      QUEUE_INDEX (x) = QUEUE_NOWHERE;
+	      free_INSN_LIST_node (link);
+	      resolve_dependencies (x);
+	    }
+	}
+    }
+
   /* Debug info.  */
   if (sched_verbose)
     {
@@ -4020,11 +4289,11 @@ schedule_block (basic_block *target_bb)
       debug_ready_list (&ready);
     }
 
-  if (current_sched_info->queue_must_finish_empty)
+  if (modulo_ii == 0 && current_sched_info->queue_must_finish_empty)
     /* Sanity check -- queue must be empty now.  Meaningless if region has
        multiple bbs.  */
     gcc_assert (!q_size && !ready.n_ready && !ready.n_debug);
-  else
+  else if (modulo_ii == 0)
     {
       /* We must maintain QUEUE_INDEX between blocks in region.  */
       for (i = ready.n_ready - 1; i >= 0; i--)
@@ -4052,9 +4321,16 @@ schedule_block (basic_block *target_bb)
 	  }
     }
 
-  commit_schedule (prev_head, tail, target_bb);
-  if (sched_verbose)
-    fprintf (sched_dump, ";;   total time = %d\n", clock_var);
+  if (success)
+    {
+      commit_schedule (prev_head, tail, target_bb);
+      if (sched_verbose)
+	fprintf (sched_dump, ";;   total time = %d\n", clock_var);
+    }
+  else
+    last_scheduled_insn = tail;
+
+  VEC_truncate (rtx, scheduled_insns, 0);
 
   if (!current_sched_info->queue_must_finish_empty
       || haifa_recovery_bb_recently_added_p)
@@ -4092,6 +4368,8 @@ schedule_block (basic_block *target_bb)
   current_sched_info->tail = tail;
 
   free_backtrack_queue ();
+
+  return success;
 }
 
 /* Set_priorities: compute priority of each insn in the block.  */
@@ -4302,6 +4580,8 @@ haifa_sched_init (void)
   nr_begin_data = nr_begin_control = nr_be_in_data = nr_be_in_control = 0;
   before_recovery = 0;
   after_recovery = 0;
+
+  modulo_ii = 0;
 }
 
 /* Finish work with the data specific to the Haifa scheduler.  */
