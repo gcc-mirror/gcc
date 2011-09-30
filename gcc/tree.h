@@ -5384,6 +5384,8 @@ extern unsigned int get_pointer_alignment (tree);
 extern tree fold_call_stmt (gimple, bool);
 extern tree gimple_fold_builtin_snprintf_chk (gimple, tree, enum built_in_function);
 extern tree make_range (tree, int *, tree *, tree *, bool *);
+extern tree make_range_step (location_t, enum tree_code, tree, tree, tree,
+			     tree *, tree *, int *, bool *);
 extern tree build_range_check (location_t, tree, tree, int, tree, tree);
 extern bool merge_ranges (int *, tree *, tree *, int, tree, tree, int,
 			  tree, tree);

@@ -115,9 +115,6 @@ static int simple_operand_p (const_tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
 static tree range_predecessor (tree);
 static tree range_successor (tree);
-extern tree make_range (tree, int *, tree *, tree *, bool *);
-extern bool merge_ranges (int *, tree *, tree *, int, tree, tree, int,
-			  tree, tree);
 static tree fold_range_test (location_t, enum tree_code, tree, tree, tree);
 static tree fold_cond_expr_with_comparison (location_t, tree, tree, tree, tree);
 static tree unextend (tree, int, int, tree);
@@ -3790,6 +3787,255 @@ range_binop (enum tree_code code, tree type, tree arg0, int upper0_p,
   return constant_boolean_node (result, type);
 }
 
+/* Helper routine for make_range.  Perform one step for it, return
+   new expression if the loop should continue or NULL_TREE if it should
+   stop.  */
+
+tree
+make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
+		 tree exp_type, tree *p_low, tree *p_high, int *p_in_p,
+		 bool *strict_overflow_p)
+{
+  tree arg0_type = TREE_TYPE (arg0);
+  tree n_low, n_high, low = *p_low, high = *p_high;
+  int in_p = *p_in_p, n_in_p;
+
+  switch (code)
+    {
+    case TRUTH_NOT_EXPR:
+      *p_in_p = ! in_p;
+      return arg0;
+
+    case EQ_EXPR: case NE_EXPR:
+    case LT_EXPR: case LE_EXPR: case GE_EXPR: case GT_EXPR:
+      /* We can only do something if the range is testing for zero
+	 and if the second operand is an integer constant.  Note that
+	 saying something is "in" the range we make is done by
+	 complementing IN_P since it will set in the initial case of
+	 being not equal to zero; "out" is leaving it alone.  */
+      if (low == NULL_TREE || high == NULL_TREE
+	  || ! integer_zerop (low) || ! integer_zerop (high)
+	  || TREE_CODE (arg1) != INTEGER_CST)
+	return NULL_TREE;
+
+      switch (code)
+	{
+	case NE_EXPR:  /* - [c, c]  */
+	  low = high = arg1;
+	  break;
+	case EQ_EXPR:  /* + [c, c]  */
+	  in_p = ! in_p, low = high = arg1;
+	  break;
+	case GT_EXPR:  /* - [-, c] */
+	  low = 0, high = arg1;
+	  break;
+	case GE_EXPR:  /* + [c, -] */
+	  in_p = ! in_p, low = arg1, high = 0;
+	  break;
+	case LT_EXPR:  /* - [c, -] */
+	  low = arg1, high = 0;
+	  break;
+	case LE_EXPR:  /* + [-, c] */
+	  in_p = ! in_p, low = 0, high = arg1;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      /* If this is an unsigned comparison, we also know that EXP is
+	 greater than or equal to zero.  We base the range tests we make
+	 on that fact, so we record it here so we can parse existing
+	 range tests.  We test arg0_type since often the return type
+	 of, e.g. EQ_EXPR, is boolean.  */
+      if (TYPE_UNSIGNED (arg0_type) && (low == 0 || high == 0))
+	{
+	  if (! merge_ranges (&n_in_p, &n_low, &n_high,
+			      in_p, low, high, 1,
+			      build_int_cst (arg0_type, 0),
+			      NULL_TREE))
+	    return NULL_TREE;
+
+	  in_p = n_in_p, low = n_low, high = n_high;
+
+	  /* If the high bound is missing, but we have a nonzero low
+	     bound, reverse the range so it goes from zero to the low bound
+	     minus 1.  */
+	  if (high == 0 && low && ! integer_zerop (low))
+	    {
+	      in_p = ! in_p;
+	      high = range_binop (MINUS_EXPR, NULL_TREE, low, 0,
+				  integer_one_node, 0);
+	      low = build_int_cst (arg0_type, 0);
+	    }
+	}
+
+      *p_low = low;
+      *p_high = high;
+      *p_in_p = in_p;
+      return arg0;
+
+    case NEGATE_EXPR:
+      /* (-x) IN [a,b] -> x in [-b, -a]  */
+      n_low = range_binop (MINUS_EXPR, exp_type,
+			   build_int_cst (exp_type, 0),
+			   0, high, 1);
+      n_high = range_binop (MINUS_EXPR, exp_type,
+			    build_int_cst (exp_type, 0),
+			    0, low, 0);
+      if (n_high != 0 && TREE_OVERFLOW (n_high))
+	return NULL_TREE;
+      goto normalize;
+
+    case BIT_NOT_EXPR:
+      /* ~ X -> -X - 1  */
+      return build2_loc (loc, MINUS_EXPR, exp_type, negate_expr (arg0),
+			 build_int_cst (exp_type, 1));
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      if (TREE_CODE (arg1) != INTEGER_CST)
+	return NULL_TREE;
+
+      /* If flag_wrapv and ARG0_TYPE is signed, then we cannot
+	 move a constant to the other side.  */
+      if (!TYPE_UNSIGNED (arg0_type)
+	  && !TYPE_OVERFLOW_UNDEFINED (arg0_type))
+	return NULL_TREE;
+
+      /* If EXP is signed, any overflow in the computation is undefined,
+	 so we don't worry about it so long as our computations on
+	 the bounds don't overflow.  For unsigned, overflow is defined
+	 and this is exactly the right thing.  */
+      n_low = range_binop (code == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR,
+			   arg0_type, low, 0, arg1, 0);
+      n_high = range_binop (code == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR,
+			    arg0_type, high, 1, arg1, 0);
+      if ((n_low != 0 && TREE_OVERFLOW (n_low))
+	  || (n_high != 0 && TREE_OVERFLOW (n_high)))
+	return NULL_TREE;
+
+      if (TYPE_OVERFLOW_UNDEFINED (arg0_type))
+	*strict_overflow_p = true;
+
+      normalize:
+	/* Check for an unsigned range which has wrapped around the maximum
+	   value thus making n_high < n_low, and normalize it.  */
+	if (n_low && n_high && tree_int_cst_lt (n_high, n_low))
+	  {
+	    low = range_binop (PLUS_EXPR, arg0_type, n_high, 0,
+			       integer_one_node, 0);
+	    high = range_binop (MINUS_EXPR, arg0_type, n_low, 0,
+				integer_one_node, 0);
+
+	    /* If the range is of the form +/- [ x+1, x ], we won't
+	       be able to normalize it.  But then, it represents the
+	       whole range or the empty set, so make it
+	       +/- [ -, - ].  */
+	    if (tree_int_cst_equal (n_low, low)
+		&& tree_int_cst_equal (n_high, high))
+	      low = high = 0;
+	    else
+	      in_p = ! in_p;
+	  }
+	else
+	  low = n_low, high = n_high;
+
+	*p_low = low;
+	*p_high = high;
+	*p_in_p = in_p;
+	return arg0;
+
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+      if (TYPE_PRECISION (arg0_type) > TYPE_PRECISION (exp_type))
+	return NULL_TREE;
+
+      if (! INTEGRAL_TYPE_P (arg0_type)
+	  || (low != 0 && ! int_fits_type_p (low, arg0_type))
+	  || (high != 0 && ! int_fits_type_p (high, arg0_type)))
+	return NULL_TREE;
+
+      n_low = low, n_high = high;
+
+      if (n_low != 0)
+	n_low = fold_convert_loc (loc, arg0_type, n_low);
+
+      if (n_high != 0)
+	n_high = fold_convert_loc (loc, arg0_type, n_high);
+
+      /* If we're converting arg0 from an unsigned type, to exp,
+	 a signed type,  we will be doing the comparison as unsigned.
+	 The tests above have already verified that LOW and HIGH
+	 are both positive.
+
+	 So we have to ensure that we will handle large unsigned
+	 values the same way that the current signed bounds treat
+	 negative values.  */
+
+      if (!TYPE_UNSIGNED (exp_type) && TYPE_UNSIGNED (arg0_type))
+	{
+	  tree high_positive;
+	  tree equiv_type;
+	  /* For fixed-point modes, we need to pass the saturating flag
+	     as the 2nd parameter.  */
+	  if (ALL_FIXED_POINT_MODE_P (TYPE_MODE (arg0_type)))
+	    equiv_type
+	      = lang_hooks.types.type_for_mode (TYPE_MODE (arg0_type),
+						TYPE_SATURATING (arg0_type));
+	  else
+	    equiv_type
+	      = lang_hooks.types.type_for_mode (TYPE_MODE (arg0_type), 1);
+
+	  /* A range without an upper bound is, naturally, unbounded.
+	     Since convert would have cropped a very large value, use
+	     the max value for the destination type.  */
+	  high_positive
+	    = TYPE_MAX_VALUE (equiv_type) ? TYPE_MAX_VALUE (equiv_type)
+	      : TYPE_MAX_VALUE (arg0_type);
+
+	  if (TYPE_PRECISION (exp_type) == TYPE_PRECISION (arg0_type))
+	    high_positive = fold_build2_loc (loc, RSHIFT_EXPR, arg0_type,
+					     fold_convert_loc (loc, arg0_type,
+							       high_positive),
+					     build_int_cst (arg0_type, 1));
+
+	  /* If the low bound is specified, "and" the range with the
+	     range for which the original unsigned value will be
+	     positive.  */
+	  if (low != 0)
+	    {
+	      if (! merge_ranges (&n_in_p, &n_low, &n_high, 1, n_low, n_high,
+				  1, fold_convert_loc (loc, arg0_type,
+						       integer_zero_node),
+				  high_positive))
+		return NULL_TREE;
+
+	      in_p = (n_in_p == in_p);
+	    }
+	  else
+	    {
+	      /* Otherwise, "or" the range with the range of the input
+		 that will be interpreted as negative.  */
+	      if (! merge_ranges (&n_in_p, &n_low, &n_high, 0, n_low, n_high,
+				  1, fold_convert_loc (loc, arg0_type,
+						       integer_zero_node),
+				  high_positive))
+		return NULL_TREE;
+
+	      in_p = (in_p != n_in_p);
+	    }
+	}
+
+      *p_low = n_low;
+      *p_high = n_high;
+      *p_in_p = in_p;
+      return arg0;
+
+    default:
+      return NULL_TREE;
+    }
+}
+
 /* Given EXP, a logical expression, set the range it is testing into
    variables denoted by PIN_P, PLOW, and PHIGH.  Return the expression
    actually being tested.  *PLOW and *PHIGH will be made of the same
@@ -3804,10 +4050,10 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh,
 	    bool *strict_overflow_p)
 {
   enum tree_code code;
-  tree arg0 = NULL_TREE, arg1 = NULL_TREE;
-  tree exp_type = NULL_TREE, arg0_type = NULL_TREE;
-  int in_p, n_in_p;
-  tree low, high, n_low, n_high;
+  tree arg0, arg1 = NULL_TREE;
+  tree exp_type, nexp;
+  int in_p;
+  tree low, high;
   location_t loc = EXPR_LOCATION (exp);
 
   /* Start with simply saying "EXP != 0" and then look at the code of EXP
@@ -3823,255 +4069,26 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh,
     {
       code = TREE_CODE (exp);
       exp_type = TREE_TYPE (exp);
+      arg0 = NULL_TREE;
 
       if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
 	{
 	  if (TREE_OPERAND_LENGTH (exp) > 0)
 	    arg0 = TREE_OPERAND (exp, 0);
-	  if (TREE_CODE_CLASS (code) == tcc_comparison
-	      || TREE_CODE_CLASS (code) == tcc_unary
-	      || TREE_CODE_CLASS (code) == tcc_binary)
-	    arg0_type = TREE_TYPE (arg0);
 	  if (TREE_CODE_CLASS (code) == tcc_binary
 	      || TREE_CODE_CLASS (code) == tcc_comparison
 	      || (TREE_CODE_CLASS (code) == tcc_expression
 		  && TREE_OPERAND_LENGTH (exp) > 1))
 	    arg1 = TREE_OPERAND (exp, 1);
 	}
+      if (arg0 == NULL_TREE)
+	break;
 
-      switch (code)
-	{
-	case TRUTH_NOT_EXPR:
-	  in_p = ! in_p, exp = arg0;
-	  continue;
-
-	case EQ_EXPR: case NE_EXPR:
-	case LT_EXPR: case LE_EXPR: case GE_EXPR: case GT_EXPR:
-	  /* We can only do something if the range is testing for zero
-	     and if the second operand is an integer constant.  Note that
-	     saying something is "in" the range we make is done by
-	     complementing IN_P since it will set in the initial case of
-	     being not equal to zero; "out" is leaving it alone.  */
-	  if (low == 0 || high == 0
-	      || ! integer_zerop (low) || ! integer_zerop (high)
-	      || TREE_CODE (arg1) != INTEGER_CST)
-	    break;
-
-	  switch (code)
-	    {
-	    case NE_EXPR:  /* - [c, c]  */
-	      low = high = arg1;
-	      break;
-	    case EQ_EXPR:  /* + [c, c]  */
-	      in_p = ! in_p, low = high = arg1;
-	      break;
-	    case GT_EXPR:  /* - [-, c] */
-	      low = 0, high = arg1;
-	      break;
-	    case GE_EXPR:  /* + [c, -] */
-	      in_p = ! in_p, low = arg1, high = 0;
-	      break;
-	    case LT_EXPR:  /* - [c, -] */
-	      low = arg1, high = 0;
-	      break;
-	    case LE_EXPR:  /* + [-, c] */
-	      in_p = ! in_p, low = 0, high = arg1;
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-
-	  /* If this is an unsigned comparison, we also know that EXP is
-	     greater than or equal to zero.  We base the range tests we make
-	     on that fact, so we record it here so we can parse existing
-	     range tests.  We test arg0_type since often the return type
-	     of, e.g. EQ_EXPR, is boolean.  */
-	  if (TYPE_UNSIGNED (arg0_type) && (low == 0 || high == 0))
-	    {
-	      if (! merge_ranges (&n_in_p, &n_low, &n_high,
-				  in_p, low, high, 1,
-				  build_int_cst (arg0_type, 0),
-				  NULL_TREE))
-		break;
-
-	      in_p = n_in_p, low = n_low, high = n_high;
-
-	      /* If the high bound is missing, but we have a nonzero low
-		 bound, reverse the range so it goes from zero to the low bound
-		 minus 1.  */
-	      if (high == 0 && low && ! integer_zerop (low))
-		{
-		  in_p = ! in_p;
-		  high = range_binop (MINUS_EXPR, NULL_TREE, low, 0,
-				      integer_one_node, 0);
-		  low = build_int_cst (arg0_type, 0);
-		}
-	    }
-
-	  exp = arg0;
-	  continue;
-
-	case NEGATE_EXPR:
-	  /* (-x) IN [a,b] -> x in [-b, -a]  */
-	  n_low = range_binop (MINUS_EXPR, exp_type,
-			       build_int_cst (exp_type, 0),
-			       0, high, 1);
-	  n_high = range_binop (MINUS_EXPR, exp_type,
-				build_int_cst (exp_type, 0),
-				0, low, 0);
-	  if (n_high != 0 && TREE_OVERFLOW (n_high))
-	    break;
-	  goto normalize;
-
-	case BIT_NOT_EXPR:
-	  /* ~ X -> -X - 1  */
-	  exp = build2_loc (loc, MINUS_EXPR, exp_type, negate_expr (arg0),
-			    build_int_cst (exp_type, 1));
-	  continue;
-
-	case PLUS_EXPR:  case MINUS_EXPR:
-	  if (TREE_CODE (arg1) != INTEGER_CST)
-	    break;
-
-	  /* If flag_wrapv and ARG0_TYPE is signed, then we cannot
-	     move a constant to the other side.  */
-	  if (!TYPE_UNSIGNED (arg0_type)
-	      && !TYPE_OVERFLOW_UNDEFINED (arg0_type))
-	    break;
-
-	  /* If EXP is signed, any overflow in the computation is undefined,
-	     so we don't worry about it so long as our computations on
-	     the bounds don't overflow.  For unsigned, overflow is defined
-	     and this is exactly the right thing.  */
-	  n_low = range_binop (code == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR,
-			       arg0_type, low, 0, arg1, 0);
-	  n_high = range_binop (code == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR,
-				arg0_type, high, 1, arg1, 0);
-	  if ((n_low != 0 && TREE_OVERFLOW (n_low))
-	      || (n_high != 0 && TREE_OVERFLOW (n_high)))
-	    break;
-
-	  if (TYPE_OVERFLOW_UNDEFINED (arg0_type))
-	    *strict_overflow_p = true;
-
-	normalize:
-	  /* Check for an unsigned range which has wrapped around the maximum
-	     value thus making n_high < n_low, and normalize it.  */
-	  if (n_low && n_high && tree_int_cst_lt (n_high, n_low))
-	    {
-	      low = range_binop (PLUS_EXPR, arg0_type, n_high, 0,
-				 integer_one_node, 0);
-	      high = range_binop (MINUS_EXPR, arg0_type, n_low, 0,
-				  integer_one_node, 0);
-
-	      /* If the range is of the form +/- [ x+1, x ], we won't
-		 be able to normalize it.  But then, it represents the
-		 whole range or the empty set, so make it
-		 +/- [ -, - ].  */
-	      if (tree_int_cst_equal (n_low, low)
-		  && tree_int_cst_equal (n_high, high))
-		low = high = 0;
-	      else
-		in_p = ! in_p;
-	    }
-	  else
-	    low = n_low, high = n_high;
-
-	  exp = arg0;
-	  continue;
-
-	CASE_CONVERT: case NON_LVALUE_EXPR:
-	  if (TYPE_PRECISION (arg0_type) > TYPE_PRECISION (exp_type))
-	    break;
-
-	  if (! INTEGRAL_TYPE_P (arg0_type)
-	      || (low != 0 && ! int_fits_type_p (low, arg0_type))
-	      || (high != 0 && ! int_fits_type_p (high, arg0_type)))
-	    break;
-
-	  n_low = low, n_high = high;
-
-	  if (n_low != 0)
-	    n_low = fold_convert_loc (loc, arg0_type, n_low);
-
-	  if (n_high != 0)
-	    n_high = fold_convert_loc (loc, arg0_type, n_high);
-
-
-	  /* If we're converting arg0 from an unsigned type, to exp,
-	     a signed type,  we will be doing the comparison as unsigned.
-	     The tests above have already verified that LOW and HIGH
-	     are both positive.
-
-	     So we have to ensure that we will handle large unsigned
-	     values the same way that the current signed bounds treat
-	     negative values.  */
-
-	  if (!TYPE_UNSIGNED (exp_type) && TYPE_UNSIGNED (arg0_type))
-	    {
-	      tree high_positive;
-	      tree equiv_type;
-	      /* For fixed-point modes, we need to pass the saturating flag
-		 as the 2nd parameter.  */
-	      if (ALL_FIXED_POINT_MODE_P (TYPE_MODE (arg0_type)))
-		equiv_type = lang_hooks.types.type_for_mode
-			     (TYPE_MODE (arg0_type),
-			      TYPE_SATURATING (arg0_type));
-	      else
-		equiv_type = lang_hooks.types.type_for_mode
-			     (TYPE_MODE (arg0_type), 1);
-
-	      /* A range without an upper bound is, naturally, unbounded.
-		 Since convert would have cropped a very large value, use
-		 the max value for the destination type.  */
-	      high_positive
-		= TYPE_MAX_VALUE (equiv_type) ? TYPE_MAX_VALUE (equiv_type)
-		: TYPE_MAX_VALUE (arg0_type);
-
-	      if (TYPE_PRECISION (exp_type) == TYPE_PRECISION (arg0_type))
-		high_positive = fold_build2_loc (loc, RSHIFT_EXPR, arg0_type,
-					     fold_convert_loc (loc, arg0_type,
-							       high_positive),
-					     build_int_cst (arg0_type, 1));
-
-	      /* If the low bound is specified, "and" the range with the
-		 range for which the original unsigned value will be
-		 positive.  */
-	      if (low != 0)
-		{
-		  if (! merge_ranges (&n_in_p, &n_low, &n_high,
-				      1, n_low, n_high, 1,
-				      fold_convert_loc (loc, arg0_type,
-							integer_zero_node),
-				      high_positive))
-		    break;
-
-		  in_p = (n_in_p == in_p);
-		}
-	      else
-		{
-		  /* Otherwise, "or" the range with the range of the input
-		     that will be interpreted as negative.  */
-		  if (! merge_ranges (&n_in_p, &n_low, &n_high,
-				      0, n_low, n_high, 1,
-				      fold_convert_loc (loc, arg0_type,
-							integer_zero_node),
-				      high_positive))
-		    break;
-
-		  in_p = (in_p != n_in_p);
-		}
-	    }
-
-	  exp = arg0;
-	  low = n_low, high = n_high;
-	  continue;
-
-	default:
-	  break;
-	}
-
-      break;
+      nexp = make_range_step (loc, code, arg0, arg1, exp_type, &low,
+			      &high, &in_p, strict_overflow_p);
+      if (nexp == NULL_TREE)
+	break;
+      exp = nexp;
     }
 
   /* If EXP is a constant, we can evaluate whether this is true or false.  */
