@@ -50,6 +50,7 @@
 #include "sel-sched.h"
 #include "debug.h"
 #include "opts.h"
+#include "hw-doloop.h"
 
 /* Table of supported architecture variants.  */
 typedef struct
@@ -160,6 +161,27 @@ static int c6x_unit_codes[ARRAY_SIZE (c6x_unit_names)];
 
 #define RESERVATION_S1 2
 #define RESERVATION_S2 10
+
+/* An enum for the unit requirements we count in the UNIT_REQS table.  */
+enum unitreqs
+{
+  UNIT_REQ_D,
+  UNIT_REQ_L,
+  UNIT_REQ_S,
+  UNIT_REQ_M,
+  UNIT_REQ_DL,
+  UNIT_REQ_DS,
+  UNIT_REQ_LS,
+  UNIT_REQ_DLS,
+  UNIT_REQ_T,
+  UNIT_REQ_X,
+  UNIT_REQ_MAX
+};
+
+/* A table used to count unit requirements.  Used when computing minimum
+   iteration intervals.  */
+typedef int unit_req_table[2][UNIT_REQ_MAX];
+static unit_req_table unit_reqs;
 
 /* Register map for debugging.  */
 int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
@@ -3164,6 +3186,149 @@ assign_reservations (rtx head, rtx end)
 	  }
     }
 }
+
+/* Return a factor by which to weight unit imbalances for a reservation
+   R.  */
+static int
+unit_req_factor (enum unitreqs r)
+{
+  switch (r)
+    {
+    case UNIT_REQ_D:
+    case UNIT_REQ_L:
+    case UNIT_REQ_S:
+    case UNIT_REQ_M:
+    case UNIT_REQ_X:
+    case UNIT_REQ_T:
+      return 1;
+    case UNIT_REQ_DL:
+    case UNIT_REQ_LS:
+    case UNIT_REQ_DS:
+      return 2;
+    case UNIT_REQ_DLS:
+      return 3;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Examine INSN, and store in REQ1/SIDE1 and REQ2/SIDE2 the unit
+   requirements.  Returns zero if INSN can't be handled, otherwise
+   either one or two to show how many of the two pairs are in use.
+   REQ1 is always used, it holds what is normally thought of as the
+   instructions reservation, e.g. UNIT_REQ_DL.  REQ2 is used to either
+   describe a cross path, or for loads/stores, the T unit.  */
+static int
+get_unit_reqs (rtx insn, int *req1, int *side1, int *req2, int *side2)
+{
+  enum attr_units units;
+  enum attr_cross cross;
+  int side, req;
+
+  if (!NONDEBUG_INSN_P (insn) || recog_memoized (insn) < 0)
+    return 0;
+  units = get_attr_units (insn);
+  if (units == UNITS_UNKNOWN)
+    return 0;
+  side = get_insn_side (insn, units);
+  cross = get_attr_cross (insn);
+
+  req = (units == UNITS_D ? UNIT_REQ_D
+	 : units == UNITS_D_ADDR ? UNIT_REQ_D
+	 : units == UNITS_DL ? UNIT_REQ_DL
+	 : units == UNITS_DS ? UNIT_REQ_DS
+	 : units == UNITS_L ? UNIT_REQ_L
+	 : units == UNITS_LS ? UNIT_REQ_LS
+	 : units == UNITS_S ? UNIT_REQ_S
+	 : units == UNITS_M ? UNIT_REQ_M
+	 : units == UNITS_DLS ? UNIT_REQ_DLS
+	 : -1);
+  gcc_assert (req != -1);
+  *req1 = req;
+  *side1 = side;
+  if (units == UNITS_D_ADDR)
+    {
+      *req2 = UNIT_REQ_T;
+      *side2 = side ^ (cross == CROSS_Y ? 1 : 0);
+      return 2;
+    }
+  else if (cross == CROSS_Y)
+    {
+      *req2 = UNIT_REQ_X;
+      *side2 = side;
+      return 2;
+    }
+  return 1;
+}
+
+/* Walk the insns between and including HEAD and TAIL, and mark the
+   resource requirements in the unit_reqs table.  */
+static void
+count_unit_reqs (unit_req_table reqs, rtx head, rtx tail)
+{
+  rtx insn;
+
+  memset (reqs, 0, sizeof (unit_req_table));
+
+  for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
+    {
+      int side1, side2, req1, req2;
+
+      switch (get_unit_reqs (insn, &req1, &side1, &req2, &side2))
+	{
+	case 2:
+	  reqs[side2][req2]++;
+	  /* fall through */
+	case 1:
+	  reqs[side1][req1]++;
+	  break;
+	}
+    }
+}
+
+/* Update the table REQS by merging more specific unit reservations into
+   more general ones, i.e. counting (for example) UNIT_REQ_D also in
+   UNIT_REQ_DL, DS, and DLS.  */
+static void
+merge_unit_reqs (unit_req_table reqs)
+{
+  int side;
+  for (side = 0; side < 2; side++)
+    {
+      int d = reqs[side][UNIT_REQ_D];
+      int l = reqs[side][UNIT_REQ_L];
+      int s = reqs[side][UNIT_REQ_S];
+      int dl = reqs[side][UNIT_REQ_DL];
+      int ls = reqs[side][UNIT_REQ_LS];
+      int ds = reqs[side][UNIT_REQ_DS];
+
+      reqs[side][UNIT_REQ_DL] += d;
+      reqs[side][UNIT_REQ_DL] += l;
+      reqs[side][UNIT_REQ_DS] += d;
+      reqs[side][UNIT_REQ_DS] += s;
+      reqs[side][UNIT_REQ_LS] += l;
+      reqs[side][UNIT_REQ_LS] += s;
+      reqs[side][UNIT_REQ_DLS] += ds + dl + ls + d + l + s;
+    }
+}
+
+/* Return the resource-constrained minimum iteration interval given the
+   data in the REQS table.  This must have been processed with
+   merge_unit_reqs already.  */
+static int
+res_mii (unit_req_table reqs)
+{
+  int side, req;
+  int worst = 1;
+  for (side = 0; side < 2; side++)
+    for (req = 0; req < UNIT_REQ_MAX; req++)
+      {
+	int factor = unit_req_factor (req);
+	worst = MAX ((reqs[side][UNIT_REQ_D] + factor - 1) / factor, worst);
+      }
+
+  return worst;
+}
 
 /* Backend scheduling state.  */
 typedef struct c6x_sched_context
@@ -3196,13 +3361,15 @@ typedef struct c6x_sched_context
 
   /* The following variable value is the last issued insn.  */
   rtx last_scheduled_insn;
+  /* The last issued insn that isn't a shadow of another.  */
+  rtx last_scheduled_iter0;
 
   /* The following variable value is DFA state before issuing the
      first insn in the current clock cycle.  We do not use this member
      of the structure directly; we copy the data in and out of
      prev_cycle_state.  */
   state_t prev_cycle_state_ctx;
-  
+
   int reg_n_accesses[FIRST_PSEUDO_REGISTER];
   int reg_n_xaccesses[FIRST_PSEUDO_REGISTER];
   int reg_set_in_cycle[FIRST_PSEUDO_REGISTER];
@@ -3222,6 +3389,10 @@ static state_t prev_cycle_state;
 /* Set when we discover while processing an insn that it would lead to too
    many accesses of the same register.  */
 static bool reg_access_stall;
+
+/* The highest insn uid after delayed insns were split, but before loop bodies
+   were copied by the modulo scheduling code.  */
+static int sploop_max_uid_iter0;
 
 /* Look up the jump cycle with index N.  For an out-of-bounds N, we return 0,
    so the caller does not specifically have to test for it.  */
@@ -3421,6 +3592,7 @@ static void
 init_sched_state (c6x_sched_context_t sc)
 {
   sc->last_scheduled_insn = NULL_RTX;
+  sc->last_scheduled_iter0 = NULL_RTX;
   sc->issued_this_cycle = 0;
   memset (sc->jump_cycles, 0, sizeof sc->jump_cycles);
   memset (sc->jump_cond, 0, sizeof sc->jump_cond);
@@ -3481,7 +3653,7 @@ c6x_clear_sched_context (void *_sc)
   c6x_sched_context_t sc = (c6x_sched_context_t) _sc;
   gcc_assert (_sc != NULL);
 
-  free (sc->prev_cycle_state_ctx); 
+  free (sc->prev_cycle_state_ctx);
 }
 
 /* Free _SC.  */
@@ -3716,7 +3888,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
       bool is_asm = (icode < 0
 		     && (GET_CODE (PATTERN (insn)) == ASM_INPUT
 			 || asm_noperands (PATTERN (insn)) >= 0));
-      bool no_parallel = (is_asm
+      bool no_parallel = (is_asm || icode == CODE_FOR_sploop
 			  || (icode >= 0
 			      && get_attr_type (insn) == TYPE_ATOMIC));
 
@@ -3725,7 +3897,8 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 	 code always assumes at least 1 cycle, which may be wrong.  */
       if ((no_parallel
 	   && (ss.issued_this_cycle > 0 || clock_var < ss.delays_finished_at))
-	  || c6x_registers_update (insn))
+	  || c6x_registers_update (insn)
+	  || (ss.issued_this_cycle > 0 && icode == CODE_FOR_sploop))
 	{
 	  memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
 	  *ready = insn;
@@ -3924,6 +4097,8 @@ c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 		    rtx insn, int can_issue_more ATTRIBUTE_UNUSED)
 {
   ss.last_scheduled_insn = insn;
+  if (INSN_UID (insn) < sploop_max_uid_iter0 && !JUMP_P (insn))
+    ss.last_scheduled_iter0 = insn;
   if (GET_CODE (PATTERN (insn)) != USE && GET_CODE (PATTERN (insn)) != CLOBBER)
     ss.issued_this_cycle++;
   if (insn_info)
@@ -4813,6 +4988,117 @@ split_delayed_branch (rtx insn)
   record_delay_slot_pair (i1, insn, 5, 0);
 }
 
+/* If INSN is a multi-cycle insn that should be handled properly in
+   modulo-scheduling, split it into a real insn and a shadow.
+   Return true if we made a change.
+
+   It is valid for us to fail to split an insn; the caller has to deal
+   with the possibility.  Currently we handle loads and most mpy2 and
+   mpy4 insns.  */
+static bool
+split_delayed_nonbranch (rtx insn)
+{
+  int code = recog_memoized (insn);
+  enum attr_type type;
+  rtx i1, newpat, src, dest;
+  rtx pat = PATTERN (insn);
+  rtvec rtv;
+  int delay;
+
+  if (GET_CODE (pat) == COND_EXEC)
+    pat = COND_EXEC_CODE (pat);
+
+  if (code < 0 || GET_CODE (pat) != SET)
+    return false;
+  src = SET_SRC (pat);
+  dest = SET_DEST (pat);
+  if (!REG_P (dest))
+    return false;
+
+  type = get_attr_type (insn);
+  if (code >= 0
+      && (type == TYPE_LOAD
+	  || type == TYPE_LOADN))
+    {
+      if (!MEM_P (src)
+	  && (GET_CODE (src) != ZERO_EXTEND
+	      || !MEM_P (XEXP (src, 0))))
+	return false;
+
+      if (GET_MODE_SIZE (GET_MODE (dest)) > 4
+	  && (GET_MODE_SIZE (GET_MODE (dest)) != 8 || !TARGET_LDDW))
+	return false;
+
+      rtv = gen_rtvec (2, GEN_INT (REGNO (SET_DEST (pat))),
+		       SET_SRC (pat));
+      newpat = gen_load_shadow (SET_DEST (pat));
+      pat = gen_rtx_UNSPEC (VOIDmode, rtv, UNSPEC_REAL_LOAD);
+      delay = 4;
+    }
+  else if (code >= 0
+	   && (type == TYPE_MPY2
+	       || type == TYPE_MPY4))
+    {
+      /* We don't handle floating point multiplies yet.  */
+      if (GET_MODE (dest) == SFmode)
+	return false;
+
+      rtv = gen_rtvec (2, GEN_INT (REGNO (SET_DEST (pat))),
+		       SET_SRC (pat));
+      newpat = gen_mult_shadow (SET_DEST (pat));
+      pat = gen_rtx_UNSPEC (VOIDmode, rtv, UNSPEC_REAL_MULT);
+      delay = type == TYPE_MPY2 ? 1 : 3;
+    }
+  else
+    return false;
+
+  pat = duplicate_cond (pat, insn);
+  newpat = duplicate_cond (newpat, insn);
+  i1 = emit_insn_before (pat, insn);
+  PATTERN (insn) = newpat;
+  INSN_CODE (insn) = -1;
+  recog_memoized (insn);
+  recog_memoized (i1);
+  record_delay_slot_pair (i1, insn, delay, 0);
+  return true;
+}
+
+/* Examine if INSN is the result of splitting a load into a real load and a
+   shadow, and if so, undo the transformation.  */
+static void
+undo_split_delayed_nonbranch (rtx insn)
+{
+  int icode = recog_memoized (insn);
+  enum attr_type type;
+  rtx prev_pat, insn_pat, prev;
+
+  if (icode < 0)
+    return;
+  type = get_attr_type (insn);
+  if (type != TYPE_LOAD_SHADOW && type != TYPE_MULT_SHADOW)
+    return;
+  prev = PREV_INSN (insn);
+  prev_pat = PATTERN (prev);
+  insn_pat = PATTERN (insn);
+  if (GET_CODE (prev_pat) == COND_EXEC)
+    {
+      prev_pat = COND_EXEC_CODE (prev_pat);
+      insn_pat = COND_EXEC_CODE (insn_pat);
+    }
+
+  gcc_assert (GET_CODE (prev_pat) == UNSPEC
+	      && ((XINT (prev_pat, 1) == UNSPEC_REAL_LOAD
+		   && type == TYPE_LOAD_SHADOW)
+		  || (XINT (prev_pat, 1) == UNSPEC_REAL_MULT
+		      && type == TYPE_MULT_SHADOW)));
+  insn_pat = gen_rtx_SET (VOIDmode, SET_DEST (insn_pat),
+			  XVECEXP (prev_pat, 0, 1));
+  insn_pat = duplicate_cond (insn_pat, prev);
+  PATTERN (insn) = insn_pat;
+  INSN_CODE (insn) = -1;
+  delete_insn (prev);
+}
+
 /* Split every insn (i.e. jumps and calls) which can have delay slots into
    two parts: the first one is scheduled normally and emits the instruction,
    while the second one is a shadow insn which shows the side effect taking
@@ -4853,6 +5139,481 @@ conditionalize_after_sched (void)
       }
 }
 
+/* A callback for the hw-doloop pass.  This function examines INSN; if
+   it is a loop_end pattern we recognize, return the reg rtx for the
+   loop counter.  Otherwise, return NULL_RTX.  */
+
+static rtx
+hwloop_pattern_reg (rtx insn)
+{
+  rtx pat, reg;
+
+  if (!JUMP_P (insn) || recog_memoized (insn) != CODE_FOR_loop_end)
+    return NULL_RTX;
+
+  pat = PATTERN (insn);
+  reg = SET_DEST (XVECEXP (pat, 0, 1));
+  if (!REG_P (reg))
+    return NULL_RTX;
+  return reg;
+}
+
+/* Return the number of cycles taken by BB, as computed by scheduling,
+   including the latencies of all insns with delay slots.  IGNORE is
+   an insn we should ignore in the calculation, usually the final
+   branch.  */
+static int
+bb_earliest_end_cycle (basic_block bb, rtx ignore)
+{
+  int earliest = 0;
+  rtx insn;
+
+  FOR_BB_INSNS (bb, insn)
+    {
+      int cycles, this_clock;
+
+      if (LABEL_P (insn) || NOTE_P (insn) || DEBUG_INSN_P (insn)
+	  || GET_CODE (PATTERN (insn)) == USE
+	  || GET_CODE (PATTERN (insn)) == CLOBBER
+	  || insn == ignore)
+	continue;
+
+      this_clock = insn_get_clock (insn);
+      cycles = get_attr_cycles (insn);
+
+      if (earliest < this_clock + cycles)
+	earliest = this_clock + cycles;
+    }
+  return earliest;
+}
+
+/* Examine the insns in BB and remove all which have a uid greater or
+   equal to MAX_UID.  */
+static void
+filter_insns_above (basic_block bb, int max_uid)
+{
+  rtx insn, next;
+  bool prev_ti = false;
+  int prev_cycle = -1;
+
+  FOR_BB_INSNS_SAFE (bb, insn, next)
+    {
+      int this_cycle;
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      if (insn == BB_END (bb))
+	return;
+      this_cycle = insn_get_clock (insn);
+      if (prev_ti && this_cycle == prev_cycle)
+	{
+	  gcc_assert (GET_MODE (insn) != TImode);
+	  PUT_MODE (insn, TImode);
+	}
+      prev_ti = false;
+      if (INSN_UID (insn) >= max_uid)
+	{
+	  if (GET_MODE (insn) == TImode)
+	    {
+	      prev_ti = true;
+	      prev_cycle = this_cycle;
+	    }
+	  delete_insn (insn);
+	}
+    }
+}
+
+/* A callback for the hw-doloop pass.  Called to optimize LOOP in a
+   machine-specific fashion; returns true if successful and false if
+   the hwloop_fail function should be called.  */
+
+static bool
+hwloop_optimize (hwloop_info loop)
+{
+  basic_block entry_bb, bb;
+  rtx seq, insn, prev, entry_after, end_packet;
+  rtx head_insn, tail_insn, new_insns, last_insn;
+  int loop_earliest, entry_earliest, entry_end_cycle;
+  int n_execute_packets;
+  edge entry_edge;
+  unsigned ix;
+  int max_uid_before, delayed_splits;
+  int i, sp_ii, min_ii, max_ii, max_parallel, n_insns, n_real_insns, stages;
+  rtx *orig_vec;
+  rtx *copies;
+  rtx **insn_copies;
+
+  if (!c6x_flag_modulo_sched || !c6x_flag_schedule_insns2
+      || !TARGET_INSNS_64PLUS)
+    return false;
+
+  if (loop->iter_reg_used || loop->depth > 1)
+    return false;
+  if (loop->has_call || loop->has_asm)
+    return false;
+
+  if (loop->head != loop->tail)
+    return false;
+
+  gcc_assert (loop->incoming_dest == loop->head);
+
+  entry_edge = NULL;
+  FOR_EACH_VEC_ELT (edge, loop->incoming, i, entry_edge)
+    if (entry_edge->flags & EDGE_FALLTHRU)
+      break;
+  if (entry_edge == NULL)
+    return false;
+
+  schedule_ebbs_init ();
+  schedule_ebb (BB_HEAD (loop->tail), loop->loop_end, true);
+  schedule_ebbs_finish ();
+
+  bb = loop->head;
+  loop_earliest = bb_earliest_end_cycle (bb, loop->loop_end) + 1;
+
+  max_uid_before = get_max_uid ();
+
+  /* Split all multi-cycle operations, such as loads.  For normal
+     scheduling, we only do this for branches, as the generated code
+     would otherwise not be interrupt-safe.  When using sploop, it is
+     safe and beneficial to split them.  If any multi-cycle operations
+     remain after splitting (because we don't handle them yet), we
+     cannot pipeline the loop.  */
+  delayed_splits = 0;
+  FOR_BB_INSNS (bb, insn)
+    {
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  recog_memoized (insn);
+	  if (split_delayed_nonbranch (insn))
+	    delayed_splits++;
+	  else if (INSN_CODE (insn) >= 0
+		   && get_attr_cycles (insn) > 1)
+	    goto undo_splits;
+	}
+    }
+
+  /* Count the number of insns as well as the number real insns, and save
+     the original sequence of insns in case we must restore it later.  */
+  n_insns = n_real_insns = 0;
+  FOR_BB_INSNS (bb, insn)
+    {
+      n_insns++;
+      if (NONDEBUG_INSN_P (insn) && insn != loop->loop_end)
+	n_real_insns++;
+    }
+  orig_vec = XNEWVEC (rtx, n_insns);
+  n_insns = 0;
+  FOR_BB_INSNS (bb, insn)
+    orig_vec[n_insns++] = insn;
+
+  /* Count the unit reservations, and compute a minimum II from that
+     table.  */
+  count_unit_reqs (unit_reqs, loop->start_label,
+		   PREV_INSN (loop->loop_end));
+  merge_unit_reqs (unit_reqs);
+
+  min_ii = res_mii (unit_reqs);
+  max_ii = loop_earliest < 15 ? loop_earliest : 14;
+
+  /* Make copies of the loop body, up to a maximum number of stages we want
+     to handle.  */
+  max_parallel = loop_earliest / min_ii + 1;
+
+  copies = XCNEWVEC (rtx, (max_parallel + 1) * n_real_insns);
+  insn_copies = XNEWVEC (rtx *, max_parallel + 1);
+  for (i = 0; i < max_parallel + 1; i++)
+    insn_copies[i] = copies + i * n_real_insns;
+
+  head_insn = next_nonnote_nondebug_insn (loop->start_label);
+  tail_insn = prev_real_insn (BB_END (bb));
+
+  i = 0;
+  FOR_BB_INSNS (bb, insn)
+    if (NONDEBUG_INSN_P (insn) && insn != loop->loop_end)
+      insn_copies[0][i++] = insn;
+
+  sploop_max_uid_iter0 = get_max_uid ();
+
+  /* Generate the copies of the loop body, and save them in the
+     INSN_COPIES array.  */
+  start_sequence ();
+  for (i = 0; i < max_parallel; i++)
+    {
+      int j;
+      rtx this_iter;
+
+      this_iter = duplicate_insn_chain (head_insn, tail_insn);
+      j = 0;
+      while (this_iter)
+	{
+	  rtx prev_stage_insn = insn_copies[i][j];
+	  gcc_assert (INSN_CODE (this_iter) == INSN_CODE (prev_stage_insn));
+
+	  if (INSN_CODE (this_iter) >= 0
+	      && (get_attr_type (this_iter) == TYPE_LOAD_SHADOW
+		  || get_attr_type (this_iter) == TYPE_MULT_SHADOW))
+	    {
+	      rtx prev = PREV_INSN (this_iter);
+	      record_delay_slot_pair (prev, this_iter,
+				      get_attr_cycles (prev) - 1, 0);
+	    }
+	  else
+	    record_delay_slot_pair (prev_stage_insn, this_iter, i, 1);
+
+	  insn_copies[i + 1][j] = this_iter;
+	  j++;
+	  this_iter = next_nonnote_nondebug_insn (this_iter);
+	}
+    }
+  new_insns = get_insns ();
+  last_insn = insn_copies[max_parallel][n_real_insns - 1];
+  end_sequence ();
+  emit_insn_before (new_insns, BB_END (bb));
+
+  /* Try to schedule the loop using varying initiation intervals,
+     starting with the smallest possible and incrementing it
+     on failure.  */
+  for (sp_ii = min_ii; sp_ii <= max_ii; sp_ii++)
+    {
+      basic_block tmp_bb;
+      if (dump_file)
+	fprintf (dump_file, "Trying to schedule for II %d\n", sp_ii);
+
+      df_clear_flags (DF_LR_RUN_DCE);
+
+      schedule_ebbs_init ();
+      set_modulo_params (sp_ii, max_parallel, n_real_insns,
+			 sploop_max_uid_iter0);
+      tmp_bb = schedule_ebb (BB_HEAD (bb), last_insn, true);
+      schedule_ebbs_finish ();
+
+      if (tmp_bb)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Found schedule with II %d\n", sp_ii);
+	  break;
+	}
+    }
+
+  discard_delay_pairs_above (max_uid_before);
+
+  if (sp_ii > max_ii)
+    goto restore_loop;
+
+  stages = insn_get_clock (ss.last_scheduled_iter0) / sp_ii + 1;
+
+  if (stages == 1 && sp_ii > 5)
+    goto restore_loop;
+
+  /* At this point, we know we've been successful, unless we find later that
+     there are too many execute packets for the loop buffer to hold.  */
+
+  /* Assign reservations to the instructions in the loop.  We must find
+     the stage that contains the full loop kernel, and transfer the
+     reservations of the instructions contained in it to the corresponding
+     instructions from iteration 0, which are the only ones we'll keep.  */
+  assign_reservations (BB_HEAD (bb), ss.last_scheduled_insn);
+  PREV_INSN (BB_END (bb)) = ss.last_scheduled_iter0;
+  NEXT_INSN (ss.last_scheduled_iter0) = BB_END (bb);
+  filter_insns_above (bb, sploop_max_uid_iter0);
+
+  for (i = 0; i < n_real_insns; i++)
+    {
+      rtx insn = insn_copies[0][i];
+      int uid = INSN_UID (insn);
+      int stage = insn_uid_get_clock (uid) / sp_ii;
+
+      if (stage + 1 < stages)
+	{
+	  int copy_uid;
+	  stage = stages - stage - 1;
+	  copy_uid = INSN_UID (insn_copies[stage][i]);
+	  INSN_INFO_ENTRY (uid).reservation
+	    = INSN_INFO_ENTRY (copy_uid).reservation;
+	}
+    }
+  if (stages == 1)
+    stages++;
+
+  /* Compute the number of execute packets the pipelined form of the loop will
+     require.  */
+  prev = NULL_RTX;
+  n_execute_packets = 0;
+  for (insn = loop->start_label; insn != loop->loop_end; insn = NEXT_INSN (insn))
+    {
+      if (NONDEBUG_INSN_P (insn) && GET_MODE (insn) == TImode
+	  && !shadow_p (insn))
+	{
+	  n_execute_packets++;
+	  if (prev && insn_get_clock (prev) + 1 != insn_get_clock (insn))
+	    /* We need an extra NOP instruction.  */
+	    n_execute_packets++;
+
+	  prev = insn;
+	}
+    }
+
+  end_packet = ss.last_scheduled_iter0;
+  while (!NONDEBUG_INSN_P (end_packet) || GET_MODE (end_packet) != TImode)
+    end_packet = PREV_INSN (end_packet);
+
+  /* The earliest cycle in which we can emit the SPKERNEL instruction.  */
+  loop_earliest = (stages - 1) * sp_ii;
+  if (loop_earliest > insn_get_clock (end_packet))
+    {
+      n_execute_packets++;
+      end_packet = loop->loop_end;
+    }
+  else
+    loop_earliest = insn_get_clock (end_packet);
+
+  if (n_execute_packets > 14)
+    goto restore_loop;
+
+  /* Generate the spkernel instruction, and place it at the appropriate
+     spot.  */
+  PUT_MODE (end_packet, VOIDmode);
+
+  insn = gen_spkernel (GEN_INT (stages - 1),
+		       const0_rtx, JUMP_LABEL (loop->loop_end));
+  insn = emit_jump_insn_before (insn, end_packet);
+  JUMP_LABEL (insn) = JUMP_LABEL (loop->loop_end);
+  insn_set_clock (insn, loop_earliest);
+  PUT_MODE (insn, TImode);
+  INSN_INFO_ENTRY (INSN_UID (insn)).ebb_start = false;
+  delete_insn (loop->loop_end);
+
+  /* Place the mvc and sploop instructions before the loop.  */
+  entry_bb = entry_edge->src;
+
+  start_sequence ();
+
+  insn = emit_insn (gen_mvilc (loop->iter_reg));
+  insn = emit_insn (gen_sploop (GEN_INT (sp_ii)));
+
+  seq = get_insns ();
+
+  if (!single_succ_p (entry_bb) || VEC_length (edge, loop->incoming) > 1)
+    {
+      basic_block new_bb;
+      edge e;
+      edge_iterator ei;
+
+      emit_insn_before (seq, BB_HEAD (loop->head));
+      seq = emit_label_before (gen_label_rtx (), seq);
+
+      new_bb = create_basic_block (seq, insn, entry_bb);
+      FOR_EACH_EDGE (e, ei, loop->incoming)
+	{
+	  if (!(e->flags & EDGE_FALLTHRU))
+	    redirect_edge_and_branch_force (e, new_bb);
+	  else
+	    redirect_edge_succ (e, new_bb);
+	}
+      make_edge (new_bb, loop->head, 0);
+    }
+  else
+    {
+      entry_after = BB_END (entry_bb);
+      while (DEBUG_INSN_P (entry_after)
+	     || (NOTE_P (entry_after)
+		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))
+	entry_after = PREV_INSN (entry_after);
+      emit_insn_after (seq, entry_after);
+    }
+
+  end_sequence ();
+
+  /* Make sure we don't try to schedule this loop again.  */
+  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, bb); ix++)
+    bb->flags |= BB_DISABLE_SCHEDULE;
+
+  return true;
+
+ restore_loop:
+  if (dump_file)
+    fprintf (dump_file, "Unable to pipeline loop.\n");
+
+  for (i = 1; i < n_insns; i++)
+    {
+      NEXT_INSN (orig_vec[i - 1]) = orig_vec[i];
+      PREV_INSN (orig_vec[i]) = orig_vec[i - 1];
+    }
+  PREV_INSN (orig_vec[0]) = PREV_INSN (BB_HEAD (bb));
+  NEXT_INSN (PREV_INSN (BB_HEAD (bb))) = orig_vec[0];
+  NEXT_INSN (orig_vec[n_insns - 1]) = NEXT_INSN (BB_END (bb));
+  PREV_INSN (NEXT_INSN (BB_END (bb))) = orig_vec[n_insns - 1];
+  BB_HEAD (bb) = orig_vec[0];
+  BB_END (bb) = orig_vec[n_insns - 1];
+ undo_splits:
+  free_delay_pairs ();
+  FOR_BB_INSNS (bb, insn)
+    if (NONDEBUG_INSN_P (insn))
+      undo_split_delayed_nonbranch (insn);
+  return false;
+}
+
+/* A callback for the hw-doloop pass.  Called when a loop we have discovered
+   turns out not to be optimizable; we have to split the doloop_end pattern
+   into a subtract and a test.  */
+static void
+hwloop_fail (hwloop_info loop)
+{
+  rtx insn, test, testreg;
+
+  if (dump_file)
+    fprintf (dump_file, "splitting doloop insn %d\n",
+	     INSN_UID (loop->loop_end));
+  insn = gen_addsi3 (loop->iter_reg, loop->iter_reg, constm1_rtx);
+  /* See if we can emit the add at the head of the loop rather than at the
+     end.  */
+  if (loop->head == NULL
+      || loop->iter_reg_used_outside
+      || loop->iter_reg_used
+      || TEST_HARD_REG_BIT (loop->regs_set_in_loop, REGNO (loop->iter_reg))
+      || loop->incoming_dest != loop->head
+      || EDGE_COUNT (loop->head->preds) != 2)
+    emit_insn_before (insn, loop->loop_end);
+  else
+    {
+      rtx t = loop->start_label;
+      while (!NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_BASIC_BLOCK)
+	t = NEXT_INSN (t);
+      emit_insn_after (insn, t);
+    }
+
+  testreg = SET_DEST (XVECEXP (PATTERN (loop->loop_end), 0, 2));
+  if (GET_CODE (testreg) == SCRATCH)
+    testreg = loop->iter_reg;
+  else
+    emit_insn_before (gen_movsi (testreg, loop->iter_reg), loop->loop_end);
+
+  test = gen_rtx_NE (VOIDmode, testreg, const0_rtx);
+  insn = emit_jump_insn_before (gen_cbranchsi4 (test, testreg, const0_rtx,
+						loop->start_label),
+				loop->loop_end);
+
+  JUMP_LABEL (insn) = loop->start_label;
+  LABEL_NUSES (loop->start_label)++;
+  delete_insn (loop->loop_end);
+}
+
+static struct hw_doloop_hooks c6x_doloop_hooks =
+{
+  hwloop_pattern_reg,
+  hwloop_optimize,
+  hwloop_fail
+};
+
+/* Run the hw-doloop pass to modulo-schedule hardware loops, or split the
+   doloop_end patterns where such optimizations are impossible.  */
+static void
+c6x_hwloops (void)
+{
+  if (optimize)
+    reorg_loops (true, &c6x_doloop_hooks);
+}
+
 /* Implement the TARGET_MACHINE_DEPENDENT_REORG pass.  We split call insns here
    into a sequence that loads the return register and performs the call,
    and emit the return label.
@@ -4881,10 +5642,17 @@ c6x_reorg (void)
       int sz = get_max_uid () * 3 / 2 + 1;
 
       insn_info = VEC_alloc (c6x_sched_insn_info, heap, sz);
+    }
 
-      /* Make sure the real-jump insns we create are not deleted.  */
-      sched_no_dce = true;
+  /* Make sure the real-jump insns we create are not deleted.  When modulo-
+     scheduling, situations where a reg is only stored in a loop can also
+     cause dead code when doing the initial unrolling.  */
+  sched_no_dce = true;
 
+  c6x_hwloops ();
+
+  if (c6x_flag_schedule_insns2)
+    {
       split_delayed_insns ();
       timevar_push (TV_SCHED2);
       if (do_selsched)
@@ -4895,8 +5663,8 @@ c6x_reorg (void)
       timevar_pop (TV_SCHED2);
 
       free_delay_pairs ();
-      sched_no_dce = false;
     }
+  sched_no_dce = false;
 
   call_labels = XCNEWVEC (rtx, get_max_uid () + 1);
 
