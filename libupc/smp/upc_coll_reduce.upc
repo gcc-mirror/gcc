@@ -111,6 +111,9 @@ The PUSH version of upc_all_reduceT:
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
 #endif
@@ -501,6 +504,9 @@ The PUSH version of upc_all_reduceT:
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
@@ -893,6 +899,9 @@ The PUSH version of upc_all_reduceT:
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
 #endif
@@ -1283,6 +1292,9 @@ The PUSH version of upc_all_reduceT:
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
@@ -1675,6 +1687,9 @@ The PUSH version of upc_all_reduceT:
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
 #endif
@@ -2065,6 +2080,9 @@ The PUSH version of upc_all_reduceT:
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
@@ -2457,6 +2475,9 @@ The PUSH version of upc_all_reduceT:
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
 #endif
@@ -2847,6 +2868,9 @@ The PUSH version of upc_all_reduceT:
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
@@ -3239,6 +3263,9 @@ The PUSH version of upc_all_reduceT:
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
 #endif
@@ -3592,6 +3619,9 @@ The PUSH version of upc_all_reduceT:
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);
 #endif
@@ -3944,6 +3974,9 @@ The PUSH version of upc_all_reduceT:
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_RED);

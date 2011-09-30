@@ -129,6 +129,9 @@ void upc_all_prefix_reduceC
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
 #endif
@@ -664,6 +667,9 @@ void upc_all_prefix_reduceUC
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
@@ -1201,6 +1207,9 @@ void upc_all_prefix_reduceS
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
 #endif
@@ -1736,6 +1745,9 @@ void upc_all_prefix_reduceUS
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
@@ -2273,6 +2285,9 @@ void upc_all_prefix_reduceI
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
 #endif
@@ -2808,6 +2823,9 @@ void upc_all_prefix_reduceUI
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
@@ -3345,6 +3363,9 @@ void upc_all_prefix_reduceL
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
 #endif
@@ -3880,6 +3901,9 @@ void upc_all_prefix_reduceUL
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
@@ -4417,6 +4441,9 @@ void upc_all_prefix_reduceF
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
 #endif
@@ -4890,6 +4917,9 @@ void upc_all_prefix_reduceD
   if (!upc_coll_init_flag)
     upc_coll_init ();
 
+  if (blk_size == 0)
+    blk_size = nelems;
+
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);
 #endif
@@ -5362,6 +5392,9 @@ void upc_all_prefix_reduceLD
 
   if (!upc_coll_init_flag)
     upc_coll_init ();
+
+  if (blk_size == 0)
+    blk_size = nelems;
 
 #ifdef _UPC_COLL_CHECK_ARGS
   upc_coll_err (dst, src, NULL, 0, sync_mode, blk_size, nelems, op, UPC_PRED);

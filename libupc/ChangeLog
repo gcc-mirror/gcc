@@ -1,3 +1,12 @@
+2011-09-30  Gary Funck  <gary@intrepid.com>
+
+	Generalize collectives library to support indefinite block sizes.
+	* smp/upc_coll_prefix_reduce.in: If 'blk_size' is zero, then set it
+	to 'nelems'.
+	* smp/upc_coll_reduce.in: Ditto.
+	* smp/upc_coll_prefix_reduce.upc: Re-generate.
+	* smp/upc_coll_reduce.upc: Re-generate.
+
 2011-09-19  Gary Funck  <gary@intrepid.com>
 
 	* libupc/smp/upc_access.c (__getstf2, __getsxf2):
