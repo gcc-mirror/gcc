@@ -6573,23 +6573,33 @@ avr_rtx_costs (rtx x, int codearg, int outer_code,
   return done;
 }
 
-/* Calculate the cost of a memory address.  */
+
+/* Implement `TARGET_ADDRESS_COST'.  */
 
 static int
 avr_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 {
+  int cost = 4;
+  
   if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x,1)) == CONST_INT
-      && (REG_P (XEXP (x,0)) || GET_CODE (XEXP (x,0)) == SUBREG)
-      && INTVAL (XEXP (x,1)) >= 61)
-    return 18;
-  if (CONSTANT_ADDRESS_P (x))
+      && CONST_INT_P (XEXP (x, 1))
+      && (REG_P (XEXP (x, 0))
+          || GET_CODE (XEXP (x, 0)) == SUBREG))
     {
-      if (optimize > 0 && io_address_operand (x, QImode))
-	return 2;
-      return 4;
+      if (INTVAL (XEXP (x, 1)) >= 61)
+        cost = 18;
     }
-  return 4;
+  else if (CONSTANT_ADDRESS_P (x))
+    {
+      if (optimize > 0
+          && io_address_operand (x, QImode))
+        cost = 2;
+    }
+
+  if (avr_log.address_cost)
+    avr_edump ("\n%?: %d = %r\n", cost, x);
+  
+  return cost;
 }
 
 /* Test for extra memory constraint 'Q'.

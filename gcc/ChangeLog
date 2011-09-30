@@ -1,3 +1,11 @@
+2011-09-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50566
+	* config/avr/avr-protos.h (avr_log_t): New field address_cost.
+	* config/avr/avr.c (avr_address_cost): Use it.
+	* config/avr/avr-log.c (avr_log_set_avr_log): Initialize it.
+	(avr_log_vadump): Unknown %-codes finish printing.
+
 2011-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/50571
