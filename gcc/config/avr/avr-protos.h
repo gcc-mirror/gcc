@@ -129,6 +129,7 @@ typedef struct
   unsigned legitimize_address :1;
   unsigned legitimize_reload_address :1;
   unsigned constraints :1;
+  unsigned address_cost :1;
 } avr_log_t;
 
 extern avr_log_t avr_log;

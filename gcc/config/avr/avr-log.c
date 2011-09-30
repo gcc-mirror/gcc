@@ -283,7 +283,12 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
               abort();
               
             default:
-              fputc (*(fmt-1), file);
+              /* Unknown %-code: Stop printing */
+              
+              fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
+              fmt = "";
+              
+              break;
             }
           break; /* % */
         }
@@ -318,6 +323,7 @@ avr_log_set_avr_log (void)
       SET_DUMP_DETAIL (legitimize_address);
       SET_DUMP_DETAIL (legitimize_reload_address);
       SET_DUMP_DETAIL (constraints);
+      SET_DUMP_DETAIL (address_cost);
 
 #undef SET_DUMP_DETAIL
     }
