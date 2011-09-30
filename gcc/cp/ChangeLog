@@ -1,3 +1,8 @@
+2011-09-30  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR c++/44473
+	* mangle.c (write_type): Handle CV qualifiers for decimal classes.
+
 2011-09-26   Andi Kleen <ak@linux.intel.com>
 
 	* repo.c (finish_repo): Use HOST_WIDE_INT_PRINT_HEX_PURE.
