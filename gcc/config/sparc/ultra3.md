@@ -56,7 +56,7 @@
 
 (define_insn_reservation "us3_array" 2
   (and (eq_attr "cpu" "ultrasparc3")
-    (eq_attr "type" "array"))
+    (eq_attr "type" "array,edgen"))
   "us3_ms + us3_slotany, nothing")
 
 ;; ??? Not entirely accurate.

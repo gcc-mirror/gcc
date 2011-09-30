@@ -13016,6 +13016,24 @@ long __builtin_vis_array16 (long, long);
 long __builtin_vis_array32 (long, long);
 @end smallexample
 
+Additionally, when you use the @option{-mvis2} switch, the VIS version
+2.0 built-in functions become available:
+
+@smallexample
+long __builtin_vis_bmask (long, long);
+int64_t __builtin_vis_bshuffledi (int64_t, int64_t);
+v2si __builtin_vis_bshufflev2si (v2si, v2si);
+v4hi __builtin_vis_bshufflev2si (v4hi, v4hi);
+v8qi __builtin_vis_bshufflev2si (v8qi, v8qi);
+
+long __builtin_vis_edge8n (void *, void *);
+long __builtin_vis_edge8ln (void *, void *);
+long __builtin_vis_edge16n (void *, void *);
+long __builtin_vis_edge16ln (void *, void *);
+long __builtin_vis_edge32n (void *, void *);
+long __builtin_vis_edge32ln (void *, void *);
+@end smallexample
+
 @node SPU Built-in Functions
 @subsection SPU Built-in Functions
 

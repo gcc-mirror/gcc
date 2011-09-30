@@ -769,16 +769,16 @@ sparc_option_override (void)
     /* UltraSPARC III */
     /* ??? Check if %y issue still holds true.  */
     { MASK_ISA,
-      MASK_V9|MASK_DEPRECATED_V8_INSNS},
+      MASK_V9|MASK_DEPRECATED_V8_INSNS|MASK_VIS2},
     /* UltraSPARC T1 */
     { MASK_ISA,
       MASK_V9|MASK_DEPRECATED_V8_INSNS},
     /* UltraSPARC T2 */
-    { MASK_ISA, MASK_V9},
+    { MASK_ISA, MASK_V9|MASK_VIS2},
     /* UltraSPARC T3 */
-    { MASK_ISA, MASK_V9 | MASK_FMAF},
+    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_FMAF},
     /* UltraSPARC T4 */
-    { MASK_ISA, MASK_V9 | MASK_FMAF},
+    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_FMAF},
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -857,9 +857,13 @@ sparc_option_override (void)
   if (target_flags_explicit & MASK_FPU)
     target_flags = (target_flags & ~MASK_FPU) | fpu;
 
-  /* Don't allow -mvis or -mfmaf if FPU is disabled.  */
+  /* -mvis2 implies -mvis */
+  if (TARGET_VIS2)
+    target_flags |= MASK_VIS;
+
+  /* Don't allow -mvis, -mvis2, or -mfmaf if FPU is disabled.  */
   if (! TARGET_FPU)
-    target_flags &= ~(MASK_VIS | MASK_FMAF);
+    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_FMAF);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available.
@@ -9300,6 +9304,21 @@ sparc_vis_init_builtins (void)
 			 di_ftype_ptr_ptr);
       def_builtin_const ("__builtin_vis_edge32l", CODE_FOR_edge32ldi_vis,
 			 di_ftype_ptr_ptr);
+      if (TARGET_VIS2)
+	{
+	  def_builtin_const ("__builtin_vis_edge8n", CODE_FOR_edge8ndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge8ln", CODE_FOR_edge8lndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16n", CODE_FOR_edge16ndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16ln", CODE_FOR_edge16lndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32n", CODE_FOR_edge32ndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32ln", CODE_FOR_edge32lndi_vis,
+			     di_ftype_ptr_ptr);
+	}
     }
   else
     {
@@ -9315,6 +9334,21 @@ sparc_vis_init_builtins (void)
 			 si_ftype_ptr_ptr);
       def_builtin_const ("__builtin_vis_edge32l", CODE_FOR_edge32lsi_vis,
 			 si_ftype_ptr_ptr);
+      if (TARGET_VIS2)
+	{
+	  def_builtin_const ("__builtin_vis_edge8n", CODE_FOR_edge8nsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge8ln", CODE_FOR_edge8lnsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16n", CODE_FOR_edge16nsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16ln", CODE_FOR_edge16lnsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32n", CODE_FOR_edge32nsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32ln", CODE_FOR_edge32lnsi_vis,
+			     si_ftype_ptr_ptr);
+	}
     }
 
   /* Pixel compare.  */
@@ -9394,6 +9428,25 @@ sparc_vis_init_builtins (void)
       def_builtin_const ("__builtin_vis_array32", CODE_FOR_array32si_vis,
 			 si_ftype_si_si);
   }
+
+  if (TARGET_VIS2)
+    {
+      /* Byte mask and shuffle */
+      if (TARGET_ARCH64)
+	def_builtin ("__builtin_vis_bmask", CODE_FOR_bmaskdi_vis,
+		     di_ftype_di_di);
+      else
+	def_builtin ("__builtin_vis_bmask", CODE_FOR_bmasksi_vis,
+		     si_ftype_si_si);
+      def_builtin ("__builtin_vis_bshufflev4hi", CODE_FOR_bshufflev4hi_vis,
+		   v4hi_ftype_v4hi_v4hi);
+      def_builtin ("__builtin_vis_bshufflev8qi", CODE_FOR_bshufflev8qi_vis,
+		   v8qi_ftype_v8qi_v8qi);
+      def_builtin ("__builtin_vis_bshufflev2si", CODE_FOR_bshufflev2si_vis,
+		   v2si_ftype_v2si_v2si);
+      def_builtin ("__builtin_vis_bshuffledi", CODE_FOR_bshuffledi_vis,
+		   di_ftype_di_di);
+    }
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.
@@ -9428,16 +9481,18 @@ sparc_expand_builtin (tree exp, rtx target,
   FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
     {
       const struct insn_operand_data *insn_op;
+      int idx;
 
       if (arg == error_mark_node)
 	return NULL_RTX;
 
       arg_count++;
-      insn_op = &insn_data[icode].operand[arg_count - !nonvoid];
+      idx = arg_count - !nonvoid;
+      insn_op = &insn_data[icode].operand[idx];
       op[arg_count] = expand_normal (arg);
 
-      if (! (*insn_data[icode].operand[arg_count].predicate) (op[arg_count],
-							      insn_op->mode))
+      if (! (*insn_data[icode].operand[idx].predicate) (op[arg_count],
+							insn_op->mode))
 	op[arg_count] = copy_to_mode_reg (insn_op->mode, op[arg_count]);
     }
 
@@ -9556,7 +9611,9 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
   if (ignore
       && icode != CODE_FOR_alignaddrsi_vis
       && icode != CODE_FOR_alignaddrdi_vis
-      && icode != CODE_FOR_wrgsr_vis)
+      && icode != CODE_FOR_wrgsr_vis
+      && icode != CODE_FOR_bmasksi_vis
+      && icode != CODE_FOR_bmaskdi_vis)
     return build_zero_cst (rtype);
 
   switch (icode)

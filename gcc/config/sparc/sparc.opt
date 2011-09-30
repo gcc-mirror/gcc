@@ -59,7 +59,11 @@ Compile for V8+ ABI
 
 mvis
 Target Report Mask(VIS)
-Use UltraSPARC Visual Instruction Set extensions
+Use UltraSPARC Visual Instruction Set version 1.0 extensions
+
+mvis2
+Target Report Mask(VIS2)
+Use UltraSPARC Visual Instruction Set version 2.0 extensions
 
 mfmaf
 Target Report Mask(FMAF)

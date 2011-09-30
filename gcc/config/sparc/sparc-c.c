@@ -45,7 +45,12 @@ sparc_target_macros (void)
       cpp_assert (parse_in, "machine=sparc");
     }
 
-  if (TARGET_VIS)
+  if (TARGET_VIS2)
+    {
+      cpp_define (parse_in, "__VIS__=0x200");
+      cpp_define (parse_in, "__VIS=0x200");
+    }
+  else if (TARGET_VIS)
     {
       cpp_define (parse_in, "__VIS__=0x100");
       cpp_define (parse_in, "__VIS=0x100");
