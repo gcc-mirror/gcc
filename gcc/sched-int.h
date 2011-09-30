@@ -1280,7 +1280,12 @@ extern rtx sched_emit_insn (rtx);
 extern rtx get_ready_element (int);
 extern int number_in_ready (void);
 
+/* Types and functions in sched-ebb.c.  */
 
+extern basic_block schedule_ebb (rtx, rtx, bool);
+extern void schedule_ebbs_init (void);
+extern void schedule_ebbs_finish (void);
+
 /* Types and functions in sched-rgn.c.  */
 
 /* A region is the main entity for interblock scheduling: insns
