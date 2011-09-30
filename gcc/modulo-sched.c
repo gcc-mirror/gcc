@@ -506,6 +506,10 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
 		   we assume no regmoves are generated as the doloop
 		   instructions are tied to the branch with an edge.  */
 		gcc_assert (set);
+		/* If the instruction contains auto-inc register then
+		   validate that the regmov is being generated for the
+		   target regsiter rather then the inc'ed register.	*/
+		gcc_assert (!autoinc_var_is_used_p (u->insn, e->dest->insn));
 	      }
 	    
 	    nreg_moves = MAX (nreg_moves, nreg_moves4e);
@@ -1281,12 +1285,10 @@ sms_schedule (void)
 	continue;
       }
 
-      /* Don't handle BBs with calls or barriers or auto-increment insns 
-	 (to avoid creating invalid reg-moves for the auto-increment insns),
+      /* Don't handle BBs with calls or barriers
 	 or !single_set with the exception of instructions that include
 	 count_reg---these instructions are part of the control part
 	 that do-loop recognizes.
-         ??? Should handle auto-increment insns.
          ??? Should handle insns defining subregs.  */
      for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
       {
@@ -1297,7 +1299,6 @@ sms_schedule (void)
             || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE
                 && !reg_mentioned_p (count_reg, insn))
-            || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
             || (INSN_P (insn) && (set = single_set (insn))
                 && GET_CODE (SET_DEST (set)) == SUBREG))
         break;
@@ -1311,8 +1312,6 @@ sms_schedule (void)
 		fprintf (dump_file, "SMS loop-with-call\n");
 	      else if (BARRIER_P (insn))
 		fprintf (dump_file, "SMS loop-with-barrier\n");
-              else if (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
-                fprintf (dump_file, "SMS reg inc\n");
               else if ((NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
                 fprintf (dump_file, "SMS loop-with-not-single-set\n");

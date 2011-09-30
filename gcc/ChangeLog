@@ -1,5 +1,14 @@
 2011-09-30  Revital Eres  <revital.eres@linaro.org>
 
+	* ddg.c (autoinc_var_is_used_p): New function.
+	(create_ddg_dep_from_intra_loop_link,
+	add_cross_iteration_register_deps): Call it.
+	* ddg.h (autoinc_var_is_used_p): Declare.
+	* modulo-sched.c (generate_reg_moves): Call autoinc_var_is_used_p.
+	(sms_schedule): Handle instructions with REG_INC.
+
+2011-09-30  Revital Eres  <revital.eres@linaro.org>
+
 	* modulo-sched.c (generate_reg_moves): Skip instructions that
 	do not set a register and verify no regmoves are created for
 	!single_set instructions.
