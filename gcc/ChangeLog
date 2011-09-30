@@ -1,3 +1,9 @@
+2011-09-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50574
+	* tree-cfg.c (verify_gimple_comparison): Compare component
+	mode sizes for vector comparisons.
+
 2011-09-30  Revital Eres  <revital.eres@linaro.org>
 
 	* ddg.c (autoinc_var_is_used_p): New function.
