@@ -4130,6 +4130,24 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_REMQUOL:
       case BUILT_IN_FREE:
 	return true;
+      case BUILT_IN_STRDUP:
+      case BUILT_IN_STRNDUP:
+	if (gimple_call_lhs (t))
+	  {
+	    handle_lhs_call (t, gimple_call_lhs (t), gimple_call_flags (t),
+			     NULL, fndecl);
+	    get_constraint_for_ptr_offset (gimple_call_lhs (t),
+					   NULL_TREE, &lhsc);
+	    get_constraint_for_ptr_offset (gimple_call_arg (t, 0),
+					   NULL_TREE, &rhsc);
+	    do_deref (&lhsc);
+	    do_deref (&rhsc);
+	    process_all_all_constraints (lhsc, rhsc);
+	    VEC_free (ce_s, heap, lhsc);
+	    VEC_free (ce_s, heap, rhsc);
+	    return true;
+	  }
+	break;
       /* Trampolines are special - they set up passing the static
 	 frame.  */
       case BUILT_IN_INIT_TRAMPOLINE:
