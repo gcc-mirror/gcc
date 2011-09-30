@@ -1,3 +1,19 @@
+2011-09-30  H.J. Lu  <hongjiu.lu@intel.com>
+	    Andi Kleen  <ak@linux.intel.com>
+
+	PR lto/50568
+	* lto.c (lto_splay_tree_delete_id): New.
+	(lto_splay_tree_compare_ids): Likewise.
+	(lto_splay_tree_lookup): Likewise.
+	(lto_splay_tree_id_equal_p): Likewise.
+	(lto_splay_tree_insert): Likewise.
+	(lto_splay_tree_new): Likewise.
+	(lto_resolution_read): Change id to unsigned HOST_WIDE_INT.
+	Use lto_splay_tree_id_equal_p and lto_splay_tree_lookup.
+	(create_subid_section_table): Use lto_splay_tree_lookup and
+	lto_splay_tree_insert.
+	(lto_file_read): Use lto_splay_tree_new.
+
 2011-09-26   Andi Kleen <ak@linux.intel.com>
 
 	* lto.c (lto_resolution_read): Remove id dumping.
