@@ -1,3 +1,9 @@
+2011-09-30  Revital Eres  <revital.eres@linaro.org>
+
+	* modulo-sched.c (generate_reg_moves): Skip instructions that
+	do not set a register and verify no regmoves are created for
+	!single_set instructions.
+
 2011-09-30  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* hw-doloop.c (scan_loop): Compute register usage only for non-debug

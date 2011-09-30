@@ -476,7 +476,12 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
       sbitmap *uses_of_defs;
       rtx last_reg_move;
       rtx prev_reg, old_reg;
-
+      rtx set = single_set (u->insn);
+      
+      /* Skip instructions that do not set a register.  */
+      if ((set && !REG_P (SET_DEST (set))))
+        continue;
+ 
       /* Compute the number of reg_moves needed for u, by looking at life
 	 ranges started at u (excluding self-loops).  */
       for (e = u->out; e; e = e->next_out)
@@ -493,6 +498,16 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
 		&& SCHED_COLUMN (e->dest) < SCHED_COLUMN (e->src))
 	      nreg_moves4e--;
 
+            if (nreg_moves4e >= 1)
+	      {
+		/* !single_set instructions are not supported yet and
+		   thus we do not except to encounter them in the loop
+		   except from the doloop part.  For the latter case
+		   we assume no regmoves are generated as the doloop
+		   instructions are tied to the branch with an edge.  */
+		gcc_assert (set);
+	      }
+	    
 	    nreg_moves = MAX (nreg_moves, nreg_moves4e);
 	  }
 
