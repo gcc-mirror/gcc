@@ -1391,6 +1391,106 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; Doloop
+;; -------------------------------------------------------------------------
+
+; operand 0 is the loop count pseudo register
+; operand 1 is the number of loop iterations or 0 if it is unknown
+; operand 2 is the maximum number of loop iterations
+; operand 3 is the number of levels of enclosed loops
+; operand 4 is the label to jump to at the top of the loop
+(define_expand "doloop_end"
+  [(parallel [(set (pc) (if_then_else
+			  (ne (match_operand:SI 0 "" "")
+			      (const_int 1))
+			  (label_ref (match_operand 4 "" ""))
+			  (pc)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 0)
+			    (const_int -1)))
+	      (clobber (match_scratch:SI 5 ""))])]
+  "TARGET_INSNS_64PLUS && optimize"
+{
+  /* The loop optimizer doesn't check the predicates... */
+  if (GET_MODE (operands[0]) != SImode)
+    FAIL;
+})
+
+(define_insn "mvilc"
+  [(set (reg:SI REG_ILC)
+	(unspec [(match_operand:SI 0 "register_operand" "a,b")] UNSPEC_MVILC))]
+  "TARGET_INSNS_64PLUS"
+  "%|%.\\tmvc\\t%$\\t%0, ILC"
+  [(set_attr "predicable" "no")
+   (set_attr "cross" "y,n")
+   (set_attr "units" "s")
+   (set_attr "dest_regfile" "b")
+   (set_attr "type" "mvilc")])
+  
+(define_insn "sploop"
+  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "i")
+		     (reg:SI REG_ILC)]
+		    UNSPECV_SPLOOP)]
+  "TARGET_INSNS_64PLUS"
+  "%|%.\\tsploop\t%0"
+  [(set_attr "predicable" "no")
+   (set_attr "type" "sploop")])
+  
+(define_insn "spkernel"
+  [(set (pc)
+	(if_then_else
+	 (ne (unspec_volatile:SI
+	      [(match_operand:SI 0 "const_int_operand" "i")
+	       (match_operand:SI 1 "const_int_operand" "i")]
+	      UNSPECV_SPKERNEL)
+	     (const_int 1))
+	 (label_ref (match_operand 2 "" ""))
+	 (pc)))]
+  "TARGET_INSNS_64PLUS"
+  "%|%.\\tspkernel\t%0, %1"
+  [(set_attr "predicable" "no")
+   (set_attr "type" "spkernel")])
+  
+(define_insn "loop_end"
+  [(set (pc)
+	(if_then_else (ne (match_operand:SI 3 "nonimmediate_operand" "0,0,0,*r")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
+   (set (match_operand:SI 0 "nonimmediate_operand" "=AB,*r,m,m")
+	(plus:SI (match_dup 3)
+		 (const_int -1)))
+   (clobber (match_scratch:SI 2 "=X,&AB,&AB,&AB"))]
+  "TARGET_INSNS_64PLUS && optimize"
+  "#"
+  [(set_attr "type" "spkernel")])
+
+(define_split
+  [(set (pc)
+	(if_then_else (ne (match_operand:SI 3 "nonimmediate_operand" "")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
+   (set (match_operand:SI 0 "memory_operand" "")
+	(plus:SI (match_dup 3)
+		 (const_int -1)))
+   (clobber (match_scratch 2))]
+  ""
+  [(set (match_dup 2) (plus:SI (match_dup 3) (const_int -1)))
+   (set (match_dup 0) (match_dup 2))
+   (set (pc)
+	(if_then_else (ne (match_dup 2) (const_int 0))
+		      (label_ref (match_dup 1))
+		      (pc)))]
+{
+  if (!REG_P (operands[3]))
+    {
+      emit_move_insn (operands[2], operands[3]);
+      operands[3] = operands[2];
+    }
+})
+
+;; -------------------------------------------------------------------------
 ;; Delayed-branch real jumps and shadows
 ;; -------------------------------------------------------------------------
 

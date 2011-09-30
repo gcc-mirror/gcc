@@ -1,3 +1,25 @@
+2011-09-30  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* common/config/c6x/c6x-common.c (c6x_option_optimization_table):
+	Enable -fmodulo-sched at -O2 and above.
+	* config/c6x/c6x.md (doloop_end): New expander.
+	(mvilc, sploop, spkernel, loop_end): New patterns.
+	(loop_end with memory destination splitter): New.
+	* config/c6x/c6x.c: Include "hw-doloop.h".
+	(enum unitreqs): New.
+	(unit_req_table): New typedef.
+	(unit_reqs): New static variable.
+	(unit_req_factor, get_unit_reqs, count_unit_reqs, merge_unit_reqs,
+	res_mii, split_delayed_nonbranch, undo_split_delayed_nonbranch,
+	hwloop_pattern_reg, bb_earliest_end_cycle, filter_insns_above,
+	hwloop_optimize, hwloop_fail, c6x_hwloops): New static functions.
+	(struct c6x_sched_context): New member last_scheduled_iter0.
+	(init_sched_state): Initialize it.
+	(c6x_variable_issue): Update it.
+	(sploop_max_uid_iter0): New static variable.
+	(c6x_sched_reorder_1): Be careful about issuing sploop.
+	(c6x_reorg): Call c6x_hwlooops before the final schedule.
+
 2011-09-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50566
