@@ -817,7 +817,6 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   int i, n_nodes;
   lto_cgraph_encoder_t encoder;
   lto_varpool_encoder_t varpool_encoder;
-  struct cgraph_asm_node *can;
   static bool asm_nodes_output = false;
 
   if (flag_wpa)
@@ -854,6 +853,8 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
 
+  lto_destroy_simple_output_block (ob);
+
   /* Emit toplevel asms.
      When doing WPA we must output every asm just once.  Since we do not partition asm
      nodes at all, output them to first output.  This is kind of hack, but should work
@@ -861,19 +862,9 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   if (!asm_nodes_output)
     {
       asm_nodes_output = true;
-      for (can = cgraph_asm_nodes; can; can = can->next)
-	{
-	  int len = TREE_STRING_LENGTH (can->asm_str);
-	  streamer_write_uhwi_stream (ob->main_stream, len);
-	  for (i = 0; i < len; ++i)
-	    streamer_write_char_stream (ob->main_stream,
-					TREE_STRING_POINTER (can->asm_str)[i]);
-	}
+      lto_output_toplevel_asms ();
     }
 
-  streamer_write_uhwi_stream (ob->main_stream, 0);
-
-  lto_destroy_simple_output_block (ob);
   output_varpool (set, vset);
   output_refs (set, vset, encoder, varpool_encoder);
 }
@@ -1185,7 +1176,6 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   VEC(cgraph_node_ptr, heap) *nodes = NULL;
   struct cgraph_node *node;
   unsigned i;
-  unsigned HOST_WIDE_INT len;
 
   tag = streamer_read_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
   while (tag)
@@ -1206,18 +1196,8 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       tag = streamer_read_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
     }
 
-  /* Input toplevel asms.  */
-  len = streamer_read_uhwi (ib);
-  while (len)
-    {
-      char *str = (char *)xmalloc (len + 1);
-      for (i = 0; i < len; ++i)
-	str[i] = streamer_read_uchar (ib);
-      cgraph_add_asm_node (build_string (len, str));
-      free (str);
+  lto_input_toplevel_asms (file_data);
 
-      len = streamer_read_uhwi (ib);
-    }
   /* AUX pointers should be all non-zero for nodes read from the stream.  */
 #ifdef ENABLE_CHECKING
   FOR_EACH_VEC_ELT (cgraph_node_ptr, nodes, i, node)

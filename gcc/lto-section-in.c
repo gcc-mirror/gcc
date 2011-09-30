@@ -53,6 +53,7 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "cgraph",
   "vars",
   "refs",
+  "asm",
   "jmpfuncs",
   "pureconst",
   "reference",

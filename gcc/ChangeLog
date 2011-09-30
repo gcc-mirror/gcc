@@ -1,3 +1,22 @@
+2011-09-30  Jan Beulich  <jbeulich@suse.com>
+
+	* lto-cgraph.c (output_cgraph): Remove processing of
+	'cgraph_asm_nodes', call lto_output_toplevel_asms() instead.
+	(input_cgraph_1): Remove loop calling cgraph_add_asm_node(), call
+	lto_input_toplevel_asms() instead.
+	* lto-section-in.c (lto_section_name): Add "asm" entry.
+	* lto-streamer-in.c (lto_input_toplevel_asms): New.
+	* lto-streamer-out.c (lto_output_toplevel_asms): New.
+	* lto-streamer.h (LTO_minor_version): Bump.
+	(enum lto_section_type): Add LTO_section_asm.
+	(struct lto_asm_header): New.
+	(lto_input_toplevel_asms, lto_output_toplevel_asms): Declare.
+	* tree-streamer.h (streamer_write_string_cst): Declare.
+	* tree-streamer-out.c (write_string_cst): Rename to
+	streamer_write_string_cst and make global. Handle incoming string
+	being NULL.
+	(streamer_write_tree_header): Adjust call to renamed function.
+
 2011-09-30  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* haifa-sched.c (modulo_ii, modulo_max_states, modulo_n_insns,
