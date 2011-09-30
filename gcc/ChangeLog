@@ -1,4 +1,18 @@
 2011-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46309
+	* fold-const.c (make_range, merge_ranges): Remove prototypes.
+	(make_range_step): New function.
+	(make_range): Use it.
+	* tree.h (make_range_step): New prototypes.
+	* Makefile.in (tree-ssa-reassoc.o): Depend on $(DIAGNOSTIC_CORE_H).
+	* tree-ssa-reassoc.c: Include diagnostic-core.h.
+	(struct range_entry): New type.
+	(init_range_entry, range_entry_cmp, update_range_test,
+	optimize_range_tests): New functions.
+	(reassociate_bb): Call optimize_range_tests.
+
+2011-09-30  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call): Handle

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "target.h"
 #include "params.h"
+#include "diagnostic-core.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -1568,6 +1569,457 @@ optimize_ops_list (enum tree_code opcode,
     optimize_ops_list (opcode, ops);
 }
 
+/* The following functions are subroutines to optimize_range_tests and allow
+   it to try to change a logical combination of comparisons into a range
+   test.
+
+   For example, both
+	X == 2 || X == 5 || X == 3 || X == 4
+   and
+	X >= 2 && X <= 5
+   are converted to
+	(unsigned) (X - 2) <= 3
+
+   For more information see comments above fold_test_range in fold-const.c,
+   this implementation is for GIMPLE.  */
+
+struct range_entry
+{
+  tree exp;
+  tree low;
+  tree high;
+  bool in_p;
+  bool strict_overflow_p;
+  unsigned int idx, next;
+};
+
+/* This is similar to make_range in fold-const.c, but on top of
+   GIMPLE instead of trees.  */
+
+static void
+init_range_entry (struct range_entry *r, tree exp)
+{
+  int in_p;
+  tree low, high;
+  bool is_bool, strict_overflow_p;
+
+  r->exp = NULL_TREE;
+  r->in_p = false;
+  r->strict_overflow_p = false;
+  r->low = NULL_TREE;
+  r->high = NULL_TREE;
+  if (TREE_CODE (exp) != SSA_NAME || !INTEGRAL_TYPE_P (TREE_TYPE (exp)))
+    return;
+
+  /* Start with simply saying "EXP != 0" and then look at the code of EXP
+     and see if we can refine the range.  Some of the cases below may not
+     happen, but it doesn't seem worth worrying about this.  We "continue"
+     the outer loop when we've changed something; otherwise we "break"
+     the switch, which will "break" the while.  */
+  low = build_int_cst (TREE_TYPE (exp), 0);
+  high = low;
+  in_p = 0;
+  strict_overflow_p = false;
+  is_bool = false;
+  if (TYPE_PRECISION (TREE_TYPE (exp)) == 1)
+    {
+      if (TYPE_UNSIGNED (TREE_TYPE (exp)))
+	is_bool = true;
+      else
+	return;
+    }
+  else if (TREE_CODE (TREE_TYPE (exp)) == BOOLEAN_TYPE)
+    is_bool = true;
+
+  while (1)
+    {
+      gimple stmt;
+      enum tree_code code;
+      tree arg0, arg1, exp_type;
+      tree nexp;
+      location_t loc;
+
+      if (TREE_CODE (exp) != SSA_NAME)
+	break;
+
+      stmt = SSA_NAME_DEF_STMT (exp);
+      if (!is_gimple_assign (stmt))
+	break;
+
+      code = gimple_assign_rhs_code (stmt);
+      arg0 = gimple_assign_rhs1 (stmt);
+      arg1 = gimple_assign_rhs2 (stmt);
+      exp_type = TREE_TYPE (exp);
+      loc = gimple_location (stmt);
+      switch (code)
+	{
+	case BIT_NOT_EXPR:
+	  if (TREE_CODE (TREE_TYPE (exp)) == BOOLEAN_TYPE)
+	    {
+	      in_p = !in_p;
+	      exp = arg0;
+	      continue;
+	    }
+	  break;
+	case SSA_NAME:
+	  exp = arg0;
+	  continue;
+	CASE_CONVERT:
+	  if (is_bool)
+	    goto do_default;
+	  if (TYPE_PRECISION (TREE_TYPE (arg0)) == 1)
+	    {
+	      if (TYPE_UNSIGNED (TREE_TYPE (arg0)))
+		is_bool = true;
+	      else
+		return;
+	    }
+	  else if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE)
+	    is_bool = true;
+	  goto do_default;
+	case EQ_EXPR:
+	case NE_EXPR:
+	case LT_EXPR:
+	case LE_EXPR:
+	case GE_EXPR:
+	case GT_EXPR:
+	  is_bool = true;
+	  /* FALLTHRU */
+	default:
+	  if (!is_bool)
+	    return;
+	do_default:
+	  nexp = make_range_step (loc, code, arg0, arg1, exp_type,
+				  &low, &high, &in_p,
+				  &strict_overflow_p);
+	  if (nexp != NULL_TREE)
+	    {
+	      exp = nexp;
+	      gcc_assert (TREE_CODE (exp) == SSA_NAME);
+	      continue;
+	    }
+	  break;
+	}
+      break;
+    }
+  if (is_bool)
+    {
+      r->exp = exp;
+      r->in_p = in_p;
+      r->low = low;
+      r->high = high;
+      r->strict_overflow_p = strict_overflow_p;
+    }
+}
+
+/* Comparison function for qsort.  Sort entries
+   without SSA_NAME exp first, then with SSA_NAMEs sorted
+   by increasing SSA_NAME_VERSION, and for the same SSA_NAMEs
+   by increasing ->low and if ->low is the same, by increasing
+   ->high.  ->low == NULL_TREE means minimum, ->high == NULL_TREE
+   maximum.  */
+
+static int
+range_entry_cmp (const void *a, const void *b)
+{
+  const struct range_entry *p = (const struct range_entry *) a;
+  const struct range_entry *q = (const struct range_entry *) b;
+
+  if (p->exp != NULL_TREE && TREE_CODE (p->exp) == SSA_NAME)
+    {
+      if (q->exp != NULL_TREE && TREE_CODE (q->exp) == SSA_NAME)
+	{
+	  /* Group range_entries for the same SSA_NAME together.  */
+	  if (SSA_NAME_VERSION (p->exp) < SSA_NAME_VERSION (q->exp))
+	    return -1;
+	  else if (SSA_NAME_VERSION (p->exp) > SSA_NAME_VERSION (q->exp))
+	    return 1;
+	  /* If ->low is different, NULL low goes first, then by
+	     ascending low.  */
+	  if (p->low != NULL_TREE)
+	    {
+	      if (q->low != NULL_TREE)
+		{
+		  tree tem = fold_binary (LT_EXPR, boolean_type_node,
+					  p->low, q->low);
+		  if (tem && integer_onep (tem))
+		    return -1;
+		  tem = fold_binary (GT_EXPR, boolean_type_node,
+				     p->low, q->low);
+		  if (tem && integer_onep (tem))
+		    return 1;
+		}
+	      else
+		return 1;
+	    }
+	  else if (q->low != NULL_TREE)
+	    return -1;
+	  /* If ->high is different, NULL high goes last, before that by
+	     ascending high.  */
+	  if (p->high != NULL_TREE)
+	    {
+	      if (q->high != NULL_TREE)
+		{
+		  tree tem = fold_binary (LT_EXPR, boolean_type_node,
+					  p->high, q->high);
+		  if (tem && integer_onep (tem))
+		    return -1;
+		  tem = fold_binary (GT_EXPR, boolean_type_node,
+				     p->high, q->high);
+		  if (tem && integer_onep (tem))
+		    return 1;
+		}
+	      else
+		return -1;
+	    }
+	  else if (p->high != NULL_TREE)
+	    return 1;
+	  /* If both ranges are the same, sort below by ascending idx.  */
+	}
+      else
+	return 1;
+    }
+  else if (q->exp != NULL_TREE && TREE_CODE (q->exp) == SSA_NAME)
+    return -1;
+
+  if (p->idx < q->idx)
+    return -1;
+  else
+    {
+      gcc_checking_assert (p->idx > q->idx);
+      return 1;
+    }
+}
+
+/* Helper routine of optimize_range_test.
+   [EXP, IN_P, LOW, HIGH, STRICT_OVERFLOW_P] is a merged range for
+   RANGE and OTHERRANGE through OTHERRANGE + COUNT - 1 ranges,
+   OPCODE and OPS are arguments of optimize_range_tests.  Return
+   true if the range merge has been successful.  */
+
+static bool
+update_range_test (struct range_entry *range, struct range_entry *otherrange,
+		   unsigned int count, enum tree_code opcode,
+		   VEC (operand_entry_t, heap) **ops, tree exp, bool in_p,
+		   tree low, tree high, bool strict_overflow_p)
+{
+  tree op = VEC_index (operand_entry_t, *ops, range->idx)->op;
+  location_t loc = gimple_location (SSA_NAME_DEF_STMT (op));
+  tree tem = build_range_check (loc, TREE_TYPE (op), exp, in_p, low, high);
+  enum warn_strict_overflow_code wc = WARN_STRICT_OVERFLOW_COMPARISON;
+  gimple_stmt_iterator gsi;
+
+  if (tem == NULL_TREE)
+    return false;
+
+  if (strict_overflow_p && issue_strict_overflow_warning (wc))
+    warning_at (loc, OPT_Wstrict_overflow,
+		"assuming signed overflow does not occur "
+		"when simplifying range test");
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      struct range_entry *r;
+      fprintf (dump_file, "Optimizing range tests ");
+      print_generic_expr (dump_file, range->exp, 0);
+      fprintf (dump_file, " %c[", range->in_p ? '+' : '-');
+      print_generic_expr (dump_file, range->low, 0);
+      fprintf (dump_file, ", ");
+      print_generic_expr (dump_file, range->high, 0);
+      fprintf (dump_file, "]");
+      for (r = otherrange; r < otherrange + count; r++)
+	{
+	  fprintf (dump_file, " and %c[", r->in_p ? '+' : '-');
+	  print_generic_expr (dump_file, r->low, 0);
+	  fprintf (dump_file, ", ");
+	  print_generic_expr (dump_file, r->high, 0);
+	  fprintf (dump_file, "]");
+	}
+      fprintf (dump_file, "\n into ");
+      print_generic_expr (dump_file, tem, 0);
+      fprintf (dump_file, "\n");
+    }
+
+  if (opcode == BIT_IOR_EXPR)
+    tem = invert_truthvalue_loc (loc, tem);
+
+  tem = fold_convert_loc (loc, TREE_TYPE (op), tem);
+  gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (op));
+  tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, true,
+				  GSI_SAME_STMT);
+
+  VEC_index (operand_entry_t, *ops, range->idx)->op = tem;
+  range->exp = exp;
+  range->low = low;
+  range->high = high;
+  range->in_p = in_p;
+  range->strict_overflow_p = false;
+
+  for (range = otherrange; range < otherrange + count; range++)
+    {
+      VEC_index (operand_entry_t, *ops, range->idx)->op = error_mark_node;
+      range->exp = NULL_TREE;
+    }
+  return true;
+}
+
+/* Optimize range tests, similarly how fold_range_test optimizes
+   it on trees.  The tree code for the binary
+   operation between all the operands is OPCODE.  */
+
+static void
+optimize_range_tests (enum tree_code opcode,
+		      VEC (operand_entry_t, heap) **ops)
+{
+  unsigned int length = VEC_length (operand_entry_t, *ops), i, j, first;
+  operand_entry_t oe;
+  struct range_entry *ranges;
+  bool any_changes = false;
+
+  if (length == 1)
+    return;
+
+  ranges = XNEWVEC (struct range_entry, length);
+  for (i = 0; i < length; i++)
+    {
+      ranges[i].idx = i;
+      init_range_entry (ranges + i, VEC_index (operand_entry_t, *ops, i)->op);
+      /* For | invert it now, we will invert it again before emitting
+	 the optimized expression.  */
+      if (opcode == BIT_IOR_EXPR)
+	ranges[i].in_p = !ranges[i].in_p;
+    }
+
+  qsort (ranges, length, sizeof (*ranges), range_entry_cmp);
+  for (i = 0; i < length; i++)
+    if (ranges[i].exp != NULL_TREE && TREE_CODE (ranges[i].exp) == SSA_NAME)
+      break;
+
+  /* Try to merge ranges.  */
+  for (first = i; i < length; i++)
+    {
+      tree low = ranges[i].low;
+      tree high = ranges[i].high;
+      int in_p = ranges[i].in_p;
+      bool strict_overflow_p = ranges[i].strict_overflow_p;
+      int update_fail_count = 0;
+
+      for (j = i + 1; j < length; j++)
+	{
+	  if (ranges[i].exp != ranges[j].exp)
+	    break;
+	  if (!merge_ranges (&in_p, &low, &high, in_p, low, high,
+			     ranges[j].in_p, ranges[j].low, ranges[j].high))
+	    break;
+	  strict_overflow_p |= ranges[j].strict_overflow_p;
+	}
+
+      if (j == i + 1)
+	continue;
+
+      if (update_range_test (ranges + i, ranges + i + 1, j - i - 1, opcode,
+			     ops, ranges[i].exp, in_p, low, high,
+			     strict_overflow_p))
+	{
+	  i = j - 1;
+	  any_changes = true;
+	}
+      /* Avoid quadratic complexity if all merge_ranges calls would succeed,
+	 while update_range_test would fail.  */
+      else if (update_fail_count == 64)
+	i = j - 1;
+      else
+	++update_fail_count;
+    }
+
+  /* Optimize X == CST1 || X == CST2
+     if popcount (CST1 ^ CST2) == 1 into
+     (X & ~(CST1 ^ CST2)) == (CST1 & ~(CST1 ^ CST2)).
+     Similarly for ranges.  E.g.
+     X != 2 && X != 3 && X != 10 && X != 11
+     will be transformed by the above loop into
+     (X - 2U) <= 1U && (X - 10U) <= 1U
+     and this loop can transform that into
+     ((X & ~8) - 2U) <= 1U.  */
+  for (i = first; i < length; i++)
+    {
+      tree lowi, highi, lowj, highj, type, lowxor, highxor, tem, exp;
+
+      if (ranges[i].exp == NULL_TREE || ranges[i].in_p)
+	continue;
+      type = TREE_TYPE (ranges[i].exp);
+      if (!INTEGRAL_TYPE_P (type))
+	continue;
+      lowi = ranges[i].low;
+      if (lowi == NULL_TREE)
+	lowi = TYPE_MIN_VALUE (type);
+      highi = ranges[i].high;
+      if (highi == NULL_TREE)
+	continue;
+      for (j = i + 1; j < length && j < i + 64; j++)
+	{
+	  if (ranges[j].exp == NULL_TREE)
+	    continue;
+	  if (ranges[i].exp != ranges[j].exp)
+	    break;
+	  if (ranges[j].in_p)
+	    continue;
+	  lowj = ranges[j].low;
+	  if (lowj == NULL_TREE)
+	    continue;
+	  highj = ranges[j].high;
+	  if (highj == NULL_TREE)
+	    highj = TYPE_MAX_VALUE (type);
+	  tem = fold_binary (GT_EXPR, boolean_type_node,
+			     lowj, highi);
+	  if (tem == NULL_TREE || !integer_onep (tem))
+	    continue;
+	  lowxor = fold_binary (BIT_XOR_EXPR, type, lowi, lowj);
+	  if (lowxor == NULL_TREE || TREE_CODE (lowxor) != INTEGER_CST)
+	    continue;
+	  gcc_checking_assert (!integer_zerop (lowxor));
+	  tem = fold_binary (MINUS_EXPR, type, lowxor,
+			     build_int_cst (type, 1));
+	  if (tem == NULL_TREE)
+	    continue;
+	  tem = fold_binary (BIT_AND_EXPR, type, lowxor, tem);
+	  if (tem == NULL_TREE || !integer_zerop (tem))
+	    continue;
+	  highxor = fold_binary (BIT_XOR_EXPR, type, highi, highj);
+	  if (!tree_int_cst_equal (lowxor, highxor))
+	    continue;
+	  tem = fold_build1 (BIT_NOT_EXPR, type, lowxor);
+	  exp = fold_build2 (BIT_AND_EXPR, type, ranges[i].exp, tem);
+	  lowj = fold_build2 (BIT_AND_EXPR, type, lowi, tem);
+	  highj = fold_build2 (BIT_AND_EXPR, type, highi, tem);
+	  if (update_range_test (ranges + i, ranges + j, 1, opcode, ops, exp,
+				 ranges[i].in_p, lowj, highj,
+				 ranges[i].strict_overflow_p
+				 || ranges[j].strict_overflow_p))
+	    {
+	      any_changes = true;
+	      break;
+	    }
+	}
+    }
+
+  if (any_changes)
+    {
+      j = 0;
+      FOR_EACH_VEC_ELT (operand_entry_t, *ops, i, oe)
+	{
+	  if (oe->op == error_mark_node)
+	    continue;
+	  else if (i != j)
+	    VEC_replace (operand_entry_t, *ops, j, oe);
+	  j++;
+	}
+      VEC_truncate (operand_entry_t, *ops, j);
+    }
+
+  XDELETEVEC (ranges);
+}
+
 /* Return true if OPERAND is defined by a PHI node which uses the LHS
    of STMT in it's operands.  This is also known as a "destructive
    update" operation.  */
@@ -2446,6 +2898,9 @@ reassociate_bb (basic_block bb)
 		  VEC_qsort (operand_entry_t, ops, sort_by_operand_rank);
 		  optimize_ops_list (rhs_code, &ops);
 		}
+
+	      if (rhs_code == BIT_IOR_EXPR || rhs_code == BIT_AND_EXPR)
+		optimize_range_tests (rhs_code, &ops);
 
 	      if (VEC_length (operand_entry_t, ops) == 1)
 		{
