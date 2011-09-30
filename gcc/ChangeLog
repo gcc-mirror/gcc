@@ -1,4 +1,11 @@
 2011-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/50571
+	* gimple-fold.c (fold_stmt_1) <case GIMPLE_ASM>: If
+	input constraints allow mem and not reg, pass true instead of
+	false as second argument to maybe_fold_reference.
+
+2011-09-30  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Fix

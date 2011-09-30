@@ -1533,28 +1533,45 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
 
     case GIMPLE_ASM:
       /* Fold *& in asm operands.  */
-      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
-	{
-	  tree link = gimple_asm_output_op (stmt, i);
-	  tree op = TREE_VALUE (link);
-	  if (REFERENCE_CLASS_P (op)
-	      && (op = maybe_fold_reference (op, true)) != NULL_TREE)
-	    {
-	      TREE_VALUE (link) = op;
-	      changed = true;
-	    }
-	}
-      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
-	{
-	  tree link = gimple_asm_input_op (stmt, i);
-	  tree op = TREE_VALUE (link);
-	  if (REFERENCE_CLASS_P (op)
-	      && (op = maybe_fold_reference (op, false)) != NULL_TREE)
-	    {
-	      TREE_VALUE (link) = op;
-	      changed = true;
-	    }
-	}
+      {
+	size_t noutputs;
+	const char **oconstraints;
+	const char *constraint;
+	bool allows_mem, allows_reg;
+
+	noutputs = gimple_asm_noutputs (stmt);
+	oconstraints = XALLOCAVEC (const char *, noutputs);
+
+	for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_output_op (stmt, i);
+	    tree op = TREE_VALUE (link);
+	    oconstraints[i]
+	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+	    if (REFERENCE_CLASS_P (op)
+		&& (op = maybe_fold_reference (op, true)) != NULL_TREE)
+	      {
+		TREE_VALUE (link) = op;
+		changed = true;
+	      }
+	  }
+	for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_input_op (stmt, i);
+	    tree op = TREE_VALUE (link);
+	    constraint
+	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+	    parse_input_constraint (&constraint, 0, 0, noutputs, 0,
+				    oconstraints, &allows_mem, &allows_reg);
+	    if (REFERENCE_CLASS_P (op)
+		&& (op = maybe_fold_reference (op, !allows_reg && allows_mem))
+		   != NULL_TREE)
+	      {
+		TREE_VALUE (link) = op;
+		changed = true;
+	      }
+	  }
+      }
       break;
 
     case GIMPLE_DEBUG:
