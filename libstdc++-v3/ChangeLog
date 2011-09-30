@@ -1,3 +1,22 @@
+2011-09-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/vector (vector<>::erase(iterator, iterator)): Check
+	iterators equality using normal iterators.
+	* include/debug/deque (deque<>::erase(iterator, iterator)): Likewise.
+
+2011-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50529
+	* include/bits/vector.tcc (vector<>::erase(iterator, iterator)):
+	Fix to do nothing if the range is empty.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/deque.tcc: Likewise.
+	* include/debug/vector: Adjust.
+	* include/debug/deque: Likewise.
+	* testsuite/23_containers/vector/modifiers/erase/50529.cc: New.
+	* testsuite/23_containers/deque/modifiers/erase/50529.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/erase/3.cc: Adjust.
+
 2011-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/49559

@@ -218,7 +218,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     deque<_Tp, _Alloc>::
     erase(iterator __first, iterator __last)
     {
-      if (__first == begin() && __last == end())
+      if (__first == __last)
+	return __first;
+      else if (__first == begin() && __last == end())
 	{
 	  clear();
 	  return end();

@@ -492,11 +492,16 @@ namespace __debug
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
 
-	difference_type __offset = __first.base() - _Base::begin();
-	_Base_iterator __res = _Base::erase(__first.base(),
-						      __last.base());
-	this->_M_invalidate_after_nth(__offset);
-	return iterator(__res, this);
+	if (__first.base() != __last.base())
+	  {
+	    difference_type __offset = __first.base() - _Base::begin();
+	    _Base_iterator __res = _Base::erase(__first.base(),
+						__last.base());
+	    this->_M_invalidate_after_nth(__offset);
+	    return iterator(__res, this);
+	  }
+	else
+	  return __first;
       }
 
       void

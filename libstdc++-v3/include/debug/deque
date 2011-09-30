@@ -460,7 +460,11 @@ namespace __debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-        if (__first.base() == _Base::begin() || __last.base() == _Base::end())
+
+	if (__first.base() == __last.base())
+	  return __first;
+        else if (__first.base() == _Base::begin()
+		 || __last.base() == _Base::end())
 	  {
 	    this->_M_detach_singular();
 	    for (_Base_iterator __position = __first.base();

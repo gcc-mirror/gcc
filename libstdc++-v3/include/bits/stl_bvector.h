@@ -821,7 +821,8 @@ template<typename _Alloc>
     iterator
     erase(iterator __first, iterator __last)
     {
-      _M_erase_at_end(std::copy(__last, end(), __first));
+      if (__first != __last)
+	_M_erase_at_end(std::copy(__last, end(), __first));
       return __first;
     }
 
