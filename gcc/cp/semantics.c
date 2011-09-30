@@ -2312,19 +2312,6 @@ tree
 finish_unary_op_expr (enum tree_code code, tree expr)
 {
   tree result = build_x_unary_op (code, expr, tf_warning_or_error);
-  /* Inside a template, build_x_unary_op does not fold the
-     expression. So check whether the result is folded before
-     setting TREE_NEGATED_INT.  */
-  if (code == NEGATE_EXPR && TREE_CODE (expr) == INTEGER_CST
-      && TREE_CODE (result) == INTEGER_CST
-      && !TYPE_UNSIGNED (TREE_TYPE (result))
-      && INT_CST_LT (result, integer_zero_node))
-    {
-      /* RESULT may be a cached INTEGER_CST, so we must copy it before
-	 setting TREE_NEGATED_INT.  */
-      result = copy_node (result);
-      TREE_NEGATED_INT (result) = 1;
-    }
   if (TREE_OVERFLOW_P (result) && !TREE_OVERFLOW_P (expr))
     overflow_warning (input_location, result);
 

@@ -43,8 +43,7 @@ never after.
 #include "diagnostic-core.h"
 
 /* Usage of TREE_LANG_FLAG_?:
-   0: TREE_NEGATED_INT (in INTEGER_CST).
-      IDENTIFIER_MARKED (used by search routines).
+   0: IDENTIFIER_MARKED (used by search routines).
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
       C_MAYBE_CONST_EXPR_INT_OPERANDS (in C_MAYBE_CONST_EXPR, for C)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
