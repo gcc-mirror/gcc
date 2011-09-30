@@ -1,3 +1,11 @@
+2011-09-30  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Fix
+	handling of BUILT_IN_STRNCAT.
+	(ref_maybe_used_by_call_p_1): Fix handling of BUILT_IN_STRCAT,
+	and BUILT_IN_STRNCAT.
+
 2011-09-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* graphite-scop-detection.c (make_close_phi_nodes_unique):  New

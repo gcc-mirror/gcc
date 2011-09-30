@@ -1208,8 +1208,20 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
       && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (callee))
       {
-	/* All the following functions clobber memory pointed to by
-	   their first argument.  */
+	/* All the following functions read memory pointed to by
+	   their second argument.  strcat/strncat additionally
+	   reads memory pointed to by the first argument.  */
+	case BUILT_IN_STRCAT:
+	case BUILT_IN_STRNCAT:
+	  {
+	    ao_ref dref;
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 0),
+					   NULL_TREE);
+	    if (refs_may_alias_p_1 (&dref, ref, false))
+	      return true;
+	  }
+	  /* FALLTHRU */
 	case BUILT_IN_STRCPY:
 	case BUILT_IN_STRNCPY:
 	case BUILT_IN_MEMCPY:
@@ -1217,8 +1229,6 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_MEMPCPY:
 	case BUILT_IN_STPCPY:
 	case BUILT_IN_STPNCPY:
-	case BUILT_IN_STRCAT:
-	case BUILT_IN_STRNCAT:
 	  {
 	    ao_ref dref;
 	    tree size = NULL_TREE;
@@ -1449,7 +1459,12 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	  {
 	    ao_ref dref;
 	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (call) == 3)
+	    /* Don't pass in size for strncat, as the maximum size
+	       is strlen (dest) + n + 1 instead of n, resp.
+	       n + 1 at dest + strlen (dest), but strlen (dest) isn't
+	       known.  */
+	    if (gimple_call_num_args (call) == 3
+		&& DECL_FUNCTION_CODE (callee) != BUILT_IN_STRNCAT)
 	      size = gimple_call_arg (call, 2);
 	    ao_ref_init_from_ptr_and_size (&dref,
 					   gimple_call_arg (call, 0),
