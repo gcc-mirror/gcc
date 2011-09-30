@@ -28,6 +28,16 @@
 	* params.def (PARAM_MAX_MODULO_BACKTRACK_ATTEMPS): New.
 	* doc/invoke.texi (--param): Document it.
 
+	* sched-ebb.c (schedule_ebb): No longer static.  Remove declaration.
+	New arg modulo_scheduling.  All callers changed.  Move note handling
+	code here from schedule_ebbs.
+	(schedule_ebbs_finish, schedule_ebbs_init): New functions, broken
+	out of schedule_ebbs.
+	(schedule_ebbs): Call them.  Remove note handling code moved to
+	schedule_ebb.
+	* sched-int.h (schedule_ebb, schedule_ebbs_init,
+	schedule_ebbs_finish): Declare.
+
 2011-09-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50574
