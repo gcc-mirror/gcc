@@ -499,7 +499,7 @@ namespace __debug
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
 
-	if (__first != __last)
+	if (__first.base() != __last.base())
 	  {
 	    difference_type __offset = __first.base() - _Base::begin();
 	    _Base_iterator __res = _Base::erase(__first.base(),
