@@ -1,3 +1,8 @@
+2011-10-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50585
+	* gfortran.dg/assumed_charlen_arg_2.f90: New.
+
 2011-09-30  Janis Johnson  <janisjo@codesourcery.com>
 
 	PR c++/44473

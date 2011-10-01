@@ -1,3 +1,9 @@
+2011-10-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50585
+	* interface.c (get_expr_storage_size): Check if 'length' component is
+	associated.
+
 2011-09-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50547
