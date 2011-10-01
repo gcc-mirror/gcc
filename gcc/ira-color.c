@@ -1769,7 +1769,7 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
   if (best_hard_regno >= 0)
     {
       for (i = hard_regno_nregs[best_hard_regno][mode] - 1; i >= 0; i--)
-	allocated_hardreg_p[best_hard_regno + 1] = true;
+	allocated_hardreg_p[best_hard_regno + i] = true;
     }
   ALLOCNO_HARD_REGNO (a) = best_hard_regno;
   ALLOCNO_ASSIGNED_P (a) = true;
