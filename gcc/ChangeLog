@@ -1,3 +1,7 @@
+2011-10-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* invoke.texi (SPARC Options): Refer to GNU/Linux.
+
 2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_frame_barrier): New function.
