@@ -1,5 +1,7 @@
 2011-10-02  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-analysis.c (inline_summary_alloc): Bounds check.
+
 	* ipa-inline-analysis.c (reset_inline_edge_summary): New function.
 	(reset_inline_summary): New function.
 	(compute_inline_parameters, inline_node_removal_hook,
