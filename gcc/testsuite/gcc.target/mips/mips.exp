@@ -588,6 +588,30 @@ proc mips_64bit_abi_p { option } {
     return 0
 }
 
+# Return true if the given abi-group option implicitly requires -mlong32.
+# o64 requires this for -mabicalls, but not otherwise; pick the conservative
+# case for simplicity.
+proc mips_long32_abi_p { option } {
+    switch -glob -- $option {
+	-mabi=o64 -
+	-mabi=n32 -
+	-mabi=32 {
+	    return 1
+	}
+    }
+    return 0
+}
+
+# Return true if the given abi-group option implicitly requires -mlong64.
+proc mips_long64_abi_p { option } {
+    switch -glob -- $option {
+	-mabi=64 {
+	    return 1
+	}
+    }
+    return 0
+}
+
 # Check whether the current target supports all the options that the
 # current test requires.  Return "" if so, otherwise return one of
 # the incompatible options.  UPSTATUS describes the option status.
@@ -1029,24 +1053,41 @@ proc mips-dg-options { args } {
 	    # -mips16 -mhard-float requires o32 or o64.
 	    # -mips16 PIC requires o32 or o64.
 	    set force_abi 1
+	} elseif { [mips_have_test_option_p options "-mlong32"]
+		   && [mips_long64_abi_p $abi] } {
+	    set force_abi 1
+	} elseif { [mips_have_test_option_p options "-mlong64"]
+		   && [mips_long32_abi_p $abi] } {
+	    set force_abi 1
 	} else {
 	    set force_abi 0
 	}
 	if { $gp_size == 32 } {
 	    if { $force_abi || [mips_64bit_abi_p $abi] } {
-		mips_make_test_option options "-mabi=32"
+		if { [mips_have_test_option_p options "-mlong64"] } {
+		    mips_make_test_option options "-mabi=eabi"
+		    mips_make_test_option options "-mgp32"
+		} else {
+		    mips_make_test_option options "-mabi=32"
+		}
 	    }
 	} else {
 	    if { $force_abi || [mips_32bit_abi_p $abi] } {
-		# All configurations should have an assembler that
-		# supports o64, since it requires the same BFD target
-		# vector as o32.  In contrast, many assembler
-		# configurations do not have n32 or n64 support.
-		mips_make_test_option options "-mabi=o64"
+		if { [mips_have_test_option_p options "-mlong64"] } {
+		    mips_make_test_option options "-mabi=eabi"
+		    mips_make_test_option options "-mgp64"
+		} else {
+		    # All configurations should have an assembler that
+		    # supports o64, since it requires the same BFD target
+		    # vector as o32.  In contrast, many assembler
+		    # configurations do not have n32 or n64 support.
+		    mips_make_test_option options "-mabi=o64"
+		}
 	    }
 	}
-	unset abi
-	unset eabi_p
+	set abi_test_option_p [mips_test_option_p options abi]
+	set abi [mips_option options abi]
+	set eabi_p [mips_same_option_p $abi "-mabi=eabi"]
     }
 
     # Handle dependencies between the abi options and the post-abi options.
@@ -1070,8 +1111,11 @@ proc mips-dg-options { args } {
 		mips_make_test_option options "-mno-mips16"
 	    }
 	}
-	unset abi
-	unset eabi_p
+	if { [mips_long32_abi_p $abi] } {
+	    mips_make_test_option options "-mlong32"
+	} elseif { [mips_long64_abi_p $abi] } {
+	    mips_make_test_option options "-mlong64"
+	}
     }
 
     # Handle dependencies between the arch option and the post-arch options.
