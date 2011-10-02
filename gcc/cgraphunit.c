@@ -426,7 +426,9 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
 	 Remove this once edges are actualy removed from the function at that time.  */
       && (e->frequency
 	  || (inline_edge_summary_vec
-	      && !inline_edge_summary (e)->predicate))
+	      && ((VEC_length(inline_edge_summary_t, inline_edge_summary_vec)
+		  <= (unsigned) e->uid)
+	          || !inline_edge_summary (e)->predicate)))
       && (e->frequency
 	  != compute_call_stmt_bb_frequency (e->caller->decl,
 					     gimple_bb (e->call_stmt))))
