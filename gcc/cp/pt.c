@@ -165,7 +165,7 @@ static int template_decl_level (tree);
 static int check_cv_quals_for_unify (int, tree, tree);
 static void template_parm_level_and_index (tree, int*, int*);
 static int unify_pack_expansion (tree, tree, tree,
-				 tree, int, bool, bool, bool);
+				 tree, unification_kind_t, bool, bool);
 static tree tsubst_template_arg (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_template_args (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
@@ -2961,6 +2961,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       break;
 
     case TEMPLATE_TYPE_PARM:
+      t = TYPE_MAIN_VARIANT (t);
     case TEMPLATE_TEMPLATE_PARM:
       if (TEMPLATE_TYPE_PARAMETER_PACK (t))
         parameter_pack_p = true;
@@ -6741,22 +6742,10 @@ coerce_template_parms (tree parms,
 	{
           if (PACK_EXPANSION_P (arg))
             {
-	      if (complain & tf_error)
-		{
-		  /* FIXME this restriction was removed by N2555; see
-		     bug 35722.  */
-		  /* If ARG is a pack expansion, but PARM is not a
-		     template parameter pack (if it were, we would have
-		     handled it above), we're trying to expand into a
-		     fixed-length argument list.  */
-		  if (TREE_CODE (arg) == EXPR_PACK_EXPANSION)
-		    sorry ("cannot expand %<%E%> into a fixed-length "
-			   "argument list", arg);
-		  else
-		    sorry ("cannot expand %<%T%> into a fixed-length "
-			   "argument list", arg);
-		}
-	      ++lost;
+              /* We don't know how many args we have yet, just
+                 use the unconverted ones for now.  */
+              new_inner_args = args;
+              break;
             }
         }
       else if (require_all_args)
@@ -9116,7 +9105,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   tree pack, packs = NULL_TREE, unsubstituted_packs = NULL_TREE;
   int i, len = -1;
   tree result;
-  int incomplete = 0;
   htab_t saved_local_specializations = NULL;
 
   gcc_assert (PACK_EXPANSION_P (t));
@@ -9189,21 +9177,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
           int my_len = 
             TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack));
 
-          /* It's all-or-nothing with incomplete argument packs.  */
-          if (incomplete && !ARGUMENT_PACK_INCOMPLETE_P (arg_pack))
-            return error_mark_node;
-          
+	  /* Don't bother trying to do a partial substitution with
+	     incomplete packs; we'll try again after deduction.  */
           if (ARGUMENT_PACK_INCOMPLETE_P (arg_pack))
-            incomplete = 1;
+            return t;
 
           if (len < 0)
 	    len = my_len;
           else if (len != my_len)
             {
-	      if (incomplete)
-		/* We got explicit args for some packs but not others;
-		   do nothing now and try again after deduction.  */
-		return t;
               if (TREE_CODE (t) == TYPE_PACK_EXPANSION)
                 error ("mismatched argument pack lengths while expanding "
                        "%<%T%>",
@@ -9261,8 +9243,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
   /* For each argument in each argument pack, substitute into the
      pattern.  */
-  result = make_tree_vec (len + incomplete);
-  for (i = 0; i < len + incomplete; ++i)
+  result = make_tree_vec (len);
+  for (i = 0; i < len; ++i)
     {
       /* For parameter pack, change the substitution of the parameter
          pack to the ith argument in its argument pack, then expand
@@ -9306,13 +9288,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
                        /*integral_constant_expression_p=*/false);
       else
         TREE_VEC_ELT (result, i) = tsubst (pattern, args, complain, in_decl);
-
-      if (i == len)
-        /* When we have incomplete argument packs, the last "expanded"
-           result is itself a pack expansion, which allows us
-           to deduce more arguments.  */
-        TREE_VEC_ELT (result, i) = 
-          make_pack_expansion (TREE_VEC_ELT (result, i));
 
       if (TREE_VEC_ELT (result, i) == error_mark_node)
 	{
@@ -14289,6 +14264,40 @@ pop_deduction_access_scope (tree tmpl)
     pop_deferring_access_checks ();
 }
 
+/* PARM is a template parameter pack for FN.  Returns true iff
+   PARM is used in a deducible way in the argument list of FN.  */
+
+static bool
+pack_deducible_p (tree parm, tree fn)
+{
+  tree t = FUNCTION_FIRST_USER_PARMTYPE (fn);
+  for (; t; t = TREE_CHAIN (t))
+    {
+      tree type = TREE_VALUE (t);
+      tree packs;
+      if (!PACK_EXPANSION_P (type))
+	continue;
+      for (packs = PACK_EXPANSION_PARAMETER_PACKS (type);
+	   packs; packs = TREE_CHAIN (packs))
+	if (TREE_VALUE (packs) == parm)
+	  {
+	    /* The template parameter pack is used in a function parameter
+	       pack.  If this is the end of the parameter list, the
+	       template parameter pack is deducible.  */
+	    if (TREE_CHAIN (t) == void_list_node)
+	      return true;
+	    else
+	      /* Otherwise, not.  Well, it could be deduced from
+		 a non-pack parameter, but doing so would end up with
+		 a deduction mismatch, so don't bother.  */
+	      return false;
+	  }
+    }
+  /* The template parameter pack isn't used in any function parameter
+     packs, but it might be used deeper, e.g. tuple<Args...>.  */
+  return true;
+}
+
 /* The FN is a TEMPLATE_DECL for a function.  ARGS is an array with
    NARGS elements of the arguments that are being used when calling
    it.  TARGS is a vector into which the deduced template arguments
@@ -14334,7 +14343,6 @@ fn_type_unification (tree fn,
   tree parms;
   tree fntype;
   int result;
-  bool incomplete_argument_packs_p = false;
 
   gcc_assert (TREE_CODE (fn) == TEMPLATE_DECL);
 
@@ -14386,6 +14394,7 @@ fn_type_unification (tree fn,
         {
           tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
           bool parameter_pack = false;
+	  tree targ = TREE_VEC_ELT (converted_args, i);
 
           /* Dig out the actual parm.  */
           if (TREE_CODE (parm) == TYPE_DECL
@@ -14400,16 +14409,15 @@ fn_type_unification (tree fn,
               parameter_pack = TEMPLATE_PARM_PARAMETER_PACK (parm);
             }
 
-          if (parameter_pack)
-            {
-              int level, idx;
-              tree targ;
-              template_parm_level_and_index (parm, &level, &idx);
+	  if (!parameter_pack && targ == NULL_TREE)
+	    /* No explicit argument for this template parameter.  */
+	    incomplete = true;
 
+          if (parameter_pack && pack_deducible_p (parm, fn))
+            {
               /* Mark the argument pack as "incomplete". We could
                  still deduce more arguments during unification.
 	         We remove this mark in type_unification_real.  */
-              targ = TMPL_ARG (converted_args, level, idx);
               if (targ)
                 {
                   ARGUMENT_PACK_INCOMPLETE_P(targ) = 1;
@@ -14418,17 +14426,9 @@ fn_type_unification (tree fn,
                 }
 
               /* We have some incomplete argument packs.  */
-              incomplete_argument_packs_p = true;
+              incomplete = true;
             }
         }
-
-      if (incomplete_argument_packs_p)
-        /* Any substitution is guaranteed to be incomplete if there
-           are incomplete argument packs, because we can still deduce
-           more arguments.  */
-        incomplete = 1;
-      else
-        incomplete = NUM_TMPL_ARGS (explicit_targs) != NUM_TMPL_ARGS (targs);
 
       processing_template_decl += incomplete;
       fntype = deduction_tsubst_fntype (fn, converted_args,
@@ -14643,6 +14643,134 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
   return result;
 }
 
+/* Subroutine of unify_one_argument.  PARM is a function parameter of a
+   template which does contain any deducible template parameters; check if
+   ARG is a suitable match for it.  STRICT, FLAGS and EXPLAIN_P are as in
+   unify_one_argument.  */
+
+static int
+check_non_deducible_conversion (tree parm, tree arg, int strict,
+				int flags, bool explain_p)
+{
+  tree type;
+
+  if (!TYPE_P (arg))
+    type = TREE_TYPE (arg);
+  else
+    type = arg;
+
+  if (same_type_p (parm, type))
+    return unify_success (explain_p);
+
+  if (strict == DEDUCE_CONV)
+    {
+      if (can_convert_arg (type, parm, NULL_TREE, flags))
+	return unify_success (explain_p);
+    }
+  else if (strict != DEDUCE_EXACT)
+    {
+      if (can_convert_arg (parm, type,
+			   TYPE_P (arg) ? NULL_TREE : arg,
+			   flags))
+	return unify_success (explain_p);
+    }
+
+  if (strict == DEDUCE_EXACT)
+    return unify_type_mismatch (explain_p, parm, arg);
+  else
+    return unify_arg_conversion (explain_p, parm, type, arg);
+}
+
+/* Subroutine of type_unification_real and unify_pack_expansion to
+   handle unification of a single P/A pair.  Parameters are as
+   for those functions.  */
+
+static int
+unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
+		    int subr, unification_kind_t strict, int flags,
+		    bool explain_p)
+{
+  tree arg_expr = NULL_TREE;
+  int arg_strict;
+
+  if (arg == error_mark_node || parm == error_mark_node)
+    return unify_invalid (explain_p);
+  if (arg == unknown_type_node)
+    /* We can't deduce anything from this, but we might get all the
+       template args from other function args.  */
+    return unify_success (explain_p);
+
+  /* FIXME uses_deducible_template_parms */
+  if (TYPE_P (parm) && !uses_template_parms (parm))
+    return check_non_deducible_conversion (parm, arg, strict, flags,
+					   explain_p);
+
+  switch (strict)
+    {
+    case DEDUCE_CALL:
+      arg_strict = (UNIFY_ALLOW_OUTER_LEVEL
+		    | UNIFY_ALLOW_MORE_CV_QUAL
+		    | UNIFY_ALLOW_DERIVED);
+      break;
+
+    case DEDUCE_CONV:
+      arg_strict = UNIFY_ALLOW_LESS_CV_QUAL;
+      break;
+
+    case DEDUCE_EXACT:
+      arg_strict = UNIFY_ALLOW_NONE;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* We only do these transformations if this is the top-level
+     parameter_type_list in a call or declaration matching; in other
+     situations (nested function declarators, template argument lists) we
+     won't be comparing a type to an expression, and we don't do any type
+     adjustments.  */
+  if (!subr)
+    {
+      if (!TYPE_P (arg))
+	{
+	  gcc_assert (TREE_TYPE (arg) != NULL_TREE);
+	  if (type_unknown_p (arg))
+	    {
+	      /* [temp.deduct.type] A template-argument can be
+		 deduced from a pointer to function or pointer
+		 to member function argument if the set of
+		 overloaded functions does not contain function
+		 templates and at most one of a set of
+		 overloaded functions provides a unique
+		 match.  */
+
+	      if (resolve_overloaded_unification
+		  (tparms, targs, parm, arg, strict,
+		   arg_strict, explain_p))
+		return unify_success (explain_p);
+	      return unify_overload_resolution_failure (explain_p, arg);
+	    }
+
+	  arg_expr = arg;
+	  arg = unlowered_expr_type (arg);
+	  if (arg == error_mark_node)
+	    return unify_invalid (explain_p);
+	}
+
+      arg_strict |=
+	maybe_adjust_types_for_deduction (strict, &parm, &arg, arg_expr);
+    }
+  else
+    gcc_assert ((TYPE_P (parm) || TREE_CODE (parm) == TEMPLATE_DECL)
+		== (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL));
+
+  /* For deduction from an init-list we need the actual list.  */
+  if (arg_expr && BRACE_ENCLOSED_INITIALIZER_P (arg_expr))
+    arg = arg_expr;
+  return unify (tparms, targs, parm, arg, arg_strict, explain_p);
+}
+
 /* Most parms like fn_type_unification.
 
    If SUBR is 1, we're being called recursively (to unify the
@@ -14660,10 +14788,9 @@ type_unification_real (tree tparms,
 		       int flags,
 		       bool explain_p)
 {
-  tree parm, arg, arg_expr;
+  tree parm, arg;
   int i;
   int ntparms = TREE_VEC_LENGTH (tparms);
-  int sub_strict;
   int saw_undeduced = 0;
   tree parms;
   const tree *args;
@@ -14677,25 +14804,6 @@ type_unification_real (tree tparms,
   /* Reset the number of non-defaulted template arguments contained
      in TARGS.  */
   NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs) = NULL_TREE;
-
-  switch (strict)
-    {
-    case DEDUCE_CALL:
-      sub_strict = (UNIFY_ALLOW_OUTER_LEVEL | UNIFY_ALLOW_MORE_CV_QUAL
-		    | UNIFY_ALLOW_DERIVED);
-      break;
-
-    case DEDUCE_CONV:
-      sub_strict = UNIFY_ALLOW_LESS_CV_QUAL;
-      break;
-
-    case DEDUCE_EXACT:
-      sub_strict = UNIFY_ALLOW_NONE;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
 
  again:
   parms = xparms;
@@ -14726,89 +14834,11 @@ type_unification_real (tree tparms,
 
       arg = args[ia];
       ++ia;
-      arg_expr = NULL;
 
-      if (arg == error_mark_node)
-	return unify_invalid (explain_p);
-      if (arg == unknown_type_node)
-	/* We can't deduce anything from this, but we might get all the
-	   template args from other function args.  */
-	continue;
-
-      /* Conversions will be performed on a function argument that
-	 corresponds with a function parameter that contains only
-	 non-deducible template parameters and explicitly specified
-	 template parameters.  */
-      if (!uses_template_parms (parm))
-	{
-	  tree type;
-
-	  if (!TYPE_P (arg))
-	    type = TREE_TYPE (arg);
-	  else
-	    type = arg;
-
-	  if (same_type_p (parm, type))
-	    continue;
-	  if (strict == DEDUCE_CONV)
-	    {
-	      if (can_convert_arg (type, parm, NULL_TREE, flags))
-		continue;
-	    }
-	  else if (strict != DEDUCE_EXACT)
-	    {
-	      if (can_convert_arg (parm, type,
-				   TYPE_P (arg) ? NULL_TREE : arg,
-				   flags))
-		continue;
-	    }
-
-	  if (strict == DEDUCE_EXACT)
-	    return unify_type_mismatch (explain_p, parm, arg);
-	  else
-	    return unify_arg_conversion (explain_p, parm, type, arg);
-	}
-
-      if (!TYPE_P (arg))
-	{
-	  gcc_assert (TREE_TYPE (arg) != NULL_TREE);
-	  if (type_unknown_p (arg))
-	    {
-	      /* [temp.deduct.type] 
-
-	         A template-argument can be deduced from a pointer to
-		 function or pointer to member function argument if
-		 the set of overloaded functions does not contain
-		 function templates and at most one of a set of
-		 overloaded functions provides a unique match.  */
-	      if (resolve_overloaded_unification
-		  (tparms, targs, parm, arg, strict, sub_strict, explain_p))
-		continue;
-
-	      return unify_overload_resolution_failure (explain_p, arg);
-	    }
-	  arg_expr = arg;
-	  arg = unlowered_expr_type (arg);
-	  if (arg == error_mark_node)
-	    return unify_invalid (explain_p);
-	}
-
-      {
-	int arg_strict = sub_strict;
-
-	if (!subr)
-	  arg_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg,
-							  arg_expr);
-
-	if (arg == init_list_type_node && arg_expr)
-	  arg = arg_expr;
-	if (unify (tparms, targs, parm, arg, arg_strict, explain_p))
-	  /* If unification failed, the recursive call will have updated
-	     UI appropriately.  */
-	  return 1;
-      }
+      if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
+			      flags, explain_p))
+	return 1;
     }
-
 
   if (parms 
       && parms != void_list_node
@@ -14826,7 +14856,7 @@ type_unification_real (tree tparms,
       /* Copy the parameter into parmvec.  */
       TREE_VEC_ELT (parmvec, 0) = TREE_VALUE (parms);
       if (unify_pack_expansion (tparms, targs, parmvec, argvec, strict,
-                                /*call_args_p=*/true, /*subr=*/subr, explain_p))
+                                /*subr=*/subr, explain_p))
         return 1;
 
       /* Advance to the end of the list of parameters.  */
@@ -15461,10 +15491,12 @@ template_parm_level_and_index (tree parm, int* level, int* index)
    unify. CALL_ARGS_P is true iff PACKED_ARGS is actually a function
    call argument list. We'll need to adjust the arguments to make them
    types. SUBR tells us if this is from a recursive call to
-   type_unification_real.  */
+   type_unification_real, or for comparing two template argument
+   lists. */
+
 static int
 unify_pack_expansion (tree tparms, tree targs, tree packed_parms, 
-                      tree packed_args, int strict, bool call_args_p,
+                      tree packed_args, unification_kind_t strict,
                       bool subr, bool explain_p)
 {
   tree parm 
@@ -15495,92 +15527,56 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
      unified and unify each with the pattern.  */
   for (i = start; i < len; i++)
     {
-      tree parm = pattern;
+      tree parm;
+      bool any_explicit = false;
+      tree arg = TREE_VEC_ELT (packed_args, i);
 
-      /* For each parameter pack, clear out the deduced value so that
-         we can deduce it again.  */
+      /* For each parameter pack, set its TMPL_ARG to either NULL_TREE
+	 or the element of its argument pack at the current index if
+	 this argument was explicitly specified.  */
       for (pack = packs; pack; pack = TREE_CHAIN (pack))
         {
           int idx, level;
+          tree arg, pargs;
           template_parm_level_and_index (TREE_PURPOSE (pack), &level, &idx);
 
-          TMPL_ARG (targs, level, idx) = NULL_TREE;
+          arg = NULL_TREE;
+          if (TREE_VALUE (pack)
+              && (pargs = ARGUMENT_PACK_EXPLICIT_ARGS (TREE_VALUE (pack)))
+              && (i < TREE_VEC_LENGTH (pargs)))
+            {
+              any_explicit = true;
+              arg = TREE_VEC_ELT (pargs, i);
+            }
+          TMPL_ARG (targs, level, idx) = arg;
         }
 
+      /* If we had explicit template arguments, substitute them into the
+	 pattern before deduction.  */
+      if (any_explicit)
+	{
+	  /* Some arguments might still be unspecified or dependent.  */
+	  bool dependent;
+	  ++processing_template_decl;
+	  dependent = any_dependent_template_arguments_p (targs);
+	  if (!dependent)
+	    --processing_template_decl;
+	  parm = tsubst (pattern, targs,
+			 explain_p ? tf_warning_or_error : tf_none,
+			 NULL_TREE);
+	  if (dependent)
+	    --processing_template_decl;
+	  if (parm == error_mark_node)
+	    return 1;
+	}
+      else
+	parm = pattern;
+
       /* Unify the pattern with the current argument.  */
-      {
-        tree arg = TREE_VEC_ELT (packed_args, i);
-	tree arg_expr = NULL_TREE;
-        int arg_strict = strict;
+      if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
+			      LOOKUP_IMPLICIT, explain_p))
+	return 1;
 
-        if (call_args_p)
-          {
-            int sub_strict;
-
-            /* This mirrors what we do in type_unification_real.  */
-            switch (strict)
-              {
-              case DEDUCE_CALL:
-                sub_strict = (UNIFY_ALLOW_OUTER_LEVEL 
-                              | UNIFY_ALLOW_MORE_CV_QUAL
-                              | UNIFY_ALLOW_DERIVED);
-                break;
-                
-              case DEDUCE_CONV:
-                sub_strict = UNIFY_ALLOW_LESS_CV_QUAL;
-                break;
-                
-              case DEDUCE_EXACT:
-                sub_strict = UNIFY_ALLOW_NONE;
-                break;
-                
-              default:
-                gcc_unreachable ();
-              }
-
-            if (!TYPE_P (arg))
-              {
-                gcc_assert (TREE_TYPE (arg) != NULL_TREE);
-                if (type_unknown_p (arg))
-                  {
-                    /* [temp.deduct.type] A template-argument can be
-                       deduced from a pointer to function or pointer
-                       to member function argument if the set of
-                       overloaded functions does not contain function
-                       templates and at most one of a set of
-                       overloaded functions provides a unique
-                       match.  */
-
-                    if (resolve_overloaded_unification
-                        (tparms, targs, parm, arg,
-			 (unification_kind_t) strict,
-			 sub_strict, explain_p))
-		      goto unified;
-		    return unify_overload_resolution_failure (explain_p, arg);
-                  }
-
-		arg_expr = arg;
-		arg = unlowered_expr_type (arg);
-		if (arg == error_mark_node)
-		  return unify_invalid (explain_p);
-              }
-      
-            arg_strict = sub_strict;
-
-            if (!subr)
-              arg_strict |= 
-                maybe_adjust_types_for_deduction ((unification_kind_t) strict,
-						  &parm, &arg, arg_expr);
-          }
-
-	/* For deduction from an init-list we need the actual list.  */
-	if (arg_expr && BRACE_ENCLOSED_INITIALIZER_P (arg_expr))
-	  arg = arg_expr;
-	RECUR_AND_CHECK_FAILURE (tparms, targs, parm, arg, arg_strict,
-				 explain_p);
-      }
-
-    unified:
       /* For each parameter pack, collect the deduced value.  */
       for (pack = packs; pack; pack = TREE_CHAIN (pack))
         {
@@ -15619,21 +15615,12 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 
       if (old_pack && ARGUMENT_PACK_INCOMPLETE_P (old_pack))
         {
-          /* Prepend the explicit arguments onto NEW_ARGS.  */
+          /* If we had fewer function args than explicit template args,
+             just use the explicits.  */
           tree explicit_args = ARGUMENT_PACK_EXPLICIT_ARGS (old_pack);
-          tree old_args = new_args;
-          int i, explicit_len = TREE_VEC_LENGTH (explicit_args);
-          int len = explicit_len + TREE_VEC_LENGTH (old_args);
-
-          /* Copy the explicit arguments.  */
-          new_args = make_tree_vec (len);
-          for (i = 0; i < explicit_len; i++)
-            TREE_VEC_ELT (new_args, i) = TREE_VEC_ELT (explicit_args, i);
-
-          /* Copy the deduced arguments.  */
-          for (; i < len; i++)
-            TREE_VEC_ELT (new_args, i) =
-              TREE_VEC_ELT (old_args, i - explicit_len);
+          int explicit_len = TREE_VEC_LENGTH (explicit_args);
+          if (len < explicit_len)
+            new_args = explicit_args;
         }
 
       if (!old_pack)
@@ -15961,9 +15948,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	    if (parm_variadic_p
 		&& unify_pack_expansion (tparms, targs,
 					 parmvec, argvec,
-					 UNIFY_ALLOW_NONE,
-					 /*call_args_p=*/false,
-					 /*subr=*/false, explain_p))
+					 DEDUCE_EXACT,
+					 /*subr=*/true, explain_p))
 	      return 1;
 	  }
 	  arg = TYPE_TI_TEMPLATE (arg);
@@ -16253,17 +16239,55 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
     case TREE_VEC:
       {
-	int i;
+	int i, len, argslen;
+	int parm_variadic_p = 0;
+
 	if (TREE_CODE (arg) != TREE_VEC)
 	  return unify_template_argument_mismatch (explain_p, parm, arg);
-	if (TREE_VEC_LENGTH (parm) != TREE_VEC_LENGTH (arg))
-	  return unify_arity (explain_p, TREE_VEC_LENGTH (arg),
-			      TREE_VEC_LENGTH (parm));
-	for (i = 0; i < TREE_VEC_LENGTH (parm); ++i)
-	  RECUR_AND_CHECK_FAILURE (tparms, targs,
-				   TREE_VEC_ELT (parm, i),
-				   TREE_VEC_ELT (arg, i),
-				   UNIFY_ALLOW_NONE, explain_p);
+
+	len = TREE_VEC_LENGTH (parm);
+	argslen = TREE_VEC_LENGTH (arg);
+
+	/* Check for pack expansions in the parameters.  */
+	for (i = 0; i < len; ++i)
+	  {
+	    if (PACK_EXPANSION_P (TREE_VEC_ELT (parm, i)))
+	      {
+		if (i == len - 1)
+		  /* We can unify against something with a trailing
+		     parameter pack.  */
+		  parm_variadic_p = 1;
+		else
+		  /* [temp.deduct.type]/9: If the template argument list of
+		     P contains a pack expansion that is not the last
+		     template argument, the entire template argument list
+		     is a non-deduced context.  */
+		  return unify_success (explain_p);
+	      }
+	  }
+
+        /* If we don't have enough arguments to satisfy the parameters
+           (not counting the pack expression at the end), or we have
+           too many arguments for a parameter list that doesn't end in
+           a pack expression, we can't unify.  */
+	if (parm_variadic_p
+	    ? argslen < len - parm_variadic_p
+	    : argslen != len)
+	  return unify_arity (explain_p, TREE_VEC_LENGTH (arg), len);
+
+	/* Unify all of the parameters that precede the (optional)
+	   pack expression.  */
+	for (i = 0; i < len - parm_variadic_p; ++i)
+	  {
+	    RECUR_AND_CHECK_FAILURE (tparms, targs,
+				     TREE_VEC_ELT (parm, i),
+				     TREE_VEC_ELT (arg, i),
+				     UNIFY_ALLOW_NONE, explain_p);
+	  }
+	if (parm_variadic_p)
+	  return unify_pack_expansion (tparms, targs, parm, arg,
+				       DEDUCE_EXACT,
+				       /*subr=*/true, explain_p);
 	return unify_success (explain_p);
       }
 
@@ -16425,58 +16449,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
-      {
-        tree packed_parms = ARGUMENT_PACK_ARGS (parm);
-        tree packed_args = ARGUMENT_PACK_ARGS (arg);
-        int i, len = TREE_VEC_LENGTH (packed_parms);
-        int argslen = TREE_VEC_LENGTH (packed_args);
-        int parm_variadic_p = 0;
-
-	for (i = 0; i < len; ++i)
-	  {
-	    if (PACK_EXPANSION_P (TREE_VEC_ELT (packed_parms, i)))
-	      {
-		if (i == len - 1)
-		  /* We can unify against something with a trailing
-		     parameter pack.  */
-		  parm_variadic_p = 1;
-		else
-		  /* Since there is something following the pack
-		     expansion, we cannot unify this template argument
-		     list.  */
-		  return unify_success (explain_p);
-	      }
-	  }
-	  
-
-        /* If we don't have enough arguments to satisfy the parameters
-           (not counting the pack expression at the end), or we have
-           too many arguments for a parameter list that doesn't end in
-           a pack expression, we can't unify.  */
-        if (argslen < (len - parm_variadic_p))
-	  return unify_too_few_arguments (explain_p, argslen, len);
-	if (argslen > len && !parm_variadic_p)
-	  return unify_too_many_arguments (explain_p, argslen, len);
-
-        /* Unify all of the parameters that precede the (optional)
-           pack expression.  */
-        for (i = 0; i < len - parm_variadic_p; ++i)
-          {
-	    RECUR_AND_CHECK_FAILURE (tparms, targs,
-				     TREE_VEC_ELT (packed_parms, i),
-				     TREE_VEC_ELT (packed_args, i),
-				     strict, explain_p);
-          }
-
-        if (parm_variadic_p)
-          return unify_pack_expansion (tparms, targs, 
-                                       packed_parms, packed_args,
-                                       strict, /*call_args_p=*/false,
-                                       /*subr=*/false, explain_p);
-        return unify_success (explain_p);
-      }
-
-      break;
+      return unify (tparms, targs, ARGUMENT_PACK_ARGS (parm),
+		    ARGUMENT_PACK_ARGS (arg), strict, explain_p);
 
     case TYPEOF_TYPE:
     case DECLTYPE_TYPE:
@@ -16785,9 +16759,8 @@ more_specialized_fn (tree pat1, tree pat2, int len)
             TREE_VEC_ELT (argvec, i) = TREE_VALUE (ta);
 
           deduce1 = (unify_pack_expansion (tparms1, targs1, parmvec,
-					   argvec, UNIFY_ALLOW_NONE, 
-                                           /*call_args_p=*/false, 
-					   /*subr=*/0, /*explain_p=*/false)
+					   argvec, DEDUCE_EXACT,
+					   /*subr=*/true, /*explain_p=*/false)
 		     == 0);
 
           /* We cannot deduce in the other direction, because ARG1 is
@@ -16810,9 +16783,8 @@ more_specialized_fn (tree pat1, tree pat2, int len)
             TREE_VEC_ELT (argvec, i) = TREE_VALUE (ta);
 
           deduce2 = (unify_pack_expansion (tparms2, targs2, parmvec,
-					   argvec, UNIFY_ALLOW_NONE, 
-                                           /*call_args_p=*/false, 
-					   /*subr=*/0, /*explain_p=*/false)
+					   argvec, DEDUCE_EXACT,
+					   /*subr=*/true, /*explain_p=*/false)
 		     == 0);
 
           /* We cannot deduce in the other direction, because ARG2 is
