@@ -1,3 +1,10 @@
+2011-10-02  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/47247
+	* lto-plugin.c (get_symbols_v2): New variable.
+	(write_resolution): Use V2 API when available.
+	(onload): Handle LDPT_GET_SYMBOLS_V2.
+
 2011-09-30  H.J. Lu  <hongjiu.lu@intel.com>
 	    Andi Kleen  <ak@linux.intel.com>
 

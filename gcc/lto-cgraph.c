@@ -52,7 +52,7 @@ static void output_cgraph_opt_summary (cgraph_node_set set);
 static void input_cgraph_opt_summary (VEC (cgraph_node_ptr, heap) * nodes);
 
 /* Number of LDPR values known to GCC.  */
-#define LDPR_NUM_KNOWN (LDPR_RESOLVED_DYN + 1)
+#define LDPR_NUM_KNOWN (LDPR_PREVAILING_DEF_IRONLY_EXP + 1)
 
 /* Cgraph streaming is organized as set of record whose type
    is indicated by a tag.  */
