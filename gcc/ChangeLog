@@ -1,5 +1,13 @@
 2011-10-02  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (ipa_passes): Remove unrechable nodes.
+	* lto-streamer-out.c (produce_symtab): Skip unused extern declarations.
+	* ipa.c (cgraph_remove_unreachable_nodes): Do not assume that external
+	functions are reachable when address is taken.
+	* tree-sra.c (modify_function): Free dominance info.
+
+2011-10-02  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline-analysis.c (inline_summary_alloc): Bounds check.
 
 	* ipa-inline-analysis.c (reset_inline_edge_summary): New function.
