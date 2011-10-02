@@ -1,5 +1,18 @@
 2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/50579
+	* gcc.target/mips/mips.exp (mips_long32_abi_p, mips_long64_abi_p):
+	New procedures.
+	(mips-dg-options): Force an ABI option if the current ABI is
+	incompatible with the required -mlong setting.  Likewise force
+	a long setting if the current one is incompatible with the
+	chosen ABI.  Keep abi_test_option_p, abi and eabi_p updated
+	throughout procedure.
+	* gcc.target/mips/abi-o64-long64.c: Require -mno-abicalls
+	instead of addressing=absolute.
+
+2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/stack-1.c: New test.
 
 2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
