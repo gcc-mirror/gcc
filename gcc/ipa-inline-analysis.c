@@ -789,6 +789,44 @@ inline_summary_alloc (void)
 					     10);
 }
 
+/* We are called multiple time for given function; clear
+   data from previous run so they are not cumulated.  */
+
+static void
+reset_inline_edge_summary (struct cgraph_edge *e)
+{
+  struct inline_edge_summary *es = inline_edge_summary (e);
+
+  es->call_stmt_size = es->call_stmt_time =0;
+  if (es->predicate)
+    pool_free (edge_predicate_pool, es->predicate);
+  es->predicate = NULL;
+  VEC_free (inline_param_summary_t, heap, es->param);
+}
+
+/* We are called multiple time for given function; clear
+   data from previous run so they are not cumulated.  */
+
+static void
+reset_inline_summary (struct cgraph_node *node)
+{
+  struct inline_summary *info = inline_summary (node);
+  struct cgraph_edge *e;
+
+  info->self_size = info->self_time = 0;
+  info->estimated_stack_size = 0;
+  info->estimated_self_stack_size = 0;
+  info->stack_frame_offset = 0;
+  info->size = 0;
+  info->time = 0;
+  VEC_free (condition, gc, info->conds);
+  VEC_free (size_time_entry,gc, info->entry);
+  for (e = node->callees; e; e = e->next_callee)
+    reset_inline_edge_summary (e);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    reset_inline_edge_summary (e);
+}
+
 /* Hook that is called by cgraph.c when a node is removed.  */
 
 static void
@@ -799,11 +837,7 @@ inline_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
       <= (unsigned)node->uid)
     return;
   info = inline_summary (node);
-  reset_node_growth_cache (node);
-  VEC_free (condition, gc, info->conds);
-  VEC_free (size_time_entry, gc, info->entry);
-  info->conds = NULL;
-  info->entry = NULL;
+  reset_inline_summary (node);
   memset (info, 0, sizeof (inline_summary_t));
 }
 
@@ -1012,13 +1046,7 @@ inline_edge_removal_hook (struct cgraph_edge *edge, void *data ATTRIBUTE_UNUSED)
     reset_edge_growth_cache (edge);
   if (edge->uid
       < (int)VEC_length (inline_edge_summary_t, inline_edge_summary_vec))
-    {
-      edge_set_predicate (edge, NULL);
-      VEC_free (inline_param_summary_t, heap,
-	        inline_edge_summary (edge)->param);
-      memset (inline_edge_summary (edge), 0,
-	      sizeof (struct inline_edge_summary));
-    }
+    reset_inline_edge_summary (edge);
 }
 
 
@@ -2041,6 +2069,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   inline_summary_alloc ();
 
   info = inline_summary (node);
+  reset_inline_summary (node);
 
   /* FIXME: Thunks are inlinable, but tree-inline don't know how to do that.
      Once this happen, we will need to more curefully predict call
@@ -2827,6 +2856,7 @@ inline_generate_summary (void)
       cgraph_add_function_insertion_hook (&add_new_function, NULL);
 
   ipa_register_cgraph_hooks ();
+  inline_free_summary ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->alias)
@@ -3109,19 +3139,24 @@ inline_write_summary (cgraph_node_set set,
 void
 inline_free_summary (void)
 {
+  struct cgraph_node *node;
+  FOR_EACH_DEFINED_FUNCTION (node)
+    reset_inline_summary (node);
   if (function_insertion_hook_holder)
     cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
   function_insertion_hook_holder = NULL;
   if (node_removal_hook_holder)
     cgraph_remove_node_removal_hook (node_removal_hook_holder);
+  node_removal_hook_holder = NULL;
   if (edge_removal_hook_holder)
     cgraph_remove_edge_removal_hook (edge_removal_hook_holder);
-  node_removal_hook_holder = NULL;
+  edge_removal_hook_holder = NULL;
   if (node_duplication_hook_holder)
     cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
+  node_duplication_hook_holder = NULL;
   if (edge_duplication_hook_holder)
     cgraph_remove_edge_duplication_hook (edge_duplication_hook_holder);
-  node_duplication_hook_holder = NULL;
+  edge_duplication_hook_holder = NULL;
   VEC_free (inline_summary_t, gc, inline_summary_vec);
   inline_summary_vec = NULL;
   VEC_free (inline_edge_summary_t, heap, inline_edge_summary_vec);

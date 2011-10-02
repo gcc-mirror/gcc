@@ -1,3 +1,12 @@
+2011-10-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (reset_inline_edge_summary): New function.
+	(reset_inline_summary): New function.
+	(compute_inline_parameters, inline_node_removal_hook,
+	inline_edge_removal_hook): Use it.
+	(inline_free_summary): Reset holders correctly.
+	(inline_generate_summary): Free summary before computing it.
+
 2011-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR preprocessor/36819
