@@ -1,5 +1,9 @@
 2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/stack-1.c: New test.
+
+2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.dg/pr49696.c: New test.
 
 2011-10-02  Jan Hubicka  <jh@suse.cz>

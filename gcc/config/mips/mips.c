@@ -9892,6 +9892,14 @@ mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
   mips_end_function_definition (fnname);
 }
 
+/* Emit an optimisation barrier for accesses to the current frame.  */
+
+static void
+mips_frame_barrier (void)
+{
+  emit_clobber (gen_frame_mem (BLKmode, stack_pointer_rtx));
+}
+
 /* Save register REG to MEM.  Make the instruction frame-related.  */
 
 static void
@@ -10035,6 +10043,7 @@ mips_expand_prologue (void)
 	  insn = mips16e_build_save_restore (false, &mask, &offset,
 					     nargs, step1);
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	  mips_frame_barrier ();
  	  size -= step1;
 
  	  /* Check if we need to save other registers.  */
@@ -10075,6 +10084,7 @@ mips_expand_prologue (void)
 	      insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 				    GEN_INT (-step1));
 	      RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	      mips_frame_barrier ();
 	      size -= step1;
 
 	      /* Start at the uppermost location for saving.  */
@@ -10135,6 +10145,7 @@ mips_expand_prologue (void)
 				    stack_pointer_rtx,
 				    GEN_INT (-step1));
 	      RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	      mips_frame_barrier ();
 	      size -= step1;
 	    }
 	  mips_for_each_saved_acc (size, mips_save_reg);
@@ -10175,6 +10186,7 @@ mips_expand_prologue (void)
 	    (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
 			  plus_constant (stack_pointer_rtx, -size)));
 	}
+      mips_frame_barrier ();
     }
 
   /* Set up the frame pointer, if we're using one.  */
@@ -10315,6 +10327,35 @@ mips_restore_reg (rtx reg, rtx mem)
 			   mips_epilogue.cfa_restore_sp_offset);
 }
 
+/* Emit code to set the stack pointer to BASE + OFFSET, given that
+   BASE + OFFSET is NEW_FRAME_SIZE bytes below the top of the frame.
+   BASE, if not the stack pointer, is available as a temporary.  */
+
+static void
+mips_deallocate_stack (rtx base, rtx offset, HOST_WIDE_INT new_frame_size)
+{
+  if (base == stack_pointer_rtx && offset == const0_rtx)
+    return;
+
+  mips_frame_barrier ();
+  if (offset == const0_rtx)
+    {
+      emit_move_insn (stack_pointer_rtx, base);
+      mips_epilogue_set_cfa (stack_pointer_rtx, new_frame_size);
+    }
+  else if (TARGET_MIPS16 && base != stack_pointer_rtx)
+    {
+      emit_insn (gen_add3_insn (base, base, offset));
+      mips_epilogue_set_cfa (base, new_frame_size);
+      emit_move_insn (stack_pointer_rtx, base);
+    }
+  else
+    {
+      emit_insn (gen_add3_insn (stack_pointer_rtx, base, offset));
+      mips_epilogue_set_cfa (stack_pointer_rtx, new_frame_size);
+    }
+}
+
 /* Emit any instructions needed before a return.  */
 
 void
@@ -10341,7 +10382,7 @@ mips_expand_epilogue (bool sibcall_p)
 {
   const struct mips_frame_info *frame;
   HOST_WIDE_INT step1, step2;
-  rtx base, target, insn;
+  rtx base, adjust, insn;
 
   if (!sibcall_p && mips_can_use_return_insn ())
     {
@@ -10384,31 +10425,14 @@ mips_expand_epilogue (bool sibcall_p)
       step1 -= step2;
     }
 
-  /* Set TARGET to BASE + STEP1.  */
-  target = base;
-  if (step1 > 0)
+  /* Get an rtx for STEP1 that we can add to BASE.  */
+  adjust = GEN_INT (step1);
+  if (!SMALL_OPERAND (step1))
     {
-      rtx adjust;
-
-      /* Get an rtx for STEP1 that we can add to BASE.  */
-      adjust = GEN_INT (step1);
-      if (!SMALL_OPERAND (step1))
-	{
-	  mips_emit_move (MIPS_EPILOGUE_TEMP (Pmode), adjust);
-	  adjust = MIPS_EPILOGUE_TEMP (Pmode);
-	}
-
-      /* Normal mode code can copy the result straight into $sp.  */
-      if (!TARGET_MIPS16)
-	target = stack_pointer_rtx;
-
-      emit_insn (gen_add3_insn (target, base, adjust));
-      mips_epilogue_set_cfa (target, step2);
+      mips_emit_move (MIPS_EPILOGUE_TEMP (Pmode), adjust);
+      adjust = MIPS_EPILOGUE_TEMP (Pmode);
     }
-
-  /* Copy TARGET into the stack pointer.  */
-  if (target != stack_pointer_rtx)
-    mips_emit_move (stack_pointer_rtx, target);
+  mips_deallocate_stack (base, adjust, step2);
 
   /* If we're using addressing macros, $gp is implicitly used by all
      SYMBOL_REFs.  We must emit a blockage insn before restoring $gp
@@ -10437,6 +10461,7 @@ mips_expand_epilogue (bool sibcall_p)
 
       /* Restore the remaining registers and deallocate the final bit
 	 of the frame.  */
+      mips_frame_barrier ();
       emit_insn (restore);
       mips_epilogue_set_cfa (stack_pointer_rtx, 0);
     }
@@ -10473,13 +10498,8 @@ mips_expand_epilogue (bool sibcall_p)
 	  offset -= UNITS_PER_WORD;
 
 	  /* If we don't use shoadow register set, we need to update SP.  */
-	  if (!cfun->machine->use_shadow_register_set_p && step2 > 0)
-	    {
-	      emit_insn (gen_add3_insn (stack_pointer_rtx,
-					stack_pointer_rtx,
-					GEN_INT (step2)));
-	      mips_epilogue_set_cfa (stack_pointer_rtx, 0);
-	    }
+	  if (!cfun->machine->use_shadow_register_set_p)
+	    mips_deallocate_stack (stack_pointer_rtx, GEN_INT (step2), 0);
 	  else
 	    /* The choice of position is somewhat arbitrary in this case.  */
 	    mips_epilogue_emit_cfa_restores ();
@@ -10489,16 +10509,8 @@ mips_expand_epilogue (bool sibcall_p)
 				    gen_rtx_REG (SImode, K0_REG_NUM)));
 	}
       else
-	{
-	  /* Deallocate the final bit of the frame.  */
-	  if (step2 > 0)
-	    {
-	      emit_insn (gen_add3_insn (stack_pointer_rtx,
-					stack_pointer_rtx,
-					GEN_INT (step2)));
-	      mips_epilogue_set_cfa (stack_pointer_rtx, 0);
-	    }
-	}
+	/* Deallocate the final bit of the frame.  */
+	mips_deallocate_stack (stack_pointer_rtx, GEN_INT (step2), 0);
     }
   gcc_assert (!mips_epilogue.cfa_restores);
 

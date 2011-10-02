@@ -1,5 +1,13 @@
 2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_frame_barrier): New function.
+	(mips_expand_prologue): Call it after allocating stack space.
+	(mips_deallocate_stack): New function.
+	(mips_expand_epilogue): Call mips_frame_barrier and
+	mips_deallocate_stack.
+
+2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR target/49696
 	* config/mips/sync.md (sync_<optab>_12): Allow zero operands.
 	(sync_old_<optab>_12, sync_new_<optab>_12, sync_nand_12): Likewise.
