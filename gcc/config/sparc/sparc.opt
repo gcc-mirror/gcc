@@ -65,6 +65,10 @@ mvis2
 Target Report Mask(VIS2)
 Use UltraSPARC Visual Instruction Set version 2.0 extensions
 
+mvis3
+Target Report Mask(VIS3)
+Use UltraSPARC Visual Instruction Set version 3.0 extensions
+
 mfmaf
 Target Report Mask(FMAF)
 Use UltraSPARC Fused Multiply-Add extensions

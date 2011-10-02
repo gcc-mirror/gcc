@@ -1,3 +1,39 @@
+2011-10-01  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.opt (VIS3): New option.
+	* doc/invoke.texi: Document it.
+	* config/sparc/sparc.h: Force TARGET_VIS3 to zero if assembler is
+	not capable of such instructions.
+	* config/sparc/sparc-c.c (sparc_target_macros): Define __VIS__
+	to 0x300 when TARGET_VIS3.
+	* config/sparc/sparc-modes.def: Create 16-byte vector modes.
+	* config/sparc/sparc.md (UNSPEC_CMASK8, UNSPEC_CMASK16, UNSPEC_CMASK32,
+	UNSPEC_FCHKSM16, UNSPEC_PDISTN, UNSPC_FUCMP): New unspecs.
+	(V64N8, VASS): New mode iterators.
+	(vis3_shift, vis3_addsub_ss): New code iterators.
+	(vbits, vconstr): New mode attributes.
+	(vis3_shift_insn, vis3_addsub_ss_insn): New code attributes.
+	(cmask8<P:mode>_vis, cmask16<P:mode>_vis, cmask32<P:mode>_vis,
+	fchksm16_vis, <vis3_shift_insn><vbits>_vis, pdistn<mode>_vis,
+	fmean16_vis, fpadd64_vis, fpsub64_vis, <vis3_addsub_ss_insn><vbits>_vis,
+	fucmp<code>8<P:mode>_vis): New VIS 3.0 instruction patterns.
+	* config/sparc/sparc.c (sparc_option_override): Set MASK_VIS3 by
+	default when targetting capable cpus.  TARGET_VIS3 implies
+	TARGET_VIS2 and TARGET_VIS, and clear them when TARGET_FPU is
+	disabled.
+	(sparc_vis_init_builtins): Emit new VIS 3.0 builtins.
+	(sparc_fold_builtin): Do not eliminate cmask{8,16,32} when result
+	is ignored.
+	* config/sparc/visintrin.h (__vis_cmask8, __vis_cmask16,
+	__vis_cmask32, __vis_fchksm16, __vis_fsll16, __vis_fslas16,
+	__vis_fsrl16, __vis_fsra16, __vis_fsll32, __vis_fslas32,
+	__vis_fsrl32, __vis_fsra32, __vis_pdistn, __vis_fmean16,
+	__vis_fpadd64, __vis_fpsub64, __vis_fpadds16, __vis_fpadds16s,
+	__vis_fpsubs16, __vis_fpsubs16s, __vis_fpadds32, __vis_fpadds32s,
+	__vis_fpsubs32, __vis_fpsubs32s, __vis_fucmple8, __vis_fucmpne8,
+	__vis_fucmpgt8, __vis_fucmpeq8): New VIS 3.0 interfaces.
+	* doc/extend.texi: Document new VIS 3.0 builtins.
+
 2011-10-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ira-color.c (assign_hard_reg): Fix typo.

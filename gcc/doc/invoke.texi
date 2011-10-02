@@ -880,7 +880,8 @@ See RS/6000 and PowerPC Options.
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
--mvis2 -mno-vis2 -mfmaf -mno-fmaf}
+-mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
+-mfmaf  -mno-fmaf}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -17444,6 +17445,16 @@ version 2.0 of the UltraSPARC Visual Instruction Set extensions.  The
 default is @option{-mvis2} when targetting a cpu that supports such
 instructions, such as UltraSPARC-III and later.  Setting @option{-mvis2}
 also sets @option{-mvis}.
+
+@item -mvis3
+@itemx -mno-vis3
+@opindex mvis3
+@opindex mno-vis3
+With @option{-mvis3}, GCC generates code that takes advantage of
+version 3.0 of the UltraSPARC Visual Instruction Set extensions.  The
+default is @option{-mvis3} when targetting a cpu that supports such
+instructions, such as niagara-3 and later.  Setting @option{-mvis3}
+also sets @option{-mvis2} and @option{-mvis}.
 
 @item -mfmaf
 @itemx -mno-fmaf

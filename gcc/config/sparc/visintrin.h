@@ -431,4 +431,200 @@ __vis_edge32ln (void *__A, void *__B)
   return __builtin_vis_edge32ln (__A, __B);
 }
 
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_cmask8 (long __A)
+{
+  return __builtin_vis_cmask8 (__A);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_cmask16 (long __A)
+{
+  return __builtin_vis_cmask16 (__A);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_cmask32 (long __A)
+{
+  return __builtin_vis_cmask32 (__A);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fchksm16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fchksm16 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fsll16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fsll16 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fslas16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fslas16 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fsrl16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fsrl16 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fsra16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fsra16 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fsll32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fsll32 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fslas32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fslas32 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fsrl32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fsrl32 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fsra32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fsra32 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_pdistn (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_pdistn (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fmean16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fmean16 (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpadd64 (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_fpadd64 (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsub64 (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_fpsub64 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpadds16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpadds16 (__A, __B);
+}
+
+extern __inline __v2hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpadds16s (__v2hi __A, __v2hi __B)
+{
+  return __builtin_vis_fpadds16s (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsubs16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpsubs16 (__A, __B);
+}
+
+extern __inline __v2hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsubs16s (__v2hi __A, __v2hi __B)
+{
+  return __builtin_vis_fpsubs16s (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpadds32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpadds32 (__A, __B);
+}
+
+extern __inline __v1si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpadds32s (__v1si __A, __v1si __B)
+{
+  return __builtin_vis_fpadds32s (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsubs32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpsubs32 (__A, __B);
+}
+
+extern __inline __v1si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsubs32s (__v1si __A, __v1si __B)
+{
+  return __builtin_vis_fpsubs32s (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fucmple8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fucmple8 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fucmpne8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fucmpne8 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fucmpgt8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fucmpgt8 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fucmpeq8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fucmpeq8 (__A, __B);
+}
+
 #endif  /* _VISINTRIN_H_INCLUDED */
