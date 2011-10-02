@@ -1,3 +1,9 @@
+2011-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR preprocessor/36819
+	* incpath.c (merge_include_chains): Call free_path on
+	heads[QUOTE] and tails[QUOTE].
+
 2011-10-02  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/47247

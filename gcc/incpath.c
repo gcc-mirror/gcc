@@ -362,6 +362,8 @@ merge_include_chains (const char *sysroot, cpp_reader *pfile, int verbose)
 void
 split_quote_chain (void)
 {
+  free_path (heads[QUOTE], REASON_QUIET);
+  free_path (tails[QUOTE], REASON_QUIET);
   heads[QUOTE] = heads[BRACKET];
   tails[QUOTE] = tails[BRACKET];
   heads[BRACKET] = NULL;
