@@ -247,10 +247,9 @@ GCC_HEADER_STDINT(gstdint.h)
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 
-AC_CHECK_HEADERS(sched.h)
-AC_CHECK_HEADERS([fcntl.h netdb.h netinet/in.h stddef.h stdlib.h sys/socket.h unistd.h])
-AC_CHECK_HEADERS([semaphore.h sys/loadavg.h])
-AC_CHECK_HEADERS([execinfo.h])
+AC_CHECK_HEADERS([execinfo.h fcntl.h limits.h netdb.h netinet/in.h])
+AC_CHECK_HEADERS([sched.h semaphore.h stddef.h stdlib.h sys/loadavg.h])
+AC_CHECK_HEADERS([sys/socket.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -287,8 +286,9 @@ AC_FUNC_FORK
 AC_FUNC_MALLOC
 AC_FUNC_MMAP
 AC_FUNC_STAT
-AC_CHECK_FUNCS([ftruncate gethostbyname gethostname memset munmap socket strerror])
-AC_CHECK_FUNCS([getloadavg clock_gettime strtoull])
+AC_CHECK_FUNCS([clock_gettime ftruncate getcwd gethostbyname gethostname])
+AC_CHECK_FUNCS([getloadavg memset mkdir munmap socket])
+AC_CHECK_FUNCS([strcasecmp strdup strerror strtol strtoull])
 AC_CHECK_FUNCS([backtrace backtrace_symbols backtrace_symbols_fd])
 AC_SYS_LARGEFILE
 
@@ -320,7 +320,7 @@ AC_LINK_IFELSE(
    pthread_attr_getaffinity_np (&attr, sizeof (cpu_set_t), &cpuset);
    pthread_attr_setaffinity_np (&attr, sizeof (cpu_set_t), &cpuset);])],
   AC_DEFINE(HAVE_PTHREAD_AFFINITY_NP, 1,
-[	Define if pthread_{,attr_}{g,s}etaffinity_np is supported.]))
+    [Define  to 1 if pthread_{,attr_}{g,s}etaffinity_np is supported.]))
 
 # At least for glibc, clock_gettime is in librt.  But don't pull that
 # in if it still doesn't give us the function we want.
@@ -457,43 +457,69 @@ fi
 
 dnl Select target specific runtime implementation.
 
-targ_runtime=smp
-targ_runtime_pthreads=
-if test "$targ_runtime" = "smp"; then
+AC_MSG_CHECKING([for UPC runtime model])
+AC_ARG_WITH(upc-runtime,
+[AS_HELP_STRING([--with-upc-runtime=MODEL],
+		[specify the runtime implementation model for UPC,
+		 where MODEL may only be: 'SMP' (Symmetric Multiprocessing)
+		 in the current implementation
+		 [default='SMP']])],
+[
+  case "$withval" in
+changequote(,)dnl
+    [Ss][Mm][Pp])
+      upc_runtime_model=smp
+      ;;
+changequote([,])dnl
+    *)
+      AC_MSG_ERROR([$withval is an invalid runtime model for --with-upc-runtime])
+      ;;
+  esac
+],
+[
+  upc_runtime_model=smp
+])
+AC_MSG_RESULT([$upc_runtime_model])
+
+AC_MSG_CHECKING([for UPC link script support])
+AC_ARG_ENABLE(upc-link-script,
+[AS_HELP_STRING([--enable-upc-link-script],
+                [enable UPC's use of a custom linker script;
+                 this will define the UPC shared section as a
+		 no load section on targets where this feature
+		 is supported (requires GNU LD).])],
+[
+  case $enableval in
+  yes | no) ;;
+  *)
+    AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no.])
+  esac
+],
+[
+  enable_upc_link_script=no
+])
+if test "$enable_upc_link_script" = yes; then
+  if test "$with_gnu_ld" = yes; then
+    gen_ld_script=${srcdir}/${targ_runtime}/gen-gccupc-ld-script.pl
+    if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
+      # if gen-gccupc-ld-script did not accept the output of the linker
+      # then disable UPC link script support.
+      AC_MSG_ERROR([Selected linker does not support linker scripts.])
+    fi
+  fi
+fi
+AC_MSG_RESULT($enable_upc_link_script)
+if test "$enable_upc_link_script" = yes; then
+  AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1,
+    [Define to 1 if UPC link script is supported.])
+fi
+
+if test "$upc_runtime_model" = "smp"; then
+  targ_runtime_pthreads=
   LIBUPC_GCC_TLS_SUPPORTED
   if test "$upc_cv_gcc_tls_supported"x = "yes"x ; then
     targ_runtime_pthreads=yes
   fi
-  AC_MSG_CHECKING([for UPC link script support])
-  AC_ARG_ENABLE(upc-link-script,
-  [  --enable-upc-link-script Enable UPC's use of a custom linker script.
-    This will define the UPC shared section as a no load section on
-    targets where this feature is supported.  Requires GNU LD.],
-  [
-    case $enableval in
-    yes | no) ;;
-    *)
-      AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no.])
-    esac
-  ],
-  [
-    enable_upc_link_script=no
-  ])
-  if test "$enable_upc_link_script" = yes; then
-    if test "$with_gnu_ld" = yes; then
-      gen_ld_script=${srcdir}/${targ_runtime}/gen-gccupc-ld-script.pl
-      if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
-	# if gen-gccupc-ld-script did not accept the output of the linker
-	# then disable UPC link script support.
-	AC_MSG_ERROR([Selected linker does not support linker scripts.])
-      fi
-    fi
-  fi
-  AC_MSG_RESULT($enable_upc_link_script)
-  if test "$enable_upc_link_script" = yes; then
-    AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1, [Define to 1 if UPC link script is supported.])
-  fi
-  AC_SUBST(upc_crtstuff_cflags)
   AC_MSG_CHECKING(for Linux scheduling affinity)
   AC_TRY_RUN(
   changequote(<<,>>)dnl
@@ -553,8 +579,9 @@ if test "$targ_runtime" = "smp"; then
   AC_MSG_RESULT([$upc_numa])
   AC_MSG_CHECKING([for UPC GUM debugging support])
   AC_ARG_ENABLE(upc-gum-debug,
-  [  --enable-upc-gum-debug Enable UPC's source level debugging with GDB and GUM
-    support. Requires UPC aware GDB.],
+  [AS_HELP_STRING([--enable-upc-gum-debug],
+                  [enable UPC's source level debugging with GDB and GUM
+                   support (requires UPC aware GDB).])],
   [
     case $enableval in
     yes | no) ;;
@@ -571,22 +598,26 @@ if test "$targ_runtime" = "smp"; then
     AC_DEFINE_UNQUOTED(GUPCR_HAVE_GUM_DEBUG,[1],
     [Define if UPC GUM debug server is supported])
   fi
+  # Use the generic (reference implementation)
+  use_generic_collectives="yes"
 
-  # Get target configury.
-  . ${srcdir}/configure.tgt
+fi #### End: SMP runtime configuration
 
-  # configure.tgt sets these substitution variables.
-  # It also sets 'upc_crtstuff=yes' if upc-crtstuff needs
-  # to be compiled.
-  AC_SUBST(config_path)
-  AC_SUBST(XCFLAGS)
-  AC_SUBST(XLDFLAGS)
-  AC_SUBST(link_upc_spec)
-  AC_SUBST(upc_crtbegin_spec)
-  AC_SUBST(upc_crtend_spec)
-  AC_SUBST(upc_crtstuff_mak)
-  AC_SUBST(upc_crtstuff_objs)
-fi
+# Get target configury.
+. ${srcdir}/configure.tgt
+
+# configure.tgt sets these substitution variables.
+# It also sets 'upc_crtstuff=yes' if upc-crtstuff needs
+# to be compiled.
+AC_SUBST(config_path)
+AC_SUBST(XCFLAGS)
+AC_SUBST(XLDFLAGS)
+AC_SUBST(link_upc_spec)
+AC_SUBST(upc_crtstuff_cflags)
+AC_SUBST(upc_crtbegin_spec)
+AC_SUBST(upc_crtend_spec)
+AC_SUBST(upc_crtstuff_mak)
+AC_SUBST(upc_crtstuff_objs)
 
 dnl Define ARG_UNUSED macro
 AH_BOTTOM([
@@ -595,13 +626,16 @@ AH_BOTTOM([
 #endif
 ])
 
-dnl Build the 'SMP' based runtime for all targets.
-AM_CONDITIONAL(LIBUPC_SMP_RUNTIME, [test "$targ_runtime" = "smp"])
+dnl Build the runtime, based upon the --with-upc-runtime setting.
+AM_CONDITIONAL(LIBUPC_SMP_RUNTIME, [test "$upc_runtime_model" = "smp"])
+
+AM_CONDITIONAL(LIBUPC_CRTSTUFF, [test "$upc_crtstuff" = "yes"])
+AM_CONDITIONAL(LIBUPC_LINK_SCRIPT, [test "$enable_upc_link_script" = "yes"])
+AM_CONDITIONAL(LIBUPC_GENERIC_COLLECTIVES,
+               [test "$use_generic_collectives" = "yes"])
 
 dnl 'smp' runtime specific settings
-AM_CONDITIONAL(LIBUPC_CRTSTUFF, [test "$upc_crtstuff" = "yes"])
 AM_CONDITIONAL(LIBUPC_PTHREADS, [test "$targ_runtime_pthreads" = "yes"])
-AM_CONDITIONAL(LIBUPC_LINK_SCRIPT, [test "$enable_upc_link_script" = "yes"])
 AM_CONDITIONAL(LIBUPC_AFFINITY, [test "$upc_affinity" = "yes"])
 AM_CONDITIONAL(LIBUPC_NUMA, [test "$upc_numa" = "yes"])
 AM_CONDITIONAL(LIBUPC_GUM, [test "$upc_gum_debug" = "yes"])
@@ -645,5 +679,4 @@ AH_BOTTOM(
 
 AC_CONFIG_FILES([Makefile testsuite/Makefile])
 AC_CONFIG_FILES([upc-crtbegin.spec libupc.spec upc-crtend.spec])
-
 AC_OUTPUT

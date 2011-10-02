@@ -607,10 +607,12 @@ LIBUPC_NUMA_FALSE
 LIBUPC_NUMA_TRUE
 LIBUPC_AFFINITY_FALSE
 LIBUPC_AFFINITY_TRUE
-LIBUPC_LINK_SCRIPT_FALSE
-LIBUPC_LINK_SCRIPT_TRUE
 LIBUPC_PTHREADS_FALSE
 LIBUPC_PTHREADS_TRUE
+LIBUPC_GENERIC_COLLECTIVES_FALSE
+LIBUPC_GENERIC_COLLECTIVES_TRUE
+LIBUPC_LINK_SCRIPT_FALSE
+LIBUPC_LINK_SCRIPT_TRUE
 LIBUPC_CRTSTUFF_FALSE
 LIBUPC_CRTSTUFF_TRUE
 LIBUPC_SMP_RUNTIME_FALSE
@@ -619,11 +621,11 @@ upc_crtstuff_objs
 upc_crtstuff_mak
 upc_crtend_spec
 upc_crtbegin_spec
+upc_crtstuff_cflags
 link_upc_spec
 XLDFLAGS
 XCFLAGS
 config_path
-upc_crtstuff_cflags
 LIBUPC_BUILD_VERSIONED_SHLIB_FALSE
 LIBUPC_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
@@ -774,6 +776,7 @@ enable_largefile
 enable_linux_futex
 enable_tls
 enable_symvers
+with_upc_runtime
 enable_upc_link_script
 enable_upc_gum_debug
 '
@@ -1426,11 +1429,13 @@ Optional Features:
   --enable-tls            Use thread-local storage [default=yes]
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
-  --enable-upc-link-script Enable UPC's use of a custom linker script.
-    This will define the UPC shared section as a no load section on
-    targets where this feature is supported.  Requires GNU LD.
-  --enable-upc-gum-debug Enable UPC's source level debugging with GDB and GUM
-    support. Requires UPC aware GDB.
+  --enable-upc-link-script
+                          enable UPC's use of a custom linker script; this
+                          will define the UPC shared section as a no load
+                          section on targets where this feature is supported
+                          (requires GNU LD).
+  --enable-upc-gum-debug  enable UPC's source level debugging with GDB and GUM
+                          support (requires UPC aware GDB).
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1438,6 +1443,11 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-upc-runtime=MODEL
+                          specify the runtime implementation model for UPC,
+                          where MODEL may only be: 'SMP' (Symmetric
+                          Multiprocessing) in the current implementation
+                          [default='SMP']
 
 Some influential environment variables:
   CC          C compiler command
@@ -11401,7 +11411,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11404 "configure"
+#line 11414 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11507,7 +11517,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11510 "configure"
+#line 11520 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12404,19 +12414,7 @@ $as_echo "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 fi
 
 
-for ac_header in sched.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "sched.h" "ac_cv_header_sched_h" "$ac_includes_default"
-if test "x$ac_cv_header_sched_h" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_SCHED_H 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in fcntl.h netdb.h netinet/in.h stddef.h stdlib.h sys/socket.h unistd.h
+for ac_header in execinfo.h fcntl.h limits.h netdb.h netinet/in.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12430,7 +12428,7 @@ fi
 
 done
 
-for ac_header in semaphore.h sys/loadavg.h
+for ac_header in sched.h semaphore.h stddef.h stdlib.h sys/loadavg.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12444,12 +12442,14 @@ fi
 
 done
 
-for ac_header in execinfo.h
+for ac_header in sys/socket.h unistd.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "execinfo.h" "ac_cv_header_execinfo_h" "$ac_includes_default"
-if test "x$ac_cv_header_execinfo_h" = x""yes; then :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+eval as_val=\$$as_ac_Header
+   if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_EXECINFO_H 1
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -13295,7 +13295,7 @@ _ACEOF
 
 fi
 
-for ac_func in ftruncate gethostbyname gethostname memset munmap socket strerror
+for ac_func in clock_gettime ftruncate getcwd gethostbyname gethostname
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -13308,7 +13308,20 @@ _ACEOF
 fi
 done
 
-for ac_func in getloadavg clock_gettime strtoull
+for ac_func in getloadavg memset mkdir munmap socket
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+for ac_func in strcasecmp strdup strerror strtol strtoull
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -14673,9 +14686,67 @@ $as_echo "#define GUPCR_PTS_VADDR_FIRST 1" >>confdefs.h
 fi
 
 
-targ_runtime=smp
-targ_runtime_pthreads=
-if test "$targ_runtime" = "smp"; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC runtime model" >&5
+$as_echo_n "checking for UPC runtime model... " >&6; }
+
+# Check whether --with-upc-runtime was given.
+if test "${with_upc_runtime+set}" = set; then :
+  withval=$with_upc_runtime;
+  case "$withval" in
+    [Ss][Mm][Pp])
+      upc_runtime_model=smp
+      ;;
+    *)
+      as_fn_error "$withval is an invalid runtime model for --with-upc-runtime" "$LINENO" 5
+      ;;
+  esac
+
+else
+
+  upc_runtime_model=smp
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_runtime_model" >&5
+$as_echo "$upc_runtime_model" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC link script support" >&5
+$as_echo_n "checking for UPC link script support... " >&6; }
+# Check whether --enable-upc-link-script was given.
+if test "${enable_upc_link_script+set}" = set; then :
+  enableval=$enable_upc_link_script;
+  case $enableval in
+  yes | no) ;;
+  *)
+    as_fn_error "--enable-upc-link-script accepts only yes or no." "$LINENO" 5
+  esac
+
+else
+
+  enable_upc_link_script=no
+
+fi
+
+if test "$enable_upc_link_script" = yes; then
+  if test "$with_gnu_ld" = yes; then
+    gen_ld_script=${srcdir}/${targ_runtime}/gen-gccupc-ld-script.pl
+    if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
+      # if gen-gccupc-ld-script did not accept the output of the linker
+      # then disable UPC link script support.
+      as_fn_error "Selected linker does not support linker scripts." "$LINENO" 5
+    fi
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_link_script" >&5
+$as_echo "$enable_upc_link_script" >&6; }
+if test "$enable_upc_link_script" = yes; then
+
+$as_echo "#define HAVE_UPC_LINK_SCRIPT 1" >>confdefs.h
+
+fi
+
+if test "$upc_runtime_model" = "smp"; then
+  targ_runtime_pthreads=
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the GCC __threads extension is supported." >&5
 $as_echo_n "checking whether the GCC __threads extension is supported.... " >&6; }
@@ -14763,41 +14834,6 @@ $as_echo "$upc_cv_gcc_tls_supported" >&6; }
   if test "$upc_cv_gcc_tls_supported"x = "yes"x ; then
     targ_runtime_pthreads=yes
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC link script support" >&5
-$as_echo_n "checking for UPC link script support... " >&6; }
-  # Check whether --enable-upc-link-script was given.
-if test "${enable_upc_link_script+set}" = set; then :
-  enableval=$enable_upc_link_script;
-    case $enableval in
-    yes | no) ;;
-    *)
-      as_fn_error "--enable-upc-link-script accepts only yes or no." "$LINENO" 5
-    esac
-
-else
-
-    enable_upc_link_script=no
-
-fi
-
-  if test "$enable_upc_link_script" = yes; then
-    if test "$with_gnu_ld" = yes; then
-      gen_ld_script=${srcdir}/${targ_runtime}/gen-gccupc-ld-script.pl
-      if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
-	# if gen-gccupc-ld-script did not accept the output of the linker
-	# then disable UPC link script support.
-	as_fn_error "Selected linker does not support linker scripts." "$LINENO" 5
-      fi
-    fi
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_link_script" >&5
-$as_echo "$enable_upc_link_script" >&6; }
-  if test "$enable_upc_link_script" = yes; then
-
-$as_echo "#define HAVE_UPC_LINK_SCRIPT 1" >>confdefs.h
-
-  fi
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux scheduling affinity" >&5
 $as_echo_n "checking for Linux scheduling affinity... " >&6; }
   if test "$cross_compiling" = yes; then :
@@ -14902,26 +14938,30 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
   fi
+  # Use the generic (reference implementation)
+  use_generic_collectives="yes"
 
-  # Get target configury.
-  . ${srcdir}/configure.tgt
+fi #### End: SMP runtime configuration
 
-  # configure.tgt sets these substitution variables.
-  # It also sets 'upc_crtstuff=yes' if upc-crtstuff needs
-  # to be compiled.
+# Get target configury.
+. ${srcdir}/configure.tgt
 
-
-
-
-
-
-
-
-fi
+# configure.tgt sets these substitution variables.
+# It also sets 'upc_crtstuff=yes' if upc-crtstuff needs
+# to be compiled.
 
 
 
- if test "$targ_runtime" = "smp"; then
+
+
+
+
+
+
+
+
+
+ if test "$upc_runtime_model" = "smp"; then
   LIBUPC_SMP_RUNTIME_TRUE=
   LIBUPC_SMP_RUNTIME_FALSE='#'
 else
@@ -14938,20 +14978,29 @@ else
   LIBUPC_CRTSTUFF_FALSE=
 fi
 
- if test "$targ_runtime_pthreads" = "yes"; then
-  LIBUPC_PTHREADS_TRUE=
-  LIBUPC_PTHREADS_FALSE='#'
-else
-  LIBUPC_PTHREADS_TRUE='#'
-  LIBUPC_PTHREADS_FALSE=
-fi
-
  if test "$enable_upc_link_script" = "yes"; then
   LIBUPC_LINK_SCRIPT_TRUE=
   LIBUPC_LINK_SCRIPT_FALSE='#'
 else
   LIBUPC_LINK_SCRIPT_TRUE='#'
   LIBUPC_LINK_SCRIPT_FALSE=
+fi
+
+ if test "$use_generic_collectives" = "yes"; then
+  LIBUPC_GENERIC_COLLECTIVES_TRUE=
+  LIBUPC_GENERIC_COLLECTIVES_FALSE='#'
+else
+  LIBUPC_GENERIC_COLLECTIVES_TRUE='#'
+  LIBUPC_GENERIC_COLLECTIVES_FALSE=
+fi
+
+
+ if test "$targ_runtime_pthreads" = "yes"; then
+  LIBUPC_PTHREADS_TRUE=
+  LIBUPC_PTHREADS_FALSE='#'
+else
+  LIBUPC_PTHREADS_TRUE='#'
+  LIBUPC_PTHREADS_FALSE=
 fi
 
  if test "$upc_affinity" = "yes"; then
@@ -14987,7 +15036,6 @@ fi
 ac_config_files="$ac_config_files Makefile testsuite/Makefile"
 
 ac_config_files="$ac_config_files upc-crtbegin.spec libupc.spec upc-crtend.spec"
-
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -15130,12 +15178,16 @@ if test -z "${LIBUPC_CRTSTUFF_TRUE}" && test -z "${LIBUPC_CRTSTUFF_FALSE}"; then
   as_fn_error "conditional \"LIBUPC_CRTSTUFF\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_PTHREADS_TRUE}" && test -z "${LIBUPC_PTHREADS_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_PTHREADS\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${LIBUPC_LINK_SCRIPT_TRUE}" && test -z "${LIBUPC_LINK_SCRIPT_FALSE}"; then
   as_fn_error "conditional \"LIBUPC_LINK_SCRIPT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBUPC_GENERIC_COLLECTIVES_TRUE}" && test -z "${LIBUPC_GENERIC_COLLECTIVES_FALSE}"; then
+  as_fn_error "conditional \"LIBUPC_GENERIC_COLLECTIVES\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBUPC_PTHREADS_TRUE}" && test -z "${LIBUPC_PTHREADS_FALSE}"; then
+  as_fn_error "conditional \"LIBUPC_PTHREADS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBUPC_AFFINITY_TRUE}" && test -z "${LIBUPC_AFFINITY_FALSE}"; then

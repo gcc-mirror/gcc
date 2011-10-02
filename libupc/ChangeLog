@@ -1,3 +1,35 @@
+2011-10-02  Gary Funck  <gary@intrepid.com>
+
+	Move the collectives library sources into their own directory
+	and add support for additional runtime implementation models.
+	* collectives/gen-upc-coll-reduce.pl: Moved from 'smp' directory.
+	* collectives/upc_coll_broadcast.upc: Ditto.
+	* collectives/upc_coll_err.upc: Ditto.
+	* collectives/upc_coll_exchange.upc: Ditto.
+	* collectives/upc_coll_gather_all.upc: Ditto.
+	* collectives/upc_coll_gather.upc: Ditto.
+	* collectives/upc_coll.h: Ditto.
+	* collectives/upc_coll_init.upc: Ditto.
+	* collectives/upc_coll_permute.upc: Ditto.
+	* collectives/upc_coll_prefix_reduce.in: Ditto.
+	* collectives/upc_coll_prefix_reduce.upc: Ditto.
+	* collectives/upc_coll_readme.txt: Ditto.
+	* collectives/upc_coll_reduce.in: Ditto.
+	* collectives/upc_coll_reduce.upc: Ditto.
+	* collectives/upc_coll_scatter.upc: Ditto.
+	* collectives/upc_coll_sort.upc: Ditto.
+	* smp/gcc-upc-lib.in: Moved from 'include' directory.
+	* gen-gccupc-inline-lib.pl: Moved from 'smp' directory.
+	* gen-gccupc-ld-script.pl: Ditto.
+	* configure.ac: Implement support for additional runtime
+	models. (Currently, only 'smp' is supported.)
+	Build the collectives library from sources in the
+	collectives directory.
+	* Makefile.am: Likewise.
+	* configure: Re-generate.
+	* config.h.in: Re-generate.
+	* Makefile.in: Re-generate.
+
 2011-09-30  Gary Funck  <gary@intrepid.com>
 
 	Generalize collectives library to support indefinite block sizes.

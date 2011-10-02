@@ -1,5 +1,12 @@
 # Process this file with automake to produce Makefile.in
 
+ WARN_CFLAGS =
+if LIBUPC_SMP_RUNTIME
+  targ_runtime_dir = smp
+  WARN_CFLAGS += -W -Wall -Wwrite-strings -Wstrict-prototypes -Werror
+  INC_CFLAGS =
+endif
+
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 ## May be used by toolexeclibdir.
@@ -26,10 +33,8 @@ libsubinclude_HEADERS = $(UPC_HDRS)
 nodist_noinst_HEADERS =
 nodist_libsubinclude_HEADERS =
 
-if LIBUPC_SMP_RUNTIME
 
 IN_LIB_CPPFLAGS  = -DIN_GCC -DIN_TARGET_LIBS
-WARN_CFLAGS = -W -Wall -Wwrite-strings -Wstrict-prototypes -Werror
 AM_CPPFLAGS = $(IN_LIB_CPPFLAGS)
 AM_CFLAGS = $(WARN_CFLAGS)
 AM_UPCFLAGS = $(WARN_CFLAGS)
@@ -37,8 +42,16 @@ AM_UPCFLAGS = $(WARN_CFLAGS)
 
 SUBDIRS = testsuite
 
+
+if LIBUPC_GENERIC_COLLECTIVES
+  collectives_dir = $(addprefix $(top_srcdir)/, collectives)
+else
+  collectives_dir =
+endif
+
 search_path =   $(addprefix $(top_srcdir)/config/, $(config_path)) \
-                $(addprefix $(top_srcdir)/, smp) \
+                $(addprefix $(top_srcdir)/, $(targ_runtime_dir)) \
+		$(collectives_dir) \
                 $(addprefix $(top_srcdir)/, include) \
                 $(top_srcdir)
 
@@ -51,36 +64,23 @@ AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
 ### Explicit build rules
 
-LIBUPC_SMP_SRCDIR = $(top_srcdir)/smp
+LIBUPC_SRCDIR = $(top_srcdir)/$(targ_runtime_dir)
 
-# We need full pathnames here, because vpath won't find
-# the files if they don't exist yet.
-UPC_COLL_PREFIX_REDUCE_UPC = $(LIBUPC_SMP_SRCDIR)/upc_coll_prefix_reduce.upc
-UPC_COLL_REDUCE_UPC = $(LIBUPC_SMP_SRCDIR)/upc_coll_reduce.upc
+EXTRA_DIST =
+MOSTLYCLEANFILES =
+UPC_RUNTIME_SRC =
 
-if MAINTAINER_MODE
-$(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_prefix_reduce.in 
-	$(PERL) $+ > $@
+if LIBUPC_SMP_RUNTIME
 
-$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in 
-	$(PERL) $+ > $@
-endif
-
-EXTRA_DIST = gcc-upc-lib.in \
-             gen-gccupc-inline-lib.pl \
-             gen-gccupc-ld-script.pl \
-	     gen-upc-coll-reduce.pl \
-             upc_coll_prefix_reduce.in \
-             upc_coll_reduce.in
+EXTRA_DIST += gcc-upc-lib.in \
+              gen-gccupc-inline-lib.pl \
+              gen-gccupc-ld-script.pl
 
 if LIBUPC_PTHREADS
 libupc_pt = libupc_pt.la
 else
 libupc_pt =
 endif
-
-toolexeclib_LTLIBRARIES = libupc.la $(libupc_pt)
-nodist_toolexeclib_HEADERS = upc-crtbegin.spec libupc.spec upc-crtend.spec
 
 # Even though we're using vpath, we have to qualify the
 # filenames with "smp/", because the libupc_pt.la rules
@@ -103,24 +103,58 @@ else
   UPC_NUMA_SUP = smp/upc_numa_stub.c
 endif
 
-UPC_RUNTIME_SRC = smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
-        smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
-        smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.c \
-        smp/upc_coll_broadcast.upc smp/upc_coll_err.upc \
-        smp/upc_coll_exchange.upc smp/upc_coll_gather_all.upc \
-        smp/upc_coll_gather.upc smp/upc_coll.h smp/upc_coll_init.upc \
-        smp/upc_coll_permute.upc $(UPC_COLL_PREFIX_REDUCE_UPC) \
-        $(UPC_COLL_REDUCE_UPC) smp/upc_coll_scatter.upc \
-        smp/upc_coll_sort.upc smp/upc_config.h smp/upc_debug.h \
-        smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
-        smp/upc_lib.h smp/upc_lock.c smp/upc_main.c smp/upc_mem.c \
-        smp/upc_mem.h smp/upc_numa.h $(UPC_NUMA_SUP) smp/upc_pgm_info.c \
-        smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
-        smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h smp/upc_vm.c
+
+UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
+	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
+	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.c \
+	smp/upc_config.h smp/upc_debug.h \
+	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
+	smp/upc_lib.h smp/upc_lock.c smp/upc_main.c smp/upc_mem.c \
+	smp/upc_mem.h smp/upc_numa.h $(UPC_NUMA_SUP) smp/upc_pgm_info.c \
+	smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
+	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h smp/upc_vm.c
 
 UPC_RUNTIME_SRC_INLINE = config.h smp/upc_access.c smp/upc_access.h \
         smp/upc_config.h smp/upc_defs.h smp/upc_mem.h smp/upc_pts.h \
         smp/upc_sup.h smp/upc_sync.h
+
+endif   ### LIBUPC_SMP_RUNTIME ####
+
+if LIBUPC_GENERIC_COLLECTIVES
+
+# We need full pathnames here, because vpath won't find
+# the files if they don't exist yet.
+LIBUPC_COLL_SRCDIR=$(top_srcdir)/collectives
+UPC_COLL_PREFIX_REDUCE_UPC = $(LIBUPC_COLL_SRCDIR)/upc_coll_prefix_reduce.upc
+UPC_COLL_REDUCE_UPC = $(LIBUPC_COLL_SRCDIR)/upc_coll_reduce.upc
+
+if MAINTAINER_MODE
+$(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl \
+                               upc_coll_prefix_reduce.in 
+	$(PERL) $+ > $@
+
+$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in 
+	$(PERL) $+ > $@
+endif
+
+UPC_COLLECTIVES_SRC = collectives/upc_coll_broadcast.upc \
+	collectives/upc_coll_err.upc collectives/upc_coll_exchange.upc \
+	collectives/upc_coll_gather_all.upc collectives/upc_coll_gather.upc \
+	collectives/upc_coll.h collectives/upc_coll_init.upc \
+	collectives/upc_coll_permute.upc $(UPC_COLL_PREFIX_REDUCE_UPC) \
+	$(UPC_COLL_REDUCE_UPC) collectives/upc_coll_scatter.upc \
+	collectives/upc_coll_sort.upc
+
+UPC_RUNTIME_SRC += $(UPC_COLLECTIVES_SRC)
+
+EXTRA_DIST += gen-upc-coll-reduce.pl \
+             upc_coll_prefix_reduce.in \
+             upc_coll_reduce.in
+
+endif
+
+toolexeclib_LTLIBRARIES = libupc.la $(libupc_pt)
+nodist_toolexeclib_HEADERS = upc-crtbegin.spec libupc.spec upc-crtend.spec
 
 gcc-upc-lib.h: gen-gccupc-inline-lib.pl gcc-upc-lib.in \
                $(UPC_RUNTIME_SRC_INLINE)
@@ -166,8 +200,6 @@ include $(gcc_objdir)/libgcc.mvars
 include $(upc_crtstuff_mak)
 
 endif
-
-endif    ### LIBUPC_SMP_RUNTIME
 
 # Automake Documentation:
 # If your package has Texinfo files in many directories, you can use the
