@@ -1,3 +1,11 @@
+2011-10-01  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/cmask.c: New test.
+	* gcc.target/sparc/fpadds.c: New test.
+	* gcc.target/sparc/fshift.c: New test.
+	* gcc.target/sparc/fucmp.c: New test.
+	* gcc.target/sparc/vis3misc.c: New test.
+
 2011-10-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50585

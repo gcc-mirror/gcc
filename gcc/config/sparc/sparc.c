@@ -776,9 +776,9 @@ sparc_option_override (void)
     /* UltraSPARC T2 */
     { MASK_ISA, MASK_V9|MASK_VIS2},
     /* UltraSPARC T3 */
-    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_FMAF},
+    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_VIS3|MASK_FMAF},
     /* UltraSPARC T4 */
-    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_FMAF},
+    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_VIS3|MASK_FMAF},
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -861,9 +861,13 @@ sparc_option_override (void)
   if (TARGET_VIS2)
     target_flags |= MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, or -mfmaf if FPU is disabled.  */
+  /* -mvis3 implies -mvis2 and -mvis */
+  if (TARGET_VIS3)
+    target_flags |= MASK_VIS2 | MASK_VIS;
+
+  /* Don't allow -mvis, -mvis2, -mvis3, or -mfmaf if FPU is disabled.  */
   if (! TARGET_FPU)
-    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_FMAF);
+    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_FMAF);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available.
@@ -9196,6 +9200,10 @@ sparc_vis_init_builtins (void)
   tree di_ftype_v8qi_v8qi_di = build_function_type_list (intDI_type_node,
 							 v8qi, v8qi,
 							 intDI_type_node, 0);
+  tree di_ftype_v8qi_v8qi = build_function_type_list (intDI_type_node,
+						      v8qi, v8qi, 0);
+  tree si_ftype_v8qi_v8qi = build_function_type_list (intSI_type_node,
+						      v8qi, v8qi, 0);
   tree di_ftype_di_di = build_function_type_list (intDI_type_node,
 						  intDI_type_node,
 						  intDI_type_node, 0);
@@ -9226,6 +9234,8 @@ sparc_vis_init_builtins (void)
 						 intDI_type_node, 0);
   tree di_ftype_void = build_function_type_list (intDI_type_node,
 						 void_type_node, 0);
+  tree void_ftype_si = build_function_type_list (void_type_node,
+						 intSI_type_node, 0);
 
   /* Packing and expanding vectors.  */
   def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis,
@@ -9447,6 +9457,102 @@ sparc_vis_init_builtins (void)
       def_builtin ("__builtin_vis_bshuffledi", CODE_FOR_bshuffledi_vis,
 		   di_ftype_di_di);
     }
+
+  if (TARGET_VIS3)
+    {
+      if (TARGET_ARCH64)
+	{
+	  def_builtin ("__builtin_vis_cmask8", CODE_FOR_cmask8di_vis,
+		       void_ftype_di);
+	  def_builtin ("__builtin_vis_cmask16", CODE_FOR_cmask16di_vis,
+		       void_ftype_di);
+	  def_builtin ("__builtin_vis_cmask32", CODE_FOR_cmask32di_vis,
+		       void_ftype_di);
+	}
+      else
+	{
+	  def_builtin ("__builtin_vis_cmask8", CODE_FOR_cmask8si_vis,
+		       void_ftype_si);
+	  def_builtin ("__builtin_vis_cmask16", CODE_FOR_cmask16si_vis,
+		       void_ftype_si);
+	  def_builtin ("__builtin_vis_cmask32", CODE_FOR_cmask32si_vis,
+		       void_ftype_si);
+	}
+
+      def_builtin_const ("__builtin_vis_fchksm16", CODE_FOR_fchksm16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+
+      def_builtin_const ("__builtin_vis_fsll16", CODE_FOR_fsll16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fslas16", CODE_FOR_fslas16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fsrl16", CODE_FOR_fsrl16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fsra16", CODE_FOR_fsra16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fsll32", CODE_FOR_fsll32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fslas32", CODE_FOR_fslas32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fsrl32", CODE_FOR_fsrl32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fsra32", CODE_FOR_fsra32_vis,
+			 v2si_ftype_v2si_v2si);
+
+      if (TARGET_ARCH64)
+	def_builtin_const ("__builtin_vis_pdistn", CODE_FOR_pdistndi_vis,
+			   di_ftype_v8qi_v8qi);
+      else
+	def_builtin_const ("__builtin_vis_pdistn", CODE_FOR_pdistnsi_vis,
+			   si_ftype_v8qi_v8qi);
+
+      def_builtin_const ("__builtin_vis_fmean16", CODE_FOR_fmean16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpadd64", CODE_FOR_fpadd64_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_fpsub64", CODE_FOR_fpsub64_vis,
+			 di_ftype_di_di);
+
+      def_builtin_const ("__builtin_vis_fpadds16", CODE_FOR_fpadds16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpadds16s", CODE_FOR_fpadds16s_vis,
+			 v2hi_ftype_v2hi_v2hi);
+      def_builtin_const ("__builtin_vis_fpsubs16", CODE_FOR_fpsubs16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpsubs16s", CODE_FOR_fpsubs16s_vis,
+			 v2hi_ftype_v2hi_v2hi);
+      def_builtin_const ("__builtin_vis_fpadds32", CODE_FOR_fpadds32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpadds32s", CODE_FOR_fpadds32s_vis,
+			 v1si_ftype_v1si_v1si);
+      def_builtin_const ("__builtin_vis_fpsubs32", CODE_FOR_fpsubs32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_fpsubs32s_vis,
+			 v1si_ftype_v1si_v1si);
+
+      if (TARGET_ARCH64)
+	{
+	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fucmple8di_vis,
+			     di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fucmpne8di_vis,
+			     di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fucmpgt8di_vis,
+			     di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fucmpeq8di_vis,
+			     di_ftype_v8qi_v8qi);
+	}
+      else
+	{
+	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fucmple8si_vis,
+			     si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fucmpne8si_vis,
+			     si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fucmpgt8si_vis,
+			     si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fucmpeq8si_vis,
+			     si_ftype_v8qi_v8qi);
+	}
+    }
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.
@@ -9608,13 +9714,27 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
   enum insn_code icode = (enum insn_code) DECL_FUNCTION_CODE (fndecl);
 
-  if (ignore
-      && icode != CODE_FOR_alignaddrsi_vis
-      && icode != CODE_FOR_alignaddrdi_vis
-      && icode != CODE_FOR_wrgsr_vis
-      && icode != CODE_FOR_bmasksi_vis
-      && icode != CODE_FOR_bmaskdi_vis)
-    return build_zero_cst (rtype);
+  if (ignore)
+    {
+      switch (icode)
+	{
+	case CODE_FOR_alignaddrsi_vis:
+	case CODE_FOR_alignaddrdi_vis:
+	case CODE_FOR_wrgsr_vis:
+	case CODE_FOR_bmasksi_vis:
+	case CODE_FOR_bmaskdi_vis:
+	case CODE_FOR_cmask8si_vis:
+	case CODE_FOR_cmask8di_vis:
+	case CODE_FOR_cmask16si_vis:
+	case CODE_FOR_cmask16di_vis:
+	case CODE_FOR_cmask32si_vis:
+	case CODE_FOR_cmask32di_vis:
+	  break;
+
+	default:
+	  return build_zero_cst (rtype);
+	}
+    }
 
   switch (icode)
     {
