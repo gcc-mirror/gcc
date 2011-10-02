@@ -6062,10 +6062,13 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	  if (nonnull)
 	    *nonnull = 1;
 
-	  /* if we're in a ctor or dtor, we know our type.  */
-	  if (DECL_LANG_SPECIFIC (current_function_decl)
-	      && (DECL_CONSTRUCTOR_P (current_function_decl)
-		  || DECL_DESTRUCTOR_P (current_function_decl)))
+	  /* if we're in a ctor or dtor, we know our type.  If
+	     current_class_ptr is set but we aren't in a function, we're in
+	     an NSDMI (and therefore a constructor).  */
+	  if (current_scope () != current_function_decl
+	      || (DECL_LANG_SPECIFIC (current_function_decl)
+		  && (DECL_CONSTRUCTOR_P (current_function_decl)
+		      || DECL_DESTRUCTOR_P (current_function_decl))))
 	    {
 	      if (cdtorp)
 		*cdtorp = 1;

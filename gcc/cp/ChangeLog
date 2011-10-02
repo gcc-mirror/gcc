@@ -1,3 +1,9 @@
+2011-10-02  Jason Merrill  <jason@redhat.com>
+
+	* class.c (fixed_type_or_null): Handle NSDMI.
+	* method.c (walk_field_subobs): Disable NSDMI noexcept checking
+	for now.
+
 2011-09-30  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (TREE_NEGATED_INT): Remove.
