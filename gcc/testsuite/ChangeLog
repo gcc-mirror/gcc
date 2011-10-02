@@ -1,3 +1,7 @@
+2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/pr49696.c: New test.
+
 2011-10-02  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/ctor-empty-1.c: Update dump file.
