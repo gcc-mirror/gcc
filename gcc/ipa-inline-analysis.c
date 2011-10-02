@@ -795,13 +795,17 @@ inline_summary_alloc (void)
 static void
 reset_inline_edge_summary (struct cgraph_edge *e)
 {
-  struct inline_edge_summary *es = inline_edge_summary (e);
+  if (e->uid
+      < (int)VEC_length (inline_edge_summary_t, inline_edge_summary_vec))
+    {
+      struct inline_edge_summary *es = inline_edge_summary (e);
 
-  es->call_stmt_size = es->call_stmt_time =0;
-  if (es->predicate)
-    pool_free (edge_predicate_pool, es->predicate);
-  es->predicate = NULL;
-  VEC_free (inline_param_summary_t, heap, es->param);
+      es->call_stmt_size = es->call_stmt_time =0;
+      if (es->predicate)
+	pool_free (edge_predicate_pool, es->predicate);
+      es->predicate = NULL;
+      VEC_free (inline_param_summary_t, heap, es->param);
+    }
 }
 
 /* We are called multiple time for given function; clear
@@ -1044,9 +1048,7 @@ inline_edge_removal_hook (struct cgraph_edge *edge, void *data ATTRIBUTE_UNUSED)
 {
   if (edge_growth_cache)
     reset_edge_growth_cache (edge);
-  if (edge->uid
-      < (int)VEC_length (inline_edge_summary_t, inline_edge_summary_vec))
-    reset_inline_edge_summary (edge);
+  reset_inline_edge_summary (edge);
 }
 
 
