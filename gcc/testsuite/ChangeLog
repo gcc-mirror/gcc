@@ -36,7 +36,7 @@
 
 2011-09-30  Revital Eres  <revital.eres@linaro.org>
 
-	* gcc.dg/sms-10.c: New file
+	* gcc.dg/sms-10.c: New file.
 
 2011-09-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
