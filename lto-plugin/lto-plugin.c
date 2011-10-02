@@ -130,7 +130,7 @@ enum symbol_style
 static char *arguments_file_name;
 static ld_plugin_register_claim_file register_claim_file;
 static ld_plugin_register_all_symbols_read register_all_symbols_read;
-static ld_plugin_get_symbols get_symbols;
+static ld_plugin_get_symbols get_symbols, get_symbols_v2;
 static ld_plugin_register_cleanup register_cleanup;
 static ld_plugin_add_input_file add_input_file;
 static ld_plugin_add_input_library add_input_library;
@@ -443,7 +443,12 @@ write_resolution (void)
       struct plugin_symtab *symtab = &info->symtab;
       struct ld_plugin_symbol *syms = symtab->syms;
 
-      get_symbols (info->handle, symtab->nsyms, syms);
+      /* Version 2 of API supports IRONLY_EXP resolution that is
+         accepted by GCC-4.7 and newer.  */
+      if (get_symbols_v2)
+        get_symbols_v2 (info->handle, symtab->nsyms, syms);
+      else
+        get_symbols (info->handle, symtab->nsyms, syms);
 
       finish_conflict_resolution (symtab, &info->conflicts);
 
@@ -987,6 +992,9 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_REGISTER_ALL_SYMBOLS_READ_HOOK:
 	  register_all_symbols_read = p->tv_u.tv_register_all_symbols_read;
+	  break;
+	case LDPT_GET_SYMBOLS_V2:
+	  get_symbols_v2 = p->tv_u.tv_get_symbols;
 	  break;
 	case LDPT_GET_SYMBOLS:
 	  get_symbols = p->tv_u.tv_get_symbols;

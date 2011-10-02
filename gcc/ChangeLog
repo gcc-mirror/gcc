@@ -1,3 +1,17 @@
+2011-10-02  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/47247
+	* lto-symtab.c (lto_symtab_resolve_symbols): Do not resolve
+	when resolution is already availbale from plugin.
+	(lto_symtab_merge_decls_1): Handle LDPR_PREVAILING_DEF_IRONLY_EXP.
+	* cgraph.c (ld_plugin_symbol_resolution): Add prevailing_def_ironly_exp.
+	* lto-cgraph.c (LDPR_NUM_KNOWN): Update.
+	* ipa.c (varpool_externally_visible_p): IRONLY variables are never
+	externally visible.
+	* varasm.c (resolution_to_local_definition_p): Add
+	LDPR_PREVAILING_DEF_IRONLY_EXP.
+	(resolution_local_p): Likewise.
+
 2011-10-01  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.opt (VIS3): New option.

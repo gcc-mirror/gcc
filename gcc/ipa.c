@@ -685,6 +685,8 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
      This is needed for i.e. references from asm statements.   */
   if (varpool_used_from_object_file_p (vnode))
     return true;
+  if (vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
+    return false;
 
   /* As a special case, the COMDAT virutal tables can be unshared.
      In LTO mode turn vtables into static variables.  The variable is readonly,

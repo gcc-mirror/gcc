@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 
-static const char *lto_resolution_str[9] =
+static const char *lto_resolution_str[10] =
 {
   "UNKNOWN",
   "UNDEF",
@@ -30,5 +30,6 @@ static const char *lto_resolution_str[9] =
   "PREEMPTED_IR",
   "RESOLVED_IR",
   "RESOLVED_EXEC",
-  "RESOLVED_DYN"
+  "RESOLVED_DYN",
+  "PREVAILING_DEF_IRONLY_EXP",
 };

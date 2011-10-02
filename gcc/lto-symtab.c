@@ -441,12 +441,14 @@ lto_symtab_resolve_symbols (void **slot)
 	e->node = cgraph_get_node (e->decl);
       else if (TREE_CODE (e->decl) == VAR_DECL)
 	e->vnode = varpool_get_node (e->decl);
+      if (e->resolution == LDPR_PREVAILING_DEF_IRONLY
+	  || e->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
+	  || e->resolution == LDPR_PREVAILING_DEF)
+	prevailing = e;
     }
 
-  e = (lto_symtab_entry_t) *slot;
-
   /* If the chain is already resolved there is nothing else to do.  */
-  if (e->resolution != LDPR_UNKNOWN)
+  if (prevailing)
     return;
 
   /* Find the single non-replaceable prevailing symbol and
@@ -586,6 +588,7 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   for (prevailing = (lto_symtab_entry_t) *slot;
        prevailing
        && prevailing->resolution != LDPR_PREVAILING_DEF_IRONLY
+       && prevailing->resolution != LDPR_PREVAILING_DEF_IRONLY_EXP
        && prevailing->resolution != LDPR_PREVAILING_DEF;
        prevailing = prevailing->next)
     ;
@@ -595,6 +598,7 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
     for (e = prevailing->next; e; e = e->next)
       {
 	if (e->resolution == LDPR_PREVAILING_DEF_IRONLY
+	    || e->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 	    || e->resolution == LDPR_PREVAILING_DEF)
 	  fatal_error ("multiple prevailing defs for %qE",
 		       DECL_NAME (prevailing->decl));
@@ -685,9 +689,9 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
      to handle UNKNOWN relocation well.
 
      The problem with storing guessed decision is whether to use
-     PREVAILING_DEF or PREVAILING_DEF_IRONLY.  First one would disable
-     some whole program optimizations, while ther second would imply
-     to many whole program assumptions.  */
+     PREVAILING_DEF, PREVAILING_DEF_IRONLY, PREVAILING_DEF_IRONLY_EXP.
+     First one would disable some whole program optimizations, while
+     ther second would imply to many whole program assumptions.  */
   if (prevailing->node && !flag_ltrans && !prevailing->guessed)
     prevailing->node->resolution = prevailing->resolution;
   else if (prevailing->vnode && !flag_ltrans && !prevailing->guessed)
