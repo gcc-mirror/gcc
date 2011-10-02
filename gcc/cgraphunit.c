@@ -2011,6 +2011,12 @@ ipa_passes (void)
 	return;
     }
 
+  /* We never run removal of unreachable nodes after early passes.  This is
+     because TODO is run before the subpasses.  It is important to remove
+     the unreachable functions to save works at IPA level and to get LTO
+     symbol tables right.  */
+  cgraph_remove_unreachable_nodes (true, cgraph_dump_file);
+
   /* If pass_all_early_optimizations was not scheduled, the state of
      the cgraph will not be properly updated.  Update it now.  */
   if (cgraph_state < CGRAPH_STATE_IPA_SSA)

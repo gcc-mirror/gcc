@@ -196,12 +196,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    /* Keep around virtual functions for possible devirtualization.  */
 	    || (before_inlining_p
 		&& DECL_VIRTUAL_P (node->decl)
-		&& (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl)))
-	    /* Also external functions with address taken are better to stay
-	       for indirect inlining.  */
-	    || (before_inlining_p
-		&& DECL_EXTERNAL (node->decl)
-		&& node->address_taken)))
+		&& (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl)))))
       {
         gcc_assert (!node->global.inlined_to);
 	enqueue_cgraph_node (node, &first);

@@ -1407,6 +1407,15 @@ produce_symtab (struct output_block *ob,
       node = lto_cgraph_encoder_deref (encoder, i);
       if (!DECL_EXTERNAL (node->decl))
 	continue;
+      /* We keep around unused extern inlines in order to be able to inline
+	 them indirectly or via vtables.  Do not output them to symbol
+	 table: they end up being undefined and just consume space.  */
+      if (!node->address_taken && !node->callers)
+	{
+	  gcc_assert (node->analyzed);
+	  gcc_assert (DECL_DECLARED_INLINE_P (node->decl));
+	  continue;
+	}
       if (DECL_COMDAT (node->decl)
 	  && cgraph_comdat_can_be_unshared_p (node))
 	continue;

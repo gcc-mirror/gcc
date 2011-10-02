@@ -4622,6 +4622,7 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   VEC (cgraph_edge_p, heap) * redirect_callers = collect_callers_of_node (node);
 
   rebuild_cgraph_edges ();
+  free_dominance_info (CDI_DOMINATORS);
   pop_cfun ();
   current_function_decl = NULL_TREE;
 
