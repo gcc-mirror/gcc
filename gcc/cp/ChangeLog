@@ -1,5 +1,22 @@
 2011-10-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/35722
+	Implement N2555 (expanding pack expansion to fixed parm list)
+	* pt.c (coerce_template_parms): Allow expanding a pack expansion
+	to a fixed-length argument list.
+	(unify_pack_expansion): Handle explicit args properly.
+	(unify) [TREE_VEC]: Handle pack expansions here.
+	[TYPE_ARGUMENT_PACK]: Not here.
+	(tsubst_pack_expansion): Don't try to do partial substitution.
+	(pack_deducible_p): New.
+	(fn_type_unification): Use it.
+	(find_parameter_packs_r): Take the TYPE_MAIN_VARIANT
+	of a type parameter.
+	(check_non_deducible_conversion): Split from type_unification_real.
+	(unify_one_argument): Split from type_unification_real...
+	(unify_pack_expansion): ...and here.  Drop call_args_p parm.
+	(type_unification_real, unify, more_specialized_fn): Adjust.
+
 	* class.c (fixed_type_or_null): Handle NSDMI.
 	* method.c (walk_field_subobs): Disable NSDMI noexcept checking
 	for now.
