@@ -29,12 +29,14 @@ struct Ptr
   static Ptr pointer_to(bool& b) { return Ptr{&b}; }
 };
 
+bool operator==(const Ptr& l, const Ptr& r) { return l.value == r.value; }
+
 void test01()
 {
   bool test = true;
-  Ptr p __attribute__((unused)) {&test};
+  Ptr p{ &test };
 
-  VERIFY( std::pointer_traits<Ptr>::pointer_to(test).value == &test );
+  VERIFY( std::pointer_traits<Ptr>::pointer_to(test) == p );
 }
 
 void test02()
