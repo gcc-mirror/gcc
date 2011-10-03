@@ -1,5 +1,7 @@
 2011-10-02  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/range-for22.C: New.
+
 	* g++.dg/cpp0x/variadic65.C: Remove xfails.
 	* g++.dg/cpp0x/variadic82.C: Remove xfails.
 	* g++.dg/cpp0x/variadic83.C: Remove xfails.
