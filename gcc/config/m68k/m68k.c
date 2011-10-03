@@ -163,6 +163,7 @@ static void m68k_function_arg_advance (cumulative_args_t, enum machine_mode,
 static rtx m68k_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
 static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
+static bool m68k_output_addr_const_extra (FILE *, rtx);
 
 /* Initialize the GCC target structure.  */
 
@@ -296,6 +297,9 @@ static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P m68k_legitimate_constant_p
+
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA m68k_output_addr_const_extra
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -4540,9 +4544,9 @@ m68k_get_reloc_decoration (enum m68k_reloc reloc)
     }
 }
 
-/* m68k implementation of OUTPUT_ADDR_CONST_EXTRA.  */
+/* m68k implementation of TARGET_OUTPUT_ADDR_CONST_EXTRA.  */
 
-bool
+static bool
 m68k_output_addr_const_extra (FILE *file, rtx x)
 {
   if (GET_CODE (x) == UNSPEC)
