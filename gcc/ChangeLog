@@ -5,6 +5,7 @@
 	conditional insn type setting, we always emit a shift.
 	(*ashlsi3_extend, *lshrsi3_extend0): New patterns.
 	(*lshrsi3_extend): Rename to *lshrsi3_extend1.
+	* config/sparc/predicates.md (const_one_operand): Delete.
 
 2011-10-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
