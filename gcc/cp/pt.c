@@ -9102,7 +9102,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 		       tree in_decl)
 {
   tree pattern;
-  tree pack, packs = NULL_TREE, unsubstituted_packs = NULL_TREE;
+  tree pack, packs = NULL_TREE;
+  bool unsubstituted_packs = false;
   int i, len = -1;
   tree result;
   htab_t saved_local_specializations = NULL;
@@ -9203,10 +9204,11 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
           TREE_TYPE (packs) = orig_arg;
         }
       else
-        /* We can't substitute for this parameter pack.  */
-        unsubstituted_packs = tree_cons (TREE_PURPOSE (pack),
-                                         TREE_VALUE (pack),
-                                         unsubstituted_packs);
+	{
+	  /* We can't substitute for this parameter pack.  */
+	  unsubstituted_packs = true;
+	  break;
+	}
     }
 
   /* We cannot expand this expansion expression, because we don't have
@@ -9252,33 +9254,38 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       for (pack = packs; pack; pack = TREE_CHAIN (pack))
         {
           tree parm = TREE_PURPOSE (pack);
+	  tree arg;
 
+	  /* Select the Ith argument from the pack.  */
           if (TREE_CODE (parm) == PARM_DECL)
             {
-	      /* Select the Ith argument from the pack.  */
-	      tree arg = make_node (ARGUMENT_PACK_SELECT);
-	      ARGUMENT_PACK_SELECT_FROM_PACK (arg) = TREE_VALUE (pack);
-	      ARGUMENT_PACK_SELECT_INDEX (arg) = i;
-              mark_used (parm);
-              register_local_specialization (arg, parm);
+	      if (i == 0)
+		{
+		  arg = make_node (ARGUMENT_PACK_SELECT);
+		  ARGUMENT_PACK_SELECT_FROM_PACK (arg) = TREE_VALUE (pack);
+		  mark_used (parm);
+		  register_local_specialization (arg, parm);
+		}
+	      else
+		arg = retrieve_local_specialization (parm);
             }
           else
             {
-              tree value = parm;
               int idx, level;
               template_parm_level_and_index (parm, &level, &idx);
-              
-	      if (i < len) 
-		{
-		  /* Select the Ith argument from the pack. */
-		  value = make_node (ARGUMENT_PACK_SELECT);
-		  ARGUMENT_PACK_SELECT_FROM_PACK (value) = TREE_VALUE (pack);
-		  ARGUMENT_PACK_SELECT_INDEX (value) = i;
-		}
 
-              /* Update the corresponding argument.  */
-              TMPL_ARG (args, level, idx) = value;
+	      if (i == 0)
+		{
+		  arg = make_node (ARGUMENT_PACK_SELECT);
+		  ARGUMENT_PACK_SELECT_FROM_PACK (arg) = TREE_VALUE (pack);
+		  /* Update the corresponding argument.  */
+		  TMPL_ARG (args, level, idx) = arg;
+		}
+	      else
+		/* Re-use the ARGUMENT_PACK_SELECT.  */
+		arg = TMPL_ARG (args, level, idx);
             }
+	  ARGUMENT_PACK_SELECT_INDEX (arg) = i;
         }
 
       /* Substitute into the PATTERN with the altered arguments.  */
