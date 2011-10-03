@@ -113,6 +113,8 @@ static void cris_print_operand_address (FILE *, rtx);
 
 static bool cris_print_operand_punct_valid_p (unsigned char code);
 
+static bool cris_output_addr_const_extra (FILE *, rtx);
+
 static void cris_conditional_register_usage (void);
 
 static void cris_asm_output_mi_thunk
@@ -179,6 +181,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_PRINT_OPERAND_ADDRESS cris_print_operand_address
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P cris_print_operand_punct_valid_p
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA cris_output_addr_const_extra
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE cris_conditional_register_usage
@@ -3608,9 +3612,9 @@ cris_asm_output_label_ref (FILE *file, char *buf)
     assemble_name (file, buf);
 }
 
-/* Worker function for OUTPUT_ADDR_CONST_EXTRA.  */
+/* Worker function for TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
 
-bool
+static bool
 cris_output_addr_const_extra (FILE *file, rtx xconst)
 {
   switch (GET_CODE (xconst))

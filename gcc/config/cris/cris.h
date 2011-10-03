@@ -1097,9 +1097,6 @@ enum cris_pic_symbol_type
 
 /* Node: Data Output */
 
-#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
-  do { if (!cris_output_addr_const_extra (STREAM, X)) goto FAIL; } while (0)
-
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR) (C) == '@'
 
 /* Node: Uninitialized Data */
