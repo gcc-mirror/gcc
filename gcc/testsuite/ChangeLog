@@ -1,4 +1,4 @@
-2011-10-03  Artem Shinkarov  <artyom.shinkaroff@gmail.com>
+2011-10-03  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
 
 	* gcc.c-torture/execute/vect-shuffle-2.c: New test.
 	* gcc.c-torture/execute/vect-shuffle-4.c: New test.

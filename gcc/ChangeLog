@@ -5,7 +5,7 @@
 	RTL using zero_extract.
 	(bshuffle<V64I:mode>_vis): Put the GSR use inside of the unspec.
 
-2011-10-03  Artem Shinkarov  <artyom.shinkaroff@gmail.com>
+2011-10-03  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
 
 	* optabs.c (expand_vec_shuffle_expr_p): New function. Checks
 	if given expression can be expanded by the target.
