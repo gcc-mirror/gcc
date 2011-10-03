@@ -8252,7 +8252,7 @@
   [(set (match_operand:V64I 0 "register_operand" "=e")
         (unspec:V64I [(match_operand:V64I 1 "register_operand" "e")
 	              (match_operand:V64I 2 "register_operand" "e")
-		      (use (reg:SI GSR_REG))]
+		      (reg:SI GSR_REG)]
                      UNSPEC_BSHUFFLE))]
   "TARGET_VIS2"
   "bshuffle\t%1, %2, %0"
