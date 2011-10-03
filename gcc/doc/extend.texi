@@ -6584,6 +6584,32 @@ c = a >  b;     /* The result would be @{0, 0,-1, 0@}  */
 c = a == b;     /* The result would be @{0,-1, 0,-1@}  */
 @end smallexample
 
+Vector shuffling is available using functions
+@code{__builtin_shuffle (vec, mask)} and
+@code{__builtin_shuffle (vec0, vec1, mask)}. Both functions construct
+a permutation of elements from one or two vectors and return a vector
+of the same type as input vector(s). The mask is a vector of
+integer-typed elements. The size of each element of the mask must be
+the same as the size of each input vector element. The number of
+elements in input vector(s) and mask must be the same.
+
+The elements of the input vectors are numbered from left to right across
+one or both of the vectors. Each element in the mask specifies a number
+of element from the input vector(s). Consider the following example.
+
+@smallexample
+typedef int v4si __attribute__ ((vector_size (16)));
+
+v4si a = @{1,2,3,4@};
+v4si b = @{5,6,7,8@};
+v4si mask1 = @{0,1,1,3@};
+v4si mask2 = @{0,4,2,5@};
+v4si res;
+
+res = __builtin_shuffle (a, mask1);       /* res is @{1,2,2,4@}  */
+res = __builtin_shuffle (a, b, mask2);    /* res is @{1,5,3,6@}  */
+@end smallexample
+
 You can declare variables and use them in function calls and returns, as
 well as in assignments and some casts.  You can specify a vector type as
 a return type for a function.  Vector types can also be used as function

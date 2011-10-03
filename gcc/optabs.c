@@ -6620,6 +6620,94 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
 }
 
+/* Return true if VEC_SHUFFLE_EXPR can be expanded using SIMD extensions
+   of the CPU.  */
+bool
+expand_vec_shuffle_expr_p (enum machine_mode mode, tree v0, tree v1, tree mask)
+{
+  int v0_mode_s = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (v0))));
+  int mask_mode_s = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (mask))));
+
+  if (TREE_CODE (mask) == VECTOR_CST
+      && targetm.vectorize.builtin_vec_perm_ok (TREE_TYPE (v0), mask))
+    return true;
+
+  if (v0_mode_s != mask_mode_s
+      || TYPE_VECTOR_SUBPARTS (TREE_TYPE (v0))
+	 != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask))
+      || TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1))
+	 != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask)))
+    return false;
+
+  return direct_optab_handler (vshuffle_optab, mode) != CODE_FOR_nothing;
+}
+
+/* Generate instructions for VEC_COND_EXPR given its type and three
+   operands.  */
+rtx
+expand_vec_shuffle_expr (tree type, tree v0, tree v1, tree mask, rtx target)
+{
+  struct expand_operand ops[4];
+  enum insn_code icode;
+  enum machine_mode mode = TYPE_MODE (type);
+  rtx rtx_v0, rtx_mask;
+
+  gcc_assert (expand_vec_shuffle_expr_p (mode, v0, v1, mask));
+
+  if (TREE_CODE (mask) == VECTOR_CST)
+    {
+      tree m_type, call;
+      tree fn = targetm.vectorize.builtin_vec_perm (TREE_TYPE (v0), &m_type);
+
+      if (!fn)
+	goto vshuffle;
+
+      if (m_type != TREE_TYPE (TREE_TYPE (mask)))
+	{
+	  int units = TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask));
+	  tree cvt = build_vector_type (m_type, units);
+	  mask = fold_convert (cvt, mask);
+	}
+
+      call = fold_build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
+      call = build_call_nary (type, call, 3, v0, v1, mask);
+
+      return expand_expr_real_1 (call, target, VOIDmode, EXPAND_NORMAL, NULL);
+    }
+
+vshuffle:
+  icode = direct_optab_handler (vshuffle_optab, mode);
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  rtx_mask = expand_normal (mask);
+
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[3], rtx_mask, mode);
+
+  if (operand_equal_p (v0, v1, 0))
+    {
+      rtx_v0 = expand_normal (v0);
+      if (!insn_operand_matches(icode, 1, rtx_v0))
+        rtx_v0 = force_reg (mode, rtx_v0);
+
+      gcc_checking_assert(insn_operand_matches(icode, 2, rtx_v0));
+
+      create_fixed_operand (&ops[1], rtx_v0);
+      create_fixed_operand (&ops[2], rtx_v0);
+    }
+  else
+    {
+      create_input_operand (&ops[1], expand_normal (v0), mode);
+      create_input_operand (&ops[2], expand_normal (v1), mode);
+    }
+
+  expand_insn (icode, 4, ops);
+  return ops[0].value;
+}
+
+
 /* Return insn code for a conditional operator with a comparison in
    mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
 

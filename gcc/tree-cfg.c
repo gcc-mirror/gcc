@@ -3727,6 +3727,59 @@ verify_gimple_assign_ternary (gimple stmt)
 	}
       break;
 
+    case VEC_SHUFFLE_EXPR:
+      if (!useless_type_conversion_p (lhs_type, rhs1_type)
+	  || !useless_type_conversion_p (lhs_type, rhs2_type))
+	{
+	  error ("type mismatch in vector shuffle expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs2_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs3_type) != VECTOR_TYPE)
+	{
+	  error ("vector types expected in vector shuffle expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      if (TYPE_VECTOR_SUBPARTS (rhs1_type) != TYPE_VECTOR_SUBPARTS (rhs2_type)
+	  || TYPE_VECTOR_SUBPARTS (rhs2_type)
+	     != TYPE_VECTOR_SUBPARTS (rhs3_type)
+	  || TYPE_VECTOR_SUBPARTS (rhs3_type)
+	     != TYPE_VECTOR_SUBPARTS (lhs_type))
+	{
+	  error ("vectors with different element number found "
+		 "in vector shuffle expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      if (TREE_CODE (TREE_TYPE (rhs3_type)) != INTEGER_TYPE
+	  || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs3_type)))
+	     != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1_type))))
+	{
+	  error ("invalid mask type in vector shuffle expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      return false;
+
     case DOT_PROD_EXPR:
     case REALIGN_LOAD_EXPR:
       /* FIXME.  */

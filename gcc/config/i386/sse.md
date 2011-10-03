@@ -230,6 +230,12 @@
    (V4SF "V4SF") (V2DF "V2DF")
    (TI "TI")])
 
+;; All 128bit vector modes
+(define_mode_attr sseshuffint
+  [(V16QI "V16QI") (V8HI "V8HI")
+   (V4SI "V4SI")  (V2DI "V2DI")
+   (V4SF "V4SI") (V2DF "V2DI")])
+
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr sseintvecmode
   [(V8SF "V8SI") (V4DF "V4DI")
@@ -6215,6 +6221,19 @@
   gcc_assert (ok);
   DONE;
 })
+
+(define_expand "vshuffle<mode>"
+  [(match_operand:V_128 0 "register_operand" "")
+   (match_operand:V_128 1 "register_operand" "")
+   (match_operand:V_128 2 "register_operand" "")
+   (match_operand:<sseshuffint> 3 "register_operand" "")]
+  "TARGET_SSSE3 || TARGET_AVX"
+{
+  bool ok = ix86_expand_vshuffle (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

@@ -2638,6 +2638,7 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == DOT_PROD_EXPR						    \
       || (SYM) == REALIGN_LOAD_EXPR					    \
       || (SYM) == VEC_COND_EXPR						    \
+      || (SYM) == VEC_SHUFFLE_EXPR                                          \
       || (SYM) == FMA_EXPR) ? GIMPLE_TERNARY_RHS			    \
    : ((SYM) == CONSTRUCTOR						    \
       || (SYM) == OBJ_TYPE_REF						    \

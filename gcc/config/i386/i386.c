@@ -19254,6 +19254,147 @@ ix86_expand_int_vcond (rtx operands[])
   return true;
 }
 
+bool
+ix86_expand_vshuffle (rtx operands[])
+{
+  rtx target = operands[0];
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  rtx mask = operands[3];
+  rtx new_mask, vt, t1, t2, w_vector;
+  enum machine_mode mode = GET_MODE (op0);
+  enum machine_mode maskmode = GET_MODE (mask);
+  enum machine_mode maskinner = GET_MODE_INNER (mode);
+  rtx vec[16];
+  int w, i, j;
+  bool one_operand_shuffle = op0 == op1;
+
+  gcc_assert ((TARGET_SSSE3 || TARGET_AVX) && GET_MODE_BITSIZE (mode) == 128);
+
+  /* Number of elements in the vector.  */
+  w = GET_MODE_BITSIZE (maskmode) / GET_MODE_BITSIZE (maskinner);
+
+  /* generate w_vector = {w, w, ...}  */
+  for (i = 0; i < w; i++)
+    vec[i] = GEN_INT (w);
+  w_vector = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
+
+  /* mask = mask & {w-1, w-1, w-1,...} */
+  for (i = 0; i < w; i++)
+    vec[i] = GEN_INT (w - 1);
+
+  vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
+  new_mask = expand_simple_binop (maskmode, AND, mask, vt,
+				  NULL_RTX, 0, OPTAB_DIRECT);
+
+  /* If the original vector mode is V16QImode, we can just
+     use pshufb directly.  */
+  if (mode == V16QImode && one_operand_shuffle)
+    {
+      t1 = gen_reg_rtx (V16QImode);
+      emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, new_mask));
+      emit_insn (gen_rtx_SET (VOIDmode, target, t1));
+      return true;
+    }
+  else if (mode == V16QImode)
+    {
+      rtx xops[6];
+
+      t1 = gen_reg_rtx (V16QImode);
+      t2 = gen_reg_rtx (V16QImode);
+      emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, new_mask));
+      emit_insn (gen_ssse3_pshufbv16qi3 (t2, op1, new_mask));
+
+      /* mask = mask & {w, w, ...}  */
+      mask = expand_simple_binop (V16QImode, AND, mask, w_vector,
+				  NULL_RTX, 0, OPTAB_DIRECT);
+      xops[0] = target;
+      xops[1] = operands[1];
+      xops[2] = operands[2];
+      xops[3] = gen_rtx_EQ (mode, mask, w_vector);
+      xops[4] = t1;
+      xops[5] = t2;
+
+      return ix86_expand_int_vcond (xops);
+    }
+
+  /* mask = mask * {w, w, ...}  */
+  new_mask = expand_simple_binop (maskmode, MULT, new_mask, w_vector,
+				  NULL_RTX, 0, OPTAB_DIRECT);
+
+  /* Convert mask to vector of chars.  */
+  new_mask = simplify_gen_subreg (V16QImode, new_mask, maskmode, 0);
+  new_mask = force_reg (V16QImode, new_mask);
+
+  /* Build a helper mask wich we will use in pshufb
+     (v4si) --> {0,0,0,0, 4,4,4,4, 8,8,8,8, 12,12,12,12}
+     (v8hi) --> {0,0, 2,2, 4,4, 6,6, ...}
+     ...  */
+  for (i = 0; i < w; i++)
+    for (j = 0; j < 16/w; j++)
+      vec[i*w+j] = GEN_INT (i*16/w);
+  vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
+  vt = force_reg (V16QImode, vt);
+
+  t1 = gen_reg_rtx (V16QImode);
+  emit_insn (gen_ssse3_pshufbv16qi3 (t1, new_mask, vt));
+  new_mask = t1;
+
+  /* Convert it into the byte positions by doing
+     new_mask = new_mask + {0,1,..,16/w, 0,1,..,16/w, ...}  */
+  for (i = 0; i < w; i++)
+    for (j = 0; j < 16/w; j++)
+      vec[i*w+j] = GEN_INT (j);
+
+  vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
+  new_mask = expand_simple_binop (V16QImode, PLUS, new_mask, vt,
+				  NULL_RTX, 0, OPTAB_DIRECT);
+
+  t1 = gen_reg_rtx (V16QImode);
+
+  /* Convert OP0 to vector of chars.  */
+  op0 = simplify_gen_subreg (V16QImode, op0, mode, 0);
+  op0 = force_reg (V16QImode, op0);
+  emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, new_mask));
+
+  if (one_operand_shuffle)
+    {
+      /* Convert it back from vector of chars to the original mode.  */
+      t1 = simplify_gen_subreg (mode, t1, V16QImode, 0);
+      emit_insn (gen_rtx_SET (VOIDmode, target, t1));
+      return true;
+    }
+  else
+    {
+      rtx xops[6];
+
+      t2 = gen_reg_rtx (V16QImode);
+
+      /* Convert OP1 to vector of chars.  */
+      op1 = simplify_gen_subreg (V16QImode, op1, mode, 0);
+      op1 = force_reg (V16QImode, op1);
+      emit_insn (gen_ssse3_pshufbv16qi3 (t1, op1, new_mask));
+
+      /* mask = mask & {w, w, ...}  */
+      mask = expand_simple_binop (V16QImode, AND, mask, w_vector,
+				  NULL_RTX, 0, OPTAB_DIRECT);
+
+      t1 = simplify_gen_subreg (mode, t1, V16QImode, 0);
+      t2 = simplify_gen_subreg (mode, t2, V16QImode, 0);
+
+      xops[0] = target;
+      xops[1] = operands[1];
+      xops[2] = operands[2];
+      xops[3] = gen_rtx_EQ (mode, mask, w_vector);
+      xops[4] = t1;
+      xops[5] = t2;
+
+      return ix86_expand_int_vcond (xops);
+    }
+
+  return false;
+}
+
 /* Unpack OP[1] into the next wider integer vector type.  UNSIGNED_P is
    true if we should do zero extension, else sign extension.  HIGH_P is
    true if we want the N/2 high elements, else the low elements.  */
@@ -31472,6 +31613,9 @@ struct expand_vec_perm_d
 
 static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d);
+static int extract_vec_perm_cst (struct expand_vec_perm_d *, tree);
+static bool ix86_vectorize_builtin_vec_perm_ok (tree vec_type, tree mask);
+
 
 /* Get a vector mode of the same size as the original but with elements
    twice as wide.  This is only guaranteed to apply to integral vectors.  */
@@ -33103,7 +33247,7 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
   res = gen_reg_rtx (outmode);
 
   half = CONST_DOUBLE_FROM_REAL_VALUE (dconsthalf, inmode);
-  
+
   /* round(a) = sgn(a) * floor(fabs(a) + 0.5) */
 
   /* scratch = fxam(op1) */
@@ -35262,10 +35406,10 @@ ix86_vectorize_builtin_vec_perm_ok (tree vec_type, tree mask)
 
   vec_mask = extract_vec_perm_cst (&d, mask);
 
-  /* This hook is cannot be called in response to something that the
-     user does (unlike the builtin expander) so we shouldn't ever see
-     an error generated from the extract.  */
-  gcc_assert (vec_mask > 0 && vec_mask <= 3);
+  /* Check whether the mask can be applied to the vector type.  */
+  if (vec_mask < 0 || vec_mask > 3)
+    return false;
+
   one_vec = (vec_mask != 3);
 
   /* Implementable with shufps or pshufd.  */

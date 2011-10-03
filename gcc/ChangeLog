@@ -1,3 +1,51 @@
+2011-10-03  Artem Shinkarov  <artyom.shinkaroff@gmail.com>
+
+	* optabs.c (expand_vec_shuffle_expr_p): New function. Checks
+	if given expression can be expanded by the target.
+	(expand_vec_shuffle_expr): New function. Expand VEC_SHUFFLE_EXPR
+	using target vector instructions.
+	* optabs.h: New optab vshuffle.
+	(expand_vec_shuffle_expr_p): New prototype.
+	(expand_vec_shuffle_expr): New prototype.
+	(vshuffle_optab): New optab.
+	* genopinit.c: Adjust to support vecshuffle.
+	* c-tree.h (c_build_vec_shuffle_expr): New prototype.
+	* expr.c (expand_expr_real_2): Adjust.
+	* c-typeck.c: (c_build_vec_shuffle_expr): Build a VEC_SHUFFLE_EXPR
+	recognizing the cases of two and three arguments.
+	(convert_arguments) (build_binary_op)
+	(scalar_to_vector) (build_array_ref): Spurious whitespace.
+	* gimplify.c (gimplify_exp): Adjusted to support VEC_SHUFFLE_EXPR.
+	* tree.def: New tree code VEC_SHUFFLE_EXPR.
+	* tree-inline.c (estimate_operator_cost): Recognize VEC_SHUFFLE_EXPR.
+	* tree-vect-generic.c (vector_element): New function. Returns an
+	element of the vector at the given position.
+	(lower_vec_shuffle): Checks if VEC_SHUFLLE_EXPR is supported
+	by the backend or expand an expression piecewise.
+	(expand_vector_operations_1): Adjusted.
+	(gate_expand_vector_operations_noop): New gate function.
+	* Makefile.in (tree-vect-generic.o): New include.
+	* gimple.c (get_gimple_rhs_num_ops): Adjust.
+	* tree-cfg.c (verify_gimple_assign_trenary): Verify VEC_SHUFFLE_EXPR.
+	* passes.c: Move veclower down.
+	* tree-pretty-print.c (dump_generic_node): Recognize
+	VEC_SHUFFLE_EXPR as valid expression.
+	* c-parser.c (c_parser_get_builtin_args): Helper function for the
+	builtins with variable number of arguments.
+	(c_parser_postfix_expression): Use a new helper function for
+	RID_CHOOSE_EXPR, RID_BUILTIN_COMPLEX and RID_BUILTIN_SHUFFLE.
+	* tree-ssa-operands: Adjust.
+	* c-family/c-common.c: New __builtin_shuffle keyword.
+	* c-family/c-common.h: New __builtin_shuffle keyword.
+	* gcc/doc/extend.texi: Adjust.
+
+	* gcc/config/i386/sse.md: (sseshuffint) New mode_attr.  Correspondence
+	between the vector and the type of the mask when shuffling.
+	(vecshuffle<mode>): New expansion.
+	* gcc/config/i386/i386-protos.h (ix86_expand_vshuffle): New prototype.
+	* gcc/config/i386/i386.c (ix86_expand_vshuffle): New function.
+	(ix86_vectorize_builtin_vec_perm_ok): Adjust.
+
 2011-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50587

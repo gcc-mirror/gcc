@@ -497,6 +497,19 @@ DEFTREECODE (COND_EXPR, "cond_expr", tcc_expression, 3)
 */
 DEFTREECODE (VEC_COND_EXPR, "vec_cond_expr", tcc_expression, 3)
 
+/* Vector shuffle expression.  A = VEC_SHUFFLE_EXPR<v0, v1, mask>
+   means
+
+   foreach i in length (mask):
+     A = mask[i] < length (v0) ? v0[mask[i]] : v1[mask[i] - length (mask)]
+
+   V0 and V1 are vectors of the same type.  MASK is an integer-typed
+   vector.  The number of MASK elements must be the same with the
+   number of elements in V0 and V1.  The size of the inner type
+   of the MASK and of the V0 and V1 must be the same.
+*/
+DEFTREECODE (VEC_SHUFFLE_EXPR, "vec_shuffle_expr", tcc_expression, 3)
+
 /* Declare local variables, including making RTL and allocating space.
    BIND_EXPR_VARS is a chain of VAR_DECL nodes for the variables.
    BIND_EXPR_BODY is the body, the expression to be computed using
