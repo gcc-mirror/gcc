@@ -19,8 +19,8 @@ _Complex float fc3 = __builtin_complex (1.0f, 1.0); /* { dg-error "different typ
 void
 f (void)
 {
-  __builtin_complex (0.0); /* { dg-error "expected" } */
-  __builtin_complex (0.0, 0.0, 0.0); /* { dg-error "expected" } */
+  __builtin_complex (0.0); /* { dg-error "wrong number of arguments" } */
+  __builtin_complex (0.0, 0.0, 0.0); /* { dg-error "wrong number of arguments" } */
 }
 
-void (*p) (void) = __builtin_complex; /* { dg-error "expected" } */
+void (*p) (void) = __builtin_complex; /* { dg-error "cannot take address" } */

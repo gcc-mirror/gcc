@@ -417,6 +417,16 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
       pp_string (buffer, ">");
       break;
+    
+    case VEC_SHUFFLE_EXPR:
+      pp_string (buffer, "VEC_SHUFFLE_EXPR <");
+      dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
+      pp_string (buffer, ">");
+      break;
 
     case REALIGN_LOAD_EXPR:
       pp_string (buffer, "REALIGN_LOAD <");

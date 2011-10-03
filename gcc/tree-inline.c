@@ -3285,6 +3285,7 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
        ??? We may consider mapping RTL costs to this.  */
     case COND_EXPR:
     case VEC_COND_EXPR:
+    case VEC_SHUFFLE_EXPR:
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
