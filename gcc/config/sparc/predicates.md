@@ -24,11 +24,6 @@
   (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
-;; Return true if OP is the one constant for MODE.
-(define_predicate "const_one_operand"
-  (and (match_code "const_int,const_double,const_vector")
-       (match_test "op == CONST1_RTX (mode)")))
-
 ;; Return true if the integer representation of OP is
 ;; all-ones.
 (define_predicate "const_all_ones_operand"
