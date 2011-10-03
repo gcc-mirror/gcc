@@ -1,3 +1,9 @@
+2011-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50587
+	* tree-ssa-reassoc.c (init_range_entry): Stop iterating when
+	arg0 is not a SSA_NAME.
+
 2011-10-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ipa-inline-analysis.c (MAX_TIME): Update comment.
