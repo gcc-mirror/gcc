@@ -1,3 +1,10 @@
+2011-10-03  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (bmask<P:mode>_vis): Split into explicit 'di'
+	and 'si' patterns which describe the GSR changes explicitly in the
+	RTL using zero_extract.
+	(bshuffle<V64I:mode>_vis): Put the GSR use inside of the unspec.
+
 2011-10-03  Artem Shinkarov  <artyom.shinkaroff@gmail.com>
 
 	* optabs.c (expand_vec_shuffle_expr_p): New function. Checks

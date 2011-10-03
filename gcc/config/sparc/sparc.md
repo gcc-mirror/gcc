@@ -8228,11 +8228,22 @@
   "array32\t%r1, %r2, %0"
   [(set_attr "type" "array")])
 
-(define_insn "bmask<P:mode>_vis"
-  [(set (match_operand:P 0 "register_operand" "=r")
-        (plus:P (match_operand:P 1 "register_operand" "rJ")
-                (match_operand:P 2 "register_operand" "rJ")))
-   (clobber (reg:SI GSR_REG))]
+(define_insn "bmaskdi_vis"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (plus:DI (match_operand:DI 1 "register_operand" "rJ")
+                 (match_operand:DI 2 "register_operand" "rJ")))
+   (set (zero_extract:DI (reg:DI GSR_REG) (const_int 32) (const_int 32))
+        (plus:DI (match_dup 1) (match_dup 2)))]
+  "TARGET_VIS2"
+  "bmask\t%r1, %r2, %0"
+  [(set_attr "type" "array")])
+
+(define_insn "bmasksi_vis"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (plus:SI (match_operand:SI 1 "register_operand" "rJ")
+                 (match_operand:SI 2 "register_operand" "rJ")))
+   (set (zero_extract:DI (reg:DI GSR_REG) (const_int 32) (const_int 32))
+        (zero_extend:DI (plus:SI (match_dup 1) (match_dup 2))))]
   "TARGET_VIS2"
   "bmask\t%r1, %r2, %0"
   [(set_attr "type" "array")])
@@ -8240,9 +8251,9 @@
 (define_insn "bshuffle<V64I:mode>_vis"
   [(set (match_operand:V64I 0 "register_operand" "=e")
         (unspec:V64I [(match_operand:V64I 1 "register_operand" "e")
-	              (match_operand:V64I 2 "register_operand" "e")]
-                     UNSPEC_BSHUFFLE))
-   (use (reg:SI GSR_REG))]
+	              (match_operand:V64I 2 "register_operand" "e")
+		      (use (reg:SI GSR_REG))]
+                     UNSPEC_BSHUFFLE))]
   "TARGET_VIS2"
   "bshuffle\t%1, %2, %0"
   [(set_attr "type" "fga")
