@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-06-21 10:27+0000\n"
-"PO-Revision-Date: 2011-07-31 14:14+0200\n"
+"PO-Revision-Date: 2011-10-03 14:14+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -33219,9 +33219,9 @@ msgid "'a1' argument of '%s' intrinsic at %L must be INTEGER, REAL or CHARACTER"
 msgstr "Argument »a1« des intrinsischen »%s« bei %L muss INTEGER, REAL oder CHARACTER sein"
 
 #: fortran/check.c:2282
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument types of '%s' intrinsic at %L must match (%s/%s)"
-msgstr "Argument »a%d« des intrinsischen »%s« bei %L muss %s(%d) sein"
+msgstr "Argumenttypen des intrinsischen »%s« bei %L müssen passen (%s/%s)"
 
 #: fortran/check.c:2296
 #, gcc-internal-format, gfc-internal-format
@@ -33239,9 +33239,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be of rank 1 or 2"
 msgstr "Argument »%s« des intrinsischen »%s« bei %L muss vom Rang 1 oder 2 sein"
 
 #: fortran/check.c:2499
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must be INTEGER"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein POINTER sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein INTEGER sein"
 
 #: fortran/check.c:2568
 #, gcc-internal-format, gfc-internal-format
@@ -33254,9 +33254,9 @@ msgid "the '%s' and '%s' arguments of '%s' intrinsic at %L must be of the same k
 msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen von der selben Art %d/%d sein"
 
 #: fortran/check.c:2718 fortran/check.c:3850
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must provide at least as many elements as there are .TRUE. values in '%s' (%ld/%d)"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss vom gleichen Typ und gleicher Art wie »%s« sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss mindestens so viele Elemente haben wie es .TRUE.-Werte »%s« (%ld/%d) gibt"
 
 #: fortran/check.c:2776
 #, gcc-internal-format, gfc-internal-format
@@ -33279,9 +33279,9 @@ msgid "'shape' argument of 'reshape' intrinsic at %L must be an array of constan
 msgstr "Argument »shape« des intrinsischen »reshape« bei %L muss ein Feld konstanter Größe sein"
 
 #: fortran/check.c:2936
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L is empty"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss %s sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L ist leer"
 
 #: fortran/check.c:2943
 #, gcc-internal-format, gfc-internal-format
@@ -33289,24 +33289,24 @@ msgid "'shape' argument of 'reshape' intrinsic at %L has more than %d elements"
 msgstr "Argument »shape« des intrinsischen »reshape« bei %L hat mehr als %d Elemente"
 
 #: fortran/check.c:2960
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L has negative element (%d)"
-msgstr "Argument »a%d« des intrinsischen »%s« bei %L muss %s(%d) sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L hat negatives Element (%d)"
 
 #: fortran/check.c:3000
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L has wrong number of elements (%d/%d)"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss vom Rang %d sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L hat falsche Anzahl der Elemente (%d/%d)"
 
 #: fortran/check.c:3018
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L has out-of-range dimension (%d)"
-msgstr "Argument »dim« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L hat Dimension außerhalb des Wertebereiches (%d)"
 
 #: fortran/check.c:3027
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L has invalid permutation of dimensions (dimension '%d' duplicated)"
-msgstr "Argument »dim« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L hat ungültige Permutation der Dimensionen (Dimension »%d« doppelt)"
 
 #: fortran/check.c:3063
 #, gcc-internal-format, gfc-internal-format
@@ -33314,24 +33314,24 @@ msgid "Without padding, there are not enough elements in the intrinsic RESHAPE s
 msgstr "Ohne Auffüllen gibt es nicht genügend Elemente in eingebauter RESHAPE-Quelle bei %L um zur Form zu passen"
 
 #: fortran/check.c:3081 fortran/check.c:3099
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must be of a derived type"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L darf kein abgeleiteter Typ sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss abgeleiteten Typ haben"
 
 #: fortran/check.c:3090 fortran/check.c:3108
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must be of an extensible type"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein numerischer Typ sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss erweiterbaren Typ haben"
 
 #: fortran/check.c:3207
 #, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: SELECTED_REAL_KIND with neither 'P' nor 'R' argument at %L"
-msgstr ""
+msgstr "Fortran 2008: SELECTED_REAL_KIND ohne Argument »P« oder »R« bei %L"
 
 #: fortran/check.c:3238
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: '%s' intrinsic with RADIX argument at %L"
-msgstr "Fortran 2003: intrinsisches »%s« mit KIND-Argument bei %L"
+msgstr "Fortran 2008: intrinsisches »%s« mit RADIX-Argument bei %L"
 
 #: fortran/check.c:3273
 #, gcc-internal-format, gfc-internal-format
@@ -33339,14 +33339,14 @@ msgid "'source' argument of 'shape' intrinsic at %L must not be an assumed size 
 msgstr "Argument »source« des intrinsischen »shape« bei %L darf kein Feld impliziter Größe sein"
 
 #: fortran/check.c:3357
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must be be an interoperable data entity"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein Feld sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss kompatible Datenentität sein"
 
 #: fortran/check.c:3386
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "GNU extension: non double precision REAL argument to %s intrinsic at %L"
-msgstr "Fehlende Argumente für intrinsisches %s bei %L"
+msgstr "GNU-Erweiterung: REAL-Argument ohne doppelte Genauigkeit für intrinsisches %s bei %L"
 
 #: fortran/check.c:3399
 #, gcc-internal-format, gfc-internal-format
@@ -33354,19 +33354,19 @@ msgid "'%s' argument of '%s' intrinsic at %L must be less than rank %d"
 msgstr "Argument »%s« für intrinsisches »%s« bei %L muss geringer als Rang %d sein"
 
 #: fortran/check.c:3418
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L is not a valid dimension index"
-msgstr "Argument »dim« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
 
 #: fortran/check.c:3679
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s argument to IMAGE_INDEX must be a rank one array at %L"
-msgstr "Effektives Argument für »%s« muss ein Zeiger bei %L sein"
+msgstr "Argument »%s« für IMAGE_INDEX muss Feld mit Rang 1 bei %L sein"
 
 #: fortran/check.c:3699
 #, gcc-internal-format, gfc-internal-format
 msgid "DIM argument without ARRAY argument not allowed for THIS_IMAGE intrinsic at %L"
-msgstr ""
+msgstr "DIM-Argument ohne ARRAY-Argument ist für intrinsisches THIS_IMAGE bei %L nicht erlaubt"
 
 #: fortran/check.c:3729
 #, gcc-internal-format, gfc-internal-format
@@ -33374,19 +33374,19 @@ msgid "'MOLD' argument of 'TRANSFER' intrinsic at %L must not be %s"
 msgstr "Argument »MOLD« des intrinsischen »TRANSFER« bei %L darf nicht %s sein"
 
 #: fortran/check.c:3864
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must have the same rank as '%s' or be a scalar"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss von der selben Art wie »%s« sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss den selben Rang wie »%s« haben oder skalar sein"
 
 #: fortran/check.c:3877
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' and '%s' arguments of '%s' intrinsic at %L must have identical shape."
-msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen den selben Typ haben"
+msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen gleiche Form haben."
 
 #: fortran/check.c:4136 fortran/check.c:4168
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Size of '%s' argument of '%s' intrinsic at %L too small (%i/%i)"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss %s sein"
+msgstr "Größe des Arguments »%s« des intrinsischen »%s« bei %L ist zu klein (%i/%i)"
 
 #: fortran/check.c:4176
 #, gcc-internal-format, gfc-internal-format
@@ -33404,31 +33404,31 @@ msgid "'%s' argument of '%s' intrinsic at %L must be INTEGER or LOGICAL"
 msgstr "Argument »%s« für intrinsisches »%s« bei %L muss INTEGER oder LOGICAL sein"
 
 #: fortran/class.c:199
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Polymorphic array at %C not yet supported"
-msgstr "Parameter verschiedener Typen in Zeigerzuweisung bei %L"
+msgstr "Polymorphes Feld bei %C wird noch nicht unterstützt"
 
 #. Since the extension field is 8 bit wide, we can only have
 #. up to 255 extension levels.
 #: fortran/class.c:270 fortran/decl.c:7344
 #, gcc-internal-format, gfc-internal-format
 msgid "Maximum extension level reached with type '%s' at %L"
-msgstr ""
+msgstr "Höchste Erweiterungsstufe mit Typ »%s« bei %L erreicht"
 
 #: fortran/class.c:650 fortran/class.c:724
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' of '%s' is PRIVATE at %L"
-msgstr "Ergebnis von %s ist NaN bei %L"
+msgstr "»%s« von »%s« ist bei %L PRIVATE"
 
 #: fortran/cpp.c:443
 #, gcc-internal-format
 msgid "To enable preprocessing, use -cpp"
-msgstr ""
+msgstr "Zum Einschalten der Vorverarbeitung -cpp verwenden"
 
 #: fortran/cpp.c:540 fortran/cpp.c:551 fortran/cpp.c:649
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "opening output file %s: %s"
-msgstr "Ausgabedatei »%s« wird geöffnet: %m"
+msgstr "Ausgabedatei »%s« wird geöffnet: %s"
 
 #: fortran/data.c:65
 #, gcc-internal-format, gfc-internal-format
@@ -33441,9 +33441,9 @@ msgid "failure to simplify substring reference in DATA statement at %L"
 msgstr "Fehlschlag bei Vereinfachung der Teil-Zeichenketten-Referenz in DATA-Anweisung bei %L"
 
 #: fortran/data.c:158
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Initialization string starting at %L was truncated to fit the variable (%d/%d)"
-msgstr "Initialisierungszeichenkette abgeschnitten um an Variable bei %L anzupassen"
+msgstr "Initialisierungszeichenkette abgeschnitten, um an Variable bei %L anzupassen (%d/%d)"
 
 #: fortran/data.c:244
 #, gcc-internal-format, gfc-internal-format
@@ -33501,9 +33501,9 @@ msgid "Bad INTENT specification at %C"
 msgstr "Falsche INTENT-Spezifikation bei %C"
 
 #: fortran/decl.c:671
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: deferred type parameter at %C"
-msgstr "Fortran 2003: VALUE-Anweisung bei %C"
+msgstr "Fortran 2003: Parameter mit zurückgestelltem Typ bei %C"
 
 #: fortran/decl.c:708
 #, gcc-internal-format, gfc-internal-format
@@ -33511,9 +33511,9 @@ msgid "Conflict in attributes of function argument at %C"
 msgstr "Konflikt in Attributen des Funktionsarguments bei %C"
 
 #: fortran/decl.c:733
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Obsolescent feature: Old-style character length at %C"
-msgstr "Veraltet: Arithmetische IF-Anweisung bei %C"
+msgstr "Veraltete Funktion: Zeichenlänge alten Stils bei %C"
 
 #: fortran/decl.c:765
 #, gcc-internal-format, gfc-internal-format
@@ -33541,7 +33541,7 @@ msgid "Procedure '%s' at %L must have the BIND(C) attribute to be C interoperabl
 msgstr "Prozedur »%s« bei %L muss das BIND(C)-Attribut haben, um mit C interoperabel zu sein"
 
 #: fortran/decl.c:1011
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Type '%s' at %L is a parameter to the BIND(C) procedure '%s' but is not C interoperable because derived type '%s' is not C interoperable"
 msgstr "Typ »%s« bei %L ist ein Parameter für die BIND(C)-Prozedur »%s«, jedoch nicht interoperabel mit C, da der abgeleitete Typ »%s« nicht mit C interoperabel ist"
 
@@ -33611,14 +33611,14 @@ msgid "Variable '%s' at %C with an initializer already appears in a DATA stateme
 msgstr "Variable »%s« bei %C mit Initialisierung tritt bereits in einer DATA-Anweisung auf"
 
 #: fortran/decl.c:1409
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Can't initialize implied-shape array at %L with scalar"
-msgstr "mehrdimensionales Feld kann nicht initialisiert werden"
+msgstr "Feld mit implizierter Form bei %L kann nicht mit Skalar initialisiert werden"
 
 #: fortran/decl.c:1427
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Non-constant lower bound in implied-shape declaration at %L"
-msgstr "Syntaxfehler in Daten-Deklaration bei %C"
+msgstr "Nicht-konstante untere Grenze in Deklaration mit impliziter Form bei %L"
 
 #: fortran/decl.c:1522
 #, gcc-internal-format, gfc-internal-format
@@ -33656,24 +33656,24 @@ msgid "Initialization of pointer at %C is not allowed in a PURE procedure"
 msgstr "Initialisierung des Zeigers bei %C ist nicht in einer PURE-Prozedur erlaubt"
 
 #: fortran/decl.c:1709
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Error in pointer initialization at %C"
-msgstr "Erweiterung: Initialisierung im alten Stil bei %C"
+msgstr "Fehler in Zeigerinitialisierung bei %C"
 
 #: fortran/decl.c:1716
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: non-NULL pointer initialization at %C"
-msgstr "Fortran 2003: Nichtganzzahliger Exponent in einem Initialisierungsausdruck bei %L"
+msgstr "Fortran 2008: Nicht-NULL-Zeigerinitialisierung bei %C"
 
 #: fortran/decl.c:1777
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Non-PARAMETER symbol '%s' at %L can't be implied-shape"
-msgstr "CHARACTER(*)-Funktion »%s« bei %L kann nicht Zeiger-wertig sein"
+msgstr "Nicht-PARAMETER-Symbol »%s« bei %L kann nicht implizite Form haben"
 
 #: fortran/decl.c:1788
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: Implied-shape array at %L"
-msgstr "Fortran 2003: IOMSG-Markierung bei %L"
+msgstr "Fortran 2008: Feld mit impliziter Form bei %L"
 
 #: fortran/decl.c:1852 fortran/decl.c:6247
 #, gcc-internal-format, gfc-internal-format
@@ -33751,9 +33751,9 @@ msgid "Kind %d not supported for type %s at %C"
 msgstr "Die Art %d wird für Typ %s bei %C nicht unterstützt"
 
 #: fortran/decl.c:2196
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "C kind type parameter is for type %s but type at %L is %s"
-msgstr "Parameter nach C-Art ist für Typ %s, aber Symbol »%s« bei %L ist vom Typ %s"
+msgstr "Typ-Parameter nach C-Art ist für Typ %s, aber Typ bei %L ist %s"
 
 #: fortran/decl.c:2205
 #, gcc-internal-format, gfc-internal-format
@@ -33782,24 +33782,24 @@ msgstr "Bei %C verwendeter BYTE-Typ ist auf der Zielmaschine nicht verfügbar"
 
 #: fortran/decl.c:2526 fortran/decl.c:2557 fortran/decl.c:2587
 #: fortran/decl.c:2681
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: TYPE with intrinsic-type-spec at %C"
-msgstr "Fortran 2003: VOLATILE-Attribut bei %C"
+msgstr "Fortran 2008: TYPE mit intrinsischer Typspezifikation bei %C"
 
 #: fortran/decl.c:2582
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Extension: DOUBLE COMPLEX at %C"
-msgstr "Erweiterung: BYTE-Typ bei %C"
+msgstr "Erweiterung: DOUBLE COMPLEX bei %C"
 
 #: fortran/decl.c:2620
 #, gcc-internal-format, gfc-internal-format
 msgid "Unlimited polymorphism at %C not yet supported"
-msgstr ""
+msgstr "Unbegrenzter Polymorphismus bei %C wird noch nicht unterstützt"
 
 #: fortran/decl.c:2629
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: CLASS statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: CLASS-Anweisung bei %C"
 
 #: fortran/decl.c:2652 fortran/decl.c:2661 fortran/decl.c:2995
 #: fortran/decl.c:3003
@@ -33853,9 +33853,9 @@ msgid "Syntax error in IMPORT statement at %C"
 msgstr "Syntaxfehler in IMPORT-Anweisung bei %C"
 
 #: fortran/decl.c:3344
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing codimension specification at %C"
-msgstr "Fehlende Dimensionsangabe bei %C"
+msgstr "Fehlende Kodimensionsangabe bei %C"
 
 #: fortran/decl.c:3346
 #, gcc-internal-format, gfc-internal-format
@@ -33888,14 +33888,14 @@ msgid "%s attribute at %L is not allowed outside of the specification part of a 
 msgstr "Attribut %s bei %L ist außerhalb des Spezifikationsabschnitts eines Moduls nicht erlaubt"
 
 #: fortran/decl.c:3502
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: ASYNCHRONOUS attribute at %C"
-msgstr "Fortran 2003: VALUE-Attribut bei %C"
+msgstr "Fortran 2003: ASYNCHRONOUS-Attribut bei %C"
 
 #: fortran/decl.c:3515
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: CONTIGUOUS attribute at %C"
-msgstr "Fortran 2003: VOLATILE-Attribut bei %C"
+msgstr "Fortran 2008: CONTIGUOUS-Attribut bei %C"
 
 #: fortran/decl.c:3561 fortran/decl.c:6535
 #, gcc-internal-format, gfc-internal-format
@@ -33997,14 +33997,14 @@ msgid "Syntax error in data declaration at %C"
 msgstr "Syntaxfehler in Daten-Deklaration bei %C"
 
 #: fortran/decl.c:4185
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: IMPURE procedure at %C"
-msgstr "Fortran 2003: \"USE :: module\" bei %C"
+msgstr "Fortran 2008: IMPURE-Prozedur bei %C"
 
 #: fortran/decl.c:4198
 #, gcc-internal-format, gfc-internal-format
 msgid "PURE and IMPURE must not appear both at %C"
-msgstr ""
+msgstr "PURE und IMPURE dürfen bei %C nicht gleichzeitig stehen"
 
 #: fortran/decl.c:4304
 #, gcc-internal-format, gfc-internal-format
@@ -34032,9 +34032,9 @@ msgid "Unexpected junk after function declaration at %C"
 msgstr "Unerwartete Angaben hinter Funktionsdeklaration bei %C"
 
 #: fortran/decl.c:4471 fortran/decl.c:5500
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: BIND(C) attribute at %L may not be specified for an internal procedure"
-msgstr "Erweiterung: BIND(C)-Attribut bei %L kann nicht für eine interne Prozedur angegeben werden"
+msgstr "Fortran 2008: BIND(C)-Attribut bei %L kann nicht für eine interne Prozedur angegeben werden"
 
 #: fortran/decl.c:4615
 #, gcc-internal-format, gfc-internal-format
@@ -34067,9 +34067,9 @@ msgid "Dummy procedure at %C may not have BIND(C) attribute with NAME"
 msgstr "Scheinprozedur bei %C kann kein BIND(C)-Attribut mit NAME haben"
 
 #: fortran/decl.c:4725
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Procedure '%s' at %L already has basic type of %s"
-msgstr "Symbol »%s« bei %L hat bereits grundlegenden Typen %s"
+msgstr "Prozedur »%s« bei %L hat bereits grundlegenden Typen %s"
 
 #: fortran/decl.c:4773 fortran/decl.c:4940 fortran/decl.c:7978
 #, gcc-internal-format, gfc-internal-format
@@ -34077,24 +34077,24 @@ msgid "Syntax error in PROCEDURE statement at %C"
 msgstr "Syntaxfehler in PROCEDURE-Anweisung bei %C"
 
 #: fortran/decl.c:4822 fortran/decl.c:7879
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected '::' after binding-attributes at %C"
-msgstr "Beendenden Namen bei %C erwartet"
+msgstr "»::« nach Bindeattributen bei %C erwartet"
 
 #: fortran/decl.c:4829
 #, gcc-internal-format, gfc-internal-format
 msgid "NOPASS or explicit interface required at %C"
-msgstr ""
+msgstr "NOPASS oder explizite Schnittstelle bei %C erforderlich"
 
 #: fortran/decl.c:4833
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: Procedure pointer component at %C"
-msgstr "Fortran 2003: Modul-Eigenschaft in USE-Anweisung bei %C"
+msgstr "Fortran 2003: Prozedurzeiger-Komponente bei %C"
 
 #: fortran/decl.c:4897
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in procedure pointer component at %C"
-msgstr "Syntaxfehler in Strukturkonstruktor bei %C"
+msgstr "Syntaxfehler in Prozedurzeiger-Komponente bei %C"
 
 #: fortran/decl.c:4914
 #, gcc-internal-format, gfc-internal-format
@@ -34119,9 +34119,9 @@ msgid "BIND(C) attribute at %L can only be used for variables or common blocks"
 msgstr "BIND(C)-Attribut bei %L kann nur für Variablen oder gemeinsame Blöcke verwendet werden"
 
 #: fortran/decl.c:5190
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008 obsolescent feature: ENTRY statement at %C"
-msgstr "Fortran 2003: Modul-Eigenschaft in USE-Anweisung bei %C"
+msgstr "Fortran 2008: Veraltete Funktion: ENTRY-Anweisung bei %C"
 
 #: fortran/decl.c:5200
 #, gcc-internal-format, gfc-internal-format
@@ -34229,9 +34229,9 @@ msgid "Unexpected END statement at %C"
 msgstr "Unerwartete END-Anweisung bei %C"
 
 #: fortran/decl.c:5875
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: END statement instead of %s statement at %L"
-msgstr "Fortran 2003: Modul-Eigenschaft in USE-Anweisung bei %C"
+msgstr "Fortran 2008: END-Anweisung statt %s-Anweisung bei %L"
 
 #. We would have required END [something].
 #: fortran/decl.c:5883
@@ -34270,9 +34270,9 @@ msgid "Dimensions specified for %s at %L after its initialisation"
 msgstr "Für %s bei %L wurden Dimensionen nach dessen Initialisierung angegeben"
 
 #: fortran/decl.c:6019
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing array specification at %L in CODIMENSION statement"
-msgstr "Fehlende Feldspezifikation bei %L in DIMENSION-Anweisung"
+msgstr "Feldspezifikation bei %L in CODIMENSION-Anweisung fehlt"
 
 #: fortran/decl.c:6028
 #, gcc-internal-format, gfc-internal-format
@@ -34322,12 +34322,12 @@ msgstr "»,« oder Ende der Anweisung bei %C erwartet"
 #: fortran/decl.c:6305
 #, gcc-internal-format, gfc-internal-format
 msgid "INTENT is not allowed inside of BLOCK at %C"
-msgstr ""
+msgstr "INTENT ist in BLOCK bei %C nicht erlaubt"
 
 #: fortran/decl.c:6337
 #, gcc-internal-format, gfc-internal-format
 msgid "OPTIONAL is not allowed inside of BLOCK at %C"
-msgstr ""
+msgstr "OPTIONAL ist in BLOCK bei %C nicht erlaubt"
 
 #: fortran/decl.c:6356
 #, gcc-internal-format, gfc-internal-format
@@ -34335,9 +34335,9 @@ msgid "Cray pointer declaration at %C requires -fcray-pointer flag"
 msgstr "Cray-Zeiger-Deklaration bei %C benötigt den Schalter -fcray-pointer"
 
 #: fortran/decl.c:6395
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: CONTIGUOUS statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2008: CONTIGUOUS-Anweisung bei %C"
 
 #: fortran/decl.c:6486
 #, gcc-internal-format, gfc-internal-format
@@ -34412,7 +34412,7 @@ msgstr "Syntaxfehler in SAVE-Anweisung bei %C"
 #: fortran/decl.c:6835
 #, gcc-internal-format, gfc-internal-format
 msgid "VALUE is not allowed inside of BLOCK at %C"
-msgstr ""
+msgstr "VALUE ist in BLOCK bei %C nicht erlaubt"
 
 #: fortran/decl.c:6839
 #, gcc-internal-format, gfc-internal-format
@@ -34432,7 +34432,7 @@ msgstr "Fortran 2003: VOLATILE-Anweisung bei %C"
 #: fortran/decl.c:6914
 #, gcc-internal-format, gfc-internal-format
 msgid "Specifying VOLATILE for coarray variable '%s' at %C, which is use-/host-associated"
-msgstr ""
+msgstr "VOLATILE für Coarray-Variable »%s« bei »%C« angegeben, die use-/host-assoziiert ist"
 
 #: fortran/decl.c:6940
 #, gcc-internal-format, gfc-internal-format
@@ -34440,14 +34440,14 @@ msgid "Syntax error in VOLATILE statement at %C"
 msgstr "Syntaxfehler in VOLATILE-Anweisung bei %C"
 
 #: fortran/decl.c:6951
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: ASYNCHRONOUS statement at %C"
-msgstr "Fortran 2003: VALUE-Anweisung bei %C"
+msgstr "Fortran 2003: ASYNCHRONOUS-Anweisung bei %C"
 
 #: fortran/decl.c:6993
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in ASYNCHRONOUS statement at %C"
-msgstr "Syntaxfehler in VALUE-Anweisung bei %C"
+msgstr "Syntaxfehler in ASYNCHRONOUS-Anweisung bei %C"
 
 #: fortran/decl.c:7017
 #, gcc-internal-format, gfc-internal-format
@@ -34455,39 +34455,39 @@ msgid "MODULE PROCEDURE at %C must be in a generic module interface"
 msgstr "MODULE PROCEDURE bei %C muss in einer generischen Modulschnittstelle sein"
 
 #: fortran/decl.c:7042
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: double colon in MODULE PROCEDURE statement at %L"
-msgstr "Fortran 2003: PROCEDURE-Anweisung bei %C"
+msgstr "Fortran 2008: »::« in MODULE PROCEDURE-Anweisung bei %L"
 
 #: fortran/decl.c:7076
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Intrinsic procedure at %L cannot be a MODULE PROCEDURE"
-msgstr "Intrinsische Prozedur »%s« ist in PROCEDURE-Anweisung bei %C nicht erlaubt"
+msgstr "Intrinsische Prozedur bei %L kann keine MODULE PROCEDURE sein"
 
 #: fortran/decl.c:7125
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Ambiguous symbol in TYPE definition at %C"
-msgstr "»::« in TYPE-Definition bei %C erwartet"
+msgstr "Mehrdeutiges Symbol in TYPE-Definition bei %C"
 
 #: fortran/decl.c:7131
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "No such symbol in TYPE definition at %C"
-msgstr "»::« in TYPE-Definition bei %C erwartet"
+msgstr "Kein solches Symbol in TYPE-Definition bei %C"
 
 #: fortran/decl.c:7137
 #, gcc-internal-format, gfc-internal-format
 msgid "'%s' in EXTENDS expression at %C is not a derived type"
-msgstr ""
+msgstr "»%s« in EXTENDS-Ausdruck bei %C ist kein abgeleiteter Typ"
 
 #: fortran/decl.c:7144
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' cannot be extended at %C because it is BIND(C)"
-msgstr "Abgeleiteter Typ »%s« bei %L kann nicht das SEQUENCE-Attribut haben, da es BIND(C) ist"
+msgstr "»%s« kann bei %C nicht erweitert werden, da es BIND(C) ist"
 
 #: fortran/decl.c:7151
 #, gcc-internal-format, gfc-internal-format
 msgid "'%s' cannot be extended at %C because it is a SEQUENCE type"
-msgstr ""
+msgstr "»%s« kann bei %C nicht erweitert werden, da es ein SEQUENCE-Typ ist"
 
 #: fortran/decl.c:7174
 #, gcc-internal-format, gfc-internal-format
@@ -34500,9 +34500,9 @@ msgid "Derived type at %C can only be PUBLIC in the specification part of a modu
 msgstr "Abgeleiteter Typ bei %C kann nur PUBLIC im Spezifikationsteil eines Moduls sein"
 
 #: fortran/decl.c:7207
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: ABSTRACT type at %C"
-msgstr "Fortran 2003: ABSTRACT INTERFACE bei %C"
+msgstr "Fortran 2003: ABSTRACT-Typ bei %C"
 
 #: fortran/decl.c:7271
 #, gcc-internal-format, gfc-internal-format
@@ -34555,159 +34555,159 @@ msgid "Syntax error in ENUMERATOR definition at %C"
 msgstr "Syntaxfehler in ENUMERATOR-Definition bei %C"
 
 #: fortran/decl.c:7644 fortran/decl.c:7659
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate access-specifier at %C"
-msgstr "Doppelte Spezifikation %s bei %C"
+msgstr "Doppelte Zugriffsspezifikation bei %C"
 
 #: fortran/decl.c:7679
 #, gcc-internal-format, gfc-internal-format
 msgid "Binding attributes already specify passing, illegal NOPASS at %C"
-msgstr ""
+msgstr "Bindeattribute legen bereits Durchleitung fest, unzulässiges NOPASS bei %C"
 
 #: fortran/decl.c:7699
 #, gcc-internal-format, gfc-internal-format
 msgid "Binding attributes already specify passing, illegal PASS at %C"
-msgstr ""
+msgstr "Bindeattribute legen bereits Durchleitung fest, unzulässiges PASS bei %C"
 
 #: fortran/decl.c:7726
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate POINTER attribute at %C"
-msgstr "Doppeltes Attribut %s bei %L"
+msgstr "Doppeltes POINTER-Attribut bei %C"
 
 #: fortran/decl.c:7744
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate NON_OVERRIDABLE at %C"
-msgstr "VARIABLE bei %C erwartet"
+msgstr "Doppeltes NON_OVERRIDABLE bei %C"
 
 #: fortran/decl.c:7760
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate DEFERRED at %C"
-msgstr "Doppelte SEQUENCE-Anweisung bei %C"
+msgstr "Doppeltes DEFERRED bei %C"
 
 #: fortran/decl.c:7773
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected access-specifier at %C"
-msgstr "Namenlose Schnittstelle bei %C erwartet"
+msgstr "Zugriffsspezifikation bei %C erwartet"
 
 #: fortran/decl.c:7775
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected binding attribute at %C"
-msgstr "Beendenden Namen bei %C erwartet"
+msgstr "Bindeattribut bei %C erwartet"
 
 #: fortran/decl.c:7783
 #, gcc-internal-format, gfc-internal-format
 msgid "NON_OVERRIDABLE and DEFERRED can't both appear at %C"
-msgstr ""
+msgstr "NON_OVERRIDABLE und DEFERRED können nicht gleichzeitig bei %C auftreten"
 
 #: fortran/decl.c:7795
 #, gcc-internal-format, gfc-internal-format
 msgid "POINTER attribute is required for procedure pointer component at %C"
-msgstr ""
+msgstr "POINTER-Attribut ist für Prozedurzeiger-Komponente bei %C erforderlich"
 
 #: fortran/decl.c:7837
 #, gcc-internal-format, gfc-internal-format
 msgid "Interface-name expected after '(' at %C"
-msgstr ""
+msgstr "Schnittstellenname nach »(« bei %C erforderlich"
 
 #: fortran/decl.c:7843
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "')' expected at %C"
-msgstr "»)« erwartet"
+msgstr "»)« bei %C erwartet"
 
 #: fortran/decl.c:7863
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Interface must be specified for DEFERRED binding at %C"
-msgstr "Syntaxfehler in NAME=-Spezifikation für Bindungsmarke bei %C"
+msgstr "Schnittstelle muss für DEFERRED-Bindung bei %C angegeben werden"
 
 #: fortran/decl.c:7868
 #, gcc-internal-format, gfc-internal-format
 msgid "PROCEDURE(interface) at %C should be declared DEFERRED"
-msgstr ""
+msgstr "PROCEDURE(Schnittstelle) bei %C sollte als DEFERRED deklariert sein"
 
 #: fortran/decl.c:7891
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected binding name at %C"
-msgstr "Beendenden Namen bei %C erwartet"
+msgstr "Bindungsname bei %C erwartet"
 
 #: fortran/decl.c:7895
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: PROCEDURE list at %C"
-msgstr "Fortran 2003: PROCEDURE-Anweisung bei %C"
+msgstr "Fortran 2008: PROCEDURE-Liste bei %C"
 
 #: fortran/decl.c:7908
 #, gcc-internal-format, gfc-internal-format
 msgid "'=> target' is invalid for DEFERRED binding at %C"
-msgstr ""
+msgstr "»=> target« ist ungültig für DEFERRED-Bindung bei %C"
 
 #: fortran/decl.c:7914
 #, gcc-internal-format, gfc-internal-format
 msgid "'::' needed in PROCEDURE binding with explicit target at %C"
-msgstr ""
+msgstr "»::« in PROCEDURE-Bindung mit explizitem Ziel bei %C erforderlich"
 
 #: fortran/decl.c:7924
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected binding target after '=>' at %C"
-msgstr "Beendenden Namen bei %C erwartet"
+msgstr "Bindungsziel hinter »=>« bei %C erforderlich"
 
 #: fortran/decl.c:7941
 #, gcc-internal-format, gfc-internal-format
 msgid "Type '%s' containing DEFERRED binding at %C is not ABSTRACT"
-msgstr ""
+msgstr "Typ »%s« mit DEFERRED-Bindung bei %C ist nicht ABSTRACT"
 
 #: fortran/decl.c:7952
 #, gcc-internal-format, gfc-internal-format
 msgid "There is already a procedure with binding name '%s' for the derived type '%s' at %C"
-msgstr ""
+msgstr "Es gibt bereits eine Prozedur mit Bindungsname »%s« für den abgeleiteten Typ »%s« bei %C"
 
 #: fortran/decl.c:8001
 #, gcc-internal-format, gfc-internal-format
 msgid "GENERIC at %C must be inside a derived-type CONTAINS"
-msgstr ""
+msgstr "GENERIC bei %C muss innerhalb eines CONTAINS eines abgeleiteten Typs sein"
 
 #: fortran/decl.c:8021
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected '::' at %C"
-msgstr "»(« bei %C erwartet"
+msgstr "»::« bei %C erwartet"
 
 #: fortran/decl.c:8033
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected generic name or operator descriptor at %C"
-msgstr "Feldindex erwartet bei %C"
+msgstr "Generischer Name oder Operatordeskriptor bei %C erwartet"
 
 #: fortran/decl.c:8059
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected '=>' at %C"
-msgstr "»(« bei %C erwartet"
+msgstr "»=>« bei %C erwartet"
 
 #: fortran/decl.c:8101
 #, gcc-internal-format, gfc-internal-format
 msgid "There's already a non-generic procedure with binding name '%s' for the derived type '%s' at %C"
-msgstr ""
+msgstr "Es gibt bereits eine nicht-generische Prozedur mit Bindungsname »%s« für den abgeleiteten Typ »%s« bei %C"
 
 #: fortran/decl.c:8109
 #, gcc-internal-format, gfc-internal-format
 msgid "Binding at %C must have the same access as already defined binding '%s'"
-msgstr ""
+msgstr "Bindung bei %C muss den selben Zugriff wie bereits definierte Bindung »%s« haben"
 
 #: fortran/decl.c:8158
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected specific binding name at %C"
-msgstr "Beendenden Namen bei %C erwartet"
+msgstr "Spezifischer Bindungsname bei %C erwartet"
 
 #: fortran/decl.c:8168
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' already defined as specific binding for the generic '%s' at %C"
-msgstr "Es gibt keine spezifische Funktion für das allgemeine »%s« bei %L"
+msgstr "»%s« bereits als spezifische Bindung für das allgemeine »%s« bei %C definiert"
 
 #: fortran/decl.c:8184
 #, gcc-internal-format, gfc-internal-format
 msgid "Junk after GENERIC binding at %C"
-msgstr ""
+msgstr "Ausschuss hinter GENERIC-Bindung bei %C"
 
 #: fortran/decl.c:8219
 #, gcc-internal-format, gfc-internal-format
 msgid "FINAL declaration at %C must be inside a derived type CONTAINS section"
-msgstr ""
+msgstr "FINAL-Deklaration bei %C muss innerhalb eines CONTAINS-Abschnitts eines abgeleiteten Typs stehen"
 
 #: fortran/decl.c:8230
 #, fuzzy, gcc-internal-format, gfc-internal-format
