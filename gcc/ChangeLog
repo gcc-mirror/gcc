@@ -1,3 +1,11 @@
+2011-10-02  Richard Henderson  <rth@redhat.com>
+	    David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (ashlsi3, *ashldi3_sp64): Remove
+	conditional insn type setting, we always emit a shift.
+	(*ashlsi3_extend, *lshrsi3_extend0): New patterns.
+	(*lshrsi3_extend): Rename to *lshrsi3_extend1.
+
 2011-10-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* invoke.texi (SPARC Options): Refer to GNU/Linux.

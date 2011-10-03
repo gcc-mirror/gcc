@@ -5814,9 +5814,20 @@
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   return "sll\t%1, %2, %0";
 }
-  [(set (attr "type")
-	(if_then_else (match_operand 2 "const_one_operand" "")
-		      (const_string "ialu") (const_string "shift")))])
+  [(set_attr "type" "shift")])
+
+(define_insn "*ashlsi3_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (ashift:SI (match_operand:SI 1 "register_operand" "r")
+		     (match_operand:SI 2 "arith_operand" "rI"))))]
+  "TARGET_ARCH64"
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+  return "sll\t%1, %2, %0";
+}
+  [(set_attr "type" "shift")])
 
 (define_expand "ashldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5843,9 +5854,7 @@
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
   return "sllx\t%1, %2, %0";
 }
-  [(set (attr "type")
-	(if_then_else (match_operand 2 "const_one_operand" "")
-		      (const_string "ialu") (const_string "shift")))])
+  [(set_attr "type" "shift")])
 
 ;; XXX UGH!
 (define_insn "ashldi3_v8plus"
@@ -5980,10 +5989,23 @@
   }
   [(set_attr "type" "shift")])
 
+(define_insn "*lshrsi3_extend0"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
+		       (match_operand:SI 2 "arith_operand" "rI"))))]
+  "TARGET_ARCH64"
+  {
+    if (GET_CODE (operands[2]) == CONST_INT)
+      operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+    return "srl\t%1, %2, %0";
+  }
+  [(set_attr "type" "shift")])
+
 ;; This handles the case where
 ;; (zero_extend:DI (lshiftrt:SI (match_operand:SI) (match_operand:SI))),
 ;; but combiner "simplifies" it for us.
-(define_insn "*lshrsi3_extend"
+(define_insn "*lshrsi3_extend1"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (subreg:DI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
 			   (match_operand:SI 2 "arith_operand" "r")) 0)
