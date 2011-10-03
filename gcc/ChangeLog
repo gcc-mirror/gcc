@@ -1,3 +1,11 @@
+2011-10-03  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/49967
+	* configure.ac (gcc_cv_ld_static_dynamic): Define for *-*-hpux*.
+	(gcc_cv_ld_static_option): Ditto.
+	(gcc_cv_ld_dynamic_option): Ditto.
+	* configure: Regenerate.
+
 2011-10-03  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (bmask<P:mode>_vis): Split into explicit 'di'
