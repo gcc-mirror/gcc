@@ -1,5 +1,8 @@
 2011-10-02  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_pack_expansion): Re-use ARGUMENT_PACK_SELECTs.
+	Change unsubstituted_packs to bool.
+
 	* parser.c (cp_parser_range_for): Don't try to deduce from {}
 	in a template.
 
