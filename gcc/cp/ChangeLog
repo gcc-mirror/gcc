@@ -1,5 +1,8 @@
 2011-10-02  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_range_for): Don't try to deduce from {}
+	in a template.
+
 	PR c++/35722
 	Implement N2555 (expanding pack expansion to fixed parm list)
 	* pt.c (coerce_template_parms): Allow expanding a pack expansion
