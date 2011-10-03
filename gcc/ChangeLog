@@ -1,3 +1,10 @@
+2011-10-03  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m68k/m68k.c (m68k_output_addr_const_extra): Make static.
+	(TARGET_OUTPUT_ADDR_CONST_EXTRA): Define.
+	* config/m68k/m68k.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
+	* config/m68k/m68k-protos.h (m68k_output_addr_const_extra): Remove.
+
 2011-10-03  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/49967
