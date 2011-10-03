@@ -1,3 +1,9 @@
+2011-10-03  Jakub Jelinek  <jakub@redhat.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (go_output_typedef): Support printing enum values that
+	don't fit in a signed HOST_WIDE_INT.
+
 2011-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/50571

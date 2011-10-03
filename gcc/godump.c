@@ -844,9 +844,24 @@ go_output_typedef (struct godump_container *container, tree decl)
       for (element = TYPE_VALUES (TREE_TYPE (decl));
 	   element != NULL_TREE;
 	   element = TREE_CHAIN (element))
-	fprintf (go_dump_file, "const _%s = " HOST_WIDE_INT_PRINT_DEC "\n",
-		 IDENTIFIER_POINTER (TREE_PURPOSE (element)),
-		 tree_low_cst (TREE_VALUE (element), 0));
+	{
+	  fprintf (go_dump_file, "const _%s = ",
+		   IDENTIFIER_POINTER (TREE_PURPOSE (element)));
+	  if (host_integerp (TREE_VALUE (element), 0))
+	    fprintf (go_dump_file, HOST_WIDE_INT_PRINT_DEC,
+		     tree_low_cst (TREE_VALUE (element), 0));
+	  else if (host_integerp (TREE_VALUE (element), 1))
+	    fprintf (go_dump_file, HOST_WIDE_INT_PRINT_UNSIGNED,
+		     ((unsigned HOST_WIDE_INT)
+		      tree_low_cst (TREE_VALUE (element), 1)));
+	  else
+	    fprintf (go_dump_file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+		     ((unsigned HOST_WIDE_INT)
+		      TREE_INT_CST_HIGH (TREE_VALUE (element))),
+		     TREE_INT_CST_LOW (TREE_VALUE (element)));
+	  fprintf (go_dump_file, "\n");
+	}
+
       pointer_set_insert (container->decls_seen, TREE_TYPE (decl));
       if (TYPE_CANONICAL (TREE_TYPE (decl)) != NULL_TREE)
 	pointer_set_insert (container->decls_seen,
