@@ -2063,6 +2063,8 @@ Order_eval::variable(Named_object* no)
       return TRAVERSE_SKIP_COMPONENTS;
     }
 
+  Expression* orig_init = init;
+
   for (Find_eval_ordering::const_iterator p = find_eval_ordering.begin();
        p != find_eval_ordering.end();
        ++p)
@@ -2086,6 +2088,9 @@ Order_eval::variable(Named_object* no)
 	}
       var->add_preinit_statement(this->gogo_, s);
     }
+
+  if (init != orig_init)
+    var->set_init(init);
 
   return TRAVERSE_SKIP_COMPONENTS;
 }
