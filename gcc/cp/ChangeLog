@@ -1,3 +1,264 @@
+2011-10-02  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_pack_expansion): Re-use ARGUMENT_PACK_SELECTs.
+	Change unsubstituted_packs to bool.
+
+	* parser.c (cp_parser_range_for): Don't try to deduce from {}
+	in a template.
+
+	PR c++/35722
+	Implement N2555 (expanding pack expansion to fixed parm list)
+	* pt.c (coerce_template_parms): Allow expanding a pack expansion
+	to a fixed-length argument list.
+	(unify_pack_expansion): Handle explicit args properly.
+	(unify) [TREE_VEC]: Handle pack expansions here.
+	[TYPE_ARGUMENT_PACK]: Not here.
+	(tsubst_pack_expansion): Don't try to do partial substitution.
+	(pack_deducible_p): New.
+	(fn_type_unification): Use it.
+	(find_parameter_packs_r): Take the TYPE_MAIN_VARIANT
+	of a type parameter.
+	(check_non_deducible_conversion): Split from type_unification_real.
+	(unify_one_argument): Split from type_unification_real...
+	(unify_pack_expansion): ...and here.  Drop call_args_p parm.
+	(type_unification_real, unify, more_specialized_fn): Adjust.
+
+	* class.c (fixed_type_or_null): Handle NSDMI.
+	* method.c (walk_field_subobs): Disable NSDMI noexcept checking
+	for now.
+
+2011-09-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (TREE_NEGATED_INT): Remove.
+	* semantics.c (finish_unary_op_expr): Don't set it.
+
+2011-09-30  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR c++/44473
+	* mangle.c (write_type): Handle CV qualifiers for decimal classes.
+
+2011-09-26   Andi Kleen <ak@linux.intel.com>
+
+	* repo.c (finish_repo): Use HOST_WIDE_INT_PRINT_HEX_PURE.
+
+2011-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45278
+	* typeck.c (cp_build_binary_op): With -Wextra, warn for ordered
+	comparison of pointer with zero.
+
+2011-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31489
+	* parser.c (cp_parser_elaborated_type_specifier): For RECORD_TYPE,
+	set CLASSTYPE_DECLARED_CLASS.
+
+2011-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (duplicate_decls): If compatible stpcpy prototype
+	is seen, set implicit_built_in_decls[BUILT_IN_STPCPY].
+
+2011-09-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45012
+	* pt.c (tsubst_copy_and_build) [CONST_DECL]: Don't pull out
+	constant value if we're still in a template.
+
+	PR c++/46105
+	* typeck.c (structural_comptypes): Ignore cv-quals on typename scope.
+
+	PR c++/50508
+	* semantics.c (cxx_eval_logical_expression): Use tree_int_cst_equal
+	rather than ==.
+
+2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45487
+	* error.c (dump_template_bindings): Separate bindings with semicolons
+	instead of commas.
+
+2011-09-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50512
+	* call.c (compare_ics): Only consider rvaluedness_matches_p
+	if the target type is the same or it too differs in rvalueness.
+
+	PR c++/50523
+	* call.c (implicit_conversion): Mask out inappropriate LOOKUP
+	flags at the top of the function.
+
+	* pt.c (tsubst_copy) [PARM_DECL]: Handle 'this' in NSDMI.
+
+2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_nontype_argument): Handle NULLPTR_TYPE.
+
+2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/26747
+	* cp-gimplify.c (get_bc_label): Remove obsolete diagnostics.
+
+2011-09-25  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (inject_this_parameter): Split out from
+	cp_parser_late_return_type_opt.
+	(cp_parser_class_specifier_1): Use it for NSDMIs.
+	* tree.c (bot_replace): Replace NSDMI 'this' with real 'this'.
+
+2011-09-24  Jason Merrill  <jason@redhat.com>
+
+	* except.c (expr_noexcept_p): Split out from finish_noexcept_expr.
+	* cp-tree.h: Declare it.
+	* method.c (walk_field_subobs): Use it.
+
+	* init.c (perform_member_init): Instantiate NSDMI here.
+	* pt.c (tsubst_decl) [FIELD_DECL]: Not here.
+
+	Handle deferred parsing of NSDMIs.
+	* parser.h (cp_unparsed_functions_entry): Add nsdmis field.
+	* parser.c (unparsed_nsdmis, cp_parser_save_nsdmi): New.
+	(cp_parser_late_parse_one_default_arg): Split out from
+	cp_parser_late_parsing_default_args.
+	(cp_parser_late_parsing_nsdmi): New.
+	(push_unparsed_function_queues): Set it.
+	(cp_parser_parameter_declaration): Save the '=' token.
+	(cp_parser_template_parameter): Likewise.
+	(cp_parser_default_argument): Call cp_parser_initializer
+	rather than cp_parser_initializer_clause.
+	(cp_parser_class_specifier_1): Parse unparsed_nsdmis.
+	(cp_parser_member_declaration): Handle nsdmis.
+	* decl2.c (grokfield): Handle DEFAULT_ARG for a function.
+
+	Implement C++11 non-static data member initializers.
+	* cp-tree.h (enum cpp_warn_str): Add CPP0X_NSDMI.
+	* error.c (maybe_warn_cpp0x): Handle it.
+	* call.c (convert_like_real) [ck_user]: Don't complain about
+	using an explicit constructor for direct-initialization.
+	* class.c (check_field_decl): Fix ancient typo.
+	(check_field_decls): NSDMIs make the default ctor non-trivial.
+	* decl.c (cp_finish_decl): Record NSDMI.
+	(grokdeclarator): Allow NSDMI.
+	* decl2.c (grokfield): Allow NSDMI.  Correct LOOKUP flags.
+	* init.c (perform_member_init): Use NSDMI.
+	* method.c (walk_field_subobs): Check for NSDMI.
+	* parser.c (cp_parser_member_declaration): Parse { } init.
+	* semantics.c (register_constexpr_fundef): Don't talk about
+	a return statement in a constexpr constructor.
+	(cxx_eval_call_expression): Check DECL_INITIAL instead of
+	DECL_SAVED_TREE.
+
+2011-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44267
+	* class.c (build_base_path): Add a tsubst_flags_t parameter.
+	(convert_to_base): Adjust call.
+	* typeck.c (build_class_member_access_expr,
+	get_member_function_from_ptrfunc, build_static_cast_1): Likewise.
+	* init.c (dfs_initialize_vtbl_ptrs, emit_mem_initializers): Likewise.
+	* method.c (do_build_copy_constructor, do_build_copy_assign): Likewise.
+	* rtti.c (build_dynamic_cast_1): Likewise.
+	* typeck2.c (build_scoped_ref, build_m_component_ref): Likewise.
+	* call.c (build_over_call, build_special_member_call): Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference): Likewise.
+	* cp-tree.h (build_base_path): Adjust declaration.
+
+2011-09-23  Jason Merrill  <jason@redhat.com>
+
+	Core 253 - allow const objects with no initializer or
+	user-provided default constructor if the defaulted constructor
+	initializes all the subobjects.
+	PR c++/20039
+	PR c++/42844
+	* class.c (default_init_uninitialized_part): New.
+	* cp-tree.h: Declare it.
+	* decl.c (check_for_uninitialized_const_var): Use it.
+	* init.c (perform_member_init): Likewise.
+	(build_new_1): Likewise.
+	* method.c (walk_field_subobs): Likewise.
+
+2011-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50258
+	* decl.c (check_static_variable_definition): Allow in-class
+	initialization of static data member of non-integral type in
+	permissive mode.
+
+2011-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50491
+	* semantics.c (potential_constant_expression_1): Handle USING_DECL.
+
+2011-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50371
+	* pt.c (invalid_nontype_parm_type_p): Handle NULLPTR_TYPE.
+
+2011-09-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50344
+	* friend.c (make_friend_class): cv-qualification is ok in a
+	friend declaration.
+
+2011-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50454
+	* decl.c (grokdeclarator): Consistently handle both __int128
+	and unsigned __int128 with -pedantic; suppress diagnostic in
+	system headers.
+
+2011-09-20  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (DECL_TEMPLOID_INSTANTIATION): New.
+	(DECL_GENERATED_P): New.
+	* class.c (finalize_literal_type_property): Use them.
+	* semantics.c (is_instantiation_of_constexpr): Likewise.
+	(register_constexpr_fundef): Likewise.
+
+	* call.c (convert_default_arg): Avoid redundant copy.
+	* tree.c (bot_manip): Copy everything.
+
+2011-09-20 Roberto Agostino Vitillo <ravitillo@lbl.gov>
+
+	* call.c (build_new_method_call_1): Use non-virtual lookup
+	for final virtual functions.
+
+2011-09-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50424
+	* call.c (set_flags_from_callee): Split out from build_call_a.
+	* cp-tree.h: Declare it.
+	* tree.c (bot_manip): Call it.
+
+2011-09-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50365
+	* parser.c (cp_parser_late_return_type_opt): Check quals parameter
+	for clearing current_class_ptr, too.
+
+2011-09-14   Diego Novillo  <dnovillo@google.com>
+
+	* name-lookup.c (lookup_arg_dependent): Use conditional
+	timevars.
+	* decl.c (xref_tag): Likewise.
+
+2011-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50391
+	* pt.c (regenerate_decl_from_template): Don't pass an error_mark_node
+	to build_exception_variant.
+
+2011-09-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48320
+	* pt.c (template_parameter_pack_p): Support TEMPLATE_PARM_INDEX
+	nodes.  Add a comment.
+	(arg_from_parm_pack_p):  New static function, factorized out from
+	tsubst_pack_expansion and extended to support non-type parameter
+	packs represented with TEMPLATE_PARM_INDEX nodes.
+	(tsubst_pack_expansion): Use arg_from_parm_pack_p.
+
 2011-09-12  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (type_unification_real): Fix handling of DEDUCE_CONV

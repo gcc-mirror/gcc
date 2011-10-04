@@ -135,13 +135,13 @@ Expression::do_traverse(Traverse*)
 }
 
 // This virtual function is called by the parser if the value of this
-// expression is being discarded.  By default, we warn.  Expressions
-// with side effects override.
+// expression is being discarded.  By default, we give an error.
+// Expressions with side effects override.
 
 void
 Expression::do_discarding_value()
 {
-  this->warn_about_unused_value();
+  this->unused_value_error();
 }
 
 // This virtual function is called to export expressions.  This will
@@ -153,12 +153,12 @@ Expression::do_export(Export*) const
   go_unreachable();
 }
 
-// Warn that the value of the expression is not used.
+// Give an error saying that the value of the expression is not used.
 
 void
-Expression::warn_about_unused_value()
+Expression::unused_value_error()
 {
-  warning_at(this->location(), OPT_Wunused_value, "value computed is not used");
+  error_at(this->location(), "value computed is not used");
 }
 
 // Note that this expression is an error.  This is called by children
@@ -5671,6 +5671,50 @@ Binary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	return Expression::make_string(left_string + right_string, location);
     }
 
+  // Special case for shift of a floating point constant.
+  if (op == OPERATOR_LSHIFT || op == OPERATOR_RSHIFT)
+    {
+      mpfr_t left_val;
+      mpfr_init(left_val);
+      Type* left_type;
+      mpz_t right_val;
+      mpz_init(right_val);
+      Type* right_type;
+      if (left->float_constant_value(left_val, &left_type)
+	  && right->integer_constant_value(false, right_val, &right_type)
+	  && mpfr_integer_p(left_val)
+	  && (left_type == NULL
+	      || left_type->is_abstract()
+	      || left_type->integer_type() != NULL))
+	{
+	  mpz_t left_int;
+	  mpz_init(left_int);
+	  mpfr_get_z(left_int, left_val, GMP_RNDN);
+
+	  mpz_t val;
+	  mpz_init(val);
+
+	  Expression* ret = NULL;
+	  if (Binary_expression::eval_integer(op, left_type, left_int,
+					      right_type, right_val,
+					      location, val))
+	    ret = Expression::make_integer(&val, left_type, location);
+
+	  mpz_clear(left_int);
+	  mpz_clear(val);
+
+	  if (ret != NULL)
+	    {
+	      mpfr_clear(left_val);
+	      mpz_clear(right_val);
+	      return ret;
+	    }
+	}
+
+      mpfr_clear(left_val);
+      mpz_clear(right_val);
+    }
+
   return this;
 }
 
@@ -5832,7 +5876,7 @@ Binary_expression::do_discarding_value()
   if (this->op_ == OPERATOR_OROR || this->op_ == OPERATOR_ANDAND)
     this->right_->discarding_value();
   else
-    this->warn_about_unused_value();
+    this->unused_value_error();
 }
 
 // Get type.
@@ -5939,14 +5983,8 @@ Binary_expression::do_determine_type(const Type_context* context)
   // Set the context for the left hand operand.
   if (is_shift_op)
     {
-      // The right hand operand plays no role in determining the type
-      // of the left hand operand.  A shift of an abstract integer in
-      // a string context gets special treatment, which may be a
-      // language bug.
-      if (subcontext.type != NULL
-	  && subcontext.type->is_string_type()
-	  && tleft->is_abstract())
-	error_at(this->location(), "shift of non-integer operand");
+      // The right hand operand of a shift plays no role in
+      // determining the type of the left hand operand.
     }
   else if (!tleft->is_abstract())
     subcontext.type = tleft;
@@ -5979,10 +6017,21 @@ Binary_expression::do_determine_type(const Type_context* context)
 
   this->left_->determine_type(&subcontext);
 
-  // The context for the right hand operand is the same as for the
-  // left hand operand, except for a shift operator.
   if (is_shift_op)
     {
+      // We may have inherited an unusable type for the shift operand.
+      // Give a useful error if that happened.
+      if (tleft->is_abstract()
+	  && subcontext.type != NULL
+	  && (this->left_->type()->integer_type() == NULL
+	      || (subcontext.type->integer_type() == NULL
+		  && subcontext.type->float_type() == NULL
+		  && subcontext.type->complex_type() == NULL)))
+	this->report_error(("invalid context-determined non-integer type "
+			    "for shift operand"));
+
+      // The context for the right hand operand is the same as for the
+      // left hand operand, except for a shift operator.
       subcontext.type = Type::lookup_integer_type("uint");
       subcontext.may_be_abstract = false;
     }
@@ -6951,6 +7000,9 @@ class Builtin_call_expression : public Call_expression
   bool
   do_complex_constant_value(mpfr_t, mpfr_t, Type**) const;
 
+  void
+  do_discarding_value();
+
   Type*
   do_type();
 
@@ -7758,6 +7810,44 @@ Builtin_call_expression::do_complex_constant_value(mpfr_t real, mpfr_t imag,
     }
 
   return false;
+}
+
+// Give an error if we are discarding the value of an expression which
+// should not normally be discarded.  We don't give an error for
+// discarding the value of an ordinary function call, but we do for
+// builtin functions, purely for consistency with the gc compiler.
+
+void
+Builtin_call_expression::do_discarding_value()
+{
+  switch (this->code_)
+    {
+    case BUILTIN_INVALID:
+    default:
+      go_unreachable();
+
+    case BUILTIN_APPEND:
+    case BUILTIN_CAP:
+    case BUILTIN_COMPLEX:
+    case BUILTIN_IMAG:
+    case BUILTIN_LEN:
+    case BUILTIN_MAKE:
+    case BUILTIN_NEW:
+    case BUILTIN_REAL:
+    case BUILTIN_ALIGNOF:
+    case BUILTIN_OFFSETOF:
+    case BUILTIN_SIZEOF:
+      this->unused_value_error();
+      break;
+
+    case BUILTIN_CLOSE:
+    case BUILTIN_COPY:
+    case BUILTIN_PANIC:
+    case BUILTIN_PRINT:
+    case BUILTIN_PRINTLN:
+    case BUILTIN_RECOVER:
+      break;
+    }
 }
 
 // Return the type.
@@ -9239,7 +9329,13 @@ Call_expression::check_argument_type(int i, const Type* parameter_type,
 				     bool issued_error)
 {
   std::string reason;
-  if (!Type::are_assignable(parameter_type, argument_type, &reason))
+  bool ok;
+  if (this->are_hidden_fields_ok_)
+    ok = Type::are_assignable_hidden_ok(parameter_type, argument_type,
+					&reason);
+  else
+    ok = Type::are_assignable(parameter_type, argument_type, &reason);
+  if (!ok)
     {
       if (!issued_error)
 	{
@@ -9683,7 +9779,10 @@ Call_result_expression::do_type()
   if (fntype == NULL)
     {
       if (ce->issue_error())
-	this->report_error(_("expected function"));    
+	{
+	  if (!ce->fn()->type()->is_error())
+	    this->report_error(_("expected function"));
+	}
       this->set_is_error();
       return Type::make_error_type();
     }
@@ -9996,7 +10095,9 @@ Array_index_expression::do_check_types(Gogo*)
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
       && this->end_->type()->integer_type() == NULL
-      && !this->end_->is_nil_expression())
+      && !this->end_->type()->is_error()
+      && !this->end_->is_nil_expression()
+      && !this->end_->is_error_expression())
     this->report_error(_("slice end must be integer"));
 
   Array_type* array_type = this->array_->type()->array_type();
@@ -11235,7 +11336,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   size_t count = call->result_count();
   Statement* s;
   if (count == 0)
-    s = Statement::make_statement(call);
+    s = Statement::make_statement(call, true);
   else
     {
       Expression_list* retvals = new Expression_list();
@@ -11783,7 +11884,7 @@ Array_construction_expression::do_check_types(Gogo*)
     }
 
   Expression* length = at->length();
-  if (length != NULL)
+  if (length != NULL && !length->is_error_expression())
     {
       mpz_t val;
       mpz_init(val);
@@ -12634,6 +12735,16 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 		      {
 			const Struct_field* sf = st->field(fre->field_index());
 			name = sf->field_name();
+
+			// See below.  FIXME.
+			if (!Gogo::is_hidden_name(name)
+			    && name[0] >= 'a'
+			    && name[0] <= 'z')
+			  {
+			    if (gogo->lookup_global(name.c_str()) != NULL)
+			      name = gogo->pack_hidden_name(name, false);
+			  }
+
 			char buf[20];
 			snprintf(buf, sizeof buf, "%u", fre->field_index());
 			size_t buflen = strlen(buf);
@@ -12665,7 +12776,7 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 
 	  // A predefined name won't be packed.  If it starts with a
 	  // lower case letter we need to check for that case, because
-	  // the field name will be packed.
+	  // the field name will be packed.  FIXME.
 	  if (!Gogo::is_hidden_name(name)
 	      && name[0] >= 'a'
 	      && name[0] <= 'z')
@@ -13499,7 +13610,10 @@ Struct_field_offset_expression::do_dump_expression(
     Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->ostream() <<  "unsafe.Offsetof(";
-  ast_dump_context->ostream() << this->field_->field_name();
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << '.';
+  ast_dump_context->ostream() <<
+    Gogo::message_name(this->field_->field_name());
   ast_dump_context->ostream() << ")";
 }
 

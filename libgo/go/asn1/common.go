@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// ASN.1 objects have metadata preceeding them:
+// ASN.1 objects have metadata preceding them:
 //   the tag: the type of the object
 //   a flag denoting if this object is compound or not
 //   the class type: the namespace of the tag
@@ -25,6 +25,7 @@ const (
 	tagOctetString     = 4
 	tagOID             = 6
 	tagEnum            = 10
+	tagUTF8String      = 12
 	tagSequence        = 16
 	tagSet             = 17
 	tagPrintableString = 19
@@ -83,7 +84,7 @@ type fieldParameters struct {
 // parseFieldParameters will parse it into a fieldParameters structure,
 // ignoring unknown parts of the string.
 func parseFieldParameters(str string) (ret fieldParameters) {
-	for _, part := range strings.Split(str, ",", -1) {
+	for _, part := range strings.Split(str, ",") {
 		switch {
 		case part == "optional":
 			ret.optional = true
@@ -132,6 +133,8 @@ func getUniversalType(t reflect.Type) (tagNumber int, isCompound, ok bool) {
 		return tagUTCTime, false, true
 	case enumeratedType:
 		return tagEnum, false, true
+	case bigIntType:
+		return tagInteger, false, true
 	}
 	switch t.Kind() {
 	case reflect.Bool:

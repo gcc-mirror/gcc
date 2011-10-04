@@ -32,15 +32,15 @@ fi
 
 repository=$1
 
-merge_rev=`sed 1q MERGE`
+old_rev=`sed 1q MERGE`
 
 rm -rf ${OLDDIR}
-hg clone -r ${merge_rev} ${repository} ${OLDDIR}
+hg clone -r ${old_rev} ${repository} ${OLDDIR}
 
 rm -rf ${NEWDIR}
-hg clone ${repository} ${NEWDIR}
+hg clone -u release ${repository} ${NEWDIR}
 
-new_rev=`cd ${NEWDIR} && hg log | sed 1q | sed -e 's/.*://'`
+new_rev=`cd ${NEWDIR} && hg log -r release | sed 1q | sed -e 's/.*://'`
 
 merge() {
   name=$1

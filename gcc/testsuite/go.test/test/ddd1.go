@@ -15,7 +15,7 @@ var (
 	_ = sum()
 	_ = sum(1.0, 2.0)
 	_ = sum(1.5)      // ERROR "integer"
-	_ = sum("hello")  // ERROR "convert|incompatible"
+	_ = sum("hello")  // ERROR "string.*as type int|incompatible"
 	_ = sum([]int{1}) // ERROR "slice literal.*as type int|incompatible"
 )
 
@@ -43,4 +43,7 @@ func bad(args ...int) {
 	var x int
 	_ = unsafe.Pointer(&x...)	// ERROR "[.][.][.]"
 	_ = unsafe.Sizeof(x...)	// ERROR "[.][.][.]"
+	_ = [...]byte("foo") // ERROR "[.][.][.]"
+	_ = [...][...]int{{1,2,3},{4,5,6}}	// ERROR "[.][.][.]"
 }
+

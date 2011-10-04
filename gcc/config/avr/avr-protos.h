@@ -47,7 +47,6 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 
 #ifdef RTX_CODE
 extern void asm_output_external_libcall (FILE *file, rtx symref);
-extern int compare_diff_p (rtx insn);
 extern const char *output_movqi (rtx insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx insn, rtx operands[], int *l);
 extern const char *out_movqi_r_mr (rtx insn, rtx op[], int *l);
@@ -56,9 +55,10 @@ extern const char *out_movhi_r_mr (rtx insn, rtx op[], int *l);
 extern const char *out_movhi_mr_r (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_r_mr (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_mr_r (rtx insn, rtx op[], int *l);
-extern const char *output_movsisf (rtx insn, rtx operands[], rtx clobber, int *l);
-extern const char *out_tstsi (rtx insn, rtx src, int *l);
-extern const char *out_tsthi (rtx insn, rtx src, int *l);
+extern const char *output_movsisf (rtx insn, rtx operands[], int *l);
+extern const char *avr_out_tstsi (rtx, rtx*, int*);
+extern const char *avr_out_tsthi (rtx, rtx*, int*);
+extern const char *avr_out_compare (rtx, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 
 extern const char *ashlqi3_out (rtx insn, rtx operands[], int *len);
@@ -81,11 +81,14 @@ extern int avr_epilogue_uses (int regno);
 extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
+extern const char* avr_out_bitop (rtx, rtx*, int*);
+extern const char* avr_out_plus (rtx*, int*);
+extern bool avr_popcount_each_byte (rtx, int, int);
 
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);
-extern const char *output_reload_inhi (rtx insn, rtx *operands, int *len);
-extern const char *output_reload_insisf (rtx insn, rtx *operands, rtx clobber, int *len);
+extern const char* output_reload_inhi (rtx*, rtx, int*);
+extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern void notice_update_cc (rtx body, rtx insn);
 extern void print_operand (FILE *file, rtx x, int code);
 extern void print_operand_address (FILE *file, rtx addr);
@@ -100,7 +103,6 @@ extern void final_prescan_insn (rtx insn, rtx *operand, int num_operands);
 extern int avr_simplify_comparison_p (enum machine_mode mode,
 				      RTX_CODE op, rtx x);
 extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
-extern int compare_eq_p (rtx insn);
 extern void out_shift_with_cnt (const char *templ, rtx insn,
 				rtx operands[], int *len, int t_len);
 extern rtx avr_incoming_return_addr_rtx (void);
@@ -109,3 +111,25 @@ extern rtx avr_incoming_return_addr_rtx (void);
 #ifdef REAL_VALUE_TYPE
 extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif
+
+/* From avr-log.c */
+
+#define avr_edump (avr_log_set_caller_e (__FUNCTION__))
+#define avr_fdump (avr_log_set_caller_f (__FUNCTION__))
+
+extern int (*avr_log_set_caller_e (const char*))(const char*, ...);
+extern int (*avr_log_set_caller_f (const char*))(FILE*, const char*, ...);
+
+extern void avr_log_set_avr_log (void);
+
+typedef struct
+{
+  unsigned rtx_costs :1;
+  unsigned legitimate_address_p :1;
+  unsigned legitimize_address :1;
+  unsigned legitimize_reload_address :1;
+  unsigned constraints :1;
+  unsigned address_cost :1;
+} avr_log_t;
+
+extern avr_log_t avr_log;

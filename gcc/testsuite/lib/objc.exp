@@ -142,6 +142,7 @@ proc objc_target_compile { source dest type options } {
     global ld_library_path
     global objc_libgcc_s_path
     global shlib_ext
+    global TEST_ALWAYS_FLAGS
     
     set shlib_ext [get_shlib_extension]
     set ld_library_path ".:${objc_libgcc_s_path}"
@@ -199,6 +200,14 @@ proc objc_target_compile { source dest type options } {
     if [target_info exists objc,no_label_values] {
 	lappend options "additional_flags=-DNO_LABEL_VALUES"
     }
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set options [concat "{additional_flags=$TEST_ALWAYS_FLAGS}" $options]
+    }
+
     # TOOL_OPTIONS must come first, so that it doesn't override testcase
     # specific options.
     if [info exists TOOL_OPTIONS] {

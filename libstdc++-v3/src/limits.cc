@@ -1,6 +1,6 @@
 // Static data members of -*- C++ -*- numeric_limits classes
 
-// Copyright (C) 1999, 2001, 2002, 2005, 2006, 2009, 2010
+// Copyright (C) 1999, 2001, 2002, 2005, 2006, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -388,6 +388,56 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const bool numeric_limits<unsigned long long>::traps;
   const bool numeric_limits<unsigned long long>::tinyness_before;
   const float_round_style numeric_limits<unsigned long long>::round_style;
+
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+  const bool numeric_limits<__int128>::is_specialized;
+  const int  numeric_limits<__int128>::digits;
+  const int  numeric_limits<__int128>::digits10;
+  const int  numeric_limits<__int128>::max_digits10;
+  const bool numeric_limits<__int128>::is_signed;
+  const bool numeric_limits<__int128>::is_integer;
+  const bool numeric_limits<__int128>::is_exact;
+  const int  numeric_limits<__int128>::radix;
+  const int  numeric_limits<__int128>::min_exponent;
+  const int  numeric_limits<__int128>::min_exponent10;
+  const int  numeric_limits<__int128>::max_exponent;
+  const int  numeric_limits<__int128>::max_exponent10;
+  const bool numeric_limits<__int128>::has_infinity;
+  const bool numeric_limits<__int128>::has_quiet_NaN;
+  const bool numeric_limits<__int128>::has_signaling_NaN;
+  const float_denorm_style numeric_limits<__int128>::has_denorm;
+  const bool numeric_limits<__int128>::has_denorm_loss;
+  const bool numeric_limits<__int128>::is_iec559;
+  const bool numeric_limits<__int128>::is_bounded;
+  const bool numeric_limits<__int128>::is_modulo;
+  const bool numeric_limits<__int128>::traps;
+  const bool numeric_limits<__int128>::tinyness_before;
+  const float_round_style numeric_limits<__int128>::round_style;
+
+  const bool numeric_limits<unsigned __int128>::is_specialized;
+  const int  numeric_limits<unsigned __int128>::digits;
+  const int  numeric_limits<unsigned __int128>::digits10;
+  const int  numeric_limits<unsigned __int128>::max_digits10;
+  const bool numeric_limits<unsigned __int128>::is_signed;
+  const bool numeric_limits<unsigned __int128>::is_integer;
+  const bool numeric_limits<unsigned __int128>::is_exact;
+  const int  numeric_limits<unsigned __int128>::radix;
+  const int  numeric_limits<unsigned __int128>::min_exponent;
+  const int  numeric_limits<unsigned __int128>::min_exponent10;
+  const int  numeric_limits<unsigned __int128>::max_exponent;
+  const int  numeric_limits<unsigned __int128>::max_exponent10;
+  const bool numeric_limits<unsigned __int128>::has_infinity;
+  const bool numeric_limits<unsigned __int128>::has_quiet_NaN;
+  const bool numeric_limits<unsigned __int128>::has_signaling_NaN;
+  const float_denorm_style numeric_limits<unsigned __int128>::has_denorm;
+  const bool numeric_limits<unsigned __int128>::has_denorm_loss;
+  const bool numeric_limits<unsigned __int128>::is_iec559;
+  const bool numeric_limits<unsigned __int128>::is_bounded;
+  const bool numeric_limits<unsigned __int128>::is_modulo;
+  const bool numeric_limits<unsigned __int128>::traps;
+  const bool numeric_limits<unsigned __int128>::tinyness_before;
+  const float_round_style numeric_limits<unsigned __int128>::round_style;
+#endif
 
   // float
   const bool numeric_limits<float>::is_specialized;

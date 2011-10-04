@@ -93,6 +93,71 @@ lto_obj_create_section_hash_table (void)
   return htab_create (37, hash_name, eq_name, free_with_string);
 }
 
+/* Delete an allocated integer KEY in the splay tree.  */
+
+static void
+lto_splay_tree_delete_id (splay_tree_key key)
+{
+  free ((void *) key);
+}
+
+/* Compare splay tree node ids A and B.  */
+
+static int
+lto_splay_tree_compare_ids (splay_tree_key a, splay_tree_key b)
+{
+  unsigned HOST_WIDE_INT ai;
+  unsigned HOST_WIDE_INT bi;
+
+  ai = *(unsigned HOST_WIDE_INT *) a;
+  bi = *(unsigned HOST_WIDE_INT *) b;
+
+  if (ai < bi)
+    return -1;
+  else if (ai > bi)
+    return 1;
+  return 0;
+}
+
+/* Look up splay tree node by ID in splay tree T.  */
+
+static splay_tree_node
+lto_splay_tree_lookup (splay_tree t, unsigned HOST_WIDE_INT id)
+{
+  return splay_tree_lookup (t, (splay_tree_key) &id);
+}
+
+/* Check if KEY has ID.  */
+
+static bool
+lto_splay_tree_id_equal_p (splay_tree_key key, unsigned HOST_WIDE_INT id)
+{
+  return *(unsigned HOST_WIDE_INT *) key == id;
+}
+
+/* Insert a splay tree node into tree T with ID as key and FILE_DATA as value. 
+   The ID is allocated separately because we need HOST_WIDE_INTs which may
+   be wider than a splay_tree_key. */
+
+static void
+lto_splay_tree_insert (splay_tree t, unsigned HOST_WIDE_INT id,
+		       struct lto_file_decl_data *file_data)
+{
+  unsigned HOST_WIDE_INT *idp = XCNEW (unsigned HOST_WIDE_INT);
+  *idp = id;
+  splay_tree_insert (t, (splay_tree_key) idp, (splay_tree_value) file_data);
+}
+
+/* Create a splay tree.  */
+
+static splay_tree
+lto_splay_tree_new (void)
+{
+  return splay_tree_new (lto_splay_tree_compare_ids,
+	 	         lto_splay_tree_delete_id,
+			 NULL);
+}
+
 /* Read the constructors and inits.  */
 
 static void
@@ -944,14 +1009,16 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
   for (i = 0; i < num_symbols; i++)
     {
       int t;
-      unsigned index, id;
+      unsigned index;
+      unsigned HOST_WIDE_INT id;
       char r_str[27];
       enum ld_plugin_symbol_resolution r = (enum ld_plugin_symbol_resolution) 0;
       unsigned int j;
       unsigned int lto_resolution_str_len =
 	sizeof (lto_resolution_str) / sizeof (char *);
 
-      t = fscanf (resolution, "%u %x %26s %*[^\n]\n", &index, &id, r_str);
+      t = fscanf (resolution, "%u " HOST_WIDE_INT_PRINT_HEX_PURE " %26s %*[^\n]\n", 
+		  &index, &id, r_str);
       if (t != 3)
         internal_error ("invalid line in the resolution file");
       if (index > max_index)
@@ -968,17 +1035,15 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
       if (j == lto_resolution_str_len)
 	internal_error ("invalid resolution in the resolution file");
 
-      if (!(nd && nd->key == id))
+      if (!(nd && lto_splay_tree_id_equal_p (nd->key, id)))
 	{
-	  nd = splay_tree_lookup (file_ids, id);
+	  nd = lto_splay_tree_lookup (file_ids, id);
 	  if (nd == NULL)
-	    internal_error ("resolution sub id %x not in object file", id);
+	    internal_error ("resolution sub id " HOST_WIDE_INT_PRINT_HEX_PURE
+			    " not in object file", id);
 	}
 
       file_data = (struct lto_file_decl_data *)nd->value;
-      if (cgraph_dump_file)
-	fprintf (cgraph_dump_file, "Adding resolution %u %u to id %x\n",
-		 index, r, file_data->id);
       VEC_safe_grow_cleared (ld_plugin_symbol_resolution_t, heap, 
 			     file_data->resolutions,
 			     max_index + 1);
@@ -990,14 +1055,14 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 /* Is the name for a id'ed LTO section? */
 
 static int 
-lto_section_with_id (const char *name, unsigned *id)
+lto_section_with_id (const char *name, unsigned HOST_WIDE_INT *id)
 {
   const char *s;
 
   if (strncmp (name, LTO_SECTION_NAME_PREFIX, strlen (LTO_SECTION_NAME_PREFIX)))
     return 0;
   s = strrchr (name, '.');
-  return s && sscanf (s, ".%x", id) == 1;
+  return s && sscanf (s, "." HOST_WIDE_INT_PRINT_HEX_PURE, id) == 1;
 }
 
 /* Create file_data of each sub file id */
@@ -1008,7 +1073,7 @@ create_subid_section_table (void **slot, void *data)
   struct lto_section_slot s_slot, *new_slot;
   struct lto_section_slot *ls = *(struct lto_section_slot **)slot;
   splay_tree file_ids = (splay_tree)data;
-  unsigned id;
+  unsigned HOST_WIDE_INT id;
   splay_tree_node nd;
   void **hash_slot;
   char *new_name;
@@ -1018,7 +1083,7 @@ create_subid_section_table (void **slot, void *data)
     return 1;
   
   /* Find hash table of sub module id */
-  nd = splay_tree_lookup (file_ids, id);
+  nd = lto_splay_tree_lookup (file_ids, id);
   if (nd != NULL)
     {
       file_data = (struct lto_file_decl_data *)nd->value;
@@ -1029,7 +1094,7 @@ create_subid_section_table (void **slot, void *data)
       memset(file_data, 0, sizeof (struct lto_file_decl_data));
       file_data->id = id;
       file_data->section_hash_table = lto_obj_create_section_hash_table ();;
-      splay_tree_insert (file_ids, id, (splay_tree_value)file_data);
+      lto_splay_tree_insert (file_ids, id, file_data);
     }
 
   /* Copy section into sub module hash table */
@@ -1080,7 +1145,7 @@ static int lto_create_files_from_ids (splay_tree_node node, void *data)
 
   lto_file_finalize (file_data, lw->file);
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "Creating file %s with sub id %x\n", 
+    fprintf (cgraph_dump_file, "Creating file %s with sub id " HOST_WIDE_INT_PRINT_HEX "\n", 
 	     file_data->file_name, file_data->id);
   file_data->next = *lw->file_data;
   *lw->file_data = file_data;
@@ -1107,7 +1172,7 @@ lto_file_read (lto_file *file, FILE *resolution_file, int *count)
 
   /* Find all sub modules in the object and put their sections into new hash
      tables in a splay tree. */
-  file_ids = splay_tree_new (splay_tree_compare_ints, NULL, NULL);
+  file_ids = lto_splay_tree_new ();
   htab_traverse (section_hash_table, create_subid_section_table, file_ids);
   
   /* Add resolutions to file ids */

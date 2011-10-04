@@ -125,6 +125,7 @@ package System.Rident is
       --  The following cases do not require consistency checking
 
       Immediate_Reclamation,                   -- (RM H.4(10))
+      No_Implementation_Aspect_Specifications, -- Ada 2012 AI-241
       No_Implementation_Attributes,            -- Ada 2005 AI-257
       No_Implementation_Identifiers,           -- Ada 2012 AI-246
       No_Implementation_Pragmas,               -- Ada 2005 AI-257
@@ -349,11 +350,12 @@ package System.Rident is
                         --  Restrictions for Restricted profile
 
                        (Set   =>
-                          (No_Implementation_Attributes    => True,
-                           No_Implementation_Identifiers   => True,
-                           No_Implementation_Pragmas       => True,
-                           No_Implementation_Units         => True,
-                           others                          => False),
+                          (No_Implementation_Aspect_Specifications => True,
+                           No_Implementation_Attributes            => True,
+                           No_Implementation_Identifiers           => True,
+                           No_Implementation_Pragmas               => True,
+                           No_Implementation_Units                 => True,
+                           others                                  => False),
 
                         --  Value settings for Restricted profile (none
 

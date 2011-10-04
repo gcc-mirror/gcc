@@ -351,7 +351,7 @@
 ;;----------------------------------------------------------------
 (define_delay (eq_attr "type" "branch,call,jump")
   [(and (eq_attr "type" "!branch,call,jump,icmp,multi,no_delay_arith,no_delay_load,no_delay_store,no_delay_imul,no_delay_move,darith") 
-        (ior (eq (symbol_ref "microblaze_no_unsafe_delay") (const_int 0))
+        (ior (not (match_test "microblaze_no_unsafe_delay"))
              (eq_attr "type" "!fadd,frsub,fmul,fdiv,fcmp,store,load")
              ))
   (nil) (nil)])

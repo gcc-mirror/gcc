@@ -72,16 +72,6 @@ var verifyTests = []verifyTest{
 		},
 	},
 	{
-		leaf:          googleLeaf,
-		intermediates: []string{verisignRoot, thawteIntermediate},
-		roots:         []string{verisignRoot},
-		currentTime:   1302726541,
-
-		expectedChains: [][]string{
-			[]string{"Google", "Thawte", "VeriSign"},
-		},
-	},
-	{
 		leaf:          dnssecExpLeaf,
 		intermediates: []string{startComIntermediate},
 		roots:         []string{startComRoot},
@@ -89,6 +79,17 @@ var verifyTests = []verifyTest{
 
 		expectedChains: [][]string{
 			[]string{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority"},
+		},
+	},
+	{
+		leaf:          dnssecExpLeaf,
+		intermediates: []string{startComIntermediate, startComRoot},
+		roots:         []string{startComRoot},
+		currentTime:   1302726541,
+
+		expectedChains: [][]string{
+			[]string{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority"},
+			[]string{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority", "StartCom Certification Authority"},
 		},
 	},
 }
@@ -120,7 +121,7 @@ func expectAuthorityUnknown(t *testing.T, i int, err os.Error) (ok bool) {
 func certificateFromPEM(pemBytes string) (*Certificate, os.Error) {
 	block, _ := pem.Decode([]byte(pemBytes))
 	if block == nil {
-		return nil, os.ErrorString("failed to decode PEM")
+		return nil, os.NewError("failed to decode PEM")
 	}
 	return ParseCertificate(block.Bytes)
 }

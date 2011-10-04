@@ -268,6 +268,7 @@ package body Sem_Ch6 is
       Loc      : constant Source_Ptr := Sloc (N);
       LocX     : constant Source_Ptr := Sloc (Expression (N));
       Def_Id   : constant Entity_Id  := Defining_Entity (Specification (N));
+      Expr     : constant Node_Id    := Expression (N);
       New_Body : Node_Id;
       New_Decl : Node_Id;
 
@@ -287,7 +288,7 @@ package body Sem_Ch6 is
 
       New_Body :=
         Make_Subprogram_Body (Loc,
-          Specification              => Specification (N),
+          Specification              => Copy_Separate_Tree (Specification (N)),
           Declarations               => Empty_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (LocX,
@@ -295,9 +296,8 @@ package body Sem_Ch6 is
                 Make_Simple_Return_Statement (LocX,
                   Expression => Expression (N)))));
 
-      if Present (Prev)
-        and then Ekind (Prev) = E_Generic_Function
-      then
+      if Present (Prev) and then Ekind (Prev) = E_Generic_Function then
+
          --  If the expression completes a generic subprogram, we must create a
          --  separate node for the body, because at instantiation the original
          --  node of the generic copy must be a generic subprogram body, and
@@ -310,36 +310,60 @@ package body Sem_Ch6 is
          Analyze (New_Body);
          Set_Is_Inlined (Prev);
 
-      elsif Present (Prev) then
+      elsif Present (Prev)
+        and then Comes_From_Source (Prev)
+      then
          Rewrite (N, New_Body);
-         Set_Is_Inlined (Prev);
          Analyze (N);
 
-      --  If this is not a completion, create both a declaration and a body,
-      --  so that the expression can be inlined whenever possible.
+         --  Prev is the previous entity with the same name, but it is can
+         --  be an unrelated spec that is not completed by the expression
+         --  function. In that case the relevant entity is the one in the body.
+         --  Not clear that the backend can inline it in this case ???
+
+         if Has_Completion (Prev) then
+            Set_Is_Inlined (Prev);
+         else
+            Set_Is_Inlined (Defining_Entity (New_Body));
+         end if;
+
+      --  If this is not a completion, create both a declaration and a body, so
+      --  that the expression can be inlined whenever possible.
 
       else
          New_Decl :=
            Make_Subprogram_Declaration (Loc,
              Specification => Specification (N));
+
          Rewrite (N, New_Decl);
          Analyze (N);
          Set_Is_Inlined (Defining_Entity (New_Decl));
 
-         --  Create new set of formals for specification in body.
+         --  To prevent premature freeze action, insert the new body at the end
+         --  of the current declarations, or at the end of the package spec.
 
-         Set_Specification (New_Body,
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name =>
-               Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))),
-             Parameter_Specifications =>
-               Copy_Parameter_List (Defining_Entity (New_Decl)),
-             Result_Definition =>
-               New_Copy_Tree (Result_Definition (Specification (New_Decl)))));
+         declare
+            Decls : List_Id          := List_Containing (N);
+            Par   : constant Node_Id := Parent (Decls);
 
-         Insert_After (N, New_Body);
-         Analyze (New_Body);
+         begin
+            if Nkind (Par) = N_Package_Specification
+               and then Decls = Visible_Declarations (Par)
+               and then Present (Private_Declarations (Par))
+               and then not Is_Empty_List (Private_Declarations (Par))
+            then
+               Decls := Private_Declarations (Par);
+            end if;
+
+            Insert_After (Last (Decls), New_Body);
+         end;
       end if;
+
+      --  If the return expression is a static constant, we suppress warning
+      --  messages on unused formals, which in most cases will be noise.
+
+      Set_Is_Trivial_Subprogram (Defining_Entity (New_Body),
+        Is_OK_Static_Expression (Expr));
    end Analyze_Expression_Function;
 
    ----------------------------------------
@@ -10243,6 +10267,16 @@ package body Sem_Ch6 is
         and then Can_Never_Be_Null (Etype (Formal_Id))
       then
          Set_Is_Known_Non_Null (Formal_Id);
+
+         --  We can also set Can_Never_Be_Null (thus preventing some junk
+         --  access checks) for the case of an IN parameter, which cannot
+         --  be changed, or for an IN OUT parameter, which can be changed but
+         --  not to a null value. But for an OUT parameter, the initial value
+         --  passed in can be null, so we can't set this flag in that case.
+
+         if Ekind (Formal_Id) /= E_Out_Parameter then
+            Set_Can_Never_Be_Null (Formal_Id);
+         end if;
       end if;
 
       Set_Mechanism (Formal_Id, Default_Mechanism);

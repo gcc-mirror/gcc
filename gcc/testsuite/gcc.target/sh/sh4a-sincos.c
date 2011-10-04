@@ -3,12 +3,10 @@
    sine and cosine.  */
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-O -ffast-math" } */
-/* { dg-final { scan-assembler-times "\tfsca\t" 1 } } */
+/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m4a" "-m4a-single" "-m4a-single-only" } }  */
+/* { dg-final { scan-assembler-times "fsca" 1 } } */
 
-#if defined __SH4A__ && ! defined __SH4_NOFPU__
 #include <math.h>
 
 double test(double f) { return sin(f) + cos(f); }
-#else
-asm ("fsca\t");
-#endif
+

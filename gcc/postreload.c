@@ -1312,7 +1312,8 @@ reload_combine (void)
 	 is and then later disable any optimization that would cross it.  */
       if (LABEL_P (insn))
 	last_label_ruid = reload_combine_ruid;
-      else if (BARRIER_P (insn))
+      else if (BARRIER_P (insn)
+	       || (INSN_P (insn) && volatile_insn_p (PATTERN (insn))))
 	for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	  if (! fixed_regs[r])
 	      reg_state[r].use_index = RELOAD_COMBINE_MAX_USES;

@@ -6,6 +6,7 @@ package os_test
 
 import (
 	. "os"
+	"path/filepath"
 	"testing"
 	"runtime"
 	"syscall"
@@ -29,10 +30,11 @@ func TestMkdirAll(t *testing.T) {
 
 	// Make file.
 	fpath := path + "/file"
-	_, err = Create(fpath)
+	f, err := Create(fpath)
 	if err != nil {
 		t.Fatalf("create %q: %s", fpath, err)
 	}
+	defer f.Close()
 
 	// Can't make directory named after file.
 	err = MkdirAll(fpath, 0777)
@@ -43,8 +45,8 @@ func TestMkdirAll(t *testing.T) {
 	if !ok {
 		t.Fatalf("MkdirAll %q returned %T, not *PathError", fpath, err)
 	}
-	if perr.Path != fpath {
-		t.Fatalf("MkdirAll %q returned wrong error path: %q not %q", fpath, perr.Path, fpath)
+	if filepath.Clean(perr.Path) != filepath.Clean(fpath) {
+		t.Fatalf("MkdirAll %q returned wrong error path: %q not %q", fpath, filepath.Clean(perr.Path), filepath.Clean(fpath))
 	}
 
 	// Can't make subdirectory of file.
@@ -57,8 +59,16 @@ func TestMkdirAll(t *testing.T) {
 	if !ok {
 		t.Fatalf("MkdirAll %q returned %T, not *PathError", ffpath, err)
 	}
-	if perr.Path != fpath {
-		t.Fatalf("MkdirAll %q returned wrong error path: %q not %q", ffpath, perr.Path, fpath)
+	if filepath.Clean(perr.Path) != filepath.Clean(fpath) {
+		t.Fatalf("MkdirAll %q returned wrong error path: %q not %q", ffpath, filepath.Clean(perr.Path), filepath.Clean(fpath))
+	}
+
+	if syscall.OS == "windows" {
+		path := `_test\_TestMkdirAll_\dir\.\dir2\`
+		err := MkdirAll(path, 0777)
+		if err != nil {
+			t.Fatalf("MkdirAll %q: %s", path, err)
+		}
 	}
 }
 
@@ -156,8 +166,8 @@ func TestRemoveAll(t *testing.T) {
 }
 
 func TestMkdirAllWithSymlink(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Log("Skipping test: symlinks don't exist under Windows")
+	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
+		t.Log("Skipping test: symlinks don't exist under Windows/Plan 9")
 		return
 	}
 
@@ -181,7 +191,7 @@ func TestMkdirAllWithSymlink(t *testing.T) {
 }
 
 func TestMkdirAllAtSlash(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
 		return
 	}
 	RemoveAll("/_go_os_test")

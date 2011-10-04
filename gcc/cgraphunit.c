@@ -426,7 +426,9 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
 	 Remove this once edges are actualy removed from the function at that time.  */
       && (e->frequency
 	  || (inline_edge_summary_vec
-	      && !inline_edge_summary (e)->predicate))
+	      && ((VEC_length(inline_edge_summary_t, inline_edge_summary_vec)
+		  <= (unsigned) e->uid)
+	          || !inline_edge_summary (e)->predicate)))
       && (e->frequency
 	  != compute_call_stmt_bb_frequency (e->caller->decl,
 					     gimple_bb (e->call_stmt))))
@@ -1772,9 +1774,15 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
     if (ref->use == IPA_REF_ALIAS)
       {
 	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+        bool saved_written = TREE_ASM_WRITTEN (alias->thunk.alias);
+
+	/* Force assemble_alias to really output the alias this time instead
+	   of buffering it in same alias pairs.  */
+	TREE_ASM_WRITTEN (alias->thunk.alias) = 1;
 	assemble_alias (alias->decl,
 			DECL_ASSEMBLER_NAME (alias->thunk.alias));
 	assemble_thunks_and_aliases (alias);
+	TREE_ASM_WRITTEN (alias->thunk.alias) = saved_written;
       }
 }
 
@@ -2005,6 +2013,12 @@ ipa_passes (void)
 	return;
     }
 
+  /* We never run removal of unreachable nodes after early passes.  This is
+     because TODO is run before the subpasses.  It is important to remove
+     the unreachable functions to save works at IPA level and to get LTO
+     symbol tables right.  */
+  cgraph_remove_unreachable_nodes (true, cgraph_dump_file);
+
   /* If pass_all_early_optimizations was not scheduled, the state of
      the cgraph will not be properly updated.  Update it now.  */
   if (cgraph_state < CGRAPH_STATE_IPA_SSA)
@@ -2036,7 +2050,7 @@ ipa_passes (void)
   if (flag_generate_lto)
     targetm.asm_out.lto_end ();
 
-  if (!flag_ltrans)
+  if (!flag_ltrans && (in_lto_p || !flag_lto || flag_fat_lto_objects))
     execute_ipa_pass_list (all_regular_ipa_passes);
   invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
@@ -2074,8 +2088,9 @@ cgraph_optimize (void)
   if (!seen_error ())
     ipa_passes ();
 
-  /* Do nothing else if any IPA pass found errors.  */
-  if (seen_error ())
+  /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */
+  if (seen_error ()
+      || (!in_lto_p && flag_lto && !flag_fat_lto_objects))
     {
       timevar_pop (TV_CGRAPHOPT);
       return;

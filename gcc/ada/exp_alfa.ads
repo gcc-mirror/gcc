@@ -37,7 +37,7 @@
 --        conversions, expand actuals in calls to introduce temporaries)
 
 --    2. Facilitate treatment for the formal verification back-end (fully
---       qualify names)
+--       qualify names, set membership)
 
 --    3. Avoid the introduction of low-level code that is difficult to analyze
 --       formally, as typically done in the full expansion for high-level

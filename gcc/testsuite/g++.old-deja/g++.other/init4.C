@@ -1,4 +1,4 @@
-// { dg-options -std=c++98 }
+// { dg-options "-std=c++98 -pedantic-errors" }
 // { dg-do assemble  }
 
 class error {

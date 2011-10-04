@@ -1915,6 +1915,28 @@ arm_option_override (void)
 	fix_cm3_ldrd = 0;
     }
 
+  /* Enable -munaligned-access by default for
+     - all ARMv6 architecture-based processors
+     - ARMv7-A, ARMv7-R, and ARMv7-M architecture-based processors.
+
+     Disable -munaligned-access by default for
+     - all pre-ARMv6 architecture-based processors
+     - ARMv6-M architecture-based processors.  */
+
+  if (unaligned_access == 2)
+    {
+      if (arm_arch6 && (arm_arch_notm || arm_arch7))
+	unaligned_access = 1;
+      else
+	unaligned_access = 0;
+    }
+  else if (unaligned_access == 1
+	   && !(arm_arch6 && (arm_arch_notm || arm_arch7)))
+    {
+      warning (0, "target CPU does not support unaligned accesses");
+      unaligned_access = 0;
+    }
+
   if (TARGET_THUMB1 && flag_schedule_insns)
     {
       /* Don't warn since it's on by default in -O2.  */
@@ -11551,7 +11573,7 @@ arm_must_pass_in_stack (enum machine_mode mode, const_tree type)
    aggregate types are placed in the lowest memory address.  */
 
 bool
-arm_pad_arg_upward (enum machine_mode mode, const_tree type)
+arm_pad_arg_upward (enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
 {
   if (!TARGET_AAPCS_BASED)
     return DEFAULT_FUNCTION_ARG_PADDING(mode, type) == upward;
@@ -11559,36 +11581,38 @@ arm_pad_arg_upward (enum machine_mode mode, const_tree type)
   if (type && BYTES_BIG_ENDIAN && INTEGRAL_TYPE_P (type))
     return false;
 
-  /* Half-float values are only passed to libcalls, not regular functions.
-     They should be passed and returned as "short"s (see RTABI).  To achieve
-     that effect in big-endian mode, pad downwards so the value is passed in
-     the least-significant end of the register.  ??? This needs to be here
-     rather than in arm_pad_reg_upward due to peculiarity in the handling of
-     libcall arguments.  */
-  if (BYTES_BIG_ENDIAN && mode == HFmode)
-    return false;
-
   return true;
 }
 
 
 /* Similarly, for use by BLOCK_REG_PADDING (MODE, TYPE, FIRST).
-   For non-AAPCS, return !BYTES_BIG_ENDIAN if the least significant
-   byte of the register has useful data, and return the opposite if the
-   most significant byte does.
-   For AAPCS, small aggregates and small complex types are always padded
-   upwards.  */
+   Return !BYTES_BIG_ENDIAN if the least significant byte of the
+   register has useful data, and return the opposite if the most
+   significant byte does.  */
 
 bool
-arm_pad_reg_upward (enum machine_mode mode ATTRIBUTE_UNUSED,
+arm_pad_reg_upward (enum machine_mode mode,
                     tree type, int first ATTRIBUTE_UNUSED)
 {
-  if (TARGET_AAPCS_BASED
-      && BYTES_BIG_ENDIAN
-      && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE
-	  || FIXED_POINT_TYPE_P (type))
-      && int_size_in_bytes (type) <= 4)
-    return true;
+  if (TARGET_AAPCS_BASED && BYTES_BIG_ENDIAN)
+    {
+      /* For AAPCS, small aggregates, small fixed-point types,
+	 and small complex types are always padded upwards.  */
+      if (type)
+	{
+	  if ((AGGREGATE_TYPE_P (type)
+	       || TREE_CODE (type) == COMPLEX_TYPE
+	       || FIXED_POINT_TYPE_P (type))
+	      && int_size_in_bytes (type) <= 4)
+	    return true;
+	}
+      else
+	{
+	  if ((COMPLEX_MODE_P (mode) || ALL_FIXED_POINT_MODE_P (mode))
+	      && GET_MODE_SIZE (mode) <= 4)
+	    return true;
+	}
+    }
 
   /* Otherwise, use default padding.  */
   return !BYTES_BIG_ENDIAN;
@@ -18236,6 +18260,29 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 	  && regno <= LAST_FPA_REGNUM);
 }
 
+/* Implement MODES_TIEABLE_P.  */
+
+bool
+arm_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+{
+  if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
+    return true;
+
+  /* We specifically want to allow elements of "structure" modes to
+     be tieable to the structure.  This more general condition allows
+     other rarer situations too.  */
+  if (TARGET_NEON
+      && (VALID_NEON_DREG_MODE (mode1)
+	  || VALID_NEON_QREG_MODE (mode1)
+	  || VALID_NEON_STRUCT_MODE (mode1))
+      && (VALID_NEON_DREG_MODE (mode2)
+	  || VALID_NEON_QREG_MODE (mode2)
+	  || VALID_NEON_STRUCT_MODE (mode2)))
+    return true;
+
+  return false;
+}
+
 /* For efficiency and historical reasons LO_REGS, HI_REGS and CC_REGS are
    not used in arm mode.  */
 
@@ -22273,6 +22320,10 @@ arm_file_start (void)
       else
 	val = 6;
       asm_fprintf (asm_out_file, "\t.eabi_attribute 30, %d\n", val);
+
+      /* Tag_CPU_unaligned_access.  */
+      asm_fprintf (asm_out_file, "\t.eabi_attribute 34, %d\n",
+		   unaligned_access);
 
       /* Tag_ABI_FP_16bit_format.  */
       if (arm_fp16_format)

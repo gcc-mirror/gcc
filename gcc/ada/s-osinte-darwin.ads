@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,7 +108,7 @@ package System.OS_Interface is
    SIGUSR1    : constant := 30; --  user defined signal 1
    SIGUSR2    : constant := 31; --  user defined signal 2
 
-   SIGADAABORT : constant := SIGTERM;
+   SIGADAABORT : constant := SIGABRT;
    --  Change this if you want to use another signal for task abort.
    --  SIGTERM might be a good one.
 
@@ -185,7 +185,8 @@ package System.OS_Interface is
 
    type clockid_t is private;
 
-   CLOCK_REALTIME : constant clockid_t;
+   CLOCK_REALTIME  : constant clockid_t;
+   CLOCK_MONOTONIC : constant clockid_t;
 
    function clock_gettime
      (clock_id : clockid_t;
@@ -254,6 +255,14 @@ package System.OS_Interface is
 
    PTHREAD_SCOPE_PROCESS : constant := 2;
    PTHREAD_SCOPE_SYSTEM  : constant := 1;
+
+   --  Read/Write lock not supported on Darwin. To add support both types
+   --  pthread_rwlock_t and pthread_rwlockattr_t must properly be defined
+   --  with the associated routines pthread_rwlock_[init/destroy] and
+   --  pthread_rwlock_[rdlock/wrlock/unlock].
+
+   subtype pthread_rwlock_t     is pthread_mutex_t;
+   subtype pthread_rwlockattr_t is pthread_mutexattr_t;
 
    -----------
    -- Stack --
@@ -516,7 +525,8 @@ private
    pragma Convention (C, timespec);
 
    type clockid_t is new int;
-   CLOCK_REALTIME : constant clockid_t := 0;
+   CLOCK_REALTIME  : constant clockid_t := 0;
+   CLOCK_MONOTONIC : constant clockid_t := CLOCK_REALTIME;
 
    --
    --  Darwin specific signal implementation

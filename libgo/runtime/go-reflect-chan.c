@@ -33,25 +33,25 @@ makechan (const struct __go_type_descriptor *typ, uint32_t size)
   return (uintptr_t) ret;
 }
 
-extern _Bool chansend (uintptr_t, uintptr_t, _Bool)
+extern _Bool chansend (struct __go_channel_type *, uintptr_t, uintptr_t, _Bool)
   asm ("libgo_reflect.reflect.chansend");
 
 _Bool
-chansend (uintptr_t ch, uintptr_t val_i, _Bool nb)
+chansend (struct __go_channel_type *ct, uintptr_t ch, uintptr_t val_i,
+	  _Bool nb)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
   uintptr_t element_size;
   void *pv;
 
-  if (channel == NULL)
-    __go_panic_msg ("send to nil channel");
+  __go_assert (ct->__common.__code == GO_CHAN);
 
-  if (__go_is_pointer_type (channel->element_type))
+  if (__go_is_pointer_type (ct->__element_type))
     pv = &val_i;
   else
     pv = (void *) val_i;
 
-  element_size = channel->element_type->__size;
+  element_size = ct->__element_type->__size;
   if (element_size <= sizeof (uint64_t))
     {
       union
@@ -94,20 +94,23 @@ struct chanrecv_ret
   _Bool received;
 };
 
-extern struct chanrecv_ret chanrecv (uintptr_t, _Bool)
+extern struct chanrecv_ret chanrecv (struct __go_channel_type *, uintptr_t,
+				     _Bool)
   asm ("libgo_reflect.reflect.chanrecv");
 
 struct chanrecv_ret
-chanrecv (uintptr_t ch, _Bool nb)
+chanrecv (struct __go_channel_type *ct, uintptr_t ch, _Bool nb)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
   void *pv;
   uintptr_t element_size;
   struct chanrecv_ret ret;
 
-  element_size = channel->element_type->__size;
+  __go_assert (ct->__common.__code == GO_CHAN);
 
-  if (__go_is_pointer_type (channel->element_type))
+  element_size = ct->__element_type->__size;
+
+  if (__go_is_pointer_type (ct->__element_type))
     pv = &ret.val;
   else
     {

@@ -100,7 +100,7 @@
   [(V4DI "TARGET_AVX2") V2DI])
 
 (define_mode_iterator VIMAX_AVX2
-  [(V4DI "TARGET_AVX2") V1TI])
+  [(V2TI "TARGET_AVX2") V1TI])
 
 (define_mode_iterator SSESCALARMODE
   [(V4DI "TARGET_AVX2") TI])
@@ -140,7 +140,7 @@
    (V8HI "sse2") (V16HI "avx2")
    (V4SI "sse2") (V8SI "avx2")
    (V2DI "sse2") (V4DI "avx2")
-   (V1TI "sse2")])
+   (V1TI "sse2") (V2TI "avx2")])
 
 (define_mode_attr ssse3_avx2
    [(V16QI "ssse3") (V32QI "avx2")
@@ -191,7 +191,6 @@
 
 ;; Random 256bit vector integer mode combinations
 (define_mode_iterator VI124_256 [V32QI V16HI V8SI])
-(define_mode_iterator VI1248_256 [V32QI V16HI V8SI V4DI])
 (define_mode_iterator VI248_256 [V16HI V8SI V4DI])
 
 ;; Int-float size matches
@@ -225,7 +224,7 @@
 
 ;; SSE instruction mode
 (define_mode_attr sseinsnmode
-  [(V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI")
+  [(V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI") (V2TI "OI")
    (V16QI "TI") (V8HI "TI") (V4SI "TI") (V2DI "TI") (V1TI "TI")
    (V8SF "V8SF") (V4DF "V4DF")
    (V4SF "V4SF") (V2DF "V2DF")
@@ -293,6 +292,11 @@
 
 ;; Instruction suffix for sign and zero extensions.
 (define_code_attr extsuffix [(sign_extend "sx") (zero_extend "zx")])
+
+;; i128 for integer vectors and TARGET_AVX2, f128 otherwise.
+(define_mode_attr i128
+  [(V8SF "f128") (V4DF "f128") (V32QI "%~128") (V16HI "%~128")
+   (V8SI "%~128") (V4DI "%~128")])
 
 ;; Mix-n-match
 (define_mode_iterator AVX256MODE2P [V8SI V8SF V4DF])
@@ -1253,26 +1257,34 @@
       emit_insn (gen_sse3_haddv4sf3 (operands[0], tmp, tmp));
     }
   else
-    ix86_expand_reduc_v4sf (gen_addv4sf3, operands[0], operands[1]);
+    ix86_expand_reduc (gen_addv4sf3, operands[0], operands[1]);
   DONE;
 })
 
+;; Modes handled by reduc_sm{in,ax}* patterns.
+(define_mode_iterator REDUC_SMINMAX_MODE
+  [(V32QI "TARGET_AVX2") (V16HI "TARGET_AVX2")
+   (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")
+   (V8SF "TARGET_AVX") (V4DF "TARGET_AVX")
+   (V4SF "TARGET_SSE")])
 
-(define_expand "reduc_smax_v4sf"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V4SF 1 "register_operand" "")]
-  "TARGET_SSE"
+(define_expand "reduc_<code>_<mode>"
+  [(smaxmin:REDUC_SMINMAX_MODE
+     (match_operand:REDUC_SMINMAX_MODE 0 "register_operand" "")
+     (match_operand:REDUC_SMINMAX_MODE 1 "register_operand" ""))]
+  ""
 {
-  ix86_expand_reduc_v4sf (gen_smaxv4sf3, operands[0], operands[1]);
+  ix86_expand_reduc (gen_<code><mode>3, operands[0], operands[1]);
   DONE;
 })
 
-(define_expand "reduc_smin_v4sf"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V4SF 1 "register_operand" "")]
-  "TARGET_SSE"
+(define_expand "reduc_<code>_<mode>"
+  [(umaxmin:VI_256
+     (match_operand:VI_256 0 "register_operand" "")
+     (match_operand:VI_256 1 "register_operand" ""))]
+  "TARGET_AVX2"
 {
-  ix86_expand_reduc_v4sf (gen_sminv4sf3, operands[0], operands[1]);
+  ix86_expand_reduc (gen_<code><mode>3, operands[0], operands[1]);
   DONE;
 })
 
@@ -3827,13 +3839,13 @@
 	  (match_operand:VI8F_256 1 "register_operand" "x,x")
 	  (parallel [(const_int 2) (const_int 3)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "vec_extract_lo_<mode>"
   [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=x,m")
@@ -3862,13 +3874,13 @@
 	  (parallel [(const_int 4) (const_int 5)
 		     (const_int 6) (const_int 7)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "vec_extract_lo_v16hi"
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "=x,m")
@@ -3901,13 +3913,13 @@
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "OI")])
 
 (define_insn_and_split "vec_extract_lo_v32qi"
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m")
@@ -3948,27 +3960,53 @@
 		     (const_int 28) (const_int 29)
 		     (const_int 30) (const_int 31)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "OI")])
 
-(define_insn "*sse4_1_extractps"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=rm")
+(define_insn_and_split "*sse4_1_extractps"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=rm,x,x")
 	(vec_select:SF
-	  (match_operand:V4SF 1 "register_operand" "x")
-	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")])))]
+	  (match_operand:V4SF 1 "register_operand" "x,0,x")
+	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n,n")])))]
   "TARGET_SSE4_1"
-  "%vextractps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_data16" "1")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "V4SF")])
+  "@
+   %vextractps\t{%2, %1, %0|%0, %1, %2}
+   #
+   #"
+  "&& reload_completed && SSE_REG_P (operands[0])"
+  [(const_int 0)]
+{
+  rtx dest = gen_rtx_REG (V4SFmode, REGNO (operands[0]));
+  switch (INTVAL (operands[2]))
+    {
+    case 1:
+    case 3:
+      emit_insn (gen_sse_shufps_v4sf (dest, operands[1], operands[1],
+				      operands[2], operands[2],
+				      GEN_INT (INTVAL (operands[2]) + 4),
+				      GEN_INT (INTVAL (operands[2]) + 4)));
+      break;
+    case 2:
+      emit_insn (gen_vec_interleave_highv4sf (dest, operands[1], operands[1]));
+      break;
+    default:
+      /* 0 should be handled by the *vec_extractv4sf_0 pattern above.  */
+      gcc_unreachable ();
+    }
+  DONE;
+}
+  [(set_attr "isa" "*,noavx,avx")
+   (set_attr "type" "sselog,*,*")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix_extra" "1,*,*")
+   (set_attr "length_immediate" "1,*,*")
+   (set_attr "prefix" "maybe_vex,*,*")
+   (set_attr "mode" "V4SF,*,*")])
 
 (define_insn_and_split "*vec_extract_v4sf_mem"
   [(set (match_operand:SF 0 "register_operand" "=x*rf")
@@ -3988,7 +4026,10 @@
 
 ;; Modes handled by vec_extract patterns.
 (define_mode_iterator VEC_EXTRACT_MODE
-  [V16QI V8HI V4SI V2DI
+  [(V32QI "TARGET_AVX") V16QI
+   (V16HI "TARGET_AVX") V8HI
+   (V8SI "TARGET_AVX") V4SI
+   (V4DI "TARGET_AVX") V2DI
    (V8SF "TARGET_AVX") V4SF
    (V4DF "TARGET_AVX") V2DF])
 
@@ -5731,30 +5772,10 @@
   operands[1] = gen_lowpart (V1TImode, operands[1]);
 })
 
-(define_expand "avx2_<code><mode>3"
-  [(set (match_operand:VI124_256 0 "register_operand" "")
-	(umaxmin:VI124_256
-	  (match_operand:VI124_256 1 "nonimmediate_operand" "")
-	  (match_operand:VI124_256 2 "nonimmediate_operand" "")))]
-  "TARGET_AVX2"
-  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
-
-(define_insn "*avx2_<code><mode>3"
-  [(set (match_operand:VI124_256 0 "register_operand" "=x")
-	(umaxmin:VI124_256
-	  (match_operand:VI124_256 1 "nonimmediate_operand" "%x")
-	  (match_operand:VI124_256 2 "nonimmediate_operand" "xm")))]
-  "TARGET_AVX2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sseiadd")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
-
-(define_insn "sse2_lshrv1ti3"
-  [(set (match_operand:V1TI 0 "register_operand" "=x,x")
-	(lshiftrt:V1TI
-	 (match_operand:V1TI 1 "register_operand" "0,x")
+(define_insn "<sse2_avx2>_lshr<mode>3"
+  [(set (match_operand:VIMAX_AVX2 0 "register_operand" "=x,x")
+	(lshiftrt:VIMAX_AVX2
+	 (match_operand:VIMAX_AVX2 1 "register_operand" "0,x")
 	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n,n")))]
   "TARGET_SSE2"
 {
@@ -5776,11 +5797,12 @@
    (set_attr "atom_unit" "sishuf")
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "TI")])
+   (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx2_<code><mode>3"
+
+(define_expand "<code><mode>3"
   [(set (match_operand:VI124_256 0 "register_operand" "")
-	(smaxmin:VI124_256
+	(maxmin:VI124_256
 	  (match_operand:VI124_256 1 "nonimmediate_operand" "")
 	  (match_operand:VI124_256 2 "nonimmediate_operand" "")))]
   "TARGET_AVX2"
@@ -5788,7 +5810,7 @@
 
 (define_insn "*avx2_<code><mode>3"
   [(set (match_operand:VI124_256 0 "register_operand" "=x")
-	(smaxmin:VI124_256
+	(maxmin:VI124_256
 	  (match_operand:VI124_256 1 "nonimmediate_operand" "%x")
 	  (match_operand:VI124_256 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
@@ -5797,6 +5819,78 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
+
+(define_expand "<code><mode>3"
+  [(set (match_operand:VI8_AVX2 0 "register_operand" "")
+	(maxmin:VI8_AVX2 (match_operand:VI8_AVX2 1 "register_operand" "")
+			 (match_operand:VI8_AVX2 2 "register_operand" "")))]
+  "TARGET_SSE4_2"
+{
+  enum rtx_code code;
+  rtx xops[6];
+  bool ok;
+
+  xops[0] = operands[0];
+
+  if (<CODE> == SMAX || <CODE> == UMAX)
+    {
+      xops[1] = operands[1];
+      xops[2] = operands[2];
+    }
+  else
+    {
+      xops[1] = operands[2];
+      xops[2] = operands[1];
+    }
+
+  code = (<CODE> == UMAX || <CODE> == UMIN) ? GTU : GT;
+
+  xops[3] = gen_rtx_fmt_ee (code, VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+
+  ok = ix86_expand_int_vcond (xops);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "<code><mode>3"
+  [(set (match_operand:VI124_128 0 "register_operand" "")
+	(smaxmin:VI124_128 (match_operand:VI124_128 1 "nonimmediate_operand" "")
+			   (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
+  "TARGET_SSE2"
+{
+  if (TARGET_SSE4_1 || <MODE>mode == V8HImode)
+    ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);
+  else
+    {
+      rtx xops[6];
+      bool ok;
+
+      xops[0] = operands[0];
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+      operands[2] = force_reg (<MODE>mode, operands[2]);
+
+      if (<CODE> == SMAX)
+	{
+	  xops[1] = operands[1];
+	  xops[2] = operands[2];
+	}
+      else
+	{
+	  xops[1] = operands[2];
+	  xops[2] = operands[1];
+	}
+
+      xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
+      xops[4] = operands[1];
+      xops[5] = operands[2];
+
+      ok = ix86_expand_int_vcond (xops);
+      gcc_assert (ok);
+      DONE;
+    }
+})
 
 (define_insn "*sse4_1_<code><mode>3"
   [(set (match_operand:VI14_128 0 "register_operand" "=x,x")
@@ -5829,102 +5923,53 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "smax<mode>3"
-  [(set (match_operand:VI14_128 0 "register_operand" "")
-	(smax:VI14_128 (match_operand:VI14_128 1 "register_operand" "")
-		       (match_operand:VI14_128 2 "register_operand" "")))]
+(define_expand "<code><mode>3"
+  [(set (match_operand:VI124_128 0 "register_operand" "")
+	(umaxmin:VI124_128 (match_operand:VI124_128 1 "nonimmediate_operand" "")
+			   (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
 {
-  if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (SMAX, <MODE>mode, operands);
+  if (TARGET_SSE4_1 || <MODE>mode == V16QImode)
+    ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);
+  else if (<CODE> == UMAX && <MODE>mode == V8HImode)
+    {
+      rtx op0 = operands[0], op2 = operands[2], op3 = op0;
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+      if (rtx_equal_p (op3, op2))
+	op3 = gen_reg_rtx (V8HImode);
+      emit_insn (gen_sse2_ussubv8hi3 (op3, operands[1], op2));
+      emit_insn (gen_addv8hi3 (op0, op3, op2));
+      DONE;
+    }
   else
     {
       rtx xops[6];
       bool ok;
 
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+      operands[2] = force_reg (<MODE>mode, operands[2]);
+
       xops[0] = operands[0];
-      xops[1] = operands[1];
-      xops[2] = operands[2];
-      xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
+
+      if (<CODE> == UMAX)
+	{
+	  xops[1] = operands[1];
+	  xops[2] = operands[2];
+	}
+      else
+	{
+	  xops[1] = operands[2];
+	  xops[2] = operands[1];
+	}
+
+      xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
       xops[4] = operands[1];
       xops[5] = operands[2];
+
       ok = ix86_expand_int_vcond (xops);
       gcc_assert (ok);
       DONE;
     }
-})
-
-(define_expand "smin<mode>3"
-  [(set (match_operand:VI14_128 0 "register_operand" "")
-	(smin:VI14_128 (match_operand:VI14_128 1 "register_operand" "")
-		       (match_operand:VI14_128 2 "register_operand" "")))]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (SMIN, <MODE>mode, operands);
-  else
-    {
-      rtx xops[6];
-      bool ok;
-
-      xops[0] = operands[0];
-      xops[1] = operands[2];
-      xops[2] = operands[1];
-      xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-      xops[4] = operands[1];
-      xops[5] = operands[2];
-      ok = ix86_expand_int_vcond (xops);
-      gcc_assert (ok);
-      DONE;
-    }
-})
-
-(define_expand "<code>v8hi3"
-  [(set (match_operand:V8HI 0 "register_operand" "")
-	(smaxmin:V8HI
-	  (match_operand:V8HI 1 "nonimmediate_operand" "")
-	  (match_operand:V8HI 2 "nonimmediate_operand" "")))]
-  "TARGET_SSE2"
-  "ix86_fixup_binary_operands_no_copy (<CODE>, V8HImode, operands);")
-
-(define_expand "smaxv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(smax:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
-  "TARGET_SSE4_2"
-{
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-  xops[1] = operands[1];
-  xops[2] = operands[2];
-  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-  ok = ix86_expand_int_vcond (xops);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "sminv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(smin:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
-  "TARGET_SSE4_2"
-{
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-  xops[1] = operands[2];
-  xops[2] = operands[1];
-  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-  ok = ix86_expand_int_vcond (xops);
-  gcc_assert (ok);
-  DONE;
 })
 
 (define_insn "*sse4_1_<code><mode>3"
@@ -5958,123 +6003,6 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "<code>v16qi3"
-  [(set (match_operand:V16QI 0 "register_operand" "")
-	(umaxmin:V16QI
-	  (match_operand:V16QI 1 "nonimmediate_operand" "")
-	  (match_operand:V16QI 2 "nonimmediate_operand" "")))]
-  "TARGET_SSE2"
-  "ix86_fixup_binary_operands_no_copy (<CODE>, V16QImode, operands);")
-
-(define_expand "umaxv8hi3"
-  [(set (match_operand:V8HI 0 "register_operand" "")
-	(umax:V8HI (match_operand:V8HI 1 "register_operand" "")
-		   (match_operand:V8HI 2 "nonimmediate_operand" "")))]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (UMAX, V8HImode, operands);
-  else
-    {
-      rtx op0 = operands[0], op2 = operands[2], op3 = op0;
-      if (rtx_equal_p (op3, op2))
-	op3 = gen_reg_rtx (V8HImode);
-      emit_insn (gen_sse2_ussubv8hi3 (op3, operands[1], op2));
-      emit_insn (gen_addv8hi3 (op0, op3, op2));
-      DONE;
-    }
-})
-
-(define_expand "umaxv4si3"
-  [(set (match_operand:V4SI 0 "register_operand" "")
-	(umax:V4SI (match_operand:V4SI 1 "register_operand" "")
-		   (match_operand:V4SI 2 "register_operand" "")))]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (UMAX, V4SImode, operands);
-  else
-    {
-      rtx xops[6];
-      bool ok;
-
-      xops[0] = operands[0];
-      xops[1] = operands[1];
-      xops[2] = operands[2];
-      xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
-      xops[4] = operands[1];
-      xops[5] = operands[2];
-      ok = ix86_expand_int_vcond (xops);
-      gcc_assert (ok);
-      DONE;
-    }
-})
-
-(define_expand "umin<mode>3"
-  [(set (match_operand:VI24_128 0 "register_operand" "")
-	(umin:VI24_128 (match_operand:VI24_128 1 "register_operand" "")
-		       (match_operand:VI24_128 2 "register_operand" "")))]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (UMIN, <MODE>mode, operands);
-  else
-    {
-      rtx xops[6];
-      bool ok;
-
-      xops[0] = operands[0];
-      xops[1] = operands[2];
-      xops[2] = operands[1];
-      xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
-      xops[4] = operands[1];
-      xops[5] = operands[2];
-      ok = ix86_expand_int_vcond (xops);
-      gcc_assert (ok);
-      DONE;
-    }
-})
-
-(define_expand "umaxv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(umax:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
-  "TARGET_SSE4_2"
-{
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-  xops[1] = operands[1];
-  xops[2] = operands[2];
-  xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-  ok = ix86_expand_int_vcond (xops);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "uminv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(umin:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
-  "TARGET_SSE4_2"
-{
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-  xops[1] = operands[2];
-  xops[2] = operands[1];
-  xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-  ok = ix86_expand_int_vcond (xops);
-  gcc_assert (ok);
-  DONE;
-})
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel integral comparisons
@@ -6082,18 +6010,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "avx2_eq<mode>3"
-  [(set (match_operand:VI1248_256 0 "register_operand" "")
-	(eq:VI1248_256
-	  (match_operand:VI1248_256 1 "nonimmediate_operand" "")
-	  (match_operand:VI1248_256 2 "nonimmediate_operand" "")))]
+  [(set (match_operand:VI_256 0 "register_operand" "")
+	(eq:VI_256
+	  (match_operand:VI_256 1 "nonimmediate_operand" "")
+	  (match_operand:VI_256 2 "nonimmediate_operand" "")))]
   "TARGET_AVX2"
   "ix86_fixup_binary_operands_no_copy (EQ, <MODE>mode, operands);")
 
 (define_insn "*avx2_eq<mode>3"
-  [(set (match_operand:VI1248_256 0 "register_operand" "=x")
-	(eq:VI1248_256
-	  (match_operand:VI1248_256 1 "nonimmediate_operand" "%x")
-	  (match_operand:VI1248_256 2 "nonimmediate_operand" "xm")))]
+  [(set (match_operand:VI_256 0 "register_operand" "=x")
+	(eq:VI_256
+	  (match_operand:VI_256 1 "nonimmediate_operand" "%x")
+	  (match_operand:VI_256 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2 && ix86_binary_operator_ok (EQ, <MODE>mode, operands)"
   "vpcmpeq<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecmp")
@@ -6164,10 +6092,10 @@
    (set_attr "mode" "TI")])
 
 (define_insn "avx2_gt<mode>3"
-  [(set (match_operand:VI1248_256 0 "register_operand" "=x")
-	(gt:VI1248_256
-	  (match_operand:VI1248_256 1 "register_operand" "x")
-	  (match_operand:VI1248_256 2 "nonimmediate_operand" "xm")))]
+  [(set (match_operand:VI_256 0 "register_operand" "=x")
+	(gt:VI_256
+	  (match_operand:VI_256 1 "register_operand" "x")
+	  (match_operand:VI_256 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2"
   "vpcmpgt<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecmp")
@@ -6189,6 +6117,23 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
+
+(define_expand "vcond<V_256:mode><VI_256:mode>"
+  [(set (match_operand:V_256 0 "register_operand" "")
+	(if_then_else:V_256
+	  (match_operator 3 ""
+	    [(match_operand:VI_256 4 "nonimmediate_operand" "")
+	     (match_operand:VI_256 5 "nonimmediate_operand" "")])
+	  (match_operand:V_256 1 "general_operand" "")
+	  (match_operand:V_256 2 "general_operand" "")))]
+  "TARGET_AVX2
+   && (GET_MODE_NUNITS (<V_256:MODE>mode)
+       == GET_MODE_NUNITS (<VI_256:MODE>mode))"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
 
 (define_expand "vcond<V_128:mode><VI124_128:mode>"
   [(set (match_operand:V_128 0 "register_operand" "")
@@ -6216,6 +6161,23 @@
 	  (match_operand:VI8F_128 1 "general_operand" "")
 	  (match_operand:VI8F_128 2 "general_operand" "")))]
   "TARGET_SSE4_2"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcondu<V_256:mode><VI_256:mode>"
+  [(set (match_operand:V_256 0 "register_operand" "")
+	(if_then_else:V_256
+	  (match_operator 3 ""
+	    [(match_operand:VI_256 4 "nonimmediate_operand" "")
+	     (match_operand:VI_256 5 "nonimmediate_operand" "")])
+	  (match_operand:V_256 1 "general_operand" "")
+	  (match_operand:V_256 2 "general_operand" "")))]
+  "TARGET_AVX2
+   && (GET_MODE_NUNITS (<V_256:MODE>mode)
+       == GET_MODE_NUNITS (<VI_256:MODE>mode))"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
@@ -10408,8 +10370,8 @@
   [(set (match_operand:V 0 "register_operand" "=x,x")
 	(if_then_else:V
 	  (match_operand:V 3 "nonimmediate_operand" "x,m")
-	  (match_operand:V 1 "vector_move_operand" "x,x")
-	  (match_operand:V 2 "vector_move_operand" "xm,x")))]
+	  (match_operand:V 1 "register_operand" "x,x")
+	  (match_operand:V 2 "nonimmediate_operand" "xm,x")))]
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
@@ -11619,14 +11581,14 @@
 	  (match_dup 1)))]
   "TARGET_AVX"
   "@
-   vbroadcastf128\t{%1, %0|%0, %1}
-   vinsertf128\t{$1, %1, %0, %0|%0, %0, %1, 1}
-   vperm2f128\t{$0, %t1, %t1, %0|%0, %t1, %t1, 0}"
+   vbroadcast<i128>\t{%1, %0|%0, %1}
+   vinsert<i128>\t{$1, %1, %0, %0|%0, %0, %1, 1}
+   vperm2<i128>\t{$0, %t1, %t1, %0|%0, %t1, %t1, 0}"
   [(set_attr "type" "ssemov,sselog1,sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "0,1,1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V4SF,V8SF,V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 ;; Recognize broadcast as a vec_select as produced by builtin_vec_perm.
 ;; If it so happens that the input is in memory, use vbroadcast.
@@ -11820,12 +11782,12 @@
 	   (match_operand:SI 3 "const_0_to_255_operand" "n")]
 	  UNSPEC_VPERMIL2F128))]
   "TARGET_AVX"
-  "vperm2f128\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  "vperm2<i128>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*avx_vperm2f128<mode>_nozero"
   [(set (match_operand:AVX256MODE2P 0 "register_operand" "=x")
@@ -11840,13 +11802,13 @@
 {
   int mask = avx_vperm2f128_parallel (operands[3], <MODE>mode) - 1;
   operands[3] = GEN_INT (mask);
-  return "vperm2f128\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+  return "vperm2<i128>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "avx_vinsertf128<mode>"
   [(match_operand:V_256 0 "register_operand" "")
@@ -11911,12 +11873,12 @@
 	    (match_operand:VI8F_256 1 "register_operand" "x")
 	    (parallel [(const_int 2) (const_int 3)]))))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
+  "vinsert<i128>\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_set_hi_<mode>"
   [(set (match_operand:VI8F_256 0 "register_operand" "=x")
@@ -11926,12 +11888,12 @@
 	    (parallel [(const_int 0) (const_int 1)]))
 	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
+  "vinsert<i128>\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_set_lo_<mode>"
   [(set (match_operand:VI4F_256 0 "register_operand" "=x")
@@ -11942,12 +11904,12 @@
 	    (parallel [(const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
+  "vinsert<i128>\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_set_hi_<mode>"
   [(set (match_operand:VI4F_256 0 "register_operand" "=x")
@@ -11958,12 +11920,12 @@
 		       (const_int 2) (const_int 3)]))
 	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
+  "vinsert<i128>\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_set_lo_v16hi"
   [(set (match_operand:V16HI 0 "register_operand" "=x")
@@ -11976,12 +11938,12 @@
 		       (const_int 12) (const_int 13)
 		       (const_int 14) (const_int 15)]))))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
+  "vinsert%~128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "OI")])
 
 (define_insn "vec_set_hi_v16hi"
   [(set (match_operand:V16HI 0 "register_operand" "=x")
@@ -11994,12 +11956,12 @@
 		       (const_int 6) (const_int 7)]))
 	  (match_operand:V8HI 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
+  "vinsert%~128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "OI")])
 
 (define_insn "vec_set_lo_v32qi"
   [(set (match_operand:V32QI 0 "register_operand" "=x")
@@ -12016,12 +11978,12 @@
 		       (const_int 28) (const_int 29)
 		       (const_int 30) (const_int 31)]))))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
+  "vinsert%~128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "OI")])
 
 (define_insn "vec_set_hi_v32qi"
   [(set (match_operand:V32QI 0 "register_operand" "=x")
@@ -12038,12 +12000,12 @@
 		       (const_int 14) (const_int 15)]))
 	  (match_operand:V16QI 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
-  "vinsertf128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
+  "vinsert%~128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+   (set_attr "mode" "OI")])
 
 (define_expand "<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:V48_AVX2 0 "register_operand" "")
@@ -12122,17 +12084,29 @@
   DONE;
 })
 
-(define_insn "avx2_extracti128"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(vec_select:V2DI
-	  (match_operand:V4DI 1 "nonimmediate_operand" "xm")
-	  (parallel [(match_operand:SI 2 "const_0_to_1_operand" "n")])))]
+(define_expand "avx2_extracti128"
+  [(match_operand:V2DI 0 "nonimmediate_operand" "")
+   (match_operand:V4DI 1 "register_operand" "")
+   (match_operand:SI 2 "const_0_to_1_operand" "")]
   "TARGET_AVX2"
-  "vextracti128\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
+{
+  rtx (*insn)(rtx, rtx);
+
+  switch (INTVAL (operands[2]))
+    {
+    case 0:
+      insn = gen_vec_extract_lo_v4di;
+      break;
+    case 1:
+      insn = gen_vec_extract_hi_v4di;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (insn (operands[0], operands[1]));
+  DONE;
+})
 
 (define_expand "avx2_inserti128"
   [(match_operand:V4DI 0 "register_operand" "")
@@ -12412,7 +12386,7 @@
   switch (which_alternative)
     {
     case 0:
-      return "vinsertf128\t{$0x1, %2, %t1, %0|%0, %t1, %2, 0x1}";
+      return "vinsert<i128>\t{$0x1, %2, %t1, %0|%0, %t1, %2, 0x1}";
     case 1:
       switch (get_attr_mode (insn))
 	{

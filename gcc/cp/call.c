@@ -306,11 +306,32 @@ build_call_n (tree function, int n, ...)
     }
 }
 
+/* Update various flags in cfun and the call itself based on what is being
+   called.  Split out of build_call_a so that bot_manip can use it too.  */
+
+void
+set_flags_from_callee (tree call)
+{
+  int nothrow;
+  tree decl = get_callee_fndecl (call);
+
+  /* We check both the decl and the type; a function may be known not to
+     throw without being declared throw().  */
+  nothrow = ((decl && TREE_NOTHROW (decl))
+	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (call)))));
+
+  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
+    cp_function_chain->can_throw = 1;
+
+  if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
+    current_function_returns_abnormally = 1;
+
+  TREE_NOTHROW (call) = nothrow;
+}
+
 tree
 build_call_a (tree function, int n, tree *argarray)
 {
-  int is_constructor = 0;
-  int nothrow;
   tree decl;
   tree result_type;
   tree fntype;
@@ -327,60 +348,45 @@ build_call_a (tree function, int n, tree *argarray)
   if (SCALAR_TYPE_P (result_type) || VOID_TYPE_P (result_type))
     result_type = cv_unqualified (result_type);
 
-  if (TREE_CODE (function) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL)
+  function = build_call_array_loc (input_location,
+				   result_type, function, n, argarray);
+  set_flags_from_callee (function);
+
+  decl = get_callee_fndecl (function);
+
+  if (decl && !TREE_USED (decl))
     {
-      decl = TREE_OPERAND (function, 0);
-      if (!TREE_USED (decl))
-	{
-	  /* We invoke build_call directly for several library
-	     functions.  These may have been declared normally if
-	     we're building libgcc, so we can't just check
-	     DECL_ARTIFICIAL.  */
-	  gcc_assert (DECL_ARTIFICIAL (decl)
-		      || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
-				   "__", 2));
-	  mark_used (decl);
-	}
+      /* We invoke build_call directly for several library
+	 functions.  These may have been declared normally if
+	 we're building libgcc, so we can't just check
+	 DECL_ARTIFICIAL.  */
+      gcc_assert (DECL_ARTIFICIAL (decl)
+		  || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
+			       "__", 2));
+      mark_used (decl);
     }
-  else
-    decl = NULL_TREE;
-
-  /* We check both the decl and the type; a function may be known not to
-     throw without being declared throw().  */
-  nothrow = ((decl && TREE_NOTHROW (decl))
-	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
-
-  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
-    cp_function_chain->can_throw = 1;
-
-  if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
-    current_function_returns_abnormally = 1;
 
   if (decl && TREE_DEPRECATED (decl))
     warn_deprecated_use (decl, NULL_TREE);
   require_complete_eh_spec_types (fntype, decl);
 
-  if (decl && DECL_CONSTRUCTOR_P (decl))
-    is_constructor = 1;
+  TREE_HAS_CONSTRUCTOR (function) = (decl && DECL_CONSTRUCTOR_P (decl));
 
   /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.
      We don't need to handle other cases of copying empty classes.  */
   if (! decl || ! DECL_BUILT_IN (decl))
     for (i = 0; i < n; i++)
-      if (is_empty_class (TREE_TYPE (argarray[i]))
-	  && ! TREE_ADDRESSABLE (TREE_TYPE (argarray[i])))
-	{
-	  tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (argarray[i]));
-	  argarray[i] = build2 (COMPOUND_EXPR, TREE_TYPE (t),
-				argarray[i], t);
-	}
-
-  function = build_call_array_loc (input_location,
-				   result_type, function, n, argarray);
-  TREE_HAS_CONSTRUCTOR (function) = is_constructor;
-  TREE_NOTHROW (function) = nothrow;
+      {
+	tree arg = CALL_EXPR_ARG (function, i);
+	if (is_empty_class (TREE_TYPE (arg))
+	    && ! TREE_ADDRESSABLE (TREE_TYPE (arg)))
+	  {
+	    tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (arg));
+	    arg = build2 (COMPOUND_EXPR, TREE_TYPE (t), arg, t);
+	    CALL_EXPR_ARG (function, i) = arg;
+	  }
+      }
 
   return function;
 }
@@ -1654,6 +1660,12 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
       || expr == error_mark_node)
     return NULL;
 
+  /* Other flags only apply to the primary function in overload
+     resolution, or after we've chosen one.  */
+  flags &= (LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION|LOOKUP_COPY_PARM
+	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_PREFER_RVALUE
+	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT);
+
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, c_cast_p, flags);
   else
@@ -1710,15 +1722,13 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
       && (flags & LOOKUP_NO_CONVERSION) == 0)
     {
       struct z_candidate *cand;
-      int convflags = (flags & (LOOKUP_NO_TEMP_BIND|LOOKUP_ONLYCONVERTING
-				|LOOKUP_NO_NARROWING));
 
       if (CLASS_TYPE_P (to)
 	  && BRACE_ENCLOSED_INITIALIZER_P (expr)
 	  && !CLASSTYPE_NON_AGGREGATE (complete_type (to)))
 	return build_aggr_conv (to, expr, flags);
 
-      cand = build_user_type_conversion_1 (to, expr, convflags);
+      cand = build_user_type_conversion_1 (to, expr, flags);
       if (cand)
 	conv = cand->second_conv;
 
@@ -5642,6 +5652,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	/* When converting from an init list we consider explicit
 	   constructors, but actually trying to call one is an error.  */
 	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
+	    /* Unless this is for direct-list-initialization.  */
+	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
+		 && CONSTRUCTOR_IS_DIRECT_INIT (expr))
 	    /* Unless we're calling it for value-initialization from an
 	       empty list, since that is handled separately in 8.5.4.  */
 	    && cand->num_convs > 0)
@@ -6124,6 +6137,8 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 
      we must not perform access checks here.  */
   push_deferring_access_checks (dk_no_check);
+  /* We must make a copy of ARG, in case subsequent processing
+     alters any part of it.  */
   arg = break_out_target_exprs (arg);
   if (TREE_CODE (arg) == CONSTRUCTOR)
     {
@@ -6134,14 +6149,6 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
     }
   else
     {
-      /* We must make a copy of ARG, in case subsequent processing
-	 alters any part of it.  For example, during gimplification a
-	 cast of the form (T) &X::f (where "f" is a member function)
-	 will lead to replacing the PTRMEM_CST for &X::f with a
-	 VAR_DECL.  We can avoid the copy for constants, since they
-	 are never modified in place.  */
-      if (!CONSTANT_CLASS_P (arg))
-	arg = unshare_expr (arg);
       arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);
@@ -6449,7 +6456,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       converted_arg = build_base_path (PLUS_EXPR,
 				       arg,
 				       cand->conversion_path,
-				       1);
+				       1, complain);
       /* Check that the base class is accessible.  */
       if (!accessible_base_p (TREE_TYPE (argtype),
 			      BINFO_TYPE (cand->conversion_path), true))
@@ -6462,7 +6469,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
 				TREE_TYPE (parmtype), ba_unique, NULL);
       converted_arg = build_base_path (PLUS_EXPR, converted_arg,
-				       base_binfo, 1);
+				       base_binfo, 1, complain);
 
       argarray[j++] = converted_arg;
       parm = TREE_CHAIN (parm);
@@ -6706,7 +6713,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (TREE_DEPRECATED (fn))
 	warn_deprecated_use (fn, NULL_TREE);
 
-      argarray[0] = build_base_path (PLUS_EXPR, argarray[0], binfo, 1);
+      argarray[0] = build_base_path (PLUS_EXPR, argarray[0], binfo, 1,
+				     complain);
       if (TREE_SIDE_EFFECTS (argarray[0]))
 	argarray[0] = save_expr (argarray[0]);
       t = build_pointer_type (TREE_TYPE (fn));
@@ -6736,7 +6744,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
   fn = build_call_a (fn, nargs, argarray);
   SET_EXPR_LOCATION (fn, loc);
 
-  /* If this call might throw an exception, note that fact.  */
   fndecl = get_callee_fndecl (fn);
 
   /* Check that arguments to builtin functions match the expectations.  */
@@ -6917,7 +6924,7 @@ build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
 	    /* However, for assignment operators, we must convert
 	       dynamically if the base is virtual.  */
 	    instance = build_base_path (PLUS_EXPR, instance,
-					binfo, /*nonnull=*/1);
+					binfo, /*nonnull=*/1, complain);
 	}
     }
 
@@ -7277,8 +7284,11 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	    }
 	  else
 	    {
+	      /* Optimize away vtable lookup if we know that this function
+		 can't be overridden.  */
 	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
-		  && resolves_to_fixed_type_p (instance, 0))
+		  && (resolves_to_fixed_type_p (instance, 0)
+		      || DECL_FINAL_P (fn) || CLASSTYPE_FINAL (basetype)))
 		flags |= LOOKUP_NONVIRTUAL;
               if (explicit_targs)
                 flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
@@ -7854,18 +7864,25 @@ compare_ics (conversion *ics1, conversion *ics2)
      types to which the references refer are the same type except for
      top-level cv-qualifiers, and the type to which the reference
      initialized by S2 refers is more cv-qualified than the type to
-     which the reference initialized by S1 refers */
+     which the reference initialized by S1 refers.
+
+     DR 1328 [over.match.best]: the context is an initialization by
+     conversion function for direct reference binding (13.3.1.6) of a
+     reference to function type, the return type of F1 is the same kind of
+     reference (i.e. lvalue or rvalue) as the reference being initialized,
+     and the return type of F2 is not.  */
 
   if (ref_conv1 && ref_conv2)
     {
-      if (!ref_conv1->this_p && !ref_conv2->this_p)
+      if (!ref_conv1->this_p && !ref_conv2->this_p
+	  && (ref_conv1->rvaluedness_matches_p
+	      != ref_conv2->rvaluedness_matches_p)
+	  && (same_type_p (ref_conv1->type, ref_conv2->type)
+	      || (TYPE_REF_IS_RVALUE (ref_conv1->type)
+		  != TYPE_REF_IS_RVALUE (ref_conv2->type))))
 	{
-	  if (ref_conv1->rvaluedness_matches_p
-	      > ref_conv2->rvaluedness_matches_p)
-	    return 1;
-	  if (ref_conv2->rvaluedness_matches_p
-	      > ref_conv1->rvaluedness_matches_p)
-	    return -1;
+	  return (ref_conv1->rvaluedness_matches_p
+		  - ref_conv2->rvaluedness_matches_p);
 	}
 
       if (same_type_ignoring_top_level_qualifiers_p (to_type1, to_type2))

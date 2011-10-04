@@ -764,6 +764,7 @@ CONFIGURE_SPECS
 CROSS_SYSTEM_HEADER_DIR
 TARGET_SYSTEM_ROOT_DEFINE
 TARGET_SYSTEM_ROOT
+SYSROOT_CFLAGS_FOR_TARGET
 enable_shared
 PERL
 enable_fixed_point
@@ -7418,8 +7419,13 @@ fi
 
 # Check whether --with-build-sysroot was given.
 if test "${with_build_sysroot+set}" = set; then :
-  withval=$with_build_sysroot;
+  withval=$with_build_sysroot; if test x"$withval" != x ; then
+     SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"
+   fi
+else
+  SYSROOT_CFLAGS_FOR_TARGET=
 fi
+
 
 
 
@@ -18180,7 +18186,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18183 "configure"
+#line 18189 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18286,7 +18292,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18289 "configure"
+#line 18295 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24302,6 +24308,42 @@ if test $gcc_cv_as_sparc_offsetable_lo10 = yes; then
 $as_echo "#define HAVE_AS_OFFSETABLE_LO10 1" >>confdefs.h
 
 fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for FMAF, HPC, and VIS 3.0 instructions" >&5
+$as_echo_n "checking assembler for FMAF, HPC, and VIS 3.0 instructions... " >&6; }
+if test "${gcc_cv_as_sparc_fmaf+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_sparc_fmaf=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text
+       .align 4
+       fmaddd %f0, %f2, %f4, %f6
+       addxccc %g1, %g2, %g3
+       fsrl32 %f2, %f4, %f8
+       fnaddd %f10, %f12, %f14' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -xarch=v9d -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_sparc_fmaf=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_sparc_fmaf" >&5
+$as_echo "$gcc_cv_as_sparc_fmaf" >&6; }
+if test $gcc_cv_as_sparc_fmaf = yes; then
+
+$as_echo "#define HAVE_AS_FMAF_HPC_VIS3 1" >>confdefs.h
+
+fi
     ;;
 
   i[34567]86-*-* | x86_64-*-*)
@@ -24455,6 +24497,44 @@ $as_echo "$as_me: WARNING: LTO for $target requires binutils >= 2.20.1, but vers
 	      ;;
 	  esac
 	fi
+	# Test if the assembler supports the section flag 'e' for specifying
+	# an excluded section.
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .section with e" >&5
+$as_echo_n "checking assembler for .section with e... " >&6; }
+if test "${gcc_cv_as_section_has_e+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_section_has_e=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 22 \) \* 1000 + 51`
+  then gcc_cv_as_section_has_e=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.section foo1,"e"
+.byte 0,0,0,0' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_section_has_e=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_has_e" >&5
+$as_echo "$gcc_cv_as_section_has_e" >&6; }
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GAS_SECTION_EXCLUDE `if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
 	;;
     esac
 

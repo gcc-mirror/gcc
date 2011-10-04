@@ -1,7 +1,7 @@
 // PR target/39496
 // { dg-do compile { target { { i?86-*-linux* x86_64-*-linux* } && ia32 } } }
 // { dg-options "-O0 -fverbose-asm -fno-omit-frame-pointer -mtune=i686 -msse2 -mfpmath=sse" }
-// { dg-require-effective-target sse2 }
+
 // Verify that {foo,bar}{,2}param are all passed on the stack, using
 // normal calling conventions, when not optimizing.
 // { dg-final { scan-assembler "\[^0-9-\]8\\(%ebp\\),\[^\n\]*fooparam," } }

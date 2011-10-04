@@ -6,20 +6,17 @@ package suffixarray
 
 import (
 	"bytes"
-	"container/vector"
 	"regexp"
 	"sort"
 	"strings"
 	"testing"
 )
 
-
 type testCase struct {
 	name     string   // name of test case
 	source   string   // source to index
 	patterns []string // patterns to lookup
 }
-
 
 var testCases = []testCase{
 	{
@@ -107,10 +104,9 @@ var testCases = []testCase{
 	},
 }
 
-
-// find all occurrences of s in source; report at most n occurences
+// find all occurrences of s in source; report at most n occurrences
 func find(src, s string, n int) []int {
-	var res vector.IntVector
+	var res []int
 	if s != "" && n != 0 {
 		// find at most n occurrences of s in src
 		for i := -1; n < 0 || len(res) < n; {
@@ -119,12 +115,11 @@ func find(src, s string, n int) []int {
 				break
 			}
 			i += j + 1
-			res.Push(i)
+			res = append(res, i)
 		}
 	}
 	return res
 }
-
 
 func testLookup(t *testing.T, tc *testCase, x *Index, s string, n int) {
 	res := x.Lookup([]byte(s), n)
@@ -141,7 +136,7 @@ func testLookup(t *testing.T, tc *testCase, x *Index, s string, n int) {
 	// we cannot simply check that the res and exp lists are equal
 
 	// check that each result is in fact a correct match and there are no duplicates
-	sort.SortInts(res)
+	sort.Ints(res)
 	for i, r := range res {
 		if r < 0 || len(tc.source) <= r {
 			t.Errorf("test %q, lookup %q, result %d (n = %d): index %d out of range [0, %d[", tc.name, s, i, n, r, len(tc.source))
@@ -163,7 +158,6 @@ func testLookup(t *testing.T, tc *testCase, x *Index, s string, n int) {
 		}
 	}
 }
-
 
 func testFindAllIndex(t *testing.T, tc *testCase, x *Index, rx *regexp.Regexp, n int) {
 	res := x.FindAllIndex(rx, n)
@@ -200,7 +194,6 @@ func testFindAllIndex(t *testing.T, tc *testCase, x *Index, rx *regexp.Regexp, n
 	}
 }
 
-
 func testLookups(t *testing.T, tc *testCase, x *Index, n int) {
 	for _, pat := range tc.patterns {
 		testLookup(t, tc, x, pat, n)
@@ -210,7 +203,6 @@ func testLookups(t *testing.T, tc *testCase, x *Index, n int) {
 	}
 }
 
-
 // index is used to hide the sort.Interface
 type index Index
 
@@ -219,13 +211,11 @@ func (x *index) Less(i, j int) bool { return bytes.Compare(x.at(i), x.at(j)) < 0
 func (x *index) Swap(i, j int)      { x.sa[i], x.sa[j] = x.sa[j], x.sa[i] }
 func (a *index) at(i int) []byte    { return a.data[a.sa[i]:] }
 
-
 func testConstruction(t *testing.T, tc *testCase, x *Index) {
 	if !sort.IsSorted((*index)(x)) {
 		t.Errorf("testConstruction failed %s", tc.name)
 	}
 }
-
 
 func TestIndex(t *testing.T) {
 	for _, tc := range testCases {

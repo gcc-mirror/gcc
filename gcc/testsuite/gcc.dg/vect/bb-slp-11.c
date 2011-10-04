@@ -48,7 +48,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 0 "slp" } } */
-/* { dg-final { scan-tree-dump-times "SLP with multiple types" 1 "slp" } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp" { target vect64 } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

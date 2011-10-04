@@ -50,7 +50,7 @@ package body System.Atomic_Counters is
    begin
       System.Machine_Code.Asm
         (Template =>
-           "lock decl" & ASCII.HT & "%0" & ASCII.LF & ASCII.HT
+           "lock%; decl" & ASCII.HT & "%0" & ASCII.LF & ASCII.HT
              & "sete %1",
          Outputs  =>
            (Unsigned_32'Asm_Output ("=m", Item.Value),
@@ -68,7 +68,7 @@ package body System.Atomic_Counters is
    procedure Increment (Item : in out Atomic_Counter) is
    begin
       System.Machine_Code.Asm
-        (Template => "lock incl" & ASCII.HT & "%0",
+        (Template => "lock%; incl" & ASCII.HT & "%0",
          Outputs  => Unsigned_32'Asm_Output ("=m", Item.Value),
          Inputs   => Unsigned_32'Asm_Input ("m", Item.Value),
          Volatile => True);

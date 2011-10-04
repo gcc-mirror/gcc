@@ -1,6 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-msse2 -Wno-abi" } */
-/* { dg-require-effective-target sse2 } */
 
 #include <emmintrin.h>
 

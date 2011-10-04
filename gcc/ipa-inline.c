@@ -710,9 +710,8 @@ relative_time_benefit (struct inline_summary *callee_info,
   uninlined_call_time =
     ((gcov_type)
      (callee_info->time
-      + inline_edge_summary (edge)->call_stmt_time
-      + CGRAPH_FREQ_BASE / 2) * edge->frequency
-     / CGRAPH_FREQ_BASE);
+      + inline_edge_summary (edge)->call_stmt_time) * edge->frequency
+     + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
   /* Compute relative time benefit, i.e. how much the call becomes faster.
      ??? perhaps computing how much the caller+calle together become faster
      would lead to more realistic results.  */
@@ -1660,10 +1659,8 @@ ipa_inline (void)
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int i;
 
-  if (in_lto_p && flag_indirect_inlining)
+  if (in_lto_p && optimize)
     ipa_update_after_lto_read ();
-  if (flag_indirect_inlining)
-    ipa_create_all_structures_for_iinln ();
 
   if (dump_file)
     dump_inline_summaries (dump_file);
@@ -1758,7 +1755,7 @@ ipa_inline (void)
     }
 
   /* Free ipa-prop structures if they are no longer needed.  */
-  if (flag_indirect_inlining)
+  if (optimize)
     ipa_free_all_structures_after_iinln ();
 
   if (dump_file)

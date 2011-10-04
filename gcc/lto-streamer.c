@@ -166,13 +166,13 @@ lto_get_section_name (int section_type, const char *name, struct lto_file_decl_d
      doesn't confuse the reader with merged sections.
 
      For options don't add a ID, the option reader cannot deal with them
-     and merging should be ok here.
-
-     XXX: use crc64 to minimize collisions? */
+     and merging should be ok here. */
   if (section_type == LTO_section_opts)
     strcpy (post, "");
+  else if (f != NULL) 
+    sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, f->id);
   else
-    sprintf (post, ".%x", f ? f->id : crc32_string(0, get_random_seed (false)));
+    sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, get_random_seed (false)); 
   return concat (LTO_SECTION_NAME_PREFIX, sep, add, post, NULL);
 }
 

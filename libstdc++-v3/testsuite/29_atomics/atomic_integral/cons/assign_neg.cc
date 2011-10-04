@@ -29,5 +29,5 @@ int main()
   return 0;
 }
 
-// { dg-error "deleted" "" { target *-*-* } 572 }
+// { dg-error "deleted" "" { target *-*-* } 616 }
 // { dg-prune-output "include" }

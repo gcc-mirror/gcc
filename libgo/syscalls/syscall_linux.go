@@ -9,6 +9,7 @@ package syscall
 import "unsafe"
 
 func libc_ptrace(request int, pid Pid_t, addr uintptr, data *byte) _C_long __asm__ ("ptrace")
+func libc_sendfile(int, int, *Offset_t, Size_t) Ssize_t __asm__ ("sendfile")
 
 var dummy *byte
 const sizeofPtr uintptr = uintptr(unsafe.Sizeof(dummy))
@@ -185,4 +186,21 @@ func Tgkill(tgid int, tid int, sig int) (errno int) {
 	r1, r2, err := Syscall(SYS_TGKILL, uintptr(tgid), uintptr(tid),
 				 uintptr(sig));
 	return int(err);
+}
+
+func Sendfile(outfd int, infd int, offset *int64, count int) (written int, errno int) {
+	var o Offset_t
+	var po *Offset_t
+	if offset != nil {
+		o = Offset_t(*offset)
+		po = &o
+	}
+	w := libc_sendfile(outfd, infd, po, Size_t(count))
+	if offset != nil {
+		*offset = int64(o)
+	}
+	if w < 0 {
+		return 0, GetErrno()
+	}
+	return int(w), 0
 }

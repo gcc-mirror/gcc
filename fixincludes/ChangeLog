@@ -1,3 +1,17 @@
+2011-09-26  Tristan Gingold  <gingold@adacore.com>
+
+	* inclhack.def (ms_define_can_use_extern_prefix):
+	(vms_use_pragma_extern_model, vms_disable_decc_string_builtins):
+	New fixes.
+	* fixincl.x: Regenerate.
+	* tests/base/rtldef/string.h: New test.
+	* tests/base/rtldef/decc$types.h: Likewise.
+	* tests/base/testing.h: Update
+
+2011-09-22  Tristan Gingold  <gingold@adacore.com>
+
+	* mkfixinc.sh (target): Remove alpha-vms from particular targets.
+
 2011-08-23  Steve Ellcey  <sje@cup.hp.com>
 
 	PR libstdc++/50153

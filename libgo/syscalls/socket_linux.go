@@ -6,9 +6,55 @@
 
 package syscall
 
+import "unsafe"
+
 const SizeofSockaddrInet4 = 16
 const SizeofSockaddrInet6 = 28
 const SizeofSockaddrUnix = 110
+const SizeofSockaddrLinklayer = 20
+const SizeofSockaddrNetlink = 12
+
+type SockaddrLinklayer struct {
+	Protocol uint16
+	Ifindex  int
+	Hatype   uint16
+	Pkttype  uint8
+	Halen    uint8
+	Addr     [8]byte
+	raw      RawSockaddrLinklayer
+}
+
+func (sa *SockaddrLinklayer) sockaddr() (*RawSockaddrAny, Socklen_t, int) {
+	if sa.Ifindex < 0 || sa.Ifindex > 0x7fffffff {
+		return nil, 0, EINVAL
+	}
+	sa.raw.Family = AF_PACKET
+	sa.raw.Protocol = sa.Protocol
+	sa.raw.Ifindex = int32(sa.Ifindex)
+	sa.raw.Hatype = sa.Hatype
+	sa.raw.Pkttype = sa.Pkttype
+	sa.raw.Halen = sa.Halen
+	for i := 0; i < len(sa.Addr); i++ {
+		sa.raw.Addr[i] = sa.Addr[i]
+	}
+	return (*RawSockaddrAny)(unsafe.Pointer(&sa.raw)), SizeofSockaddrLinklayer, 0
+}
+
+type SockaddrNetlink struct {
+	Family uint16
+	Pad    uint16
+	Pid    uint32
+	Groups uint32
+	raw    RawSockaddrNetlink
+}
+
+func (sa *SockaddrNetlink) sockaddr() (*RawSockaddrAny, Socklen_t, int) {
+	sa.raw.Family = AF_NETLINK
+	sa.raw.Pad = sa.Pad
+	sa.raw.Pid = sa.Pid
+	sa.raw.Groups = sa.Groups
+	return (*RawSockaddrAny)(unsafe.Pointer(&sa.raw)), SizeofSockaddrNetlink, 0
+}
 
 type RawSockaddrInet4 struct {
 	Family uint16;
@@ -64,6 +110,23 @@ func (sa *RawSockaddrUnix) getLen() (int, int) {
 	return n, 0
 }
 
+type RawSockaddrLinklayer struct {
+	Family   uint16
+	Protocol uint16
+	Ifindex  int32
+	Hatype   uint16
+	Pkttype  uint8
+	Halen    uint8
+	Addr     [8]uint8
+}
+
+type RawSockaddrNetlink struct {
+	Family uint16
+	Pad    uint16
+	Pid    uint32
+	Groups uint32
+}
+
 type RawSockaddr struct {
 	Family uint16;
 	Data [14]int8;
@@ -72,4 +135,31 @@ type RawSockaddr struct {
 // BindToDevice binds the socket associated with fd to device.
 func BindToDevice(fd int, device string) (errno int) {
 	return SetsockoptString(fd, SOL_SOCKET, SO_BINDTODEVICE, device)
+}
+
+func anyToSockaddrOS(rsa *RawSockaddrAny) (Sockaddr, int) {
+	switch rsa.Addr.Family {
+	case AF_NETLINK:
+		pp := (*RawSockaddrNetlink)(unsafe.Pointer(rsa))
+		sa := new(SockaddrNetlink)
+		sa.Family = pp.Family
+		sa.Pad = pp.Pad
+		sa.Pid = pp.Pid
+		sa.Groups = pp.Groups
+		return sa, 0
+
+	case AF_PACKET:
+		pp := (*RawSockaddrLinklayer)(unsafe.Pointer(rsa))
+		sa := new(SockaddrLinklayer)
+		sa.Protocol = pp.Protocol
+		sa.Ifindex = int(pp.Ifindex)
+		sa.Hatype = pp.Hatype
+		sa.Pkttype = pp.Pkttype
+		sa.Halen = pp.Halen
+		for i := 0; i < len(sa.Addr); i++ {
+			sa.Addr[i] = pp.Addr[i]
+		}
+		return sa, 0
+	}
+	return nil, EAFNOSUPPORT;
 }

@@ -17,6 +17,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"url"
 )
 
 type stringMultimap map[string][]string
@@ -43,7 +44,7 @@ var parseTests = []parseTest{
 
 func TestParseForm(t *testing.T) {
 	for i, test := range parseTests {
-		form, err := ParseQuery(test.query)
+		form, err := url.ParseQuery(test.query)
 		if err != nil {
 			t.Errorf("test %d: Unexpected error: %v", i, err)
 			continue
@@ -72,7 +73,7 @@ func TestParseForm(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	req := &Request{Method: "GET"}
-	req.URL, _ = ParseURL("http://www.google.com/search?q=foo&q=bar")
+	req.URL, _ = url.Parse("http://www.google.com/search?q=foo&q=bar")
 	if q := req.FormValue("q"); q != "foo" {
 		t.Errorf(`req.FormValue("q") = %q, want "foo"`, q)
 	}
@@ -80,7 +81,7 @@ func TestQuery(t *testing.T) {
 
 func TestPostQuery(t *testing.T) {
 	req := &Request{Method: "POST"}
-	req.URL, _ = ParseURL("http://www.google.com/search?q=foo&q=bar&both=x")
+	req.URL, _ = url.Parse("http://www.google.com/search?q=foo&q=bar&both=x")
 	req.Header = Header{
 		"Content-Type": {"application/x-www-form-urlencoded; boo!"},
 	}
@@ -162,13 +163,22 @@ func TestRedirect(t *testing.T) {
 	defer ts.Close()
 
 	var end = regexp.MustCompile("/foo/$")
-	r, url, err := Get(ts.URL)
+	r, err := Get(ts.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
 	r.Body.Close()
+	url := r.Request.URL.String()
 	if r.StatusCode != 200 || !end.MatchString(url) {
 		t.Fatalf("Get got status %d at %q, want 200 matching /foo/$", r.StatusCode, url)
+	}
+}
+
+func TestSetBasicAuth(t *testing.T) {
+	r, _ := NewRequest("GET", "http://example.com/", nil)
+	r.SetBasicAuth("Aladdin", "open sesame")
+	if g, e := r.Header.Get("Authorization"), "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="; g != e {
+		t.Errorf("got header %q, want %q", g, e)
 	}
 }
 
@@ -210,16 +220,28 @@ func TestEmptyMultipartRequest(t *testing.T) {
 	testMissingFile(t, req)
 }
 
+func TestRequestMultipartCallOrder(t *testing.T) {
+	req := newTestMultipartRequest(t)
+	_, err := req.MultipartReader()
+	if err != nil {
+		t.Fatalf("MultipartReader: %v", err)
+	}
+	err = req.ParseMultipartForm(1024)
+	if err == nil {
+		t.Errorf("expected an error from ParseMultipartForm after call to MultipartReader")
+	}
+}
+
 func testMissingFile(t *testing.T, req *Request) {
 	f, fh, err := req.FormFile("missing")
 	if f != nil {
-		t.Errorf("FormFile file = %q, want nil", f, nil)
+		t.Errorf("FormFile file = %q, want nil", f)
 	}
 	if fh != nil {
-		t.Errorf("FormFile file header = %q, want nil", fh, nil)
+		t.Errorf("FormFile file header = %q, want nil", fh)
 	}
 	if err != ErrMissingFile {
-		t.Errorf("FormFile err = %q, want nil", err, ErrMissingFile)
+		t.Errorf("FormFile err = %q, want ErrMissingFile", err)
 	}
 }
 
@@ -227,7 +249,7 @@ func newTestMultipartRequest(t *testing.T) *Request {
 	b := bytes.NewBufferString(strings.Replace(message, "\n", "\r\n", -1))
 	req, err := NewRequest("POST", "/", b)
 	if err != nil {
-		t.Fatalf("NewRequest:", err)
+		t.Fatal("NewRequest:", err)
 	}
 	ctype := fmt.Sprintf(`multipart/form-data; boundary="%s"`, boundary)
 	req.Header.Set("Content-type", ctype)
@@ -267,7 +289,7 @@ func validateTestMultipartContents(t *testing.T, req *Request, allMem bool) {
 func testMultipartFile(t *testing.T, req *Request, key, expectFilename, expectContent string) multipart.File {
 	f, fh, err := req.FormFile(key)
 	if err != nil {
-		t.Fatalf("FormFile(%q):", key, err)
+		t.Fatalf("FormFile(%q): %q", key, err)
 	}
 	if fh.Filename != expectFilename {
 		t.Errorf("filename = %q, want %q", fh.Filename, expectFilename)

@@ -582,52 +582,52 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       --  The list container actually contains two lists: one for the "active"
       --  nodes that contain elements that have been inserted onto the list,
       --  and another for the "inactive" nodes for the free store.
-      --
+
       --  We desire that merely declaring an object should have only minimal
       --  cost; specially, we want to avoid having to initialize the free
       --  store (to fill in the links), especially if the capacity is large.
-      --
+
       --  The head of the free list is indicated by Container.Free. If its
-      --  value is non-negative, then the free store has been initialized
-      --  in the "normal" way: Container.Free points to the head of the list
-      --  of free (inactive) nodes, and the value 0 means the free list is
-      --  empty. Each node on the free list has been initialized to point
-      --  to the next free node (via its Next component), and the value 0
-      --  means that this is the last free node.
-      --
-      --  If Container.Free is negative, then the links on the free store
-      --  have not been initialized. In this case the link values are
-      --  implied: the free store comprises the components of the node array
-      --  started with the absolute value of Container.Free, and continuing
-      --  until the end of the array (Nodes'Last).
-      --
-      --  If the list container is manipulated on one end only (for example
-      --  if the container were being used as a stack), then there is no
-      --  need to initialize the free store, since the inactive nodes are
-      --  physically contiguous (in fact, they lie immediately beyond the
-      --  logical end being manipulated). The only time we need to actually
-      --  initialize the nodes in the free store is if the node that becomes
-      --  inactive is not at the end of the list. The free store would then
-      --  be discontiguous and so its nodes would need to be linked in the
-      --  traditional way.
-      --
+      --  value is non-negative, then the free store has been initialized in
+      --  the "normal" way: Container.Free points to the head of the list of
+      --  free (inactive) nodes, and the value 0 means the free list is empty.
+      --  Each node on the free list has been initialized to point to the next
+      --  free node (via its Next component), and the value 0 means that this
+      --  is the last free node.
+
+      --  If Container.Free is negative, then the links on the free store have
+      --  not been initialized. In this case the link values are implied: the
+      --  free store comprises the components of the node array started with
+      --  the absolute value of Container.Free, and continuing until the end of
+      --  the array (Nodes'Last).
+
+      --  If the list container is manipulated on one end only (for example if
+      --  the container were being used as a stack), then there is no need to
+      --  initialize the free store, since the inactive nodes are physically
+      --  contiguous (in fact, they lie immediately beyond the logical end
+      --  being manipulated). The only time we need to actually initialize the
+      --  nodes in the free store is if the node that becomes inactive is not
+      --  at the end of the list. The free store would then be discontiguous
+      --  and so its nodes would need to be linked in the traditional way.
+
       --  ???
       --  It might be possible to perform an optimization here. Suppose that
-      --  the free store can be represented as having two parts: one
-      --  comprising the non-contiguous inactive nodes linked together
-      --  in the normal way, and the other comprising the contiguous
-      --  inactive nodes (that are not linked together, at the end of the
-      --  nodes array). This would allow us to never have to initialize
-      --  the free store, except in a lazy way as nodes become inactive.
+      --  the free store can be represented as having two parts: one comprising
+      --  the non-contiguous inactive nodes linked together in the normal way,
+      --  and the other comprising the contiguous inactive nodes (that are not
+      --  linked together, at the end of the nodes array). This would allow us
+      --  to never have to initialize the free store, except in a lazy way as
+      --  nodes become inactive.
 
-      --  When an element is deleted from the list container, its node
-      --  becomes inactive, and so we set its Prev component to a negative
-      --  value, to indicate that it is now inactive. This provides a useful
-      --  way to detect a dangling cursor reference.
+      --  When an element is deleted from the list container, its node becomes
+      --  inactive, and so we set its Prev component to a negative value, to
+      --  indicate that it is now inactive. This provides a useful way to
+      --  detect a dangling cursor reference.
 
       N (X).Prev := -1;  -- Node is deallocated (not on active list)
 
       if Container.Free >= 0 then
+
          --  The free store has previously been initialized. All we need to
          --  do here is link the newly-free'd node onto the free list.
 
@@ -635,11 +635,12 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          Container.Free := X;
 
       elsif X + 1 = abs Container.Free then
+
          --  The free store has not been initialized, and the node becoming
          --  inactive immediately precedes the start of the free store. All
          --  we need to do is move the start of the free store back by one.
 
-         N (X).Next := 0;  -- Not strictly necessary, but marginally safer
+         N (X).Next := 0;  -- not strictly necessary, but marginally safer
          Container.Free := Container.Free + 1;
 
       else
@@ -650,11 +651,10 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          --  node onto the head of the free store.
 
          --  ???
-         --  See the comments above for an optimization opportunity. If
-         --  the next link for a node on the free store is negative, then
-         --  this means the remaining nodes on the free store are
-         --  physically contiguous, starting as the absolute value of
-         --  that index value.
+         --  See the comments above for an optimization opportunity. If the
+         --  next link for a node on the free store is negative, then this
+         --  means the remaining nodes on the free store are physically
+         --  contiguous, starting as the absolute value of that index value.
 
          Container.Free := abs Container.Free;
 
@@ -689,7 +689,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          Node  : Count_Type := Container.First;
 
       begin
-         for I in 2 .. Container.Length loop
+         for J in 2 .. Container.Length loop
             if Nodes (Nodes (Node).Next).Element < Nodes (Node).Element then
                return False;
             end if;
@@ -766,17 +766,20 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          N : Node_Array renames Container.Nodes;
 
          procedure Partition (Pivot, Back : Count_Type);
+         --  What does this do ???
 
          procedure Sort (Front, Back : Count_Type);
+         --  Internal procedure, what does it do??? rename it???
 
          ---------------
          -- Partition --
          ---------------
 
          procedure Partition (Pivot, Back : Count_Type) is
-            Node : Count_Type := N (Pivot).Next;
+            Node : Count_Type;
 
          begin
+            Node := N (Pivot).Next;
             while Node /= Back loop
                if N (Node).Element < N (Pivot).Element then
                   declare
@@ -2066,21 +2069,21 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node = L.First then  -- eliminates earlier disjunct
+         --  Eliminate earlier disjunct
+
+         if Position.Node = L.First then
             return True;
          end if;
 
-         --  If we get here, we know, per disjunctive syllogism (modus
-         --  tollendo ponens), that this predicate is true:
-         --  N (Position.Node).Prev /= 0
+         --  If we get here, we know (disjunctive syllogism) that this
+         --  predicate is true: N (Position.Node).Prev /= 0
 
          if Position.Node = L.Last then  -- eliminates earlier disjunct
             return True;
          end if;
 
-         --  If we get here, we know, per disjunctive syllogism (modus
-         --  tollendo ponens), that this predicate is true:
-         --  N (Position.Node).Next /= 0
+         --  If we get here, we know (disjunctive syllogism) that this
+         --  predicate is true: N (Position.Node).Next /= 0
 
          if N (N (Position.Node).Next).Prev /= Position.Node then
             return False;

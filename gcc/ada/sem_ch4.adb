@@ -4125,6 +4125,11 @@ package body Sem_Ch4 is
                   Set_Entity_With_Style_Check (Sel, Comp);
                   Generate_Reference (Comp, Sel);
 
+                  --  The selector is not overloadable, so we have a candidate
+                  --  interpretation.
+
+                  Has_Candidate := True;
+
                else
                   goto Next_Comp;
                end if;

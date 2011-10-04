@@ -4130,6 +4130,24 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_REMQUOL:
       case BUILT_IN_FREE:
 	return true;
+      case BUILT_IN_STRDUP:
+      case BUILT_IN_STRNDUP:
+	if (gimple_call_lhs (t))
+	  {
+	    handle_lhs_call (t, gimple_call_lhs (t), gimple_call_flags (t),
+			     NULL, fndecl);
+	    get_constraint_for_ptr_offset (gimple_call_lhs (t),
+					   NULL_TREE, &lhsc);
+	    get_constraint_for_ptr_offset (gimple_call_arg (t, 0),
+					   NULL_TREE, &rhsc);
+	    do_deref (&lhsc);
+	    do_deref (&rhsc);
+	    process_all_all_constraints (lhsc, rhsc);
+	    VEC_free (ce_s, heap, lhsc);
+	    VEC_free (ce_s, heap, rhsc);
+	    return true;
+	  }
+	break;
       /* Trampolines are special - they set up passing the static
 	 frame.  */
       case BUILT_IN_INIT_TRAMPOLINE:
@@ -5589,10 +5607,11 @@ intra_create_variable_infos (void)
       varinfo_t p;
 
       /* For restrict qualified pointers to objects passed by
-         reference build a real representative for the pointed-to object.  */
-      if (DECL_BY_REFERENCE (t)
-	  && POINTER_TYPE_P (TREE_TYPE (t))
-	  && TYPE_RESTRICT (TREE_TYPE (t)))
+         reference build a real representative for the pointed-to object.
+	 Treat restrict qualified references the same.  */
+      if (TYPE_RESTRICT (TREE_TYPE (t))
+	  && ((DECL_BY_REFERENCE (t) && POINTER_TYPE_P (TREE_TYPE (t)))
+	      || TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
 	{
 	  struct constraint_expr lhsc, rhsc;
 	  varinfo_t vi;
@@ -5975,6 +5994,21 @@ pt_solution_empty_p (struct pt_solution *pt)
       && !pt_solution_empty_p (&ipa_escaped_pt))
     return false;
 
+  return true;
+}
+
+/* Return true if the points-to solution *PT only point to a single var, and
+   return the var uid in *UID.  */
+
+bool
+pt_solution_singleton_p (struct pt_solution *pt, unsigned *uid)
+{
+  if (pt->anything || pt->nonlocal || pt->escaped || pt->ipa_escaped
+      || pt->null || pt->vars == NULL
+      || !bitmap_single_bit_set_p (pt->vars))
+    return false;
+
+  *uid = bitmap_first_set_bit (pt->vars);
   return true;
 }
 

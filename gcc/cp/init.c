@@ -100,7 +100,8 @@ dfs_initialize_vtbl_ptrs (tree binfo, void *data)
     {
       tree base_ptr = TREE_VALUE ((tree) data);
 
-      base_ptr = build_base_path (PLUS_EXPR, base_ptr, binfo, /*nonnull=*/1);
+      base_ptr = build_base_path (PLUS_EXPR, base_ptr, binfo, /*nonnull=*/1,
+				  tf_warning_or_error);
 
       expand_virtual_init (binfo, base_ptr);
     }
@@ -492,6 +493,21 @@ perform_member_init (tree member, tree init)
   tree decl;
   tree type = TREE_TYPE (member);
 
+  /* Use the non-static data member initializer if there was no
+     mem-initializer for this field.  */
+  if (init == NULL_TREE)
+    {
+      if (CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (member)))
+	/* Do deferred instantiation of the NSDMI.  */
+	init = (tsubst_copy_and_build
+		(DECL_INITIAL (member),
+		 CLASSTYPE_TI_ARGS (DECL_CONTEXT (member)),
+		 tf_warning_or_error, member, /*function_p=*/false,
+		 /*integral_constant_expression_p=*/false));
+      else
+	init = break_out_target_exprs (DECL_INITIAL (member));
+    }
+
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
   if (warn_ecpp && init == NULL_TREE && TREE_CODE (type) != ARRAY_TYPE)
@@ -579,7 +595,7 @@ perform_member_init (tree member, tree init)
 	    flags |= LOOKUP_DEFAULTED;
 	  if (CP_TYPE_CONST_P (type)
 	      && init == NULL_TREE
-	      && !type_has_user_provided_default_constructor (type))
+	      && default_init_uninitialized_part (type))
 	    /* TYPE_NEEDS_CONSTRUCTING can be set just because we have a
 	       vtable; still give this diagnostic.  */
 	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
@@ -963,7 +979,7 @@ emit_mem_initializers (tree mem_inits)
 	  tree base_addr;
 
 	  base_addr = build_base_path (PLUS_EXPR, current_class_ptr,
-				       subobject, 1);
+				       subobject, 1, tf_warning_or_error);
 	  expand_aggr_init_1 (subobject, NULL_TREE,
 			      cp_build_indirect_ref (base_addr, RO_NULL,
                                                      tf_warning_or_error),
@@ -2088,7 +2104,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     }
 
   if (CP_TYPE_CONST_P (elt_type) && *init == NULL
-      && !type_has_user_provided_default_constructor (elt_type))
+      && default_init_uninitialized_part (elt_type))
     {
       if (complain & tf_error)
         error ("uninitialized const in %<new%> of %q#T", elt_type);

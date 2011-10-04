@@ -264,19 +264,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef _Tp type; };
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    inline _Tp&
+    constexpr _Tp&
     get(array<_Tp, _Nm>& __arr) noexcept
-    { return __arr[_Int]; }
+    { return __arr._M_instance[_Int]; }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    inline _Tp&&
+    constexpr _Tp&&
     get(array<_Tp, _Nm>&& __arr) noexcept
     { return std::move(get<_Int>(__arr)); }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    inline const _Tp&
+    constexpr const _Tp&
     get(const array<_Tp, _Nm>& __arr) noexcept
-    { return __arr[_Int]; }
+    { return __arr._M_instance[_Int]; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

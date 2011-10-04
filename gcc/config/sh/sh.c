@@ -242,7 +242,7 @@ static void sh_file_start (void);
 static int flow_dependent_p (rtx, rtx);
 static void flow_dependent_p_1 (rtx, const_rtx, void *);
 static int shiftcosts (rtx);
-static int andcosts (rtx);
+static int and_xor_ior_costs (rtx, int code);
 static int addsubcosts (rtx);
 static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
@@ -2830,14 +2830,15 @@ shiftcosts (rtx x)
     return shift_insns[value];
 }
 
-/* Return the cost of an AND operation.  */
+/* Return the cost of an AND/XOR/IOR operation.  */
 
 static inline int
-andcosts (rtx x)
+and_xor_ior_costs (rtx x, int code)
 {
   int i;
 
-  /* Anding with a register is a single cycle and instruction.  */
+  /* A logical operation with two registers is a single cycle
+     instruction.  */
   if (!CONST_INT_P (XEXP (x, 1)))
     return 1;
 
@@ -2853,17 +2854,18 @@ andcosts (rtx x)
     }
 
   /* These constants are single cycle extu.[bw] instructions.  */
-  if (i == 0xff || i == 0xffff)
+  if ((i == 0xff || i == 0xffff) && code == AND)
     return 1;
-  /* Constants that can be used in an and immediate instruction in a single
-     cycle, but this requires r0, so make it a little more expensive.  */
+  /* Constants that can be used in an instruction as an immediate are
+     a single cycle, but this requires r0, so make it a little more
+     expensive.  */
   if (CONST_OK_FOR_K08 (i))
     return 2;
-  /* Constants that can be loaded with a mov immediate and an and.
+  /* Constants that can be loaded with a mov immediate need one more cycle.
      This case is probably unnecessary.  */
   if (CONST_OK_FOR_I08 (i))
     return 2;
-  /* Any other constants requires a 2 cycle pc-relative load plus an and.
+  /* Any other constant requires an additional 2 cycle pc-relative load.
      This case is probably unnecessary.  */
   return 3;
 }
@@ -3032,7 +3034,9 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case AND:
-      *total = COSTS_N_INSNS (andcosts (x));
+    case XOR:
+    case IOR:
+      *total = COSTS_N_INSNS (and_xor_ior_costs (x, code));
       return true;
 
     case MULT:

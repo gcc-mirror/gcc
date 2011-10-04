@@ -17,7 +17,10 @@ __go_send_big (struct __go_channel* channel, const void *val, _Bool for_select)
   size_t offset;
 
   if (channel == NULL)
-    __go_panic_msg ("send to nil channel");
+    {
+      // Block forever.
+      __go_select (0, 0, NULL, NULL);
+    }
 
   element_size = channel->element_type->__size;
   alloc_size = (element_size + sizeof (uint64_t) - 1) / sizeof (uint64_t);

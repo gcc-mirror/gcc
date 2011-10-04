@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Implementation</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      allocator&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    "/><link rel="home" href="../index.html" title="The GNU C++ Library"/><link rel="up" href="mt_allocator.html" title="Chapter 20. The mt_allocator"/><link rel="prev" href="bk01pt03ch20s02.html" title="Design Issues"/><link rel="next" href="bk01pt03ch20s04.html" title="Single Thread Example"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Implementation</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch20s02.html">Prev</a> </td><th width="60%" align="center">Chapter 20. The mt_allocator</th><td align="right"> <a accesskey="n" href="bk01pt03ch20s04.html">Next</a></td></tr></table><hr/></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h2 class="title"><a id="allocator.mt.impl"/>Implementation</h2></div></div></div><div class="section" title="Tunable Parameters"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.mt.tune"/>Tunable Parameters</h3></div></div></div><p>Certain allocation parameters can be modified, or tuned. There
+exists a nested <code class="code">struct __pool_base::_Tune</code> that contains all
+these parameters, which include settings for
+</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>Alignment</p></li><li class="listitem"><p>Maximum bytes before calling <code class="code">::operator new</code> directly</p></li><li class="listitem"><p>Minimum bytes</p></li><li class="listitem"><p>Size of underlying global allocations</p></li><li class="listitem"><p>Maximum number of supported threads</p></li><li class="listitem"><p>Migration of deallocations to the global free list</p></li><li class="listitem"><p>Shunt for global <code class="code">new</code> and <code class="code">delete</code></p></li></ul></div><p>Adjusting parameters for a given instance of an allocator can only
+happen before any allocations take place, when the allocator itself is
+initialized. For instance:
+</p><pre class="programlisting">
+#include &lt;ext/mt_allocator.h&gt;
+
+struct pod
+{
+  int i;
+  int j;
+};
+
+int main()
+{
+  typedef pod value_type;
+  typedef __gnu_cxx::__mt_alloc&lt;value_type&gt; allocator_type;
+  typedef __gnu_cxx::__pool_base::_Tune tune_type;
+
+  tune_type t_default;
+  tune_type t_opt(16, 5120, 32, 5120, 20, 10, false);
+  tune_type t_single(16, 5120, 32, 5120, 1, 10, false);
+
+  tune_type t;
+  t = allocator_type::_M_get_options();
+  allocator_type::_M_set_options(t_opt);
+  t = allocator_type::_M_get_options();
+
+  allocator_type a;
+  allocator_type::pointer p1 = a.allocate(128);
+  allocator_type::pointer p2 = a.allocate(5128);
+
+  a.deallocate(p1, 128);
+  a.deallocate(p2, 5128);
+
+  return 0;
+}
+</pre></div><div class="section" title="Initialization"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.mt.init"/>Initialization</h3></div></div></div><p>
+The static variables (pointers to freelists, tuning parameters etc)
+are initialized as above, or are set to the global defaults.
+</p><p>
+The very first allocate() call will always call the
+_S_initialize_once() function.  In order to make sure that this
+function is called exactly once we make use of a __gthread_once call
+in MT applications and check a static bool (_S_init) in ST
+applications.
+</p><p>
+The _S_initialize() function:
+- If the GLIBCXX_FORCE_NEW environment variable is set, it sets the bool
+  _S_force_new to true and then returns. This will cause subsequent calls to
+  allocate() to return memory directly from a new() call, and deallocate will
+  only do a delete() call.
+</p><p>
+- If the GLIBCXX_FORCE_NEW environment variable is not set, both ST and MT
+  applications will:
+  - Calculate the number of bins needed. A bin is a specific power of two size
+    of bytes. I.e., by default the allocator will deal with requests of up to
+    128 bytes (or whatever the value of _S_max_bytes is when _S_init() is
+    called). This means that there will be bins of the following sizes
+    (in bytes): 1, 2, 4, 8, 16, 32, 64, 128.
+
+  - Create the _S_binmap array. All requests are rounded up to the next
+    "large enough" bin. I.e., a request for 29 bytes will cause a block from
+    the "32 byte bin" to be returned to the application. The purpose of
+    _S_binmap is to speed up the process of finding out which bin to use.
+    I.e., the value of _S_binmap[ 29 ] is initialized to 5 (bin 5 = 32 bytes).
+</p><p>
+  - Create the _S_bin array. This array consists of bin_records. There will be
+    as many bin_records in this array as the number of bins that we calculated
+    earlier. I.e., if _S_max_bytes = 128 there will be 8 entries.
+    Each bin_record is then initialized:
+    - bin_record-&gt;first = An array of pointers to block_records. There will be
+      as many block_records pointers as there are maximum number of threads
+      (in a ST application there is only 1 thread, in a MT application there
+      are _S_max_threads).
+      This holds the pointer to the first free block for each thread in this
+      bin. I.e., if we would like to know where the first free block of size 32
+      for thread number 3 is we would look this up by: _S_bin[ 5 ].first[ 3 ]
+
+    The above created block_record pointers members are now initialized to
+    their initial values. I.e. _S_bin[ n ].first[ n ] = NULL;
+</p><p>
+- Additionally a MT application will:
+  - Create a list of free thread id's. The pointer to the first entry
+    is stored in _S_thread_freelist_first. The reason for this approach is
+    that the __gthread_self() call will not return a value that corresponds to
+    the maximum number of threads allowed but rather a process id number or
+    something else. So what we do is that we create a list of thread_records.
+    This list is _S_max_threads long and each entry holds a size_t thread_id
+    which is initialized to 1, 2, 3, 4, 5 and so on up to _S_max_threads.
+    Each time a thread calls allocate() or deallocate() we call
+    _S_get_thread_id() which looks at the value of _S_thread_key which is a
+    thread local storage pointer. If this is NULL we know that this is a newly
+    created thread and we pop the first entry from this list and saves the
+    pointer to this record in the _S_thread_key variable. The next time
+    we will get the pointer to the thread_record back and we use the
+    thread_record-&gt;thread_id as identification. I.e., the first thread that
+    calls allocate will get the first record in this list and thus be thread
+    number 1 and will then find the pointer to its first free 32 byte block
+    in _S_bin[ 5 ].first[ 1 ]
+    When we create the _S_thread_key we also define a destructor
+    (_S_thread_key_destr) which means that when the thread dies, this
+    thread_record is returned to the front of this list and the thread id
+    can then be reused if a new thread is created.
+    This list is protected by a mutex (_S_thread_freelist_mutex) which is only
+    locked when records are removed or added to the list.
+</p><p>
+  - Initialize the free and used counters of each bin_record:
+    - bin_record-&gt;free = An array of size_t. This keeps track of the number
+      of blocks on a specific thread's freelist in each bin. I.e., if a thread
+      has 12 32-byte blocks on it's freelists and allocates one of these, this
+      counter would be decreased to 11.
+
+    - bin_record-&gt;used = An array of size_t. This keeps track of the number
+      of blocks currently in use of this size by this thread. I.e., if a thread
+      has made 678 requests (and no deallocations...) of 32-byte blocks this
+      counter will read 678.
+
+    The above created arrays are now initialized with their initial values.
+    I.e. _S_bin[ n ].free[ n ] = 0;
+</p><p>
+  - Initialize the mutex of each bin_record: The bin_record-&gt;mutex
+    is used to protect the global freelist. This concept of a global
+    freelist is explained in more detail in the section "A multi
+    threaded example", but basically this mutex is locked whenever a
+    block of memory is retrieved or returned to the global freelist
+    for this specific bin. This only occurs when a number of blocks
+    are grabbed from the global list to a thread specific list or when
+    a thread decides to return some blocks to the global freelist.
+</p></div><div class="section" title="Deallocation Notes"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.mt.deallocation"/>Deallocation Notes</h3></div></div></div><p> Notes about deallocation. This allocator does not explicitly
+release memory. Because of this, memory debugging programs like
+valgrind or purify may notice leaks: sorry about this
+inconvenience. Operating systems will reclaim allocated memory at
+program termination anyway. If sidestepping this kind of noise is
+desired, there are three options: use an allocator, like
+<code class="code">new_allocator</code> that releases memory while debugging, use
+GLIBCXX_FORCE_NEW to bypass the allocator's internal pools, or use a
+custom pool datum that releases resources on destruction.
+</p><p>
+  On systems with the function <code class="code">__cxa_atexit</code>, the
+allocator can be forced to free all memory allocated before program
+termination with the member function
+<code class="code">__pool_type::_M_destroy</code>. However, because this member
+function relies on the precise and exactly-conforming ordering of
+static destructors, including those of a static local
+<code class="code">__pool</code> object, it should not be used, ever, on systems
+that don't have the necessary underlying support. In addition, in
+practice, forcing deallocation can be tricky, as it requires the
+<code class="code">__pool</code> object to be fully-constructed before the object
+that uses it is fully constructed. For most (but not all) STL
+containers, this works, as an instance of the allocator is constructed
+as part of a container's constructor. However, this assumption is
+implementation-specific, and subject to change. For an example of a
+pool that frees memory, see the following
+    <a class="link" href="http://gcc.gnu.org/viewcvs/trunk/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup">
+    example.</a>
+</p></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="bk01pt03ch20s02.html">Prev</a> </td><td align="center"><a accesskey="u" href="mt_allocator.html">Up</a></td><td align="right"> <a accesskey="n" href="bk01pt03ch20s04.html">Next</a></td></tr><tr><td align="left" valign="top">Design Issues </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Single Thread Example</td></tr></table></div></body></html>

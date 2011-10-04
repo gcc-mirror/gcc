@@ -1,6 +1,6 @@
 /* md5.c - Functions to compute MD5 message digest of files or memory blocks
    according to the definition of MD5 in RFC 1321 from April 1992.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2011 Free Software Foundation, Inc.
 
    NOTE: This source is derived from an old version taken from the GNU C
    Library (glibc).
@@ -245,9 +245,11 @@ md5_process_bytes (const void *buffer, size_t len, struct md5_ctx *ctx)
           }
       else
 #endif
-      md5_process_block (buffer, len & ~63, ctx);
-      buffer = (const void *) ((const char *) buffer + (len & ~63));
-      len &= 63;
+	{
+	  md5_process_block (buffer, len & ~63, ctx);
+	  buffer = (const void *) ((const char *) buffer + (len & ~63));
+	  len &= 63;
+	}
     }
 
   /* Move remaining bytes in internal buffer.  */

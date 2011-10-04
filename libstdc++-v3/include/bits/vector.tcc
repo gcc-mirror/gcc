@@ -147,9 +147,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector<_Tp, _Alloc>::
     erase(iterator __first, iterator __last)
     {
-      if (__last != end())
-	_GLIBCXX_MOVE3(__last, end(), __first);
-      _M_erase_at_end(__first.base() + (end() - __last));
+      if (__first != __last)
+	{
+	  if (__last != end())
+	    _GLIBCXX_MOVE3(__last, end(), __first);
+	  _M_erase_at_end(__first.base() + (end() - __last));
+	}
       return __first;
     }
 

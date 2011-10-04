@@ -20,6 +20,6 @@ struct call_sum {
 
 int main() {
   // This shouldn't be an error; this is bug 35722.
-  reverse<call_sum>(1,2);	// { dg-bogus "no match" "" { xfail *-*-* } }
-  // { dg-bogus "sorry, unimplemented" "candidate explanation" { xfail *-*-* } 6 }
+  reverse<call_sum>(1,2);	// { dg-bogus "no match" "" }
+  // { dg-bogus "sorry, unimplemented" "candidate explanation" { target *-*-* } 6 }
 }

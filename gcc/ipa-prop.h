@@ -72,11 +72,22 @@ along with GCC; see the file COPYING3.  If not see
 enum jump_func_type
 {
   IPA_JF_UNKNOWN = 0,  /* newly allocated and zeroed jump functions default */
-  IPA_JF_KNOWN_TYPE,        /* represented by field base_binfo */
+  IPA_JF_KNOWN_TYPE,        /* represented by field known_type */
   IPA_JF_CONST,             /* represented by field costant */
   IPA_JF_CONST_MEMBER_PTR,  /* represented by field member_cst */
   IPA_JF_PASS_THROUGH,	    /* represented by field pass_through */
   IPA_JF_ANCESTOR	    /* represented by field ancestor */
+};
+
+/* Structure holding data required to describe a known type jump function.  */
+struct GTY(()) ipa_known_type_data
+{
+  /* Offset of the component of the base_type being described.  */
+  HOST_WIDE_INT offset;
+  /* Type of the whole object.  */
+  tree base_type;
+  /* Type of the component of the object that is being described.  */
+  tree component_type;
 };
 
 /* Structure holding data required to describe a pass-through jump function.  */
@@ -127,7 +138,7 @@ typedef struct GTY (()) ipa_jump_func
      functions and member_cst holds constant c++ member functions.  */
   union jump_func_value
   {
-    tree GTY ((tag ("IPA_JF_KNOWN_TYPE"))) base_binfo;
+    struct ipa_known_type_data GTY ((tag ("IPA_JF_KNOWN_TYPE"))) known_type;
     tree GTY ((tag ("IPA_JF_CONST"))) constant;
     struct ipa_member_ptr_cst GTY ((tag ("IPA_JF_CONST_MEMBER_PTR"))) member_cst;
     struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
@@ -282,7 +293,6 @@ void ipa_free_edge_args_substructures (struct ipa_edge_args *);
 void ipa_free_node_params_substructures (struct ipa_node_params *);
 void ipa_free_all_node_params (void);
 void ipa_free_all_edge_args (void);
-void ipa_create_all_structures_for_iinln (void);
 void ipa_free_all_structures_after_ipa_cp (void);
 void ipa_free_all_structures_after_iinln (void);
 void ipa_register_cgraph_hooks (void);

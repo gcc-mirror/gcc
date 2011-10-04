@@ -2,22 +2,27 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-/* Translate a .goc file into a .c file.  A .goc file is a combination
-   of a limited form of Go with C.  */
+/*
+ * Translate a .goc file into a .c file.  A .goc file is a combination
+ * of a limited form of Go with C.
+ */
 
 /*
-   package PACKAGENAME
-   {# line}
-   func NAME([NAME TYPE { , NAME TYPE }]) [(NAME TYPE { , NAME TYPE })] \{
-     C code with proper brace nesting
-   \}
+	package PACKAGENAME
+	{# line}
+	func NAME([NAME TYPE { , NAME TYPE }]) [(NAME TYPE { , NAME TYPE })] \{
+	  C code with proper brace nesting
+	\}
 */
 
-/* We generate C code which implements the function such that it can
-   be called from Go and executes the C code.  */
+/*
+ * We generate C code which implements the function such that it can
+ * be called from Go and executes the C code.
+ */
 
 #include <assert.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -87,20 +92,34 @@ static struct {
 /* Fixed structure alignment (non-gcc only) */
 int structround = 4;
 
+char *argv0;
+
+static void
+sysfatal(char *fmt, ...)
+{
+	char buf[256];
+	va_list arg;
+
+	va_start(arg, fmt);
+	vsnprintf(buf, sizeof buf, fmt, arg);
+	va_end(arg);
+
+	fprintf(stderr, "%s: %s\n", argv0 ? argv0 : "<prog>", buf);
+	exit(1);
+}
+
 /* Unexpected EOF.  */
 static void
 bad_eof(void)
 {
-	fprintf(stderr, "%s:%u: unexpected EOF\n", file, lineno);
-	exit(1);
+	sysfatal("%s:%ud: unexpected EOF\n", file, lineno);
 }
 
 /* Out of memory.  */
 static void
 bad_mem(void)
 {
-	fprintf(stderr, "%s:%u: out of memory\n", file, lineno);
-	exit(1);
+	sysfatal("%s:%ud: out of memory\n", file, lineno);
 }
 
 /* Allocate memory without fail.  */
@@ -199,8 +218,10 @@ getchar_skipping_comments(void)
 	}
 }
 
-/* Read and return a token.  Tokens are delimited by whitespace or by
-   [(),{}].  The latter are all returned as single characters.  */
+/*
+ * Read and return a token.  Tokens are delimited by whitespace or by
+ * [(),{}].  The latter are all returned as single characters.
+ */
 static char *
 read_token(void)
 {
@@ -262,11 +283,11 @@ read_package(void)
 	char *token;
 
 	token = read_token_no_eof();
+	if (token == NULL)
+		sysfatal("%s:%ud: no token\n", file, lineno);
 	if (strcmp(token, "package") != 0) {
-		fprintf(stderr,
-			"%s:%u: expected \"package\", got \"%s\"\n",
+		sysfatal("%s:%ud: expected \"package\", got \"%s\"\n",
 			file, lineno, token);
-		exit(1);
 	}
 	return read_token_no_eof();
 }
@@ -293,8 +314,10 @@ read_preprocessor_lines(void)
 	}
 }
 
-/* Read a type in Go syntax and return a type in C syntax.  We only
-   permit basic types and pointers.  */
+/*
+ * Read a type in Go syntax and return a type in C syntax.  We only
+ * permit basic types and pointers.
+ */
 static char *
 read_type(void)
 {
@@ -337,14 +360,15 @@ type_size(char *p)
 		if(strcmp(type_table[i].name, p) == 0)
 			return type_table[i].size;
 	if(!gcc) {
-		fprintf(stderr, "%s:%u: unknown type %s\n", file, lineno, p);
-		exit(1);
+		sysfatal("%s:%ud: unknown type %s\n", file, lineno, p);
 	}
 	return 1;
 }
 
-/* Read a list of parameters.  Each parameter is a name and a type.
-   The list ends with a ')'.  We have already read the '('.  */
+/*
+ * Read a list of parameters.  Each parameter is a name and a type.
+ * The list ends with a ')'.  We have already read the '('.
+ */
 static struct params *
 read_params(int *poffset)
 {
@@ -380,17 +404,18 @@ read_params(int *poffset)
 		}
 	}
 	if (strcmp(token, ")") != 0) {
-		fprintf(stderr, "%s:%u: expected '('\n",
+		sysfatal("%s:%ud: expected '('\n",
 			file, lineno);
-		exit(1);
 	}
 	if (poffset != NULL)
 		*poffset = offset;
 	return ret;
 }
 
-/* Read a function header.  This reads up to and including the initial
-   '{' character.  Returns 1 if it read a header, 0 at EOF.  */
+/*
+ * Read a function header.  This reads up to and including the initial
+ * '{' character.  Returns 1 if it read a header, 0 at EOF.
+ */
 static int
 read_func_header(char **name, struct params **params, int *paramwid, struct params **rets)
 {
@@ -421,9 +446,8 @@ read_func_header(char **name, struct params **params, int *paramwid, struct para
 
 	token = read_token();
 	if (token == NULL || strcmp(token, "(") != 0) {
-		fprintf(stderr, "%s:%u: expected \"(\"\n",
+		sysfatal("%s:%ud: expected \"(\"\n",
 			file, lineno);
-		exit(1);
 	}
 	*params = read_params(paramwid);
 
@@ -435,9 +459,8 @@ read_func_header(char **name, struct params **params, int *paramwid, struct para
 		token = read_token();
 	}
 	if (token == NULL || strcmp(token, "{") != 0) {
-		fprintf(stderr, "%s:%u: expected \"{\"\n",
+		sysfatal("%s:%ud: expected \"{\"\n",
 			file, lineno);
-		exit(1);
 	}
 	return 1;
 }
@@ -589,8 +612,10 @@ write_func_trailer(char *package, char *name,
 		write_6g_func_trailer(rets);
 }
 
-/* Read and write the body of the function, ending in an unnested }
-   (which is read but not written).  */
+/*
+ * Read and write the body of the function, ending in an unnested }
+ * (which is read but not written).
+ */
 static void
 copy_body(void)
 {
@@ -677,15 +702,15 @@ process_file(void)
 static void
 usage(void)
 {
-	fprintf(stderr, "Usage: goc2c [--6g | --gc] [--go-prefix PREFIX] [file]\n");
-	exit(1);
+	sysfatal("Usage: goc2c [--6g | --gc] [--go-prefix PREFIX] [file]\n");
 }
 
-int
+void
 main(int argc, char **argv)
 {
 	char *goarch;
 
+	argv0 = argv[0];
 	while(argc > 1 && argv[1][0] == '-') {
 		if(strcmp(argv[1], "-") == 0)
 			break;
@@ -706,7 +731,7 @@ main(int argc, char **argv)
 	if(argc <= 1 || strcmp(argv[1], "-") == 0) {
 		file = "<stdin>";
 		process_file();
-		return 0;
+		exit(0);
 	}
 
 	if(argc > 2)
@@ -714,8 +739,7 @@ main(int argc, char **argv)
 
 	file = argv[1];
 	if(freopen(file, "r", stdin) == 0) {
-		fprintf(stderr, "open %s: %s\n", file, strerror(errno));
-		exit(1);
+		sysfatal("open %s: %r\n", file);
 	}
 
 	if(!gcc) {
@@ -731,5 +755,5 @@ main(int argc, char **argv)
 	}
 
 	process_file();
-	return 0;
+	exit(0);
 }

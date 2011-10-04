@@ -576,8 +576,8 @@
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_1")))]
@@ -612,8 +612,8 @@
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_2")))]
@@ -649,16 +649,16 @@
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmul.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (if_then_else
-                                    (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                    (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32"))
-                                  (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                  (if_then_else (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32")
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32")))))]
 )
@@ -671,16 +671,16 @@
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmla.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vmla_ddd")
                                   (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (if_then_else
-                                    (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                    (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                                     (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
-                                  (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                  (if_then_else (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_qqq_8_16")
                                     (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
 )
@@ -693,16 +693,16 @@
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmls.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vmla_ddd")
                                   (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (if_then_else
-                                    (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                    (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                                     (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
-                                  (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                  (if_then_else (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_qqq_8_16")
                                     (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
 )
@@ -902,8 +902,8 @@
   "TARGET_NEON"
   "vabs.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_3")))]
@@ -915,8 +915,8 @@
   "TARGET_NEON"
   "vneg.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_3")))]
@@ -947,7 +947,7 @@
   "TARGET_NEON"
   "vmin.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_vadd_ddd_vabs_dd")
                     (const_string "neon_int_5")))]
 )
@@ -959,7 +959,7 @@
   "TARGET_NEON"
   "vmax.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_vadd_ddd_vabs_dd")
                     (const_string "neon_int_5")))]
 )
@@ -985,7 +985,7 @@
       }
   }
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_vshl_ddd")
                     (const_string "neon_shift_3")))]
 )
@@ -1001,7 +1001,7 @@
 					false);
   }
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_vshl_ddd")
                     (const_string "neon_shift_3")))]
 )
@@ -1017,7 +1017,7 @@
 					false);
   }              
   [(set (attr "neon_type")
-	(if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+	(if_then_else (match_test "<Is_d_reg>")
 		      (const_string "neon_vshl_ddd")
 		      (const_string "neon_shift_3")))]
 )
@@ -1035,7 +1035,7 @@
   "TARGET_NEON"
   "vshl.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_vshl_ddd")
                     (const_string "neon_shift_3")))]
 )
@@ -1051,7 +1051,7 @@
   "TARGET_NEON"
   "vshl.<V_u_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_vshl_ddd")
                     (const_string "neon_shift_3")))]
 )
@@ -1251,66 +1251,14 @@
                     (const_string "neon_int_1") (const_string "neon_int_5")))]
 )
 
-; FIXME: We wouldn't need the following insns if we could write subregs of
-; vector registers. Make an attempt at removing unnecessary moves, though
-; we're really at the mercy of the register allocator.
-
-(define_insn "neon_move_lo_quad_<mode>"
-  [(set (match_operand:ANY128 0 "s_register_operand" "+w")
-        (vec_concat:ANY128
-          (match_operand:<V_HALF> 1 "s_register_operand" "w")
-          (vec_select:<V_HALF> 
-		(match_dup 0)
-	        (match_operand:ANY128 2 "vect_par_constant_high" ""))))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%e0, %P1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_move_hi_quad_<mode>"
-  [(set (match_operand:ANY128 0 "s_register_operand" "+w")
-        (vec_concat:ANY128
-          (vec_select:<V_HALF>
-		(match_dup 0)
-	        (match_operand:ANY128 2 "vect_par_constant_low" ""))
-          (match_operand:<V_HALF> 1 "s_register_operand" "w")))]
-	   
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%f0, %P1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
 (define_expand "move_hi_quad_<mode>"
  [(match_operand:ANY128 0 "s_register_operand" "")
   (match_operand:<V_HALF> 1 "s_register_operand" "")]
  "TARGET_NEON"
 {
-  rtvec v = rtvec_alloc (<V_mode_nunits>/2);
-  rtx t1;
-  int i;
-
-  for (i=0; i < (<V_mode_nunits>/2); i++)
-     RTVEC_ELT (v, i) = GEN_INT (i);
-
-  t1 = gen_rtx_PARALLEL (<MODE>mode, v);
-  emit_insn (gen_neon_move_hi_quad_<mode> (operands[0], operands[1], t1));
-
+  emit_move_insn (simplify_gen_subreg (<V_HALF>mode, operands[0], <MODE>mode,
+				       GET_MODE_SIZE (<V_HALF>mode)),
+		  operands[1]);
   DONE;
 })
 
@@ -1319,16 +1267,9 @@
   (match_operand:<V_HALF> 1 "s_register_operand" "")]
  "TARGET_NEON"
 {
-  rtvec v = rtvec_alloc (<V_mode_nunits>/2);
-  rtx t1;
-  int i;
-
-  for (i=0; i < (<V_mode_nunits>/2); i++)
-     RTVEC_ELT (v, i) = GEN_INT ((<V_mode_nunits>/2) + i);
-
-  t1 = gen_rtx_PARALLEL (<MODE>mode, v);
-  emit_insn (gen_neon_move_lo_quad_<mode> (operands[0], operands[1], t1));
-
+  emit_move_insn (simplify_gen_subreg (<V_HALF>mode, operands[0],
+				       <MODE>mode, 0),
+		  operands[1]);
   DONE;
 })
 
@@ -1491,8 +1432,8 @@
   "vpadd.<V_if_elem>\t%P0, %P1, %P2"
   ;; Assume this schedules like vadd.
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_1")))]
@@ -1507,7 +1448,7 @@
   "vpmin.<V_s_elem>\t%P0, %P1, %P2"
   ;; Assume this schedules like vmin.
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_vadd_ddd_vabs_dd")
                     (const_string "neon_int_5")))]
 )
@@ -1521,7 +1462,7 @@
   "vpmax.<V_s_elem>\t%P0, %P1, %P2"
   ;; Assume this schedules like vmax.
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_vadd_ddd_vabs_dd")
                     (const_string "neon_int_5")))]
 )
@@ -1794,8 +1735,8 @@
   "TARGET_NEON"
   "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_1")))]
@@ -1873,16 +1814,16 @@
   "TARGET_NEON"
   "vmul.%F3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (if_then_else
-                                    (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                    (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32"))
-                                  (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                  (if_then_else (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32")
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32")))))]
 )
@@ -1915,16 +1856,16 @@
   "TARGET_NEON"
   "vmla.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vmla_ddd")
                                   (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (if_then_else
-                                    (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                    (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                                     (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
-                                  (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                  (if_then_else (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_qqq_8_16")
                                     (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
 )
@@ -1939,7 +1880,7 @@
   "TARGET_NEON"
   "vmlal.%T4%#<V_sz_elem>\t%q0, %P2, %P3"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -1972,17 +1913,17 @@
   "TARGET_NEON"
   "vmls.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vmla_ddd")
                                   (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (if_then_else
-                                    (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                    (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                                     (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
                                   (if_then_else
-                                    (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                                    (match_test "<Scalar_mul_8_16>")
                                     (const_string "neon_mla_qqq_8_16")
                                     (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
 )
@@ -1997,7 +1938,7 @@
   "TARGET_NEON"
   "vmlsl.%T4%#<V_sz_elem>\t%q0, %P2, %P3"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -2011,11 +1952,11 @@
   "TARGET_NEON"
   "vq%O3dmulh.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
-        (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
+        (if_then_else (match_test "<Scalar_mul_8_16>")
                       (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
                       (const_string "neon_mul_qqq_8_16_32_ddd_32"))
-        (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+        (if_then_else (match_test "<Scalar_mul_8_16>")
                       (const_string "neon_mul_qqq_8_16_32_ddd_32")
                       (const_string "neon_mul_qqq_8_16_32_ddd_32"))))]
 )
@@ -2030,7 +1971,7 @@
   "TARGET_NEON"
   "vqdmlal.<V_s_elem>\t%q0, %P2, %P3"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -2045,7 +1986,7 @@
   "TARGET_NEON"
   "vqdmlsl.<V_s_elem>\t%q0, %P2, %P3"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -2059,7 +2000,7 @@
   "TARGET_NEON"
   "vmull.%T3%#<V_sz_elem>\t%q0, %P1, %P2"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
 )
@@ -2073,7 +2014,7 @@
   "TARGET_NEON"
   "vqdmull.<V_s_elem>\t%q0, %P1, %P2"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
 )
@@ -2103,8 +2044,8 @@
   "TARGET_NEON"
   "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_2")))]
@@ -2177,8 +2118,8 @@
   vceq.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
   vceq.<V_if_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_5")))]
@@ -2196,8 +2137,8 @@
   vcge.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
   vcge.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                   (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
+                   (if_then_else (match_test "<Is_d_reg>")
                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
                    (const_string "neon_int_5")))]
@@ -2215,8 +2156,8 @@
   vcgt.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
   vcgt.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                   (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
+                   (if_then_else (match_test "<Is_d_reg>")
                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
                    (const_string "neon_int_5")))]
@@ -2235,8 +2176,8 @@
   "TARGET_NEON"
   "vcle.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_5")))]
@@ -2252,8 +2193,8 @@
   "TARGET_NEON"
   "vclt.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                    (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_float_mode>")
+                    (if_then_else (match_test "<Is_d_reg>")
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_5")))]
@@ -2268,7 +2209,7 @@
   "TARGET_NEON"
   "vacge.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -2282,7 +2223,7 @@
   "TARGET_NEON"
   "vacgt.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -2307,8 +2248,8 @@
   "TARGET_NEON"
   "vabd.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                   (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
+                   (if_then_else (match_test "<Is_d_reg>")
                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
                    (const_string "neon_int_5")))]
@@ -2335,7 +2276,7 @@
   "TARGET_NEON"
   "vaba.%T4%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
                    (const_string "neon_vaba") (const_string "neon_vaba_qqq")))]
 )
 
@@ -2360,8 +2301,8 @@
   "TARGET_NEON"
   "vmax.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-    (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                  (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+    (if_then_else (match_test "<Is_float_mode>")
+                  (if_then_else (match_test "<Is_d_reg>")
                                 (const_string "neon_fp_vadd_ddd_vabs_dd")
                                 (const_string "neon_fp_vadd_qqq_vabs_qq"))
                   (const_string "neon_int_5")))]
@@ -2376,8 +2317,8 @@
   "TARGET_NEON"
   "vmin.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-    (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                  (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+    (if_then_else (match_test "<Is_float_mode>")
+                  (if_then_else (match_test "<Is_d_reg>")
                                 (const_string "neon_fp_vadd_ddd_vabs_dd")
                                 (const_string "neon_fp_vadd_qqq_vabs_qq"))
                   (const_string "neon_int_5")))]
@@ -2428,7 +2369,7 @@
   "vpmax.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   ;; Assume this schedules like vmax.
   [(set (attr "neon_type")
-    (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+    (if_then_else (match_test "<Is_float_mode>")
                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                   (const_string "neon_int_5")))]
 )
@@ -2443,7 +2384,7 @@
   "vpmin.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   ;; Assume this schedules like vmin.
   [(set (attr "neon_type")
-    (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+    (if_then_else (match_test "<Is_float_mode>")
                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                   (const_string "neon_int_5")))]
 )
@@ -2457,7 +2398,7 @@
   "TARGET_NEON"
   "vrecps.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_fp_vrecps_vrsqrts_ddd")
                     (const_string "neon_fp_vrecps_vrsqrts_qqq")))]
 )
@@ -2471,7 +2412,7 @@
   "TARGET_NEON"
   "vrsqrts.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_fp_vrecps_vrsqrts_ddd")
                     (const_string "neon_fp_vrecps_vrsqrts_qqq")))]
 )
@@ -2570,7 +2511,7 @@
   "TARGET_NEON"
   "vrecpe.<V_u_elem>\t%<V_reg>0, %<V_reg>1"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_fp_vadd_ddd_vabs_dd")
                     (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -2583,7 +2524,7 @@
   "TARGET_NEON"
   "vrsqrte.<V_u_elem>\t%<V_reg>0, %<V_reg>1"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_fp_vadd_ddd_vabs_dd")
                     (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -2969,183 +2910,27 @@
    (set_attr "neon_type" "neon_bp_simple")]
 )
 
-(define_insn "neon_vget_highv16qi"
-  [(set (match_operand:V8QI 0 "s_register_operand" "=w")
-	(vec_select:V8QI (match_operand:V16QI 1 "s_register_operand" "w")
-                         (parallel [(const_int 8) (const_int 9)
-			            (const_int 10) (const_int 11)
-				    (const_int 12) (const_int 13)
-				    (const_int 14) (const_int 15)])))]
+(define_expand "neon_vget_high<mode>"
+  [(match_operand:<V_HALF> 0 "s_register_operand")
+   (match_operand:VQX 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
+  emit_move_insn (operands[0],
+		  simplify_gen_subreg (<V_HALF>mode, operands[1], <MODE>mode,
+				       GET_MODE_SIZE (<V_HALF>mode)));
+  DONE;
+})
 
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv8hi"
-  [(set (match_operand:V4HI 0 "s_register_operand" "=w")
-	(vec_select:V4HI (match_operand:V8HI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 4) (const_int 5)
-			            (const_int 6) (const_int 7)])))]
+(define_expand "neon_vget_low<mode>"
+  [(match_operand:<V_HALF> 0 "s_register_operand")
+   (match_operand:VQX 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv4si"
-  [(set (match_operand:V2SI 0 "s_register_operand" "=w")
-	(vec_select:V2SI (match_operand:V4SI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 2) (const_int 3)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv4sf"
-  [(set (match_operand:V2SF 0 "s_register_operand" "=w")
-	(vec_select:V2SF (match_operand:V4SF 1 "s_register_operand" "w")
-	                 (parallel [(const_int 2) (const_int 3)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_highv2di"
-  [(set (match_operand:DI 0 "s_register_operand" "=w")
-	(vec_select:DI (match_operand:V2DI 1 "s_register_operand" "w")
-	               (parallel [(const_int 1)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src + 2)
-    return "vmov\t%P0, %f1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv16qi"
-  [(set (match_operand:V8QI 0 "s_register_operand" "=w")
-	(vec_select:V8QI (match_operand:V16QI 1 "s_register_operand" "w")
-                         (parallel [(const_int 0) (const_int 1)
-			            (const_int 2) (const_int 3)
-				    (const_int 4) (const_int 5)
-				    (const_int 6) (const_int 7)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv8hi"
-  [(set (match_operand:V4HI 0 "s_register_operand" "=w")
-	(vec_select:V4HI (match_operand:V8HI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 0) (const_int 1)
-			            (const_int 2) (const_int 3)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv4si"
-  [(set (match_operand:V2SI 0 "s_register_operand" "=w")
-	(vec_select:V2SI (match_operand:V4SI 1 "s_register_operand" "w")
-	                 (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv4sf"
-  [(set (match_operand:V2SF 0 "s_register_operand" "=w")
-	(vec_select:V2SF (match_operand:V4SF 1 "s_register_operand" "w")
-	                 (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lowv2di"
-  [(set (match_operand:DI 0 "s_register_operand" "=w")
-	(vec_select:DI (match_operand:V2DI 1 "s_register_operand" "w")
-	               (parallel [(const_int 0)])))]
-  "TARGET_NEON"
-{
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
-
-  if (dest != src)
-    return "vmov\t%P0, %e1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
+  emit_move_insn (operands[0],
+		  simplify_gen_subreg (<V_HALF>mode, operands[1],
+				       <MODE>mode, 0));
+  DONE;
+})
 
 (define_insn "neon_vcvt<mode>"
   [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
@@ -3155,7 +2940,7 @@
   "TARGET_NEON"
   "vcvt.%T2%#32.f32\t%<V_reg>0, %<V_reg>1"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -3168,7 +2953,7 @@
   "TARGET_NEON"
   "vcvt.f32.%T2%#32\t%<V_reg>0, %<V_reg>1"
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -3185,7 +2970,7 @@
   return "vcvt.%T3%#32.f32\t%<V_reg>0, %<V_reg>1, %2";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -3202,7 +2987,7 @@
   return "vcvt.f32.%T3%#32\t%<V_reg>0, %<V_reg>1, %2";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+     (if_then_else (match_test "<Is_d_reg>")
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
@@ -3261,9 +3046,9 @@
   return "vmul.<V_if_elem>\t%P0, %P1, %P2[%c3]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
                    (const_string "neon_fp_vmul_ddd")
-                   (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                   (if_then_else (match_test "<Scalar_mul_8_16>")
                                  (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
                                  (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar"))))]
 )
@@ -3282,9 +3067,9 @@
   return "vmul.<V_if_elem>\t%q0, %q1, %P2[%c3]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
                    (const_string "neon_fp_vmul_qqd")
-                   (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                   (if_then_else (match_test "<Scalar_mul_8_16>")
                                  (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")
                                  (const_string "neon_mul_qqd_32_scalar"))))]
 )
@@ -3303,7 +3088,7 @@
   return "vmull.%T4%#<V_sz_elem>\t%q0, %P1, %P2[%c3]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
 )
@@ -3322,7 +3107,7 @@
   return "vqdmull.<V_s_elem>\t%q0, %P1, %P2[%c3]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
 )
@@ -3341,7 +3126,7 @@
   return "vq%O4dmulh.%T4%#<V_sz_elem>\t%q0, %q1, %P2[%c3]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")
                    (const_string "neon_mul_qqd_32_scalar")))]
 )
@@ -3360,7 +3145,7 @@
   return "vq%O4dmulh.%T4%#<V_sz_elem>\t%P0, %P1, %P2[%c3]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
 )
@@ -3380,9 +3165,9 @@
   return "vmla.<V_if_elem>\t%P0, %P2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
                    (const_string "neon_fp_vmla_ddd_scalar")
-                   (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                   (if_then_else (match_test "<Scalar_mul_8_16>")
                                  (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
                                  (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))))]
 )
@@ -3402,9 +3187,9 @@
   return "vmla.<V_if_elem>\t%q0, %q2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
                    (const_string "neon_fp_vmla_qqq_scalar")
-                   (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                   (if_then_else (match_test "<Scalar_mul_8_16>")
                                  (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")
                                  (const_string "neon_mla_qqq_32_qqd_32_scalar"))))]
 )
@@ -3424,7 +3209,7 @@
   return "vmlal.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -3444,7 +3229,7 @@
   return "vqdmlal.<V_s_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -3464,9 +3249,9 @@
   return "vmls.<V_if_elem>\t%P0, %P2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
                    (const_string "neon_fp_vmla_ddd_scalar")
-                   (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                   (if_then_else (match_test "<Scalar_mul_8_16>")
                                  (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
                                  (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))))]
 )
@@ -3486,9 +3271,9 @@
   return "vmls.<V_if_elem>\t%q0, %q2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+     (if_then_else (match_test "<Is_float_mode>")
                    (const_string "neon_fp_vmla_qqq_scalar")
-                   (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+                   (if_then_else (match_test "<Scalar_mul_8_16>")
                                  (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")
                                  (const_string "neon_mla_qqq_32_qqd_32_scalar"))))]
 )
@@ -3508,7 +3293,7 @@
   return "vmlsl.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -3528,7 +3313,7 @@
   return "vqdmlsl.<V_s_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set (attr "neon_type")
-     (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
+     (if_then_else (match_test "<Scalar_mul_8_16>")
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
@@ -3756,7 +3541,7 @@
   return "vext.<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2, %3";
 }
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_bp_simple")
                     (const_string "neon_bp_2cycle")))]
 )
@@ -3834,7 +3619,7 @@
   "TARGET_NEON"
   "v%O3shl.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_vshl_ddd")
                     (const_string "neon_shift_3")))]
 )
@@ -3848,7 +3633,7 @@
   "TARGET_NEON"
   "vq%O3shl.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_shift_2")
                     (const_string "neon_vqshl_vrshl_vqrshl_qqq")))]
 )
@@ -3993,7 +3778,7 @@
   return "vsri.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
 }
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_shift_1")
                     (const_string "neon_shift_3")))]
 )
@@ -4010,7 +3795,7 @@
   return "vsli.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
 }
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_shift_1")
                     (const_string "neon_shift_3")))]
 )
@@ -4182,7 +3967,7 @@
   "TARGET_NEON"
   "vtrn.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_bp_simple")
                     (const_string "neon_bp_3cycle")))]
 )
@@ -4209,7 +3994,7 @@
   "TARGET_NEON"
   "vzip.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_bp_simple")
                     (const_string "neon_bp_3cycle")))]
 )
@@ -4236,7 +4021,7 @@
   "TARGET_NEON"
   "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
   [(set (attr "neon_type")
-      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+      (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_bp_simple")
                     (const_string "neon_bp_3cycle")))]
 )
@@ -5665,3 +5450,32 @@
   emit_insn (gen_neon_vec_pack_trunc_<V_double> (operands[0], tempreg));
   DONE;
 })
+
+(define_insn "neon_vabd<mode>_2"
+ [(set (match_operand:VDQ 0 "s_register_operand" "=w")
+       (abs:VDQ (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
+                           (match_operand:VDQ 2 "s_register_operand" "w"))))]
+ "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ "vabd.<V_s_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set (attr "neon_type")
+       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+                     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
+                     (const_string "neon_int_5")))]
+)
+
+(define_insn "neon_vabd<mode>_3"
+ [(set (match_operand:VDQ 0 "s_register_operand" "=w")
+       (abs:VDQ (unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "w")
+                             (match_operand:VDQ 2 "s_register_operand" "w")]
+                 UNSPEC_VSUB)))]
+ "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ "vabd.<V_if_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set (attr "neon_type")
+       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
+                     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
+                     (const_string "neon_int_5")))]
+)

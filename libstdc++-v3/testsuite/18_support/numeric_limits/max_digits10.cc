@@ -3,7 +3,7 @@
 
 // 2010-02-25  Ed Smith-Rowland
 
-// Copyright (C) 2010 Free Software Foundation
+// Copyright (C) 2010, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,6 +46,12 @@ test01()
   VERIFY( std::numeric_limits<unsigned long long>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<char16_t>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<char32_t>::max_digits10 == 0 );
+
+  // GNU Extensions.
+#ifdef _GLIBCXX_USE_INT128
+  VERIFY( std::numeric_limits<__int128>::max_digits10 == 0 );
+  VERIFY( std::numeric_limits<unsigned __int128>::max_digits10 == 0 );
+#endif
 
   const int f_max_digits10 = (2 + std::numeric_limits<float>::digits
 			      * 643 / 2136);

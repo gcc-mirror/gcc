@@ -31,14 +31,15 @@ along with GCC; see the file COPYING3.  If not see
 /* Output the STRING constant to the string
    table in OB.  Then put the index onto the INDEX_STREAM.  */
 
-static void
-write_string_cst (struct output_block *ob,
-		   struct lto_output_stream *index_stream,
-		   tree string)
+void
+streamer_write_string_cst (struct output_block *ob,
+			   struct lto_output_stream *index_stream,
+			   tree string)
 {
   streamer_write_string_with_length (ob, index_stream,
-				     TREE_STRING_POINTER (string),
-				     TREE_STRING_LENGTH (string),
+				     string ? TREE_STRING_POINTER (string)
+					    : NULL,
+				     string ? TREE_STRING_LENGTH (string) : 0,
 				     true);
 }
 
@@ -866,7 +867,7 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
   /* The text in strings and identifiers are completely emitted in
      the header.  */
   if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    write_string_cst (ob, ob->main_stream, expr);
+    streamer_write_string_cst (ob, ob->main_stream, expr);
   else if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     write_identifier (ob, ob->main_stream, expr);
   else if (CODE_CONTAINS_STRUCT (code, TS_VEC))

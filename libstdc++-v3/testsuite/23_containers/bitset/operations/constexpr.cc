@@ -26,15 +26,15 @@ int main()
   typedef std::_Base_bitset<6> bitset_base;
   constexpr bitset_base base = bitset_base();
 
-  constexpr auto r1 = base._M_getword(2);
+  constexpr auto r1 __attribute__((unused)) = base._M_getword(2);
   // constexpr auto r2 = base._M_getdata(); // error, pointer to this
-  auto r2 = base._M_getdata(); 
-  constexpr auto r3 = base._M_hiword();
+  auto r2 __attribute__((unused)) = base._M_getdata(); 
+  constexpr auto r3 __attribute__((unused)) = base._M_hiword();
 
   // bitset operators
   typedef std::bitset<6> bitset_type;
   constexpr bitset_type a = bitset_type();
-  constexpr auto v = a[0];
+  constexpr auto v __attribute__((unused)) = a[0];
 
   return 0;
 }

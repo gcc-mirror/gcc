@@ -9,15 +9,35 @@ package unicode
 const (
 	MaxRune         = 0x10FFFF // Maximum valid Unicode code point.
 	ReplacementChar = 0xFFFD   // Represents invalid code points.
+	MaxASCII        = 0x7F     // maximum ASCII value.
+	MaxLatin1       = 0xFF     // maximum Latin-1 value.
 )
 
+// RangeTable defines a set of Unicode code points by listing the ranges of
+// code points within the set. The ranges are listed in two slices
+// to save space: a slice of 16-bit ranges and a slice of 32-bit ranges.
+// The two slices must be in sorted order and non-overlapping.
+// Also, R32 should contain only values >= 0x10000 (1<<16).
+type RangeTable struct {
+	R16 []Range16
+	R32 []Range32
+}
 
-// The representation of a range of Unicode code points.  The range runs from Lo to Hi
+// Range16 represents of a range of 16-bit Unicode code points.  The range runs from Lo to Hi
 // inclusive and has the specified stride.
-type Range struct {
-	Lo     int
-	Hi     int
-	Stride int
+type Range16 struct {
+	Lo     uint16
+	Hi     uint16
+	Stride uint16
+}
+
+// Range32 represents of a range of Unicode code points and is used when one or
+// more of the values will not fit in 16 bits.  The range runs from Lo to Hi
+// inclusive and has the specified stride. Lo and Hi must always be >= 1<<16.
+type Range32 struct {
+	Lo     uint32
+	Hi     uint32
+	Stride uint32
 }
 
 // CaseRange represents a range of Unicode code points for simple (one
@@ -31,8 +51,8 @@ type Range struct {
 //	{UpperLower, UpperLower, UpperLower}
 // The constant UpperLower has an otherwise impossible delta value.
 type CaseRange struct {
-	Lo    int
-	Hi    int
+	Lo    uint32
+	Hi    uint32
 	Delta d
 }
 
@@ -60,22 +80,8 @@ const (
 	UpperLower = MaxRune + 1 // (Cannot be a valid delta.)
 )
 
-// Is tests whether rune is in the specified table of ranges.
-func Is(ranges []Range, rune int) bool {
-	// common case: rune is ASCII or Latin-1
-	if rune < 0x100 {
-		for _, r := range ranges {
-			if rune > r.Hi {
-				continue
-			}
-			if rune < r.Lo {
-				return false
-			}
-			return (rune-r.Lo)%r.Stride == 0
-		}
-		return false
-	}
-
+// is16 uses binary search to test whether rune is in the specified slice of 16-bit ranges.
+func is16(ranges []Range16, rune uint16) bool {
 	// binary search over ranges
 	lo := 0
 	hi := len(ranges)
@@ -94,49 +100,78 @@ func Is(ranges []Range, rune int) bool {
 	return false
 }
 
+// is32 uses binary search to test whether rune is in the specified slice of 32-bit ranges.
+func is32(ranges []Range32, rune uint32) bool {
+	// binary search over ranges
+	lo := 0
+	hi := len(ranges)
+	for lo < hi {
+		m := lo + (hi-lo)/2
+		r := ranges[m]
+		if r.Lo <= rune && rune <= r.Hi {
+			return (rune-r.Lo)%r.Stride == 0
+		}
+		if rune < r.Lo {
+			hi = m
+		} else {
+			lo = m + 1
+		}
+	}
+	return false
+}
+
+// Is tests whether rune is in the specified table of ranges.
+func Is(rangeTab *RangeTable, rune int) bool {
+	// common case: rune is ASCII or Latin-1.
+	if uint32(rune) <= MaxLatin1 {
+		// Only need to check R16, since R32 is always >= 1<<16.
+		r16 := uint16(rune)
+		for _, r := range rangeTab.R16 {
+			if r16 > r.Hi {
+				continue
+			}
+			if r16 < r.Lo {
+				return false
+			}
+			return (r16-r.Lo)%r.Stride == 0
+		}
+		return false
+	}
+	r16 := rangeTab.R16
+	if len(r16) > 0 && rune <= int(r16[len(r16)-1].Hi) {
+		return is16(r16, uint16(rune))
+	}
+	r32 := rangeTab.R32
+	if len(r32) > 0 && rune >= int(r32[0].Lo) {
+		return is32(r32, uint32(rune))
+	}
+	return false
+}
+
 // IsUpper reports whether the rune is an upper case letter.
 func IsUpper(rune int) bool {
-	if rune < 0x80 { // quick ASCII check
-		return 'A' <= rune && rune <= 'Z'
+	// See comment in IsGraphic.
+	if uint32(rune) <= MaxLatin1 {
+		return properties[uint8(rune)]&pLu != 0
 	}
 	return Is(Upper, rune)
 }
 
 // IsLower reports whether the rune is a lower case letter.
 func IsLower(rune int) bool {
-	if rune < 0x80 { // quick ASCII check
-		return 'a' <= rune && rune <= 'z'
+	// See comment in IsGraphic.
+	if uint32(rune) <= MaxLatin1 {
+		return properties[uint8(rune)]&pLl != 0
 	}
 	return Is(Lower, rune)
 }
 
 // IsTitle reports whether the rune is a title case letter.
 func IsTitle(rune int) bool {
-	if rune < 0x80 { // quick ASCII check
+	if rune <= MaxLatin1 {
 		return false
 	}
 	return Is(Title, rune)
-}
-
-// IsLetter reports whether the rune is a letter.
-func IsLetter(rune int) bool {
-	if rune < 0x80 { // quick ASCII check
-		rune &^= 'a' - 'A'
-		return 'A' <= rune && rune <= 'Z'
-	}
-	return Is(Letter, rune)
-}
-
-// IsSpace reports whether the rune is a white space character.
-func IsSpace(rune int) bool {
-	if rune <= 0xFF { // quick Latin-1 check
-		switch rune {
-		case '\t', '\n', '\v', '\f', '\r', ' ', 0x85, 0xA0:
-			return true
-		}
-		return false
-	}
-	return Is(White_Space, rune)
 }
 
 // to maps the rune using the specified case mapping.
@@ -150,7 +185,7 @@ func to(_case int, rune int, caseRange []CaseRange) int {
 	for lo < hi {
 		m := lo + (hi-lo)/2
 		r := caseRange[m]
-		if r.Lo <= rune && rune <= r.Hi {
+		if int(r.Lo) <= rune && rune <= int(r.Hi) {
 			delta := int(r.Delta[_case])
 			if delta > MaxRune {
 				// In an Upper-Lower sequence, which always starts with
@@ -163,11 +198,11 @@ func to(_case int, rune int, caseRange []CaseRange) int {
 				// bit in the sequence offset.
 				// The constants UpperCase and TitleCase are even while LowerCase
 				// is odd so we take the low bit from _case.
-				return r.Lo + ((rune-r.Lo)&^1 | _case&1)
+				return int(r.Lo) + ((rune-int(r.Lo))&^1 | _case&1)
 			}
 			return rune + delta
 		}
-		if rune < r.Lo {
+		if rune < int(r.Lo) {
 			hi = m
 		} else {
 			lo = m + 1
@@ -183,7 +218,7 @@ func To(_case int, rune int) int {
 
 // ToUpper maps the rune to upper case.
 func ToUpper(rune int) int {
-	if rune < 0x80 { // quick ASCII check
+	if rune <= MaxASCII {
 		if 'a' <= rune && rune <= 'z' {
 			rune -= 'a' - 'A'
 		}
@@ -194,7 +229,7 @@ func ToUpper(rune int) int {
 
 // ToLower maps the rune to lower case.
 func ToLower(rune int) int {
-	if rune < 0x80 { // quick ASCII check
+	if rune <= MaxASCII {
 		if 'A' <= rune && rune <= 'Z' {
 			rune += 'a' - 'A'
 		}
@@ -205,7 +240,7 @@ func ToLower(rune int) int {
 
 // ToTitle maps the rune to title case.
 func ToTitle(rune int) int {
-	if rune < 0x80 { // quick ASCII check
+	if rune <= MaxASCII {
 		if 'a' <= rune && rune <= 'z' { // title case is upper case for ASCII
 			rune -= 'a' - 'A'
 		}
@@ -239,4 +274,53 @@ func (special SpecialCase) ToLower(rune int) int {
 		r = ToLower(rune)
 	}
 	return r
+}
+
+// caseOrbit is defined in tables.go as []foldPair.  Right now all the
+// entries fit in uint16, so use uint16.  If that changes, compilation
+// will fail (the constants in the composite literal will not fit in uint16)
+// and the types here can change to uint32.
+type foldPair struct {
+	From uint16
+	To   uint16
+}
+
+// SimpleFold iterates over Unicode code points equivalent under
+// the Unicode-defined simple case folding.  Among the code points
+// equivalent to rune (including rune itself), SimpleFold returns the
+// smallest r >= rune if one exists, or else the smallest r >= 0. 
+//
+// For example:
+//	SimpleFold('A') = 'a'
+//	SimpleFold('a') = 'A'
+//
+//	SimpleFold('K') = 'k'
+//	SimpleFold('k') = '\u212A' (Kelvin symbol, K)
+//	SimpleFold('\u212A') = 'K'
+//
+//	SimpleFold('1') = '1'
+//
+func SimpleFold(rune int) int {
+	// Consult caseOrbit table for special cases.
+	lo := 0
+	hi := len(caseOrbit)
+	for lo < hi {
+		m := lo + (hi-lo)/2
+		if int(caseOrbit[m].From) < rune {
+			lo = m + 1
+		} else {
+			hi = m
+		}
+	}
+	if lo < len(caseOrbit) && int(caseOrbit[lo].From) == rune {
+		return int(caseOrbit[lo].To)
+	}
+
+	// No folding specified.  This is a one- or two-element
+	// equivalence class containing rune and ToLower(rune)
+	// and ToUpper(rune) if they are different from rune.
+	if l := ToLower(rune); l != rune {
+		return l
+	}
+	return ToUpper(rune)
 }

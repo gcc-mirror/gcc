@@ -1,3 +1,10 @@
+2011-10-04  Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 179421 into gupc branch.
+
+	* tree.c (build_opaque_vector_type): Add null UPC layout qualifier
+	argument to the call to check_qualified_type().
+
 2011-09-22  Gary Funck  <gary@intrepid.com>
 
 	* tree-pretty-print.c (dump_generic_node): Print UPC type qualifier

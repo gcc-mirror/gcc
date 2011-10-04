@@ -1504,7 +1504,7 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
       offset -= TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (fld));
       exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
       t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
-      return fold_build3_loc (loc, COMPONENT_REF, model->type, t, fld,
+      return fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (fld), t, fld,
 			      TREE_OPERAND (model->expr, 2));
     }
   else
@@ -4623,6 +4623,7 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   VEC (cgraph_edge_p, heap) * redirect_callers = collect_callers_of_node (node);
 
   rebuild_cgraph_edges ();
+  free_dominance_info (CDI_DOMINATORS);
   pop_cfun ();
   current_function_decl = NULL_TREE;
 

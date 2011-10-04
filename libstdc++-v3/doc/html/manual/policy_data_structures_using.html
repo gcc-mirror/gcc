@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Using</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    "/><link rel="home" href="../index.html" title="The GNU C++ Library"/><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures"/><link rel="prev" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures"/><link rel="next" href="policy_data_structures_design.html" title="Design"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Using</th></tr><tr><td align="left"><a accesskey="p" href="policy_data_structures.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td align="right"> <a accesskey="n" href="policy_data_structures_design.html">Next</a></td></tr></table><hr/></div><div class="section" title="Using"><div class="titlepage"><div><div><h2 class="title"><a id="containers.pbds.using"/>Using</h2></div></div></div><div class="section" title="Prerequisites"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.prereq"/>Prerequisites</h3></div></div></div><p>The library contains only header files, and does not require any
+      other libraries except the standard C++ library . All classes are
+      defined in namespace <code class="code">__gnu_pbds</code>. The library internally
+      uses macros beginning with <code class="code">PB_DS</code>, but
+      <code class="code">#undef</code>s anything it <code class="code">#define</code>s (except for
+      header guards). Compiling the library in an environment where macros
+      beginning in <code class="code">PB_DS</code> are defined, may yield unpredictable
+      results in compilation, execution, or both.</p><p>
+	Further dependencies are necessary to create the visual output
+	for the performance tests. To create these graphs, an
+	additional package is needed: <span class="command"><strong>pychart</strong></span>.
+      </p></div><div class="section" title="Organization"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.organization"/>Organization</h3></div></div></div><p>
+	The various data structures are organized as follows.
+      </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+	    Branch-Based
+	  </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		<code class="classname">basic_branch</code>
+		is an abstract base class for branched-based
+		associative-containers
+	      </p></li><li class="listitem"><p>
+		<code class="classname">tree</code>
+		is a concrete base class for tree-based
+		associative-containers
+	      </p></li><li class="listitem"><p>
+		<code class="classname">trie</code>
+		is a concrete base class trie-based
+		associative-containers
+	      </p></li></ul></div></li><li class="listitem"><p>
+	    Hash-Based
+	  </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		<code class="classname">basic_hash_table</code>
+		is an abstract base class for hash-based
+		associative-containers
+	      </p></li><li class="listitem"><p>
+		<code class="classname">cc_hash_table</code>
+		is a concrete collision-chaining hash-based
+		associative-containers
+	      </p></li><li class="listitem"><p>
+		<code class="classname">gp_hash_table</code>
+		is a concrete (general) probing hash-based
+		associative-containers
+	      </p></li></ul></div></li><li class="listitem"><p>
+	    List-Based
+	  </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		<code class="classname">list_update</code>
+		list-based update-policy associative container
+	      </p></li></ul></div></li><li class="listitem"><p>
+	    Heap-Based
+	  </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		<code class="classname">priority_queue</code>
+		A priority queue.
+	      </p></li></ul></div></li></ul></div><p>
+	The hierarchy is composed naturally so that commonality is
+	captured by base classes. Thus <code class="function">operator[]</code>
+	is defined at the base of any hierarchy, since all derived
+	containers support it. Conversely <code class="function">split</code> is
+	defined in <code class="classname">basic_branch</code>, since only
+	tree-like containers support it.
+      </p><p>
+	In addition, there are the following diagnostics classes,
+	used to report errors specific to this library's data
+	structures.
+      </p><div class="figure"><a id="id665824"/><p class="title"><strong>Figure 22.7. Exception Hierarchy</strong></p><div class="figure-contents"><div class="mediaobject" style="text-align: center"><img src="../images/pbds_exception_hierarchy.png" style="text-align: middle" alt="Exception Hierarchy"/></div></div></div><br class="figure-break"/></div><div class="section" title="Tutorial"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.tutorial"/>Tutorial</h3></div></div></div><div class="section" title="Basic Use"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.basic"/>Basic Use</h4></div></div></div><p>
+	  For the most part, the policy-based containers containers in
+	  namespace <code class="literal">__gnu_pbds</code> have the same interface as
+	  the equivalent containers in the standard C++ library, except for
+	  the names used for the container classes themselves. For example,
+	  this shows basic operations on a collision-chaining hash-based
+	  container:
+	</p><pre class="programlisting">
+	  #include &lt;ext/pb_ds/assoc_container.h&gt;
+
+	  int main()
+	  {
+	  __gnu_pbds::cc_hash_table&lt;int, char&gt; c;
+	  c[2] = 'b';
+	  assert(c.find(1) == c.end());
+	  };
+	</pre><p>
+	  The container is called
+	  <code class="classname">__gnu_pbds::cc_hash_table</code> instead of
+	  <code class="classname">std::unordered_map</code>, since <span class="quote">“<span class="quote">unordered
+	  map</span>”</span> does not necessarily mean a hash-based map as implied by
+	  the C++ library (C++0x or TR1). For example, list-based associative
+	  containers, which are very useful for the construction of
+	  "multimaps," are also unordered.
+	</p><p>This snippet shows a red-black tree based container:</p><pre class="programlisting">
+	  #include &lt;ext/pb_ds/assoc_container.h&gt;
+
+	  int main()
+	  {
+	  __gnu_pbds::tree&lt;int, char&gt; c;
+	  c[2] = 'b';
+	  assert(c.find(2) != c.end());
+	  };
+	</pre><p>The container is called <code class="classname">tree</code> instead of
+	<code class="classname">map</code> since the underlying data structures are
+	being named with specificity.
+	</p><p>
+	  The member function naming convention is to strive to be the same as
+	  the equivalent member functions in other C++ standard library
+	  containers. The familiar methods are unchanged:
+	  <code class="function">begin</code>, <code class="function">end</code>,
+	  <code class="function">size</code>, <code class="function">empty</code>, and
+	  <code class="function">clear</code>.
+	</p><p>
+	  This isn't to say that things are exactly as one would expect, given
+	  the container requirments and interfaces in the C++ standard.
+	</p><p>
+	  The names of containers' policies and policy accessors are
+	  different then the usual. For example, if <span class="type">hash_type</span> is
+	some type of hash-based container, then</p><pre class="programlisting">
+	  hash_type::hash_fn
+	</pre><p>
+	  gives the type of its hash functor, and if <code class="varname">obj</code> is
+	  some hash-based container object, then
+	</p><pre class="programlisting">
+	  obj.get_hash_fn()
+	</pre><p>will return a reference to its hash-functor object.</p><p>
+	  Similarly, if <span class="type">tree_type</span> is some type of tree-based
+	  container, then
+	</p><pre class="programlisting">
+	  tree_type::cmp_fn
+	</pre><p>
+	  gives the type of its comparison functor, and if
+	  <code class="varname">obj</code> is some tree-based container object,
+	  then
+	</p><pre class="programlisting">
+	  obj.get_cmp_fn()
+	</pre><p>will return a reference to its comparison-functor object.</p><p>
+	  It would be nice to give names consistent with those in the existing
+	  C++ standard (inclusive of TR1). Unfortunately, these standard
+	  containers don't consistently name types and methods. For example,
+	  <code class="classname">std::tr1::unordered_map</code> uses
+	  <span class="type">hasher</span> for the hash functor, but
+	  <code class="classname">std::map</code> uses <span class="type">key_compare</span> for
+	  the comparison functor. Also, we could not find an accessor for
+	  <code class="classname">std::tr1::unordered_map</code>'s hash functor, but
+	  <code class="classname">std::map</code> uses <code class="classname">compare</code>
+	  for accessing the comparison functor.
+	</p><p>
+	  Instead, <code class="literal">__gnu_pbds</code> attempts to be internally
+	  consistent, and uses standard-derived terminology if possible.
+	</p><p>
+	  Another source of difference is in scope:
+	  <code class="literal">__gnu_pbds</code> contains more types of associative
+	  containers than the standard C++ library, and more opportunities
+	  to configure these new containers, since different types of
+	  associative containers are useful in different settings.
+	</p><p>
+	  Namespace <code class="literal">__gnu_pbds</code> contains different classes for
+	  hash-based containers, tree-based containers, trie-based containers,
+	  and list-based containers.
+	</p><p>
+	  Since associative containers share parts of their interface, they
+	  are organized as a class hierarchy.
+	</p><p>Each type or method is defined in the most-common ancestor
+	in which it makes sense.
+	</p><p>For example, all associative containers support iteration
+	expressed in the following form:
+	</p><pre class="programlisting">
+	  const_iterator
+	  begin() const;
+
+	  iterator
+	  begin();
+
+	  const_iterator
+	  end() const;
+
+	  iterator
+	  end();
+	</pre><p>
+	  But not all containers contain or use hash functors. Yet, both
+	  collision-chaining and (general) probing hash-based associative
+	  containers have a hash functor, so
+	  <code class="classname">basic_hash_table</code> contains the interface:
+	</p><pre class="programlisting">
+	  const hash_fn&amp;
+	  get_hash_fn() const;
+
+	  hash_fn&amp;
+	  get_hash_fn();
+	</pre><p>
+	  so all hash-based associative containers inherit the same
+	  hash-functor accessor methods.
+	</p></div><div class="section" title="Configuring via Template Parameters"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.configuring"/>
+	    Configuring via Template Parameters
+	  </h4></div></div></div><p>
+	  In general, each of this library's containers is
+	  parametrized by more policies than those of the standard library. For
+	  example, the standard hash-based container is parametrized as
+	  follows:
+	</p><pre class="programlisting">
+	  template&lt;typename Key, typename Mapped, typename Hash,
+	  typename Pred, typename Allocator, bool Cache_Hashe_Code&gt;
+	  class unordered_map;
+	</pre><p>
+	  and so can be configured by key type, mapped type, a functor
+	  that translates keys to unsigned integral types, an equivalence
+	  predicate, an allocator, and an indicator whether to store hash
+	  values with each entry. this library's collision-chaining
+	  hash-based container is parametrized as
+	</p><pre class="programlisting">
+	  template&lt;typename Key, typename Mapped, typename Hash_Fn,
+	  typename Eq_Fn, typename Comb_Hash_Fn,
+	  typename Resize_Policy, bool Store_Hash
+	  typename Allocator&gt;
+	  class cc_hash_table;
+	</pre><p>
+	  and so can be configured by the first four types of
+	  <code class="classname">std::tr1::unordered_map</code>, then a
+	  policy for translating the key-hash result into a position
+	  within the table, then a policy by which the table resizes,
+	  an indicator whether to store hash values with each entry,
+	  and an allocator (which is typically the last template
+	  parameter in standard containers).
+	</p><p>
+	  Nearly all policy parameters have default values, so this
+	  need not be considered for casual use. It is important to
+	  note, however, that hash-based containers' policies can
+	  dramatically alter their performance in different settings,
+	  and that tree-based containers' policies can make them
+	  useful for other purposes than just look-up.
+	</p><p>As opposed to associative containers, priority queues have
+	relatively few configuration options. The priority queue is
+	parametrized as follows:</p><pre class="programlisting">
+	  template&lt;typename Value_Type, typename Cmp_Fn,typename Tag,
+	  typename Allocator&gt;
+	  class priority_queue;
+	</pre><p>The <code class="classname">Value_Type</code>, <code class="classname">Cmp_Fn</code>, and
+	<code class="classname">Allocator</code> parameters are the container's value type,
+	comparison-functor type, and allocator type, respectively;
+	these are very similar to the standard's priority queue. The
+	<code class="classname">Tag</code> parameter is different: there are a number of
+	pre-defined tag types corresponding to binary heaps, binomial
+	heaps, etc., and <code class="classname">Tag</code> should be instantiated
+	by one of them.</p><p>Note that as opposed to the
+	<code class="classname">std::priority_queue</code>,
+	<code class="classname">__gnu_pbds::priority_queue</code> is not a
+	sequence-adapter; it is a regular container.</p></div><div class="section" title="Querying Container Attributes"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.traits"/>
+	    Querying Container Attributes
+	  </h4></div></div></div><p/><p>A containers underlying data structure
+	affect their performance; Unfortunately, they can also affect
+	their interface. When manipulating generically associative
+	containers, it is often useful to be able to statically
+	determine what they can support and what the cannot.
+	</p><p>Happily, the standard provides a good solution to a similar
+	problem - that of the different behavior of iterators. If
+	<code class="classname">It</code> is an iterator, then
+	</p><pre class="programlisting">
+	  typename std::iterator_traits&lt;It&gt;::iterator_category
+	</pre><p>is one of a small number of pre-defined tag classes, and
+	</p><pre class="programlisting">
+	  typename std::iterator_traits&lt;It&gt;::value_type
+	</pre><p>is the value type to which the iterator "points".</p><p>
+	  Similarly, in this library, if <span class="type">C</span> is a
+	  container, then <code class="classname">container_traits</code> is a
+	  trait class that stores information about the kind of
+	  container that is implemented.
+	</p><pre class="programlisting">
+	  typename container_traits&lt;C&gt;::container_category
+	</pre><p>
+	  is one of a small number of predefined tag structures that
+	  uniquely identifies the type of underlying data structure.
+	</p><p>In most cases, however, the exact underlying data
+	structure is not really important, but what is important is
+	one of its other attributes: whether it guarantees storing
+	elements by key order, for example. For this one can
+	use</p><pre class="programlisting">
+	  typename container_traits&lt;C&gt;::order_preserving
+	</pre><p>
+	  Also,
+	</p><pre class="programlisting">
+	  typename container_traits&lt;C&gt;::invalidation_guarantee
+	</pre><p>is the container's invalidation guarantee. Invalidation
+	guarantees are especially important regarding priority queues,
+	since in this library's design, iterators are practically the
+	only way to manipulate them.</p></div><div class="section" title="Point and Range Iteration"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.point_range_iteration"/>
+	    Point and Range Iteration
+	  </h4></div></div></div><p/><p>This library differentiates between two types of methods
+	and iterators: point-type, and range-type. For example,
+	<code class="function">find</code> and <code class="function">insert</code> are point-type methods, since
+	they each deal with a specific element; their returned
+	iterators are point-type iterators. <code class="function">begin</code> and
+	<code class="function">end</code> are range-type methods, since they are not used to
+	find a specific element, but rather to go over all elements in
+	a container object; their returned iterators are range-type
+	iterators.
+	</p><p>Most containers store elements in an order that is
+	determined by their interface. Correspondingly, it is fine that
+	their point-type iterators are synonymous with their range-type
+	iterators. For example, in the following snippet
+	</p><pre class="programlisting">
+	  std::for_each(c.find(1), c.find(5), foo);
+	</pre><p>
+	  two point-type iterators (returned by <code class="function">find</code>) are used
+	  for a range-type purpose - going over all elements whose key is
+	  between 1 and 5.
+	</p><p>
+	  Conversely, the above snippet makes no sense for
+	  self-organizing containers - ones that order (and reorder)
+	  their elements by implementation. It would be nice to have a
+	  uniform iterator system that would allow the above snippet to
+	  compile only if it made sense.
+	</p><p>
+	  This could trivially be done by specializing
+	  <code class="function">std::for_each</code> for the case of iterators returned by
+	  <code class="classname">std::tr1::unordered_map</code>, but this would only solve the
+	  problem for one algorithm and one container. Fundamentally, the
+	  problem is that one can loop using a self-organizing
+	  container's point-type iterators.
+	</p><p>
+	  This library's containers define two families of
+	  iterators: <span class="type">point_const_iterator</span> and
+	  <span class="type">point_iterator</span> are the iterator types returned by
+	  point-type methods; <span class="type">const_iterator</span> and
+	  <span class="type">iterator</span> are the iterator types returned by range-type
+	  methods.
+	</p><pre class="programlisting">
+	  class &lt;- some container -&gt;
+	  {
+	  public:
+	  ...
+
+	  typedef &lt;- something -&gt; const_iterator;
+
+	  typedef &lt;- something -&gt; iterator;
+
+	  typedef &lt;- something -&gt; point_const_iterator;
+
+	  typedef &lt;- something -&gt; point_iterator;
+
+	  ...
+
+	  public:
+	  ...
+
+	  const_iterator begin () const;
+
+	  iterator begin();
+
+	  point_const_iterator find(...) const;
+
+	  point_iterator find(...);
+	  };
+	</pre><p>For
+	containers whose interface defines sequence order , it
+	is very simple: point-type and range-type iterators are exactly
+	the same, which means that the above snippet will compile if it
+	is used for an order-preserving associative container.
+	</p><p>
+	  For self-organizing containers, however, (hash-based
+	  containers as a special example), the preceding snippet will
+	  not compile, because their point-type iterators do not support
+	  <code class="function">operator++</code>.
+	</p><p>In any case, both for order-preserving and self-organizing
+	containers, the following snippet will compile:
+	</p><pre class="programlisting">
+	  typename Cntnr::point_iterator it = c.find(2);
+	</pre><p>
+	  because a range-type iterator can always be converted to a
+	  point-type iterator.
+	</p><p>Distingushing between iterator types also
+	raises the point that a container's iterators might have
+	different invalidation rules concerning their de-referencing
+	abilities and movement abilities. This now corresponds exactly
+	to the question of whether point-type and range-type iterators
+	are valid. As explained above, <code class="classname">container_traits</code> allows
+	querying a container for its data structure attributes. The
+	iterator-invalidation guarantees are certainly a property of
+	the underlying data structure, and so
+	</p><pre class="programlisting">
+	  container_traits&lt;C&gt;::invalidation_guarantee
+	</pre><p>
+	  gives one of three pre-determined types that answer this
+	  query.
+	</p></div></div><div class="section" title="Examples"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.examples"/>Examples</h3></div></div></div><p>
+	Additional code examples are provided in the source
+	distribution, as part of the regression and performance
+	testsuite.
+      </p><div class="section" title="Intermediate Use"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.basic"/>Intermediate Use</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+	      Basic use of maps:
+	      <code class="filename">basic_map.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Basic use of sets:
+	      <code class="filename">basic_set.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Conditionally erasing values from an associative container object:
+	      <code class="filename">erase_if.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Basic use of multimaps:
+	      <code class="filename">basic_multimap.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Basic use of multisets:
+	      <code class="filename">basic_multiset.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Basic use of priority queues:
+	      <code class="filename">basic_priority_queue.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Splitting and joining priority queues:
+	      <code class="filename">priority_queue_split_join.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Conditionally erasing values from a priority queue:
+	      <code class="filename">priority_queue_erase_if.cc</code>
+	    </p></li></ul></div></div><div class="section" title="Querying with container_traits"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.query"/>Querying with <code class="classname">container_traits</code> </h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+	      Using <code class="classname">container_traits</code> to query
+	      about underlying data structure behavior:
+	      <code class="filename">assoc_container_traits.cc</code>
+	    </p></li><li class="listitem"><p>
+	      A non-compiling example showing wrong use of finding keys in
+	      hash-based containers: <code class="filename">hash_find_neg.cc</code>
+	    </p></li><li class="listitem"><p>
+	      Using <code class="classname">container_traits</code>
+	      to query about underlying data structure behavior:
+	      <code class="filename">priority_queue_container_traits.cc</code>
+	    </p></li></ul></div></div><div class="section" title="By Container Method"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.container"/>By Container Method</h4></div></div></div><p/><div class="section" title="Hash-Based"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.hash"/>Hash-Based</h5></div></div></div><div class="section" title="size Related"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.hash.resize"/>size Related</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		  Setting the initial size of a hash-based container
+		  object:
+		  <code class="filename">hash_initial_size.cc</code>
+		</p></li><li class="listitem"><p>
+		  A non-compiling example showing how not to resize a
+		  hash-based container object:
+		  <code class="filename">hash_resize_neg.cc</code>
+		</p></li><li class="listitem"><p>
+		  Resizing the size of a hash-based container object:
+		  <code class="filename">hash_resize.cc</code>
+		</p></li><li class="listitem"><p>
+		  Showing an illegal resize of a hash-based container
+		  object:
+		  <code class="filename">hash_illegal_resize.cc</code>
+		</p></li><li class="listitem"><p>
+		  Changing the load factors of a hash-based container
+		  object: <code class="filename">hash_load_set_change.cc</code>
+		</p></li></ul></div></div><div class="section" title="Hashing Function Related"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.hash.hashor"/>Hashing Function Related</h6></div></div></div><p/><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		  Using a modulo range-hashing function for the case of an
+		  unknown skewed key distribution:
+		  <code class="filename">hash_mod.cc</code>
+		</p></li><li class="listitem"><p>
+		  Writing a range-hashing functor for the case of a known
+		  skewed key distribution:
+		  <code class="filename">shift_mask.cc</code>
+		</p></li><li class="listitem"><p>
+		  Storing the hash value along with each key:
+		  <code class="filename">store_hash.cc</code>
+		</p></li><li class="listitem"><p>
+		  Writing a ranged-hash functor:
+		  <code class="filename">ranged_hash.cc</code>
+		</p></li></ul></div></div></div><div class="section" title="Branch-Based"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.branch"/>Branch-Based</h5></div></div></div><div class="section" title="split or join Related"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.split"/>split or join Related</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		  Joining two tree-based container objects:
+		  <code class="filename">tree_join.cc</code>
+		</p></li><li class="listitem"><p>
+		  Splitting a PATRICIA trie container object:
+		  <code class="filename">trie_split.cc</code>
+		</p></li><li class="listitem"><p>
+		  Order statistics while joining two tree-based container
+		  objects:
+		  <code class="filename">tree_order_statistics_join.cc</code>
+		</p></li></ul></div></div><div class="section" title="Node Invariants"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.invariants"/>Node Invariants</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		  Using trees for order statistics:
+		  <code class="filename">tree_order_statistics.cc</code>
+		</p></li><li class="listitem"><p>
+		  Augmenting trees to support operations on line
+		  intervals:
+		  <code class="filename">tree_intervals.cc</code>
+		</p></li></ul></div></div><div class="section" title="trie"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.trie"/>trie</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		  Using a PATRICIA trie for DNA strings:
+		  <code class="filename">trie_dna.cc</code>
+		</p></li><li class="listitem"><p>
+		  Using a PATRICIA
+		  trie for finding all entries whose key matches a given prefix:
+		  <code class="filename">trie_prefix_search.cc</code>
+		</p></li></ul></div></div></div><div class="section" title="Priority Queues"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.priority_queue"/>Priority Queues</h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
+		Cross referencing an associative container and a priority
+		queue: <code class="filename">priority_queue_xref.cc</code>
+	      </p></li><li class="listitem"><p>
+		Cross referencing a vector and a priority queue using a
+		very simple version of Dijkstra's shortest path
+		algorithm:
+		<code class="filename">priority_queue_dijkstra.cc</code>
+	      </p></li></ul></div></div></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="policy_data_structures.html">Prev</a> </td><td align="center"><a accesskey="u" href="policy_data_structures.html">Up</a></td><td align="right"> <a accesskey="n" href="policy_data_structures_design.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 22. Policy-Based Data Structures </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Design</td></tr></table></div></body></html>

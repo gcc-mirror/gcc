@@ -120,8 +120,8 @@ can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
     return true;
   for (next = node->same_comdat_group;
        next != node; next = next->same_comdat_group)
-    if (node->callers && node->callers != e
-	&& !can_remove_node_now_p_1 (node))
+    if ((next->callers && next->callers != e)
+	|| !can_remove_node_now_p_1 (next))
       return false;
   return true;
 }
@@ -248,7 +248,9 @@ inline_call (struct cgraph_edge *e, bool update_original,
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
-  if (flag_indirect_inlining && optimize)
+  /* This must happen after inline_merge_summary that rely on jump
+     functions of callee to not be updated.  */
+  if (optimize)
     return ipa_propagate_indirect_call_infos (curr, new_edges);
   else
     return false;

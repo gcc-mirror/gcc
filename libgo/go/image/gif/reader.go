@@ -28,7 +28,9 @@ const (
 	fColorMapFollows = 1 << 7
 
 	// Image fields.
-	ifInterlace = 1 << 6
+	ifLocalColorTable = 1 << 7
+	ifInterlace       = 1 << 6
+	ifPixelSizeMask   = 7
 
 	// Graphic control flags.
 	gcTransparentColorSet = 1 << 0
@@ -94,28 +96,26 @@ type blockReader struct {
 	tmp   [256]byte
 }
 
-func (b *blockReader) Read(p []byte) (n int, err os.Error) {
+func (b *blockReader) Read(p []byte) (int, os.Error) {
 	if len(p) == 0 {
-		return
+		return 0, nil
 	}
-	if len(b.slice) > 0 {
-		n = copy(p, b.slice)
-		b.slice = b.slice[n:]
-		return
+	if len(b.slice) == 0 {
+		blockLen, err := b.r.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		if blockLen == 0 {
+			return 0, os.EOF
+		}
+		b.slice = b.tmp[0:blockLen]
+		if _, err = io.ReadFull(b.r, b.slice); err != nil {
+			return 0, err
+		}
 	}
-	var blockLen uint8
-	blockLen, err = b.r.ReadByte()
-	if err != nil {
-		return
-	}
-	if blockLen == 0 {
-		return 0, os.EOF
-	}
-	b.slice = b.tmp[0:blockLen]
-	if _, err = io.ReadFull(b.r, b.slice); err != nil {
-		return
-	}
-	return b.Read(p)
+	n := copy(p, b.slice)
+	b.slice = b.slice[n:]
+	return n, nil
 }
 
 // decode reads a GIF image from r and stores the result in d.
@@ -140,8 +140,6 @@ func (d *decoder) decode(r io.Reader, configOnly bool) os.Error {
 			return err
 		}
 	}
-
-	d.image = nil
 
 Loop:
 	for err == nil {
@@ -175,11 +173,10 @@ Loop:
 			if err != nil {
 				return err
 			}
-			if litWidth > 8 {
+			if litWidth < 2 || litWidth > 8 {
 				return fmt.Errorf("gif: pixel size in decode out of range: %d", litWidth)
 			}
-			// A wonderfully Go-like piece of magic. Unfortunately it's only at its
-			// best for 8-bit pixels.
+			// A wonderfully Go-like piece of magic.
 			lzwr := lzw.NewReader(&blockReader{r: d.r}, lzw.LSB, int(litWidth))
 			if _, err = io.ReadFull(lzwr, m.Pix); err != nil {
 				break
@@ -191,8 +188,14 @@ Loop:
 				return err
 			}
 			if c != 0 {
-				return os.ErrorString("gif: extra data after image")
+				return os.NewError("gif: extra data after image")
 			}
+
+			// Undo the interlacing if necessary.
+			if d.imageFields&ifInterlace != 0 {
+				uninterlace(m)
+			}
+
 			d.image = append(d.image, m)
 			d.delay = append(d.delay, d.delayTime)
 			d.delayTime = 0 // TODO: is this correct, or should we hold on to the value?
@@ -237,6 +240,9 @@ func (d *decoder) readColorMap() (image.PalettedColorModel, os.Error) {
 		return nil, fmt.Errorf("gif: can't handle %d bits per pixel", d.pixelSize)
 	}
 	numColors := 1 << d.pixelSize
+	if d.imageFields&ifLocalColorTable != 0 {
+		numColors = 1 << ((d.imageFields & ifPixelSizeMask) + 1)
+	}
 	numValues := 3 * numColors
 	_, err := io.ReadFull(d.r, d.tmp[0:numValues])
 	if err != nil {
@@ -275,7 +281,7 @@ func (d *decoder) readExtension() os.Error {
 		return fmt.Errorf("gif: unknown extension 0x%.2x", extension)
 	}
 	if size > 0 {
-		if _, err := d.r.Read(d.tmp[0:size]); err != nil {
+		if _, err := io.ReadFull(d.r, d.tmp[0:size]); err != nil {
 			return err
 		}
 	}
@@ -323,15 +329,15 @@ func (d *decoder) newImageFromDescriptor() (*image.Paletted, os.Error) {
 	if _, err := io.ReadFull(d.r, d.tmp[0:9]); err != nil {
 		return nil, fmt.Errorf("gif: can't read image descriptor: %s", err)
 	}
-	_ = int(d.tmp[0]) + int(d.tmp[1])<<8 // TODO: honor left value
-	_ = int(d.tmp[2]) + int(d.tmp[3])<<8 // TODO: honor top value
+	left := int(d.tmp[0]) + int(d.tmp[1])<<8
+	top := int(d.tmp[2]) + int(d.tmp[3])<<8
 	width := int(d.tmp[4]) + int(d.tmp[5])<<8
 	height := int(d.tmp[6]) + int(d.tmp[7])<<8
 	d.imageFields = d.tmp[8]
-	if d.imageFields&ifInterlace != 0 {
-		return nil, os.ErrorString("gif: can't handle interlaced images")
-	}
-	return image.NewPaletted(width, height, nil), nil
+	m := image.NewPaletted(width, height, nil)
+	// Overwrite the rectangle to take account of left and top.
+	m.Rect = image.Rect(left, top, left+width, top+height)
+	return m, nil
 }
 
 func (d *decoder) readBlock() (int, os.Error) {
@@ -342,9 +348,39 @@ func (d *decoder) readBlock() (int, os.Error) {
 	return io.ReadFull(d.r, d.tmp[0:n])
 }
 
+// interlaceScan defines the ordering for a pass of the interlace algorithm.
+type interlaceScan struct {
+	skip, start int
+}
+
+// interlacing represents the set of scans in an interlaced GIF image.
+var interlacing = []interlaceScan{
+	{8, 0}, // Group 1 : Every 8th. row, starting with row 0.
+	{8, 4}, // Group 2 : Every 8th. row, starting with row 4.
+	{4, 2}, // Group 3 : Every 4th. row, starting with row 2.
+	{2, 1}, // Group 4 : Every 2nd. row, starting with row 1.
+}
+
+// uninterlace rearranges the pixels in m to account for interlaced input.
+func uninterlace(m *image.Paletted) {
+	var nPix []uint8
+	dx := m.Bounds().Dx()
+	dy := m.Bounds().Dy()
+	nPix = make([]uint8, dx*dy)
+	offset := 0 // steps through the input by sequential scan lines.
+	for _, pass := range interlacing {
+		nOffset := pass.start * dx // steps through the output as defined by pass.
+		for y := pass.start; y < dy; y += pass.skip {
+			copy(nPix[nOffset:nOffset+dx], m.Pix[offset:offset+dx])
+			offset += dx
+			nOffset += dx * pass.skip
+		}
+	}
+	m.Pix = nPix
+}
+
 // Decode reads a GIF image from r and returns the first embedded
 // image as an image.Image.
-// Limitation: The file must be 8 bits per pixel and have no interlacing.
 func Decode(r io.Reader) (image.Image, os.Error) {
 	var d decoder
 	if err := d.decode(r, false); err != nil {
@@ -362,7 +398,6 @@ type GIF struct {
 
 // DecodeAll reads a GIF image from r and returns the sequential frames
 // and timing information.
-// Limitation: The file must be 8 bits per pixel and have no interlacing.
 func DecodeAll(r io.Reader) (*GIF, os.Error) {
 	var d decoder
 	if err := d.decode(r, false); err != nil {
@@ -376,15 +411,14 @@ func DecodeAll(r io.Reader) (*GIF, os.Error) {
 	return gif, nil
 }
 
-// DecodeConfig returns the color model and dimensions of a GIF image without
-// decoding the entire image.
+// DecodeConfig returns the global color model and dimensions of a GIF image
+// without decoding the entire image.
 func DecodeConfig(r io.Reader) (image.Config, os.Error) {
 	var d decoder
 	if err := d.decode(r, true); err != nil {
 		return image.Config{}, err
 	}
-	colorMap := d.globalColorMap
-	return image.Config{colorMap, d.width, d.height}, nil
+	return image.Config{d.globalColorMap, d.width, d.height}, nil
 }
 
 func init() {

@@ -2,7 +2,7 @@
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,9 +53,18 @@ void test01()
 #endif
 
   // Chapter 48, chapter 20. Smallest rank such that new signed type same size.
-  typedef make_signed<test_enum>::type  	test25_type;
-  VERIFY( is_signed<test25_type>::value );
-  VERIFY( sizeof(test25_type) == sizeof(test_enum) );
+  typedef make_signed<test_enum>::type  	test24_type;
+  VERIFY( is_signed<test24_type>::value );
+  VERIFY( sizeof(test24_type) == sizeof(test_enum) );
+
+  // GNU Extensions.
+#ifdef _GLIBCXX_USE_INT128
+  typedef make_signed<unsigned __int128>::type  test25_type;
+  VERIFY( (is_same<test25_type, __int128>::value) );
+
+  typedef make_signed<__int128>::type  	        test26_type;
+  VERIFY( (is_same<test26_type, __int128>::value) );
+#endif
 }
 
 int main()

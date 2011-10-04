@@ -1,3 +1,645 @@
+2011-10-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/range-for22.C: New.
+
+	* g++.dg/cpp0x/variadic65.C: Remove xfails.
+	* g++.dg/cpp0x/variadic82.C: Remove xfails.
+	* g++.dg/cpp0x/variadic83.C: Remove xfails.
+	* g++.dg/cpp0x/variadic105.C: Remove xfails.
+
+	* g++.dg/cpp0x/nsdmi5.C: New.
+
+2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/50579
+	* gcc.target/mips/mips.exp (mips_long32_abi_p, mips_long64_abi_p):
+	New procedures.
+	(mips-dg-options): Force an ABI option if the current ABI is
+	incompatible with the required -mlong setting.  Likewise force
+	a long setting if the current one is incompatible with the
+	chosen ABI.  Keep abi_test_option_p, abi and eabi_p updated
+	throughout procedure.
+	* gcc.target/mips/abi-o64-long64.c: Require -mno-abicalls
+	instead of addressing=absolute.
+
+2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/stack-1.c: New test.
+
+2011-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/pr49696.c: New test.
+
+2011-10-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/ctor-empty-1.c: Update dump file.
+
+2011-10-01  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/cmask.c: New test.
+	* gcc.target/sparc/fpadds.c: New test.
+	* gcc.target/sparc/fshift.c: New test.
+	* gcc.target/sparc/fucmp.c: New test.
+	* gcc.target/sparc/vis3misc.c: New test.
+
+2011-10-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50585
+	* gfortran.dg/assumed_charlen_arg_2.f90: New.
+
+2011-09-30  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR c++/44473
+	* g++.dg/dfp/44473-1.C: New test.
+	* g++.dg/dfp/44473-2.C: New test.
+	* g++.dg/dfp/mangle-1.C: New test.
+	* g++.dg/dfp/mangle-2.C: New test.
+	* g++.dg/dfp/mangle-3.C: New test.
+	* g++.dg/dfp/mangle-4.C: New test.
+	* g++.dg/dfp/mangle-5.C: New test.
+
+2011-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/50571
+	* gcc.dg/pr50571.c: New test.
+
+	PR tree-optimization/46309
+	* gcc.dg/pr46309.c: New test.
+
+2011-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/strlenopt-21.c: New test.
+
+2011-09-30  Revital Eres  <revital.eres@linaro.org>
+
+	* gcc.dg/sms-10.c: New file.
+
+2011-09-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* gcc.target/arm/pr50099.c: New test.
+
+2011-09-30  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+       * gcc.target/arm/pr42835.c: Add -fno-tree-tail-merge.
+
+2011-09-30  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/bmaskbshuf.c: New test.
+	* gcc.target/sparc/edgen.c: New test.
+
+2011-09-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50547
+	* gfortran.dg/pure_formal_proc_3.f90: New.
+
+	PR fortran/50553
+	* gfortran.dg/stfunc_7.f90: New.
+
+2011-09-29  Artjoms Sinkarovs <artyom.shinkaroff@gmail.com>
+
+	* gcc.c-torture/execute/vector-compare-1.c: New testcase.
+	* gcc.c-torture/execute/vector-compare-2.c: Likewise.
+	* gcc.dg/vector-compare-1.c: Likewise.
+	* gcc.dg/vector-compare-2.c: Likewise.
+
+2011-09-29  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/array.c: New test.
+
+2011-09-29  Jiangning Liu  <jiangning.liu@arm.com>
+
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-1.c: Explicitly turn on
+	loop unroll and set max unroll times to 8.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-2.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-3.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-4.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-5.c: Likewise.
+
+2011-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/40145
+	* g++.dg/ext/visibility/warn5.C: New.
+
+2011-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45278
+	* g++.dg/warn/Wextra-3.C: New.
+
+2011-09-28  Oleg Endo  <oleg.endo@t-online.de>
+
+	PR target/49486
+	* gcc.target/sh/pr49468-si.c: New.
+
+2011-09-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/50485
+	* gcc.target/i386/sse4_1-blendps.c: Include <stdlib.h>.
+	(TEST): Initialize src3 with random floats.
+	* gcc.target/i386/sse4_1-blendps-2.c (sse4_1_test): Remove field i from
+	union src3.  Initialize src3 with random floats.
+
+2011-09-27  Oleg Endo  <oleg.endo@t-online.de>
+
+	* gcc.target/sh/mfmovd.c: Extend list of supported targets.
+	* gcc.target/sh/struct-arg-dw2.c: Fix typo.
+	* gcc.target/sh/sh4a-sincos.c: Make test SH4A only.
+	* gcc.target/sh/sh4a-sincosf.c: Ditto.
+	* gcc.target/sh/sh4a-cos.c: Ditto.
+	* gcc.target/sh/sh4a-cosf.c: Ditto.
+	* gcc.target/sh/sh4a-sin.c: Ditto.
+	* gcc.target/sh/sh4a-sinf.c: Ditto.
+	* gcc.target/sh/sh4a-fsrra.c: Ditto.
+	* gcc.target/sh/sh4a-memmovua.c: Ditto.
+	* gcc.target/sh/sh4a-bitmovua.c: Ditto.
+
+2011-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31489
+	* g++.dg/parse/error40.C: New.
+	* g++.dg/warn/incomplete1.C: Adjust.
+
+2011-09-27  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49463
+	* gcc.c-torture/execute/builtins/strstr-asm-lib.c (my_strstr):
+	Mark used.
+
+2011-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/strlenopt-1.c: New test.
+	* gcc.dg/strlenopt-1f.c: New test.
+	* gcc.dg/strlenopt-2.c: New test.
+	* gcc.dg/strlenopt-2f.c: New test.
+	* gcc.dg/strlenopt-3.c: New test.
+	* gcc.dg/strlenopt-4.c: New test.
+	* gcc.dg/strlenopt-4g.c: New test.
+	* gcc.dg/strlenopt-4gf.c: New test.
+	* gcc.dg/strlenopt-5.c: New test.
+	* gcc.dg/strlenopt-6.c: New test.
+	* gcc.dg/strlenopt-7.c: New test.
+	* gcc.dg/strlenopt-8.c: New test.
+	* gcc.dg/strlenopt-9.c: New test.
+	* gcc.dg/strlenopt-10.c: New test.
+	* gcc.dg/strlenopt-11.c: New test.
+	* gcc.dg/strlenopt-12.c: New test.
+	* gcc.dg/strlenopt-12g.c: New test.
+	* gcc.dg/strlenopt-13.c: New test.
+	* gcc.dg/strlenopt-14g.c: New test.
+	* gcc.dg/strlenopt-14gf.c: New test.
+	* gcc.dg/strlenopt-15.c: New test.
+	* gcc.dg/strlenopt-16g.c: New test.
+	* gcc.dg/strlenopt-17g.c: New test.
+	* gcc.dg/strlenopt-18g.c: New test.
+	* gcc.dg/strlenopt.h: New file.
+
+2011-09-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43864
+	* gcc.dg/fold-compare-2.c (dg-options): Add -fno-tree-tail-merge.
+	* gcc/testsuite/gcc.dg/uninit-pred-2_c.c: Same.
+	* gcc.dg/pr43864.c: New test.
+	* gcc.dg/pr43864-2.c: Same.
+	* gcc.dg/pr43864-3.c: Same.
+	* gcc.dg/pr43864-4.c: Same.
+
+2011-09-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inline-5.c: New testcase.
+
+2011-09-27  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/bb-slp-11.c: Expect to get vectorized with 64-bit
+	vectors.
+	* gcc.dg/vect/bb-slp-27.c: New.
+	* gcc.dg/vect/bb-slp-28.c: New.
+
+2011-09-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* testsuite/lib/target-supports.exp (check_profiling_available):
+	Don't rely solely on TLS tests for -fprofile-generate, fall
+	through to the other code.
+
+2011-09-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50363
+	* gcc.dg/torture/pr50363.c: New testcase.
+
+2011-09-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45012
+	* g++.dg/template/partial13.C: New.
+
+	PR c++/46105
+	* g++.dg/template/partial12.C: New.
+
+	PR c++/50508
+	* g++.dg/cpp0x/constexpr-typedef1.C: New.
+
+2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45487
+	* g++.dg/diagnostic/bindings1.C: New.
+	* g++.old-deja/g++.pt/memtemp77.C: Adjust.
+
+2011-09-26  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/wrgsr.c: New test.
+	* gcc.target/sparc/rdgsr.c: New test.
+	* gcc.target/sparc/edge.c: New test.
+	* gcc.target/sparc/fcmp.c: New test.
+
+	* gcc.target/sparc/edge.c: Update for new return types.
+	* gcc.target/sparc/fcmp.c: Likewise.
+
+	* gcc.target/sparc/fpaddsubi.c: New test.
+
+2011-09-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50515
+	* gfortran.dg/common_15.f90: New.
+
+	PR fortran/50517
+	* gfortran.dg/dummy_procedure_5.f90: New.
+	* gfortran.dg/interface_26.f90: Modified error message.
+	* gfortran.dg/proc_ptr_11.f90: Ditto.
+	* gfortran.dg/proc_ptr_15.f90: Ditto.
+	* gfortran.dg/proc_ptr_comp_20.f90: Ditto.
+	* gfortran.dg/proc_ptr_result_5.f90: Ditto.
+
+2011-09-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50512
+	* g++.dg/overload/rvalue3.C: New.
+
+	PR c++/50523
+	* g++.dg/overload/ref-conv2.C: New.
+
+	* g++.dg/cpp0x/nsdmi-template1.C: New.
+
+2011-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/nullptr25.C: New.
+
+2011-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50472
+	* gcc.dg/torture/pr50472.c: New testcase.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt22.adb: New test.
+	* gnat.dg/opt22_pkg.ad[sb]: New helper.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt21.adb: New test.
+	* gnat.dg/opt21_pkg.ad[sb]: New helper.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt20.ad[sb]: New test.
+	* gnat.dg/opt20_pkg.ads: New helper.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array17.adb: New test.
+	* gnat.dg/array17_pkg.ads: New helper.
+
+2011-09-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nsdmi-defer4.C: New.
+
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/frame_overflow.ads: New.
+	* gnat.dg/frame_overflow.adb: Adjust.
+	* gnat.dg/specs/addr1.ads: Likewise.
+
+2011-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/tree-ssa/restrict2.C: New test.
+
+2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_vect64): New.
+	* gcc.dg/vect/bb-slp-11.c: Expect the error message twice in case
+	of multiple vector sizes.
+	* gcc.dg/vect/bb-slp-26.c: New.
+
+2011-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50280
+	* g++.dg/template/bitfield1.C: New.
+
+2011-09-25  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/bb-slp-24.c: New.
+
+2011-09-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nsdmi-eh1.C: New.
+
+	* g++.dg/cpp0x/nsdmi-defer3.C: New.
+
+	* g++.dg/cpp0x/nsdmi-defer1.C: New.
+	* g++.dg/cpp0x/nsdmi-defer2.C: New.
+
+	* g++.dg/cpp0x/nsdmi1.C: New.
+	* g++.dg/cpp0x/nsdmi2.C: New.
+	* g++.dg/cpp0x/nsdmi3.C: New.
+	* g++.dg/cpp0x/nsdmi4.C: New.
+	* g++.old-deja/g++.other/init4.C: New.
+
+2011-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44267
+	* g++.dg/template/sfinae28.C: New.
+
+2011-09-23  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (errchk): Handle more cases of getting
+	correct Tcl backslash quoting in regular expressions in test file.
+
+2011-09-23  Jason Merrill  <jason@redhat.com>
+
+	Core 253
+	* g++.dg/init/const8.C: New.
+	* g++.dg/cpp0x/constexpr-object1.C: Add a data member.
+	* g++.dg/cpp0x/defaulted2.C: Likewise.
+	* g++.dg/cpp0x/pr42844-2.C: Likewise.
+	* g++.dg/init/pr20039.C: Likewise.
+	* g++.dg/init/pr42844.C: Likewise.
+
+2011-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inline-1.c: new testcase.
+	* gcc.dg/ipa/inline-2.c: new testcase.
+	* gcc.dg/ipa/inline-3.c: new testcase.
+	* gcc.dg/ipa/inline-4.c: new testcase.
+
+2011-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50258
+	* g++.dg/cpp0x/constexpr-static8.C: New.
+
+2011-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avxfp-1.c: New test.
+	* gcc.target/i386/avxfp-2.c: New test.
+
+2011-09-23  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.c-torture/execute/941014-1.x: Deleted.
+
+2011-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50491
+	* g++.dg/cpp0x/pr50491.C: New.
+
+2011-09-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR testsuite/50487
+	* gfortran.dg/bessel_6.f90: Fix tolerance test.
+
+2011-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50371
+	* g++.dg/cpp0x/nullptr24.C: New.
+
+2011-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50482
+	* gcc.target/i386/pr50482.c: New test.
+
+2011-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/pad-2.c, gcc.target/i386/pad-3.c,
+	gcc.target/i386/pad-4.c, gcc.target/i386/pad-5a.c,
+	gcc.target/i386/pad-5b.c, gcc.target/i386/pad-6a.c,
+	gcc.target/i386/pad-6b.c, gcc.target/i386/pad-7.c,
+	gcc.target/i386/pad-8.c, gcc.target/i386/pad-9.c,
+	gcc.target/i386/pad-10.cm gcc.target/i386/vect-double-1.c: Skip if
+	multilib options contain different -march= from dg-options.
+
+2011-09-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50344
+	* g++.dg/template/friend52.C: New.
+
+2011-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/arm/cmp-1.c: New test.
+	* gcc.target/arm/cmp-2.c: Likewise.
+
+2011-09-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41733
+	* gfortran.dg/impure_actual_1.f90: Modified error message.
+	* gfortran.dg/proc_ptr_32.f90: New.
+	* gfortran.dg/proc_ptr_33.f90: New.
+
+2011-09-22  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50451
+	* gcc.dg/vect/pr50451.c: New test.
+
+2011-09-21  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (errchk): Add special case for bug332.
+	(go-gc-tests): Add special cases for bug347 and bug348.  Recognize
+	some more test lines.
+
+2011-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/other/i386-3.C: Remove duplicated dg-options.
+	* g++.dg/other/i386-4.C: Remove dg-require-effective-target directive.
+	* g++.dg/other/i386-8.C: Ditto.
+	* g++.dg/other/pr34435.C: Ditto.
+	* g++.dg/other/pr39496.C: Ditto.
+	* g++.dg/other/mmintrin.C: Ditto.
+
+2011-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-cond-7.c: New test.
+	* gcc.target/i386/sse4_1-cond-1.c: New test.
+	* gcc.target/i386/avx-cond-1.c: New test.
+
+2011-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50464
+	* g++.dg/other/pr50464.C: New test.
+
+2011-09-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/bmi2-mulx32-2.c: New test.
+	* gcc.target/i386/bmi2-mulx32-2a.c: Ditto.
+	* gcc.target/i386/bmi2-mulx64-2.c: Ditto.
+	* gcc.target/i386/bmi2-mulx64-2a.c: Ditto.
+
+2011-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt19.adb: New test.
+
+2011-09-21  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/neon-thumb2-move.c: Skip the warning message
+	on arch conflict when testing case on targets other than armv7-a.
+
+2011-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50454
+	* g++.dg/ext/int128-1.C: New.
+	* g++.dg/ext/int128-2.C: Likewise.
+	* g++.dg/ext/int128-2.h: Likewise.
+
+2011-09-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/50469
+	* gfortran.dg/storage_size_2.f08: Replace "must be be" with
+	"must be".
+
+2011-09-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-generated1.C: New.
+
+	PR c++/50442
+	* g++.dg/overload/ref-conv1.C: New.
+
+2011-09-20  Roberto Agostino Vitillo  <ravitillo@lbl.gov>
+
+	* g++.dg/other/final1.C: New.
+
+2011-09-20  Ira Rosen  <ira.rosen@linaro.org>
+
+	* g++.dg/vect/slp-pr50413.cc: Don't run the test.  Remove main ()
+	and get_bit ().
+
+2011-09-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.dg/20100906-1.c: Use -fno-short-enums option for
+	"target arm_eabi".
+
+2011-09-19  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50413
+	* g++.dg/vect/vect.exp: Run slp-pr* tests with
+	-fdump-tree-slp-details.  Run other tests with
+	-fdump-tree-vect-details.
+	* g++.dg/vect/slp-pr50413.cc: New.
+
+2011-09-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Ira Rosen  <ira.rosen@linaro.org>
+
+	PR testsuite/50435
+	* gcc.dg/vect/bb-slp-25.c: Add an if to avoid loop vectorization.
+	Fix underscores around restrict.
+
+2011-09-18  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50414
+	* gfortran.dg/vect/Ofast-pr50414.f90: New.
+	* gfortran.dg/vect/vect.exp: Run Ofast-* tests with -Ofast.
+	* gcc.dg/vect/no-scevccp-noreassoc-slp-reduc-7.c: New.
+
+2011-09-18  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50412
+	* gfortran.dg/vect/pr50412.f90: New.
+
+2011-09-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50424
+	* g++.dg/eh/defarg1.C: New.
+
+2011-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-reduc-10.c: New test.
+	* gcc.target/i386/avx-reduc-1.c: New test.
+
+	* gcc.target/i386/sse2-extract-1.c: New test.
+	* gcc.target/i386/avx-extract-1.c: New test.
+
+2011-09-16  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.dg/tree-ssa/foldconst-3.c: Don't use short enums.
+
+2011-09-15   Diego Novillo  <dnovillo@google.com>
+
+	* lib/g++.exp (g++_init): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_CXXFLAGS, if defined.
+	* lib/gfortran.exp (gfortran_init): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_GFORTRANFLAGS, if defined.
+	* lib/go.exp (go_target_compile): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_GOCFLAGS, if defined.
+	* lib/obj-c++.exp (obj-c++_init): Add $TEST_ALWAYS_FLAGS to
+	ALWAYS_OBJCXXFLAGS, if defined.
+	* lib/gcc.exp (gcc_target_compile): Add $TEST_ALWAYS_FLAGS to
+	additional_flags, if defined.
+	* lib/gnat.exp (gnat_target_compile): Likewise.
+	* lib/objc.exp (objc_target_compile): Likewise.
+	* lib/target-supports-dg.exp (dg-add-options): Handle
+	TEST_ALWAYS_FLAGS.
+
+2011-09-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/50322
+	* gcc.dg/tree-ssa/ivopts-lt.c: require stdint_types. include stdint.h.
+	Use uintptr_t in f1.  Undo avr xfails.
+
+2011-09-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50401
+	PR fortran/50403
+	* gfortran.dg/function_types_3.f90: New.
+
+2011-09-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50365
+	* g++.dg/cpp0x/trailing7.C: New.
+
+	PR c++/50361
+	* g++.dg/cpp0x/nullptr23.C: New.
+
+2011-09-15  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/bb-slp-25.c: New.
+
+2011-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50391
+	* g++.dg/cpp0x/noexcept15.C: New.
+
+2011-09-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/50251
+	* gcc.dg/pr50251.c: New test.
+
+2011-09-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34547
+	PR fortran/50375
+	* gfortran.dg/null_5.f90: New.
+	* gfortran.dg/null_6.f90: New.
+
+2011-09-13  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/compile/20110913-1.c: New test.
+
+2011-09-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50379
+	* gfortran.dg/result_2.f90: New.
+
+2011-09-13  Sevak Sargsyan <sevak.sargsyan@ispras.ru>
+
+	* gcc.target/arm/neon-combine-sub-abs-into-vabd.c: New test.
+
+2011-09-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48320
+	* g++.dg/cpp0x/variadic116.C: New test case.
+
 2011-09-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips.exp (mips_option_groups): Add debug options.
@@ -25,7 +667,7 @@
 2011-09-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50327
-	* gfortran.dg/do_while_1.f90:  New test.
+	* gfortran.dg/do_while_1.f90: New test.
 
 2011-09-11  Janus Weil  <janus@gcc.gnu.org>
 

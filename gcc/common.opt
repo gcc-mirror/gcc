@@ -1087,6 +1087,10 @@ Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
 ffast-math
 Common
 
+ffat-lto-objects
+Common Var(flag_fat_lto_objects) Init(1)
+Output lto objects containing both the intermediate language and binary output.
+
 ffinite-math-only
 Common Report Var(flag_finite_math_only) Optimization SetByCombined
 Assume no NaNs or infinities are generated
@@ -1941,6 +1945,10 @@ ftree-dominator-opts
 Common Report Var(flag_tree_dom) Optimization
 Enable dominator optimizations
 
+ftree-tail-merge
+Common Report Var(flag_tree_tail_merge) Optimization
+Enable tail merging on trees
+
 ftree-dse
 Common Report Var(flag_tree_dse) Optimization
 Enable dead store elimination
@@ -1952,6 +1960,10 @@ Enable forward propagation on trees
 ftree-fre
 Common Report Var(flag_tree_fre) Optimization
 Enable Full Redundancy Elimination (FRE) on trees
+
+foptimize-strlen
+Common Report Var(flag_optimize_strlen) Optimization
+Enable string length optimizations on trees
 
 ftree-loop-distribution
 Common Report Var(flag_tree_loop_distribution) Optimization

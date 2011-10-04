@@ -147,3 +147,6 @@ extern void __go_builtin_close (struct __go_channel *);
 extern int __go_chan_len (struct __go_channel *);
 
 extern int __go_chan_cap (struct __go_channel *);
+
+extern uintptr_t __go_select (uintptr_t, _Bool, struct __go_channel **,
+			      _Bool *);

@@ -817,10 +817,11 @@ package Einfo is
 --       Present in access types. This field points to the type that is
 --       directly designated by the access type. In the case of an access
 --       type to an incomplete type, this field references the incomplete
---       type. Note that in the semantic processing, what is useful in
---       nearly all cases is the full type designated by the access type.
---       The function Designated_Type obtains this full type in the case of
---       access to an incomplete type.
+--       type. Directly_Designated_Type is typically used in implementing the
+--       static semantics of the language; in implementing dynamic semantics,
+--       we typically want the full view of the designated type. The function
+--       Designated_Type obtains this full type in the case of access to an
+--       incomplete type.
 
 --    Discard_Names (Flag88)
 --       Present in types and exception entities. Set if pragma Discard_Names

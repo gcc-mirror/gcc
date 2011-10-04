@@ -1163,6 +1163,7 @@ package Rtsfind is
      RE_Get_RACW,                        -- System.Partition_Interface
      RE_Get_RCI_Package_Receiver,        -- System.Partition_Interface
      RE_Get_Unique_Remote_Pointer,       -- System.Partition_Interface
+     RE_RACW_Stub_Type,                  -- System.Partition_Interface
      RE_RACW_Stub_Type_Access,           -- System.Partition_Interface
      RE_RAS_Proxy_Type_Access,           -- System.Partition_Interface
      RE_Raise_Program_Error_Unknown_Tag, -- System.Partition_Interface
@@ -1652,6 +1653,7 @@ package Rtsfind is
      RE_Initialize_Protection,           -- System.Tasking.Protected_Objects
      RE_Finalize_Protection,             -- System.Tasking.Protected_Objects
      RE_Lock,                            -- System.Tasking.Protected_Objects
+     RE_Lock_Read_Only,                  -- System.Tasking.Protected_Objects
      RE_Get_Ceiling,                     -- System.Tasking.Protected_Objects
      RE_Set_Ceiling,                     -- System.Tasking.Protected_Objects
      RE_Unlock,                          -- System.Tasking.Protected_Objects
@@ -2357,6 +2359,7 @@ package Rtsfind is
      RE_Get_RACW                         => System_Partition_Interface,
      RE_Get_RCI_Package_Receiver         => System_Partition_Interface,
      RE_Get_Unique_Remote_Pointer        => System_Partition_Interface,
+     RE_RACW_Stub_Type                   => System_Partition_Interface,
      RE_RACW_Stub_Type_Access            => System_Partition_Interface,
      RE_RAS_Proxy_Type_Access            => System_Partition_Interface,
      RE_Raise_Program_Error_Unknown_Tag  => System_Partition_Interface,
@@ -2881,6 +2884,7 @@ package Rtsfind is
      RE_Initialize_Protection            => System_Tasking_Protected_Objects,
      RE_Finalize_Protection              => System_Tasking_Protected_Objects,
      RE_Lock                             => System_Tasking_Protected_Objects,
+     RE_Lock_Read_Only                   => System_Tasking_Protected_Objects,
      RE_Get_Ceiling                      => System_Tasking_Protected_Objects,
      RE_Set_Ceiling                      => System_Tasking_Protected_Objects,
      RE_Unlock                           => System_Tasking_Protected_Objects,

@@ -15,6 +15,9 @@ __go_send_nonblocking_big (struct __go_channel* channel, const void *val)
   size_t alloc_size;
   size_t offset;
 
+  if (channel == NULL)
+    return 0;
+
   element_size = channel->element_type->__size;
   alloc_size = (element_size + sizeof (uint64_t) - 1) / sizeof (uint64_t);
 

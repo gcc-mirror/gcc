@@ -1161,13 +1161,13 @@ package body Lib.Writ is
 
       --  Output R lines for No_Dependence entries
 
-      for J in No_Dependence.First .. No_Dependence.Last loop
-         if In_Extended_Main_Source_Unit (No_Dependence.Table (J).Unit)
-           and then not No_Dependence.Table (J).Warn
+      for J in No_Dependences.First .. No_Dependences.Last loop
+         if In_Extended_Main_Source_Unit (No_Dependences.Table (J).Unit)
+           and then not No_Dependences.Table (J).Warn
          then
             Write_Info_Initiate ('R');
             Write_Info_Char (' ');
-            Write_Unit_Name (No_Dependence.Table (J).Unit);
+            Write_Unit_Name (No_Dependences.Table (J).Unit);
             Write_Info_EOL;
          end if;
       end loop;

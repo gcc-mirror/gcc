@@ -6172,6 +6172,8 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   if (!(flags & SECTION_DEBUG))
     *f++ = 'a';
+  if (flags & SECTION_EXCLUDE)
+    *f++ = 'e';
   if (flags & SECTION_WRITE)
     *f++ = 'w';
   if (flags & SECTION_CODE)
@@ -6694,6 +6696,7 @@ static bool
 resolution_to_local_definition_p (enum ld_plugin_symbol_resolution resolution)
 {
   return (resolution == LDPR_PREVAILING_DEF
+	  || resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 	  || resolution == LDPR_PREVAILING_DEF_IRONLY);
 }
 
@@ -6705,6 +6708,7 @@ resolution_local_p (enum ld_plugin_symbol_resolution resolution)
 {
   return (resolution == LDPR_PREVAILING_DEF
 	  || resolution == LDPR_PREVAILING_DEF_IRONLY
+	  || resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 	  || resolution == LDPR_PREEMPTED_REG
 	  || resolution == LDPR_PREEMPTED_IR
 	  || resolution == LDPR_RESOLVED_IR

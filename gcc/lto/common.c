@@ -31,7 +31,7 @@ const char *lto_visibility_str[4] __attribute__ ((visibility ("hidden"))) =
  "INTERNAL", "HIDDEN"
 };
 
-const char *lto_resolution_str[9] __attribute__ ((visibility ("hidden"))) =
+const char *lto_resolution_str[10] __attribute__ ((visibility ("hidden"))) =
 {
   "UNKNOWN",
   "UNDEF",
@@ -41,6 +41,7 @@ const char *lto_resolution_str[9] __attribute__ ((visibility ("hidden"))) =
   "PREEMPTED_IR",
   "RESOLVED_IR",
   "RESOLVED_EXEC",
-  "RESOLVED_DYN"
+  "RESOLVED_DYN",
+  "PREVAILING_DEF_IRONLY_EXP",
 };
 

@@ -951,7 +951,8 @@ package body Ch3 is
    --------------------------------
 
    --  SUBTYPE_DECLARATION ::=
-   --    subtype DEFINING_IDENTIFIER is [NULL_EXCLUSION] SUBTYPE_INDICATION;
+   --    subtype DEFINING_IDENTIFIER is [NULL_EXCLUSION] SUBTYPE_INDICATION
+   --    {ASPECT_SPECIFICATIONS];
 
    --  The caller has checked that the initial token is SUBTYPE
 

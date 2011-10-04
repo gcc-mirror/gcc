@@ -903,7 +903,12 @@ AC_SUBST(enable_shared)
 
 AC_ARG_WITH(build-sysroot, 
   [AS_HELP_STRING([--with-build-sysroot=sysroot],
-                  [use sysroot as the system root during the build])])
+                  [use sysroot as the system root during the build])],
+  [if test x"$withval" != x ; then
+     SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"
+   fi],
+  [SYSROOT_CFLAGS_FOR_TARGET=])
+AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
 
 AC_ARG_WITH(sysroot,
 [AS_HELP_STRING([[--with-sysroot[=DIR]]],
@@ -3649,6 +3654,18 @@ foo:
        fi],
        [AC_DEFINE(HAVE_AS_OFFSETABLE_LO10, 1,
 	         [Define if your assembler supports offsetable %lo().])])
+
+    gcc_GAS_CHECK_FEATURE([FMAF, HPC, and VIS 3.0 instructions],
+      gcc_cv_as_sparc_fmaf,,
+      [-xarch=v9d],
+      [.text
+       .align 4
+       fmaddd %f0, %f2, %f4, %f6
+       addxccc %g1, %g2, %g3
+       fsrl32 %f2, %f4, %f8
+       fnaddd %f10, %f12, %f14],,
+      [AC_DEFINE(HAVE_AS_FMAF_HPC_VIS3, 1,
+                [Define if your assembler supports FMAF, HPC, and VIS 3.0 instructions.])])
     ;;
 
 changequote(,)dnl
@@ -3712,6 +3729,15 @@ foo:	nop
 	      ;;
 	  esac
 	fi
+	# Test if the assembler supports the section flag 'e' for specifying
+	# an excluded section.
+	gcc_GAS_CHECK_FEATURE([.section with e], gcc_cv_as_section_has_e,
+	  [2,22,51],,
+[.section foo1,"e"
+.byte 0,0,0,0])
+	AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
+	  [`if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`],
+          [Define if your assembler supports specifying the section flag e.])
 	;;
     esac
 

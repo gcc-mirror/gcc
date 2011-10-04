@@ -71,8 +71,7 @@ package body Exp_Ch9 is
    --  types with defaulted discriminant of an integer type, when the bound
    --  of some entry family depends on a discriminant. The limitation to
    --  entry families of 128K should be reasonable in all cases, and is a
-   --  documented implementation restriction. It will be lifted when protected
-   --  entry families are re-implemented as a single ordered queue.
+   --  documented implementation restriction.
 
    Entry_Family_Bound : constant Int := 2**16;
 
@@ -1690,7 +1689,7 @@ package body Exp_Ch9 is
       --  The parameter that designates the synchronized object in the call
 
       Actuals : constant List_Id := New_List;
-      --  the actuals in the entry call.
+      --  The actuals in the entry call
 
       Decls : constant List_Id := New_List;
 
@@ -3008,7 +3007,7 @@ package body Exp_Ch9 is
                raise Program_Error;
          end case;
 
-         --  Establish link between subprogram body entity and source entry.
+         --  Establish link between subprogram body entity and source entry
 
          Set_Corresponding_Protected_Entry (Edef, Ent);
 
@@ -3243,6 +3242,7 @@ package body Exp_Ch9 is
       Stmts        : List_Id;
       Object_Parm  : Node_Id;
       Exc_Safe     : Boolean;
+      Lock_Kind    : RE_Id;
 
       function Is_Exception_Safe (Subprogram : Node_Id) return Boolean;
       --  Tell whether a given subprogram cannot raise an exception
@@ -3389,12 +3389,16 @@ package body Exp_Ch9 is
                 Parameter_Associations => Uactuals));
          end if;
 
+         Lock_Kind := RE_Lock_Read_Only;
+
       else
          Unprot_Call :=
            Make_Procedure_Call_Statement (Loc,
              Name =>
                Make_Identifier (Loc, Chars (Defining_Unit_Name (N_Op_Spec))),
              Parameter_Associations => Uactuals);
+
+         Lock_Kind := RE_Lock;
       end if;
 
       --  Wrap call in block that will be covered by an at_end handler
@@ -3419,7 +3423,7 @@ package body Exp_Ch9 is
             Service_Name := New_Reference_To (RTE (RE_Service_Entry), Loc);
 
          when System_Tasking_Protected_Objects =>
-            Lock_Name := New_Reference_To (RTE (RE_Lock), Loc);
+            Lock_Name := New_Reference_To (RTE (Lock_Kind), Loc);
             Service_Name := New_Reference_To (RTE (RE_Unlock), Loc);
 
          when others =>
@@ -5219,7 +5223,7 @@ package body Exp_Ch9 is
 
       Comps := New_List (
         Make_Component_Declaration (Loc,
-          Defining_Identifier => Make_Temporary (Loc, 'P'),
+          Defining_Identifier  => Make_Temporary (Loc, 'P'),
           Component_Definition =>
             Make_Component_Definition (Loc,
               Aliased_Present => False,
@@ -5236,11 +5240,10 @@ package body Exp_Ch9 is
       Decl2 :=
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => E_T,
-          Type_Definition =>
+          Type_Definition     =>
             Make_Record_Definition (Loc,
               Component_List =>
-                Make_Component_List (Loc,
-                  Component_Items => Comps)));
+                Make_Component_List (Loc, Component_Items => Comps)));
 
       Insert_After (Decl1, Decl2);
       Analyze (Decl2);
@@ -8333,7 +8336,7 @@ package body Exp_Ch9 is
             Insert_After (Current_Node, Sub);
             Analyze (Sub);
 
-            --  build wrapper procedure for pre/postconditions.
+            --  Build wrapper procedure for pre/postconditions
 
             Build_PPC_Wrapper (Comp_Id, N);
 
@@ -10611,29 +10614,34 @@ package body Exp_Ch9 is
         Make_Defining_Identifier (Sloc (Tasktyp),
           Chars => New_External_Name (Tasknm, 'Z')));
 
-      if Present (Taskdef) and then Has_Storage_Size_Pragma (Taskdef) and then
-        Is_Static_Expression (Expression (First (
-          Pragma_Argument_Associations (Find_Task_Or_Protected_Pragma (
-            Taskdef, Name_Storage_Size)))))
+      if Present (Taskdef)
+        and then Has_Storage_Size_Pragma (Taskdef)
+        and then
+          Is_Static_Expression
+            (Expression
+               (First (Pragma_Argument_Associations
+                         (Find_Task_Or_Protected_Pragma
+                            (Taskdef, Name_Storage_Size)))))
       then
          Size_Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Storage_Size_Variable (Tasktyp),
-             Object_Definition => New_Reference_To (RTE (RE_Size_Type), Loc),
-             Expression =>
+             Object_Definition   => New_Reference_To (RTE (RE_Size_Type), Loc),
+             Expression          =>
                Convert_To (RTE (RE_Size_Type),
-                 Relocate_Node (
-                   Expression (First (
-                     Pragma_Argument_Associations (
-                       Find_Task_Or_Protected_Pragma
-                         (Taskdef, Name_Storage_Size)))))));
+                 Relocate_Node
+                   (Expression (First (Pragma_Argument_Associations
+                                         (Find_Task_Or_Protected_Pragma
+                                            (Taskdef, Name_Storage_Size)))))));
 
       else
          Size_Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Storage_Size_Variable (Tasktyp),
-             Object_Definition => New_Reference_To (RTE (RE_Size_Type), Loc),
-             Expression => New_Reference_To (RTE (RE_Unspecified_Size), Loc));
+             Object_Definition   =>
+               New_Reference_To (RTE (RE_Size_Type), Loc),
+             Expression          =>
+               New_Reference_To (RTE (RE_Unspecified_Size), Loc));
       end if;
 
       Insert_After (Elab_Decl, Size_Decl);
@@ -10646,7 +10654,7 @@ package body Exp_Ch9 is
 
       Append_To (Cdecls,
         Make_Component_Declaration (Loc,
-          Defining_Identifier =>
+          Defining_Identifier  =>
             Make_Defining_Identifier (Loc, Name_uTask_Id),
           Component_Definition =>
             Make_Component_Definition (Loc,
@@ -10667,8 +10675,8 @@ package body Exp_Ch9 is
                Make_Component_Definition (Loc,
                  Aliased_Present     => True,
                  Subtype_Indication  => Make_Subtype_Indication (Loc,
-                   Subtype_Mark => New_Occurrence_Of
-                     (RTE (RE_Ada_Task_Control_Block), Loc),
+                   Subtype_Mark =>
+                     New_Occurrence_Of (RTE (RE_Ada_Task_Control_Block), Loc),
 
                    Constraint   =>
                      Make_Index_Or_Discriminant_Constraint (Loc,

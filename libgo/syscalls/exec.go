@@ -13,8 +13,14 @@ import "unsafe"
 func libc_fcntl(fd int, cmd int, arg int) int __asm__ ("fcntl")
 func libc_fork() Pid_t __asm__ ("fork")
 func libc_setsid() Pid_t __asm__ ("setsid")
+func libc_setpgid(Pid_t, Pid_t) int __asm__ ("setpgid")
+func libc_chroot(path *byte) int __asm__ ("chroot")
+func libc_setuid(Uid_t) int __asm__ ("setuid")
+func libc_setgid(Gid_t) int __asm__ ("setgid")
+func libc_setgroups(Size_t, *Gid_t) int __asm__ ("setgroups")
 func libc_chdir(name *byte) int __asm__ ("chdir")
 func libc_dup2(int, int) int __asm__ ("dup2")
+func libc_ioctl(int, int) int __asm__ ("ioctl")
 func libc_execve(*byte, **byte, **byte) int __asm__ ("execve")
 func libc_sysexit(int) __asm__ ("_exit")
 
@@ -24,7 +30,7 @@ func libc_sysexit(int) __asm__ ("_exit")
 // In the child, this function must not acquire any locks, because
 // they might have been locked at the time of the fork.  This means
 // no rescheduling, no malloc calls, and no new stack segments.
-func forkAndExecInChild(argv0 *byte, argv, envv []*byte, dir *byte, attr *ProcAttr, pipe int) (pid int, err int) {
+func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr *ProcAttr, sys *SysProcAttr, pipe int) (pid int, err int) {
 	// Declare all variables at top in case any
 	// declarations require heap allocation (e.g., err1).
 	var r1, r2, err1 uintptr
@@ -51,15 +57,47 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, dir *byte, attr *ProcAt
 	// Fork succeeded, now in child.
 
 	// Enable tracing if requested.
-	if attr.Ptrace {
+	if sys.Ptrace {
 		if libc_ptrace(_PTRACE_TRACEME, 0, 0, nil) < 0 {
 			goto childerror
 		}
 	}
 
 	// Session ID
-	if attr.Setsid {
+	if sys.Setsid {
 		if libc_setsid() == Pid_t(-1) {
+			goto childerror
+		}
+	}
+
+	// Set process group
+	if sys.Setpgid {
+		if libc_setpgid(0, 0) < 0 {
+			goto childerror
+		}
+	}
+
+	// Chroot
+	if chroot != nil {
+		if libc_chroot(chroot) < 0 {
+			goto childerror
+		}
+	}
+
+	// User and groups
+	if cred := sys.Credential; cred != nil {
+		ngroups := uintptr(len(cred.Groups))
+		var groups *Gid_t
+		if ngroups > 0 {
+			groups = (*Gid_t)(unsafe.Pointer(&cred.Groups[0]))
+		}
+		if libc_setgroups(Size_t(ngroups), groups) < 0 {
+			goto childerror
+		}
+		if libc_setgid(Gid_t(cred.Gid)) < 0 {
+			goto childerror
+		}
+		if libc_setuid(Uid_t(cred.Uid)) < 0 {
 			goto childerror
 		}
 	}
@@ -129,6 +167,20 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, dir *byte, attr *ProcAt
 		libc_close(i)
 	}
 
+	// Detach fd 0 from tty
+	if sys.Noctty {
+		if libc_ioctl(0, TIOCNOTTY) < 0 {
+			goto childerror
+		}
+	}
+
+	// Make fd 0 the tty
+	if sys.Setctty {
+		if libc_ioctl(0, TIOCSCTTY) < 0 {
+			goto childerror
+		}
+	}
+
 	// Time to exec.
 	libc_execve(argv0, &argv[0], &envv[0])
 
@@ -147,25 +199,49 @@ childerror:
 	panic("unreached")
 }
 
-
-type ProcAttr struct {
-	Setsid bool     // Create session.
-	Ptrace bool     // Enable tracing.
-	Dir    string   // Current working directory.
-	Env    []string // Environment.
-	Files  []int    // File descriptors.
+// Credential holds user and group identities to be assumed
+// by a child process started by StartProcess.
+type Credential struct {
+	Uid    uint32   // User ID.
+	Gid    uint32   // Group ID.
+	Groups []uint32 // Supplementary group IDs.
 }
 
-var zeroAttributes ProcAttr
+// ProcAttr holds attributes that will be applied to a new process started
+// by StartProcess.
+type ProcAttr struct {
+	Dir   string   // Current working directory.
+	Env   []string // Environment.
+	Files []int    // File descriptors.
+	Sys   *SysProcAttr
+}
+
+type SysProcAttr struct {
+	Chroot     string      // Chroot.
+	Credential *Credential // Credential.
+	Ptrace     bool        // Enable tracing.
+	Setsid     bool        // Create session.
+	Setpgid    bool        // Set process group ID to new pid (SYSV setpgrp)
+	Setctty    bool        // Set controlling terminal to fd 0
+	Noctty     bool        // Detach fd 0 from controlling terminal
+}
+
+var zeroProcAttr ProcAttr
+var zeroSysProcAttr SysProcAttr
 
 func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err int) {
 	var p [2]int
+	var n Ssize_t
 	var r1 int
 	var err1 uintptr
 	var wstatus WaitStatus
 
 	if attr == nil {
-		attr = &zeroAttributes
+		attr = &zeroProcAttr
+	}
+	sys := attr.Sys
+	if sys == nil {
+		sys = &zeroSysProcAttr
 	}
 
 	p[0] = -1
@@ -180,6 +256,10 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err int) {
 		argvp[0] = argv0p
 	}
 
+	var chroot *byte
+	if sys.Chroot != "" {
+		chroot = StringBytePtr(sys.Chroot)
+	}
 	var dir *byte
 	if attr.Dir != "" {
 		dir = StringBytePtr(attr.Dir)
@@ -202,22 +282,16 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err int) {
 	}
 
 	// Kick off child.
-	pid, err = forkAndExecInChild(argv0p, argvp, envvp, dir, attr, p[1])
+	pid, err = forkAndExecInChild(argv0p, argvp, envvp, chroot, dir, attr, sys, p[1])
 	if err != 0 {
-	error:
-		if p[0] >= 0 {
-			Close(p[0])
-			Close(p[1])
-		}
-		ForkLock.Unlock()
-		return 0, err
+		goto error
 	}
 	ForkLock.Unlock()
 
 	// Read child error status from pipe.
 	Close(p[1])
-	n := libc_read(p[0], (*byte)(unsafe.Pointer(&err1)),
-		       Size_t(unsafe.Sizeof(err1)))
+	n = libc_read(p[0], (*byte)(unsafe.Pointer(&err1)),
+		      Size_t(unsafe.Sizeof(err1)))
 	err = 0
 	if n < 0 {
 		err = GetErrno()
@@ -242,6 +316,14 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err int) {
 
 	// Read got EOF, so pipe closed on exec, so exec succeeded.
 	return pid, 0
+
+error:
+	if p[0] >= 0 {
+		Close(p[0])
+		Close(p[1])
+	}
+	ForkLock.Unlock()
+	return 0, err
 }
 
 // Combination of fork and exec, careful to be thread safe.

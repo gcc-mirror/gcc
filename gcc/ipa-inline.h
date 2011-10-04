@@ -104,10 +104,27 @@ struct GTY(()) inline_summary
   VEC(size_time_entry,gc) *entry;
 };
 
+
 typedef struct inline_summary inline_summary_t;
 DEF_VEC_O(inline_summary_t);
 DEF_VEC_ALLOC_O(inline_summary_t,gc);
 extern GTY(()) VEC(inline_summary_t,gc) *inline_summary_vec;
+
+/* Information kept about parameter of call site.  */
+struct inline_param_summary
+{
+  /* REG_BR_PROB_BASE based probability that parameter will change in between
+     two invocation of the calls.
+     I.e. loop invariant parameters
+     REG_BR_PROB_BASE/estimated_iterations and regular
+     parameters REG_BR_PROB_BASE.
+
+     Value 0 is reserved for compile time invariants. */
+  int change_prob;
+};
+typedef struct inline_param_summary inline_param_summary_t;
+DEF_VEC_O(inline_param_summary_t);
+DEF_VEC_ALLOC_O(inline_param_summary_t,heap);
 
 /* Information kept about callgraph edges.  */
 struct inline_edge_summary
@@ -118,6 +135,10 @@ struct inline_edge_summary
   /* Depth of loop nest, 0 means no nesting.  */
   unsigned short int loop_depth;
   struct predicate *predicate;
+  /* Array indexed by parameters.
+     0 means that parameter change all the time, REG_BR_PROB_BASE means
+     that parameter is constant.  */
+  VEC (inline_param_summary_t, heap) *param;
 };
 
 typedef struct inline_edge_summary inline_edge_summary_t;
@@ -219,7 +240,7 @@ estimate_edge_time (struct cgraph_edge *edge)
   if ((int)VEC_length (edge_growth_cache_entry, edge_growth_cache) <= edge->uid
       || !(ret = VEC_index (edge_growth_cache_entry,
 			    edge_growth_cache,
-			    edge->uid)->size))
+			    edge->uid)->time))
     return do_estimate_edge_time (edge);
   return ret - (ret > 0);
 }

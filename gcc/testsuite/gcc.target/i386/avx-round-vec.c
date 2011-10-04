@@ -7,7 +7,7 @@
 
 #include <math.h>
 
-extern double floor (double);
+extern double round (double);
 
 #define NUM 64
 

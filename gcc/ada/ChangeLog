@@ -1,3 +1,506 @@
+2011-09-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (Darwin): Partial reversion of previous
+	change to powerpc section.
+
+2011-09-29  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (Darwin): Factor LIBGNAT_TARGET_PAIRS
+	across the port.
+
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbhase.adb, a-cbhase.ads, a-cborse.adb, a-cborse.ads,
+	a-cihase.adb, a-cihase.ads, a-ciorse.adb, a-ciorse.ads,
+	a-coorse.adb, a-coorse.ads: Add iterator machinery to bounded sets and
+	indefinite sets.
+	* a-coorma.ads: Minor reformmating.
+	* einfo.ads: Improve the comment describing the
+	Directly_Designated_Type function.
+	* a-ciorma.adb, a-ciorma.ads: Add iterator machinery to indefinite
+	ordered maps.
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update
+	dependencies.
+
+2011-09-27  Robert Dewar  <dewar@adacore.com>
+
+	* a-comutr.ads: Minor reformatting.
+
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cimutr.adb, a-cimutr.ads, a-cbmutr.adb, a-cbmutr.ads: Add children
+	iterators to multiway trees.
+
+2011-09-27  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb (d.D): New option for strict Alfa mode.
+	* opt.ads (Strict_Alfa_Mode): New flag to interpret compiler
+	permissions as strictly as possible.
+	* sem_ch3.adb (Signed_Integer_Type_Declaration): In non-strict
+	Alfa mode, now, interpret ranges of base types like GNAT does; in
+	strict mode, simply change the range of the implicit base Itype.
+	* gnat1drv.adb: Update comments. Set Strict_Alfa_Mode.
+
+2011-09-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb: Minor comment fixes.
+
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-comutr.adb, a-comutr.ads: Add children iterators on multiway
+	trees.
+
+2011-09-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Use Designated_Type
+	instead of Directly_Designated_Type in the indirect array case.
+
+2011-09-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, exp_aggr.adb: Minor reformatting.
+
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, par-ch3.adb: Minor comment update: aspect specification
+	on subtype declarations.
+	* exp_aggr.adb: Minor comment update.
+
+2011-09-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Safe_Prefixed_Reference): Remove always-false
+	test in the N_Explicit_Dereference case.  Fold double logical
+	negation in the special loop case and conditionalize it on
+	Variable_Ref being true.
+
+2011-09-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): If the prefix is a
+	single protected object and the selector is a discriminant or an
+	entry family, this is a non-overloaded candidate interpretation,
+	and possible primitive operations of the type must not be
+	examined.
+
+2011-09-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taspri-posix-noaltstack.ads (Lock): Mark fields aliased.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* s-osinte-hpux.ads, s-osinte-aix.ads, s-osinte-solaris-posix.ads,
+	s-osinte-irix.ads, s-osinte-darwin.ads, s-osinte-freebsd.ads:
+	Add dummy definitions for pthread_rwlock_t
+	and pthread_rwlockattr_t on all POSIX platforms.
+	* s-taprop-irix.adb, s-taprop-posix.adb (Initialize_Lock): Fix lock
+	reference.
+	(Finalize_Lock): Likewise.
+	(Write_Lock): Likewise.
+	(Unlock): Likewise.
+
+2011-09-27  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tassta.adb (Task_Wrapper): Increase Guard_Page_Size value for
+	windows 64.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* s-osinte-hpux.ads, s-taprop-vxworks.adb, s-taspri-vxworks.ads,
+	s-taprop-tru64.adb, s-osinte-aix.ads, s-taspri-posix-noaltstack.ads,
+	s-taspri-mingw.ads, s-taprop-vms.adb, s-tpoben.adb, s-tpoben.ads,
+	s-taprop-mingw.adb, s-taprob.adb, s-taprob.ads,
+	s-osinte-solaris-posix.ads, s-taprop-solaris.adb, s-taspri-solaris.ads,
+	s-osinte-irix.ads, s-taprop-irix.adb, s-osinte-darwin.ads,
+	s-taspri-dummy.ads, s-taspri-posix.ads, s-taprop.ads,
+	s-taspri-vms.ads, s-osinte-freebsd.ads, s-taprop-hpux-dce.adb,
+	s-taspri-hpux-dce.ads, s-taspri-tru64.ads, s-taprop-dummy.adb,
+	s-taprop-posix.adb: Revert previous changes.
+	(Lock): Now a record containing the two possible lock
+	(mutex and read/write) defined in OS_Interface.
+	* s-taprop-linux.adb (Finalize_Protection): Use r/w lock for
+	'R' locking policy.
+	(Initialize_Protection): Likewise.
+	(Lock): Likewise.
+	(Lock_Read_Only): Likewise.
+	(Unlock): Likewise.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* s-taspri-posix-noaltstack.ads (RW_Lock): This type is now defined as
+	OS_Interface.pthread_rwlock_t.
+
+2011-09-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, a-cimutr.adb, a-cimutr.ads, gnat1drv.adb, a-comutr.adb,
+	a-comutr.ads, exp_dist.adb, a-cbmutr.adb, a-cbmutr.ads,
+	sem_ch5.adb, sem_util.adb: Minor reformatting.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* s-taprop.ads (Initialize_Lock)[RW_Lock]: New spec for r/w lock.
+	(Finalize_Lock)[RW_Lock]: Likewise.
+	(Write_Lock)[RW_Lock]: Likewise.
+	(Unlock)[RW_Lock]: Likewise.
+	(Read_Lock): Define L as RW_Lock (instead of Lock).
+	* s-taprop-linux.adb (Initialize_Lock)[RW_Lock]: New
+	routine for r/w lock.
+	(Finalize_Lock)[RW_Lock]: Likewise.
+	(Write_Lock)[RW_Lock]: Likewise.
+	(Unlock)[RW_Lock]: Likewise.
+	(Read_Lock): Define L as RW_Lock (instead of Lock).
+
+	* s-taprop-vxworks.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
+	s-taprop-mingw.adb, s-taprop-solaris.adb, s-taprop-irix.adb,
+	s-taprop-hpux-dce.adb, s-taprop-dummy.adb, s-taprop-posix.adb
+	(Initialize_Lock)[RW_Lock]: Same implementation as corresponding
+	routine for standard lock.
+	(Finalize_Lock)[RW_Lock]: Likewise.
+	(Write_Lock)[RW_Lock]: Likewise.
+	(Unlock)[RW_Lock]: Likewise.
+	(Read_Lock): Define L as RW_Lock (instead of Lock).
+	* s-taprob.ads, s-tpoben.ads (Protection): Add RWL (RW_Lock)
+	in the record definition.
+	* s-taprob.adb, s-taproben.adb (Finalize_Protection): Use r/w
+	lock for 'R' locking policy.
+	(Initialize_Protection): Likewise.
+	(Lock): Likewise.
+	(Lock_Read_Only): Likewise.
+	(Unlock): Likewise.
+	* s-taspri-posix.ads (RW_Lock): New type defined as
+	OS_Interface.pthread_rwlock_t.
+
+	* s-taspri-vxworks.ads, s-taspri-posix-noaltstack.ads,
+	s-taspri-mingw.ads, s-taspri-solaris.ads, s-taspri-dummy.ads,
+	s-taspri-posix.ads, s-taspri-vms.ads, s-taspri-hpux-dce.ads,
+	s-taspri-tru64.ads (RW_Lock): New type defined as alias to Lock.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* exp_ch9.adb, s-taspri-posix.ads: Minor reformatting.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* s-osinte-aix.ads, s-osinte-darwin.ads, s-osinte-freebsd.ads,
+	s-osinte-hpux.ads, s-osinte-irix.ads,
+	s-osinte-solaris-posix.ads (pthread_rwlock_t): New definition alias of
+	pthread_mutex_t.
+	(pthread_rwlockattr_t): New definition alias of pthread_mutexattr_t.
+	* s-osinte-linux.ads (pthread_rwlock_t, pthread_rwlockattr_t,
+	pthread_rwlockattr_init, pthread_rwlockattr_destroy,
+	pthread_rwlockattr_setkind_np, pthread_rwlock_init,
+	pthread_rwlock_destroy, pthread_rwlock_rdlock,
+	pthread_rwlock_wrlock, pthread_rwlock_unlock): New.
+
+2011-09-27  Pascal Obry  <obry@adacore.com>
+
+	* rtsfind.ads: Add RE_Lock_Read_Only into rtsfind circuitry.
+	(RE_Id): Add RE_Lock_Read_Only.
+	(RE_Unit_Table): Likewise.
+	* sem_prag.adb (Process_Convention): Change Pragma_Locking_Policy
+	to lift restriction on first character. Handle now the
+	Name_Concurrent_Readers_Locking where policy character is set to
+	'R'.
+	* snames.ads-tmpl (Name_Concurrent_Readers_Locking): New
+	constant.
+	* exp_ch9.adb (Build_Protected_Subprogram_Body): Generate a
+	read only lock for function in protected object.
+	* s-taprob.ads (Lock_Read_Only): Remove obsolete comment as
+	this routine is now used.
+
+2011-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* s-atocou-x86.adb (Decrement): Use %;.
+	(Increment): Likewise.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (build_allocator): Set TREE_THIS_NOTRAP on the
+	dereference of the pointer to the storage area.  Remove useless type
+	conversions and factor out common code.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (maybe_unconstrained_array): Declare TYPE local
+	variable and use it throughout.
+	<UNCONSTRAINED_ARRAY_TYPE>: Add 'break' at the end.
+	<RECORD_TYPE>: Do not unconditionally convert to the unpadded type as a
+	first step.  Also convert to the unpadded type as a last step.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (create_subprog_decl): Replace TREE_CHAIN with
+	DECL_CHAIN in comment.
+	* gcc-interface/trans.c (gigi): Likewise.
+	(Attribute_to_gnu): Likewise.
+	(build_function_stub): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.c (create_subprog_decl): Likewise.
+	(convert_vms_descriptor64): Likewise.
+	(convert_vms_descriptor32): Likewise.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (assoc_to_constructor): Minor tweaks.
+	* gcc-interface/utils2.c (build_simple_component_ref): Fix formatting
+	issues.  Use COMPLETE_TYPE_P in assertion.  Also set TREE_READONLY if
+	the type of the record is TYPE_READONLY.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Set_Formal_Mode): Set Can_Never_Be_Null on an IN or IN
+	OUT formal parameter which is of an null-exclusion access subtype.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_CAN_NEVER_BE_NULL_P): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Set the flag.
+	(gnat_to_gnu_param): Likewise.
+	* gcc-interface/utils.c (convert) <UNCONSTRAINED_ARRAY_REF>: Invoke
+	maybe_unconstrained_array instead of doing the work manually.
+	(maybe_unconstrained_array): Propagate the TREE_THIS_NOTRAP flag.
+	* gcc-interface/utils2.c (build_unary_op) <INDIRECT_REF>: If operand
+	is a DECL with the flag, set TREE_THIS_NOTRAP on the reference.
+	(gnat_stabilize_reference_1): Propagate the TREE_THIS_NOTRAP flag.
+	(gnat_stabilize_reference): Likewise.
+
+2011-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_NULL_BOUNDS): New macro.
+	(SET_TYPE_NULL_BOUNDS): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Set again
+	TREE_THIS_NOTRAP on the INDIRECT_REF node built for the template.
+	* gcc-interface/trans.c (Identifier_to_gnu): Return initializers of fat
+	pointer types.
+	* gcc-interface/utils.c (create_var_decl_1): If the object is external,
+	check that the initializer is a valid constant expression for use in
+	initializing a static variable.  Add missing guard.
+	(update_pointer_to): Adjust TYPE_NULL_BOUNDS if set.
+	(convert_to_fat_pointer): In the null fat pointer case, build a valid
+	pointer for the bounds.
+	* gcc-interface/utils2.c (compare_fat_pointers): New function.
+	(build_binary_op) <EQ_EXPR>: Call it to compare fat pointers.
+
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TREE_THIS_NOTRAP): Redefine.
+	* gcc-interface/trans.c (Identifier_to_gnu): Factor out common code in
+	the by-ref case.  Do not set TREE_READONLY on a renamed object.  Set
+	TREE_THIS_NOTRAP on UNCONSTRAINED_ARRAY_REF nodes.
+	(Attribute_to_gnu) <Attr_Length>: Expand the use of the parameter cache
+	to the indirect case.
+	* gcc-interface/utils.c (convert) <UNCONSTRAINED_ARRAY_REF>: Preserve
+	the TREE_THIS_NOTRAP flag.
+
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): In the case of an
+	iteration scheme, always generate the do-while form if optimization
+	is enabled.  Use more straightforward test at the end.
+
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Subtype>: Use
+	XNEW instead of xmalloc.  Do not build useless pointer type.
+	<E_Anonymous_Access_Subprogram_Type>: Use XNEW instead of xmalloc.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Raise_Constraint_Error>: Tidy.
+	* gcc-interface/utils2.c (build_unary_op): Remove local variable.
+
+2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Do not promote
+	the alignment if this doesn't prevent BLKmode access to the object.
+
+2011-09-24  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (darwin): Do not issue the
+	'-flat_namespace' linker flag during Ada build.
+	* mlib-tgt-specific-darwin.adb: Remove '-flat_namespace' flag from the
+	default shared library options.
+
+2011-09-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc-interface/decl.c (annotate_value): Look up expression for
+	insertion in the cache at the end.
+
+2011-09-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-09-19  Steve Baird  <baird@adacore.com>
+
+	* snames.ads-tmpl: Move declaration of Name_Annotate into range of
+	configuration pragma names so that Is_Configuration_Pragma_Name
+	will return True for Name_Annotate.  Make corresponding change in
+	Pragma_Id enumeration type.  This is needed to allow an Annotate
+	pragma to occur in a configuration pragma file (typically,
+	a gnat.adc file).
+	* gnat_ugn.texi: Add Annotate to the list of configuration pragmas.
+	* gnat_rm.texi: Note that pragma Annotate may be used as a
+	configuration pragma.
+
+2011-09-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbmutr.adb, a-cbmutr.ads, a-cimutr.adb, a-cimutr.ads,
+	a-comutr.adb, a-comutr.ads: Add iterator machinery for multiway trees.
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb, exp_alfa.ads (Expand_Alfa_N_In): New function
+	for expansion of set membership.
+	(Expand_Alfa): Call expansion for N_In and N_Not_In nodes.
+	* exp_ch4.adb, exp_ch4.ads (Expand_Set_Membership): Make procedure
+	visible for use in Alfa expansion.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Introduce loop
+	variable in Alfa mode.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* s-osinte-darwin.ads: Change SIGADAABRT on Darwin to SIGABRT.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting.
+
+2011-09-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Build_Renamed_Body): Generic subprograms
+	instantiations cannot be poperly inlined by the compiler, do
+	not set the Body_To_Inline attribute in such cases.
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Inherit all
+	inlining-related flags from the generic subprogram declaration.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb, rtsfind.ads, sem_util.adb, sem_util.ads
+	(Build_Stub_Type): Remove, instead copy components from
+	System.Partition_Interface.RACW_Stub_Type.
+	(RPC_Receiver_Decl): Remainder of code from old Build_Stub_Type routine.
+	(Copy_Component_List): New subprogram.
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Ignore references to
+	constants in Standard.
+
+2011-09-19  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads, errout.ads: Minor reformatting.
+
+2011-09-19  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads (Impl_Defined_Aspects): New array
+	* lib-writ.adb (No_Dependences): New name for No_Dependence
+	* restrict.adb (No_Dependences): New name for No_Dependence
+	(Check_Restriction_No_Specification_Of_Aspect): New
+	procedure.
+	(Set_Restriction_No_Specification_Of_Aspect): New procedure
+	(Restricted_Profile_Result): New variable
+	(No_Specification_Of_Aspects): New variable
+	(No_Specification_Of_Aspect_Warning): New variable
+	* restrict.ads (No_Dependences): New name for No_Dependence
+	(Check_Restriction_No_Specification_Of_Aspect): New procedure
+	(Set_Restriction_No_Specification_Of_Aspect): New procedure
+	* s-rident.ads: Add restriction
+	No_Implementation_Aspect_Specifications, this is also added to
+	the No_Implementation_Extensions profile.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Check
+	No_Implementation_Defined_Aspects
+	(Analyze_Aspect_Specifications): Check No_Specification_Of_Aspect
+	* sem_prag.adb (Analyze_Aspect_Specifications): Check
+	No_Implementation_Aspects
+	(Analyze_Aspect_Specifications): Check No_Specification_Of_Aspect
+	* snames.ads-tmpl (Name_No_Specification_Of_Aspect): New name
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Take into account multiple
+	renamings for Alfa refs.
+
+2011-09-19  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-mingw.adb: Minor reformatting.
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Set tagged type
+	expansion to False in mode Alfa
+
+2011-09-19  Pascal Obry  <obry@adacore.com>
+
+	* mingw32.h: Remove obsolete code needed for old versions
+	of MingW.
+
+2011-09-19  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Minor reformatting.
+
+2011-09-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): When the expression
+	function is transformed into a declaration and a body, insert
+	body at the end of the declarative part, to prevent premature
+	freeze actions, and preserve original specification in the
+	subprogram declaration.
+
+2011-09-19  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Minor editing.
+
+2011-09-19  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, lib-writ.ads, s-restri.ads, sem_ch6.adb,
+	exp_aggr.adb: Minor reformatting.
+
+2011-09-19  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Change entity referenced
+	to underlying object if any, or else reference to the HEAP.
+
+2011-09-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-09-15  Robert Dewar  <dewar@adacore.com>
+
+	* tree_io.ads: Minor reformatting.
+	* a-intnam.ads: Fix bad header.
+
+2011-09-15  Thomas Quinot  <quinot@adacore.com>
+
+	* a-exexpr-gcc.adb: Minor reformatting.
+
+2011-09-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb: Propagate information that an expression function comes
+	from source (otherwise references to this entity are not stored).
+
+2011-09-15  Robert Dewar  <dewar@adacore.com>
+
+	* a-cdlili.adb, a-coinve.adb, a-stzunb-shared.ads, a-suezst.adb,
+	a-suenco.adb, a-stwiun-shared.ads, a-cobove.adb, a-convec.adb,
+	a-btgbso.adb, a-cbdlli.adb, a-suewst.adb: Minor reformatting.
+
+2011-09-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Code cleanup:
+	if the expression function is not a completion, create a
+	new specification for the generated declaration, and keep the
+	original specification in the generated body. Shorter code also
+	ensures that proper warnings are generated for unused formals
+	in all cases.
+
+2011-09-15  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_io.ads: Update ASIS_Version_Number because of the changes
+	in the tree structures for expression functions.
+
+2011-09-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-aix.ads, s-osinte-darwin.ads, s-osinte-freebsd.ads,
+	s-osinte-hpux.ads, s-osinte-lynxos.ads, s-osinte-solaris-posix.ads,
+	s-taprop-posix.adb (CLOCK_MONOTONIC): New constant.
+	(CLOCK_REALTIME): Fix wrong value on some OSes.
+	* s-taprop-posix.adb (Monotonic_Clock): Use CLOCK_MONOTONIC.
+
 2011-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (maybe_unconstrained_array): In the reference
@@ -10964,7 +11467,7 @@
 	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Use libcommon.a
 	instead of version.o.
 
-2011-05-18  Kai Tietz <ktietz@redhat.com>
+2011-05-18  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc-interface/trans.c (Exception_Handler_to_gnu_sjlj): Use
 	boolean_false_node instead of integer_zero_node.
@@ -14156,7 +14659,7 @@ notice and this notice are preserved.
 	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Use libcommon.a
 	instead of version.o.
 
-2011-05-18  Kai Tietz <ktietz@redhat.com>
+2011-05-18  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc-interface/trans.c (Exception_Handler_to_gnu_sjlj): Use
 	boolean_false_node instead of integer_zero_node.

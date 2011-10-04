@@ -91,6 +91,11 @@ package Exp_Ch4 is
    --  to insert those bodies at the right place. Nod provides the Sloc
    --  value for generated code.
 
+   procedure Expand_Set_Membership (N : Node_Id);
+   --  For each choice of a set membership, we create a simple equality or
+   --  membership test. The whole membership is rewritten connecting these
+   --  with OR ELSE.
+
    function Integer_Promotion_Possible (N : Node_Id) return Boolean;
    --  Returns true if the node is a type conversion whose operand is an
    --  arithmetic operation on signed integers, and the base type of the

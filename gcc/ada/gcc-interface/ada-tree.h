@@ -275,7 +275,8 @@ do {						   \
 
 /* For an INTEGER_TYPE with TYPE_MODULAR_P, this is the value of the
    modulus. */
-#define TYPE_MODULUS(NODE) GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+#define TYPE_MODULUS(NODE) \
+  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_MODULUS(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
@@ -300,6 +301,13 @@ do {						   \
   GET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE))
 #define SET_TYPE_ACTUAL_BOUNDS(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE), X)
+
+/* For a POINTER_TYPE that points to the template type of an unconstrained
+   array type, this is the address to be used in a null fat pointer.  */
+#define TYPE_NULL_BOUNDS(NODE) \
+  GET_TYPE_LANG_SPECIFIC (POINTER_TYPE_CHECK (NODE))
+#define SET_TYPE_NULL_BOUNDS(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC (POINTER_TYPE_CHECK (NODE), X)
 
 /* For a RECORD_TYPE that is a fat pointer, this is the type for the
    unconstrained object.  Likewise for a RECORD_TYPE that is pointed
@@ -344,6 +352,9 @@ do {						   \
    is needed to access the object.  */
 #define DECL_BY_REF_P(NODE) DECL_LANG_FLAG_1 (NODE)
 
+/* Nonzero in a DECL if it is made for a pointer that can never be null.  */
+#define DECL_CAN_NEVER_BE_NULL_P(NODE) DECL_LANG_FLAG_2 (NODE)
+
 /* Nonzero in a FIELD_DECL that is a dummy built for some internal reason.  */
 #define DECL_INTERNAL_P(NODE) DECL_LANG_FLAG_3 (FIELD_DECL_CHECK (NODE))
 
@@ -356,7 +367,7 @@ do {						   \
   DECL_LANG_FLAG_3 (FUNCTION_DECL_CHECK (NODE))
 
 /* Nonzero in a DECL if it is made for a pointer that points to something which
-   is readonly.  Used mostly for fat pointers.  */
+   is readonly.  */
 #define DECL_POINTS_TO_READONLY_P(NODE) DECL_LANG_FLAG_4 (NODE)
 
 /* Nonzero in a PARM_DECL if we are to pass by descriptor.  */
@@ -424,6 +435,15 @@ do {						   \
   GET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE))
 #define SET_DECL_PARM_ALT_TYPE(NODE, X) \
   SET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE), X)
+
+
+/* Flags added to ref nodes.  */
+
+/* Nonzero means this node will not trap.  */
+#undef TREE_THIS_NOTRAP
+#define TREE_THIS_NOTRAP(NODE) \
+  (TREE_CHECK4 (NODE, INDIRECT_REF, ARRAY_REF, UNCONSTRAINED_ARRAY_REF, \
+		ARRAY_RANGE_REF)->base.nothrow_flag)
 
 
 /* Fields and macros for statements.  */

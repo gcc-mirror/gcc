@@ -6,7 +6,6 @@ package big
 
 import "testing"
 
-
 type funWW func(x, y, c Word) (z1, z0 Word)
 type argWW struct {
 	x, y, c, z1, z0 Word
@@ -26,14 +25,12 @@ var sumWW = []argWW{
 	{_M, _M, 1, 1, _M},
 }
 
-
 func testFunWW(t *testing.T, msg string, f funWW, a argWW) {
 	z1, z0 := f(a.x, a.y, a.c)
 	if z1 != a.z1 || z0 != a.z0 {
 		t.Errorf("%s%+v\n\tgot z1:z0 = %#x:%#x; want %#x:%#x", msg, a, z1, z0, a.z1, a.z0)
 	}
 }
-
 
 func TestFunWW(t *testing.T) {
 	for _, a := range sumWW {
@@ -50,7 +47,6 @@ func TestFunWW(t *testing.T) {
 		testFunWW(t, "subWW_g symmetric", subWW_g, arg)
 	}
 }
-
 
 type funVV func(z, x, y []Word) (c Word)
 type argVV struct {
@@ -70,7 +66,6 @@ var sumVV = []argVV{
 	{nat{0, 0, 0, 0}, nat{_M, 0, _M, 0}, nat{1, _M, 0, _M}, 1},
 }
 
-
 func testFunVV(t *testing.T, msg string, f funVV, a argVV) {
 	z := make(nat, len(a.z))
 	c := f(z, a.x, a.y)
@@ -84,7 +79,6 @@ func testFunVV(t *testing.T, msg string, f funVV, a argVV) {
 		t.Errorf("%s%+v\n\tgot c = %#x; want %#x", msg, a, c, a.c)
 	}
 }
-
 
 func TestFunVV(t *testing.T) {
 	for _, a := range sumVV {
@@ -105,7 +99,6 @@ func TestFunVV(t *testing.T) {
 		testFunVV(t, "subVV symmetric", subVV, arg)
 	}
 }
-
 
 type funVW func(z, x []Word, y Word) (c Word)
 type argVW struct {
@@ -169,7 +162,6 @@ var rshVW = []argVW{
 	{nat{_M, _M, _M >> 20}, nat{_M, _M, _M}, 20, _M << (_W - 20) & _M},
 }
 
-
 func testFunVW(t *testing.T, msg string, f funVW, a argVW) {
 	z := make(nat, len(a.z))
 	c := f(z, a.x, a.y)
@@ -184,6 +176,11 @@ func testFunVW(t *testing.T, msg string, f funVW, a argVW) {
 	}
 }
 
+func makeFunVW(f func(z, x []Word, s uint) (c Word)) funVW {
+	return func(z, x []Word, s Word) (c Word) {
+		return f(z, x, uint(s))
+	}
+}
 
 func TestFunVW(t *testing.T) {
 	for _, a := range sumVW {
@@ -196,19 +193,22 @@ func TestFunVW(t *testing.T) {
 		testFunVW(t, "subVW", subVW, arg)
 	}
 
+	shlVW_g := makeFunVW(shlVU_g)
+	shlVW := makeFunVW(shlVU)
 	for _, a := range lshVW {
 		arg := a
-		testFunVW(t, "shlVW_g", shlVW_g, arg)
-		testFunVW(t, "shlVW", shlVW, arg)
+		testFunVW(t, "shlVU_g", shlVW_g, arg)
+		testFunVW(t, "shlVU", shlVW, arg)
 	}
 
+	shrVW_g := makeFunVW(shrVU_g)
+	shrVW := makeFunVW(shrVU)
 	for _, a := range rshVW {
 		arg := a
-		testFunVW(t, "shrVW_g", shrVW_g, arg)
-		testFunVW(t, "shrVW", shrVW, arg)
+		testFunVW(t, "shrVU_g", shrVW_g, arg)
+		testFunVW(t, "shrVU", shrVW, arg)
 	}
 }
-
 
 type funVWW func(z, x []Word, y, r Word) (c Word)
 type argVWW struct {
@@ -243,7 +243,6 @@ var prodVWW = []argVWW{
 	{nat{_M<<7&_M + 1<<6, _M, _M, _M}, nat{_M, _M, _M, _M}, 1 << 7, 1 << 6, _M >> (_W - 7)},
 }
 
-
 func testFunVWW(t *testing.T, msg string, f funVWW, a argVWW) {
 	z := make(nat, len(a.z))
 	c := f(z, a.x, a.y, a.r)
@@ -257,7 +256,6 @@ func testFunVWW(t *testing.T, msg string, f funVWW, a argVWW) {
 		t.Errorf("%s%+v\n\tgot c = %#x; want %#x", msg, a, c, a.c)
 	}
 }
-
 
 // TODO(gri) mulAddVWW and divWVW are symmetric operations but
 //           their signature is not symmetric. Try to unify.
@@ -285,7 +283,6 @@ func testFunWVW(t *testing.T, msg string, f funWVW, a argWVW) {
 	}
 }
 
-
 func TestFunVWW(t *testing.T) {
 	for _, a := range prodVWW {
 		arg := a
@@ -300,7 +297,6 @@ func TestFunVWW(t *testing.T) {
 	}
 }
 
-
 var mulWWTests = []struct {
 	x, y Word
 	q, r Word
@@ -308,7 +304,6 @@ var mulWWTests = []struct {
 	{_M, _M, _M - 1, 1},
 	// 32 bit only: {0xc47dfa8c, 50911, 0x98a4, 0x998587f4},
 }
-
 
 func TestMulWW(t *testing.T) {
 	for i, test := range mulWWTests {
@@ -318,7 +313,6 @@ func TestMulWW(t *testing.T) {
 		}
 	}
 }
-
 
 var mulAddWWWTests = []struct {
 	x, y, c Word
@@ -330,7 +324,6 @@ var mulAddWWWTests = []struct {
 	{_M, _M, 0, _M - 1, 1},
 	{_M, _M, _M, _M, 0},
 }
-
 
 func TestMulAddWWW(t *testing.T) {
 	for i, test := range mulAddWWWTests {

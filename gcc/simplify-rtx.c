@@ -2431,9 +2431,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case IOR:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
-      if (CONST_INT_P (trueop1)
-	  && ((UINTVAL (trueop1) & GET_MODE_MASK (mode))
-	      == GET_MODE_MASK (mode)))
+      if (INTEGRAL_MODE_P (mode) && trueop1 == CONSTM1_RTX (mode))
 	return op1;
       if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0))
 	return op0;
@@ -2573,9 +2571,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case XOR:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
-      if (CONST_INT_P (trueop1)
-	  && ((UINTVAL (trueop1) & GET_MODE_MASK (mode))
-	      == GET_MODE_MASK (mode)))
+      if (INTEGRAL_MODE_P (mode) && trueop1 == CONSTM1_RTX (mode))
 	return simplify_gen_unary (NOT, mode, op0, mode);
       if (rtx_equal_p (trueop0, trueop1)
 	  && ! side_effects_p (op0)
@@ -2721,6 +2717,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case AND:
       if (trueop1 == CONST0_RTX (mode) && ! side_effects_p (op0))
 	return trueop1;
+      if (INTEGRAL_MODE_P (mode) && trueop1 == CONSTM1_RTX (mode))
+	return op0;
       if (HWI_COMPUTABLE_MODE_P (mode))
 	{
 	  HOST_WIDE_INT nzop0 = nonzero_bits (trueop0, mode);
@@ -5611,6 +5609,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
   /* Optimize SUBREG truncations of zero and sign extended values.  */
   if ((GET_CODE (op) == ZERO_EXTEND
        || GET_CODE (op) == SIGN_EXTEND)
+      && SCALAR_INT_MODE_P (innermode)
       && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode))
     {
       unsigned int bitpos = subreg_lsb_1 (outermode, innermode, byte);
@@ -5649,6 +5648,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
   if ((GET_CODE (op) == LSHIFTRT
        || GET_CODE (op) == ASHIFTRT)
       && SCALAR_INT_MODE_P (outermode)
+      && SCALAR_INT_MODE_P (innermode)
       /* Ensure that OUTERMODE is at least twice as wide as the INNERMODE
 	 to avoid the possibility that an outer LSHIFTRT shifts by more
 	 than the sign extension's sign_bit_copies and introduces zeros
@@ -5668,6 +5668,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
   if ((GET_CODE (op) == LSHIFTRT
        || GET_CODE (op) == ASHIFTRT)
       && SCALAR_INT_MODE_P (outermode)
+      && SCALAR_INT_MODE_P (innermode)
       && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode)
       && CONST_INT_P (XEXP (op, 1))
       && GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
@@ -5682,6 +5683,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      the outer subreg is effectively a truncation to the original mode.  */
   if (GET_CODE (op) == ASHIFT
       && SCALAR_INT_MODE_P (outermode)
+      && SCALAR_INT_MODE_P (innermode)
       && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode)
       && CONST_INT_P (XEXP (op, 1))
       && (GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
@@ -5695,7 +5697,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
   /* Recognize a word extraction from a multi-word subreg.  */
   if ((GET_CODE (op) == LSHIFTRT
        || GET_CODE (op) == ASHIFTRT)
-      && SCALAR_INT_MODE_P (outermode)
+      && SCALAR_INT_MODE_P (innermode)
       && GET_MODE_PRECISION (outermode) >= BITS_PER_WORD
       && GET_MODE_PRECISION (innermode) >= (2 * GET_MODE_PRECISION (outermode))
       && CONST_INT_P (XEXP (op, 1))
@@ -5717,6 +5719,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 
   if ((GET_CODE (op) == LSHIFTRT
        || GET_CODE (op) == ASHIFTRT)
+      && SCALAR_INT_MODE_P (innermode)
       && MEM_P (XEXP (op, 0))
       && CONST_INT_P (XEXP (op, 1))
       && GET_MODE_SIZE (outermode) < GET_MODE_SIZE (GET_MODE (op))

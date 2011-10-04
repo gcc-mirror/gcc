@@ -1883,6 +1883,11 @@ package Opt is
    --  generation of Why code for those parts of the input code that belong to
    --  the Alfa subset of Ada. Set by debug flag -gnatd.F.
 
+   Strict_Alfa_Mode : Boolean := False;
+   --  Interpret compiler permissions as strictly as possible. E.g. base ranges
+   --  for integers are limited to the strict minimum with this option. Set by
+   --  debug flag -gnatd.D.
+
    function Full_Expander_Active return Boolean;
    pragma Inline (Full_Expander_Active);
    --  Returns the value of (Expander_Active and not Alfa_Mode). This "flag"

@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
+#define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
 
 /* The global buffer where we dump everything.  It is there only for
    transitional purpose.  It is expected, in the near future, to be
@@ -259,7 +260,7 @@ dump_template_parameter (tree parm, int flags)
 static void
 dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
 {
-  int need_comma = 0;
+  bool need_semicolon = false;
   int i;
   tree t;
 
@@ -283,8 +284,8 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
 	  if (lvl_args && NUM_TMPL_ARGS (lvl_args) > arg_idx)
 	    arg = TREE_VEC_ELT (lvl_args, arg_idx);
 
-	  if (need_comma)
-	    pp_separate_with_comma (cxx_pp);
+	  if (need_semicolon)
+	    pp_separate_with_semicolon (cxx_pp);
 	  dump_template_parameter (TREE_VEC_ELT (p, i), TFF_PLAIN_IDENTIFIER);
 	  pp_cxx_whitespace (cxx_pp);
 	  pp_equal (cxx_pp);
@@ -301,7 +302,7 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
 	    pp_string (cxx_pp, M_("<missing>"));
 
 	  ++arg_idx;
-	  need_comma = 1;
+	  need_semicolon = true;
 	}
 
       parms = TREE_CHAIN (parms);
@@ -313,8 +314,8 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
 
   FOR_EACH_VEC_ELT (tree, typenames, i, t)
     {
-      if (need_comma)
-	pp_separate_with_comma (cxx_pp);
+      if (need_semicolon)
+	pp_separate_with_semicolon (cxx_pp);
       dump_type (t, TFF_PLAIN_IDENTIFIER);
       pp_cxx_whitespace (cxx_pp);
       pp_equal (cxx_pp);
@@ -3234,6 +3235,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
       case CPP0X_OVERRIDE_CONTROLS:
 	pedwarn (input_location, 0,
 		 "override controls (override/final) "
+		 "only available with -std=c++0x or -std=gnu++0x");
+        break;
+      case CPP0X_NSDMI:
+	pedwarn (input_location, 0,
+		 "non-static data member initializers "
 		 "only available with -std=c++0x or -std=gnu++0x");
         break;
       default:

@@ -56,10 +56,6 @@ VEC (ipa_node_params_t, heap) *ipa_node_params_vector;
 /* Vector where the parameter infos are actually stored. */
 VEC (ipa_edge_args_t, gc) *ipa_edge_args_vector;
 
-/* Bitmap with all UIDs of call graph edges that have been already processed
-   by indirect inlining.  */
-static bitmap iinlining_processed_edges;
-
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_edge_hook_list *edge_removal_hook_holder;
 static struct cgraph_node_hook_list *node_removal_hook_holder;
@@ -164,10 +160,12 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	fprintf (f, "UNKNOWN\n");
       else if (type == IPA_JF_KNOWN_TYPE)
 	{
-	  tree binfo_type = TREE_TYPE (jump_func->value.base_binfo);
-	  fprintf (f, "KNOWN TYPE, type in binfo is: ");
-	  print_generic_expr (f, binfo_type, 0);
-	  fprintf (f, " (%u)\n", TYPE_UID (binfo_type));
+	  fprintf (f, "KNOWN TYPE: base  ");
+	  print_generic_expr (f, jump_func->value.known_type.base_type, 0);
+	  fprintf (f, ", offset "HOST_WIDE_INT_PRINT_DEC", component ",
+		   jump_func->value.known_type.offset);
+	  print_generic_expr (f, jump_func->value.known_type.component_type, 0);
+	  fprintf (f, "\n");
 	}
       else if (type == IPA_JF_CONST)
 	{
@@ -199,9 +197,9 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 		   tree_code_name[(int)
 				  jump_func->value.pass_through.operation]);
 	  if (jump_func->value.pass_through.operation != NOP_EXPR)
-	    print_generic_expr (dump_file,
+	    print_generic_expr (f,
 				jump_func->value.pass_through.operand, 0);
-	  fprintf (dump_file, "\n");
+	  fprintf (f, "\n");
 	}
       else if (type == IPA_JF_ANCESTOR)
 	{
@@ -210,7 +208,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 		   jump_func->value.ancestor.formal_id,
 		   jump_func->value.ancestor.offset);
 	  print_generic_expr (f, jump_func->value.ancestor.type, 0);
-	  fprintf (dump_file, "\n");
+	  fprintf (f, "\n");
 	}
     }
 }
@@ -638,7 +636,7 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
 			      gimple call)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree base, binfo;
+  tree base;
 
   if (!flag_devirtualize
       || TREE_CODE (op) != ADDR_EXPR
@@ -654,18 +652,14 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
       || is_global_var (base))
     return;
 
-  if (detect_type_change (op, base, call, jfunc, offset))
+  if (detect_type_change (op, base, call, jfunc, offset)
+      || !TYPE_BINFO (TREE_TYPE (base)))
     return;
 
-  binfo = TYPE_BINFO (TREE_TYPE (base));
-  if (!binfo)
-    return;
-  binfo = get_binfo_at_offset (binfo, offset, TREE_TYPE (op));
-  if (binfo)
-    {
-      jfunc->type = IPA_JF_KNOWN_TYPE;
-      jfunc->value.base_binfo = binfo;
-    }
+  jfunc->type = IPA_JF_KNOWN_TYPE;
+  jfunc->value.known_type.base_type = TREE_TYPE (base);
+  jfunc->value.known_type.offset = offset;
+  jfunc->value.known_type.component_type = TREE_TYPE (op);
 }
 
 
@@ -1504,18 +1498,16 @@ static void
 combine_known_type_and_ancestor_jfs (struct ipa_jump_func *src,
 				     struct ipa_jump_func *dst)
 {
-  tree new_binfo;
+  HOST_WIDE_INT combined_offset;
+  tree combined_type;
 
-  new_binfo = get_binfo_at_offset (src->value.base_binfo,
-				   dst->value.ancestor.offset,
-				   dst->value.ancestor.type);
-  if (new_binfo)
-    {
-      dst->type = IPA_JF_KNOWN_TYPE;
-      dst->value.base_binfo = new_binfo;
-    }
-  else
-    dst->type = IPA_JF_UNKNOWN;
+  combined_offset = src->value.known_type.offset + dst->value.ancestor.offset;
+  combined_type = dst->value.ancestor.type;
+
+  dst->type = IPA_JF_KNOWN_TYPE;
+  dst->value.known_type.base_type = src->value.known_type.base_type;
+  dst->value.known_type.offset = combined_offset;
+  dst->value.known_type.component_type = combined_type;
 }
 
 /* Update the jump functions associated with call graph edge E when the call
@@ -1650,22 +1642,19 @@ static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc)
 {
-  tree binfo, type, target;
-  HOST_WIDE_INT token;
+  tree binfo, target;
 
-  if (jfunc->type == IPA_JF_KNOWN_TYPE)
-    binfo = jfunc->value.base_binfo;
-  else
+  if (jfunc->type != IPA_JF_KNOWN_TYPE)
     return NULL;
 
-  if (!binfo)
-    return NULL;
-
-  token = ie->indirect_info->otr_token;
-  type = ie->indirect_info->otr_type;
-  binfo = get_binfo_at_offset (binfo, ie->indirect_info->anc_offset, type);
+  binfo = TYPE_BINFO (jfunc->value.known_type.base_type);
+  gcc_checking_assert (binfo);
+  binfo = get_binfo_at_offset (binfo, jfunc->value.known_type.offset
+			       + ie->indirect_info->anc_offset,
+			       ie->indirect_info->otr_type);
   if (binfo)
-    target = gimple_get_virt_method_for_binfo (token, binfo);
+    target = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
+					       binfo);
   else
     return NULL;
 
@@ -1699,18 +1688,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       struct ipa_jump_func *jfunc;
 
       next_ie = ie->next_callee;
-      if (bitmap_bit_p (iinlining_processed_edges, ie->uid))
-	continue;
 
-      /* If we ever use indirect edges for anything other than indirect
-	 inlining, we will need to skip those with negative param_indices. */
       if (ici->param_index == -1)
 	continue;
 
       /* We must check range due to calls with variable number of arguments:  */
       if (ici->param_index >= ipa_get_cs_argument_count (top))
 	{
-	  bitmap_set_bit (iinlining_processed_edges, ie->uid);
+	  ici->param_index = -1;
 	  continue;
 	}
 
@@ -1725,7 +1710,10 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	}
       else
 	/* Either we can find a destination for this edge now or never. */
-	bitmap_set_bit (iinlining_processed_edges, ie->uid);
+	ici->param_index = -1;
+
+      if (!flag_indirect_inlining)
+	continue;
 
       if (ici->polymorphic)
 	new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc);
@@ -1771,6 +1759,8 @@ propagate_info_to_inlined_callees (struct cgraph_edge *cs,
       res |= propagate_info_to_inlined_callees (cs, e->callee, new_edges);
     else
       update_jump_functions_after_inlining (cs, e);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    update_jump_functions_after_inlining (cs, e);
 
   return res;
 }
@@ -1785,13 +1775,19 @@ bool
 ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 				   VEC (cgraph_edge_p, heap) **new_edges)
 {
+  bool changed;
   /* Do nothing if the preparation phase has not been carried out yet
      (i.e. during early inlining).  */
   if (!ipa_node_params_vector)
     return false;
   gcc_assert (ipa_edge_args_vector);
 
-  return propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+  changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+
+  /* We do not keep jump functions of inlined edges up to date. Better to free
+     them so we do not access them accidentally.  */
+  ipa_free_edge_args_substructures (IPA_EDGE_REF (cs));
+  return changed;
 }
 
 /* Frees all dynamically allocated structures that the argument info points
@@ -1889,10 +1885,6 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 
   new_args->jump_functions = VEC_copy (ipa_jump_func_t, gc,
 				       old_args->jump_functions);
-
-  if (iinlining_processed_edges
-      && bitmap_bit_p (iinlining_processed_edges, src->uid))
-    bitmap_set_bit (iinlining_processed_edges, dst->uid);
 }
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
@@ -1963,21 +1955,13 @@ ipa_unregister_cgraph_hooks (void)
   function_insertion_hook_holder = NULL;
 }
 
-/* Allocate all necessary data structures necessary for indirect inlining.  */
-
-void
-ipa_create_all_structures_for_iinln (void)
-{
-  iinlining_processed_edges = BITMAP_ALLOC (NULL);
-}
-
 /* Free all ipa_node_params and all ipa_edge_args structures if they are no
    longer needed after ipa-cp.  */
 
 void
 ipa_free_all_structures_after_ipa_cp (void)
 {
-  if (!flag_indirect_inlining)
+  if (!optimize)
     {
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();
@@ -1993,8 +1977,6 @@ ipa_free_all_structures_after_ipa_cp (void)
 void
 ipa_free_all_structures_after_iinln (void)
 {
-  BITMAP_FREE (iinlining_processed_edges);
-
   ipa_free_all_edge_args ();
   ipa_free_all_node_params ();
   ipa_unregister_cgraph_hooks ();
@@ -2589,7 +2571,9 @@ ipa_write_jump_function (struct output_block *ob,
     case IPA_JF_UNKNOWN:
       break;
     case IPA_JF_KNOWN_TYPE:
-      stream_write_tree (ob, jump_func->value.base_binfo, true);
+      streamer_write_uhwi (ob, jump_func->value.known_type.offset);
+      stream_write_tree (ob, jump_func->value.known_type.base_type, true);
+      stream_write_tree (ob, jump_func->value.known_type.component_type, true);
       break;
     case IPA_JF_CONST:
       stream_write_tree (ob, jump_func->value.constant, true);
@@ -2625,7 +2609,10 @@ ipa_read_jump_function (struct lto_input_block *ib,
     case IPA_JF_UNKNOWN:
       break;
     case IPA_JF_KNOWN_TYPE:
-      jump_func->value.base_binfo = stream_read_tree (ib, data_in);
+      jump_func->value.known_type.offset = streamer_read_uhwi (ib);
+      jump_func->value.known_type.base_type = stream_read_tree (ib, data_in);
+      jump_func->value.known_type.component_type = stream_read_tree (ib,
+								     data_in);
       break;
     case IPA_JF_CONST:
       jump_func->value.constant = stream_read_tree (ib, data_in);

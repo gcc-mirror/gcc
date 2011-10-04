@@ -3,6 +3,7 @@
 /* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-O2 -mthumb -march=armv7-a" } */
 /* { dg-add-options arm_neon } */
+/* { dg-prune-output "switch .* conflicts with" } */
 
 #include <arm_neon.h>
 #include <stddef.h>

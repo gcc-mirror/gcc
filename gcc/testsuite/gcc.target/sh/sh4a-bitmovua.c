@@ -1,9 +1,9 @@
-/* Verify that we generate movua to load unaligned 32-bit values.  */
+/* Verify that we generate movua to load unaligned 32-bit values on SH4A.  */
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-O" } */
-/* { dg-final { scan-assembler-times "\tmovua\\.l\t" 6 } } */
+/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m4a" "-m4a-single" "-m4a-single-only" "-m4a-nofpu" } }  */
+/* { dg-final { scan-assembler-times "movua.l" 6 } } */
 
-#ifdef __SH4A__
 /* Aligned.  */
 struct s0 { long long d : 32; } x0;
 long long f0() {
@@ -63,11 +63,5 @@ struct u4 { long long c : 32; unsigned long long d : 32; } y4;
 unsigned long long g4() {
   return y4.d;
 }
-#else
-asm ("movua.l\t");
-asm ("movua.l\t");
-asm ("movua.l\t");
-asm ("movua.l\t");
-asm ("movua.l\t");
-asm ("movua.l\t");
-#endif
+
+

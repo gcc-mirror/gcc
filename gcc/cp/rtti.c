@@ -1,6 +1,6 @@
 /* RunTime Type Identification
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010
+   2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
@@ -616,7 +616,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
     if (binfo)
       {
 	expr = build_base_path (PLUS_EXPR, convert_from_reference (expr),
-				binfo, 0);
+				binfo, 0, complain);
 	if (TREE_CODE (exprtype) == POINTER_TYPE)
 	  expr = rvalue (expr);
 	return expr;

@@ -173,7 +173,7 @@
                               (eq_attr "alternative" "3") (const_int 16)
                               (eq_attr "alternative" "9")
                                (if_then_else
-                                 (eq (symbol_ref "TARGET_VFP_SINGLE") (const_int 1))
+                                 (match_test "TARGET_VFP_SINGLE")
                                  (const_int 8)
                                  (const_int 4))]
                               (const_int 4)))
@@ -454,8 +454,7 @@
    (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
 			       (eq_attr "alternative" "7")
 				(if_then_else
-				 (eq (symbol_ref "TARGET_VFP_SINGLE")
-				     (const_int 1))
+				 (match_test "TARGET_VFP_SINGLE")
 				 (const_int 8)
 				 (const_int 4))]
 			      (const_int 4)))
@@ -498,8 +497,7 @@
    (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
 			       (eq_attr "alternative" "7")
 				(if_then_else
-				 (eq (symbol_ref "TARGET_VFP_SINGLE")
-				     (const_int 1))
+				 (match_test "TARGET_VFP_SINGLE")
 				 (const_int 8)
 				 (const_int 4))]
 			      (const_int 4)))

@@ -78,6 +78,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 2, 7)")))
 
+;; Return 1 if OP is constant integer 1..6 for MODE.
+(define_predicate "const_1_to_6_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 6)")))
+
 ;; Return 1 if OP is constant integer 2..6 for MODE.
 (define_predicate "const_2_to_6_operand"
   (and (match_code "const_int")

@@ -8831,11 +8831,11 @@ get_file_function_name (const char *type)
 	file = input_filename;
 
       len = strlen (file);
-      q = (char *) alloca (9 * 2 + len + 1);
+      q = (char *) alloca (9 + 17 + len + 1);
       memcpy (q, file, len + 1);
 
-      sprintf (q + len, "_%08X_%08X", crc32_string (0, name),
-	       crc32_string (0, get_random_seed (false)));
+      snprintf (q + len, 9 + 17 + 1, "_%08X_" HOST_WIDE_INT_PRINT_HEX, 
+		crc32_string (0, name), get_random_seed (false));
 
       p = q;
     }
@@ -9834,17 +9834,29 @@ build_vector_type (tree innertype, int nunits)
   return make_vector_type (innertype, nunits, VOIDmode);
 }
 
-/* Similarly, but takes the inner type and number of units, which must be
-   a power of two.  */
+/* Similarly, but builds a variant type with TYPE_VECTOR_OPAQUE set.  */
 
 tree
 build_opaque_vector_type (tree innertype, int nunits)
 {
-  tree t;
-  innertype = build_distinct_type_copy (innertype);
-  t = make_vector_type (innertype, nunits, VOIDmode);
-  TYPE_VECTOR_OPAQUE (t) = true;
-  return t;
+  tree t = make_vector_type (innertype, nunits, VOIDmode);
+  tree cand;
+  /* We always build the non-opaque variant before the opaque one,
+     so if it already exists, it is TYPE_NEXT_VARIANT of this one.  */
+  cand = TYPE_NEXT_VARIANT (t);
+  if (cand
+      && TYPE_VECTOR_OPAQUE (cand)
+      && check_qualified_type (cand, t, TYPE_QUALS (t), NULL_TREE))
+    return cand;
+  /* Othewise build a variant type and make sure to queue it after
+     the non-opaque type.  */
+  cand = build_distinct_type_copy (t);
+  TYPE_VECTOR_OPAQUE (cand) = true;
+  TYPE_CANONICAL (cand) = TYPE_CANONICAL (t);
+  TYPE_NEXT_VARIANT (cand) = TYPE_NEXT_VARIANT (t);
+  TYPE_NEXT_VARIANT (t) = cand;
+  TYPE_MAIN_VARIANT (cand) = TYPE_MAIN_VARIANT (t);
+  return cand;
 }
 
 

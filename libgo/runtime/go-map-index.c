@@ -9,6 +9,7 @@
 
 #include "go-alloc.h"
 #include "go-assert.h"
+#include "go-panic.h"
 #include "map.h"
 
 /* Rehash MAP to a larger size.  */
@@ -84,6 +85,13 @@ __go_map_index (struct __go_map *map, const void *key, _Bool insert)
   size_t key_size;
   size_t bucket_index;
   char *entry;
+
+  if (map == NULL)
+    {
+      if (insert)
+	__go_panic_msg ("assignment to entry in nil map");
+      return NULL;
+    }
 
   descriptor = map->__descriptor;
 

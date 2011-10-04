@@ -934,6 +934,61 @@ output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
 }
 
 
+/* Emit toplevel asms.  */
+
+void
+lto_output_toplevel_asms (void)
+{
+  struct output_block *ob;
+  struct cgraph_asm_node *can;
+  char *section_name;
+  struct lto_output_stream *header_stream;
+  struct lto_asm_header header;
+
+  if (! cgraph_asm_nodes)
+    return;
+
+  ob = create_output_block (LTO_section_asm);
+
+  /* Make string 0 be a NULL string.  */
+  streamer_write_char_stream (ob->string_stream, 0);
+
+  for (can = cgraph_asm_nodes; can; can = can->next)
+    streamer_write_string_cst (ob, ob->main_stream, can->asm_str);
+
+  streamer_write_string_cst (ob, ob->main_stream, NULL_TREE);
+
+  section_name = lto_get_section_name (LTO_section_asm, NULL, NULL);
+  lto_begin_section (section_name, !flag_wpa);
+  free (section_name);
+
+  /* The entire header stream is computed here.  */
+  memset (&header, 0, sizeof (header));
+
+  /* Write the header.  */
+  header.lto_header.major_version = LTO_major_version;
+  header.lto_header.minor_version = LTO_minor_version;
+  header.lto_header.section_type = LTO_section_asm;
+
+  header.main_size = ob->main_stream->total_size;
+  header.string_size = ob->string_stream->total_size;
+
+  header_stream = XCNEW (struct lto_output_stream);
+  lto_output_data_stream (header_stream, &header, sizeof (header));
+  lto_write_stream (header_stream);
+  free (header_stream);
+
+  /* Put all of the gimple and the string table out the asm file as a
+     block of text.  */
+  lto_write_stream (ob->main_stream);
+  lto_write_stream (ob->string_stream);
+
+  lto_end_section ();
+
+  destroy_output_block (ob);
+}
+
+
 /* Copy the function body of NODE without deserializing. */
 
 static void
@@ -1352,6 +1407,15 @@ produce_symtab (struct output_block *ob,
       node = lto_cgraph_encoder_deref (encoder, i);
       if (!DECL_EXTERNAL (node->decl))
 	continue;
+      /* We keep around unused extern inlines in order to be able to inline
+	 them indirectly or via vtables.  Do not output them to symbol
+	 table: they end up being undefined and just consume space.  */
+      if (!node->address_taken && !node->callers)
+	{
+	  gcc_assert (node->analyzed);
+	  gcc_assert (DECL_DECLARED_INLINE_P (node->decl));
+	  continue;
+	}
       if (DECL_COMDAT (node->decl)
 	  && cgraph_comdat_can_be_unshared_p (node))
 	continue;

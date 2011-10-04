@@ -110,7 +110,8 @@ const char * const ld_plugin_symbol_resolution_names[]=
   "preempted_ir",
   "resolved_ir",
   "resolved_exec",
-  "resolved_dyn"
+  "resolved_dyn",
+  "prevailing_def_ironly_exp"
 };
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);

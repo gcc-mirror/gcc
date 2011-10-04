@@ -3229,8 +3229,8 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
         }
 
       if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type)
-	  || (GET_MODE_SIZE (TYPE_MODE (type))
-	      != GET_MODE_SIZE (TYPE_MODE (op0_type))))
+	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type)))
+	      != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0_type)))))
         {
           error ("invalid vector comparison resulting type");
           debug_generic_expr (type);

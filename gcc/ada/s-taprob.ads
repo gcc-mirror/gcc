@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,10 +193,6 @@ package System.Tasking.Protected_Objects is
    --  has been made by the caller. Other calls to Lock_Read_Only may (but
    --  need not) return before the call to Unlock, and the corresponding
    --  callers will also own the lock for read access.
-   --
-   --  Note: we are not currently using this interface, it is provided
-   --  for possible future use. At the current time, everyone uses Lock
-   --  for both read and write locks.
 
    procedure Set_Ceiling
      (Object : Protection_Access;

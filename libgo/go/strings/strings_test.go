@@ -5,6 +5,7 @@
 package strings_test
 
 import (
+	"bytes"
 	"os"
 	"reflect"
 	"strconv"
@@ -169,7 +170,6 @@ func BenchmarkIndex(b *testing.B) {
 	}
 }
 
-
 type ExplodeTest struct {
 	s string
 	n int
@@ -185,7 +185,7 @@ var explodetests = []ExplodeTest{
 
 func TestExplode(t *testing.T) {
 	for _, tt := range explodetests {
-		a := Split(tt.s, "", tt.n)
+		a := SplitN(tt.s, "", tt.n)
 		if !eq(a, tt.a) {
 			t.Errorf("explode(%q, %d) = %v; want %v", tt.s, tt.n, a, tt.a)
 			continue
@@ -222,7 +222,7 @@ var splittests = []SplitTest{
 
 func TestSplit(t *testing.T) {
 	for _, tt := range splittests {
-		a := Split(tt.s, tt.sep, tt.n)
+		a := SplitN(tt.s, tt.sep, tt.n)
 		if !eq(a, tt.a) {
 			t.Errorf("Split(%q, %q, %d) = %v; want %v", tt.s, tt.sep, tt.n, a, tt.a)
 			continue
@@ -233,6 +233,12 @@ func TestSplit(t *testing.T) {
 		s := Join(a, tt.sep)
 		if s != tt.s {
 			t.Errorf("Join(Split(%q, %q, %d), %q) = %q", tt.s, tt.sep, tt.n, tt.sep, s)
+		}
+		if tt.n < 0 {
+			b := Split(tt.s, tt.sep)
+			if !reflect.DeepEqual(a, b) {
+				t.Errorf("Split disagrees with SplitN(%q, %q, %d) = %v; want %v", tt.s, tt.sep, tt.n, b, a)
+			}
 		}
 	}
 }
@@ -255,7 +261,7 @@ var splitaftertests = []SplitTest{
 
 func TestSplitAfter(t *testing.T) {
 	for _, tt := range splitaftertests {
-		a := SplitAfter(tt.s, tt.sep, tt.n)
+		a := SplitAfterN(tt.s, tt.sep, tt.n)
 		if !eq(a, tt.a) {
 			t.Errorf(`Split(%q, %q, %d) = %v; want %v`, tt.s, tt.sep, tt.n, a, tt.a)
 			continue
@@ -263,6 +269,12 @@ func TestSplitAfter(t *testing.T) {
 		s := Join(a, "")
 		if s != tt.s {
 			t.Errorf(`Join(Split(%q, %q, %d), %q) = %q`, tt.s, tt.sep, tt.n, tt.sep, s)
+		}
+		if tt.n < 0 {
+			b := SplitAfter(tt.s, tt.sep)
+			if !reflect.DeepEqual(a, b) {
+				t.Errorf("SplitAfter disagrees with SplitAfterN(%q, %q, %d) = %v; want %v", tt.s, tt.sep, tt.n, b, a)
+			}
 		}
 	}
 }
@@ -311,7 +323,6 @@ func TestFieldsFunc(t *testing.T) {
 		}
 	}
 }
-
 
 // Test case for any function which accepts and returns a single string.
 type StringTest struct {
@@ -622,8 +633,8 @@ func equal(m string, s1, s2 string, t *testing.T) bool {
 	if s1 == s2 {
 		return true
 	}
-	e1 := Split(s1, "", -1)
-	e2 := Split(s2, "", -1)
+	e1 := Split(s1, "")
+	e2 := Split(s2, "")
 	for i, c1 := range e1 {
 		if i > len(e2) {
 			break
@@ -751,13 +762,56 @@ func TestRunes(t *testing.T) {
 	}
 }
 
+func TestReadByte(t *testing.T) {
+	testStrings := []string{"", abcd, faces, commas}
+	for _, s := range testStrings {
+		reader := NewReader(s)
+		if e := reader.UnreadByte(); e == nil {
+			t.Errorf("Unreading %q at beginning: expected error", s)
+		}
+		var res bytes.Buffer
+		for {
+			b, e := reader.ReadByte()
+			if e == os.EOF {
+				break
+			}
+			if e != nil {
+				t.Errorf("Reading %q: %s", s, e)
+				break
+			}
+			res.WriteByte(b)
+			// unread and read again
+			e = reader.UnreadByte()
+			if e != nil {
+				t.Errorf("Unreading %q: %s", s, e)
+				break
+			}
+			b1, e := reader.ReadByte()
+			if e != nil {
+				t.Errorf("Reading %q after unreading: %s", s, e)
+				break
+			}
+			if b1 != b {
+				t.Errorf("Reading %q after unreading: want byte %q, got %q", s, b, b1)
+				break
+			}
+		}
+		if res.String() != s {
+			t.Errorf("Reader(%q).ReadByte() produced %q", s, res.String())
+		}
+	}
+}
+
 func TestReadRune(t *testing.T) {
 	testStrings := []string{"", abcd, faces, commas}
 	for _, s := range testStrings {
 		reader := NewReader(s)
+		if e := reader.UnreadRune(); e == nil {
+			t.Errorf("Unreading %q at beginning: expected error", s)
+		}
 		res := ""
 		for {
-			r, _, e := reader.ReadRune()
+			r, z, e := reader.ReadRune()
 			if e == os.EOF {
 				break
 			}
@@ -766,6 +820,25 @@ func TestReadRune(t *testing.T) {
 				break
 			}
 			res += string(r)
+			// unread and read again
+			e = reader.UnreadRune()
+			if e != nil {
+				t.Errorf("Unreading %q: %s", s, e)
+				break
+			}
+			r1, z1, e := reader.ReadRune()
+			if e != nil {
+				t.Errorf("Reading %q after unreading: %s", s, e)
+				break
+			}
+			if r1 != r {
+				t.Errorf("Reading %q after unreading: want rune %q, got %q", s, r, r1)
+				break
+			}
+			if z1 != z {
+				t.Errorf("Reading %q after unreading: want size %d, got %d", s, z, z1)
+				break
+			}
 		}
 		if res != s {
 			t.Errorf("Reader(%q).ReadRune() produced %q", s, res)

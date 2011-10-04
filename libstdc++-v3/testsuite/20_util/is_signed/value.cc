@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // 2005-01-24  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,6 +48,16 @@ void test01()
   VERIFY( (test_category<is_signed, float>(true)) );
   VERIFY( (test_category<is_signed, double>(true)) );
   VERIFY( (test_category<is_signed, long double>(true)) );
+
+  // GNU Extensions.
+#ifdef _GLIBCXX_USE_INT128
+  VERIFY( (test_category<is_signed, __int128>(true)) );
+  VERIFY( (test_category<is_signed, unsigned __int128>(false)) );
+#endif
+
+#ifdef _GLIBCXX_USE_FLOAT128
+  VERIFY( (test_category<is_signed, __float128>(true)) );
+#endif
 
   // Sanity check.
   VERIFY( (test_category<is_signed, ClassType>(false)) );

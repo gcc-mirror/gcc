@@ -4508,6 +4508,65 @@ fix = {
 
 
 /*
+ *  Define __CAN_USE_EXTERN_PREFIX on vms.
+ */
+fix = {
+    hackname  = vms_define_can_use_extern_prefix;
+    files     = "rtldef/decc$types.h";
+    select    = "#[ \t]*else\n"
+		"#[ \t]*if defined\\(__DECCXX\\)\n"
+		"#[ \t]*define __CAN_USE_EXTERN_PREFIX 1\n";
+    mach      = "*-*-*vms*";
+    c_fix     = format;
+
+    c_fix_arg = "%0"
+		"#    elif defined (__GNUC__)\n"
+		"#\tdefine __CAN_USE_EXTERN_PREFIX 1\n";
+
+    test_text = "# else\n"
+		"#    if defined(__DECCXX)\n"
+		"#\tdefine __CAN_USE_EXTERN_PREFIX 1\n"
+		"#    endif\n"
+		"# endif\n";
+};
+
+/*
+ * On VMS, use pragma extern_model instead of VAX-C keywords.
+ */
+fix = {
+    hackname  = vms_use_pragma_extern_model;
+    select    = "#if defined\\(__DECC\\) \\|\\| defined\\(__DECCXX\\)\n"
+		"# pragma extern_model __save\n";
+    mach      = "*-*-*vms*";
+    c_fix     = format;
+
+    c_fix_arg = "#if defined(__DECC) || defined(__DECCXX) || defined(__GNUC__)\n"
+		"# pragma extern_model __save\n";
+
+    test_text = "#if defined(__DECC) || defined(__DECCXX)\n"
+		"# pragma extern_model __save\n"
+		"# pragma extern_model strict_refdef\n"
+		"   extern struct x zz$yy;\n"
+		"# pragma extern_model __restore\n"
+		"#endif\n";
+};
+
+/*
+ * On VMS, disable the use of dec-c string builtins
+ */
+fix = {
+    hackname  = vms_disable_decc_string_builtins;
+    select    = "#if !defined\\(__VAX\\)\n";
+    mach      = "*-*-*vms*";
+    files     = "rtldef/string.h";
+    c_fix     = format;
+
+    c_fix_arg = "#if !defined(__VAX) && !defined(__GNUC__)\n";
+
+    test_text = "#if !defined(__VAX)\n";
+};
+
+/*
  *  AIX and Interix headers define NULL to be cast to a void pointer,
  *  which is illegal in ANSI C++.
  */

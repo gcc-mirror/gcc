@@ -5,25 +5,8 @@
 package main
 
 import (
-	"syscall"
 	"unsafe"
 )
-
-func loadDll(fname string) uint32 {
-	h, e := syscall.LoadLibrary(fname)
-	if e != 0 {
-		abortf("LoadLibrary(%s) failed with err=%d.\n", fname, e)
-	}
-	return h
-}
-
-func getSysProcAddr(m uint32, pname string) uintptr {
-	p, e := syscall.GetProcAddress(m, pname)
-	if e != 0 {
-		abortf("GetProcAddress(%s) failed with err=%d.\n", pname, e)
-	}
-	return uintptr(p)
-}
 
 type Wndclassex struct {
 	Size       uint32
@@ -96,7 +79,7 @@ const (
 	// Some button control styles
 	BS_DEFPUSHBUTTON = 1
 
-	// Some colour constants
+	// Some color constants
 	COLOR_WINDOW  = 5
 	COLOR_BTNFACE = 15
 
@@ -108,13 +91,13 @@ const (
 )
 
 var (
-	// Some globaly known cusrors
+	// Some globally known cursors
 	IDC_ARROW = MakeIntResource(32512)
 	IDC_IBEAM = MakeIntResource(32513)
 	IDC_WAIT  = MakeIntResource(32514)
 	IDC_CROSS = MakeIntResource(32515)
 
-	// Some globaly known icons
+	// Some globally known icons
 	IDI_APPLICATION = MakeIntResource(32512)
 	IDI_HAND        = MakeIntResource(32513)
 	IDI_QUESTION    = MakeIntResource(32514)

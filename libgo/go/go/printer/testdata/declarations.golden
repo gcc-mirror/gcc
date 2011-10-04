@@ -44,7 +44,6 @@ import _ "os"
 import _ "os"
 import _ "os"
 
-
 import _ "fmt"
 import _ "fmt"
 import _ "fmt"
@@ -116,7 +115,6 @@ import _ "io"
 
 var _ int
 
-
 // printing of constant literals
 const (
 	_	= "foobar"
@@ -158,9 +156,7 @@ const (
 bar`
 )
 
-
 func _() {
-	// the following decls need a semicolon at the end
 	type _ int
 	type _ *int
 	type _ []int
@@ -175,7 +171,6 @@ func _() {
 	var _ chan int
 	var _ func() int
 
-	// the following decls don't need a semicolon at the end
 	type _ struct{}
 	type _ *struct{}
 	type _ []struct{}
@@ -205,7 +200,6 @@ func _() {
 	var _ func() interface{}
 }
 
-
 // don't lose blank lines in grouped declarations
 const (
 	_	int	= 0
@@ -222,7 +216,6 @@ const (
 	_
 )
 
-
 type (
 	_	int
 	_	struct{}
@@ -232,7 +225,6 @@ type (
 	// a comment
 	_	map[string]int
 )
-
 
 var (
 	_	int	= 0
@@ -245,7 +237,6 @@ var (
 	// a comment
 	_	bool
 )
-
 
 // don't lose blank lines in this struct
 type _ struct {
@@ -295,7 +286,6 @@ type _ struct {
 	}
 }
 
-
 // no tabs for single or ungrouped decls
 func _() {
 	const xxxxxx = 0
@@ -331,11 +321,11 @@ func _() {
 	)
 	// some entries have a type
 	const (
-		xxxxxx		= 1
-		x		= 2
-		xxx		= 3
+		xxxxxx			= 1
+		x			= 2
+		xxx			= 3
 		yyyyyyyy	float	= iota
-		yyyy		= "bar"
+		yyyy			= "bar"
 		yyy
 		yy	= 2
 	)
@@ -365,7 +355,7 @@ func _() {
 		xxx		string
 		yyyyyyyy	int	= 1234
 		y		float	= 3.14
-		yyyy		= "bar"
+		yyyy			= "bar"
 		yyy		string	= "foo"
 	)
 	// mixed entries - all comments should be aligned
@@ -373,7 +363,7 @@ func _() {
 		a, b, c			int
 		x			= 10
 		d			int			// comment
-		y			= 20			// comment
+		y				= 20		// comment
 		f, ff, fff, ffff	int	= 0, 1, 2, 3	// comment
 	)
 	// respect original line breaks
@@ -401,6 +391,32 @@ func _() {
 	)
 }
 
+// alignment of "=" in consecutive lines (extended example from issue 1414)
+const (
+	umax	uint	= ^uint(0)		// maximum value for a uint
+	bpu		= 1 << (5 + umax>>63)	// bits per uint
+	foo
+	bar	= -1
+)
+
+// typical enum
+const (
+	a	MyType	= iota
+	abcd
+	b
+	c
+	def
+)
+
+// excerpt from godoc.go
+var (
+	goroot		= flag.String("goroot", runtime.GOROOT(), "Go root directory")
+	testDir		= flag.String("testdir", "", "Go root subdirectory - for testing only (faster startups)")
+	pkgPath		= flag.String("path", "", "additional package directories (colon-separated)")
+	filter		= flag.String("filter", "", "filter file containing permitted package directory paths")
+	filterMin	= flag.Int("filter_minutes", 0, "filter file update interval in minutes; disabled if <= 0")
+	filterDelay	delayTime	// actual filter update interval in minutes; usually filterDelay == filterMin, but filterDelay may back off exponentially
+)
 
 // formatting of structs
 type _ struct{}
@@ -469,13 +485,11 @@ type _ struct {
 	r, s	float	// this line should be indented
 }
 
-
 // difficult cases
 type _ struct {
 	bool		// comment
 	text	[]byte	// comment
 }
-
 
 // formatting of interfaces
 type EI interface{}
@@ -502,7 +516,6 @@ type _ interface {	// this comment must not change indentation
 	gggggggggggg(x, y, z int)	// hurray
 }
 
-
 // formatting of variable declarations
 func _() {
 	type day struct {
@@ -520,7 +533,6 @@ func _() {
 	)
 }
 
-
 // formatting of multi-line variable declarations
 var a1, b1, c1 int	// all on one line
 
@@ -533,7 +545,6 @@ var (
 	a4, b4, c4	int	// this line should be indented
 )
 
-
 func _() {
 	var privateKey2 = &Block{Type:	"RSA PRIVATE KEY",
 		Headers:	map[string]string{},
@@ -544,7 +555,6 @@ func _() {
 		},
 	}
 }
-
 
 func _() {
 	var Universe = Scope{
@@ -589,7 +599,6 @@ func _() {
 	}
 }
 
-
 // alignment of map composite entries
 var _ = map[int]int{
 	// small key sizes: always align even if size ratios are large
@@ -613,20 +622,17 @@ var _ = map[int]int{
 	abcde:	a,	// align with previous line
 }
 
-
 func _() {
 	var _ = T{
 		a,	// must introduce trailing comma
 	}
 }
 
-
 // formatting of function results
 func _() func()				{}
 func _() func(int)			{ return nil }
 func _() func(int) int			{ return nil }
 func _() func(int) func(int) func()	{ return nil }
-
 
 // formatting of consecutive single-line functions
 func _()	{}
@@ -655,7 +661,6 @@ func _() int {
 	return x
 }
 
-
 // making function declarations safe for new semicolon rules
 func _() { /* multi-line func because of comment */
 }
@@ -663,7 +668,6 @@ func _() { /* multi-line func because of comment */
 func _() {
 	/* multi-line func because block is on multiple lines */
 }
-
 
 // ellipsis parameters
 func _(...int)
@@ -685,7 +689,6 @@ func _(x ...func())
 func _(x ...func(...int))
 func _(x ...map[string]int)
 func _(x ...chan int)
-
 
 // these parameter lists must remain multi-line since they are multi-line in the source
 func _(bool,

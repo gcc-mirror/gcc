@@ -212,6 +212,10 @@ var caseTest = []caseT{
 	{UpperCase, 0x10450, 0x10450},
 	{LowerCase, 0x10450, 0x10450},
 	{TitleCase, 0x10450, 0x10450},
+
+	// Non-letters with case.
+	{LowerCase, 0x2161, 0x2171},
+	{UpperCase, 0x0345, 0x0399},
 }
 
 func TestIsLetter(t *testing.T) {
@@ -323,7 +327,7 @@ func TestIsSpace(t *testing.T) {
 // Check that the optimizations for IsLetter etc. agree with the tables.
 // We only need to check the Latin-1 range.
 func TestLetterOptimizations(t *testing.T) {
-	for i := 0; i < 0x100; i++ {
+	for i := 0; i <= MaxLatin1; i++ {
 		if Is(Letter, i) != IsLetter(i) {
 			t.Errorf("IsLetter(U+%04X) disagrees with Is(Letter)", i)
 		}
@@ -373,6 +377,52 @@ func TestTurkishCase(t *testing.T) {
 		}
 		if TurkishCase.ToTitle(l) != u {
 			t.Errorf("title(U+%04X) is U+%04X not U+%04X", l, TurkishCase.ToTitle(l), u)
+		}
+	}
+}
+
+var simpleFoldTests = []string{
+	// SimpleFold could order its returned slices in any order it wants,
+	// but we know it orders them in increasing order starting at in
+	// and looping around from MaxRune to 0.
+
+	// Easy cases.
+	"Aa",
+	"aA",
+	"δΔ",
+	"Δδ",
+
+	// ASCII special cases.
+	"KkK",
+	"kKK",
+	"KKk",
+	"Ssſ",
+	"sſS",
+	"ſSs",
+
+	// Non-ASCII special cases.
+	"ρϱΡ",
+	"ϱΡρ",
+	"Ρρϱ",
+	"ͅΙιι",
+	"Ιιιͅ",
+	"ιιͅΙ",
+	"ιͅΙι",
+
+	// Extra special cases: has lower/upper but no case fold.
+	"İ",
+	"ı",
+}
+
+func TestSimpleFold(t *testing.T) {
+	for _, tt := range simpleFoldTests {
+		cycle := []int(tt)
+		rune := cycle[len(cycle)-1]
+		for _, out := range cycle {
+			if r := SimpleFold(rune); r != out {
+				t.Errorf("SimpleFold(%#U) = %#U, want %#U", rune, r, out)
+			}
+			rune = out
 		}
 	}
 }

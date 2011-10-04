@@ -34,17 +34,18 @@ func (u *unmarshaler) UnmarshalJSON(b []byte) os.Error {
 	return nil
 }
 
+type ustruct struct {
+	M unmarshaler
+}
+
 var (
 	um0, um1 unmarshaler // target2 of unmarshaling
 	ump      = &um1
 	umtrue   = unmarshaler{true}
+	umslice  = []unmarshaler{unmarshaler{true}}
+	umslicep = new([]unmarshaler)
+	umstruct = ustruct{unmarshaler{true}}
 )
-
-type badTag struct {
-	X string
-	Y string "y"
-	Z string "@#*%(#@"
-}
 
 type unmarshalTest struct {
 	in  string
@@ -67,9 +68,6 @@ var unmarshalTests = []unmarshalTest{
 	{`{"X": [1,2,3], "Y": 4}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.TypeOf("")}},
 	{`{"x": 1}`, new(tx), tx{}, &UnmarshalFieldError{"x", txType, txType.Field(0)}},
 
-	// skip invalid tags
-	{`{"X":"a", "y":"b", "Z":"c"}`, new(badTag), badTag{"a", "b", "c"}, nil},
-
 	// syntax errors
 	{`{"X": "foo", "Y"}`, nil, nil, &SyntaxError{"invalid character '}' after object key", 17}},
 
@@ -86,6 +84,9 @@ var unmarshalTests = []unmarshalTest{
 	// unmarshal interface test
 	{`{"T":false}`, &um0, umtrue, nil}, // use "false" so test will fail if custom unmarshaler is not called
 	{`{"T":false}`, &ump, &umtrue, nil},
+	{`[{"T":false}]`, &umslice, umslice, nil},
+	{`[{"T":false}]`, &umslicep, &umslice, nil},
+	{`{"M":{"T":false}}`, &umstruct, umstruct, nil},
 }
 
 func TestMarshal(t *testing.T) {
@@ -149,7 +150,6 @@ func TestUnmarshal(t *testing.T) {
 			println(string(data))
 			data, _ = Marshal(tt.out)
 			println(string(data))
-			return
 			continue
 		}
 	}
@@ -217,6 +217,18 @@ func TestUnmarshalPtrPtr(t *testing.T) {
 	}
 }
 
+func TestEscape(t *testing.T) {
+	const input = `"foobar"<html>`
+	const expected = `"\"foobar\"\u003chtml\u003e"`
+	b, err := Marshal(input)
+	if err != nil {
+		t.Fatalf("Marshal error: %v", err)
+	}
+	if s := string(b); s != expected {
+		t.Errorf("Encoding of [%s] was [%s], want [%s]", input, s, expected)
+	}
+}
+
 func TestHTMLEscape(t *testing.T) {
 	b, err := MarshalForHTML("foobarbaz<>&quux")
 	if err != nil {
@@ -250,7 +262,10 @@ type All struct {
 	Float32 float32
 	Float64 float64
 
-	Foo string "bar"
+	Foo  string `json:"bar"`
+	Foo2 string `json:"bar2,dummyopt"`
+
+	IntStr int64 `json:",string"`
 
 	PBool    *bool
 	PInt     *int
@@ -319,6 +334,8 @@ var allValue = All{
 	Float32: 14.1,
 	Float64: 15.1,
 	Foo:     "foo",
+	Foo2:    "foo2",
+	IntStr:  42,
 	String:  "16",
 	Map: map[string]Small{
 		"17": {Tag: "tag17"},
@@ -379,6 +396,8 @@ var allValueIndent = `{
 	"Float32": 14.1,
 	"Float64": 15.1,
 	"bar": "foo",
+	"bar2": "foo2",
+	"IntStr": "42",
 	"PBool": null,
 	"PInt": null,
 	"PInt8": null,
@@ -469,6 +488,8 @@ var pallValueIndent = `{
 	"Float32": 0,
 	"Float64": 0,
 	"bar": "",
+	"bar2": "",
+        "IntStr": "0",
 	"PBool": true,
 	"PInt": 2,
 	"PInt8": 3,

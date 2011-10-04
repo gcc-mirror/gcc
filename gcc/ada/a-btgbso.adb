@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -546,11 +546,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
            "attempt to tamper with cursors (container is busy)";
       end if;
 
-      --  Note that there's no way to decide a priori whether the
-      --  target has enough capacity for the union with source.
-      --  We cannot simply compare the sum of the existing lengths
-      --  to the capacity of the target, because equivalent items
-      --  from source are not included in the union.
+      --  Note that there's no way to decide a priori whether the target has
+      --  enough capacity for the union with source. We cannot simply compare
+      --  the sum of the existing lengths to the capacity of the target,
+      --  because equivalent items from source are not included in the union.
 
       Iterate (Source);
    end Set_Union;

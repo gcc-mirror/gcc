@@ -6,6 +6,7 @@ package types
 
 import (
 	"exec"
+	"go/ast"
 	"io/ioutil"
 	"path/filepath"
 	"runtime"
@@ -13,7 +14,6 @@ import (
 	"testing"
 	"time"
 )
-
 
 var gcName, gcPath string // compiler name and path
 
@@ -34,38 +34,29 @@ func init() {
 	gcPath, _ = exec.LookPath(gcName)
 }
 
-
 func compile(t *testing.T, dirname, filename string) {
-	cmd, err := exec.Run(gcPath, []string{gcPath, filename}, nil, dirname, exec.DevNull, exec.Pipe, exec.MergeWithStdout)
+	cmd := exec.Command(gcPath, filename)
+	cmd.Dir = dirname
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Errorf("%s %s failed: %s", gcName, filename, err)
 		return
 	}
-	defer cmd.Close()
-
-	msg, err := cmd.Wait(0)
-	if err != nil {
-		t.Errorf("%s %s failed: %s", gcName, filename, err)
-		return
-	}
-
-	if !msg.Exited() || msg.ExitStatus() != 0 {
-		t.Errorf("%s %s failed: exit status = %d", gcName, filename, msg.ExitStatus())
-		output, _ := ioutil.ReadAll(cmd.Stdout)
-		t.Log(string(output))
-	}
+	t.Logf("%s", string(out))
 }
 
+// Use the same global imports map for all tests. The effect is
+// as if all tested packages were imported into a single package.
+var imports = make(map[string]*ast.Object)
 
 func testPath(t *testing.T, path string) bool {
-	_, _, err := GcImporter(path)
+	_, err := GcImporter(imports, path)
 	if err != nil {
 		t.Errorf("testPath(%s): %s", path, err)
 		return false
 	}
 	return true
 }
-
 
 const maxTime = 3e9 // maximum allotted testing time in ns
 
@@ -97,7 +88,6 @@ func testDir(t *testing.T, dir string, endTime int64) (nimports int) {
 	}
 	return
 }
-
 
 func TestGcImport(t *testing.T) {
 	compile(t, "testdata", "exports.go")

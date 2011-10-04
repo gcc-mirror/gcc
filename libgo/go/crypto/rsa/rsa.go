@@ -9,6 +9,7 @@ package rsa
 
 import (
 	"big"
+	"crypto/rand"
 	"crypto/subtle"
 	"hash"
 	"io"
@@ -17,69 +18,6 @@ import (
 
 var bigZero = big.NewInt(0)
 var bigOne = big.NewInt(1)
-
-// randomPrime returns a number, p, of the given size, such that p is prime
-// with high probability.
-func randomPrime(rand io.Reader, bits int) (p *big.Int, err os.Error) {
-	if bits < 1 {
-		err = os.EINVAL
-	}
-
-	bytes := make([]byte, (bits+7)/8)
-	p = new(big.Int)
-
-	for {
-		_, err = io.ReadFull(rand, bytes)
-		if err != nil {
-			return
-		}
-
-		// Don't let the value be too small.
-		bytes[0] |= 0x80
-		// Make the value odd since an even number this large certainly isn't prime.
-		bytes[len(bytes)-1] |= 1
-
-		p.SetBytes(bytes)
-		if big.ProbablyPrime(p, 20) {
-			return
-		}
-	}
-
-	return
-}
-
-// randomNumber returns a uniform random value in [0, max).
-func randomNumber(rand io.Reader, max *big.Int) (n *big.Int, err os.Error) {
-	k := (max.BitLen() + 7) / 8
-
-	// r is the number of bits in the used in the most significant byte of
-	// max.
-	r := uint(max.BitLen() % 8)
-	if r == 0 {
-		r = 8
-	}
-
-	bytes := make([]byte, k)
-	n = new(big.Int)
-
-	for {
-		_, err = io.ReadFull(rand, bytes)
-		if err != nil {
-			return
-		}
-
-		// Clear bits in the first byte to increase the probability
-		// that the candidate is < max.
-		bytes[0] &= uint8(int(1<<r) - 1)
-
-		n.SetBytes(bytes)
-		if n.Cmp(max) < 0 {
-			return
-		}
-	}
-
-	return
-}
 
 // A PublicKey represents the public part of an RSA key.
 type PublicKey struct {
@@ -94,7 +32,7 @@ type PrivateKey struct {
 	Primes    []*big.Int // prime factors of N, has >= 2 elements.
 
 	// Precomputed contains precomputed values that speed up private
-	// operations, if availible.
+	// operations, if available.
 	Precomputed PrecomputedValues
 }
 
@@ -126,7 +64,7 @@ func (priv *PrivateKey) Validate() os.Error {
 	// easy for an attack to generate composites that pass this test.
 	for _, prime := range priv.Primes {
 		if !big.ProbablyPrime(prime, 20) {
-			return os.ErrorString("Prime factor is composite")
+			return os.NewError("prime factor is composite")
 		}
 	}
 
@@ -136,7 +74,7 @@ func (priv *PrivateKey) Validate() os.Error {
 		modulus.Mul(modulus, prime)
 	}
 	if modulus.Cmp(priv.N) != 0 {
-		return os.ErrorString("invalid modulus")
+		return os.NewError("invalid modulus")
 	}
 	// Check that e and totient(Πprimes) are coprime.
 	totient := new(big.Int).Set(bigOne)
@@ -150,20 +88,20 @@ func (priv *PrivateKey) Validate() os.Error {
 	y := new(big.Int)
 	big.GcdInt(gcd, x, y, totient, e)
 	if gcd.Cmp(bigOne) != 0 {
-		return os.ErrorString("invalid public exponent E")
+		return os.NewError("invalid public exponent E")
 	}
 	// Check that de ≡ 1 (mod totient(Πprimes))
 	de := new(big.Int).Mul(priv.D, e)
 	de.Mod(de, totient)
 	if de.Cmp(bigOne) != 0 {
-		return os.ErrorString("invalid private exponent D")
+		return os.NewError("invalid private exponent D")
 	}
 	return nil
 }
 
 // GenerateKey generates an RSA keypair of the given bit size.
-func GenerateKey(rand io.Reader, bits int) (priv *PrivateKey, err os.Error) {
-	return GenerateMultiPrimeKey(rand, 2, bits)
+func GenerateKey(random io.Reader, bits int) (priv *PrivateKey, err os.Error) {
+	return GenerateMultiPrimeKey(random, 2, bits)
 }
 
 // GenerateMultiPrimeKey generates a multi-prime RSA keypair of the given bit
@@ -176,7 +114,7 @@ func GenerateKey(rand io.Reader, bits int) (priv *PrivateKey, err os.Error) {
 //
 // [1] US patent 4405829 (1972, expired)
 // [2] http://www.cacr.math.uwaterloo.ca/techreports/2006/cacr2006-16.pdf
-func GenerateMultiPrimeKey(rand io.Reader, nprimes int, bits int) (priv *PrivateKey, err os.Error) {
+func GenerateMultiPrimeKey(random io.Reader, nprimes int, bits int) (priv *PrivateKey, err os.Error) {
 	priv = new(PrivateKey)
 	// Smaller public exponents lead to faster public key
 	// operations. Since the exponent must be coprime to
@@ -189,7 +127,7 @@ func GenerateMultiPrimeKey(rand io.Reader, nprimes int, bits int) (priv *Private
 	priv.E = 3
 
 	if nprimes < 2 {
-		return nil, os.ErrorString("rsa.GenerateMultiPrimeKey: nprimes must be >= 2")
+		return nil, os.NewError("rsa.GenerateMultiPrimeKey: nprimes must be >= 2")
 	}
 
 	primes := make([]*big.Int, nprimes)
@@ -198,7 +136,7 @@ NextSetOfPrimes:
 	for {
 		todo := bits
 		for i := 0; i < nprimes; i++ {
-			primes[i], err = randomPrime(rand, todo/(nprimes-i))
+			primes[i], err = rand.Prime(random, todo/(nprimes-i))
 			if err != nil {
 				return nil, err
 			}
@@ -293,7 +231,7 @@ func encrypt(c *big.Int, pub *PublicKey, m *big.Int) *big.Int {
 // EncryptOAEP encrypts the given message with RSA-OAEP.
 // The message must be no longer than the length of the public modulus less
 // twice the hash length plus 2.
-func EncryptOAEP(hash hash.Hash, rand io.Reader, pub *PublicKey, msg []byte, label []byte) (out []byte, err os.Error) {
+func EncryptOAEP(hash hash.Hash, random io.Reader, pub *PublicKey, msg []byte, label []byte) (out []byte, err os.Error) {
 	hash.Reset()
 	k := (pub.N.BitLen() + 7) / 8
 	if len(msg) > k-2*hash.Size()-2 {
@@ -313,7 +251,7 @@ func EncryptOAEP(hash hash.Hash, rand io.Reader, pub *PublicKey, msg []byte, lab
 	db[len(db)-len(msg)-1] = 1
 	copy(db[len(db)-len(msg):], msg)
 
-	_, err = io.ReadFull(rand, seed)
+	_, err = io.ReadFull(random, seed)
 	if err != nil {
 		return
 	}
@@ -405,7 +343,7 @@ func (priv *PrivateKey) Precompute() {
 
 // decrypt performs an RSA decryption, resulting in a plaintext integer. If a
 // random source is given, RSA blinding is used.
-func decrypt(rand io.Reader, priv *PrivateKey, c *big.Int) (m *big.Int, err os.Error) {
+func decrypt(random io.Reader, priv *PrivateKey, c *big.Int) (m *big.Int, err os.Error) {
 	// TODO(agl): can we get away with reusing blinds?
 	if c.Cmp(priv.N) > 0 {
 		err = DecryptionError{}
@@ -413,16 +351,16 @@ func decrypt(rand io.Reader, priv *PrivateKey, c *big.Int) (m *big.Int, err os.E
 	}
 
 	var ir *big.Int
-	if rand != nil {
+	if random != nil {
 		// Blinding enabled. Blinding involves multiplying c by r^e.
 		// Then the decryption operation performs (m^e * r^e)^d mod n
 		// which equals mr mod n. The factor of r can then be removed
-		// by multipling by the multiplicative inverse of r.
+		// by multiplying by the multiplicative inverse of r.
 
 		var r *big.Int
 
 		for {
-			r, err = randomNumber(rand, priv.N)
+			r, err = rand.Int(random, priv.N)
 			if err != nil {
 				return
 			}
@@ -483,7 +421,7 @@ func decrypt(rand io.Reader, priv *PrivateKey, c *big.Int) (m *big.Int, err os.E
 
 // DecryptOAEP decrypts ciphertext using RSA-OAEP.
 // If rand != nil, DecryptOAEP uses RSA blinding to avoid timing side-channel attacks.
-func DecryptOAEP(hash hash.Hash, rand io.Reader, priv *PrivateKey, ciphertext []byte, label []byte) (msg []byte, err os.Error) {
+func DecryptOAEP(hash hash.Hash, random io.Reader, priv *PrivateKey, ciphertext []byte, label []byte) (msg []byte, err os.Error) {
 	k := (priv.N.BitLen() + 7) / 8
 	if len(ciphertext) > k ||
 		k < hash.Size()*2+2 {
@@ -493,7 +431,7 @@ func DecryptOAEP(hash hash.Hash, rand io.Reader, priv *PrivateKey, ciphertext []
 
 	c := new(big.Int).SetBytes(ciphertext)
 
-	m, err := decrypt(rand, priv, c)
+	m, err := decrypt(random, priv, c)
 	if err != nil {
 		return
 	}

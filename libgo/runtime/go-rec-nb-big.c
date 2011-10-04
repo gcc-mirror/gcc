@@ -18,6 +18,13 @@ __go_receive_nonblocking_big (struct __go_channel* channel, void *val,
   size_t alloc_size;
   size_t offset;
 
+  if (channel == NULL)
+    {
+      if (closed != NULL)
+	*closed = 0;
+      return 0;
+    }
+
   element_size = channel->element_type->__size;
   alloc_size = (element_size + sizeof (uint64_t) - 1) / sizeof (uint64_t);
 

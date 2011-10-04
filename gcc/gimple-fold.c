@@ -551,6 +551,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   reaching_vuse = gimple_vuse (stmt);
 
   push_gimplify_context (&gctx);
+  gctx.into_ssa = gimple_in_ssa_p (cfun);
 
   if (lhs == NULL_TREE)
     {
@@ -1200,28 +1201,45 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
 
     case GIMPLE_ASM:
       /* Fold *& in asm operands.  */
-      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
-	{
-	  tree link = gimple_asm_output_op (stmt, i);
-	  tree op = TREE_VALUE (link);
-	  if (REFERENCE_CLASS_P (op)
-	      && (op = maybe_fold_reference (op, true)) != NULL_TREE)
-	    {
-	      TREE_VALUE (link) = op;
-	      changed = true;
-	    }
-	}
-      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
-	{
-	  tree link = gimple_asm_input_op (stmt, i);
-	  tree op = TREE_VALUE (link);
-	  if (REFERENCE_CLASS_P (op)
-	      && (op = maybe_fold_reference (op, false)) != NULL_TREE)
-	    {
-	      TREE_VALUE (link) = op;
-	      changed = true;
-	    }
-	}
+      {
+	size_t noutputs;
+	const char **oconstraints;
+	const char *constraint;
+	bool allows_mem, allows_reg;
+
+	noutputs = gimple_asm_noutputs (stmt);
+	oconstraints = XALLOCAVEC (const char *, noutputs);
+
+	for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_output_op (stmt, i);
+	    tree op = TREE_VALUE (link);
+	    oconstraints[i]
+	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+	    if (REFERENCE_CLASS_P (op)
+		&& (op = maybe_fold_reference (op, true)) != NULL_TREE)
+	      {
+		TREE_VALUE (link) = op;
+		changed = true;
+	      }
+	  }
+	for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_input_op (stmt, i);
+	    tree op = TREE_VALUE (link);
+	    constraint
+	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+	    parse_input_constraint (&constraint, 0, 0, noutputs, 0,
+				    oconstraints, &allows_mem, &allows_reg);
+	    if (REFERENCE_CLASS_P (op)
+		&& (op = maybe_fold_reference (op, !allows_reg && allows_mem))
+		   != NULL_TREE)
+	      {
+		TREE_VALUE (link) = op;
+		changed = true;
+	      }
+	  }
+      }
       break;
 
     case GIMPLE_DEBUG:
@@ -2919,6 +2937,9 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
   HOST_WIDE_INT offset, size, max_size;
   tree tem;
 
+  if (TREE_THIS_VOLATILE (t))
+    return NULL_TREE;
+
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     return get_symbol_constant_value (t);
 
@@ -3048,7 +3069,8 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
 
   if (TREE_CODE (v) != VAR_DECL
       || !DECL_VIRTUAL_P (v)
-      || !DECL_INITIAL (v))
+      || !DECL_INITIAL (v)
+      || DECL_INITIAL (v) == error_mark_node)
     return NULL_TREE;
   gcc_checking_assert (TREE_CODE (TREE_TYPE (v)) == ARRAY_TYPE);
   size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))), 1);

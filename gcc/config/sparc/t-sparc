@@ -1,0 +1,36 @@
+# General rules that all sparc/ targets must have.
+#
+# Copyright (C) 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+sparc.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(TREE_H) $(RTL_H) $(REGS_H) hard-reg-set.h insn-config.h  \
+  insn-codes.h conditions.h output.h $(INSN_ATTR_H) $(FLAGS_H) \
+  $(FUNCTION_H) $(EXCEPT_H) $(EXPR_H) $(OPTABS_H) $(RECOG_H) \
+  $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TM_P_H) debug.h $(TARGET_H) \
+  $(TARGET_DEF_H) $(COMMON_TARGET_H) $(CFGLAYOUT_H) $(GIMPLE_H) \
+  langhooks.h reload.h $(PARAMS_H) $(DF_H) dwarf2out.h $(OPTS_H) \
+  gt-sparc.h
+
+sparc-c.o: $(srcdir)/config/sparc/sparc-c.c \
+    $(srcdir)/config/sparc/sparc-protos.h \
+    $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) $(FLAGS_H) \
+    $(TM_P_H) coretypes.h $(TM_H) $(TREE_H) \
+    $(C_COMMON_H) $(C_PRAGMA_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/sparc/sparc-c.c

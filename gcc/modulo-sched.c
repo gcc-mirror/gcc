@@ -211,7 +211,7 @@ static int get_sched_window (partial_schedule_ptr, ddg_node_ptr,
 static bool try_scheduling_node_in_cycle (partial_schedule_ptr, ddg_node_ptr,
 					  int, int, sbitmap, int *, sbitmap,
 					  sbitmap);
-static bool remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
+static void remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
 
 #define SCHED_ASAP(x) (((node_sched_params_ptr)(x)->aux.info)->asap)
 #define SCHED_TIME(x) (((node_sched_params_ptr)(x)->aux.info)->time)
@@ -476,7 +476,12 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
       sbitmap *uses_of_defs;
       rtx last_reg_move;
       rtx prev_reg, old_reg;
-
+      rtx set = single_set (u->insn);
+      
+      /* Skip instructions that do not set a register.  */
+      if ((set && !REG_P (SET_DEST (set))))
+        continue;
+ 
       /* Compute the number of reg_moves needed for u, by looking at life
 	 ranges started at u (excluding self-loops).  */
       for (e = u->out; e; e = e->next_out)
@@ -493,6 +498,20 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
 		&& SCHED_COLUMN (e->dest) < SCHED_COLUMN (e->src))
 	      nreg_moves4e--;
 
+            if (nreg_moves4e >= 1)
+	      {
+		/* !single_set instructions are not supported yet and
+		   thus we do not except to encounter them in the loop
+		   except from the doloop part.  For the latter case
+		   we assume no regmoves are generated as the doloop
+		   instructions are tied to the branch with an edge.  */
+		gcc_assert (set);
+		/* If the instruction contains auto-inc register then
+		   validate that the regmov is being generated for the
+		   target regsiter rather then the inc'ed register.	*/
+		gcc_assert (!autoinc_var_is_used_p (u->insn, e->dest->insn));
+	      }
+	    
 	    nreg_moves = MAX (nreg_moves, nreg_moves4e);
 	  }
 
@@ -834,8 +853,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 	if (next_ps_i->node->cuid == g->closing_branch->cuid)
 	  break;
 
-      gcc_assert (next_ps_i);
-      gcc_assert (remove_node_from_ps (ps, next_ps_i));
+      remove_node_from_ps (ps, next_ps_i);
       success =
 	try_scheduling_node_in_cycle (ps, g->closing_branch,
 				      g->closing_branch->cuid, c,
@@ -1267,12 +1285,10 @@ sms_schedule (void)
 	continue;
       }
 
-      /* Don't handle BBs with calls or barriers or auto-increment insns 
-	 (to avoid creating invalid reg-moves for the auto-increment insns),
+      /* Don't handle BBs with calls or barriers
 	 or !single_set with the exception of instructions that include
 	 count_reg---these instructions are part of the control part
 	 that do-loop recognizes.
-         ??? Should handle auto-increment insns.
          ??? Should handle insns defining subregs.  */
      for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
       {
@@ -1283,7 +1299,6 @@ sms_schedule (void)
             || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE
                 && !reg_mentioned_p (count_reg, insn))
-            || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
             || (INSN_P (insn) && (set = single_set (insn))
                 && GET_CODE (SET_DEST (set)) == SUBREG))
         break;
@@ -1297,8 +1312,6 @@ sms_schedule (void)
 		fprintf (dump_file, "SMS loop-with-call\n");
 	      else if (BARRIER_P (insn))
 		fprintf (dump_file, "SMS loop-with-barrier\n");
-              else if (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
-                fprintf (dump_file, "SMS reg inc\n");
               else if ((NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
                 fprintf (dump_file, "SMS loop-with-not-single-set\n");
@@ -1485,8 +1498,8 @@ sms_schedule (void)
           if (dump_file)
             {
 	      fprintf (dump_file,
-		       "SMS succeeded %d %d (with ii, sc)\n", ps->ii,
-		       stage_count);
+		       "%s:%d SMS succeeded %d %d (with ii, sc)\n",
+		       insn_file (tail), insn_line (tail), ps->ii, stage_count);
 	      print_partial_schedule (ps, dump_file);
 	    }
  
@@ -2719,22 +2732,18 @@ create_ps_insn (ddg_node_ptr node, int cycle)
 }
 
 
-/* Removes the given PS_INSN from the partial schedule.  Returns false if the
-   node is not found in the partial schedule, else returns true.  */
-static bool
+/* Removes the given PS_INSN from the partial schedule.  */  
+static void 
 remove_node_from_ps (partial_schedule_ptr ps, ps_insn_ptr ps_i)
 {
   int row;
 
-  if (!ps || !ps_i)
-    return false;
-
+  gcc_assert (ps && ps_i);
+  
   row = SMODULO (ps_i->cycle, ps->ii);
   if (! ps_i->prev_in_row)
     {
-      if (ps_i != ps->rows[row])
-	return false;
-
+      gcc_assert (ps_i == ps->rows[row]);
       ps->rows[row] = ps_i->next_in_row;
       if (ps->rows[row])
 	ps->rows[row]->prev_in_row = NULL;
@@ -2748,7 +2757,7 @@ remove_node_from_ps (partial_schedule_ptr ps, ps_insn_ptr ps_i)
    
   ps->rows_length[row] -= 1; 
   free (ps_i);
-  return true;
+  return;
 }
 
 /* Unlike what literature describes for modulo scheduling (which focuses

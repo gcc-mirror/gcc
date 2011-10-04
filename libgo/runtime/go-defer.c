@@ -13,7 +13,7 @@
 /* This function is called each time we need to defer a call.  */
 
 void
-__go_defer (void *frame, void (*pfn) (void *), void *arg)
+__go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
 {
   struct __go_defer_stack *n;
 
@@ -34,7 +34,7 @@ __go_defer (void *frame, void (*pfn) (void *), void *arg)
 /* This function is called when we want to undefer the stack.  */
 
 void
-__go_undefer (void *frame)
+__go_undefer (_Bool *frame)
 {
   if (__go_panic_defer == NULL)
     return;
@@ -53,6 +53,12 @@ __go_undefer (void *frame)
 
       __go_panic_defer->__defer = d->__next;
       __go_free (d);
+
+      /* Since we are executing a defer function here, we know we are
+	 returning from the calling function.  If the calling
+	 function, or one of its callees, paniced, then the defer
+	 functions would be executed by __go_panic.  */
+      *frame = 1;
     }
 }
 

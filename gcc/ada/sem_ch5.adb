@@ -2302,10 +2302,13 @@ package body Sem_Ch5 is
       Typ : Entity_Id;
 
    begin
-      --  In semantics mode, introduce loop variable so that loop body can be
-      --  properly analyzed. Otherwise this is one after expansion.
+      --  In semantics/Alfa modes, we won't be further expanding the loop, so
+      --  introduce loop variable so that loop body can be properly analyzed.
+      --  Otherwise this happens after expansion.
 
-      if Operating_Mode = Check_Semantics then
+      if Operating_Mode = Check_Semantics
+        or else Alfa_Mode
+      then
          Enter_Name (Def_Id);
       end if;
 

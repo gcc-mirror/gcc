@@ -269,8 +269,32 @@ struct processor_costs niagara2_costs = {
   COSTS_N_INSNS (5), /* imul */
   COSTS_N_INSNS (5), /* imulX */
   0, /* imul bit factor */
-  COSTS_N_INSNS (31), /* idiv, average of 12 - 41 cycle range */
-  COSTS_N_INSNS (31), /* idivX, average of 12 - 41 cycle range */
+  COSTS_N_INSNS (26), /* idiv, average of 12 - 41 cycle range */
+  COSTS_N_INSNS (26), /* idivX, average of 12 - 41 cycle range */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
+static const
+struct processor_costs niagara3_costs = {
+  COSTS_N_INSNS (3), /* int load */
+  COSTS_N_INSNS (3), /* int signed load */
+  COSTS_N_INSNS (3), /* int zeroed load */
+  COSTS_N_INSNS (3), /* float load */
+  COSTS_N_INSNS (9), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (9), /* fadd, fsub */
+  COSTS_N_INSNS (9), /* fcmp */
+  COSTS_N_INSNS (9), /* fmov, fmovr */
+  COSTS_N_INSNS (9), /* fmul */
+  COSTS_N_INSNS (23), /* fdivs */
+  COSTS_N_INSNS (37), /* fdivd */
+  COSTS_N_INSNS (23), /* fsqrts */
+  COSTS_N_INSNS (37), /* fsqrtd */
+  COSTS_N_INSNS (9), /* imul */
+  COSTS_N_INSNS (9), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (31), /* idiv, average of 17 - 45 cycle range */
+  COSTS_N_INSNS (30), /* idivX, average of 16 - 44 cycle range */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
 };
@@ -305,7 +329,7 @@ char leaf_reg_remap[] =
   72, 73, 74, 75, 76, 77, 78, 79,
   80, 81, 82, 83, 84, 85, 86, 87,
   88, 89, 90, 91, 92, 93, 94, 95,
-  96, 97, 98, 99, 100};
+  96, 97, 98, 99, 100, 101, 102};
 
 /* Vector, indexed by hard register number, which contains 1
    for a register that is allowable in a candidate for leaf
@@ -323,7 +347,7 @@ char sparc_leaf_regs[] =
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1};
+  1, 1, 1, 1, 1, 1, 1};
 
 struct GTY(()) machine_function
 {
@@ -745,16 +769,16 @@ sparc_option_override (void)
     /* UltraSPARC III */
     /* ??? Check if %y issue still holds true.  */
     { MASK_ISA,
-      MASK_V9|MASK_DEPRECATED_V8_INSNS},
+      MASK_V9|MASK_DEPRECATED_V8_INSNS|MASK_VIS2},
     /* UltraSPARC T1 */
     { MASK_ISA,
       MASK_V9|MASK_DEPRECATED_V8_INSNS},
     /* UltraSPARC T2 */
-    { MASK_ISA, MASK_V9},
+    { MASK_ISA, MASK_V9|MASK_VIS2},
     /* UltraSPARC T3 */
-    { MASK_ISA, MASK_V9},
+    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_VIS3|MASK_FMAF},
     /* UltraSPARC T4 */
-    { MASK_ISA, MASK_V9},
+    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_VIS3|MASK_FMAF},
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -833,9 +857,17 @@ sparc_option_override (void)
   if (target_flags_explicit & MASK_FPU)
     target_flags = (target_flags & ~MASK_FPU) | fpu;
 
-  /* Don't allow -mvis if FPU is disabled.  */
+  /* -mvis2 implies -mvis */
+  if (TARGET_VIS2)
+    target_flags |= MASK_VIS;
+
+  /* -mvis3 implies -mvis2 and -mvis */
+  if (TARGET_VIS3)
+    target_flags |= MASK_VIS2 | MASK_VIS;
+
+  /* Don't allow -mvis, -mvis2, -mvis3, or -mfmaf if FPU is disabled.  */
   if (! TARGET_FPU)
-    target_flags &= ~MASK_VIS;
+    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_FMAF);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available.
@@ -845,6 +877,10 @@ sparc_option_override (void)
       target_flags |= MASK_V9;
       target_flags &= ~(MASK_V8 | MASK_SPARCLET | MASK_SPARCLITE);
     }
+
+  /* -mvis also implies -mv8plus on 32-bit */
+  if (TARGET_VIS && ! TARGET_ARCH64)
+    target_flags |= MASK_V8PLUS;
 
   /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
   if (TARGET_V9 && TARGET_ARCH32)
@@ -917,9 +953,11 @@ sparc_option_override (void)
       sparc_costs = &niagara_costs;
       break;
     case PROCESSOR_NIAGARA2:
+      sparc_costs = &niagara2_costs;
+      break;
     case PROCESSOR_NIAGARA3:
     case PROCESSOR_NIAGARA4:
-      sparc_costs = &niagara2_costs;
+      sparc_costs = &niagara3_costs;
       break;
     case PROCESSOR_NATIVE:
       gcc_unreachable ();
@@ -1140,9 +1178,11 @@ sparc_expand_move (enum machine_mode mode, rtx *operands)
       if (operands [1] == const0_rtx)
 	operands[1] = CONST0_RTX (mode);
 
-      /* We can clear FP registers if TARGET_VIS, and always other regs.  */
+      /* We can clear or set to all-ones FP registers if TARGET_VIS, and
+	 always other regs.  */
       if ((TARGET_VIS || REGNO (operands[0]) < SPARC_FIRST_FP_REG)
-	  && const_zero_operand (operands[1], mode))
+	  && (const_zero_operand (operands[1], mode)
+	      || const_all_ones_operand (operands[1], mode)))
 	return false;
 
       if (REGNO (operands[0]) < SPARC_FIRST_FP_REG
@@ -2825,9 +2865,10 @@ eligible_for_restore_insn (rtx trial, bool return_p)
 int
 eligible_for_return_delay (rtx trial)
 {
+  int regno;
   rtx pat;
 
-  if (GET_CODE (trial) != INSN || GET_CODE (PATTERN (trial)) != SET)
+  if (GET_CODE (trial) != INSN)
     return 0;
 
   if (get_attr_length (trial) != 1)
@@ -2844,17 +2885,45 @@ eligible_for_return_delay (rtx trial)
       get_attr_in_uncond_branch_delay (trial) == IN_UNCOND_BRANCH_DELAY_TRUE;
 
   pat = PATTERN (trial);
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int i;
+
+      if (! TARGET_V9)
+	return 0;
+      for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
+	{
+	  rtx expr = XVECEXP (pat, 0, i);
+	  if (GET_CODE (expr) != SET)
+	    return 0;
+	  if (GET_CODE (SET_DEST (expr)) != REG)
+	    return 0;
+	  regno = REGNO (SET_DEST (expr));
+	  if (regno >= 8 && regno < 24)
+	    return 0;
+	}
+      return !epilogue_renumber (&pat, 1)
+	&& (get_attr_in_uncond_branch_delay (trial)
+	    == IN_UNCOND_BRANCH_DELAY_TRUE);
+    }
+
+  if (GET_CODE (pat) != SET)
+    return 0;
+
+  if (GET_CODE (SET_DEST (pat)) != REG)
+    return 0;
+
+  regno = REGNO (SET_DEST (pat));
 
   /* Otherwise, only operations which can be done in tandem with
      a `restore' or `return' insn can go into the delay slot.  */
-  if (GET_CODE (SET_DEST (pat)) != REG
-      || (REGNO (SET_DEST (pat)) >= 8 && REGNO (SET_DEST (pat)) < 24))
+  if (regno >= 8 && regno < 24)
     return 0;
 
   /* If this instruction sets up floating point register and we have a return
      instruction, it can probably go in.  But restore will not work
      with FP_REGS.  */
-  if (REGNO (SET_DEST (pat)) >= 32)
+  if (regno >= 32)
     return (TARGET_V9
 	    && !epilogue_renumber (&pat, 1)
 	    && get_attr_in_uncond_branch_delay (trial)
@@ -3066,19 +3135,21 @@ sparc_legitimate_constant_p (enum machine_mode mode, rtx x)
         return true;
 
       /* Floating point constants are generally not ok.
-	 The only exception is 0.0 in VIS.  */
+	 The only exception is 0.0 and all-ones in VIS.  */
       if (TARGET_VIS
 	  && SCALAR_FLOAT_MODE_P (mode)
-	  && const_zero_operand (x, mode))
+	  && (const_zero_operand (x, mode)
+	      || const_all_ones_operand (x, mode)))
 	return true;
 
       return false;
 
     case CONST_VECTOR:
       /* Vector constants are generally not ok.
-	 The only exception is 0 in VIS.  */
+	 The only exception is 0 or -1 in VIS.  */
       if (TARGET_VIS
-	  && const_zero_operand (x, mode))
+	  && (const_zero_operand (x, mode)
+	      || const_all_ones_operand (x, mode)))
 	return true;
 
       return false;
@@ -4010,8 +4081,8 @@ static const int hard_32bit_mode_classes[] = {
   /* %fcc[0123] */
   CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
 
-  /* %icc */
-  CC_MODES
+  /* %icc, %sfp, %gsr */
+  CC_MODES, 0, D_MODES
 };
 
 static const int hard_64bit_mode_classes[] = {
@@ -4035,8 +4106,8 @@ static const int hard_64bit_mode_classes[] = {
   /* %fcc[0123] */
   CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
 
-  /* %icc */
-  CC_MODES
+  /* %icc, %sfp, %gsr */
+  CC_MODES, 0, D_MODES
 };
 
 int sparc_mode_class [NUM_MACHINE_MODES];
@@ -9074,9 +9145,21 @@ sparc_init_libfuncs (void)
     }
 }
 
-#define def_builtin(NAME, CODE, TYPE) \
-  add_builtin_function((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, \
-                       NULL_TREE)
+static tree def_builtin(const char *name, int code, tree type)
+{
+  return add_builtin_function(name, type, code, BUILT_IN_MD, NULL,
+			      NULL_TREE);
+}
+
+static tree def_builtin_const(const char *name, int code, tree type)
+{
+  tree t = def_builtin(name, code, type);
+
+  if (t)
+    TREE_READONLY (t) = 1;
+
+  return t;
+}
 
 /* Implement the TARGET_INIT_BUILTINS target hook.
    Create builtin functions for special SPARC instructions.  */
@@ -9098,6 +9181,7 @@ sparc_vis_init_builtins (void)
   tree v4hi = build_vector_type (intHI_type_node, 4);
   tree v2hi = build_vector_type (intHI_type_node, 2);
   tree v2si = build_vector_type (intSI_type_node, 2);
+  tree v1si = build_vector_type (intSI_type_node, 1);
 
   tree v4qi_ftype_v4hi = build_function_type_list (v4qi, v4hi, 0);
   tree v8qi_ftype_v2si_v8qi = build_function_type_list (v8qi, v2si, v8qi, 0);
@@ -9111,44 +9195,75 @@ sparc_vis_init_builtins (void)
   tree v4hi_ftype_v4hi_v4hi = build_function_type_list (v4hi, v4hi, v4hi, 0);
   tree v2si_ftype_v2si_v2si = build_function_type_list (v2si, v2si, v2si, 0);
   tree v8qi_ftype_v8qi_v8qi = build_function_type_list (v8qi, v8qi, v8qi, 0);
+  tree v2hi_ftype_v2hi_v2hi = build_function_type_list (v2hi, v2hi, v2hi, 0);
+  tree v1si_ftype_v1si_v1si = build_function_type_list (v1si, v1si, v1si, 0);
   tree di_ftype_v8qi_v8qi_di = build_function_type_list (intDI_type_node,
 							 v8qi, v8qi,
 							 intDI_type_node, 0);
+  tree di_ftype_v8qi_v8qi = build_function_type_list (intDI_type_node,
+						      v8qi, v8qi, 0);
+  tree si_ftype_v8qi_v8qi = build_function_type_list (intSI_type_node,
+						      v8qi, v8qi, 0);
   tree di_ftype_di_di = build_function_type_list (intDI_type_node,
 						  intDI_type_node,
 						  intDI_type_node, 0);
+  tree si_ftype_si_si = build_function_type_list (intSI_type_node,
+						  intSI_type_node,
+						  intSI_type_node, 0);
   tree ptr_ftype_ptr_si = build_function_type_list (ptr_type_node,
 		        			    ptr_type_node,
 					            intSI_type_node, 0);
   tree ptr_ftype_ptr_di = build_function_type_list (ptr_type_node,
 		        			    ptr_type_node,
 					            intDI_type_node, 0);
+  tree si_ftype_ptr_ptr = build_function_type_list (intSI_type_node,
+		        			    ptr_type_node,
+					            ptr_type_node, 0);
+  tree di_ftype_ptr_ptr = build_function_type_list (intDI_type_node,
+		        			    ptr_type_node,
+					            ptr_type_node, 0);
+  tree si_ftype_v4hi_v4hi = build_function_type_list (intSI_type_node,
+						      v4hi, v4hi, 0);
+  tree si_ftype_v2si_v2si = build_function_type_list (intSI_type_node,
+						      v2si, v2si, 0);
+  tree di_ftype_v4hi_v4hi = build_function_type_list (intDI_type_node,
+						      v4hi, v4hi, 0);
+  tree di_ftype_v2si_v2si = build_function_type_list (intDI_type_node,
+						      v2si, v2si, 0);
+  tree void_ftype_di = build_function_type_list (void_type_node,
+						 intDI_type_node, 0);
+  tree di_ftype_void = build_function_type_list (intDI_type_node,
+						 void_type_node, 0);
+  tree void_ftype_si = build_function_type_list (void_type_node,
+						 intSI_type_node, 0);
 
   /* Packing and expanding vectors.  */
-  def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis, v4qi_ftype_v4hi);
+  def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis,
+	       v4qi_ftype_v4hi);
   def_builtin ("__builtin_vis_fpack32", CODE_FOR_fpack32_vis,
 	       v8qi_ftype_v2si_v8qi);
   def_builtin ("__builtin_vis_fpackfix", CODE_FOR_fpackfix_vis,
 	       v2hi_ftype_v2si);
-  def_builtin ("__builtin_vis_fexpand", CODE_FOR_fexpand_vis, v4hi_ftype_v4qi);
-  def_builtin ("__builtin_vis_fpmerge", CODE_FOR_fpmerge_vis,
-	       v8qi_ftype_v4qi_v4qi);
+  def_builtin_const ("__builtin_vis_fexpand", CODE_FOR_fexpand_vis,
+		     v4hi_ftype_v4qi);
+  def_builtin_const ("__builtin_vis_fpmerge", CODE_FOR_fpmerge_vis,
+		     v8qi_ftype_v4qi_v4qi);
 
   /* Multiplications.  */
-  def_builtin ("__builtin_vis_fmul8x16", CODE_FOR_fmul8x16_vis,
-	       v4hi_ftype_v4qi_v4hi);
-  def_builtin ("__builtin_vis_fmul8x16au", CODE_FOR_fmul8x16au_vis,
-	       v4hi_ftype_v4qi_v2hi);
-  def_builtin ("__builtin_vis_fmul8x16al", CODE_FOR_fmul8x16al_vis,
-	       v4hi_ftype_v4qi_v2hi);
-  def_builtin ("__builtin_vis_fmul8sux16", CODE_FOR_fmul8sux16_vis,
-	       v4hi_ftype_v8qi_v4hi);
-  def_builtin ("__builtin_vis_fmul8ulx16", CODE_FOR_fmul8ulx16_vis,
-	       v4hi_ftype_v8qi_v4hi);
-  def_builtin ("__builtin_vis_fmuld8sux16", CODE_FOR_fmuld8sux16_vis,
-	       v2si_ftype_v4qi_v2hi);
-  def_builtin ("__builtin_vis_fmuld8ulx16", CODE_FOR_fmuld8ulx16_vis,
-	       v2si_ftype_v4qi_v2hi);
+  def_builtin_const ("__builtin_vis_fmul8x16", CODE_FOR_fmul8x16_vis,
+		     v4hi_ftype_v4qi_v4hi);
+  def_builtin_const ("__builtin_vis_fmul8x16au", CODE_FOR_fmul8x16au_vis,
+		     v4hi_ftype_v4qi_v2hi);
+  def_builtin_const ("__builtin_vis_fmul8x16al", CODE_FOR_fmul8x16al_vis,
+		     v4hi_ftype_v4qi_v2hi);
+  def_builtin_const ("__builtin_vis_fmul8sux16", CODE_FOR_fmul8sux16_vis,
+		     v4hi_ftype_v8qi_v4hi);
+  def_builtin_const ("__builtin_vis_fmul8ulx16", CODE_FOR_fmul8ulx16_vis,
+		     v4hi_ftype_v8qi_v4hi);
+  def_builtin_const ("__builtin_vis_fmuld8sux16", CODE_FOR_fmuld8sux16_vis,
+		     v2si_ftype_v4qi_v2hi);
+  def_builtin_const ("__builtin_vis_fmuld8ulx16", CODE_FOR_fmuld8ulx16_vis,
+		     v2si_ftype_v4qi_v2hi);
 
   /* Data aligning.  */
   def_builtin ("__builtin_vis_faligndatav4hi", CODE_FOR_faligndatav4hi_vis,
@@ -9158,17 +9273,286 @@ sparc_vis_init_builtins (void)
   def_builtin ("__builtin_vis_faligndatav2si", CODE_FOR_faligndatav2si_vis,
 	       v2si_ftype_v2si_v2si);
   def_builtin ("__builtin_vis_faligndatadi", CODE_FOR_faligndatadi_vis,
-               di_ftype_di_di);
+	       di_ftype_di_di);
+
+  def_builtin ("__builtin_vis_write_gsr", CODE_FOR_wrgsr_vis,
+	       void_ftype_di);
+  def_builtin ("__builtin_vis_read_gsr", CODE_FOR_rdgsr_vis,
+	       di_ftype_void);
+
   if (TARGET_ARCH64)
-    def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrdi_vis,
-	         ptr_ftype_ptr_di);
+    {
+      def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrdi_vis,
+		   ptr_ftype_ptr_di);
+      def_builtin ("__builtin_vis_alignaddrl", CODE_FOR_alignaddrldi_vis,
+		   ptr_ftype_ptr_di);
+    }
   else
-    def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrsi_vis,
-	         ptr_ftype_ptr_si);
+    {
+      def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrsi_vis,
+		   ptr_ftype_ptr_si);
+      def_builtin ("__builtin_vis_alignaddrl", CODE_FOR_alignaddrlsi_vis,
+		   ptr_ftype_ptr_si);
+    }
 
   /* Pixel distance.  */
-  def_builtin ("__builtin_vis_pdist", CODE_FOR_pdist_vis,
-	       di_ftype_v8qi_v8qi_di);
+  def_builtin_const ("__builtin_vis_pdist", CODE_FOR_pdist_vis,
+		     di_ftype_v8qi_v8qi_di);
+
+  /* Edge handling.  */
+  if (TARGET_ARCH64)
+    {
+      def_builtin_const ("__builtin_vis_edge8", CODE_FOR_edge8di_vis,
+			 di_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge8l", CODE_FOR_edge8ldi_vis,
+			 di_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge16", CODE_FOR_edge16di_vis,
+			 di_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge16l", CODE_FOR_edge16ldi_vis,
+			 di_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge32", CODE_FOR_edge32di_vis,
+			 di_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge32l", CODE_FOR_edge32ldi_vis,
+			 di_ftype_ptr_ptr);
+      if (TARGET_VIS2)
+	{
+	  def_builtin_const ("__builtin_vis_edge8n", CODE_FOR_edge8ndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge8ln", CODE_FOR_edge8lndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16n", CODE_FOR_edge16ndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16ln", CODE_FOR_edge16lndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32n", CODE_FOR_edge32ndi_vis,
+			     di_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32ln", CODE_FOR_edge32lndi_vis,
+			     di_ftype_ptr_ptr);
+	}
+    }
+  else
+    {
+      def_builtin_const ("__builtin_vis_edge8", CODE_FOR_edge8si_vis,
+			 si_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge8l", CODE_FOR_edge8lsi_vis,
+			 si_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge16", CODE_FOR_edge16si_vis,
+			 si_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge16l", CODE_FOR_edge16lsi_vis,
+			 si_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge32", CODE_FOR_edge32si_vis,
+			 si_ftype_ptr_ptr);
+      def_builtin_const ("__builtin_vis_edge32l", CODE_FOR_edge32lsi_vis,
+			 si_ftype_ptr_ptr);
+      if (TARGET_VIS2)
+	{
+	  def_builtin_const ("__builtin_vis_edge8n", CODE_FOR_edge8nsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge8ln", CODE_FOR_edge8lnsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16n", CODE_FOR_edge16nsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge16ln", CODE_FOR_edge16lnsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32n", CODE_FOR_edge32nsi_vis,
+			     si_ftype_ptr_ptr);
+	  def_builtin_const ("__builtin_vis_edge32ln", CODE_FOR_edge32lnsi_vis,
+			     si_ftype_ptr_ptr);
+	}
+    }
+
+  /* Pixel compare.  */
+  if (TARGET_ARCH64)
+    {
+      def_builtin_const ("__builtin_vis_fcmple16", CODE_FOR_fcmple16di_vis,
+			 di_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmple32", CODE_FOR_fcmple32di_vis,
+			 di_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fcmpne16", CODE_FOR_fcmpne16di_vis,
+			 di_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmpne32", CODE_FOR_fcmpne32di_vis,
+			 di_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fcmpgt16", CODE_FOR_fcmpgt16di_vis,
+			 di_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmpgt32", CODE_FOR_fcmpgt32di_vis,
+			 di_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fcmpeq16", CODE_FOR_fcmpeq16di_vis,
+			 di_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fcmpeq32di_vis,
+			 di_ftype_v2si_v2si);
+    }
+  else
+    {
+      def_builtin_const ("__builtin_vis_fcmple16", CODE_FOR_fcmple16si_vis,
+			 si_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmple32", CODE_FOR_fcmple32si_vis,
+			 si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fcmpne16", CODE_FOR_fcmpne16si_vis,
+			 si_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmpne32", CODE_FOR_fcmpne32si_vis,
+			 si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fcmpgt16", CODE_FOR_fcmpgt16si_vis,
+			 si_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmpgt32", CODE_FOR_fcmpgt32si_vis,
+			 si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fcmpeq16", CODE_FOR_fcmpeq16si_vis,
+			 si_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fcmpeq32si_vis,
+			 si_ftype_v2si_v2si);
+    }
+
+  /* Addition and subtraction.  */
+  def_builtin_const ("__builtin_vis_fpadd16", CODE_FOR_addv4hi3,
+		     v4hi_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fpadd16s", CODE_FOR_addv2hi3,
+		     v2hi_ftype_v2hi_v2hi);
+  def_builtin_const ("__builtin_vis_fpadd32", CODE_FOR_addv2si3,
+		     v2si_ftype_v2si_v2si);
+  def_builtin_const ("__builtin_vis_fpadd32s", CODE_FOR_addsi3,
+		     v1si_ftype_v1si_v1si);
+  def_builtin_const ("__builtin_vis_fpsub16", CODE_FOR_subv4hi3,
+		     v4hi_ftype_v4hi_v4hi);
+  def_builtin_const ("__builtin_vis_fpsub16s", CODE_FOR_subv2hi3,
+		     v2hi_ftype_v2hi_v2hi);
+  def_builtin_const ("__builtin_vis_fpsub32", CODE_FOR_subv2si3,
+		     v2si_ftype_v2si_v2si);
+  def_builtin_const ("__builtin_vis_fpsub32s", CODE_FOR_subsi3,
+		     v1si_ftype_v1si_v1si);
+
+  /* Three-dimensional array addressing.  */
+  if (TARGET_ARCH64)
+    {
+      def_builtin_const ("__builtin_vis_array8", CODE_FOR_array8di_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_array16", CODE_FOR_array16di_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_array32", CODE_FOR_array32di_vis,
+			 di_ftype_di_di);
+    }
+  else
+    {
+      def_builtin_const ("__builtin_vis_array8", CODE_FOR_array8si_vis,
+			 si_ftype_si_si);
+      def_builtin_const ("__builtin_vis_array16", CODE_FOR_array16si_vis,
+			 si_ftype_si_si);
+      def_builtin_const ("__builtin_vis_array32", CODE_FOR_array32si_vis,
+			 si_ftype_si_si);
+  }
+
+  if (TARGET_VIS2)
+    {
+      /* Byte mask and shuffle */
+      if (TARGET_ARCH64)
+	def_builtin ("__builtin_vis_bmask", CODE_FOR_bmaskdi_vis,
+		     di_ftype_di_di);
+      else
+	def_builtin ("__builtin_vis_bmask", CODE_FOR_bmasksi_vis,
+		     si_ftype_si_si);
+      def_builtin ("__builtin_vis_bshufflev4hi", CODE_FOR_bshufflev4hi_vis,
+		   v4hi_ftype_v4hi_v4hi);
+      def_builtin ("__builtin_vis_bshufflev8qi", CODE_FOR_bshufflev8qi_vis,
+		   v8qi_ftype_v8qi_v8qi);
+      def_builtin ("__builtin_vis_bshufflev2si", CODE_FOR_bshufflev2si_vis,
+		   v2si_ftype_v2si_v2si);
+      def_builtin ("__builtin_vis_bshuffledi", CODE_FOR_bshuffledi_vis,
+		   di_ftype_di_di);
+    }
+
+  if (TARGET_VIS3)
+    {
+      if (TARGET_ARCH64)
+	{
+	  def_builtin ("__builtin_vis_cmask8", CODE_FOR_cmask8di_vis,
+		       void_ftype_di);
+	  def_builtin ("__builtin_vis_cmask16", CODE_FOR_cmask16di_vis,
+		       void_ftype_di);
+	  def_builtin ("__builtin_vis_cmask32", CODE_FOR_cmask32di_vis,
+		       void_ftype_di);
+	}
+      else
+	{
+	  def_builtin ("__builtin_vis_cmask8", CODE_FOR_cmask8si_vis,
+		       void_ftype_si);
+	  def_builtin ("__builtin_vis_cmask16", CODE_FOR_cmask16si_vis,
+		       void_ftype_si);
+	  def_builtin ("__builtin_vis_cmask32", CODE_FOR_cmask32si_vis,
+		       void_ftype_si);
+	}
+
+      def_builtin_const ("__builtin_vis_fchksm16", CODE_FOR_fchksm16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+
+      def_builtin_const ("__builtin_vis_fsll16", CODE_FOR_fsll16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fslas16", CODE_FOR_fslas16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fsrl16", CODE_FOR_fsrl16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fsra16", CODE_FOR_fsra16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fsll32", CODE_FOR_fsll32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fslas32", CODE_FOR_fslas32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fsrl32", CODE_FOR_fsrl32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fsra32", CODE_FOR_fsra32_vis,
+			 v2si_ftype_v2si_v2si);
+
+      if (TARGET_ARCH64)
+	def_builtin_const ("__builtin_vis_pdistn", CODE_FOR_pdistndi_vis,
+			   di_ftype_v8qi_v8qi);
+      else
+	def_builtin_const ("__builtin_vis_pdistn", CODE_FOR_pdistnsi_vis,
+			   si_ftype_v8qi_v8qi);
+
+      def_builtin_const ("__builtin_vis_fmean16", CODE_FOR_fmean16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpadd64", CODE_FOR_fpadd64_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_fpsub64", CODE_FOR_fpsub64_vis,
+			 di_ftype_di_di);
+
+      def_builtin_const ("__builtin_vis_fpadds16", CODE_FOR_fpadds16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpadds16s", CODE_FOR_fpadds16s_vis,
+			 v2hi_ftype_v2hi_v2hi);
+      def_builtin_const ("__builtin_vis_fpsubs16", CODE_FOR_fpsubs16_vis,
+			 v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpsubs16s", CODE_FOR_fpsubs16s_vis,
+			 v2hi_ftype_v2hi_v2hi);
+      def_builtin_const ("__builtin_vis_fpadds32", CODE_FOR_fpadds32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpadds32s", CODE_FOR_fpadds32s_vis,
+			 v1si_ftype_v1si_v1si);
+      def_builtin_const ("__builtin_vis_fpsubs32", CODE_FOR_fpsubs32_vis,
+			 v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_fpsubs32s_vis,
+			 v1si_ftype_v1si_v1si);
+
+      if (TARGET_ARCH64)
+	{
+	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fucmple8di_vis,
+			     di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fucmpne8di_vis,
+			     di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fucmpgt8di_vis,
+			     di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fucmpeq8di_vis,
+			     di_ftype_v8qi_v8qi);
+	}
+      else
+	{
+	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fucmple8si_vis,
+			     si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fucmpne8si_vis,
+			     si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fucmpgt8si_vis,
+			     si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fucmpeq8si_vis,
+			     si_ftype_v8qi_v8qi);
+	}
+    }
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.
@@ -9185,32 +9569,49 @@ sparc_expand_builtin (tree exp, rtx target,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int icode = DECL_FUNCTION_CODE (fndecl);
   rtx pat, op[4];
-  enum machine_mode mode[4];
   int arg_count = 0;
+  bool nonvoid;
 
-  mode[0] = insn_data[icode].operand[0].mode;
-  if (!target
-      || GET_MODE (target) != mode[0]
-      || ! (*insn_data[icode].operand[0].predicate) (target, mode[0]))
-    op[0] = gen_reg_rtx (mode[0]);
-  else
-    op[0] = target;
+  nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
 
+  if (nonvoid)
+    {
+      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      if (!target
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	op[0] = gen_reg_rtx (tmode);
+      else
+	op[0] = target;
+    }
   FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
     {
+      const struct insn_operand_data *insn_op;
+      int idx;
+
+      if (arg == error_mark_node)
+	return NULL_RTX;
+
       arg_count++;
-      mode[arg_count] = insn_data[icode].operand[arg_count].mode;
+      idx = arg_count - !nonvoid;
+      insn_op = &insn_data[icode].operand[idx];
       op[arg_count] = expand_normal (arg);
 
-      if (! (*insn_data[icode].operand[arg_count].predicate) (op[arg_count],
-							      mode[arg_count]))
-	op[arg_count] = copy_to_mode_reg (mode[arg_count], op[arg_count]);
+      if (! (*insn_data[icode].operand[idx].predicate) (op[arg_count],
+							insn_op->mode))
+	op[arg_count] = copy_to_mode_reg (insn_op->mode, op[arg_count]);
     }
 
   switch (arg_count)
     {
+    case 0:
+      pat = GEN_FCN (icode) (op[0]);
+      break;
     case 1:
-      pat = GEN_FCN (icode) (op[0], op[1]);
+      if (nonvoid)
+	pat = GEN_FCN (icode) (op[0], op[1]);
+      else
+	pat = GEN_FCN (icode) (op[1]);
       break;
     case 2:
       pat = GEN_FCN (icode) (op[0], op[1], op[2]);
@@ -9227,7 +9628,10 @@ sparc_expand_builtin (tree exp, rtx target,
 
   emit_insn (pat);
 
-  return op[0];
+  if (nonvoid)
+    return op[0];
+  else
+    return const0_rtx;
 }
 
 static int
@@ -9310,10 +9714,27 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
   enum insn_code icode = (enum insn_code) DECL_FUNCTION_CODE (fndecl);
 
-  if (ignore
-      && icode != CODE_FOR_alignaddrsi_vis
-      && icode != CODE_FOR_alignaddrdi_vis)
-    return build_zero_cst (rtype);
+  if (ignore)
+    {
+      switch (icode)
+	{
+	case CODE_FOR_alignaddrsi_vis:
+	case CODE_FOR_alignaddrdi_vis:
+	case CODE_FOR_wrgsr_vis:
+	case CODE_FOR_bmasksi_vis:
+	case CODE_FOR_bmaskdi_vis:
+	case CODE_FOR_cmask8si_vis:
+	case CODE_FOR_cmask8di_vis:
+	case CODE_FOR_cmask16si_vis:
+	case CODE_FOR_cmask16di_vis:
+	case CODE_FOR_cmask32si_vis:
+	case CODE_FOR_cmask32di_vis:
+	  break;
+
+	default:
+	  return build_zero_cst (rtype);
+	}
+    }
 
   switch (icode)
     {
@@ -9504,6 +9925,25 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       else
 	*total = COSTS_N_INSNS (1);
       return false;
+
+    case FMA:
+      {
+	rtx sub;
+
+	gcc_assert (float_mode_p);
+	*total = sparc_costs->float_mul;
+
+	sub = XEXP (x, 0);
+	if (GET_CODE (sub) == NEG)
+	  sub = XEXP (sub, 0);
+	*total += rtx_cost (sub, FMA, 0, speed);
+
+	sub = XEXP (x, 2);
+	if (GET_CODE (sub) == NEG)
+	  sub = XEXP (sub, 0);
+	*total += rtx_cost (sub, FMA, 2, speed);
+	return true;
+      }
 
     case MULT:
       if (float_mode_p)
@@ -10266,6 +10706,8 @@ sparc_conditional_register_usage (void)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	leaf_reg_remap [regno] = regno;
     }
+  if (TARGET_VIS)
+    global_regs[SPARC_GSR_REG] = 1;
 }
 
 /* Implement TARGET_PREFERRED_RELOAD_CLASS

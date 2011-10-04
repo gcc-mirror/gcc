@@ -28,8 +28,6 @@ namespace
 {
   struct future_error_category : public std::error_category
   {
-    future_error_category() noexcept {}
-
     virtual const char*
     name() const noexcept
     { return "future"; }

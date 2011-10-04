@@ -68,13 +68,14 @@ namespace __gnu_test
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<template<typename...> class Property, typename... Types>
+  template<template<typename...> class Property,
+	   typename Type1, typename... Types>
     bool
-    test_property(typename Property<Types...>::value_type value)
+    test_property(typename Property<Type1, Types...>::value_type value)
     {
       bool ret = true;
-      ret &= Property<Types...>::value == value;
-      ret &= Property<Types...>::type::value == value;
+      ret &= Property<Type1, Types...>::value == value;
+      ret &= Property<Type1, Types...>::type::value == value;
       return ret;
     }
 #endif

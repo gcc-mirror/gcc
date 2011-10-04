@@ -22,6 +22,9 @@
 ;; This code iterator is used for sign- and zero- extensions.
 (define_mode_iterator small_int_modes [(HI "") (QI "")])
 
+;; This code iterator is used for max and min operations.
+(define_mode_iterator int_modes [(SI "") (HI "") (QI "")])
+
 ;; We do not handle DFmode here because it is either
 ;; the same as SFmode, or if -m64bit-doubles is active
 ;; then all operations on doubles have to be handled by
@@ -1160,26 +1163,107 @@
    (set_attr "timings" "22,44")]
 )
 
-(define_insn "smaxsi3"
-  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r")
-	(smax:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
-		 (match_operand:SI 2 "rx_source_operand"
-				   "r,Sint08,Sint16,Sint24,i,Q")))]
+(define_insn "smax<int_modes:mode>3"
+  [(set (match_operand:int_modes                 0 "register_operand" "=r,r,r,r,r,r")
+	(smax:int_modes (match_operand:int_modes 1 "register_operand" "%0,0,0,0,0,0")
+			(match_operand:int_modes 2 "rx_source_operand"
+						 "r,Sint08,Sint16,Sint24,i,Q")))]
   ""
   "max\t%Q2, %0"
   [(set_attr "length" "3,4,5,6,7,6")
    (set_attr "timings" "11,11,11,11,11,33")]
 )
 
-(define_insn "sminsi3"
-  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r")
-	(smin:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
-		 (match_operand:SI 2 "rx_source_operand"
-				   "r,Sint08,Sint16,Sint24,i,Q")))]
+(define_insn "smin<int_modes:mode>3"
+  [(set (match_operand:int_modes                 0 "register_operand" "=r,r,r,r,r,r")
+	(smin:int_modes (match_operand:int_modes 1 "register_operand" "%0,0,0,0,0,0")
+		 (match_operand:int_modes        2 "rx_source_operand"
+						 "r,Sint08,Sint16,Sint24,i,Q")))]
   ""
   "min\t%Q2, %0"
   [(set_attr "length"  "3,4,5,6,7,6")
    (set_attr "timings" "11,11,11,11,11,33")]
+)
+
+(define_insn "umax<small_int_modes:mode>3_u"
+  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r")
+	(smax:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
+		 (zero_extend:SI (match_operand:small_int_modes 2 "rx_minmaxex_operand"
+								"r,Sint08,Sint16,Sint24,i,Q"))))]
+  ""
+  "max\t%R2, %0"
+  [(set_attr "length"  "3,4,5,6,7,6")
+   (set_attr "timings" "11,11,11,11,11,33")]
+)
+
+(define_insn "umin<small_int_modes:mode>3_ur"
+  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r")
+	(smin:SI (zero_extend:SI (match_operand:small_int_modes 2 "rx_minmaxex_operand"
+								"r,Sint08,Sint16,Sint24,i,Q"))
+		 (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")))]
+  ""
+  "min\t%R2, %0"
+  [(set_attr "length"  "3,4,5,6,7,6")
+   (set_attr "timings" "11,11,11,11,11,33")]
+)
+
+(define_insn "umax<small_int_modes:mode>3_ur"
+  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r")
+	(smax:SI (zero_extend:SI (match_operand:small_int_modes 2 "rx_minmaxex_operand"
+								"r,Sint08,Sint16,Sint24,i,Q"))
+		 (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")))]
+  ""
+  "max\t%R2, %0"
+  [(set_attr "length"  "3,4,5,6,7,6")
+   (set_attr "timings" "11,11,11,11,11,33")]
+)
+
+(define_expand "umax<small_int_modes:mode>3"
+  [(set (match_dup 4)
+	(zero_extend:SI (match_operand:small_int_modes 1 "register_operand" "%0,0,0,0,0,0")))
+   (set (match_dup 3)
+	(smax:SI (match_dup 4)
+		 (match_operand:small_int_modes 2 "rx_source_operand"
+						"r,Sint08,Sint16,Sint24,i,Q")))
+   (set (match_operand:small_int_modes          0 "register_operand" "=r,r,r,r,r,r")
+	(match_dup 6))
+   ]
+  ""
+  "operands[3] = gen_reg_rtx (SImode);
+   operands[4] = gen_reg_rtx (SImode);
+   operands[5] = gen_reg_rtx (SImode);
+   operands[6] = gen_rtx_SUBREG (GET_MODE (operands[0]), operands[3],
+     TARGET_BIG_ENDIAN_DATA ? (GET_MODE (operands[0]) == HImode ? 2 : 3) : 0);
+   if (GET_CODE (operands[2]) != CONST_INT)
+     {
+       emit_move_insn (operands[5], gen_rtx_ZERO_EXTEND (SImode, operands[2]));
+       operands[2] = operands[5];
+     }
+  "
+)
+
+(define_expand "umin<small_int_modes:mode>3"
+  [(set (match_dup 4)
+	(zero_extend:SI (match_operand:small_int_modes 1 "register_operand" "%0,0,0,0,0,0")))
+   (set (match_dup 3)
+	(smin:SI (match_dup 4)
+		 (match_operand:small_int_modes 2 "rx_source_operand"
+						"r,Sint08,Sint16,Sint24,i,Q")))
+   (set (match_operand:small_int_modes          0 "register_operand" "=r,r,r,r,r,r")
+	(match_dup 6))
+   ]
+  ""
+  "operands[3] = gen_reg_rtx (SImode);
+   operands[4] = gen_reg_rtx (SImode);
+   operands[5] = gen_reg_rtx (SImode);
+   operands[6] = gen_rtx_SUBREG (GET_MODE (operands[0]), operands[3],
+     TARGET_BIG_ENDIAN_DATA ? (GET_MODE (operands[0]) == HImode ? 2 : 3) : 0);
+   if (GET_CODE (operands[2]) != CONST_INT)
+     {
+       emit_move_insn (operands[5], gen_rtx_ZERO_EXTEND (SImode, operands[2]));
+       operands[2] = operands[5];
+     }
+   "
 )
 
 (define_insn "mulsi3"

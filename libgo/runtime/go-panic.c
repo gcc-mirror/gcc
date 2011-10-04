@@ -87,6 +87,12 @@ __go_panic (struct __go_empty_interface arg)
 	      /* __go_unwind_stack should not return.  */
 	      abort ();
 	    }
+
+	  /* Because we executed that defer function by a panic, and
+	     it did not call recover, we know that we are not
+	     returning from the calling function--we are panicing
+	     through it.  */
+	  *d->__frame = 0;
 	}
 
       __go_panic_defer->__defer = d->__next;

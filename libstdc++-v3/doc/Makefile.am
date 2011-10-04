@@ -396,7 +396,7 @@ xml_image_basic = \
 	${xml_image_dir}/pbds_tree_node_invariants.png \
 	${xml_image_dir}/pbds_tree_node_updator_policy_cd.png \
 	${xml_image_dir}/pbds_trie_node_updator_policy_cd.png \
-	${xml_image_dir}/pbds_update_seq_diagram.png 
+	${xml_image_dir}/pbds_update_seq_diagram.png
 
 xml_image_generated = \
 	${xml_image_dir}/pbds_binary_priority_queue_int_push_pop.png \
@@ -477,8 +477,9 @@ ${docbook_outdir}/fo:
 
 ${docbook_outdir}/html:
 	mkdir -p ${docbook_outdir}/html
+	mkdir -p ${docbook_outdir}/html/ext
 	mkdir -p ${docbook_outdir}/html/images
-	mkdir -p ${docbook_outdir}/html/manual/ext
+	mkdir -p ${docbook_outdir}/html/manual
 
 ${docbook_outdir}/pdf:
 	mkdir -p ${docbook_outdir}/pdf
@@ -488,7 +489,6 @@ ${docbook_outdir}/texinfo:
 
 ${docbook_outdir}/xml:
 	mkdir -p ${docbook_outdir}/xml
-	mkdir -p ${docbook_outdir}/xml/images
 
 # Validate existing XML structure.
 XMLLINT = xmllint
@@ -512,9 +512,6 @@ stamp-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
 	${top_srcdir}/doc/xml/manual/spine.xml > ${manual_xml};
 	$(XMLLINT) $(XMLLINT_FLAGS) \
 	${top_srcdir}/doc/xml/spine.xml > ${set_xml};
-	if [ ! -d "${docbook_outdir}/xml/images" ]; then \
-	  $(LN_S) ${top_srcdir}/doc/xml/images ${docbook_outdir}/xml/; \
-	fi
 	$(STAMP) stamp-xml-single-docbook
 
 doc-xml-single-docbook: stamp-xml-single-docbook
@@ -525,7 +522,7 @@ stamp-html-docbook-images: stamp-html-docbook $(xml_images)
 	$(STAMP) stamp-html-docbook-images
 
 stamp-html-docbook-lwg: stamp-html-docbook $(xml_extra)
-	$(INSTALL_DATA)	$(xml_extra) ${docbook_outdir}/html/manual/ext
+	$(INSTALL_DATA)	$(xml_extra) ${docbook_outdir}/html/ext
 	$(STAMP) stamp-html-docbook-lwg
 
 stamp-html-docbook-data: stamp-html-docbook-images stamp-html-docbook-lwg
@@ -595,10 +592,14 @@ doc-texinfo-docbook: stamp-texinfo-docbook
 
 doc-info-docbook: stamp-info-docbook
 
-# EPUB, via dbtoepub + ruby
+# EPUB, via ruby + dbtoepub
+# Can verify document with: epubcheck
 manual_epub = ${docbook_outdir}/epub/libstdc++-manual.epub
 stamp-epub-docbook: stamp-xml-single-docbook ${docbook_outdir}/epub
 	@echo "Generating epub files..."
+	if [ ! -d "${docbook_outdir}/images" ]; then \
+	  $(LN_S) ${top_srcdir}/doc/xml/images ${docbook_outdir}/; \
+	fi
 	${XSL_STYLE_DIR}/epub/bin/dbtoepub -v -d -o ${manual_epub} ${set_xml}
 	$(STAMP) stamp-epub-docbook
 

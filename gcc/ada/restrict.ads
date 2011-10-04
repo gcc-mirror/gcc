@@ -166,13 +166,13 @@ package Restrict is
       --  No_Profile if a pragma Restriction set the No_Dependence entry.
    end record;
 
-   package No_Dependence is new Table.Table (
+   package No_Dependences is new Table.Table (
      Table_Component_Type => ND_Entry,
      Table_Index_Type     => Int,
      Table_Low_Bound      => 0,
      Table_Initial        => 200,
      Table_Increment      => 200,
-     Table_Name           => "Name_No_Dependence");
+     Table_Name           => "Name_No_Dependences");
 
    -------------------------------
    -- SPARK Restriction Control --
@@ -254,6 +254,11 @@ package Restrict is
    --  Called when a dependence on a unit is created (either implicitly, or by
    --  an explicit WITH clause). U is a node for the unit involved, and Err is
    --  the node to which an error will be attached if necessary.
+
+   procedure Check_Restriction_No_Specification_Of_Aspect (N : Node_Id);
+   --  N is the node id for an N_Aspect_Specification. An error message
+   --  (warning) will be issued if a restriction (warning) was previous set
+   --  for this aspect using Set_No_Specification_Of_Aspect.
 
    procedure Check_Elaboration_Code_Allowed (N : Node_Id);
    --  Tests to see if elaboration code is allowed by the current restrictions
@@ -408,6 +413,15 @@ package Restrict is
    --  Treat_Restrictions_As_Warnings is set. False if from Restrictions and
    --  this flag is not set. Profile is set to a non-default value if the
    --  No_Dependence restriction comes from a Profile pragma.
+
+   procedure Set_Restriction_No_Specification_Of_Aspect
+     (N       : Node_Id;
+      Warning : Boolean);
+   --  N is the node id for an identifier from a pragma Restrictions for the
+   --  No_Specification_Of_Aspect pragma. An error message will be issued if
+   --  the identifier is not a valid aspect name. Warning is set True for the
+   --  case of a Restriction_Warnings pragma specifying this restriction and
+   --  False for a Restrictions pragma specifying this restriction.
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);

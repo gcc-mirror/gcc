@@ -1,5 +1,5 @@
 /* Generic SSA value propagation engine.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -673,6 +673,40 @@ move_ssa_defining_stmt_for_defs (gimple new_stmt, gimple old_stmt)
     }
 }
 
+/* Helper function for update_gimple_call and update_call_from_tree.
+   A GIMPLE_CALL STMT is being replaced with GIMPLE_CALL NEW_STMT.  */
+
+static void
+finish_update_gimple_call (gimple_stmt_iterator *si_p, gimple new_stmt,
+			   gimple stmt)
+{
+  gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+  move_ssa_defining_stmt_for_defs (new_stmt, stmt);
+  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+  gimple_set_location (new_stmt, gimple_location (stmt));
+  if (gimple_block (new_stmt) == NULL_TREE)
+    gimple_set_block (new_stmt, gimple_block (stmt));
+  gsi_replace (si_p, new_stmt, false);
+}
+
+/* Update a GIMPLE_CALL statement at iterator *SI_P to call to FN
+   with number of arguments NARGS, where the arguments in GIMPLE form
+   follow NARGS argument.  */
+
+bool
+update_gimple_call (gimple_stmt_iterator *si_p, tree fn, int nargs, ...)
+{
+  va_list ap;
+  gimple new_stmt, stmt = gsi_stmt (*si_p);
+
+  gcc_assert (is_gimple_call (stmt));
+  va_start (ap, nargs);
+  new_stmt = gimple_build_call_valist (fn, nargs, ap);
+  finish_update_gimple_call (si_p, new_stmt, stmt);
+  va_end (ap);
+  return true;
+}
 
 /* Update a GIMPLE_CALL statement at iterator *SI_P to reflect the
    value of EXPR, which is expected to be the result of folding the
@@ -689,13 +723,7 @@ move_ssa_defining_stmt_for_defs (gimple new_stmt, gimple old_stmt)
 bool
 update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 {
-  tree lhs;
-
   gimple stmt = gsi_stmt (*si_p);
-
-  gcc_assert (is_gimple_call (stmt));
-
-  lhs = gimple_call_lhs (stmt);
 
   if (valid_gimple_call_p (expr))
     {
@@ -716,18 +744,14 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
         }
 
       new_stmt = gimple_build_call_vec (fn, args);
-      gimple_call_set_lhs (new_stmt, lhs);
-      move_ssa_defining_stmt_for_defs (new_stmt, stmt);
-      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-      gimple_set_location (new_stmt, gimple_location (stmt));
-      gsi_replace (si_p, new_stmt, false);
+      finish_update_gimple_call (si_p, new_stmt, stmt);
       VEC_free (tree, heap, args);
 
       return true;
     }
   else if (valid_gimple_rhs_p (expr))
     {
+      tree lhs = gimple_call_lhs (stmt);
       gimple new_stmt;
 
       /* The call has simplified to an expression

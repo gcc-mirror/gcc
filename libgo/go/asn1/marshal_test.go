@@ -30,19 +30,23 @@ type rawContentsStruct struct {
 }
 
 type implicitTagTest struct {
-	A int "implicit,tag:5"
+	A int `asn1:"implicit,tag:5"`
 }
 
 type explicitTagTest struct {
-	A int "explicit,tag:5"
+	A int `asn1:"explicit,tag:5"`
 }
 
 type ia5StringTest struct {
-	A string "ia5"
+	A string `asn1:"ia5"`
 }
 
 type printableStringTest struct {
-	A string "printable"
+	A string `asn1:"printable"`
+}
+
+type optionalRawValueTest struct {
+	A RawValue `asn1:"optional"`
 }
 
 type testSET []int
@@ -102,6 +106,7 @@ var marshalTests = []marshalTest{
 			"7878787878787878787878787878787878787878787878787878787878787878",
 	},
 	{ia5StringTest{"test"}, "3006160474657374"},
+	{optionalRawValueTest{}, "3000"},
 	{printableStringTest{"test"}, "3006130474657374"},
 	{printableStringTest{"test*"}, "30071305746573742a"},
 	{rawContentsStruct{nil, 64}, "3003020140"},

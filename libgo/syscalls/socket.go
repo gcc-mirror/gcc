@@ -131,7 +131,7 @@ func anyToSockaddr(rsa *RawSockaddrAny) (Sockaddr, int) {
 		}
 		return sa, 0;
 	}
-	return nil, EAFNOSUPPORT;
+	return anyToSockaddrOS(rsa)
 }
 
 func libc_accept(fd int, sa *RawSockaddrAny, len *Socklen_t) int __asm__ ("accept");
@@ -239,7 +239,7 @@ func SetsockoptString(fd, level, opt int, s string) (errno int) {
 	return setsockopt(fd, level, opt, uintptr(unsafe.Pointer(&[]byte(s)[0])), Socklen_t(len(s)))
 }
 
-func SetsockoptIpMreq(fd, level, opt int, mreq *IpMreq) (errno int) {
+func SetsockoptIPMreq(fd, level, opt int, mreq *IPMreq) (errno int) {
 	return setsockopt(fd, level, opt, uintptr(unsafe.Pointer(mreq)), unsafe.Sizeof(*mreq))
 }
 

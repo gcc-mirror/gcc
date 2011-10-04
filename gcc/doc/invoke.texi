@@ -355,8 +355,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdce -fdelayed-branch @gol
 -fdelete-null-pointer-checks -fdse -fdevirtualize -fdse @gol
--fearly-inlining -fipa-sra -fexpensive-optimizations -ffast-math @gol
--ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
+-fearly-inlining -fipa-sra -fexpensive-optimizations -ffat-lto-objects @gol
+-ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
 -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm -fgraphite-identity @gol
 -fgcse-sm -fif-conversion -fif-conversion2 -findirect-inlining @gol
@@ -407,7 +407,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-pta -ftree-reassoc @gol
--ftree-sink -ftree-sra -ftree-switch-conversion @gol
+-ftree-sink -ftree-sra -ftree-switch-conversion -ftree-tail-merge @gol
 -ftree-ter -ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
@@ -879,7 +879,9 @@ See RS/6000 and PowerPC Options.
 -mlittle-endian @gol
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
--mv8plus  -mno-v8plus  -mvis  -mno-vis}
+-mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
+-mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
+-mfmaf  -mno-fmaf}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -6136,7 +6138,7 @@ also turns on the following optimization flags:
 -fsched-interblock  -fsched-spec @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fstrict-aliasing -fstrict-overflow @gol
--ftree-switch-conversion @gol
+-ftree-switch-conversion -ftree-tail-merge @gol
 -ftree-pre @gol
 -ftree-vrp}
 
@@ -7019,6 +7021,13 @@ Perform conversion of simple initializations in a switch to
 initializations from a scalar array.  This flag is enabled by default
 at @option{-O2} and higher.
 
+@item -ftree-tail-merge
+Look for identical code sequences.  When found, replace one with a jump to the
+other.  This optimization is known as tail merging or cross jumping.  This flag
+is enabled by default at @option{-O2} and higher.  The run time of this pass can
+be limited using @option{max-tail-merge-comparisons} parameter and
+@option{max-tail-merge-iterations} parameter.
+
 @item -ftree-dce
 @opindex ftree-dce
 Perform dead code elimination (DCE) on trees.  This flag is enabled by
@@ -7890,6 +7899,22 @@ use it.
 Enabled by default when LTO support in GCC is enabled and GCC was compiled
 with a linker supporting plugins (GNU ld 2.21 or newer or gold).
 
+@item -ffat-lto-objects
+@opindex ffat-lto-objects
+Fat LTO objects are object files that contain both the intermediate language
+and the object code. This makes them useable for both LTO linking and normal
+linking. This option makes effect only with @option{-flto} and is ignored 
+at linktime.
+
+@option{-fno-fat-lto-objects} improves compilation time over plain LTO, but
+requires the complete toolchain to be aware of LTO. It requires a linker with
+linker plugin support for basic functionality.  Additionally, nm, ar and ranlib
+need to support linker plugins to allow a full-featured build environment
+(capable of building static libraries etc).
+
+The default is @option{-ffat-lto-objects} but this default is intended to
+change in future releases when linker plugin enabled environments become more
+common.
 @item -fcompare-elim
 @opindex fcompare-elim
 After register allocation and post-register allocation instruction splitting,
@@ -8450,6 +8475,11 @@ before flushing the current state and starting over.  Large functions
 with few branches or calls can create excessively large lists which
 needlessly consume memory and resources.
 
+@item max-modulo-backtrack-attempts
+The maximum number of backtrack attempts the scheduler should make
+when modulo scheduling a loop.  Larger values can exponentially increase
+compile time.
+
 @item max-inline-insns-single
 Several parameters control the tree inliner used in gcc.
 This number sets the maximum number of instructions (counted in GCC's
@@ -8585,6 +8615,14 @@ The depth of search in the dominator tree for expressions to hoist.
 This is used to avoid quadratic behavior in hoisting algorithm.
 The value of 0 will avoid limiting the search, but may slow down compilation
 of huge functions.  The default value is 30.
+
+@item max-tail-merge-comparisons
+The maximum amount of similar bbs to compare a bb with.  This is used to
+avoid quadratic behaviour in tree tail merging.  The default value is 10.
+
+@item max-tail-merge-iterations
+The maximum amount of iterations of the pass over the function.  This is used to
+limit run time in tree tail merging.  The default value is 2.
 
 @item max-unrolled-insns
 The maximum number of instructions that a loop should have if that loop
@@ -17307,7 +17345,7 @@ for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
 and @samp{niagara4}.
 
-Native Solaris and Linux toolchains also support the value @samp{native},
+Native Solaris and GNU/Linux toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
 @option{-mcpu=native} has no effect if GCC does not recognize
 the processor.
@@ -17380,7 +17418,7 @@ that select a particular CPU implementation.  Those are @samp{cypress},
 @samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{f930}, @samp{f934},
 @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, @samp{ultrasparc3},
 @samp{niagara}, @samp{niagara2}, @samp{niagara3} and @samp{niagara4}.  With
-native Solaris and Linux toolchains, @samp{native} can also be used.
+native Solaris and GNU/Linux toolchains, @samp{native} can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus
@@ -17397,6 +17435,35 @@ mode for all SPARC-V9 processors.
 @opindex mno-vis
 With @option{-mvis}, GCC generates code that takes advantage of the UltraSPARC
 Visual Instruction Set extensions.  The default is @option{-mno-vis}.
+
+@item -mvis2
+@itemx -mno-vis2
+@opindex mvis2
+@opindex mno-vis2
+With @option{-mvis2}, GCC generates code that takes advantage of
+version 2.0 of the UltraSPARC Visual Instruction Set extensions.  The
+default is @option{-mvis2} when targetting a cpu that supports such
+instructions, such as UltraSPARC-III and later.  Setting @option{-mvis2}
+also sets @option{-mvis}.
+
+@item -mvis3
+@itemx -mno-vis3
+@opindex mvis3
+@opindex mno-vis3
+With @option{-mvis3}, GCC generates code that takes advantage of
+version 3.0 of the UltraSPARC Visual Instruction Set extensions.  The
+default is @option{-mvis3} when targetting a cpu that supports such
+instructions, such as niagara-3 and later.  Setting @option{-mvis3}
+also sets @option{-mvis2} and @option{-mvis}.
+
+@item -mfmaf
+@itemx -mno-fmaf
+@opindex mfmaf
+@opindex mno-fmaf
+With @option{-mfmaf}, GCC generates code that takes advantage of the UltraSPARC
+Fused Multiply-Add Floating-point extensions.  The default is @option{-mfmaf}
+when targetting a cpu that supports such instructions, such as Niagara-3 and
+later.
 @end table
 
 These @samp{-m} options are supported in addition to the above

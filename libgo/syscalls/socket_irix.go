@@ -78,7 +78,7 @@ func BindToDevice(fd int, device string) (errno int) {
 // This could be enabled with -D_SGI_SOURCE, but conflicts with
 // -D_XOPEN_SOURCE=500 required for msg_control etc. in struct msghgr, so
 // simply provide it here.
-type IpMreq struct {
+type IPMreq struct {
 	Multiaddr [4]byte
 	Interface [4]byte
 }
@@ -123,3 +123,7 @@ const (
 	EAI_OVERFLOW	= 13
 	EAI_MAX		= 14
 )
+
+func anyToSockaddrOS(rsa *RawSockaddrAny) (Sockaddr, int) {
+	return nil, EAFNOSUPPORT;
+}

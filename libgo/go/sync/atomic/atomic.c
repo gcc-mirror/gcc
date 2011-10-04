@@ -95,3 +95,31 @@ AddUintptr (uintptr_t *val, uintptr_t delta)
 {
   return __sync_add_and_fetch (val, delta);
 }
+
+int32_t LoadInt32 (int32_t *addr)
+  asm ("libgo_sync.atomic.LoadInt32");
+
+int32_t
+LoadInt32 (int32_t *addr)
+{
+  int32_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, v))
+    v = *addr;
+  return v;
+}
+
+uint32_t LoadUint32 (uint32_t *addr)
+  asm ("libgo_sync.atomic.LoadUint32");
+
+uint32_t
+LoadUint32 (uint32_t *addr)
+{
+  uint32_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, v))
+    v = *addr;
+  return v;
+}

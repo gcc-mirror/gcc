@@ -35,11 +35,11 @@ int main()
   constexpr duration<int> d0(12);
   constexpr duration<int> d1(3);
 
-  constexpr auto r1 = t1 + d0;
-  constexpr auto r2 = d1 + t2;
+  constexpr auto r1 __attribute__((unused)) = t1 + d0;
+  constexpr auto r2 __attribute__((unused)) = d1 + t2;
 
-  constexpr auto r3 = t1 - d0;
-  constexpr auto r4 = t2 - t3;
+  constexpr auto r3 __attribute__((unused)) = t1 - d0;
+  constexpr auto r4 __attribute__((unused)) = t2 - t3;
 
   return 0;
 }

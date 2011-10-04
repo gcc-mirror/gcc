@@ -26,8 +26,10 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Exp_Attr; use Exp_Attr;
+with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
+with Nlists;   use Nlists;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
@@ -50,6 +52,9 @@ package body Exp_Alfa is
 
    procedure Expand_Alfa_N_Attribute_Reference (N : Node_Id);
    --  Expand attributes 'Old and 'Result only
+
+   procedure Expand_Alfa_N_In (N : Node_Id);
+   --  Expand set membership into individual ones
 
    procedure Expand_Alfa_N_Simple_Return_Statement (N : Node_Id);
    --  Insert conversion on function return if necessary
@@ -80,6 +85,12 @@ package body Exp_Alfa is
 
          when N_Attribute_Reference =>
             Expand_Alfa_N_Attribute_Reference (N);
+
+         when N_In =>
+            Expand_Alfa_N_In (N);
+
+         when N_Not_In =>
+            Expand_N_Not_In (N);
 
          when others =>
             null;
@@ -166,6 +177,18 @@ package body Exp_Alfa is
             null;
       end case;
    end Expand_Alfa_N_Attribute_Reference;
+
+   ----------------------
+   -- Expand_Alfa_N_In --
+   ----------------------
+
+   procedure Expand_Alfa_N_In (N : Node_Id) is
+   begin
+      if Present (Alternatives (N)) then
+         Expand_Set_Membership (N);
+         return;
+      end if;
+   end Expand_Alfa_N_In;
 
    -------------------------------------------
    -- Expand_Alfa_N_Simple_Return_Statement --

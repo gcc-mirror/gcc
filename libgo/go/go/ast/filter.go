@@ -20,25 +20,25 @@ func identListExports(list []*Ident) []*Ident {
 	return list[0:j]
 }
 
-
-// isExportedType assumes that typ is a correct type.
-func isExportedType(typ Expr) bool {
-	switch t := typ.(type) {
+// fieldName assumes that x is the type of an anonymous field and
+// returns the corresponding field name. If x is not an acceptable
+// anonymous field, the result is nil.
+//
+func fieldName(x Expr) *Ident {
+	switch t := x.(type) {
 	case *Ident:
-		return t.IsExported()
-	case *ParenExpr:
-		return isExportedType(t.X)
+		return t
 	case *SelectorExpr:
-		// assume t.X is a typename
-		return t.Sel.IsExported()
+		if _, ok := t.X.(*Ident); ok {
+			return t.Sel
+		}
 	case *StarExpr:
-		return isExportedType(t.X)
+		return fieldName(t.X)
 	}
-	return false
+	return nil
 }
 
-
-func fieldListExports(fields *FieldList, incomplete *bool) {
+func fieldListExports(fields *FieldList) (removedFields bool) {
 	if fields == nil {
 		return
 	}
@@ -53,12 +53,13 @@ func fieldListExports(fields *FieldList, incomplete *bool) {
 			// fields, so this is not absolutely correct.
 			// However, this cannot be done w/o complete
 			// type information.)
-			exported = isExportedType(f.Type)
+			name := fieldName(f.Type)
+			exported = name != nil && name.IsExported()
 		} else {
 			n := len(f.Names)
 			f.Names = identListExports(f.Names)
 			if len(f.Names) < n {
-				*incomplete = true
+				removedFields = true
 			}
 			exported = len(f.Names) > 0
 		}
@@ -69,11 +70,11 @@ func fieldListExports(fields *FieldList, incomplete *bool) {
 		}
 	}
 	if j < len(list) {
-		*incomplete = true
+		removedFields = true
 	}
 	fields.List = list[0:j]
+	return
 }
-
 
 func paramListExports(fields *FieldList) {
 	if fields == nil {
@@ -84,18 +85,21 @@ func paramListExports(fields *FieldList) {
 	}
 }
 
-
 func typeExports(typ Expr) {
 	switch t := typ.(type) {
 	case *ArrayType:
 		typeExports(t.Elt)
 	case *StructType:
-		fieldListExports(t.Fields, &t.Incomplete)
+		if fieldListExports(t.Fields) {
+			t.Incomplete = true
+		}
 	case *FuncType:
 		paramListExports(t.Params)
 		paramListExports(t.Results)
 	case *InterfaceType:
-		fieldListExports(t.Methods, &t.Incomplete)
+		if fieldListExports(t.Methods) {
+			t.Incomplete = true
+		}
 	case *MapType:
 		typeExports(t.Key)
 		typeExports(t.Value)
@@ -103,7 +107,6 @@ func typeExports(typ Expr) {
 		typeExports(t.Value)
 	}
 }
-
 
 func specExports(spec Spec) bool {
 	switch s := spec.(type) {
@@ -122,7 +125,6 @@ func specExports(spec Spec) bool {
 	return false
 }
 
-
 func specListExports(list []Spec) []Spec {
 	j := 0
 	for _, s := range list {
@@ -133,7 +135,6 @@ func specListExports(list []Spec) []Spec {
 	}
 	return list[0:j]
 }
-
 
 func declExports(decl Decl) bool {
 	switch d := decl.(type) {
@@ -146,7 +147,6 @@ func declExports(decl Decl) bool {
 	}
 	return false
 }
-
 
 // FileExports trims the AST for a Go source file in place such that only
 // exported nodes remain: all top-level identifiers which are not exported
@@ -170,7 +170,6 @@ func FileExports(src *File) bool {
 	return j > 0
 }
 
-
 // PackageExports trims the AST for a Go package in place such that only
 // exported nodes remain. The pkg.Files list is not changed, so that file
 // names and top-level package comments don't get lost.
@@ -188,7 +187,6 @@ func PackageExports(pkg *Package) bool {
 	return hasExports
 }
 
-
 // ----------------------------------------------------------------------------
 // General filtering
 
@@ -205,6 +203,37 @@ func filterIdentList(list []*Ident, f Filter) []*Ident {
 	return list[0:j]
 }
 
+func filterFieldList(fields *FieldList, filter Filter) (removedFields bool) {
+	if fields == nil {
+		return false
+	}
+	list := fields.List
+	j := 0
+	for _, f := range list {
+		keepField := false
+		if len(f.Names) == 0 {
+			// anonymous field
+			name := fieldName(f.Type)
+			keepField = name != nil && filter(name.Name)
+		} else {
+			n := len(f.Names)
+			f.Names = filterIdentList(f.Names, filter)
+			if len(f.Names) < n {
+				removedFields = true
+			}
+			keepField = len(f.Names) > 0
+		}
+		if keepField {
+			list[j] = f
+			j++
+		}
+	}
+	if j < len(list) {
+		removedFields = true
+	}
+	fields.List = list[0:j]
+	return
+}
 
 func filterSpec(spec Spec, f Filter) bool {
 	switch s := spec.(type) {
@@ -212,11 +241,24 @@ func filterSpec(spec Spec, f Filter) bool {
 		s.Names = filterIdentList(s.Names, f)
 		return len(s.Names) > 0
 	case *TypeSpec:
-		return f(s.Name.Name)
+		if f(s.Name.Name) {
+			return true
+		}
+		switch t := s.Type.(type) {
+		case *StructType:
+			if filterFieldList(t.Fields, f) {
+				t.Incomplete = true
+			}
+			return len(t.Fields.List) > 0
+		case *InterfaceType:
+			if filterFieldList(t.Methods, f) {
+				t.Incomplete = true
+			}
+			return len(t.Methods.List) > 0
+		}
 	}
 	return false
 }
-
 
 func filterSpecList(list []Spec, f Filter) []Spec {
 	j := 0
@@ -229,8 +271,14 @@ func filterSpecList(list []Spec, f Filter) []Spec {
 	return list[0:j]
 }
 
-
-func filterDecl(decl Decl, f Filter) bool {
+// FilterDecl trims the AST for a Go declaration in place by removing
+// all names (including struct field and interface method names, but
+// not from parameter lists) that don't pass through the filter f.
+//
+// FilterDecl returns true if there are any declared names left after
+// filtering; it returns false otherwise.
+//
+func FilterDecl(decl Decl, f Filter) bool {
 	switch d := decl.(type) {
 	case *GenDecl:
 		d.Specs = filterSpecList(d.Specs, f)
@@ -241,12 +289,11 @@ func filterDecl(decl Decl, f Filter) bool {
 	return false
 }
 
-
 // FilterFile trims the AST for a Go file in place by removing all
-// names from top-level declarations (but not from parameter lists
-// or inside types) that don't pass through the filter f. If the
-// declaration is empty afterwards, the declaration is removed from
-// the AST.
+// names from top-level declarations (including struct field and
+// interface method names, but not from parameter lists) that don't
+// pass through the filter f. If the declaration is empty afterwards,
+// the declaration is removed from the AST.
 // The File.comments list is not changed.
 //
 // FilterFile returns true if there are any top-level declarations
@@ -255,7 +302,7 @@ func filterDecl(decl Decl, f Filter) bool {
 func FilterFile(src *File, f Filter) bool {
 	j := 0
 	for _, d := range src.Decls {
-		if filterDecl(d, f) {
+		if FilterDecl(d, f) {
 			src.Decls[j] = d
 			j++
 		}
@@ -264,12 +311,11 @@ func FilterFile(src *File, f Filter) bool {
 	return j > 0
 }
 
-
 // FilterPackage trims the AST for a Go package in place by removing all
-// names from top-level declarations (but not from parameter lists
-// or inside types) that don't pass through the filter f. If the
-// declaration is empty afterwards, the declaration is removed from
-// the AST.
+// names from top-level declarations (including struct field and
+// interface method names, but not from parameter lists) that don't
+// pass through the filter f. If the declaration is empty afterwards,
+// the declaration is removed from the AST.
 // The pkg.Files list is not changed, so that file names and top-level
 // package comments don't get lost.
 //
@@ -285,7 +331,6 @@ func FilterPackage(pkg *Package, f Filter) bool {
 	}
 	return hasDecls
 }
-
 
 // ----------------------------------------------------------------------------
 // Merging of package files
@@ -305,7 +350,6 @@ const (
 // different comment groups when they are concatenated into a single group
 //
 var separator = &Comment{noPos, "//"}
-
 
 // MergePackageFiles creates a file AST by merging the ASTs of the
 // files belonging to a package. The mode flags control merging behavior.

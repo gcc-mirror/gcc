@@ -53,11 +53,12 @@ func readBytes(buf *Reader) string {
 		if e == os.EOF {
 			break
 		}
-		if e != nil {
+		if e == nil {
+			b[nb] = c
+			nb++
+		} else if e != iotest.ErrTimeout {
 			panic("Data: " + e.String())
 		}
-		b[nb] = c
-		nb++
 	}
 	return string(b[0:nb])
 }
@@ -75,7 +76,6 @@ func TestReaderSimple(t *testing.T) {
 	}
 }
 
-
 type readMaker struct {
 	name string
 	fn   func(io.Reader) io.Reader
@@ -86,6 +86,7 @@ var readMakers = []readMaker{
 	{"byte", iotest.OneByteReader},
 	{"half", iotest.HalfReader},
 	{"data+err", iotest.DataErrReader},
+	{"timeout", iotest.TimeoutReader},
 }
 
 // Call ReadString (which ends up calling everything else)
@@ -97,7 +98,7 @@ func readLines(b *Reader) string {
 		if e == os.EOF {
 			break
 		}
-		if e != nil {
+		if e != nil && e != iotest.ErrTimeout {
 			panic("GetLines: " + e.String())
 		}
 		s += s1

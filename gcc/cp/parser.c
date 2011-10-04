@@ -1486,6 +1486,8 @@ cp_parser_context_new (cp_parser_context* next)
   VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->funs_with_default_args
 #define unparsed_funs_with_definitions \
   VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->funs_with_definitions
+#define unparsed_nsdmis \
+  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->nsdmis
 
 static void
 push_unparsed_function_queues (cp_parser *parser)
@@ -1494,6 +1496,7 @@ push_unparsed_function_queues (cp_parser *parser)
 		 parser->unparsed_queues, NULL);
   unparsed_funs_with_default_args = NULL;
   unparsed_funs_with_definitions = make_tree_vector ();
+  unparsed_nsdmis = NULL;
 }
 
 static void
@@ -1936,11 +1939,17 @@ static tree cp_parser_functional_cast
   (cp_parser *, tree);
 static tree cp_parser_save_member_function_body
   (cp_parser *, cp_decl_specifier_seq *, cp_declarator *, tree);
+static tree cp_parser_save_nsdmi
+  (cp_parser *);
 static tree cp_parser_enclosed_template_argument_list
   (cp_parser *);
 static void cp_parser_save_default_args
   (cp_parser *, tree);
 static void cp_parser_late_parsing_for_member
+  (cp_parser *, tree);
+static tree cp_parser_late_parse_one_default_arg
+  (cp_parser *, tree, tree, tree);
+static void cp_parser_late_parsing_nsdmi
   (cp_parser *, tree);
 static void cp_parser_late_parsing_default_args
   (cp_parser *, tree);
@@ -8679,7 +8688,9 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
     {
       stmt = begin_range_for_stmt (scope, init);
       finish_range_for_decl (stmt, range_decl, range_expr);
-      if (!type_dependent_expression_p (range_expr))
+      if (!type_dependent_expression_p (range_expr)
+	  /* do_auto_deduction doesn't mess with template init-lists.  */
+	  && !BRACE_ENCLOSED_INITIALIZER_P (range_expr))
 	do_range_for_auto_deduction (range_decl, range_expr);
     }
   else
@@ -11343,9 +11354,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
 	 user may try to do so, so we'll parse them and give an
 	 appropriate diagnostic here.  */
 
-      /* Consume the `='.  */
       cp_token *start_token = cp_lexer_peek_token (parser->lexer);
-      cp_lexer_consume_token (parser->lexer);
       
       /* Find the name of the parameter pack.  */     
       id_declarator = parameter_declarator->declarator;
@@ -13416,7 +13425,13 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
     }
 
   if (tag_type != enum_type)
-    cp_parser_check_class_key (tag_type, type);
+    {
+      /* Indicate whether this class was declared as a `class' or as a
+	 `struct'.  */
+      if (TREE_CODE (type) == RECORD_TYPE)
+	CLASSTYPE_DECLARED_CLASS (type) = (tag_type == class_type);
+      cp_parser_check_class_key (tag_type, type);
+    }
 
   /* A "<" cannot follow an elaborated type specifier.  If that
      happens, the user was probably trying to form a template-id.  */
@@ -15683,6 +15698,31 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
   return virt_specifiers;
 }
 
+/* Used by handling of trailing-return-types and NSDMI, in which 'this'
+   is in scope even though it isn't real.  */
+
+static void
+inject_this_parameter (tree ctype, cp_cv_quals quals)
+{
+  tree this_parm;
+
+  if (current_class_ptr)
+    {
+      /* We don't clear this between NSDMIs.  Is it already what we want?  */
+      tree type = TREE_TYPE (TREE_TYPE (current_class_ptr));
+      if (same_type_ignoring_top_level_qualifiers_p (ctype, type)
+	  && cp_type_quals (type) == quals)
+	return;
+    }
+
+  this_parm = build_this_parm (ctype, quals);
+  /* Clear this first to avoid shortcut in cp_build_indirect_ref.  */
+  current_class_ptr = NULL_TREE;
+  current_class_ref
+    = cp_build_indirect_ref (this_parm, RO_NULL, tf_warning_or_error);
+  current_class_ptr = this_parm;
+}
+
 /* Parse a late-specified return type, if any.  This is not a separate
    non-terminal, but part of a function declarator, which looks like
 
@@ -15711,17 +15751,13 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
   if (quals >= 0)
     {
       /* DR 1207: 'this' is in scope in the trailing return type.  */
-      tree this_parm = build_this_parm (current_class_type, quals);
       gcc_assert (current_class_ptr == NULL_TREE);
-      current_class_ref
-	= cp_build_indirect_ref (this_parm, RO_NULL, tf_warning_or_error);
-      /* Set this second to avoid shortcut in cp_build_indirect_ref.  */
-      current_class_ptr = this_parm;
+      inject_this_parameter (current_class_type, quals);
     }
 
   type = cp_parser_trailing_type_id (parser);
 
-  if (current_class_type)
+  if (quals >= 0)
     current_class_ptr = current_class_ref = NULL_TREE;
 
   return type;
@@ -16323,9 +16359,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
   /* If the next token is `=', then process a default argument.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
     {
-      /* Consume the `='.  */
-      cp_lexer_consume_token (parser->lexer);
-
       /* If we are defining a class, then the tokens that make up the
 	 default argument must be saved and processed later.  */
       if (!template_parm_p && at_class_scope_p ()
@@ -16535,7 +16568,7 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   tree default_argument = NULL_TREE;
   bool saved_greater_than_is_operator_p;
   bool saved_local_variables_forbidden_p;
-  bool non_constant_p;
+  bool non_constant_p, is_direct_init;
 
   /* Make sure that PARSER->GREATER_THAN_IS_OPERATOR_P is
      set correctly.  */
@@ -16549,7 +16582,7 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   if (template_parm_p)
     push_deferring_access_checks (dk_no_deferred);
   default_argument
-    = cp_parser_initializer_clause (parser, &non_constant_p);
+    = cp_parser_initializer (parser, &is_direct_init, &non_constant_p);
   if (BRACE_ENCLOSED_INITIALIZER_P (default_argument))
     maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
   if (template_parm_p)
@@ -17265,11 +17298,12 @@ cp_parser_class_specifier_1 (cp_parser* parser)
      there is no need to delay the parsing of `A::B::f'.  */
   if (--parser->num_classes_being_defined == 0)
     {
-      tree fn;
+      tree decl;
       tree class_type = NULL_TREE;
       tree pushed_scope = NULL_TREE;
       unsigned ix;
       cp_default_arg_entry *e;
+      tree save_ccp, save_ccr;
 
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
@@ -17284,7 +17318,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       FOR_EACH_VEC_ELT (cp_default_arg_entry, unparsed_funs_with_default_args,
 			ix, e)
 	{
-	  fn = e->decl;
+	  decl = e->decl;
 	  /* If there are default arguments that have not yet been processed,
 	     take care of them now.  */
 	  if (class_type != e->class_type)
@@ -17295,18 +17329,36 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	      pushed_scope = push_scope (class_type);
 	    }
 	  /* Make sure that any template parameters are in scope.  */
-	  maybe_begin_member_template_processing (fn);
+	  maybe_begin_member_template_processing (decl);
 	  /* Parse the default argument expressions.  */
-	  cp_parser_late_parsing_default_args (parser, fn);
+	  cp_parser_late_parsing_default_args (parser, decl);
 	  /* Remove any template parameters from the symbol table.  */
 	  maybe_end_member_template_processing ();
 	}
+      VEC_truncate (cp_default_arg_entry, unparsed_funs_with_default_args, 0);
+      /* Now parse any NSDMIs.  */
+      save_ccp = current_class_ptr;
+      save_ccr = current_class_ref;
+      FOR_EACH_VEC_ELT (tree, unparsed_nsdmis, ix, decl)
+	{
+	  if (class_type != DECL_CONTEXT (decl))
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      class_type = DECL_CONTEXT (decl);
+	      pushed_scope = push_scope (class_type);
+	    }
+	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
+	  cp_parser_late_parsing_nsdmi (parser, decl);
+	}
+      VEC_truncate (tree, unparsed_nsdmis, 0);
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
-      VEC_truncate (cp_default_arg_entry, unparsed_funs_with_default_args, 0);
       /* Now parse the body of the functions.  */
-      FOR_EACH_VEC_ELT (tree, unparsed_funs_with_definitions, ix, fn)
-	cp_parser_late_parsing_for_member (parser, fn);
+      FOR_EACH_VEC_ELT (tree, unparsed_funs_with_definitions, ix, decl)
+	cp_parser_late_parsing_for_member (parser, decl);
       VEC_truncate (tree, unparsed_funs_with_definitions, 0);
     }
 
@@ -18185,8 +18237,14 @@ cp_parser_member_declaration (cp_parser* parser)
 		     constant-initializer.  When we call `grokfield', it will
 		     perform more stringent semantics checks.  */
 		  initializer_token_start = cp_lexer_peek_token (parser->lexer);
-		  if (function_declarator_p (declarator))
+		  if (function_declarator_p (declarator)
+		      || (decl_specifiers.type
+			  && TREE_CODE (decl_specifiers.type) == TYPE_DECL
+			  && (TREE_CODE (TREE_TYPE (decl_specifiers.type))
+			      == FUNCTION_TYPE)))
 		    initializer = cp_parser_pure_specifier (parser);
+		  else if (decl_specifiers.storage_class != sc_static)
+		    initializer = cp_parser_save_nsdmi (parser);
 		  else if (cxx_dialect >= cxx0x)
 		    {
 		      bool nonconst;
@@ -18201,6 +18259,15 @@ cp_parser_member_declaration (cp_parser* parser)
 		  else
 		    /* Parse the initializer.  */
 		    initializer = cp_parser_constant_initializer (parser);
+		}
+	      else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
+		       && !function_declarator_p (declarator))
+		{
+		  bool x;
+		  if (decl_specifiers.storage_class != sc_static)
+		    initializer = cp_parser_save_nsdmi (parser);
+		  else
+		    initializer = cp_parser_initializer (parser, &x, &x);
 		}
 	      /* Otherwise, there is no initializer.  */
 	      else
@@ -18286,6 +18353,11 @@ cp_parser_member_declaration (cp_parser* parser)
 
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
 		cp_parser_save_default_args (parser, decl);
+	      else if (TREE_CODE (decl) == FIELD_DECL
+		       && !DECL_C_BIT_FIELD (decl)
+		       && DECL_INITIAL (decl))
+		/* Add DECL to the queue of NSDMI to be parsed later.  */
+		VEC_safe_push (tree, gc, unparsed_nsdmis, decl);
 	    }
 
 	  if (assume_semicolon)
@@ -20533,6 +20605,30 @@ cp_parser_save_member_function_body (cp_parser* parser,
   return fn;
 }
 
+/* Save the tokens that make up the in-class initializer for a non-static
+   data member.  Returns a DEFAULT_ARG.  */
+
+static tree
+cp_parser_save_nsdmi (cp_parser* parser)
+{
+  /* Save away the tokens that make up the body of the
+     function.  */
+  cp_token *first = parser->lexer->next_token;
+  cp_token *last;
+  tree node;
+
+  cp_parser_cache_group (parser, CPP_CLOSE_PAREN, /*depth=*/0);
+
+  last = parser->lexer->next_token;
+
+  node = make_node (DEFAULT_ARG);
+  DEFARG_TOKENS (node) = cp_token_cache_new (first, last);
+  DEFARG_INSTANTIATIONS (node) = NULL;
+
+  return node;
+}
+
+
 /* Parse a template-argument-list, as well as the trailing ">" (but
    not the opening ">").  See cp_parser_template_argument_list for the
    return value.  */
@@ -20738,6 +20834,83 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
       }
 }
 
+/* DEFAULT_ARG contains the saved tokens for the initializer of DECL,
+   which is either a FIELD_DECL or PARM_DECL.  Parse it and return
+   the result.  For a PARM_DECL, PARMTYPE is the corresponding type
+   from the parameter-type-list.  */
+
+static tree
+cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
+				      tree default_arg, tree parmtype)
+{
+  cp_token_cache *tokens;
+  tree parsed_arg;
+  bool dummy;
+
+  /* Push the saved tokens for the default argument onto the parser's
+     lexer stack.  */
+  tokens = DEFARG_TOKENS (default_arg);
+  cp_parser_push_lexer_for_tokens (parser, tokens);
+
+  start_lambda_scope (decl);
+
+  /* Parse the default argument.  */
+  parsed_arg = cp_parser_initializer (parser, &dummy, &dummy);
+  if (BRACE_ENCLOSED_INITIALIZER_P (parsed_arg))
+    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
+
+  finish_lambda_scope ();
+
+  if (!processing_template_decl)
+    {
+      /* In a non-template class, check conversions now.  In a template,
+	 we'll wait and instantiate these as needed.  */
+      if (TREE_CODE (decl) == PARM_DECL)
+	parsed_arg = check_default_argument (parmtype, parsed_arg);
+      else
+	{
+	  int flags = LOOKUP_IMPLICIT;
+	  if (BRACE_ENCLOSED_INITIALIZER_P (parsed_arg)
+	      && CONSTRUCTOR_IS_DIRECT_INIT (parsed_arg))
+	    flags = LOOKUP_NORMAL;
+	  parsed_arg = digest_init_flags (TREE_TYPE (decl), parsed_arg, flags);
+	}
+    }
+
+  /* If the token stream has not been completely used up, then
+     there was extra junk after the end of the default
+     argument.  */
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+    {
+      if (TREE_CODE (decl) == PARM_DECL)
+	cp_parser_error (parser, "expected %<,%>");
+      else
+	cp_parser_error (parser, "expected %<;%>");
+    }
+
+  /* Revert to the main lexer.  */
+  cp_parser_pop_lexer (parser);
+
+  return parsed_arg;
+}
+
+/* FIELD is a non-static data member with an initializer which we saved for
+   later; parse it now.  */
+
+static void
+cp_parser_late_parsing_nsdmi (cp_parser *parser, tree field)
+{
+  tree def;
+
+  push_unparsed_function_queues (parser);
+  def = cp_parser_late_parse_one_default_arg (parser, field,
+					      DECL_INITIAL (field),
+					      NULL_TREE);
+  pop_unparsed_function_queues (parser);
+
+  DECL_INITIAL (field) = def;
+}
+
 /* FN is a FUNCTION_DECL which may contains a parameter with an
    unparsed DEFAULT_ARG.  Parse the default args now.  This function
    assumes that the current scope is the scope in which the default
@@ -20747,7 +20920,6 @@ static void
 cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 {
   bool saved_local_variables_forbidden_p;
-  bool non_constant_p;
   tree parm, parmdecl;
 
   /* While we're parsing the default args, we might (due to the
@@ -20769,7 +20941,6 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
        parm = TREE_CHAIN (parm),
 	 parmdecl = DECL_CHAIN (parmdecl))
     {
-      cp_token_cache *tokens;
       tree default_arg = TREE_PURPOSE (parm);
       tree parsed_arg;
       VEC(tree,gc) *insts;
@@ -20784,25 +20955,14 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 	   already declared with default arguments.  */
 	continue;
 
-       /* Push the saved tokens for the default argument onto the parser's
-	  lexer stack.  */
-      tokens = DEFARG_TOKENS (default_arg);
-      cp_parser_push_lexer_for_tokens (parser, tokens);
-
-      start_lambda_scope (parmdecl);
-
-      /* Parse the assignment-expression.  */
-      parsed_arg = cp_parser_initializer_clause (parser, &non_constant_p);
+      parsed_arg
+	= cp_parser_late_parse_one_default_arg (parser, parmdecl,
+						default_arg,
+						TREE_VALUE (parm));
       if (parsed_arg == error_mark_node)
 	{
-	  cp_parser_pop_lexer (parser);
 	  continue;
 	}
-      if (BRACE_ENCLOSED_INITIALIZER_P (parsed_arg))
-	maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
-
-      if (!processing_template_decl)
-	parsed_arg = check_default_argument (TREE_VALUE (parm), parsed_arg);
 
       TREE_PURPOSE (parm) = parsed_arg;
 
@@ -20810,17 +20970,6 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       for (insts = DEFARG_INSTANTIATIONS (default_arg), ix = 0;
 	   VEC_iterate (tree, insts, ix, copy); ix++)
 	TREE_PURPOSE (copy) = parsed_arg;
-
-      finish_lambda_scope ();
-
-      /* If the token stream has not been completely used up, then
-	 there was extra junk after the end of the default
-	 argument.  */
-      if (!cp_lexer_next_token_is (parser->lexer, CPP_EOF))
-	cp_parser_error (parser, "expected %<,%>");
-
-      /* Revert to the main lexer.  */
-      cp_parser_pop_lexer (parser);
     }
 
   pop_defarg_context ();

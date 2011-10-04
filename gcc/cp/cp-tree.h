@@ -394,7 +394,9 @@ typedef enum cpp0x_warn_str
   /* inline namespaces */
   CPP0X_INLINE_NAMESPACES,
   /* override controls, override/final */
-  CPP0X_OVERRIDE_CONTROLS
+  CPP0X_OVERRIDE_CONTROLS,
+  /* non-static data member initializers */
+  CPP0X_NSDMI
 } cpp0x_warn_str;
   
 /* The various kinds of operation used by composite_pointer_type. */
@@ -2987,10 +2989,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TYPENAME_IS_RESOLVING_P(NODE) \
   (TREE_LANG_FLAG_2 (TYPENAME_TYPE_CHECK (NODE)))
 
-/* Nonzero in INTEGER_CST means that this int is negative by dint of
-   using a twos-complement negated operand.  */
-#define TREE_NEGATED_INT(NODE) TREE_LANG_FLAG_0 (INTEGER_CST_CHECK (NODE))
-
 /* [class.virtual]
 
    A class that declares or inherits a virtual function is called a
@@ -3704,6 +3702,17 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    a DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION.  */
 #define DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION(DECL) \
   (DECL_TEMPLATE_INFO (DECL) && !DECL_USE_TEMPLATE (DECL))
+
+/* Nonzero if DECL is a function generated from a function 'temploid',
+   i.e. template, member of class template, or dependent friend.  */
+#define DECL_TEMPLOID_INSTANTIATION(DECL)		\
+  (DECL_TEMPLATE_INSTANTIATION (DECL)			\
+   || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (DECL))
+
+/* Nonzero if DECL is either defined implicitly by the compiler or
+   generated from a temploid.  */
+#define DECL_GENERATED_P(DECL) \
+  (DECL_TEMPLOID_INSTANTIATION (DECL) || DECL_DEFAULTED_FN (DECL))
 
 /* Nonzero iff we are currently processing a declaration for an
    entity with its own template parameter list, and which is not a
@@ -4721,6 +4730,7 @@ extern bool check_dtor_name			(tree, tree);
 extern tree build_conditional_expr		(tree, tree, tree, 
                                                  tsubst_flags_t);
 extern tree build_addr_func			(tree);
+extern void set_flags_from_callee		(tree);
 extern tree build_call_a			(tree, int, tree*);
 extern tree build_call_n			(tree, int, ...);
 extern bool null_ptr_cst_p			(tree);
@@ -4778,7 +4788,7 @@ extern void validate_conversion_obstack		(void);
 /* in class.c */
 extern tree build_vfield_ref			(tree, tree);
 extern tree build_base_path			(enum tree_code, tree,
-						 tree, int);
+						 tree, int, tsubst_flags_t);
 extern tree convert_to_base			(tree, tree, bool, bool,
 						 tsubst_flags_t);
 extern tree convert_to_base_statically		(tree, tree);
@@ -4826,6 +4836,7 @@ extern tree in_class_defaulted_default_constructor (tree);
 extern bool user_provided_p			(tree);
 extern bool type_has_user_provided_constructor  (tree);
 extern bool type_has_user_provided_default_constructor (tree);
+extern tree default_init_uninitialized_part (tree);
 extern bool trivial_default_constructor_is_constexpr (tree);
 extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
@@ -5032,6 +5043,7 @@ extern tree build_throw				(tree);
 extern int nothrow_libfn_p			(const_tree);
 extern void check_handlers			(tree);
 extern tree finish_noexcept_expr		(tree, tsubst_flags_t);
+extern bool expr_noexcept_p			(tree, tsubst_flags_t);
 extern void perform_deferred_noexcept_checks	(void);
 extern bool nothrow_spec_p			(const_tree);
 extern bool type_noexcept_p			(const_tree);

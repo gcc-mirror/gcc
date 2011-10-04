@@ -77,7 +77,7 @@ extern bool set_src_pwd		       (const char *);
 
 /* Functions used to manipulate the random seed.  */
 
-extern const char *get_random_seed (bool);
+extern HOST_WIDE_INT get_random_seed (bool);
 extern const char *set_random_seed (const char *);
 
 #endif /* ! GCC_TOPLEV_H */

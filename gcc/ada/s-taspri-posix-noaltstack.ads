@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,11 @@ package System.Task_Primitives is
 
 private
 
-   type Lock is new System.OS_Interface.pthread_mutex_t;
+   type Lock is record
+      WO : aliased System.OS_Interface.pthread_mutex_t;
+      RW : aliased System.OS_Interface.pthread_rwlock_t;
+   end record;
+
    type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
 
    type Suspension_Object is record

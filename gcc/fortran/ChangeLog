@@ -1,3 +1,81 @@
+2011-10-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50585
+	* interface.c (get_expr_storage_size): Check if 'length' component is
+	associated.
+
+2011-09-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50547
+	* resolve.c (resolve_formal_arglist): Fix pureness check for dummy
+	functions.
+
+	PR fortran/50553
+	* symbol.c (check_conflict): Forbid TARGET attribute for statement
+	functions.
+
+2011-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-types.c (gfc_type_for_size): Return wider type
+	if no suitable narrower type has been found.
+	(gfc_type_for_mode): Return NULL_TREE if gfc_type_for_size
+	returned type doesn't have expected TYPE_MODE.
+
+2011-09-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50515
+	* resolve.c (resolve_common_blocks): Check for EXTERNAL attribute.
+
+	PR fortran/50517
+	* interface.c (gfc_compare_interfaces): Bugfix in check for result type.
+
+2011-09-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41733
+	* expr.c (gfc_check_pointer_assign): Check for nonintrinsic elemental
+	procedures.
+	* interface.c (gfc_compare_interfaces): Rename 'intent_flag'. Check
+	for PURE and ELEMENTAL attributes.
+	(compare_actual_formal): Remove pureness check here.
+
+2011-09-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* check.c (gfc_check_c_sizeof): Remove redundant word.
+
+2011-09-20  Simon Baldwin  <simonb@google.com>
+
+	* module.c (gfc_dump_module): Omit timestamp from output.
+
+2011-09-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50403
+	* symbol.c (gfc_use_derived): Fix coding style.
+
+2011-09-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50401
+	* resolve.c (resolve_transfer): Check if component 'ref' is defined.
+
+	PR fortran/50403
+	* symbol.c (gfc_use_derived): Check if argument 'sym' is defined.
+
+2011-09-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34547
+	PR fortran/50375
+	* check.c (gfc_check_null): Allow allocatables as MOLD to NULL.
+	* resolve.c (resolve_transfer): Reject NULL without MOLD.
+	* interface.c (gfc_procedure_use): Reject NULL without MOLD
+	if no explicit interface is known.
+	(gfc_search_interface): Reject NULL without MOLD if it would
+	lead to ambiguity.
+
+2011-09-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50379
+	* symbol.c (check_conflict): Check conflict between GENERIC and RESULT
+	attributes.
+
 2011-09-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50327

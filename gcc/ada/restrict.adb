@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Einfo;    use Einfo;
@@ -41,14 +42,28 @@ with Uname;    use Uname;
 package body Restrict is
 
    Restricted_Profile_Result : Boolean := False;
-   --  This switch memoizes the result of Restricted_Profile function
-   --  calls for improved efficiency. Its setting is valid only if
-   --  Restricted_Profile_Cached is True. Note that if this switch
-   --  is ever set True, it need never be turned off again.
+   --  This switch memoizes the result of Restricted_Profile function calls for
+   --  improved efficiency. Valid only if Restricted_Profile_Cached is True.
+   --  Note: if this switch is ever set True, it is never turned off again.
 
    Restricted_Profile_Cached : Boolean := False;
-   --  This flag is set to True if the Restricted_Profile_Result
-   --  contains the correct cached result of Restricted_Profile calls.
+   --  This flag is set to True if the Restricted_Profile_Result contains the
+   --  correct cached result of Restricted_Profile calls.
+
+   No_Specification_Of_Aspects : array (Aspect_Id) of Source_Ptr :=
+                                   (others => No_Location);
+   --  Entries in this array are set to point to a previously occuring pragma
+   --  that activates a No_Specification_Of_Aspect check.
+
+   No_Specification_Of_Aspect_Warning : array (Aspect_Id) of Boolean :=
+                                          (others => True);
+   --  An entry in this array is set False in reponse to a previous call to
+   --  Set_No_Speficiation_Of_Aspect for pragmas in the main unit that
+   --  specify Warning as False. Once set False, an entry is never reset.
+
+   No_Specification_Of_Aspect_Set : Boolean := False;
+   --  Set True if any entry of No_Specifcation_Of_Aspects has been set True.
+   --  Once set True, this is never turned off again.
 
    -----------------------
    -- Local Subprograms --
@@ -461,14 +476,14 @@ package body Restrict is
 
       --  Loop through entries in No_Dependence table to check each one in turn
 
-      for J in No_Dependence.First .. No_Dependence.Last loop
-         DU := No_Dependence.Table (J).Unit;
+      for J in No_Dependences.First .. No_Dependences.Last loop
+         DU := No_Dependences.Table (J).Unit;
 
          if Same_Unit (U, DU) then
             Error_Msg_Sloc := Sloc (DU);
             Error_Msg_Node_1 := DU;
 
-            if No_Dependence.Table (J).Warn then
+            if No_Dependences.Table (J).Warn then
                Error_Msg
                  ("?violation of restriction `No_Dependence '='> &`#",
                   Sloc (Err));
@@ -482,6 +497,44 @@ package body Restrict is
          end if;
       end loop;
    end Check_Restriction_No_Dependence;
+
+   --------------------------------------------------
+   -- Check_Restriction_No_Specification_Of_Aspect --
+   --------------------------------------------------
+
+   procedure Check_Restriction_No_Specification_Of_Aspect (N : Node_Id) is
+      A_Id : Aspect_Id;
+      Id   : Node_Id;
+
+   begin
+      --  Ignore call if no instances of this restriction set
+
+      if not No_Specification_Of_Aspect_Set then
+         return;
+      end if;
+
+      --  Ignore call if node N is not in the main source unit, since we only
+      --  give messages for . This avoids giving messages for aspects that are
+      --  specified in withed units.
+
+      if not In_Extended_Main_Source_Unit (N) then
+         return;
+      end if;
+
+      Id := Identifier (N);
+      A_Id := Get_Aspect_Id (Chars (Id));
+      pragma Assert (A_Id /= No_Aspect);
+
+      Error_Msg_Sloc := No_Specification_Of_Aspects (A_Id);
+
+      if Error_Msg_Sloc /= No_Location then
+         Error_Msg_Node_1 := Id;
+         Error_Msg_Warn := No_Specification_Of_Aspect_Warning (A_Id);
+         Error_Msg_N
+           ("<violation of restriction `No_Specification_Of_Aspect '='> &`#",
+            Id);
+      end if;
+   end Check_Restriction_No_Specification_Of_Aspect;
 
    --------------------------------------
    -- Check_Wide_Character_Restriction --
@@ -1059,16 +1112,16 @@ package body Restrict is
    begin
       --  Loop to check for duplicate entry
 
-      for J in No_Dependence.First .. No_Dependence.Last loop
+      for J in No_Dependences.First .. No_Dependences.Last loop
 
          --  Case of entry already in table
 
-         if Same_Unit (Unit, No_Dependence.Table (J).Unit) then
+         if Same_Unit (Unit, No_Dependences.Table (J).Unit) then
 
             --  Error has precedence over warning
 
             if not Warn then
-               No_Dependence.Table (J).Warn := False;
+               No_Dependences.Table (J).Warn := False;
             end if;
 
             return;
@@ -1077,8 +1130,29 @@ package body Restrict is
 
       --  Entry is not currently in table
 
-      No_Dependence.Append ((Unit, Warn, Profile));
+      No_Dependences.Append ((Unit, Warn, Profile));
    end Set_Restriction_No_Dependence;
+
+   ------------------------------------------------
+   -- Set_Restriction_No_Specification_Of_Aspect --
+   ------------------------------------------------
+
+   procedure Set_Restriction_No_Specification_Of_Aspect
+     (N       : Node_Id;
+      Warning : Boolean)
+   is
+      A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (N));
+      pragma Assert (A_Id /= No_Aspect);
+
+   begin
+      No_Specification_Of_Aspects (A_Id) := Sloc (N);
+
+      if Warning = False then
+         No_Specification_Of_Aspect_Warning (A_Id) := False;
+      end if;
+
+      No_Specification_Of_Aspect_Set := True;
+   end Set_Restriction_No_Specification_Of_Aspect;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

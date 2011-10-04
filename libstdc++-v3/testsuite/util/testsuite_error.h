@@ -29,8 +29,6 @@ namespace __gnu_test
 {
   struct test_category : public std::error_category
   { 
-    test_category() {}
-
     virtual const char*
     name() const noexcept
     {
@@ -45,8 +43,6 @@ namespace __gnu_test
 
   struct test_derived_category : public test_category
   { 
-    test_derived_category() {}
-
     virtual const char*
     name() const noexcept
     {

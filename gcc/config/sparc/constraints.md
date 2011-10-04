@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;    ABCD           P         Z
+;;;    AB                       
 ;;;    a        jkl    q  tuvwxyz
 
 
@@ -52,6 +52,10 @@
  (and (match_code "const_double")
       (match_test "const_zero_operand (op, mode)")))
 
+(define_constraint "C"
+ "The floating-point all-ones constant"
+ (and (match_code "const_double")
+      (match_test "const_all_ones_operand (op, mode)")))
 
 ;; Integer constant constraints
 
@@ -95,6 +99,10 @@
  (and (match_code "const_int")
       (match_test "ival == 4096")))
 
+(define_constraint "P"
+ "The integer constant -1"
+ (and (match_code "const_int")
+      (match_test "ival == -1")))
 
 ;; Extra constraints
 ;; Our memory extra constraints have to emulate the behavior of 'm' and 'o',
@@ -146,3 +154,8 @@
  "The vector zero constant"
  (and (match_code "const_vector")
       (match_test "const_zero_operand (op, mode)")))
+
+(define_constraint "Z"
+ "The vector all ones constant"
+ (and (match_code "const_vector")
+      (match_test "const_all_ones_operand (op, mode)")))
