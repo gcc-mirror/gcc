@@ -1,3 +1,9 @@
+2011-10-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_vect_multiple_sizes):
+	Make et_vect_multiple_sizes_saved global.
+	(check_effective_target_vect64): Make et_vect64_saved global.
+
 2011-10-03  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
 
 	* gcc.c-torture/execute/vect-shuffle-2.c: New test.

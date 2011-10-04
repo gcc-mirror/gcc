@@ -3375,7 +3375,7 @@ foreach N {2 3 4 8} {
 # Return 1 if the target supports multiple vector sizes
 
 proc check_effective_target_vect_multiple_sizes { } {
-    global et_vect_multiple_sizes
+    global et_vect_multiple_sizes_saved
 
     if [info exists et_vect_multiple_sizes_saved] {
         verbose "check_effective_target_vect_multiple_sizes: using cached result" 2
@@ -3393,7 +3393,7 @@ proc check_effective_target_vect_multiple_sizes { } {
 # Return 1 if the target supports vectors of 64 bits.
 
 proc check_effective_target_vect64 { } {
-    global et_vect64
+    global et_vect64_saved
 
     if [info exists et_vect64_saved] {
         verbose "check_effective_target_vect64: using cached result" 2
