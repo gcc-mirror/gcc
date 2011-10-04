@@ -2859,10 +2859,10 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 tree
 c_build_vec_shuffle_expr (location_t loc, tree v0, tree v1, tree mask)
 {
-  tree vec_shuffle, tmp;
+  tree vec_shuffle;
   bool wrap = true;
   bool maybe_const = false;
-  bool two_arguments;
+  bool two_arguments = false;
 
   if (v1 == NULL_TREE)
     {
@@ -2916,17 +2916,16 @@ c_build_vec_shuffle_expr (location_t loc, tree v0, tree v1, tree mask)
     }
 
   /* Avoid C_MAYBE_CONST_EXPRs inside VEC_SHUFFLE_EXPR.  */
-  tmp = c_fully_fold (v0, false, &maybe_const);
-  v0 = save_expr (tmp);
+  v0 = c_fully_fold (v0, false, &maybe_const);
   wrap &= maybe_const;
 
-  if (!two_arguments)
+  if (two_arguments)
+    v1 = v0 = save_expr (v0);
+  else
     {
       v1 = c_fully_fold (v1, false, &maybe_const);
       wrap &= maybe_const;
     }
-  else
-    v1 = v0;
 
   mask = c_fully_fold (mask, false, &maybe_const);
   wrap &= maybe_const;

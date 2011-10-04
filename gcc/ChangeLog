@@ -1,3 +1,8 @@
+2011-10-04  Richard Henderson  <rth@redhat.com>
+
+	* c-typeck.c (c_build_vec_shuffle_expr): Fix uninitialized variable.
+	Avoid save_expr unless two_arguments.
+
 2011-10-04  Ozkan Sezer  <sezeroz@gmail.com>
 
 	* config/i386/mingw-w64.h (CPP_SPEC): Rename _REENTRANCE to
