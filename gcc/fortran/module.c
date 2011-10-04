@@ -4810,6 +4810,9 @@ write_dt_extensions (gfc_symtree *st)
 {
   if (!gfc_check_symbol_access (st->n.sym))
     return;
+  if (!(st->n.sym->ns && st->n.sym->ns->proc_name
+	&& st->n.sym->ns->proc_name->attr.flavor == FL_MODULE))
+    return;
 
   mio_lparen ();
   mio_pool_string (&st->n.sym->name);
