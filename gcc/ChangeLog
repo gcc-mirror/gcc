@@ -1,3 +1,8 @@
+2011-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (i[34567]86-*-elf*, x86_64-*-elf*): Use
+	i386/t-crtstuff.
+
 2011-10-04  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer.h (lto_input_toplevel_asms): Add order_base parameter.
