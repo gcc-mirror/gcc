@@ -1,3 +1,8 @@
+2011-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/bind/48698.cc (g): Fix return type, avoid -Wall
+	warning.
+
 2011-10-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/ext/alloc_traits.h (__alloc_traits::max_size): Define.

@@ -25,7 +25,7 @@
 int f(int i);
 
 // Don't want placeholders to interfere with a possibly-versioned namespace.
-int g()
+void g()
 {
   std::bind(f, std::placeholders::_6);
 }
