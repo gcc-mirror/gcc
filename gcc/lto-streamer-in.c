@@ -1144,7 +1144,7 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 /* Input toplevel asms.  */
 
 void
-lto_input_toplevel_asms (struct lto_file_decl_data *file_data)
+lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
 {
   size_t len;
   const char *data = lto_get_section_data (file_data, LTO_section_asm,
@@ -1173,7 +1173,12 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data)
 		     header->lto_header.minor_version);
 
   while ((str = streamer_read_string_cst (data_in, &ib)))
-    cgraph_add_asm_node (str);
+    {
+      struct cgraph_asm_node *node = cgraph_add_asm_node (str);
+      node->order = streamer_read_hwi (&ib) + order_base;
+      if (node->order >= cgraph_order)
+	cgraph_order = node->order + 1;
+    }
 
   clear_line_info (data_in);
   lto_data_in_delete (data_in);
