@@ -807,7 +807,7 @@ extern void lto_input_function_body (struct lto_file_decl_data *, tree,
 				     const char *);
 extern void lto_input_constructors_and_inits (struct lto_file_decl_data *,
 					      const char *);
-extern void lto_input_toplevel_asms (struct lto_file_decl_data *);
+extern void lto_input_toplevel_asms (struct lto_file_decl_data *, int);
 extern struct data_in *lto_data_in_create (struct lto_file_decl_data *,
 				    const char *, unsigned,
 				    VEC(ld_plugin_symbol_resolution_t,heap) *);

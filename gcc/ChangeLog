@@ -1,3 +1,16 @@
+2011-10-04  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer.h (lto_input_toplevel_asms): Add order_base parameter.
+	* lto-streamer-in.c (lto_input_toplevel_asms): Stream in order.
+	* lto-streamer-out.c (lto_output_toplevel_asms): Stream out order.
+	* lto-cgraph.c (order_base): New static var.
+	(lto_output_node): Stream in order.
+	(lto_output_varpool_node): Stream out order.
+	(input_node): Stream in order.
+	(input_varpool_node): Stream out order.
+	(input_cgraph_1): Initialize order base; update call of
+	lto_input_toplevel_asms.
+
 2011-10-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50566
