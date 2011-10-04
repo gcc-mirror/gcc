@@ -1,3 +1,7 @@
+2011-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_fold_builtin): Use a sequence of tests.
+
 2011-10-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* longlong.h (smul_ppmm, sdiv_qrnnd): Add underscores to the local

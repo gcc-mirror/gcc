@@ -9716,24 +9716,23 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 
   if (ignore)
     {
-      switch (icode)
-	{
-	case CODE_FOR_alignaddrsi_vis:
-	case CODE_FOR_alignaddrdi_vis:
-	case CODE_FOR_wrgsr_vis:
-	case CODE_FOR_bmasksi_vis:
-	case CODE_FOR_bmaskdi_vis:
-	case CODE_FOR_cmask8si_vis:
-	case CODE_FOR_cmask8di_vis:
-	case CODE_FOR_cmask16si_vis:
-	case CODE_FOR_cmask16di_vis:
-	case CODE_FOR_cmask32si_vis:
-	case CODE_FOR_cmask32di_vis:
-	  break;
-
-	default:
-	  return build_zero_cst (rtype);
-	}
+      /* Note that a switch statement instead of the sequence of tests would
+	 be incorrect as many of the CODE_FOR values could be CODE_FOR_nothing
+	 and that would yield multiple alternatives with identical values.  */
+      if (icode == CODE_FOR_alignaddrsi_vis
+	  || icode == CODE_FOR_alignaddrdi_vis
+	  || icode == CODE_FOR_wrgsr_vis
+	  || icode == CODE_FOR_bmasksi_vis
+	  || icode == CODE_FOR_bmaskdi_vis
+	  || icode == CODE_FOR_cmask8si_vis
+	  || icode == CODE_FOR_cmask8di_vis
+	  || icode == CODE_FOR_cmask16si_vis
+	  || icode == CODE_FOR_cmask16di_vis
+	  || icode == CODE_FOR_cmask32si_vis
+	  || icode == CODE_FOR_cmask32di_vis)
+	;
+      else
+	return build_zero_cst (rtype);
     }
 
   switch (icode)
