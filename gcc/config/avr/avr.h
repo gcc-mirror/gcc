@@ -385,51 +385,17 @@ typedef struct avr_args {
   (REGNO (X) >= FIRST_PSEUDO_REGISTER || REG_OK_FOR_BASE_STRICT_P(X))
 
 #define REG_OK_FOR_BASE_STRICT_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-
-/* LEGITIMIZE_RELOAD_ADDRESS will allow register R26/27 to be used, where it
-   is no worse than normal base pointers R28/29 and R30/31. For example:
-   If base offset is greater than 63 bytes or for R++ or --R addressing.  */
-   
-#define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_LEVELS, WIN)    \
-do {									    \
-  if (1&&(GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC))	    \
-    {									    \
-      push_reload (XEXP (X,0), XEXP (X,0), &XEXP (X,0), &XEXP (X,0),	    \
-	           POINTER_REGS, GET_MODE (X),GET_MODE (X) , 0, 0,	    \
-		   OPNUM, RELOAD_OTHER);				    \
-      goto WIN;								    \
-    }									    \
-  if (GET_CODE (X) == PLUS						    \
-      && REG_P (XEXP (X, 0))						    \
-      && (reg_equiv_constant (REGNO (XEXP (X, 0))) == 0)		    \
-      && GET_CODE (XEXP (X, 1)) == CONST_INT				    \
-      && INTVAL (XEXP (X, 1)) >= 1)					    \
-    {									    \
-      int fit = INTVAL (XEXP (X, 1)) <= (64 - GET_MODE_SIZE (MODE));	    \
-      if (fit)								    \
-	{								    \
-          if (reg_equiv_address (REGNO (XEXP (X, 0))) != 0)		    \
-	    {								    \
-	      int regno = REGNO (XEXP (X, 0));				    \
-	      rtx mem = make_memloc (X, regno);				    \
-	      push_reload (XEXP (mem,0), NULL, &XEXP (mem,0), NULL,         \
-		           POINTER_REGS, Pmode, VOIDmode, 0, 0,		    \
-		           1, ADDR_TYPE (TYPE));			    \
-	      push_reload (mem, NULL_RTX, &XEXP (X, 0), NULL,		    \
-		           BASE_POINTER_REGS, GET_MODE (X), VOIDmode, 0, 0, \
-		           OPNUM, TYPE);				    \
-	      goto WIN;							    \
-	    }								    \
-	}								    \
-      else if (! (frame_pointer_needed && XEXP (X,0) == frame_pointer_rtx)) \
-	{								    \
-	  push_reload (X, NULL_RTX, &X, NULL,				    \
-		       POINTER_REGS, GET_MODE (X), VOIDmode, 0, 0,	    \
-		       OPNUM, TYPE);					    \
-          goto WIN;							    \
-	}								    \
-    }									    \
-} while(0)
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_L,WIN)          \
+  do {                                                                  \
+    rtx new_x = avr_legitimize_reload_address (X, MODE, OPNUM, TYPE,    \
+                                               ADDR_TYPE (TYPE),        \
+                                               IND_L, make_memloc);     \
+    if (new_x)                                                          \
+      {                                                                 \
+        X = new_x;                                                      \
+        goto WIN;                                                       \
+      }                                                                 \
+  } while (0)
 
 #define BRANCH_COST(speed_p, predictable_p) 0
 
