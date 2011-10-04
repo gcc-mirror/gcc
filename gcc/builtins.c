@@ -8288,7 +8288,8 @@ fold_builtin_strcpy (location_t loc, tree fndecl, tree dest, tree src, tree len)
 	return NULL_TREE;
     }
 
-  len = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
+  len = fold_convert_loc (loc, size_type_node, len);
+  len = size_binop_loc (loc, PLUS_EXPR, len, build_int_cst (size_type_node, 1));
   return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)),
 			   build_call_expr_loc (loc, fn, 3, dest, src, len));
 }
@@ -8319,7 +8320,9 @@ fold_builtin_stpcpy (location_t loc, tree fndecl, tree dest, tree src)
   if (!fn)
     return NULL_TREE;
 
-  lenp1 = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
+  lenp1 = size_binop_loc (loc, PLUS_EXPR,
+			  fold_convert_loc (loc, size_type_node, len),
+			  build_int_cst (size_type_node, 1));
   /* We use dest twice in building our expression.  Save it from
      multiple expansions.  */
   dest = builtin_save_expr (dest);
@@ -8375,6 +8378,8 @@ fold_builtin_strncpy (location_t loc, tree fndecl, tree dest,
   fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
   if (!fn)
     return NULL_TREE;
+
+  len = fold_convert_loc (loc, size_type_node, len);
   return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)),
 			   build_call_expr_loc (loc, fn, 3, dest, src, len));
 }
@@ -12127,7 +12132,9 @@ fold_builtin_stxcpy_chk (location_t loc, tree fndecl, tree dest,
 	      if (!fn)
 		return NULL_TREE;
 
-	      len = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
+	      len = fold_convert_loc (loc, size_type_node, len);
+	      len = size_binop_loc (loc, PLUS_EXPR, len,
+				    build_int_cst (size_type_node, 1));
 	      return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)),
 				       build_call_expr_loc (loc, fn, 4,
 							dest, src, len, size));
