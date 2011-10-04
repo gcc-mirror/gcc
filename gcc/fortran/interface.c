@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "gfortran.h"
 #include "match.h"
+#include "arith.h"
 
 /* The current_interface structure holds information about the
    interface currently being parsed.  This structure is saved and
@@ -1071,13 +1072,51 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
   /* Check array shape.  */
   if (s1->as && s2->as)
     {
+      int i, compval;
+      gfc_expr *shape1, *shape2;
+
       if (s1->as->type != s2->as->type)
 	{
 	  snprintf (errmsg, err_len, "Shape mismatch in argument '%s'",
 		    s1->name);
 	  return FAILURE;
 	}
-      /* FIXME: Check exact shape.  */
+
+      if (s1->as->type == AS_EXPLICIT)
+	for (i = 0; i < s1->as->rank + s1->as->corank; i++)
+	  {
+	    shape1 = gfc_subtract (gfc_copy_expr (s1->as->upper[i]),
+				  gfc_copy_expr (s1->as->lower[i]));
+	    shape2 = gfc_subtract (gfc_copy_expr (s2->as->upper[i]),
+				  gfc_copy_expr (s2->as->lower[i]));
+	    compval = gfc_dep_compare_expr (shape1, shape2);
+	    gfc_free_expr (shape1);
+	    gfc_free_expr (shape2);
+	    switch (compval)
+	    {
+	      case -1:
+	      case  1:
+	      case -3:
+		snprintf (errmsg, err_len, "Shape mismatch in dimension %i of "
+			  "argument '%s'", i, s1->name);
+		return FAILURE;
+
+	      case -2:
+		/* FIXME: Implement a warning for this case.
+		gfc_warning ("Possible shape mismatch in argument '%s'",
+			    s1->name);*/
+		break;
+
+	      case 0:
+		break;
+
+	      default:
+		gfc_internal_error ("check_dummy_characteristics: Unexpected "
+				    "result %i of gfc_dep_compare_expr",
+				    compval);
+		break;
+	    }
+	  }
     }
     
   return SUCCESS;
@@ -1131,6 +1170,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			  "of '%s'", name2);
 	      return 0;
 	    }
+
+	  /* FIXME: Check array bounds and string length of result.  */
 	}
 
       if (s1->attr.pure && !s2->attr.pure)

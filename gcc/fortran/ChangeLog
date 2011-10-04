@@ -1,3 +1,8 @@
+2011-10-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	* interface.c (check_dummy_characteristics): Check the array shape.
+
 2011-10-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50585
