@@ -1,3 +1,13 @@
+2011-10-03  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (fpack16_vis, fpackfix_vis, fpack32_vis): Make
+	GSR_REG an input operand to UNSPEC instead of a parallel USE.
+	(faligndata<V64I:mode>_vis): Likewise and use DI mode.
+	(alignaddrsi_vis, alignaddrdi_vis, alignaddrlsi_vis, alignaddrldi_vis):
+	Reference GSR_REG in DI mode, simplify convoluted expressions by using
+	zero_extract.
+	(bshuffle<V64I:mode>_vis): Reference GSR_REG in DI mode.
+
 2011-10-03  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* tree-eh.c (remove_unreachable_handlers): Obvious cleanup.
