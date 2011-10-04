@@ -1,3 +1,9 @@
+2011-10-04  Ozkan Sezer  <sezeroz@gmail.com>
+
+	* config/i386/mingw-w64.h (CPP_SPEC): Rename _REENTRANCE to
+	_REENTRANT.
+	* config/i386/mingw32.h (CPP_SPEC): Likewise.
+
 2011-10-04  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/driver-sparc.c (cpu_names): Fix string for supersparc
