@@ -1,3 +1,9 @@
+2011-10-04  Artem Shinkarov  <artyom.shinkaroff@gmail.com>
+
+	* gcc.c-torture/execute/vector-compare-1.c: Fix trailing white
+	spaces.
+	(main): Use __typeof to get result type of comparison.
+
 2011-10-04  Ira Rosen  <ira.rosen@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_vect_multiple_sizes):
