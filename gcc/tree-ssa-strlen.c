@@ -1297,7 +1297,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   if (si != NULL)
     newlen = si->length;
   else
-    newlen = build_int_cst (TREE_TYPE (len), ~idx);
+    newlen = build_int_cst (size_type_node, ~idx);
   oldlen = NULL_TREE;
   if (olddsi != NULL)
     {

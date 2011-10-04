@@ -1,5 +1,13 @@
 2011-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/50604
+	* builtins.c (fold_builtin_strcpy, fold_builtin_stpcpy,
+	fold_builtin_strncpy, fold_builtin_stxcpy_chk): Ensure
+	last argument to memcpy has size_type_node type instead of
+	ssizetype.
+	* tree-ssa-strlen.c (handle_builtin_memcpy): Use size_type_node
+	instead of TREE_TYPE (len) as type for newlen.
+
 	PR tree-optimization/50522
 	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Don't test
 	TYPE_RESTRICT.

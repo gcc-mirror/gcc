@@ -1,3 +1,8 @@
+2011-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50604
+	* gcc.dg/pr50604.c: New test.
+
 2011-10-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR tree-optimization/49662
