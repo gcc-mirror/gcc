@@ -67,8 +67,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _M_clear()
     {
       typedef _List_node<_Tp>  _Node;
-      _Node* __cur = static_cast<_Node*>(this->_M_impl._M_node._M_next);
-      while (__cur != &this->_M_impl._M_node)
+      _Node* __cur = static_cast<_Node*>(_M_impl._M_node._M_next);
+      while (__cur != &_M_impl._M_node)
 	{
 	  _Node* __tmp = __cur;
 	  __cur = static_cast<_Node*>(__cur->_M_next);
@@ -139,14 +139,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     list<_Tp, _Alloc>::
     resize(size_type __new_size)
     {
-      iterator __i = begin();
-      size_type __len = 0;
-      for (; __i != end() && __len < __new_size; ++__i, ++__len)
-        ;
-      if (__len == __new_size)
-        erase(__i, end());
-      else                          // __i == end()
-	_M_default_append(__new_size - __len);
+      if (__new_size > size())
+	_M_default_append(__new_size - size());
+      else if (__new_size < size())
+	{
+	  iterator __i = begin();
+	  std::advance(__i, __new_size);
+	  erase(__i, end());
+	}
     }
 
   template<typename _Tp, typename _Alloc>
@@ -154,14 +154,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     list<_Tp, _Alloc>::
     resize(size_type __new_size, const value_type& __x)
     {
-      iterator __i = begin();
-      size_type __len = 0;
-      for (; __i != end() && __len < __new_size; ++__i, ++__len)
-        ;
-      if (__len == __new_size)
-        erase(__i, end());
-      else                          // __i == end()
-        insert(end(), __new_size - __len, __x);
+      if (__new_size > size())
+	insert(end(), __new_size - size(), __x);
+      else if (__new_size < size())
+	{
+	  iterator __i = begin();
+	  std::advance(__i, __new_size);
+	  erase(__i, end());
+	}
     }
 #else
   template<typename _Tp, typename _Alloc>
@@ -312,6 +312,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      ++__first1;
 	  if (__first2 != __last2)
 	    _M_transfer(__last1, __first2, __last2);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  this->_M_impl._M_size += __x.size();
+	  __x._M_impl._M_size = 0;
+#endif
 	}
     }
 
@@ -346,6 +351,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		++__first1;
 	    if (__first2 != __last2)
 	      _M_transfer(__last1, __first2, __last2);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	    this->_M_impl._M_size += __x.size();
+	    __x._M_impl._M_size = 0;
+#endif
 	  }
       }
 
