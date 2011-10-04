@@ -1,5 +1,11 @@
 2011-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/50522
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Don't test
+	TYPE_RESTRICT.
+	(ptr_derefs_may_alias_p): Call pt_solutions_same_restrict_base
+	unconditionally.
+
 	* fold-const.c (fold_unary_loc): Don't optimize
 	POINTER_PLUS_EXPR casted to TYPE_RESTRICT pointer by
 	casting the inner pointer if it isn't TYPE_RESTRICT.
