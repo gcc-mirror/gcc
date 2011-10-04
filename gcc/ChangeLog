@@ -1,3 +1,8 @@
+2011-10-04  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/driver-sparc.c (cpu_names): Fix string for supersparc
+	under Linux.
+
 2011-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50604
