@@ -1229,11 +1229,11 @@ x86_64-*-darwin*)
 	;;
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h"
-	tmake_file="${tmake_file} i386/t-i386elf t-svr4"
+	tmake_file="${tmake_file} i386/t-i386elf i386/t-crtstuff t-svr4"
 	;;
 x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
-	tmake_file="${tmake_file} i386/t-i386elf t-svr4"
+	tmake_file="${tmake_file} i386/t-i386elf i386/t-crtstuff t-svr4"
 	;;
 i[34567]86-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/freebsd.h"
