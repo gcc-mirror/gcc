@@ -1,3 +1,13 @@
+2011-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50566
+	* config/avr/avr-protos.h (avr_legitimize_reload_address): New
+	prototype.
+	* config/avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Copy worker code
+	from here...
+	* config/avr/avr.c (avr_legitimize_reload_address) ...to this new
+	function.  Log if avr_log.legitimize_reload_address.
+
 2011-10-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_fold_builtin): Use a sequence of tests.

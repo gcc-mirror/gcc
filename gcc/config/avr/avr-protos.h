@@ -106,6 +106,7 @@ extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern void out_shift_with_cnt (const char *templ, rtx insn,
 				rtx operands[], int *len, int t_len);
 extern rtx avr_incoming_return_addr_rtx (void);
+extern rtx avr_legitimize_reload_address (rtx, enum machine_mode, int, int, int, int, rtx (*)(rtx,int));
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE

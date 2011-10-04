@@ -1290,6 +1290,87 @@ avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 }
 
 
+/* Implement `LEGITIMIZE_RELOAD_ADDRESS'.  */
+/* This will allow register R26/27 to be used where it is no worse than normal
+   base pointers R28/29 or R30/31.  For example, if base offset is greater
+   than 63 bytes or for R++ or --R addressing.  */
+
+rtx
+avr_legitimize_reload_address (rtx x, enum machine_mode mode,
+                               int opnum, int type, int addr_type,
+                               int ind_levels ATTRIBUTE_UNUSED,
+                               rtx (*mk_memloc)(rtx,int))
+{
+  if (avr_log.legitimize_reload_address)
+    avr_edump ("\n%?:%m %r\n", mode, x);
+  
+  if (1 && (GET_CODE (x) == POST_INC
+            || GET_CODE (x) == PRE_DEC))
+    {
+      push_reload (XEXP (x, 0), XEXP (x, 0), &XEXP (x, 0), &XEXP (x, 0),
+                   POINTER_REGS, GET_MODE (x), GET_MODE (x), 0, 0,
+                   opnum, RELOAD_OTHER);
+      
+      if (avr_log.legitimize_reload_address)
+        avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+                   POINTER_REGS, XEXP (x, 0), XEXP (x, 0));
+      
+      return x;
+    }
+  
+  if (GET_CODE (x) == PLUS
+      && REG_P (XEXP (x, 0))
+      && 0 == reg_equiv_constant (REGNO (XEXP (x, 0)))
+      && CONST_INT_P (XEXP (x, 1))
+      && INTVAL (XEXP (x, 1)) >= 1)
+    {
+      bool fit = INTVAL (XEXP (x, 1)) <= MAX_LD_OFFSET (mode);
+      
+      if (fit)
+        {
+          if (reg_equiv_address (REGNO (XEXP (x, 0))) != 0)
+            {
+              int regno = REGNO (XEXP (x, 0));
+              rtx mem = mk_memloc (x, regno);
+              
+              push_reload (XEXP (mem, 0), NULL_RTX, &XEXP (mem, 0), NULL,
+                           POINTER_REGS, Pmode, VOIDmode, 0, 0,
+                           1, addr_type);
+              
+              if (avr_log.legitimize_reload_address)
+                avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+                           POINTER_REGS, XEXP (mem, 0), NULL_RTX);
+              
+              push_reload (mem, NULL_RTX, &XEXP (x, 0), NULL,
+                           BASE_POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
+                           opnum, type);
+              
+              if (avr_log.legitimize_reload_address)
+                avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+                           BASE_POINTER_REGS, mem, NULL_RTX);
+              
+              return x;
+            }
+        }
+      else if (! (frame_pointer_needed
+                  && XEXP (x, 0) == frame_pointer_rtx))
+        {
+          push_reload (x, NULL_RTX, &x, NULL,
+                       POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
+                       opnum, type);
+          
+          if (avr_log.legitimize_reload_address)
+            avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+                       POINTER_REGS, x, NULL_RTX);
+          
+          return x;
+        }
+    }
+  
+  return NULL_RTX;
+}
+
+
 /* Helper function to print assembler resp. track instruction
    sequence lengths.
    
