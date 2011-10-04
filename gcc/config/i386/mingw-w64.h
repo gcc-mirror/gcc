@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} " \
 		 "%{municode:-DUNICODE} " \
-		 "%{" SPEC_PTHREAD1 ":-D_REENTRANCE} " \
-		 "%{" SPEC_PTHREAD2 ":-U_REENTRANCE} "
+		 "%{" SPEC_PTHREAD1 ":-D_REENTRANT} " \
+		 "%{" SPEC_PTHREAD2 ":-U_REENTRANT} "
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
