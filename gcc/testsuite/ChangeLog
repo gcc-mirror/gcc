@@ -1,3 +1,7 @@
+2011-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/restrict-4.c: New test.
+
 2011-10-04  Artem Shinkarov  <artyom.shinkaroff@gmail.com>
 
 	* gcc.c-torture/execute/vector-compare-1.c: Fix trailing white

@@ -1,3 +1,11 @@
+2011-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.c (fold_unary_loc): Don't optimize
+	POINTER_PLUS_EXPR casted to TYPE_RESTRICT pointer by
+	casting the inner pointer if it isn't TYPE_RESTRICT.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Don't through
+	casts from non-TYPE_RESTRICT pointer to TYPE_RESTRICT pointer.
+
 2011-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (i[34567]86-*-elf*, x86_64-*-elf*): Use

@@ -804,6 +804,11 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && ((rhs_code == SSA_NAME && rhs == name)
 	  || CONVERT_EXPR_CODE_P (rhs_code)))
     {
+      /* Don't propagate restrict pointer's RHS.  */
+      if (TYPE_RESTRICT (TREE_TYPE (lhs))
+	  && !TYPE_RESTRICT (TREE_TYPE (name))
+	  && !is_gimple_min_invariant (def_rhs))
+	return false;
       /* Only recurse if we don't deal with a single use or we cannot
 	 do the propagation to the current statement.  In particular
 	 we can end up with a conversion needed for a non-invariant
