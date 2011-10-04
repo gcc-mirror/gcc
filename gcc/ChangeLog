@@ -1,3 +1,8 @@
+2011-10-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* longlong.h (smul_ppmm, sdiv_qrnnd): Add underscores to the local
+	variables.  Fix second operand of DR.  Swap inputs for sdiv_qrnnd.
+
 2011-10-03  Jakub Jelinek  <jakub@redhat.com>
 	    Ian Lance Taylor  <iant@google.com>
 

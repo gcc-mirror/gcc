@@ -343,23 +343,24 @@ UDItype __umulsidi3 (USItype, USItype);
 #else
 #define smul_ppmm(xh, xl, m0, m1) \
   do {                                                                  \
-    register SItype r0 __asm__ ("0");                                   \
-    register SItype r1 __asm__ ("1") = m0;                              \
+    register SItype __r0 __asm__ ("0");					\
+    register SItype __r1 __asm__ ("1") = (m0);				\
                                                                         \
     __asm__ ("mr\t%%r0,%3"                                              \
-             : "=r" (r0), "=r" (r1)                                     \
-             : "r"  (r1),  "r" (m1));                                   \
-    (xh) = r0; (xl) = r1;                                               \
+             : "=r" (__r0), "=r" (__r1)					\
+             : "r"  (__r1),  "r" (m1));					\
+    (xh) = __r0; (xl) = __r1;						\
   } while (0)
+
 #define sdiv_qrnnd(q, r, n1, n0, d) \
-  do {									\
-    register SItype r0 __asm__ ("0") = n0;                              \
-    register SItype r1 __asm__ ("1") = n1;                              \
+  do {                                                                  \
+    register SItype __r0 __asm__ ("0") = (n1);				\
+    register SItype __r1 __asm__ ("1") = (n0);				\
                                                                         \
-    __asm__ ("dr\t%%r0,%3"						\
-	     : "=r" (r0), "=r" (r1)		         		\
-	     : "r" (r0), "r" (r1), "r" (d));				\
-    (q) = r0; (r) = r1;                  				\
+    __asm__ ("dr\t%%r0,%4"                                              \
+             : "=r" (__r0), "=r" (__r1)					\
+             : "r" (__r0), "r" (__r1), "r" (d));			\
+    (q) = __r1; (r) = __r0;						\
   } while (0)
 #endif /* __zarch__ */
 #endif
