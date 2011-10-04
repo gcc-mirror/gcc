@@ -386,6 +386,8 @@ namespace __gnu_test
       typedef std::integral_constant<bool, Propagate> trait_type;
 
     public:
+      // default allocator_traits::rebind_alloc would select
+      // uneq_allocator::rebind so we must define rebind here
       template<typename Up>
 	struct rebind { typedef propagating_allocator<Up, Propagate> other; };
 
@@ -432,6 +434,32 @@ namespace __gnu_test
       propagating_allocator select_on_container_copy_construction() const
       { return Propagate ? *this : propagating_allocator(); }
     };
+
+  // Class template supporting the minimal interface that satisfies the
+  // Allocator requirements, from example in [allocator.requirements]
+  template <class Tp>
+    struct SimpleAllocator
+    {
+      typedef Tp value_type;
+
+      SimpleAllocator() { }
+
+      template <class T>
+        SimpleAllocator(const SimpleAllocator<T>& other) { }
+
+      Tp *allocate(std::size_t n)
+      { return std::allocator<Tp>().allocate(n); }
+
+      void deallocate(Tp *p, std::size_t n)
+      { std::allocator<Tp>().deallocate(p, n); }
+    };
+
+  template <class T, class U>
+    bool operator==(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
+    { return true; }
+  template <class T, class U>
+    bool operator!=(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
+    { return false; }
 
 #endif
 
