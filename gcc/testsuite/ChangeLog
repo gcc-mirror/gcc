@@ -1,3 +1,10 @@
+2011-10-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/49662
+	* gcc.dg/graphite/interchange-14.c: Remove xfail *-*-*.
+	* gcc.dg/graphite/interchange-15.c: Likewise.
+	* gcc.dg/graphite/interchange-mvt.c: Likewise.
+
 2011-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/restrict-4.c: New test.

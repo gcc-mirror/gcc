@@ -59,6 +59,6 @@ main (void)
 }
 
 /* PRE destroys the perfect nest and we can't cope with that yet.  */
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */
 
