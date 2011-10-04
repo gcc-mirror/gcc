@@ -1,3 +1,7 @@
+2011-10-04  Andrew Haley  <aph@redhat.com>
+
+        * src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Clear icache.
+
 2011-09-04  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR libffi/49594
