@@ -1,3 +1,7 @@
+2011-10-03  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* tree-eh.c (remove_unreachable_handlers): Obvious cleanup.
+
 2011-10-03  Jakub Jelinek  <jakub@redhat.com>
 	    Ian Lance Taylor  <iant@google.com>
 
