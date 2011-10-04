@@ -39,17 +39,17 @@ int main (int argc, char *argv[]) {
     int i;
 
     i0 = (vector (4, INT)){argc, 1,  2,  10};
-    i1 = (vector (4, INT)){0, 3, 2, (INT)-23};    
+    i1 = (vector (4, INT)){0, 3, 2, (INT)-23};
     test (4, i0, i1, ires, "%i");
 #undef INT
 
-#define INT unsigned int 
+#define INT unsigned int
     vector (4, int) ures;
     vector (4, INT) u0;
     vector (4, INT) u1;
 
     u0 = (vector (4, INT)){argc, 1,  2,  10};
-    u1 = (vector (4, INT)){0, 3, 2, (INT)-23};    
+    u1 = (vector (4, INT)){0, 3, 2, (INT)-23};
     test (4, u0, u1, ures, "%u");
 #undef INT
 
@@ -60,7 +60,7 @@ int main (int argc, char *argv[]) {
     vector (8, short) sres;
 
     s0 = (vector (8, SHORT)){argc, 1,  2,  10,  6, 87, (SHORT)-5, 2};
-    s1 = (vector (8, SHORT)){0, 3, 2, (SHORT)-23, 12, 10, (SHORT)-2, 0};    
+    s1 = (vector (8, SHORT)){0, 3, 2, (SHORT)-23, 12, 10, (SHORT)-2, 0};
     test (8, s0, s1, sres, "%i");
 #undef SHORT
 
@@ -70,7 +70,7 @@ int main (int argc, char *argv[]) {
     vector (8, short) usres;
 
     us0 = (vector (8, SHORT)){argc, 1,  2,  10,  6, 87, (SHORT)-5, 2};
-    us1 = (vector (8, SHORT)){0, 3, 2, (SHORT)-23, 12, 10, (SHORT)-2, 0};    
+    us1 = (vector (8, SHORT)){0, 3, 2, (SHORT)-23, 12, 10, (SHORT)-2, 0};
     test (8, us0, us1, usres, "%u");
 #undef SHORT
 
@@ -102,19 +102,19 @@ int main (int argc, char *argv[]) {
 /* Float comparison.  */
     vector (4, float) f0;
     vector (4, float) f1;
-    vector (4, int) ifres;
+    __typeof (f0 == f1) ifres;
 
     f0 = (vector (4, float)){(float)argc, 1.,  2.,  10.};
-    f1 = (vector (4, float)){0., 3., 2., (float)-23};    
+    f1 = (vector (4, float)){0., 3., 2., (float)-23};
     test (4, f0, f1, ifres, "%f");
-    
+
 /* Double comparison.  */
     vector (2, double) d0;
     vector (2, double) d1;
-    vector (2, long long) idres;
+    __typeof (d0 == d1) idres;
 
     d0 = (vector (2, double)){(double)argc,  10.};
-    d1 = (vector (2, double)){0., (double)-23};    
+    d1 = (vector (2, double)){0., (double)-23};
     test (2, d0, d1, idres, "%f");
 
 
