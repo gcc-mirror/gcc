@@ -70,7 +70,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     struct _Vector_base
     {
-      typedef typename _Alloc::template rebind<_Tp>::other _Tp_alloc_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+        rebind<_Tp>::other _Tp_alloc_type;
       typedef typename __gnu_cxx::__alloc_traits<_Tp_alloc_type>::pointer
        	pointer;
 
@@ -643,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**  Returns the size() of the largest possible %vector.  */
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
-      { return _M_get_Tp_allocator().max_size(); }
+      { return _Alloc_traits::max_size(_M_get_Tp_allocator()); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**

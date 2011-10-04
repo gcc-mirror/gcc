@@ -1,3 +1,19 @@
+2011-10-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/alloc_traits.h (__alloc_traits::max_size): Define.
+	(__alloc_traits::rebind): Define.
+	* include/bits/stl_vector.h: Use them.
+	* testsuite/util/testsuite_allocator.h (SimpleAllocator): Define.
+	* testsuite/23_containers/vector/allocator/minimal.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2011-10-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/pointer_traits/pointer_to.cc: Define equality
