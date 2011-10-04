@@ -1052,6 +1052,12 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
     }
 }
 
+/* List of file_decl_datas */
+struct file_data_list
+  {
+    struct lto_file_decl_data *first, *last;
+  };
+
 /* Is the name for a id'ed LTO section? */
 
 static int 
@@ -1068,11 +1074,10 @@ lto_section_with_id (const char *name, unsigned HOST_WIDE_INT *id)
 /* Create file_data of each sub file id */
 
 static int 
-create_subid_section_table (void **slot, void *data)
+create_subid_section_table (struct lto_section_slot *ls, splay_tree file_ids,
+                            struct file_data_list *list)
 {
   struct lto_section_slot s_slot, *new_slot;
-  struct lto_section_slot *ls = *(struct lto_section_slot **)slot;
-  splay_tree file_ids = (splay_tree)data;
   unsigned HOST_WIDE_INT id;
   splay_tree_node nd;
   void **hash_slot;
@@ -1095,6 +1100,13 @@ create_subid_section_table (void **slot, void *data)
       file_data->id = id;
       file_data->section_hash_table = lto_obj_create_section_hash_table ();;
       lto_splay_tree_insert (file_ids, id, file_data);
+
+      /* Maintain list in linker order */
+      if (!list->first)
+        list->first = file_data;
+      if (list->last)
+        list->last->next = file_data;
+      list->last = file_data;
     }
 
   /* Copy section into sub module hash table */
@@ -1129,27 +1141,17 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
   lto_free_section_data (file_data, LTO_section_decls, NULL, data, len);
 }
 
-struct lwstate
+/* Finalize FILE_DATA in FILE and increase COUNT. */
+
+static int 
+lto_create_files_from_ids (lto_file *file, struct lto_file_decl_data *file_data, 
+			   int *count)
 {
-  lto_file *file;
-  struct lto_file_decl_data **file_data;
-  int *count;
-};
-
-/* Traverse ids and create a list of file_datas out of it. */      
-
-static int lto_create_files_from_ids (splay_tree_node node, void *data)
-{
-  struct lwstate *lw = (struct lwstate *)data;
-  struct lto_file_decl_data *file_data = (struct lto_file_decl_data *)node->value;
-
-  lto_file_finalize (file_data, lw->file);
+  lto_file_finalize (file_data, file);
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Creating file %s with sub id " HOST_WIDE_INT_PRINT_HEX "\n", 
 	     file_data->file_name, file_data->id);
-  file_data->next = *lw->file_data;
-  *lw->file_data = file_data;
-  (*lw->count)++;
+  (*count)++;
   return 0;
 }
 
@@ -1166,29 +1168,31 @@ lto_file_read (lto_file *file, FILE *resolution_file, int *count)
   struct lto_file_decl_data *file_data = NULL;
   splay_tree file_ids;
   htab_t section_hash_table;
-  struct lwstate state;
-  
-  section_hash_table = lto_obj_build_section_table (file);
+  struct lto_section_slot *section;
+  struct file_data_list file_list;
+  struct lto_section_list section_list;
+ 
+  memset (&section_list, 0, sizeof (struct lto_section_list)); 
+  section_hash_table = lto_obj_build_section_table (file, &section_list);
 
   /* Find all sub modules in the object and put their sections into new hash
      tables in a splay tree. */
   file_ids = lto_splay_tree_new ();
-  htab_traverse (section_hash_table, create_subid_section_table, file_ids);
-  
+  memset (&file_list, 0, sizeof (struct file_data_list));
+  for (section = section_list.first; section != NULL; section = section->next)
+    create_subid_section_table (section, file_ids, &file_list);
+
   /* Add resolutions to file ids */
   lto_resolution_read (file_ids, resolution_file, file);
 
-  /* Finalize each lto file for each submodule in the merged object
-     and create list for returning. */
-  state.file = file;
-  state.file_data = &file_data;
-  state.count = count;
-  splay_tree_foreach (file_ids, lto_create_files_from_ids, &state);
-    
+  /* Finalize each lto file for each submodule in the merged object */
+  for (file_data = file_list.first; file_data != NULL; file_data = file_data->next)
+    lto_create_files_from_ids (file, file_data, count);
+ 
   splay_tree_delete (file_ids);
   htab_delete (section_hash_table);
 
-  return file_data;
+  return file_list.first;
 }
 
 #if HAVE_MMAP_FILE && HAVE_SYSCONF && defined _SC_PAGE_SIZE
@@ -2427,7 +2431,7 @@ lto_read_all_file_options (void)
 
       file_data = XCNEW (struct lto_file_decl_data);
       file_data->file_name = file->filename;
-      file_data->section_hash_table = lto_obj_build_section_table (file);
+      file_data->section_hash_table = lto_obj_build_section_table (file, NULL);
 
       lto_read_file_options (file_data);
 

@@ -1,3 +1,20 @@
+2011-10-02   Andi Kleen <ak@linux.intel.com>
+
+	* lto-object.c (lto_obj_add_section_data): Add list.
+	(lto_obj_add_section): Fill in list.
+	(ltoobj_build_section_table): Pass through list.
+	* lto.c (file_data_list): Declare.
+	(create_subid_section_table): Pass arguments directly.
+	Fill in list of file_datas.
+	(lwstate): Delete.
+	(lto_create_files_from_ids): Pass in direct arguments.
+	Don't maintain list.
+	(lto_file_read): Use explicit section and file data lists.
+	(lto_read_all_file_options): Pass in section_list.
+	* lto.h (lto_obj_build_section_table): Add list.
+	(lto_section_slot): Add next.
+	(lto_section_list): Declare.
+
 2011-10-02  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/47247
