@@ -512,22 +512,29 @@ type_for_widest_vector_mode (enum machine_mode inner_mode, optab op, int satp)
 static tree
 vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 {
-  tree type;
+  tree vect_type, vect_elt_type;
   gimple asgn;
   tree tmpvec;
   tree arraytype;
   bool need_asgn = true;
+  unsigned int elements;
 
-  gcc_assert (TREE_CODE (TREE_TYPE (vect)) == VECTOR_TYPE);
+  vect_type = TREE_TYPE (vect);
+  vect_elt_type = TREE_TYPE (vect_type);
+  elements = TYPE_VECTOR_SUBPARTS (vect_type);
 
-  type = TREE_TYPE (vect);
   if (TREE_CODE (idx) == INTEGER_CST)
     {
       unsigned HOST_WIDE_INT index;
 
-      if (!host_integerp (idx, 1)
-           || (index = tree_low_cst (idx, 1)) > TYPE_VECTOR_SUBPARTS (type)-1)
-        return error_mark_node;
+      /* Given that we're about to compute a binary modulus,
+	 we don't care about the high bits of the value.  */
+      index = TREE_INT_CST_LOW (idx);
+      if (!host_integerp (idx, 1) || index >= elements)
+	{
+	  index &= elements - 1;
+	  idx = build_int_cst (TREE_TYPE (idx), index);
+	}
 
       if (TREE_CODE (vect) == VECTOR_CST)
         {
@@ -536,33 +543,30 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 	  for (i = 0; vals; vals = TREE_CHAIN (vals), ++i)
 	    if (i == index)
 	       return TREE_VALUE (vals);
-	  return error_mark_node;
+	  return build_zero_cst (vect_elt_type);
         }
       else if (TREE_CODE (vect) == CONSTRUCTOR)
         {
           unsigned i;
-          VEC (constructor_elt, gc) *vals = CONSTRUCTOR_ELTS (vect);
-          constructor_elt *elt;
+          tree elt_i, elt_v;
 
-          for (i = 0; VEC_iterate (constructor_elt, vals, i, elt); i++)
-            if (operand_equal_p (elt->index, idx, 0))
-              return elt->value;
-          return fold_convert (TREE_TYPE (type), integer_zero_node);
-        }
-      else if (TREE_CODE (vect) == SSA_NAME)
-        {
-	  tree size = TYPE_SIZE (TREE_TYPE (type));
-          tree pos = fold_build2 (MULT_EXPR, TREE_TYPE (idx), idx, size);
-          return fold_build3 (BIT_FIELD_REF, TREE_TYPE (type), vect, size, pos);
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (vect), i, elt_i, elt_v)
+            if (operand_equal_p (elt_i, idx, 0))
+              return elt_v;
+          return build_zero_cst (vect_elt_type);
         }
       else
-	return error_mark_node;
+        {
+	  tree size = TYPE_SIZE (vect_elt_type);
+          tree pos = fold_build2 (MULT_EXPR, TREE_TYPE (idx), idx, size);
+          return fold_build3 (BIT_FIELD_REF, vect_elt_type, vect, size, pos);
+        }
     }
 
   if (!ptmpvec)
-    tmpvec = create_tmp_var (TREE_TYPE (vect), "vectmp");
+    tmpvec = create_tmp_var (vect_type, "vectmp");
   else if (!*ptmpvec)
-    tmpvec = *ptmpvec = create_tmp_var (TREE_TYPE (vect), "vectmp");
+    tmpvec = *ptmpvec = create_tmp_var (vect_type, "vectmp");
   else
     {
       tmpvec = *ptmpvec;
@@ -576,17 +580,14 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
       gsi_insert_before (gsi, asgn, GSI_SAME_STMT);
     }
 
-  arraytype = build_array_type_nelts (TREE_TYPE (type),
-				      TYPE_VECTOR_SUBPARTS (TREE_TYPE (vect)));
-
-  return build4 (ARRAY_REF, TREE_TYPE (type),
+  arraytype = build_array_type_nelts (vect_elt_type, elements);
+  return build4 (ARRAY_REF, vect_elt_type,
                  build1 (VIEW_CONVERT_EXPR, arraytype, tmpvec),
                  idx, NULL_TREE, NULL_TREE);
 }
 
 /* Check if VEC_SHUFFLE_EXPR within the given setting is supported
-   by hardware, or lower it piecewise.  Function returns false when
-   the expression must be replaced with TRAP_RETURN, true otherwise.
+   by hardware, or lower it piecewise.
 
    When VEC_SHUFFLE_EXPR has the same first and second operands:
    VEC_SHUFFLE_EXPR <v0, v0, mask> the lowered version would be
@@ -597,162 +598,96 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
    {mask[0] < len(v0) ? v0[mask[0]] : v1[mask[0]], ...}
    V0 and V1 must have the same type.  MASK, V0, V1 must have the
    same number of arguments.  */
-static bool
-lower_vec_shuffle (gimple_stmt_iterator *gsi, location_t loc)
-{
 
+static void
+lower_vec_shuffle (gimple_stmt_iterator *gsi)
+{
   gimple stmt = gsi_stmt (*gsi);
   tree mask = gimple_assign_rhs3 (stmt);
   tree vec0 = gimple_assign_rhs1 (stmt);
   tree vec1 = gimple_assign_rhs2 (stmt);
-  unsigned els = TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask));
-  tree type0 = TREE_TYPE (TREE_TYPE (vec0));
-  VEC(constructor_elt,gc) *v = NULL;
-  tree vectype, constr;
-  tree vec0tmp = NULL_TREE, masktmp = NULL_TREE;
+  tree vect_type = TREE_TYPE (vec0);
+  tree mask_type = TREE_TYPE (mask);
+  tree vect_elt_type = TREE_TYPE (vect_type);
+  tree mask_elt_type = TREE_TYPE (mask_type);
+  unsigned int elements = TYPE_VECTOR_SUBPARTS (vect_type);
+  VEC(constructor_elt,gc) *v;
+  tree constr, t, si, i_val;
+  tree vec0tmp = NULL_TREE, vec1tmp = NULL_TREE, masktmp = NULL_TREE;
+  bool two_operand_p = !operand_equal_p (vec0, vec1, 0);
+  unsigned i;
 
-  if (expand_vec_shuffle_expr_p (TYPE_MODE (TREE_TYPE (vec0)), vec0, vec1, mask))
+  if (expand_vec_shuffle_expr_p (TYPE_MODE (vect_type), vec0, vec1, mask))
+    return;
+
+  v = VEC_alloc (constructor_elt, gc, elements);
+  for (i = 0; i < elements; i++)
     {
-      tree t;
+      si = size_int (i);
+      i_val = vector_element (gsi, mask, si, &masktmp);
 
-      t = gimplify_build3 (gsi, VEC_SHUFFLE_EXPR, TREE_TYPE (vec0),
-			   vec0, vec1, mask);
-      gimple_assign_set_rhs_from_tree (gsi, t);
-      /* Statement should be updated by callee.  */
-      return true;
-    }
-
-  if (operand_equal_p (vec0, vec1, 0))
-    {
-      unsigned i;
-      tree vec0tmp = NULL_TREE;
-
-      v = VEC_alloc (constructor_elt, gc, els);
-      for (i = 0; i < els; i++)
+      if (TREE_CODE (i_val) == INTEGER_CST)
         {
-          tree idxval, vecel, t;
+	  unsigned HOST_WIDE_INT index;
 
-	  idxval = vector_element (gsi, mask, size_int (i), &masktmp);
-          if (idxval == error_mark_node)
-            {
-              if (warning_at (loc, 0, "Invalid shuffling mask index %i", i))
-		inform (loc, "if this code is reached the programm will abort");
-	      return false;
-            }
+	  index = TREE_INT_CST_LOW (i_val);
+	  if (!host_integerp (i_val, 1) || index >= elements)
+	    i_val = build_int_cst (mask_elt_type, index & (elements - 1));
 
-	  vecel = vector_element (gsi, vec0, idxval, &vec0tmp);
-          if (vecel == error_mark_node)
-            {
-              if (warning_at (loc, 0, "Invalid shuffling arguments"))
-		inform (loc, "if this code is reached the programm will abort");
-	      return false;
-            }
+          if (two_operand_p && (index & elements) != 0)
+	    t = vector_element (gsi, vec1, i_val, &vec1tmp);
+	  else
+	    t = vector_element (gsi, vec0, i_val, &vec0tmp);
 
-          t = force_gimple_operand_gsi (gsi, vecel, true,
-					NULL_TREE, true, GSI_SAME_STMT);
-          CONSTRUCTOR_APPEND_ELT (v, size_int (i), t);
+          t = force_gimple_operand_gsi (gsi, t, true, NULL_TREE,
+					true, GSI_SAME_STMT);
         }
-    }
-  else
-    {
-      unsigned i;
-      tree var = create_tmp_var (type0, "vecel");
-      tree vec1tmp = NULL_TREE;
-
-      v = VEC_alloc (constructor_elt, gc, els);
-      for (i = 0; i < els; i++)
+      else
         {
-          tree idxval, idx1val, cond, elval0, elval1, condexpr, t, ssatmp;
-          tree vec0el, vec1el;
-          gimple asgn;
+	  tree cond = NULL_TREE, v0_val;
 
-          idxval = vector_element (gsi, mask, size_int (i), &masktmp);
-	  if (idxval == error_mark_node)
-            {
-              if (warning_at (loc, 0, "Invalid shuffling mask index %i", i))
-		inform (loc, "if this code is reached the programm will abort");
-	      return false;
+	  if (two_operand_p)
+	    {
+	      cond = fold_build2 (BIT_AND_EXPR, mask_elt_type, i_val,
+			          build_int_cst (mask_elt_type, elements));
+	      cond = force_gimple_operand_gsi (gsi, cond, true, NULL_TREE,
+					       true, GSI_SAME_STMT);
+	    }
+
+	  i_val = fold_build2 (BIT_AND_EXPR, mask_elt_type, i_val,
+			       build_int_cst (mask_elt_type, elements - 1));
+	  i_val = force_gimple_operand_gsi (gsi, i_val, true, NULL_TREE,
+					    true, GSI_SAME_STMT);
+
+	  v0_val = vector_element (gsi, vec0, i_val, &vec0tmp);
+	  v0_val = force_gimple_operand_gsi (gsi, v0_val, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+
+	  if (two_operand_p)
+	    {
+	      tree v1_val;
+
+	      v1_val = vector_element (gsi, vec1, i_val, &vec1tmp);
+	      v1_val = force_gimple_operand_gsi (gsi, v1_val, true, NULL_TREE,
+						 true, GSI_SAME_STMT);
+
+	      cond = fold_build2 (EQ_EXPR, boolean_type_node,
+				  cond, build_zero_cst (mask_elt_type));
+	      cond = fold_build3 (COND_EXPR, vect_elt_type,
+				  cond, v0_val, v1_val);
+              t = force_gimple_operand_gsi (gsi, cond, true, NULL_TREE,
+					    true, GSI_SAME_STMT);
             }
-
-          if (TREE_CODE (idxval) == INTEGER_CST)
-            {
-              if (tree_int_cst_lt (idxval, size_int (els)))
-                {
-                  vec0el = vector_element (gsi, vec0, idxval, &vec0tmp);
-                  t = force_gimple_operand_gsi (gsi, vec0el,
-                                    true, NULL_TREE, true, GSI_SAME_STMT);
-                }
-              else if (tree_int_cst_lt (idxval, size_int (2*els)))
-                {
-                  idx1val = fold_build2 (MINUS_EXPR, TREE_TYPE (idxval),
-                        idxval, build_int_cst (TREE_TYPE (idxval), els));
-
-                  vec1el = vector_element (gsi, vec1, idx1val, &vec1tmp);
-                  t = force_gimple_operand_gsi (gsi, vec1el, true,
-						NULL_TREE, true, GSI_SAME_STMT);
-                }
-              else
-                {
-                  if (warning_at (loc, 0, "Invalid shuffling mask index %i", i))
-		    inform (loc, "if this code is reached the "
-				  "programm will abort");
-		  return false;
-                }
-            }
-          else
-            {
-
-              idx1val = fold_build2 (MINUS_EXPR, TREE_TYPE (idxval),
-                            idxval, build_int_cst (TREE_TYPE (idxval), els));
-              idx1val = force_gimple_operand_gsi (gsi, idx1val,
-                                true, NULL_TREE, true, GSI_SAME_STMT);
-              cond = fold_build2 (GT_EXPR, boolean_type_node, \
-                             idxval, fold_convert (type0, size_int (els - 1)));
-
-	      vec0el = vector_element (gsi, vec0, idxval, &vec0tmp);
-              if (vec0el == error_mark_node)
-                {
-                  if (warning_at (loc, 0, "Invalid shuffling arguments"))
-		    inform (loc, "if this code is reached the "
-				 "programm will abort");
-		  return false;
-                }
-
-              elval0 = force_gimple_operand_gsi (gsi, vec0el,
-                                true, NULL_TREE, true, GSI_SAME_STMT);
-
-	      vec1el = vector_element (gsi, vec1, idx1val, &vec1tmp);
-              if (vec1el == error_mark_node)
-                {
-                  if (warning_at (loc, 0, "Invalid shuffling arguments"))
-		    inform (loc, "if this code is reached the "
-				 "programm will abort");
-		  return false;
-                }
-
-              elval1 = force_gimple_operand_gsi (gsi, vec1el,
-                                true, NULL_TREE, true, GSI_SAME_STMT);
-
-              condexpr = fold_build3 (COND_EXPR, type0, cond, \
-                                      elval1, elval0);
-
-              t = force_gimple_operand_gsi (gsi, condexpr, true, \
-                                        NULL_TREE, true, GSI_SAME_STMT);
-            }
-
-          asgn = gimple_build_assign (var, t);
-          ssatmp = make_ssa_name (var, asgn);
-          gimple_assign_set_lhs (asgn, ssatmp);
-          gsi_insert_before (gsi, asgn, GSI_SAME_STMT);
-          CONSTRUCTOR_APPEND_ELT (v, size_int (i), ssatmp);
+	  else
+	    t = v0_val;
         }
+
+      CONSTRUCTOR_APPEND_ELT (v, si, t);
     }
 
-  vectype = build_vector_type (type0, els);
-  constr = build_constructor (vectype, v);
+  constr = build_constructor (vect_type, v);
   gimple_assign_set_rhs_from_tree (gsi, constr);
-  /* Statement should be updated by callee.  */
-  return true;
+  update_stmt (gsi_stmt (*gsi));
 }
 
 /* Process one statement.  If we identify a vector operation, expand it.  */
@@ -777,21 +712,8 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 
   if (code == VEC_SHUFFLE_EXPR)
     {
-      if (!lower_vec_shuffle (gsi, gimple_location (stmt)))
-	{
-	  gimple new_stmt;
-	  tree vec0;
-
-	  vec0 = gimple_assign_rhs1 (stmt);
-	  new_stmt = gimple_build_call (built_in_decls[BUILT_IN_TRAP], 0);
-	  gsi_insert_before (gsi, new_stmt,  GSI_SAME_STMT);
-	  split_block (gimple_bb (new_stmt), new_stmt);
-	  new_stmt = gimple_build_assign (gimple_assign_lhs (stmt), vec0);
-	  gsi_replace (gsi, new_stmt, false);
-	}
-
-      gimple_set_modified (gsi_stmt (*gsi), true);
-      update_stmt (gsi_stmt (*gsi));
+      lower_vec_shuffle (gsi);
+      return;
     }
 
   if (rhs_class != GIMPLE_UNARY_RHS && rhs_class != GIMPLE_BINARY_RHS)

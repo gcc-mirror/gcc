@@ -1,3 +1,11 @@
+2011-10-05  Richard Henderson  <rth@redhat.com>
+
+	* tree-vect-generic.c (vector_element): Never fail.  Use
+	build_zero_cst.  Tidy up type references.
+	(lower_vec_shuffle): Never fail.  Mask shuffle indicies.  Reduce
+	code duplication.  Do update_stmt here ...
+	(expand_vector_operations_1): ... not here.
+
 2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (distance_non_agu_define): Simplify calculation
