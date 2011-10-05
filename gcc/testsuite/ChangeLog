@@ -1,3 +1,14 @@
+2011-10-05  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/vect-shuffle-1.c: Rewrite.
+	* gcc.c-torture/execute/vect-shuffle-2.c: Rewrite.
+	* gcc.c-torture/execute/vect-shuffle-3.c: Rewrite.
+	* gcc.c-torture/execute/vect-shuffle-4.c: Rewrite.
+	* gcc.c-torture/execute/vect-shuffle-5.c: Rewrite.
+	* gcc.c-torture/execute/vect-shuffle-6.c: New test.
+	* gcc.c-torture/execute/vect-shuffle-7.c: New test.
+	* gcc.c-torture/execute/vect-shuffle-8.c: New test.
+
 2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect.exp (VEC_CFLAGS): Move initialization after

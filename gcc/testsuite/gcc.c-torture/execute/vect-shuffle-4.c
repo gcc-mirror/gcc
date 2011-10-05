@@ -1,50 +1,51 @@
-#define vector(elcount, type)  \
-__attribute__((vector_size((elcount)*sizeof(type)))) type
+typedef unsigned char V __attribute__((vector_size(16), may_alias));
 
-#define vidx(type, vec, idx) (*(((type *) &(vec)) + idx))
+struct S
+{
+  V in, mask, out;
+};
 
-#define shuf2compare(type, count, vres, v0, v1, mask) \
-do { \
-    int __i; \
-    for (__i = 0; __i < count; __i++) { \
-        if (vidx(type, vres, __i) != ((vidx(type, mask, __i) < count) ? \
-                          vidx(type, v0, vidx(type, mask, __i)) :  \
-                          vidx(type, v1, (vidx(type, mask, __i) - count)))) \
-            __builtin_abort (); \
-        } \
-} while (0)
+struct S tests[] = {
+  {
+    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 },
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, },
+    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 },
+  },
+  {
+    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 },
+    { 0x10, 0x21, 0x32, 0x43, 0x54, 0x65, 0x76, 0x87,
+      0x98, 0xa9, 0xba, 0xcb, 0xdc, 0xed, 0xfe, 0xff },
+    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 },
+  },
+  {
+    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 },
+    { 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 },
+    { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 },
+  },
+  {
+    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 },
+    { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 },
+    { 1, 3, 5, 7, 9, 11, 13, 15, 2, 4, 6, 8, 10, 12, 14, 16 },
+  },
+  {
+    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 },
+    { 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 }, 
+    { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 }, 
+  },
+};
 
+extern void abort(void);
 
-vector (8, short) __attribute__ ((noinline))
-f (vector (8, short) x, vector (8, short) y, vector (8, short) mask) {
-    return __builtin_shuffle (x, y, mask);
+int main()
+{
+  int i;
+
+  for (i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i)
+    {
+      V r = __builtin_shuffle(tests[i].in, tests[i].mask);
+      if (memcmp(&r, &tests[i].out, sizeof(V)) != 0)
+	abort();
+    }
+
+  return 0;
 }
-
-
-
-int main (int argc, char *argv[]) {
-    vector (8, short) v0 = {argc, 1,2,3,4,5,6,7};
-    vector (8, short) v1 = {argc, 1,argc,3,4,5,argc,7};
-    vector (8, short) v2;
-
-    //vector (8, short) mask = {1,2,5,4,3,6,7};
-
-    vector (8, short) mask0 = {0,2,3,1,4,5,6,7};
-    vector (8, short) mask1 = {0,12,3,4,3,0,10,9};
-    vector (8, short) mask2 = {0,8,1,9,2,10,3,11};
-
-    v2 = f (v0, v1,  mask0);
-    shuf2compare (short, 8, v2, v0, v1, mask0);
-
-    v2 = f (v0, v1,  mask1);
-    shuf2compare (short, 8, v2, v0, v1, mask1);
-
-    v2 = f (v0, v1,  mask2);
-    shuf2compare (short, 8, v2, v0, v1, mask2);
-
-    v2 = f (mask0, mask0,  v0);
-    shuf2compare (short, 8, v2, mask0, mask0, v0);
-
-    return 0;
-}
-
