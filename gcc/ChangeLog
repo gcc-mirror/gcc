@@ -1,3 +1,10 @@
+2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_binop): New static function.
+	(ix86_split_lea_for_addr): Use ix86_emit_binop to emit add and shl
+	instructions.
+	(x86_output_mi_thunk): Use ix86_emit_binop to emit add instructions.
+
 2011-10-04  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (UNSPEC_FHADD, UNSPEC_FHSUB,

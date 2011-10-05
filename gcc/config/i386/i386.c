@@ -16470,6 +16470,21 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
   return !ix86_lea_outperforms (insn, regno0, regno1, regno2, split_cost);
 }
 
+/* Emit x86 binary operand CODE in mode MODE, where the first operand
+   matches destination.  RTX includes clobber of FLAGS_REG.  */
+
+static void
+ix86_emit_binop (enum rtx_code code, enum machine_mode mode,
+		 rtx dst, rtx src)
+{
+  rtx op, clob;
+
+  op = gen_rtx_SET (VOIDmode, dst, gen_rtx_fmt_ee (code, mode, dst, src));
+  clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+  
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clob)));
+}
+
 /* Split lea instructions into a sequence of instructions
    which are executed on ALU to avoid AGU stalls.
    It is assumed that it is allowed to clobber flags register
@@ -16482,8 +16497,7 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
   unsigned int regno1 = INVALID_REGNUM;
   unsigned int regno2 = INVALID_REGNUM;
   struct ix86_address parts;
-  rtx tmp, clob;
-  rtvec par;
+  rtx tmp;
   int ok, adds;
 
   ok = ix86_decompose_address (operands[1], &parts);
@@ -16515,14 +16529,7 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 	  gcc_assert (regno2 != regno0);
 
 	  for (adds = parts.scale; adds > 0; adds--)
-	    {
-	      tmp = gen_rtx_PLUS (mode, operands[0], parts.index);
-	      tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
-	      clob = gen_rtx_CLOBBER (VOIDmode,
-				      gen_rtx_REG (CCmode, FLAGS_REG));
-	      par = gen_rtvec (2, tmp, clob);
-	      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
-	    }
+	    ix86_emit_binop (PLUS, mode, operands[0], parts.index);
 	}
       else
 	{
@@ -16531,30 +16538,14 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
 
 	  /* Use shift for scaling.  */
-	  tmp = gen_rtx_ASHIFT (mode, operands[0],
-				GEN_INT (exact_log2 (parts.scale)));
-	  tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
-	  clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-	  par = gen_rtvec (2, tmp, clob);
-	  emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+	  ix86_emit_binop (ASHIFT, mode, operands[0],
+			   GEN_INT (exact_log2 (parts.scale)));
 
 	  if (parts.base)
-	    {
-	      tmp = gen_rtx_PLUS (mode, operands[0], parts.base);
-	      tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
-	      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-	      par = gen_rtvec (2, tmp, clob);
-	      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
-	    }
+	    ix86_emit_binop (PLUS, mode, operands[0], parts.base);
 
 	  if (parts.disp && parts.disp != const0_rtx)
-	    {
-	      tmp = gen_rtx_PLUS (mode, operands[0], parts.disp);
-	      tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
-	      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-	      par = gen_rtvec (2, tmp, clob);
-	      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
-	    }
+	    ix86_emit_binop (PLUS, mode, operands[0], parts.disp);
 	}
     }
   else if (!parts.base && !parts.index)
@@ -16565,41 +16556,32 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
   else
     {
       if (!parts.base)
-      {
-        if (regno0 != regno2)
-	  emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
-      }
+	{
+	  if (regno0 != regno2)
+	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
+	}
       else if (!parts.index)
-      {
-        if (regno0 != regno1)
-          emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
-      }
-      else
-      {
-	if (regno0 == regno1)
-	  tmp = gen_rtx_PLUS (mode, operands[0], parts.index);
-	else if (regno0 == regno2)
-	  tmp = gen_rtx_PLUS (mode, operands[0], parts.base);
-	else
-	  {
+	{
+	  if (regno0 != regno1)
 	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
-	    tmp = gen_rtx_PLUS (mode, operands[0], parts.index);
-	  }
+	}
+      else
+	{
+	  if (regno0 == regno1)
+	    tmp = parts.index;
+	  else if (regno0 == regno2)
+	    tmp = parts.base;
+	  else
+	    {
+	      emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
+	      tmp = parts.index;
+	    }
 
-        tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
-	clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-	par = gen_rtvec (2, tmp, clob);
-	emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
-      }
+	  ix86_emit_binop (PLUS, mode, operands[0], tmp);
+	}
 
       if (parts.disp && parts.disp != const0_rtx)
-      {
-        tmp = gen_rtx_PLUS (mode, operands[0], parts.disp);
-        tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
-	clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-	par = gen_rtvec (2, tmp, clob);
-	emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
-      }
+	ix86_emit_binop (PLUS, mode, operands[0], parts.disp);
     }
 }
 
@@ -30940,7 +30922,7 @@ x86_output_mi_thunk (FILE *file,
 	    }
 	}
 
-      emit_insn (ix86_gen_add3 (delta_dst, delta_dst, delta_rtx));
+      ix86_emit_binop (PLUS, Pmode, delta_dst, delta_rtx);
     }
 
   /* Adjust the this parameter by a value stored in the vtable.  */
@@ -30983,7 +30965,7 @@ x86_output_mi_thunk (FILE *file,
 						  REGNO (this_reg)),
 				     vcall_mem));
       else
-	emit_insn (ix86_gen_add3 (this_reg, this_reg, vcall_mem));
+	ix86_emit_binop (PLUS, Pmode, this_reg, vcall_mem);
     }
 
   /* If necessary, drop THIS back to its stack slot.  */
