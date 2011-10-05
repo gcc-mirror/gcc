@@ -10,8 +10,7 @@
 	umulxhi_v8plus, xmulx_vis, *xmulx_sp64, xmulx_v8plus,
 	xmulxhi_vis, *xmulxhi_sp64, xmulxhi_v8plus): New VIS 3.0
 	builtins patterns.
-	* config/sparc/sparc.c (sparc_vis_init_builtins): Emit new
-	builtins.
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Emit new builtins.
 	(output_v8plus_mult): New function.
 	* config/sparc/sparc-protos.h: Declare it.
 	* config/sparc/visintrin.h (__vis_fhadds, __vis_fhaddd,
@@ -26,8 +25,7 @@
 
 2011-10-04  Ozkan Sezer  <sezeroz@gmail.com>
 
-	* config/i386/mingw-w64.h (CPP_SPEC): Rename _REENTRANCE to
-	_REENTRANT.
+	* config/i386/mingw-w64.h (CPP_SPEC): Rename _REENTRANCE to _REENTRANT.
 	* config/i386/mingw32.h (CPP_SPEC): Likewise.
 
 2011-10-04  David S. Miller  <davem@davemloft.net>
@@ -40,8 +38,7 @@
 	PR tree-optimization/50604
 	* builtins.c (fold_builtin_strcpy, fold_builtin_stpcpy,
 	fold_builtin_strncpy, fold_builtin_stxcpy_chk): Ensure
-	last argument to memcpy has size_type_node type instead of
-	ssizetype.
+	last argument to memcpy has size_type_node type instead of ssizetype.
 	* tree-ssa-strlen.c (handle_builtin_memcpy): Use size_type_node
 	instead of TREE_TYPE (len) as type for newlen.
 
@@ -59,8 +56,7 @@
 
 2011-10-04  Joseph Myers  <joseph@codesourcery.com>
 
-	* config.gcc (i[34567]86-*-elf*, x86_64-*-elf*): Use
-	i386/t-crtstuff.
+	* config.gcc (i[34567]86-*-elf*, x86_64-*-elf*): Use i386/t-crtstuff.
 
 2011-10-04  Jan Hubicka  <jh@suse.cz>
 
@@ -143,8 +139,8 @@
 	RTL using zero_extract.
 	(bshuffle<V64I:mode>_vis): Put the GSR use inside of the unspec.
 
-	* config/sparc/sparc.md (bshuffle<V64I:mode>_vis): Don't wrap GSR_REG in
-	a USE, since it's now a true arg to the UNSPEC.
+	* config/sparc/sparc.md (bshuffle<V64I:mode>_vis): Don't wrap
+	GSR_REG in a USE, since it's now a true arg to the UNSPEC.
 
 2011-10-03  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
 
@@ -265,7 +261,8 @@
 	* lto-symtab.c (lto_symtab_resolve_symbols): Do not resolve
 	when resolution is already availbale from plugin.
 	(lto_symtab_merge_decls_1): Handle LDPR_PREVAILING_DEF_IRONLY_EXP.
-	* cgraph.c (ld_plugin_symbol_resolution): Add prevailing_def_ironly_exp.
+	* cgraph.c (ld_plugin_symbol_resolution): Add
+	prevailing_def_ironly_exp.
 	* lto-cgraph.c (LDPR_NUM_KNOWN): Update.
 	* ipa.c (varpool_externally_visible_p): IRONLY variables are never
 	externally visible.
@@ -290,12 +287,12 @@
 	(vis3_shift_insn, vis3_addsub_ss_insn): New code attributes.
 	(cmask8<P:mode>_vis, cmask16<P:mode>_vis, cmask32<P:mode>_vis,
 	fchksm16_vis, <vis3_shift_insn><vbits>_vis, pdistn<mode>_vis,
-	fmean16_vis, fpadd64_vis, fpsub64_vis, <vis3_addsub_ss_insn><vbits>_vis,
-	fucmp<code>8<P:mode>_vis): New VIS 3.0 instruction patterns.
+	fmean16_vis, fpadd64_vis, fpsub64_vis,
+	<vis3_addsub_ss_insn><vbits>_vis, fucmp<code>8<P:mode>_vis): New
+	VIS 3.0 instruction patterns.
 	* config/sparc/sparc.c (sparc_option_override): Set MASK_VIS3 by
 	default when targetting capable cpus.  TARGET_VIS3 implies
-	TARGET_VIS2 and TARGET_VIS, and clear them when TARGET_FPU is
-	disabled.
+	TARGET_VIS2 and TARGET_VIS, and clear them when TARGET_FPU is disabled.
 	(sparc_vis_init_builtins): Emit new VIS 3.0 builtins.
 	(sparc_fold_builtin): Do not eliminate cmask{8,16,32} when result
 	is ignored.
@@ -463,7 +460,7 @@
 
 2011-09-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-        PR target/50099
+	PR target/50099
 	* config/arm/iterators.md (qhs_zextenddi_cstr): New.
 	(qhs_zextenddi_op): New.
 	* config/arm/arm.md ("zero_extend<mode>di2"): Use them.
@@ -504,8 +501,7 @@
 2011-09-29  Nick Clifton  <nickc@redhat.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 
-	* config/frv/frvbegin.c: Fix location of unwind-dw2-fde.h header
-	file.
+	* config/frv/frvbegin.c: Fix location of unwind-dw2-fde.h header file.
 	* config/frv/frvend.c: Likewise.
 	* config/frv/frv.c (frv_function_prologue): Move misplaced
 	CALL_ARG_LOCATION notes back to their proper locations.
@@ -539,27 +535,29 @@
 
 2011-09-27   Andi Kleen <ak@linux.intel.com>
 
-	* gcc.c (get_local_tick). Rename to get_random_number.
-        Read from /dev/urandom.
-	Add getpid call.
+	* gcc.c (get_local_tick). Rename to get_random_number.  Read from
+	/dev/urandom.  Add getpid call.
 	(compare_debug_dump_opt_spec_function): Drop getpid call.
 
 2011-09-26   Andi Kleen <ak@linux.intel.com>
 
-	* toplev.c (init_local_tick): Try reading random seed from /dev/urandom
+	* toplev.c (init_local_tick): Try reading random seed
+	from /dev/urandom.
 
 2011-09-26   Andi Kleen <ak@linux.intel.com>
 
 	* hwint.h (HOST_WIDE_INT_PRINT_HEX_PURE): Add.
 	* lto-streamer.c (lto_get_section_name): Remove crc32_string.
  	Handle numerical random seed.
-	* lto-streamer.h (lto_file_decl_data): Change id to unsigned HOST_WIDE_INT.
+	* lto-streamer.h (lto_file_decl_data): Change id to
+	unsigned HOST_WIDE_INT.
 	* toplev.c (random_seed): Add.
 	(init_random_seed): Change for numerical random seed.
 	(get_random_seed): Return as HOST_WIDE_INT.
 	(set_random_seed): Crc32 existing string.
 	* toplev.h (get_random_seed): Change to numercal return.
-	* tree.c (get_file_function_name): Remove CRC. Handle numerical random seed.
+	* tree.c (get_file_function_name): Remove CRC. Handle
+	numerical random seed.
 
 2011-09-29  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -584,8 +582,7 @@
 	(c_objc_common_truthvalue_conversion): Adjust.
 	* tree-vect-generic.c (do_compare): Helper function.
 	(expand_vector_comparison): Check if hardware supports
-	vector comparison of the given type or expand vector
-	piecewise.
+	vector comparison of the given type or expand vector piecewise.
 	(expand_vector_operation): Treat comparison as binary
 	operation of vector type.
 	(expand_vector_operations_1): Adjust.
