@@ -332,7 +332,7 @@
   ""
   { return flag_pic ? (TARGET_AS100_SYNTAX ? "\n?:\tbra\t%0"
 					   : "\n1:\tbra\t%0")
-	                                   : "jmp\t%0";
+	                                   : "\n1:jmp\t%0";
   }
   [(set_attr "timings" "33")
    (set_attr "length" "2")]
@@ -901,7 +901,7 @@
 	  (match_operand:SI   2 "rx_source_operand" "r,Sint08,Sint16,Sint24,i,Q")))
     (clobber (reg:CC CC_REG))]
   "reload_completed"
-  "adc %2,%0"
+  "adc\t%2, %0"
   [(set_attr "timings" "11,11,11,11,11,33")
    (set_attr "length"   "3,4,5,6,7,6")]
 )
@@ -922,7 +922,7 @@
 	    (match_dup 2))
 	  (const_int 0)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSCmode)"
-  "adc %2,%0"
+  "adc\t%2, %0"
   [(set_attr "timings" "11,11,11,11,11,33")
    (set_attr "length"   "3,4,5,6,7,6")]
 )
@@ -980,7 +980,7 @@
 })
 
 (define_insn_and_split "adddi3_internal"
-  [(set (match_operand:SI          0 "register_operand"  "=r")
+  [(set (match_operand:SI          0 "register_operand"  "=&r")
 	(plus:SI (match_operand:SI 2 "register_operand"  "r")
 		 (match_operand:SI 3 "rx_source_operand" "riQ")))
    (set (match_operand:SI          1 "register_operand"  "=r")
@@ -1163,11 +1163,11 @@
    (set_attr "timings" "22,44")]
 )
 
-(define_insn "smax<int_modes:mode>3"
-  [(set (match_operand:int_modes                 0 "register_operand" "=r,r,r,r,r,r")
-	(smax:int_modes (match_operand:int_modes 1 "register_operand" "%0,0,0,0,0,0")
-			(match_operand:int_modes 2 "rx_source_operand"
-						 "r,Sint08,Sint16,Sint24,i,Q")))]
+(define_insn "smaxsi3"
+  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r")
+	(smax:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
+		 (match_operand:SI 2 "rx_source_operand"
+				   "r,Sint08,Sint16,Sint24,i,Q")))]
   ""
   "max\t%Q2, %0"
   [(set_attr "length" "3,4,5,6,7,6")
