@@ -4961,6 +4961,47 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
   return "";
 }
 
+
+/* PLEN == NULL: Output code to add CONST_INT OP[0] to SP.
+   PLEN != NULL: Set *PLEN to the length of that sequence.
+   Return "".  */
+
+const char*
+avr_out_addto_sp (rtx *op, int *plen)
+{
+  int pc_len = AVR_2_BYTE_PC ? 2 : 3;
+  int addend = INTVAL (op[0]);
+
+  if (plen)
+    *plen = 0;
+
+  if (addend < 0)
+    {
+      if (flag_verbose_asm || flag_print_asm_name)
+        avr_asm_len (ASM_COMMENT_START "SP -= %n0", op, plen, 0);
+  
+      while (addend <= -pc_len)
+        {
+          addend += pc_len;
+          avr_asm_len ("rcall .", op, plen, 1);
+        }
+
+      while (addend++ < 0)
+        avr_asm_len ("push __zero_reg__", op, plen, 1);
+    }
+  else if (addend > 0)
+    {
+      if (flag_verbose_asm || flag_print_asm_name)
+        avr_asm_len (ASM_COMMENT_START "SP += %0", op, plen, 0);
+
+      while (addend-- > 0)
+        avr_asm_len ("pop __tmp_reg__", op, plen, 1);
+    }
+
+  return "";
+}
+
+
 /* Create RTL split patterns for byte sized rotate expressions.  This
   produces a series of move instructions and considers overlap situations.
   Overlapping non-HImode operands need a scratch register.  */
@@ -5154,6 +5195,8 @@ adjust_insn_length (rtx insn, int len)
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
       
     case ADJUST_LEN_OUT_PLUS: avr_out_plus (op, &len); break;
+
+    case ADJUST_LEN_ADDTO_SP: avr_out_addto_sp (op, &len); break;
       
     case ADJUST_LEN_MOV8:  output_movqi (insn, op, &len); break;
     case ADJUST_LEN_MOV16: output_movhi (insn, op, &len); break;

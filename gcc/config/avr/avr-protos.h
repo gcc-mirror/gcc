@@ -83,6 +83,7 @@ extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
 extern const char* avr_out_plus (rtx*, int*);
+extern const char* avr_out_addto_sp (rtx*, int*);
 extern bool avr_popcount_each_byte (rtx, int, int);
 
 extern int extra_constraint_Q (rtx x);

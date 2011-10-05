@@ -1,3 +1,12 @@
+2011-10-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_out_addto_sp): New prototype.
+	* config/avr/avr.c (avr_out_addto_sp): New function.
+	(adjust_insn_length): Handle ADJUST_LEN_ADDTO_SP.
+	* config/avr/avr.md (adjust_len): Add "addto_sp".
+	(*movhi_sp): Remove insn.
+	(*addhi3_sp_R_pc2, *addhi3_sp_R_pc3): Merge to *addhi3_sp_R.
+
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
 	* gimple-fold.c (gimple_fold_stmt_to_constant_1): For

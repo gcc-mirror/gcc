@@ -136,7 +136,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "out_bitop, out_plus, tsthi, tstsi, compare,
+  "out_bitop, out_plus, addto_sp, tsthi, tstsi, compare,
    mov8, mov16, mov32, reload_in16, reload_in32,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,
@@ -345,15 +345,6 @@
       operands[1] = copy_to_mode_reg(HImode, operand1);
     }
 }")
-
-(define_insn "*movhi_sp"
-  [(set (match_operand:HI 0 "register_operand" "=q,r")
-        (match_operand:HI 1 "register_operand"  "r,q"))]
-  "((stack_register_operand(operands[0], HImode) && register_operand (operands[1], HImode))
-    || (register_operand (operands[0], HImode) && stack_register_operand(operands[1], HImode)))"
-  "* return output_movhi (insn, operands, NULL);"
-  [(set_attr "length" "5,2")
-   (set_attr "cc" "none,none")])
 
 (define_insn "movhi_sp_r_irq_off"
   [(set (match_operand:HI 0 "stack_register_operand" "=q")
@@ -767,142 +758,16 @@
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
 
-(define_insn "*addhi3_sp_R_pc2"
+(define_insn "*addhi3_sp_R"
   [(set (match_operand:HI 1 "stack_register_operand" "=q")
         (plus:HI (match_operand:HI 2 "stack_register_operand" "q")
                  (match_operand:HI 0 "avr_sp_immediate_operand" "R")))]
-  "AVR_2_BYTE_PC"
-  "*{
-      if (CONST_INT_P (operands[0]))
-        {
-	  switch(INTVAL (operands[0]))
-	    {
-	    case -6: 
-	      return \"rcall .\" CR_TAB 
-	             \"rcall .\" CR_TAB 
-		     \"rcall .\";
-	    case -5: 
-	      return \"rcall .\" CR_TAB 
-	             \"rcall .\" CR_TAB 
-		     \"push __tmp_reg__\";
-	    case -4: 
-	      return \"rcall .\" CR_TAB 
-	             \"rcall .\";
-	    case -3: 
-	      return \"rcall .\" CR_TAB 
-	             \"push __tmp_reg__\";
-	    case -2: 
-	      return \"rcall .\";
-	    case -1: 
-	      return \"push __tmp_reg__\";
-	    case 0: 
-	      return \"\";
-	    case 1: 
-	      return \"pop __tmp_reg__\";
-	    case 2: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\";
-	    case 3: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\";
-	    case 4: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\";
-	    case 5: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\";
-	    }
-        }
-      return \"bug\";
-    }"
-  [(set (attr "length") 
-        (cond [(eq (const_int -6) (symbol_ref "INTVAL (operands[0])")) (const_int 3)
-               (eq (const_int -5) (symbol_ref "INTVAL (operands[0])")) (const_int 3)
-               (eq (const_int -4) (symbol_ref "INTVAL (operands[0])")) (const_int 2)
-               (eq (const_int -3) (symbol_ref "INTVAL (operands[0])")) (const_int 2)
-               (eq (const_int -2) (symbol_ref "INTVAL (operands[0])")) (const_int 1)
-               (eq (const_int -1) (symbol_ref "INTVAL (operands[0])")) (const_int 1)
-               (eq (const_int  0) (symbol_ref "INTVAL (operands[0])")) (const_int 0)
-               (eq (const_int  1) (symbol_ref "INTVAL (operands[0])")) (const_int 1)
-               (eq (const_int  2) (symbol_ref "INTVAL (operands[0])")) (const_int 2)
-               (eq (const_int  3) (symbol_ref "INTVAL (operands[0])")) (const_int 3)
-               (eq (const_int  4) (symbol_ref "INTVAL (operands[0])")) (const_int 4)
-               (eq (const_int  5) (symbol_ref "INTVAL (operands[0])")) (const_int 5)]
-               (const_int 0)))])
-
-(define_insn "*addhi3_sp_R_pc3"
-  [(set (match_operand:HI 1 "stack_register_operand" "=q")
-        (plus:HI (match_operand:HI 2 "stack_register_operand" "q")
-                 (match_operand:QI 0 "avr_sp_immediate_operand" "R")))]
-  "AVR_3_BYTE_PC"
-  "*{
-      if (CONST_INT_P (operands[0]))
-        {
-	  switch(INTVAL (operands[0]))
-	    {
-	    case -6: 
-	      return \"rcall .\" CR_TAB 
-		     \"rcall .\";
-	    case -5: 
-	      return \"rcall .\" CR_TAB 
-	             \"push __tmp_reg__\" CR_TAB 
-		     \"push __tmp_reg__\";
-	    case -4: 
-	      return \"rcall .\" CR_TAB 
-	             \"push __tmp_reg__\";
-	    case -3: 
-	      return \"rcall .\";
-	    case -2: 
-	      return \"push __tmp_reg__\" CR_TAB 
-		     \"push __tmp_reg__\";
-	    case -1: 
-	      return \"push __tmp_reg__\";
-	    case 0: 
-	      return \"\";
-	    case 1: 
-	      return \"pop __tmp_reg__\";
-	    case 2: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\";
-	    case 3: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\";
-	    case 4: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\";
-	    case 5: 
-	      return \"pop __tmp_reg__\" CR_TAB 
-	             \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\" CR_TAB 
-		     \"pop __tmp_reg__\";
-	    }
-        }
-      return \"bug\";
-    }"
-  [(set (attr "length") 
-        (cond [(eq (const_int -6) (symbol_ref "INTVAL (operands[0])")) (const_int 2)
-               (eq (const_int -5) (symbol_ref "INTVAL (operands[0])")) (const_int 3)
-               (eq (const_int -4) (symbol_ref "INTVAL (operands[0])")) (const_int 2)
-               (eq (const_int -3) (symbol_ref "INTVAL (operands[0])")) (const_int 1)
-               (eq (const_int -2) (symbol_ref "INTVAL (operands[0])")) (const_int 2)
-               (eq (const_int -1) (symbol_ref "INTVAL (operands[0])")) (const_int 1)
-               (eq (const_int  0) (symbol_ref "INTVAL (operands[0])")) (const_int 0)
-               (eq (const_int  1) (symbol_ref "INTVAL (operands[0])")) (const_int 1)
-               (eq (const_int  2) (symbol_ref "INTVAL (operands[0])")) (const_int 2)
-               (eq (const_int  3) (symbol_ref "INTVAL (operands[0])")) (const_int 3)
-               (eq (const_int  4) (symbol_ref "INTVAL (operands[0])")) (const_int 4)
-               (eq (const_int  5) (symbol_ref "INTVAL (operands[0])")) (const_int 5)]
-               (const_int 0)))])
+  ""
+  {
+    return avr_out_addto_sp (operands, NULL);
+  }
+  [(set_attr "length" "5")
+   (set_attr "adjust_len" "addto_sp")])
 
 (define_insn "*addhi3"
   [(set (match_operand:HI 0 "register_operand" "=r,!w,!w,d,r,r")
