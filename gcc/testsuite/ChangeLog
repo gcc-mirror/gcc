@@ -1,3 +1,8 @@
+2011-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50613
+	* gcc.dg/pr50613.c: New test.
+
 2011-10-05  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/vect-shuffle-1.c: Rewrite.

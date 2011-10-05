@@ -692,6 +692,14 @@ find_equal_ptrs (tree ptr, int idx)
 	{
 	case SSA_NAME:
 	  break;
+	CASE_CONVERT:
+	  if (!POINTER_TYPE_P (TREE_TYPE (ptr)))
+	    return;
+	  if (TREE_CODE (ptr) == SSA_NAME)
+	    break;
+	  if (TREE_CODE (ptr) != ADDR_EXPR)
+	    return;
+	  /* FALLTHRU */
 	case ADDR_EXPR:
 	  {
 	    int *pidx = addr_stridxptr (TREE_OPERAND (ptr, 0));
@@ -699,10 +707,6 @@ find_equal_ptrs (tree ptr, int idx)
 	      *pidx = idx;
 	    return;
 	  }
-	CASE_CONVERT:
-	  if (POINTER_TYPE_P (TREE_TYPE (ptr)))
-	    break;
-	  return;
 	default:
 	  return;
 	}
