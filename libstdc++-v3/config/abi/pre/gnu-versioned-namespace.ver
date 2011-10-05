@@ -20,23 +20,23 @@
 ## with this library; see the file COPYING3.  If not see
 ## <http://www.gnu.org/licenses/>.
 
-GLIBCXX_5.0 {
+GLIBCXX_7.0 {
 
   global:
 
     # Names inside the 'extern' block are demangled names.
     extern "C++"
     {
-      std::_6::*;
+      std::__7::*;
       std::*
     };
 
     # locale
-    _ZNSt2_69has_facetINS_*;
+    _ZNSt3__79has_facetINS_*;
 
     # hash 
-    _ZNSt8__detail2_612__prime_listE;
-    _ZNSt3tr18__detail2_612__prime_listE;
+    _ZNSt8__detail3__712__prime_listE;
+    _ZNSt3tr18__detail3__712__prime_listE;
 
     # thread/mutex/condition_variable/future
     __once_proxy;
@@ -73,41 +73,41 @@ GLIBCXX_5.0 {
     _ZTv0_n*;
 
     # std::__detail::_List_node_base
-    _ZNSt8__detail2_615_List_node_base7_M_hook*;
-    _ZNSt8__detail2_615_List_node_base9_M_unhookEv;
-    _ZNSt8__detail2_615_List_node_base10_M_reverseEv;
-    _ZNSt8__detail2_615_List_node_base11_M_transfer*;
-    _ZNSt8__detail2_615_List_node_base4swapER*;
+    _ZNSt8__detail3__715_List_node_base7_M_hook*;
+    _ZNSt8__detail3__715_List_node_base9_M_unhookEv;
+    _ZNSt8__detail3__715_List_node_base10_M_reverseEv;
+    _ZNSt8__detail3__715_List_node_base11_M_transfer*;
+    _ZNSt8__detail3__715_List_node_base4swapER*;
 
     # std::__convert_to_v
-    _ZNSt2_614__convert_to_v*;
+    _ZNSt3__714__convert_to_v*;
 
     # std::__copy_streambufs
-    _ZNSt2_617__copy_streambufsI*;
-    _ZNSt2_621__copy_streambufs_eofI*;
+    _ZNSt3__717__copy_streambufsI*;
+    _ZNSt3__721__copy_streambufs_eofI*;
 
     # __gnu_cxx::__atomic_add
     # __gnu_cxx::__exchange_and_add
-    _ZN9__gnu_cxx2_612__atomic_addEPV[il][il];
-    _ZN9__gnu_cxx2_618__exchange_and_addEPV[li][il];
+    _ZN9__gnu_cxx3__712__atomic_addEPV[il][il];
+    _ZN9__gnu_cxx3__718__exchange_and_addEPV[li][il];
 
     # __gnu_cxx::__pool
-    _ZN9__gnu_cxx2_66__poolILb[01]EE13_M_initializeEv;
-    _ZN9__gnu_cxx2_66__poolILb[01]EE16_M_reserve_blockE[jm][jm];
-    _ZN9__gnu_cxx2_66__poolILb[01]EE16_M_reclaim_blockEPc[jm];
-    _ZN9__gnu_cxx2_66__poolILb[01]EE10_M_destroyEv;
-    _ZN9__gnu_cxx2_66__poolILb1EE16_M_get_thread_idEv;
+    _ZN9__gnu_cxx3__76__poolILb[01]EE13_M_initializeEv;
+    _ZN9__gnu_cxx3__76__poolILb[01]EE16_M_reserve_blockE[jm][jm];
+    _ZN9__gnu_cxx3__76__poolILb[01]EE16_M_reclaim_blockEPc[jm];
+    _ZN9__gnu_cxx3__76__poolILb[01]EE10_M_destroyEv;
+    _ZN9__gnu_cxx3__76__poolILb1EE16_M_get_thread_idEv;
 
-    _ZN9__gnu_cxx2_617__pool_alloc_base9_M_refillE[jm];    
-    _ZN9__gnu_cxx2_617__pool_alloc_base16_M_get_free_listE[jm];
-    _ZN9__gnu_cxx2_617__pool_alloc_base12_M_get_mutexEv;
+    _ZN9__gnu_cxx3__717__pool_alloc_base9_M_refillE[jm];    
+    _ZN9__gnu_cxx3__717__pool_alloc_base16_M_get_free_listE[jm];
+    _ZN9__gnu_cxx3__717__pool_alloc_base12_M_get_mutexEv;
 
-    _ZN9__gnu_cxx2_69free_list6_M_getE[jm];
-    _ZN9__gnu_cxx2_69free_list8_M_clearEv;
+    _ZN9__gnu_cxx3__79free_list6_M_getE[jm];
+    _ZN9__gnu_cxx3__79free_list8_M_clearEv;
 
     # __gnu_cxx::stdio_sync_filebuf
-    _ZTVN9__gnu_cxx2_618stdio_sync_filebufI[cw]St2_611char_traitsI[cw]EEE;
-    _ZN9__gnu_cxx2_618stdio_sync_filebufI[cw]NSt2_611char_traitsI[cw]EEE[5-9]*;
+    _ZTVN9__gnu_cxx3__718stdio_sync_filebufI[cw]St3__711char_traitsI[cw]EEE;
+    _ZN9__gnu_cxx3__718stdio_sync_filebufI[cw]NSt3__711char_traitsI[cw]EEE[5-9]*;
 
     # debug mode
     _ZN11__gnu_debug19_Safe_sequence_base12_M_get_mutexEv;
@@ -212,7 +212,7 @@ CXXABI_2.0 {
     _ZSt15_Fnv_hash_bytesPKv*;
 
     # __gnu_cxx::_verbose_terminate_handler()
-    _ZN9__gnu_cxx2_627__verbose_terminate_handlerEv;
+    _ZN9__gnu_cxx3__727__verbose_terminate_handlerEv;
 
     # *_type_info classes, ctor and dtor
     _ZN10__cxxabiv117__array_type_info*;

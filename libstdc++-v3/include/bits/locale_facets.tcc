@@ -635,15 +635,11 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
 	      const char_type __c = *__beg;
 
-	      if (!__donef)
-		__testf = __c == __lc->_M_falsename[__n];
-
+	      __testf = __c == __lc->_M_falsename[__n];
 	      if (!__testf && __donet)
 		break;
 
-	      if (!__donet)
-		__testt = __c == __lc->_M_truename[__n];
-
+	      __testt = __c == __lc->_M_truename[__n];
 	      if (!__testt && __donef)
 		break;
 

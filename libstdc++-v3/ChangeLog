@@ -1,3 +1,18 @@
+2011-10-05  Benjamin Kosnik  <bkoz@redhat.com
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+        PR libstdc++/48698
+        * acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Set libtool_VERSION here.
+        * configure.ac: Move AC_SUBST of libtool_VERSION past call to
+        GLIBCXX_ENABLE_SYMVERS.
+        * configure: Regenerate.
+        * include/bits/c++config: Use __7 as versioned namespace name.
+        * config/abi/pre/gnu-versioned-namespace.ver: Change mangling as
+        per above.
+        * include/c_global/cwchar: Adjust nested namespaces.
+        * testsuite/20_util/bind/48698.cc: Add test case.
+        * testsuite/ext/profile/mutex_extensions_neg.cc: Change line number.
+
 2011-09-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/vector (vector<>::erase(iterator, iterator)): Check

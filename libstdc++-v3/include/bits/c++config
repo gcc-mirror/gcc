@@ -162,41 +162,42 @@ namespace std
 
 
 // Defined if inline namespaces are used for versioning.
-#define _GLIBCXX_INLINE_VERSION
+#define _GLIBCXX_INLINE_VERSION 
 
 // Inline namespace for symbol versioning.
 #if _GLIBCXX_INLINE_VERSION
+
 namespace std
 {
-  inline namespace _6 { }
+  inline namespace __7 { }
 
-  namespace rel_ops { inline namespace _6 { } }
+  namespace rel_ops { inline namespace __7 { } }
 
   namespace tr1
   {
-    inline namespace _6 { }
-    namespace placeholders { inline namespace _6 { } }
-    namespace regex_constants { inline namespace _6 { } }
-    namespace __detail { inline namespace _6 { } }
+    inline namespace __7 { }
+    namespace placeholders { inline namespace __7 { } }
+    namespace regex_constants { inline namespace __7 { } }
+    namespace __detail { inline namespace __7 { } }
   }
 
-  namespace decimal { inline namespace _6 { } }
+  namespace decimal { inline namespace __7 { } }
 
-  namespace chrono { inline namespace _6 { } }
-  namespace placeholders { inline namespace _6 { } }
-  namespace regex_constants { inline namespace _6 { } }
-  namespace this_thread { inline namespace _6 { } }
+  namespace chrono { inline namespace __7 { } }
+  namespace placeholders { inline namespace __7 { } }
+  namespace regex_constants { inline namespace __7 { } }
+  namespace this_thread { inline namespace __7 { } }
 
-  namespace __detail { inline namespace _6 { } }
-  namespace __regex { inline namespace _6 { } }
+  namespace __detail { inline namespace __7 { } }
+  namespace __regex { inline namespace __7 { } }
 }
 
 namespace __gnu_cxx
 {
-  inline namespace _6 { }
-  namespace __detail { inline namespace _6 { } }
+  inline namespace __7 { }
+  namespace __detail { inline namespace __7 { } }
 }
-# define _GLIBCXX_BEGIN_NAMESPACE_VERSION namespace _6 {
+# define _GLIBCXX_BEGIN_NAMESPACE_VERSION namespace __7 {
 # define _GLIBCXX_END_NAMESPACE_VERSION }
 #else
 # define _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -213,7 +214,7 @@ namespace std
   namespace __cxx1998
   {
 #if _GLIBCXX_INLINE_VERSION
- inline namespace _6 { }
+ inline namespace __7 { }
 #endif
   }
 

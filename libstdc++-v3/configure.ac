@@ -11,10 +11,6 @@ AC_CONFIG_HEADER(config.h)
 # exported.  Only used at the end of this file.
 ### am handles this now?  ORIGINAL_LD_FOR_MULTILIBS=$LD
 
-# For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:16:0
-AC_SUBST(libtool_VERSION)
-
 # Find the rest of the source tree framework.
 AM_ENABLE_MULTILIB(, ..)
 
@@ -303,6 +299,8 @@ GCC_HEADER_STDINT(include/gstdint.h)
 
 # This depends on GLIBCXX CHECK_LINKER_FEATURES, but without it assumes no.
 GLIBCXX_ENABLE_SYMVERS([yes])
+AC_SUBST(libtool_VERSION)
+
 GLIBCXX_ENABLE_VISIBILITY([yes])
 
 ac_ldbl_compat=no

@@ -644,6 +644,7 @@ GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 ENABLE_VISIBILITY_FALSE
 ENABLE_VISIBILITY_TRUE
+libtool_VERSION
 ENABLE_SYMVERS_SOL2_FALSE
 ENABLE_SYMVERS_SOL2_TRUE
 ENABLE_SYMVERS_SUN_FALSE
@@ -787,7 +788,6 @@ build_vendor
 build_cpu
 build
 multi_basedir
-libtool_VERSION
 target_alias
 host_alias
 build_alias
@@ -2823,10 +2823,6 @@ ac_config_headers="$ac_config_headers config.h"
 # keeping the changes in LD private, export them just because LD is
 # exported.  Only used at the end of this file.
 ### am handles this now?  ORIGINAL_LD_FOR_MULTILIBS=$LD
-
-# For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:16:0
-
 
 # Find the rest of the source tree framework.
 # Default to --enable-multilib
@@ -11488,7 +11484,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11491 "configure"
+#line 11487 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11594,7 +11590,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11597 "configure"
+#line 11593 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14952,7 +14948,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14955 "configure"
+#line 14951 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15320,7 +15316,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15323 "configure"
+#line 15319 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15357,7 +15353,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15360 "configure"
+#line 15356 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15394,7 +15390,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15397 "configure"
+#line 15393 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15432,7 +15428,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15435 "configure"
+#line 15431 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15508,7 +15504,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15511 "configure"
+#line 15507 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -64267,7 +64263,10 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
   fi
 fi
 
-# Everything parsed; figure out what file to use.
+# For libtool versioning info, format is CURRENT:REVISION:AGE
+libtool_VERSION=6:16:0
+
+# Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
   no)
     SYMVER_FILE=config/abi/pre/none.ver
@@ -64279,6 +64278,7 @@ $as_echo "#define _GLIBCXX_SYMVER_GNU 1" >>confdefs.h
 
     ;;
   gnu-versioned-namespace)
+    libtool_VERSION=7:0:0
     SYMVER_FILE=config/abi/pre/gnu-versioned-namespace.ver
 
 $as_echo "#define _GLIBCXX_SYMVER_GNU_NAMESPACE 1" >>confdefs.h
@@ -64427,6 +64427,8 @@ $as_echo "#define _GLIBCXX_PTRDIFF_T_IS_INT 1" >>confdefs.h
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_ptrdiff_t_is_i" >&5
 $as_echo "$glibcxx_ptrdiff_t_is_i" >&6; }
+
+
 
 
  # Check whether --enable-visibility was given.
