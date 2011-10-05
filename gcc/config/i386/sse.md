@@ -6229,11 +6229,9 @@
    (match_operand:<sseshuffint> 3 "register_operand" "")]
   "TARGET_SSSE3 || TARGET_AVX"
 {
-  bool ok = ix86_expand_vshuffle (operands);
-  gcc_assert (ok);
+  ix86_expand_vshuffle (operands);
   DONE;
 })
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

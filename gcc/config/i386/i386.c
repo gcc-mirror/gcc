@@ -19237,145 +19237,139 @@ ix86_expand_int_vcond (rtx operands[])
   return true;
 }
 
-bool
+void
 ix86_expand_vshuffle (rtx operands[])
 {
   rtx target = operands[0];
   rtx op0 = operands[1];
   rtx op1 = operands[2];
   rtx mask = operands[3];
-  rtx new_mask, vt, t1, t2, w_vector;
+  rtx vt, vec[16];
   enum machine_mode mode = GET_MODE (op0);
   enum machine_mode maskmode = GET_MODE (mask);
-  enum machine_mode maskinner = GET_MODE_INNER (mode);
-  rtx vec[16];
-  int w, i, j;
-  bool one_operand_shuffle = op0 == op1;
+  int w, e, i;
+  bool one_operand_shuffle = rtx_equal_p (op0, op1);
 
-  gcc_assert ((TARGET_SSSE3 || TARGET_AVX) && GET_MODE_BITSIZE (mode) == 128);
+  gcc_checking_assert (GET_MODE_BITSIZE (mode) == 128);
 
   /* Number of elements in the vector.  */
-  w = GET_MODE_BITSIZE (maskmode) / GET_MODE_BITSIZE (maskinner);
+  w = GET_MODE_NUNITS (mode);
+  e = GET_MODE_UNIT_SIZE (mode);
 
-  /* generate w_vector = {w, w, ...}  */
-  for (i = 0; i < w; i++)
-    vec[i] = GEN_INT (w);
-  w_vector = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
-
-  /* mask = mask & {w-1, w-1, w-1,...} */
-  for (i = 0; i < w; i++)
-    vec[i] = GEN_INT (w - 1);
-
-  vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
-  new_mask = expand_simple_binop (maskmode, AND, mask, vt,
-				  NULL_RTX, 0, OPTAB_DIRECT);
-
-  /* If the original vector mode is V16QImode, we can just
-     use pshufb directly.  */
-  if (mode == V16QImode && one_operand_shuffle)
+  if (TARGET_XOP)
     {
-      t1 = gen_reg_rtx (V16QImode);
-      emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, new_mask));
-      emit_insn (gen_rtx_SET (VOIDmode, target, t1));
-      return true;
-    }
-  else if (mode == V16QImode)
-    {
-      rtx xops[6];
+      /* The XOP VPPERM insn supports three inputs.  By ignoring the 
+	 one_operand_shuffle special case, we avoid creating another
+	 set of constant vectors in memory.  */
+      one_operand_shuffle = false;
 
-      t1 = gen_reg_rtx (V16QImode);
-      t2 = gen_reg_rtx (V16QImode);
-      emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, new_mask));
-      emit_insn (gen_ssse3_pshufbv16qi3 (t2, op1, new_mask));
-
-      /* mask = mask & {w, w, ...}  */
-      mask = expand_simple_binop (V16QImode, AND, mask, w_vector,
-				  NULL_RTX, 0, OPTAB_DIRECT);
-      xops[0] = target;
-      xops[1] = operands[1];
-      xops[2] = operands[2];
-      xops[3] = gen_rtx_EQ (mode, mask, w_vector);
-      xops[4] = t1;
-      xops[5] = t2;
-
-      return ix86_expand_int_vcond (xops);
-    }
-
-  /* mask = mask * {w, w, ...}  */
-  new_mask = expand_simple_binop (maskmode, MULT, new_mask, w_vector,
-				  NULL_RTX, 0, OPTAB_DIRECT);
-
-  /* Convert mask to vector of chars.  */
-  new_mask = simplify_gen_subreg (V16QImode, new_mask, maskmode, 0);
-  new_mask = force_reg (V16QImode, new_mask);
-
-  /* Build a helper mask wich we will use in pshufb
-     (v4si) --> {0,0,0,0, 4,4,4,4, 8,8,8,8, 12,12,12,12}
-     (v8hi) --> {0,0, 2,2, 4,4, 6,6, ...}
-     ...  */
-  for (i = 0; i < w; i++)
-    for (j = 0; j < 16/w; j++)
-      vec[i*w+j] = GEN_INT (i*16/w);
-  vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
-  vt = force_reg (V16QImode, vt);
-
-  t1 = gen_reg_rtx (V16QImode);
-  emit_insn (gen_ssse3_pshufbv16qi3 (t1, new_mask, vt));
-  new_mask = t1;
-
-  /* Convert it into the byte positions by doing
-     new_mask = new_mask + {0,1,..,16/w, 0,1,..,16/w, ...}  */
-  for (i = 0; i < w; i++)
-    for (j = 0; j < 16/w; j++)
-      vec[i*w+j] = GEN_INT (j);
-
-  vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
-  new_mask = expand_simple_binop (V16QImode, PLUS, new_mask, vt,
-				  NULL_RTX, 0, OPTAB_DIRECT);
-
-  t1 = gen_reg_rtx (V16QImode);
-
-  /* Convert OP0 to vector of chars.  */
-  op0 = simplify_gen_subreg (V16QImode, op0, mode, 0);
-  op0 = force_reg (V16QImode, op0);
-  emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, new_mask));
-
-  if (one_operand_shuffle)
-    {
-      /* Convert it back from vector of chars to the original mode.  */
-      t1 = simplify_gen_subreg (mode, t1, V16QImode, 0);
-      emit_insn (gen_rtx_SET (VOIDmode, target, t1));
-      return true;
+      /* mask = mask & {2*w-1, ...} */
+      vt = GEN_INT (2*w - 1);
     }
   else
     {
-      rtx xops[6];
-
-      t2 = gen_reg_rtx (V16QImode);
-
-      /* Convert OP1 to vector of chars.  */
-      op1 = simplify_gen_subreg (V16QImode, op1, mode, 0);
-      op1 = force_reg (V16QImode, op1);
-      emit_insn (gen_ssse3_pshufbv16qi3 (t1, op1, new_mask));
-
-      /* mask = mask & {w, w, ...}  */
-      mask = expand_simple_binop (V16QImode, AND, mask, w_vector,
-				  NULL_RTX, 0, OPTAB_DIRECT);
-
-      t1 = simplify_gen_subreg (mode, t1, V16QImode, 0);
-      t2 = simplify_gen_subreg (mode, t2, V16QImode, 0);
-
-      xops[0] = target;
-      xops[1] = operands[1];
-      xops[2] = operands[2];
-      xops[3] = gen_rtx_EQ (mode, mask, w_vector);
-      xops[4] = t1;
-      xops[5] = t2;
-
-      return ix86_expand_int_vcond (xops);
+      /* mask = mask & {w-1, ...} */
+      vt = GEN_INT (w - 1);
     }
 
-  return false;
+  for (i = 0; i < w; i++)
+    vec[i] = vt;
+  vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
+  mask = expand_simple_binop (maskmode, AND, mask, vt,
+			      NULL_RTX, 0, OPTAB_DIRECT);
+
+  /* For non-QImode operations, convert the word permutation control
+     into a byte permutation control.  */
+  if (mode != V16QImode)
+    {
+      mask = expand_simple_binop (maskmode, ASHIFT, mask,
+				  GEN_INT (exact_log2 (e)),
+				  NULL_RTX, 0, OPTAB_DIRECT);
+
+      /* Convert mask to vector of chars.  */
+      mask = force_reg (V16QImode, gen_lowpart (V16QImode, mask));
+
+      /* Replicate each of the input bytes into byte positions:
+	 (v2di) --> {0,0,0,0,0,0,0,0, 8,8,8,8,8,8,8,8}
+	 (v4si) --> {0,0,0,0, 4,4,4,4, 8,8,8,8, 12,12,12,12}
+	 (v8hi) --> {0,0, 2,2, 4,4, 6,6, ...}.  */
+      for (i = 0; i < 16; ++i)
+	vec[i] = GEN_INT (i/e * e);
+      vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
+      vt = force_const_mem (V16QImode, vt);
+      if (TARGET_XOP)
+	emit_insn (gen_xop_pperm (mask, mask, mask, vt));
+      else
+	emit_insn (gen_ssse3_pshufbv16qi3 (mask, mask, vt));
+
+      /* Convert it into the byte positions by doing
+	 mask = mask + {0,1,..,16/w, 0,1,..,16/w, ...}  */
+      for (i = 0; i < 16; ++i)
+	vec[i] = GEN_INT (i % e);
+      vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
+      vt = force_const_mem (V16QImode, vt);
+      emit_insn (gen_addv16qi3 (mask, mask, vt));
+    }
+
+  /* The actual shuffle operations all operate on V16QImode.  */
+  op0 = gen_lowpart (V16QImode, op0);
+  op1 = gen_lowpart (V16QImode, op1);
+  target = gen_lowpart (V16QImode, target);
+
+  if (TARGET_XOP)
+    {
+      emit_insn (gen_xop_pperm (target, op0, op1, mask));
+    }
+  else if (one_operand_shuffle)
+    {
+      emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, mask));
+    }
+  else
+    {
+      rtx xops[6], t1, t2;
+      bool ok;
+
+      /* Shuffle the two input vectors independently.  */
+      t1 = gen_reg_rtx (V16QImode);
+      t2 = gen_reg_rtx (V16QImode);
+      emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, mask));
+      emit_insn (gen_ssse3_pshufbv16qi3 (t2, op1, mask));
+
+      /* Then merge them together.  The key is whether any given control
+         element contained a bit set that indicates the second word.  */
+      mask = operands[3];
+      vt = GEN_INT (w);
+      if (maskmode == V2DImode && !TARGET_SSE4_1)
+	{
+	  /* Without SSE4.1, we don't have V2DImode EQ.  Perform one
+	     more shuffle to convert the V2DI input mask into a V4SI
+	     input mask.  At which point the masking that expand_int_vcond
+	     will work as desired.  */
+	  rtx t3 = gen_reg_rtx (V4SImode);
+	  emit_insn (gen_sse2_pshufd_1 (t3, gen_lowpart (V4SImode, mask),
+				        const0_rtx, const0_rtx,
+				        const2_rtx, const2_rtx));
+	  mask = t3;
+	  maskmode = V4SImode;
+	  e = w = 4;
+	}
+
+      for (i = 0; i < w; i++)
+	vec[i] = vt;
+      vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
+      vt = force_reg (maskmode, vt);
+      mask = expand_simple_binop (maskmode, AND, mask, vt,
+				  NULL_RTX, 0, OPTAB_DIRECT);
+
+      xops[0] = gen_lowpart (maskmode, operands[0]);
+      xops[1] = gen_lowpart (maskmode, t2);
+      xops[2] = gen_lowpart (maskmode, t1);
+      xops[3] = gen_rtx_EQ (maskmode, mask, vt);
+      xops[4] = mask;
+      xops[5] = vt;
+      ok = ix86_expand_int_vcond (xops);
+      gcc_assert (ok);
+    }
 }
 
 /* Unpack OP[1] into the next wider integer vector type.  UNSIGNED_P is
