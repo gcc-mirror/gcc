@@ -1,3 +1,10 @@
+2011-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50613
+	* tree-ssa-strlen.c (find_equal_ptrs): If CASE_CONVERT
+	operand is ADDR_EXPR, fallthru into ADDR_EXPR handling,
+	and if it is neither that not SSA_NAME, give up.
+
 2011-10-05  Richard Henderson  <rth@redhat.com>
 
 	* tree-vect-generic.c (vector_element): Never fail.  Use
