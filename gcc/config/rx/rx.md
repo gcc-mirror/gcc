@@ -73,6 +73,8 @@
    (UNSPEC_BUILTIN_SAT     49)
    (UNSPEC_BUILTIN_SETPSW  50)
    (UNSPEC_BUILTIN_WAIT	   51)
+
+   (UNSPEC_PID_ADDR	   52)
   ]
 )
 
@@ -330,9 +332,9 @@
 	(match_operand:SI          0 "register_operand" "r"))
    (use (label_ref (match_operand  1 "" "")))]
   ""
-  { return flag_pic ? (TARGET_AS100_SYNTAX ? "\n?:\tbra\t%0"
-					   : "\n1:\tbra\t%0")
-	                                   : "\n1:jmp\t%0";
+  { return TARGET_PID ? (TARGET_AS100_SYNTAX ? "\n?:\tbra\t%0"
+					     : "\n1:\tbra\t%0")
+	                                     : "\n1:jmp\t%0";
   }
   [(set_attr "timings" "33")
    (set_attr "length" "2")]
@@ -556,8 +558,18 @@
 	(match_operand:register_modes 1 "general_operand"))]
   ""
   {
-    if (MEM_P (operand0) && MEM_P (operand1))
-      operands[1] = copy_to_mode_reg (<register_modes:MODE>mode, operand1);
+    if (MEM_P (operands[0]) && MEM_P (operands[1]))
+      operands[1] = copy_to_mode_reg (<register_modes:MODE>mode, operands[1]);
+    operands[0] = rx_maybe_pidify_operand (operands[0], 0);
+    operands[1] = rx_maybe_pidify_operand (operands[1], 0);
+    if (GET_CODE (operands[0]) != REG
+	&& GET_CODE (operands[1]) == PLUS)
+      operands[1] = copy_to_mode_reg (<register_modes:MODE>mode, operands[1]);
+    if (GET_CODE (operands[1]) == PLUS && GET_MODE (operands[1]) == SImode)
+      {
+        emit_insn (gen_addsi3 (operands[0], XEXP (operands[1], 0), XEXP (operands[1], 1)));
+        DONE;
+      }
     if (CONST_INT_P (operand1)
         && ! rx_is_legitimate_constant (<register_modes:MODE>mode, operand1))
       FAIL;
@@ -566,13 +578,13 @@
 
 (define_insn "*mov<register_modes:mode>_internal"
   [(set (match_operand:register_modes
-	 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,Q,Q,Q,Q")
+	 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,Q,Q,Q,Q,r")
 	(match_operand:register_modes
-	 1 "general_operand" "Int08,Sint16,Sint24,i,r,m,r,Int08,Sint16,Sint24,i"))]
+	 1 "general_operand" "Int08,Sint16,Sint24,i,r,m,r,Int08,Sint16,Sint24,i,RpdaRpid"))]
   ""
   { return rx_gen_move_template (operands, false); }
-  [(set_attr "length" "3,4,5,6,2,4,6,5,6,7,8")
-   (set_attr "timings" "11,11,11,11,11,12,11,11,11,11,11")]
+  [(set_attr "length" "3,4,5,6,2,4,6,5,6,7,8,8")
+   (set_attr "timings" "11,11,11,11,11,12,11,11,11,11,11,11")]
 )
 
 (define_insn "extend<small_int_modes:mode>si2"
@@ -830,7 +842,20 @@
   [(set_attr "length" "2,3")]
 )
 
-(define_insn "addsi3"
+(define_expand "addsi3"
+  [(parallel [(set (match_operand:SI          0 "register_operand"  "")
+	(plus:SI (match_operand:SI 1 "register_operand"  "")
+		 (match_operand:SI 2 "rx_source_operand" "")))
+    (clobber (reg:CC CC_REG))])]
+  ""
+  "
+      operands[0] = rx_maybe_pidify_operand (operands[0], 1);
+      operands[1] = rx_maybe_pidify_operand (operands[1], 1);
+      operands[2] = rx_maybe_pidify_operand (operands[2], 1);
+  "
+)
+
+(define_insn "addsi3_internal"
   [(set (match_operand:SI          0 "register_operand"  "=r,r,r,r,r,r,r,r,r,r,r,r,r,r")
 	(plus:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,0,r,r,r,r,r,r,0")
 		 (match_operand:SI 2 "rx_source_operand" "r,Uint04,NEGint4,Sint08,Sint16,Sint24,i,0,r,Sint08,Sint16,Sint24,i,Q")))
@@ -2582,4 +2607,11 @@
   ""
   "nop"
   [(set_attr "length" "1")]
+)
+
+(define_expand "pid_addr"
+  [(plus:SI (match_operand:SI 0)
+	    (const:SI (unspec:SI [(match_operand:SI 1)] UNSPEC_PID_ADDR)))]
+  ""
+  ""
 )

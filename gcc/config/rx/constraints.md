@@ -1,5 +1,5 @@
 ;; Constraint definitions for Renesas RX.
-;; Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2008, 2009, 2010. 2011 Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 ;;
 ;; This file is part of GCC.
@@ -83,6 +83,26 @@
 		      (match_code "const_int" "01")
 		 )
 	    )
+       )
+  )
+)
+
+(define_constraint "Rpid"
+  "A MEM to a PID variable"
+  (and (match_code "mem")
+       (and (match_code "plus" "0")
+	    (and (match_code "reg,subreg" "00")
+		 (match_code "unspec" "01")
+	    )
+       )
+  )
+)
+
+(define_constraint "Rpda"
+  "An address to a PID variable"
+  (and (match_code "plus" "")
+       (and (match_code "reg,subreg" "0")
+	    (match_code "unspec" "1")
        )
   )
 )

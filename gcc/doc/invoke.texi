@@ -828,6 +828,7 @@ See RS/6000 and PowerPC Options.
 -mrelax@gol
 -mmax-constant-size=@gol
 -mint-register=@gol
+-mpid@gol
 -msave-acc-in-interrupts}
 
 @emph{S/390 and zSeries Options}
@@ -16576,10 +16577,11 @@ which can be placed into the small data area.  Using the small data
 area can lead to smaller and faster code, but the size of area is
 limited and it is up to the programmer to ensure that the area does
 not overflow.  Also when the small data area is used one of the RX's
-registers (@code{r13}) is reserved for use pointing to this area, so
-it is no longer available for use by the compiler.  This could result
-in slower and/or larger code if variables which once could have been
-held in @code{r13} are now pushed onto the stack.
+registers (usually @code{r13}) is reserved for use pointing to this
+area, so it is no longer available for use by the compiler.  This
+could result in slower and/or larger code if variables which once
+could have been held in the reserved register are now pushed onto the
+stack.
 
 Note, common variables (variables which have not been initialised) and
 constants are not placed into the small data area as they are assigned
@@ -16588,9 +16590,10 @@ to other sections in the output executable.
 The default value is zero, which disables this feature.  Note, this
 feature is not enabled by default with higher optimization levels
 (@option{-O2} etc) because of the potentially detrimental effects of
-reserving register @code{r13}.  It is up to the programmer to
-experiment and discover whether this feature is of benefit to their
-program.
+reserving a register.  It is up to the programmer to experiment and
+discover whether this feature is of benefit to their program.  See the
+description of the @option{-mpid} option for a description of how the
+actual register to hold the small data area pointer is chosen.
 
 @item -msim
 @itemx -mno-sim
@@ -16644,6 +16647,35 @@ accumulator register.  This is only necessary if normal code might use
 the accumulator register, for example because it performs 64-bit
 multiplications.  The default is to ignore the accumulator as this
 makes the interrupt handlers faster.
+
+@item -mpid
+@itemx -mno-pid
+@opindex mpid
+@opindex mno-pid
+Enables the generation of position independent data.  When enabled any
+access to constant data will done via an offset from a base address
+held in a register.  This allows the location of constant data to be
+determined at run-time without requiring the executable to be
+relocated, which is a benefit to embedded applications with tight
+memory constraints.  Data that can be modified is not affected by this
+option.
+
+Note, using this feature reserves a register, usually @code{r13}, for
+the constant data base address.  This can result in slower and/or
+larger code, especially in complicated functions.
+
+The actual register chosen to hold the constant data base address
+depends upon whether the @option{-msmall-data-limit} and/or the
+@option{-mint-register} command line options are enabled.  Starting
+with register @code{r13} and proceeding downwards, registers are
+allocated first to satisfy the requirements of @option{-mint-register},
+then @option{-mpid} and finally @option{-msmall-data-limit}.  Thus it
+is possible for the small data area register to be @code{r8} if both
+@option{-mint-register=4} and @option{-mpid} are specified on the
+command line.
+
+By default this feature is not enabled.  The default can be restored
+via the @option{-mno-pid} command line option.
 
 @end table
 
