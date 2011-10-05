@@ -35,6 +35,7 @@ extern bool		rx_is_legitimate_constant (enum machine_mode, rtx);
 extern bool		rx_is_restricted_memory_address (rtx,
 							 enum machine_mode);
 extern bool		rx_match_ccmode (rtx, enum machine_mode);
+extern rtx		rx_maybe_pidify_operand (rtx, int);
 extern void		rx_notice_update_cc (rtx, rtx);
 extern void		rx_split_cbranch (enum machine_mode, enum rtx_code,
 					  rtx, rtx, rtx);

@@ -63,6 +63,13 @@
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
+#undef  CPP_SPEC
+#define CPP_SPEC "\
+%{mpid:-D_RX_PID=1} \
+%{mint-register=*:-D_RX_INT_REGISTERS=%*} \
+%{msmall-data-limit*:-D_RX_SMALL_DATA} \
+"
+
 #undef  ASM_SPEC
 #define ASM_SPEC "\
 %{mbig-endian-data:-mbig-endian-data} \
@@ -70,6 +77,8 @@
 %{!m64bit-doubles:-m32bit-doubles} \
 %{msmall-data-limit*:-msmall-data-limit} \
 %{mrelax:-relax} \
+%{mpid} \
+%{mint-register=*} \
 "
 
 #undef  LIB_SPEC
@@ -200,14 +209,17 @@ enum reg_class
 #define STRUCT_VAL_REGNUM		15
 #define CC_REGNUM                       16
 
-/* This is the register which is used to hold the address of the start
-   of the small data area, if that feature is being used.  Note - this
-   register must not be call_used because otherwise library functions
-   that are compiled without small data support might clobber it.
+/* This is the register which will probably be used to hold the address of
+   the start of the small data area, if -msmall-data-limit is being used,
+   or the address of the constant data area if -mpid is being used.  If both
+   features are in use then two consecutive registers will be used.
 
-   FIXME: The function gcc/config/rx/rx.c:rx_gen_move_template() has a
-   built in copy of this register's name, rather than constructing the
-   name from this #define.  */
+   Note - these registers must not be call_used because otherwise library
+   functions that are compiled without -msmall-data-limit/-mpid support
+   might clobber them.
+
+   Note that the actual values used depends on other options; use
+   rx_gp_base_regnum() and rx_pid_base_regnum() instead.  */
 #define GP_BASE_REGNUM			13
 
 #define ELIMINABLE_REGS					\
@@ -444,12 +456,14 @@ typedef unsigned int CUMULATIVE_ARGS;
 	   VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   Note: The local label referenced by the "3b" below is emitted by
+   Note: The local label referenced by the "1b" below is emitted by
    the tablejump insn.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, TARGET_AS100_SYNTAX \
 	   ? "\t.LWORD L%d - ?-\n" : "\t.long .L%d - 1b\n", VALUE)
+
+#define CASE_VECTOR_PC_RELATIVE	(TARGET_PID)
 
 #define ASM_OUTPUT_SIZE_DIRECTIVE(STREAM, NAME, SIZE)			\
   do									\
@@ -595,7 +609,7 @@ typedef unsigned int CUMULATIVE_ARGS;
 
 /* For PIC put jump tables into the text section so that the offsets that
    they contain are always computed between two same-section symbols.  */
-#define JUMP_TABLES_IN_TEXT_SECTION	(flag_pic)
+#define JUMP_TABLES_IN_TEXT_SECTION	(TARGET_PID || flag_pic)
 
 /* This is a version of REG_P that also returns TRUE for SUBREGs.  */
 #define RX_REG_P(rtl) (REG_P (rtl) || GET_CODE (rtl) == SUBREG)

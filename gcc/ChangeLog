@@ -1,3 +1,47 @@
+2011-10-05  DJ Delorie  <dj@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.opt (mpid): Define.
+	* config/rx/t-rx (MULTILIB_OPTIONS): Add -mpid
+	(MULTILIB_DIRNAMES): Add pid.
+	* config/rx/rx.c (rx_gp_base_regnum_val, rx_pid_base_regnum_val)
+	(rx_num_interrupt_regs): New variable.
+	(rx_gp_base_regnum): New function.  Returns the number of the
+	small data area register.
+	(rx_pid_base_regnum): New function.  Returns the number of the pid
+	base register.
+	(rx_decl_for_addr): New function.  Returns the symbolic part of a
+	MEM.
+	(rx_pid_data_operand): New function.  Returns whether an object is
+	in the position independent data area.
+	(rx_legitimize_address): New function.  Puts undecided PID
+	objects in the PID data area.
+	(rx_is_legitimate_address): Add support for PID operands.
+	(rx_print_operand_address): Likewise.
+	(rx_print_operand): Likewise.
+	(rx_maybe_pidify_operand): New function.  Determine if an operand
+	is suitable for PID addressing.
+	(rx_gen_move_template): Add PID support.
+	(rx_conditional_register_usage): Likewise.
+	(rx_option_override): Initialise rx_num_interrupt_regs.
+	(rx_is_legitimate_constant): Add support for PID constants.
+	(TARGET_LEGITIMIZE_ADDRESS): Define.
+	* config/rx/constraints.md (Rpid): Define.
+	(Rpda): Define.
+	* config/rx/rx.md (UNSPEC_PID_ADDR): Define.
+	(tablejump): Add PID support.
+	(mov<>): Likewise.
+	(mov<>_internal): Likewise.
+	(addsi3): Convert to an expander.  Add PID support.
+	(pid_addr): New pattern.
+	* config/rx/rx.h (CPP_SPEC): Define.
+	(ASM_SPEC): Pass -mpid and -mint-register on to assembler.
+	(CASE_VECTOR_PC_RELATIVE): Define.
+	(JUMP_TABLES_IN_TEXT_SECTION): Enable for PID mode.
+	* config/rx/rx-protos.h (rx_maybe_pidify_operand): Prototype.
+	* doc/invoke.texi (RX Options): Document -mpid command line
+	option.
+
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38885

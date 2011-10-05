@@ -51,7 +51,43 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "opts.h"
+
+static unsigned int rx_gp_base_regnum_val = INVALID_REGNUM;
+static unsigned int rx_pid_base_regnum_val = INVALID_REGNUM;
+static unsigned int rx_num_interrupt_regs;
 
+static unsigned int
+rx_gp_base_regnum (void)
+{
+  if (rx_gp_base_regnum_val == INVALID_REGNUM)
+    gcc_unreachable ();
+  return rx_gp_base_regnum_val;
+}
+
+static unsigned int
+rx_pid_base_regnum (void)
+{
+  if (rx_pid_base_regnum_val == INVALID_REGNUM)
+    gcc_unreachable ();
+  return rx_pid_base_regnum_val;
+}
+
+/* Find a SYMBOL_REF in a "standard" MEM address and return its decl.  */
+
+static tree
+rx_decl_for_addr (rtx op)
+{
+  if (GET_CODE (op) == MEM)
+    op = XEXP (op, 0);
+  if (GET_CODE (op) == CONST)
+    op = XEXP (op, 0);
+  while (GET_CODE (op) == PLUS)
+    op = XEXP (op, 0);
+  if (GET_CODE (op) == SYMBOL_REF)
+    return SYMBOL_REF_DECL (op);
+  return NULL_TREE;
+}
+
 static void rx_print_operand (FILE *, rtx, int);
 
 #define CC_FLAG_S	(1 << 0)
@@ -63,6 +99,67 @@ static void rx_print_operand (FILE *, rtx, int);
 static unsigned int flags_from_mode (enum machine_mode mode);
 static unsigned int flags_from_code (enum rtx_code code);
 
+/* Return true if OP is a reference to an object in a PID data area.  */
+
+enum pid_type
+{
+  PID_NOT_PID = 0,	/* The object is not in the PID data area.  */
+  PID_ENCODED,		/* The object is in the PID data area.  */
+  PID_UNENCODED		/* The object will be placed in the PID data area, but it has not been placed there yet.  */
+};
+
+static enum pid_type
+rx_pid_data_operand (rtx op)
+{
+  tree op_decl;
+
+  if (!TARGET_PID)
+    return PID_NOT_PID;
+
+  if (GET_CODE (op) == PLUS
+      && GET_CODE (XEXP (op, 0)) == REG
+      && GET_CODE (XEXP (op, 1)) == CONST
+      && GET_CODE (XEXP (XEXP (op, 1), 0)) == UNSPEC)
+    return PID_ENCODED;
+
+  op_decl = rx_decl_for_addr (op);
+
+  if (op_decl)
+    {
+      if (TREE_READONLY (op_decl))
+	return PID_UNENCODED;
+    }
+  else
+    {
+      /* Sigh, some special cases.  */
+      if (GET_CODE (op) == SYMBOL_REF
+	  || GET_CODE (op) == LABEL_REF)
+	return PID_UNENCODED;
+    }
+
+  return PID_NOT_PID;
+}
+
+static rtx
+rx_legitimize_address (rtx x,
+		       rtx oldx ATTRIBUTE_UNUSED,
+		       enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  if (rx_pid_data_operand (x) == PID_UNENCODED)
+    {
+      rtx rv = gen_pid_addr (gen_rtx_REG (SImode, rx_pid_base_regnum ()), x);
+      return rv;
+    }
+
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && REG_P (XEXP (XEXP (x, 0), 0)) 
+      && REG_P (XEXP (x, 1)))
+    return force_reg (SImode, x);
+
+  return x;
+}
+
 /* Return true if OP is a reference to an object in a small data area.  */
 
 static bool
@@ -92,6 +189,16 @@ rx_is_legitimate_address (enum machine_mode mode, rtx x,
     /* Pre-decrement Register Indirect or
        Post-increment Register Indirect.  */
     return RTX_OK_FOR_BASE (XEXP (x, 0), strict);
+
+  switch (rx_pid_data_operand (x))
+    {
+    case PID_UNENCODED:
+      return false;
+    case PID_ENCODED:
+      return true;
+    default:
+      break;
+    }
 
   if (GET_CODE (x) == PLUS)
     {
@@ -337,15 +444,17 @@ rx_print_operand_address (FILE * file, rtx addr)
 	{
 	  addr = XEXP (addr, 0);
 	  gcc_assert (XINT (addr, 1) == UNSPEC_CONST);
-      
-	  addr = XVECEXP (addr, 0, 0);
+
+	  /* FIXME: Putting this case label here is an appalling abuse of the C language.  */
+	case UNSPEC:
+          addr = XVECEXP (addr, 0, 0);
 	  gcc_assert (CONST_INT_P (addr));
 	}
       /* Fall through.  */
     case LABEL_REF:
     case SYMBOL_REF:
       fprintf (file, "#");
-
+      /* Fall through.  */
     default:
       output_addr_const (file, addr);
       break;
@@ -389,9 +498,11 @@ rx_assemble_integer (rtx x, unsigned int size, int is_aligned)
      %B  Print an integer comparison name.
      %C  Print a control register name.
      %F  Print a condition code flag name.
+     %G  Register used for small-data-area addressing
      %H  Print high part of a DImode register, integer or address.
      %L  Print low part of a DImode register, integer or address.
      %N  Print the negation of the immediate value.
+     %P  Register used for PID addressing
      %Q  If the operand is a MEM, then correctly generate
          register indirect or register relative addressing.
      %R  Like %Q but for zero-extending loads.  */
@@ -400,6 +511,16 @@ static void
 rx_print_operand (FILE * file, rtx op, int letter)
 {
   bool unsigned_load = false;
+  bool print_hash = true;
+
+  if (letter == 'A'
+      && ((GET_CODE (op) == CONST
+	   && GET_CODE (XEXP (op, 0)) == UNSPEC)
+	  || GET_CODE (op) == UNSPEC))
+    {
+      print_hash = false;
+      letter = 0;
+    }
 
   switch (letter)
     {
@@ -538,6 +659,10 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	}
       break;
 
+    case 'G':
+      fprintf (file, "%s", reg_names [rx_gp_base_regnum ()]);
+      break;
+
     case 'H':
       switch (GET_CODE (op))
 	{
@@ -597,6 +722,10 @@ rx_print_operand (FILE * file, rtx op, int letter)
       gcc_assert (CONST_INT_P (op));
       fprintf (file, "#");
       rx_print_integer (file, - INTVAL (op));
+      break;
+
+    case 'P':
+      fprintf (file, "%s", reg_names [rx_pid_base_regnum ()]);
       break;
 
     case 'R':
@@ -667,6 +796,24 @@ rx_print_operand (FILE * file, rtx op, int letter)
       /* Fall through.  */
 
     default:
+      if (GET_CODE (op) == CONST
+	  && GET_CODE (XEXP (op, 0)) == UNSPEC)
+	op = XEXP (op, 0);
+      else if (GET_CODE (op) == CONST
+	       && GET_CODE (XEXP (op, 0)) == PLUS
+	       && GET_CODE (XEXP (XEXP (op, 0), 0)) == UNSPEC
+	       && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+	{
+	  if (print_hash)
+	    fprintf (file, "#");
+	  fprintf (file, "(");
+	  rx_print_operand (file, XEXP (XEXP (op, 0), 0), 'A');
+	  fprintf (file, " + ");
+	  output_addr_const (file, XEXP (XEXP (op, 0), 1));
+	  fprintf (file, ")");
+	  return;
+	}
+
       switch (GET_CODE (op))
 	{
 	case MULT:
@@ -721,20 +868,52 @@ rx_print_operand (FILE * file, rtx op, int letter)
 
 	    REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
 	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
-	    fprintf (file, TARGET_AS100_SYNTAX ? "#0%lxH" : "#0x%lx", val);
+	    if (print_hash)
+	      fprintf (file, "#");
+	    fprintf (file, TARGET_AS100_SYNTAX ? "0%lxH" : "0x%lx", val);
 	    break;
 	  }
 
 	case CONST_INT:
-	  fprintf (file, "#");
+	  if (print_hash)
+	    fprintf (file, "#");
 	  rx_print_integer (file, INTVAL (op));
 	  break;
 
-	case SYMBOL_REF:
+	case UNSPEC:
+	  switch (XINT (op, 1))
+	    {
+	    case UNSPEC_PID_ADDR:
+	      {
+		rtx sym, add;
+
+		if (print_hash)
+		  fprintf (file, "#");
+		sym = XVECEXP (op, 0, 0);
+		add = NULL_RTX;
+		fprintf (file, "(");
+		if (GET_CODE (sym) == PLUS)
+		  {
+		    add = XEXP (sym, 1);
+		    sym = XEXP (sym, 0);
+		  }
+		output_addr_const (file, sym);
+		if (add != NULL_RTX)
+		  {
+		    fprintf (file, "+");
+		    output_addr_const (file, add);
+		  }
+		fprintf (file, "-__pid_base");
+		fprintf (file, ")");
+		return;
+	      }
+	    }
+	  /* Fall through */
+
 	case CONST:
+	case SYMBOL_REF:
 	case LABEL_REF:
 	case CODE_LABEL:
-	case UNSPEC:
 	  rx_print_operand_address (file, op);
 	  break;
 
@@ -743,6 +922,29 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	}
       break;
     }
+}
+
+/* Maybe convert an operand into its PID format.  */
+
+rtx
+rx_maybe_pidify_operand (rtx op, int copy_to_reg)
+{
+  if (rx_pid_data_operand (op) == PID_UNENCODED)
+    {
+      if (GET_CODE (op) == MEM)
+	{
+	  rtx a = gen_pid_addr (gen_rtx_REG (SImode, rx_pid_base_regnum ()), XEXP (op, 0));
+	  op = replace_equiv_address (op, a);
+	}
+      else
+	{
+	  op = gen_pid_addr (gen_rtx_REG (SImode, rx_pid_base_regnum ()), op);
+	}
+
+      if (copy_to_reg)
+	op = copy_to_mode_reg (GET_MODE (op), op);
+    }
+  return op;
 }
 
 /* Returns an assembler template for a move instruction.  */
@@ -784,13 +986,15 @@ rx_gen_move_template (rtx * operands, bool is_movu)
       gcc_unreachable ();
     }
 
-  if (MEM_P (src) && rx_small_data_operand (XEXP (src, 0)))
-    src_template = "%%gp(%A1)[r13]";
+  if (MEM_P (src) && rx_pid_data_operand (XEXP (src, 0)) == PID_UNENCODED)
+    src_template = "(%A1-__pid_base)[%P1]";
+  else if (MEM_P (src) && rx_small_data_operand (XEXP (src, 0)))
+    src_template = "%%gp(%A1)[%G1]";
   else
     src_template = "%1";
 
   if (MEM_P (dest) && rx_small_data_operand (XEXP (dest, 0)))
-    dst_template = "%%gp(%A0)[r13]";
+    dst_template = "%%gp(%A0)[%G0]";
   else
     dst_template = "%0";
 
@@ -996,8 +1200,21 @@ rx_conditional_register_usage (void)
 {
   static bool using_fixed_regs = false;
 
+  if (TARGET_PID)
+    {
+      rx_pid_base_regnum_val = GP_BASE_REGNUM - rx_num_interrupt_regs;
+      fixed_regs[rx_pid_base_regnum_val] = call_used_regs [rx_pid_base_regnum_val] = 1;
+    }
+
   if (rx_small_data_limit > 0)
-    fixed_regs[GP_BASE_REGNUM] = call_used_regs [GP_BASE_REGNUM] = 1;
+    {
+      if (TARGET_PID)
+	rx_gp_base_regnum_val = rx_pid_base_regnum_val - 1;
+      else
+	rx_gp_base_regnum_val = GP_BASE_REGNUM - rx_num_interrupt_regs;
+
+      fixed_regs[rx_gp_base_regnum_val] = call_used_regs [rx_gp_base_regnum_val] = 1;
+    }
 
   if (use_fixed_regs != using_fixed_regs)
     {
@@ -2338,8 +2555,10 @@ rx_option_override (void)
 	      fixed_regs[13] = call_used_regs [13] = 1;
 	      /* Fall through.  */
 	    case 0:
+	      rx_num_interrupt_regs = opt->value;
 	      break;
 	    default:
+	      rx_num_interrupt_regs = 0;
 	      /* Error message already given because rx_handle_option
 		 returned false.  */
 	      break;
@@ -2444,7 +2663,7 @@ rx_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	  return true;
 
 	case UNSPEC:
-	  return XINT (x, 1) == UNSPEC_CONST;
+	  return XINT (x, 1) == UNSPEC_CONST || XINT (x, 1) == UNSPEC_PID_ADDR;
 
 	default:
 	  /* FIXME: Can this ever happen ?  */
@@ -3030,6 +3249,9 @@ rx_adjust_insn_length (rtx insn, int current_length)
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P		rx_is_legitimate_constant
+
+#undef  TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS		rx_legitimize_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

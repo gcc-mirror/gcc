@@ -112,3 +112,9 @@ Specifies the number of registers to reserve for interrupt handlers.
 msave-acc-in-interrupts
 Target Mask(SAVE_ACC_REGISTER)
 Specifies whether interrupt functions should save and restore the accumulator register.
+
+;---------------------------------------------------
+
+mpid
+Target Mask(PID)
+Enables Position-Independent-Data (PID) mode.
