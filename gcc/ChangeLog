@@ -1,3 +1,9 @@
+2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (distance_non_agu_define): Simplify calculation
+	of "found".  Simplify return value calculation.
+	(distance_agu_use): Ditto.
+
 2011-10-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/50621
@@ -20,8 +26,7 @@
 	small data area register.
 	(rx_pid_base_regnum): New function.  Returns the number of the pid
 	base register.
-	(rx_decl_for_addr): New function.  Returns the symbolic part of a
-	MEM.
+	(rx_decl_for_addr): New function.  Returns the symbolic part of a MEM.
 	(rx_pid_data_operand): New function.  Returns whether an object is
 	in the position independent data area.
 	(rx_legitimize_address): New function.  Puts undecided PID
@@ -49,8 +54,7 @@
 	(CASE_VECTOR_PC_RELATIVE): Define.
 	(JUMP_TABLES_IN_TEXT_SECTION): Enable for PID mode.
 	* config/rx/rx-protos.h (rx_maybe_pidify_operand): Prototype.
-	* doc/invoke.texi (RX Options): Document -mpid command line
-	option.
+	* doc/invoke.texi (RX Options): Document -mpid command line option.
 
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
@@ -101,9 +105,8 @@
 
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
-	* gimple-fold.c (gimple_fold_stmt_to_constant_1): For
-	ternary ops with an embedded expression valueize and fold
-	that as well.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): For ternary ops
+	with an embedded expression valueize and fold that as well.
 	* tree-ssa-sccvn.c (try_to_simplify): Also allow SSA name
 	results from gimple_fold_stmt_to_constant_1.
 
