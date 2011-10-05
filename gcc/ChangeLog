@@ -6,6 +6,12 @@
 	code duplication.  Do update_stmt here ...
 	(expand_vector_operations_1): ... not here.
 
+	* config/i386/i386.c (ix86_expand_vshuffle): Never fail.  Handle
+	TARGET_XOP.  Fix pshufb constant vector creation.  Reduce code
+	duplication.  Handle V2DI without SSE4.1.
+	* config/i386/i386-protos.h (ix86_expand_vshuffle): Update decl.
+	* config/i386/i386.md (vshuffle<V_128>): Remove assert for ok.
+
 2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (distance_non_agu_define): Simplify calculation
