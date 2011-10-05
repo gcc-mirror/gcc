@@ -1,3 +1,9 @@
+2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/strlenopt-21.c (dg-options): Remove -fdump-tree-optimized.
+	* gcc.dg/ipa/inline-5.c: Cleanup inline ipa dump.
+	* g++.dg/other/final1.C: Cleanup original tree dump.
+
 2011-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50613

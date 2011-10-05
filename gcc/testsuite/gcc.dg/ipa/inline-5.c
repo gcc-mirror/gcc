@@ -33,3 +33,4 @@ accessreference (struct a *a)
 
 /* { dg-final { scan-ipa-dump-times "Will be eliminated" 4 "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "50. will be eliminated" 1 "inline"  } } */
+/* { dg-final { cleanup-ipa-dump "inline" } } */
