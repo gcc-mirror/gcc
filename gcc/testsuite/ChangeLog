@@ -17,7 +17,10 @@
 2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect.exp (VEC_CFLAGS): Move initialization after
-	DEFAULT_VECTFLAGS initialization.
+	DEFAULT_VECTFLAGS initialization.  Append "-fdump-tree-veclower2".
+	* gcc.dg/vect/vec-scal-opt.c: Scan and cleanup veclower2 tree dump.
+	* gcc.dg/vect/vec-scal-opt1.c: Ditto.
+	* gcc.dg/vect/vec-scal-opt2.c: Ditto.
 
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
