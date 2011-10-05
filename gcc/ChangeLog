@@ -1,3 +1,11 @@
+2011-10-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (tablejump): Add missing label.
+	(adddi3_internal): Mark operand 0 as early-clobbered.
+	(smaxsi3): Revert previous delta.
+	(adc_internal): Fix whitespace in generated asm.
+	(adc_flags): Likewise.
+
 2011-10-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* expmed.c (expand_mult_highpart_optab): Replace optab_handler
