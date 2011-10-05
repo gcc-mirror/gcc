@@ -1,3 +1,11 @@
+2011-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50609
+	* gimple-fold.c (fold_array_ctor_reference): Also handle
+	vector typed constructors.
+	(fold_ctor_reference): Dispatch to fold_array_ctor_reference
+	for vector typed constructors.
+
 2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_emit_binop): New static function.

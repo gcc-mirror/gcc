@@ -2747,10 +2747,12 @@ fold_array_ctor_reference (tree type, tree ctor,
   double_int low_bound, elt_size;
   double_int index, max_index;
   double_int access_index;
-  tree domain_type = TYPE_DOMAIN (TREE_TYPE (ctor));
+  tree domain_type = NULL_TREE;
   HOST_WIDE_INT inner_offset;
 
   /* Compute low bound and elt size.  */
+  if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE)
+    domain_type = TYPE_DOMAIN (TREE_TYPE (ctor));
   if (domain_type && TYPE_MIN_VALUE (domain_type))
     {
       /* Static constructors for variably sized objects makes no sense.  */
@@ -2917,7 +2919,8 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
   if (TREE_CODE (ctor) == CONSTRUCTOR)
     {
 
-      if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE)
+      if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE
+	  || TREE_CODE (TREE_TYPE (ctor)) == VECTOR_TYPE)
 	return fold_array_ctor_reference (type, ctor, offset, size);
       else
 	return fold_nonarray_ctor_reference (type, ctor, offset, size);
