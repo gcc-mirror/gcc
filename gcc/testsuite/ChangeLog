@@ -1,5 +1,11 @@
 2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/avx256-unaligned-load-3.c (dg-options): Add
+	-mtune=generic.
+	* gcc.target/i386/avx256-unaligned-store-3.c (dg-options): Ditto.
+
+2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/torture/builtin-complex-1.c: Use dg-add-options ieee.
 
 2011-10-04  David S. Miller  <davem@davemloft.net>
