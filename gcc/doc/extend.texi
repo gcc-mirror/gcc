@@ -13099,6 +13099,17 @@ long __builtin_vis_fucmple8 (v8qi, v8qi);
 long __builtin_vis_fucmpne8 (v8qi, v8qi);
 long __builtin_vis_fucmpgt8 (v8qi, v8qi);
 long __builtin_vis_fucmpeq8 (v8qi, v8qi);
+
+float __builtin_vis_fhadds (float, float);
+double __builtin_vis_fhaddd (double, double);
+float __builtin_vis_fhsubs (float, float);
+double __builtin_vis_fhsubd (double, double);
+float __builtin_vis_fnhadds (float, float);
+double __builtin_vis_fnhaddd (double, double);
+
+int64_t __builtin_vis_umulxhi (int64_t, int64_t);
+int64_t __builtin_vis_xmulx (int64_t, int64_t);
+int64_t __builtin_vis_xmulxhi (int64_t, int64_t);
 @end smallexample
 
 @node SPU Built-in Functions
