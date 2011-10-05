@@ -1,3 +1,8 @@
+2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect.exp (VEC_CFLAGS): Move initialization after
+	DEFAULT_VECTFLAGS initialization.
+
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38885
