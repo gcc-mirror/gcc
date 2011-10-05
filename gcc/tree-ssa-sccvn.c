@@ -275,6 +275,13 @@ vn_get_expr_for (tree name)
 			  gimple_assign_rhs2 (def_stmt));
       break;
 
+    case tcc_exceptional:
+      if (code == CONSTRUCTOR
+	  && TREE_CODE
+	       (TREE_TYPE (gimple_assign_rhs1 (def_stmt))) == VECTOR_TYPE)
+	expr = gimple_assign_rhs1 (def_stmt);
+      break;
+
     default:;
     }
   if (expr == NULL_TREE)
@@ -2922,7 +2929,8 @@ simplify_unary_expression (gimple stmt)
      GIMPLE_ASSIGN_SINGLE codes.  */
   if (code == REALPART_EXPR
       || code == IMAGPART_EXPR
-      || code == VIEW_CONVERT_EXPR)
+      || code == VIEW_CONVERT_EXPR
+      || code == BIT_FIELD_REF)
     op0 = TREE_OPERAND (op0, 0);
 
   if (TREE_CODE (op0) != SSA_NAME)
@@ -2934,7 +2942,8 @@ simplify_unary_expression (gimple stmt)
   else if (CONVERT_EXPR_CODE_P (code)
 	   || code == REALPART_EXPR
 	   || code == IMAGPART_EXPR
-	   || code == VIEW_CONVERT_EXPR)
+	   || code == VIEW_CONVERT_EXPR
+	   || code == BIT_FIELD_REF)
     {
       /* We want to do tree-combining on conversion-like expressions.
          Make sure we feed only SSA_NAMEs or constants to fold though.  */
@@ -2943,6 +2952,7 @@ simplify_unary_expression (gimple stmt)
 	  || BINARY_CLASS_P (tem)
 	  || TREE_CODE (tem) == VIEW_CONVERT_EXPR
 	  || TREE_CODE (tem) == SSA_NAME
+	  || TREE_CODE (tem) == CONSTRUCTOR
 	  || is_gimple_min_invariant (tem))
 	op0 = tem;
     }
@@ -2951,7 +2961,14 @@ simplify_unary_expression (gimple stmt)
   if (op0 == orig_op0)
     return NULL_TREE;
 
-  result = fold_unary_ignore_overflow (code, gimple_expr_type (stmt), op0);
+  if (code == BIT_FIELD_REF)
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+      result = fold_ternary (BIT_FIELD_REF, TREE_TYPE (rhs),
+			     op0, TREE_OPERAND (rhs, 1), TREE_OPERAND (rhs, 2));
+    }
+  else
+    result = fold_unary_ignore_overflow (code, gimple_expr_type (stmt), op0);
   if (result)
     {
       STRIP_USELESS_TYPE_CONVERSION (result);
@@ -2989,7 +3006,8 @@ try_to_simplify (gimple stmt)
       /* Fallthrough for some unary codes that can operate on registers.  */
       if (!(code == REALPART_EXPR
 	    || code == IMAGPART_EXPR
-	    || code == VIEW_CONVERT_EXPR))
+	    || code == VIEW_CONVERT_EXPR
+	    || code == BIT_FIELD_REF))
 	break;
       /* We could do a little more with unary ops, if they expand
 	 into binary ops, but it's debatable whether it is worth it. */
@@ -3159,7 +3177,8 @@ visit_use (tree use)
 			  /* VOP-less references can go through unary case.  */
 			  if ((code == REALPART_EXPR
 			       || code == IMAGPART_EXPR
-			       || code == VIEW_CONVERT_EXPR)
+			       || code == VIEW_CONVERT_EXPR
+			       || code == BIT_FIELD_REF)
 			      && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
 			    {
 			      changed = visit_nary_op (lhs, stmt);

@@ -1,3 +1,10 @@
+2011-10-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_get_expr_for): Handle CONSTRUCTOR of
+	vector type.
+	(simplify_unary_expression): Handle BIT_FIELD_REFs.
+	(try_to_simplify): Handle BIT_FIELD_REFs.
+
 2011-10-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-protos.h (avr_out_addto_sp): New prototype.
