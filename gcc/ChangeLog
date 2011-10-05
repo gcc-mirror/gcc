@@ -1,3 +1,13 @@
+2011-10-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/50621
+	* config/i386/i386.c (ix86_add_cfa_restore_note): Omit notes only
+	if the function was not shrink-wrapped.
+	(ix86_expand_epilogue): Ensure queued cfa_adjust notes are attached
+	to an insn.
+	* function.c (thread_prologue_and_epilogue_insns): Make sure the
+	shrink_wrapped flag is set even if there is no dump file.
+
 2011-10-05  DJ Delorie  <dj@redhat.com>
 	    Nick Clifton  <nickc@redhat.com>
 

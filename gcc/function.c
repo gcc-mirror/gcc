@@ -5741,10 +5741,11 @@ thread_prologue_and_epilogue_insns (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Shrink-wrapping aborted due to clobber.\n");
 	}
-      else if (dump_file && entry_edge != orig_entry_edge)
+      else if (entry_edge != orig_entry_edge)
 	{
 	  crtl->shrink_wrapped = true;
-	  fprintf (dump_file, "Performing shrink-wrapping.\n");
+	  if (dump_file)
+	    fprintf (dump_file, "Performing shrink-wrapping.\n");
 	}
 
     fail_shrinkwrap:
