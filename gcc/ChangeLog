@@ -1,3 +1,8 @@
+2011-10-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* expmed.c (expand_mult_highpart_optab): Replace optab_handler
+	with the new widening_optab_handler.
+
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50609
