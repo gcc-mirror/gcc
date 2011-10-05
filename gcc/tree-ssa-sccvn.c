@@ -2967,27 +2967,29 @@ simplify_unary_expression (gimple stmt)
 static tree
 try_to_simplify (gimple stmt)
 {
+  enum tree_code code = gimple_assign_rhs_code (stmt);
   tree tem;
 
   /* For stores we can end up simplifying a SSA_NAME rhs.  Just return
      in this case, there is no point in doing extra work.  */
-  if (gimple_assign_copy_p (stmt)
-      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+  if (code == SSA_NAME)
     return NULL_TREE;
 
   /* First try constant folding based on our current lattice.  */
-  tem = gimple_fold_stmt_to_constant (stmt, vn_valueize);
-  if (tem)
+  tem = gimple_fold_stmt_to_constant_1 (stmt, vn_valueize);
+  if (tem
+      && (TREE_CODE (tem) == SSA_NAME
+	  || is_gimple_min_invariant (tem)))
     return tem;
 
   /* If that didn't work try combining multiple statements.  */
-  switch (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)))
+  switch (TREE_CODE_CLASS (code))
     {
     case tcc_reference:
-      /* Fallthrough for some codes that can operate on registers.  */
-      if (!(TREE_CODE (gimple_assign_rhs1 (stmt)) == REALPART_EXPR
-	    || TREE_CODE (gimple_assign_rhs1 (stmt)) == IMAGPART_EXPR
-	    || TREE_CODE (gimple_assign_rhs1 (stmt)) == VIEW_CONVERT_EXPR))
+      /* Fallthrough for some unary codes that can operate on registers.  */
+      if (!(code == REALPART_EXPR
+	    || code == IMAGPART_EXPR
+	    || code == VIEW_CONVERT_EXPR))
 	break;
       /* We could do a little more with unary ops, if they expand
 	 into binary ops, but it's debatable whether it is worth it. */

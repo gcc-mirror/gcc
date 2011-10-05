@@ -2569,6 +2569,19 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
               tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
               tree op2 = (*valueize) (gimple_assign_rhs3 (stmt));
 
+	      /* Fold embedded expressions in ternary codes.  */
+	      if ((subcode == COND_EXPR
+		   || subcode == VEC_COND_EXPR)
+		  && COMPARISON_CLASS_P (op0))
+		{
+		  tree op00 = (*valueize) (TREE_OPERAND (op0, 0));
+		  tree op01 = (*valueize) (TREE_OPERAND (op0, 1));
+		  tree tem = fold_binary_loc (loc, TREE_CODE (op0),
+					      TREE_TYPE (op0), op00, op01);
+		  if (tem)
+		    op0 = tem;
+		}
+
               return fold_ternary_loc (loc, subcode,
 				       gimple_expr_type (stmt), op0, op1, op2);
             }
