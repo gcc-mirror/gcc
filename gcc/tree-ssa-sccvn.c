@@ -1442,7 +1442,54 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	}
     }
 
-  /* 3) For aggregate copies translate the reference through them if
+  /* 3) Assignment from a constant.  We can use folds native encode/interpret
+     routines to extract the assigned bits.  */
+  else if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
+	   && ref->size == maxsize
+	   && maxsize % BITS_PER_UNIT == 0
+	   && offset % BITS_PER_UNIT == 0
+	   && is_gimple_reg_type (vr->type)
+	   && gimple_assign_single_p (def_stmt)
+	   && is_gimple_min_invariant (gimple_assign_rhs1 (def_stmt)))
+    {
+      tree base2;
+      HOST_WIDE_INT offset2, size2, maxsize2;
+      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
+				       &offset2, &size2, &maxsize2);
+      if (maxsize2 != -1
+	  && maxsize2 == size2
+	  && size2 % BITS_PER_UNIT == 0
+	  && offset2 % BITS_PER_UNIT == 0
+	  && operand_equal_p (base, base2, 0)
+	  && offset2 <= offset
+	  && offset2 + size2 >= offset + maxsize)
+	{
+	  /* We support up to 512-bit values (for V8DFmode).  */
+	  unsigned char buffer[64];
+	  int len;
+
+	  len = native_encode_expr (gimple_assign_rhs1 (def_stmt),
+				    buffer, sizeof (buffer));
+	  if (len > 0)
+	    {
+	      tree val = native_interpret_expr (vr->type,
+						buffer
+						+ ((offset - offset2)
+						   / BITS_PER_UNIT),
+						ref->size / BITS_PER_UNIT);
+	      if (val)
+		{
+		  unsigned int value_id = get_or_alloc_constant_value_id (val);
+		  return vn_reference_insert_pieces
+		           (vuse, vr->set, vr->type,
+			    VEC_copy (vn_reference_op_s, heap, vr->operands),
+			    val, value_id);
+		}
+	    }
+	}
+    }
+
+  /* 4) For aggregate copies translate the reference through them if
      the copy kills ref.  */
   else if (vn_walk_kind == VN_WALKREWRITE
 	   && gimple_assign_single_p (def_stmt)
@@ -1540,7 +1587,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       return NULL;
     }
 
-  /* 4) For memcpy copies translate the reference through them if
+  /* 5) For memcpy copies translate the reference through them if
      the copy kills ref.  */
   else if (vn_walk_kind == VN_WALKREWRITE
 	   && is_gimple_reg_type (vr->type)

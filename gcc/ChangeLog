@@ -1,3 +1,9 @@
+2011-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38885
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle partial reads
+	from constants.
+
 2011-10-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* doc/invoke.texi (-fshrink-wrap): Document.
