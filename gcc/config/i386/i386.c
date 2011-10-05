@@ -9134,7 +9134,8 @@ static GTY(()) rtx queued_cfa_restores;
 static void
 ix86_add_cfa_restore_note (rtx insn, rtx reg, HOST_WIDE_INT cfa_offset)
 {
-  if (cfa_offset <= cfun->machine->fs.red_zone_offset)
+  if (!crtl->shrink_wrapped
+      && cfa_offset <= cfun->machine->fs.red_zone_offset)
     return;
 
   if (insn)
@@ -10738,6 +10739,8 @@ ix86_expand_epilogue (int style)
 				 GEN_INT (m->fs.sp_offset - UNITS_PER_WORD),
 				 style, true);
     }
+  else
+    ix86_add_queued_cfa_restore_notes (get_last_insn ());
 
   /* Sibcall epilogues don't want a return instruction.  */
   if (style == 0)
