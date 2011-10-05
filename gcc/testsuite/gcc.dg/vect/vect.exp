@@ -64,8 +64,8 @@ lappend DEFAULT_VECTCFLAGS "-O2"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/nodump-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
-# "-O -fdump-tree-veclower"
-lappend VEC_FLAGS "-O" "-fdump-tree-veclower"
+# "-O -fdump-tree-veclower2"
+lappend VEC_FLAGS "-O" "-fdump-tree-veclower2"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vec-scal-*.\[cS\]]]  \
         "" $VEC_FLAGS
 
