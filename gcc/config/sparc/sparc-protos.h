@@ -105,6 +105,7 @@ extern int v9_regcmp_p (enum rtx_code);
 extern int sparc_check_64 (rtx, rtx);
 extern rtx gen_df_reg (rtx, int);
 extern void sparc_expand_compare_and_swap_12 (rtx, rtx, rtx, rtx);
+extern const char *output_v8plus_mult (rtx, rtx *, const char *);
 #endif /* RTX_CODE */
 
 #endif /* __SPARC_PROTOS_H__ */

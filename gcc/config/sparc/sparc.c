@@ -9236,6 +9236,12 @@ sparc_vis_init_builtins (void)
 						 void_type_node, 0);
   tree void_ftype_si = build_function_type_list (void_type_node,
 						 intSI_type_node, 0);
+  tree sf_ftype_sf_sf = build_function_type_list (float_type_node,
+						  float_type_node,
+						  float_type_node, 0);
+  tree df_ftype_df_df = build_function_type_list (double_type_node,
+						  double_type_node,
+						  double_type_node, 0);
 
   /* Packing and expanding vectors.  */
   def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis,
@@ -9552,6 +9558,26 @@ sparc_vis_init_builtins (void)
 	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fucmpeq8si_vis,
 			     si_ftype_v8qi_v8qi);
 	}
+
+      def_builtin_const ("__builtin_vis_fhadds", CODE_FOR_fhaddsf_vis,
+			 sf_ftype_sf_sf);
+      def_builtin_const ("__builtin_vis_fhaddd", CODE_FOR_fhadddf_vis,
+			 df_ftype_df_df);
+      def_builtin_const ("__builtin_vis_fhsubs", CODE_FOR_fhsubsf_vis,
+			 sf_ftype_sf_sf);
+      def_builtin_const ("__builtin_vis_fhsubd", CODE_FOR_fhsubdf_vis,
+			 df_ftype_df_df);
+      def_builtin_const ("__builtin_vis_fnhadds", CODE_FOR_fnhaddsf_vis,
+			 sf_ftype_sf_sf);
+      def_builtin_const ("__builtin_vis_fnhaddd", CODE_FOR_fnhadddf_vis,
+			 df_ftype_df_df);
+
+      def_builtin_const ("__builtin_vis_umulxhi", CODE_FOR_umulxhi_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_xmulx", CODE_FOR_xmulx_vis,
+			 di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_xmulxhi", CODE_FOR_xmulxhi_vis,
+			 di_ftype_di_di);
     }
 }
 
@@ -10736,6 +10762,79 @@ sparc_preferred_reload_class (rtx x, reg_class_t rclass)
     }
 
   return rclass;
+}
+
+const char *
+output_v8plus_mult (rtx insn, rtx *operands, const char *name)
+{
+  char mulstr[32];
+
+  gcc_assert (! TARGET_ARCH64);
+
+  if (sparc_check_64 (operands[1], insn) <= 0)
+    output_asm_insn ("srl\t%L1, 0, %L1", operands);
+  if (which_alternative == 1)
+    output_asm_insn ("sllx\t%H1, 32, %H1", operands);
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (which_alternative == 1)
+	{
+	  output_asm_insn ("or\t%L1, %H1, %H1", operands);
+	  sprintf (mulstr, "%s\t%%H1, %%2, %%L0", name);
+	  output_asm_insn (mulstr, operands);
+	  return "srlx\t%L0, 32, %H0";
+	}
+      else
+	{
+	  output_asm_insn ("sllx\t%H1, 32, %3", operands);
+          output_asm_insn ("or\t%L1, %3, %3", operands);
+          sprintf (mulstr, "%s\t%%3, %%2, %%3", name);
+	  output_asm_insn (mulstr, operands);
+	  output_asm_insn ("srlx\t%3, 32, %H0", operands);
+          return "mov\t%3, %L0";
+	}
+    }
+  else if (rtx_equal_p (operands[1], operands[2]))
+    {
+      if (which_alternative == 1)
+	{
+	  output_asm_insn ("or\t%L1, %H1, %H1", operands);
+          sprintf (mulstr, "%s\t%%H1, %%H1, %%L0", name);
+	  output_asm_insn (mulstr, operands);
+	  return "srlx\t%L0, 32, %H0";
+	}
+      else
+	{
+	  output_asm_insn ("sllx\t%H1, 32, %3", operands);
+          output_asm_insn ("or\t%L1, %3, %3", operands);
+	  sprintf (mulstr, "%s\t%%3, %%3, %%3", name);
+	  output_asm_insn (mulstr, operands);
+	  output_asm_insn ("srlx\t%3, 32, %H0", operands);
+          return "mov\t%3, %L0";
+	}
+    }
+  if (sparc_check_64 (operands[2], insn) <= 0)
+    output_asm_insn ("srl\t%L2, 0, %L2", operands);
+  if (which_alternative == 1)
+    {
+      output_asm_insn ("or\t%L1, %H1, %H1", operands);
+      output_asm_insn ("sllx\t%H2, 32, %L1", operands);
+      output_asm_insn ("or\t%L2, %L1, %L1", operands);
+      sprintf (mulstr, "%s\t%%H1, %%L1, %%L0", name);
+      output_asm_insn (mulstr, operands);
+      return "srlx\t%L0, 32, %H0";
+    }
+  else
+    {
+      output_asm_insn ("sllx\t%H1, 32, %3", operands);
+      output_asm_insn ("sllx\t%H2, 32, %4", operands);
+      output_asm_insn ("or\t%L1, %3, %3", operands);
+      output_asm_insn ("or\t%L2, %4, %4", operands);
+      sprintf (mulstr, "%s\t%%3, %%4, %%3", name);
+      output_asm_insn (mulstr, operands);
+      output_asm_insn ("srlx\t%3, 32, %H0", operands);
+      return "mov\t%3, %L0";
+    }
 }
 
 #include "gt-sparc.h"

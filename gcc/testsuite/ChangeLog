@@ -1,3 +1,9 @@
+2011-10-04  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/fhalve.c: New test.
+	* gcc.target/sparc/fnegop.c: New test.
+	* gcc.target/sparc/xmul.c: New test.
+
 2011-10-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/35831

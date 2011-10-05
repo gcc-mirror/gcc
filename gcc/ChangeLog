@@ -1,3 +1,24 @@
+2011-10-04  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (UNSPEC_FHADD, UNSPEC_FHSUB,
+	UNSPEC_XMUL): New unspecs.
+	(muldi3_v8plus): Use output_v8plus_mult.
+	(*naddsf3, *nadddf3, *nmulsf3, *nmuldf3, *nmuldf3_extend):
+	New VIS 3.0 combiner patterns.
+	(fhaddsf_vis, fhadddf_vis, fhsubsf_vis, fhsubdf_vis,
+	fnhaddsf_vis, fnhaddf_vis, umulxhi_vis, *umulxhi_sp64,
+	umulxhi_v8plus, xmulx_vis, *xmulx_sp64, xmulx_v8plus,
+	xmulxhi_vis, *xmulxhi_sp64, xmulxhi_v8plus): New VIS 3.0
+	builtins patterns.
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Emit new
+	builtins.
+	(output_v8plus_mult): New function.
+	* config/sparc/sparc-protos.h: Declare it.
+	* config/sparc/visintrin.h (__vis_fhadds, __vis_fhaddd,
+	__vis_fhsubs, __vis_fhsubd, __vis_fnhadds, __vis_fnhaddd,
+	__vis_umulxhi, __vis_xmulx, __vis_xmulxhi): New intrinsics.
+	* doc/extend.texi: Document new builtins.
+
 2011-10-04  Richard Henderson  <rth@redhat.com>
 
 	* c-typeck.c (c_build_vec_shuffle_expr): Fix uninitialized variable.
