@@ -10779,13 +10779,13 @@ ix86_expand_epilogue (int style)
 
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 				     popc, -1, true);
-	  emit_jump_insn (gen_return_indirect_internal (ecx));
+	  emit_jump_insn (gen_simple_return_indirect_internal (ecx));
 	}
       else
-	emit_jump_insn (gen_return_pop_internal (popc));
+	emit_jump_insn (gen_simple_return_pop_internal (popc));
     }
   else
-    emit_jump_insn (gen_return_internal ());
+    emit_jump_insn (gen_simple_return_internal ());
 
   /* Restore the state back to the state from the prologue,
      so that it's correct for the next epilogue.  */
@@ -31312,7 +31312,7 @@ ix86_pad_returns (void)
 	}
       if (replace)
 	{
-	  emit_jump_insn_before (gen_return_internal_long (), ret);
+	  emit_jump_insn_before (gen_simple_return_internal_long (), ret);
 	  delete_insn (ret);
 	}
     }

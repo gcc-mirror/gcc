@@ -1,3 +1,7 @@
+2011-10-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.target/i386/sw-1.c: New test.
+
 2011-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx256-unaligned-load-3.c (dg-options): Add

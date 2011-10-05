@@ -1488,6 +1488,16 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   edge e1, e2;
   edge_iterator ei;
 
+  /* If we performed shrink-wrapping, edges to the EXIT_BLOCK_PTR can
+     only be distinguished for JUMP_INSNs.  The two paths may differ in
+     whether they went through the prologue.  Sibcalls are fine, we know
+     that we either didn't need or inserted an epilogue before them.  */
+  if (crtl->shrink_wrapped
+      && single_succ_p (bb1) && single_succ (bb1) == EXIT_BLOCK_PTR
+      && !JUMP_P (BB_END (bb1))
+      && !(CALL_P (BB_END (bb1)) && SIBLING_CALL_P (BB_END (bb1))))
+    return false;
+  
   /* If BB1 has only one successor, we may be looking at either an
      unconditional jump, or a fake edge to exit.  */
   if (single_succ_p (bb1)

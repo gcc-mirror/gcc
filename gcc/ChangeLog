@@ -1,3 +1,28 @@
+2011-10-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* doc/invoke.texi (-fshrink-wrap): Document.
+	* opts.c (default_options_table): Add it.
+	* common.opt (fshrink-wrap): Add.
+	* function.c (emit_return_into_block): Remove useless declaration.
+	(record_hard_reg_uses_1, record_hard_reg_uses, frame_required_for_rtx,
+	requires_stack_frame_p, gen_return_pattern): New static functions.
+	(emit_return_into_block): New arg simple_p.  All callers changed.
+	Use gen_return_pattern.
+	(thread_prologue_and_epilogue_insns): Implement shrink-wrapping.
+	* config/i386/i386.md (return): Expand into a simple_return.
+	(simple_return): New expander):
+	(simple_return_internal, simple_return_internal_long,
+	simple_return_pop_internal_long, simple_return_indirect_internal):
+	Renamed from return_internal, return_internal_long,
+	return_pop_internal_long and return_indirect_internal; changed to use
+	simple_return.
+	* config/i386/i386.c (ix86_expand_epilogue): Adjust to expand
+	simple returns.
+	(ix86_pad_returns): Likewise.
+	* function.h (struct rtl_data): Add member shrink_wrapped.
+	* cfgcleanup.c (outgoing_edges_match): If shrink-wrapped, edges that
+	are not jumps or sibcalls can't be compared.
+
 2011-10-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_get_expr_for): Handle CONSTRUCTOR of

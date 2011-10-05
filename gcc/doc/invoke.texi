@@ -396,10 +396,10 @@ Objective-C and Objective-C++ Dialects}.
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
--fsignaling-nans -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
--fsplit-wide-types -fstack-protector -fstack-protector-all @gol
--fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer @gol
--ftree-bit-ccp @gol
+-fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
+-fsplit-ivs-in-unroller -fsplit-wide-types -fstack-protector @gol
+-fstack-protector-all -fstrict-aliasing -fstrict-overflow @gol
+-fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
 -ftree-forwprop -ftree-fre -ftree-loop-if-convert @gol
@@ -6879,6 +6879,12 @@ This option has no effect until one of @option{-fselective-scheduling} or
 @opindex fsel-sched-pipelining-outer-loops
 When pipelining loops during selective scheduling, also pipeline outer loops.
 This option has no effect until @option{-fsel-sched-pipelining} is turned on.
+
+@item -fshrink-wrap
+@opindex fshrink-wrap
+Emit function prologues only before parts of the function that need it,
+rather than at the top of the function.  This flag is enabled by default at
+@option{-O} and higher.
 
 @item -fcaller-saves
 @opindex fcaller-saves
