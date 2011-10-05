@@ -5571,6 +5571,7 @@ thread_prologue_and_epilogue_insns (void)
       }
       
   if (flag_shrink_wrap && HAVE_simple_return
+      && (targetm.profile_before_prologue () || !crtl->profile)
       && nonempty_prologue && !crtl->calls_eh_return)
     {
       HARD_REG_SET prologue_clobbered, prologue_used, live_on_edge;
