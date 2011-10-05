@@ -1,65 +1,64 @@
-/* Test that different type variants are compatible within
-   vector shuffling.  */
+#if __SIZEOF_INT__ == 4
+typedef unsigned int V __attribute__((vector_size(16), may_alias));
 
-#define vector(elcount, type)  \
-__attribute__((vector_size((elcount)*sizeof(type)))) type
+struct S
+{
+  V in1, in2, mask, out;
+};
 
-#define shufcompare(count, vres, v0, mask) \
-do { \
-    int __i; \
-    for (__i = 0; __i < count; __i++) { \
-        if (vres[__i] != v0[mask[__i]]) \
-            __builtin_abort (); \
-    } \
-} while (0)
+struct S tests[] = {
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0x55555555, 0x66666666, 0x77777777, 0x88888888 },
+    { 0, 1, 2, 3 },
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0x55555555, 0x66666666, 0x77777777, 0x88888888 },
+    { 4, 5, 6, 7 },
+    { 0x55555555, 0x66666666, 0x77777777, 0x88888888 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0x55555555, 0x66666666, 0x77777777, 0x88888888 },
+    { 0, 4, 1, 5 },
+    { 0x11111111, 0x55555555, 0x22222222, 0x66666666 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0x55555555, 0x66666666, 0x77777777, 0x88888888 },
+    { 0, 7, 4, 3 },
+    { 0x11111111, 0x88888888, 0x55555555, 0x44444444 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0x55555555, 0x66666666, 0x77777777, 0x88888888 },
+    { 0, 0, 0, 0 },
+    { 0x11111111, 0x11111111, 0x11111111, 0x11111111 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0x55555555, 0x66666666, 0x77777777, 0x88888888 },
+    { 7, 7, 7, 7 },
+    { 0x88888888, 0x88888888, 0x88888888, 0x88888888 },
+  },
+};
 
-#define test_compat_mask(res, vec, mask) \
-  res = __builtin_shuffle (vec, mask); \
-  shufcompare(4, res, vec, mask); \
-  res = __builtin_shuffle (vec, c ## mask); \
-  shufcompare(4, res, vec, c ##  mask); \
-  res = __builtin_shuffle (vec, r ## mask); \
-  shufcompare(4, res, vec, r ##  mask); \
-  res = __builtin_shuffle (vec, d ## mask); \
-  shufcompare(4, res, vec, d ##  mask); \
-  res = __builtin_shuffle (vec, dc ## mask); \
-  shufcompare(4, res, vec, dc ##  mask); \
+extern void abort(void);
 
-#define test_compat_vec(res, vec, mask) \
-  test_compat_mask (res, vec, mask); \
-  test_compat_mask (res, c ## vec, mask); \
-  test_compat_mask (res, r ## vec, mask); \
-  test_compat_mask (res, d ## vec, mask); \
-  test_compat_mask (res, dc ## vec, mask);
+int main()
+{
+  int i;
 
-#define test_compat(res, vec, mask) \
-  test_compat_vec (res, vec, mask); \
-  test_compat_vec (d ## res, vec, mask); \
-  test_compat_vec (r ## res, vec, mask);
+  for (i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i)
+    {
+      V r = __builtin_shuffle(tests[i].in1, tests[i].in2, tests[i].mask);
+      if (__builtin_memcmp(&r, &tests[i].out, sizeof(V)) != 0)
+	abort();
+    }
 
-typedef vector (4, int) v4si;
-typedef const vector (4, int) v4sicst;
-
-int main (int argc, char *argv[]) {
-    vector (4, int) vec = {argc, 1,2,3};
-    const vector (4, int) cvec = {argc, 1,2,3};
-    register vector (4, int) rvec = {argc, 1,2,3};
-    v4si dvec = {argc, 1,2,3};
-    v4sicst dcvec = {argc, 1,2,3};
-
-    vector (4, int) res;
-    v4si dres;
-    register vector (4, int) rres;
-
-    vector (4, int) mask = {0,3,2,1};
-    const vector (4, int) cmask = {0,3,2,1};
-    register vector (4, int) rmask = {0,3,2,1};
-    v4si dmask = {0,3,2,1};
-    v4sicst dcmask = {0,3,2,1};
-
-    test_compat (res, vec, mask);
-
-    return 0;
+  return 0;
 }
 
-
+#endif /* SIZEOF_INT */

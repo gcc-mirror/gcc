@@ -1,46 +1,68 @@
-#define vector(elcount, type)  \
-__attribute__((vector_size((elcount)*sizeof(type)))) type
+#if __SIZEOF_INT__ == 4
+typedef unsigned int V __attribute__((vector_size(16), may_alias));
 
-#define vidx(type, vec, idx) (*(((type *) &(vec)) + idx))
+struct S
+{
+  V in, mask, out;
+};
 
-#define shufcompare(type, count, vres, v0, mask) \
-do { \
-    int __i; \
-    for (__i = 0; __i < count; __i++) { \
-        if (vidx(type, vres, __i) != vidx(type, v0, vidx(type, mask, __i))) \
-            __builtin_abort (); \
-    } \
-} while (0)
+struct S tests[] = {
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0, 1, 2, 3 },
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0+1*4, 1+2*4, 2+3*4, 3+4*4 },
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 3, 2, 1, 0 },
+    { 0x44444444, 0x33333333, 0x22222222, 0x11111111 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0, 3, 2, 1 },
+    { 0x11111111, 0x44444444, 0x33333333, 0x22222222 },
+  },
+  {
+    { 0x11111111, 0x22222222, 0x33333333, 0x44444444 },
+    { 0, 2, 1, 3 },
+    { 0x11111111, 0x33333333, 0x22222222, 0x44444444 },
+  },
+  {
+    { 0x11223344, 0x55667788, 0x99aabbcc, 0xddeeff00 },
+    { 3, 1, 2, 0 },
+    { 0xddeeff00, 0x55667788, 0x99aabbcc, 0x11223344 },
+  },
+  {
+    { 0x11223344, 0x55667788, 0x99aabbcc, 0xddeeff00 },
+    { 0, 0, 0, 0 },
+    { 0x11223344, 0x11223344, 0x11223344, 0x11223344 },
+  },
+  {
+    { 0x11223344, 0x55667788, 0x99aabbcc, 0xddeeff00 },
+    { 1, 2, 1, 2 },
+    { 0x55667788, 0x99aabbcc, 0x55667788, 0x99aabbcc },
+  }
+};
 
+extern void abort(void);
 
-int main (int argc, char *argv[]) {
-    /*vector (8, short) v0 = {argc, 1,2,3,4,5,6,7};
-    vector (8, short) v1 = {argc, 1,argc,3,4,5,argc,7};
-    vector (8, short) v2;
+int main()
+{
+  int i;
 
-    vector (8, short) smask = {0,0,1,2,3,4,5,6};
+  for (i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i)
+    {
+      V r = __builtin_shuffle(tests[i].in, tests[i].mask);
+      if (__builtin_memcmp(&r, &tests[i].out, sizeof(V)) != 0)
+	abort();
+    }
 
-    v2 = __builtin_shuffle (v0,  smask);
-    shufcompare (short, 8, v2, v0, smask);
-    v2 = __builtin_shuffle (v0, v1);
-    shufcompare (short, 8, v2, v0, v1);
-    v2 = __builtin_shuffle (smask, v0);
-    shufcompare (short, 8, v2, smask, v0);*/
-
-    vector (4, int) i0 = {argc, 1,2,3};
-    vector (4, int) i1 = {argc, 1, argc, 3};
-    vector (4, int) i2;
-
-    vector (4, int) imask = {0,3,2,1};
-
-    /*i2 = __builtin_shuffle (i0, imask);
-    shufcompare (int, 4, i2, i0, imask);*/
-    i2 = __builtin_shuffle (i0, i1);
-    shufcompare (int, 4, i2, i0, i1);
-
-    i2 = __builtin_shuffle (imask, i0);
-    shufcompare (int, 4, i2, imask, i0);
-
-    return 0;
+  return 0;
 }
 
+#endif /* SIZEOF_INT */

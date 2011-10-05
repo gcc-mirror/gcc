@@ -1,36 +1,58 @@
-#define vector(elcount, type)  \
-__attribute__((vector_size((elcount)*sizeof(type)))) type
+#if __SIZEOF_LONG_LONG__ == 8
+typedef unsigned long long V __attribute__((vector_size(16), may_alias));
 
-#define vidx(type, vec, idx) (*(((type *) &(vec)) + idx))
+struct S
+{
+  V in, mask, out;
+};
 
-#define shufcompare(type, count, vres, v0, mask) \
-do { \
-    int __i; \
-    for (__i = 0; __i < count; __i++) { \
-        if (vidx(type, vres, __i) != vidx(type, v0, vidx(type, mask, __i))) \
-            __builtin_abort (); \
-    } \
-} while (0)
+struct S tests[] = {
+  {
+    { 0x1111111111111111, 0x2222222222222222 },
+    { 0, 1 },
+    { 0x1111111111111111, 0x2222222222222222 },
+  },
+  {
+    { 0x1111111111111111, 0x2222222222222222 },
+    { 0x0102030405060700, 0xffeeddccbbaa99f1 },
+    { 0x1111111111111111, 0x2222222222222222 },
+  },
+  {
+    { 0x1111111111111111, 0x2222222222222222 },
+    { 1, 0 },
+    { 0x2222222222222222, 0x1111111111111111 },
+  },
+  {
+    { 0x1111111111111111, 0x2222222222222222 },
+    { 0, 0 },
+    { 0x1111111111111111, 0x1111111111111111 },
+  },
+  {
+    { 0x1122334455667788, 0x99aabbccddeeff00 },
+    { 1, 1 },
+    { 0x99aabbccddeeff00, 0x99aabbccddeeff00 },
+  },
+  {
+    { 0x1122334455667788, 0x99aabbccddeeff00 },
+    { 1, 0 },
+    { 0x99aabbccddeeff00, 0x1122334455667788 },
+  },
+};
 
-vector (8, short) __attribute__ ((noinline))
-f (vector (8, short) x, vector (8, short) mask) {
-    return __builtin_shuffle (x, mask);
+extern void abort(void);
+
+int main()
+{
+  int i;
+
+  for (i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i)
+    {
+      V r = __builtin_shuffle(tests[i].in, tests[i].mask);
+      if (__builtin_memcmp(&r, &tests[i].out, sizeof(V)) != 0)
+	abort();
+    }
+
+  return 0;
 }
 
-
-int main (int argc, char *argv[]) {
-    vector (8, short) v0 = {argc, 1,2,3,4,5,6,7};
-    vector (8, short) v1 = {argc, 1,argc,3,4,5,argc,7};
-    vector (8, short) v2;
-
-    vector (8, short) mask = {0,0,1,2,3,4,5,6};
-
-    v2 = f (v0,  mask);
-    shufcompare (short, 8, v2, v0, mask);
-
-    v2 = f (v0, v1);
-    shufcompare (short, 8, v2, v0, v1);
-
-    return 0;
-}
-
+#endif /* SIZEOF_LONG_LONG */
