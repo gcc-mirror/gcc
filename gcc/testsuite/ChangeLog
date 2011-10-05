@@ -1,3 +1,8 @@
+2011-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38885
+	* gcc.dg/tree-ssa/ssa-fre-33.c: New testcase.
+
 2011-10-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc.target/i386/sw-1.c: New test.
