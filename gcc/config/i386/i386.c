@@ -16142,19 +16142,20 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
 
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      int bb_dist = distance_non_agu_define_in_bb (regno1, regno2,
-							   insn, distance,
-							   BB_END (e->src),
-							   &found_in_bb);
+	      int bb_dist
+		= distance_non_agu_define_in_bb (regno1, regno2,
+						 insn, distance,
+						 BB_END (e->src),
+						 &found_in_bb);
 	      if (found_in_bb)
 		{
 		  if (shortest_dist < 0)
 		    shortest_dist = bb_dist;
 		  else if (bb_dist > 0)
 		    shortest_dist = MIN (bb_dist, shortest_dist);
-		}
 
-	      found = found || found_in_bb;
+		  found = true;
+		}
 	    }
 
 	  distance = shortest_dist;
@@ -16167,11 +16168,9 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
   extract_insn_cached (insn);
 
   if (!found)
-    distance = -1;
-  else
-    distance = distance >> 1;
+    return -1;
 
-  return distance;
+  return distance >> 1;
 }
 
 /* Return the distance in half-cycles between INSN and the next
@@ -16184,9 +16183,9 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
    found and false otherwise.  */
 
 static int
-distance_agu_use_in_bb(unsigned int regno,
-		       rtx insn, int distance, rtx start,
-		       bool *found, bool *redefined)
+distance_agu_use_in_bb (unsigned int regno,
+			rtx insn, int distance, rtx start,
+			bool *found, bool *redefined)
 {
   basic_block bb = start ? BLOCK_FOR_INSN (start) : NULL;
   rtx next = start;
@@ -16271,18 +16270,19 @@ distance_agu_use (unsigned int regno0, rtx insn)
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
-	      int bb_dist = distance_agu_use_in_bb (regno0, insn,
-						    distance, BB_HEAD (e->dest),
-						    &found_in_bb, &redefined_in_bb);
+	      int bb_dist
+		= distance_agu_use_in_bb (regno0, insn,
+					  distance, BB_HEAD (e->dest),
+					  &found_in_bb, &redefined_in_bb);
 	      if (found_in_bb)
 		{
 		  if (shortest_dist < 0)
 		    shortest_dist = bb_dist;
 		  else if (bb_dist > 0)
 		    shortest_dist = MIN (bb_dist, shortest_dist);
-		}
 
-	      found = found || found_in_bb;
+		  found = true;
+		}
 	    }
 
 	  distance = shortest_dist;
@@ -16290,11 +16290,9 @@ distance_agu_use (unsigned int regno0, rtx insn)
     }
 
   if (!found || redefined)
-    distance = -1;
-  else
-    distance = distance >> 1;
+    return -1;
 
-  return distance;
+  return distance >> 1;
 }
 
 /* Define this macro to tune LEA priority vs ADD, it take effect when
@@ -16349,7 +16347,7 @@ ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
    false otherwise.  */
 
 static bool
-ix86_ok_to_clobber_flags(rtx insn)
+ix86_ok_to_clobber_flags (rtx insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   df_ref *use;
