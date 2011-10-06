@@ -1,3 +1,8 @@
+2001-10-06  Richard Henderson  <rth@redhat.com>
+
+	* optabs.c (expand_vec_shuffle_expr): Use the proper mode for the
+	mask operand.  Tidy the code.
+
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-patterns.c (vect_pattern_recog_1): Use
