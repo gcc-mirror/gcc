@@ -1,3 +1,8 @@
+2011-10-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39164
+	* g++.dg/cpp0x/default31.C: New.
+
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50596
