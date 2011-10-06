@@ -3434,7 +3434,7 @@ package body Sem_Ch4 is
       --  of the high bound.
 
       procedure Check_Universal_Expression (N : Node_Id);
-      --  In Ada83, reject bounds of a universal range that are not
+      --  In Ada 83, reject bounds of a universal range that are not
       --  literals or entity names.
 
       -----------------------

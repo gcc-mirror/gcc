@@ -210,12 +210,19 @@ package body Ch3 is
       --  we set Force_Msg to True, since we want at least one message for each
       --  separate declaration (but not use) of a reserved identifier.
 
+      --  Duplication should be removed, common code should be factored???
+
       if Token = Tok_Identifier then
 
-         --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
-         --  OVERRIDING, and SYNCHRONIZED are new reserved words. Note that
-         --  in the case where these keywords are misused in Ada 95 mode,
-         --  this routine will generally not be called at all.
+         --  Shouldn't the warnings below be emitted when in Ada 83 mode???
+
+         --  Ada 2005 (AI-284): If compiling in Ada 95 mode, we warn that
+         --  INTERFACE, OVERRIDING, and SYNCHRONIZED are new reserved words.
+         --  Note that in the case where these keywords are misused in Ada 95
+         --  mode, this routine will generally not be called at all.
+
+         --  What sort of misuse is this comment talking about??? These are
+         --  perfectly legitimate defining identifiers in Ada 95???
 
          if Ada_Version = Ada_95
            and then Warn_On_Ada_2005_Compatibility
@@ -657,7 +664,7 @@ package body Ch3 is
                      Error_Msg_SP
                        ("(Ada 83) limited record declaration not allowed!");
 
-                  --  In Ada2005, "abstract limited" can appear before "new",
+                  --  In Ada 2005, "abstract limited" can appear before "new",
                   --  but it cannot be part of an untagged record declaration.
 
                   elsif Abstract_Present
@@ -4236,7 +4243,7 @@ package body Ch3 is
                P_Identifier_Declarations (Decls, Done, In_Spec);
             end if;
 
-         --  Ada2005: A subprogram declaration can start with "not" or
+         --  Ada 2005: A subprogram declaration can start with "not" or
          --  "overriding". In older versions, "overriding" is handled
          --  like an identifier, with the appropriate messages.
 

@@ -1921,11 +1921,11 @@ package body Exp_Util is
       then
          null;
 
-      --  In Ada95 nothing to be done if the type of the expression is limited,
+      --  In Ada 95 nothing to be done if the type of the expression is limited
       --  because in this case the expression cannot be copied, and its use can
       --  only be by reference.
 
-      --  In Ada2005, the context can be an object declaration whose expression
+      --  In Ada 2005 the context can be an object declaration whose expression
       --  is a function that returns in place. If the nominal subtype has
       --  unknown discriminants, the call still provides constraints on the
       --  object, and we have to create an actual subtype from it.

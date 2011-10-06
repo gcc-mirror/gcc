@@ -2068,7 +2068,7 @@ package body Sem_Ch5 is
                   Set_Parent (D_Copy, Parent (DS));
                   Pre_Analyze_Range (D_Copy);
 
-                  --  Ada2012: If the domain of iteration is a function call,
+                  --  Ada 2012: If the domain of iteration is a function call,
                   --  it is the new iterator form.
 
                   --  We have also implemented the shorter form : for X in S

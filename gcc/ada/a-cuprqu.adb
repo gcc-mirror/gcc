@@ -65,6 +65,24 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          Free (X);
       end Dequeue;
 
+      procedure Dequeue
+        (List     : in out List_Type;
+         At_Least : Queue_Priority;
+         Element  : in out Queue_Interfaces.Element_Type;
+         Success  : out Boolean)
+      is
+      begin
+         if List.Length = 0
+           or else not Before (At_Least, Get_Priority (List.First.Element))
+         then
+            Success := False;
+            return;
+         end if;
+
+         List.Dequeue (Element);
+         Success := True;
+      end Dequeue;
+
       -------------
       -- Enqueue --
       -------------
@@ -132,22 +150,6 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          end loop;
       end Finalize;
 
-      ------------------------
-      -- Have_High_Priority --
-      ------------------------
-
-      --  ???
-      --  function Have_High_Priority
-      --    (List         : List_Type;
-      --     Low_Priority : Queue_Priority) return Boolean
-      --  is
-      --  begin
-      --     if List.Length = 0 then
-      --        return False;
-      --     end if;
-      --     return Before (Get_Priority (List.First.Element), Low_Priority);
-      --  end Have_High_Priority;
-
       ------------
       -- Length --
       ------------
@@ -190,14 +192,18 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          List.Dequeue (Element);
       end Dequeue;
 
-      --  ???
-      --  entry Dequeue_Only_High_Priority
-      --    (Low_Priority : Queue_Priority;
-      --     Element      : out Queue_Interfaces.Element_Type) when True
-      --  is
-      --  begin
-      --     null;
-      --  end Dequeue_Only_High_Priority;
+      --------------------------------
+      -- Dequeue_Only_High_Priority --
+      --------------------------------
+
+      procedure Dequeue_Only_High_Priority
+        (At_Least : Queue_Priority;
+         Element  : in out Queue_Interfaces.Element_Type;
+         Success  : out Boolean)
+      is
+      begin
+         List.Dequeue (At_Least, Element, Success);
+      end Dequeue_Only_High_Priority;
 
       -------------
       -- Enqueue --

@@ -765,7 +765,7 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Allocator_Expression
 
    begin
-      --  In the case of an Ada2012 allocator whose initial value comes from a
+      --  In the case of an Ada 2012 allocator whose initial value comes from a
       --  function call, pass "the accessibility level determined by the point
       --  of call" (AI05-0234) to the function. Conceptually, this belongs in
       --  Expand_Call but it couldn't be done there (because the Etype of the

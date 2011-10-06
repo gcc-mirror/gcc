@@ -178,7 +178,7 @@ package body Exp_Ch9 is
    --  body or an accept body. The renamed object is a component of the
    --  parameter block that is a parameter in the entry call.
 
-   --  In Ada2012,  If the formal is an incomplete tagged type, the renaming
+   --  In Ada 2012, if the formal is an incomplete tagged type, the renaming
    --  does not dereference the corresponding component to prevent an illegal
    --  use of the incomplete type (AI05-0151).
 
@@ -11857,7 +11857,7 @@ package body Exp_Ch9 is
       S : Entity_Id;
 
    begin
-      --  In Ada2005, the master is the innermost enclosing scope that is not
+      --  In Ada 2005, the master is the innermost enclosing scope that is not
       --  transient. If the enclosing block is the rewriting of a call or the
       --  scope is an extended return statement this is valid master. The
       --  master in an extended return is only used within the return, and is

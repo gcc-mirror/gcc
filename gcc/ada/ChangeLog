@@ -1,3 +1,36 @@
+2011-10-06  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads, exp_attr.adb, exp_ch3.adb, exp_ch4.adb, exp_ch7.adb,
+	exp_ch9.adb, exp_ch9.ads, exp_strm.adb, exp_util.adb, freeze.adb,
+	g-debpoo.ads, opt.ads, par-ch12.adb, par-ch2.adb, par-ch3.adb,
+	par-ch5.adb, par-ch6.adb, sem_aggr.adb, sem_attr.adb, sem_cat.adb,
+	sem_ch10.adb, sem_ch12.adb, sem_ch3.adb, sem_ch4.adb, sem_ch5.adb,
+	sem_ch6.adb, sem_intr.adb, sem_res.ads, sem_type.adb, sem_util.adb,
+	s-regpat.adb, s-tpopde-vms.ads: Minor reformatting.
+	* s-osinte-freebsd.ads: Fix for tasking failures on FreeBSD.
+
+2011-10-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cihase.adb, a-ciorma.adb: Avoid accessibility checks in container
+	references.
+
+2011-10-06  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cuprqu.ads, a-cuprqu.adb, a-cbprqu.ads, a-cbprqu.adb
+	(Dequeue_Only_High_Priority): Protected procedure now implemented.
+
+2011-10-06  Vincent Celier  <celier@adacore.com>
+
+	* g-trasym.adb: Replace old implementation with the default
+	implementation that returns list of addresses as "0x...".
+	* g-trasym.ads: Update the list of platforms with the full
+	capability.  Indicate that there is a default implementation
+	for other platforms.
+	* g-trasym-unimplemented.ads, g-trasym-unimplemented.adb: Remove.
+	* gcc-interface/Makefile.in: Remove g-trasym-unimplemented, as there
+	is now a default implementation for all platforms without the full
+	capability.
+
 2011-10-06  Robert Dewar  <dewar@adacore.com>
 
 	* a-ciorse.adb, a-cihase.adb, a-cihase.ads, a-coorse.adb,

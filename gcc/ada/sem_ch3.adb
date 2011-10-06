@@ -9026,7 +9026,7 @@ package body Sem_Ch3 is
          --  The partial view of T may have been a private extension, for
          --  which inherited functions dispatching on result are abstract.
          --  If the full view is a null extension, there is no need for
-         --  overriding in Ada2005, but wrappers need to be built for them
+         --  overriding in Ada 2005, but wrappers need to be built for them
          --  (see exp_ch3, Build_Controlling_Function_Wrappers).
 
          if Is_Null_Extension (T)
@@ -18287,7 +18287,7 @@ package body Sem_Ch3 is
 
                --  Look up tree to find an appropriate insertion point. We
                --  can't just use insert_actions because later processing
-               --  depends on the insertion node. Prior to Ada2012 the
+               --  depends on the insertion node. Prior to Ada 2012 the
                --  insertion point could only be a declaration or a loop, but
                --  quantified expressions can appear within any context in an
                --  expression, and the insertion point can be any statement,

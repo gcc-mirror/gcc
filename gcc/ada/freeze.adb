@@ -1616,9 +1616,9 @@ package body Freeze is
       --  Start of processing for Check_Current_Instance
 
       begin
-         --  In Ada95, the (imprecise) rule is that the current instance of a
-         --  limited type is aliased. In Ada2005, limitedness must be explicit:
-         --  either a tagged type, or a limited record.
+         --  In Ada 95, the (imprecise) rule is that the current instance of a
+         --  limited type is aliased. In Ada 2005, limitedness must be
+         --  explicit: either a tagged type, or a limited record.
 
          if Is_Limited_Type (Rec_Type)
            and then (Ada_Version < Ada_2005 or else Is_Tagged_Type (Rec_Type))

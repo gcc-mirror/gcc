@@ -1169,7 +1169,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    is
       pragma Unreferenced (Container);
    begin
-      return (Element => Position.Node.Element);
+      return (Element => Position.Node.Element.all'Access);
    end Constant_Reference;
 
    -------------
@@ -2072,7 +2072,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       is
          pragma Unreferenced (Container);
       begin
-         return (Element => Position.Node.Element);
+         return (Element => Position.Node.Element.all'Access);
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key
@@ -2081,7 +2081,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       is
          Position : constant Cursor := Find (Container, Key);
       begin
-         return (Element => Position.Node.Element);
+         return (Element => Position.Node.Element.all'Access);
       end Reference_Preserving_Key;
 
    end Generic_Keys;

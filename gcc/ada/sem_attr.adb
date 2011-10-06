@@ -2125,7 +2125,7 @@ package body Sem_Attr is
 
       case Attr_Id is
 
-         --  Attributes related to Ada2012 iterators. Attribute specifications
+         --  Attributes related to Ada 2012 iterators. Attribute specifications
          --  exist for these, but they cannot be queried.
 
          when Attribute_Constant_Indexing    |
@@ -6120,7 +6120,7 @@ package body Sem_Attr is
 
       case Id is
 
-         --  Attributes related to Ada2012 iterators (placeholder ???)
+         --  Attributes related to Ada 2012 iterators (placeholder ???)
 
          when Attribute_Constant_Indexing    => null;
          when Attribute_Default_Iterator     => null;
