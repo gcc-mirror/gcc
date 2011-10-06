@@ -296,10 +296,11 @@ record_stack_refs (rtx *xp, void *data)
   return 0;
 }
 
-/* If INSN has a REG_ARGS_SIZE note, move it to LAST.  */
+/* If INSN has a REG_ARGS_SIZE note, move it to LAST.
+   AFTER is true iff LAST follows INSN in the instruction stream.  */
 
 static void
-maybe_move_args_size_note (rtx last, rtx insn)
+maybe_move_args_size_note (rtx last, rtx insn, bool after)
 {
   rtx note, last_note;
 
@@ -309,7 +310,12 @@ maybe_move_args_size_note (rtx last, rtx insn)
 
   last_note = find_reg_note (last, REG_ARGS_SIZE, NULL_RTX);
   if (last_note)
-    XEXP (last_note, 0) = XEXP (note, 0);
+    {
+      /* The ARGS_SIZE notes are *not* cumulative.  They represent an
+	 absolute value, and the "most recent" note wins.  */
+      if (!after)
+        XEXP (last_note, 0) = XEXP (note, 0);
+    }
   else
     add_reg_note (last, REG_ARGS_SIZE, XEXP (note, 0));
 }
@@ -385,7 +391,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 						  last_sp_adjust + this_adjust,
 						  this_adjust))
 		    {
-		      maybe_move_args_size_note (last_sp_set, insn);
+		      maybe_move_args_size_note (last_sp_set, insn, false);
 
 		      /* It worked!  */
 		      delete_insn (insn);
@@ -403,6 +409,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 						  last_sp_adjust + this_adjust,
 						  -last_sp_adjust))
 		    {
+		      maybe_move_args_size_note (insn, last_sp_set, true);
+
 		      /* It worked!  */
 		      delete_insn (last_sp_set);
 		      last_sp_set = insn;

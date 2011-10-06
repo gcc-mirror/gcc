@@ -1,3 +1,10 @@
+2011-10-06  Richard Henderson  <rth@redhat.com>
+
+	* combine-stack-adjust.c (maybe_move_args_size_note): Add after
+	parameter; use it to decide whether to merge two notes.
+	(combine_stack_adjustments_for_block): Use maybe_move_args_size_note
+	for the deallocation case as well.
+
 2011-10-06  Anatoly Sokolov  <aesok@post.ru>
 
 	* system.h (OUTPUT_ADDR_CONST_EXTRA): Poison.
