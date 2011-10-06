@@ -130,6 +130,22 @@ struct c_expr
   tree original_type;
 };
 
+/* Type alias for struct c_expr. This allows to use the structure
+   inside the VEC types.  */
+typedef struct c_expr c_expr_t;
+
+/* A varray of c_expr_t.  */
+DEF_VEC_O (c_expr_t);
+DEF_VEC_ALLOC_O (c_expr_t, gc);
+DEF_VEC_ALLOC_O (c_expr_t, heap);
+
+/* Append a new c_expr_t element to V.  */
+#define C_EXPR_APPEND(V, ELEM) \
+  do { \
+    c_expr_t *__elem_p = VEC_safe_push (c_expr_t, gc, V, NULL); \
+    *__elem_p = (ELEM); \
+  } while (0)
+
 /* A kind of type specifier.  Note that this information is currently
    only used to distinguish tag definitions, tag references and typeof
    uses.  */
