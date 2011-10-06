@@ -1,3 +1,7 @@
+2011-10-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (smin3): Revert previous delta.
+
 2011-10-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38884
