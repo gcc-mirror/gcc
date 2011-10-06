@@ -396,7 +396,6 @@ vect_handle_widen_mult_by_const (gimple stmt, tree const_oprnd, tree *oprnd,
       new_oprnd = make_ssa_name (tmp, NULL);
       new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd, *oprnd,
 					       NULL_TREE);
-      SSA_NAME_DEF_STMT (new_oprnd) = new_stmt;
       STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)) = new_stmt;
       VEC_safe_push (gimple, heap, *stmts, def_stmt);
       *oprnd = new_oprnd;
@@ -615,7 +614,6 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
   var = vect_recog_temp_ssa_var (type, NULL);
   pattern_stmt = gimple_build_assign_with_ops (WIDEN_MULT_EXPR, var, oprnd0,
 					       oprnd1);
-  SSA_NAME_DEF_STMT (var) = pattern_stmt;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     print_gimple_stmt (vect_dump, pattern_stmt, 0, TDF_SLIM);
@@ -699,7 +697,6 @@ vect_recog_pow_pattern (VEC (gimple, heap) **stmts, tree *type_in,
 
       var = vect_recog_temp_ssa_var (TREE_TYPE (base), NULL);
       stmt = gimple_build_assign_with_ops (MULT_EXPR, var, base, base);
-      SSA_NAME_DEF_STMT (var) = stmt;
       return stmt;
     }
 
@@ -822,7 +819,6 @@ vect_recog_widen_sum_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   var = vect_recog_temp_ssa_var (type, NULL);
   pattern_stmt = gimple_build_assign_with_ops (WIDEN_SUM_EXPR, var,
 					       oprnd0, oprnd1);
-  SSA_NAME_DEF_STMT (var) = pattern_stmt;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -1012,7 +1008,6 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
               new_oprnd = make_ssa_name (tmp, NULL);
               new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
                                                        oprnd, NULL_TREE);
-              SSA_NAME_DEF_STMT (new_oprnd) = new_stmt;
               STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)) = new_stmt;
               VEC_safe_push (gimple, heap, *stmts, def_stmt);
               oprnd = new_oprnd;
@@ -1034,7 +1029,6 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
           new_oprnd = make_ssa_name (tmp, NULL);
           new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
                                                    oprnd, NULL_TREE);
-          SSA_NAME_DEF_STMT (new_oprnd) = new_stmt;
           oprnd = new_oprnd;
           *new_def_stmt = new_stmt;
         }
@@ -1137,9 +1131,9 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
         VEC_safe_push (gimple, heap, *stmts, prev_stmt);
 
       var = vect_recog_temp_ssa_var (new_type, NULL);
-      pattern_stmt = gimple_build_assign_with_ops (
-                          gimple_assign_rhs_code (stmt), var, op0, op1);
-      SSA_NAME_DEF_STMT (var) = pattern_stmt;
+      pattern_stmt
+	= gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), var,
+					op0, op1);
       STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt)) = pattern_stmt;
       STMT_VINFO_PATTERN_DEF_STMT (vinfo_for_stmt (stmt)) = new_def_stmt;
 
@@ -1178,7 +1172,6 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
           new_oprnd = make_ssa_name (tmp, NULL);
           pattern_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
                                                        var, NULL_TREE);
-          SSA_NAME_DEF_STMT (new_oprnd) = pattern_stmt;
           STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt)) = pattern_stmt;
 
           *type_in = get_vectype_for_scalar_type (new_type);
