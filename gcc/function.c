@@ -5455,7 +5455,7 @@ thread_prologue_and_epilogue_insns (void)
   basic_block last_bb;
   bool last_bb_active ATTRIBUTE_UNUSED;
 #ifdef HAVE_simple_return
-  bool unconverted_simple_returns = false;
+  VEC (basic_block, heap) *unconverted_simple_returns = NULL;
   basic_block simple_return_block_hot = NULL;
   basic_block simple_return_block_cold = NULL;
   bool nonempty_prologue;
@@ -5876,7 +5876,8 @@ thread_prologue_and_epilogue_insns (void)
 		{
 #ifdef HAVE_simple_return
 		  if (simple_p)
-		    unconverted_simple_returns = true;
+		    VEC_safe_push (basic_block, heap,
+				   unconverted_simple_returns, bb);
 #endif
 		  continue;
 		}
@@ -5894,7 +5895,8 @@ thread_prologue_and_epilogue_insns (void)
 	    {
 #ifdef HAVE_simple_return
 	      if (simple_p)
-		unconverted_simple_returns = true;
+		VEC_safe_push (basic_block, heap,
+			       unconverted_simple_returns, bb);
 #endif
 	      continue;
 	    }
@@ -6042,10 +6044,11 @@ epilogue_done:
      convert to conditional simple_returns, but couldn't for some
      reason, create a block to hold a simple_return insn and redirect
      those remaining edges.  */
-  if (unconverted_simple_returns)
+  if (!VEC_empty (basic_block, unconverted_simple_returns))
     {
-      edge_iterator ei2;
       basic_block exit_pred = EXIT_BLOCK_PTR->prev_bb;
+      basic_block src_bb;
+      int i;
 
       gcc_assert (entry_edge != orig_entry_edge);
 
@@ -6062,19 +6065,12 @@ epilogue_done:
 	    simple_return_block_cold = e->dest;
 	}
 
-    restart_scan:
-      for (ei2 = ei_start (last_bb->preds); (e = ei_safe_edge (ei2)); )
+      FOR_EACH_VEC_ELT (basic_block, unconverted_simple_returns, i, src_bb)
 	{
-	  basic_block bb = e->src;
+	  edge e = find_edge (src_bb, last_bb);
 	  basic_block *pdest_bb;
 
-	  if (bb == ENTRY_BLOCK_PTR
-	      || bitmap_bit_p (&bb_flags, bb->index))
-	    {
-	      ei_next (&ei2);
-	      continue;
-	    }
-	  if (BB_PARTITION (e->src) == BB_HOT_PARTITION)
+	  if (BB_PARTITION (src_bb) == BB_HOT_PARTITION)
 	    pdest_bb = &simple_return_block_hot;
 	  else
 	    pdest_bb = &simple_return_block_cold;
@@ -6094,8 +6090,8 @@ epilogue_done:
 	      make_edge (bb, EXIT_BLOCK_PTR, 0);
 	    }
 	  redirect_edge_and_branch_force (e, *pdest_bb);
-	  goto restart_scan;
 	}
+      VEC_free (basic_block, heap, unconverted_simple_returns);
     }
 #endif
 
