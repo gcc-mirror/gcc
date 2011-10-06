@@ -1,3 +1,21 @@
+2011-10-06  Michael Matz  <matz@suse.de>
+
+	* tree-flow.h (get_var_ann): Don't declare.
+	* tree-flow-inline.h (get_var_ann): Remove.
+	(set_is_used): Use var_ann, not get_var_ann.
+	* tree-dfa.c (add_referenced_var): Inline body of get_var_ann.
+	* tree-profile.c (gimple_gen_edge_profiler): Call
+	find_referenced_var_in.
+	(gimple_gen_interval_profiler): Ditto.
+	(gimple_gen_pow2_profiler): Ditto.
+	(gimple_gen_one_value_profiler): Ditto.
+	(gimple_gen_average_profiler): Ditto.
+	(gimple_gen_ior_profiler): Ditto.
+	(gimple_gen_ic_profiler): Ditto plus call add_referenced_var.
+	(gimple_gen_ic_func_profiler): Call add_referenced_var.
+	* tree-mudflap.c (execute_mudflap_function_ops): Call
+	add_referenced_var.
+
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-patterns.c (vect_handle_widen_mult_by_const): For lhs

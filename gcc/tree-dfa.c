@@ -580,8 +580,9 @@ set_default_def (tree var, tree def)
 bool
 add_referenced_var (tree var)
 {
-  get_var_ann (var);
   gcc_assert (DECL_P (var));
+  if (!*DECL_VAR_ANN_PTR (var))
+    create_var_ann (var);
 
   /* Insert VAR into the referenced_vars hash table if it isn't present.  */
   if (referenced_var_check_and_insert (var))
