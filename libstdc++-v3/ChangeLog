@@ -1,3 +1,8 @@
+2011-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/pod_char_traits.h: Avoid warnings in C++0x mode
+	when int_type is unsigned.
+
 2011-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/49561
