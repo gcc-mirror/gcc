@@ -452,7 +452,18 @@ package body Sem_Ch6 is
          --  incompatibility with Ada 95. Not clear whether this should be
          --  enforced yet or perhaps controllable with special switch. ???
 
-         if Is_Limited_Type (R_Type)
+         --  A limited interface that is not immutably limited is OK.
+
+         if Is_Limited_Interface (R_Type)
+           and then
+             not (Is_Task_Interface (R_Type)
+                   or else Is_Protected_Interface (R_Type)
+                   or else Is_Synchronized_Interface (R_Type))
+         then
+            null;
+
+         elsif Is_Limited_Type (R_Type)
+           and then not Is_Interface (R_Type)
            and then Comes_From_Source (N)
            and then not In_Instance_Body
            and then not OK_For_Limited_Init_In_05 (R_Type, Expr)

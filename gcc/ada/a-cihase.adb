@@ -49,7 +49,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    overriding function First (Object : Iterator) return Cursor;
 
    overriding function Next
-     (Object : Iterator;
+     (Object   : Iterator;
       Position : Cursor) return Cursor;
 
    -----------------------
@@ -426,8 +426,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    -- Equivalent_Elements --
    -------------------------
 
-   function Equivalent_Elements (Left, Right : Cursor)
-     return Boolean is
+   function Equivalent_Elements (Left, Right : Cursor) return Boolean is
    begin
       if Left.Node = null then
          raise Constraint_Error with
@@ -457,8 +456,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                 Right.Node.Element.all);
    end Equivalent_Elements;
 
-   function Equivalent_Elements (Left : Cursor; Right : Element_Type)
-     return Boolean is
+   function Equivalent_Elements
+     (Left  : Cursor;
+      Right : Element_Type) return Boolean
+   is
    begin
       if Left.Node = null then
          raise Constraint_Error with
@@ -475,8 +476,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       return Equivalent_Elements (Left.Node.Element.all, Right);
    end Equivalent_Elements;
 
-   function Equivalent_Elements (Left : Element_Type; Right : Cursor)
-     return Boolean is
+   function Equivalent_Elements
+     (Left  : Element_Type;
+      Right : Cursor) return Boolean
+   is
    begin
       if Right.Node = null then
          raise Constraint_Error with
@@ -497,8 +500,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    -- Equivalent_Keys --
    ---------------------
 
-   function Equivalent_Keys (Key : Element_Type; Node : Node_Access)
-     return Boolean is
+   function Equivalent_Keys
+     (Key  : Element_Type;
+      Node : Node_Access) return Boolean
+   is
    begin
       return Equivalent_Elements (Key, Node.Element.all);
    end Equivalent_Keys;
@@ -535,13 +540,9 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Item      : Element_Type) return Cursor
    is
       Node : constant Node_Access := Element_Keys.Find (Container.HT, Item);
-
    begin
-      if Node = null then
-         return No_Element;
-      end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
+      return (if Node = null then No_Element
+              else Cursor'(Container'Unrestricted_Access, Node));
    end Find;
 
    --------------------
@@ -604,23 +605,16 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function First (Container : Set) return Cursor is
       Node : constant Node_Access := HT_Ops.First (Container.HT);
-
    begin
-      if Node = null then
-         return No_Element;
-      end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
+      return (if Node = null then No_Element
+              else Cursor'(Container'Unrestricted_Access, Node));
    end First;
 
    function First (Object : Iterator) return Cursor is
       Node : constant Node_Access := HT_Ops.First (Object.Container.HT);
    begin
-      if Node = null then
-         return No_Element;
-      end if;
-
-      return Cursor'(Object.Container, Node);
+      return (if Node = null then No_Element
+              else Cursor'(Object.Container, Node));
    end First;
 
    ----------
@@ -750,7 +744,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       function New_Node (Next : Node_Access) return Node_Access is
          Element : Element_Access := new Element_Type'(New_Item);
-
       begin
          return new Node_Type'(Element, Next);
       exception
@@ -1025,13 +1018,9 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       declare
          HT   : Hash_Table_Type renames Position.Container.HT;
          Node : constant Node_Access := HT_Ops.Next (HT, Position.Node);
-
       begin
-         if Node = null then
-            return No_Element;
-         end if;
-
-         return Cursor'(Position.Container, Node);
+         return (if Node = null then No_Element
+                 else Cursor'(Position.Container, Node));
       end;
    end Next;
 
@@ -1041,7 +1030,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    end Next;
 
    function Next
-     (Object : Iterator;
+     (Object   : Iterator;
       Position : Cursor) return Cursor
    is
    begin
@@ -1050,11 +1039,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
            "Position cursor designates wrong set";
       end if;
 
-      if Position.Node = null then
-         return No_Element;
-      end if;
-
-      return Next (Position);
+      return (if Position.Node = null then No_Element else Next (Position));
    end Next;
 
    -------------
@@ -1166,7 +1151,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
      (Stream : not null access Root_Stream_Type'Class) return Node_Access
    is
       X : Element_Access := new Element_Type'(Element_Type'Input (Stream));
-
    begin
       return new Node_Type'(X, null);
    exception
@@ -1183,9 +1167,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
      (Container : aliased Set;
       Position  : Cursor) return Constant_Reference_Type
    is
-   begin
       pragma Unreferenced (Container);
-
+   begin
       return (Element => Position.Node.Element);
    end Constant_Reference;
 
@@ -1301,8 +1284,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Iterate_Source_When_Empty_Target : declare
             procedure Process (Src_Node : Node_Access);
 
-            procedure Iterate is
-               new HT_Ops.Generic_Iteration (Process);
+            procedure Iterate is new HT_Ops.Generic_Iteration (Process);
 
             -------------
             -- Process --
@@ -1535,12 +1517,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    ------------
 
    function To_Set (New_Item : Element_Type) return Set is
-      HT : Hash_Table_Type;
-
+      HT       : Hash_Table_Type;
       Node     : Node_Access;
       Inserted : Boolean;
       pragma Unreferenced (Node, Inserted);
-
    begin
       Insert (HT, New_Item, Node, Inserted);
       return Set'(Controlled with HT);
@@ -1578,7 +1558,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
          function New_Node (Next : Node_Access) return Node_Access is
             Tgt : Element_Access := new Element_Type'(Src);
-
          begin
             return new Node_Type'(Tgt, Next);
          exception
@@ -1655,14 +1634,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          -------------
 
          procedure Process (L_Node : Node_Access) is
-            Src : Element_Type renames L_Node.Element.all;
-
-            J : constant Hash_Type := Hash (Src) mod Buckets'Length;
-
+            Src    : Element_Type renames L_Node.Element.all;
+            J      : constant Hash_Type := Hash (Src) mod Buckets'Length;
             Bucket : Node_Access renames Buckets (J);
-
-            Tgt : Element_Access := new Element_Type'(Src);
-
+            Tgt    : Element_Access := new Element_Type'(Src);
          begin
             Bucket := new Node_Type'(Tgt, Bucket);
          exception
@@ -1940,13 +1915,9 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Key       : Key_Type) return Cursor
       is
          Node : constant Node_Access := Key_Keys.Find (Container.HT, Key);
-
       begin
-         if Node = null then
-            return No_Element;
-         end if;
-
-         return Cursor'(Container'Unrestricted_Access, Node);
+         return (if Node = null then No_Element
+                 else Cursor'(Container'Unrestricted_Access, Node));
       end Find;
 
       ---------
@@ -2106,7 +2077,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
-         Key  : Key_Type) return Reference_Type
+         Key       : Key_Type) return Reference_Type
       is
          Position : constant Cursor := Find (Container, Key);
       begin

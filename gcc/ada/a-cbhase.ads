@@ -148,8 +148,7 @@ package Ada.Containers.Bounded_Hashed_Sets is
 
    function Constant_Reference
      (Container : aliased Set;
-      Position  : Cursor)
-   return Constant_Reference_Type;
+      Position  : Cursor) return Constant_Reference_Type;
 
    procedure Assign (Target : in out Set; Source : Set);
    --  If Target denotes the same object as Source, then the operation has no
@@ -355,8 +354,9 @@ package Ada.Containers.Bounded_Hashed_Sets is
       Process   : not null access procedure (Position : Cursor));
    --  Calls Process for each node in the set
 
-   function Iterate (Container : Set)
-     return Set_Iterator_Interfaces.Forward_Iterator'Class;
+   function Iterate
+     (Container : Set)
+      return Set_Iterator_Interfaces.Forward_Iterator'Class;
 
    generic
       type Key_Type (<>) is private;
@@ -431,13 +431,11 @@ package Ada.Containers.Bounded_Hashed_Sets is
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
-         Position  : Cursor)
-      return Reference_Type;
+         Position  : Cursor) return Reference_Type;
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
-         Key  : Key_Type)
-      return Reference_Type;
+         Key       : Key_Type) return Reference_Type;
 
    private
       type Reference_Type (Element : not null access Element_Type)
@@ -446,7 +444,6 @@ package Ada.Containers.Bounded_Hashed_Sets is
    end Generic_Keys;
 
 private
-
    pragma Inline (Next);
 
    type Node_Type is record
@@ -519,6 +516,6 @@ private
    for Constant_Reference_Type'Write use Write;
 
    Empty_Set : constant Set :=
-     (Hash_Table_Type with Capacity => 0, Modulus => 0);
+                 (Hash_Table_Type with Capacity => 0, Modulus => 0);
 
 end Ada.Containers.Bounded_Hashed_Sets;
