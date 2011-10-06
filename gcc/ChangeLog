@@ -1,3 +1,23 @@
+2011-10-06  Michael Matz  <matz@suse.de>
+
+	* i386/i386.opt (recip_mask, recip_mask_explicit,
+	x_recip_mask_explicit): New variables and cl_target member.
+	(mrecip=): New option.
+	* i386/i386.h (RECIP_MASK_DIV, RECIP_MASK_SQRT, RECIP_MASK_VEC_DIV,
+	RECIP_MASK_VEC_SQRT, RECIP_MASK_ALL, RECIP_MASK_NONE): New bitmasks.
+	(TARGET_RECIP_DIV, TARGET_RECIP_SQRT, TARGET_RECIP_VEC_DIV,
+	TARGET_RECIP_VEC_SQRT): New tests.
+	* i386/i386.md (divsf3): Check TARGET_RECIP_DIV.
+	(sqrt<mode>2): Check TARGET_RECIP_SQRT.
+	* i386/sse.md (div<mode>3): Check TARGET_RECIP_VEC_DIV.
+	(sqrt<mode>2): Check TARGET_RECIP_VEC_SQRT.
+	* i386/i386.c (ix86_option_override_internal): Set recip_mask
+	for -mrecip and -mrecip=options.
+	(ix86_function_specific_save): Save recip_mask_explicit.
+	(ix86_function_specific_restore): Restore recip_mask_explicit.
+
+	* doc/invoke.texi (ix86 Options): Document the new option.
+
 2011-10-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/49049

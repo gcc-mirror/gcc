@@ -779,7 +779,9 @@
 {
   ix86_fixup_binary_operands_no_copy (DIV, <MODE>mode, operands);
 
-  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_insn_for_size_p ()
+  if (TARGET_SSE_MATH
+      && TARGET_RECIP_VEC_DIV
+      && !optimize_insn_for_size_p ()
       && flag_finite_math_only && !flag_trapping_math
       && flag_unsafe_math_optimizations)
     {
@@ -857,7 +859,9 @@
 	(sqrt:VF1 (match_operand:VF1 1 "nonimmediate_operand" "")))]
   "TARGET_SSE"
 {
-  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_insn_for_size_p ()
+  if (TARGET_SSE_MATH
+      && TARGET_RECIP_VEC_SQRT
+      && !optimize_insn_for_size_p ()
       && flag_finite_math_only && !flag_trapping_math
       && flag_unsafe_math_optimizations)
     {
