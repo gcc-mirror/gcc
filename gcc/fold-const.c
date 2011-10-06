@@ -13647,7 +13647,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
     case BIT_FIELD_REF:
       if ((TREE_CODE (arg0) == VECTOR_CST
-	   || (TREE_CODE (arg0) == CONSTRUCTOR && TREE_CONSTANT (arg0)))
+	   || TREE_CODE (arg0) == CONSTRUCTOR)
 	  && type == TREE_TYPE (TREE_TYPE (arg0)))
 	{
 	  unsigned HOST_WIDE_INT width = tree_low_cst (arg1, 1);
@@ -13659,24 +13659,17 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      && (idx = idx / width)
 		 < TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)))
 	    {
-	      tree elements = NULL_TREE;
-
 	      if (TREE_CODE (arg0) == VECTOR_CST)
-		elements = TREE_VECTOR_CST_ELTS (arg0);
-	      else
 		{
-		  unsigned HOST_WIDE_INT idx;
-		  tree value;
-
-		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg0), idx, value)
-		    elements = tree_cons (NULL_TREE, value, elements);
+		  tree elements = TREE_VECTOR_CST_ELTS (arg0);
+		  while (idx-- > 0 && elements)
+		    elements = TREE_CHAIN (elements);
+		  if (elements)
+		    return TREE_VALUE (elements);
 		}
-	      while (idx-- > 0 && elements)
-		elements = TREE_CHAIN (elements);
-	      if (elements)
-		return TREE_VALUE (elements);
-	      else
-		return build_zero_cst (type);
+	      else if (idx < CONSTRUCTOR_NELTS (arg0))
+		return CONSTRUCTOR_ELT (arg0, idx)->value;
+	      return build_zero_cst (type);
 	    }
 	}
 
