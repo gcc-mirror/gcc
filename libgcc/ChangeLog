@@ -1,3 +1,9 @@
+2011-10-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/49804
+	* config.host: Add crtbegin.o, crtbeginS.o, crtend.o, crtendS.o to
+	extra_parts.
+
 2011-09-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx-lib.h: Always restrict doubles to the SF type when
