@@ -1,3 +1,32 @@
+2011-10-06  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/vect-shuffle-1.c: Remove.
+	* gcc.c-torture/execute/vect-shuffle-2.c: Remove.
+	* gcc.c-torture/execute/vect-shuffle-3.c: Remove.
+	* gcc.c-torture/execute/vect-shuffle-4.c: Remove.
+	* gcc.c-torture/execute/vect-shuffle-5.c: Remove.
+	* gcc.c-torture/execute/vect-shuffle-6.c: Remove.
+	* gcc.c-torture/execute/vect-shuffle-7.c: Remove.
+	* gcc.c-torture/execute/vect-shuffle-8.c: Remove.
+	* gcc.c-torture/execute/vshuf-16.inc: New file.
+	* gcc.c-torture/execute/vshuf-2.inc: New file.
+	* gcc.c-torture/execute/vshuf-4.inc: New file.
+	* gcc.c-torture/execute/vshuf-8.inc: New file.
+	* gcc.c-torture/execute/vshuf-main.inc: New file.
+	* gcc.c-torture/execute/vshuf-v16qi.c: New test.
+	* gcc.c-torture/execute/vshuf-v2df.c: New test.
+	* gcc.c-torture/execute/vshuf-v2di.c: New test.
+	* gcc.c-torture/execute/vshuf-v2sf.c: New test.
+	* gcc.c-torture/execute/vshuf-v2si.c: New test.
+	* gcc.c-torture/execute/vshuf-v4df.c: New test.
+	* gcc.c-torture/execute/vshuf-v4di.c: New test.
+	* gcc.c-torture/execute/vshuf-v4hi.c: New test.
+	* gcc.c-torture/execute/vshuf-v4sf.c: New test.
+	* gcc.c-torture/execute/vshuf-v4si.c: New test.
+	* gcc.c-torture/execute/vshuf-v8hi.c: New test.
+	* gcc.c-torture/execute/vshuf-v8qi.c: New test.
+	* gcc.c-torture/execute/vshuf-v8si.c: New test.
+
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49279
