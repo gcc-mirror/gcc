@@ -3414,7 +3414,7 @@ package body Sem_Aggr is
                         Selector_Name);
                      return;
 
-                  --  (Ada2005): If this is an association with a box,
+                  --  (Ada 2005): If this is an association with a box,
                   --  indicate that the association need not represent
                   --  any component.
 

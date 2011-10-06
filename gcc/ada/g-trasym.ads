@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2010, AdaCore                     --
+--                     Copyright (C) 1999-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,16 +31,16 @@
 
 --  Run-time symbolic traceback support
 
---  This capability is currently supported on the following targets:
+--  The full capability is currently supported on the following targets:
 
---     HP-UX hppa and ia64
+--     HP-UX ia64
 --     IRIX
 --     GNU/Linux x86, x86_64, ia64
---     AIX
+--     FreeBSD x86, x86_64
 --     Solaris sparc and x86
 --     Tru64
---     OpenVMS/Alpha
---     Windows NT/XP/Vista
+--     OpenVMS Alpha and ia64
+--     Windows
 
 --  The routines provided in this package assume that your application has
 --  been compiled with debugging information turned on, since this information
@@ -76,6 +76,10 @@
 --  On VMS, there is no restriction on using this facility with shared
 --  libraries. However, the OS should be at least v7.3-1 and OS patch
 --  VMS731_TRACE-V0100 must be applied in order to use this package.
+
+--  On platforms where the full capability is not supported, function
+--  Symbolic_Traceback return a list of addresses expressed as "0x..."
+--  separated by line feed.
 
 with Ada.Exceptions; use Ada.Exceptions;
 

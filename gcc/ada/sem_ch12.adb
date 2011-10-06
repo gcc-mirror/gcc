@@ -258,7 +258,7 @@ package body Sem_Ch12 is
    --  are not accessible outside of the instance.
 
    --  In a generic, a formal package is treated like a special instantiation.
-   --  Our Ada95 compiler handled formals with and without box in different
+   --  Our Ada 95 compiler handled formals with and without box in different
    --  ways. With partial parametrization, we use a single model for both.
    --  We create a package declaration that consists of the specification of
    --  the generic package, and a set of declarations that map the actuals

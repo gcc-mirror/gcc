@@ -2475,11 +2475,11 @@ package Einfo is
 --    Is_Local_Anonymous_Access (Flag194)
 --       Present in access types. Set for an anonymous access type to indicate
 --       that the type is created for a record component with an access
---       definition, an array component, or (pre-Ada2012) a stand-alone object.
+--       definition, an array component, or (pre-Ada 2012) a standalone object.
 --       Such anonymous types have an accessibility level equal to that of the
 --       declaration in which they appear, unlike the anonymous access types
 --       that are created for access parameters, access discriminants, and
---       (as of Ada2012) stand-alone objects.
+--       (as of Ada 2012) stand-alone objects.
 
 --    Is_Machine_Code_Subprogram (Flag137)
 --       Present in subprogram entities. Set to indicate that the subprogram

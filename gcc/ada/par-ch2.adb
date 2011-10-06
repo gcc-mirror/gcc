@@ -59,10 +59,14 @@ package body Ch2 is
    begin
       --  All set if we do indeed have an identifier
 
+      --  Code duplication, see Par_Ch3.P_Defining_Identifier???
+
       if Token = Tok_Identifier then
 
-         --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
-         --  OVERRIDING, and SYNCHRONIZED are new reserved words.
+         --  Shouldn't the warnings below be emitted when in Ada 83 mode???
+
+         --  Ada 2005 (AI-284): If compiling in Ada 95 mode, we warn that
+         --  INTERFACE, OVERRIDING, and SYNCHRONIZED are new reserved words.
 
          if Ada_Version = Ada_95
            and then Warn_On_Ada_2005_Compatibility

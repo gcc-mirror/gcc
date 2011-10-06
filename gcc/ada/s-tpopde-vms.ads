@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ package System.Task_Primitives.Operations.DEC is
 
    procedure Interrupt_AST_Handler (ID : Address);
    pragma Convention (C, Interrupt_AST_Handler);
-   --  Handles the AST for Ada95 Interrupts
+   --  Handles the AST for Ada 95 Interrupts
 
    procedure RMS_AST_Handler (ID : Address);
    --  Handles the AST for RMS_Asynch_Operations

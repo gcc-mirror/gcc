@@ -1649,7 +1649,7 @@ package body Ch5 is
 
       if Token = Tok_Of or else Token = Tok_Colon then
          if Ada_Version < Ada_2012 then
-            Error_Msg_SC ("iterator is an Ada2012 feature");
+            Error_Msg_SC ("iterator is an Ada 2012 feature");
          end if;
 
          return P_Iterator_Specification (ID_Node);

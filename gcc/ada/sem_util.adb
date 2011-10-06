@@ -2993,7 +2993,7 @@ package body Sem_Util is
             if not Is_Local_Anonymous_Access (Etype (Expr)) then
 
                --  Handle type conversions introduced for a rename of an
-               --  Ada2012 stand-alone object of an anonymous access type.
+               --  Ada 2012 stand-alone object of an anonymous access type.
 
                return Dynamic_Accessibility_Level (Expression (Expr));
             end if;
@@ -7501,7 +7501,7 @@ package body Sem_Util is
                  Is_Object_Reference (Prefix (N))
                    or else Is_Access_Type (Etype (Prefix (N)));
 
-            --  In Ada95, a function call is a constant object; a procedure
+            --  In Ada 95, a function call is a constant object; a procedure
             --  call is not.
 
             when N_Function_Call =>
@@ -7617,7 +7617,7 @@ package body Sem_Util is
 
       elsif Original_Node (AV) /= AV then
 
-         --  In Ada2012, the explicit dereference may be a rewritten call to a
+         --  In Ada 2012, the explicit dereference may be a rewritten call to a
          --  Reference function.
 
          if Ada_Version >= Ada_2012

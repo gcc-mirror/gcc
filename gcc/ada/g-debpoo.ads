@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This packages provides a special implementation of the Ada95 storage pools
+--  This packages provides a special implementation of the Ada 95 storage pools
 
 --  The goal of this debug pool is to detect incorrect uses of memory
 --  (multiple deallocations, access to invalid memory,...). Errors are reported

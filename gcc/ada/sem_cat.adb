@@ -900,7 +900,7 @@ package body Sem_Cat is
          --  If the type is private, it must have the Ada 2005 pragma
          --  Has_Preelaborable_Initialization.
          --  The check is omitted within predefined units. This is probably
-         --  obsolete code to fix the Ada95 weakness in this area ???
+         --  obsolete code to fix the Ada 95 weakness in this area ???
 
          if Is_Private_Type (T)
            and then not Has_Pragma_Preelab_Init (T)

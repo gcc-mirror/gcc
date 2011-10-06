@@ -95,8 +95,8 @@ package Sem_Res is
    procedure Ambiguous_Character (C : Node_Id);
    --  Give list of candidate interpretations when a character literal cannot
    --  be resolved, for example in a (useless) comparison such as 'A' = 'B'.
-   --  In Ada95 the literals in question can be of type Character or Wide_
-   --  Character. In Ada2005 Wide_Wide_Character is also a candidate. The
+   --  In Ada 95 the literals in question can be of type Character or Wide_
+   --  Character. In Ada 2005 Wide_Wide_Character is also a candidate. The
    --  node may also be overloaded with user-defined character types.
 
    procedure Check_Parameterless_Call (N : Node_Id);

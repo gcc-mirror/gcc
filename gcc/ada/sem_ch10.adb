@@ -208,7 +208,7 @@ package body Sem_Ch10 is
    -- Limited_With_Clauses --
    --------------------------
 
-   --  Limited_With clauses are the mechanism chosen for Ada05 to support
+   --  Limited_With clauses are the mechanism chosen for Ada 05 to support
    --  mutually recursive types declared in different units. A limited_with
    --  clause that names package P in the context of unit U makes the types
    --  declared in the visible part of P available within U, but with the

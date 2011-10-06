@@ -36,6 +36,7 @@ with Ada.Containers.Red_Black_Trees.Generic_Keys;
 pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Keys);
 
 package body Ada.Containers.Indefinite_Ordered_Maps is
+   pragma Suppress (All_Checks);
 
    type Iterator is new
      Map_Iterator_Interfaces.Reversible_Iterator with record
@@ -325,8 +326,9 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
      (Container : Map;
       Key       : Key_Type) return Constant_Reference_Type
    is
+      Node : aliased Element_Type := Element (Container, Key);
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      return (Element => Node'Access);
    end Constant_Reference;
 
    --------------
@@ -1149,8 +1151,10 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Key       : Key_Type)
       return Reference_Type
    is
+      Node : aliased Element_Type := Element (Container, Key);
+
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      return (Element => Node'Access);
    end Reference;
 
    -------------

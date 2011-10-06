@@ -387,7 +387,7 @@ package body Sem_Ch6 is
    begin
       Analyze (P);
 
-      --  A call of the form A.B (X) may be an Ada05 call, which is rewritten
+      --  A call of the form A.B (X) may be an Ada 05 call, which is rewritten
       --  as B (A, X). If the rewriting is successful, the call has been
       --  analyzed and we just return.
 
@@ -495,7 +495,7 @@ package body Sem_Ch6 is
             elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
                if Inside_A_Generic then
                   Error_Msg_N
-                    ("return of limited object not permitted in Ada2005 "
+                    ("return of limited object not permitted in Ada 2005 "
                      & "(RM-2005 6.5(5.5/2))?", Expr);
 
                elsif Is_Immutably_Limited_Type (R_Type) then
@@ -2381,7 +2381,7 @@ package body Sem_Ch6 is
             --  expansion has generated an equivalent type that is used when
             --  elaborating the body.
 
-            --  An exception in the case of Ada2012, AI05-177: The bodies
+            --  An exception in the case of Ada 2012, AI05-177: The bodies
             --  created for expression functions do not freeze.
 
             if No (Spec_Id)
@@ -6134,7 +6134,7 @@ package body Sem_Ch6 is
             Desig_2 : Entity_Id;
 
          begin
-            --  In Ada2005, access constant indicators must match for
+            --  In Ada 2005, access constant indicators must match for
             --  subtype conformance.
 
             if Ada_Version >= Ada_2005
@@ -8725,7 +8725,7 @@ package body Sem_Ch6 is
                --  inherited in a derivation, or when an inherited operation
                --  of a tagged full type overrides the inherited operation of
                --  a private extension. Ada 83 had a special rule for the
-               --  literal case. In Ada95, the later implicit operation hides
+               --  literal case. In Ada 95, the later implicit operation hides
                --  the former, and the literal is always the former. In the
                --  odd case where both are derived operations declared at the
                --  same point, both operations should be declared, and in that
@@ -10262,7 +10262,7 @@ package body Sem_Ch6 is
 
       if Nkind (Parameter_Type (Spec)) = N_Access_Definition then
 
-         --  Ada 2005 (AI-231): In Ada95, access parameters are always non-
+         --  Ada 2005 (AI-231): In Ada 95, access parameters are always non-
          --  null; In Ada 2005, only if then null_exclusion is explicit.
 
          if Ada_Version < Ada_2005

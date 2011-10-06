@@ -44,6 +44,24 @@ package body Ada.Containers.Bounded_Priority_Queues is
          List.Container.Delete_First;
       end Dequeue;
 
+      procedure Dequeue
+        (List     : in out List_Type;
+         At_Least : Queue_Priority;
+         Element  : in out Queue_Interfaces.Element_Type;
+         Success  : out Boolean)
+      is
+      begin
+         if List.Length = 0
+           or else not Before (At_Least, Get_Priority (List.First_Element))
+         then
+            Success := False;
+            return;
+         end if;
+
+         List.Dequeue (Element);
+         Success := True;
+      end Dequeue;
+
       -------------
       -- Enqueue --
       -------------
@@ -82,6 +100,18 @@ package body Ada.Containers.Bounded_Priority_Queues is
             List.Max_Length := Count;
          end if;
       end Enqueue;
+
+      -------------------
+      -- First_Element --
+      -------------------
+
+      function First_Element
+        (List : List_Type) return Queue_Interfaces.Element_Type
+      is
+      begin
+         --  Use Constant_Reference for this.  ???
+         return List.Container.First_Element;
+      end First_Element;
 
       ------------
       -- Length --
@@ -125,14 +155,18 @@ package body Ada.Containers.Bounded_Priority_Queues is
          List.Dequeue (Element);
       end Dequeue;
 
-      --  ???
-      --  entry Dequeue_Only_High_Priority
-      --    (Low_Priority : Queue_Priority;
-      --     Element      : out Queue_Interfaces.Element_Type) when True
-      --  is
-      --  begin
-      --     null;
-      --  end Dequeue_Only_High_Priority;
+      --------------------------------
+      -- Dequeue_Only_High_Priority --
+      --------------------------------
+
+      procedure Dequeue_Only_High_Priority
+        (At_Least : Queue_Priority;
+         Element  : in out Queue_Interfaces.Element_Type;
+         Success  : out Boolean)
+      is
+      begin
+         List.Dequeue (At_Least, Element, Success);
+      end Dequeue_Only_High_Priority;
 
       --------------
       --  Enqueue --

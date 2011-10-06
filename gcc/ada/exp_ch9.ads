@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -266,7 +266,7 @@ package Exp_Ch9 is
    function Find_Master_Scope (E : Entity_Id) return Entity_Id;
    --  When a type includes tasks, a master entity is created in the scope, to
    --  be used by the runtime during activation. In general the master is the
-   --  immediate scope in which the type is declared, but in Ada2005, in the
+   --  immediate scope in which the type is declared, but in Ada 2005, in the
    --  presence of synchronized classwide interfaces, the immediate scope of
    --  an anonymous access type may be a transient scope, which has no run-time
    --  presence. In this case, the scope of the master is the innermost scope
