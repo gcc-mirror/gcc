@@ -7,6 +7,12 @@
 	(vshuffle<mode>): Use it.
 	(avx_vec_concat<V_256>): Rename from *vec_concat<V_256>_avx.
 
+	* config/i386/i386.c (ix86_expand_sse_movcc): Use correct mode
+	for vector_all_ones_operand.
+	(ix86_expand_int_vcond): Distinguish between comparison mode
+	and data mode.  Allow them to differ.
+	(ix86_expand_vshuffle): Don't force data mode to match maskmode.
+
 2001-10-06  Richard Henderson  <rth@redhat.com>
 
 	* optabs.c (expand_vec_shuffle_expr): Use the proper mode for the
