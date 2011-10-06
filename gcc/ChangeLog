@@ -1,5 +1,12 @@
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-patterns.c (vect_handle_widen_mult_by_const): For lhs
+	don't set SSA_NAME_DEF_STMT that has been already set by
+	gimple_build_assign_with_ops.
+	(vect_recog_pow_pattern, vect_recog_widen_sum_pattern,
+	vect_operation_fits_smaller_type, vect_recog_over_widening_pattern):
+	Likewise.
+
 	* tree.h (avoid_folding_inline_builtin): New prototype.
 	* builtins.c (avoid_folding_inline_builtin): No longer static.
 	* gimple-fold.c (gimple_fold_builtin): Give up if
