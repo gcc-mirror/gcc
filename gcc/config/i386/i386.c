@@ -3057,6 +3057,22 @@ ix86_option_override_internal (bool main_args_p)
 	PTA_64BIT /* flags are only used for -march switch.  */ },
     };
 
+  /* -mrecip options.  */
+  static struct
+    {
+      const char *string;           /* option name */
+      unsigned int mask;            /* mask bits to set */
+    }
+  const recip_options[] =
+    {
+      { "all",       RECIP_MASK_ALL },
+      { "none",      RECIP_MASK_NONE },
+      { "div",       RECIP_MASK_DIV },
+      { "sqrt",      RECIP_MASK_SQRT },
+      { "vec-div",   RECIP_MASK_VEC_DIV },
+      { "vec-sqrt",  RECIP_MASK_VEC_SQRT },
+    };
+
   int const pta_size = ARRAY_SIZE (processor_alias_table);
 
   /* Set up prefix/suffix so the error messages refer to either the command
@@ -3814,6 +3830,56 @@ ix86_option_override_internal (bool main_args_p)
       target_flags &= ~MASK_VZEROUPPER;
     }
 
+  if (ix86_recip_name)
+    {
+      char *p = ASTRDUP (ix86_recip_name);
+      char *q;
+      unsigned int mask, i;
+      bool invert;
+
+      while ((q = strtok (p, ",")) != NULL)
+	{
+	  p = NULL;
+	  if (*q == '!')
+	    {
+	      invert = true;
+	      q++;
+	    }
+	  else
+	    invert = false;
+
+	  if (!strcmp (q, "default"))
+	    mask = RECIP_MASK_ALL;
+	  else
+	    {
+	      for (i = 0; i < ARRAY_SIZE (recip_options); i++)
+		if (!strcmp (q, recip_options[i].string))
+		  {
+		    mask = recip_options[i].mask;
+		    break;
+		  }
+
+	      if (i == ARRAY_SIZE (recip_options))
+		{
+		  error ("unknown option for -mrecip=%s", q);
+		  invert = false;
+		  mask = RECIP_MASK_NONE;
+		}
+	    }
+
+	  recip_mask_explicit |= mask;
+	  if (invert)
+	    recip_mask &= ~mask;
+	  else
+	    recip_mask |= mask;
+	}
+    }
+
+  if (TARGET_RECIP)
+    recip_mask |= RECIP_MASK_ALL & ~recip_mask_explicit;
+  else if (target_flags_explicit & MASK_RECIP)
+    recip_mask &= ~(RECIP_MASK_ALL & ~recip_mask_explicit);
+
   /* Save the initial options in case the user does function specific
      options.  */
   if (main_args_p)
@@ -3946,6 +4012,7 @@ ix86_function_specific_save (struct cl_target_option *ptr)
   ptr->arch_specified = ix86_arch_specified;
   ptr->x_ix86_isa_flags_explicit = ix86_isa_flags_explicit;
   ptr->ix86_target_flags_explicit = target_flags_explicit;
+  ptr->x_recip_mask_explicit = recip_mask_explicit;
 
   /* The fields are char but the variables are not; make sure the
      values fit in the fields.  */
@@ -3973,6 +4040,7 @@ ix86_function_specific_restore (struct cl_target_option *ptr)
   ix86_arch_specified = ptr->arch_specified;
   ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
   target_flags_explicit = ptr->ix86_target_flags_explicit;
+  recip_mask_explicit = ptr->x_recip_mask_explicit;
 
   /* Recreate the arch feature tests if the arch changed */
   if (old_arch != ix86_arch)

@@ -605,7 +605,9 @@ Objective-C and Objective-C++ Dialects}.
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
 -mincoming-stack-boundary=@var{num} @gol
--mcld -mcx16 -msahf -mmovbe -mcrc32 -mrecip -mvzeroupper @gol
+-mcld -mcx16 -msahf -mmovbe -mcrc32 @gol
+-mrecip -mrecip=@var{opt} @gol
+-mvzeroupper @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -mavx2 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
@@ -12870,6 +12872,22 @@ decreased by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
 Note that GCC implements 1.0f/sqrtf(x) in terms of RSQRTSS (or RSQRTPS)
 already with @option{-ffast-math} (or the above option combination), and
 doesn't need @option{-mrecip}.
+
+@item -mrecip=@var{opt}
+@opindex mrecip=opt
+This option allows to control which reciprocal estimate instructions
+may be used.  @var{opt} is a comma separated list of options, that may
+be preceded by a @code{!} to invert the option:
+@code{all}: enable all estimate instructions,
+@code{default}: enable the default instructions, equivalent to @option{-mrecip},
+@code{none}: disable all estimate instructions, equivalent to @option{-mno-recip},
+@code{div}: enable the approximation for scalar division,
+@code{vec-div}: enable the approximation for vectorized division,
+@code{sqrt}: enable the approximation for scalar square root,
+@code{vec-sqrt}: enable the approximation for vectorized square root.
+
+So for example, @option{-mrecip=all,!sqrt} would enable
+all of the reciprocal approximations, except for square root.
 
 @item -mveclibabi=@var{type}
 @opindex mveclibabi
