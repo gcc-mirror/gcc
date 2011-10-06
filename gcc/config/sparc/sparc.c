@@ -774,11 +774,11 @@ sparc_option_override (void)
     { MASK_ISA,
       MASK_V9|MASK_DEPRECATED_V8_INSNS},
     /* UltraSPARC T2 */
-    { MASK_ISA, MASK_V9|MASK_VIS2},
+    { MASK_ISA, MASK_V9|MASK_POPC|MASK_VIS2},
     /* UltraSPARC T3 */
-    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_VIS3|MASK_FMAF},
+    { MASK_ISA, MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF},
     /* UltraSPARC T4 */
-    { MASK_ISA, MASK_V9|MASK_VIS2|MASK_VIS3|MASK_FMAF},
+    { MASK_ISA, MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF},
   };
   const struct cpu_table *cpu;
   unsigned int i;

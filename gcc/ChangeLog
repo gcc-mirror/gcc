@@ -1,3 +1,16 @@
+2011-10-05  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.opt (POPC): New option.
+	* doc/invoke.texi: Document it.
+	* config/sparc/sparc.c (sparc_option_override): Enable MASK_POPC by
+	default on Niagara-2 and later.
+	* config/sparc/sparc.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/sparc/sparc.md (SIDI): New mode iterator.
+	(ffsdi2): Delete commented out pattern and comments.
+	(popcount<mode>2, clz<mode>2): New expanders.
+	(*popcount<mode>_sp64, popcountsi_v8plus, popcountdi_v8plus,
+	*clzdi_sp64, clzdi_v8plus, *clzsi_sp64, clzsi_v8plus): New insns.
+
 2011-10-06  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
 
 	PR middle-end/50607
