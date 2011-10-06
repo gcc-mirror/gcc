@@ -1,3 +1,8 @@
+2011-10-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-generic.c (vector_element): Look at previous
+	generated results.
+
 2011-10-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/39950
