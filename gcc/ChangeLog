@@ -1,3 +1,13 @@
+2011-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49279
+	* tree-ssa-structalias.c (find_func_aliases): Don't handle
+	CAST_RESTRICT.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Allow
+	restrict propagation.
+	* tree-ssa.c (useless_type_conversion_p): Don't return false
+	if TYPE_RESTRICT differs.
+
 2011-10-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* function.c (thread_prologue_and_epilogue_insns): Build a vector

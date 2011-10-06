@@ -1,3 +1,9 @@
+2011-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49279
+	* gcc.dg/tree-ssa/restrict-4.c: XFAIL.
+	* gcc.c-torture/execute/pr49279.c: New test.
+
 2011-10-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/49049
