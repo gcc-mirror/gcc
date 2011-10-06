@@ -5993,16 +5993,16 @@ c_parser_alignof_expression (c_parser *parser)
    for the middle-end nodes like COMPLEX_EXPR, VEC_SHUFFLE_EXPR and
    others.  The name of the builtin is passed using BNAME parameter.
    Function returns true if there were no errors while parsing and
-   stores the arguments in EXPR_LIST.  List of original types can be
-   obtained by passing non NULL value to ORIG_TYPES.  */
+   stores the arguments in CEXPR_LIST.  */
 static bool
 c_parser_get_builtin_args (c_parser *parser, const char *bname,
-			   VEC(tree,gc) **expr_list,
-			   VEC(tree,gc) **orig_types)
+			   VEC(c_expr_t,gc) **ret_cexpr_list)
 {
   location_t loc = c_parser_peek_token (parser)->location;
-  *expr_list = NULL;
+  VEC (c_expr_t,gc) *cexpr_list;
+  c_expr_t expr;
 
+  *ret_cexpr_list = NULL;
   if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
     {
       error_at (loc, "cannot take address of %qs", bname);
@@ -6016,15 +6016,21 @@ c_parser_get_builtin_args (c_parser *parser, const char *bname,
       c_parser_consume_token (parser);
       return true;
     }
-    
-  if (orig_types)
-    *expr_list = c_parser_expr_list (parser, false, false, orig_types);
-  else
-    *expr_list = c_parser_expr_list (parser, false, false, NULL);
+
+  expr = c_parser_expr_no_commas (parser, NULL);
+  cexpr_list = VEC_alloc (c_expr_t, gc, 1);
+  C_EXPR_APPEND (cexpr_list, expr);
+  while (c_parser_next_token_is (parser, CPP_COMMA))
+    {
+      c_parser_consume_token (parser);
+      expr = c_parser_expr_no_commas (parser, NULL);
+      C_EXPR_APPEND (cexpr_list, expr);
+    }
 
   if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
     return false;
 
+  *ret_cexpr_list = cexpr_list;
   return true;
 }
 
@@ -6378,52 +6384,41 @@ c_parser_postfix_expression (c_parser *parser)
 	  break;
 	case RID_CHOOSE_EXPR:
 	  {
-	    VEC(tree,gc) *expr_list;
-	    VEC(tree,gc) *orig_types;
-	    tree e1value, e2value, e3value, c;
+	    VEC (c_expr_t, gc) *cexpr_list;
+	    c_expr_t *e1_p, *e2_p, *e3_p;
+	    tree c;
 
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser,
 					    "__builtin_choose_expr",
-					    &expr_list, &orig_types))
+					    &cexpr_list))
 	      {
 		expr.value = error_mark_node;
 		break;
 	      }
 
-	    if (VEC_length (tree, expr_list) != 3)
+	    if (VEC_length (c_expr_t, cexpr_list) != 3)
 	      {
 		error_at (loc, "wrong number of arguments to "
 			       "%<__builtin_choose_expr%>");
 		expr.value = error_mark_node;
 		break;
 	      }
-	    
-	    e1value = VEC_index (tree, expr_list, 0);
-	    e2value = VEC_index (tree, expr_list, 1);
-	    e3value = VEC_index (tree, expr_list, 2);
 
-	    c = e1value;
-	    mark_exp_read (e2value);
-	    mark_exp_read (e3value);
+	    e1_p = VEC_index (c_expr_t, cexpr_list, 0);
+	    e2_p = VEC_index (c_expr_t, cexpr_list, 1);
+	    e3_p = VEC_index (c_expr_t, cexpr_list, 2);
+
+	    c = e1_p->value;
+	    mark_exp_read (e2_p->value);
+	    mark_exp_read (e3_p->value);
 	    if (TREE_CODE (c) != INTEGER_CST
 		|| !INTEGRAL_TYPE_P (TREE_TYPE (c)))
 	      error_at (loc,
 			"first argument to %<__builtin_choose_expr%> not"
 			" a constant");
 	    constant_expression_warning (c);
-	    
-	    if (integer_zerop (c))
-	      {
-		expr.value = e3value;
-		expr.original_type = VEC_index (tree, orig_types, 2);
-	      }
-	    else
-	      {
-		expr.value = e2value;
-		expr.original_type = VEC_index (tree, orig_types, 1);
-	      }
-
+	    expr = integer_zerop (c) ? *e3_p : *e2_p;
 	    break;
 	  }
 	case RID_TYPES_COMPATIBLE_P:
@@ -6464,50 +6459,50 @@ c_parser_postfix_expression (c_parser *parser)
 	  }
 	  break;
 	case RID_BUILTIN_COMPLEX:
-	  { 
-	    VEC(tree,gc) *expr_list;
-	    tree e1value, e2value;
-	    
+	  {
+	    VEC(c_expr_t, gc) *cexpr_list;
+	    c_expr_t *e1_p, *e2_p;
+
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser,
 					    "__builtin_complex",
-					    &expr_list, NULL))
+					    &cexpr_list))
 	      {
 		expr.value = error_mark_node;
 		break;
 	      }
 
-	    if (VEC_length (tree, expr_list) != 2)
+	    if (VEC_length (c_expr_t, cexpr_list) != 2)
 	      {
 		error_at (loc, "wrong number of arguments to "
 			       "%<__builtin_complex%>");
 		expr.value = error_mark_node;
 		break;
 	      }
-	    
-	    e1value = VEC_index (tree, expr_list, 0);
-	    e2value = VEC_index (tree, expr_list, 1);
 
-	    mark_exp_read (e1value);
-	    if (TREE_CODE (e1value) == EXCESS_PRECISION_EXPR)
-	      e1value = convert (TREE_TYPE (e1value),
-				 TREE_OPERAND (e1value, 0));
-	    mark_exp_read (e2value);
-	    if (TREE_CODE (e2value) == EXCESS_PRECISION_EXPR)
-	      e2value = convert (TREE_TYPE (e2value),
-				 TREE_OPERAND (e2value, 0));
-	    if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (e1value))
-		|| DECIMAL_FLOAT_TYPE_P (TREE_TYPE (e1value))
-		|| !SCALAR_FLOAT_TYPE_P (TREE_TYPE (e2value))
-		|| DECIMAL_FLOAT_TYPE_P (TREE_TYPE (e2value)))
+	    e1_p = VEC_index (c_expr_t, cexpr_list, 0);
+	    e2_p = VEC_index (c_expr_t, cexpr_list, 1);
+
+	    mark_exp_read (e1_p->value);
+	    if (TREE_CODE (e1_p->value) == EXCESS_PRECISION_EXPR)
+	      e1_p->value = convert (TREE_TYPE (e1_p->value),
+				     TREE_OPERAND (e1_p->value, 0));
+	    mark_exp_read (e2_p->value);
+	    if (TREE_CODE (e2_p->value) == EXCESS_PRECISION_EXPR)
+	      e2_p->value = convert (TREE_TYPE (e2_p->value),
+				     TREE_OPERAND (e2_p->value, 0));
+	    if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (e1_p->value))
+		|| DECIMAL_FLOAT_TYPE_P (TREE_TYPE (e1_p->value))
+		|| !SCALAR_FLOAT_TYPE_P (TREE_TYPE (e2_p->value))
+		|| DECIMAL_FLOAT_TYPE_P (TREE_TYPE (e2_p->value)))
 	      {
 		error_at (loc, "%<__builtin_complex%> operand "
 			  "not of real binary floating-point type");
 		expr.value = error_mark_node;
 		break;
 	      }
-	    if (TYPE_MAIN_VARIANT (TREE_TYPE (e1value))
-		!= TYPE_MAIN_VARIANT (TREE_TYPE (e2value)))
+	    if (TYPE_MAIN_VARIANT (TREE_TYPE (e1_p->value))
+		!= TYPE_MAIN_VARIANT (TREE_TYPE (e2_p->value)))
 	      {
 		error_at (loc,
 			  "%<__builtin_complex%> operands of different types");
@@ -6518,34 +6513,37 @@ c_parser_postfix_expression (c_parser *parser)
 	      pedwarn (loc, OPT_pedantic,
 		       "ISO C90 does not support complex types");
 	    expr.value = build2 (COMPLEX_EXPR,
-				 build_complex_type (TYPE_MAIN_VARIANT
-						     (TREE_TYPE (e1value))),
-				 e1value, e2value);
+				 build_complex_type
+				   (TYPE_MAIN_VARIANT
+				     (TREE_TYPE (e1_p->value))),
+				 e1_p->value, e2_p->value);
 	    break;
 	  }
 	case RID_BUILTIN_SHUFFLE:
 	  {
-	    VEC(tree,gc) *expr_list;
-	    
+	    VEC(c_expr_t,gc) *cexpr_list;
+
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser,
 					    "__builtin_shuffle",
-					    &expr_list, NULL))
+					    &cexpr_list))
 	      {
 		expr.value = error_mark_node;
 		break;
 	      }
 
-	    if (VEC_length (tree, expr_list) == 2)
-	      expr.value = c_build_vec_shuffle_expr
-				(loc, VEC_index (tree, expr_list, 0),
-				 NULL_TREE,
-				 VEC_index (tree, expr_list, 1));
-	    else if (VEC_length (tree, expr_list) == 3)
-	      expr.value = c_build_vec_shuffle_expr
-				(loc, VEC_index (tree, expr_list, 0),
-				 VEC_index (tree, expr_list, 1),
-				 VEC_index (tree, expr_list, 2));
+	    if (VEC_length (c_expr_t, cexpr_list) == 2)
+	      expr.value =
+		c_build_vec_shuffle_expr
+		  (loc, VEC_index (c_expr_t, cexpr_list, 0)->value,
+		   NULL_TREE, VEC_index (c_expr_t, cexpr_list, 1)->value);
+
+	    else if (VEC_length (c_expr_t, cexpr_list) == 3)
+	      expr.value =
+		c_build_vec_shuffle_expr
+		  (loc, VEC_index (c_expr_t, cexpr_list, 0)->value,
+		   VEC_index (c_expr_t, cexpr_list, 1)->value,
+		   VEC_index (c_expr_t, cexpr_list, 2)->value);
 	    else
 	      {
 		error_at (loc, "wrong number of arguments to "

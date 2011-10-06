@@ -1,3 +1,11 @@
+2011-10-06  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
+	* c-tree.h (c_expr_t): New typedef for struct c_expr.
+	(C_EXPR_APPEND): New macro.
+	* c-parser.c (c_parser_get_builtin_args): Preserve 
+	original_tree_code of c_expr structure. Fixes bconstp-3.c
+	failure of PR50607.
+	(c_parser_postfix_expression): Adjust to the new function.
+
 2011-10-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* function.c (thread_prologue_and_epilogue_insns): Don't shrink-wrap
