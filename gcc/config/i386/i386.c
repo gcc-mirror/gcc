@@ -18941,7 +18941,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
   enum machine_mode mode = GET_MODE (dest);
   rtx t2, t3, x;
 
-  if (vector_all_ones_operand (op_true, GET_MODE (op_true))
+  if (vector_all_ones_operand (op_true, mode)
       && rtx_equal_p (op_false, CONST0_RTX (mode)))
     {
       emit_insn (gen_rtx_SET (VOIDmode, dest, cmp));
@@ -19170,7 +19170,8 @@ ix86_expand_fp_vcond (rtx operands[])
 bool
 ix86_expand_int_vcond (rtx operands[])
 {
-  enum machine_mode mode = GET_MODE (operands[0]);
+  enum machine_mode data_mode = GET_MODE (operands[0]);
+  enum machine_mode mode = GET_MODE (operands[4]);
   enum rtx_code code = GET_CODE (operands[3]);
   bool negate = false;
   rtx x, cop0, cop1;
@@ -19297,8 +19298,21 @@ ix86_expand_int_vcond (rtx operands[])
 	}
     }
 
-  x = ix86_expand_sse_cmp (operands[0], code, cop0, cop1,
-			   operands[1+negate], operands[2-negate]);
+  /* Allow the comparison to be done in one mode, but the movcc to
+     happen in another mode.  */
+  if (data_mode == mode)
+    {
+      x = ix86_expand_sse_cmp (operands[0], code, cop0, cop1,
+			       operands[1+negate], operands[2-negate]);
+    }
+  else
+    {
+      gcc_assert (GET_MODE_SIZE (data_mode) == GET_MODE_SIZE (mode));
+      x = ix86_expand_sse_cmp (gen_lowpart (mode, operands[0]),
+			       code, cop0, cop1,
+			       operands[1+negate], operands[2-negate]);
+      x = gen_lowpart (data_mode, x);
+    }
 
   ix86_expand_sse_movcc (operands[0], x, operands[1+negate],
 			 operands[2-negate]);
@@ -19533,9 +19547,9 @@ ix86_expand_vshuffle (rtx operands[])
       mask = expand_simple_binop (maskmode, AND, mask, vt,
 				  NULL_RTX, 0, OPTAB_DIRECT);
 
-      xops[0] = gen_lowpart (maskmode, operands[0]);
-      xops[1] = gen_lowpart (maskmode, t2);
-      xops[2] = gen_lowpart (maskmode, t1);
+      xops[0] = operands[0];
+      xops[1] = gen_lowpart (mode, t2);
+      xops[2] = gen_lowpart (mode, t1);
       xops[3] = gen_rtx_EQ (maskmode, mask, vt);
       xops[4] = mask;
       xops[5] = vt;
