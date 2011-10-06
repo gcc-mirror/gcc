@@ -19312,17 +19312,120 @@ ix86_expand_vshuffle (rtx operands[])
   rtx op0 = operands[1];
   rtx op1 = operands[2];
   rtx mask = operands[3];
-  rtx vt, vec[16];
+  rtx t1, t2, vt, vec[16];
   enum machine_mode mode = GET_MODE (op0);
   enum machine_mode maskmode = GET_MODE (mask);
   int w, e, i;
   bool one_operand_shuffle = rtx_equal_p (op0, op1);
 
-  gcc_checking_assert (GET_MODE_BITSIZE (mode) == 128);
-
   /* Number of elements in the vector.  */
   w = GET_MODE_NUNITS (mode);
   e = GET_MODE_UNIT_SIZE (mode);
+  gcc_assert (w <= 16);
+
+  if (TARGET_AVX2)
+    {
+      if (mode == V4DImode || mode == V4DFmode)
+	{
+	  /* Unfortunately, the VPERMQ and VPERMPD instructions only support
+	     an constant shuffle operand.  With a tiny bit of effort we can
+	     use VPERMD instead.  A re-interpretation stall for V4DFmode is
+	     unfortunate but there's no avoiding it.  */
+	  t1 = gen_reg_rtx (V8SImode);
+
+	  /* Replicate the low bits of the V4DImode mask into V8SImode:
+	       mask = { A B C D }
+	       t1 = { A A B B C C D D }.  */
+	  for (i = 0; i < 4; ++i)
+	    vec[i*2 + 1] = vec[i*2] = GEN_INT (i * 2);
+	  vt = gen_rtx_CONST_VECTOR (V8SImode, gen_rtvec_v (8, vec));
+	  vt = force_reg (V8SImode, vt);
+	  mask = gen_lowpart (V8SImode, mask);
+	  emit_insn (gen_avx2_permvarv8si (t1, vt, mask));
+
+	  /* Multiply the shuffle indicies by two.  */
+	  emit_insn (gen_avx2_lshlv8si3 (t1, t1, const1_rtx));
+
+	  /* Add one to the odd shuffle indicies:
+		t1 = { A*2, A*2+1, B*2, B*2+1, ... }.  */
+	  for (i = 0; i < 4; ++i)
+	    {
+	      vec[i * 2] = const0_rtx;
+	      vec[i * 2 + 1] = const1_rtx;
+	    }
+	  vt = gen_rtx_CONST_VECTOR (V8SImode, gen_rtvec_v (8, vec));
+	  vt = force_const_mem (V8SImode, vt);
+	  emit_insn (gen_addv8si3 (t1, t1, vt));
+
+	  /* Continue as if V8SImode was used initially.  */
+	  operands[3] = mask = t1;
+	  target = gen_lowpart (V8SImode, target);
+	  op0 = gen_lowpart (V8SImode, op0);
+	  op1 = gen_lowpart (V8SImode, op1);
+	  maskmode = mode = V8SImode;
+	  w = 8;
+	  e = 4;
+	}
+
+      switch (mode)
+	{
+	case V8SImode:
+	  /* The VPERMD and VPERMPS instructions already properly ignore
+	     the high bits of the shuffle elements.  No need for us to
+	     perform an AND ourselves.  */
+	  if (one_operand_shuffle)
+	    emit_insn (gen_avx2_permvarv8si (target, mask, op0));
+	  else
+	    {
+	      t1 = gen_reg_rtx (V8SImode);
+	      t2 = gen_reg_rtx (V8SImode);
+	      emit_insn (gen_avx2_permvarv8si (t1, mask, op0));
+	      emit_insn (gen_avx2_permvarv8si (t2, mask, op1));
+	      goto merge_two;
+	    }
+	  return;
+
+	case V8SFmode:
+	  mask = gen_lowpart (V8SFmode, mask);
+	  if (one_operand_shuffle)
+	    emit_insn (gen_avx2_permvarv8sf (target, mask, op0));
+	  else
+	    {
+	      t1 = gen_reg_rtx (V8SFmode);
+	      t2 = gen_reg_rtx (V8SFmode);
+	      emit_insn (gen_avx2_permvarv8sf (t1, mask, op0));
+	      emit_insn (gen_avx2_permvarv8sf (t2, mask, op1));
+	      goto merge_two;
+	    }
+	  return;
+
+        case V4SImode:
+	  /* By combining the two 128-bit input vectors into one 256-bit
+	     input vector, we can use VPERMD and VPERMPS for the full
+	     two-operand shuffle.  */
+	  t1 = gen_reg_rtx (V8SImode);
+	  t2 = gen_reg_rtx (V8SImode);
+	  emit_insn (gen_avx_vec_concatv8si (t1, op0, op1));
+	  emit_insn (gen_avx_vec_concatv8si (t2, mask, mask));
+	  emit_insn (gen_avx2_permvarv8si (t1, t2, t1));
+	  emit_insn (gen_avx_vextractf128v8si (target, t1, const0_rtx));
+	  return;
+
+        case V4SFmode:
+	  t1 = gen_reg_rtx (V8SFmode);
+	  t2 = gen_reg_rtx (V8SFmode);
+	  mask = gen_lowpart (V4SFmode, mask);
+	  emit_insn (gen_avx_vec_concatv8sf (t1, op0, op1));
+	  emit_insn (gen_avx_vec_concatv8sf (t2, mask, mask));
+	  emit_insn (gen_avx2_permvarv8sf (t1, t2, t1));
+	  emit_insn (gen_avx_vextractf128v8sf (target, t1, const0_rtx));
+	  return;
+
+	default:
+	  gcc_assert (GET_MODE_SIZE (mode) <= 16);
+	  break;
+	}
+    }
 
   if (TARGET_XOP)
     {
@@ -19394,7 +19497,7 @@ ix86_expand_vshuffle (rtx operands[])
     }
   else
     {
-      rtx xops[6], t1, t2;
+      rtx xops[6];
       bool ok;
 
       /* Shuffle the two input vectors independently.  */
@@ -19403,6 +19506,7 @@ ix86_expand_vshuffle (rtx operands[])
       emit_insn (gen_ssse3_pshufbv16qi3 (t1, op0, mask));
       emit_insn (gen_ssse3_pshufbv16qi3 (t2, op1, mask));
 
+ merge_two:
       /* Then merge them together.  The key is whether any given control
          element contained a bit set that indicates the second word.  */
       mask = operands[3];

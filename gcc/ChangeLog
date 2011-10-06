@@ -1,5 +1,14 @@
 2001-10-06  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_vshuffle): Add AVX2 support.
+	* config/i386/sse.md (sseshuffint): Remove.
+	(sseintvecmode): Support V16HI, V8HI, V32QI, V16QI.
+	(VSHUFFLE_AVX2): New mode iterator.
+	(vshuffle<mode>): Use it.
+	(avx_vec_concat<V_256>): Rename from *vec_concat<V_256>_avx.
+
+2001-10-06  Richard Henderson  <rth@redhat.com>
+
 	* optabs.c (expand_vec_shuffle_expr): Use the proper mode for the
 	mask operand.  Tidy the code.
 
