@@ -6550,9 +6550,26 @@ arm_legitimize_reload_address (rtx *p,
 			       int opnum, int type,
 			       int ind_levels ATTRIBUTE_UNUSED)
 {
+  /* We must recognize output that we have already generated ourselves.  */
+  if (GET_CODE (*p) == PLUS
+      && GET_CODE (XEXP (*p, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (*p, 0), 0)) == REG
+      && GET_CODE (XEXP (XEXP (*p, 0), 1)) == CONST_INT
+      && GET_CODE (XEXP (*p, 1)) == CONST_INT)
+    {
+      push_reload (XEXP (*p, 0), NULL_RTX, &XEXP (*p, 0), NULL,
+		   MODE_BASE_REG_CLASS (mode), GET_MODE (*p),
+		   VOIDmode, 0, 0, opnum, (enum reload_type) type);
+      return true;
+    }
+
   if (GET_CODE (*p) == PLUS
       && GET_CODE (XEXP (*p, 0)) == REG
       && ARM_REGNO_OK_FOR_BASE_P (REGNO (XEXP (*p, 0)))
+      /* If the base register is equivalent to a constant, let the generic
+	 code handle it.  Otherwise we will run into problems if a future
+	 reload pass decides to rematerialize the constant.  */
+      && !reg_equiv_constant (ORIGINAL_REGNO (XEXP (*p, 0)))
       && GET_CODE (XEXP (*p, 1)) == CONST_INT)
     {
       HOST_WIDE_INT val = INTVAL (XEXP (*p, 1));
