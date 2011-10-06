@@ -1,3 +1,8 @@
+2011-10-06  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR target/50305
+	* gcc.target/arm/pr50305.c: New test.
+
 2011-10-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38884

@@ -1,3 +1,11 @@
+2011-10-06  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR target/50305
+	* config/arm/arm.c (arm_legitimize_reload_address): Recognize
+	output of a previous pass through legitimize_reload_address.
+	Do not attempt to optimize addresses if the base register is
+	equivalent to a constant.
+
 2011-10-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* function.c (thread_prologue_and_epilogue_insns): Mark
