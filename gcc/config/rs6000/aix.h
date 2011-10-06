@@ -97,6 +97,9 @@
     {						\
       builtin_define ("_IBMR2");		\
       builtin_define ("_POWER");		\
+      builtin_define ("__powerpc__");           \
+      builtin_define ("__PPC__");               \
+      builtin_define ("__unix__");              \
       builtin_define ("_AIX");			\
       builtin_define ("_AIX32");		\
       builtin_define ("_AIX41");		\
