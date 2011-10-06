@@ -1,3 +1,9 @@
+2011-10-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* function.c (thread_prologue_and_epilogue_insns): Mark
+	last_bb_active as possibly unused.  It is unused for targets which
+	do neither have "return" nor "simple_return" expanders.
+
 2011-10-06  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_ternary_loc): Also fold non-constant
