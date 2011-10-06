@@ -3808,6 +3808,28 @@ proc add_options_for_upc_library_calls { flags } {
     return "$flags -fno-upc-inline-lib"
 }
 
+# Check if UPC struct pts build
+
+proc check_effective_target_upc_struct_pts { } {
+    return [check_no_compiler_messages upc_struct_pts object {
+	#include <upc.h>
+	#ifndef __UPC_PTS_STRUCT_REP__
+	#  error struct PTS is not supported
+	#endif
+    }]
+}
+
+# Check if UPC packed pts build
+
+proc check_effective_target_upc_packed_pts { } {
+    return [check_no_compiler_messages upc_packed_pts object {
+	#include <upc.h>
+	#ifndef __UPC_PTS_PACKED_REP__
+	#  error packed PTS is not supported
+	#endif
+    }]
+}
+
 # Return 1 if the target provides a full C99 runtime.
 
 proc check_effective_target_c99_runtime { } {
