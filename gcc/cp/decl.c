@@ -7418,6 +7418,12 @@ grokfndecl (tree ctype,
 	      error ("definition of implicitly-declared %qD", old_decl);
 	      return NULL_TREE;
 	    }
+	  else if (DECL_DEFAULTED_FN (old_decl))
+	    {
+	      error ("definition of explicitly-defaulted %q+D", decl);
+	      error ("%q+#D explicitly defaulted here", old_decl);
+	      return NULL_TREE;
+	    }
 
 	  /* Since we've smashed OLD_DECL to its
 	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
