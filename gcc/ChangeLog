@@ -1,3 +1,9 @@
+2011-10-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/39950
+	* config/rs6000/aix.h (TARGET_OS_AIX_CPP_BUILTINS): Define
+	__powerpc__, __PPC__, __unix__.
+
 2011-10-06  Michael Matz  <matz@suse.de>
 
 	* i386/i386.opt (recip_mask, recip_mask_explicit,
