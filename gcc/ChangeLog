@@ -1,5 +1,10 @@
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-patterns.c (vect_pattern_recog_1): Use
+	vect_recog_func_ptr typedef for the first argument.
+	(vect_pattern_recog): Rename vect_recog_func_ptr variable
+	to vect_recog_func, use vect_recog_func_ptr typedef for it.
+
 	PR tree-optimization/49279
 	* tree-ssa-structalias.c (find_func_aliases): Don't handle
 	CAST_RESTRICT.

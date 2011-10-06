@@ -1272,10 +1272,9 @@ vect_mark_pattern_stmts (gimple orig_stmt, gimple pattern_stmt,
    for vect_recog_pattern.  */
 
 static void
-vect_pattern_recog_1 (
-	gimple (* vect_recog_func) (VEC (gimple, heap) **, tree *, tree *),
-	gimple_stmt_iterator si,
-	VEC (gimple, heap) **stmts_to_replace)
+vect_pattern_recog_1 (vect_recog_func_ptr vect_recog_func,
+		      gimple_stmt_iterator si,
+		      VEC (gimple, heap) **stmts_to_replace)
 {
   gimple stmt = gsi_stmt (si), pattern_stmt;
   stmt_vec_info stmt_info;
@@ -1459,7 +1458,7 @@ vect_pattern_recog (loop_vec_info loop_vinfo)
   unsigned int nbbs = loop->num_nodes;
   gimple_stmt_iterator si;
   unsigned int i, j;
-  gimple (* vect_recog_func_ptr) (VEC (gimple, heap) **, tree *, tree *);
+  vect_recog_func_ptr vect_recog_func;
   VEC (gimple, heap) *stmts_to_replace = VEC_alloc (gimple, heap, 1);
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -1475,8 +1474,8 @@ vect_pattern_recog (loop_vec_info loop_vinfo)
           /* Scan over all generic vect_recog_xxx_pattern functions.  */
           for (j = 0; j < NUM_PATTERNS; j++)
             {
-              vect_recog_func_ptr = vect_vect_recog_func_ptrs[j];
-	      vect_pattern_recog_1 (vect_recog_func_ptr, si,
+	      vect_recog_func = vect_vect_recog_func_ptrs[j];
+	      vect_pattern_recog_1 (vect_recog_func, si,
 				    &stmts_to_replace);
             }
         }
