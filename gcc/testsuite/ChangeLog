@@ -1,3 +1,9 @@
+2011-10-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38884
+	* gcc.dg/tree-ssa/ssa-fre-34.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-35.c: Likewise.
+
 2011-10-05  David S. Miller  <davem@davemloft.net>
 
 	* gcc.target/sparc/lzd.c: New test.

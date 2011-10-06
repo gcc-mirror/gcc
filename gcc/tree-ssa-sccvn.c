@@ -1489,7 +1489,66 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	}
     }
 
-  /* 4) For aggregate copies translate the reference through them if
+  /* 4) Assignment from an SSA name which definition we may be able
+     to access pieces from.  */
+  else if (ref->size == maxsize
+	   && is_gimple_reg_type (vr->type)
+	   && gimple_assign_single_p (def_stmt)
+	   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
+    {
+      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+      gimple def_stmt2 = SSA_NAME_DEF_STMT (rhs1);
+      if (is_gimple_assign (def_stmt2)
+	  && (gimple_assign_rhs_code (def_stmt2) == COMPLEX_EXPR
+	      || gimple_assign_rhs_code (def_stmt2) == CONSTRUCTOR)
+	  && types_compatible_p (vr->type, TREE_TYPE (TREE_TYPE (rhs1))))
+	{
+	  tree base2;
+	  HOST_WIDE_INT offset2, size2, maxsize2, off;
+	  base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
+					   &offset2, &size2, &maxsize2);
+	  off = offset - offset2;
+	  if (maxsize2 != -1
+	      && maxsize2 == size2
+	      && operand_equal_p (base, base2, 0)
+	      && offset2 <= offset
+	      && offset2 + size2 >= offset + maxsize)
+	    {
+	      tree val = NULL_TREE;
+	      HOST_WIDE_INT elsz
+		= TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (TREE_TYPE (rhs1))));
+	      if (gimple_assign_rhs_code (def_stmt2) == COMPLEX_EXPR)
+		{
+		  if (off == 0)
+		    val = gimple_assign_rhs1 (def_stmt2);
+		  else if (off == elsz)
+		    val = gimple_assign_rhs2 (def_stmt2);
+		}
+	      else if (gimple_assign_rhs_code (def_stmt2) == CONSTRUCTOR
+		       && off % elsz == 0)
+		{
+		  tree ctor = gimple_assign_rhs1 (def_stmt2);
+		  unsigned i = off / elsz;
+		  if (i < CONSTRUCTOR_NELTS (ctor))
+		    {
+		      constructor_elt *elt = CONSTRUCTOR_ELT (ctor, i);
+		      if (compare_tree_int (elt->index, i) == 0)
+			val = elt->value;
+		    }
+		}
+	      if (val)
+		{
+		  unsigned int value_id = get_or_alloc_constant_value_id (val);
+		  return vn_reference_insert_pieces
+		           (vuse, vr->set, vr->type,
+			    VEC_copy (vn_reference_op_s, heap, vr->operands),
+			    val, value_id);
+		}
+	    }
+	}
+    }
+
+  /* 5) For aggregate copies translate the reference through them if
      the copy kills ref.  */
   else if (vn_walk_kind == VN_WALKREWRITE
 	   && gimple_assign_single_p (def_stmt)
@@ -1587,7 +1646,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       return NULL;
     }
 
-  /* 5) For memcpy copies translate the reference through them if
+  /* 6) For memcpy copies translate the reference through them if
      the copy kills ref.  */
   else if (vn_walk_kind == VN_WALKREWRITE
 	   && is_gimple_reg_type (vr->type)
