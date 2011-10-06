@@ -1281,7 +1281,8 @@ vect_mark_pattern_stmts (gimple orig_stmt, gimple pattern_stmt,
 static void
 vect_pattern_recog_1 (
 	gimple (* vect_recog_func) (VEC (gimple, heap) **, tree *, tree *),
-	gimple_stmt_iterator si)
+	gimple_stmt_iterator si,
+	VEC (gimple, heap) **stmts_to_replace)
 {
   gimple stmt = gsi_stmt (si), pattern_stmt;
   stmt_vec_info stmt_info;
@@ -1291,14 +1292,14 @@ vect_pattern_recog_1 (
   enum tree_code code;
   int i;
   gimple next;
-  VEC (gimple, heap) *stmts_to_replace = VEC_alloc (gimple, heap, 1);
 
-  VEC_quick_push (gimple, stmts_to_replace, stmt);
-  pattern_stmt = (* vect_recog_func) (&stmts_to_replace, &type_in, &type_out);
+  VEC_truncate (gimple, *stmts_to_replace, 0);
+  VEC_quick_push (gimple, *stmts_to_replace, stmt);
+  pattern_stmt = (* vect_recog_func) (stmts_to_replace, &type_in, &type_out);
   if (!pattern_stmt)
     return;
 
-  stmt = VEC_last (gimple, stmts_to_replace);
+  stmt = VEC_last (gimple, *stmts_to_replace);
   stmt_info = vinfo_for_stmt (stmt);
   loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
  
@@ -1363,8 +1364,8 @@ vect_pattern_recog_1 (
   /* It is possible that additional pattern stmts are created and inserted in
      STMTS_TO_REPLACE.  We create a stmt_info for each of them, and mark the
      relevant statements.  */
-  for (i = 0; VEC_iterate (gimple, stmts_to_replace, i, stmt)
-              && (unsigned) i < (VEC_length (gimple, stmts_to_replace) - 1);
+  for (i = 0; VEC_iterate (gimple, *stmts_to_replace, i, stmt)
+	      && (unsigned) i < (VEC_length (gimple, *stmts_to_replace) - 1);
        i++)
     {
       stmt_info = vinfo_for_stmt (stmt);
@@ -1377,8 +1378,6 @@ vect_pattern_recog_1 (
 
       vect_mark_pattern_stmts (stmt, pattern_stmt, NULL_TREE);
     }
-
-  VEC_free (gimple, heap, stmts_to_replace);
 }
 
 
@@ -1468,6 +1467,7 @@ vect_pattern_recog (loop_vec_info loop_vinfo)
   gimple_stmt_iterator si;
   unsigned int i, j;
   gimple (* vect_recog_func_ptr) (VEC (gimple, heap) **, tree *, tree *);
+  VEC (gimple, heap) *stmts_to_replace = VEC_alloc (gimple, heap, 1);
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_pattern_recog ===");
@@ -1483,8 +1483,11 @@ vect_pattern_recog (loop_vec_info loop_vinfo)
           for (j = 0; j < NUM_PATTERNS; j++)
             {
               vect_recog_func_ptr = vect_vect_recog_func_ptrs[j];
-              vect_pattern_recog_1 (vect_recog_func_ptr, si);
+	      vect_pattern_recog_1 (vect_recog_func_ptr, si,
+				    &stmts_to_replace);
             }
         }
     }
+
+  VEC_free (gimple, heap, stmts_to_replace);
 }
