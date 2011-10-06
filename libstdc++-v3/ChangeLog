@@ -1,3 +1,15 @@
+2011-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Tidy dg- directives,
+	for C++0x testing too.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/
+	base_classes.cc: Adjust for C++0x testing.
+	* testsuite/ext/codecvt/char-1.cc: Avoid warnings in C++0x mode.
+	* testsuite/ext/codecvt/char-2.cc: Likewise.
+	* testsuite/ext/codecvt/wchar_t.cc: Likewise.
+
 2011-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/pod_char_traits.h: Avoid warnings in C++0x mode
