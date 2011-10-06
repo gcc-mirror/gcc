@@ -1,3 +1,11 @@
+2011-10-06  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_ternary_loc): Also fold non-constant
+	vector CONSTRUCTORs.  Make more efficient.
+	* tree-ssa-dom.c (cprop_operand): Don't handle virtual operands.
+	(cprop_into_stmt): Don't propagate into virtual operands.
+	(optimize_stmt): Really dump original statement.
+
 2011-10-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (smin3): Revert previous delta.
