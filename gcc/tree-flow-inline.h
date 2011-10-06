@@ -145,16 +145,6 @@ var_ann (const_tree t)
   return p ? *p : NULL;
 }
 
-/* Return the variable annotation for T, which must be a _DECL node.
-   Create the variable annotation if it doesn't exist.  */
-static inline var_ann_t
-get_var_ann (tree var)
-{
-  var_ann_t *p = DECL_VAR_ANN_PTR (var);
-  gcc_checking_assert (p);
-  return *p ? *p : create_var_ann (var);
-}
-
 /* Get the number of the next statement uid to be allocated.  */
 static inline unsigned int
 gimple_stmt_max_uid (struct function *fn)
@@ -568,7 +558,7 @@ phi_arg_index_from_use (use_operand_p use)
 static inline void
 set_is_used (tree var)
 {
-  var_ann_t ann = get_var_ann (var);
+  var_ann_t ann = var_ann (var);
   ann->used = true;
 }
 
