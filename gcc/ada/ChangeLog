@@ -1,3 +1,20 @@
+2011-10-06  Robert Dewar  <dewar@adacore.com>
+
+	* a-ciorse.adb, a-cihase.adb, a-cihase.ads, a-coorse.adb,
+	a-cborse.adb, a-comutr.adb, a-ciorma.adb, a-cbmutr.adb,
+	a-cbmutr.ads, a-cbhase.adb, a-cbhase.ads: Minor reformatting and code
+	reorganization (use conditional expressions).
+
+2011-10-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Arithmetic_Op): Fix bad warning for
+	floating divide by zero.
+
+2011-10-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Limited interfaces that are not immutably limited
+	are OK in return statements.
+
 2011-09-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* gcc-interface/Makefile.in (Darwin): Partial reversion of previous

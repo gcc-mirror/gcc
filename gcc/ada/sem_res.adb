@@ -64,6 +64,7 @@ with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Intr; use Sem_Intr;
 with Sem_Util; use Sem_Util;
+with Targparm; use Targparm;
 with Sem_Type; use Sem_Type;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
@@ -4874,13 +4875,33 @@ package body Sem_Res is
                            (Is_Real_Type (Etype (Rop))
                              and then Expr_Value_R (Rop) = Ureal_0))
             then
-               --  Specialize the warning message according to the operation
+               --  Specialize the warning message according to the operation.
+               --  The following warnings are for the case
 
                case Nkind (N) is
                   when N_Op_Divide =>
-                     Apply_Compile_Time_Constraint_Error
-                       (N, "division by zero?", CE_Divide_By_Zero,
-                        Loc => Sloc (Right_Opnd (N)));
+
+                     --  For division, we have two cases, for float division
+                     --  of an unconstrained float type, on a machine where
+                     --  Machine_Overflows is false, we don't get an exception
+                     --  at run-time, but rather an infinity or Nan. The Nan
+                     --  case is pretty obscure, so just warn about infinities.
+
+                     if Is_Floating_Point_Type (Typ)
+                       and then not Is_Constrained (Typ)
+                       and then not Machine_Overflows_On_Target
+                     then
+                        Error_Msg_N
+                          ("float division by zero, " &
+                           "may generate '+'/'- infinity?", Right_Opnd (N));
+
+                        --  For all other cases, we get a Constraint_Error
+
+                     else
+                        Apply_Compile_Time_Constraint_Error
+                          (N, "division by zero?", CE_Divide_By_Zero,
+                           Loc => Sloc (Right_Opnd (N)));
+                     end if;
 
                   when N_Op_Rem =>
                      Apply_Compile_Time_Constraint_Error

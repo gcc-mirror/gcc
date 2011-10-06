@@ -54,11 +54,11 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    overriding function First (Object : Child_Iterator) return Cursor;
 
    overriding function Next
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor;
 
    overriding function Previous
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor;
 
    overriding function Last (Object : Child_Iterator) return Cursor;
@@ -599,10 +599,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    begin
       if Capacity = 0 then
          C := Source.Count;
-
       elsif Capacity >= Source.Count then
          C := Capacity;
-
       else
          raise Capacity_Error with "Capacity value too small";
       end if;
@@ -841,12 +839,12 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  nodes that contain elements that have been inserted onto the tree,
       --  and another for the "inactive" nodes of the free store, from which
       --  nodes are allocated when a new child is inserted in the tree.
-      --
+
       --  We desire that merely declaring a tree object should have only
       --  minimal cost; specially, we want to avoid having to initialize the
       --  free store (to fill in the links), especially if the capacity of the
       --  tree object is large.
-      --
+
       --  The head of the free list is indicated by Container.Free. If its
       --  value is non-negative, then the free store has been initialized in
       --  the "normal" way: Container.Free points to the head of the list of
@@ -854,20 +852,20 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  empty. Each node on the free list has been initialized to point to
       --  the next free node (via its Next component), and the value 0 means
       --  that this is the last node of the free list.
-      --
+
       --  If Container.Free is negative, then the links on the free store have
       --  not been initialized. In this case the link values are implied: the
       --  free store comprises the components of the node array started with
       --  the absolute value of Container.Free, and continuing until the end of
       --  the array (Nodes'Last).
-      --
+
       --  We prefer to lazy-init the free store (in fact, we would prefer to
       --  not initialize it at all, because such initialization is an O(n)
       --  operation). The time when we need to actually initialize the nodes in
       --  the free store is when the node that becomes inactive is not at the
       --  end of the active list. The free store would then be discontigous and
       --  so its nodes would need to be linked in the traditional way.
-      --
+
       --  It might be possible to perform an optimization here. Suppose that
       --  the free store can be represented as having two parts: one comprising
       --  the non-contiguous inactive nodes linked together in the normal way,
@@ -1218,8 +1216,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Right_Subtree : Count_Type) return Boolean
    is
    begin
-      if Left_Tree.Elements (Left_Subtree)
-        /= Right_Tree.Elements (Right_Subtree)
+      if Left_Tree.Elements  (Left_Subtree) /=
+         Right_Tree.Elements (Right_Subtree)
       then
          return False;
       end if;
@@ -1262,7 +1260,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
    function First (Object : Child_Iterator) return Cursor is
       Node : Count_Type'Base;
-
    begin
       Node := Object.Container.Nodes (Object.Position.Node).Children.First;
       return (Object.Container, Node);
@@ -1722,11 +1719,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
    function Is_Root (Position : Cursor) return Boolean is
    begin
-      if Position.Container = null then
-         return False;
-      end if;
-
-      return Position.Node = Root_Node (Position.Container.all);
+      return
+        (if Position.Container = null then False
+         else Position.Node = Root_Node (Position.Container.all));
    end Is_Root;
 
    -------------
@@ -1839,7 +1834,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    function Iterate_Children
      (Container : Tree;
       Parent    : Cursor)
-     return Tree_Iterator_Interfaces.Reversible_Iterator'Class
+      return Tree_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Unreferenced (Container);
    begin
@@ -2039,10 +2034,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    end Next;
 
    function Next
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor
    is
-
    begin
       if Object.Container /= Position.Container then
          raise Program_Error;
@@ -2201,7 +2195,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    --------------
 
    overriding function Previous
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor
    is
    begin
