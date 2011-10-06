@@ -536,6 +536,17 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 	  idx = build_int_cst (TREE_TYPE (idx), index);
 	}
 
+      /* When lowering a vector statement sequence do some easy
+         simplification by looking through intermediate vector results.  */
+      if (TREE_CODE (vect) == SSA_NAME)
+	{
+	  gimple def_stmt = SSA_NAME_DEF_STMT (vect);
+	  if (is_gimple_assign (def_stmt)
+	      && (gimple_assign_rhs_code (def_stmt) == VECTOR_CST
+		  || gimple_assign_rhs_code (def_stmt) == CONSTRUCTOR))
+	    vect = gimple_assign_rhs1 (def_stmt);
+	}
+
       if (TREE_CODE (vect) == VECTOR_CST)
         {
 	  unsigned i;
