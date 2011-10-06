@@ -10360,7 +10360,7 @@ fold_builtin_varargs (location_t loc, tree fndecl, tree exp,
    been inlined, otherwise e.g. -D_FORTIFY_SOURCE checking
    might not be performed.  */
 
-static bool
+bool
 avoid_folding_inline_builtin (tree fndecl)
 {
   return (DECL_DECLARED_INLINE_P (fndecl)
