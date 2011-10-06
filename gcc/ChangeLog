@@ -1,3 +1,9 @@
+2011-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49279
+	* tree-ssa-structalias.c (find_func_aliases): Don't handle
+	CAST_RESTRICT.
+
 2011-10-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* longlong.h (smul_ppmm, sdiv_qrnnd): Add underscores to the local

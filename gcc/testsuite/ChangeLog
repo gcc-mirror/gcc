@@ -1,3 +1,8 @@
+2011-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49279
+	* gcc.c-torture/execute/pr49279.c: New test.
+
 2011-10-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/48706
