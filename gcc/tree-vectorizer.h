@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
@@ -818,6 +818,7 @@ extern bool vect_transform_stmt (gimple, gimple_stmt_iterator *,
                                  bool *, slp_tree, slp_instance);
 extern void vect_remove_stores (gimple);
 extern bool vect_analyze_stmt (gimple, bool *, slp_tree);
+extern bool vect_is_simple_cond (tree, loop_vec_info, tree *);
 extern bool vectorizable_condition (gimple, gimple_stmt_iterator *, gimple *,
                                     tree, int);
 extern void vect_get_load_cost (struct data_reference *, int, bool,
@@ -902,7 +903,7 @@ extern void vect_slp_transform_bb (basic_block);
    Additional pattern recognition functions can (and will) be added
    in the future.  */
 typedef gimple (* vect_recog_func_ptr) (VEC (gimple, heap) **, tree *, tree *);
-#define NUM_PATTERNS 5
+#define NUM_PATTERNS 6
 void vect_pattern_recog (loop_vec_info);
 
 /* In tree-vectorizer.c.  */

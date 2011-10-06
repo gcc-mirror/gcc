@@ -1,3 +1,10 @@
+2011-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50596
+	* lib/target-supports.exp (check_effective_target_vect_cond_mixed):
+	New.
+	* gcc.dg/vect/vect-cond-8.c: New test.
+
 2011-10-06  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/vect-shuffle-1.c: Remove.
