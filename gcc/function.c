@@ -5602,10 +5602,6 @@ thread_prologue_and_epilogue_insns (void)
 	  note_stores (PATTERN (p_insn), record_hard_reg_sets,
 		       &prologue_clobbered);
 	}
-      for (p_insn = split_prologue_seq; p_insn; p_insn = NEXT_INSN (p_insn))
-	if (NONDEBUG_INSN_P (p_insn))
-	  note_stores (PATTERN (p_insn), record_hard_reg_sets,
-		       &prologue_clobbered);
 
       bitmap_initialize (&bb_antic_flags, &bitmap_default_obstack);
       bitmap_initialize (&bb_on_list, &bitmap_default_obstack);
@@ -5758,7 +5754,7 @@ thread_prologue_and_epilogue_insns (void)
 
   if (split_prologue_seq != NULL_RTX)
     {
-      insert_insn_on_edge (split_prologue_seq, entry_edge);
+      insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
       inserted = true;
     }
   if (prologue_seq != NULL_RTX)
