@@ -5453,7 +5453,7 @@ thread_prologue_and_epilogue_insns (void)
 {
   bool inserted;
   basic_block last_bb;
-  bool last_bb_active;
+  bool last_bb_active ATTRIBUTE_UNUSED;
 #ifdef HAVE_simple_return
   bool unconverted_simple_returns = false;
   basic_block simple_return_block_hot = NULL;
