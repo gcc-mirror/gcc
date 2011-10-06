@@ -1,3 +1,15 @@
+2011-10-06  Anatoly Sokolov  <aesok@post.ru>
+
+	* system.h (OUTPUT_ADDR_CONST_EXTRA): Poison.
+	* doc/tm.texi.in (OUTPUT_ADDR_CONST_EXTRA): Remove documentation.
+	* doc/tm.texi: Regenerate.
+	* target.def (output_addr_const_extra): Use
+	hook_bool_FILEptr_rtx_false.
+	* targhooks.c (default_asm_output_addr_const_extra): Remove.
+	* targhooks.h (default_asm_output_addr_const_extra): Remove.
+	* hooks.c (hook_bool_FILEptr_rtx_false): New functions.
+	* hooks.h (hook_bool_FILEptr_rtx_false): Declare.
+
 2011-10-06  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (popcount<mode>2, clz<mode>2): Split up into...
