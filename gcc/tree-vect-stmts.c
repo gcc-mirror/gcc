@@ -652,9 +652,25 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
              have to scan the RHS or function arguments instead.  */
           if (is_gimple_assign (stmt))
             {
-              for (i = 1; i < gimple_num_ops (stmt); i++)
+	      enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+	      tree op = gimple_assign_rhs1 (stmt);
+
+	      i = 1;
+	      if (rhs_code == COND_EXPR && COMPARISON_CLASS_P (op))
+		{
+		  if (!process_use (stmt, TREE_OPERAND (op, 0), loop_vinfo,
+				    live_p, relevant, &worklist)
+		      || !process_use (stmt, TREE_OPERAND (op, 1), loop_vinfo,
+				       live_p, relevant, &worklist))
+		    {
+		      VEC_free (gimple, heap, worklist);
+		      return false;
+		    }
+		  i = 2;
+		}
+	      for (; i < gimple_num_ops (stmt); i++)
                 {
-                  tree op = gimple_op (stmt, i);
+		  op = gimple_op (stmt, i);
                   if (!process_use (stmt, op, loop_vinfo, live_p, relevant,
                                     &worklist))
                     {
@@ -4682,7 +4698,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
    Returns whether a COND can be vectorized.  Checks whether
    condition operands are supportable using vec_is_simple_use.  */
 
-static bool
+bool
 vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo, tree *comp_vectype)
 {
   tree lhs, rhs;

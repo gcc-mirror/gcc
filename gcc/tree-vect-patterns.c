@@ -49,12 +49,15 @@ static gimple vect_recog_dot_prod_pattern (VEC (gimple, heap) **, tree *,
 static gimple vect_recog_pow_pattern (VEC (gimple, heap) **, tree *, tree *);
 static gimple vect_recog_over_widening_pattern (VEC (gimple, heap) **, tree *,
                                                  tree *);
+static gimple vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **,
+						  tree *, tree *);
 static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
 	vect_recog_widen_mult_pattern,
 	vect_recog_widen_sum_pattern,
 	vect_recog_dot_prod_pattern,
 	vect_recog_pow_pattern,
-        vect_recog_over_widening_pattern};
+	vect_recog_over_widening_pattern,
+	vect_recog_mixed_size_cond_pattern};
 
 
 /* Function widened_name_p
@@ -1211,6 +1214,120 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
 }
 
 
+/* Function vect_recog_mixed_size_cond_pattern
+
+   Try to find the following pattern:
+
+     type x_t, y_t;
+     TYPE a_T, b_T, c_T;
+   loop:
+     S1  a_T = x_t CMP y_t ? b_T : c_T;
+
+   where type 'TYPE' is an integral type which has different size
+   from 'type'.  b_T and c_T are constants and if 'TYPE' is wider
+   than 'type', the constants need to fit into an integer type
+   with the same width as 'type'.
+
+   Input:
+
+   * LAST_STMT: A stmt from which the pattern search begins.
+
+   Output:
+
+   * TYPE_IN: The type of the input arguments to the pattern.
+
+   * TYPE_OUT: The type of the output of this pattern.
+
+   * Return value: A new stmt that will be used to replace the pattern.
+	Additionally a def_stmt is added.
+
+	a_it = x_t CMP y_t ? b_it : c_it;
+	a_T = (TYPE) a_it;  */
+
+static gimple
+vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
+				    tree *type_out)
+{
+  gimple last_stmt = VEC_index (gimple, *stmts, 0);
+  tree cond_expr, then_clause, else_clause;
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt), def_stmt_info;
+  tree type, vectype, comp_vectype, itype, vecitype;
+  enum machine_mode cmpmode;
+  gimple pattern_stmt, def_stmt;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+
+  if (!is_gimple_assign (last_stmt)
+      || gimple_assign_rhs_code (last_stmt) != COND_EXPR
+      || STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_internal_def)
+    return NULL;
+
+  cond_expr = gimple_assign_rhs1 (last_stmt);
+  then_clause = gimple_assign_rhs2 (last_stmt);
+  else_clause = gimple_assign_rhs3 (last_stmt);
+
+  if (TREE_CODE (then_clause) != INTEGER_CST
+      || TREE_CODE (else_clause) != INTEGER_CST)
+    return NULL;
+
+  if (!vect_is_simple_cond (cond_expr, loop_vinfo, &comp_vectype)
+      || !comp_vectype)
+    return NULL;
+
+  type = gimple_expr_type (last_stmt);
+  cmpmode = GET_MODE_INNER (TYPE_MODE (comp_vectype));
+
+  if (GET_MODE_BITSIZE (TYPE_MODE (type)) == GET_MODE_BITSIZE (cmpmode))
+    return NULL;
+
+  vectype = get_vectype_for_scalar_type (type);
+  if (vectype == NULL_TREE)
+    return NULL;
+
+  if (expand_vec_cond_expr_p (vectype, comp_vectype))
+    return NULL;
+
+  itype = build_nonstandard_integer_type (GET_MODE_BITSIZE (cmpmode),
+					  TYPE_UNSIGNED (type));
+  if (itype == NULL_TREE
+      || GET_MODE_BITSIZE (TYPE_MODE (itype)) != GET_MODE_BITSIZE (cmpmode))
+    return NULL;
+
+  vecitype = get_vectype_for_scalar_type (itype);
+  if (vecitype == NULL_TREE)
+    return NULL;
+
+  if (!expand_vec_cond_expr_p (vecitype, comp_vectype))
+    return NULL;
+
+  if (GET_MODE_BITSIZE (TYPE_MODE (type)) > GET_MODE_BITSIZE (cmpmode))
+    {
+      if (!int_fits_type_p (then_clause, itype)
+	  || !int_fits_type_p (else_clause, itype))
+	return NULL;
+    }
+
+  def_stmt
+    = gimple_build_assign_with_ops3 (COND_EXPR,
+				     vect_recog_temp_ssa_var (itype, NULL),
+				     unshare_expr (cond_expr),
+				     fold_convert (itype, then_clause),
+				     fold_convert (itype, else_clause));
+  pattern_stmt
+    = gimple_build_assign_with_ops (NOP_EXPR,
+				    vect_recog_temp_ssa_var (type, NULL),
+				    gimple_assign_lhs (def_stmt), NULL_TREE);
+
+  STMT_VINFO_PATTERN_DEF_STMT (stmt_vinfo) = def_stmt;
+  def_stmt_info = new_stmt_vec_info (def_stmt, loop_vinfo, NULL);
+  set_vinfo_for_stmt (def_stmt, def_stmt_info);
+  STMT_VINFO_VECTYPE (def_stmt_info) = vecitype;
+  *type_in = vecitype;
+  *type_out = vectype;
+
+  return pattern_stmt;
+}
+
+
 /* Mark statements that are involved in a pattern.  */
 
 static inline void
@@ -1238,14 +1355,18 @@ vect_mark_pattern_stmts (gimple orig_stmt, gimple pattern_stmt,
   if (STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info))
     {
       def_stmt = STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info);
-      set_vinfo_for_stmt (def_stmt,
-                          new_stmt_vec_info (def_stmt, loop_vinfo, NULL));
-      gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
       def_stmt_info = vinfo_for_stmt (def_stmt);
+      if (def_stmt_info == NULL)
+	{
+	  def_stmt_info = new_stmt_vec_info (def_stmt, loop_vinfo, NULL);
+	  set_vinfo_for_stmt (def_stmt, def_stmt_info);
+	}
+      gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
       STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
       STMT_VINFO_DEF_TYPE (def_stmt_info)
 	= STMT_VINFO_DEF_TYPE (orig_stmt_info);
-      STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
+      if (STMT_VINFO_VECTYPE (def_stmt_info) == NULL_TREE)
+	STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
     }
 }
 

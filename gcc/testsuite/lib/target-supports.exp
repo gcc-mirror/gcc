@@ -3234,6 +3234,26 @@ proc check_effective_target_vect_condition { } {
     return $et_vect_cond_saved
 }
 
+# Return 1 if the target supports vector conditional operations where
+# the comparison has different type from the lhs, 0 otherwise.
+
+proc check_effective_target_vect_cond_mixed { } {
+    global et_vect_cond_mixed_saved
+
+    if [info exists et_vect_cond_mixed_saved] {
+	verbose "check_effective_target_vect_cond_mixed: using cached result" 2
+    } else {
+	set et_vect_cond_mixed_saved 0
+	if { [istarget i?86-*-*]
+	     || [istarget x86_64-*-*] } {
+	   set et_vect_cond_mixed_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_cond_mixed: returning $et_vect_cond_mixed_saved" 2
+    return $et_vect_cond_mixed_saved
+}
+
 # Return 1 if the target supports vector char multiplication, 0 otherwise.
 
 proc check_effective_target_vect_char_mult { } {
