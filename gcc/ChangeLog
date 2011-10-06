@@ -1,3 +1,9 @@
+2011-10-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38884
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle partial
+	reads from aggregate SSA names.
+
 2011-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-patterns.c (vect_pattern_recog_1): Add stmts_to_replace
