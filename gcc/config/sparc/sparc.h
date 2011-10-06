@@ -1608,6 +1608,11 @@ do {									   \
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
+/* For SImode, we make sure the top 32-bits of the register are clear and
+   then we subtract 32 from the lzd instruction result.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = ((MODE) == SImode ? 32 : 64), 1)
+
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,
    CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand

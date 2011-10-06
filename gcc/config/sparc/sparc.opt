@@ -73,6 +73,10 @@ mfmaf
 Target Report Mask(FMAF)
 Use UltraSPARC Fused Multiply-Add extensions
 
+mpopc
+Target Report Mask(POPC)
+Use UltraSPARC Population-Count instruction
+
 mptr64
 Target Report RejectNegative Mask(PTR64)
 Pointers are 64-bit
