@@ -1210,6 +1210,11 @@ gimple_fold_builtin (gimple stmt)
   if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_MD)
     return NULL_TREE;
 
+  /* Give up for always_inline inline builtins until they are
+     inlined.  */
+  if (avoid_folding_inline_builtin (callee))
+    return NULL_TREE;
+
   /* If the builtin could not be folded, and it has no argument list,
      we're done.  */
   nargs = gimple_call_num_args (stmt);

@@ -1,5 +1,10 @@
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.h (avoid_folding_inline_builtin): New prototype.
+	* builtins.c (avoid_folding_inline_builtin): No longer static.
+	* gimple-fold.c (gimple_fold_builtin): Give up if
+	avoid_folding_inline_builtin returns true.
+
 	PR tree-optimization/49279
 	* tree-ssa-structalias.c (find_func_aliases): Don't handle
 	CAST_RESTRICT.
