@@ -6650,9 +6650,8 @@ expand_vec_shuffle_expr (tree type, tree v0, tree v1, tree mask, rtx target)
   struct expand_operand ops[4];
   enum insn_code icode;
   enum machine_mode mode = TYPE_MODE (type);
-  rtx rtx_v0, rtx_mask;
 
-  gcc_assert (expand_vec_shuffle_expr_p (mode, v0, v1, mask));
+  gcc_checking_assert (expand_vec_shuffle_expr_p (mode, v0, v1, mask));
 
   if (TREE_CODE (mask) == VECTOR_CST)
     {
@@ -6675,24 +6674,23 @@ expand_vec_shuffle_expr (tree type, tree v0, tree v1, tree mask, rtx target)
       return expand_expr_real_1 (call, target, VOIDmode, EXPAND_NORMAL, NULL);
     }
 
-vshuffle:
+ vshuffle:
   icode = direct_optab_handler (vshuffle_optab, mode);
 
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  rtx_mask = expand_normal (mask);
-
   create_output_operand (&ops[0], target, mode);
-  create_input_operand (&ops[3], rtx_mask, mode);
+  create_input_operand (&ops[3], expand_normal (mask),
+			TYPE_MODE (TREE_TYPE (mask)));
 
   if (operand_equal_p (v0, v1, 0))
     {
-      rtx_v0 = expand_normal (v0);
-      if (!insn_operand_matches(icode, 1, rtx_v0))
+      rtx rtx_v0 = expand_normal (v0);
+      if (!insn_operand_matches (icode, 1, rtx_v0))
         rtx_v0 = force_reg (mode, rtx_v0);
 
-      gcc_checking_assert(insn_operand_matches(icode, 2, rtx_v0));
+      gcc_checking_assert (insn_operand_matches (icode, 2, rtx_v0));
 
       create_fixed_operand (&ops[1], rtx_v0);
       create_fixed_operand (&ops[2], rtx_v0);
