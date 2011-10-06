@@ -206,8 +206,6 @@
 
 (define_mode_iterator V64N8 [V2SI V4HI])
 
-(define_mode_iterator SIDI [SI DI])
-
 ;; The upper 32 fp regs on the v9 can't hold SFmode values.  To deal with this
 ;; a second register class, EXTRA_FP_REGS, exists for the v9 chip.  The name
 ;; is a bit of a misnomer as it covers all 64 fp regs.  The corresponding
@@ -6806,21 +6804,57 @@
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_expand "popcount<mode>2"
-  [(set (match_operand:SIDI 0 "register_operand" "")
-        (popcount:SIDI (match_operand:SIDI 1 "register_operand" "")))]
+(define_expand "popcountdi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+        (popcount:DI (match_operand:DI 1 "register_operand" "")))]
   "TARGET_POPC"
 {
   if (! TARGET_ARCH64)
     {
-      emit_insn (gen_popcount<mode>_v8plus (operands[0], operands[1]));
+      emit_insn (gen_popcountdi_v8plus (operands[0], operands[1]));
       DONE;
     }
 })
 
-(define_insn "*popcount<mode>_sp64"
-  [(set (match_operand:SIDI 0 "register_operand" "=r")
-        (popcount:SIDI (match_operand:SIDI 1 "register_operand" "r")))]
+(define_insn "*popcountdi_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (popcount:DI (match_operand:DI 1 "register_operand" "r")))]
+  "TARGET_POPC && TARGET_ARCH64"
+  "popc\t%1, %0")
+
+(define_insn "popcountdi_v8plus"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (popcount:DI (match_operand:DI 1 "register_operand" "r")))
+   (clobber (match_scratch:SI 2 "=&h"))]
+  "TARGET_POPC && ! TARGET_ARCH64"
+{
+  if (sparc_check_64 (operands[1], insn) <= 0)
+    output_asm_insn ("srl\t%L1, 0, %L1", operands);
+  return "sllx\t%H1, 32, %2\n\tor\t%L1, %2, %2\n\tpopc\t%2, %L0\n\tclr\t%H0";
+}
+  [(set_attr "type" "multi")
+   (set_attr "length" "5")])
+
+(define_expand "popcountsi2"
+  [(set (match_dup 2)
+        (zero_extend:DI (match_operand:SI 1 "register_operand" "")))
+   (set (match_operand:SI 0 "register_operand" "")
+        (truncate:SI (popcount:DI (match_dup 2))))]
+  "TARGET_POPC"
+{
+  if (! TARGET_ARCH64)
+    {
+      emit_insn (gen_popcountsi_v8plus (operands[0], operands[1]));
+      DONE;
+    }
+  else
+    operands[2] = gen_reg_rtx (DImode);
+})
+
+(define_insn "*popcountsi_sp64"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (truncate:SI
+          (popcount:DI (match_operand:DI 1 "register_operand" "r"))))]
   "TARGET_POPC && TARGET_ARCH64"
   "popc\t%1, %0")
 
@@ -6836,27 +6870,14 @@
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
-(define_insn "popcountdi_v8plus"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (popcount:DI (match_operand:DI 1 "register_operand" "r")))
-   (clobber (match_scratch:SI 2 "=&h"))]
-  "TARGET_POPC && ! TARGET_ARCH64"
-{
-  if (sparc_check_64 (operands[1], insn) <= 0)
-    output_asm_insn ("srl\t%L1, 0, %L1", operands);
-  return "sllx\t%H1, 32, %2\n\tor\t%L1, %2, %2\n\tpopc\t%2, %L0\n\tclr\t%H0";
-}
-  [(set_attr "type" "multi")
-   (set_attr "length" "5")])
-
-(define_expand "clz<mode>2"
-  [(set (match_operand:SIDI 0 "register_operand" "")
-        (clz:SIDI (match_operand:SIDI 1 "register_operand" "")))]
+(define_expand "clzdi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+        (clz:DI (match_operand:DI 1 "register_operand" "")))]
   "TARGET_VIS3"
 {
   if (! TARGET_ARCH64)
     {
-      emit_insn (gen_clz<mode>_v8plus (operands[0], operands[1]));
+      emit_insn (gen_clzdi_v8plus (operands[0], operands[1]));
       DONE;
     }
 })
@@ -6880,13 +6901,33 @@
   [(set_attr "type" "multi")
    (set_attr "length" "5")])
 
+(define_expand "clzsi2"
+  [(set (match_dup 2)
+        (zero_extend:DI (match_operand:SI 1 "register_operand" "")))
+   (set (match_dup 3)
+        (truncate:SI (clz:DI (match_dup 2))))
+   (set (match_operand:SI 0 "register_operand" "")
+        (minus:SI (match_dup 3) (const_int 32)))]
+  "TARGET_VIS3"
+{
+  if (! TARGET_ARCH64)
+    {
+      emit_insn (gen_clzsi_v8plus (operands[0], operands[1]));
+      DONE;
+    }
+  else
+    {
+      operands[2] = gen_reg_rtx (DImode);
+      operands[3] = gen_reg_rtx (SImode);
+    }
+})
+
 (define_insn "*clzsi_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (clz:SI (match_operand:SI 1 "register_operand" "r")))]
+        (truncate:SI
+          (clz:DI (match_operand:DI 1 "register_operand" "r"))))]
   "TARGET_VIS3 && TARGET_ARCH64"
-  "lzd\t%1, %0\n\tsub\t%0, 32, %0"
-  [(set_attr "type" "multi")
-   (set_attr "length" "2")])
+  "lzd\t%1, %0")
 
 (define_insn "clzsi_v8plus"
   [(set (match_operand:SI 0 "register_operand" "=r")
