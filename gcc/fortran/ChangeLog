@@ -1,5 +1,10 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c (gfc_conv_expr_descriptor): Simplify coarray
+	descriptor setup code. 
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* resolve.c (compare_spec_to_ref): Move coarray ref initialization
 	code...
 	(resolve_array_ref): ... here.
