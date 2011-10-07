@@ -1,5 +1,12 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c (gfc_walk_variable_expr): Remove scalar coarray
+	handling.  Don't reset array ref's corank and codimensions' types
+	in the full array ref case.  Update loop upper limit.
+	Remove DIMEN_THIS_IMAGE case.  Remove unnecessary conditions.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans.h (gfc_ss_info): Remove codimen field.
 	* trans-array.c (gfc_get_array_ss): Don't set codimen field.
 	(gfc_trans_create_temp_array): Don't set descriptor's cobounds.

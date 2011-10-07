@@ -7612,12 +7612,6 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 
       ar = &ref->u.ar;
 
-      if (ar->as->rank == 0 && ref->next != NULL)
-	{
-	  /* Scalar coarray.  */
-	  continue;
-	}
-
       switch (ar->type)
 	{
 	case AR_ELEMENT:
@@ -7632,7 +7626,6 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  /* Make sure array is the same as array(:,:), this way
 	     we don't need to special case all the time.  */
 	  ar->dimen = ar->as->rank;
-	  ar->codimen = 0;
 	  for (n = 0; n < ar->dimen; n++)
 	    {
 	      ar->dimen_type[n] = DIMEN_RANGE;
@@ -7640,14 +7633,6 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	      gcc_assert (ar->start[n] == NULL);
 	      gcc_assert (ar->end[n] == NULL);
 	      gcc_assert (ar->stride[n] == NULL);
-	    }
-	  for (n = ar->dimen; n < ar->dimen + ar->as->corank; n++)
-	    {
-	      newss->data.info.dim[n] = n;
-	      ar->dimen_type[n] = DIMEN_RANGE;
-
-	      gcc_assert (ar->start[n] == NULL);
-	      gcc_assert (ar->end[n] == NULL);
 	    }
 	  ss = newss;
 	  break;
@@ -7657,14 +7642,12 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  newss->data.info.ref = ref;
 
 	  /* We add SS chains for all the subscripts in the section.  */
-	  for (n = 0; n < ar->dimen + ar->codimen; n++)
+	  for (n = 0; n < ar->dimen; n++)
 	    {
 	      gfc_ss *indexss;
 
 	      switch (ar->dimen_type[n])
 		{
-	        case DIMEN_THIS_IMAGE:
-		  continue;
 		case DIMEN_ELEMENT:
 		  /* Add SS for elemental (scalar) subscripts.  */
 		  gcc_assert (ar->start[n]);
@@ -7677,8 +7660,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
                   /* We don't add anything for sections, just remember this
                      dimension for later.  */
 		  newss->data.info.dim[newss->data.info.dimen] = n;
-		  if (n < ar->dimen)
-		    newss->data.info.dimen++;
+		  newss->data.info.dimen++;
 		  break;
 
 		case DIMEN_VECTOR:
@@ -7689,8 +7671,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 		  indexss->loop_chain = gfc_ss_terminator;
 		  newss->data.info.subscript[n] = indexss;
 		  newss->data.info.dim[newss->data.info.dimen] = n;
-		  if (n < ar->dimen)
-		    newss->data.info.dimen++;
+		  newss->data.info.dimen++;
 		  break;
 
 		default:
