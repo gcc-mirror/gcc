@@ -1,5 +1,10 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* resolve.c (resolve_array_ref): Set array_ref's dimen field (and the
+	associated dimen_type) in the full array ref case.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-intrinsic.c (walk_coarray): New function.
 	(convert_element_to_coarray_ref): Move code to walk_coarray. Remove.
 	(trans-this_image, trans_image_index, conv_intrinsic_cobound):
