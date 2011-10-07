@@ -3175,14 +3175,46 @@ gfc_trans_scalarized_loop_boundary (gfc_loopinfo * loop, stmtblock_t * body)
 }
 
 
+/* Precalculate (either lower or upper) bound of an array section.
+     BLOCK: Block in which the (pre)calculation code will go.
+     BOUNDS[DIM]: Where the bound value will be stored once evaluated.
+     VALUES[DIM]: Specified bound (NULL <=> unspecified).
+     DESC: Array descriptor from which the bound will be picked if unspecified
+       (either lower or upper bound according to LBOUND).  */
+
+static void
+evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
+		tree desc, int dim, bool lbound)
+{
+  gfc_se se;
+  gfc_expr * input_val = values[dim];
+  tree *output = &bounds[dim];
+
+
+  if (input_val)
+    {
+      /* Specified section bound.  */
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr_type (&se, input_val, gfc_array_index_type);
+      gfc_add_block_to_block (block, &se.pre);
+      *output = se.expr;
+    }
+  else
+    {
+      /* No specific bound specified so use the bound of the array.  */
+      *output = lbound ? gfc_conv_array_lbound (desc, dim) :
+			 gfc_conv_array_ubound (desc, dim);
+    }
+  *output = gfc_evaluate_now (*output, block);
+}
+
+
 /* Calculate the lower bound of an array section.  */
 
 static void
 gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
 			      bool coarray, bool coarray_last)
 {
-  gfc_expr *start;
-  gfc_expr *end;
   gfc_expr *stride = NULL;
   tree desc;
   gfc_se se;
@@ -3207,48 +3239,18 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
   gcc_assert (ar->dimen_type[dim] == DIMEN_RANGE
 	      || ar->dimen_type[dim] == DIMEN_THIS_IMAGE);
   desc = info->descriptor;
-  start = ar->start[dim];
-  end = ar->end[dim];
   if (!coarray)
     stride = ar->stride[dim];
 
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
-  if (start)
-    {
-      /* Specified section start.  */
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr_type (&se, start, gfc_array_index_type);
-      gfc_add_block_to_block (&loop->pre, &se.pre);
-      info->start[dim] = se.expr;
-    }
-  else
-    {
-      /* No lower bound specified so use the bound of the array.  */
-      info->start[dim] = gfc_conv_array_lbound (desc, dim);
-    }
-  info->start[dim] = gfc_evaluate_now (info->start[dim], &loop->pre);
+  evaluate_bound (&loop->pre, info->start, ar->start, desc, dim, true);
 
   /* Similarly calculate the end.  Although this is not used in the
      scalarizer, it is needed when checking bounds and where the end
      is an expression with side-effects.  */
   if (!coarray_last)
-    {
-      if (end)
-	{
-	  /* Specified section start.  */
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr_type (&se, end, gfc_array_index_type);
-	  gfc_add_block_to_block (&loop->pre, &se.pre);
-	  info->end[dim] = se.expr;
-	}
-      else
-	{
-	  /* No upper bound specified so use the bound of the array.  */
-	  info->end[dim] = gfc_conv_array_ubound (desc, dim);
-	}
-      info->end[dim] = gfc_evaluate_now (info->end[dim], &loop->pre);
-    }
+    evaluate_bound (&loop->pre, info->end, ar->end, desc, dim, false);
 
   /* Calculate the stride.  */
   if (!coarray && stride == NULL)
