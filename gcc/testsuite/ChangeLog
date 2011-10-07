@@ -1,3 +1,15 @@
+2011-10-06  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* gcc.dg/pr47276.c (ASMNAME, ASMNAME2, STRING): Define.
+	(__EI___vsyslog_chk, __EI_syslog, __EI_vsyslog): Use ASMNAME.  
+	(syslog, vsyslog, __vsyslog_chk): Likewise.
+
+	* gcc.dg/lto/20081222_1.c (ASMNAME, ASMNAME2, STRING): Define.
+	(x, EXT_x): Use ASMNAME.
+
+	* gcc.dg/torture/pr48044.c (ASMNAME, ASMNAME2, STRING): Define.
+	(a, c): Use ASMNAME.
+
 2011-10-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/50527
