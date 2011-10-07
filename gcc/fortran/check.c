@@ -203,42 +203,10 @@ double_check (gfc_expr *d, int n)
 }
 
 
-/* Check whether an expression is a coarray (without array designator).  */
-
-static bool
-is_coarray (gfc_expr *e)
-{
-  bool coarray = false;
-  gfc_ref *ref;
-
-  if (e->expr_type != EXPR_VARIABLE)
-    return false;
-
-  coarray = e->symtree->n.sym->attr.codimension;
-
-  for (ref = e->ref; ref; ref = ref->next)
-    {
-      if (ref->type == REF_COMPONENT)
-	coarray = ref->u.c.component->attr.codimension;
-      else if (ref->type != REF_ARRAY || ref->u.ar.dimen != 0)
-	coarray = false;
-      else if (ref->type == REF_ARRAY && ref->u.ar.codimen != 0) 
-	{
-	  int n;
-	  for (n = 0; n < ref->u.ar.codimen; n++)
-	    if (ref->u.ar.dimen_type[n] != DIMEN_THIS_IMAGE)
-	      coarray = false;
-	}
-    }
-
-  return coarray;
-}
-
-
 static gfc_try
 coarray_check (gfc_expr *e, int n)
 {
-  if (!is_coarray (e))
+  if (!gfc_is_coarray (e))
     {
       gfc_error ("Expected coarray variable as '%s' argument to the %s "
                  "intrinsic at %L", gfc_current_intrinsic_arg[n]->name,
