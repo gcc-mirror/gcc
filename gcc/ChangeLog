@@ -1,3 +1,10 @@
+2011-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_tls_call_insn): Remove assertion.
+	Load GOT pointer for non-pic builds.
+	(s390_load_got): Replace pic_offset_table_rtx with hardcoded r12.
+	(s390_emit_call): Likewise.
+
 2011-10-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/50527
