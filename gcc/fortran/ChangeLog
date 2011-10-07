@@ -1,5 +1,10 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* expr.c (gfc_get_corank): Return 0 if input expression is not a
+	coarray.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.c (gfc_conv_expr_descriptor): Simplify coarray
 	descriptor setup code. 
 

@@ -4301,13 +4301,19 @@ gfc_get_corank (gfc_expr *e)
 {
   int corank;
   gfc_ref *ref;
+
+  if (!gfc_is_coarray (e))
+    return 0;
+
   corank = e->symtree->n.sym->as ? e->symtree->n.sym->as->corank : 0;
+
   for (ref = e->ref; ref; ref = ref->next)
     {
       if (ref->type == REF_ARRAY)
 	corank = ref->u.ar.as->corank;
       gcc_assert (ref->type != REF_SUBSTRING);
     }
+
   return corank;
 }
 
