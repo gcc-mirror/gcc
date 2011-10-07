@@ -1,5 +1,11 @@
 2011-10-07  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/predicates.md (avx2_pblendw_operand): New.
+	* config/i386/sse.md (sse4_1_pblendw): Un-macroize.
+	(avx2_pblendw, *avx2_pblendw): New expander and insn.
+
+2011-10-07  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (bdesc_args): Update code for
 	__builtin_ia32_palignr256.  Change type of __builtin_ia32_pslldqi256,
 	and __builtin_ia32_psrldqi256 to V4DI_FTYPE_V4DI_INT_CONVERT.

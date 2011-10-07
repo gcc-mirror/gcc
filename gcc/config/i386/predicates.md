@@ -1210,3 +1210,12 @@
       return false;
   return true;
 })
+
+;; Return true if OP is a proper third operand to vpblendw256.
+(define_predicate "avx2_pblendw_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT val = INTVAL (op);
+  HOST_WIDE_INT low = val & 0xff;
+  return val == (low << 8) | low;
+})

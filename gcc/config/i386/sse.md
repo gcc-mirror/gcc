@@ -9417,11 +9417,11 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<sse4_1_avx2>_pblendw"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")
-	(vec_merge:VI2_AVX2
-	  (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,xm")
-	  (match_operand:VI2_AVX2 1 "register_operand" "0,x")
+(define_insn "sse4_1_pblendw"
+  [(set (match_operand:V8HI 0 "register_operand" "=x,x")
+	(vec_merge:V8HI
+	  (match_operand:V8HI 2 "nonimmediate_operand" "xm,xm")
+	  (match_operand:V8HI 1 "register_operand" "0,x")
 	  (match_operand:SI 3 "const_0_to_255_operand" "n,n")))]
   "TARGET_SSE4_1"
   "@
@@ -9432,7 +9432,37 @@
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set_attr "mode" "TI")])
+
+;; The builtin uses an 8-bit immediate.  Expand that.
+(define_expand "avx2_pblendw"
+  [(set (match_operand:V16HI 0 "register_operand" "")
+	(vec_merge:V16HI
+	  (match_operand:V16HI 2 "nonimmediate_operand" "")
+	  (match_operand:V16HI 1 "register_operand" "")
+	  (match_operand:SI 3 "const_0_to_255_operand" "")))]
+  "TARGET_AVX2"
+{
+  HOST_WIDE_INT val = INTVAL (operands[3]) & 0xff;
+  operands[3] = GEN_INT (val << 8 | val);
+})
+
+(define_insn "*avx2_pblendw"
+  [(set (match_operand:V16HI 0 "register_operand" "=x")
+	(vec_merge:V16HI
+	  (match_operand:V16HI 2 "nonimmediate_operand" "xm")
+	  (match_operand:V16HI 1 "register_operand" "x")
+	  (match_operand:SI 3 "avx2_pblendw_operand" "n")))]
+  "TARGET_SSE4_1"
+{
+  operands[3] = GEN_INT (INTVAL (operands[3]) & 0xff);
+  return "vpblendw\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+}
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "OI")])
 
 (define_insn "avx2_pblendd<mode>"
   [(set (match_operand:VI4_AVX2 0 "register_operand" "=x")
