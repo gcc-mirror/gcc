@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { vis3 } } } */
 /* { dg-options "-mcpu=niagara3 -mvis" } */
 typedef int __v2si __attribute__((vector_size(8)));
 typedef int __v1si __attribute__((vector_size(4)));

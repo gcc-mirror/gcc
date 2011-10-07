@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { vis3 } } } */
 /* { dg-options "-mcpu=niagara3 -mvis" } */
 typedef unsigned char vec8 __attribute__((vector_size(8)));
 

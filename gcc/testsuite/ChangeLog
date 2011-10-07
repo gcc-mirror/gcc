@@ -1,3 +1,17 @@
+2011-10-07  David S. Miller  <davem@davemloft.net>
+
+	PR 50655
+	* gcc.target/sparc/sparc.exp: Add vis3 target test.
+	* gcc.target/sparc/cmask.c: Use it.
+	* gcc.target/sparc/fhalve.c: Likewise.
+	* gcc.target/sparc/fnegop.c: Likewise.
+	* gcc.target/sparc/fpadds.c: Likewise.
+	* gcc.target/sparc/fshift.c: Likewise.
+	* gcc.target/sparc/fucmp.c: Likewise.
+	* gcc.target/sparc/lzd.c: Likewise.
+	* gcc.target/sparc/vis3misc.c: Likewise.
+	* gcc.target/sparc/xmul.c: Likewise.
+
 2011-10-07  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/avx256-unaligned-load-2.c: Tweek vinsert pattern
@@ -17,7 +31,7 @@
 2011-10-06  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* gcc.dg/pr47276.c (ASMNAME, ASMNAME2, STRING): Define.
-	(__EI___vsyslog_chk, __EI_syslog, __EI_vsyslog): Use ASMNAME.  
+	(__EI___vsyslog_chk, __EI_syslog, __EI_vsyslog): Use ASMNAME.
 	(syslog, vsyslog, __vsyslog_chk): Likewise.
 
 	* gcc.dg/lto/20081222_1.c (ASMNAME, ASMNAME2, STRING): Define.
