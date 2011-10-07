@@ -1,5 +1,9 @@
 2011-10-07  Ian Lance Taylor  <iant@google.com>
 
+	* generic-morestack-thread.c: #include <errno.h>.
+
+2011-10-07  Ian Lance Taylor  <iant@google.com>
+
 	PR target/46093
 	* generic-morestack.c (__generic_morestack): Make sure the segment
 	is large enough for both the stack frame and the copied
