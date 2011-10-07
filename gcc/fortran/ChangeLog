@@ -1,5 +1,10 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c (gfc_conv_expr_descriptor): Use codim instead of
+	loop.codimen as argument to gfc_get_array_type_bounds.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.h (struct gfc_se): New flag want_coarray.
 	* trans-intrinsic.c (trans_this_image, trans_image_index,
 	conv_intrinsic_cobound): Set want_coarray.
