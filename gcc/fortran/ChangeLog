@@ -1,5 +1,10 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c (gfc_conv_expr_descriptor): Add out-of-the-scalarizer
+	cobounds evaluation.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.c (gfc_conv_ss_startstride): Support zero rank loop.
 
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
