@@ -1269,8 +1269,12 @@ vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
       || TREE_CODE (else_clause) != INTEGER_CST)
     return NULL;
 
-  if (!vect_is_simple_cond (cond_expr, loop_vinfo, &comp_vectype)
-      || !comp_vectype)
+  if (!COMPARISON_CLASS_P (cond_expr))
+    return NULL;
+
+  comp_vectype
+    = get_vectype_for_scalar_type (TREE_TYPE (TREE_OPERAND (cond_expr, 0)));
+  if (comp_vectype == NULL_TREE)
     return NULL;
 
   type = gimple_expr_type (last_stmt);

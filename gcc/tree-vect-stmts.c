@@ -4698,7 +4698,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
    Returns whether a COND can be vectorized.  Checks whether
    condition operands are supportable using vec_is_simple_use.  */
 
-bool
+static bool
 vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo, tree *comp_vectype)
 {
   tree lhs, rhs;

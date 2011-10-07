@@ -1,3 +1,8 @@
+2011-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50650
+	* gcc.c-torture/compile/pr50650.c: New test.
+
 2011-10-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR tree-optimization/50575
