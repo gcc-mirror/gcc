@@ -3302,7 +3302,7 @@ case "${target}" in
 			| k8 | k8-sse3 | athlon64 | athlon64-sse3 | opteron \
 			| opteron-sse3 | athlon-fx | bdver2 | bdver1 | btver1 \
 			| amdfam10 | barcelona | nocona | core2 | corei7 \
-			| corei7-avx | atom)
+			| corei7-avx | core-avx-i | core-avx2 | atom)
 				# OK
 				;;
 			*)

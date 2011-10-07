@@ -1,5 +1,9 @@
 2011-10-07  Richard Henderson  <rth@redhat.com>
 
+	* config.gcc (x86_64-*): Add core-avx-i, core-avx2 for with_cpu.
+
+2011-10-07  Richard Henderson  <rth@redhat.com>
+
 	PR 49752
 	* fold-const.c (fold_checksum_tree): Remove out-of-date assert.
 
