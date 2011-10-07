@@ -949,10 +949,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    if ((TREE_CODE (gnu_expr) == COMPONENT_REF
 		 && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
 		/* Strip useless conversions around the object.  */
-		|| (TREE_CODE (gnu_expr) == NOP_EXPR
-		    && gnat_types_compatible_p
-		       (TREE_TYPE (gnu_expr),
-			TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))))
+		|| gnat_useless_type_conversion (gnu_expr))
 	      {
 		gnu_expr = TREE_OPERAND (gnu_expr, 0);
 		gnu_type = TREE_TYPE (gnu_expr);

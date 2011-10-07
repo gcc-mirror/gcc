@@ -1958,7 +1958,7 @@ begin_subprog_body (tree subprog_decl)
   make_decl_rtl (subprog_decl);
 }
 
-/* Finish the definition of the current subprogram BODY and finalize it.  */
+/* Finish translating the current subprogram and set its BODY.  */
 
 void
 end_subprog_body (tree body)
@@ -1983,7 +1983,13 @@ end_subprog_body (tree body)
   DECL_SAVED_TREE (fndecl) = body;
 
   current_function_decl = DECL_CONTEXT (fndecl);
+}
 
+/* Wrap up compilation of SUBPROG_DECL, a subprogram body.  */
+
+void
+rest_of_subprog_body_compilation (tree subprog_decl)
+{
   /* We cannot track the location of errors past this point.  */
   error_gnat_node = Empty;
 
@@ -1992,15 +1998,15 @@ end_subprog_body (tree body)
     return;
 
   /* Dump functions before gimplification.  */
-  dump_function (TDI_original, fndecl);
+  dump_function (TDI_original, subprog_decl);
 
   /* ??? This special handling of nested functions is probably obsolete.  */
-  if (!DECL_CONTEXT (fndecl))
-    cgraph_finalize_function (fndecl, false);
+  if (!DECL_CONTEXT (subprog_decl))
+    cgraph_finalize_function (subprog_decl, false);
   else
     /* Register this function with cgraph just far enough to get it
        added to our parent's nested function list.  */
-    (void) cgraph_get_create_node (fndecl);
+    (void) cgraph_get_create_node (subprog_decl);
 }
 
 tree
@@ -2192,6 +2198,20 @@ gnat_types_compatible_p (tree t1, tree t2)
     return 1;
 
   return 0;
+}
+
+/* Return true if EXPR is a useless type conversion.  */
+
+bool
+gnat_useless_type_conversion (tree expr)
+{
+  if (CONVERT_EXPR_P (expr)
+      || TREE_CODE (expr) == VIEW_CONVERT_EXPR
+      || TREE_CODE (expr) == NON_LVALUE_EXPR)
+    return gnat_types_compatible_p (TREE_TYPE (expr),
+				    TREE_TYPE (TREE_OPERAND (expr, 0)));
+
+  return false;
 }
 
 /* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */

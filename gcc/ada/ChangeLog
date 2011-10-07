@@ -1,3 +1,33 @@
+2011-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (gnat_useless_type_conversion): Declare.
+	(rest_of_subprog_body_compilation): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: For renaming,
+	test for useless conversions by means of gnat_useless_type_conversion.
+	* gcc-interface/trans.c: Include bitmap.h and cgraph.h.
+	(language_function): Add named_ret_val and other_ret_val.
+	(f_named_ret_val): New macro.
+	(f_other_ret_val): Likewise.
+	(gigi): Call rest_of_subprog_body_compilation.
+	(struct nrv_data): New structure.
+	(is_nrv_p): New predicate.
+	(prune_nrv_r): New helper function.
+	(prune_nrv_in_block): New function.
+	(finalize_nrv_r): New helper function.
+	(finalize_nrv): New function.
+	(return_value_ok_for_nrv_p): New predicate.
+	(build_return_expr): If optimization is enabled, record candidates for
+	the Named Return Value optimization.
+	(build_function_stub): Call rest_of_subprog_body_compilation.
+	(Subprogram_Body_to_gnu): If optimization is enabled and there are
+	candidates, finalize the Named Return Value optimization.
+	Call rest_of_subprog_body_compilation.
+	(call_to_gnu): At the end, if a return value is needed, simplify the
+	result before wrapping it up in a COMPOUND_EXPR.
+	* gcc-interface/utils.c (end_subprog_body): Split into...
+	(rest_of_subprog_body_compilation): ...this.  New function.
+	(gnat_useless_type_conversion): Likewise.
+
 2011-10-06  Thomas Quinot  <quinot@adacore.com>
 
 	* einfo.ads, exp_attr.adb, exp_ch3.adb, exp_ch4.adb, exp_ch7.adb,

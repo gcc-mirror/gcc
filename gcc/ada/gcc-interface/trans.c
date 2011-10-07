@@ -34,6 +34,8 @@
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
 #include "gimple.h"
+#include "bitmap.h"
+#include "cgraph.h"
 
 #include "ada.h"
 #include "adadecode.h"
@@ -125,10 +127,18 @@ DEF_VEC_ALLOC_P(parm_attr,gc);
 
 struct GTY(()) language_function {
   VEC(parm_attr,gc) *parm_attr_cache;
+  bitmap named_ret_val;
+  VEC(tree,gc) *other_ret_val;
 };
 
 #define f_parm_attr_cache \
   DECL_STRUCT_FUNCTION (current_function_decl)->language->parm_attr_cache
+
+#define f_named_ret_val \
+  DECL_STRUCT_FUNCTION (current_function_decl)->language->named_ret_val
+
+#define f_other_ret_val \
+  DECL_STRUCT_FUNCTION (current_function_decl)->language->other_ret_val
 
 /* A structure used to gather together information about a statement group.
    We use this to gather related statements, for example the "then" part
@@ -626,6 +636,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 	{
 	  begin_subprog_body (info->elab_proc);
 	  end_subprog_body (gnu_body);
+	  rest_of_subprog_body_compilation (info->elab_proc);
 	}
     }
 
@@ -2502,9 +2513,275 @@ establish_gnat_vms_condition_handler (void)
   add_stmt (establish_stmt);
 }
 
-/* Similar, but for RETURN_EXPR.  If RET_VAL is non-null, build a RETURN_EXPR
-   around the assignment of RET_VAL to RET_OBJ.  Otherwise just build a bare
-   RETURN_EXPR around RESULT_OBJ, which may be null in this case.  */
+/* This page implements a form of Named Return Value optimization modelled
+   on the C++ optimization of the same name.  The main difference is that
+   we disregard any semantical considerations when applying it here, the
+   counterpart being that we don't try to apply it to semantically loaded
+   return types, i.e. types with the TREE_ADDRESSABLE flag set.
+
+   We consider a function body of the following GENERIC form:
+
+     return_type R1;
+       [...]
+     RETURN_EXPR [<retval> = ...]
+       [...]
+     RETURN_EXPR [<retval> = R1]
+       [...]
+     return_type Ri;
+       [...]
+     RETURN_EXPR [<retval> = ...]
+       [...]
+     RETURN_EXPR [<retval> = Ri]
+       [...]
+
+   and we try to fulfill a simple criterion that would make it possible to
+   replace one or several Ri variables with the RESULT_DECL of the function.
+
+   The first observation is that RETURN_EXPRs that don't directly reference
+   any of the Ri variables on the RHS of their assignment are transparent wrt
+   the optimization.  This is because the Ri variables aren't addressable so
+   any transformation applied to them doesn't affect the RHS; moreover, the
+   assignment writes the full <retval> object so existing values are entirely
+   discarded.
+
+   This property can be extended to some forms of RETURN_EXPRs that reference
+   the Ri variables, for example CONSTRUCTORs, but isn't true in the general
+   case, in particular when function calls are involved.
+
+   Therefore the algorithm is as follows:
+
+     1. Collect the list of candidates for a Named Return Value (Ri variables
+	on the RHS of assignments of RETURN_EXPRs) as well as the list of the
+	other expressions on the RHS of such assignments.
+
+     2. Prune the members of the first list (candidates) that are referenced
+	by a member of the second list (expressions).
+
+     3. Extract a set of candidates with non-overlapping live ranges from the
+	first list.  These are the Named Return Values.
+
+     4. Adjust the relevant RETURN_EXPRs and replace the occurrences of the
+	Named Return Values in the function with the RESULT_DECL.  */
+
+struct nrv_data
+{
+  bitmap nrv;
+  tree result;
+  struct pointer_set_t *visited;
+};
+
+/* Return true if T is a Named Return Value.  */
+
+static inline bool
+is_nrv_p (bitmap nrv, tree t)
+{
+  return TREE_CODE (t) == VAR_DECL && bitmap_bit_p (nrv, DECL_UID (t));
+}
+
+/* Helper function for walk_tree, used by finalize_nrv below.  */
+
+static tree
+prune_nrv_r (tree *tp, int *walk_subtrees, void *data)
+{
+  struct nrv_data *dp = (struct nrv_data *)data;
+  tree t = *tp;
+
+  /* No need to walk into types or decls.  */
+  if (IS_TYPE_OR_DECL_P (t))
+    *walk_subtrees = 0;
+
+  if (is_nrv_p (dp->nrv, t))
+    bitmap_clear_bit (dp->nrv, DECL_UID (t));
+
+  return NULL_TREE;
+}
+
+/* Prune Named Return Values in BLOCK and return true if there is still a
+   Named Return Value in BLOCK or one of its sub-blocks.  */
+
+static bool
+prune_nrv_in_block (bitmap nrv, tree block)
+{
+  bool has_nrv = false;
+  tree t;
+
+  /* First recurse on the sub-blocks.  */
+  for (t = BLOCK_SUBBLOCKS (block); t; t = BLOCK_CHAIN (t))
+    has_nrv |= prune_nrv_in_block (nrv, t);
+
+  /* Then make sure to keep at most one NRV per block.  */
+  for (t = BLOCK_VARS (block); t; t = DECL_CHAIN (t))
+    if (is_nrv_p (nrv, t))
+      {
+	if (has_nrv)
+	  bitmap_clear_bit (nrv, DECL_UID (t));
+	else
+	  has_nrv = true;
+      }
+
+  return has_nrv;
+}
+
+/* Helper function for walk_tree, used by finalize_nrv below.  */
+
+static tree
+finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
+{
+  struct nrv_data *dp = (struct nrv_data *)data;
+  tree t = *tp;
+
+  /* No need to walk into types.  */
+  if (TYPE_P (t))
+    *walk_subtrees = 0;
+
+  /* Change RETURN_EXPRs of NRVs to just refer to the RESULT_DECL; this is a
+     nop, but differs from using NULL_TREE in that it indicates that we care
+     about the value of the RESULT_DECL.  */
+  else if (TREE_CODE (t) == RETURN_EXPR
+	   && TREE_CODE (TREE_OPERAND (t, 0)) == MODIFY_EXPR)
+    {
+      tree ret_val = TREE_OPERAND (TREE_OPERAND (t, 0), 1), init_expr;
+
+      /* If this is the temporary created for a return value with variable
+	 size in call_to_gnu, we replace the RHS with the init expression.  */
+      if (TREE_CODE (ret_val) == COMPOUND_EXPR
+	  && TREE_CODE (TREE_OPERAND (ret_val, 0)) == INIT_EXPR
+	  && TREE_OPERAND (TREE_OPERAND (ret_val, 0), 0)
+	     == TREE_OPERAND (ret_val, 1))
+	{
+	  init_expr = TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1);
+	  ret_val = TREE_OPERAND (ret_val, 1);
+	}
+      else
+	init_expr = NULL_TREE;
+
+      /* Strip useless conversions around the return value.  */
+      if (gnat_useless_type_conversion (ret_val))
+	ret_val = TREE_OPERAND (ret_val, 0);
+
+      if (is_nrv_p (dp->nrv, ret_val))
+	{
+	  if (init_expr)
+	    TREE_OPERAND (TREE_OPERAND (t, 0), 1) = init_expr;
+	  else
+	    TREE_OPERAND (t, 0) = dp->result;
+	}
+    }
+
+  /* Replace the DECL_EXPR of NRVs with an initialization of the RESULT_DECL,
+     if needed.  */
+  else if (TREE_CODE (t) == DECL_EXPR
+	   && is_nrv_p (dp->nrv, DECL_EXPR_DECL (t)))
+    {
+      tree var = DECL_EXPR_DECL (t), init;
+
+      if (DECL_INITIAL (var))
+	{
+	  init = build_binary_op (INIT_EXPR, NULL_TREE, dp->result,
+				  DECL_INITIAL (var));
+	  SET_EXPR_LOCATION (init, EXPR_LOCATION (t));
+	  DECL_INITIAL (var) = NULL_TREE;
+	}
+      else
+	init = build_empty_stmt (EXPR_LOCATION (t));
+      *tp = init;
+
+      /* Identify the NRV to the RESULT_DECL for debugging purposes.  */
+      SET_DECL_VALUE_EXPR (var, dp->result);
+      DECL_HAS_VALUE_EXPR_P (var) = 1;
+      /* ??? Kludge to avoid an assertion failure during inlining.  */
+      DECL_SIZE (var) = bitsize_unit_node;
+      DECL_SIZE_UNIT (var) = size_one_node;
+    }
+
+  /* And replace all uses of NRVs with the RESULT_DECL.  */
+  else if (is_nrv_p (dp->nrv, t))
+    *tp = convert (TREE_TYPE (t), dp->result);
+
+  /* Avoid walking into the same tree more than once.  Unfortunately, we
+     can't just use walk_tree_without_duplicates because it would only call
+     us for the first occurrence of NRVs in the function body.  */
+  if (pointer_set_insert (dp->visited, *tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
+/* Finalize the Named Return Value optimization for FNDECL.  The NRV bitmap
+   contains the candidates for Named Return Value and OTHER is a list of
+   the other return values.  */
+
+static void
+finalize_nrv (tree fndecl, bitmap nrv, VEC(tree,gc) *other)
+{
+  struct cgraph_node *node;
+  struct nrv_data data;
+  unsigned int i;
+  tree iter;
+
+  /* We shouldn't be applying the optimization to return types that we aren't
+     allowed to manipulate freely.  */
+  gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (TREE_TYPE (fndecl))));
+
+  /* Prune the candidates that are referenced by other return values.  */
+  data.nrv = nrv;
+  data.result = NULL_TREE;
+  data.visited = NULL;
+  for (i = 0; VEC_iterate(tree, other, i, iter); i++)
+    walk_tree_without_duplicates (&iter, prune_nrv_r, &data);
+  if (bitmap_empty_p (nrv))
+    return;
+
+  /* Prune also the candidates that are referenced by nested functions.  */
+  node = cgraph_get_create_node (fndecl);
+  for (node = node->nested; node; node = node->next_nested)
+    walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl), prune_nrv_r,
+				  &data);
+  if (bitmap_empty_p (nrv))
+    return;
+
+  /* Extract a set of NRVs with non-overlapping live ranges.  */
+  if (!prune_nrv_in_block (nrv, DECL_INITIAL (fndecl)))
+    return;
+
+  /* Adjust the relevant RETURN_EXPRs and replace the occurrences of NRVs.  */
+  data.nrv = nrv;
+  data.result = DECL_RESULT (fndecl);
+  data.visited = pointer_set_create ();
+  walk_tree (&DECL_SAVED_TREE (fndecl), finalize_nrv_r, &data, NULL);
+  pointer_set_destroy (data.visited);
+}
+
+/* Return true if RET_VAL can be used as a Named Return Value for the
+   anonymous return object RET_OBJ.  */
+
+static bool
+return_value_ok_for_nrv_p (tree ret_obj, tree ret_val)
+{
+  if (TREE_CODE (ret_val) != VAR_DECL)
+    return false;
+
+  if (TREE_THIS_VOLATILE (ret_val))
+    return false;
+
+  if (DECL_CONTEXT (ret_val) != current_function_decl)
+    return false;
+
+  if (TREE_STATIC (ret_val))
+    return false;
+
+  if (TREE_ADDRESSABLE (ret_val))
+    return false;
+
+  if (DECL_ALIGN (ret_val) > DECL_ALIGN (ret_obj))
+    return false;
+
+  return true;
+}
+
+/* Build a RETURN_EXPR.  If RET_VAL is non-null, build a RETURN_EXPR around
+   the assignment of RET_VAL to RET_OBJ.  Otherwise build a bare RETURN_EXPR
+   around RESULT_OBJ, which may be null in this case.  */
 
 static tree
 build_return_expr (tree ret_obj, tree ret_val)
@@ -2533,6 +2810,41 @@ build_return_expr (tree ret_obj, tree ret_val)
 	ret_val = convert (operation_type, ret_val);
 
       result_expr = build2 (MODIFY_EXPR, void_type_node, ret_obj, ret_val);
+
+      /* If the function returns an aggregate type, find out whether this is
+	 a candidate for Named Return Value.  If so, record it.  Otherwise,
+	 if this is an expression of some kind, record it elsewhere.  */
+      if (optimize
+	  && AGGREGATE_TYPE_P (operation_type)
+	  && !TYPE_IS_FAT_POINTER_P (operation_type)
+	  && aggregate_value_p (operation_type, current_function_decl))
+	{
+	  /* Recognize the temporary created for a return value with variable
+	     size in call_to_gnu.  We want to eliminate it if possible.  */
+	  if (TREE_CODE (ret_val) == COMPOUND_EXPR
+	      && TREE_CODE (TREE_OPERAND (ret_val, 0)) == INIT_EXPR
+	      && TREE_OPERAND (TREE_OPERAND (ret_val, 0), 0)
+		 == TREE_OPERAND (ret_val, 1))
+	    ret_val = TREE_OPERAND (ret_val, 1);
+
+	  /* Strip useless conversions around the return value.  */
+	  if (gnat_useless_type_conversion (ret_val))
+	    ret_val = TREE_OPERAND (ret_val, 0);
+
+	  /* Now apply the test to the return value.  */
+	  if (return_value_ok_for_nrv_p (ret_obj, ret_val))
+	    {
+	      if (!f_named_ret_val)
+		f_named_ret_val = BITMAP_GGC_ALLOC ();
+	      bitmap_set_bit (f_named_ret_val, DECL_UID (ret_val));
+	    }
+
+	  /* Note that we need not care about CONSTRUCTORs here, as they are
+	     totally transparent given the read-compose-write semantics of
+	     assignments from CONSTRUCTORs.  */
+	  else if (EXPR_P (ret_val))
+	    VEC_safe_push (tree, gc, f_other_ret_val, ret_val);
+	}
     }
   else
     result_expr = ret_obj;
@@ -2601,6 +2913,7 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
 
   gnat_poplevel ();
   end_subprog_body (end_stmt_group ());
+  rest_of_subprog_body_compilation (gnu_stub_decl);
 }
 
 /* Subroutine of gnat_to_gnu to process gnat_node, an N_Subprogram_Body.  We
@@ -2854,6 +3167,18 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   if (gnu_return_var_elmt)
     TREE_VALUE (gnu_return_var_elmt) = void_type_node;
+
+  /* If the function returns an aggregate type and we have candidates for
+     a Named Return Value, finalize the optimization.  */
+  if (optimize && gnu_subprog_language->named_ret_val)
+    {
+      finalize_nrv (gnu_subprog_decl, gnu_subprog_language->named_ret_val,
+		    gnu_subprog_language->other_ret_val);
+      gnu_subprog_language->named_ret_val = NULL;
+      gnu_subprog_language->other_ret_val = NULL;
+    }
+
+  rest_of_subprog_body_compilation (gnu_subprog_decl);
 
   /* If there is a stub associated with the function, build it now.  */
   if (DECL_FUNCTION_STUB (gnu_subprog_decl))
@@ -3518,10 +3843,16 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   else
     return gnu_call;
 
-  /* If we nevertheless need a value, make a COMPOUND_EXPR to return it.  */
+  /* If we nevertheless need a value, make a COMPOUND_EXPR to return it.
+     But first simplify if we have only one statement in the list.  */
   if (returning_value)
-    gnu_result
-      = build_compound_expr (TREE_TYPE (gnu_call), gnu_result, gnu_call);
+    {
+      tree first = expr_first (gnu_result), last = expr_last (gnu_result);
+      if (first == last)
+	gnu_result = first;
+      gnu_result
+	= build_compound_expr (TREE_TYPE (gnu_call), gnu_result, gnu_call);
+    }
 
   return gnu_result;
 }
