@@ -129,11 +129,12 @@
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "memory_operand")))
 
+;; This doesn't have to do much because the constant is already checked
+;; in the shift_operator predicate.
 (define_predicate "shift_amount_operand"
   (ior (and (match_test "TARGET_ARM")
 	    (match_operand 0 "s_register_operand"))
-       (and (match_code "const_int")
-	    (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) < 32"))))
+       (match_operand 0 "const_int_operand")))
 
 (define_predicate "arm_add_operand"
   (ior (match_operand 0 "arm_rhs_operand")
@@ -219,13 +220,20 @@
        (match_test "mode == GET_MODE (op)")))
 
 ;; True for shift operators.
+;; Notes:
+;;  * mult is only permitted with a constant shift amount
+;;  * patterns that permit register shift amounts only in ARM mode use
+;;    shift_amount_operand, patterns that always allow registers do not,
+;;    so we don't have to worry about that sort of thing here.
 (define_special_predicate "shift_operator"
   (and (ior (ior (and (match_code "mult")
 		      (match_test "power_of_two_operand (XEXP (op, 1), mode)"))
 		 (and (match_code "rotate")
 		      (match_test "GET_CODE (XEXP (op, 1)) == CONST_INT
 				   && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) < 32")))
-	    (match_code "ashift,ashiftrt,lshiftrt,rotatert"))
+	    (and (match_code "ashift,ashiftrt,lshiftrt,rotatert")
+		 (match_test "GET_CODE (XEXP (op, 1)) != CONST_INT
+			      || ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) < 32")))
        (match_test "mode == GET_MODE (op)")))
 
 ;; True for shift operators which can be used with saturation instructions.
