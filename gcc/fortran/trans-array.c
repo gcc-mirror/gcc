@@ -3861,7 +3861,6 @@ temporary:
 	base_type = gfc_get_element_type (base_type);
       loop->temp_ss = gfc_get_temp_ss (base_type, dest->string_length,
 				       loop->dimen);
-      loop->temp_ss->data.temp.codimen = loop->codimen;
       gfc_add_ss_to_loop (loop, loop->temp_ss);
     }
   else
@@ -5920,7 +5919,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       se->string_length = loop.temp_ss->string_length;
       gcc_assert (loop.temp_ss->data.temp.dimen == loop.dimen);
-      loop.temp_ss->data.temp.codimen = loop.codimen;
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
 
