@@ -3635,8 +3635,10 @@ gimplify_parameters (void)
 		  DECL_IGNORED_P (addr) = 0;
 		  local = build_fold_indirect_ref (addr);
 
-		  t = built_in_decls[BUILT_IN_ALLOCA];
-		  t = build_call_expr (t, 1, DECL_SIZE_UNIT (parm));
+		  t = built_in_decls[BUILT_IN_ALLOCA_WITH_ALIGN];
+		  t = build_call_expr (t, 1, DECL_SIZE_UNIT (parm),
+				       size_int (DECL_ALIGN (parm)));
+
 		  /* The call has been built for a variable-sized object.  */
 		  CALL_ALLOCA_FOR_VAR_P (t) = 1;
 		  t = fold_convert (ptr_type, t);

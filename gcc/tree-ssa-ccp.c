@@ -1492,6 +1492,7 @@ evaluate_stmt (gimple stmt)
   tree simplified = NULL_TREE;
   ccp_lattice_t likelyvalue = likely_value (stmt);
   bool is_constant = false;
+  unsigned int align;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1632,10 +1633,14 @@ evaluate_stmt (gimple stmt)
 	      break;
 
 	    case BUILT_IN_ALLOCA:
+	    case BUILT_IN_ALLOCA_WITH_ALIGN:
+	      align = (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA_WITH_ALIGN
+		       ? TREE_INT_CST_LOW (gimple_call_arg (stmt, 1))
+		       : BIGGEST_ALIGNMENT);
 	      val.lattice_val = CONSTANT;
 	      val.value = build_int_cst (TREE_TYPE (gimple_get_lhs (stmt)), 0);
 	      val.mask = shwi_to_double_int
-		  	   (~(((HOST_WIDE_INT) BIGGEST_ALIGNMENT)
+		  	   (~(((HOST_WIDE_INT) align)
 			      / BITS_PER_UNIT - 1));
 	      break;
 
@@ -1685,15 +1690,15 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
-/* Detects a vla-related alloca with a constant argument.  Declares fixed-size
-   array and return the address, if found, otherwise returns NULL_TREE.  */
+/* Detects a __builtin_alloca_with_align with constant size argument.  Declares
+   fixed-size array and returns the address, if found, otherwise returns
+   NULL_TREE.  */
 
 static tree
-fold_builtin_alloca_for_var (gimple stmt)
+fold_builtin_alloca_with_align (gimple stmt)
 {
   unsigned HOST_WIDE_INT size, threshold, n_elem;
   tree lhs, arg, block, var, elem_type, array_type;
-  unsigned int align;
 
   /* Get lhs.  */
   lhs = gimple_call_lhs (stmt);
@@ -1709,10 +1714,10 @@ fold_builtin_alloca_for_var (gimple stmt)
 
   size = TREE_INT_CST_LOW (arg);
 
-  /* Heuristic: don't fold large vlas.  */
+  /* Heuristic: don't fold large allocas.  */
   threshold = (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_LARGE_STACK_FRAME);
-  /* In case a vla is declared at function scope, it has the same lifetime as a
-     declared array, so we allow a larger size.  */
+  /* In case the alloca is located at function entry, it has the same lifetime
+     as a declared array, so we allow a larger size.  */
   block = gimple_block (stmt);
   if (!(cfun->after_inlining
         && TREE_CODE (BLOCK_SUPERCONTEXT (block)) == FUNCTION_DECL))
@@ -1723,12 +1728,9 @@ fold_builtin_alloca_for_var (gimple stmt)
   /* Declare array.  */
   elem_type = build_nonstandard_integer_type (BITS_PER_UNIT, 1);
   n_elem = size * 8 / BITS_PER_UNIT;
-  align = MIN (size * 8, BIGGEST_ALIGNMENT);
-  if (align < BITS_PER_UNIT)
-    align = BITS_PER_UNIT;
   array_type = build_array_type_nelts (elem_type, n_elem);
   var = create_tmp_var (array_type, NULL);
-  DECL_ALIGN (var) = align;
+  DECL_ALIGN (var) = TREE_INT_CST_LOW (gimple_call_arg (stmt, 1));
   {
     struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
     if (pi != NULL && !pi->pt.anything)
@@ -1813,12 +1815,12 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	if (gimple_call_internal_p (stmt))
 	  return false;
 
-        /* The heuristic of fold_builtin_alloca_for_var differs before and after
-           inlining, so we don't require the arg to be changed into a constant
-           for folding, but just to be constant.  */
-        if (gimple_call_alloca_for_var_p (stmt))
+        /* The heuristic of fold_builtin_alloca_with_align differs before and
+	   after inlining, so we don't require the arg to be changed into a
+	   constant for folding, but just to be constant.  */
+        if (gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN))
           {
-            tree new_rhs = fold_builtin_alloca_for_var (stmt);
+            tree new_rhs = fold_builtin_alloca_with_align (stmt);
             if (new_rhs)
 	      {
 		bool res = update_call_from_tree (gsi, new_rhs);
@@ -2093,7 +2095,8 @@ optimize_stack_restore (gimple_stmt_iterator i)
       if (!callee
 	  || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
 	  /* All regular builtins are ok, just obviously not alloca.  */
-	  || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA)
+	  || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
+	  || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA_WITH_ALIGN)
 	return NULL_TREE;
 
       if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE)
