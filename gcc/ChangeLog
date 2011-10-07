@@ -1,3 +1,8 @@
+2011-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (DWH, dwh): New mode macros.
+	("umulsidi3"): Extend to support "umulditi3" as well.
+
 2011-10-07  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
