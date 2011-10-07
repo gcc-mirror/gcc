@@ -924,18 +924,32 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 /* Convert the last ref of a scalar coarray from an AR_ELEMENT to an
    AR_FULL, suitable for the scalarizer.  */
 
-static void
-convert_element_to_coarray_ref (gfc_expr *expr)
+static gfc_ss *
+walk_coarray (gfc_expr *e)
 {
-  gfc_ref *ref;
+  gfc_ss *ss;
 
-  for (ref = expr->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->next == NULL
-	&& ref->u.ar.codimen)
-      {
-	ref->u.ar.type = AR_FULL;
-	break;
-      }
+  gcc_assert (gfc_get_corank (e) > 0);
+
+  ss = gfc_walk_expr (e);
+
+  /* Fix scalar coarray.  */
+  if (ss == gfc_ss_terminator)
+    {
+      gfc_ref *ref;
+
+      ss = gfc_get_array_ss (gfc_ss_terminator, e, 0, GFC_SS_SECTION);
+
+      ref = e->ref;
+      while (ref->next)
+	ref = ref->next;
+
+      gcc_assert (ref->type == REF_ARRAY && ref->u.ar.codimen > 0);
+      ref->u.ar.type = AR_FULL;
+      ss->data.info.ref = ref;
+    }
+
+  return ss;
 }
 
 
@@ -969,9 +983,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
-  if (expr->value.function.actual->expr->rank == 0)
-    convert_element_to_coarray_ref (expr->value.function.actual->expr);
-  ss = gfc_walk_expr (expr->value.function.actual->expr);
+  ss = walk_coarray (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
   ss->data.info.codimen = corank;
   argse.want_coarray = 1;
@@ -1157,9 +1169,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
-  if (expr->value.function.actual->expr->rank == 0)
-    convert_element_to_coarray_ref (expr->value.function.actual->expr);
-  ss = gfc_walk_expr (expr->value.function.actual->expr);
+  ss = walk_coarray (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
   ss->data.info.codimen = corank;
   argse.want_coarray = 1;
@@ -1484,9 +1494,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
   corank = gfc_get_corank (arg->expr);
 
-  if (expr->value.function.actual->expr->rank == 0)
-    convert_element_to_coarray_ref (expr->value.function.actual->expr);
-  ss = gfc_walk_expr (arg->expr);
+  ss = walk_coarray (arg->expr);
   gcc_assert (ss != gfc_ss_terminator);
   ss->data.info.codimen = corank;
   gfc_init_se (&argse, NULL);
