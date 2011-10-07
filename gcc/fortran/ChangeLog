@@ -1,5 +1,9 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c	(gfc_conv_ss_startstride): Merge two switch cases.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.c (gfc_conv_section_startstride): Remove coarray argument.
 	Remove conditions on coarray.
 	(gfc_conv_ss_startstride): Update call to gfc_conv_section_startstride.

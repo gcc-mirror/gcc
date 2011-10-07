@@ -3280,9 +3280,6 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	    {
 	    case GFC_ISYM_LBOUND:
 	    case GFC_ISYM_UBOUND:
-	      loop->dimen = ss->data.info.dimen;
-	      goto done;
-
 	    case GFC_ISYM_LCOBOUND:
 	    case GFC_ISYM_UCOBOUND:
 	    case GFC_ISYM_THIS_IMAGE:
