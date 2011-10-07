@@ -200,6 +200,9 @@ static GTY(()) struct gnat_binding_level *current_binding_level;
 /* A chain of gnat_binding_level structures awaiting reuse.  */
 static GTY((deletable)) struct gnat_binding_level *free_binding_level;
 
+/* The context to be used for global declarations.  */
+static GTY(()) tree global_context;
+
 /* An array of global declarations.  */
 static GTY(()) VEC(tree,gc) *global_decls;
 
@@ -497,15 +500,19 @@ gnat_zaplevel (void)
   free_binding_level = level;
 }
 
-/* Records a ..._DECL node DECL as belonging to the current lexical scope
-   and uses GNAT_NODE for location information and propagating flags.  */
+/* Record DECL as belonging to the current lexical scope and use GNAT_NODE
+   for location information and flag propagation.  */
 
 void
 gnat_pushdecl (tree decl, Node_Id gnat_node)
 {
-  /* If this decl is public external or at toplevel, there is no context.  */
+  /* If DECL is public external or at top level, it has global context.  */
   if ((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || global_bindings_p ())
-    DECL_CONTEXT (decl) = 0;
+    {
+      if (!global_context)
+	global_context = build_translation_unit_decl (NULL_TREE);
+      DECL_CONTEXT (decl) = global_context;
+   }
   else
     {
       DECL_CONTEXT (decl) = current_function_decl;
@@ -518,11 +525,12 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	DECL_STATIC_CHAIN (decl) = 1;
     }
 
-  TREE_NO_WARNING (decl) = (gnat_node == Empty || Warnings_Off (gnat_node));
+  TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
   if (Present (gnat_node))
     Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (decl));
+
   add_decl_expr (decl, gnat_node);
 
   /* Put the declaration on the list.  The list of declarations is in reverse
@@ -1982,7 +1990,7 @@ end_subprog_body (tree body)
 
   DECL_SAVED_TREE (fndecl) = body;
 
-  current_function_decl = DECL_CONTEXT (fndecl);
+  current_function_decl = decl_function_context (fndecl);
 }
 
 /* Wrap up compilation of SUBPROG_DECL, a subprogram body.  */
@@ -2001,7 +2009,7 @@ rest_of_subprog_body_compilation (tree subprog_decl)
   dump_function (TDI_original, subprog_decl);
 
   /* ??? This special handling of nested functions is probably obsolete.  */
-  if (!DECL_CONTEXT (subprog_decl))
+  if (!decl_function_context (subprog_decl))
     cgraph_finalize_function (subprog_decl, false);
   else
     /* Register this function with cgraph just far enough to get it

@@ -1,5 +1,15 @@
 2011-10-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR lto/50492
+	* gcc-interface/gigi.h (gnat_pushdecl): Adjust comment.
+	* gcc-interface/utils.c (global_context): New variable.
+	(gnat_pushdecl): Initialize it and set it as the DECL_CONTEXT of DECLs
+	that are either public external or at top level.  Use "No" macro.
+	(end_subprog_body): Call decl_function_context.
+	(rest_of_subprog_body_compilation): Likewise.
+
+2011-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (gnat_useless_type_conversion): Declare.
 	(rest_of_subprog_body_compilation): Likewise.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: For renaming,
