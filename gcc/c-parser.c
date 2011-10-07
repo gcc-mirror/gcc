@@ -5990,7 +5990,7 @@ c_parser_alignof_expression (c_parser *parser)
 }
 
 /* Helper function to read arguments of builtins which are interfaces
-   for the middle-end nodes like COMPLEX_EXPR, VEC_SHUFFLE_EXPR and
+   for the middle-end nodes like COMPLEX_EXPR, VEC_PERM_EXPR and
    others.  The name of the builtin is passed using BNAME parameter.
    Function returns true if there were no errors while parsing and
    stores the arguments in CEXPR_LIST.  */
@@ -6534,13 +6534,13 @@ c_parser_postfix_expression (c_parser *parser)
 
 	    if (VEC_length (c_expr_t, cexpr_list) == 2)
 	      expr.value =
-		c_build_vec_shuffle_expr
+		c_build_vec_perm_expr
 		  (loc, VEC_index (c_expr_t, cexpr_list, 0)->value,
 		   NULL_TREE, VEC_index (c_expr_t, cexpr_list, 1)->value);
 
 	    else if (VEC_length (c_expr_t, cexpr_list) == 3)
 	      expr.value =
-		c_build_vec_shuffle_expr
+		c_build_vec_perm_expr
 		  (loc, VEC_index (c_expr_t, cexpr_list, 0)->value,
 		   VEC_index (c_expr_t, cexpr_list, 1)->value,
 		   VEC_index (c_expr_t, cexpr_list, 2)->value);

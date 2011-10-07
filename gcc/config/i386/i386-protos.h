@@ -123,7 +123,7 @@ extern bool ix86_expand_int_movcc (rtx[]);
 extern bool ix86_expand_fp_movcc (rtx[]);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
-extern void ix86_expand_vshuffle (rtx[]);
+extern void ix86_expand_vec_perm (rtx[]);
 extern void ix86_expand_sse_unpack (rtx[], bool, bool);
 extern bool ix86_expand_int_addcc (rtx[]);
 extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, bool);

@@ -253,7 +253,7 @@ static const char * const optabs[] =
   "set_optab_handler (vec_shl_optab, $A, CODE_FOR_$(vec_shl_$a$))",
   "set_optab_handler (vec_shr_optab, $A, CODE_FOR_$(vec_shr_$a$))",
   "set_optab_handler (vec_realign_load_optab, $A, CODE_FOR_$(vec_realign_load_$a$))",
-  "set_direct_optab_handler (vshuffle_optab, $A, CODE_FOR_$(vshuffle$a$))",
+  "set_direct_optab_handler (vec_perm_optab, $A, CODE_FOR_$(vec_perm$a$))",
   "set_convert_optab_handler (vcond_optab, $A, $B, CODE_FOR_$(vcond$a$b$))",
   "set_convert_optab_handler (vcondu_optab, $A, $B, CODE_FOR_$(vcondu$a$b$))",
   "set_optab_handler (ssum_widen_optab, $A, CODE_FOR_$(widen_ssum$I$a3$))",

@@ -6199,19 +6199,19 @@
 ;; ??? Irritatingly, the 256-bit VPSHUFB only shuffles within the 128-bit
 ;; lanes.  For now, we don't try to support V32QI or V16HImode.  So we
 ;; don't want to use VI_AVX2.
-(define_mode_iterator VSHUFFLE_AVX2
+(define_mode_iterator VEC_PERM_AVX2
   [V16QI V8HI V4SI V2DI V4SF V2DF
    (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")
    (V8SF "TARGET_AVX2") (V4DF "TARGET_AVX2")])
 
-(define_expand "vshuffle<mode>"
-  [(match_operand:VSHUFFLE_AVX2 0 "register_operand" "")
-   (match_operand:VSHUFFLE_AVX2 1 "register_operand" "")
-   (match_operand:VSHUFFLE_AVX2 2 "register_operand" "")
+(define_expand "vec_perm<mode>"
+  [(match_operand:VEC_PERM_AVX2 0 "register_operand" "")
+   (match_operand:VEC_PERM_AVX2 1 "register_operand" "")
+   (match_operand:VEC_PERM_AVX2 2 "register_operand" "")
    (match_operand:<sseintvecmode> 3 "register_operand" "")]
   "TARGET_SSSE3 || TARGET_AVX || TARGET_XOP"
 {
-  ix86_expand_vshuffle (operands);
+  ix86_expand_vec_perm (operands);
   DONE;
 })
 

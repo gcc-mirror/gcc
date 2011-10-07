@@ -19325,8 +19325,10 @@ ix86_expand_int_vcond (rtx operands[])
   return true;
 }
 
+/* Expand a variable vector permutation.  */
+
 void
-ix86_expand_vshuffle (rtx operands[])
+ix86_expand_vec_perm (rtx operands[])
 {
   rtx target = operands[0];
   rtx op0 = operands[1];

@@ -6586,16 +6586,18 @@ c = a == b;     /* The result would be @{0,-1, 0,-1@}  */
 
 Vector shuffling is available using functions
 @code{__builtin_shuffle (vec, mask)} and
-@code{__builtin_shuffle (vec0, vec1, mask)}. Both functions construct
-a permutation of elements from one or two vectors and return a vector
-of the same type as input vector(s). The mask is a vector of
-integer-typed elements. The size of each element of the mask must be
-the same as the size of each input vector element. The number of
-elements in input vector(s) and mask must be the same.
+@code{__builtin_shuffle (vec0, vec1, mask)}.
+Both functions construct a permutation of elements from one or two
+vectors and return a vector of the same type as the input vector(s).
+The @var{mask} is an integral vector with the same width (@var{W})
+and element count (@var{N}) as the output vector.
 
-The elements of the input vectors are numbered from left to right across
-one or both of the vectors. Each element in the mask specifies a number
-of element from the input vector(s). Consider the following example.
+The elements of the input vectors are numbered in memory ordering of
+@var{vec0} beginning at 0 and @var{vec1} beginning at @var{N}.  The
+elements of @var{mask} are considered modulo @var{N} in the single-operand
+case and modulo @math{2*@var{N}} in the two-operand case.
+
+Consider the following example,
 
 @smallexample
 typedef int v4si __attribute__ ((vector_size (16)));
@@ -6610,6 +6612,9 @@ res = __builtin_shuffle (a, mask1);       /* res is @{1,2,2,4@}  */
 res = __builtin_shuffle (a, b, mask2);    /* res is @{1,5,3,6@}  */
 @end smallexample
 
+Note that @code{__builtin_shuffle} is intentionally semantically
+compatible with the OpenCL @code{shuffle} and @code{shuffle2} functions.
+
 You can declare variables and use them in function calls and returns, as
 well as in assignments and some casts.  You can specify a vector type as
 a return type for a function.  Vector types can also be used as function
@@ -6619,20 +6624,6 @@ to and from other datatypes of the same size).
 
 You cannot operate between vectors of different lengths or different
 signedness without a cast.
-
-A port that supports hardware vector operations, usually provides a set
-of built-in functions that can be used to operate on vectors.  For
-example, a function to add two vectors and multiply the result by a
-third could look like this:
-
-@smallexample
-v4si f (v4si a, v4si b, v4si c)
-@{
-  v4si tmp = __builtin_addv4si (a, b);
-  return __builtin_mulv4si (tmp, c);
-@}
-
-@end smallexample
 
 @node Offsetof
 @section Offsetof

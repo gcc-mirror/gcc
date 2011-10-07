@@ -943,7 +943,7 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
 
     case COND_EXPR:
     case VEC_COND_EXPR:
-    case VEC_SHUFFLE_EXPR:
+    case VEC_PERM_EXPR:
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), uflags);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), uflags);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 2), uflags);

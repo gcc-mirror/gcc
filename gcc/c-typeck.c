@@ -2846,7 +2846,7 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
   return require_complete_type (result);
 }
 
-/* Build a VEC_SHUFFLE_EXPR if V0, V1 and MASK are not error_mark_nodes
+/* Build a VEC_PERM_EXPR if V0, V1 and MASK are not error_mark_nodes
    and have vector types, V0 has the same type as V1, and the number of
    elements of V0, V1, MASK is the same.
 
@@ -2857,9 +2857,9 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
    an implementation accident and this semantics is not guaranteed to
    the user.  */
 tree
-c_build_vec_shuffle_expr (location_t loc, tree v0, tree v1, tree mask)
+c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask)
 {
-  tree vec_shuffle;
+  tree ret;
   bool wrap = true;
   bool maybe_const = false;
   bool two_arguments = false;
@@ -2915,7 +2915,7 @@ c_build_vec_shuffle_expr (location_t loc, tree v0, tree v1, tree mask)
       return error_mark_node;
     }
 
-  /* Avoid C_MAYBE_CONST_EXPRs inside VEC_SHUFFLE_EXPR.  */
+  /* Avoid C_MAYBE_CONST_EXPRs inside VEC_PERM_EXPR.  */
   v0 = c_fully_fold (v0, false, &maybe_const);
   wrap &= maybe_const;
 
@@ -2930,12 +2930,12 @@ c_build_vec_shuffle_expr (location_t loc, tree v0, tree v1, tree mask)
   mask = c_fully_fold (mask, false, &maybe_const);
   wrap &= maybe_const;
 
-  vec_shuffle = build3 (VEC_SHUFFLE_EXPR, TREE_TYPE (v0), v0, v1, mask);
+  ret = build3 (VEC_PERM_EXPR, TREE_TYPE (v0), v0, v1, mask);
 
   if (!wrap)
-    vec_shuffle = c_wrap_maybe_const (vec_shuffle, true);
+    ret = c_wrap_maybe_const (ret, true);
 
-  return vec_shuffle;
+  return ret;
 }
 
 /* Convert the argument expressions in the vector VALUES

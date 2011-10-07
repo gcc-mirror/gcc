@@ -6620,10 +6620,10 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
 }
 
-/* Return true if VEC_SHUFFLE_EXPR can be expanded using SIMD extensions
+/* Return true if VEC_PERM_EXPR can be expanded using SIMD extensions
    of the CPU.  */
 bool
-expand_vec_shuffle_expr_p (enum machine_mode mode, tree v0, tree v1, tree mask)
+expand_vec_perm_expr_p (enum machine_mode mode, tree v0, tree v1, tree mask)
 {
   int v0_mode_s = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (v0))));
   int mask_mode_s = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (mask))));
@@ -6639,19 +6639,19 @@ expand_vec_shuffle_expr_p (enum machine_mode mode, tree v0, tree v1, tree mask)
 	 != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask)))
     return false;
 
-  return direct_optab_handler (vshuffle_optab, mode) != CODE_FOR_nothing;
+  return direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing;
 }
 
 /* Generate instructions for VEC_COND_EXPR given its type and three
    operands.  */
 rtx
-expand_vec_shuffle_expr (tree type, tree v0, tree v1, tree mask, rtx target)
+expand_vec_perm_expr (tree type, tree v0, tree v1, tree mask, rtx target)
 {
   struct expand_operand ops[4];
   enum insn_code icode;
   enum machine_mode mode = TYPE_MODE (type);
 
-  gcc_checking_assert (expand_vec_shuffle_expr_p (mode, v0, v1, mask));
+  gcc_checking_assert (expand_vec_perm_expr_p (mode, v0, v1, mask));
 
   if (TREE_CODE (mask) == VECTOR_CST)
     {
@@ -6659,7 +6659,7 @@ expand_vec_shuffle_expr (tree type, tree v0, tree v1, tree mask, rtx target)
       tree fn = targetm.vectorize.builtin_vec_perm (TREE_TYPE (v0), &m_type);
 
       if (!fn)
-	goto vshuffle;
+	goto vec_perm;
 
       if (m_type != TREE_TYPE (TREE_TYPE (mask)))
 	{
@@ -6674,8 +6674,8 @@ expand_vec_shuffle_expr (tree type, tree v0, tree v1, tree mask, rtx target)
       return expand_expr_real_1 (call, target, VOIDmode, EXPAND_NORMAL, NULL);
     }
 
- vshuffle:
-  icode = direct_optab_handler (vshuffle_optab, mode);
+ vec_perm:
+  icode = direct_optab_handler (vec_perm_optab, mode);
 
   if (icode == CODE_FOR_nothing)
     return 0;
