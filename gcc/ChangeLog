@@ -1,3 +1,13 @@
+2011-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50650
+	* tree-vect-patterns.c (vect_recog_mixed_size_cond_pattern): Don't
+	call vect_is_simple_cond here, instead fail if cond_expr isn't
+	COMPARISON_CLASS_P or if get_vectype_for_scalar_type returns NULL
+	for cond_expr's first operand.
+	* tree-vect-stmts.c (vect_is_simple_cond): Static again.
+	* tree-vectorizer.h (vect_is_simple_cond): Remove prototype.
+
 2011-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (DWH, dwh): New mode macros.

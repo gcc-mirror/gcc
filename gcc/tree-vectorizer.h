@@ -818,7 +818,6 @@ extern bool vect_transform_stmt (gimple, gimple_stmt_iterator *,
                                  bool *, slp_tree, slp_instance);
 extern void vect_remove_stores (gimple);
 extern bool vect_analyze_stmt (gimple, bool *, slp_tree);
-extern bool vect_is_simple_cond (tree, loop_vec_info, tree *);
 extern bool vectorizable_condition (gimple, gimple_stmt_iterator *, gimple *,
                                     tree, int);
 extern void vect_get_load_cost (struct data_reference *, int, bool,
