@@ -212,7 +212,7 @@ typedef struct gfc_ss
     {
       /* The rank of the temporary.  May be less than the rank of the
          assigned expression.  */
-      int dimen, codimen;
+      int dimen;
       tree type;
     }
     temp;

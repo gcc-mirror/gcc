@@ -1,5 +1,11 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans.h (gfc_ss): Remove data.temp.codimen field.
+	* trans-array.c (gfc_conv_resolve_dependencies,
+	gfc_conv_expr_descriptor): Don't set temp's codimen field.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* resolve.c (resolve_array_ref): Set array_ref's dimen field (and the
 	associated dimen_type) in the full array ref case.
 
