@@ -1,3 +1,9 @@
+2011-10-07  David S. Miller  <davem@davemloft.net>
+
+	PR 50655
+	* configure.ac: Add .register directives to VIS3 test.
+	* configure: Regenerate.
+
 2011-10-07  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc (x86_64-*): Add core-avx-i, core-avx2 for with_cpu.

@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { vis3 } } } */
 /* { dg-options "-O2 -mcpu=niagara3 -mvis" } */
 
 float test_fnadds(float x, float y)

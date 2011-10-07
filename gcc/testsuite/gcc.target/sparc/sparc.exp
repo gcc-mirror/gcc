@@ -24,6 +24,17 @@ if ![istarget sparc*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if vis3 instructions can be compiled.
+proc check_effective_target_vis3 { } {
+    return [check_no_compiler_messages vis3 object {
+	long long
+	_vis3_fpadd64 (long long __X, long long __Y)
+	{
+	    return __builtin_vis_fpadd64 (__X, __Y);
+	}
+    } "-mcpu=niagara3 -mvis" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

@@ -3491,6 +3491,8 @@ foo:
       gcc_cv_as_sparc_fmaf,,
       [-xarch=v9d],
       [.text
+       .register %g2, #scratch
+       .register %g3, #scratch
        .align 4
        fmaddd %f0, %f2, %f4, %f6
        addxccc %g1, %g2, %g3
