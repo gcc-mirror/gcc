@@ -1,3 +1,8 @@
+2011-10-07  Richard Henderson  <rth@redhat.com>
+
+	PR 49752
+	* fold-const.c (fold_checksum_tree): Remove out-of-date assert.
+
 2011-10-07  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/predicates.md (shift_amount_operand): Remove constant
