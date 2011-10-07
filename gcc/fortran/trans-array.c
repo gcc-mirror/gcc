@@ -5988,6 +5988,11 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tree to;
       tree base;
 
+      if (se->want_coarray)
+	codim = gfc_get_corank (expr);
+      else
+	codim = 0;
+
       /* Set the string_length for a character array.  */
       if (expr->ts.type == BT_CHARACTER)
 	se->string_length =  gfc_get_expr_charlen (expr);
@@ -6036,7 +6041,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	base = NULL_TREE;
 
       ndim = info->ref ? info->ref->u.ar.dimen : info->dimen;
-      codim = info->codimen;
       for (n = 0; n < ndim; n++)
 	{
 	  stride = gfc_conv_array_stride (desc, n);

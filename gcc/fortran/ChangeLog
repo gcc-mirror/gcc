@@ -1,5 +1,13 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.h (struct gfc_se): New flag want_coarray.
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	conv_intrinsic_cobound): Set want_coarray.
+	* trans_array.c (gfc_conv_expr_descriptor): Evaluate codimension
+	earlier and without relying on the scalarizer.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* expr.c (gfc_get_corank): Return 0 if input expression is not a
 	coarray.
 
