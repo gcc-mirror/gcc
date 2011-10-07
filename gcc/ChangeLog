@@ -1,3 +1,9 @@
+2011-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/predicates.md (shift_amount_operand): Remove constant
+	range check.
+	(shift_operator): Check range of constants for all shift operators.
+
 2011-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_tls_call_insn): Remove assertion.
