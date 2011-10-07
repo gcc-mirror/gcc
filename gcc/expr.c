@@ -8605,9 +8605,10 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
     case VEC_PACK_FIX_TRUNC_EXPR:
       mode = TYPE_MODE (TREE_TYPE (treeop0));
       goto binop;
-    
-    case VEC_SHUFFLE_EXPR:
-      target = expand_vec_shuffle_expr (type, treeop0, treeop1, treeop2, target);
+
+    case VEC_PERM_EXPR:
+      target = expand_vec_perm_expr (type, treeop0, treeop1, treeop2, target);
+      gcc_assert (target);
       return target;
 
     case DOT_PROD_EXPR:

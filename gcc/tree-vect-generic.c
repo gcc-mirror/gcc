@@ -597,21 +597,21 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
                  idx, NULL_TREE, NULL_TREE);
 }
 
-/* Check if VEC_SHUFFLE_EXPR within the given setting is supported
+/* Check if VEC_PERM_EXPR within the given setting is supported
    by hardware, or lower it piecewise.
 
-   When VEC_SHUFFLE_EXPR has the same first and second operands:
-   VEC_SHUFFLE_EXPR <v0, v0, mask> the lowered version would be
+   When VEC_PERM_EXPR has the same first and second operands:
+   VEC_PERM_EXPR <v0, v0, mask> the lowered version would be
    {v0[mask[0]], v0[mask[1]], ...}
    MASK and V0 must have the same number of elements.
 
-   Otherwise VEC_SHUFFLE_EXPR <v0, v1, mask> is lowered to
+   Otherwise VEC_PERM_EXPR <v0, v1, mask> is lowered to
    {mask[0] < len(v0) ? v0[mask[0]] : v1[mask[0]], ...}
    V0 and V1 must have the same type.  MASK, V0, V1 must have the
    same number of arguments.  */
 
 static void
-lower_vec_shuffle (gimple_stmt_iterator *gsi)
+lower_vec_perm (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
   tree mask = gimple_assign_rhs3 (stmt);
@@ -628,7 +628,7 @@ lower_vec_shuffle (gimple_stmt_iterator *gsi)
   bool two_operand_p = !operand_equal_p (vec0, vec1, 0);
   unsigned i;
 
-  if (expand_vec_shuffle_expr_p (TYPE_MODE (vect_type), vec0, vec1, mask))
+  if (expand_vec_perm_expr_p (TYPE_MODE (vect_type), vec0, vec1, mask))
     return;
 
   v = VEC_alloc (constructor_elt, gc, elements);
@@ -721,9 +721,9 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   rhs_class = get_gimple_rhs_class (code);
   lhs = gimple_assign_lhs (stmt);
 
-  if (code == VEC_SHUFFLE_EXPR)
+  if (code == VEC_PERM_EXPR)
     {
-      lower_vec_shuffle (gsi);
+      lower_vec_perm (gsi);
       return;
     }
 

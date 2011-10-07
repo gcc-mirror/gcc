@@ -4028,6 +4028,34 @@ will be set to the value @var{op1} & @var{msk} | @var{op2} & ~@var{msk}
 where @var{msk} is computed by element-wise evaluation of the vector
 comparison with a truth value of all-ones and a false value of all-zeros.
 
+@cindex @code{vec_perm@var{m}} instruction pattern
+@item @samp{vec_perm@var{m}}
+Output a (variable) vector permutation.  Operand 0 is the destination
+to receive elements from operand 1 and operand 2, which are of mode
+@var{m}.  Operand 3 is the @dfn{selector}.  It is an integral mode
+vector of the same width and number of elements as mode @var{m}.
+
+The input elements are numbered from 0 in operand 1 through
+@math{2*@var{N}-1} in operand 2.  The elements of the selector must
+be computed modulo @math{2*@var{N}}.  Note that if
+@code{rtx_equal_p(operand1, operand2)}, this can be implemented
+with just operand 1 and selector elements modulo @var{N}.
+
+@cindex @code{vec_perm_const@var{m}) instruction pattern
+@item @samp{vec_perm_const@var{m}}
+Like @samp{vec_perm} except that the permutation is a compile-time
+constant.  That is, operand 3, the @dfn{selector}, is a @code{CONST_VECTOR}.
+
+Some targets cannot perform a permutation with a variable selector,
+but can efficiently perform a constant permutation.  Further, the
+target hook @code{vec_perm_ok} is queried to determine if the 
+specific constant permutation is available efficiently; the named
+pattern is never expanded without @code{vec_perm_ok} returning true.
+
+There is no need for a target to supply both @samp{vec_perm@var{m}}
+and @samp{vec_perm_const@var{m}} if the former can trivially implement
+the operation with, say, the vector constant loaded into a register.
+
 @cindex @code{push@var{m}1} instruction pattern
 @item @samp{push@var{m}1}
 Output a push instruction.  Operand 0 is value to push.  Used only when

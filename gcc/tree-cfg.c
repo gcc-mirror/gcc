@@ -3727,11 +3727,11 @@ verify_gimple_assign_ternary (gimple stmt)
 	}
       break;
 
-    case VEC_SHUFFLE_EXPR:
+    case VEC_PERM_EXPR:
       if (!useless_type_conversion_p (lhs_type, rhs1_type)
 	  || !useless_type_conversion_p (lhs_type, rhs2_type))
 	{
-	  error ("type mismatch in vector shuffle expression");
+	  error ("type mismatch in vector permute expression");
 	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs1_type);
 	  debug_generic_expr (rhs2_type);
@@ -3743,7 +3743,7 @@ verify_gimple_assign_ternary (gimple stmt)
 	  || TREE_CODE (rhs2_type) != VECTOR_TYPE
 	  || TREE_CODE (rhs3_type) != VECTOR_TYPE)
 	{
-	  error ("vector types expected in vector shuffle expression");
+	  error ("vector types expected in vector permute expression");
 	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs1_type);
 	  debug_generic_expr (rhs2_type);
@@ -3758,7 +3758,7 @@ verify_gimple_assign_ternary (gimple stmt)
 	     != TYPE_VECTOR_SUBPARTS (lhs_type))
 	{
 	  error ("vectors with different element number found "
-		 "in vector shuffle expression");
+		 "in vector permute expression");
 	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs1_type);
 	  debug_generic_expr (rhs2_type);
@@ -3770,7 +3770,7 @@ verify_gimple_assign_ternary (gimple stmt)
 	  || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs3_type)))
 	     != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1_type))))
 	{
-	  error ("invalid mask type in vector shuffle expression");
+	  error ("invalid mask type in vector permute expression");
 	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs1_type);
 	  debug_generic_expr (rhs2_type);

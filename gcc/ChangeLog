@@ -1,5 +1,30 @@
 2011-10-07  Richard Henderson  <rth@redhat.com>
 
+	* doc/extend.texi (__builtin_shuffle): Improve the description to
+	include the modulus of the selector.  Mention OpenCL.
+	* doc/md.texi (vec_perm, vec_perm_const): Document named patterns.
+
+	* tree.def (VEC_PERM_EXPR): Rename from VEC_SHUFFLE_EXPR.
+	* genopinit.c (optabs): Rename vshuffle to vec_perm.
+	* c-typeck.c (c_build_vec_perm_expr): Rename from
+	c_build_vec_shuffle_expr.  Update for name changes.
+	* optabs.c (expand_vec_perm_expr_p): Rename from
+	expand_vec_shuffle_expr_p.
+	(expand_vec_perm_expr): Rename from expand_vec_shuffle_expr.
+	* optabs.h (OTI_vec_perm): Rename from DOI_vshuffle.
+	(vec_perm_optab): Rename from vshuffle_optab.
+	* expr.c, gimple-pretty-print.c, gimple.c, gimplify.c,
+	c-tree.h, c-parser.c, tree-cfg.c, tree-inline.c, tree-pretty-print.c,
+	tree-ssa-operands.c, tree-vect-generic.c: Update for name changes.
+
+	* config/i386/i386.c (ix86_expand_vec_perm): Rename from
+	ix86_expand_vshuffle.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/sse.md (VEC_PERM_AVX2): Rename from VSHUFFLE_AVX2.
+	(vec_perm<VEC_PERM_AVX2>): Rename from vshuffle<VSHUFFLE_AVX2>.
+
+2011-10-07  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/predicates.md (avx2_pblendw_operand): New.
 	* config/i386/sse.md (sse4_1_pblendw): Un-macroize.
 	(avx2_pblendw, *avx2_pblendw): New expander and insn.
