@@ -1,5 +1,12 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c (gfc_conv_section_startstride): Remove coarray_last
+	argument. Remove condition on coarray_last.
+	(gfc_conv_ss_startstride): Update call to gfc_conv_section_startstride.
+	(gfc_conv_expr_descriptor): Ditto.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.c (gfc_walk_variable_expr): Remove scalar coarray
 	handling.  Don't reset array ref's corank and codimensions' types
 	in the full array ref case.  Update loop upper limit.

@@ -3201,7 +3201,7 @@ evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
 
 static void
 gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
-			      bool coarray, bool coarray_last)
+			      bool coarray)
 {
   gfc_expr *stride = NULL;
   tree desc;
@@ -3237,8 +3237,7 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
   /* Similarly calculate the end.  Although this is not used in the
      scalarizer, it is needed when checking bounds and where the end
      is an expression with side-effects.  */
-  if (!coarray_last)
-    evaluate_bound (&loop->pre, info->end, ar->end, desc, dim, false);
+  evaluate_bound (&loop->pre, info->end, ar->end, desc, dim, false);
 
   /* Calculate the stride.  */
   if (!coarray && stride == NULL)
@@ -3321,7 +3320,7 @@ done:
 
 	  for (n = 0; n < ss->data.info.dimen; n++)
 	    gfc_conv_section_startstride (loop, ss, ss->data.info.dim[n],
-					  false, false);
+					  false);
 	  break;
 
 	case GFC_SS_INTRINSIC:
@@ -5976,7 +5975,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  for (n = ss->data.info.dimen; n < ss->data.info.dimen + codim - 1;
 	       n++)
 	    {
-	      gfc_conv_section_startstride (&loop, ss, n, true, false);
+	      gfc_conv_section_startstride (&loop, ss, n, true);
 	      loop.from[n] = info->start[n];
 	      loop.to[n]   = info->end[n];
 	    }
