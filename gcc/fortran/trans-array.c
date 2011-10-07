@@ -3187,12 +3187,14 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
   tree desc;
   gfc_se se;
   gfc_ss_info *info;
+  gfc_array_ref *ar;
 
   gcc_assert (ss->type == GFC_SS_SECTION);
 
   info = &ss->data.info;
+  ar = &info->ref->u.ar;
 
-  if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
+  if (ar->dimen_type[dim] == DIMEN_VECTOR)
     {
       /* We use a zero-based index to access the vector.  */
       info->start[dim] = gfc_index_zero_node;
@@ -3202,12 +3204,12 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
       return;
     }
 
-  gcc_assert (info->ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
+  gcc_assert (ar->dimen_type[dim] == DIMEN_RANGE);
   desc = info->descriptor;
-  start = info->ref->u.ar.start[dim];
-  end = info->ref->u.ar.end[dim];
+  start = ar->start[dim];
+  end = ar->end[dim];
   if (!coarray)
-    stride = info->ref->u.ar.stride[dim];
+    stride = ar->stride[dim];
 
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
