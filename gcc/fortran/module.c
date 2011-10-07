@@ -3597,6 +3597,8 @@ mio_symbol (gfc_symbol *sym)
 
   mio_symbol_attribute (&sym->attr);
   mio_typespec (&sym->ts);
+  if (sym->ts.type == BT_CLASS)
+    sym->attr.class_ok = 1;
 
   if (iomode == IO_OUTPUT)
     mio_namespace_ref (&sym->formal_ns);

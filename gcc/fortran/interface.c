@@ -1838,7 +1838,7 @@ get_expr_storage_size (gfc_expr *e)
 	    {
 	      /* The string length is the substring length.
 		 Set now to full string length.  */
-	      if (ref->u.ss.length == NULL
+	      if (!ref->u.ss.length || !ref->u.ss.length->length
 		  || ref->u.ss.length->length->expr_type != EXPR_CONSTANT)
 		return 0;
 

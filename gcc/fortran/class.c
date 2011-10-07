@@ -188,7 +188,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     /* Class container has already been built.  */
     return SUCCESS;
 
-  attr->class_ok = attr->dummy || attr->pointer  || attr->allocatable;
+  attr->class_ok = attr->dummy || attr->pointer || attr->allocatable;
   
   if (!attr->class_ok)
     /* We can not build the class container yet.  */

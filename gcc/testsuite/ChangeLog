@@ -1,3 +1,11 @@
+2011-10-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50585
+	* gfortran.dg/assumed_charlen_arg_2.f90: New.
+
+	PR fortran/50625
+	* gfortran.dg/class_46.f03: New.
+
 2011-10-07  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/49049

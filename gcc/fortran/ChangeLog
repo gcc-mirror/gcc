@@ -1,3 +1,15 @@
+2011-10-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50585
+	* interface.c (get_expr_storage_size): Check if 'length' component is
+	associated.
+
+	PR fortran/50625
+	* class.c (gfc_build_class_symbol): Fix whitespace.
+	* module.c (mio_symbol): Set 'class_ok' attribute.
+	* trans-decl.c (gfc_get_symbol_decl): Make sure the backend_decl has
+	been built for class symbols.
+
 2011-10-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/48706

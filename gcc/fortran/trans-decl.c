@@ -1123,7 +1123,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     {
       gfc_component *c = CLASS_DATA (sym);
       if (!c->ts.u.derived->backend_decl)
-	gfc_find_derived_vtab (c->ts.u.derived);
+	{
+	  gfc_find_derived_vtab (c->ts.u.derived);
+	  gfc_get_derived_type (sym->ts.u.derived);
+	}
     }
 
   /* All deferred character length procedures need to retain the backend
