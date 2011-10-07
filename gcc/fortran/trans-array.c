@@ -5994,7 +5994,21 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tree base;
 
       if (se->want_coarray)
-	codim = gfc_get_corank (expr);
+	{
+	  codim = gfc_get_corank (expr);
+	  for (n = ss->data.info.dimen; n < ss->data.info.dimen + codim - 1;
+	       n++)
+	    {
+	      gfc_conv_section_startstride (&loop, ss, n, true, false);
+	      loop.from[n] = info->start[n];
+	      loop.to[n]   = info->end[n];
+	    }
+
+	  gcc_assert (n == ss->data.info.dimen + codim - 1);
+	  evaluate_bound (&loop.pre, info->start, info->ref->u.ar.start,
+			  info->descriptor, n, true);
+	  loop.from[n] = info->start[n];
+	}
       else
 	codim = 0;
 
