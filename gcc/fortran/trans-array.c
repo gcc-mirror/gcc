@@ -5971,7 +5971,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	      /* Make sure we are not lost somehow.  */
 	      gcc_assert (info->ref->u.ar.dimen_type[n] == DIMEN_THIS_IMAGE);
 
-	      /* Make sure the call to gfc_conv_section_startstride won't 
+	      /* Make sure the call to gfc_conv_section_startstride won't
 	         generate unnecessary code to calculate stride.  */
 	      gcc_assert (info->ref->u.ar.stride[n] == NULL);
 

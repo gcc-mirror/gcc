@@ -1,5 +1,9 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans-array.c	(gfc_conv_expr_descriptor): Remove trailing whitespace.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans-array.c	(gfc_conv_ss_startstride): Merge two switch cases.
 
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
