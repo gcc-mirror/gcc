@@ -526,7 +526,6 @@ gfc_get_array_ss (gfc_ss *next, gfc_expr *expr, int dimen, gfc_ss_type type)
   ss->expr = expr;
   info = &ss->data.info;
   info->dimen = dimen;
-  info->codimen = 0;
   for (i = 0; i < info->dimen; i++)
     info->dim[i] = i;
 
@@ -972,13 +971,6 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			      size, tmp);
       size = gfc_evaluate_now (size, pre);
-    }
-  for (n = info->dimen; n < info->dimen + info->codimen; n++)
-    {
-      gfc_conv_descriptor_lbound_set (pre, desc, gfc_rank_cst[n],
-                                      gfc_index_zero_node);
-      if (n < info->dimen + info->codimen - 1)
-	gfc_conv_descriptor_ubound_set (pre, desc, gfc_rank_cst[n], loop->to[n]);
     }
 
   /* Get the size of the array.  */
@@ -1872,7 +1864,7 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
   info->data = gfc_build_addr_expr (NULL_TREE, tmp);
   info->offset = gfc_index_zero_node;
 
-  for (i = 0; i < info->dimen + info->codimen; i++)
+  for (i = 0; i < info->dimen; i++)
     {
       info->delta[i] = gfc_index_zero_node;
       info->start[i] = gfc_index_zero_node;
@@ -3330,12 +3322,6 @@ done:
 	  for (n = 0; n < ss->data.info.dimen; n++)
 	    gfc_conv_section_startstride (loop, ss, ss->data.info.dim[n],
 					  false, false);
-	  for (n = ss->data.info.dimen;
-	       n < ss->data.info.dimen + ss->data.info.codimen; n++)
-	    gfc_conv_section_startstride (loop, ss, ss->data.info.dim[n], true,
-					  n == ss->data.info.dimen
-					       + ss->data.info.codimen -1);
-
 	  break;
 
 	case GFC_SS_INTRINSIC:
@@ -7690,8 +7676,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 		case DIMEN_RANGE:
                   /* We don't add anything for sections, just remember this
                      dimension for later.  */
-		  newss->data.info.dim[newss->data.info.dimen
-				       + newss->data.info.codimen] = n;
+		  newss->data.info.dim[newss->data.info.dimen] = n;
 		  if (n < ar->dimen)
 		    newss->data.info.dimen++;
 		  break;
@@ -7703,8 +7688,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 					      1, GFC_SS_VECTOR);
 		  indexss->loop_chain = gfc_ss_terminator;
 		  newss->data.info.subscript[n] = indexss;
-		  newss->data.info.dim[newss->data.info.dimen
-				       + newss->data.info.codimen] = n;
+		  newss->data.info.dim[newss->data.info.dimen] = n;
 		  if (n < ar->dimen)
 		    newss->data.info.dimen++;
 		  break;

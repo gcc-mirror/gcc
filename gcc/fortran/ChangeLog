@@ -1,5 +1,17 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
+	* trans.h (gfc_ss_info): Remove codimen field.
+	* trans-array.c (gfc_get_array_ss): Don't set codimen field.
+	(gfc_trans_create_temp_array): Don't set descriptor's cobounds.
+	(gfc_trans_constant_array_constructor): Update loop upper limit.
+	(gfc_conv_ss_startstride): Don't set codimen field.
+	Don't get descriptor's cobounds.
+	(gfc_walk_variable_expr): Update dimension index.
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	conv_intrinsic_cobound): Don't set codimen field
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
 	* trans.h (gfc_loopinfo): Remove codimen field.
 	* trans-array.c (gfc_set_vector_loop_bounds,
 	gfc_trans_scalarizing_loops, gfc_conv_loop_setup): Update loop upper
@@ -75,7 +87,7 @@
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
 	* trans-array.c (gfc_conv_expr_descriptor): Simplify coarray
-	descriptor setup code. 
+	descriptor setup code.
 
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 

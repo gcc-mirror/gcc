@@ -118,7 +118,7 @@ gfc_coarray_type;
 
 typedef struct gfc_ss_info
 {
-  int dimen, codimen;
+  int dimen;
   /* The ref that holds information on this section.  */
   gfc_ref *ref;
   /* The descriptor of this array.  */
