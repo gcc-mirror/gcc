@@ -450,8 +450,8 @@ extern void set_block_jmpbuf_decl (tree decl);
 /* Get the setjmp_decl, if any, for the current binding level.  */
 extern tree get_block_jmpbuf_decl (void);
 
-/* Records a ..._DECL node DECL as belonging to the current lexical scope
-   and uses GNAT_NODE for location information.  */
+/* Record DECL as belonging to the current lexical scope and use GNAT_NODE
+   for location information and flag propagation.  */
 extern void gnat_pushdecl (tree decl, Node_Id gnat_node);
 
 extern void gnat_init_gcc_eh (void);
