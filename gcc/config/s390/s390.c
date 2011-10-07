@@ -3604,7 +3604,8 @@ s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
 {
   rtx insn;
 
-  gcc_assert (flag_pic);
+  if (!flag_pic)
+    emit_insn (s390_load_got ());
 
   if (!s390_tls_symbol)
     s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
@@ -7859,6 +7860,12 @@ s390_load_got (void)
 {
   rtx insns;
 
+  /* We cannot use pic_offset_table_rtx here since we use this
+     function also for non-pic if __tls_get_offset is called and in
+     that case PIC_OFFSET_TABLE_REGNUM as well as pic_offset_table_rtx
+     aren't usable.  */
+  rtx got_rtx = gen_rtx_REG (Pmode, 12);
+
   if (!got_symbol)
     {
       got_symbol = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
@@ -7869,7 +7876,7 @@ s390_load_got (void)
 
   if (TARGET_CPU_ZARCH)
     {
-      emit_move_insn (pic_offset_table_rtx, got_symbol);
+      emit_move_insn (got_rtx, got_symbol);
     }
   else
     {
@@ -7880,13 +7887,13 @@ s390_load_got (void)
       offset = gen_rtx_CONST (Pmode, offset);
       offset = force_const_mem (Pmode, offset);
 
-      emit_move_insn (pic_offset_table_rtx, offset);
+      emit_move_insn (got_rtx, offset);
 
       offset = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (offset, 0)),
 			       UNSPEC_LTREL_BASE);
-      offset = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, offset);
+      offset = gen_rtx_PLUS (Pmode, got_rtx, offset);
 
-      emit_move_insn (pic_offset_table_rtx, offset);
+      emit_move_insn (got_rtx, offset);
     }
 
   insns = get_insns ();
@@ -9827,8 +9834,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
       /* s390_function_ok_for_sibcall should
 	 have denied sibcalls in this case.  */
       gcc_assert (retaddr_reg != NULL_RTX);
-
-      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, 12));
     }
   return insn;
 }
