@@ -985,7 +985,6 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   gfc_init_se (&argse, NULL);
   ss = walk_coarray (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
-  ss->data.info.codimen = corank;
   argse.want_coarray = 1;
   gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -1171,7 +1170,6 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
   gfc_init_se (&argse, NULL);
   ss = walk_coarray (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
-  ss->data.info.codimen = corank;
   argse.want_coarray = 1;
   gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -1496,7 +1494,6 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
   ss = walk_coarray (arg->expr);
   gcc_assert (ss != gfc_ss_terminator);
-  ss->data.info.codimen = corank;
   gfc_init_se (&argse, NULL);
   argse.want_coarray = 1;
 
