@@ -18,13 +18,13 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; All vector modes including V1TImode, used in move patterns.
+;; All vector modes including V?TImode, used in move patterns.
 (define_mode_iterator V16
   [(V32QI "TARGET_AVX") V16QI
    (V16HI "TARGET_AVX") V8HI
    (V8SI "TARGET_AVX") V4SI
    (V4DI "TARGET_AVX") V2DI
-   V1TI
+   (V2TI "TARGET_AVX") V1TI
    (V8SF "TARGET_AVX") V4SF
    (V4DF "TARGET_AVX") V2DF])
 
@@ -99,11 +99,13 @@
 (define_mode_iterator VI8_AVX2
   [(V4DI "TARGET_AVX2") V2DI])
 
+;; ??? We should probably use TImode instead.
 (define_mode_iterator VIMAX_AVX2
   [(V2TI "TARGET_AVX2") V1TI])
 
+;; ??? This should probably be dropped in favor of VIMAX_AVX2.
 (define_mode_iterator SSESCALARMODE
-  [(V4DI "TARGET_AVX2") TI])
+  [(V2TI "TARGET_AVX2") TI])
 
 (define_mode_iterator VI12_AVX2
   [(V32QI "TARGET_AVX2") V16QI
@@ -147,7 +149,7 @@
     (V8HI "ssse3") (V16HI "avx2")
     (V4SI "ssse3") (V8SI "avx2")
     (V2DI "ssse3") (V4DI "avx2")
-    (TI "ssse3")])
+    (TI "ssse3") (V2TI "avx2")])
 
 (define_mode_attr sse4_1_avx2
    [(V16QI "sse4_1") (V32QI "avx2")
@@ -5649,21 +5651,6 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx2_lshrqv4di3"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
-	(lshiftrt:V4DI
-	 (match_operand:V4DI 1 "register_operand" "x")
-	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n")))]
-  "TARGET_AVX2"
-{
-  operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
-  return "vpsrldq\t{%2, %1, %0|%0, %1, %2}";
-}
-  [(set_attr "type" "sseishft")
-   (set_attr "prefix" "vex")
-   (set_attr "length_immediate" "1")
-   (set_attr "mode" "OI")])
-
 (define_insn "lshr<mode>3"
   [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")
 	(lshiftrt:VI248_AVX2
@@ -5682,20 +5669,6 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "avx2_lshlqv4di3"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
-	(ashift:V4DI (match_operand:V4DI 1 "register_operand" "x")
-		     (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n")))]
-  "TARGET_AVX2"
-{
-  operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
-  return "vpslldq\t{%2, %1, %0|%0, %1, %2}";
-}
-  [(set_attr "type" "sseishft")
-   (set_attr "prefix" "vex")
-   (set_attr "length_immediate" "1")
-   (set_attr "mode" "OI")])
 
 (define_insn "avx2_lshl<mode>3"
   [(set (match_operand:VI248_256 0 "register_operand" "=x")

@@ -1,3 +1,14 @@
+2011-10-07  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (bdesc_args): Update code for
+	__builtin_ia32_palignr256.  Change type of __builtin_ia32_pslldqi256,
+	and __builtin_ia32_psrldqi256 to V4DI_FTYPE_V4DI_INT_CONVERT.
+	(ix86_expand_args_builtin): Handle V4DI_FTYPE_V4DI_INT_CONVERT.
+	* config/i386/sse.md (mode iterator V16): Add V2TI.
+	(mode iterator SSESCALARMODE): Use V2TI not V4DI.
+	(mode attr ssse3_avx2): Add V2TI.
+	(avx2_lshrqv4di3, avx2_lshlqv4di3): Remove.
+
 2011-10-07  David S. Miller  <davem@davemloft.net>
 
 	PR 50655
