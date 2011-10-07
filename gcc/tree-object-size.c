@@ -411,6 +411,7 @@ alloc_object_size (const_gimple call, int object_size_type)
 	/* fall through */
       case BUILT_IN_MALLOC:
       case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
 	arg1 = 0;
       default:
 	break;

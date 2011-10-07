@@ -4516,20 +4516,33 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
 {
   rtx op0;
   rtx result;
+  bool valid_arglist;
+  unsigned int align;
+  bool alloca_with_align = (DECL_FUNCTION_CODE (get_callee_fndecl (exp))
+			    == BUILT_IN_ALLOCA_WITH_ALIGN);
 
   /* Emit normal call if marked not-inlineable.  */
   if (CALL_CANNOT_INLINE_P (exp))
     return NULL_RTX;
 
-  if (!validate_arglist (exp, INTEGER_TYPE, VOID_TYPE))
+  valid_arglist
+    = (alloca_with_align
+       ? validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE)
+       : validate_arglist (exp, INTEGER_TYPE, VOID_TYPE));
+
+  if (!valid_arglist)
     return NULL_RTX;
 
   /* Compute the argument.  */
   op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
 
+  /* Compute the alignment.  */
+  align = (alloca_with_align
+	   ? TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1))
+	   : BIGGEST_ALIGNMENT);
+
   /* Allocate the desired space.  */
-  result = allocate_dynamic_stack_space (op0, 0, BIGGEST_ALIGNMENT,
-					 cannot_accumulate);
+  result = allocate_dynamic_stack_space (op0, 0, align, cannot_accumulate);
   result = convert_memory_address (ptr_mode, result);
 
   return result;
@@ -5304,6 +5317,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       && !called_as_built_in (fndecl)
       && DECL_ASSEMBLER_NAME_SET_P (fndecl)
       && fcode != BUILT_IN_ALLOCA
+      && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
       && fcode != BUILT_IN_FREE)
     return expand_call (exp, target, ignore);
 
@@ -5559,6 +5573,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return XEXP (DECL_RTL (DECL_RESULT (current_function_decl)), 0);
 
     case BUILT_IN_ALLOCA:
+    case BUILT_IN_ALLOCA_WITH_ALIGN:
       /* If the allocation stems from the declaration of a variable-sized
 	 object, it cannot accumulate.  */
       target = expand_builtin_alloca (exp, CALL_ALLOCA_FOR_VAR_P (exp));
@@ -13568,6 +13583,7 @@ is_inexpensive_builtin (tree decl)
       {
       case BUILT_IN_ABS:
       case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
       case BUILT_IN_BSWAP32:
       case BUILT_IN_BSWAP64:
       case BUILT_IN_CLZ:

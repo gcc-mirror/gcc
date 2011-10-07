@@ -973,7 +973,9 @@ mf_xform_statements (void)
             case GIMPLE_CALL:
               {
                 tree fndecl = gimple_call_fndecl (s);
-                if (fndecl && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA))
+                if (fndecl && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA
+			       || (DECL_FUNCTION_CODE (fndecl)
+				   == BUILT_IN_ALLOCA_WITH_ALIGN)))
                   gimple_call_set_cannot_inline (s, true);
               }
               break;

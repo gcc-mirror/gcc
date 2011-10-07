@@ -1329,8 +1329,9 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   SET_DECL_VALUE_EXPR (decl, t);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
 
-  t = built_in_decls[BUILT_IN_ALLOCA];
-  t = build_call_expr (t, 1, DECL_SIZE_UNIT (decl));
+  t = built_in_decls[BUILT_IN_ALLOCA_WITH_ALIGN];
+  t = build_call_expr (t, 2, DECL_SIZE_UNIT (decl),
+		       size_int (DECL_ALIGN (decl)));
   /* The call has been built for a variable-sized object.  */
   CALL_ALLOCA_FOR_VAR_P (t) = 1;
   t = fold_convert (ptr_type, t);

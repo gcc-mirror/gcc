@@ -308,6 +308,7 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 	    case BUILT_IN_MALLOC:
 	    case BUILT_IN_CALLOC:
 	    case BUILT_IN_ALLOCA:
+	    case BUILT_IN_ALLOCA_WITH_ALIGN:
 	      return;
 
 	    default:;
@@ -639,6 +640,7 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	  case BUILT_IN_MALLOC:
 	  case BUILT_IN_CALLOC:
 	  case BUILT_IN_ALLOCA:
+	  case BUILT_IN_ALLOCA_WITH_ALIGN:
 	  case BUILT_IN_FREE:
 	    return false;
 
@@ -890,6 +892,8 @@ propagate_necessity (struct edge_list *el)
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_VA_END
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
+		      || (DECL_FUNCTION_CODE (callee)
+			  == BUILT_IN_ALLOCA_WITH_ALIGN)
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ASSUME_ALIGNED))

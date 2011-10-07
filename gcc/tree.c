@@ -9483,9 +9483,18 @@ build_common_builtin_nodes (void)
 			    "alloca", ECF_MALLOC | ECF_NOTHROW | ECF_LEAF);
     }
 
+  ftype = build_function_type_list (ptr_type_node, size_type_node,
+				    size_type_node, NULL_TREE);
+  local_define_builtin ("__builtin_alloca_with_align", ftype,
+			BUILT_IN_ALLOCA_WITH_ALIGN, "alloca",
+			ECF_MALLOC | ECF_NOTHROW | ECF_LEAF);
+
   /* If we're checking the stack, `alloca' can throw.  */
   if (flag_stack_check)
-    TREE_NOTHROW (built_in_decls[BUILT_IN_ALLOCA]) = 0;
+    {
+      TREE_NOTHROW (built_in_decls[BUILT_IN_ALLOCA]) = 0;
+      TREE_NOTHROW (built_in_decls[BUILT_IN_ALLOCA_WITH_ALIGN]) = 0;
+    }
 
   ftype = build_function_type_list (void_type_node,
 				    ptr_type_node, ptr_type_node,

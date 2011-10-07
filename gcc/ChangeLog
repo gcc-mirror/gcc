@@ -1,3 +1,21 @@
+2011-10-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/50527
+	* tree.c (build_common_builtin_nodes): Add local_define_builtin for
+	* builtins.c (expand_builtin_alloca): Handle BUILT_IN_ALLOCA_WITH_ALIGN
+	* tree-ssa-ccp.c (evaluate_stmt): Set align for
+	* builtins.def (BUILT_IN_ALLOCA_WITH_ALIGN): Declare using
+	* ipa-pure-const.c (special_builtin_state): Handle
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1)
+	* function.c (gimplify_parameters): Lower vla to
+	* gimplify.c (gimplify_vla_decl): Same.
+	* cfgexpand.c (expand_call_stmt): Handle BUILT_IN_ALLOCA_WITH_ALIGN.
+	* tree-mudflap.c (mf_xform_statements): Same.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary)
+	* varasm.c (incorporeal_function_p): Same.
+	* tree-object-size.c (alloc_object_size): Same.
+	* gimple.c (gimple_build_call_from_tree): Same.
+
 2011-10-07  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* function.c (frame_required_for_rtx): Remove function.
