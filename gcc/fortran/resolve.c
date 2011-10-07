@@ -4644,8 +4644,23 @@ resolve_array_ref (gfc_array_ref *ar)
 	}
     }
 
-  if (ar->type == AR_FULL && ar->as->rank == 0)
-    ar->type = AR_ELEMENT;
+  if (ar->type == AR_FULL)
+    {
+      if (ar->as->rank == 0)
+	ar->type = AR_ELEMENT;
+
+      /* Make sure array is the same as array(:,:), this way
+	 we don't need to special case all the time.  */
+      ar->dimen = ar->as->rank;
+      for (i = 0; i < ar->dimen; i++)
+	{
+	  ar->dimen_type[i] = DIMEN_RANGE;
+
+	  gcc_assert (ar->start[i] == NULL);
+	  gcc_assert (ar->end[i] == NULL);
+	  gcc_assert (ar->stride[i] == NULL);
+	}
+    }
 
   /* If the reference type is unknown, figure out what kind it is.  */
 
