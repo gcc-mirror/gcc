@@ -86,6 +86,8 @@ typedef struct gfc_se
      args alias.  */
   unsigned force_tmp:1;
 
+  unsigned want_coarray:1;
+
   /* Scalarization parameters.  */
   struct gfc_se *parent;
   struct gfc_ss *ss;
