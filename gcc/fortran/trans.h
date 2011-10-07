@@ -245,7 +245,7 @@ typedef struct gfc_loopinfo
   stmtblock_t pre;
   stmtblock_t post;
 
-  int dimen, codimen;
+  int dimen;
 
   /* All the SS involved with this loop.  */
   gfc_ss *ss;

@@ -641,7 +641,7 @@ gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping * mapping,
   tree tmp;
 
   if (as && as->type == AS_EXPLICIT)
-    for (n = 0; n < se->loop->dimen + se->loop->codimen; n++)
+    for (n = 0; n < se->loop->dimen; n++)
       {
 	dim = se->ss->data.info.dim[n];
 	gcc_assert (dim < as->rank);
@@ -655,22 +655,18 @@ gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping * mapping,
 	    gfc_add_block_to_block (&se->post, &tmpse.post);
 	    lower = fold_convert (gfc_array_index_type, tmpse.expr);
 
-	    if (se->loop->codimen == 0
-		|| n < se->loop->dimen + se->loop->codimen - 1)
-	      {
-		/* ...and the upper bound.  */
-		gfc_init_se (&tmpse, NULL);
-		gfc_apply_interface_mapping (mapping, &tmpse, as->upper[dim]);
-		gfc_add_block_to_block (&se->pre, &tmpse.pre);
-		gfc_add_block_to_block (&se->post, &tmpse.post);
-		upper = fold_convert (gfc_array_index_type, tmpse.expr);
+	    /* ...and the upper bound.  */
+	    gfc_init_se (&tmpse, NULL);
+	    gfc_apply_interface_mapping (mapping, &tmpse, as->upper[dim]);
+	    gfc_add_block_to_block (&se->pre, &tmpse.pre);
+	    gfc_add_block_to_block (&se->post, &tmpse.post);
+	    upper = fold_convert (gfc_array_index_type, tmpse.expr);
 
-		/* Set the upper bound of the loop to UPPER - LOWER.  */
-		tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				       gfc_array_index_type, upper, lower);
-		tmp = gfc_evaluate_now (tmp, &se->pre);
-		se->loop->to[n] = tmp;
-	      }
+	    /* Set the upper bound of the loop to UPPER - LOWER.  */
+	    tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				   gfc_array_index_type, upper, lower);
+	    tmp = gfc_evaluate_now (tmp, &se->pre);
+	    se->loop->to[n] = tmp;
 	  }
       }
 }
@@ -2116,7 +2112,7 @@ gfc_set_vector_loop_bounds (gfc_loopinfo * loop, gfc_ss_info * info)
   int n;
   int dim;
 
-  for (n = 0; n < loop->dimen + loop->codimen; n++)
+  for (n = 0; n < loop->dimen; n++)
     {
       dim = info->dim[n];
       if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR
@@ -2948,7 +2944,7 @@ gfc_start_scalarized_body (gfc_loopinfo * loop, stmtblock_t * pbody)
 
   gcc_assert (!loop->array_parameter);
 
-  for (dim = loop->dimen + loop->codimen - 1; dim >= 0; dim--)
+  for (dim = loop->dimen - 1; dim >= 0; dim--)
     {
       n = loop->order[dim];
 
@@ -3102,7 +3098,7 @@ gfc_trans_scalarizing_loops (gfc_loopinfo * loop, stmtblock_t * body)
 
   pblock = body;
   /* Generate the loops.  */
-  for (dim = 0; dim < loop->dimen + loop->codimen; dim++)
+  for (dim = 0; dim < loop->dimen; dim++)
     {
       n = loop->order[dim];
       gfc_trans_scalarized_loop_end (loop, n, pblock);
@@ -3288,7 +3284,6 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	case GFC_SS_FUNCTION:
 	case GFC_SS_COMPONENT:
 	  loop->dimen = ss->data.info.dimen;
-	  loop->codimen = ss->data.info.codimen;
 	  goto done;
 
 	/* As usual, lbound and ubound are exceptions!.  */
@@ -3298,14 +3293,12 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	    case GFC_ISYM_LBOUND:
 	    case GFC_ISYM_UBOUND:
 	      loop->dimen = ss->data.info.dimen;
-	      loop->codimen = 0;
 	      goto done;
 
 	    case GFC_ISYM_LCOBOUND:
 	    case GFC_ISYM_UCOBOUND:
 	    case GFC_ISYM_THIS_IMAGE:
 	      loop->dimen = ss->data.info.dimen;
-	      loop->codimen = ss->data.info.codimen;
 	      goto done;
 
 	    default:
@@ -3888,7 +3881,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
   mpz_t i;
 
   mpz_init (i);
-  for (n = 0; n < loop->dimen + loop->codimen; n++)
+  for (n = 0; n < loop->dimen; n++)
     {
       loopspec[n] = NULL;
       dynamic[n] = false;
@@ -3997,7 +3990,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
       /* Set the extents of this range.  */
       cshape = loopspec[n]->shape;
-      if (n < loop->dimen && cshape && INTEGER_CST_P (info->start[dim])
+      if (cshape && INTEGER_CST_P (info->start[dim])
 	  && INTEGER_CST_P (info->stride[dim]))
 	{
 	  loop->from[n] = info->start[dim];
