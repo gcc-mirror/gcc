@@ -3200,8 +3200,7 @@ evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
 /* Calculate the lower bound of an array section.  */
 
 static void
-gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
-			      bool coarray)
+gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
 {
   gfc_expr *stride = NULL;
   tree desc;
@@ -3219,16 +3218,14 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
       /* We use a zero-based index to access the vector.  */
       info->start[dim] = gfc_index_zero_node;
       info->end[dim] = NULL;
-      if (!coarray)
-	info->stride[dim] = gfc_index_one_node;
+      info->stride[dim] = gfc_index_one_node;
       return;
     }
 
   gcc_assert (ar->dimen_type[dim] == DIMEN_RANGE
 	      || ar->dimen_type[dim] == DIMEN_THIS_IMAGE);
   desc = info->descriptor;
-  if (!coarray)
-    stride = ar->stride[dim];
+  stride = ar->stride[dim];
 
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
@@ -3240,9 +3237,9 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
   evaluate_bound (&loop->pre, info->end, ar->end, desc, dim, false);
 
   /* Calculate the stride.  */
-  if (!coarray && stride == NULL)
+  if (stride == NULL)
     info->stride[dim] = gfc_index_one_node;
-  else if (!coarray)
+  else
     {
       gfc_init_se (&se, NULL);
       gfc_conv_expr_type (&se, stride, gfc_array_index_type);
@@ -3319,8 +3316,7 @@ done:
 	  gfc_conv_ss_descriptor (&loop->pre, ss, !loop->array_parameter);
 
 	  for (n = 0; n < ss->data.info.dimen; n++)
-	    gfc_conv_section_startstride (loop, ss, ss->data.info.dim[n],
-					  false);
+	    gfc_conv_section_startstride (loop, ss, ss->data.info.dim[n]);
 	  break;
 
 	case GFC_SS_INTRINSIC:
@@ -5975,7 +5971,14 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  for (n = ss->data.info.dimen; n < ss->data.info.dimen + codim - 1;
 	       n++)
 	    {
-	      gfc_conv_section_startstride (&loop, ss, n, true);
+	      /* Make sure we are not lost somehow.  */
+	      gcc_assert (info->ref->u.ar.dimen_type[n] == DIMEN_THIS_IMAGE);
+
+	      /* Make sure the call to gfc_conv_section_startstride won't 
+	         generate unnecessary code to calculate stride.  */
+	      gcc_assert (info->ref->u.ar.stride[n] == NULL);
+
+	      gfc_conv_section_startstride (&loop, ss, n);
 	      loop.from[n] = info->start[n];
 	      loop.to[n]   = info->end[n];
 	    }
