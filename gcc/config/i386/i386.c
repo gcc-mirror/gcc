@@ -15798,6 +15798,12 @@ ix86_fixup_binary_operands (enum rtx_code code, enum machine_mode mode,
   if (MEM_P (src1) && !rtx_equal_p (dst, src1))
     src1 = force_reg (mode, src1);
 
+  /* Improve address combine.  */
+  if (code == PLUS
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && MEM_P (src2))
+    src2 = force_reg (mode, src2);
+
   operands[1] = src1;
   operands[2] = src2;
   return dst;
