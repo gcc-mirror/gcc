@@ -4396,14 +4396,6 @@ compare_spec_to_ref (gfc_array_ref *ar)
 	  return FAILURE;
       }
 
-  if (as->corank && ar->codimen == 0)
-    {
-      int n;
-      ar->codimen = as->corank;
-      for (n = ar->dimen; n < ar->dimen + ar->codimen; n++)
-	ar->dimen_type[n] = DIMEN_THIS_IMAGE;
-    }
-
   return SUCCESS;
 }
 
@@ -4671,6 +4663,14 @@ resolve_array_ref (gfc_array_ref *ar)
 
   if (!ar->as->cray_pointee && compare_spec_to_ref (ar) == FAILURE)
     return FAILURE;
+
+  if (ar->as->corank && ar->codimen == 0)
+    {
+      int n;
+      ar->codimen = ar->as->corank;
+      for (n = ar->dimen; n < ar->dimen + ar->codimen; n++)
+	ar->dimen_type[n] = DIMEN_THIS_IMAGE;
+    }
 
   return SUCCESS;
 }
