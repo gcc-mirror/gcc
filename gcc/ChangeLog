@@ -1,3 +1,14 @@
+2011-10-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* function.c (frame_required_for_rtx): Remove function.
+	(requires_stack_frame_p): New arg set_up_by_prologue.  All callers
+	changed.  Compute a set of mentioned registers and compare against
+	the new arg rather than calling frame_required_for_rtx.
+	(thread_prologue_and_epilogue_insns): Compute the set_up_by_prologue
+	reg set.  Convert the unconverted_simple_returns mechanism to store
+	jump insns rather than their basic blocks.  Also check the
+	orig_entry_edge destination for new blocks.
+
 2011-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50650
