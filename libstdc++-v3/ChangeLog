@@ -1,3 +1,8 @@
+2011-10-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/util/testsuite_allocator.h (uneq_allocator): Add
+	propagate_on_container_swap typedef for C++0x testing.
+
 2011-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/27_io/ios_base/cons/assign_neg.cc: Tidy dg- directives,

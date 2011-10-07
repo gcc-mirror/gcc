@@ -256,7 +256,11 @@ namespace __gnu_test
       typedef Tp&                                 reference;
       typedef const Tp&                           const_reference;
       typedef Tp                                  value_type;
-      
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      typedef std::true_type                      propagate_on_container_swap;
+#endif
+
       template<typename Tp1>
         struct rebind
 	{ typedef uneq_allocator<Tp1> other; };
