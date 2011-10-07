@@ -9453,7 +9453,7 @@
 	  (match_operand:V16HI 2 "nonimmediate_operand" "xm")
 	  (match_operand:V16HI 1 "register_operand" "x")
 	  (match_operand:SI 3 "avx2_pblendw_operand" "n")))]
-  "TARGET_SSE4_1"
+  "TARGET_AVX2"
 {
   operands[3] = GEN_INT (INTVAL (operands[3]) & 0xff);
   return "vpblendw\t{%3, %2, %1, %0|%0, %1, %2, %3}";
