@@ -3279,8 +3279,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 
   loop->dimen = 0;
   /* Determine the rank of the loop.  */
-  for (ss = loop->ss;
-       ss != gfc_ss_terminator && loop->dimen == 0; ss = ss->loop_chain)
+  for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
       switch (ss->type)
 	{
@@ -3290,7 +3289,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	case GFC_SS_COMPONENT:
 	  loop->dimen = ss->data.info.dimen;
 	  loop->codimen = ss->data.info.codimen;
-	  break;
+	  goto done;
 
 	/* As usual, lbound and ubound are exceptions!.  */
 	case GFC_SS_INTRINSIC:
@@ -3300,14 +3299,14 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	    case GFC_ISYM_UBOUND:
 	      loop->dimen = ss->data.info.dimen;
 	      loop->codimen = 0;
-	      break;
+	      goto done;
 
 	    case GFC_ISYM_LCOBOUND:
 	    case GFC_ISYM_UCOBOUND:
 	    case GFC_ISYM_THIS_IMAGE:
 	      loop->dimen = ss->data.info.dimen;
 	      loop->codimen = ss->data.info.codimen;
-	      break;
+	      goto done;
 
 	    default:
 	      break;
@@ -3320,8 +3319,9 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 
   /* We should have determined the rank of the expression by now.  If
      not, that's bad news.  */
-  gcc_assert (loop->dimen + loop->codimen != 0);
+  gcc_unreachable ();
 
+done:
   /* Loop over all the SS in the chain.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
