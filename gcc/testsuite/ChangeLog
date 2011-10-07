@@ -1,5 +1,10 @@
 2011-10-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR tree-optimization/50575
+	* gcc.c-torture/execute/vector-compare-2.x: New file.
+
+2011-10-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR middle-end/50125
 	* gcc.dg/uninit-B.c (baz): Remove xfail *-*-*.
 	* gcc.dg/uninit-pr19430.c (main): Remove xfail *-*-*.
