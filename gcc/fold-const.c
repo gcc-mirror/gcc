@@ -13880,11 +13880,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx, htab_t ht)
   union tree_node buf;
   int i, len;
 
-recursive_label:
-
-  gcc_assert ((sizeof (struct tree_exp) + 5 * sizeof (tree)
-	       <= sizeof (struct tree_function_decl))
-	      && sizeof (struct tree_type) <= sizeof (struct tree_function_decl));
+ recursive_label:
   if (expr == NULL)
     return;
   slot = (void **) htab_find_slot (ht, expr, INSERT);
