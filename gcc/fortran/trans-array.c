@@ -3204,7 +3204,8 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim,
       return;
     }
 
-  gcc_assert (ar->dimen_type[dim] == DIMEN_RANGE);
+  gcc_assert (ar->dimen_type[dim] == DIMEN_RANGE
+	      || ar->dimen_type[dim] == DIMEN_THIS_IMAGE);
   desc = info->descriptor;
   start = ar->start[dim];
   end = ar->end[dim];
