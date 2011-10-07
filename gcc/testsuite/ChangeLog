@@ -1,3 +1,9 @@
+2011-10-07  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/avx256-unaligned-load-2.c: Tweek vinsert pattern
+	match for avx2.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Similarly.
+
 2011-10-07  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.dg/pr50193-1.c: New file.
