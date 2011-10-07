@@ -2,6 +2,10 @@
 /* { dg-do compile } */
 /* { dg-require-alias "" } */
 
-int a __asm__ ("b") = 0;
-extern int c __asm__ ("a") __attribute__ ((alias ("b")));
+#define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
+#define ASMNAME2(prefix, cname) STRING (prefix) cname
+#define STRING(x)    #x
+
+int a __asm__ (ASMNAME ("b")) = 0;
+extern int c __asm__ (ASMNAME ("a")) __attribute__ ((alias ("b")));
 extern int d __attribute__ ((weak, alias ("a")));
