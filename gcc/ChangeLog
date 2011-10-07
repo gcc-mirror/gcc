@@ -1,3 +1,10 @@
+2011-10-07  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/50603
+	* config/i386/i386.c (ix86_fixup_binary_operands): Force src2 of
+	integer PLUS RTX to a register to improve address combine.
+
 2011-10-06  Richard Henderson  <rth@redhat.com>
 
 	* combine-stack-adjust.c (maybe_move_args_size_note): Add after
@@ -31,9 +38,8 @@
 
 2011-10-06  Bernd Schmidt  <bernds@codesourcery.com>
 
-	* function.c (thread_prologue_and_epilogue_insns): Emit split
-	prologue on the orig_entry_edge. Don't account for it in
-	prologue_clobbered.
+	* function.c (thread_prologue_and_epilogue_insns): Emit split prologue
+	on the orig_entry_edge. Don't account for it in prologue_clobbered.
 
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
