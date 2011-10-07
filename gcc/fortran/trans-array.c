@@ -6140,22 +6140,13 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       for (n = ndim; n < ndim + codim; n++)
 	{
-	  /* look for the corresponding scalarizer dimension: dim.  */
-	  for (dim = 0; dim < ndim + codim; dim++)
-	    if (info->dim[dim] == n)
-	      break;
-
-	  /* loop exited early: the DIM being looked for has been found.  */
-	  gcc_assert (dim < ndim + codim);
-
-	  from = loop.from[dim];
-	  to = loop.to[dim];
+	  from = loop.from[n];
+	  to = loop.to[n];
 	  gfc_conv_descriptor_lbound_set (&loop.pre, parm,
-					  gfc_rank_cst[dim], from);
+					  gfc_rank_cst[n], from);
 	  if (n < ndim + codim - 1)
 	    gfc_conv_descriptor_ubound_set (&loop.pre, parm,
-					    gfc_rank_cst[dim], to);
-	  dim++;
+					    gfc_rank_cst[n], to);
 	}
 
       if (se->data_not_needed)
