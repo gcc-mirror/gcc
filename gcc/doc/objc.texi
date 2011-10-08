@@ -635,7 +635,8 @@ following class does this:
 
 + (void)initialize
 @{
-  class_ivar_set_gcinvisible (self, "weakPointer", YES);
+  if (self == objc_lookUpClass ("WeakPointer"))
+    class_ivar_set_gcinvisible (self, "weakPointer", YES);
 @}
 
 - initWithPointer:(const void*)p

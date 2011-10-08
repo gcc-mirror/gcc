@@ -516,34 +516,13 @@ __objc_send_initialize (Class class)
 
       {
 	SEL op = sel_registerName ("initialize");
-	IMP imp = 0;
-        struct objc_method_list * method_list = class->class_pointer->methods;
-	
-        while (method_list)
-	  {
-	    int i;
-	    struct objc_method * method;
-	    
-	    for (i = 0; i < method_list->method_count; i++)
-	      {
-		method = &(method_list->method_list[i]);
-		if (method->method_name
-		    && method->method_name->sel_id == op->sel_id)
-		  {
-		    imp = method->method_imp;
-		    break;
-		  }
-	      }
-	    
-	    if (imp)
-	      break;
-	    
-	    method_list = method_list->method_next;
-	  }
-	if (imp)
+        struct objc_method *method = search_for_method_in_hierarchy (class->class_pointer, 
+								     op);
+
+	if (method)
 	  {
 	    DEBUG_PRINTF (" begin of [%s +initialize]\n", class->name);
-	    (*imp) ((id) class, op);
+	    (*method->method_imp) ((id)class, op);
 	    DEBUG_PRINTF (" end of [%s +initialize]\n", class->name);
 	  }
 #ifdef DEBUG

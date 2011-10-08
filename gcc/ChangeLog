@@ -1,3 +1,9 @@
+2011-10-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/50428
+	* doc/objc.texi (Garbage Collection): Updated example to protect
+	+initialize against execution in subclasses.
+
 2011-10-07  Richard Henderson  <rth@redhat.com>
 
 	* doc/extend.texi (__builtin_shuffle): Improve the description to
