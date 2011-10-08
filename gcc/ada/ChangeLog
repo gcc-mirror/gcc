@@ -8711,15 +8711,16 @@
 
 2011-08-03  Matthew Heaney  <heaney@adacore.com>
 
-	* a-cobove.adb (Merge): Move source onto target, instead of using Assign
+	* a-cobove.adb (Merge): Move source onto target, instead of using
+	Assign.
 
 2011-08-03  Matthew Heaney  <heaney@adacore.com>
 
-	* a-cbdlli.adb (Splice): move source items from first to last
+	* a-cbdlli.adb (Splice): Move source items from first to last.
 
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
-	* sem_util.ads: comment added.
+	* sem_util.ads: Add comment.
 
 2011-08-03  Javier Miranda  <miranda@adacore.com>
 
