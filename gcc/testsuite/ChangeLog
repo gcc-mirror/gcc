@@ -1,3 +1,8 @@
+2011-10-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/50428	
+	* objc/execute/initialize-1.m: New test.
+
 2011-10-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/47844

@@ -1,3 +1,14 @@
+2011-10-08  Richard Frith-Macdonald <rfm@gnu.org>
+            Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/50428
+	* sendmsg.c (__objc_send_initialize): If a class does not have an
+	+initialize method, search for an +initialize method in the
+	superclass and in the ancestor classes and execute the first one
+	that is found.  This makes the GNU runtime behave in the same way
+	as the Apple/NeXT runtime with respect to +initialize methods and
+	subclassing.
+
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/50002
