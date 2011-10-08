@@ -2609,6 +2609,18 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
       /* Temporary array or derived type component.  */
       gcc_assert (se->loop);
       index = se->loop->loopvar[se->loop->order[i]];
+
+      /* Pointer functions can have stride[0] different from unity. 
+	 Use the stride returned by the function call and stored in
+	 the descriptor for the temporary.  */ 
+      if (se->ss && se->ss->type == GFC_SS_FUNCTION
+	    && se->ss->expr
+	    && se->ss->expr->symtree
+	    && se->ss->expr->symtree->n.sym->result
+	    && se->ss->expr->symtree->n.sym->result->attr.pointer)
+	stride = gfc_conv_descriptor_stride_get (info->descriptor,
+						 gfc_rank_cst[dim]);
+
       if (!integer_zerop (info->delta[dim]))
 	index = fold_build2_loc (input_location, PLUS_EXPR,
 				 gfc_array_index_type, index, info->delta[dim]);

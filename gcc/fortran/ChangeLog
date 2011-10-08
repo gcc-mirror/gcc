@@ -1,3 +1,9 @@
+2011-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47844
+	* trans-array.c (gfc_conv_array_index_offset): Use descriptor
+	stride for pointer function results.
+
 2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
 
 	* trans-array.c	(gfc_conv_expr_descriptor): Remove trailing whitespace.
