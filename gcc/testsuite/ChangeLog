@@ -1,3 +1,8 @@
+2011-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38980
+	* g++.dg/warn/format5.C: New.
+
 2011-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45044
@@ -22,7 +27,7 @@
 
 2011-10-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	PR libobjc/50428	
+	PR libobjc/50428
 	* objc/execute/initialize-1.m: New test.
 
 2011-10-08  Paul Thomas  <pault@gcc.gnu.org>

@@ -1,3 +1,14 @@
+2011-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38980
+	* init.c (constant_value_1): Add bool parameter.
+	(decl_constant_value_safe): Add.
+	(integral_constant_value): Adjust.
+	(decl_constant_value): Adjust.
+	* cp-tree.h (decl_constant_value_safe): Declare.
+	* typeck.c (decay_conversion): Use decl_constant_value_safe.
+	* call.c (convert_like_real): Likewise.
+
 2011-10-09  Jakub Jelinek  <jakub@redhat.com>
 	    Diego Novillo  <dnovillo@google.com>
 
