@@ -1627,19 +1627,19 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 bool
 reregister_specialization (tree spec, tree tinfo, tree new_spec)
 {
-  spec_entry **slot;
+  spec_entry *entry;
   spec_entry elt;
 
   elt.tmpl = most_general_template (TI_TEMPLATE (tinfo));
   elt.args = TI_ARGS (tinfo);
   elt.spec = NULL_TREE;
 
-  slot = (spec_entry **) htab_find_slot (decl_specializations, &elt, INSERT);
-  if (*slot)
+  entry = (spec_entry *) htab_find (decl_specializations, &elt);
+  if (entry != NULL)
     {
-      gcc_assert ((*slot)->spec == spec || (*slot)->spec == new_spec);
+      gcc_assert (entry->spec == spec || entry->spec == new_spec);
       gcc_assert (new_spec != NULL_TREE);
-      (*slot)->spec = new_spec;
+      entry->spec = new_spec;
       return 1;
     }
 
