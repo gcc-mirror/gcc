@@ -45,7 +45,7 @@
 	* trans-intrinsic.c (conv_same_strlen_check): New method.
 	(gfc_conv_intrinsic_merge): Call it here to actually do the check.
 
-2008-12-15  Mikael Morin  <mikael.morin@tele2.fr>
+2008-12-15  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/38487
 	* dependency.c (gfc_is_data_pointer): New function.
@@ -53,7 +53,7 @@
 	in the pointer case.
 	(gfc_check_dependency): Use gfc_is_data_pointer.
 
-2008-12-15  Mikael Morin  <mikael.morin@tele2.fr>
+2008-12-15  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/38113
 	* error.c (show_locus): Start counting columns at 0.
@@ -98,13 +98,13 @@
 	* invoke.texi (idirafter): New.
 	(no-range-check): Fixed entry in option-index.
 
-2008-12-09  Mikael Morin  <mikael.morin@tele2.fr>
+2008-12-09  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/37469
 	* expr.c (find_array_element): Simplify array bounds.
 	Assert that both bounds are constant expressions.
 
-2008-12-09  Mikael Morin  <mikael.morin@tele2.fr>
+2008-12-09  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/35983
 	* trans-expr.c (gfc_trans_subcomponent_assign):
@@ -158,7 +158,7 @@
 	* trans-types.c (gfc_sym_type,gfc_get_function_type): Support procedure
 	pointers as function result.
 
-2008-12-01  Mikael Morin  <mikael.morin@tele2.fr>
+2008-12-01  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/38252
 	* parse.c (parse_spec): Skip statement order check in case
@@ -193,7 +193,7 @@
 	* module.c (gfc_dump_module): Report error on unlink only if
 	errno != ENOENT.
 
-2008-11-25  Mikael Morin  <mikael.morin@tele2.fr>
+2008-11-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/36463
 	* expr.c (replace_symbol): Don't replace the symtree
@@ -218,7 +218,7 @@
 	* arith.c (gfc_check_real_range): Add mpfr_check_range.
 	* simplify.c (gfc_simplify_nearest): Add mpfr_check_range.
 
-2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
+2008-11-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/38184
 	* simplify.c (is_constant_array_expr): Return true instead of false
@@ -308,7 +308,7 @@
 	* module.c (load_equiv): Regression fix; check that equivalence
 	members come from the same module only.
 
-2008-11-16  Mikael Morin <mikael.morin@tele2.fr>
+2008-11-16  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/35681
 	* dependency.c (gfc_check_argument_var_dependency): Add
@@ -333,7 +333,7 @@
 	* dependency.h (enum gfc_dep_check): New enum.
 	(gfc_check_fncall_dependency): Update prototype.
 
-2008-11-16  Mikael Morin  <mikael.morin@tele2.fr>
+2008-11-16  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/37992
 	* gfortran.h (gfc_namespace): Added member old_cl_list, 
@@ -518,7 +518,7 @@
 	* fortran/check.c (gfc_check_random_seed): Check PUT size
 	at compile time.
 
-2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
+2008-10-31  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/35840
 	* expr.c (gfc_reduce_init_expr): New function, containing checking code
@@ -528,7 +528,7 @@
 	checking that the expression is a constant. 
 	* match.h (gfc_reduce_init_expr): Prototype added. 
 
-2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
+2008-10-31  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/35820
 	* resolve.c (gfc_count_forall_iterators): New function.
@@ -548,7 +548,7 @@
 	gfc_simplify_ifix, gfc_simplify_idint, simplify_nint): Update function
 	calls to include locus.
 
-2008-10-30  Mikael Morin  <mikael.morin@tele2.fr>
+2008-10-30  Mikael Morin  <mikael@gcc.gnu.org>
 
         PR fortran/37903
         * trans-array.c (gfc_trans_create_temp_array): If n is less
@@ -563,7 +563,7 @@
 	possible.  Calculate the translation from loop variables to
 	array indices if an array constructor.
 
-2008-10-30  Mikael Morin  <mikael.morin@tele2.fr>
+2008-10-30  Mikael Morin  <mikael@gcc.gnu.org>
 
         PR fortran/37749
         * trans-array.c (gfc_trans_create_temp_array): If size is NULL
