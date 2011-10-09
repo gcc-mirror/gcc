@@ -1,5 +1,11 @@
 2011-10-09  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/45044
+	* gfortran.dg/common_14.f90: Compile with -Wno-align-commons.
+	* gfortran.dg/common_16.f90: New.
+
+2011-10-09  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/iso_c_binding_param_1.f90: New.
 	* gfortran.dg/iso_c_binding_param_2.f90: New.
 	* gfortran.dg/c_sizeof_2.f90: Update dg-error.
