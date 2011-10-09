@@ -388,6 +388,7 @@ vect_handle_widen_mult_by_const (gimple stmt, tree const_oprnd, tree *oprnd,
           || TREE_TYPE (gimple_assign_lhs (new_stmt)) != new_type)
         return false;
 
+      VEC_safe_push (gimple, heap, *stmts, def_stmt);
       *oprnd = gimple_assign_lhs (new_stmt);
     }
   else
@@ -1424,8 +1425,6 @@ vect_pattern_recog_1 (vect_recog_func_ptr vect_recog_func,
     {
       /* No need to check target support (already checked by the pattern
          recognition function).  */
-      if (type_out)
-	gcc_assert (VECTOR_MODE_P (TYPE_MODE (type_out)));
       pattern_vectype = type_out ? type_out : type_in;
     }
   else

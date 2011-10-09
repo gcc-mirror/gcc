@@ -1,3 +1,11 @@
+2011-10-09  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50635
+	* tree-vect-patterns.c (vect_handle_widen_mult_by_const): Add
+	DEF_STMT to the list of statements to be replaced by the
+	pattern statements.
+	(vect_handle_widen_mult_by_const): Don't check TYPE_OUT.
+
 2011-10-09  Anatoly Sokolov  <aesok@post.ru>
 
 	* system.h: Commit forgotten hunk in previous patch.

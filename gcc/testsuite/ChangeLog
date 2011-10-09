@@ -1,3 +1,8 @@
+2011-10-09  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50635
+	* gcc.dg/vect/pr50635.c: New test.
+
 2011-10-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50659
