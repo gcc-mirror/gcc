@@ -298,8 +298,8 @@ get_int_kind_from_minimal_width (int size)
 /* Generate the CInteropKind_t objects for the C interoperable
    kinds.  */
 
-static
-void init_c_interop_kinds (void)
+void
+gfc_init_c_interop_kinds (void)
 {
   int i;
 
@@ -316,11 +316,11 @@ void init_c_interop_kinds (void)
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_INTEGER; \
   c_interop_kinds_table[a].value = c;
-#define NAMED_REALCST(a,b,c) \
+#define NAMED_REALCST(a,b,c,d) \
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_REAL; \
   c_interop_kinds_table[a].value = c;
-#define NAMED_CMPXCST(a,b,c) \
+#define NAMED_CMPXCST(a,b,c,d) \
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_COMPLEX; \
   c_interop_kinds_table[a].value = c;
@@ -584,10 +584,8 @@ gfc_init_kinds (void)
   /* Choose atomic kinds to match C's int.  */
   gfc_atomic_int_kind = gfc_c_int_kind;
   gfc_atomic_logical_kind = gfc_c_int_kind;
-
-  /* initialize the C interoperable kinds  */
-  init_c_interop_kinds();
 }
+
 
 /* Make sure that a valid kind is present.  Returns an index into the
    associated kinds array, -1 if the kind is not present.  */

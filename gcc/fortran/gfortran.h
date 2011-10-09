@@ -610,8 +610,8 @@ iso_fortran_env_symbol;
 #undef NAMED_DERIVED_TYPE
 
 #define NAMED_INTCST(a,b,c,d) a,
-#define NAMED_REALCST(a,b,c) a,
-#define NAMED_CMPXCST(a,b,c) a,
+#define NAMED_REALCST(a,b,c,d) a,
+#define NAMED_CMPXCST(a,b,c,d) a,
 #define NAMED_LOGCST(a,b,c) a,
 #define NAMED_CHARKNDCST(a,b,c) a,
 #define NAMED_CHARCST(a,b,c) a,

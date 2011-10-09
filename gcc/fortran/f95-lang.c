@@ -595,6 +595,7 @@ gfc_init_decl_processing (void)
   /* Set up F95 type nodes.  */
   gfc_init_kinds ();
   gfc_init_types ();
+  gfc_init_c_interop_kinds ();
 }
 
 
