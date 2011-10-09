@@ -1,3 +1,9 @@
+2011-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34927
+	* typeck2.c (abstract_virtuals_error_sfinae): Don't produce duplicate
+	inform messages in case of cloned destructor.
+
 2011-10-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39164

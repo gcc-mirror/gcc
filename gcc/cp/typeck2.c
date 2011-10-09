@@ -340,7 +340,10 @@ abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
 	      type);
 
       FOR_EACH_VEC_ELT (tree, pure, ix, fn)
-	inform (input_location, "\t%+#D", fn);
+	if (! DECL_CLONED_FUNCTION_P (fn)
+	    || DECL_COMPLETE_DESTRUCTOR_P (fn))
+	  inform (input_location, "\t%+#D", fn);
+
       /* Now truncate the vector.  This leaves it non-null, so we know
 	 there are pure virtuals, but empty so we don't list them out
 	 again.  */
