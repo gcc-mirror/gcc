@@ -3519,7 +3519,7 @@
 
 	* intrinsic.texi (MALLOC): Make example more portable.
 
-2009-02-13  Mikael Morin  <mikael.morin@tele2.fr>
+2009-02-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/38259
 	* module.c (gfc_dump_module,gfc_use_module): Add module
@@ -3566,7 +3566,7 @@
 
 	* invoke.texi (RANGE): RANGE also takes INTEGER arguments.
 
-2009-01-19  Mikael Morin  <mikael.morin@tele2.fr>
+2009-01-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/38859
 	* simplify.c (simplify_bound): Don't use array specification
@@ -3656,7 +3656,7 @@
 	is substituted by a function. 
 	* resolve.c (check_host_association): Return if above is set.
 
-2009-01-04  Mikael Morin  <mikael.morin@tele2.fr>
+2009-01-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/35681
 	* ChangeLog-2008: Fix function name.
@@ -3681,7 +3681,7 @@
 	* intrinsic.h (gfc_simplify_merge): New prototype.
 	* intrinsic.c (add_functions): Added simplification for MERGE.
 
-2009-01-04  Mikael Morin  <mikael.morin@tele2.fr>
+2009-01-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/38536
 	* gfortran.h (gfc_is_data_pointer): Added prototype
