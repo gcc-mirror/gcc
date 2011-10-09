@@ -5350,8 +5350,53 @@ import_iso_c_binding_module (void)
       for (u = gfc_rename_list; u; u = u->next)
 	if (strcmp (c_interop_kinds_table[i].name, u->use_name) == 0)
 	  {
+	    bool not_in_std;
+	    const char *name;
 	    u->found = 1;
 	    found = true;
+
+	    switch (i)
+	      {
+#define NAMED_FUNCTION(a,b,c,d) \
+	        case a: \
+		  not_in_std = (gfc_option.allow_std & d) == 0; \
+		  name = b; \
+		  break;
+#include "iso-c-binding.def"
+#undef NAMED_FUNCTION
+#define NAMED_INTCST(a,b,c,d) \
+	        case a: \
+		  not_in_std = (gfc_option.allow_std & d) == 0; \
+		  name = b; \
+		  break;
+#include "iso-c-binding.def"
+#undef NAMED_INTCST
+#define NAMED_REALCST(a,b,c,d) \
+	        case a: \
+		  not_in_std = (gfc_option.allow_std & d) == 0; \
+		  name = b; \
+		  break;
+#include "iso-c-binding.def"
+#undef NAMED_REALCST
+#define NAMED_CMPXCST(a,b,c,d) \
+	        case a: \
+		  not_in_std = (gfc_option.allow_std & d) == 0; \
+		  name = b; \
+		  break;
+#include "iso-c-binding.def"
+#undef NAMED_CMPXCST
+		default:
+		  not_in_std = false;
+		  name = "";
+	      }
+
+	    if (not_in_std)
+	      {
+		gfc_error ("The symbol '%s', referenced at %C, is not "
+			   "in the selected standard", name);
+		continue;
+	      }
+
 	    switch (i)
 	      {
 #define NAMED_FUNCTION(a,b,c,d) \
@@ -5374,23 +5419,59 @@ import_iso_c_binding_module (void)
 	  }
 
       if (!found && !only_flag)
-	switch (i)
-	  {
+	{
+	  /* Skip, if the symbol is not in the enabled standard.  */
+	  switch (i)
+	    {
 #define NAMED_FUNCTION(a,b,c,d) \
-	    case a: \
-	      if ((gfc_option.allow_std & d) == 0) \
-		continue; \
-	      create_intrinsic_function (b, (gfc_isym_id) c, \
-					 iso_c_module_name, \
-					 INTMOD_ISO_C_BINDING); \
+	      case a: \
+		if ((gfc_option.allow_std & d) == 0) \
+		  continue; \
+		break;
+#include "iso-c-binding.def"
+#undef NAMED_FUNCTION
+
+#define NAMED_INTCST(a,b,c,d) \
+	      case a: \
+		if ((gfc_option.allow_std & d) == 0) \
+		  continue; \
+		break;
+#include "iso-c-binding.def"
+#undef NAMED_INTCST
+#define NAMED_REALCST(a,b,c,d) \
+	      case a: \
+		if ((gfc_option.allow_std & d) == 0) \
+		  continue; \
+		break;
+#include "iso-c-binding.def"
+#undef NAMED_REALCST
+#define NAMED_CMPXCST(a,b,c,d) \
+	      case a: \
+		if ((gfc_option.allow_std & d) == 0) \
+		  continue; \
+		break;
+#include "iso-c-binding.def"
+#undef NAMED_CMPXCST
+	      default:
+		; /* Not GFC_STD_* versioned. */
+	    }
+
+	  switch (i)
+	    {
+#define NAMED_FUNCTION(a,b,c,d) \
+	      case a: \
+		create_intrinsic_function (b, (gfc_isym_id) c, \
+					   iso_c_module_name, \
+					   INTMOD_ISO_C_BINDING); \
 		  break;
 #include "iso-c-binding.def"
 #undef NAMED_FUNCTION
 
-	    default:
-	      generate_isocbinding_symbol (iso_c_module_name,
-					   (iso_c_binding_symbol) i, NULL);
-	  }
+	      default:
+		generate_isocbinding_symbol (iso_c_module_name,
+					     (iso_c_binding_symbol) i, NULL);
+	    }
+	}
    }
 
    for (u = gfc_rename_list; u; u = u->next)

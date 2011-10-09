@@ -13006,7 +13006,9 @@ type default integer, which can be used as KIND type parameters.
 In addition to the integer named constants required by the Fortran 2003 
 standard, GNU Fortran provides as an extension named constants for the 
 128-bit integer types supported by the C compiler: @code{C_INT128_T, 
-C_INT_LEAST128_T, C_INT_FAST128_T}.
+C_INT_LEAST128_T, C_INT_FAST128_T}. Furthermore, if @code{__float} is
+supported in C, the named constants @code{C_FLOAT128, C_FLOAT128_COMPLEX}
+are defined.
 
 @multitable @columnfractions .15 .35 .35 .35
 @item Fortran Type  @tab Named constant         @tab C type                                @tab Extension
@@ -13036,9 +13038,11 @@ C_INT_LEAST128_T, C_INT_FAST128_T}.
 @item @code{REAL}   @tab @code{C_FLOAT}         @tab @code{float}
 @item @code{REAL}   @tab @code{C_DOUBLE}        @tab @code{double}
 @item @code{REAL}   @tab @code{C_LONG_DOUBLE}   @tab @code{long double}
+@item @code{REAL}   @tab @code{C_FLOAT128}      @tab @code{__float128}                    @tab Ext.
 @item @code{COMPLEX}@tab @code{C_FLOAT_COMPLEX} @tab @code{float _Complex}
 @item @code{COMPLEX}@tab @code{C_DOUBLE_COMPLEX}@tab @code{double _Complex}
 @item @code{COMPLEX}@tab @code{C_LONG_DOUBLE_COMPLEX}@tab @code{long double _Complex}
+@item @code{REAL}   @tab @code{C_FLOAT128_COMPLEX}   @tab @code{__float128 _Complex}      @tab Ext.
 @item @code{LOGICAL}@tab @code{C_BOOL}          @tab @code{_Bool}
 @item @code{CHARACTER}@tab @code{C_CHAR}        @tab @code{char}
 @end multitable

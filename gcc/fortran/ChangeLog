@@ -1,3 +1,21 @@
+2011-10-09  Tobias Burnus  <burnus@net-b.de>
+
+	* Make-lang.in (F95_PARSER_OBJS, GFORTRAN_TRANS_DEPS): Add
+	dependency on iso-c-binding.def and iso-fortran-env.def.
+	* module.c (import_iso_c_binding_module): Add error when
+	explicitly importing a nonstandard symbol; extend standard-
+	depending loading.
+	* iso-c-binding.def: Add c_float128 and c_float128_complex
+	integer parameters (for -std=gnu).
+	* intrinsic.texi (ISO_C_Binding): Document them.
+	* symbol.c (generate_isocbinding_symbol): Change macros
+	to ignore GFC_STD_* data.
+	* trans-types.c (gfc_init_c_interop_kinds): Ditto; make
+	nonstatic and renamed from "init_c_interop_kinds".
+	(gfc_init_kinds): Don't call it
+	* trans-types.h (gfc_init_c_interop_kinds): Add prototype.
+	* f95-lang.c (gfc_init_decl_processing): Call it.
+
 2011-10-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50659

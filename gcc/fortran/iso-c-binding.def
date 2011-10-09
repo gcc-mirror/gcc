@@ -24,11 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef NAMED_REALCST
-# define NAMED_REALCST(a,b,c) 
+# define NAMED_REALCST(a,b,c,d) 
 #endif
 
 #ifndef NAMED_CMPXCST
-# define NAMED_CMPXCST(a,b,c) 
+# define NAMED_CMPXCST(a,b,c,d) 
 #endif
 
 #ifndef NAMED_LOGCST
@@ -103,17 +103,25 @@ NAMED_INTCST (ISOCBINDING_INT_FAST128_T, "c_int_fast128_t",
 	      get_int_kind_from_width (128), GFC_STD_GNU)
 
 NAMED_REALCST (ISOCBINDING_FLOAT, "c_float", \
-               get_real_kind_from_node (float_type_node))
+               get_real_kind_from_node (float_type_node), GFC_STD_F2003)
 NAMED_REALCST (ISOCBINDING_DOUBLE, "c_double", \
-               get_real_kind_from_node (double_type_node))
+               get_real_kind_from_node (double_type_node), GFC_STD_F2003)
 NAMED_REALCST (ISOCBINDING_LONG_DOUBLE, "c_long_double", \
-               get_real_kind_from_node (long_double_type_node))
+               get_real_kind_from_node (long_double_type_node), GFC_STD_F2003)
+NAMED_REALCST (ISOCBINDING_FLOAT128, "c_float128", \
+	       float128_type_node == NULL_TREE \
+		  ? -4 : get_real_kind_from_node (float128_type_node), \
+	       GFC_STD_GNU)
 NAMED_CMPXCST (ISOCBINDING_FLOAT_COMPLEX, "c_float_complex", \
-               get_real_kind_from_node (float_type_node))
+               get_real_kind_from_node (float_type_node), GFC_STD_F2003)
 NAMED_CMPXCST (ISOCBINDING_DOUBLE_COMPLEX, "c_double_complex", \
-               get_real_kind_from_node (double_type_node))
+               get_real_kind_from_node (double_type_node), GFC_STD_F2003)
 NAMED_CMPXCST (ISOCBINDING_LONG_DOUBLE_COMPLEX, "c_long_double_complex", \
-               get_real_kind_from_node (long_double_type_node))
+               get_real_kind_from_node (long_double_type_node), GFC_STD_F2003)
+NAMED_CMPXCST (ISOCBINDING_FLOAT128_COMPLEX, "c_float128_complex", \
+	       float128_type_node == NULL_TREE \
+		  ? -4 : get_real_kind_from_node (float128_type_node), \
+	       GFC_STD_GNU)
 
 NAMED_LOGCST (ISOCBINDING_BOOL, "c_bool", \
               get_int_kind_from_width (BOOL_TYPE_SIZE))
