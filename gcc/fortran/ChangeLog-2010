@@ -71,7 +71,7 @@
 	substring references.
 	(gfc_check_same_strlen):  Use gfc_var_strlen.
 
-2010-12-23  Mikael Morin  <mikael.morin@gcc.gnu.org>
+2010-12-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/46978
 	Revert part of revision 164112

@@ -380,7 +380,7 @@
 	* symbol.c (check_conflict): Allow threadprivate attribute with
 	FL_PROCEDURE if proc_pointer.
 
-2011-08-25  Mikael Morin  <mikael.morin@gcc.gnu.org>
+2011-08-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50050
 	* expr.c (gfc_free_shape): Do nothing if shape is NULL.
@@ -430,7 +430,7 @@
 	* cpp.c (gfc_cpp_init): Force BUILTINS_LOCATION for tokens
 	defined in cpp_define_builtins.
 
-2011-08-22  Mikael Morin  <mikael.morin@gcc.gnu.org>
+2011-08-22  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50050
 	* gfortran.h (gfc_clear_shape, gfc_free_shape): New prototypes.
