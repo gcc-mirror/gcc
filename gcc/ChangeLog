@@ -1,3 +1,8 @@
+2011-10-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* system.h: Commit forgotten hunk in previous patch.
+	(OUTPUT_ADDR_CONST_EXTRA): Poison.
+
 2011-10-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/50428
