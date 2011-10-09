@@ -1,3 +1,8 @@
+2011-10-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50659
+	* gfortran.dg/proc_decl_27.f90: New.
+
 2011-10-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/50428	
