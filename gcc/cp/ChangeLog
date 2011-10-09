@@ -1,3 +1,13 @@
+2011-10-09  Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* pt.c (reregister_specialization): Use htab_find instead of
+	htab_find_slot with INSERT.
+	(maybe_process_partial_specialization, lookup_template_class_1): Change
+	slot variable type to void ** to avoid aliasing problems.
+	(register_specialization): Likewise.  Use slot != NULL instead of
+	more expensive !optimize_specialization_lookup_p (tmpl) test.
+
 2011-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/34927

@@ -892,7 +892,8 @@ maybe_process_partial_specialization (tree type)
 		     instantiation.  Reassign it to the new member
 		     specialization template.  */
 		  spec_entry elt;
-		  spec_entry **slot;
+		  spec_entry *entry;
+		  void **slot;
 
 		  elt.tmpl = most_general_template (tmpl);
 		  elt.args = CLASSTYPE_TI_ARGS (inst);
@@ -903,10 +904,10 @@ maybe_process_partial_specialization (tree type)
 		  elt.tmpl = tmpl;
 		  elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
 
-		  slot = (spec_entry **)
-		    htab_find_slot (type_specializations, &elt, INSERT);
-		  *slot = ggc_alloc_spec_entry ();
-		  **slot = elt;
+		  slot = htab_find_slot (type_specializations, &elt, INSERT);
+		  entry = ggc_alloc_spec_entry ();
+		  *entry = elt;
+		  *slot = entry;
 		}
 	      else if (COMPLETE_OR_OPEN_TYPE_P (inst))
 		/* But if we've had an implicit instantiation, that's a
@@ -1294,7 +1295,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 			 hashval_t hash)
 {
   tree fn;
-  spec_entry **slot = NULL;
+  void **slot = NULL;
   spec_entry elt;
 
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL && DECL_P (spec));
@@ -1327,10 +1328,10 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
       if (hash == 0)
 	hash = hash_specialization (&elt);
 
-      slot = (spec_entry **)
+      slot =
 	htab_find_slot_with_hash (decl_specializations, &elt, hash, INSERT);
       if (*slot)
-	fn = (*slot)->spec;
+	fn = ((spec_entry *) *slot)->spec;
       else
 	fn = NULL_TREE;
     }
@@ -1423,11 +1424,12 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
       && !check_specialization_namespace (tmpl))
     DECL_CONTEXT (spec) = DECL_CONTEXT (tmpl);
 
-  if (!optimize_specialization_lookup_p (tmpl))
+  if (slot != NULL /* !optimize_specialization_lookup_p (tmpl) */)
     {
+      spec_entry *entry = ggc_alloc_spec_entry ();
       gcc_assert (tmpl && args && spec);
-      *slot = ggc_alloc_spec_entry ();
-      **slot = elt;
+      *entry = elt;
+      *slot = entry;
       if (TREE_CODE (spec) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (spec)
 	  && PRIMARY_TEMPLATE_P (tmpl)
 	  && DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (tmpl)) == NULL_TREE)
@@ -1639,19 +1641,19 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 bool
 reregister_specialization (tree spec, tree tinfo, tree new_spec)
 {
-  spec_entry **slot;
+  spec_entry *entry;
   spec_entry elt;
 
   elt.tmpl = most_general_template (TI_TEMPLATE (tinfo));
   elt.args = TI_ARGS (tinfo);
   elt.spec = NULL_TREE;
 
-  slot = (spec_entry **) htab_find_slot (decl_specializations, &elt, INSERT);
-  if (*slot)
+  entry = (spec_entry *) htab_find (decl_specializations, &elt);
+  if (entry != NULL)
     {
-      gcc_assert ((*slot)->spec == spec || (*slot)->spec == new_spec);
+      gcc_assert (entry->spec == spec || entry->spec == new_spec);
       gcc_assert (new_spec != NULL_TREE);
-      (*slot)->spec = new_spec;
+      entry->spec = new_spec;
       return 1;
     }
 
@@ -7042,7 +7044,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 {
   tree templ = NULL_TREE, parmlist;
   tree t;
-  spec_entry **slot;
+  void **slot;
   spec_entry *entry;
   spec_entry elt;
   hashval_t hash;
@@ -7480,10 +7482,11 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
 
       elt.spec = t;
-      slot = (spec_entry **) htab_find_slot_with_hash (type_specializations,
-						       &elt, hash, INSERT);
-      *slot = ggc_alloc_spec_entry ();
-      **slot = elt;
+      slot = htab_find_slot_with_hash (type_specializations,
+				       &elt, hash, INSERT);
+      entry = ggc_alloc_spec_entry ();
+      *entry = elt;
+      *slot = entry;
 
       /* Note this use of the partial instantiation so we can check it
 	 later in maybe_process_partial_specialization.  */
