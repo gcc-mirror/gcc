@@ -1,3 +1,8 @@
+2011-10-09  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* interface.c (check_dummy_characteristics): Count dimensions starting
+	from one in diagnostic.
+
 2011-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	* Make-lang.in (F95_PARSER_OBJS, GFORTRAN_TRANS_DEPS): Add

@@ -1098,7 +1098,7 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	      case  1:
 	      case -3:
 		snprintf (errmsg, err_len, "Shape mismatch in dimension %i of "
-			  "argument '%s'", i, s1->name);
+			  "argument '%s'", i + 1, s1->name);
 		return FAILURE;
 
 	      case -2:
