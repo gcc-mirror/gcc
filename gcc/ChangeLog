@@ -1,3 +1,8 @@
+2011-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-forwprop.c (forward_propagate_into_comparison): Do not make
+	the replacement if the conversion to the LHS type is not useless.
+
 2011-10-09  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50635
