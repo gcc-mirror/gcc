@@ -3719,62 +3719,36 @@
    (set_attr "cc" "none")])
 
 ;; table jump
+;; For entries in jump table see avr_output_addr_vec_elt.
 
-;; Table made from "rjmp" instructions for <=8K devices.
+;; Table made from "rjmp .L<n>" instructions for <= 8K devices.
 (define_insn "*tablejump_rjmp"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r")]
-			UNSPEC_INDEX_JMP))
+  [(set (pc)
+        (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r")]
+                   UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
-  "(!AVR_HAVE_JMP_CALL) && (!AVR_HAVE_EIJMP_EICALL)"
+  "!AVR_HAVE_JMP_CALL"
   "@
 	ijmp
 	push %A0\;push %B0\;ret"
   [(set_attr "length" "1,3")
    (set_attr "cc" "none,none")])
 
-;; Not a prologue, but similar idea - move the common piece of code to libgcc.
+;; Move the common piece of code to libgcc.
+;; Table made from ".word gs(.L<n>)" addresses for > 8K devices.
+;; Read jump address from table and perform indirect jump.
 (define_insn "*tablejump_lib"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
-			UNSPEC_INDEX_JMP))
+  [(set (pc)
+        (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
+                   UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
-  "AVR_HAVE_JMP_CALL && TARGET_CALL_PROLOGUES"
-  "%~jmp __tablejump2__"
+  "AVR_HAVE_JMP_CALL"
+  "jmp __tablejump2__"
   [(set_attr "length" "2")
    (set_attr "cc" "clobber")])
 
-(define_insn "*tablejump_enh"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
-			UNSPEC_INDEX_JMP))
-   (use (label_ref (match_operand 1 "" "")))
-   (clobber (match_dup 0))]
-  "AVR_HAVE_JMP_CALL && AVR_HAVE_LPMX"
-  "lsl r30
-	rol r31
-	lpm __tmp_reg__,Z+
-	lpm r31,Z
-	mov r30,__tmp_reg__
-	%!ijmp"
-  [(set_attr "length" "6")
-   (set_attr "cc" "clobber")])
-
-(define_insn "*tablejump"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
-			UNSPEC_INDEX_JMP))
-   (use (label_ref (match_operand 1 "" "")))
-   (clobber (match_dup 0))]
-  "AVR_HAVE_JMP_CALL && !AVR_HAVE_EIJMP_EICALL"
-  "lsl r30
-	rol r31
-	lpm
-	inc r30
-	push r0
-	lpm
-	push r0
-	ret"
-  [(set_attr "length" "8")
-   (set_attr "cc" "clobber")])
 
 (define_expand "casesi"
   [(set (match_dup 6)

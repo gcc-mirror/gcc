@@ -821,27 +821,31 @@ ENDF __tablejump2__
 
 DEFUN __tablejump__
 #if defined (__AVR_HAVE_LPMX__)
-	lpm	__tmp_reg__, Z+
-	lpm	r31, Z
-	mov	r30, __tmp_reg__
-
 #if defined (__AVR_HAVE_EIJMP_EICALL__)
-	eijmp
-#else
+	lpm  __tmp_reg__, Z+		
+	push __tmp_reg__
+	lpm  __tmp_reg__, Z		
+	push __tmp_reg__
+	push __zero_reg__
+	ret
+#else    
+	lpm __tmp_reg__, Z+
+	lpm r31, Z
+	mov r30, __tmp_reg__
 	ijmp
 #endif
 
-#else
+#else /* !HAVE_LPMX */
 	lpm
-	adiw	r30, 1
-	push	r0
+	adiw r30, 1
+	push r0
 	lpm
-	push	r0
+	push r0
 #if defined (__AVR_HAVE_EIJMP_EICALL__)
-        push    __zero_reg__
+	push __zero_reg__
 #endif
 	ret
-#endif
+#endif /* !HAVE_LPMX */
 ENDF __tablejump__
 #endif /* defined (L_tablejump) */
 
