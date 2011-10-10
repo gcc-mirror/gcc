@@ -5,13 +5,13 @@ run
 
 set $ret = 0
 while (simulate_thread_fini != 1) && (! $ret)
-  call simulate_thread_other_threads()
+  call simulate_thread_wrapper_other_threads()
   stepi
   set $ret |= simulate_thread_step_verify()
 end
 
 if (! $ret)
-  set $ret |= simulate_thread_final_verify()
+  set $ret |= simulate_thread_wrapper_final_verify()
 end
 continue
 quit $ret

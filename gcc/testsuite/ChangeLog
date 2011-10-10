@@ -1,3 +1,12 @@
+2011-10-10  Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew Macleod  <amacleod@redhat.com>
+
+	* gcc.dg/simulate-thread/simulate-thread.gdb: Call
+	wrappers for *other_threads() and *final_verify().
+	* gcc.dg/simulate-thread/simulate-thread.h
+	(simulate_thread_wrapper_other_threads): New.
+	(simulate_thread_wrapper_final_verify): New.
+
 2011-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-gdb-test.exp (gdb-test): Delete $cmd_file before return.
