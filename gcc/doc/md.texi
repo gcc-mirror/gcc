@@ -4041,7 +4041,7 @@ be computed modulo @math{2*@var{N}}.  Note that if
 @code{rtx_equal_p(operand1, operand2)}, this can be implemented
 with just operand 1 and selector elements modulo @var{N}.
 
-@cindex @code{vec_perm_const@var{m}) instruction pattern
+@cindex @code{vec_perm_const@var{m}} instruction pattern
 @item @samp{vec_perm_const@var{m}}
 Like @samp{vec_perm} except that the permutation is a compile-time
 constant.  That is, operand 3, the @dfn{selector}, is a @code{CONST_VECTOR}.
