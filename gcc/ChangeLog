@@ -1,3 +1,10 @@
+2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50652
+	Backport from Mainline r179737.
+	* config/avr/avr-devices.c (avr_mcu_types): Set
+	.data_section_start of atmega164a to 0x100.
+
 2011-10-07  Bernd Schmidt  <bernds@codesourcery.com>
 
  	PR target/49049

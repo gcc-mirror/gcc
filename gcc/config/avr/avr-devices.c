@@ -131,7 +131,7 @@ const struct mcu_type_s avr_mcu_types[] = {
   { "atmega161",            ARCH_AVR5, "__AVR_ATmega161__",         0, 0x0060, "m161" },
   { "atmega162",            ARCH_AVR5, "__AVR_ATmega162__",         0, 0x0100, "m162" },
   { "atmega163",            ARCH_AVR5, "__AVR_ATmega163__",         0, 0x0060, "m163" },
-  { "atmega164a",           ARCH_AVR5, "__AVR_ATmega164A__",        0, 0x0060, "m164a" },
+  { "atmega164a",           ARCH_AVR5, "__AVR_ATmega164A__",        0, 0x0100, "m164a" },
   { "atmega164p",           ARCH_AVR5, "__AVR_ATmega164P__",        0, 0x0100, "m164p" },
   { "atmega165",            ARCH_AVR5, "__AVR_ATmega165__",         0, 0x0100, "m165" },
   { "atmega165a",           ARCH_AVR5, "__AVR_ATmega165A__",        0, 0x0100, "m165a" },
