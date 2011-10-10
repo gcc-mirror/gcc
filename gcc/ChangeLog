@@ -1,3 +1,8 @@
+2011-10-10  Michael Matz  <matz@suse.de>
+
+	PR middle-end/50638
+	* tree-emutls.c (gen_emutls_addr): Call add_referenced_var.
+
 2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* modulo-sched.c (ps_reg_move_info): Add num_consecutive_stages.
