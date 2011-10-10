@@ -3739,16 +3739,25 @@ proc check_effective_target_fd_truncate { } {
 	  int fd;
 	  const char t[] = "test writing more than ten characters";
 	  char s[11];
-	  fd =  fileno (f);
+	  int status = 0;
+	  fd = fileno (f);
 	  write (fd, t, sizeof (t) - 1);
 	  lseek (fd, 0, 0);
 	  if (ftruncate (fd, 10) != 0)
-	    exit (1);
+	    status = 1;
 	  close (fd);
+	  fclose (f);
+	  if (status)
+	    {
+	      unlink ("tst.tmp");
+	      exit (status);
+	    }
 	  f = fopen ("tst.tmp", "rb");
 	  if (fread (s, 1, sizeof (s), f) != 10 || strncmp (s, t, 10) != 0)
-	    exit (1);
-	  exit (0);
+	    status = 1;
+	  fclose (f);
+	  unlink ("tst.tmp");
+	  exit (status);
 	}
     }
 
