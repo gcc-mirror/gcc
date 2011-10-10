@@ -62,6 +62,10 @@ static gfc_code *inserted_block, **changed_statement;
 
 gfc_namespace *current_ns;
 
+/* If we are within any forall loop.  */
+
+static int forall_level;
+
 /* Entry point - run all passes for a namespace.  So far, only an
    optimization pass is run.  */
 
@@ -163,6 +167,12 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   if ((*e)->ts.type == BT_CHARACTER 
       && ((*e)->ts.u.cl == NULL || (*e)->ts.u.cl->length == NULL
 	  || (*e)->ts.u.cl->length->expr_type != EXPR_CONSTANT))
+    return 0;
+
+  /* We don't do function elimination within FORALL statements, it can
+     lead to wrong-code in certain circumstances.  */
+
+  if (forall_level > 0)
     return 0;
 
   /* If we don't know the shape at compile time, we create an allocatable
@@ -493,6 +503,7 @@ optimize_namespace (gfc_namespace *ns)
 {
 
   current_ns = ns;
+  forall_level = 0;
 
   gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
@@ -1193,6 +1204,8 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		    WALK_SUBEXPR (fa->end);
 		    WALK_SUBEXPR (fa->stride);
 		  }
+		if (co->op == EXEC_FORALL)
+		  forall_level ++;
 		break;
 	      }
 
@@ -1335,6 +1348,10 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (b->expr2);
 	      WALK_SUBCODE (b->next);
 	    }
+
+	  if (co->op == EXEC_FORALL)
+	    forall_level --;
+
 	}
     }
   return 0;

@@ -1,3 +1,8 @@
+2011-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50564
+	* gfortran.dg/forall_15.f90:  New test case.
+
 2011-10-10  Aldy Hernandez  <aldyh@redhat.com>
 	    Andrew Macleod  <amacleod@redhat.com>
 
