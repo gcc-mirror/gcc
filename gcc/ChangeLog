@@ -1,5 +1,36 @@
 2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* modulo-sched.c (ps_insn): Adjust comment.
+	(ps_reg_move_info): New structure.
+	(partial_schedule): Add reg_moves field.
+	(SCHED_PARAMS): Use node_sched_param_vec instead of node_sched_params.
+	(node_sched_params): Turn first_reg_move into an identifier.
+	(ps_reg_move): New function.
+	(ps_rtl_insn): Cope with register moves.
+	(ps_first_note): Adjust comment and assert that the instruction
+	isn't a register move.
+	(node_sched_params): Replace with...
+	(node_sched_param_vec): ...this vector.
+	(set_node_sched_params): Adjust accordingly.
+	(print_node_sched_params): Take a partial schedule instead of a ddg.
+	Use ps_rtl_insn and ps_reg_move.
+	(generate_reg_moves): Rename to...
+	(schedule_reg_moves): ...this.  Remove rescan parameter.  Record each
+	move in the partial schedule, but don't emit it here.  Don't perform
+	register substitutions here either.
+	(apply_reg_moves): New function.
+	(duplicate_insns_of_cycles): Use register indices directly,
+	rather than finding instructions using PREV_INSN.  Use ps_reg_move.
+	(sms_schedule): Call schedule_reg_moves before committing to
+	a partial schedule.   Try the next ii if the schedule fails.
+	Use apply_reg_moves instead of generate_reg_moves.  Adjust
+	call to print_node_sched_params.  Free node_sched_param_vec
+	instead of node_sched_params.
+	(create_partial_schedule): Initialize reg_moves.
+	(free_partial_schedule): Free reg_moves.
+
+2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* modulo-sched.c (ps_insn): Replace node field with an identifier.
 	(SCHED_ASAP): Replace with..
 	(NODE_ASAP): ...this macro.
