@@ -1,3 +1,7 @@
+2011-10-10  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/graphite/id-pr46845.c: Include powerpc for warning options.
+
 2011-10-10  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Yakovlev Vladimir <vladimir.b.yakovlev@intel.com>
 
