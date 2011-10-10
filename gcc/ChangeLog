@@ -1,5 +1,6 @@
 2011-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR bootstrap/50665
 	* optabs.h (DOI_vec_perm): Rename from OTI_vec_perm.  Move from enum
 	optab_index to enum direct_optab_index.
 	(vec_perm_optab): Update.
