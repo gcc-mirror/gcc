@@ -165,17 +165,6 @@ struct partial_schedule
   int stage_count;  /* The stage count of the partial schedule.  */
 };
 
-/* We use this to record all the register replacements we do in
-   the kernel so we can undo SMS if it is not profitable.  */
-struct undo_replace_buff_elem
-{
-  rtx insn;
-  rtx orig_reg;
-  rtx new_reg;
-  struct undo_replace_buff_elem *next;
-};
-
-
 
 static partial_schedule_ptr create_partial_schedule (int ii, ddg_ptr, int history);
 static void free_partial_schedule (partial_schedule_ptr);
@@ -460,13 +449,12 @@ print_node_sched_params (FILE *file, int num_nodes, ddg_ptr g)
    nreg_moves = ----------------------------------- + 1 - {   dependence.
                             ii                          { 1 if not.
 */
-static struct undo_replace_buff_elem *
+static void
 generate_reg_moves (partial_schedule_ptr ps, bool rescan)
 {
   ddg_ptr g = ps->g;
   int ii = ps->ii;
   int i;
-  struct undo_replace_buff_elem *reg_move_replaces = NULL;
 
   for (i = 0; i < g->num_nodes; i++)
     {
@@ -562,22 +550,6 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
 
 	  EXECUTE_IF_SET_IN_SBITMAP (uses_of_defs[i_reg_move], 0, i_use, sbi)
 	    {
-	      struct undo_replace_buff_elem *rep;
-
-	      rep = (struct undo_replace_buff_elem *)
-		    xcalloc (1, sizeof (struct undo_replace_buff_elem));
-	      rep->insn = g->nodes[i_use].insn;
-	      rep->orig_reg = old_reg;
-	      rep->new_reg = new_reg;
-
-	      if (! reg_move_replaces)
-		reg_move_replaces = rep;
-	      else
-		{
-		  rep->next = reg_move_replaces;
-		  reg_move_replaces = rep;
-		}
-
 	      replace_rtx (g->nodes[i_use].insn, old_reg, new_reg);
 	      if (rescan)
 		df_insn_rescan (g->nodes[i_use].insn);
@@ -586,21 +558,6 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
 	  prev_reg = new_reg;
 	}
       sbitmap_vector_free (uses_of_defs);
-    }
-  return reg_move_replaces;
-}
-
-/* Free memory allocated for the undo buffer.  */
-static void
-free_undo_replace_buff (struct undo_replace_buff_elem *reg_move_replaces)
-{
-
-  while (reg_move_replaces)
-    {
-      struct undo_replace_buff_elem *rep = reg_move_replaces;
-
-      reg_move_replaces = reg_move_replaces->next;
-      free (rep);
     }
 }
 
@@ -1480,8 +1437,6 @@ sms_schedule (void)
 	}
       else
 	{
-	  struct undo_replace_buff_elem *reg_move_replaces;
-
           if (!opt_sc_p)
             {
 	      /* Rotate the partial schedule to have the branch in row ii-1.  */
@@ -1531,13 +1486,11 @@ sms_schedule (void)
 	  /* The life-info is not valid any more.  */
 	  df_set_bb_dirty (g->bb);
 
-	  reg_move_replaces = generate_reg_moves (ps, true);
+	  generate_reg_moves (ps, true);
 	  if (dump_file)
 	    print_node_sched_params (dump_file, g->num_nodes, g);
 	  /* Generate prolog and epilog.  */
           generate_prolog_epilog (ps, loop, count_reg, count_init);
-
-	  free_undo_replace_buff (reg_move_replaces);
 	}
 
       free_partial_schedule (ps);
