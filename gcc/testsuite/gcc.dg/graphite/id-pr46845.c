@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -ffast-math -fgraphite-identity -w -Wno-psabi" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2 -ffast-math -fgraphite-identity -w -Wno-psabi" { target { i?86-*-* x86_64-*-* powerpc*-*-* } } } */
 
 typedef float V2SF __attribute__ ((vector_size (128)));
 
