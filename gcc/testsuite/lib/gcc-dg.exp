@@ -747,4 +747,26 @@ proc dg-message { args } {
     process-message saved-dg-warning "" $args
 }
 
+# Check the existence of a gdb in the path, and return true if there
+# is one.
+#
+# Set env(GDB_FOR_GCC_TESTING) accordingly.
+
+proc gdb-exists { args } {
+    if ![info exists ::env(GDB_FOR_GCC_TESTING)] {
+	global GDB
+	if ![info exists ::env(GDB_FOR_GCC_TESTING)] {
+	    if [info exists GDB] {
+		setenv GDB_FOR_GCC_TESTING "$GDB"
+	    } else {
+		setenv GDB_FOR_GCC_TESTING "[transform gdb]"
+	    }
+	}
+    }
+    if { [which $::env(GDB_FOR_GCC_TESTING)] != 0 } {
+	return 1;
+    }
+    return 0;
+}
+
 set additional_prunes ""
