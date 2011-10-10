@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-ffast-math -fdump-tree-gimple" } */
+/* { dg-options "-O -ffast-math -fdump-tree-gimple" } */
 
 extern double sqrt (double);
 extern double pow (double, double);

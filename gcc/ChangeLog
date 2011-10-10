@@ -1,3 +1,9 @@
+2011-10-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50195
+	* fold-const.c (fold_binary_loc): Canonicalize x*x to pow (x, 2)
+	only when optimizing.
+
 2011-10-10  Nick Clifton  <nickc@redhat.com>
 
 	PR middle-end/49801

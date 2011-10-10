@@ -1,3 +1,8 @@
+2011-10-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50195
+	* gcc.dg/builtins-47.c: Optimize.
+
 2011-10-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* lib/gcc-simulate-thread.exp: New.
