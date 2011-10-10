@@ -1,3 +1,8 @@
+2011-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_fd_truncate):
+	Close and unlink test file before exit.
+
 2011-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50564
