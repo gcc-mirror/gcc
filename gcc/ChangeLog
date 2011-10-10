@@ -1,3 +1,9 @@
+2011-10-10  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/cris/cris.c (cris_preferred_reload_class): New function.
+	(TARGET_PREFERRED_RELOAD_CLASS): Define.
+	* config/cris/cris.h (PREFERRED_RELOAD_CLASS): Remove.
+
 2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (*tablejump_rjmp): Change insn condition to
