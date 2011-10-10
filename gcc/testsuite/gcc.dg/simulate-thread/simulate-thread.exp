@@ -1,0 +1,38 @@
+# Copyright (C) 2011 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Your run of the mill dg test, but verify that we have a working GDB first.
+
+load_lib gcc-dg.exp
+load_lib gcc-simulate-thread.exp
+load_lib torture-options.exp
+
+dg-init
+torture-init
+set-torture-options [list \
+	{ -O0 -g } \
+	{ -O1 -g } \
+	{ -O2 -g } \
+	{ -O3 -g } \
+	{ -Os -g } ]
+
+if [gdb-exists] {
+  gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] ""
+  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/simulate-thread/*.c]] ""
+}
+
+torture-finish
+dg-finish

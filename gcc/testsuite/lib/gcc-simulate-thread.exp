@@ -1,0 +1,90 @@
+#   Copyright (C) 2011 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Utility for running a given test through the simulate-thread harness
+# using gdb.  This is invoked via dg-final.
+#
+# Adapted from the guality harness.
+#
+# Call 'fail' if a given test printed "FAIL:", otherwise call 'pass'.
+
+proc simulate-thread { args } {
+    if { ![isnative] || [is_remote target] } { return }
+
+    if { [llength $args] == 1 } {
+	switch [dg-process-target [lindex $args 0]] {
+		"F" { setup_xfail "*-*-*" }
+	}
+    }
+
+    # This assumes that we are three frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    upvar 2 prog prog
+    upvar 2 srcdir testsuite_dir
+
+    set gdb_name $::env(GDB_FOR_GCC_TESTING)
+    set exec_file "[file rootname [file tail $prog]].exe"
+    set cmd_file "$testsuite_dir/gcc.dg/simulate-thread/simulate-thread.gdb"
+
+    if ![file exists $exec_file] {
+	return
+    }
+
+    send_log "Spawning: $gdb_name -nx -nw -quiet -x $cmd_file ./$exec_file\n"
+    set res [remote_spawn target "$gdb_name -nx -nw  -x $cmd_file ./$exec_file"]
+    if { $res < 0 || $res == "" } {
+	unsupported "$testcase"
+	return
+    }
+
+    set gdb_worked 0
+    remote_expect target [timeout_value] {
+	# Too old GDB
+	-re "Unhandled dwarf expression|Error in sourced command file" {
+	    unsupported "$testcase"
+	    remote_close target
+	    return
+	}
+	-re "FAIL:" {
+	    fail "$testcase"
+	    remote_close target
+	    return
+	}
+	# If the gdb output contained simulate_thread_main, assume
+	# that at the very least, we had a working gdb that was able
+	# to break in simulate_thread_main.
+	-re "simulate_thread_main" {
+	    set gdb_worked 1
+	    exp_continue
+	}
+	timeout {
+	    unsupported "$testcase"
+	    remote_close target
+	    return
+	}
+    }
+
+    remote_close target
+    if {$gdb_worked} {
+	pass "$testcase"
+    } else {
+	# Fail in the absence of a sane GDB.
+	fail "$testcase"
+    }
+    return
+}

@@ -1,3 +1,24 @@
+2011-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lib/gcc-simulate-thread.exp: New.
+	* gcc.dg/simulate-thread/guality.h: New.
+	* gcc.dg/simulate-thread/simulate-thread.h: New.
+	* gcc.dg/simulate-thread/simulate-thread.exp: New.
+	* gcc.dg/simulate-thread/simulate-thread.gdb: New.
+	* gcc.dg/simulate-thread/README: New.
+	* g++.dg/simulate-thread/guality.h: New.
+	* g++.dg/simulate-thread/simulate-thread.h: New.
+	* g++.dg/simulate-thread/simulate-thread.exp: New.
+	* g++.dg/simulate-thread/simulate-thread.gdb: New.
+	* c-c++-common/cxxbitfields-2.c: Remove.
+	* c-c++-common/cxxbitfields.c: Remove.
+	* c-c++-common/cxxbitfields-4.c: Remove.
+	* c-c++-common/cxxbitfields-5.c: Remove.
+	* c-c++-common/simulate-thread/bitfields-1.c: New.
+	* c-c++-common/simulate-thread/bitfields-2.c: New.
+	* c-c++-common/simulate-thread/bitfields-3.c: New.
+	* c-c++-common/simulate-thread/bitfields-4.c: New.
+
 2011-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38980
