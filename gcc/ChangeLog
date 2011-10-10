@@ -1,3 +1,9 @@
+2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_option_override): Set
+	flag_omit_frame_pointer to 0 if frame pointer is needed for
+	unwinding.
+
 2011-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/50665
