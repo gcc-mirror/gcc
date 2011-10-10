@@ -153,6 +153,9 @@ struct ps_reg_move_info
   rtx old_reg;
   rtx new_reg;
 
+  /* The number of consecutive stages that the move occupies.  */
+  int num_consecutive_stages;
+
   /* An instruction that sets NEW_REG to the correct value.  The first
      move associated with DEF will have an rhs of OLD_REG; later moves
      use the result of the previous move.  */
@@ -218,8 +221,6 @@ static partial_schedule_ptr sms_schedule_by_order (ddg_ptr, int, int, int *);
 static void permute_partial_schedule (partial_schedule_ptr, rtx);
 static void generate_prolog_epilog (partial_schedule_ptr, struct loop *,
                                     rtx, rtx);
-static void duplicate_insns_of_cycles (partial_schedule_ptr,
-				       int, int, int, rtx);
 static int calculate_stage_count (partial_schedule_ptr, int);
 static void calculate_must_precede_follow (ddg_node_ptr, int, int,
 					   int, int, sbitmap, sbitmap, sbitmap);
@@ -233,8 +234,6 @@ static void remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
 
 #define SCHED_PARAMS(x) VEC_index (node_sched_params, node_sched_param_vec, x)
 #define SCHED_TIME(x) (SCHED_PARAMS (x)->time)
-#define SCHED_FIRST_REG_MOVE(x) (SCHED_PARAMS (x)->first_reg_move)
-#define SCHED_NREG_MOVES(x) (SCHED_PARAMS (x)->nreg_moves)
 #define SCHED_ROW(x) (SCHED_PARAMS (x)->row)
 #define SCHED_STAGE(x) (SCHED_PARAMS (x)->stage)
 #define SCHED_COLUMN(x) (SCHED_PARAMS (x)->column)
@@ -243,15 +242,6 @@ static void remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
 typedef struct node_sched_params
 {
   int time;	/* The absolute scheduling cycle.  */
-
-  /* The following field (first_reg_move) is the ps_insn id of the first
-     register-move instruction added to handle the modulo-variable-expansion
-     of the register defined by this node.  This register-move copies the
-     original register defined by the node.  */
-  int first_reg_move;
-
-  /* The number of register-move instructions added.  */
-  int nreg_moves;
 
   int row;    /* Holds time % ii.  */
   int stage;  /* Holds time / ii.  */
@@ -342,6 +332,17 @@ ps_first_note (partial_schedule_ptr ps, int id)
 {
   gcc_assert (id < ps->g->num_nodes);
   return ps->g->nodes[id].first_note;
+}
+
+/* Return the number of consecutive stages that are occupied by
+   partial schedule instruction ID in PS.  */
+static int
+ps_num_consecutive_stages (partial_schedule_ptr ps, int id)
+{
+  if (id < ps->g->num_nodes)
+    return 1;
+  else
+    return ps_reg_move (ps, id)->num_consecutive_stages;
 }
 
 /* Given HEAD and TAIL which are the first and last insns in a loop;
@@ -456,6 +457,45 @@ set_node_sched_params (ddg_ptr g)
 			 node_sched_param_vec, g->num_nodes);
 }
 
+/* Make sure that node_sched_param_vec has an entry for every move in PS.  */
+static void
+extend_node_sched_params (partial_schedule_ptr ps)
+{
+  VEC_safe_grow_cleared (node_sched_params, heap, node_sched_param_vec,
+			 ps->g->num_nodes + VEC_length (ps_reg_move_info,
+							ps->reg_moves));
+}
+
+/* Update the sched_params (time, row and stage) for node U using the II,
+   the CYCLE of U and MIN_CYCLE.
+   We're not simply taking the following
+   SCHED_STAGE (u) = CALC_STAGE_COUNT (SCHED_TIME (u), min_cycle, ii);
+   because the stages may not be aligned on cycle 0.  */
+static void
+update_node_sched_params (int u, int ii, int cycle, int min_cycle)
+{
+  int sc_until_cycle_zero;
+  int stage;
+
+  SCHED_TIME (u) = cycle;
+  SCHED_ROW (u) = SMODULO (cycle, ii);
+
+  /* The calculation of stage count is done adding the number
+     of stages before cycle zero and after cycle zero.  */
+  sc_until_cycle_zero = CALC_STAGE_COUNT (-1, min_cycle, ii);
+
+  if (SCHED_TIME (u) < 0)
+    {
+      stage = CALC_STAGE_COUNT (-1, SCHED_TIME (u), ii);
+      SCHED_STAGE (u) = sc_until_cycle_zero - stage;
+    }
+  else
+    {
+      stage = CALC_STAGE_COUNT (SCHED_TIME (u), 0, ii);
+      SCHED_STAGE (u) = sc_until_cycle_zero + stage - 1;
+    }
+}
+
 static void
 print_node_sched_params (FILE *file, int num_nodes, partial_schedule_ptr ps)
 {
@@ -466,21 +506,169 @@ print_node_sched_params (FILE *file, int num_nodes, partial_schedule_ptr ps)
   for (i = 0; i < num_nodes; i++)
     {
       node_sched_params_ptr nsp = SCHED_PARAMS (i);
-      int j;
 
       fprintf (file, "Node = %d; INSN = %d\n", i,
 	       INSN_UID (ps_rtl_insn (ps, i)));
       fprintf (file, " asap = %d:\n", NODE_ASAP (&ps->g->nodes[i]));
       fprintf (file, " time = %d:\n", nsp->time);
-      fprintf (file, " nreg_moves = %d:\n", nsp->nreg_moves);
-      for (j = 0; j < nsp->nreg_moves; j++)
-	{
-	  ps_reg_move_info *move = ps_reg_move (ps, nsp->first_reg_move + j);
+      fprintf (file, " stage = %d:\n", nsp->stage);
+    }
+}
 
-	  fprintf (file, " reg_move = ");
-	  print_rtl_single (file, move->insn);
+/* Set SCHED_COLUMN for each instruction in row ROW of PS.  */
+static void
+set_columns_for_row (partial_schedule_ptr ps, int row)
+{
+  ps_insn_ptr cur_insn;
+  int column;
+
+  column = 0;
+  for (cur_insn = ps->rows[row]; cur_insn; cur_insn = cur_insn->next_in_row)
+    SCHED_COLUMN (cur_insn->id) = column++;
+}
+
+/* Set SCHED_COLUMN for each instruction in PS.  */
+static void
+set_columns_for_ps (partial_schedule_ptr ps)
+{
+  int row;
+
+  for (row = 0; row < ps->ii; row++)
+    set_columns_for_row (ps, row);
+}
+
+/* Try to schedule the move with ps_insn identifier I_REG_MOVE in PS.
+   Its single predecessor has already been scheduled, as has its
+   ddg node successors.  (The move may have also another move as its
+   successor, in which case that successor will be scheduled later.)
+
+   The move is part of a chain that satisfies register dependencies
+   between a producing ddg node and various consuming ddg nodes.
+   If some of these dependencies have a distance of 1 (meaning that
+   the use is upward-exposoed) then DISTANCE1_USES is nonnull and
+   contains the set of uses with distance-1 dependencies.
+   DISTANCE1_USES is null otherwise.
+
+   MUST_FOLLOW is a scratch bitmap that is big enough to hold
+   all current ps_insn ids.
+
+   Return true on success.  */
+static bool
+schedule_reg_move (partial_schedule_ptr ps, int i_reg_move,
+		   sbitmap distance1_uses, sbitmap must_follow)
+{
+  unsigned int u;
+  int this_time, this_distance, this_start, this_end, this_latency;
+  int start, end, c, ii;
+  sbitmap_iterator sbi;
+  ps_reg_move_info *move;
+  rtx this_insn;
+  ps_insn_ptr psi;
+
+  move = ps_reg_move (ps, i_reg_move);
+  ii = ps->ii;
+  if (dump_file)
+    {
+      fprintf (dump_file, "Scheduling register move INSN %d; ii = %d"
+	       ", min cycle = %d\n\n", INSN_UID (move->insn), ii,
+	       PS_MIN_CYCLE (ps));
+      print_rtl_single (dump_file, move->insn);
+      fprintf (dump_file, "\n%11s %11s %5s\n", "start", "end", "time");
+      fprintf (dump_file, "=========== =========== =====\n");
+    }
+
+  start = INT_MIN;
+  end = INT_MAX;
+
+  /* For dependencies of distance 1 between a producer ddg node A
+     and consumer ddg node B, we have a chain of dependencies:
+
+        A --(T,L1,1)--> M1 --(T,L2,0)--> M2 ... --(T,Ln,0)--> B
+
+     where Mi is the ith move.  For dependencies of distance 0 between
+     a producer ddg node A and consumer ddg node C, we have a chain of
+     dependencies:
+
+        A --(T,L1',0)--> M1' --(T,L2',0)--> M2' ... --(T,Ln',0)--> C
+
+     where Mi' occupies the same position as Mi but occurs a stage later.
+     We can only schedule each move once, so if we have both types of
+     chain, we model the second as:
+
+        A --(T,L1',1)--> M1 --(T,L2',0)--> M2 ... --(T,Ln',-1)--> C
+
+     First handle the dependencies between the previously-scheduled
+     predecessor and the move.  */
+  this_insn = ps_rtl_insn (ps, move->def);
+  this_latency = insn_latency (this_insn, move->insn);
+  this_distance = distance1_uses && move->def < ps->g->num_nodes ? 1 : 0;
+  this_time = SCHED_TIME (move->def) - this_distance * ii;
+  this_start = this_time + this_latency;
+  this_end = this_time + ii;
+  if (dump_file)
+    fprintf (dump_file, "%11d %11d %5d %d --(T,%d,%d)--> %d\n",
+	     this_start, this_end, SCHED_TIME (move->def),
+	     INSN_UID (this_insn), this_latency, this_distance,
+	     INSN_UID (move->insn));
+
+  if (start < this_start)
+    start = this_start;
+  if (end > this_end)
+    end = this_end;
+
+  /* Handle the dependencies between the move and previously-scheduled
+     successors.  */
+  EXECUTE_IF_SET_IN_SBITMAP (move->uses, 0, u, sbi)
+    {
+      this_insn = ps_rtl_insn (ps, u);
+      this_latency = insn_latency (move->insn, this_insn);
+      if (distance1_uses && !TEST_BIT (distance1_uses, u))
+	this_distance = -1;
+      else
+	this_distance = 0;
+      this_time = SCHED_TIME (u) + this_distance * ii;
+      this_start = this_time - ii;
+      this_end = this_time - this_latency;
+      if (dump_file)
+	fprintf (dump_file, "%11d %11d %5d %d --(T,%d,%d)--> %d\n",
+		 this_start, this_end, SCHED_TIME (u), INSN_UID (move->insn),
+		 this_latency, this_distance, INSN_UID (this_insn));
+
+      if (start < this_start)
+	start = this_start;
+      if (end > this_end)
+	end = this_end;
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "----------- ----------- -----\n");
+      fprintf (dump_file, "%11d %11d %5s %s\n", start, end, "", "(max, min)");
+    }
+
+  sbitmap_zero (must_follow);
+  SET_BIT (must_follow, move->def);
+
+  start = MAX (start, end - (ii - 1));
+  for (c = end; c >= start; c--)
+    {
+      psi = ps_add_node_check_conflicts (ps, i_reg_move, c,
+					 move->uses, must_follow);
+      if (psi)
+	{
+	  update_node_sched_params (i_reg_move, ii, c, PS_MIN_CYCLE (ps));
+	  if (dump_file)
+	    fprintf (dump_file, "\nScheduled register move INSN %d at"
+		     " time %d, row %d\n\n", INSN_UID (move->insn), c,
+		     SCHED_ROW (i_reg_move));
+	  return true;
 	}
     }
+
+  if (dump_file)
+    fprintf (dump_file, "\nNo available slot\n\n");
+
+  return false;
 }
 
 /*
@@ -508,6 +696,9 @@ schedule_reg_moves (partial_schedule_ptr ps)
       int nreg_moves = 0, i_reg_move;
       rtx prev_reg, old_reg;
       int first_move;
+      int distances[2];
+      sbitmap must_follow;
+      sbitmap distance1_uses;
       rtx set = single_set (u->insn);
       
       /* Skip instructions that do not set a register.  */
@@ -516,6 +707,7 @@ schedule_reg_moves (partial_schedule_ptr ps)
  
       /* Compute the number of reg_moves needed for u, by looking at life
 	 ranges started at u (excluding self-loops).  */
+      distances[0] = distances[1] = false;
       for (e = u->out; e; e = e->next_out)
 	if (e->type == TRUE_DEP && e->dest != e->src)
 	  {
@@ -546,6 +738,11 @@ schedule_reg_moves (partial_schedule_ptr ps)
 		gcc_assert (!autoinc_var_is_used_p (u->insn, e->dest->insn));
 	      }
 	    
+	    if (nreg_moves4e)
+	      {
+		gcc_assert (e->distance < 2);
+		distances[e->distance] = true;
+	      }
 	    nreg_moves = MAX (nreg_moves, nreg_moves4e);
 	  }
 
@@ -556,11 +753,10 @@ schedule_reg_moves (partial_schedule_ptr ps)
       first_move = VEC_length (ps_reg_move_info, ps->reg_moves);
       VEC_safe_grow_cleared (ps_reg_move_info, heap, ps->reg_moves,
 			     first_move + nreg_moves);
+      extend_node_sched_params (ps);
 
       /* Record the moves associated with this node.  */
       first_move += ps->g->num_nodes;
-      SCHED_FIRST_REG_MOVE (i) = first_move;
-      SCHED_NREG_MOVES (i) = nreg_moves;
 
       /* Generate each move.  */
       old_reg = prev_reg = SET_DEST (single_set (u->insn));
@@ -569,14 +765,17 @@ schedule_reg_moves (partial_schedule_ptr ps)
 	  ps_reg_move_info *move = ps_reg_move (ps, first_move + i_reg_move);
 
 	  move->def = i_reg_move > 0 ? first_move + i_reg_move - 1 : i;
-	  move->uses = sbitmap_alloc (g->num_nodes);
+	  move->uses = sbitmap_alloc (first_move + nreg_moves);
 	  move->old_reg = old_reg;
 	  move->new_reg = gen_reg_rtx (GET_MODE (prev_reg));
+	  move->num_consecutive_stages = distances[0] && distances[1] ? 2 : 1;
 	  move->insn = gen_move_insn (move->new_reg, copy_rtx (prev_reg));
 	  sbitmap_zero (move->uses);
 
 	  prev_reg = move->new_reg;
 	}
+
+      distance1_uses = distances[1] ? sbitmap_alloc (g->num_nodes) : NULL;
 
       /* Every use of the register defined by node may require a different
 	 copy of this register, depending on the time the use is scheduled.
@@ -601,8 +800,21 @@ schedule_reg_moves (partial_schedule_ptr ps)
 
 		move = ps_reg_move (ps, first_move + dest_copy - 1);
 		SET_BIT (move->uses, e->dest->cuid);
+		if (e->distance == 1)
+		  SET_BIT (distance1_uses, e->dest->cuid);
 	      }
 	  }
+
+      must_follow = sbitmap_alloc (first_move + nreg_moves);
+      for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
+	if (!schedule_reg_move (ps, first_move + i_reg_move,
+				distance1_uses, must_follow))
+	  break;
+      sbitmap_free (must_follow);
+      if (distance1_uses)
+	sbitmap_free (distance1_uses);
+      if (i_reg_move < nreg_moves)
+	return false;
     }
   return true;
 }
@@ -625,39 +837,6 @@ apply_reg_moves (partial_schedule_ptr ps)
 	  replace_rtx (ps->g->nodes[i_use].insn, move->old_reg, move->new_reg);
 	  df_insn_rescan (ps->g->nodes[i_use].insn);
 	}
-    }
-
-  FOR_EACH_VEC_ELT (ps_reg_move_info, ps->reg_moves, i, move)
-    add_insn_before (move->insn, ps_first_note (ps, move->def), NULL);
-}
-
-/* Update the sched_params (time, row and stage) for node U using the II,
-   the CYCLE of U and MIN_CYCLE.  
-   We're not simply taking the following
-   SCHED_STAGE (u) = CALC_STAGE_COUNT (SCHED_TIME (u), min_cycle, ii);
-   because the stages may not be aligned on cycle 0.  */
-static void
-update_node_sched_params (int u, int ii, int cycle, int min_cycle)
-{
-  int sc_until_cycle_zero;
-  int stage;
-
-  SCHED_TIME (u) = cycle;
-  SCHED_ROW (u) = SMODULO (cycle, ii);
-
-  /* The calculation of stage count is done adding the number
-     of stages before cycle zero and after cycle zero.  */
-  sc_until_cycle_zero = CALC_STAGE_COUNT (-1, min_cycle, ii);
-
-  if (SCHED_TIME (u) < 0)
-    {
-      stage = CALC_STAGE_COUNT (-1, SCHED_TIME (u), ii);
-      SCHED_STAGE (u) = sc_until_cycle_zero - stage;
-    }
-  else
-    {
-      stage = CALC_STAGE_COUNT (SCHED_TIME (u), 0, ii);
-      SCHED_STAGE (u) = sc_until_cycle_zero + stage - 1;
     }
 }
 
@@ -699,22 +878,6 @@ reset_sched_times (partial_schedule_ptr ps, int amount)
       }
 }
  
-/* Set SCHED_COLUMN of each node according to its position in PS.  */
-static void
-set_columns_for_ps (partial_schedule_ptr ps)
-{
-  int row;
-
-  for (row = 0; row < ps->ii; row++)
-    {
-      ps_insn_ptr cur_insn = ps->rows[row];
-      int column = 0;
-
-      for (; cur_insn; cur_insn = cur_insn->next_in_row)
-	SCHED_COLUMN (cur_insn->id) = column++;
-    }
-}
-
 /* Permute the insns according to their order in PS, from row 0 to
    row ii-1, and position them right before LAST.  This schedules
    the insns of the loop kernel.  */
@@ -731,8 +894,13 @@ permute_partial_schedule (partial_schedule_ptr ps, rtx last)
 	rtx insn = ps_rtl_insn (ps, ps_ij->id);
 
 	if (PREV_INSN (last) != insn)
-	  reorder_insns_nobb (ps_first_note (ps, ps_ij->id), insn,
-			      PREV_INSN (last));
+	  {
+	    if (ps_ij->id < ps->g->num_nodes)
+	      reorder_insns_nobb (ps_first_note (ps, ps_ij->id), insn,
+				  PREV_INSN (last));
+	    else
+	      add_insn_before (insn, last, NULL);
+	  }
       }
 }
 
@@ -935,7 +1103,7 @@ clear:
 
 static void
 duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
-			   int to_stage, int for_prolog, rtx count_reg)
+			   int to_stage, rtx count_reg)
 {
   int row;
   ps_insn_ptr ps_ij;
@@ -944,7 +1112,7 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
     for (ps_ij = ps->rows[row]; ps_ij; ps_ij = ps_ij->next_in_row)
       {
 	int u = ps_ij->id;
-	int j, i_reg_moves, i_reg_move;
+	int first_u, last_u;
 	rtx u_insn;
 
         /* Do not duplicate any insn which refers to count_reg as it
@@ -958,42 +1126,15 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
             || JUMP_P (u_insn))
           continue;
 
-	if (for_prolog)
+	first_u = SCHED_STAGE (u);
+	last_u = first_u + ps_num_consecutive_stages (ps, u) - 1;
+	if (from_stage <= last_u && to_stage >= first_u)
 	  {
-	    /* SCHED_STAGE (u) >= from_stage == 0.  Generate increasing
-	       number of reg_moves starting with the second occurrence of
-	       u, which is generated if its SCHED_STAGE <= to_stage.  */
-	    i_reg_moves = to_stage - SCHED_STAGE (u) + 1;
-	    i_reg_moves = MAX (i_reg_moves, 0);
-	    i_reg_moves = MIN (i_reg_moves, SCHED_NREG_MOVES (u));
-
-	    /* The reg_moves start from the *first* reg_move backwards.  */
-	    i_reg_move = SCHED_FIRST_REG_MOVE (u) + (i_reg_moves - 1);
+	    if (u < ps->g->num_nodes)
+	      duplicate_insn_chain (ps_first_note (ps, u), u_insn);
+	    else
+	      emit_insn (copy_rtx (PATTERN (u_insn)));
 	  }
-	else /* It's for the epilog.  */
-	  {
-	    /* SCHED_STAGE (u) <= to_stage.  Generate all reg_moves,
-	       starting to decrease one stage after u no longer occurs;
-	       that is, generate all reg_moves until
-	       SCHED_STAGE (u) == from_stage - 1.  */
-	    i_reg_moves = (SCHED_NREG_MOVES (u)
-			   - (from_stage - SCHED_STAGE (u) - 1));
-	    i_reg_moves = MAX (i_reg_moves, 0);
-	    i_reg_moves = MIN (i_reg_moves, SCHED_NREG_MOVES (u));
-
-	    /* The reg_moves start from the *last* reg_move forwards.  */
-	    i_reg_move = SCHED_FIRST_REG_MOVE (u) + (SCHED_NREG_MOVES (u) - 1);
-	  }
-
-	for (j = 0; j < i_reg_moves; j++)
-	  {
-	    ps_reg_move_info *move = ps_reg_move (ps, i_reg_move - j);
-
-	    emit_insn (copy_rtx (PATTERN (move->insn)));
-	  }
-	if (SCHED_STAGE (u) >= from_stage
-	    && SCHED_STAGE (u) <= to_stage)
-	  duplicate_insn_chain (ps_first_note (ps, u), u_insn);
       }
 }
 
@@ -1027,7 +1168,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
     }
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, 0, i, 1, count_reg);
+    duplicate_insns_of_cycles (ps, 0, i, count_reg);
 
   /* Put the prolog on the entry edge.  */
   e = loop_preheader_edge (loop);
@@ -1039,7 +1180,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
   start_sequence ();
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, i + 1, last_stage, 0, count_reg);
+    duplicate_insns_of_cycles (ps, i + 1, last_stage, count_reg);
 
   /* Put the epilogue on the exit edge.  */
   gcc_assert (single_exit (loop));
@@ -1375,8 +1516,7 @@ sms_schedule (void)
     {
       rtx head, tail;
       rtx count_reg, count_init;
-      int mii, rec_mii;
-      unsigned stage_count;
+      int mii, rec_mii, stage_count, min_cycle;
       HOST_WIDEST_INT loop_count = 0;
       bool opt_sc_p;
 
@@ -1486,13 +1626,12 @@ sms_schedule (void)
 		}
 
 	      gcc_assert (stage_count >= 1);
-	      PS_STAGE_COUNT (ps) = stage_count;
 	    }
 
 	  /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
 	     1 means that there is no interleaving between iterations thus
 	     we let the scheduling passes do the job in this case.  */
-	  if (stage_count < (unsigned) PARAM_VALUE (PARAM_SMS_MIN_SC)
+	  if (stage_count < PARAM_VALUE (PARAM_SMS_MIN_SC)
 	      || (count_init && (loop_count <= stage_count))
 	      || (flag_branch_probabilities && (trip_count <= stage_count)))
 	    {
@@ -1520,12 +1659,28 @@ sms_schedule (void)
 	  
 	  set_columns_for_ps (ps);
 
+	  min_cycle = PS_MIN_CYCLE (ps) - SMODULO (PS_MIN_CYCLE (ps), ps->ii);
 	  if (!schedule_reg_moves (ps))
 	    {
 	      mii = ps->ii + 1;
 	      free_partial_schedule (ps);
 	      continue;
 	    }
+
+	  /* Moves that handle incoming values might have been added
+	     to a new first stage.  Bump the stage count if so.
+
+	     ??? Perhaps we could consider rotating the schedule here
+	     instead?  */
+	  if (PS_MIN_CYCLE (ps) < min_cycle)
+	    {
+	      reset_sched_times (ps, 0);
+	      stage_count++;
+	    }
+
+	  /* The stage count should now be correct without rotation.  */
+	  gcc_checking_assert (stage_count == calculate_stage_count (ps, 0));
+	  PS_STAGE_COUNT (ps) = stage_count;
 
 	  canon_loop (loop);
 

@@ -1,5 +1,28 @@
 2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* modulo-sched.c (ps_reg_move_info): Add num_consecutive_stages.
+	(SCHED_FIRST_REG_MOVE, SCHED_NREG_MOVES): Delete.
+	(node_sched_params): Remove first_reg_move and nreg_moves.
+	(ps_num_consecutive_stages, extend_node_sched_params): New functions.
+	(update_node_sched_params): Move up file.
+	(print_node_sched_params): Print the stage.  Don't dump info related
+	to first_reg_move and nreg_moves.
+	(set_columns_for_row): New function.
+	(set_columns_for_ps): Move up file and use set_columns_for_row.
+	(schedule_reg_move): New function.
+	(schedule_reg_moves): Call extend_node_sched_params and
+	schedule_reg_move.  Extend size of uses bitmap.  Initialize
+	num_consecutive_stages.  Return false if a move could not be
+	scheduled.
+	(apply_reg_moves): Don't emit moves here.
+	(permute_partial_schedule): Handle register moves.
+	(duplicate_insns_of_cycles): Remove for_prolog.  Emit moves according
+	to the same stage-count test as ddg nodes.
+	(generate_prolog_epilog): Update calls accordingly.
+	(sms_schedule): Allow move-scheduling to add a new first stage.
+
+2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* modulo-sched.c (ps_insn): Adjust comment.
 	(ps_reg_move_info): New structure.
 	(partial_schedule): Add reg_moves field.
