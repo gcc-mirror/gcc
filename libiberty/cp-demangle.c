@@ -2294,8 +2294,10 @@ static struct demangle_component **
 d_cv_qualifiers (struct d_info *di,
                  struct demangle_component **pret, int member_fn)
 {
+  struct demangle_component **pstart;
   char peek;
 
+  pstart = pret;
   peek = d_peek_char (di);
   while (peek == 'r' || peek == 'V' || peek == 'K')
     {
@@ -2330,6 +2332,28 @@ d_cv_qualifiers (struct d_info *di,
       pret = &d_left (*pret);
 
       peek = d_peek_char (di);
+    }
+
+  if (!member_fn && peek == 'F')
+    {
+      while (pstart != pret)
+	{
+	  switch ((*pstart)->type)
+	    {
+	    case DEMANGLE_COMPONENT_RESTRICT:
+	      (*pstart)->type = DEMANGLE_COMPONENT_RESTRICT_THIS;
+	      break;
+	    case DEMANGLE_COMPONENT_VOLATILE:
+	      (*pstart)->type = DEMANGLE_COMPONENT_VOLATILE_THIS;
+	      break;
+	    case DEMANGLE_COMPONENT_CONST:
+	      (*pstart)->type = DEMANGLE_COMPONENT_CONST_THIS;
+	      break;
+	    default:
+	      break;
+	    }
+	  pstart = &d_left (*pstart);
+	}
     }
 
   return pret;

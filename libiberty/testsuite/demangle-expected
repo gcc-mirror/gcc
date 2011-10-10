@@ -4198,3 +4198,8 @@ f1<int>
 _Z3fooi._omp_cpyfn.6
 foo(int) [clone ._omp_cpyfn.6]
 foo
+#
+--format=gnu-v3 --no-params
+_Z1fIKFvvES0_Evv
+void f<void () const, void ()>()
+f<void () const, void ()>
