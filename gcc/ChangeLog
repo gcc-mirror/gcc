@@ -1,5 +1,10 @@
 2011-10-10  Richard Guenther  <rguenther@suse.de>
 
+	* ipa-split.c (pass_split_functions): Add verification TODOs.
+	(pass_feedback_split_functions): Likewise.
+
+2011-10-10  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/50195
 	* fold-const.c (fold_binary_loc): Canonicalize x*x to pow (x, 2)
 	only when optimizing.
