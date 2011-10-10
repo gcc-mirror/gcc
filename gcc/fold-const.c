@@ -10693,9 +10693,9 @@ fold_binary_loc (location_t loc,
 		    }
 		}
 
-	      /* Optimize x*x as pow(x,2.0), which is expanded as x*x.  */
+	      /* Canonicalize x*x as pow(x,2.0), which is expanded as x*x.  */
 	      if (!in_gimple_form
-		  && optimize_function_for_speed_p (cfun)
+		  && optimize
 		  && operand_equal_p (arg0, arg1, 0))
 		{
 		  tree powfn = mathfn_built_in (type, BUILT_IN_POW);
