@@ -1,3 +1,8 @@
+2011-10-10  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Yakovlev Vladimir  <vladimir.b.yakovlev@intel.com>
+
+	* config/i386/sse.md (fma_fnmsub_<mode>): Fix a typo.
+
 2011-10-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50389
