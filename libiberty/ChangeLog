@@ -1,3 +1,10 @@
+2011-10-10  Ian Lance Taylor  <iant@google.com>
+
+	PR c++/48665
+	* cp-demangle.c (d_cv_qualifiers): If qualifiers are applied to a
+	function type, change them to apply to the "this" parameter.
+	* testsuite/demangle-expected: Add test case.
+
 2011-09-28  Doug Evans  <dje@google.com>
 
 	* timeval-utils.c: New file.
