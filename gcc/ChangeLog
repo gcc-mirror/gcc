@@ -1,5 +1,48 @@
 2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* modulo-sched.c (ps_insn): Replace node field with an identifier.
+	(SCHED_ASAP): Replace with..
+	(NODE_ASAP): ...this macro.
+	(SCHED_PARAMS): New macro.
+	(SCHED_TIME, SCHED_FIRST_REG_MOVE, SCHED_NREG_MOVES, SCHED_ROW)
+	(SCHED_STAGE, SCHED_COLUMN): Redefine using SCHED_PARAMS.
+	(node_sched_params): Remove asap.
+	(ps_rtl_insn, ps_first_note): New functions.
+	(set_node_sched_params): Use XCNEWVEC.  Don't copy across the
+	asap values.
+	(print_node_sched_params): Use SCHED_PARAMS and NODE_ASAP.
+	(generate_reg_moves): Pass ids to the SCHED_* macros.
+	(update_node_sched_params): Take a ps insn identifier rather than
+	a node as parameter.  Use ps_rtl_insn.
+	(set_columns_for_ps): Update for above field and SCHED_* macro changes.
+	(permute_partial_schedule): Use ps_rtl_insn and ps_first_note.
+	(optimize_sc): Update for above field and SCHED_* macro changes.
+	Update calls to try_scheduling_node_in_cycle and
+	update_node_sched_params.
+	(duplicate_insns_of_cycles): Adjust for above field and SCHED_*
+	macro changes.  Use ps_rtl_insn and ps_first_note.
+	(sms_schedule): Pass ids to the SCHED_* macros.
+	(get_sched_window): Adjust for above field and SCHED_* macro changes.
+	Use NODE_ASAP instead of SCHED_ASAP.
+	(try_scheduling_node_in_cycle): Remove node parameter.  Update
+	call to ps_add_node_check_conflicts.  Pass ids to the SCHED_*
+	macros.
+	(sms_schedule_by_order): Update call to try_scheduling_node_in_cycle.
+	(ps_insert_empty_row): Adjust for above field changes.
+	(compute_split_row): Use ids rather than nodes.
+	(verify_partial_schedule): Adjust for above field changes.
+	(print_partial_schedule): Use ps_rtl_insn.
+	(create_ps_insn): Take an id rather than a node.
+	(ps_insn_find_column): Adjust for above field changes.
+	Use ps_rtl_insn.
+	(ps_insn_advance_column): Adjust for above field changes.
+	(add_node_to_ps): Remove node parameter.  Update call to
+	create_ps_insn.
+	(ps_has_conflicts): Use ps_rtl_insn.
+	(ps_add_node_check_conflicts): Replace node parameter than an id.
+
+2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* modulo-sched.c (undo_replace_buff_elem): Delete.
 	(generate_reg_moves): Don't build and return an undo list.
 	(free_undo_replace_buff): Delete.
