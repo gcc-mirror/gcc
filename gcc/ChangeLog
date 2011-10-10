@@ -1,5 +1,9 @@
 2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.md (*mulhi3_enh): Treat squaring smarter.
+
+2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/50652
 	* config/avr/avr-mcus.def (AVR_MCU): Set .data_section_start of
 	atmega164a to 0x100.

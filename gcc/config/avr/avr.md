@@ -1560,13 +1560,11 @@
 	(mult:HI (match_operand:HI 1 "register_operand" "r")
 		 (match_operand:HI 2 "register_operand" "r")))]
   "AVR_HAVE_MUL"
-  "mul %A1,%A2
-	movw %0,r0
-	mul %A1,%B2
-	add %B0,r0
-	mul %B1,%A2
-	add %B0,r0
-	clr r1"
+  {
+    return REGNO (operands[1]) == REGNO (operands[2])
+           ? "mul %A1,%A1\;movw %0,r0\;mul %A1,%B1\;add %B0,r0\;add %B0,r0\;clr r1"
+           : "mul %A1,%A2\;movw %0,r0\;mul %A1,%B2\;add %B0,r0\;mul %B1,%A2\;add %B0,r0\;clr r1";
+  }
   [(set_attr "length" "7")
    (set_attr "cc" "clobber")])
 
