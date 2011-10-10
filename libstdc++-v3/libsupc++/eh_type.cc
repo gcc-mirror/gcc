@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling routines for catching.
-// Copyright (C) 2001, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2008, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -33,7 +33,7 @@ namespace __cxxabiv1
 // Returns the type_info for the currently handled exception [15.3/8], or
 // null if there is none.
 extern "C"
-std::type_info *__cxa_current_exception_type () throw()
+std::type_info *__cxa_current_exception_type () _GLIBCXX_NOTHROW
 {
   __cxa_eh_globals *globals = __cxa_get_globals ();
   __cxa_exception *header = globals->caughtExceptions;

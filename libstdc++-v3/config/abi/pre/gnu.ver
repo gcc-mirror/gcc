@@ -104,7 +104,7 @@ GLIBCXX_3.4 {
       std::logic_error*;
       std::locale::[A-Za-e]*;
       std::locale::facet::[A-Za-z]*;
-      std::locale::facet::_S_get_c_locale*;	
+      std::locale::facet::_S_get_c_locale*;
       std::locale::facet::_S_clone_c_locale*;
       std::locale::facet::_S_create_c_locale*;
       std::locale::facet::_S_destroy_c_locale*;
@@ -145,7 +145,7 @@ GLIBCXX_3.4 {
       std::strstream*;
       std::strstreambuf*;
 #     std::t[a-q]*;
-      std::t[a-g]*;      
+      std::t[a-g]*;
       std::th[a-h]*;
       std::th[j-q]*;
       std::th[s-z]*;
@@ -238,7 +238,7 @@ GLIBCXX_3.4 {
     _ZNKSs8_M_limit*;
     _ZNKSs9_M_ibeginEv;
     _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_E*;
-    _ZNKSs7compare*; 
+    _ZNKSs7compare*;
     _ZNKSs5c_strEv;
     _ZNKSs8capacityEv;
     _ZNKSs4copyEPc[jmy][jmy];
@@ -435,10 +435,10 @@ GLIBCXX_3.4 {
 
     # std::locale destructors
     _ZNSt6localeD*;
-	
+
     # std::locale::facet destructors
     _ZNSt6locale5facetD*;
-	 
+
     # std::locale::_Impl constructors, destructors
     _ZNSt6locale5_ImplC*;
     _ZNSt6locale5_ImplD*;
@@ -447,7 +447,7 @@ GLIBCXX_3.4 {
     _ZNSt8ios_baseD*;
     _ZNSt8ios_base4InitD*;
 
-    # bool std::has_facet 
+    # bool std::has_facet
     _ZSt9has_facetIS*;
 
     # std::use_facet
@@ -486,7 +486,7 @@ GLIBCXX_3.4 {
 
     # std::time_get_byname
     _ZNSt15time_get_byname*;
-    
+
     # std::time_put
     _ZNSt8time_put*;
     _ZNKSt8time_put*;
@@ -569,7 +569,7 @@ GLIBCXX_3.4 {
     _ZNK11__gnu_debug16_Error_formatter13_M_print_word*;
     _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
     _ZNK11__gnu_debug16_Error_formatter8_M_error*;
-    
+
     # exceptions as functions
     _ZSt16__throw_bad_castv;
     _ZSt17__throw_bad_allocv;
@@ -809,11 +809,11 @@ GLIBCXX_3.4 {
 };
 
 GLIBCXX_3.4.1 {
- 
+
     _ZNSt12__basic_fileIcE4fileEv;
- 
+
 } GLIBCXX_3.4;
- 
+
 GLIBCXX_3.4.2 {
 
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4fileEv;
@@ -825,7 +825,7 @@ GLIBCXX_3.4.2 {
 } GLIBCXX_3.4.1;
 
 GLIBCXX_3.4.3 {
- 
+
     # stub functions from libmath
     acosf;
     acosl;
@@ -969,7 +969,7 @@ GLIBCXX_3.4.10 {
     _ZNKSt4hashIeEclEe;
 
     _ZSt17__verify_grouping*;
-    
+
     _ZNSt8__detail12__prime_listE;
     _ZNSt3tr18__detail12__prime_listE;
 
@@ -992,7 +992,7 @@ GLIBCXX_3.4.10 {
 } GLIBCXX_3.4.9;
 
 GLIBCXX_3.4.11 {
-	 
+
     # atomic
     __atomic_flag_for_address;
     __atomic_flag_wait_explicit;
@@ -1328,16 +1328,16 @@ CXXABI_1.3 {
     __cxa_rethrow;
     __cxa_throw;
     __cxa_type_match;
+    __cxa_vec_ctor;
     __cxa_vec_cctor;
     __cxa_vec_cleanup;
-    __cxa_vec_ctor;
+    __cxa_vec_delete;
     __cxa_vec_delete2;
     __cxa_vec_delete3;
-    __cxa_vec_delete;
     __cxa_vec_dtor;
+    __cxa_vec_new;
     __cxa_vec_new2;
     __cxa_vec_new3;
-    __cxa_vec_new;
     __gxx_personality_v0;
     __gxx_personality_sj0;
     __dynamic_cast;
@@ -1491,3 +1491,12 @@ CXXABI_1.3.5 {
     _ZTVSt16nested_exception;
 
 } CXXABI_1.3.4;
+
+CXXABI_1.3.6 {
+
+    __cxa_allocate_dependent_exception;
+    __cxa_free_dependent_exception;
+    __cxa_get_exception_ptr;
+    __cxa_deleted_virtual;
+
+} CXXABI_1.3.5;

@@ -1,3 +1,17 @@
+2011-10-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/49818
+	* config/abi/pre/gnu.ver (CXXABI_1.3.6): Add symbols.
+	* testsuite/util/testsuite_abi.cc: Same.
+	* libsupc++/unwind-cxx.h: Move required eh API...
+	* libsupc++/cxxabi.h: ... to here. Add required forward declarations.
+	Use _GLIBCXX_NOTHROW.
+	* libsupc++/pure.cc (__cxa_deleted_virtual): Add.
+	* libsupc++/eh_alloc.cc: Use _GLIBCXX_NOTHROW.
+	* libsupc++/eh_catch.cc: Same.
+	* libsupc++/eh_globals.cc: Same.
+	* libsupc++/eh_type.cc: Same.
+	
 2011-10-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/util/testsuite_allocator.h (uneq_allocator): Add
