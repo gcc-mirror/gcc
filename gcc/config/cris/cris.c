@@ -123,6 +123,8 @@ static void cris_asm_output_mi_thunk
 static void cris_file_start (void);
 static void cris_init_libfuncs (void);
 
+static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
+
 static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int, int *, bool);
@@ -197,6 +199,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
+
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS cris_preferred_reload_class
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST cris_register_move_cost
@@ -1340,6 +1345,31 @@ cris_reload_address_legitimized (rtx x,
     }
 
   return false;
+}
+
+
+/* Worker function for TARGET_PREFERRED_RELOAD_CLASS.
+
+   It seems like gcc (2.7.2 and 2.9x of 2000-03-22) may send "NO_REGS" as
+   the class for a constant (testcase: __Mul in arit.c).  To avoid forcing
+   out a constant into the constant pool, we will trap this case and
+   return something a bit more sane.  FIXME: Check if this is a bug.
+   Beware that we must not "override" classes that can be specified as
+   constraint letters, or else asm operands using them will fail when
+   they need to be reloaded.  FIXME: Investigate whether that constitutes
+   a bug.  */
+
+static reg_class_t
+cris_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
+{
+  if (rclass != ACR_REGS
+      && rclass != MOF_REGS
+      && rclass != SRP_REGS
+      && rclass != CC0_REGS
+      && rclass != SPECIAL_REGS)
+    return GENERAL_REGS;
+
+  return rclass;
 }
 
 /* Worker function for TARGET_REGISTER_MOVE_COST.  */
