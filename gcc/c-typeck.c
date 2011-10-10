@@ -1112,9 +1112,13 @@ comptypes_internal (tree type1, tree type2, bool *enum_and_int_p,
   /* If the type is UPC qualified, the block sizes have
      to be equal.  The block sizes are either NULL
      or are the same integer constant.  */
-  if ((TYPE_QUALS (t1) & TYPE_QUAL_SHARED)
-      && (TYPE_BLOCK_FACTOR (t1) != TYPE_BLOCK_FACTOR (t2)))
-    return 0;
+  if (TYPE_QUALS (t1) & TYPE_QUAL_SHARED)
+    {
+      const_tree b1 = TYPE_BLOCK_FACTOR (t1);
+      const_tree b2 = TYPE_BLOCK_FACTOR (t2);
+      if (!(b1 == b2 || tree_int_cst_equal (b1, b2)))
+        return 0;
+    }
 
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
@@ -11139,7 +11143,9 @@ c_build_qualified_type_1 (tree type, int type_quals, tree layout_qualifier)
 	  const tree t_elem_type = strip_array_types (t);
 	  tree t_elem_block_factor = TYPE_BLOCK_FACTOR (t_elem_type);
 	  if (TYPE_QUALS (t_elem_type) == type_quals
-	      && t_elem_block_factor == layout_qualifier
+	      && (t_elem_block_factor == layout_qualifier
+	          || tree_int_cst_equal (t_elem_block_factor,
+		                         layout_qualifier))
 	      && TYPE_NAME (t) == TYPE_NAME (type)
 	      && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
 	      && attribute_list_equal (TYPE_ATTRIBUTES (t),

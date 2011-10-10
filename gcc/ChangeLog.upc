@@ -1,3 +1,10 @@
+2011-10-10  Gary Funck  <gary@intrepid.com>
+
+	* tree.c (check_qualified_type, check_aligned_type):
+	Call tree_int_cst_equal() to compare UPC blocking factors
+	if the corresponding tree pointers are not equal.
+	* c-typeck.c (comptypes_internal, c_build_qualified_type_1): Ditto.
+
 2011-10-07  Nenad Vukicevic <nenad@intrepid.com>
 
  	Add configuration checks for struct/packed builds so we can 

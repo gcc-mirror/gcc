@@ -5689,7 +5689,9 @@ check_qualified_type (tree cand, tree base,
                       int type_quals, tree layout_qualifier)
 {
   return (TYPE_QUALS (cand) == type_quals
-	  && TYPE_BLOCK_FACTOR (cand) == layout_qualifier
+	  && (TYPE_BLOCK_FACTOR (cand) == layout_qualifier
+	      || tree_int_cst_equal (TYPE_BLOCK_FACTOR (cand),
+	                             layout_qualifier))
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
@@ -5705,7 +5707,9 @@ static bool
 check_aligned_type (tree cand, tree base, unsigned int align)
 {
   return (TYPE_QUALS (cand) == TYPE_QUALS (base)
-	  && TYPE_BLOCK_FACTOR (cand) == TYPE_BLOCK_FACTOR (base)
+	  && (TYPE_BLOCK_FACTOR (cand) == TYPE_BLOCK_FACTOR (base)
+	      || tree_int_cst_equal (TYPE_BLOCK_FACTOR (cand),
+	                             TYPE_BLOCK_FACTOR (base)))
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
