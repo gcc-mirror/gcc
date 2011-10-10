@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling routines for catching.
-// Copyright (C) 2001, 2003, 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2004, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -28,7 +28,7 @@
 using namespace __cxxabiv1;
 
 extern "C" void *
-__cxxabiv1::__cxa_get_exception_ptr(void *exc_obj_in) throw()
+__cxxabiv1::__cxa_get_exception_ptr(void *exc_obj_in) _GLIBCXX_NOTHROW
 {
   _Unwind_Exception *exceptionObject
     = reinterpret_cast <_Unwind_Exception *>(exc_obj_in);
@@ -37,7 +37,7 @@ __cxxabiv1::__cxa_get_exception_ptr(void *exc_obj_in) throw()
 }
 
 extern "C" void *
-__cxxabiv1::__cxa_begin_catch (void *exc_obj_in) throw()
+__cxxabiv1::__cxa_begin_catch (void *exc_obj_in) _GLIBCXX_NOTHROW
 {
   _Unwind_Exception *exceptionObject
     = reinterpret_cast <_Unwind_Exception *>(exc_obj_in);

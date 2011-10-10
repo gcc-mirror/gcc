@@ -1,5 +1,5 @@
 // -*- C++ -*- 
-// Copyright (C) 2000, 2001, 2009 Free Software Foundation
+// Copyright (C) 2000, 2001, 2009, 2011 Free Software Foundation
 //
 // This file is part of GCC.
 //
@@ -47,5 +47,12 @@ extern "C" void
 __cxxabiv1::__cxa_pure_virtual (void)
 {
   writestr ("pure virtual method called\n");
+  std::terminate ();
+}
+
+extern "C" void
+__cxxabiv1::__cxa_deleted_virtual (void)
+{
+  writestr ("deleted virtual method called\n");
   std::terminate ();
 }
