@@ -2009,7 +2009,7 @@
   "TARGET_FMA"
   "@
    vfnmsub132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
-   vfnmsub231<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfnmsub213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
    vfnmsub231<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
