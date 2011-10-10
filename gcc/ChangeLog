@@ -1,5 +1,12 @@
 2011-10-10  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/50389
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Do not
+	mark symbols for renaming.  Append the VUSE to all statements
+	that possibly can have one.
+
+2011-10-10  Richard Guenther  <rguenther@suse.de>
+
 	* ipa-split.c (pass_split_functions): Add verification TODOs.
 	(pass_feedback_split_functions): Likewise.
 

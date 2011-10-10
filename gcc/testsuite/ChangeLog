@@ -1,5 +1,10 @@
 2011-10-10  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/50389
+	* gcc.dg/torture/pr50389.c: New testcase.
+
+2011-10-10  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/50195
 	* gcc.dg/builtins-47.c: Optimize.
 

@@ -588,13 +588,10 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	}
       new_stmt = gsi_stmt (i);
       if (gimple_in_ssa_p (cfun))
-	{
-	  find_new_referenced_vars (new_stmt);
-	  mark_symbols_for_renaming (new_stmt);
-	}
-      /* If the new statement has a VUSE, update it with exact SSA name we
-         know will reach this one.  */
-      if (gimple_vuse (new_stmt))
+	find_new_referenced_vars (new_stmt);
+      /* If the new statement possibly has a VUSE, update it with exact SSA
+	 name we know will reach this one.  */
+      if (gimple_has_mem_ops (new_stmt))
 	{
 	  /* If we've also seen a previous store create a new VDEF for
 	     the latter one, and make that the new reaching VUSE.  */
