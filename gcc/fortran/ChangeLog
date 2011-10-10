@@ -1,3 +1,12 @@
+2011-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50564
+	* frontend-passes (forall_level):  New variable.
+	(cfe_register_funcs):  Don't register functions if we
+	are within a forall loop.
+	(optimize_namespace):  Set forall_level to 0 before entry.
+	(gfc_code_walker):  Increase/decrease forall_level.
+
 2011-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45044
