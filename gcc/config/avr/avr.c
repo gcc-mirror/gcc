@@ -351,6 +351,21 @@ avr_option_override (void)
 {
   flag_delete_null_pointer_checks = 0;
 
+  /* Unwind tables currently require a frame pointer for correctness,
+     see toplev.c:process_options().  */
+
+  if ((flag_unwind_tables
+       || flag_non_call_exceptions
+       || flag_asynchronous_unwind_tables)
+      && !ACCUMULATE_OUTGOING_ARGS)
+    {
+      flag_omit_frame_pointer = 0;
+    }
+  else
+    {
+      flag_omit_frame_pointer = (optimize >= 1);
+    }
+
   avr_current_device = &avr_mcu_types[avr_mcu_index];
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
   avr_extra_arch_macro = avr_current_device->macro;
