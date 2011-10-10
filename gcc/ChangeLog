@@ -1,3 +1,11 @@
+2011-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* modulo-sched.c (undo_replace_buff_elem): Delete.
+	(generate_reg_moves): Don't build and return an undo list.
+	(free_undo_replace_buff): Delete.
+	(sms_schedule): Adjust call to generate_reg_moves.
+	Don't call free_undo_replace_buff.
+
 2011-10-10  Matthias Klose <doko@ubuntu.com>
 
 	* common/config/m32c: Remove empty directory.
