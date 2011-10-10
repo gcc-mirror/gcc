@@ -1,9 +1,13 @@
+2011-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Delete $cmd_file before return.
+
 2011-10-10  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/graphite/id-pr46845.c: Include powerpc for warning options.
 
 2011-10-10  Kirill Yukhin  <kirill.yukhin@intel.com>
-	    Yakovlev Vladimir <vladimir.b.yakovlev@intel.com>
+	    Yakovlev Vladimir  <vladimir.b.yakovlev@intel.com>
 
 	* gcc.target/i386/fma_1.h: New file.
 	* gcc.target/i386/fma_2.h: Likewise.
@@ -178,7 +182,7 @@
 	PR fortran/50625
 	* gfortran.dg/class_46.f03: New.
 
-2011-10-06  Joern Rennecke <joern.rennecke@embecosm.com>
+2011-10-06  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/pr47276.c (ASMNAME, ASMNAME2, STRING): Define.
 	(__EI___vsyslog_chk, __EI_syslog, __EI_vsyslog): Use ASMNAME.
@@ -6443,6 +6447,7 @@
 	* gcc.dg/vect/pr49038.c: New test.
 
 2011-05-26  Fabien Chêne  <fabien@gcc.gnu.org>
+
 	* g++.dg/init/pr25811-3.C: New.
 	* g++.dg/init/pr25811-4.C: New.
 
@@ -6517,7 +6522,7 @@
 2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/48177
-	* objc.dg/pr48177.m: New testcase.	
+	* objc.dg/pr48177.m: New testcase.
 
 2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
