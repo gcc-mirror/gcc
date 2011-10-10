@@ -1,3 +1,7 @@
+2011-10-10  Matthias Klose <doko@ubuntu.com>
+
+	* common/config/m32c: Remove empty directory.
+
 2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (*mulhi3_enh): Treat squaring smarter.
