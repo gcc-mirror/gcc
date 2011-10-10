@@ -1,3 +1,7 @@
+2011-10-10  Richard Henderson  <rth@redhat.com>
+
+	* doc/md.texi (vec_perm_const): Fix typo in cindex.
+
 2011-10-10  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Yakovlev Vladimir  <vladimir.b.yakovlev@intel.com>
 
