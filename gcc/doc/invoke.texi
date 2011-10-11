@@ -271,7 +271,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
--Wvariadic-macros -Wvla -Wvolatile-register-var  -Wwrite-strings}
+-Wvariadic-macros -Wvector-operation-performance -Wvla 
+-Wvolatile-register-var  -Wwrite-strings}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -4541,6 +4542,18 @@ modes.  To inhibit the warning messages, use @option{-Wno-long-long}.
 Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
 alternate syntax when in pedantic ISO C99 mode.  This is default.
 To inhibit the warning messages, use @option{-Wno-variadic-macros}.
+
+@item -Wvector-operation-performance
+@opindex Wvector-operation-performance
+@opindex Wno-vector-operation-performance
+Warn if vector operation is not implemented via SIMD capabilities of the
+architecture.  Mainly useful for the performance tuning.
+Vector operation can be implemented @code{piecewise} which means that the
+scalar operation is performed on every vector element; 
+@code{in parallel} which means that the vector operation is implemented
+using scalars of wider type, which normally is more performance efficient;
+and @code{as a single scalar} which means that vector fits into a
+scalar type.
 
 @item -Wvla
 @opindex Wvla
