@@ -9,7 +9,7 @@
 
 2011-10-09  Tobias Burnus  <burnus@net-b.de>
 
-	PR fortran/45044
+	PR fortran/50273
 	* trans-common.c (translate_common): Fix -Walign-commons check.
 
 2011-10-09  Mikael Morin  <mikael.morin@sfr.fr>
