@@ -12586,7 +12586,11 @@ tsubst_copy_and_build (tree t,
 	if (error_msg)
 	  error (error_msg);
 	if (!function_p && TREE_CODE (decl) == IDENTIFIER_NODE)
-	  decl = unqualified_name_lookup_error (decl);
+	  {
+	    if (complain & tf_error)
+	      unqualified_name_lookup_error (decl);
+	    decl = error_mark_node;
+	  }
 	return decl;
       }
 

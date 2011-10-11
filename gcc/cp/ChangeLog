@@ -1,3 +1,9 @@
+2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50611
+	* pt.c (tsubst_copy_and_build): If (complain & tf_error) is false
+	do not call unqualified_name_lookup_error.
+
 2011-10-09  Jakub Jelinek  <jakub@redhat.com>
 	    Diego Novillo  <dnovillo@google.com>
 
