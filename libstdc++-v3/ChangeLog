@@ -1,3 +1,9 @@
+2011-10-11  Emil Wojak  <emil@wojak.eu>
+
+	PR c++/50661
+	* include/bits/stl_algobase.h (equal): Compare arrays of pointers
+	too with memcmp.
+
 2011-10-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/49818
@@ -11,7 +17,7 @@
 	* libsupc++/eh_catch.cc: Same.
 	* libsupc++/eh_globals.cc: Same.
 	* libsupc++/eh_type.cc: Same.
-	
+
 2011-10-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/util/testsuite_allocator.h (uneq_allocator): Add
