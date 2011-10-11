@@ -6278,64 +6278,6 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
     }
 }
 
-/* Copies the reference information from OLD_REF to NEW_REF.  */
-
-static void
-copy_ref_info (tree new_ref, tree old_ref)
-{
-  tree new_ptr_base = NULL_TREE;
-
-  TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (old_ref);
-  TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (old_ref);
-
-  new_ptr_base = TREE_OPERAND (new_ref, 0);
-
-  /* We can transfer points-to information from an old pointer
-     or decl base to the new one.  */
-  if (new_ptr_base
-      && TREE_CODE (new_ptr_base) == SSA_NAME
-      && !SSA_NAME_PTR_INFO (new_ptr_base))
-    {
-      tree base = get_base_address (old_ref);
-      if (!base)
-	;
-      else if ((TREE_CODE (base) == MEM_REF
-		|| TREE_CODE (base) == TARGET_MEM_REF)
-	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
-	       && SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)))
-	{
-	  struct ptr_info_def *new_pi;
-	  duplicate_ssa_name_ptr_info
-	    (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
-	  new_pi = SSA_NAME_PTR_INFO (new_ptr_base);
-	  /* We have to be careful about transfering alignment information.  */
-	  if (TREE_CODE (old_ref) == MEM_REF
-	      && !(TREE_CODE (new_ref) == TARGET_MEM_REF
-		   && (TMR_INDEX2 (new_ref)
-		       || (TMR_STEP (new_ref)
-			   && (TREE_INT_CST_LOW (TMR_STEP (new_ref))
-			       < new_pi->align)))))
-	    {
-	      new_pi->misalign += double_int_sub (mem_ref_offset (old_ref),
-						  mem_ref_offset (new_ref)).low;
-	      new_pi->misalign &= (new_pi->align - 1);
-	    }
-	  else
-	    {
-	      new_pi->align = 1;
-	      new_pi->misalign = 0;
-	    }
-	}
-      else if (TREE_CODE (base) == VAR_DECL
-	       || TREE_CODE (base) == PARM_DECL
-	       || TREE_CODE (base) == RESULT_DECL)
-	{
-	  struct ptr_info_def *pi = get_ptr_info (new_ptr_base);
-	  pt_solution_set_var (&pi->pt, base);
-	}
-    }
-}
-
 /* Performs a peephole optimization to reorder the iv update statement with
    a mem ref to enable instruction combining in later phases. The mem ref uses
    the iv value before the update, so the reordering transformation requires

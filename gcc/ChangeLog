@@ -1,3 +1,9 @@
+2011-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* tree.h (copy_ref_info): Expose existing function.
+	* tree-ssa-loop-ivopts.c (copy_ref_info): Move function to...
+	* tree-ssa-address.c (copy_ref_info): ...here, and remove static token.
+
 2011-10-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-protos.h (avr_mode_code_base_reg_class): New prototype.
