@@ -4,11 +4,6 @@
 	* config/sparc/sparc.md (mov<I:mode>cc): Do not save comparison code.
 	(mov<F:mode>cc): Likewise.
 
-2011-10-11  Janis Johnson  <janisjo@codesourcery.com>
-
-	PR c++/44473
-	* mangle.c (write_type): Handle CV qualifiers for decimal classes.
-
 2011-10-11  Nick Clifton  <nickc@redhat.com>
 
 	PR middle-end/49801
