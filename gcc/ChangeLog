@@ -1,5 +1,20 @@
 2011-10-11  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr-protos.h (avr_mode_code_base_reg_class): New prototype.
+	(avr_regno_mode_code_ok_for_base_p): New prototype.
+	* config/avr/avr.h (BASE_REG_CLASS): Remove.
+	(REGNO_OK_FOR_BASE_P): Remove.
+	(REG_OK_FOR_BASE_NOSTRICT_P): Remove.
+	(REG_OK_FOR_BASE_STRICT_P): Remove.
+	(MODE_CODE_BASE_REG_CLASS): New define.
+	(REGNO_MODE_CODE_OK_FOR_BASE_P): New define.
+	* config/avr/avr.c (avr_mode_code_base_reg_class): New function.
+	(avr_regno_mode_code_ok_for_base_p): New function.
+	(avr_reg_ok_for_addr_p): New static function.
+	(avr_legitimate_address_p): Use it.  Beautify.
+
+2011-10-11  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/50447
 	* config/avr/avr.md (cc): Add out_plus attribute alternative.
 	(addsi3): Use it.  Adapt avr_out_plus to new prototype.  Use

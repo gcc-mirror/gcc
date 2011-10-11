@@ -1202,43 +1202,68 @@ avr_cannot_modify_jumps_p (void)
 }
 
 
+/* Helper function for `avr_legitimate_address_p'.  */
+
+static inline bool
+avr_reg_ok_for_addr_p (rtx reg, addr_space_t as ATTRIBUTE_UNUSED, int strict)
+{
+  return (REG_P (reg)
+          && (avr_regno_mode_code_ok_for_base_p (REGNO (reg),
+                                                 QImode, MEM, UNKNOWN)
+              || (!strict
+                  && REGNO (reg) >= FIRST_PSEUDO_REGISTER)));
+}
+
+
 /* Return nonzero if X (an RTX) is a legitimate memory address on the target
    machine for a memory operand of mode MODE.  */
 
-bool
+static bool
 avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   reg_class_t r = NO_REGS;
   
-  if (REG_P (x) && (strict ? REG_OK_FOR_BASE_STRICT_P (x)
-                    : REG_OK_FOR_BASE_NOSTRICT_P (x)))
-    r = POINTER_REGS;
+  if (REG_P (x)
+      && avr_reg_ok_for_addr_p (x, ADDR_SPACE_GENERIC, strict))
+    {
+      r = POINTER_REGS;
+    }
   else if (CONSTANT_ADDRESS_P (x))
-    r = ALL_REGS;
+    {
+      r = ALL_REGS;
+    }
   else if (GET_CODE (x) == PLUS
            && REG_P (XEXP (x, 0))
-	   && GET_CODE (XEXP (x, 1)) == CONST_INT
-	   && INTVAL (XEXP (x, 1)) >= 0)
+           && CONST_INT_P (XEXP (x, 1))
+           && INTVAL (XEXP (x, 1)) >= 0)
     {
-      int fit = INTVAL (XEXP (x, 1)) <= MAX_LD_OFFSET (mode);
+      rtx reg = XEXP (x, 0);
+      bool fit = INTVAL (XEXP (x, 1)) <= MAX_LD_OFFSET (mode);
+      
       if (fit)
-	{
-	  if (! strict
-	      || REGNO (XEXP (x,0)) == REG_X
-	      || REGNO (XEXP (x,0)) == REG_Y
-	      || REGNO (XEXP (x,0)) == REG_Z)
-	    r = BASE_POINTER_REGS;
-	  if (XEXP (x,0) == frame_pointer_rtx
-	      || XEXP (x,0) == arg_pointer_rtx)
-	    r = BASE_POINTER_REGS;
-	}
-      else if (frame_pointer_needed && XEXP (x,0) == frame_pointer_rtx)
-	r = POINTER_Y_REGS;
+        {
+          if (! strict
+              || REGNO (reg) == REG_X
+              || REGNO (reg) == REG_Y
+              || REGNO (reg) == REG_Z)
+            {
+              r = BASE_POINTER_REGS;
+            }
+          
+          if (reg == frame_pointer_rtx
+              || reg == arg_pointer_rtx)
+            {
+              r = BASE_POINTER_REGS;
+            }
+        }
+      else if (frame_pointer_needed && reg == frame_pointer_rtx)
+        {
+          r = POINTER_Y_REGS;
+        }
     }
   else if ((GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_INC)
            && REG_P (XEXP (x, 0))
-           && (strict ? REG_OK_FOR_BASE_STRICT_P (XEXP (x, 0))
-               : REG_OK_FOR_BASE_NOSTRICT_P (XEXP (x, 0))))
+           && avr_reg_ok_for_addr_p (XEXP (x, 0), ADDR_SPACE_GENERIC, strict))
     {
       r = POINTER_REGS;
     }
@@ -1269,7 +1294,7 @@ avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 /* Attempts to replace X with a valid
    memory address for an operand of mode MODE  */
 
-rtx
+static rtx
 avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 {
   bool big_offset_p = false;
@@ -7221,6 +7246,51 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
   /* All modes larger than 8 bits should start in an even register.  */
   
   return !(regno & 1);
+}
+
+
+/* Implement `MODE_CODE_BASE_REG_CLASS'.  */
+
+reg_class_t
+avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
+                              RTX_CODE outer_code ATTRIBUTE_UNUSED,
+                              RTX_CODE index_code ATTRIBUTE_UNUSED)
+{
+  return reload_completed ? BASE_POINTER_REGS : POINTER_REGS;
+}
+
+
+/* Implement `REGNO_MODE_CODE_OK_FOR_BASE_P'.  */
+
+bool
+avr_regno_mode_code_ok_for_base_p (int regno,
+                                   enum machine_mode mode ATTRIBUTE_UNUSED,
+                                   RTX_CODE outer_code ATTRIBUTE_UNUSED,
+                                   RTX_CODE index_code ATTRIBUTE_UNUSED)
+{
+  if (regno < FIRST_PSEUDO_REGISTER
+      && (regno == REG_X
+          || regno == REG_Y
+          || regno == REG_Z
+          || regno == ARG_POINTER_REGNUM))
+    {
+      return true;
+    }
+
+  if (reg_renumber)
+    {
+      regno = reg_renumber[regno];
+
+      if (regno == REG_X
+          || regno == REG_Y
+          || regno == REG_Z
+          || regno == ARG_POINTER_REGNUM)
+        {
+          return true;
+        }
+    }
+  
+  return false;
 }
 
 
