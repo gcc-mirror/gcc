@@ -1,3 +1,8 @@
+2011-10-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50273
+	* trans-common.c (translate_common): Fix -Walign-commons check.
+
 2011-10-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50585

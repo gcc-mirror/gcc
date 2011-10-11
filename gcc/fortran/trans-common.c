@@ -1061,14 +1061,12 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   HOST_WIDE_INT offset;
   HOST_WIDE_INT current_offset;
   unsigned HOST_WIDE_INT align;
-  unsigned HOST_WIDE_INT max_align;
   bool saw_equiv;
 
   common_segment = NULL;
   offset = 0;
   current_offset = 0;
   align = 1;
-  max_align = 1;
   saw_equiv = false;
 
   /* Add symbols to the segment.  */
@@ -1111,7 +1109,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	  if (gfc_option.flag_align_commons)
 	    offset = align_segment (&align);
 
-	  if (offset & (max_align - 1))
+	  if (offset)
 	    {
 	      /* The required offset conflicts with previous alignment
 		 requirements.  Insert padding immediately before this
@@ -1134,8 +1132,6 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	  /* Apply the offset to the new segments.  */
 	  apply_segment_offset (current_segment, offset);
 	  current_offset += offset;
-	  if (max_align < align)
-	    max_align = align;
 
 	  /* Add the new segments to the common block.  */
 	  common_segment = add_segments (common_segment, current_segment);
@@ -1155,11 +1151,11 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   if (common_segment->offset != 0 && gfc_option.warn_align_commons)
     {
       if (strcmp (common->name, BLANK_COMMON_NAME))
-	gfc_warning ("COMMON '%s' at %L requires %d bytes of padding at start; "
+	gfc_warning ("COMMON '%s' at %L requires %d bytes of padding; "
 		     "reorder elements or use -fno-align-commons",
 		     common->name, &common->where, (int)common_segment->offset);
       else
-	gfc_warning ("COMMON at %L requires %d bytes of padding at start; "
+	gfc_warning ("COMMON at %L requires %d bytes of padding; "
 		     "reorder elements or use -fno-align-commons",
 		     &common->where, (int)common_segment->offset);
     }
