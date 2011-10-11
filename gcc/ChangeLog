@@ -1,3 +1,9 @@
+2011-10-11  Tristan Gingold  <gingold@adacore.com>
+
+	* doc/invoke.texi (C Dialect Options): Document
+	-fallow-parameterless-variadic-functions.
+	* c-parser.c (c_parser_parms_list_declarator): Handle it.
+
 2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_option_override): Set
