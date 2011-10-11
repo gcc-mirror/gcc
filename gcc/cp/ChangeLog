@@ -1,3 +1,11 @@
+2011-10-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49855
+	PR c++/49896
+	* call.c (perform_implicit_conversion_flags): Do perform
+	scalar conversions in templates.
+	* pt.c (tsubst_copy, tsubst_copy_and_build): Handle CONVERT_EXPR.
+
 2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50611
