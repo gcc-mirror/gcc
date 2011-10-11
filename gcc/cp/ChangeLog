@@ -1,3 +1,24 @@
+2011-10-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49855
+	PR c++/49896
+	* cp-tree.def (IMPLICIT_CONV_EXPR): New.
+	* call.c (perform_implicit_conversion_flags): Build it
+	instead of NOP_EXPR.
+	* cp-objcp-common.c (cp_common_init_ts): It's typed.
+	* cxx-pretty-print.c (pp_cxx_cast_expression): Handle it.
+	(pp_cxx_expression): Likewise.
+	* error.c (dump_expr): Likewise.
+	* semantics.c (potential_constant_expression_1): Likewise.
+	* tree.c (cp_tree_equal): Likewise.
+	(cp_walk_subtrees): Likewise.
+	* pt.c (iterative_hash_template_arg): Likewise.
+	(for_each_template_parm_r): Likewise.
+	(type_dependent_expression_p): Likewise.
+	(tsubst_copy, tsubst_copy_and_build): Handle IMPLICIT_CONV_EXPR
+	and CONVERT_EXPR.
+	* cp-tree.h (IMPLICIT_CONV_EXPR_DIRECT_INIT): New.
+
 2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50611

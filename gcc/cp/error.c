@@ -2052,6 +2052,7 @@ dump_expr (tree t, int flags)
       break;
 
     CASE_CONVERT:
+    case IMPLICIT_CONV_EXPR:
     case VIEW_CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
