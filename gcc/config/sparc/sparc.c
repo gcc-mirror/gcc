@@ -6789,7 +6789,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
     {
       tree tmp = create_tmp_var (type, "va_arg_tmp");
       tree dest_addr = build_fold_addr_expr (tmp);
-      tree copy = build_call_expr (implicit_built_in_decls[BUILT_IN_MEMCPY],
+      tree copy = build_call_expr (builtin_decl_implicit (BUILT_IN_MEMCPY),
 				   3, dest_addr, addr, size_int (rsize));
       TREE_ADDRESSABLE (tmp) = 1;
       gimplify_and_add (copy, pre_p);

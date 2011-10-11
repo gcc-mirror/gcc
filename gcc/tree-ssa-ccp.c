@@ -2175,7 +2175,7 @@ optimize_stdarg_builtin (gimple call)
     case BUILT_IN_VA_START:
       if (!va_list_simple_ptr
 	  || targetm.expand_builtin_va_start != NULL
-          || built_in_decls[BUILT_IN_NEXT_ARG] == NULL)
+          || builtin_decl_explicit_p (BUILT_IN_NEXT_ARG))
 	return NULL_TREE;
 
       if (gimple_call_num_args (call) != 2)
@@ -2188,7 +2188,7 @@ optimize_stdarg_builtin (gimple call)
 	return NULL_TREE;
 
       lhs = build_fold_indirect_ref_loc (loc, lhs);
-      rhs = build_call_expr_loc (loc, built_in_decls[BUILT_IN_NEXT_ARG],
+      rhs = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_NEXT_ARG),
                              1, integer_zero_node);
       rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
       return build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, rhs);

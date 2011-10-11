@@ -639,7 +639,7 @@ gfc_builtin_function (tree decl)
 #define ATTR_CONST_NOTHROW_LIST		(ECF_NOTHROW | ECF_CONST)
 
 static void
-gfc_define_builtin (const char *name, tree type, int code,
+gfc_define_builtin (const char *name, tree type, enum built_in_function code,
 		    const char *library_name, int attr)
 {
   tree decl;
@@ -654,8 +654,7 @@ gfc_define_builtin (const char *name, tree type, int code,
     DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
 					NULL, DECL_ATTRIBUTES (decl));
 
-  built_in_decls[code] = decl;
-  implicit_built_in_decls[code] = decl;
+  set_builtin_decl (code, decl, true);
 }
 
 
@@ -1006,7 +1005,7 @@ gfc_init_builtin_functions (void)
                                     size_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_malloc", ftype, BUILT_IN_MALLOC,
 		      "malloc", ATTR_NOTHROW_LEAF_LIST);
-  DECL_IS_MALLOC (built_in_decls[BUILT_IN_MALLOC]) = 1;
+  DECL_IS_MALLOC (builtin_decl_explicit (BUILT_IN_MALLOC)) = 1;
 
   ftype = build_function_type_list (pvoid_type_node,
                                     size_type_node, pvoid_type_node,
@@ -1122,7 +1121,7 @@ gfc_init_builtin_functions (void)
 
   gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],
 		      BUILT_IN_TRAP, NULL, ATTR_NOTHROW_LEAF_LIST);
-  TREE_THIS_VOLATILE (built_in_decls[BUILT_IN_TRAP]) = 1;
+  TREE_THIS_VOLATILE (builtin_decl_explicit (BUILT_IN_TRAP)) = 1;
 
   gfc_define_builtin ("__emutls_get_address",
 		      builtin_types[BT_FN_PTR_PTR],

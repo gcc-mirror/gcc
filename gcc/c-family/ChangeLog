@@ -1,3 +1,14 @@
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-common.c (def_builtin_1): Delete old interface with two
+	parallel arrays to hold standard builtin declarations, and replace
+	it with a function based interface that can support creating
+	builtins on the fly in the future.  Change all uses, and poison
+	the old	names.  Make sure 0 is not a legitimate builtin index.
+	* c-omp.c (c_finish_omp_barrier): Ditto.
+	(c_finish_omp_taskwait): Ditto.
+	(c_finish_omp_flush): Ditto.
+
 2011-10-11  Tristan Gingold  <gingold@adacore.com>
 
 	* c.opt: (fallow-parameterless-variadic-functions): New.

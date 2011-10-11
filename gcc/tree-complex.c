@@ -956,7 +956,7 @@ expand_complex_libcall (gimple_stmt_iterator *gsi, tree ar, tree ai,
 	     (BUILT_IN_COMPLEX_DIV_MIN + mode - MIN_MODE_COMPLEX_FLOAT));
   else
     gcc_unreachable ();
-  fn = built_in_decls[bcode];
+  fn = builtin_decl_explicit (bcode);
 
   stmt = gimple_build_call (fn, 4, ar, ai, br, bi);
   gimple_call_set_lhs (stmt, lhs);

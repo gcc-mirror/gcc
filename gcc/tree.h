@@ -335,10 +335,6 @@ extern const char * built_in_names[(int) END_BUILTINS];
 #define CASE_FLT_FN(FN) case FN: case FN##F: case FN##L
 #define CASE_FLT_FN_REENT(FN) case FN##_R: case FN##F_R: case FN##L_R
 #define CASE_INT_FN(FN) case FN: case FN##L: case FN##LL
-
-/* An array of _DECL trees for the above.  */
-extern GTY(()) tree built_in_decls[(int) END_BUILTINS];
-extern GTY(()) tree implicit_built_in_decls[(int) END_BUILTINS];
 
 /* In an OMP_CLAUSE node.  */
 
@@ -5917,5 +5913,95 @@ is_lang_specific (tree t)
 
 /* In gimple-low.c.  */
 extern bool block_may_fallthru (const_tree);
+
+
+/* Functional interface to the builtin functions.  */
+
+/* The builtin_info structure holds the FUNCTION_DECL of the standard builtin
+   function, and a flag that says if the function is available implicitly, or
+   whether the user has to code explicit calls to __builtin_<xxx>.  */
+
+typedef struct GTY(()) builtin_info_type_d {
+  tree decl[(int)END_BUILTINS];
+  bool implicit_p[(int)END_BUILTINS];
+} builtin_info_type;
+
+extern GTY(()) builtin_info_type builtin_info;
+
+/* Valid builtin number.  */
+#define BUILTIN_VALID_P(FNCODE) \
+  (IN_RANGE ((int)FNCODE, ((int)BUILT_IN_NONE) + 1, ((int) END_BUILTINS) - 1))
+
+/* Return the tree node for an explicit standard builtin function or NULL.  */
+static inline tree
+builtin_decl_explicit (enum built_in_function fncode)
+{
+  gcc_checking_assert (BUILTIN_VALID_P (fncode));
+
+  return builtin_info.decl[(size_t)fncode];
+}
+
+/* Return the tree node for an implicit builtin function or NULL.  */
+static inline tree
+builtin_decl_implicit (enum built_in_function fncode)
+{
+  size_t uns_fncode = (size_t)fncode;
+  gcc_checking_assert (BUILTIN_VALID_P (fncode));
+
+  if (!builtin_info.implicit_p[uns_fncode])
+    return NULL_TREE;
+
+  return builtin_info.decl[uns_fncode];
+}
+
+/* Set explicit builtin function nodes and whether it is an implicit
+   function.  */
+
+static inline void
+set_builtin_decl (enum built_in_function fncode, tree decl, bool implicit_p)
+{
+  size_t ufncode = (size_t)fncode;
+
+  gcc_checking_assert (BUILTIN_VALID_P (fncode)
+		       && (decl != NULL_TREE || !implicit_p));
+
+  builtin_info.decl[ufncode] = decl;
+  builtin_info.implicit_p[ufncode] = implicit_p;
+}
+
+/* Set the implicit flag for a builtin function.  */
+
+static inline void
+set_builtin_decl_implicit_p (enum built_in_function fncode, bool implicit_p)
+{
+  size_t uns_fncode = (size_t)fncode;
+
+  gcc_checking_assert (BUILTIN_VALID_P (fncode)
+		       && builtin_info.decl[uns_fncode] != NULL_TREE);
+
+  builtin_info.implicit_p[uns_fncode] = implicit_p;
+}
+
+/* Return whether the standard builtin function can be used as an explicit
+   function.  */
+
+static inline bool
+builtin_decl_explicit_p (enum built_in_function fncode)
+{
+  gcc_checking_assert (BUILTIN_VALID_P (fncode));
+  return (builtin_info.decl[(size_t)fncode] != NULL_TREE);
+}
+
+/* Return whether the standard builtin function can be used implicitly.  */
+
+static inline bool
+builtin_decl_implicit_p (enum built_in_function fncode)
+{
+  size_t uns_fncode = (size_t)fncode;
+
+  gcc_checking_assert (BUILTIN_VALID_P (fncode));
+  return (builtin_info.decl[uns_fncode] != NULL_TREE
+	  && builtin_info.implicit_p[uns_fncode]);
+}
 
 #endif  /* GCC_TREE_H  */

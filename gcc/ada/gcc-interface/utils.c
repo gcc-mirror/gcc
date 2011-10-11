@@ -5657,7 +5657,7 @@ def_builtin_1 (enum built_in_function fncode,
 
   /* Preserve an already installed decl.  It most likely was setup in advance
      (e.g. as part of the internal builtins) for specific reasons.  */
-  if (built_in_decls[(int) fncode] != NULL_TREE)
+  if (builtin_decl_explicit (fncode) != NULL_TREE)
     return;
 
   gcc_assert ((!both_p && !fallback_p)
@@ -5674,9 +5674,7 @@ def_builtin_1 (enum built_in_function fncode,
     add_builtin_function (libname, libtype, fncode, fnclass,
 			  NULL, fnattrs);
 
-  built_in_decls[(int) fncode] = decl;
-  if (implicit_p)
-    implicit_built_in_decls[(int) fncode] = decl;
+  set_builtin_decl (fncode, decl, implicit_p);
 }
 
 static int flag_isoc94 = 0;

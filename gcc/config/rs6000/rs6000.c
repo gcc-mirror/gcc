@@ -3739,7 +3739,7 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 	case BUILT_IN_SQRT:
 	case BUILT_IN_TAN:
 	case BUILT_IN_TANH:
-	  bdecl = implicit_built_in_decls[fn];
+	  bdecl = builtin_decl_implicit (fn);
 	  suffix = "d2";				/* pow -> powd2 */
 	  if (el_mode != DFmode
 	      || n != 2)
@@ -3776,7 +3776,7 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 	case BUILT_IN_SQRTF:
 	case BUILT_IN_TANF:
 	case BUILT_IN_TANHF:
-	  bdecl = implicit_built_in_decls[fn];
+	  bdecl = builtin_decl_implicit (fn);
 	  suffix = "4";					/* powf -> powf4 */
 	  if (el_mode != SFmode
 	      || n != 4)
@@ -9400,7 +9400,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       tree tmp = create_tmp_var (type, "va_arg_tmp");
       tree dest_addr = build_fold_addr_expr (tmp);
 
-      tree copy = build_call_expr (implicit_built_in_decls[BUILT_IN_MEMCPY],
+      tree copy = build_call_expr (builtin_decl_implicit (BUILT_IN_MEMCPY),
 				   3, dest_addr, addr, size_int (rsize * 4));
 
       gimplify_and_add (copy, pre_p);
@@ -12213,8 +12213,8 @@ rs6000_init_builtins (void)
 
 #if TARGET_XCOFF
   /* AIX libm provides clog as __clog.  */
-  if (built_in_decls [BUILT_IN_CLOG])
-    set_user_assembler_name (built_in_decls [BUILT_IN_CLOG], "__clog");
+  if ((tdecl = builtin_decl_explicit ([BUILT_IN_CLOG))) != NULL_TREE)
+    set_user_assembler_name (tdecl, "__clog");
 #endif
 
 #ifdef SUBTARGET_INIT_BUILTINS

@@ -2059,7 +2059,7 @@ scan_omp (gimple_seq body, omp_context *ctx)
 static tree
 build_omp_barrier (void)
 {
-  return build_call_expr (built_in_decls[BUILT_IN_GOMP_BARRIER], 0);
+  return build_call_expr (builtin_decl_explicit (BUILT_IN_GOMP_BARRIER), 0);
 }
 
 /* If a context was created for STMT when it was scanned, return it.  */
@@ -2300,7 +2300,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      if (c_kind != OMP_CLAUSE_FIRSTPRIVATE || !is_task_ctx (ctx))
 		{
 		  gimple stmt;
-		  tree tmp;
+		  tree tmp, atmp;
 
 		  ptr = DECL_VALUE_EXPR (new_var);
 		  gcc_assert (TREE_CODE (ptr) == INDIRECT_REF);
@@ -2309,8 +2309,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  x = TYPE_SIZE_UNIT (TREE_TYPE (new_var));
 
 		  /* void *tmp = __builtin_alloca */
-		  stmt
-		    = gimple_build_call (built_in_decls[BUILT_IN_ALLOCA], 1, x);
+		  atmp = builtin_decl_explicit (BUILT_IN_ALLOCA);
+		  stmt = gimple_build_call (atmp, 1, x);
 		  tmp = create_tmp_var_raw (ptr_type_node, NULL);
 		  gimple_add_tmp_var (tmp);
 		  gimple_call_set_lhs (stmt, tmp);
@@ -2354,8 +2354,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		}
 	      else
 		{
-		  x = build_call_expr_loc (clause_loc,
-				       built_in_decls[BUILT_IN_ALLOCA], 1, x);
+		  tree atmp = builtin_decl_explicit (BUILT_IN_ALLOCA);
+		  x = build_call_expr_loc (clause_loc, atmp, 1, x);
 		}
 
 	      x = fold_convert_loc (clause_loc, TREE_TYPE (new_var), x);
@@ -2493,7 +2493,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
      but it certainly is to C++ operator=.  */
   if (copyin_seq)
     {
-      x = build_call_expr (built_in_decls[BUILT_IN_OMP_GET_THREAD_NUM], 0);
+      x = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM),
+			   0);
       x = build2 (NE_EXPR, boolean_type_node, x,
 		  build_int_cst (TREE_TYPE (x), 0));
       x = build3 (COND_EXPR, void_type_node, x, copyin_seq, NULL);
@@ -2688,12 +2689,14 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
 	}
     }
 
-  stmt = gimple_build_call (built_in_decls[BUILT_IN_GOMP_ATOMIC_START], 0);
+  stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_START),
+			    0);
   gimple_seq_add_stmt (stmt_seqp, stmt);
 
   gimple_seq_add_seq (stmt_seqp, sub_seq);
 
-  stmt = gimple_build_call (built_in_decls[BUILT_IN_GOMP_ATOMIC_END], 0);
+  stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_END),
+			    0);
   gimple_seq_add_stmt (stmt_seqp, stmt);
 }
 
@@ -2917,7 +2920,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
   tree t, t1, t2, val, cond, c, clauses;
   gimple_stmt_iterator gsi;
   gimple stmt;
-  int start_ix;
+  enum built_in_function start_ix;
+  int start_ix2;
   location_t clause_loc;
   VEC(tree,gc) *args;
 
@@ -2932,10 +2936,11 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	{
 	case GIMPLE_OMP_FOR:
 	  gcc_assert (region->inner->sched_kind != OMP_CLAUSE_SCHEDULE_AUTO);
-	  start_ix = BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START
-		     + (region->inner->sched_kind
-			== OMP_CLAUSE_SCHEDULE_RUNTIME
-			? 3 : region->inner->sched_kind);
+	  start_ix2 = ((int)BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START
+		       + (region->inner->sched_kind
+			  == OMP_CLAUSE_SCHEDULE_RUNTIME
+			  ? 3 : region->inner->sched_kind));
+	  start_ix = (enum built_in_function)start_ix2;
 	  break;
 	case GIMPLE_OMP_SECTIONS:
 	  start_ix = BUILT_IN_GOMP_PARALLEL_SECTIONS_START;
@@ -3057,7 +3062,7 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
   VEC_splice (tree, args, ws_args);
 
   t = build_call_expr_loc_vec (UNKNOWN_LOCATION,
-			       built_in_decls[start_ix], args);
+			       builtin_decl_explicit (start_ix), args);
 
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);
@@ -3073,7 +3078,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 			    false, GSI_CONTINUE_LINKING);
 
   t = build_call_expr_loc (gimple_location (entry_stmt),
-			   built_in_decls[BUILT_IN_GOMP_PARALLEL_END], 0);
+			   builtin_decl_explicit (BUILT_IN_GOMP_PARALLEL_END),
+			   0);
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);
 }
@@ -3125,7 +3131,8 @@ expand_task_call (basic_block bb, gimple entry_stmt)
   else
     t3 = build_fold_addr_expr_loc (loc, t);
 
-  t = build_call_expr (built_in_decls[BUILT_IN_GOMP_TASK], 7, t1, t2, t3,
+  t = build_call_expr (builtin_decl_explicit (BUILT_IN_GOMP_TASK),
+		       7, t1, t2, t3,
 		       gimple_omp_task_arg_size (entry_stmt),
 		       gimple_omp_task_arg_align (entry_stmt), cond, flags);
 
@@ -3150,7 +3157,7 @@ maybe_catch_exception (gimple_seq body)
   if (lang_hooks.eh_protect_cleanup_actions != NULL)
     decl = lang_hooks.eh_protect_cleanup_actions ();
   else
-    decl = built_in_decls[BUILT_IN_TRAP];
+    decl = builtin_decl_explicit (BUILT_IN_TRAP);
 
   g = gimple_build_eh_must_not_throw (decl);
   g = gimple_build_try (body, gimple_seq_alloc_with_stmt (g),
@@ -3297,10 +3304,10 @@ optimize_omp_library_calls (gimple entry_stmt)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
-  tree thr_num_id
-    = DECL_ASSEMBLER_NAME (built_in_decls [BUILT_IN_OMP_GET_THREAD_NUM]);
-  tree num_thr_id
-    = DECL_ASSEMBLER_NAME (built_in_decls [BUILT_IN_OMP_GET_NUM_THREADS]);
+  tree thr_num_tree = builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM);
+  tree thr_num_id = DECL_ASSEMBLER_NAME (thr_num_tree);
+  tree num_thr_tree = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS);
+  tree num_thr_id = DECL_ASSEMBLER_NAME (num_thr_tree);
   bool untied_task = (gimple_code (entry_stmt) == GIMPLE_OMP_TASK
 		      && find_omp_clause (gimple_omp_task_clauses (entry_stmt),
 					  OMP_CLAUSE_UNTIED) != NULL);
@@ -3325,10 +3332,10 @@ optimize_omp_library_calls (gimple entry_stmt)
 		   during the execution of the task region.  */
 		if (untied_task)
 		  continue;
-		built_in = built_in_decls [BUILT_IN_OMP_GET_THREAD_NUM];
+		built_in = builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM);
 	      }
 	    else if (DECL_NAME (decl) == num_thr_id)
-	      built_in = built_in_decls [BUILT_IN_OMP_GET_NUM_THREADS];
+	      built_in = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS);
 	    else
 	      continue;
 
@@ -3812,7 +3819,7 @@ expand_omp_for_generic (struct omp_region *region,
     {
       /* In a combined parallel loop, emit a call to
 	 GOMP_loop_foo_next.  */
-      t = build_call_expr (built_in_decls[next_fn], 2,
+      t = build_call_expr (builtin_decl_explicit (next_fn), 2,
 			   build_fold_addr_expr (istart0),
 			   build_fold_addr_expr (iend0));
     }
@@ -3848,34 +3855,36 @@ expand_omp_for_generic (struct omp_region *region,
 	  if (fd->chunk_size)
 	    {
 	      t = fold_convert (fd->iter_type, fd->chunk_size);
-	      t = build_call_expr (built_in_decls[start_fn], 6,
-				   t0, t1, t2, t, t3, t4);
+	      t = build_call_expr (builtin_decl_explicit (start_fn),
+				   6, t0, t1, t2, t, t3, t4);
 	    }
 	  else
-	    t = build_call_expr (built_in_decls[start_fn], 5,
-				 t0, t1, t2, t3, t4);
+	    t = build_call_expr (builtin_decl_explicit (start_fn),
+				 5, t0, t1, t2, t3, t4);
 	}
       else
 	{
 	  tree t5;
 	  tree c_bool_type;
+	  tree bfn_decl;
 
 	  /* The GOMP_loop_ull_*start functions have additional boolean
 	     argument, true for < loops and false for > loops.
 	     In Fortran, the C bool type can be different from
 	     boolean_type_node.  */
-	  c_bool_type = TREE_TYPE (TREE_TYPE (built_in_decls[start_fn]));
+	  bfn_decl = builtin_decl_explicit (start_fn);
+	  c_bool_type = TREE_TYPE (TREE_TYPE (bfn_decl));
 	  t5 = build_int_cst (c_bool_type,
 			      fd->loop.cond_code == LT_EXPR ? 1 : 0);
 	  if (fd->chunk_size)
 	    {
+	      tree bfn_decl = builtin_decl_explicit (start_fn);
 	      t = fold_convert (fd->iter_type, fd->chunk_size);
-	      t = build_call_expr (built_in_decls[start_fn], 7,
-				   t5, t0, t1, t2, t, t3, t4);
+	      t = build_call_expr (bfn_decl, 7, t5, t0, t1, t2, t, t3, t4);
 	    }
 	  else
-	    t = build_call_expr (built_in_decls[start_fn], 6,
-				 t5, t0, t1, t2, t3, t4);
+	    t = build_call_expr (builtin_decl_explicit (start_fn),
+				 6, t5, t0, t1, t2, t3, t4);
 	}
     }
   if (TREE_TYPE (t) != boolean_type_node)
@@ -4031,7 +4040,7 @@ expand_omp_for_generic (struct omp_region *region,
       /* Emit code to get the next parallel iteration in L2_BB.  */
       gsi = gsi_start_bb (l2_bb);
 
-      t = build_call_expr (built_in_decls[next_fn], 2,
+      t = build_call_expr (builtin_decl_explicit (next_fn), 2,
 			   build_fold_addr_expr (istart0),
 			   build_fold_addr_expr (iend0));
       t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
@@ -4046,9 +4055,9 @@ expand_omp_for_generic (struct omp_region *region,
   /* Add the loop cleanup function.  */
   gsi = gsi_last_bb (exit_bb);
   if (gimple_omp_return_nowait_p (gsi_stmt (gsi)))
-    t = built_in_decls[BUILT_IN_GOMP_LOOP_END_NOWAIT];
+    t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
   else
-    t = built_in_decls[BUILT_IN_GOMP_LOOP_END];
+    t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END);
   stmt = gimple_build_call (t, 0);
   gsi_insert_after (&gsi, stmt, GSI_SAME_STMT);
   gsi_remove (&gsi, true);
@@ -4169,12 +4178,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   gsi = gsi_last_bb (entry_bb);
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_FOR);
 
-  t = build_call_expr (built_in_decls[BUILT_IN_OMP_GET_NUM_THREADS], 0);
+  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS), 0);
   t = fold_convert (itype, t);
   nthreads = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
 
-  t = build_call_expr (built_in_decls[BUILT_IN_OMP_GET_THREAD_NUM], 0);
+  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM), 0);
   t = fold_convert (itype, t);
   threadid = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
@@ -4391,12 +4400,12 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   si = gsi_last_bb (entry_bb);
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_FOR);
 
-  t = build_call_expr (built_in_decls[BUILT_IN_OMP_GET_NUM_THREADS], 0);
+  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS), 0);
   t = fold_convert (itype, t);
   nthreads = force_gimple_operand_gsi (&si, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
 
-  t = build_call_expr (built_in_decls[BUILT_IN_OMP_GET_THREAD_NUM], 0);
+  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM), 0);
   t = fold_convert (itype, t);
   threadid = force_gimple_operand_gsi (&si, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
@@ -4658,14 +4667,14 @@ expand_omp_for (struct omp_region *region)
       fn_index = (fd.sched_kind == OMP_CLAUSE_SCHEDULE_RUNTIME)
 		  ? 3 : fd.sched_kind;
       fn_index += fd.have_ordered * 4;
-      start_ix = BUILT_IN_GOMP_LOOP_STATIC_START + fn_index;
-      next_ix = BUILT_IN_GOMP_LOOP_STATIC_NEXT + fn_index;
+      start_ix = ((int)BUILT_IN_GOMP_LOOP_STATIC_START) + fn_index;
+      next_ix = ((int)BUILT_IN_GOMP_LOOP_STATIC_NEXT) + fn_index;
       if (fd.iter_type == long_long_unsigned_type_node)
 	{
-	  start_ix += BUILT_IN_GOMP_LOOP_ULL_STATIC_START
-		      - BUILT_IN_GOMP_LOOP_STATIC_START;
-	  next_ix += BUILT_IN_GOMP_LOOP_ULL_STATIC_NEXT
-		     - BUILT_IN_GOMP_LOOP_STATIC_NEXT;
+	  start_ix += ((int)BUILT_IN_GOMP_LOOP_ULL_STATIC_START
+			- (int)BUILT_IN_GOMP_LOOP_STATIC_START);
+	  next_ix += ((int)BUILT_IN_GOMP_LOOP_ULL_STATIC_NEXT
+		      - (int)BUILT_IN_GOMP_LOOP_STATIC_NEXT);
 	}
       expand_omp_for_generic (region, &fd, (enum built_in_function) start_ix,
 			      (enum built_in_function) next_ix);
@@ -4778,13 +4787,13 @@ expand_omp_sections (struct omp_region *region)
 	 call GOMP_sections_start.  */
       t = build_int_cst (unsigned_type_node,
 			 exit_reachable ? len - 1 : len);
-      u = built_in_decls[BUILT_IN_GOMP_SECTIONS_START];
+      u = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_START);
       stmt = gimple_build_call (u, 1, t);
     }
   else
     {
       /* Otherwise, call GOMP_sections_next.  */
-      u = built_in_decls[BUILT_IN_GOMP_SECTIONS_NEXT];
+      u = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_NEXT);
       stmt = gimple_build_call (u, 0);
     }
   gimple_call_set_lhs (stmt, vin);
@@ -4866,16 +4875,19 @@ expand_omp_sections (struct omp_region *region)
   VEC_free (tree, heap, label_vec);
 
   si = gsi_start_bb (default_bb);
-  stmt = gimple_build_call (built_in_decls[BUILT_IN_TRAP], 0);
+  stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
   gsi_insert_after (&si, stmt, GSI_CONTINUE_LINKING);
 
   if (exit_reachable)
     {
+      tree bfn_decl;
+
       /* Code to get the next section goes in L1_BB.  */
       si = gsi_last_bb (l1_bb);
       gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_CONTINUE);
 
-      stmt = gimple_build_call (built_in_decls[BUILT_IN_GOMP_SECTIONS_NEXT], 0);
+      bfn_decl = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_NEXT);
+      stmt = gimple_build_call (bfn_decl, 0);
       gimple_call_set_lhs (stmt, vnext);
       gsi_insert_after (&si, stmt, GSI_SAME_STMT);
       gsi_remove (&si, true);
@@ -4885,9 +4897,9 @@ expand_omp_sections (struct omp_region *region)
       /* Cleanup function replaces GIMPLE_OMP_RETURN in EXIT_BB.  */
       si = gsi_last_bb (l2_bb);
       if (gimple_omp_return_nowait_p (gsi_stmt (si)))
-	t = built_in_decls[BUILT_IN_GOMP_SECTIONS_END_NOWAIT];
+	t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END_NOWAIT);
       else
-	t = built_in_decls[BUILT_IN_GOMP_SECTIONS_END];
+	t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END);
       stmt = gimple_build_call (t, 0);
       gsi_insert_after (&si, stmt, GSI_SAME_STMT);
       gsi_remove (&si, true);
@@ -4995,7 +5007,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
 			    tree addr, tree loaded_val,
 			    tree stored_val, int index)
 {
-  enum built_in_function oldbase, newbase;
+  enum built_in_function oldbase, newbase, tmpbase;
   tree decl, itype, call;
   direct_optab optab, oldoptab, newoptab;
   tree lhs, rhs;
@@ -5085,7 +5097,9 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   else
     return false;
 
-  decl = built_in_decls[(need_new ? newbase : oldbase) + index + 1];
+  tmpbase = ((enum built_in_function)
+	     ((need_new ? newbase : oldbase) + index + 1));
+  decl = builtin_decl_explicit (tmpbase);
   if (decl == NULL_TREE)
     return false;
   itype = TREE_TYPE (TREE_TYPE (decl));
@@ -5166,8 +5180,11 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   basic_block loop_header = single_succ (load_bb);
   gimple phi, stmt;
   edge e;
+  enum built_in_function fncode;
 
-  cmpxchg = built_in_decls[BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N + index + 1];
+  fncode = (enum built_in_function)((int)BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N
+				    + index + 1);
+  cmpxchg = builtin_decl_explicit (fncode);
   if (cmpxchg == NULL_TREE)
     return false;
   type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
@@ -5355,7 +5372,7 @@ expand_omp_atomic_mutex (basic_block load_bb, basic_block store_bb,
   si = gsi_last_bb (load_bb);
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_ATOMIC_LOAD);
 
-  t = built_in_decls[BUILT_IN_GOMP_ATOMIC_START];
+  t = builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_START);
   t = build_call_expr (t, 0);
   force_gimple_operand_gsi (&si, t, true, NULL_TREE, true, GSI_SAME_STMT);
 
@@ -5370,7 +5387,7 @@ expand_omp_atomic_mutex (basic_block load_bb, basic_block store_bb,
 			      stored_val);
   gsi_insert_before (&si, stmt, GSI_SAME_STMT);
 
-  t = built_in_decls[BUILT_IN_GOMP_ATOMIC_END];
+  t = builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_END);
   t = build_call_expr (t, 0);
   force_gimple_operand_gsi (&si, t, true, NULL_TREE, true, GSI_SAME_STMT);
   gsi_remove (&si, true);
@@ -5806,7 +5823,7 @@ lower_omp_single_simple (gimple single_stmt, gimple_seq *pre_p)
   gimple call, cond;
   tree lhs, decl;
 
-  decl = built_in_decls[BUILT_IN_GOMP_SINGLE_START];
+  decl = builtin_decl_explicit (BUILT_IN_GOMP_SINGLE_START);
   lhs = create_tmp_var (TREE_TYPE (TREE_TYPE (decl)), NULL);
   call = gimple_build_call (decl, 0);
   gimple_call_set_lhs (call, lhs);
@@ -5855,7 +5872,7 @@ lower_omp_single_simple (gimple single_stmt, gimple_seq *pre_p)
 static void
 lower_omp_single_copy (gimple single_stmt, gimple_seq *pre_p, omp_context *ctx)
 {
-  tree ptr_type, t, l0, l1, l2;
+  tree ptr_type, t, l0, l1, l2, bfn_decl;
   gimple_seq copyin_seq;
   location_t loc = gimple_location (single_stmt);
 
@@ -5868,7 +5885,8 @@ lower_omp_single_copy (gimple single_stmt, gimple_seq *pre_p, omp_context *ctx)
   l1 = create_artificial_label (loc);
   l2 = create_artificial_label (loc);
 
-  t = build_call_expr_loc (loc, built_in_decls[BUILT_IN_GOMP_SINGLE_COPY_START], 0);
+  bfn_decl = builtin_decl_explicit (BUILT_IN_GOMP_SINGLE_COPY_START);
+  t = build_call_expr_loc (loc, bfn_decl, 0);
   t = fold_convert_loc (loc, ptr_type, t);
   gimplify_assign (ctx->receiver_decl, t, pre_p);
 
@@ -5887,8 +5905,8 @@ lower_omp_single_copy (gimple single_stmt, gimple_seq *pre_p, omp_context *ctx)
 			      &copyin_seq, ctx);
 
   t = build_fold_addr_expr_loc (loc, ctx->sender_decl);
-  t = build_call_expr_loc (loc, built_in_decls[BUILT_IN_GOMP_SINGLE_COPY_END],
-		       1, t);
+  bfn_decl = builtin_decl_explicit (BUILT_IN_GOMP_SINGLE_COPY_END);
+  t = build_call_expr_loc (loc, bfn_decl, 1, t);
   gimplify_and_add (t, pre_p);
 
   t = build_and_jump (&l2);
@@ -5955,7 +5973,7 @@ lower_omp_single (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 static void
 lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 {
-  tree block, lab = NULL, x;
+  tree block, lab = NULL, x, bfn_decl;
   gimple stmt = gsi_stmt (*gsi_p), bind;
   location_t loc = gimple_location (stmt);
   gimple_seq tseq;
@@ -5967,7 +5985,8 @@ lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   bind = gimple_build_bind (NULL, gimple_seq_alloc_with_stmt (stmt),
       				 block);
 
-  x = build_call_expr_loc (loc, built_in_decls[BUILT_IN_OMP_GET_THREAD_NUM], 0);
+  bfn_decl = builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM);
+  x = build_call_expr_loc (loc, bfn_decl, 0);
   x = build2 (EQ_EXPR, boolean_type_node, x, integer_zero_node);
   x = build3 (COND_EXPR, void_type_node, x, NULL, build_and_jump (&lab));
   tseq = NULL;
@@ -6006,7 +6025,8 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   bind = gimple_build_bind (NULL, gimple_seq_alloc_with_stmt (stmt),
       				   block);
 
-  x = gimple_build_call (built_in_decls[BUILT_IN_GOMP_ORDERED_START], 0);
+  x = gimple_build_call (builtin_decl_explicit (BUILT_IN_GOMP_ORDERED_START),
+			 0);
   gimple_bind_add_stmt (bind, x);
 
   lower_omp (gimple_omp_body (stmt), ctx);
@@ -6014,7 +6034,7 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple_bind_add_seq (bind, gimple_omp_body (stmt));
   gimple_omp_set_body (stmt, NULL);
 
-  x = gimple_build_call (built_in_decls[BUILT_IN_GOMP_ORDERED_END], 0);
+  x = gimple_build_call (builtin_decl_explicit (BUILT_IN_GOMP_ORDERED_END), 0);
   gimple_bind_add_stmt (bind, x);
 
   gimple_bind_add_stmt (bind, gimple_build_omp_return (true));
@@ -6080,19 +6100,19 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       else
 	decl = (tree) n->value;
 
-      lock = built_in_decls[BUILT_IN_GOMP_CRITICAL_NAME_START];
+      lock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_NAME_START);
       lock = build_call_expr_loc (loc, lock, 1, build_fold_addr_expr_loc (loc, decl));
 
-      unlock = built_in_decls[BUILT_IN_GOMP_CRITICAL_NAME_END];
+      unlock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_NAME_END);
       unlock = build_call_expr_loc (loc, unlock, 1,
 				build_fold_addr_expr_loc (loc, decl));
     }
   else
     {
-      lock = built_in_decls[BUILT_IN_GOMP_CRITICAL_START];
+      lock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_START);
       lock = build_call_expr_loc (loc, lock, 0);
 
-      unlock = built_in_decls[BUILT_IN_GOMP_CRITICAL_END];
+      unlock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_END);
       unlock = build_call_expr_loc (loc, unlock, 0);
     }
 

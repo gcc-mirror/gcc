@@ -4989,7 +4989,7 @@ create_main_function (tree fndecl)
     { 
       /* Per F2008, 8.5.1 END of the main program implies a
 	 SYNC MEMORY.  */ 
-      tmp = built_in_decls [BUILT_IN_SYNC_SYNCHRONIZE];
+      tmp = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
       tmp = build_call_expr_loc (input_location, tmp, 0);
       gfc_add_expr_to_block (&body, tmp);
 

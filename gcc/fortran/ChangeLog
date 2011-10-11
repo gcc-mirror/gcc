@@ -1,3 +1,37 @@
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* trans-expr.c (gfc_conv_power_op): Delete old interface with two
+	parallel arrays to hold standard builtin declarations, and replace
+	it with a function based interface that can support creating
+	builtins on the fly in the future.  Change all uses, and poison
+	the old names.  Make sure 0 is not a legitimate builtin index.
+	(fill_with_spaces): Ditto.
+	(gfc_trans_string_copy): Ditto.
+	(gfc_trans_zero_assign): Ditto.
+	(gfc_build_memcpy_call): Ditto.
+	(alloc_scalar_allocatable_for_assignment): Ditto.
+	* trans-array.c (gfc_trans_array_constructor_value): Ditto.
+	(duplicate_allocatable): Ditto.
+	(gfc_alloc_allocatable_for_assignment): Ditto.
+	* trans-openmp.c (gfc_omp_clause_copy_ctor): Ditto.
+	(gfc_omp_clause_assign_op): Ditto.
+	(gfc_trans_omp_atomic): Ditto.
+	(gfc_trans_omp_do): Ditto.
+	(gfc_trans_omp_task): Ditto.
+	* trans-stmt.c (gfc_trans_stop): Ditto.
+	(gfc_trans_sync): Ditto.
+	(gfc_trans_allocate): Ditto.
+	(gfc_trans_deallocate): Ditto.
+	* trans.c (gfc_call_malloc): Ditto.
+	(gfc_allocate_using_malloc): Ditto.
+	(gfc_call_free): Ditto.
+	(gfc_deallocate_with_status): Ditto.
+	(gfc_deallocate_scalar_with_status): Ditto.
+	* f95-lang.c (gfc_define_builtin): Ditto.
+	(gfc_init_builtin_functions): Ditto.
+	* trans-decl.c (create_main_function): Ditto.
+	* trans-intrinsic.c (builtin_decl_for_precision): Ditto.
+
 2011-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50564

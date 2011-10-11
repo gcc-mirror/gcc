@@ -2934,7 +2934,7 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 
 	 Resolve this by expanding the resx node to an abort.  */
 
-      fn = implicit_built_in_decls[BUILT_IN_TRAP];
+      fn = builtin_decl_implicit (BUILT_IN_TRAP);
       x = gimple_build_call (fn, 0);
       gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
@@ -2991,7 +2991,7 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	  edge_iterator ei;
 	  tree dst_nr = build_int_cst (integer_type_node, dst_r->index);
 
-	  fn = implicit_built_in_decls[BUILT_IN_EH_COPY_VALUES];
+	  fn = builtin_decl_implicit (BUILT_IN_EH_COPY_VALUES);
 	  src_nr = build_int_cst (integer_type_node, src_r->index);
 	  x = gimple_build_call (fn, 2, dst_nr, src_nr);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
@@ -3026,13 +3026,13 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	 with no arguments for C++ and Java.  Check for that.  */
       if (src_r->use_cxa_end_cleanup)
 	{
-	  fn = implicit_built_in_decls[BUILT_IN_CXA_END_CLEANUP];
+	  fn = builtin_decl_implicit (BUILT_IN_CXA_END_CLEANUP);
 	  x = gimple_build_call (fn, 0);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 	}
       else
 	{
-	  fn = implicit_built_in_decls[BUILT_IN_EH_POINTER];
+	  fn = builtin_decl_implicit (BUILT_IN_EH_POINTER);
 	  src_nr = build_int_cst (integer_type_node, src_r->index);
 	  x = gimple_build_call (fn, 1, src_nr);
 	  var = create_tmp_var (ptr_type_node, NULL);
@@ -3040,7 +3040,7 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	  gimple_call_set_lhs (x, var);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
-	  fn = implicit_built_in_decls[BUILT_IN_UNWIND_RESUME];
+	  fn = builtin_decl_implicit (BUILT_IN_UNWIND_RESUME);
 	  x = gimple_build_call (fn, 1, var);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 	}
@@ -3206,7 +3206,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	  }
 	else
 	  {
-	    fn = implicit_built_in_decls[BUILT_IN_EH_FILTER];
+	    fn = builtin_decl_implicit (BUILT_IN_EH_FILTER);
 	    x = gimple_build_call (fn, 1, build_int_cst (integer_type_node,
 							 region_nr));
 	    filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);
@@ -3232,7 +3232,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	edge b_e = BRANCH_EDGE (src);
 	edge f_e = FALLTHRU_EDGE (src);
 
-	fn = implicit_built_in_decls[BUILT_IN_EH_FILTER];
+	fn = builtin_decl_implicit (BUILT_IN_EH_FILTER);
 	x = gimple_build_call (fn, 1, build_int_cst (integer_type_node,
 						     region_nr));
 	filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);

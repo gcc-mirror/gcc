@@ -1811,8 +1811,8 @@ convert_nl_goto_reference (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   x = get_frame_field (info, target_context, field, &wi->gsi);
   x = build_addr (x, target_context);
   x = gsi_gimplify_val (info, x, &wi->gsi);
-  call = gimple_build_call (implicit_built_in_decls[BUILT_IN_NONLOCAL_GOTO], 2,
-			    build_addr (new_label, target_context), x);
+  call = gimple_build_call (builtin_decl_implicit (BUILT_IN_NONLOCAL_GOTO),
+			    2, build_addr (new_label, target_context), x);
   gsi_replace (&wi->gsi, call, false);
 
   /* We have handled all of STMT's operands, no need to keep going.  */
@@ -1924,7 +1924,7 @@ convert_tramp_reference_op (tree *tp, int *walk_subtrees, void *data)
 
       /* Do machine-specific ugliness.  Normally this will involve
 	 computing extra alignment, but it can really be anything.  */
-      builtin = implicit_built_in_decls[BUILT_IN_ADJUST_TRAMPOLINE];
+      builtin = builtin_decl_implicit (BUILT_IN_ADJUST_TRAMPOLINE);
       call = gimple_build_call (builtin, 1, x);
       x = init_tmp_var_with_call (info, &wi->gsi, call);
 
@@ -2399,7 +2399,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 		      root->frame_decl, field, NULL_TREE);
 	  arg1 = build_addr (x, context);
 
-	  x = implicit_built_in_decls[BUILT_IN_INIT_TRAMPOLINE];
+	  x = builtin_decl_implicit (BUILT_IN_INIT_TRAMPOLINE);
 	  stmt = gimple_build_call (x, 3, arg1, arg2, arg3);
 	  gimple_seq_add_stmt (&stmt_list, stmt);
 	}

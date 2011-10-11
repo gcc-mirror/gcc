@@ -1049,7 +1049,7 @@ streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
     {
       if (fcode >= END_BUILTINS)
 	fatal_error ("machine independent builtin code out of range");
-      result = built_in_decls[fcode];
+      result = builtin_decl_explicit (fcode);
       gcc_assert (result);
     }
   else if (fclass == BUILT_IN_MD)

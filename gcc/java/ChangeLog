@@ -1,3 +1,19 @@
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* class.c (build_static_field_ref): Delete old interface with two
+	parallel arrays to hold standard builtin declarations, and replace
+	it with a function based interface that can support creating
+	builtins on the fly in the future.  Change all uses, and poison
+	the old names.  Make sure 0 is not a legitimate builtin index.
+	* decl.c (java_init_decl_processing): Ditto.
+	* except.c (compareAndSwapLong_builtin): Ditto.
+	(compareAndSwapObject_builtin): Ditto.
+	(putVolatile_builtin): Ditto.
+	(define_builtin): Ditto.
+	(check_for_builtin): Ditto.
+	* expr.c (rewrite_arglist_getcaller): Ditto.
+	(expand_java_field_op): Ditto.
+
 2011-08-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (CFLAGS-java/jcf-io.o, CFLAGS-java/jcf-path.o):

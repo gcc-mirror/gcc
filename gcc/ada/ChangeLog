@@ -1,3 +1,14 @@
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc-interface/utils.c (def_builtin_1): Delete old interface with
+	two parallel arrays to hold standard builtin declarations, and
+	replace it with a function based interface that can support
+	creating builtins on the fly in the future.  Change all uses, and
+	poison the old names.  Make sure 0 is not a legitimate builtin
+	index.
+	* gcc-interface/trans.c (Exception_Handler_to_gnu_zcx): Ditto.
+	(gnat_to_gnu): Ditto.
+
 2011-10-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/50492
