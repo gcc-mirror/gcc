@@ -1,3 +1,9 @@
+2011-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/49965
+	* config/sparc/sparc.md (mov<I:mode>cc): Do not save comparison code.
+	(mov<F:mode>cc): Likewise.
+
 2011-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* tree-ssa-address.c (copy_ref_info): Remove copy of TREE_THIS_NOTRAP.
