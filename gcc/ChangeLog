@@ -1,3 +1,8 @@
+2011-10-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Remove
+	the extra break.
+
 2011-10-11  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
 
 	* doc/invoke.texi: Document new warning.

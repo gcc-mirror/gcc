@@ -28096,7 +28096,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = store;
       memory = 0;
       break;
-      break;
     case UINT64_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
