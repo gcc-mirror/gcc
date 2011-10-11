@@ -1,3 +1,8 @@
+2011-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50660
+	* call.c (conversion_null_warnings): Don't look through references.
+
 2011-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38980
