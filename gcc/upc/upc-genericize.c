@@ -364,23 +364,25 @@ upc_simplify_shared_ref (location_t loc, tree exp)
     }
   else
     t_offset = offset;
-  if (t_offset)
-    {
-      const tree base_addr_type = TREE_TYPE (base_addr);
-      const enum tree_code cvt_op =
-          upc_types_compatible_p ( upc_char_pts_type_node, base_addr_type)
-          ? NOP_EXPR : CONVERT_EXPR;
-      /* Convert the base address to (shared [] char *), which may
-	 reset the pointer's phase to zero.  This is the behavior
-	 that is required to meaningfully add an offset to the
-	 base address.  */
-      base_addr = build1 (cvt_op, upc_char_pts_type_node, base_addr);
-      /* Adjust the base address so that it points to the
-	 simplified lvalue.  */
-      base_addr = fold (build_binary_op (loc, PLUS_EXPR,
-			base_addr, t_offset, 0));
-      base_addr = convert (base_addr_type, base_addr);
-    }
+  {
+    const tree base_addr_type = TREE_TYPE (base_addr);
+    const enum tree_code cvt_op =
+	upc_types_compatible_p ( upc_char_pts_type_node, base_addr_type)
+	? NOP_EXPR : CONVERT_EXPR;
+    /* Convert the base address to (shared [] char *), which may
+       reset the pointer's phase to zero.  This is the behavior
+       that is required to reference a field in a structure and
+       to meaningfully add an offset to the base address.  */
+    base_addr = build1 (cvt_op, upc_char_pts_type_node, base_addr);
+    if (t_offset)
+      {
+	/* Adjust the base address so that it points to the
+	   simplified lvalue.  */
+	base_addr = fold (build_binary_op (loc, PLUS_EXPR,
+			  base_addr, t_offset, 0));
+	base_addr = convert (base_addr_type, base_addr);
+      }
+  }
   /* We need to construct a pointer-to-shared type that
      will be used to point to the referenced value.  However,
      for a COMPONENT_REF, the original type will likely not have

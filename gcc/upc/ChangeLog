@@ -1,3 +1,10 @@
+2011-10-10  Gary Funck  <gary@intrepid.com>
+
+	* upc-genericize.c (upc_simplify_shared_ref): When simplifying
+	the base address always convert to (shared [] char *).
+	This ensures that &a[i].field1 ends up with the required
+	zero block size, for example.
+
 2011-09-22  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c (upc_get_block_factor): test TYPE_HAS_BLOCK_FACTOR()
