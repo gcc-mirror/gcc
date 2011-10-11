@@ -5514,10 +5514,9 @@ build_temp (tree expr, tree type, int flags,
 static void
 conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 {
-  tree t = non_reference (totype);
-
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if (expr == null_node && TREE_CODE (t) != BOOLEAN_TYPE && ARITHMETIC_TYPE_P (t))
+  if (expr == null_node && TREE_CODE (totype) != BOOLEAN_TYPE
+      && ARITHMETIC_TYPE_P (totype))
     {
       if (fn)
 	warning_at (input_location, OPT_Wconversion_null,
@@ -5525,11 +5524,11 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 		    argnum, fn);
       else
 	warning_at (input_location, OPT_Wconversion_null,
-		    "converting to non-pointer type %qT from NULL", t);
+		    "converting to non-pointer type %qT from NULL", totype);
     }
 
   /* Issue warnings if "false" is converted to a NULL pointer */
-  else if (expr == boolean_false_node && POINTER_TYPE_P (t))
+  else if (expr == boolean_false_node && TYPE_PTR_P (totype))
     {
       if (fn)
 	warning_at (input_location, OPT_Wconversion_null,
@@ -5537,7 +5536,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 		    "of %qD", argnum, fn);
       else
 	warning_at (input_location, OPT_Wconversion_null,
-		    "converting %<false%> to pointer type %qT", t);
+		    "converting %<false%> to pointer type %qT", totype);
     }
 }
 
