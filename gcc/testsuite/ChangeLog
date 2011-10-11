@@ -1,3 +1,7 @@
+2011-10-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/20090223-1.c: Add -Wno-attributes.
+
 2011-10-11  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/fma_double_1.c: Add -mfpmath=sse.
