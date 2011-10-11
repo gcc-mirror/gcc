@@ -812,7 +812,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
       typedef typename iterator_traits<_II2>::value_type _ValueType2;
-      const bool __simple = (__is_integer<_ValueType1>::__value
+      const bool __simple = ((__is_integer<_ValueType1>::__value
+			      || __is_pointer<_ValueType1>::__value)
 	                     && __is_pointer<_II1>::__value
 	                     && __is_pointer<_II2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
