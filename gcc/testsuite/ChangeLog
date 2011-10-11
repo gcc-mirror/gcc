@@ -1,3 +1,42 @@
+2011-10-11  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/fma_double_1.c: Add -mfpmath=sse.
+	* gcc.target/i386/fma_double_2.c: Ditto.
+	* gcc.target/i386/fma_double_3.c: Ditto.
+	* gcc.target/i386/fma_double_4.c: Ditto.
+	* gcc.target/i386/fma_double_5.c: Ditto.
+	* gcc.target/i386/fma_double_6.c: Ditto.
+	* gcc.target/i386/fma_float_1.c: Ditto.
+	* gcc.target/i386/fma_float_2.c: Ditto.
+	* gcc.target/i386/fma_float_3.c: Ditto.
+	* gcc.target/i386/fma_float_4.c: Ditto.
+	* gcc.target/i386/fma_float_5.c: Ditto.
+	* gcc.target/i386/fma_float_6.c: Ditto.
+	* gcc.target/i386/l_fma_double_1.c: Ditto.
+	* gcc.target/i386/l_fma_double_2.c: Ditto.
+	* gcc.target/i386/l_fma_double_3.c: Ditto.
+	* gcc.target/i386/l_fma_double_4.c: Ditto.
+	* gcc.target/i386/l_fma_double_5.c: Ditto.
+	* gcc.target/i386/l_fma_double_6.c: Ditto.
+	* gcc.target/i386/l_fma_float_1.c: Ditto.
+	* gcc.target/i386/l_fma_float_2.c: Ditto.
+	* gcc.target/i386/l_fma_float_3.c: Ditto.
+	* gcc.target/i386/l_fma_float_4.c: Ditto.
+	* gcc.target/i386/l_fma_float_5.c: Ditto.
+	* gcc.target/i386/l_fma_float_6.c: Ditto.
+	* gcc.target/i386/l_fma_run_double_1.c: Ditto.
+	* gcc.target/i386/l_fma_run_double_2.c: Ditto.
+	* gcc.target/i386/l_fma_run_double_3.c: Ditto.
+	* gcc.target/i386/l_fma_run_double_4.c: Ditto.
+	* gcc.target/i386/l_fma_run_double_5.c: Ditto.
+	* gcc.target/i386/l_fma_run_double_6.c: Ditto.
+	* gcc.target/i386/l_fma_run_float_1.c: Ditto.
+	* gcc.target/i386/l_fma_run_float_2.c: Ditto.
+	* gcc.target/i386/l_fma_run_float_3.c: Ditto.
+	* gcc.target/i386/l_fma_run_float_4.c: Ditto.
+	* gcc.target/i386/l_fma_run_float_5.c: Ditto.
+	* gcc.target/i386/l_fma_run_float_6.c: Ditto.
+
 2011-10-11  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc.dg/va-arg-4.c: New test.

@@ -5,7 +5,7 @@
 /* Test that the compiler properly optimizes floating point multiply
    and add instructions into FMA3 instructions.  */
 
-/* { dg-options "-O3 -mfma" } */
+/* { dg-options "-O3 -mfpmath=sse -mfma" } */
 
 
 #define TYPE float
