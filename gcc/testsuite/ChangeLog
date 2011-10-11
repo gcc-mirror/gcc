@@ -1,5 +1,7 @@
 2011-10-11  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/initlist-49216.C: New.
+
 	PR c++/49855
 	PR c++/49896
 	* g++.dg/template/constant1.C: New.

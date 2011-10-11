@@ -1,5 +1,8 @@
 2011-10-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49216
+	* init.c (build_vec_init): Avoid crash on new int[1]{}.
+
 	PR c++/49855
 	PR c++/49896
 	* call.c (perform_implicit_conversion_flags): Do perform
