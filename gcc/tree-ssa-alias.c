@@ -1875,6 +1875,60 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
   return true;
 }
 
+/* For two PHI arguments ARG0 and ARG1 try to skip non-aliasing code
+   until we hit the phi argument definition that dominates the other one.
+   Return that, or NULL_TREE if there is no such definition.  */
+
+static tree
+get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
+			    ao_ref *ref, bitmap *visited)
+{
+  gimple def0 = SSA_NAME_DEF_STMT (arg0);
+  gimple def1 = SSA_NAME_DEF_STMT (arg1);
+  tree common_vuse;
+
+  if (arg0 == arg1)
+    return arg0;
+  else if (gimple_nop_p (def0)
+	   || (!gimple_nop_p (def1)
+	       && dominated_by_p (CDI_DOMINATORS,
+				  gimple_bb (def1), gimple_bb (def0))))
+    {
+      if (maybe_skip_until (phi, arg0, ref, arg1, visited))
+	return arg0;
+    }
+  else if (gimple_nop_p (def1)
+	   || dominated_by_p (CDI_DOMINATORS,
+			      gimple_bb (def0), gimple_bb (def1)))
+    {
+      if (maybe_skip_until (phi, arg1, ref, arg0, visited))
+	return arg1;
+    }
+  /* Special case of a diamond:
+       MEM_1 = ...
+       goto (cond) ? L1 : L2
+       L1: store1 = ...    #MEM_2 = vuse(MEM_1)
+	   goto L3
+       L2: store2 = ...    #MEM_3 = vuse(MEM_1)
+       L3: MEM_4 = PHI<MEM_2, MEM_3>
+     We were called with the PHI at L3, MEM_2 and MEM_3 don't
+     dominate each other, but still we can easily skip this PHI node
+     if we recognize that the vuse MEM operand is the same for both,
+     and that we can skip both statements (they don't clobber us).
+     This is still linear.  Don't use maybe_skip_until, that might
+     potentially be slow.  */
+  else if ((common_vuse = gimple_vuse (def0))
+	   && common_vuse == gimple_vuse (def1))
+    {
+      if (!stmt_may_clobber_ref_p_1 (def0, ref)
+	  && !stmt_may_clobber_ref_p_1 (def1, ref))
+	return common_vuse;
+    }
+
+  return NULL_TREE;
+}
+
+
 /* Starting from a PHI node for the virtual operand of the memory reference
    REF find a continuation virtual operand that allows to continue walking
    statements dominating PHI skipping only statements that cannot possibly
@@ -1890,53 +1944,24 @@ get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
   if (nargs == 1)
     return PHI_ARG_DEF (phi, 0);
 
-  /* For two arguments try to skip non-aliasing code until we hit
-     the phi argument definition that dominates the other one.  */
-  if (nargs == 2)
+  /* For two or more arguments try to pairwise skip non-aliasing code
+     until we hit the phi argument definition that dominates the other one.  */
+  else if (nargs >= 2)
     {
       tree arg0 = PHI_ARG_DEF (phi, 0);
-      tree arg1 = PHI_ARG_DEF (phi, 1);
-      gimple def0 = SSA_NAME_DEF_STMT (arg0);
-      gimple def1 = SSA_NAME_DEF_STMT (arg1);
-      tree common_vuse;
+      tree arg1;
+      unsigned i = 1;
+      do
+	{
+	  arg1 = PHI_ARG_DEF (phi, i);
+	  arg0 = get_continuation_for_phi_1 (phi, arg0, arg1, ref, visited);
+	  if (!arg0)
+	    return NULL_TREE;
 
-      if (arg0 == arg1)
-	return arg0;
-      else if (gimple_nop_p (def0)
-	       || (!gimple_nop_p (def1)
-		   && dominated_by_p (CDI_DOMINATORS,
-				      gimple_bb (def1), gimple_bb (def0))))
-	{
-	  if (maybe_skip_until (phi, arg0, ref, arg1, visited))
-	    return arg0;
 	}
-      else if (gimple_nop_p (def1)
-	       || dominated_by_p (CDI_DOMINATORS,
-				  gimple_bb (def0), gimple_bb (def1)))
-	{
-	  if (maybe_skip_until (phi, arg1, ref, arg0, visited))
-	    return arg1;
-	}
-      /* Special case of a diamond:
-	   MEM_1 = ...
-	   goto (cond) ? L1 : L2
-	   L1: store1 = ...    #MEM_2 = vuse(MEM_1)
-	       goto L3
-	   L2: store2 = ...    #MEM_3 = vuse(MEM_1)
-	   L3: MEM_4 = PHI<MEM_2, MEM_3>
-	 We were called with the PHI at L3, MEM_2 and MEM_3 don't
-	 dominate each other, but still we can easily skip this PHI node
-	 if we recognize that the vuse MEM operand is the same for both,
-	 and that we can skip both statements (they don't clobber us).
-	 This is still linear.  Don't use maybe_skip_until, that might
-	 potentially be slow.  */
-      else if ((common_vuse = gimple_vuse (def0))
-	       && common_vuse == gimple_vuse (def1))
-	{
-	  if (!stmt_may_clobber_ref_p_1 (def0, ref)
-	      && !stmt_may_clobber_ref_p_1 (def1, ref))
-	    return common_vuse;
-	}
+      while (++i < nargs);
+
+      return arg0;
     }
 
   return NULL_TREE;

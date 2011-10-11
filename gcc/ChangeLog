@@ -1,3 +1,11 @@
+2011-10-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50204
+	* tree-ssa-alias.c (get_continuation_for_phi_1): Split out
+	two argument handling from ...
+	(get_continuation_for_phi): ... here.  Handle arbitrary number
+	of PHI args.
+
 2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33067
