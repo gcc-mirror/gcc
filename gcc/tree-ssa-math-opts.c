@@ -1805,9 +1805,9 @@ execute_optimize_bswap (void)
   if (sizeof (HOST_WIDEST_INT) < 8)
     return 0;
 
-  bswap32_p = (built_in_decls[BUILT_IN_BSWAP32]
+  bswap32_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP32)
 	       && optab_handler (bswap_optab, SImode) != CODE_FOR_nothing);
-  bswap64_p = (built_in_decls[BUILT_IN_BSWAP64]
+  bswap64_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP64)
 	       && (optab_handler (bswap_optab, DImode) != CODE_FOR_nothing
 		   || (bswap32_p && word_mode == SImode)));
 
@@ -1818,13 +1818,13 @@ execute_optimize_bswap (void)
      assumes that the return and argument type are the same.  */
   if (bswap32_p)
     {
-      tree fndecl = built_in_decls[BUILT_IN_BSWAP32];
+      tree fndecl = builtin_decl_explicit (BUILT_IN_BSWAP32);
       bswap32_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
     }
 
   if (bswap64_p)
     {
-      tree fndecl = built_in_decls[BUILT_IN_BSWAP64];
+      tree fndecl = builtin_decl_explicit (BUILT_IN_BSWAP64);
       bswap64_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
     }
 
@@ -1858,14 +1858,14 @@ execute_optimize_bswap (void)
 	    case 32:
 	      if (bswap32_p)
 		{
-		  fndecl = built_in_decls[BUILT_IN_BSWAP32];
+		  fndecl = builtin_decl_explicit (BUILT_IN_BSWAP32);
 		  bswap_type = bswap32_type;
 		}
 	      break;
 	    case 64:
 	      if (bswap64_p)
 		{
-		  fndecl = built_in_decls[BUILT_IN_BSWAP64];
+		  fndecl = builtin_decl_explicit (BUILT_IN_BSWAP64);
 		  bswap_type = bswap64_type;
 		}
 	      break;

@@ -69,8 +69,7 @@ define_builtin(built_in_function bcode, const char* name, const char* libname,
 				   libname, NULL_TREE);
   if (const_p)
     TREE_READONLY(decl) = 1;
-  built_in_decls[bcode] = decl;
-  implicit_built_in_decls[bcode] = decl;
+  set_builtin_decl (bcode, decl, true);
   builtin_functions[name] = decl;
   if (libname != NULL)
     {
@@ -2311,14 +2310,13 @@ Gogo::make_trampoline(tree fnaddr, tree closure, source_location location)
   x = save_expr(x);
 
   // Initialize the trampoline.
-  tree ini = build_call_expr(implicit_built_in_decls[BUILT_IN_INIT_TRAMPOLINE],
+  tree ini = build_call_expr(builtin_decl_implicit(BUILT_IN_INIT_TRAMPOLINE),
 			     3, x, fnaddr, closure);
 
   // On some targets the trampoline address needs to be adjusted.  For
   // example, when compiling in Thumb mode on the ARM, the address
   // needs to have the low bit set.
-  x = build_call_expr(implicit_built_in_decls[BUILT_IN_ADJUST_TRAMPOLINE],
-		      1, x);
+  x = build_call_expr(builtin_decl_explicit(BUILT_IN_ADJUST_TRAMPOLINE), 1, x);
   x = fold_convert(TREE_TYPE(fnaddr), x);
 
   return build2(COMPOUND_EXPR, TREE_TYPE(x), ini, x);

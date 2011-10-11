@@ -3635,7 +3635,7 @@ gimplify_parameters (void)
 		  DECL_IGNORED_P (addr) = 0;
 		  local = build_fold_indirect_ref (addr);
 
-		  t = built_in_decls[BUILT_IN_ALLOCA_WITH_ALIGN];
+		  t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
 		  t = build_call_expr (t, 1, DECL_SIZE_UNIT (parm),
 				       size_int (DECL_ALIGN (parm)));
 

@@ -1109,12 +1109,12 @@ build_stack_save_restore (gimple *save, gimple *restore)
 {
   tree tmp_var;
 
-  *save = gimple_build_call (implicit_built_in_decls[BUILT_IN_STACK_SAVE], 0);
+  *save = gimple_build_call (builtin_decl_implicit (BUILT_IN_STACK_SAVE), 0);
   tmp_var = create_tmp_var (ptr_type_node, "saved_stack");
   gimple_call_set_lhs (*save, tmp_var);
 
   *restore
-    = gimple_build_call (implicit_built_in_decls[BUILT_IN_STACK_RESTORE],
+    = gimple_build_call (builtin_decl_implicit (BUILT_IN_STACK_RESTORE),
 			 1, tmp_var);
 }
 
@@ -1329,7 +1329,7 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   SET_DECL_VALUE_EXPR (decl, t);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
 
-  t = built_in_decls[BUILT_IN_ALLOCA_WITH_ALIGN];
+  t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
   t = build_call_expr (t, 2, DECL_SIZE_UNIT (decl),
 		       size_int (DECL_ALIGN (decl)));
   /* The call has been built for a variable-sized object.  */
@@ -3211,7 +3211,7 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value,
   to_ptr = build_fold_addr_expr_loc (loc, to);
   gimplify_arg (&to_ptr, seq_p, loc);
 
-  t = implicit_built_in_decls[BUILT_IN_MEMCPY];
+  t = builtin_decl_implicit (BUILT_IN_MEMCPY);
 
   gs = gimple_build_call (t, 3, to_ptr, from_ptr, size);
 
@@ -3258,7 +3258,7 @@ gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value,
 
   to_ptr = build_fold_addr_expr_loc (loc, to);
   gimplify_arg (&to_ptr, seq_p, loc);
-  t = implicit_built_in_decls[BUILT_IN_MEMSET];
+  t = builtin_decl_implicit (BUILT_IN_MEMSET);
 
   gs = gimple_build_call (t, 3, to_ptr, integer_zero_node, size);
 
@@ -4681,7 +4681,7 @@ gimplify_variable_sized_compare (tree *expr_p)
   arg = SUBSTITUTE_PLACEHOLDER_IN_EXPR (arg, op0);
   src = build_fold_addr_expr_loc (loc, op1);
   dest = build_fold_addr_expr_loc (loc, op0);
-  t = implicit_built_in_decls[BUILT_IN_MEMCMP];
+  t = builtin_decl_implicit (BUILT_IN_MEMCMP);
   t = build_call_expr_loc (loc, t, 3, dest, src, arg);
 
   expr
@@ -7980,24 +7980,24 @@ gimplify_function_tree (tree fndecl)
       tree tmp_var;
       gimple call;
 
-      x = implicit_built_in_decls[BUILT_IN_RETURN_ADDRESS];
+      x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
       call = gimple_build_call (x, 1, integer_zero_node);
       tmp_var = create_tmp_var (ptr_type_node, "return_addr");
       gimple_call_set_lhs (call, tmp_var);
       gimplify_seq_add_stmt (&cleanup, call);
-      x = implicit_built_in_decls[BUILT_IN_PROFILE_FUNC_EXIT];
+      x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_EXIT);
       call = gimple_build_call (x, 2,
 				build_fold_addr_expr (current_function_decl),
 				tmp_var);
       gimplify_seq_add_stmt (&cleanup, call);
       tf = gimple_build_try (seq, cleanup, GIMPLE_TRY_FINALLY);
 
-      x = implicit_built_in_decls[BUILT_IN_RETURN_ADDRESS];
+      x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
       call = gimple_build_call (x, 1, integer_zero_node);
       tmp_var = create_tmp_var (ptr_type_node, "return_addr");
       gimple_call_set_lhs (call, tmp_var);
       gimplify_seq_add_stmt (&body, call);
-      x = implicit_built_in_decls[BUILT_IN_PROFILE_FUNC_ENTER];
+      x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_ENTER);
       call = gimple_build_call (x, 2,
 				build_fold_addr_expr (current_function_decl),
 				tmp_var);

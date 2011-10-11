@@ -882,6 +882,9 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	TARGET_HANDLE_OFAST TARGET_OPTION_OPTIMIZATION \
         TARGET_IRA_COVER_CLASSES TARGET_HELP
 
+/* Arrays that were deleted in favor of a functional interface.  */
+ #pragma GCC poison built_in_decls implicit_built_in_decls
+
 /* Hooks into libgcc2.  */
  #pragma GCC poison LIBGCC2_DOUBLE_TYPE_SIZE LIBGCC2_WORDS_BIG_ENDIAN \
    LIBGCC2_FLOAT_WORDS_BIG_ENDIAN

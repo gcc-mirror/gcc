@@ -1,3 +1,14 @@
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* objc-next-runtime-abi-01.c (objc_build_exc_ptr): Delete old
+	interface with two parallel arrays to hold standard builtin
+	declarations, and replace it with a function based interface that
+	can support creating builtins on the fly in the future.  Change
+	all uses, and poison the old names.  Make sure 0 is not a
+	legitimate builtin index.
+	* objc-next-runtime-abi-02.c (objc_build_exc_ptr): Ditto.
+	* objc-gnu-runtime-abi-01.c (objc_build_exc_ptr): Ditto.
+
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* objc-next-runtime-abi-02.c (objc_v2_build_ivar_ref):

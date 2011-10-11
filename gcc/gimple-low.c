@@ -169,7 +169,7 @@ lower_function_body (void)
 	 and insert.  */
       disp_var = create_tmp_var (ptr_type_node, "setjmpvar");
       arg = build_addr (disp_label, current_function_decl);
-      t = implicit_built_in_decls[BUILT_IN_SETJMP_DISPATCHER];
+      t = builtin_decl_implicit (BUILT_IN_SETJMP_DISPATCHER);
       x = gimple_build_call (t, 1, arg);
       gimple_call_set_lhs (x, disp_var);
 
@@ -861,7 +861,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 
   /* Build '__builtin_setjmp_setup (BUF, NEXT_LABEL)' and insert.  */
   arg = build_addr (next_label, current_function_decl);
-  t = implicit_built_in_decls[BUILT_IN_SETJMP_SETUP];
+  t = builtin_decl_implicit (BUILT_IN_SETJMP_SETUP);
   g = gimple_build_call (t, 2, gimple_call_arg (stmt, 0), arg);
   gimple_set_location (g, loc);
   gimple_set_block (g, gimple_block (stmt));
@@ -886,7 +886,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 
   /* Build '__builtin_setjmp_receiver (NEXT_LABEL)' and insert.  */
   arg = build_addr (next_label, current_function_decl);
-  t = implicit_built_in_decls[BUILT_IN_SETJMP_RECEIVER];
+  t = builtin_decl_implicit (BUILT_IN_SETJMP_RECEIVER);
   g = gimple_build_call (t, 1, arg);
   gimple_set_location (g, loc);
   gimple_set_block (g, gimple_block (stmt));

@@ -2372,17 +2372,21 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	    {
 	      C_DECL_BUILTIN_PROTOTYPE (newdecl) = 0;
 	      if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
-		switch (DECL_FUNCTION_CODE (newdecl))
-		  {
-		  /* If a compatible prototype of these builtin functions
-		     is seen, assume the runtime implements it with the
-		     expected semantics.  */
-		  case BUILT_IN_STPCPY:
-		    implicit_built_in_decls[DECL_FUNCTION_CODE (newdecl)]
-		      = built_in_decls[DECL_FUNCTION_CODE (newdecl)];
-		  default:
-		    break;
-		  }
+		{
+		  enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
+		  switch (fncode)
+		    {
+		      /* If a compatible prototype of these builtin functions
+			 is seen, assume the runtime implements it with the
+			 expected semantics.  */
+		    case BUILT_IN_STPCPY:
+		      if (builtin_decl_explicit_p (fncode))
+			set_builtin_decl_implicit_p (fncode, true);
+		      break;
+		    default:
+		      break;
+		    }
+		}
 	    }
 	  else
 	    C_DECL_BUILTIN_PROTOTYPE (newdecl)
@@ -4338,7 +4342,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
     }
 
   /* If this is a function and an assembler name is specified, reset DECL_RTL
-     so we can give it its new name.  Also, update built_in_decls if it
+     so we can give it its new name.  Also, update builtin_decl if it
      was a normal built-in.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
     {

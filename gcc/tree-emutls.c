@@ -387,8 +387,8 @@ emutls_common_1 (tree tls_decl, tree control_decl, tree *pstmts)
 
   word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
 
-  x = build_call_expr (built_in_decls[BUILT_IN_EMUTLS_REGISTER_COMMON], 4,
-		       build_fold_addr_expr (control_decl),
+  x = build_call_expr (builtin_decl_explicit (BUILT_IN_EMUTLS_REGISTER_COMMON),
+		       4, build_fold_addr_expr (control_decl),
 		       fold_convert (word_type_node,
 				     DECL_SIZE_UNIT (tls_decl)),
 		       build_int_cst (word_type_node,
@@ -623,7 +623,7 @@ lower_emutls_function_body (struct cgraph_node *node)
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
   d.cfun_node = node;
-  d.builtin_decl = built_in_decls[BUILT_IN_EMUTLS_GET_ADDRESS];
+  d.builtin_decl = builtin_decl_explicit (BUILT_IN_EMUTLS_GET_ADDRESS);
   /* This is where we introduce the declaration to the IL and so we have to
      create a node for it.  */
   d.builtin_node = cgraph_get_create_node (d.builtin_decl);

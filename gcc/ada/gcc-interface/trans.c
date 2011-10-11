@@ -4230,7 +4230,7 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
      time, and reuse it to feed the end_handler hook's argument at exit.  */
 
   gnu_current_exc_ptr
-    = build_call_expr (built_in_decls [BUILT_IN_EH_POINTER],
+    = build_call_expr (builtin_decl_explicit (BUILT_IN_EH_POINTER),
 		       1, integer_zero_node);
   prev_gnu_incoming_exc_ptr = gnu_incoming_exc_ptr;
   gnu_incoming_exc_ptr = create_var_decl (get_identifier ("EXPTR"), NULL_TREE,
@@ -5520,7 +5520,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	      to_ptr = build_fold_addr_expr (to);
 	      from_ptr = build_fold_addr_expr (from);
 
-	      t = implicit_built_in_decls[BUILT_IN_MEMMOVE];
+	      t = builtin_decl_implicit (BUILT_IN_MEMMOVE);
 	      gnu_result = build_call_expr (t, 3, to_ptr, from_ptr, size);
 	   }
 	}

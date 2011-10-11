@@ -602,7 +602,7 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
   if (gfc_option.coarray == GFC_FCOARRAY_LIB && !error_stop)
     {
       /* Per F2008, 8.5.1 STOP implies a SYNC MEMORY.  */
-      tmp = built_in_decls [BUILT_IN_SYNC_SYNCHRONIZE];
+      tmp = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
       tmp = build_call_expr_loc (input_location, tmp, 0);
       gfc_add_expr_to_block (&se.pre, tmp);
 
@@ -774,7 +774,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       image control statements SYNC IMAGES and SYNC ALL.  */
    if (gfc_option.coarray == GFC_FCOARRAY_LIB)
      {
-	tmp = built_in_decls [BUILT_IN_SYNC_SYNCHRONIZE];
+       tmp = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
 	tmp = build_call_expr_loc (input_location, tmp, 0);
 	gfc_add_expr_to_block (&se.pre, tmp);
      }
@@ -5076,7 +5076,7 @@ gfc_trans_allocate (gfc_code * code)
 			      slen);
 
       dlen = build_call_expr_loc (input_location,
-			      built_in_decls[BUILT_IN_MEMCPY], 3,
+				  builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 		gfc_build_addr_expr (pvoid_type_node, se.expr), errmsg, slen);
 
       tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, stat,
@@ -5251,7 +5251,7 @@ gfc_trans_deallocate (gfc_code *code)
 			      slen);
 
       dlen = build_call_expr_loc (input_location,
-			      built_in_decls[BUILT_IN_MEMCPY], 3,
+				  builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 		gfc_build_addr_expr (pvoid_type_node, se.expr), errmsg, slen);
 
       tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, astat,

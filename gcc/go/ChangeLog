@@ -1,3 +1,13 @@
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gofrontend/gogo-tree.cc (define_builtin): Delete old interface
+	with two parallel arrays to hold standard builtin declarations,
+	and replace it with a function based interface that can support
+	creating builtins on the fly in the future.  Change all uses, and
+	poison the old names.  Make sure 0 is not a legitimate builtin
+	index.
+	(Gogo::make_trampoline(tree): Ditto.
+
 2011-08-24  Roberto Lublinerman  <rluble@gmail.com>
 
 	* lang.opt: Add fgo-optimize-.

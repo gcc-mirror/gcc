@@ -1357,11 +1357,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       if (DECL_BUILT_IN_CLASS (olddecl) == BUILT_IN_NORMAL
 	  && DECL_ANTICIPATED (olddecl)
 	  && TREE_NOTHROW (newdecl)
-	  && !TREE_NOTHROW (olddecl)
-	  && built_in_decls [DECL_FUNCTION_CODE (olddecl)] != NULL_TREE
-	  && built_in_decls [DECL_FUNCTION_CODE (olddecl)] != olddecl
-	  && types_match)
-	TREE_NOTHROW (built_in_decls [DECL_FUNCTION_CODE (olddecl)]) = 1;
+	  && !TREE_NOTHROW (olddecl))
+	{
+	  enum built_in_function fncode = DECL_FUNCTION_CODE (olddecl);
+	  tree tmpdecl = builtin_decl_explicit (fncode);
+	  if (tmpdecl && tmpdecl != olddecl && types_match)
+	    TREE_NOTHROW (tmpdecl)  = 1;
+	}
 
       /* Whether or not the builtin can throw exceptions has no
 	 bearing on this declarator.  */
@@ -2136,17 +2138,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		 regardless of declaration matches.  */
 	      COPY_DECL_RTL (olddecl, newdecl);
 	      if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
-		switch (DECL_FUNCTION_CODE (newdecl))
-		  {
-		    /* If a compatible prototype of these builtin functions
-		       is seen, assume the runtime implements it with the
-		       expected semantics.  */
-		  case BUILT_IN_STPCPY:
-		    implicit_built_in_decls[DECL_FUNCTION_CODE (newdecl)]
-		      = built_in_decls[DECL_FUNCTION_CODE (newdecl)];
-		  default:
-		    break;
-		  }
+		{
+		  enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
+		  switch (fncode)
+		    {
+		      /* If a compatible prototype of these builtin functions
+			 is seen, assume the runtime implements it with the
+			 expected semantics.  */
+		    case BUILT_IN_STPCPY:
+		      if (builtin_decl_explicit_p (fncode))
+			set_builtin_decl_implicit_p (fncode, true);
+		      break;
+		    default:
+		      break;
+		    }
+		}
 	    }
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);

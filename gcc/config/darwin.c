@@ -2962,7 +2962,7 @@ darwin_override_options (void)
 static void
 darwin_patch_builtin (int fncode)
 {
-  tree fn = built_in_decls[fncode];
+  tree fn = builtin_decl_explicit (fncode);
   tree sym;
   char *newname;
 
@@ -2974,7 +2974,7 @@ darwin_patch_builtin (int fncode)
 
   set_user_assembler_name (fn, newname);
 
-  fn = implicit_built_in_decls[fncode];
+  fn = builtin_decl_implicit (fncode);
   if (fn)
     set_user_assembler_name (fn, newname);
 }
@@ -3149,9 +3149,10 @@ darwin_rename_builtins (void)
      use the faster version.  */
   if (!flag_unsafe_math_optimizations)
     {
-      int dcode = (BUILT_IN_COMPLEX_DIV_MIN
-		   + DCmode - MIN_MODE_COMPLEX_FLOAT);
-      tree fn = built_in_decls[dcode];
+      enum built_in_function dcode
+	= (enum built_in_function)(BUILT_IN_COMPLEX_DIV_MIN
+				   + DCmode - MIN_MODE_COMPLEX_FLOAT);
+      tree fn = builtin_decl_explicit (dcode);
       /* Fortran and c call TARGET_INIT_BUILTINS and
 	 TARGET_INIT_LIBFUNCS at different times, so we have to put a
 	 call into each to ensure that at least one of them is called
@@ -3159,7 +3160,7 @@ darwin_rename_builtins (void)
 	 new hook to run after build_common_builtin_nodes runs.  */
       if (fn)
 	set_user_assembler_name (fn, "___ieee_divdc3");
-      fn = implicit_built_in_decls[dcode];
+      fn = builtin_decl_implicit (dcode);
       if (fn)
 	set_user_assembler_name (fn, "___ieee_divdc3");
     }
