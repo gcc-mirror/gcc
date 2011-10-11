@@ -2484,11 +2484,9 @@
 			(match_operand:I 3 "arith10_operand" "")))]
   "TARGET_V9 && !(<I:MODE>mode == DImode && TARGET_ARCH32)"
 {
-  enum rtx_code code = GET_CODE (operands[1]);
   rtx cc_reg;
 
-  if (GET_MODE (XEXP (operands[1], 0)) == DImode
-      && ! TARGET_ARCH64)
+  if (GET_MODE (XEXP (operands[1], 0)) == DImode && !TARGET_ARCH64)
     FAIL;
 
   if (GET_MODE (XEXP (operands[1], 0)) == TFmode && !TARGET_HARD_QUAD)
@@ -2499,12 +2497,14 @@
   if (XEXP (operands[1], 1) == const0_rtx
       && GET_CODE (XEXP (operands[1], 0)) == REG
       && GET_MODE (XEXP (operands[1], 0)) == DImode
-      && v9_regcmp_p (code))
+      && v9_regcmp_p (GET_CODE (operands[1])))
     cc_reg = XEXP (operands[1], 0);
   else
     cc_reg = gen_compare_reg (operands[1]);
 
-  operands[1] = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+  operands[1]
+    = gen_rtx_fmt_ee (GET_CODE (operands[1]), GET_MODE (cc_reg), cc_reg,
+		      const0_rtx);
 })
 
 (define_expand "mov<F:mode>cc"
@@ -2514,11 +2514,9 @@
 			(match_operand:F 3 "register_operand" "")))]
   "TARGET_V9 && TARGET_FPU"
 {
-  enum rtx_code code = GET_CODE (operands[1]);
   rtx cc_reg;
 
-  if (GET_MODE (XEXP (operands[1], 0)) == DImode
-      && ! TARGET_ARCH64)
+  if (GET_MODE (XEXP (operands[1], 0)) == DImode && !TARGET_ARCH64)
     FAIL;
 
   if (GET_MODE (XEXP (operands[1], 0)) == TFmode && !TARGET_HARD_QUAD)
@@ -2529,12 +2527,14 @@
   if (XEXP (operands[1], 1) == const0_rtx
       && GET_CODE (XEXP (operands[1], 0)) == REG
       && GET_MODE (XEXP (operands[1], 0)) == DImode
-      && v9_regcmp_p (code))
+      && v9_regcmp_p (GET_CODE (operands[1])))
     cc_reg = XEXP (operands[1], 0);
   else
     cc_reg = gen_compare_reg (operands[1]);
 
-  operands[1] = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+  operands[1]
+    = gen_rtx_fmt_ee (GET_CODE (operands[1]), GET_MODE (cc_reg), cc_reg,
+		      const0_rtx);
 })
 
 ;; Conditional move define_insns
