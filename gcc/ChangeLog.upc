@@ -1,3 +1,10 @@
+2011-10-11  Nenad Vukicevic <nenad@intrepid.com>
+
+	* testsuite/lib/upc-dg.exp: Limit number of torture runs to
+	only four (O0 static/dynamic, O3 static/dynamic).
+	Detect -fupc-threads-0 as an option for dynamic threads
+	compile environment.
+
 2011-10-10  Gary Funck  <gary@intrepid.com>
 
 	* tree.c (check_qualified_type, check_aligned_type):

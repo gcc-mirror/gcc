@@ -21,13 +21,9 @@ set dg-linenum-format ":%d:\[-0-9\]+:"
 if ![info exists DG_UPC_TORTURE_OPTIONS] {
     set DG_UPC_TORTURE_OPTIONS [list \
         { -O0 -g -dwarf-2-upc -fupc-threads-4} \
-        { -O1 -fupc-threads-4} \
-        { -O2 -fupc-threads-4} \
+        { -O0 -g -dwarf-2-upc -fupc-threads-0} \
         { -O3 -fupc-threads-4} \
-        { -O3 -fupc-threads-4 -fupc-pthreads-model-tls} \
-        { -O3 -fupc-threads-4 -fno-upc-inline-lib} \
-        { -O3 -fupc-threads-1} \
-        { -O3 } ]
+        { -O3 -fupc-threads-0} ]
 }
 
 if [info exists ADDITIONAL_UPC_TORTURE_OPTIONS] {
@@ -83,7 +79,7 @@ proc upc-dg-runtest { testcases default-extra-flags } {
 	    set combined_flags "$flags ${default-extra-flags}"
 	    verbose "$tool UPC Testing $nshort, $combined_flags" 1
 	    verbose "UPC Testing $nshort, $combined_flags" 1
-	    if { [string first "-fupc-threads-" $combined_flags] == -1 } {
+	    if { [string first "-fupc-threads-0" $combined_flags] >= 0 } {
 	        set upc_run_arguments " -n4"
 	    } else {
 	        set upc_run_arguments ""
