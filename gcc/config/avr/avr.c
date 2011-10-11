@@ -1630,9 +1630,37 @@ void
 notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
 {
   rtx set;
+  enum attr_cc cc = get_attr_cc (insn);
   
-  switch (get_attr_cc (insn))
+  switch (cc)
     {
+    default:
+      break;
+
+    case CC_OUT_PLUS:
+      {
+        rtx *op = recog_data.operand;
+        int len_dummy, icc;
+        
+        /* Extract insn's operands.  */
+        extract_constrain_insn_cached (insn);
+        
+        avr_out_plus (op, &len_dummy, &icc);
+        cc = (enum attr_cc) icc;
+        
+        break;
+      }
+    }
+
+  switch (cc)
+    {
+    default:
+      /* Special values like CC_OUT_PLUS from above have been
+         mapped to "standard" CC_* values so we never come here.  */
+      
+      gcc_unreachable();
+      break;
+      
     case CC_NONE:
       /* Insn does not affect CC at all.  */
       break;
@@ -4673,10 +4701,11 @@ lshrsi3_out (rtx insn, rtx operands[], int *len)
    addition; otherwise, set *PLEN to the length of the instruction sequence (in
    words) printed with PLEN == NULL.  XOP[3] is an 8-bit scratch register.
    CODE == PLUS:  perform addition by using ADD instructions.
-   CODE == MINUS: perform addition by using SUB instructions.  */
+   CODE == MINUS: perform addition by using SUB instructions.
+   Set *PCC to effect on cc0 according to respective CC_* insn attribute.  */
 
 static void
-avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code)
+avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
 {
   /* MODE of the operation.  */
   enum machine_mode mode = GET_MODE (xop[0]);
@@ -4700,6 +4729,10 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code)
   /* Value to add.  There are two ways to add VAL: R += VAL and R -= -VAL.  */
   rtx xval = xop[2];
 
+  /* Addition does not set cc0 in a usable way.  */
+  
+  *pcc = (MINUS == code) ? CC_SET_CZN : CC_CLOBBER;
+
   if (MINUS == code)
     xval = gen_int_mode (-UINTVAL (xval), mode);
 
@@ -4722,6 +4755,11 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code)
 
       op[0] = reg8;
       op[1] = GEN_INT (val8);
+
+      /* To get usable cc0 no low-bytes must have been skipped.  */
+      
+      if (i && !started)
+        *pcc = CC_CLOBBER;
       
       if (!started && i % 2 == 0
           && test_hard_reg_class (ADDW_REGS, reg8))
@@ -4794,6 +4832,11 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code)
       started = true;
 
     } /* for all sub-bytes */
+
+  /* No output doesn't change cc0.  */
+  
+  if (plen && *plen == 0)
+    *pcc = CC_NONE;
 }
 
 
@@ -4803,24 +4846,35 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code)
 
    and return "".  If PLEN == NULL, print assembler instructions to perform the
    addition; otherwise, set *PLEN to the length of the instruction sequence (in
-   words) printed with PLEN == NULL.  */
+   words) printed with PLEN == NULL.
+   If PCC != 0 then set *PCC to the the instruction sequence's effect on the
+   condition code (with respect to XOP[0]).  */
 
 const char*
-avr_out_plus (rtx *xop, int *plen)
+avr_out_plus (rtx *xop, int *plen, int *pcc)
 {
   int len_plus, len_minus;
+  int cc_plus, cc_minus, cc_dummy;
 
+  if (!pcc)
+    pcc = &cc_dummy;
+                                   
   /* Work out if  XOP[0] += XOP[2]  is better or  XOP[0] -= -XOP[2].  */
   
-  avr_out_plus_1 (xop, &len_plus, PLUS);
-  avr_out_plus_1 (xop, &len_minus, MINUS);
+  avr_out_plus_1 (xop, &len_plus, PLUS, &cc_plus);
+  avr_out_plus_1 (xop, &len_minus, MINUS, &cc_minus);
 
+  /* Prefer MINUS over PLUS if size is equal because it sets cc0.  */
+  
   if (plen)
-    *plen = (len_minus <= len_plus) ? len_minus : len_plus;
+    {
+      *plen = (len_minus <= len_plus) ? len_minus : len_plus;
+      *pcc  = (len_minus <= len_plus) ? cc_minus : cc_plus;
+    }
   else if (len_minus <= len_plus)
-    avr_out_plus_1 (xop, NULL, MINUS);
+    avr_out_plus_1 (xop, NULL, MINUS, pcc);
   else
-    avr_out_plus_1 (xop, NULL, PLUS);
+    avr_out_plus_1 (xop, NULL, PLUS, pcc);
 
   return "";
 }
@@ -5209,7 +5263,7 @@ adjust_insn_length (rtx insn, int len)
       
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
       
-    case ADJUST_LEN_OUT_PLUS: avr_out_plus (op, &len); break;
+    case ADJUST_LEN_OUT_PLUS: avr_out_plus (op, &len, NULL); break;
 
     case ADJUST_LEN_ADDTO_SP: avr_out_addto_sp (op, &len); break;
       

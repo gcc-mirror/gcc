@@ -77,7 +77,8 @@
 (include "constraints.md")
   
 ;; Condition code settings.
-(define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber"
+(define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber,
+                   out_plus"
   (const_string "none"))
 
 (define_attr "type" "branch,branch1,arith,xcall"
@@ -786,30 +787,28 @@
    (set_attr "cc" "set_n,set_czn,set_czn,set_czn,set_n,set_n")])
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand"          "=r,!w,!w,d,l,l ,d,r")
-        (plus:SI (match_operand:SI 1 "register_operand" "%0,0 ,0 ,0,0,0 ,0,0")
-                 (match_operand:SI 2 "nonmemory_operand" "r,I ,J ,s,P,N ,n,n")))
-   (clobber (match_scratch:QI 3                         "=X,X ,X ,X,X,X ,X,&d"))]
+  [(set (match_operand:SI 0 "register_operand"          "=r,d ,d,r")
+        (plus:SI (match_operand:SI 1 "register_operand" "%0,0 ,0,0")
+                 (match_operand:SI 2 "nonmemory_operand" "r,s ,n,n")))
+   (clobber (match_scratch:QI 3                         "=X,X ,X,&d"))]
   ""
   {
     static const char * const asm_code[] =
       {
         "add %A0,%A2\;adc %B0,%B2\;adc %C0,%C2\;adc %D0,%D2",
-        "adiw %0,%2\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__",
-        "sbiw %0,%n2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__",
         "subi %0,lo8(-(%2))\;sbci %B0,hi8(-(%2))\;sbci %C0,hlo8(-(%2))\;sbci %D0,hhi8(-(%2))",
-        "sec\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__",
-        "sec\;sbc %A0,__zero_reg__\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
+        "",
+        ""
       };
 
-    if (which_alternative >= (signed) (sizeof (asm_code) / sizeof (*asm_code)))
-      return avr_out_plus (operands, NULL);
+    if (*asm_code[which_alternative])
+      return asm_code [which_alternative];
 
-    return asm_code [which_alternative];
+    return avr_out_plus (operands, NULL, NULL);
   }
-  [(set_attr "length" "4,3,3,4,5,5,8,8")
-   (set_attr "adjust_len" "*,*,*,*,*,*,out_plus,out_plus")
-   (set_attr "cc" "set_n,set_n,set_czn,set_czn,set_n,set_n,clobber,clobber")])
+  [(set_attr "length" "4,4,4,8")
+   (set_attr "adjust_len" "*,*,out_plus,out_plus")
+   (set_attr "cc" "set_n,set_czn,out_plus,out_plus")])
 
 (define_insn "*addsi3_zero_extend"
   [(set (match_operand:SI 0 "register_operand"                         "=r")

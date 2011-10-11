@@ -1,3 +1,16 @@
+2011-10-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50447
+	* config/avr/avr.md (cc): Add out_plus attribute alternative.
+	(addsi3): Use it.  Adapt avr_out_plus to new prototype.  Use
+	avr_out_plus for all CONST_INT addends.
+	* config/avr/avr-protos.h (avr_out_plus): Change prototype.
+	* config/avr/avr.c (notice_update_cc): Call avr_out_plus on
+	CC_OUT_PLUS.
+	(avr_out_plus_1): Change prototype and report effect on cc0.
+	(avr_out_plus): Ditto.
+	(adjust_insn_length): Adapt call to avr_out_plus to new prototype.
+
 2011-10-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_special_args_builtin): Remove
