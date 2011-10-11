@@ -308,21 +308,13 @@ enum reg_class {
 
 #define REGNO_REG_CLASS(R) avr_regno_reg_class(R)
 
-#define BASE_REG_CLASS (reload_completed ? BASE_POINTER_REGS : POINTER_REGS)
+#define MODE_CODE_BASE_REG_CLASS(mode, outer_code, index_code) \
+  avr_mode_code_base_reg_class (mode, outer_code, index_code)
 
 #define INDEX_REG_CLASS NO_REGS
 
-#define REGNO_OK_FOR_BASE_P(r) (((r) < FIRST_PSEUDO_REGISTER		\
-				 && ((r) == REG_X			\
-				     || (r) == REG_Y			\
-				     || (r) == REG_Z			\
-				     || (r) == ARG_POINTER_REGNUM))	\
-				|| (reg_renumber			\
-				    && (reg_renumber[r] == REG_X	\
-					|| reg_renumber[r] == REG_Y	\
-					|| reg_renumber[r] == REG_Z	\
-					|| (reg_renumber[r]		\
-					    == ARG_POINTER_REGNUM))))
+#define REGNO_MODE_CODE_OK_FOR_BASE_P(num, mode, outer_code, index_code) \
+  avr_regno_mode_code_ok_for_base_p (num, mode, outer_code, index_code)
 
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
 
@@ -381,10 +373,6 @@ typedef struct avr_args {
 
 #define MAX_REGS_PER_ADDRESS 1
 
-#define REG_OK_FOR_BASE_NOSTRICT_P(X) \
-  (REGNO (X) >= FIRST_PSEUDO_REGISTER || REG_OK_FOR_BASE_STRICT_P(X))
-
-#define REG_OK_FOR_BASE_STRICT_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_L,WIN)          \
   do {                                                                  \
     rtx new_x = avr_legitimize_reload_address (X, MODE, OPNUM, TYPE,    \
