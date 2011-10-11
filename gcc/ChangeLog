@@ -1,3 +1,8 @@
+2011-10-11  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* modulo-sched.c: Fix comment typo.  Mention the possibility
+	of using scheduling windows of II+1 cycles.
+
 2011-10-11  Tristan Gingold  <gingold@adacore.com>
 
 	* doc/invoke.texi (C Dialect Options): Document

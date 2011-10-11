@@ -545,7 +545,7 @@ set_columns_for_ps (partial_schedule_ptr ps)
    The move is part of a chain that satisfies register dependencies
    between a producing ddg node and various consuming ddg nodes.
    If some of these dependencies have a distance of 1 (meaning that
-   the use is upward-exposoed) then DISTANCE1_USES is nonnull and
+   the use is upward-exposed) then DISTANCE1_USES is nonnull and
    contains the set of uses with distance-1 dependencies.
    DISTANCE1_USES is null otherwise.
 
@@ -1810,7 +1810,11 @@ sms_schedule (void)
    41. endif
    42. compute epilogue & prologue
    43. finish - succeeded to schedule
-*/
+
+   ??? The algorithm restricts the scheduling window to II cycles.
+   In rare cases, it may be better to allow windows of II+1 cycles.
+   The window would then start and end on the same row, but with
+   different "must precede" and "must follow" requirements.  */
 
 /* A limit on the number of cycles that resource conflicts can span.  ??? Should
    be provided by DFA, and be dependent on the type of insn scheduled.  Currently
