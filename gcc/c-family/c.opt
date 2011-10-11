@@ -700,6 +700,10 @@ Enforce class member access control semantics
 fall-virtual
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
+fallow-parameterless-variadic-functions
+C ObjC Var(flag_allow_parameterless_variadic_functions)
+Allow variadic functions without named parameter
+
 falt-external-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 No longer supported

@@ -3159,10 +3159,19 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr)
   if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
     {
       struct c_arg_info *ret = build_arg_info ();
-      /* Suppress -Wold-style-definition for this case.  */
-      ret->types = error_mark_node;
-      error_at (c_parser_peek_token (parser)->location,
-		"ISO C requires a named argument before %<...%>");
+
+      if (flag_allow_parameterless_variadic_functions)
+        {
+          /* F (...) is allowed.  */
+          ret->types = NULL_TREE;
+        }
+      else
+        {
+          /* Suppress -Wold-style-definition for this case.  */
+          ret->types = error_mark_node;
+          error_at (c_parser_peek_token (parser)->location,
+                    "ISO C requires a named argument before %<...%>");
+        }
       c_parser_consume_token (parser);
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
