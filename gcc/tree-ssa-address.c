@@ -883,7 +883,6 @@ copy_ref_info (tree new_ref, tree old_ref)
 	      new_pi->align = 1;
 	      new_pi->misalign = 0;
 	    }
-	  TREE_THIS_NOTRAP (new_ref) = TREE_THIS_NOTRAP (base);
 	}
       else if (TREE_CODE (base) == VAR_DECL
 	       || TREE_CODE (base) == PARM_DECL
