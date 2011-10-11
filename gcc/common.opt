@@ -694,6 +694,10 @@ Wcoverage-mismatch
 Common Var(warn_coverage_mismatch) Init(1) Warning
 Warn in case profiles in -fprofile-use do not match
 
+Wvector-operation-performance
+Common Var(warn_vector_operation_performance) Warning
+Warn when a vector operation is compiled outside the SIMD
+
 Xassembler
 Driver Separate
 

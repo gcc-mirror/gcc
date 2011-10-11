@@ -235,6 +235,14 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
   int delta = tree_low_cst (part_width, 1)
 	      / tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
   int i;
+  location_t loc = gimple_location (gsi_stmt (*gsi));
+
+  if (types_compatible_p (gimple_expr_type (gsi_stmt (*gsi)), type))
+    warning_at (loc, OPT_Wvector_operation_performance,
+		"vector operation will be expanded piecewise");
+  else
+    warning_at (loc, OPT_Wvector_operation_performance,
+		"vector operation will be expanded in parallel");
 
   v = VEC_alloc(constructor_elt, gc, (nunits + delta - 1) / delta);
   for (i = 0; i < nunits;
@@ -260,6 +268,7 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
   tree result, compute_type;
   enum machine_mode mode;
   int n_words = tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
+  location_t loc = gimple_location (gsi_stmt (*gsi));
 
   /* We have three strategies.  If the type is already correct, just do
      the operation an element at a time.  Else, if the vector is wider than
@@ -284,6 +293,9 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
       mode = mode_for_size (tree_low_cst (TYPE_SIZE (type), 1), MODE_INT, 0);
       compute_type = lang_hooks.types.type_for_mode (mode, 1);
       result = f (gsi, compute_type, a, b, NULL_TREE, NULL_TREE, code);
+      warning_at (loc, OPT_Wvector_operation_performance,
+	          "vector operation will be expanded with a "
+		  "single scalar operation");
     }
 
   return result;
@@ -400,8 +412,8 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
       case PLUS_EXPR:
       case MINUS_EXPR:
         if (!TYPE_OVERFLOW_TRAPS (type))
-          return expand_vector_addition (gsi, do_binop, do_plus_minus, type,
-		      		         gimple_assign_rhs1 (assign),
+	  return expand_vector_addition (gsi, do_binop, do_plus_minus, type,
+					 gimple_assign_rhs1 (assign),
 					 gimple_assign_rhs2 (assign), code);
 	break;
 
@@ -626,10 +638,15 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   tree constr, t, si, i_val;
   tree vec0tmp = NULL_TREE, vec1tmp = NULL_TREE, masktmp = NULL_TREE;
   bool two_operand_p = !operand_equal_p (vec0, vec1, 0);
+  location_t loc = gimple_location (gsi_stmt (*gsi));
   unsigned i;
 
   if (expand_vec_perm_expr_p (TYPE_MODE (vect_type), vec0, vec1, mask))
     return;
+  
+  warning_at (loc, OPT_Wvector_operation_performance,
+              "vector shuffling operation will be expanded piecewise");
+
 
   v = VEC_alloc (constructor_elt, gc, elements);
   for (i = 0; i < elements; i++)

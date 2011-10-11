@@ -1,3 +1,9 @@
+2011-10-11  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
+
+	* gcc.target/i386/warn-vect-op-3.c: New test.
+	* gcc.target/i386/warn-vect-op-1.c: New test.
+	* gcc.target/i386/warn-vect-op-2.c: New test.
+
 2011-10-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/pr49994-3.c: Add -mbackchain for s390 and s390x.

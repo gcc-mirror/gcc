@@ -1,3 +1,14 @@
+2011-10-11  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
+
+	* doc/invoke.texi: Document new warning.
+	* common.opt (Wvector-operation-performance): Define new warning.
+	* tree-vect-generic.c (expand_vector_piecewise): Warn about expanded
+	vector operation.
+	(exapnd_vector_parallel): Warn about expanded vector operation.
+	(lower_vec_shuffle): Warn about expanded vector operation.
+	* c-typeck.c (c_build_vec_perm_expr): Store correct location
+	when creating VEC_PERM_EXPR.
+
 2011-10-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50204
