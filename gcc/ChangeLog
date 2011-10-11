@@ -1,3 +1,9 @@
+2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33067
+	* c-family/c-pretty-print.c (pp_c_floating_constant): Output
+	max_digits10 (in the ISO C++ WG N1822 sense) decimal digits.
+
 2011-10-11  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* modulo-sched.c: Fix comment typo.  Mention the possibility
