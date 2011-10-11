@@ -1,3 +1,11 @@
+2011-10-11  Nick Clifton  <nickc@redhat.com>
+
+	PR middle-end/49801
+	* compare-elim.c (find_comparisons_in_bb): Use df_get_live_in and
+	df_get_live_out instead of accessing the bitmaps directly.
+	(execute_compare_elim_after_reload): Remove calls to df_set_flags,
+	df_live_add_problem and df_analyze.
+
 2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50652

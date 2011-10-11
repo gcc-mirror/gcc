@@ -356,7 +356,7 @@ find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
 
       /* Look to see if the flags register is live outgoing here, and
 	 incoming to any successor not part of the extended basic block.  */
-      if (bitmap_bit_p (&DF_LIVE_BB_INFO (bb)->out, targetm.flags_regnum))
+      if (bitmap_bit_p (df_get_live_out (bb), targetm.flags_regnum))
 	{
 	  edge e;
 	  edge_iterator ei;
@@ -364,7 +364,7 @@ find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      basic_block dest = e->dest;
-	      if (bitmap_bit_p (&DF_LIVE_BB_INFO (dest)->in,
+	      if (bitmap_bit_p (df_get_live_in (bb),
 				targetm.flags_regnum)
 		  && !single_pred_p (dest))
 		{
@@ -580,8 +580,6 @@ try_eliminate_compare (struct comparison *cmp)
 static unsigned int
 execute_compare_elim_after_reload (void)
 {
-  df_set_flags (DF_DEFER_INSN_RESCAN);
-  df_live_add_problem ();
   df_analyze ();
 
   gcc_checking_assert (all_compares == NULL);
@@ -602,8 +600,6 @@ execute_compare_elim_after_reload (void)
 
       VEC_free (comparison_struct_p, heap, all_compares);
       all_compares = NULL;
-
-      df_analyze ();
     }
 
   return 0;
