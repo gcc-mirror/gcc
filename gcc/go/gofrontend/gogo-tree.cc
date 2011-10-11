@@ -69,7 +69,7 @@ define_builtin(built_in_function bcode, const char* name, const char* libname,
 				   libname, NULL_TREE);
   if (const_p)
     TREE_READONLY(decl) = 1;
-  set_builtin_decl (bcode, decl, true);
+  set_builtin_decl(bcode, decl, true);
   builtin_functions[name] = decl;
   if (libname != NULL)
     {
