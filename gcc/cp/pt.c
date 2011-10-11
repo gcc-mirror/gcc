@@ -1591,6 +1591,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return val;
 
     case CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
     case STATIC_CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
     case CONST_CAST_EXPR:
@@ -7702,6 +7703,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 
     case MODOP_EXPR:
     case CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
     case REINTERPRET_CAST_EXPR:
     case CONST_CAST_EXPR:
     case STATIC_CAST_EXPR:
@@ -11714,7 +11716,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
 /* Like tsubst, but deals with expressions.  This function just replaces
    template parms; to finish processing the resultant expression, use
-   tsubst_expr.  */
+   tsubst_copy_and_build or tsubst_expr.  */
 
 static tree
 tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
@@ -11879,6 +11881,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case CONST_CAST_EXPR:
     case STATIC_CAST_EXPR:
     case DYNAMIC_CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
+    case CONVERT_EXPR:
     case NOP_EXPR:
       return build1
 	(code, tsubst (TREE_TYPE (t), args, complain, in_decl),
@@ -13079,6 +13083,23 @@ tsubst_copy_and_build (tree t,
     case NOP_EXPR:
       return build_nop
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
+	 RECUR (TREE_OPERAND (t, 0)));
+
+    case IMPLICIT_CONV_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree expr = RECUR (TREE_OPERAND (t, 0));
+	int flags = LOOKUP_IMPLICIT;
+	if (IMPLICIT_CONV_EXPR_DIRECT_INIT (t))
+	  flags = LOOKUP_NORMAL;
+	return perform_implicit_conversion_flags (type, expr, complain,
+						  flags);
+      }
+
+    case CONVERT_EXPR:
+      return build1
+	(CONVERT_EXPR,
+	 tsubst (TREE_TYPE (t), args, complain, in_decl),
 	 RECUR (TREE_OPERAND (t, 0)));
 
     case CAST_EXPR:
@@ -19176,6 +19197,7 @@ type_dependent_expression_p (tree expression)
       || TREE_CODE (expression) == STATIC_CAST_EXPR
       || TREE_CODE (expression) == CONST_CAST_EXPR
       || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
+      || TREE_CODE (expression) == IMPLICIT_CONV_EXPR
       || TREE_CODE (expression) == CAST_EXPR)
     return dependent_type_p (TREE_TYPE (expression));
 
