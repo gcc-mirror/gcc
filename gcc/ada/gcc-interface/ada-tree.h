@@ -355,6 +355,9 @@ do {						   \
 /* Nonzero in a DECL if it is made for a pointer that can never be null.  */
 #define DECL_CAN_NEVER_BE_NULL_P(NODE) DECL_LANG_FLAG_2 (NODE)
 
+/* Nonzero in a VAR_DECL if it is made for a loop parameter.  */
+#define DECL_LOOP_PARM_P(NODE) DECL_LANG_FLAG_3 (VAR_DECL_CHECK (NODE))
+
 /* Nonzero in a FIELD_DECL that is a dummy built for some internal reason.  */
 #define DECL_INTERNAL_P(NODE) DECL_LANG_FLAG_3 (FIELD_DECL_CHECK (NODE))
 
@@ -409,9 +412,16 @@ do {						   \
    || (DECL_ORIGINAL_FIELD (FIELD1)					\
        && (DECL_ORIGINAL_FIELD (FIELD1) == DECL_ORIGINAL_FIELD (FIELD2))))
 
-/* In a VAR_DECL, points to the object being renamed if the VAR_DECL is a
-   renaming pointer, otherwise 0.  Note that this object is guaranteed to
-   be protected against multiple evaluations.  */
+/* In a VAR_DECL with the DECL_LOOP_PARM_P flag set, points to the special
+   induction variable that is built under certain circumstances, if any.  */
+#define DECL_INDUCTION_VAR(NODE) \
+  GET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))
+#define SET_DECL_INDUCTION_VAR(NODE, X) \
+  SET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE), X)
+
+/* In a VAR_DECL without the DECL_LOOP_PARM_P flag set and that is a renaming
+   pointer, points to the object being renamed, if any.  Note that this object
+   is guaranteed to be protected against multiple evaluations.  */
 #define DECL_RENAMED_OBJECT(NODE) \
   GET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))
 #define SET_DECL_RENAMED_OBJECT(NODE, X) \
