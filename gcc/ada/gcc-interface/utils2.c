@@ -1277,13 +1277,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
     case INDIRECT_REF:
       {
-	bool can_never_be_null;
-	tree t = operand;
-
-	while (CONVERT_EXPR_P (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR)
-	  t = TREE_OPERAND (t, 0);
-
-	can_never_be_null = DECL_P (t) && DECL_CAN_NEVER_BE_NULL_P (t);
+	tree t = remove_conversions (operand, false);
+	bool can_never_be_null = DECL_P (t) && DECL_CAN_NEVER_BE_NULL_P (t);
 
 	/* If TYPE is a thin pointer, first convert to the fat pointer.  */
 	if (TYPE_IS_THIN_POINTER_P (type)
@@ -2608,16 +2603,13 @@ gnat_invariant_expr (tree expr)
 {
   tree type = TREE_TYPE (expr), t;
 
-  STRIP_NOPS (expr);
+  expr = remove_conversions (expr, false);
 
   while ((TREE_CODE (expr) == CONST_DECL
 	  || (TREE_CODE (expr) == VAR_DECL && TREE_READONLY (expr)))
 	 && decl_function_context (expr) == current_function_decl
 	 && DECL_INITIAL (expr))
-    {
-      expr = DECL_INITIAL (expr);
-      STRIP_NOPS (expr);
-    }
+    expr = remove_conversions (DECL_INITIAL (expr), false);
 
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);

@@ -1147,11 +1147,11 @@ compute_related_constant (tree op0, tree op1)
 static tree
 split_plus (tree in, tree *pvar)
 {
-  /* Strip NOPS in order to ease the tree traversal and maximize the
-     potential for constant or plus/minus discovery. We need to be careful
+  /* Strip conversions in order to ease the tree traversal and maximize the
+     potential for constant or plus/minus discovery.  We need to be careful
      to always return and set *pvar to bitsizetype trees, but it's worth
      the effort.  */
-  STRIP_NOPS (in);
+  in = remove_conversions (in, false);
 
   *pvar = convert (bitsizetype, in);
 
@@ -2288,7 +2288,9 @@ max_size (tree exp, bool max_p)
       switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
-	  if (code == NON_LVALUE_EXPR)
+	  if (code == SAVE_EXPR)
+	    return exp;
+	  else if (code == NON_LVALUE_EXPR)
 	    return max_size (TREE_OPERAND (exp, 0), max_p);
 	  else
 	    return
@@ -2330,9 +2332,7 @@ max_size (tree exp, bool max_p)
 	  }
 
 	case 3:
-	  if (code == SAVE_EXPR)
-	    return exp;
-	  else if (code == COND_EXPR)
+	  if (code == COND_EXPR)
 	    return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
 				max_size (TREE_OPERAND (exp, 1), max_p),
 				max_size (TREE_OPERAND (exp, 2), max_p));
@@ -4359,8 +4359,9 @@ remove_conversions (tree exp, bool true_address)
 	return remove_conversions (TREE_OPERAND (exp, 0), true_address);
       break;
 
-    case VIEW_CONVERT_EXPR:  case NON_LVALUE_EXPR:
     CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
       return remove_conversions (TREE_OPERAND (exp, 0), true_address);
 
     default:

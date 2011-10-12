@@ -1,5 +1,16 @@
 2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu): Use remove_conversions.
+	(push_range_check_info): Likewise.
+	(gnat_to_gnu) <N_Code_Statement>: Likewise.
+	* gcc-interface/utils2.c (build_unary_op) <INDIRECT_REF>: Likewise.
+	(gnat_invariant_expr): Likewise.
+	* gcc-interface/utils.c (compute_related_constant): Likewise.
+	(max_size): Fix handling of SAVE_EXPR.
+	(remove_conversions): Fix formatting.
+
+2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_LOOP_PARM_P): New flag.
 	(DECL_INDUCTION_VAR): New macro.
 	(SET_DECL_INDUCTION_VAR): Likewise.
