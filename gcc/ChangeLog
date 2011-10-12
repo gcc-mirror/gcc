@@ -1,3 +1,11 @@
+2011-10-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (maybe_skip_until): Cache also at the point
+	of the first store we visit in a basic-block.
+	(get_continuation_for_phi): Search for a candidate VUSE that
+	might dominates all others.  Do pairwise disambiguation against
+	that candidate.
+
 2011-10-12  Paul Koning  <pkoning@gcc.gnu.org>
 
 	PR tree-optimization/50189

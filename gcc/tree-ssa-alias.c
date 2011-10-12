@@ -1846,6 +1846,8 @@ static bool
 maybe_skip_until (gimple phi, tree target, ao_ref *ref,
 		  tree vuse, bitmap *visited)
 {
+  basic_block bb = gimple_bb (phi);
+
   if (!*visited)
     *visited = BITMAP_ALLOC (NULL);
 
@@ -1870,6 +1872,14 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
       else if (gimple_nop_p (def_stmt)
 	       || stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	return false;
+      /* If we reach a new basic-block see if we already skipped it
+         in a previous walk that ended successfully.  */
+      if (gimple_bb (def_stmt) != bb)
+	{
+	  if (!bitmap_set_bit (*visited, SSA_NAME_VERSION (vuse)))
+	    return true;
+	  bb = gimple_bb (def_stmt);
+	}
       vuse = gimple_vuse (def_stmt);
     }
   return true;
@@ -1948,18 +1958,35 @@ get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
      until we hit the phi argument definition that dominates the other one.  */
   else if (nargs >= 2)
     {
-      tree arg0 = PHI_ARG_DEF (phi, 0);
-      tree arg1;
-      unsigned i = 1;
-      do
+      tree arg0, arg1;
+      unsigned i;
+
+      /* Find a candidate for the virtual operand which definition
+	 dominates those of all others.  */
+      arg0 = PHI_ARG_DEF (phi, 0);
+      if (!SSA_NAME_IS_DEFAULT_DEF (arg0))
+	for (i = 1; i < nargs; ++i)
+	  {
+	    arg1 = PHI_ARG_DEF (phi, i);
+	    if (SSA_NAME_IS_DEFAULT_DEF (arg1))
+	      {
+		arg0 = arg1;
+		break;
+	      }
+	    if (dominated_by_p (CDI_DOMINATORS,
+				gimple_bb (SSA_NAME_DEF_STMT (arg0)),
+				gimple_bb (SSA_NAME_DEF_STMT (arg1))))
+	      arg0 = arg1;
+	  }
+
+      /* Then pairwise reduce against the found candidate.  */
+      for (i = 0; i < nargs; ++i)
 	{
 	  arg1 = PHI_ARG_DEF (phi, i);
 	  arg0 = get_continuation_for_phi_1 (phi, arg0, arg1, ref, visited);
 	  if (!arg0)
 	    return NULL_TREE;
-
 	}
-      while (++i < nargs);
 
       return arg0;
     }
