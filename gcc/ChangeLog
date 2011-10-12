@@ -1,3 +1,14 @@
+2011-10-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* expr.h (copy_blkmode_to_reg): Declare.
+	* expr.c (copy_blkmode_to_reg): New function.
+	(expand_assignment): Don't expand register RESULT_DECLs before
+	the lhs.  Use copy_blkmode_to_reg to copy BLKmode values into a
+	RESULT_DECL register.
+	(expand_expr_real_1): Handle BLKmode decls when looking for promotion.
+	* stmt.c (expand_return): Move BLKmode-to-register code into
+	copy_blkmode_to_reg.
+
 2011-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/49965
