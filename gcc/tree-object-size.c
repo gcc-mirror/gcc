@@ -166,24 +166,19 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
   gcc_assert (TREE_CODE (ptr) == ADDR_EXPR);
 
   pt_var = TREE_OPERAND (ptr, 0);
-  if (REFERENCE_CLASS_P (pt_var))
-    pt_var = get_base_address (pt_var);
+  while (handled_component_p (pt_var))
+    pt_var = TREE_OPERAND (pt_var, 0);
 
   if (pt_var
-      && TREE_CODE (pt_var) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (pt_var, 0)) == SSA_NAME
-      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (pt_var, 0))))
+      && TREE_CODE (pt_var) == MEM_REF)
     {
       unsigned HOST_WIDE_INT sz;
 
-      if (!osi || (object_size_type & 1) != 0)
+      if (!osi || (object_size_type & 1) != 0
+	  || TREE_CODE (pt_var) != SSA_NAME)
 	{
 	  sz = compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
 					    object_size_type & ~1);
-	  if (host_integerp (TREE_OPERAND (pt_var, 1), 0))
-	    sz -= TREE_INT_CST_LOW (TREE_OPERAND (pt_var, 1));
-	  else
-	    sz = offset_limit;
 	}
       else
 	{
@@ -195,10 +190,17 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	    sz = object_sizes[object_size_type][SSA_NAME_VERSION (var)];
 	  else
 	    sz = unknown[object_size_type];
-	  if (host_integerp (TREE_OPERAND (pt_var, 1), 0))
-	    sz -= TREE_INT_CST_LOW (TREE_OPERAND (pt_var, 1));
+	}
+      if (sz != unknown[object_size_type])
+	{
+	  double_int dsz = double_int_sub (uhwi_to_double_int (sz),
+					   mem_ref_offset (pt_var));
+	  if (double_int_negative_p (dsz))
+	    sz = 0;
+	  else if (double_int_fits_in_uhwi_p (dsz))
+	    sz = double_int_to_uhwi (dsz);
 	  else
-	    sz = offset_limit;
+	    sz = unknown[object_size_type];
 	}
 
       if (sz != unknown[object_size_type] && sz < offset_limit)
@@ -211,7 +213,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	        tree_low_cst (DECL_SIZE_UNIT (pt_var), 1) < offset_limit)
     pt_var_size = DECL_SIZE_UNIT (pt_var);
   else if (pt_var
-	   && (SSA_VAR_P (pt_var) || TREE_CODE (pt_var) == STRING_CST)
+	   && TREE_CODE (pt_var) == STRING_CST
 	   && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
 	   && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)), 1)
 	   && (unsigned HOST_WIDE_INT)
