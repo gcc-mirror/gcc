@@ -44,8 +44,7 @@ PWD_COMMAND = $${PWDCMD-pwd}
 
 # The tedious process of getting CFLAGS right.
 CFLAGS=-g
-LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
-GCC_WARN_CFLAGS = $(LOOSE_WARN)
+GCC_WARN_CFLAGS = -W -Wall
 WARN_CFLAGS = @warn_cflags@
 
 ADA_CFLAGS=@ADA_CFLAGS@
@@ -64,8 +63,8 @@ INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I$(fsrcdir)/ada -I$(fsrcdir)/config \
 	-I$(fsrcdir)/../include -I$(fsrcdir)
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
-# Variables for gnattools1, native
-TOOLS_FLAGS_TO_PASS_1= \
+# Variables for gnattools, native
+TOOLS_FLAGS_TO_PASS_NATIVE= \
 	"CC=../../xgcc -B../../" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" \
@@ -76,11 +75,13 @@ TOOLS_FLAGS_TO_PASS_1= \
 	"exeext=$(exeext)" \
 	"fsrcdir=$(fsrcdir)" \
 	"srcdir=$(fsrcdir)" \
+	"GNATMAKE=../../gnatmake" \
+	"GNATLINK=../../gnatlink" \
 	"GNATBIND=../../gnatbind" \
 	"TOOLSCASE=native"
 
 # Variables for regnattools
-TOOLS_FLAGS_TO_PASS_1re= \
+TOOLS_FLAGS_TO_PASS_RE= \
 	"CC=../../xgcc -B../../" \
 	"CFLAGS=$(CFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
@@ -93,24 +94,7 @@ TOOLS_FLAGS_TO_PASS_1re= \
 	"GNATMAKE=../../gnatmake" \
 	"GNATLINK=../../gnatlink" \
 	"GNATBIND=../../gnatbind" \
-	"TOOLSCASE=cross" \
-	"INCLUDES="
-
-# Variables for gnattools2, native
-TOOLS_FLAGS_TO_PASS_NATIVE= \
-	"CC=../../xgcc -B../../" \
-	"CFLAGS=$(CFLAGS)" \
-	"ADAFLAGS=$(ADAFLAGS)" \
-	"ADA_CFLAGS=$(ADA_CFLAGS)" \
-	"INCLUDES=$(INCLUDES_FOR_SUBDIR)" \
-	"ADA_INCLUDES=-I../rts $(ADA_INCLUDES_FOR_SUBDIR)" \
-	"exeext=$(exeext)" \
-	"fsrcdir=$(fsrcdir)" \
-	"srcdir=$(fsrcdir)" \
-	"GNATMAKE=../../gnatmake" \
-	"GNATLINK=../../gnatlink" \
-	"GNATBIND=../../gnatbind" \
-	"TOOLSCASE=native"
+	"TOOLSCASE=cross"
 
 # Variables for gnattools, cross
 TOOLS_FLAGS_TO_PASS_CROSS= \
@@ -177,7 +161,7 @@ $(GCC_DIR)/stamp-tools:
 gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib-rts
 	# gnattools1
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_1) \
+	  $(TOOLS_FLAGS_TO_PASS_NATIVE) \
 	  ../../gnatmake$(exeext) ../../gnatlink$(exeext)
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
@@ -189,7 +173,7 @@ gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib-rts
 regnattools: $(GCC_DIR)/stamp-gnatlib-rts
 	# gnattools1-re
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_1re) \
+	  $(TOOLS_FLAGS_TO_PASS_RE) INCLUDES="" \
 	  gnatmake-re gnatlink-re
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \

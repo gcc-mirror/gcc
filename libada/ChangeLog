@@ -1,3 +1,14 @@
+2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (LOOSE_WARN): Delete.
+	(GCC_WARN_CFLAGS): Likewise.
+	(WARN_CFLAGS): Likewise.
+	(GNATLIBFLAGS): Add -nostdinc.
+	(GNATLIBCFLAGS_FOR_C): Add -W -Wall.
+	(LIBADA_FLAGS_TO_PASS): Remove WARN_CFLAGS.
+	* configure.ac (warn_cflags): Delete.
+	* configure: Regenerate.
+
 2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Include ../config/picflag.m4.

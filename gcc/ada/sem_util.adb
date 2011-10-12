@@ -2739,7 +2739,7 @@ package body Sem_Util is
          end if;
 
       elsif Is_Entity_Name (A2) then
-         return Denotes_Same_Prefix (A2, A1);
+         return Denotes_Same_Prefix (A1 => A2, A2 => A1);
 
       elsif Nkind_In (A1, N_Selected_Component, N_Indexed_Component, N_Slice)
               and then

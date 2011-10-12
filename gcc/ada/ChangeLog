@@ -1,5 +1,34 @@
 2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_util.adb (Denotes_Same_Prefix): Fix fatal warning.
+	* gcc-interface/Make-lang.in (WARN_ADAFLAGS): New.
+	(ALL_ADAFLAGS): Include WARN_ADAFLAGS.
+	(ADA_FLAGS_TO_PASS): Likewise.
+	(COMMON_FLAGS_TO_PASS): New.
+	(ADA_TOOLS_FLAGS_TO_PASS): Use COMMON_FLAGS_TO_PASS.  In the regular
+	native case, also use FLAGS_TO_PASS and ADA_FLAGS_TO_PASS.
+	(gnatlib): Use COMMON_FLAGS_TO_PASS.
+	(ada.install-common): Likewise.
+	(install-gnatlib): Likewise.
+	(install-gnatlib-obj): Likewise.
+	(gnattools): Use ADA_TOOLS_FLAGS_TO_PASS for gnattools1 as well.
+	(gnat-cross): Delete.
+	(gnatboot): Likewise.
+	(gnatboot2): Likewise.
+	(gnatboot3): Likewise.
+	(gnatstage1): Likewise.
+	(gnatstage2): Likewise.
+	* gcc-interface/Makefile.in (SOME_ADAFLAGS): Likewise.
+	(MOST_ADAFLAGS): Likewise.
+	(LOOSE_CFLAGS): Likewise.
+	(gnat-cross): Likewise.
+	(GNATLIBFLAGS): Add -W -Wall.
+	(GNATLIBCFLAGS_FOR_C): Likewise.
+	* gcc-interface/lang.opt: Remove C-specific warnings.  Add doc lines.
+	* gcc-interface/misc.c (gnat_handle_option): Remove obsolete cases.
+
+2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Attribute_to_gnu): Use remove_conversions.
 	(push_range_check_info): Likewise.
 	(gnat_to_gnu) <N_Code_Statement>: Likewise.
