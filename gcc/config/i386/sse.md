@@ -4330,10 +4330,10 @@
 
 ;; Modes handled by vec_extract_even/odd pattern.
 (define_mode_iterator VEC_EXTRACT_EVENODD_MODE
-  [(V16QI "TARGET_SSE2")
-   (V8HI "TARGET_SSE2")
-   (V4SI "TARGET_SSE2")
-   (V2DI "TARGET_SSE2")
+  [(V32QI "TARGET_AVX2") (V16QI "TARGET_SSE2")
+   (V16HI "TARGET_AVX2") (V8HI "TARGET_SSE2")
+   (V8SI "TARGET_AVX2") (V4SI "TARGET_SSE2")
+   (V4DI "TARGET_AVX2") (V2DI "TARGET_SSE2")
    (V8SF "TARGET_AVX") V4SF
    (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
@@ -6196,11 +6196,9 @@
   DONE;
 })
 
-;; ??? Irritatingly, the 256-bit VPSHUFB only shuffles within the 128-bit
-;; lanes.  For now, we don't try to support V32QI or V16HImode.  So we
-;; don't want to use VI_AVX2.
 (define_mode_iterator VEC_PERM_AVX2
   [V16QI V8HI V4SI V2DI V4SF V2DF
+   (V32QI "TARGET_AVX2") (V16HI "TARGET_AVX2")
    (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")
    (V8SF "TARGET_AVX2") (V4DF "TARGET_AVX2")])
 
@@ -6431,8 +6429,8 @@
 
 (define_expand "vec_pack_trunc_<mode>"
   [(match_operand:<ssepackmode> 0 "register_operand" "")
-   (match_operand:VI248_128 1 "register_operand" "")
-   (match_operand:VI248_128 2 "register_operand" "")]
+   (match_operand:VI248_AVX2 1 "register_operand" "")
+   (match_operand:VI248_AVX2 2 "register_operand" "")]
   "TARGET_SSE2"
 {
   rtx op1 = gen_lowpart (<ssepackmode>mode, operands[1]);
@@ -6513,8 +6511,7 @@
 		     (const_int 28) (const_int 60)
 		     (const_int 29) (const_int 61)
 		     (const_int 30) (const_int 62)
-		     (const_int 31) (const_int 63)
-		     (const_int 32) (const_int 64)])))]
+		     (const_int 31) (const_int 63)])))]
   "TARGET_AVX2"
   "vpunpckhbw\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
@@ -6559,7 +6556,6 @@
 		     (const_int 5) (const_int 37)
 		     (const_int 6) (const_int 38)
 		     (const_int 7) (const_int 39)
-		     (const_int 15) (const_int 47)
 		     (const_int 16) (const_int 48)
 		     (const_int 17) (const_int 49)
 		     (const_int 18) (const_int 50)
@@ -6919,7 +6915,11 @@
 				GEN_INT ((mask >> 0) & 3),
 				GEN_INT ((mask >> 2) & 3),
 				GEN_INT ((mask >> 4) & 3),
-				GEN_INT ((mask >> 6) & 3)));
+				GEN_INT ((mask >> 6) & 3),
+				GEN_INT (((mask >> 0) & 3) + 4),
+				GEN_INT (((mask >> 2) & 3) + 4),
+				GEN_INT (((mask >> 4) & 3) + 4),
+				GEN_INT (((mask >> 6) & 3) + 4)));
   DONE;
 })
 
@@ -6931,11 +6931,15 @@
 		     (match_operand 3 "const_0_to_3_operand" "")
 		     (match_operand 4 "const_0_to_3_operand" "")
 		     (match_operand 5 "const_0_to_3_operand" "")
-		     (match_dup 2)
-		     (match_dup 3)
-		     (match_dup 4)
-		     (match_dup 5)])))]
-  "TARGET_AVX2"
+		     (match_operand 6 "const_4_to_7_operand" "")
+		     (match_operand 7 "const_4_to_7_operand" "")
+		     (match_operand 8 "const_4_to_7_operand" "")
+		     (match_operand 9 "const_4_to_7_operand" "")])))]
+  "TARGET_AVX2
+   && INTVAL (operands[2]) + 4 == INTVAL (operands[6])
+   && INTVAL (operands[3]) + 4 == INTVAL (operands[7])
+   && INTVAL (operands[4]) + 4 == INTVAL (operands[8])
+   && INTVAL (operands[5]) + 4 == INTVAL (operands[9])"
 {
   int mask = 0;
   mask |= INTVAL (operands[2]) << 0;
@@ -7002,7 +7006,11 @@
 				 GEN_INT ((mask >> 0) & 3),
 				 GEN_INT ((mask >> 2) & 3),
 				 GEN_INT ((mask >> 4) & 3),
-				 GEN_INT ((mask >> 6) & 3)));
+				 GEN_INT ((mask >> 6) & 3),
+				 GEN_INT (((mask >> 0) & 3) + 8),
+				 GEN_INT (((mask >> 2) & 3) + 8),
+				 GEN_INT (((mask >> 4) & 3) + 8),
+				 GEN_INT (((mask >> 6) & 3) + 8)));
   DONE;
 })
 
@@ -7018,15 +7026,19 @@
 		     (const_int 5)
 		     (const_int 6)
 		     (const_int 7)
-		     (match_dup 2)
-		     (match_dup 3)
-		     (match_dup 4)
-		     (match_dup 5)
+		     (match_operand 6 "const_8_to_11_operand" "")
+		     (match_operand 7 "const_8_to_11_operand" "")
+		     (match_operand 8 "const_8_to_11_operand" "")
+		     (match_operand 9 "const_8_to_11_operand" "")
 		     (const_int 12)
 		     (const_int 13)
 		     (const_int 14)
 		     (const_int 15)])))]
-  "TARGET_AVX2"
+  "TARGET_AVX2
+   && INTVAL (operands[2]) + 8 == INTVAL (operands[6])
+   && INTVAL (operands[3]) + 8 == INTVAL (operands[7])
+   && INTVAL (operands[4]) + 8 == INTVAL (operands[8])
+   && INTVAL (operands[5]) + 8 == INTVAL (operands[9])"
 {
   int mask = 0;
   mask |= INTVAL (operands[2]) << 0;
@@ -7098,7 +7110,11 @@
 				 GEN_INT (((mask >> 0) & 3) + 4),
 				 GEN_INT (((mask >> 2) & 3) + 4),
 				 GEN_INT (((mask >> 4) & 3) + 4),
-				 GEN_INT (((mask >> 6) & 3) + 4)));
+				 GEN_INT (((mask >> 6) & 3) + 4),
+				 GEN_INT (((mask >> 0) & 3) + 12),
+				 GEN_INT (((mask >> 2) & 3) + 12),
+				 GEN_INT (((mask >> 4) & 3) + 12),
+				 GEN_INT (((mask >> 6) & 3) + 12)));
   DONE;
 })
 
@@ -7118,11 +7134,15 @@
 		     (const_int 9)
 		     (const_int 10)
 		     (const_int 11)
-		     (match_dup 2)
-		     (match_dup 3)
-		     (match_dup 4)
-		     (match_dup 5)])))]
-  "TARGET_AVX2"
+		     (match_operand 6 "const_12_to_15_operand" "")
+		     (match_operand 7 "const_12_to_15_operand" "")
+		     (match_operand 8 "const_12_to_15_operand" "")
+		     (match_operand 9 "const_12_to_15_operand" "")])))]
+  "TARGET_AVX2
+   && INTVAL (operands[2]) + 8 == INTVAL (operands[6])
+   && INTVAL (operands[3]) + 8 == INTVAL (operands[7])
+   && INTVAL (operands[4]) + 8 == INTVAL (operands[8])
+   && INTVAL (operands[5]) + 8 == INTVAL (operands[9])"
 {
   int mask = 0;
   mask |= (INTVAL (operands[2]) - 4) << 0;
@@ -11526,14 +11546,39 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_insn "avx2_permv4di"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
-	(unspec:V4DI
-	  [(match_operand:V4DI 1 "register_operand" "xm")
-	   (match_operand:SI 2 "const_0_to_255_operand" "n")]
-	  UNSPEC_VPERMDI))]
+(define_expand "avx2_permv4di"
+  [(match_operand:V4DI 0 "register_operand" "")
+   (match_operand:V4DI 1 "nonimmediate_operand" "")
+   (match_operand:SI 2 "const_0_to_255_operand" "")]
   "TARGET_AVX2"
-  "vpermq\t{%2, %1, %0|%0, %1, %2}"
+{
+  int mask = INTVAL (operands[2]);
+  emit_insn (gen_avx2_permv4di_1 (operands[0], operands[1],
+				  GEN_INT ((mask >> 0) & 3),
+				  GEN_INT ((mask >> 2) & 3),
+				  GEN_INT ((mask >> 4) & 3),
+				  GEN_INT ((mask >> 6) & 3)));
+  DONE;
+})
+
+(define_insn "avx2_permv4di_1"
+  [(set (match_operand:V4DI 0 "register_operand" "=x")
+	(vec_select:V4DI
+	  (match_operand:V4DI 1 "nonimmediate_operand" "xm")
+	  (parallel [(match_operand 2 "const_0_to_3_operand" "")
+		     (match_operand 3 "const_0_to_3_operand" "")
+		     (match_operand 4 "const_0_to_3_operand" "")
+		     (match_operand 5 "const_0_to_3_operand" "")])))]
+  "TARGET_AVX2"
+{
+  int mask = 0;
+  mask |= INTVAL (operands[2]) << 0;
+  mask |= INTVAL (operands[3]) << 2;
+  mask |= INTVAL (operands[4]) << 4;
+  mask |= INTVAL (operands[5]) << 6;
+  operands[2] = GEN_INT (mask);
+  return "vpermq\t{%2, %1, %0|%0, %1, %2}";
+}
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
@@ -11542,7 +11587,7 @@
   [(set (match_operand:V4DI 0 "register_operand" "=x")
 	(unspec:V4DI
 	  [(match_operand:V4DI 1 "register_operand" "x")
-	   (match_operand:V4DI 2 "register_operand" "xm")
+	   (match_operand:V4DI 2 "nonimmediate_operand" "xm")
 	   (match_operand:SI 3 "const_0_to_255_operand" "n")]
 	  UNSPEC_VPERMTI))]
   "TARGET_AVX2"

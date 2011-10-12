@@ -1,5 +1,35 @@
 2011-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (UNSPEC_VPERMDI): Remove.
+	* config/i386/i386.c (ix86_expand_vec_perm): Handle
+	V16QImode and V32QImode for TARGET_AVX2.
+	(MAX_VECT_LEN): Increase to 32.
+	(expand_vec_perm_blend): Add support for 32-byte integer
+	vectors with TARGET_AVX2.
+	(valid_perm_using_mode_p): New function.
+	(expand_vec_perm_pshufb): Add support for 32-byte integer
+	vectors with TARGET_AVX2.
+	(expand_vec_perm_vpshufb2_vpermq): New function.
+	(expand_vec_perm_vpshufb2_vpermq_even_odd): New function.
+	(expand_vec_perm_even_odd_1): Handle 32-byte integer vectors
+	with TARGET_AVX2.
+	(ix86_expand_vec_perm_builtin_1): Try expand_vec_perm_vpshufb2_vpermq
+	and expand_vec_perm_vpshufb2_vpermq_even_odd.
+	* config/i386/sse.md (VEC_EXTRACT_EVENODD_MODE): Add for TARGET_AVX2
+	32-byte integer vector modes.
+	(vec_pack_trunc_<mode>): Use VI248_AVX2 instead of VI248_128.
+	(avx2_interleave_highv32qi, avx2_interleave_lowv32qi): Remove pasto.
+	(avx2_pshufdv3, avx2_pshuflwv3, avx2_pshufhwv3): Generate
+	4 new operands.
+	(avx2_pshufd_1, avx2_pshuflw_1, avx2_pshufhw_1): Don't use
+	match_dup, instead add 4 new operands and require they have
+	right cross-lane values.
+	(avx2_permv4di): Change into define_expand.
+	(avx2_permv4di_1): New instruction.
+	(avx2_permv2ti): Use nonimmediate_operand instead of register_operand
+	for "xm" constrained operand.
+	(VEC_PERM_AVX2): Add V32QI and V16QI for TARGET_AVX2.
+
 	* config/i386/sse.md (avx2_gathersi<mode>,
 	avx2_gatherdi<mode>, avx2_gatherdi<mode>256): Add clobber of
 	match_scratch, change memory_operand to register_operand,
