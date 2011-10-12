@@ -1364,10 +1364,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 don't try to build a trampoline.  */
       if (attribute == Attr_Code_Address)
 	{
-	  for (gnu_expr = gnu_result;
-	       CONVERT_EXPR_P (gnu_expr);
-	       gnu_expr = TREE_OPERAND (gnu_expr, 0))
-	    TREE_CONSTANT (gnu_expr) = 1;
+	  gnu_expr = remove_conversions (gnu_result, false);
 
 	  if (TREE_CODE (gnu_expr) == ADDR_EXPR)
 	    TREE_NO_TRAMPOLINE (gnu_expr) = TREE_CONSTANT (gnu_expr) = 1;
@@ -1378,10 +1375,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 a useful warning with -Wtrampolines.  */
       else if (TREE_CODE (TREE_TYPE (gnu_prefix)) == FUNCTION_TYPE)
 	{
-	  for (gnu_expr = gnu_result;
-	       CONVERT_EXPR_P (gnu_expr);
-	       gnu_expr = TREE_OPERAND (gnu_expr, 0))
-	    ;
+	  gnu_expr = remove_conversions (gnu_result, false);
 
 	  if (TREE_CODE (gnu_expr) == ADDR_EXPR
 	      && decl_function_context (TREE_OPERAND (gnu_expr, 0)))
@@ -2156,8 +2150,7 @@ push_range_check_info (tree var)
   if (VEC_empty (loop_info, gnu_loop_stack))
     return NULL;
 
-  while (CONVERT_EXPR_P (var) || TREE_CODE (var) == VIEW_CONVERT_EXPR)
-    var = TREE_OPERAND (var, 0);
+  var = remove_conversions (var, false);
 
   if (TREE_CODE (var) != VAR_DECL)
     return NULL;
@@ -6139,7 +6132,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		     is modelled on the C front-end.  */
 		  if (!allows_reg)
 		    {
-		      STRIP_NOPS (output);
+		      output = remove_conversions (output, false);
 		      if (TREE_CODE (output) == CONST_DECL
 			  && DECL_CONST_CORRESPONDING_VAR (output))
 			output = DECL_CONST_CORRESPONDING_VAR (output);
@@ -6167,7 +6160,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		     mark it addressable.  */
 		  if (!allows_reg && allows_mem)
 		    {
-		      STRIP_NOPS (input);
+		      input = remove_conversions (input, false);
 		      if (TREE_CODE (input) == CONST_DECL
 			  && DECL_CONST_CORRESPONDING_VAR (input))
 			input = DECL_CONST_CORRESPONDING_VAR (input);
