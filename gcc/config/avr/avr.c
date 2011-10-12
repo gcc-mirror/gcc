@@ -7202,6 +7202,53 @@ test_hard_reg_class (enum reg_class rclass, rtx x)
 }
 
 
+/* Helper for jump_over_one_insn_p:  Test if INSN is a 2-word instruction
+   and thus is suitable to be skipped by CPSE, SBRC, etc.  */
+
+static bool
+avr_2word_insn_p (rtx insn)
+{
+  if (avr_current_device->errata_skip
+      || !insn
+      || 2 != get_attr_length (insn))
+    {
+      return false;
+    }
+
+  switch (INSN_CODE (insn))
+    {
+    default:
+      return false;
+      
+    case CODE_FOR_movqi_insn:
+      {
+        rtx set  = single_set (insn);
+        rtx src  = SET_SRC (set);
+        rtx dest = SET_DEST (set);
+        
+        /* Factor out LDS and STS from movqi_insn.  */
+        
+        if (MEM_P (dest)
+            && (REG_P (src) || src == const0_rtx))
+          {
+            return CONSTANT_ADDRESS_P (XEXP (dest, 0));
+          }
+        else if (REG_P (dest)
+                 && MEM_P (src))
+          {
+            return CONSTANT_ADDRESS_P (XEXP (src, 0));
+          }
+        
+        return false;
+      }
+
+    case CODE_FOR_call_insn:
+    case CODE_FOR_call_value_insn:
+      return true;
+    }
+}
+
+
 int
 jump_over_one_insn_p (rtx insn, rtx dest)
 {
@@ -7210,7 +7257,11 @@ jump_over_one_insn_p (rtx insn, rtx dest)
 		      : dest);
   int jump_addr = INSN_ADDRESSES (INSN_UID (insn));
   int dest_addr = INSN_ADDRESSES (uid);
-  return dest_addr - jump_addr == get_attr_length (insn) + 1;
+  int jump_offset = dest_addr - jump_addr - get_attr_length (insn);
+  
+  return (jump_offset == 1
+          || (jump_offset == 2
+              && avr_2word_insn_p (next_active_insn (insn))));
 }
 
 /* Returns 1 if a value of mode MODE can be stored starting with hard

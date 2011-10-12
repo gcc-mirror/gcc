@@ -296,7 +296,7 @@
        operands[1] = copy_to_mode_reg(QImode, operand1);
   ")
 
-(define_insn "*movqi"
+(define_insn "movqi_insn"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,d,Qm,r,q,r,*r")
 	(match_operand:QI 1 "general_operand"       "rL,i,rL,Qm,r,q,i"))]
   "(register_operand (operands[0],QImode)
@@ -3627,7 +3627,7 @@
   ""
   "")
 
-(define_insn "*call_insn"
+(define_insn "call_insn"
   [(parallel[(call (mem:HI (match_operand:HI 0 "nonmemory_operand" "z,s,z,s"))
                    (match_operand:HI 1 "general_operand"           "X,X,X,X"))
              (use (match_operand:HI 2 "const_int_operand"          "L,L,P,P"))])]
@@ -3650,7 +3650,7 @@
                                         (const_int 2)
                                         (const_int 1))])])
 
-(define_insn "*call_value_insn"
+(define_insn "call_value_insn"
   [(parallel[(set (match_operand 0 "register_operand"                   "=r,r,r,r")
                   (call (mem:HI (match_operand:HI 1 "nonmemory_operand"  "z,s,z,s"))
                         (match_operand:HI 2 "general_operand"            "X,X,X,X")))
