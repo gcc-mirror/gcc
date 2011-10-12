@@ -1,5 +1,8 @@
 2011-10-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/powerpc/warn-1.c: Skip if not powerpc_vsx_ok.
+	* gcc.target/powerpc/warn-2.c: Ditto.
+
 	* gcc.target/powerpc/ppc-fma-3.c: Require powerpc_fprs.
 	* gcc.target/powerpc/ppc-fma-4.c: Likewise.
 	* gcc.target/powerpc/ppc-fma-5.c: Likewise.
