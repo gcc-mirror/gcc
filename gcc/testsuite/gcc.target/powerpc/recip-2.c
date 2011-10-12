@@ -1,4 +1,5 @@
 /* { dg-do compile { target { { powerpc*-*-* } && { ! powerpc*-apple-darwin* } } } } */
+/* { dg-require-effective-target powerpc_fprs } */
 /* { dg-options "-O2 -mrecip -ffast-math -mcpu=power5" } */
 /* { dg-final { scan-assembler-times "frsqrtes" 1 } } */
 /* { dg-final { scan-assembler-times "fmsubs" 1 } } */
