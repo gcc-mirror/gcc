@@ -1,3 +1,11 @@
+2011-10-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h (EMIT_EABI_ATTRIBUTE): New macro.  Used to
+	emit a .eabi_attribute assembler directive, possibly with a
+	comment attached.
+	* config/arm/arm.c (arm_file_start): Use the new macro.
+	* config/arm/arm-c.c (arm_output_c_attributes): Likewise.
+
 2011-10-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49939
