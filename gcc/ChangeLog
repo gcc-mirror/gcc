@@ -1,3 +1,12 @@
+2011-10-12  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/49967
+	Backport from Mainline 179472.
+	* configure.ac (gcc_cv_ld_static_dynamic): Define for *-*-hpux*.
+	(gcc_cv_ld_static_option): Ditto.
+	(gcc_cv_ld_dynamic_option): Ditto.
+	* configure: Regenerate.
+
 2011-10-12  Paul Koning  <pkoning@gcc.gnu.org>
 
 	PR tree-optimization/50189
