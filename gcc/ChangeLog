@@ -1,3 +1,9 @@
+2011-10-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50700
+	* tree-object-size.c (addr_object_size): Simplify and treat
+	MEM_REF bases consistently.
+
 2011-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/50565

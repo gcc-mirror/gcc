@@ -1,3 +1,8 @@
+2011-10-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50700
+	* gcc.dg/builtin-object-size-12.c: New testcase.
+
 2011-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/50565
