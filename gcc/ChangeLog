@@ -1,3 +1,8 @@
+2011-10-12  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/i386.md (simple_return): Disable
+	if TARGET_SEH is active.
+
 2011-10-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_init_builtins): Fix unbalanced parentheses.
