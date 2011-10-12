@@ -1,3 +1,10 @@
+2011-10-12  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* function.c (prepare_shrink_wrap, bb_active_p): New function.
+	(thread_prologue_and_epilogue_insns): Use bb_active_p.
+	Call prepare_shrink_wrap, then recompute bb_active_p for the
+	last block.
+
 2011-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/50565

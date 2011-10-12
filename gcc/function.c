@@ -5356,6 +5356,129 @@ requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
 
   return false;
 }
+
+/* Look for sets of call-saved registers in the first block of the
+   function, and move them down into successor blocks if the register
+   is used only on one path.  This exposes more opportunities for
+   shrink-wrapping.
+   These kinds of sets often occur when incoming argument registers are
+   moved to call-saved registers because their values are live across
+   one or more calls during the function.  */
+
+static void
+prepare_shrink_wrap (basic_block entry_block)
+{
+  rtx insn, curr;
+  FOR_BB_INSNS_SAFE (entry_block, insn, curr)
+    {
+      basic_block next_bb;
+      edge e, live_edge;
+      edge_iterator ei;
+      rtx set, scan;
+      unsigned destreg, srcreg;
+
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      set = single_set (insn);
+      if (!set)
+	continue;
+
+      if (!REG_P (SET_SRC (set)) || !REG_P (SET_DEST (set)))
+	continue;
+      srcreg = REGNO (SET_SRC (set));
+      destreg = REGNO (SET_DEST (set));
+      if (hard_regno_nregs[srcreg][GET_MODE (SET_SRC (set))] > 1
+	  || hard_regno_nregs[destreg][GET_MODE (SET_DEST (set))] > 1)
+	continue;
+
+      next_bb = entry_block;
+      scan = insn;
+
+      for (;;)
+	{
+	  live_edge = NULL;
+	  /* Try to find a single edge across which the register is live.
+	     If we find one, we'll try to move the set across this edge.  */
+	  FOR_EACH_EDGE (e, ei, next_bb->succs)
+	    {
+	      if (REGNO_REG_SET_P (df_get_live_in (e->dest), destreg))
+		{
+		  if (live_edge)
+		    {
+		      live_edge = NULL;
+		      break;
+		    }
+		  live_edge = e;
+		}
+	    }
+	  if (!live_edge)
+	    break;
+	  /* We can sometimes encounter dead code.  Don't try to move it
+	     into the exit block.  */
+	  if (live_edge->dest == EXIT_BLOCK_PTR)
+	    break;
+	  if (EDGE_COUNT (live_edge->dest->preds) > 1)
+	    break;
+	  while (scan != BB_END (next_bb))
+	    {
+	      scan = NEXT_INSN (scan);
+	      if (NONDEBUG_INSN_P (scan))
+		{
+		  rtx link;
+		  HARD_REG_SET set_regs;
+
+		  CLEAR_HARD_REG_SET (set_regs);
+		  note_stores (PATTERN (scan), record_hard_reg_sets,
+			       &set_regs);
+		  if (CALL_P (scan))
+		    IOR_HARD_REG_SET (set_regs, call_used_reg_set);
+		  for (link = REG_NOTES (scan); link; link = XEXP (link, 1))
+		    if (REG_NOTE_KIND (link) == REG_INC)
+		      record_hard_reg_sets (XEXP (link, 0), NULL, &set_regs);
+
+		  if (TEST_HARD_REG_BIT (set_regs, srcreg)
+		      || reg_referenced_p (SET_DEST (set),
+					   PATTERN (scan)))
+		    {
+		      scan = NULL_RTX;
+		      break;
+		    }
+		  if (CALL_P (scan))
+		    {
+		      rtx link = CALL_INSN_FUNCTION_USAGE (scan);
+		      while (link)
+			{
+			  rtx tmp = XEXP (link, 0);
+			  if (GET_CODE (tmp) == USE
+			      && reg_referenced_p (SET_DEST (set), tmp))
+			    break;
+			  link = XEXP (link, 1);
+			}
+		      if (link)
+			{
+			  scan = NULL_RTX;
+			  break;
+			}
+		    }
+		}
+	    }
+	  if (!scan)
+	    break;
+	  next_bb = live_edge->dest;
+	}
+
+      if (next_bb != entry_block)
+	{
+	  rtx after = BB_HEAD (next_bb);
+	  while (!NOTE_P (after)
+		 || NOTE_KIND (after) != NOTE_INSN_BASIC_BLOCK)
+	    after = NEXT_INSN (after);
+	  emit_insn_after (PATTERN (insn), after);
+	  delete_insn (insn);
+	}
+    }
+}
+
 #endif
 
 #ifdef HAVE_return
@@ -5403,6 +5526,23 @@ emit_return_into_block (bool simple_p, basic_block bb)
   JUMP_LABEL (jump) = pat;
 }
 #endif
+
+/* Return true if BB has any active insns.  */
+static bool
+bb_active_p (basic_block bb)
+{
+  rtx label;
+
+  /* Test whether there are active instructions in BB.  */
+  label = BB_END (bb);
+  while (label && !LABEL_P (label))
+    {
+      if (active_insn_p (label))
+	break;
+      label = PREV_INSN (label);
+    }
+  return BB_HEAD (bb) != label || !LABEL_P (label);
+}
 
 /* Generate the prologue and epilogue RTL if the machine supports it.  Thread
    this into place with notes indicating where the prologue ends and where
@@ -5490,19 +5630,8 @@ thread_prologue_and_epilogue_insns (void)
   exit_fallthru_edge = find_fallthru_edge (EXIT_BLOCK_PTR->preds);
   if (exit_fallthru_edge != NULL)
     {
-      rtx label;
-
       last_bb = exit_fallthru_edge->src;
-      /* Test whether there are active instructions in the last block.  */
-      label = BB_END (last_bb);
-      while (label && !LABEL_P (label))
-	{
-	  if (active_insn_p (label))
-	    break;
-	  label = PREV_INSN (label);
-	}
-
-      last_bb_active = BB_HEAD (last_bb) != label || !LABEL_P (label);
+      last_bb_active = bb_active_p (last_bb);
     }
   else
     {
@@ -5607,6 +5736,12 @@ thread_prologue_and_epilogue_insns (void)
 	  note_stores (PATTERN (p_insn), record_hard_reg_sets,
 		       &prologue_clobbered);
 	}
+
+      prepare_shrink_wrap (entry_edge->dest);
+
+      /* That may have inserted instructions into the last block.  */
+      if (last_bb && !last_bb_active)
+	last_bb_active = bb_active_p (last_bb);
 
       bitmap_initialize (&bb_antic_flags, &bitmap_default_obstack);
       bitmap_initialize (&bb_on_list, &bitmap_default_obstack);
