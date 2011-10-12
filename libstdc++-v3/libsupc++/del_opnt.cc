@@ -1,6 +1,7 @@
 // Boilerplate support routines for -*- C++ -*- dynamic memory management.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2004, 2009 Free Software Foundation
+// Copyright (C) 1997, 1998, 1999, 2000, 2004, 2009, 2010, 2011 
+// Free Software Foundation
 //
 // This file is part of GCC.
 //
@@ -29,7 +30,7 @@
 extern "C" void free (void *);
 
 _GLIBCXX_WEAK_DEFINITION void
-operator delete (void *ptr, const std::nothrow_t&) throw ()
+operator delete (void *ptr, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
 {
   free (ptr);
 }

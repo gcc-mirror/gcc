@@ -1,3 +1,21 @@
+2011-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50594
+	* libsupc++/new (operator new, operator delete): Decorate with
+	__attribute__((__externally_visible__)).
+	* include/bits/c++config: Add _GLIBCXX_THROW.
+	* libsupc++/del_op.cc: Adjust.
+	* libsupc++/del_opv.cc: Likewise.
+	* libsupc++/del_opnt.cc: Likewise.
+	* libsupc++/del_opvnt.cc: Likewise.
+	* libsupc++/new_op.cc: Likewise.
+	* libsupc++/new_opv.cc: Likewise.
+	* libsupc++/new_opnt.cc: Likewise.
+	* libsupc++/new_opvnt.cc: Likewise.
+	* testsuite/18_support/50594.cc: New.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error
+	line number.
+
 2011-10-11  Emil Wojak  <emil@wojak.eu>
 
 	PR c++/50661

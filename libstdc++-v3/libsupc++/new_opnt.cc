@@ -34,7 +34,7 @@ extern "C" void *malloc (std::size_t);
 extern new_handler __new_handler;
 
 _GLIBCXX_WEAK_DEFINITION void *
-operator new (std::size_t sz, const std::nothrow_t&) throw()
+operator new (std::size_t sz, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
 {
   void *p;
 
