@@ -1,3 +1,7 @@
+2011-10-12  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_init_builtins): Fix unbalanced parentheses.
+
 2011-10-12  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (maybe_skip_until): Cache also at the point
