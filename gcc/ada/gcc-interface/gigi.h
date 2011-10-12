@@ -492,6 +492,10 @@ extern bool fntype_same_flags_p (const_tree, tree, bool, bool, bool);
    not permitted by the language being compiled.  */
 extern tree convert (tree type, tree expr);
 
+/* Create an expression whose value is that of EXPR converted to the common
+   index type, which is sizetype.  */
+extern tree convert_to_index_type (tree expr);
+
 /* Routines created solely for the tree translator's sake. Their prototypes
    can be changed as desired.  */
 
@@ -915,6 +919,11 @@ extern tree gnat_protect_expr (tree exp);
    force evaluation of everything.  We set SUCCESS to true unless we walk
    through something we don't know how to stabilize.  */
 extern tree gnat_stabilize_reference (tree ref, bool force, bool *success);
+
+/* If EXPR is an expression that is invariant in the current function, in the
+   sense that it can be evaluated anywhere in the function and any number of
+   times, return EXPR or an equivalent expression.  Otherwise return NULL.  */
+extern tree gnat_invariant_expr (tree expr);
 
 /* Implementation of the builtin_function langhook.  */
 extern tree gnat_builtin_function (tree decl);

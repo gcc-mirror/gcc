@@ -1,11 +1,47 @@
+2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_LOOP_PARM_P): New flag.
+	(DECL_INDUCTION_VAR): New macro.
+	(SET_DECL_INDUCTION_VAR): Likewise.
+	* gcc-interface/gigi.h (convert_to_index_type): Declare.
+	(gnat_invariant_expr): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: If this is a loop
+	parameter, set DECL_LOOP_PARM_P on it.
+	* gcc-interface/misc.c (gnat_print_decl) <VAR_DECL>: If DECL_LOOP_PARM_P
+	is set, print DECL_INDUCTION_VAR instead of DECL_RENAMED_OBJECT.
+	* gcc-interface/trans.c (gnu_loop_label_stack): Delete.
+	(struct range_check_info_d): New type.
+	(struct loop_info_d): Likewise.
+	(gnu_loop_stack): New stack.
+	(Identifier_to_gnu): Set TREE_READONLY flag on the first dereference
+	built for a by-double-ref read-only parameter.  If DECL_LOOP_PARM_P
+	is set, do not test DECL_RENAMED_OBJECT.
+	(push_range_check_info): New function.
+	(Loop_Statement_to_gnu): Push a new struct loop_info_d instead of just
+	the label.  Reference the label and the iteration variable from it.
+	Build the special induction variable in the unsigned version of the
+	size type, if it is larger than the base type.  And attach it to the
+	iteration variable if the latter isn't by-ref.  In the iteration scheme
+	case, initialize the invariant conditions in front of the loop if
+	deemed profitable.  Use gnu_loop_stack.
+	(gnat_to_gnu) <N_Exit_Statement>: Use gnu_loop_stack.
+	<N_Raise_Constraint_Error>: Always process the reason.  In the range
+	check and related cases, and if loop unswitching is enabled, compute
+	invariant conditions and push this information onto the stack.
+	Do not translate again the condition if it has been already translated.
+	* gcc-interface/utils.c (record_global_renaming_pointer): Assert that
+	DECL_LOOP_PARM_P isn't set.
+	(convert_to_index_type): New function.
+	* gcc-interface/utils2.c (build_binary_op) <ARRAY_REF>: Use it in order
+	to convert the index from the base index type to sizetype.
+	(gnat_invariant_expr): New function.
+
 2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc-interface/utils.c (def_builtin_1): Delete old interface with
 	two parallel arrays to hold standard builtin declarations, and
 	replace it with a function based interface that can support
-	creating builtins on the fly in the future.  Change all uses, and
-	poison the old names.  Make sure 0 is not a legitimate builtin
-	index.
+	creating builtins on the fly in the future.
 	* gcc-interface/trans.c (Exception_Handler_to_gnu_zcx): Ditto.
 	(gnat_to_gnu): Ditto.
 

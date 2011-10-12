@@ -1771,7 +1771,7 @@ process_attributes (tree decl, struct attrib *attr_list)
 void
 record_global_renaming_pointer (tree decl)
 {
-  gcc_assert (DECL_RENAMED_OBJECT (decl));
+  gcc_assert (!DECL_LOOP_PARM_P (decl) && DECL_RENAMED_OBJECT (decl));
   VEC_safe_push (tree, gc, global_renaming_pointers, decl);
 }
 
@@ -4246,6 +4246,92 @@ convert (tree type, tree expr)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Create an expression whose value is that of EXPR converted to the common
+   index type, which is sizetype.  EXPR is supposed to be in the base type
+   of the GNAT index type.  Calling it is equivalent to doing
+
+     convert (sizetype, expr)
+
+   but we try to distribute the type conversion with the knowledge that EXPR
+   cannot overflow in its type.  This is a best-effort approach and we fall
+   back to the above expression as soon as difficulties are encountered.
+
+   This is necessary to overcome issues that arise when the GNAT base index
+   type and the GCC common index type (sizetype) don't have the same size,
+   which is quite frequent on 64-bit architectures.  In this case, and if
+   the GNAT base index type is signed but the iteration type of the loop has
+   been forced to unsigned, the loop scalar evolution engine cannot compute
+   a simple evolution for the general induction variables associated with the
+   array indices, because it will preserve the wrap-around semantics in the
+   unsigned type of their "inner" part.  As a result, many loop optimizations
+   are blocked.
+
+   The solution is to use a special (basic) induction variable that is at
+   least as large as sizetype, and to express the aforementioned general
+   induction variables in terms of this induction variable, eliminating
+   the problematic intermediate truncation to the GNAT base index type.
+   This is possible as long as the original expression doesn't overflow
+   and if the middle-end hasn't introduced artificial overflows in the
+   course of the various simplification it can make to the expression.  */
+
+tree
+convert_to_index_type (tree expr)
+{
+  enum tree_code code = TREE_CODE (expr);
+  tree type = TREE_TYPE (expr);
+
+  /* If the type is unsigned, overflow is allowed so we cannot be sure that
+     EXPR doesn't overflow.  Keep it simple if optimization is disabled.  */
+  if (TYPE_UNSIGNED (type) || !optimize)
+    return convert (sizetype, expr);
+
+  switch (code)
+    {
+    case VAR_DECL:
+      /* The main effect of the function: replace a loop parameter with its
+	 associated special induction variable.  */
+      if (DECL_LOOP_PARM_P (expr) && DECL_INDUCTION_VAR (expr))
+	expr = DECL_INDUCTION_VAR (expr);
+      break;
+
+    CASE_CONVERT:
+      {
+	tree otype = TREE_TYPE (TREE_OPERAND (expr, 0));
+	/* Bail out as soon as we suspect some sort of type frobbing.  */
+	if (TYPE_PRECISION (type) != TYPE_PRECISION (otype)
+	    || TYPE_UNSIGNED (type) != TYPE_UNSIGNED (otype))
+	  break;
+      }
+
+      /* ... fall through ... */
+
+    case NON_LVALUE_EXPR:
+      return fold_build1 (code, sizetype,
+			  convert_to_index_type (TREE_OPERAND (expr, 0)));
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+      return fold_build2 (code, sizetype,
+			  convert_to_index_type (TREE_OPERAND (expr, 0)),
+			  convert_to_index_type (TREE_OPERAND (expr, 1)));
+
+    case COMPOUND_EXPR:
+      return fold_build2 (code, sizetype, TREE_OPERAND (expr, 0),
+			  convert_to_index_type (TREE_OPERAND (expr, 1)));
+
+    case COND_EXPR:
+      return fold_build3 (code, sizetype, TREE_OPERAND (expr, 0),
+			  convert_to_index_type (TREE_OPERAND (expr, 1)),
+			  convert_to_index_type (TREE_OPERAND (expr, 2)));
+
+    default:
+      break;
+    }
+
+  return convert (sizetype, expr);
 }
 
 /* Remove all conversions that are done in EXP.  This includes converting

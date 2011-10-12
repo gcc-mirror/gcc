@@ -394,8 +394,12 @@ gnat_print_decl (FILE *file, tree node, int indent)
       break;
 
     case VAR_DECL:
-      print_node (file, "renamed object", DECL_RENAMED_OBJECT (node),
-		  indent + 4);
+      if (DECL_LOOP_PARM_P (node))
+	print_node (file, "induction var", DECL_INDUCTION_VAR (node),
+		    indent + 4);
+      else
+	print_node (file, "renamed object", DECL_RENAMED_OBJECT (node),
+		    indent + 4);
       break;
 
     default:
