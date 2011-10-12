@@ -1,5 +1,10 @@
 2011-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (vec_avx2): New mode_attr.
+	(mulv16qi3): Macroize to cover also mulv32qi3 for
+	TARGET_AVX2 into ...
+	(mul<mode>3): ... this.
+
 	* config/i386/i386.md (UNSPEC_VPERMDI): Remove.
 	* config/i386/i386.c (ix86_expand_vec_perm): Handle
 	V16QImode and V32QImode for TARGET_AVX2.
