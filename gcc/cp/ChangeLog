@@ -1,3 +1,10 @@
+2011-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50594
+	* decl.c (cxx_init_decl_processing): Add
+	__attribute__((externally_visible)) to operator new and
+	operator delete library fn.
+
 2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* decl.c (duplicate_decls): Delete old interface with two parallel

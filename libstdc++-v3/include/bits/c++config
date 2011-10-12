@@ -103,9 +103,11 @@
 # ifdef __GXX_EXPERIMENTAL_CXX0X__
 #  define _GLIBCXX_NOEXCEPT noexcept
 #  define _GLIBCXX_USE_NOEXCEPT noexcept
+#  define _GLIBCXX_THROW(_EXC)
 # else
 #  define _GLIBCXX_NOEXCEPT
 #  define _GLIBCXX_USE_NOEXCEPT throw()
+#  define _GLIBCXX_THROW(_EXC) throw(_EXC)
 # endif
 #endif
 
