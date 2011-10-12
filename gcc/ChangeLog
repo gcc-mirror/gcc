@@ -1,5 +1,12 @@
 2011-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (vec_unpacks_lo_<mode>,
+	vec_unpacks_hi_<mode>, vec_unpacku_lo_<mode>,
+	vec_unpacku_hi_<mode>): Change VI124_128 mode to
+	VI124_AVX2.
+	* config/i386/i386.c (ix86_expand_sse_unpack): Handle
+	V32QImode, V16HImode and V8SImode for TARGET_AVX2.
+
 	* config/i386/sse.md (vec_avx2): New mode_attr.
 	(mulv16qi3): Macroize to cover also mulv32qi3 for
 	TARGET_AVX2 into ...
