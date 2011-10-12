@@ -1,3 +1,8 @@
+2011-10-12  Paul Koning  <pkoning@gcc.gnu.org>
+
+	PR tree-optimization/50189
+	* g++.dg/torture/pr50189.C: New testcase.
+
 2011-10-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50700
