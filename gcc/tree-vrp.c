@@ -1476,7 +1476,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 
   limit = avoid_overflow_infinity (limit);
 
-  type = TREE_TYPE (limit);
+  type = TREE_TYPE (var);
   gcc_assert (limit != var);
 
   /* For pointer arithmetic, we only keep track of pointer equality
@@ -1650,8 +1650,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
 	  if (cond_code == LT_EXPR)
 	    {
-	      tree one = build_int_cst (type, 1);
-	      max = fold_build2 (MINUS_EXPR, type, max, one);
+	      tree one = build_int_cst (TREE_TYPE (max), 1);
+	      max = fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, one);
 	      if (EXPR_P (max))
 		TREE_NO_WARNING (max) = 1;
 	    }
@@ -1685,8 +1685,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
 	  if (cond_code == GT_EXPR)
 	    {
-	      tree one = build_int_cst (type, 1);
-	      min = fold_build2 (PLUS_EXPR, type, min, one);
+	      tree one = build_int_cst (TREE_TYPE (min), 1);
+	      min = fold_build2 (PLUS_EXPR, TREE_TYPE (min), min, one);
 	      if (EXPR_P (min))
 		TREE_NO_WARNING (min) = 1;
 	    }

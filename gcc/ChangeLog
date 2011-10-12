@@ -1,3 +1,9 @@
+2011-10-12  Paul Koning  <pkoning@gcc.gnu.org>
+
+	PR tree-optimization/50189
+	* tree-vrp.c (extract_range_from_assert): Use the type of
+	the variable, not the limit.
+
 2011-10-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50700
