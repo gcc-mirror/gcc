@@ -1,5 +1,5 @@
-/* { dg-do compile { target { vis3 } } } */
-/* { dg-options "-mcpu=niagara3 -mvis" } */
+/* { dg-do compile } */
+/* { dg-options "-mvis3" } */
 typedef unsigned char vec8 __attribute__((vector_size(8)));
 
 long test_fucmple8 (vec8 a, vec8 b)

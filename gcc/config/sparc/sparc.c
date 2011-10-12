@@ -850,7 +850,11 @@ sparc_option_override (void)
 
   cpu = &cpu_table[(int) sparc_cpu_and_features];
   target_flags &= ~cpu->disable;
-  target_flags |= cpu->enable;
+  target_flags |= (cpu->enable
+#ifndef HAVE_AS_FMAF_HPC_VIS3
+		   & ~(MASK_FMAF | MASK_VIS3)
+#endif
+		   );
 
   /* If -mfpu or -mno-fpu was explicitly used, don't override with
      the processor default.  */
