@@ -2235,4 +2235,19 @@ extern int making_const_table;
    " %{mcpu=generic-*:-march=%*;"				\
    "   :%{mcpu=*:-mcpu=%*} %{march=*:-march=%*}}"
 
+/* This macro is used to emit an EABI tag and its associated value.
+   We emit the numerical value of the tag in case the assembler does not
+   support textual tags.  (Eg gas prior to 2.20).  If requested we include
+   the tag name in a comment so that anyone reading the assembler output
+   will know which tag is being set.  */
+#define EMIT_EABI_ATTRIBUTE(NAME,NUM,VAL)				\
+  do									\
+    {									\
+      asm_fprintf (asm_out_file, "\t.eabi_attribute %d, %d", NUM, VAL); \
+      if (flag_verbose_asm || flag_debug_asm)				\
+	asm_fprintf (asm_out_file, "\t%s " #NAME, ASM_COMMENT_START);	\
+      asm_fprintf (asm_out_file, "\n");					\
+    }									\
+  while (0)
+
 #endif /* ! GCC_ARM_H */
