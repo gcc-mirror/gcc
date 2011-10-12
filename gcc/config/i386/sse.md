@@ -12524,55 +12524,61 @@
 		       (V8SI "V8SI") (V8SF "V8SI")])
 
 (define_expand "avx2_gathersi<mode>"
-  [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "")
-	(unspec:VEC_GATHER_MODE
-	  [(match_operand:VEC_GATHER_MODE 1 "register_operand" "")
-	   (match_operand:<ssescalarmode> 2 "memory_operand" "")
-	   (match_operand:<VEC_GATHER_MODE> 3 "register_operand" "")
-	   (match_operand:VEC_GATHER_MODE 4 "register_operand" "")
-	   (match_operand:SI 5 "const1248_operand " "")]
-	  UNSPEC_GATHER))]
+  [(parallel [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "")
+		   (unspec:VEC_GATHER_MODE
+		     [(match_operand:VEC_GATHER_MODE 1 "register_operand" "")
+		      (match_operand 2 "register_operand" "")
+		      (mem:BLK (scratch))
+		      (match_operand:<VEC_GATHER_MODE> 3 "register_operand" "")
+		      (match_operand:VEC_GATHER_MODE 4 "register_operand" "")
+		      (match_operand:SI 5 "const1248_operand " "")]
+		     UNSPEC_GATHER))
+	      (clobber (match_scratch:VEC_GATHER_MODE 6 ""))])]
   "TARGET_AVX2")
 
 (define_insn "*avx2_gathersi<mode>"
-  [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "=x")
+  [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "=&x")
 	(unspec:VEC_GATHER_MODE
-	  [(match_operand:VEC_GATHER_MODE 1 "register_operand" "0")
-	   (mem:<ssescalarmode>
-	     (match_operand:P 2 "register_operand" "r"))
-	   (match_operand:<VEC_GATHER_MODE> 3 "register_operand" "x")
-	   (match_operand:VEC_GATHER_MODE 4 "register_operand" "x")
-	   (match_operand:SI 5 "const1248_operand" "n")]
-	  UNSPEC_GATHER))]
+	  [(match_operand:VEC_GATHER_MODE 2 "register_operand" "0")
+	   (match_operand:P 3 "register_operand" "r")
+	   (mem:BLK (scratch))
+	   (match_operand:<VEC_GATHER_MODE> 4 "register_operand" "x")
+	   (match_operand:VEC_GATHER_MODE 5 "register_operand" "1")
+	   (match_operand:SI 6 "const1248_operand" "n")]
+	  UNSPEC_GATHER))
+   (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<gthrfirstp>gatherd<gthrlastp>\t{%4, (%2, %3, %c5), %0|%0, (%2, %3, %c5), %4}"
+  "v<gthrfirstp>gatherd<gthrlastp>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "avx2_gatherdi<mode>"
-  [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "")
-	(unspec:VEC_GATHER_MODE
-	  [(match_operand:VEC_GATHER_MODE 1 "register_operand" "")
-	   (match_operand:<ssescalarmode> 2 "memory_operand" "")
-	   (match_operand:<AVXMODE48P_DI> 3 "register_operand" "")
-	   (match_operand:VEC_GATHER_MODE 4 "register_operand" "")
-	   (match_operand:SI 5 "const1248_operand " "")]
-	  UNSPEC_GATHER))]
+  [(parallel [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "")
+		   (unspec:VEC_GATHER_MODE
+		     [(match_operand:VEC_GATHER_MODE 1 "register_operand" "")
+		      (match_operand 2 "register_operand" "")
+		      (mem:BLK (scratch))
+		      (match_operand:<AVXMODE48P_DI> 3 "register_operand" "")
+		      (match_operand:VEC_GATHER_MODE 4 "register_operand" "")
+		      (match_operand:SI 5 "const1248_operand " "")]
+		     UNSPEC_GATHER))
+	      (clobber (match_scratch:VEC_GATHER_MODE 6 ""))])]
   "TARGET_AVX2")
 
 (define_insn "*avx2_gatherdi<mode>"
-  [(set (match_operand:AVXMODE48P_DI 0 "register_operand" "=x")
+  [(set (match_operand:AVXMODE48P_DI 0 "register_operand" "=&x")
 	(unspec:AVXMODE48P_DI
-	  [(match_operand:AVXMODE48P_DI 1 "register_operand" "0")
-	   (mem:<ssescalarmode>
-	     (match_operand:P 2 "register_operand" "r"))
-	   (match_operand:<AVXMODE48P_DI> 3 "register_operand" "x")
-	   (match_operand:AVXMODE48P_DI 4 "register_operand" "x")
-	   (match_operand:SI 5 "const1248_operand" "n")]
-	  UNSPEC_GATHER))]
+	  [(match_operand:AVXMODE48P_DI 2 "register_operand" "0")
+	   (match_operand:P 3 "register_operand" "r")
+	   (mem:BLK (scratch))
+	   (match_operand:<AVXMODE48P_DI> 4 "register_operand" "x")
+	   (match_operand:AVXMODE48P_DI 5 "register_operand" "1")
+	   (match_operand:SI 6 "const1248_operand" "n")]
+	  UNSPEC_GATHER))
+   (clobber (match_scratch:AVXMODE48P_DI 1 "=&x"))]
   "TARGET_AVX2"
-  "v<gthrfirstp>gatherq<gthrlastp>\t{%4, (%2, %3, %c5), %0|%0, (%2, %3, %c5), %4}"
+  "v<gthrfirstp>gatherq<gthrlastp>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -12580,28 +12586,31 @@
 ;; Special handling for VEX.256 with float arguments
 ;; since there're still xmms as operands
 (define_expand "avx2_gatherdi<mode>256"
-  [(set (match_operand:VI4F_128 0 "register_operand" "")
-	(unspec:VI4F_128
-	  [(match_operand:VI4F_128 1 "register_operand" "")
-	   (match_operand:<ssescalarmode> 2 "memory_operand" "")
-	   (match_operand:V4DI 3 "register_operand" "")
-	   (match_operand:VI4F_128 4 "register_operand" "")
-	   (match_operand:SI 5 "const1248_operand " "")]
-	  UNSPEC_GATHER))]
+  [(parallel [(set (match_operand:VI4F_128 0 "register_operand" "")
+		   (unspec:VI4F_128
+		     [(match_operand:VI4F_128 1 "register_operand" "")
+		      (match_operand 2 "register_operand" "")
+		      (mem:BLK (scratch))
+		      (match_operand:V4DI 3 "register_operand" "")
+		      (match_operand:VI4F_128 4 "register_operand" "")
+		      (match_operand:SI 5 "const1248_operand " "")]
+		     UNSPEC_GATHER))
+	      (clobber (match_scratch:VI4F_128 6 ""))])]
   "TARGET_AVX2")
 
 (define_insn "*avx2_gatherdi<mode>256"
   [(set (match_operand:VI4F_128 0 "register_operand" "=x")
 	(unspec:VI4F_128
-	  [(match_operand:VI4F_128 1 "register_operand" "0")
-	   (mem:<ssescalarmode>
-	     (match_operand:P 2 "register_operand" "r"))
-	   (match_operand:V4DI 3 "register_operand" "x")
-	   (match_operand:VI4F_128 4 "register_operand" "x")
-	   (match_operand:SI 5 "const1248_operand" "n")]
-	  UNSPEC_GATHER))]
+	  [(match_operand:VI4F_128 2 "register_operand" "0")
+	   (match_operand:P 3 "register_operand" "r")
+	   (mem:BLK (scratch))
+	   (match_operand:V4DI 4 "register_operand" "x")
+	   (match_operand:VI4F_128 5 "register_operand" "1")
+	   (match_operand:SI 6 "const1248_operand" "n")]
+	  UNSPEC_GATHER)) 
+   (clobber (match_scratch:VI4F_128 1 "=&x"))]
   "TARGET_AVX2"
-  "v<gthrfirstp>gatherq<gthrlastp>\t{%4, (%2, %3, %c5), %0|%0, (%2, %3, %c5), %4}"
+  "v<gthrfirstp>gatherq<gthrlastp>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
