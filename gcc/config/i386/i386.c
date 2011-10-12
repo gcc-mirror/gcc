@@ -28748,7 +28748,6 @@ rdrand_step:
       op4 = expand_normal (arg4);
       /* Note the arg order is different from the operand order.  */
       mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
       mode2 = insn_data[icode].operand[3].mode;
       mode3 = insn_data[icode].operand[4].mode;
       mode4 = insn_data[icode].operand[5].mode;
@@ -28762,12 +28761,11 @@ rdrand_step:
       if (GET_MODE (op1) != Pmode)
 	op1 = convert_to_mode (Pmode, op1, 1);
       op1 = force_reg (Pmode, op1);
-      op1 = gen_rtx_MEM (mode1, op1);
 
       if (!insn_data[icode].operand[1].predicate (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
-      if (!insn_data[icode].operand[2].predicate (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
+      if (!insn_data[icode].operand[2].predicate (op1, Pmode))
+	op1 = copy_to_mode_reg (Pmode, op1);
       if (!insn_data[icode].operand[3].predicate (op2, mode2))
 	op2 = copy_to_mode_reg (mode2, op2);
       if (!insn_data[icode].operand[4].predicate (op3, mode3))

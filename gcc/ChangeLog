@@ -1,3 +1,17 @@
+2011-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (avx2_gathersi<mode>,
+	avx2_gatherdi<mode>, avx2_gatherdi<mode>256): Add clobber of
+	match_scratch, change memory_operand to register_operand,
+	add (mem:BLK (scratch)) use.
+	(*avx2_gathersi<mode>, *avx2_gatherdi<mode>,
+	*avx2_gatherdi<mode>256): Add clobber of match_scratch,
+	add earlyclobber to the output operand and match_scratch,
+	add (mem:BLK (scratch)) use, change the other mem to match_operand.
+	Use %p6 instead of %c6 in the pattern.
+	* config/i386/i386.c (ix86_expand_builtin): Adjust for
+	operand 2 being a Pmode register_operand instead of memory_operand.
+
 2011-10-12  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/i386.md (simple_return): Disable
