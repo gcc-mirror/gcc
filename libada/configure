@@ -553,7 +553,6 @@ PACKAGE_URL=
 ac_unique_file="Makefile.in"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-warn_cflags
 have_getipinfo
 default_gnatlib_target
 LN_S
@@ -3004,12 +3003,6 @@ $as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
 have_getipinfo=
 if test x$have_unwind_getipinfo = xyes; then
   have_getipinfo=-DHAVE_GETIPINFO
-fi
-
-
-warn_cflags=
-if test "x$GCC" = "xyes"; then
-  warn_cflags='$(GCC_WARN_CFLAGS)'
 fi
 
 

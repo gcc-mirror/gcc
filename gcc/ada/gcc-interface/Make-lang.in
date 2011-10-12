@@ -46,6 +46,7 @@ RMDIR = rm -rf
 
 # Extra flags to pass to recursive makes.
 COMMON_ADAFLAGS= -gnatpg -gnata
+WARN_ADAFLAGS= -W -Wall
 BOOT_ADAFLAGS= $(COMMON_ADAFLAGS)
 
 ifeq ($(CROSS),)
@@ -56,17 +57,19 @@ else
 ADAFLAGS= $(COMMON_ADAFLAGS)
 endif
 
-ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
+ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(WARN_ADAFLAGS)
 FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
 ADA_INCLUDES = -nostdinc -I- -I. -Iada -I$(srcdir)/ada -I$(srcdir)/ada/gcc-interface
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
+# We do not want the WARN_CFLAGS of the compiler in Ada as it is for C/C++.
+COMMON_FLAGS_TO_PASS = $(filter-out -pedantic -W%, $(FLAGS_TO_PASS))
 ADA_FLAGS_TO_PASS = \
 	"ADA_FOR_BUILD=$(ADA_FOR_BUILD)"	\
 	"ADA_INCLUDE_DIR=$(ADA_INCLUDE_DIR)"	\
 	"ADA_RTL_OBJ_DIR=$(ADA_RTL_OBJ_DIR)"	\
-	"ADAFLAGS=$(ADAFLAGS)"			\
+	"ADAFLAGS=$(ADAFLAGS) $(WARN_ADAFLAGS)"	\
 	"ADA_FOR_TARGET=$(ADA_FOR_TARGET)"	\
 	"INSTALL=$(INSTALL)" 			\
 	"INSTALL_DATA=$(INSTALL_DATA)"		\
@@ -99,14 +102,12 @@ ifeq ($(build), $(host))
     # This is a regular native. So use the compiler from our current build
     # tree.
     ADA_TOOLS_FLAGS_TO_PASS=\
-        "CC=../../xgcc -B../../"	\
-        "CFLAGS=$(CFLAGS)"		\
-	"exeext=$(exeext)"              \
-        "ADAFLAGS=$(ADAFLAGS)"		\
-        "ADA_INCLUDES=-I../rts"		\
-	"GNATMAKE=../../gnatmake"	\
-	"GNATLINK=../../gnatlink"	\
-	"GNATBIND=../../gnatbind"
+        CC="../../xgcc -B../../" \
+        $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+        ADA_INCLUDES="-I- -I../rts" \
+        GNATMAKE="../../gnatmake" \
+        GNATLINK="../../gnatlink" \
+        GNATBIND="../../gnatbind"
   else
     # This is a regular cross compiler. Use the native compiler to compile
     # the tools.
@@ -117,7 +118,7 @@ ifeq ($(build), $(host))
 
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
-        $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+        $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
         ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
         GNATMAKE="gnatmake" \
         GNATBIND="gnatbind" \
@@ -139,7 +140,7 @@ else
     # built runtime.
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
-        $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
+        $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
         ADA_INCLUDES="-I../rts"                \
         GNATMAKE="$(GNATMAKE_FOR_HOST)"      \
         GNATBIND="$(GNATBIND_FOR_HOST)"      \
@@ -151,7 +152,7 @@ else
     RTS_DIR:=$(strip $(subst \,/,$(shell $(GNATLS_FOR_HOST) -v | grep adalib )))
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
-        $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
+        $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
         ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
         GNATMAKE="$(GNATMAKE_FOR_HOST)"      \
         GNATBIND="$(GNATBIND_FOR_HOST)"      \
@@ -547,9 +548,7 @@ gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) ggc-none.o libcomm
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink
 gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-	  ADA_INCLUDES="-I- -I../rts"\
-	  CC="../../xgcc -B../../" GNATBIND="../../gnatbind"  gnattools1
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 
 regnattools:
@@ -566,7 +565,7 @@ canadian-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 
 gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: ada/s-oscons.ads force
-	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
+	$(MAKE) -C ada $(COMMON_FLAGS_TO_PASS)  \
 	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
@@ -578,11 +577,6 @@ gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: ada/s-oscons.ads force
 # use only for native compiler
 gnatlib_and_tools: gnatlib gnattools
 
-# use cross-gcc
-gnat-cross: force
-	make $(GNAT1_ADA_OBJS) CC="gcc -B../stage1/" CFLAGS="-S -gnatp" \
-		$(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) HOST_CFLAGS= HOST_CC=cc
-
 # Build hooks:
 
 ada.all.cross:
@@ -966,14 +960,14 @@ ada.install-common:
 #
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  $(MAKE) $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib; \
+	  $(MAKE) $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib; \
 	fi
 
 install-gnatlib:
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib$(LIBGNAT_TARGET)
+	$(MAKE) -C ada $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib$(LIBGNAT_TARGET)
 
 install-gnatlib-obj:
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib-obj
+	$(MAKE) -C ada $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib-obj
 
 ada.install-man:
 ada.install-plugin:
@@ -1129,50 +1123,7 @@ $(check_acats_targets): check-acats%:
 	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/run_acats $$chapters
 
 .PHONY: check-acats $(check_acats_targets)
-
 
-# Bootstrapping targets for just GNAT - use the same stage directories
-gnatboot: force
-	-$(RM) gnatboot3
-	$(MAKE) gnat1$(exeext) gnatbind$(exeext) CC="$(CC)" \
-		CFLAGS="$(CFLAGS)"
-	$(MAKE) gnatboot2 BOOT_CFLAGS="$(BOOT_CFLAGS)" \
-	                  BOOT_ADAFLAGS="$(BOOT_ADAFLAGS)" \
-	                  LDFLAGS="$(BOOT_LDFLAGS)"
-
-gnatboot2: force
-	$(MAKE) gnatstage1
-	$(MAKE) gnat1$(exeext) gnatbind$(exeext)  CC="gcc -B../stage1/"\
-				CFLAGS="$(BOOT_CFLAGS)" \
-	        		ADAFLAGS="$(BOOT_ADAFLAGS)"\
-				LDFLAGS="$(BOOT_LDFLAGS)" \
-				GNATBIND="../stage1/gnatbind"
-	$(MAKE) gnatboot3 BOOT_CFLAGS="$(BOOT_CFLAGS)" \
-			    BOOT_ADAFLAGS="$(BOOT_ADAFLAGS)" \
-			    LDFLAGS="$(BOOT_LDFLAGS)"
-
-gnatboot3:
-	$(MAKE) gnatstage2
-	$(MAKE) gnat1$(exeext) gnatbind$(exeext)  CC="gcc -B../stage2/"\
-				CFLAGS="$(BOOT_CFLAGS)" \
-	        		ADAFLAGS="$(BOOT_ADAFLAGS)"\
-				LDFLAGS="$(BOOT_LDFLAGS)" \
-				GNATBIND="../stage2/gnatbind"
-
-gnatstage1: force
-	-$(MKDIR) stage1
-	-$(MKDIR) stage1/ada
-	-$(MV) gnat1$(exeext) gnatbind$(exeext) stage1
-	-$(MV) ada/*$(objext) ada/*.ali stage1/ada
-	-$(MV) ada/stamp-* stage1/ada
-
-gnatstage2: force
-	-$(MKDIR) stage2
-	-$(MKDIR) stage2/ada
-	-$(MV) gnat1$(exeext) gnatbind$(exeext) stage2
-	-$(MV) ada/*$(objext) ada/*.ali stage2/ada
-	-$(MV) ada/stamp-* stage2/ada
-
 # Compiling object files from source files.
 
 # Note that dependencies on obstack.h are not written

@@ -124,17 +124,6 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
       warn_maybe_uninitialized = value;
       break;
 
-    case OPT_Wmissing_prototypes:
-    case OPT_Wstrict_prototypes:
-    case OPT_Wwrite_strings:
-    case OPT_Wlong_long:
-    case OPT_Wvariadic_macros:
-    case OPT_Wold_style_definition:
-    case OPT_Wmissing_format_attribute:
-    case OPT_Woverlength_strings:
-      /* These are used in the GCC Makefile.  */
-      break;
-
     case OPT_gant:
       warning (0, "%<-gnat%> misspelled as %<-gant%>");
 

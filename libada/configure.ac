@@ -144,12 +144,6 @@ if test x$have_unwind_getipinfo = xyes; then
 fi
 AC_SUBST(have_getipinfo)
 
-warn_cflags=
-if test "x$GCC" = "xyes"; then
-  warn_cflags='$(GCC_WARN_CFLAGS)'
-fi
-AC_SUBST(warn_cflags)
-
 # Output: create a Makefile.
 AC_CONFIG_FILES([Makefile])
 

@@ -48,66 +48,35 @@ Ada AdaWhy Alias(nostdlib)
 
 I
 Ada AdaWhy Joined Separate
-; Documented for C
+-I <dir>.	Add <dir> to the end of the main source path
 
 Wall
 Ada AdaWhy
-; Documented for C
-
-Wmissing-prototypes
-Ada AdaWhy
-; Documented for C
-
-Wstrict-prototypes
-Ada AdaWhy
-; Documented for C
-
-Wwrite-strings
-Ada AdaWhy
-; Documented for C
-
-Wlong-long
-Ada AdaWhy
-; Documented for C
-
-Wvariadic-macros
-Ada AdaWhy
-; Documented for C
-
-Wold-style-definition
-Ada AdaWhy
-; Documented for C
-
-Wmissing-format-attribute
-Ada AdaWhy
-; Documented for C
-
-Woverlength-strings
-Ada AdaWhy
-; Documented for C
+Enable most warning messages
 
 k8
 Driver
+Synonym of -gnatk8
 
 nostdinc
 Ada AdaWhy RejectNegative
-; Don't look for source files
+Do not look for source files in standard path
 
 nostdlib
 Ada AdaWhy
-; Don't look for object files
+Do not look for object files in standard path
 
 fRTS=
 Ada AdaWhy Joined RejectNegative
-; Selects the runtime
+Select the runtime
 
 gant
 Ada AdaWhy Joined Undocumented
-; Catches typos
+Catch typos
 
 gnatO
 Ada AdaWhy Separate
-; Sets name of output ALI file (internal switch)
+Set name of output ALI file (internal switch)
 
 gnat
 Ada AdaWhy Joined

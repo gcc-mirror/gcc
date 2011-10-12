@@ -105,20 +105,18 @@ TEXI2PDF = texi2pdf
 GNATBIND_FLAGS = -static -x
 ADA_CFLAGS =
 ADAFLAGS = -W -Wall -gnatpg -gnata
-SOME_ADAFLAGS =-gnata
 FORCE_DEBUG_ADAFLAGS = -g
-NO_SIBLING_ADAFLAGS=-fno-optimize-sibling-calls
-NO_REORDER_ADAFLAGS=-fno-toplevel-reorder
-GNATLIBFLAGS = -gnatpg -nostdinc
+NO_SIBLING_ADAFLAGS = -fno-optimize-sibling-calls
+NO_REORDER_ADAFLAGS = -fno-toplevel-reorder
+GNATLIBFLAGS = -W -Wall -gnatpg -nostdinc
 GNATLIBCFLAGS = -g -O2
 PICFLAG_FOR_TARGET = @PICFLAG_FOR_TARGET@
 # Pretend that _Unwind_GetIPInfo is available for the target by default.  This
 # should be autodetected during the configuration of libada and passed down to
 # here, but we need something for --disable-libada and hope for the best.
-GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(PICFLAG_FOR_TARGET) -fexceptions \
-	-DIN_RTS -DHAVE_GETIPINFO
+GNATLIBCFLAGS_FOR_C = -W -Wall $(GNATLIBCFLAGS) $(PICFLAG_FOR_TARGET) \
+	-fexceptions -DIN_RTS -DHAVE_GETIPINFO
 ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
-MOST_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(SOME_ADAFLAGS)
 THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
@@ -231,8 +229,7 @@ all.indirect: Makefile ../gnat1$(exeext)
 INTERNAL_CFLAGS = @CROSS@ -DIN_GCC
 
 # This is the variable actually used when we compile.
-LOOSE_CFLAGS = `echo $(CFLAGS) $(WARN2_CFLAGS)|sed -e 's/-pedantic//g' -e 's/-Wtraditional//g'`
-ALL_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(LOOSE_CFLAGS)
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS)
@@ -2735,10 +2732,6 @@ gnatlib-zcx:
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" gnatlib
-
-# .s files for cross-building
-gnat-cross: force
-	make $(GNAT1_ADA_OBJS) CC="gcc -B../stage1/" CFLAGS="-S -gnatp"
 
 # Compiling object files from source files.
 

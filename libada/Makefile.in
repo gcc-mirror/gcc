@@ -45,21 +45,17 @@ AWK=@AWK@
 
 # Variables for the user (or the top level) to override.
 objext=.o
-GNATLIBFLAGS= -W -Wall -gnatpg
 THREAD_KIND=native
 TRACE=no
 LDFLAGS=
 
 # The tedious process of getting CFLAGS right.
 CFLAGS=-g
-LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
-GCC_WARN_CFLAGS = $(LOOSE_WARN)
-WARN_CFLAGS = @warn_cflags@
-
 PICFLAG = @PICFLAG@
+GNATLIBFLAGS= -W -Wall -gnatpg -nostdinc
 GNATLIBCFLAGS= -g -O2
-GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(PICFLAG) -fexceptions \
-	-DIN_RTS @have_getipinfo@
+GNATLIBCFLAGS_FOR_C = -W -Wall $(GNATLIBCFLAGS) $(PICFLAG) \
+	-fexceptions -DIN_RTS @have_getipinfo@
 
 host_subdir = @host_subdir@
 GCC_DIR=$(MULTIBUILDTOP)../../$(host_subdir)/gcc
@@ -91,7 +87,7 @@ LIBADA_FLAGS_TO_PASS = \
         "exeext=.exeext.should.not.be.used " \
 	'CC=the.host.compiler.should.not.be.needed' \
 	"GCC_FOR_TARGET=$(CC)" \
-        "CFLAGS=$(CFLAGS) $(WARN_CFLAGS)"
+        "CFLAGS=$(CFLAGS)"
 
 # Rules to build gnatlib.
 .PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared oscons
