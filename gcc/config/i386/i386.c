@@ -19683,9 +19683,38 @@ ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
   if (TARGET_SSE4_1)
     {
       rtx (*unpack)(rtx, rtx);
+      rtx (*extract)(rtx, rtx) = NULL;
+      enum machine_mode halfmode = BLKmode;
 
       switch (imode)
 	{
+	case V32QImode:
+	  if (unsigned_p)
+	    unpack = gen_avx2_zero_extendv16qiv16hi2;
+	  else
+	    unpack = gen_avx2_sign_extendv16qiv16hi2;
+	  halfmode = V16QImode;
+	  extract
+	    = high_p ? gen_vec_extract_hi_v32qi : gen_vec_extract_lo_v32qi;
+	  break;
+	case V16HImode:
+	  if (unsigned_p)
+	    unpack = gen_avx2_zero_extendv8hiv8si2;
+	  else
+	    unpack = gen_avx2_sign_extendv8hiv8si2;
+	  halfmode = V8HImode;
+	  extract
+	    = high_p ? gen_vec_extract_hi_v16hi : gen_vec_extract_lo_v16hi;
+	  break;
+	case V8SImode:
+	  if (unsigned_p)
+	    unpack = gen_avx2_zero_extendv4siv4di2;
+	  else
+	    unpack = gen_avx2_sign_extendv4siv4di2;
+	  halfmode = V4SImode;
+	  extract
+	    = high_p ? gen_vec_extract_hi_v8si : gen_vec_extract_lo_v8si;
+	  break;
 	case V16QImode:
 	  if (unsigned_p)
 	    unpack = gen_sse4_1_zero_extendv8qiv8hi2;
@@ -19708,7 +19737,12 @@ ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 	  gcc_unreachable ();
 	}
 
-      if (high_p)
+      if (GET_MODE_SIZE (imode) == 32)
+	{
+	  tmp = gen_reg_rtx (halfmode);
+	  emit_insn (extract (tmp, operands[1]));
+	}
+      else if (high_p)
 	{
 	  /* Shift higher 8 bytes to lower 8 bytes.  */
 	  tmp = gen_reg_rtx (imode);

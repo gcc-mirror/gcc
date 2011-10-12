@@ -7536,25 +7536,25 @@
 
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand" "")
-   (match_operand:VI124_128 1 "register_operand" "")]
+   (match_operand:VI124_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands, false, false); DONE;")
 
 (define_expand "vec_unpacks_hi_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand" "")
-   (match_operand:VI124_128 1 "register_operand" "")]
+   (match_operand:VI124_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands, false, true); DONE;")
 
 (define_expand "vec_unpacku_lo_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand" "")
-   (match_operand:VI124_128 1 "register_operand" "")]
+   (match_operand:VI124_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands, true, false); DONE;")
 
 (define_expand "vec_unpacku_hi_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand" "")
-   (match_operand:VI124_128 1 "register_operand" "")]
+   (match_operand:VI124_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands, true, true); DONE;")
 
