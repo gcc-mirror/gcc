@@ -1,3 +1,9 @@
+2011-10-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50700
+	* tree-object-size.c (addr_object_size): Simplify and treat
+	MEM_REF bases consistently.
+
 2011-10-12  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* function.c (prepare_shrink_wrap, bb_active_p): New function.
