@@ -1,3 +1,20 @@
+2011-10-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/powerpc/ppc-fma-3.c: Require powerpc_fprs.
+	* gcc.target/powerpc/ppc-fma-4.c: Likewise.
+	* gcc.target/powerpc/ppc-fma-5.c: Likewise.
+	* gcc.target/powerpc/ppc-fma-7.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-11.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-3.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-7.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-8.c: Likewise.
+	* gcc.target/powerpc/ppc-pow.c: Likewise.
+	* gcc.target/powerpc/recip-1.c: Likewise.
+	* gcc.target/powerpc/recip-2.c: Likewise.
+	* gcc.target/powerpc/recip-3.c: Likewise.
+	* gcc.target/powerpc/recip-4.c: Likewise.
+	* gcc.target/powerpc/recip-5.c: Likewise.
+
 2011-10-12  David S. Miller  <davem@davemloft.net>
 
 	* gcc.target/sparc/cmask.c: Remove 'vis3' target check and specify
