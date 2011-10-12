@@ -163,7 +163,7 @@ and warnings}.
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
 @gccoptlist{-fno-automatic  -ff2c  -fno-underscoring @gol
--fwhole-file -fsecond-underscore @gol
+-fno-whole-file -fsecond-underscore @gol
 -fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
 -fcoarray=@var{<none|single>} -fmax-stack-var-size=@var{n} @gol
@@ -1206,18 +1206,21 @@ in the source, even if the names as seen by the linker are mangled to
 prevent accidental linking between procedures with incompatible
 interfaces.
 
-@item -fwhole-file
-@opindex @code{fwhole-file}
-By default, GNU Fortran parses, resolves and translates each procedure
-in a file separately.  Using this option modifies this such that the
-whole file is parsed and placed in a single front-end tree.  During
-resolution, in addition to all the usual checks and fixups, references
+@item -fno-whole-file
+@opindex @code{fno-whole-file}
+This flag causes the compiler to resolve and translate each procedure in
+a file separately. 
+
+By default, the whole file is parsed and placed in a single front-end tree.
+During resolution, in addition to all the usual checks and fixups, references
 to external procedures that are in the same file effect resolution of
-that procedure, if not already done, and a check of the interfaces. The
+that procedure, if not already done, and a check of the interfaces.  The
 dependences are resolved by changing the order in which the file is
 translated into the backend tree.  Thus, a procedure that is referenced
 is translated before the reference and the duplication of backend tree
 declarations eliminated.
+
+The @option{-fno-whole-file} option is deprecated and may lead to wrong code.
 
 @item -fsecond-underscore
 @opindex @code{fsecond-underscore}

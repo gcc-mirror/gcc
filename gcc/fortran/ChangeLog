@@ -1,4 +1,10 @@
 2011-10-11  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	* invoke.texi (-fwhole-file): Update wording since -fwhole-file
+	is now enabled by default.
+
+2011-10-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50273
 	* trans-common.c (translate_common): Fix -Walign-commons check.
