@@ -1,3 +1,16 @@
+2011-10-12  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/cmask.c: Remove 'vis3' target check and specify
+	'-mvis3' instead of 'mcpu=niagara3' in options.
+	* gcc.target/sparc/fhalve.c: Likewise.
+	* gcc.target/sparc/fnegop.c: Likewise.
+	* gcc.target/sparc/fpadds.c: Likewise.
+	* gcc.target/sparc/fshift.c: Likewise.
+	* gcc.target/sparc/fucmp.c: Likewise.
+	* gcc.target/sparc/lzd.c: Likewise.
+	* gcc.target/sparc/vis3misc.c: Likewise.
+	* gcc.target/sparc/xmul.c: Likewise.
+
 2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/vect1.ad[sb]: New test.

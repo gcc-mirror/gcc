@@ -1,5 +1,5 @@
-/* { dg-do compile { target { vis3 } } } */
-/* { dg-options "-mcpu=niagara3" } */
+/* { dg-do compile } */
+/* { dg-options "-mvis3" } */
 int test_clz(int a)
 {
   return __builtin_clz(a);

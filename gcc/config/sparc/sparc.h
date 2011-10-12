@@ -1871,10 +1871,6 @@ extern int sparc_indent_opcode;
 
 #ifndef HAVE_AS_FMAF_HPC_VIS3
 #define AS_NIAGARA3_FLAG "b"
-#undef TARGET_FMAF
-#define TARGET_FMAF 0
-#undef TARGET_VIS3
-#define TARGET_VIS3 0
 #else
 #define AS_NIAGARA3_FLAG "d"
 #endif

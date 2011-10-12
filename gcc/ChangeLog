@@ -1,3 +1,10 @@
+2011-10-12  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.h: Do not force TARGET_VIS3 and TARGET_FMAF
+	to zero when assembler lacks support for such instructions.
+	* config/sparc/sparc.c (sparc_option_override): Clear MASK_VIS3
+	and MASK_FMAF in defaults when assembler lacks necessary support.
+
 2011-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_unpacks_lo_<mode>,
