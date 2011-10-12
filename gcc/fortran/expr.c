@@ -4079,8 +4079,9 @@ gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
   return error_found ? FAILURE : SUCCESS;
 }
 
-/* Walk an expression tree and replace all symbols with a corresponding symbol
-   in the formal_ns of "sym". Needed for copying interfaces in PROCEDURE
+
+/* Walk an expression tree and replace all dummy symbols by the corresponding
+   symbol in the formal_ns of "sym". Needed for copying interfaces in PROCEDURE
    statements. The boolean return value is required by gfc_traverse_expr.  */
 
 static bool
@@ -4089,14 +4090,12 @@ replace_symbol (gfc_expr *expr, gfc_symbol *sym, int *i ATTRIBUTE_UNUSED)
   if ((expr->expr_type == EXPR_VARIABLE 
        || (expr->expr_type == EXPR_FUNCTION
 	   && !gfc_is_intrinsic (expr->symtree->n.sym, 0, expr->where)))
-      && expr->symtree->n.sym->ns == sym->ts.interface->formal_ns)
+      && expr->symtree->n.sym->ns == sym->ts.interface->formal_ns
+      && expr->symtree->n.sym->attr.dummy)
     {
-      gfc_symtree *stree;
-      gfc_namespace *ns = sym->formal_ns;
-      /* Don't use gfc_get_symtree as we prefer to fail badly if we don't find
-	 the symtree rather than create a new one (and probably fail later).  */
-      stree = gfc_find_symtree (ns ? ns->sym_root : gfc_current_ns->sym_root,
-		      		expr->symtree->n.sym->name);
+      gfc_symtree *root = sym->formal_ns ? sym->formal_ns->sym_root
+					 : gfc_current_ns->sym_root;
+      gfc_symtree *stree = gfc_find_symtree (root, expr->symtree->n.sym->name);
       gcc_assert (stree);
       stree->n.sym->attr = expr->symtree->n.sym->attr;
       expr->symtree = stree;
@@ -4109,6 +4108,7 @@ gfc_expr_replace_symbols (gfc_expr *expr, gfc_symbol *dest)
 {
   gfc_traverse_expr (expr, dest, &replace_symbol, 0);
 }
+
 
 /* The following is analogous to 'replace_symbol', and needed for copying
    interfaces for procedure pointer components. The argument 'sym' must formally

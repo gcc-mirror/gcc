@@ -1,3 +1,8 @@
+2011-10-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50659
+	* gfortran.dg/proc_decl_27.f90: New.
+
 2011-10-12  Paul Koning  <pkoning@gcc.gnu.org>
 
 	PR tree-optimization/50189
