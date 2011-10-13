@@ -1,5 +1,10 @@
 2011-10-13  Tom de Vries  <tom@codesourcery.com>
 
+	* function.c (gimplify_parameters): Set number of arguments of call to
+	BUILT_IN_ALLOCA_WITH_ALIGN to 2.
+
+2011-10-13  Tom de Vries  <tom@codesourcery.com>
+
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Set MEM_READONLY_P
 	for static const strings.
 	* varasm.c (build_constant_desc): Generate the memory location of the
