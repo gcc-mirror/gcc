@@ -17008,6 +17008,10 @@ ix86_build_const_vector (enum machine_mode mode, bool vect, rtx value)
 
   switch (mode)
     {
+    case V32QImode:
+    case V16QImode:
+    case V16HImode:
+    case V8HImode:
     case V8SImode:
     case V4SImode:
     case V4DImode:
@@ -33250,72 +33254,100 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
     }
 }
 
+/* Generate code to copy vector bits i / 2 ... i - 1 from vector SRC
+   to bits 0 ... i / 2 - 1 of vector DEST, which has the same mode.
+   The upper bits of DEST are undefined, though they shouldn't cause
+   exceptions (some bits from src or all zeros are ok).  */
+
+static void
+emit_reduc_half (rtx dest, rtx src, int i)
+{
+  rtx tem;
+  switch (GET_MODE (src))
+    {
+    case V4SFmode:
+      if (i == 128)
+	tem = gen_sse_movhlps (dest, src, src);
+      else
+	tem = gen_sse_shufps_v4sf (dest, src, src, const1_rtx, const1_rtx,
+				   GEN_INT (1 + 4), GEN_INT (1 + 4));
+      break;
+    case V2DFmode:
+      tem = gen_vec_interleave_highv2df (dest, src, src);
+      break;
+    case V16QImode:
+    case V8HImode:
+    case V4SImode:
+    case V2DImode:
+      tem = gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, dest),
+				gen_lowpart (V1TImode, src),
+				GEN_INT (i / 2));
+      break;
+    case V8SFmode:
+      if (i == 256)
+	tem = gen_avx_vperm2f128v8sf3 (dest, src, src, const1_rtx);
+      else
+	tem = gen_avx_shufps256 (dest, src, src,
+				 GEN_INT (i == 128 ? 2 + (3 << 2) : 1));
+      break;
+    case V4DFmode:
+      if (i == 256)
+	tem = gen_avx_vperm2f128v4df3 (dest, src, src, const1_rtx);
+      else
+	tem = gen_avx_shufpd256 (dest, src, src, const1_rtx);
+      break;
+    case V32QImode:
+    case V16HImode:
+    case V8SImode:
+    case V4DImode:
+      if (i == 256)
+	tem = gen_avx2_permv2ti (gen_lowpart (V4DImode, dest),
+				 gen_lowpart (V4DImode, src),
+				 gen_lowpart (V4DImode, src),
+				 const1_rtx);
+      else
+	tem = gen_avx2_lshrv2ti3 (gen_lowpart (V2TImode, dest),
+				  gen_lowpart (V2TImode, src),
+				  GEN_INT (i / 2));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  emit_insn (tem);
+}
+
 /* Expand a vector reduction.  FN is the binary pattern to reduce;
    DEST is the destination; IN is the input vector.  */
 
 void
 ix86_expand_reduc (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
 {
-  rtx tmp1, tmp2, tmp3, tmp4, tmp5;
+  rtx half, dst, vec = in;
   enum machine_mode mode = GET_MODE (in);
   int i;
 
-  tmp1 = gen_reg_rtx (mode);
-  tmp2 = gen_reg_rtx (mode);
-  tmp3 = gen_reg_rtx (mode);
-
-  switch (mode)
+  /* SSE4 has a special instruction for V8HImode UMIN reduction.  */
+  if (TARGET_SSE4_1
+      && mode == V8HImode
+      && fn == gen_uminv8hi3)
     {
-    case V4SFmode:
-      emit_insn (gen_sse_movhlps (tmp1, in, in));
-      emit_insn (fn (tmp2, tmp1, in));
-      emit_insn (gen_sse_shufps_v4sf (tmp3, tmp2, tmp2,
-				      const1_rtx, const1_rtx,
-				      GEN_INT (1+4), GEN_INT (1+4)));
-      break;
-    case V8SFmode:
-      tmp4 = gen_reg_rtx (mode);
-      tmp5 = gen_reg_rtx (mode);
-      emit_insn (gen_avx_vperm2f128v8sf3 (tmp4, in, in, const1_rtx));
-      emit_insn (fn (tmp5, tmp4, in));
-      emit_insn (gen_avx_shufps256 (tmp1, tmp5, tmp5, GEN_INT (2+12)));
-      emit_insn (fn (tmp2, tmp1, tmp5));
-      emit_insn (gen_avx_shufps256 (tmp3, tmp2, tmp2, const1_rtx));
-      break;
-    case V4DFmode:
-      emit_insn (gen_avx_vperm2f128v4df3 (tmp1, in, in, const1_rtx));
-      emit_insn (fn (tmp2, tmp1, in));
-      emit_insn (gen_avx_shufpd256 (tmp3, tmp2, tmp2, const1_rtx));
-      break;
-    case V32QImode:
-    case V16HImode:
-    case V8SImode:
-    case V4DImode:
-      emit_insn (gen_avx2_permv2ti (gen_lowpart (V4DImode, tmp1),
-				    gen_lowpart (V4DImode, in),
-				    gen_lowpart (V4DImode, in),
-				    const1_rtx));
-      tmp4 = in;
-      tmp5 = tmp1;
-      for (i = 64; i >= GET_MODE_BITSIZE (GET_MODE_INNER (mode)); i >>= 1)
-	{
-	  if (i != 64)
-	    {
-	      tmp2 = gen_reg_rtx (mode);
-	      tmp3 = gen_reg_rtx (mode);
-	    }
-	  emit_insn (fn (tmp2, tmp4, tmp5));
-	  emit_insn (gen_avx2_lshrv2ti3 (gen_lowpart (V2TImode, tmp3),
-					 gen_lowpart (V2TImode, tmp2),
-					 GEN_INT (i)));
-	  tmp4 = tmp2;
-	  tmp5 = tmp3;
-	}
-      break;
-    default:
-      gcc_unreachable ();
+      emit_insn (gen_sse4_1_phminposuw (dest, in));
+      return;
     }
-  emit_insn (fn (dest, tmp2, tmp3));
+
+  for (i = GET_MODE_BITSIZE (mode);
+       i > GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+       i >>= 1)
+    {
+      half = gen_reg_rtx (mode);
+      emit_reduc_half (half, vec, i);
+      if (i == GET_MODE_BITSIZE (GET_MODE_INNER (mode)) * 2)
+	dst = dest;
+      else
+	dst = gen_reg_rtx (mode);
+      emit_insn (fn (dst, half, vec));
+      vec = dst;
+    }
 }
 
 /* Target hook for scalar_mode_supported_p.  */

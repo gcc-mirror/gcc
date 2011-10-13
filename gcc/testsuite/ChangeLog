@@ -1,3 +1,10 @@
+2011-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/sse4_1-phminposuw-2.c: New test.
+	* gcc.target/i386/sse4_1-phminposuw-3.c: New test.
+	* gcc.target/i386/avx-vphminposuw-2.c: New test.
+	* gcc.target/i386/avx-vphminposuw-3.c: New test.
+
 2011-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr50712.c: Check ia32 instead of ilp32.
