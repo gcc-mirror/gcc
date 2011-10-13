@@ -719,18 +719,60 @@ produce_asm (struct output_block *ob, tree fn)
 }
 
 
+/* Output the base body of struct function FN using output block OB.  */
+
+static void
+output_struct_function_base (struct output_block *ob, struct function *fn)
+{
+  struct bitpack_d bp;
+  unsigned i;
+  tree t;
+
+  /* Output the static chain and non-local goto save area.  */
+  stream_write_tree (ob, fn->static_chain_decl, true);
+  stream_write_tree (ob, fn->nonlocal_goto_save_area, true);
+
+  /* Output all the local variables in the function.  */
+  streamer_write_hwi (ob, VEC_length (tree, fn->local_decls));
+  FOR_EACH_VEC_ELT (tree, fn->local_decls, i, t)
+    stream_write_tree (ob, t, true);
+
+  /* Output the function start and end loci.  */
+  lto_output_location (ob, fn->function_start_locus);
+  lto_output_location (ob, fn->function_end_locus);
+
+  /* Output current IL state of the function.  */
+  streamer_write_uhwi (ob, fn->curr_properties);
+
+  /* Write all the attributes for FN.  */
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, fn->is_thunk, 1);
+  bp_pack_value (&bp, fn->has_local_explicit_reg_vars, 1);
+  bp_pack_value (&bp, fn->after_tree_profile, 1);
+  bp_pack_value (&bp, fn->returns_pcc_struct, 1);
+  bp_pack_value (&bp, fn->returns_struct, 1);
+  bp_pack_value (&bp, fn->can_throw_non_call_exceptions, 1);
+  bp_pack_value (&bp, fn->always_inline_functions_inlined, 1);
+  bp_pack_value (&bp, fn->after_inlining, 1);
+  bp_pack_value (&bp, fn->stdarg, 1);
+  bp_pack_value (&bp, fn->has_nonlocal_label, 1);
+  bp_pack_value (&bp, fn->calls_alloca, 1);
+  bp_pack_value (&bp, fn->calls_setjmp, 1);
+  bp_pack_value (&bp, fn->va_list_fpr_size, 8);
+  bp_pack_value (&bp, fn->va_list_gpr_size, 8);
+  streamer_write_bitpack (&bp);
+}
+
+
 /* Output the body of function NODE->DECL.  */
 
 static void
 output_function (struct cgraph_node *node)
 {
-  struct bitpack_d bp;
   tree function;
   struct function *fn;
   basic_block bb;
   struct output_block *ob;
-  unsigned i;
-  tree t;
 
   function = node->decl;
   fn = DECL_STRUCT_FUNCTION (function);
@@ -750,39 +792,7 @@ output_function (struct cgraph_node *node)
 
   streamer_write_record_start (ob, LTO_function);
 
-  /* Write all the attributes for FN.  */
-  bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, fn->is_thunk, 1);
-  bp_pack_value (&bp, fn->has_local_explicit_reg_vars, 1);
-  bp_pack_value (&bp, fn->after_tree_profile, 1);
-  bp_pack_value (&bp, fn->returns_pcc_struct, 1);
-  bp_pack_value (&bp, fn->returns_struct, 1);
-  bp_pack_value (&bp, fn->can_throw_non_call_exceptions, 1);
-  bp_pack_value (&bp, fn->always_inline_functions_inlined, 1);
-  bp_pack_value (&bp, fn->after_inlining, 1);
-  bp_pack_value (&bp, fn->stdarg, 1);
-  bp_pack_value (&bp, fn->has_nonlocal_label, 1);
-  bp_pack_value (&bp, fn->calls_alloca, 1);
-  bp_pack_value (&bp, fn->calls_setjmp, 1);
-  bp_pack_value (&bp, fn->va_list_fpr_size, 8);
-  bp_pack_value (&bp, fn->va_list_gpr_size, 8);
-  streamer_write_bitpack (&bp);
-
-  /* Output the function start and end loci.  */
-  lto_output_location (ob, fn->function_start_locus);
-  lto_output_location (ob, fn->function_end_locus);
-
-  /* Output current IL state of the function.  */
-  streamer_write_uhwi (ob, fn->curr_properties);
-
-  /* Output the static chain and non-local goto save area.  */
-  stream_write_tree (ob, fn->static_chain_decl, true);
-  stream_write_tree (ob, fn->nonlocal_goto_save_area, true);
-
-  /* Output all the local variables in the function.  */
-  streamer_write_hwi (ob, VEC_length (tree, fn->local_decls));
-  FOR_EACH_VEC_ELT (tree, fn->local_decls, i, t)
-    stream_write_tree (ob, t, true);
+  output_struct_function_base (ob, fn);
 
   /* Output the head of the arguments list.  */
   stream_write_tree (ob, DECL_ARGUMENTS (function), true);
