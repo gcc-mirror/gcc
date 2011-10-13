@@ -51,6 +51,16 @@ struct streamer_hooks {
      and descriptors needed by the unpickling routines.  It returns the
      tree instantiated from the stream.  */
   tree (*read_tree) (struct lto_input_block *, struct data_in *);
+
+  /* [OPT] Called by lto_input_location to retrieve the source location of the
+     tree currently being read. If this hook returns NULL, lto_input_location
+     defaults to calling lto_input_location_bitpack.  */
+  location_t (*input_location) (struct lto_input_block *, struct data_in *);
+
+  /* [OPT] Called by lto_output_location to write the source_location of the
+     tree currently being written. If this hook returns NULL,
+     lto_output_location defaults to calling lto_output_location_bitpack.  */
+  void (*output_location) (struct output_block *, location_t);
 };
 
 #define stream_write_tree(OB, EXPR, REF_P) \

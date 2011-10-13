@@ -172,15 +172,21 @@ lto_output_location_bitpack (struct bitpack_d *bp,
 
 
 /* Emit location LOC to output block OB.
-   When bitpack is handy, it is more space effecient to call
+   If the output_location streamer hook exists, call it.
+   Otherwise, when bitpack is handy, it is more space efficient to call
    lto_output_location_bitpack with existing bitpack.  */
 
 void
 lto_output_location (struct output_block *ob, location_t loc)
 {
-  struct bitpack_d bp = bitpack_create (ob->main_stream);
-  lto_output_location_bitpack (&bp, ob, loc);
-  streamer_write_bitpack (&bp);
+  if (streamer_hooks.output_location)
+    streamer_hooks.output_location (ob, loc);
+  else
+    {
+      struct bitpack_d bp = bitpack_create (ob->main_stream);
+      lto_output_location_bitpack (&bp, ob, loc);
+      streamer_write_bitpack (&bp);
+    }
 }
 
 
