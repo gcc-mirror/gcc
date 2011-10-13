@@ -1963,6 +1963,8 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs)
 	 a non-register.  Otherwise we are confused and forget to
 	 add virtual operands for it.  */
       && (!is_gimple_reg_type (TREE_TYPE (var))
+	  || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE
+	  || TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
 	  || !bitmap_bit_p (not_reg_needs, DECL_UID (var))))
     {
       TREE_ADDRESSABLE (var) = 0;
