@@ -1340,6 +1340,15 @@ package body Sem_Ch6 is
          Analyze (P);
          Analyze_Call_And_Resolve;
 
+      --  In Ada 2012. a qualified expression is a name, but it cannot be a
+      --  procedure name, so the construct can only be a qualified expression.
+
+      elsif Nkind (P) = N_Qualified_Expression
+        and then Ada_Version >= Ada_2012
+      then
+         Rewrite (N, Make_Code_Statement (Loc, Expression => P));
+         Analyze (N);
+
       --  Anything else is an error
 
       else

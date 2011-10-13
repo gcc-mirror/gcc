@@ -3364,11 +3364,19 @@ package body Sem_Ch13 is
 
          --  No statements other than code statements, pragmas, and labels.
          --  Again we allow certain internally generated statements.
+         --  In Ada 2012, qualified expressions are names, and the code
+         --  statement is initially parsed as a procedure call.
 
          Stmt := First (Statements (HSS));
          while Present (Stmt) loop
             StmtO := Original_Node (Stmt);
-            if Comes_From_Source (StmtO)
+
+            if Ada_Version >= Ada_2012
+              and then Nkind (StmtO) = N_Procedure_Call_Statement
+            then
+               null;
+
+            elsif Comes_From_Source (StmtO)
               and then not Nkind_In (StmtO, N_Pragma,
                                             N_Label,
                                             N_Code_Statement)
