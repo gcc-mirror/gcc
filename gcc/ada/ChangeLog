@@ -1,5 +1,14 @@
 2011-10-13  Geert Bosch  <bosch@adacore.com>
 
+	* s-gearop.ads (Forward_Eliminate): Add "abs" formal function
+	returning a Real.
+	* s-gearop.adb (Forward_Eliminate): Remove local "abs" function
+	and use formal.
+	* a-ngrear.adb (Forward_Eliminate): Adjust instantiation for
+	new profile.
+
+2011-10-13  Geert Bosch  <bosch@adacore.com>
+
 	* a-ngrear.adb, s-gearop.adb, s-gearop.ads (Sqrt): Make generic and
 	move to System.Generic_Array_Operations.
 

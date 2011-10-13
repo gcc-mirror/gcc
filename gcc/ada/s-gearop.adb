@@ -161,9 +161,6 @@ package body System.Generic_Array_Operations is
       pragma Assert (M'First (1) = N'First (1) and then
                      M'Last  (1) = N'Last (1));
 
-      function "abs" (X : Scalar) return Scalar is
-        (if X < Zero then Zero - X else X);
-
       --  The following are variations of the elementary matrix row operations:
       --  row switching, row multiplication and row addition. Because in this
       --  algorithm the addition factor is always a negated value, we chose to
@@ -274,14 +271,14 @@ package body System.Generic_Array_Operations is
       for J in M'Range (2) loop
          declare
             Max_Row : Integer := Row;
-            Max_Abs : Scalar := Zero;
+            Max_Abs : Real'Base := 0.0;
 
          begin
             --  Find best pivot in column J, starting in row Row
 
             for K in Row .. M'Last (1) loop
                declare
-                  New_Abs : constant Scalar := abs M (K, J);
+                  New_Abs : constant Real'Base := abs M (K, J);
                begin
                   if Max_Abs < New_Abs then
                      Max_Abs := New_Abs;
@@ -290,7 +287,7 @@ package body System.Generic_Array_Operations is
                end;
             end loop;
 
-            if Zero < Max_Abs then
+            if Max_Abs > 0.0 then
                Switch_Row (M, N, Row, Max_Row);
                Divide_Row (M, N, Row, M (Row, J));
 
