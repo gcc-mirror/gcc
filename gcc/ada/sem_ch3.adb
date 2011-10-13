@@ -706,11 +706,9 @@ package body Sem_Ch3 is
      (Related_Nod : Node_Id;
       N           : Node_Id) return Entity_Id
    is
-      Loc                 : constant Source_Ptr := Sloc (Related_Nod);
       Anon_Type           : Entity_Id;
       Anon_Scope          : Entity_Id;
       Desig_Type          : Entity_Id;
-      Decl                : Entity_Id;
       Enclosing_Prot_Type : Entity_Id := Empty;
 
    begin
@@ -903,26 +901,8 @@ package body Sem_Ch3 is
            and then Comes_From_Source (Related_Nod)
            and then not Restriction_Active (No_Task_Hierarchy)
          then
-            if not Has_Master_Entity (Current_Scope) then
-               Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc, Name_uMaster),
-                   Constant_Present    => True,
-                   Object_Definition   =>
-                     New_Reference_To (RTE (RE_Master_Id), Loc),
-                   Expression          =>
-                     Make_Explicit_Dereference (Loc,
-                       New_Reference_To (RTE (RE_Current_Master), Loc)));
-
-               Insert_Before (Related_Nod, Decl);
-               Analyze (Decl);
-
-               Set_Master_Id (Anon_Type, Defining_Identifier (Decl));
-               Set_Has_Master_Entity (Current_Scope);
-            else
-               Build_Master_Renaming (Related_Nod, Anon_Type);
-            end if;
+            Build_Master_Entity (Defining_Identifier (Related_Nod), True);
+            Build_Master_Renaming (Related_Nod, Anon_Type);
          end if;
       end if;
 

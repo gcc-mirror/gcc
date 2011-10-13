@@ -1911,6 +1911,8 @@ package body Lib.Xref is
                      Op := Ultimate_Alias (Old_E);
 
                   --  Normal case of no alias present
+                  --  we omit generated primitives like tagged equality,
+                  --  that have no source representation.
 
                   else
                      Op := Old_E;
@@ -1918,6 +1920,7 @@ package body Lib.Xref is
 
                   if Present (Op)
                     and then Sloc (Op) /= Standard_Location
+                    and then Comes_From_Source (Op)
                   then
                      declare
                         Loc      : constant Source_Ptr := Sloc (Op);

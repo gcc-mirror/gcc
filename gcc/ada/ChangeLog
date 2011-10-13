@@ -1,3 +1,55 @@
+2011-10-13  Thomas Quinot  <quinot@adacore.com>
+
+	* par-ch2.adb, par.adb, par-util.adb, par-ch3.adb
+	(Check_Future_Identifier): New subprogram,
+	factors duplicated code from Par.Ch2.P_Identifier and
+	Par.Ch3.P_Defining_Identifier.
+
+2011-10-13  Thomas Quinot  <quinot@adacore.com>
+
+	* s-taprop-posix.adb (Initialize): Always raise Storage_Error
+	if we fail to initialize CV attributes or CV.
+
+2011-10-13  Thomas Quinot  <quinot@adacore.com>
+
+	* s-tasren.adb (Timed_Selective_Wait, case
+	Accept_Alternative_Selected): Use Defer_Abort_Nestable, since
+	we know abortion is already deferred.
+
+2011-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Class_Wide_Master): Moved to exp_ch9.
+	(Build_Master_Renaming (function)): Removed.
+	(Build_Master_Renaming (procedure)): Moved to exp_ch9.
+	(Expand_Full_Type_Declaration): Alphabetize
+	variables. Reformatting of code and comments. Rewrite the
+	section on processing of anonymous access-to-task types in
+	record components.
+	* exp_ch3.ads (Build_Class_Wide_Master): Moved to exp_ch9.
+	(Build_Master_Renaming): Moved to exp_ch9.
+	* exp_ch9.adb (Build_Class_Wide_Master): Moved from exp_ch3.
+	(Build_Master_Entity): Add formal parameter
+	Use_Current. Reformatting of code and comments.
+	(Build_Master_Renaming): Moved from exp_ch3.
+	* exp_ch9.ads (Build_Class_Wide_Master): Moved from
+	exp_ch3. Update comment on usage.
+	(Build_Master_Entity):
+	Add formal parameter Use_Current. Update comment on usage.
+	(Build_Master_Renaming): Moved from exp_ch3.
+	* sem_ch3.adb (Access_Definition): Remove redundant code to
+	create a _master and a renaming.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb: Do no emit reference to overridden operation,
+	if it is internally generated.
+
+2011-10-13  Vincent Celier  <celier@adacore.com>
+
+	* bindgen.adb: Remove any processing related to g-trasym
+	* Makefile.rtl: Add g-trasym.o to GNATRTL_NONTASKING_OBJS
+	* mlib-prj.adb: Remove any processing related to g-trasym.
+
 2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_util.adb (Denotes_Same_Prefix): Fix fatal warning.
