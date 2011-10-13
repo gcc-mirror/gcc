@@ -1,5 +1,8 @@
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50437
+	* g++.dg/cpp0x/lambda/lambda-auto1.C: New.
+
 	PR c++/50618
 	* g++.dg/init/vbase1.C: New.
 

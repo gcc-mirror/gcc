@@ -8324,7 +8324,7 @@ build_lambda_object (tree lambda_expr)
 
   /* N2927: "[The closure] class type is not an aggregate."
      But we briefly treat it as an aggregate to make this simpler.  */
-  type = TREE_TYPE (lambda_expr);
+  type = LAMBDA_EXPR_CLOSURE (lambda_expr);
   CLASSTYPE_NON_AGGREGATE (type) = 0;
   expr = finish_compound_literal (type, expr, tf_warning_or_error);
   CLASSTYPE_NON_AGGREGATE (type) = 1;
@@ -8365,7 +8365,7 @@ begin_lambda_type (tree lambda)
   type = begin_class_definition (type, /*attributes=*/NULL_TREE);
 
   /* Cross-reference the expression and the type.  */
-  TREE_TYPE (lambda) = type;
+  LAMBDA_EXPR_CLOSURE (lambda) = type;
   CLASSTYPE_LAMBDA_EXPR (type) = lambda;
 
   return type;
@@ -8399,7 +8399,7 @@ lambda_function (tree lambda)
 {
   tree type;
   if (TREE_CODE (lambda) == LAMBDA_EXPR)
-    type = TREE_TYPE (lambda);
+    type = LAMBDA_EXPR_CLOSURE (lambda);
   else
     type = lambda;
   gcc_assert (LAMBDA_TYPE_P (type));
@@ -8714,7 +8714,7 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
 
   /* If TREE_TYPE isn't set, we're still in the introducer, so check
      for duplicates.  */
-  if (!TREE_TYPE (lambda))
+  if (!LAMBDA_EXPR_CLOSURE (lambda))
     {
       if (IDENTIFIER_MARKED (name))
 	{
@@ -8740,13 +8740,14 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
     LAMBDA_EXPR_THIS_CAPTURE (lambda) = member;
 
   /* Add it to the appropriate closure class if we've started it.  */
-  if (current_class_type && current_class_type == TREE_TYPE (lambda))
+  if (current_class_type
+      && current_class_type == LAMBDA_EXPR_CLOSURE (lambda))
     finish_member_declaration (member);
 
   LAMBDA_EXPR_CAPTURE_LIST (lambda)
     = tree_cons (member, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
 
-  if (TREE_TYPE (lambda))
+  if (LAMBDA_EXPR_CLOSURE (lambda))
     return build_capture_proxy (member);
   /* For explicit captures we haven't started the function yet, so we wait
      and build the proxy from cp_parser_lambda_body.  */
@@ -8789,7 +8790,7 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
     {
       tree lambda = TREE_VALUE (node);
 
-      current_class_type = TREE_TYPE (lambda);
+      current_class_type = LAMBDA_EXPR_CLOSURE (lambda);
       var = add_capture (lambda,
                             id,
                             initializer,
@@ -8820,7 +8821,7 @@ lambda_expr_this_capture (tree lambda)
   if (!this_capture
       && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE)
     {
-      tree containing_function = TYPE_CONTEXT (TREE_TYPE (lambda));
+      tree containing_function = TYPE_CONTEXT (LAMBDA_EXPR_CLOSURE (lambda));
       tree lambda_stack = tree_cons (NULL_TREE, lambda, NULL_TREE);
       tree init = NULL_TREE;
 
@@ -8870,7 +8871,8 @@ lambda_expr_this_capture (tree lambda)
   else
     {
       /* To make sure that current_class_ref is for the lambda.  */
-      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref)) == TREE_TYPE (lambda));
+      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref))
+		  == LAMBDA_EXPR_CLOSURE (lambda));
 
       result = this_capture;
 

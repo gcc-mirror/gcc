@@ -1,3 +1,13 @@
+2011-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50437
+	* cp-tree.h (struct tree_lambda_expr): Add closure field.
+	(LAMBDA_EXPR_CLOSURE): New.
+	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Likewise.
+	* semantics.c (build_lambda_object): Use it instead of TREE_TYPE.
+	(begin_lambda_type, lambda_function, add_capture): Likewise.
+	(add_default_capture, lambda_expr_this_capture): Likewise.
+
 2011-10-13   Diego Novillo  <dnovillo@google.com>
 
 	* cp-tree.h (struct language_function): Rename in_function_try_handler
