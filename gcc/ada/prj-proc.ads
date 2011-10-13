@@ -34,6 +34,7 @@ package Prj.Proc is
    procedure Process_Project_Tree_Phase_1
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Packages_To_Check      : String_List_Access;
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
@@ -68,6 +69,7 @@ package Prj.Proc is
    procedure Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Packages_To_Check      : String_List_Access;
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;

@@ -42,7 +42,7 @@ package Prj.Part is
       Project           : out Project_Node_Id;
       Project_File_Name : String;
       Errout_Handling   : Errout_Mode := Always_Finalize;
-      Packages_To_Check : String_List_Access := All_Packages;
+      Packages_To_Check : String_List_Access;
       Store_Comments    : Boolean := False;
       Current_Directory : String := "";
       Is_Config_File    : Boolean;
