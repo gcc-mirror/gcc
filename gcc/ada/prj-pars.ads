@@ -36,7 +36,7 @@ package Prj.Pars is
      (In_Tree           : Project_Tree_Ref;
       Project           : out Project_Id;
       Project_File_Name : String;
-      Packages_To_Check : String_List_Access := All_Packages;
+      Packages_To_Check : String_List_Access;
       Reset_Tree        : Boolean := True;
       In_Node_Tree      : Prj.Tree.Project_Node_Tree_Ref := null;
       Env               : in out Prj.Tree.Environment);
