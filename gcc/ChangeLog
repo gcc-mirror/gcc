@@ -1,3 +1,10 @@
+2011-10-13  Tom de Vries  <tom@codesourcery.com>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Set MEM_READONLY_P
+	for static const strings.
+	* varasm.c (build_constant_desc): Generate the memory location of the
+	constant using gen_const_mem.
+
 2011-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50698
