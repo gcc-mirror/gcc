@@ -1346,10 +1346,10 @@ package Rtsfind is
      RE_Storage_Offset,                  -- System.Storage_Elements
      RE_To_Address,                      -- System.Storage_Elements
 
-     RE_Root_Storage_Pool_Ptr,           -- System.Storage_Pools
      RE_Allocate_Any,                    -- System.Storage_Pools
      RE_Deallocate_Any,                  -- System.Storage_Pools
      RE_Root_Storage_Pool,               -- System.Storage_Pools
+     RE_Root_Storage_Pool_Ptr,           -- System.Storage_Pools
 
      RE_Allocate_Any_Controlled,         -- System.Storage_Pools.Subpools
      RE_Deallocate_Any_Controlled,       -- System.Storage_Pools.Subpools
@@ -2543,10 +2543,10 @@ package Rtsfind is
      RE_Storage_Offset                   => System_Storage_Elements,
      RE_To_Address                       => System_Storage_Elements,
 
-     RE_Root_Storage_Pool_Ptr            => System_Storage_Pools,
      RE_Allocate_Any                     => System_Storage_Pools,
      RE_Deallocate_Any                   => System_Storage_Pools,
      RE_Root_Storage_Pool                => System_Storage_Pools,
+     RE_Root_Storage_Pool_Ptr            => System_Storage_Pools,
 
      RE_Allocate_Any_Controlled          => System_Storage_Pools_Subpools,
      RE_Deallocate_Any_Controlled        => System_Storage_Pools_Subpools,

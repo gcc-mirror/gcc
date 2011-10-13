@@ -1,3 +1,33 @@
+2011-10-13  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Add gnattest section.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb: Do not create body of renaming if declaration has
+	errors.
+
+2011-10-13  Olivier Hainque  <hainque@adacore.com>
+
+	* init.c (__gnat_error_handler - vxworks case): Restrict sigtramp calls
+	further, to the ppc+kernel case only.
+
+2011-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Comment reformatting.
+	* exp_ch6.adb (Add_Unconstrained_Actuals_To_Build_In_Place_Call):
+	Do not create a pool formal on .NET/JVM.
+	(Expand_N_Extended_Return_Statement): Alphabetize local
+	variables. Do not create a renaming of the build-in-place pool
+	parameter on .NET/JVM.	(Make_Build_In_Place_Call_In_Allocator):
+	Add the user-defined pool only on non-VM targets.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Alphabetize
+	local variables.  Do not add a pool actual on .NET/JVM.
+	* sem_ch6.adb: Add with and use clause for Targparm.
+	(Create_Extra_Formals): Add build-in-place pool formal only on
+	non-VM targets.
+	* rtsfind.ads: Alphabetize entries.
+
 2011-10-13  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Minor correction.

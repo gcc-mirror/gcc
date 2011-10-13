@@ -192,6 +192,7 @@ AdaCore@*
 * Stack Related Facilities::
 * Verifying Properties Using gnatcheck::
 * Creating Sample Bodies Using gnatstub::
+* Creating Test Drivers Using gnattest::
 * Generating Ada Bindings for C and C++ headers::
 * Other Utility Programs::
 * Running and Debugging Ada Programs::
@@ -467,6 +468,22 @@ Sample Bodies Using gnatstub
 
 * Running gnatstub::
 * Switches for gnatstub::
+
+Creating Test Drivers Using gnattest
+
+* Running gnattest::
+* Switches for gnattest::
+* Project Attributes for gnattest::
+* Simple Test Driver::
+* Setting Up and Tearing Down Testing Environment::
+* Reusing Previously Written Tests::
+* Default Test Behavior::
+* Testing Primitive Operations of Tagged Types::
+* Test Inheritance::
+* Liskov Substitution Principle Check::
+* Testing with Contracts::
+* Additional Tests::
+* Current Limitations::
 
 Other Utility Programs
 
@@ -812,6 +829,10 @@ a utility that checks Ada code against a set of rules.
 @item
 @ref{Creating Sample Bodies Using gnatstub}, discusses @code{gnatstub},
 a utility that generates empty but compilable bodies for library units.
+
+@item
+@ref{Creating Test Drivers Using gnattest}, discusses @code{gnattest},
+a utility that generates unit testing templates for library units.
 
 @item
 @ref{Generating Ada Bindings for C and C++ headers}, describes how to
@@ -17643,6 +17664,457 @@ unless this option is set.
 Verbose mode: generate version information.
 
 @end table
+
+@c *********************************
+@node Creating Test Drivers Using gnattest
+@chapter Creating Test Drivers Using @command{gnattest}
+@findex gnattest
+
+@noindent
+@command{gnattest} is an ASIS-based utility that creates template tests
+(test stubs) as well as test driver infrastructure (harness) for unit testing
+of Ada source code.
+
+In order to process source files from the project, @command{gnattest} has to
+semantically analyze these Ada sources. Therefore, test templates can only be
+generated for legal Ada units. If a unit is dependent on some other units,
+those units should be among source files of the project or of other projects
+imported by this one.
+
+Generated stubs and harness are based on AUnit testing framework. AUnit
+framework is an Ada adaptation of Java and C++ unit testing frameworks.
+While it is advised that gnattest users read AUnit manual, deep knowledge
+of AUnit is not necessary for using gnattest. For correct operation of
+@command{gnattest} AUnit should be installed on default project path.
+
+@menu
+* Running gnattest::
+* Switches for gnattest::
+* Project Attributes for gnattest::
+* Simple Test Driver::
+* Setting Up and Tearing Down Testing Environment::
+* Reusing Previously Written Tests::
+* Default Test Behavior::
+* Testing Primitive Operations of Tagged Types::
+* Test Inheritance::
+* Liskov Substitution Principle Check::
+* Testing with Contracts::
+* Additional Tests::
+* Current Limitations::
+@end menu
+
+@node Running gnattest
+@section Running @command{gnattest}
+
+@noindent
+@command{gnattest} has the command-line interface of the form
+
+@smallexample
+@c $ gnattest @var{-Pprojname} @ovar{switches} @var{filename} @ovar{directory}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnattest @var{-Pprojname} @r{[}@var{--harness-dir=dirname}@r{]} @r{[}@var{switches}@r{]} @var{filename} @r{[}-cargs @var{gcc_switches}@r{]}
+@end smallexample
+
+@noindent
+where
+@table @var
+
+@item -Pprojname
+specifies the project that allow locating the source files. If no [filenames]
+are provided on the command line, all project sources are used as input.
+
+@item --harness-dir=dirname
+specifies directory to put harness packages and project file for the test
+driver. The harness dir should be either specified by that switch or by
+corresponding attribute in the argument project file.
+
+@item filename
+is the name of the source file that contains a library unit package declaration
+for which a test package must be created. The file name may contain the path
+information.
+
+@item @samp{@var{gcc_switches}} is a list of switches for
+@command{gcc}. They will be passed on to all compiler invocations made by
+@command{gnatstub} to generate the ASIS trees. Here you can provide
+@option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
+use the @option{-gnatec} switch to set the configuration file,
+use the @option{-gnat05} switch if sources should be compiled in
+Ada 2005 mode etc.
+
+@item switches
+is an optional sequence of switches as described in the next section
+
+@end table
+
+@node Switches for gnattest
+@section Switches for @command{gnattest}
+
+@table @option
+@c !sort!
+
+@item --harness-only
+@cindex @option{--harness-only} (@command{gnattest})
+When this option is given, @command{gnattest} creates a harness for all
+sources treating them as test packages.
+
+@item --additional-tests=@var{projname}
+@cindex @option{--additional-tests} (@command{gnattest})
+Sources described in @var{projname} are considered potential additional
+manual tests to be added to the test suite.
+
+@item -r
+@cindex @option{-r} (@command{gnattest})
+Consider recursively all sources from all projects.
+
+@item -q
+@cindex @option{-q} (@command{gnattest})
+Supresses non-critical output messages.
+
+@item -v
+@cindex @option{-v} (@command{gnattest})
+Verbose mode: generate version information.
+
+@item --liskov
+@cindex @option{--liskov} (@command{gnattest})
+Enables Liskov verification: run all tests from all parents in order
+to check substitutability.
+
+@item --stub-default=@var{val}
+@cindex @option{--stub-default} (@command{gnattest})
+Specifies the default behavior of generated stubs. @var{val} can be either
+"fail" or "pass", "fail" being the default.
+
+@item --separate-root=@var{dirname}
+@cindex @option{--separate-root} (@command{gnattest})
+Directory hierarchy of tested sources is recreated in the @var{dirname} directory,
+test packages are placed in corresponding dirs.
+
+@item --subdir=@var{dirname}
+@cindex @option{--subdir} (@command{gnattest})
+Test packages are placed in subdirectories. That's the default output mode since
+it does not require any additional input from the user. Subdirs called "tests"
+will be created by default.
+
+@end table
+
+Separate root ans subdir output modes cannot be used at the same time.
+
+@node Project Attributes for gnattest
+@section Project Attributes for @command{gnattest}
+
+@noindent
+
+Most of the command line options can be also given to the tool by adding
+special attributes to the project file. Those attributes should be put in
+package gnattest. Here is the list of the attributes.
+
+@itemize @bullet
+
+@item Separate_Stub_Root
+is used to select the same output mode as with the --separate-root option.
+This attribute cannot be used togather with Stub_Subdir.
+
+@item Stub_Subdir
+is used to select the same output mode as with the --sudbir option.
+This attribute cannot be used togather with Separate_Stub_Root.
+
+@item Harness_Dir
+is used to specify the directory to place harness packages and project
+file for the test driver, otherwise specified by --harness-dir.
+
+@item Additional_Tests
+is used to specify the project file otherwise given by
+--additional-tests switch.
+
+@item Stubs_Default
+is used to specify the default behaviour of test stubs, otherwise
+specified by --stub-default option. The value for this attribute
+shoul be either "pass" or "fail"
+
+@end itemize
+
+All those attributes can be overridden from command line if needed.
+Other @command{gnattest} switches can also be passed via the project
+file as an attribute list called GNATtest_Switches.
+
+@node Simple Test Driver
+@section Simple Test Driver
+
+@noindent
+
+@command{gnattest} works with package specifications. The basic functionality
+of @command{gnattest} is creating one test stub per one subprogram declared
+in package specification. This can be observes on a very simple example
+located at
+
+@smallexample
+examples/lib1
+@end smallexample
+
+This is a simple package containing one subprogram. By running gnattest
+
+@smallexample
+$ gnattest --harness-dir=driver -Plib1.gpr
+@end smallexample
+
+a test driver is created. It can be compiled and run:
+
+@smallexample
+$ cd driver
+$ gprbuild -Ptest_driver
+$ test_runner
+@end smallexample
+
+One failed test with diagnosis "test not implemented" is reported.
+Since no special output option was specified the test package Lib1.Tests
+is located in
+
+@smallexample
+examples/lib1/src/tests
+@end smallexample
+
+For each package containing testable subprograms a child test package is
+generated. It contains one test routine per tested subprogram. Each
+declaration of test subprogram has a comment cpecifying to which tested
+subprogram it corresponds. All the test routines have separated bodies.
+The test routine locates at lib1-tests-test_inc_5eaee3.adb has a single
+statement - procedure Assert. It has two arguments: the boolean expression
+which we want to check and the diagnosis message to display if the condition
+is false.
+
+That is where actual testing code should be written after a proper setup.
+An actual check can be performed by replacing the stubbing code with
+
+@smallexample @c ada
+Assert (Inc (1) = 2, "wrong incrementation");
+@end smallexample
+
+After recompiling and running the test driver one successfully passed test
+is reported.
+
+@node Setting Up and Tearing Down Testing Environment
+@section Setting Up and Tearing Down Testing Environment
+
+@noindent
+
+Besides test routines themselves, each test package has an inner package
+Env_Mgmt that has two procedures: User_Set_Up and User_Tear_Down.
+User_Set_Up is called before each test routine of the package and
+User_Tear_Down is called after each test routine. Those two procedures can
+be used to perform necessary initialization and finalization,
+memory allocation etc.
+
+@node Reusing Previously Written Tests
+@section Reusing Previously Written Tests
+
+@noindent
+
+Bodies of test routines and env_mgmt packages are never overridden after they
+were created once. As long as the name of the subprogram, full expanded Ada
+names and order of it's parameters are the same, the old test routine will
+fit in it's place.
+
+This can be demonstrated with the presious example. By uncommenting declaration
+and body of function Dec in lib1.ads and lib1.adb, running
+@command{gnattest} on the project and then running the test driver:
+
+@smallexample
+gnattest --harness-dir=driver -Plib1.gpr
+cd driver
+gprbuild -Ptest_driver
+test_runner
+@end smallexample
+
+the old test is not replaced with a stub neither lost.
+
+@node Default Test Behavior
+@section Default Test Behavior
+
+@noindent
+
+Generated test driver can treat all unimplemented tests in two ways:
+either count them all as failed (this is usefull to see which tests are still
+left to implement) or as  passed (to sort out unimplemented ones from those
+actually failing for a reason).
+
+Test driver accepts a switch to specify this behavior: --stub-default=val,
+where val is either "pass" or "fail" (exactly as for @command{gnattest}).
+
+The default behavior of the test driver is set with the same switch
+passed to gnattest when generating the test driver.
+
+Passing it to the driver generated on the first example
+
+@smallexample
+test_runer --stub-default=pass
+@end smallexample
+
+makes both tests pass, even the unimplemented one.
+
+@node Testing Primitive Operations of Tagged Types
+@section Testing Primitive Operations of Tagged Types
+
+@noindent
+
+Creating test stubs for primitive operations of tagged types have a number
+of features. Test routines for all primitives of a given tagged type are
+placed in a separate child package named after the tagged type (so if you
+have tagged type T in package P all tests for primitives of T will be in
+P.T_Tests).
+
+By running gnattest on the second example (actual tests for this example
+are already written so no need to worry if the tool reports that 0 new stubs
+were generated).
+
+@smallexample
+cd examples/lib2
+gnattest --harness-dir=driver -Plib2.gpr
+@end smallexample
+
+Taking a closer look at the test type declared in the test package
+Speed1.Controller_Tests is necessary. It is declared in
+
+@smallexample
+examples/lib2/src/tests
+@end smallexample
+
+Test types are direct or indirect descendants of
+AUnit.Test_Fixtures.Test_Fixture type. For non-primitive tested subprograms
+there is no need for the user to care about them. However when generating
+test packages for primitive operations, there are some things the user
+should know.
+
+Type Test_Controller has component that allows to assign it all kinds of
+derivations of type Controller. And if you look at the specification of
+package Speed2.Auto_Controller, you can see, that Test_Auto_Controller
+actually derives from Test_Controller rather that AUnit type Test_Fixture.
+Thus test types repeat the hierarchy of tested types.
+
+The User_Set_Up procedure of Env_Mgmt package corresponding to a test package
+of primitive operations of type T assigns Fixture with a reference to an
+object of that exact type T. Notice however, that if the tagged type has
+discriminants, the User_Set_Up does has only a commented template of setting
+up the fixture since filling th discriminant with actual value is up
+to the user.
+
+The knowledge of the structure if test types allows to have additional testing
+without additional effort. Those possibilities are described below.
+
+@node Test Inheritance
+@section Test Inheritance
+
+@noindent
+
+Since test type hierarchy repeats the hierarchy of tested types, the
+inheritance of tests take place. An example of such inheritance can be
+shown by running the test driver generated for second example. As previously
+mentioned, actual tests are already written for this example.
+
+@smallexample
+cd examples/lib2/driver
+gprbuild -Ptest_driver
+test_runner
+@end smallexample
+
+There are 6 passed tests while there are only 5 testable subprograms. Test
+routine for function Speed has been inherited and ran against objects of the
+derived type.
+
+@node Liskov Substitution Principle Check
+@section Liskov Substitution Principle Check
+
+@noindent
+
+Liskov substitution principle (LSP) is a principle in object-oriented
+programming. It states that, in a computer program if S is a subtype of T,
+then objects of type T may be replaced with objects of type S (i.e., objects
+of type S may be substitutes for objects of type T), without altering any of
+the desirable properties of that program.
+
+In the example used for previous section there clearly have a violation of LSP.
+The overriding function Adjust_Speed in package Speed2 removes the
+functionality of the overridden function. Gnattest has a special option to run
+overridden parent tests against objects of the type which have overriding
+primitives.
+
+@smallexample
+gnattest --harness-dir=driver --liskov -Plib2.gpr
+cd driver
+gprbuild -Ptest_driver
+test_runner
+@end smallexample
+
+While all the tests pass by themselves, the parent test for Adjust_Speed fails
+against object of derived type.
+
+@node Testing with Contracts
+@section Testing with Contracts
+
+@noindent
+
+@command{gnattest} supports pragmas Precondition, Postcondition and Test_Case.
+Test routines are generated one per each Test_Case associated with a tested
+subprogram. Those test routines have special wrappers for tested functions
+that have composition of pre- and postcondition of the subprogram an
+"requires" and "ensures" of the Test_Case (depending on the mode pre- and post
+either count for Nominal mode or do not for Robustness mode).
+
+The thirg example demonstrates how it works:
+
+@smallexample
+cd examples/lib3
+gnattest --harness-dir=driver -Plib3.gpr
+@end smallexample
+
+Putting actual checks within the range of the contract does not cause any
+error reports. For example, for the test routine which corresponds to
+test case 1
+
+@smallexample @c ada
+Assert (Sqrt (9.0) = 3.0, "wrong sqrt");
+@end smallexample
+
+and for the test routine corresponding to test case 2
+
+@smallexample @c ada
+Assert (Sqrt (-5.0) = -1.0, "wrong error indication");
+@end smallexample
+
+are acceptable:
+
+@smallexample
+cd driver
+gprbuild -Ptest_driver
+test_runner
+@end smallexample
+
+However, by by changing 9.0 to 25.0 and 3.0 to 5.0 for example you can get
+a precondition violation for test case one. Also by putting any otherwise
+correct but positive pair of numbers to the second test routine you can also
+get a precondition violation. Postconditions are checked and reported
+the same way.
+
+@node Additional Tests
+@section Additional Tests
+
+@noindent
+@command{gnattest} can add already existing testing code to the driver along
+with new stubs. This solves the legacy problem: no need to rewrite all the
+tests. The only thing required is a project file that has all the desired
+test units (and all their dependencies) as it's source files.
+
+@node Current Limitations
+@section Current Limitations
+
+@noindent
+
+The tool currently does not support following features:
+
+@itemize @bullet
+@item generic tests for generic packages and package instantiations
+@item tests for protected operations and entries
+@item acpects Pre-, Postcondition and Test_Case
+@end itemize
 
 @c *********************************
 @node Generating Ada Bindings for C and C++ headers

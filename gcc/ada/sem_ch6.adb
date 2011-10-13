@@ -78,6 +78,7 @@ with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Style;
 with Stylesw;  use Stylesw;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -6483,14 +6484,16 @@ package body Sem_Ch6 is
                    (E, Standard_Natural,
                     E, BIP_Formal_Suffix (BIP_Alloc_Form));
 
-               --  Whenever we need BIP_Alloc_Form, we also need
-               --  BIP_Storage_Pool, in case BIP_Alloc_Form indicates to use a
-               --  user-defined pool.
+               --  Add BIP_Storage_Pool, in case BIP_Alloc_Form indicates to
+               --  use a user-defined pool. This formal is not added on .NET
+               --  and JVM as those targets do not support pools.
 
-               Discard :=
-                 Add_Extra_Formal
-                   (E, RTE (RE_Root_Storage_Pool_Ptr),
-                    E, BIP_Formal_Suffix (BIP_Storage_Pool));
+               if VM_Target = No_VM then
+                  Discard :=
+                    Add_Extra_Formal
+                      (E, RTE (RE_Root_Storage_Pool_Ptr),
+                       E, BIP_Formal_Suffix (BIP_Storage_Pool));
+               end if;
             end if;
 
             --  In the case of functions whose result type needs finalization,

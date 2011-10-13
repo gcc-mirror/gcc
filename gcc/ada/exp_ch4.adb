@@ -3526,8 +3526,8 @@ package body Exp_Ch4 is
       end if;
 
       --  Set the storage pool and find the appropriate version of Allocate to
-      --  call. But don't overwrite the storage pool if it is already set,
-      --  which can happen for build-in-place function returns (see
+      --  call. Do not overwrite the storage pool if it is already set, which
+      --  can happen for build-in-place function returns (see
       --  Exp_Ch4.Expand_N_Extended_Return_Statement).
 
       if No (Storage_Pool (N)) then
