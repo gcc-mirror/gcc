@@ -1229,7 +1229,14 @@ package body Sem_Attr is
 
       procedure Check_Enum_Image is
          Lit : Entity_Id;
+
       begin
+         --  When an enumeration type appears in an attribute reference, all
+         --  literals of the type are marked as referenced. This must only be
+         --  done if the attribute reference appears in the current source.
+         --  Otherwise the information on references may differ between a
+         --  normal compilation and one that performs inlining.
+
          if Is_Enumeration_Type (P_Base_Type)
            and then In_Extended_Main_Code_Unit (N)
          then
@@ -5036,6 +5043,12 @@ package body Sem_Attr is
          Check_Scalar_Type;
 
          --  Case of enumeration type
+
+         --  When an enumeration type appears in an attribute reference, all
+         --  literals of the type are marked as referenced. This must only be
+         --  done if the attribute reference appears in the current source.
+         --  Otherwise the information on references may differ between a
+         --  normal compilation and one that performs inlining.
 
          if Is_Enumeration_Type (P_Type)
            and then In_Extended_Main_Code_Unit (N)

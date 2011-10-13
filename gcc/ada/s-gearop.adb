@@ -109,7 +109,8 @@ package body System.Generic_Array_Operations is
          Target : Integer;
          Source : Integer;
          Factor : Scalar);
-      --  Needs comments ???
+      --  Elementary row operation that subtracts Factor * M (Source, <>) from
+      --  M (Target, <>)
 
       procedure Sub_Row
         (M      : in out Matrix;
@@ -161,24 +162,31 @@ package body System.Generic_Array_Operations is
       function "abs" (X : Scalar) return Scalar is
         (if X < Zero then Zero - X else X);
 
+      --  The following are variations of the elementary matrix row operations:
+      --  row switching, row multiplication and row addition. Because in this
+      --  algorithm the addition factor is always a negated value, we chose to
+      --  use  row subtraction instead. Similarly, instead of multiplying by
+      --  a reciprocal, we divide.
+
       procedure Sub_Row
         (M : in out Matrix;
          Target : Integer;
          Source : Integer;
          Factor : Scalar);
-      --  Needs commenting ???
+      --  Subtrace Factor * M (Source, <>) from M (Target, <>)
 
       procedure Divide_Row
         (M, N  : in out Matrix;
          Row   : Integer;
          Scale : Scalar);
-      --  Needs commenting ???
+      --  Divide M (Row) and N (Row) by Scale, and update Det
 
       procedure Switch_Row
         (M, N  : in out Matrix;
          Row_1 : Integer;
          Row_2 : Integer);
-      --  Needs commenting ???
+      --  Exchange M (Row_1) and N (Row_1) with M (Row_2) and N (Row_2),
+      --  negating Det in the process.
 
       -------------
       -- Sub_Row --
@@ -254,8 +262,7 @@ package body System.Generic_Array_Operations is
          end if;
       end Switch_Row;
 
-      I : Integer := M'First (1);
-      --  Avoid use of I ???
+      Row : Integer := M'First (1);
 
    --  Start of processing for Forward_Eliminate
 
@@ -264,35 +271,35 @@ package body System.Generic_Array_Operations is
 
       for J in M'Range (2) loop
          declare
-            Max_I   : Integer := I;
+            Max_Row : Integer := Row;
             Max_Abs : Scalar := Zero;
 
          begin
-            --  Find best pivot in column J, starting in row I
+            --  Find best pivot in column J, starting in row Row
 
-            for K in I .. M'Last (1) loop
+            for K in Row .. M'Last (1) loop
                declare
                   New_Abs : constant Scalar := abs M (K, J);
                begin
                   if Max_Abs < New_Abs then
                      Max_Abs := New_Abs;
-                     Max_I := K;
+                     Max_Row := K;
                   end if;
                end;
             end loop;
 
             if Zero < Max_Abs then
-               Switch_Row (M, N, I, Max_I);
-               Divide_Row (M, N, I, M (I, J));
+               Switch_Row (M, N, Row, Max_Row);
+               Divide_Row (M, N, Row, M (Row, J));
 
-               for U in I + 1 .. M'Last (1) loop
-                  Sub_Row (N, U, I, M (U, J));
-                  Sub_Row (M, U, I, M (U, J));
+               for U in Row + 1 .. M'Last (1) loop
+                  Sub_Row (N, U, Row, M (U, J));
+                  Sub_Row (M, U, Row, M (U, J));
                end loop;
 
-               exit when I >= M'Last (1);
+               exit when Row >= M'Last (1);
 
-               I := I + 1;
+               Row := Row + 1;
 
             else
                Det := Zero; --  Zero, but we don't have literals

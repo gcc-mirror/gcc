@@ -388,9 +388,9 @@ package body Sem_Ch6 is
    begin
       Analyze (P);
 
-      --  A call of the form A.B (X) may be an Ada 05 call, which is rewritten
-      --  as B (A, X). If the rewriting is successful, the call has been
-      --  analyzed and we just return.
+      --  A call of the form A.B (X) may be an Ada 2005 call, which is
+      --  rewritten as B (A, X). If the rewriting is successful, the call
+      --  has been analyzed and we just return.
 
       if Nkind (P) = N_Selected_Component
         and then Name (N) /= P

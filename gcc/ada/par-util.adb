@@ -201,7 +201,7 @@ package body Util is
 
       --  Note: we deliberately do not emit these warnings when operating in
       --  Ada 83 mode because in that case we assume the user is building
-      --  legacy code anyway.
+      --  legacy code anyway and is not interested in updating Ada versions.
 
    end Check_Future_Keyword;
 

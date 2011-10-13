@@ -13762,13 +13762,18 @@ package body Sem_Prag is
                Error_Msg_N ("Unchecked_Union must not be tagged", Typ);
                return;
 
-            else
-               if not Has_Discriminants (Typ) then
-                  Error_Msg_N
-                    ("Unchecked_Union must have one discriminant", Typ);
-                  return;
-               end if;
+            elsif not Has_Discriminants (Typ) then
+               Error_Msg_N
+                ("Unchecked_Union must have one discriminant", Typ);
+               return;
 
+            --  Note: in previous versions of GNAT we used to check for limited
+            --  types and give an error, but in fact the standard does allow
+            --  Unchecked_Union on limited types, so this check was removed.
+
+            --  Proceed with basic error checks completed
+
+            else
                Discr := First_Discriminant (Typ);
                while Present (Discr) loop
                   if No (Discriminant_Default_Value (Discr)) then

@@ -61,7 +61,7 @@ package body Impunit is
    --  The following is a giant string list containing the names of all non-
    --  implementation internal files, i.e. the complete list of files for
    --  internal units which a program may legitimately WITH when operating in
-   --  either Ada 95 or Ada 05 mode.
+   --  either Ada 95 or Ada 2005 mode.
 
    --  Note that this list should match the list of units documented in the
    --  "GNAT Library" section of the GNAT Reference Manual. A unit listed here

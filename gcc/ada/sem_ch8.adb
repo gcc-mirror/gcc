@@ -2402,7 +2402,6 @@ package body Sem_Ch8 is
 
          if not Is_Actual then
             Error_Msg_N ("expect valid subprogram name in renaming", N);
-
          else
             Error_Msg_NE ("no visible subprogram for formal&", N, Nam);
          end if;

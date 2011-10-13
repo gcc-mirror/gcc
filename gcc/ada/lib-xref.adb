@@ -1910,9 +1910,9 @@ package body Lib.Xref is
 
                      Op := Ultimate_Alias (Old_E);
 
-                  --  Normal case of no alias present
-                  --  we omit generated primitives like tagged equality,
-                  --  that have no source representation.
+                  --  Normal case of no alias present. We omit generated
+                  --  primitives like tagged equality, that have no source
+                  --  representation.
 
                   else
                      Op := Old_E;
