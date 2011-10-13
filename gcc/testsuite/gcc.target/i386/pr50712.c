@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2" } */
 
 typedef __builtin_va_list __va_list;
