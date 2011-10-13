@@ -2398,7 +2398,15 @@ package body Sem_Ch8 is
       elsif not Is_Entity_Name (Nam)
         or else not Is_Overloadable (Entity (Nam))
       then
-         Error_Msg_N ("expect valid subprogram name in renaming", N);
+         --  Do not mention the renaming if it comes from an instance
+
+         if not Is_Actual then
+            Error_Msg_N ("expect valid subprogram name in renaming", N);
+
+         else
+            Error_Msg_NE ("no visible subprogram for formal&", N, Nam);
+         end if;
+
          return;
       end if;
 

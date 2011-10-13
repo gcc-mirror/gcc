@@ -4207,11 +4207,10 @@ package body Exp_Ch3 is
       --  anonymous access-to-task pointers.
 
       elsif Ada_Version >= Ada_2005
-        and then
-          (Is_Record_Type (Def_Id)
-             or else
-               (Is_Array_Type (Def_Id)
-                  and then Is_Record_Type (Component_Type (Def_Id))))
+        and then (Is_Record_Type (Def_Id)
+                   or else
+                     (Is_Array_Type (Def_Id)
+                       and then Is_Record_Type (Component_Type (Def_Id))))
       then
          declare
             Comp  : Entity_Id;
@@ -4270,7 +4269,7 @@ package body Exp_Ch3 is
       end if;
 
       if Nkind (Type_Definition (Original_Node (N))) =
-           N_Derived_Type_Definition
+                                                   N_Derived_Type_Definition
         and then not Is_Tagged_Type (Def_Id)
         and then Present (Freeze_Node (Par_Id))
         and then Present (TSS_Elist (Freeze_Node (Par_Id)))
