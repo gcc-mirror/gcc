@@ -1,3 +1,13 @@
+2011-10-13  Gabriel Charette  <gchare@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* streamer-hooks.h (struct streamer_hooks): Add hooks
+	input_location and output_location.
+	* lto-streamer-in.c (lto_input_location): Use
+	streamer_hooks.input_location, if set.
+	* lto-streamer-out.c (lto_output_location): Use
+	streamer_hooks.output_location, if set.
+
 2011-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50712

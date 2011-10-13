@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "tree-streamer.h"
 #include "tree-pass.h"
+#include "streamer-hooks.h"
 
 /* The table to hold the file names.  */
 static htab_t file_name_hash_table;
@@ -180,15 +181,23 @@ lto_input_location_bitpack (struct data_in *data_in, struct bitpack_d *bp)
 }
 
 
-/* Read a location from input block IB.  */
+/* Read a location from input block IB.
+   If the input_location streamer hook exists, call it.
+   Otherwise, proceed with reading the location from the
+   expanded location bitpack.  */
 
 location_t
 lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
 {
-  struct bitpack_d bp;
+  if (streamer_hooks.input_location)
+    return streamer_hooks.input_location (ib, data_in);
+  else
+    {
+      struct bitpack_d bp;
 
-  bp = streamer_read_bitpack (ib);
-  return lto_input_location_bitpack (data_in, &bp);
+      bp = streamer_read_bitpack (ib);
+      return lto_input_location_bitpack (data_in, &bp);
+    }
 }
 
 
