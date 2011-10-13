@@ -1,4 +1,9 @@
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (vec_set<mode>): Change V_128 iterator mode
+	to V.
+
+2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa.c (maybe_optimize_var): Drop TREE_ADDRESSABLE
