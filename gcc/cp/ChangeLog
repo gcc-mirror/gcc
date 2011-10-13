@@ -1,3 +1,9 @@
+2011-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50618
+	* init.c (expand_aggr_init_1): Don't zero-initialize virtual
+	bases of a base subobject.
+
 2011-10-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49216

@@ -1,3 +1,8 @@
+2011-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50618
+	* g++.dg/init/vbase1.C: New.
+
 2011-10-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50659
