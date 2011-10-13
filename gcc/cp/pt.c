@@ -10269,6 +10269,16 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    = tsubst_expr (DECL_INITIAL (t), args,
 			   complain, in_decl,
 			   /*integral_constant_expression_p=*/true);
+	else if (DECL_INITIAL (t))
+	  {
+	    /* Set up DECL_TEMPLATE_INFO so that we can get at the
+	       NSDMI in perform_member_init.  Still set DECL_INITIAL
+	       to error_mark_node so that we know there is one.  */
+	    DECL_INITIAL (r) = error_mark_node;
+	    gcc_assert (DECL_LANG_SPECIFIC (r) == NULL);
+	    retrofit_lang_decl (r);
+	    DECL_TEMPLATE_INFO (r) = build_template_info (t, args);
+	  }
 	/* We don't have to set DECL_CONTEXT here; it is set by
 	   finish_member_declaration.  */
 	DECL_CHAIN (r) = NULL_TREE;
