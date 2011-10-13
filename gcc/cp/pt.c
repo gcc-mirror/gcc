@@ -13937,8 +13937,8 @@ tsubst_copy_and_build (tree t,
       {
 	tree r = build_lambda_expr ();
 
-	tree type = tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
-	TREE_TYPE (r) = type;
+	tree type = tsubst (LAMBDA_EXPR_CLOSURE (t), args, complain, NULL_TREE);
+	LAMBDA_EXPR_CLOSURE (r) = type;
 	CLASSTYPE_LAMBDA_EXPR (type) = r;
 
 	LAMBDA_EXPR_LOCATION (r)

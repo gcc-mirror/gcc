@@ -671,6 +671,12 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_PENDING_PROXIES(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->pending_proxies)
 
+/* The closure type of the lambda.  Note that the TREE_TYPE of a
+   LAMBDA_EXPR is always NULL_TREE, because we need to instantiate the
+   LAMBDA_EXPR in order to instantiate the type.  */
+#define LAMBDA_EXPR_CLOSURE(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->closure)
+
 struct GTY (()) tree_lambda_expr
 {
   struct tree_typed typed;
@@ -678,6 +684,7 @@ struct GTY (()) tree_lambda_expr
   tree this_capture;
   tree return_type;
   tree extra_scope;
+  tree closure;
   VEC(tree,gc)* pending_proxies;
   location_t locus;
   enum cp_lambda_default_capture_mode_type default_capture_mode;
