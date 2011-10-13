@@ -1,3 +1,9 @@
+2011-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/50589
+	* s-linux-alpha.ads: Do not "with" Interfaces.C.
+	* s-linux-sparc.ads: Likewise.
+
 2011-10-13  Geert Bosch  <bosch@adacore.com>
 
 	* s-gearop.ads (Forward_Eliminate): Add "abs" formal function

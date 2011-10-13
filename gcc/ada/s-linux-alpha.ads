@@ -35,8 +35,6 @@
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
-with Interfaces.C;
-
 package System.Linux is
    pragma Preelaborate;
 
