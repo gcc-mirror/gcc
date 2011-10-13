@@ -6119,6 +6119,30 @@ package VMS_Data is
    --   See 'HELP GNAT COMPILE /WIDE_CHARACTER_ENCODING' for an explanation
    --   about the different character encoding methods.
 
+   S_Pretty_Enums     : aliased constant S := "/ENUM_CASING="              &
+                                              "AS_DECLARED "               &
+                                                 "-neD "                   &
+                                              "LOWER_CASE "                &
+                                                 "-neL "                   &
+                                              "UPPER_CASE "                &
+                                                 "-neU "                   &
+                                              "MIXED_CASE "                &
+                                                 "-neM";
+   --        /ENUM_CASING=name-option
+   --
+   --   Specify the casing of enumeration literals. If not specified, the
+   --   casing of enumeration literals is defined by the NAME_CASING option.
+   --   'name-option' may be one of:
+   --
+   --      AS_DECLARED       Literals casing for defining occurrences are
+   --                        as they appear in the source file.
+   --
+   --      LOWER_CASE        Literals are in lower case.
+   --
+   --      UPPER_CASE        Literals are in upper case.
+   --
+   --      MIXED_CASE        Literals are in mixed case.
+
    S_Pretty_Files     : aliased constant S := "/FILES=@"                   &
                                                  "-files=@";
    --      /FILES=filename
@@ -6369,6 +6393,7 @@ package VMS_Data is
                         S_Pretty_Eol              'Access,
                         S_Pretty_Ext              'Access,
                         S_Pretty_Encoding         'Access,
+                        S_Pretty_Enums            'Access,
                         S_Pretty_Files            'Access,
                         S_Pretty_Follow           'Access,
                         S_Pretty_Forced           'Access,

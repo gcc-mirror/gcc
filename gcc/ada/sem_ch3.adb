@@ -16889,6 +16889,38 @@ package body Sem_Ch3 is
          when N_Attribute_Reference =>
             return Attribute_Name (Original_Node (Exp)) = Name_Input;
 
+         --  For a conditional expression, all dependent expressions must be
+         --  legal constructs.
+
+         when N_Conditional_Expression =>
+            declare
+               Then_Expr : constant Node_Id :=
+                 Next
+                   (First (Expressions (Original_Node (Exp))));
+               Else_Expr : constant Node_Id := Next (Then_Expr);
+
+            begin
+               return OK_For_Limited_Init_In_05 (Typ, Then_Expr)
+                 and then OK_For_Limited_Init_In_05 (Typ, Else_Expr);
+            end;
+
+         when N_Case_Expression =>
+            declare
+               Alt : Node_Id;
+
+            begin
+               Alt := First (Alternatives (Original_Node (Exp)));
+               while Present (Alt) loop
+                  if not OK_For_Limited_Init_In_05 (Typ, Expression (Alt)) then
+                     return False;
+                  end if;
+
+                  Next (Alt);
+               end loop;
+
+               return True;
+            end;
+
          when others =>
             return False;
       end case;

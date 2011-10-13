@@ -1,3 +1,68 @@
+2011-10-13  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi, vms_data.ads: Add an option to control enumeration
+	literal casing.
+
+2011-10-13  Nicolas Roche  <roche@adacore.com>
+
+	* gnatlink.adb: Ensure that -mrtp is passed when
+	runtime name ends with 'rtp'.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Unchecked_Union): an
+	unchecked union type can be limited.
+
+2011-10-13  Olivier Hainque  <hainque@adacore.com>
+
+	* init.c (__gnat_error_handler) <VxWorks version>: Add comments on
+	the use of the signal trampoline for PPC in the sjlj case as well.
+	Add legitimate casts, preventing compile time warnings on the
+	(sighandler *) profile.
+
+2011-10-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggr_Expr): Always perform semantic
+	analysis in Alfa mode.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (OK_For_Limited_Init_In_05): Conditional and case
+	expressions are legal limited return values if each one of their
+	dependent expressions are legal.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Procedure_Call_Statement): In Ada 2012 mode,
+	if the prefix of the call is a qualified expression, rewrite as
+	a code statement.
+	* sem_ch13.adb (Analyze_Code_Statement): In Ada 2012 mode, the
+	code statement is legal if it is a rewriting of a procedure call.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Flatten): If a component association has a box,
+	assume that aggregate is not static.
+	(Safe_Aggregate): If a component association in a non-limited
+	aggregate has a box, assume that it cannot be expanded in place.
+
+2011-10-13  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Get_Or_Create_Configuration_File): Call
+	Process_Project_Tree_Phase_1 with Packages_To_Check.
+	(Process_Project_And_Apply_Config): Ditto
+	* prj-part.ads, prj-part.adb, prj-pars.ads, prj-pars.adb (Parse):
+	Remove default for argument Packages_To_Check.
+	* prj-proc.adb (Recursive_Process): New argument
+	Packages_To_Check.
+	(Process): Ditto.
+	(Process_Project_Tree_Phase_1): Ditto.
+	(Recursive_Project.Process_Aggregated_Projects): Call
+	Prj.Part.Parse and Process_Project_Tree_Phase_1 with
+	Packages_To_Check.
+	* prj-proc.ads (Process): New argument Packages_To_Check
+	(Process_Project_Tree_Phase_1): Ditto
+
 2011-10-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Fix typo.

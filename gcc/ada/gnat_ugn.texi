@@ -13002,6 +13002,23 @@ Names are in lower case
 @item ^-nM^/NAME_CASING=MIXED_CASE^
 Names are in mixed case
 
+@cindex @option{^-ne@var{x}^/ENUM_CASING^} (@command{gnatpp})
+@item ^-neD^/ENUM_CASING=AS_DECLARED^
+Enumeration literal casing for defining occurrences are as they appear in the
+source file. Overrides ^-n^/NAME_CASING^ casing setting.
+
+@item ^-neU^/ENUM_CASING=UPPER_CASE^
+Enumeration literals are in upper case.  Overrides ^-n^/NAME_CASING^ casing
+setting.
+
+@item ^-neL^/ENUM_CASING=LOWER_CASE^
+Enumeration literals are in lower case. Overrides ^-n^/NAME_CASING^ casing
+setting.
+
+@item ^-neM^/ENUM_CASING=MIXED_CASE^
+Enumeration literals are in mixed case. Overrides ^-n^/NAME_CASING^ casing
+setting.
+
 @cindex @option{^-p@var{x}^/PRAGMA_CASING^} (@command{gnatpp})
 @item ^-pL^/PRAGMA_CASING=LOWER_CASE^
 Pragma names are lower case

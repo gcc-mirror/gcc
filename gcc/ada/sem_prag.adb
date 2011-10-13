@@ -13762,12 +13762,6 @@ package body Sem_Prag is
                Error_Msg_N ("Unchecked_Union must not be tagged", Typ);
                return;
 
-            elsif Is_Limited_Type (Typ) then
-               Error_Msg_N
-                 ("Unchecked_Union must not be limited record type", Typ);
-               Explain_Limited_Type (Typ, Typ);
-               return;
-
             else
                if not Has_Discriminants (Typ) then
                   Error_Msg_N
