@@ -1,5 +1,12 @@
 2011-10-13   Diego Novillo  <dnovillo@google.com>
 
+	* cp-tree.h (struct language_function): Rename in_function_try_handler
+	to x_in_function_try_handler.
+	Rename in_base_initializer to x_in_base_initializer.
+	Update all users.
+
+2011-10-13   Diego Novillo  <dnovillo@google.com>
+
 	* class.c (sorted_fields_type_new): Factor out of ...
 	(finish_struct_1): ... here.
 

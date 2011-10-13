@@ -1053,8 +1053,8 @@ struct GTY(()) language_function {
   BOOL_BITFIELD returns_value : 1;
   BOOL_BITFIELD returns_null : 1;
   BOOL_BITFIELD returns_abnormally : 1;
-  BOOL_BITFIELD in_function_try_handler : 1;
-  BOOL_BITFIELD in_base_initializer : 1;
+  BOOL_BITFIELD x_in_function_try_handler : 1;
+  BOOL_BITFIELD x_in_base_initializer : 1;
 
   /* True if this function can throw an exception.  */
   BOOL_BITFIELD can_throw : 1;
@@ -1121,9 +1121,9 @@ struct GTY(()) language_function {
   cp_function_chain->returns_abnormally
 
 /* Nonzero if we are processing a base initializer.  Zero elsewhere.  */
-#define in_base_initializer cp_function_chain->in_base_initializer
+#define in_base_initializer cp_function_chain->x_in_base_initializer
 
-#define in_function_try_handler cp_function_chain->in_function_try_handler
+#define in_function_try_handler cp_function_chain->x_in_function_try_handler
 
 /* Expression always returned from function, or error_mark_node
    otherwise, for use by the automatic named return value optimization.  */
