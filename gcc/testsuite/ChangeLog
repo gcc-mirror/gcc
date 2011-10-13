@@ -1,5 +1,8 @@
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50618
+	* g++.dg/init/vbase1.C: New.
+
 	Backported from 4.6 branch
 	2011-03-11  Jakub Jelinek  <jakub@redhat.com>
 
