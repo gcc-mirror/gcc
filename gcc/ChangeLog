@@ -1,3 +1,9 @@
+2011-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50698
+	* tree-data-ref.c (split_constant_offset_1): Also process
+	offsets of &MEM.
+
 2011-10-12  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.h: Do not force TARGET_VIS3 and TARGET_FMAF

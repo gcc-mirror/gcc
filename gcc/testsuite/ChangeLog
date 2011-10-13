@@ -1,3 +1,8 @@
+2011-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50698
+	* g++.dg/vect/pr50698.cc: New testcase.
+
 2011-10-12  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/powerpc/warn-1.c: Skip if not powerpc_vsx_ok.
