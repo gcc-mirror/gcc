@@ -1,3 +1,7 @@
+2011-10-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Fix typo.
+
 2011-10-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Analyze_Formal_{Floating_Type,
