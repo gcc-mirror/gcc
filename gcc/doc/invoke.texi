@@ -885,7 +885,8 @@ See RS/6000 and PowerPC Options.
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
--mfmaf  -mno-fmaf  -mpopc  -mno-popc}
+-mfmaf  -mno-fmaf  -mpopc  -mno-popc @gol
+-mfix-at697f}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -4001,19 +4002,19 @@ The message is in keeping with the output of @option{-fstack-usage}.
 If the stack usage is fully static but exceeds the specified amount, it's:
 
 @smallexample
-  warning: stack usage is 1120 bytes
+  warning: stack usage is 1120 bytes
 @end smallexample
 @item
 If the stack usage is (partly) dynamic but bounded, it's:
 
 @smallexample
-  warning: stack usage might be 1648 bytes
+  warning: stack usage might be 1648 bytes
 @end smallexample
 @item
 If the stack usage is (partly) dynamic and not bounded, it's:
 
 @smallexample
-  warning: stack usage might be unbounded
+  warning: stack usage might be unbounded
 @end smallexample
 @end itemize
 
@@ -17549,6 +17550,11 @@ With @option{-mfmaf}, GCC generates code that takes advantage of the UltraSPARC
 Fused Multiply-Add Floating-point extensions.  The default is @option{-mfmaf}
 when targetting a cpu that supports such instructions, such as Niagara-3 and
 later.
+
+@item -mfix-at697f
+@opindex mfix-at697f
+Enable the documented workaround for the single erratum of the Atmel AT697F
+processor (which corresponds to erratum #13 of the AT697E processor).
 @end table
 
 These @samp{-m} options are supported in addition to the above
