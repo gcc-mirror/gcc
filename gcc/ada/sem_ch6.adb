@@ -6482,6 +6482,15 @@ package body Sem_Ch6 is
                  Add_Extra_Formal
                    (E, Standard_Natural,
                     E, BIP_Formal_Suffix (BIP_Alloc_Form));
+
+               --  Whenever we need BIP_Alloc_Form, we also need
+               --  BIP_Storage_Pool, in case BIP_Alloc_Form indicates to use a
+               --  user-defined pool.
+
+               Discard :=
+                 Add_Extra_Formal
+                   (E, RTE (RE_Root_Storage_Pool_Ptr),
+                    E, BIP_Formal_Suffix (BIP_Storage_Pool));
             end if;
 
             --  In the case of functions whose result type needs finalization,

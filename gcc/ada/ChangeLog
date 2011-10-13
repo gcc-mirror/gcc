@@ -1,3 +1,24 @@
+2011-10-13  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.ads (BIP_Storage_Pool): New "extra implicit parameter"
+	that gets passed in the same cases where BIP_Alloc_Form is passed
+	(caller-unknown-size results). BIP_Storage_Pool is used when
+	BIP_Alloc_Form = User_Storage_Pool.  In that case, a pointer
+	to the user-defined storage pool is passed at the call site,
+	and this pool is used in callee to allocate the result.
+	* exp_ch6.adb (Add_Unconstrained_Actuals_To_Build_In_Place_Call): New
+	version of Add_Alloc_Form_Actual_To_Build_In_Place_Call. Passes
+	the additional BIP_Storage_Pool actual.
+	(Expand_N_Extended_Return_Statement): Allocate the function
+	result using the user-defined storage pool, if BIP_Alloc_Form =
+	User_Storage_Pool.
+	* sem_ch6.adb: Add the "extra formal" for BIP_Storage_Pool.
+	* exp_ch4.adb: Don't overwrite storage pool set by
+	Expand_N_Extended_Return_Statement.
+	* s-stopoo.ads, rtsfind.ads (Root_Storage_Pool_Ptr): New type,
+	for use in build-in-place function calls within allocators
+	where the access type has a user-defined storage pool.
+
 2011-10-13  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi, vms_data.ads: Add an option to control enumeration
