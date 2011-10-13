@@ -98,6 +98,11 @@ mstd-struct-return
 Target Report RejectNegative Var(sparc_std_struct_return)
 Enable strict 32-bit psABI struct return checking.
 
+mfix-at697f
+Target Report RejectNegative Var(sparc_fix_at697f)
+Enable workaround for single erratum of AT697F processor
+(corresponding to erratum #13 of AT697E processor)
+
 Mask(LITTLE_ENDIAN)
 ;; Generate code for little-endian
 

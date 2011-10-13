@@ -415,6 +415,7 @@ static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				   HOST_WIDE_INT, tree);
 static bool sparc_can_output_mi_thunk (const_tree, HOST_WIDE_INT,
 				       HOST_WIDE_INT, const_tree);
+static void sparc_reorg (void);
 static struct machine_function * sparc_init_machine_status (void);
 static bool sparc_cannot_force_const_mem (rtx);
 static rtx sparc_tls_get_addr (void);
@@ -567,6 +568,9 @@ static const struct default_options sparc_option_optimization_table[] =
 #define TARGET_ASM_OUTPUT_MI_THUNK sparc_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK sparc_can_output_mi_thunk
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG sparc_reorg
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS sparc_rtx_costs
@@ -9421,6 +9425,104 @@ sparc_can_output_mi_thunk (const_tree thunk_fndecl ATTRIBUTE_UNUSED,
 {
   /* Bound the loop used in the default method above.  */
   return (vcall_offset >= -32768 || ! fixed_regs[5]);
+}
+
+/* We use the machine specific reorg pass to enable workarounds for errata.  */
+
+static void
+sparc_reorg (void)
+{
+  rtx insn, next;
+
+  /* The only erratum we handle for now is that of the AT697F processor.  */
+  if (!sparc_fix_at697f)
+    return;
+
+  /* We need to have the (essentially) final form of the insn stream in order
+     to properly detect the various hazards.  Run delay slot scheduling.  */
+  if (optimize > 0 && flag_delayed_branch)
+    dbr_schedule (get_insns ());
+
+  /* Now look for specific patterns in the insn stream.  */
+  for (insn = get_insns (); insn; insn = next)
+    {
+      bool insert_nop = false;
+      rtx set;
+
+      /* Look for a single-word load into an odd-numbered FP register.  */
+      if (NONJUMP_INSN_P (insn)
+	  && (set = single_set (insn)) != NULL_RTX
+	  && GET_MODE_SIZE (GET_MODE (SET_SRC (set))) == 4
+	  && MEM_P (SET_SRC (set))
+	  && REG_P (SET_DEST (set))
+	  && REGNO (SET_DEST (set)) > 31
+	  && REGNO (SET_DEST (set)) % 2 != 0)
+	{
+	  /* The wrong dependency is on the enclosing double register.  */
+	  unsigned int x = REGNO (SET_DEST (set)) - 1;
+	  unsigned int src1, src2, dest;
+	  int code;
+
+	  /* If the insn has a delay slot, then it cannot be problematic.  */
+	  next = next_active_insn (insn);
+	  if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
+	    code = -1;
+	  else
+	    {
+	      extract_insn (next);
+	      code = INSN_CODE (next);
+	    }
+
+	  switch (code)
+	    {
+	    case CODE_FOR_adddf3:
+	    case CODE_FOR_subdf3:
+	    case CODE_FOR_muldf3:
+	    case CODE_FOR_divdf3:
+	      dest = REGNO (recog_data.operand[0]);
+	      src1 = REGNO (recog_data.operand[1]);
+	      src2 = REGNO (recog_data.operand[2]);
+	      if (src1 != src2)
+		{
+		  /* Case [1-4]:
+				 ld [address], %fx+1
+				 FPOPd %f{x,y}, %f{y,x}, %f{x,y}  */
+		  if ((src1 == x || src2 == x)
+		      && (dest == src1 || dest == src2))
+		    insert_nop = true;
+		}
+	      else
+		{
+		  /* Case 5:
+			     ld [address], %fx+1
+			     FPOPd %fx, %fx, %fx  */
+		  if (src1 == x
+		      && dest == src1
+		      && (code == CODE_FOR_adddf3 || code == CODE_FOR_muldf3))
+		    insert_nop = true;
+		}
+	      break;
+
+	    case CODE_FOR_sqrtdf2:
+	      dest = REGNO (recog_data.operand[0]);
+	      src1 = REGNO (recog_data.operand[1]);
+	      /* Case 6:
+			 ld [address], %fx+1
+			 fsqrtd %fx, %fx  */
+	      if (src1 == x && dest == src1)
+		insert_nop = true;
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+      else
+	next = NEXT_INSN (insn);
+
+      if (insert_nop)
+	emit_insn_after (gen_nop (), insn);
+    }
 }
 
 /* How to allocate a 'struct machine_function'.  */
