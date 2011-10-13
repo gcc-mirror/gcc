@@ -333,10 +333,13 @@ package body Sem_Util is
       end if;
    end Apply_Compile_Time_Constraint_Error;
 
+   --------------------------------------
+   -- Available_Full_View_Of_Component --
+   --------------------------------------
+
    function Available_Full_View_Of_Component (T : Entity_Id) return Boolean is
       ST  : constant Entity_Id := Scope (T);
       SCT : constant Entity_Id := Scope (Component_Type (T));
-
    begin
       return In_Open_Scopes (ST)
         and then In_Open_Scopes (SCT)
@@ -7360,9 +7363,9 @@ package body Sem_Util is
    ----------------------------
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean is
+      pragma Assert (Is_Overloadable (E));
       Kind : constant Node_Kind := Nkind (Parent (E));
    begin
-      pragma Assert (Is_Overloadable (E));
       return Kind = N_Full_Type_Declaration
         or else Kind = N_Private_Extension_Declaration
         or else Kind = N_Subtype_Declaration
@@ -7375,7 +7378,8 @@ package body Sem_Util is
    -------------------------------------
 
    function Is_Inherited_Operation_For_Type
-     (E : Entity_Id; Typ : Entity_Id) return Boolean
+     (E   : Entity_Id;
+      Typ : Entity_Id) return Boolean
    is
    begin
       return Is_Inherited_Operation (E)

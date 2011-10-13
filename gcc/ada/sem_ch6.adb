@@ -6462,10 +6462,10 @@ package body Sem_Ch6 is
          declare
             Result_Subt : constant Entity_Id := Etype (E);
             Full_Subt   : constant Entity_Id := Available_View (Result_Subt);
-
-            Discard     : Entity_Id;
-            pragma Warnings (Off, Discard);
             Formal_Typ  : Entity_Id;
+
+            Discard : Entity_Id;
+            pragma Warnings (Off, Discard);
 
          begin
             --  In the case of functions with unconstrained result subtypes,

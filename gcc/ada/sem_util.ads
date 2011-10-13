@@ -845,8 +845,8 @@ package Sem_Util is
    --  by the derived type declaration for type Typ.
 
    function Is_Iterator (Typ : Entity_Id) return Boolean;
-   --  AI05-0139-2 : check whether Typ is one of the predefined interfaces
-   --  in Ada.Iterator_Interfaces, or it is derived from one.
+   --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in
+   --  Ada.Iterator_Interfaces, or it is derived from one.
 
    function Is_LHS (N : Node_Id) return Boolean;
    --  Returns True iff N is used as Name in an assignment statement
@@ -856,8 +856,7 @@ package Sem_Util is
    --  i.e. a library unit or an entity declared in a library package.
 
    function Is_Limited_Class_Wide_Type (Typ : Entity_Id) return Boolean;
-   --  Given an arbitrary type, determine whether it is a limited class-wide
-   --  type.
+   --  Determine whether a given arbitrary type is a limited class-wide type
 
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
    --  Determines whether Expr is a reference to a variable or IN OUT mode

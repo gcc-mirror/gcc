@@ -4156,20 +4156,20 @@ package body Exp_Ch3 is
          elsif Is_Limited_Class_Wide_Type (Desig_Typ)
            and then Tasking_Allowed
 
-            --  Do not create a class-wide master for types whose convention is
-            --  Java since these types cannot embed Ada tasks anyway. Note that
-            --  the following test cannot catch the following case:
+           --  Do not create a class-wide master for types whose convention is
+           --  Java since these types cannot embed Ada tasks anyway. Note that
+           --  the following test cannot catch the following case:
 
-            --      package java.lang.Object is
-            --         type Typ is tagged limited private;
-            --         type Ref is access all Typ'Class;
-            --      private
-            --         type Typ is tagged limited ...;
-            --         pragma Convention (Typ, Java)
-            --      end;
+           --      package java.lang.Object is
+           --         type Typ is tagged limited private;
+           --         type Ref is access all Typ'Class;
+           --      private
+           --         type Typ is tagged limited ...;
+           --         pragma Convention (Typ, Java)
+           --      end;
 
-            --  Because the convention appears after we have done the
-            --  processing for type Ref.
+           --  Because the convention appears after we have done the
+           --  processing for type Ref.
 
            and then Convention (Desig_Typ) /= Convention_Java
            and then Convention (Desig_Typ) /= Convention_CIL
@@ -5178,12 +5178,13 @@ package body Exp_Ch3 is
    ---------------------------------
 
    procedure Expand_Previous_Access_Type (Def_Id : Entity_Id) is
-      Ptr_Typ : Entity_Id := First_Entity (Current_Scope);
+      Ptr_Typ : Entity_Id;
 
    begin
       --  Find all access types in the current scope whose designated type is
       --  Def_Id and build master renamings for them.
 
+      Ptr_Typ := First_Entity (Current_Scope);
       while Present (Ptr_Typ) loop
          if Is_Access_Type (Ptr_Typ)
            and then Designated_Type (Ptr_Typ) = Def_Id

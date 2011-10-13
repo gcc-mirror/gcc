@@ -911,8 +911,7 @@ __gnat_get_task_options (void)
 
   /* Force VX_FP_TASK because it is almost always required */
   options |= VX_FP_TASK;
-#if defined (__SPE__) && (! defined (__VXWORKSMILS__)) \
-    && (! defined (VTHREADS))
+#if defined (__SPE__) && (! defined (__VXWORKSMILS__))
   options |= VX_SPE_TASK;
 #endif
 
