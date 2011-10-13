@@ -1,4 +1,11 @@
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa.c (maybe_optimize_var): Drop TREE_ADDRESSABLE
+	from vector or complex vars even if their DECL_UID is in not_reg_needs
+	bitmap.
+
+2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (reduc_umin_v8hi): New pattern.
 	* config/i386/i386.c (ix86_build_const_vector): Handle
