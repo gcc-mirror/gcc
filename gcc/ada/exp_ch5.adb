@@ -3458,6 +3458,20 @@ package body Exp_Ch5 is
                            Statements => Statements (N)))),
 
                    End_Label => End_Label (N)));
+
+               --  The loop parameter's entity must be removed from the loop
+               --  scope's entity list, since itw will now be located in the
+               --  new block scope. Any other entities already associated with
+               --  the loop scope, such as the loop parameter's subtype, will
+               --  remain there.
+
+               pragma Assert (First_Entity (Scope (Loop_Id)) = Loop_Id);
+
+               Set_First_Entity (Scope (Loop_Id), Next_Entity (Loop_Id));
+               if Last_Entity (Scope (Loop_Id)) = Loop_Id then
+                  Set_Last_Entity (Scope (Loop_Id), Empty);
+               end if;
+
                Analyze (N);
 
             --  Nothing to do with other cases of for loops
