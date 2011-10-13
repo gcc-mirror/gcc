@@ -1,3 +1,11 @@
+2011-10-13   Lawrence Crowl  <crowl@google.com>
+	     Diego Novillo  <dnovillo@google.com>
+
+	* lto-streamer-in.c (input_struct_function_base): Factor out of ...
+	(input_function): ... here.
+	* lto-streamer-out.c (output_struct_function_base): Factor out of ...
+	(output_function): ... here.
+
 2011-10-13  Gabriel Charette  <gchare@google.com>
 	    Diego Novillo  <dnovillo@google.com>
 

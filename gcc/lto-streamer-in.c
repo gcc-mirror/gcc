@@ -764,51 +764,16 @@ fixup_call_stmt_edges (struct cgraph_node *orig, gimple *stmts)
       }
 }
 
-/* Read the body of function FN_DECL from DATA_IN using input block IB.  */
+
+/* Input the base body of struct function FN from DATA_IN
+   using input block IB.  */
 
 static void
-input_function (tree fn_decl, struct data_in *data_in,
-		struct lto_input_block *ib)
+input_struct_function_base (struct function *fn, struct data_in *data_in,
+                            struct lto_input_block *ib)
 {
-  struct function *fn;
-  enum LTO_tags tag;
-  gimple *stmts;
-  basic_block bb;
   struct bitpack_d bp;
-  struct cgraph_node *node;
-  tree args, narg, oarg;
   int len;
-
-  fn = DECL_STRUCT_FUNCTION (fn_decl);
-  tag = streamer_read_record_start (ib);
-  clear_line_info (data_in);
-
-  gimple_register_cfg_hooks ();
-  lto_tag_check (tag, LTO_function);
-
-  /* Read all the attributes for FN.  */
-  bp = streamer_read_bitpack (ib);
-  fn->is_thunk = bp_unpack_value (&bp, 1);
-  fn->has_local_explicit_reg_vars = bp_unpack_value (&bp, 1);
-  fn->after_tree_profile = bp_unpack_value (&bp, 1);
-  fn->returns_pcc_struct = bp_unpack_value (&bp, 1);
-  fn->returns_struct = bp_unpack_value (&bp, 1);
-  fn->can_throw_non_call_exceptions = bp_unpack_value (&bp, 1);
-  fn->always_inline_functions_inlined = bp_unpack_value (&bp, 1);
-  fn->after_inlining = bp_unpack_value (&bp, 1);
-  fn->stdarg = bp_unpack_value (&bp, 1);
-  fn->has_nonlocal_label = bp_unpack_value (&bp, 1);
-  fn->calls_alloca = bp_unpack_value (&bp, 1);
-  fn->calls_setjmp = bp_unpack_value (&bp, 1);
-  fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
-  fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
-
-  /* Input the function start and end loci.  */
-  fn->function_start_locus = lto_input_location (ib, data_in);
-  fn->function_end_locus = lto_input_location (ib, data_in);
-
-  /* Input the current IL state of the function.  */
-  fn->curr_properties = streamer_read_uhwi (ib);
 
   /* Read the static chain and non-local goto save area.  */
   fn->static_chain_decl = stream_read_tree (ib, data_in);
@@ -826,6 +791,54 @@ input_function (tree fn_decl, struct data_in *data_in,
 	  VEC_replace (tree, fn->local_decls, i, t);
 	}
     }
+
+  /* Input the function start and end loci.  */
+  fn->function_start_locus = lto_input_location (ib, data_in);
+  fn->function_end_locus = lto_input_location (ib, data_in);
+
+  /* Input the current IL state of the function.  */
+  fn->curr_properties = streamer_read_uhwi (ib);
+
+  /* Read all the attributes for FN.  */
+  bp = streamer_read_bitpack (ib);
+  fn->is_thunk = bp_unpack_value (&bp, 1);
+  fn->has_local_explicit_reg_vars = bp_unpack_value (&bp, 1);
+  fn->after_tree_profile = bp_unpack_value (&bp, 1);
+  fn->returns_pcc_struct = bp_unpack_value (&bp, 1);
+  fn->returns_struct = bp_unpack_value (&bp, 1);
+  fn->can_throw_non_call_exceptions = bp_unpack_value (&bp, 1);
+  fn->always_inline_functions_inlined = bp_unpack_value (&bp, 1);
+  fn->after_inlining = bp_unpack_value (&bp, 1);
+  fn->stdarg = bp_unpack_value (&bp, 1);
+  fn->has_nonlocal_label = bp_unpack_value (&bp, 1);
+  fn->calls_alloca = bp_unpack_value (&bp, 1);
+  fn->calls_setjmp = bp_unpack_value (&bp, 1);
+  fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
+  fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
+}
+
+
+/* Read the body of function FN_DECL from DATA_IN using input block IB.  */
+
+static void
+input_function (tree fn_decl, struct data_in *data_in,
+		struct lto_input_block *ib)
+{
+  struct function *fn;
+  enum LTO_tags tag;
+  gimple *stmts;
+  basic_block bb;
+  struct cgraph_node *node;
+  tree args, narg, oarg;
+
+  fn = DECL_STRUCT_FUNCTION (fn_decl);
+  tag = streamer_read_record_start (ib);
+  clear_line_info (data_in);
+
+  gimple_register_cfg_hooks ();
+  lto_tag_check (tag, LTO_function);
+
+  input_struct_function_base (fn, data_in, ib);
 
   /* Read all function arguments.  We need to re-map them here to the
      arguments of the merged function declaration.  */
