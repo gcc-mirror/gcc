@@ -1,5 +1,10 @@
 2011-10-13  Geert Bosch  <bosch@adacore.com>
 
+	* a-ngrear.adb, s-gearop.adb, s-gearop.ads (Sqrt): Make generic and
+	move to System.Generic_Array_Operations.
+
+2011-10-13  Geert Bosch  <bosch@adacore.com>
+
 	* a-ngrear.adb ("abs"): Adjust for modified L2_Norm generic
 	* s-gearop.ads (L2_Norm): Change profile to be suitable for
 	Complex_Vector

@@ -102,10 +102,10 @@ package body Ada.Numerics.Generic_Real_Arrays is
    procedure Swap (Left, Right : in out Real);
    --  Exchange Left and Right
 
-   function Sqrt (X : Real) return Real;
-   --  Sqrt is implemented locally here, in order to avoid dragging in all of
-   --  the elementary functions. Speed of the square root is not a big concern
-   --  here. This also avoids depending on a specific floating point type.
+   function Sqrt is new Ops.Sqrt (Real);
+   --  Instant a generic square root implementation here, in order to avoid
+   --  instantiating a complete copy of Generic_Elementary_Functions.
+   --  Speed of the square root is not a big concern here.
 
    ------------
    -- Rotate --
@@ -118,51 +118,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
       X := Old_X - Sin * (Old_Y + Old_X * Tau);
       Y := Old_Y + Sin * (Old_X - Old_Y * Tau);
    end Rotate;
-
-   ----------
-   -- Sqrt --
-   ----------
-
-   function Sqrt (X : Real) return Real is
-      Root, Next : Real;
-
-   begin
-      --  Be defensive: any comparisons with NaN values will yield False.
-
-      if not (X > 0.0) then
-         if X = 0.0 then
-            return X;
-         else
-            raise Argument_Error;
-         end if;
-      end if;
-
-      --  Compute an initial estimate based on:
-
-      --     X = M * R**E and Sqrt (X) = Sqrt (M) * R**(E / 2.0),
-
-      --  where M is the mantissa, R is the radix and E the exponent.
-
-      --  By ignoring the mantissa and ignoring the case of an odd
-      --  exponent, we get a final error that is at most R. In other words,
-      --  the result has about a single bit precision.
-
-      Root := Real (Real'Machine_Radix) ** (Real'Exponent (X) / 2);
-
-      --  Because of the poor initial estimate, use the Babylonian method of
-      --  computing the square root, as it is stable for all inputs. Every step
-      --  will roughly double the precision of the result. Just a few steps
-      --  suffice in most cases. Eight iterations should give about 2**8 bits
-      --  of precision.
-
-      for J in 1 .. 8 loop
-         Next := (Root + X / Root) / 2.0;
-         exit when Root = Next;
-         Root := Next;
-      end loop;
-
-      return Root;
-   end Sqrt;
 
    ----------
    -- Swap --
