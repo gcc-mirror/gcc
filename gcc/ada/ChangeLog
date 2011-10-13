@@ -1,3 +1,50 @@
+2011-10-13  Cyrille Comar  <comar@adacore.com>
+
+	* gnat_ugn.texi: Minor editing.
+
+2011-10-13  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add documentation on packages and attributes
+	that are inherited from a project being extended into the
+	extended project.
+
+2011-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Master): Rewritten.
+	(Expand_N_Full_Type_Declaration): Reformat the declarative
+	region. Update the call to Build_Master_Renaming.
+	(Expand_Previous_Access_Type): Rewritten.
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call):
+	Add local constant Result_Subt and update related usage.
+	(Expand_N_Extended_Return_Statement): Add local constant
+	Result_Subt and update related usage.
+	* exp_ch9.adb (Build_Activation_Chain): Rewritten to use the
+	new context detection mechanism.
+	(Build_Class_Wide_Master):
+	Use Insert_Action to add the renaming into the tree.
+	(Build_Master_Entity): Rewritten to use the new context detection
+	mechanism.
+	(Build_Master_Renaming): Add formal parameter Ins_Nod
+	and related usage. Use Insert_Action to add the renaming into the
+	tree.
+	(Find_Enclosing_Context): New subsidiary routine. Rather
+	than relying on enclosing scopes, this routine looks at the
+	tree structure to figure out the proper context for a _master
+	or a _chain. This approach eliminates the issues with transient
+	scopes which have not been converted into blocks.
+	* exp_ch9.ads (Build_Master_Entity): Change parameter profile
+	to better reflect the new usage. Update the related comment.
+	(Build_Master_Renaming): Add formal parameter Ins_Nod. Update
+	the comment on usage.
+	* sem_ch3.adb (Access_Definition): Update the calls to
+	Build_Master_Entity and Build_Master_Renaming.
+	* sem_ch6.adb (Create_Extra_Formals): Add local variable
+	Full_Subt. Code reformatting.
+	* sem_util.adb (Is_Iterator): Alphabetized.
+	(Is_LHS): Alphabetized.
+	(Is_Limited_Class_Wide_Type): New routine.
+	* sem_util.ads (Is_Limited_Class_Wide_Type): New routine.
+
 2011-10-13  Geert Bosch  <bosch@adacore.com>
 
 	* a-ngrear.adb (Solve): Make generic and move to

@@ -346,6 +346,18 @@ package body Exp_Ch9 is
    --  to handle properly the case of bounds that depend on discriminants.
    --  If Cap is true, the result is capped according to Entry_Family_Bound.
 
+   procedure Find_Enclosing_Context
+     (N             : Node_Id;
+      Context       : out Node_Id;
+      Context_Id    : out Entity_Id;
+      Context_Decls : out List_Id);
+   --  Subsidiary routine to procedures Build_Activation_Chain_Entity and
+   --  Build_Master_Entity. Given an arbitrary node in the tree, find the
+   --  nearest enclosing body, block, package or return statement and return
+   --  its constituents. Context is the enclosing construct, Context_Id is
+   --  the scope of Context_Id and Context_Decls is the declarative list of
+   --  Context.
+
    procedure Extract_Dispatching_Call
      (N        : Node_Id;
       Call_Ent : out Entity_Id;
@@ -870,64 +882,33 @@ package body Exp_Ch9 is
 
       --  Local variables
 
-      Decls : List_Id;
-      Par   : Node_Id;
+      Context    : Node_Id;
+      Context_Id : Entity_Id;
+      Decls      : List_Id;
 
    --  Start of processing for Build_Activation_Chain_Entity
 
    begin
-      --  Traverse the parent chain looking for an enclosing construct which
-      --  contains an activation chain variable. The construct is either a
-      --  body, a block, or an extended return.
-
-      Par := Parent (N);
-
-      while not Nkind_In (Par, N_Block_Statement,
-                               N_Entry_Body,
-                               N_Extended_Return_Statement,
-                               N_Package_Body,
-                               N_Package_Declaration,
-                               N_Subprogram_Body,
-                               N_Task_Body)
-      loop
-         Par := Parent (Par);
-      end loop;
-
-      --  When the enclosing construct is a package body, the activation chain
-      --  variable is declared in the body, but the Activation_Chain_Entity is
-      --  attached to the spec.
-
-      if Nkind (Par) = N_Package_Body then
-         Decls := Declarations (Par);
-         Par   := Unit_Declaration_Node (Corresponding_Spec (Par));
-
-      elsif Nkind (Par) = N_Package_Declaration then
-         Decls := Visible_Declarations (Specification (Par));
-
-      elsif Nkind (Par) = N_Extended_Return_Statement then
-         Decls := Return_Object_Declarations (Par);
-
-      else
-         Decls := Declarations (Par);
-      end if;
+      Find_Enclosing_Context (N, Context, Context_Id, Decls);
 
       --  If an activation chain entity has not been declared already, create
       --  one.
 
-      if Nkind (Par) = N_Extended_Return_Statement
-        or else No (Activation_Chain_Entity (Par))
+      if Nkind (Context) = N_Extended_Return_Statement
+        or else No (Activation_Chain_Entity (Context))
       then
          --  Since extended return statements do not store the entity of the
          --  chain, examine the return object declarations to avoid creating
          --  a duplicate.
 
-         if Nkind (Par) = N_Extended_Return_Statement
-           and then Has_Activation_Chain (Par)
+         if Nkind (Context) = N_Extended_Return_Statement
+           and then Has_Activation_Chain (Context)
          then
             return;
          end if;
 
          declare
+            Loc   : constant Source_Ptr := Sloc (Context);
             Chain : Entity_Id;
             Decl  : Node_Id;
 
@@ -943,19 +924,29 @@ package body Exp_Ch9 is
             --  Activate_Tasks. Task activation is the responsibility of the
             --  caller.
 
-            if Nkind (Par) /= N_Extended_Return_Statement then
-               Set_Activation_Chain_Entity (Par, Chain);
+            if Nkind (Context) /= N_Extended_Return_Statement then
+               Set_Activation_Chain_Entity (Context, Chain);
             end if;
 
             Decl :=
-              Make_Object_Declaration (Sloc (Par),
+              Make_Object_Declaration (Loc,
                 Defining_Identifier => Chain,
                 Aliased_Present     => True,
                 Object_Definition   =>
-                  New_Reference_To (RTE (RE_Activation_Chain), Sloc (Par)));
+                  New_Reference_To (RTE (RE_Activation_Chain), Loc));
 
             Prepend_To (Decls, Decl);
-            Analyze (Decl);
+
+            --  Ensure that the _chain appears in the proper scope of the
+            --  context.
+
+            if Context_Id /= Current_Scope then
+               Push_Scope (Context_Id);
+               Analyze (Decl);
+               Pop_Scope;
+            else
+               Analyze (Decl);
+            end if;
          end;
       end if;
    end Build_Activation_Chain_Entity;
@@ -1189,8 +1180,7 @@ package body Exp_Ch9 is
           Subtype_Mark        => New_Reference_To (Standard_Integer, Loc),
           Name                => Name_Id);
 
-      Insert_Before (Related_Node, Ren_Decl);
-      Analyze (Ren_Decl);
+      Insert_Action (Related_Node, Ren_Decl);
 
       Set_Master_Id (Typ, Master_Id);
    end Build_Class_Wide_Master;
@@ -2885,43 +2875,51 @@ package body Exp_Ch9 is
    -- Build_Master_Entity --
    -------------------------
 
-   procedure Build_Master_Entity
-     (Id          : Entity_Id;
-      Use_Current : Boolean := False)
-   is
-      Loc         : constant Source_Ptr := Sloc (Id);
-      Context     : Node_Id;
-      Master_Decl : Node_Id;
-      Master_Scop : Entity_Id;
+   procedure Build_Master_Entity (Obj_Or_Typ : Entity_Id) is
+      Loc        : constant Source_Ptr := Sloc (Obj_Or_Typ);
+      Context    : Node_Id;
+      Context_Id : Entity_Id;
+      Decl       : Node_Id;
+      Decls      : List_Id;
+      Par        : Node_Id;
 
    begin
-      if Use_Current then
-         Master_Scop := Current_Scope;
+      if Is_Itype (Obj_Or_Typ) then
+         Par := Associated_Node_For_Itype (Obj_Or_Typ);
       else
-         Master_Scop := Find_Master_Scope (Id);
+         Par := Parent (Obj_Or_Typ);
       end if;
 
-      --  Do not create a master if the enclosing scope already has one or if
-      --  there is no task hierarchy.
+      --  When creating a master for a record component which is either a task
+      --  or access-to-task, the enclosing record is the master scope and the
+      --  proper insertion point is the component list.
 
-      if Has_Master_Entity (Master_Scop)
+      if Is_Record_Type (Current_Scope) then
+         Context    := Par;
+         Context_Id := Current_Scope;
+         Decls      := List_Containing (Context);
+
+      --  Default case for object declarations and access types. Note that the
+      --  context is updated to the nearest enclosing body, block, package or
+      --  return statement.
+
+      else
+         Find_Enclosing_Context (Par, Context, Context_Id, Decls);
+      end if;
+
+      --  Do not create a master if one already exists or there is no task
+      --  hierarchy.
+
+      if Has_Master_Entity (Context_Id)
         or else Restriction_Active (No_Task_Hierarchy)
       then
          return;
       end if;
 
-      --  Determine the proper context to insert the master
-
-      if Is_Access_Type (Id) and then Is_Itype (Id) then
-         Context := Associated_Node_For_Itype (Id);
-      else
-         Context := Parent (Id);
-      end if;
-
       --  Create a master, generate:
       --    _Master : constant Master_Id := Current_Master.all;
 
-      Master_Decl :=
+      Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Name_uMaster),
@@ -2931,29 +2929,43 @@ package body Exp_Ch9 is
             Make_Explicit_Dereference (Loc,
               New_Reference_To (RTE (RE_Current_Master), Loc)));
 
-      Insert_Before (Context, Master_Decl);
-      Analyze (Master_Decl);
+      --  The master is inserted at the start of the declarative list of the
+      --  context.
 
-      --  Mark enclosing scope and its associated construct as task masters
+      Prepend_To (Decls, Decl);
 
-      Set_Has_Master_Entity (Master_Scop);
+      --  In certain cases where transient scopes are involved, the immediate
+      --  scope is not always the proper master scope. Ensure that the master
+      --  declaration and entity appear in the same context.
 
-      while Nkind (Context) /= N_Compilation_Unit loop
-         Context := Parent (Context);
+      if Context_Id /= Current_Scope then
+         Push_Scope (Context_Id);
+         Analyze (Decl);
+         Pop_Scope;
+      else
+         Analyze (Decl);
+      end if;
 
-         --  If we fall off the top, we are at the outer level, and the
-         --  environment task is our effective master, so nothing to mark.
+      --  Mark the enclosing scope and its associated construct as being task
+      --  masters.
 
+      Set_Has_Master_Entity (Context_Id);
+
+      while Present (Context)
+        and then Nkind (Context) /= N_Compilation_Unit
+      loop
          if Nkind_In (Context, N_Block_Statement,
                                N_Subprogram_Body,
                                N_Task_Body)
          then
-            Set_Is_Task_Master (Context, True);
-            return;
+            Set_Is_Task_Master (Context);
+            exit;
 
          elsif Nkind (Parent (Context)) = N_Subunit then
             Context := Corresponding_Stub (Parent (Context));
          end if;
+
+         Context := Parent (Context);
       end loop;
    end Build_Master_Entity;
 
@@ -2961,8 +2973,12 @@ package body Exp_Ch9 is
    -- Build_Master_Renaming --
    ---------------------------
 
-   procedure Build_Master_Renaming (N : Node_Id; Typ : Entity_Id) is
-      Loc         : constant Source_Ptr := Sloc (N);
+   procedure Build_Master_Renaming
+     (Ptr_Typ : Entity_Id;
+      Ins_Nod : Node_Id := Empty)
+   is
+      Loc         : constant Source_Ptr := Sloc (Ptr_Typ);
+      Context     : Node_Id;
       Master_Decl : Node_Id;
       Master_Id   : Entity_Id;
 
@@ -2973,9 +2989,22 @@ package body Exp_Ch9 is
          return;
       end if;
 
+      --  Determine the proper context to insert the master renaming
+
+      if Present (Ins_Nod) then
+         Context := Ins_Nod;
+      elsif Is_Itype (Ptr_Typ) then
+         Context := Associated_Node_For_Itype (Ptr_Typ);
+      else
+         Context := Parent (Ptr_Typ);
+      end if;
+
+      --  Generate:
+      --    <Ptr_Typ>M : Master_Id renames _Master;
+
       Master_Id :=
         Make_Defining_Identifier (Loc,
-          New_External_Name (Chars (Typ), 'M'));
+          New_External_Name (Chars (Ptr_Typ), 'M'));
 
       Master_Decl :=
         Make_Object_Renaming_Declaration (Loc,
@@ -2983,10 +3012,11 @@ package body Exp_Ch9 is
           Subtype_Mark        => New_Reference_To (RTE (RE_Master_Id), Loc),
           Name                => Make_Identifier (Loc, Name_uMaster));
 
-      Insert_Before (N, Master_Decl);
-      Analyze (Master_Decl);
+      Insert_Action (Context, Master_Decl);
 
-      Set_Master_Id (Typ, Master_Id);
+      --  The renamed master now services the access type
+
+      Set_Master_Id (Ptr_Typ, Master_Id);
    end Build_Master_Renaming;
 
    -----------------------------------------
@@ -4404,7 +4434,7 @@ package body Exp_Ch9 is
 
             Make_Object_Declaration (Loc,
               Defining_Identifier => Chain,
-              Aliased_Present => True,
+              Aliased_Present     => True,
               Object_Definition   =>
                 New_Reference_To (RTE (RE_Activation_Chain), Loc))),
 
@@ -12016,6 +12046,94 @@ package body Exp_Ch9 is
                 Make_Integer_Literal (Loc, 1)),
             Make_Integer_Literal (Loc, 0)));
    end Family_Size;
+
+   ----------------------------
+   -- Find_Enclosing_Context --
+   ----------------------------
+
+   procedure Find_Enclosing_Context
+     (N             : Node_Id;
+      Context       : out Node_Id;
+      Context_Id    : out Entity_Id;
+      Context_Decls : out List_Id)
+   is
+   begin
+      --  Traverse the parent chain looking for an enclosing body, block,
+      --  package or return statement.
+
+      Context := Parent (N);
+      while not Nkind_In (Context, N_Block_Statement,
+                                   N_Entry_Body,
+                                   N_Extended_Return_Statement,
+                                   N_Package_Body,
+                                   N_Package_Declaration,
+                                   N_Subprogram_Body,
+                                   N_Task_Body)
+      loop
+         Context := Parent (Context);
+      end loop;
+
+      --  Extract the constituents of the context
+
+      if Nkind (Context) = N_Extended_Return_Statement then
+         Context_Decls := Return_Object_Declarations (Context);
+         Context_Id    := Return_Statement_Entity (Context);
+
+      --  Package declarations and bodies use a common library-level activation
+      --  chain or task master, therefore return the package declaration as the
+      --  proper carrier for the appropriate flag.
+
+      elsif Nkind (Context) = N_Package_Body then
+         Context_Decls := Declarations (Context);
+         Context_Id    := Corresponding_Spec (Context);
+         Context       := Parent (Context_Id);
+
+         if Nkind (Context) = N_Defining_Program_Unit_Name then
+            Context := Parent (Parent (Context));
+         else
+            Context := Parent (Context);
+         end if;
+
+      elsif Nkind (Context) = N_Package_Declaration then
+         Context_Decls := Visible_Declarations (Specification (Context));
+         Context_Id    := Defining_Unit_Name (Specification (Context));
+
+         if Nkind (Context_Id) = N_Defining_Program_Unit_Name then
+            Context_Id := Defining_Identifier (Context_Id);
+         end if;
+
+      else
+         Context_Decls := Declarations (Context);
+
+         if Nkind (Context) = N_Block_Statement then
+            Context_Id := Entity (Identifier (Context));
+
+         elsif Nkind (Context) = N_Entry_Body then
+            Context_Id := Defining_Identifier (Context);
+
+         elsif Nkind (Context) = N_Subprogram_Body then
+            if Present (Corresponding_Spec (Context)) then
+               Context_Id := Corresponding_Spec (Context);
+            else
+               Context_Id := Defining_Unit_Name (Specification (Context));
+
+               if Nkind (Context_Id) = N_Defining_Program_Unit_Name then
+                  Context_Id := Defining_Identifier (Context_Id);
+               end if;
+            end if;
+
+         elsif Nkind (Context) = N_Task_Body then
+            Context_Id := Corresponding_Spec (Context);
+
+         else
+            raise Program_Error;
+         end if;
+      end if;
+
+      pragma Assert (Present (Context));
+      pragma Assert (Present (Context_Id));
+      pragma Assert (Present (Context_Decls));
+   end Find_Enclosing_Context;
 
    -----------------------
    -- Find_Master_Scope --
