@@ -645,16 +645,33 @@
 
 	PR middle-end/50527
 	* tree.c (build_common_builtin_nodes): Add local_define_builtin for
+	BUILT_IN_ALLOCA_WITH_ALIGN.  Mark that BUILT_IN_ALLOCA_WITH_ALIGN can
+	throw.
 	* builtins.c (expand_builtin_alloca): Handle BUILT_IN_ALLOCA_WITH_ALIGN
+	arglist.  Set align for	BUILT_IN_ALLOCA_WITH_ALIGN.
+	(expand_builtin): Handle BUILT_IN_ALLOCA_WITH_ALIGN.
+	(is_inexpensive_builtin): Handle BUILT_IN_ALLOCA_WITH_ALIGN.
 	* tree-ssa-ccp.c (evaluate_stmt): Set align for
+	BUILT_IN_ALLOCA_WITH_ALIGN.
+	(fold_builtin_alloca_for_var): Rename to ...
+	(fold_builtin_alloca_with_align): Set DECL_ALIGN from 2nd
+	BUILT_IN_ALLOCA_WITH_ALIGN argument.
+	(ccp_fold_stmt): Try folding BUILT_IN_ALLOCA_WITH_ALIGN using
+	fold_builtin_alloca_with_align.
+	(optimize_stack_restore): Handle BUILT_IN_ALLOCA_WITH_ALIGN.
 	* builtins.def (BUILT_IN_ALLOCA_WITH_ALIGN): Declare using
+	DEF_BUILTIN_STUB.
 	* ipa-pure-const.c (special_builtin_state): Handle
+	BUILT_IN_ALLOCA_WITH_ALIGN.
 	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1)
+	(call_may_clobber_ref_p_1): Same.
 	* function.c (gimplify_parameters): Lower vla to
+	BUILT_IN_ALLOCA_WITH_ALIGN.
 	* gimplify.c (gimplify_vla_decl): Same.
 	* cfgexpand.c (expand_call_stmt): Handle BUILT_IN_ALLOCA_WITH_ALIGN.
 	* tree-mudflap.c (mf_xform_statements): Same.
 	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary)
+	(mark_all_reaching_defs_necessary_1, propagate_necessity): Same.
 	* varasm.c (incorporeal_function_p): Same.
 	* tree-object-size.c (alloc_object_size): Same.
 	* gimple.c (gimple_build_call_from_tree): Same.
