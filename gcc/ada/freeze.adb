@@ -1409,7 +1409,6 @@ package body Freeze is
                if Nkind (Decl) = N_Subprogram_Renaming_Declaration then
                   if Error_Posted (Decl) then
                      Set_Has_Completion (E);
-
                   else
                      Build_And_Analyze_Renamed_Body (Decl, E, After);
                   end if;
@@ -1621,8 +1620,8 @@ package body Freeze is
       --  Start of processing for Check_Current_Instance
 
       begin
-         --  In Ada 95, the (imprecise) rule is that the current instance of a
-         --  limited type is aliased. In Ada 2005, limitedness must be
+         --  In Ada 95, the (imprecise) rule is that the current instance
+         --  of a limited type is aliased. In Ada 2005, limitedness must be
          --  explicit: either a tagged type, or a limited record.
 
          if Is_Limited_Type (Rec_Type)
@@ -1651,6 +1650,7 @@ package body Freeze is
          if Nkind (Decl) = N_Full_Type_Declaration then
             declare
                Tdef : constant Node_Id := Type_Definition (Decl);
+
             begin
                if Nkind (Tdef) = N_Modular_Type_Definition then
                   declare

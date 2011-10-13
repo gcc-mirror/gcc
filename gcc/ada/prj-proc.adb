@@ -145,6 +145,7 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Packages_To_Check      : String_List_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
@@ -1347,6 +1348,7 @@ package body Prj.Proc is
    procedure Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Packages_To_Check      : String_List_Access;
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
@@ -1361,6 +1363,7 @@ package body Prj.Proc is
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
          Env                    => Env,
+         Packages_To_Check      => Packages_To_Check,
          Reset_Tree             => Reset_Tree);
 
       if Project_Qualifier_Of
@@ -2325,6 +2328,7 @@ package body Prj.Proc is
    procedure Process_Project_Tree_Phase_1
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Packages_To_Check      : String_List_Access;
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
@@ -2349,6 +2353,7 @@ package body Prj.Proc is
       Recursive_Process
         (Project                => Project,
          In_Tree                => In_Tree,
+         Packages_To_Check      => Packages_To_Check,
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
          Env                    => Env,
@@ -2482,6 +2487,7 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Packages_To_Check      : String_List_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
@@ -2539,9 +2545,9 @@ package body Prj.Proc is
                Recursive_Process
                  (In_Tree                => In_Tree,
                   Project                => New_Project,
+                  Packages_To_Check      => Packages_To_Check,
                   From_Project_Node      =>
-                    Project_Node_Of
-                      (With_Clause, From_Project_Node_Tree),
+                    Project_Node_Of (With_Clause, From_Project_Node_Tree),
                   From_Project_Node_Tree => From_Project_Node_Tree,
                   Env                    => Env,
                   Extended_By            => No_Project);
@@ -2596,6 +2602,7 @@ package body Prj.Proc is
             Prj.Part.Parse
               (In_Tree           => From_Project_Node_Tree,
                Project           => Loaded_Project,
+               Packages_To_Check => Packages_To_Check,
                Project_File_Name => Get_Name_String (List.Path),
                Errout_Handling   => Prj.Part.Never_Finalize,
                Current_Directory => Get_Name_String (Project.Directory.Name),
@@ -2627,6 +2634,7 @@ package body Prj.Proc is
                   Process_Project_Tree_Phase_1
                     (In_Tree                => Tree,
                      Project                => List.Project,
+                     Packages_To_Check      => Packages_To_Check,
                      Success                => Success,
                      From_Project_Node      => Loaded_Project,
                      From_Project_Node_Tree => From_Project_Node_Tree,
@@ -2638,6 +2646,7 @@ package body Prj.Proc is
                   Process_Project_Tree_Phase_1
                     (In_Tree                => Tree,
                      Project                => List.Project,
+                     Packages_To_Check      => Packages_To_Check,
                      Success                => Success,
                      From_Project_Node      => Loaded_Project,
                      From_Project_Node_Tree => From_Project_Node_Tree,
@@ -2859,8 +2868,10 @@ package body Prj.Proc is
             Recursive_Process
               (In_Tree                => In_Tree,
                Project                => Project.Extends,
-               From_Project_Node      => Extended_Project_Of
-                 (Declaration_Node, From_Project_Node_Tree),
+               Packages_To_Check      => Packages_To_Check,
+               From_Project_Node      =>
+                 Extended_Project_Of
+                   (Declaration_Node, From_Project_Node_Tree),
                From_Project_Node_Tree => From_Project_Node_Tree,
                Env                    => Env,
                Extended_By            => Project);

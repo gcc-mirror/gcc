@@ -16895,10 +16895,8 @@ package body Sem_Ch3 is
          when N_Conditional_Expression =>
             declare
                Then_Expr : constant Node_Id :=
-                 Next
-                   (First (Expressions (Original_Node (Exp))));
+                             Next (First (Expressions (Original_Node (Exp))));
                Else_Expr : constant Node_Id := Next (Then_Expr);
-
             begin
                return OK_For_Limited_Init_In_05 (Typ, Then_Expr)
                  and then OK_For_Limited_Init_In_05 (Typ, Else_Expr);

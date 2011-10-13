@@ -607,12 +607,12 @@ package Sem_Attr is
      (Typ          : Entity_Id;
       Nam          : TSS_Name_Type;
       Partial_View : Entity_Id := Empty) return Boolean;
-   --  For a limited type Typ, return True iff the given attribute is
-   --  available. For Ada 05, availability is defined by 13.13.2(36/1). For Ada
-   --  95, an attribute is considered to be available if it has been specified
-   --  using an attribute definition clause for the type, or for its full view,
-   --  or for an ancestor of either. Parameter Partial_View is used only
-   --  internally, when checking for an attribute definition clause that is not
-   --  visible (Ada 95 only).
+   --  For a limited type Typ, return True if and only if the given attribute
+   --  is available. For Ada 2005, availability is defined by 13.13.2(36/1).
+   --  For Ada 95, an attribute is considered to be available if it has been
+   --  specified using an attribute definition clause for the type, or for its
+   --  full view, or for an ancestor of either. Parameter Partial_View is used
+   --  only internally, when checking for an attribute definition clause that
+   --  is not visible (Ada 95 only).
 
 end Sem_Attr;

@@ -30,8 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This is the default implementation for platforms where the full capability
---  is not supported. It returns tracebacks as lists of "0x..." strings
---  corresponding to the addresses.
+--  is not supported. It returns tracebacks as lists of LF separated strings of
+--  the form "0x..." corresponding to the addresses.
 
 with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
 with System.Address_Image;
@@ -51,8 +51,10 @@ package body GNAT.Traceback.Symbolic is
       else
          declare
             Img : String := System.Address_Image (Traceback (Traceback'First));
+
             Result : String (1 .. (Img'Length + 3) * Traceback'Length);
             Last   : Natural := 0;
+
          begin
             for J in Traceback'Range loop
                Img := System.Address_Image (Traceback (J));

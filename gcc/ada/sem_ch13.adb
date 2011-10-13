@@ -3364,6 +3364,7 @@ package body Sem_Ch13 is
 
          --  No statements other than code statements, pragmas, and labels.
          --  Again we allow certain internally generated statements.
+
          --  In Ada 2012, qualified expressions are names, and the code
          --  statement is initially parsed as a procedure call.
 

@@ -1616,7 +1616,7 @@ begin
                      if Arg'Length > 8
                        and then
                          (Arg (Arg'First + 6 .. Arg'First + 8) = "rtp"
-                          or else Arg (Arg'Last - 2 .. Arg'Last) = "rtp")
+                           or else Arg (Arg'Last - 2 .. Arg'Last) = "rtp")
                      then
                         Linker_Options.Increment_Last;
                         Linker_Options.Table (Linker_Options.Last) :=

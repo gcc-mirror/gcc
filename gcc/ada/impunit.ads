@@ -25,8 +25,9 @@
 
 --  This package contains data and functions used to determine if a given unit
 --  is an internal unit intended only for use by the implementation and which
---  should not be directly WITH'ed by user code. It also checks for Ada 05
---  units that should only be WITH'ed in Ada 05 mode.
+--  should not be directly WITH'ed by user code. It also checks for Ada 2005
+--  units that should only be WITH'ed in Ada 2005 mode, and Ada 2012 units
+--  that should only be WITH'ed in Ada 2012 mode.
 
 with Types; use Types;
 

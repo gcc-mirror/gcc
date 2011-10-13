@@ -3515,7 +3515,7 @@ package body Exp_Aggr is
                            --  active, if this is a preelaborable unit or a
                            --  predefined unit. This ensures that predefined
                            --  units get the same level of constant folding in
-                           --  Ada 95 and Ada 05, where their categorization
+                           --  Ada 95 and Ada 2005, where their categorization
                            --  has changed.
 
                            declare

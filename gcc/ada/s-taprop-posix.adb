@@ -1089,6 +1089,9 @@ package body System.Task_Primitives.Operations is
          Result := pthread_mutex_destroy (S.L'Access);
          pragma Assert (Result = 0);
 
+         --  Storage_Error is propagated as intended if the allocation of the
+         --  underlying OS entities fails.
+
          raise Storage_Error;
       end if;
 
@@ -1101,6 +1104,9 @@ package body System.Task_Primitives.Operations is
 
          Result := pthread_condattr_destroy (Cond_Attr'Access);
          pragma Assert (Result = 0);
+
+         --  Storage_Error is propagated as intended if the allocation of the
+         --  underlying OS entities fails.
 
          raise Storage_Error;
       end if;

@@ -254,9 +254,9 @@ package body Exp_Ch6 is
       Add_Extra_Actual_To_Call (Function_Call, Obj_Acc_Formal, Obj_Address);
    end Add_Access_Actual_To_Build_In_Place_Call;
 
-   --------------------------------------------------
+   ------------------------------------------------------
    -- Add_Unconstrained_Actuals_To_Build_In_Place_Call --
-   --------------------------------------------------
+   ------------------------------------------------------
 
    procedure Add_Unconstrained_Actuals_To_Build_In_Place_Call
      (Function_Call  : Node_Id;
@@ -5285,13 +5285,13 @@ package body Exp_Ch6 is
                      else
                         SS_Allocator := New_Copy_Tree (Heap_Allocator);
 
-                        --  The heap and pool allocators are marked
+                        --  The heap and pool allocators are marked as
                         --  Comes_From_Source since they correspond to an
                         --  explicit user-written allocator (that is, it will
                         --  only be executed on behalf of callers that call the
-                        --  function as initialization for such an
-                        --  allocator). This prevents errors when
-                        --  No_Implicit_Heap_Allocations is in force.
+                        --  function as initialization for such an allocator).
+                        --  Prevents errors when No_Implicit_Heap_Allocations
+                        --  is in force.
 
                         Set_Comes_From_Source (Heap_Allocator, True);
                         Set_Comes_From_Source (Pool_Allocator, True);
@@ -8218,9 +8218,7 @@ package body Exp_Ch6 is
 
       else
          Add_Unconstrained_Actuals_To_Build_In_Place_Call
-           (Func_Call,
-            Function_Id,
-            Alloc_Form => Secondary_Stack);
+           (Func_Call, Function_Id, Alloc_Form => Secondary_Stack);
          Caller_Object := Empty;
 
          Establish_Transient_Scope (Object_Decl, Sec_Stack => True);

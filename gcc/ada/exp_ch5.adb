@@ -3466,8 +3466,8 @@ package body Exp_Ch5 is
                --  remain there.
 
                pragma Assert (First_Entity (Scope (Loop_Id)) = Loop_Id);
-
                Set_First_Entity (Scope (Loop_Id), Next_Entity (Loop_Id));
+
                if Last_Entity (Scope (Loop_Id)) = Loop_Id then
                   Set_Last_Entity (Scope (Loop_Id), Empty);
                end if;

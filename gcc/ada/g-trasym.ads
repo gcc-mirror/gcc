@@ -42,6 +42,10 @@
 --     OpenVMS Alpha and ia64
 --     Windows
 
+--  Note: on targets other than those listed above, a dummy implementation of
+--  the body returns a series of LF separated strings of the form "0x..."
+--  corresponding to the addresses.
+
 --  The routines provided in this package assume that your application has
 --  been compiled with debugging information turned on, since this information
 --  is used to build a symbolic traceback.
@@ -87,8 +91,7 @@ package GNAT.Traceback.Symbolic is
    pragma Elaborate_Body;
 
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String;
-   --  Build a string containing a symbolic traceback of the given call chain
-   --
+   --  Build a string containing a symbolic traceback of the given call chain.
    --  Note: This procedure may be installed by Set_Trace_Decorator, to get a
    --  symbolic traceback on all exceptions raised (see GNAT.Exception_Traces).
 

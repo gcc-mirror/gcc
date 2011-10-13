@@ -1992,8 +1992,8 @@ package body Sem_Type is
       --  exclude the universal_fixed operator, which often causes ambiguities
       --  in legacy code.
 
-      --  Ditto in Ada 2012, where an ambiguity may arise for an operation on
-      --  a partial view that is completed with a fixed point type. See
+      --  Ditto in Ada 2012, where an ambiguity may arise for an operation
+      --  on a partial view that is completed with a fixed point type. See
       --  AI05-0020 and AI05-0209. The ambiguity is resolved in favor of the
       --  user-defined subprogram so that a client of the package has the
       --  same resulution as the body of the package.

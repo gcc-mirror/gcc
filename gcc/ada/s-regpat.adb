@@ -2013,11 +2013,13 @@ package body System.Regpat is
             Must_Have_Length => Dummy.Must_Have_Length,
             Paren_Count      => Dummy.Paren_Count,
             Flags            => Dummy.Flags,
-            Program          => Dummy.Program
-              (Dummy.Program'First .. Dummy.Program'First + Size - 1));
+            Program          =>
+              Dummy.Program
+                (Dummy.Program'First .. Dummy.Program'First + Size - 1));
       else
          --  We have to recompile now that we know the size
-         --  ??? Can we use Ada 05's return construct ?
+         --  ??? Can we use Ada 2005's return construct ?
+
          declare
             Result : Pattern_Matcher (Size);
          begin

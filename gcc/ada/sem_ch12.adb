@@ -1573,12 +1573,14 @@ package body Sem_Ch12 is
      (T   : Entity_Id;
       Def : Node_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (Def);
-      Base      : constant Entity_Id :=
-                    New_Internal_Entity
-                      (E_Decimal_Fixed_Point_Type,
-                       Current_Scope,
-                         Sloc (Defining_Identifier (Parent (Def))), 'G');
+      Loc : constant Source_Ptr := Sloc (Def);
+
+      Base : constant Entity_Id :=
+               New_Internal_Entity
+                 (E_Decimal_Fixed_Point_Type,
+                  Current_Scope,
+                  Sloc (Defining_Identifier (Parent (Def))), 'G');
+
       Int_Base  : constant Entity_Id := Standard_Integer;
       Delta_Val : constant Ureal := Ureal_1;
       Digs_Val  : constant Uint  := Uint_6;
@@ -1719,7 +1721,8 @@ package body Sem_Ch12 is
       Base : constant Entity_Id :=
                New_Internal_Entity
                  (E_Floating_Point_Type, Current_Scope,
-                    Sloc (Defining_Identifier (Parent (Def))), 'G');
+                  Sloc (Defining_Identifier (Parent (Def))), 'G');
+
    begin
       Enter_Name          (T);
       Set_Ekind           (T, E_Enumeration_Subtype);
@@ -1768,7 +1771,7 @@ package body Sem_Ch12 is
       Base : constant Entity_Id :=
                New_Internal_Entity
                  (E_Floating_Point_Type, Current_Scope,
-                    Sloc (Defining_Identifier (Parent (Def))), 'G');
+                  Sloc (Defining_Identifier (Parent (Def))), 'G');
 
    begin
       --  The various semantic attributes are taken from the predefined type
@@ -1987,7 +1990,8 @@ package body Sem_Ch12 is
       Base : constant Entity_Id :=
                New_Internal_Entity
                  (E_Ordinary_Fixed_Point_Type, Current_Scope,
-                    Sloc (Defining_Identifier (Parent (Def))), 'G');
+                  Sloc (Defining_Identifier (Parent (Def))), 'G');
+
    begin
       --  The semantic attributes are set for completeness only, their values
       --  will never be used, since all properties of the type are non-static.
@@ -2410,9 +2414,9 @@ package body Sem_Ch12 is
    is
       Base : constant Entity_Id :=
                New_Internal_Entity
-          (E_Signed_Integer_Type,
-           Current_Scope,
-             Sloc (Defining_Identifier (Parent (Def))), 'G');
+                 (E_Signed_Integer_Type,
+                  Current_Scope,
+                  Sloc (Defining_Identifier (Parent (Def))), 'G');
 
    begin
       Enter_Name (T);

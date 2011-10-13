@@ -2934,8 +2934,7 @@ package body Exp_Ch9 is
       Insert_Before (Context, Master_Decl);
       Analyze (Master_Decl);
 
-      --  Mark the enclosing scope and its associated construct as being task
-      --  masters.
+      --  Mark enclosing scope and its associated construct as task masters
 
       Set_Has_Master_Entity (Master_Scop);
 

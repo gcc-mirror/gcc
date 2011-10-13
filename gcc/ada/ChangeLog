@@ -1,3 +1,16 @@
+2011-10-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sem_ch3.adb, impunit.adb, impunit.ads, sem_type.adb,
+	prj-proc.adb, exp_ch9.adb, s-regpat.adb, sem_ch10.adb, sem_prag.adb,
+	sem_ch12.adb, freeze.adb, sem_attr.adb, sem_attr.ads, gnatlink.adb,
+	par-ch6.adb, exp_ch6.adb, sem_ch4.adb, sem_ch6.adb, sem_ch8.adb,
+	par-util.adb, sem_ch13.adb, lib-xref.adb, g-trasym.adb, g-trasym.ads,
+	exp_aggr.adb, s-taprop-posix.adb: Minor reformatting.
+
+2011-10-13  Geert Bosch  <bosch@adacore.com>
+
+	* s-gearop.adb: Minor comment additions.
+
 2011-10-13  Fedor Rybin  <frybin@adacore.com>
 
 	* gnat_ugn.texi: Add gnattest section.
