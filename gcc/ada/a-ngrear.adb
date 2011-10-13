@@ -33,7 +33,7 @@
 --  reason for this is new Ada 2012 requirements that prohibit algorithms such
 --  as Strassen's algorithm, which may be used by some BLAS implementations. In
 --  addition, some platforms lacked suitable compilers to compile the reference
---  BLAS/LAPACK implementation. Finally, on some platforms there are be more
+--  BLAS/LAPACK implementation. Finally, on some platforms there are more
 --  floating point types than supported by BLAS/LAPACK.
 
 with Ada.Containers.Generic_Anonymous_Array_Sort; use Ada.Containers;
@@ -336,6 +336,11 @@ package body Ada.Numerics.Generic_Real_Arrays is
            X_Matrix      => Real_Matrix,
            Result_Matrix => Real_Matrix,
            Operation     => "abs");
+
+      function Solve is
+         new Matrix_Vector_Solution (Real'Base, Real_Vector, Real_Matrix);
+
+      function Solve is new Matrix_Matrix_Solution (Real'Base, Real_Matrix);
 
       function Unit_Matrix is new
         Generic_Array_Operations.Unit_Matrix
@@ -696,58 +701,11 @@ package body Ada.Numerics.Generic_Real_Arrays is
    -- Solve --
    -----------
 
-   function Solve (A : Real_Matrix; X : Real_Vector) return Real_Vector is
-      N   : constant Natural := Length (A);
-      MA  : Real_Matrix := A;
-      MX  : Real_Matrix (A'Range (1), 1 .. 1);
-      R   : Real_Vector (A'Range (2));
-      Det : Real'Base;
+   function Solve (A : Real_Matrix; X : Real_Vector) return Real_Vector
+      renames Instantiations.Solve;
 
-   begin
-      if X'Length /= N then
-         raise Constraint_Error with "incompatible vector length";
-      end if;
-
-      for J in 0 .. MX'Length (1) - 1 loop
-         MX (MX'First (1) + J, 1) := X (X'First + J);
-      end loop;
-
-      Forward_Eliminate (MA, MX, Det);
-      Back_Substitute (MA, MX);
-
-      for J in 0 .. R'Length - 1 loop
-         R (R'First + J) := MX (MX'First (1) + J, 1);
-      end loop;
-
-      return R;
-   end Solve;
-
-   function Solve (A, X : Real_Matrix) return Real_Matrix is
-      N  : constant Natural := Length (A);
-      MA : Real_Matrix (A'Range (2), A'Range (2));
-      MB : Real_Matrix (A'Range (2), X'Range (2));
-      Det : Real'Base;
-
-   begin
-      if X'Length (1) /= N then
-         raise Constraint_Error with "matrices have unequal number of rows";
-      end if;
-
-      for J in 0 .. A'Length (1) - 1 loop
-         for K in MA'Range (2) loop
-            MA (MA'First (1) + J, K) := A (A'First (1) + J, K);
-         end loop;
-
-         for K in MB'Range (2) loop
-            MB (MB'First (1) + J, K) := X (X'First (1) + J, K);
-         end loop;
-      end loop;
-
-      Forward_Eliminate (MA, MB, Det);
-      Back_Substitute (MA, MB);
-
-      return MB;
-   end Solve;
+   function Solve (A, X : Real_Matrix) return Real_Matrix
+      renames Instantiations.Solve;
 
    ----------------------
    -- Sort_Eigensystem --

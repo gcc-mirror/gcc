@@ -390,6 +390,35 @@ pragma Pure (Generic_Array_Operations);
      (Left  : Left_Matrix;
       Right : Right_Matrix) return Result_Matrix;
 
+   ----------------------------
+   -- Matrix_Vector_Solution --
+   ----------------------------
+
+   generic
+      type Scalar is private;
+      type Vector is array (Integer range <>) of Scalar;
+      type Matrix is array (Integer range <>, Integer range <>) of Scalar;
+      with procedure Back_Substitute (M, N : in out Matrix) is <>;
+      with procedure Forward_Eliminate
+             (M   : in out Matrix;
+              N   : in out Matrix;
+              Det : out Scalar) is <>;
+   function Matrix_Vector_Solution (A : Matrix; X : Vector) return Vector;
+
+   ----------------------------
+   -- Matrix_Matrix_Solution --
+   ----------------------------
+
+   generic
+      type Scalar is private;
+      type Matrix is array (Integer range <>, Integer range <>) of Scalar;
+      with procedure Back_Substitute (M, N : in out Matrix) is <>;
+      with procedure Forward_Eliminate
+             (M   : in out Matrix;
+              N   : in out Matrix;
+              Det : out Scalar) is <>;
+   function Matrix_Matrix_Solution (A : Matrix; X : Matrix) return Matrix;
+
    ----------
    -- Sqrt --
    ----------
