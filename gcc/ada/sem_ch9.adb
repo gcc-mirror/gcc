@@ -1163,7 +1163,11 @@ package body Sem_Ch9 is
    begin
       if No_Run_Time_Mode then
          Error_Msg_CRT ("protected type", N);
-         goto Leave;
+         if Has_Aspects (N) then
+            Analyze_Aspect_Specifications (N, Def_Id);
+         end if;
+
+         return;
       end if;
 
       Tasking_Used := True;
@@ -1256,6 +1260,13 @@ package body Sem_Ch9 is
          Next_Entity (E);
       end loop;
 
+      --  If aspects are present, analyze them now. They can make references
+      --  to the discriminants of the type.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Def_Id);
+      end if;
+
       End_Scope;
 
       --  Case of a completion of a private declaration
@@ -1286,11 +1297,6 @@ package body Sem_Ch9 is
             Expand_N_Protected_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
          end if;
-      end if;
-
-   <<Leave>>
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
       end if;
    end Analyze_Protected_Type_Declaration;
 
