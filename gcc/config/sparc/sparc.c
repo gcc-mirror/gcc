@@ -9496,21 +9496,21 @@ sparc_vis_init_builtins (void)
       def_builtin_const ("__builtin_vis_fchksm16", CODE_FOR_fchksm16_vis,
 			 v4hi_ftype_v4hi_v4hi);
 
-      def_builtin_const ("__builtin_vis_fsll16", CODE_FOR_fsll16_vis,
+      def_builtin_const ("__builtin_vis_fsll16", CODE_FOR_vashlv4hi3,
 			 v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fslas16", CODE_FOR_fslas16_vis,
+      def_builtin_const ("__builtin_vis_fslas16", CODE_FOR_vssashlv4hi3,
 			 v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fsrl16", CODE_FOR_fsrl16_vis,
+      def_builtin_const ("__builtin_vis_fsrl16", CODE_FOR_vlshrv4hi3,
 			 v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fsra16", CODE_FOR_fsra16_vis,
+      def_builtin_const ("__builtin_vis_fsra16", CODE_FOR_vashrv4hi3,
 			 v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fsll32", CODE_FOR_fsll32_vis,
+      def_builtin_const ("__builtin_vis_fsll32", CODE_FOR_vashlv2si3,
 			 v2si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fslas32", CODE_FOR_fslas32_vis,
+      def_builtin_const ("__builtin_vis_fslas32", CODE_FOR_vssashlv2si3,
 			 v2si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fsrl32", CODE_FOR_fsrl32_vis,
+      def_builtin_const ("__builtin_vis_fsrl32", CODE_FOR_vlshrv2si3,
 			 v2si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fsra32", CODE_FOR_fsra32_vis,
+      def_builtin_const ("__builtin_vis_fsra32", CODE_FOR_vashrv2si3,
 			 v2si_ftype_v2si_v2si);
 
       if (TARGET_ARCH64)
@@ -9527,21 +9527,21 @@ sparc_vis_init_builtins (void)
       def_builtin_const ("__builtin_vis_fpsub64", CODE_FOR_fpsub64_vis,
 			 di_ftype_di_di);
 
-      def_builtin_const ("__builtin_vis_fpadds16", CODE_FOR_fpadds16_vis,
+      def_builtin_const ("__builtin_vis_fpadds16", CODE_FOR_ssaddv4hi3,
 			 v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fpadds16s", CODE_FOR_fpadds16s_vis,
+      def_builtin_const ("__builtin_vis_fpadds16s", CODE_FOR_ssaddv2hi3,
 			 v2hi_ftype_v2hi_v2hi);
-      def_builtin_const ("__builtin_vis_fpsubs16", CODE_FOR_fpsubs16_vis,
+      def_builtin_const ("__builtin_vis_fpsubs16", CODE_FOR_sssubv4hi3,
 			 v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fpsubs16s", CODE_FOR_fpsubs16s_vis,
+      def_builtin_const ("__builtin_vis_fpsubs16s", CODE_FOR_sssubv2hi3,
 			 v2hi_ftype_v2hi_v2hi);
-      def_builtin_const ("__builtin_vis_fpadds32", CODE_FOR_fpadds32_vis,
+      def_builtin_const ("__builtin_vis_fpadds32", CODE_FOR_ssaddv2si3,
 			 v2si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fpadds32s", CODE_FOR_fpadds32s_vis,
+      def_builtin_const ("__builtin_vis_fpadds32s", CODE_FOR_ssaddsi3,
 			 v1si_ftype_v1si_v1si);
-      def_builtin_const ("__builtin_vis_fpsubs32", CODE_FOR_fpsubs32_vis,
+      def_builtin_const ("__builtin_vis_fpsubs32", CODE_FOR_sssubv2si3,
 			 v2si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_fpsubs32s_vis,
+      def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_sssubsi3,
 			 v1si_ftype_v1si_v1si);
 
       if (TARGET_ARCH64)

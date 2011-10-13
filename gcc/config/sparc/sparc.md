@@ -53,7 +53,7 @@
    (UNSPEC_FPACK32		41)
    (UNSPEC_FPACKFIX		42)
    (UNSPEC_FEXPAND		43)
-   (UNSPEC_FPMERGE		44)
+   (UNSPEC_MUL16AU		44)
    (UNSPEC_MUL16AL		45)
    (UNSPEC_MUL8UL		46)
    (UNSPEC_MULDUL		47)
@@ -89,6 +89,9 @@
    (UNSPEC_FHADD		83)
    (UNSPEC_FHSUB		84)
    (UNSPEC_XMUL			85)
+   (UNSPEC_MUL8			86)
+   (UNSPEC_MUL8SU		87)
+   (UNSPEC_MULDSU		88)
   ])
 
 (define_constants
@@ -8004,36 +8007,64 @@
  [(set_attr "type" "fga")
   (set_attr "fptype" "double")])
 
-;; It may be possible to describe this operation as (1 indexed):
-;; (vec_select (vec_duplicate (vec_duplicate (vec_concat 1 2)))
-;;  1,5,10,14,19,23,28,32)
-;; Note that (vec_merge:V8QI [(V4QI) (V4QI)] (10101010 = 170) doesn't work
-;; because vec_merge expects all the operands to be of the same type.
 (define_insn "fpmerge_vis"
   [(set (match_operand:V8QI 0 "register_operand" "=e")
-        (unspec:V8QI [(match_operand:V4QI 1 "register_operand" "f")
-                      (match_operand:V4QI 2 "register_operand" "f")]
-         UNSPEC_FPMERGE))]
+        (vec_select:V8QI
+          (vec_concat:V8QI (match_operand:V4QI 1 "register_operand" "f")
+                           (match_operand:V4QI 2 "register_operand" "f"))
+          (parallel [(const_int 0) (const_int 4)
+                     (const_int 1) (const_int 5)
+                     (const_int 2) (const_int 6)
+		     (const_int 3) (const_int 7)])))]
  "TARGET_VIS"
  "fpmerge\t%1, %2, %0"
+ [(set_attr "type" "fga")
+  (set_attr "fptype" "double")])
+
+(define_insn "vec_interleave_lowv8qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=e")
+        (vec_select:V8QI
+          (vec_concat:V16QI (match_operand:V8QI 1 "register_operand" "f")
+                            (match_operand:V8QI 2 "register_operand" "f"))
+          (parallel [(const_int 0) (const_int 8)
+                     (const_int 1) (const_int 9)
+                     (const_int 2) (const_int 10)
+		     (const_int 3) (const_int 11)])))]
+ "TARGET_VIS"
+ "fpmerge\t%L1, %L2, %0"
+ [(set_attr "type" "fga")
+  (set_attr "fptype" "double")])
+
+(define_insn "vec_interleave_highv8qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=e")
+        (vec_select:V8QI
+          (vec_concat:V16QI (match_operand:V8QI 1 "register_operand" "f")
+                            (match_operand:V8QI 2 "register_operand" "f"))
+          (parallel [(const_int 4) (const_int 12)
+                     (const_int 5) (const_int 13)
+                     (const_int 6) (const_int 14)
+		     (const_int 7) (const_int 15)])))]
+ "TARGET_VIS"
+ "fpmerge\t%H1, %H2, %0"
  [(set_attr "type" "fga")
   (set_attr "fptype" "double")])
 
 ;; Partitioned multiply instructions
 (define_insn "fmul8x16_vis"
   [(set (match_operand:V4HI 0 "register_operand" "=e")
-        (mult:V4HI (match_operand:V4QI 1 "register_operand" "f")
-                   (match_operand:V4HI 2 "register_operand" "e")))]
+        (unspec:V4HI [(match_operand:V4QI 1 "register_operand" "f")
+                      (match_operand:V4HI 2 "register_operand" "e")]
+         UNSPEC_MUL8))]
   "TARGET_VIS"
   "fmul8x16\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-;; Only one of the following two insns can be a multiply.
 (define_insn "fmul8x16au_vis"
   [(set (match_operand:V4HI 0 "register_operand" "=e")
-        (mult:V4HI (match_operand:V4QI 1 "register_operand" "f")
-                   (match_operand:V2HI 2 "register_operand" "f")))]
+        (unspec:V4HI [(match_operand:V4QI 1 "register_operand" "f")
+                      (match_operand:V2HI 2 "register_operand" "f")]
+         UNSPEC_MUL16AU))]
   "TARGET_VIS"
   "fmul8x16au\t%1, %2, %0"
   [(set_attr "type" "fpmul")
@@ -8049,11 +8080,11 @@
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-;; Only one of the following two insns can be a multiply.
 (define_insn "fmul8sux16_vis"
   [(set (match_operand:V4HI 0 "register_operand" "=e")
-        (mult:V4HI (match_operand:V8QI 1 "register_operand" "e")
-                   (match_operand:V4HI 2 "register_operand" "e")))]
+        (unspec:V4HI [(match_operand:V8QI 1 "register_operand" "e")
+                      (match_operand:V4HI 2 "register_operand" "e")]
+         UNSPEC_MUL8SU))]
   "TARGET_VIS"
   "fmul8sux16\t%1, %2, %0"
   [(set_attr "type" "fpmul")
@@ -8069,11 +8100,11 @@
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
-;; Only one of the following two insns can be a multiply.
 (define_insn "fmuld8sux16_vis"
   [(set (match_operand:V2SI 0 "register_operand" "=e")
-        (mult:V2SI (match_operand:V4QI 1 "register_operand" "f")
-                   (match_operand:V2HI 2 "register_operand" "f")))]
+        (unspec:V2SI [(match_operand:V4QI 1 "register_operand" "f")
+                      (match_operand:V2HI 2 "register_operand" "f")]
+         UNSPEC_MULDSU))]
   "TARGET_VIS"
   "fmuld8sux16\t%1, %2, %0"
   [(set_attr "type" "fpmul")
@@ -8440,8 +8471,10 @@
 (define_code_iterator vis3_shift [ashift ss_ashift lshiftrt ashiftrt])
 (define_code_attr vis3_shift_insn
   [(ashift "fsll") (ss_ashift "fslas") (lshiftrt "fsrl") (ashiftrt "fsra")])
+(define_code_attr vis3_shift_patname
+  [(ashift "ashl") (ss_ashift "ssashl") (lshiftrt "lshr") (ashiftrt "ashr")])
    
-(define_insn "<vis3_shift_insn><vbits>_vis"
+(define_insn "v<vis3_shift_patname><mode>3"
   [(set (match_operand:V64N8 0 "register_operand" "=<vconstr>")
         (vis3_shift:V64N8 (match_operand:V64N8 1 "register_operand" "<vconstr>")
                           (match_operand:V64N8 2 "register_operand" "<vconstr>")))]
@@ -8490,8 +8523,10 @@
 (define_code_iterator vis3_addsub_ss [ss_plus ss_minus])
 (define_code_attr vis3_addsub_ss_insn
   [(ss_plus "fpadds") (ss_minus "fpsubs")])
+(define_code_attr vis3_addsub_ss_patname
+  [(ss_plus "ssadd") (ss_minus "sssub")])
 
-(define_insn "<vis3_addsub_ss_insn><vbits>_vis"
+(define_insn "<vis3_addsub_ss_patname><mode>3"
   [(set (match_operand:VASS 0 "register_operand" "=<vconstr>")
         (vis3_addsub_ss:VASS (match_operand:VASS 1 "register_operand" "<vconstr>")
                              (match_operand:VASS 2 "register_operand" "<vconstr>")))]

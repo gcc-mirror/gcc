@@ -64,6 +64,22 @@
 
 2011-10-12  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.md (UNSPEC_FPMERGE): Delete.
+	(UNSPEC_MUL16AU, UNSPEC_MUL8, UNSPEC_MUL8SU, UNSPEC_MULDSU): New
+	unspecs.
+	(fpmerge_vis): Remove inaccurate comment, represent using vec_select
+	of a vec_concat.
+	(vec_interleave_lowv8qi, vec_interleave_highv8qi): New insns.
+	(fmul8x16_vis, fmul8x16au_vis, fmul8sux16_vis, fmuld8sux16_vis):
+	Reimplement as unspecs and remove inaccurate comments.
+	(vis3_shift_patname): New code attr.
+	(<vis3_shift_insn><vbits>_vis): Rename to "v<vis3_shift_patname><mode>3".
+	(vis3_addsub_ss_patname): New code attr.
+	(<vis3_addsub_ss_insn><vbits>_vis): Rename to
+	"<vis3_addsub_ss_patname><mode>3".
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Update to
+	accommodate pattern name changes.
+
 	* config/sparc/sparc.h: Do not force TARGET_VIS3 and TARGET_FMAF
 	to zero when assembler lacks support for such instructions.
 	* config/sparc/sparc.c (sparc_option_override): Clear MASK_VIS3
