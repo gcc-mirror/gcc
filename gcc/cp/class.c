@@ -5663,6 +5663,22 @@ determine_key_method (tree type)
   return;
 }
 
+
+/* Allocate and return an instance of struct sorted_fields_type with
+   N fields.  */
+
+static struct sorted_fields_type *
+sorted_fields_type_new (int n)
+{
+  struct sorted_fields_type *sft;
+  sft = ggc_alloc_sorted_fields_type (sizeof (struct sorted_fields_type)
+				      + n * sizeof (tree));
+  sft->len = n;
+
+  return sft;
+}
+
+
 /* Perform processing required when the definition of T (a class type)
    is complete.  */
 
@@ -5792,9 +5808,7 @@ finish_struct_1 (tree t)
   n_fields = count_fields (TYPE_FIELDS (t));
   if (n_fields > 7)
     {
-      struct sorted_fields_type *field_vec = ggc_alloc_sorted_fields_type
-	 (sizeof (struct sorted_fields_type) + n_fields * sizeof (tree));
-      field_vec->len = n_fields;
+      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
       add_fields_to_record_type (TYPE_FIELDS (t), field_vec, 0);
       qsort (field_vec->elts, n_fields, sizeof (tree),
 	     field_decl_cmp);

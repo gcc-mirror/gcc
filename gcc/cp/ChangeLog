@@ -1,3 +1,8 @@
+2011-10-13   Diego Novillo  <dnovillo@google.com>
+
+	* class.c (sorted_fields_type_new): Factor out of ...
+	(finish_struct_1): ... here.
+
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50618
