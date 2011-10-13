@@ -29,6 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Numerics; use Ada.Numerics;
+
 package body System.Generic_Array_Operations is
 
    --  The local function Check_Unit_Last computes the index
@@ -566,6 +568,56 @@ package body System.Generic_Array_Operations is
 
       return R;
    end Scalar_Vector_Elementwise_Operation;
+
+   ----------
+   -- Sqrt --
+   ----------
+
+   function Sqrt (X : Real'Base) return Real'Base is
+      Root, Next : Real'Base;
+
+   begin
+      --  Be defensive: any comparisons with NaN values will yield False.
+
+      if not (X > 0.0) then
+         if X = 0.0 then
+            return X;
+         else
+            raise Argument_Error;
+         end if;
+
+      elsif X > Real'Base'Last then
+         --  X is infinity, which is its own square root
+
+         return X;
+      end if;
+
+      --  Compute an initial estimate based on:
+
+      --     X = M * R**E and Sqrt (X) = Sqrt (M) * R**(E / 2.0),
+
+      --  where M is the mantissa, R is the radix and E the exponent.
+
+      --  By ignoring the mantissa and ignoring the case of an odd
+      --  exponent, we get a final error that is at most R. In other words,
+      --  the result has about a single bit precision.
+
+      Root := Real'Base (Real'Machine_Radix) ** (Real'Exponent (X) / 2);
+
+      --  Because of the poor initial estimate, use the Babylonian method of
+      --  computing the square root, as it is stable for all inputs. Every step
+      --  will roughly double the precision of the result. Just a few steps
+      --  suffice in most cases. Eight iterations should give about 2**8 bits
+      --  of precision.
+
+      for J in 1 .. 8 loop
+         Next := (Root + X / Root) / 2.0;
+         exit when Root = Next;
+         Root := Next;
+      end loop;
+
+      return Root;
+   end Sqrt;
 
    ---------------------------
    -- Matrix_Matrix_Product --

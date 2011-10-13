@@ -388,6 +388,14 @@ pragma Pure (Generic_Array_Operations);
      (Left  : Left_Matrix;
       Right : Right_Matrix) return Result_Matrix;
 
+   ----------
+   -- Sqrt --
+   ----------
+
+   generic
+      type Real is digits <>;
+   function Sqrt (X : Real'Base) return Real'Base;
+
    -----------------
    -- Swap_Column --
    -----------------
