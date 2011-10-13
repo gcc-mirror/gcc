@@ -1303,6 +1303,16 @@
   DONE;
 })
 
+(define_expand "reduc_umin_v8hi"
+  [(umin:V8HI
+     (match_operand:V8HI 0 "register_operand" "")
+     (match_operand:V8HI 1 "register_operand" ""))]
+  "TARGET_SSE4_1"
+{
+  ix86_expand_reduc (gen_uminv8hi3, operands[0], operands[1]);
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel floating point comparisons
