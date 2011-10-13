@@ -1,5 +1,12 @@
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50614
+	* cp-tree.h (VAR_TEMPL_TYPE_FIELD_OR_FUNCTION_DECL_CHECK): New.
+	(DECL_TEMPLATE_INFO): Use it.
+	* pt.c (tsubst_decl) [FIELD_DECL]: Set DECL_TEMPLATE_INFO
+	if the decl has an NSDMI.
+	* init.c (perform_member_init): Use it.
+
 	PR c++/50437
 	* cp-tree.h (struct tree_lambda_expr): Add closure field.
 	(LAMBDA_EXPR_CLOSURE): New.

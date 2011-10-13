@@ -201,6 +201,9 @@ c-common.h, not after.
 #define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK4(NODE,VAR_DECL,FUNCTION_DECL,TYPE_DECL,TEMPLATE_DECL)
 
+#define VAR_TEMPL_TYPE_FIELD_OR_FUNCTION_DECL_CHECK(NODE) \
+  TREE_CHECK5(NODE,VAR_DECL,FIELD_DECL,FUNCTION_DECL,TYPE_DECL,TEMPLATE_DECL)
+
 #define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE) \
   TREE_CHECK(NODE,BOUND_TEMPLATE_TEMPLATE_PARM)
 
@@ -2556,7 +2559,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    global function f.  In this case, DECL_TEMPLATE_INFO for S<int>::f
    will be non-NULL, but DECL_USE_TEMPLATE will be zero.  */
 #define DECL_TEMPLATE_INFO(NODE) \
-  (DECL_LANG_SPECIFIC (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK (NODE)) \
+  (DECL_LANG_SPECIFIC (VAR_TEMPL_TYPE_FIELD_OR_FUNCTION_DECL_CHECK (NODE)) \
    ->u.min.template_info)
 
 /* For a VAR_DECL, indicates that the variable is actually a
@@ -2701,7 +2704,10 @@ extern void decl_shadowed_for_var_insert (tree, tree);
      template <class T> struct S { friend void f<int>(int, double); }
 
    the DECL_TI_TEMPLATE will be an IDENTIFIER_NODE for `f' and the
-   DECL_TI_ARGS will be {int}.  */
+   DECL_TI_ARGS will be {int}.
+
+   For a FIELD_DECL with a non-static data member initializer, this value
+   is the FIELD_DECL it was instantiated from.  */
 #define DECL_TI_TEMPLATE(NODE)      TI_TEMPLATE (DECL_TEMPLATE_INFO (NODE))
 
 /* The template arguments used to obtain this decl from the most

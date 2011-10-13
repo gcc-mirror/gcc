@@ -497,11 +497,11 @@ perform_member_init (tree member, tree init)
      mem-initializer for this field.  */
   if (init == NULL_TREE)
     {
-      if (CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (member)))
+      if (DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
 	/* Do deferred instantiation of the NSDMI.  */
 	init = (tsubst_copy_and_build
-		(DECL_INITIAL (member),
-		 CLASSTYPE_TI_ARGS (DECL_CONTEXT (member)),
+		(DECL_INITIAL (DECL_TI_TEMPLATE (member)),
+		 DECL_TI_ARGS (member),
 		 tf_warning_or_error, member, /*function_p=*/false,
 		 /*integral_constant_expression_p=*/false));
       else
