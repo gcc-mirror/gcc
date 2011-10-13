@@ -291,11 +291,12 @@ pragma Pure (Generic_Array_Operations);
    -------------
 
    generic
-      type Scalar is private;
-      type Vector is array (Integer range <>) of Scalar;
-      with function Inner_Product (Left, Right : Vector) return Scalar is <>;
-      with function Sqrt (X : Scalar) return Scalar is <>;
-   function L2_Norm (X : Vector) return Scalar;
+      type X_Scalar is private;
+      type Result_Real is digits <>;
+      type X_Vector is array (Integer range <>) of X_Scalar;
+      with function "abs" (Right : X_Scalar) return Result_Real is <>;
+      with function Sqrt (X : Result_Real'Base) return Result_Real'Base is <>;
+   function L2_Norm (X : X_Vector) return Result_Real'Base;
 
    -------------------
    -- Outer_Product --

@@ -1,3 +1,11 @@
+2011-10-13  Geert Bosch  <bosch@adacore.com>
+
+	* a-ngrear.adb ("abs"): Adjust for modified L2_Norm generic
+	* s-gearop.ads (L2_Norm): Change profile to be suitable for
+	Complex_Vector
+	* s-gearop.adb (L2_Norm): Reimplement using direct definition,
+	not inner product
+
 2011-10-13  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_ch3.adb, impunit.adb, impunit.ads, sem_type.adb,
