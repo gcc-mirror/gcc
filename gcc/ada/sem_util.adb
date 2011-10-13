@@ -333,6 +333,16 @@ package body Sem_Util is
       end if;
    end Apply_Compile_Time_Constraint_Error;
 
+   function Available_Full_View_Of_Component (T : Entity_Id) return Boolean is
+      ST  : constant Entity_Id := Scope (T);
+      SCT : constant Entity_Id := Scope (Component_Type (T));
+
+   begin
+      return In_Open_Scopes (ST)
+        and then In_Open_Scopes (SCT)
+        and then Scope_Depth (ST) >= Scope_Depth (SCT);
+   end Available_Full_View_Of_Component;
+
    --------------------------------
    -- Bad_Predicated_Subtype_Use --
    --------------------------------

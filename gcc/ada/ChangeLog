@@ -1,3 +1,28 @@
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Available_Full_View_Of_Component):
+	New predicate to determine whether some operations on an array
+	type are available when the full view of its component may differ
+	from the view of the point of the array declaration.
+	* sem_ch4.adb (Find_Equality_Types): Use
+	Available_Full_View_Of_Component.
+	* sem_type.adb (Valid_Boolean_Arg, Valid_Comparison_Arg): Ditto
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb: Analyze aspects while discriminants of protected
+	type are visible.
+
+2011-10-13  Geert Bosch  <bosch@adacore.com>
+
+	* Makefile.rtl (GNATRTL_TASKING_OBJECTS): Add
+	a-nlcoar.o, a-nllcar.o, a-nucoar.o and s-gearop.o, as these no
+	longer depend on an external library.
+	* gcc-interface/Makefile.in (GNATRTL_LINEARALGEBRA_OBJS): Remove
+	a-nlcoar.o, a-nllcar.o, a-nucoar.o and s-gearop.o.
+	Update dependencies.
+	* gcc-interface/Make-lang.in: Update dependencies. 
+
 2011-10-13  Cyrille Comar  <comar@adacore.com>
 
 	* gnat_ugn.texi: Minor editing.
