@@ -887,7 +887,7 @@ package body Sem_Ch3 is
       --  proper Master for the created tasks.
 
       if Nkind (Related_Nod) = N_Object_Declaration
-         and then Expander_Active
+        and then Expander_Active
       then
          if Is_Interface (Desig_Type)
            and then Is_Limited_Record (Desig_Type)
@@ -899,10 +899,9 @@ package body Sem_Ch3 is
 
          elsif Has_Task (Desig_Type)
            and then Comes_From_Source (Related_Nod)
-           and then not Restriction_Active (No_Task_Hierarchy)
          then
-            Build_Master_Entity (Defining_Identifier (Related_Nod), True);
-            Build_Master_Renaming (Related_Nod, Anon_Type);
+            Build_Master_Entity (Defining_Identifier (Related_Nod));
+            Build_Master_Renaming (Anon_Type);
          end if;
       end if;
 

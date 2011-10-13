@@ -2015,8 +2015,16 @@ end Work;
 @end smallexample
 
 @noindent
-An extending project retains all the switches specified in the
-extended project.
+All packages that are not declared in the extending project are inherited from
+the project being extended, with their attributes, with the exception of
+@code{Linker'Linker_Options} which is never inherited. In particular, an
+extending project retains all the switches specified in the project being
+extended.
+
+At the project level, if they are not declared in the extending project, some
+attributes are inherited from the project being extended. They are:
+@code{Languages}, @code{Main} (for a root non library project) and
+@code{Library_Name} (for a project extending a library project)
 
 @menu
 * Project Hierarchy Extension::

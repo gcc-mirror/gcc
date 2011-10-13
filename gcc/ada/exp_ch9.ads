@@ -60,24 +60,22 @@ package Exp_Ch9 is
    --  protected type. The statements are wrapped inside a block due to a local
    --  declaration.
 
-   procedure Build_Master_Entity
-     (Id          : Entity_Id;
-      Use_Current : Boolean := False);
+   procedure Build_Master_Entity (Obj_Or_Typ : Entity_Id);
    --  Given the name of an object or a type which is either a task, contains
    --  tasks or designates tasks, create a _master in the appropriate scope
-   --  which captures the value of Current_Master. Mark the enclosing body as
-   --  being a task master. A _master is built to avoid multiple expensive
-   --  calls to Current_Master and to facilitate object initialization. Flag
-   --  Use_Current ensures that the master scope is the current scope.
+   --  which captures the value of Current_Master. Mark the nearest enclosing
+   --  body or block as being a task master.
 
-   procedure Build_Master_Renaming (N : Node_Id; Typ : Entity_Id);
-   --  Given an access type Typ and a declaration N of a designated type that
-   --  is either a task or contains tasks, create a renaming of the form:
+   procedure Build_Master_Renaming
+     (Ptr_Typ : Entity_Id;
+      Ins_Nod : Node_Id := Empty);
+   --  Given an access type Ptr_Typ whose designated type is either a task or
+   --  contains tasks, create a renaming of the form:
    --
-   --     TypM : Master_Id renames _Master;
+   --     <Ptr_Typ>M : Master_Id renames _Master;
    --
-   --  where _master denotes the task master of the enclosing context. The
-   --  renaming declaration is inserted before N.
+   --  where _master denotes the task master of the enclosing context. Ins_Nod
+   --  is used to provide a specific insertion node for the renaming.
 
    function Build_Private_Protected_Declaration (N : Node_Id) return Entity_Id;
    --  A subprogram body without a previous spec that appears in a protected

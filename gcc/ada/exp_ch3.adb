@@ -4124,29 +4124,27 @@ package body Exp_Ch3 is
    ------------------------------------
 
    procedure Expand_N_Full_Type_Declaration (N : Node_Id) is
-      Def_Id : constant Entity_Id := Defining_Identifier (N);
-      B_Id   : constant Entity_Id := Base_Type (Def_Id);
-      FN     : Node_Id;
-      Par_Id : Entity_Id;
 
-      procedure Build_Master (Def_Id : Entity_Id);
-      --  Create the master associated with Def_Id
+      procedure Build_Master (Ptr_Typ : Entity_Id);
+      --  Create the master associated with Ptr_Typ
 
       ------------------
       -- Build_Master --
       ------------------
 
-      procedure Build_Master (Def_Id : Entity_Id) is
+      procedure Build_Master (Ptr_Typ : Entity_Id) is
+         Desig_Typ : constant Entity_Id := Designated_Type (Ptr_Typ);
+
       begin
          --  Anonymous access types are created for the components of the
          --  record parameter for an entry declaration. No master is created
          --  for such a type.
 
-         if Has_Task (Designated_Type (Def_Id))
-           and then Comes_From_Source (N)
+         if Comes_From_Source (N)
+           and then Has_Task (Desig_Typ)
          then
-            Build_Master_Entity (Def_Id);
-            Build_Master_Renaming (Parent (Def_Id), Def_Id);
+            Build_Master_Entity (Ptr_Typ);
+            Build_Master_Renaming (Ptr_Typ);
 
          --  Create a class-wide master because a Master_Id must be generated
          --  for access-to-limited-class-wide types whose root may be extended
@@ -4155,8 +4153,7 @@ package body Exp_Ch3 is
          --  Note: This code covers access-to-limited-interfaces because they
          --        can be used to reference tasks implementing them.
 
-         elsif Is_Class_Wide_Type (Designated_Type (Def_Id))
-           and then Is_Limited_Type (Designated_Type (Def_Id))
+         elsif Is_Limited_Class_Wide_Type (Desig_Typ)
            and then Tasking_Allowed
 
             --  Do not create a class-wide master for types whose convention is
@@ -4174,12 +4171,19 @@ package body Exp_Ch3 is
             --  Because the convention appears after we have done the
             --  processing for type Ref.
 
-           and then Convention (Designated_Type (Def_Id)) /= Convention_Java
-           and then Convention (Designated_Type (Def_Id)) /= Convention_CIL
+           and then Convention (Desig_Typ) /= Convention_Java
+           and then Convention (Desig_Typ) /= Convention_CIL
          then
-            Build_Class_Wide_Master (Def_Id);
+            Build_Class_Wide_Master (Ptr_Typ);
          end if;
       end Build_Master;
+
+      --  Local declarations
+
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      B_Id   : constant Entity_Id := Base_Type (Def_Id);
+      FN     : Node_Id;
+      Par_Id : Entity_Id;
 
    --  Start of processing for Expand_N_Full_Type_Declaration
 
@@ -4240,7 +4244,7 @@ package body Exp_Ch3 is
 
                   if First then
                      Build_Master_Entity (Def_Id);
-                     Build_Master_Renaming (N, Typ);
+                     Build_Master_Renaming (Typ);
                      M_Id := Master_Id (Typ);
 
                      First := False;
@@ -5174,23 +5178,30 @@ package body Exp_Ch3 is
    ---------------------------------
 
    procedure Expand_Previous_Access_Type (Def_Id : Entity_Id) is
-      T : Entity_Id := First_Entity (Current_Scope);
+      Ptr_Typ : Entity_Id := First_Entity (Current_Scope);
 
    begin
-      --  Find all access types declared in the current scope, whose
-      --  designated type is Def_Id. If it does not have a Master_Id,
-      --  create one now.
+      --  Find all access types in the current scope whose designated type is
+      --  Def_Id and build master renamings for them.
 
-      while Present (T) loop
-         if Is_Access_Type (T)
-           and then Designated_Type (T) = Def_Id
-           and then No (Master_Id (T))
+      while Present (Ptr_Typ) loop
+         if Is_Access_Type (Ptr_Typ)
+           and then Designated_Type (Ptr_Typ) = Def_Id
+           and then No (Master_Id (Ptr_Typ))
          then
+            --  Ensure that the designated type has a master
+
             Build_Master_Entity (Def_Id);
-            Build_Master_Renaming (Parent (Def_Id), T);
+
+            --  Private and incomplete types complicate the insertion of master
+            --  renamings because the access type may precede the full view of
+            --  the designated type. For this reason, the master renamings are
+            --  inserted relative to the designated type.
+
+            Build_Master_Renaming (Ptr_Typ, Ins_Nod => Parent (Def_Id));
          end if;
 
-         Next_Entity (T);
+         Next_Entity (Ptr_Typ);
       end loop;
    end Expand_Previous_Access_Type;
 

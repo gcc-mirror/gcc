@@ -846,6 +846,10 @@ package Sem_Util is
    --  A library-level declaration is one that is accessible from Standard,
    --  i.e. a library unit or an entity declared in a library package.
 
+   function Is_Limited_Class_Wide_Type (Typ : Entity_Id) return Boolean;
+   --  Given an arbitrary type, determine whether it is a limited class-wide
+   --  type.
+
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
    --  Determines whether Expr is a reference to a variable or IN OUT mode
    --  parameter of the current enclosing subprogram.

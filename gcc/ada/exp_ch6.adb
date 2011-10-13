@@ -477,13 +477,14 @@ package body Exp_Ch6 is
       Function_Id   : Entity_Id;
       Master_Actual : Node_Id)
    is
-      Loc    : constant Source_Ptr := Sloc (Function_Call);
-      Actual : Node_Id := Master_Actual;
+      Loc         : constant Source_Ptr := Sloc (Function_Call);
+      Result_Subt : constant Entity_Id := Available_View (Etype (Function_Id));
+      Actual      : Node_Id := Master_Actual;
 
    begin
       --  No such extra parameters are needed if there are no tasks
 
-      if not Has_Task (Available_View (Etype (Function_Id))) then
+      if not Has_Task (Result_Subt) then
          return;
       end if;
 
@@ -4590,6 +4591,7 @@ package body Exp_Ch6 is
 
       Par_Func     : constant Entity_Id :=
                        Return_Applies_To (Return_Statement_Entity (N));
+      Result_Subt  : constant Entity_Id := Etype (Par_Func);
       Ret_Obj_Id   : constant Entity_Id :=
                        First_Entity (Return_Statement_Entity (N));
       Ret_Obj_Decl : constant Node_Id := Parent (Ret_Obj_Id);
@@ -4894,7 +4896,7 @@ package body Exp_Ch6 is
       --  built in place (though we plan to do so eventually).
 
       if Present (HSS)
-        or else Is_Composite_Type (Etype (Par_Func))
+        or else Is_Composite_Type (Result_Subt)
         or else No (Exp)
       then
          if No (HSS) then
@@ -4921,7 +4923,7 @@ package body Exp_Ch6 is
          --  the case of result types with task parts.
 
          if Is_Build_In_Place
-           and then Has_Task (Etype (Par_Func))
+           and then Has_Task (Result_Subt)
          then
             --  The return expression is an aggregate for a complex type which
             --  contains tasks. This particular case is left unexpanded since
@@ -4932,7 +4934,12 @@ package body Exp_Ch6 is
                Expand_N_Aggregate (Exp);
             end if;
 
-            Append_To (Stmts, Move_Activation_Chain);
+            --  Do not move the activation chain if the return object does not
+            --  contain tasks.
+
+            if Has_Task (Etype (Ret_Obj_Id)) then
+               Append_To (Stmts, Move_Activation_Chain);
+            end if;
          end if;
 
          --  Update the state of the function right before the object is
@@ -5031,7 +5038,6 @@ package body Exp_Ch6 is
                Return_Obj_Typ   : constant Entity_Id := Etype (Return_Obj_Id);
                Return_Obj_Expr  : constant Node_Id :=
                                     Expression (Ret_Obj_Decl);
-               Result_Subt      : constant Entity_Id := Etype (Par_Func);
                Constr_Result    : constant Boolean :=
                                     Is_Constrained (Result_Subt);
                Obj_Alloc_Formal : Entity_Id;

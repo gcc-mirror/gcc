@@ -6461,9 +6461,11 @@ package body Sem_Ch6 is
       if Ada_Version >= Ada_2005 and then Is_Build_In_Place_Function (E) then
          declare
             Result_Subt : constant Entity_Id := Etype (E);
+            Full_Subt   : constant Entity_Id := Available_View (Result_Subt);
 
-            Discard : Entity_Id;
+            Discard     : Entity_Id;
             pragma Warnings (Off, Discard);
+            Formal_Typ  : Entity_Id;
 
          begin
             --  In the case of functions with unconstrained result subtypes,
@@ -6510,7 +6512,7 @@ package body Sem_Ch6 is
             --  master of the tasks to be created, and the caller's activation
             --  chain.
 
-            if Has_Task (Available_View (Result_Subt)) then
+            if Has_Task (Full_Subt) then
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Master_Id),
@@ -6524,31 +6526,27 @@ package body Sem_Ch6 is
             --  All build-in-place functions get an extra formal that will be
             --  passed the address of the return object within the caller.
 
-            declare
-               Formal_Type : constant Entity_Id :=
-                               Create_Itype
-                                 (E_Anonymous_Access_Type, E,
-                                  Scope_Id => Scope (E));
-            begin
-               Set_Directly_Designated_Type (Formal_Type, Result_Subt);
-               Set_Etype (Formal_Type, Formal_Type);
-               Set_Depends_On_Private
-                 (Formal_Type, Has_Private_Component (Formal_Type));
-               Set_Is_Public (Formal_Type, Is_Public (Scope (Formal_Type)));
-               Set_Is_Access_Constant (Formal_Type, False);
+            Formal_Typ :=
+              Create_Itype (E_Anonymous_Access_Type, E, Scope_Id => Scope (E));
 
-               --  Ada 2005 (AI-50217): Propagate the attribute that indicates
-               --  the designated type comes from the limited view (for
-               --  back-end purposes).
+            Set_Directly_Designated_Type (Formal_Typ, Result_Subt);
+            Set_Etype (Formal_Typ, Formal_Typ);
+            Set_Depends_On_Private
+              (Formal_Typ, Has_Private_Component (Formal_Typ));
+            Set_Is_Public (Formal_Typ, Is_Public (Scope (Formal_Typ)));
+            Set_Is_Access_Constant (Formal_Typ, False);
 
-               Set_From_With_Type (Formal_Type, From_With_Type (Result_Subt));
+            --  Ada 2005 (AI-50217): Propagate the attribute that indicates
+            --  the designated type comes from the limited view (for back-end
+            --  purposes).
 
-               Layout_Type (Formal_Type);
+            Set_From_With_Type (Formal_Typ, From_With_Type (Result_Subt));
 
-               Discard :=
-                 Add_Extra_Formal
-                   (E, Formal_Type, E, BIP_Formal_Suffix (BIP_Object_Access));
-            end;
+            Layout_Type (Formal_Typ);
+
+            Discard :=
+              Add_Extra_Formal
+                (E, Formal_Typ, E, BIP_Formal_Suffix (BIP_Object_Access));
          end;
       end if;
    end Create_Extra_Formals;
