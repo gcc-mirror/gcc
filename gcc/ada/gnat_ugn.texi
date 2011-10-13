@@ -17503,7 +17503,7 @@ current directory)
 
 @item @samp{@var{gcc_switches}} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
-@command{gnatelim} to generate the ASIS trees. Here you can provide
+@command{gnatstub} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
 use the @option{-gnatec} switch to set the configuration file,
 use the @option{-gnat05} switch if sources should be compiled in

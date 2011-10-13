@@ -1152,7 +1152,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       return Reference_Type
    is
       Node : aliased Element_Type := Element (Container, Key);
-
    begin
       return (Element => Node'Access);
    end Reference;

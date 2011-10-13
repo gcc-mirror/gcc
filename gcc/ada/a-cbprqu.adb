@@ -80,8 +80,10 @@ package body Ada.Containers.Bounded_Priority_Queues is
       begin
          C := List.Container.First;
          while Has_Element (C) loop
-            --  ???
+
+            --  ??? why is following commented out ???
             --  if Before (P, Get_Priority (List.Constant_Reference (C))) then
+
             if Before (P, Get_Priority (Element (C))) then
                List.Container.Insert (C, New_Item);
                exit;
@@ -109,7 +111,9 @@ package body Ada.Containers.Bounded_Priority_Queues is
         (List : List_Type) return Queue_Interfaces.Element_Type
       is
       begin
+
          --  Use Constant_Reference for this.  ???
+
          return List.Container.First_Element;
       end First_Element;
 

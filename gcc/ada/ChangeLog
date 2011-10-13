@@ -1,3 +1,15 @@
+2011-10-13  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Minor correction.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb: Minor error message improvement.
+
+2011-10-13  Robert Dewar  <dewar@adacore.com>
+
+	* a-cbprqu.adb, a-ciorma.adb, exp_ch3.adb: Minor reformatting.
+
 2011-10-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Loop_Statement): For the transformation
