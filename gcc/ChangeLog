@@ -1,3 +1,10 @@
+2011-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50712
+	* ipa-split.c (split_function): Always re-gimplify parameters
+	when they are not gimple vals before passing them.  Properly
+	check for type compatibility.
+
 2011-10-13  Tom de Vries  <tom@codesourcery.com>
 
 	* function.c (gimplify_parameters): Set number of arguments of call to
