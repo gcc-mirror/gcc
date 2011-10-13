@@ -3526,23 +3526,28 @@ package body Exp_Ch4 is
       end if;
 
       --  Set the storage pool and find the appropriate version of Allocate to
-      --  call.
+      --  call. But don't overwrite the storage pool if it is already set,
+      --  which can happen for build-in-place function returns (see
+      --  Exp_Ch4.Expand_N_Extended_Return_Statement).
 
-      Pool := Associated_Storage_Pool (Root_Type (PtrT));
-      Set_Storage_Pool (N, Pool);
+      if No (Storage_Pool (N)) then
+         Pool := Associated_Storage_Pool (Root_Type (PtrT));
 
-      if Present (Pool) then
-         if Is_RTE (Pool, RE_SS_Pool) then
-            if VM_Target = No_VM then
-               Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
+         if Present (Pool) then
+            Set_Storage_Pool (N, Pool);
+
+            if Is_RTE (Pool, RE_SS_Pool) then
+               if VM_Target = No_VM then
+                  Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
+               end if;
+
+            elsif Is_Class_Wide_Type (Etype (Pool)) then
+               Set_Procedure_To_Call (N, RTE (RE_Allocate_Any));
+
+            else
+               Set_Procedure_To_Call (N,
+                 Find_Prim_Op (Etype (Pool), Name_Allocate));
             end if;
-
-         elsif Is_Class_Wide_Type (Etype (Pool)) then
-            Set_Procedure_To_Call (N, RTE (RE_Allocate_Any));
-
-         else
-            Set_Procedure_To_Call (N,
-              Find_Prim_Op (Etype (Pool), Name_Allocate));
          end if;
       end if;
 

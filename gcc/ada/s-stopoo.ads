@@ -65,6 +65,14 @@ private
    type Root_Storage_Pool is abstract
      new Ada.Finalization.Limited_Controlled with null record;
 
+   type Root_Storage_Pool_Ptr is access all Root_Storage_Pool'Class;
+   for Root_Storage_Pool_Ptr'Storage_Size use 0;
+   --  Type of the BIP_Storage_Pool extra parameter (see Exp_Ch6). The
+   --  Storage_Size clause is necessary, because otherwise we have a
+   --  chicken&egg problem; we can't be creating collection finalization code
+   --  in this low-level package, because that involves Pool_Global, which
+   --  imports this package.
+
    --  ??? Are these two still needed? It might be possible to use Subpools.
    --  Allocate_Any_Controlled / Deallocate_Any_Controlled for non-controlled
    --  objects.

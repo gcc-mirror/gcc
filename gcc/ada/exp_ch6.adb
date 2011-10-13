@@ -94,15 +94,18 @@ package body Exp_Ch6 is
    --  along directly to the build-in-place function. Finally, if Return_Object
    --  is empty, then pass a null literal as the actual.
 
-   procedure Add_Alloc_Form_Actual_To_Build_In_Place_Call
+   procedure Add_Unconstrained_Actuals_To_Build_In_Place_Call
      (Function_Call  : Node_Id;
       Function_Id    : Entity_Id;
       Alloc_Form     : BIP_Allocation_Form := Unspecified;
-      Alloc_Form_Exp : Node_Id             := Empty);
-   --  Ada 2005 (AI-318-02): Add an actual indicating the form of allocation,
-   --  if any, to be done by a build-in-place function. If Alloc_Form_Exp is
-   --  present, then use it, otherwise pass a literal corresponding to the
-   --  Alloc_Form parameter (which must not be Unspecified in that case).
+      Alloc_Form_Exp : Node_Id             := Empty;
+      Pool_Actual    : Node_Id             := Make_Null (No_Location));
+   --  Ada 2005 (AI-318-02): Add the actuals needed for a build-in-place
+   --  function call that returns a caller-unknown-size result (BIP_Alloc_Form
+   --  and BIP_Storage_Pool). If Alloc_Form_Exp is present, then use it,
+   --  otherwise pass a literal corresponding to the Alloc_Form parameter
+   --  (which must not be Unspecified in that case). Pool_Actual is the
+   --  parameter to pass to BIP_Storage_Pool.
 
    procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
      (Func_Call  : Node_Id;
@@ -252,18 +255,20 @@ package body Exp_Ch6 is
    end Add_Access_Actual_To_Build_In_Place_Call;
 
    --------------------------------------------------
-   -- Add_Alloc_Form_Actual_To_Build_In_Place_Call --
+   -- Add_Unconstrained_Actuals_To_Build_In_Place_Call --
    --------------------------------------------------
 
-   procedure Add_Alloc_Form_Actual_To_Build_In_Place_Call
+   procedure Add_Unconstrained_Actuals_To_Build_In_Place_Call
      (Function_Call  : Node_Id;
       Function_Id    : Entity_Id;
       Alloc_Form     : BIP_Allocation_Form := Unspecified;
-      Alloc_Form_Exp : Node_Id             := Empty)
+      Alloc_Form_Exp : Node_Id             := Empty;
+      Pool_Actual    : Node_Id             := Make_Null (No_Location))
    is
       Loc               : constant Source_Ptr := Sloc (Function_Call);
       Alloc_Form_Actual : Node_Id;
       Alloc_Form_Formal : Node_Id;
+      Pool_Formal       : Node_Id;
 
    begin
       --  The allocation form generally doesn't need to be passed in the case
@@ -305,7 +310,15 @@ package body Exp_Ch6 is
 
       Add_Extra_Actual_To_Call
         (Function_Call, Alloc_Form_Formal, Alloc_Form_Actual);
-   end Add_Alloc_Form_Actual_To_Build_In_Place_Call;
+
+      --  Pass the Storage_Pool parameter
+
+      Pool_Formal := Build_In_Place_Formal (Function_Id, BIP_Storage_Pool);
+      Analyze_And_Resolve (Pool_Actual, Etype (Pool_Formal));
+      Add_Extra_Actual_To_Call
+        (Function_Call, Pool_Formal, Pool_Actual);
+
+   end Add_Unconstrained_Actuals_To_Build_In_Place_Call;
 
    -----------------------------------------------------------
    -- Add_Finalization_Master_Actual_To_Build_In_Place_Call --
@@ -541,6 +554,8 @@ package body Exp_Ch6 is
       case Kind is
          when BIP_Alloc_Form          =>
             return "BIPalloc";
+         when BIP_Storage_Pool          =>
+            return "BIPstoragepool";
          when BIP_Finalization_Master =>
             return "BIPfinalizationmaster";
          when BIP_Master              =>
@@ -4638,11 +4653,12 @@ package body Exp_Ch6 is
          Alloc_Expr : Node_Id) return Node_Id
       is
       begin
+         pragma Assert (Is_Build_In_Place_Function (Func_Id));
+
          --  Processing for build-in-place object allocation. This is disabled
          --  on .NET/JVM because the targets do not support pools.
 
          if VM_Target = No_VM
-           and then Is_Build_In_Place_Function (Func_Id)
            and then Needs_Finalization (Ret_Typ)
          then
             declare
@@ -5121,8 +5137,12 @@ package body Exp_Ch6 is
                      Alloc_Obj_Id   : Entity_Id;
                      Alloc_Obj_Decl : Node_Id;
                      Alloc_If_Stmt  : Node_Id;
-                     Heap_Allocator : Node_Id;
                      SS_Allocator   : Node_Id;
+                     Heap_Allocator : Node_Id;
+
+                     Pool_Decl      : Node_Id;
+                     Pool_Allocator : Node_Id;
+                     Pool_Id : constant Entity_Id := Make_Temporary (Loc, 'P');
 
                   begin
                      --  Reuse the itype created for the function's implicit
@@ -5216,6 +5236,25 @@ package body Exp_Ch6 is
                         Set_No_Initialization (Heap_Allocator);
                      end if;
 
+                     --  The Pool_Allocator is just like the Heap_Allocator,
+                     --  except we set Storage_Pool and Procedure_To_Call so it
+                     --  will use the user-defined storage pool.
+
+                     Pool_Allocator := New_Copy_Tree (Heap_Allocator);
+                     Pool_Decl :=
+                       Make_Object_Renaming_Declaration (Loc,
+                         Defining_Identifier => Pool_Id,
+                         Subtype_Mark        =>
+                           New_Reference_To (RTE (RE_Root_Storage_Pool), Loc),
+                         Name                =>
+                           Make_Explicit_Dereference (Loc,
+                             New_Reference_To
+                               (Build_In_Place_Formal
+                                  (Par_Func, BIP_Storage_Pool), Loc)));
+                     Set_Storage_Pool (Pool_Allocator, Pool_Id);
+                     Set_Procedure_To_Call
+                       (Pool_Allocator, RTE (RE_Allocate_Any));
+
                      --  If the No_Allocators restriction is active, then only
                      --  an allocator for secondary stack allocation is needed.
                      --  It's OK for such allocators to have Comes_From_Source
@@ -5225,22 +5264,25 @@ package body Exp_Ch6 is
                      if Restriction_Active (No_Allocators) then
                         SS_Allocator   := Heap_Allocator;
                         Heap_Allocator := Make_Null (Loc);
+                        Pool_Allocator := Make_Null (Loc);
 
-                     --  Otherwise the heap allocator may be needed, so we make
-                     --  another allocator for secondary stack allocation.
+                     --  Otherwise the heap and pool allocators may be needed,
+                     --  so we make another allocator for secondary stack
+                     --  allocation.
 
                      else
                         SS_Allocator := New_Copy_Tree (Heap_Allocator);
 
-                        --  The heap allocator is marked Comes_From_Source
-                        --  since it corresponds to an explicit user-written
-                        --  allocator (that is, it will only be executed on
-                        --  behalf of callers that call the function as
-                        --  initialization for such an allocator). This
-                        --  prevents errors when No_Implicit_Heap_Allocations
-                        --  is in force.
+                        --  The heap and pool allocators are marked
+                        --  Comes_From_Source since they correspond to an
+                        --  explicit user-written allocator (that is, it will
+                        --  only be executed on behalf of callers that call the
+                        --  function as initialization for such an
+                        --  allocator). This prevents errors when
+                        --  No_Implicit_Heap_Allocations is in force.
 
                         Set_Comes_From_Source (Heap_Allocator, True);
+                        Set_Comes_From_Source (Pool_Allocator, True);
                      end if;
 
                      --  The allocator is returned on the secondary stack. We
@@ -5269,10 +5311,12 @@ package body Exp_Ch6 is
 
                      --  Create an if statement to test the BIP_Alloc_Form
                      --  formal and initialize the access object to either the
-                     --  BIP_Object_Access formal (BIP_Alloc_Form = 0), the
-                     --  result of allocating the object in the secondary stack
-                     --  (BIP_Alloc_Form = 1), or else an allocator to create
-                     --  the return object in the heap (BIP_Alloc_Form = 2).
+                     --  BIP_Object_Access formal (BIP_Alloc_Form =
+                     --  Caller_Allocation), the result of allocating the
+                     --  object in the secondary stack (BIP_Alloc_Form =
+                     --  Secondary_Stack), or else an allocator to create the
+                     --  return object in the heap or user-defined pool
+                     --  (BIP_Alloc_Form = Global_Heap or User_Storage_Pool).
 
                      --  ??? An unchecked type conversion must be made in the
                      --  case of assigning the access object formal to the
@@ -5320,15 +5364,34 @@ package body Exp_Ch6 is
                                Make_Assignment_Statement (Loc,
                                  Name       =>
                                    New_Reference_To (Alloc_Obj_Id, Loc),
-                                 Expression => SS_Allocator)))),
+                                 Expression => SS_Allocator))),
+
+                           Make_Elsif_Part (Loc,
+                             Condition =>
+                               Make_Op_Eq (Loc,
+                                 Left_Opnd  =>
+                                   New_Reference_To (Obj_Alloc_Formal, Loc),
+                                 Right_Opnd =>
+                                   Make_Integer_Literal (Loc,
+                                     UI_From_Int (BIP_Allocation_Form'Pos
+                                                    (Global_Heap)))),
+
+                             Then_Statements => New_List (
+                               Build_Heap_Allocator
+                                 (Temp_Id    => Alloc_Obj_Id,
+                                  Temp_Typ   => Ref_Type,
+                                  Func_Id    => Par_Func,
+                                  Ret_Typ    => Return_Obj_Typ,
+                                  Alloc_Expr => Heap_Allocator)))),
 
                          Else_Statements => New_List (
+                           Pool_Decl,
                            Build_Heap_Allocator
                              (Temp_Id    => Alloc_Obj_Id,
                               Temp_Typ   => Ref_Type,
                               Func_Id    => Par_Func,
                               Ret_Typ    => Return_Obj_Typ,
-                              Alloc_Expr => Heap_Allocator)));
+                              Alloc_Expr => Pool_Allocator)));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the
@@ -7592,7 +7655,7 @@ package body Exp_Ch6 is
          --  called as a dispatching operation and must be treated similarly
          --  to functions with unconstrained result subtypes.
 
-         Add_Alloc_Form_Actual_To_Build_In_Place_Call
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
 
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
@@ -7623,11 +7686,29 @@ package body Exp_Ch6 is
       --  operations. ???
 
       else
-         --  Pass an allocation parameter indicating that the function should
-         --  allocate its result on the heap.
+         --  No user-defined pool; pass an allocation parameter indicating that
+         --  the function should allocate its result on the heap.
 
-         Add_Alloc_Form_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Alloc_Form => Global_Heap);
+         if No (Associated_Storage_Pool (Acc_Type)) then
+
+            Add_Unconstrained_Actuals_To_Build_In_Place_Call
+              (Func_Call, Function_Id, Alloc_Form => Global_Heap);
+
+         --  User-defined pool; pass an allocation parameter indicating that
+         --  the function should allocate its result in the pool, and pass the
+         --  pool.  We need 'Unrestricted_Access here, because 'Access is
+         --  illegal, because the storage pool is not aliased.
+
+         else
+            Add_Unconstrained_Actuals_To_Build_In_Place_Call
+              (Func_Call, Function_Id, Alloc_Form => User_Storage_Pool,
+               Pool_Actual =>
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     New_Reference_To
+                       (Associated_Storage_Pool (Acc_Type), Loc),
+                   Attribute_Name => Name_Unrestricted_Access));
+         end if;
 
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Acc_Type);
@@ -7796,7 +7877,7 @@ package body Exp_Ch6 is
          --  called as a dispatching operation and must be treated similarly
          --  to functions with unconstrained result subtypes.
 
-         Add_Alloc_Form_Actual_To_Build_In_Place_Call
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
 
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
@@ -7820,7 +7901,7 @@ package body Exp_Ch6 is
          --  Pass an allocation parameter indicating that the function should
          --  allocate its result on the secondary stack.
 
-         Add_Alloc_Form_Actual_To_Build_In_Place_Call
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Secondary_Stack);
 
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
@@ -7898,7 +7979,7 @@ package body Exp_Ch6 is
       --  controlling result, because dispatching calls to the function needs
       --  to be treated effectively the same as calls to class-wide functions.
 
-      Add_Alloc_Form_Actual_To_Build_In_Place_Call
+      Add_Unconstrained_Actuals_To_Build_In_Place_Call
         (Func_Call, Func_Id, Alloc_Form => Caller_Allocation);
 
       Add_Finalization_Master_Actual_To_Build_In_Place_Call
@@ -8047,19 +8128,23 @@ package body Exp_Ch6 is
          --  has an unconstrained or tagged result type).
 
          if Needs_BIP_Alloc_Form (Enclosing_Func) then
-            Add_Alloc_Form_Actual_To_Build_In_Place_Call
+            Add_Unconstrained_Actuals_To_Build_In_Place_Call
               (Func_Call,
                Function_Id,
                Alloc_Form_Exp =>
                  New_Reference_To
                    (Build_In_Place_Formal (Enclosing_Func, BIP_Alloc_Form),
+                    Loc),
+               Pool_Actual =>
+                 New_Reference_To
+                   (Build_In_Place_Formal (Enclosing_Func, BIP_Storage_Pool),
                     Loc));
 
          --  Otherwise, if enclosing function has a constrained result subtype,
          --  then caller allocation will be used.
 
          else
-            Add_Alloc_Form_Actual_To_Build_In_Place_Call
+            Add_Unconstrained_Actuals_To_Build_In_Place_Call
               (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
          end if;
 
@@ -8102,7 +8187,7 @@ package body Exp_Ch6 is
          --  called as a dispatching operation and must be treated similarly
          --  to functions with unconstrained result subtypes.
 
-         Add_Alloc_Form_Actual_To_Build_In_Place_Call
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
 
       --  In other unconstrained cases, pass an indication to do the allocation
@@ -8111,7 +8196,7 @@ package body Exp_Ch6 is
       --  scope is established to ensure eventual cleanup of the result.
 
       else
-         Add_Alloc_Form_Actual_To_Build_In_Place_Call
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call,
             Function_Id,
             Alloc_Form => Secondary_Stack);
