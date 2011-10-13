@@ -651,6 +651,75 @@ package body System.Generic_Array_Operations is
       return R;
    end  Matrix_Matrix_Product;
 
+   ----------------------------
+   -- Matrix_Vector_Solution --
+   ----------------------------
+
+   function Matrix_Vector_Solution (A : Matrix; X : Vector) return Vector is
+      N   : constant Natural := A'Length (1);
+      MA  : Matrix := A;
+      MX  : Matrix (A'Range (1), 1 .. 1);
+      R   : Vector (A'Range (2));
+      Det : Scalar;
+
+   begin
+      if A'Length (2) /= N then
+         raise Constraint_Error with "matrix is not square";
+      end if;
+
+      if X'Length /= N then
+         raise Constraint_Error with "incompatible vector length";
+      end if;
+
+      for J in 0 .. MX'Length (1) - 1 loop
+         MX (MX'First (1) + J, 1) := X (X'First + J);
+      end loop;
+
+      Forward_Eliminate (MA, MX, Det);
+      Back_Substitute (MA, MX);
+
+      for J in 0 .. R'Length - 1 loop
+         R (R'First + J) := MX (MX'First (1) + J, 1);
+      end loop;
+
+      return R;
+   end Matrix_Vector_Solution;
+
+   ----------------------------
+   -- Matrix_Matrix_Solution --
+   ----------------------------
+
+   function Matrix_Matrix_Solution (A, X : Matrix) return Matrix is
+      N  : constant Natural := A'Length (1);
+      MA : Matrix (A'Range (2), A'Range (2));
+      MB : Matrix (A'Range (2), X'Range (2));
+      Det : Scalar;
+
+   begin
+      if A'Length (2) /= N then
+         raise Constraint_Error with "matrix is not square";
+      end if;
+
+      if X'Length (1) /= N then
+         raise Constraint_Error with "matrices have unequal number of rows";
+      end if;
+
+      for J in 0 .. A'Length (1) - 1 loop
+         for K in MA'Range (2) loop
+            MA (MA'First (1) + J, K) := A (A'First (1) + J, K);
+         end loop;
+
+         for K in MB'Range (2) loop
+            MB (MB'First (1) + J, K) := X (X'First (1) + J, K);
+         end loop;
+      end loop;
+
+      Forward_Eliminate (MA, MB, Det);
+      Back_Substitute (MA, MB);
+
+      return MB;
+   end Matrix_Matrix_Solution;
+
    ---------------------------
    -- Matrix_Vector_Product --
    ---------------------------

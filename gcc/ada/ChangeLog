@@ -1,3 +1,16 @@
+2011-10-13  Geert Bosch  <bosch@adacore.com>
+
+	* a-ngrear.adb (Solve): Make generic and move to
+	System.Generic_Array_Operations.
+	* s-gearop.ads (Matrix_Vector_Solution, Matrix_Matrix_Solution):
+	New generic solvers to	compute a vector resp. matrix Y such
+	that A * Y = X, approximately.
+	* s-gearop.adb (Matrix_Vector_Solution, Matrix_Matrix_Solution):
+	Implement using Forward_Eliminate and Back_Substitute
+	* a-ngcoar.adb: Reimplement in pure Ada to remove dependencies
+	on BLAS and LAPACK.
+	* a-ngcoar.ads ("abs"): Fix return type to be real.
+
 2011-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/50589
