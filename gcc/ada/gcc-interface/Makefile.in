@@ -844,7 +844,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
       system.ads<system-vxworks-x86-rtp.ads
 
       EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
-      EXTRA_LIBGNAT_SRCS+=affinity.o
+      EXTRA_LIBGNAT_OBJS+=affinity.o
       EXTRA_LIBGNAT_SRCS+=affinity.c
     else
       ifeq ($(strip $(filter-out kernel-smp, $(THREAD_KIND))),)
