@@ -356,10 +356,14 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
       function "abs" is new
         L2_Norm
-          (Scalar        => Real'Base,
-           Vector        => Real_Vector,
-           Inner_Product => "*",
-           Sqrt          => Sqrt);
+          (X_Scalar      => Real'Base,
+           Result_Real   => Real'Base,
+           X_Vector      => Real_Vector,
+           "abs"         => "+");
+      --  While the L2_Norm by definition uses the absolute values of the
+      --  elements of X_Vector, for real values the subsequent squaring
+      --  makes this unnecessary, so we substitute the "+" identity function
+      --  instead.
 
       function "abs" is new
         Vector_Elementwise_Operation

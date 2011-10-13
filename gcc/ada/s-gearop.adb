@@ -336,9 +336,14 @@ package body System.Generic_Array_Operations is
    -- L2_Norm --
    -------------
 
-   function L2_Norm (X : Vector) return Scalar is
+   function L2_Norm (X : X_Vector) return Result_Real'Base is
+      Sum    : Result_Real'Base := 0.0;
    begin
-      return Sqrt (Inner_Product (X, X));
+      for J in X'Range loop
+         Sum := Sum + Result_Real'Base (abs X (J))**2;
+      end loop;
+
+      return Sqrt (Sum);
    end L2_Norm;
 
    ----------------------------------
