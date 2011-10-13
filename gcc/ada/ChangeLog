@@ -1,3 +1,22 @@
+2011-10-13  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb, sem_util.adb, sem_util.ads, exp_ch6.adb, sem_ch4.adb,
+	sem_ch6.adb, exp_ch3.adb: Minor reformatting.
+
+2011-10-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add a-ngcoar.o.
+
+2011-10-13  Jerome Guitton  <guitton@adacore.com>
+
+	* sysdep.c (__gnat_get_task_options): Re-enable VX_SPE_TASK on vThreads
+
+2011-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* a-convec.ads (Cursor): Minor reformatting.
+	* a-convec.adb (Next): Fix minor inconsistencies.
+	(Previous): Likewise.
+
 2011-10-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Available_Full_View_Of_Component):

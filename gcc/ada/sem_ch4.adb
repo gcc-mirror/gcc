@@ -5554,7 +5554,7 @@ package body Sem_Ch4 is
                 and then not Is_Limited_Composite (T1))
 
                or else
-                (Is_Array_Type (T1)
+                 (Is_Array_Type (T1)
                    and then not Is_Limited_Type (Component_Type (T1))
                    and then Available_Full_View_Of_Component (T1)))
          then

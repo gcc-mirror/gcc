@@ -479,7 +479,7 @@ package body Exp_Ch6 is
    is
       Loc         : constant Source_Ptr := Sloc (Function_Call);
       Result_Subt : constant Entity_Id := Available_View (Etype (Function_Id));
-      Actual      : Node_Id := Master_Actual;
+      Actual      : Node_Id            := Master_Actual;
 
    begin
       --  No such extra parameters are needed if there are no tasks
@@ -504,11 +504,11 @@ package body Exp_Ch6 is
 
       declare
          Master_Formal : Node_Id;
+
       begin
          --  Locate implicit master parameter in the called function
 
          Master_Formal := Build_In_Place_Formal (Function_Id, BIP_Master);
-
          Analyze_And_Resolve (Actual, Etype (Master_Formal));
 
          --  Build the parameter association for the new actual and add it to

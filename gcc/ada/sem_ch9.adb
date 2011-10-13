@@ -1163,6 +1163,7 @@ package body Sem_Ch9 is
    begin
       if No_Run_Time_Mode then
          Error_Msg_CRT ("protected type", N);
+
          if Has_Aspects (N) then
             Analyze_Aspect_Specifications (N, Def_Id);
          end if;
@@ -1208,6 +1209,13 @@ package body Sem_Ch9 is
       end if;
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
+
+      --  If aspects are present, analyze them now. They can make references
+      --  to the discriminants of the type, but not to any components.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Def_Id);
+      end if;
 
       Analyze (Protected_Definition (N));
 
@@ -1259,13 +1267,6 @@ package body Sem_Ch9 is
 
          Next_Entity (E);
       end loop;
-
-      --  If aspects are present, analyze them now. They can make references
-      --  to the discriminants of the type.
-
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
-      end if;
 
       End_Scope;
 
@@ -2052,6 +2053,10 @@ package body Sem_Ch9 is
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Def_Id);
+      end if;
+
       if Present (Task_Definition (N)) then
          Analyze_Task_Definition (Task_Definition (N));
       end if;
@@ -2105,10 +2110,6 @@ package body Sem_Ch9 is
             Expand_N_Task_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
          end if;
-      end if;
-
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
       end if;
    end Analyze_Task_Type_Declaration;
 
