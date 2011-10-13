@@ -1407,7 +1407,12 @@ package body Freeze is
                Decl := Unit_Declaration_Node (E);
 
                if Nkind (Decl) = N_Subprogram_Renaming_Declaration then
-                  Build_And_Analyze_Renamed_Body (Decl, E, After);
+                  if Error_Posted (Decl) then
+                     Set_Has_Completion (E);
+
+                  else
+                     Build_And_Analyze_Renamed_Body (Decl, E, After);
+                  end if;
 
                elsif Nkind (Decl) = N_Subprogram_Declaration
                  and then Present (Corresponding_Body (Decl))

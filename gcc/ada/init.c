@@ -2014,13 +2014,13 @@ __gnat_error_handler (int sig, void *si, struct sigcontext *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if defined (__PPC__)
-  /* On PowerPC, we process signals through a Call Frame Info trampoline,
-     voiding the need for myriads of fallback_frame_state variants in the
-     ZCX runtime.  We have no simple way to distinguish ZCX from SJLJ here,
-     so we do this for SJLJ as well even though this is not necessary.
-     This only incurs a few extra instructions and a tiny amount of extra
-     stack usage.  */
+#if defined (__PPC__) && defined(_WRS_KERNEL)
+  /* On PowerPC, kernel mode, we process signals through a Call Frame Info
+     trampoline, voiding the need for myriads of fallback_frame_state
+     variants in the ZCX runtime.  We have no simple way to distinguish ZCX
+     from SJLJ here, so we do this for SJLJ as well even though this is not
+     necessary.  This only incurs a few extra instructions and a tiny
+     amount of extra stack usage.  */
 
   #include "sigtramp.h"
 

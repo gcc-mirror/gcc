@@ -311,13 +311,15 @@ package body Exp_Ch6 is
       Add_Extra_Actual_To_Call
         (Function_Call, Alloc_Form_Formal, Alloc_Form_Actual);
 
-      --  Pass the Storage_Pool parameter
+      --  Pass the Storage_Pool parameter. This parameter is omitted on .NET
+      --  and JVM as those targets do not support pools.
 
-      Pool_Formal := Build_In_Place_Formal (Function_Id, BIP_Storage_Pool);
-      Analyze_And_Resolve (Pool_Actual, Etype (Pool_Formal));
-      Add_Extra_Actual_To_Call
-        (Function_Call, Pool_Formal, Pool_Actual);
-
+      if VM_Target = No_VM then
+         Pool_Formal := Build_In_Place_Formal (Function_Id, BIP_Storage_Pool);
+         Analyze_And_Resolve (Pool_Actual, Etype (Pool_Formal));
+         Add_Extra_Actual_To_Call
+           (Function_Call, Pool_Formal, Pool_Actual);
+      end if;
    end Add_Unconstrained_Actuals_To_Build_In_Place_Call;
 
    -----------------------------------------------------------
@@ -5132,17 +5134,17 @@ package body Exp_Ch6 is
                     Build_In_Place_Formal (Par_Func, BIP_Alloc_Form);
 
                   declare
-                     Ref_Type       : Entity_Id;
-                     Ptr_Type_Decl  : Node_Id;
+                     Pool_Id        : constant Entity_Id :=
+                                        Make_Temporary (Loc, 'P');
                      Alloc_Obj_Id   : Entity_Id;
                      Alloc_Obj_Decl : Node_Id;
                      Alloc_If_Stmt  : Node_Id;
-                     SS_Allocator   : Node_Id;
                      Heap_Allocator : Node_Id;
-
                      Pool_Decl      : Node_Id;
                      Pool_Allocator : Node_Id;
-                     Pool_Id : constant Entity_Id := Make_Temporary (Loc, 'P');
+                     Ptr_Type_Decl  : Node_Id;
+                     Ref_Type       : Entity_Id;
+                     SS_Allocator   : Node_Id;
 
                   begin
                      --  Reuse the itype created for the function's implicit
@@ -5237,23 +5239,33 @@ package body Exp_Ch6 is
                      end if;
 
                      --  The Pool_Allocator is just like the Heap_Allocator,
-                     --  except we set Storage_Pool and Procedure_To_Call so it
-                     --  will use the user-defined storage pool.
+                     --  except we set Storage_Pool and Procedure_To_Call so
+                     --  it will use the user-defined storage pool.
 
                      Pool_Allocator := New_Copy_Tree (Heap_Allocator);
-                     Pool_Decl :=
-                       Make_Object_Renaming_Declaration (Loc,
-                         Defining_Identifier => Pool_Id,
-                         Subtype_Mark        =>
-                           New_Reference_To (RTE (RE_Root_Storage_Pool), Loc),
-                         Name                =>
-                           Make_Explicit_Dereference (Loc,
-                             New_Reference_To
-                               (Build_In_Place_Formal
-                                  (Par_Func, BIP_Storage_Pool), Loc)));
-                     Set_Storage_Pool (Pool_Allocator, Pool_Id);
-                     Set_Procedure_To_Call
-                       (Pool_Allocator, RTE (RE_Allocate_Any));
+
+                     --  Do not generate the renaming of the build-in-place
+                     --  pool parameter on .NET/JVM because the parameter is
+                     --  not created in the first place.
+
+                     if VM_Target = No_VM then
+                        Pool_Decl :=
+                          Make_Object_Renaming_Declaration (Loc,
+                            Defining_Identifier => Pool_Id,
+                            Subtype_Mark        =>
+                              New_Reference_To
+                                (RTE (RE_Root_Storage_Pool), Loc),
+                            Name                =>
+                              Make_Explicit_Dereference (Loc,
+                                New_Reference_To
+                                  (Build_In_Place_Formal
+                                     (Par_Func, BIP_Storage_Pool), Loc)));
+                        Set_Storage_Pool (Pool_Allocator, Pool_Id);
+                        Set_Procedure_To_Call
+                          (Pool_Allocator, RTE (RE_Allocate_Any));
+                     else
+                        Pool_Decl := Make_Null_Statement (Loc);
+                     end if;
 
                      --  If the No_Allocators restriction is active, then only
                      --  an allocator for secondary stack allocation is needed.
@@ -7686,20 +7698,14 @@ package body Exp_Ch6 is
       --  operations. ???
 
       else
-         --  No user-defined pool; pass an allocation parameter indicating that
-         --  the function should allocate its result on the heap.
+         --  Case of a user-defined storage pool. Pass an allocation parameter
+         --  indicating that the function should allocate its result in the
+         --  pool, and pass the pool. Use 'Unrestricted_Access because the
+         --  pool may not be aliased.
 
-         if No (Associated_Storage_Pool (Acc_Type)) then
-
-            Add_Unconstrained_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Alloc_Form => Global_Heap);
-
-         --  User-defined pool; pass an allocation parameter indicating that
-         --  the function should allocate its result in the pool, and pass the
-         --  pool.  We need 'Unrestricted_Access here, because 'Access is
-         --  illegal, because the storage pool is not aliased.
-
-         else
+         if VM_Target = No_VM
+           and then Present (Associated_Storage_Pool (Acc_Type))
+         then
             Add_Unconstrained_Actuals_To_Build_In_Place_Call
               (Func_Call, Function_Id, Alloc_Form => User_Storage_Pool,
                Pool_Actual =>
@@ -7708,6 +7714,13 @@ package body Exp_Ch6 is
                      New_Reference_To
                        (Associated_Storage_Pool (Acc_Type), Loc),
                    Attribute_Name => Name_Unrestricted_Access));
+
+         --  No user-defined pool; pass an allocation parameter indicating that
+         --  the function should allocate its result on the heap.
+
+         else
+            Add_Unconstrained_Actuals_To_Build_In_Place_Call
+              (Func_Call, Function_Id, Alloc_Form => Global_Heap);
          end if;
 
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
@@ -8059,20 +8072,20 @@ package body Exp_Ch6 is
       Loc             : Source_Ptr;
       Obj_Def_Id      : constant Entity_Id :=
                           Defining_Identifier (Object_Decl);
-
-      Func_Call       : Node_Id := Function_Call;
-      Function_Id     : Entity_Id;
-      Result_Subt     : Entity_Id;
-      Caller_Object   : Node_Id;
-      Call_Deref      : Node_Id;
-      Ref_Type        : Entity_Id;
-      Ptr_Typ_Decl    : Node_Id;
-      Def_Id          : Entity_Id;
-      New_Expr        : Node_Id;
       Enclosing_Func  : constant Entity_Id :=
                           Enclosing_Subprogram (Obj_Def_Id);
+      Call_Deref      : Node_Id;
+      Caller_Object   : Node_Id;
+      Def_Id          : Entity_Id;
       Fmaster_Actual  : Node_Id := Empty;
+      Func_Call       : Node_Id := Function_Call;
+      Function_Id     : Entity_Id;
+      Pool_Actual     : Node_Id;
+      Ptr_Typ_Decl    : Node_Id;
       Pass_Caller_Acc : Boolean := False;
+      New_Expr        : Node_Id;
+      Ref_Type        : Entity_Id;
+      Result_Subt     : Entity_Id;
 
    begin
       --  Step past qualification or unchecked conversion (the latter can occur
@@ -8128,6 +8141,17 @@ package body Exp_Ch6 is
          --  has an unconstrained or tagged result type).
 
          if Needs_BIP_Alloc_Form (Enclosing_Func) then
+            if VM_Target = No_VM then
+               Pool_Actual :=
+                 New_Reference_To (Build_In_Place_Formal
+                   (Enclosing_Func, BIP_Storage_Pool), Loc);
+
+            --  The build-in-place pool formal is not built on .NET/JVM
+
+            else
+               Pool_Actual := Empty;
+            end if;
+
             Add_Unconstrained_Actuals_To_Build_In_Place_Call
               (Func_Call,
                Function_Id,
@@ -8135,10 +8159,7 @@ package body Exp_Ch6 is
                  New_Reference_To
                    (Build_In_Place_Formal (Enclosing_Func, BIP_Alloc_Form),
                     Loc),
-               Pool_Actual =>
-                 New_Reference_To
-                   (Build_In_Place_Formal (Enclosing_Func, BIP_Storage_Pool),
-                    Loc));
+               Pool_Actual => Pool_Actual);
 
          --  Otherwise, if enclosing function has a constrained result subtype,
          --  then caller allocation will be used.
