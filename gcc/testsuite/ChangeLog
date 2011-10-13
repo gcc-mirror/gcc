@@ -1,3 +1,11 @@
+2011-10-13  Jason Merrill  <jason@redhat.com>
+
+	Backported from 4.6 branch
+	2011-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48035
+	* g++.dg/inherit/virtual8.C: New test.
+
 2011-09-01  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/50050
