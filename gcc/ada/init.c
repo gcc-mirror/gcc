@@ -1906,7 +1906,8 @@ __gnat_clear_exception_count (void)
 /* Handle different SIGnal to exception mappings in different VxWorks
    versions.   */
 static void
-__gnat_map_signal (int sig)
+__gnat_map_signal (int sig, void *si ATTRIBUTE_UNUSED,
+		   struct sigcontext *sc ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -2001,9 +2002,7 @@ __gnat_map_signal (int sig)
    propagation after the required low level adjustments.  */
 
 void
-__gnat_error_handler (int sig,
-		      void *si ATTRIBUTE_UNUSED,
-		      struct sigcontext *sc ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, void *si, struct sigcontext *sc)
 {
   sigset_t mask;
 
@@ -2015,7 +2014,17 @@ __gnat_error_handler (int sig,
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-  __gnat_map_signal (sig);
+#if defined (__PPC__)
+  /* We process signals through a Call Frame Info trampoline, voiding
+     the need for myriads of fallback_frame_state variants.  */
+
+  #include "sigtramp.h"
+
+  __gnat_sigtramp (sig, si, sc, &__gnat_map_signal);
+
+#else
+  __gnat_map_signal (sig, si, sc);
+#endif
 }
 
 void

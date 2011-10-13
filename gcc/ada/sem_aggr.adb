@@ -3121,6 +3121,13 @@ package body Sem_Aggr is
 
                         Expr := New_Copy_Tree (Expression (Parent (Compon)));
 
+                        --  Component may have no default, in which case the
+                        --  expression is empty and the component is default-
+                        --  initialized, but an association for the component
+                        --  exists, and it is not covered by an others clause.
+
+                        return Expr;
+
                      else
                         if Present (Next (Selector_Name)) then
                            Expr := New_Copy_Tree (Expression (Assoc));

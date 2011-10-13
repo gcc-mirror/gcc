@@ -264,6 +264,10 @@ package body Sem_Attr is
       --  If the prefix type is an enumeration type, set all its literals
       --  as referenced, since the image function could possibly end up
       --  referencing any of the literals indirectly. Same for Enum_Val.
+      --  Set the flag only if the reference is in the main code unit. Same
+      --  restriction when resolving 'Value; otherwise an improperly set
+      --  reference when analyzing an inlined body will lose a proper warning
+      --  on a useless with_clause.
 
       procedure Check_Fixed_Point_Type;
       --  Verify that prefix of attribute N is a fixed type
@@ -1226,7 +1230,9 @@ package body Sem_Attr is
       procedure Check_Enum_Image is
          Lit : Entity_Id;
       begin
-         if Is_Enumeration_Type (P_Base_Type) then
+         if Is_Enumeration_Type (P_Base_Type)
+           and then In_Extended_Main_Code_Unit (N)
+         then
             Lit := First_Literal (P_Base_Type);
             while Present (Lit) loop
                Set_Referenced (Lit);
@@ -5031,7 +5037,9 @@ package body Sem_Attr is
 
          --  Case of enumeration type
 
-         if Is_Enumeration_Type (P_Type) then
+         if Is_Enumeration_Type (P_Type)
+           and then In_Extended_Main_Code_Unit (N)
+         then
             Check_Restriction (No_Enumeration_Maps, N);
 
             --  Mark all enumeration literals as referenced, since the use of

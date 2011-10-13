@@ -1,3 +1,42 @@
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_{Floating_Type,
+	Signed_Integer_Type,  Decimal_Fixed_Point_Type, Discrete_Type}):
+	Use sloc of defining identifier of farmal type declaration,
+	as sloc of generated internal entity, to prevent misplaced
+	references in ali.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_intr.adb (Check_Intrinsic_Operator): Check that type
+	is fully defined before checking that it is a numeric type.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): If a component
+	association for component X has a box, then X is covered in the
+	aggregate even if there is not default value for X in the type
+	declaration, and X has to be default-initialized.
+
+2011-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Enum_Image, Analyze_Attribute case
+	'Value): Mark literals as referenced only if reference is in
+	current source unit.
+
+2011-10-13  Matthew Heaney  <heaney@adacore.com>
+
+	* a-csquin.ads (Enque, Dequeue): Mark interface operations as entries.
+
+2011-10-13  Olivier Hainque  <hainque@adacore.com>
+
+	* sigtramp.h: New file.  Prototype and spec of the signal
+	trampoline to be called by an established handler to provide
+	dwarf call frame info before the real signal processing code.
+	* sigtramp-ppcvxw.c: New file.	Implementation of the signal
+	trampoline for ppc-vxworks.
+	* init.c (vxworks section): Use it for ppc.
+
 2011-10-13  Thomas Quinot  <quinot@adacore.com>
 
 	* par-ch2.adb, par.adb, par-util.adb, par-ch3.adb
