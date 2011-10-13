@@ -1073,6 +1073,128 @@ package body Exp_Ch9 is
           Parameter_Associations => New_List (Concurrent_Ref (N)));
    end Build_Call_With_Task;
 
+   -----------------------------
+   -- Build_Class_Wide_Master --
+   -----------------------------
+
+   procedure Build_Class_Wide_Master (Typ : Entity_Id) is
+      Loc          : constant Source_Ptr := Sloc (Typ);
+      Master_Id    : Entity_Id;
+      Master_Scope : Entity_Id;
+      Name_Id      : Node_Id;
+      Related_Node : Node_Id;
+      Ren_Decl     : Node_Id;
+
+   begin
+      --  Nothing to do if there is no task hierarchy
+
+      if Restriction_Active (No_Task_Hierarchy) then
+         return;
+      end if;
+
+      --  Find the declaration that created the access type. It is either a
+      --  type declaration, or an object declaration with an access definition,
+      --  in which case the type is anonymous.
+
+      if Is_Itype (Typ) then
+         Related_Node := Associated_Node_For_Itype (Typ);
+      else
+         Related_Node := Parent (Typ);
+      end if;
+
+      Master_Scope := Find_Master_Scope (Typ);
+
+      --  Nothing to do if the master scope already contains a _master entity.
+      --  The only exception to this is the following scenario:
+
+      --    Source_Scope
+      --       Transient_Scope_1
+      --          _master
+
+      --       Transient_Scope_2
+      --          use of master
+
+      --  In this case the source scope is marked as having the master entity
+      --  even though the actual declaration appears inside an inner scope. If
+      --  the second transient scope requires a _master, it cannot use the one
+      --  already declared because the entity is not visible.
+
+      Name_Id := Make_Identifier (Loc, Name_uMaster);
+
+      if not Has_Master_Entity (Master_Scope)
+        or else No (Current_Entity_In_Scope (Name_Id))
+      then
+         declare
+            Master_Decl : Node_Id;
+
+         begin
+            Set_Has_Master_Entity (Master_Scope);
+
+            --  Generate:
+            --    _master : constant Integer := Current_Master.all;
+
+            Master_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Name_uMaster),
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Reference_To (Standard_Integer, Loc),
+                Expression          =>
+                  Make_Explicit_Dereference (Loc,
+                    New_Reference_To (RTE (RE_Current_Master), Loc)));
+
+            Insert_Action (Related_Node, Master_Decl);
+            Analyze (Master_Decl);
+
+            --  Mark the containing scope as a task master. Masters associated
+            --  with return statements are already marked at this stage (see
+            --  Analyze_Subprogram_Body).
+
+            if Ekind (Current_Scope) /= E_Return_Statement then
+               declare
+                  Par : Node_Id := Related_Node;
+
+               begin
+                  while Nkind (Par) /= N_Compilation_Unit loop
+                     Par := Parent (Par);
+
+                     --  If we fall off the top, we are at the outer level, and
+                     --  the environment task is our effective master, so
+                     --  nothing to mark.
+
+                     if Nkind_In (Par, N_Block_Statement,
+                                       N_Subprogram_Body,
+                                       N_Task_Body)
+                     then
+                        Set_Is_Task_Master (Par);
+                        exit;
+                     end if;
+                  end loop;
+               end;
+            end if;
+         end;
+      end if;
+
+      Master_Id :=
+        Make_Defining_Identifier (Loc,
+          New_External_Name (Chars (Typ), 'M'));
+
+      --  Generate:
+      --    Mnn renames _master;
+
+      Ren_Decl :=
+        Make_Object_Renaming_Declaration (Loc,
+          Defining_Identifier => Master_Id,
+          Subtype_Mark        => New_Reference_To (Standard_Integer, Loc),
+          Name                => Name_Id);
+
+      Insert_Before (Related_Node, Ren_Decl);
+      Analyze (Ren_Decl);
+
+      Set_Master_Id (Typ, Master_Id);
+   end Build_Class_Wide_Master;
+
    --------------------------------
    -- Build_Corresponding_Record --
    --------------------------------
@@ -2763,63 +2885,110 @@ package body Exp_Ch9 is
    -- Build_Master_Entity --
    -------------------------
 
-   procedure Build_Master_Entity (E : Entity_Id) is
-      Loc  : constant Source_Ptr := Sloc (E);
-      P    : Node_Id;
-      Decl : Node_Id;
-      S    : Entity_Id;
+   procedure Build_Master_Entity
+     (Id          : Entity_Id;
+      Use_Current : Boolean := False)
+   is
+      Loc         : constant Source_Ptr := Sloc (Id);
+      Context     : Node_Id;
+      Master_Decl : Node_Id;
+      Master_Scop : Entity_Id;
 
    begin
-      S := Find_Master_Scope (E);
+      if Use_Current then
+         Master_Scop := Current_Scope;
+      else
+         Master_Scop := Find_Master_Scope (Id);
+      end if;
 
-      --  Nothing to do if we already built a master entity for this scope
-      --  or if there is no task hierarchy.
+      --  Do not create a master if the enclosing scope already has one or if
+      --  there is no task hierarchy.
 
-      if Has_Master_Entity (S)
+      if Has_Master_Entity (Master_Scop)
         or else Restriction_Active (No_Task_Hierarchy)
       then
          return;
       end if;
 
-      --  Otherwise first build the master entity
-      --    _Master : constant Master_Id := Current_Master.all;
-      --  and insert it just before the current declaration
+      --  Determine the proper context to insert the master
 
-      Decl :=
+      if Is_Access_Type (Id) and then Is_Itype (Id) then
+         Context := Associated_Node_For_Itype (Id);
+      else
+         Context := Parent (Id);
+      end if;
+
+      --  Create a master, generate:
+      --    _Master : constant Master_Id := Current_Master.all;
+
+      Master_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Name_uMaster),
-          Constant_Present => True,
-          Object_Definition => New_Reference_To (RTE (RE_Master_Id), Loc),
-          Expression =>
+          Constant_Present    => True,
+          Object_Definition   => New_Reference_To (RTE (RE_Master_Id), Loc),
+          Expression          =>
             Make_Explicit_Dereference (Loc,
               New_Reference_To (RTE (RE_Current_Master), Loc)));
 
-      P := Parent (E);
-      Insert_Before (P, Decl);
-      Analyze (Decl);
+      Insert_Before (Context, Master_Decl);
+      Analyze (Master_Decl);
 
-      Set_Has_Master_Entity (S);
+      --  Mark the enclosing scope and its associated construct as being task
+      --  masters.
 
-      --  Now mark the containing scope as a task master
+      Set_Has_Master_Entity (Master_Scop);
 
-      while Nkind (P) /= N_Compilation_Unit loop
-         P := Parent (P);
+      while Nkind (Context) /= N_Compilation_Unit loop
+         Context := Parent (Context);
 
          --  If we fall off the top, we are at the outer level, and the
          --  environment task is our effective master, so nothing to mark.
 
-         if Nkind_In
-              (P, N_Task_Body, N_Block_Statement, N_Subprogram_Body)
+         if Nkind_In (Context, N_Block_Statement,
+                               N_Subprogram_Body,
+                               N_Task_Body)
          then
-            Set_Is_Task_Master (P, True);
+            Set_Is_Task_Master (Context, True);
             return;
 
-         elsif Nkind (Parent (P)) = N_Subunit then
-            P := Corresponding_Stub (Parent (P));
+         elsif Nkind (Parent (Context)) = N_Subunit then
+            Context := Corresponding_Stub (Parent (Context));
          end if;
       end loop;
    end Build_Master_Entity;
+
+   ---------------------------
+   -- Build_Master_Renaming --
+   ---------------------------
+
+   procedure Build_Master_Renaming (N : Node_Id; Typ : Entity_Id) is
+      Loc         : constant Source_Ptr := Sloc (N);
+      Master_Decl : Node_Id;
+      Master_Id   : Entity_Id;
+
+   begin
+      --  Nothing to do if there is no task hierarchy
+
+      if Restriction_Active (No_Task_Hierarchy) then
+         return;
+      end if;
+
+      Master_Id :=
+        Make_Defining_Identifier (Loc,
+          New_External_Name (Chars (Typ), 'M'));
+
+      Master_Decl :=
+        Make_Object_Renaming_Declaration (Loc,
+          Defining_Identifier => Master_Id,
+          Subtype_Mark        => New_Reference_To (RTE (RE_Master_Id), Loc),
+          Name                => Make_Identifier (Loc, Name_uMaster));
+
+      Insert_Before (N, Master_Decl);
+      Analyze (Master_Decl);
+
+      Set_Master_Id (Typ, Master_Id);
+   end Build_Master_Renaming;
 
    -----------------------------------------
    -- Build_Private_Protected_Declaration --

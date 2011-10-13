@@ -70,9 +70,6 @@ package body MLib.Prj is
    S_Dec_Ads : File_Name_Type := No_File;
    --  Name_Id for "dec.ads"
 
-   G_Trasym_Ads : File_Name_Type := No_File;
-   --  Name_Id for "g-trasym.ads"
-
    Arguments : String_List_Access := No_Argument;
    --  Used to accumulate arguments for the invocation of gnatbind and of the
    --  compiler. Also used to collect the interface ALI when copying the ALI
@@ -316,9 +313,6 @@ package body MLib.Prj is
       Libdecgnat_Needed : Boolean := False;
       --  On OpenVMS, set True if library needs to be linked with libdecgnat
 
-      Gtrasymobj_Needed : Boolean := False;
-      --  On OpenVMS, set rue if library needs to be linked with g-trasym.obj
-
       Object_Directory_Path : constant String :=
                                 Get_Name_String
                                   (For_Project.Object_Directory.Display_Name);
@@ -375,8 +369,7 @@ package body MLib.Prj is
       --  to link with -lgnarl (this is the case when there is a dependency
       --  on s-osinte.ads). On OpenVMS, set Libdecgnat_Needed if the ALI file
       --  indicates that there is a need to link with -ldecgnat (this is the
-      --  case when there is a dependency on dec.ads). Set Gtrasymobj_Needed
-      --  if there is a dependency on g-trasym.ads.
+      --  case when there is a dependency on dec.ads).
 
       procedure Process (The_ALI : File_Name_Type);
       --  Check if the closure of a library unit which is or should be in the
@@ -513,8 +506,7 @@ package body MLib.Prj is
          if Libgnarl_Needed /= Yes
            or else
             (Main_Project
-              and then OpenVMS_On_Target
-              and then ((not Libdecgnat_Needed) or (not Gtrasymobj_Needed)))
+              and then OpenVMS_On_Target)
          then
             --  Scan the ALI file
 
@@ -548,9 +540,6 @@ package body MLib.Prj is
                elsif OpenVMS_On_Target then
                   if ALI.Sdep.Table (Index).Sfile = S_Dec_Ads then
                      Libdecgnat_Needed := True;
-
-                  elsif ALI.Sdep.Table (Index).Sfile = G_Trasym_Ads then
-                     Gtrasymobj_Needed := True;
                   end if;
                end if;
             end loop;
@@ -836,12 +825,6 @@ package body MLib.Prj is
          Name_Len := 0;
          Add_Str_To_Name_Buffer ("dec.ads");
          S_Dec_Ads := Name_Find;
-      end if;
-
-      if G_Trasym_Ads = No_File then
-         Name_Len := 0;
-         Add_Str_To_Name_Buffer ("g-trasym.ads");
-         G_Trasym_Ads := Name_Find;
       end if;
 
       --  We work in the object directory
@@ -1556,8 +1539,7 @@ package body MLib.Prj is
                                           ALIs.Append (new String'(ALI_Path));
 
                                           --  Find out if for this ALI file,
-                                          --  libgnarl or libdecgnat or
-                                          --  g-trasym.obj (on OpenVMS) is
+                                          --  libgnarl or libdecgnat is
                                           --  necessary.
 
                                           Check_Libs (ALI_Path, True);
@@ -1640,12 +1622,6 @@ package body MLib.Prj is
             else
                Opts.Table (Opts.Last) := new String'(Shared_Lib ("gnarl"));
             end if;
-         end if;
-
-         if Gtrasymobj_Needed then
-            Opts.Increment_Last;
-            Opts.Table (Opts.Last) :=
-              new String'(Lib_Directory & "/g-trasym.obj");
          end if;
 
          if Libdecgnat_Needed then

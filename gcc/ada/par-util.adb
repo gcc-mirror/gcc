@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -167,6 +167,43 @@ package body Util is
            ("(style) incorrect layout");
       end if;
    end Check_Bad_Layout;
+
+   --------------------------
+   -- Check_Future_Keyword --
+   --------------------------
+
+   procedure Check_Future_Keyword is
+   begin
+      --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
+      --  OVERRIDING, and SYNCHRONIZED are new reserved words.
+
+      if Ada_Version = Ada_95
+        and then Warn_On_Ada_2005_Compatibility
+      then
+         if Token_Name = Name_Overriding
+           or else Token_Name = Name_Synchronized
+           or else (Token_Name = Name_Interface
+                     and then Prev_Token /= Tok_Pragma)
+         then
+            Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
+         end if;
+      end if;
+
+      --  Similarly, warn about Ada 2012 reserved words
+
+      if Ada_Version in Ada_95 .. Ada_2005
+        and then Warn_On_Ada_2012_Compatibility
+      then
+         if Token_Name = Name_Some then
+            Error_Msg_N ("& is a reserved word in Ada 2012?", Token_Node);
+         end if;
+      end if;
+
+      --  Note: we deliberately do not emit these warnings when operating in
+      --  Ada 83 mode because in that case we assume the user is building
+      --  legacy code anyway.
+
+   end Check_Future_Keyword;
 
    --------------------------
    -- Check_Misspelling_Of --

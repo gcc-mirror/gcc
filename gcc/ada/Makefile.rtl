@@ -435,6 +435,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-tasloc$(objext) \
   g-timsta$(objext) \
   g-traceb$(objext) \
+  g-trasym$(objext) \
   g-u3spch$(objext) \
   g-utf_32$(objext) \
   g-wispch$(objext) \

@@ -1089,9 +1089,7 @@ package body System.Task_Primitives.Operations is
          Result := pthread_mutex_destroy (S.L'Access);
          pragma Assert (Result = 0);
 
-         if Result = ENOMEM then
-            raise Storage_Error;
-         end if;
+         raise Storage_Error;
       end if;
 
       Result := pthread_cond_init (S.CV'Access, Cond_Attr'Access);
@@ -1101,11 +1099,10 @@ package body System.Task_Primitives.Operations is
          Result := pthread_mutex_destroy (S.L'Access);
          pragma Assert (Result = 0);
 
-         if Result = ENOMEM then
-            Result := pthread_condattr_destroy (Cond_Attr'Access);
-            pragma Assert (Result = 0);
-            raise Storage_Error;
-         end if;
+         Result := pthread_condattr_destroy (Cond_Attr'Access);
+         pragma Assert (Result = 0);
+
+         raise Storage_Error;
       end if;
 
       Result := pthread_condattr_destroy (Cond_Attr'Access);

@@ -50,28 +50,34 @@ package Exp_Ch9 is
    --  Task_Id of the associated task as the parameter. The caller is
    --  responsible for analyzing and resolving the resulting tree.
 
+   procedure Build_Class_Wide_Master (Typ : Entity_Id);
+   --  Given an access-to-limited class-wide type or an access-to-limited
+   --  interface, ensure that the designated type has a _master and generate
+   --  a renaming of the said master to service the access type.
+
    function Build_Entry_Names (Conc_Typ : Entity_Id) return Node_Id;
    --  Create the statements which populate the entry names array of a task or
    --  protected type. The statements are wrapped inside a block due to a local
    --  declaration.
 
-   procedure Build_Master_Entity (E : Entity_Id);
-   --  Given an entity E for the declaration of an object containing tasks
-   --  or of a type declaration for an allocator whose designated type is a
-   --  task or contains tasks, this routine marks the appropriate enclosing
-   --  context as a master, and also declares a variable called _Master in
-   --  the current declarative part which captures the value of Current_Master
-   --  (if not already built by a prior call). We build this object (instead
-   --  of just calling Current_Master) for two reasons. First it is clearly
-   --  more efficient to call Current_Master only once for a bunch of tasks
-   --  in the same declarative part, and second it makes things easier in
-   --  generating the initialization routines, since they can just reference
-   --  the object _Master by name, and they will get the proper Current_Master
-   --  value at the outer level, and copy in the parameter value for the outer
-   --  initialization call if the call is for a nested component). Note that
-   --  in the case of nested packages, we only really need to make one such
-   --  object at the outer level, but it is much easier to generate one per
-   --  declarative part.
+   procedure Build_Master_Entity
+     (Id          : Entity_Id;
+      Use_Current : Boolean := False);
+   --  Given the name of an object or a type which is either a task, contains
+   --  tasks or designates tasks, create a _master in the appropriate scope
+   --  which captures the value of Current_Master. Mark the enclosing body as
+   --  being a task master. A _master is built to avoid multiple expensive
+   --  calls to Current_Master and to facilitate object initialization. Flag
+   --  Use_Current ensures that the master scope is the current scope.
+
+   procedure Build_Master_Renaming (N : Node_Id; Typ : Entity_Id);
+   --  Given an access type Typ and a declaration N of a designated type that
+   --  is either a task or contains tasks, create a renaming of the form:
+   --
+   --     TypM : Master_Id renames _Master;
+   --
+   --  where _master denotes the task master of the enclosing context. The
+   --  renaming declaration is inserted before N.
 
    function Build_Private_Protected_Declaration (N : Node_Id) return Entity_Id;
    --  A subprogram body without a previous spec that appears in a protected
