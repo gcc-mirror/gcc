@@ -65,12 +65,14 @@ pragma Pure (Generic_Array_Operations);
 
    generic
       type Scalar is private;
+      type Real is digits <>;
       type Matrix is array (Integer range <>, Integer range <>) of Scalar;
+      with function "abs" (Right : Scalar) return Real'Base is <>;
       with function "-" (Left, Right : Scalar) return Scalar is <>;
       with function "*" (Left, Right : Scalar) return Scalar is <>;
       with function "/" (Left, Right : Scalar) return Scalar is <>;
-      with function "<" (Left, Right : Scalar) return Boolean is <>;
-      Zero, One : Scalar;
+      Zero : Scalar;
+      One  : Scalar;
    procedure Forward_Eliminate
      (M   : in out Matrix;
       N   : in out Matrix;

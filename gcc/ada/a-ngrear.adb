@@ -33,7 +33,7 @@
 --  reason for this is new Ada 2012 requirements that prohibit algorithms such
 --  as Strassen's algorithm, which may be used by some BLAS implementations. In
 --  addition, some platforms lacked suitable compilers to compile the reference
---  BLAS/LAPACK implementation. Finally, on many platforms there may be more
+--  BLAS/LAPACK implementation. Finally, on some platforms there are be more
 --  floating point types than supported by BLAS/LAPACK.
 
 with Ada.Containers.Generic_Anonymous_Array_Sort; use Ada.Containers;
@@ -59,6 +59,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
    procedure Forward_Eliminate is new Ops.Forward_Eliminate
     (Scalar        => Real'Base,
+     Real          => Real'Base,
      Matrix        => Real_Matrix,
      Zero          => 0.0,
      One           => 1.0);
