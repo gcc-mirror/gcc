@@ -372,10 +372,6 @@ avr_option_override (void)
     {
       flag_omit_frame_pointer = 0;
     }
-  else
-    {
-      flag_omit_frame_pointer = (optimize >= 1);
-    }
 
   avr_current_device = &avr_mcu_types[avr_mcu_index];
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
