@@ -1,3 +1,9 @@
+2011-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.c (walk_stmt_load_store_addr_ops): Call visit_addr
+	also on COND_EXPR/VEC_COND_EXPR comparison operands if they are
+	ADDR_EXPRs.
+
 2011-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50723
