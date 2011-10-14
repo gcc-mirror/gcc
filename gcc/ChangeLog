@@ -1,3 +1,14 @@
+2011-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (*avx_cvtdq2pd256_2): Rename to...
+	(avx_cvtdq2pd256_2): ... this.
+	(sseunpackfltmode): New mode attr.
+	(vec_unpacks_float_hi_v8hi, vec_unpacks_float_lo_v8hi,
+	vec_unpacku_float_hi_v8hi, vec_unpacku_float_lo_v8hi): Macroize
+	using VI2_AVX2 iterator.
+	(vec_unpacku_float_hi_v8si, vec_unpacku_float_lo_v8si): New
+	expanders.
+
 2011-10-13  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (plusminus): New code iterator.
