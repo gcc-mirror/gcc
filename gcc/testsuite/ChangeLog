@@ -3,7 +3,7 @@
 	PR c++/50563
 	* g++.dg/cpp0x/nsdmi-list1.C: New.
 
-	PR c++/50507
+	PR c++/50707
 	* g++.dg/cpp0x/nsdmi-const1.C: New.
 
 2011-10-14  Janus Weil  <janus@gcc.gnu.org>

@@ -4,7 +4,7 @@
 	* parser.c (cp_parser_cache_group): Handle end==CPP_COMMA.
 	(cp_parser_save_nsdmi): Pass it.
 
-	PR c++/50507
+	PR c++/50707
 	* method.c (walk_field_subobs): Check for NSDMI before
 	complaining about uninitialized fields.
 
