@@ -1,3 +1,16 @@
+2011-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Check_Premature_Freezing): If an untagged type
+	is a generic actual, it is a subtype of a type that was frozen
+	by the instantiation, and even if not marked frozen it does not
+	affect the construction of the dispatch table.
+
+2011-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, mlib-utl.adb, sem_util.adb, sem_ch4.adb: Minor code
+	reformatting.
+	* s-rident.ads: Add missing Compiler_Unit pragma.
+
 2011-10-14  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_res.adb: Minor reformatting.

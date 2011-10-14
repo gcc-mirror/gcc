@@ -3910,8 +3910,8 @@ package body Sem_Util is
             end if;
          end loop;
 
-         --  This loop checks the form of the prefix for an entity,
-         --  using recursion to deal with intermediate components.
+         --  This loop checks the form of the prefix for an entity, using
+         --  recursion to deal with intermediate components.
 
          loop
             --  Check for Y where Y is an entity
@@ -3925,7 +3925,6 @@ package body Sem_Util is
             elsif
               Nkind_In (Expr, N_Selected_Component, N_Indexed_Component)
             then
-
                Expr := Prefix (Expr);
                Off := True;
 
