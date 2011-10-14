@@ -32,8 +32,8 @@ typedef void (__kernel_dmb_t) (void);
 #define __kernel_dmb (*(__kernel_dmb_t *) 0xffff0fa0)
 
 /* Note: we implement byte, short and int versions of atomic operations using
-   the above kernel helpers, but there is no support for "long long" (64-bit)
-   operations as yet.  */
+   the above kernel helpers; see linux-atomic-64bit.c for "long long" (64-bit)
+   operations.  */
 
 #define HIDDEN __attribute__ ((visibility ("hidden")))
 
@@ -273,6 +273,7 @@ SUBWORD_TEST_AND_SET (unsigned char,  1)
     *ptr = 0;								\
   }
 
+SYNC_LOCK_RELEASE (long long,   8)
 SYNC_LOCK_RELEASE (int,   4)
 SYNC_LOCK_RELEASE (short, 2)
 SYNC_LOCK_RELEASE (char,  1)
