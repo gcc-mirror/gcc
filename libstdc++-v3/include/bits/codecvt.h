@@ -292,7 +292,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       codecvt(size_t __refs = 0)
-      : __codecvt_abstract_base<_InternT, _ExternT, _StateT> (__refs) { }
+      : __codecvt_abstract_base<_InternT, _ExternT, _StateT> (__refs),
+	_M_c_locale_codecvt(0)
+      { }
 
       explicit
       codecvt(__c_locale __cloc, size_t __refs = 0);
