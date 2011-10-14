@@ -1,3 +1,9 @@
+2011-10-14  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
+
+	* gcc.target/i386/warn-vect-op-3.c: Exclude 32-bit architectures.
+	* gcc.target/i386/warn-vect-op-1.c: Ditto.
+	* gcc.target/i386/warn-vect-op-2.c: Ditto.
+
 2011-10-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50718
