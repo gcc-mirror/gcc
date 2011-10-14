@@ -4041,6 +4041,12 @@ be computed modulo @math{2*@var{N}}.  Note that if
 @code{rtx_equal_p(operand1, operand2)}, this can be implemented
 with just operand 1 and selector elements modulo @var{N}.
 
+In order to make things easy for a number of targets, if there is no
+@samp{vec_perm} pattern for mode @var{m}, but there is for mode @var{q}
+where @var{q} is a vector of @code{QImode} of the same width as @var{m},
+the middle-end will lower the mode @var{m} @code{VEC_PERM_EXPR} to
+mode @var{q}.
+
 @cindex @code{vec_perm_const@var{m}} instruction pattern
 @item @samp{vec_perm_const@var{m}}
 Like @samp{vec_perm} except that the permutation is a compile-time
