@@ -2957,10 +2957,11 @@ darwin_override_options (void)
   darwin_running_cxx = (strstr (lang_hooks.name, "C++") != 0);
 }
 
-/* Add $LDBL128 suffix to long double builtins.  */
+#if DARWIN_PPC
+/* Add $LDBL128 suffix to long double builtins for ppc darwin.  */
 
 static void
-darwin_patch_builtin (int fncode)
+darwin_patch_builtin (enum built_in_function fncode)
 {
   tree fn = builtin_decl_explicit (fncode);
   tree sym;
@@ -2998,6 +2999,7 @@ darwin_patch_builtins (void)
 #undef PATCH_BUILTIN_NO64
 #undef PATCH_BUILTIN_VARIADIC
 }
+#endif
 
 /*  CFStrings implementation.  */
 static GTY(()) tree cfstring_class_reference = NULL_TREE;
