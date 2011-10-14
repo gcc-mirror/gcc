@@ -1,3 +1,11 @@
+2011-10-13  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (plusminus): New code iterator.
+	(plusminus_insn): New code attr.
+	(addv2si3, subv2si3, addv4hi3, subv4hi3, addv2hi3, subv2hi3): Merge
+	using plusminus and plusminus_insn.
+	(fpadd64_vis, fpsub64_vis): Likewise.
+
 2011-10-13  Richard Henderson  <rth@redhat.com>
 
 	* doc/md.texi (vec_perm): Document fallback to byte permutation.
