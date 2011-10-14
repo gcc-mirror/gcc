@@ -1,3 +1,10 @@
+2011-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50714
+	* include/bits/codecvt.h (codecvt<>::codecvt(size_t)): Initialize
+	_M_c_locale_codecvt member.
+	* testsuite/22_locale/codecvt_byname/50714.cc: New.
+
 2011-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50594
