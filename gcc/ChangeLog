@@ -1,3 +1,7 @@
+2011-10-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* invoke.texi (AVR Options): Avoid \leq{}.
+
 2011-10-14  Kai Tietz  <ktietz@redhat.com>
 
 	* gimplify.c (gimplify_expr): Take care that for bitwise-binary
