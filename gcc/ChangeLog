@@ -1,3 +1,18 @@
+2011-10-14  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50723
+	* ipa-split.c (split_function): Use GSI_CONTINUE_LINKING.
+
+	2011-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50712
+	* ipa-split.c (split_function): Always re-gimplify parameters
+	when they are not gimple vals before passing them.  Properly
+	check for type compatibility.
+
 2011-10-12  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/49967

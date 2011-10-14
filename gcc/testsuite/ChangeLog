@@ -1,3 +1,14 @@
+2011-10-14  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-10-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr50723.c: New testcase.
+
+	2011-10-13  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/pr50712.c: New testcase.
+
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50618
