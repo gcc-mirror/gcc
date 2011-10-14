@@ -1,3 +1,9 @@
+2011-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50354
+	* config/sparc/linux64.h (TARGET_DEFAULT): Only override if the default
+	processor is at least V9 and TARGET_64BIT_DEFAULT is defined.
+
 2011-10-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* invoke.texi (AVR Options): Avoid \leq{}.
@@ -251,6 +257,13 @@
 	streamer_hooks.input_location, if set.
 	* lto-streamer-out.c (lto_output_location): Use
 	streamer_hooks.output_location, if set.
+
+2011-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC options): Document -mfix-at697f.
+	* config/sparc/sparc.opt (mfix-at697f): New option.
+	* config/sparc/sparc.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(sparc_reorg): New function.
 
 2011-10-13  Richard Guenther  <rguenther@suse.de>
 
