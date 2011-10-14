@@ -3190,7 +3190,7 @@ in the case of @code{scanf} formats, this option will suppress the
 warning if the unused arguments are all pointers, since the Single
 Unix Specification says that such unused arguments are allowed.
 
-@item -Wno-format-zero-length @r{(C and Objective-C only)}
+@item -Wno-format-zero-length @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Wno-format-zero-length
 @opindex Wformat-zero-length
 If @option{-Wformat} is specified, do not warn about zero-length formats.
