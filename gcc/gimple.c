@@ -5313,9 +5313,24 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	       || gimple_code (stmt) == GIMPLE_COND))
     {
       for (i = 0; i < gimple_num_ops (stmt); ++i)
-	if (gimple_op (stmt, i)
-	    && TREE_CODE (gimple_op (stmt, i)) == ADDR_EXPR)
-	  ret |= visit_addr (stmt, TREE_OPERAND (gimple_op (stmt, i), 0), data);
+	{
+	  tree op = gimple_op (stmt, i);
+	  if (op == NULL_TREE)
+	    ;
+	  else if (TREE_CODE (op) == ADDR_EXPR)
+	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	  /* COND_EXPR and VCOND_EXPR rhs1 argument is a comparison
+	     tree with two operands.  */
+	  else if (i == 1 && COMPARISON_CLASS_P (op))
+	    {
+	      if (TREE_CODE (TREE_OPERAND (op, 0)) == ADDR_EXPR)
+		ret |= visit_addr (stmt, TREE_OPERAND (TREE_OPERAND (op, 0),
+						       0), data);
+	      if (TREE_CODE (TREE_OPERAND (op, 1)) == ADDR_EXPR)
+		ret |= visit_addr (stmt, TREE_OPERAND (TREE_OPERAND (op, 1),
+						       0), data);
+	    }
+	}
     }
   else if (is_gimple_call (stmt))
     {
