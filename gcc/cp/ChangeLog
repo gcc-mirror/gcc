@@ -1,3 +1,9 @@
+2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38174
+	* call.c (add_builtin_candidate): If two pointers have a composite
+	pointer type, generate a single candidate with that type.
+
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50614

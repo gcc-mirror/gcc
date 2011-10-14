@@ -2582,6 +2582,21 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  || MAYBE_CLASS_TYPE_P (type1)
 	  || TREE_CODE (type1) == ENUMERAL_TYPE))
     {
+      if (TYPE_PTR_P (type1) || TYPE_PTR_TO_MEMBER_P (type1))
+	{
+	  tree cptype = composite_pointer_type (type1, type2,
+						error_mark_node,
+						error_mark_node,
+						CPO_CONVERSION,
+						tf_none);
+	  if (cptype != error_mark_node)
+	    {
+	      build_builtin_candidate
+		(candidates, fnname, cptype, cptype, args, argtypes, flags);
+	      return;
+	    }
+	}
+
       build_builtin_candidate
 	(candidates, fnname, type1, type1, args, argtypes, flags);
       build_builtin_candidate
