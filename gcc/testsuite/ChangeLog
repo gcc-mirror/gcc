@@ -1,3 +1,8 @@
+2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38174
+	* g++.dg/overload/operator4.C: New.
+
 2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
 
 	* gcc.dg/di-longlong64-sync-1.c: New test.
