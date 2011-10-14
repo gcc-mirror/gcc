@@ -36132,6 +36132,67 @@ ix86_expand_vec_perm_builtin (tree exp)
   return CONST0_RTX (d.vmode);
 }
 
+bool
+ix86_expand_vec_perm_const (rtx operands[4])
+{
+  struct expand_vec_perm_d d;
+  int i, nelt, which;
+  rtx sel;
+
+  d.target = operands[0];
+  d.op0 = operands[1];
+  d.op1 = operands[2];
+  sel = operands[3];
+
+  d.vmode = GET_MODE (d.target);
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = false;
+
+  gcc_assert (GET_CODE (sel) == CONST_VECTOR);
+  gcc_assert (XVECLEN (sel, 0) == nelt);
+
+  for (i = which = 0; i < nelt; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      int ei = INTVAL (e) & (2 * nelt - 1);
+
+      which |= (ei < nelt ? 1 : 2);
+      d.perm[i] = ei;
+    }
+
+  switch (which)
+    {
+    default:
+      gcc_unreachable();
+
+    case 3:
+      if (!rtx_equal_p (d.op0, d.op1))
+	break;
+
+      /* The elements of PERM do not suggest that only the first operand
+	 is used, but both operands are identical.  Allow easier matching
+	 of the permutation by folding the permutation into the single
+	 input vector.  */
+      for (i = 0; i < nelt; ++i)
+	if (d.perm[i] >= nelt)
+	  d.perm[i] -= nelt;
+      /* FALLTHRU */
+
+    case 1:
+      d.op1 = d.op0;
+      break;
+
+    case 2:
+      for (i = 0; i < nelt; ++i)
+        d.perm[i] -= nelt;
+      d.op0 = d.op1;
+      break;
+    }
+
+  return ix86_expand_vec_perm_builtin_1 (&d);
+}
+
 /* Implement targetm.vectorize.builtin_vec_perm_ok.  */
 
 static bool
