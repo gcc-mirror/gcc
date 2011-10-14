@@ -1,3 +1,8 @@
+2011-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50723
+	* ipa-split.c (split_function): Use GSI_CONTINUE_LINKING.
+
 2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* gengtype.c (files_rules): Added rules for objc/objc-map.h and

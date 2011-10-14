@@ -1134,7 +1134,7 @@ split_function (struct split_point *split_point)
     if (!is_gimple_val (arg))
       {
 	arg = force_gimple_operand_gsi (&gsi, arg, true, NULL_TREE,
-					false, GSI_NEW_STMT);
+					false, GSI_CONTINUE_LINKING);
 	VEC_replace (tree, args_to_pass, i, arg);
       }
   call = gimple_build_call_vec (node->decl, args_to_pass);
