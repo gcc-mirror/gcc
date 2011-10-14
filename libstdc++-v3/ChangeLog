@@ -1,3 +1,7 @@
+2011-10-14  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/performance/23_containers/insert_erase/41975.cc: New.
+
 2011-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/22_locale/codecvt_byname/50714.cc: Fix mychar.
