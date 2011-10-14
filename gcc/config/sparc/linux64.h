@@ -31,7 +31,9 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#ifdef TARGET_64BIT_DEFAULT
+/* On Linux, the combination sparc64-* --with-cpu=v8 is supported and
+   selects a 32-bit compiler.  */
+#if defined(TARGET_64BIT_DEFAULT) && TARGET_CPU_DEFAULT >= TARGET_CPU_v9
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (MASK_V9 + MASK_PTR64 + MASK_64BIT + MASK_STACK_BIAS + \
