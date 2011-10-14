@@ -1,3 +1,8 @@
+2011-10-14  Kai Tietz  <ktietz@redhat.com>
+
+	* gimplify.c (gimplify_expr): Take care that for bitwise-binary
+	transformation the operands have compatible types.
+
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_widen_smult_hi_v8hi,

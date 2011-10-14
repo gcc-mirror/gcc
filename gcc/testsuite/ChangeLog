@@ -1,3 +1,7 @@
+2011-10-14  Kai Tietz  <ktietz@redhat.com>
+
+	* gfortran.fortran-torture/compile/logical-2.f90: New test.
+
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/sse2-mul-1.c: New test.
