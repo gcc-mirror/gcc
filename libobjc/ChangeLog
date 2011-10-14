@@ -1,6 +1,19 @@
 2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Backport from mainline
+	2011-10-09  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/49883
+	* init.c (__objc_exec_class): Work around a bug in clang's code
+	generation.  Clang sets the class->info field to values different
+	from 0x1 or 0x2 (the only allowed values in the traditional GNU
+	Objective-C runtime ABI) to store some additional information, but
+	this breaks backwards compatibility.  Wipe out all the bits in the
+	fields other than the first two upon loading a class.
+
+2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Backport from mainline
 	2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/50002
