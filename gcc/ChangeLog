@@ -4,6 +4,11 @@
 
 	* config/rs6000/spu.md (vec_permv16qi): New pattern.
 
+	* config/i386/i386.c (ix86_expand_vec_perm_const): New.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/sse.md (VEC_PERM_CONST): New mode iterator.
+	(vec_perm_const<VEC_PERM_CONST>): New expander.
+
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_set<mode>): Change V_128 iterator mode
