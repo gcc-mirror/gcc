@@ -1677,6 +1677,14 @@ package body Ch6 is
          Scan; -- past ALIASED
          Set_Aliased_Present (Decl_Node);
 
+         if Ada_Version < Ada_2012 then
+            Error_Msg_SC -- CODEFIX
+              ("ALIASED not allowed in extended return in Ada2012?");
+         else
+            Error_Msg_SC -- CODEFIX
+              ("ALIASED not allowed in extended return");
+         end if;
+
          if Token = Tok_Constant then
             Scan; -- past CONSTANT
             Set_Constant_Present (Decl_Node);

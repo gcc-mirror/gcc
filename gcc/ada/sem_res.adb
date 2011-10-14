@@ -7368,7 +7368,7 @@ package body Sem_Res is
       --  evaluation of the corresponding "and then" or "or else". If we left
       --  the replacement to expansion time, then run-time checks associated
       --  with such operands would be evaluated unconditionally, due to being
-      --  before to the condition prior to the rewriting as short-circuit forms
+      --  before the condition prior to the rewriting as short-circuit forms
       --  during expansion.
 
       if Short_Circuit_And_Or

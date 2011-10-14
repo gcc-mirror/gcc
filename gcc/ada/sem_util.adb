@@ -3025,7 +3025,8 @@ package body Sem_Util is
    function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id is
    begin
       if Present (Renamed_Object (Id))
-        and then Is_Entity_Name (Renamed_Object (Id)) then
+        and then Is_Entity_Name (Renamed_Object (Id))
+      then
          return Effective_Extra_Accessibility (Entity (Renamed_Object (Id)));
       end if;
 
@@ -3922,7 +3923,8 @@ package body Sem_Util is
             --  Check for components
 
             elsif
-               Nkind_In (Expr, N_Selected_Component, N_Indexed_Component) then
+              Nkind_In (Expr, N_Selected_Component, N_Indexed_Component)
+            then
 
                Expr := Prefix (Expr);
                Off := True;

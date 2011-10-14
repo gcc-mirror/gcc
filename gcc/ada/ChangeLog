@@ -1,3 +1,44 @@
+2011-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+
+2011-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call):
+	Code and comment reformatting. Use BIP_Task_Master
+	when creating a _master.
+	(BIP_Formal_Suffix): Code reformatting. Correct the case for
+	BIP_Task_Master.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Use
+	BIP_Task_Master when creating a reference to the enclosing
+	function's _master formal.
+	(Move_Activation_Chain): Use BIP_Task_Master when creating a reference
+	to the _master.
+	* exp_ch6.ads: Change BIP_Master to BIP_Task_Master.
+	(Needs_BIP_Finalization_Master): Alphabetized.
+	* sem_ch6.adb (Create_Extra_Formals): Update the usage of
+	BIP_Task_Master.
+
+2011-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch6.adb (P_Return_Object_Declaration): In Ada 2012 mode,
+	reject an aliased keyword on the object declaration of an extended
+	return statement. In older versions of the language indicate
+	that this is illegal in the standard.
+
+2011-10-14  Pascal Obry  <obry@adacore.com>
+
+	* sem_util.adb, sem_ch4.adb: Minor reformatting.
+
+2011-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Recognize properly procedure calls that are
+	transformed into code statements.
+
+2011-10-14  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Minor fix in project example.
+
 2011-10-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb: Return objects are aliased if their type is
