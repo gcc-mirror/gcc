@@ -1016,25 +1016,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	}
       else if (sfk == sfk_constructor)
 	{
-	  bool bad = true;
-	  if (CP_TYPE_CONST_P (mem_type)
-	      && default_init_uninitialized_part (mem_type))
-	    {
-	      if (msg)
-		error ("uninitialized non-static const member %q#D",
-		       field);
-	    }
-	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
-	    {
-	      if (msg)
-		error ("uninitialized non-static reference member %q#D",
-		       field);
-	    }
-	  else
-	    bad = false;
-
-	  if (bad && deleted_p)
-	    *deleted_p = true;
+	  bool bad;
 
 	  if (DECL_INITIAL (field))
 	    {
@@ -1056,6 +1038,26 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	      /* Don't do the normal processing.  */
 	      continue;
 	    }
+
+	  bad = false;
+	  if (CP_TYPE_CONST_P (mem_type)
+	      && default_init_uninitialized_part (mem_type))
+	    {
+	      if (msg)
+		error ("uninitialized non-static const member %q#D",
+		       field);
+	      bad = true;
+	    }
+	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
+	    {
+	      if (msg)
+		error ("uninitialized non-static reference member %q#D",
+		       field);
+	      bad = true;
+	    }
+
+	  if (bad && deleted_p)
+	    *deleted_p = true;
 
 	  /* For an implicitly-defined default constructor to be constexpr,
 	     every member must have a user-provided default constructor or

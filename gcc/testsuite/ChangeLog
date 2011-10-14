@@ -1,3 +1,8 @@
+2011-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50507
+	* g++.dg/cpp0x/nsdmi-const1.C: New.
+
 2011-10-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50570
