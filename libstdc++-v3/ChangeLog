@@ -1,3 +1,7 @@
+2011-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/22_locale/codecvt_byname/50714.cc: Fix mychar.
+
 2011-10-14  Jonathan Yong  <jon_y@users.sourceforge.net>
 
 	* configure.host: Use config/os/mingw32-w64 instead of

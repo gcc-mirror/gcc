@@ -18,8 +18,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <locale>
+#include <ext/pod_char_traits.h>
 
-#define mychar unsigned short
+#define mychar __gnu_cxx::character<unsigned short, int>
 
 namespace std
 {
