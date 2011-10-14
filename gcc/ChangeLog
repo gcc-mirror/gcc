@@ -1,3 +1,10 @@
+2011-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (mulv2di3): Macroize using VI8_AVX2
+	iterator.
+	(ashl<mode>3): Use VI248_AVX2 iterator instead of VI248_128.
+	Use <sseinsnmode> instead of TI in mode attr.
+
 2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
 
 	* config/arm/linux-atomic-64bit.c: New (based on linux-atomic.c).
