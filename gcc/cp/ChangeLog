@@ -1,5 +1,9 @@
 2011-10-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50507
+	* method.c (walk_field_subobs): Check for NSDMI before
+	complaining about uninitialized fields.
+
 	* pt.c (tsubst_decl) [FIELD_DECL]: Use void_zero_node
 	instead of error_mark_node as a placeholder.
 
