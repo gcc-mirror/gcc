@@ -5579,26 +5579,10 @@ package body Exp_Ch4 is
          Expand_Boolean_Operator (N);
 
       elsif Is_Boolean_Type (Etype (N)) then
-
-         --  Replace AND by AND THEN if Short_Circuit_And_Or active and the
-         --  type is standard Boolean (do not mess with AND that uses a non-
-         --  standard Boolean type, because something strange is going on).
-
-         if Short_Circuit_And_Or and then Typ = Standard_Boolean then
-            Rewrite (N,
-              Make_And_Then (Sloc (N),
-                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
-                Right_Opnd => Relocate_Node (Right_Opnd (N))));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise, adjust conditions
-
-         else
-            Adjust_Condition (Left_Opnd (N));
-            Adjust_Condition (Right_Opnd (N));
-            Set_Etype (N, Standard_Boolean);
-            Adjust_Result_Type (N, Typ);
-         end if;
+         Adjust_Condition (Left_Opnd (N));
+         Adjust_Condition (Right_Opnd (N));
+         Set_Etype (N, Standard_Boolean);
+         Adjust_Result_Type (N, Typ);
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
@@ -7535,26 +7519,10 @@ package body Exp_Ch4 is
          Expand_Boolean_Operator (N);
 
       elsif Is_Boolean_Type (Etype (N)) then
-
-         --  Replace OR by OR ELSE if Short_Circuit_And_Or active and the type
-         --  is standard Boolean (do not mess with AND that uses a non-standard
-         --  Boolean type, because something strange is going on).
-
-         if Short_Circuit_And_Or and then Typ = Standard_Boolean then
-            Rewrite (N,
-              Make_Or_Else (Sloc (N),
-                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
-                Right_Opnd => Relocate_Node (Right_Opnd (N))));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise, adjust conditions
-
-         else
-            Adjust_Condition (Left_Opnd (N));
-            Adjust_Condition (Right_Opnd (N));
-            Set_Etype (N, Standard_Boolean);
-            Adjust_Result_Type (N, Typ);
-         end if;
+         Adjust_Condition (Left_Opnd (N));
+         Adjust_Condition (Right_Opnd (N));
+         Set_Etype (N, Standard_Boolean);
+         Adjust_Result_Type (N, Typ);
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));

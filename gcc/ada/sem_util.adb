@@ -6567,19 +6567,18 @@ package body Sem_Util is
            (Is_Object (E)
              and then
                (Is_Aliased (E)
-                  or else (Present (Renamed_Object (E))
-                             and then Is_Aliased_View (Renamed_Object (E)))))
+                 or else (Present (Renamed_Object (E))
+                           and then Is_Aliased_View (Renamed_Object (E)))))
 
            or else ((Is_Formal (E)
                       or else Ekind (E) = E_Generic_In_Out_Parameter
                       or else Ekind (E) = E_Generic_In_Parameter)
                     and then Is_Tagged_Type (Etype (E)))
 
-           or else (Is_Concurrent_Type (E)
-                     and then In_Open_Scopes (E))
+           or else (Is_Concurrent_Type (E) and then In_Open_Scopes (E))
 
-            --  Current instance of type, either directly or as rewritten
-            --  reference to the current object.
+           --  Current instance of type, either directly or as rewritten
+           --  reference to the current object.
 
            or else (Is_Entity_Name (Original_Node (Obj))
                      and then Present (Entity (Original_Node (Obj)))
@@ -6588,7 +6587,13 @@ package body Sem_Util is
            or else (Is_Type (E) and then E = Current_Scope)
 
            or else (Is_Incomplete_Or_Private_Type (E)
-                     and then Full_View (E) = Current_Scope);
+                     and then Full_View (E) = Current_Scope)
+
+           --  Ada 2012 AI05-0053: the return object of an extended return
+           --  statement is aliased if its type is immutably limited.
+
+           or else (Is_Return_Object (E)
+                     and then Is_Immutably_Limited_Type (Etype (E)));
 
       elsif Nkind (Obj) = N_Selected_Component then
          return Is_Aliased (Entity (Selector_Name (Obj)));

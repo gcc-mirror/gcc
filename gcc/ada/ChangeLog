@@ -1,3 +1,17 @@
+2011-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb: Return objects are aliased if their type is
+	immutably limited as per AI05-0053.
+
+2011-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_And): Remove Short_Circuit_And_Or
+	expansion code (moved to sem_res) (Expand_N_Op_Or): Remove
+	Short_Circuit_And_Or expansion code (moved to sem_res).
+	* sem_res.adb (Resolve_Logical_Op): Add code to rewrite Boolean
+	"and" and "or" operators as short-circuit "and then" and "or
+	else", when pragma Short_Circuit_And_Or is active.
+
 2011-10-13  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch9.adb, sem_util.adb, sem_util.ads, exp_ch6.adb, sem_ch4.adb,
