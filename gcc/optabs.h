@@ -638,9 +638,6 @@ enum direct_optab_index
   DOI_reload_in,
   DOI_reload_out,
 
-  /* Vector shuffling.  */
-  DOI_vec_perm,
-
   /* Block move operation.  */
   DOI_movmem,
 
@@ -688,6 +685,10 @@ enum direct_optab_index
   /* Atomic clear with release semantics.  */
   DOI_sync_lock_release,
 
+  /* Vector permutation.  */
+  DOI_vec_perm,
+  DOI_vec_perm_const,
+
   DOI_MAX
 };
 
@@ -704,7 +705,6 @@ typedef struct direct_optab_d *direct_optab;
 #endif
 #define reload_in_optab (&direct_optab_table[(int) DOI_reload_in])
 #define reload_out_optab (&direct_optab_table[(int) DOI_reload_out])
-#define vec_perm_optab (&direct_optab_table[(int) DOI_vec_perm])
 #define movmem_optab (&direct_optab_table[(int) DOI_movmem])
 #define setmem_optab (&direct_optab_table[(int) DOI_setmem])
 #define cmpstr_optab (&direct_optab_table[(int) DOI_cmpstr])
@@ -734,6 +734,8 @@ typedef struct direct_optab_d *direct_optab;
   (&direct_optab_table[(int) DOI_sync_lock_test_and_set])
 #define sync_lock_release_optab \
   (&direct_optab_table[(int) DOI_sync_lock_release])
+#define vec_perm_optab (&direct_optab_table[DOI_vec_perm])
+#define vec_perm_const_optab (&direct_optab_table[(int) DOI_vec_perm_const])
 
 /* Target-dependent globals.  */
 struct target_optabs {
@@ -889,7 +891,7 @@ extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
 extern rtx expand_vec_shift_expr (sepops, rtx);
 
 /* Return tree if target supports vector operations for VEC_PERM_EXPR.  */
-bool expand_vec_perm_expr_p (enum machine_mode, tree, tree, tree);
+extern bool can_vec_perm_expr_p (tree, tree);
 
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm_expr (tree, tree, tree, tree, rtx);

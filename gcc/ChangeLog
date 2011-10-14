@@ -1,5 +1,16 @@
 2011-10-13  Richard Henderson  <rth@redhat.com>
 
+	* doc/md.texi (vec_perm): Document fallback to byte permutation.
+	* genopinit.c (optabs): Add vec_perm_const.
+	* optabs.c (can_vec_perm_expr_p): Rename from expand_vec_perm_expr_p.
+	Reject non-vector modes.  Allow fallback to byte permutation.
+	(expand_vec_perm_expr_1): Split out from ...
+	(expand_vec_perm_expr): ... here.  Allow fallback to byte permutation.
+	* optabs.h (DOI_vec_perm_const, vec_perm_const_optab): New.
+	* tree-vect-generic.c (lower_vec_perm): Update for name change.
+
+2011-10-13  Richard Henderson  <rth@redhat.com>
+
 	* config/rs6000/altivec.md (vec_permv16qi): New pattern.
 
 	* config/rs6000/spu.md (vec_permv16qi): New pattern.

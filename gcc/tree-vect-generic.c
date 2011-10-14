@@ -641,7 +641,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   location_t loc = gimple_location (gsi_stmt (*gsi));
   unsigned i;
 
-  if (expand_vec_perm_expr_p (TYPE_MODE (vect_type), vec0, vec1, mask))
+  if (can_vec_perm_expr_p (vect_type, mask))
     return;
   
   warning_at (loc, OPT_Wvector_operation_performance,
