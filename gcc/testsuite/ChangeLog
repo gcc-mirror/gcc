@@ -1,3 +1,11 @@
+2011-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/sse2-mul-1.c: New test.
+	* gcc.target/i386/sse4_1-mul-1.c: New test.
+	* gcc.target/i386/avx-mul-1.c: New test.
+	* gcc.target/i386/xop-mul-1.c: New test.
+	* gcc.target/i386/avx2-mul-1.c: New test.
+
 2011-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50563
