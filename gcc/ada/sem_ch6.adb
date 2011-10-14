@@ -6516,7 +6516,7 @@ package body Sem_Ch6 is
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Master_Id),
-                    E, BIP_Formal_Suffix (BIP_Master));
+                    E, BIP_Formal_Suffix (BIP_Task_Master));
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Activation_Chain_Access),

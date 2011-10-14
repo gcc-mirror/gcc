@@ -3155,9 +3155,9 @@ package body Sem_Ch4 is
       --  Unary operator case
 
       else
-         if Op_Name = Name_Op_Subtract or else
-            Op_Name = Name_Op_Add      or else
-            Op_Name = Name_Op_Abs
+         if        Op_Name = Name_Op_Subtract
+           or else Op_Name = Name_Op_Add
+           or else Op_Name = Name_Op_Abs
          then
             Find_Unary_Types (Act1, Op_Id, N);
 
@@ -6434,7 +6434,7 @@ package body Sem_Ch4 is
 
    begin
 
-      --  Check whether type has a specified indexing aspect.
+      --  Check whether type has a specified indexing aspect
 
       Func_Name := Empty;
       Is_Var := False;
@@ -6443,7 +6443,7 @@ package body Sem_Ch4 is
       while Present (Ritem) loop
          if Nkind (Ritem) = N_Aspect_Specification then
 
-            --  Prefer Variable_Indexing, but will settle for Constant.
+            --  Prefer Variable_Indexing, but will settle for Constant
 
             if Get_Aspect_Id (Chars (Identifier (Ritem))) =
                                                  Aspect_Constant_Indexing
@@ -6529,7 +6529,7 @@ package body Sem_Ch4 is
                if Success then
                   Set_Etype (Name (N), It.Typ);
 
-                  --  Add implicit dereference interpretation.
+                  --  Add implicit dereference interpretation
 
                   Disc := First_Discriminant (Etype (It.Nam));
 

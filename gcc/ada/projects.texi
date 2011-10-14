@@ -580,19 +580,19 @@ packages would be involved in the build process.
       @b{for} Object_Dir @b{use} "obj";
       @b{for} Exec_Dir @b{use} ".";
       @b{for} Main @b{use} ("proc.adb");
+
+      @b{package} Builder @b{is}  --<<<  for gnatmake and gprbuild
+      @b{end} Builder;
+
+      @b{package} Compiler @b{is} --<<<  for the compiler
+      @b{end} Compiler;
+
+      @b{package} Binder @b{is}   --<<<  for the binder
+      @b{end} Binder;
+
+      @b{package} Linker @b{is}   --<<<  for the linker
+      @b{end} Linker;
    @b{end} Build;
-
-   @b{package} Builder @b{is}  --<<<  for gnatmake and gprbuild
-   @b{end} Builder;
-
-   @b{package} Compiler @b{is} --<<<  for the compiler
-   @b{end} Compiler;
-
-   @b{package} Binder @b{is}   --<<<  for the binder
-   @b{end} Binder;
-
-   @b{package} Linker @b{is}   --<<<  for the linker
-   @b{end} Linker;
 @end smallexample
 
 @noindent

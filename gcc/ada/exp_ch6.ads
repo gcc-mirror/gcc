@@ -107,7 +107,7 @@ package Exp_Ch6 is
       --  Present if result type needs finalization. Pointer to caller's
       --  finalization master.
 
-      BIP_Master,
+      BIP_Task_Master,
       --  Present if result type contains tasks. Master associated with
       --  calling context.
 
@@ -201,13 +201,13 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
-   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
-   --  finalization master implicit parameter.
-
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
+
+   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Return True if the result subtype of function
+   --  Func_Id needs finalization actions.
 
    function Needs_Result_Accessibility_Level
      (Func_Id : Entity_Id) return Boolean;

@@ -477,9 +477,13 @@ package body Exp_Ch6 is
       Function_Id   : Entity_Id;
       Master_Actual : Node_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (Function_Call);
-      Result_Subt : constant Entity_Id := Available_View (Etype (Function_Id));
-      Actual      : Node_Id            := Master_Actual;
+      Loc           : constant Source_Ptr := Sloc (Function_Call);
+      Result_Subt   : constant Entity_Id :=
+                        Available_View (Etype (Function_Id));
+      Actual        : Node_Id;
+      Chain_Actual  : Node_Id;
+      Chain_Formal  : Node_Id;
+      Master_Formal : Node_Id;
 
    begin
       --  No such extra parameters are needed if there are no tasks
@@ -487,6 +491,8 @@ package body Exp_Ch6 is
       if not Has_Task (Result_Subt) then
          return;
       end if;
+
+      Actual := Master_Actual;
 
       --  Use a dummy _master actual in case of No_Task_Hierarchy
 
@@ -500,52 +506,34 @@ package body Exp_Ch6 is
          Actual := New_Reference_To (Actual, Loc);
       end if;
 
-      --  The master
+      --  Locate the implicit master parameter in the called function
 
-      declare
-         Master_Formal : Node_Id;
+      Master_Formal := Build_In_Place_Formal (Function_Id, BIP_Task_Master);
+      Analyze_And_Resolve (Actual, Etype (Master_Formal));
 
-      begin
-         --  Locate implicit master parameter in the called function
+      --  Build the parameter association for the new actual and add it to the
+      --  end of the function's actuals.
 
-         Master_Formal := Build_In_Place_Formal (Function_Id, BIP_Master);
-         Analyze_And_Resolve (Actual, Etype (Master_Formal));
+      Add_Extra_Actual_To_Call (Function_Call, Master_Formal, Actual);
 
-         --  Build the parameter association for the new actual and add it to
-         --  the end of the function's actuals.
+      --  Locate the implicit activation chain parameter in the called function
 
-         Add_Extra_Actual_To_Call (Function_Call, Master_Formal, Actual);
-      end;
+      Chain_Formal :=
+        Build_In_Place_Formal (Function_Id, BIP_Activation_Chain);
 
-      --  The activation chain
+      --  Create the actual which is a pointer to the current activation chain
 
-      declare
-         Activation_Chain_Actual : Node_Id;
-         Activation_Chain_Formal : Node_Id;
+      Chain_Actual :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => Make_Identifier (Loc, Name_uChain),
+          Attribute_Name => Name_Unrestricted_Access);
 
-      begin
-         --  Locate implicit activation chain parameter in the called function
+      Analyze_And_Resolve (Chain_Actual, Etype (Chain_Formal));
 
-         Activation_Chain_Formal :=
-           Build_In_Place_Formal (Function_Id, BIP_Activation_Chain);
+      --  Build the parameter association for the new actual and add it to the
+      --  end of the function's actuals.
 
-         --  Create the actual which is a pointer to the current activation
-         --  chain
-
-         Activation_Chain_Actual :=
-           Make_Attribute_Reference (Loc,
-             Prefix         => Make_Identifier (Loc, Name_uChain),
-             Attribute_Name => Name_Unrestricted_Access);
-
-         Analyze_And_Resolve
-           (Activation_Chain_Actual, Etype (Activation_Chain_Formal));
-
-         --  Build the parameter association for the new actual and add it to
-         --  the end of the function's actuals.
-
-         Add_Extra_Actual_To_Call
-           (Function_Call, Activation_Chain_Formal, Activation_Chain_Actual);
-      end;
+      Add_Extra_Actual_To_Call (Function_Call, Chain_Formal, Chain_Actual);
    end Add_Task_Actuals_To_Build_In_Place_Call;
 
    -----------------------
@@ -557,12 +545,12 @@ package body Exp_Ch6 is
       case Kind is
          when BIP_Alloc_Form          =>
             return "BIPalloc";
-         when BIP_Storage_Pool          =>
+         when BIP_Storage_Pool        =>
             return "BIPstoragepool";
          when BIP_Finalization_Master =>
             return "BIPfinalizationmaster";
-         when BIP_Master              =>
-            return "BIPmaster";
+         when BIP_Task_Master         =>
+            return "BIPtaskmaster";
          when BIP_Activation_Chain    =>
             return "BIPactivationchain";
          when BIP_Object_Access       =>
@@ -578,6 +566,9 @@ package body Exp_Ch6 is
      (Func : Entity_Id;
       Kind : BIP_Formal_Kind) return Entity_Id
    is
+      Formal_Name  : constant Name_Id :=
+                       New_External_Name
+                         (Chars (Func), BIP_Formal_Suffix (Kind));
       Extra_Formal : Entity_Id := Extra_Formals (Func);
 
    begin
@@ -596,9 +587,8 @@ package body Exp_Ch6 is
 
       loop
          pragma Assert (Present (Extra_Formal));
-         exit when
-           Chars (Extra_Formal) =
-             New_External_Name (Chars (Func), BIP_Formal_Suffix (Kind));
+         exit when Chars (Extra_Formal) = Formal_Name;
+
          Next_Formal_With_Extras (Extra_Formal);
       end loop;
 
@@ -4831,7 +4821,7 @@ package body Exp_Ch6 is
                --  New master
 
                New_Reference_To
-                 (Build_In_Place_Formal (Par_Func, BIP_Master), Loc)));
+                 (Build_In_Place_Formal (Par_Func, BIP_Task_Master), Loc)));
       end Move_Activation_Chain;
 
    --  Start of processing for Expand_N_Extended_Return_Statement
@@ -8248,8 +8238,8 @@ package body Exp_Ch6 is
          Add_Task_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id,
             Master_Actual =>
-              New_Reference_To
-                (Build_In_Place_Formal (Enclosing_Func, BIP_Master), Loc));
+              New_Reference_To (Build_In_Place_Formal
+                (Enclosing_Func, BIP_Task_Master), Loc));
 
       else
          Add_Task_Actuals_To_Build_In_Place_Call

@@ -3372,8 +3372,11 @@ package body Sem_Ch13 is
          while Present (Stmt) loop
             StmtO := Original_Node (Stmt);
 
+            --  A procedure call transformed into a code statement is OK.
+
             if Ada_Version >= Ada_2012
               and then Nkind (StmtO) = N_Procedure_Call_Statement
+              and then Nkind (Name (StmtO)) = N_Qualified_Expression
             then
                null;
 
