@@ -850,35 +850,57 @@ __objc_update_classes_with_methods (struct objc_method *method_a, struct objc_me
       
       while (node != NULL)
 	{
-	  /* Iterate over all methods in the class.  */
-	  Class class = node->pointer;
-	  struct objc_method_list * method_list = class->methods;
+	  /* We execute this loop twice: the first time, we iterate
+	     over all methods in the class (instance methods), while
+	     the second time we iterate over all methods in the meta
+	     class (class methods).  */
+	  Class class = Nil;
+	  BOOL done = NO;
 
-	  while (method_list)
+	  while (done == NO)
 	    {
-	      int i;
+	      struct objc_method_list * method_list;
 
-	      for (i = 0; i < method_list->method_count; ++i)
+	      if (class == Nil)
 		{
-		  struct objc_method *method = &method_list->method_list[i];
-
-		  /* If the method is one of the ones we are looking
-		     for, update the implementation.  */
-		  if (method == method_a)
-		    sarray_at_put_safe (class->dtable,
-					(sidx) method_a->method_name->sel_id,
-					method_a->method_imp);
-
-		  if (method == method_b)
-		    {
-		      if (method_b != NULL)
-			sarray_at_put_safe (class->dtable,
-					    (sidx) method_b->method_name->sel_id,
-					    method_b->method_imp);
-		    }
+		  /* The first time, we work on the class.  */
+		  class = node->pointer;
 		}
-	  
-	      method_list = method_list->method_next;
+	      else
+		{
+		  /* The second time, we work on the meta class.  */
+		  class = class->class_pointer;
+		  done = YES;
+		}
+
+	      method_list = class->methods;
+
+	      while (method_list)
+		{
+		  int i;
+		  
+		  for (i = 0; i < method_list->method_count; ++i)
+		    {
+		      struct objc_method *method = &method_list->method_list[i];
+		      
+		      /* If the method is one of the ones we are
+			 looking for, update the implementation.  */
+		      if (method == method_a)
+			sarray_at_put_safe (class->dtable,
+					    (sidx) method_a->method_name->sel_id,
+					    method_a->method_imp);
+		      
+		      if (method == method_b)
+			{
+			  if (method_b != NULL)
+			    sarray_at_put_safe (class->dtable,
+						(sidx) method_b->method_name->sel_id,
+						method_b->method_imp);
+			}
+		    }
+		  
+		  method_list = method_list->method_next;
+		}
 	    }
 	  node = node->next;
 	}
