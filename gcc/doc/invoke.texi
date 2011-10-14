@@ -10700,7 +10700,7 @@ Without this option, the @code{X} register may be used in the same way
 as @code{Y} or @code{Z} which then is emulated by additional
 instructions.  
 For example, loading a value with @code{X+const} addressing with a
-small @code{const @leq{} 63} to a register @var{Rn} will be printed as
+small @code{const <= 63} to a register @var{Rn} will be printed as
 @example
 adiw r26, const
 ld   @var{Rn}, X
