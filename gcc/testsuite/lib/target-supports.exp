@@ -2067,6 +2067,47 @@ proc check_effective_target_arm_fp16_ok { } {
 		check_effective_target_arm_fp16_ok_nocache]
 }
 
+# Creates a series of routines that return 1 if the given architecture
+# can be selected and a routine to give the flags to select that architecture
+# Note: Extra flags may be added to disable options from newer compilers
+# (Thumb in particular - but others may be added in the future)
+# Usage: /* { dg-require-effective-target arm_arch_v5_ok } */
+#        /* { dg-add-options arm_arch_v5 } */
+foreach { armfunc armflag armdef } { v5 "-march=armv5 -marm" __ARM_ARCH_5__
+				     v6 "-march=armv6" __ARM_ARCH_6__
+				     v6k "-march=armv6k" __ARM_ARCH_6K__
+				     v7a "-march=armv7-a" __ARM_ARCH_7A__ } {
+    eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
+	proc check_effective_target_arm_arch_FUNC_ok { } {
+	    if { [ string match "*-marm*" "FLAG" ] &&
+		![check_effective_target_arm_arm_ok] } {
+		return 0
+	    }
+	    return [check_no_compiler_messages arm_arch_FUNC_ok assembly {
+		#if !defined (DEF)
+		#error FOO
+		#endif
+	    } "FLAG" ]
+	}
+
+	proc add_options_for_arm_arch_FUNC { flags } {
+	    return "$flags FLAG"
+	}
+    }]
+}
+
+# Return 1 if this is an ARM target where -marm causes ARM to be
+# used (not Thumb)
+
+proc check_effective_target_arm_arm_ok { } {
+    return [check_no_compiler_messages arm_arm_ok assembly {
+	#if !defined (__arm__) || defined (__thumb__) || defined (__thumb2__)
+	#error FOO
+	#endif
+    } "-marm"]
+}
+
+
 # Return 1 is this is an ARM target where -mthumb causes Thumb-1 to be
 # used.
 
@@ -3455,6 +3496,31 @@ proc check_effective_target_sync_int_long { } {
 
     verbose "check_effective_target_sync_int_long: returning $et_sync_int_long_saved" 2
     return $et_sync_int_long_saved
+}
+
+# Return 1 if the target supports atomic operations on "long long" and can
+# execute them
+# So far only put checks in for ARM, others may want to add their own
+proc check_effective_target_sync_longlong { } {
+    return [check_runtime sync_longlong_runtime {
+      #include <stdlib.h>
+      int main ()
+      {
+	long long l1;
+
+	if (sizeof (long long) != 8)
+	  exit (1);
+
+      #ifdef __arm__
+	/* Just check for native; checking for kernel fallback is tricky.  */
+	asm volatile ("ldrexd r0,r1, [%0]" : : "r" (&l1) : "r0", "r1");
+      #else
+      # error "Add other suitable archs here"
+      #endif
+
+	exit (0);
+      }
+    } "" ]
 }
 
 # Return 1 if the target supports atomic operations on "char" and "short".
