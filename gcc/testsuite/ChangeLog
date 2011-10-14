@@ -1,3 +1,8 @@
+2011-10-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50570
+	* gfortran.dg/pointer_intent_5.f90: New.
+
 2011-10-14  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
 
 	* gcc.target/i386/warn-vect-op-3.c: Exclude 32-bit architectures.
