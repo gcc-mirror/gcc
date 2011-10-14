@@ -15,6 +15,9 @@
 	* tree-vect-generic.c (expand_vector_operations_1): Don't do that
 	here; always simplify to scalar shift of vector if possible.
 
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Fix mode
+	test for vector splat.
+
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_set<mode>): Change V_128 iterator mode
