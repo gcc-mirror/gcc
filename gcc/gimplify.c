@@ -7256,8 +7256,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case TRUTH_XOR_EXPR:
 	  {
 	    tree orig_type = TREE_TYPE (*expr_p);
+	    tree new_type, xop0, xop1;
 	    *expr_p = gimple_boolify (*expr_p);
-	    if (!useless_type_conversion_p (orig_type, TREE_TYPE (*expr_p)))
+	    new_type = TREE_TYPE (*expr_p);
+	    if (!useless_type_conversion_p (orig_type, new_type))
 	      {
 		*expr_p = fold_convert_loc (input_location, orig_type, *expr_p);
 		ret = GS_OK;
@@ -7281,7 +7283,18 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      default:
 		break;
 	      }
-
+	    /* Now make sure that operands have compatible type to
+	       expression's new_type.  */
+	    xop0 = TREE_OPERAND (*expr_p, 0);
+	    xop1 = TREE_OPERAND (*expr_p, 1);
+	    if (!useless_type_conversion_p (new_type, TREE_TYPE (xop0)))
+	      TREE_OPERAND (*expr_p, 0) = fold_convert_loc (input_location,
+							    new_type,
+	      						    xop0);
+	    if (!useless_type_conversion_p (new_type, TREE_TYPE (xop1)))
+	      TREE_OPERAND (*expr_p, 1) = fold_convert_loc (input_location,
+							    new_type,
+	      						    xop1);
 	    /* Continue classified as tcc_binary.  */
 	    goto expr_2;
 	  }
