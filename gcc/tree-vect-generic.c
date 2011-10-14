@@ -775,60 +775,39 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == LROTATE_EXPR
       || code == RROTATE_EXPR)
     {
-      bool vector_scalar_shift;
-      op = optab_for_tree_code (code, type, optab_scalar);
-
-      /* Vector/Scalar shift is supported.  */
-      vector_scalar_shift = (op && (optab_handler (op, TYPE_MODE (type))
-				    != CODE_FOR_nothing));
-
-      /* If the 2nd argument is vector, we need a vector/vector shift.
-         Except all the elements in the second vector are the same.  */
+      /* Check whether we have vector <op> {x,x,x,x} where x
+         could be a scalar variable or a constant.  Transform
+         vector <op> {x,x,x,x} ==> vector <op> scalar.  */
       if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (rhs2))))
         {
           tree first;
           gimple def_stmt;
 
-          /* Check whether we have vector <op> {x,x,x,x} where x
-             could be a scalar variable or a constant. Transform
-             vector <op> {x,x,x,x} ==> vector <op> scalar.  */
-          if (vector_scalar_shift
-              && ((TREE_CODE (rhs2) == VECTOR_CST
-		   && (first = uniform_vector_p (rhs2)) != NULL_TREE)
-		  || (TREE_CODE (rhs2) == SSA_NAME
-		      && (def_stmt = SSA_NAME_DEF_STMT (rhs2))
-		      && gimple_assign_single_p (def_stmt)
-		      && (first = uniform_vector_p
-			    (gimple_assign_rhs1 (def_stmt))) != NULL_TREE)))
+          if ((TREE_CODE (rhs2) == VECTOR_CST
+	       && (first = uniform_vector_p (rhs2)) != NULL_TREE)
+	      || (TREE_CODE (rhs2) == SSA_NAME
+		  && (def_stmt = SSA_NAME_DEF_STMT (rhs2))
+		  && gimple_assign_single_p (def_stmt)
+		  && (first = uniform_vector_p
+		      (gimple_assign_rhs1 (def_stmt))) != NULL_TREE))
             {
               gimple_assign_set_rhs2 (stmt, first);
               update_stmt (stmt);
               rhs2 = first;
             }
-          else
-            op = optab_for_tree_code (code, type, optab_vector);
         }
 
-      /* Try for a vector/scalar shift, and if we don't have one, see if we
-         have a vector/vector shift */
-      else if (!vector_scalar_shift)
+      if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (rhs2))))
+        op = optab_for_tree_code (code, type, optab_vector);
+      else
 	{
-	  op = optab_for_tree_code (code, type, optab_vector);
+          op = optab_for_tree_code (code, type, optab_scalar);
 
-	  if (op && (optab_handler (op, TYPE_MODE (type))
-		     != CODE_FOR_nothing))
-	    {
-	      /* Transform vector <op> scalar => vector <op> {x,x,x,x}.  */
-	      int n_parts = TYPE_VECTOR_SUBPARTS (type);
-	      int part_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
-	      tree part_type = lang_hooks.types.type_for_size (part_size, 1);
-	      tree vect_type = build_vector_type (part_type, n_parts);
-
-	      rhs2 = fold_convert (part_type, rhs2);
-	      rhs2 = build_vector_from_val (vect_type, rhs2);
-	      gimple_assign_set_rhs2 (stmt, rhs2);
-	      update_stmt (stmt);
-	    }
+	  /* The rtl expander will expand vector/scalar as vector/vector
+	     if necessary.  Don't bother converting the stmt here.  */
+	  if (op == NULL
+	      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	    op = optab_for_tree_code (code, type, optab_vector);
 	}
     }
   else
@@ -874,12 +853,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (compute_type == type)
     {
       compute_mode = TYPE_MODE (compute_type);
-      if ((GET_MODE_CLASS (compute_mode) == MODE_VECTOR_INT
-	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_FLOAT
-	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_FRACT
-	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_UFRACT
-	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_ACCUM
-	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_UACCUM)
+      if (VECTOR_MODE_P (compute_mode)
           && op != NULL
 	  && optab_handler (op, compute_mode) != CODE_FOR_nothing)
 	return;

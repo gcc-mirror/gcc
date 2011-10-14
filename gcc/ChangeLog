@@ -9,6 +9,12 @@
 	* config/i386/sse.md (VEC_PERM_CONST): New mode iterator.
 	(vec_perm_const<VEC_PERM_CONST>): New expander.
 
+	* optabs.c (expand_vector_broadcast): New.
+	(expand_binop): Expand scalar shifts of vectors to vector shifts
+	of vectors, if the former isn't supported.
+	* tree-vect-generic.c (expand_vector_operations_1): Don't do that
+	here; always simplify to scalar shift of vector if possible.
+
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_set<mode>): Change V_128 iterator mode
