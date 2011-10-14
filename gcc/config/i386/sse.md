@@ -2517,7 +2517,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
-(define_insn "*avx_cvtdq2pd256_2"
+(define_insn "avx_cvtdq2pd256_2"
   [(set (match_operand:V4DF 0 "register_operand" "=x")
 	(float:V4DF
 	  (vec_select:V4SI
@@ -2786,51 +2786,58 @@
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX")
 
-(define_expand "vec_unpacks_float_hi_v8hi"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
+(define_mode_attr sseunpackfltmode
+  [(V8HI "V4SF") (V4SI "V2DF") (V16HI "V8SF") (V8SI "V4DF")])
+
+(define_expand "vec_unpacks_float_hi_<mode>"
+  [(match_operand:<sseunpackfltmode> 0 "register_operand" "")
+   (match_operand:VI2_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx tmp = gen_reg_rtx (V4SImode);
+  rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
-  emit_insn (gen_vec_unpacks_hi_v8hi (tmp, operands[1]));
-  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  emit_insn (gen_vec_unpacks_hi_<mode> (tmp, operands[1]));
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
 
-(define_expand "vec_unpacks_float_lo_v8hi"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
+(define_expand "vec_unpacks_float_lo_<mode>"
+  [(match_operand:<sseunpackfltmode> 0 "register_operand" "")
+   (match_operand:VI2_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx tmp = gen_reg_rtx (V4SImode);
+  rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
-  emit_insn (gen_vec_unpacks_lo_v8hi (tmp, operands[1]));
-  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  emit_insn (gen_vec_unpacks_lo_<mode> (tmp, operands[1]));
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
 
-(define_expand "vec_unpacku_float_hi_v8hi"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
+(define_expand "vec_unpacku_float_hi_<mode>"
+  [(match_operand:<sseunpackfltmode> 0 "register_operand" "")
+   (match_operand:VI2_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx tmp = gen_reg_rtx (V4SImode);
+  rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
-  emit_insn (gen_vec_unpacku_hi_v8hi (tmp, operands[1]));
-  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  emit_insn (gen_vec_unpacku_hi_<mode> (tmp, operands[1]));
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
 
-(define_expand "vec_unpacku_float_lo_v8hi"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
+(define_expand "vec_unpacku_float_lo_<mode>"
+  [(match_operand:<sseunpackfltmode> 0 "register_operand" "")
+   (match_operand:VI2_AVX2 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx tmp = gen_reg_rtx (V4SImode);
+  rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
-  emit_insn (gen_vec_unpacku_lo_v8hi (tmp, operands[1]));
-  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  emit_insn (gen_vec_unpacku_lo_<mode> (tmp, operands[1]));
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
 
@@ -2940,6 +2947,58 @@
 
   for (i = 5; i < 8; i++)
     operands[i] = gen_reg_rtx (V2DFmode);
+})
+
+(define_expand "vec_unpacku_float_hi_v8si"
+  [(match_operand:V4DF 0 "register_operand" "")
+   (match_operand:V8SI 1 "register_operand" "")]
+  "TARGET_AVX"
+{
+  REAL_VALUE_TYPE TWO32r;
+  rtx x, tmp[6];
+  int i;
+
+  real_ldexp (&TWO32r, &dconst1, 32);
+  x = const_double_from_real_value (TWO32r, DFmode);
+
+  tmp[0] = force_reg (V4DFmode, CONST0_RTX (V4DFmode));
+  tmp[1] = force_reg (V4DFmode, ix86_build_const_vector (V4DFmode, 1, x));
+  tmp[5] = gen_reg_rtx (V4SImode);
+
+  for (i = 2; i < 5; i++)
+    tmp[i] = gen_reg_rtx (V4DFmode);
+  emit_insn (gen_vec_extract_hi_v8si (tmp[5], operands[1]));
+  emit_insn (gen_avx_cvtdq2pd256 (tmp[2], tmp[5]));
+  emit_insn (gen_rtx_SET (VOIDmode, tmp[3],
+			  gen_rtx_LT (V4DFmode, tmp[2], tmp[0])));
+  emit_insn (gen_andv4df3 (tmp[4], tmp[3], tmp[1]));
+  emit_insn (gen_addv4df3 (operands[0], tmp[2], tmp[4]));
+  DONE;
+})
+
+(define_expand "vec_unpacku_float_lo_v8si"
+  [(match_operand:V4DF 0 "register_operand" "")
+   (match_operand:V8SI 1 "nonimmediate_operand" "")]
+  "TARGET_AVX"
+{
+  REAL_VALUE_TYPE TWO32r;
+  rtx x, tmp[5];
+  int i;
+
+  real_ldexp (&TWO32r, &dconst1, 32);
+  x = const_double_from_real_value (TWO32r, DFmode);
+
+  tmp[0] = force_reg (V4DFmode, CONST0_RTX (V4DFmode));
+  tmp[1] = force_reg (V4DFmode, ix86_build_const_vector (V4DFmode, 1, x));
+
+  for (i = 2; i < 5; i++)
+    tmp[i] = gen_reg_rtx (V4DFmode);
+  emit_insn (gen_avx_cvtdq2pd256_2 (tmp[2], operands[1]));
+  emit_insn (gen_rtx_SET (VOIDmode, tmp[3],
+			  gen_rtx_LT (V4DFmode, tmp[2], tmp[0])));
+  emit_insn (gen_andv4df3 (tmp[4], tmp[3], tmp[1]));
+  emit_insn (gen_addv4df3 (operands[0], tmp[2], tmp[4]));
+  DONE;
 })
 
 (define_expand "vec_pack_trunc_v4df"
