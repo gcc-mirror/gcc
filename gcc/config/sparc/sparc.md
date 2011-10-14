@@ -7881,64 +7881,36 @@
   [(set_attr "type" "multi")
    (set_attr "length" "4")])
 
-
 ;; Vector instructions.
 
-(define_insn "addv2si3"
+(define_code_iterator plusminus [plus minus])
+(define_code_attr plusminus_insn [(plus "add") (minus "sub")])
+
+;; fp{add,sub}32s are emitted by the {add,sub}si3 patterns.
+(define_insn "<plusminus_insn>v2si3"
   [(set (match_operand:V2SI 0 "register_operand" "=e")
-	(plus:V2SI (match_operand:V2SI 1 "register_operand" "e")
-		   (match_operand:V2SI 2 "register_operand" "e")))]
+	(plusminus:V2SI (match_operand:V2SI 1 "register_operand" "e")
+			(match_operand:V2SI 2 "register_operand" "e")))]
   "TARGET_VIS"
-  "fpadd32\t%1, %2, %0"
+  "fp<plusminus_insn>32\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "fptype" "double")])
 
-(define_insn "addv4hi3"
+(define_insn "<plusminus_insn>v4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=e")
-	 (plus:V4HI (match_operand:V4HI 1 "register_operand" "e")
-		    (match_operand:V4HI 2 "register_operand" "e")))]
+	(plusminus:V4HI (match_operand:V4HI 1 "register_operand" "e")
+			(match_operand:V4HI 2 "register_operand" "e")))]
   "TARGET_VIS"
-  "fpadd16\t%1, %2, %0"
+  "fp<plusminus_insn>16\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "fptype" "double")])
 
-;; fpadd32s is emitted by the addsi3 pattern.
-
-(define_insn "addv2hi3"
+(define_insn "<plusminus_insn>v2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=f")
-	(plus:V2HI (match_operand:V2HI 1 "register_operand" "f")
-		   (match_operand:V2HI 2 "register_operand" "f")))]
+	(plusminus:V2HI (match_operand:V2HI 1 "register_operand" "f")
+			(match_operand:V2HI 2 "register_operand" "f")))]
   "TARGET_VIS"
-  "fpadd16s\t%1, %2, %0"
-  [(set_attr "type" "fga")
-   (set_attr "fptype" "single")])
-
-(define_insn "subv2si3"
-  [(set (match_operand:V2SI 0 "register_operand" "=e")
-	(minus:V2SI (match_operand:V2SI 1 "register_operand" "e")
-		    (match_operand:V2SI 2 "register_operand" "e")))]
-  "TARGET_VIS"
-  "fpsub32\t%1, %2, %0"
-  [(set_attr "type" "fga")
-   (set_attr "fptype" "double")])
-
-(define_insn "subv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=e")
-	(minus:V4HI (match_operand:V4HI 1 "register_operand" "e")
-		    (match_operand:V4HI 2 "register_operand" "e")))]
-  "TARGET_VIS"
-  "fpsub16\t%1, %2, %0"
-  [(set_attr "type" "fga")
-   (set_attr "fptype" "double")])
-
-;; fpsub32s is emitted by the subsi3 pattern.
-
-(define_insn "subv2hi3"
-  [(set (match_operand:V2HI 0 "register_operand" "=f")
-	(minus:V2HI (match_operand:V2HI 1 "register_operand" "f")
-		    (match_operand:V2HI 2 "register_operand" "f")))]
-  "TARGET_VIS"
-  "fpsub16s\t%1, %2, %0"
+  "fp<plusminus_insn>16s\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "fptype" "single")])
 
@@ -8505,19 +8477,12 @@
   "TARGET_VIS3"
   "fmean16\t%1, %2, %0")
 
-(define_insn "fpadd64_vis"
+(define_insn "fp<plusminus_insn>64_vis"
   [(set (match_operand:DI 0 "register_operand" "=e")
-        (plus:DI (match_operand:DI 1 "register_operand" "e")
-                 (match_operand:DI 2 "register_operand" "e")))]
+	(plusminus:DI (match_operand:DI 1 "register_operand" "e")
+		      (match_operand:DI 2 "register_operand" "e")))]
   "TARGET_VIS3"
-  "fpadd64\t%1, %2, %0")
-
-(define_insn "fpsub64_vis"
-  [(set (match_operand:DI 0 "register_operand" "=e")
-        (minus:DI (match_operand:DI 1 "register_operand" "e")
-                  (match_operand:DI 2 "register_operand" "e")))]
-  "TARGET_VIS3"
-  "fpsub64\t%1, %2, %0")
+  "fp<plusminus_insn>64\t%1, %2, %0")
 
 (define_mode_iterator VASS [V4HI V2SI V2HI SI])
 (define_code_iterator vis3_addsub_ss [ss_plus ss_minus])
