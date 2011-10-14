@@ -24042,12 +24042,26 @@ arm_output_ldrex (emit_f emit,
 		  rtx target,
 		  rtx memory)
 {
-  const char *suffix = arm_ldrex_suffix (mode);
-  rtx operands[2];
+  rtx operands[3];
 
   operands[0] = target;
-  operands[1] = memory;
-  arm_output_asm_insn (emit, 0, operands, "ldrex%s\t%%0, %%C1", suffix);
+  if (mode != DImode)
+    {
+      const char *suffix = arm_ldrex_suffix (mode);
+      operands[1] = memory;
+      arm_output_asm_insn (emit, 0, operands, "ldrex%s\t%%0, %%C1", suffix);
+    }
+  else
+    {
+      /* The restrictions on target registers in ARM mode are that the two
+	 registers are consecutive and the first one is even; Thumb is
+	 actually more flexible, but DI should give us this anyway.
+	 Note that the 1st register always gets the lowest word in memory.  */
+      gcc_assert ((REGNO (target) & 1) == 0);
+      operands[1] = gen_rtx_REG (SImode, REGNO (target) + 1);
+      operands[2] = memory;
+      arm_output_asm_insn (emit, 0, operands, "ldrexd\t%%0, %%1, %%C2");
+    }
 }
 
 /* Emit a strex{b,h,d, } instruction appropriate for the specified
@@ -24060,14 +24074,41 @@ arm_output_strex (emit_f emit,
 		  rtx value,
 		  rtx memory)
 {
-  const char *suffix = arm_ldrex_suffix (mode);
-  rtx operands[3];
+  rtx operands[4];
 
   operands[0] = result;
   operands[1] = value;
-  operands[2] = memory;
-  arm_output_asm_insn (emit, 0, operands, "strex%s%s\t%%0, %%1, %%C2", suffix,
-		       cc);
+  if (mode != DImode)
+    {
+      const char *suffix = arm_ldrex_suffix (mode);
+      operands[2] = memory;
+      arm_output_asm_insn (emit, 0, operands, "strex%s%s\t%%0, %%1, %%C2",
+			  suffix, cc);
+    }
+  else
+    {
+      /* The restrictions on target registers in ARM mode are that the two
+	 registers are consecutive and the first one is even; Thumb is
+	 actually more flexible, but DI should give us this anyway.
+	 Note that the 1st register always gets the lowest word in memory.  */
+      gcc_assert ((REGNO (value) & 1) == 0 || TARGET_THUMB2);
+      operands[2] = gen_rtx_REG (SImode, REGNO (value) + 1);
+      operands[3] = memory;
+      arm_output_asm_insn (emit, 0, operands, "strexd%s\t%%0, %%1, %%2, %%C3",
+			   cc);
+    }
+}
+
+/* Helper to emit an it instruction in Thumb2 mode only; although the assembler
+   will ignore it in ARM mode, emitting it will mess up instruction counts we
+   sometimes keep 'flags' are the extra t's and e's if it's more than one
+   instruction that is conditional.  */
+static void
+arm_output_it (emit_f emit, const char *flags, const char *cond)
+{
+  rtx operands[1]; /* Don't actually use the operand.  */
+  if (TARGET_THUMB2)
+    arm_output_asm_insn (emit, 0, operands, "it%s\t%s", flags, cond);
 }
 
 /* Helper to emit a two operand instruction.  */
@@ -24109,7 +24150,7 @@ arm_output_op3 (emit_f emit, const char *mnemonic, rtx d, rtx a, rtx b)
 
    required_value:
 
-   RTX register or const_int representing the required old_value for
+   RTX register representing the required old_value for
    the modify to continue, if NULL no comparsion is performed.  */
 static void
 arm_output_sync_loop (emit_f emit,
@@ -24123,7 +24164,13 @@ arm_output_sync_loop (emit_f emit,
 		      enum attr_sync_op sync_op,
 		      int early_barrier_required)
 {
-  rtx operands[1];
+  rtx operands[2];
+  /* We'll use the lo for the normal rtx in the none-DI case
+     as well as the least-sig word in the DI case.  */
+  rtx old_value_lo, required_value_lo, new_value_lo, t1_lo;
+  rtx old_value_hi, required_value_hi, new_value_hi, t1_hi;
+
+  bool is_di = mode == DImode;
 
   gcc_assert (t1 != t2);
 
@@ -24134,82 +24181,142 @@ arm_output_sync_loop (emit_f emit,
 
   arm_output_ldrex (emit, mode, old_value, memory);
 
+  if (is_di)
+    {
+      old_value_lo = gen_lowpart (SImode, old_value);
+      old_value_hi = gen_highpart (SImode, old_value);
+      if (required_value)
+	{
+	  required_value_lo = gen_lowpart (SImode, required_value);
+	  required_value_hi = gen_highpart (SImode, required_value);
+	}
+      else
+	{
+	  /* Silence false potentially unused warning.  */
+	  required_value_lo = NULL_RTX;
+	  required_value_hi = NULL_RTX;
+	}
+      new_value_lo = gen_lowpart (SImode, new_value);
+      new_value_hi = gen_highpart (SImode, new_value);
+      t1_lo = gen_lowpart (SImode, t1);
+      t1_hi = gen_highpart (SImode, t1);
+    }
+  else
+    {
+      old_value_lo = old_value;
+      new_value_lo = new_value;
+      required_value_lo = required_value;
+      t1_lo = t1;
+
+      /* Silence false potentially unused warning.  */
+      t1_hi = NULL_RTX;
+      new_value_hi = NULL_RTX;
+      required_value_hi = NULL_RTX;
+      old_value_hi = NULL_RTX;
+    }
+
   if (required_value)
     {
-      rtx operands[2];
+      operands[0] = old_value_lo;
+      operands[1] = required_value_lo;
 
-      operands[0] = old_value;
-      operands[1] = required_value;
       arm_output_asm_insn (emit, 0, operands, "cmp\t%%0, %%1");
+      if (is_di)
+        {
+          arm_output_it (emit, "", "eq");
+          arm_output_op2 (emit, "cmpeq", old_value_hi, required_value_hi);
+        }
       arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYB%%=", LOCAL_LABEL_PREFIX);
     }
 
   switch (sync_op)
     {
     case SYNC_OP_ADD:
-      arm_output_op3 (emit, "add", t1, old_value, new_value);
+      arm_output_op3 (emit, is_di ? "adds" : "add",
+		      t1_lo, old_value_lo, new_value_lo);
+      if (is_di)
+	arm_output_op3 (emit, "adc", t1_hi, old_value_hi, new_value_hi);
       break;
 
     case SYNC_OP_SUB:
-      arm_output_op3 (emit, "sub", t1, old_value, new_value);
+      arm_output_op3 (emit, is_di ? "subs" : "sub",
+		      t1_lo, old_value_lo, new_value_lo);
+      if (is_di)
+	arm_output_op3 (emit, "sbc", t1_hi, old_value_hi, new_value_hi);
       break;
 
     case SYNC_OP_IOR:
-      arm_output_op3 (emit, "orr", t1, old_value, new_value);
+      arm_output_op3 (emit, "orr", t1_lo, old_value_lo, new_value_lo);
+      if (is_di)
+	arm_output_op3 (emit, "orr", t1_hi, old_value_hi, new_value_hi);
       break;
 
     case SYNC_OP_XOR:
-      arm_output_op3 (emit, "eor", t1, old_value, new_value);
+      arm_output_op3 (emit, "eor", t1_lo, old_value_lo, new_value_lo);
+      if (is_di)
+	arm_output_op3 (emit, "eor", t1_hi, old_value_hi, new_value_hi);
       break;
 
     case SYNC_OP_AND:
-      arm_output_op3 (emit,"and", t1, old_value, new_value);
+      arm_output_op3 (emit,"and", t1_lo, old_value_lo, new_value_lo);
+      if (is_di)
+	arm_output_op3 (emit, "and", t1_hi, old_value_hi, new_value_hi);
       break;
 
     case SYNC_OP_NAND:
-      arm_output_op3 (emit, "and", t1, old_value, new_value);
-      arm_output_op2 (emit, "mvn", t1, t1);
+      arm_output_op3 (emit, "and", t1_lo, old_value_lo, new_value_lo);
+      if (is_di)
+	arm_output_op3 (emit, "and", t1_hi, old_value_hi, new_value_hi);
+      arm_output_op2 (emit, "mvn", t1_lo, t1_lo);
+      if (is_di)
+	arm_output_op2 (emit, "mvn", t1_hi, t1_hi);
       break;
 
     case SYNC_OP_NONE:
       t1 = new_value;
+      t1_lo = new_value_lo;
+      if (is_di)
+	t1_hi = new_value_hi;
       break;
     }
 
+  /* Note that the result of strex is a 0/1 flag that's always 1 register.  */
   if (t2)
     {
-       arm_output_strex (emit, mode, "", t2, t1, memory);
-       operands[0] = t2;
-       arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
-       arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
-			    LOCAL_LABEL_PREFIX);
+      arm_output_strex (emit, mode, "", t2, t1, memory);
+      operands[0] = t2;
+      arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
+      arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
+			   LOCAL_LABEL_PREFIX);
     }
   else
     {
       /* Use old_value for the return value because for some operations
 	 the old_value can easily be restored.  This saves one register.  */
-      arm_output_strex (emit, mode, "", old_value, t1, memory);
-      operands[0] = old_value;
+      arm_output_strex (emit, mode, "", old_value_lo, t1, memory);
+      operands[0] = old_value_lo;
       arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
       arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
 			   LOCAL_LABEL_PREFIX);
 
+      /* Note that we only used the _lo half of old_value as a temporary
+	 so in DI we don't have to restore the _hi part.  */
       switch (sync_op)
 	{
 	case SYNC_OP_ADD:
-	  arm_output_op3 (emit, "sub", old_value, t1, new_value);
+	  arm_output_op3 (emit, "sub", old_value_lo, t1_lo, new_value_lo);
 	  break;
 
 	case SYNC_OP_SUB:
-	  arm_output_op3 (emit, "add", old_value, t1, new_value);
+	  arm_output_op3 (emit, "add", old_value_lo, t1_lo, new_value_lo);
 	  break;
 
 	case SYNC_OP_XOR:
-	  arm_output_op3 (emit, "eor", old_value, t1, new_value);
+	  arm_output_op3 (emit, "eor", old_value_lo, t1_lo, new_value_lo);
 	  break;
 
 	case SYNC_OP_NONE:
-	  arm_output_op2 (emit, "mov", old_value, required_value);
+	  arm_output_op2 (emit, "mov", old_value_lo, required_value_lo);
 	  break;
 
 	default:
@@ -24315,7 +24422,7 @@ arm_expand_sync (enum machine_mode mode,
     target = gen_reg_rtx (mode);
 
   memory = arm_legitimize_sync_memory (memory);
-  if (mode != SImode)
+  if (mode != SImode && mode != DImode)
     {
       rtx load_temp = gen_reg_rtx (SImode);
 
