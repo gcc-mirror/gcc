@@ -3114,63 +3114,61 @@ package body Sem_Ch4 is
 
          if Present (Next_Actual (Act2)) then
             return;
-
-         elsif     Op_Name = Name_Op_Add
-           or else Op_Name = Name_Op_Subtract
-           or else Op_Name = Name_Op_Multiply
-           or else Op_Name = Name_Op_Divide
-           or else Op_Name = Name_Op_Mod
-           or else Op_Name = Name_Op_Rem
-           or else Op_Name = Name_Op_Expon
-         then
-            Find_Arithmetic_Types (Act1, Act2, Op_Id, N);
-
-         elsif     Op_Name =  Name_Op_And
-           or else Op_Name = Name_Op_Or
-           or else Op_Name = Name_Op_Xor
-         then
-            Find_Boolean_Types (Act1, Act2, Op_Id, N);
-
-         elsif     Op_Name = Name_Op_Lt
-           or else Op_Name = Name_Op_Le
-           or else Op_Name = Name_Op_Gt
-           or else Op_Name = Name_Op_Ge
-         then
-            Find_Comparison_Types (Act1, Act2, Op_Id,  N);
-
-         elsif     Op_Name = Name_Op_Eq
-           or else Op_Name = Name_Op_Ne
-         then
-            Find_Equality_Types (Act1, Act2, Op_Id,  N);
-
-         elsif     Op_Name = Name_Op_Concat then
-            Find_Concatenation_Types (Act1, Act2, Op_Id, N);
-
-         --  Is this else null correct, or should it be an abort???
-
-         else
-            null;
          end if;
+
+         --  Otherwise action depends on operator
+
+         case Op_Name is
+            when Name_Op_Add      |
+                 Name_Op_Subtract |
+                 Name_Op_Multiply |
+                 Name_Op_Divide   |
+                 Name_Op_Mod      |
+                 Name_Op_Rem      |
+                 Name_Op_Expon    =>
+               Find_Arithmetic_Types (Act1, Act2, Op_Id, N);
+
+            when Name_Op_And      |
+                 Name_Op_Or       |
+                 Name_Op_Xor      =>
+               Find_Boolean_Types (Act1, Act2, Op_Id, N);
+
+            when Name_Op_Lt       |
+                 Name_Op_Le       |
+                 Name_Op_Gt       |
+                 Name_Op_Ge       =>
+               Find_Comparison_Types (Act1, Act2, Op_Id,  N);
+
+            when Name_Op_Eq       |
+                 Name_Op_Ne       =>
+               Find_Equality_Types (Act1, Act2, Op_Id,  N);
+
+            when Name_Op_Concat   =>
+               Find_Concatenation_Types (Act1, Act2, Op_Id, N);
+
+            --  Is this when others, or should it be an abort???
+
+            when others           =>
+               null;
+         end case;
 
       --  Unary operator case
 
       else
-         if        Op_Name = Name_Op_Subtract
-           or else Op_Name = Name_Op_Add
-           or else Op_Name = Name_Op_Abs
-         then
-            Find_Unary_Types (Act1, Op_Id, N);
+         case Op_Name is
+            when Name_Op_Subtract |
+                 Name_Op_Add      |
+                 Name_Op_Abs      =>
+               Find_Unary_Types (Act1, Op_Id, N);
 
-         elsif
-            Op_Name = Name_Op_Not
-         then
-            Find_Negation_Types (Act1, Op_Id, N);
+            when Name_Op_Not      =>
+               Find_Negation_Types (Act1, Op_Id, N);
 
-         --  Is this else null correct, or should it be an abort???
+            --  Is this when others correct, or should it be an abort???
 
-         else
-            null;
-         end if;
+            when others           =>
+               null;
+         end case;
       end if;
    end Analyze_Operator_Call;
 

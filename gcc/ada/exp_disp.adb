@@ -3771,12 +3771,16 @@ package body Exp_Disp is
       --  Start of processing for Check_Premature_Freezing
 
       begin
+         --  Note that if the type is a (subtype of) a generic actual, the
+         --  actual will have been frozen by the instantiation.
+
          if Present (N)
            and then Is_Private_Type (Typ)
            and then No (Full_View (Typ))
            and then not Is_Generic_Type (Typ)
            and then not Is_Tagged_Type (Typ)
            and then not Is_Frozen (Typ)
+           and then not Is_Generic_Actual_Type (Typ)
          then
             Error_Msg_Sloc := Sloc (Subp);
             Error_Msg_NE
