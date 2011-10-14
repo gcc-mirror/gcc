@@ -260,8 +260,16 @@ case "${host_os}" in
     atomic_word_dir=os/irix
     ;;
   mingw32*)
-    os_include_dir="os/mingw32"
-    error_constants_dir="os/mingw32"
+    case "$host" in
+      *-w64-*)
+        os_include_dir="os/mingw32-w64"
+        error_constants_dir="os/mingw32-w64"
+        ;;
+      *)
+        os_include_dir="os/mingw32"
+        error_constants_dir="os/mingw32"
+        ;;
+    esac
     OPT_LDFLAGS="${OPT_LDFLAGS} \$(lt_host_flags)"
     ;;
   netbsd*)

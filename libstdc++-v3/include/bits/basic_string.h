@@ -201,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_set_length_and_sharable(size_type __n)
 	{
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 #endif
 	    {
@@ -231,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_dispose(const _Alloc& __a)
 	{
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 #endif
 	    {
@@ -252,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_CharT*
 	_M_refcopy() throw()
 	{
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 #endif
             __gnu_cxx::__atomic_add_dispatch(&this->_M_refcount, 1);
@@ -430,7 +430,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Default constructor creates an empty string.
        */
       basic_string()
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 #else
       : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
@@ -502,7 +502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_string(basic_string&& __str) noexcept
       : _M_dataplus(__str._M_dataplus)
       {
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING	
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	__str._M_data(_S_empty_rep()._M_refdata());
 #else
 	__str._M_data(_S_construct(size_type(), _CharT(), get_allocator()));

@@ -564,17 +564,21 @@ dnl be turned on, that does not put empty objects in per-process static
 dnl memory (mostly useful together with shared memory allocators, see PR
 dnl libstdc++/16612 for details).
 dnl
-dnl --enable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING
-dnl --disable-fully-dynamic-string leaves _GLIBCXX_FULLY_DYNAMIC_STRING undefined
+dnl --enable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 1
+dnl --disable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 0
+dnl otherwise undefined
 dnl  +  Usage:  GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING], [
   GLIBCXX_ENABLE(fully-dynamic-string,$1,,[do not put empty strings in per-process static memory])
   if test $enable_fully_dynamic_string = yes; then
-    AC_DEFINE(_GLIBCXX_FULLY_DYNAMIC_STRING, 1,
-	      [Define if a fully dynamic basic_string is wanted.])
+    enable_fully_dynamic_string_def=1
+  else
+    enable_fully_dynamic_string_def=0
   fi
+  AC_DEFINE_UNQUOTED([_GLIBCXX_FULLY_DYNAMIC_STRING], [${enable_fully_dynamic_string_def}],
+	      [Define to 1 if a fully dynamic basic_string is wanted, 0 to disable, undefined for platform defaults])
 ])
 
 
