@@ -1,3 +1,8 @@
+2011-10-14  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_decl) [FIELD_DECL]: Use void_zero_node
+	instead of error_mark_node as a placeholder.
+
 2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38174
