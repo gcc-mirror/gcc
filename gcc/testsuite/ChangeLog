@@ -1,3 +1,9 @@
+2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/17212
+	* g++.dg/warn/format6.C: New.
+	* obj-c++.dg/warn6.mm: Likewise.
+
 2011-10-13  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_shift_scalar):
