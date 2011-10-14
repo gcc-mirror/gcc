@@ -7356,6 +7356,48 @@ package body Sem_Res is
          Check_For_Visible_Operator (N, B_Typ);
       end if;
 
+      --  Replace AND by AND THEN, or OR by OR ELSE, if Short_Circuit_And_Or
+      --  is active and the result type is standard Boolean (do not mess with
+      --  ops that return a nonstandard Boolean type, because something strange
+      --  is going on).
+
+      --  Note: you might expect this replacement to be done during expansion,
+      --  but that doesn't work, because when the pragma Short_Circuit_And_Or
+      --  is used, no part of the right operand of an "and" or "or" operator
+      --  should be executed if the left operand would short-circuit the
+      --  evaluation of the corresponding "and then" or "or else". If we left
+      --  the replacement to expansion time, then run-time checks associated
+      --  with such operands would be evaluated unconditionally, due to being
+      --  before to the condition prior to the rewriting as short-circuit forms
+      --  during expansion.
+
+      if Short_Circuit_And_Or
+        and then B_Typ = Standard_Boolean
+        and then Nkind_In (N, N_Op_And, N_Op_Or)
+      then
+         if Nkind (N) = N_Op_And then
+            Rewrite (N,
+              Make_And_Then (Sloc (N),
+                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
+                Right_Opnd => Relocate_Node (Right_Opnd (N))));
+            Analyze_And_Resolve (N, B_Typ);
+
+         --  Case of OR changed to OR ELSE
+
+         else
+            Rewrite (N,
+              Make_Or_Else (Sloc (N),
+                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
+                Right_Opnd => Relocate_Node (Right_Opnd (N))));
+            Analyze_And_Resolve (N, B_Typ);
+         end if;
+
+         --  Return now, since analysis of the rewritten ops will take care of
+         --  other reference bookkeeping and expression folding.
+
+         return;
+      end if;
+
       Resolve (Left_Opnd (N), B_Typ);
       Resolve (Right_Opnd (N), B_Typ);
 
