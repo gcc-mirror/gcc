@@ -13,6 +13,13 @@
 	when they are not gimple vals before passing them.  Properly
 	check for type compatibility.
 
+2011-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC options): Document -mfix-at697f.
+	* config/sparc/sparc.opt (mfix-at697f): New option.
+	* config/sparc/sparc.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(sparc_reorg): New function.
+
 2011-10-12  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/49967
