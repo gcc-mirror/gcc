@@ -1,3 +1,8 @@
+2011-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Fix typo in my
+	change on October 11th, 2011.
+
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_interleave_high<mode>,
@@ -11,7 +16,7 @@
 	Fix thinko from r179765
 	* config/avr/avr.c (avr_option_override): Don't override
 	flag_omit_frame_pointer if not actually needed.
-	
+
 2011-10-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/46278
