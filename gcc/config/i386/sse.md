@@ -4860,10 +4860,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "neg<mode>2"
-  [(set (match_operand:VI_128 0 "register_operand" "")
-	(minus:VI_128
+  [(set (match_operand:VI_AVX2 0 "register_operand" "")
+	(minus:VI_AVX2
 	  (match_dup 2)
-	  (match_operand:VI_128 1 "nonimmediate_operand" "")))]
+	  (match_operand:VI_AVX2 1 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
   "operands[2] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));")
 
