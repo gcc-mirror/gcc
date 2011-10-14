@@ -1,5 +1,9 @@
 2011-10-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50563
+	* parser.c (cp_parser_cache_group): Handle end==CPP_COMMA.
+	(cp_parser_save_nsdmi): Pass it.
+
 	PR c++/50507
 	* method.c (walk_field_subobs): Check for NSDMI before
 	complaining about uninitialized fields.
