@@ -1,5 +1,12 @@
 2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
 
+	* config/arm/linux-atomic-64bit.c: New (based on linux-atomic.c).
+	* config/arm/linux-atomic.c: Change comment to point to 64bit version.
+	(SYNC_LOCK_RELEASE): Instantiate 64bit version.
+	* config/arm/t-linux-eabi: Pull in linux-atomic-64bit.c.
+
+2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
+
 	* config/arm/arm.c (arm_output_ldrex): Support ldrexd.
 	(arm_output_strex): Support strexd.
 	(arm_output_it): New helper to output it in Thumb2 mode only.
