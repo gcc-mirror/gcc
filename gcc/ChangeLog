@@ -1,3 +1,8 @@
+2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* gengtype.c (files_rules): Added rules for objc/objc-map.h and
+	objc/objc-map.c.
+
 2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/17212

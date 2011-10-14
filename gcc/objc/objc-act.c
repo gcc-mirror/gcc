@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "langhooks.h"
 #include "objc-act.h"
+#include "objc-map.h"
 #include "input.h"
 #include "function.h"
 #include "output.h"
@@ -157,27 +158,25 @@ static void objc_generate_cxx_cdtors (void);
 static void objc_decl_method_attributes (tree*, tree, int);
 static tree build_keyword_selector (tree);
 
-/* Hash tables to manage the global pool of method prototypes.  */
 static void hash_init (void);
 
-hash *nst_method_hash_list = 0;
-hash *cls_method_hash_list = 0;
+/* Hash tables to manage the global pool of method prototypes.  Each
+   of these maps map a method name (selector) identifier to either a
+   single tree (for methods with a single method prototype) or a
+   TREE_VEC (for methods with multiple method prototypes).  */
+static GTY(()) objc_map_t instance_method_map = 0;
+static GTY(()) objc_map_t class_method_map = 0;
 
 /* Hash tables to manage the global pool of class names.  */
 
-hash *cls_name_hash_list = 0;
-hash *als_name_hash_list = 0;
+static GTY(()) objc_map_t class_name_map = 0;
+static GTY(()) objc_map_t alias_name_map = 0;
 
-hash *ivar_offset_hash_list = 0;
-
-static void hash_class_name_enter (hash *, tree, tree);
-static hash hash_class_name_lookup (hash *, tree);
-
-static hash hash_lookup (hash *, tree);
 static tree lookup_method (tree, tree);
 static tree lookup_method_static (tree, tree, int);
 
-static tree add_class (tree, tree);
+static void interface_hash_init (void);
+static tree add_interface (tree, tree);
 static void add_category (tree, tree);
 static inline tree lookup_category (tree, tree);
 
@@ -207,7 +206,7 @@ static void generate_struct_by_value_array (void) ATTRIBUTE_NORETURN;
 
 static void mark_referenced_methods (void);
 static bool objc_type_valid_for_messaging (tree type, bool allow_classes);
-static tree check_duplicates (hash, int, int);
+static tree check_duplicates (tree, int, int);
 
 /*** Private Interface (data) ***/
 /* Flags for lookup_method_static().  */
@@ -380,6 +379,7 @@ objc_init (void)
 
   /* Set up stuff used by FE parser and all runtimes.  */
   errbuf = XNEWVEC (char, 1024 * 10);
+  interface_hash_init ();
   hash_init ();
   objc_encoding_init ();
   /* ... and then check flags and set-up for the selected runtime ... */
@@ -418,19 +418,15 @@ objc_write_global_declarations (void)
 
   if (warn_selector)
     {
-      int slot;
-      hash hsh;
+      objc_map_iterator_t i;
 
-      /* Run through the selector hash tables and print a warning for any
-         selector which has multiple methods.  */
+      objc_map_iterator_initialize (class_method_map, &i);
+      while (objc_map_iterator_move_to_next (class_method_map, &i))
+	check_duplicates (objc_map_iterator_current_value (class_method_map, i), 0, 1);
 
-      for (slot = 0; slot < SIZEHASHTABLE; slot++)
-	{
-	  for (hsh = cls_method_hash_list[slot]; hsh; hsh = hsh->next)
-	    check_duplicates (hsh, 0, 1);
-	  for (hsh = nst_method_hash_list[slot]; hsh; hsh = hsh->next)
-	    check_duplicates (hsh, 0, 0);
-	}
+      objc_map_iterator_initialize (instance_method_map, &i);
+      while (objc_map_iterator_move_to_next (instance_method_map, &i))
+	check_duplicates (objc_map_iterator_current_value (instance_method_map, i), 0, 0);
     }
 
   /* TODO: consider an early exit here if either errorcount or sorrycount
@@ -3351,8 +3347,7 @@ objc_declare_alias (tree alias_ident, tree class_ident)
 #ifdef OBJCPLUS
       pop_lang_context ();
 #endif
-      hash_class_name_enter (als_name_hash_list, alias_ident,
-			     underlying_class);
+      objc_map_put (alias_name_map, alias_ident, underlying_class);
     }
 }
 
@@ -3392,15 +3387,13 @@ objc_declare_class (tree identifier)
 	 the TYPE_OBJC_INTERFACE.  If later an @interface is found,
 	 we'll replace the ident with the interface.  */
       TYPE_OBJC_INTERFACE (record) = identifier;
-      hash_class_name_enter (cls_name_hash_list, identifier, NULL_TREE);
+      objc_map_put (class_name_map, identifier, NULL_TREE);
     }
 }
 
 tree
 objc_is_class_name (tree ident)
 {
-  hash target;
-
   if (ident && TREE_CODE (ident) == IDENTIFIER_NODE)
     {
       tree t = identifier_global_value (ident);
@@ -3428,16 +3421,17 @@ objc_is_class_name (tree ident)
   if (lookup_interface (ident))
     return ident;
 
-  target = hash_class_name_lookup (cls_name_hash_list, ident);
-  if (target)
-    return target->key;
+  {
+    tree target;
 
-  target = hash_class_name_lookup (als_name_hash_list, ident);
-  if (target)
-    {
-      gcc_assert (target->list && target->list->value);
-      return target->list->value;
-    }
+    target = objc_map_get (class_name_map, ident);
+    if (target != OBJC_MAP_NOT_FOUND)
+      return ident;
+
+    target = objc_map_get (alias_name_map, ident);
+    if (target != OBJC_MAP_NOT_FOUND)
+      return target;
+  }
 
   return 0;
 }
@@ -3761,25 +3755,30 @@ objc_generate_write_barrier (tree lhs, enum tree_code modifycode, tree rhs)
   return result;
 }
 
-struct GTY(()) interface_tuple {
-  tree id;
-  tree class_name;
-};
+/* Implementation of the table mapping a class name (as an identifier)
+   to a class node.  The two public functions for it are
+   lookup_interface() and add_interface().  add_interface() is only
+   used in this file, so we can make it static.  */
 
-static GTY ((param_is (struct interface_tuple))) htab_t interface_htab;
+static GTY(()) objc_map_t interface_map;
 
-static hashval_t
-hash_interface (const void *p)
+static void
+interface_hash_init (void)
 {
-  const struct interface_tuple *d = (const struct interface_tuple *) p;
-  return IDENTIFIER_HASH_VALUE (d->id);
+  interface_map = objc_map_alloc_ggc (200);  
 }
 
-static int
-eq_interface (const void *p1, const void *p2)
+static tree
+add_interface (tree class_name, tree name)
 {
-  const struct interface_tuple *d = (const struct interface_tuple *) p1;
-  return d->id == p2;
+  /* Put interfaces on list in reverse order.  */
+  TREE_CHAIN (class_name) = interface_chain;
+  interface_chain = class_name;
+
+  /* Add it to the map.  */
+  objc_map_put (interface_map, name, class_name);
+
+  return interface_chain;
 }
 
 tree
@@ -3794,19 +3793,12 @@ lookup_interface (tree ident)
     return NULL_TREE;
 
   {
-    struct interface_tuple **slot;
-    tree i = NULL_TREE;
+    tree interface = objc_map_get (interface_map, ident);
 
-    if (interface_htab)
-      {
-	slot = (struct interface_tuple **)
-	  htab_find_slot_with_hash (interface_htab, ident,
-				    IDENTIFIER_HASH_VALUE (ident),
-				    NO_INSERT);
-	if (slot && *slot)
-	  i = (*slot)->class_name;
-      }
-    return i;
+    if (interface == OBJC_MAP_NOT_FOUND)
+      return NULL_TREE;
+    else
+      return interface;
   }
 }
 
@@ -5052,71 +5044,75 @@ build_function_type_for_method (tree return_type, tree method,
   return ftype;
 }
 
+/* The 'method' argument is a tree; this tree could either be a single
+   method, which is returned, or could be a TREE_VEC containing a list
+   of methods.  In that case, the first one is returned, and warnings
+   are issued as appropriate.  */
 static tree
-check_duplicates (hash hsh, int methods, int is_class)
+check_duplicates (tree method, int methods, int is_class)
 {
-  tree meth = NULL_TREE;
+  tree first_method;
+  size_t i;
 
-  if (hsh)
+  if (method == NULL_TREE)
+    return NULL_TREE;
+
+  if (TREE_CODE (method) != TREE_VEC)
+    return method;
+
+  /* We have two or more methods with the same name but different
+     types.  */
+  first_method = TREE_VEC_ELT (method, 0);
+  
+  /* But just how different are those types?  If
+     -Wno-strict-selector-match is specified, we shall not complain if
+     the differences are solely among types with identical size and
+     alignment.  */
+  if (!warn_strict_selector_match)
     {
-      meth = hsh->key;
-
-      if (hsh->list)
-        {
-	  /* We have two or more methods with the same name but
-	     different types.  */
-	  attr loop;
-
-	  /* But just how different are those types?  If
-	     -Wno-strict-selector-match is specified, we shall not
-	     complain if the differences are solely among types with
-	     identical size and alignment.  */
-	  if (!warn_strict_selector_match)
-	    {
-	      for (loop = hsh->list; loop; loop = loop->next)
-		if (!comp_proto_with_proto (meth, loop->value, 0))
-		  goto issue_warning;
-
-	      return meth;
-	    }
-
-	issue_warning:
-	  if (methods)
-	    {
-	      bool type = TREE_CODE (meth) == INSTANCE_METHOD_DECL;
-
-	      warning_at (input_location, 0,
-			  "multiple methods named %<%c%E%> found",
-			  (is_class ? '+' : '-'),
-			  METHOD_SEL_NAME (meth));
-	      inform (DECL_SOURCE_LOCATION (meth), "using %<%c%s%>",
-		      (type ? '-' : '+'),
-		      identifier_to_locale (gen_method_decl (meth)));
-	    }
-	  else
-	    {
-	      bool type = TREE_CODE (meth) == INSTANCE_METHOD_DECL;
-
-	      warning_at (input_location, 0,
-			  "multiple selectors named %<%c%E%> found",
-			  (is_class ? '+' : '-'),
-			  METHOD_SEL_NAME (meth));
-	      inform (DECL_SOURCE_LOCATION (meth), "found %<%c%s%>",
-		      (type ? '-' : '+'),
-		      identifier_to_locale (gen_method_decl (meth)));
-	    }
-
-	  for (loop = hsh->list; loop; loop = loop->next)
-	    {
-	      bool type = TREE_CODE (loop->value) == INSTANCE_METHOD_DECL;
-
-	      inform (DECL_SOURCE_LOCATION (loop->value), "also found %<%c%s%>",
-		      (type ? '-' : '+'),
-		      identifier_to_locale (gen_method_decl (loop->value)));
-	    }
-        }
+      for (i = 0; i < TREE_VEC_LENGTH (method); i++)
+	if (!comp_proto_with_proto (first_method, TREE_VEC_ELT (method, i), 0))
+	  goto issue_warning;
+      
+      return first_method;
     }
-  return meth;
+    
+ issue_warning:
+  if (methods)
+    {
+      bool type = TREE_CODE (first_method) == INSTANCE_METHOD_DECL;
+      
+      warning_at (input_location, 0,
+		  "multiple methods named %<%c%E%> found",
+		  (is_class ? '+' : '-'),
+		  METHOD_SEL_NAME (first_method));
+      inform (DECL_SOURCE_LOCATION (first_method), "using %<%c%s%>",
+	      (type ? '-' : '+'),
+	      identifier_to_locale (gen_method_decl (first_method)));
+    }
+  else
+    {
+      bool type = TREE_CODE (first_method) == INSTANCE_METHOD_DECL;
+      
+      warning_at (input_location, 0,
+		  "multiple selectors named %<%c%E%> found",
+		  (is_class ? '+' : '-'),
+		  METHOD_SEL_NAME (first_method));
+      inform (DECL_SOURCE_LOCATION (first_method), "found %<%c%s%>",
+	      (type ? '-' : '+'),
+	      identifier_to_locale (gen_method_decl (first_method)));
+    }
+  
+  for (i = 0; i < TREE_VEC_LENGTH (method); i++)
+    {
+      bool type = TREE_CODE (TREE_VEC_ELT (method, i)) == INSTANCE_METHOD_DECL;
+      
+      inform (DECL_SOURCE_LOCATION (TREE_VEC_ELT (method, i)), "also found %<%c%s%>",
+	      (type ? '-' : '+'),
+	      identifier_to_locale (gen_method_decl (TREE_VEC_ELT (method, i))));
+    }
+
+  return first_method;
 }
 
 /* If RECEIVER is a class reference, return the identifier node for
@@ -5294,17 +5290,18 @@ objc_build_message_expr (tree receiver, tree message_args)
 static tree
 lookup_method_in_hash_lists (tree sel_name, int is_class)
 {
-  hash method_prototype = NULL;
+  tree method_prototype = OBJC_MAP_NOT_FOUND;
 
   if (!is_class)
-    method_prototype = hash_lookup (nst_method_hash_list,
-				    sel_name);
-
-  if (!method_prototype)
+    method_prototype = objc_map_get (instance_method_map, sel_name);
+  
+  if (method_prototype == OBJC_MAP_NOT_FOUND)
     {
-      method_prototype = hash_lookup (cls_method_hash_list,
-				      sel_name);
+      method_prototype = objc_map_get (class_method_map, sel_name);
       is_class = 1;
+
+      if (method_prototype == OBJC_MAP_NOT_FOUND)
+	return NULL_TREE;
     }
 
   return check_duplicates (method_prototype, 1, is_class);
@@ -5714,21 +5711,19 @@ objc_build_selector_expr (location_t loc, tree selnamelist)
       /* Look the selector up in the list of all known class and
          instance methods (up to this line) to check that the selector
          exists.  */
-      hash hsh;
+      tree method;
 
       /* First try with instance methods.  */
-      hsh = hash_lookup (nst_method_hash_list, selname);
+      method = objc_map_get (instance_method_map, selname);
 
       /* If not found, try with class methods.  */
-      if (!hsh)
+      if (method == OBJC_MAP_NOT_FOUND)
 	{
-	  hsh = hash_lookup (cls_method_hash_list, selname);
-	}
+	  method = objc_map_get (class_method_map, selname);
 
-      /* If still not found, print out a warning.  */
-      if (!hsh)
-	{
-	  warning (0, "undeclared selector %qE", selname);
+	  /* If still not found, print out a warning.  */
+	  if (method == OBJC_MAP_NOT_FOUND)
+	    warning (0, "undeclared selector %qE", selname);
 	}
     }
 
@@ -5761,131 +5756,99 @@ build_ivar_reference (tree id)
   return (*runtime.build_ivar_reference) (input_location, base, id);
 }
 
-/* Compute a hash value for a given method SEL_NAME.  */
-
-static size_t
-hash_func (tree sel_name)
-{
-  const unsigned char *s
-    = (const unsigned char *)IDENTIFIER_POINTER (sel_name);
-  size_t h = 0;
-
-  while (*s)
-    h = h * 67 + *s++ - 113;
-  return h;
-}
-
 static void
 hash_init (void)
 {
-  nst_method_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
-  cls_method_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
+  instance_method_map = objc_map_alloc_ggc (1000);
+  class_method_map = objc_map_alloc_ggc (1000);
 
-  cls_name_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
-  als_name_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
-
-  ivar_offset_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
+  class_name_map = objc_map_alloc_ggc (200);
+  alias_name_map = objc_map_alloc_ggc (200);
 
   /* Initialize the hash table used to hold the constant string objects.  */
   string_htab = htab_create_ggc (31, string_hash,
 				   string_eq, NULL);
 }
 
-/* This routine adds sel_name to the hash list. sel_name  is a class or alias
-   name for the class. If alias name, then value is its underlying class.
-   If class, the value is NULL_TREE. */
-
+/* Use the following to add a method to class_method_map or
+   instance_method_map.  It will add the method, keyed by the
+   METHOD_SEL_NAME.  If the method already exists, but with one or
+   more different prototypes, it will store a TREE_VEC in the map,
+   with the method prototypes in the vector.  */
 static void
-hash_class_name_enter (hash *hashlist, tree sel_name, tree value)
+insert_method_into_method_map (bool class_method, tree method)
 {
-  hash obj;
-  int slot = hash_func (sel_name) % SIZEHASHTABLE;
+  tree method_name = METHOD_SEL_NAME (method);
+  tree existing_entry;
+  objc_map_t map;
 
-  obj = ggc_alloc_hashed_entry ();
-  if (value != NULL_TREE)
-    {
-      /* Save the underlying class for the 'alias' in the hash table */
-      attr obj_attr = ggc_alloc_hashed_attribute ();
-      obj_attr->value = value;
-      obj->list = obj_attr;
-    }
+  if (class_method)
+    map = class_method_map;
   else
-    obj->list = 0;
-  obj->next = hashlist[slot];
-  obj->key = sel_name;
+    map = instance_method_map;
 
-  hashlist[slot] = obj;         /* append to front */
+  /* Check if the method already exists in the map.  */
+  existing_entry = objc_map_get (map, method_name);
 
-}
-
-/*
-   Searches in the hash table looking for a match for class or alias name.
-*/
-
-static hash
-hash_class_name_lookup (hash *hashlist, tree sel_name)
-{
-  hash target;
-
-  target = hashlist[hash_func (sel_name) % SIZEHASHTABLE];
-
-  while (target)
+  /* If not, we simply add it to the map.  */
+  if (existing_entry == OBJC_MAP_NOT_FOUND)
+    objc_map_put (map, method_name, method);
+  else
     {
-      if (sel_name == target->key)
-	return target;
+      tree new_entry;
+      
+      /* If an entry already exists, it's more complicated.  We'll
+	 have to check whether the method prototype is the same or
+	 not.  */
+      if (TREE_CODE (existing_entry) != TREE_VEC)
+	{
+	  /* If the method prototypes are the same, there is nothing
+	     to do.  */
+	  if (comp_proto_with_proto (method, existing_entry, 1))
+	    return;
 
-      target = target->next;
+	  /* If not, create a vector to store both the method already
+	     in the map, and the new one that we are adding.  */
+	  new_entry = make_tree_vec (2);
+	  
+	  TREE_VEC_ELT (new_entry, 0) = existing_entry;
+	  TREE_VEC_ELT (new_entry, 1) = method;
+	}
+      else
+	{
+	  /* An entry already exists, and it's already a vector.  This
+	     means that at least 2 different method prototypes were
+	     already found, and we're considering registering yet
+	     another one.  */
+	  size_t i;
+
+	  /* Check all the existing prototypes.  If any matches the
+	     one we need to add, there is nothing to do because it's
+	     already there.  */
+	  for (i = 0; i < TREE_VEC_LENGTH (existing_entry); i++)
+	    if (comp_proto_with_proto (method, TREE_VEC_ELT (existing_entry, i), 1))
+	      return;
+
+	  /* Else, create a new, bigger vector and add the new method
+	     at the end of it.  This is inefficient but extremely
+	     rare; in any sane program most methods have a single
+	     prototype, and very few, if any, will have more than
+	     2!  */
+	  new_entry = make_tree_vec (TREE_VEC_LENGTH (existing_entry) + 1);
+	  
+	  /* Copy the methods from the existing vector.  */
+	  for (i = 0; i < TREE_VEC_LENGTH (existing_entry); i++)
+	    TREE_VEC_ELT (new_entry, i) = TREE_VEC_ELT (existing_entry, i);
+	  
+	  /* Add the new method at the end.  */
+	  TREE_VEC_ELT (new_entry, i) = method;
+	}
+
+      /* Store the new vector in the map.  */
+      objc_map_put (map, method_name, new_entry);
     }
-  return 0;
 }
 
-/* WARNING!!!!  hash_enter is called with a method, and will peek
-   inside to find its selector!  But hash_lookup is given a selector
-   directly, and looks for the selector that's inside the found
-   entry's key (method) for comparison.  */
-
-static void
-hash_enter (hash *hashlist, tree method)
-{
-  hash obj;
-  int slot = hash_func (METHOD_SEL_NAME (method)) % SIZEHASHTABLE;
-
-  obj = ggc_alloc_hashed_entry ();
-  obj->list = 0;
-  obj->next = hashlist[slot];
-  obj->key = method;
-
-  hashlist[slot] = obj;		/* append to front */
-}
-
-static hash
-hash_lookup (hash *hashlist, tree sel_name)
-{
-  hash target;
-
-  target = hashlist[hash_func (sel_name) % SIZEHASHTABLE];
-
-  while (target)
-    {
-      if (sel_name == METHOD_SEL_NAME (target->key))
-	return target;
-
-      target = target->next;
-    }
-  return 0;
-}
-
-static void
-hash_add_attr (hash entry, tree value)
-{
-  attr obj;
-
-  obj = ggc_alloc_hashed_attribute ();
-  obj->next = entry->list;
-  obj->value = value;
-
-  entry->list = obj;		/* append to front */
-}
 
 static tree
 lookup_method (tree mchain, tree method)
@@ -5985,31 +5948,6 @@ lookup_method_static (tree interface, tree ident, int flags)
     {
       /* If an instance method was not found, return 0.  */
       return NULL_TREE;
-    }
-}
-
-/* Add the method to the hash list if it doesn't contain an identical
-   method already. */
-
-static void
-add_method_to_hash_list (hash *hash_list, tree method)
-{
-  hash hsh;
-
-  if (!(hsh = hash_lookup (hash_list, METHOD_SEL_NAME (method))))
-    {
-      /* Install on a global chain.  */
-      hash_enter (hash_list, method);
-    }
-  else
-    {
-      /* Check types against those; if different, add to a list.  */
-      attr loop;
-      int already_there = comp_proto_with_proto (method, hsh->key, 1);
-      for (loop = hsh->list; !already_there && loop; loop = loop->next)
-	already_there |= comp_proto_with_proto (method, loop->value, 1);
-      if (!already_there)
-	hash_add_attr (hsh, method);
     }
 }
 
@@ -6135,10 +6073,10 @@ objc_add_method (tree klass, tree method, int is_class, bool is_optional)
     }
 
   if (is_class)
-    add_method_to_hash_list (cls_method_hash_list, method);
+    insert_method_into_method_map (true, method);
   else
     {
-      add_method_to_hash_list (nst_method_hash_list, method);
+      insert_method_into_method_map (false, method);
 
       /* Instance methods in root classes (and categories thereof)
 	 may act as class methods as a last resort.  We also add
@@ -6151,35 +6089,10 @@ objc_add_method (tree klass, tree method, int is_class, bool is_optional)
 
       if (TREE_CODE (klass) == PROTOCOL_INTERFACE_TYPE
 	  || !CLASS_SUPER_NAME (klass))
-	add_method_to_hash_list (cls_method_hash_list, method);
+	insert_method_into_method_map (true, method);
     }
 
   return method;
-}
-
-static tree
-add_class (tree class_name, tree name)
-{
-  struct interface_tuple **slot;
-
-  /* Put interfaces on list in reverse order.  */
-  TREE_CHAIN (class_name) = interface_chain;
-  interface_chain = class_name;
-
-  if (interface_htab == NULL)
-    interface_htab = htab_create_ggc (31, hash_interface, eq_interface, NULL);
-  slot = (struct interface_tuple **)
-    htab_find_slot_with_hash (interface_htab, name,
-			      IDENTIFIER_HASH_VALUE (name),
-			      INSERT);
-  if (!*slot)
-    {
-      *slot = ggc_alloc_cleared_interface_tuple ();
-      (*slot)->id = name;
-    }
-  (*slot)->class_name = class_name;
-
-  return interface_chain;
 }
 
 static void
@@ -6951,8 +6864,8 @@ start_class (enum tree_code code, tree class_name, tree super_name,
         {
 	  warning (0, "cannot find interface declaration for %qE",
 		   class_name);
-	  add_class (implementation_template = objc_implementation_context,
-		     class_name);
+	  add_interface (implementation_template = objc_implementation_context,
+			 class_name);
         }
 
       /* If a super class has been specified in the implementation,
@@ -6985,7 +6898,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
         warning (0, "duplicate interface declaration for class %qE", class_name);
 #endif
       else
-	add_class (klass, class_name);
+	add_interface (klass, class_name);
 
       if (protocol_list)
 	CLASS_PROTOCOL_LIST (klass)

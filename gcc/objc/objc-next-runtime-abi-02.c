@@ -231,6 +231,7 @@ static tree begin_catch (struct objc_try_context **, tree, tree, tree, bool);
 static void finish_catch (struct objc_try_context **, tree);
 static tree finish_try_stmt (struct objc_try_context **);
 
+/* TODO: Use an objc-map.  */
 static GTY ((length ("SIZEHASHTABLE"))) hash *extern_names;
 
 bool

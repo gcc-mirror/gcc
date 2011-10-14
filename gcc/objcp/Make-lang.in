@@ -58,6 +58,7 @@ OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
    objcp/objc-next-runtime-abi-01.o \
    objcp/objc-next-runtime-abi-02.o \
    objcp/objc-encoding.o \
+   objcp/objc-map.o \
    $(CXX_AND_OBJCXX_OBJS)
 
 obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
@@ -149,6 +150,7 @@ objcp/objcp-act.o : objc/objc-act.c \
    $(RTL_H) $(EXPR_H) $(TARGET_H) \
    objcp/objcp-decl.h \
    objc/objc-encoding.h \
+   objc/objc-map.h \
    objc/objc-runtime-hooks.h \
    objc/objc-runtime-shared-support.h \
    objcp/objcp-decl.h
@@ -162,6 +164,14 @@ objcp/objc-encoding.o : objc/objc-encoding.c \
    objc/objc-encoding.h \
    objc/objc-runtime-shared-support.h \
    objcp/objcp-decl.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
+		$(OUTPUT_OPTION)
+
+objcp/objc-map.o : objc/objc-map.c \
+   $(START_HDRS) \
+   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
+   $(OBSTACK_H) \
+   objc/objc-map.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 
