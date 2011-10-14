@@ -1,5 +1,11 @@
 2011-10-14  Georg-Johann Lay  <avr@gjlay.de>
 
+	Fix thinko from r179765
+	* config/avr/avr.c (avr_option_override): Don't override
+	flag_omit_frame_pointer if not actually needed.
+	
+2011-10-14  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/46278
 	* doc/invoke.texi (AVR Options): Document -mstrict-X.
 
