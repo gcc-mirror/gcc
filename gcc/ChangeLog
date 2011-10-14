@@ -1,8 +1,14 @@
+2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/17212
+	* c-family/c.opt ([Wformat-zero-length]): Add C++ and Objective-C++.
+	* doc/invoke.texi: Update.
+
 2011-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/50699
 	* config/darwin.c (darwin_patch_builtin): Adjust argument type. Only
-	build for powerpc targets.  (darwin_patch_builtins): Only build for 
+	build for powerpc targets.  (darwin_patch_builtins): Only build for
 	powerpc targets.
 
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
