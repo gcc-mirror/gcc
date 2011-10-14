@@ -1,3 +1,18 @@
+2011-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (vec_widen_smult_hi_v8hi,
+	vec_widen_smult_lo_v8hi, vec_widen_umult_hi_v8hi,
+	vec_widen_umult_lo_v8hi): Macroize using VI2_AVX2
+	mode iterator and any_extend code iterator.
+	(vec_widen_<s>mult_hi_v8si, vec_widen_<s>mult_lo_v8si): New
+	expanders.
+	(vec_widen_smult_hi_v4si, vec_widen_smult_lo_v4si): Enable
+	also for TARGET_SSE4_1 using pmuldq insn.
+	(sdot_prodv8hi): Macroize using VI2_AVX2 iterator.
+	(sse2_sse4_1): New code attr.
+	(udot_prodv4si): Macroize using any_extend code iterator.
+	(<s>dot_prodv8si): New expander.
+
 2011-10-14  Yakovlev Vladimir  <vladimir.b.yakovlev@intel.com>
 
 	* config/i386/i386.c (atom_cost): Changed cost for loading
