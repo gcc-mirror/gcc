@@ -1,3 +1,54 @@
+2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-map.h: New file.
+	* objc-map.c: New file.	
+	* config-lang.in (gtfiles): Added objc-map.h.
+	* Make-lang.in (OBJC_OBJS): Added objc-map.o.
+	(objc/objc-map.o): New rule.
+	(objc/objc-act.o): Depend on objc/objc-map.h.
+	* objc-next-runtime-abi-02.c: Added a TODO comment.
+	* objc-act.c: Include objc-map.h.
+	(nst_method_hash_list, cls_method_hash_list): Removed.
+	(instance_method_map, class_method_map): New.
+	(cls_name_hash_list, als_name_hash_list): Removed.
+	(class_name_map, alias_name_map): Removed.
+	(ivar_offset_hash_list): Removed.
+	(hash_class_name_enter, hash_class_name_lookup, hash_enter,
+	hash_lookup, hash_add_attr, add_method_to_hash_list): Removed.
+	(interface_hash_init): New.
+	(objc_init): Call interface_hash_init.
+	(objc_write_global_declarations): Iterate over class_method_map
+	and instance_method_map instead of cls_method_hash_list and
+	nst_method_hash_list.
+	(objc_declare_alias): Use alias_name_map instead of
+	cls_name_hash_list.
+	(objc_is_class_name): Use class_name_map and alias_name_map
+	instead of cls_name_hash_list and als_name_hash_list.
+	(interface_tuple, interface_htab, hash_interface, eq_interface):
+	Removed.
+	(interface_map): New.
+	(add_class): Renamed to add_interface.  Use interface_map instead
+	of interface_htab.
+	(lookup_interface): Use interface_map instead of interface_htab.
+	(check_duplicates): Changed first argument to be a tree,
+	potentially a TREE_VEC, instead of a hash.  Changed implementation
+	to match.
+	(lookup_method_in_hash_lists): Use class_method_map and
+	instance_method_map instead of cls_method_hash_list and
+	nst_method_hash_list.
+	(objc_build_selector_expr): Likewise.
+	(hash_func): Removed.
+	(hash_init): Create instance_method_map, class_method_map,
+	class_name_map, and alias_name_map.  Do not create
+	nst_method_hash_list, cls_method_hash_list, cls_name_hash_list,
+	als_name_hash_list, and ivar_offset_hash_list.
+	(insert_method_into_method_map): New.
+	(objc_add_method): Use insert_method_into_method_map instead of
+	add_method_to_hash_list.
+	(start_class): Call add_interface instead of add_class.
+	* objc-act.h (cls_name_hash_list, als_name_hash_list,
+	nst_method_hash_list, cls_method_hash_list): Removed.
+
 2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* objc-next-runtime-abi-01.c (objc_build_exc_ptr): Delete old
