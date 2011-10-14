@@ -1,5 +1,10 @@
 2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
 
+	PR target/48126
+	* config/arm/arm.c (arm_output_sync_loop): Move label before barrier.
+
+2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
+
 	* config/arm/arm.h (TARGET_HAVE_DMB_MCR): MCR Not available in Thumb1.
 
 2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
