@@ -735,6 +735,41 @@ expand_vec_shift_expr (sepops ops, rtx target)
   return eops[0].value;
 }
 
+/* Create a new vector value in VMODE with all elements set to OP.  The
+   mode of OP must be the element mode of VMODE.  If OP is a constant,
+   then the return value will be a constant.  */
+
+static rtx
+expand_vector_broadcast (enum machine_mode vmode, rtx op)
+{
+  enum insn_code icode;
+  rtvec vec;
+  rtx ret;
+  int i, n;
+
+  gcc_checking_assert (VECTOR_MODE_P (vmode));
+
+  n = GET_MODE_NUNITS (vmode);
+  vec = rtvec_alloc (n);
+  for (i = 0; i < n; ++i)
+    RTVEC_ELT (vec, i) = op;
+
+  if (CONSTANT_P (op))
+    return gen_rtx_CONST_VECTOR (vmode, vec);
+
+  /* ??? If the target doesn't have a vec_init, then we have no easy way
+     of performing this operation.  Most of this sort of generic support
+     is hidden away in the vector lowering support in gimple.  */
+  icode = optab_handler (vec_init_optab, vmode);
+  if (icode == CODE_FOR_nothing)
+    return NULL;
+
+  ret = gen_reg_rtx (vmode);
+  emit_insn (GEN_FCN (icode) (ret, gen_rtx_PARALLEL (vmode, vec)));
+
+  return ret;
+}
+
 /* This subroutine of expand_doubleword_shift handles the cases in which
    the effective shift value is >= BITS_PER_WORD.  The arguments and return
    value are the same as for the parent routine, except that SUPERWORD_OP1
@@ -1530,6 +1565,36 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	    return gen_lowpart (mode, temp);
 	  else
 	    return convert_to_mode (mode, temp, unsignedp);
+	}
+    }
+
+  /* If this is a vector shift by a scalar, see if we can do a vector
+     shift by a vector.  If so, broadcast the scalar into a vector.  */
+  if (mclass == MODE_VECTOR_INT)
+    {
+      optab otheroptab = NULL;
+
+      if (binoptab == ashl_optab)
+	otheroptab = vashl_optab;
+      else if (binoptab == ashr_optab)
+	otheroptab = vashr_optab;
+      else if (binoptab == lshr_optab)
+	otheroptab = vlshr_optab;
+      else if (binoptab == rotl_optab)
+	otheroptab = vrotl_optab;
+      else if (binoptab == rotr_optab)
+	otheroptab = vrotr_optab;
+
+      if (otheroptab && optab_handler (otheroptab, mode) != CODE_FOR_nothing)
+	{
+	  rtx vop1 = expand_vector_broadcast (mode, op1);
+	  if (vop1)
+	    {
+	      temp = expand_binop_directly (mode, otheroptab, op0, vop1,
+					    target, unsignedp, methods, last);
+	      if (temp)
+		return temp;
+	    }
 	}
     }
 

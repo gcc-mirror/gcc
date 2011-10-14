@@ -1,3 +1,11 @@
+2011-10-13  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_shift_scalar):
+	Delete.
+	* gcc.dg/vect/vec-scal-opt.c: Don't test vect_shift_scalar.
+	* gcc.dg/vect/vec-scal-opt1.c: Likewise.
+	* gcc.dg/vect/vec-scal-opt2.c: Likewise.
+
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50614
