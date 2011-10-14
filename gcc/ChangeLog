@@ -1,3 +1,11 @@
+2011-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (vec_interleave_high<mode>,
+	vec_interleave_low<mode>): Add AVX2 expanders for VI_256
+	modes.
+	* config/i386/i386.c (expand_vec_perm_interleave3): New function.
+	(ix86_expand_vec_perm_builtin_1): Call it.
+
 2011-10-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	Fix thinko from r179765

@@ -6848,6 +6848,38 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
+(define_expand "vec_interleave_high<mode>"
+  [(match_operand:VI_256 0 "register_operand" "=x")
+   (match_operand:VI_256 1 "register_operand" "x")
+   (match_operand:VI_256 2 "nonimmediate_operand" "xm")]
+ "TARGET_AVX2"
+{
+  rtx t1 = gen_reg_rtx (<MODE>mode);
+  rtx t2 = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_avx2_interleave_low<mode> (t1, operands[1], operands[2]));
+  emit_insn (gen_avx2_interleave_high<mode> (t2,  operands[1], operands[2]));
+  emit_insn (gen_avx2_permv2ti (gen_lowpart (V4DImode, operands[0]),
+				gen_lowpart (V4DImode, t1),
+				gen_lowpart (V4DImode, t2), GEN_INT (1 + (3 << 4))));
+  DONE;
+})
+
+(define_expand "vec_interleave_low<mode>"
+  [(match_operand:VI_256 0 "register_operand" "=x")
+   (match_operand:VI_256 1 "register_operand" "x")
+   (match_operand:VI_256 2 "nonimmediate_operand" "xm")]
+ "TARGET_AVX2"
+{
+  rtx t1 = gen_reg_rtx (<MODE>mode);
+  rtx t2 = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_avx2_interleave_low<mode> (t1, operands[1], operands[2]));
+  emit_insn (gen_avx2_interleave_high<mode> (t2, operands[1], operands[2]));
+  emit_insn (gen_avx2_permv2ti (gen_lowpart (V4DImode, operands[0]),
+				gen_lowpart (V4DImode, t1),
+				gen_lowpart (V4DImode, t2), GEN_INT (0 + (2 << 4))));
+  DONE;
+})
+
 ;; Modes handled by pinsr patterns.
 (define_mode_iterator PINSR_MODE
   [(V16QI "TARGET_SSE4_1") V8HI

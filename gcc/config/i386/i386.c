@@ -35474,6 +35474,82 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to simplify
+   a two vector permutation using 2 intra-lane interleave insns
+   and cross-lane shuffle for 32-byte vectors.  */
+
+static bool
+expand_vec_perm_interleave3 (struct expand_vec_perm_d *d)
+{
+  unsigned i, nelt;
+  rtx (*gen) (rtx, rtx, rtx);
+
+  if (d->op0 == d->op1)
+    return false;
+  if (TARGET_AVX2 && GET_MODE_SIZE (d->vmode) == 32)
+    ;
+  else if (TARGET_AVX && (d->vmode == V8SFmode || d->vmode == V4DFmode))
+    ;
+  else
+    return false;
+
+  nelt = d->nelt;
+  if (d->perm[0] != 0 && d->perm[0] != nelt / 2)
+    return false;
+  for (i = 0; i < nelt; i += 2)
+    if (d->perm[i] != d->perm[0] + i / 2
+	|| d->perm[i + 1] != d->perm[0] + i / 2 + nelt)
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  switch (d->vmode)
+    {
+    case V32QImode:
+      if (d->perm[0])
+	gen = gen_vec_interleave_highv32qi;
+      else
+	gen = gen_vec_interleave_lowv32qi;
+      break;
+    case V16HImode:
+      if (d->perm[0])
+	gen = gen_vec_interleave_highv16hi;
+      else
+	gen = gen_vec_interleave_lowv16hi;
+      break;
+    case V8SImode:
+      if (d->perm[0])
+	gen = gen_vec_interleave_highv8si;
+      else
+	gen = gen_vec_interleave_lowv8si;
+      break;
+    case V4DImode:
+      if (d->perm[0])
+	gen = gen_vec_interleave_highv4di;
+      else
+	gen = gen_vec_interleave_lowv4di;
+      break;
+    case V8SFmode:
+      if (d->perm[0])
+	gen = gen_vec_interleave_highv8sf;
+      else
+	gen = gen_vec_interleave_lowv8sf;
+      break;
+    case V4DFmode:
+      if (d->perm[0])
+	gen = gen_vec_interleave_highv4df;
+      else
+	gen = gen_vec_interleave_lowv4df;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (d->target, d->op0, d->op1));
+  return true;
+}
+
 /* A subroutine of expand_vec_perm_even_odd_1.  Implement the double-word
    permutation with two pshufb insns and an ior.  We should have already
    failed all two instruction sequences.  */
@@ -35970,6 +36046,9 @@ ix86_expand_vec_perm_builtin_1 (struct expand_vec_perm_d *d)
   /* Try sequences of three instructions.  */
 
   if (expand_vec_perm_pshufb2 (d))
+    return true;
+
+  if (expand_vec_perm_interleave3 (d))
     return true;
 
   /* Try sequences of four instructions.  */
