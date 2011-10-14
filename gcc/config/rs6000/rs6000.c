@@ -12213,7 +12213,7 @@ rs6000_init_builtins (void)
 
 #if TARGET_XCOFF
   /* AIX libm provides clog as __clog.  */
-  if ((tdecl = builtin_decl_explicit ([BUILT_IN_CLOG))) != NULL_TREE)
+  if ((tdecl = builtin_decl_explicit (BUILT_IN_CLOG)) != NULL_TREE)
     set_user_assembler_name (tdecl, "__clog");
 #endif
 
