@@ -1,3 +1,18 @@
+2011-10-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/46278
+	* doc/invoke.texi (AVR Options): Document -mstrict-X.
+
+	* config/avr/avr.opt (-mstrict-X): New option.
+	(avr_strict_X): New variable reflecting -mstrict-X.
+	* config/avr/avr.c (avr_reg_ok_for_addr_p): Add parameter
+	outer_code and pass it down to avr_regno_mode_code_ok_for_base_p.
+	(avr_legitimate_address_p): Pass outer_code to
+	avr_reg_ok_for_addr_p and use that function in case PLUS.
+	(avr_mode_code_base_reg_class): Depend on avr_strict_X.
+	(avr_regno_mode_code_ok_for_base_p): Ditto, and depend on outer_code.
+	(avr_option_override): Disable -fcaller-saves if -mstrict-X is on.
+	
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (neg<mode>2): Use VI_AVX2 iterator instead

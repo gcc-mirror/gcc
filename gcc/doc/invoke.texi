@@ -487,7 +487,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mno-interrupts @gol
--mcall-prologues  -mtiny-stack  -mint8}
+-mcall-prologues  -mtiny-stack  -mint8  -mstrict-X}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -10689,6 +10689,23 @@ char will be 1 byte, an int will be 1 byte, a long will be 2 bytes
 and long long will be 4 bytes.  Please note that this option does not
 comply to the C standards, but it will provide you with smaller code
 size.
+
+@item -mstrict-X
+@opindex mstrict-X
+Use register @code{X} in a way proposed by the hardware.  This means
+that @code{X} will only be used in indirect, post-increment or
+pre-decrement addressing.
+
+Without this option, the @code{X} register may be used in the same way
+as @code{Y} or @code{Z} which then is emulated by additional
+instructions.  
+For example, loading a value with @code{X+const} addressing with a
+small @code{const @leq{} 63} to a register @var{Rn} will be printed as
+@example
+adiw r26, const
+ld   @var{Rn}, X
+sbiw r26, const
+@end example
 @end table
 
 @node Blackfin Options
