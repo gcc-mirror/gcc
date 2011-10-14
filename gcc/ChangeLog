@@ -1,5 +1,8 @@
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (neg<mode>2): Use VI_AVX2 iterator instead
+	of VI_128.
+
 	* config/i386/sse.md (mulv2di3): Macroize using VI8_AVX2
 	iterator.
 	(ashl<mode>3): Use VI248_AVX2 iterator instead of VI248_128.
