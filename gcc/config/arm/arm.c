@@ -24217,8 +24217,11 @@ arm_output_sync_loop (emit_f emit,
 	}
     }
 
-  arm_process_output_memory_barrier (emit, NULL);
+  /* Note: label is before barrier so that in cmp failure case we still get
+     a barrier to stop subsequent loads floating upwards past the ldrex
+     PR target/48126.  */
   arm_output_asm_insn (emit, 1, operands, "%sLSYB%%=:", LOCAL_LABEL_PREFIX);
+  arm_process_output_memory_barrier (emit, NULL);
 }
 
 static rtx
