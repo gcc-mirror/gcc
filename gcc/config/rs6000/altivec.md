@@ -1357,6 +1357,15 @@
   "vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
 
+(define_expand "vec_permv16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "")
+		       (match_operand:V16QI 2 "register_operand" "")
+		       (match_operand:V16QI 3 "register_operand" "")]
+		      UNSPEC_VPERM))]
+  "TARGET_ALTIVEC"
+  "")
+
 (define_insn "altivec_vrfip"		; ceil
   [(set (match_operand:V4SF 0 "register_operand" "=v")
         (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")]
