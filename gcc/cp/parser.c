@@ -20617,7 +20617,8 @@ cp_parser_save_nsdmi (cp_parser* parser)
   cp_token *last;
   tree node;
 
-  cp_parser_cache_group (parser, CPP_CLOSE_PAREN, /*depth=*/0);
+  /* Save tokens until the next comma or semicolon.  */
+  cp_parser_cache_group (parser, CPP_COMMA, /*depth=*/0);
 
   last = parser->lexer->next_token;
 
@@ -21718,6 +21719,12 @@ cp_parser_cache_group (cp_parser *parser,
 	/* We've hit the end of an enclosing block, so there's been some
 	   kind of syntax error.  */
 	return true;
+
+      /* If we're caching something finished by a comma (or semicolon),
+	 such as an NSDMI, don't consume the comma.  */
+      if (end == CPP_COMMA
+	  && (token->type == CPP_SEMICOLON || token->type == CPP_COMMA))
+	return false;
 
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);

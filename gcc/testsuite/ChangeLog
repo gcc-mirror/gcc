@@ -1,5 +1,8 @@
 2011-10-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50563
+	* g++.dg/cpp0x/nsdmi-list1.C: New.
+
 	PR c++/50507
 	* g++.dg/cpp0x/nsdmi-const1.C: New.
 
