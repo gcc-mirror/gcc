@@ -5419,10 +5419,10 @@
   DONE;
 })
 
-(define_insn_and_split "mulv2di3"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(mult:V2DI (match_operand:V2DI 1 "register_operand" "")
-		   (match_operand:V2DI 2 "register_operand" "")))]
+(define_insn_and_split "mul<mode>3"
+  [(set (match_operand:VI8_AVX2 0 "register_operand" "")
+	(mult:VI8_AVX2 (match_operand:VI8_AVX2 1 "register_operand" "")
+		       (match_operand:VI8_AVX2 2 "register_operand" "")))]
   "TARGET_SSE2
    && can_create_pseudo_p ()"
   "#"
@@ -5436,7 +5436,7 @@
   op1 = operands[1];
   op2 = operands[2];
 
-  if (TARGET_XOP)
+  if (TARGET_XOP && <MODE>mode == V2DImode)
     {
       /* op1: A,B,C,D, op2: E,F,G,H */
       op1 = gen_lowpart (V4SImode, op1);
@@ -5468,39 +5468,42 @@
     }
   else
     {
-      t1 = gen_reg_rtx (V2DImode);
-      t2 = gen_reg_rtx (V2DImode);
-      t3 = gen_reg_rtx (V2DImode);
-      t4 = gen_reg_rtx (V2DImode);
-      t5 = gen_reg_rtx (V2DImode);
-      t6 = gen_reg_rtx (V2DImode);
+      t1 = gen_reg_rtx (<MODE>mode);
+      t2 = gen_reg_rtx (<MODE>mode);
+      t3 = gen_reg_rtx (<MODE>mode);
+      t4 = gen_reg_rtx (<MODE>mode);
+      t5 = gen_reg_rtx (<MODE>mode);
+      t6 = gen_reg_rtx (<MODE>mode);
       thirtytwo = GEN_INT (32);
 
       /* Multiply low parts.  */
-      emit_insn (gen_sse2_umulv2siv2di3 (t1, gen_lowpart (V4SImode, op1),
-					 gen_lowpart (V4SImode, op2)));
+      emit_insn (gen_<sse2_avx2>_umulv<ssescalarnum>si<mode>3
+		  (t1, gen_lowpart (<ssepackmode>mode, op1),
+		   gen_lowpart (<ssepackmode>mode, op2)));
 
-      /* Shift input vectors left 32 bits so we can multiply high parts.  */
-      emit_insn (gen_lshrv2di3 (t2, op1, thirtytwo));
-      emit_insn (gen_lshrv2di3 (t3, op2, thirtytwo));
+      /* Shift input vectors right 32 bits so we can multiply high parts.  */
+      emit_insn (gen_lshr<mode>3 (t2, op1, thirtytwo));
+      emit_insn (gen_lshr<mode>3 (t3, op2, thirtytwo));
 
       /* Multiply high parts by low parts.  */
-      emit_insn (gen_sse2_umulv2siv2di3 (t4, gen_lowpart (V4SImode, op1),
-					 gen_lowpart (V4SImode, t3)));
-      emit_insn (gen_sse2_umulv2siv2di3 (t5, gen_lowpart (V4SImode, op2),
-					 gen_lowpart (V4SImode, t2)));
+      emit_insn (gen_<sse2_avx2>_umulv<ssescalarnum>si<mode>3
+		  (t4, gen_lowpart (<ssepackmode>mode, op1),
+		   gen_lowpart (<ssepackmode>mode, t3)));
+      emit_insn (gen_<sse2_avx2>_umulv<ssescalarnum>si<mode>3
+		  (t5, gen_lowpart (<ssepackmode>mode, op2),
+		   gen_lowpart (<ssepackmode>mode, t2)));
 
       /* Shift them back.  */
-      emit_insn (gen_ashlv2di3 (t4, t4, thirtytwo));
-      emit_insn (gen_ashlv2di3 (t5, t5, thirtytwo));
+      emit_insn (gen_ashl<mode>3 (t4, t4, thirtytwo));
+      emit_insn (gen_ashl<mode>3 (t5, t5, thirtytwo));
 
       /* Add the three parts together.  */
-      emit_insn (gen_addv2di3 (t6, t1, t4));
-      emit_insn (gen_addv2di3 (op0, t6, t5));
+      emit_insn (gen_add<mode>3 (t6, t1, t4));
+      emit_insn (gen_add<mode>3 (op0, t6, t5));
     }
 
   set_unique_reg_note (get_last_insn (), REG_EQUAL,
-		       gen_rtx_MULT (V2DImode, operands[1], operands[2]));
+		       gen_rtx_MULT (<MODE>mode, operands[1], operands[2]));
   DONE;
 })
 
@@ -5768,9 +5771,9 @@
    (set_attr "mode" "OI")])
 
 (define_insn "ashl<mode>3"
-  [(set (match_operand:VI248_128 0 "register_operand" "=x,x")
-	(ashift:VI248_128
-	  (match_operand:VI248_128 1 "register_operand" "0,x")
+  [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")
+	(ashift:VI248_AVX2
+	  (match_operand:VI248_AVX2 1 "register_operand" "0,x")
 	  (match_operand:SI 2 "nonmemory_operand" "xN,xN")))]
   "TARGET_SSE2"
   "@
@@ -5784,7 +5787,7 @@
        (const_string "0")))
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "TI")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "vec_shl_<mode>"
   [(set (match_operand:VI_128 0 "register_operand" "")
