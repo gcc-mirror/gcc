@@ -2,6 +2,8 @@
 
 	* config/rs6000/altivec.md (vec_permv16qi): New pattern.
 
+	* config/rs6000/spu.md (vec_permv16qi): New pattern.
+
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_set<mode>): Change V_128 iterator mode

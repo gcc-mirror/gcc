@@ -4395,6 +4395,18 @@ selb\t%0,%4,%0,%3"
   "shufb\t%0,%1,%2,%3"
   [(set_attr "type" "shuf")])
 
+(define_expand "vec_permv16qi"
+  [(set (match_operand:V16QI 0 "spu_reg_operand" "")
+	(unspec:V16QI
+	  [(match_operand:V16QI 1 "spu_reg_operand" "")
+	   (match_operand:V16QI 2 "spu_reg_operand" "")
+	   (match_operand:V16QI 3 "spu_reg_operand" "")]
+	  UNSPEC_SHUFB))]
+  ""
+  {
+    operands[3] = gen_lowpart (TImode, operands[3]);
+  })
+
 (define_insn "nop"
   [(unspec_volatile [(const_int 0)] UNSPECV_NOP)]
   ""
