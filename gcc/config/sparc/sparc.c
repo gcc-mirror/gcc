@@ -700,6 +700,61 @@ char sparc_hard_reg_printed[8];
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+static void
+dump_target_flag_bits (const int flags)
+{
+  if (flags & MASK_64BIT)
+    fprintf (stderr, "64BIT ");
+  if (flags & MASK_APP_REGS)
+    fprintf (stderr, "APP_REGS ");
+  if (flags & MASK_FASTER_STRUCTS)
+    fprintf (stderr, "FASTER_STRUCTS ");
+  if (flags & MASK_FLAT)
+    fprintf (stderr, "FLAT ");
+  if (flags & MASK_FMAF)
+    fprintf (stderr, "FMAF ");
+  if (flags & MASK_FPU)
+    fprintf (stderr, "FPU ");
+  if (flags & MASK_HARD_QUAD)
+    fprintf (stderr, "HARD_QUAD ");
+  if (flags & MASK_POPC)
+    fprintf (stderr, "POPC ");
+  if (flags & MASK_PTR64)
+    fprintf (stderr, "PTR64 ");
+  if (flags & MASK_STACK_BIAS)
+    fprintf (stderr, "STACK_BIAS ");
+  if (flags & MASK_UNALIGNED_DOUBLES)
+    fprintf (stderr, "UNALIGNED_DOUBLES ");
+  if (flags & MASK_V8PLUS)
+    fprintf (stderr, "V8PLUS ");
+  if (flags & MASK_VIS)
+    fprintf (stderr, "VIS ");
+  if (flags & MASK_VIS2)
+    fprintf (stderr, "VIS2 ");
+  if (flags & MASK_VIS3)
+    fprintf (stderr, "VIS3 ");
+  if (flags & MASK_DEPRECATED_V8_INSNS)
+    fprintf (stderr, "DEPRECATED_V8_INSNS ");
+  if (flags & MASK_LITTLE_ENDIAN)
+    fprintf (stderr, "LITTLE_ENDIAN ");
+  if (flags & MASK_SPARCLET)
+    fprintf (stderr, "SPARCLET ");
+  if (flags & MASK_SPARCLITE)
+    fprintf (stderr, "SPARCLITE ");
+  if (flags & MASK_V8)
+    fprintf (stderr, "V8 ");
+  if (flags & MASK_V9)
+    fprintf (stderr, "V9 ");
+}
+
+static void
+dump_target_flags (const char *prefix, const int flags)
+{
+  fprintf (stderr, "%s: (%08x) [ ", prefix, flags);
+  dump_target_flag_bits (flags);
+  fprintf(stderr, "]\n");
+}
+
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 
@@ -745,48 +800,92 @@ sparc_option_override (void)
   /* Table of values for -m{cpu,tune}=.  This must match the order of
      the PROCESSOR_* enumeration.  */
   static struct cpu_table {
+    const char *const name;
     const int disable;
     const int enable;
   } const cpu_table[] = {
-    { MASK_ISA, 0 },
-    { MASK_ISA, 0 },
-    { MASK_ISA, MASK_V8 },
+    { "v7",		MASK_ISA, 0 },
+    { "cypress",	MASK_ISA, 0 },
+    { "v8",		MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
-    { MASK_ISA, MASK_V8 },
-    { MASK_ISA, MASK_V8|MASK_FPU },
+    { "supersparc",	MASK_ISA, MASK_V8 },
+    { "hypersparc",	MASK_ISA, MASK_V8|MASK_FPU },
     /* LEON */
-    { MASK_ISA, MASK_V8|MASK_FPU },
-    { MASK_ISA, MASK_SPARCLITE },
+    { "leon",		MASK_ISA, MASK_V8|MASK_FPU },
+    { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
-    { MASK_ISA|MASK_FPU, MASK_SPARCLITE },
+    { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     /* The Fujitsu MB86934 is the recent sparclite chip, with an FPU.  */
-    { MASK_ISA, MASK_SPARCLITE|MASK_FPU },
-    { MASK_ISA|MASK_FPU, MASK_SPARCLITE },
-    { MASK_ISA, MASK_SPARCLET },
+    { "f934",		MASK_ISA, MASK_SPARCLITE|MASK_FPU },
+    { "sparclite86x",	MASK_ISA|MASK_FPU, MASK_SPARCLITE },
+    { "sparclet",	MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
-    { MASK_ISA, MASK_SPARCLET },
-    { MASK_ISA, MASK_V9 },
+    { "tsc701",		MASK_ISA, MASK_SPARCLET },
+    { "v9",		MASK_ISA, MASK_V9 },
     /* UltraSPARC I, II, IIi */
-    { MASK_ISA,
+    { "ultrasparc",	MASK_ISA,
     /* Although insns using %y are deprecated, it is a clear win.  */
-      MASK_V9|MASK_DEPRECATED_V8_INSNS},
+      MASK_V9|MASK_DEPRECATED_V8_INSNS },
     /* UltraSPARC III */
     /* ??? Check if %y issue still holds true.  */
-    { MASK_ISA,
-      MASK_V9|MASK_DEPRECATED_V8_INSNS|MASK_VIS2},
+    { "ultrasparc3",	MASK_ISA,
+      MASK_V9|MASK_DEPRECATED_V8_INSNS|MASK_VIS2 },
     /* UltraSPARC T1 */
-    { MASK_ISA,
-      MASK_V9|MASK_DEPRECATED_V8_INSNS},
+    { "niagara",	MASK_ISA,
+      MASK_V9|MASK_DEPRECATED_V8_INSNS },
     /* UltraSPARC T2 */
-    { MASK_ISA, MASK_V9|MASK_POPC|MASK_VIS2},
+    { "niagara2",	MASK_ISA,
+      MASK_V9|MASK_POPC|MASK_VIS2 },
     /* UltraSPARC T3 */
-    { MASK_ISA, MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF},
+    { "niagara3",	MASK_ISA,
+      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF },
     /* UltraSPARC T4 */
-    { MASK_ISA, MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF},
+    { "niagara4",	MASK_ISA,
+      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF },
   };
   const struct cpu_table *cpu;
   unsigned int i;
   int fpu;
+
+  if (sparc_debug_string != NULL)
+    {
+      const char *q;
+      char *p;
+
+      p = ASTRDUP (sparc_debug_string);
+      while ((q = strtok (p, ",")) != NULL)
+	{
+	  bool invert;
+	  int mask;
+
+	  p = NULL;
+	  if (*q == '!')
+	    {
+	      invert = true;
+	      q++;
+	    }
+	  else
+	    invert = false;
+
+	  if (! strcmp (q, "all"))
+	    mask = MASK_DEBUG_ALL;
+	  else if (! strcmp (q, "options"))
+	    mask = MASK_DEBUG_OPTIONS;
+	  else
+	    error ("unknown -mdebug-%s switch", q);
+
+	  if (invert)
+	    sparc_debug &= ~mask;
+	  else
+	    sparc_debug |= mask;
+	}
+    }
+
+  if (TARGET_DEBUG_OPTIONS)
+    {
+      dump_target_flags("Initial target_flags", target_flags);
+      dump_target_flags("target_flags_explicit", target_flags_explicit);
+    }
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -849,10 +948,25 @@ sparc_option_override (void)
       gcc_assert (def->cpu != -1);
       sparc_cpu_and_features = def->processor;
     }
+
+  if ((target_flags & MASK_V8PLUS)
+      && sparc_cpu_and_features < PROCESSOR_V9)
+    sparc_cpu_and_features = PROCESSOR_V9;
+
   if (!global_options_set.x_sparc_cpu)
     sparc_cpu = sparc_cpu_and_features;
 
   cpu = &cpu_table[(int) sparc_cpu_and_features];
+
+  if (TARGET_DEBUG_OPTIONS)
+    {
+      fprintf (stderr, "sparc_cpu_and_features: %s\n", cpu->name);
+      fprintf (stderr, "sparc_cpu: %s\n",
+	       cpu_table[(int) sparc_cpu].name);
+      dump_target_flags ("cpu->disable", cpu->disable);
+      dump_target_flags ("cpu->enable", cpu->enable);
+    }
+
   target_flags &= ~cpu->disable;
   target_flags |= (cpu->enable
 #ifndef HAVE_AS_FMAF_HPC_VIS3
@@ -975,6 +1089,9 @@ sparc_option_override (void)
   if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
+
+  if (TARGET_DEBUG_OPTIONS)
+    dump_target_flags ("Final target_flags", target_flags);
 
   maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
 			 ((sparc_cpu == PROCESSOR_ULTRASPARC

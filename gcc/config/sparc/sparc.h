@@ -1880,3 +1880,9 @@ extern int sparc_indent_opcode;
 
 /* We use gcc _mcount for profiling.  */
 #define NO_PROFILE_COUNTERS 0
+
+/* Debug support */
+#define MASK_DEBUG_OPTIONS		0x01	/* debug option handling */
+#define MASK_DEBUG_ALL			MASK_DEBUG_OPTIONS
+
+#define TARGET_DEBUG_OPTIONS		(sparc_debug & MASK_DEBUG_OPTIONS)

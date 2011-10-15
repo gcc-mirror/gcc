@@ -21,6 +21,10 @@
 HeaderInclude
 config/sparc/sparc-opts.h
 
+;; Debug flags
+TargetVariable
+unsigned int sparc_debug
+
 mfpu
 Target Report Mask(FPU)
 Use hardware FP
@@ -179,6 +183,10 @@ Enum(sparc_processor_type) String(niagara4) Value(PROCESSOR_NIAGARA4)
 mcmodel=
 Target RejectNegative Joined Var(sparc_cmodel_string)
 Use given SPARC-V9 code model
+
+mdebug=
+Target RejectNegative Joined Var(sparc_debug_string)
+Enable debug output
 
 mstd-struct-return
 Target Report RejectNegative Var(sparc_std_struct_return)
