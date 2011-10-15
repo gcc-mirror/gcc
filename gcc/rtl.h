@@ -2503,6 +2503,7 @@ extern int sibcall_epilogue_contains (const_rtx);
 extern void mark_temp_addr_taken (rtx);
 extern void update_temp_slot_address (rtx, rtx);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
+extern void set_return_jump_label (rtx);
 
 /* In stmt.c */
 extern void expand_null_return (void);

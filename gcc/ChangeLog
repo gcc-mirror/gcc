@@ -1,3 +1,15 @@
+2011-10-15  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/49941
+	* jump.c (mark_jump_label_1): Set JUMP_LABEL for simple_return jumps.
+
+	* rtl.h (set_return_jump_label): Declare.
+	* function.c (set_return_jump_label): New function, extracted..
+	(thread_prologue_and_epilogue_insns): ..from here.  Use it in
+	another instance to set return jump_label.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Use set_return_jump_label.
+	* reorg.c (find_end_label): Likewise.
+
 2011-10-14  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sol2.h: Protect -m{cpu,tune}=native handling
