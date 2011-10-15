@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-prune-output ".*warning: 'sseregparm' attribute ignored.*" } */
-/* { dg-options "-O3 -mfpmath=sse -mfma -mtune=generic" } */
+/* { dg-options "-O3 -Wno-attributes -mfpmath=sse -mfma -mtune=generic" } */
 
 /* Test that the compiler properly optimizes floating point multiply
    and add instructions into FMA3 instructions.  */

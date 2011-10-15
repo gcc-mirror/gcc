@@ -1,3 +1,15 @@
+2011-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/fma_float_?.c (dg-prune_output): Remove.
+	(dg-options): Add -Wno-attributes.
+	* gcc.target/i386/fma_double_?.c: Ditto.
+	* gcc.target/i386/fma_run_float_?.c: Ditto.
+	* gcc.target/i386/fma_run_double_?.c: Ditto.
+	* gcc.target/i386/l_fma_float_?.c: Dtto.
+	* gcc.target/i386/l_fma_double_?.c: Ditto.
+	* gcc.target/i386/l_fma_run_float_?.c: Ditto.
+	* gcc.target/i386/l_fma_run_double_?.c: Ditto.
+
 2011-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/bind_c_usage_23.f90: Change TR 29113 to TS 29113 in
