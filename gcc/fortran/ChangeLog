@@ -1,3 +1,8 @@
+2011-10-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50659
+	* expr.c (replace_symbol): Only do replacement if the symbol is a dummy.
+
 2011-09-01  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/50050
