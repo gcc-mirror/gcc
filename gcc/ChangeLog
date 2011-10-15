@@ -1,3 +1,21 @@
+2011-10-14  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sol2.h: Protect -m{cpu,tune}=native handling
+	with a more complete cpp test.
+	* config/sparc/linux64.h: Likewise.
+	* config/sparc/linux.h: Likewise.
+	* config/sparc/sparc.opt (sparc_debug): New target variable.
+	(mdebug): New target option.
+	* config/sparc/sparc.h (MASK_DEBUG_OPTIONS, MASK_DEBUG_ALL,
+	TARGET_DEBUG_OPTIONS): New defines.
+	* config/sparc/sparc.c (debug_target_flag_bits,
+	debug_target_flags): New functions.
+	(sparc_option_override): Add name strings back to cpu_table[].
+	Parse -mdebug string.  When TARGET_DEBUG_OPTIONS is true, print
+	out the target flags before and after override processing as well
+	as the selected cpu.  If MASK_V8PLUS, make sure that the selected
+	cpu is at least v9.
+
 2011-10-15  Oleg Endo  <oleg.endo@t-online.de>
 
 	PR target/49263
