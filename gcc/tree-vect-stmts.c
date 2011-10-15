@@ -3996,41 +3996,33 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 }
 
 /* Given a vector type VECTYPE returns a builtin DECL to be used
-   for vector permutation and stores a mask into *MASK that implements
-   reversal of the vector elements.  If that is impossible to do
-   returns NULL (and *MASK is unchanged).  */
+   for vector permutation and returns the mask that implements
+   reversal of the vector elements.  If that is impossible to do,
+   returns NULL.  */
 
 static tree
-perm_mask_for_reverse (tree vectype, tree *mask)
+perm_mask_for_reverse (tree vectype)
 {
-  tree builtin_decl;
-  tree mask_element_type, mask_type;
-  tree mask_vec = NULL;
-  int i;
-  int nunits;
-  if (!targetm.vectorize.builtin_vec_perm)
+  tree mask_element_type, mask_type, mask_vec = NULL;
+  int i, nunits;
+
+  if (!can_vec_perm_expr_p (vectype, NULL_TREE))
     return NULL;
 
-  builtin_decl = targetm.vectorize.builtin_vec_perm (vectype,
-                                                     &mask_element_type);
-  if (!builtin_decl || !mask_element_type)
-    return NULL;
-
+  mask_element_type
+    = lang_hooks.types.type_for_size
+    (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (vectype))), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  if (!mask_type
-      || TYPE_VECTOR_SUBPARTS (vectype) != TYPE_VECTOR_SUBPARTS (mask_type))
-    return NULL;
 
   for (i = 0; i < nunits; i++)
     mask_vec = tree_cons (NULL, build_int_cst (mask_element_type, i), mask_vec);
   mask_vec = build_vector (mask_type, mask_vec);
 
-  if (!targetm.vectorize.builtin_vec_perm_ok (vectype, mask_vec))
+  if (!can_vec_perm_expr_p (vectype, mask_vec))
     return NULL;
-  if (mask)
-    *mask = mask_vec;
-  return builtin_decl;
+
+  return mask_vec;
 }
 
 /* Given a vector variable X, that was generated for the scalar LHS of
@@ -4041,27 +4033,16 @@ static tree
 reverse_vec_elements (tree x, gimple stmt, gimple_stmt_iterator *gsi)
 {
   tree vectype = TREE_TYPE (x);
-  tree mask_vec, builtin_decl;
-  tree perm_dest, data_ref;
+  tree mask_vec, perm_dest, data_ref;
   gimple perm_stmt;
 
-  builtin_decl = perm_mask_for_reverse (vectype, &mask_vec);
+  mask_vec = perm_mask_for_reverse (vectype);
 
   perm_dest = vect_create_destination_var (gimple_assign_lhs (stmt), vectype);
 
   /* Generate the permute statement.  */
-  perm_stmt = gimple_build_call (builtin_decl, 3, x, x, mask_vec);
-  if (!useless_type_conversion_p (vectype,
-				  TREE_TYPE (TREE_TYPE (builtin_decl))))
-    {
-      tree tem = create_tmp_reg (TREE_TYPE (TREE_TYPE (builtin_decl)), NULL);
-      tem = make_ssa_name (tem, perm_stmt);
-      gimple_call_set_lhs (perm_stmt, tem);
-      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-      perm_stmt = gimple_build_assign (NULL_TREE,
-				       build1 (VIEW_CONVERT_EXPR,
-					       vectype, tem));
-    }
+  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
+					     x, x, mask_vec);
   data_ref = make_ssa_name (perm_dest, perm_stmt);
   gimple_set_lhs (perm_stmt, data_ref);
   vect_finish_stmt_generation (stmt, perm_stmt, gsi);
@@ -4237,7 +4218,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    fprintf (vect_dump, "negative step but alignment required.");
 	  return false;
 	}
-      if (!perm_mask_for_reverse (vectype, NULL))
+      if (!perm_mask_for_reverse (vectype))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "negative step and reversing not supported.");

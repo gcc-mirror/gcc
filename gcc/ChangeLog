@@ -1,3 +1,15 @@
+2011-10-15  Richard Henderson  <rth@redhat.com>
+
+	* tree-vect-slp.c: Include langhooks.h.
+	(vect_create_mask_and_perm): Emit VEC_PERM_EXPR, not a builtin.
+	(vect_transform_slp_perm_load): Use can_vec_perm_expr_p.  Simplify
+	mask creation for VEC_PERM_EXPR.
+	* tree-vect-stmts.c (perm_mask_for_reverse): Return the mask,
+	not the builtin.
+	(reverse_vec_elements): Emit VEC_PERM_EXPR not a builtin.
+	* Makefile.in (tree-vect-slp.o): Update dependency.
+	* optabs.c (can_vec_perm_expr_p): Allow NULL as unknown constant.
+
 2011-10-15  Alan Modra  <amodra@gmail.com>
 
 	PR bootstrap/50738

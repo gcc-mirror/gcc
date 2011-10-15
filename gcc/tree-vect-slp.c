@@ -1,5 +1,5 @@
 /* SLP - Basic Block Vectorization
-   Copyright (C) 2007, 2008, 2009, 2010
+   Copyright (C) 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "optabs.h"
 #include "tree-vectorizer.h"
+#include "langhooks.h"
 
 /* Extract the location of the basic block in the source code.
    Return the basic block location if succeed and NULL if not.  */
@@ -2226,8 +2227,7 @@ static inline void
 vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
                            tree mask, int first_vec_indx, int second_vec_indx,
                            gimple_stmt_iterator *gsi, slp_tree node,
-                           tree builtin_decl, tree vectype,
-                           VEC(tree,heap) *dr_chain,
+                           tree vectype, VEC(tree,heap) *dr_chain,
                            int ncopies, int vect_stmts_counter)
 {
   tree perm_dest;
@@ -2251,10 +2251,10 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
       second_vec = VEC_index (tree, dr_chain, second_vec_indx);
 
       /* Generate the permute statement.  */
-      perm_stmt = gimple_build_call (builtin_decl,
-				     3, first_vec, second_vec, mask);
+      perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
+						 first_vec, second_vec, mask);
       data_ref = make_ssa_name (perm_dest, perm_stmt);
-      gimple_call_set_lhs (perm_stmt, data_ref);
+      gimple_set_lhs (perm_stmt, data_ref);
       vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 
       /* Store the vector statement in NODE.  */
@@ -2361,9 +2361,9 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree mask_element_type = NULL_TREE, mask_type;
-  int i, j, k, m, scale, mask_nunits, nunits, vec_index = 0, scalar_index;
+  int i, j, k, nunits, vec_index = 0, scalar_index;
   slp_tree node;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info), builtin_decl;
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   gimple next_scalar_stmt;
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
   int first_mask_element;
@@ -2374,35 +2374,24 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
   bool mask_fixed = false;
   bool needs_first_vector = false;
 
-  if (!targetm.vectorize.builtin_vec_perm)
+  if (!can_vec_perm_expr_p (vectype, NULL_TREE))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {
-          fprintf (vect_dump, "no builtin for vect permute for ");
+          fprintf (vect_dump, "no vect permute for ");
           print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
         }
-
-       return false;
+      return false;
     }
 
-  builtin_decl = targetm.vectorize.builtin_vec_perm (vectype,
-                                                     &mask_element_type);
-  if (!builtin_decl || !mask_element_type)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "no builtin for vect permute for ");
-          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
-        }
-
-       return false;
-    }
-
+  /* The generic VEC_PERM_EXPR code always uses an integral type of the
+     same size as the vector element being permuted.  */
+  mask_element_type
+    = lang_hooks.types.type_for_size
+    (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (vectype))), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
-  mask_nunits = TYPE_VECTOR_SUBPARTS (mask_type);
-  mask = (int *) xmalloc (sizeof (int) * mask_nunits);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  scale = mask_nunits / nunits;
+  mask = (int *) xmalloc (sizeof (int) * nunits);
   unroll_factor = SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
 
   /* The number of vector stmts to generate based only on SLP_NODE_INSTANCE
@@ -2425,8 +2414,7 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
      for b's: b0b0b0b1 b1b1b2b2 b2b3b3b3
      ...
 
-     The masks for a's should be: {0,0,0,3} {3,3,6,6} {6,9,9,9} (in target
-     scpecific type, e.g., in bytes for Altivec.
+     The masks for a's should be: {0,0,0,3} {3,3,6,6} {6,9,9,9}.
      The last mask is illegal since we assume two operands for permute
      operation, and the mask element values can't be outside that range.
      Hence, the last mask must be converted into {2,5,5,5}.
@@ -2451,20 +2439,17 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
         {
           for (k = 0; k < group_size; k++)
             {
-              first_mask_element = (i + j * group_size) * scale;
-              for (m = 0; m < scale; m++)
-                {
-                  if (!vect_get_mask_element (stmt, first_mask_element, m,
-                                   mask_nunits, only_one_vec, index, mask,
-                                   &current_mask_element, &need_next_vector,
-                                   &number_of_mask_fixes, &mask_fixed,
-                                   &needs_first_vector))
-                    return false;
+              first_mask_element = i + j * group_size;
+              if (!vect_get_mask_element (stmt, first_mask_element, 0,
+					  nunits, only_one_vec, index,
+					  mask, &current_mask_element,
+					  &need_next_vector,
+					  &number_of_mask_fixes, &mask_fixed,
+					  &needs_first_vector))
+		return false;
+	      mask[index++] = current_mask_element;
 
-                  mask[index++] = current_mask_element;
-                }
-
-              if (index == mask_nunits)
+              if (index == nunits)
                 {
 		  tree mask_vec = NULL;
 
@@ -2476,8 +2461,7 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 		  mask_vec = build_vector (mask_type, mask_vec);
 		  index = 0;
 
-		  if (!targetm.vectorize.builtin_vec_perm_ok (vectype,
-							      mask_vec))
+		  if (!can_vec_perm_expr_p (vectype, mask_vec))
 		    {
 		      if (vect_print_dump_info (REPORT_DETAILS))
 			{
@@ -2501,7 +2485,7 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 
                       vect_create_mask_and_perm (stmt, next_scalar_stmt,
                                mask_vec, first_vec_index, second_vec_index,
-			       gsi, node, builtin_decl, vectype, dr_chain,
+			       gsi, node, vectype, dr_chain,
 			       ncopies, vect_stmts_counter++);
                     }
                 }
