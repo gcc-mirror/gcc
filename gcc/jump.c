@@ -1086,6 +1086,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
       return;
 
     case RETURN:
+    case SIMPLE_RETURN:
       if (is_target)
 	{
 	  gcc_assert (JUMP_LABEL (insn) == NULL || JUMP_LABEL (insn) == x);
@@ -1408,7 +1409,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
   int i;
   const char *fmt;
 
-      if ((code == LABEL_REF && XEXP (x, 0) == olabel)
+  if ((code == LABEL_REF && XEXP (x, 0) == olabel)
       || x == olabel)
     {
       x = redirect_target (nlabel);

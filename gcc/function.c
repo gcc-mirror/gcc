@@ -5527,6 +5527,20 @@ emit_return_into_block (bool simple_p, basic_block bb)
 }
 #endif
 
+/* Set JUMP_LABEL for a return insn.  */
+
+void
+set_return_jump_label (rtx returnjump)
+{
+  rtx pat = PATTERN (returnjump);
+  if (GET_CODE (pat) == PARALLEL)
+    pat = XVECEXP (pat, 0, 0);
+  if (ANY_RETURN_P (pat))
+    JUMP_LABEL (returnjump) = pat;
+  else
+    JUMP_LABEL (returnjump) = ret_rtx;
+}
+
 /* Return true if BB has any active insns.  */
 static bool
 bb_active_p (basic_block bb)
@@ -6062,7 +6076,7 @@ thread_prologue_and_epilogue_insns (void)
 	  emit_return_into_block (false, last_bb);
 	  epilogue_end = BB_END (last_bb);
 	  if (JUMP_P (epilogue_end))
-	    JUMP_LABEL (epilogue_end) = ret_rtx;
+	    set_return_jump_label (epilogue_end);
 	  single_succ_edge (last_bb)->flags &= ~EDGE_FALLTHRU;
 	  goto epilogue_done;
 	}
@@ -6127,15 +6141,7 @@ thread_prologue_and_epilogue_insns (void)
       inserted = true;
 
       if (JUMP_P (returnjump))
-	{
-	  rtx pat = PATTERN (returnjump);
-	  if (GET_CODE (pat) == PARALLEL)
-	    pat = XVECEXP (pat, 0, 0);
-	  if (ANY_RETURN_P (pat))
-	    JUMP_LABEL (returnjump) = pat;
-	  else
-	    JUMP_LABEL (returnjump) = ret_rtx;
-	}
+	set_return_jump_label (returnjump);
     }
   else
 #endif
