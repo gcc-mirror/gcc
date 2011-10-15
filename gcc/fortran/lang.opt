@@ -590,9 +590,9 @@ std=f2008
 Fortran
 Conform to the ISO Fortran 2008 standard
 
-std=f2008tr
+std=f2008ts
 Fortran
-Conform to the ISO Fortran 2008 standard including TR 29113
+Conform to the ISO Fortran 2008 standard including TS 29113
 
 std=f95
 Fortran

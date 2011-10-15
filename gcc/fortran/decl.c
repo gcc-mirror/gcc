@@ -1069,7 +1069,7 @@ verify_c_interop_param (gfc_symbol *sym)
 	      retval = FAILURE;
 	    }
 	  else if (sym->attr.optional == 1
-		   && gfc_notify_std (GFC_STD_F2008_TR, "TR29113: Variable '%s' "
+		   && gfc_notify_std (GFC_STD_F2008_TS, "TS29113: Variable '%s' "
 				      "at %L with OPTIONAL attribute in "
 				      "procedure '%s' which is BIND(C)",
 				      sym->name, &(sym->declared_at),

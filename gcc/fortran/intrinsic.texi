@@ -10222,7 +10222,7 @@ See @code{PRECISION} for an example.
 @code{RANK(A)} returns the rank of a scalar or array data object.
 
 @item @emph{Standard}:
-Technical Report (TR) 29113
+Technical Specification (TS) 29113
 
 @item @emph{Class}:
 Inquiry function
