@@ -1,5 +1,11 @@
 2011-10-15  Alan Modra  <amodra@gmail.com>
 
+	PR bootstrap/50738
+	* ifcvt.c (dead_or_predicable): Revert accidental commit with
+	HAVE_simple_return test.
+
+2011-10-15  Alan Modra  <amodra@gmail.com>
+
 	* ifcvt.c (dead_or_predicable): Disable if-conversion when
 	doing so is likely to kill a shrink-wrapping opportunity.
 

@@ -4173,7 +4173,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 register used to pass function parameters, which then must be
 	 saved in caller-saved regs.  A caller-saved reg requires the
 	 prologue, killing a shrink-wrap opportunity.  */
-      if ((flag_shrink_wrap && HAVE_simple_return && !epilogue_completed)
+      if ((flag_shrink_wrap && !epilogue_completed)
 	  && ENTRY_BLOCK_PTR->next_bb == test_bb
 	  && single_succ_p (new_dest)
 	  && single_succ (new_dest) == EXIT_BLOCK_PTR
