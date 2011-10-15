@@ -1,3 +1,7 @@
+2011-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/combined-1.c: Compile at -O2.
+
 2011-10-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/fma_float_?.c (dg-prune_output): Remove.
