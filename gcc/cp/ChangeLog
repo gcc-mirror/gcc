@@ -1,3 +1,10 @@
+2011-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50732
+	* semantics.c (finish_trait_expr): Do not try to instantiate the
+	the base type of an __is_base_of trait.
+	(check_trait_type): Return a tree; use complete_type_or_else.
+
 2011-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50563
