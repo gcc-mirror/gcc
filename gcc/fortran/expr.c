@@ -4478,7 +4478,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, const char* context)
 		       sym->name, context, &e->where);
 	  return FAILURE;
 	}
-      if (!pointer && !is_pointer)
+      if (!pointer && !is_pointer && !sym->attr.pointer)
 	{
 	  if (context)
 	    gfc_error ("Dummy argument '%s' with INTENT(IN) in variable"

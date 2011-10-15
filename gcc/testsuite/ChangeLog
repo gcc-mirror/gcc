@@ -1,3 +1,8 @@
+2011-10-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50570
+	* gfortran.dg/pointer_intent_5.f90: New.
+
 2011-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Backport from mainline

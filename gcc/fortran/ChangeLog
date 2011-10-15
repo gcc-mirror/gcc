@@ -1,3 +1,9 @@
+2011-10-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50570
+	* expr.c (gfc_check_vardef_context): Don't throw an error on
+	non-pointer assignments involving an intent(in) pointer dummy.
+
 2011-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50718
