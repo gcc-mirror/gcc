@@ -3326,10 +3326,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else
 		goto end_pointer_check;
 
+	      tmp = parmse.expr;
+
+	      /* If the argument is passed by value, we need to strip the
+		 INDIRECT_REF.  */
+	      if (!POINTER_TYPE_P (TREE_TYPE (parmse.expr)))
+		tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 
 	      cond = fold_build2_loc (input_location, EQ_EXPR,
-				      boolean_type_node, parmse.expr,
-				      fold_convert (TREE_TYPE (parmse.expr),
+				      boolean_type_node, tmp,
+				      fold_convert (TREE_TYPE (tmp),
 						    null_pointer_node));
 	    }
  

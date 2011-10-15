@@ -1,3 +1,9 @@
+2011-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50718
+	* trans-expr.c (gfc_conv_procedure_call): Fix -fcheck=pointer
+	for dummy arguments with VALUE attribute.
+
 2011-10-14  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

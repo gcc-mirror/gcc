@@ -1,3 +1,9 @@
+2011-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50718
+	* gfortran.dg/pointer_check_11.f90: New.
+	* gfortran.dg/pointer_check_12.f90: New.
+
 2011-10-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50659
