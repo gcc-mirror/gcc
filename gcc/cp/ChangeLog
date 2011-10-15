@@ -1,3 +1,12 @@
+2011-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Backport from mainline
+	2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>,
+
+	PR obj-c++/48275
+	* parser.c (cp_parser_objc_at_property_declaration): Allow setter
+	and getter names to use all the allowed method names.
+
 2011-10-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50618

@@ -1,3 +1,12 @@
+2011-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Backport from mainline
+	2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc-++/48275
+	* obj-c++.dg/property/cxx-property-1.mm: New.
+	* obj-c++.dg/property/cxx-property-2.mm: New.
+
 2011-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50718
