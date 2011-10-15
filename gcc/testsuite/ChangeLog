@@ -1,3 +1,10 @@
+2011-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50732
+	* g++.dg/ext/is_base_of_incomplete.C: New.
+	* g++.dg/ext/is_base_of_diagnostic.C: Adjust dg-errors.
+	* g++.dg/ext/unary_trait_incomplete.C: Likewise.
+
 2011-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/combined-1.c: Compile at -O2.

@@ -5210,23 +5210,20 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     }
 }
 
-/* Returns true if TYPE is a complete type, an array of unknown bound,
-   or (possibly cv-qualified) void, returns false otherwise.  */
+/* If TYPE is an array of unknown bound, or (possibly cv-qualified)
+   void, or a complete type, returns it, otherwise NULL_TREE.  */
 
-static bool
+static tree
 check_trait_type (tree type)
 {
-  if (COMPLETE_TYPE_P (type))
-    return true;
-
   if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type)
       && COMPLETE_TYPE_P (TREE_TYPE (type)))
-    return true;
+    return type;
 
   if (VOID_TYPE_P (type))
-    return true;
+    return type;
 
-  return false;
+  return complete_type_or_else (strip_array_types (type), NULL_TREE);
 }
 
 /* Process a trait expression.  */
@@ -5276,10 +5273,6 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
       return trait_expr;
     }
 
-  complete_type (type1);
-  if (type2)
-    complete_type (type2);
-
   switch (kind)
     {
     case CPTK_HAS_NOTHROW_ASSIGN:
@@ -5298,20 +5291,15 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
       if (!check_trait_type (type1))
-	{
-	  error ("incomplete type %qT not allowed", type1);
-	  return error_mark_node;
-	}
+	return error_mark_node;
       break;
 
     case CPTK_IS_BASE_OF:
       if (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
 	  && !same_type_ignoring_top_level_qualifiers_p (type1, type2)
-	  && !COMPLETE_TYPE_P (type2))
-	{
-	  error ("incomplete type %qT not allowed", type2);
-	  return error_mark_node;
-	}
+	  && !complete_type_or_else (type2, NULL_TREE))
+	/* We already issued an error.  */
+	return error_mark_node;
       break;
 
     case CPTK_IS_CLASS:
