@@ -1,3 +1,8 @@
+2011-10-15  Nicolas Roche  <roche@adacore.com>
+
+	* gcc-interface/lang-specs.h: Ensure -mrtp switch is passed when using
+	either rtp-smp or ravenscar-cert-rtp runtimes.
+
 2011-10-15  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Add_Unconstrained_Actuals_To_Build_In_Place_Call):
