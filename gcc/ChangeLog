@@ -50,8 +50,7 @@
 	tstsi_t_zero_extract_subreg_xor_big): New insns.
 	(*movsicc_t_false, *movsicc_t_true): Replace space with tab in
 	asm output.
-	(*andsi_compact): Reorder alternatives so that K08 is considered
-	first.
+	(*andsi_compact): Reorder alternatives so that K08 is considered first.
 
 2011-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -74,8 +73,7 @@
 	vec_widen_smult_lo_v8hi, vec_widen_umult_hi_v8hi,
 	vec_widen_umult_lo_v8hi): Macroize using VI2_AVX2
 	mode iterator and any_extend code iterator.
-	(vec_widen_<s>mult_hi_v8si, vec_widen_<s>mult_lo_v8si): New
-	expanders.
+	(vec_widen_<s>mult_hi_v8si, vec_widen_<s>mult_lo_v8si): New expanders.
 	(vec_widen_smult_hi_v4si, vec_widen_smult_lo_v4si): Enable
 	also for TARGET_SSE4_1 using pmuldq insn.
 	(sdot_prodv8hi): Macroize using VI2_AVX2 iterator.
@@ -96,8 +94,7 @@
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_interleave_high<mode>,
-	vec_interleave_low<mode>): Add AVX2 expanders for VI_256
-	modes.
+	vec_interleave_low<mode>): Add AVX2 expanders for VI_256 modes.
 	* config/i386/i386.c (expand_vec_perm_interleave3): New function.
 	(ix86_expand_vec_perm_builtin_1): Call it.
 
@@ -121,14 +118,13 @@
 	(avr_mode_code_base_reg_class): Depend on avr_strict_X.
 	(avr_regno_mode_code_ok_for_base_p): Ditto, and depend on outer_code.
 	(avr_option_override): Disable -fcaller-saves if -mstrict-X is on.
-	
+
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (neg<mode>2): Use VI_AVX2 iterator instead
 	of VI_128.
 
-	* config/i386/sse.md (mulv2di3): Macroize using VI8_AVX2
-	iterator.
+	* config/i386/sse.md (mulv2di3): Macroize using VI8_AVX2 iterator.
 	(ashl<mode>3): Use VI248_AVX2 iterator instead of VI248_128.
 	Use <sseinsnmode> instead of TI in mode attr.
 
@@ -197,9 +193,8 @@
 
 2011-10-14  Jakub Jelinek  <jakub@redhat.com>
 
-	* gimple.c (walk_stmt_load_store_addr_ops): Call visit_addr
-	also on COND_EXPR/VEC_COND_EXPR comparison operands if they are
-	ADDR_EXPRs.
+	* gimple.c (walk_stmt_load_store_addr_ops): Call visit_addr also
+	on COND_EXPR/VEC_COND_EXPR comparison operands if they are ADDR_EXPRs.
 
 2011-10-14  Richard Guenther  <rguenther@suse.de>
 
@@ -232,8 +227,7 @@
 	(vec_unpacks_float_hi_v8hi, vec_unpacks_float_lo_v8hi,
 	vec_unpacku_float_hi_v8hi, vec_unpacku_float_lo_v8hi): Macroize
 	using VI2_AVX2 iterator.
-	(vec_unpacku_float_hi_v8si, vec_unpacku_float_lo_v8si): New
-	expanders.
+	(vec_unpacku_float_hi_v8si, vec_unpacku_float_lo_v8si): New expanders.
 
 2011-10-13  David S. Miller  <davem@davemloft.net>
 
@@ -276,15 +270,13 @@
 
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 
-	* config/i386/sse.md (vec_set<mode>): Change V_128 iterator mode
-	to V.
+	* config/i386/sse.md (vec_set<mode>): Change V_128 iterator mode to V.
 
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa.c (maybe_optimize_var): Drop TREE_ADDRESSABLE
-	from vector or complex vars even if their DECL_UID is in not_reg_needs
-	bitmap.
+	* tree-ssa.c (maybe_optimize_var): Drop TREE_ADDRESSABLE from vector
+	or complex vars even if their DECL_UID is in not_reg_needs bitmap.
 
 2011-10-13  Jakub Jelinek  <jakub@redhat.com>
 
@@ -295,8 +287,8 @@
 	(ix86_expand_reduc): Use phminposuw insn for V8HImode UMIN.
 	Use emit_reduc_half helper function.
 
-2011-10-13   Lawrence Crowl  <crowl@google.com>
-	     Diego Novillo  <dnovillo@google.com>
+2011-10-13  Lawrence Crowl  <crowl@google.com>
+	    Diego Novillo  <dnovillo@google.com>
 
 	* lto-streamer-in.c (input_struct_function_base): Factor out of ...
 	(input_function): ... here.
@@ -356,7 +348,8 @@
 	(fmul8x16_vis, fmul8x16au_vis, fmul8sux16_vis, fmuld8sux16_vis):
 	Reimplement as unspecs and remove inaccurate comments.
 	(vis3_shift_patname): New code attr.
-	(<vis3_shift_insn><vbits>_vis): Rename to "v<vis3_shift_patname><mode>3".
+	(<vis3_shift_insn><vbits>_vis): Rename to
+	"v<vis3_shift_patname><mode>3".
 	(vis3_addsub_ss_patname): New code attr.
 	(<vis3_addsub_ss_insn><vbits>_vis): Rename to
 	"<vis3_addsub_ss_patname><mode>3".
@@ -372,14 +365,12 @@
 
 	* config/i386/sse.md (vec_unpacks_lo_<mode>,
 	vec_unpacks_hi_<mode>, vec_unpacku_lo_<mode>,
-	vec_unpacku_hi_<mode>): Change VI124_128 mode to
-	VI124_AVX2.
+	vec_unpacku_hi_<mode>): Change VI124_128 mode to VI124_AVX2.
 	* config/i386/i386.c (ix86_expand_sse_unpack): Handle
 	V32QImode, V16HImode and V8SImode for TARGET_AVX2.
 
 	* config/i386/sse.md (vec_avx2): New mode_attr.
-	(mulv16qi3): Macroize to cover also mulv32qi3 for
-	TARGET_AVX2 into ...
+	(mulv16qi3): Macroize to cover also mulv32qi3 for TARGET_AVX2 into ...
 	(mul<mode>3): ... this.
 
 	* config/i386/i386.md (UNSPEC_VPERMDI): Remove.
@@ -426,8 +417,7 @@
 
 2011-10-12  Kai Tietz  <ktietz@redhat.com>
 
-	* config/i386/i386.md (simple_return): Disable
-	if TARGET_SEH is active.
+	* config/i386/i386.md (simple_return): Disable if TARGET_SEH is active.
 
 2011-10-12  Steve Ellcey  <sje@cup.hp.com>
 
@@ -638,7 +628,8 @@
 
 2011-10-11  Georg-Johann Lay  <avr@gjlay.de>
 
-	* config/avr/avr-protos.h (avr_mode_code_base_reg_class): New prototype.
+	* config/avr/avr-protos.h (avr_mode_code_base_reg_class): New
+	prototype.
 	(avr_regno_mode_code_ok_for_base_p): New prototype.
 	* config/avr/avr.h (BASE_REG_CLASS): Remove.
 	(REGNO_OK_FOR_BASE_P): Remove.
@@ -708,8 +699,7 @@
 2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_option_override): Set
-	flag_omit_frame_pointer to 0 if frame pointer is needed for
-	unwinding.
+	flag_omit_frame_pointer to 0 if frame pointer is needed for unwinding.
 
 2011-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -854,8 +844,7 @@
 	(get_sched_window): Adjust for above field and SCHED_* macro changes.
 	Use NODE_ASAP instead of SCHED_ASAP.
 	(try_scheduling_node_in_cycle): Remove node parameter.  Update
-	call to ps_add_node_check_conflicts.  Pass ids to the SCHED_*
-	macros.
+	call to ps_add_node_check_conflicts.  Pass ids to the SCHED_* macros.
 	(sms_schedule_by_order): Update call to try_scheduling_node_in_cycle.
 	(ps_insert_empty_row): Adjust for above field changes.
 	(compute_split_row): Use ids rather than nodes.
