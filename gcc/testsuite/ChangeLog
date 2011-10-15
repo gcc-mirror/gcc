@@ -1,3 +1,8 @@
+2011-10-15  Oleg Endo  <oleg.endo@t-online.de>
+
+	PR target/49263
+	* gcc.target/sh/pr49263.c: New.
+
 2011-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/debug1.ads: Tweak.

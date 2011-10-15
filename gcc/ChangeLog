@@ -1,3 +1,19 @@
+2011-10-15  Oleg Endo  <oleg.endo@t-online.de>
+
+	PR target/49263
+	* config/sh/sh.h (ZERO_EXTRACT_ANDMASK): New macro.
+	* config/sh/sh.c (sh_rtx_costs): Add test instruction case.
+	* config/sh/sh.md (tstsi_t): Name existing insn.  Make inner
+	and instruction commutative.
+	(tsthi_t, tstqi_t, tstqi_t_zero, tstsi_t_and_not,
+	tstsi_t_zero_extract_eq, tstsi_t_zero_extract_xor,
+	tstsi_t_zero_extract_subreg_xor_little,
+	tstsi_t_zero_extract_subreg_xor_big): New insns.
+	(*movsicc_t_false, *movsicc_t_true): Replace space with tab in
+	asm output.
+	(*andsi_compact): Reorder alternatives so that K08 is considered
+	first.
+
 2011-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/50354

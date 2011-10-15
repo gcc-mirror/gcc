@@ -242,7 +242,7 @@ static void sh_file_start (void);
 static int flow_dependent_p (rtx, rtx);
 static void flow_dependent_p_1 (rtx, const_rtx, void *);
 static int shiftcosts (rtx);
-static int and_xor_ior_costs (rtx, int code);
+static int and_xor_ior_costs (rtx, int);
 static int addsubcosts (rtx);
 static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
@@ -2994,6 +2994,20 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       else
         *total = 8;
       return true;
+
+    case EQ:
+      /* An and with a constant compared against zero is
+	 most likely going to be a TST #imm, R0 instruction.
+	 Notice that this does not catch the zero_extract variants from
+	 the md file.  */
+      if (GET_CODE (XEXP (x, 0)) == AND
+	  && CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 0)
+	{
+	  *total = 1;
+	  return true;
+	}
+      else
+	return false;
 
     case CONST:
     case LABEL_REF:
