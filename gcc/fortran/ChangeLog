@@ -1,3 +1,17 @@
+2011-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Fortran 2008 status, TS 29113 status,
+	Further Interoperability of Fortran with C): Update implementation
+	status, change references from TR 29113 to TS 29113.
+	* intrinsic.texi (RANK): Change TR 29113 to TS 29113.
+	* invoke.text (-std=): Ditto, change -std=f2008tr to -std=f2008ts.
+	* lang.opt (std=): Ditto.
+	* options.c (gfc_handle_option, set_default_std_flags): Ditto and
+	change GFC_STD_F2008_TR to GFC_STD_F2008_TS.
+	* libgfortran.h: Ditto.
+	* intrinsic.c (add_functions, gfc_check_intrinsic_standard): Ditto.
+	* decl.c (verify_c_interop_param): Ditto.
+
 2011-10-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50570

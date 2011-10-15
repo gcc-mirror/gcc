@@ -1,3 +1,13 @@
+2011-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/bind_c_usage_23.f90: Change TR 29113 to TS 29113 in
+	the comments.
+	* gfortran.dg/bind_c_usage_24.f90: Ditto.
+	* gfortran.dg/rank_3.f90: Ditto.
+	* gfortran.dg/bind_c_usage_22.f90: Ditto, change -std=f2008tr to
+	-std=f2008ts in dg-options.
+	* gfortran.dg/rank_4.f90: Ditto.
+
 2011-10-15  Oleg Endo  <oleg.endo@t-online.de>
 
 	PR target/49263

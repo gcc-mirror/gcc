@@ -1,10 +1,10 @@
 ! { dg-do compile }
-! { dg-options "-std=f2008tr" }
+! { dg-options "-std=f2008ts" }
 !
 ! PR fortran/48858
 ! PR fortran/48820
 !
-! OPTIONAL + BIND(C) is allowed since TR 29113
+! OPTIONAL + BIND(C) is allowed since TS 29113
 !
 
 ! VALID
@@ -13,20 +13,20 @@ subroutine sub(z) bind(C)
   integer(c_int), value :: z
 end subroutine sub
 
-! VALID since TR29113
+! VALID since TS29113
 subroutine sub2(z) bind(C)
   use iso_c_binding
   integer(c_int), optional :: z
 end subroutine sub2
 
-! VALID since TR29113
+! VALID since TS29113
 subroutine sub2a(z) bind(C)
   use iso_c_binding
   integer(c_int) :: z
   optional :: z
 end subroutine sub2a
 
-! VALID since TR29113
+! VALID since TS29113
 subroutine sub2b(z) bind(C)
   use iso_c_binding
   optional :: z

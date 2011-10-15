@@ -772,7 +772,7 @@ compile option was used.
 @menu
 * Fortran 2003 status::
 * Fortran 2008 status::
-* TR 29113 status::
+* TS 29113 status::
 @end menu
 
 @node Fortran 2003 status
@@ -1003,8 +1003,11 @@ the intrinsic module @code{ISO_FORTRAN_ENV}.
 @code{ISO_C_BINDINGS} and @code{COMPILER_VERSION} and @code{COMPILER_OPTIONS}
 of @code{ISO_FORTRAN_ENV}.
 
-@item Experimental coarray, use the @option{-fcoarray=single} or
-@option{-fcoarray=lib} flag to enable it.
+@item Coarray support for serial programs with @option{-fcoarray=single} flag
+and experimental support for multiple images with the @option{-fcoarray=lib}
+flag.
+
+@item The @code{DO CONCURRENT} construct is supported.
 
 @item The @code{BLOCK} construct is supported.
 
@@ -1049,19 +1052,25 @@ arrays are supported for named constants (@code{PARAMETER}).
 
 
 
-@node TR 29113 status
-@section Fortran 29113 status
+@node TS 29113 status
+@section Technical Specification 29113 Status
 
-GNU Fortran supports some of the new features of the technical report (TR)
-29113 on Further Interoperability of Fortran with C.
-@uref{http://gcc.gnu.org/wiki/Fortran2008Status, wiki} has some information
-about the current TR 29113 implementation status.  In particular, the
+GNU Fortran supports some of the new features of the Technical
+Specification (TS) 29113 on Further Interoperability of Fortran with C.
+The @uref{http://gcc.gnu.org/wiki/TS29113Status, wiki} has some information
+about the current TS 29113 implementation status.  In particular, the
 following is implemented.
 
 @itemize
-@item The @option{-std=f2008} option.
-@item The OPTIONAL attribute is now allowed for dummy arguments of
-BIND(C) procedures.
+@item The @option{-std=f2008ts} option.
+
+@item The @code{OPTIONAL} attribute is allowed for dummy arguments
+of @code{BIND(C) procedures.}
+
+@item The RANK intrinsic is supported.
+
+@item GNU Fortran's implementation for variables with @code{ASYNCHRONOUS}
+attribute is compatible with TS 29113.
 @end itemize
 
 
@@ -2446,15 +2455,13 @@ END MODULE m
 Assumed-shape and allocatable arrays are passed using an array descriptor
 (dope vector).  The internal structure of the array descriptor used
 by GNU Fortran is not yet documented and will change.  There will also be
-a Technical Report (TR 29113) which standardizes an interoperable
+a Technical Specification (TS 29113) which standardizes an interoperable
 array descriptor.  Until then, you can use the Chasm Language
 Interoperability Tools, @url{http://chasm-interop.sourceforge.net/},
 which provide an interface to GNU Fortran's array descriptor.
 
-The technical report 29113 will presumably also include support for
-C-interoperable @code{OPTIONAL} and for assumed-rank and assumed-type
-dummy arguments.  However, the TR has neither been approved nor implemented
-in GNU Fortran; therefore, these features are not yet available.
+GNU Fortran already supports the C-interoperable @code{OPTIONAL}
+attribute; for absent arguments, a @code{NULL} pointer is passed.
 
 
 
@@ -2620,9 +2627,9 @@ Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 @code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4), @code{GFC_STD_F95}
 (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU} (32),
 @code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128), 
-@code{GFC_STD_F2008_OBS} (256) and GFC_STD_F2008_TR (512). Default:
+@code{GFC_STD_F2008_OBS} (256) and GFC_STD_F2008_TS (512). Default:
 @code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003
-| GFC_STD_F2008 | GFC_STD_F2008_TR | GFC_STD_F2008_OBS | GFC_STD_F77
+| GFC_STD_F2008 | GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77
 | GFC_STD_GNU | GFC_STD_LEGACY}.
 @item @var{option}[1] @tab Standard-warning flag; prints a warning to
 standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
