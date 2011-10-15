@@ -1,3 +1,23 @@
+2011-10-15  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Add_Unconstrained_Actuals_To_Build_In_Place_Call):
+	Do not create a pool formal on unless RE_Root_Storage_Pool_Ptr
+	is available.
+	(Expand_N_Extended_Return_Statement): Do not create a renaming of the
+	build-in-place pool parameter unless RE_Root_Storage_Pool_Ptr is
+	available.
+	(Make_Build_In_Place_Call_In_Allocator): Add the user-defined
+	pool only if RE_Root_Storage_Pool_Ptr is available.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Do not add a
+	pool actual unless RE_Root_Storage_Pool_Ptr is available.
+	* sem_ch6.adb (Create_Extra_Formals): Add build-in-place pool
+	formal only if RE_Root_Storage_Pool_Ptr is available.
+
+2011-10-15  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cusyqu.ads, a-cbsyqu.ads, a-cuprqu.ads, a-cbprqu.ads (Queue
+	type): Specify Priority aspect for protected type.
+
 2011-10-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_disp.adb (Check_Premature_Freezing): If an untagged type

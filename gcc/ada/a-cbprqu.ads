@@ -101,9 +101,7 @@ package Ada.Containers.Bounded_Priority_Queues is
    protected type Queue
      (Capacity : Count_Type := Default_Capacity;
       Ceiling  : System.Any_Priority := Default_Ceiling)
-   --  ???
-   --  with Priority => Ceiling is new Queue_Interfaces.Queue with
-   is new Queue_Interfaces.Queue with
+     with Priority => Ceiling is new Queue_Interfaces.Queue with
 
       overriding
       entry Enqueue (New_Item : Queue_Interfaces.Element_Type);

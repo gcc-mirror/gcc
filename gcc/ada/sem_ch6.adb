@@ -6487,10 +6487,12 @@ package body Sem_Ch6 is
                     E, BIP_Formal_Suffix (BIP_Alloc_Form));
 
                --  Add BIP_Storage_Pool, in case BIP_Alloc_Form indicates to
-               --  use a user-defined pool. This formal is not added on .NET
-               --  and JVM as those targets do not support pools.
+               --  use a user-defined pool. This formal is not added on
+               --  .NET/JVM/ZFP as those targets do not support pools.
 
-               if VM_Target = No_VM then
+               if VM_Target = No_VM and then
+                 RTE_Available (RE_Root_Storage_Pool_Ptr)
+               then
                   Discard :=
                     Add_Extra_Formal
                       (E, RTE (RE_Root_Storage_Pool_Ptr),
