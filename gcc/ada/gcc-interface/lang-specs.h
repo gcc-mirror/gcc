@@ -40,7 +40,7 @@
     %{coverage:-fprofile-arcs -ftest-coverage} "
    "%{gnatea:-gnatez} %{g*&m*} "
 #if defined(TARGET_VXWORKS_RTP)
-   "%{fRTS=rtp:-mrtp} "
+   "%{fRTS=rtp:-mrtp} %{fRTS=rtp-smp:-mrtp} %{fRTS=ravenscar-cert-rtp:-mrtp}"
 #endif
    "%1 %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
