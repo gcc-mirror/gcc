@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mcpu=ultrasparc -mvis" } */
+/* { dg-options "-O2 -mcpu=ultrasparc -mvis" } */
 typedef short vec16 __attribute__((vector_size(8)));
 typedef int vec32 __attribute__((vector_size(8)));
 
