@@ -1,5 +1,8 @@
 2011-10-15  Alan Modra  <amodra@gmail.com>
 
+	* ifcvt.c (dead_or_predicable): Disable if-conversion when
+	doing so is likely to kill a shrink-wrapping opportunity.
+
 	PR rtl-optimization/49941
 	* jump.c (mark_jump_label_1): Set JUMP_LABEL for simple_return jumps.
 
