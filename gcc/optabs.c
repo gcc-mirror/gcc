@@ -6686,7 +6686,7 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
 }
 
 /* Return true if VEC_PERM_EXPR can be expanded using SIMD extensions
-   of the CPU.  */
+   of the CPU.  SEL may be NULL, which stands for an unknown constant.  */
 
 bool
 can_vec_perm_expr_p (tree type, tree sel)
@@ -6699,10 +6699,10 @@ can_vec_perm_expr_p (tree type, tree sel)
   if (!VECTOR_MODE_P (mode))
     return false;
 
-  if (TREE_CODE (sel) == VECTOR_CST)
+  if (sel == NULL || TREE_CODE (sel) == VECTOR_CST)
     {
       if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
-	  && targetm.vectorize.builtin_vec_perm_ok (type, sel))
+	  && (sel == NULL || targetm.vectorize.builtin_vec_perm_ok (type, sel)))
 	return true;
     }
 
@@ -6722,7 +6722,7 @@ can_vec_perm_expr_p (tree type, tree sel)
 
   /* In order to support the lowering of non-constant permutations,
      we need to support shifts and adds.  */
-  if (TREE_CODE (sel) != VECTOR_CST)
+  if (sel != NULL && TREE_CODE (sel) != VECTOR_CST)
     {
       if (GET_MODE_UNIT_SIZE (mode) > 2
 	  && optab_handler (ashl_optab, mode) == CODE_FOR_nothing
