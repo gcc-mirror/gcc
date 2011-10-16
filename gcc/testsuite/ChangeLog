@@ -1,3 +1,7 @@
+2011-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/vla-23.c: New test.
+
 2011-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50596
