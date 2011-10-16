@@ -651,13 +651,13 @@ compile_file (void)
         {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
 	  ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
-					  "__gnu_slim_lto",
+					  "__gnu_lto_slim",
 					  (unsigned HOST_WIDE_INT) 1, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
-	  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_slim_lto",
+	  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
 				     (unsigned HOST_WIDE_INT) 1, 8);
 #else
-	  ASM_OUTPUT_COMMON (asm_out_file, "__gnu_slim_lto",
+	  ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
 			     (unsigned HOST_WIDE_INT) 1,
 			     (unsigned HOST_WIDE_INT) 1);
 #endif
