@@ -7886,6 +7886,11 @@
 	* gfortran.dg/char4_iunit_2.f03: Adjust test.
 	* gfortran.dg/real_const_3.f90: Adjust test.
 
+2011-04-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/inline-10.c: New testcase.
+	* gcc.dg/tree-ssa/inline-9.c: Disable partial inlining.
+
 2011-04-28  Xinliang David Li  <davidxl@google.com>
 
 	* gcc.dg/tree-prof/prof-robust-1.c: New test.

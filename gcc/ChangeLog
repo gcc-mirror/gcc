@@ -12,8 +12,6 @@
 	(check_bool_pattern, adjust_bool_pattern_cast,
 	adjust_bool_pattern, vect_recog_bool_pattern): New functions.
 
-	* gcc.dg/vect/vect-cond-9.c: New test.
-
 2011-10-16  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-stmts.c (vectorizable_load): For SLP without permutation
@@ -19229,8 +19227,6 @@
 
 2011-04-29  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/tree-ssa/inline-10.c: New testcase.
-	* gcc.dg/tree-ssa/inline-9.c: Disable partial inlining.
 	* ipa-inline.h (clause_t): Turn into unsigned int.
 	* ipa-inline-analysis.c (add_clause): Do more simplification.
 	(and_predicates): Shortcut more cases.
