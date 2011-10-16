@@ -1003,6 +1003,7 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
                   || TREE_TYPE (gimple_assign_lhs (new_stmt)) != interm_type)
                 return false;
 
+	      VEC_safe_push (gimple, heap, *stmts, def_stmt);
               oprnd = gimple_assign_lhs (new_stmt);
             }
           else
