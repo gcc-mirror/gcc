@@ -1,3 +1,21 @@
+2011-10-16 Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vect-stmts.c (vectorizable_load): For SLP without permutation
+	treat the first load of the node as the first element in its
+	interleaving chain.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Swap the operands if
+	necessary and possible.
+	(vect_build_slp_tree): Add new argument.  Allow load groups of any size
+	in basic blocks.  Keep all the loads for further permutation check.
+	Use the new argument to determine if there is a permutation.  Update
+	the recursive calls.
+	(vect_supported_load_permutation_p): Allow subchains of interleaving
+	chains in basic block vectorization.
+	(vect_analyze_slp_instance): Update the call to vect_build_slp_tree.
+	Check load permutation based on the new parameter.
+	(vect_schedule_slp_instance): Don't start from the first element in
+	interleaving chain unless the loads are permuted.
+
 2011-10-15  Jan Hubicka  <jh@suse.cz>
 
 	PR target/48668
