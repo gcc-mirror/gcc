@@ -17878,13 +17878,13 @@ Let's take a very simple example using the first @command{gnattest} example
 located at
 
 @smallexample
-<install_prefix>/share/examples/gnattest/lib1
+<install_prefix>/share/examples/gnattest/simple
 @end smallexample
 
 This project contains a simple package containing one subprogram. By running gnattest
 
 @smallexample
-$ gnattest --harness-dir=driver -Plib1.gpr
+$ gnattest --harness-dir=driver -Psimple.gpr
 @end smallexample
 
 a test driver is created in dir "driver". It can be compiled and run:
@@ -17896,18 +17896,18 @@ $ test_runner
 @end smallexample
 
 One failed test with diagnosis "test not implemented" is reported.
-Since no special output option was specified the test package Lib1.Tests
+Since no special output option was specified the test package Simple.Tests
 is located in
 
 @smallexample
-<install_prefix>/share/examples/gnattest/lib1/src/tests
+<install_prefix>/share/examples/gnattest/simple/src/tests
 @end smallexample
 
 For each package containing visible subprograms, a child test package is
 generated. It contains one test routine per tested subprogram. Each
 declaration of test subprogram has a comment specifying to which tested
 subprogram it corresponds. All the test routines have separated bodies.
-The test routine locates at lib1-tests-test_inc_5eaee3.adb has a single
+The test routine locates at simple-tests-test_inc_5eaee3.adb has a single
 statement - procedure Assert. It has two arguments: the boolean expression
 which we want to check and the diagnosis message to display if the condition
 is false.
@@ -17945,11 +17945,11 @@ names and order of its parameters are the same, the old test routine will
 fit in it's place and no test stub will be generated for this subprogram.
 
 This can be demonstrated with the previous example. By uncommenting declaration
-and body of function Dec in lib1.ads and lib1.adb, running
+and body of function Dec in simple.ads and simple.adb, running
 @command{gnattest} on the project and then running the test driver:
 
 @smallexample
-gnattest --harness-dir=driver -Plib1.gpr
+gnattest --harness-dir=driver -Psimple.gpr
 cd driver
 gprbuild -Ptest_driver
 test_runner
@@ -18001,15 +18001,15 @@ are already written so no need to worry if the tool reports that 0 new stubs
 were generated).
 
 @smallexample
-cd examples/lib2
-gnattest --harness-dir=driver -Plib2.gpr
+cd <install_prefix>/share/examples/gnattest/tagged_rec
+gnattest --harness-dir=driver -Ptagged_rec.gpr
 @end smallexample
 
 Taking a closer look at the test type declared in the test package
 Speed1.Controller_Tests is necessary. It is declared in
 
 @smallexample
-examples/lib2/src/tests
+<install_prefix>/share/examples/gnattest/tagged_rec/src/tests
 @end smallexample
 
 Test types are direct or indirect descendants of
@@ -18045,7 +18045,7 @@ shown by running the test driver generated for second example. As previously
 mentioned, actual tests are already written for this example.
 
 @smallexample
-cd examples/lib2/driver
+cd driver
 gprbuild -Ptest_driver
 test_runner
 @end smallexample
@@ -18084,7 +18084,7 @@ overridden parent tests against objects of the type which have overriding
 primitives.
 
 @smallexample
-gnattest --harness-dir=driver --liskov -Plib2.gpr
+gnattest --harness-dir=driver --liskov -Ptagged_rec.gpr
 cd driver
 gprbuild -Ptest_driver
 test_runner
@@ -18108,8 +18108,8 @@ either count for Nominal mode or do not for Robustness mode).
 The third example demonstrates how it works:
 
 @smallexample
-cd examples/lib3
-gnattest --harness-dir=driver -Plib3.gpr
+cd <install_prefix>/share/examples/gnattest/contracts
+gnattest --harness-dir=driver -Pcontracts.gpr
 @end smallexample
 
 Putting actual checks within the range of the contract does not cause any
@@ -18144,10 +18144,37 @@ the same way.
 @section Additional Tests
 
 @noindent
-@command{gnattest} can add already existing testing code to the driver along
-with new stubs. This solves the legacy problem: no need to rewrite all the
-tests. The only thing required is a project file that has all the desired
-test units (and all their dependencies) as it's source files.
+@command{gnattest} can add user written tests to the main suite of the test
+driver. @command{gnattest} traverses given packages and searches for test
+routines. All procedures with a single in out parameter of a type which is
+a derivation of AUnit.Test_Fixtures.Test_Fixture declared in package
+specifications are added to the suites and then are executed by test driver.
+(Set_Up and Tear_Down are filtered out).
+
+An example illustrates two ways of crating test harness for user written tests.
+Directory additional contains a AUnit based test driver written by hand.
+
+@smallexample
+<install_prefix>/share/examples/gnattest/additional_tests/
+@end smallexample
+
+To create a test driver for already written tests use --harness-only option:
+
+@smallexample
+gnattest -Padditional/harness/harness.gpr --harness-dir=harness_only \
+  --harness-only
+gnatmake -Pharness_only/test_driver.gpr
+harness_only/test_runner
+@end smallexample
+
+Additional tests can also be executed together withgenerated tests:
+
+@smallexample
+gnattest -Psimple.gpr --additional-tests=additional/harness/harness.gpr \
+  --harness-dir=mixing
+gnatmake -Pmixing/test_driver.gpr
+mixing/test_runner
+@end smallexample
 
 @node Current Limitations
 @section Current Limitations

@@ -802,7 +802,7 @@ package body Ada.Containers.Vectors is
       if Is_Empty (Object.Container.all) then
          return No_Element;
       else
-         return Cursor'(Object.Container, Index_Type'First);
+         return (Object.Container, Index_Type'First);
       end if;
    end First;
 
@@ -1517,7 +1517,7 @@ package body Ada.Containers.Vectors is
 
       Insert (Container, Index, New_Item);
 
-      Position := Cursor'(Container'Unchecked_Access, Index);
+      Position := (Container'Unchecked_Access, Index);
    end Insert;
 
    procedure Insert
@@ -1600,7 +1600,7 @@ package body Ada.Containers.Vectors is
 
       Insert (Container, Index, New_Item, Count);
 
-      Position := Cursor'(Container'Unchecked_Access, Index);
+      Position := (Container'Unchecked_Access, Index);
    end Insert;
 
    procedure Insert
@@ -2017,7 +2017,7 @@ package body Ada.Containers.Vectors is
 
       Insert_Space (Container, Index, Count => Count);
 
-      Position := Cursor'(Container'Unchecked_Access, Index);
+      Position := (Container'Unchecked_Access, Index);
    end Insert_Space;
 
    --------------
@@ -2093,7 +2093,7 @@ package body Ada.Containers.Vectors is
       if Is_Empty (Object.Container.all) then
          return No_Element;
       else
-         return Cursor'(Object.Container, Object.Container.Last);
+         return (Object.Container, Object.Container.Last);
       end if;
    end Last;
 
@@ -2406,7 +2406,7 @@ package body Ada.Containers.Vectors is
       return Constant_Reference_Type
    is
    begin
-      if (Position) > Container.Last then
+      if Position > Container.Last then
          raise Constraint_Error with "Index is out of range";
       else
          return (Element => Container.Elements.EA (Position)'Access);
@@ -3009,7 +3009,7 @@ package body Ada.Containers.Vectors is
       if Index not in Index_Type'First .. Container.Last then
          return No_Element;
       else
-         return Cursor'(Container'Unchecked_Access, Index);
+         return (Container'Unchecked_Access, Index);
       end if;
    end To_Cursor;
 

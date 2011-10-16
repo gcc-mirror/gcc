@@ -6490,8 +6490,8 @@ package body Sem_Ch6 is
                --  use a user-defined pool. This formal is not added on
                --  .NET/JVM/ZFP as those targets do not support pools.
 
-               if VM_Target = No_VM and then
-                 RTE_Available (RE_Root_Storage_Pool_Ptr)
+               if VM_Target = No_VM
+                 and then RTE_Available (RE_Root_Storage_Pool_Ptr)
                then
                   Discard :=
                     Add_Extra_Formal

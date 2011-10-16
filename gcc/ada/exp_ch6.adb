@@ -311,11 +311,11 @@ package body Exp_Ch6 is
       Add_Extra_Actual_To_Call
         (Function_Call, Alloc_Form_Formal, Alloc_Form_Actual);
 
-      --  Pass the Storage_Pool parameter. This parameter is omitted
+      --  Pass the Storage_Pool parameter. This parameter is omitted on
       --  .NET/JVM/ZFP as those targets do not support pools.
 
-      if
-        VM_Target = No_VM and then RTE_Available (RE_Root_Storage_Pool_Ptr)
+      if VM_Target = No_VM
+        and then RTE_Available (RE_Root_Storage_Pool_Ptr)
       then
          Pool_Formal := Build_In_Place_Formal (Function_Id, BIP_Storage_Pool);
          Analyze_And_Resolve (Pool_Actual, Etype (Pool_Formal));
@@ -5246,8 +5246,8 @@ package body Exp_Ch6 is
                      --  pool parameter on .NET/JVM/ZFP because the parameter
                      --  is not created in the first place.
 
-                     if VM_Target = No_VM and then
-                       RTE_Available (RE_Root_Storage_Pool_Ptr)
+                     if VM_Target = No_VM
+                       and then RTE_Available (RE_Root_Storage_Pool_Ptr)
                      then
                         Pool_Decl :=
                           Make_Object_Renaming_Declaration (Loc,

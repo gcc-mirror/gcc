@@ -152,18 +152,6 @@ const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_default_libgcc_subdir = "lib";
 
-#elif defined (_AIX)
-const char *__gnat_object_file_option = "-Wl,-f,";
-const char *__gnat_run_path_option = "";
-int __gnat_link_max = 15000;
-const unsigned char __gnat_objlist_file_supported = 1;
-char __gnat_shared_libgnat_default = STATIC;
-char __gnat_shared_libgcc_default = STATIC;
-unsigned char __gnat_using_gnu_linker = 0;
-const char *__gnat_object_library_extension = ".a";
-unsigned char __gnat_separate_run_path_options = 0;
-const char *__gnat_default_libgcc_subdir = "lib";
-
 #elif defined (__FreeBSD__)
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
@@ -204,12 +192,27 @@ const char *__gnat_default_libgcc_subdir = "lib64";
 const char *__gnat_default_libgcc_subdir = "lib";
 #endif
 
+#elif defined (_AIX)
+/* On AIX, even when with GNU ld we use native linker switches.  This is
+   particularly important for '-f' as it should be interpreted by collect2.  */
+
+const char *__gnat_object_file_option = "-Wl,-f,";
+const char *__gnat_run_path_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
+int __gnat_link_max = 15000;
+const unsigned char __gnat_objlist_file_supported = 1;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
+unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
+
 #elif (HAVE_GNU_LD)
 /*  These are the settings for all systems that use gnu ld. GNU style response
     file is supported, the shared library default is STATIC.  */
 
-const char *__gnat_run_path_option = "";
 const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "";
 char __gnat_shared_libgnat_default = STATIC;
 char __gnat_shared_libgcc_default = STATIC;
 int __gnat_link_max = 8192;
