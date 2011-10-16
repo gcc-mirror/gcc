@@ -1237,7 +1237,10 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
     {
       fd = open (file_data->file_name, O_RDONLY|O_BINARY);
       if (fd == -1)
-	return NULL;
+        {
+	  fatal_error ("Cannot open %s", file_data->file_name);
+	  return NULL;
+        }
       fd_name = xstrdup (file_data->file_name);
     }
 
@@ -1255,7 +1258,10 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
   result = (char *) mmap (NULL, computed_len, PROT_READ, MAP_PRIVATE,
 			  fd, computed_offset);
   if (result == MAP_FAILED)
-    return NULL;
+    {
+      fatal_error ("Cannot map %s", file_data->file_name);
+      return NULL;
+    }
 
   return result + diff;
 #else
@@ -1264,6 +1270,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
       || read (fd, result, len) != (ssize_t) len)
     {
       free (result);
+      fatal_error ("Cannot read %s", file_data->file_name);
       result = NULL;
     }
 #ifdef __MINGW32__
