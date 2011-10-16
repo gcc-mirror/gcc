@@ -269,49 +269,17 @@ resolve_formal_arglist (gfc_symbol *proc)
       if (sym->attr.if_source != IFSRC_UNKNOWN)
 	resolve_formal_arglist (sym);
 
-      /* F08:C1279.  */
-      if (gfc_pure (proc)
-	  && sym->attr.flavor == FL_PROCEDURE && !gfc_pure (sym))
+      if (sym->attr.subroutine || sym->attr.external)
 	{
-	  gfc_error ("Dummy procedure '%s' of PURE procedure at %L must "
-		     "also be PURE", sym->name, &sym->declared_at);
-	  continue;
+	  if (sym->attr.flavor == FL_UNKNOWN)
+	    gfc_add_flavor (&sym->attr, FL_PROCEDURE, sym->name, &sym->declared_at);
 	}
-      
-      if (sym->attr.subroutine || sym->attr.external || sym->attr.intrinsic)
+      else
 	{
-	  if (proc->attr.implicit_pure && !gfc_pure(sym))
-	    proc->attr.implicit_pure = 0;
-
-	  /* F08:C1289.  */
-	  if (gfc_elemental (proc))
-	    {
-	      gfc_error ("Dummy procedure at %L not allowed in ELEMENTAL "
-			 "procedure", &sym->declared_at);
-	      continue;
-	    }
-
-	  if (sym->attr.function
-		&& sym->ts.type == BT_UNKNOWN
-		&& sym->attr.intrinsic)
-	    {
-	      gfc_intrinsic_sym *isym;
-	      isym = gfc_find_function (sym->name);
-	      if (isym == NULL || !isym->specific)
-		{
-		  gfc_error ("Unable to find a specific INTRINSIC procedure "
-			     "for the reference '%s' at %L", sym->name,
-			     &sym->declared_at);
-		}
-	      sym->ts = isym->ts;
-	    }
-
-	  continue;
+	  if (sym->ts.type == BT_UNKNOWN && !proc->attr.intrinsic
+	      && (!sym->attr.function || sym->result == sym))
+	    gfc_set_default_type (sym, 1, sym->ns);
 	}
-
-      if (sym->ts.type == BT_UNKNOWN && !proc->attr.intrinsic
-	  && (!sym->attr.function || sym->result == sym))
-	gfc_set_default_type (sym, 1, sym->ns);
 
       gfc_resolve_array_spec (sym->as, 0);
 
@@ -343,44 +311,64 @@ resolve_formal_arglist (gfc_symbol *proc)
       if (sym->attr.flavor == FL_UNKNOWN)
 	gfc_add_flavor (&sym->attr, FL_VARIABLE, sym->name, &sym->declared_at);
 
-      if (gfc_pure (proc) && !sym->attr.pointer
-	  && sym->attr.flavor != FL_PROCEDURE)
+      if (gfc_pure (proc))
 	{
-	  if (proc->attr.function && sym->attr.intent != INTENT_IN)
+	  if (sym->attr.flavor == FL_PROCEDURE)
 	    {
-	      if (sym->attr.value)
-		gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s' "
-				"of pure function '%s' at %L with VALUE "
-				"attribute but without INTENT(IN)", sym->name,
-				proc->name, &sym->declared_at);
-	      else
-		gfc_error ("Argument '%s' of pure function '%s' at %L must be "
-			   "INTENT(IN) or VALUE", sym->name, proc->name,
-			   &sym->declared_at);
+	      /* F08:C1279.  */
+	      if (!gfc_pure (sym))
+		{
+		  gfc_error ("Dummy procedure '%s' of PURE procedure at %L must "
+			    "also be PURE", sym->name, &sym->declared_at);
+		  continue;
+		}
 	    }
-
-	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+	  else if (!sym->attr.pointer)
 	    {
-	      if (sym->attr.value)
-		gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s' "
-				"of pure subroutine '%s' at %L with VALUE "
-				"attribute but without INTENT", sym->name,
-				proc->name, &sym->declared_at);
-	      else
-		gfc_error ("Argument '%s' of pure subroutine '%s' at %L must "
-		       "have its INTENT specified or have the VALUE "
-		       "attribute", sym->name, proc->name, &sym->declared_at);
+	      if (proc->attr.function && sym->attr.intent != INTENT_IN)
+		{
+		  if (sym->attr.value)
+		    gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s'"
+				    " of pure function '%s' at %L with VALUE "
+				    "attribute but without INTENT(IN)",
+				    sym->name, proc->name, &sym->declared_at);
+		  else
+		    gfc_error ("Argument '%s' of pure function '%s' at %L must "
+			       "be INTENT(IN) or VALUE", sym->name, proc->name,
+			       &sym->declared_at);
+		}
+
+	      if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+		{
+		  if (sym->attr.value)
+		    gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s'"
+				    " of pure subroutine '%s' at %L with VALUE "
+				    "attribute but without INTENT", sym->name,
+				    proc->name, &sym->declared_at);
+		  else
+		    gfc_error ("Argument '%s' of pure subroutine '%s' at %L "
+			       "must have its INTENT specified or have the "
+			       "VALUE attribute", sym->name, proc->name,
+			       &sym->declared_at);
+		}
 	    }
 	}
 
-      if (proc->attr.implicit_pure && !sym->attr.pointer
-	  && sym->attr.flavor != FL_PROCEDURE)
+      if (proc->attr.implicit_pure)
 	{
-	  if (proc->attr.function && sym->attr.intent != INTENT_IN)
-	    proc->attr.implicit_pure = 0;
+	  if (sym->attr.flavor == FL_PROCEDURE)
+	    {
+	      if (!gfc_pure(sym))
+		proc->attr.implicit_pure = 0;
+	    }
+	  else if (!sym->attr.pointer)
+	    {
+	      if (proc->attr.function && sym->attr.intent != INTENT_IN)
+		proc->attr.implicit_pure = 0;
 
-	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
-	    proc->attr.implicit_pure = 0;
+	      if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+		proc->attr.implicit_pure = 0;
+	    }
 	}
 
       if (gfc_elemental (proc))

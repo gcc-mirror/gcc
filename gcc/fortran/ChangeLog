@@ -1,3 +1,9 @@
+2011-10-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50547
+	* resolve.c (resolve_formal_arglist): Remove unneeded error message.
+	Some reshuffling.
+
 2011-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (Fortran 2008 status, TS 29113 status,
