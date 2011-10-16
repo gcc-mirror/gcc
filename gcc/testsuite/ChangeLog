@@ -1,5 +1,10 @@
 2011-10-16  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/47023
+	* gfortran.dg/c_kind_tests_3.f03: New.
+
+2011-10-16  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/50547
 	* gfortran.dg/elemental_args_check_4.f90: New.
 

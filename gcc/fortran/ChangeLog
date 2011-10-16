@@ -1,5 +1,13 @@
 2011-10-16  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/47023
+	* primary.c (match_kind_param): Detect ISO_C_BINDING kinds.
+	(get_kind): Pass on 'is_iso_c' flag.
+	(match_integer_constant,match_real_constant,match_logical_constant):
+	Set 'ts.is_c_interop'.
+
+2011-10-16  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/50547
 	* resolve.c (resolve_formal_arglist): Remove unneeded error message.
 	Some reshuffling.
