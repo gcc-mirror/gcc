@@ -4241,6 +4241,11 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (strided_load)
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      if (slp
+          && !SLP_INSTANCE_LOAD_PERMUTATION (slp_node_instance)
+	  && first_stmt != VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0))
+        first_stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0);
+
       /* Check if the chain of loads is already vectorized.  */
       if (STMT_VINFO_VEC_STMT (vinfo_for_stmt (first_stmt)))
 	{

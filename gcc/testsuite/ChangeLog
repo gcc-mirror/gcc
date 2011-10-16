@@ -1,3 +1,7 @@
+2011-10-16 Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/bb-slp-29.c: New test.
+
 2011-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50732
