@@ -1,3 +1,25 @@
+2011-10-16  Tristan Gingold  <gingold@adacore.com>
+
+	* link.c (_AIX): Add support for GNU ld.        
+
+2011-10-16  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Fixing gnattest example names in the doc.
+	Adding explanation to additional tests usage.
+
+2011-10-16  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb, sem_ch6.adb: Minor reformatting.
+
+2011-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* a-convec.adb: Fix minor inconsistencies.
+
+2011-10-16  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cusyqu.ads, a-cbsyqu.ads, a-cuprqu.ads, a-cbprqu.ads (package
+	Implementation): Specify pragma Implementation_Defined.
+
 2011-10-15  Nicolas Roche  <roche@adacore.com>
 
 	* gcc-interface/lang-specs.h: Ensure -mrtp switch is passed when using

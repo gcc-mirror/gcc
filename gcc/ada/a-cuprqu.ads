@@ -52,11 +52,11 @@ generic
 package Ada.Containers.Unbounded_Priority_Queues is
    pragma Preelaborate;
 
-   --  All identifiers in this unit are implementation defined
-
-   pragma Implementation_Defined;
-
    package Implementation is
+
+      --  All identifiers in this unit are implementation defined
+
+      pragma Implementation_Defined;
 
       type List_Type is tagged limited private;
 
