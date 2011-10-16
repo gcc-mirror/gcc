@@ -1,3 +1,7 @@
+2011-10-08  Andi Kleen  <ak@linux.intel.com>
+
+	* ggc-page.c (GGC_QUIRE_SIZE): Increase to 512
+
 2011-10-13  Andi Kleen  <ak@linux.intel.com>
 
 	* toplev.c (compile_file): Rename __gnu_slim_lto to __gnu_lto_slim.
