@@ -1,3 +1,8 @@
+2011-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/50615
+	* combine.c (distribute_notes) <REG_ARGS_SIZE>: Skip if I3 is a no-op.
+
 2011-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50596
