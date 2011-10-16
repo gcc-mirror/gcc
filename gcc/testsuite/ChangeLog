@@ -1,4 +1,9 @@
-2011-10-16 Ira Rosen  <ira.rosen@linaro.org>
+2011-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50596
+	* gcc.dg/vect/vect-cond-9.c: New test.
+
+2011-10-16  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/bb-slp-29.c: New test.
 

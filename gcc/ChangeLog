@@ -1,4 +1,15 @@
-2011-10-16 Ira Rosen  <ira.rosen@linaro.org>
+2011-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50596
+	* tree-vectorizer.h (NUM_PATTERNS): Increase to 7.
+	* tree-vect-patterns.c (vect_vect_recog_func_ptrs): Add
+	vect_recog_bool_pattern.
+	(check_bool_pattern, adjust_bool_pattern_cast,
+	adjust_bool_pattern, vect_recog_bool_pattern): New functions.
+
+	* gcc.dg/vect/vect-cond-9.c: New test.
+
+2011-10-16  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-stmts.c (vectorizable_load): For SLP without permutation
 	treat the first load of the node as the first element in its
