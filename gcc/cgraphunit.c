@@ -1798,7 +1798,6 @@ cgraph_expand_function (struct cgraph_node *node)
 
   announce_function (decl);
   node->process = 0;
-  assemble_thunks_and_aliases (node);
   gcc_assert (node->lowered);
 
   /* Generate RTL for the body of DECL.  */
@@ -1808,6 +1807,14 @@ cgraph_expand_function (struct cgraph_node *node)
   gcc_assert (TREE_ASM_WRITTEN (decl));
   current_function_decl = NULL;
   gcc_assert (!cgraph_preserve_function_body_p (node));
+
+  /* It would make a lot more sense to output thunks before function body to get more
+     forward and lest backwarding jumps.  This is however would need solving problem
+     with comdats. See PR48668.  Also aliases must come after function itself to
+     make one pass assemblers, like one on AIX happy.  See PR 50689.
+     FIXME: Perhaps thunks should be move before function IFF they are not in comdat
+     groups.  */
+  assemble_thunks_and_aliases (node);
   cgraph_release_function_body (node);
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
      points to the dead function body.  */
