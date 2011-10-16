@@ -1,3 +1,7 @@
+2011-10-09  Andi Kleen  <ak@linux.intel.com>
+
+	* lto.c (lto_section_read): Call fatal_error on IO or mmap errors.
+
 2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* lto-lang.c (def_builtin_1): Delete old interface with two
