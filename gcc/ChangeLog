@@ -1,3 +1,10 @@
+2011-10-16  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50727
+	* tree-vect-patterns.c (vect_operation_fits_smaller_type): Add
+	DEF_STMT to the list of statements to be replaced by the
+	pattern statements.
+
 2011-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/50615

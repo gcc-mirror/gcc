@@ -1,3 +1,8 @@
+2011-10-16  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50727
+	* gcc.dg/vect/pr50727.c: New test.
+
 2011-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vla-23.c: New test.
