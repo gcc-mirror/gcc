@@ -1,3 +1,10 @@
+2011-10-15  Jan Hubicka  <jh@suse.cz>
+
+	PR target/48668
+	PR target/50689
+	* cgraphunit.c (cgraph_expand_function): Expand thunks and alises
+	after function body.
+
 2011-10-15  Richard Henderson  <rth@redhat.com>
 
 	* tree-vect-slp.c: Include langhooks.h.
