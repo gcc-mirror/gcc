@@ -462,7 +462,7 @@ static struct globals
    can override this by defining GGC_QUIRE_SIZE explicitly.  */
 #ifndef GGC_QUIRE_SIZE
 # ifdef USING_MMAP
-#  define GGC_QUIRE_SIZE 256
+#  define GGC_QUIRE_SIZE 512	/* 2MB for 4K pages */
 # else
 #  define GGC_QUIRE_SIZE 16
 # endif
