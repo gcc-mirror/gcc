@@ -1,3 +1,11 @@
+2011-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (current_ns):  Make static.
+	(create_var):  Note parent of newly created namespace.
+	(optimize_namespace):  Don't wak sibling namespaces
+	if they are EXEC_BLOCK because this is handled...
+	(gfc_code_walker):  ... here.  Also walk ASSOCIATE lists.
+
 2011-10-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47023

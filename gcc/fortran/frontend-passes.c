@@ -60,7 +60,7 @@ static gfc_code *inserted_block, **changed_statement;
 
 /* The namespace we are currently dealing with.  */
 
-gfc_namespace *current_ns;
+static gfc_namespace *current_ns;
 
 /* If we are within any forall loop.  */
 
@@ -261,6 +261,7 @@ create_var (gfc_expr * e)
       (*current_code)->next = NULL;
       /* Insert the BLOCK at the right position.  */
       *current_code = inserted_block;
+      ns->parent = current_ns;
     }
   else
     ns = inserted_block->ext.block.ns;
@@ -509,8 +510,12 @@ optimize_namespace (gfc_namespace *ns)
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
   gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
 
+  /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
-    optimize_namespace (ns);
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	optimize_namespace (ns);
+    }
 }
 
 /* Replace code like
@@ -1143,6 +1148,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  gfc_code *b;
 	  gfc_actual_arglist *a;
 	  gfc_code *co;
+	  gfc_association_list *alist;
 
 	  /* There might be statement insertions before the current code,
 	     which must not affect the expression walker.  */
@@ -1151,6 +1157,13 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	  switch (co->op)
 	    {
+
+	    case EXEC_BLOCK:
+	      WALK_SUBCODE (co->ext.block.ns->code);
+	      for (alist = co->ext.block.assoc; alist; alist = alist->next)
+		WALK_SUBEXPR (alist->target);
+	      break;
+
 	    case EXEC_DO:
 	      WALK_SUBEXPR (co->ext.iterator->var);
 	      WALK_SUBEXPR (co->ext.iterator->start);
