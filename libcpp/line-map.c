@@ -92,16 +92,43 @@ new_linemap (struct line_maps *set,
   if (LINEMAPS_USED (set, macro_map_p) == LINEMAPS_ALLOCATED (set, macro_map_p))
     {
       /* We ran out of allocated line maps. Let's allocate more.  */
+      unsigned alloc_size;
 
       line_map_realloc reallocator
 	= set->reallocator ? set->reallocator : xrealloc;
+      line_map_round_alloc_size_func round_alloc_size =
+	set->round_alloc_size;
+
+      /* We are going to execute some dance to try to reduce the
+	 overhead of the memory allocator, in case we are using the
+	 ggc-page.c one.
+	 
+	 The actual size of memory we are going to get back from the
+	 allocator is the smallest power of 2 that is greater than the
+	 size we requested.  So let's consider that size then.  */
+
+      alloc_size =
+	(2 * LINEMAPS_ALLOCATED (set, macro_map_p) +  256)
+	* sizeof (struct line_map);
+
+      /* Get the actual size of memory that is going to be allocated
+	 by the allocator.  */
+      alloc_size = round_alloc_size (alloc_size);
+
+      /* Now alloc_size contains the exact memory size we would get if
+	 we have asked for the initial alloc_size amount of memory.
+	 Let's get back to the number of macro map that amounts
+	 to.  */
       LINEMAPS_ALLOCATED (set, macro_map_p) =
-	2 * LINEMAPS_ALLOCATED (set, macro_map_p) + 256;
-      LINEMAPS_MAPS (set, macro_map_p)
-	= (struct line_map *) (*reallocator) (LINEMAPS_MAPS (set, macro_map_p),
-					      LINEMAPS_ALLOCATED (set,
-								  macro_map_p)
-					      * sizeof (struct line_map));
+	alloc_size / (sizeof (struct line_map));
+
+      /* And now let's really do the re-allocation.  */
+      LINEMAPS_MAPS (set, macro_map_p) =
+	(struct line_map *) (*reallocator)
+	(LINEMAPS_MAPS (set, macro_map_p),
+	 (LINEMAPS_ALLOCATED (set, macro_map_p)
+	  * sizeof (struct line_map)));
+
       result =
 	&LINEMAPS_MAPS (set, macro_map_p)[LINEMAPS_USED (set, macro_map_p)];
       memset (result, 0,

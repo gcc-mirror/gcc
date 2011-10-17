@@ -1,6 +1,22 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* ggc.h (ggc_round_alloc_size): Declare new public entry point.
+	* ggc-none.c (ggc_round_alloc_size): New public stub function.
+	* ggc-page.c (ggc_alloced_size_order_for_request): New static
+	function.  Factorized from ggc_internal_alloc_stat.
+	(ggc_round_alloc_size): New public function.  Uses
+	ggc_alloced_size_order_for_request.
+	(ggc_internal_alloc_stat): Use ggc_alloced_size_order_for_request.
+	* ggc-zone.c (ggc_round_alloc_size): New public function extracted
+	from ggc_internal_alloc_zone_stat.
+	(ggc_internal_alloc_zone_stat): Use ggc_round_alloc_size.
+	* toplev.c (general_init): Initialize
+	line_table->alloced_size_for_request.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* input.c (ONE_K, ONE_M, SCALE, STAT_LABEL, FORMAT_AMOUNT): New
 	macros.
 	(num_expanded_macros_counter, num_macro_tokens_counter): Declare
