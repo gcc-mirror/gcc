@@ -1,3 +1,9 @@
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50757
+	* g++.dg/warn/format7.C: New.
+	* obj-c++.dg/warn7.mm: Likewise.
+
 2011-10-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50729
