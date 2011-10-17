@@ -1276,6 +1276,12 @@
 #endif
 
 
+/* Define to 1 if you have the `madvise' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MADVISE
+#endif
+
+
 /* Define to 1 if you have the <malloc.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MALLOC_H
