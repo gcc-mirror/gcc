@@ -5331,6 +5331,8 @@ adjust_insn_length (rtx insn, int len)
     case ADJUST_LEN_ASHLHI: ashlhi3_out (insn, op, &len); break;
     case ADJUST_LEN_ASHLSI: ashlsi3_out (insn, op, &len); break;
       
+    case ADJUST_LEN_CALL: len = AVR_HAVE_JMP_CALL ? 2 : 1; break;
+
     default:
       gcc_unreachable();
     }

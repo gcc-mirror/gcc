@@ -454,8 +454,6 @@ typedef struct avr_args {
 
 #define PRINT_OPERAND_ADDRESS(STREAM, X) print_operand_address(STREAM, X)
 
-#define ASSEMBLER_DIALECT AVR_HAVE_MOVW
-
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)	\
 {						\
   gcc_assert (REGNO < 32);			\

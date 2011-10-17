@@ -1,3 +1,32 @@
+2011-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (ASSEMBLER_DIALECT): Remove.
+	* config/avr/avr.md (mcu_have_movw, mcu_mega): Remove attributes.
+	(adjust_len): Add alternative "call".
+	(isa, enabled): New insn attributes.
+	(length): Use match_test with AVR_HAVE_JMP_CALL instead of
+	mcu_mega attribute.
+	(*sbrx_branch<mode>): Ditto.
+	(*sbrx_and_branch<mode>): Ditto.
+	(*sbix_branch): Ditto.
+	(*sbix_branch_bit7): Ditto.
+	(*sbix_branch_tmp): Ditto.
+	(*sbix_branch_tmp_bit7): Ditto.
+	(jump): Ditto.
+	(negsi2): Use attribute "isa" instead of assembler dialect.
+	(extendhisi2): Ditto.
+	(call_insn, call_value_insn): Set adjust_len attribute.
+	(indirect_jump): Indent to coding rules.
+	(call_prologue_saves): Use isa attribute instead of mcu_mega.
+	(epilogue_restores): Ditto.  Fix setting of SP as described in the
+	RTX pattern.
+	(*indirect_jump): Fusion of *jcindirect_jump, *njcindirect_jump
+	and *indirect_jump_avr6.
+	(*tablejump): Fusion of *tablejump_rjmp and *tablejump_lib.
+	(*jcindirect_jump, *njcindirect_jump, *indirect_jump_avr6): Remove.
+	(*tablejump_rjmp, *tablejump_lib): Remove.
+	* config/avr/avr.c (adjust_insn_length): Handle ADJUST_LEN_CALL.
+
 2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50757
