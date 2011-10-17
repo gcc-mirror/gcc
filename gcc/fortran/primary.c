@@ -57,10 +57,10 @@ match_kind_param (int *kind, int *is_iso_c)
   if (gfc_find_symbol (name, NULL, 1, &sym))
     return MATCH_ERROR;
 
-  *is_iso_c = sym->attr.is_iso_c;
-
   if (sym == NULL)
     return MATCH_NO;
+
+  *is_iso_c = sym->attr.is_iso_c;
 
   if (sym->attr.flavor != FL_PARAMETER)
     return MATCH_NO;
