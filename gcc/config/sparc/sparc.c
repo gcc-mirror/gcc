@@ -9403,7 +9403,7 @@ sparc_vis_init_builtins (void)
 	       v8qi_ftype_v8qi_v8qi);
   def_builtin ("__builtin_vis_faligndatav2si", CODE_FOR_faligndatav2si_vis,
 	       v2si_ftype_v2si_v2si);
-  def_builtin ("__builtin_vis_faligndatadi", CODE_FOR_faligndatadi_vis,
+  def_builtin ("__builtin_vis_faligndatadi", CODE_FOR_faligndatav1di_vis,
 	       di_ftype_di_di);
 
   def_builtin ("__builtin_vis_write_gsr", CODE_FOR_wrgsr_vis,
@@ -9539,7 +9539,7 @@ sparc_vis_init_builtins (void)
 		     v2hi_ftype_v2hi_v2hi);
   def_builtin_const ("__builtin_vis_fpadd32", CODE_FOR_addv2si3,
 		     v2si_ftype_v2si_v2si);
-  def_builtin_const ("__builtin_vis_fpadd32s", CODE_FOR_addsi3,
+  def_builtin_const ("__builtin_vis_fpadd32s", CODE_FOR_addv1si3,
 		     v1si_ftype_v1si_v1si);
   def_builtin_const ("__builtin_vis_fpsub16", CODE_FOR_subv4hi3,
 		     v4hi_ftype_v4hi_v4hi);
@@ -9547,7 +9547,7 @@ sparc_vis_init_builtins (void)
 		     v2hi_ftype_v2hi_v2hi);
   def_builtin_const ("__builtin_vis_fpsub32", CODE_FOR_subv2si3,
 		     v2si_ftype_v2si_v2si);
-  def_builtin_const ("__builtin_vis_fpsub32s", CODE_FOR_subsi3,
+  def_builtin_const ("__builtin_vis_fpsub32s", CODE_FOR_subv1si3,
 		     v1si_ftype_v1si_v1si);
 
   /* Three-dimensional array addressing.  */
@@ -9585,7 +9585,7 @@ sparc_vis_init_builtins (void)
 		   v8qi_ftype_v8qi_v8qi);
       def_builtin ("__builtin_vis_bshufflev2si", CODE_FOR_bshufflev2si_vis,
 		   v2si_ftype_v2si_v2si);
-      def_builtin ("__builtin_vis_bshuffledi", CODE_FOR_bshuffledi_vis,
+      def_builtin ("__builtin_vis_bshuffledi", CODE_FOR_bshufflev1di_vis,
 		   di_ftype_di_di);
     }
 
@@ -9654,11 +9654,11 @@ sparc_vis_init_builtins (void)
 			 v2hi_ftype_v2hi_v2hi);
       def_builtin_const ("__builtin_vis_fpadds32", CODE_FOR_ssaddv2si3,
 			 v2si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fpadds32s", CODE_FOR_ssaddsi3,
+      def_builtin_const ("__builtin_vis_fpadds32s", CODE_FOR_ssaddv1si3,
 			 v1si_ftype_v1si_v1si);
       def_builtin_const ("__builtin_vis_fpsubs32", CODE_FOR_sssubv2si3,
 			 v2si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_sssubsi3,
+      def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_sssubv1si3,
 			 v1si_ftype_v1si_v1si);
 
       if (TARGET_ARCH64)
@@ -9747,6 +9747,13 @@ sparc_expand_builtin (tree exp, rtx target,
       idx = arg_count - !nonvoid;
       insn_op = &insn_data[icode].operand[idx];
       op[arg_count] = expand_normal (arg);
+
+      if (insn_op->mode == V1DImode
+	  && GET_MODE (op[arg_count]) == DImode)
+	op[arg_count] = gen_lowpart (V1DImode, op[arg_count]);
+      else if (insn_op->mode == V1SImode
+	  && GET_MODE (op[arg_count]) == SImode)
+	op[arg_count] = gen_lowpart (V1SImode, op[arg_count]);
 
       if (! (*insn_data[icode].operand[idx].predicate) (op[arg_count],
 							insn_op->mode))
@@ -11058,6 +11065,36 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
       output_asm_insn ("srlx\t%3, 32, %H0", operands);
       return "mov\t%3, %L0";
     }
+}
+
+void
+sparc_expand_vector_init (rtx target, rtx vals)
+{
+  enum machine_mode mode = GET_MODE (target);
+  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  int n_elts = GET_MODE_NUNITS (mode);
+  int i, n_var = 0;
+  rtx mem;
+
+  for (i = 0; i < n_elts; i++)
+    {
+      rtx x = XVECEXP (vals, 0, i);
+      if (!CONSTANT_P (x))
+	n_var++;
+    }
+
+  if (n_var == 0)
+    {
+      emit_move_insn (target, gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0)));
+      return;
+    }
+
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  for (i = 0; i < n_elts; i++)
+    emit_move_insn (adjust_address_nv (mem, inner_mode,
+				    i * GET_MODE_SIZE (inner_mode)),
+		    XVECEXP (vals, 0, i));
+  emit_move_insn (target, mem);
 }
 
 #include "gt-sparc.h"
