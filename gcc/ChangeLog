@@ -1,3 +1,53 @@
+2011-10-17  Simon Baldwin  <simonb@google.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Add --with-native-system-header-dir.  Set and
+	substitute NATIVE_SYSTEM_HEADER_DIR.  Use native_system_header
+	when setting target_header_dir.
+	* config.gcc: Always set native_system_header_dir.
+	(*-*-gnu*): Set native_system_header_dir.  Don't use t-gnu.
+	(i[34567]86-pc-msdosdjgpp*): Set native_system_header_dir.  Don't
+	use i386/t-djgpp.
+	(i[34567]86-*-mingw* | x86_64-*-mingw*): Set
+	native_system_header_dir.
+	(spu-*-elf*): Set native_system_header_dir.
+	* Makefile.in (NATIVE_SYSTEM_HEADER_DIR): Set to
+	@NATIVE_SYSTEM_HEADER_DIR@.
+	(PREPROCESSOR_DEFINES): Define NATIVE_SYSTEM_HEADER_DIR.
+	* cppdefault.c (STANDARD_INCLUDE_DIR): Don't define.
+	(NATIVE_SYSTEM_HEADER_COMPONENT): Rename from
+	STANDARD_INCLUDE_COMPONENT.
+	(cpp_include_defaults): Don't use SYSTEM_INCLUDE_DIR.  Rename
+	STANDARD_INCLUDE_DIR to NATIVE_SYSTEM_HEADER_DIR.
+	* system.h: Poison SYSTEM_INCLUDE_DIR, STANDARD_INCLUDE_DIR, and
+	STANDARD_INCLUDE_COMPONENT.
+	* config/i386/t-mingw32 (NATIVE_SYSTEM_HEADER_DIR): Remove.
+	* config/i386/t-mingw-w32: Likewise.
+	* config/i386/t-mingw-w64: Likewise.
+	* config/spu/t-spu-elf: Likewise.
+	* config/i386/t-djgpp: Remove.
+	* config/t-gnu: Remove.
+	* config/i386/mingw32.h (STANDARD_INCLUDE_DIR): Don't define.
+	(NATIVE_SYSTEM_HEADER_COMPONENT): Rename from
+	STANDARD_INCLUDE_COMPONENT.
+	* config/i386/djgpp.h (STANDARD_INCLUDE_DIR): Don't define.
+	* config/spu/spu-elf.h: Likewise.
+	* config/vms/xm-vms.h: Likewise.
+	* config/gnu.h: Likewise.
+	* config/openbsd.h (INCLUDE_DEFAULTS): Change STANDARD_INCLUDE_DIR
+	and STANDARD_INCLUDE_COMPONENT to NATIVE_SYSTEM_HEADER_DIR and
+	NATIVE_SYSTME_HEADER_COMPONENT.
+	* doc/install.texi (Configuration): Document
+	--with-native-system-header-dir.  Mention it in the documentation
+	for --with-sysroot and --with-build-sysroot.
+	* doc/tm.texi.in (Driver): Don't document SYSTEM_INCLUDE_DIR or
+	STANDARD_INCLUDE_DIR.  Rename STANDARD_INCLUDE_COMPONENT to
+	NATIVE_SYSTEM_HEADER_COMPONENT.  Rename uses of
+	STANDARD_INCLUDE_DIR to NATIVE_SYSTEM_HEADER_DIR.
+	* doc/fragments.texi (Target Fragment): Don't document
+	NATIVE_SYSTEM_HEADER_DIR.
+	* configure, doc/tm.texi: Rebuild.
+
 2011-10-17  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.md: Use register_or_zero_operand where rJ

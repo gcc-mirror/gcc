@@ -1,6 +1,6 @@
 /* Configuration for GCC for hosting on VMS
    using a Unix style C library.
-   Copyright (C) 1996, 1997, 2001, 2004, 2007, 2009
+   Copyright (C) 1996, 1997, 2001, 2004, 2007, 2009, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -55,4 +55,3 @@ do                                                         \
 
 #define STANDARD_EXEC_PREFIX "/gnu/libexec/gcc/"
 #define STANDARD_STARTFILE_PREFIX "/gnu/lib/"
-#define STANDARD_INCLUDE_DIR "/gnu/include"

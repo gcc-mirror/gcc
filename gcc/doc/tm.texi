@@ -470,33 +470,15 @@ initialize the necessary environment variables.
 Define this macro as a C string constant if you wish to override the
 standard choice of @file{/usr/local/include} as the default prefix to
 try when searching for local header files.  @code{LOCAL_INCLUDE_DIR}
-comes before @code{SYSTEM_INCLUDE_DIR} in the search order.
+comes before @code{NATIVE_SYSTEM_HEADER_DIR} (set in
+@file{config.gcc}, normally @file{/usr/include}) in the search order.
 
 Cross compilers do not search either @file{/usr/local/include} or its
 replacement.
 @end defmac
 
-@defmac SYSTEM_INCLUDE_DIR
-Define this macro as a C string constant if you wish to specify a
-system-specific directory to search for header files before the standard
-directory.  @code{SYSTEM_INCLUDE_DIR} comes before
-@code{STANDARD_INCLUDE_DIR} in the search order.
-
-Cross compilers do not use this macro and do not search the directory
-specified.
-@end defmac
-
-@defmac STANDARD_INCLUDE_DIR
-Define this macro as a C string constant if you wish to override the
-standard choice of @file{/usr/include} as the default prefix to
-try when searching for header files.
-
-Cross compilers ignore this macro and do not search either
-@file{/usr/include} or its replacement.
-@end defmac
-
-@defmac STANDARD_INCLUDE_COMPONENT
-The ``component'' corresponding to @code{STANDARD_INCLUDE_DIR}.
+@defmac NATIVE_SYSTEM_HEADER_COMPONENT
+The ``component'' corresponding to @code{NATIVE_SYSTEM_HEADER_DIR}.
 See @code{INCLUDE_DEFAULTS}, below, for the description of components.
 If you do not define this macro, no component is used.
 @end defmac
@@ -505,8 +487,8 @@ If you do not define this macro, no component is used.
 Define this macro if you wish to override the entire default search path
 for include files.  For a native compiler, the default search path
 usually consists of @code{GCC_INCLUDE_DIR}, @code{LOCAL_INCLUDE_DIR},
-@code{SYSTEM_INCLUDE_DIR}, @code{GPLUSPLUS_INCLUDE_DIR}, and
-@code{STANDARD_INCLUDE_DIR}.  In addition, @code{GPLUSPLUS_INCLUDE_DIR}
+@code{GPLUSPLUS_INCLUDE_DIR}, and
+@code{NATIVE_SYSTEM_HEADER_DIR}.  In addition, @code{GPLUSPLUS_INCLUDE_DIR}
 and @code{GCC_INCLUDE_DIR} are defined automatically by @file{Makefile},
 and specify private search areas for GCC@.  The directory
 @code{GPLUSPLUS_INCLUDE_DIR} is used only for C++ programs.

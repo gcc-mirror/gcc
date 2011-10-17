@@ -1,6 +1,7 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2003, 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004, 2006, 2007, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -25,18 +26,12 @@
 #include "tm.h"
 #include "cppdefault.h"
 
-#ifndef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/include"
-#endif
-
-#ifndef STANDARD_INCLUDE_COMPONENT
-#define STANDARD_INCLUDE_COMPONENT 0
+#ifndef NATIVE_SYSTEM_HEADER_COMPONENT
+#define NATIVE_SYSTEM_HEADER_COMPONENT 0
 #endif
 
 #if defined (CROSS_DIRECTORY_STRUCTURE) && !defined (TARGET_SYSTEM_ROOT)
 # undef LOCAL_INCLUDE_DIR
-# undef SYSTEM_INCLUDE_DIR
-# undef STANDARD_INCLUDE_DIR
 #else
 # undef CROSS_INCLUDE_DIR
 #endif
@@ -89,14 +84,8 @@ const struct default_include cpp_include_defaults[]
     /* Another place the target system's headers might be.  */
     { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1, 0, 0 },
 #endif
-#ifdef SYSTEM_INCLUDE_DIR
-    /* Some systems have an extra dir of include files.  */
-    { SYSTEM_INCLUDE_DIR, 0, 0, 0, 1, 0 },
-#endif
-#ifdef STANDARD_INCLUDE_DIR
     /* /usr/include comes dead last.  */
-    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0, 1, 0 },
-#endif
+    { NATIVE_SYSTEM_HEADER_DIR, NATIVE_SYSTEM_HEADER_COMPONENT, 0, 0, 1, 0 },
     { 0, 0, 0, 0, 0, 0 }
   };
 #endif /* no INCLUDE_DEFAULTS */
@@ -136,4 +125,3 @@ cpp_relocated (void)
 
   return relocated;
 }
-
