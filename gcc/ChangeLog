@@ -1,3 +1,13 @@
+2011-10-08  Andi Kleen  <ak@linux.intel.com>
+
+	PR other/50636
+	* config.in, configure: Regenerate.
+	* configure.ac (madvise): Add to AC_CHECK_FUNCS.
+	* ggc-page.c (USING_MADVISE): Add.
+	(page_entry): Add discarded field.
+	(alloc_page): Check for discarded pages.
+	(release_pages): Add USING_MADVISE branch.
+
 2011-10-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50729
