@@ -1,3 +1,9 @@
+2011-10-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	PR fortran/50752
+	* gfortran.dg/kind_tests_4.f90: New.
+
 2011-10-17  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/vect-21.c: Expect the loops to get vectorized on
