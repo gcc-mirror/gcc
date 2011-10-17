@@ -1,3 +1,8 @@
+2011-10-17  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/vect-21.c: Expect the loops to get vectorized on
+	targets that support vector condition.
+
 2011-10-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47023
