@@ -106,7 +106,7 @@ static void upc_genericize_pts_cvt (location_t, tree *);
 static void upc_genericize_real_imag_ref (location_t, tree *);
 static void upc_genericize_shared_inc_dec_expr (location_t, tree *, int);
 static void upc_genericize_shared_var_ref (location_t, tree *);
-static void upc_genericize_stmt (tree *, int);
+static void upc_genericize_walk (tree *, int);
 static void upc_genericize_stmt_list (tree *);
 static void upc_genericize_sync_stmt (location_t, tree *);
 
@@ -646,10 +646,12 @@ upc_shared_addr (location_t loc, tree exp)
       if (TREE_CODE (ref) == ERROR_MARK)
 	return ref;
       addr = build_fold_addr_expr_loc (loc, ref);
+      upc_genericize_walk (&addr, /* want_value */ 1);
       break;
     case INDIRECT_REF:
       /* Remove the indirection by taking the address and simplifying.  */
       addr = build_fold_addr_expr_loc (loc, ref);
+      upc_genericize_walk (&addr, /* want_value */ 1);
       break;
     case BIT_FIELD_REF:
       error ("invalid & operation applied to a UPC shared bit field");
@@ -772,6 +774,7 @@ upc_genericize_array_ref (location_t loc, tree *expr_p)
   *expr_p = build_indirect_ref (loc,
 				build_binary_op (loc, PLUS_EXPR, ar, index,
 						 0), RO_ARRAY_INDEXING);
+  upc_genericize_indirect_ref (loc, expr_p);
 }
 
 /* Handle conversions between UPC pointers-to-shared and
@@ -1191,8 +1194,8 @@ upc_genericize_compound_expr (tree *expr_p, int want_value)
 {
   tree *lhs_p = &TREE_OPERAND (*expr_p, 0);
   tree *rhs_p = &TREE_OPERAND (*expr_p, 1);
-  upc_genericize_stmt (lhs_p, 0);
-  upc_genericize_stmt (rhs_p, want_value);
+  upc_genericize_walk (lhs_p, 0);
+  upc_genericize_walk (rhs_p, want_value);
 }
 
 /* Convert a conditional expression into GENERIC form.
@@ -1207,11 +1210,11 @@ upc_genericize_cond_expr (tree *expr_p, int want_value)
   tree *cond_p = &TREE_OPERAND (*expr_p, 0);
   tree *then_p = &TREE_OPERAND (*expr_p, 1);
   tree *else_p = &TREE_OPERAND (*expr_p, 2);
-  upc_genericize_stmt (cond_p, 1);
+  upc_genericize_walk (cond_p, 1);
   if (*then_p)
-    upc_genericize_stmt (then_p, want_value);
+    upc_genericize_walk (then_p, want_value);
   if (*else_p)
-    upc_genericize_stmt (else_p, want_value);
+    upc_genericize_walk (else_p, want_value);
 }
 
 /* Convert a declaration expression into GENERIC form.
@@ -1225,21 +1228,21 @@ upc_genericize_decl_expr (tree *expr_p)
   tree decl = DECL_EXPR_DECL (*expr_p);
   tree *decl_init_p = &DECL_INITIAL (decl);
   if (*decl_init_p)
-    upc_genericize_stmt (decl_init_p, 0);
+    upc_genericize_walk (decl_init_p, 0);
 }
 
-/* Convert the tree rooted at STMT_P into GENERIC.
+/* Convert the tree rooted at EXPR_P into GENERIC.
    WANT_VALUE is the initial value the flag that
    upc_genericize_expr() will query to determine
    whether the expression node should return a value.
-   NOTE: STMT_P can point to any kind of expression node.  */
+   NOTE: EXPR_P can point to any kind of expression node.  */
 
 static void
-upc_genericize_stmt (tree *stmt_p, int want_value)
+upc_genericize_walk (tree *expr_p, int want_value)
 {
   walk_data_t wdata;
   wdata.want_value = want_value;
-  (void) walk_tree (stmt_p, upc_genericize_expr, &wdata, NULL);
+  (void) walk_tree (expr_p, upc_genericize_expr, &wdata, NULL);
 }
 
 /* Convert a statement list to GENERIC.  */
@@ -1251,14 +1254,14 @@ upc_genericize_stmt_list (tree *stmt_list_p)
   while (!tsi_end_p (s))
     {
       tree *stmt_p = tsi_stmt_ptr (s);
-      upc_genericize_stmt (stmt_p, 0);
+      upc_genericize_walk (stmt_p, 0);
       tsi_next (&s);
     }
 }
 
 /* Convert the function body identified by BODY_P into GENERIC.
-   Initially assert WANT_VALUE as TRUE.  Traverse the function
-   body by calling walk_tree() and applying upc_genericize_stmt().  */
+   Traverse the function body by calling upc_genericize_walk().
+   Initially assert WANT_VALUE as FALSE.  */
 
 static void
 upc_genericize_body (tree *body_p, tree fndecl)
@@ -1269,7 +1272,7 @@ upc_genericize_body (tree *body_p, tree fndecl)
 
   input_location = DECL_SOURCE_LOCATION (fndecl);
 
-  upc_genericize_stmt (body_p, 0);
+  upc_genericize_walk (body_p, /* want_value */ 0);
 
   timevar_pop (TV_TREE_UPC_GENERICIZE);
 

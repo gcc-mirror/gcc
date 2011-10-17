@@ -1,3 +1,14 @@
+2011-10-17  Gary Funck  <gary@intrepid.com>
+
+	Fix a regression caused by the previous commit.
+	* upc-genericize.c (upc_genericize_walk):
+	Renamed from: upc_genericize_stmt.
+	(upc_shared_addr): for COMPONENT_REF and INDIRECT_REF
+	re-walk the tree after simplification, by calling
+	upc_genericize_walk().
+	(upc_genericize_array_ref): expand the newly constructed
+	indirect reference by calling upc_genericize_indirect_ref().
+ 
 2011-10-10  Gary Funck  <gary@intrepid.com>
 
 	* upc-genericize.c (upc_simplify_shared_ref): When simplifying
