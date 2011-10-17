@@ -1,3 +1,29 @@
+2011-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/vshuf-v16hi.c: New test.
+	* gcc.dg/torture/vshuf-16.inc: New file.
+	* gcc.dg/torture/vshuf-2.inc: New file.
+	* gcc.dg/torture/vshuf-32.inc: New file.
+	* gcc.dg/torture/vshuf-4.inc: New file.
+	* gcc.dg/torture/vshuf-8.inc: New file.
+	* gcc.dg/torture/vshuf-main.inc: New file.
+	* gcc.dg/torture/vshuf-v16hi.c: New test.
+	* gcc.dg/torture/vshuf-v16qi.c: New test.
+	* gcc.dg/torture/vshuf-v2df.c: New test.
+	* gcc.dg/torture/vshuf-v2di.c: New test.
+	* gcc.dg/torture/vshuf-v2sf.c: New test.
+	* gcc.dg/torture/vshuf-v2si.c: New test.
+	* gcc.dg/torture/vshuf-v32qi.c: New test.
+	* gcc.dg/torture/vshuf-v4df.c: New test.
+	* gcc.dg/torture/vshuf-v4di.c: New test.
+	* gcc.dg/torture/vshuf-v4hi.c: New test.
+	* gcc.dg/torture/vshuf-v4sf.c: New test.
+	* gcc.dg/torture/vshuf-v4si.c: New test.
+	* gcc.dg/torture/vshuf-v8hi.c: New test.
+	* gcc.dg/torture/vshuf-v8qi.c: New test.
+	* gcc.dg/torture/vshuf-v8sf.c: New test.
+	* gcc.dg/torture/vshuf-v8si.c: New test.
+
 2011-10-17  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50746
