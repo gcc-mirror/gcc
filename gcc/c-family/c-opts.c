@@ -628,6 +628,18 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->preprocessed = value;
       break;
 
+    case OPT_ftrack_macro_expansion:
+      if (value)
+	value = 2;
+      /* Fall Through.  */
+
+    case OPT_ftrack_macro_expansion_:
+      if (arg && *arg != '\0')
+	cpp_opts->track_macro_expansion = value;
+      else
+	cpp_opts->track_macro_expansion = 2;
+      break;
+
     case OPT_frepo:
       flag_use_repository = value;
       if (value)

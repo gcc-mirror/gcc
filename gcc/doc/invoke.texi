@@ -429,9 +429,9 @@ Objective-C and Objective-C++ Dialects}.
 -iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
 -imultilib @var{dir} -isysroot @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
--P  -fworking-directory  -remap @gol
--trigraphs  -undef  -U@var{macro}  -Wp,@var{option} @gol
--Xpreprocessor @var{option}}
+-P -ftrack-macro-expansion -fworking-directory @gol
+-remap -trigraphs  -undef  -U@var{macro}  @gol
+-Wp,@var{option} -Xpreprocessor @var{option}}
 
 @item Assembler Option
 @xref{Assembler Options,,Passing Options to the Assembler}.
