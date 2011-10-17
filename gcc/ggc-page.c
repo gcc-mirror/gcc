@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #define USING_MALLOC_PAGE_GROUPS
 #endif
 
-#if defined(HAVE_MADVISE) && defined(MADV_DONTNEED)
+#if defined(HAVE_MADVISE) && defined(MADV_DONTNEED) && defined(USING_MMAP)
 # define USING_MADVISE
 #endif
 

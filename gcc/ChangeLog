@@ -1,3 +1,8 @@
+2011-10-17  Andi Kleen  <ak@linux.intel.com>
+
+	* ggc-page.c (USING_MADVISE): Adjust ifdef to check for
+	USING_MMAP.
+
 2011-10-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.h (ASSEMBLER_DIALECT): Remove.
