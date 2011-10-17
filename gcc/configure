@@ -26483,6 +26483,7 @@ fi
 $as_echo_n "checking sys/sdt.h in the target C library... " >&6; }
 have_sys_sdt_h=no
 if test -f $target_header_dir/sys/sdt.h; then
+  have_sys_sdt_h=yes
 
 $as_echo "#define HAVE_SYS_SDT_H 1" >>confdefs.h
 
