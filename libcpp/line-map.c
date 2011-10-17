@@ -46,6 +46,10 @@ static source_location linemap_macro_loc_to_exp_point (struct line_maps *,
 						       source_location,
 						       const struct line_map **);
 
+/* Counters defined in macro.c.  */
+extern unsigned num_expanded_macros_counter;
+extern unsigned num_macro_tokens_counter;
+
 /* Initialize a line map set.  */
 
 void
@@ -1142,4 +1146,63 @@ linemap_dump_location (struct line_maps *set,
      E: macro expansion?.   */
   fprintf (stream, "{P:%s;F:%s;L:%d;C:%d;S:%d;M:%p;E:%d,LOC:%d}",
 	   path, from, l, c, s, (void*)map, e, loc);
+}
+
+/* Compute and return statistics about the memory consumption of some
+   parts of the line table SET.  */
+
+void
+linemap_get_statistics (struct line_maps *set,
+			struct linemap_stats *s)
+{
+  size_t ordinary_maps_allocated_size, ordinary_maps_used_size,
+    macro_maps_allocated_size, macro_maps_used_size,
+    macro_maps_locations_size = 0, duplicated_macro_maps_locations_size = 0;
+
+  struct line_map *cur_map;
+
+  ordinary_maps_allocated_size =
+    LINEMAPS_ORDINARY_ALLOCATED (set) * sizeof (struct line_map);
+
+  ordinary_maps_used_size =
+    LINEMAPS_ORDINARY_USED (set) * sizeof (struct line_map);
+
+  macro_maps_allocated_size =
+    LINEMAPS_MACRO_ALLOCATED (set) * sizeof (struct line_map);
+
+  for (cur_map = LINEMAPS_MACRO_MAPS (set);
+       cur_map && cur_map <= LINEMAPS_LAST_MACRO_MAP (set);
+       ++cur_map)
+    {
+      unsigned i;
+
+      linemap_assert (linemap_macro_expansion_map_p (cur_map));
+
+      macro_maps_locations_size +=
+	2 * MACRO_MAP_NUM_MACRO_TOKENS (cur_map) * sizeof (source_location);
+
+      for (i = 0; i < 2 * MACRO_MAP_NUM_MACRO_TOKENS (cur_map); i += 2)
+	{
+	  if (MACRO_MAP_LOCATIONS (cur_map)[i] ==
+	      MACRO_MAP_LOCATIONS (cur_map)[i + 1])
+	    duplicated_macro_maps_locations_size +=
+	      sizeof (source_location);
+	}
+    }
+
+  macro_maps_used_size =
+    LINEMAPS_MACRO_USED (set) * sizeof (struct line_map);
+
+  s->num_ordinary_maps_allocated = LINEMAPS_ORDINARY_ALLOCATED (set);
+  s->num_ordinary_maps_used = LINEMAPS_ORDINARY_USED (set);
+  s->ordinary_maps_allocated_size = ordinary_maps_allocated_size;
+  s->ordinary_maps_used_size = ordinary_maps_used_size;
+  s->num_expanded_macros = num_expanded_macros_counter;
+  s->num_macro_tokens = num_macro_tokens_counter;
+  s->num_macro_maps_used = LINEMAPS_MACRO_USED (set);
+  s->macro_maps_allocated_size = macro_maps_allocated_size;
+  s->macro_maps_locations_size = macro_maps_locations_size;
+  s->macro_maps_used_size = macro_maps_used_size;
+  s->duplicated_macro_maps_locations_size =
+    duplicated_macro_maps_locations_size;
 }

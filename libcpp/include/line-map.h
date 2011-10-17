@@ -675,6 +675,27 @@ expanded_location linemap_expand_location_full (struct line_maps *,
 						source_location loc,
 						enum location_resolution_kind lrk);
 
+/* Statistics about maps allocation and usage as returned by
+   linemap_get_statistics.  */
+struct linemap_stats
+{
+  size_t num_ordinary_maps_allocated;
+  size_t num_ordinary_maps_used;
+  size_t ordinary_maps_allocated_size;
+  size_t ordinary_maps_used_size;
+  size_t num_expanded_macros;
+  size_t num_macro_tokens;
+  size_t num_macro_maps_used;
+  size_t macro_maps_allocated_size;
+  size_t macro_maps_used_size;
+  size_t macro_maps_locations_size;
+  size_t duplicated_macro_maps_locations_size;
+};
+
+/* Compute and return statistics about the memory consumption of some
+   parts of the line table SET.  */
+void linemap_get_statistics (struct line_maps *, struct linemap_stats *);
+
 /* Dump debugging information about source location LOC into the file
    stream STREAM. SET is the line map set LOC comes from.  */
 void linemap_dump_location (struct line_maps *, source_location, FILE *);

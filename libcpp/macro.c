@@ -165,6 +165,13 @@ static void consume_next_token_from_context (cpp_reader *pfile,
 					     source_location *);
 static const cpp_token* cpp_get_token_1 (cpp_reader *, source_location *);
 
+/* Statistical counter tracking the number of macros that got
+   expanded.  */
+unsigned num_expanded_macros_counter = 0;
+/* Statistical counter tracking the total number tokens resulting
+   from macro expansion.  */
+unsigned num_macro_tokens_counter = 0;
+
 /* Emits a warning if NODE is a macro defined in the main file that
    has not been used.  */
 int
@@ -1082,10 +1089,15 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 					    (const cpp_token **)
 					    macro_tokens->base,
 					    count);
+	      num_macro_tokens_counter += count;
 	    }
 	  else
-	    _cpp_push_token_context (pfile, node, macro->exp.tokens,
-				     macro_real_token_count (macro));
+	    {
+	      unsigned tokens_count = macro_real_token_count (macro);
+	      _cpp_push_token_context (pfile, node, macro->exp.tokens,
+				       tokens_count);
+	      num_macro_tokens_counter += tokens_count;
+	    }
 	}
 
       if (pragma_buff)
@@ -1095,13 +1107,18 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 				     padding_token (pfile, result), 1);
 	  do
 	    {
+	      unsigned tokens_count;
 	      _cpp_buff *tail = pragma_buff->next;
 	      pragma_buff->next = NULL;
+	      tokens_count = ((const cpp_token **) BUFF_FRONT (pragma_buff)
+			      - (const cpp_token **) pragma_buff->base);
 	      push_ptoken_context (pfile, NULL, pragma_buff,
 				   (const cpp_token **) pragma_buff->base,
-				   ((const cpp_token **) BUFF_FRONT (pragma_buff)
-				    - (const cpp_token **) pragma_buff->base));
+				   tokens_count);
 	      pragma_buff = tail;
+	      if (!CPP_OPTION (pfile, track_macro_expansion))
+		num_macro_tokens_counter += tokens_count;
+
 	    }
 	  while (pragma_buff != NULL);
 	  return 2;
@@ -1711,6 +1728,8 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
   else
     push_ptoken_context (pfile, node, buff, first,
 			 tokens_buff_count (buff));
+
+  num_macro_tokens_counter += tokens_buff_count (buff);
 }
 
 /* Return a special padding token, with padding inherited from SOURCE.  */
@@ -2240,6 +2259,8 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 	}
       else
 	{
+	  if (pfile->context->c.macro)
+	    ++num_expanded_macros_counter;
 	  _cpp_pop_context (pfile);
 	  if (pfile->state.in_directive)
 	    continue;
