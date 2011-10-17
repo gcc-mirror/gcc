@@ -738,7 +738,7 @@ recursive_macro (cpp_reader *pfile, cpp_hashnode *node)
       do
 	{
 	  depth++;
-	  if (context->macro == node && depth > 20)
+	  if (context->c.macro == node && depth > 20)
 	    break;
 	  context = context->prev;
 	}

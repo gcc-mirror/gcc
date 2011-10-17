@@ -1,6 +1,15 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* c.opt (ftrack-macro-expansion): New option. Handle it with and
+	without argument.
+	* c-opts.c (c_common_handle_option)<case
+	OPT_ftrack_macro_expansion_, case OPT_ftrack_macro_expansion>: New
+	cases. Handle -ftrack-macro-expansion with and without argument.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* c-ppoutput.c (scan_translation_unit, maybe_print_line)
 	(print_line, cb_define, do_line_change): Adjust to avoid touching
 	the internals of struct line_map.  Use the public API instead.

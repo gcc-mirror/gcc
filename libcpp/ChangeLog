@@ -1,3 +1,82 @@
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* include/cpplib.h (struct cpp_options)<track_macro_expansion>:
+	New option.
+	* internal.h (struct macro_context): New struct.
+	(enum context_tokens_kind): New enum.
+	(struct cpp_context)<tokens_kind>: New member of type enum
+	context_tokens_kind.
+	(struct cpp_context)<macro>: Remove this.  Replace it with an enum
+	of macro and  macro_context.
+	(struct cpp_context)<direct_p>: Remove.
+	(_cpp_remaining_tokens_num_in_context): Declare new function.
+	* directives.c (destringize_and_run): Adjust.
+	* lex.c (_cpp_remaining_tokens_num_in_context)
+	(_cpp_token_from_context_at): Define new functions
+	(cpp_peek_token): Use them.
+	* init.c (cpp_create_reader): Initialize the base context to zero.
+	(_cpp_token_from_context_at): Define new static function.
+	(cpp_peek_token): Use new _cpp_remaining_tokens_num_in_context and
+	_cpp_token_from_context_at.
+	* macro.c (struct macro_arg)<virt_locs, expanded_virt_locs>: New
+	members.
+	(enum macro_arg_token_kind): New enum.
+	(struct macro_arg_token_iter): New struct.
+	(maybe_adjust_loc_for_trad_cpp, push_extended_tokens_context)
+	(alloc_expanded_arg_mem, ensure_expanded_arg_room)
+	(delete_macro_args, set_arg_token, get_arg_token_location)
+	(arg_token_ptr_at, macro_arg_token_iter_init)
+	(macro_arg_token_iter_get_token)
+	(macro_arg_token_iter_get_location, macro_arg_token_iter_forward)
+	(expanded_token_index, tokens_buff_new, tokens_buff_count)
+	(tokens_buff_last_token_ptr, tokens_buff_put_token_to)
+	(tokens_buff_add_token, tokens_buff_remove_last_token)
+	(reached_end_of_context, consume_next_token_from_context): New
+	static functions.
+	(cpp_get_token_1): New static function. Split and extended from
+	cpp_get_token.  Use reached_end_of_context and
+	consume_next_token_from_context.  Unify its return point.  Move
+	the location tweaking from cpp_get_token_with_location in here.
+	(cpp_get_token): Use cpp_get_token_1
+	(stringify_arg): Use the new arg_token_at.
+	(paste_all_tokens): Support tokens coming from extended tokens
+	contexts.
+	(collect_args): Return the number of collected arguments, by
+	parameter.  Store virtual locations of tokens that constitute the
+	collected args.
+	(funlike_invocation_p): Return the number of collected arguments,
+	by parameter.
+	(enter_macro_context): Add a parameter for macro expansion point.
+	Pass it to replace_args and to the "used" cpp callback.  Get the
+	number of function-like macro arguments from funlike_invocation_p,
+	pass it to the new delete_macro_args to free the memory used by
+	macro args.  When -ftrack-macro-expansion is in effect, for macros
+	that have no arguments, create a macro map for the macro expansion
+	and use it to allocate proper virtual locations for tokens
+	resulting from the expansion.  Push an extended tokens context
+	containing the tokens resulting from macro expansion and their
+	virtual locations.
+	(replace_args): Rename the different variables named 'count' into
+	variables with more meaningful names.  Create a macro map;
+	allocate virtual locations of tokens resulting from this
+	expansion.  Use macro_arg_token_iter to iterate over tokens of a
+	given macro.  Handle the case of the argument of
+	-ftrack-macro-expansion being < 2.  Don't free macro arguments
+	memory resulting from expand_arg here, as these are freed by the
+	caller of replace_arg using delete_macro_args now.  Push extended
+	token context.
+	(next_context, push_ptoken_context, _cpp_push_token_context)
+	(_cpp_push_text_context): Properly initialize the context.
+	(expand_arg): Use the new alloc_expanded_arg_mem,
+	push_extended_tokens_context, cpp_get_token_1, and set_arg_token.
+	(_cpp_pop_context): Really free the memory held by the context.
+	Handle freeing memory used by extended tokens contexts.
+	(cpp_get_token_with_location): Use cpp_get_token_1.
+	(cpp_sys_macro_p): Adjust.
+	(_cpp_backup_tokens): Support the new kinds of token contexts.
+	* traditional.c (recursive_macro): Adjust.
+
 2011-10-15  Tom Tromey  <tromey@redhat>
 	    Dodji Seketeli  <dodji@redhat.com>
 

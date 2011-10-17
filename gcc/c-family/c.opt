@@ -945,6 +945,14 @@ fpreprocessed
 C ObjC C++ ObjC++
 Treat the input file as already preprocessed
 
+ftrack-macro-expansion
+C ObjC C++ ObjC++ JoinedOrMissing RejectNegative UInteger
+; converted into ftrack-macro-expansion=
+
+ftrack-macro-expansion=
+C ObjC C++ ObjC++ JoinedOrMissing RejectNegative UInteger
+-ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages
+
 fpretty-templates
 C++ ObjC++ Var(flag_pretty_templates) Init(1)
 -fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments

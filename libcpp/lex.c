@@ -1703,6 +1703,38 @@ next_tokenrun (tokenrun *run)
   return run->next;
 }
 
+/* Return the number of not yet processed token in the the current
+   context.  */
+int
+_cpp_remaining_tokens_num_in_context (cpp_reader *pfile)
+{
+  cpp_context *context = pfile->context;
+  if (context->tokens_kind == TOKENS_KIND_DIRECT)
+    return ((LAST (context).token - FIRST (context).token)
+	    / sizeof (cpp_token));
+  else if (context->tokens_kind == TOKENS_KIND_INDIRECT
+	   || context->tokens_kind == TOKENS_KIND_EXTENDED)
+    return ((LAST (context).ptoken - FIRST (context).ptoken)
+	    / sizeof (cpp_token *));
+  else
+      abort ();
+}
+
+/* Returns the token present at index INDEX in the current context.
+   If INDEX is zero, the next token to be processed is returned.  */
+static const cpp_token*
+_cpp_token_from_context_at (cpp_reader *pfile, int index)
+{
+  cpp_context *context = pfile->context;
+  if (context->tokens_kind == TOKENS_KIND_DIRECT)
+    return &(FIRST (context).token[index]);
+  else if (context->tokens_kind == TOKENS_KIND_INDIRECT
+	   || context->tokens_kind == TOKENS_KIND_EXTENDED)
+    return FIRST (context).ptoken[index];
+ else
+   abort ();
+}
+
 /* Look ahead in the input stream.  */
 const cpp_token *
 cpp_peek_token (cpp_reader *pfile, int index)
@@ -1714,15 +1746,10 @@ cpp_peek_token (cpp_reader *pfile, int index)
   /* First, scan through any pending cpp_context objects.  */
   while (context->prev)
     {
-      ptrdiff_t sz = (context->direct_p
-                      ? LAST (context).token - FIRST (context).token
-                      : LAST (context).ptoken - FIRST (context).ptoken);
+      ptrdiff_t sz = _cpp_remaining_tokens_num_in_context (pfile);
 
       if (index < (int) sz)
-        return (context->direct_p
-                ? FIRST (context).token + index
-                : *(FIRST (context).ptoken + index));
-
+        return _cpp_token_from_context_at (pfile, index);
       index -= (int) sz;
       context = context->prev;
     }

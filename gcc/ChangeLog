@@ -1,3 +1,10 @@
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* doc/cppopts.texi (-ftrack-macro-expansion): Document new option.
+	* doc/invoke.texi (-ftrack-macro-expansion): Add this to the list of
+	preprocessor related options.
+
 2011-10-15  Tom Tromey  <tromey@redhat>
 	    Dodji Seketeli  <dodji@redhat.com>
 

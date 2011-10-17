@@ -1,6 +1,6 @@
 /* Part of CPP library.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
-   2008, 2009, 2010 Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -139,6 +139,40 @@ struct tokenrun
 #define CUR(c) ((c)->u.trad.cur)
 #define RLIMIT(c) ((c)->u.trad.rlimit)
 
+/* This describes some additional data that is added to the macro
+   token context of type cpp_context, when -ftrack-macro-expansion is
+   on.  */
+typedef struct
+{
+  /* The node of the macro we are referring to.  */
+  cpp_hashnode *macro_node;
+  /* This buffer contains an array of virtual locations.  The virtual
+     location at index 0 is the virtual location of the token at index
+     0 in the current instance of cpp_context; similarly for all the
+     other virtual locations.  */
+  source_location *virt_locs;
+  /* This is a pointer to the current virtual location.  This is used
+     to iterate over the virtual locations while we iterate over the
+     tokens they belong to.  */
+  source_location *cur_virt_loc;
+} macro_context;
+
+/* The kind of tokens carried by a cpp_context.  */
+enum context_tokens_kind {
+  /* This is the value of cpp_context::tokens_kind if u.iso.first
+     contains an instance of cpp_token **.  */
+  TOKENS_KIND_INDIRECT,
+  /* This is the value of cpp_context::tokens_kind if u.iso.first
+     contains an instance of cpp_token *.  */
+  TOKENS_KIND_DIRECT,
+  /* This is the value of cpp_context::tokens_kind when the token
+     context contains tokens resulting from macro expansion.  In that
+     case struct cpp_context::macro points to an instance of struct
+     macro_context.  This is used only when the
+     -ftrack-macro-expansion flag is on.  */
+  TOKENS_KIND_EXTENDED
+};
+
 typedef struct cpp_context cpp_context;
 struct cpp_context
 {
@@ -168,11 +202,24 @@ struct cpp_context
      When the context is popped, the buffer is released.  */
   _cpp_buff *buff;
 
-  /* For a macro context, the macro node, otherwise NULL.  */
-  cpp_hashnode *macro;
+  /* If tokens_kind is TOKEN_KIND_EXTENDED, then (as we thus are in a
+     macro context) this is a pointer to an instance of macro_context.
+     Otherwise if tokens_kind is *not* TOKEN_KIND_EXTENDED, then, if
+     we are in a macro context, this is a pointer to an instance of
+     cpp_hashnode, representing the name of the macro this context is
+     for.  If we are not in a macro context, then this is just NULL.
+     Note that when tokens_kind is TOKEN_KIND_EXTENDED, the memory
+     used by the instance of macro_context pointed to by this member
+     is de-allocated upon de-allocation of the instance of struct
+     cpp_context.  */
+  union
+  {
+    macro_context *mc;
+    cpp_hashnode *macro;
+  } c;
 
-  /* True if utoken element is token, else ptoken.  */
-  bool direct_p;
+  /* This determines the type of tokens held by this context.  */
+  enum context_tokens_kind tokens_kind;
 };
 
 struct lexer_state
@@ -605,6 +652,7 @@ extern cpp_token *_cpp_lex_direct (cpp_reader *);
 extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
 extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
+extern int _cpp_remaining_tokens_num_in_context (cpp_reader *);
 
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);

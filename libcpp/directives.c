@@ -1,7 +1,7 @@
 /* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1742,7 +1742,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
   saved_cur_run = pfile->cur_run;
 
   pfile->context = XNEW (cpp_context);
-  pfile->context->macro = 0;
+  pfile->context->c.macro = 0;
   pfile->context->prev = 0;
   pfile->context->next = 0;
 
