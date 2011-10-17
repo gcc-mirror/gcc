@@ -675,4 +675,8 @@ expanded_location linemap_expand_location_full (struct line_maps *,
 						source_location loc,
 						enum location_resolution_kind lrk);
 
+/* Dump debugging information about source location LOC into the file
+   stream STREAM. SET is the line map set LOC comes from.  */
+void linemap_dump_location (struct line_maps *, source_location, FILE *);
+
 #endif /* !LIBCPP_LINE_MAP_H  */

@@ -1,6 +1,13 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* include/cpplib.h (struct cpp_options)<debug>: New struct member.
+	* include/line-map.h (linemap_dump_location): Declare ...
+	* line-map.c (linemap_dump_location): ... new function.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* include/cpplib.h (struct cpp_options)<track_macro_expansion>:
 	New option.
 	* internal.h (struct macro_context): New struct.

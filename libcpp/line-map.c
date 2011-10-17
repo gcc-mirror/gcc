@@ -1105,3 +1105,41 @@ linemap_expand_location_full (struct line_maps *set,
   xloc = linemap_expand_location (map, loc);
   return xloc;
 }
+
+/* Dump debugging information about source location LOC into the file
+   stream STREAM. SET is the line map set LOC comes from.  */
+
+void
+linemap_dump_location (struct line_maps *set,
+		       source_location loc,
+		       FILE *stream)
+{
+  const struct line_map *map;
+  source_location location;
+  const char *path, *from;
+  int l,c,s,e;
+
+  if (loc == 0)
+    return;
+
+  location =
+    linemap_resolve_location (set, loc, LRK_MACRO_DEFINITION_LOCATION, &map);
+  path = LINEMAP_FILE (map);
+
+  l = SOURCE_LINE (map, location);
+  c = SOURCE_COLUMN (map, location);
+  s = LINEMAP_SYSP (map) != 0;
+  e = location != loc;
+
+  if (e)
+    from = "N/A";
+  else
+    from = (INCLUDED_FROM (set, map))
+      ? LINEMAP_FILE (INCLUDED_FROM (set, map))
+      : "<NULL>";
+
+  /* P: path, L: line, C: column, S: in-system-header, M: map address,
+     E: macro expansion?.   */
+  fprintf (stream, "{P:%s;F:%s;L:%d;C:%d;S:%d;M:%p;E:%d,LOC:%d}",
+	   path, from, l, c, s, (void*)map, e, loc);
+}

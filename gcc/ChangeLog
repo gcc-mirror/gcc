@@ -1,6 +1,13 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* doc/cppopts.texi: Document -fdebug-cpp.
+	* doc/invoke.texi: Add -fdebug-cpp to the list of preprocessor
+	options.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* gcc/diagnostic.h (diagnostic_report_current_module): Add a
 	location parameter.
 	* diagnostic.c (diagnostic_report_current_module): Add a location
