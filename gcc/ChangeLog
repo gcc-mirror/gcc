@@ -1,3 +1,77 @@
+2011-10-17  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc-modes.def: Add single entry vector modes for
+	DImode and SImode.
+	* config/sparc/sparc/sparc.md (V32, V32I, V64, V64I, V64N8): Delete
+	mode iterators.
+	(mov<V32:mode>): Revert back to plain SFmode pattern.
+	(*movsf_insn): Likewise.
+	(mov<V64:mode>): Revert back to plain DFmode pattern.
+	(*movdf_insn_sp32): Likewise.
+	(*movdf_insn_sp32_v9): Likewise.
+	(*movdf_insn_sp64): Likewise.
+	(V64 mode splitters) Likewise.
+	(addsi3): Remove VIS alternatives.
+	(subsi3): Likewise.
+	(and<V64I:mode>3): Revert to DImode only pattern.
+	(and<V64I:mode>3_sp32): Likewise.
+	(*and<V64I:mode>3_sp64): Likewise.
+	(and<V32I:mode>3): Likewise.
+	(*and_not_<V64I:mode>_sp32): Likewise.
+	(*and_not_<V64I:mode>_sp64): Likewise.
+	(*and_not_<V32I:mode>): Likewise.
+	(ior<V64I:mode>3): Likewise.
+	(*ior<V64I:mode>3_sp32): Likewise.
+	(*ior<V64I:mode>3_sp64): Likewise.
+	(ior<V32I:mode>3): Likewise.
+	(*or_not_<V64I:mode>_sp32): Likewise.
+	(*or_not_<V64I:mode>_sp64): Likewise.
+	(*or_not_<V32I:mode>): Likewise.
+	(xor<V64I:mode>3): Likewise.
+	(*xor<V64I:mode>3_sp32): Likewise.
+	(*xor<V64I:mode>3_sp64): Likewise.
+	(xor<V32I:mode>3): Likewise.
+	(V64I mode splitters): Likewise.
+	(*xor_not_<V64I:mode>_sp32): Likewise.
+	(*xor_not_<V64I:mode>_sp64): Likewise.
+	(*xor_not_<V32I:mode>): Likewise.
+	(one_cmpl<V64I:mode>2): Likewise.
+	(*one_cmpl<V64I:mode>2_sp32): Likewise.
+	(*one_cmpl<V64I:mode>2_sp64): Likewise.
+	(one_cmpl<V32I:mode>2): Likewise.
+	(VM32, VM64, VMALL): New mode iterators.
+	(vbits, vconstr, vfptype): New mode attributes.
+	(mov<VMALL:mode>): New expander.
+	(*mov<VM32:mode>_insn): New insn.
+	(*mov<VM64:mode>_insn_sp64): New insn.
+	(*mov<VM64:mode>_insn_sp32): New insn, and associated splitter
+	specifically for the register to memory case.
+	(vec_init<mode>): New expander.
+	(VADDSUB): New mode iterator.
+	(<plusminus_insn>v2si3, <plusminus_insn>v2hi3): Remove and replace
+	with...
+	(<plusminus_insn><mode>3): New consolidated pattern.
+	(VL): New mode iterator for logical operations.
+	(vlsuf): New more attribute.
+	(vlop): New code iterator.
+	(vlinsn, vlninsn): New code attributes.
+	(<code><mode>3): New insn to non-negated vector logical ops.
+	(*not_<code><mode>3): Likewise for negated variants.
+	(*nand<mode>_vis): New insn.
+	(vlnotop): New code iterator.
+	(*<code>_not1<mode>_vis, *<code>_not2<mode>_vis): New insns.
+	(one_cmpl<mode>2): New insn.
+	(faligndata<V64I:mode>_vis): Rewrite to use VM64 iterator.
+	(bshuffle<VM64:mode>_vis): Likewise.
+	(v<vis3_shift_patname><mode>3): Use GCM mode iterator.
+	(fp<plusminus_insn>64_vis): Use V1DI mode.
+	(VASS mode iterator): Use V1SI not SI mode.
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Account for
+	single-entry vector mode changes.
+	(sparc_expand_builtin): Likewise.
+	(sparc_expand_vector_init): New function.
+	* config/sparc/sparc-protos.h (sparc_expand_vector_init): Declare.
+
 2011-10-17  Kai Tietz  <ktietz@redhat.com>
 
 	* fold-const.c (simple_operand_p_2): New function.

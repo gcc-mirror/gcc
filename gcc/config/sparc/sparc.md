@@ -200,23 +200,11 @@
 (define_mode_iterator I [QI HI SI DI])
 (define_mode_iterator F [SF DF TF])
 
-;; We don't define V1SI because SI should work just fine.
-(define_mode_iterator V32 [SF V2HI V4QI])
-(define_mode_iterator V32I [SI V2HI V4QI])
-
-(define_mode_iterator V64 [DF V2SI V4HI V8QI])
-(define_mode_iterator V64I [DI V2SI V4HI V8QI])
-
-(define_mode_iterator V64N8 [V2SI V4HI])
-
 ;; The upper 32 fp regs on the v9 can't hold SFmode values.  To deal with this
 ;; a second register class, EXTRA_FP_REGS, exists for the v9 chip.  The name
 ;; is a bit of a misnomer as it covers all 64 fp regs.  The corresponding
 ;; constraint letter is 'e'.  To avoid any confusion, 'e' is used instead of
 ;; 'f' for all DF/TFmode values, including those that are specific to the v8.
-
-(define_mode_attr vbits [(V2SI "32") (V4HI "16") (SI "32s") (V2HI "16s")])
-(define_mode_attr vconstr [(V2SI "e") (V4HI "e") (SI "f") (V2HI "f")])
 
 ;; Attribute for cpu type.
 ;; These must match the values for enum processor_type in sparc.h.
@@ -1929,24 +1917,23 @@
 })
 
 
-;; Floating point and vector move instructions
+;; Floating point move instructions
 
-;; Yes, you guessed it right, the former movsf expander.
-(define_expand "mov<V32:mode>"
-  [(set (match_operand:V32 0 "nonimmediate_operand" "")
-	(match_operand:V32 1 "general_operand" ""))]
-  "<V32:MODE>mode == SFmode || TARGET_VIS"
+(define_expand "movsf"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "")
+	(match_operand:SF 1 "general_operand" ""))]
+  ""
 {
-  if (sparc_expand_move (<V32:MODE>mode, operands))
+  if (sparc_expand_move (SFmode, operands))
     DONE;
 })
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:V32 0 "nonimmediate_operand" "=d,d,f,*r,*r,*r,f,*r,m,m")
-	(match_operand:V32 1 "input_operand"        "GY,ZC,f,*rRY,Q,S,m,m,f,*rGY"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=d, d,f,  *r,*r,*r,f,*r,m,   m")
+	(match_operand:SF 1 "input_operand"        "GY,ZC,f,*rRY, Q, S,m, m,f,*rGY"))]
   "TARGET_FPU
-   && (register_operand (operands[0], <V32:MODE>mode)
-       || register_or_zero_or_all_ones_operand (operands[1], <V32:MODE>mode))"
+   && (register_operand (operands[0], SFmode)
+       || register_or_zero_or_all_ones_operand (operands[1], SFmode))"
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE
       && (which_alternative == 3
@@ -2067,20 +2054,19 @@
   [(set (match_dup 0) (high:SF (match_dup 1)))
    (set (match_dup 0) (lo_sum:SF (match_dup 0) (match_dup 1)))])
 
-;; Yes, you again guessed it right, the former movdf expander.
-(define_expand "mov<V64:mode>"
-  [(set (match_operand:V64 0 "nonimmediate_operand" "")
-	(match_operand:V64 1 "general_operand" ""))]
-  "<V64:MODE>mode == DFmode || TARGET_VIS"
+(define_expand "movdf"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "")
+	(match_operand:DF 1 "general_operand" ""))]
+  ""
 {
-  if (sparc_expand_move (<V64:MODE>mode, operands))
+  if (sparc_expand_move (DFmode, operands))
     DONE;
 })
 
 ;; Be careful, fmovd does not exist when !v9.
 (define_insn "*movdf_insn_sp32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,W,U,T,o,e,*r,o,e,o")
-	(match_operand:DF 1 "input_operand"    "W#F,e,T,U,G,e,*rFo,*r,o#F,e"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,W,U,T,o,e,  *r, o,  e,o")
+	(match_operand:DF 1 "input_operand"       "W#F,e,T,U,G,e,*rFo,*r,o#F,e"))]
   "TARGET_FPU
    && ! TARGET_V9
    && (register_operand (operands[0], DFmode)
@@ -2117,13 +2103,13 @@
 
 ;; We have available v9 double floats but not 64-bit integer registers.
 (define_insn "*movdf_insn_sp32_v9"
-  [(set (match_operand:V64 0 "nonimmediate_operand" "=b,b,e,e,T,W,U,T,f,*r,o")
-        (match_operand:V64 1 "input_operand" "GY,ZC,e,W#F,GY,e,T,U,o#F,*roGYDF,*rGYf"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,  e, T,W,U,T,  f,     *r,    o")
+        (match_operand:DF 1 "input_operand"        "GY,ZC,e,W#F,GY,e,T,U,o#F,*roGYDF,*rGYf"))]
   "TARGET_FPU
    && TARGET_V9
    && ! TARGET_ARCH64
-   && (register_operand (operands[0], <V64:MODE>mode)
-       || register_or_zero_or_all_ones_operand (operands[1], <V64:MODE>mode))"
+   && (register_operand (operands[0], DFmode)
+       || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
   "@
   fzero\t%0
   fone\t%0
@@ -2159,12 +2145,12 @@
 
 ;; We have available both v9 double floats and 64-bit integer registers.
 (define_insn "*movdf_insn_sp64"
-  [(set (match_operand:V64 0 "nonimmediate_operand" "=b,b,e,e,W,*r,*r,m,*r")
-        (match_operand:V64 1 "input_operand"    "GY,ZC,e,W#F,e,*rGY,m,*rGY,DF"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,  e,W,  *r,*r,   m,*r")
+        (match_operand:DF 1 "input_operand"        "GY,ZC,e,W#F,e,*rGY, m,*rGY,DF"))]
   "TARGET_FPU
    && TARGET_ARCH64
-   && (register_operand (operands[0], <V64:MODE>mode)
-       || register_or_zero_or_all_ones_operand (operands[1], <V64:MODE>mode))"
+   && (register_operand (operands[0], DFmode)
+       || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
   "@
   fzero\t%0
   fone\t%0
@@ -2192,10 +2178,10 @@
   stx\t%r1, %0"
   [(set_attr "type" "*,load,store")])
 
-;; This pattern builds V64mode constants in integer registers.
+;; This pattern builds DFmode constants in integer registers.
 (define_split
-  [(set (match_operand:V64 0 "register_operand" "")
-        (match_operand:V64 1 "const_double_or_vector_operand" ""))]
+  [(set (match_operand:DF 0 "register_operand" "")
+        (match_operand:DF 1 "const_double_operand" ""))]
   "TARGET_FPU
    && (GET_CODE (operands[0]) == REG
        && REGNO (operands[0]) < 32)
@@ -2249,8 +2235,8 @@
 ;; careful when V9 but not ARCH64 because the integer
 ;; register DFmode cases must be handled.
 (define_split
-  [(set (match_operand:V64 0 "register_operand" "")
-        (match_operand:V64 1 "register_operand" ""))]
+  [(set (match_operand:DF 0 "register_operand" "")
+        (match_operand:DF 1 "register_operand" ""))]
   "(! TARGET_V9
     || (! TARGET_ARCH64
         && ((GET_CODE (operands[0]) == REG
@@ -2265,18 +2251,11 @@
   rtx set_src = operands[1];
   rtx dest1, dest2;
   rtx src1, src2;
-  enum machine_mode half_mode;
 
-  /* We can be expanded for DFmode or integral vector modes.  */
-  if (<V64:MODE>mode == DFmode)
-    half_mode = SFmode;
-  else
-    half_mode = SImode;
-  
-  dest1 = gen_highpart (half_mode, set_dest);
-  dest2 = gen_lowpart (half_mode, set_dest);
-  src1 = gen_highpart (half_mode, set_src);
-  src2 = gen_lowpart (half_mode, set_src);
+  dest1 = gen_highpart (SFmode, set_dest);
+  dest2 = gen_lowpart (SFmode, set_dest);
+  src1 = gen_highpart (SFmode, set_src);
+  src2 = gen_lowpart (SFmode, set_src);
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
@@ -2294,8 +2273,8 @@
 })
 
 (define_split
-  [(set (match_operand:V64 0 "register_operand" "")
-	(match_operand:V64 1 "memory_operand" ""))]
+  [(set (match_operand:DF 0 "register_operand" "")
+	(match_operand:DF 1 "memory_operand" ""))]
   "reload_completed
    && ! TARGET_ARCH64
    && (((REGNO (operands[0]) % 2) != 0)
@@ -2303,34 +2282,27 @@
    && offsettable_memref_p (operands[1])"
   [(clobber (const_int 0))]
 {
-  enum machine_mode half_mode;
   rtx word0, word1;
 
-  /* We can be expanded for DFmode or integral vector modes.  */
-  if (<V64:MODE>mode == DFmode)
-    half_mode = SFmode;
-  else
-    half_mode = SImode;
+  word0 = adjust_address (operands[1], SFmode, 0);
+  word1 = adjust_address (operands[1], SFmode, 4);
 
-  word0 = adjust_address (operands[1], half_mode, 0);
-  word1 = adjust_address (operands[1], half_mode, 4);
-
-  if (reg_overlap_mentioned_p (gen_highpart (half_mode, operands[0]), word1))
+  if (reg_overlap_mentioned_p (gen_highpart (SFmode, operands[0]), word1))
     {
-      emit_move_insn_1 (gen_lowpart (half_mode, operands[0]), word1);
-      emit_move_insn_1 (gen_highpart (half_mode, operands[0]), word0);
+      emit_move_insn_1 (gen_lowpart (SFmode, operands[0]), word1);
+      emit_move_insn_1 (gen_highpart (SFmode, operands[0]), word0);
     }
   else
     {
-      emit_move_insn_1 (gen_highpart (half_mode, operands[0]), word0);
-      emit_move_insn_1 (gen_lowpart (half_mode, operands[0]), word1);
+      emit_move_insn_1 (gen_highpart (SFmode, operands[0]), word0);
+      emit_move_insn_1 (gen_lowpart (SFmode, operands[0]), word1);
     }
   DONE;
 })
 
 (define_split
-  [(set (match_operand:V64 0 "memory_operand" "")
-	(match_operand:V64 1 "register_operand" ""))]
+  [(set (match_operand:DF 0 "memory_operand" "")
+	(match_operand:DF 1 "register_operand" ""))]
   "reload_completed
    && ! TARGET_ARCH64
    && (((REGNO (operands[1]) % 2) != 0)
@@ -2338,26 +2310,19 @@
    && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
 {
-  enum machine_mode half_mode;
   rtx word0, word1;
 
-  /* We can be expanded for DFmode or integral vector modes.  */
-  if (<V64:MODE>mode == DFmode)
-    half_mode = SFmode;
-  else
-    half_mode = SImode;
+  word0 = adjust_address (operands[0], SFmode, 0);
+  word1 = adjust_address (operands[0], SFmode, 4);
 
-  word0 = adjust_address (operands[0], half_mode, 0);
-  word1 = adjust_address (operands[0], half_mode, 4);
-
-  emit_move_insn_1 (word0, gen_highpart (half_mode, operands[1]));
-  emit_move_insn_1 (word1, gen_lowpart (half_mode, operands[1]));
+  emit_move_insn_1 (word0, gen_highpart (SFmode, operands[1]));
+  emit_move_insn_1 (word1, gen_lowpart (SFmode, operands[1]));
   DONE;
 })
 
 (define_split
-  [(set (match_operand:V64 0 "memory_operand" "")
-        (match_operand:V64 1 "const_zero_operand" ""))]
+  [(set (match_operand:DF 0 "memory_operand" "")
+        (match_operand:DF 1 "const_zero_operand" ""))]
   "reload_completed
    && (! TARGET_V9
        || (! TARGET_ARCH64
@@ -2365,26 +2330,19 @@
    && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
 {
-  enum machine_mode half_mode;
   rtx dest1, dest2;
 
-  /* We can be expanded for DFmode or integral vector modes.  */
-  if (<V64:MODE>mode == DFmode)
-    half_mode = SFmode;
-  else
-    half_mode = SImode;
+  dest1 = adjust_address (operands[0], SFmode, 0);
+  dest2 = adjust_address (operands[0], SFmode, 4);
 
-  dest1 = adjust_address (operands[0], half_mode, 0);
-  dest2 = adjust_address (operands[0], half_mode, 4);
-
-  emit_move_insn_1 (dest1, CONST0_RTX (half_mode));
-  emit_move_insn_1 (dest2, CONST0_RTX (half_mode));
+  emit_move_insn_1 (dest1, CONST0_RTX (SFmode));
+  emit_move_insn_1 (dest2, CONST0_RTX (SFmode));
   DONE;
 })
 
 (define_split
-  [(set (match_operand:V64 0 "register_operand" "")
-        (match_operand:V64 1 "const_zero_operand" ""))]
+  [(set (match_operand:DF 0 "register_operand" "")
+        (match_operand:DF 1 "const_zero_operand" ""))]
   "reload_completed
    && ! TARGET_ARCH64
    && ((GET_CODE (operands[0]) == REG
@@ -2394,20 +2352,13 @@
 	   && REGNO (SUBREG_REG (operands[0])) < 32))"
   [(clobber (const_int 0))]
 {
-  enum machine_mode half_mode;
   rtx set_dest = operands[0];
   rtx dest1, dest2;
 
-  /* We can be expanded for DFmode or integral vector modes.  */
-  if (<V64:MODE>mode == DFmode)
-    half_mode = SFmode;
-  else
-    half_mode = SImode;
-
-  dest1 = gen_highpart (half_mode, set_dest);
-  dest2 = gen_lowpart (half_mode, set_dest);
-  emit_move_insn_1 (dest1, CONST0_RTX (half_mode));
-  emit_move_insn_1 (dest2, CONST0_RTX (half_mode));
+  dest1 = gen_highpart (SFmode, set_dest);
+  dest2 = gen_lowpart (SFmode, set_dest);
+  emit_move_insn_1 (dest1, CONST0_RTX (SFmode));
+  emit_move_insn_1 (dest2, CONST0_RTX (SFmode));
   DONE;
 })
 
@@ -3751,16 +3702,15 @@
    sub\t%1, -%2, %0")
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,d")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r,r,d")
-		 (match_operand:SI 2 "arith_add_operand" "rI,O,d")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(plus:SI (match_operand:SI 1 "register_operand" "%r,r")
+		 (match_operand:SI 2 "arith_add_operand" "rI,O")))]
   ""
   "@
    add\t%1, %2, %0
-   sub\t%1, -%2, %0
-   fpadd32s\t%1, %2, %0"
-  [(set_attr "type" "*,*,fga")
-   (set_attr "fptype" "*,*,single")])
+   sub\t%1, -%2, %0"
+  [(set_attr "type" "*,*")
+   (set_attr "fptype" "*,*")])
 
 (define_insn "*cmp_cc_plus"
   [(set (reg:CC_NOOV CC_REG)
@@ -3923,16 +3873,15 @@
    add\t%1, -%2, %0")
 
 (define_insn "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,d")
-	(minus:SI (match_operand:SI 1 "register_operand" "r,r,d")
-		  (match_operand:SI 2 "arith_add_operand" "rI,O,d")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(minus:SI (match_operand:SI 1 "register_operand" "r,r")
+		  (match_operand:SI 2 "arith_add_operand" "rI,O")))]
   ""
   "@
    sub\t%1, %2, %0
-   add\t%1, -%2, %0
-   fpsub32s\t%1, %2, %0"
-  [(set_attr "type" "*,*,fga")
-   (set_attr "fptype" "*,*,single")])
+   add\t%1, -%2, %0"
+  [(set_attr "type" "*,*")
+   (set_attr "fptype" "*,*")])
 
 (define_insn "*cmp_minus_cc"
   [(set (reg:CC_NOOV CC_REG)
@@ -4657,46 +4606,33 @@
 ;; We define DImode `and' so with DImode `not' we can get
 ;; DImode `andn'.  Other combinations are possible.
 
-(define_expand "and<V64I:mode>3"
-  [(set (match_operand:V64I 0 "register_operand" "")
-	(and:V64I (match_operand:V64I 1 "arith_double_operand" "")
-		  (match_operand:V64I 2 "arith_double_operand" "")))]
+(define_expand "anddi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(and:DI (match_operand:DI 1 "arith_double_operand" "")
+		(match_operand:DI 2 "arith_double_operand" "")))]
   ""
   "")
 
-(define_insn "*and<V64I:mode>3_sp32"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(and:V64I (match_operand:V64I 1 "arith_double_operand" "%r,b")
-		  (match_operand:V64I 2 "arith_double_operand" "rHI,b")))]
+(define_insn "*anddi3_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (match_operand:DI 1 "arith_double_operand" "%r")
+		(match_operand:DI 2 "arith_double_operand" "rHI")))]
   "! TARGET_ARCH64"
-  "@
-  #
-  fand\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "*,double")])
+  "#")
 
-(define_insn "*and<V64I:mode>3_sp64"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(and:V64I (match_operand:V64I 1 "arith_operand" "%r,b")
-		  (match_operand:V64I 2 "arith_operand" "rI,b")))]
+(define_insn "*anddi3_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (match_operand:DI 1 "arith_operand" "%r")
+		(match_operand:DI 2 "arith_operand" "rI")))]
   "TARGET_ARCH64"
-  "@
-   and\t%1, %2, %0
-   fand\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,double")])
+  "and\t%1, %2, %0")
 
-(define_insn "and<V32I:mode>3"
-  [(set (match_operand:V32I 0 "register_operand" "=r,d")
-	(and:V32I (match_operand:V32I 1 "arith_operand" "%r,d")
-		  (match_operand:V32I 2 "arith_operand" "rI,d")))]
+(define_insn "andsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (match_operand:SI 1 "arith_operand" "%r")
+		(match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "@
-   and\t%1, %2, %0
-   fands\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,single")])
+  "and\t%1, %2, %0")
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -4710,14 +4646,12 @@
   operands[4] = GEN_INT (~INTVAL (operands[2]));
 })
 
-(define_insn_and_split "*and_not_<V64I:mode>_sp32"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(and:V64I (not:V64I (match_operand:V64I 1 "register_operand" "%r,b"))
-		  (match_operand:V64I 2 "register_operand" "r,b")))]
+(define_insn_and_split "*and_not_di_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (not:DI (match_operand:DI 1 "register_operand" "%r"))
+		(match_operand:DI 2 "register_operand" "r")))]
   "! TARGET_ARCH64"
-  "@
-   #
-   fandnot1\t%1, %2, %0"
+  "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
@@ -4732,72 +4666,50 @@
    operands[6] = gen_lowpart (SImode, operands[0]);
    operands[7] = gen_lowpart (SImode, operands[1]);
    operands[8] = gen_lowpart (SImode, operands[2]);"
-  [(set_attr "type" "*,fga")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "*,double")])
+  [(set_attr "length" "2")])
 
-(define_insn "*and_not_<V64I:mode>_sp64"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(and:V64I (not:V64I (match_operand:V64I 1 "register_operand" "%r,b"))
-		  (match_operand:V64I 2 "register_operand" "r,b")))]
+(define_insn "*and_not_di_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (not:DI (match_operand:DI 1 "register_operand" "%r"))
+		(match_operand:DI 2 "register_operand" "r")))]
   "TARGET_ARCH64"
-  "@
-   andn\t%2, %1, %0
-   fandnot1\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,double")])
+  "andn\t%2, %1, %0")
 
-(define_insn "*and_not_<V32I:mode>"
-  [(set (match_operand:V32I 0 "register_operand" "=r,d")
-	(and:V32I (not:V32I (match_operand:V32I 1 "register_operand" "%r,d"))
-		  (match_operand:V32I 2 "register_operand" "r,d")))]
+(define_insn "*and_not_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (not:SI (match_operand:SI 1 "register_operand" "%r"))
+		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "@
-   andn\t%2, %1, %0
-   fandnot1s\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,single")])
+  "andn\t%2, %1, %0")
 
-(define_expand "ior<V64I:mode>3"
-  [(set (match_operand:V64I 0 "register_operand" "")
-	(ior:V64I (match_operand:V64I 1 "arith_double_operand" "")
-		  (match_operand:V64I 2 "arith_double_operand" "")))]
+(define_expand "iordi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(ior:DI (match_operand:DI 1 "arith_double_operand" "")
+		(match_operand:DI 2 "arith_double_operand" "")))]
   ""
   "")
 
-(define_insn "*ior<V64I:mode>3_sp32"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(ior:V64I (match_operand:V64I 1 "arith_double_operand" "%r,b")
-		  (match_operand:V64I 2 "arith_double_operand" "rHI,b")))]
+(define_insn "*iordi3_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI (match_operand:DI 1 "arith_double_operand" "%r")
+		(match_operand:DI 2 "arith_double_operand" "rHI")))]
   "! TARGET_ARCH64"
-  "@
-  #
-  for\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "*,double")])
+  "#"
+  [(set_attr "length" "2")])
 
-(define_insn "*ior<V64I:mode>3_sp64"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(ior:V64I (match_operand:V64I 1 "arith_operand" "%r,b")
-		  (match_operand:V64I 2 "arith_operand" "rI,b")))]
+(define_insn "*iordi3_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI (match_operand:DI 1 "arith_operand" "%r")
+		(match_operand:DI 2 "arith_operand" "rI")))]
   "TARGET_ARCH64"
-  "@
-  or\t%1, %2, %0
-  for\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,double")])
+  "or\t%1, %2, %0")
 
-(define_insn "ior<V32I:mode>3"
-  [(set (match_operand:V32I 0 "register_operand" "=r,d")
-	(ior:V32I (match_operand:V32I 1 "arith_operand" "%r,d")
-		  (match_operand:V32I 2 "arith_operand" "rI,d")))]
+(define_insn "iorsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ior:SI (match_operand:SI 1 "arith_operand" "%r")
+		(match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "@
-   or\t%1, %2, %0
-   fors\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,single")])
+  "or\t%1, %2, %0")
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -4811,14 +4723,12 @@
   operands[4] = GEN_INT (~INTVAL (operands[2]));
 })
 
-(define_insn_and_split "*or_not_<V64I:mode>_sp32"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(ior:V64I (not:V64I (match_operand:V64I 1 "register_operand" "r,b"))
-		  (match_operand:V64I 2 "register_operand" "r,b")))]
+(define_insn_and_split "*or_not_di_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI (not:DI (match_operand:DI 1 "register_operand" "r"))
+		(match_operand:DI 2 "register_operand" "r")))]
   "! TARGET_ARCH64"
-  "@
-   #
-   fornot1\t%1, %2, %0"
+  "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
@@ -4833,72 +4743,50 @@
    operands[6] = gen_lowpart (SImode, operands[0]);
    operands[7] = gen_lowpart (SImode, operands[1]);
    operands[8] = gen_lowpart (SImode, operands[2]);"
-  [(set_attr "type" "*,fga")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "*,double")])
+  [(set_attr "length" "2")])
 
-(define_insn "*or_not_<V64I:mode>_sp64"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(ior:V64I (not:V64I (match_operand:V64I 1 "register_operand" "r,b"))
-		  (match_operand:V64I 2 "register_operand" "r,b")))]
+(define_insn "*or_not_di_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI (not:DI (match_operand:DI 1 "register_operand" "r"))
+		(match_operand:DI 2 "register_operand" "r")))]
   "TARGET_ARCH64"
-  "@
-  orn\t%2, %1, %0
-  fornot1\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,double")])
+  "orn\t%2, %1, %0")
 
-(define_insn "*or_not_<V32I:mode>"
-  [(set (match_operand:V32I 0 "register_operand" "=r,d")
-	(ior:V32I (not:V32I (match_operand:V32I 1 "register_operand" "r,d"))
-		  (match_operand:V32I 2 "register_operand" "r,d")))]
+(define_insn "*or_not_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ior:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
+		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "@
-   orn\t%2, %1, %0
-   fornot1s\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,single")])
+  "orn\t%2, %1, %0")
 
-(define_expand "xor<V64I:mode>3"
-  [(set (match_operand:V64I 0 "register_operand" "")
-	(xor:V64I (match_operand:V64I 1 "arith_double_operand" "")
-		  (match_operand:V64I 2 "arith_double_operand" "")))]
+(define_expand "xordi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(xor:DI (match_operand:DI 1 "arith_double_operand" "")
+		(match_operand:DI 2 "arith_double_operand" "")))]
   ""
   "")
 
-(define_insn "*xor<V64I:mode>3_sp32"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(xor:V64I (match_operand:V64I 1 "arith_double_operand" "%r,b")
-		  (match_operand:V64I 2 "arith_double_operand" "rHI,b")))]
+(define_insn "*xordi3_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(xor:DI (match_operand:DI 1 "arith_double_operand" "%r")
+		(match_operand:DI 2 "arith_double_operand" "rHI")))]
   "! TARGET_ARCH64"
-  "@
-  #
-  fxor\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "*,double")])
+  "#"
+  [(set_attr "length" "2")])
 
-(define_insn "*xor<V64I:mode>3_sp64"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(xor:V64I (match_operand:V64I 1 "arith_operand" "%rJ,b")
-		  (match_operand:V64I 2 "arith_operand" "rI,b")))]
+(define_insn "*xordi3_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(xor:DI (match_operand:DI 1 "arith_operand" "%rJ")
+		(match_operand:DI 2 "arith_operand" "rI")))]
   "TARGET_ARCH64"
-  "@
-  xor\t%r1, %2, %0
-  fxor\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,double")])
+  "xor\t%r1, %2, %0")
 
-(define_insn "xor<V32I:mode>3"
-  [(set (match_operand:V32I 0 "register_operand" "=r,d")
-	(xor:V32I (match_operand:V32I 1 "arith_operand" "%rJ,d")
-		  (match_operand:V32I 2 "arith_operand" "rI,d")))]
+(define_insn "xorsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(xor:SI (match_operand:SI 1 "arith_operand" "%rJ")
+		  (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "@
-   xor\t%r1, %2, %0
-   fxors\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,single")])
+  "xor\t%r1, %2, %0")
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -4926,10 +4814,10 @@
 
 ;; Split DImode logical operations requiring two instructions.
 (define_split
-  [(set (match_operand:V64I 0 "register_operand" "")
-	(match_operator:V64I 1 "cc_arith_operator"	; AND, IOR, XOR
-			   [(match_operand:V64I 2 "register_operand" "")
-			    (match_operand:V64I 3 "arith_double_operand" "")]))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_operator:DI 1 "cc_arith_operator"	; AND, IOR, XOR
+			   [(match_operand:DI 2 "register_operand" "")
+			    (match_operand:DI 3 "arith_double_operand" "")]))]
   "! TARGET_ARCH64
    && reload_completed
    && ((GET_CODE (operands[0]) == REG
@@ -4945,7 +4833,7 @@
   operands[6] = gen_highpart (SImode, operands[2]);
   operands[7] = gen_lowpart (SImode, operands[2]);
 #if HOST_BITS_PER_WIDE_INT == 32
-  if (GET_CODE (operands[3]) == CONST_INT && <V64I:MODE>mode == DImode)
+  if (GET_CODE (operands[3]) == CONST_INT)
     {
       if (INTVAL (operands[3]) < 0)
 	operands[8] = constm1_rtx;
@@ -4954,20 +4842,18 @@
     }
   else
 #endif
-    operands[8] = gen_highpart_mode (SImode, <V64I:MODE>mode, operands[3]);
+    operands[8] = gen_highpart_mode (SImode, DImode, operands[3]);
   operands[9] = gen_lowpart (SImode, operands[3]);
 })
 
 ;; xnor patterns.  Note that (a ^ ~b) == (~a ^ b) == ~(a ^ b).
 ;; Combine now canonicalizes to the rightmost expression.
-(define_insn_and_split "*xor_not_<V64I:mode>_sp32"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(not:V64I (xor:V64I (match_operand:V64I 1 "register_operand" "r,b")
-			    (match_operand:V64I 2 "register_operand" "r,b"))))]
+(define_insn_and_split "*xor_not_di_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(not:DI (xor:DI (match_operand:DI 1 "register_operand" "r")
+			(match_operand:DI 2 "register_operand" "r"))))]
   "! TARGET_ARCH64"
-  "@
-   #
-   fxnor\t%1, %2, %0"
+  "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
@@ -4982,31 +4868,21 @@
    operands[6] = gen_lowpart (SImode, operands[0]);
    operands[7] = gen_lowpart (SImode, operands[1]);
    operands[8] = gen_lowpart (SImode, operands[2]);"
-  [(set_attr "type" "*,fga")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "*,double")])
+  [(set_attr "length" "2")])
 
-(define_insn "*xor_not_<V64I:mode>_sp64"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(not:V64I (xor:V64I (match_operand:V64I 1 "register_or_zero_operand" "rJ,b")
-			    (match_operand:V64I 2 "arith_operand" "rI,b"))))]
+(define_insn "*xor_not_di_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(not:DI (xor:DI (match_operand:DI 1 "register_or_zero_operand" "rJ")
+			(match_operand:DI 2 "arith_operand" "rI"))))]
   "TARGET_ARCH64"
-  "@
-  xnor\t%r1, %2, %0
-  fxnor\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,double")])
+  "xnor\t%r1, %2, %0")
 
-(define_insn "*xor_not_<V32I:mode>"
-  [(set (match_operand:V32I 0 "register_operand" "=r,d")
-	(not:V32I (xor:V32I (match_operand:V32I 1 "register_or_zero_operand" "rJ,d")
-			    (match_operand:V32I 2 "arith_operand" "rI,d"))))]
+(define_insn "*xor_not_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(not:SI (xor:SI (match_operand:SI 1 "register_or_zero_operand" "rJ")
+			(match_operand:SI 2 "arith_operand" "rI"))))]
   ""
-  "@
-   xnor\t%r1, %2, %0
-   fxnors\t%1, %2, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,single")])
+  "xnor\t%r1, %2, %0")
 
 ;; These correspond to the above in the case where we also (or only)
 ;; want to set the condition code.  
@@ -5244,19 +5120,17 @@
 
 ;; We cannot use the "not" pseudo insn because the Sun assembler
 ;; does not know how to make it work for constants.
-(define_expand "one_cmpl<V64I:mode>2"
-  [(set (match_operand:V64I 0 "register_operand" "")
-	(not:V64I (match_operand:V64I 1 "register_operand" "")))]
+(define_expand "one_cmpldi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(not:DI (match_operand:DI 1 "register_operand" "")))]
   ""
   "")
 
-(define_insn_and_split "*one_cmpl<V64I:mode>2_sp32"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(not:V64I (match_operand:V64I 1 "register_operand" "r,b")))]
+(define_insn_and_split "*one_cmpldi2_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(not:DI (match_operand:DI 1 "register_operand" "r")))]
   "! TARGET_ARCH64"
-  "@
-   #
-   fnot1\t%1, %0"
+  "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
@@ -5269,29 +5143,19 @@
    operands[3] = gen_highpart (SImode, operands[1]);
    operands[4] = gen_lowpart (SImode, operands[0]);
    operands[5] = gen_lowpart (SImode, operands[1]);"
-  [(set_attr "type" "*,fga")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "*,double")])
+  [(set_attr "length" "2")])
 
-(define_insn "*one_cmpl<V64I:mode>2_sp64"
-  [(set (match_operand:V64I 0 "register_operand" "=r,b")
-	(not:V64I (match_operand:V64I 1 "arith_operand" "rI,b")))]
+(define_insn "*one_cmpldi2_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(not:DI (match_operand:DI 1 "arith_operand" "rI")))]
   "TARGET_ARCH64"
-  "@
-   xnor\t%%g0, %1, %0
-   fnot1\t%1, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,double")])
+  "xnor\t%%g0, %1, %0")
 
-(define_insn "one_cmpl<V32I:mode>2"
-  [(set (match_operand:V32I 0 "register_operand" "=r,d")
-	(not:V32I (match_operand:V32I 1 "arith_operand" "rI,d")))]
+(define_insn "one_cmplsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(not:SI (match_operand:SI 1 "arith_operand" "rI")))]
   ""
-  "@
-  xnor\t%%g0, %1, %0
-  fnot1s\t%1, %0"
-  [(set_attr "type" "*,fga")
-   (set_attr "fptype" "*,single")])
+  "xnor\t%%g0, %1, %0")
 
 (define_insn "*cmp_cc_not"
   [(set (reg:CC CC_REG)
@@ -7883,59 +7747,193 @@
 
 ;; Vector instructions.
 
+(define_mode_iterator VM32 [V1SI V2HI V4QI])
+(define_mode_iterator VM64 [V1DI V2SI V4HI V8QI])
+(define_mode_iterator VMALL [V1SI V2HI V4QI V1DI V2SI V4HI V8QI])
+
+(define_mode_attr vbits [(V2SI "32") (V4HI "16") (V1SI "32s") (V2HI "16s")])
+(define_mode_attr vconstr [(V1SI "f") (V2HI "f") (V4QI "f")
+			   (V1DI "e") (V2SI "e") (V4HI "e") (V8QI "e")])
+(define_mode_attr vfptype [(V1SI "single") (V2HI "single") (V4QI "single")
+			   (V1DI "double") (V2SI "double") (V4HI "double")
+			   (V8QI "double")])
+
+(define_expand "mov<VMALL:mode>"
+  [(set (match_operand:VMALL 0 "nonimmediate_operand" "")
+	(match_operand:VMALL 1 "general_operand" ""))]
+  "TARGET_VIS"
+{
+  if (sparc_expand_move (<VMALL:MODE>mode, operands))
+    DONE;
+})
+
+(define_insn "*mov<VM32:mode>_insn"
+  [(set (match_operand:VM32 0 "nonimmediate_operand" "=f, f,f,f,m, m,r,m, r, r")
+	(match_operand:VM32 1 "input_operand"        "GY,ZC,f,m,f,GY,m,r,GY,ZC"))]
+  "TARGET_VIS
+   && (register_operand (operands[0], <VM32:MODE>mode)
+       || register_or_zero_or_all_ones_operand (operands[1], <VM32:MODE>mode))"
+  "@
+  fzeros\t%0
+  fones\t%0
+  fsrc1s\t%1, %0
+  ld\t%1, %0
+  st\t%1, %0
+  st\t%r1, %0
+  ld\t%1, %0
+  st\t%1, %0
+  mov\t0, %0
+  mov\t-1, %0"
+  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*")])
+
+(define_insn "*mov<VM64:mode>_insn_sp64"
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,e,m, m,r,m, r, r")
+	(match_operand:VM64 1 "input_operand"        "GY,ZC,e,m,e,GY,m,r,GY,ZC"))]
+  "TARGET_VIS
+   && TARGET_ARCH64
+   && (register_operand (operands[0], <VM64:MODE>mode)
+       || register_or_zero_or_all_ones_operand (operands[1], <VM64:MODE>mode))"
+  "@
+  fzero\t%0
+  fone\t%0
+  fsrc1\t%1, %0
+  ldd\t%1, %0
+  std\t%1, %0
+  stx\t%r1, %0
+  ldx\t%1, %0
+  stx\t%1, %0
+  mov\t0, %0
+  mov\t-1, %0"
+  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*")])
+
+(define_insn "*mov<VM64:mode>_insn_sp32"
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,e,m, m,U,T,o, r, r")
+	(match_operand:VM64 1 "input_operand"        "GY,ZC,e,m,e,GY,T,U,r,GY,ZC"))]
+  "TARGET_VIS
+   && ! TARGET_ARCH64
+   && (register_operand (operands[0], <VM64:MODE>mode)
+       || register_or_zero_or_all_ones_operand (operands[1], <VM64:MODE>mode))"
+  "@
+  fzero\t%0
+  fone\t%0
+  fsrc1\t%1, %0
+  ldd\t%1, %0
+  std\t%1, %0
+  stx\t%r1, %0
+  ldd\t%1, %0
+  std\t%1, %0
+  #
+  mov 0, %L0; mov 0, %H0
+  mov -1, %L0; mov -1, %H0"
+  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*,*")
+   (set_attr "length" "*,*,*,*,*,*,*,*,2,2,2")])
+
+(define_split
+  [(set (match_operand:VM64 0 "memory_operand" "")
+        (match_operand:VM64 1 "register_operand" ""))]
+  "reload_completed
+   && TARGET_VIS
+   && ! TARGET_ARCH64
+   && (((REGNO (operands[1]) % 2) != 0)
+       || ! mem_min_alignment (operands[0], 8))
+   && offsettable_memref_p (operands[0])"
+  [(clobber (const_int 0))]
+{
+  rtx word0, word1;
+
+  word0 = adjust_address (operands[0], SImode, 0);
+  word1 = adjust_address (operands[0], SImode, 4);
+
+  emit_move_insn_1 (word0, gen_highpart (SImode, operands[1]));
+  emit_move_insn_1 (word1, gen_lowpart (SImode, operands[1]));
+  DONE;
+})
+
+(define_expand "vec_init<mode>"
+  [(match_operand:VMALL 0 "register_operand" "")
+   (match_operand:VMALL 1 "" "")]
+  "TARGET_VIS"
+{
+  sparc_expand_vector_init (operands[0], operands[1]);
+  DONE;
+})
+
 (define_code_iterator plusminus [plus minus])
 (define_code_attr plusminus_insn [(plus "add") (minus "sub")])
 
-;; fp{add,sub}32s are emitted by the {add,sub}si3 patterns.
-(define_insn "<plusminus_insn>v2si3"
-  [(set (match_operand:V2SI 0 "register_operand" "=e")
-	(plusminus:V2SI (match_operand:V2SI 1 "register_operand" "e")
-			(match_operand:V2SI 2 "register_operand" "e")))]
-  "TARGET_VIS"
-  "fp<plusminus_insn>32\t%1, %2, %0"
-  [(set_attr "type" "fga")
-   (set_attr "fptype" "double")])
+(define_mode_iterator VADDSUB [V1SI V2SI V2HI V4HI])
 
-(define_insn "<plusminus_insn>v4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=e")
-	(plusminus:V4HI (match_operand:V4HI 1 "register_operand" "e")
-			(match_operand:V4HI 2 "register_operand" "e")))]
+(define_insn "<plusminus_insn><mode>3"
+  [(set (match_operand:VADDSUB 0 "register_operand" "=<vconstr>")
+	(plusminus:VADDSUB (match_operand:VADDSUB 1 "register_operand" "<vconstr>")
+			   (match_operand:VADDSUB 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS"
-  "fp<plusminus_insn>16\t%1, %2, %0"
+  "fp<plusminus_insn><vbits>\t%1, %2, %0"
   [(set_attr "type" "fga")
-   (set_attr "fptype" "double")])
+   (set_attr "fptype" "<vfptype>")])
 
-(define_insn "<plusminus_insn>v2hi3"
-  [(set (match_operand:V2HI 0 "register_operand" "=f")
-	(plusminus:V2HI (match_operand:V2HI 1 "register_operand" "f")
-			(match_operand:V2HI 2 "register_operand" "f")))]
+(define_mode_iterator VL [V1SI V2HI V4QI V1DI V2SI V4HI V8QI])
+(define_mode_attr vlsuf [(V1SI "s") (V2HI "s") (V4QI "s")
+			 (V1DI  "") (V2SI  "") (V4HI  "") (V8QI "")])
+(define_code_iterator vlop [ior and xor])
+(define_code_attr vlinsn [(ior "or") (and "and") (xor "xor")])
+(define_code_attr vlninsn [(ior "nor") (and "nand") (xor "xnor")])
+
+(define_insn "<code><mode>3"
+  [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
+	(vlop:VL (match_operand:VL 1 "register_operand" "<vconstr>")
+		 (match_operand:VL 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS"
-  "fp<plusminus_insn>16s\t%1, %2, %0"
+  "f<vlinsn><vlsuf>\t%1, %2, %0"
   [(set_attr "type" "fga")
-   (set_attr "fptype" "single")])
+   (set_attr "fptype" "<vfptype>")])
 
-;; All other logical instructions have integer equivalents so they
-;; are defined together.
+(define_insn "*not_<code><mode>3"
+  [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
+        (not:VL (vlop:VL (match_operand:VL 1 "register_operand" "<vconstr>")
+			 (match_operand:VL 2 "register_operand" "<vconstr>"))))]
+  "TARGET_VIS"
+  "f<vlninsn><vlsuf>\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "<vfptype>")])
 
 ;; (ior (not (op1)) (not (op2))) is the canonical form of NAND.
-
-(define_insn "*nand<V64:mode>_vis"
-  [(set (match_operand:V64 0 "register_operand" "=e")
-	(ior:V64 (not:V64 (match_operand:V64 1 "register_operand" "e"))
-		 (not:V64 (match_operand:V64 2 "register_operand" "e"))))]
+(define_insn "*nand<mode>_vis"
+  [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
+	(ior:VL (not:VL (match_operand:VL 1 "register_operand" "<vconstr>"))
+		(not:VL (match_operand:VL 2 "register_operand" "<vconstr>"))))]
   "TARGET_VIS"
-  "fnand\t%1, %2, %0"
+  "fnand<vlsuf>\t%1, %2, %0"
   [(set_attr "type" "fga")
-   (set_attr "fptype" "double")])
+   (set_attr "fptype" "<vfptype>")])
 
-(define_insn "*nand<V32:mode>_vis"
-  [(set (match_operand:V32 0 "register_operand" "=f")
-	 (ior:V32 (not:V32 (match_operand:V32 1 "register_operand" "f"))
-		  (not:V32 (match_operand:V32 2 "register_operand" "f"))))]
+(define_code_iterator vlnotop [ior and])
+
+(define_insn "*<code>_not1<mode>_vis"
+  [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
+	(vlnotop:VL (not:VL (match_operand:VL 1 "register_operand" "<vconstr>"))
+		    (match_operand:VL 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS"
-  "fnands\t%1, %2, %0"
+  "f<vlinsn>not1<vlsuf>\t%1, %2, %0"
   [(set_attr "type" "fga")
-   (set_attr "fptype" "single")])
+   (set_attr "fptype" "<vfptype>")])
+
+(define_insn "*<code>_not2<mode>_vis"
+  [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
+	(vlnotop:VL (match_operand:VL 1 "register_operand" "<vconstr>")
+		    (not:VL (match_operand:VL 2 "register_operand" "<vconstr>"))))]
+  "TARGET_VIS"
+  "f<vlinsn>not2<vlsuf>\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "<vfptype>")])
+
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
+	(not:VL (match_operand:VL 1 "register_operand" "<vconstr>")))]
+  "TARGET_VIS"
+  "fnot1<vlsuf>\t%1, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "<vfptype>")])
 
 ;; Hard to generate VIS instructions.  We have builtins for these.
 
@@ -8152,10 +8150,10 @@
 ;; Using faligndata only makes sense after an alignaddr since the choice of
 ;; bytes to take out of each operand is dependent on the results of the last
 ;; alignaddr.
-(define_insn "faligndata<V64I:mode>_vis"
-  [(set (match_operand:V64I 0 "register_operand" "=e")
-        (unspec:V64I [(match_operand:V64I 1 "register_operand" "e")
-                      (match_operand:V64I 2 "register_operand" "e")
+(define_insn "faligndata<VM64:mode>_vis"
+  [(set (match_operand:VM64 0 "register_operand" "=e")
+        (unspec:VM64 [(match_operand:VM64 1 "register_operand" "e")
+                      (match_operand:VM64 2 "register_operand" "e")
                       (reg:DI GSR_REG)]
          UNSPEC_ALIGNDATA))]
   "TARGET_VIS"
@@ -8341,10 +8339,10 @@
   "bmask\t%r1, %r2, %0"
   [(set_attr "type" "array")])
 
-(define_insn "bshuffle<V64I:mode>_vis"
-  [(set (match_operand:V64I 0 "register_operand" "=e")
-        (unspec:V64I [(match_operand:V64I 1 "register_operand" "e")
-	              (match_operand:V64I 2 "register_operand" "e")
+(define_insn "bshuffle<VM64:mode>_vis"
+  [(set (match_operand:VM64 0 "register_operand" "=e")
+        (unspec:VM64 [(match_operand:VM64 1 "register_operand" "e")
+	              (match_operand:VM64 2 "register_operand" "e")
 		      (reg:DI GSR_REG)]
                      UNSPEC_BSHUFFLE))]
   "TARGET_VIS2"
@@ -8447,9 +8445,9 @@
   [(ashift "ashl") (ss_ashift "ssashl") (lshiftrt "lshr") (ashiftrt "ashr")])
    
 (define_insn "v<vis3_shift_patname><mode>3"
-  [(set (match_operand:V64N8 0 "register_operand" "=<vconstr>")
-        (vis3_shift:V64N8 (match_operand:V64N8 1 "register_operand" "<vconstr>")
-                          (match_operand:V64N8 2 "register_operand" "<vconstr>")))]
+  [(set (match_operand:GCM 0 "register_operand" "=<vconstr>")
+	(vis3_shift:GCM (match_operand:GCM 1 "register_operand" "<vconstr>")
+			(match_operand:GCM 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS3"
   "<vis3_shift_insn><vbits>\t%1, %2, %0")
 
@@ -8478,13 +8476,13 @@
   "fmean16\t%1, %2, %0")
 
 (define_insn "fp<plusminus_insn>64_vis"
-  [(set (match_operand:DI 0 "register_operand" "=e")
-	(plusminus:DI (match_operand:DI 1 "register_operand" "e")
-		      (match_operand:DI 2 "register_operand" "e")))]
+  [(set (match_operand:V1DI 0 "register_operand" "=e")
+	(plusminus:V1DI (match_operand:V1DI 1 "register_operand" "e")
+			(match_operand:V1DI 2 "register_operand" "e")))]
   "TARGET_VIS3"
   "fp<plusminus_insn>64\t%1, %2, %0")
 
-(define_mode_iterator VASS [V4HI V2SI V2HI SI])
+(define_mode_iterator VASS [V4HI V2SI V2HI V1SI])
 (define_code_iterator vis3_addsub_ss [ss_plus ss_minus])
 (define_code_attr vis3_addsub_ss_insn
   [(ss_plus "fpadds") (ss_minus "fpsubs")])

@@ -1,3 +1,16 @@
+2011-10-17  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/fand.c: Remove __LP64__ ifdefs and expect
+	all operations to emit VIS instructions.
+	* gcc.target/sparc/fandnot.c: Likewise.
+	* gcc.target/sparc/fnot.c: Likewise.
+	* gcc.target/sparc/for.c: Likewise.
+	* gcc.target/sparc/fornot.c: Likewise.
+	* gcc.target/sparc/fxnor.c: Likewise.
+	* gcc.target/sparc/fxor.c: Likewise.
+	* gcc.target/sparc/combined-1.c: Revert change to use -O2, no longer
+	needed.
+
 2011-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/vshuf-v16hi.c: New test.
