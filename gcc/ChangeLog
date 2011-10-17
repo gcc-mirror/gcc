@@ -1,3 +1,11 @@
+2011-10-17  Kai Tietz  <ktietz@redhat.com>
+
+	* fold-const.c (simple_operand_p_2): New function.
+	(fold_truthop): Rename to
+	(fold_truth_andor_1): function name.
+	Additionally remove branching creation for logical and/or.
+	(fold_truth_andor): Handle branching creation for logical and/or here.
+
 2011-10-17  Andi Kleen  <ak@linux.intel.com>
 
 	* ggc-page.c (USING_MADVISE): Adjust ifdef to check for
