@@ -1,3 +1,10 @@
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44524
+	* typeck.c (build_class_member_access_expr): Provide a better error
+	message for X.Y where X is a pointer to class type.
+	(finish_class_member_access_expr): Likewise.
+
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 

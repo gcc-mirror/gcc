@@ -2128,8 +2128,16 @@ build_class_member_access_expr (tree object, tree member,
   if (!CLASS_TYPE_P (object_type))
     {
       if (complain & tf_error)
-	error ("request for member %qD in %qE, which is of non-class type %qT",
-	       member, object, object_type);
+	{
+	  if (POINTER_TYPE_P (object_type)
+	      && CLASS_TYPE_P (TREE_TYPE (object_type)))
+	    error ("request for member %qD in %qE, which is of pointer "
+		   "type %qT (maybe you meant to use %<->%> ?)",
+		   member, object, object_type);
+	  else
+	    error ("request for member %qD in %qE, which is of non-class "
+		   "type %qT", member, object, object_type);
+	}
       return error_mark_node;
     }
 
@@ -2508,8 +2516,16 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
   if (!CLASS_TYPE_P (object_type))
     {
       if (complain & tf_error)
-	error ("request for member %qD in %qE, which is of non-class type %qT",
-	       name, object, object_type);
+	{
+	  if (POINTER_TYPE_P (object_type)
+	      && CLASS_TYPE_P (TREE_TYPE (object_type)))
+	    error ("request for member %qD in %qE, which is of pointer "
+		   "type %qT (maybe you meant to use %<->%> ?)",
+		   name, object, object_type);
+	  else
+	    error ("request for member %qD in %qE, which is of non-class "
+		   "type %qT", name, object, object_type);
+	}
       return error_mark_node;
     }
 
