@@ -1,3 +1,9 @@
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48489
+	* typeck.c (finish_class_member_access_expr): Fix error call
+	for TREE_CODE (access_path) == TREE_BINFO.
+
 2011-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50732

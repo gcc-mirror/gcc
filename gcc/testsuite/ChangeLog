@@ -1,3 +1,8 @@
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48489
+	* g++.dg/inherit/error5.C: New.
+
 2011-10-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47023
