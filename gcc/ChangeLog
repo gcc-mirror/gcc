@@ -1,3 +1,9 @@
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50757
+	* c-family/c.opt ([Wnonnull]): Add C++ and Objective-C++.
+	* doc/invoke.texi: Update.
+
 2011-10-17  Richard Henderson  <rth@redhat.com>
 
 	PR 50746
