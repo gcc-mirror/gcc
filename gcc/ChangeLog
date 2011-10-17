@@ -1,6 +1,17 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* input.c (ONE_K, ONE_M, SCALE, STAT_LABEL, FORMAT_AMOUNT): New
+	macros.
+	(num_expanded_macros_counter, num_macro_tokens_counter): Declare
+	new counters.
+	(dump_line_table_statistics): Define new function.
+	* input.h (dump_line_table_statistics): Declare new function.
+	* toplev.c (dump_memory_report): Call dump_line_table_statistics.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* doc/cppopts.texi: Document -fdebug-cpp.
 	* doc/invoke.texi: Add -fdebug-cpp to the list of preprocessor
 	options.

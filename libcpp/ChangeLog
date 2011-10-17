@@ -1,6 +1,18 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* line-map.h (struct linemap_stats): Declare new struct.
+	(linemap_get_statistics): Declare ...
+	* line-map.c (linemap_get_statistics):  ... new function.
+	* macro.c (num_expanded_macros_counter, num_macro_tokens_counter):
+	Declare new counters.
+	(enter_macro_context, replace_args): Update
+	num_macro_tokens_counter.
+	(cpp_get_token_1): Update num_expanded_macros_counter.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* include/cpplib.h (struct cpp_options)<debug>: New struct member.
 	* include/line-map.h (linemap_dump_location): Declare ...
 	* line-map.c (linemap_dump_location): ... new function.

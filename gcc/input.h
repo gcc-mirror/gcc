@@ -55,4 +55,6 @@ extern location_t input_location;
   ((linemap_location_in_system_header_p (line_table, LOC)))
 #define in_system_header (in_system_header_at (input_location))
 
+void dump_line_table_statistics (void);
+
 #endif
