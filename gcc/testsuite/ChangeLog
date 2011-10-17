@@ -1,3 +1,8 @@
+2011-10-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50729
+	* gcc.dg/torture/pr50729.c: New testcase.
+
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
