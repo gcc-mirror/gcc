@@ -1496,7 +1496,6 @@ CXXABI_1.3.6 {
 
     __cxa_allocate_dependent_exception;
     __cxa_free_dependent_exception;
-    __cxa_get_exception_ptr;
     __cxa_deleted_virtual;
 
 } CXXABI_1.3.5;
