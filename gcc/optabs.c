@@ -6837,7 +6837,7 @@ expand_vec_perm_expr (tree type, tree v0, tree v1, tree sel, rtx target)
           this_e *= u;
 
 	  for (j = 0; j < u; ++j)
-	    vec[i * e + j] = GEN_INT (this_e + j);
+	    vec[i * u + j] = GEN_INT (this_e + j);
 	}
       sel_rtx = gen_rtx_CONST_VECTOR (qimode, gen_rtvec_v (w, vec));
     }
