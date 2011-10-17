@@ -112,13 +112,13 @@ static tree decode_field_reference (location_t, tree, HOST_WIDE_INT *,
 static int all_ones_mask_p (const_tree, int);
 static tree sign_bit_p (tree, const_tree);
 static int simple_operand_p (const_tree);
+static bool simple_operand_p_2 (tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
 static tree range_predecessor (tree);
 static tree range_successor (tree);
 static tree fold_range_test (location_t, enum tree_code, tree, tree, tree);
 static tree fold_cond_expr_with_comparison (location_t, tree, tree, tree, tree);
 static tree unextend (tree, int, int, tree);
-static tree fold_truthop (location_t, enum tree_code, tree, tree, tree);
 static tree optimize_minmax_comparison (location_t, enum tree_code,
 					tree, tree, tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree, bool *);
@@ -3500,7 +3500,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   return lhs;
 }
 
-/* Subroutine for fold_truthop: decode a field reference.
+/* Subroutine for fold_truth_andor_1: decode a field reference.
 
    If EXP is a comparison reference, we return the innermost reference.
 
@@ -3668,7 +3668,7 @@ sign_bit_p (tree exp, const_tree val)
   return NULL_TREE;
 }
 
-/* Subroutine for fold_truthop: determine if an operand is simple enough
+/* Subroutine for fold_truth_andor_1: determine if an operand is simple enough
    to be evaluated unconditionally.  */
 
 static int
@@ -3678,7 +3678,7 @@ simple_operand_p (const_tree exp)
   STRIP_NOPS (exp);
 
   return (CONSTANT_CLASS_P (exp)
-	  || TREE_CODE (exp) == SSA_NAME
+  	  || TREE_CODE (exp) == SSA_NAME
 	  || (DECL_P (exp)
 	      && ! TREE_ADDRESSABLE (exp)
 	      && ! TREE_THIS_VOLATILE (exp)
@@ -3692,6 +3692,36 @@ simple_operand_p (const_tree exp)
 		 registers aren't expensive.  */
 	      && (! TREE_STATIC (exp) || DECL_REGISTER (exp))));
 }
+
+/* Subroutine for fold_truth_andor: determine if an operand is simple enough
+   to be evaluated unconditionally.
+   I addition to simple_operand_p, we assume that comparisons and logic-not
+   operations are simple, if their operands are simple, too.  */
+
+static bool
+simple_operand_p_2 (tree exp)
+{
+  enum tree_code code;
+
+  /* Strip any conversions that don't change the machine mode.  */
+  STRIP_NOPS (exp);
+
+  code = TREE_CODE (exp);
+
+  if (TREE_SIDE_EFFECTS (exp)
+      || tree_could_trap_p (exp))
+    return false;
+
+  if (TREE_CODE_CLASS (code) == tcc_comparison)
+    return (simple_operand_p (TREE_OPERAND (exp, 0))
+	    && simple_operand_p (TREE_OPERAND (exp, 1)));
+
+  if (code == TRUTH_NOT_EXPR)
+      return simple_operand_p_2 (TREE_OPERAND (exp, 0));
+
+  return simple_operand_p (exp);
+}
+
 
 /* The following functions are subroutines to fold_range_test and allow it to
    try to change a logical combination of comparisons into a range test.
@@ -4888,7 +4918,7 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
   return 0;
 }
 
-/* Subroutine for fold_truthop: C is an INTEGER_CST interpreted as a P
+/* Subroutine for fold_truth_andor_1: C is an INTEGER_CST interpreted as a P
    bit value.  Arrange things so the extra bits will be set to zero if and
    only if C is signed-extended to its full width.  If MASK is nonzero,
    it is an INTEGER_CST that should be AND'ed with the extra bits.  */
@@ -5025,8 +5055,8 @@ merge_truthop_with_opposite_arm (location_t loc, tree op, tree cmpop,
    We return the simplified tree or 0 if no optimization is possible.  */
 
 static tree
-fold_truthop (location_t loc, enum tree_code code, tree truth_type,
-	      tree lhs, tree rhs)
+fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
+		    tree lhs, tree rhs)
 {
   /* If this is the "or" of two comparisons, we can do something if
      the comparisons are NE_EXPR.  If this is the "and", we can do something
@@ -5054,8 +5084,6 @@ fold_truthop (location_t loc, enum tree_code code, tree truth_type,
   tree lntype, rntype, result;
   HOST_WIDE_INT first_bit, end_bit;
   int volatilep;
-  tree orig_lhs = lhs, orig_rhs = rhs;
-  enum tree_code orig_code = code;
 
   /* Start by getting the comparison codes.  Fail if anything is volatile.
      If one operand is a BIT_AND_EXPR with the constant one, treat it as if
@@ -5119,8 +5147,7 @@ fold_truthop (location_t loc, enum tree_code code, tree truth_type,
   /* If the RHS can be evaluated unconditionally and its operands are
      simple, it wins to evaluate the RHS unconditionally on machines
      with expensive branches.  In this case, this isn't a comparison
-     that can be merged.  Avoid doing this if the RHS is a floating-point
-     comparison since those can trap.  */
+     that can be merged.  */
 
   if (BRANCH_COST (optimize_function_for_speed_p (cfun),
 		   false) >= 2
@@ -5149,13 +5176,6 @@ fold_truthop (location_t loc, enum tree_code code, tree truth_type,
 			   build2 (BIT_IOR_EXPR, TREE_TYPE (ll_arg),
 				   ll_arg, rl_arg),
 			   build_int_cst (TREE_TYPE (ll_arg), 0));
-
-      if (LOGICAL_OP_NON_SHORT_CIRCUIT)
-	{
-	  if (code != orig_code || lhs != orig_lhs || rhs != orig_rhs)
-	    return build2_loc (loc, code, truth_type, lhs, rhs);
-	  return NULL_TREE;
-	}
     }
 
   /* See if the comparisons can be merged.  Then get all the parameters for
@@ -8380,12 +8400,68 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
      lhs is another similar operation, try to merge its rhs with our
      rhs.  Then try to merge our lhs and rhs.  */
   if (TREE_CODE (arg0) == code
-      && 0 != (tem = fold_truthop (loc, code, type,
-				   TREE_OPERAND (arg0, 1), arg1)))
+      && 0 != (tem = fold_truth_andor_1 (loc, code, type,
+					 TREE_OPERAND (arg0, 1), arg1)))
     return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0), tem);
 
-  if ((tem = fold_truthop (loc, code, type, arg0, arg1)) != 0)
+  if ((tem = fold_truth_andor_1 (loc, code, type, arg0, arg1)) != 0)
     return tem;
+
+  if ((BRANCH_COST (optimize_function_for_speed_p (cfun),
+		    false) >= 2)
+      && LOGICAL_OP_NON_SHORT_CIRCUIT
+      && (code == TRUTH_AND_EXPR
+          || code == TRUTH_ANDIF_EXPR
+          || code == TRUTH_OR_EXPR
+          || code == TRUTH_ORIF_EXPR))
+    {
+      enum tree_code ncode, icode;
+
+      ncode = (code == TRUTH_ANDIF_EXPR || code == TRUTH_AND_EXPR)
+	      ? TRUTH_AND_EXPR : TRUTH_OR_EXPR;
+      icode = ncode == TRUTH_AND_EXPR ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
+
+      /* Transform ((A AND-IF B) AND[-IF] C) into (A AND-IF (B AND C)),
+	 or ((A OR-IF B) OR[-IF] C) into (A OR-IF (B OR C))
+	 We don't want to pack more than two leafs to a non-IF AND/OR
+	 expression.
+	 If tree-code of left-hand operand isn't an AND/OR-IF code and not
+	 equal to IF-CODE, then we don't want to add right-hand operand.
+	 If the inner right-hand side of left-hand operand has
+	 side-effects, or isn't simple, then we can't add to it,
+	 as otherwise we might destroy if-sequence.  */
+      if (TREE_CODE (arg0) == icode
+	  && simple_operand_p_2 (arg1)
+	  /* Needed for sequence points to handle trappings, and
+	     side-effects.  */
+	  && simple_operand_p_2 (TREE_OPERAND (arg0, 1)))
+	{
+	  tem = fold_build2_loc (loc, ncode, type, TREE_OPERAND (arg0, 1),
+				 arg1);
+	  return fold_build2_loc (loc, icode, type, TREE_OPERAND (arg0, 0),
+				  tem);
+	}
+	/* Same as abouve but for (A AND[-IF] (B AND-IF C)) -> ((A AND B) AND-IF C),
+	   or (A OR[-IF] (B OR-IF C) -> ((A OR B) OR-IF C).  */
+      else if (TREE_CODE (arg1) == icode
+	  && simple_operand_p_2 (arg0)
+	  /* Needed for sequence points to handle trappings, and
+	     side-effects.  */
+	  && simple_operand_p_2 (TREE_OPERAND (arg1, 0)))
+	{
+	  tem = fold_build2_loc (loc, ncode, type, 
+				 arg0, TREE_OPERAND (arg1, 0));
+	  return fold_build2_loc (loc, icode, type, tem,
+				  TREE_OPERAND (arg1, 1));
+	}
+      /* Transform (A AND-IF B) into (A AND B), or (A OR-IF B)
+	 into (A OR B).
+	 For sequence point consistancy, we need to check for trapping,
+	 and side-effects.  */
+      else if (code == icode && simple_operand_p_2 (arg0)
+               && simple_operand_p_2 (arg1))
+	return fold_build2_loc (loc, ncode, type, arg0, arg1);
+    }
 
   return NULL_TREE;
 }
