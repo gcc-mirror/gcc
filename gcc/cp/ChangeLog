@@ -1,3 +1,10 @@
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* error.c (cp_diagnostic_starter): Pass the relevant location to
+	diagnostic_report_current_module.
+	(cp_diagnostic_finalizer): Call virt_loc_aware_diagnostic_finalizer.
+
 2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48489

@@ -1,6 +1,16 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* lib/prune.exp (prune_gcc_output):  Prune output referring to
+	included files.
+	* gcc.dg/cpp/macro-exp-tracking-1.c: New test.
+	* gcc.dg/cpp/macro-exp-tracking-2.c: Likewise.
+	* gcc.dg/cpp/macro-exp-tracking-3.c: Likewise.
+	* gcc.dg/cpp/pragma-diagnostic-2.c: Likewise.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* gcc.dg/cpp/pragma-diagnostic-1.c: New test.
 
 2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
