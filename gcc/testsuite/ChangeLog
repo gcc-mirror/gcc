@@ -1,3 +1,8 @@
+2011-10-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50736
+	* g++.dg/cpp0x/lambda/lambda-capture-neg.C: New.
+
 2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44524

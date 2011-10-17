@@ -7630,6 +7630,31 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
                  /*ambiguous_decls=*/NULL,
                  capture_token->location);
 
+	  if (capture_init_expr == error_mark_node)
+	    {
+	      unqualified_name_lookup_error (capture_id);
+	      continue;
+	    }
+	  else if (DECL_P (capture_init_expr)
+		   && (TREE_CODE (capture_init_expr) != VAR_DECL
+		       && TREE_CODE (capture_init_expr) != PARM_DECL))
+	    {
+	      error_at (capture_token->location,
+			"capture of non-variable %qD ",
+			capture_init_expr);
+	      inform (0, "%q+#D declared here", capture_init_expr);
+	      continue;
+	    }
+	  if (TREE_CODE (capture_init_expr) == VAR_DECL
+	      && decl_storage_duration (capture_init_expr) != dk_auto)
+	    {
+	      pedwarn (capture_token->location, 0, "capture of variable "
+		       "%qD with non-automatic storage duration",
+		       capture_init_expr);
+	      inform (0, "%q+#D declared here", capture_init_expr);
+	      continue;
+	    }
+
 	  capture_init_expr
             = finish_id_expression
                 (capture_id,
@@ -7646,10 +7671,6 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
                  &error_msg,
                  capture_token->location);
 	}
-
-      if (TREE_CODE (capture_init_expr) == IDENTIFIER_NODE)
-	capture_init_expr
-	  = unqualified_name_lookup_error (capture_init_expr);
 
       if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
 	  && !explicit_init_p)
