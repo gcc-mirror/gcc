@@ -1,6 +1,27 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* gcc/diagnostic.h (diagnostic_report_current_module): Add a
+	location parameter.
+	* diagnostic.c (diagnostic_report_current_module): Add a location
+	parameter to the function definition.  Use it instead of
+	input_location.  Resolve the virtual location rather than just
+	looking up its map and risking to touch a resulting macro map.
+	(default_diagnostic_starter): Pass the relevant diagnostic
+	location to diagnostic_report_current_module.
+	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): New.
+	(virt_loc_aware_diagnostic_finalizer): Likewise.
+	(diagnostic_report_current_function): Pass the
+	relevant location to diagnostic_report_current_module.
+	* tree-diagnostic.h (virt_loc_aware_diagnostic_finalizer): Declare
+	new function.
+	* toplev.c (general_init): By default, use the new
+	virt_loc_aware_diagnostic_finalizer as diagnostic finalizer.
+	* Makefile.in: Add vec.h dependency to tree-diagnostic.c.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* doc/cppopts.texi (-ftrack-macro-expansion): Document new option.
 	* doc/invoke.texi (-ftrack-macro-expansion): Add this to the list of
 	preprocessor related options.

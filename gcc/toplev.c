@@ -1171,6 +1171,9 @@ general_init (const char *argv0)
      can give warnings and errors.  */
   diagnostic_initialize (global_dc, N_OPTS);
   diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
+  /* By default print macro expansion contexts in the diagnostic
+     finalizer -- for tokens resulting from macro macro expansion.  */
+  diagnostic_finalizer (global_dc) = virt_loc_aware_diagnostic_finalizer;
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   pp_format_decoder (global_dc->printer) = &default_tree_printer;

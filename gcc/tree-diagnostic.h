@@ -52,5 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 void default_tree_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 extern void diagnostic_report_current_function (diagnostic_context *,
 						diagnostic_info *);
-
+void virt_loc_aware_diagnostic_finalizer (diagnostic_context *,
+					  diagnostic_info *);
 #endif /* ! GCC_TREE_DIAGNOSTIC_H */
