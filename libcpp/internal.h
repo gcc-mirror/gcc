@@ -67,7 +67,8 @@ struct cset_converter
 
 #define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
     const struct line_maps *line_table = PFILE->line_table; \
-    const struct line_map *map = &line_table->maps[line_table->used-1]; \
+    const struct line_map *map = \
+      LINEMAPS_LAST_ORDINARY_MAP (line_table); \
     linenum_type line = SOURCE_LINE (map, line_table->highest_line); \
     linemap_line_start (PFILE->line_table, line + 1, COLS_HINT); \
   } while (0)
@@ -738,6 +739,76 @@ ufputs (const unsigned char *s, FILE *f)
 {
   return fputs ((const char *)s, f);
 }
+
+  /* In line-map.c.  */
+
+/* Create a macro map.  A macro map encodes source locations of tokens
+   that are part of a macro replacement-list, at a macro expansion
+   point. See the extensive comments of struct line_map and struct
+   line_map_macro, in line-map.h.
+
+   This map shall be created when the macro is expanded. The map
+   encodes the source location of the expansion point of the macro as
+   well as the "original" source location of each token that is part
+   of the macro replacement-list. If a macro is defined but never
+   expanded, it has no macro map.  SET is the set of maps the macro
+   map should be part of.  MACRO_NODE is the macro which the new macro
+   map should encode source locations for.  EXPANSION is the location
+   of the expansion point of MACRO. For function-like macros
+   invocations, it's best to make it point to the closing parenthesis
+   of the macro, rather than the the location of the first character
+   of the macro.  NUM_TOKENS is the number of tokens that are part of
+   the replacement-list of MACRO.  */
+const struct line_map *linemap_enter_macro (struct line_maps *,
+					    struct cpp_hashnode*,
+					    source_location,
+					    unsigned int);
+
+/* Create and return a virtual location for a token that is part of a
+   macro expansion-list at a macro expansion point.  See the comment
+   inside struct line_map_macro to see what an expansion-list exactly
+   is.
+
+   A call to this function must come after a call to
+   linemap_enter_macro.
+
+   MAP is the map into which the source location is created.  TOKEN_NO
+   is the index of the token in the macro replacement-list, starting
+   at number 0.
+
+   ORIG_LOC is the location of the token outside of this macro
+   expansion.  If the token comes originally from the macro
+   definition, it is the locus in the macro definition; otherwise it
+   is a location in the context of the caller of this macro expansion
+   (which is a virtual location or a source location if the caller is
+   itself a macro expansion or not).
+
+   MACRO_DEFINITION_LOC is the location in the macro definition,
+   either of the token itself or of a macro parameter that it
+   replaces.  */
+source_location linemap_add_macro_token (const struct line_map *,
+					 unsigned int,
+					 source_location,
+					 source_location);
+
+/* Return the source line number corresponding to source location
+   LOCATION.  SET is the line map set LOCATION comes from.  If
+   LOCATION is the location of token that is part of the
+   expansion-list of a macro expansion return the line number of the
+   macro expansion point.  */
+int linemap_get_expansion_line (struct line_maps *,
+				source_location);
+
+/* Return the path of the file corresponding to source code location
+   LOCATION.
+
+   If LOCATION is the location of a token that is part of the
+   replacement-list of a macro expansion return the file path of the
+   macro expansion point.
+
+   SET is the line map set LOCATION comes from.  */
+const char* linemap_get_expansion_filename (struct line_maps *,
+					    source_location);
 
 #ifdef __cplusplus
 }

@@ -314,7 +314,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 	     (Get_Name_String (file_info_ptr[i].File_Name))));
 
       /* We rely on the order isomorphism between files and line maps.  */
-      gcc_assert ((int) line_table->used == i);
+      gcc_assert ((int) LINEMAPS_ORDINARY_USED (line_table) == i);
 
       /* We create the line map for a source file at once, with a fixed number
 	 of columns chosen to avoid jumping over the next power of 2.  */
@@ -8391,12 +8391,10 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
       Source_File_Index file = Get_Source_File_Index (Sloc);
       Logical_Line_Number line = Get_Logical_Line_Number (Sloc);
       Column_Number column = Get_Column_Number (Sloc);
-      struct line_map *map = &line_table->maps[file - 1];
+      struct line_map *map = LINEMAPS_ORDINARY_MAP_AT (line_table, file - 1);
 
-      /* Translate the location according to the line-map.h formula.  */
-      *locus = map->start_location
-		+ ((line - map->to_line) << map->column_bits)
-		+ (column & ((1 << map->column_bits) - 1));
+      /* Translate the location.  */
+      *locus = linemap_position_for_line_and_column (map, line, column);
     }
 
   ref_filename

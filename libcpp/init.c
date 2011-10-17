@@ -586,7 +586,9 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   if (CPP_OPTION (pfile, preprocessed))
     {
       read_original_filename (pfile);
-      fname = pfile->line_table->maps[pfile->line_table->used-1].to_file;
+      fname =
+	ORDINARY_MAP_FILE_NAME
+	((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)));
     }
   return fname;
 }
