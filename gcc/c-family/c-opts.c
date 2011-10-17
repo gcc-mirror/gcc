@@ -628,6 +628,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->preprocessed = value;
       break;
 
+    case OPT_fdebug_cpp:
+      cpp_opts->debug = 1;
+      break;
+
     case OPT_ftrack_macro_expansion:
       if (value)
 	value = 2;

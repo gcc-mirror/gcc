@@ -429,7 +429,7 @@ Objective-C and Objective-C++ Dialects}.
 -iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
 -imultilib @var{dir} -isysroot @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
--P -ftrack-macro-expansion -fworking-directory @gol
+-P  -fdebug-cpp -ftrack-macro-expansion -fworking-directory @gol
 -remap -trigraphs  -undef  -U@var{macro}  @gol
 -Wp,@var{option} -Xpreprocessor @var{option}}
 

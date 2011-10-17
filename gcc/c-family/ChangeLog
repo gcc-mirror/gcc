@@ -1,6 +1,22 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* c.opt (fdebug-cpp): New option.
+	* c-opts.c (c_common_handle_option): Handle the option.
+	* c-ppoutput.c (maybe_print_line_1): New static function. Takes an
+	output stream in parameter. Factorized from ...
+	(maybe_print_line): ... this. Dump location debug information when
+	-fdebug-cpp is in effect.
+	(print_line_1): New static function. Takes an output stream in
+	parameter. Factorized from ...
+	(print_line): ... here. Dump location information when -fdebug-cpp
+	is in effect.
+	(scan_translation_unit): Dump location information when
+	-fdebug-cpp is in effect.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* c.opt (ftrack-macro-expansion): New option. Handle it with and
 	without argument.
 	* c-opts.c (c_common_handle_option)<case

@@ -59,7 +59,9 @@ static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
 static void dump_queued_macros (cpp_reader *);
 
+static void print_line_1 (source_location, const char*, FILE *);
 static void print_line (source_location, const char *);
+static void maybe_print_line_1 (source_location, FILE *);
 static void maybe_print_line (source_location);
 static void do_line_change (cpp_reader *, const cpp_token *,
 			    source_location, int);
@@ -243,7 +245,12 @@ scan_translation_unit (cpp_reader *pfile)
 	  in_pragma = false;
 	}
       else
-	cpp_output_token (token, print.outf);
+	{
+	  if (cpp_get_options (parse_in)->debug)
+	      linemap_dump_location (line_table, token->src_loc,
+				     print.outf);
+	  cpp_output_token (token, print.outf);
+	}
 
       if (token->type == CPP_COMMENT)
 	account_for_newlines (token->val.str.text, token->val.str.len);
@@ -297,8 +304,9 @@ scan_translation_unit_trad (cpp_reader *pfile)
 /* If the token read on logical line LINE needs to be output on a
    different line to the current one, output the required newlines or
    a line marker, and return 1.  Otherwise return 0.  */
+
 static void
-maybe_print_line (source_location src_loc)
+maybe_print_line_1 (source_location src_loc, FILE *stream)
 {
   int src_line = LOCATION_LINE (src_loc);
   const char *src_file = LOCATION_FILE (src_loc);
@@ -306,7 +314,7 @@ maybe_print_line (source_location src_loc)
   /* End the previous line of text.  */
   if (print.printed)
     {
-      putc ('\n', print.outf);
+      putc ('\n', stream);
       print.src_line++;
       print.printed = 0;
     }
@@ -318,22 +326,37 @@ maybe_print_line (source_location src_loc)
     {
       while (src_line > print.src_line)
 	{
-	  putc ('\n', print.outf);
+	  putc ('\n', stream);
 	  print.src_line++;
 	}
     }
   else
-    print_line (src_loc, "");
+    print_line_1 (src_loc, "", stream);
+
+}
+
+/* If the token read on logical line LINE needs to be output on a
+   different line to the current one, output the required newlines or
+   a line marker, and return 1.  Otherwise return 0.  */
+
+static void
+maybe_print_line (source_location src_loc)
+{
+  if (cpp_get_options (parse_in)->debug)
+    linemap_dump_location (line_table, src_loc,
+			   print.outf);
+  maybe_print_line_1 (src_loc, print.outf);
 }
 
 /* Output a line marker for logical line LINE.  Special flags are "1"
    or "2" indicating entering or leaving a file.  */
+
 static void
-print_line (source_location src_loc, const char *special_flags)
+print_line_1 (source_location src_loc, const char *special_flags, FILE *stream)
 {
   /* End any previous line of text.  */
   if (print.printed)
-    putc ('\n', print.outf);
+    putc ('\n', stream);
   print.printed = 0;
 
   if (!flag_no_line_commands)
@@ -354,18 +377,30 @@ print_line (source_location src_loc, const char *special_flags)
 			    (const unsigned char *) file_path,
 			    to_file_len);
       *p = '\0';
-      fprintf (print.outf, "# %u \"%s\"%s",
+      fprintf (stream, "# %u \"%s\"%s",
 	       print.src_line == 0 ? 1 : print.src_line,
 	       to_file_quoted, special_flags);
 
       sysp = in_system_header_at (src_loc);
       if (sysp == 2)
-	fputs (" 3 4", print.outf);
+	fputs (" 3 4", stream);
       else if (sysp == 1)
-	fputs (" 3", print.outf);
+	fputs (" 3", stream);
 
-      putc ('\n', print.outf);
+      putc ('\n', stream);
     }
+}
+
+/* Output a line marker for logical line LINE.  Special flags are "1"
+   or "2" indicating entering or leaving a file.  */
+
+static void
+print_line (source_location src_loc, const char *special_flags)
+{
+    if (cpp_get_options (parse_in)->debug)
+      linemap_dump_location (line_table, src_loc,
+			     print.outf);
+    print_line_1 (src_loc, special_flags, print.outf);
 }
 
 /* Helper function for cb_line_change and scan_translation_unit.  */
