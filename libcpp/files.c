@@ -1220,13 +1220,12 @@ cpp_make_system_header (cpp_reader *pfile, int syshdr, int externc)
 {
   int flags = 0;
   const struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = &line_table->maps[line_table->used-1];
-
+  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   /* 1 = system header, 2 = system header to be treated as C.  */
   if (syshdr)
     flags = 1 + (externc != 0);
   pfile->buffer->sysp = flags;
-  _cpp_do_file_change (pfile, LC_RENAME, map->to_file,
+  _cpp_do_file_change (pfile, LC_RENAME, ORDINARY_MAP_FILE_NAME (map),
 		       SOURCE_LINE (map, pfile->line_table->highest_line), flags);
 }
 

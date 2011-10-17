@@ -1,3 +1,18 @@
+2011-10-15  Tom Tromey  <tromey@redhat>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* input.h (struct expanded_location): Move to libcpp/line-map.h.
+	(LOCATION_COLUMN): New accessor
+	(in_system_header_at): Use linemap_location_in_system_header_p.
+	* diagnostic.c (diagnostic_report_current_module): Adjust to avoid
+	touching the internals of struct line_map.  Use the public API.
+	instead.
+	(diagnostic_report_diagnostic): Don't use relational operator '<'
+	on virtual locations.  Use linemap_location_before_p instead.
+	* input.c (expand_location): Adjust to expand to the tokens'
+	spelling location when macro location tracking is on.
+
+
 2011-10-08  Andi Kleen  <ak@linux.intel.com>
 
 	* ggc-page.c (GGC_QUIRE_SIZE): Increase to 512

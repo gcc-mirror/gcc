@@ -190,9 +190,7 @@ scan_translation_unit (cpp_reader *pfile)
       /* Subtle logic to output a space if and only if necessary.  */
       if (avoid_paste)
 	{
-	  const struct line_map *map
-	    = linemap_lookup (line_table, loc);
-	  int src_line = SOURCE_LINE (map, loc);
+	  int src_line = LOCATION_LINE (loc);
 
 	  if (print.source == NULL)
 	    print.source = token;
@@ -212,9 +210,7 @@ scan_translation_unit (cpp_reader *pfile)
 	}
       else if (token->flags & PREV_WHITE)
 	{
-	  const struct line_map *map
-	    = linemap_lookup (line_table, loc);
-	  int src_line = SOURCE_LINE (map, loc);
+	  int src_line = LOCATION_LINE (loc);
 
 	  if (src_line != print.src_line
 	      && do_line_adjustments
@@ -304,8 +300,9 @@ scan_translation_unit_trad (cpp_reader *pfile)
 static void
 maybe_print_line (source_location src_loc)
 {
-  const struct line_map *map = linemap_lookup (line_table, src_loc);
-  int src_line = SOURCE_LINE (map, src_loc);
+  int src_line = LOCATION_LINE (src_loc);
+  const char *src_file = LOCATION_FILE (src_loc);
+
   /* End the previous line of text.  */
   if (print.printed)
     {
@@ -317,7 +314,7 @@ maybe_print_line (source_location src_loc)
   if (!flag_no_line_commands
       && src_line >= print.src_line
       && src_line < print.src_line + 8
-      && strcmp (map->to_file, print.src_file) == 0)
+      && strcmp (src_file, print.src_file) == 0)
     {
       while (src_line > print.src_line)
 	{
@@ -341,28 +338,30 @@ print_line (source_location src_loc, const char *special_flags)
 
   if (!flag_no_line_commands)
     {
-      const struct line_map *map = linemap_lookup (line_table, src_loc);
-
-      size_t to_file_len = strlen (map->to_file);
+      const char *file_path = LOCATION_FILE (src_loc);
+      int sysp;
+      size_t to_file_len = strlen (file_path);
       unsigned char *to_file_quoted =
          (unsigned char *) alloca (to_file_len * 4 + 1);
       unsigned char *p;
 
-      print.src_line = SOURCE_LINE (map, src_loc);
-      print.src_file = map->to_file;
+      print.src_line = LOCATION_LINE (src_loc);
+      print.src_file = file_path;
 
       /* cpp_quote_string does not nul-terminate, so we have to do it
 	 ourselves.  */
       p = cpp_quote_string (to_file_quoted,
-			    (const unsigned char *) map->to_file, to_file_len);
+			    (const unsigned char *) file_path,
+			    to_file_len);
       *p = '\0';
       fprintf (print.outf, "# %u \"%s\"%s",
 	       print.src_line == 0 ? 1 : print.src_line,
 	       to_file_quoted, special_flags);
 
-      if (map->sysp == 2)
+      sysp = in_system_header_at (src_loc);
+      if (sysp == 2)
 	fputs (" 3 4", print.outf);
-      else if (map->sysp == 1)
+      else if (sysp == 1)
 	fputs (" 3", print.outf);
 
       putc ('\n', print.outf);
@@ -391,8 +390,7 @@ do_line_change (cpp_reader *pfile, const cpp_token *token,
      ought to care.  Some things do care; the fault lies with them.  */
   if (!CPP_OPTION (pfile, traditional))
     {
-      const struct line_map *map = linemap_lookup (line_table, src_loc);
-      int spaces = SOURCE_COLUMN (map, src_loc) - 2;
+      int spaces = LOCATION_COLUMN (src_loc) - 2;
       print.printed = 1;
 
       while (-- spaces >= 0)
@@ -421,6 +419,8 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 static void
 cb_define (cpp_reader *pfile, source_location line, cpp_hashnode *node)
 {
+  const struct line_map *map;
+
   maybe_print_line (line);
   fputs ("#define ", print.outf);
 
@@ -432,7 +432,10 @@ cb_define (cpp_reader *pfile, source_location line, cpp_hashnode *node)
     fputs ((const char *) NODE_NAME (node), print.outf);
 
   putc ('\n', print.outf);
-  if (linemap_lookup (line_table, line)->to_line != 0)
+  linemap_resolve_location (line_table, line,
+			    LRK_MACRO_DEFINITION_LOCATION,
+			    &map);
+  if (LINEMAP_LINE (map) != 0)
     print.src_line++;
 }
 

@@ -42,12 +42,7 @@ expand_location (source_location loc)
       xloc.sysp = 0;
     }
   else
-    {
-      const struct line_map *map = linemap_lookup (line_table, loc);
-      xloc.file = map->to_file;
-      xloc.line = SOURCE_LINE (map, loc);
-      xloc.column = SOURCE_COLUMN (map, loc);
-      xloc.sysp = map->sysp != 0;
-    };
+    xloc = linemap_expand_location_full (line_table, loc,
+					 LRK_SPELLING_LOCATION);
   return xloc;
 }

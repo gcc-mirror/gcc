@@ -171,13 +171,17 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	unsigned int len;
 	const char *name;
 	uchar *buf;
-	map = linemap_lookup (pfile->line_table, pfile->line_table->highest_line);
-
-	if (node->value.builtin == BT_BASE_FILE)
-	  while (! MAIN_FILE_P (map))
-	    map = INCLUDED_FROM (pfile->line_table, map);
-
-	name = map->to_file;
+	
+	if (node->value.builtin == BT_FILE)
+	  name = linemap_get_expansion_filename (pfile->line_table,
+						 pfile->line_table->highest_line);
+	else
+	  {
+	    map = linemap_lookup (pfile->line_table, pfile->line_table->highest_line);
+	    while (! MAIN_FILE_P (map))
+	      map = INCLUDED_FROM (pfile->line_table, map);
+	    name = ORDINARY_MAP_FILE_NAME (map);
+	  }
 	len = strlen (name);
 	buf = _cpp_unaligned_alloc (pfile, len * 2 + 3);
 	result = buf;
@@ -196,14 +200,14 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
       break;
 
     case BT_SPECLINE:
-      map = &pfile->line_table->maps[pfile->line_table->used-1];
+      map = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
-      number = SOURCE_LINE (map, 
-			    CPP_OPTION (pfile, traditional) 
-			    ? pfile->line_table->highest_line
-			    : pfile->cur_token[-1].src_loc);
+      number = linemap_get_expansion_line (pfile->line_table,
+					   CPP_OPTION (pfile, traditional)
+					   ? pfile->line_table->highest_line
+					   : pfile->cur_token[-1].src_loc);
       break;
 
       /* __STDC__ has the value 1 under normal circumstances.

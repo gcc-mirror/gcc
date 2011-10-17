@@ -1,3 +1,121 @@
+2011-10-15  Tom Tromey  <tromey@redhat>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* include/line-map.h (enum lc_reason)<LC_ENTER_MACRO>: New enum
+	member.
+	(MAX_SOURCE_LOCATION): New constant.
+	(struct line_map_ordinary, struct line_map_macro): New structs.
+    	(struct line_map): Turn this into a union of the two above.  Add
+	comments.
+	(struct maps_info): New struct.
+	(struct line_maps)<info_ordinary, info_macro>: Two new fields.
+	These now carry the map information that was previously scattered
+	in struct line_maps.
+	(struct map_info::allocated): Fix comment.
+	(MAP_START_LOCATION, ORDINARY_MAP_FILE_NAME)
+	(ORDINARY_MAP_STARTING_LINE_NUMBER)
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX)
+	(ORDINARY_MAP_IN_SYSTEM_HEADER_P)
+	(ORDINARY_MAP_NUMBER_OF_COLUMN_BITS, MACRO_MAP_MACRO)
+	(MACRO_MAP_NUM_MACRO_TOKENS MACRO_MAP_LOCATIONS)
+	(MACRO_MAP_EXPANSION_POINT_LOCATION)
+	(LOCATION_POSSIBLY_IN_MACRO_MAP_P, LINEMAPS_MAP_INFO)
+	(LINEMAPS_MAPS, LINEMAPS_ALLOCATE, LINEMAPS_USED, LINEMAPS_CACHE)
+	(LINEMAPS_LAST_MAP, LINEMAPS_LAST_ALLOCATED_MAP)
+	(LINEMAPS_ORDINARY_MAPS, LINEMAPS_ORDINARY_ALLOCATED)
+	(LINEMAPS_ORDINARY_USED, LINEMAPS_ORDINARY_CACHE)
+	(LINEMAPS_LAST_ORDINARY_MAP, LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP)
+	(LINEMAPS_MACRO_MAPS, LINEMAPS_MACRO_ALLOCATED)
+	(LINEMAPS_MACRO_USED, LINEMAPS_MACRO_CACHE)
+	(LINEMAPS_LAST_MACRO_MAP, LINEMAPS_LAST_ALLOCATED_MACRO_MAP)
+	(LINEMAPS_MAP_AT, LINEMAPS_ORDINARY_MAP_AT)
+	(LINEMAPS_MACRO_MAP_AT): New accessors for ordinary and macro map
+	information.
+	(linemap_check_ordinary, linemap_assert)
+	(linemap_location_before_p): New macros.
+	(linemap_position_for_line_and_column)
+	(linemap_tracks_macro_expansion_locs_p, linemap_add_macro_token)
+	(linemap_macro_expansion_map_p)
+	(linemap_macro_map_loc_to_def_point)
+	(linemap_macro_map_loc_unwind_once)
+	(linemap_macro_map_loc_to_exp_point, linemap_step_out_once)
+	(linemap_get_source_line linemap_get_source_column)
+	(linemap_map_get_macro_name, linemap_get_file_path)
+	(linemap_location_in_system_header_p)
+	(linemap_location_from_macro_expansion_p): Declare new functions.
+	(SOURCE_LINE, SOURCE_COLUMN, LAST_SOURCE_LINE_LOCATION)
+	(LINEMAP_FILE, LINEMAP_LINE, LINEMAP_SYSP): Assert that this
+	accessors act on ordinary maps only.
+	(INCLUDED_FROM): Return NULL for main files; use the new
+	accessors.
+	(LINEMAP_POSITION_FOR_COLUMN): Use the new accessors.
+	(struct expanded_location): Move here from gcc/input.h
+	(linemap_resolve_location, linemap_expand_location)
+	(linemap_expand_location_full): Declare new functions.
+	* line-map.c: Include cpplib.h, internal.h
+	(linemap_enter_macro, linemap_add_macro_token)
+	(linemap_get_expansion_line, linemap_get_expansion_filename): New
+	functions that are private to libcpp.
+	(linemap_assert): New macro.
+	(linemap_macro_loc_to_exp_point, linemap_macro_loc_to_exp_point)
+	(linemap_macro_loc_unwind, linemap_macro_map_loc_to_def_point)
+	(linemap_macro_map_loc_unwind_toward_spelling)
+	(linemap_macro_map_loc_to_exp_point)
+	(first_map_in_common_1, first_map_in_common): New static
+	functions.
+	(new_linemap): Define new static functions.  Extracted and
+	enhanced from ...
+	(linemap_add): ... here.  Use linemap_assert in lieu of abort
+	previously.
+	(linemap_tracks_macro_expansion_locs_p)
+	(linemap_add_macro_token, linemap_macro_expansion_map_p)
+	(linemap_check_ordinary, linemap_macro_map_loc_to_exp_point)
+	(linemap_macro_map_loc_to_def_point)
+	(linemap_macro_map_loc_unwind_once)
+	(linemap_step_out_once, linemap_map_get_index)
+	(linemap_get_source_line,linemap_get_source_column)
+	(linemap_get_file_path, linemap_map_get_macro_name)
+	(linemap_location_in_system_header_p)
+	(linemap_location_originated_from_system_header_p)
+	(linemap_location_from_macro_expansion_p)
+	(linemap_tracks_macro_expansion_locs_p)
+	(linemap_resolve_location, linemap_expand_location)
+	(linemap_expand_location_full)
+	(linemap_tracks_macro_expansion_locs_p)
+	(linemap_position_for_line_and_column, linemap_compare_locations):
+	Define new public functions.
+	(linemap_init): Initialize ordinary and macro maps information in
+	the map set.
+	(linemap_check_files_exited): Use the new accessors.
+	(linemap_free): Remove this dead code.
+	(linemap_line_start): Assert this uses an ordinary map.  Adjust to
+	use the new ordinary map accessors and data structures.  Don't
+	overflow past the lowest possible macro token's location.
+	(linemap_position_for_column): Assert the ordinary maps of the map
+	set are really ordinary.  Use ordinary map accessors.
+	(linemap_lookup): Keep the same logic but generalize to allow
+	lookup of both ordinary and macro maps.  Do not crash when called
+	with an empty line table.
+	* directives-only.c (_cpp_preprocess_dir_only): Adjust to use the
+	new API of line-map.h.
+	* directives.c (start_directive, do_line, do_linemarker)
+	(do_linemarker): Likewise.
+	* files.c (_cpp_find_file, _cpp_stack_include, open_file_failed)
+	(make_cpp_dir, cpp_make_system_header): Likewise.
+	* init.c (cpp_read_main_file): Likewise.
+	* internal.h (CPP_INCREMENT_LINE): Likewise.
+	(linemap_enter_macro, linemap_add_macro_token)
+	(linemap_get_expansion_line, linemap_get_expansion_filename): New
+	functions private to libcpp.
+	* lex.c (_cpp_process_line_notes, _cpp_skip_block_comment)
+	(skip_line_comment, skip_whitespace, lex_raw_string)
+	(_cpp_lex_direct): Likewise.
+	* macro.c (_cpp_builtin_macro_text): Likewise.
+	(_cpp_aligned_alloc): Initialize the new name member of the macro.
+	* traditional.c (copy_comment, _cpp_scan_out_logical_line):
+	Likewise.
+	* errors.c (cpp_diagnostic): Adjust to new linemap API.
+
 2011-08-28  Dodji Seketeli  <dodji@redhat.com>
 
 	* line-map.c (linemap_add): Assert that reason must not be

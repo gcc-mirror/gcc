@@ -1,3 +1,9 @@
+2011-10-15  Tom Tromey  <tromey@redhat.com> 
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* gcc-interface/trans.c (gigi, Sloc_to_locus): Adjust to use the
+	new public ordinary map interface.
+
 2011-10-16  Tristan Gingold  <gingold@adacore.com>
 
 	* link.c (_AIX): Add support for GNU ld.        

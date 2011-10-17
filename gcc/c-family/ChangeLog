@@ -1,3 +1,12 @@
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* c-ppoutput.c (scan_translation_unit, maybe_print_line)
+	(print_line, cb_define, do_line_change): Adjust to avoid touching
+	the internals of struct line_map.  Use the public API instead.
+	* c-pch.c (c_common_read_pch): Likewise.
+	* c-lex.c (fe_file_change): Likewise.
+
 2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* c-common.c (def_builtin_1): Delete old interface with two

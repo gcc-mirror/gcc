@@ -884,14 +884,14 @@ static void
 do_line (cpp_reader *pfile)
 {
   const struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = &line_table->maps[line_table->used - 1];
+  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
 
   /* skip_rest_of_line() may cause line table to be realloc()ed so note down
      sysp right now.  */
 
-  unsigned char map_sysp = map->sysp;
+  unsigned char map_sysp = ORDINARY_MAP_IN_SYSTEM_HEADER_P (map);
   const cpp_token *token;
-  const char *new_file = map->to_file;
+  const char *new_file = ORDINARY_MAP_FILE_NAME (map);
   linenum_type new_lineno;
 
   /* C99 raised the minimum limit on #line numbers.  */
@@ -946,11 +946,11 @@ static void
 do_linemarker (cpp_reader *pfile)
 {
   const struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = &line_table->maps[line_table->used - 1];
+  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   const cpp_token *token;
-  const char *new_file = map->to_file;
+  const char *new_file = ORDINARY_MAP_FILE_NAME (map);
   linenum_type new_lineno;
-  unsigned int new_sysp = map->sysp;
+  unsigned int new_sysp = ORDINARY_MAP_IN_SYSTEM_HEADER_P (map);
   enum lc_reason reason = LC_RENAME_VERBATIM;
   int flag;
   bool wrapped;
@@ -1038,7 +1038,9 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
   const struct line_map *map = linemap_add (pfile->line_table, reason, sysp,
 					    to_file, file_line);
   if (map != NULL)
-    linemap_line_start (pfile->line_table, map->to_line, 127);
+    linemap_line_start (pfile->line_table,
+			ORDINARY_MAP_STARTING_LINE_NUMBER (map),
+			127);
 
   if (pfile->cb.file_change)
     pfile->cb.file_change (pfile, map);
