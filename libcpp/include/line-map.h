@@ -53,6 +53,10 @@ typedef unsigned int source_location;
 /* Memory allocation function typedef.  Works like xrealloc.  */
 typedef void *(*line_map_realloc) (void *, size_t);
 
+/* Memory allocator function that returns the actual allocated size,
+   for a given requested allocation.  */
+typedef size_t (*line_map_round_alloc_size_func) (size_t);
+
 /* An ordinary line map encodes physical source locations. Those
    physical source locations are called "spelling locations".
    
@@ -281,6 +285,10 @@ struct GTY(()) line_maps {
   /* If non-null, the allocator to use when resizing 'maps'.  If null,
      xrealloc is used.  */
   line_map_realloc reallocator;
+
+  /* The allocators' function used to know the actual size it
+     allocated, for a certain allocation size requested.  */
+  line_map_round_alloc_size_func round_alloc_size;
 };
 
 /* Returns the pointer to the memory region where information about

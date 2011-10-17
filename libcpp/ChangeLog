@@ -1,6 +1,14 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
+	* include/line-map.h (struct line_maps::alloced_size_for_request):
+	New member.
+	* line-map.c (new_linemap): Use set->alloced_size_for_request to
+	get the actual allocated size of line maps.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
 	* line-map.h (struct linemap_stats): Declare new struct.
 	(linemap_get_statistics): Declare ...
 	* line-map.c (linemap_get_statistics):  ... new function.

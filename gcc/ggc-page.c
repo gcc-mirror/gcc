@@ -1054,6 +1054,47 @@ static unsigned char size_lookup[NUM_SIZE_LOOKUP] =
   9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9
 };
 
+/* For a given size of memory requested for allocation, return the
+   actual size that is going to be allocated, as well as the size
+   order.  */
+
+static void
+ggc_round_alloc_size_1 (size_t requested_size,
+			size_t *size_order,
+			size_t *alloced_size)
+{
+  size_t order, object_size;
+
+  if (requested_size < NUM_SIZE_LOOKUP)
+    {
+      order = size_lookup[requested_size];
+      object_size = OBJECT_SIZE (order);
+    }
+  else
+    {
+      order = 10;
+      while (requested_size > (object_size = OBJECT_SIZE (order)))
+        order++;
+    }
+
+  if (size_order)
+    *size_order = order;
+  if (alloced_size)
+    *alloced_size = object_size;
+}
+
+/* For a given size of memory requested for allocation, return the
+   actual size that is going to be allocated.  */
+
+size_t
+ggc_round_alloc_size (size_t requested_size)
+{
+  size_t size = 0;
+  
+  ggc_round_alloc_size_1 (requested_size, NULL, &size);
+  return size;
+}
+
 /* Typed allocation function.  Does nothing special in this collector.  */
 
 void *
@@ -1072,17 +1113,7 @@ ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
   struct page_entry *entry;
   void *result;
 
-  if (size < NUM_SIZE_LOOKUP)
-    {
-      order = size_lookup[size];
-      object_size = OBJECT_SIZE (order);
-    }
-  else
-    {
-      order = 10;
-      while (size > (object_size = OBJECT_SIZE (order)))
-	order++;
-    }
+  ggc_round_alloc_size_1 (size, &order, &object_size);
 
   /* If there are non-full pages for this size allocation, they are at
      the head of the list.  */

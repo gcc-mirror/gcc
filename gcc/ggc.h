@@ -145,6 +145,8 @@ extern void gt_pch_save (FILE *f);
 /* The internal primitive.  */
 extern void *ggc_internal_alloc_stat (size_t MEM_STAT_DECL);
 
+extern size_t ggc_round_alloc_size (size_t requested_size);
+
 #define ggc_internal_alloc(s) ggc_internal_alloc_stat (s MEM_STAT_INFO)
 
 /* Allocate an object of the specified type and size.  */

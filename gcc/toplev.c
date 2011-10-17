@@ -1216,6 +1216,7 @@ general_init (const char *argv0)
   line_table = ggc_alloc_line_maps ();
   linemap_init (line_table);
   line_table->reallocator = realloc_for_line_map;
+  line_table->round_alloc_size = ggc_round_alloc_size;
   init_ttree ();
 
   /* Initialize register usage now so switches may override.  */
