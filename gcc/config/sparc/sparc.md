@@ -8214,8 +8214,8 @@
 ;; with the same operands.
 (define_insn "edge8<P:mode>_vis"
   [(set (reg:CC_NOOV CC_REG)
-        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
-			  	  (match_operand:P 2 "register_operand" "rJ"))
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_or_zero_operand" "rJ")
+			  	  (match_operand:P 2 "register_or_zero_operand" "rJ"))
 			 (const_int 0)))
    (set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8))]
@@ -8225,8 +8225,8 @@
 
 (define_insn "edge8l<P:mode>_vis"
   [(set (reg:CC_NOOV CC_REG)
-        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
-			  	  (match_operand:P 2 "register_operand" "rJ"))
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_or_zero_operand" "rJ")
+			  	  (match_operand:P 2 "register_or_zero_operand" "rJ"))
 			 (const_int 0)))
    (set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE8L))]
@@ -8236,8 +8236,8 @@
 
 (define_insn "edge16<P:mode>_vis"
   [(set (reg:CC_NOOV CC_REG)
-        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
-			  	  (match_operand:P 2 "register_operand" "rJ"))
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_or_zero_operand" "rJ")
+			  	  (match_operand:P 2 "register_or_zero_operand" "rJ"))
 			 (const_int 0)))
    (set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16))]
@@ -8247,8 +8247,8 @@
 
 (define_insn "edge16l<P:mode>_vis"
   [(set (reg:CC_NOOV CC_REG)
-        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
-			  	  (match_operand:P 2 "register_operand" "rJ"))
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_or_zero_operand" "rJ")
+			  	  (match_operand:P 2 "register_or_zero_operand" "rJ"))
 			 (const_int 0)))
    (set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE16L))]
@@ -8258,8 +8258,8 @@
 
 (define_insn "edge32<P:mode>_vis"
   [(set (reg:CC_NOOV CC_REG)
-        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
-			  	  (match_operand:P 2 "register_operand" "rJ"))
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_or_zero_operand" "rJ")
+			  	  (match_operand:P 2 "register_or_zero_operand" "rJ"))
 			 (const_int 0)))
    (set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32))]
@@ -8269,8 +8269,8 @@
 
 (define_insn "edge32l<P:mode>_vis"
   [(set (reg:CC_NOOV CC_REG)
-        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_operand" "rJ")
-			  	  (match_operand:P 2 "register_operand" "rJ"))
+        (compare:CC_NOOV (minus:P (match_operand:P 1 "register_or_zero_operand" "rJ")
+			  	  (match_operand:P 2 "register_or_zero_operand" "rJ"))
 			 (const_int 0)))
    (set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_dup 1) (match_dup 2)] UNSPEC_EDGE32L))]
@@ -8294,8 +8294,8 @@
 
 (define_insn "array8<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-                   (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_ARRAY8))]
   "TARGET_VIS"
   "array8\t%r1, %r2, %0"
@@ -8303,8 +8303,8 @@
 
 (define_insn "array16<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-                   (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_ARRAY16))]
   "TARGET_VIS"
   "array16\t%r1, %r2, %0"
@@ -8312,8 +8312,8 @@
 
 (define_insn "array32<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-                   (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_ARRAY32))]
   "TARGET_VIS"
   "array32\t%r1, %r2, %0"
@@ -8321,8 +8321,8 @@
 
 (define_insn "bmaskdi_vis"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (plus:DI (match_operand:DI 1 "register_operand" "rJ")
-                 (match_operand:DI 2 "register_operand" "rJ")))
+        (plus:DI (match_operand:DI 1 "register_or_zero_operand" "rJ")
+                 (match_operand:DI 2 "register_or_zero_operand" "rJ")))
    (set (zero_extract:DI (reg:DI GSR_REG) (const_int 32) (const_int 32))
         (plus:DI (match_dup 1) (match_dup 2)))]
   "TARGET_VIS2"
@@ -8331,8 +8331,8 @@
 
 (define_insn "bmasksi_vis"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (plus:SI (match_operand:SI 1 "register_operand" "rJ")
-                 (match_operand:SI 2 "register_operand" "rJ")))
+        (plus:SI (match_operand:SI 1 "register_or_zero_operand" "rJ")
+                 (match_operand:SI 2 "register_or_zero_operand" "rJ")))
    (set (zero_extract:DI (reg:DI GSR_REG) (const_int 32) (const_int 32))
         (zero_extend:DI (plus:SI (match_dup 1) (match_dup 2))))]
   "TARGET_VIS2"
@@ -8353,8 +8353,8 @@
 ;; VIS 2.0 adds edge variants which do not set the condition codes
 (define_insn "edge8n<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-	           (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+	           (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_EDGE8N))]
   "TARGET_VIS2"
   "edge8n\t%r1, %r2, %0"
@@ -8362,8 +8362,8 @@
 
 (define_insn "edge8ln<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-	           (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+	           (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_EDGE8LN))]
   "TARGET_VIS2"
   "edge8ln\t%r1, %r2, %0"
@@ -8371,8 +8371,8 @@
 
 (define_insn "edge16n<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-                   (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_EDGE16N))]
   "TARGET_VIS2"
   "edge16n\t%r1, %r2, %0"
@@ -8380,8 +8380,8 @@
 
 (define_insn "edge16ln<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-                   (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_EDGE16LN))]
   "TARGET_VIS2"
   "edge16ln\t%r1, %r2, %0"
@@ -8389,8 +8389,8 @@
 
 (define_insn "edge32n<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-                   (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_EDGE32N))]
   "TARGET_VIS2"
   "edge32n\t%r1, %r2, %0"
@@ -8398,8 +8398,8 @@
 
 (define_insn "edge32ln<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "rJ")
-                   (match_operand:P 2 "register_operand" "rJ")]
+        (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")
+                   (match_operand:P 2 "register_or_zero_operand" "rJ")]
                   UNSPEC_EDGE32LN))]
   "TARGET_VIS2"
   "edge32ln\t%r1, %r2, %0"

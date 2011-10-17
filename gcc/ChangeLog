@@ -1,8 +1,13 @@
+2011-10-17  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.md: Use register_or_zero_operand where rJ
+	is the constraint.
+
 2011-10-17  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc-modes.def: Add single entry vector modes for
 	DImode and SImode.
-	* config/sparc/sparc/sparc.md (V32, V32I, V64, V64I, V64N8): Delete
+	* config/sparc/sparc.md (V32, V32I, V64, V64I, V64N8): Delete
 	mode iterators.
 	(mov<V32:mode>): Revert back to plain SFmode pattern.
 	(*movsf_insn): Likewise.
