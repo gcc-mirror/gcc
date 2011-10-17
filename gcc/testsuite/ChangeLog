@@ -1,3 +1,8 @@
+2011-10-17  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50746
+	* gcc.dg/vect/vect-114.c: Remove vect_hw_misalign.
+
 2011-10-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50736
