@@ -32,15 +32,19 @@ int matching_actual_arglist = 0;
 
 /* Matches a kind-parameter expression, which is either a named
    symbolic constant or a nonnegative integer constant.  If
-   successful, sets the kind value to the correct integer.  */
+   successful, sets the kind value to the correct integer.
+   The argument 'is_iso_c' signals whether the kind is an ISO_C_BINDING
+   symbol like e.g. 'c_int'.  */
 
 static match
-match_kind_param (int *kind)
+match_kind_param (int *kind, int *is_iso_c)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
   const char *p;
   match m;
+
+  *is_iso_c = 0;
 
   m = gfc_match_small_literal_int (kind, NULL);
   if (m != MATCH_NO)
@@ -55,6 +59,8 @@ match_kind_param (int *kind)
 
   if (sym == NULL)
     return MATCH_NO;
+
+  *is_iso_c = sym->attr.is_iso_c;
 
   if (sym->attr.flavor != FL_PARAMETER)
     return MATCH_NO;
@@ -77,20 +83,24 @@ match_kind_param (int *kind)
 
 /* Get a trailing kind-specification for non-character variables.
    Returns:
-      the integer kind value or:
-      -1 if an error was generated
-      -2 if no kind was found */
+     * the integer kind value or
+     * -1 if an error was generated,
+     * -2 if no kind was found.
+   The argument 'is_iso_c' signals whether the kind is an ISO_C_BINDING
+   symbol like e.g. 'c_int'.  */
 
 static int
-get_kind (void)
+get_kind (int *is_iso_c)
 {
   int kind;
   match m;
 
+  *is_iso_c = 0;
+
   if (gfc_match_char ('_') != MATCH_YES)
     return -2;
 
-  m = match_kind_param (&kind);
+  m = match_kind_param (&kind, is_iso_c);
   if (m == MATCH_NO)
     gfc_error ("Missing kind-parameter at %C");
 
@@ -188,7 +198,7 @@ match_digits (int signflag, int radix, char *buffer)
 static match
 match_integer_constant (gfc_expr **result, int signflag)
 {
-  int length, kind;
+  int length, kind, is_iso_c;
   locus old_loc;
   char *buffer;
   gfc_expr *e;
@@ -208,7 +218,7 @@ match_integer_constant (gfc_expr **result, int signflag)
 
   match_digits (signflag, 10, buffer);
 
-  kind = get_kind ();
+  kind = get_kind (&is_iso_c);
   if (kind == -2)
     kind = gfc_default_integer_kind;
   if (kind == -1)
@@ -221,6 +231,7 @@ match_integer_constant (gfc_expr **result, int signflag)
     }
 
   e = gfc_convert_integer (buffer, kind, 10, &gfc_current_locus);
+  e->ts.is_c_interop = is_iso_c;
 
   if (gfc_range_check (e) != ARITH_OK)
     {
@@ -473,7 +484,7 @@ backup:
 static match
 match_real_constant (gfc_expr **result, int signflag)
 {
-  int kind, count, seen_dp, seen_digits;
+  int kind, count, seen_dp, seen_digits, is_iso_c;
   locus old_loc, temp_loc;
   char *p, *buffer, c, exp_char;
   gfc_expr *e;
@@ -611,7 +622,7 @@ done:
       c = gfc_next_ascii_char ();
     }
 
-  kind = get_kind ();
+  kind = get_kind (&is_iso_c);
   if (kind == -1)
     goto cleanup;
 
@@ -665,6 +676,7 @@ done:
   e = gfc_convert_real (buffer, kind, &gfc_current_locus);
   if (negate)
     mpfr_neg (e->value.real, e->value.real, GFC_RND_MODE);
+  e->ts.is_c_interop = is_iso_c;
 
   switch (gfc_range_check (e))
     {
@@ -1102,13 +1114,13 @@ static match
 match_logical_constant (gfc_expr **result)
 {
   gfc_expr *e;
-  int i, kind;
+  int i, kind, is_iso_c;
 
   i = match_logical_constant_string ();
   if (i == -1)
     return MATCH_NO;
 
-  kind = get_kind ();
+  kind = get_kind (&is_iso_c);
   if (kind == -1)
     return MATCH_ERROR;
   if (kind == -2)
@@ -1121,7 +1133,7 @@ match_logical_constant (gfc_expr **result)
     }
 
   e = gfc_get_logical_expr (kind, &gfc_current_locus, i);
-  e->ts.is_c_interop = 0;
+  e->ts.is_c_interop = is_iso_c;
   e->ts.is_iso_c = 0;
 
   *result = e;
