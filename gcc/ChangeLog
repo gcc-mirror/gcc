@@ -1,3 +1,9 @@
+2011-10-17  Sergio Durigan Junior  <sergiodj@redhat.com>
+
+	* configure.ac: Display `yes' if the SystemTap header has been
+	found.
+	* configure: Regenerate.
+
 2011-10-08  Andi Kleen  <ak@linux.intel.com>
 
 	PR other/50636
