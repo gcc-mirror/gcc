@@ -2591,7 +2591,9 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	  if (member == NULL_TREE)
 	    {
 	      if (complain & tf_error)
-		error ("%qD has no member named %qE", object_type, name);
+		error ("%qD has no member named %qE",
+		       TREE_CODE (access_path) == TREE_BINFO
+		       ? TREE_TYPE (access_path) : object_type, name);
 	      return error_mark_node;
 	    }
 	  if (member == error_mark_node)
