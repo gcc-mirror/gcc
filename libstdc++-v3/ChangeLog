@@ -1,3 +1,9 @@
+2011-10-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/50715
+	* config/abi/pre/gnu.ver (CXXABI_1.3.6): Remove duplicate
+	__cxa_get_exception_ptr.
+
 2011-10-14  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/performance/23_containers/insert_erase/41975.cc: New.
