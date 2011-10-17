@@ -621,18 +621,16 @@ linemap_macro_expansion_map_p (const struct line_map *map)
    Read the comments of struct line_map and struct line_map_macro in
    line-map.h to understand what a macro expansion point is.  */
 
-source_location
+static source_location
 linemap_macro_map_loc_to_exp_point (const struct line_map *map,
-				    source_location location)
+				    source_location location ATTRIBUTE_UNUSED)
 {
-  unsigned token_no;
-
   linemap_assert (linemap_macro_expansion_map_p (map)
 		  && location >= MAP_START_LOCATION (map));
 
   /* Make sure LOCATION is correct.  */
-  token_no = location - MAP_START_LOCATION (map);
-  linemap_assert (token_no <  MACRO_MAP_NUM_MACRO_TOKENS (map));
+  linemap_assert ((location - MAP_START_LOCATION (map))
+		  <  MACRO_MAP_NUM_MACRO_TOKENS (map));
 
   return MACRO_MAP_EXPANSION_POINT_LOCATION (map);
 }

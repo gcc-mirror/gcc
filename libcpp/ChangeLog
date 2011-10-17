@@ -1,3 +1,9 @@
+2011-10-17  Dodji Seketeli  <dodji@redhat.com>
+
+	* line-map.c (linemap_macro_map_loc_to_exp_point): Avoid setting a
+    	variable without using it if ENABLE_CHECKING is not defined.  Mark
+    	the LOCATION parameter as being unused.
+
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
