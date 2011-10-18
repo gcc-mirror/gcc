@@ -1,3 +1,10 @@
+2011-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50735
+	* function.c (gimplify_parameters): Use create_tmp_var instead of
+	create_tmp_reg.  If parm is not TREE_ADDRESSABLE and type is complex
+	or vector type, set DECL_GIMPLE_REG_P.
+
 2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config.host (arm*-*-linux*): Add driver-arm.o and x-arm.
