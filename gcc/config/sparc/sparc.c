@@ -10863,6 +10863,113 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
   emit_move_insn (result, gen_lowpart (GET_MODE (result), res));
 }
 
+void
+sparc_expand_vec_perm_bmask (enum machine_mode vmode, rtx sel)
+{
+  rtx t_1, t_2, t_3;
+
+  sel = gen_lowpart (DImode, sel);
+  switch (vmode)
+    {
+    case V2SImode:
+      /* inp = xxxxxxxAxxxxxxxB */
+      t_1 = expand_simple_binop (DImode, LSHIFTRT, sel, GEN_INT (16),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* t_1 = ....xxxxxxxAxxx. */
+      sel = expand_simple_binop (SImode, AND, gen_lowpart (SImode, sel),
+				 GEN_INT (3), NULL_RTX, 1, OPTAB_DIRECT);
+      t_1 = expand_simple_binop (SImode, AND, gen_lowpart (SImode, t_1),
+				 GEN_INT (0x30000), NULL_RTX, 1, OPTAB_DIRECT);
+      /* sel = .......B */
+      /* t_1 = ...A.... */
+      sel = expand_simple_binop (SImode, IOR, sel, t_1, sel, 1, OPTAB_DIRECT);
+      /* sel = ...A...B */
+      sel = expand_mult (SImode, sel, GEN_INT (0x4444), sel, 1);
+      /* sel = AAAABBBB * 4 */
+      t_1 = force_reg (SImode, GEN_INT (0x01230123));
+      /* sel = { A*4, A*4+1, A*4+2, ... } */
+      break;
+
+    case V4HImode:
+      /* inp = xxxAxxxBxxxCxxxD */
+      t_1 = expand_simple_binop (DImode, LSHIFTRT, sel, GEN_INT (8),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      t_2 = expand_simple_binop (DImode, LSHIFTRT, sel, GEN_INT (16),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      t_3 = expand_simple_binop (DImode, LSHIFTRT, sel, GEN_INT (24),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* t_1 = ..xxxAxxxBxxxCxx */
+      /* t_2 = ....xxxAxxxBxxxC */
+      /* t_3 = ......xxxAxxxBxx */
+      sel = expand_simple_binop (SImode, AND, gen_lowpart (SImode, sel),
+				 GEN_INT (0x07),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      t_1 = expand_simple_binop (SImode, AND, gen_lowpart (SImode, t_1),
+				 GEN_INT (0x0700),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      t_2 = expand_simple_binop (SImode, AND, gen_lowpart (SImode, t_2),
+				 GEN_INT (0x070000),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      t_3 = expand_simple_binop (SImode, AND, gen_lowpart (SImode, t_3),
+				 GEN_INT (0x07000000),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* sel = .......D */
+      /* t_1 = .....C.. */
+      /* t_2 = ...B.... */
+      /* t_3 = .A...... */
+      sel = expand_simple_binop (SImode, IOR, sel, t_1, sel, 1, OPTAB_DIRECT);
+      t_2 = expand_simple_binop (SImode, IOR, t_2, t_3, t_2, 1, OPTAB_DIRECT);
+      sel = expand_simple_binop (SImode, IOR, sel, t_2, sel, 1, OPTAB_DIRECT);
+      /* sel = .A.B.C.D */
+      sel = expand_mult (SImode, sel, GEN_INT (0x22), sel, 1);
+      /* sel = AABBCCDD * 2 */
+      t_1 = force_reg (SImode, GEN_INT (0x01010101));
+      /* sel = { A*2, A*2+1, B*2, B*2+1, ... } */
+      break;
+  
+    case V8QImode:
+      /* input = xAxBxCxDxExFxGxH */
+      sel = expand_simple_binop (DImode, AND, sel,
+				 GEN_INT ((HOST_WIDE_INT)0x0f0f0f0f << 32
+					  | 0x0f0f0f0f),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* sel = .A.B.C.D.E.F.G.H */
+      t_1 = expand_simple_binop (DImode, LSHIFTRT, sel, GEN_INT (4),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* t_1 = ..A.B.C.D.E.F.G. */
+      sel = expand_simple_binop (DImode, IOR, sel, t_1,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* sel = .AABBCCDDEEFFGGH */
+      sel = expand_simple_binop (DImode, AND, sel,
+				 GEN_INT ((HOST_WIDE_INT)0xff00ff << 32
+					  | 0xff00ff),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* sel = ..AB..CD..EF..GH */
+      t_1 = expand_simple_binop (DImode, LSHIFTRT, sel, GEN_INT (8),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* t_1 = ....AB..CD..EF.. */
+      sel = expand_simple_binop (DImode, IOR, sel, t_1,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* sel = ..ABABCDCDEFEFGH */
+      sel = expand_simple_binop (DImode, AND, sel,
+				 GEN_INT ((HOST_WIDE_INT)0xffff << 32 | 0xffff),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* sel = ....ABCD....EFGH */
+      t_1 = expand_simple_binop (DImode, LSHIFTRT, sel, GEN_INT (16),
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* t_1 = ........ABCD.... */
+      sel = gen_lowpart (SImode, sel);
+      t_1 = gen_lowpart (SImode, t_1);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Always perform the final addition/merge within the bmask insn.  */
+  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, t_1));
+}
+
 /* Implement TARGET_FRAME_POINTER_REQUIRED.  */
 
 static bool
