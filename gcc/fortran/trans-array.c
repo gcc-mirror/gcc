@@ -5974,6 +5974,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tree to;
       tree base;
 
+      ndim = info->ref ? info->ref->u.ar.dimen : info->dimen;
+
       if (se->want_coarray)
 	{
 	  codim = gfc_get_corank (expr);
@@ -6046,7 +6048,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       else
 	base = NULL_TREE;
 
-      ndim = info->ref ? info->ref->u.ar.dimen : info->dimen;
       for (n = 0; n < ndim; n++)
 	{
 	  stride = gfc_conv_array_stride (desc, n);
