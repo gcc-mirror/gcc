@@ -1,3 +1,14 @@
+2011-10-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (struct machine_function): New data structure.
+	(spu_init_machine_status): New function.
+	(spu_option_override): Install it.
+	(get_pic_reg): Set and use cfun->machine->pic_reg.
+	(spu_split_immediate): Do not set crtl->uses_pic_offset_table.
+	(need_to_save_reg): Use cfun->machine->pic_reg instead of
+	checking crtl->uses_pic_offset_table.
+	(spu_expand_prologue): Likewise.
+
 2011-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50735
