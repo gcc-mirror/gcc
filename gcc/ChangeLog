@@ -25363,7 +25363,6 @@
 	* dwarf2asm.c (dw2_asm_output_encoded_addr_rtx): Add missing
 	va_end.
 	* c-family/c-common.c (def_fn_type): Likewise.
-	* ada/gcc-interface/utils.c (def_fn_type): Likewise.
 	* emit-rtl.c (gen_rtvec): Likewise.
 	* lto/lto-lang.c (def_fn_type): Likewise.
 
