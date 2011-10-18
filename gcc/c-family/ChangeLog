@@ -4,6 +4,17 @@
 	* c-lex.c (fe_file_change): Use LINEMAP_SYSP when
     	!NO_IMPLICIT_EXTERN_C.
 
+2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
+
+	* c-common.c (c_common_reswords): Add __bases,
+	__direct_bases.
+	* c-common.h: Add RID_BASES and RID_DIRECT_BASES.
+
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50757
+	* c.opt ([Wnonnull]): Add C++ and Objective-C++.
+
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
@@ -37,6 +48,17 @@
 	the internals of struct line_map.  Use the public API instead.
 	* c-pch.c (c_common_read_pch): Likewise.
 	* c-lex.c (fe_file_change): Likewise.
+
+2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/17212
+	* c.opt ([Wformat-zero-length]): Add C++ and Objective-C++.
+
+2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33067
+	* c-pretty-print.c (pp_c_floating_constant): Output
+	max_digits10 (in the ISO C++ WG N1822 sense) decimal digits.
 
 2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
