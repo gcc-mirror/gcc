@@ -323,7 +323,14 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
       return fold_convert (TYPE_MAIN_VARIANT (type), base);
     }
 
-  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+  /* Scalar coarray, there is nothing to do.  */
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    {
+      gcc_assert (decl == NULL_TREE);
+      gcc_assert (integer_zerop (offset));
+      return base;
+    }
+
   type = TREE_TYPE (type);
 
   if (DECL_P (base))

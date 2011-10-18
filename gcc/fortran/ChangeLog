@@ -1,6 +1,12 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50420
+	* trans.c (gfc_build_array_ref): If type is not an array, check that
+	there is nothing to do, and do nothing.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
 	* trans-types.c (gfc_build_array_type): Don't force lower bound to one
 	in the deferred case.
 
