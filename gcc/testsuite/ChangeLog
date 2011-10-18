@@ -1,3 +1,22 @@
+2011-10-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx2-vpop-check.h: New header.
+	* gcc.target/i386/avx2-vpaddd-3.c: New test.
+	* gcc.target/i386/avx2-vpaddw-3.c: Ditto.
+	* gcc.target/i386/avx2-vpaddb-3.c: Ditto.
+	* gcc.target/i386/avx2-vpaddq-3.c: Ditto.
+	* gcc.target/i386/avx2-vpand-3.c: Ditto.
+	* gcc.target/i386/avx2-vpmulld-3.c: Ditto.
+	* gcc.target/i386/avx2-vpmullw-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsrad-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsraw-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsrld-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsrlw-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsubb-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsubd-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsubq-3.c: Ditto.
+	* gcc.target/i386/avx2-vpsubw-3.c: Ditto.
+
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50420
