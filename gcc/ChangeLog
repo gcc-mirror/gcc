@@ -1,3 +1,31 @@
+2011-10-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.h (struct pt_solution): Remove
+	vars_contains_restrict member.
+	(pt_solutions_same_restrict_base): Remove.
+	(pt_solution_set): Adjust.
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Remove
+	vars_contains_restrict handling.
+	(dump_points_to_solution): Likewise.
+	(ptr_derefs_may_alias_p): Do not call pt_solutions_same_restrict_base.
+	* tree-ssa-structalias.c (struct variable_info): Remove is_restrict_var
+	field.
+	(new_var_info): Do not initialize it.
+	(ipa_escaped_pt): Adjust.
+	(make_constraint_from_restrict): Make the tag global.
+	(make_constraint_from_global_restrict): New function.
+	(make_constraint_from_heapvar): Remove.
+	(create_variable_info_for): Do not make restrict vars point
+	to NONLOCAL.
+	(intra_create_variable_infos): Likewise.
+	(find_what_var_points_to): Remove vars_contains_restrict handling.
+	(pt_solution_set): Adjust.
+	(pt_solution_ior_into): Likewise.
+	(pt_solutions_same_restrict_base): Remove.
+	(compute_points_to_sets): Do not test is_restrict_var.
+	* cfgexpand.c (update_alias_info_with_stack_vars): Adjust.
+	* gimple-pretty-print.c (pp_points_to_solution): Likewise.
+
 2011-10-18  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50672

@@ -530,7 +530,7 @@ update_alias_info_with_stack_vars (void)
 
       /* Make the SSA name point to all partition members.  */
       pi = get_ptr_info (name);
-      pt_solution_set (&pi->pt, part, false, false);
+      pt_solution_set (&pi->pt, part, false);
     }
 
   /* Make all points-to sets that contain one member of a partition
