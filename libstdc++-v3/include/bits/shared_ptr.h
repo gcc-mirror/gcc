@@ -211,6 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __r  A %shared_ptr.
        *  @post   get() == __r.get() && use_count() == __r.use_count()
        */
+      shared_ptr(const shared_ptr&) noexcept = default;
       template<typename _Tp1, typename = typename
 	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	shared_ptr(const shared_ptr<_Tp1>& __r) noexcept
@@ -264,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr shared_ptr(nullptr_t __p) noexcept
       : __shared_ptr<_Tp>(__p) { }
 
+      shared_ptr& operator=(const shared_ptr&) noexcept = default;
       template<typename _Tp1>
 	shared_ptr&
 	operator=(const shared_ptr<_Tp1>& __r) noexcept

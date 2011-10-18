@@ -4870,6 +4870,8 @@ extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
 extern bool type_has_move_constructor		(tree);
 extern bool type_has_move_assign		(tree);
+extern bool type_has_user_declared_move_constructor (tree);
+extern bool type_has_user_declared_move_assign(tree);
 extern bool type_build_ctor_call		(tree);
 extern void explain_non_literal_class		(tree);
 extern void defaulted_late_check		(tree);

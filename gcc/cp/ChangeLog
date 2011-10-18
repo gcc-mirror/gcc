@@ -1,3 +1,17 @@
+2011-10-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50500
+	DR 1082
+	* class.c (type_has_user_declared_move_constructor): New.
+	(type_has_user_declared_move_assign): New.
+	(add_implicitly_declared_members): Add lazy copy ops
+	even if there's a move.
+	* method.c (lazily_declare_fn): Delete implicit copies
+	if there's a move.
+	(maybe_explain_implicit_delete): Explain this.  Use inform rather
+	than error.
+	* cp-tree.h: Declare new fns.
+
 2011-10-18   Diego Novillo  <dnovillo@google.com>
 
 	* parser.c: Remove ENABLE_CHECKING markers around debugging

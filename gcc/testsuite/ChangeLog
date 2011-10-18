@@ -1,3 +1,24 @@
+2011-10-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50500
+	* g++.dg/cpp0x/implicit12.C: New.
+	* g++.dg/cpp0x/defaulted20.C: Adjust.
+	* g++.dg/cpp0x/defaulted21.C: Adjust.
+	* g++.dg/cpp0x/implicit-copy.C: Adjust.
+	* g++.dg/cpp0x/implicit4.C: Adjust.
+	* g++.dg/cpp0x/implicit5.C: Adjust.
+	* g++.dg/cpp0x/implicit8.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-ice2.C: Adjust.
+	* g++.dg/cpp0x/not_special.C: Adjust.
+	* g++.dg/cpp0x/rv-trivial-bug.C: Adjust.
+	* g++.dg/cpp0x/rv1n.C: Adjust.
+	* g++.dg/cpp0x/rv2n.C: Adjust.
+	* g++.dg/cpp0x/rv3n.C: Adjust.
+	* g++.dg/cpp0x/rv4n.C: Adjust.
+	* g++.dg/cpp0x/rv5n.C: Adjust.
+	* g++.dg/cpp0x/rv6n.C: Adjust.
+	* g++.dg/cpp0x/rv7n.C: Adjust.
+
 2011-10-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx2-vpop-check.h: New header.

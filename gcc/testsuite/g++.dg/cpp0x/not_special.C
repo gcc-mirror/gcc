@@ -1,8 +1,8 @@
 // I, Howard Hinnant, hereby place this code in the public domain.
 
 // Test that move constructor and move assignement are special.
-//   That is, their presence should inhibit compiler generated
-//   copy ctor or assignment.
+//   That is, their presence should cause compiler declared
+//   copy ctor or assignment to be deleted.
 
 // { dg-options "-std=c++0x" }
 
@@ -24,12 +24,12 @@ struct base
     base& operator=(const base&) {++assign; return *this;}
 };
 
-struct derived
+struct derived			// { dg-message "declares a move" }
     : base
 {
     derived() {}
-    derived(derived&&) {}			  // { dg-error "argument 1" }
-    derived& operator=(derived&&) {return *this;} // { dg-error "argument 1" }
+    derived(derived&&) {}
+    derived& operator=(derived&&) {return *this;}
 };
 
 int test1()
@@ -37,11 +37,11 @@ int test1()
     derived d;
     derived d2(static_cast<derived&&>(d));  // should not call base::(const base&)
     assert(copy == 0);
-    derived d3(d);		// { dg-error "lvalue" }
+    derived d3(d);		// { dg-error "deleted" }
     assert(copy == 1);
     d2 = static_cast<derived&&>(d);         // should not call base::operator=
     assert(assign == 0);
-    d3 = d;			// { dg-error "lvalue" }
+    d3 = d;			// { dg-error "deleted" }
     assert(assign == 1);
     return 0;
 }

@@ -1375,18 +1375,31 @@ maybe_explain_implicit_delete (tree decl)
 	{
 	  informed = true;
 	  if (sfk == sfk_constructor)
-	    error ("a lambda closure type has a deleted default constructor");
+	    inform (DECL_SOURCE_LOCATION (decl),
+		    "a lambda closure type has a deleted default constructor");
 	  else if (sfk == sfk_copy_assignment)
-	    error ("a lambda closure type has a deleted copy assignment operator");
+	    inform (DECL_SOURCE_LOCATION (decl),
+		    "a lambda closure type has a deleted copy assignment operator");
 	  else
 	    informed = false;
+	}
+      else if (DECL_ARTIFICIAL (decl)
+	       && (sfk == sfk_copy_assignment
+		   || sfk == sfk_copy_constructor)
+	       && (type_has_user_declared_move_constructor (ctype)
+		   || type_has_user_declared_move_assign (ctype)))
+	{
+	  inform (0, "%q+#D is implicitly declared as deleted because %qT "
+		 "declares a move constructor or move assignment operator",
+		 decl, ctype);
+	  informed = true;
 	}
       if (!informed)
 	{
 	  tree parm_type = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (decl));
 	  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
 	  tree scope = push_scope (ctype);
-	  error ("%qD is implicitly deleted because the default "
+	  inform (0, "%q+#D is implicitly deleted because the default "
 		 "definition would be ill-formed:", decl);
 	  pop_scope (scope);
 	  synthesized_method_walk (ctype, sfk, const_p,
@@ -1742,6 +1755,15 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 
   /* Declare the function.  */
   fn = implicitly_declare_fn (sfk, type, const_p);
+
+  /* [class.copy]/8 If the class definition declares a move constructor or
+     move assignment operator, the implicitly declared copy constructor is
+     defined as deleted.... */
+  if ((sfk == sfk_copy_assignment
+       || sfk == sfk_copy_constructor)
+      && (type_has_user_declared_move_constructor (type)
+	  || type_has_user_declared_move_assign (type)))
+    DECL_DELETED_FN (fn) = true;
 
   /* For move variants, rather than declare them as deleted we just
      don't declare them at all.  */
