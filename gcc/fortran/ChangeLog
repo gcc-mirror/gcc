@@ -1,3 +1,17 @@
+2011-10-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	* decl.c (verify_c_interop_param): Renamed to
+	'gfc_verify_c_interop_param'. Add error message for polymorphic
+	arguments.
+	(verify_c_interop): Renamed to 'gfc_verify_c_interop'. Reject
+	polymorphic variables.
+	(verify_bind_c_sym): Renamed 'verify_c_interop'.
+	* gfortran.h (verify_c_interop,verify_c_interop_param): Renamed.
+	* check.c (gfc_check_sizeof): Ditto.
+	* resolve.c (gfc_iso_c_func_interface,resolve_fl_procedure): Ditto.
+	* symbol.c (verify_bind_c_derived_type): Ditto.
+
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
