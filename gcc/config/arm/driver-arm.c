@@ -134,6 +134,9 @@ not_found:
     unsigned int i;
     unsigned int opt;
     const char *search[] = {NULL, "arch"};
+
+    fclose (f);
+
     search[0] = argv[0];
     for (opt = 0; opt < ARRAY_SIZE (search); opt++)
       for (i = 0; i < ARRAY_SIZE (configure_default_options); i++)

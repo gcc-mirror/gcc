@@ -1,5 +1,10 @@
 2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/arm/driver-arm.c (host_detect_local_cpu): Close the file
+	before exiting.
+
+2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
 	PR tree-optimization/50717
 
 	* tree-ssa-math-opts.c (is_widening_mult_p): Remove the 'type'
