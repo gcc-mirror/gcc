@@ -500,10 +500,27 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Define the structure for the machine field in struct function.  */
+struct GTY(()) machine_function
+{
+  /* Register to use for PIC accesses.  */
+  rtx pic_reg;
+};
+
+/* How to allocate a 'struct machine_function'.  */
+static struct machine_function *
+spu_init_machine_status (void)
+{
+  return ggc_alloc_cleared_machine_function ();
+}
+
 /* Implement TARGET_OPTION_OVERRIDE.  */
 static void
 spu_option_override (void)
 {
+  /* Set up function hooks.  */
+  init_machine_status = spu_init_machine_status;
+
   /* Small loops will be unpeeled at -O3.  For SPU it is more important
      to keep code small by default.  */
   if (!flag_unroll_loops && !flag_peel_loops)
@@ -1741,12 +1758,22 @@ print_operand (FILE * file, rtx x, int code)
 static rtx
 get_pic_reg (void)
 {
-  rtx pic_reg = pic_offset_table_rtx;
   if (!reload_completed && !reload_in_progress)
     abort ();
-  if (current_function_is_leaf && !df_regs_ever_live_p (LAST_ARG_REGNUM))
-    pic_reg = gen_rtx_REG (SImode, LAST_ARG_REGNUM);
-  return pic_reg;
+
+  /* If we've already made the decision, we need to keep with it.  Once we've
+     decided to use LAST_ARG_REGNUM, future calls to df_regs_ever_live_p may
+     return true since the register is now live; this should not cause us to
+     "switch back" to using pic_offset_table_rtx.  */
+  if (!cfun->machine->pic_reg)
+    {
+      if (current_function_is_leaf && !df_regs_ever_live_p (LAST_ARG_REGNUM))
+	cfun->machine->pic_reg = gen_rtx_REG (SImode, LAST_ARG_REGNUM);
+      else
+	cfun->machine->pic_reg = pic_offset_table_rtx;
+    }
+
+  return cfun->machine->pic_reg;
 }
 
 /* Split constant addresses to handle cases that are too large. 
@@ -1849,7 +1876,6 @@ spu_split_immediate (rtx * ops)
 	    {
 	      rtx pic_reg = get_pic_reg ();
 	      emit_insn (gen_addsi3 (ops[0], ops[0], pic_reg));
-	      crtl->uses_pic_offset_table = 1;
 	    }
 	  return flag_pic || c == IC_IL2s;
 	}
@@ -1875,9 +1901,7 @@ need_to_save_reg (int regno, int saving)
     return 1;
   if (flag_pic
       && regno == PIC_OFFSET_TABLE_REGNUM
-      && (!saving || crtl->uses_pic_offset_table)
-      && (!saving
-	  || !current_function_is_leaf || df_regs_ever_live_p (LAST_ARG_REGNUM)))
+      && (!saving || cfun->machine->pic_reg == pic_offset_table_rtx))
     return 1;
   return 0;
 }
@@ -1991,8 +2015,8 @@ spu_expand_prologue (void)
   rtx scratch_reg_0, scratch_reg_1;
   rtx insn, real;
 
-  if (flag_pic && optimize == 0)
-    crtl->uses_pic_offset_table = 1;
+  if (flag_pic && optimize == 0 && !cfun->machine->pic_reg)
+    cfun->machine->pic_reg = pic_offset_table_rtx;
 
   if (spu_naked_function_p (current_function_decl))
     return;
@@ -2029,9 +2053,9 @@ spu_expand_prologue (void)
 	  }
     }
 
-  if (flag_pic && crtl->uses_pic_offset_table)
+  if (flag_pic && cfun->machine->pic_reg)
     {
-      rtx pic_reg = get_pic_reg ();
+      rtx pic_reg = cfun->machine->pic_reg;
       insn = emit_insn (gen_load_pic_offset (pic_reg, scratch_reg_0));
       insn = emit_insn (gen_subsi3 (pic_reg, pic_reg, scratch_reg_0));
     }
