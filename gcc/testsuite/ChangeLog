@@ -1,3 +1,12 @@
+2011-10-18  Ira Rosen  <ira.rosen@linaro.org>
+
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_vect_widen_shift): New.
+	* gcc.dg/vect/vect-widen-shift-s16.c: New.
+	* gcc.dg/vect/vect-widen-shift-s8.c: New.
+	* gcc.dg/vect/vect-widen-shift-u16.c: New.
+	* gcc.dg/vect/vect-widen-shift-u8.c: New.
+
 2011-10-18  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/restrict-1.c: New testcase.

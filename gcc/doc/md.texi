@@ -4272,6 +4272,17 @@ are vectors with N signed/unsigned elements of size S@.  Multiply the high/low
 elements of the two vectors, and put the N/2 products of size 2*S in the
 output vector (operand 0).
 
+@cindex @code{vec_widen_ushiftl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_ushiftl_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_sshiftl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_sshiftl_lo_@var{m}} instruction pattern
+@item @samp{vec_widen_ushiftl_hi_@var{m}}, @samp{vec_widen_ushiftl_lo_@var{m}}
+@itemx @samp{vec_widen_sshiftl_hi_@var{m}}, @samp{vec_widen_sshiftl_lo_@var{m}}
+Signed/Unsigned widening shift left.  The first input (operand 1) is a vector
+with N signed/unsigned elements of size S@.  Operand 2 is a constant.  Shift
+the high/low elements of operand 1, and put the N/2 results of size 2*S in the
+output vector (operand 0).
+
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
 Multiply operands 1 and 2, which have mode @code{HImode}, and store

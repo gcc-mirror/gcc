@@ -2907,6 +2907,26 @@ proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
 }
 
 # Return 1 if the target plus current options supports a vector
+# widening shift, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_widen_shift { } {
+    global et_vect_widen_shift_saved
+
+    if [info exists et_vect_shift_saved] {
+        verbose "check_effective_target_vect_widen_shift: using cached result" 2
+    } else {
+        set et_vect_widen_shift_saved 0
+        if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
+            set et_vect_widen_shift_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_shift: returning $et_vect_widen_shift_saved" 2
+    return $et_vect_widen_shift_saved
+}
+
+# Return 1 if the target plus current options supports a vector
 # dot-product of signed chars, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.

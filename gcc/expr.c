@@ -8732,6 +8732,19 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	return target;
       }
 
+    case VEC_WIDEN_LSHIFT_HI_EXPR:
+    case VEC_WIDEN_LSHIFT_LO_EXPR:
+      {
+        tree oprnd0 = treeop0;
+        tree oprnd1 = treeop1;
+
+        expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+        target = expand_widen_pattern_expr (ops, op0, op1, NULL_RTX,
+                                            target, unsignedp);
+        gcc_assert (target);
+        return target;
+      }
+
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:

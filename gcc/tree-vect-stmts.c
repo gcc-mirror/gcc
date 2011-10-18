@@ -3333,6 +3333,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
   VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   VEC (tree, heap) *vec_dsts = NULL, *interm_types = NULL, *tmp_vec_dsts = NULL;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+  unsigned int k;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -3349,7 +3350,8 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 
   code = gimple_assign_rhs_code (stmt);
   if (!CONVERT_EXPR_CODE_P (code)
-      && code != WIDEN_MULT_EXPR)
+      && code != WIDEN_MULT_EXPR
+      && code != WIDEN_LSHIFT_EXPR)
     return false;
 
   scalar_dest = gimple_assign_lhs (stmt);
@@ -3377,7 +3379,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
       bool ok;
 
       op1 = gimple_assign_rhs2 (stmt);
-      if (code == WIDEN_MULT_EXPR)
+      if (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR)
         {
 	  /* For WIDEN_MULT_EXPR, if OP0 is a constant, use the type of
 	     OP1.  */
@@ -3454,7 +3456,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
     fprintf (vect_dump, "transform type promotion operation. ncopies = %d.",
                         ncopies);
 
-  if (code == WIDEN_MULT_EXPR)
+  if (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR)
     {
       if (CONSTANT_CLASS_P (op0))
 	op0 = fold_convert (TREE_TYPE (op1), op0);
@@ -3495,6 +3497,8 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
       if (op_type == binary_op)
         vec_oprnds1 = VEC_alloc (tree, heap, 1);
     }
+  else if (code == WIDEN_LSHIFT_EXPR)
+    vec_oprnds1 = VEC_alloc (tree, heap, slp_node->vec_stmts_size);
 
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
@@ -3508,15 +3512,33 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
       if (j == 0)
         {
           if (slp_node)
-              vect_get_slp_defs (op0, op1, slp_node, &vec_oprnds0,
-                                 &vec_oprnds1, -1);
-          else
+	    {
+	      if (code == WIDEN_LSHIFT_EXPR)
+                {
+                  vec_oprnd1 = op1;
+		  /* Store vec_oprnd1 for every vector stmt to be created
+		     for SLP_NODE.  We check during the analysis that all
+		     the shift arguments are the same.  */
+                  for (k = 0; k < slp_node->vec_stmts_size - 1; k++)
+                    VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
+
+    		  vect_get_slp_defs (op0, NULL_TREE, slp_node, &vec_oprnds0, NULL,
+ 	                             -1);
+                }
+              else
+                vect_get_slp_defs (op0, op1, slp_node, &vec_oprnds0,
+                                   &vec_oprnds1, -1);
+	    }
+	  else
             {
               vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
               VEC_quick_push (tree, vec_oprnds0, vec_oprnd0);
               if (op_type == binary_op)
                 {
-                  vec_oprnd1 = vect_get_vec_def_for_operand (op1, stmt, NULL);
+                  if (code == WIDEN_LSHIFT_EXPR)
+                    vec_oprnd1 = op1;
+                  else
+                    vec_oprnd1 = vect_get_vec_def_for_operand (op1, stmt, NULL);
                   VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
                 }
             }
@@ -3527,7 +3549,10 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
           VEC_replace (tree, vec_oprnds0, 0, vec_oprnd0);
           if (op_type == binary_op)
             {
-              vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[1], vec_oprnd1);
+              if (code == WIDEN_LSHIFT_EXPR)
+                vec_oprnd1 = op1;
+              else
+                vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[1], vec_oprnd1);
               VEC_replace (tree, vec_oprnds1, 0, vec_oprnd1);
             }
         }
@@ -5786,6 +5811,19 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
         {
           c2 = VEC_WIDEN_MULT_HI_EXPR;
           c1 = VEC_WIDEN_MULT_LO_EXPR;
+        }
+      break;
+
+    case WIDEN_LSHIFT_EXPR:
+      if (BYTES_BIG_ENDIAN)
+        {
+          c1 = VEC_WIDEN_LSHIFT_HI_EXPR;
+          c2 = VEC_WIDEN_LSHIFT_LO_EXPR;
+        }
+      else
+        {
+          c2 = VEC_WIDEN_LSHIFT_HI_EXPR;
+          c1 = VEC_WIDEN_LSHIFT_LO_EXPR;
         }
       break;
 

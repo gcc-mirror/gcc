@@ -479,6 +479,14 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
 
+    case VEC_WIDEN_LSHIFT_HI_EXPR:
+      return TYPE_UNSIGNED (type) ?
+        vec_widen_ushiftl_hi_optab : vec_widen_sshiftl_hi_optab;
+
+    case VEC_WIDEN_LSHIFT_LO_EXPR:
+      return TYPE_UNSIGNED (type) ?
+        vec_widen_ushiftl_lo_optab : vec_widen_sshiftl_lo_optab;
+
     case VEC_UNPACK_HI_EXPR:
       return TYPE_UNSIGNED (type) ?
 	vec_unpacku_hi_optab : vec_unpacks_hi_optab;
@@ -6197,6 +6205,10 @@ init_optabs (void)
   init_optab (vec_widen_umult_lo_optab, UNKNOWN);
   init_optab (vec_widen_smult_hi_optab, UNKNOWN);
   init_optab (vec_widen_smult_lo_optab, UNKNOWN);
+  init_optab (vec_widen_ushiftl_hi_optab, UNKNOWN);
+  init_optab (vec_widen_ushiftl_lo_optab, UNKNOWN);
+  init_optab (vec_widen_sshiftl_hi_optab, UNKNOWN);
+  init_optab (vec_widen_sshiftl_lo_optab, UNKNOWN);
   init_optab (vec_unpacks_hi_optab, UNKNOWN);
   init_optab (vec_unpacks_lo_optab, UNKNOWN);
   init_optab (vec_unpacku_hi_optab, UNKNOWN);
