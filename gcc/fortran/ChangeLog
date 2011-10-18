@@ -1,6 +1,11 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50420
+	* check.c (dim_corank_check): Use gfc_get_corank to get corank.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
 	* trans-intrinsic.c (walk_coarray): Change AR_ELEMENT to AR_SECTION.
 
 	PR fortran/50420
