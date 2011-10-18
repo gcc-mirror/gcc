@@ -1,3 +1,11 @@
+2011-10-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/50760
+	* include/line-map.h (struct linemap_stats): Change the type of
+    	the members from size_t to long.
+	* macro.c (macro_arg_token_iter_init): Unconditionally initialize
+    	iter->location_ptr.
+
 2011-10-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* line-map.c (linemap_macro_map_loc_to_exp_point): Avoid setting a

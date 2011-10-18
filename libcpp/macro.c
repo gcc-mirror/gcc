@@ -1278,6 +1278,10 @@ macro_arg_token_iter_init (macro_arg_token_iter *iter,
   iter->track_macro_exp_p = track_macro_exp_p;
   iter->kind = kind;
   iter->token_ptr = token_ptr;
+  /* Unconditionally initialize this so that the compiler doesn't warn
+     about iter->location_ptr being possibly uninitialized later after
+     this code has been inlined somewhere.  */
+  iter->location_ptr = NULL;
   if (track_macro_exp_p)
     iter->location_ptr = get_arg_token_location (arg, kind);
 #ifdef ENABLE_CHECKING

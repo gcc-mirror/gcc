@@ -80,7 +80,7 @@ void
 dump_line_table_statistics (void)
 {
   struct linemap_stats s;
-  size_t total_used_map_size,
+  long total_used_map_size,
     macro_maps_size,
     total_allocated_map_size;
 
@@ -99,45 +99,45 @@ dump_line_table_statistics (void)
     + s.macro_maps_used_size
     + s.macro_maps_locations_size;
 
-  fprintf (stderr, "Number of expanded macros:                     %5lu\n",
+  fprintf (stderr, "Number of expanded macros:                     %5ld\n",
            s.num_expanded_macros);
   if (s.num_expanded_macros != 0)
-    fprintf (stderr, "Average number of tokens per macro expansion:  %5lu\n",
+    fprintf (stderr, "Average number of tokens per macro expansion:  %5ld\n",
              s.num_macro_tokens / s.num_expanded_macros);
   fprintf (stderr,
            "\nLine Table allocations during the "
            "compilation process\n");
-  fprintf (stderr, "Number of ordinary maps used:        %5lu%c\n",
+  fprintf (stderr, "Number of ordinary maps used:        %5ld%c\n",
            SCALE (s.num_ordinary_maps_used),
            STAT_LABEL (s.num_ordinary_maps_used));
-  fprintf (stderr, "Ordinary map used size:              %5lu%c\n",
+  fprintf (stderr, "Ordinary map used size:              %5ld%c\n",
            SCALE (s.ordinary_maps_used_size),
            STAT_LABEL (s.ordinary_maps_used_size));
-  fprintf (stderr, "Number of ordinary maps allocated:   %5lu%c\n",
+  fprintf (stderr, "Number of ordinary maps allocated:   %5ld%c\n",
            SCALE (s.num_ordinary_maps_allocated),
            STAT_LABEL (s.num_ordinary_maps_allocated));
-  fprintf (stderr, "Ordinary maps allocated size:        %5lu%c\n",
+  fprintf (stderr, "Ordinary maps allocated size:        %5ld%c\n",
            SCALE (s.ordinary_maps_allocated_size),
            STAT_LABEL (s.ordinary_maps_allocated_size));
-  fprintf (stderr, "Number of macro maps used:           %5lu%c\n",
+  fprintf (stderr, "Number of macro maps used:           %5ld%c\n",
            SCALE (s.num_macro_maps_used),
            STAT_LABEL (s.num_macro_maps_used));
-  fprintf (stderr, "Macro maps used size:                %5lu%c\n",
+  fprintf (stderr, "Macro maps used size:                %5ld%c\n",
            SCALE (s.macro_maps_used_size),
            STAT_LABEL (s.macro_maps_used_size));
-  fprintf (stderr, "Macro maps locations size:           %5lu%c\n",
+  fprintf (stderr, "Macro maps locations size:           %5ld%c\n",
            SCALE (s.macro_maps_locations_size),
            STAT_LABEL (s.macro_maps_locations_size));
-  fprintf (stderr, "Macro maps size:                     %5lu%c\n",
+  fprintf (stderr, "Macro maps size:                     %5ld%c\n",
            SCALE (macro_maps_size),
            STAT_LABEL (macro_maps_size));
-  fprintf (stderr, "Duplicated maps locations size:      %5lu%c\n",
+  fprintf (stderr, "Duplicated maps locations size:      %5ld%c\n",
            SCALE (s.duplicated_macro_maps_locations_size),
            STAT_LABEL (s.duplicated_macro_maps_locations_size));
-  fprintf (stderr, "Total allocated maps size:           %5lu%c\n",
+  fprintf (stderr, "Total allocated maps size:           %5ld%c\n",
            SCALE (total_allocated_map_size),
            STAT_LABEL (total_allocated_map_size));
-  fprintf (stderr, "Total used maps size:                %5lu%c\n",
+  fprintf (stderr, "Total used maps size:                %5ld%c\n",
            SCALE (total_used_map_size),
            STAT_LABEL (total_used_map_size));
   fprintf (stderr, "\n");

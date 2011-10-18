@@ -211,7 +211,7 @@ fe_file_change (const struct line_map *new_map)
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
-	  else if (new_map->sysp == 2)
+	  else if (LINEMAP_SYSP (new_map) == 2)
 	    {
 	      c_header_level = 1;
 	      ++pending_lang_change;
@@ -224,7 +224,7 @@ fe_file_change (const struct line_map *new_map)
 #ifndef NO_IMPLICIT_EXTERN_C
       if (c_header_level && --c_header_level == 0)
 	{
-	  if (new_map->sysp == 2)
+	  if (LINEMAP_SYSP (new_map) == 2)
 	    warning (0, "badly nested C headers from preprocessor");
 	  --pending_lang_change;
 	}
