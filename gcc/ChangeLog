@@ -1,3 +1,17 @@
+2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.host (arm*-*-linux*): Add driver-arm.o and x-arm.
+	* config/arm/arm.opt: Add 'native' processor_type and
+	arm_arch enum values.
+	* config/arm/arm.h (host_detect_local_cpu): New prototype.
+	(EXTRA_SPEC_FUNCTIONS): New define.
+	(MCPU_MTUNE_NATIVE_SPECS): New define.
+	(DRIVER_SELF_SPECS): New define.
+	* config/arm/driver-arm.c: New file.
+	* config/arm/x-arm: New file.
+	* doc/invoke.texi (ARM Options): Document -mcpu=native,
+	-mtune=native and -march=native.
+
 2011-10-18  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/50205

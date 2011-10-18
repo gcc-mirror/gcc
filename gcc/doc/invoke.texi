@@ -10397,9 +10397,15 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
+
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
 See @option{-mtune} for more information.
+
+@option{-mcpu=native} causes the compiler to auto-detect the CPU
+of the build computer.  At present, this feature is only supported on
+Linux, and not all architectures are recognised.  If the auto-detect is
+unsuccessful the option has no effect.
 
 @item -mtune=@var{name}
 @opindex mtune
@@ -10419,6 +10425,11 @@ processors, balancing between optimizations that benefit some CPUs in the
 range, and avoiding performance pitfalls of other CPUs.  The effects of
 this option may change in future GCC versions as CPU models come and go.
 
+@option{-mtune=native} causes the compiler to auto-detect the CPU
+of the build computer.  At present, this feature is only supported on
+Linux, and not all architectures are recognised.  If the auto-detect is
+unsuccessful the option has no effect.
+
 @item -march=@var{name}
 @opindex march
 This specifies the name of the target ARM architecture.  GCC uses this
@@ -10431,6 +10442,11 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+
+@option{-march=native} causes the compiler to auto-detect the architecture
+of the build computer.  At present, this feature is only supported on
+Linux, and not all architectures are recognised.  If the auto-detect is
+unsuccessful the option has no effect.
 
 @item -mfpu=@var{name}
 @itemx -mfpe=@var{number}

@@ -2255,4 +2255,21 @@ extern int making_const_table;
     }									\
   while (0)
 
+/* -mcpu=native handling only makes sense with compiler running on
+   an ARM chip.  */
+#if defined(__arm__)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+# define EXTRA_SPEC_FUNCTIONS						\
+  { "local_cpu_detect", host_detect_local_cpu },
+
+# define MCPU_MTUNE_NATIVE_SPECS					\
+   " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
+   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#else
+# define MCPU_MTUNE_NATIVE_SPECS ""
+#endif
+
+#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
+
 #endif /* ! GCC_ARM_H */
