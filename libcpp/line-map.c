@@ -1180,7 +1180,7 @@ void
 linemap_get_statistics (struct line_maps *set,
 			struct linemap_stats *s)
 {
-  size_t ordinary_maps_allocated_size, ordinary_maps_used_size,
+  long ordinary_maps_allocated_size, ordinary_maps_used_size,
     macro_maps_allocated_size, macro_maps_used_size,
     macro_maps_locations_size = 0, duplicated_macro_maps_locations_size = 0;
 

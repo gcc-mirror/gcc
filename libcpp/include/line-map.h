@@ -687,17 +687,17 @@ expanded_location linemap_expand_location_full (struct line_maps *,
    linemap_get_statistics.  */
 struct linemap_stats
 {
-  size_t num_ordinary_maps_allocated;
-  size_t num_ordinary_maps_used;
-  size_t ordinary_maps_allocated_size;
-  size_t ordinary_maps_used_size;
-  size_t num_expanded_macros;
-  size_t num_macro_tokens;
-  size_t num_macro_maps_used;
-  size_t macro_maps_allocated_size;
-  size_t macro_maps_used_size;
-  size_t macro_maps_locations_size;
-  size_t duplicated_macro_maps_locations_size;
+  long num_ordinary_maps_allocated;
+  long num_ordinary_maps_used;
+  long ordinary_maps_allocated_size;
+  long ordinary_maps_used_size;
+  long num_expanded_macros;
+  long num_macro_tokens;
+  long num_macro_maps_used;
+  long macro_maps_allocated_size;
+  long macro_maps_used_size;
+  long macro_maps_locations_size;
+  long duplicated_macro_maps_locations_size;
 };
 
 /* Compute and return statistics about the memory consumption of some

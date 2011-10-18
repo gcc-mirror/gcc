@@ -1,3 +1,8 @@
+2011-10-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/50760
+	* input.c (dump_line_table_statistics): Use long, not size_t.
+
 2011-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (in_call_delay): Fix formatting issues.

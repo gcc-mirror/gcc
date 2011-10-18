@@ -1,3 +1,9 @@
+2011-10-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/50760
+	* c-lex.c (fe_file_change): Use LINEMAP_SYSP when
+    	!NO_IMPLICIT_EXTERN_C.
+
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
