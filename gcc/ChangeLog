@@ -101,12 +101,6 @@
 
 	* config/sparc/sparc.md (in_call_delay): Fix formatting issues.
 
-2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
-
-	* gcc/c-family/c-common.c (c_common_reswords): Add __bases,
-	__direct_bases.
-	* gcc/c-family/c-common.h: Add RID_BASES and RID_DIRECT_BASES.
-
 2011-10-17  Simon Baldwin  <simonb@google.com>
 	    Ian Lance Taylor  <iant@google.com>
 
@@ -285,8 +279,7 @@
 2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50757
-	* c-family/c.opt ([Wnonnull]): Add C++ and Objective-C++.
-	* doc/invoke.texi: Update.
+	* doc/invoke.texi ([Wnonnull]): Update.
 
 2011-10-17  Richard Henderson  <rth@redhat.com>
 
@@ -671,8 +664,7 @@
 2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/17212
-	* c-family/c.opt ([Wformat-zero-length]): Add C++ and Objective-C++.
-	* doc/invoke.texi: Update.
+	* doc/invoke.texi ([Wformat-zero-length]): Update.
 
 2011-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
@@ -1140,12 +1132,6 @@
 	two argument handling from ...
 	(get_continuation_for_phi): ... here.  Handle arbitrary number
 	of PHI args.
-
-2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR c++/33067
-	* c-family/c-pretty-print.c (pp_c_floating_constant): Output
-	max_digits10 (in the ISO C++ WG N1822 sense) decimal digits.
 
 2011-10-11  Richard Sandiford  <richard.sandiford@linaro.org>
 
