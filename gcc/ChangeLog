@@ -53,6 +53,11 @@
 	* config/sparc/sparc.md: Use register_or_zero_operand where rJ
 	is the constraint.
 
+	* config/sparc/sparc.md (vec_perm_constv8qi, vec_perm<mode>): New
+	patterns.
+	* config/sparc/sparc.c (sparc_expand_vec_perm_bmask): New function.
+	* config/sparc/sparc-protos.h (sparc_expand_vec_perm_bmask): Declare.
+
 2011-10-17  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc-modes.def: Add single entry vector modes for
