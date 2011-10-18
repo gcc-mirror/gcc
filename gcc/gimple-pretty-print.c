@@ -610,8 +610,6 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
       pp_character (buffer, '}');
       if (pt->vars_contains_global)
 	pp_string (buffer, " (glob)");
-      if (pt->vars_contains_restrict)
-	pp_string (buffer, " (restr)");
     }
 }
 

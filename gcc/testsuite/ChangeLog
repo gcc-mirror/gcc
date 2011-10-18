@@ -1,3 +1,7 @@
+2011-10-18  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/restrict-1.c: New testcase.
+
 2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
 
 	* g++.dg/ext/bases.C: New test.

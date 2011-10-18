@@ -219,13 +219,6 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
   if (!pi)
     return true;
 
-  /* If the decl can be used as a restrict tag and we have a restrict
-     pointer and that pointers points-to set doesn't contain this decl
-     then they can't alias.  */
-  if (DECL_RESTRICTED_P (decl)
-      && pi->pt.vars_contains_restrict)
-    return bitmap_bit_p (pi->pt.vars, DECL_PT_UID (decl));
-
   return pt_solution_includes (&pi->pt, decl);
 }
 
@@ -315,11 +308,6 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
   pi2 = SSA_NAME_PTR_INFO (ptr2);
   if (!pi1 || !pi2)
     return true;
-
-  /* If both pointers are restrict-qualified try to disambiguate
-     with restrict information.  */
-  if (!pt_solutions_same_restrict_base (&pi1->pt, &pi2->pt))
-    return false;
 
   /* ???  This does not use TBAA to prune decls from the intersection
      that not both pointers may access.  */
@@ -426,8 +414,6 @@ dump_points_to_solution (FILE *file, struct pt_solution *pt)
       dump_decl_set (file, pt->vars);
       if (pt->vars_contains_global)
 	fprintf (file, " (includes global vars)");
-      if (pt->vars_contains_restrict)
-	fprintf (file, " (includes restrict tags)");
     }
 }
 
