@@ -100,6 +100,14 @@ case ${host} in
 esac
 
 case ${host} in
+  arm*-*-linux*)
+    case ${target} in
+      arm*-*-*)
+	host_extra_gcc_objs="driver-arm.o"
+	host_xmake_file="${host_xmake_file} arm/x-arm"
+	;;
+    esac
+    ;;
   alpha*-*-linux* | alpha*-dec-osf*)
     case ${target} in
       alpha*-*-linux* | alpha*-dec-osf*)
