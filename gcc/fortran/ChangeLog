@@ -1,6 +1,15 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50420
+	* trans-intrinsic.c (walk_coarray): Change AR_ELEMENT to AR_SECTION.
+
+	PR fortran/50420
+	* trans-intrinsic.c (walk_coarray): Use gfc_walk_array_ref for
+	the scalarization chain initialization. 
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
 	* trans-intrinsic.c (walk_coarray): Allow subreferences after a
 	coarray object reference.
 
