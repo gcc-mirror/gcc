@@ -943,10 +943,16 @@ walk_coarray (gfc_expr *e)
       ss = gfc_get_array_ss (gfc_ss_terminator, e, 0, GFC_SS_SECTION);
 
       ref = e->ref;
-      while (ref->next)
-	ref = ref->next;
+      while (ref)
+	{
+	  if (ref->type == REF_ARRAY
+	      && ref->u.ar.codimen > 0)
+	    break;
 
-      gcc_assert (ref->type == REF_ARRAY && ref->u.ar.codimen > 0);
+	  ref = ref->next;
+	}
+
+      gcc_assert (ref != NULL);
       ref->u.ar.type = AR_FULL;
       ss->data.info.ref = ref;
     }
