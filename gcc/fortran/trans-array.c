@@ -6150,13 +6150,13 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 					  gfc_rank_cst[dim], stride);
 	}
 
-      for (n = ndim; n < ndim + codim; n++)
+      for (n = loop.dimen; n < loop.dimen + codim; n++)
 	{
 	  from = loop.from[n];
 	  to = loop.to[n];
 	  gfc_conv_descriptor_lbound_set (&loop.pre, parm,
 					  gfc_rank_cst[n], from);
-	  if (n < ndim + codim - 1)
+	  if (n < loop.dimen + codim - 1)
 	    gfc_conv_descriptor_ubound_set (&loop.pre, parm,
 					    gfc_rank_cst[n], to);
 	}
