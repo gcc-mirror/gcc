@@ -386,15 +386,15 @@
 
 (define_attr "in_call_delay" "false,true"
   (cond [(eq_attr "type" "uncond_branch,branch,call,sibcall,call_no_delay_slot,multi")
-	 	(const_string "false")
+		(const_string "false")
 	 (eq_attr "type" "load,fpload,store,fpstore")
-	 	(if_then_else (eq_attr "length" "1")
+		(if_then_else (eq_attr "length" "1")
 			      (const_string "true")
 			      (const_string "false"))]
-	(if_then_else (and (eq_attr "length" "1")
-			   (eq_attr "tls_call_delay" "true"))
-		      (const_string "true")
-		      (const_string "false"))))
+	 (if_then_else (and (eq_attr "length" "1")
+			    (eq_attr "tls_call_delay" "true"))
+		       (const_string "true")
+		       (const_string "false"))))
 
 (define_attr "eligible_for_sibcall_delay" "false,true"
   (symbol_ref "(eligible_for_sibcall_delay (insn)
