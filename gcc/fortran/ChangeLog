@@ -1,6 +1,12 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50420
+	* trans-types.c (gfc_build_array_type): Don't force lower bound to one
+	in the deferred case.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
 	* simplify.c (simplify_cobound): Accept non-last-in-ref-chain coarrays.
 	Don't set already set array ref.
 
