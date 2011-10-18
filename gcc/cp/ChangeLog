@@ -1,3 +1,25 @@
+2011-10-18   Diego Novillo  <dnovillo@google.com>
+
+	* parser.c: Remove ENABLE_CHECKING markers around debugging
+	routines.
+	(cp_lexer_dump_tokens): Add arguments START_TOKEN and CURR_TOKEN.
+	Make static
+	When printing CURR_TOKEN surround it in [[ ]].
+	Start printing at START_TOKEN.
+	Update all users.
+	(cp_debug_print_tree_if_set): New.
+	(cp_debug_print_context): New.
+	(cp_debug_print_context_stack): New.
+	(cp_debug_print_flag): New.
+	(cp_debug_print_unparsed_function): New.
+	(cp_debug_print_unparsed_queues): New.
+	(cp_debug_parser_tokens): New.
+	(cp_debug_parser): New.
+	(cp_lexer_start_debugging): Set cp_lexer_debug_stream to stderr.
+	(cp_lexer_stop_debugging): Set cp_lexer_debug_stream to NULL.
+	* parser.h (cp_lexer_dump_tokens): Remove declaration.
+	(cp_debug_parser): Declare.
+
 2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
 
 	* cp-tree.def: Add BASES as a new tree code.
