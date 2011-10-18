@@ -1,6 +1,12 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50420
+	* trans-intrinsic.c (walk_coarray): Allow subreferences after a
+	coarray object reference.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
 	* trans-array.c (gfc_walk_array_ref): Allow zero rank arrays
 	if they are coarrays.
 
