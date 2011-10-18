@@ -1,3 +1,10 @@
+2011-10-18  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_block_move_unaligned_straight)
+	(arm_adjust_block_mem, arm_block_move_unaligned_loop)
+	(arm_movmemqi_unaligned): New.
+	(arm_gen_movmemqi): Support unaligned block copies.
+
 2011-10-18  Ira Rosen  <ira.rosen@linaro.org>
 
 	* doc/md.texi (vec_widen_ushiftl_hi, vec_widen_ushiftl_lo,

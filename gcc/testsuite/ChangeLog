@@ -1,3 +1,11 @@
+2011-10-18  Julian Brown  <julian@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_unaligned): New.
+	* gcc.target/arm/unaligned-memcpy-1.c: New.
+	* gcc.target/arm/unaligned-memcpy-2.c: New.
+	* gcc.target/arm/unaligned-memcpy-3.c: New.
+	* gcc.target/arm/unaligned-memcpy-4.c: New.
+
 2011-10-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47023
