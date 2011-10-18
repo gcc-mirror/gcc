@@ -564,6 +564,8 @@ struct GTY (()) tree_argument_pack_select {
 
 typedef enum cp_trait_kind
 {
+  CPTK_BASES,
+  CPTK_DIRECT_BASES,
   CPTK_HAS_NOTHROW_ASSIGN,
   CPTK_HAS_NOTHROW_CONSTRUCTOR,
   CPTK_HAS_NOTHROW_COPY,
@@ -3433,6 +3435,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define UNDERLYING_TYPE_TYPE(NODE) \
   (TYPE_VALUES_RAW (UNDERLYING_TYPE_CHECK (NODE)))
 
+/* The type in question for BASES.  */
+#define BASES_TYPE(NODE) \
+  (TYPE_VALUES_RAW (BASES_CHECK (NODE)))
+
+#define BASES_DIRECT(NODE) \
+  TREE_LANG_FLAG_0 (BASES_CHECK (NODE))
+
 /* The expression in question for a DECLTYPE_TYPE.  */
 #define DECLTYPE_TYPE_EXPR(NODE) (TYPE_VALUES_RAW (DECLTYPE_TYPE_CHECK (NODE)))
 
@@ -5462,6 +5471,9 @@ extern tree finish_id_expression		(tree, tree, tree,
                                                  location_t);
 extern tree finish_typeof			(tree);
 extern tree finish_underlying_type	        (tree);
+extern tree calculate_bases                     (tree);
+extern tree finish_bases                        (tree, bool);
+extern tree calculate_direct_bases              (tree);
 extern tree finish_offsetof			(tree);
 extern void finish_decl_cleanup			(tree, tree);
 extern void finish_eh_cleanup			(tree);

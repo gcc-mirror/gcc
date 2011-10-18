@@ -3394,6 +3394,149 @@ finish_underlying_type (tree type)
   return underlying_type;
 }
 
+/* Implement the __direct_bases keyword: Return the direct base classes
+   of type */
+
+tree
+calculate_direct_bases (tree type)
+{
+  VEC(tree, gc) *vector = make_tree_vector();
+  tree bases_vec = NULL_TREE;
+  VEC(tree, none) *base_binfos;
+  tree binfo;
+  unsigned i;
+
+  complete_type (type);
+
+  if (!NON_UNION_CLASS_TYPE_P (type))
+    return make_tree_vec (0);
+
+  base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
+
+  /* Virtual bases are initialized first */
+  for (i = 0; VEC_iterate (tree, base_binfos, i, binfo); i++)
+    {
+      if (BINFO_VIRTUAL_P (binfo))
+       {
+         VEC_safe_push (tree, gc, vector, binfo);
+       }
+    }
+
+  /* Now non-virtuals */
+  for (i = 0; VEC_iterate (tree, base_binfos, i, binfo); i++)
+    {
+      if (!BINFO_VIRTUAL_P (binfo))
+       {
+         VEC_safe_push (tree, gc, vector, binfo);
+       }
+    }
+
+
+  bases_vec = make_tree_vec (VEC_length (tree, vector));
+
+  for (i = 0; i < VEC_length (tree, vector); ++i)
+    {
+      TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE (VEC_index (tree, vector, i));
+    }
+  return bases_vec;
+}
+
+/* Implement the __bases keyword: Return the base classes
+   of type */
+
+/* Find morally non-virtual base classes by walking binfo hierarchy */
+/* Virtual base classes are handled separately in finish_bases */
+
+static tree
+dfs_calculate_bases_pre (tree binfo, ATTRIBUTE_UNUSED void *data_)
+{
+  /* Don't walk bases of virtual bases */
+  return BINFO_VIRTUAL_P (binfo) ? dfs_skip_bases : NULL_TREE;
+}
+
+static tree
+dfs_calculate_bases_post (tree binfo, void *data_)
+{
+  VEC(tree, gc) **data = (VEC(tree, gc) **) data_;
+  if (!BINFO_VIRTUAL_P (binfo))
+    {
+      VEC_safe_push (tree, gc, *data, BINFO_TYPE (binfo));
+    }
+  return NULL_TREE;
+}
+
+/* Calculates the morally non-virtual base classes of a class */
+static VEC(tree, gc) *
+calculate_bases_helper (tree type)
+{
+  VEC(tree, gc) *vector = make_tree_vector();
+
+  /* Now add non-virtual base classes in order of construction */
+  dfs_walk_all (TYPE_BINFO (type),
+                dfs_calculate_bases_pre, dfs_calculate_bases_post, &vector);
+  return vector;
+}
+
+tree
+calculate_bases (tree type)
+{
+  VEC(tree, gc) *vector = make_tree_vector();
+  tree bases_vec = NULL_TREE;
+  unsigned i;
+  VEC(tree, gc) *vbases;
+  VEC(tree, gc) *nonvbases;
+  tree binfo;
+
+  complete_type (type);
+
+  if (!NON_UNION_CLASS_TYPE_P (type))
+    return make_tree_vec (0);
+
+  /* First go through virtual base classes */
+  for (vbases = CLASSTYPE_VBASECLASSES (type), i = 0;
+       VEC_iterate (tree, vbases, i, binfo); i++)
+    {
+      VEC(tree, gc) *vbase_bases = calculate_bases_helper (BINFO_TYPE (binfo));
+      VEC_safe_splice (tree, gc, vector, vbase_bases);
+      release_tree_vector (vbase_bases);
+    }
+
+  /* Now for the non-virtual bases */
+  nonvbases = calculate_bases_helper (type);
+  VEC_safe_splice (tree, gc, vector, nonvbases);
+  release_tree_vector (nonvbases);
+
+  /* Last element is entire class, so don't copy */
+  bases_vec = make_tree_vec (VEC_length (tree, vector) - 1);
+
+  for (i = 0; i < VEC_length (tree, vector) - 1; ++i)
+    {
+      TREE_VEC_ELT (bases_vec, i) = VEC_index (tree, vector, i);
+    }
+  release_tree_vector (vector);
+  return bases_vec;
+}
+
+tree
+finish_bases (tree type, bool direct)
+{
+  tree bases = NULL_TREE;
+
+  if (!processing_template_decl)
+    {
+      /* Parameter packs can only be used in templates */
+      error ("Parameter pack __bases only valid in template declaration");
+      return error_mark_node;
+    }
+
+  bases = cxx_make_type (BASES);
+  BASES_TYPE (bases) = type;
+  BASES_DIRECT (bases) = direct;
+  SET_TYPE_STRUCTURAL_EQUALITY (bases);
+
+  return bases;
+}
+
 /* Perform C++-specific checks for __builtin_offsetof before calling
    fold_offsetof.  */
 

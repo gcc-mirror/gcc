@@ -1,0 +1,102 @@
+// TR2 type_traits -*- C++ -*-
+
+// Copyright (C) 2011 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file tr2/type_traits
+ *  This is a TR2 C++ Library header.
+ */
+
+#ifndef _GLIBCXX_TR2_TYPE_TRAITS
+#define _GLIBCXX_TR2_TYPE_TRAITS 1
+
+#pragma GCC system_header
+#include <type_traits>
+#include <bits/c++config.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace tr2
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /**
+   * @defgroup metaprogramming Type Traits
+   * @ingroup utilities
+   *
+   * Compile time type transformation and information.
+   * @{
+   */
+
+  template<typename... _Elements>
+    struct typelist;
+
+  template<>
+    struct typelist<>
+    {
+      typedef std::true_type 			empty;
+    };
+
+  template<typename _First, typename... _Rest>
+    struct typelist<_First, _Rest...>
+    {
+      typedef std::false_type 			empty;
+
+      struct first
+      {
+	typedef _First 				type;
+      };
+
+      struct rest
+      {
+	typedef typelist<_Rest...> 		type;
+      };
+    };
+
+  // Sequence abstraction metafunctions default to looking in the type
+  template<typename _Tp>
+    struct first : public _Tp::first { };
+
+  template<typename _Tp>
+    struct rest : public _Tp::rest { };
+
+  template<typename _Tp>
+    struct empty : public _Tp::empty { };
+
+
+  template<typename _Tp>
+    struct bases
+    {
+      typedef typelist<__bases(_Tp)...> 	type;
+    };
+
+  template<typename _Tp>
+    struct direct_bases
+    {
+      typedef typelist<__direct_bases(_Tp)...> 	type;
+    };
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+}
+
+#endif // _GLIBCXX_TR2_TYPE_TRAITS

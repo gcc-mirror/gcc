@@ -1,3 +1,23 @@
+2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
+
+	* include/tr2/type_traits (bases, direct_bases, typelist): New.
+
+2011-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libstdc++-v3/include/Makefile.am: Add tr2 directory and includes.
+	* libstdc++-v3/include/Makefile.in: Regenerate.
+
+	* scripts/create_testsuite_files: Search tr2 directory.
+	* testsuite/libstdc++-dg/conformance.exp: Same.
+
+	* testsuite/tr2/bases/requirements/explicit_instantiation.cc: New.
+	* testsuite/tr2/bases/requirements/typedefs.cc: New.
+	* testsuite/tr2/bases/value.cc: New.
+	* testsuite/tr2/direct_bases/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/tr2/direct_bases/requirements/typedefs.cc: New.
+	* testsuite/tr2/direct_bases/value.cc: New.
+
 2011-10-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/50715
@@ -194,7 +214,7 @@
 	* testsuite/23_containers/deque/modifiers/erase/3.cc: Adjust.
 
 2011-09-25  Benjamin Kosnik  <bkoz@redhat.com>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/48698
 	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Set libtool_VERSION here.

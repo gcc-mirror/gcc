@@ -1,3 +1,16 @@
+2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
+
+	* cp-tree.def: Add BASES as a new tree code.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_BASES, CPTK_DIRECT_BASES.
+	(BASES_TYPE, BASES_DIRECT): Define.
+	(calculate_bases, finish_bases, calculate_direct_bases): Declare.
+	* parser.c (cp_parser_trait_expr, cp_parser_template_argument_list,
+	(cp_parser_simple_type_specifier, cp_parser_save_nsdmi): Use them.
+	* pt.c (find_parameter_packs_r, tsubst_pack_expansion): Likewise.
+	* semantics.c (calculate_bases, finish_bases, calculate_direct_bases,
+	dfs_calculate_bases_pre, dfs_calculate_bases_post,
+	calculate_bases_helper): Define.
+
 2011-10-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50736
