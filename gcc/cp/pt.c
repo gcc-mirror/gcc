@@ -2980,6 +2980,9 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
         }
       break;
 
+    case BASES:
+      parameter_pack_p = true;
+      break;
     default:
       /* Not a parameter pack.  */
       break;
@@ -9127,6 +9130,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       tree arg_pack = NULL_TREE;
       tree orig_arg = NULL_TREE;
 
+      if (TREE_CODE (parm_pack) == BASES)
+       {
+         if (BASES_DIRECT (parm_pack))
+           return calculate_direct_bases (tsubst_expr (BASES_TYPE (parm_pack),
+                                                        args, complain, in_decl, false));
+         else
+           return calculate_bases (tsubst_expr (BASES_TYPE (parm_pack),
+                                                 args, complain, in_decl, false));
+       }
       if (TREE_CODE (parm_pack) == PARM_DECL)
 	{
 	  if (!cp_unevaluated_operand)

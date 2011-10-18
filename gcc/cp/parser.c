@@ -7304,6 +7304,12 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case RID_UNDERLYING_TYPE:
       kind = CPTK_UNDERLYING_TYPE;
       break;
+    case RID_BASES:
+      kind = CPTK_BASES;
+      break;
+    case RID_DIRECT_BASES:
+      kind = CPTK_DIRECT_BASES;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -7348,9 +7354,17 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
   /* Complete the trait expression, which may mean either processing
      the trait expr now or saving it for template instantiation.  */
-  return kind != CPTK_UNDERLYING_TYPE
-    ? finish_trait_expr (kind, type1, type2)
-    : finish_underlying_type (type1);
+  switch(kind)
+    {
+    case CPTK_UNDERLYING_TYPE:
+      return finish_underlying_type (type1);
+    case CPTK_BASES:
+      return finish_bases (type1, false);
+    case CPTK_DIRECT_BASES:
+      return finish_bases (type1, true);
+    default:
+      return finish_trait_expr (kind, type1, type2);
+    }
 }
 
 /* Lambdas that appear in variable initializer or default argument scope
@@ -12040,6 +12054,7 @@ cp_parser_template_argument_list (cp_parser* parser)
   parser->integral_constant_expression_p = false;
   saved_non_ice_p = parser->non_integral_constant_expression_p;
   parser->non_integral_constant_expression_p = false;
+
   /* Parse the arguments.  */
   do
     {
@@ -12857,7 +12872,6 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
     case RID_UNDERLYING_TYPE:
       type = cp_parser_trait_expr (parser, RID_UNDERLYING_TYPE);
-
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token->location,
@@ -12865,6 +12879,14 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       return type;
 
+    case RID_BASES:
+    case RID_DIRECT_BASES:
+      type = cp_parser_trait_expr (parser, token->keyword);
+      if (decl_specs)
+       cp_parser_set_decl_spec_type (decl_specs, type,
+                                     token->location,
+                                     /*type_definition_p=*/false);
+      return type;
     default:
       break;
     }
@@ -20652,7 +20674,7 @@ cp_parser_save_nsdmi (cp_parser* parser)
 
 
 /* Parse a template-argument-list, as well as the trailing ">" (but
-   not the opening ">").  See cp_parser_template_argument_list for the
+   not the opening "<").  See cp_parser_template_argument_list for the
    return value.  */
 
 static tree

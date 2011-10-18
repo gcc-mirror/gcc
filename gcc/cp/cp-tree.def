@@ -462,6 +462,10 @@ DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
    UNDERLYING_TYPE_TYPE is the type in question.  */
 DEFTREECODE (UNDERLYING_TYPE, "underlying_type", tcc_type, 0)
 
+/* A type designated by one of the bases type traits.
+   BASES_TYPE is the type in question.  */
+DEFTREECODE (BASES, "bases", tcc_type, 0)
+
 /* Used to represent the template information stored by template
    specializations.
    The accessors are:

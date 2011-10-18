@@ -1,3 +1,9 @@
+2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
+
+	* gcc/c-family/c-common.c (c_common_reswords): Add __bases,
+	__direct_bases.
+	* gcc/c-family/c-common.h: Add RID_BASES and RID_DIRECT_BASES.
+
 2011-10-17  Simon Baldwin  <simonb@google.com>
 	    Ian Lance Taylor  <iant@google.com>
 
