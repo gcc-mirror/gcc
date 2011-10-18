@@ -2296,8 +2296,7 @@ gfc_find_array_ref (gfc_expr *e)
 
   for (ref = e->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY
-	&& (ref->u.ar.type == AR_FULL || ref->u.ar.type == AR_SECTION
-	    || (ref->u.ar.type == AR_ELEMENT && ref->u.ar.dimen == 0)))
+	&& (ref->u.ar.type == AR_FULL || ref->u.ar.type == AR_SECTION))
       break;
 
   if (ref == NULL)
