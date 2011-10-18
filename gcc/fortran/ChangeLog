@@ -1,3 +1,8 @@
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_expr_descriptor): Move ndim initialization
+	earlier.
+
 2011-10-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47023
