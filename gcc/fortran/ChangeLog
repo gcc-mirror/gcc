@@ -1,5 +1,12 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.h (gfc_walk_array_ref): New prototype.
+	* trans-array.c (gfc_walk_array_ref): New function, containing
+	all but the beginning of gfc_walk_variable_expr's code.
+	(gfc_walk_variable_expr): Use gfc_walk_array_ref.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
 	PR fortran/50420
 	* trans-array.c (gfc_conv_expr_descriptor): Use loop.dimen instead of
 	ndim for the descriptor's rank.
