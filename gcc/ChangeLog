@@ -1,3 +1,25 @@
+2011-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_vec_perm): In merge_two use
+	mode SUBREG of operands[0] as target.
+	(valid_perm_using_mode_p): Don't ignore higher bits of d->perm.
+	(expand_vec_pshufb): For V8SImode vmode emit avx2_permvarv8si.
+	(expand_vec_perm_1): Handle identity and some broadcast
+	permutations.
+	(expand_vec_perm_interleave2): Handle also 32-byte modes, using
+	vperm2[fi]128 or vpunpck[lh]* followed by single insn permutation.
+	For d->testing_p return true earlier to avoid creating more GC
+	garbage.
+	(expand_vec_perm_vpermq_perm_1): New function.
+	(expand_vec_perm_vpshufb2_vpermq): For d->testing_p return true
+	earlier to avoid creating more GC garbage.  Fix handling of
+	V16HImode.  Avoid some SUBREGs in SET_DEST.
+	(expand_vec_perm_broadcast_1): Return false for 32-byte integer
+	vector modes.
+	(expand_vec_perm_vpshufb4_vpermq2): New function.
+	(ix86_expand_vec_perm_builtin_1): Call expand_vec_perm_vpermq_perm_1
+	and expand_vec_perm_vpshufb4_vpermq2.
+
 2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/driver-arm.c (host_detect_local_cpu): Close the file

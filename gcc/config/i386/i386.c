@@ -19663,7 +19663,7 @@ ix86_expand_vec_perm (rtx operands[])
       mask = expand_simple_binop (maskmode, AND, mask, vt,
 				  NULL_RTX, 0, OPTAB_DIRECT);
 
-      xops[0] = operands[0];
+      xops[0] = gen_lowpart (mode, operands[0]);
       xops[1] = gen_lowpart (mode, t2);
       xops[2] = gen_lowpart (mode, t1);
       xops[3] = gen_rtx_EQ (maskmode, mask, vt);
@@ -35006,8 +35006,7 @@ valid_perm_using_mode_p (enum machine_mode vmode, struct expand_vec_perm_d *d)
       return false;
     else
       for (j = 1; j < chunk; ++j)
-	if ((d->perm[i] & (d->nelt - 1)) + j
-	    != (d->perm[i + j] & (d->nelt - 1)))
+	if (d->perm[i] + j != d->perm[i + j])
 	  return false;
 
   return true;
@@ -35138,6 +35137,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, vperm));
       else if (vmode == V32QImode)
 	emit_insn (gen_avx2_pshufbv32qi3 (target, op0, vperm));
+      else
+	emit_insn (gen_avx2_permvarv8si (target, vperm, op0));
     }
   else
     {
@@ -35163,9 +35164,58 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   if (d->op0 == d->op1)
     {
       int mask = nelt - 1;
+      bool identity_perm = true;
+      bool broadcast_perm = true;
 
       for (i = 0; i < nelt; i++)
-	perm2[i] = d->perm[i] & mask;
+	{
+	  perm2[i] = d->perm[i] & mask;
+	  if (perm2[i] != i)
+	    identity_perm = false;
+	  if (perm2[i])
+	    broadcast_perm = false;
+	}
+
+      if (identity_perm)
+	{
+	  if (!d->testing_p)
+	    emit_move_insn (d->target, d->op0);
+	  return true;
+	}
+      else if (broadcast_perm && TARGET_AVX2)
+	{
+	  /* Use vpbroadcast{b,w,d}.  */
+	  rtx op = d->op0, (*gen) (rtx, rtx) = NULL;
+	  switch (d->vmode)
+	    {
+	    case V32QImode:
+	      op = gen_lowpart (V16QImode, op);
+	      gen = gen_avx2_pbroadcastv32qi;
+	      break;
+	    case V16HImode:
+	      op = gen_lowpart (V8HImode, op);
+	      gen = gen_avx2_pbroadcastv16hi;
+	      break;
+	    case V8SImode:
+	      op = gen_lowpart (V4SImode, op);
+	      gen = gen_avx2_pbroadcastv8si;
+	      break;
+	    case V16QImode:
+	      gen = gen_avx2_pbroadcastv16qi;
+	      break;
+	    case V8HImode:
+	      gen = gen_avx2_pbroadcastv8hi;
+	      break;
+	    /* For other modes prefer other shuffles this function creates.  */
+	    default: break;
+	    }
+	  if (gen != NULL)
+	    {
+	      if (!d->testing_p)
+		emit_insn (gen (d->target, op));
+	      return true;
+	    }
+	}
 
       if (expand_vselect (d->target, d->op0, perm2, nelt))
 	return true;
@@ -35349,93 +35399,210 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
 {
   struct expand_vec_perm_d dremap, dfinal;
   unsigned i, nelt = d->nelt, nelt2 = nelt / 2;
-  unsigned contents, h1, h2, h3, h4;
+  unsigned HOST_WIDE_INT contents;
   unsigned char remap[2 * MAX_VECT_LEN];
   rtx seq;
-  bool ok;
+  bool ok, same_halves = false;
 
-  if (d->op0 == d->op1)
-    return false;
-
-  /* The 256-bit unpck[lh]p[sd] instructions only operate within the 128-bit
-     lanes.  We can use similar techniques with the vperm2f128 instruction,
-     but it requires slightly different logic.  */
-  if (GET_MODE_SIZE (d->vmode) != 16)
+  if (GET_MODE_SIZE (d->vmode) == 16)
+    {
+      if (d->op0 == d->op1)
+	return false;
+    }
+  else if (GET_MODE_SIZE (d->vmode) == 32)
+    {
+      if (!TARGET_AVX)
+	return false;
+      /* For 32-byte modes allow even d->op0 == d->op1.
+	 The lack of cross-lane shuffling in some instructions
+	 might prevent a single insn shuffle.  */
+    }
+  else
     return false;
 
   /* Examine from whence the elements come.  */
   contents = 0;
   for (i = 0; i < nelt; ++i)
-    contents |= 1u << d->perm[i];
-
-  /* Split the two input vectors into 4 halves.  */
-  h1 = (1u << nelt2) - 1;
-  h2 = h1 << nelt2;
-  h3 = h2 << nelt2;
-  h4 = h3 << nelt2;
+    contents |= ((unsigned HOST_WIDE_INT) 1) << d->perm[i];
 
   memset (remap, 0xff, sizeof (remap));
   dremap = *d;
 
-  /* If the elements from the low halves use interleave low, and similarly
-     for interleave high.  If the elements are from mis-matched halves, we
-     can use shufps for V4SF/V4SI or do a DImode shuffle.  */
-  if ((contents & (h1 | h3)) == contents)
+  if (GET_MODE_SIZE (d->vmode) == 16)
     {
-      for (i = 0; i < nelt2; ++i)
+      unsigned HOST_WIDE_INT h1, h2, h3, h4;
+
+      /* Split the two input vectors into 4 halves.  */
+      h1 = (((unsigned HOST_WIDE_INT) 1) << nelt2) - 1;
+      h2 = h1 << nelt2;
+      h3 = h2 << nelt2;
+      h4 = h3 << nelt2;
+
+      /* If the elements from the low halves use interleave low, and similarly
+	 for interleave high.  If the elements are from mis-matched halves, we
+	 can use shufps for V4SF/V4SI or do a DImode shuffle.  */
+      if ((contents & (h1 | h3)) == contents)
 	{
-	  remap[i] = i * 2;
-	  remap[i + nelt] = i * 2 + 1;
-	  dremap.perm[i * 2] = i;
-	  dremap.perm[i * 2 + 1] = i + nelt;
+	  /* punpckl* */
+	  for (i = 0; i < nelt2; ++i)
+	    {
+	      remap[i] = i * 2;
+	      remap[i + nelt] = i * 2 + 1;
+	      dremap.perm[i * 2] = i;
+	      dremap.perm[i * 2 + 1] = i + nelt;
+	    }
 	}
-    }
-  else if ((contents & (h2 | h4)) == contents)
-    {
-      for (i = 0; i < nelt2; ++i)
+      else if ((contents & (h2 | h4)) == contents)
 	{
-	  remap[i + nelt2] = i * 2;
-	  remap[i + nelt + nelt2] = i * 2 + 1;
-	  dremap.perm[i * 2] = i + nelt2;
-	  dremap.perm[i * 2 + 1] = i + nelt + nelt2;
+	  /* punpckh* */
+	  for (i = 0; i < nelt2; ++i)
+	    {
+	      remap[i + nelt2] = i * 2;
+	      remap[i + nelt + nelt2] = i * 2 + 1;
+	      dremap.perm[i * 2] = i + nelt2;
+	      dremap.perm[i * 2 + 1] = i + nelt + nelt2;
+	    }
 	}
-    }
-  else if ((contents & (h1 | h4)) == contents)
-    {
-      for (i = 0; i < nelt2; ++i)
+      else if ((contents & (h1 | h4)) == contents)
 	{
-	  remap[i] = i;
-	  remap[i + nelt + nelt2] = i + nelt2;
-	  dremap.perm[i] = i;
-	  dremap.perm[i + nelt2] = i + nelt + nelt2;
+	  /* shufps */
+	  for (i = 0; i < nelt2; ++i)
+	    {
+	      remap[i] = i;
+	      remap[i + nelt + nelt2] = i + nelt2;
+	      dremap.perm[i] = i;
+	      dremap.perm[i + nelt2] = i + nelt + nelt2;
+	    }
+	  if (nelt != 4)
+	    {
+	      /* shufpd */
+	      dremap.vmode = V2DImode;
+	      dremap.nelt = 2;
+	      dremap.perm[0] = 0;
+	      dremap.perm[1] = 3;
+	    }
 	}
-      if (nelt != 4)
+      else if ((contents & (h2 | h3)) == contents)
 	{
-	  dremap.vmode = V2DImode;
-	  dremap.nelt = 2;
-	  dremap.perm[0] = 0;
-	  dremap.perm[1] = 3;
+	  /* shufps */
+	  for (i = 0; i < nelt2; ++i)
+	    {
+	      remap[i + nelt2] = i;
+	      remap[i + nelt] = i + nelt2;
+	      dremap.perm[i] = i + nelt2;
+	      dremap.perm[i + nelt2] = i + nelt;
+	    }
+	  if (nelt != 4)
+	    {
+	      /* shufpd */
+	      dremap.vmode = V2DImode;
+	      dremap.nelt = 2;
+	      dremap.perm[0] = 1;
+	      dremap.perm[1] = 2;
+	    }
 	}
-    }
-  else if ((contents & (h2 | h3)) == contents)
-    {
-      for (i = 0; i < nelt2; ++i)
-	{
-	  remap[i + nelt2] = i;
-	  remap[i + nelt] = i + nelt2;
-	  dremap.perm[i] = i + nelt2;
-	  dremap.perm[i + nelt2] = i + nelt;
-	}
-      if (nelt != 4)
-	{
-	  dremap.vmode = V2DImode;
-	  dremap.nelt = 2;
-	  dremap.perm[0] = 1;
-	  dremap.perm[1] = 2;
-	}
+      else
+	return false;
     }
   else
-    return false;
+    {
+      unsigned int nelt4 = nelt / 4, nzcnt = 0;
+      unsigned HOST_WIDE_INT q[8];
+      unsigned int nonzero_halves[4];
+
+      /* Split the two input vectors into 8 quarters.  */
+      q[0] = (((unsigned HOST_WIDE_INT) 1) << nelt4) - 1;
+      for (i = 1; i < 8; ++i)
+	q[i] = q[0] << (nelt4 * i);
+      for (i = 0; i < 4; ++i)
+	if (((q[2 * i] | q[2 * i + 1]) & contents) != 0)
+	  {
+	    nonzero_halves[nzcnt] = i;
+	    ++nzcnt;
+	  }
+
+      if (nzcnt == 1)
+	{
+	  gcc_assert (d->op0 == d->op1);
+	  nonzero_halves[1] = nonzero_halves[0];
+	  same_halves = true;
+	}
+      else if (d->op0 == d->op1)
+	{
+	  gcc_assert (nonzero_halves[0] == 0);
+	  gcc_assert (nonzero_halves[1] == 1);
+	}
+
+      if (nzcnt <= 2)
+	{
+	  if (d->perm[0] / nelt2 == nonzero_halves[1])
+	    {
+	      /* Attempt to increase the likelyhood that dfinal
+		 shuffle will be intra-lane.  */
+	      char tmph = nonzero_halves[0];
+	      nonzero_halves[0] = nonzero_halves[1];
+	      nonzero_halves[1] = tmph;
+	    }
+
+	  /* vperm2f128 or vperm2i128.  */
+	  for (i = 0; i < nelt2; ++i)
+	    {
+	      remap[i + nonzero_halves[1] * nelt2] = i + nelt2;
+	      remap[i + nonzero_halves[0] * nelt2] = i;
+	      dremap.perm[i + nelt2] = i + nonzero_halves[1] * nelt2;
+	      dremap.perm[i] = i + nonzero_halves[0] * nelt2;
+	    }
+
+	  if (d->vmode != V8SFmode
+	      && d->vmode != V4DFmode
+	      && d->vmode != V8SImode)
+	    {
+	      dremap.vmode = V8SImode;
+	      dremap.nelt = 8;
+	      for (i = 0; i < 4; ++i)
+		{
+		  dremap.perm[i] = i + nonzero_halves[0] * 4;
+		  dremap.perm[i + 4] = i + nonzero_halves[1] * 4;
+		}
+	    }
+	}
+      else if (d->op0 == d->op1)
+	return false;
+      else if (TARGET_AVX2
+	       && (contents & (q[0] | q[2] | q[4] | q[6])) == contents)
+	{
+	  /* vpunpckl* */
+	  for (i = 0; i < nelt4; ++i)
+	    {
+	      remap[i] = i * 2;
+	      remap[i + nelt] = i * 2 + 1;
+	      remap[i + nelt2] = i * 2 + nelt2;
+	      remap[i + nelt + nelt2] = i * 2 + nelt2 + 1;
+	      dremap.perm[i * 2] = i;
+	      dremap.perm[i * 2 + 1] = i + nelt;
+	      dremap.perm[i * 2 + nelt2] = i + nelt2;
+	      dremap.perm[i * 2 + nelt2 + 1] = i + nelt + nelt2;
+	    }
+	}
+      else if (TARGET_AVX2
+	       && (contents & (q[1] | q[3] | q[5] | q[7])) == contents)
+	{
+	  /* vpunpckh* */
+	  for (i = 0; i < nelt4; ++i)
+	    {
+	      remap[i + nelt4] = i * 2;
+	      remap[i + nelt + nelt4] = i * 2 + 1;
+	      remap[i + nelt2 + nelt4] = i * 2 + nelt2;
+	      remap[i + nelt + nelt2 + nelt4] = i * 2 + nelt2 + 1;
+	      dremap.perm[i * 2] = i + nelt4;
+	      dremap.perm[i * 2 + 1] = i + nelt + nelt4;
+	      dremap.perm[i * 2 + nelt2] = i + nelt2 + nelt4;
+	      dremap.perm[i * 2 + nelt2 + 1] = i + nelt + nelt2 + nelt4;
+	    }
+	}
+      else
+	return false;
+    }
 
   /* Use the remapping array set up above to move the elements from their
      swizzled locations into their final destinations.  */
@@ -35444,7 +35611,15 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
     {
       unsigned e = remap[d->perm[i]];
       gcc_assert (e < nelt);
-      dfinal.perm[i] = e;
+      /* If same_halves is true, both halves of the remapped vector are the
+	 same.  Avoid cross-lane accesses if possible.  */
+      if (same_halves && i >= nelt2)
+	{
+	  gcc_assert (e < nelt2);
+	  dfinal.perm[i] = e + nelt2;
+	}
+      else
+	dfinal.perm[i] = e;
     }
   dfinal.op0 = gen_reg_rtx (dfinal.vmode);
   dfinal.op1 = dfinal.op0;
@@ -35460,6 +35635,9 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
   if (!ok)
     return false;
 
+  if (d->testing_p)
+    return true;
+
   if (dremap.vmode != dfinal.vmode)
     {
       dremap.target = gen_lowpart (dremap.vmode, dremap.target);
@@ -35471,6 +35649,83 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
   gcc_assert (ok);
 
   emit_insn (seq);
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to simplify
+   a single vector cross-lane permutation into vpermq followed
+   by any of the single insn permutations.  */
+
+static bool
+expand_vec_perm_vpermq_perm_1 (struct expand_vec_perm_d *d)
+{
+  struct expand_vec_perm_d dremap, dfinal;
+  unsigned i, j, nelt = d->nelt, nelt2 = nelt / 2, nelt4 = nelt / 4;
+  unsigned contents[2];
+  bool ok;
+
+  if (!(TARGET_AVX2
+	&& (d->vmode == V32QImode || d->vmode == V16HImode)
+	&& d->op0 == d->op1))
+    return false;
+
+  contents[0] = 0;
+  contents[1] = 0;
+  for (i = 0; i < nelt2; ++i)
+    {
+      contents[0] |= 1u << (d->perm[i] / nelt4);
+      contents[1] |= 1u << (d->perm[i + nelt2] / nelt4);
+    }
+
+  for (i = 0; i < 2; ++i)
+    {
+      unsigned int cnt = 0;
+      for (j = 0; j < 4; ++j)
+	if ((contents[i] & (1u << j)) != 0 && ++cnt > 2)
+	  return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  dremap = *d;
+  dremap.vmode = V4DImode;
+  dremap.nelt = 4;
+  dremap.target = gen_reg_rtx (V4DImode);
+  dremap.op0 = gen_lowpart (V4DImode, d->op0);
+  dremap.op1 = dremap.op0;
+  for (i = 0; i < 2; ++i)
+    {
+      unsigned int cnt = 0;
+      for (j = 0; j < 4; ++j)
+	if ((contents[i] & (1u << j)) != 0)
+	  dremap.perm[2 * i + cnt++] = j;
+      for (; cnt < 2; ++cnt)
+	dremap.perm[2 * i + cnt] = 0;
+    }
+
+  dfinal = *d;
+  dfinal.op0 = gen_lowpart (dfinal.vmode, dremap.target);
+  dfinal.op1 = dfinal.op0;
+  for (i = 0, j = 0; i < nelt; ++i)
+    {
+      if (i == nelt2)
+	j = 2;
+      dfinal.perm[i] = (d->perm[i] & (nelt4 - 1)) | (j ? nelt2 : 0);
+      if ((d->perm[i] / nelt4) == dremap.perm[j])
+	;
+      else if ((d->perm[i] / nelt4) == dremap.perm[j + 1])
+	dfinal.perm[i] |= nelt4;
+      else
+	gcc_unreachable ();
+    }
+
+  ok = expand_vec_perm_1 (&dremap);
+  gcc_assert (ok);
+
+  ok = expand_vec_perm_1 (&dfinal);
+  gcc_assert (ok);
+
   return true;
 }
 
@@ -35621,6 +35876,9 @@ expand_vec_perm_vpshufb2_vpermq (struct expand_vec_perm_d *d)
       || (d->vmode != V32QImode && d->vmode != V16HImode))
     return false;
 
+  if (d->testing_p)
+    return true;
+
   nelt = d->nelt;
   eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
 
@@ -35635,12 +35893,12 @@ expand_vec_perm_vpshufb2_vpermq (struct expand_vec_perm_d *d)
   for (i = 0; i < nelt; ++i)
     {
       unsigned j, e = d->perm[i] & (nelt / 2 - 1);
-      unsigned which = ((d->perm[i] ^ i) & (nelt / 2));
+      unsigned which = ((d->perm[i] ^ i) & (nelt / 2)) * eltsz;
 
       for (j = 0; j < eltsz; ++j)
 	{
 	  rperm[!!which][(i * eltsz + j) ^ which] = GEN_INT (e * eltsz + j);
-	  rperm[!which][(i * eltsz + j) ^ (which ^ (nelt / 2))] = m128;
+	  rperm[!which][(i * eltsz + j) ^ (which ^ 16)] = m128;
 	}
     }
 
@@ -35652,10 +35910,9 @@ expand_vec_perm_vpshufb2_vpermq (struct expand_vec_perm_d *d)
   emit_insn (gen_avx2_pshufbv32qi3 (h, op, vperm));
 
   /* Swap the 128-byte lanes of h into hp.  */
-  hp = gen_reg_rtx (V32QImode);
+  hp = gen_reg_rtx (V4DImode);
   op = gen_lowpart (V4DImode, h);
-  emit_insn (gen_avx2_permv4di_1 (gen_lowpart (V4DImode, hp), op,
-				  const2_rtx, GEN_INT (3), const0_rtx,
+  emit_insn (gen_avx2_permv4di_1 (hp, op, const2_rtx, GEN_INT (3), const0_rtx,
 				  const1_rtx));
 
   vperm = gen_rtx_CONST_VECTOR (V32QImode, gen_rtvec_v (32, rperm[0]));
@@ -35666,7 +35923,7 @@ expand_vec_perm_vpshufb2_vpermq (struct expand_vec_perm_d *d)
   emit_insn (gen_avx2_pshufbv32qi3 (l, op, vperm));
 
   op = gen_lowpart (V32QImode, d->target);
-  emit_insn (gen_iorv32qi3 (op, l, hp));
+  emit_insn (gen_iorv32qi3 (op, l, gen_lowpart (V32QImode, hp)));
 
   return true;
 }
@@ -35994,6 +36251,15 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       gcc_assert (ok);
       return true;
 
+    case V32QImode:
+    case V16HImode:
+    case V8SImode:
+    case V4DImode:
+      /* For AVX2 broadcasts of the first element vpbroadcast* or
+	 vpermq should be used by expand_vec_perm_1.  */
+      gcc_assert (!TARGET_AVX2 || d->perm[0]);
+      return false;
+
     default:
       gcc_unreachable ();
     }
@@ -36016,6 +36282,117 @@ expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
       return false;
 
   return expand_vec_perm_broadcast_1 (d);
+}
+
+/* Implement arbitrary permutation of two V32QImode and V16QImode operands
+   with 4 vpshufb insns, 2 vpermq and 3 vpor.  We should have already failed
+   all the shorter instruction sequences.  */
+
+static bool
+expand_vec_perm_vpshufb4_vpermq2 (struct expand_vec_perm_d *d)
+{
+  rtx rperm[4][32], vperm, l[2], h[2], op, m128;
+  unsigned int i, nelt, eltsz;
+  bool used[4];
+
+  if (!TARGET_AVX2
+      || d->op0 == d->op1
+      || (d->vmode != V32QImode && d->vmode != V16HImode))
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  nelt = d->nelt;
+  eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+
+  /* Generate 4 permutation masks.  If the required element is within
+     the same lane, it is shuffled in.  If the required element from the
+     other lane, force a zero by setting bit 7 in the permutation mask.
+     In the other mask the mask has non-negative elements if element
+     is requested from the other lane, but also moved to the other lane,
+     so that the result of vpshufb can have the two V2TImode halves
+     swapped.  */
+  m128 = GEN_INT (-128);
+  for (i = 0; i < 32; ++i)
+    {
+      rperm[0][i] = m128;
+      rperm[1][i] = m128;
+      rperm[2][i] = m128;
+      rperm[3][i] = m128;
+    }
+  used[0] = false;
+  used[1] = false;
+  used[2] = false;
+  used[3] = false;
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned j, e = d->perm[i] & (nelt / 2 - 1);
+      unsigned xlane = ((d->perm[i] ^ i) & (nelt / 2)) * eltsz;
+      unsigned int which = ((d->perm[i] & nelt) ? 2 : 0) + (xlane ? 1 : 0);
+
+      for (j = 0; j < eltsz; ++j)
+	rperm[which][(i * eltsz + j) ^ xlane] = GEN_INT (e * eltsz + j);
+      used[which] = true;
+    }
+
+  for (i = 0; i < 2; ++i)
+    {
+      if (!used[2 * i + 1])
+	{
+	  h[i] = NULL_RTX;
+	  continue;
+	}
+      vperm = gen_rtx_CONST_VECTOR (V32QImode,
+				    gen_rtvec_v (32, rperm[2 * i + 1]));
+      vperm = force_reg (V32QImode, vperm);
+      h[i] = gen_reg_rtx (V32QImode);
+      op = gen_lowpart (V32QImode, i ? d->op1 : d->op0);
+      emit_insn (gen_avx2_pshufbv32qi3 (h[i], op, vperm));
+    }
+
+  /* Swap the 128-byte lanes of h[X].  */
+  for (i = 0; i < 2; ++i)
+   {
+     if (h[i] == NULL_RTX)
+       continue;
+     op = gen_reg_rtx (V4DImode);
+     emit_insn (gen_avx2_permv4di_1 (op, gen_lowpart (V4DImode, h[i]),
+				     const2_rtx, GEN_INT (3), const0_rtx,
+				     const1_rtx));
+     h[i] = gen_lowpart (V32QImode, op);
+   }
+
+  for (i = 0; i < 2; ++i)
+    {
+      if (!used[2 * i])
+	{
+	  l[i] = NULL_RTX;
+	  continue;
+	}
+      vperm = gen_rtx_CONST_VECTOR (V32QImode, gen_rtvec_v (32, rperm[2 * i]));
+      vperm = force_reg (V32QImode, vperm);
+      l[i] = gen_reg_rtx (V32QImode);
+      op = gen_lowpart (V32QImode, i ? d->op1 : d->op0);
+      emit_insn (gen_avx2_pshufbv32qi3 (l[i], op, vperm));
+    }
+
+  for (i = 0; i < 2; ++i)
+    {
+      if (h[i] && l[i])
+	{
+	  op = gen_reg_rtx (V32QImode);
+	  emit_insn (gen_iorv32qi3 (op, l[i], h[i]));
+	  l[i] = op;
+	}
+      else if (h[i])
+	l[i] = h[i];
+    }
+
+  gcc_assert (l[0] && l[1]);
+  op = gen_lowpart (V32QImode, d->target);
+  emit_insn (gen_iorv32qi3 (op, l[0], l[1]));
+  return true;
 }
 
 /* The guts of ix86_expand_vec_perm_builtin, also used by the ok hook.
@@ -36041,6 +36418,9 @@ ix86_expand_vec_perm_builtin_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_broadcast (d))
+    return true;
+
+  if (expand_vec_perm_vpermq_perm_1 (d))
     return true;
 
   /* Try sequences of three instructions.  */
@@ -36070,6 +36450,10 @@ ix86_expand_vec_perm_builtin_1 (struct expand_vec_perm_d *d)
      The combinatorics of punpck[lh] get pretty ugly... */
 
   if (expand_vec_perm_even_odd (d))
+    return true;
+
+  /* Even longer sequences.  */
+  if (expand_vec_perm_vpshufb4_vpermq2 (d))
     return true;
 
   return false;
