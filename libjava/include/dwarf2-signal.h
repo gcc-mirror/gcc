@@ -29,20 +29,7 @@ class java::lang::Throwable;
 // then throw an exception.  With the dwarf2 unwinder we don't usually
 // need to do anything, with some minor exceptions.
 
-#ifdef __alpha__
-#define MAKE_THROW_FRAME(_exception)					\
-do									\
-{									\
-  /* Alpha either leaves PC pointing at a faulting instruction or the	\
-   following instruction, depending on the signal.  SEGV always does	\
-   the former, so we adjust the saved PC to point to the following	\
-   instruction; this is what the handler in libgcc expects.  */		\
-  struct sigcontext *_sc = (struct sigcontext *)_p;			\
-  _sc->sc_pc += 4;							\
-}									\
-while (0)
-
-#elif defined(__ia64__)
+#ifdef __ia64__
 
 #define MAKE_THROW_FRAME(_exception)					\
 do									\

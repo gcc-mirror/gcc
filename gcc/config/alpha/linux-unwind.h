@@ -74,5 +74,7 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[64].how = REG_SAVED_OFFSET;
   fs->regs.reg[64].loc.offset = (long)&sc->sc_pc - new_cfa;
   fs->retaddr_column = 64;
+  fs->signal_frame = 1;
+
   return _URC_NO_REASON;
 }
