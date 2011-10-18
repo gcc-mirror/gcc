@@ -7700,8 +7700,10 @@ gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
 		  gcc_unreachable ();
 		}
 	    }
-	  /* We should have at least one non-elemental dimension.  */
-	  gcc_assert (newss->data.info.dimen > 0);
+	  /* We should have at least one non-elemental dimension,
+	     unless we are creating a descriptor for a (scalar) coarray.  */
+	  gcc_assert (newss->data.info.dimen > 0
+		      || newss->data.info.ref->u.ar.as->corank > 0);
 	  ss = newss;
 	  break;
 
