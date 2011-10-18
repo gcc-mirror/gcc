@@ -982,18 +982,36 @@ propagate_necessity (struct edge_list *el)
     }
 }
 
+/* Replace all uses of NAME by underlying variable and mark it
+   for renaming.  */
+
+void
+mark_virtual_operand_for_renaming (tree name)
+{
+  bool used = false;
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  gimple stmt;
+  tree name_var;
+
+  name_var = SSA_NAME_VAR (name);
+  FOR_EACH_IMM_USE_STMT (stmt, iter, name)
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+        SET_USE (use_p, name_var);
+      update_stmt (stmt);
+      used = true;
+    }
+  if (used)
+    mark_sym_for_renaming (name_var);
+}
+
 /* Replace all uses of result of PHI by underlying variable and mark it
    for renaming.  */
 
 void
 mark_virtual_phi_result_for_renaming (gimple phi)
 {
-  bool used = false;
-  imm_use_iterator iter;
-  use_operand_p use_p;
-  gimple stmt;
-  tree result_ssa, result_var;
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Marking result for renaming : ");
@@ -1001,18 +1019,9 @@ mark_virtual_phi_result_for_renaming (gimple phi)
       fprintf (dump_file, "\n");
     }
 
-  result_ssa = gimple_phi_result (phi);
-  result_var = SSA_NAME_VAR (result_ssa);
-  FOR_EACH_IMM_USE_STMT (stmt, iter, result_ssa)
-    {
-      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-        SET_USE (use_p, result_var);
-      update_stmt (stmt);
-      used = true;
-    }
-  if (used)
-    mark_sym_for_renaming (result_var);
+  mark_virtual_operand_for_renaming (gimple_phi_result (phi));
 }
+
 
 /* Remove dead PHI nodes from block BB.  */
 

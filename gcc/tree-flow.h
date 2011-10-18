@@ -715,6 +715,7 @@ bool stmt_dominates_stmt_p (gimple, gimple);
 void mark_virtual_ops_for_renaming (gimple);
 
 /* In tree-ssa-dce.c */
+void mark_virtual_operand_for_renaming (tree);
 void mark_virtual_phi_result_for_renaming (gimple);
 
 /* In tree-ssa-threadedge.c */

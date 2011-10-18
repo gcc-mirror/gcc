@@ -1,3 +1,16 @@
+2011-10-18  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/50672
+	* tree-ssa-dce.c (mark_virtual_operand_for_renaming): New function,
+	factored out of ...
+	(mark_virtual_phi_result_for_renaming): Use
+	mark_virtual_operand_for_renaming.
+	* tree-flow.h (mark_virtual_operand_for_renaming): Declare.
+	* tree-ssa-tail-merge.c (release_last_vdef): New function.
+	(purge_bbs): Add update_vops parameter.  Call release_last_vdef for each
+	deleted basic block.
+	(tail_merge_optimize): Add argument to call to purge_bbs.
+
 2011-10-18  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50716
