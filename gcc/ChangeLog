@@ -1,3 +1,10 @@
+2011-10-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50716
+	* expr.c (get_object_or_type_alignment): New function.
+	(expand_assignment): Use it.
+	(expand_expr_real_1): Likewise.
+
 2011-10-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/50760
