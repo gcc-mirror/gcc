@@ -7603,13 +7603,21 @@ static gfc_ss *
 gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 {
   gfc_ref *ref;
-  gfc_array_ref *ar;
-  gfc_ss *newss;
-  int n;
 
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
       break;
+
+  return gfc_walk_array_ref (ss, expr, ref);
+}
+
+
+gfc_ss *
+gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
+{
+  gfc_array_ref *ar;
+  gfc_ss *newss;
+  int n;
 
   for (; ref; ref = ref->next)
     {
