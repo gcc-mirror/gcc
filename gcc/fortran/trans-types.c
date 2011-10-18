@@ -1254,7 +1254,7 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 
   for (n = as->rank; n < as->rank + as->corank; n++)
     {
-      if (as->lower[n] == NULL)
+      if (as->type != AS_DEFERRED && as->lower[n] == NULL)
         lbound[n] = gfc_index_one_node;
       else
         lbound[n] = gfc_conv_array_bound (as->lower[n]);
