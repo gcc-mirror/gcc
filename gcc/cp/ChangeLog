@@ -1,5 +1,10 @@
 2011-10-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50742
+	* decl.c (check_previous_goto_1): Handle using-decl.
+
+2011-10-18  Jason Merrill  <jason@redhat.com>
+
 	PR c++/50500
 	DR 1082
 	* class.c (type_has_user_declared_move_constructor): New.
