@@ -1,3 +1,11 @@
+2011-10-18  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/50205
+	* sel-sched.c (count_occurrences_1): Simplify on the assumption that
+	p->x is a register.  Forbid substitution when the same register is
+	found in a different mode.
+	(count_occurrences_equiv): Assert that 'what' is a register.
+
 2011-10-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50767

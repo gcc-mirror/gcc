@@ -813,18 +813,12 @@ count_occurrences_1 (rtx *cur_rtx, void *arg)
 {
   rtx_search_arg_p p = (rtx_search_arg_p) arg;
 
-  /* The last param FOR_GCSE is true, because otherwise it performs excessive
-    substitutions like
-	r8 = r33
-	r16 = r33
-    for the last insn it presumes r33 equivalent to r8, so it changes it to
-    r33.  Actually, there's no change, but it spoils debugging.  */
-  if (exp_equiv_p (*cur_rtx, p->x, 0, true))
+  if (REG_P (*cur_rtx) && REGNO (*cur_rtx) == REGNO (p->x))
     {
-      /* Bail out if we occupy more than one register.  */
-      if (REG_P (*cur_rtx)
-          && HARD_REGISTER_P (*cur_rtx)
-          && hard_regno_nregs[REGNO(*cur_rtx)][GET_MODE (*cur_rtx)] > 1)
+      /* Bail out if mode is different or more than one register is used.  */
+      if (GET_MODE (*cur_rtx) != GET_MODE (p->x)
+          || (HARD_REGISTER_P (*cur_rtx)
+	      && hard_regno_nregs[REGNO(*cur_rtx)][GET_MODE (*cur_rtx)] > 1))
         {
           p->n = 0;
           return 1;
@@ -837,7 +831,6 @@ count_occurrences_1 (rtx *cur_rtx, void *arg)
     }
 
   if (GET_CODE (*cur_rtx) == SUBREG
-      && REG_P (p->x)
       && (!REG_P (SUBREG_REG (*cur_rtx))
 	  || REGNO (SUBREG_REG (*cur_rtx)) == REGNO (p->x)))
     {
@@ -859,6 +852,7 @@ count_occurrences_equiv (rtx what, rtx where)
 {
   struct rtx_search_arg arg;
 
+  gcc_assert (REG_P (what));
   arg.x = what;
   arg.n = 0;
 
