@@ -207,6 +207,11 @@ flush_i4 (GFC_INTEGER_4 *unit)
       if (us != NULL)
 	{
 	  sflush (us->s);
+#ifdef _WIN32
+	  /* Without _commit, changes are not visible
+	     to other file descriptors.  */
+	  _commit (u->s->fd);
+#endif
 	  unlock_unit (us);
 	}
     }
@@ -230,6 +235,11 @@ flush_i8 (GFC_INTEGER_8 *unit)
       if (us != NULL)
 	{
 	  sflush (us->s);
+#ifdef _WIN32
+	  /* Without _commit, changes are not visible
+	     to other file descriptors.  */
+	  _commit (u->s->fd);
+#endif
 	  unlock_unit (us);
 	}
     }

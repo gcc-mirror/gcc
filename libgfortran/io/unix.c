@@ -435,10 +435,6 @@ buf_flush (unix_stream * s)
   if (s->ndirty != 0)
     return -1;
 
-#ifdef _WIN32
-  _commit (s->fd);
-#endif
-
   return 0;
 }
 
@@ -1542,7 +1538,14 @@ flush_all_units_1 (gfc_unit *u, int min_unit)
 	  if (__gthread_mutex_trylock (&u->lock))
 	    return u;
 	  if (u->s)
-	    sflush (u->s);
+	    {
+	      sflush (u->s);
+#ifdef _WIN32
+	      /* Without _commit, changes are not visible to other
+		 file descriptors.  */
+	      _commit (u->s->fd);
+#endif
+	    }
 	  __gthread_mutex_unlock (&u->lock);
 	}
       u = u->right;
@@ -1573,6 +1576,11 @@ flush_all_units (void)
       if (u->closed == 0)
 	{
 	  sflush (u->s);
+#ifdef _WIN32
+	  /* Without _commit, changes are not visible to other
+	     file descriptors.  */
+	  _commit (u->s->fd);
+#endif
 	  __gthread_mutex_lock (&unit_lock);
 	  __gthread_mutex_unlock (&u->lock);
 	  (void) predec_waiting_locked (u);

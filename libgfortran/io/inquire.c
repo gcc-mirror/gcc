@@ -409,7 +409,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	  if (u == NULL)
 	    *iqp->size = -1;
 	  else
-	    *iqp->size = file_size (u->file, (gfc_charlen_type) u->file_len);
+	    {
+	      sflush (u->s);
+	      *iqp->size = file_length (u->s);
+	    }
 	}
     }
 

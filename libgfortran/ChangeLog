@@ -1,3 +1,14 @@
+2011-10-18  Tobias Burnus  <burnus@net-b.de>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/50016
+	* io/file_pos.c (st_flush): Call _commit on MinGW(-w64).
+	* io/intrinsics.c (flush_i4, flush_i8): Ditto.
+	* io/unix.c (flush_all_units_1, flush_all_units): Ditto.
+	(buf_flush): Remove _commit call.
+	* io/inquire.c (inquire_via_unit): Flush internal buffer
+	and call file_length instead of invoking stat via file_size.
+
 2011-09-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport fron trunk

@@ -452,6 +452,10 @@ st_flush (st_parameter_filepos *fpp)
         fbuf_flush (u, u->mode);
 
       sflush (u->s);
+#ifdef _WIN32
+      /* Without _commit, changes are not visible to other file descriptors.  */
+      _commit (u->s->fd);
+#endif
       unlock_unit (u);
     }
   else
