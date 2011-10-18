@@ -1,3 +1,11 @@
+2011-10-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50500
+	* include/bits/shared_ptr.h: Default copy ctor and assignment.
+	* testsuite/util/testsuite_allocator.h: Define copy assignment.
+	* testsuite/util/testsuite_rvalref.h: Default copy assignment.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Remove note tags.
+
 2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
 
 	* include/tr2/type_traits (bases, direct_bases, typelist): New.
