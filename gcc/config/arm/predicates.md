@@ -136,6 +136,11 @@
 	    (match_operand 0 "s_register_operand"))
        (match_operand 0 "const_int_operand")))
 
+(define_predicate "const_neon_scalar_shift_amount_operand"
+  (and (match_code "const_int")
+       (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) <= GET_MODE_BITSIZE (mode)
+	&& ((unsigned HOST_WIDE_INT) INTVAL (op)) > 0")))
+
 (define_predicate "arm_add_operand"
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_neg_immediate_operand")))

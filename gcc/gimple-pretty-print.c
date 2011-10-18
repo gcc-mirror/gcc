@@ -343,6 +343,8 @@ dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     case VEC_EXTRACT_ODD_EXPR:
     case VEC_INTERLEAVE_HIGH_EXPR:
     case VEC_INTERLEAVE_LOW_EXPR:
+    case VEC_WIDEN_LSHIFT_HI_EXPR:
+    case VEC_WIDEN_LSHIFT_LO_EXPR:
       for (p = tree_code_name [(int) code]; *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");

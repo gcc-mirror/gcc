@@ -351,6 +351,12 @@ enum optab_index
   OTI_vec_widen_umult_lo,
   OTI_vec_widen_smult_hi,
   OTI_vec_widen_smult_lo,
+  /* Widening shift left.
+     The high/low part of the resulting vector is returned.  */
+  OTI_vec_widen_ushiftl_hi,
+  OTI_vec_widen_ushiftl_lo,
+  OTI_vec_widen_sshiftl_hi,
+  OTI_vec_widen_sshiftl_lo,
   /* Extract and widen the high/low part of a vector of signed or
      floating point elements.  */
   OTI_vec_unpacks_hi,
@@ -544,6 +550,10 @@ enum optab_index
 #define vec_widen_umult_lo_optab (&optab_table[OTI_vec_widen_umult_lo])
 #define vec_widen_smult_hi_optab (&optab_table[OTI_vec_widen_smult_hi])
 #define vec_widen_smult_lo_optab (&optab_table[OTI_vec_widen_smult_lo])
+#define vec_widen_ushiftl_hi_optab (&optab_table[OTI_vec_widen_ushiftl_hi])
+#define vec_widen_ushiftl_lo_optab (&optab_table[OTI_vec_widen_ushiftl_lo])
+#define vec_widen_sshiftl_hi_optab (&optab_table[OTI_vec_widen_sshiftl_hi])
+#define vec_widen_sshiftl_lo_optab (&optab_table[OTI_vec_widen_sshiftl_lo])
 #define vec_unpacks_hi_optab (&optab_table[OTI_vec_unpacks_hi])
 #define vec_unpacks_lo_optab (&optab_table[OTI_vec_unpacks_lo])
 #define vec_unpacku_hi_optab (&optab_table[OTI_vec_unpacku_hi])

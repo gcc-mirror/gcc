@@ -489,6 +489,11 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		    }
 		}
 	    }
+	  else if (rhs_code == WIDEN_LSHIFT_EXPR)
+            {
+              need_same_oprnds = true;
+              first_op1 = gimple_assign_rhs2 (stmt);
+            }
 	}
       else
 	{

@@ -823,7 +823,9 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_UNPACK_LO_EXPR
       || code == VEC_PACK_TRUNC_EXPR
       || code == VEC_PACK_SAT_EXPR
-      || code == VEC_PACK_FIX_TRUNC_EXPR)
+      || code == VEC_PACK_FIX_TRUNC_EXPR
+      || code == VEC_WIDEN_LSHIFT_HI_EXPR
+      || code == VEC_WIDEN_LSHIFT_LO_EXPR)
     type = TREE_TYPE (rhs1);
 
   /* Optabs will try converting a negation into a subtraction, so

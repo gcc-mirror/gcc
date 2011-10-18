@@ -1,3 +1,49 @@
+2011-10-18  Ira Rosen  <ira.rosen@linaro.org>
+
+	* doc/md.texi (vec_widen_ushiftl_hi, vec_widen_ushiftl_lo,
+	vec_widen_sshiftl_hi, vec_widen_sshiftl_lo): Document.
+	* tree-pretty-print.c (dump_generic_node): Handle WIDEN_LSHIFT_EXPR,
+	VEC_WIDEN_LSHIFT_HI_EXPR and VEC_WIDEN_LSHIFT_LO_EXPR.
+	(op_code_prio): Likewise.
+	(op_symbol_code): Handle WIDEN_LSHIFT_EXPR.
+	* optabs.c (optab_for_tree_code): Handle
+	VEC_WIDEN_LSHIFT_HI_EXPR and VEC_WIDEN_LSHIFT_LO_EXPR.
+	(init-optabs): Initialize optab codes for vec_widen_u/sshiftl_hi/lo.
+	* optabs.h (enum optab_index): Add OTI_vec_widen_u/sshiftl_hi/lo.
+	* genopinit.c (optabs): Initialize the new optabs.
+	* expr.c (expand_expr_real_2): Handle
+	VEC_WIDEN_LSHIFT_HI_EXPR and VEC_WIDEN_LSHIFT_LO_EXPR.
+	* gimple-pretty-print.c (dump_binary_rhs): Likewise.
+	* tree-vectorizer.h (NUM_PATTERNS): Increase to 8.
+	* tree.def (WIDEN_LSHIFT_EXPR, VEC_WIDEN_LSHIFT_HI_EXPR,
+	VEC_WIDEN_LSHIFT_LO_EXPR): New.
+	* cfgexpand.c (expand_debug_expr): Handle new tree codes.
+	* tree-vect-patterns.c (vect_vect_recog_func_ptrs): Add
+	vect_recog_widen_shift_pattern.
+	(vect_handle_widen_mult_by_const): Rename...
+	(vect_handle_widen_op_by_const): ...to this.  Handle shifts.
+	Add a new argument, update documentation.
+	(vect_recog_widen_mult_pattern): Assume that only second
+	operand can be constant.  Update call to
+	vect_handle_widen_op_by_const.
+	(vect_recog_over_widening_pattern): Fix typo.
+	(vect_recog_widen_shift_pattern): New.
+	* tree-vect-stmts.c (vectorizable_type_promotion): Handle
+	widening shifts.
+	(supportable_widening_operation): Likewise.
+	* tree-inline.c (estimate_operator_cost): Handle new tree codes.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* config/arm/neon.md (neon_vec_<US>shiftl_<mode>): New.
+	(vec_widen_<US>shiftl_lo_<mode>, neon_vec_<US>shiftl_hi_<mode>,
+	vec_widen_<US>shiftl_hi_<mode>, neon_vec_<US>shift_left_<mode>):
+	Likewise.
+	* config/arm/predicates.md (const_neon_scalar_shift_amount_operand):
+	New.
+	* config/arm/iterators.md (V_innermode): New.
+	* tree-vect-slp.c (vect_build_slp_tree): Require same shift operand
+	for widening shift.
+
 2011-10-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.h (struct pt_solution): Remove

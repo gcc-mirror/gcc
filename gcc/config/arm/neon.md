@@ -5335,6 +5335,44 @@
  }
 )
 
+(define_insn "neon_vec_<US>shiftl_<mode>"
+ [(set (match_operand:<V_widen> 0 "register_operand" "=w")
+       (SE:<V_widen> (ashift:VW (match_operand:VW 1 "register_operand" "w")
+       (match_operand:<V_innermode> 2 "const_neon_scalar_shift_amount_operand" ""))))]
+  "TARGET_NEON"
+{
+  return "vshll.<US><V_sz_elem> %q0, %P1, %2";
+}
+  [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_expand "vec_widen_<US>shiftl_lo_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand" "")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))
+   (match_operand:SI 2 "immediate_operand" "i")]
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
+ {
+  emit_insn (gen_neon_vec_<US>shiftl_<V_half> (operands[0],
+		simplify_gen_subreg (<V_HALF>mode, operands[1], <MODE>mode, 0),
+		operands[2]));
+   DONE;
+ }
+)
+
+(define_expand "vec_widen_<US>shiftl_hi_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand" "")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))
+   (match_operand:SI 2 "immediate_operand" "i")]
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
+ {
+  emit_insn (gen_neon_vec_<US>shiftl_<V_half> (operands[0],
+                simplify_gen_subreg (<V_HALF>mode, operands[1], <MODE>mode,
+				     GET_MODE_SIZE (<V_HALF>mode)),
+                operands[2]));
+   DONE;
+ }
+)
+
 ;; Vectorize for non-neon-quad case
 (define_insn "neon_unpack<US>_<mode>"
  [(set (match_operand:<V_widen> 0 "register_operand" "=w")
@@ -5408,6 +5446,34 @@
  					    
    DONE;
 
+ }
+)
+
+(define_expand "vec_widen_<US>shiftl_hi_<mode>"
+ [(match_operand:<V_double_width> 0 "register_operand" "")
+   (SE:<V_double_width> (match_operand:VDI 1 "register_operand" ""))
+   (match_operand:SI 2 "immediate_operand" "i")]
+ "TARGET_NEON"
+ {
+   rtx tmpreg = gen_reg_rtx (<V_widen>mode);
+   emit_insn (gen_neon_vec_<US>shiftl_<mode> (tmpreg, operands[1], operands[2]));
+   emit_insn (gen_neon_vget_high<V_widen_l> (operands[0], tmpreg));
+
+   DONE;
+ }
+)
+
+(define_expand "vec_widen_<US>shiftl_lo_<mode>"
+  [(match_operand:<V_double_width> 0 "register_operand" "")
+   (SE:<V_double_width> (match_operand:VDI 1 "register_operand" ""))
+   (match_operand:SI 2 "immediate_operand" "i")]
+ "TARGET_NEON"
+ {
+   rtx tmpreg = gen_reg_rtx (<V_widen>mode);
+   emit_insn (gen_neon_vec_<US>shiftl_<mode> (tmpreg, operands[1], operands[2]));
+   emit_insn (gen_neon_vget_low<V_widen_l> (operands[0], tmpreg));
+
+   DONE;
  }
 )
 

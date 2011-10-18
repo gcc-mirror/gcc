@@ -1125,6 +1125,19 @@ DEFTREECODE (WIDEN_MULT_PLUS_EXPR, "widen_mult_plus_expr", tcc_expression, 3)
    is subtracted from t3.  */
 DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_minus_expr", tcc_expression, 3)
 
+/* Widening shift left.
+   The first operand is of type t1.
+   The second operand is the number of bits to shift by; it need not be the
+   same type as the first operand and result.
+   Note that the result is undefined if the second operand is larger
+   than or equal to the first operand's type size.
+   The type of the entire expression is t2, such that t2 is at least twice
+   the size of t1.
+   WIDEN_LSHIFT_EXPR is equivalent to first widening (promoting)
+   the first argument from type t1 to type t2, and then shifting it
+   by the second argument.  */
+DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
+
 /* Fused multiply-add.
    All operands and the result are of the same type.  No intermediate
    rounding is performed after multiplying operand one with operand two
@@ -1179,6 +1192,16 @@ DEFTREECODE (VEC_EXTRACT_ODD_EXPR, "vec_extractodd_expr", tcc_binary, 2)
 /* Merge input vectors interleaving their fields.  */
 DEFTREECODE (VEC_INTERLEAVE_HIGH_EXPR, "vec_interleavehigh_expr", tcc_binary, 2)
 DEFTREECODE (VEC_INTERLEAVE_LOW_EXPR, "vec_interleavelow_expr", tcc_binary, 2)
+
+/* Widening vector shift left in bits.
+   Operand 0 is a vector to be shifted with N elements of size S.
+   Operand 1 is an integer shift amount in bits.
+   The result of the operation is N elements of size 2*S.
+   VEC_WIDEN_LSHIFT_HI_EXPR computes the N/2 high results.
+   VEC_WIDEN_LSHIFT_LO_EXPR computes the N/2 low results.
+ */
+DEFTREECODE (VEC_WIDEN_LSHIFT_HI_EXPR, "widen_lshift_hi_expr", tcc_binary, 2)
+DEFTREECODE (VEC_WIDEN_LSHIFT_LO_EXPR, "widen_lshift_lo_expr", tcc_binary, 2)
 
 /* PREDICT_EXPR.  Specify hint for branch prediction.  The
    PREDICT_EXPR_PREDICTOR specify predictor and PREDICT_EXPR_OUTCOME the
