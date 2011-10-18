@@ -3188,7 +3188,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
   /* Fold the last statement.  */
   gsi = gsi_last (*stmts);
-  fold_stmt_inplace (&gsi);
+  if (fold_stmt_inplace (&gsi))
+    update_stmt (gsi_stmt (gsi));
 
   /* Add a value number to the temporary.
      The value may already exist in either NEW_SETS, or AVAIL_OUT, because
