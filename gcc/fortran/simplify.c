@@ -3512,11 +3512,9 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  switch (ref->u.ar.type)
 	    {
 	    case AR_ELEMENT:
-	      if (ref->next == NULL)
+	      if (ref->u.ar.as->corank > 0)
 		{
-		  gcc_assert (ref->u.ar.as->corank > 0
-			      && ref->u.ar.as->rank == 0);
-		  as = ref->u.ar.as;
+		  gcc_assert (as == ref->u.ar.as);
 		  goto done;
 		}
 	      as = NULL;
