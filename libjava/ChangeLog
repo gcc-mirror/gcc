@@ -1,7 +1,14 @@
+2011-10-18  Uros Bizjak  <ubizjak@gmail.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50737
+	* include/dwarf2-signal.h [__alpha__]: Remove MAKE_THROW_FRAME
+	definition.
+
 2011-07-12  Andrew Haley  <aph@redhat.com>
 
-        * java/lang/natClass.cc (finalize): Make sure that the class
-        really has an engine.
+	* java/lang/natClass.cc (finalize): Make sure that the class
+	really has an engine.
 
 2011-06-27  Release Manager
 

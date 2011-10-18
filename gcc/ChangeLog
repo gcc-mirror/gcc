@@ -1,3 +1,10 @@
+2011-10-18  Uros Bizjak  <ubizjak@gmail.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50737
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state): Set
+	fs->signal_frame to 1.
+
 2011-10-14  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
