@@ -3455,7 +3455,7 @@ gfc_check_sizeof (gfc_expr *arg ATTRIBUTE_UNUSED)
 gfc_try
 gfc_check_c_sizeof (gfc_expr *arg)
 {
-  if (verify_c_interop (&arg->ts) != SUCCESS)
+  if (gfc_verify_c_interop (&arg->ts) != SUCCESS)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be an "
 		 "interoperable data entity",

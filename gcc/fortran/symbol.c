@@ -3635,7 +3635,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
       else
 	{
 	  /* Grab the typespec for the given component and test the kind.  */ 
-	  is_c_interop = verify_c_interop (&(curr_comp->ts));
+	  is_c_interop = gfc_verify_c_interop (&(curr_comp->ts));
 	  
 	  if (is_c_interop != SUCCESS)
 	    {

@@ -1,3 +1,8 @@
+2011-10-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	* gfortran.dg/iso_c_binding_class.f03: New.
+
 2011-10-18  Ira Rosen  <ira.rosen@linaro.org>
 
 	* testsuite/lib/target-supports.exp

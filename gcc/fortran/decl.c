@@ -961,7 +961,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
    across platforms.  */
 
 gfc_try
-verify_c_interop_param (gfc_symbol *sym)
+gfc_verify_c_interop_param (gfc_symbol *sym)
 {
   int is_c_interop = 0;
   gfc_try retval = SUCCESS;
@@ -1000,20 +1000,24 @@ verify_c_interop_param (gfc_symbol *sym)
     {
       if (sym->ns->proc_name->attr.is_bind_c == 1)
 	{
-	  is_c_interop =
-	    (verify_c_interop (&(sym->ts))
-	     == SUCCESS ? 1 : 0);
+	  is_c_interop = (gfc_verify_c_interop (&(sym->ts)) == SUCCESS ? 1 : 0);
 
 	  if (is_c_interop != 1)
 	    {
 	      /* Make personalized messages to give better feedback.  */
 	      if (sym->ts.type == BT_DERIVED)
-		gfc_error ("Type '%s' at %L is a parameter to the BIND(C) "
-			   "procedure '%s' but is not C interoperable "
+		gfc_error ("Variable '%s' at %L is a dummy argument to the "
+			   "BIND(C) procedure '%s' but is not C interoperable "
 			   "because derived type '%s' is not C interoperable",
 			   sym->name, &(sym->declared_at),
 			   sym->ns->proc_name->name, 
 			   sym->ts.u.derived->name);
+	      else if (sym->ts.type == BT_CLASS)
+		gfc_error ("Variable '%s' at %L is a dummy argument to the "
+			   "BIND(C) procedure '%s' but is not C interoperable "
+			   "because it is polymorphic",
+			   sym->name, &(sym->declared_at),
+			   sym->ns->proc_name->name);
 	      else
 		gfc_warning ("Variable '%s' at %L is a parameter to the "
 			     "BIND(C) procedure '%s' but may not be C "
@@ -3711,11 +3715,13 @@ set_com_block_bind_c (gfc_common_head *com_block, int is_bind_c)
 /* Verify that the given gfc_typespec is for a C interoperable type.  */
 
 gfc_try
-verify_c_interop (gfc_typespec *ts)
+gfc_verify_c_interop (gfc_typespec *ts)
 {
   if (ts->type == BT_DERIVED && ts->u.derived != NULL)
     return (ts->u.derived->ts.is_c_interop || ts->u.derived->attr.is_bind_c)
 	   ? SUCCESS : FAILURE;
+  else if (ts->type == BT_CLASS)
+    return FAILURE;
   else if (ts->is_c_interop != 1)
     return FAILURE;
   
@@ -3788,7 +3794,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
      the given ts (current_ts), so look in both.  */
   if (tmp_sym->ts.type != BT_UNKNOWN || ts->type != BT_UNKNOWN) 
     {
-      if (verify_c_interop (&(tmp_sym->ts)) != SUCCESS)
+      if (gfc_verify_c_interop (&(tmp_sym->ts)) != SUCCESS)
 	{
 	  /* See if we're dealing with a sym in a common block or not.	*/
 	  if (is_in_common == 1)
