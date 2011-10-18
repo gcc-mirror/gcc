@@ -1,5 +1,12 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/50420
+	* trans-array.c (gfc_conv_expr_descriptor): Count codimensions starting
+	from zero, and add then the relevant offset (either ndim or loop.dimen)
+	depending on context.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_expr_descriptor): Save some horizontal space.
 
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
