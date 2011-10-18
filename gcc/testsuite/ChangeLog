@@ -1,3 +1,11 @@
+2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR tree-optimization/50717
+
+	* gcc.dg/pr50717-1.c: New file.
+	* gcc.target/arm/wmul-12.c: Correct types.
+	* gcc.target/arm/wmul-8.c: Correct types.
+
 2011-10-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50531
