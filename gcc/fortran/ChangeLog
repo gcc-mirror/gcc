@@ -1,5 +1,11 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/50420
+	* simplify.c (simplify_cobound): Accept non-last-in-ref-chain coarrays.
+	Don't set already set array ref.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* array.c (gfc_find_array_ref): Remove coarray-specific handling.
 
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
