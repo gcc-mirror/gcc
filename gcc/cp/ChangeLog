@@ -1,5 +1,9 @@
 2011-10-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50531
+	* pt.c (instantiate_decl): Recognize when a function defaulted
+	outside the class is already instantiated.
+
 	PR c++/50742
 	* decl.c (check_previous_goto_1): Handle using-decl.
 
