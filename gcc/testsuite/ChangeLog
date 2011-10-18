@@ -1,3 +1,8 @@
+2011-10-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50767
+	* gcc.dg/torture/pr50767.c: New testcase.
+
 2011-10-18  Julian Brown  <julian@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_unaligned): New.
