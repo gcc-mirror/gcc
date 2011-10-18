@@ -2039,10 +2039,12 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
    and *TYPE2_OUT would give the operands of the multiplication.  */
 
 static bool
-is_widening_mult_p (tree type, gimple stmt,
+is_widening_mult_p (gimple stmt,
 		    tree *type1_out, tree *rhs1_out,
 		    tree *type2_out, tree *rhs2_out)
 {
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+
   if (TREE_CODE (type) != INTEGER_TYPE
       && TREE_CODE (type) != FIXED_POINT_TYPE)
     return false;
@@ -2104,7 +2106,7 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
   if (TREE_CODE (type) != INTEGER_TYPE)
     return false;
 
-  if (!is_widening_mult_p (type, stmt, &type1, &rhs1, &type2, &rhs2))
+  if (!is_widening_mult_p (stmt, &type1, &rhs1, &type2, &rhs2))
     return false;
 
   to_mode = TYPE_MODE (type);
@@ -2281,7 +2283,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   if (code == PLUS_EXPR
       && (rhs1_code == MULT_EXPR || rhs1_code == WIDEN_MULT_EXPR))
     {
-      if (!is_widening_mult_p (type, rhs1_stmt, &type1, &mult_rhs1,
+      if (!is_widening_mult_p (rhs1_stmt, &type1, &mult_rhs1,
 			       &type2, &mult_rhs2))
 	return false;
       add_rhs = rhs2;
@@ -2289,7 +2291,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
     }
   else if (rhs2_code == MULT_EXPR || rhs2_code == WIDEN_MULT_EXPR)
     {
-      if (!is_widening_mult_p (type, rhs2_stmt, &type1, &mult_rhs1,
+      if (!is_widening_mult_p (rhs2_stmt, &type1, &mult_rhs1,
 			       &type2, &mult_rhs2))
 	return false;
       add_rhs = rhs1;

@@ -5,8 +5,8 @@
 long long
 foo (int *b, int *c)
 {
-  int tmp = *b * *c;
-  return 10 + (long long)tmp;
+  long long tmp = (long long)*b * *c;
+  return 10 + tmp;
 }
 
 /* { dg-final { scan-assembler "smlal" } } */
