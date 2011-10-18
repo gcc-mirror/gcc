@@ -1,5 +1,9 @@
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_conv_expr_descriptor): Save some horizontal space.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_expr_descriptor): Move ndim initialization
 	earlier.
 

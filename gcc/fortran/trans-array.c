@@ -5978,16 +5978,18 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       if (se->want_coarray)
 	{
+	  gfc_array_ref *ar = &info->ref->u.ar;
+
 	  codim = gfc_get_corank (expr);
 	  for (n = ss->data.info.dimen; n < ss->data.info.dimen + codim - 1;
 	       n++)
 	    {
 	      /* Make sure we are not lost somehow.  */
-	      gcc_assert (info->ref->u.ar.dimen_type[n] == DIMEN_THIS_IMAGE);
+	      gcc_assert (ar->dimen_type[n] == DIMEN_THIS_IMAGE);
 
 	      /* Make sure the call to gfc_conv_section_startstride won't
 	         generate unnecessary code to calculate stride.  */
-	      gcc_assert (info->ref->u.ar.stride[n] == NULL);
+	      gcc_assert (ar->stride[n] == NULL);
 
 	      gfc_conv_section_startstride (&loop, ss, n);
 	      loop.from[n] = info->start[n];
@@ -5995,7 +5997,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    }
 
 	  gcc_assert (n == ss->data.info.dimen + codim - 1);
-	  evaluate_bound (&loop.pre, info->start, info->ref->u.ar.start,
+	  evaluate_bound (&loop.pre, info->start, ar->start,
 			  info->descriptor, n, true);
 	  loop.from[n] = info->start[n];
 	}
