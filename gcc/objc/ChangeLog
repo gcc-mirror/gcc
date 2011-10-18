@@ -1,3 +1,11 @@
+2011-10-18  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR objc/50743
+	* objc-act.c (check_duplicates): Cast TREE_VEC_LENGTH result to
+	size_t to avoid signed/unsigned
+	comparison.
+	(insert_method_into_method_map): Likewise.
+
 2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-map.h: New file.

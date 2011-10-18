@@ -5070,7 +5070,7 @@ check_duplicates (tree method, int methods, int is_class)
      alignment.  */
   if (!warn_strict_selector_match)
     {
-      for (i = 0; i < TREE_VEC_LENGTH (method); i++)
+      for (i = 0; i < (size_t) TREE_VEC_LENGTH (method); i++)
 	if (!comp_proto_with_proto (first_method, TREE_VEC_ELT (method, i), 0))
 	  goto issue_warning;
       
@@ -5103,7 +5103,7 @@ check_duplicates (tree method, int methods, int is_class)
 	      identifier_to_locale (gen_method_decl (first_method)));
     }
   
-  for (i = 0; i < TREE_VEC_LENGTH (method); i++)
+  for (i = 0; i < (size_t) TREE_VEC_LENGTH (method); i++)
     {
       bool type = TREE_CODE (TREE_VEC_ELT (method, i)) == INSTANCE_METHOD_DECL;
       
@@ -5825,7 +5825,7 @@ insert_method_into_method_map (bool class_method, tree method)
 	  /* Check all the existing prototypes.  If any matches the
 	     one we need to add, there is nothing to do because it's
 	     already there.  */
-	  for (i = 0; i < TREE_VEC_LENGTH (existing_entry); i++)
+	  for (i = 0; i < (size_t) TREE_VEC_LENGTH (existing_entry); i++)
 	    if (comp_proto_with_proto (method, TREE_VEC_ELT (existing_entry, i), 1))
 	      return;
 
@@ -5837,7 +5837,7 @@ insert_method_into_method_map (bool class_method, tree method)
 	  new_entry = make_tree_vec (TREE_VEC_LENGTH (existing_entry) + 1);
 	  
 	  /* Copy the methods from the existing vector.  */
-	  for (i = 0; i < TREE_VEC_LENGTH (existing_entry); i++)
+	  for (i = 0; i < (size_t) TREE_VEC_LENGTH (existing_entry); i++)
 	    TREE_VEC_ELT (new_entry, i) = TREE_VEC_ELT (existing_entry, i);
 	  
 	  /* Add the new method at the end.  */
