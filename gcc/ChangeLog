@@ -1,3 +1,8 @@
+2011-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (loc_descriptor): For SUBREG pass SUBREG_REG's mode as
+	second argument instead of mode.
+
 2011-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_vec_perm): In merge_two use
