@@ -1,3 +1,22 @@
+2011-10-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50447
+	* config/avr/avr.md (cc): New alternative out_plus_noclobber.
+	(adjust_len): Ditto.
+	(addhi3): Don't pipe through short; use gen_int_mode instead.
+	Prior to reload, expand to gen_addhi3_clobber.
+	(*addhi3): Use avr_out_plus_noclobber if applicable, use
+	out_plus_noclobber in cc and adjust_len attribute.
+	(addhi3_clobber): 2 new RTL peepholes.
+	(addhi3_clobber): New insn.
+	* config/avr/avr-protos.h: (avr_out_plus_noclobber): New prototype.
+	* config/avr/avr.c (avr_out_plus_noclobber): New function.
+	(notice_update_cc): Handle CC_OUT_PLUS_NOCLOBBER.
+	(avr_out_plus_1): Tweak if only MSB is +/-1 and other bytes are 0.
+	Set cc0 to set_zn for adiw on 16-bit values.
+	(adjust_insn_length): Handle ADJUST_LEN_OUT_PLUS_NOCLOBBER.
+	(expand_epilogue): No need to add 0 to frame_pointer_rtx.
+
 2011-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50780

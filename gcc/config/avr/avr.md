@@ -78,7 +78,7 @@
   
 ;; Condition code settings.
 (define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber,
-                   out_plus"
+                   out_plus, out_plus_noclobber"
   (const_string "none"))
 
 (define_attr "type" "branch,branch1,arith,xcall"
@@ -125,7 +125,8 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "out_bitop, out_plus, addto_sp, tsthi, tstsi, compare, call,
+  "out_bitop, out_plus, out_plus_noclobber, addto_sp,
+   tsthi, tstsi, compare, call,
    mov8, mov16, mov32, reload_in16, reload_in32,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,
@@ -759,14 +760,22 @@
 	(plus:HI (match_operand:HI 1 "register_operand" "")
 		 (match_operand:HI 2 "nonmemory_operand" "")))]
   ""
-  "
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    {
-      short tmp = INTVAL (operands[2]);
-      operands[2] = GEN_INT(tmp);
-    }
-}")
+  {
+    if (CONST_INT_P (operands[2]))
+      {
+        operands[2] = gen_int_mode (INTVAL (operands[2]), HImode);
+
+        if (can_create_pseudo_p()
+            && !stack_register_operand (operands[0], HImode)
+            && !stack_register_operand (operands[1], HImode)
+            && !d_register_operand (operands[0], HImode)
+            && !d_register_operand (operands[1], HImode))
+          {
+            emit_insn (gen_addhi3_clobber (operands[0], operands[1], operands[2]));
+            DONE;
+          }
+      }
+  })
 
 
 (define_insn "*addhi3_zero_extend"
@@ -803,20 +812,77 @@
    (set_attr "adjust_len" "addto_sp")])
 
 (define_insn "*addhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,!w,!w,d,r,r")
- 	(plus:HI
- 	 (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0")
- 	 (match_operand:HI 2 "nonmemory_operand" "r,I,J,i,P,N")))]
+  [(set (match_operand:HI 0 "register_operand"          "=r,d,d")
+        (plus:HI (match_operand:HI 1 "register_operand" "%0,0,0")
+                 (match_operand:HI 2 "nonmemory_operand" "r,s,n")))]
   ""
-  "@
- 	add %A0,%A2\;adc %B0,%B2
- 	adiw %A0,%2
- 	sbiw %A0,%n2
- 	subi %A0,lo8(-(%2))\;sbci %B0,hi8(-(%2))
- 	sec\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__
- 	sec\;sbc %A0,__zero_reg__\;sbc %B0,__zero_reg__"
-  [(set_attr "length" "2,1,1,2,3,3")
-   (set_attr "cc" "set_n,set_czn,set_czn,set_czn,set_n,set_n")])
+  {
+    static const char * const asm_code[] =
+      {
+        "add %A0,%A2\;adc %B0,%B2",
+        "subi %A0,lo8(-(%2))\;sbci %B0,hi8(-(%2))",
+        ""
+      };
+
+    if (*asm_code[which_alternative])
+      return asm_code[which_alternative];
+
+    return avr_out_plus_noclobber (operands, NULL, NULL);
+  }
+  [(set_attr "length" "2,2,2")
+   (set_attr "adjust_len" "*,*,out_plus_noclobber")
+   (set_attr "cc" "set_n,set_czn,out_plus_noclobber")])
+
+;; Adding a constant to NO_LD_REGS might have lead to a reload of
+;; that constant to LD_REGS.  We don't add a scratch to *addhi3
+;; itself because that insn is special to reload.
+
+(define_peephole2 ; addhi3_clobber
+  [(set (match_operand:HI 0 "d_register_operand" "")
+        (match_operand:HI 1 "const_int_operand" ""))
+   (set (match_operand:HI 2 "l_register_operand" "")
+        (plus:HI (match_dup 2)
+                 (match_dup 0)))]
+  "peep2_reg_dead_p (2, operands[0])"
+  [(parallel [(set (match_dup 2)
+                   (plus:HI (match_dup 2)
+                            (match_dup 1)))
+              (clobber (match_dup 3))])]
+  {
+    operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, 0);
+  })
+
+;; Same, but with reload to NO_LD_REGS
+;; Combine *reload_inhi with *addhi3
+
+(define_peephole2 ; addhi3_clobber
+  [(parallel [(set (match_operand:HI 0 "l_register_operand" "")
+                   (match_operand:HI 1 "const_int_operand" ""))
+              (clobber (match_operand:QI 2 "d_register_operand" ""))])
+   (set (match_operand:HI 3 "l_register_operand" "")
+        (plus:HI (match_dup 3)
+                 (match_dup 0)))]
+  "peep2_reg_dead_p (2, operands[0])"
+  [(parallel [(set (match_dup 3)
+                   (plus:HI (match_dup 3)
+                            (match_dup 1)))
+              (clobber (match_dup 2))])])
+
+(define_insn "addhi3_clobber"
+  [(set (match_operand:HI 0 "register_operand"           "=d,l")
+        (plus:HI (match_operand:HI 1 "register_operand"  "%0,0")
+                 (match_operand:HI 2 "const_int_operand"  "n,n")))
+   (clobber (match_scratch:QI 3                          "=X,&d"))]
+  ""
+  {
+    gcc_assert (REGNO (operands[0]) == REGNO (operands[1]));
+    
+    return avr_out_plus (operands, NULL, NULL);
+  }
+  [(set_attr "length" "4")
+   (set_attr "adjust_len" "out_plus")
+   (set_attr "cc" "out_plus")])
+
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand"          "=r,d ,d,r")
@@ -3606,12 +3672,8 @@
                       (if_then_else (match_test "!AVR_HAVE_JMP_CALL")
                                     (const_int 1)
                                     (const_int 2))
-                      (if_then_else (and (ge (minus (pc)
-                                                    (match_dup 0))
-                                             (const_int -2047))
-                                         (le (minus (pc)
-                                                    (match_dup 0))
-                                             (const_int 2047)))
+                      (if_then_else (and (ge (minus (pc) (match_dup 0)) (const_int -2047))
+                                         (le (minus (pc) (match_dup 0)) (const_int 2047)))
                                     (const_int 1)
                                     (const_int 2))))
    (set_attr "cc" "none")])
