@@ -1508,11 +1508,14 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
   edge e;
   edge_iterator ei;
 
+  phi_vuse2 = vop_at_entry (bb2);
+  if (phi_vuse2 != NULL_TREE && TREE_CODE (phi_vuse2) != SSA_NAME)
+    phi_vuse2 = NULL_TREE;
+
   if (update_vops)
     {
       /* Find the vops at entry of bb1 and bb2.  */
       phi_vuse1 = vop_at_entry (bb1);
-      phi_vuse2 = vop_at_entry (bb2);
 
       /* If one of the 2 not found, it means there's no need to update.  */
       update_vops = phi_vuse1 != NULL_TREE && phi_vuse2 != NULL_TREE;
@@ -1545,6 +1548,9 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
       gcc_assert (pred_edge != NULL);
       if (update_vops)
 	VEC_safe_push (edge, heap, redirected_edges, pred_edge);
+      else if (phi_vuse2 && gimple_bb (SSA_NAME_DEF_STMT (phi_vuse2)) == bb2)
+	add_phi_arg (SSA_NAME_DEF_STMT (phi_vuse2), SSA_NAME_VAR (phi_vuse2),
+		     pred_edge, UNKNOWN_LOCATION);
     }
 
   /* Update the vops.  */

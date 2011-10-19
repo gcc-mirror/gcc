@@ -1,3 +1,11 @@
+2011-10-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/50769
+	* tree-ssa-tail-merge.c (replace_block_by): Calculate phi_vuse2
+	unconditionally.  Handle case that phi_vuse2 is not an SSA_NAME.  Add
+	dummy argument .MEM to phi when increasing number of arguments of phi by
+	redirecting edges to the block with phi.
+
 2011-10-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/50777
