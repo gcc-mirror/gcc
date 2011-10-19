@@ -1,5 +1,10 @@
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50793
+	* tree.c (bot_manip): Propagate AGGR_INIT_ZERO_FIRST.
+
+2011-10-19  Jason Merrill  <jason@redhat.com>
+
 	PR c++/50787
 	* parser.c (cp_parser_initializer_clause): Don't call
 	maybe_constant_value here.
