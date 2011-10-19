@@ -1,3 +1,10 @@
+2011-10-19  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/50340
+	* sel-sched-ir.c (update_target_availability): LHS register
+	availability is not known if the unavailable LHS of the other
+	expression is a different register.
+
 2011-10-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/50310
