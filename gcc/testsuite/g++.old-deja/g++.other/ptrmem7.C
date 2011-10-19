@@ -31,9 +31,9 @@ void A::foo ()
   int (*ptr8) (short) = ns;
 
   int (A::*ptr11) (int) = &A::single;
-  int (A::*ptr12) (int) = A::single;      // { dg-error "match" }
+  int (A::*ptr12) (int) = A::single;      // { dg-error "cannot convert" }
   int (A::*ptr13) (int) = &single;        // { dg-error "pointer to member" }
-  int (A::*ptr14) (int) = single;         // { dg-error "match" }
+  int (A::*ptr14) (int) = single;         // { dg-error "cannot convert" }
 
   int (A::*ptr20) (int) = &(A::ns);       // { dg-error "pointer to member" }
   int (A::*ptr21) (int) = &(A::single);   // { dg-error "pointer to member" }

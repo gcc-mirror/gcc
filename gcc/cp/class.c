@@ -6867,8 +6867,8 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
       else
 	{
 	  if (flags & tf_error)
-	    error ("argument of type %qT does not match %qT",
-		   TREE_TYPE (rhs), lhstype);
+	    error ("cannot convert %qE from type %qT to type %qT",
+		   rhs, TREE_TYPE (rhs), lhstype);
 	  return error_mark_node;
 	}
     }
