@@ -2,7 +2,7 @@
 
 	Fix support for large file support on 32-bit machines.
 
-	* smp/upc_configure.h: Move inclusion of 'configure.h' to the top
+	* smp/upc_config.h: Move inclusion of 'config.h' to the top
 	  of the include list. This allows all system include files
 	  to see definition of _FILE_OFFSET_BITS=64 that enables large
 	  file support.
