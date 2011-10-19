@@ -753,6 +753,13 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'madvise', otherwise define to 0.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_MADVISE
+#endif
+
+
 /* Define to 1 if we found a declaration for 'malloc', otherwise define to 0.
    */
 #ifndef USED_FOR_TARGET

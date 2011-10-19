@@ -1,3 +1,13 @@
+2011-10-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/50777
+	* configure.ac: Save and restore CXXFLAGS around
+	gcc_AC_CHECK_DECLS uses.
+	Check for madvise() declaration with g++ if --enable-build-with-cxx.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* ggc-page.c (USING_MADVISE): Also check HAVE_DECL_MADVISE.
+
 2011-10-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/49310

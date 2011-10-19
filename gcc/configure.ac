@@ -1094,6 +1094,8 @@ AM_LANGINFO_CODESET
 # We will need to find libiberty.h and ansidecl.h
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -I${srcdir} -I${srcdir}/../include"
 gcc_AC_CHECK_DECLS(getenv atol asprintf sbrk abort atof getcwd getwd \
 	strsignal strstr strverscmp \
 	errno snprintf vsnprintf vasprintf malloc realloc calloc \
@@ -1146,6 +1148,21 @@ gcc_AC_CHECK_DECLS(sigaltstack, , ,[
 #include <signal.h>
 ])
 
+# g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which hides the madvise()
+# prototype.
+AS_IF([test "$ENABLE_BUILD_WITH_CXX" = "yes"],
+  [AC_LANG_PUSH([C++])
+   gcc_AC_CHECK_DECLS(madvise, , ,[
+     #include "ansidecl.h"
+     #include "system.h"
+   ])
+   AC_LANG_POP([C++])],
+  [gcc_AC_CHECK_DECLS(madvise, , ,[
+     #include "ansidecl.h"
+     #include "system.h"
+   ])
+])
+
 # More time-related stuff.
 AC_CACHE_CHECK(for struct tms, ac_cv_struct_tms, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1172,8 +1189,9 @@ if test $gcc_cv_type_clock_t = yes; then
   [Define if <time.h> defines clock_t.])
 fi
 
-# Restore CFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
+# Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
+CXXFLAGS="$saved_CXXFLAGS"
 
 gcc_AC_INITFINI_ARRAY
 
