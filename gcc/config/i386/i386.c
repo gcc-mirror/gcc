@@ -35992,7 +35992,7 @@ expand_vec_perm_vpshufb2_vpermq_even_odd (struct expand_vec_perm_d *d)
   vperm = force_reg (V32QImode, vperm);
 
   h = gen_reg_rtx (V32QImode);
-  op = gen_lowpart (V32QImode, d->op0);
+  op = gen_lowpart (V32QImode, d->op1);
   emit_insn (gen_avx2_pshufbv32qi3 (h, op, vperm));
 
   ior = gen_reg_rtx (V32QImode);
@@ -36154,9 +36154,9 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       /* Swap the 2nd and 3rd position in each lane into
 	 { 0 2 1 3 8 a 9 b } and { 4 6 5 7 c e d f }.  */
       emit_insn (gen_avx2_pshufdv3 (t1, t1,
-				    GEN_INT (2 * 2 + 1 * 16 + 3 * 64)));
+				    GEN_INT (2 * 4 + 1 * 16 + 3 * 64)));
       emit_insn (gen_avx2_pshufdv3 (t2, t2,
-				    GEN_INT (2 * 2 + 1 * 16 + 3 * 64)));
+				    GEN_INT (2 * 4 + 1 * 16 + 3 * 64)));
 
       /* Now an vpunpck[lh]qdq will produce
 	 { 0 2 4 6 8 a c e } resp. { 1 3 5 7 9 b d f }.  */
@@ -36498,6 +36498,7 @@ ix86_expand_vec_perm_builtin (tree exp)
 {
   struct expand_vec_perm_d d;
   tree arg0, arg1, arg2;
+  bool maybe_retry = false;
 
   arg0 = CALL_EXPR_ARG (exp, 0);
   arg1 = CALL_EXPR_ARG (exp, 1);
@@ -36543,6 +36544,7 @@ ix86_expand_vec_perm_builtin (tree exp)
 	for (i = 0; i < nelt; ++i)
 	  if (d.perm[i] >= nelt)
 	    d.perm[i] -= nelt;
+	maybe_retry = true;
       }
       /* FALLTHRU */
 
@@ -36562,6 +36564,28 @@ ix86_expand_vec_perm_builtin (tree exp)
   d.target = gen_reg_rtx (d.vmode);
   if (ix86_expand_vec_perm_builtin_1 (&d))
     return d.target;
+
+  /* If the mask says both arguments are needed, but they are the same,
+     the above tried to expand with d.op0 == d.op1.  If that didn't work,
+     retry with d.op0 != d.op1 as that is what testing has been done with.  */
+  if (maybe_retry)
+    {
+      rtx seq;
+      bool ok;
+
+      extract_vec_perm_cst (&d, arg2);
+      d.op1 = gen_reg_rtx (d.vmode);
+      start_sequence ();
+      ok = ix86_expand_vec_perm_builtin_1 (&d);
+      seq = get_insns ();
+      end_sequence ();
+      if (ok)
+	{
+	  emit_move_insn (d.op1, d.op0);
+	  emit_insn (seq);
+	  return d.target;
+	}
+    }
 
   /* For compiler generated permutations, we should never got here, because
      the compiler should also be checking the ok hook.  But since this is a
@@ -36588,6 +36612,19 @@ ix86_expand_vec_perm_builtin (tree exp)
 	     d.perm[8], d.perm[9], d.perm[10], d.perm[11],
 	     d.perm[12], d.perm[13], d.perm[14], d.perm[15]);
       break;
+    case 32:
+      sorry ("vector permutation "
+	     "(%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d "
+	     "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)",
+	     d.perm[0], d.perm[1], d.perm[2], d.perm[3],
+	     d.perm[4], d.perm[5], d.perm[6], d.perm[7],
+	     d.perm[8], d.perm[9], d.perm[10], d.perm[11],
+	     d.perm[12], d.perm[13], d.perm[14], d.perm[15],
+	     d.perm[16], d.perm[17], d.perm[18], d.perm[19],
+	     d.perm[20], d.perm[21], d.perm[22], d.perm[23],
+	     d.perm[24], d.perm[25], d.perm[26], d.perm[27],
+	     d.perm[28], d.perm[29], d.perm[30], d.perm[31]);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -36599,6 +36636,7 @@ bool
 ix86_expand_vec_perm_const (rtx operands[4])
 {
   struct expand_vec_perm_d d;
+  unsigned char perm[MAX_VECT_LEN];
   int i, nelt, which;
   rtx sel;
 
@@ -36614,6 +36652,7 @@ ix86_expand_vec_perm_const (rtx operands[4])
 
   gcc_assert (GET_CODE (sel) == CONST_VECTOR);
   gcc_assert (XVECLEN (sel, 0) == nelt);
+  gcc_checking_assert (sizeof (d.perm) == sizeof (perm));
 
   for (i = which = 0; i < nelt; ++i)
     {
@@ -36622,6 +36661,7 @@ ix86_expand_vec_perm_const (rtx operands[4])
 
       which |= (ei < nelt ? 1 : 2);
       d.perm[i] = ei;
+      perm[i] = ei;
     }
 
   switch (which)
@@ -36653,7 +36693,32 @@ ix86_expand_vec_perm_const (rtx operands[4])
       break;
     }
 
-  return ix86_expand_vec_perm_builtin_1 (&d);
+  if (ix86_expand_vec_perm_builtin_1 (&d))
+    return true;
+
+  /* If the mask says both arguments are needed, but they are the same,
+     the above tried to expand with d.op0 == d.op1.  If that didn't work,
+     retry with d.op0 != d.op1 as that is what testing has been done with.  */
+  if (which == 3 && d.op0 == d.op1)
+    {
+      rtx seq;
+      bool ok;
+
+      memcpy (d.perm, perm, sizeof (perm));
+      d.op1 = gen_reg_rtx (d.vmode);
+      start_sequence ();
+      ok = ix86_expand_vec_perm_builtin_1 (&d);
+      seq = get_insns ();
+      end_sequence ();
+      if (ok)
+	{
+	  emit_move_insn (d.op1, d.op0);
+	  emit_insn (seq);
+	  return true;
+	}
+    }
+
+  return false;
 }
 
 /* Implement targetm.vectorize.builtin_vec_perm_ok.  */

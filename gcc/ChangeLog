@@ -1,5 +1,14 @@
 2011-10-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (expand_vec_perm_vpshufb2_vpermq_even_odd): Use
+	d->op1 instead of d->op0 for the second vpshufb.
+	(expand_vec_perm_even_odd_1): For V8SImode fix vpshufd immediates.
+	(ix86_expand_vec_perm_const): If mask indicates two operands are
+	needed, but both are the same and expanding them as d.op0 == d.op1
+	failed, retry with d.op0 != d.op1.
+	(ix86_expand_vec_perm_builtin): Likewise.  Handle sorry printing
+	also for d.nelt == 32.
+
 	PR middle-end/50754
 	* cfgexpand.c (expand_debug_expr): Handle WIDEN_LSHIFT_EXPR, ignore
 	VEC_PERM_EXPR.

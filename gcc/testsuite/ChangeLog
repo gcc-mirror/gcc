@@ -1,3 +1,10 @@
+2011-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/vshuf-32.inc: Add interleave permutations.
+	* gcc.dg/torture/vshuf-16.inc: Likewise.
+	* gcc.dg/torture/vshuf-8.inc: Likewise.
+	* gcc.dg/torture/vshuf-4.inc: Likewise.
+
 2011-10-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47023
