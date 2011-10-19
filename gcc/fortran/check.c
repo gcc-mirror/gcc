@@ -3444,8 +3444,15 @@ gfc_check_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
 
 gfc_try
-gfc_check_sizeof (gfc_expr *arg ATTRIBUTE_UNUSED)
+gfc_check_sizeof (gfc_expr *arg)
 {
+  if (arg->ts.type == BT_PROCEDURE)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L may not be a procedure",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &arg->where);
+      return FAILURE;
+    }
   return SUCCESS;
 }
 
