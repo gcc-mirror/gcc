@@ -637,7 +637,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case 0xb: fprintf (file, "fintv"); break;
 	case 0xc: fprintf (file, "intb"); break;
 	default:
-	  warning (0, "unreocgnized control register number: %d - using 'psw'",
+	  warning (0, "unrecognized control register number: %d - using 'psw'",
 		   (int) INTVAL (op));
 	  fprintf (file, "psw");
 	  break;
