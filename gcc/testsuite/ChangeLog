@@ -1,3 +1,8 @@
+2011-10-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50793
+	* g++.dg/init/value9.C: New.
+
 2011-10-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50659
