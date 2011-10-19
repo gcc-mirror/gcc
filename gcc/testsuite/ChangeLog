@@ -1,3 +1,8 @@
+2011-10-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/compat/struct-layout-1_generate.c: Also pass -mno-mmx
+	-Wno-abi for i?86-*-mingw32* x86_64-*-mingw32* i?86-*-cygwin*.
+
 2011-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/50796
