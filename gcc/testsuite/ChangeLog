@@ -1,3 +1,8 @@
+2011-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/50796
+	* gcc.dg/plugin/plugindir?.c Update dg_prune_output.
+
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50787
