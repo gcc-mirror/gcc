@@ -1219,7 +1219,6 @@ handle_alias_pairs (void)
   for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p);)
     {
       if (TREE_CODE (p->decl) == FUNCTION_DECL
-	   && !lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
 	  && (target_node = cgraph_node_for_asm (p->target)) != NULL)
 	{
 	  src_node = cgraph_get_node (p->decl);
@@ -1231,12 +1230,12 @@ handle_alias_pairs (void)
 	     However for weakref we insist on EXTERNAL flag being set.
 	     See gcc.dg/attr-alias-5.c  */
 	  if (DECL_EXTERNAL (p->decl))
-	    DECL_EXTERNAL (p->decl) = 0;
+	    DECL_EXTERNAL (p->decl) = lookup_attribute ("weakref",
+							DECL_ATTRIBUTES (p->decl)) != NULL;
 	  cgraph_create_function_alias (p->decl, target_node->decl);
 	  VEC_unordered_remove (alias_pair, alias_pairs, i);
 	}
       else if (TREE_CODE (p->decl) == VAR_DECL
-	       && !lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
 	       && (target_vnode = varpool_node_for_asm (p->target)) != NULL)
 	{
 	  /* Normally EXTERNAL flag is used to mark external inlines,
@@ -1245,7 +1244,8 @@ handle_alias_pairs (void)
 	     However for weakref we insist on EXTERNAL flag being set.
 	     See gcc.dg/attr-alias-5.c  */
 	  if (DECL_EXTERNAL (p->decl))
-	    DECL_EXTERNAL (p->decl) = 0;
+	    DECL_EXTERNAL (p->decl) = lookup_attribute ("weakref",
+							DECL_ATTRIBUTES (p->decl)) != NULL;
 	  varpool_create_variable_alias (p->decl, target_vnode->decl);
 	  VEC_unordered_remove (alias_pair, alias_pairs, i);
 	}
@@ -2064,6 +2064,26 @@ ipa_passes (void)
   bitmap_obstack_release (NULL);
 }
 
+/* Weakrefs may be associated to external decls and thus not output
+   at expansion time.  Emit all neccesary aliases.  */
+
+void
+output_weakrefs (void)
+{
+  struct cgraph_node *node;
+  struct varpool_node *vnode;
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->alias && node->thunk.alias && DECL_EXTERNAL (node->decl)
+        && !TREE_ASM_WRITTEN (node->decl))
+      assemble_alias (node->decl,
+		      DECL_ASSEMBLER_NAME (node->thunk.alias));
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (vnode->alias && vnode->alias_of && DECL_EXTERNAL (vnode->decl)
+        && !TREE_ASM_WRITTEN (vnode->decl))
+      assemble_alias (vnode->decl,
+		      DECL_ASSEMBLER_NAME (vnode->alias_of));
+}
+
 
 /* Perform simple optimizations based on callgraph.  */
 
@@ -2150,6 +2170,8 @@ cgraph_optimize (void)
 
       varpool_assemble_pending_decls ();
     }
+
+  output_weakrefs ();
   cgraph_process_new_functions ();
   cgraph_state = CGRAPH_STATE_FINISHED;
 
