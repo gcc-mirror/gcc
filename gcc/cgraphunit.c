@@ -2067,7 +2067,7 @@ ipa_passes (void)
 /* Weakrefs may be associated to external decls and thus not output
    at expansion time.  Emit all neccesary aliases.  */
 
-void
+static void
 output_weakrefs (void)
 {
   struct cgraph_node *node;
