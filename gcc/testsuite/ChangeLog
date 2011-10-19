@@ -1,3 +1,12 @@
+2011-10-19  Kai Tietz  <ktietz@redhat.com>
+
+	PR middle-end/50795
+	* gcc.dg/tree-ssa/builtin-expect-1.c: Adjust test.
+	* gcc.dg/tree-ssa/builtin-expect-2.c: Adjust test.
+	* gcc.dg/tree-ssa/builtin-expect-3.c: Adjust test.
+	* gcc.dg/tree-ssa/builtin-expect-4.c: Adjust test.
+	* gcc.dg/tree-ssa/builtin-expect-5.c: Adjust test.
+
 2011-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50768

@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-forwprop" } */
 
-f (int i, float j) 
+f (int i, float j, int i2, float j2) 
 { 
-  if (__builtin_expect (i > 0 && __builtin_expect (j != 0, 1), 0))
+  if (__builtin_expect ((i * i2) > 0 && __builtin_expect ((j * j2) != 0, 1), 0))
     a ();
   else
     b ();
