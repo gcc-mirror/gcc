@@ -9081,8 +9081,7 @@ compile time for more complete debug information.  If this is set too
 low, value expressions that are available and could be represented in
 debug information may end up not being used; setting this higher may
 enable the compiler to find more complex debug expressions, but compile
-time may grow exponentially, and even then, it may fail to find more
-usable expressions.  The default is 10.
+time and memory use may grow.  The default is 12.
 
 @item min-nondebug-insn-uid
 Use uids starting at this parameter for nondebug insns.  The range below

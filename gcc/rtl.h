@@ -265,7 +265,8 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      when we access a component.
      1 in a CALL_INSN if it is a sibling call.
      1 in a SET that is for a return.
-     In a CODE_LABEL, part of the two-bit alternate entry field.  */
+     In a CODE_LABEL, part of the two-bit alternate entry field.
+     1 in a CONCAT is VAL_EXPR_IS_COPIED in var-tracking.c.  */
   unsigned int jump : 1;
   /* In a CODE_LABEL, part of the two-bit alternate entry field.
      1 in a MEM if it cannot trap.
@@ -278,7 +279,9 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      constants pool.
      1 in a CALL_INSN logically equivalent to ECF_CONST and TREE_READONLY.
      1 in a NOTE, or EXPR_LIST for a const call.
-     1 in a JUMP_INSN of an annulling branch.  */
+     1 in a JUMP_INSN of an annulling branch.
+     1 in a CONCAT is VAL_EXPR_IS_CLOBBERED in var-tracking.c.
+     1 in a preserved VALUE is PRESERVED_VALUE_P in cselib.c.  */
   unsigned int unchanging : 1;
   /* 1 in a MEM or ASM_OPERANDS expression if the memory reference is volatile.
      1 in an INSN, CALL_INSN, JUMP_INSN, CODE_LABEL, BARRIER, or NOTE
@@ -290,7 +293,8 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      non-local label.
      In a SYMBOL_REF, this flag is used for machine-specific purposes.
      In a PREFETCH, this flag indicates that it should be considered a scheduling
-     barrier.  */
+     barrier.
+     1 in a CONCAT is VAL_NEEDS_RESOLUTION in var-tracking.c.  */
   unsigned int volatil : 1;
   /* 1 in a MEM referring to a field of an aggregate.
      0 if the MEM was a variable or the result of a * operator in C;
@@ -311,19 +315,24 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      In a REG, this is not needed for that purpose, and used instead
      in `leaf_renumber_regs_insn'.
      1 in a SYMBOL_REF, means that emit_library_call
-     has used it as the function.  */
+     has used it as the function.
+     1 in a CONCAT is VAL_HOLDS_TRACK_EXPR in var-tracking.c.
+     1 in a VALUE or DEBUG_EXPR is VALUE_RECURSED_INTO in var-tracking.c.  */
   unsigned int used : 1;
   /* 1 in an INSN or a SET if this rtx is related to the call frame,
      either changing how we compute the frame address or saving and
      restoring registers in the prologue and epilogue.
      1 in a REG or MEM if it is a pointer.
      1 in a SYMBOL_REF if it addresses something in the per-function
-     constant string pool.  */
+     constant string pool.
+     1 in a VALUE is VALUE_CHANGED in var-tracking.c.  */
   unsigned frame_related : 1;
   /* 1 in a REG or PARALLEL that is the current function's return value.
      1 in a MEM if it refers to a scalar.
      1 in a SYMBOL_REF for a weak symbol.
-     1 in a CALL_INSN logically equivalent to ECF_PURE and DECL_PURE_P. */
+     1 in a CALL_INSN logically equivalent to ECF_PURE and DECL_PURE_P.
+     1 in a CONCAT is VAL_EXPR_HAS_REVERSE in var-tracking.c.
+     1 in a VALUE or DEBUG_EXPR is NO_LOC_P in var-tracking.c.  */
   unsigned return_val : 1;
 
   /* The first element of the operands of this rtx.

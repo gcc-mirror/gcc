@@ -1,3 +1,115 @@
+2011-10-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/49310
+	* var-tracking.c (loc_exp_dep, onepart_aux): New structs.
+	(variable_part): Replace offset with union.
+	(enum onepart_enum, onepart_enum_t): New.
+	(variable_def): Drop cur_loc_changed, add onepart.
+	(value_chain_def, const_value_chain): Remove.
+	(VAR_PART_OFFSET, VAR_LOC_1PAUX): New macros, with checking.
+	(VAR_LOC_DEP_LST, VAR_LOC_DEP_LSTP): New macros.
+	(VAR_LOC_FROM, VAR_LOC_DEPTH, VAR_LOC_DEP_VEC): Likewise.
+	(value_chain_pool, value_chains): Remove.
+	(dropped_values): New.
+	(struct parm_reg): Only if HAVE_window_save.
+	(vt_stack_adjustments): Don't record register arguments.
+	(dv_as_rtx): New.
+	(dv_onepart_p): Return a onepart_enum_t.
+	(onepart_pool): New.
+	(dv_pool): Remove.
+	(dv_from_rtx): New.
+	(variable_htab_free): Release onepart aux data.  Reset flags.
+	(value_chain_htab_hash, value_chain_htab_eq): Remove.
+	(unshare_variable): Use onepart field.  Propagate onepart aux
+	data or offset.  Drop cur_loc_changed.
+	(val_store): Cope with NULL insn.  Rephrase dump output.  Check
+	for unsuitable locs.  Add FIXME on using cselib locs.
+	(val_reset): Remove FIXME of unfounded concerns.
+	(val_resolve): Check for unsuitable locs.  Add FIXME on using
+	cselib locs.
+	(variable_union): Use onepart field, adjust access to offset.
+	(NO_LOC_P): New.
+	(VALUE_CHANGED, DECL_CHANGED): Update doc.
+	(set_dv_changed): Clear NO_LOC_P when changed.
+	(find_loc_in_1pdv): Use onepart field.
+	(intersect_loc_chains): Likewise.
+	(unsuitable_loc): New.
+	(loc_cmp): Keep ENTRY_VALUEs at the end of the loc list.
+	(add_value_chain, add_value_chains): Remove.
+	(add_cselib_value_chains, remove_value_chain): Likewise.
+	(remove_value_chains, remove_cselib_value_chains): Likewise.
+	(canonicalize_loc_order_check): Use onepart.  Drop cur_loc_changed.
+	(canonicalize_values_star, canonicalize_vars_star): Use onepart.
+	(variable_merge_over_cur): Likewise.  Adjust access to offset.
+	Drop cur_loc_changed.
+	(variable_merge_over_src): Use onepart field.
+	(remove_duplicate_values): Likewise.
+	(variable_post_merge_new_vals): Likewise.
+	(find_mem_expr_in_1pdv): Likewise.
+	(dataflow_set_preserve_mem_locs): Likewise.  Drop cur_loc_changed
+	and value chains.
+	(dataflow_set_remove_mem_locs): Likewise.  Use VAR_LOC_FROM.
+	(variable_different_p): Use onepart field.  Move onepart test out
+	of the loop.
+	(argument_reg_set): Drop.
+	(add_uses, add_stores): Preserve but do not record in dynamic
+	tables equivalences for ENTRY_VALUEs and CFA_based addresses.
+	Avoid unsuitable address expressions.
+	(EXPR_DEPTH): Unlimit.
+	(EXPR_USE_DEPTH): Repurpose PARAM_MAX_VARTRACK_EXPR_DEPTH.
+	(prepare_call_arguments): Use DECL_RTL_IF_SET.
+	(dump_var): Adjust access to offset.
+	(variable_from_dropped, recover_dropped_1paux): New.
+	(variable_was_changed): Drop cur_loc_changed.  Use onepart.
+	Preserve onepart aux in empty_var.  Recover empty_var and onepart
+	aux from dropped_values.
+	(find_variable_location_part): Special-case onepart.  Adjust
+	access to offset.
+	(set_slot_part): Use onepart.  Drop cur_loc_changed.  Adjust
+	access to offset.  Initialize onepaux.  Drop value chains.
+	(delete_slot_part): Drop value chains.  Use VAR_LOC_FROM.
+	(VEC (variable, heap), VEC (rtx, stack)): Define.
+	(expand_loc_callback_data): Drop dummy, cur_loc_changed,
+	ignore_cur_loc.  Add expanding, pending, depth.
+	(loc_exp_dep_alloc, loc_exp_dep_clear): New.
+	(loc_exp_dep_insert, loc_exp_dep_set): New.
+	(notify_dependents_of_resolved_value): New.
+	(update_depth, vt_expand_var_loc_chain): New.
+	(vt_expand_loc_callback): Revamped.
+	(resolve_expansions_pending_recursion): New.
+	(INIT_ELCD, FINI_ELCD): New.
+	(vt_expand_loc): Use the new macros above.  Drop ignore_cur_loc
+	parameter, adjust all callers.
+	(vt_expand_loc_dummy): Drop.
+	(vt_expand_1pvar): New.
+	(emit_note_insn_var_location): Operate on non-debug decls only.
+	Revamp multi-part cur_loc recomputation and one-part expansion.
+	Drop cur_loc_changed.  Adjust access to offset.
+	(VEC (variable, heap)): Drop.
+	(changed_variables_stack, changed_values_stack): Drop.
+	(check_changed_vars_0, check_changed_vars_1): Remove.
+	(check_changed_vars_2, check_changed_vars_3): Remove.
+	(values_to_stack, remove_value_from_changed_variables): New.
+	(notify_dependents_of_changed_value, process_changed_values): New.
+	(emit_notes_for_changes): Revamp onepart updates.
+	(emit_notes_for_differences_1): Use onepart.  Drop cur_loc_changed
+	and value chains.  Propagate onepaux.  Recover empty_var and onepaux
+	from dropped_values.
+	(emit_notes_for_differences_2): Drop value chains.
+	(emit_notes_in_bb): Adjust.
+	(vt_emit_notes): Drop value chains, changed_variables_stack.
+	Initialize and release dropped_values.
+	(create_entry_value): Revamp.
+	(vt_add_function_parameter): Use new interface.
+	(note_register_arguments): Remove.
+	(vt_initialize): Drop value chains and register arguments.
+	(vt_finalize): Drop value chains.  Release windowed_parm_regs only
+	if HAVE_window_save.
+	* rtl.h: Document various pass-local uses of RTL flags.
+	* tree.h (DECL_RTL_KNOWN_SET): New.
+	* doc/invoke.texi (param max-vartrack-expr-depth): Update
+	description and default.
+
 2011-10-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50447
