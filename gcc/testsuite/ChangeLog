@@ -1,3 +1,8 @@
+2011-10-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/50340
+	* gcc.dg/pr50340.c: New.
+
 2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR tree-optimization/50717
