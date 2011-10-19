@@ -3506,7 +3506,8 @@ regcprop.o : regcprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 regrename.o : regrename.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_ERROR_H) insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h \
    output.h $(RECOG_H) $(FUNCTION_H) $(OBSTACK_H) $(FLAGS_H) $(TM_P_H) \
-   addresses.h reload.h $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H) $(TARGET_H)
+   addresses.h reload.h $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H) $(TARGET_H) \
+   regrename.h $(EMIT_RTL_H)
 ifcvt.o : ifcvt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) insn-config.h $(FUNCTION_H) $(RECOG_H) \
    $(TARGET_H) $(BASIC_BLOCK_H) $(EXPR_H) output.h $(EXCEPT_H) $(TM_P_H) \
