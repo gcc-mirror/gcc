@@ -1,3 +1,9 @@
+2011-10-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50787
+	* parser.c (cp_parser_initializer_clause): Don't call
+	maybe_constant_value here.
+
 2011-10-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50531
