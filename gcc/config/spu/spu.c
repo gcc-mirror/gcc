@@ -6415,13 +6415,24 @@ spu_emit_vector_compare (enum rtx_code rcode,
           try_again = true;
           break;
         case NE:
+	case UNEQ:
+	case UNLE:
+	case UNLT:
+	case UNGE:
+	case UNGT:
+	case UNORDERED:
           /* Treat A != B as ~(A==B).  */
           {
+	    enum rtx_code rev_code;
             enum insn_code nor_code;
-            rtx eq_rtx = spu_emit_vector_compare (EQ, op0, op1, dest_mode);
+	    rtx rev_mask;
+
+	    rev_code = reverse_condition_maybe_unordered (rcode);
+            rev_mask = spu_emit_vector_compare (rev_code, op0, op1, dest_mode);
+
             nor_code = optab_handler (one_cmpl_optab, dest_mode);
             gcc_assert (nor_code != CODE_FOR_nothing);
-            emit_insn (GEN_FCN (nor_code) (mask, eq_rtx));
+            emit_insn (GEN_FCN (nor_code) (mask, rev_mask));
             if (dmode != dest_mode)
               {
                 rtx temp = gen_reg_rtx (dest_mode);
@@ -6457,6 +6468,48 @@ spu_emit_vector_compare (enum rtx_code rcode,
             ior_code = optab_handler (ior_optab, dest_mode);
             gcc_assert (ior_code != CODE_FOR_nothing);
             emit_insn (GEN_FCN (ior_code) (mask, c_rtx, eq_rtx));
+            if (dmode != dest_mode)
+              {
+                rtx temp = gen_reg_rtx (dest_mode);
+                convert_move (temp, mask, 0);
+                return temp;
+              }
+            return mask;
+          }
+          break;
+        case LTGT:
+          /* Try LT OR GT */
+          {
+            rtx lt_rtx, gt_rtx;
+            enum insn_code ior_code;
+
+            lt_rtx = spu_emit_vector_compare (LT, op0, op1, dest_mode);
+            gt_rtx = spu_emit_vector_compare (GT, op0, op1, dest_mode);
+
+            ior_code = optab_handler (ior_optab, dest_mode);
+            gcc_assert (ior_code != CODE_FOR_nothing);
+            emit_insn (GEN_FCN (ior_code) (mask, lt_rtx, gt_rtx));
+            if (dmode != dest_mode)
+              {
+                rtx temp = gen_reg_rtx (dest_mode);
+                convert_move (temp, mask, 0);
+                return temp;
+              }
+            return mask;
+          }
+          break;
+        case ORDERED:
+          /* Implement as (A==A) & (B==B) */
+          {
+            rtx a_rtx, b_rtx;
+            enum insn_code and_code;
+
+            a_rtx = spu_emit_vector_compare (EQ, op0, op0, dest_mode);
+            b_rtx = spu_emit_vector_compare (EQ, op1, op1, dest_mode);
+
+            and_code = optab_handler (and_optab, dest_mode);
+            gcc_assert (and_code != CODE_FOR_nothing);
+            emit_insn (GEN_FCN (and_code) (mask, a_rtx, b_rtx));
             if (dmode != dest_mode)
               {
                 rtx temp = gen_reg_rtx (dest_mode);
