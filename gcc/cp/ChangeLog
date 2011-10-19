@@ -1,3 +1,13 @@
+2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38761
+	PR c++/40872
+	* decl.c (duplicate_decls, make_typename_type, grokdeclarator): Use
+	G_() in error message strings to facilitate translation.
+	* semantics.c (finish_id_expression): Likewise.
+	* parser.c (cp_parser_nested_name_specifier_opt,
+	cp_parser_parameter_declaration): Likewise.
+
 2011-10-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50531

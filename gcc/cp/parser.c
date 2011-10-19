@@ -4752,8 +4752,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	       && (TREE_CODE (TYPENAME_TYPE_FULLNAME (new_scope))
 		   == TEMPLATE_ID_EXPR)))
 	permerror (input_location, TYPE_P (new_scope)
-		   ? "%qT is not a template"
-		   : "%qD is not a template",
+		   ? G_("%qT is not a template")
+		   : G_("%qD is not a template"),
 		   new_scope);
       /* If it is a class scope, try to complete it; we are about to
 	 be looking up names inside the class.  */
@@ -16810,17 +16810,20 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  
 	  if (id_declarator && id_declarator->kind == cdk_id)
 	    error_at (declarator_token_start->location,
-		      template_parm_p 
-		      ? "template parameter pack %qD"
-		      " cannot have a default argument"
-		      : "parameter pack %qD cannot have a default argument",
+		      template_parm_p
+		      ? G_("template parameter pack %qD "
+			   "cannot have a default argument")
+		      : G_("parameter pack %qD cannot have "
+			   "a default argument"),
 		      id_declarator->u.id.unqualified_name);
 	  else
 	    error_at (declarator_token_start->location,
-		      template_parm_p 
-		      ? "template parameter pack cannot have a default argument"
-		      : "parameter pack cannot have a default argument");
-	  
+		      template_parm_p
+		      ? G_("template parameter pack cannot have "
+			   "a default argument")
+		      : G_("parameter pack cannot have a "
+			   "default argument"));
+
 	  default_argument = NULL_TREE;
 	}
     }
