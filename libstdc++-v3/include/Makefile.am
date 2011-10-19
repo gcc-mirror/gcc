@@ -79,7 +79,7 @@ std_headers = \
 bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
-        ${bits_srcdir}/algorithmfwd.h \
+	${bits_srcdir}/algorithmfwd.h \
 	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
@@ -179,11 +179,11 @@ bits_headers = \
 
 bits_sup_srcdir = ${glibcxx_srcdir}/libsupc++
 bits_sup_headers = \
-        ${bits_sup_srcdir}/cxxabi_forced.h \
-        ${bits_sup_srcdir}/exception_defines.h \
-        ${bits_sup_srcdir}/exception_ptr.h \
-        ${bits_sup_srcdir}/hash_bytes.h \
-        ${bits_sup_srcdir}/nested_exception.h
+	${bits_sup_srcdir}/cxxabi_forced.h \
+	${bits_sup_srcdir}/exception_defines.h \
+	${bits_sup_srcdir}/exception_ptr.h \
+	${bits_sup_srcdir}/hash_bytes.h \
+	${bits_sup_srcdir}/nested_exception.h
 
 backward_srcdir = ${glibcxx_srcdir}/include/backward
 backward_builddir = ./backward
@@ -269,7 +269,7 @@ pb_headers1 = \
 	${pb_srcdir}/detail/binomial_heap_/binomial_heap_.hpp \
 	${pb_srcdir}/detail/binomial_heap_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/binomial_heap_/debug_fn_imps.hpp \
-	${pb_srcdir}/detail/bin_search_tree_/bin_search_tree_.hpp 
+	${pb_srcdir}/detail/bin_search_tree_/bin_search_tree_.hpp
 
 pb_headers2 = \
 	${pb_srcdir}/detail/bin_search_tree_/constructors_destructor_fn_imps.hpp \
@@ -607,6 +607,10 @@ tr1_headers = \
 tr2_srcdir = ${glibcxx_srcdir}/include/tr2
 tr2_builddir = ./tr2
 tr2_headers = \
+	${tr2_srcdir}/bool_set \
+	${tr2_srcdir}/bool_set.tcc \
+	${tr2_srcdir}/dynamic_bitset \
+	${tr2_srcdir}/ratio \
 	${tr2_srcdir}/type_traits
 
 decimal_srcdir = ${glibcxx_srcdir}/include/decimal
@@ -725,49 +729,49 @@ parallel_srcdir = ${glibcxx_srcdir}/include/parallel
 parallel_builddir = ./parallel
 if ENABLE_PARALLEL
 parallel_headers = \
-        ${parallel_srcdir}/algo.h \
-        ${parallel_srcdir}/algobase.h \
-        ${parallel_srcdir}/algorithm \
-        ${parallel_srcdir}/algorithmfwd.h \
-        ${parallel_srcdir}/balanced_quicksort.h \
-        ${parallel_srcdir}/base.h \
-        ${parallel_srcdir}/basic_iterator.h \
-        ${parallel_srcdir}/checkers.h \
-        ${parallel_srcdir}/compatibility.h \
-        ${parallel_srcdir}/compiletime_settings.h \
-        ${parallel_srcdir}/equally_split.h \
-        ${parallel_srcdir}/features.h \
-        ${parallel_srcdir}/find.h \
-        ${parallel_srcdir}/find_selectors.h \
-        ${parallel_srcdir}/for_each.h \
-        ${parallel_srcdir}/for_each_selectors.h \
-        ${parallel_srcdir}/iterator.h \
-        ${parallel_srcdir}/list_partition.h \
-        ${parallel_srcdir}/losertree.h \
-        ${parallel_srcdir}/merge.h \
-        ${parallel_srcdir}/multiseq_selection.h \
-        ${parallel_srcdir}/multiway_merge.h \
-        ${parallel_srcdir}/multiway_mergesort.h \
-        ${parallel_srcdir}/numeric \
-        ${parallel_srcdir}/numericfwd.h \
-        ${parallel_srcdir}/omp_loop.h \
-        ${parallel_srcdir}/omp_loop_static.h \
-        ${parallel_srcdir}/par_loop.h \
-        ${parallel_srcdir}/parallel.h \
-        ${parallel_srcdir}/partial_sum.h \
-        ${parallel_srcdir}/partition.h \
-        ${parallel_srcdir}/queue.h \
-        ${parallel_srcdir}/quicksort.h \
-        ${parallel_srcdir}/random_number.h \
-        ${parallel_srcdir}/random_shuffle.h \
-        ${parallel_srcdir}/search.h \
-        ${parallel_srcdir}/set_operations.h \
-        ${parallel_srcdir}/settings.h \
-        ${parallel_srcdir}/sort.h \
-        ${parallel_srcdir}/tags.h \
-        ${parallel_srcdir}/types.h \
-        ${parallel_srcdir}/unique_copy.h \
-        ${parallel_srcdir}/workstealing.h
+	${parallel_srcdir}/algo.h \
+	${parallel_srcdir}/algobase.h \
+	${parallel_srcdir}/algorithm \
+	${parallel_srcdir}/algorithmfwd.h \
+	${parallel_srcdir}/balanced_quicksort.h \
+	${parallel_srcdir}/base.h \
+	${parallel_srcdir}/basic_iterator.h \
+	${parallel_srcdir}/checkers.h \
+	${parallel_srcdir}/compatibility.h \
+	${parallel_srcdir}/compiletime_settings.h \
+	${parallel_srcdir}/equally_split.h \
+	${parallel_srcdir}/features.h \
+	${parallel_srcdir}/find.h \
+	${parallel_srcdir}/find_selectors.h \
+	${parallel_srcdir}/for_each.h \
+	${parallel_srcdir}/for_each_selectors.h \
+	${parallel_srcdir}/iterator.h \
+	${parallel_srcdir}/list_partition.h \
+	${parallel_srcdir}/losertree.h \
+	${parallel_srcdir}/merge.h \
+	${parallel_srcdir}/multiseq_selection.h \
+	${parallel_srcdir}/multiway_merge.h \
+	${parallel_srcdir}/multiway_mergesort.h \
+	${parallel_srcdir}/numeric \
+	${parallel_srcdir}/numericfwd.h \
+	${parallel_srcdir}/omp_loop.h \
+	${parallel_srcdir}/omp_loop_static.h \
+	${parallel_srcdir}/par_loop.h \
+	${parallel_srcdir}/parallel.h \
+	${parallel_srcdir}/partial_sum.h \
+	${parallel_srcdir}/partition.h \
+	${parallel_srcdir}/queue.h \
+	${parallel_srcdir}/quicksort.h \
+	${parallel_srcdir}/random_number.h \
+	${parallel_srcdir}/random_shuffle.h \
+	${parallel_srcdir}/search.h \
+	${parallel_srcdir}/set_operations.h \
+	${parallel_srcdir}/settings.h \
+	${parallel_srcdir}/sort.h \
+	${parallel_srcdir}/tags.h \
+	${parallel_srcdir}/types.h \
+	${parallel_srcdir}/unique_copy.h \
+	${parallel_srcdir}/workstealing.h
 else
 parallel_headers =
 endif
@@ -894,7 +898,7 @@ allstamped = \
 	stamp-std stamp-bits stamp-bits-sup stamp-c_base stamp-c_compatibility \
 	stamp-backward stamp-ext stamp-pb stamp-tr1 stamp-tr2 stamp-decimal \
 	stamp-debug stamp-parallel stamp-profile stamp-profile-impl \
-	stamp-host 
+	stamp-host
 
 # List of all files that are created by explicit building, editing, or
 # catenation.
@@ -1104,7 +1108,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "s,define _GLIBCXX_EXTERN_TEMPLATE, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \
 	-e "$$ldbl_compat" \
-            < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
+	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
 	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
 	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
