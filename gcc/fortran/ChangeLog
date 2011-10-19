@@ -1,3 +1,10 @@
+2011-10-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	* check.c (gfc_check_sizeof): Reject procedures as argument of SIZEOF.
+	* intrinsinc.texi (SIZEOF): Document it.
+	(STORAGE_SIZE): Fix special characters. Fix line breaks.
+
 2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50420

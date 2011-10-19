@@ -11459,7 +11459,8 @@ number of bytes occupied by the argument.  If the argument has the
 to is returned.  If the argument is of a derived type with @code{POINTER}
 or @code{ALLOCATABLE} components, the return value doesn't account for
 the sizes of the data pointed to by these components. If the argument is
-polymorphic, the size according to the declared type is returned.
+polymorphic, the size according to the declared type is returned. The argument
+may not be a procedure or procedure pointer.
 
 @item @emph{Example}:
 @smallexample
@@ -11816,8 +11817,10 @@ Inquiry function
 @end multitable
 
 @item @emph{Return Value}:
-The result is a scalar integer with the kind type parameter speciﬁed by KIND (or default integer type if KIND is missing). The result value is the size expressed in bits for an element of an array that
-has the dynamic type and type parameters of A.
+The result is a scalar integer with the kind type parameter specified by KIND
+(or default integer type if KIND is missing). The result value is the size
+expressed in bits for an element of an array that has the dynamic type and type
+parameters of A.
 
 @item @emph{See also}:
 @ref{C_SIZEOF}, @ref{SIZEOF}
