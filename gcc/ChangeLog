@@ -1,3 +1,9 @@
+2011-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50754
+	* cfgexpand.c (expand_debug_expr): Handle WIDEN_LSHIFT_EXPR, ignore
+	VEC_PERM_EXPR.
+
 2011-10-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* regrename.h: New file.
