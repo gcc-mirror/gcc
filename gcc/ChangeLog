@@ -1,3 +1,11 @@
+2011-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50780
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Verify
+	the condition is properly gimple before using it.
+	* tree-eh (stmt_could_throw_1_p): Properly extract the
+	operation type from comparisons.
+
 2011-10-19  Roland Stigge  <stigge@antcom.de>
 
 	PR translation/48638
