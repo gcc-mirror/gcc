@@ -1522,6 +1522,23 @@ retry:
   return u;
 }
 
+
+/* Flush dirty data, making sure that OS metadata is updated as
+   well. Note that this is VERY slow on mingw due to committing data
+   to stable storage.  */
+int
+flush_sync (stream * s)
+{
+  if (sflush (s) == -1)
+    return -1;
+#ifdef __MINGW32__
+  if (_commit (((unix_stream *)s)->fd) == -1)
+    return -1;
+#endif
+  return 0;
+}
+
+
 static gfc_unit *
 flush_all_units_1 (gfc_unit *u, int min_unit)
 {
@@ -1538,14 +1555,7 @@ flush_all_units_1 (gfc_unit *u, int min_unit)
 	  if (__gthread_mutex_trylock (&u->lock))
 	    return u;
 	  if (u->s)
-	    {
-	      sflush (u->s);
-#ifdef _WIN32
-	      /* Without _commit, changes are not visible to other
-		 file descriptors.  */
-	      _commit (u->s->fd);
-#endif
-	    }
+	    flush_sync (u->s);
 	  __gthread_mutex_unlock (&u->lock);
 	}
       u = u->right;
@@ -1575,12 +1585,7 @@ flush_all_units (void)
 
       if (u->closed == 0)
 	{
-	  sflush (u->s);
-#ifdef _WIN32
-	  /* Without _commit, changes are not visible to other
-	     file descriptors.  */
-	  _commit (u->s->fd);
-#endif
+	  flush_sync (u->s);
 	  __gthread_mutex_lock (&unit_lock);
 	  __gthread_mutex_unlock (&u->lock);
 	  (void) predec_waiting_locked (u);

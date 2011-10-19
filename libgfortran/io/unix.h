@@ -167,6 +167,9 @@ internal_proto(is_special);
 extern void flush_if_preconnected (stream *);
 internal_proto(flush_if_preconnected);
 
+extern int flush_sync (stream *);
+internal_proto(flush_sync);
+
 extern int stream_isatty (stream *);
 internal_proto(stream_isatty);
 

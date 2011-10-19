@@ -1,3 +1,16 @@
+2011-10-19  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Kai Tietz  <ktietz@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50016
+	* io/unix.h (flush_sync): Add new libgfortran-internal prototype.
+	* io/unix.c (flush_sync): New function, which calls sflush and
+	on MinGW(-w64) also _commit.
+	(flush_all_units, flush_all_units_1): Replace sflush/_commit by
+	flush_sync.
+	* io/file_pos.c (st_flush): Replace sflush/_commit by flush_sync.
+	* io/intrinsics.c (flush_i4, flush_i8): Ditto.
+
 2011-10-18  Tobias Burnus  <burnus@net-b.de>
 	    Janne Blomqvist  <jb@gcc.gnu.org>
 
