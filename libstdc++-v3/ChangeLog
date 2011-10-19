@@ -1,3 +1,20 @@
+2011-10-19  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/tr2/bool_set (bool_set): New.
+	* include/tr2/bool_set.tcc: New.
+	* include/tr2/dynamic_bitset (dynamic_bitset): New.
+	* include/tr2/ratio (kibi, mebi, gibi, tebi, pebi, exbi): New.
+	* include/Makefile.am: Add files.
+	* include/Makefile.in: Regenerate.
+
+2011-10-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add tr2 files.
+	* testsuite/tr2/headers/all.cc: New.
+	* testsuite/tr2/headers/using_namespace_std_tr2.cc: New.
+
+	* include/tr2/type_traits: Tweak.
+
 2011-10-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50500
