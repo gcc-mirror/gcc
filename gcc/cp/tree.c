@@ -1879,8 +1879,12 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
       tree u;
 
       if (TREE_CODE (TREE_OPERAND (t, 1)) == AGGR_INIT_EXPR)
-	u = build_cplus_new (TREE_TYPE (t), TREE_OPERAND (t, 1),
-			     tf_warning_or_error);
+	{
+	  u = build_cplus_new (TREE_TYPE (t), TREE_OPERAND (t, 1),
+			       tf_warning_or_error);
+	  if (AGGR_INIT_ZERO_FIRST (TREE_OPERAND (t, 1)))
+	    AGGR_INIT_ZERO_FIRST (TREE_OPERAND (u, 1)) = true;
+	}
       else
 	u = build_target_expr_with_type (TREE_OPERAND (t, 1), TREE_TYPE (t),
 					 tf_warning_or_error);
