@@ -1,3 +1,8 @@
+2011-10-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50793
+	* g++.dg/init/value9.C: New.
+
 2011-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/torture/vshuf-32.inc: Add interleave permutations.
