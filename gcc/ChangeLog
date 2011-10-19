@@ -1,3 +1,9 @@
+2011-10-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR target/50310
+	* config/spu/spu.c (spu_emit_vector_compare): Support unordered
+	floating-point comparisons.
+
 2011-10-19  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (handle_alias_pairs): Also handle wekref with destination
