@@ -1,3 +1,32 @@
+2011-10-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* regrename.h: New file.
+	* regrename.c: Include it.  Also include "emit-rtl.h".
+	(struct du_head, struct du_chain, du_head_p DEF_VEC and
+	DEF_VEC_ALLOC_P): Move to regrename.h.
+	(do_replace): Remove declaration.
+	(insn_rr): New variable.
+	(cur_operand): New static variable.
+	(regrename_chain_from_id): Renamed from chain_from_id and no longer
+	static.  All callers changed.
+	(record_operand_use): New static function.
+	(scan_rtx_reg): Use it.
+	(find_best_rename_reg): New function, broken out of rename_chains.
+	(rename_chains): Use it.  Don't update chain regno and nregs here, ...
+	(regrename_do_replace): ... do it here instead.  Renamed from
+	do_replace, and no longer static.  All callers changed.
+	(regrename_analyze): No longer static.  New arg bb_mask.
+	All callers changed.  If bb_mask is nonzero, use it to limit the
+	number of basic blocks we analyze.  If we failed to analyze a block,
+	clear insn operand data.
+	(record_out_operands): New arg insn_info.  Update cur_operand if it is
+	nonnull.
+	(build_def_use): If insn_rr is nonnull, pass an insn_info to
+	record_out_operands, and update cur_operand here as well.
+	(regrename_init, regrename_finish): New functions.
+	(regrename_optimize): Use them.
+	* Makefile.in (regrename.o): Adjust dependencies.
+
 2011-10-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50769
