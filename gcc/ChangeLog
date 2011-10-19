@@ -1,3 +1,14 @@
+2011-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50350
+	Backport from mainline
+	2011-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/50386
+	PR middle-end/50326
+	* tree-sra.c (build_ref_for_model): Use the type of the field as
+	the type of the COMPONENT_REF.
+
 2011-10-18  Uros Bizjak  <ubizjak@gmail.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
