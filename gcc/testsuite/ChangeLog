@@ -1,3 +1,9 @@
+2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/13657
+	* g++.dg/parse/error42.C: New.
+	* g++.old-deja/g++.other/ptrmem7.C: Tweak dg-errors.
+
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50793

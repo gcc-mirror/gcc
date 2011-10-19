@@ -1,3 +1,8 @@
+2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/13657
+	* class.c (instantiate_type): Fix error message.
+
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50793
