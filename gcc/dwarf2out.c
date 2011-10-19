@@ -12502,7 +12502,8 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	 legitimate to make the Dwarf info refer to the whole register which
 	 contains the given subreg.  */
       if (REG_P (SUBREG_REG (rtl)) && subreg_lowpart_p (rtl))
-	loc_result = loc_descriptor (SUBREG_REG (rtl), mode, initialized);
+	loc_result = loc_descriptor (SUBREG_REG (rtl),
+				     GET_MODE (SUBREG_REG (rtl)), initialized);
       else
 	goto do_default;
       break;
