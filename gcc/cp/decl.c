@@ -1542,8 +1542,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  error_at (DECL_SOURCE_LOCATION (newdecl), errmsg, newdecl);
 	  if (DECL_NAME (olddecl) != NULL_TREE)
 	    error ((DECL_INITIAL (olddecl) && namespace_bindings_p ())
-			 ? "%q+#D previously defined here"
-			 : "%q+#D previously declared here", olddecl);
+		   ? G_("%q+#D previously defined here")
+		   : G_("%q+#D previously declared here"), olddecl);
 	  return error_mark_node;
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -3236,8 +3236,8 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (!t)
     {
       if (complain & tf_error)
-	error (want_template ? "no class template named %q#T in %q#T"
-	       : "no type named %q#T in %q#T", name, context);
+	error (want_template ? G_("no class template named %q#T in %q#T")
+	       : G_("no type named %q#T in %q#T"), name, context);
       return error_mark_node;
     }
   
@@ -9143,13 +9143,13 @@ grokdeclarator (const cp_declarator *declarator,
 		   virtual.  A constructor may not be static.  */
 		if (staticp == 2)
 		  error ((flags == DTOR_FLAG)
-			 ? "destructor cannot be static member function"
-			 : "constructor cannot be static member function");
+			 ? G_("destructor cannot be static member function")
+			 : G_("constructor cannot be static member function"));
 		if (memfn_quals)
 		  {
 		    error ((flags == DTOR_FLAG)
-			   ? "destructors may not be cv-qualified"
-			   : "constructors may not be cv-qualified");
+			   ? G_("destructors may not be cv-qualified")
+			   : G_("constructors may not be cv-qualified"));
 		    memfn_quals = TYPE_UNQUALIFIED;
 		  }
 
@@ -9502,8 +9502,10 @@ grokdeclarator (const cp_declarator *declarator,
 	      && (!friendp || funcdef_flag))
 	    {
 	      error (funcdef_flag
-		     ? "cannot define member function %<%T::%s%> within %<%T%>"
-		     : "cannot declare member function %<%T::%s%> within %<%T%>",
+		     ? G_("cannot define member function %<%T::%s%> "
+			  "within %<%T%>")
+		     : G_("cannot declare member function %<%T::%s%> "
+			  "within %<%T%>"),
 		     ctype, name, current_class_type);
 	      return error_mark_node;
 	    }
@@ -10223,8 +10225,8 @@ grokdeclarator (const cp_declarator *declarator,
 		     || sfk == sfk_destructor)
 	      {
 		error (funcdef_flag
-		       ? "%qs defined in a non-class scope"
-		       : "%qs declared in a non-class scope", name);
+		       ? G_("%qs defined in a non-class scope")
+		       : G_("%qs declared in a non-class scope"), name);
 		sfk = sfk_none;
 	      }
 	  }
