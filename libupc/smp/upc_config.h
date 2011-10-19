@@ -29,6 +29,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef _UPC_CONFIG_H_
 #define _UPC_CONFIG_H_
 
+#include "config.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -63,8 +65,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 #define GUPCR_THREAD_LOCAL
 #endif
-
-#include "config.h"
 
 #define DEV_ZERO "/dev/zero"
 #define OFFSET_ZERO ((off_t) 0)
