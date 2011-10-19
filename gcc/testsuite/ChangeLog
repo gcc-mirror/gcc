@@ -3,6 +3,11 @@
 	PR c++/50787
 	* g++.dg/init/ref20.C: New.
 
+2011-10-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50787
+	* g++.dg/init/ref20.C: New.
+
 2011-10-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50531
