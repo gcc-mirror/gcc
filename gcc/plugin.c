@@ -1,5 +1,5 @@
 /* Support for GCC plugin mechanism.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -149,7 +149,7 @@ add_new_plugin (const char* plugin_name)
 			    plugin_name, ".so", NULL);
       if (access (plugin_name, R_OK))
 	fatal_error
-	  ("inacessible plugin file %s expanded from short plugin name %s: %m",
+	  ("inaccessible plugin file %s expanded from short plugin name %s: %m",
 	   plugin_name, base_name);
     }
   else

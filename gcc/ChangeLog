@@ -1,3 +1,13 @@
+2011-10-19  Roland Stigge  <stigge@antcom.de>
+
+	PR translation/48638
+	* plugin.c (add_new_plugin): Fix typo in fatal_error message.
+
+2011-10-19  Roland Stigge  <stigge@antcom.de>
+
+	PR translation/49517
+	* config/rx/rx.c (rx_print_operand): Fix typo in warning message.
+
 2011-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50768

@@ -1,3 +1,9 @@
+2011-10-19  Roland Stigge  <stigge@antcom.de>
+
+	PR translation/49704
+	* semantics.c (potential_constant_expression_1): Use "AST" instead of
+	"ast" in sorry message.
+
 2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38761
