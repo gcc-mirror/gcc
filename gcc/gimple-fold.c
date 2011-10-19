@@ -534,25 +534,22 @@ void
 gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 {
   tree lhs;
-  tree tmp = NULL_TREE;  /* Silence warning.  */
   gimple stmt, new_stmt;
   gimple_stmt_iterator i;
   gimple_seq stmts = gimple_seq_alloc();
   struct gimplify_ctx gctx;
-  gimple last = NULL;
-  gimple laststore = NULL;
+  gimple last;
+  gimple laststore;
   tree reaching_vuse;
 
   stmt = gsi_stmt (*si_p);
 
   gcc_assert (is_gimple_call (stmt));
 
-  lhs = gimple_call_lhs (stmt);
-  reaching_vuse = gimple_vuse (stmt);
-
   push_gimplify_context (&gctx);
   gctx.into_ssa = gimple_in_ssa_p (cfun);
 
+  lhs = gimple_call_lhs (stmt);
   if (lhs == NULL_TREE)
     {
       gimplify_and_add (expr, &stmts);
@@ -571,105 +568,83 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	}
     }
   else
-    tmp = get_initialized_tmp_var (expr, &stmts, NULL);
+    {
+      tree tmp = get_initialized_tmp_var (expr, &stmts, NULL);
+      new_stmt = gimple_build_assign (lhs, tmp);
+      i = gsi_last (stmts);
+      gsi_insert_after_without_update (&i, new_stmt,
+				       GSI_CONTINUE_LINKING);
+    }
 
   pop_gimplify_context (NULL);
 
   if (gimple_has_location (stmt))
     annotate_all_with_location (stmts, gimple_location (stmt));
 
-  /* The replacement can expose previously unreferenced variables.  */
+  /* First iterate over the replacement statements backward, assigning
+     virtual operands to their defining statements.  */
+  laststore = NULL;
+  for (i = gsi_last (stmts); !gsi_end_p (i); gsi_prev (&i))
+    {
+      new_stmt = gsi_stmt (i);
+      if (gimple_assign_single_p (new_stmt)
+	  && !is_gimple_reg (gimple_assign_lhs (new_stmt)))
+	{
+	  tree vdef;
+	  if (!laststore)
+	    vdef = gimple_vdef (stmt);
+	  else
+	    vdef = make_ssa_name (gimple_vop (cfun), new_stmt);
+	  gimple_set_vdef (new_stmt, vdef);
+	  if (TREE_CODE (vdef) == SSA_NAME)
+	    SSA_NAME_DEF_STMT (vdef) = new_stmt;
+	  laststore = new_stmt;
+	}
+    }
+
+  /* Second iterate over the statements forward, assigning virtual
+     operands to their uses.  */
+  last = NULL;
+  reaching_vuse = gimple_vuse (stmt);
   for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
     {
+      /* Do not insert the last stmt in this loop but remember it
+         for replacing the original statement.  */
       if (last)
 	{
 	  gsi_insert_before (si_p, last, GSI_NEW_STMT);
 	  gsi_next (si_p);
 	}
       new_stmt = gsi_stmt (i);
+      /* The replacement can expose previously unreferenced variables.  */
       if (gimple_in_ssa_p (cfun))
 	find_new_referenced_vars (new_stmt);
       /* If the new statement possibly has a VUSE, update it with exact SSA
 	 name we know will reach this one.  */
       if (gimple_has_mem_ops (new_stmt))
-	{
-	  /* If we've also seen a previous store create a new VDEF for
-	     the latter one, and make that the new reaching VUSE.  */
-	  if (laststore)
-	    {
-	      reaching_vuse = make_ssa_name (gimple_vop (cfun), laststore);
-	      gimple_set_vdef (laststore, reaching_vuse);
-	      update_stmt (laststore);
-	      laststore = NULL;
-	    }
-	  gimple_set_vuse (new_stmt, reaching_vuse);
-	  gimple_set_modified (new_stmt, true);
-	}
-      if (gimple_assign_single_p (new_stmt)
-	  && !is_gimple_reg (gimple_assign_lhs (new_stmt)))
-	{
-	  laststore = new_stmt;
-	}
+	gimple_set_vuse (new_stmt, reaching_vuse);
+      gimple_set_modified (new_stmt, true);
+      if (gimple_vdef (new_stmt))
+	reaching_vuse = gimple_vdef (new_stmt);
       last = new_stmt;
     }
 
-  if (lhs == NULL_TREE)
+  /* If the new sequence does not do a store release the virtual
+     definition of the original statement.  */
+  if (reaching_vuse
+      && reaching_vuse == gimple_vuse (stmt))
     {
-      /* If we replace a call without LHS that has a VDEF and our new
-         sequence ends with a store we must make that store have the same
-	 vdef in order not to break the sequencing.  This can happen
-	 for instance when folding memcpy calls into assignments.  */
-      if (gimple_vdef (stmt) && laststore)
-	{
-	  gimple_set_vdef (laststore, gimple_vdef (stmt));
-	  if (TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
-	    SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = laststore;
-	  update_stmt (laststore);
-	}
-      else if (gimple_in_ssa_p (cfun))
+      tree vdef = gimple_vdef (stmt);
+      if (vdef
+	  && TREE_CODE (vdef) == SSA_NAME)
 	{
 	  unlink_stmt_vdef (stmt);
-	  release_defs (stmt);
+	  release_ssa_name (vdef);
 	}
-      new_stmt = last;
-    }
-  else
-    {
-      if (last)
-	{
-	  gsi_insert_before (si_p, last, GSI_NEW_STMT);
-	  gsi_next (si_p);
-	}
-      if (laststore && is_gimple_reg (lhs))
-	{
-	  gimple_set_vdef (laststore, gimple_vdef (stmt));
-	  update_stmt (laststore);
-	  if (TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
-	    SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = laststore;
-	  laststore = NULL;
-	}
-      else if (laststore)
-	{
-	  reaching_vuse = make_ssa_name (gimple_vop (cfun), laststore);
-	  gimple_set_vdef (laststore, reaching_vuse);
-	  update_stmt (laststore);
-	  laststore = NULL;
-	}
-      new_stmt = gimple_build_assign (lhs, tmp);
-      if (!is_gimple_reg (tmp))
-	gimple_set_vuse (new_stmt, reaching_vuse);
-      if (!is_gimple_reg (lhs))
-	{
-	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-	  if (TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
-	    SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = new_stmt;
-	}
-      else if (reaching_vuse == gimple_vuse (stmt))
-	unlink_stmt_vdef (stmt);
     }
 
-  gimple_set_location (new_stmt, gimple_location (stmt));
-  gsi_replace (si_p, new_stmt, false);
+  /* Finally replace rhe original statement with the last.  */
+  gsi_replace (si_p, last, false);
 }
 
 /* Return the string length, maximum string length or maximum value of

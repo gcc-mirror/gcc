@@ -1,3 +1,8 @@
+2011-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50768
+	* gcc.dg/torture/pr50768.c: New testcase.
+
 2011-10-19  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/50340
