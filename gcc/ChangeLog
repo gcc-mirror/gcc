@@ -1,5 +1,8 @@
 2011-10-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (loc_descriptor): For SUBREG pass SUBREG_REG's mode as
+	second argument instead of mode.
+
 	PR target/50350
 	Backport from mainline
 	2011-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
