@@ -1,3 +1,10 @@
+2011-10-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (handle_alias_pairs): Also handle wekref with destination
+	declared.
+	(output_weakrefs): New function.
+	* varpool.c (varpool_create_variable_alias): Handle external aliases.
+
 2011-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (loc_descriptor): For SUBREG pass SUBREG_REG's mode as
