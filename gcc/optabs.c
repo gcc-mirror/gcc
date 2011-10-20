@@ -6714,7 +6714,7 @@ can_vec_perm_expr_p (tree type, tree sel)
   if (sel == NULL || TREE_CODE (sel) == VECTOR_CST)
     {
       if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
-	  && (sel == NULL || targetm.vectorize.builtin_vec_perm_ok (type, sel)))
+	  && (sel == NULL || targetm.vectorize.vec_perm_const_ok (type, sel)))
 	return true;
     }
 
@@ -6808,7 +6808,7 @@ expand_vec_perm_expr (tree type, tree v0, tree v1, tree sel, rtx target)
     {
       icode = direct_optab_handler (vec_perm_const_optab, mode);
       if (icode != CODE_FOR_nothing
-	  && targetm.vectorize.builtin_vec_perm_ok (TREE_TYPE (v0), sel)
+	  && targetm.vectorize.vec_perm_const_ok (TREE_TYPE (v0), sel)
 	  && (tmp = expand_vec_perm_expr_1 (icode, target, v0_rtx,
 					    v1_rtx, sel_rtx)) != NULL)
 	return tmp;

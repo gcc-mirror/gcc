@@ -5711,7 +5711,7 @@ misalignment value (@var{misalign}).
 Return true if vector alignment is reachable (by peeling N iterations) for the given type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK (tree @var{vec_type}, tree @var{mask})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (tree @var{vec_type}, tree @var{mask})
 Return true if a vector created for @code{vec_perm_const} is valid.
 @end deftypefn
 

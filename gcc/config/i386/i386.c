@@ -36446,7 +36446,7 @@ ix86_expand_vec_perm_const (rtx operands[4])
   return false;
 }
 
-/* Implement targetm.vectorize.builtin_vec_perm_ok.  */
+/* Implement targetm.vectorize.vec_perm_const_ok.  */
 
 static bool
 ix86_vectorize_vec_perm_const_ok (tree vec_type, tree mask)
@@ -37879,8 +37879,8 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   ix86_builtin_vectorization_cost
-#undef TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK
-#define TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK \
+#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
+#define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
   ix86_vectorize_vec_perm_const_ok
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
