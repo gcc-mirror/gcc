@@ -1316,7 +1316,7 @@ sparc_expand_move (enum machine_mode mode, rtx *operands)
 	  && (mode == SFmode
 	      /* And any DF constant in integer registers.  */
 	      || (mode == DFmode
-		  && (reload_completed || reload_in_progress))))
+		  && ! can_create_pseudo_p ())))
 	return false;
 
       operands[1] = force_const_mem (mode, operands[1]);
@@ -1362,11 +1362,9 @@ static void
 sparc_emit_set_const32 (rtx op0, rtx op1)
 {
   enum machine_mode mode = GET_MODE (op0);
-  rtx temp;
+  rtx temp = op0;
 
-  if (reload_in_progress || reload_completed)
-    temp = op0;
-  else
+  if (can_create_pseudo_p ())
     temp = gen_reg_rtx (mode);
 
   if (GET_CODE (op1) == CONST_INT)
@@ -1739,11 +1737,9 @@ sparc_emit_set_const64_longway (rtx op0, rtx temp,
 				unsigned HOST_WIDE_INT high_bits,
 				unsigned HOST_WIDE_INT low_bits)
 {
-  rtx sub_temp;
+  rtx sub_temp = op0;
 
-  if (reload_in_progress || reload_completed)
-    sub_temp = op0;
-  else
+  if (can_create_pseudo_p ())
     sub_temp = gen_reg_rtx (DImode);
 
   if ((high_bits & 0xfffffc00) != 0)
@@ -1762,7 +1758,7 @@ sparc_emit_set_const64_longway (rtx op0, rtx temp,
       sub_temp = temp;
     }
 
-  if (!reload_in_progress && !reload_completed)
+  if (can_create_pseudo_p ())
     {
       rtx temp2 = gen_reg_rtx (DImode);
       rtx temp3 = gen_reg_rtx (DImode);
@@ -1970,7 +1966,7 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
 	      && (GET_CODE (op0) == SUBREG
 		  || (REG_P (op0) && ! SPARC_FP_REG_P (REGNO (op0)))));
 
-  if (reload_in_progress || reload_completed)
+  if (! can_create_pseudo_p ())
     temp = op0;
 
   if (GET_CODE (op1) != CONST_INT)
@@ -3685,7 +3681,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
 
       if (reg == 0)
 	{
-	  gcc_assert (! reload_in_progress && ! reload_completed);
+	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
 	}
 
@@ -3694,7 +3690,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
 	  /* If not during reload, allocate another temp reg here for loading
 	     in the address, so that these instructions can be optimized
 	     properly.  */
-	  rtx temp_reg = ((reload_in_progress || reload_completed)
+	  rtx temp_reg = (! can_create_pseudo_p ()
 			  ? reg : gen_reg_rtx (Pmode));
 
 	  /* Must put the SYMBOL_REF inside an UNSPEC here so that cse
@@ -3753,7 +3749,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
 
       if (reg == 0)
 	{
-	  gcc_assert (! reload_in_progress && ! reload_completed);
+	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
 	}
 
@@ -3766,7 +3762,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
 	{
 	  if (SMALL_INT (offset))
 	    return plus_constant (base, INTVAL (offset));
-	  else if (! reload_in_progress && ! reload_completed)
+	  else if (can_create_pseudo_p ())
 	    offset = force_reg (Pmode, offset);
 	  else
 	    /* If we reach here, then something is seriously wrong.  */
@@ -7900,7 +7896,7 @@ memory_ok_for_ldd (rtx op)
       if (TARGET_ARCH32 && !mem_min_alignment (op, 8))
 	return 0;
 
-      if ((reload_in_progress || reload_completed)
+      if (! can_create_pseudo_p ()
 	  && !strict_memory_address_p (Pmode, XEXP (op, 0)))
 	return 0;
     }
