@@ -1,3 +1,8 @@
+2011-10-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41449
+	* g++.dg/eh/partial1.C: New.
+
 2011-10-20  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/vperm-v2df.c, gcc.target/i386/vperm-v2di.c,

@@ -1,3 +1,9 @@
+2011-10-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41449
+	* typeck2.c (split_nonconstant_init_1): Handle EH cleanup of
+	initialized subobjects.
+
 2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/13657
