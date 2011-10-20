@@ -1,11 +1,38 @@
 ! { dg-do compile }
+! PR fortran/50514
 program ishft_3
-  integer i, j
-  write(*,*) ishftc( 3, 2, 3 )
-  write(*,*) ishftc( 3, 2, i )
-  write(*,*) ishftc( 3, i, j )
-  write(*,*) ishftc( 3, 128 )     ! { dg-error "exceeds BIT_SIZE of first" }
-  write(*,*) ishftc( 3, 0, 128 )  ! { dg-error "exceeds BIT_SIZE of first" }
-  write(*,*) ishftc( 3, 0, 0 )    ! { dg-error "Invalid third argument" }
-  write(*,*) ishftc( 3, 3, 2 )    ! { dg-error "exceeds third argument" }
+
+   implicit none
+
+   integer j, m
+
+   m = 42
+   !
+   ! These should compile.
+   !
+   j = ishft(m, 16)
+   j = ishft(m, -16)
+   j = ishftc(m, 16)
+   j = ishftc(m, -16)
+   !
+   ! These should issue an error.
+   !
+   j = ishft(m, 640)    ! { dg-error "absolute value of SHIFT" }
+   j = ishftc(m, 640)   ! { dg-error "absolute value of SHIFT" }
+   j = ishft(m, -640)   ! { dg-error "absolute value of SHIFT" }
+   j = ishftc(m, -640)  ! { dg-error "absolute value of SHIFT" }
+
+   ! abs(SHIFT) must be <= SIZE
+
+   j = ishftc(m,  1, 2)
+   j = ishftc(m,  1, 2)
+   j = ishftc(m, -1, 2)
+   j = ishftc(m, -1, 2)
+
+   j = ishftc(m,  10, 2)! { dg-error "absolute value of SHIFT" }
+   j = ishftc(m,  10, 2)! { dg-error "absolute value of SHIFT" }
+   j = ishftc(m, -10, 2)! { dg-error "absolute value of SHIFT" }
+   j = ishftc(m, -10, 2)! { dg-error "absolute value of SHIFT" }
+
+   j = ishftc(m, 1, -2) ! { dg-error "must be positive" }
 end program
