@@ -4472,6 +4472,28 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   invalidate_global_renaming_pointers ();
 }
 
+/* Return true if GNAT_NODE is on the LHS of an assignment or an actual
+   parameter of a call.  */
+
+static bool
+lhs_or_actual_p (Node_Id gnat_node)
+{
+  Node_Id gnat_parent = Parent (gnat_node);
+  Node_Kind kind = Nkind (gnat_parent);
+
+  if (kind == N_Assignment_Statement && Name (gnat_parent) == gnat_node)
+    return true;
+
+  if ((kind == N_Procedure_Call_Statement || kind == N_Function_Call)
+      && Name (gnat_parent) != gnat_node)
+    return true;
+
+  if (kind == N_Parameter_Association)
+    return true;
+
+  return false;
+}
+
 /* Return true if GNAT_NODE, an unchecked type conversion, is a no-op as far
    as gigi is concerned.  This is used to avoid conversions on the LHS.  */
 
@@ -4483,11 +4505,7 @@ unchecked_conversion_nop (Node_Id gnat_node)
   /* The conversion must be on the LHS of an assignment or an actual parameter
      of a call.  Otherwise, even if the conversion was essentially a no-op, it
      could de facto ensure type consistency and this should be preserved.  */
-  if (!(Nkind (Parent (gnat_node)) == N_Assignment_Statement
-	&& Name (Parent (gnat_node)) == gnat_node)
-      && !((Nkind (Parent (gnat_node)) == N_Procedure_Call_Statement
-	    || Nkind (Parent (gnat_node)) == N_Function_Call)
-	   && Name (Parent (gnat_node)) != gnat_node))
+  if (!lhs_or_actual_p (gnat_node))
     return false;
 
   from_type = Etype (Expression (gnat_node));
@@ -6528,13 +6546,13 @@ gnat_to_gnu (Node_Id gnat_node)
   /* Now convert the result to the result type, unless we are in one of the
      following cases:
 
-       1. If this is the Name of an assignment statement or a parameter of
-	  a procedure call, return the result almost unmodified since the
-	  RHS will have to be converted to our type in that case, unless
-	  the result type has a simpler size.  Likewise if there is just
-	  a no-op unchecked conversion in-between.  Similarly, don't convert
-	  integral types that are the operands of an unchecked conversion
-	  since we need to ignore those conversions (for 'Valid).
+       1. If this is the LHS of an assignment or an actual parameter of a
+	  call, return the result almost unmodified since the RHS will have
+	  to be converted to our type in that case, unless the result type
+	  has a simpler size.  Likewise if there is just a no-op unchecked
+	  conversion in-between.  Similarly, don't convert integral types
+	  that are the operands of an unchecked conversion since we need
+	  to ignore those conversions (for 'Valid).
 
        2. If we have a label (which doesn't have any well-defined type), a
 	  field or an error, return the result almost unmodified.  Similarly,
@@ -6549,13 +6567,9 @@ gnat_to_gnu (Node_Id gnat_node)
        4. Finally, if the type of the result is already correct.  */
 
   if (Present (Parent (gnat_node))
-      && ((Nkind (Parent (gnat_node)) == N_Assignment_Statement
-	   && Name (Parent (gnat_node)) == gnat_node)
+      && (lhs_or_actual_p (gnat_node)
 	  || (Nkind (Parent (gnat_node)) == N_Unchecked_Type_Conversion
 	      && unchecked_conversion_nop (Parent (gnat_node)))
-	  || (Nkind (Parent (gnat_node)) == N_Procedure_Call_Statement
-	      && Name (Parent (gnat_node)) != gnat_node)
-	  || Nkind (Parent (gnat_node)) == N_Parameter_Association
 	  || (Nkind (Parent (gnat_node)) == N_Unchecked_Type_Conversion
 	      && !AGGREGATE_TYPE_P (gnu_result_type)
 	      && !AGGREGATE_TYPE_P (TREE_TYPE (gnu_result))))
