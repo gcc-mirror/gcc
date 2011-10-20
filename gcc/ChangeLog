@@ -1,3 +1,12 @@
+2011-10-20  Richard Henderson  <rth@redhat.com>
+
+	* target.def (vec_perm_const_ok): Rename from builtin_vec_perm_ok.
+	* optabs.c (can_vec_perm_expr_p): Update to match.
+	(expand_vec_perm_expr): Likewise.
+	* config/i386/i386.c (TARGET_VECTORIZE_VEC_PERM_CONST_OK): Rename
+	from TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK.
+	* doc/tm.texi.in: Likewise.
+
 2011-10-20  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	PR target/50572

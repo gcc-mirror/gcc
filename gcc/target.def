@@ -985,9 +985,9 @@ DEFHOOK
  bool, (const_tree type, bool is_packed),
  default_builtin_vector_alignment_reachable)
 
-/* Return true if a vector created for builtin_vec_perm is valid.  */
+/* Return true if a vector created for vec_perm_const is valid.  */
 DEFHOOK
-(builtin_vec_perm_ok,
+(vec_perm_const_ok,
  "",
  bool, (tree vec_type, tree mask),
  hook_bool_tree_tree_true)
