@@ -1,3 +1,8 @@
+2011-10-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (stmt_cost): Add WIDEN_*, FMA_EXPR
+	and rotates to the set of expensive operations.
+
 2011-10-19  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (sparc_expand_move): Use
