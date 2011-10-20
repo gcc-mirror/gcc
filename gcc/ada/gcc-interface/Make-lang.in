@@ -61,8 +61,12 @@ ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(WARN_ADAFLAGS)
 FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
 ADA_INCLUDES = -nostdinc -I- -I. -Iada -I$(srcdir)/ada -I$(srcdir)/ada/gcc-interface
+GNATLIBFLAGS= -W -Wall -gnatpg -nostdinc
+GNATLIBCFLAGS= -g -O2 $(TCFLAGS)
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
+THREAD_KIND=native
+TRACE=no
 # We do not want the WARN_CFLAGS of the compiler in Ada as it is for C/C++.
 COMMON_FLAGS_TO_PASS = $(filter-out -pedantic -W%, $(FLAGS_TO_PASS))
 ADA_FLAGS_TO_PASS = \
@@ -1199,8 +1203,9 @@ ada/a-tags.o  : ada/a-tags.adb ada/a-tags.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-CFLAGS-ada/tracebak.o += $(ADA_CFLAGS) -fno-omit-frame-pointer
 ada/tracebak.o : ada/tracebak.c $(CONFIG_H) $(SYSTEM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 
 # dependencies for windows specific tool (mdll)
 
@@ -1221,20 +1226,25 @@ ada/exit.o     : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
 ada/link.o     : ada/link.c
 
-CFLAGS-ada/targext.o += $(ADA_CFLAGS)
 ada/targext.o : ada/targext.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-CFLAGS-ada/cio.o += $(ADA_CFLAGS)
 ada/cio.o : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-CFLAGS-ada/init.o += $(ADA_CFLAGS)
 ada/init.o : ada/init.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-CFLAGS-ada/initialize.o += $(ADA_CFLAGS)
 ada/initialize.o : ada/initialize.c
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-CFLAGS-ada/raise.o += $(ADA_CFLAGS)
 ada/raise.o : ada/raise.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/cuintp.o : ada/gcc-interface/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) ada/gcc-interface/ada.h ada/types.h ada/uintp.h \

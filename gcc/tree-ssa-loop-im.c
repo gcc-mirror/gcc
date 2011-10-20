@@ -549,6 +549,11 @@ stmt_cost (gimple stmt)
   switch (gimple_assign_rhs_code (stmt))
     {
     case MULT_EXPR:
+    case WIDEN_MULT_EXPR:
+    case WIDEN_MULT_PLUS_EXPR:
+    case WIDEN_MULT_MINUS_EXPR:
+    case DOT_PROD_EXPR:
+    case FMA_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
@@ -565,6 +570,9 @@ stmt_cost (gimple stmt)
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case WIDEN_LSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
       cost += 20;
       break;
 

@@ -52,10 +52,19 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 
 set LTO_TORTURE_OPTIONS ""
 if [check_effective_target_lto] {
-    set LTO_TORTURE_OPTIONS [list \
-	{ -O2 -flto -flto-partition=none } \
-	{ -O2 -flto }
-    ]
+    # When having plugin test both slim and fat LTO and plugin/nonplugin
+    # path.
+    if [check_linker_plugin_available] {
+      set LTO_TORTURE_OPTIONS [list \
+	  { -O2 -flto -fno-use-linker-plugin -flto-partition=none } \
+	  { -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects }
+      ]
+    } else {
+      set LTO_TORTURE_OPTIONS [list \
+	  { -O2 -flto -flto-partition=none } \
+	  { -O2 -flto }
+      ]
+    }
 }
 
 global GCC_UNDER_TEST

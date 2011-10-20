@@ -1,3 +1,28 @@
+2011-10-20  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/t-linux (M68K_MLIB_CPU): Add ColdFire CPUs.
+
+2011-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+       PR target/50106
+       * config/arm/arm.c (thumb_unexpanded_epilogue): Handle return
+	reg size from 1-3.
+
+2011-10-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (stmt_cost): Add WIDEN_*, FMA_EXPR
+	and rotates to the set of expensive operations.
+
+2011-10-19  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.c (sparc_expand_move): Use
+	can_create_pseudo_p.
+	(sparc_emit_set_const32): Likewise.
+	(sparc_emit_set_const64_longway): Likewise.
+	(sparc_emit_set_const64): Likewise.
+	(sparc_legitimize_pic_address): Likewise.
+	(memory_ok_for_ldd): Likewise.
+
 2011-10-20  Dehao Chen  <dehao@google.com>
 
 	* profile.c (compute_branch_probabilities): Compute and dump the

@@ -1,3 +1,9 @@
+2011-10-20  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/50801
+	* lex.c (_cpp_remaining_tokens_num_in_context): Fix computation of
+	number of tokens.
+
 2011-10-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/50760

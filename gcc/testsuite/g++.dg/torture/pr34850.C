@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
+/* { dg-options "-ffat-lto-objects" } */
 
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
