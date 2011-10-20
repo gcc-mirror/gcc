@@ -1,5 +1,11 @@
 2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (lhs_or_actual_p): New predicate.
+	(unchecked_conversion_nop): Use it.
+	(gnat_to_gnu): Likewise.
+
+2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* back_end.adb (Call_Back_End): Pass the maximum logical line number
 	instead of the maximum physical line number to gigi.
 	* gcc-interface/trans.c (Sloc_to_locus): Cope with line zero.
