@@ -1384,6 +1384,7 @@ inline_small_functions (void)
       struct cgraph_node *where, *callee;
       int badness = fibheap_min_key (heap);
       int current_badness;
+      int cached_badness;
       int growth;
 
       edge = (struct cgraph_edge *) fibheap_extract_min (heap);
@@ -1392,16 +1393,18 @@ inline_small_functions (void)
       if (!edge->inline_failed)
 	continue;
 
-      /* Be sure that caches are maintained consistent.  */
-#ifdef ENABLE_CHECKING
+      /* Be sure that caches are maintained consistent.  
+         We can not make this ENABLE_CHECKING only because it cause differnt
+         updates of the fibheap queue.  */
+      cached_badness = edge_badness (edge, false);
       reset_edge_growth_cache (edge);
       reset_node_growth_cache (edge->callee);
-#endif
 
       /* When updating the edge costs, we only decrease badness in the keys.
 	 Increases of badness are handled lazilly; when we see key with out
 	 of date value on it, we re-insert it now.  */
       current_badness = edge_badness (edge, false);
+      gcc_assert (cached_badness == current_badness);
       gcc_assert (current_badness >= badness);
       if (current_badness != badness)
 	{
