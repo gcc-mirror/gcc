@@ -5649,12 +5649,8 @@ misalignment value (@var{misalign}).
 Return true if vector alignment is reachable (by peeling N iterations) for the given type.
 @end deftypefn
 
-@hook TARGET_VECTORIZE_BUILTIN_VEC_PERM
-Target builtin that implements vector permute.
-@end deftypefn
-
 @hook TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK
-Return true if a vector created for @code{builtin_vec_perm} is valid.
+Return true if a vector created for @code{vec_perm_const} is valid.
 @end deftypefn
 
 @hook TARGET_VECTORIZE_BUILTIN_CONVERSION
