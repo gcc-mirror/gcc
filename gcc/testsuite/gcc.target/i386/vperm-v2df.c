@@ -16,7 +16,7 @@ extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 #define assert(T) ((T) || (__builtin_trap (), 0))
 
 #define TEST(E0, E1) \
-  b.v = __builtin_ia32_vec_perm_v2df (i[0].v, i[1].v, (IV){E0, E1}); \
+  b.v = __builtin_shuffle (i[0].v, i[1].v, (IV){E0, E1}); \
   c.s[0] = i[0].s[E0]; \
   c.s[1] = i[0].s[E1]; \
   __asm__("" : : : "memory"); \

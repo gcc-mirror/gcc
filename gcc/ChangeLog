@@ -1,3 +1,25 @@
+2011-10-20  Richard Henderson  <rth@redhat.com>
+
+	* target.def (builtin_vec_perm): Remove.
+	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_VEC_PERM): Remove.
+
+	* config/i386/i386.c (ix86_expand_vec_perm_builtin): Remove.
+	(IX86_BUILTIN_VEC_PERM_*): Remove.
+	(bdesc_args): Remove vec_perm builtins
+	(ix86_expand_builtin): Likewise.
+	(ix86_expand_vec_perm_const_1): Rename from
+	ix86_expand_vec_perm_builtin_1.
+	(extract_vec_perm_cst): Merge into...
+	(ix86_vectorize_vec_perm_const_ok): ... here.  Rename from
+	ix86_vectorize_builtin_vec_perm_ok.
+	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Remove.
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vec_perm): Remove.
+	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Remove.
+
+	* config/spu/spu.c (spu_builtin_vec_perm): Remove.
+	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Remove.
+
 2011-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47989
@@ -16,8 +38,8 @@
 
 	PR other/50659
 	* doc/cppopts.texi: Use @smallexample/@end smallexample in
-    	documentation for -fdebug-cpp instead of @quotation/@end quotation
-    	that is not supported by contrib/texi2pod.pl.
+	documentation for -fdebug-cpp instead of @quotation/@end quotation
+	that is not supported by contrib/texi2pod.pl.
 
 2011-10-19  Jan Hubicka  <jh@suse.cz>
 
@@ -36,8 +58,8 @@
 
 2011-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-       PR target/50106
-       * config/arm/arm.c (thumb_unexpanded_epilogue): Handle return
+	PR target/50106
+	* config/arm/arm.c (thumb_unexpanded_epilogue): Handle return
 	reg size from 1-3.
 
 2011-10-20  Richard Guenther  <rguenther@suse.de>

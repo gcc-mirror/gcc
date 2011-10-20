@@ -985,12 +985,6 @@ DEFHOOK
  bool, (const_tree type, bool is_packed),
  default_builtin_vector_alignment_reachable)
 
-/* Target builtin that implements vector permute.  */
-DEFHOOK
-(builtin_vec_perm,
- "",
- tree, (tree type, tree *mask_element_type), NULL)
-
 /* Return true if a vector created for builtin_vec_perm is valid.  */
 DEFHOOK
 (builtin_vec_perm_ok,

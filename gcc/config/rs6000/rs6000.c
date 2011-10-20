@@ -988,7 +988,6 @@ static tree rs6000_builtin_mask_for_load (void);
 static tree rs6000_builtin_mul_widen_even (tree);
 static tree rs6000_builtin_mul_widen_odd (tree);
 static tree rs6000_builtin_conversion (unsigned int, tree, tree);
-static tree rs6000_builtin_vec_perm (tree, tree *);
 static bool rs6000_builtin_support_vector_misalignment (enum
 							machine_mode,
 							const_tree,
@@ -1407,8 +1406,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD rs6000_builtin_mul_widen_odd
 #undef TARGET_VECTORIZE_BUILTIN_CONVERSION
 #define TARGET_VECTORIZE_BUILTIN_CONVERSION rs6000_builtin_conversion
-#undef TARGET_VECTORIZE_BUILTIN_VEC_PERM
-#define TARGET_VECTORIZE_BUILTIN_VEC_PERM rs6000_builtin_vec_perm
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT		\
   rs6000_builtin_support_vector_misalignment
@@ -3474,65 +3471,6 @@ rs6000_builtin_support_vector_misalignment (enum machine_mode mode,
     }
   return false;
 }
-
-/* Implement targetm.vectorize.builtin_vec_perm.  */
-tree
-rs6000_builtin_vec_perm (tree type, tree *mask_element_type)
-{
-  tree inner_type = TREE_TYPE (type);
-  bool uns_p = TYPE_UNSIGNED (inner_type);
-  tree d;
-
-  *mask_element_type = unsigned_char_type_node;
-
-  switch (TYPE_MODE (type))
-    {
-    case V16QImode:
-      d = (uns_p
-	   ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_16QI_UNS]
-	   : rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_16QI]);
-      break;
-
-    case V8HImode:
-      d = (uns_p
-	   ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_8HI_UNS]
-	   : rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_8HI]);
-      break;
-
-    case V4SImode:
-      d = (uns_p
-	   ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_4SI_UNS]
-	   : rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_4SI]);
-      break;
-
-    case V4SFmode:
-      d = rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_4SF];
-      break;
-
-    case V2DFmode:
-      if (!TARGET_ALLOW_DF_PERMUTE)
-	return NULL_TREE;
-
-      d = rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_2DF];
-      break;
-
-    case V2DImode:
-      if (!TARGET_ALLOW_DF_PERMUTE)
-	return NULL_TREE;
-
-      d = (uns_p
-	   ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_2DI_UNS]
-	   : rs6000_builtin_decls[ALTIVEC_BUILTIN_VPERM_2DI]);
-      break;
-
-    default:
-      return NULL_TREE;
-    }
-
-  gcc_assert (d);
-  return d;
-}
-
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int

@@ -5711,12 +5711,8 @@ misalignment value (@var{misalign}).
 Return true if vector alignment is reachable (by peeling N iterations) for the given type.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VEC_PERM (tree @var{type}, tree *@var{mask_element_type})
-Target builtin that implements vector permute.
-@end deftypefn
-
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK (tree @var{vec_type}, tree @var{mask})
-Return true if a vector created for @code{builtin_vec_perm} is valid.
+Return true if a vector created for @code{vec_perm_const} is valid.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{dest_type}, tree @var{src_type})

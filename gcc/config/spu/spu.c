@@ -218,7 +218,6 @@ static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 static bool spu_vector_alignment_reachable (const_tree, bool);
-static tree spu_builtin_vec_perm (tree, tree *);
 static enum machine_mode spu_addr_space_pointer_mode (addr_space_t);
 static enum machine_mode spu_addr_space_address_mode (addr_space_t);
 static bool spu_addr_space_subset_p (addr_space_t, addr_space_t);
@@ -448,9 +447,6 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 
 #undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
-
-#undef TARGET_VECTORIZE_BUILTIN_VEC_PERM
-#define TARGET_VECTORIZE_BUILTIN_VEC_PERM spu_builtin_vec_perm
 
 #undef TARGET_LIBGCC_CMP_RETURN_MODE
 #define TARGET_LIBGCC_CMP_RETURN_MODE spu_libgcc_cmp_return_mode
@@ -6956,49 +6952,6 @@ spu_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_packed
 
   /* All other types are naturally aligned.  */
   return true;
-}
-
-/* Implement targetm.vectorize.builtin_vec_perm.  */
-tree
-spu_builtin_vec_perm (tree type, tree *mask_element_type)
-{
-  *mask_element_type = unsigned_char_type_node;
-
-  switch (TYPE_MODE (type))
-    {
-    case V16QImode:
-      if (TYPE_UNSIGNED (type))
-        return spu_builtin_decls[SPU_SHUFFLE_0];
-      else
-        return spu_builtin_decls[SPU_SHUFFLE_1];
-
-    case V8HImode:
-      if (TYPE_UNSIGNED (type))
-        return spu_builtin_decls[SPU_SHUFFLE_2];
-      else
-        return spu_builtin_decls[SPU_SHUFFLE_3];
-
-    case V4SImode:
-      if (TYPE_UNSIGNED (type))
-        return spu_builtin_decls[SPU_SHUFFLE_4];
-      else
-        return spu_builtin_decls[SPU_SHUFFLE_5];
-
-    case V2DImode:
-      if (TYPE_UNSIGNED (type))
-        return spu_builtin_decls[SPU_SHUFFLE_6];
-      else
-        return spu_builtin_decls[SPU_SHUFFLE_7];
-
-    case V4SFmode:
-      return spu_builtin_decls[SPU_SHUFFLE_8];
-
-    case V2DFmode:
-      return spu_builtin_decls[SPU_SHUFFLE_9];
-
-    default:
-      return NULL_TREE;
-    }
 }
 
 /* Return the appropriate mode for a named address pointer.  */
