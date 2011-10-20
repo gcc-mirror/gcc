@@ -1,5 +1,10 @@
 2011-10-20  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/lto/pr46940_0.c (ASMNAME, ASMNAME2, STRING): Define.
+	(_moz_foo, EXT__foo): Use ASMNAME.
+
+2011-10-20  Joseph Myers  <joseph@codesourcery.com>
+
 	* lib/lto.exp (lto-execute): Use .exe suffix for test executable
 	names.
 
