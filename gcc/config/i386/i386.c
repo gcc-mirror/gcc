@@ -2595,7 +2595,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&bdver1_cost, 32, 24, 32, 7, 32},
   {&bdver2_cost, 32, 24, 32, 7, 32},
   {&btver1_cost, 32, 24, 32, 7, 32},
-  {&atom_cost, 16, 7, 16, 7, 16}
+  {&atom_cost, 16, 15, 16, 7, 16}
 };
 
 static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
