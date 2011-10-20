@@ -1515,8 +1515,13 @@ inline_small_functions (void)
 
 	  /* We inlined last offline copy to the body.  This might lead
 	     to callees of function having fewer call sites and thus they
-	     may need updating.  */
-	  if (callee->global.inlined_to)
+	     may need updating. 
+
+	     FIXME: the callee size could also shrink because more information
+	     is propagated from caller.  We don't track when this happen and
+	     thus we need to recompute everything all the time.  Once this is
+	     solved, "|| 1" should go away.  */
+	  if (callee->global.inlined_to || 1)
 	    update_all_callee_keys (heap, callee, updated_nodes);
 	  else
 	    update_callee_keys (heap, edge->callee, updated_nodes);
