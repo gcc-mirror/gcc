@@ -511,7 +511,7 @@ proc lto-execute { src1 sid } {
 	verbose "Testing $testcase, $option"
 
 	# There's a unique name for each executable we generate.
-	set execname "${execbase}-${count}1"
+	set execname "${execbase}-${count}1.exe"
 	incr count
 
 	file_on_host delete $execname
