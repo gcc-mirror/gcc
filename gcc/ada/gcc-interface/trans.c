@@ -8393,6 +8393,10 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
       Column_Number column = Get_Column_Number (Sloc);
       struct line_map *map = LINEMAPS_ORDINARY_MAP_AT (line_table, file - 1);
 
+      /* We can have zero if pragma Source_Reference is in effect.  */
+      if (line < 1)
+	line = 1;
+
       /* Translate the location.  */
       *locus = linemap_position_for_line_and_column (map, line, column);
     }

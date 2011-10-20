@@ -114,9 +114,13 @@ package body Back_End is
          return;
       end if;
 
+      --  The back end needs to know the maximum line number that can appear
+      --  in a Sloc, in other words the maximum logical line number.
+
       for J in 1 .. Last_Source_File loop
          File_Info_Array (J).File_Name        := Full_Debug_Name (J);
-         File_Info_Array (J).Num_Source_Lines := Num_Source_Lines (J);
+         File_Info_Array (J).Num_Source_Lines :=
+           Nat (Physical_To_Logical (Last_Source_Line (J), J));
       end loop;
 
       if Generate_SCIL then
