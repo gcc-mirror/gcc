@@ -1,4 +1,4 @@
-2011-10-15  Tom Tromey  <tromey@redhat.com> 
+2011-10-16  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
 	* gcc-interface/trans.c (gigi, Sloc_to_locus): Adjust to use the
@@ -6,7 +6,7 @@
 
 2011-10-16  Tristan Gingold  <gingold@adacore.com>
 
-	* link.c (_AIX): Add support for GNU ld.        
+	* link.c (_AIX): Add support for GNU ld.
 
 2011-10-16  Fedor Rybin  <frybin@adacore.com>
 
