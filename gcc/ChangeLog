@@ -1,3 +1,10 @@
+2011-10-20  Dehao Chen  <dehao@google.com>
+
+	* profile.c (compute_branch_probabilities): Compute and dump the
+	overlap between the static estimation and the instrumentation profile.
+	(OVERLAP_BASE): New macro.
+	(compute_frequency_overlap): New function
+
 2011-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (expand_vec_perm_vpshufb2_vpermq_even_odd): Use
