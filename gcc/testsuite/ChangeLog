@@ -1,3 +1,9 @@
+2011-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+       * gcc.dg/ipa/ipa-sra-2.c: Add dg-require-effective-target
+       non_strict_align.
+       * gcc.dg/ipa/ipa-sra-6.c: Ditto.
+
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50793
