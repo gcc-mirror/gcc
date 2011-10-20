@@ -1,3 +1,8 @@
+2011-10-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/lto.exp (lto-execute): Use .exe suffix for test executable
+	names.
+
 2011-10-20  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/50766
