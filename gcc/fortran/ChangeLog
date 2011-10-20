@@ -1,9 +1,16 @@
-2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/50514
+	* check.c (less_than_bitsize1): Check |shift| <= bit_size(i).
+	(gfc_check_ishftc):  Check |shift| <= bit_size(i) and check
+	that size is positive.
+
+2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/50524
 	* resolve.c (resolve_ref): Check return value of resolve_substring().
 
-2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* io.c (match_dt_format): Match a user-defined operator or a kind
 	type prefixed string.
