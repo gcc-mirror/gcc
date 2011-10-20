@@ -1,5 +1,9 @@
 2011-10-20  Steve Ellcey  <sje@cup.hp.com>
 
+	* gcc.dg/vect/vect-120.c: Add vect_floatint_cvt requirement.
+
+2011-10-20  Steve Ellcey  <sje@cup.hp.com>
+
 	PR testsuite/50722
 	* gcc.dg/pr49994-3.c: Skip on HP-UX.
 
