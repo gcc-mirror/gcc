@@ -1710,12 +1710,10 @@ _cpp_remaining_tokens_num_in_context (cpp_reader *pfile)
 {
   cpp_context *context = pfile->context;
   if (context->tokens_kind == TOKENS_KIND_DIRECT)
-    return ((LAST (context).token - FIRST (context).token)
-	    / sizeof (cpp_token));
+    return (LAST (context).token - FIRST (context).token);
   else if (context->tokens_kind == TOKENS_KIND_INDIRECT
 	   || context->tokens_kind == TOKENS_KIND_EXTENDED)
-    return ((LAST (context).ptoken - FIRST (context).ptoken)
-	    / sizeof (cpp_token *));
+    return (LAST (context).ptoken - FIRST (context).ptoken);
   else
       abort ();
 }
