@@ -1,3 +1,12 @@
+2011-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/50106
+	Backport from mainline.
+	2011-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	 * config/arm/arm.c (thumb_unexpanded_epilogue): Handle return
+        reg size from 1-3.
+
 2011-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (loc_descriptor): For SUBREG pass SUBREG_REG's mode as
