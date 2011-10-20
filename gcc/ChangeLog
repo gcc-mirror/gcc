@@ -1,3 +1,9 @@
+2011-10-20  Sergey Ostanevich  <sergos.gnu@gmail.com>
+
+	PR target/50572
+	* config/i386/i386.c (processor_target_table): Change Atom
+	align_loops_max_skip to 15.
+
 2011-10-20  Richard Henderson  <rth@redhat.com>
 
 	* target.def (builtin_vec_perm): Remove.
