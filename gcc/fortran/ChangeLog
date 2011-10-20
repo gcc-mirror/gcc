@@ -1,5 +1,10 @@
 2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/50524
+	* resolve.c (resolve_ref): Check return value of resolve_substring().
+
+2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* io.c (match_dt_format): Match a user-defined operator or a kind
 	type prefixed string.
 
