@@ -1,3 +1,8 @@
+2011-10-20  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/50722
+	* gcc.dg/pr49994-3.c: Skip on HP-UX.
+
 2011-10-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/lto/pr46940_0.c (ASMNAME, ASMNAME2, STRING): Define.
