@@ -1102,7 +1102,7 @@ ggc_internal_alloc_zone_stat (size_t orig_size, struct alloc_zone *zone
   struct small_page_entry *entry;
   struct alloc_chunk *chunk, **pp;
   void *result;
-  size_t size = ggc_alloced_size_for_request (orig_size);
+  size_t size = ggc_round_alloc_size (orig_size);
 
   /* Try to allocate the object from several different sources.  Each
      of these cases is responsible for setting RESULT and SIZE to

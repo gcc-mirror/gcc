@@ -10,6 +10,10 @@
 
 2011-10-20  Dodji Seketeli  <dodji@redhat.com>
 
+	* ggc-zone.c (ggc_internal_alloc_zone_stat): Rename
+	ggc_alloced_size_order_for_request into ggc_round_alloc_size like
+	it was done in ggc-page.c.
+
 	PR other/50659
 	* doc/cppopts.texi: Use @smallexample/@end smallexample in
     	documentation for -fdebug-cpp instead of @quotation/@end quotation
