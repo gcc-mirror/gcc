@@ -1,3 +1,9 @@
+2011-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+       * gcc.dg/ipa/ipa-sra-2.c: Add dg-require-effective-target
+       non_strict_align.
+       * gcc.dg/ipa/ipa-sra-6.c: Ditto.
+
 2011-10-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/i386/pr40906-1.c, gcc.target/i386/pr40906-2.c,
@@ -59,7 +65,7 @@
 2011-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/50796
-	* gcc.dg/plugin/plugindir?.c Update dg_prune_output.
+	* gcc.dg/plugin/plugindir?.c Update dg-prune-output.
 
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
