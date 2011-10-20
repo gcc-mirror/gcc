@@ -1,5 +1,12 @@
 2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/Make-lang.in (GNATLIBFLAGS, GNATLIBCFLAGS, THREAD_KIND,
+	TRACE): Reintroduce.
+	(ada/tracebak.o, ada/targext.o, ada/cio.o, ada/init.o,
+	ada/initialize.o, ada/raise.o): Reintroduce explicit compilation rules.
+
+2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lhs_or_actual_p): New predicate.
 	(unchecked_conversion_nop): Use it.
 	(gnat_to_gnu): Likewise.
