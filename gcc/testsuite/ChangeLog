@@ -1,3 +1,8 @@
+2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/source_ref1.adb: New test.
+	* gnat.dg/source_ref2.adb: Likewise.
+
 2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/13657

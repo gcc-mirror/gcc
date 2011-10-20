@@ -1,3 +1,9 @@
+2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* back_end.adb (Call_Back_End): Pass the maximum logical line number
+	instead of the maximum physical line number to gigi.
+	* gcc-interface/trans.c (Sloc_to_locus): Cope with line zero.
+
 2011-10-16  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
