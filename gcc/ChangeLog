@@ -1,3 +1,13 @@
+2011-10-19  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.c (sparc_expand_move): Use
+	can_create_pseudo_p.
+	(sparc_emit_set_const32): Likewise.
+	(sparc_emit_set_const64_longway): Likewise.
+	(sparc_emit_set_const64): Likewise.
+	(sparc_legitimize_pic_address): Likewise.
+	(memory_ok_for_ldd): Likewise.
+
 2011-10-20  Dehao Chen  <dehao@google.com>
 
 	* profile.c (compute_branch_probabilities): Compute and dump the
