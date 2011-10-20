@@ -1,3 +1,17 @@
+2011-10-19  Jan Hubicka  <jh@suse.cz>
+
+	* lib/lto.exp (lto_init): Test slib lto and no-liker-plugin path.
+	* lto/gcc-dg.exp (check_effective_target_lto): Likewise.
+	* lto/c-torture.exp: Likewise.
+	* execute/bultins/strstr-asm.c: Force fat LTO.
+	* gcc.c-torture/compile/sync-1.c: Likewise.
+	* gcc.c-torture/compile/sync-1.c: Likewise.
+	* gcc.c-torture/compile/sync-3.c: Likewise.
+	* gcc.dg/noncompile/invalid_asm.c: Likewise.
+	* gcc.dg/noncompile/920507-1.c: Likewise.
+	* gcc.dg/torture/pr36400.c: Likewise.
+	* g++.dg/torture/pr34850.C: Likewise.
+
 2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/source_ref1.adb: New test.
