@@ -12922,7 +12922,12 @@ Note that while the throughput of the sequence is higher than the throughput
 of the non-reciprocal instruction, the precision of the sequence can be
 decreased by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
 
-Note that GCC implements 1.0f/sqrtf(x) in terms of RSQRTSS (or RSQRTPS)
+Note that GCC implements @code{1.0f/sqrtf(@var{x})} in terms of RSQRTSS
+(or RSQRTPS) already with @option{-ffast-math} (or the above option
+combination), and doesn't need @option{-mrecip}.
+
+Also note that GCC emits the above sequence with additional Newton-Raphson step
+for vectorized single float division and vectorized @code{sqrtf(@var{x})}
 already with @option{-ffast-math} (or the above option combination), and
 doesn't need @option{-mrecip}.
 
