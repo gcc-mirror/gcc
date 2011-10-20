@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_shift } */
+/* { dg-require-effective-target vect_floatint_cvt } */
 
 static inline float
 i2f(int x)
