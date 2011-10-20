@@ -1665,6 +1665,23 @@ lto_1_to_1_map (void)
 						 ltrans_partitions);
 }
 
+/* Helper function for qsort; sort nodes by order.  */
+static int
+node_cmp (const void *pa, const void *pb)
+{
+  const struct cgraph_node *a = *(const struct cgraph_node * const *) pa;
+  const struct cgraph_node *b = *(const struct cgraph_node * const *) pb;
+  return b->order - a->order;
+}
+
+/* Helper function for qsort; sort nodes by order.  */
+static int
+varpool_node_cmp (const void *pa, const void *pb)
+{
+  const struct varpool_node *a = *(const struct varpool_node * const *) pa;
+  const struct varpool_node *b = *(const struct varpool_node * const *) pb;
+  return b->order - a->order;
+}
 
 /* Group cgraph nodes into equally-sized partitions.
 
@@ -1708,9 +1725,11 @@ static void
 lto_balanced_map (void)
 {
   int n_nodes = 0;
+  int n_varpool_nodes = 0, varpool_pos = 0;
   struct cgraph_node **postorder =
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   struct cgraph_node **order = XNEWVEC (struct cgraph_node *, cgraph_max_uid);
+  struct varpool_node **varpool_order = NULL;
   int i, postorder_len;
   struct cgraph_node *node;
   int total_size = 0, best_total_size = 0;
@@ -1722,6 +1741,7 @@ lto_balanced_map (void)
   int best_n_nodes = 0, best_n_varpool_nodes = 0, best_i = 0, best_cost =
     INT_MAX, best_internal = 0;
   int npartitions;
+  int current_order = -1;
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     gcc_assert (!vnode->aux);
@@ -1731,6 +1751,7 @@ lto_balanced_map (void)
      multiple partitions, this is just an estimate of real size.  This is why
      we keep partition_size updated after every partition is finalized.  */
   postorder_len = ipa_reverse_postorder (postorder);
+    
   for (i = 0; i < postorder_len; i++)
     {
       node = postorder[i];
@@ -1741,6 +1762,23 @@ lto_balanced_map (void)
 	}
     }
   free (postorder);
+
+  if (!flag_toplevel_reorder)
+    {
+      qsort (order, n_nodes, sizeof (struct cgraph_node *), node_cmp);
+
+      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+	if (partition_varpool_node_p (vnode))
+	  n_varpool_nodes++;
+      varpool_order = XNEWVEC (struct varpool_node *, n_varpool_nodes);
+
+      n_varpool_nodes = 0;
+      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+	if (partition_varpool_node_p (vnode))
+	  varpool_order[n_varpool_nodes++] = vnode;
+      qsort (varpool_order, n_varpool_nodes, sizeof (struct varpool_node *),
+	     varpool_node_cmp);
+    }
 
   /* Compute partition size and create the first partition.  */
   partition_size = total_size / PARAM_VALUE (PARAM_LTO_PARTITIONS);
@@ -1756,8 +1794,20 @@ lto_balanced_map (void)
     {
       if (order[i]->aux)
 	continue;
+
+      current_order = order[i]->order;
+
+      if (!flag_toplevel_reorder)
+	while (varpool_pos < n_varpool_nodes && varpool_order[varpool_pos]->order < current_order)
+	  {
+	    if (!varpool_order[varpool_pos]->aux)
+	      add_varpool_node_to_partition (partition, varpool_order[varpool_pos]);
+	    varpool_pos++;
+	  }
+
       add_cgraph_node_to_partition (partition, order[i]);
       total_size -= inline_summary (order[i])->size;
+	  
 
       /* Once we added a new node to the partition, we also want to add
          all referenced variables unless they was already added into some
@@ -1796,7 +1846,7 @@ lto_balanced_map (void)
 
 	      gcc_assert (node->analyzed);
 
-	      /* Compute boundary cost of callgrpah edges.  */
+	      /* Compute boundary cost of callgraph edges.  */
 	      for (edge = node->callees; edge; edge = edge->next_callee)
 		if (edge->callee->analyzed)
 		  {
@@ -1848,7 +1898,8 @@ lto_balanced_map (void)
 		vnode = ipa_ref_varpool_node (ref);
 		if (!vnode->finalized)
 		  continue;
-		if (!vnode->aux && partition_varpool_node_p (vnode))
+		if (!vnode->aux && flag_toplevel_reorder
+		    && partition_varpool_node_p (vnode))
 		  add_varpool_node_to_partition (partition, vnode);
 		vsi = varpool_node_set_find (partition->varpool_set, vnode);
 		if (!vsi_end_p (vsi)
@@ -1878,7 +1929,8 @@ lto_balanced_map (void)
 
 		vnode = ipa_ref_refering_varpool_node (ref);
 		gcc_assert (vnode->finalized);
-		if (!vnode->aux && partition_varpool_node_p (vnode))
+		if (!vnode->aux && flag_toplevel_reorder
+		    && partition_varpool_node_p (vnode))
 		  add_varpool_node_to_partition (partition, vnode);
 		vsi = varpool_node_set_find (partition->varpool_set, vnode);
 		if (!vsi_end_p (vsi)
@@ -1967,9 +2019,22 @@ lto_balanced_map (void)
     }
 
   /* Varables that are not reachable from the code go into last partition.  */
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (partition_varpool_node_p (vnode) && !vnode->aux)
-      add_varpool_node_to_partition (partition, vnode);
+  if (flag_toplevel_reorder)
+    {
+      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+        if (partition_varpool_node_p (vnode) && !vnode->aux)
+	  add_varpool_node_to_partition (partition, vnode);
+    }
+  else
+    {
+      while (varpool_pos < n_varpool_nodes)
+	{
+	  if (!varpool_order[varpool_pos]->aux)
+	    add_varpool_node_to_partition (partition, varpool_order[varpool_pos]);
+	  varpool_pos++;
+	}
+      free (varpool_order);
+    }
   free (order);
 }
 
@@ -2134,13 +2199,35 @@ static lto_file *current_lto_file;
    longest compilation being executed too late.  */
 
 static int
-cmp_partitions (const void *a, const void *b)
+cmp_partitions_size (const void *a, const void *b)
 {
   const struct ltrans_partition_def *pa
      = *(struct ltrans_partition_def *const *)a;
   const struct ltrans_partition_def *pb
      = *(struct ltrans_partition_def *const *)b;
   return pb->insns - pa->insns;
+}
+
+/* Helper for qsort; compare partitions and return one with smaller order.  */
+
+static int
+cmp_partitions_order (const void *a, const void *b)
+{
+  const struct ltrans_partition_def *pa
+     = *(struct ltrans_partition_def *const *)a;
+  const struct ltrans_partition_def *pb
+     = *(struct ltrans_partition_def *const *)b;
+  int ordera = -1, orderb = -1;
+
+  if (VEC_length (cgraph_node_ptr, pa->cgraph_set->nodes))
+    ordera = VEC_index (cgraph_node_ptr, pa->cgraph_set->nodes, 0)->order;
+  else if (VEC_length (varpool_node_ptr, pa->varpool_set->nodes))
+    ordera = VEC_index (varpool_node_ptr, pa->varpool_set->nodes, 0)->order;
+  if (VEC_length (cgraph_node_ptr, pb->cgraph_set->nodes))
+    orderb = VEC_index (cgraph_node_ptr, pb->cgraph_set->nodes, 0)->order;
+  else if (VEC_length (varpool_node_ptr, pb->varpool_set->nodes))
+    orderb = VEC_index (varpool_node_ptr, pb->varpool_set->nodes, 0)->order;
+  return orderb - ordera;
 }
 
 /* Write all output files in WPA mode and the file with the list of
@@ -2191,7 +2278,12 @@ lto_wpa_write_files (void)
   blen = strlen (temp_filename);
 
   n_sets = VEC_length (ltrans_partition, ltrans_partitions);
-  VEC_qsort (ltrans_partition, ltrans_partitions, cmp_partitions);
+
+  /* Sort partitions by size so small ones are compiled last.
+     FIXME: Even when not reordering we may want to output one list for parallel make
+     and other for final link command.  */
+  VEC_qsort (ltrans_partition, ltrans_partitions,
+	    flag_toplevel_reorder ? cmp_partitions_size : cmp_partitions_order);
   for (i = 0; i < n_sets; i++)
     {
       size_t len;
