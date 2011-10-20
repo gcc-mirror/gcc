@@ -1,3 +1,4 @@
+/* { dg-options "-ffat-lto-objects" } */
 int *
 x(void)
 {
