@@ -1,3 +1,8 @@
+2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* io.c (match_dt_format): Match a user-defined operator or a kind
+	type prefixed string.
+
 2011-10-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47023
