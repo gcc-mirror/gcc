@@ -1,3 +1,8 @@
+2011-10-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/tree-prof/val-prof-7.c: Declare bzero instead of
+	including <strings.h>.
+
 2011-10-19  Jan Hubicka  <jh@suse.cz>
 
 	* lib/lto.exp (lto_init): Test slib lto and no-liker-plugin path.
