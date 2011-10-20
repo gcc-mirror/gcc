@@ -1,5 +1,10 @@
 2011-10-19  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (inline_small_functions): Always update all calles after
+	inlining.
+
+2011-10-19  Jan Hubicka  <jh@suse.cz>
+
 	PR bootstrap/50709
 	* ipa-inline.c (inline_small_functions): Fix checking code to not make
 	effect on fibheap stability.
