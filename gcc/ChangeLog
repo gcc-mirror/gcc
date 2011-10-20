@@ -1,3 +1,13 @@
+2011-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47989
+	* config/i386/i386.h (RECIP_MASK_DEFAULT): New define.
+	* config/i386/i386.op (recip_mask): Initialize with RECIP_MASK_DEFAULT.
+	* doc/invoke.texi (ix86 Options, -mrecip): Document that GCC
+	implements vectorized single float division and vectorized sqrtf(x)
+	with reciprocal sequence with additional Newton-Raphson step with
+	-ffast-math.
+
 2011-10-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR other/50659
@@ -33,8 +43,7 @@
 
 2011-10-19  David S. Miller  <davem@davemloft.net>
 
-	* config/sparc/sparc.c (sparc_expand_move): Use
-	can_create_pseudo_p.
+	* config/sparc/sparc.c (sparc_expand_move): Use can_create_pseudo_p.
 	(sparc_emit_set_const32): Likewise.
 	(sparc_emit_set_const64_longway): Likewise.
 	(sparc_emit_set_const64): Likewise.
@@ -279,8 +288,8 @@
 
 2011-10-19  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphunit.c (handle_alias_pairs): Also handle wekref with destination
-	declared.
+	* cgraphunit.c (handle_alias_pairs): Also handle wekref with
+	destination declared.
 	(output_weakrefs): New function.
 	* varpool.c (varpool_create_variable_alias): Handle external aliases.
 
@@ -319,7 +328,6 @@
 2011-10-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR tree-optimization/50717
-
 	* tree-ssa-math-opts.c (is_widening_mult_p): Remove the 'type'
 	parameter.  Calculate 'type' from stmt.
 	(convert_mult_to_widen): Update call the is_widening_mult_p.
@@ -668,8 +676,7 @@
 
 2011-10-17  Sergio Durigan Junior  <sergiodj@redhat.com>
 
-	* configure.ac: Display `yes' if the SystemTap header has been
-	found.
+	* configure.ac: Display `yes' if the SystemTap header has been found.
 	* configure: Regenerate.
 
 2011-10-08  Andi Kleen  <ak@linux.intel.com>
@@ -685,8 +692,7 @@
 2011-10-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50729
-	* tree-vrp.c (extract_range_from_unary_expr_1): Remove
-	redundant test.
+	* tree-vrp.c (extract_range_from_unary_expr_1): Remove redundant test.
 	(simplify_conversion_using_ranges): Properly test the
 	intermediate result.
 
@@ -709,8 +715,7 @@
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
-	* input.c (ONE_K, ONE_M, SCALE, STAT_LABEL, FORMAT_AMOUNT): New
-	macros.
+	* input.c (ONE_K, ONE_M, SCALE, STAT_LABEL, FORMAT_AMOUNT): New macros.
 	(num_expanded_macros_counter, num_macro_tokens_counter): Declare
 	new counters.
 	(dump_line_table_statistics): Define new function.
@@ -721,8 +726,7 @@
 	    Dodji Seketeli  <dodji@redhat.com>
 
 	* doc/cppopts.texi: Document -fdebug-cpp.
-	* doc/invoke.texi: Add -fdebug-cpp to the list of preprocessor
-	options.
+	* doc/invoke.texi: Add -fdebug-cpp to the list of preprocessor options.
 
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
@@ -759,8 +763,7 @@
 	(LOCATION_COLUMN): New accessor
 	(in_system_header_at): Use linemap_location_in_system_header_p.
 	* diagnostic.c (diagnostic_report_current_module): Adjust to avoid
-	touching the internals of struct line_map.  Use the public API.
-	instead.
+	touching the internals of struct line_map.  Use the public API instead.
 	(diagnostic_report_diagnostic): Don't use relational operator '<'
 	on virtual locations.  Use linemap_location_before_p instead.
 	* input.c (expand_location): Adjust to expand to the tokens'
@@ -1280,9 +1283,8 @@
 2011-10-12  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* function.c (prepare_shrink_wrap, bb_active_p): New function.
-	(thread_prologue_and_epilogue_insns): Use bb_active_p.
-	Call prepare_shrink_wrap, then recompute bb_active_p for the
-	last block.
+	(thread_prologue_and_epilogue_insns): Use bb_active_p.  Call
+	prepare_shrink_wrap, then recompute bb_active_p for the last block.
 
 2011-10-12  Joseph Myers  <joseph@codesourcery.com>
 
@@ -1526,8 +1528,8 @@
 
 2011-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
-	* config/avr/avr.c (avr_option_override): Set
-	flag_omit_frame_pointer to 0 if frame pointer is needed for unwinding.
+	* config/avr/avr.c (avr_option_override): Set flag_omit_frame_pointer
+	to 0 if frame pointer is needed for unwinding.
 
 2011-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
