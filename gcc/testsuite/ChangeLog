@@ -1,5 +1,10 @@
 2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/50524
+	* gfortran.dg/substring_integer_index.f90: New test.
+
+2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* gfortran.dg/format_string.f: New test.
 
 
