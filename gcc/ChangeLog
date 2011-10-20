@@ -1,3 +1,12 @@
+2011-10-20  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/50766
+	* config/i386/i386.md (bmi_bextr_<mode>): Update register/
+	memory operand order.
+	(bmi2_bzhi_<mode>3): Ditto.
+	(bmi2_pdep_<mode>3): Ditto.
+	(bmi2_pext_<mode>3): Ditto.
+
 2011-10-20  Richard Henderson  <rth@redhat.com>
 
 	* target.def (vec_perm_const_ok): Rename from builtin_vec_perm_ok.
