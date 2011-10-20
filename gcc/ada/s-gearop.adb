@@ -29,6 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Numerics; use Ada.Numerics;
+
 package body System.Generic_Array_Operations is
 
    --  The local function Check_Unit_Last computes the index
@@ -109,7 +111,8 @@ package body System.Generic_Array_Operations is
          Target : Integer;
          Source : Integer;
          Factor : Scalar);
-      --  Needs comments ???
+      --  Elementary row operation that subtracts Factor * M (Source, <>) from
+      --  M (Target, <>)
 
       procedure Sub_Row
         (M      : in out Matrix;
@@ -158,27 +161,31 @@ package body System.Generic_Array_Operations is
       pragma Assert (M'First (1) = N'First (1) and then
                      M'Last  (1) = N'Last (1));
 
-      function "abs" (X : Scalar) return Scalar is
-        (if X < Zero then Zero - X else X);
+      --  The following are variations of the elementary matrix row operations:
+      --  row switching, row multiplication and row addition. Because in this
+      --  algorithm the addition factor is always a negated value, we chose to
+      --  use  row subtraction instead. Similarly, instead of multiplying by
+      --  a reciprocal, we divide.
 
       procedure Sub_Row
         (M : in out Matrix;
          Target : Integer;
          Source : Integer;
          Factor : Scalar);
-      --  Needs commenting ???
+      --  Subtrace Factor * M (Source, <>) from M (Target, <>)
 
       procedure Divide_Row
         (M, N  : in out Matrix;
          Row   : Integer;
          Scale : Scalar);
-      --  Needs commenting ???
+      --  Divide M (Row) and N (Row) by Scale, and update Det
 
       procedure Switch_Row
         (M, N  : in out Matrix;
          Row_1 : Integer;
          Row_2 : Integer);
-      --  Needs commenting ???
+      --  Exchange M (Row_1) and N (Row_1) with M (Row_2) and N (Row_2),
+      --  negating Det in the process.
 
       -------------
       -- Sub_Row --
@@ -254,8 +261,7 @@ package body System.Generic_Array_Operations is
          end if;
       end Switch_Row;
 
-      I : Integer := M'First (1);
-      --  Avoid use of I ???
+      Row : Integer := M'First (1);
 
    --  Start of processing for Forward_Eliminate
 
@@ -264,35 +270,35 @@ package body System.Generic_Array_Operations is
 
       for J in M'Range (2) loop
          declare
-            Max_I   : Integer := I;
-            Max_Abs : Scalar := Zero;
+            Max_Row : Integer := Row;
+            Max_Abs : Real'Base := 0.0;
 
          begin
-            --  Find best pivot in column J, starting in row I
+            --  Find best pivot in column J, starting in row Row
 
-            for K in I .. M'Last (1) loop
+            for K in Row .. M'Last (1) loop
                declare
-                  New_Abs : constant Scalar := abs M (K, J);
+                  New_Abs : constant Real'Base := abs M (K, J);
                begin
                   if Max_Abs < New_Abs then
                      Max_Abs := New_Abs;
-                     Max_I := K;
+                     Max_Row := K;
                   end if;
                end;
             end loop;
 
-            if Zero < Max_Abs then
-               Switch_Row (M, N, I, Max_I);
-               Divide_Row (M, N, I, M (I, J));
+            if Max_Abs > 0.0 then
+               Switch_Row (M, N, Row, Max_Row);
+               Divide_Row (M, N, Row, M (Row, J));
 
-               for U in I + 1 .. M'Last (1) loop
-                  Sub_Row (N, U, I, M (U, J));
-                  Sub_Row (M, U, I, M (U, J));
+               for U in Row + 1 .. M'Last (1) loop
+                  Sub_Row (N, U, Row, M (U, J));
+                  Sub_Row (M, U, Row, M (U, J));
                end loop;
 
-               exit when I >= M'Last (1);
+               exit when Row >= M'Last (1);
 
-               I := I + 1;
+               Row := Row + 1;
 
             else
                Det := Zero; --  Zero, but we don't have literals
@@ -329,9 +335,14 @@ package body System.Generic_Array_Operations is
    -- L2_Norm --
    -------------
 
-   function L2_Norm (X : Vector) return Scalar is
+   function L2_Norm (X : X_Vector) return Result_Real'Base is
+      Sum    : Result_Real'Base := 0.0;
    begin
-      return Sqrt (Inner_Product (X, X));
+      for J in X'Range loop
+         Sum := Sum + Result_Real'Base (abs X (J))**2;
+      end loop;
+
+      return Sqrt (Sum);
    end L2_Norm;
 
    ----------------------------------
@@ -555,6 +566,56 @@ package body System.Generic_Array_Operations is
       return R;
    end Scalar_Vector_Elementwise_Operation;
 
+   ----------
+   -- Sqrt --
+   ----------
+
+   function Sqrt (X : Real'Base) return Real'Base is
+      Root, Next : Real'Base;
+
+   begin
+      --  Be defensive: any comparisons with NaN values will yield False.
+
+      if not (X > 0.0) then
+         if X = 0.0 then
+            return X;
+         else
+            raise Argument_Error;
+         end if;
+
+      elsif X > Real'Base'Last then
+         --  X is infinity, which is its own square root
+
+         return X;
+      end if;
+
+      --  Compute an initial estimate based on:
+
+      --     X = M * R**E and Sqrt (X) = Sqrt (M) * R**(E / 2.0),
+
+      --  where M is the mantissa, R is the radix and E the exponent.
+
+      --  By ignoring the mantissa and ignoring the case of an odd
+      --  exponent, we get a final error that is at most R. In other words,
+      --  the result has about a single bit precision.
+
+      Root := Real'Base (Real'Machine_Radix) ** (Real'Exponent (X) / 2);
+
+      --  Because of the poor initial estimate, use the Babylonian method of
+      --  computing the square root, as it is stable for all inputs. Every step
+      --  will roughly double the precision of the result. Just a few steps
+      --  suffice in most cases. Eight iterations should give about 2**8 bits
+      --  of precision.
+
+      for J in 1 .. 8 loop
+         Next := (Root + X / Root) / 2.0;
+         exit when Root = Next;
+         Root := Next;
+      end loop;
+
+      return Root;
+   end Sqrt;
+
    ---------------------------
    -- Matrix_Matrix_Product --
    ---------------------------
@@ -589,6 +650,75 @@ package body System.Generic_Array_Operations is
 
       return R;
    end  Matrix_Matrix_Product;
+
+   ----------------------------
+   -- Matrix_Vector_Solution --
+   ----------------------------
+
+   function Matrix_Vector_Solution (A : Matrix; X : Vector) return Vector is
+      N   : constant Natural := A'Length (1);
+      MA  : Matrix := A;
+      MX  : Matrix (A'Range (1), 1 .. 1);
+      R   : Vector (A'Range (2));
+      Det : Scalar;
+
+   begin
+      if A'Length (2) /= N then
+         raise Constraint_Error with "matrix is not square";
+      end if;
+
+      if X'Length /= N then
+         raise Constraint_Error with "incompatible vector length";
+      end if;
+
+      for J in 0 .. MX'Length (1) - 1 loop
+         MX (MX'First (1) + J, 1) := X (X'First + J);
+      end loop;
+
+      Forward_Eliminate (MA, MX, Det);
+      Back_Substitute (MA, MX);
+
+      for J in 0 .. R'Length - 1 loop
+         R (R'First + J) := MX (MX'First (1) + J, 1);
+      end loop;
+
+      return R;
+   end Matrix_Vector_Solution;
+
+   ----------------------------
+   -- Matrix_Matrix_Solution --
+   ----------------------------
+
+   function Matrix_Matrix_Solution (A, X : Matrix) return Matrix is
+      N  : constant Natural := A'Length (1);
+      MA : Matrix (A'Range (2), A'Range (2));
+      MB : Matrix (A'Range (2), X'Range (2));
+      Det : Scalar;
+
+   begin
+      if A'Length (2) /= N then
+         raise Constraint_Error with "matrix is not square";
+      end if;
+
+      if X'Length (1) /= N then
+         raise Constraint_Error with "matrices have unequal number of rows";
+      end if;
+
+      for J in 0 .. A'Length (1) - 1 loop
+         for K in MA'Range (2) loop
+            MA (MA'First (1) + J, K) := A (A'First (1) + J, K);
+         end loop;
+
+         for K in MB'Range (2) loop
+            MB (MB'First (1) + J, K) := X (X'First (1) + J, K);
+         end loop;
+      end loop;
+
+      Forward_Eliminate (MA, MB, Det);
+      Back_Substitute (MA, MB);
+
+      return MB;
+   end Matrix_Matrix_Solution;
 
    ---------------------------
    -- Matrix_Vector_Product --

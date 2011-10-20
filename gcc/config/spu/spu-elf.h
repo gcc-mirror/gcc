@@ -35,10 +35,6 @@
 #undef STANDARD_STARTFILE_PREFIX_2
 #define STANDARD_STARTFILE_PREFIX_2 ""
 
-/* Use "/include" instead of "/usr/include".  */
-#undef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/include"
-
 /* We do not provide any "/usr/local/include" directory on SPU.  */
 #undef LOCAL_INCLUDE_DIR
 
@@ -77,4 +73,3 @@
       mcache-size=16 :-lgcc_cache16k; \
       mcache-size=8  :-lgcc_cache8k; \
                      :-lgcc_cache64k}"
-

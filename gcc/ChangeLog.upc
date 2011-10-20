@@ -1,3 +1,8 @@
+2011-10-19  Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 180233 into gupc branch.
+        Incorporates fix for PR debug/49310 (var tracking).
+
 2011-10-11  Nenad Vukicevic <nenad@intrepid.com>
 
 	* testsuite/lib/upc-dg.exp: Limit number of torture runs to

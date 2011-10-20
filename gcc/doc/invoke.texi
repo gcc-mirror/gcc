@@ -170,7 +170,7 @@ in the following sections.
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
--aux-info @var{filename} @gol
+-aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding -fopenmp -fms-extensions -fplan9-extensions @gol
 -trigraphs  -no-integrated-cpp  -traditional  -traditional-cpp @gol
@@ -271,7 +271,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
--Wvariadic-macros -Wvla -Wvolatile-register-var  -Wwrite-strings}
+-Wvariadic-macros -Wvector-operation-performance -Wvla 
+-Wvolatile-register-var  -Wwrite-strings}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -396,10 +397,10 @@ Objective-C and Objective-C++ Dialects}.
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
--fsignaling-nans -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
--fsplit-wide-types -fstack-protector -fstack-protector-all @gol
--fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer @gol
--ftree-bit-ccp @gol
+-fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
+-fsplit-ivs-in-unroller -fsplit-wide-types -fstack-protector @gol
+-fstack-protector-all -fstrict-aliasing -fstrict-overflow @gol
+-fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
 -ftree-forwprop -ftree-fre -ftree-loop-if-convert @gol
@@ -428,9 +429,9 @@ Objective-C and Objective-C++ Dialects}.
 -iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
 -imultilib @var{dir} -isysroot @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
--P  -fworking-directory  -remap @gol
--trigraphs  -undef  -U@var{macro}  -Wp,@var{option} @gol
--Xpreprocessor @var{option}}
+-P  -fdebug-cpp -ftrack-macro-expansion -fworking-directory @gol
+-remap -trigraphs  -undef  -U@var{macro}  @gol
+-Wp,@var{option} -Xpreprocessor @var{option}}
 
 @item Assembler Option
 @xref{Assembler Options,,Passing Options to the Assembler}.
@@ -486,7 +487,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mno-interrupts @gol
--mcall-prologues  -mtiny-stack  -mint8}
+-mcall-prologues  -mtiny-stack  -mint8  -mstrict-X}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -605,7 +606,9 @@ Objective-C and Objective-C++ Dialects}.
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
 -mincoming-stack-boundary=@var{num} @gol
--mcld -mcx16 -msahf -mmovbe -mcrc32 -mrecip -mvzeroupper @gol
+-mcld -mcx16 -msahf -mmovbe -mcrc32 @gol
+-mrecip -mrecip=@var{opt} @gol
+-mvzeroupper @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -mavx2 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
@@ -828,6 +831,7 @@ See RS/6000 and PowerPC Options.
 -mrelax@gol
 -mmax-constant-size=@gol
 -mint-register=@gol
+-mpid@gol
 -msave-acc-in-interrupts}
 
 @emph{S/390 and zSeries Options}
@@ -881,7 +885,8 @@ See RS/6000 and PowerPC Options.
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
--mfmaf  -mno-fmaf}
+-mfmaf  -mno-fmaf  -mpopc  -mno-popc @gol
+-mfix-at697f}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -1618,6 +1623,13 @@ definition (@samp{C} or @samp{F}, respectively, in the following
 character).  In the case of function definitions, a K&R-style list of
 arguments followed by their declarations is also provided, inside
 comments, after the declaration.
+
+@item -fallow-parameterless-variadic-functions
+Accept variadic functions without named parameters.
+
+Although it is possible to define such a function, this is not very
+useful as it is not possible to read the arguments.  This is only
+supported for C as this construct is allowed by C++.
 
 @item -fno-asm
 @opindex fno-asm
@@ -3178,7 +3190,7 @@ in the case of @code{scanf} formats, this option will suppress the
 warning if the unused arguments are all pointers, since the Single
 Unix Specification says that such unused arguments are allowed.
 
-@item -Wno-format-zero-length @r{(C and Objective-C only)}
+@item -Wno-format-zero-length
 @opindex Wno-format-zero-length
 @opindex Wformat-zero-length
 If @option{-Wformat} is specified, do not warn about zero-length formats.
@@ -3211,7 +3223,7 @@ Enable @option{-Wformat} plus format checks not included in
 @option{-Wformat}.  Currently equivalent to @samp{-Wformat
 -Wformat-nonliteral -Wformat-security -Wformat-y2k}.
 
-@item -Wnonnull @r{(C and Objective-C only)}
+@item -Wnonnull
 @opindex Wnonnull
 @opindex Wno-nonnull
 Warn about passing a null pointer for arguments marked as
@@ -3990,19 +4002,19 @@ The message is in keeping with the output of @option{-fstack-usage}.
 If the stack usage is fully static but exceeds the specified amount, it's:
 
 @smallexample
-  warning: stack usage is 1120 bytes
+  warning: stack usage is 1120 bytes
 @end smallexample
 @item
 If the stack usage is (partly) dynamic but bounded, it's:
 
 @smallexample
-  warning: stack usage might be 1648 bytes
+  warning: stack usage might be 1648 bytes
 @end smallexample
 @item
 If the stack usage is (partly) dynamic and not bounded, it's:
 
 @smallexample
-  warning: stack usage might be unbounded
+  warning: stack usage might be unbounded
 @end smallexample
 @end itemize
 
@@ -4531,6 +4543,18 @@ modes.  To inhibit the warning messages, use @option{-Wno-long-long}.
 Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
 alternate syntax when in pedantic ISO C99 mode.  This is default.
 To inhibit the warning messages, use @option{-Wno-variadic-macros}.
+
+@item -Wvector-operation-performance
+@opindex Wvector-operation-performance
+@opindex Wno-vector-operation-performance
+Warn if vector operation is not implemented via SIMD capabilities of the
+architecture.  Mainly useful for the performance tuning.
+Vector operation can be implemented @code{piecewise} which means that the
+scalar operation is performed on every vector element; 
+@code{in parallel} which means that the vector operation is implemented
+using scalars of wider type, which normally is more performance efficient;
+and @code{as a single scalar} which means that vector fits into a
+scalar type.
 
 @item -Wvla
 @opindex Wvla
@@ -6880,6 +6904,12 @@ This option has no effect until one of @option{-fselective-scheduling} or
 When pipelining loops during selective scheduling, also pipeline outer loops.
 This option has no effect until @option{-fsel-sched-pipelining} is turned on.
 
+@item -fshrink-wrap
+@opindex fshrink-wrap
+Emit function prologues only before parts of the function that need it,
+rather than at the top of the function.  This flag is enabled by default at
+@option{-O} and higher.
+
 @item -fcaller-saves
 @opindex fcaller-saves
 Enable values to be allocated in registers that will be clobbered by
@@ -9051,8 +9081,7 @@ compile time for more complete debug information.  If this is set too
 low, value expressions that are available and could be represented in
 debug information may end up not being used; setting this higher may
 enable the compiler to find more complex debug expressions, but compile
-time may grow exponentially, and even then, it may fail to find more
-usable expressions.  The default is 10.
+time and memory use may grow.  The default is 12.
 
 @item min-nondebug-insn-uid
 Use uids starting at this parameter for nondebug insns.  The range below
@@ -10367,9 +10396,15 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
+
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
 See @option{-mtune} for more information.
+
+@option{-mcpu=native} causes the compiler to auto-detect the CPU
+of the build computer.  At present, this feature is only supported on
+Linux, and not all architectures are recognised.  If the auto-detect is
+unsuccessful the option has no effect.
 
 @item -mtune=@var{name}
 @opindex mtune
@@ -10389,6 +10424,11 @@ processors, balancing between optimizations that benefit some CPUs in the
 range, and avoiding performance pitfalls of other CPUs.  The effects of
 this option may change in future GCC versions as CPU models come and go.
 
+@option{-mtune=native} causes the compiler to auto-detect the CPU
+of the build computer.  At present, this feature is only supported on
+Linux, and not all architectures are recognised.  If the auto-detect is
+unsuccessful the option has no effect.
+
 @item -march=@var{name}
 @opindex march
 This specifies the name of the target ARM architecture.  GCC uses this
@@ -10401,6 +10441,11 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+
+@option{-march=native} causes the compiler to auto-detect the architecture
+of the build computer.  At present, this feature is only supported on
+Linux, and not all architectures are recognised.  If the auto-detect is
+unsuccessful the option has no effect.
 
 @item -mfpu=@var{name}
 @itemx -mfpe=@var{number}
@@ -10659,6 +10704,23 @@ char will be 1 byte, an int will be 1 byte, a long will be 2 bytes
 and long long will be 4 bytes.  Please note that this option does not
 comply to the C standards, but it will provide you with smaller code
 size.
+
+@item -mstrict-X
+@opindex mstrict-X
+Use register @code{X} in a way proposed by the hardware.  This means
+that @code{X} will only be used in indirect, post-increment or
+pre-decrement addressing.
+
+Without this option, the @code{X} register may be used in the same way
+as @code{Y} or @code{Z} which then is emulated by additional
+instructions.  
+For example, loading a value with @code{X+const} addressing with a
+small @code{const <= 63} to a register @var{Rn} will be printed as
+@example
+adiw r26, const
+ld   @var{Rn}, X
+sbiw r26, const
+@end example
 @end table
 
 @node Blackfin Options
@@ -12863,6 +12925,22 @@ decreased by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
 Note that GCC implements 1.0f/sqrtf(x) in terms of RSQRTSS (or RSQRTPS)
 already with @option{-ffast-math} (or the above option combination), and
 doesn't need @option{-mrecip}.
+
+@item -mrecip=@var{opt}
+@opindex mrecip=opt
+This option allows to control which reciprocal estimate instructions
+may be used.  @var{opt} is a comma separated list of options, that may
+be preceded by a @code{!} to invert the option:
+@code{all}: enable all estimate instructions,
+@code{default}: enable the default instructions, equivalent to @option{-mrecip},
+@code{none}: disable all estimate instructions, equivalent to @option{-mno-recip},
+@code{div}: enable the approximation for scalar division,
+@code{vec-div}: enable the approximation for vectorized division,
+@code{sqrt}: enable the approximation for scalar square root,
+@code{vec-sqrt}: enable the approximation for vectorized square root.
+
+So for example, @option{-mrecip=all,!sqrt} would enable
+all of the reciprocal approximations, except for square root.
 
 @item -mveclibabi=@var{type}
 @opindex mveclibabi
@@ -16570,10 +16648,11 @@ which can be placed into the small data area.  Using the small data
 area can lead to smaller and faster code, but the size of area is
 limited and it is up to the programmer to ensure that the area does
 not overflow.  Also when the small data area is used one of the RX's
-registers (@code{r13}) is reserved for use pointing to this area, so
-it is no longer available for use by the compiler.  This could result
-in slower and/or larger code if variables which once could have been
-held in @code{r13} are now pushed onto the stack.
+registers (usually @code{r13}) is reserved for use pointing to this
+area, so it is no longer available for use by the compiler.  This
+could result in slower and/or larger code if variables which once
+could have been held in the reserved register are now pushed onto the
+stack.
 
 Note, common variables (variables which have not been initialised) and
 constants are not placed into the small data area as they are assigned
@@ -16582,9 +16661,10 @@ to other sections in the output executable.
 The default value is zero, which disables this feature.  Note, this
 feature is not enabled by default with higher optimization levels
 (@option{-O2} etc) because of the potentially detrimental effects of
-reserving register @code{r13}.  It is up to the programmer to
-experiment and discover whether this feature is of benefit to their
-program.
+reserving a register.  It is up to the programmer to experiment and
+discover whether this feature is of benefit to their program.  See the
+description of the @option{-mpid} option for a description of how the
+actual register to hold the small data area pointer is chosen.
 
 @item -msim
 @itemx -mno-sim
@@ -16638,6 +16718,35 @@ accumulator register.  This is only necessary if normal code might use
 the accumulator register, for example because it performs 64-bit
 multiplications.  The default is to ignore the accumulator as this
 makes the interrupt handlers faster.
+
+@item -mpid
+@itemx -mno-pid
+@opindex mpid
+@opindex mno-pid
+Enables the generation of position independent data.  When enabled any
+access to constant data will done via an offset from a base address
+held in a register.  This allows the location of constant data to be
+determined at run-time without requiring the executable to be
+relocated, which is a benefit to embedded applications with tight
+memory constraints.  Data that can be modified is not affected by this
+option.
+
+Note, using this feature reserves a register, usually @code{r13}, for
+the constant data base address.  This can result in slower and/or
+larger code, especially in complicated functions.
+
+The actual register chosen to hold the constant data base address
+depends upon whether the @option{-msmall-data-limit} and/or the
+@option{-mint-register} command line options are enabled.  Starting
+with register @code{r13} and proceeding downwards, registers are
+allocated first to satisfy the requirements of @option{-mint-register},
+then @option{-mpid} and finally @option{-msmall-data-limit}.  Thus it
+is possible for the small data area register to be @code{r8} if both
+@option{-mint-register=4} and @option{-mpid} are specified on the
+command line.
+
+By default this feature is not enabled.  The default can be restored
+via the @option{-mno-pid} command line option.
 
 @end table
 
@@ -17456,6 +17565,15 @@ default is @option{-mvis3} when targetting a cpu that supports such
 instructions, such as niagara-3 and later.  Setting @option{-mvis3}
 also sets @option{-mvis2} and @option{-mvis}.
 
+@item -mpopc
+@itemx -mno-popc
+@opindex mpopc
+@opindex mno-popc
+With @option{-mpopc}, GCC generates code that takes advantage of the UltraSPARC
+population count instruction.  The default is @option{-mpopc}
+when targetting a cpu that supports such instructions, such as Niagara-2 and
+later.
+
 @item -mfmaf
 @itemx -mno-fmaf
 @opindex mfmaf
@@ -17464,6 +17582,11 @@ With @option{-mfmaf}, GCC generates code that takes advantage of the UltraSPARC
 Fused Multiply-Add Floating-point extensions.  The default is @option{-mfmaf}
 when targetting a cpu that supports such instructions, such as Niagara-3 and
 later.
+
+@item -mfix-at697f
+@opindex mfix-at697f
+Enable the documented workaround for the single erratum of the Atmel AT697F
+processor (which corresponds to erratum #13 of the AT697E processor).
 @end table
 
 These @samp{-m} options are supported in addition to the above

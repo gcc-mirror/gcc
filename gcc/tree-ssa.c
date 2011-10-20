@@ -1283,12 +1283,6 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	  != TYPE_ADDR_SPACE (TREE_TYPE (inner_type)))
 	return false;
 
-      /* Do not lose casts to restrict qualified pointers.  */
-      if ((TYPE_RESTRICT (outer_type)
-	   != TYPE_RESTRICT (inner_type))
-	  && TYPE_RESTRICT (outer_type))
-	return false;
-
       /* If the outer type is (void *), the conversion is not necessary.  */
       if (VOID_TYPE_P (TREE_TYPE (outer_type)))
 	return true;
@@ -1982,6 +1976,8 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs)
 	 a non-register.  Otherwise we are confused and forget to
 	 add virtual operands for it.  */
       && (!is_gimple_reg_type (TREE_TYPE (var))
+	  || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE
+	  || TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
 	  || !bitmap_bit_p (not_reg_needs, DECL_UID (var))))
     {
       TREE_ADDRESSABLE (var) = 0;

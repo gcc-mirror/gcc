@@ -467,7 +467,7 @@ find_end_label (rtx kind)
 	      /* The return we make may have delay slots too.  */
 	      rtx insn = gen_return ();
 	      insn = emit_jump_insn (insn);
-	      JUMP_LABEL (insn) = ret_rtx;
+	      set_return_jump_label (insn);
 	      emit_barrier ();
 	      if (num_delay_slots (insn) > 0)
 		obstack_ptr_grow (&unfilled_slots_obstack, insn);

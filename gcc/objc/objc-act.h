@@ -252,12 +252,6 @@ struct GTY(()) hashed_entry {
 
 #define SIZEHASHTABLE		257
 
-extern GTY ((length ("SIZEHASHTABLE"))) hash *nst_method_hash_list;
-extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_method_hash_list;
-
-extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_name_hash_list;
-extern GTY ((length ("SIZEHASHTABLE"))) hash *als_name_hash_list;
-
 /* An array of all the local variables in the current function that
    need to be marked as volatile.  */
 extern GTY(()) VEC(tree,gc) *local_variables_to_volatilize;

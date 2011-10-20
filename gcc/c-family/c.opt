@@ -399,7 +399,7 @@ C UPC ObjC C++ ObjC++ Var(warn_format_y2k) Warning
 Warn about strftime formats yielding 2-digit years
 
 Wformat-zero-length
-C UPC ObjC Var(warn_format_zero_length) Warning
+C UPC ObjC C++ ObjC++ Var(warn_format_zero_length) Warning
 Warn about zero-length formats
 
 Wformat=
@@ -493,7 +493,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about use of multi-character character constants
 
 Wnarrowing
-C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(1)
+C UPC Objc C++ ObjC++ Warning Var(warn_narrowing) Init(1)
 -Wno-narrowing	  In C++0x mode, ignore ill-formed narrowing conversions within { }
 
 Wnested-externs
@@ -513,7 +513,7 @@ C++ ObjC++ Var(warn_nonvdtor) Warning
 Warn about non-virtual destructors
 
 Wnonnull
-C UPC ObjC Var(warn_nonnull) Warning
+C UPC ObjC C++ ObjC++ Var(warn_nonnull) Warning
 Warn about NULL being passed to argument slots marked as requiring non-NULL
 
 Wnormalized=
@@ -657,7 +657,7 @@ C UPC ObjC Var(warn_unsuffixed_float_constants) Warning
 Warn about unsuffixed float constants
 
 Wunused-local-typedefs
-C ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning
+C UPC Objc C++ ObjC++ Var(warn_unused_local_typedefs) Warning
 Warn about
 
 Wunused-macros
@@ -707,6 +707,10 @@ Enforce class member access control semantics
 fall-virtual
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
+fallow-parameterless-variadic-functions
+C UPC Objc Var(flag_allow_parameterless_variadic_functions)
+Allow variadic functions without named parameter
+
 falt-external-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 No longer supported
@@ -745,6 +749,10 @@ ObjC ObjC++ Joined MissingArgError(no class name specified with %qs)
 fconstexpr-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
 -fconstexpr-depth=<number>	Specify maximum constexpr recursion depth
+
+fdebug-cpp
+C UPC ObjC C++ ObjC++
+Emit debug annotations during preprocessing
 
 fdeduce-init-list
 C++ ObjC++ Var(flag_deduce_init_list) Init(1)
@@ -947,6 +955,14 @@ Enable Plan 9 language extensions
 fpreprocessed
 C UPC ObjC C++ ObjC++
 Treat the input file as already preprocessed
+
+ftrack-macro-expansion
+C UPC ObjC C++ ObjC++ JoinedOrMissing RejectNegative UInteger
+; converted into ftrack-macro-expansion=
+
+ftrack-macro-expansion=
+C UPC ObjC C++ ObjC++ JoinedOrMissing RejectNegative UInteger
+-ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages
 
 fpretty-templates
 C++ ObjC++ Var(flag_pretty_templates) Init(1)

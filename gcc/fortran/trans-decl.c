@@ -1179,7 +1179,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     {
       gfc_component *c = CLASS_DATA (sym);
       if (!c->ts.u.derived->backend_decl)
-	gfc_find_derived_vtab (c->ts.u.derived);
+	{
+	  gfc_find_derived_vtab (c->ts.u.derived);
+	  gfc_get_derived_type (sym->ts.u.derived);
+	}
     }
 
   /* All deferred character length procedures need to retain the backend
@@ -4986,7 +4989,7 @@ create_main_function (tree fndecl)
     { 
       /* Per F2008, 8.5.1 END of the main program implies a
 	 SYNC MEMORY.  */ 
-      tmp = built_in_decls [BUILT_IN_SYNC_SYNCHRONIZE];
+      tmp = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
       tmp = build_call_expr_loc (input_location, tmp, 0);
       gfc_add_expr_to_block (&body, tmp);
 

@@ -530,7 +530,7 @@ update_alias_info_with_stack_vars (void)
 
       /* Make the SSA name point to all partition members.  */
       pi = get_ptr_info (name);
-      pt_solution_set (&pi->pt, part, false, false);
+      pt_solution_set (&pi->pt, part, false);
     }
 
   /* Make all points-to sets that contain one member of a partition
@@ -1858,7 +1858,8 @@ expand_call_stmt (gimple stmt)
   CALL_EXPR_RETURN_SLOT_OPT (exp) = gimple_call_return_slot_opt_p (stmt);
   if (decl
       && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA)
+      && (DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA
+	  || DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA_WITH_ALIGN))
     CALL_ALLOCA_FOR_VAR_P (exp) = gimple_call_alloca_for_var_p (stmt);
   else
     CALL_FROM_THUNK_P (exp) = gimple_call_from_thunk_p (stmt);
@@ -3264,6 +3265,9 @@ expand_debug_expr (tree exp)
     case VEC_UNPACK_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_WIDEN_LSHIFT_HI_EXPR:
+    case VEC_WIDEN_LSHIFT_LO_EXPR:
+    case VEC_PERM_EXPR:
       return NULL;
 
    /* Misc codes.  */
@@ -3318,6 +3322,7 @@ expand_debug_expr (tree exp)
       return NULL;
 
     case WIDEN_SUM_EXPR:
+    case WIDEN_LSHIFT_EXPR:
       if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
@@ -3326,7 +3331,8 @@ expand_debug_expr (tree exp)
 									  0)))
 				  ? ZERO_EXTEND : SIGN_EXTEND, mode, op0,
 				  inner_mode);
-	  return simplify_gen_binary (PLUS, mode, op0, op1);
+	  return simplify_gen_binary (TREE_CODE (exp) == WIDEN_LSHIFT_EXPR
+				      ? ASHIFT : PLUS, mode, op0, op1);
 	}
       return NULL;
 

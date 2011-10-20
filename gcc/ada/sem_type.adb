@@ -1988,12 +1988,12 @@ package body Sem_Type is
       --  Otherwise, the predefined operator has precedence, or if the user-
       --  defined operation is directly visible we have a true ambiguity.
 
-      --  If this is a fixed-point multiplication and division in Ada83 mode,
+      --  If this is a fixed-point multiplication and division in Ada 83 mode,
       --  exclude the universal_fixed operator, which often causes ambiguities
       --  in legacy code.
 
-      --  Ditto in Ada2012, where an ambiguity may arise for an operation on
-      --  a partial view that is completed with a fixed point type. See
+      --  Ditto in Ada 2012, where an ambiguity may arise for an operation
+      --  on a partial view that is completed with a fixed point type. See
       --  AI05-0020 and AI05-0209. The ambiguity is resolved in favor of the
       --  user-defined subprogram so that a client of the package has the
       --  same resulution as the body of the package.
@@ -3372,18 +3372,28 @@ package body Sem_Type is
 
    function Valid_Boolean_Arg (T : Entity_Id) return Boolean is
    begin
-      return Is_Boolean_Type (T)
-        or else T = Any_Composite
-        or else (Is_Array_Type (T)
-                  and then T /= Any_String
-                  and then Number_Dimensions (T) = 1
-                  and then Is_Boolean_Type (Component_Type (T))
-                  and then (not Is_Private_Composite (T)
-                             or else In_Instance)
-                  and then (not Is_Limited_Composite (T)
-                             or else In_Instance))
+      if Is_Boolean_Type (T)
         or else Is_Modular_Integer_Type (T)
-        or else T = Universal_Integer;
+        or else T = Universal_Integer
+        or else T = Any_Composite
+      then
+         return True;
+
+      elsif Is_Array_Type (T)
+        and then T /= Any_String
+        and then Number_Dimensions (T) = 1
+        and then Is_Boolean_Type (Component_Type (T))
+        and then
+         ((not Is_Private_Composite (T)
+            and then not Is_Limited_Composite (T))
+           or else In_Instance
+           or else Available_Full_View_Of_Component (T))
+      then
+         return True;
+
+      else
+         return False;
+      end if;
    end Valid_Boolean_Arg;
 
    --------------------------
@@ -3395,10 +3405,12 @@ package body Sem_Type is
 
       if T = Any_Composite then
          return False;
+
       elsif Is_Discrete_Type (T)
         or else Is_Real_Type (T)
       then
          return True;
+
       elsif Is_Array_Type (T)
           and then Number_Dimensions (T) = 1
           and then Is_Discrete_Type (Component_Type (T))
@@ -3408,6 +3420,14 @@ package body Sem_Type is
                      or else In_Instance)
       then
          return True;
+
+      elsif Is_Array_Type (T)
+        and then Number_Dimensions (T) = 1
+        and then Is_Discrete_Type (Component_Type (T))
+        and then Available_Full_View_Of_Component (T)
+      then
+         return True;
+
       elsif Is_String_Type (T) then
          return True;
       else

@@ -2582,6 +2582,21 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  || MAYBE_CLASS_TYPE_P (type1)
 	  || TREE_CODE (type1) == ENUMERAL_TYPE))
     {
+      if (TYPE_PTR_P (type1) || TYPE_PTR_TO_MEMBER_P (type1))
+	{
+	  tree cptype = composite_pointer_type (type1, type2,
+						error_mark_node,
+						error_mark_node,
+						CPO_CONVERSION,
+						tf_none);
+	  if (cptype != error_mark_node)
+	    {
+	      build_builtin_candidate
+		(candidates, fnname, cptype, cptype, args, argtypes, flags);
+	      return;
+	    }
+	}
+
       build_builtin_candidate
 	(candidates, fnname, type1, type1, args, argtypes, flags);
       build_builtin_candidate
@@ -5514,10 +5529,9 @@ build_temp (tree expr, tree type, int flags,
 static void
 conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 {
-  tree t = non_reference (totype);
-
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if (expr == null_node && TREE_CODE (t) != BOOLEAN_TYPE && ARITHMETIC_TYPE_P (t))
+  if (expr == null_node && TREE_CODE (totype) != BOOLEAN_TYPE
+      && ARITHMETIC_TYPE_P (totype))
     {
       if (fn)
 	warning_at (input_location, OPT_Wconversion_null,
@@ -5525,11 +5539,11 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 		    argnum, fn);
       else
 	warning_at (input_location, OPT_Wconversion_null,
-		    "converting to non-pointer type %qT from NULL", t);
+		    "converting to non-pointer type %qT from NULL", totype);
     }
 
   /* Issue warnings if "false" is converted to a NULL pointer */
-  else if (expr == boolean_false_node && POINTER_TYPE_P (t))
+  else if (expr == boolean_false_node && TYPE_PTR_P (totype))
     {
       if (fn)
 	warning_at (input_location, OPT_Wconversion_null,
@@ -5537,7 +5551,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 		    "of %qD", argnum, fn);
       else
 	warning_at (input_location, OPT_Wconversion_null,
-		    "converting %<false%> to pointer type %qT", t);
+		    "converting %<false%> to pointer type %qT", totype);
     }
 }
 
@@ -5703,7 +5717,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	 leave it as an lvalue.  */
       if (inner >= 0)
         {   
-          expr = decl_constant_value (expr);
+          expr = decl_constant_value_safe (expr);
           if (expr == null_node && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (totype))
             /* If __null has been converted to an integer type, we do not
                want to warn about uses of EXPR as an integer, rather than
@@ -8398,13 +8412,19 @@ perform_implicit_conversion_flags (tree type, tree expr, tsubst_flags_t complain
 	}
       expr = error_mark_node;
     }
-  else if (processing_template_decl)
+  else if (processing_template_decl
+	   /* As a kludge, we always perform conversions between scalar
+	      types, as IMPLICIT_CONV_EXPR confuses c_finish_omp_for.  */
+	   && !(SCALAR_TYPE_P (type) && SCALAR_TYPE_P (TREE_TYPE (expr))))
     {
       /* In a template, we are only concerned about determining the
 	 type of non-dependent expressions, so we do not have to
-	 perform the actual conversion.  */
-      if (TREE_TYPE (expr) != type)
-	expr = build_nop (type, expr);
+	 perform the actual conversion.  But for initializers, we
+	 need to be able to perform it at instantiation
+	 (or fold_non_dependent_expr) time.  */
+      expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
+      if (!(flags & LOOKUP_ONLYCONVERTING))
+	IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
     }
   else
     expr = convert_like (conv, expr, complain);

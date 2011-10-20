@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=niagara3 -mvis" } */
+/* { dg-options "-mvis3" } */
 typedef int __v2si __attribute__((vector_size(8)));
 typedef int __v1si __attribute__((vector_size(4)));
 typedef short __v4hi __attribute__((vector_size(8)));

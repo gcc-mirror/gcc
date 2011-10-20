@@ -3842,7 +3842,7 @@ package body Exp_Ch7 is
    ----------------------------------
 
    --  Add call to Activate_Tasks if there are tasks declared and the package
-   --  has no body. Note that in Ada83, this may result in premature activation
+   --  has no body. Note that in Ada 83 this may result in premature activation
    --  of some tasks, given that we cannot tell whether a body will eventually
    --  appear.
 

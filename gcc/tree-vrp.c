@@ -1519,7 +1519,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 
   limit = avoid_overflow_infinity (limit);
 
-  type = TREE_TYPE (limit);
+  type = TREE_TYPE (var);
   gcc_assert (limit != var);
 
   /* For pointer arithmetic, we only keep track of pointer equality
@@ -1693,8 +1693,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
 	  if (cond_code == LT_EXPR)
 	    {
-	      tree one = build_int_cst (type, 1);
-	      max = fold_build2 (MINUS_EXPR, type, max, one);
+	      tree one = build_int_cst (TREE_TYPE (max), 1);
+	      max = fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, one);
 	      if (EXPR_P (max))
 		TREE_NO_WARNING (max) = 1;
 	    }
@@ -1728,8 +1728,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
 	  if (cond_code == GT_EXPR)
 	    {
-	      tree one = build_int_cst (type, 1);
-	      min = fold_build2 (PLUS_EXPR, type, min, one);
+	      tree one = build_int_cst (TREE_TYPE (min), 1);
+	      min = fold_build2 (PLUS_EXPR, TREE_TYPE (min), min, one);
 	      if (EXPR_P (min))
 		TREE_NO_WARNING (min) = 1;
 	    }
@@ -2913,15 +2913,10 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
       if (POINTER_TYPE_P (type))
 	{
-	  if (CONVERT_EXPR_CODE_P (code))
-	    {
-	      if (range_is_nonnull (&vr0))
-		set_value_range_to_nonnull (vr, type);
-	      else if (range_is_null (&vr0))
-		set_value_range_to_null (vr, type);
-	      else
-		set_value_range_to_varying (vr);
-	    }
+	  if (range_is_nonnull (&vr0))
+	    set_value_range_to_nonnull (vr, type);
+	  else if (range_is_null (&vr0))
+	    set_value_range_to_null (vr, type);
 	  else
 	    set_value_range_to_varying (vr);
 	  return;
@@ -7288,10 +7283,17 @@ simplify_conversion_using_ranges (gimple stmt)
 			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
   middlemax = double_int_ext (innermax, TYPE_PRECISION (TREE_TYPE (middleop)),
 			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
-  /* If the middle values do not represent a proper range fail.  */
-  if (double_int_cmp (middlemin, middlemax,
-		      TYPE_UNSIGNED (TREE_TYPE (middleop))) > 0)
+  /* If the middle values are not equal to the original values fail.
+     But only if the inner cast truncates (thus we ignore differences
+     in extension to handle the case going from a range to an anti-range
+     and back).  */
+  if ((TYPE_PRECISION (TREE_TYPE (innerop))
+       > TYPE_PRECISION (TREE_TYPE (middleop)))
+      && (!double_int_equal_p (innermin, middlemin)
+	  || !double_int_equal_p (innermax, middlemax)))
     return false;
+  /* Require that the final conversion applied to both the original
+     and the intermediate range produces the same result.  */
   if (!double_int_equal_p (double_int_ext (middlemin,
 					   TYPE_PRECISION (finaltype),
 					   TYPE_UNSIGNED (finaltype)),

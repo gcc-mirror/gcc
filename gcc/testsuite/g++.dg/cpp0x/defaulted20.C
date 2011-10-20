@@ -2,13 +2,12 @@
 // { dg-options -std=c++0x }
 
 struct A {
-  A(A&&) = default;		// { dg-message "A::A|no known conversion" }
+  A(A&&) = default;
 };
 struct B {
   const A a;
   B(const B&) = default;
-  B(B&&) = default;		// { dg-error "implicitly deleted|no match" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 10 }
+  B(B&&) = default;	// { dg-error "implicitly deleted|use of deleted" }
 };
 
 void g(B);			// { dg-error "argument 1" }

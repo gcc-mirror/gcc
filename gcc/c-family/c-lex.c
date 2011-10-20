@@ -207,10 +207,10 @@ fe_file_change (const struct line_map *new_map)
 	    line = SOURCE_LINE (new_map - 1, included_at);
 
 	  input_location = new_map->start_location;
-	  (*debug_hooks->start_source_file) (line, new_map->to_file);
+	  (*debug_hooks->start_source_file) (line, LINEMAP_FILE (new_map));
 	  if (c_header_level)
 	    ++c_header_level;
-	  else if (new_map->sysp == 2)
+	  else if (LINEMAP_SYSP (new_map) == 2)
 	    {
 	      c_header_level = 1;
 #ifndef NO_IMPLICIT_EXTERN_C
@@ -223,7 +223,7 @@ fe_file_change (const struct line_map *new_map)
     {
       if (c_header_level && --c_header_level == 0)
 	{
-	  if (new_map->sysp == 2)
+	  if (LINEMAP_SYSP (new_map) == 2)
 	    warning (0, "badly nested C headers from preprocessor");
 #ifndef NO_IMPLICIT_EXTERN_C
 	  --pending_lang_change;
@@ -231,10 +231,10 @@ fe_file_change (const struct line_map *new_map)
 	}
       input_location = new_map->start_location;
 
-      (*debug_hooks->end_source_file) (new_map->to_line);
+      (*debug_hooks->end_source_file) (LINEMAP_LINE (new_map));
     }
 
-  update_header_times (new_map->to_file);
+  update_header_times (LINEMAP_FILE (new_map));
   input_location = new_map->start_location;
 }
 

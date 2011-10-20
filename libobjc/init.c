@@ -643,6 +643,15 @@ __objc_exec_class (struct objc_module *module)
       assert (CLS_ISMETA (class->class_pointer));
       DEBUG_PRINTF (" installing class '%s'\n", class->name);
 
+      /* Workaround for a bug in clang: Clang may set flags other than
+	 _CLS_CLASS and _CLS_META even when compiling for the
+	 traditional ABI (version 8), confusing our runtime.  Try to
+	 wipe these flags out.  */
+      if (CLS_ISCLASS (class))
+	__CLS_INFO (class) = _CLS_CLASS;
+      else
+	__CLS_INFO (class) = _CLS_META;
+
       /* Initialize the subclass list to be NULL.  In some cases it
 	 isn't and this crashes the program.  */
       class->subclass_list = NULL;

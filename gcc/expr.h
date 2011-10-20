@@ -325,6 +325,8 @@ extern rtx copy_blkmode_from_reg (rtx, rtx, tree);
    Mode is TYPE_MODE of the non-promoted parameter, or VOIDmode.  */
 extern void use_reg_mode (rtx *, rtx, enum machine_mode);
 
+extern rtx copy_blkmode_to_reg (enum machine_mode, tree);
+
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
 static inline void
 use_reg (rtx *fusage, rtx reg)

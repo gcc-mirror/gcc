@@ -802,7 +802,7 @@ package body Ada.Containers.Vectors is
       if Is_Empty (Object.Container.all) then
          return No_Element;
       else
-         return Cursor'(Object.Container, Index_Type'First);
+         return (Object.Container, Index_Type'First);
       end if;
    end First;
 
@@ -1517,7 +1517,7 @@ package body Ada.Containers.Vectors is
 
       Insert (Container, Index, New_Item);
 
-      Position := Cursor'(Container'Unchecked_Access, Index);
+      Position := (Container'Unchecked_Access, Index);
    end Insert;
 
    procedure Insert
@@ -1600,7 +1600,7 @@ package body Ada.Containers.Vectors is
 
       Insert (Container, Index, New_Item, Count);
 
-      Position := Cursor'(Container'Unchecked_Access, Index);
+      Position := (Container'Unchecked_Access, Index);
    end Insert;
 
    procedure Insert
@@ -2017,7 +2017,7 @@ package body Ada.Containers.Vectors is
 
       Insert_Space (Container, Index, Count => Count);
 
-      Position := Cursor'(Container'Unchecked_Access, Index);
+      Position := (Container'Unchecked_Access, Index);
    end Insert_Space;
 
    --------------
@@ -2093,7 +2093,7 @@ package body Ada.Containers.Vectors is
       if Is_Empty (Object.Container.all) then
          return No_Element;
       else
-         return Cursor'(Object.Container, Object.Container.Last);
+         return (Object.Container, Object.Container.Last);
       end if;
    end Last;
 
@@ -2204,24 +2204,18 @@ package body Ada.Containers.Vectors is
 
    function Next (Object : Iterator; Position : Cursor) return Cursor is
    begin
-      if Position.Index = Object.Container.Last then
-         return  No_Element;
-      else
+      if Position.Index < Object.Container.Last then
          return (Object.Container, Position.Index + 1);
+      else
+         return No_Element;
       end if;
    end Next;
-
-   ----------
-   -- Next --
-   ----------
 
    procedure Next (Position : in out Cursor) is
    begin
       if Position.Container = null then
          return;
-      end if;
-
-      if Position.Index < Position.Container.Last then
+      elsif Position.Index < Position.Container.Last then
          Position.Index := Position.Index + 1;
       else
          Position := No_Element;
@@ -2253,30 +2247,15 @@ package body Ada.Containers.Vectors is
    -- Previous --
    --------------
 
-   procedure Previous (Position : in out Cursor) is
-   begin
-      if Position.Container = null then
-         return;
-      end if;
-
-      if Position.Index > Index_Type'First then
-         Position.Index := Position.Index - 1;
-      else
-         Position := No_Element;
-      end if;
-   end Previous;
-
    function Previous (Position : Cursor) return Cursor is
    begin
       if Position.Container = null then
          return No_Element;
-      end if;
-
-      if Position.Index > Index_Type'First then
+      elsif Position.Index > Index_Type'First then
          return (Position.Container, Position.Index - 1);
+      else
+         return No_Element;
       end if;
-
-      return No_Element;
    end Previous;
 
    function Previous (Object : Iterator; Position : Cursor) return Cursor is
@@ -2285,6 +2264,17 @@ package body Ada.Containers.Vectors is
          return (Object.Container, Position.Index - 1);
       else
          return No_Element;
+      end if;
+   end Previous;
+
+   procedure Previous (Position : in out Cursor) is
+   begin
+      if Position.Container = null then
+         return;
+      elsif Position.Index > Index_Type'First then
+         Position.Index := Position.Index - 1;
+      else
+         Position := No_Element;
       end if;
    end Previous;
 
@@ -2416,7 +2406,7 @@ package body Ada.Containers.Vectors is
       return Constant_Reference_Type
    is
    begin
-      if (Position) > Container.Last then
+      if Position > Container.Last then
          raise Constraint_Error with "Index is out of range";
       else
          return (Element => Container.Elements.EA (Position)'Access);
@@ -3019,7 +3009,7 @@ package body Ada.Containers.Vectors is
       if Index not in Index_Type'First .. Container.Last then
          return No_Element;
       else
-         return Cursor'(Container'Unchecked_Access, Index);
+         return (Container'Unchecked_Access, Index);
       end if;
    end To_Cursor;
 

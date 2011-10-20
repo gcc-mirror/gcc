@@ -3635,7 +3635,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
       else
 	{
 	  /* Grab the typespec for the given component and test the kind.  */ 
-	  is_c_interop = verify_c_interop (&(curr_comp->ts));
+	  is_c_interop = gfc_verify_c_interop (&(curr_comp->ts));
 	  
 	  if (is_c_interop != SUCCESS)
 	    {
@@ -4336,8 +4336,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
     {
 
 #define NAMED_INTCST(a,b,c,d) case a : 
-#define NAMED_REALCST(a,b,c) case a :
-#define NAMED_CMPXCST(a,b,c) case a :
+#define NAMED_REALCST(a,b,c,d) case a :
+#define NAMED_CMPXCST(a,b,c,d) case a :
 #define NAMED_LOGCST(a,b,c) case a :
 #define NAMED_CHARKNDCST(a,b,c) case a :
 #include "iso-c-binding.def"

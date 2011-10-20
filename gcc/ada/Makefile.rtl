@@ -186,27 +186,31 @@ GNATRTL_NONTASKING_OBJS= \
   a-locale$(objext) \
   a-ncelfu$(objext) \
   a-ngcefu$(objext) \
+  a-ngcoar$(objext) \
   a-ngcoty$(objext) \
   a-ngelfu$(objext) \
   a-ngrear$(objext) \
-  a-nllrar$(objext) \
-  a-nlrear$(objext) \
-  a-nurear$(objext) \
   a-nlcefu$(objext) \
+  a-nlcoar$(objext) \
   a-nlcoty$(objext) \
   a-nlelfu$(objext) \
+  a-nlrear$(objext) \
+  a-nllcar$(objext) \
   a-nllcef$(objext) \
   a-nllcty$(objext) \
   a-nllefu$(objext) \
+  a-nllrar$(objext) \
   a-nscefu$(objext) \
   a-nscoty$(objext) \
   a-nselfu$(objext) \
+  a-nucoar$(objext) \
   a-nucoty$(objext) \
   a-nudira$(objext) \
   a-nuelfu$(objext) \
   a-nuflra$(objext) \
   a-numaux$(objext) \
   a-numeri$(objext) \
+  a-nurear$(objext) \
   a-rbtgbo$(objext) \
   a-rbtgbk$(objext) \
   a-rbtgso$(objext) \
@@ -435,6 +439,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-tasloc$(objext) \
   g-timsta$(objext) \
   g-traceb$(objext) \
+  g-trasym$(objext) \
   g-u3spch$(objext) \
   g-utf_32$(objext) \
   g-wispch$(objext) \
@@ -514,6 +519,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-fvadfl$(objext) \
   s-fvaffl$(objext) \
   s-fvagfl$(objext) \
+  s-gearop$(objext) \
   s-geveop$(objext) \
   s-gloloc$(objext) \
   s-htable$(objext) \

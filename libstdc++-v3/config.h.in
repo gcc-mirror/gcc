@@ -707,7 +707,8 @@
 /* Define to use concept checking code from the boost libraries. */
 #undef _GLIBCXX_CONCEPT_CHECKS
 
-/* Define if a fully dynamic basic_string is wanted. */
+/* Define to 1 if a fully dynamic basic_string is wanted, 0 to disable,
+   undefined for platform defaults */
 #undef _GLIBCXX_FULLY_DYNAMIC_STRING
 
 /* Define if gthreads library is available. */

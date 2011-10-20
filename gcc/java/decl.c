@@ -1135,7 +1135,7 @@ java_init_decl_processing (void)
 
   initialize_builtins ();
 
-  soft_fmod_node = built_in_decls[BUILT_IN_FMOD];
+  soft_fmod_node = builtin_decl_explicit (BUILT_IN_FMOD);
 
   parse_version ();
 }

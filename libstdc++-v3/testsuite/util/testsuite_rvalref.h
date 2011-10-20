@@ -255,6 +255,9 @@ namespace __gnu_test
     { throw 1; }
 
     throwing_move_constructor(const throwing_move_constructor&) = default;
+
+    throwing_move_constructor&
+    operator=(const throwing_move_constructor&) = default;
   };
 
 } // namespace __gnu_test

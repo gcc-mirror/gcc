@@ -20,7 +20,7 @@ struct eight {char x[8];};
 struct A
 {
     A();
-    A(const volatile A&&);	// { dg-error "argument 1" }
+    A(const volatile A&&);
 };
 
                A    source();
@@ -40,9 +40,9 @@ six   sink_6_123456(const          A&&);  // { dg-message "note" }
 int test6_123456()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_123456(v_source());   // { dg-error "no match" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 46 }
     sink_6_123456(cv_source());  // { dg-error "no match" }
@@ -60,9 +60,9 @@ seven sink_6_123457(volatile       A&&);  // { dg-message "note" }
 int test6_123457()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_123457(cv_source());  // { dg-error "no match" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 66 }
     return 0;
@@ -78,9 +78,9 @@ eight sink_6_235678(const volatile A&&);  // { dg-message "" }
 int test6_235678()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_235678(a);  // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 84 }
     sink_6_235678(cva);		// { dg-error "lvalue" }
@@ -97,9 +97,9 @@ eight sink_6_234678(const volatile A&&);  // { dg-message "note" }
 int test6_234678()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_234678(a);         // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 103 }
     sink_6_234678(source());  // { dg-error "ambiguous" }
@@ -117,9 +117,9 @@ eight sink_6_234578(const volatile A&&);  // { dg-message "note" }
 int test6_234578()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_234578(a);  // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 123 }
     return 0;
@@ -135,9 +135,9 @@ eight sink_6_234568(const volatile A&&);  // { dg-message "note" }
 int test6_234568()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_234568(a);  // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 141 }
     return 0;
@@ -153,9 +153,9 @@ seven sink_6_234567(volatile       A&&);  // { dg-message "note" }
 int test6_234567()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_234567(a);            // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 159 }
     sink_6_234567(cv_source());  // { dg-error "no match" }
@@ -173,9 +173,9 @@ eight sink_6_134678(const volatile A&&);  // { dg-message "note" }
 int test6_134678()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_134678(source());  // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 179 }
     return 0;
@@ -191,9 +191,9 @@ eight sink_6_124678(const volatile A&&);  // { dg-message "note" }
 int test6_124678()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_124678(source());  // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 197 }
     return 0;
@@ -209,9 +209,9 @@ eight sink_6_123678(const volatile A&&);  // { dg-message "" }
 int test6_123678()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_123678(cva);		// { dg-error "lvalue" }
     sink_6_123678(source());  // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 216 }
@@ -228,9 +228,9 @@ seven sink_6_123567(volatile       A&&);  // { dg-message "note" }
 int test6_123567()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_123567(cva);          // { dg-error "no match" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 234 }
     sink_6_123567(cv_source());  // { dg-error "no match" }
@@ -248,9 +248,9 @@ eight sink_6_123568(const volatile A&&); // { dg-message "" }
 int test6_123568()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_123568(cva); // { dg-error "lvalue" }
     return 0;
 }
@@ -265,9 +265,9 @@ eight sink_6_123578(const volatile A&&); // { dg-message "" }
 int test6_123578()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_123578(cva);		// { dg-error "lvalue" }
     return 0;
 }
@@ -282,9 +282,9 @@ seven sink_6_123467(volatile       A&&);  // { dg-message "note" }
 int test6_123467()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_123467(source());     // { dg-error "ambiguous" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 288 }
     sink_6_123467(cv_source());  // { dg-error "no match" }
@@ -302,9 +302,9 @@ seven sink_6_124567(volatile       A&&);  // { dg-message "note" }
 int test6_124567()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_124567(cv_source());  // { dg-error "no match" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 308 }
     return 0;
@@ -320,9 +320,9 @@ eight sink_6_125678(const volatile A&&); // { dg-message "" }
 int test6_125678()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_125678(va);		// { dg-error "lvalue" }
     sink_6_125678(cva);		// { dg-error "lvalue" }
     return 0;
@@ -338,9 +338,9 @@ seven sink_6_134567(volatile       A&&);  // { dg-message "note" }
 int test6_134567()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_134567(cv_source());  // { dg-error "no match" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 344 }
     return 0;
@@ -356,9 +356,9 @@ eight sink_6_135678(const volatile A&&); // { dg-message "" }
 int test6_135678()
 {
                    A a;
-    const          A ca = a; // { dg-error "lvalue" }
+    const          A ca = a; // { dg-error "deleted" }
           volatile A va;
-    const volatile A cva = a; // { dg-error "lvalue" }
+    const volatile A cva = a; // { dg-error "deleted" }
     sink_6_135678(ca);		// { dg-error "lvalue" }
     sink_6_135678(cva);		// { dg-error "lvalue" }
     return 0;

@@ -1357,11 +1357,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       if (DECL_BUILT_IN_CLASS (olddecl) == BUILT_IN_NORMAL
 	  && DECL_ANTICIPATED (olddecl)
 	  && TREE_NOTHROW (newdecl)
-	  && !TREE_NOTHROW (olddecl)
-	  && built_in_decls [DECL_FUNCTION_CODE (olddecl)] != NULL_TREE
-	  && built_in_decls [DECL_FUNCTION_CODE (olddecl)] != olddecl
-	  && types_match)
-	TREE_NOTHROW (built_in_decls [DECL_FUNCTION_CODE (olddecl)]) = 1;
+	  && !TREE_NOTHROW (olddecl))
+	{
+	  enum built_in_function fncode = DECL_FUNCTION_CODE (olddecl);
+	  tree tmpdecl = builtin_decl_explicit (fncode);
+	  if (tmpdecl && tmpdecl != olddecl && types_match)
+	    TREE_NOTHROW (tmpdecl)  = 1;
+	}
 
       /* Whether or not the builtin can throw exceptions has no
 	 bearing on this declarator.  */
@@ -1540,8 +1542,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  error_at (DECL_SOURCE_LOCATION (newdecl), errmsg, newdecl);
 	  if (DECL_NAME (olddecl) != NULL_TREE)
 	    error ((DECL_INITIAL (olddecl) && namespace_bindings_p ())
-			 ? "%q+#D previously defined here"
-			 : "%q+#D previously declared here", olddecl);
+		   ? G_("%q+#D previously defined here")
+		   : G_("%q+#D previously declared here"), olddecl);
 	  return error_mark_node;
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -2136,17 +2138,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		 regardless of declaration matches.  */
 	      COPY_DECL_RTL (olddecl, newdecl);
 	      if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
-		switch (DECL_FUNCTION_CODE (newdecl))
-		  {
-		    /* If a compatible prototype of these builtin functions
-		       is seen, assume the runtime implements it with the
-		       expected semantics.  */
-		  case BUILT_IN_STPCPY:
-		    implicit_built_in_decls[DECL_FUNCTION_CODE (newdecl)]
-		      = built_in_decls[DECL_FUNCTION_CODE (newdecl)];
-		  default:
-		    break;
-		  }
+		{
+		  enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
+		  switch (fncode)
+		    {
+		      /* If a compatible prototype of these builtin functions
+			 is seen, assume the runtime implements it with the
+			 expected semantics.  */
+		    case BUILT_IN_STPCPY:
+		      if (builtin_decl_explicit_p (fncode))
+			set_builtin_decl_implicit_p (fncode, true);
+		      break;
+		    default:
+		      break;
+		    }
+		}
 	    }
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
@@ -2677,7 +2683,8 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
       tree new_decls, old_decls = (b == level ? names : NULL_TREE);
 
       for (new_decls = b->names; new_decls != old_decls;
-	   new_decls = DECL_CHAIN (new_decls))
+	   new_decls = (DECL_P (new_decls) ? DECL_CHAIN (new_decls)
+			: TREE_CHAIN (new_decls)))
 	{
 	  int problem = decl_jump_unsafe (new_decls);
 	  if (! problem)
@@ -3229,8 +3236,8 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (!t)
     {
       if (complain & tf_error)
-	error (want_template ? "no class template named %q#T in %q#T"
-	       : "no type named %q#T in %q#T", name, context);
+	error (want_template ? G_("no class template named %q#T in %q#T")
+	       : G_("no type named %q#T in %q#T"), name, context);
       return error_mark_node;
     }
   
@@ -3648,7 +3655,7 @@ cxx_init_decl_processing (void)
   current_lang_name = lang_name_cplusplus;
 
   {
-    tree newattrs;
+    tree newattrs, extvisattr;
     tree newtype, deltype;
     tree ptr_ftype_sizetype;
     tree new_eh_spec;
@@ -3678,12 +3685,15 @@ cxx_init_decl_processing (void)
 
     /* Ensure attribs.c is initialized.  */
     init_attributes ();
-    newattrs
-      = build_tree_list (get_identifier ("alloc_size"),
-			 build_tree_list (NULL_TREE, integer_one_node));
+    extvisattr = build_tree_list (get_identifier ("externally_visible"),
+				  NULL_TREE);
+    newattrs = tree_cons (get_identifier ("alloc_size"),
+			  build_tree_list (NULL_TREE, integer_one_node),
+			  extvisattr);
     newtype = cp_build_type_attribute_variant (ptr_ftype_sizetype, newattrs);
     newtype = build_exception_variant (newtype, new_eh_spec);
-    deltype = build_exception_variant (void_ftype_ptr, empty_except_spec);
+    deltype = cp_build_type_attribute_variant (void_ftype_ptr, extvisattr);
+    deltype = build_exception_variant (deltype, empty_except_spec);
     push_cp_library_fn (NEW_EXPR, newtype);
     push_cp_library_fn (VEC_NEW_EXPR, newtype);
     global_delete_fndecl = push_cp_library_fn (DELETE_EXPR, deltype);
@@ -7418,6 +7428,12 @@ grokfndecl (tree ctype,
 	      error ("definition of implicitly-declared %qD", old_decl);
 	      return NULL_TREE;
 	    }
+	  else if (DECL_DEFAULTED_FN (old_decl))
+	    {
+	      error ("definition of explicitly-defaulted %q+D", decl);
+	      error ("%q+#D explicitly defaulted here", old_decl);
+	      return NULL_TREE;
+	    }
 
 	  /* Since we've smashed OLD_DECL to its
 	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
@@ -9127,13 +9143,13 @@ grokdeclarator (const cp_declarator *declarator,
 		   virtual.  A constructor may not be static.  */
 		if (staticp == 2)
 		  error ((flags == DTOR_FLAG)
-			 ? "destructor cannot be static member function"
-			 : "constructor cannot be static member function");
+			 ? G_("destructor cannot be static member function")
+			 : G_("constructor cannot be static member function"));
 		if (memfn_quals)
 		  {
 		    error ((flags == DTOR_FLAG)
-			   ? "destructors may not be cv-qualified"
-			   : "constructors may not be cv-qualified");
+			   ? G_("destructors may not be cv-qualified")
+			   : G_("constructors may not be cv-qualified"));
 		    memfn_quals = TYPE_UNQUALIFIED;
 		  }
 
@@ -9486,8 +9502,10 @@ grokdeclarator (const cp_declarator *declarator,
 	      && (!friendp || funcdef_flag))
 	    {
 	      error (funcdef_flag
-		     ? "cannot define member function %<%T::%s%> within %<%T%>"
-		     : "cannot declare member function %<%T::%s%> within %<%T%>",
+		     ? G_("cannot define member function %<%T::%s%> "
+			  "within %<%T%>")
+		     : G_("cannot declare member function %<%T::%s%> "
+			  "within %<%T%>"),
 		     ctype, name, current_class_type);
 	      return error_mark_node;
 	    }
@@ -10207,8 +10225,8 @@ grokdeclarator (const cp_declarator *declarator,
 		     || sfk == sfk_destructor)
 	      {
 		error (funcdef_flag
-		       ? "%qs defined in a non-class scope"
-		       : "%qs declared in a non-class scope", name);
+		       ? G_("%qs defined in a non-class scope")
+		       : G_("%qs declared in a non-class scope"), name);
 		sfk = sfk_none;
 	      }
 	  }

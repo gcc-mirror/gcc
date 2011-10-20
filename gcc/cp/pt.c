@@ -892,7 +892,8 @@ maybe_process_partial_specialization (tree type)
 		     instantiation.  Reassign it to the new member
 		     specialization template.  */
 		  spec_entry elt;
-		  spec_entry **slot;
+		  spec_entry *entry;
+		  void **slot;
 
 		  elt.tmpl = most_general_template (tmpl);
 		  elt.args = CLASSTYPE_TI_ARGS (inst);
@@ -903,10 +904,10 @@ maybe_process_partial_specialization (tree type)
 		  elt.tmpl = tmpl;
 		  elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
 
-		  slot = (spec_entry **)
-		    htab_find_slot (type_specializations, &elt, INSERT);
-		  *slot = ggc_alloc_spec_entry ();
-		  **slot = elt;
+		  slot = htab_find_slot (type_specializations, &elt, INSERT);
+		  entry = ggc_alloc_spec_entry ();
+		  *entry = elt;
+		  *slot = entry;
 		}
 	      else if (COMPLETE_OR_OPEN_TYPE_P (inst))
 		/* But if we've had an implicit instantiation, that's a
@@ -1294,7 +1295,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 			 hashval_t hash)
 {
   tree fn;
-  spec_entry **slot = NULL;
+  void **slot = NULL;
   spec_entry elt;
 
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL && DECL_P (spec));
@@ -1327,10 +1328,10 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
       if (hash == 0)
 	hash = hash_specialization (&elt);
 
-      slot = (spec_entry **)
+      slot =
 	htab_find_slot_with_hash (decl_specializations, &elt, hash, INSERT);
       if (*slot)
-	fn = (*slot)->spec;
+	fn = ((spec_entry *) *slot)->spec;
       else
 	fn = NULL_TREE;
     }
@@ -1423,11 +1424,12 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
       && !check_specialization_namespace (tmpl))
     DECL_CONTEXT (spec) = DECL_CONTEXT (tmpl);
 
-  if (!optimize_specialization_lookup_p (tmpl))
+  if (slot != NULL /* !optimize_specialization_lookup_p (tmpl) */)
     {
+      spec_entry *entry = ggc_alloc_spec_entry ();
       gcc_assert (tmpl && args && spec);
-      *slot = ggc_alloc_spec_entry ();
-      **slot = elt;
+      *entry = elt;
+      *slot = entry;
       if (TREE_CODE (spec) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (spec)
 	  && PRIMARY_TEMPLATE_P (tmpl)
 	  && DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (tmpl)) == NULL_TREE)
@@ -1589,6 +1591,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return val;
 
     case CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
     case STATIC_CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
     case CONST_CAST_EXPR:
@@ -1639,19 +1642,19 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 bool
 reregister_specialization (tree spec, tree tinfo, tree new_spec)
 {
-  spec_entry **slot;
+  spec_entry *entry;
   spec_entry elt;
 
   elt.tmpl = most_general_template (TI_TEMPLATE (tinfo));
   elt.args = TI_ARGS (tinfo);
   elt.spec = NULL_TREE;
 
-  slot = (spec_entry **) htab_find_slot (decl_specializations, &elt, INSERT);
-  if (*slot)
+  entry = (spec_entry *) htab_find (decl_specializations, &elt);
+  if (entry != NULL)
     {
-      gcc_assert ((*slot)->spec == spec || (*slot)->spec == new_spec);
+      gcc_assert (entry->spec == spec || entry->spec == new_spec);
       gcc_assert (new_spec != NULL_TREE);
-      (*slot)->spec = new_spec;
+      entry->spec = new_spec;
       return 1;
     }
 
@@ -2977,6 +2980,9 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
         }
       break;
 
+    case BASES:
+      parameter_pack_p = true;
+      break;
     default:
       /* Not a parameter pack.  */
       break;
@@ -7042,7 +7048,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 {
   tree templ = NULL_TREE, parmlist;
   tree t;
-  spec_entry **slot;
+  void **slot;
   spec_entry *entry;
   spec_entry elt;
   hashval_t hash;
@@ -7480,10 +7486,11 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
 
       elt.spec = t;
-      slot = (spec_entry **) htab_find_slot_with_hash (type_specializations,
-						       &elt, hash, INSERT);
-      *slot = ggc_alloc_spec_entry ();
-      **slot = elt;
+      slot = htab_find_slot_with_hash (type_specializations,
+				       &elt, hash, INSERT);
+      entry = ggc_alloc_spec_entry ();
+      *entry = elt;
+      *slot = entry;
 
       /* Note this use of the partial instantiation so we can check it
 	 later in maybe_process_partial_specialization.  */
@@ -7699,6 +7706,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 
     case MODOP_EXPR:
     case CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
     case REINTERPRET_CAST_EXPR:
     case CONST_CAST_EXPR:
     case STATIC_CAST_EXPR:
@@ -9122,6 +9130,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       tree arg_pack = NULL_TREE;
       tree orig_arg = NULL_TREE;
 
+      if (TREE_CODE (parm_pack) == BASES)
+       {
+         if (BASES_DIRECT (parm_pack))
+           return calculate_direct_bases (tsubst_expr (BASES_TYPE (parm_pack),
+                                                        args, complain, in_decl, false));
+         else
+           return calculate_bases (tsubst_expr (BASES_TYPE (parm_pack),
+                                                 args, complain, in_decl, false));
+       }
       if (TREE_CODE (parm_pack) == PARM_DECL)
 	{
 	  if (!cp_unevaluated_operand)
@@ -10264,6 +10281,16 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    = tsubst_expr (DECL_INITIAL (t), args,
 			   complain, in_decl,
 			   /*integral_constant_expression_p=*/true);
+	else if (DECL_INITIAL (t))
+	  {
+	    /* Set up DECL_TEMPLATE_INFO so that we can get at the
+	       NSDMI in perform_member_init.  Still set DECL_INITIAL
+	       so that we know there is one.  */
+	    DECL_INITIAL (r) = void_zero_node;
+	    gcc_assert (DECL_LANG_SPECIFIC (r) == NULL);
+	    retrofit_lang_decl (r);
+	    DECL_TEMPLATE_INFO (r) = build_template_info (t, args);
+	  }
 	/* We don't have to set DECL_CONTEXT here; it is set by
 	   finish_member_declaration.  */
 	DECL_CHAIN (r) = NULL_TREE;
@@ -11711,7 +11738,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
 /* Like tsubst, but deals with expressions.  This function just replaces
    template parms; to finish processing the resultant expression, use
-   tsubst_expr.  */
+   tsubst_copy_and_build or tsubst_expr.  */
 
 static tree
 tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
@@ -11876,6 +11903,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case CONST_CAST_EXPR:
     case STATIC_CAST_EXPR:
     case DYNAMIC_CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
+    case CONVERT_EXPR:
     case NOP_EXPR:
       return build1
 	(code, tsubst (TREE_TYPE (t), args, complain, in_decl),
@@ -13023,7 +13052,11 @@ tsubst_copy_and_build (tree t,
 	if (error_msg)
 	  error (error_msg);
 	if (!function_p && TREE_CODE (decl) == IDENTIFIER_NODE)
-	  decl = unqualified_name_lookup_error (decl);
+	  {
+	    if (complain & tf_error)
+	      unqualified_name_lookup_error (decl);
+	    decl = error_mark_node;
+	  }
 	return decl;
       }
 
@@ -13072,6 +13105,23 @@ tsubst_copy_and_build (tree t,
     case NOP_EXPR:
       return build_nop
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
+	 RECUR (TREE_OPERAND (t, 0)));
+
+    case IMPLICIT_CONV_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree expr = RECUR (TREE_OPERAND (t, 0));
+	int flags = LOOKUP_IMPLICIT;
+	if (IMPLICIT_CONV_EXPR_DIRECT_INIT (t))
+	  flags = LOOKUP_NORMAL;
+	return perform_implicit_conversion_flags (type, expr, complain,
+						  flags);
+      }
+
+    case CONVERT_EXPR:
+      return build1
+	(CONVERT_EXPR,
+	 tsubst (TREE_TYPE (t), args, complain, in_decl),
 	 RECUR (TREE_OPERAND (t, 0)));
 
     case CAST_EXPR:
@@ -13909,8 +13959,8 @@ tsubst_copy_and_build (tree t,
       {
 	tree r = build_lambda_expr ();
 
-	tree type = tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
-	TREE_TYPE (r) = type;
+	tree type = tsubst (LAMBDA_EXPR_CLOSURE (t), args, complain, NULL_TREE);
+	LAMBDA_EXPR_CLOSURE (r) = type;
 	CLASSTYPE_LAMBDA_EXPR (type) = r;
 
 	LAMBDA_EXPR_LOCATION (r)
@@ -17995,6 +18045,8 @@ instantiate_decl (tree d, int defer_ok,
     d = DECL_CLONED_FUNCTION (d);
 
   if (DECL_TEMPLATE_INSTANTIATED (d)
+      || (TREE_CODE (d) == FUNCTION_DECL
+	  && DECL_DEFAULTED_FN (d) && DECL_INITIAL (d))
       || DECL_TEMPLATE_SPECIALIZATION (d))
     /* D has already been instantiated or explicitly specialized, so
        there's nothing for us to do here.
@@ -19169,6 +19221,7 @@ type_dependent_expression_p (tree expression)
       || TREE_CODE (expression) == STATIC_CAST_EXPR
       || TREE_CODE (expression) == CONST_CAST_EXPR
       || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
+      || TREE_CODE (expression) == IMPLICIT_CONV_EXPR
       || TREE_CODE (expression) == CAST_EXPR)
     return dependent_type_p (TREE_TYPE (expression));
 

@@ -64,6 +64,7 @@ with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Intr; use Sem_Intr;
 with Sem_Util; use Sem_Util;
+with Targparm; use Targparm;
 with Sem_Type; use Sem_Type;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
@@ -4874,13 +4875,33 @@ package body Sem_Res is
                            (Is_Real_Type (Etype (Rop))
                              and then Expr_Value_R (Rop) = Ureal_0))
             then
-               --  Specialize the warning message according to the operation
+               --  Specialize the warning message according to the operation.
+               --  The following warnings are for the case
 
                case Nkind (N) is
                   when N_Op_Divide =>
-                     Apply_Compile_Time_Constraint_Error
-                       (N, "division by zero?", CE_Divide_By_Zero,
-                        Loc => Sloc (Right_Opnd (N)));
+
+                     --  For division, we have two cases, for float division
+                     --  of an unconstrained float type, on a machine where
+                     --  Machine_Overflows is false, we don't get an exception
+                     --  at run-time, but rather an infinity or Nan. The Nan
+                     --  case is pretty obscure, so just warn about infinities.
+
+                     if Is_Floating_Point_Type (Typ)
+                       and then not Is_Constrained (Typ)
+                       and then not Machine_Overflows_On_Target
+                     then
+                        Error_Msg_N
+                          ("float division by zero, " &
+                           "may generate '+'/'- infinity?", Right_Opnd (N));
+
+                        --  For all other cases, we get a Constraint_Error
+
+                     else
+                        Apply_Compile_Time_Constraint_Error
+                          (N, "division by zero?", CE_Divide_By_Zero,
+                           Loc => Sloc (Right_Opnd (N)));
+                     end if;
 
                   when N_Op_Rem =>
                      Apply_Compile_Time_Constraint_Error
@@ -7333,6 +7354,48 @@ package body Sem_Res is
         and then Etype (Right_Opnd (N)) = Universal_Integer
       then
          Check_For_Visible_Operator (N, B_Typ);
+      end if;
+
+      --  Replace AND by AND THEN, or OR by OR ELSE, if Short_Circuit_And_Or
+      --  is active and the result type is standard Boolean (do not mess with
+      --  ops that return a nonstandard Boolean type, because something strange
+      --  is going on).
+
+      --  Note: you might expect this replacement to be done during expansion,
+      --  but that doesn't work, because when the pragma Short_Circuit_And_Or
+      --  is used, no part of the right operand of an "and" or "or" operator
+      --  should be executed if the left operand would short-circuit the
+      --  evaluation of the corresponding "and then" or "or else". If we left
+      --  the replacement to expansion time, then run-time checks associated
+      --  with such operands would be evaluated unconditionally, due to being
+      --  before the condition prior to the rewriting as short-circuit forms
+      --  during expansion.
+
+      if Short_Circuit_And_Or
+        and then B_Typ = Standard_Boolean
+        and then Nkind_In (N, N_Op_And, N_Op_Or)
+      then
+         if Nkind (N) = N_Op_And then
+            Rewrite (N,
+              Make_And_Then (Sloc (N),
+                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
+                Right_Opnd => Relocate_Node (Right_Opnd (N))));
+            Analyze_And_Resolve (N, B_Typ);
+
+         --  Case of OR changed to OR ELSE
+
+         else
+            Rewrite (N,
+              Make_Or_Else (Sloc (N),
+                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
+                Right_Opnd => Relocate_Node (Right_Opnd (N))));
+            Analyze_And_Resolve (N, B_Typ);
+         end if;
+
+         --  Return now, since analysis of the rewritten ops will take care of
+         --  other reference bookkeeping and expression folding.
+
+         return;
       end if;
 
       Resolve (Left_Opnd (N), B_Typ);

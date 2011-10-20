@@ -131,8 +131,8 @@ along with GCC; see the file COPYING3.  If not see
    define it here at all.  */
 #undef DEF_BUILTIN_STUB
 #define DEF_BUILTIN_STUB(ENUM, NAME) \
-  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, 0, 0, false, false, \
-	       false, 0, false, false)
+  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_LAST, BT_LAST, false, false, \
+	       false, ATTR_LAST, false, false)
 
 /* Builtin used by the implementation of GNU OpenMP.  None of these are
    actually implemented in the compiler; they're all in libgomp.  */
@@ -172,6 +172,9 @@ along with GCC; see the file COPYING3.  If not see
    maintenance purposes.  */
 #undef ATTR_MATHFN_FPROUNDING_STORE
 #define ATTR_MATHFN_FPROUNDING_STORE ATTR_NOTHROW_LEAF_LIST
+
+/* Make sure 0 is not a legitimate builtin.  */
+DEF_BUILTIN_STUB(BUILT_IN_NONE, (const char *)0)
 
 /* Category: math builtins.  */
 DEF_LIB_BUILTIN        (BUILT_IN_ACOS, "acos", BT_FN_DOUBLE_DOUBLE, ATTR_MATHFN_FPROUNDING_ERRNO)
@@ -738,6 +741,7 @@ DEF_BUILTIN_STUB (BUILT_IN_SETJMP_RECEIVER, "__builtin_setjmp_receiver")
 /* Implementing variable sized local variables.  */
 DEF_BUILTIN_STUB (BUILT_IN_STACK_SAVE, "__builtin_stack_save")
 DEF_BUILTIN_STUB (BUILT_IN_STACK_RESTORE, "__builtin_stack_restore")
+DEF_BUILTIN_STUB (BUILT_IN_ALLOCA_WITH_ALIGN, "__builtin_alloca_with_align")
 
 /* Object size checking builtins.  */
 DEF_GCC_BUILTIN	       (BUILT_IN_OBJECT_SIZE, "object_size", BT_FN_SIZE_CONST_PTR_INT, ATTR_PURE_NOTHROW_LEAF_LIST)

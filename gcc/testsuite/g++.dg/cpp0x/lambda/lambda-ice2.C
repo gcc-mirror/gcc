@@ -9,7 +9,7 @@ decltype(F()) run(F f) // { dg-message "note" }
 
 int main()
 {
-  auto l = []() { return 5; }; // { dg-error "lambda closure type" }
+  auto l = []() { return 5; }; // { dg-message "lambda closure type" }
 
   run(l); // { dg-error "no match" }
   // { dg-message "candidate" "candidate note" { target *-*-* } 14 }

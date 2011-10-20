@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2009, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2011, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,66 +30,35 @@
 ------------------------------------------------------------------------------
 
 with System.Generic_Array_Operations; use System.Generic_Array_Operations;
-with System.Generic_Complex_BLAS;
-with System.Generic_Complex_LAPACK;
+with Ada.Numerics; use Ada.Numerics;
 
 package body Ada.Numerics.Generic_Complex_Arrays is
-
-   --  Operations involving inner products use BLAS library implementations.
-   --  This allows larger matrices and vectors to be computed efficiently,
-   --  taking into account memory hierarchy issues and vector instructions
-   --  that vary widely between machines.
 
    --  Operations that are defined in terms of operations on the type Real,
    --  such as addition, subtraction and scaling, are computed in the canonical
    --  way looping over all elements.
 
-   --  Operations for solving linear systems and computing determinant,
-   --  eigenvalues, eigensystem and inverse, are implemented using the
-   --  LAPACK library.
-
-   type BLAS_Real_Vector is array (Integer range <>) of Real;
-
-   package BLAS is new System.Generic_Complex_BLAS
-     (Real           => Real,
-      Complex_Types  => Complex_Types,
-      Complex_Vector => Complex_Vector,
-      Complex_Matrix => Complex_Matrix);
-
-   package LAPACK is new System.Generic_Complex_LAPACK
-     (Real           => Real,
-      Real_Vector    => BLAS_Real_Vector,
-      Complex_Types  => Complex_Types,
-      Complex_Vector => Complex_Vector,
-      Complex_Matrix => Complex_Matrix);
+   package Ops renames System.Generic_Array_Operations;
 
    subtype Real is Real_Arrays.Real;
    --  Work around visibility bug ???
 
-   use BLAS, LAPACK;
+   function Is_Non_Zero (X : Complex) return Boolean is (X /= (0.0, 0.0));
+   --  Needed by Back_Substitute
 
-   --  Procedure versions of functions returning unconstrained values.
-   --  This allows for inlining the function wrapper.
+   procedure Back_Substitute is new Ops.Back_Substitute
+     (Scalar        => Complex,
+      Matrix        => Complex_Matrix,
+      Is_Non_Zero   => Is_Non_Zero);
 
-   procedure Eigenvalues
-     (A      : Complex_Matrix;
-      Values : out Real_Vector);
+   procedure Forward_Eliminate is new Ops.Forward_Eliminate
+    (Scalar        => Complex,
+     Real          => Real'Base,
+     Matrix        => Complex_Matrix,
+     Zero          => (0.0, 0.0),
+     One           => (1.0, 0.0));
 
-   procedure Inverse
-     (A      : Complex_Matrix;
-      R      : out Complex_Matrix);
-
-   procedure Solve
-     (A      : Complex_Matrix;
-      X      : Complex_Vector;
-      B      : out Complex_Vector);
-
-   procedure Solve
-     (A      : Complex_Matrix;
-      X      : Complex_Matrix;
-      B      : out Complex_Matrix);
-
-   procedure Transpose is new System.Generic_Array_Operations.Transpose
+   procedure Transpose is new Ops.Transpose
                                 (Scalar => Complex,
                                  Matrix => Complex_Matrix);
 
@@ -97,6 +66,12 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    --  not a square matrix, and otherwise returns its length.
 
    function Length is new Square_Matrix_Length (Complex, Complex_Matrix);
+
+   --  Instant a generic square root implementation here, in order to avoid
+   --  instantiating a complete copy of Generic_Elementary_Functions.
+   --  Speed of the square root is not a big concern here.
+
+   function Sqrt is new Ops.Sqrt (Real'Base);
 
    --  Instantiating the following subprograms directly would lead to
    --  name clashes, so use a local package.
@@ -155,6 +130,14 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                              Right_Vector  => Complex_Vector,
                              Zero          => (0.0, 0.0));
 
+      function "*" is new Inner_Product
+                            (Left_Scalar   => Complex,
+                             Right_Scalar  => Complex,
+                             Result_Scalar => Complex,
+                             Left_Vector   => Complex_Vector,
+                             Right_Vector  => Complex_Vector,
+                             Zero          => (0.0, 0.0));
+
       function "*" is new Outer_Product
                             (Left_Scalar   => Complex,
                              Right_Scalar  => Complex,
@@ -229,6 +212,15 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                              Result_Vector => Complex_Vector,
                              Zero          => (0.0, 0.0));
 
+      function "*" is new Matrix_Vector_Product
+                            (Left_Scalar   => Complex,
+                             Right_Scalar  => Complex,
+                             Result_Scalar => Complex,
+                             Matrix        => Complex_Matrix,
+                             Right_Vector  => Complex_Vector,
+                             Result_Vector => Complex_Vector,
+                             Zero          => (0.0, 0.0));
+
       function "*" is new Vector_Matrix_Product
                             (Left_Scalar   => Real'Base,
                              Right_Scalar  => Complex,
@@ -245,6 +237,24 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                              Left_Vector   => Complex_Vector,
                              Matrix        => Real_Matrix,
                              Result_Vector => Complex_Vector,
+                             Zero          => (0.0, 0.0));
+
+      function "*" is new Vector_Matrix_Product
+                            (Left_Scalar   => Complex,
+                             Right_Scalar  => Complex,
+                             Result_Scalar => Complex,
+                             Left_Vector   => Complex_Vector,
+                             Matrix        => Complex_Matrix,
+                             Result_Vector => Complex_Vector,
+                             Zero          => (0.0, 0.0));
+
+      function "*" is new Matrix_Matrix_Product
+                            (Left_Scalar   => Complex,
+                             Right_Scalar  => Complex,
+                             Result_Scalar => Complex,
+                             Left_Matrix   => Complex_Matrix,
+                             Right_Matrix  => Complex_Matrix,
+                             Result_Matrix => Complex_Matrix,
                              Zero          => (0.0, 0.0));
 
       function "*" is new Matrix_Matrix_Product
@@ -444,6 +454,15 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                              Left_Matrix   => Complex_Matrix,
                              Result_Matrix => Complex_Matrix,
                              Operation     => "/");
+
+      -----------
+      -- "abs" --
+      -----------
+
+      function "abs" is new L2_Norm
+                              (X_Scalar      => Complex,
+                               Result_Real   => Real'Base,
+                               X_Vector      => Complex_Vector);
 
       --------------
       -- Argument --
@@ -671,6 +690,16 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                              Y_Matrix      => Real_Matrix,
                              Update        => Set_Re);
 
+      -----------
+      -- Solve --
+      -----------
+
+      function Solve is
+         new Matrix_Vector_Solution (Complex, Complex_Vector, Complex_Matrix);
+
+      function Solve is
+         new Matrix_Matrix_Solution (Complex, Complex_Matrix);
+
       -----------------
       -- Unit_Matrix --
       -----------------
@@ -686,7 +715,6 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                              Vector        => Complex_Vector,
                              Zero          => (0.0, 0.0),
                              One           => (1.0, 0.0));
-
    end Instantiations;
 
    ---------
@@ -696,15 +724,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    function "*"
      (Left  : Complex_Vector;
       Right : Complex_Vector) return Complex
-   is
-   begin
-      if Left'Length /= Right'Length then
-         raise Constraint_Error with
-            "vectors are of different length in inner product";
-      end if;
-
-      return dot (Left'Length, X => Left, Y => Right);
-   end "*";
+     renames Instantiations."*";
 
    function "*"
      (Left  : Real_Vector;
@@ -738,31 +758,8 @@ package body Ada.Numerics.Generic_Complex_Arrays is
 
    function "*"
      (Left  : Complex_Matrix;
-      Right : Complex_Matrix)
-      return  Complex_Matrix
-   is
-      R : Complex_Matrix (Left'Range (1), Right'Range (2));
-
-   begin
-      if Left'Length (2) /= Right'Length (1) then
-         raise Constraint_Error with
-            "incompatible dimensions in matrix-matrix multiplication";
-      end if;
-
-      gemm (Trans_A => No_Trans'Access,
-            Trans_B => No_Trans'Access,
-            M       => Right'Length (2),
-            N       => Left'Length (1),
-            K       => Right'Length (1),
-            A       => Right,
-            Ld_A    => Right'Length (2),
-            B       => Left,
-            Ld_B    => Left'Length (2),
-            C       => R,
-            Ld_C    => R'Length (2));
-
-      return R;
-   end "*";
+      Right : Complex_Matrix) return  Complex_Matrix
+     renames Instantiations."*";
 
    function "*"
      (Left  : Complex_Vector;
@@ -772,48 +769,12 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    function "*"
      (Left  : Complex_Vector;
       Right : Complex_Matrix) return Complex_Vector
-   is
-      R : Complex_Vector (Right'Range (2));
-
-   begin
-      if Left'Length /= Right'Length (1) then
-         raise Constraint_Error with
-           "incompatible dimensions in vector-matrix multiplication";
-      end if;
-
-      gemv (Trans => No_Trans'Access,
-            M     => Right'Length (2),
-            N     => Right'Length (1),
-            A     => Right,
-            Ld_A  => Right'Length (2),
-            X     => Left,
-            Y     => R);
-
-      return R;
-   end "*";
+     renames Instantiations."*";
 
    function "*"
      (Left  : Complex_Matrix;
       Right : Complex_Vector) return Complex_Vector
-   is
-      R : Complex_Vector (Left'Range (1));
-
-   begin
-      if Left'Length (2) /= Right'Length then
-         raise Constraint_Error with
-            "incompatible dimensions in matrix-vector multiplication";
-      end if;
-
-      gemv (Trans => Trans'Access,
-            M     => Left'Length (2),
-            N     => Left'Length (1),
-            A     => Left,
-            Ld_A  => Left'Length (2),
-            X     => Right,
-            Y     => R);
-
-      return R;
-   end "*";
+     renames Instantiations."*";
 
    function "*"
      (Left  : Real_Matrix;
@@ -984,10 +945,8 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -- "abs" --
    -----------
 
-   function "abs" (Right : Complex_Vector) return Complex is
-   begin
-      return (nrm2 (Right'Length, Right), 0.0);
-   end "abs";
+   function "abs" (Right : Complex_Vector) return Real'Base
+      renames Instantiations."abs";
 
    --------------
    -- Argument --
@@ -1070,38 +1029,12 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -----------------
 
    function Determinant (A : Complex_Matrix) return Complex is
-      N    : constant Integer := Length (A);
-      LU   : Complex_Matrix (1 .. N, 1 .. N) := A;
-      Piv  : Integer_Vector (1 .. N);
-      Info : aliased Integer := -1;
-      Neg  : Boolean;
-      Det  : Complex;
-
+      M : Complex_Matrix := A;
+      B : Complex_Matrix (A'Range (1), 1 .. 0);
+      R : Complex;
    begin
-      if N = 0 then
-         return (0.0, 0.0);
-      end if;
-
-      getrf (N, N, LU, N, Piv, Info'Access);
-
-      if Info /= 0 then
-         raise Constraint_Error with "ill-conditioned matrix";
-      end if;
-
-      Det := LU (1, 1);
-      Neg := Piv (1) /= 1;
-
-      for J in 2 .. N loop
-         Det := Det * LU (J, J);
-         Neg := Neg xor (Piv (J) /= J);
-      end loop;
-
-      if Neg then
-         return -Det;
-
-      else
-         return Det;
-      end if;
+      Forward_Eliminate (M, B, R);
+      return R;
    end Determinant;
 
    -----------------
@@ -1113,174 +1046,96 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       Values  : out Real_Vector;
       Vectors : out Complex_Matrix)
    is
-      Job_Z    : aliased Character := 'V';
-      Rng      : aliased Character := 'A';
-      Uplo     : aliased Character := 'U';
+      N : constant Natural := Length (A);
 
-      N        : constant Natural := Length (A);
-      W        : BLAS_Real_Vector (Values'Range);
-      M        : Integer;
-      B        : Complex_Matrix (1 .. N, 1 .. N);
-      L_Work   : Complex_Vector (1 .. 1);
-      LR_Work  : BLAS_Real_Vector (1 .. 1);
-      LI_Work  : Integer_Vector (1 .. 1);
-      I_Supp_Z : Integer_Vector (1 .. 2 * N);
-      Info     : aliased Integer;
+      --  For a Hermitian matrix C, we convert the eigenvalue problem to a
+      --  real symmetric one: if C = A + i * B, then the (N, N) complex
+      --  eigenvalue problem:
+      --     (A + i * B) * (u + i * v) = Lambda * (u + i * v)
+      --
+      --  is equivalent to the (2 * N, 2 * N) real eigenvalue problem:
+      --     [  A, B ] [ u ] = Lambda * [ u ]
+      --     [ -B, A ] [ v ]            [ v ]
+      --
+      --  Note that the (2 * N, 2 * N) matrix above is symmetric, as
+      --  Transpose (A) = A and Transpose (B) = -B if C is Hermitian.
+
+      --  We solve this eigensystem using the real-valued algorithms. The final
+      --  result will have every eigenvalue twice, so in the sorted output we
+      --  just pick every second value, with associated eigenvector u + i * v.
+
+      M    : Real_Matrix (1 .. 2 * N, 1 .. 2 * N);
+      Vals : Real_Vector (1 .. 2 * N);
+      Vecs : Real_Matrix (1 .. 2 * N, 1 .. 2 * N);
 
    begin
-      if Values'Length /= N then
-         raise Constraint_Error with "wrong length for output vector";
-      end if;
-
-      if Vectors'First (1) /= A'First (1)
-        or else Vectors'Last (1) /= A'Last (1)
-        or else Vectors'First (2) /= A'First (2)
-        or else Vectors'Last (2) /= A'Last (2)
-      then
-         raise Constraint_Error with "wrong dimensions for output matrix";
-      end if;
-
-      if N = 0 then
-         return;
-      end if;
-
-      --  Check for hermitian matrix ???
-      --  Copy only required triangle ???
-
-      B := A;
-
-      --  Find size of work area
-
-      heevr
-        (Job_Z'Access, Rng'Access, Uplo'Access, N, B, N,
-         M        => M,
-         W        => W,
-         Z        => Vectors,
-         Ld_Z     => N,
-         I_Supp_Z => I_Supp_Z,
-         Work     => L_Work,
-         L_Work   => -1,
-         R_Work   => LR_Work,
-         LR_Work  => -1,
-         I_Work   => LI_Work,
-         LI_Work  => -1,
-         Info     => Info'Access);
-
-      if Info /= 0 then
-         raise Constraint_Error;
-      end if;
-
-      declare
-         Work   : Complex_Vector (1 .. Integer (L_Work (1).Re));
-         R_Work : BLAS_Real_Vector (1 .. Integer (LR_Work (1)));
-         I_Work : Integer_Vector (1 .. LI_Work (1));
-
-      begin
-         heevr
-           (Job_Z'Access, Rng'Access, Uplo'Access, N, B, N,
-            M        => M,
-            W        => W,
-            Z        => Vectors,
-            Ld_Z     => N,
-            I_Supp_Z => I_Supp_Z,
-            Work     => Work,
-            L_Work   => Work'Length,
-            R_Work   => R_Work,
-            LR_Work  => LR_Work'Length,
-            I_Work   => I_Work,
-            LI_Work  => LI_Work'Length,
-            Info     => Info'Access);
-
-         if Info /= 0 then
-            raise Constraint_Error with "inverting non-Hermitian matrix";
-         end if;
-
-         for J in Values'Range loop
-            Values (J) := W (J);
+      for J in 1 .. N loop
+         for K in 1 .. N loop
+            declare
+               C : constant Complex :=
+                     (A (A'First (1) + (J - 1), A'First (2) + (K - 1)));
+            begin
+               M (J, K) := Re (C);
+               M (J + N, K + N) := Re (C);
+               M (J + N, K) := Im (C);
+               M (J, K + N) := -Im (C);
+            end;
          end loop;
-      end;
+      end loop;
+
+      Eigensystem (M, Vals, Vecs);
+
+      for J in 1 .. N loop
+         declare
+            Col : constant Integer := Values'First + (J - 1);
+         begin
+            Values (Col) := Vals (2 * J);
+
+            for K in 1 .. N loop
+               declare
+                  Row : constant Integer := Vectors'First (2) + (K - 1);
+               begin
+                  Vectors (Row, Col)
+                     := (Vecs (J * 2, Col), Vecs (J * 2, Col + N));
+               end;
+            end loop;
+         end;
+      end loop;
    end Eigensystem;
 
    -----------------
    -- Eigenvalues --
    -----------------
 
-   procedure Eigenvalues
-     (A      : Complex_Matrix;
-      Values : out Real_Vector)
-   is
-      Job_Z    : aliased Character := 'N';
-      Rng      : aliased Character := 'A';
-      Uplo     : aliased Character := 'U';
-      N        : constant Natural := Length (A);
-      B        : Complex_Matrix (1 .. N, 1 .. N) := A;
-      Z        : Complex_Matrix (1 .. 1, 1 .. 1);
-      W        : BLAS_Real_Vector (Values'Range);
-      L_Work   : Complex_Vector (1 .. 1);
-      LR_Work  : BLAS_Real_Vector (1 .. 1);
-      LI_Work  : Integer_Vector (1 .. 1);
-      I_Supp_Z : Integer_Vector (1 .. 2 * N);
-      M        : Integer;
-      Info     : aliased Integer;
-
-   begin
-      if Values'Length /= N then
-         raise Constraint_Error with "wrong length for output vector";
-      end if;
-
-      if N = 0 then
-         return;
-      end if;
-
-      --  Check for hermitian matrix ???
-
-      --  Find size of work area
-
-      heevr (Job_Z'Access, Rng'Access, Uplo'Access, N, B, N,
-             M        => M,
-             W        => W,
-             Z        => Z,
-             Ld_Z     => 1,
-             I_Supp_Z => I_Supp_Z,
-             Work     => L_Work,  L_Work  => -1,
-             R_Work   => LR_Work, LR_Work => -1,
-             I_Work   => LI_Work, LI_Work => -1,
-             Info     => Info'Access);
-
-      if Info /= 0 then
-         raise Constraint_Error;
-      end if;
-
-      declare
-         Work : Complex_Vector (1 .. Integer (L_Work (1).Re));
-         R_Work : BLAS_Real_Vector (1 .. Integer (LR_Work (1)));
-         I_Work : Integer_Vector (1 .. LI_Work (1));
-      begin
-         heevr (Job_Z'Access, Rng'Access, Uplo'Access, N, B, N,
-                M        => M,
-                W        => W,
-                Z        => Z,
-                Ld_Z     => 1,
-                I_Supp_Z => I_Supp_Z,
-                Work     => Work,   L_Work  => Work'Length,
-                R_Work   => R_Work, LR_Work => R_Work'Length,
-                I_Work   => I_Work, LI_Work => I_Work'Length,
-                Info     => Info'Access);
-
-         if Info /= 0 then
-            raise Constraint_Error with "inverting singular matrix";
-         end if;
-
-         for J in Values'Range loop
-            Values (J) := W (J);
-         end loop;
-      end;
-   end Eigenvalues;
-
    function Eigenvalues (A : Complex_Matrix) return Real_Vector is
+      --  See Eigensystem for a description of the algorithm
+
+      N : constant Natural := Length (A);
       R : Real_Vector (A'Range (1));
+
+      M    : Real_Matrix (1 .. 2 * N, 1 .. 2 * N);
+      Vals : Real_Vector (1 .. 2 * N);
    begin
-      Eigenvalues (A, R);
+      for J in 1 .. N loop
+         for K in 1 .. N loop
+            declare
+               C : constant Complex :=
+                     (A (A'First (1) + (J - 1), A'First (2) + (K - 1)));
+            begin
+               M (J, K) := Re (C);
+               M (J + N, K + N) := Re (C);
+               M (J + N, K) := Im (C);
+               M (J, K + N) := -Im (C);
+            end;
+         end loop;
+      end loop;
+
+      Vals := Eigenvalues (M);
+
+      for J in 1 .. N loop
+         R (A'First (1) + (J - 1)) := Vals (2 * J);
+      end loop;
+
       return R;
    end Eigenvalues;
 
@@ -1298,73 +1153,8 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -- Inverse --
    -------------
 
-   procedure Inverse (A : Complex_Matrix; R : out Complex_Matrix) is
-      N      : constant Integer := Length (A);
-      Piv    : Integer_Vector (1 .. N);
-      L_Work : Complex_Vector (1 .. 1);
-      Info   : aliased Integer := -1;
-
-   begin
-      --  All computations are done using column-major order, but this works
-      --  out fine, because Transpose (Inverse (Transpose (A))) = Inverse (A).
-
-      R := A;
-
-      --  Compute LU decomposition
-
-      getrf (M      => N,
-             N      => N,
-             A      => R,
-             Ld_A   => N,
-             I_Piv  => Piv,
-             Info   => Info'Access);
-
-      if Info /= 0 then
-         raise Constraint_Error with "inverting singular matrix";
-      end if;
-
-      --  Determine size of work area
-
-      getri (N      => N,
-             A      => R,
-             Ld_A   => N,
-             I_Piv  => Piv,
-             Work   => L_Work,
-             L_Work => -1,
-             Info   => Info'Access);
-
-      if Info /= 0 then
-         raise Constraint_Error;
-      end if;
-
-      declare
-         Work : Complex_Vector (1 .. Integer (L_Work (1).Re));
-
-      begin
-         --  Compute inverse from LU decomposition
-
-         getri (N      => N,
-                A      => R,
-                Ld_A   => N,
-                I_Piv  => Piv,
-                Work   => Work,
-                L_Work => Work'Length,
-                Info   => Info'Access);
-
-         if Info /= 0 then
-            raise Constraint_Error with "inverting singular matrix";
-         end if;
-
-         --  ??? Should iterate with gerfs, based on implementation advice
-      end;
-   end Inverse;
-
    function Inverse (A : Complex_Matrix) return Complex_Matrix is
-      R : Complex_Matrix (A'Range (2), A'Range (1));
-   begin
-      Inverse (A, R);
-      return R;
-   end Inverse;
+     (Solve (A, Unit_Matrix (Length (A))));
 
    -------------
    -- Modulus --
@@ -1418,53 +1208,15 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -- Solve --
    -----------
 
-   procedure Solve
-     (A : Complex_Matrix;
-      X : Complex_Vector;
-      B : out Complex_Vector)
-   is
-   begin
-      if Length (A) /= X'Length then
-         raise Constraint_Error with
-           "incompatible matrix and vector dimensions";
-      end if;
-
-      --  ??? Should solve directly, is faster and more accurate
-
-      B := Inverse (A) * X;
-   end Solve;
-
-   procedure Solve
-     (A : Complex_Matrix;
-      X : Complex_Matrix;
-      B : out Complex_Matrix)
-   is
-   begin
-      if Length (A) /= X'Length (1) then
-         raise Constraint_Error with "incompatible matrix dimensions";
-      end if;
-
-      --  ??? Should solve directly, is faster and more accurate
-
-      B := Inverse (A) * X;
-   end Solve;
-
    function Solve
      (A : Complex_Matrix;
       X : Complex_Vector) return Complex_Vector
-   is
-      B : Complex_Vector (A'Range (2));
-   begin
-      Solve (A, X, B);
-      return B;
-   end Solve;
+     renames Instantiations.Solve;
 
-   function Solve (A, X : Complex_Matrix) return Complex_Matrix is
-      B : Complex_Matrix (A'Range (2), X'Range (2));
-   begin
-      Solve (A, X, B);
-      return B;
-   end Solve;
+   function Solve
+     (A : Complex_Matrix;
+      X : Complex_Matrix) return Complex_Matrix
+     renames Instantiations.Solve;
 
    ---------------
    -- Transpose --

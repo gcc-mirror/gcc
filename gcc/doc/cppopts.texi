@@ -583,6 +583,37 @@ correct column numbers in warnings or errors, even if tabs appear on the
 line.  If the value is less than 1 or greater than 100, the option is
 ignored.  The default is 8.
 
+@item -fdebug-cpp
+@opindex fdebug-cpp
+This option is only useful for debugging GCC.  When used with
+@option{-E}, dumps debugging information about location maps.  Every
+token in the output is preceded by the dump of the map its location
+belongs to.  The dump of the map holding the location of a token would
+be:
+@quotation
+@{@samp{P}:@file{/file/path};@samp{F}:@file{/includer/path};@samp{L}:@var{line_num};@samp{C}:@var{col_num};@samp{S}:@var{system_header_p};@samp{M}:@var{map_address};@samp{E}:@var{macro_expansion_p},@samp{loc}:@var{location}@}
+@end quotation
+
+When used without @option{-E}, this option has no effect.
+
+@item -ftrack-macro-expansion@r{[}=@var{level}@r{]}
+@opindex ftrack-macro-expansion
+Track locations of tokens across macro expansions. This allows the
+compiler to emit diagnostic about the current macro expansion stack
+when a compilation error occurs in a macro expansion. Using this
+option makes the preprocessor and the compiler consume more
+memory. The @var{level} parameter can be used to choose the level of
+precision of token location tracking thus decreasing the memory
+consumption if necessary. Value @samp{0} of @var{level} de-activates
+this option just as if no @option{-ftrack-macro-expansion} was present
+on the command line. Value @samp{1} tracks tokens locations in a
+degraded mode for the sake of minimal memory overhead. In this mode
+all tokens resulting from the expansion of an argument of a
+function-like macro have the same location. Value @samp{2} tracks
+tokens locations completely. This value is the most memory hungry.
+When this option is given no argument, the default parameter value is
+@samp{2}.
+
 @item -fexec-charset=@var{charset}
 @opindex fexec-charset
 @cindex character set, execution

@@ -38,7 +38,6 @@ extern bool cris_valid_pic_const (rtx, bool);
 extern bool cris_store_multiple_op_p (rtx);
 extern bool cris_movem_load_rest_p (rtx, int);
 extern void cris_asm_output_symbol_ref (FILE *, rtx);
-extern bool cris_output_addr_const_extra (FILE *, rtx);
 extern int cris_cfun_uses_pic_table (void);
 extern void cris_asm_output_case_end (FILE *, int, rtx);
 extern rtx cris_gen_movem_load (rtx, rtx, int);

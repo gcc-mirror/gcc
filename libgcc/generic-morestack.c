@@ -512,7 +512,7 @@ __generic_morestack (size_t *pframe_size, void *old_stack, size_t param_size)
   current = *pp;
 
   if (current == NULL)
-    current = allocate_segment (frame_size);
+    current = allocate_segment (frame_size + param_size);
 
   current->old_stack = old_stack;
 

@@ -1638,11 +1638,11 @@ package Opt is
    --  GNAT
    --  This is the value of the configuration switch for the Ada 83 mode, as
    --  set by the command line switches -gnat83/95/05, and possibly modified by
-   --  the use of configuration pragmas Ada_83/Ada95/Ada05. This switch is used
-   --  to set the initial value for Ada_Version mode at the start of analysis
-   --  of a unit. Note however, that the setting of this flag is ignored for
-   --  internal and predefined units (which are always compiled in the most up
-   --  to date version of Ada).
+   --  the use of configuration pragmas Ada_*. This switch is used to set the
+   --  initial value for Ada_Version mode at the start of analysis of a unit.
+   --  Note however that the setting of this flag is ignored for internal and
+   --  predefined units (which are always compiled in the most up to date
+   --  version of Ada).
 
    Ada_Version_Explicit_Config : Ada_Version_Type;
    --  GNAT

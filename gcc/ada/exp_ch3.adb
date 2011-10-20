@@ -114,20 +114,6 @@ package body Exp_Ch3 is
    --  removing the implicit call that would otherwise constitute elaboration
    --  code.
 
-   function Build_Master_Renaming
-     (N : Node_Id;
-      T : Entity_Id) return Entity_Id;
-   --  If the designated type of an access type is a task type or contains
-   --  tasks, we make sure that a _Master variable is declared in the current
-   --  scope, and then declare a renaming for it:
-   --
-   --    atypeM : Master_Id renames _Master;
-   --
-   --  where atyp is the name of the access type. This declaration is used when
-   --  an allocator for the access type is expanded. The node is the full
-   --  declaration of the designated type that contains tasks. The renaming
-   --  declaration is inserted before N, and after the Master declaration.
-
    procedure Build_Record_Init_Proc (N : Node_Id; Rec_Ent : Entity_Id);
    --  Build record initialization procedure. N is the type declaration
    --  node, and Rec_Ent is the corresponding entity for the record type.
@@ -776,132 +762,6 @@ package body Exp_Ch3 is
          end if;
       end if;
    end Build_Array_Init_Proc;
-
-   -----------------------------
-   -- Build_Class_Wide_Master --
-   -----------------------------
-
-   procedure Build_Class_Wide_Master (T : Entity_Id) is
-      Loc          : constant Source_Ptr := Sloc (T);
-      Master_Id    : Entity_Id;
-      Master_Scope : Entity_Id;
-      Name_Id      : Node_Id;
-      Related_Node : Node_Id;
-      Ren_Decl     : Node_Id;
-
-   begin
-      --  Nothing to do if there is no task hierarchy
-
-      if Restriction_Active (No_Task_Hierarchy) then
-         return;
-      end if;
-
-      --  Find the declaration that created the access type. It is either a
-      --  type declaration, or an object declaration with an access definition,
-      --  in which case the type is anonymous.
-
-      if Is_Itype (T) then
-         Related_Node := Associated_Node_For_Itype (T);
-      else
-         Related_Node := Parent (T);
-      end if;
-
-      Master_Scope := Find_Master_Scope (T);
-
-      --  Nothing to do if the master scope already contains a _master entity.
-      --  The only exception to this is the following scenario:
-
-      --    Source_Scope
-      --       Transient_Scope_1
-      --          _master
-
-      --       Transient_Scope_2
-      --          use of master
-
-      --  In this case the source scope is marked as having the master entity
-      --  even though the actual declaration appears inside an inner scope. If
-      --  the second transient scope requires a _master, it cannot use the one
-      --  already declared because the entity is not visible.
-
-      Name_Id := Make_Identifier (Loc, Name_uMaster);
-
-      if not Has_Master_Entity (Master_Scope)
-        or else No (Current_Entity_In_Scope (Name_Id))
-      then
-         declare
-            Master_Decl : Node_Id;
-
-         begin
-            Set_Has_Master_Entity (Master_Scope);
-
-            --  Generate:
-            --    _master : constant Integer := Current_Master.all;
-
-            Master_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_uMaster),
-                Constant_Present    => True,
-                Object_Definition   =>
-                  New_Reference_To (Standard_Integer, Loc),
-                Expression          =>
-                  Make_Explicit_Dereference (Loc,
-                    New_Reference_To (RTE (RE_Current_Master), Loc)));
-
-            Insert_Action (Related_Node, Master_Decl);
-            Analyze (Master_Decl);
-
-            --  Mark the containing scope as a task master. Masters associated
-            --  with return statements are already marked at this stage (see
-            --  Analyze_Subprogram_Body).
-
-            if Ekind (Current_Scope) /= E_Return_Statement then
-               declare
-                  Par : Node_Id := Related_Node;
-
-               begin
-                  while Nkind (Par) /= N_Compilation_Unit loop
-                     Par := Parent (Par);
-
-                     --  If we fall off the top, we are at the outer level, and
-                     --  the environment task is our effective master, so
-                     --  nothing to mark.
-
-                     if Nkind_In (Par, N_Block_Statement,
-                                       N_Subprogram_Body,
-                                       N_Task_Body)
-                     then
-                        Set_Is_Task_Master (Par);
-                        exit;
-                     end if;
-                  end loop;
-               end;
-            end if;
-         end;
-      end if;
-
-      Master_Id :=
-        Make_Defining_Identifier (Loc,
-          New_External_Name (Chars (T), 'M'));
-
-      --  Generate:
-      --    Mnn renames _master;
-
-      Ren_Decl :=
-        Make_Object_Renaming_Declaration (Loc,
-          Defining_Identifier => Master_Id,
-          Subtype_Mark        => New_Reference_To (Standard_Integer, Loc),
-          Name                => Name_Id);
-
-      Insert_Before (Related_Node, Ren_Decl);
-      Analyze (Ren_Decl);
-
-      Set_Master_Id (T, Master_Id);
-
-   exception
-      when RE_Not_Available =>
-         return;
-   end Build_Class_Wide_Master;
 
    --------------------------------
    -- Build_Discr_Checking_Funcs --
@@ -1672,65 +1532,6 @@ package body Exp_Ch3 is
       when RE_Not_Available =>
          return Empty_List;
    end Build_Initialization_Call;
-
-   ---------------------------
-   -- Build_Master_Renaming --
-   ---------------------------
-
-   function Build_Master_Renaming
-     (N : Node_Id;
-      T : Entity_Id) return Entity_Id
-   is
-      Loc  : constant Source_Ptr := Sloc (N);
-      M_Id : Entity_Id;
-      Decl : Node_Id;
-
-   begin
-      --  Nothing to do if there is no task hierarchy
-
-      if Restriction_Active (No_Task_Hierarchy) then
-         return Empty;
-      end if;
-
-      M_Id :=
-        Make_Defining_Identifier (Loc,
-          New_External_Name (Chars (T), 'M'));
-
-      Decl :=
-        Make_Object_Renaming_Declaration (Loc,
-          Defining_Identifier => M_Id,
-          Subtype_Mark        => New_Reference_To (RTE (RE_Master_Id), Loc),
-          Name                => Make_Identifier (Loc, Name_uMaster));
-      Insert_Before (N, Decl);
-      Analyze (Decl);
-      return M_Id;
-
-   exception
-      when RE_Not_Available =>
-         return Empty;
-   end Build_Master_Renaming;
-
-   ---------------------------
-   -- Build_Master_Renaming --
-   ---------------------------
-
-   procedure Build_Master_Renaming (N : Node_Id; T : Entity_Id) is
-      M_Id : Entity_Id;
-
-   begin
-      --  Nothing to do if there is no task hierarchy
-
-      if Restriction_Active (No_Task_Hierarchy) then
-         return;
-      end if;
-
-      M_Id := Build_Master_Renaming (N, T);
-      Set_Master_Id (T, M_Id);
-
-   exception
-      when RE_Not_Available =>
-         return;
-   end Build_Master_Renaming;
 
    ----------------------------
    -- Build_Record_Init_Proc --
@@ -4323,29 +4124,27 @@ package body Exp_Ch3 is
    ------------------------------------
 
    procedure Expand_N_Full_Type_Declaration (N : Node_Id) is
-      Def_Id : constant Entity_Id := Defining_Identifier (N);
-      B_Id   : constant Entity_Id := Base_Type (Def_Id);
-      Par_Id : Entity_Id;
-      FN     : Node_Id;
 
-      procedure Build_Master (Def_Id : Entity_Id);
-      --  Create the master associated with Def_Id
+      procedure Build_Master (Ptr_Typ : Entity_Id);
+      --  Create the master associated with Ptr_Typ
 
       ------------------
       -- Build_Master --
       ------------------
 
-      procedure Build_Master (Def_Id : Entity_Id) is
+      procedure Build_Master (Ptr_Typ : Entity_Id) is
+         Desig_Typ : constant Entity_Id := Designated_Type (Ptr_Typ);
+
       begin
          --  Anonymous access types are created for the components of the
          --  record parameter for an entry declaration. No master is created
          --  for such a type.
 
-         if Has_Task (Designated_Type (Def_Id))
-           and then Comes_From_Source (N)
+         if Comes_From_Source (N)
+           and then Has_Task (Desig_Typ)
          then
-            Build_Master_Entity (Def_Id);
-            Build_Master_Renaming (Parent (Def_Id), Def_Id);
+            Build_Master_Entity (Ptr_Typ);
+            Build_Master_Renaming (Ptr_Typ);
 
          --  Create a class-wide master because a Master_Id must be generated
          --  for access-to-limited-class-wide types whose root may be extended
@@ -4354,31 +4153,37 @@ package body Exp_Ch3 is
          --  Note: This code covers access-to-limited-interfaces because they
          --        can be used to reference tasks implementing them.
 
-         elsif Is_Class_Wide_Type (Designated_Type (Def_Id))
-           and then Is_Limited_Type (Designated_Type (Def_Id))
+         elsif Is_Limited_Class_Wide_Type (Desig_Typ)
            and then Tasking_Allowed
 
-            --  Do not create a class-wide master for types whose convention is
-            --  Java since these types cannot embed Ada tasks anyway. Note that
-            --  the following test cannot catch the following case:
+           --  Do not create a class-wide master for types whose convention is
+           --  Java since these types cannot embed Ada tasks anyway. Note that
+           --  the following test cannot catch the following case:
 
-            --      package java.lang.Object is
-            --         type Typ is tagged limited private;
-            --         type Ref is access all Typ'Class;
-            --      private
-            --         type Typ is tagged limited ...;
-            --         pragma Convention (Typ, Java)
-            --      end;
+           --      package java.lang.Object is
+           --         type Typ is tagged limited private;
+           --         type Ref is access all Typ'Class;
+           --      private
+           --         type Typ is tagged limited ...;
+           --         pragma Convention (Typ, Java)
+           --      end;
 
-            --  Because the convention appears after we have done the
-            --  processing for type Ref.
+           --  Because the convention appears after we have done the
+           --  processing for type Ref.
 
-           and then Convention (Designated_Type (Def_Id)) /= Convention_Java
-           and then Convention (Designated_Type (Def_Id)) /= Convention_CIL
+           and then Convention (Desig_Typ) /= Convention_Java
+           and then Convention (Desig_Typ) /= Convention_CIL
          then
-            Build_Class_Wide_Master (Def_Id);
+            Build_Class_Wide_Master (Ptr_Typ);
          end if;
       end Build_Master;
+
+      --  Local declarations
+
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      B_Id   : constant Entity_Id := Base_Type (Def_Id);
+      FN     : Node_Id;
+      Par_Id : Entity_Id;
 
    --  Start of processing for Expand_N_Full_Type_Declaration
 
@@ -4390,6 +4195,8 @@ package body Exp_Ch3 is
             Expand_Access_Protected_Subprogram_Type (N);
          end if;
 
+      --  Array of anonymous access-to-task pointers
+
       elsif Ada_Version >= Ada_2005
         and then Is_Array_Type (Def_Id)
         and then Is_Access_Type (Component_Type (Def_Id))
@@ -4400,73 +4207,57 @@ package body Exp_Ch3 is
       elsif Has_Task (Def_Id) then
          Expand_Previous_Access_Type (Def_Id);
 
+      --  Check the components of a record type or array of records for
+      --  anonymous access-to-task pointers.
+
       elsif Ada_Version >= Ada_2005
-        and then
-         (Is_Record_Type (Def_Id)
-           or else (Is_Array_Type (Def_Id)
-                      and then Is_Record_Type (Component_Type (Def_Id))))
+        and then (Is_Record_Type (Def_Id)
+                   or else
+                     (Is_Array_Type (Def_Id)
+                       and then Is_Record_Type (Component_Type (Def_Id))))
       then
          declare
-            Comp : Entity_Id;
-            Typ  : Entity_Id;
-            M_Id : Entity_Id;
+            Comp  : Entity_Id;
+            First : Boolean;
+            M_Id  : Entity_Id;
+            Typ   : Entity_Id;
 
          begin
-            --  Look for the first anonymous access type component
-
             if Is_Array_Type (Def_Id) then
                Comp := First_Entity (Component_Type (Def_Id));
             else
                Comp := First_Entity (Def_Id);
             end if;
 
+            --  Examine all components looking for anonymous access-to-task
+            --  types.
+
+            First := True;
             while Present (Comp) loop
                Typ := Etype (Comp);
 
-               exit when Is_Access_Type (Typ)
-                 and then Ekind (Typ) = E_Anonymous_Access_Type;
+               if Ekind (Typ) = E_Anonymous_Access_Type
+                 and then Has_Task (Available_View (Designated_Type (Typ)))
+                 and then No (Master_Id (Typ))
+               then
+                  --  Ensure that the record or array type have a _master
+
+                  if First then
+                     Build_Master_Entity (Def_Id);
+                     Build_Master_Renaming (Typ);
+                     M_Id := Master_Id (Typ);
+
+                     First := False;
+
+                  --  Reuse the same master to service any additional types
+
+                  else
+                     Set_Master_Id (Typ, M_Id);
+                  end if;
+               end if;
 
                Next_Entity (Comp);
             end loop;
-
-            --  If found we add a renaming declaration of master_id and we
-            --  associate it to each anonymous access type component. Do
-            --  nothing if the access type already has a master. This will be
-            --  the case if the array type is the packed array created for a
-            --  user-defined array type T, where the master_id is created when
-            --  expanding the declaration for T.
-
-            if Present (Comp)
-              and then Ekind (Typ) = E_Anonymous_Access_Type
-              and then not Restriction_Active (No_Task_Hierarchy)
-              and then No (Master_Id (Typ))
-
-               --  Do not consider run-times with no tasking support
-
-              and then RTE_Available (RE_Current_Master)
-              and then Has_Task (Non_Limited_Designated_Type (Typ))
-            then
-               Build_Master_Entity (Def_Id);
-               M_Id := Build_Master_Renaming (N, Def_Id);
-
-               if Is_Array_Type (Def_Id) then
-                  Comp := First_Entity (Component_Type (Def_Id));
-               else
-                  Comp := First_Entity (Def_Id);
-               end if;
-
-               while Present (Comp) loop
-                  Typ := Etype (Comp);
-
-                  if Is_Access_Type (Typ)
-                    and then Ekind (Typ) = E_Anonymous_Access_Type
-                  then
-                     Set_Master_Id (Typ, M_Id);
-                  end if;
-
-                  Next_Entity (Comp);
-               end loop;
-            end if;
          end;
       end if;
 
@@ -4482,7 +4273,7 @@ package body Exp_Ch3 is
       end if;
 
       if Nkind (Type_Definition (Original_Node (N))) =
-                                                N_Derived_Type_Definition
+                                                   N_Derived_Type_Definition
         and then not Is_Tagged_Type (Def_Id)
         and then Present (Freeze_Node (Par_Id))
         and then Present (TSS_Elist (Freeze_Node (Par_Id)))
@@ -5387,23 +5178,31 @@ package body Exp_Ch3 is
    ---------------------------------
 
    procedure Expand_Previous_Access_Type (Def_Id : Entity_Id) is
-      T : Entity_Id := First_Entity (Current_Scope);
+      Ptr_Typ : Entity_Id;
 
    begin
-      --  Find all access types declared in the current scope, whose
-      --  designated type is Def_Id. If it does not have a Master_Id,
-      --  create one now.
+      --  Find all access types in the current scope whose designated type is
+      --  Def_Id and build master renamings for them.
 
-      while Present (T) loop
-         if Is_Access_Type (T)
-           and then Designated_Type (T) = Def_Id
-           and then No (Master_Id (T))
+      Ptr_Typ := First_Entity (Current_Scope);
+      while Present (Ptr_Typ) loop
+         if Is_Access_Type (Ptr_Typ)
+           and then Designated_Type (Ptr_Typ) = Def_Id
+           and then No (Master_Id (Ptr_Typ))
          then
+            --  Ensure that the designated type has a master
+
             Build_Master_Entity (Def_Id);
-            Build_Master_Renaming (Parent (Def_Id), T);
+
+            --  Private and incomplete types complicate the insertion of master
+            --  renamings because the access type may precede the full view of
+            --  the designated type. For this reason, the master renamings are
+            --  inserted relative to the designated type.
+
+            Build_Master_Renaming (Ptr_Typ, Ins_Nod => Parent (Def_Id));
          end if;
 
-         Next_Entity (T);
+         Next_Entity (Ptr_Typ);
       end loop;
    end Expand_Previous_Access_Type;
 
@@ -6289,7 +6088,7 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-      --  In the non-tagged case, ever since Ada83 an equality function must
+      --  In the non-tagged case, ever since Ada 83 an equality function must
       --  be  provided for variant records that are not unchecked unions.
       --  In Ada 2012 the equality function composes, and thus must be built
       --  explicitly just as for tagged records.

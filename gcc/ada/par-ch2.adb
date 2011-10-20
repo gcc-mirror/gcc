@@ -59,33 +59,10 @@ package body Ch2 is
    begin
       --  All set if we do indeed have an identifier
 
+      --  Code duplication, see Par_Ch3.P_Defining_Identifier???
+
       if Token = Tok_Identifier then
-
-         --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
-         --  OVERRIDING, and SYNCHRONIZED are new reserved words.
-
-         if Ada_Version = Ada_95
-           and then Warn_On_Ada_2005_Compatibility
-         then
-            if Token_Name = Name_Overriding
-              or else Token_Name = Name_Synchronized
-              or else (Token_Name = Name_Interface
-                        and then Prev_Token /= Tok_Pragma)
-            then
-               Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
-            end if;
-         end if;
-
-         --  Similarly, warn about Ada 2012 reserved words
-
-         if Ada_Version in Ada_95 .. Ada_2005
-           and then Warn_On_Ada_2012_Compatibility
-         then
-            if Token_Name = Name_Some then
-               Error_Msg_N ("& is a reserved word in Ada 2012?", Token_Node);
-            end if;
-         end if;
-
+         Check_Future_Keyword;
          Ident_Node := Token_Node;
          Scan; -- past Identifier
          return Ident_Node;

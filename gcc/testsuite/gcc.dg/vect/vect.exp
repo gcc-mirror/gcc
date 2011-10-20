@@ -39,14 +39,14 @@ if ![check_vect_support_and_set_flags] {
     return
 }
 
-global VEC_FLAGS
-set VEC_FLAGS $DEFAULT_VECTCFLAGS
-
 # These flags are used for all targets.
 lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model"
 
 # Initialize `dg'.
 dg-init
+
+global VEC_FLAGS
+set VEC_FLAGS $DEFAULT_VECTCFLAGS
 
 global O1_VECTCFLAGS
 set O1_VECTCFLAGS $DEFAULT_VECTCFLAGS
@@ -64,8 +64,8 @@ lappend DEFAULT_VECTCFLAGS "-O2"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/nodump-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
-# "-O -fdump-tree-veclower"
-lappend VEC_FLAGS "-O" "-fdump-tree-veclower"
+# "-O -fdump-tree-veclower2"
+lappend VEC_FLAGS "-O" "-fdump-tree-veclower2"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vec-scal-*.\[cS\]]]  \
         "" $VEC_FLAGS
 

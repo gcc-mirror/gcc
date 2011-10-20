@@ -1266,7 +1266,7 @@ build_static_field_ref (tree fdecl)
       int cpool_index = alloc_constant_fieldref (output_class, fdecl);
       tree cache_entry = build_fieldref_cache_entry (cpool_index, fdecl);
       tree test
-        = build_call_expr (built_in_decls[BUILT_IN_EXPECT], 2,
+        = build_call_expr (builtin_decl_implicit (BUILT_IN_EXPECT), 2,
 			   build2 (EQ_EXPR, boolean_type_node,
 				   cache_entry, null_pointer_node),
 			   boolean_false_node);

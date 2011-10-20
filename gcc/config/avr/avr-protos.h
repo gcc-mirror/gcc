@@ -82,7 +82,9 @@ extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
-extern const char* avr_out_plus (rtx*, int*);
+extern const char* avr_out_plus (rtx*, int*, int*);
+extern const char* avr_out_plus_noclobber (rtx*, int*, int*);
+extern const char* avr_out_addto_sp (rtx*, int*);
 extern bool avr_popcount_each_byte (rtx, int, int);
 
 extern int extra_constraint_Q (rtx x);
@@ -105,7 +107,10 @@ extern int avr_simplify_comparison_p (enum machine_mode mode,
 extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern void out_shift_with_cnt (const char *templ, rtx insn,
 				rtx operands[], int *len, int t_len);
+extern reg_class_t avr_mode_code_base_reg_class (enum machine_mode, RTX_CODE, RTX_CODE);
+extern bool avr_regno_mode_code_ok_for_base_p (int, enum machine_mode, RTX_CODE, RTX_CODE);
 extern rtx avr_incoming_return_addr_rtx (void);
+extern rtx avr_legitimize_reload_address (rtx, enum machine_mode, int, int, int, int, rtx (*)(rtx,int));
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE

@@ -139,7 +139,7 @@ static tree
 builtin_decl_for_precision (enum built_in_function base_built_in,
 			    int precision)
 {
-  int i = END_BUILTINS;
+  enum built_in_function i = END_BUILTINS;
 
   gfc_intrinsic_map_t *m;
   for (m = gfc_intrinsic_map; m->double_built_in != base_built_in ; m++)
@@ -158,7 +158,7 @@ builtin_decl_for_precision (enum built_in_function base_built_in,
       return m->real16_decl;
     }
 
-  return (i == END_BUILTINS ? NULL_TREE : built_in_decls[i]);
+  return (i == END_BUILTINS ? NULL_TREE : builtin_decl_explicit (i));
 }
 
 
@@ -679,26 +679,28 @@ gfc_build_intrinsic_lib_fndecls (void)
        m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
     {
       if (m->float_built_in != END_BUILTINS)
-	m->real4_decl = built_in_decls[m->float_built_in];
+	m->real4_decl = builtin_decl_explicit (m->float_built_in);
       if (m->complex_float_built_in != END_BUILTINS)
-	m->complex4_decl = built_in_decls[m->complex_float_built_in];
+	m->complex4_decl = builtin_decl_explicit (m->complex_float_built_in);
       if (m->double_built_in != END_BUILTINS)
-	m->real8_decl = built_in_decls[m->double_built_in];
+	m->real8_decl = builtin_decl_explicit (m->double_built_in);
       if (m->complex_double_built_in != END_BUILTINS)
-	m->complex8_decl = built_in_decls[m->complex_double_built_in];
+	m->complex8_decl = builtin_decl_explicit (m->complex_double_built_in);
 
       /* If real(kind=10) exists, it is always long double.  */
       if (m->long_double_built_in != END_BUILTINS)
-	m->real10_decl = built_in_decls[m->long_double_built_in];
+	m->real10_decl = builtin_decl_explicit (m->long_double_built_in);
       if (m->complex_long_double_built_in != END_BUILTINS)
-	m->complex10_decl = built_in_decls[m->complex_long_double_built_in];
+	m->complex10_decl
+	  = builtin_decl_explicit (m->complex_long_double_built_in);
 
       if (!gfc_real16_is_float128)
 	{
 	  if (m->long_double_built_in != END_BUILTINS)
-	    m->real16_decl = built_in_decls[m->long_double_built_in];
+	    m->real16_decl = builtin_decl_explicit (m->long_double_built_in);
 	  if (m->complex_long_double_built_in != END_BUILTINS)
-	    m->complex16_decl = built_in_decls[m->complex_long_double_built_in];
+	    m->complex16_decl
+	      = builtin_decl_explicit (m->complex_long_double_built_in);
 	}
       else if (quad_decls[m->double_built_in] != NULL_TREE)
         {
@@ -924,18 +926,37 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 /* Convert the last ref of a scalar coarray from an AR_ELEMENT to an
    AR_FULL, suitable for the scalarizer.  */
 
-static void
-convert_element_to_coarray_ref (gfc_expr *expr)
+static gfc_ss *
+walk_coarray (gfc_expr *e)
 {
-  gfc_ref *ref;
+  gfc_ss *ss;
 
-  for (ref = expr->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->next == NULL
-	&& ref->u.ar.codimen)
-      {
-	ref->u.ar.type = AR_FULL;
-	break;
-      }
+  gcc_assert (gfc_get_corank (e) > 0);
+
+  ss = gfc_walk_expr (e);
+
+  /* Fix scalar coarray.  */
+  if (ss == gfc_ss_terminator)
+    {
+      gfc_ref *ref;
+
+      ref = e->ref;
+      while (ref)
+	{
+	  if (ref->type == REF_ARRAY
+	      && ref->u.ar.codimen > 0)
+	    break;
+
+	  ref = ref->next;
+	}
+
+      gcc_assert (ref != NULL);
+      if (ref->u.ar.type == AR_ELEMENT)
+	ref->u.ar.type = AR_SECTION;
+      ss = gfc_reverse_ss (gfc_walk_array_ref (ss, e, ref));
+    }
+
+  return ss;
 }
 
 
@@ -969,11 +990,9 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
-  if (expr->value.function.actual->expr->rank == 0)
-    convert_element_to_coarray_ref (expr->value.function.actual->expr);
-  ss = gfc_walk_expr (expr->value.function.actual->expr);
+  ss = walk_coarray (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
-  ss->data.info.codimen = corank;
+  argse.want_coarray = 1;
   gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
@@ -1156,11 +1175,9 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
-  if (expr->value.function.actual->expr->rank == 0)
-    convert_element_to_coarray_ref (expr->value.function.actual->expr);
-  ss = gfc_walk_expr (expr->value.function.actual->expr);
+  ss = walk_coarray (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
-  ss->data.info.codimen = corank;
+  argse.want_coarray = 1;
   gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
@@ -1482,12 +1499,10 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
   corank = gfc_get_corank (arg->expr);
 
-  if (expr->value.function.actual->expr->rank == 0)
-    convert_element_to_coarray_ref (expr->value.function.actual->expr);
-  ss = gfc_walk_expr (arg->expr);
+  ss = walk_coarray (arg->expr);
   gcc_assert (ss != gfc_ss_terminator);
-  ss->data.info.codimen = corank;
   gfc_init_se (&argse, NULL);
+  argse.want_coarray = 1;
 
   gfc_conv_expr_descriptor (&argse, arg->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -2202,7 +2217,8 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
       if (FLOAT_TYPE_P (TREE_TYPE (mvar)))
 	{
 	  isnan = build_call_expr_loc (input_location,
-				   built_in_decls[BUILT_IN_ISNAN], 1, mvar);
+				       builtin_decl_explicit (BUILT_IN_ISNAN),
+				       1, mvar);
 	  tmp = fold_build2_loc (input_location, TRUTH_OR_EXPR,
 				 boolean_type_node, tmp,
 				 fold_convert (boolean_type_node, isnan));
@@ -4079,17 +4095,17 @@ gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
   if (argsize <= INT_TYPE_SIZE)
     {
       arg_type = unsigned_type_node;
-      func = built_in_decls[BUILT_IN_CLZ];
+      func = builtin_decl_explicit (BUILT_IN_CLZ);
     }
   else if (argsize <= LONG_TYPE_SIZE)
     {
       arg_type = long_unsigned_type_node;
-      func = built_in_decls[BUILT_IN_CLZL];
+      func = builtin_decl_explicit (BUILT_IN_CLZL);
     }
   else if (argsize <= LONG_LONG_TYPE_SIZE)
     {
       arg_type = long_long_unsigned_type_node;
-      func = built_in_decls[BUILT_IN_CLZLL];
+      func = builtin_decl_explicit (BUILT_IN_CLZLL);
     }
   else
     {
@@ -4128,7 +4144,7 @@ gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
 	 where ULL_MAX is the largest value that a ULL_MAX can hold
 	 (0xFFFFFFFFFFFFFFFF for a 64-bit long long type), and ULLSIZE
 	 is the bit-size of the long long type (64 in this example).  */
-      tree ullsize, ullmax, tmp1, tmp2;
+      tree ullsize, ullmax, tmp1, tmp2, btmp;
 
       ullsize = build_int_cst (result_type, LONG_LONG_TYPE_SIZE);
       ullmax = fold_build1_loc (input_location, BIT_NOT_EXPR,
@@ -4146,16 +4162,14 @@ gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
       tmp1 = fold_build2_loc (input_location, RSHIFT_EXPR, arg_type,
 			      arg, ullsize);
       tmp1 = fold_convert (long_long_unsigned_type_node, tmp1);
+      btmp = builtin_decl_explicit (BUILT_IN_CLZLL);
       tmp1 = fold_convert (result_type,
-			   build_call_expr_loc (input_location,	
-						built_in_decls[BUILT_IN_CLZLL],
-						1, tmp1));
+			   build_call_expr_loc (input_location, btmp, 1, tmp1));
 
       tmp2 = fold_convert (long_long_unsigned_type_node, arg);
+      btmp = builtin_decl_explicit (BUILT_IN_CLZLL);
       tmp2 = fold_convert (result_type,
-			   build_call_expr_loc (input_location,
-						built_in_decls[BUILT_IN_CLZLL],
-						1, tmp2));
+			   build_call_expr_loc (input_location, btmp, 1, tmp2));
       tmp2 = fold_build2_loc (input_location, PLUS_EXPR, result_type,
 			      tmp2, ullsize);
 
@@ -4198,17 +4212,17 @@ gfc_conv_intrinsic_trailz (gfc_se * se, gfc_expr *expr)
   if (argsize <= INT_TYPE_SIZE)
     {
       arg_type = unsigned_type_node;
-      func = built_in_decls[BUILT_IN_CTZ];
+      func = builtin_decl_explicit (BUILT_IN_CTZ);
     }
   else if (argsize <= LONG_TYPE_SIZE)
     {
       arg_type = long_unsigned_type_node;
-      func = built_in_decls[BUILT_IN_CTZL];
+      func = builtin_decl_explicit (BUILT_IN_CTZL);
     }
   else if (argsize <= LONG_LONG_TYPE_SIZE)
     {
       arg_type = long_long_unsigned_type_node;
-      func = built_in_decls[BUILT_IN_CTZLL];
+      func = builtin_decl_explicit (BUILT_IN_CTZLL);
     }
   else
     {
@@ -4242,7 +4256,7 @@ gfc_conv_intrinsic_trailz (gfc_se * se, gfc_expr *expr)
 	 where ULL_MAX is the largest value that a ULL_MAX can hold
 	 (0xFFFFFFFFFFFFFFFF for a 64-bit long long type), and ULLSIZE
 	 is the bit-size of the long long type (64 in this example).  */
-      tree ullsize, ullmax, tmp1, tmp2;
+      tree ullsize, ullmax, tmp1, tmp2, btmp;
 
       ullsize = build_int_cst (result_type, LONG_LONG_TYPE_SIZE);
       ullmax = fold_build1_loc (input_location, BIT_NOT_EXPR,
@@ -4257,18 +4271,16 @@ gfc_conv_intrinsic_trailz (gfc_se * se, gfc_expr *expr)
       tmp1 = fold_build2_loc (input_location, RSHIFT_EXPR, arg_type,
 			      arg, ullsize);
       tmp1 = fold_convert (long_long_unsigned_type_node, tmp1);
+      btmp = builtin_decl_explicit (BUILT_IN_CTZLL);
       tmp1 = fold_convert (result_type,
-			   build_call_expr_loc (input_location,	
-						built_in_decls[BUILT_IN_CTZLL],
-						1, tmp1));
+			   build_call_expr_loc (input_location, btmp, 1, tmp1));
       tmp1 = fold_build2_loc (input_location, PLUS_EXPR, result_type,
 			      tmp1, ullsize);
 
       tmp2 = fold_convert (long_long_unsigned_type_node, arg);
+      btmp = builtin_decl_explicit (BUILT_IN_CTZLL);
       tmp2 = fold_convert (result_type,
-			   build_call_expr_loc (input_location,
-						built_in_decls[BUILT_IN_CTZLL],
-						1, tmp2));
+			   build_call_expr_loc (input_location, btmp, 1, tmp2));
 
       trailz = fold_build3_loc (input_location, COND_EXPR, result_type,
 				cond, tmp1, tmp2);
@@ -4304,17 +4316,23 @@ gfc_conv_intrinsic_popcnt_poppar (gfc_se * se, gfc_expr *expr, int parity)
   if (argsize <= INT_TYPE_SIZE)
     {
       arg_type = unsigned_type_node;
-      func = built_in_decls[parity ? BUILT_IN_PARITY : BUILT_IN_POPCOUNT];
+      func = builtin_decl_explicit (parity
+				    ? BUILT_IN_PARITY
+				    : BUILT_IN_POPCOUNT);
     }
   else if (argsize <= LONG_TYPE_SIZE)
     {
       arg_type = long_unsigned_type_node;
-      func = built_in_decls[parity ? BUILT_IN_PARITYL : BUILT_IN_POPCOUNTL];
+      func = builtin_decl_explicit (parity
+				    ? BUILT_IN_PARITYL
+				    : BUILT_IN_POPCOUNTL);
     }
   else if (argsize <= LONG_LONG_TYPE_SIZE)
     {
       arg_type = long_long_unsigned_type_node;
-      func = built_in_decls[parity ? BUILT_IN_PARITYLL : BUILT_IN_POPCOUNTLL];
+      func = builtin_decl_explicit (parity
+				    ? BUILT_IN_PARITYLL
+				    : BUILT_IN_POPCOUNTLL);
     }
   else
     {
@@ -4327,7 +4345,9 @@ gfc_conv_intrinsic_popcnt_poppar (gfc_se * se, gfc_expr *expr, int parity)
 	 as 'long long'.  */
       gcc_assert (argsize == 2 * LONG_LONG_TYPE_SIZE);
 
-      func = built_in_decls[parity ? BUILT_IN_PARITYLL : BUILT_IN_POPCOUNTLL];
+      func = builtin_decl_explicit (parity
+				    ? BUILT_IN_PARITYLL
+				    : BUILT_IN_POPCOUNTLL);
 
       /* Convert it to an integer, and store into a variable.  */
       utype = gfc_build_uint_type (argsize);
@@ -4580,7 +4600,8 @@ gfc_conv_intrinsic_isnan (gfc_se * se, gfc_expr * expr)
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
   se->expr = build_call_expr_loc (input_location,
-			      built_in_decls[BUILT_IN_ISNAN], 1, arg);
+				  builtin_decl_explicit (BUILT_IN_ISNAN),
+				  1, arg);
   STRIP_TYPE_NOPS (se->expr);
   se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
 }
@@ -5490,7 +5511,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   /* Use memcpy to do the transfer.  */
   tmp = build_call_expr_loc (input_location,
-			 built_in_decls[BUILT_IN_MEMCPY],
+			 builtin_decl_explicit (BUILT_IN_MEMCPY),
 			 3,
 			 tmp,
 			 fold_convert (pvoid_type_node, source),
@@ -5535,7 +5556,7 @@ scalar_transfer:
       gfc_add_modify (&block, tmpdecl,
 		      fold_convert (TREE_TYPE (ptr), tmp));
       tmp = build_call_expr_loc (input_location,
-			     built_in_decls[BUILT_IN_MEMCPY], 3,
+			     builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 			     fold_convert (pvoid_type_node, tmpdecl),
 			     fold_convert (pvoid_type_node, ptr),
 			     extent);
@@ -5560,7 +5581,7 @@ scalar_transfer:
       /* Use memcpy to do the transfer.  */
       tmp = gfc_build_addr_expr (NULL_TREE, tmpdecl);
       tmp = build_call_expr_loc (input_location,
-			     built_in_decls[BUILT_IN_MEMCPY], 3,
+			     builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 			     fold_convert (pvoid_type_node, tmp),
 			     fold_convert (pvoid_type_node, ptr),
 			     extent);
@@ -6001,7 +6022,8 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
   tmp = fold_build_pointer_plus_loc (input_location,
 				     fold_convert (pvoid_type_node, dest), tmp);
   tmp = build_call_expr_loc (input_location,
-			     built_in_decls[BUILT_IN_MEMMOVE], 3, tmp, src,
+			     builtin_decl_explicit (BUILT_IN_MEMMOVE),
+			     3, tmp, src,
 			     fold_build2_loc (input_location, MULT_EXPR,
 					      size_type_node, slen,
 					      fold_convert (size_type_node,

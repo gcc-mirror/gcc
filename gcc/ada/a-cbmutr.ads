@@ -182,7 +182,7 @@ package Ada.Containers.Bounded_Multiway_Trees is
    function Iterate_Children
      (Container : Tree;
       Parent    : Cursor)
-     return Tree_Iterator_Interfaces.Reversible_Iterator'Class;
+      return Tree_Iterator_Interfaces.Reversible_Iterator'Class;
 
    function Child_Count (Parent : Cursor) return Count_Type;
 

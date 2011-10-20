@@ -123,23 +123,26 @@ namespace __cxxabiv1
   void
   __cxa_guard_abort(__guard*) _GLIBCXX_NOTHROW;
 
-  // Pure virtual functions.
-  void
-  __cxa_pure_virtual(void) __attribute__ ((__noreturn__));
-
-  // Exception handling.
-  void
-  __cxa_bad_cast();
-
-  void
-  __cxa_bad_typeid();
-
   // DSO destruction.
   int
   __cxa_atexit(void (*)(void*), void*, void*) _GLIBCXX_NOTHROW;
 
   int
   __cxa_finalize(void*);
+
+  // Pure virtual functions.
+  void
+  __cxa_pure_virtual(void) __attribute__ ((__noreturn__));
+
+  void
+  __cxa_deleted_virtual(void) __attribute__ ((__noreturn__));
+
+  // Exception handling auxillary.
+  void 
+  __cxa_bad_cast() __attribute__((__noreturn__));
+
+  void 
+  __cxa_bad_typeid() __attribute__((__noreturn__));
 
 
   /**
@@ -185,6 +188,7 @@ namespace __cxxabiv1
   char*
   __cxa_demangle(const char* __mangled_name, char* __output_buffer,
 		 size_t* __length, int* __status);
+
 #ifdef __cplusplus
   }
 } // namespace __cxxabiv1
@@ -547,30 +551,89 @@ namespace __cxxabiv1
 		__upcast_result& __restrict __result) const;
   };
 
+  // Exception handling forward declarations.
+  struct __cxa_exception;
+  struct __cxa_refcounted_exception;
+  struct __cxa_dependent_exception;
+  struct __cxa_eh_globals;
+
+  extern "C"
+  {
   // Dynamic cast runtime.
+
   // src2dst has the following possible values
   //  >-1: src_type is a unique public non-virtual base of dst_type
   //       dst_ptr + src2dst == src_ptr
   //   -1: unspecified relationship
   //   -2: src_type is not a public base of dst_type
   //   -3: src_type is a multiple public non-virtual base of dst_type
-  extern "C" void*
+  void*
   __dynamic_cast(const void* __src_ptr, // Starting object.
 		 const __class_type_info* __src_type, // Static type of object.
 		 const __class_type_info* __dst_type, // Desired target type.
 		 ptrdiff_t __src2dst); // How src and dst are related.
 
 
+  // Exception handling runtime.
+
+  // The __cxa_eh_globals for the current thread can be obtained by using
+  // either of the following functions.  The "fast" version assumes at least
+  // one prior call of __cxa_get_globals has been made from the current
+  // thread, so no initialization is necessary.
+  __cxa_eh_globals*
+  __cxa_get_globals() _GLIBCXX_NOTHROW __attribute__ ((__const__));
+
+  __cxa_eh_globals*
+  __cxa_get_globals_fast() _GLIBCXX_NOTHROW __attribute__ ((__const__));
+
+  // Allocate memory for the primary exception plus the thrown object.
+  void*
+  __cxa_allocate_exception(size_t) _GLIBCXX_NOTHROW;
+
+  // Free the space allocated for the primary exception.
+  void 
+  __cxa_free_exception(void*) _GLIBCXX_NOTHROW;
+
+  // Throw the exception.
+  void
+  __cxa_throw(void*, std::type_info*, void (*) (void *)) 
+  __attribute__((__noreturn__));
+
+  // Used to implement exception handlers.
+  void*
+  __cxa_get_exception_ptr(void*) _GLIBCXX_NOTHROW __attribute__ ((__pure__));
+
+  void*
+  __cxa_begin_catch(void*) _GLIBCXX_NOTHROW;
+
+  void 
+  __cxa_end_catch();
+
+  void 
+  __cxa_rethrow() __attribute__((__noreturn__));
+
   // Returns the type_info for the currently handled exception [15.3/8], or
   // null if there is none.
-  extern "C" std::type_info*
+  std::type_info*
   __cxa_current_exception_type() _GLIBCXX_NOTHROW __attribute__ ((__pure__));
+
+  // GNU Extensions.
+
+  // Allocate memory for a dependent exception.
+  __cxa_dependent_exception*
+  __cxa_allocate_dependent_exception() _GLIBCXX_NOTHROW;
+
+  // Free the space allocated for the dependent exception.
+  void
+  __cxa_free_dependent_exception(__cxa_dependent_exception*) _GLIBCXX_NOTHROW;
+
+  } // extern "C"
 
   // A magic placeholder class that can be caught by reference
   // to recognize foreign exceptions.
   class __foreign_exception
   {
-    virtual ~__foreign_exception() _GLIBCXX_NOTHROW;
+    virtual ~__foreign_exception() throw();
     virtual void __pure_dummy() = 0; // prevent catch by value
   };
 

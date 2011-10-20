@@ -33,7 +33,7 @@
 --  reason for this is new Ada 2012 requirements that prohibit algorithms such
 --  as Strassen's algorithm, which may be used by some BLAS implementations. In
 --  addition, some platforms lacked suitable compilers to compile the reference
---  BLAS/LAPACK implementation. Finally, on many platforms there may be more
+--  BLAS/LAPACK implementation. Finally, on some platforms there are more
 --  floating point types than supported by BLAS/LAPACK.
 
 with Ada.Containers.Generic_Anonymous_Array_Sort; use Ada.Containers;
@@ -59,6 +59,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
    procedure Forward_Eliminate is new Ops.Forward_Eliminate
     (Scalar        => Real'Base,
+     Real          => Real'Base,
      Matrix        => Real_Matrix,
      Zero          => 0.0,
      One           => 1.0);
@@ -102,10 +103,10 @@ package body Ada.Numerics.Generic_Real_Arrays is
    procedure Swap (Left, Right : in out Real);
    --  Exchange Left and Right
 
-   function Sqrt (X : Real) return Real;
-   --  Sqrt is implemented locally here, in order to avoid dragging in all of
-   --  the elementary functions. Speed of the square root is not a big concern
-   --  here. This also avoids depending on a specific floating point type.
+   function Sqrt is new Ops.Sqrt (Real);
+   --  Instant a generic square root implementation here, in order to avoid
+   --  instantiating a complete copy of Generic_Elementary_Functions.
+   --  Speed of the square root is not a big concern here.
 
    ------------
    -- Rotate --
@@ -118,51 +119,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
       X := Old_X - Sin * (Old_Y + Old_X * Tau);
       Y := Old_Y + Sin * (Old_X - Old_Y * Tau);
    end Rotate;
-
-   ----------
-   -- Sqrt --
-   ----------
-
-   function Sqrt (X : Real) return Real is
-      Root, Next : Real;
-
-   begin
-      --  Be defensive: any comparisons with NaN values will yield False.
-
-      if not (X > 0.0) then
-         if X = 0.0 then
-            return X;
-         else
-            raise Argument_Error;
-         end if;
-      end if;
-
-      --  Compute an initial estimate based on:
-
-      --     X = M * R**E and Sqrt (X) = Sqrt (M) * R**(E / 2.0),
-
-      --  where M is the mantissa, R is the radix and E the exponent.
-
-      --  By ignoring the mantissa and ignoring the case of an odd
-      --  exponent, we get a final error that is at most R. In other words,
-      --  the result has about a single bit precision.
-
-      Root := Real (Real'Machine_Radix) ** (Real'Exponent (X) / 2);
-
-      --  Because of the poor initial estimate, use the Babylonian method of
-      --  computing the square root, as it is stable for all inputs. Every step
-      --  will roughly double the precision of the result. Just a few steps
-      --  suffice in most cases. Eight iterations should give about 2**8 bits
-      --  of precision.
-
-      for J in 1 .. 8 loop
-         Next := (Root + X / Root) / 2.0;
-         exit when Root = Next;
-         Root := Next;
-      end loop;
-
-      return Root;
-   end Sqrt;
 
    ----------
    -- Swap --
@@ -356,10 +312,14 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
       function "abs" is new
         L2_Norm
-          (Scalar        => Real'Base,
-           Vector        => Real_Vector,
-           Inner_Product => "*",
-           Sqrt          => Sqrt);
+          (X_Scalar      => Real'Base,
+           Result_Real   => Real'Base,
+           X_Vector      => Real_Vector,
+           "abs"         => "+");
+      --  While the L2_Norm by definition uses the absolute values of the
+      --  elements of X_Vector, for real values the subsequent squaring
+      --  makes this unnecessary, so we substitute the "+" identity function
+      --  instead.
 
       function "abs" is new
         Vector_Elementwise_Operation
@@ -376,6 +336,11 @@ package body Ada.Numerics.Generic_Real_Arrays is
            X_Matrix      => Real_Matrix,
            Result_Matrix => Real_Matrix,
            Operation     => "abs");
+
+      function Solve is
+         new Matrix_Vector_Solution (Real'Base, Real_Vector, Real_Matrix);
+
+      function Solve is new Matrix_Matrix_Solution (Real'Base, Real_Matrix);
 
       function Unit_Matrix is new
         Generic_Array_Operations.Unit_Matrix
@@ -736,58 +701,11 @@ package body Ada.Numerics.Generic_Real_Arrays is
    -- Solve --
    -----------
 
-   function Solve (A : Real_Matrix; X : Real_Vector) return Real_Vector is
-      N   : constant Natural := Length (A);
-      MA  : Real_Matrix := A;
-      MX  : Real_Matrix (A'Range (1), 1 .. 1);
-      R   : Real_Vector (A'Range (2));
-      Det : Real'Base;
+   function Solve (A : Real_Matrix; X : Real_Vector) return Real_Vector
+      renames Instantiations.Solve;
 
-   begin
-      if X'Length /= N then
-         raise Constraint_Error with "incompatible vector length";
-      end if;
-
-      for J in 0 .. MX'Length (1) - 1 loop
-         MX (MX'First (1) + J, 1) := X (X'First + J);
-      end loop;
-
-      Forward_Eliminate (MA, MX, Det);
-      Back_Substitute (MA, MX);
-
-      for J in 0 .. R'Length - 1 loop
-         R (R'First + J) := MX (MX'First (1) + J, 1);
-      end loop;
-
-      return R;
-   end Solve;
-
-   function Solve (A, X : Real_Matrix) return Real_Matrix is
-      N  : constant Natural := Length (A);
-      MA : Real_Matrix (A'Range (2), A'Range (2));
-      MB : Real_Matrix (A'Range (2), X'Range (2));
-      Det : Real'Base;
-
-   begin
-      if X'Length (1) /= N then
-         raise Constraint_Error with "matrices have unequal number of rows";
-      end if;
-
-      for J in 0 .. A'Length (1) - 1 loop
-         for K in MA'Range (2) loop
-            MA (MA'First (1) + J, K) := A (A'First (1) + J, K);
-         end loop;
-
-         for K in MB'Range (2) loop
-            MB (MB'First (1) + J, K) := X (X'First (1) + J, K);
-         end loop;
-      end loop;
-
-      Forward_Eliminate (MA, MB, Det);
-      Back_Substitute (MA, MB);
-
-      return MB;
-   end Solve;
+   function Solve (A, X : Real_Matrix) return Real_Matrix
+      renames Instantiations.Solve;
 
    ----------------------
    -- Sort_Eigensystem --

@@ -903,6 +903,14 @@ ideas of what it is for.  People use it as if it specified where to
 install part of GCC@.  Perhaps they make this assumption because
 installing GCC creates the directory.
 
+@item --with-native-system-header-dir=@var{dirname}
+Specifies that @var{dirname} is the directory that contains native system
+header files, rather than @file{/usr/include}.  This option is most useful
+if you are creating a compiler that should be isolated from the system
+as much as possible.  It is most commonly used with the
+@option{--with-sysroot} option and will cause GCC to search
+@var{dirname} inside the system root specified by that option.
+
 @item --enable-shared[=@var{package}[,@dots{}]]
 Build shared versions of libraries, if shared libraries are supported on
 the target platform.  Unlike GCC 2.95.x and earlier, shared libraries
@@ -1736,6 +1744,10 @@ target libraries (which runs on the build system) and the compiler newly
 installed with @code{make install}; it does not affect the compiler which is
 used to build GCC itself.
 
+If you specify the @option{--with-native-system-header-dir=@var{dirname}}
+option then the compiler will search that directory within @var{dirname} for
+native system headers rather than the default @file{/usr/include}.
+
 @item --with-build-sysroot
 @itemx --with-build-sysroot=@var{dir}
 Tells GCC to consider @var{dir} as the system root (see
@@ -1749,6 +1761,10 @@ which you are installing GCC and your target libraries.
 This option affects the system root for the compiler used to build
 target libraries (which runs on the build system); it does not affect
 the compiler which is used to build GCC itself.
+
+If you specify the @option{--with-native-system-header-dir=@var{dirname}}
+option then the compiler will search that directory within @var{dirname} for
+native system headers rather than the default @file{/usr/include}.
 
 @item --with-headers
 @itemx --with-headers=@var{dir}

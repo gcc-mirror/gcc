@@ -210,7 +210,6 @@ static void cp_lexer_commit_tokens
   (cp_lexer *);
 static void cp_lexer_rollback_tokens
   (cp_lexer *);
-#ifdef ENABLE_CHECKING
 static void cp_lexer_print_token
   (FILE *, cp_token *);
 static inline bool cp_lexer_debugging_p
@@ -219,15 +218,6 @@ static void cp_lexer_start_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
 static void cp_lexer_stop_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
-#else
-/* If we define cp_lexer_debug_stream to NULL it will provoke warnings
-   about passing NULL to functions that require non-NULL arguments
-   (fputs, fprintf).  It will never be used, so all we need is a value
-   of the right type that's guaranteed not to be NULL.  */
-#define cp_lexer_debug_stream stdout
-#define cp_lexer_print_token(str, tok) (void) 0
-#define cp_lexer_debugging_p(lexer) 0
-#endif /* ENABLE_CHECKING */
 
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
@@ -241,33 +231,64 @@ static void cp_parser_initial_pragma
 
 /* Variables.  */
 
-#ifdef ENABLE_CHECKING
 /* The stream to which debugging output should be written.  */
 static FILE *cp_lexer_debug_stream;
-#endif /* ENABLE_CHECKING */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
    sizeof, typeof, or alignof.  */
 int cp_unevaluated_operand;
 
-#ifdef ENABLE_CHECKING
-/* Dump up to NUM tokens in BUFFER to FILE.  If NUM is 0, dump all the
-   tokens.  */
+/* Dump up to NUM tokens in BUFFER to FILE starting with token
+   START_TOKEN.  If START_TOKEN is NULL, the dump starts with the
+   first token in BUFFER.  If NUM is 0, dump all the tokens.  If
+   CURR_TOKEN is set and it is one of the tokens in BUFFER, it will be
+   highlighted by surrounding it in [[ ]].  */
 
-void
-cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer, unsigned num)
+static void
+cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer,
+		      cp_token *start_token, unsigned num,
+		      cp_token *curr_token)
 {
-  unsigned i;
+  unsigned i, nprinted;
   cp_token *token;
+  bool do_print;
 
   fprintf (file, "%u tokens\n", VEC_length (cp_token, buffer));
+
+  if (buffer == NULL)
+    return;
 
   if (num == 0)
     num = VEC_length (cp_token, buffer);
 
-  for (i = 0; VEC_iterate (cp_token, buffer, i, token) && i < num; i++)
+  if (start_token == NULL)
+    start_token = VEC_address (cp_token, buffer);
+
+  if (start_token > VEC_address (cp_token, buffer))
     {
+      cp_lexer_print_token (file, VEC_index (cp_token, buffer, 0));
+      fprintf (file, " ... ");
+    }
+
+  do_print = false;
+  nprinted = 0;
+  for (i = 0; VEC_iterate (cp_token, buffer, i, token) && nprinted < num; i++)
+    {
+      if (token == start_token)
+	do_print = true;
+
+      if (!do_print)
+	continue;
+
+      nprinted++;
+      if (token == curr_token)
+	fprintf (file, "[[");
+
       cp_lexer_print_token (file, token);
+
+      if (token == curr_token)
+	fprintf (file, "]]");
+
       switch (token->type)
 	{
 	  case CPP_SEMICOLON:
@@ -298,9 +319,227 @@ cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer, unsigned num)
 void
 cp_lexer_debug_tokens (VEC(cp_token,gc) *buffer)
 {
-  cp_lexer_dump_tokens (stderr, buffer, 0);
+  cp_lexer_dump_tokens (stderr, buffer, NULL, 0, NULL);
 }
-#endif
+
+
+/* Dump the cp_parser tree field T to FILE if T is non-NULL.  DESC is the
+   description for T.  */
+
+static void
+cp_debug_print_tree_if_set (FILE *file, const char *desc, tree t)
+{
+  if (t)
+    {
+      fprintf (file, "%s: ", desc);
+      print_node_brief (file, "", t, 0);
+    }
+}
+
+
+/* Dump parser context C to FILE.  */
+
+static void
+cp_debug_print_context (FILE *file, cp_parser_context *c)
+{
+  const char *status_s[] = { "OK", "ERROR", "COMMITTED" };
+  fprintf (file, "{ status = %s, scope = ", status_s[c->status]);
+  print_node_brief (file, "", c->object_type, 0);
+  fprintf (file, "}\n");
+}
+
+
+/* Print the stack of parsing contexts to FILE starting with FIRST.  */
+
+static void
+cp_debug_print_context_stack (FILE *file, cp_parser_context *first)
+{
+  unsigned i;
+  cp_parser_context *c;
+
+  fprintf (file, "Parsing context stack:\n");
+  for (i = 0, c = first; c; c = c->next, i++)
+    {
+      fprintf (file, "\t#%u: ", i);
+      cp_debug_print_context (file, c);
+    }
+}
+
+
+/* Print the value of FLAG to FILE.  DESC is a string describing the flag.  */
+
+static void
+cp_debug_print_flag (FILE *file, const char *desc, bool flag)
+{
+  if (flag)
+    fprintf (file, "%s: true\n", desc);
+}
+
+
+/* Print an unparsed function entry UF to FILE.  */
+
+static void
+cp_debug_print_unparsed_function (FILE *file, cp_unparsed_functions_entry *uf)
+{
+  unsigned i;
+  cp_default_arg_entry *default_arg_fn;
+  tree fn;
+
+  fprintf (file, "\tFunctions with default args:\n");
+  for (i = 0;
+       VEC_iterate (cp_default_arg_entry, uf->funs_with_default_args, i,
+		    default_arg_fn);
+       i++)
+    {
+      fprintf (file, "\t\tClass type: ");
+      print_node_brief (file, "", default_arg_fn->class_type, 0);
+      fprintf (file, "\t\tDeclaration: ");
+      print_node_brief (file, "", default_arg_fn->decl, 0);
+      fprintf (file, "\n");
+    }
+
+  fprintf (file, "\n\tFunctions with definitions that require "
+	   "post-processing\n\t\t");
+  for (i = 0; VEC_iterate (tree, uf->funs_with_definitions, i, fn); i++)
+    {
+      print_node_brief (file, "", fn, 0);
+      fprintf (file, " ");
+    }
+  fprintf (file, "\n");
+
+  fprintf (file, "\n\tNon-static data members with initializers that require "
+           "post-processing\n\t\t");
+  for (i = 0; VEC_iterate (tree, uf->nsdmis, i, fn); i++)
+    {
+      print_node_brief (file, "", fn, 0);
+      fprintf (file, " ");
+    }
+  fprintf (file, "\n");
+}
+
+
+/* Print the stack of unparsed member functions S to FILE.  */
+
+static void
+cp_debug_print_unparsed_queues (FILE *file,
+				VEC(cp_unparsed_functions_entry, gc) *s)
+{
+  unsigned i;
+  cp_unparsed_functions_entry *uf;
+
+  fprintf (file, "Unparsed functions\n");
+  for (i = 0; VEC_iterate (cp_unparsed_functions_entry, s, i, uf); i++)
+    {
+      fprintf (file, "#%u:\n", i);
+      cp_debug_print_unparsed_function (file, uf);
+    }
+}
+
+
+/* Dump the tokens in a window of size WINDOW_SIZE around the next_token for
+   the given PARSER.  If FILE is NULL, the output is printed on stderr. */
+
+static void
+cp_debug_parser_tokens (FILE *file, cp_parser *parser, int window_size)
+{
+  cp_token *next_token, *first_token, *start_token;
+
+  if (file == NULL)
+    file = stderr;
+
+  next_token = parser->lexer->next_token;
+  first_token = VEC_address (cp_token, parser->lexer->buffer);
+  start_token = (next_token > first_token + window_size / 2)
+		? next_token - window_size / 2
+		: first_token;
+  cp_lexer_dump_tokens (file, parser->lexer->buffer, start_token, window_size,
+			next_token);
+}
+
+
+/* Dump debugging information for the given PARSER.  If FILE is NULL,
+   the output is printed on stderr.  */
+
+void
+cp_debug_parser (FILE *file, cp_parser *parser)
+{
+  const size_t window_size = 20;
+  cp_token *token;
+  expanded_location eloc;
+
+  if (file == NULL)
+    file = stderr;
+
+  fprintf (file, "Parser state\n\n");
+  fprintf (file, "Number of tokens: %u\n",
+	   VEC_length (cp_token, parser->lexer->buffer));
+  cp_debug_print_tree_if_set (file, "Lookup scope", parser->scope);
+  cp_debug_print_tree_if_set (file, "Object scope",
+				     parser->object_scope);
+  cp_debug_print_tree_if_set (file, "Qualifying scope",
+				     parser->qualifying_scope);
+  cp_debug_print_context_stack (file, parser->context);
+  cp_debug_print_flag (file, "Allow GNU extensions",
+			      parser->allow_gnu_extensions_p);
+  cp_debug_print_flag (file, "'>' token is greater-than",
+			      parser->greater_than_is_operator_p);
+  cp_debug_print_flag (file, "Default args allowed in current "
+			      "parameter list", parser->default_arg_ok_p);
+  cp_debug_print_flag (file, "Parsing integral constant-expression",
+			      parser->integral_constant_expression_p);
+  cp_debug_print_flag (file, "Allow non-constant expression in current "
+			      "constant-expression",
+			      parser->allow_non_integral_constant_expression_p);
+  cp_debug_print_flag (file, "Seen non-constant expression",
+			      parser->non_integral_constant_expression_p);
+  cp_debug_print_flag (file, "Local names and 'this' forbidden in "
+			      "current context",
+			      parser->local_variables_forbidden_p);
+  cp_debug_print_flag (file, "In unbraced linkage specification",
+			      parser->in_unbraced_linkage_specification_p);
+  cp_debug_print_flag (file, "Parsing a declarator",
+			      parser->in_declarator_p);
+  cp_debug_print_flag (file, "In template argument list",
+			      parser->in_template_argument_list_p);
+  cp_debug_print_flag (file, "Parsing an iteration statement",
+			      parser->in_statement & IN_ITERATION_STMT);
+  cp_debug_print_flag (file, "Parsing a switch statement",
+			      parser->in_statement & IN_SWITCH_STMT);
+  cp_debug_print_flag (file, "Parsing a structured OpenMP block",
+			      parser->in_statement & IN_OMP_BLOCK);
+  cp_debug_print_flag (file, "Parsing a an OpenMP loop",
+			      parser->in_statement & IN_OMP_FOR);
+  cp_debug_print_flag (file, "Parsing an if statement",
+			      parser->in_statement & IN_IF_STMT);
+  cp_debug_print_flag (file, "Parsing a type-id in an expression "
+			      "context", parser->in_type_id_in_expr_p);
+  cp_debug_print_flag (file, "Declarations are implicitly extern \"C\"",
+			      parser->implicit_extern_c);
+  cp_debug_print_flag (file, "String expressions should be translated "
+			      "to execution character set",
+			      parser->translate_strings_p);
+  cp_debug_print_flag (file, "Parsing function body outside of a "
+			      "local class", parser->in_function_body);
+  cp_debug_print_flag (file, "Auto correct a colon to a scope operator",
+			      parser->colon_corrects_to_scope_p);
+  if (parser->type_definition_forbidden_message)
+    fprintf (file, "Error message for forbidden type definitions: %s\n",
+	     parser->type_definition_forbidden_message);
+  cp_debug_print_unparsed_queues (file, parser->unparsed_queues);
+  fprintf (file, "Number of class definitions in progress: %u\n",
+	   parser->num_classes_being_defined);
+  fprintf (file, "Number of template parameter lists for the current "
+	   "declaration: %u\n", parser->num_template_parameter_lists);
+  cp_debug_parser_tokens (file, parser, window_size);
+  token = parser->lexer->next_token;
+  fprintf (file, "Next token to parse:\n");
+  fprintf (file, "\tToken:  ");
+  cp_lexer_print_token (file, token);
+  eloc = expand_location (token->location);
+  fprintf (file, "\n\tFile:   %s\n", eloc.file);
+  fprintf (file, "\tLine:   %d\n", eloc.line);
+  fprintf (file, "\tColumn: %d\n", eloc.column);
+}
 
 
 /* Allocate memory for a new lexer object and return it.  */
@@ -315,10 +554,9 @@ cp_lexer_alloc (void)
   /* Allocate the memory.  */
   lexer = ggc_alloc_cleared_cp_lexer ();
 
-#ifdef ENABLE_CHECKING
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
-#endif /* ENABLE_CHECKING */
+
   lexer->saved_tokens = VEC_alloc (cp_token_position, heap,
 				   CP_SAVED_TOKEN_STACK);
 
@@ -388,10 +626,8 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   lexer->saved_tokens = VEC_alloc (cp_token_position, heap,
 				   CP_SAVED_TOKEN_STACK);
 
-#ifdef ENABLE_CHECKING
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
-#endif
 
   gcc_assert (!lexer->next_token->purged_p);
   return lexer;
@@ -409,15 +645,12 @@ cp_lexer_destroy (cp_lexer *lexer)
 
 /* Returns nonzero if debugging information should be output.  */
 
-#ifdef ENABLE_CHECKING
-
 static inline bool
 cp_lexer_debugging_p (cp_lexer *lexer)
 {
   return lexer->debugging_p;
 }
 
-#endif /* ENABLE_CHECKING */
 
 static inline cp_token_position
 cp_lexer_token_position (cp_lexer *lexer, bool previous_p)
@@ -852,8 +1085,6 @@ cp_lexer_rollback_tokens (cp_lexer* lexer)
 
 /* Print a representation of the TOKEN on the STREAM.  */
 
-#ifdef ENABLE_CHECKING
-
 static void
 cp_lexer_print_token (FILE * stream, cp_token *token)
 {
@@ -914,6 +1145,7 @@ static void
 cp_lexer_start_debugging (cp_lexer* lexer)
 {
   lexer->debugging_p = true;
+  cp_lexer_debug_stream = stderr;
 }
 
 /* Stop emitting debugging information.  */
@@ -922,9 +1154,8 @@ static void
 cp_lexer_stop_debugging (cp_lexer* lexer)
 {
   lexer->debugging_p = false;
+  cp_lexer_debug_stream = NULL;
 }
-
-#endif /* ENABLE_CHECKING */
 
 /* Create a new cp_token_cache, representing a range of tokens.  */
 
@@ -4521,8 +4752,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	       && (TREE_CODE (TYPENAME_TYPE_FULLNAME (new_scope))
 		   == TEMPLATE_ID_EXPR)))
 	permerror (input_location, TYPE_P (new_scope)
-		   ? "%qT is not a template"
-		   : "%qD is not a template",
+		   ? G_("%qT is not a template")
+		   : G_("%qD is not a template"),
 		   new_scope);
       /* If it is a class scope, try to complete it; we are about to
 	 be looking up names inside the class.  */
@@ -7304,6 +7535,12 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case RID_UNDERLYING_TYPE:
       kind = CPTK_UNDERLYING_TYPE;
       break;
+    case RID_BASES:
+      kind = CPTK_BASES;
+      break;
+    case RID_DIRECT_BASES:
+      kind = CPTK_DIRECT_BASES;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -7348,9 +7585,17 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
   /* Complete the trait expression, which may mean either processing
      the trait expr now or saving it for template instantiation.  */
-  return kind != CPTK_UNDERLYING_TYPE
-    ? finish_trait_expr (kind, type1, type2)
-    : finish_underlying_type (type1);
+  switch(kind)
+    {
+    case CPTK_UNDERLYING_TYPE:
+      return finish_underlying_type (type1);
+    case CPTK_BASES:
+      return finish_bases (type1, false);
+    case CPTK_DIRECT_BASES:
+      return finish_bases (type1, true);
+    default:
+      return finish_trait_expr (kind, type1, type2);
+    }
 }
 
 /* Lambdas that appear in variable initializer or default argument scope
@@ -7630,6 +7875,31 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
                  /*ambiguous_decls=*/NULL,
                  capture_token->location);
 
+	  if (capture_init_expr == error_mark_node)
+	    {
+	      unqualified_name_lookup_error (capture_id);
+	      continue;
+	    }
+	  else if (DECL_P (capture_init_expr)
+		   && (TREE_CODE (capture_init_expr) != VAR_DECL
+		       && TREE_CODE (capture_init_expr) != PARM_DECL))
+	    {
+	      error_at (capture_token->location,
+			"capture of non-variable %qD ",
+			capture_init_expr);
+	      inform (0, "%q+#D declared here", capture_init_expr);
+	      continue;
+	    }
+	  if (TREE_CODE (capture_init_expr) == VAR_DECL
+	      && decl_storage_duration (capture_init_expr) != dk_auto)
+	    {
+	      pedwarn (capture_token->location, 0, "capture of variable "
+		       "%qD with non-automatic storage duration",
+		       capture_init_expr);
+	      inform (0, "%q+#D declared here", capture_init_expr);
+	      continue;
+	    }
+
 	  capture_init_expr
             = finish_id_expression
                 (capture_id,
@@ -7646,10 +7916,6 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
                  &error_msg,
                  capture_token->location);
 	}
-
-      if (TREE_CODE (capture_init_expr) == IDENTIFIER_NODE)
-	capture_init_expr
-	  = unqualified_name_lookup_error (capture_init_expr);
 
       if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
 	  && !explicit_init_p)
@@ -12019,6 +12285,7 @@ cp_parser_template_argument_list (cp_parser* parser)
   parser->integral_constant_expression_p = false;
   saved_non_ice_p = parser->non_integral_constant_expression_p;
   parser->non_integral_constant_expression_p = false;
+
   /* Parse the arguments.  */
   do
     {
@@ -12836,7 +13103,6 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
     case RID_UNDERLYING_TYPE:
       type = cp_parser_trait_expr (parser, RID_UNDERLYING_TYPE);
-
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token->location,
@@ -12844,6 +13110,14 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       return type;
 
+    case RID_BASES:
+    case RID_DIRECT_BASES:
+      type = cp_parser_trait_expr (parser, token->keyword);
+      if (decl_specs)
+       cp_parser_set_decl_spec_type (decl_specs, type,
+                                     token->location,
+                                     /*type_definition_p=*/false);
+      return type;
     default:
       break;
     }
@@ -16536,17 +16810,20 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  
 	  if (id_declarator && id_declarator->kind == cdk_id)
 	    error_at (declarator_token_start->location,
-		      template_parm_p 
-		      ? "template parameter pack %qD"
-		      " cannot have a default argument"
-		      : "parameter pack %qD cannot have a default argument",
+		      template_parm_p
+		      ? G_("template parameter pack %qD "
+			   "cannot have a default argument")
+		      : G_("parameter pack %qD cannot have "
+			   "a default argument"),
 		      id_declarator->u.id.unqualified_name);
 	  else
 	    error_at (declarator_token_start->location,
-		      template_parm_p 
-		      ? "template parameter pack cannot have a default argument"
-		      : "parameter pack cannot have a default argument");
-	  
+		      template_parm_p
+		      ? G_("template parameter pack cannot have "
+			   "a default argument")
+		      : G_("parameter pack cannot have a "
+			   "default argument"));
+
 	  default_argument = NULL_TREE;
 	}
     }
@@ -20617,7 +20894,8 @@ cp_parser_save_nsdmi (cp_parser* parser)
   cp_token *last;
   tree node;
 
-  cp_parser_cache_group (parser, CPP_CLOSE_PAREN, /*depth=*/0);
+  /* Save tokens until the next comma or semicolon.  */
+  cp_parser_cache_group (parser, CPP_COMMA, /*depth=*/0);
 
   last = parser->lexer->next_token;
 
@@ -20630,7 +20908,7 @@ cp_parser_save_nsdmi (cp_parser* parser)
 
 
 /* Parse a template-argument-list, as well as the trailing ">" (but
-   not the opening ">").  See cp_parser_template_argument_list for the
+   not the opening "<").  See cp_parser_template_argument_list for the
    return value.  */
 
 static tree
@@ -21718,6 +21996,12 @@ cp_parser_cache_group (cp_parser *parser,
 	/* We've hit the end of an enclosing block, so there's been some
 	   kind of syntax error.  */
 	return true;
+
+      /* If we're caching something finished by a comma (or semicolon),
+	 such as an NSDMI, don't consume the comma.  */
+      if (end == CPP_COMMA
+	  && (token->type == CPP_SEMICOLON || token->type == CPP_COMMA))
+	return false;
 
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);

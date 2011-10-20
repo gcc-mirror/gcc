@@ -63,7 +63,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Base::hasher          hasher;
       typedef typename _Base::key_equal       key_equal;
       typedef typename _Base::allocator_type  allocator_type;
-      
+      typedef typename _Base::iterator        iterator;
+      typedef typename _Base::const_iterator  const_iterator;
+
       explicit
       __unordered_set(size_type __n = 10,
 		      const hasher& __hf = hasher(),
@@ -103,6 +105,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->insert(__l.begin(), __l.end());
 	return *this;
       }
+
+      using _Base::insert;
+
+      std::pair<iterator, bool>
+      insert(value_type&& __v)
+      { return this->_M_insert(std::move(__v), std::true_type()); }
+
+      iterator
+      insert(const_iterator, value_type&& __v)
+      { return insert(std::move(__v)).first; }
     };
 
   template<class _Value,
@@ -132,7 +144,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Base::hasher          hasher;
       typedef typename _Base::key_equal       key_equal;
       typedef typename _Base::allocator_type  allocator_type;
-      
+      typedef typename _Base::iterator        iterator;
+      typedef typename _Base::const_iterator  const_iterator;
+
       explicit
       __unordered_multiset(size_type __n = 10,
 			   const hasher& __hf = hasher(),
@@ -173,6 +187,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->insert(__l.begin(), __l.end());
 	return *this;
       }
+
+      using _Base::insert;
+
+      iterator
+      insert(value_type&& __v)
+      { return this->_M_insert(std::move(__v), std::false_type()); }
+
+      iterator
+      insert(const_iterator, value_type&& __v)
+      { return insert(std::move(__v)); }
     };
 
   template<class _Value, class _Hash, class _Pred, class _Alloc,

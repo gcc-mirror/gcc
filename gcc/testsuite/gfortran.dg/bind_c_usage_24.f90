@@ -4,7 +4,7 @@
 ! PR fortran/48858
 ! PR fortran/48820
 !
-! TR 29113: BIND(C) with OPTIONAL
+! TS 29113: BIND(C) with OPTIONAL
 !
 module m
   use iso_c_binding

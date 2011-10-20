@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2010, AdaCore                     --
+--                     Copyright (C) 2002-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -553,8 +553,7 @@ package body MLib.Utl is
                Write_RF (Opening'Address, 1);
             end if;
 
-            Write_RF
-                (Objects (J).all'Address, Objects (J).all'Length);
+            Write_RF (Objects (J).all'Address, Objects (J).all'Length);
 
             --  Closing quote for GNU linker
 

@@ -37,20 +37,6 @@ extern GTY(()) struct line_maps *line_table;
 extern char builtins_location_check[(BUILTINS_LOCATION
 				     < RESERVED_LOCATION_COUNT) ? 1 : -1];
 
-typedef struct
-{
-  /* The name of the source file involved.  */
-  const char *file;
-
-  /* The line-location in the source file.  */
-  int line;
-
-  int column;
-
-  /* In a system header?. */
-  bool sysp;
-} expanded_location;
-
 extern expanded_location expand_location (source_location);
 
 /* Historically GCC used location_t, while cpp used source_location.
@@ -61,10 +47,14 @@ extern location_t input_location;
 
 #define LOCATION_FILE(LOC) ((expand_location (LOC)).file)
 #define LOCATION_LINE(LOC) ((expand_location (LOC)).line)
+#define LOCATION_COLUMN(LOC)((expand_location (LOC)).column)
 
 #define input_line LOCATION_LINE (input_location)
 #define input_filename LOCATION_FILE (input_location)
-#define in_system_header_at(LOC) ((expand_location (LOC)).sysp != 0)
+#define in_system_header_at(LOC) \
+  ((linemap_location_in_system_header_p (line_table, LOC)))
 #define in_system_header (in_system_header_at (input_location))
+
+void dump_line_table_statistics (void);
 
 #endif

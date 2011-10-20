@@ -48,10 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 /* We override default /usr or /usr/local part with /dev/env/DJDIR which */
 /* points to actual DJGPP installation directory.  */
 
-/* Standard include directory */
-#undef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/dev/env/DJDIR/include/"
-
 /* Search for as.exe and ld.exe in DJGPP's binary directory.  */ 
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/dev/env/DJDIR/bin/"

@@ -1,6 +1,7 @@
 /* Test __builtin_complex semantics.  */
 /* { dg-do run } */
 /* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-add-options ieee } */
 
 extern void exit (int);
 extern void abort (void);

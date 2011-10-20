@@ -36,3 +36,4 @@ LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx _clear_cache
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
 
 LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic.c
+LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic-64bit.c

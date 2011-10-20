@@ -94,6 +94,15 @@ package Sem_Util is
    --  not end with a ? (this is used when the caller wants to parameterize
    --  whether an error or warning is given.
 
+   function Available_Full_View_Of_Component (T : Entity_Id) return Boolean;
+   --  If at the point of declaration an array type has a private or limited
+   --  component, several array operations are not avaiable on the type, and
+   --  the array type is flagged accordingly. If in the immediate scope of
+   --  the array type the component becomes non-private or non-limited, these
+   --  operations become avaiable. This can happen if the scopes of both types
+   --  are open, and the scope of the array is not outside the scope of the
+   --  component.
+
    procedure Bad_Predicated_Subtype_Use
      (Msg : String;
       N   : Node_Id;
@@ -836,8 +845,8 @@ package Sem_Util is
    --  by the derived type declaration for type Typ.
 
    function Is_Iterator (Typ : Entity_Id) return Boolean;
-   --  AI05-0139-2: Check whether Typ is derived from the predefined interface
-   --  Ada.Iterator_Interfaces.Forward_Iterator.
+   --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in
+   --  Ada.Iterator_Interfaces, or it is derived from one.
 
    function Is_LHS (N : Node_Id) return Boolean;
    --  Returns True iff N is used as Name in an assignment statement
@@ -845,6 +854,9 @@ package Sem_Util is
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,
    --  i.e. a library unit or an entity declared in a library package.
+
+   function Is_Limited_Class_Wide_Type (Typ : Entity_Id) return Boolean;
+   --  Determine whether a given arbitrary type is a limited class-wide type
 
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
    --  Determines whether Expr is a reference to a variable or IN OUT mode

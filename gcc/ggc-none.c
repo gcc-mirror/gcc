@@ -39,6 +39,15 @@ ggc_alloc_typed_stat (enum gt_types_enum ARG_UNUSED (gte), size_t size
   return xmalloc (size);
 }
 
+/* For a given size of memory requested for allocation, return the
+   actual size that is going to be allocated.  */
+
+size_t
+ggc_round_alloc_size (size_t requested_size)
+{
+  return requested_size;
+}
+
 void *
 ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
 {

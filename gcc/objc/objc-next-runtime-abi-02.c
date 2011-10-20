@@ -231,6 +231,7 @@ static tree begin_catch (struct objc_try_context **, tree, tree, tree, bool);
 static void finish_catch (struct objc_try_context **, tree);
 static tree finish_try_stmt (struct objc_try_context **);
 
+/* TODO: Use an objc-map.  */
 static GTY ((length ("SIZEHASHTABLE"))) hash *extern_names;
 
 bool
@@ -3676,7 +3677,7 @@ static tree
 objc_build_exc_ptr (struct objc_try_context **x ATTRIBUTE_UNUSED)
 {
   tree t;
-  t = built_in_decls[BUILT_IN_EH_POINTER];
+  t = builtin_decl_explicit (BUILT_IN_EH_POINTER);
   t = build_call_expr (t, 1, integer_zero_node);
   return fold_convert (objc_object_type, t);
 }

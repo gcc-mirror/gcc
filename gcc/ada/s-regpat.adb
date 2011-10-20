@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2010, AdaCore                    --
+--                      Copyright (C) 1999-2011, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2013,11 +2013,13 @@ package body System.Regpat is
             Must_Have_Length => Dummy.Must_Have_Length,
             Paren_Count      => Dummy.Paren_Count,
             Flags            => Dummy.Flags,
-            Program          => Dummy.Program
-              (Dummy.Program'First .. Dummy.Program'First + Size - 1));
+            Program          =>
+              Dummy.Program
+                (Dummy.Program'First .. Dummy.Program'First + Size - 1));
       else
          --  We have to recompile now that we know the size
-         --  ??? Can we use Ada05's return construct ?
+         --  ??? Can we use Ada 2005's return construct ?
+
          declare
             Result : Pattern_Matcher (Size);
          begin

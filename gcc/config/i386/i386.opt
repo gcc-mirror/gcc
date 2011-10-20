@@ -31,6 +31,15 @@ HOST_WIDE_INT ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAU
 Variable
 HOST_WIDE_INT ix86_isa_flags_explicit
 
+TargetVariable
+int recip_mask
+
+Variable
+int recip_mask_explicit
+
+TargetSave
+int x_recip_mask_explicit
+
 ;; Definitions to add to the cl_target_option structure
 ;; -march= processor
 TargetSave
@@ -372,6 +381,10 @@ Return 8-byte vectors in memory
 mrecip
 Target Report Mask(RECIP) Save
 Generate reciprocals instead of divss and sqrtss.
+
+mrecip=
+Target Report RejectNegative Joined Var(ix86_recip_name)
+Control generation of reciprocal estimates.
 
 mcld
 Target Report Mask(CLD) Save

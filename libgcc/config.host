@@ -777,7 +777,7 @@ sparc-wrs-vxworks)
 	;;
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	tmake_file="$tmake_file t-crtfm"
-	extra_parts=crtfastmath.o
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o crtfastmath.o"
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	extra_parts="$extra_parts crtfastmath.o"

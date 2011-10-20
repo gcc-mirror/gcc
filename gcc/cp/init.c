@@ -497,11 +497,11 @@ perform_member_init (tree member, tree init)
      mem-initializer for this field.  */
   if (init == NULL_TREE)
     {
-      if (CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (member)))
+      if (DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
 	/* Do deferred instantiation of the NSDMI.  */
 	init = (tsubst_copy_and_build
-		(DECL_INITIAL (member),
-		 CLASSTYPE_TI_ARGS (DECL_CONTEXT (member)),
+		(DECL_INITIAL (DECL_TI_TEMPLATE (member)),
+		 DECL_TI_ARGS (member),
 		 tf_warning_or_error, member, /*function_p=*/false,
 		 /*integral_constant_expression_p=*/false));
       else
@@ -1588,27 +1588,25 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
      that's value-initialization.  */
   if (init == void_type_node)
     {
-      /* If there's a user-provided constructor, we just call that.  */
-      if (type_has_user_provided_constructor (type))
-	/* Fall through.  */;
-      /* If there isn't, but we still need to call the constructor,
-	 zero out the object first.  */
-      else if (type_build_ctor_call (type))
+      /* If no user-provided ctor, we need to zero out the object.  */
+      if (!type_has_user_provided_constructor (type))
 	{
-	  init = build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
+	  tree field_size = NULL_TREE;
+	  if (exp != true_exp && CLASSTYPE_AS_BASE (type) != type)
+	    /* Don't clobber already initialized virtual bases.  */
+	    field_size = TYPE_SIZE (CLASSTYPE_AS_BASE (type));
+	  init = build_zero_init_1 (type, NULL_TREE, /*static_storage_p=*/false,
+				    field_size);
 	  init = build2 (INIT_EXPR, type, exp, init);
 	  finish_expr_stmt (init);
-	  /* And then call the constructor.  */
 	}
+
       /* If we don't need to mess with the constructor at all,
-	 then just zero out the object and we're done.  */
-      else
-	{
-	  init = build2 (INIT_EXPR, type, exp,
-			 build_value_init_noctor (type, complain));
-	  finish_expr_stmt (init);
-	  return;
-	}
+	 then we're done.  */
+      if (! type_build_ctor_call (type))
+	return;
+
+      /* Otherwise fall through and call the constructor.  */
       init = NULL_TREE;
     }
 
@@ -1794,10 +1792,11 @@ build_offset_ref (tree type, tree member, bool address_p)
    constant initializer, return the initializer (or, its initializers,
    recursively); otherwise, return DECL.  If INTEGRAL_P, the
    initializer is only returned if DECL is an integral
-   constant-expression.  */
+   constant-expression.  If RETURN_AGGREGATE_CST_OK_P, it is ok to
+   return an aggregate constant.  */
 
 static tree
-constant_value_1 (tree decl, bool integral_p)
+constant_value_1 (tree decl, bool integral_p, bool return_aggregate_cst_ok_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
 	 || (integral_p
@@ -1834,12 +1833,13 @@ constant_value_1 (tree decl, bool integral_p)
       if (!init
 	  || !TREE_TYPE (init)
 	  || !TREE_CONSTANT (init)
-	  || (!integral_p
-	      /* Do not return an aggregate constant (of which
-		 string literals are a special case), as we do not
-		 want to make inadvertent copies of such entities,
-		 and we must be sure that their addresses are the
-		 same everywhere.  */
+	  || (!integral_p && !return_aggregate_cst_ok_p
+	      /* Unless RETURN_AGGREGATE_CST_OK_P is true, do not
+		 return an aggregate constant (of which string
+		 literals are a special case), as we do not want
+		 to make inadvertent copies of such entities, and
+		 we must be sure that their addresses are the
+ 		 same everywhere.  */
 	      && (TREE_CODE (init) == CONSTRUCTOR
 		  || TREE_CODE (init) == STRING_CST)))
 	break;
@@ -1856,18 +1856,28 @@ constant_value_1 (tree decl, bool integral_p)
 tree
 integral_constant_value (tree decl)
 {
-  return constant_value_1 (decl, /*integral_p=*/true);
+  return constant_value_1 (decl, /*integral_p=*/true,
+			   /*return_aggregate_cst_ok_p=*/false);
 }
 
 /* A more relaxed version of integral_constant_value, used by the
-   common C/C++ code and by the C++ front end for optimization
-   purposes.  */
+   common C/C++ code.  */
 
 tree
 decl_constant_value (tree decl)
 {
-  return constant_value_1 (decl,
-			   /*integral_p=*/processing_template_decl);
+  return constant_value_1 (decl, /*integral_p=*/processing_template_decl,
+			   /*return_aggregate_cst_ok_p=*/true);
+}
+
+/* A version of integral_constant_value used by the C++ front end for
+   optimization purposes.  */
+
+tree
+decl_constant_value_safe (tree decl)
+{
+  return constant_value_1 (decl, /*integral_p=*/processing_template_decl,
+			   /*return_aggregate_cst_ok_p=*/false);
 }
 
 /* Common subroutines of build_new and build_vec_delete.  */

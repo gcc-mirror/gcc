@@ -41,6 +41,8 @@
 --  so we can do the instantiation under control of Discard_Names to remove
 --  the tables.
 
+pragma Compiler_Unit;
+
 generic
 package System.Rident is
    pragma Preelaborate;

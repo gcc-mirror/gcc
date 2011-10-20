@@ -374,14 +374,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert_bucket(_Arg&&, size_type,
 			 typename _Hashtable::_Hash_code_type);
 
-      template<typename _Arg>
-	std::pair<iterator, bool>
-	_M_insert(_Arg&&, std::true_type);
-
-      template<typename _Arg>
-	iterator
-	_M_insert(_Arg&&, std::false_type);
-
       typedef typename std::conditional<__unique_keys,
 					std::pair<iterator, bool>,
 					iterator>::type
@@ -393,38 +385,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   >::type
 	_Insert_Conv_Type;
 
+    protected:
+      template<typename _Arg>
+	std::pair<iterator, bool>
+	_M_insert(_Arg&&, std::true_type);
+
+      template<typename _Arg>
+	iterator
+	_M_insert(_Arg&&, std::false_type);
+
     public:
       // Insert and erase
       _Insert_Return_Type
       insert(const value_type& __v)
-      { return _M_insert(__v, std::integral_constant<bool, __unique_keys>()); }
+      { return _M_insert(__v, integral_constant<bool, __unique_keys>()); }
 
       iterator
       insert(const_iterator, const value_type& __v)
       { return _Insert_Conv_Type()(insert(__v)); }
 
-      _Insert_Return_Type
-      insert(value_type&& __v)
-      { return _M_insert(std::move(__v),
-			 std::integral_constant<bool, __unique_keys>()); }
-
-      iterator
-      insert(const_iterator, value_type&& __v)
-      { return _Insert_Conv_Type()(insert(std::move(__v))); }
-
       template<typename _Pair, typename = typename
-	       std::enable_if<!__constant_iterators
-			      && std::is_convertible<_Pair,
-						     value_type>::value>::type>
+	std::enable_if<__and_<integral_constant<bool, !__constant_iterators>,
+			      std::is_convertible<_Pair,
+						  value_type>>::value>::type>
 	_Insert_Return_Type
 	insert(_Pair&& __v)
 	{ return _M_insert(std::forward<_Pair>(__v),
-			   std::integral_constant<bool, __unique_keys>()); }
+			   integral_constant<bool, __unique_keys>()); }
 
       template<typename _Pair, typename = typename
-	       std::enable_if<!__constant_iterators
-			      && std::is_convertible<_Pair,
-						     value_type>::value>::type>
+        std::enable_if<__and_<integral_constant<bool, !__constant_iterators>,
+			      std::is_convertible<_Pair,
+						  value_type>>::value>::type>
 	iterator
 	insert(const_iterator, _Pair&& __v)
 	{ return _Insert_Conv_Type()(insert(std::forward<_Pair>(__v))); }

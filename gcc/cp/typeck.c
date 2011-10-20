@@ -1827,7 +1827,7 @@ decay_conversion (tree exp)
   /* FIXME remove? at least need to remember that this isn't really a
      constant expression if EXP isn't decl_constant_var_p, like with
      C_MAYBE_CONST_EXPR.  */
-  exp = decl_constant_value (exp);
+  exp = decl_constant_value_safe (exp);
   if (error_operand_p (exp))
     return error_mark_node;
 
@@ -2128,8 +2128,16 @@ build_class_member_access_expr (tree object, tree member,
   if (!CLASS_TYPE_P (object_type))
     {
       if (complain & tf_error)
-	error ("request for member %qD in %qE, which is of non-class type %qT",
-	       member, object, object_type);
+	{
+	  if (POINTER_TYPE_P (object_type)
+	      && CLASS_TYPE_P (TREE_TYPE (object_type)))
+	    error ("request for member %qD in %qE, which is of pointer "
+		   "type %qT (maybe you meant to use %<->%> ?)",
+		   member, object, object_type);
+	  else
+	    error ("request for member %qD in %qE, which is of non-class "
+		   "type %qT", member, object, object_type);
+	}
       return error_mark_node;
     }
 
@@ -2508,8 +2516,16 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
   if (!CLASS_TYPE_P (object_type))
     {
       if (complain & tf_error)
-	error ("request for member %qD in %qE, which is of non-class type %qT",
-	       name, object, object_type);
+	{
+	  if (POINTER_TYPE_P (object_type)
+	      && CLASS_TYPE_P (TREE_TYPE (object_type)))
+	    error ("request for member %qD in %qE, which is of pointer "
+		   "type %qT (maybe you meant to use %<->%> ?)",
+		   name, object, object_type);
+	  else
+	    error ("request for member %qD in %qE, which is of non-class "
+		   "type %qT", name, object, object_type);
+	}
       return error_mark_node;
     }
 
@@ -2591,7 +2607,9 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	  if (member == NULL_TREE)
 	    {
 	      if (complain & tf_error)
-		error ("%qD has no member named %qE", object_type, name);
+		error ("%qD has no member named %qE",
+		       TREE_CODE (access_path) == TREE_BINFO
+		       ? TREE_TYPE (access_path) : object_type, name);
 	      return error_mark_node;
 	    }
 	  if (member == error_mark_node)

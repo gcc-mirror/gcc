@@ -1817,6 +1817,11 @@ struct file_rule_st files_rules[] = {
     REG_EXTENDED, NULL_REGEX,
     "gt-objc-objc-act.h", "objc/objc-act.c", NULL_FRULACT },
 
+  /* objc/objc-map.h gives gt-objc-objc-map.h for objc/objc-map.c !  */
+  { DIR_PREFIX_REGEX "objc/objc-map\\.h$",
+    REG_EXTENDED, NULL_REGEX,
+    "gt-objc-objc-map.h", "objc/objc-map.c", NULL_FRULACT },
+
   /* General cases.  For header *.h and source *.c files, we need
    * special actions to handle the language.  */
 

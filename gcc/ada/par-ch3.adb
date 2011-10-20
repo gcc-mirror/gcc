@@ -210,34 +210,10 @@ package body Ch3 is
       --  we set Force_Msg to True, since we want at least one message for each
       --  separate declaration (but not use) of a reserved identifier.
 
+      --  Duplication should be removed, common code should be factored???
+
       if Token = Tok_Identifier then
-
-         --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
-         --  OVERRIDING, and SYNCHRONIZED are new reserved words. Note that
-         --  in the case where these keywords are misused in Ada 95 mode,
-         --  this routine will generally not be called at all.
-
-         if Ada_Version = Ada_95
-           and then Warn_On_Ada_2005_Compatibility
-         then
-            if Token_Name = Name_Overriding
-              or else Token_Name = Name_Synchronized
-              or else (Token_Name = Name_Interface
-                        and then Prev_Token /= Tok_Pragma)
-            then
-               Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
-            end if;
-         end if;
-
-         --  Similarly, warn about Ada 2012 reserved words
-
-         if Ada_Version in Ada_95 .. Ada_2005
-           and then Warn_On_Ada_2012_Compatibility
-         then
-            if Token_Name = Name_Some then
-               Error_Msg_N ("& is a reserved word in Ada 2012?", Token_Node);
-            end if;
-         end if;
+         Check_Future_Keyword;
 
       --  If we have a reserved identifier, manufacture an identifier with
       --  a corresponding name after posting an appropriate error message
@@ -657,7 +633,7 @@ package body Ch3 is
                      Error_Msg_SP
                        ("(Ada 83) limited record declaration not allowed!");
 
-                  --  In Ada2005, "abstract limited" can appear before "new",
+                  --  In Ada 2005, "abstract limited" can appear before "new",
                   --  but it cannot be part of an untagged record declaration.
 
                   elsif Abstract_Present
@@ -4236,7 +4212,7 @@ package body Ch3 is
                P_Identifier_Declarations (Decls, Done, In_Spec);
             end if;
 
-         --  Ada2005: A subprogram declaration can start with "not" or
+         --  Ada 2005: A subprogram declaration can start with "not" or
          --  "overriding". In older versions, "overriding" is handled
          --  like an identifier, with the appropriate messages.
 

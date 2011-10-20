@@ -1906,7 +1906,8 @@ __gnat_clear_exception_count (void)
 /* Handle different SIGnal to exception mappings in different VxWorks
    versions.   */
 static void
-__gnat_map_signal (int sig)
+__gnat_map_signal (int sig, void *si ATTRIBUTE_UNUSED,
+		   struct sigcontext *sc ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -2001,9 +2002,7 @@ __gnat_map_signal (int sig)
    propagation after the required low level adjustments.  */
 
 void
-__gnat_error_handler (int sig,
-		      void *si ATTRIBUTE_UNUSED,
-		      struct sigcontext *sc ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, void *si, struct sigcontext *sc)
 {
   sigset_t mask;
 
@@ -2015,7 +2014,22 @@ __gnat_error_handler (int sig,
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-  __gnat_map_signal (sig);
+#if defined (__PPC__) && defined(_WRS_KERNEL)
+  /* On PowerPC, kernel mode, we process signals through a Call Frame Info
+     trampoline, voiding the need for myriads of fallback_frame_state
+     variants in the ZCX runtime.  We have no simple way to distinguish ZCX
+     from SJLJ here, so we do this for SJLJ as well even though this is not
+     necessary.  This only incurs a few extra instructions and a tiny
+     amount of extra stack usage.  */
+
+  #include "sigtramp.h"
+
+  __gnat_sigtramp (sig, (void *)si, (void *)sc,
+		   (sighandler_t *)&__gnat_map_signal);
+
+#else
+  __gnat_map_signal (sig, si, sc);
+#endif
 }
 
 void

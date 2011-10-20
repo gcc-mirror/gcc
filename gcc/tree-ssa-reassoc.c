@@ -1648,6 +1648,8 @@ init_range_entry (struct range_entry *r, tree exp)
 
       code = gimple_assign_rhs_code (stmt);
       arg0 = gimple_assign_rhs1 (stmt);
+      if (TREE_CODE (arg0) != SSA_NAME)
+	break;
       arg1 = gimple_assign_rhs2 (stmt);
       exp_type = TREE_TYPE (exp);
       loc = gimple_location (stmt);

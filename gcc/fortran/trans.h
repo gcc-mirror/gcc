@@ -86,6 +86,8 @@ typedef struct gfc_se
      args alias.  */
   unsigned force_tmp:1;
 
+  unsigned want_coarray:1;
+
   /* Scalarization parameters.  */
   struct gfc_se *parent;
   struct gfc_ss *ss;
@@ -116,7 +118,7 @@ gfc_coarray_type;
 
 typedef struct gfc_ss_info
 {
-  int dimen, codimen;
+  int dimen;
   /* The ref that holds information on this section.  */
   gfc_ref *ref;
   /* The descriptor of this array.  */
@@ -210,7 +212,7 @@ typedef struct gfc_ss
     {
       /* The rank of the temporary.  May be less than the rank of the
          assigned expression.  */
-      int dimen, codimen;
+      int dimen;
       tree type;
     }
     temp;
@@ -243,7 +245,7 @@ typedef struct gfc_loopinfo
   stmtblock_t pre;
   stmtblock_t post;
 
-  int dimen, codimen;
+  int dimen;
 
   /* All the SS involved with this loop.  */
   gfc_ss *ss;

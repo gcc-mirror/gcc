@@ -33,6 +33,15 @@
 ;; A list of integer modes that are up to one word long
 (define_mode_iterator QHSI [QI HI SI])
 
+;; A list of integer modes that are less than a word
+(define_mode_iterator NARROW [QI HI])
+
+;; A list of all the integer modes upto 64bit
+(define_mode_iterator QHSD [QI HI SI DI])
+
+;; A list of the 32bit and 64bit integer modes
+(define_mode_iterator SIDI [SI DI])
+
 ;; Integer element sizes implemented by IWMMXT.
 (define_mode_iterator VMMX [V2SI V4HI V8QI])
 
@@ -404,6 +413,9 @@
 			       (V2UHA "16") (UHA "16")
 			       (V4QQ "8") (V2HQ "16") (QQ "8") (HQ "16")
 			       (V2HA "16") (HA "16") (SQ "") (SA "")])
+
+;; Mode attribute for vshll.
+(define_mode_attr V_innermode [(V8QI "QI") (V4HI "HI") (V2SI "SI")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes

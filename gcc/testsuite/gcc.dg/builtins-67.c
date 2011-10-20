@@ -58,14 +58,14 @@ long long llceilf (float a) { return (long long) ceilf (a); }
 long long llceill (long double a) { return (long long) ceill (a); }
 #endif
 
-int iround (double a) { return (int) round (a); }
 #ifdef HAVE_C99_RUNTIME
+int iround (double a) { return (int) round (a); }
 int iroundf (float a) { return (int) roundf (a); }
 int iroundl (long double a) { return (int) roundl (a); }
 #endif
 
-int irint (double a) { return (int) rint (a); }
 #ifdef HAVE_C99_RUNTIME
+int irint (double a) { return (int) rint (a); }
 int irintf (float a) { return (int) rintf (a); }
 int irintl (long double a) { return (int) rintl (a); }
 #endif

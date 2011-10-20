@@ -1,3 +1,27 @@
+2011-10-16  Uros Bizjak  <ubizjak@gmail.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50737
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state): Set
+	fs->signal_frame to 1.
+
+2011-10-07  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack-thread.c: #include <errno.h>.
+
+2011-10-07  Ian Lance Taylor  <iant@google.com>
+
+	PR target/46093
+	* generic-morestack.c (__generic_morestack): Make sure the segment
+	is large enough for both the stack frame and the copied
+	parameters.
+
+2011-10-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/49804
+	* config.host: Add crtbegin.o, crtbeginS.o, crtend.o, crtendS.o to
+	extra_parts.
+
 2011-09-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx-lib.h: Always restrict doubles to the SF type when

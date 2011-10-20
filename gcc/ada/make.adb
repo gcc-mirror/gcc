@@ -4603,7 +4603,7 @@ package body Make is
 
    procedure Library_Phase
      (Stand_Alone_Libraries : in out Boolean;
-      Library_Rebuilt : in out Boolean)
+      Library_Rebuilt       : in out Boolean)
    is
       Depth   : Natural;
       Current : Natural;

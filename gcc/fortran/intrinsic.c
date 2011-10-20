@@ -2434,9 +2434,9 @@ add_functions (void)
   make_generic ("range", GFC_ISYM_RANGE, GFC_STD_F95);
 
   add_sym_1 ("rank", GFC_ISYM_RANK, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di,
-	     GFC_STD_F2008_TR, gfc_check_rank, gfc_simplify_rank, NULL,
+	     GFC_STD_F2008_TS, gfc_check_rank, gfc_simplify_rank, NULL,
 	     a, BT_REAL, dr, REQUIRED);
-  make_generic ("rank", GFC_ISYM_RANK, GFC_STD_F2008_TR);
+  make_generic ("rank", GFC_ISYM_RANK, GFC_STD_F2008_TS);
 
   add_sym_2 ("real", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_real, gfc_simplify_real, gfc_resolve_real,
@@ -3989,8 +3989,8 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
       symstd_msg = "new in Fortran 2008";
       break;
 
-    case GFC_STD_F2008_TR:
-      symstd_msg = "new in TR 29113";
+    case GFC_STD_F2008_TS:
+      symstd_msg = "new in TS 29113";
       break;
 
     case GFC_STD_GNU:

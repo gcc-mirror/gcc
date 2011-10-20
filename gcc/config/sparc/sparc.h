@@ -1608,6 +1608,11 @@ do {									   \
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
+/* For SImode, we make sure the top 32-bits of the register are clear and
+   then we subtract 32 from the lzd instruction result.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = ((MODE) == SImode ? 32 : 64), 1)
+
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,
    CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand
@@ -1866,10 +1871,6 @@ extern int sparc_indent_opcode;
 
 #ifndef HAVE_AS_FMAF_HPC_VIS3
 #define AS_NIAGARA3_FLAG "b"
-#undef TARGET_FMAF
-#define TARGET_FMAF 0
-#undef TARGET_VIS3
-#define TARGET_VIS3 0
 #else
 #define AS_NIAGARA3_FLAG "d"
 #endif
@@ -1879,3 +1880,9 @@ extern int sparc_indent_opcode;
 
 /* We use gcc _mcount for profiling.  */
 #define NO_PROFILE_COUNTERS 0
+
+/* Debug support */
+#define MASK_DEBUG_OPTIONS		0x01	/* debug option handling */
+#define MASK_DEBUG_ALL			MASK_DEBUG_OPTIONS
+
+#define TARGET_DEBUG_OPTIONS		(sparc_debug & MASK_DEBUG_OPTIONS)

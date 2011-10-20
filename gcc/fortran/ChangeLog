@@ -1,3 +1,393 @@
+2011-10-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	* check.c (gfc_check_sizeof): Reject procedures as argument of SIZEOF.
+	* intrinsinc.texi (SIZEOF): Document it.
+	(STORAGE_SIZE): Fix special characters. Fix line breaks.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* trans.c (gfc_build_array_ref): If type is not an array, check that
+	there is nothing to do, and do nothing.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* trans-types.c (gfc_build_array_type): Don't force lower bound to one
+	in the deferred case.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* simplify.c (simplify_cobound): Accept non-last-in-ref-chain coarrays.
+	Don't set already set array ref.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* array.c (gfc_find_array_ref): Remove coarray-specific handling.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* check.c (dim_corank_check): Use gfc_get_corank to get corank.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* trans-intrinsic.c (walk_coarray): Change AR_ELEMENT to AR_SECTION.
+
+	PR fortran/50420
+	* trans-intrinsic.c (walk_coarray): Use gfc_walk_array_ref for
+	the scalarization chain initialization. 
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* trans-intrinsic.c (walk_coarray): Allow subreferences after a
+	coarray object reference.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* trans-array.c (gfc_walk_array_ref): Allow zero rank arrays
+	if they are coarrays.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.h (gfc_walk_array_ref): New prototype.
+	* trans-array.c (gfc_walk_array_ref): New function, containing
+	all but the beginning of gfc_walk_variable_expr's code.
+	(gfc_walk_variable_expr): Use gfc_walk_array_ref.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* trans-array.c (gfc_conv_expr_descriptor): Use loop.dimen instead of
+	ndim for the descriptor's rank.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50420
+	* trans-array.c (gfc_conv_expr_descriptor): Count codimensions starting
+	from zero, and add then the relevant offset (either ndim or loop.dimen)
+	depending on context.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_expr_descriptor): Save some horizontal space.
+
+2011-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_expr_descriptor): Move ndim initialization
+	earlier.
+
+2011-10-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	* decl.c (verify_c_interop_param): Renamed to
+	'gfc_verify_c_interop_param'. Add error message for polymorphic
+	arguments.
+	(verify_c_interop): Renamed to 'gfc_verify_c_interop'. Reject
+	polymorphic variables.
+	(verify_bind_c_sym): Renamed 'verify_c_interop'.
+	* gfortran.h (verify_c_interop,verify_c_interop_param): Renamed.
+	* check.c (gfc_check_sizeof): Ditto.
+	* resolve.c (gfc_iso_c_func_interface,resolve_fl_procedure): Ditto.
+	* symbol.c (verify_bind_c_derived_type): Ditto.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* cpp.c (print_line, cb_define): Adjust to avoid using internals
+	of struct line_map.  Use the public API instead.
+
+2011-10-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	PR fortran/50752
+	* primary.c (match_kind_param): Avoid segfault.
+
+2011-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (current_ns):  Make static.
+	(create_var):  Note parent of newly created namespace.
+	(optimize_namespace):  Don't wak sibling namespaces
+	if they are EXEC_BLOCK because this is handled...
+	(gfc_code_walker):  ... here.  Also walk ASSOCIATE lists.
+
+2011-10-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47023
+	* primary.c (match_kind_param): Detect ISO_C_BINDING kinds.
+	(get_kind): Pass on 'is_iso_c' flag.
+	(match_integer_constant,match_real_constant,match_logical_constant):
+	Set 'ts.is_c_interop'.
+
+2011-10-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50547
+	* resolve.c (resolve_formal_arglist): Remove unneeded error message.
+	Some reshuffling.
+
+2011-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Fortran 2008 status, TS 29113 status,
+	Further Interoperability of Fortran with C): Update implementation
+	status, change references from TR 29113 to TS 29113.
+	* intrinsic.texi (RANK): Change TR 29113 to TS 29113.
+	* invoke.text (-std=): Ditto, change -std=f2008tr to -std=f2008ts.
+	* lang.opt (std=): Ditto.
+	* options.c (gfc_handle_option, set_default_std_flags): Ditto and
+	change GFC_STD_F2008_TR to GFC_STD_F2008_TS.
+	* libgfortran.h: Ditto.
+	* intrinsic.c (add_functions, gfc_check_intrinsic_standard): Ditto.
+	* decl.c (verify_c_interop_param): Ditto.
+
+2011-10-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50570
+	* expr.c (gfc_check_vardef_context): Don't throw an error on
+	non-pointer assignments involving an intent(in) pointer dummy.
+
+2011-10-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50718
+	* trans-expr.c (gfc_conv_procedure_call): Fix -fcheck=pointer
+	for dummy arguments with VALUE attribute.
+
+2011-10-11  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	* invoke.texi (-fwhole-file): Update wording since -fwhole-file
+	is now enabled by default.
+
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* trans-expr.c (gfc_conv_power_op): Delete old interface with two
+	parallel arrays to hold standard builtin declarations, and replace
+	it with a function based interface that can support creating
+	builtins on the fly in the future.  Change all uses, and poison
+	the old names.  Make sure 0 is not a legitimate builtin index.
+	(fill_with_spaces): Ditto.
+	(gfc_trans_string_copy): Ditto.
+	(gfc_trans_zero_assign): Ditto.
+	(gfc_build_memcpy_call): Ditto.
+	(alloc_scalar_allocatable_for_assignment): Ditto.
+	* trans-array.c (gfc_trans_array_constructor_value): Ditto.
+	(duplicate_allocatable): Ditto.
+	(gfc_alloc_allocatable_for_assignment): Ditto.
+	* trans-openmp.c (gfc_omp_clause_copy_ctor): Ditto.
+	(gfc_omp_clause_assign_op): Ditto.
+	(gfc_trans_omp_atomic): Ditto.
+	(gfc_trans_omp_do): Ditto.
+	(gfc_trans_omp_task): Ditto.
+	* trans-stmt.c (gfc_trans_stop): Ditto.
+	(gfc_trans_sync): Ditto.
+	(gfc_trans_allocate): Ditto.
+	(gfc_trans_deallocate): Ditto.
+	* trans.c (gfc_call_malloc): Ditto.
+	(gfc_allocate_using_malloc): Ditto.
+	(gfc_call_free): Ditto.
+	(gfc_deallocate_with_status): Ditto.
+	(gfc_deallocate_scalar_with_status): Ditto.
+	* f95-lang.c (gfc_define_builtin): Ditto.
+	(gfc_init_builtin_functions): Ditto.
+	* trans-decl.c (create_main_function): Ditto.
+	* trans-intrinsic.c (builtin_decl_for_precision): Ditto.
+
+2011-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50564
+	* frontend-passes (forall_level):  New variable.
+	(cfe_register_funcs):  Don't register functions if we
+	are within a forall loop.
+	(optimize_namespace):  Set forall_level to 0 before entry.
+	(gfc_code_walker):  Increase/decrease forall_level.
+
+2011-10-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50273
+	* trans-common.c (translate_common): Fix -Walign-commons check.
+
+2011-10-09  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* interface.c (check_dummy_characteristics): Count dimensions starting
+	from one in diagnostic.
+
+2011-10-09  Tobias Burnus  <burnus@net-b.de>
+
+	* Make-lang.in (F95_PARSER_OBJS, GFORTRAN_TRANS_DEPS): Add
+	dependency on iso-c-binding.def and iso-fortran-env.def.
+	* module.c (import_iso_c_binding_module): Add error when
+	explicitly importing a nonstandard symbol; extend standard-
+	depending loading.
+	* iso-c-binding.def: Add c_float128 and c_float128_complex
+	integer parameters (for -std=gnu).
+	* intrinsic.texi (ISO_C_Binding): Document them.
+	* symbol.c (generate_isocbinding_symbol): Change macros
+	to ignore GFC_STD_* data.
+	* trans-types.c (gfc_init_c_interop_kinds): Ditto; make
+	nonstatic and renamed from "init_c_interop_kinds".
+	(gfc_init_kinds): Don't call it
+	* trans-types.h (gfc_init_c_interop_kinds): Add prototype.
+	* f95-lang.c (gfc_init_decl_processing): Call it.
+
+2011-10-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50659
+	* expr.c (replace_symbol): Only do replacement if the symbol is a dummy.
+
+2011-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47844
+	* trans-array.c (gfc_conv_array_index_offset): Use descriptor
+	stride for pointer function results.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c	(gfc_conv_expr_descriptor): Remove trailing whitespace.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c	(gfc_conv_ss_startstride): Merge two switch cases.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_section_startstride): Remove coarray argument.
+	Remove conditions on coarray.
+	(gfc_conv_ss_startstride): Update call to gfc_conv_section_startstride.
+	(gfc_conv_expr_descriptor): Ditto. Add assertions before the call.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_section_startstride): Remove coarray_last
+	argument. Remove condition on coarray_last.
+	(gfc_conv_ss_startstride): Update call to gfc_conv_section_startstride.
+	(gfc_conv_expr_descriptor): Ditto.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_walk_variable_expr): Remove scalar coarray
+	handling.  Don't reset array ref's corank and codimensions' types
+	in the full array ref case.  Update loop upper limit.
+	Remove DIMEN_THIS_IMAGE case.  Remove unnecessary conditions.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans.h (gfc_ss_info): Remove codimen field.
+	* trans-array.c (gfc_get_array_ss): Don't set codimen field.
+	(gfc_trans_create_temp_array): Don't set descriptor's cobounds.
+	(gfc_trans_constant_array_constructor): Update loop upper limit.
+	(gfc_conv_ss_startstride): Don't set codimen field.
+	Don't get descriptor's cobounds.
+	(gfc_walk_variable_expr): Update dimension index.
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	conv_intrinsic_cobound): Don't set codimen field
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans.h (gfc_loopinfo): Remove codimen field.
+	* trans-array.c (gfc_set_vector_loop_bounds,
+	gfc_trans_scalarizing_loops, gfc_conv_loop_setup): Update loop upper
+	limit.
+	(gfc_set_loop_bounds_from_array_spec): Ditto. Remove skip on last
+	codimension.
+	(gfc_start_scalarized_body): Update loop lower limit.
+	(gfc_conv_ss_startstride): Don't set loop's codimen field.
+	(gfc_conv_loop_setup): Remove unnecessary condition.
+	(gfc_conv_expr_descriptor): Don't use loop's codimen field as corank.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans.h (gfc_ss): Remove data.temp.codimen field.
+	* trans-array.c (gfc_conv_resolve_dependencies,
+	gfc_conv_expr_descriptor): Don't set temp's codimen field.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* resolve.c (resolve_array_ref): Set array_ref's dimen field (and the
+	associated dimen_type) in the full array ref case.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-intrinsic.c (walk_coarray): New function.
+	(convert_element_to_coarray_ref): Move code to walk_coarray. Remove.
+	(trans-this_image, trans_image_index, conv_intrinsic_cobound):
+	Use walk_coarray.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_expr_descriptor): Add out-of-the-scalarizer
+	cobounds evaluation.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_ss_startstride): Support zero rank loop.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_section_startstride): Move code to
+	evaluate_bound.  Use evaluate_bound.
+	(evaluate_bound): New function.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_section_startstride): Update assertion to
+	also accept coarrays.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_section_startstride): Factor common
+	array ref references.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_expr_descriptor): Use codim instead of
+	loop.codimen as argument to gfc_get_array_type_bounds.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.h (struct gfc_se): New flag want_coarray.
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	conv_intrinsic_cobound): Set want_coarray.
+	* trans_array.c (gfc_conv_expr_descriptor): Evaluate codimension
+	earlier and without relying on the scalarizer.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* expr.c (gfc_get_corank): Return 0 if input expression is not a
+	coarray.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* trans-array.c (gfc_conv_expr_descriptor): Simplify coarray
+	descriptor setup code.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* resolve.c (compare_spec_to_ref): Move coarray ref initialization
+	code...
+	(resolve_array_ref): ... here.
+
+2011-10-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* check.c (is_coarray): Remove.
+	(coarray_check): Use gfc_is_coarray.
+
+2011-10-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50625
+	* class.c (gfc_build_class_symbol): Fix whitespace.
+	* module.c (mio_symbol): Set 'class_ok' attribute.
+	* trans-decl.c (gfc_get_symbol_decl): Make sure the backend_decl has
+	been built for class symbols.
+
+2011-10-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	* interface.c (check_dummy_characteristics): Check the array shape.
+
 2011-10-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50585
@@ -202,7 +592,7 @@
 	* symbol.c (check_conflict): Allow threadprivate attribute with
 	FL_PROCEDURE if proc_pointer.
 
-2011-08-25  Mikael Morin  <mikael.morin@gcc.gnu.org>
+2011-08-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50050
 	* expr.c (gfc_free_shape): Do nothing if shape is NULL.
@@ -252,7 +642,7 @@
 	* cpp.c (gfc_cpp_init): Force BUILTINS_LOCATION for tokens
 	defined in cpp_define_builtins.
 
-2011-08-22  Mikael Morin  <mikael.morin@gcc.gnu.org>
+2011-08-22  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50050
 	* gfortran.h (gfc_clear_shape, gfc_free_shape): New prototypes.

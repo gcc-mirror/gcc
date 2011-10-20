@@ -1,3 +1,259 @@
+2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/13657
+	* class.c (instantiate_type): Fix error message.
+
+2011-10-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50793
+	* tree.c (bot_manip): Propagate AGGR_INIT_ZERO_FIRST.
+
+2011-10-19  Roland Stigge  <stigge@antcom.de>
+
+	PR translation/49704
+	* semantics.c (potential_constant_expression_1): Use "AST" instead of
+	"ast" in sorry message.
+
+2011-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38761
+	PR c++/40872
+	* decl.c (duplicate_decls, make_typename_type, grokdeclarator): Use
+	G_() in error message strings to facilitate translation.
+	* semantics.c (finish_id_expression): Likewise.
+	* parser.c (cp_parser_nested_name_specifier_opt,
+	cp_parser_parameter_declaration): Likewise.
+
+2011-10-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50531
+	* pt.c (instantiate_decl): Recognize when a function defaulted
+	outside the class is already instantiated.
+
+	PR c++/50742
+	* decl.c (check_previous_goto_1): Handle using-decl.
+
+2011-10-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50500
+	DR 1082
+	* class.c (type_has_user_declared_move_constructor): New.
+	(type_has_user_declared_move_assign): New.
+	(add_implicitly_declared_members): Add lazy copy ops
+	even if there's a move.
+	* method.c (lazily_declare_fn): Delete implicit copies
+	if there's a move.
+	(maybe_explain_implicit_delete): Explain this.  Use inform rather
+	than error.
+	* cp-tree.h: Declare new fns.
+
+2011-10-18   Diego Novillo  <dnovillo@google.com>
+
+	* parser.c: Remove ENABLE_CHECKING markers around debugging
+	routines.
+	(cp_lexer_dump_tokens): Add arguments START_TOKEN and CURR_TOKEN.
+	Make static
+	When printing CURR_TOKEN surround it in [[ ]].
+	Start printing at START_TOKEN.
+	Update all users.
+	(cp_debug_print_tree_if_set): New.
+	(cp_debug_print_context): New.
+	(cp_debug_print_context_stack): New.
+	(cp_debug_print_flag): New.
+	(cp_debug_print_unparsed_function): New.
+	(cp_debug_print_unparsed_queues): New.
+	(cp_debug_parser_tokens): New.
+	(cp_debug_parser): New.
+	(cp_lexer_start_debugging): Set cp_lexer_debug_stream to stderr.
+	(cp_lexer_stop_debugging): Set cp_lexer_debug_stream to NULL.
+	* parser.h (cp_lexer_dump_tokens): Remove declaration.
+	(cp_debug_parser): Declare.
+
+2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
+
+	* cp-tree.def: Add BASES as a new tree code.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_BASES, CPTK_DIRECT_BASES.
+	(BASES_TYPE, BASES_DIRECT): Define.
+	(calculate_bases, finish_bases, calculate_direct_bases): Declare.
+	* parser.c (cp_parser_trait_expr, cp_parser_template_argument_list,
+	(cp_parser_simple_type_specifier, cp_parser_save_nsdmi): Use them.
+	* pt.c (find_parameter_packs_r, tsubst_pack_expansion): Likewise.
+	* semantics.c (calculate_bases, finish_bases, calculate_direct_bases,
+	dfs_calculate_bases_pre, dfs_calculate_bases_post,
+	calculate_bases_helper): Define.
+
+2011-10-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50736
+	* parser.c (cp_parser_lambda_introducer): Check for more
+	invalid captures.
+
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44524
+	* typeck.c (build_class_member_access_expr): Provide a better error
+	message for X.Y where X is a pointer to class type.
+	(finish_class_member_access_expr): Likewise.
+
+2011-10-15  Tom Tromey  <tromey@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* error.c (cp_diagnostic_starter): Pass the relevant location to
+	diagnostic_report_current_module.
+	(cp_diagnostic_finalizer): Call virt_loc_aware_diagnostic_finalizer.
+
+2011-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48489
+	* typeck.c (finish_class_member_access_expr): Fix error call
+	for TREE_CODE (access_path) == TREE_BINFO.
+
+2011-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50732
+	* semantics.c (finish_trait_expr): Do not try to instantiate the
+	the base type of an __is_base_of trait.
+	(check_trait_type): Return a tree; use complete_type_or_else.
+
+2011-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50563
+	* parser.c (cp_parser_cache_group): Handle end==CPP_COMMA.
+	(cp_parser_save_nsdmi): Pass it.
+
+	PR c++/50707
+	* method.c (walk_field_subobs): Check for NSDMI before
+	complaining about uninitialized fields.
+
+	* pt.c (tsubst_decl) [FIELD_DECL]: Use void_zero_node
+	instead of error_mark_node as a placeholder.
+
+2011-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38174
+	* call.c (add_builtin_candidate): If two pointers have a composite
+	pointer type, generate a single candidate with that type.
+
+2011-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50614
+	* cp-tree.h (VAR_TEMPL_TYPE_FIELD_OR_FUNCTION_DECL_CHECK): New.
+	(DECL_TEMPLATE_INFO): Use it.
+	* pt.c (tsubst_decl) [FIELD_DECL]: Set DECL_TEMPLATE_INFO
+	if the decl has an NSDMI.
+	* init.c (perform_member_init): Use it.
+
+	PR c++/50437
+	* cp-tree.h (struct tree_lambda_expr): Add closure field.
+	(LAMBDA_EXPR_CLOSURE): New.
+	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Likewise.
+	* semantics.c (build_lambda_object): Use it instead of TREE_TYPE.
+	(begin_lambda_type, lambda_function, add_capture): Likewise.
+	(add_default_capture, lambda_expr_this_capture): Likewise.
+
+2011-10-13   Diego Novillo  <dnovillo@google.com>
+
+	* cp-tree.h (struct language_function): Rename in_function_try_handler
+	to x_in_function_try_handler.
+	Rename in_base_initializer to x_in_base_initializer.
+	Update all users.
+
+2011-10-13   Diego Novillo  <dnovillo@google.com>
+
+	* class.c (sorted_fields_type_new): Factor out of ...
+	(finish_struct_1): ... here.
+
+2011-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50618
+	* init.c (expand_aggr_init_1): Don't zero-initialize virtual
+	bases of a base subobject.
+
+2011-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50594
+	* decl.c (cxx_init_decl_processing): Add
+	__attribute__((externally_visible)) to operator new and
+	operator delete library fn.
+
+2011-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* decl.c (duplicate_decls): Delete old interface with two parallel
+	arrays to hold standard builtin declarations, and replace it with
+	a function based interface that can support creating builtins on
+	the fly in the future.  Change all uses, and poison the old
+	names.  Make sure 0 is not a legitimate builtin index.
+	* except.c (build_eh_type_type): Ditto.
+	(choose_personality_routine): Ditto.
+	* semantics.c (finish_omp_atomic): Ditto.
+	(finish_omp_barrier): Ditto.
+	(finish_omp_flush): Ditto.
+	(finish_omp_taskwait): Ditto.
+
+2011-10-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49855
+	PR c++/49896
+	* cp-tree.def (IMPLICIT_CONV_EXPR): New.
+	* call.c (perform_implicit_conversion_flags): Build it
+	instead of NOP_EXPR.
+	* cp-objcp-common.c (cp_common_init_ts): It's typed.
+	* cxx-pretty-print.c (pp_cxx_cast_expression): Handle it.
+	(pp_cxx_expression): Likewise.
+	* error.c (dump_expr): Likewise.
+	* semantics.c (potential_constant_expression_1): Likewise.
+	* tree.c (cp_tree_equal): Likewise.
+	(cp_walk_subtrees): Likewise.
+	* pt.c (iterative_hash_template_arg): Likewise.
+	(for_each_template_parm_r): Likewise.
+	(type_dependent_expression_p): Likewise.
+	(tsubst_copy, tsubst_copy_and_build): Handle IMPLICIT_CONV_EXPR
+	and CONVERT_EXPR.
+	* cp-tree.h (IMPLICIT_CONV_EXPR_DIRECT_INIT): New.
+
+2011-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50611
+	* pt.c (tsubst_copy_and_build): If (complain & tf_error) is false
+	do not call unqualified_name_lookup_error.
+
+2011-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50660
+	* call.c (conversion_null_warnings): Don't look through references.
+
+2011-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38980
+	* init.c (constant_value_1): Add bool parameter.
+	(decl_constant_value_safe): Add.
+	(integral_constant_value): Adjust.
+	(decl_constant_value): Adjust.
+	* cp-tree.h (decl_constant_value_safe): Declare.
+	* typeck.c (decay_conversion): Use decl_constant_value_safe.
+	* call.c (convert_like_real): Likewise.
+
+2011-10-09  Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* pt.c (reregister_specialization): Use htab_find instead of
+	htab_find_slot with INSERT.
+	(maybe_process_partial_specialization, lookup_template_class_1): Change
+	slot variable type to void ** to avoid aliasing problems.
+	(register_specialization): Likewise.  Use slot != NULL instead of
+	more expensive !optimize_specialization_lookup_p (tmpl) test.
+
+2011-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34927
+	* typeck2.c (abstract_virtuals_error_sfinae): Don't produce duplicate
+	inform messages in case of cloned destructor.
+
+2011-10-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39164
+	* decl.c (grokfndecl): Diagnose redefinition of defaulted fn.
+
 2011-10-02  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_pack_expansion): Re-use ARGUMENT_PACK_SELECTs.

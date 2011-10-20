@@ -88,21 +88,26 @@ package Exp_Ch6 is
 
    type BIP_Formal_Kind is
    --  Ada 2005 (AI-318-02): This type defines the kinds of implicit extra
-   --  formals created for build-in-place functions. The order of the above
+   --  formals created for build-in-place functions. The order of these
    --  enumeration literals matches the order in which the formals are
    --  declared. See Sem_Ch6.Create_Extra_Formals.
 
      (BIP_Alloc_Form,
-      --  Present if result subtype is unconstrained, or if the result type
-      --  is tagged. Indicates whether the return object is allocated by the
-      --  caller or callee, and if the callee, whether to use the secondary
-      --  stack or the heap. See Create_Extra_Formals.
+      --  Present if result subtype is unconstrained or tagged. Indicates
+      --  whether the return object is allocated by the caller or callee, and
+      --  if the callee, whether to use the secondary stack or the heap. See
+      --  Create_Extra_Formals.
+
+      BIP_Storage_Pool,
+      --  Present if result subtype is unconstrained or tagged. If
+      --  BIP_Alloc_Form = User_Storage_Pool, this is a pointer to the pool
+      --  (of type access to Root_Storage_Pool'Class). Otherwise null.
 
       BIP_Finalization_Master,
       --  Present if result type needs finalization. Pointer to caller's
       --  finalization master.
 
-      BIP_Master,
+      BIP_Task_Master,
       --  Present if result type contains tasks. Master associated with
       --  calling context.
 
@@ -114,8 +119,7 @@ package Exp_Ch6 is
       --  the return object, or null if BIP_Alloc_Form indicates allocated by
       --  callee.
       --
-      --  ??? We also need to be able to pass in some way to access a user-
-      --  defined storage pool at some point. And perhaps a constrained flag.
+      --  ??? We might also need to be able to pass in a constrained flag.
 
    function BIP_Formal_Suffix (Kind : BIP_Formal_Kind) return String;
    --  Ada 2005 (AI-318-02): Returns a string to be used as the suffix of names
@@ -197,13 +201,13 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
-   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
-   --  finalization master implicit parameter.
-
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
+
+   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Return True if the result subtype of function
+   --  Func_Id needs finalization actions.
 
    function Needs_Result_Accessibility_Level
      (Func_Id : Entity_Id) return Boolean;

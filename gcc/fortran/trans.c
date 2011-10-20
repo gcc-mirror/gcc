@@ -323,7 +323,14 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
       return fold_convert (TYPE_MAIN_VARIANT (type), base);
     }
 
-  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+  /* Scalar coarray, there is nothing to do.  */
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    {
+      gcc_assert (decl == NULL_TREE);
+      gcc_assert (integer_zerop (offset));
+      return base;
+    }
+
   type = TREE_TYPE (type);
 
   if (DECL_P (base))
@@ -512,7 +519,7 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
 tree
 gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 {
-  tree tmp, msg, malloc_result, null_result, res;
+  tree tmp, msg, malloc_result, null_result, res, malloc_tree;
   stmtblock_t block2;
 
   size = gfc_evaluate_now (size, block);
@@ -529,10 +536,11 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
   size = fold_build2_loc (input_location, MAX_EXPR, size_type_node, size,
 			  build_int_cst (size_type_node, 1));
 
+  malloc_tree = builtin_decl_explicit (BUILT_IN_MALLOC);
   gfc_add_modify (&block2, res,
 		  fold_convert (prvoid_type_node,
 				build_call_expr_loc (input_location,
-				   built_in_decls[BUILT_IN_MALLOC], 1, size)));
+						     malloc_tree, 1, size)));
 
   /* Optionally check whether malloc was successful.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_MEM)
@@ -604,7 +612,7 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
   gfc_add_modify (block, pointer,
 	  fold_convert (TREE_TYPE (pointer),
 		build_call_expr_loc (input_location,
-			     built_in_decls[BUILT_IN_MALLOC], 1,
+			     builtin_decl_explicit (BUILT_IN_MALLOC), 1,
 			     fold_build2_loc (input_location,
 				      MAX_EXPR, size_type_node, size,
 				      build_int_cst (size_type_node, 1)))));
@@ -783,7 +791,8 @@ gfc_call_free (tree var)
   cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, var,
 			  build_int_cst (pvoid_type_node, 0));
   call = build_call_expr_loc (input_location,
-			      built_in_decls[BUILT_IN_FREE], 1, var);
+			      builtin_decl_explicit (BUILT_IN_FREE),
+			      1, var);
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond, call,
 			 build_empty_stmt (input_location));
   gfc_add_expr_to_block (&block, tmp);
@@ -871,8 +880,8 @@ gfc_deallocate_with_status (tree pointer, tree status, bool can_fail,
   /* When POINTER is not NULL, we free it.  */
   gfc_start_block (&non_null);
   tmp = build_call_expr_loc (input_location,
-			 built_in_decls[BUILT_IN_FREE], 1,
-			 fold_convert (pvoid_type_node, pointer));
+			     builtin_decl_explicit (BUILT_IN_FREE), 1,
+			     fold_convert (pvoid_type_node, pointer));
   gfc_add_expr_to_block (&non_null, tmp);
 
   if (status != NULL_TREE && !integer_zerop (status))
@@ -968,8 +977,8 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, bool can_fail,
     }
   
   tmp = build_call_expr_loc (input_location,
-			 built_in_decls[BUILT_IN_FREE], 1,
-			 fold_convert (pvoid_type_node, pointer));
+			     builtin_decl_explicit (BUILT_IN_FREE), 1,
+			     fold_convert (pvoid_type_node, pointer));
   gfc_add_expr_to_block (&non_null, tmp);
 
   if (status != NULL_TREE && !integer_zerop (status))
@@ -1026,7 +1035,7 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 
   /* Call realloc and check the result.  */
   tmp = build_call_expr_loc (input_location,
-			 built_in_decls[BUILT_IN_REALLOC], 2,
+			 builtin_decl_explicit (BUILT_IN_REALLOC), 2,
 			 fold_convert (pvoid_type_node, mem), size);
   gfc_add_modify (block, res, fold_convert (type, tmp));
   null_result = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
@@ -1593,7 +1602,8 @@ gfc_unlikely (tree cond)
   cond = fold_convert (long_integer_type_node, cond);
   tmp = build_zero_cst (long_integer_type_node);
   cond = build_call_expr_loc (input_location,
-			      built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
+			      builtin_decl_explicit (BUILT_IN_EXPECT),
+			      2, cond, tmp);
   cond = fold_convert (boolean_type_node, cond);
   return cond;
 }
@@ -1609,7 +1619,8 @@ gfc_likely (tree cond)
   cond = fold_convert (long_integer_type_node, cond);
   tmp = build_one_cst (long_integer_type_node);
   cond = build_call_expr_loc (input_location,
-			      built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
+			      builtin_decl_explicit (BUILT_IN_EXPECT),
+			      2, cond, tmp);
   cond = fold_convert (boolean_type_node, cond);
   return cond;
 }

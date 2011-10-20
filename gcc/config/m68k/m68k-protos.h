@@ -51,7 +51,6 @@ extern bool strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
 extern int standard_68881_constant_p (rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
-extern bool m68k_output_addr_const_extra (FILE *, rtx);
 extern void notice_update_cc (rtx, rtx);
 extern bool m68k_legitimate_base_reg_p (rtx, bool);
 extern bool m68k_legitimate_index_reg_p (rtx, bool);

@@ -288,7 +288,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HAVE_DMB		(arm_arch7)
 
 /* Nonzero if this chip implements a memory barrier via CP15.  */
-#define TARGET_HAVE_DMB_MCR	(arm_arch6k && ! TARGET_HAVE_DMB)
+#define TARGET_HAVE_DMB_MCR	(arm_arch6 && ! TARGET_HAVE_DMB \
+				 && ! TARGET_THUMB1)
 
 /* Nonzero if this chip implements a memory barrier instruction.  */
 #define TARGET_HAVE_MEMORY_BARRIER (TARGET_HAVE_DMB || TARGET_HAVE_DMB_MCR)
@@ -296,8 +297,12 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* Nonzero if this chip supports ldrex and strex */
 #define TARGET_HAVE_LDREX	((arm_arch6 && TARGET_ARM) || arm_arch7)
 
-/* Nonzero if this chip supports ldrex{bhd} and strex{bhd}.  */
-#define TARGET_HAVE_LDREXBHD	((arm_arch6k && TARGET_ARM) || arm_arch7)
+/* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
+#define TARGET_HAVE_LDREXBH	((arm_arch6k && TARGET_ARM) || arm_arch7)
+
+/* Nonzero if this chip supports ldrexd and strexd.  */
+#define TARGET_HAVE_LDREXD	(((arm_arch6k && TARGET_ARM) || arm_arch7) \
+				 && arm_arch_notm)
 
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV		((TARGET_ARM && arm_arch_arm_hwdiv) \
@@ -2234,5 +2239,37 @@ extern int making_const_table;
 #define ASM_CPU_SPEC \
    " %{mcpu=generic-*:-march=%*;"				\
    "   :%{mcpu=*:-mcpu=%*} %{march=*:-march=%*}}"
+
+/* This macro is used to emit an EABI tag and its associated value.
+   We emit the numerical value of the tag in case the assembler does not
+   support textual tags.  (Eg gas prior to 2.20).  If requested we include
+   the tag name in a comment so that anyone reading the assembler output
+   will know which tag is being set.  */
+#define EMIT_EABI_ATTRIBUTE(NAME,NUM,VAL)				\
+  do									\
+    {									\
+      asm_fprintf (asm_out_file, "\t.eabi_attribute %d, %d", NUM, VAL); \
+      if (flag_verbose_asm || flag_debug_asm)				\
+	asm_fprintf (asm_out_file, "\t%s " #NAME, ASM_COMMENT_START);	\
+      asm_fprintf (asm_out_file, "\n");					\
+    }									\
+  while (0)
+
+/* -mcpu=native handling only makes sense with compiler running on
+   an ARM chip.  */
+#if defined(__arm__)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+# define EXTRA_SPEC_FUNCTIONS						\
+  { "local_cpu_detect", host_detect_local_cpu },
+
+# define MCPU_MTUNE_NATIVE_SPECS					\
+   " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
+   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#else
+# define MCPU_MTUNE_NATIVE_SPECS ""
+#endif
+
+#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
 
 #endif /* ! GCC_ARM_H */

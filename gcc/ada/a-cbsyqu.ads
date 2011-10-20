@@ -44,11 +44,11 @@ generic
 package Ada.Containers.Bounded_Synchronized_Queues is
    pragma Preelaborate;
 
-   --  All identifiers in this unit are implementation defined
-
-   pragma Implementation_Defined;
-
    package Implementation is
+
+      --  All identifiers in this unit are implementation defined
+
+      pragma Implementation_Defined;
 
       type List_Type (Capacity : Count_Type) is tagged limited private;
 
@@ -83,9 +83,7 @@ package Ada.Containers.Bounded_Synchronized_Queues is
    protected type Queue
      (Capacity : Count_Type := Default_Capacity;
       Ceiling  : System.Any_Priority := Default_Ceiling)
-   --  ???
-   --  with Priority => Ceiling is new Queue_Interfaces.Queue with
-   is new Queue_Interfaces.Queue with
+     with Priority => Ceiling is new Queue_Interfaces.Queue with
 
       overriding
       entry Enqueue (New_Item : Queue_Interfaces.Element_Type);

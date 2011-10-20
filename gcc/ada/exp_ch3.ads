@@ -46,15 +46,6 @@ package Exp_Ch3 is
    procedure Expand_Record_Extension (T : Entity_Id; Def : Node_Id);
    --  Add a field _parent in the extension part of the record
 
-   procedure Build_Class_Wide_Master (T : Entity_Id);
-   --  For access to class-wide limited types we must build a task master
-   --  because some subsequent extension may add a task component. To avoid
-   --  bringing in the tasking run-time whenever an access-to-class-wide
-   --  limited type is used, we use the soft-link mechanism and add a level of
-   --  indirection to calls to routines that manipulate Master_Ids. This must
-   --  also be used for anonymous access types whose designated type is a task
-   --  or synchronized interface.
-
    procedure Build_Discr_Checking_Funcs (N : Node_Id);
    --  Builds function which checks whether the component name is consistent
    --  with the current discriminants. N is the full type declaration node,
@@ -92,19 +83,6 @@ package Exp_Ch3 is
    --
    --  Constructor_Ref is a call to a constructor subprogram. It is currently
    --  used only to support C++ constructors.
-
-   procedure Build_Master_Renaming (N : Node_Id; T : Entity_Id);
-   --  If the designated type of an access type is a task type or contains
-   --  tasks, we make sure that a _Master variable is declared in the current
-   --  scope, and then declare a renaming for it:
-   --
-   --    atypeM : Master_Id renames _Master;
-   --
-   --  where atyp is the name of the access type. This declaration is
-   --  used when an allocator for the access type is expanded. The node N
-   --  is the full declaration of the designated type that contains tasks.
-   --  The renaming declaration is inserted before N, and after the Master
-   --  declaration.
 
    function Freeze_Type (N : Node_Id) return Boolean;
    --  This function executes the freezing actions associated with the given

@@ -155,6 +155,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   init_library ();
 
   pfile = XCNEW (cpp_reader);
+  memset (&pfile->base_context, 0, sizeof (pfile->base_context));
 
   cpp_set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_multichar) = 1;
@@ -214,7 +215,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
 
   /* Initialize the base context.  */
   pfile->context = &pfile->base_context;
-  pfile->base_context.macro = 0;
+  pfile->base_context.c.macro = 0;
   pfile->base_context.prev = pfile->base_context.next = 0;
 
   /* Aligned and unaligned storage.  */
@@ -587,7 +588,9 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   if (CPP_OPTION (pfile, preprocessed))
     {
       read_original_filename (pfile);
-      fname = pfile->line_table->maps[pfile->line_table->used-1].to_file;
+      fname =
+	ORDINARY_MAP_FILE_NAME
+	((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)));
     }
   return fname;
 }

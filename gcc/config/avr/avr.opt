@@ -61,3 +61,7 @@ Relax branches
 mpmem-wrap-around
 Target Report
 Make the linker relaxation machine assume that a program counter wrap-around occurs.
+
+mstrict-X
+Target Report Var(avr_strict_X) Init(0)
+When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.

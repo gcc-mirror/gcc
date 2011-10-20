@@ -1355,7 +1355,6 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_vectorize);
 	    {
 	      struct opt_pass **p = &pass_vectorize.pass.sub;
-	      NEXT_PASS (pass_lower_vector_ssa);
 	      NEXT_PASS (pass_dce_loop);
 	    }
           NEXT_PASS (pass_predcom);
@@ -1367,6 +1366,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_tree_loop_done);
 	}
+      NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc);
       NEXT_PASS (pass_vrp);

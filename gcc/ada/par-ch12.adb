@@ -336,7 +336,7 @@ package body Ch12 is
    begin
       Generic_Assoc_Node := New_Node (N_Generic_Association, Token_Ptr);
 
-      --  Ada2005: an association can be given by: others => <>
+      --  Ada 2005: an association can be given by: others => <>
 
       if Token = Tok_Others then
          if Ada_Version < Ada_2005 then

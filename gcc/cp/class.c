@@ -2736,13 +2736,12 @@ add_implicitly_declared_members (tree t,
 
      If a class definition does not explicitly declare a copy
      constructor, one is declared implicitly.  */
-  if (! TYPE_HAS_COPY_CTOR (t) && ! TYPE_FOR_JAVA (t)
-      && !type_has_move_constructor (t))
+  if (! TYPE_HAS_COPY_CTOR (t) && ! TYPE_FOR_JAVA (t))
     {
       TYPE_HAS_COPY_CTOR (t) = 1;
       TYPE_HAS_CONST_COPY_CTOR (t) = !cant_have_const_cctor;
       CLASSTYPE_LAZY_COPY_CTOR (t) = 1;
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx0x && !type_has_move_constructor (t))
 	CLASSTYPE_LAZY_MOVE_CTOR (t) = 1;
     }
 
@@ -2750,13 +2749,12 @@ add_implicitly_declared_members (tree t,
      when it is needed.  For now, just record whether or not the type
      of the parameter to the assignment operator will be a const or
      non-const reference.  */
-  if (!TYPE_HAS_COPY_ASSIGN (t) && !TYPE_FOR_JAVA (t)
-      && !type_has_move_assign (t))
+  if (!TYPE_HAS_COPY_ASSIGN (t) && !TYPE_FOR_JAVA (t))
     {
       TYPE_HAS_COPY_ASSIGN (t) = 1;
       TYPE_HAS_CONST_COPY_ASSIGN (t) = !cant_have_const_assignment;
       CLASSTYPE_LAZY_COPY_ASSIGN (t) = 1;
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx0x && !type_has_move_assign (t))
 	CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 1;
     }
 
@@ -4495,6 +4493,54 @@ type_has_move_assign (tree t)
   return false;
 }
 
+/* Returns true iff class T has a move constructor that was explicitly
+   declared in the class body.  Note that this is different from
+   "user-provided", which doesn't include functions that are defaulted in
+   the class.  */
+
+bool
+type_has_user_declared_move_constructor (tree t)
+{
+  tree fns;
+
+  if (CLASSTYPE_LAZY_MOVE_CTOR (t))
+    return false;
+
+  if (!CLASSTYPE_METHOD_VEC (t))
+    return false;
+
+  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+      if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
+	return true;
+    }
+
+  return false;
+}
+
+/* Returns true iff class T has a move assignment operator that was
+   explicitly declared in the class body.  */
+
+bool
+type_has_user_declared_move_assign (tree t)
+{
+  tree fns;
+
+  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
+    return false;
+
+  for (fns = lookup_fnfields_slot (t, ansi_assopname (NOP_EXPR));
+       fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+      if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
+	return true;
+    }
+
+  return false;
+}
+
 /* Nonzero if we need to build up a constructor call when initializing an
    object of this class, either because it has a user-provided constructor
    or because it doesn't have a default constructor (so we need to give an
@@ -5663,6 +5709,22 @@ determine_key_method (tree type)
   return;
 }
 
+
+/* Allocate and return an instance of struct sorted_fields_type with
+   N fields.  */
+
+static struct sorted_fields_type *
+sorted_fields_type_new (int n)
+{
+  struct sorted_fields_type *sft;
+  sft = ggc_alloc_sorted_fields_type (sizeof (struct sorted_fields_type)
+				      + n * sizeof (tree));
+  sft->len = n;
+
+  return sft;
+}
+
+
 /* Perform processing required when the definition of T (a class type)
    is complete.  */
 
@@ -5792,9 +5854,7 @@ finish_struct_1 (tree t)
   n_fields = count_fields (TYPE_FIELDS (t));
   if (n_fields > 7)
     {
-      struct sorted_fields_type *field_vec = ggc_alloc_sorted_fields_type
-	 (sizeof (struct sorted_fields_type) + n_fields * sizeof (tree));
-      field_vec->len = n_fields;
+      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
       add_fields_to_record_type (TYPE_FIELDS (t), field_vec, 0);
       qsort (field_vec->elts, n_fields, sizeof (tree),
 	     field_decl_cmp);
@@ -6807,8 +6867,8 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
       else
 	{
 	  if (flags & tf_error)
-	    error ("argument of type %qT does not match %qT",
-		   TREE_TYPE (rhs), lhstype);
+	    error ("cannot convert %qE from type %qT to type %qT",
+		   rhs, TREE_TYPE (rhs), lhstype);
 	  return error_mark_node;
 	}
     }

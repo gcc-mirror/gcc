@@ -435,6 +435,9 @@ struct GTY(()) rtl_data {
      function where currently compiled version of it is nothrow.  */
   bool nothrow;
 
+  /* True if we performed shrink-wrapping for the current function.  */
+  bool shrink_wrapped;
+
   /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
      asm.  Unlike regs_ever_live, elements of this array corresponding
      to eliminable regs (like the frame pointer) are set if an asm

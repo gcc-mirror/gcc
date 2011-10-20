@@ -409,8 +409,8 @@ private
    for Vector_Access'Storage_Size use 0;
 
    type Cursor is record
-      Container   : Vector_Access;
-      Index       : Index_Type := Index_Type'First;
+      Container : Vector_Access;
+      Index     : Index_Type := Index_Type'First;
    end record;
 
    procedure Write

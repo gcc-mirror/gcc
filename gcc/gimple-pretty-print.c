@@ -343,6 +343,8 @@ dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     case VEC_EXTRACT_ODD_EXPR:
     case VEC_INTERLEAVE_HIGH_EXPR:
     case VEC_INTERLEAVE_LOW_EXPR:
+    case VEC_WIDEN_LSHIFT_HI_EXPR:
+    case VEC_WIDEN_LSHIFT_LO_EXPR:
       for (p = tree_code_name [(int) code]; *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");
@@ -410,6 +412,16 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
 
     case DOT_PROD_EXPR:
       pp_string (buffer, "DOT_PROD_EXPR <");
+      dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
+      pp_string (buffer, ">");
+      break;
+    
+    case VEC_PERM_EXPR:
+      pp_string (buffer, "VEC_PERM_EXPR <");
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
@@ -600,8 +612,6 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
       pp_character (buffer, '}');
       if (pt->vars_contains_global)
 	pp_string (buffer, " (glob)");
-      if (pt->vars_contains_restrict)
-	pp_string (buffer, " (restr)");
     }
 }
 

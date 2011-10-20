@@ -52,11 +52,11 @@ generic
 package Ada.Containers.Unbounded_Priority_Queues is
    pragma Preelaborate;
 
-   --  All identifiers in this unit are implementation defined
-
-   pragma Implementation_Defined;
-
    package Implementation is
+
+      --  All identifiers in this unit are implementation defined
+
+      pragma Implementation_Defined;
 
       type List_Type is tagged limited private;
 
@@ -67,6 +67,12 @@ package Ada.Containers.Unbounded_Priority_Queues is
       procedure Dequeue
         (List    : in out List_Type;
          Element : out Queue_Interfaces.Element_Type);
+
+      procedure Dequeue
+        (List     : in out List_Type;
+         At_Least : Queue_Priority;
+         Element  : in out Queue_Interfaces.Element_Type;
+         Success  : out Boolean);
 
       function Length (List : List_Type) return Count_Type;
 
@@ -91,36 +97,35 @@ package Ada.Containers.Unbounded_Priority_Queues is
       overriding
       procedure Finalize (List : in out List_Type);
 
-      --  ???
-      --  not overriding
-      --  function Have_High_Priority
-      --    (List         : List_Type;
-      --     Low_Priority : Queue_Priority) return Boolean;
-
    end Implementation;
 
    protected type Queue (Ceiling : System.Any_Priority := Default_Ceiling)
-     --  ???
-     --  with Priority => Ceiling is new Queue_Interfaces.Queue with
-     is new Queue_Interfaces.Queue with
+     with Priority => Ceiling is new Queue_Interfaces.Queue with
 
-     overriding
-     entry Enqueue (New_Item : Queue_Interfaces.Element_Type);
+      overriding
+      entry Enqueue (New_Item : Queue_Interfaces.Element_Type);
 
-     overriding
-     entry Dequeue (Element : out Queue_Interfaces.Element_Type);
+      overriding
+      entry Dequeue (Element : out Queue_Interfaces.Element_Type);
 
-     --  ???
-     --  not overriding
-     --  entry Dequeue_Only_High_Priority
-     --    (Low_Priority : Queue_Priority;
-     --     Element      : out Queue_Interfaces.Element_Type);
+      --  The priority queue operation Dequeue_Only_High_Priority had been a
+      --  protected entry in early drafts of AI05-0159, but it was discovered
+      --  that that operation as specified was not in fact implementable. The
+      --  operation was changed from an entry to a protected procedure per the
+      --  ARG meeting in Edinburgh (June 2011), with a different signature and
+      --  semantics.
 
-     overriding
-     function Current_Use return Count_Type;
+      not overriding
+      procedure Dequeue_Only_High_Priority
+        (At_Least : Queue_Priority;
+         Element  : in out Queue_Interfaces.Element_Type;
+         Success  : out Boolean);
 
-     overriding
-     function Peak_Use return Count_Type;
+      overriding
+      function Current_Use return Count_Type;
+
+      overriding
+      function Peak_Use return Count_Type;
 
    private
 

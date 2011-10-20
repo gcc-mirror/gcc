@@ -56,6 +56,7 @@ proc gdb-test { args } {
     set res [remote_spawn target "$gdb_name -nx -nw -quiet -x $cmd_file ./$output_file"]
     if { $res < 0 || $res == "" } {
 	unsupported "$testname"
+	file delete $cmd_file
 	return
     }
 
@@ -64,6 +65,7 @@ proc gdb-test { args } {
 	-re "Unhandled dwarf expression|Error in sourced command file" {
 	    unsupported "$testname"
 	    remote_close target
+	    file delete $cmd_file
 	    return
 	}
 	-re {[\n\r]\$1 = ([^\n\r]*)[\n\r]+\$2 = ([^\n\r]*)[\n\r]} {
@@ -76,16 +78,19 @@ proc gdb-test { args } {
 		fail "$testname"
 	    }
 	    remote_close target
+	    file delete $cmd_file
 	    return
 	}
 	timeout {
 	    unsupported "$testname"
 	    remote_close target
+	    file delete $cmd_file
 	    return
 	}
     }
 
-    remote_close target
     unsupported "$testname"
+    remote_close target
+    file delete $cmd_file
     return
 }

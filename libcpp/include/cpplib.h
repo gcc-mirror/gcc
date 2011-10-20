@@ -392,6 +392,18 @@ struct cpp_options
   /* Nonzero means we're looking at already preprocessed code, so don't
      bother trying to do macro expansion and whatnot.  */
   unsigned char preprocessed;
+  
+  /* Nonzero means we are going to emit debugging logs during
+     preprocessing.  */
+  unsigned char debug;
+
+  /* Nonzero means we are tracking locations of tokens involved in
+     macro expansion. 1 Means we track the location in degraded mode
+     where we do not track locations of tokens resulting from the
+     expansion of arguments of function-like macro.  2 Means we do
+     track all macro expansions. This last option is the one that
+     consumes the highest amount of memory.  */
+  unsigned char track_macro_expansion;
 
   /* Nonzero means handle C++ alternate operator names.  */
   unsigned char operator_names;

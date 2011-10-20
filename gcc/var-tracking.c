@@ -301,6 +301,48 @@ typedef struct location_chain_def
   enum var_init_status init;
 } *location_chain;
 
+/* A vector of loc_exp_dep holds the active dependencies of a one-part
+   DV on VALUEs, i.e., the VALUEs expanded so as to form the current
+   location of DV.  Each entry is also part of VALUE' s linked-list of
+   backlinks back to DV.  */
+typedef struct loc_exp_dep_s
+{
+  /* The dependent DV.  */
+  decl_or_value dv;
+  /* The dependency VALUE or DECL_DEBUG.  */
+  rtx value;
+  /* The next entry in VALUE's backlinks list.  */
+  struct loc_exp_dep_s *next;
+  /* A pointer to the pointer to this entry (head or prev's next) in
+     the doubly-linked list.  */
+  struct loc_exp_dep_s **pprev;
+} loc_exp_dep;
+
+DEF_VEC_O (loc_exp_dep);
+
+/* This data structure is allocated for one-part variables at the time
+   of emitting notes.  */
+struct onepart_aux
+{
+  /* Doubly-linked list of dependent DVs.  These are DVs whose cur_loc
+     computation used the expansion of this variable, and that ought
+     to be notified should this variable change.  If the DV's cur_loc
+     expanded to NULL, all components of the loc list are regarded as
+     active, so that any changes in them give us a chance to get a
+     location.  Otherwise, only components of the loc that expanded to
+     non-NULL are regarded as active dependencies.  */
+  loc_exp_dep *backlinks;
+  /* This holds the LOC that was expanded into cur_loc.  We need only
+     mark a one-part variable as changed if the FROM loc is removed,
+     or if it has no known location and a loc is added, or if it gets
+     a change notification from any of its active dependencies.  */
+  rtx from;
+  /* The depth of the cur_loc expression.  */
+  int depth;
+  /* Dependencies actively used when expand FROM into cur_loc.  */
+  VEC (loc_exp_dep, none) deps;
+};
+
 /* Structure describing one part of variable.  */
 typedef struct variable_part_def
 {
@@ -310,12 +352,32 @@ typedef struct variable_part_def
   /* Location which was last emitted to location list.  */
   rtx cur_loc;
 
-  /* The offset in the variable.  */
-  HOST_WIDE_INT offset;
+  union variable_aux
+  {
+    /* The offset in the variable, if !var->onepart.  */
+    HOST_WIDE_INT offset;
+
+    /* Pointer to auxiliary data, if var->onepart and emit_notes.  */
+    struct onepart_aux *onepaux;
+  } aux;
 } variable_part;
 
 /* Maximum number of location parts.  */
 #define MAX_VAR_PARTS 16
+
+/* Enumeration type used to discriminate various types of one-part
+   variables.  */
+typedef enum onepart_enum
+{
+  /* Not a one-part variable.  */
+  NOT_ONEPART = 0,
+  /* A one-part DECL that is not a DEBUG_EXPR_DECL.  */
+  ONEPART_VDECL = 1,
+  /* A DEBUG_EXPR_DECL.  */
+  ONEPART_DEXPR = 2,
+  /* A VALUE.  */
+  ONEPART_VALUE = 3
+} onepart_enum_t;
 
 /* Structure describing where the variable is located.  */
 typedef struct variable_def
@@ -330,10 +392,8 @@ typedef struct variable_def
   /* Number of variable parts.  */
   char n_var_parts;
 
-  /* True if this variable changed (any of its) cur_loc fields
-     during the current emit_notes_for_changes resp.
-     emit_notes_for_differences call.  */
-  bool cur_loc_changed;
+  /* What type of DV this is, according to enum onepart_enum.  */
+  ENUM_BITFIELD (onepart_enum) onepart : CHAR_BIT;
 
   /* True if this variable_def struct is currently in the
      changed_variables hash table.  */
@@ -344,28 +404,47 @@ typedef struct variable_def
 } *variable;
 typedef const struct variable_def *const_variable;
 
-/* Structure for chaining backlinks from referenced VALUEs to
-   DVs that are referencing them.  */
-typedef struct value_chain_def
-{
-  /* Next value_chain entry.  */
-  struct value_chain_def *next;
-
-  /* The declaration of the variable, or an RTL value
-     being handled like a declaration, whose var_parts[0].loc_chain
-     references the VALUE owning this value_chain.  */
-  decl_or_value dv;
-
-  /* Reference count.  */
-  int refcount;
-} *value_chain;
-typedef const struct value_chain_def *const_value_chain;
-
 /* Pointer to the BB's information specific to variable tracking pass.  */
 #define VTI(BB) ((variable_tracking_info) (BB)->aux)
 
 /* Macro to access MEM_OFFSET as an HOST_WIDE_INT.  Evaluates MEM twice.  */
 #define INT_MEM_OFFSET(mem) (MEM_OFFSET_KNOWN_P (mem) ? MEM_OFFSET (mem) : 0)
+
+#if ENABLE_CHECKING && (GCC_VERSION >= 2007)
+
+/* Access VAR's Ith part's offset, checking that it's not a one-part
+   variable.  */
+#define VAR_PART_OFFSET(var, i) __extension__			\
+(*({  variable const __v = (var);				\
+      gcc_checking_assert (!__v->onepart);			\
+      &__v->var_part[(i)].aux.offset; }))
+
+/* Access VAR's one-part auxiliary data, checking that it is a
+   one-part variable.  */
+#define VAR_LOC_1PAUX(var) __extension__			\
+(*({  variable const __v = (var);				\
+      gcc_checking_assert (__v->onepart);			\
+      &__v->var_part[0].aux.onepaux; }))
+
+#else
+#define VAR_PART_OFFSET(var, i) ((var)->var_part[(i)].aux.offset)
+#define VAR_LOC_1PAUX(var) ((var)->var_part[0].aux.onepaux)
+#endif
+
+/* These are accessor macros for the one-part auxiliary data.  When
+   convenient for users, they're guarded by tests that the data was
+   allocated.  */
+#define VAR_LOC_DEP_LST(var) (VAR_LOC_1PAUX (var)		  \
+			      ? VAR_LOC_1PAUX (var)->backlinks	  \
+			      : NULL)
+#define VAR_LOC_DEP_LSTP(var) (VAR_LOC_1PAUX (var)		  \
+			       ? &VAR_LOC_1PAUX (var)->backlinks  \
+			       : NULL)
+#define VAR_LOC_FROM(var) (VAR_LOC_1PAUX (var)->from)
+#define VAR_LOC_DEPTH(var) (VAR_LOC_1PAUX (var)->depth)
+#define VAR_LOC_DEP_VEC(var) (VAR_LOC_1PAUX (var)		  \
+			      ? &VAR_LOC_1PAUX (var)->deps	  \
+			      : NULL)
 
 /* Alloc pool for struct attrs_def.  */
 static alloc_pool attrs_pool;
@@ -382,17 +461,16 @@ static alloc_pool loc_chain_pool;
 /* Alloc pool for struct shared_hash_def.  */
 static alloc_pool shared_hash_pool;
 
-/* Alloc pool for struct value_chain_def.  */
-static alloc_pool value_chain_pool;
-
 /* Changed variables, notes will be emitted for them.  */
 static htab_t changed_variables;
 
-/* Links from VALUEs to DVs referencing them in their current loc_chains.  */
-static htab_t value_chains;
-
 /* Shall notes be emitted?  */
 static bool emit_notes;
+
+/* Values whose dynamic location lists have gone empty, but whose
+   cselib location lists are still usable.  Use this to hold the
+   current location, the backlinks, etc, during emit_notes.  */
+static htab_t dropped_values;
 
 /* Empty shared hashtable.  */
 static shared_hash empty_shared_hash;
@@ -400,6 +478,7 @@ static shared_hash empty_shared_hash;
 /* Scratch register bitmap used by cselib_expand_value_rtx.  */
 static bitmap scratch_regs = NULL;
 
+#ifdef HAVE_window_save
 typedef struct GTY(()) parm_reg {
   rtx outgoing;
   rtx incoming;
@@ -410,6 +489,7 @@ DEF_VEC_ALLOC_O(parm_reg_t, gc);
 
 /* Vector of windowed parameter registers, if any.  */
 static VEC(parm_reg_t, gc) *windowed_parm_regs = NULL;
+#endif
 
 /* Variable used to tell whether cselib_process_insn called our hook.  */
 static bool cselib_hook_called;
@@ -420,7 +500,6 @@ static void stack_adjust_offset_pre_post (rtx, HOST_WIDE_INT *,
 static void insn_stack_adjust_offset_pre_post (rtx, HOST_WIDE_INT *,
 					       HOST_WIDE_INT *);
 static bool vt_stack_adjustments (void);
-static void note_register_arguments (rtx);
 static hashval_t variable_htab_hash (const void *);
 static int variable_htab_eq (const void *, const void *);
 static void variable_htab_free (void *);
@@ -476,6 +555,7 @@ static void dump_vars (htab_t);
 static void dump_dataflow_set (dataflow_set *);
 static void dump_dataflow_sets (void);
 
+static void set_dv_changed (decl_or_value, bool);
 static void variable_was_changed (variable, dataflow_set *);
 static void **set_slot_part (dataflow_set *, rtx, void **,
 			     decl_or_value, HOST_WIDE_INT,
@@ -672,15 +752,11 @@ vt_stack_adjustments (void)
 	    for (insn = BB_HEAD (dest);
 		 insn != NEXT_INSN (BB_END (dest));
 		 insn = NEXT_INSN (insn))
-	      {
-		if (INSN_P (insn))
-		  {
-		    insn_stack_adjust_offset_pre_post (insn, &pre, &post);
-		    offset += pre + post;
-		  }
-		if (CALL_P (insn))
-		  note_register_arguments (insn);
-	      }
+	      if (INSN_P (insn))
+		{
+		  insn_stack_adjust_offset_pre_post (insn, &pre, &post);
+		  offset += pre + post;
+		}
 
 	  VTI (dest)->out.stack_adjust = offset;
 
@@ -1133,6 +1209,21 @@ dv_as_value (decl_or_value dv)
   return (rtx)dv;
 }
 
+/* Return the DEBUG_EXPR of a DEBUG_EXPR_DECL or the VALUE in DV.  */
+static inline rtx
+dv_as_rtx (decl_or_value dv)
+{
+  tree decl;
+
+  if (dv_is_value_p (dv))
+    return dv_as_value (dv);
+
+  decl = dv_as_decl (dv);
+
+  gcc_checking_assert (TREE_CODE (decl) == DEBUG_EXPR_DECL);
+  return DECL_RTL_KNOWN_SET (decl);
+}
+
 /* Return the opaque pointer in the decl_or_value.  */
 static inline void *
 dv_as_opaque (decl_or_value dv)
@@ -1140,36 +1231,36 @@ dv_as_opaque (decl_or_value dv)
   return dv;
 }
 
-/* Return true if a decl_or_value must not have more than one variable
-   part.  */
-static inline bool
+/* Return nonzero if a decl_or_value must not have more than one
+   variable part.  The returned value discriminates among various
+   kinds of one-part DVs ccording to enum onepart_enum.  */
+static inline onepart_enum_t
 dv_onepart_p (decl_or_value dv)
 {
   tree decl;
 
   if (!MAY_HAVE_DEBUG_INSNS)
-    return false;
+    return NOT_ONEPART;
 
   if (dv_is_value_p (dv))
-    return true;
+    return ONEPART_VALUE;
 
   decl = dv_as_decl (dv);
 
-  if (!decl)
-    return true;
-
   if (TREE_CODE (decl) == DEBUG_EXPR_DECL)
-    return true;
+    return ONEPART_DEXPR;
 
-  return (target_for_debug_bind (decl) != NULL_TREE);
+  if (target_for_debug_bind (decl) != NULL_TREE)
+    return ONEPART_VDECL;
+
+  return NOT_ONEPART;
 }
 
-/* Return the variable pool to be used for dv, depending on whether it
-   can have multiple parts or not.  */
+/* Return the variable pool to be used for a dv of type ONEPART.  */
 static inline alloc_pool
-dv_pool (decl_or_value dv)
+onepart_pool (onepart_enum_t onepart)
 {
-  return dv_onepart_p (dv) ? valvar_pool : var_pool;
+  return onepart ? valvar_pool : var_pool;
 }
 
 /* Build a decl_or_value out of a decl.  */
@@ -1189,6 +1280,30 @@ dv_from_value (rtx value)
   decl_or_value dv;
   dv = value;
   gcc_checking_assert (dv_is_value_p (dv));
+  return dv;
+}
+
+/* Return a value or the decl of a debug_expr as a decl_or_value.  */
+static inline decl_or_value
+dv_from_rtx (rtx x)
+{
+  decl_or_value dv;
+
+  switch (GET_CODE (x))
+    {
+    case DEBUG_EXPR:
+      dv = dv_from_decl (DEBUG_EXPR_TREE_DECL (x));
+      gcc_checking_assert (DECL_RTL_KNOWN_SET (DEBUG_EXPR_TREE_DECL (x)) == x);
+      break;
+
+    case VALUE:
+      dv = dv_from_value (x);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
   return dv;
 }
 
@@ -1254,6 +1369,8 @@ variable_htab_eq (const void *x, const void *y)
   return (dv_as_opaque (v->dv) == dv_as_opaque (dv));
 }
 
+static void loc_exp_dep_clear (variable var);
+
 /* Free the element of VARIABLE_HTAB (its type is struct variable_def).  */
 
 static void
@@ -1278,29 +1395,18 @@ variable_htab_free (void *elem)
 	}
       var->var_part[i].loc_chain = NULL;
     }
-  pool_free (dv_pool (var->dv), var);
-}
-
-/* The hash function for value_chains htab, computes the hash value
-   from the VALUE.  */
-
-static hashval_t
-value_chain_htab_hash (const void *x)
-{
-  const_value_chain const v = (const_value_chain) x;
-
-  return dv_htab_hash (v->dv);
-}
-
-/* Compare the VALUE X with VALUE Y.  */
-
-static int
-value_chain_htab_eq (const void *x, const void *y)
-{
-  const_value_chain const v = (const_value_chain) x;
-  decl_or_value dv = CONST_CAST2 (decl_or_value, const void *, y);
-
-  return dv_as_opaque (v->dv) == dv_as_opaque (dv);
+  if (var->onepart && VAR_LOC_1PAUX (var))
+    {
+      loc_exp_dep_clear (var);
+      if (VAR_LOC_DEP_LST (var))
+	VAR_LOC_DEP_LST (var)->pprev = NULL;
+      XDELETE (VAR_LOC_1PAUX (var));
+      /* These may be reused across functions, so reset
+	 e.g. NO_LOC_P.  */
+      if (var->onepart == ONEPART_DEXPR)
+	set_dv_changed (var->dv, true);
+    }
+  pool_free (onepart_pool (var->onepart), var);
 }
 
 /* Initialize the set (array) SET of attrs to empty lists.  */
@@ -1569,13 +1675,12 @@ unshare_variable (dataflow_set *set, void **slot, variable var,
   variable new_var;
   int i;
 
-  new_var = (variable) pool_alloc (dv_pool (var->dv));
+  new_var = (variable) pool_alloc (onepart_pool (var->onepart));
   new_var->dv = var->dv;
   new_var->refcount = 1;
   var->refcount--;
   new_var->n_var_parts = var->n_var_parts;
-  new_var->cur_loc_changed = var->cur_loc_changed;
-  var->cur_loc_changed = false;
+  new_var->onepart = var->onepart;
   new_var->in_changed_variables = false;
 
   if (! flag_var_tracking_uninit)
@@ -1586,7 +1691,18 @@ unshare_variable (dataflow_set *set, void **slot, variable var,
       location_chain node;
       location_chain *nextp;
 
-      new_var->var_part[i].offset = var->var_part[i].offset;
+      if (i == 0 && var->onepart)
+	{
+	  /* One-part auxiliary data is only used while emitting
+	     notes, so propagate it to the new variable in the active
+	     dataflow set.  If we're not emitting notes, this will be
+	     a no-op.  */
+	  gcc_checking_assert (!VAR_LOC_1PAUX (var) || emit_notes);
+	  VAR_LOC_1PAUX (new_var) = VAR_LOC_1PAUX (var);
+	  VAR_LOC_1PAUX (var) = NULL;
+	}
+      else
+	VAR_PART_OFFSET (new_var, i) = VAR_PART_OFFSET (var, i);
       nextp = &new_var->var_part[i].loc_chain;
       for (node = var->var_part[i].loc_chain; node; node = node->next)
 	{
@@ -1891,6 +2007,26 @@ var_mem_delete (dataflow_set *set, rtx loc, bool clobber)
   delete_variable_part (set, loc, dv_from_decl (decl), offset);
 }
 
+/* Return true if LOC should not be expanded for location expressions,
+   or used in them.  */
+
+static inline bool
+unsuitable_loc (rtx loc)
+{
+  switch (GET_CODE (loc))
+    {
+    case PC:
+    case SCRATCH:
+    case CC0:
+    case ASM_INPUT:
+    case ASM_OPERANDS:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Bind a value to a location it was just stored in.  If MODIFIED
    holds, assume the location was modified, detaching it from any
    values bound to it.  */
@@ -1904,10 +2040,10 @@ val_store (dataflow_set *set, rtx val, rtx loc, rtx insn, bool modified)
 
   if (dump_file)
     {
-      fprintf (dump_file, "%i: ", INSN_UID (insn));
-      print_inline_rtx (dump_file, val, 0);
-      fprintf (dump_file, " stored in ");
+      fprintf (dump_file, "%i: ", insn ? INSN_UID (insn) : 0);
       print_inline_rtx (dump_file, loc, 0);
+      fprintf (dump_file, " evaluates to ");
+      print_inline_rtx (dump_file, val, 0);
       if (v->locs)
 	{
 	  struct elt_loc_list *l;
@@ -1920,6 +2056,8 @@ val_store (dataflow_set *set, rtx val, rtx loc, rtx insn, bool modified)
       fprintf (dump_file, "\n");
     }
 
+  gcc_checking_assert (!unsuitable_loc (loc));
+
   if (REG_P (loc))
     {
       if (modified)
@@ -1931,6 +2069,8 @@ val_store (dataflow_set *set, rtx val, rtx loc, rtx insn, bool modified)
     var_mem_decl_set (set, loc, VAR_INIT_STATUS_INITIALIZED,
 		      dv_from_value (val), 0, NULL_RTX, INSERT);
   else
+    /* ??? Ideally we wouldn't get these, and use them from the static
+       cselib loc list.  */
     set_variable_part (set, loc, dv_from_value (val), 0,
 		       VAR_INIT_STATUS_INITIALIZED, NULL_RTX, INSERT);
 }
@@ -1997,13 +2137,6 @@ val_reset (dataflow_set *set, decl_or_value dv)
     delete_variable_part (set, dv_as_value (dv), dv_from_value (cval), 0);
 
   clobber_variable_part (set, NULL, dv, 0, NULL);
-
-  /* ??? Should we make sure there aren't other available values or
-     variables whose values involve this one other than by
-     equivalence?  E.g., at the very least we should reset MEMs, those
-     shouldn't be too hard to find cselib-looking up the value as an
-     address, then locating the resulting value in our own hash
-     table.  */
 }
 
 /* Find the values in a given location and map the val to another
@@ -2028,6 +2161,8 @@ val_resolve (dataflow_set *set, rtx val, rtx loc, rtx insn)
     }
 
   val_reset (set, dv);
+
+  gcc_checking_assert (!unsuitable_loc (loc));
 
   if (REG_P (loc))
     {
@@ -2061,6 +2196,8 @@ val_resolve (dataflow_set *set, rtx val, rtx loc, rtx insn)
     var_mem_decl_set (set, loc, VAR_INIT_STATUS_INITIALIZED,
 		      dv_from_value (val), 0, NULL_RTX, INSERT);
   else
+    /* ??? Ideally we wouldn't get these, and use them from the static
+       cselib loc list.  */
     /* ??? Merge equivalent expressions.  */
     set_variable_part (set, loc, dv_from_value (val), 0,
 		       VAR_INIT_STATUS_INITIALIZED, NULL_RTX, INSERT);
@@ -2176,10 +2313,11 @@ variable_union (variable src, dataflow_set *set)
     dst = (variable) *dstp;
 
   gcc_assert (src->n_var_parts);
+  gcc_checking_assert (src->onepart == dst->onepart);
 
   /* We can combine one-part variables very efficiently, because their
      entries are in canonical order.  */
-  if (dv_onepart_p (src->dv))
+  if (src->onepart)
     {
       location_chain *nodep, dnode, snode;
 
@@ -2233,16 +2371,18 @@ variable_union (variable src, dataflow_set *set)
       return 1;
     }
 
+  gcc_checking_assert (!src->onepart);
+
   /* Count the number of location parts, result is K.  */
   for (i = 0, j = 0, k = 0;
        i < src->n_var_parts && j < dst->n_var_parts; k++)
     {
-      if (src->var_part[i].offset == dst->var_part[j].offset)
+      if (VAR_PART_OFFSET (src, i) == VAR_PART_OFFSET (dst, j))
 	{
 	  i++;
 	  j++;
 	}
-      else if (src->var_part[i].offset < dst->var_part[j].offset)
+      else if (VAR_PART_OFFSET (src, i) < VAR_PART_OFFSET (dst, j))
 	i++;
       else
 	j++;
@@ -2252,7 +2392,7 @@ variable_union (variable src, dataflow_set *set)
 
   /* We track only variables whose size is <= MAX_VAR_PARTS bytes
      thus there are at most MAX_VAR_PARTS different offsets.  */
-  gcc_assert (dv_onepart_p (dst->dv) ? k == 1 : k <= MAX_VAR_PARTS);
+  gcc_checking_assert (dst->onepart ? k == 1 : k <= MAX_VAR_PARTS);
 
   if (dst->n_var_parts != k && shared_var_p (dst, set->vars))
     {
@@ -2269,7 +2409,7 @@ variable_union (variable src, dataflow_set *set)
       location_chain node, node2;
 
       if (i >= 0 && j >= 0
-	  && src->var_part[i].offset == dst->var_part[j].offset)
+	  && VAR_PART_OFFSET (src, i) == VAR_PART_OFFSET (dst, j))
 	{
 	  /* Compute the "sorted" union of the chains, i.e. the locations which
 	     are in both chains go first, they are sorted by the sum of
@@ -2317,7 +2457,7 @@ variable_union (variable src, dataflow_set *set)
 	      /* The most common case, much simpler, no qsort is needed.  */
 	      location_chain dstnode = dst->var_part[j].loc_chain;
 	      dst->var_part[k].loc_chain = dstnode;
-	      dst->var_part[k].offset = dst->var_part[j].offset;
+	      VAR_PART_OFFSET (dst, k) = VAR_PART_OFFSET(dst, j);
 	      node2 = dstnode;
 	      for (node = src->var_part[i].loc_chain; node; node = node->next)
 		if (!((REG_P (dstnode->loc)
@@ -2455,20 +2595,20 @@ variable_union (variable src, dataflow_set *set)
 		  dst->var_part[k].loc_chain = vui[0].lc;
 		}
 
-	      dst->var_part[k].offset = dst->var_part[j].offset;
+	      VAR_PART_OFFSET (dst, k) = VAR_PART_OFFSET (dst, j);
 	    }
 	  i--;
 	  j--;
 	}
       else if ((i >= 0 && j >= 0
-		&& src->var_part[i].offset < dst->var_part[j].offset)
+		&& VAR_PART_OFFSET (src, i) < VAR_PART_OFFSET (dst, j))
 	       || i < 0)
 	{
 	  dst->var_part[k] = dst->var_part[j];
 	  j--;
 	}
       else if ((i >= 0 && j >= 0
-		&& src->var_part[i].offset > dst->var_part[j].offset)
+		&& VAR_PART_OFFSET (src, i) > VAR_PART_OFFSET (dst, j))
 	       || j < 0)
 	{
 	  location_chain *nextp;
@@ -2492,7 +2632,7 @@ variable_union (variable src, dataflow_set *set)
 	      nextp = &new_lc->next;
 	    }
 
-	  dst->var_part[k].offset = src->var_part[i].offset;
+	  VAR_PART_OFFSET (dst, k) = VAR_PART_OFFSET (src, i);
 	  i--;
 	}
       dst->var_part[k].cur_loc = NULL;
@@ -2543,25 +2683,46 @@ dataflow_set_union (dataflow_set *dst, dataflow_set *src)
 /* Whether the value is currently being expanded.  */
 #define VALUE_RECURSED_INTO(x) \
   (RTL_FLAG_CHECK2 ("VALUE_RECURSED_INTO", (x), VALUE, DEBUG_EXPR)->used)
-/* Whether the value is in changed_variables hash table.  */
+
+/* Whether no expansion was found, saving useless lookups.
+   It must only be set when VALUE_CHANGED is clear.  */
+#define NO_LOC_P(x) \
+  (RTL_FLAG_CHECK2 ("NO_LOC_P", (x), VALUE, DEBUG_EXPR)->return_val)
+
+/* Whether cur_loc in the value needs to be (re)computed.  */
 #define VALUE_CHANGED(x) \
   (RTL_FLAG_CHECK1 ("VALUE_CHANGED", (x), VALUE)->frame_related)
-/* Whether the decl is in changed_variables hash table.  */
+/* Whether cur_loc in the decl needs to be (re)computed.  */
 #define DECL_CHANGED(x) TREE_VISITED (x)
 
-/* Record that DV has been added into resp. removed from changed_variables
-   hashtable.  */
+/* Record (if NEWV) that DV needs to have its cur_loc recomputed.  For
+   user DECLs, this means they're in changed_variables.  Values and
+   debug exprs may be left with this flag set if no user variable
+   requires them to be evaluated.  */
 
 static inline void
 set_dv_changed (decl_or_value dv, bool newv)
 {
-  if (dv_is_value_p (dv))
-    VALUE_CHANGED (dv_as_value (dv)) = newv;
-  else
-    DECL_CHANGED (dv_as_decl (dv)) = newv;
+  switch (dv_onepart_p (dv))
+    {
+    case ONEPART_VALUE:
+      if (newv)
+	NO_LOC_P (dv_as_value (dv)) = false;
+      VALUE_CHANGED (dv_as_value (dv)) = newv;
+      break;
+
+    case ONEPART_DEXPR:
+      if (newv)
+	NO_LOC_P (DECL_RTL_KNOWN_SET (dv_as_decl (dv))) = false;
+      /* Fall through...  */
+
+    default:
+      DECL_CHANGED (dv_as_decl (dv)) = newv;
+      break;
+    }
 }
 
-/* Return true if DV is present in changed_variables hash table.  */
+/* Return true if DV needs to have its cur_loc recomputed.  */
 
 static inline bool
 dv_changed_p (decl_or_value dv)
@@ -2585,12 +2746,11 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
   if (!var)
     return NULL;
 
-  gcc_checking_assert (dv_onepart_p (var->dv));
+  gcc_checking_assert (var->onepart);
 
   if (!var->n_var_parts)
     return NULL;
 
-  gcc_checking_assert (var->var_part[0].offset == 0);
   gcc_checking_assert (loc != dv_as_opaque (var->dv));
 
   loc_code = GET_CODE (loc);
@@ -2639,6 +2799,8 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
       return find_loc_in_1pdv (loc, rvar, vars);
     }
 
+  /* ??? Gotta look in cselib_val locations too.  */
+
   return NULL;
 }
 
@@ -2683,7 +2845,7 @@ insert_into_intersection (location_chain *nodep, rtx loc,
   *nodep = node;
 }
 
-/* Insert in DEST the intersection the locations present in both
+/* Insert in DEST the intersection of the locations present in both
    S1NODE and S2VAR, directly or indirectly.  S1NODE is from a
    variable in DSM->cur, whereas S2VAR is from DSM->src.  dvar is in
    DSM->dst.  */
@@ -2700,11 +2862,10 @@ intersect_loc_chains (rtx val, location_chain *dest, struct dfset_merge *dsm,
     {
       location_chain s2node;
 
-      gcc_checking_assert (dv_onepart_p (s2var->dv));
+      gcc_checking_assert (s2var->onepart);
 
       if (s2var->n_var_parts)
 	{
-	  gcc_checking_assert (s2var->var_part[0].offset == 0);
 	  s2node = s2var->var_part[0].loc_chain;
 
 	  for (; s1node && s2node;
@@ -2749,6 +2910,8 @@ intersect_loc_chains (rtx val, location_chain *dest, struct dfset_merge *dsm,
 		}
 	    }
 	}
+
+      /* ??? gotta look in cselib_val locations too.  */
 
       /* ??? if the location is equivalent to any location in src,
 	 searched recursively
@@ -2838,6 +3001,18 @@ loc_cmp (rtx x, rtx y)
 
   if (GET_CODE (y) == VALUE)
     return 1;
+
+  /* Entry value is the least preferable kind of expression.  */
+  if (GET_CODE (x) == ENTRY_VALUE)
+    {
+      if (GET_CODE (y) != ENTRY_VALUE)
+	return 1;
+      gcc_assert (GET_MODE (x) == GET_MODE (y));
+      return loc_cmp (XEXP (x, 0), XEXP (y, 0));
+    }
+
+  if (GET_CODE (y) == ENTRY_VALUE)
+    return -1;
 
   if (GET_CODE (x) == GET_CODE (y))
     /* Compare operands below.  */;
@@ -2933,186 +3108,23 @@ loc_cmp (rtx x, rtx y)
   return 0;
 }
 
-/* If decl or value DVP refers to VALUE from *LOC, add backlinks
-   from VALUE to DVP.  */
-
-static int
-add_value_chain (rtx *loc, void *dvp)
-{
-  decl_or_value dv, ldv;
-  value_chain vc, nvc;
-  void **slot;
-
-  if (GET_CODE (*loc) == VALUE)
-    ldv = dv_from_value (*loc);
-  else if (GET_CODE (*loc) == DEBUG_EXPR)
-    ldv = dv_from_decl (DEBUG_EXPR_TREE_DECL (*loc));
-  else
-    return 0;
-
-  if (dv_as_opaque (ldv) == dvp)
-    return 0;
-
-  dv = (decl_or_value) dvp;
-  slot = htab_find_slot_with_hash (value_chains, ldv, dv_htab_hash (ldv),
-				   INSERT);
-  if (!*slot)
-    {
-      vc = (value_chain) pool_alloc (value_chain_pool);
-      vc->dv = ldv;
-      vc->next = NULL;
-      vc->refcount = 0;
-      *slot = (void *) vc;
-    }
-  else
-    {
-      for (vc = ((value_chain) *slot)->next; vc; vc = vc->next)
-	if (dv_as_opaque (vc->dv) == dv_as_opaque (dv))
-	  break;
-      if (vc)
-	{
-	  vc->refcount++;
-	  return 0;
-	}
-    }
-  vc = (value_chain) *slot;
-  nvc = (value_chain) pool_alloc (value_chain_pool);
-  nvc->dv = dv;
-  nvc->next = vc->next;
-  nvc->refcount = 1;
-  vc->next = nvc;
-  return 0;
-}
-
-/* If decl or value DVP refers to VALUEs from within LOC, add backlinks
-   from those VALUEs to DVP.  */
-
-static void
-add_value_chains (decl_or_value dv, rtx loc)
-{
-  if (GET_CODE (loc) == VALUE || GET_CODE (loc) == DEBUG_EXPR)
-    {
-      add_value_chain (&loc, dv_as_opaque (dv));
-      return;
-    }
-  if (REG_P (loc))
-    return;
-  if (MEM_P (loc))
-    loc = XEXP (loc, 0);
-  for_each_rtx (&loc, add_value_chain, dv_as_opaque (dv));
-}
-
-/* If CSELIB_VAL_PTR of value DV refer to VALUEs, add backlinks from those
-   VALUEs to DV.  Add the same time get rid of ASM_OPERANDS from locs list,
-   that is something we never can express in .debug_info and can prevent
-   reverse ops from being used.  */
-
-static void
-add_cselib_value_chains (decl_or_value dv)
-{
-  struct elt_loc_list **l;
-
-  for (l = &CSELIB_VAL_PTR (dv_as_value (dv))->locs; *l;)
-    if (GET_CODE ((*l)->loc) == ASM_OPERANDS)
-      *l = (*l)->next;
-    else
-      {
-	for_each_rtx (&(*l)->loc, add_value_chain, dv_as_opaque (dv));
-	l = &(*l)->next;
-      }
-}
-
-/* If decl or value DVP refers to VALUE from *LOC, remove backlinks
-   from VALUE to DVP.  */
-
-static int
-remove_value_chain (rtx *loc, void *dvp)
-{
-  decl_or_value dv, ldv;
-  value_chain vc;
-  void **slot;
-
-  if (GET_CODE (*loc) == VALUE)
-    ldv = dv_from_value (*loc);
-  else if (GET_CODE (*loc) == DEBUG_EXPR)
-    ldv = dv_from_decl (DEBUG_EXPR_TREE_DECL (*loc));
-  else
-    return 0;
-
-  if (dv_as_opaque (ldv) == dvp)
-    return 0;
-
-  dv = (decl_or_value) dvp;
-  slot = htab_find_slot_with_hash (value_chains, ldv, dv_htab_hash (ldv),
-				   NO_INSERT);
-  for (vc = (value_chain) *slot; vc->next; vc = vc->next)
-    if (dv_as_opaque (vc->next->dv) == dv_as_opaque (dv))
-      {
-	value_chain dvc = vc->next;
-	gcc_assert (dvc->refcount > 0);
-	if (--dvc->refcount == 0)
-	  {
-	    vc->next = dvc->next;
-	    pool_free (value_chain_pool, dvc);
-	    if (vc->next == NULL && vc == (value_chain) *slot)
-	      {
-		pool_free (value_chain_pool, vc);
-		htab_clear_slot (value_chains, slot);
-	      }
-	  }
-	return 0;
-      }
-  gcc_unreachable ();
-}
-
-/* If decl or value DVP refers to VALUEs from within LOC, remove backlinks
-   from those VALUEs to DVP.  */
-
-static void
-remove_value_chains (decl_or_value dv, rtx loc)
-{
-  if (GET_CODE (loc) == VALUE || GET_CODE (loc) == DEBUG_EXPR)
-    {
-      remove_value_chain (&loc, dv_as_opaque (dv));
-      return;
-    }
-  if (REG_P (loc))
-    return;
-  if (MEM_P (loc))
-    loc = XEXP (loc, 0);
-  for_each_rtx (&loc, remove_value_chain, dv_as_opaque (dv));
-}
-
 #if ENABLE_CHECKING
-/* If CSELIB_VAL_PTR of value DV refer to VALUEs, remove backlinks from those
-   VALUEs to DV.  */
-
-static void
-remove_cselib_value_chains (decl_or_value dv)
-{
-  struct elt_loc_list *l;
-
-  for (l = CSELIB_VAL_PTR (dv_as_value (dv))->locs; l; l = l->next)
-    for_each_rtx (&l->loc, remove_value_chain, dv_as_opaque (dv));
-}
-
 /* Check the order of entries in one-part variables.   */
 
 static int
 canonicalize_loc_order_check (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   variable var = (variable) *slot;
-  decl_or_value dv = var->dv;
   location_chain node, next;
 
 #ifdef ENABLE_RTL_CHECKING
   int i;
   for (i = 0; i < var->n_var_parts; i++)
     gcc_assert (var->var_part[0].cur_loc == NULL);
-  gcc_assert (!var->cur_loc_changed && !var->in_changed_variables);
+  gcc_assert (!var->in_changed_variables);
 #endif
 
-  if (!dv_onepart_p (dv))
+  if (!var->onepart)
     return 1;
 
   gcc_assert (var->n_var_parts == 1);
@@ -3186,7 +3198,7 @@ canonicalize_values_star (void **slot, void *data)
   bool has_value;
   bool has_marks;
 
-  if (!dv_onepart_p (dv))
+  if (!var->onepart)
     return 1;
 
   gcc_checking_assert (var->n_var_parts == 1);
@@ -3408,7 +3420,7 @@ canonicalize_vars_star (void **slot, void *data)
   variable cvar;
   location_chain cnode;
 
-  if (!dv_onepart_p (dv) || dv_is_value_p (dv))
+  if (!var->onepart || var->onepart == ONEPART_VALUE)
     return 1;
 
   gcc_assert (var->n_var_parts == 1);
@@ -3461,7 +3473,7 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
   void **dstslot;
   variable s2var, dvar = NULL;
   decl_or_value dv = s1var->dv;
-  bool onepart = dv_onepart_p (dv);
+  onepart_enum_t onepart = s1var->onepart;
   rtx val;
   hashval_t dvhash;
   location_chain node, *nodep;
@@ -3475,8 +3487,7 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
   if (!onepart)
     return variable_union (s1var, dst);
 
-  gcc_checking_assert (s1var->n_var_parts == 1
-		       && s1var->var_part[0].offset == 0);
+  gcc_checking_assert (s1var->n_var_parts == 1);
 
   dvhash = dv_htab_hash (dv);
   if (dv_is_value_p (dv))
@@ -3493,16 +3504,16 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
 
   dsm->src_onepart_cnt--;
   gcc_assert (s2var->var_part[0].loc_chain
-	      && s2var->n_var_parts == 1
-	      && s2var->var_part[0].offset == 0);
+	      && s2var->onepart == onepart
+	      && s2var->n_var_parts == 1);
 
   dstslot = shared_hash_find_slot_noinsert_1 (dst->vars, dv, dvhash);
   if (dstslot)
     {
       dvar = (variable)*dstslot;
       gcc_assert (dvar->refcount == 1
-		  && dvar->n_var_parts == 1
-		  && dvar->var_part[0].offset == 0);
+		  && dvar->onepart == onepart
+		  && dvar->n_var_parts == 1);
       nodep = &dvar->var_part[0].loc_chain;
     }
   else
@@ -3529,15 +3540,18 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
 	{
 	  if (node)
 	    {
-	      dvar = (variable) pool_alloc (dv_pool (dv));
+	      dvar = (variable) pool_alloc (onepart_pool (onepart));
 	      dvar->dv = dv;
 	      dvar->refcount = 1;
 	      dvar->n_var_parts = 1;
-	      dvar->cur_loc_changed = false;
+	      dvar->onepart = onepart;
 	      dvar->in_changed_variables = false;
-	      dvar->var_part[0].offset = 0;
 	      dvar->var_part[0].loc_chain = node;
 	      dvar->var_part[0].cur_loc = NULL;
+	      if (onepart)
+		VAR_LOC_1PAUX (dvar) = NULL;
+	      else
+		VAR_PART_OFFSET (dvar, 0) = 0;
 
 	      dstslot
 		= shared_hash_find_slot_unshare_1 (&dst->vars, dv, dvhash,
@@ -3662,15 +3676,16 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
 							  INSERT);
 		  if (!*slot)
 		    {
-		      variable var = (variable) pool_alloc (dv_pool (dv));
+		      variable var = (variable) pool_alloc (onepart_pool
+							    (ONEPART_VALUE));
 		      var->dv = dv;
 		      var->refcount = 1;
 		      var->n_var_parts = 1;
-		      var->cur_loc_changed = false;
+		      var->onepart = ONEPART_VALUE;
 		      var->in_changed_variables = false;
-		      var->var_part[0].offset = 0;
 		      var->var_part[0].loc_chain = NULL;
 		      var->var_part[0].cur_loc = NULL;
+		      VAR_LOC_1PAUX (var) = NULL;
 		      *slot = var;
 		    }
 
@@ -3717,9 +3732,8 @@ variable_merge_over_src (variable s2var, struct dfset_merge *dsm)
 {
   dataflow_set *dst = dsm->dst;
   decl_or_value dv = s2var->dv;
-  bool onepart = dv_onepart_p (dv);
 
-  if (!onepart)
+  if (!s2var->onepart)
     {
       void **dstp = shared_hash_find_slot (dst->vars, dv);
       *dstp = s2var;
@@ -3864,7 +3878,7 @@ remove_duplicate_values (variable var)
 {
   location_chain node, *nodep;
 
-  gcc_assert (dv_onepart_p (var->dv));
+  gcc_assert (var->onepart);
   gcc_assert (var->n_var_parts == 1);
   gcc_assert (var->refcount == 1);
 
@@ -3915,7 +3929,7 @@ variable_post_merge_new_vals (void **slot, void *info)
   variable var = (variable)*slot;
   location_chain node;
 
-  if (!dv_onepart_p (var->dv) || !var->n_var_parts)
+  if (!var->onepart || !var->n_var_parts)
     return 1;
 
   gcc_assert (var->n_var_parts == 1);
@@ -4146,12 +4160,10 @@ find_mem_expr_in_1pdv (tree expr, rtx val, htab_t vars)
   if (!var)
     return NULL;
 
-  gcc_assert (dv_onepart_p (var->dv));
+  gcc_assert (var->onepart);
 
   if (!var->n_var_parts)
     return NULL;
-
-  gcc_assert (var->var_part[0].offset == 0);
 
   VALUE_RECURSED_INTO (val) = true;
 
@@ -4206,7 +4218,7 @@ dataflow_set_preserve_mem_locs (void **slot, void *data)
   dataflow_set *set = (dataflow_set *) data;
   variable var = (variable) *slot;
 
-  if (dv_is_decl_p (var->dv) && dv_onepart_p (var->dv))
+  if (var->onepart == ONEPART_VDECL || var->onepart == ONEPART_DEXPR)
     {
       tree decl = dv_as_decl (var->dv);
       location_chain loc, *locp;
@@ -4277,10 +4289,7 @@ dataflow_set_preserve_mem_locs (void **slot, void *data)
 		    {
 		      changed = true;
 		      var->var_part[0].cur_loc = NULL;
-		      var->cur_loc_changed = true;
 		    }
-		  add_value_chains (var->dv, loc->loc);
-		  remove_value_chains (var->dv, old_loc);
 		}
 	      locp = &loc->next;
 	      continue;
@@ -4288,12 +4297,10 @@ dataflow_set_preserve_mem_locs (void **slot, void *data)
 
 	  if (emit_notes)
 	    {
-	      remove_value_chains (var->dv, old_loc);
 	      if (old_loc == var->var_part[0].cur_loc)
 		{
 		  changed = true;
 		  var->var_part[0].cur_loc = NULL;
-		  var->cur_loc_changed = true;
 		}
 	    }
 	  *locp = loc->next;
@@ -4321,10 +4328,11 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
   dataflow_set *set = (dataflow_set *) data;
   variable var = (variable) *slot;
 
-  if (dv_is_value_p (var->dv))
+  if (var->onepart == ONEPART_VALUE)
     {
       location_chain loc, *locp;
       bool changed = false;
+      rtx cur_loc;
 
       gcc_assert (var->n_var_parts == 1);
 
@@ -4343,6 +4351,11 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
 	  gcc_assert (var->n_var_parts == 1);
 	}
 
+      if (VAR_LOC_1PAUX (var))
+	cur_loc = VAR_LOC_FROM (var);
+      else
+	cur_loc = var->var_part[0].cur_loc;
+
       for (locp = &var->var_part[0].loc_chain, loc = *locp;
 	   loc; loc = *locp)
 	{
@@ -4353,17 +4366,16 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
 	      continue;
 	    }
 
-	  if (emit_notes)
-	    remove_value_chains (var->dv, loc->loc);
 	  *locp = loc->next;
 	  /* If we have deleted the location which was last emitted
 	     we have to emit new location so add the variable to set
 	     of changed variables.  */
-	  if (var->var_part[0].cur_loc == loc->loc)
+	  if (cur_loc == loc->loc)
 	    {
 	      changed = true;
 	      var->var_part[0].cur_loc = NULL;
-	      var->cur_loc_changed = true;
+	      if (VAR_LOC_1PAUX (var))
+		VAR_LOC_FROM (var) = NULL;
 	    }
 	  pool_free (loc_chain_pool, loc);
 	}
@@ -4467,20 +4479,24 @@ variable_different_p (variable var1, variable var2)
   if (var1 == var2)
     return false;
 
+  if (var1->onepart != var2->onepart)
+    return true;
+
   if (var1->n_var_parts != var2->n_var_parts)
     return true;
 
+  if (var1->onepart && var1->n_var_parts)
+    {
+      gcc_checking_assert (dv_as_opaque (var1->dv) == dv_as_opaque (var2->dv)
+			   && var1->n_var_parts == 1);
+      /* One-part values have locations in a canonical order.  */
+      return onepart_variable_different_p (var1, var2);
+    }
+
   for (i = 0; i < var1->n_var_parts; i++)
     {
-      if (var1->var_part[i].offset != var2->var_part[i].offset)
+      if (VAR_PART_OFFSET (var1, i) != VAR_PART_OFFSET (var2, i))
 	return true;
-      /* One-part values have locations in a canonical order.  */
-      if (i == 0 && var1->var_part[i].offset == 0 && dv_onepart_p (var1->dv))
-	{
-	  gcc_assert (var1->n_var_parts == 1
-		      && dv_as_opaque (var1->dv) == dv_as_opaque (var2->dv));
-	  return onepart_variable_different_p (var1, var2);
-	}
       if (variable_part_different_p (&var1->var_part[i], &var2->var_part[i]))
 	return true;
       if (variable_part_different_p (&var2->var_part[i], &var1->var_part[i]))
@@ -5020,9 +5036,6 @@ log_op_type (rtx x, basic_block bb, rtx insn,
 /* All preserved VALUEs.  */
 static VEC (rtx, heap) *preserved_values;
 
-/* Registers used in the current function for passing parameters.  */
-static HARD_REG_SET argument_reg_set;
-
 /* Ensure VAL is preserved and remember it in a vector for vt_emit_notes.  */
 
 static void
@@ -5089,11 +5102,7 @@ add_uses (rtx *ploc, void *data)
 
 	  if (MEM_P (vloc)
 	      && !REG_P (XEXP (vloc, 0))
-	      && !MEM_P (XEXP (vloc, 0))
-	      && GET_CODE (XEXP (vloc, 0)) != ENTRY_VALUE
-	      && (GET_CODE (XEXP (vloc, 0)) != PLUS
-		  || XEXP (XEXP (vloc, 0), 0) != cfa_base_rtx
-		  || !CONST_INT_P (XEXP (XEXP (vloc, 0), 1))))
+	      && !MEM_P (XEXP (vloc, 0)))
 	    {
 	      rtx mloc = vloc;
 	      enum machine_mode address_mode = get_address_mode (mloc);
@@ -5105,16 +5114,24 @@ add_uses (rtx *ploc, void *data)
 		{
 		  micro_operation moa;
 		  preserve_value (val);
-		  mloc = cselib_subst_to_values (XEXP (mloc, 0),
-						 GET_MODE (mloc));
-		  moa.type = MO_VAL_USE;
-		  moa.insn = cui->insn;
-		  moa.u.loc = gen_rtx_CONCAT (address_mode,
-					      val->val_rtx, mloc);
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    log_op_type (moa.u.loc, cui->bb, cui->insn,
-				 moa.type, dump_file);
-		  VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &moa);
+
+		  if (GET_CODE (XEXP (mloc, 0)) != ENTRY_VALUE
+		      && (GET_CODE (XEXP (mloc, 0)) != PLUS
+			  || XEXP (XEXP (mloc, 0), 0) != cfa_base_rtx
+			  || !CONST_INT_P (XEXP (XEXP (mloc, 0), 1))))
+		    {
+		      mloc = cselib_subst_to_values (XEXP (mloc, 0),
+						     GET_MODE (mloc));
+		      moa.type = MO_VAL_USE;
+		      moa.insn = cui->insn;
+		      moa.u.loc = gen_rtx_CONCAT (address_mode,
+						  val->val_rtx, mloc);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			log_op_type (moa.u.loc, cui->bb, cui->insn,
+				     moa.type, dump_file);
+		      VEC_safe_push (micro_operation, heap, VTI (bb)->mos,
+				     &moa);
+		    }
 		}
 	    }
 
@@ -5122,7 +5139,7 @@ add_uses (rtx *ploc, void *data)
 	      && (GET_CODE (vloc) != CONST
 		  || for_each_rtx (&vloc, non_suitable_const, NULL)))
 	    /* For constants don't look up any value.  */;
-	  else if (!VAR_LOC_UNKNOWN_P (vloc)
+	  else if (!VAR_LOC_UNKNOWN_P (vloc) && !unsuitable_loc (vloc)
 		   && (val = find_use_val (vloc, GET_MODE (oloc), cui)))
 	    {
 	      enum machine_mode mode2;
@@ -5168,32 +5185,36 @@ add_uses (rtx *ploc, void *data)
 
 	  if (MEM_P (oloc)
 	      && !REG_P (XEXP (oloc, 0))
-	      && !MEM_P (XEXP (oloc, 0))
-	      && GET_CODE (XEXP (oloc, 0)) != ENTRY_VALUE
-	      && (GET_CODE (XEXP (oloc, 0)) != PLUS
-		  || XEXP (XEXP (oloc, 0), 0) != cfa_base_rtx
-		  || !CONST_INT_P (XEXP (XEXP (oloc, 0), 1))))
+	      && !MEM_P (XEXP (oloc, 0)))
 	    {
 	      rtx mloc = oloc;
 	      enum machine_mode address_mode = get_address_mode (mloc);
 	      cselib_val *val
 		= cselib_lookup (XEXP (mloc, 0), address_mode, 0,
-				GET_MODE (mloc));
+				 GET_MODE (mloc));
 
 	      if (val && !cselib_preserved_value_p (val))
 		{
 		  micro_operation moa;
 		  preserve_value (val);
-		  mloc = cselib_subst_to_values (XEXP (mloc, 0),
-						GET_MODE (mloc));
-		  moa.type = MO_VAL_USE;
-		  moa.insn = cui->insn;
-		  moa.u.loc = gen_rtx_CONCAT (address_mode,
-					      val->val_rtx, mloc);
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    log_op_type (moa.u.loc, cui->bb, cui->insn,
-				 moa.type, dump_file);
-		  VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &moa);
+
+		  if (GET_CODE (XEXP (mloc, 0)) != ENTRY_VALUE
+		      && (GET_CODE (XEXP (mloc, 0)) != PLUS
+			  || XEXP (XEXP (mloc, 0), 0) != cfa_base_rtx
+			  || !CONST_INT_P (XEXP (XEXP (mloc, 0), 1))))
+		    {
+		      mloc = cselib_subst_to_values (XEXP (mloc, 0),
+						     GET_MODE (mloc));
+		      moa.type = MO_VAL_USE;
+		      moa.insn = cui->insn;
+		      moa.u.loc = gen_rtx_CONCAT (address_mode,
+						  val->val_rtx, mloc);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			log_op_type (moa.u.loc, cui->bb, cui->insn,
+				     moa.type, dump_file);
+		      VEC_safe_push (micro_operation, heap, VTI (bb)->mos,
+				     &moa);
+		    }
 		}
 	    }
 
@@ -5255,7 +5276,18 @@ add_uses_1 (rtx *x, void *cui)
   for_each_rtx (x, add_uses, cui);
 }
 
-#define EXPR_DEPTH (PARAM_VALUE (PARAM_MAX_VARTRACK_EXPR_DEPTH))
+/* This is the value used during expansion of locations.  We want it
+   to be unbounded, so that variables expanded deep in a recursion
+   nest are fully evaluated, so that their values are cached
+   correctly.  We avoid recursion cycles through other means, and we
+   don't unshare RTL, so excess complexity is not a problem.  */
+#define EXPR_DEPTH (INT_MAX)
+/* We use this to keep too-complex expressions from being emitted as
+   location notes, and then to debug information.  Users can trade
+   compile time for ridiculously complex expressions, although they're
+   seldom useful, and they may often have to be discarded as not
+   representable anyway.  */
+#define EXPR_USE_DEPTH (PARAM_VALUE (PARAM_MAX_VARTRACK_EXPR_DEPTH))
 
 /* Attempt to reverse the EXPR operation in the debug info.  Say for
    reg1 = reg2 + 6 even when reg2 is no longer live we
@@ -5382,10 +5414,8 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	  mo.u.loc = loc;
 	  if (GET_CODE (expr) == SET
 	      && SET_DEST (expr) == loc
-	      && REGNO (loc) < FIRST_PSEUDO_REGISTER
-	      && TEST_HARD_REG_BIT (argument_reg_set, REGNO (loc))
-	      && find_use_val (loc, mode, cui)
-	      && GET_CODE (SET_SRC (expr)) != ASM_OPERANDS)
+	      && !unsuitable_loc (SET_SRC (expr))
+	      && find_use_val (loc, mode, cui))
 	    {
 	      gcc_checking_assert (type == MO_VAL_SET);
 	      mo.u.loc = gen_rtx_SET (VOIDmode, loc, SET_SRC (expr));
@@ -5422,11 +5452,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
     {
       if (MEM_P (loc) && type == MO_VAL_SET
 	  && !REG_P (XEXP (loc, 0))
-	  && !MEM_P (XEXP (loc, 0))
-	  && GET_CODE (XEXP (loc, 0)) != ENTRY_VALUE
-	  && (GET_CODE (XEXP (loc, 0)) != PLUS
-	      || XEXP (XEXP (loc, 0), 0) != cfa_base_rtx
-	      || !CONST_INT_P (XEXP (XEXP (loc, 0), 1))))
+	  && !MEM_P (XEXP (loc, 0)))
 	{
 	  rtx mloc = loc;
 	  enum machine_mode address_mode = get_address_mode (mloc);
@@ -5437,15 +5463,23 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	  if (val && !cselib_preserved_value_p (val))
 	    {
 	      preserve_value (val);
-	      mo.type = MO_VAL_USE;
-	      mloc = cselib_subst_to_values (XEXP (mloc, 0),
-					     GET_MODE (mloc));
-	      mo.u.loc = gen_rtx_CONCAT (address_mode, val->val_rtx, mloc);
-	      mo.insn = cui->insn;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		log_op_type (mo.u.loc, cui->bb, cui->insn,
-			     mo.type, dump_file);
-	      VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &mo);
+
+	      if (GET_CODE (XEXP (mloc, 0)) != ENTRY_VALUE
+		  && (GET_CODE (XEXP (mloc, 0)) != PLUS
+		      || XEXP (XEXP (mloc, 0), 0) != cfa_base_rtx
+		      || !CONST_INT_P (XEXP (XEXP (mloc, 0), 1))))
+		{
+		  mloc = cselib_subst_to_values (XEXP (mloc, 0),
+						 GET_MODE (mloc));
+		  mo.type = MO_VAL_USE;
+		  mo.insn = cui->insn;
+		  mo.u.loc = gen_rtx_CONCAT (address_mode,
+					     val->val_rtx, mloc);
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    log_op_type (mo.u.loc, cui->bb, cui->insn,
+				 mo.type, dump_file);
+		  VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &mo);
+		}
 	    }
 	}
 
@@ -5893,7 +5927,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	      tree dtemp = VEC_index (tree, *debug_args, ix + 1);
 	      enum machine_mode mode = DECL_MODE (dtemp);
 	      item = gen_rtx_DEBUG_PARAMETER_REF (mode, param);
-	      item = gen_rtx_CONCAT (mode, item, DECL_RTL (dtemp));
+	      item = gen_rtx_CONCAT (mode, item, DECL_RTL_KNOWN_SET (dtemp));
 	      call_arguments = gen_rtx_EXPR_LIST (VOIDmode, item,
 						  call_arguments);
 	    }
@@ -6705,7 +6739,7 @@ dump_var (variable var)
   for (i = 0; i < var->n_var_parts; i++)
     {
       fprintf (dump_file, "    offset %ld\n",
-	       (long) var->var_part[i].offset);
+	       (long)(var->onepart ? 0 : VAR_PART_OFFSET (var, i)));
       for (node = var->var_part[i].loc_chain; node; node = node->next)
 	{
 	  fprintf (dump_file, "      ");
@@ -6766,6 +6800,73 @@ dump_dataflow_sets (void)
     }
 }
 
+/* Return the variable for DV in dropped_values, inserting one if
+   requested with INSERT.  */
+
+static inline variable
+variable_from_dropped (decl_or_value dv, enum insert_option insert)
+{
+  void **slot;
+  variable empty_var;
+  onepart_enum_t onepart;
+
+  slot = htab_find_slot_with_hash (dropped_values, dv, dv_htab_hash (dv),
+				   insert);
+
+  if (!slot)
+    return NULL;
+
+  if (*slot)
+    return (variable) *slot;
+
+  gcc_checking_assert (insert == INSERT);
+
+  onepart = dv_onepart_p (dv);
+
+  gcc_checking_assert (onepart == ONEPART_VALUE || onepart == ONEPART_DEXPR);
+
+  empty_var = (variable) pool_alloc (onepart_pool (onepart));
+  empty_var->dv = dv;
+  empty_var->refcount = 1;
+  empty_var->n_var_parts = 0;
+  empty_var->onepart = onepart;
+  empty_var->in_changed_variables = false;
+  empty_var->var_part[0].loc_chain = NULL;
+  empty_var->var_part[0].cur_loc = NULL;
+  VAR_LOC_1PAUX (empty_var) = NULL;
+  set_dv_changed (dv, true);
+
+  *slot = empty_var;
+
+  return empty_var;
+}
+
+/* Recover the one-part aux from dropped_values.  */
+
+static struct onepart_aux *
+recover_dropped_1paux (variable var)
+{
+  variable dvar;
+
+  gcc_checking_assert (var->onepart);
+
+  if (VAR_LOC_1PAUX (var))
+    return VAR_LOC_1PAUX (var);
+
+  if (var->onepart == ONEPART_VDECL)
+    return NULL;
+
+  dvar = variable_from_dropped (var->dv, NO_INSERT);
+
+  if (!dvar)
+    return NULL;
+
+  VAR_LOC_1PAUX (var) = VAR_LOC_1PAUX (dvar);
+  VAR_LOC_1PAUX (dvar) = NULL;
+
+  return VAR_LOC_1PAUX (var);
+}
+
 /* Add variable VAR to the hash table of changed variables and
    if it has no locations delete it from SET's hash table.  */
 
@@ -6777,7 +6878,6 @@ variable_was_changed (variable var, dataflow_set *set)
   if (emit_notes)
     {
       void **slot;
-      bool old_cur_loc_changed = false;
 
       /* Remember this decl or VALUE has been added to changed_variables.  */
       set_dv_changed (var->dv, true);
@@ -6791,30 +6891,76 @@ variable_was_changed (variable var, dataflow_set *set)
 	  variable old_var = (variable) *slot;
 	  gcc_assert (old_var->in_changed_variables);
 	  old_var->in_changed_variables = false;
-	  old_cur_loc_changed = old_var->cur_loc_changed;
+	  if (var != old_var && var->onepart)
+	    {
+	      /* Restore the auxiliary info from an empty variable
+		 previously created for changed_variables, so it is
+		 not lost.  */
+	      gcc_checking_assert (!VAR_LOC_1PAUX (var));
+	      VAR_LOC_1PAUX (var) = VAR_LOC_1PAUX (old_var);
+	      VAR_LOC_1PAUX (old_var) = NULL;
+	    }
 	  variable_htab_free (*slot);
 	}
+
       if (set && var->n_var_parts == 0)
 	{
-	  variable empty_var;
+	  onepart_enum_t onepart = var->onepart;
+	  variable empty_var = NULL;
+	  void **dslot = NULL;
 
-	  empty_var = (variable) pool_alloc (dv_pool (var->dv));
-	  empty_var->dv = var->dv;
-	  empty_var->refcount = 1;
-	  empty_var->n_var_parts = 0;
-	  empty_var->cur_loc_changed = true;
+	  if (onepart == ONEPART_VALUE || onepart == ONEPART_DEXPR)
+	    {
+	      dslot = htab_find_slot_with_hash (dropped_values, var->dv,
+						dv_htab_hash (var->dv),
+						INSERT);
+	      empty_var = (variable) *dslot;
+
+	      if (empty_var)
+		{
+		  gcc_checking_assert (!empty_var->in_changed_variables);
+		  if (!VAR_LOC_1PAUX (var))
+		    {
+		      VAR_LOC_1PAUX (var) = VAR_LOC_1PAUX (empty_var);
+		      VAR_LOC_1PAUX (empty_var) = NULL;
+		    }
+		  else
+		    gcc_checking_assert (!VAR_LOC_1PAUX (empty_var));
+		}
+	    }
+
+	  if (!empty_var)
+	    {
+	      empty_var = (variable) pool_alloc (onepart_pool (onepart));
+	      empty_var->dv = var->dv;
+	      empty_var->refcount = 1;
+	      empty_var->n_var_parts = 0;
+	      empty_var->onepart = onepart;
+	      if (dslot)
+		{
+		  empty_var->refcount++;
+		  *dslot = empty_var;
+		}
+	    }
+	  else
+	    empty_var->refcount++;
 	  empty_var->in_changed_variables = true;
 	  *slot = empty_var;
+	  if (onepart)
+	    {
+	      empty_var->var_part[0].loc_chain = NULL;
+	      empty_var->var_part[0].cur_loc = NULL;
+	      VAR_LOC_1PAUX (empty_var) = VAR_LOC_1PAUX (var);
+	      VAR_LOC_1PAUX (var) = NULL;
+	    }
 	  goto drop_var;
 	}
       else
 	{
+	  if (var->onepart && !VAR_LOC_1PAUX (var))
+	    recover_dropped_1paux (var);
 	  var->refcount++;
 	  var->in_changed_variables = true;
-	  /* If within processing one uop a variable is deleted
-	     and then readded, we need to assume it has changed.  */
-	  if (old_cur_loc_changed)
-	    var->cur_loc_changed = true;
 	  *slot = var;
 	}
     }
@@ -6849,13 +6995,24 @@ find_variable_location_part (variable var, HOST_WIDE_INT offset,
 {
   int pos, low, high;
 
+  if (var->onepart)
+    {
+      if (offset != 0)
+	return -1;
+
+      if (insertion_point)
+	*insertion_point = 0;
+
+      return var->n_var_parts - 1;
+    }
+
   /* Find the location part.  */
   low = 0;
   high = var->n_var_parts;
   while (low != high)
     {
       pos = (low + high) / 2;
-      if (var->var_part[pos].offset < offset)
+      if (VAR_PART_OFFSET (var, pos) < offset)
 	low = pos + 1;
       else
 	high = pos;
@@ -6865,7 +7022,7 @@ find_variable_location_part (variable var, HOST_WIDE_INT offset,
   if (insertion_point)
     *insertion_point = pos;
 
-  if (pos < var->n_var_parts && var->var_part[pos].offset == offset)
+  if (pos < var->n_var_parts && VAR_PART_OFFSET (var, pos) == offset)
     return pos;
 
   return -1;
@@ -6880,12 +7037,17 @@ set_slot_part (dataflow_set *set, rtx loc, void **slot,
   location_chain node, next;
   location_chain *nextp;
   variable var;
-  bool onepart = dv_onepart_p (dv);
-
-  gcc_assert (offset == 0 || !onepart);
-  gcc_assert (loc != dv_as_opaque (dv));
+  onepart_enum_t onepart;
 
   var = (variable) *slot;
+
+  if (var)
+    onepart = var->onepart;
+  else
+    onepart = dv_onepart_p (dv);
+
+  gcc_checking_assert (offset == 0 || !onepart);
+  gcc_checking_assert (loc != dv_as_opaque (dv));
 
   if (! flag_var_tracking_uninit)
     initialized = VAR_INIT_STATUS_INITIALIZED;
@@ -6893,13 +7055,16 @@ set_slot_part (dataflow_set *set, rtx loc, void **slot,
   if (!var)
     {
       /* Create new variable information.  */
-      var = (variable) pool_alloc (dv_pool (dv));
+      var = (variable) pool_alloc (onepart_pool (onepart));
       var->dv = dv;
       var->refcount = 1;
       var->n_var_parts = 1;
-      var->cur_loc_changed = false;
+      var->onepart = onepart;
       var->in_changed_variables = false;
-      var->var_part[0].offset = offset;
+      if (var->onepart)
+	VAR_LOC_1PAUX (var) = NULL;
+      else
+	VAR_PART_OFFSET (var, 0) = offset;
       var->var_part[0].loc_chain = NULL;
       var->var_part[0].cur_loc = NULL;
       *slot = var;
@@ -7054,7 +7219,7 @@ set_slot_part (dataflow_set *set, rtx loc, void **slot,
 	  /* We track only variables whose size is <= MAX_VAR_PARTS bytes
 	     thus there are at most MAX_VAR_PARTS different offsets.  */
 	  gcc_assert (var->n_var_parts < MAX_VAR_PARTS
-		      && (!var->n_var_parts || !dv_onepart_p (var->dv)));
+		      && (!var->n_var_parts || !onepart));
 
 	  /* We have to move the elements of array starting at index
 	     inspos to the next position.  */
@@ -7062,7 +7227,8 @@ set_slot_part (dataflow_set *set, rtx loc, void **slot,
 	    var->var_part[pos] = var->var_part[pos - 1];
 
 	  var->n_var_parts++;
-	  var->var_part[pos].offset = offset;
+	  gcc_checking_assert (!onepart);
+	  VAR_PART_OFFSET (var, pos) = offset;
 	  var->var_part[pos].loc_chain = NULL;
 	  var->var_part[pos].cur_loc = NULL;
 	}
@@ -7083,10 +7249,7 @@ set_slot_part (dataflow_set *set, rtx loc, void **slot,
 	      if (node->set_src != NULL && set_src == NULL)
 		set_src = node->set_src;
 	      if (var->var_part[pos].cur_loc == node->loc)
-		{
-		  var->var_part[pos].cur_loc = NULL;
-		  var->cur_loc_changed = true;
-		}
+		var->var_part[pos].cur_loc = NULL;
 	      pool_free (loc_chain_pool, node);
 	      *nextp = next;
 	      break;
@@ -7105,9 +7268,6 @@ set_slot_part (dataflow_set *set, rtx loc, void **slot,
   node->set_src = set_src;
   node->next = *nextp;
   *nextp = node;
-
-  if (onepart && emit_notes)
-    add_value_chains (var->dv, loc);
 
   /* If no location was emitted do so.  */
   if (var->var_part[pos].cur_loc == NULL)
@@ -7238,6 +7398,7 @@ delete_slot_part (dataflow_set *set, rtx loc, void **slot,
       location_chain node, next;
       location_chain *nextp;
       bool changed;
+      rtx cur_loc;
 
       if (shared_var_p (var, set->vars))
 	{
@@ -7258,6 +7419,11 @@ delete_slot_part (dataflow_set *set, rtx loc, void **slot,
 	    }
 	}
 
+      if (pos == 0 && var->onepart && VAR_LOC_1PAUX (var))
+	cur_loc = VAR_LOC_FROM (var);
+      else
+	cur_loc = var->var_part[pos].cur_loc;
+
       /* Delete the location part.  */
       changed = false;
       nextp = &var->var_part[pos].loc_chain;
@@ -7268,16 +7434,15 @@ delete_slot_part (dataflow_set *set, rtx loc, void **slot,
 	       && REGNO (node->loc) == REGNO (loc))
 	      || rtx_equal_p (node->loc, loc))
 	    {
-	      if (emit_notes && pos == 0 && dv_onepart_p (var->dv))
-		remove_value_chains (var->dv, node->loc);
 	      /* If we have deleted the location which was last emitted
 		 we have to emit new location so add the variable to set
 		 of changed variables.  */
-	      if (var->var_part[pos].cur_loc == node->loc)
+	      if (cur_loc == node->loc)
 		{
 		  changed = true;
 		  var->var_part[pos].cur_loc = NULL;
-		  var->cur_loc_changed = true;
+		  if (pos == 0 && var->onepart && VAR_LOC_1PAUX (var))
+		    VAR_LOC_FROM (var) = NULL;
 		}
 	      pool_free (loc_chain_pool, node);
 	      *nextp = next;
@@ -7291,8 +7456,6 @@ delete_slot_part (dataflow_set *set, rtx loc, void **slot,
 	{
 	  changed = true;
 	  var->n_var_parts--;
-	  if (emit_notes)
-	    var->cur_loc_changed = true;
 	  while (pos < var->n_var_parts)
 	    {
 	      var->var_part[pos] = var->var_part[pos + 1];
@@ -7321,6 +7484,12 @@ delete_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
   delete_slot_part (set, loc, slot, offset);
 }
 
+DEF_VEC_P (variable);
+DEF_VEC_ALLOC_P (variable, heap);
+
+DEF_VEC_ALLOC_P_STACK (rtx);
+#define VEC_rtx_stack_alloc(alloc) VEC_stack_alloc (rtx, alloc)
+
 /* Structure for passing some other parameters to function
    vt_expand_loc_callback.  */
 struct expand_loc_callback_data
@@ -7328,56 +7497,368 @@ struct expand_loc_callback_data
   /* The variables and values active at this point.  */
   htab_t vars;
 
-  /* True in vt_expand_loc_dummy calls, no rtl should be allocated.
-     Non-NULL should be returned if vt_expand_loc would return
-     non-NULL in that case, NULL otherwise.  cur_loc_changed should be
-     computed and cur_loc recomputed when possible (but just once
-     per emit_notes_for_changes call).  */
-  bool dummy;
+  /* Stack of values and debug_exprs under expansion, and their
+     children.  */
+  VEC (rtx, stack) *expanding;
 
-  /* True if expansion of subexpressions had to recompute some
-     VALUE/DEBUG_EXPR_DECL's cur_loc or used a VALUE/DEBUG_EXPR_DECL
-     whose cur_loc has been already recomputed during current
-     emit_notes_for_changes call.  */
-  bool cur_loc_changed;
+  /* Stack of values and debug_exprs whose expansion hit recursion
+     cycles.  They will have VALUE_RECURSED_INTO marked when added to
+     this list.  This flag will be cleared if any of its dependencies
+     resolves to a valid location.  So, if the flag remains set at the
+     end of the search, we know no valid location for this one can
+     possibly exist.  */
+  VEC (rtx, stack) *pending;
 
-  /* True if cur_loc should be ignored and any possible location
-     returned.  */
-  bool ignore_cur_loc;
+  /* The maximum depth among the sub-expressions under expansion.
+     Zero indicates no expansion so far.  */
+  int depth;
 };
+
+/* Allocate the one-part auxiliary data structure for VAR, with enough
+   room for COUNT dependencies.  */
+
+static void
+loc_exp_dep_alloc (variable var, int count)
+{
+  size_t allocsize;
+
+  gcc_checking_assert (var->onepart);
+
+  /* We can be called with COUNT == 0 to allocate the data structure
+     without any dependencies, e.g. for the backlinks only.  However,
+     if we are specifying a COUNT, then the dependency list must have
+     been emptied before.  It would be possible to adjust pointers or
+     force it empty here, but this is better done at an earlier point
+     in the algorithm, so we instead leave an assertion to catch
+     errors.  */
+  gcc_checking_assert (!count
+		       || VEC_empty (loc_exp_dep, VAR_LOC_DEP_VEC (var)));
+
+  if (VAR_LOC_1PAUX (var)
+      && VEC_space (loc_exp_dep, VAR_LOC_DEP_VEC (var), count))
+    return;
+
+  allocsize = offsetof (struct onepart_aux, deps)
+    + VEC_embedded_size (loc_exp_dep, count);
+
+  if (VAR_LOC_1PAUX (var))
+    {
+      VAR_LOC_1PAUX (var) = XRESIZEVAR (struct onepart_aux,
+					VAR_LOC_1PAUX (var), allocsize);
+      /* If the reallocation moves the onepaux structure, the
+	 back-pointer to BACKLINKS in the first list member will still
+	 point to its old location.  Adjust it.  */
+      if (VAR_LOC_DEP_LST (var))
+	VAR_LOC_DEP_LST (var)->pprev = VAR_LOC_DEP_LSTP (var);
+    }
+  else
+    {
+      VAR_LOC_1PAUX (var) = XNEWVAR (struct onepart_aux, allocsize);
+      *VAR_LOC_DEP_LSTP (var) = NULL;
+      VAR_LOC_FROM (var) = NULL;
+      VAR_LOC_DEPTH (var) = 0;
+    }
+  VEC_embedded_init (loc_exp_dep, VAR_LOC_DEP_VEC (var), count);
+}
+
+/* Remove all entries from the vector of active dependencies of VAR,
+   removing them from the back-links lists too.  */
+
+static void
+loc_exp_dep_clear (variable var)
+{
+  while (!VEC_empty (loc_exp_dep, VAR_LOC_DEP_VEC (var)))
+    {
+      loc_exp_dep *led = VEC_last (loc_exp_dep, VAR_LOC_DEP_VEC (var));
+      if (led->next)
+	led->next->pprev = led->pprev;
+      if (led->pprev)
+	*led->pprev = led->next;
+      VEC_pop (loc_exp_dep, VAR_LOC_DEP_VEC (var));
+    }
+}
+
+/* Insert an active dependency from VAR on X to the vector of
+   dependencies, and add the corresponding back-link to X's list of
+   back-links in VARS.  */
+
+static void
+loc_exp_insert_dep (variable var, rtx x, htab_t vars)
+{
+  decl_or_value dv;
+  variable xvar;
+  loc_exp_dep *led;
+
+  dv = dv_from_rtx (x);
+
+  /* ??? Build a vector of variables parallel to EXPANDING, to avoid
+     an additional look up?  */
+  xvar = (variable) htab_find_with_hash (vars, dv, dv_htab_hash (dv));
+
+  if (!xvar)
+    {
+      xvar = variable_from_dropped (dv, NO_INSERT);
+      gcc_checking_assert (xvar);
+    }
+
+  /* No point in adding the same backlink more than once.  This may
+     arise if say the same value appears in two complex expressions in
+     the same loc_list, or even more than once in a single
+     expression.  */
+  if (VAR_LOC_DEP_LST (xvar) && VAR_LOC_DEP_LST (xvar)->dv == var->dv)
+    return;
+
+  VEC_quick_push (loc_exp_dep, VAR_LOC_DEP_VEC (var), NULL);
+  led = VEC_last (loc_exp_dep, VAR_LOC_DEP_VEC (var));
+  led->dv = var->dv;
+  led->value = x;
+
+  loc_exp_dep_alloc (xvar, 0);
+  led->pprev = VAR_LOC_DEP_LSTP (xvar);
+  led->next = *led->pprev;
+  if (led->next)
+    led->next->pprev = &led->next;
+  *led->pprev = led;
+}
+
+/* Create active dependencies of VAR on COUNT values starting at
+   VALUE, and corresponding back-links to the entries in VARS.  Return
+   true if we found any pending-recursion results.  */
+
+static bool
+loc_exp_dep_set (variable var, rtx result, rtx *value, int count, htab_t vars)
+{
+  bool pending_recursion = false;
+
+  gcc_checking_assert (VEC_empty (loc_exp_dep, VAR_LOC_DEP_VEC (var)));
+
+  /* Set up all dependencies from last_child (as set up at the end of
+     the loop above) to the end.  */
+  loc_exp_dep_alloc (var, count);
+
+  while (count--)
+    {
+      rtx x = *value++;
+
+      if (!pending_recursion)
+	pending_recursion = !result && VALUE_RECURSED_INTO (x);
+
+      loc_exp_insert_dep (var, x, vars);
+    }
+
+  return pending_recursion;
+}
+
+/* Notify the back-links of IVAR that are pending recursion that we
+   have found a non-NIL value for it, so they are cleared for another
+   attempt to compute a current location.  */
+
+static void
+notify_dependents_of_resolved_value (variable ivar, htab_t vars)
+{
+  loc_exp_dep *led, *next;
+
+  for (led = VAR_LOC_DEP_LST (ivar); led; led = next)
+    {
+      decl_or_value dv = led->dv;
+      variable var;
+
+      next = led->next;
+
+      if (dv_is_value_p (dv))
+	{
+	  rtx value = dv_as_value (dv);
+
+	  /* If we have already resolved it, leave it alone.  */
+	  if (!VALUE_RECURSED_INTO (value))
+	    continue;
+
+	  /* Check that VALUE_RECURSED_INTO, true from the test above,
+	     implies NO_LOC_P.  */
+	  gcc_checking_assert (NO_LOC_P (value));
+
+	  /* We won't notify variables that are being expanded,
+	     because their dependency list is cleared before
+	     recursing.  */
+	  VALUE_RECURSED_INTO (value) = false;
+
+	  gcc_checking_assert (dv_changed_p (dv));
+	}
+      else if (!dv_changed_p (dv))
+	continue;
+
+      var = (variable) htab_find_with_hash (vars, dv, dv_htab_hash (dv));
+
+      if (!var)
+	var = variable_from_dropped (dv, NO_INSERT);
+
+      if (var)
+	notify_dependents_of_resolved_value (var, vars);
+
+      if (next)
+	next->pprev = led->pprev;
+      if (led->pprev)
+	*led->pprev = next;
+      led->next = NULL;
+      led->pprev = NULL;
+    }
+}
+
+static rtx vt_expand_loc_callback (rtx x, bitmap regs,
+				   int max_depth, void *data);
+
+/* Return the combined depth, when one sub-expression evaluated to
+   BEST_DEPTH and the previous known depth was SAVED_DEPTH.  */
+
+static inline int
+update_depth (int saved_depth, int best_depth)
+{
+  /* If we didn't find anything, stick with what we had.  */
+  if (!best_depth)
+    return saved_depth;
+
+  /* If we found hadn't found anything, use the depth of the current
+     expression.  Do NOT add one extra level, we want to compute the
+     maximum depth among sub-expressions.  We'll increment it later,
+     if appropriate.  */
+  if (!saved_depth)
+    return best_depth;
+
+  if (saved_depth < best_depth)
+    return best_depth;
+  else
+    return saved_depth;
+}
+
+/* Expand VAR to a location RTX, updating its cur_loc.  Use REGS and
+   DATA for cselib expand callback.  If PENDRECP is given, indicate in
+   it whether any sub-expression couldn't be fully evaluated because
+   it is pending recursion resolution.  */
+
+static inline rtx
+vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
+{
+  struct expand_loc_callback_data *elcd
+    = (struct expand_loc_callback_data *) data;
+  location_chain loc, next;
+  rtx result = NULL;
+  int first_child, result_first_child, last_child;
+  bool pending_recursion;
+  rtx loc_from = NULL;
+  struct elt_loc_list *cloc = NULL;
+  int depth, saved_depth = elcd->depth;
+
+  /* Clear all backlinks pointing at this, so that we're not notified
+     while we're active.  */
+  loc_exp_dep_clear (var);
+
+  if (var->onepart == ONEPART_VALUE)
+    {
+      cselib_val *val = CSELIB_VAL_PTR (dv_as_value (var->dv));
+
+      gcc_checking_assert (cselib_preserved_value_p (val));
+
+      cloc = val->locs;
+    }
+
+  first_child = result_first_child = last_child
+    = VEC_length (rtx, elcd->expanding);
+
+  /* Attempt to expand each available location in turn.  */
+  for (next = loc = var->n_var_parts ? var->var_part[0].loc_chain : NULL;
+       loc || cloc; loc = next)
+    {
+      result_first_child = last_child;
+
+      if (!loc || (GET_CODE (loc->loc) == ENTRY_VALUE && cloc))
+	{
+	  loc_from = cloc->loc;
+	  next = loc;
+	  cloc = cloc->next;
+	  if (unsuitable_loc (loc_from))
+	    continue;
+	}
+      else
+	{
+	  loc_from = loc->loc;
+	  next = loc->next;
+	}
+
+      gcc_checking_assert (!unsuitable_loc (loc_from));
+
+      elcd->depth = 0;
+      result = cselib_expand_value_rtx_cb (loc_from, regs, EXPR_DEPTH,
+					   vt_expand_loc_callback, data);
+      last_child = VEC_length (rtx, elcd->expanding);
+
+      if (result)
+	{
+	  depth = elcd->depth;
+
+	  gcc_checking_assert (depth || result_first_child == last_child);
+
+	  if (last_child - result_first_child != 1)
+	    depth++;
+
+	  if (depth <= EXPR_USE_DEPTH)
+	    break;
+
+	  result = NULL;
+	}
+
+      /* Set it up in case we leave the loop.  */
+      depth = 0;
+      loc_from = NULL;
+      result_first_child = first_child;
+    }
+
+  /* Register all encountered dependencies as active.  */
+  pending_recursion = loc_exp_dep_set
+    (var, result, VEC_address (rtx, elcd->expanding) + result_first_child,
+     last_child - result_first_child, elcd->vars);
+
+  VEC_truncate (rtx, elcd->expanding, first_child);
+
+  /* Record where the expansion came from.  */
+  gcc_checking_assert (!result || !pending_recursion);
+  VAR_LOC_FROM (var) = loc_from;
+  VAR_LOC_DEPTH (var) = depth;
+
+  elcd->depth = update_depth (saved_depth, depth);
+
+  /* Indicate whether any of the dependencies are pending recursion
+     resolution.  */
+  if (pendrecp)
+    *pendrecp = pending_recursion;
+
+  if (!pendrecp || !pending_recursion)
+    var->var_part[0].cur_loc = result;
+
+  return result;
+}
 
 /* Callback for cselib_expand_value, that looks for expressions
    holding the value in the var-tracking hash tables.  Return X for
    standard processing, anything else is to be used as-is.  */
 
 static rtx
-vt_expand_loc_callback (rtx x, bitmap regs, int max_depth, void *data)
+vt_expand_loc_callback (rtx x, bitmap regs,
+			int max_depth ATTRIBUTE_UNUSED,
+			void *data)
 {
   struct expand_loc_callback_data *elcd
     = (struct expand_loc_callback_data *) data;
-  bool dummy = elcd->dummy;
-  bool cur_loc_changed = elcd->cur_loc_changed;
-  rtx cur_loc;
   decl_or_value dv;
   variable var;
-  location_chain loc;
-  rtx result, subreg, xret;
+  rtx result, subreg;
+  bool pending_recursion = false;
+  bool from_empty = false;
 
   switch (GET_CODE (x))
     {
     case SUBREG:
-      if (dummy)
-	{
-	  if (cselib_dummy_expand_value_rtx_cb (SUBREG_REG (x), regs,
-						max_depth - 1,
-						vt_expand_loc_callback, data))
-	    return pc_rtx;
-	  else
-	    return NULL;
-	}
-
       subreg = cselib_expand_value_rtx_cb (SUBREG_REG (x), regs,
-					   max_depth - 1,
+					   EXPR_DEPTH,
 					   vt_expand_loc_callback, data);
 
       if (!subreg)
@@ -7395,148 +7876,172 @@ vt_expand_loc_callback (rtx x, bitmap regs, int max_depth, void *data)
       return result;
 
     case DEBUG_EXPR:
-      dv = dv_from_decl (DEBUG_EXPR_TREE_DECL (x));
-      xret = NULL;
-      break;
-
     case VALUE:
-      dv = dv_from_value (x);
-      xret = x;
+      dv = dv_from_rtx (x);
       break;
 
     default:
       return x;
     }
 
-  if (VALUE_RECURSED_INTO (x))
+  VEC_safe_push (rtx, stack, elcd->expanding, x);
+
+  /* Check that VALUE_RECURSED_INTO implies NO_LOC_P.  */
+  gcc_checking_assert (!VALUE_RECURSED_INTO (x) || NO_LOC_P (x));
+
+  if (NO_LOC_P (x))
     return NULL;
 
   var = (variable) htab_find_with_hash (elcd->vars, dv, dv_htab_hash (dv));
 
   if (!var)
     {
-      if (dummy && dv_changed_p (dv))
-	elcd->cur_loc_changed = true;
-      return xret;
+      from_empty = true;
+      var = variable_from_dropped (dv, INSERT);
     }
 
-  if (var->n_var_parts == 0)
+  gcc_checking_assert (var);
+
+  if (!dv_changed_p (dv))
     {
-      if (dummy)
-	elcd->cur_loc_changed = true;
-      return xret;
-    }
+      gcc_checking_assert (!NO_LOC_P (x));
+      gcc_checking_assert (var->var_part[0].cur_loc);
+      gcc_checking_assert (VAR_LOC_1PAUX (var));
+      gcc_checking_assert (VAR_LOC_1PAUX (var)->depth);
 
-  gcc_assert (var->n_var_parts == 1);
+      elcd->depth = update_depth (elcd->depth, VAR_LOC_1PAUX (var)->depth);
+
+      return var->var_part[0].cur_loc;
+    }
 
   VALUE_RECURSED_INTO (x) = true;
-  result = NULL;
+  /* This is tentative, but it makes some tests simpler.  */
+  NO_LOC_P (x) = true;
 
-  if (var->var_part[0].cur_loc && !elcd->ignore_cur_loc)
+  gcc_checking_assert (var->n_var_parts == 1 || from_empty);
+
+  result = vt_expand_var_loc_chain (var, regs, data, &pending_recursion);
+
+  if (pending_recursion)
     {
-      if (dummy)
-	{
-	  if (cselib_dummy_expand_value_rtx_cb (var->var_part[0].cur_loc, regs,
-						max_depth,
-						vt_expand_loc_callback, data))
-	    result = pc_rtx;
-	}
-      else
-	result = cselib_expand_value_rtx_cb (var->var_part[0].cur_loc, regs,
-					     max_depth,
-					     vt_expand_loc_callback, data);
+      gcc_checking_assert (!result);
+      VEC_safe_push (rtx, stack, elcd->pending, x);
+    }
+  else
+    {
+      NO_LOC_P (x) = !result;
+      VALUE_RECURSED_INTO (x) = false;
+      set_dv_changed (dv, false);
+
       if (result)
-	set_dv_changed (dv, false);
-      cur_loc = var->var_part[0].cur_loc;
-    }
-  else
-    cur_loc = NULL_RTX;
-  if (!result && (dv_changed_p (dv) || elcd->ignore_cur_loc))
-    {
-      if (!elcd->ignore_cur_loc)
-	set_dv_changed (dv, false);
-      for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
-	if (loc->loc == cur_loc)
-	  continue;
-	else if (dummy)
-	  {
-	    elcd->cur_loc_changed = cur_loc_changed;
-	    if (cselib_dummy_expand_value_rtx_cb (loc->loc, regs, max_depth,
-						  vt_expand_loc_callback,
-						  data))
-	      {
-		result = pc_rtx;
-		break;
-	      }
-	  }
-	else
-	  {
-	    result = cselib_expand_value_rtx_cb (loc->loc, regs, max_depth,
-						 vt_expand_loc_callback, data);
-	    if (result)
-	      break;
-	  }
-      if (dummy && (result || var->var_part[0].cur_loc))
-	var->cur_loc_changed = true;
-      if (!elcd->ignore_cur_loc)
-	var->var_part[0].cur_loc = loc ? loc->loc : NULL_RTX;
-    }
-  if (dummy)
-    {
-      if (var->cur_loc_changed)
-	elcd->cur_loc_changed = true;
-      else if (!result && var->var_part[0].cur_loc == NULL_RTX)
-	elcd->cur_loc_changed = cur_loc_changed;
+	notify_dependents_of_resolved_value (var, elcd->vars);
     }
 
-  VALUE_RECURSED_INTO (x) = false;
-  if (result)
-    return result;
-  else
-    return xret;
+  return result;
 }
 
-/* Expand VALUEs in LOC, using VARS as well as cselib's equivalence
-   tables.  */
+/* While expanding variables, we may encounter recursion cycles
+   because of mutual (possibly indirect) dependencies between two
+   particular variables (or values), say A and B.  If we're trying to
+   expand A when we get to B, which in turn attempts to expand A, if
+   we can't find any other expansion for B, we'll add B to this
+   pending-recursion stack, and tentatively return NULL for its
+   location.  This tentative value will be used for any other
+   occurrences of B, unless A gets some other location, in which case
+   it will notify B that it is worth another try at computing a
+   location for it, and it will use the location computed for A then.
+   At the end of the expansion, the tentative NULL locations become
+   final for all members of PENDING that didn't get a notification.
+   This function performs this finalization of NULL locations.  */
+
+static void
+resolve_expansions_pending_recursion (VEC (rtx, stack) *pending)
+{
+  while (!VEC_empty (rtx, pending))
+    {
+      rtx x = VEC_pop (rtx, pending);
+      decl_or_value dv;
+
+      if (!VALUE_RECURSED_INTO (x))
+	continue;
+
+      gcc_checking_assert (NO_LOC_P (x));
+      VALUE_RECURSED_INTO (x) = false;
+      dv = dv_from_rtx (x);
+      gcc_checking_assert (dv_changed_p (dv));
+      set_dv_changed (dv, false);
+    }
+}
+
+/* Initialize expand_loc_callback_data D with variable hash table V.
+   It must be a macro because of alloca (VEC stack).  */
+#define INIT_ELCD(d, v)						\
+  do								\
+    {								\
+      (d).vars = (v);						\
+      (d).expanding = VEC_alloc (rtx, stack, 4);		\
+      (d).pending = VEC_alloc (rtx, stack, 4);			\
+      (d).depth = 0;						\
+    }								\
+  while (0)
+/* Finalize expand_loc_callback_data D, resolved to location L.  */
+#define FINI_ELCD(d, l)						\
+  do								\
+    {								\
+      resolve_expansions_pending_recursion ((d).pending);	\
+      VEC_free (rtx, stack, (d).pending);			\
+      VEC_free (rtx, stack, (d).expanding);			\
+								\
+      if ((l) && MEM_P (l))					\
+	(l) = targetm.delegitimize_address (l);			\
+    }								\
+  while (0)
+
+/* Expand VALUEs and DEBUG_EXPRs in LOC to a location, using the
+   equivalences in VARS, updating their CUR_LOCs in the process.  */
 
 static rtx
-vt_expand_loc (rtx loc, htab_t vars, bool ignore_cur_loc)
+vt_expand_loc (rtx loc, htab_t vars)
 {
   struct expand_loc_callback_data data;
+  rtx result;
 
   if (!MAY_HAVE_DEBUG_INSNS)
     return loc;
 
-  data.vars = vars;
-  data.dummy = false;
-  data.cur_loc_changed = false;
-  data.ignore_cur_loc = ignore_cur_loc;
-  loc = cselib_expand_value_rtx_cb (loc, scratch_regs, EXPR_DEPTH,
-				    vt_expand_loc_callback, &data);
+  INIT_ELCD (data, vars);
 
-  if (loc && MEM_P (loc))
-    loc = targetm.delegitimize_address (loc);
-  return loc;
+  result = cselib_expand_value_rtx_cb (loc, scratch_regs, EXPR_DEPTH,
+				       vt_expand_loc_callback, &data);
+
+  FINI_ELCD (data, result);
+
+  return result;
 }
 
-/* Like vt_expand_loc, but only return true/false (whether vt_expand_loc
-   would succeed or not, without actually allocating new rtxes.  */
+/* Expand the one-part VARiable to a location, using the equivalences
+   in VARS, updating their CUR_LOCs in the process.  */
 
-static bool
-vt_expand_loc_dummy (rtx loc, htab_t vars, bool *pcur_loc_changed)
+static rtx
+vt_expand_1pvar (variable var, htab_t vars)
 {
   struct expand_loc_callback_data data;
-  bool ret;
+  rtx loc;
 
-  gcc_assert (MAY_HAVE_DEBUG_INSNS);
-  data.vars = vars;
-  data.dummy = true;
-  data.cur_loc_changed = false;
-  data.ignore_cur_loc = false;
-  ret = cselib_dummy_expand_value_rtx_cb (loc, scratch_regs, EXPR_DEPTH,
-					  vt_expand_loc_callback, &data);
-  *pcur_loc_changed = data.cur_loc_changed;
-  return ret;
+  gcc_checking_assert (var->onepart && var->n_var_parts == 1);
+
+  if (!dv_changed_p (var->dv))
+    return var->var_part[0].cur_loc;
+
+  INIT_ELCD (data, vars);
+
+  loc = vt_expand_var_loc_chain (var, scratch_regs, &data, NULL);
+
+  gcc_checking_assert (VEC_empty (rtx, data.expanding));
+
+  FINI_ELCD (data, loc);
+
+  return loc;
 }
 
 /* Emit the NOTE_INSN_VAR_LOCATION for variable *VARP.  DATA contains
@@ -7561,49 +8066,57 @@ emit_note_insn_var_location (void **varp, void *data)
   tree decl;
   location_chain lc;
 
-  if (dv_is_value_p (var->dv))
-    goto value_or_debug_decl;
+  gcc_checking_assert (var->onepart == NOT_ONEPART
+		       || var->onepart == ONEPART_VDECL);
 
   decl = dv_as_decl (var->dv);
-
-  if (TREE_CODE (decl) == DEBUG_EXPR_DECL)
-    goto value_or_debug_decl;
 
   complete = true;
   last_limit = 0;
   n_var_parts = 0;
-  if (!MAY_HAVE_DEBUG_INSNS)
-    {
-      for (i = 0; i < var->n_var_parts; i++)
-	if (var->var_part[i].cur_loc == NULL && var->var_part[i].loc_chain)
-	  {
-	    var->var_part[i].cur_loc = var->var_part[i].loc_chain->loc;
-	    var->cur_loc_changed = true;
-	  }
-      if (var->n_var_parts == 0)
-	var->cur_loc_changed = true;
-    }
-  if (!var->cur_loc_changed)
-    goto clear;
+  if (!var->onepart)
+    for (i = 0; i < var->n_var_parts; i++)
+      if (var->var_part[i].cur_loc == NULL && var->var_part[i].loc_chain)
+	var->var_part[i].cur_loc = var->var_part[i].loc_chain->loc;
   for (i = 0; i < var->n_var_parts; i++)
     {
       enum machine_mode mode, wider_mode;
       rtx loc2;
+      HOST_WIDE_INT offset;
 
-      if (last_limit < var->var_part[i].offset)
+      if (i == 0 && var->onepart)
 	{
-	  complete = false;
-	  break;
+	  gcc_checking_assert (var->n_var_parts == 1);
+	  offset = 0;
+	  initialized = VAR_INIT_STATUS_INITIALIZED;
+	  loc2 = vt_expand_1pvar (var, vars);
 	}
-      else if (last_limit > var->var_part[i].offset)
-	continue;
-      offsets[n_var_parts] = var->var_part[i].offset;
-      if (!var->var_part[i].cur_loc)
+      else
 	{
-	  complete = false;
-	  continue;
+	  if (last_limit < VAR_PART_OFFSET (var, i))
+	    {
+	      complete = false;
+	      break;
+	    }
+	  else if (last_limit > VAR_PART_OFFSET (var, i))
+	    continue;
+	  offset = VAR_PART_OFFSET (var, i);
+	  if (!var->var_part[i].cur_loc)
+	    {
+	      complete = false;
+	      continue;
+	    }
+	  for (lc = var->var_part[i].loc_chain; lc; lc = lc->next)
+	    if (var->var_part[i].cur_loc == lc->loc)
+	      {
+		initialized = lc->init;
+		break;
+	      }
+	  gcc_assert (lc);
+	  loc2 = var->var_part[i].cur_loc;
 	}
-      loc2 = vt_expand_loc (var->var_part[i].cur_loc, vars, false);
+
+      offsets[n_var_parts] = offset;
       if (!loc2)
 	{
 	  complete = false;
@@ -7611,29 +8124,22 @@ emit_note_insn_var_location (void **varp, void *data)
 	}
       loc[n_var_parts] = loc2;
       mode = GET_MODE (var->var_part[i].cur_loc);
-      if (mode == VOIDmode && dv_onepart_p (var->dv))
+      if (mode == VOIDmode && var->onepart)
 	mode = DECL_MODE (decl);
-      for (lc = var->var_part[i].loc_chain; lc; lc = lc->next)
-	if (var->var_part[i].cur_loc == lc->loc)
-	  {
-	    initialized = lc->init;
-	    break;
-	  }
-      gcc_assert (lc);
       last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
 
       /* Attempt to merge adjacent registers or memory.  */
       wider_mode = GET_MODE_WIDER_MODE (mode);
       for (j = i + 1; j < var->n_var_parts; j++)
-	if (last_limit <= var->var_part[j].offset)
+	if (last_limit <= VAR_PART_OFFSET (var, j))
 	  break;
       if (j < var->n_var_parts
 	  && wider_mode != VOIDmode
 	  && var->var_part[j].cur_loc
 	  && mode == GET_MODE (var->var_part[j].cur_loc)
 	  && (REG_P (loc[n_var_parts]) || MEM_P (loc[n_var_parts]))
-	  && last_limit == var->var_part[j].offset
-	  && (loc2 = vt_expand_loc (var->var_part[j].cur_loc, vars, false))
+	  && last_limit == (var->onepart ? 0 : VAR_PART_OFFSET (var, j))
+	  && (loc2 = vt_expand_loc (var->var_part[j].cur_loc, vars))
 	  && GET_CODE (loc[n_var_parts]) == GET_CODE (loc2))
 	{
 	  rtx new_loc = NULL;
@@ -7746,152 +8252,152 @@ emit_note_insn_var_location (void **varp, void *data)
     }
   NOTE_VAR_LOCATION (note) = note_vl;
 
- clear:
   set_dv_changed (var->dv, false);
-  var->cur_loc_changed = false;
   gcc_assert (var->in_changed_variables);
   var->in_changed_variables = false;
   htab_clear_slot (changed_variables, varp);
 
   /* Continue traversing the hash table.  */
   return 1;
-
- value_or_debug_decl:
-  if (dv_changed_p (var->dv) && var->n_var_parts)
-    {
-      location_chain lc;
-      bool cur_loc_changed;
-
-      if (var->var_part[0].cur_loc
-	  && vt_expand_loc_dummy (var->var_part[0].cur_loc, vars,
-				  &cur_loc_changed))
-	goto clear;
-      for (lc = var->var_part[0].loc_chain; lc; lc = lc->next)
-	if (lc->loc != var->var_part[0].cur_loc
-	    && vt_expand_loc_dummy (lc->loc, vars, &cur_loc_changed))
-	  break;
-      var->var_part[0].cur_loc = lc ? lc->loc : NULL_RTX;
-    }
-  goto clear;
 }
 
-DEF_VEC_P (variable);
-DEF_VEC_ALLOC_P (variable, heap);
-
-/* Stack of variable_def pointers that need processing with
-   check_changed_vars_2.  */
-
-static VEC (variable, heap) *changed_variables_stack;
-
-/* VALUEs with no variables that need set_dv_changed (val, false)
-   called before check_changed_vars_3.  */
-
-static VEC (rtx, heap) *changed_values_stack;
-
-/* Helper function for check_changed_vars_1 and check_changed_vars_2.  */
-
-static void
-check_changed_vars_0 (decl_or_value dv, htab_t htab)
-{
-  value_chain vc
-    = (value_chain) htab_find_with_hash (value_chains, dv, dv_htab_hash (dv));
-
-  if (vc == NULL)
-    return;
-  for (vc = vc->next; vc; vc = vc->next)
-    if (!dv_changed_p (vc->dv))
-      {
-	variable vcvar
-	  = (variable) htab_find_with_hash (htab, vc->dv,
-					    dv_htab_hash (vc->dv));
-	if (vcvar)
-	  {
-	    set_dv_changed (vc->dv, true);
-	    VEC_safe_push (variable, heap, changed_variables_stack, vcvar);
-	  }
-	else if (dv_is_value_p (vc->dv))
-	  {
-	    set_dv_changed (vc->dv, true);
-	    VEC_safe_push (rtx, heap, changed_values_stack,
-			   dv_as_value (vc->dv));
-	    check_changed_vars_0 (vc->dv, htab);
-	  }
-      }
-}
-
-/* Populate changed_variables_stack with variable_def pointers
-   that need variable_was_changed called on them.  */
+/* While traversing changed_variables, push onto DATA (a stack of RTX
+   values) entries that aren't user variables.  */
 
 static int
-check_changed_vars_1 (void **slot, void *data)
+values_to_stack (void **slot, void *data)
 {
+  VEC (rtx, stack) **changed_values_stack = (VEC (rtx, stack) **)data;
   variable var = (variable) *slot;
-  htab_t htab = (htab_t) data;
 
-  if (dv_is_value_p (var->dv)
-      || TREE_CODE (dv_as_decl (var->dv)) == DEBUG_EXPR_DECL)
-    check_changed_vars_0 (var->dv, htab);
+  if (var->onepart == ONEPART_VALUE)
+    VEC_safe_push (rtx, stack, *changed_values_stack, dv_as_value (var->dv));
+  else if (var->onepart == ONEPART_DEXPR)
+    VEC_safe_push (rtx, stack, *changed_values_stack,
+		   DECL_RTL_KNOWN_SET (dv_as_decl (var->dv)));
+
   return 1;
 }
 
-/* Add VAR to changed_variables and also for VALUEs add recursively
-   all DVs that aren't in changed_variables yet but reference the
-   VALUE from its loc_chain.  */
-
+/* Remove from changed_variables the entry whose DV corresponds to
+   value or debug_expr VAL.  */
 static void
-check_changed_vars_2 (variable var, htab_t htab)
+remove_value_from_changed_variables (rtx val)
 {
-  variable_was_changed (var, NULL);
-  if (dv_is_value_p (var->dv)
-      || TREE_CODE (dv_as_decl (var->dv)) == DEBUG_EXPR_DECL)
-    check_changed_vars_0 (var->dv, htab);
+  decl_or_value dv = dv_from_rtx (val);
+  void **slot;
+  variable var;
+
+  slot = htab_find_slot_with_hash (changed_variables,
+				   dv, dv_htab_hash (dv), NO_INSERT);
+  var = (variable) *slot;
+  var->in_changed_variables = false;
+  htab_clear_slot (changed_variables, slot);
 }
 
-/* For each changed decl (except DEBUG_EXPR_DECLs) recompute
-   cur_loc if needed (and cur_loc of all VALUEs and DEBUG_EXPR_DECLs
-   it needs and are also in changed variables) and track whether
-   cur_loc (or anything it uses to compute location) had to change
-   during the current emit_notes_for_changes call.  */
+/* If VAL (a value or debug_expr) has backlinks to variables actively
+   dependent on it in HTAB or in CHANGED_VARIABLES, mark them as
+   changed, adding to CHANGED_VALUES_STACK any dependencies that may
+   have dependencies of their own to notify.  */
 
-static int
-check_changed_vars_3 (void **slot, void *data)
+static void
+notify_dependents_of_changed_value (rtx val, htab_t htab,
+				    VEC (rtx, stack) **changed_values_stack)
 {
-  variable var = (variable) *slot;
-  htab_t vars = (htab_t) data;
-  int i;
-  location_chain lc;
-  bool cur_loc_changed;
+  void **slot;
+  variable var;
+  loc_exp_dep *led;
+  decl_or_value dv = dv_from_rtx (val);
 
-  if (dv_is_value_p (var->dv)
-      || TREE_CODE (dv_as_decl (var->dv)) == DEBUG_EXPR_DECL)
-    return 1;
+  slot = htab_find_slot_with_hash (changed_variables,
+				   dv, dv_htab_hash (dv), NO_INSERT);
+  if (!slot)
+    slot = htab_find_slot_with_hash (htab,
+				     dv, dv_htab_hash (dv), NO_INSERT);
+  if (!slot)
+    slot = htab_find_slot_with_hash (dropped_values,
+				     dv, dv_htab_hash (dv), NO_INSERT);
+  var = (variable) *slot;
 
-  for (i = 0; i < var->n_var_parts; i++)
+  while ((led = VAR_LOC_DEP_LST (var)))
     {
-      if (var->var_part[i].cur_loc
-	  && vt_expand_loc_dummy (var->var_part[i].cur_loc, vars,
-				  &cur_loc_changed))
+      decl_or_value ldv = led->dv;
+      void **islot;
+      variable ivar;
+
+      /* Deactivate and remove the backlink, as it was “used up”.  It
+	 makes no sense to attempt to notify the same entity again:
+	 either it will be recomputed and re-register an active
+	 dependency, or it will still have the changed mark.  */
+      if (led->next)
+	led->next->pprev = led->pprev;
+      if (led->pprev)
+	*led->pprev = led->next;
+      led->next = NULL;
+      led->pprev = NULL;
+
+      if (dv_changed_p (ldv))
+	continue;
+
+      switch (dv_onepart_p (ldv))
 	{
-	  if (cur_loc_changed)
-	    var->cur_loc_changed = true;
-	  continue;
-	}
-      for (lc = var->var_part[i].loc_chain; lc; lc = lc->next)
-	if (lc->loc != var->var_part[i].cur_loc
-	    && vt_expand_loc_dummy (lc->loc, vars, &cur_loc_changed))
+	case ONEPART_VALUE:
+	case ONEPART_DEXPR:
+	  set_dv_changed (ldv, true);
+	  VEC_safe_push (rtx, stack, *changed_values_stack, dv_as_rtx (ldv));
 	  break;
-      if (lc || var->var_part[i].cur_loc)
-	var->cur_loc_changed = true;
-      var->var_part[i].cur_loc = lc ? lc->loc : NULL_RTX;
+
+	default:
+	  islot = htab_find_slot_with_hash (htab, ldv, dv_htab_hash (ldv),
+					    NO_INSERT);
+	  ivar = (variable) *islot;
+	  gcc_checking_assert (!VAR_LOC_DEP_LST (ivar));
+	  variable_was_changed (ivar, NULL);
+	  break;
+	}
     }
-  if (var->n_var_parts == 0)
-    var->cur_loc_changed = true;
-  return 1;
+}
+
+/* Take out of changed_variables any entries that don't refer to use
+   variables.  Back-propagate change notifications from values and
+   debug_exprs to their active dependencies in HTAB or in
+   CHANGED_VARIABLES.  */
+
+static void
+process_changed_values (htab_t htab)
+{
+  int i, n;
+  rtx val;
+  VEC (rtx, stack) *changed_values_stack = VEC_alloc (rtx, stack, 20);
+
+  /* Move values from changed_variables to changed_values_stack.  */
+  htab_traverse (changed_variables, values_to_stack, &changed_values_stack);
+
+  /* Back-propagate change notifications in values while popping
+     them from the stack.  */
+  for (n = i = VEC_length (rtx, changed_values_stack);
+       i > 0; i = VEC_length (rtx, changed_values_stack))
+    {
+      val = VEC_pop (rtx, changed_values_stack);
+      notify_dependents_of_changed_value (val, htab, &changed_values_stack);
+
+      /* This condition will hold when visiting each of the entries
+	 originally in changed_variables.  We can't remove them
+	 earlier because this could drop the backlinks before we got a
+	 chance to use them.  */
+      if (i == n)
+	{
+	  remove_value_from_changed_variables (val);
+	  n--;
+	}
+    }
+
+  VEC_free (rtx, stack, changed_values_stack);
 }
 
 /* Emit NOTE_INSN_VAR_LOCATION note for each variable from a chain
-   CHANGED_VARIABLES and delete this chain.  WHERE specifies whether the notes
-   shall be emitted before of after instruction INSN.  */
+   CHANGED_VARIABLES and delete this chain.  WHERE specifies whether
+   the notes shall be emitted before of after instruction INSN.  */
 
 static void
 emit_notes_for_changes (rtx insn, enum emit_note_where where,
@@ -7904,19 +8410,7 @@ emit_notes_for_changes (rtx insn, enum emit_note_where where,
     return;
 
   if (MAY_HAVE_DEBUG_INSNS)
-    {
-      /* Unfortunately this has to be done in two steps, because
-	 we can't traverse a hashtab into which we are inserting
-	 through variable_was_changed.  */
-      htab_traverse (changed_variables, check_changed_vars_1, htab);
-      while (VEC_length (variable, changed_variables_stack) > 0)
-	check_changed_vars_2 (VEC_pop (variable, changed_variables_stack),
-			      htab);
-      while (VEC_length (rtx, changed_values_stack) > 0)
-	set_dv_changed (dv_from_value (VEC_pop (rtx, changed_values_stack)),
-			false);
-      htab_traverse (changed_variables, check_changed_vars_3, htab);
-    }
+    process_changed_values (htab);
 
   data.insn = insn;
   data.where = where;
@@ -7941,78 +8435,59 @@ emit_notes_for_differences_1 (void **slot, void *data)
   if (!new_var)
     {
       /* Variable has disappeared.  */
-      variable empty_var;
+      variable empty_var = NULL;
 
-      empty_var = (variable) pool_alloc (dv_pool (old_var->dv));
-      empty_var->dv = old_var->dv;
-      empty_var->refcount = 0;
-      empty_var->n_var_parts = 0;
-      empty_var->cur_loc_changed = false;
-      empty_var->in_changed_variables = false;
-      if (dv_onepart_p (old_var->dv))
+      if (old_var->onepart == ONEPART_VALUE
+	  || old_var->onepart == ONEPART_DEXPR)
 	{
-	  location_chain lc;
+	  empty_var = variable_from_dropped (old_var->dv, NO_INSERT);
+	  if (empty_var)
+	    {
+	      gcc_checking_assert (!empty_var->in_changed_variables);
+	      if (!VAR_LOC_1PAUX (old_var))
+		{
+		  VAR_LOC_1PAUX (old_var) = VAR_LOC_1PAUX (empty_var);
+		  VAR_LOC_1PAUX (empty_var) = NULL;
+		}
+	      else
+		gcc_checking_assert (!VAR_LOC_1PAUX (empty_var));
+	    }
+	}
 
-	  gcc_assert (old_var->n_var_parts == 1);
-	  for (lc = old_var->var_part[0].loc_chain; lc; lc = lc->next)
-	    remove_value_chains (old_var->dv, lc->loc);
+      if (!empty_var)
+	{
+	  empty_var = (variable) pool_alloc (onepart_pool (old_var->onepart));
+	  empty_var->dv = old_var->dv;
+	  empty_var->refcount = 0;
+	  empty_var->n_var_parts = 0;
+	  empty_var->onepart = old_var->onepart;
+	  empty_var->in_changed_variables = false;
+	}
+
+      if (empty_var->onepart)
+	{
+	  /* Propagate the auxiliary data to (ultimately)
+	     changed_variables.  */
+	  empty_var->var_part[0].loc_chain = NULL;
+	  empty_var->var_part[0].cur_loc = NULL;
+	  VAR_LOC_1PAUX (empty_var) = VAR_LOC_1PAUX (old_var);
+	  VAR_LOC_1PAUX (old_var) = NULL;
 	}
       variable_was_changed (empty_var, NULL);
       /* Continue traversing the hash table.  */
       return 1;
     }
+  /* Update cur_loc and one-part auxiliary data, before new_var goes
+     through variable_was_changed.  */
+  if (old_var != new_var && new_var->onepart)
+    {
+      gcc_checking_assert (VAR_LOC_1PAUX (new_var) == NULL);
+      VAR_LOC_1PAUX (new_var) = VAR_LOC_1PAUX (old_var);
+      VAR_LOC_1PAUX (old_var) = NULL;
+      new_var->var_part[0].cur_loc = old_var->var_part[0].cur_loc;
+    }
   if (variable_different_p (old_var, new_var))
-    {
-      if (dv_onepart_p (old_var->dv))
-	{
-	  location_chain lc1, lc2;
-
-	  gcc_assert (old_var->n_var_parts == 1
-		      && new_var->n_var_parts == 1);
-	  lc1 = old_var->var_part[0].loc_chain;
-	  lc2 = new_var->var_part[0].loc_chain;
-	  while (lc1
-		 && lc2
-		 && ((REG_P (lc1->loc) && REG_P (lc2->loc))
-		     || rtx_equal_p (lc1->loc, lc2->loc)))
-	    {
-	      lc1 = lc1->next;
-	      lc2 = lc2->next;
-	    }
-	  for (; lc2; lc2 = lc2->next)
-	    add_value_chains (old_var->dv, lc2->loc);
-	  for (; lc1; lc1 = lc1->next)
-	    remove_value_chains (old_var->dv, lc1->loc);
-	}
-      variable_was_changed (new_var, NULL);
-    }
-  /* Update cur_loc.  */
-  if (old_var != new_var)
-    {
-      int i;
-      for (i = 0; i < new_var->n_var_parts; i++)
-	{
-	  new_var->var_part[i].cur_loc = NULL;
-	  if (old_var->n_var_parts != new_var->n_var_parts
-	      || old_var->var_part[i].offset != new_var->var_part[i].offset)
-	    new_var->cur_loc_changed = true;
-	  else if (old_var->var_part[i].cur_loc != NULL)
-	    {
-	      location_chain lc;
-	      rtx cur_loc = old_var->var_part[i].cur_loc;
-
-	      for (lc = new_var->var_part[i].loc_chain; lc; lc = lc->next)
-		if (lc->loc == cur_loc
-		    || rtx_equal_p (cur_loc, lc->loc))
-		  {
-		    new_var->var_part[i].cur_loc = lc->loc;
-		    break;
-		  }
-	      if (lc == NULL)
-		new_var->cur_loc_changed = true;
-	    }
-	}
-    }
+    variable_was_changed (new_var, NULL);
 
   /* Continue traversing the hash table.  */
   return 1;
@@ -8033,15 +8508,6 @@ emit_notes_for_differences_2 (void **slot, void *data)
   if (!old_var)
     {
       int i;
-      /* Variable has appeared.  */
-      if (dv_onepart_p (new_var->dv))
-	{
-	  location_chain lc;
-
-	  gcc_assert (new_var->n_var_parts == 1);
-	  for (lc = new_var->var_part[0].loc_chain; lc; lc = lc->next)
-	    add_value_chains (new_var->dv, lc->loc);
-	}
       for (i = 0; i < new_var->n_var_parts; i++)
 	new_var->var_part[i].cur_loc = NULL;
       variable_was_changed (new_var, NULL);
@@ -8111,7 +8577,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		{
 		  XEXP (XEXP (*p, 0), 1)
 		    = vt_expand_loc (XEXP (XEXP (*p, 0), 1),
-				     shared_hash_htab (set->vars), true);
+				     shared_hash_htab (set->vars));
 		  /* If expansion is successful, keep it in the list.  */
 		  if (XEXP (XEXP (*p, 0), 1))
 		    p = &XEXP (*p, 1);
@@ -8412,15 +8878,9 @@ vt_emit_notes (void)
   emit_notes = true;
 
   if (MAY_HAVE_DEBUG_INSNS)
-    {
-      unsigned int i;
-      rtx val;
-
-      FOR_EACH_VEC_ELT (rtx, preserved_values, i, val)
-	add_cselib_value_chains (dv_from_value (val));
-      changed_variables_stack = VEC_alloc (variable, heap, 40);
-      changed_values_stack = VEC_alloc (rtx, heap, 40);
-    }
+    dropped_values = htab_create (cselib_get_next_uid () * 2,
+				  variable_htab_hash, variable_htab_eq,
+				  variable_htab_free);
 
   dataflow_set_init (&cur);
 
@@ -8441,23 +8901,11 @@ vt_emit_notes (void)
   htab_traverse (shared_hash_htab (cur.vars),
 		 emit_notes_for_differences_1,
 		 shared_hash_htab (empty_shared_hash));
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      unsigned int i;
-      rtx val;
-
-      FOR_EACH_VEC_ELT (rtx, preserved_values, i, val)
-	remove_cselib_value_chains (dv_from_value (val));
-      gcc_assert (htab_elements (value_chains) == 0);
-    }
 #endif
   dataflow_set_destroy (&cur);
 
   if (MAY_HAVE_DEBUG_INSNS)
-    {
-      VEC_free (variable, heap, changed_variables_stack);
-      VEC_free (rtx, heap, changed_values_stack);
-    }
+    htab_delete (dropped_values);
 
   emit_notes = false;
 }
@@ -8489,36 +8937,27 @@ vt_get_decl_and_offset (rtx rtl, tree *declp, HOST_WIDE_INT *offsetp)
   return false;
 }
 
-/* Helper function for vt_add_function_parameter.  RTL is
-   the expression and VAL corresponding cselib_val pointer
-   for which ENTRY_VALUE should be created.  */
+/* Mark the value for the ENTRY_VALUE of RTL as equivalent to EQVAL in
+   OUT.  */
 
 static void
-create_entry_value (rtx rtl, cselib_val *val)
+create_entry_value (dataflow_set *out, rtx eqval, rtx rtl)
 {
-  cselib_val *val2;
-  struct elt_loc_list *el;
-  el = (struct elt_loc_list *) ggc_alloc_cleared_atomic (sizeof (*el));
-  el->loc = gen_rtx_ENTRY_VALUE (GET_MODE (rtl));
-  ENTRY_VALUE_EXP (el->loc) = rtl;
-  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (rtl), true,
-				  VOIDmode, get_insns ());
-  el->next = val->locs;
-  el->setting_insn = get_insns ();
-  val->locs = el;
-  if (val2
-      && val2 != val
-      && val2->locs
-      && rtx_equal_p (val2->locs->loc, el->loc))
-    {
-      struct elt_loc_list *el2;
+  rtx ev = gen_rtx_ENTRY_VALUE (GET_MODE (rtl));
+  cselib_val *val;
 
-      preserve_value (val2);
-      el2 = (struct elt_loc_list *) ggc_alloc_cleared_atomic (sizeof (*el2));
-      el2->next = val2->locs;
-      el2->loc = val->val_rtx;
-      el2->setting_insn = get_insns ();
-      val2->locs = el2;
+  ENTRY_VALUE_EXP (ev) = rtl;
+
+  val = cselib_lookup_from_insn (ev, GET_MODE (ev), true,
+				 VOIDmode, get_insns ());
+
+  if (val->val_rtx != eqval)
+    {
+      preserve_value (val);
+      set_variable_part (out, val->val_rtx, dv_from_value (eqval), 0,
+			 VAR_INIT_STATUS_INITIALIZED, NULL_RTX, INSERT);
+      set_variable_part (out, eqval, dv_from_value (val->val_rtx), 0,
+			 VAR_INIT_STATUS_INITIALIZED, NULL_RTX, INSERT);
     }
 }
 
@@ -8678,20 +9117,22 @@ vt_add_function_parameter (tree parm)
 			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
       if (dv_is_value_p (dv))
 	{
-	  cselib_val *val = CSELIB_VAL_PTR (dv_as_value (dv));
-	  create_entry_value (incoming, val);
+	  create_entry_value (out, dv_as_value (dv), incoming);
 	  if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE
 	      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (parm))))
 	    {
 	      enum machine_mode indmode
 		= TYPE_MODE (TREE_TYPE (TREE_TYPE (parm)));
 	      rtx mem = gen_rtx_MEM (indmode, incoming);
-	      val = cselib_lookup_from_insn (mem, indmode, true,
-					     VOIDmode, get_insns ());
+	      cselib_val *val = cselib_lookup_from_insn (mem, indmode, true,
+							 VOIDmode,
+							 get_insns ());
 	      if (val)
 		{
 		  preserve_value (val);
-		  create_entry_value (mem, val);
+		  set_variable_part (out, mem, dv_from_value (val->val_rtx), 0,
+				     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
+		  create_entry_value (out, val->val_rtx, mem);
 		}
 	    }
 	}
@@ -8753,23 +9194,6 @@ fp_setter (rtx insn)
 	  return true;
     }
   return false;
-}
-
-/* Gather all registers used for passing arguments to other functions
-   called from the current routine.  */
-
-static void
-note_register_arguments (rtx insn)
-{
-  rtx link, x;
-
-  for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-    if (GET_CODE (XEXP (link, 0)) == USE)
-      {
-	x = XEXP (XEXP (link, 0), 0);
-	if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
-	  SET_HARD_REG_BIT (argument_reg_set, REGNO (x));
-      }
 }
 
 /* Initialize cfa_base_rtx, create a preserved VALUE for it and
@@ -8843,14 +9267,6 @@ vt_initialize (void)
 		   variable_htab_free);
   changed_variables = htab_create (10, variable_htab_hash, variable_htab_eq,
 				   variable_htab_free);
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      value_chain_pool = create_alloc_pool ("value_chain_def pool",
-					    sizeof (struct value_chain_def),
-					    1024);
-      value_chains = htab_create (32, value_chain_htab_hash,
-				  value_chain_htab_eq, NULL);
-    }
 
   /* Init the IN and OUT sets.  */
   FOR_ALL_BB (bb)
@@ -8875,8 +9291,6 @@ vt_initialize (void)
       scratch_regs = NULL;
       valvar_pool = NULL;
     }
-
-  CLEAR_HARD_REG_SET (argument_reg_set);
 
   /* In order to factor out the adjustments made to the stack pointer or to
      the hard frame pointer and thus be able to use DW_OP_fbreg operations
@@ -8960,14 +9374,6 @@ vt_initialize (void)
 	  if (elim == hard_frame_pointer_rtx)
 	    vt_init_cfa_base ();
 	}
-    }
-
-  if (frame_pointer_needed)
-    {
-      rtx insn;
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (CALL_P (insn))
-	  note_register_arguments (insn);
     }
 
   hard_frame_pointer_adjustment = -1;
@@ -9155,8 +9561,6 @@ vt_finalize (void)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
-      htab_delete (value_chains);
-      free_alloc_pool (value_chain_pool);
       free_alloc_pool (valvar_pool);
       VEC_free (rtx, heap, preserved_values);
       cselib_finish ();
@@ -9164,7 +9568,9 @@ vt_finalize (void)
       scratch_regs = NULL;
     }
 
+#ifdef HAVE_window_save
   VEC_free (parm_reg_t, gc, windowed_parm_regs);
+#endif
 
   if (vui_vec)
     XDELETEVEC (vui_vec);

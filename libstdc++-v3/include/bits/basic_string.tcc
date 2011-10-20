@@ -80,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		   input_iterator_tag)
       {
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 #endif
@@ -126,7 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		   forward_iterator_tag)
       {
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 #endif
@@ -154,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     _S_construct(size_type __n, _CharT __c, const _Alloc& __a)
     {
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       if (__n == 0 && __a == _Alloc())
 	return _S_empty_rep()._M_refdata();
 #endif
@@ -456,7 +456,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     _M_leak_hard()
     {
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       if (_M_rep() == &_S_empty_rep())
 	return;
 #endif

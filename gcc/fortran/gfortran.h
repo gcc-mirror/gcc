@@ -610,8 +610,8 @@ iso_fortran_env_symbol;
 #undef NAMED_DERIVED_TYPE
 
 #define NAMED_INTCST(a,b,c,d) a,
-#define NAMED_REALCST(a,b,c) a,
-#define NAMED_CMPXCST(a,b,c) a,
+#define NAMED_REALCST(a,b,c,d) a,
+#define NAMED_CMPXCST(a,b,c,d) a,
 #define NAMED_LOGCST(a,b,c) a,
 #define NAMED_CHARKNDCST(a,b,c) a,
 #define NAMED_CHARCST(a,b,c) a,
@@ -2581,8 +2581,8 @@ gfc_symtree* gfc_find_symtree_in_proc (const char *, gfc_namespace *);
 int gfc_find_symbol (const char *, gfc_namespace *, int, gfc_symbol **);
 int gfc_find_sym_tree (const char *, gfc_namespace *, int, gfc_symtree **);
 int gfc_get_symbol (const char *, gfc_namespace *, gfc_symbol **);
-gfc_try verify_c_interop (gfc_typespec *);
-gfc_try verify_c_interop_param (gfc_symbol *);
+gfc_try gfc_verify_c_interop (gfc_typespec *);
+gfc_try gfc_verify_c_interop_param (gfc_symbol *);
 gfc_try verify_bind_c_sym (gfc_symbol *, gfc_typespec *, int, gfc_common_head *);
 gfc_try verify_bind_c_derived_type (gfc_symbol *);
 gfc_try verify_com_block_vars_c_interop (gfc_common_head *);

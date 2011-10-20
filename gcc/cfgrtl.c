@@ -1273,7 +1273,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  gcc_unreachable ();
 #endif
 	}
-      JUMP_LABEL (BB_END (jump_block)) = jump_label;
+      set_return_jump_label (BB_END (jump_block));
     }
   else
     {

@@ -253,7 +253,7 @@ extern diagnostic_context *global_dc;
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *, int);
 extern void diagnostic_finish (diagnostic_context *);
-extern void diagnostic_report_current_module (diagnostic_context *);
+extern void diagnostic_report_current_module (diagnostic_context *, location_t);
 
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,

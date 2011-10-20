@@ -583,22 +583,6 @@ enum reg_class
 /* See REGNO_OK_FOR_BASE_P.  */
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
-/* It seems like gcc (2.7.2 and 2.9x of 2000-03-22) may send "NO_REGS" as
-   the class for a constant (testcase: __Mul in arit.c).  To avoid forcing
-   out a constant into the constant pool, we will trap this case and
-   return something a bit more sane.  FIXME: Check if this is a bug.
-   Beware that we must not "override" classes that can be specified as
-   constraint letters, or else asm operands using them will fail when
-   they need to be reloaded.  FIXME: Investigate whether that constitutes
-   a bug.  */
-#define PREFERRED_RELOAD_CLASS(X, CLASS)	\
- ((CLASS) != ACR_REGS				\
-  && (CLASS) != MOF_REGS			\
-  && (CLASS) != SRP_REGS			\
-  && (CLASS) != CC0_REGS			\
-  && (CLASS) != SPECIAL_REGS			\
-  ? GENERAL_REGS : (CLASS))
-
 /* We can't move special registers to and from memory in smaller than
    word_mode.  We also can't move between special registers.  Luckily,
    -1, as returned by true_regnum for non-sub/registers, is valid as a
@@ -1096,9 +1080,6 @@ enum cris_pic_symbol_type
 
 
 /* Node: Data Output */
-
-#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
-  do { if (!cris_output_addr_const_extra (STREAM, X)) goto FAIL; } while (0)
 
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR) (C) == '@'
 

@@ -703,9 +703,11 @@ varpool_create_variable_alias (tree alias, tree decl)
   gcc_assert (TREE_CODE (alias) == VAR_DECL);
   alias_node = varpool_node (alias);
   alias_node->alias = 1;
-  alias_node->finalized = 1;
+  if (!DECL_EXTERNAL (alias))
+    alias_node->finalized = 1;
   alias_node->alias_of = decl;
-  if (decide_is_variable_needed (alias_node, alias)
+  if ((!DECL_EXTERNAL (alias)
+       && decide_is_variable_needed (alias_node, alias))
       || alias_node->needed)
     varpool_mark_needed_node (alias_node);
   return alias_node;

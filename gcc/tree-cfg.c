@@ -3510,6 +3510,44 @@ verify_gimple_assign_binary (gimple stmt)
 	return false;
       }
 
+    case WIDEN_LSHIFT_EXPR:
+      {
+        if (!INTEGRAL_TYPE_P (lhs_type)
+            || !INTEGRAL_TYPE_P (rhs1_type)
+            || TREE_CODE (rhs2) != INTEGER_CST
+            || (2 * TYPE_PRECISION (rhs1_type) > TYPE_PRECISION (lhs_type)))
+          {
+            error ("type mismatch in widening vector shift expression");
+            debug_generic_expr (lhs_type);
+            debug_generic_expr (rhs1_type);
+            debug_generic_expr (rhs2_type);
+            return true;
+          }
+
+        return false;
+      }
+
+    case VEC_WIDEN_LSHIFT_HI_EXPR:
+    case VEC_WIDEN_LSHIFT_LO_EXPR:
+      {
+        if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+            || TREE_CODE (lhs_type) != VECTOR_TYPE
+            || !INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+            || !INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))
+            || TREE_CODE (rhs2) != INTEGER_CST
+            || (2 * TYPE_PRECISION (TREE_TYPE (rhs1_type))
+                > TYPE_PRECISION (TREE_TYPE (lhs_type))))
+          {
+            error ("type mismatch in widening vector shift expression");
+            debug_generic_expr (lhs_type);
+            debug_generic_expr (rhs1_type);
+            debug_generic_expr (rhs2_type);
+            return true;
+          }
+
+        return false;
+      }
+
     case PLUS_EXPR:
     case MINUS_EXPR:
       {
@@ -3726,6 +3764,59 @@ verify_gimple_assign_ternary (gimple stmt)
 	  return true;
 	}
       break;
+
+    case VEC_PERM_EXPR:
+      if (!useless_type_conversion_p (lhs_type, rhs1_type)
+	  || !useless_type_conversion_p (lhs_type, rhs2_type))
+	{
+	  error ("type mismatch in vector permute expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs2_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs3_type) != VECTOR_TYPE)
+	{
+	  error ("vector types expected in vector permute expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      if (TYPE_VECTOR_SUBPARTS (rhs1_type) != TYPE_VECTOR_SUBPARTS (rhs2_type)
+	  || TYPE_VECTOR_SUBPARTS (rhs2_type)
+	     != TYPE_VECTOR_SUBPARTS (rhs3_type)
+	  || TYPE_VECTOR_SUBPARTS (rhs3_type)
+	     != TYPE_VECTOR_SUBPARTS (lhs_type))
+	{
+	  error ("vectors with different element number found "
+		 "in vector permute expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      if (TREE_CODE (TREE_TYPE (rhs3_type)) != INTEGER_TYPE
+	  || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs3_type)))
+	     != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1_type))))
+	{
+	  error ("invalid mask type in vector permute expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      return false;
 
     case DOT_PROD_EXPR:
     case REALIGN_LOAD_EXPR:

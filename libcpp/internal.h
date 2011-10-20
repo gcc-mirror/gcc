@@ -1,6 +1,6 @@
 /* Part of CPP library.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
-   2008, 2009, 2010 Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -67,7 +67,8 @@ struct cset_converter
 
 #define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
     const struct line_maps *line_table = PFILE->line_table; \
-    const struct line_map *map = &line_table->maps[line_table->used-1]; \
+    const struct line_map *map = \
+      LINEMAPS_LAST_ORDINARY_MAP (line_table); \
     linenum_type line = SOURCE_LINE (map, line_table->highest_line); \
     linemap_line_start (PFILE->line_table, line + 1, COLS_HINT); \
   } while (0)
@@ -138,6 +139,40 @@ struct tokenrun
 #define CUR(c) ((c)->u.trad.cur)
 #define RLIMIT(c) ((c)->u.trad.rlimit)
 
+/* This describes some additional data that is added to the macro
+   token context of type cpp_context, when -ftrack-macro-expansion is
+   on.  */
+typedef struct
+{
+  /* The node of the macro we are referring to.  */
+  cpp_hashnode *macro_node;
+  /* This buffer contains an array of virtual locations.  The virtual
+     location at index 0 is the virtual location of the token at index
+     0 in the current instance of cpp_context; similarly for all the
+     other virtual locations.  */
+  source_location *virt_locs;
+  /* This is a pointer to the current virtual location.  This is used
+     to iterate over the virtual locations while we iterate over the
+     tokens they belong to.  */
+  source_location *cur_virt_loc;
+} macro_context;
+
+/* The kind of tokens carried by a cpp_context.  */
+enum context_tokens_kind {
+  /* This is the value of cpp_context::tokens_kind if u.iso.first
+     contains an instance of cpp_token **.  */
+  TOKENS_KIND_INDIRECT,
+  /* This is the value of cpp_context::tokens_kind if u.iso.first
+     contains an instance of cpp_token *.  */
+  TOKENS_KIND_DIRECT,
+  /* This is the value of cpp_context::tokens_kind when the token
+     context contains tokens resulting from macro expansion.  In that
+     case struct cpp_context::macro points to an instance of struct
+     macro_context.  This is used only when the
+     -ftrack-macro-expansion flag is on.  */
+  TOKENS_KIND_EXTENDED
+};
+
 typedef struct cpp_context cpp_context;
 struct cpp_context
 {
@@ -167,11 +202,24 @@ struct cpp_context
      When the context is popped, the buffer is released.  */
   _cpp_buff *buff;
 
-  /* For a macro context, the macro node, otherwise NULL.  */
-  cpp_hashnode *macro;
+  /* If tokens_kind is TOKEN_KIND_EXTENDED, then (as we thus are in a
+     macro context) this is a pointer to an instance of macro_context.
+     Otherwise if tokens_kind is *not* TOKEN_KIND_EXTENDED, then, if
+     we are in a macro context, this is a pointer to an instance of
+     cpp_hashnode, representing the name of the macro this context is
+     for.  If we are not in a macro context, then this is just NULL.
+     Note that when tokens_kind is TOKEN_KIND_EXTENDED, the memory
+     used by the instance of macro_context pointed to by this member
+     is de-allocated upon de-allocation of the instance of struct
+     cpp_context.  */
+  union
+  {
+    macro_context *mc;
+    cpp_hashnode *macro;
+  } c;
 
-  /* True if utoken element is token, else ptoken.  */
-  bool direct_p;
+  /* This determines the type of tokens held by this context.  */
+  enum context_tokens_kind tokens_kind;
 };
 
 struct lexer_state
@@ -604,6 +652,7 @@ extern cpp_token *_cpp_lex_direct (cpp_reader *);
 extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
 extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
+extern int _cpp_remaining_tokens_num_in_context (cpp_reader *);
 
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
@@ -738,6 +787,76 @@ ufputs (const unsigned char *s, FILE *f)
 {
   return fputs ((const char *)s, f);
 }
+
+  /* In line-map.c.  */
+
+/* Create a macro map.  A macro map encodes source locations of tokens
+   that are part of a macro replacement-list, at a macro expansion
+   point. See the extensive comments of struct line_map and struct
+   line_map_macro, in line-map.h.
+
+   This map shall be created when the macro is expanded. The map
+   encodes the source location of the expansion point of the macro as
+   well as the "original" source location of each token that is part
+   of the macro replacement-list. If a macro is defined but never
+   expanded, it has no macro map.  SET is the set of maps the macro
+   map should be part of.  MACRO_NODE is the macro which the new macro
+   map should encode source locations for.  EXPANSION is the location
+   of the expansion point of MACRO. For function-like macros
+   invocations, it's best to make it point to the closing parenthesis
+   of the macro, rather than the the location of the first character
+   of the macro.  NUM_TOKENS is the number of tokens that are part of
+   the replacement-list of MACRO.  */
+const struct line_map *linemap_enter_macro (struct line_maps *,
+					    struct cpp_hashnode*,
+					    source_location,
+					    unsigned int);
+
+/* Create and return a virtual location for a token that is part of a
+   macro expansion-list at a macro expansion point.  See the comment
+   inside struct line_map_macro to see what an expansion-list exactly
+   is.
+
+   A call to this function must come after a call to
+   linemap_enter_macro.
+
+   MAP is the map into which the source location is created.  TOKEN_NO
+   is the index of the token in the macro replacement-list, starting
+   at number 0.
+
+   ORIG_LOC is the location of the token outside of this macro
+   expansion.  If the token comes originally from the macro
+   definition, it is the locus in the macro definition; otherwise it
+   is a location in the context of the caller of this macro expansion
+   (which is a virtual location or a source location if the caller is
+   itself a macro expansion or not).
+
+   MACRO_DEFINITION_LOC is the location in the macro definition,
+   either of the token itself or of a macro parameter that it
+   replaces.  */
+source_location linemap_add_macro_token (const struct line_map *,
+					 unsigned int,
+					 source_location,
+					 source_location);
+
+/* Return the source line number corresponding to source location
+   LOCATION.  SET is the line map set LOCATION comes from.  If
+   LOCATION is the location of token that is part of the
+   expansion-list of a macro expansion return the line number of the
+   macro expansion point.  */
+int linemap_get_expansion_line (struct line_maps *,
+				source_location);
+
+/* Return the path of the file corresponding to source code location
+   LOCATION.
+
+   If LOCATION is the location of a token that is part of the
+   replacement-list of a macro expansion return the file path of the
+   macro expansion point.
+
+   SET is the line map set LOCATION comes from.  */
+const char* linemap_get_expansion_filename (struct line_maps *,
+					    source_location);
 
 #ifdef __cplusplus
 }

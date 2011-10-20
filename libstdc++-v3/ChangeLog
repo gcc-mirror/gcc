@@ -1,7 +1,201 @@
+2011-10-19  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/tr2/bool_set (bool_set): New.
+	* include/tr2/bool_set.tcc: New.
+	* include/tr2/dynamic_bitset (dynamic_bitset): New.
+	* include/tr2/ratio (kibi, mebi, gibi, tebi, pebi, exbi): New.
+	* include/Makefile.am: Add files.
+	* include/Makefile.in: Regenerate.
+
+2011-10-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add tr2 files.
+	* testsuite/tr2/headers/all.cc: New.
+	* testsuite/tr2/headers/using_namespace_std_tr2.cc: New.
+
+	* include/tr2/type_traits: Tweak.
+
+2011-10-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50500
+	* include/bits/shared_ptr.h: Default copy ctor and assignment.
+	* testsuite/util/testsuite_allocator.h: Define copy assignment.
+	* testsuite/util/testsuite_rvalref.h: Default copy assignment.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Remove note tags.
+
+2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
+
+	* include/tr2/type_traits (bases, direct_bases, typelist): New.
+
+2011-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libstdc++-v3/include/Makefile.am: Add tr2 directory and includes.
+	* libstdc++-v3/include/Makefile.in: Regenerate.
+
+	* scripts/create_testsuite_files: Search tr2 directory.
+	* testsuite/libstdc++-dg/conformance.exp: Same.
+
+	* testsuite/tr2/bases/requirements/explicit_instantiation.cc: New.
+	* testsuite/tr2/bases/requirements/typedefs.cc: New.
+	* testsuite/tr2/bases/value.cc: New.
+	* testsuite/tr2/direct_bases/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/tr2/direct_bases/requirements/typedefs.cc: New.
+	* testsuite/tr2/direct_bases/value.cc: New.
+
+2011-10-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/50715
+	* config/abi/pre/gnu.ver (CXXABI_1.3.6): Remove duplicate
+	__cxa_get_exception_ptr.
+
+2011-10-14  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/performance/23_containers/insert_erase/41975.cc: New.
+
+2011-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/22_locale/codecvt_byname/50714.cc: Fix mychar.
+
+2011-10-14  Jonathan Yong  <jon_y@users.sourceforge.net>
+
+	* configure.host: Use config/os/mingw32-w64 instead of
+	config/os/mingw32 if vendor key is "w64".
+	* config/os/mingw32-w64: Duplicate from config/os/mingw32.
+	* config/os/mingw32-w64/os_defines.h: Enable
+	_GLIBCXX_FULLY_DYNAMIC_STRING if undefined.
+	* acinclude.m4: Set fully-dynamic-string to 1 when enabled,
+	0 when disabled or undefined if unset by user.
+	* include/bits/basic_string.h: Check if
+	_GLIBCXX_FULLY_DYNAMIC_STRING is set to 0 instead of undefined.
+	include/bits/basic_string.tcc: Likewise.
+	* configure: Regenerated.
+	* config.h.in: Likewise.
+
+2011-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50714
+	* include/bits/codecvt.h (codecvt<>::codecvt(size_t)): Initialize
+	_M_c_locale_codecvt member.
+	* testsuite/22_locale/codecvt_byname/50714.cc: New.
+
+2011-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50594
+	* libsupc++/new (operator new, operator delete): Decorate with
+	__attribute__((__externally_visible__)).
+	* include/bits/c++config: Add _GLIBCXX_THROW.
+	* libsupc++/del_op.cc: Adjust.
+	* libsupc++/del_opv.cc: Likewise.
+	* libsupc++/del_opnt.cc: Likewise.
+	* libsupc++/del_opvnt.cc: Likewise.
+	* libsupc++/new_op.cc: Likewise.
+	* libsupc++/new_opv.cc: Likewise.
+	* libsupc++/new_opnt.cc: Likewise.
+	* libsupc++/new_opvnt.cc: Likewise.
+	* testsuite/18_support/50594.cc: New.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error
+	line number.
+
+2011-10-11  Emil Wojak  <emil@wojak.eu>
+
+	PR c++/50661
+	* include/bits/stl_algobase.h (equal): Compare arrays of pointers
+	too with memcmp.
+
+2011-10-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/49818
+	* config/abi/pre/gnu.ver (CXXABI_1.3.6): Add symbols.
+	* testsuite/util/testsuite_abi.cc: Same.
+	* libsupc++/unwind-cxx.h: Move required eh API...
+	* libsupc++/cxxabi.h: ... to here. Add required forward declarations.
+	Use _GLIBCXX_NOTHROW.
+	* libsupc++/pure.cc (__cxa_deleted_virtual): Add.
+	* libsupc++/eh_alloc.cc: Use _GLIBCXX_NOTHROW.
+	* libsupc++/eh_catch.cc: Same.
+	* libsupc++/eh_globals.cc: Same.
+	* libsupc++/eh_type.cc: Same.
+
+2011-10-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/util/testsuite_allocator.h (uneq_allocator): Add
+	propagate_on_container_swap typedef for C++0x testing.
+
+2011-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Tidy dg- directives,
+	for C++0x testing too.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/
+	base_classes.cc: Adjust for C++0x testing.
+	* testsuite/ext/codecvt/char-1.cc: Avoid warnings in C++0x mode.
+	* testsuite/ext/codecvt/char-2.cc: Likewise.
+	* testsuite/ext/codecvt/wchar_t.cc: Likewise.
+
+2011-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/pod_char_traits.h: Avoid warnings in C++0x mode
+	when int_type is unsigned.
+
+2011-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49561
+	* include/bits/stl_list.h (_List_base<>::_List_impl::_M_size):
+	Add in C++0x mode.
+	(_List_base<>::_List_impl, _List_base<>::_M_get_node,
+	_List_base<>::_M_put_node, _List_base<>::_List_base(_List_base&&),
+	list<>::size, list<>::swap, list<>::splice): Use it.
+	(operator==(const list<>&, const list<>&)): Rewrite in C++0x mode.
+	* include/bits/list.tcc (list<>::erase): Likewise.
+	(list<>::merge): Adjust in C++0x mode.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2011-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/bind/48698.cc (g): Fix return type, avoid -Wall
+	warning.
+
+2011-10-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/alloc_traits.h (__alloc_traits::max_size): Define.
+	(__alloc_traits::rebind): Define.
+	* include/bits/stl_vector.h: Use them.
+	* testsuite/util/testsuite_allocator.h (SimpleAllocator): Define.
+	* testsuite/23_containers/vector/allocator/minimal.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2011-10-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/pointer_traits/pointer_to.cc: Define equality
+	operator and use.
+
+2011-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable.h (_Hashtable<>::insert(value_type&&),
+	insert(const_iterator, value_type&&)): Don't define here...
+	* include/bits/unordered_set.h (__unordered_set<>,
+	__unordered_multiset<>): ... define here instead.
+
 2011-09-29  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/util/testsuite_tr1.h (test_property): Avoid
-	ambguity.
+	ambiguity.
 
 2011-10-01  François Dumont  <fdumont@gcc.gnu.org>
 
@@ -45,7 +239,7 @@
 	* testsuite/23_containers/deque/modifiers/erase/3.cc: Adjust.
 
 2011-09-25  Benjamin Kosnik  <bkoz@redhat.com>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/48698
 	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Set libtool_VERSION here.

@@ -1745,6 +1745,11 @@ update_target_availability (expr_t to, expr_t from, insn_t split_point)
           else
             EXPR_TARGET_AVAILABLE (to) = -1;
         }
+      else if (EXPR_TARGET_AVAILABLE (from) == 0
+	       && EXPR_LHS (from)
+	       && REG_P (EXPR_LHS (from))
+	       && REGNO (EXPR_LHS (to)) != REGNO (EXPR_LHS (from)))
+	EXPR_TARGET_AVAILABLE (to) = -1;
       else
         EXPR_TARGET_AVAILABLE (to) &= EXPR_TARGET_AVAILABLE (from);
     }

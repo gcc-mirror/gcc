@@ -256,7 +256,11 @@ namespace __gnu_test
       typedef Tp&                                 reference;
       typedef const Tp&                           const_reference;
       typedef Tp                                  value_type;
-      
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      typedef std::true_type                      propagate_on_container_swap;
+#endif
+
       template<typename Tp1>
         struct rebind
 	{ typedef uneq_allocator<Tp1> other; };
@@ -386,6 +390,8 @@ namespace __gnu_test
       typedef std::integral_constant<bool, Propagate> trait_type;
 
     public:
+      // default allocator_traits::rebind_alloc would select
+      // uneq_allocator::rebind so we must define rebind here
       template<typename Up>
 	struct rebind { typedef propagating_allocator<Up, Propagate> other; };
 
@@ -402,6 +408,14 @@ namespace __gnu_test
       propagating_allocator() noexcept = default;
 
       propagating_allocator(const propagating_allocator&) noexcept = default;
+
+      propagating_allocator&
+      operator=(const propagating_allocator& a) noexcept
+	{
+	  static_assert(Propagate, "assigning propagating_allocator<T, true>");
+	  propagating_allocator(a).swap_base(*this);
+	  return *this;
+	}
 
       template<bool P2>
   	propagating_allocator&
@@ -432,6 +446,32 @@ namespace __gnu_test
       propagating_allocator select_on_container_copy_construction() const
       { return Propagate ? *this : propagating_allocator(); }
     };
+
+  // Class template supporting the minimal interface that satisfies the
+  // Allocator requirements, from example in [allocator.requirements]
+  template <class Tp>
+    struct SimpleAllocator
+    {
+      typedef Tp value_type;
+
+      SimpleAllocator() { }
+
+      template <class T>
+        SimpleAllocator(const SimpleAllocator<T>& other) { }
+
+      Tp *allocate(std::size_t n)
+      { return std::allocator<Tp>().allocate(n); }
+
+      void deallocate(Tp *p, std::size_t n)
+      { std::allocator<Tp>().deallocate(p, n); }
+    };
+
+  template <class T, class U>
+    bool operator==(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
+    { return true; }
+  template <class T, class U>
+    bool operator!=(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
+    { return false; }
 
 #endif
 

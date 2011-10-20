@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O -mvsx -mno-altivec" } */
 
 /* { dg-warning "-mvsx and -mno-altivec are incompatible" "" { target *-*-* } 1 } */

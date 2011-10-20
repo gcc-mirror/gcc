@@ -678,7 +678,7 @@ package body Exp_Attr is
 
       case Id is
 
-         --  Attributes related to Ada2012 iterators (placeholder ???)
+         --  Attributes related to Ada 2012 iterators (placeholder ???)
 
          when Attribute_Constant_Indexing    => null;
          when Attribute_Default_Iterator     => null;

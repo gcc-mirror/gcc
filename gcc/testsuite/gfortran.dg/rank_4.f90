@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=f2008tr -fdump-tree-original" }
+! { dg-options "-std=f2008ts -fdump-tree-original" }
 !
 ! PR fortran/48820
 !

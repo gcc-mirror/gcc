@@ -706,11 +706,9 @@ package body Sem_Ch3 is
      (Related_Nod : Node_Id;
       N           : Node_Id) return Entity_Id
    is
-      Loc                 : constant Source_Ptr := Sloc (Related_Nod);
       Anon_Type           : Entity_Id;
       Anon_Scope          : Entity_Id;
       Desig_Type          : Entity_Id;
-      Decl                : Entity_Id;
       Enclosing_Prot_Type : Entity_Id := Empty;
 
    begin
@@ -889,7 +887,7 @@ package body Sem_Ch3 is
       --  proper Master for the created tasks.
 
       if Nkind (Related_Nod) = N_Object_Declaration
-         and then Expander_Active
+        and then Expander_Active
       then
          if Is_Interface (Desig_Type)
            and then Is_Limited_Record (Desig_Type)
@@ -901,28 +899,9 @@ package body Sem_Ch3 is
 
          elsif Has_Task (Desig_Type)
            and then Comes_From_Source (Related_Nod)
-           and then not Restriction_Active (No_Task_Hierarchy)
          then
-            if not Has_Master_Entity (Current_Scope) then
-               Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc, Name_uMaster),
-                   Constant_Present    => True,
-                   Object_Definition   =>
-                     New_Reference_To (RTE (RE_Master_Id), Loc),
-                   Expression          =>
-                     Make_Explicit_Dereference (Loc,
-                       New_Reference_To (RTE (RE_Current_Master), Loc)));
-
-               Insert_Before (Related_Nod, Decl);
-               Analyze (Decl);
-
-               Set_Master_Id (Anon_Type, Defining_Identifier (Decl));
-               Set_Has_Master_Entity (Current_Scope);
-            else
-               Build_Master_Renaming (Related_Nod, Anon_Type);
-            end if;
+            Build_Master_Entity (Defining_Identifier (Related_Nod));
+            Build_Master_Renaming (Anon_Type);
          end if;
       end if;
 
@@ -9026,7 +9005,7 @@ package body Sem_Ch3 is
          --  The partial view of T may have been a private extension, for
          --  which inherited functions dispatching on result are abstract.
          --  If the full view is a null extension, there is no need for
-         --  overriding in Ada2005, but wrappers need to be built for them
+         --  overriding in Ada 2005, but wrappers need to be built for them
          --  (see exp_ch3, Build_Controlling_Function_Wrappers).
 
          if Is_Null_Extension (T)
@@ -16909,6 +16888,36 @@ package body Sem_Ch3 is
          when N_Attribute_Reference =>
             return Attribute_Name (Original_Node (Exp)) = Name_Input;
 
+         --  For a conditional expression, all dependent expressions must be
+         --  legal constructs.
+
+         when N_Conditional_Expression =>
+            declare
+               Then_Expr : constant Node_Id :=
+                             Next (First (Expressions (Original_Node (Exp))));
+               Else_Expr : constant Node_Id := Next (Then_Expr);
+            begin
+               return OK_For_Limited_Init_In_05 (Typ, Then_Expr)
+                 and then OK_For_Limited_Init_In_05 (Typ, Else_Expr);
+            end;
+
+         when N_Case_Expression =>
+            declare
+               Alt : Node_Id;
+
+            begin
+               Alt := First (Alternatives (Original_Node (Exp)));
+               while Present (Alt) loop
+                  if not OK_For_Limited_Init_In_05 (Typ, Expression (Alt)) then
+                     return False;
+                  end if;
+
+                  Next (Alt);
+               end loop;
+
+               return True;
+            end;
+
          when others =>
             return False;
       end case;
@@ -18287,7 +18296,7 @@ package body Sem_Ch3 is
 
                --  Look up tree to find an appropriate insertion point. We
                --  can't just use insert_actions because later processing
-               --  depends on the insertion node. Prior to Ada2012 the
+               --  depends on the insertion node. Prior to Ada 2012 the
                --  insertion point could only be a declaration or a loop, but
                --  quantified expressions can appear within any context in an
                --  expression, and the insertion point can be any statement,

@@ -414,13 +414,11 @@ package Ada.Containers.Indefinite_Hashed_Sets is
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
-         Position  : Cursor)
-      return Reference_Type;
+         Position  : Cursor) return Reference_Type;
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
-         Key  : Key_Type)
-      return Reference_Type;
+         Key       : Key_Type) return Reference_Type;
 
    private
       type Reference_Type (Element : not null access Element_Type)
@@ -428,7 +426,6 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    end Generic_Keys;
 
 private
-
    pragma Inline (Next);
 
    type Node_Type;

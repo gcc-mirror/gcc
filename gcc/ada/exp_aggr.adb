@@ -3398,6 +3398,15 @@ package body Exp_Aggr is
             begin
                Assoc := First (Component_Associations (N));
                while Present (Assoc) loop
+
+                  --  If this is a box association, flattening is in general
+                  --  not possible because at this point we cannot tell if the
+                  --  default is static or even exists.
+
+                  if Box_Present (Assoc) then
+                     return False;
+                  end if;
+
                   Choice := First (Choices (Assoc));
 
                   while Present (Choice) loop
@@ -3506,7 +3515,7 @@ package body Exp_Aggr is
                            --  active, if this is a preelaborable unit or a
                            --  predefined unit. This ensures that predefined
                            --  units get the same level of constant folding in
-                           --  Ada 95 and Ada 05, where their categorization
+                           --  Ada 95 and Ada 2005, where their categorization
                            --  has changed.
 
                            declare
@@ -4147,6 +4156,12 @@ package body Exp_Aggr is
                      if not Safe_Aggregate (Expression (Expr)) then
                         return False;
                      end if;
+
+                  --  If association has a box, no way to determine yet
+                  --  whether default can be assigned in place.
+
+                  elsif Box_Present (Expr) then
+                     return False;
 
                   elsif not Safe_Component (Expression (Expr)) then
                      return False;

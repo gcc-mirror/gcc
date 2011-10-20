@@ -499,9 +499,7 @@ def_builtin_1 (enum built_in_function fncode, const char *name,
     add_builtin_function (libname, libtype, fncode, fnclass,
 			  NULL, fnattrs);
 
-  built_in_decls[(int) fncode] = decl;
-  if (implicit_p)
-    implicit_built_in_decls[(int) fncode] = decl;
+  set_builtin_decl (fncode, decl, implicit_p);
 }
 
 

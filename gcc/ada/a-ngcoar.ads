@@ -66,7 +66,7 @@ package Ada.Numerics.Generic_Complex_Arrays is
    function "+" (Left, Right : Complex_Vector) return Complex_Vector;
    function "-" (Left, Right : Complex_Vector) return Complex_Vector;
    function "*" (Left, Right : Complex_Vector) return Complex;
-   function "abs" (Right : Complex_Vector) return Complex;
+   function "abs" (Right : Complex_Vector) return Real'Base;
 
    --  Mixed Real_Vector and Complex_Vector arithmetic operations
 

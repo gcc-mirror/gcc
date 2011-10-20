@@ -200,6 +200,9 @@ static GTY(()) struct gnat_binding_level *current_binding_level;
 /* A chain of gnat_binding_level structures awaiting reuse.  */
 static GTY((deletable)) struct gnat_binding_level *free_binding_level;
 
+/* The context to be used for global declarations.  */
+static GTY(()) tree global_context;
+
 /* An array of global declarations.  */
 static GTY(()) VEC(tree,gc) *global_decls;
 
@@ -497,15 +500,19 @@ gnat_zaplevel (void)
   free_binding_level = level;
 }
 
-/* Records a ..._DECL node DECL as belonging to the current lexical scope
-   and uses GNAT_NODE for location information and propagating flags.  */
+/* Record DECL as belonging to the current lexical scope and use GNAT_NODE
+   for location information and flag propagation.  */
 
 void
 gnat_pushdecl (tree decl, Node_Id gnat_node)
 {
-  /* If this decl is public external or at toplevel, there is no context.  */
+  /* If DECL is public external or at top level, it has global context.  */
   if ((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || global_bindings_p ())
-    DECL_CONTEXT (decl) = 0;
+    {
+      if (!global_context)
+	global_context = build_translation_unit_decl (NULL_TREE);
+      DECL_CONTEXT (decl) = global_context;
+   }
   else
     {
       DECL_CONTEXT (decl) = current_function_decl;
@@ -518,11 +525,12 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	DECL_STATIC_CHAIN (decl) = 1;
     }
 
-  TREE_NO_WARNING (decl) = (gnat_node == Empty || Warnings_Off (gnat_node));
+  TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
   if (Present (gnat_node))
     Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (decl));
+
   add_decl_expr (decl, gnat_node);
 
   /* Put the declaration on the list.  The list of declarations is in reverse
@@ -1139,11 +1147,11 @@ compute_related_constant (tree op0, tree op1)
 static tree
 split_plus (tree in, tree *pvar)
 {
-  /* Strip NOPS in order to ease the tree traversal and maximize the
-     potential for constant or plus/minus discovery. We need to be careful
+  /* Strip conversions in order to ease the tree traversal and maximize the
+     potential for constant or plus/minus discovery.  We need to be careful
      to always return and set *pvar to bitsizetype trees, but it's worth
      the effort.  */
-  STRIP_NOPS (in);
+  in = remove_conversions (in, false);
 
   *pvar = convert (bitsizetype, in);
 
@@ -1763,7 +1771,7 @@ process_attributes (tree decl, struct attrib *attr_list)
 void
 record_global_renaming_pointer (tree decl)
 {
-  gcc_assert (DECL_RENAMED_OBJECT (decl));
+  gcc_assert (!DECL_LOOP_PARM_P (decl) && DECL_RENAMED_OBJECT (decl));
   VEC_safe_push (tree, gc, global_renaming_pointers, decl);
 }
 
@@ -1958,7 +1966,7 @@ begin_subprog_body (tree subprog_decl)
   make_decl_rtl (subprog_decl);
 }
 
-/* Finish the definition of the current subprogram BODY and finalize it.  */
+/* Finish translating the current subprogram and set its BODY.  */
 
 void
 end_subprog_body (tree body)
@@ -1982,8 +1990,14 @@ end_subprog_body (tree body)
 
   DECL_SAVED_TREE (fndecl) = body;
 
-  current_function_decl = DECL_CONTEXT (fndecl);
+  current_function_decl = decl_function_context (fndecl);
+}
 
+/* Wrap up compilation of SUBPROG_DECL, a subprogram body.  */
+
+void
+rest_of_subprog_body_compilation (tree subprog_decl)
+{
   /* We cannot track the location of errors past this point.  */
   error_gnat_node = Empty;
 
@@ -1992,15 +2006,15 @@ end_subprog_body (tree body)
     return;
 
   /* Dump functions before gimplification.  */
-  dump_function (TDI_original, fndecl);
+  dump_function (TDI_original, subprog_decl);
 
   /* ??? This special handling of nested functions is probably obsolete.  */
-  if (!DECL_CONTEXT (fndecl))
-    cgraph_finalize_function (fndecl, false);
+  if (!decl_function_context (subprog_decl))
+    cgraph_finalize_function (subprog_decl, false);
   else
     /* Register this function with cgraph just far enough to get it
        added to our parent's nested function list.  */
-    (void) cgraph_get_create_node (fndecl);
+    (void) cgraph_get_create_node (subprog_decl);
 }
 
 tree
@@ -2194,6 +2208,20 @@ gnat_types_compatible_p (tree t1, tree t2)
   return 0;
 }
 
+/* Return true if EXPR is a useless type conversion.  */
+
+bool
+gnat_useless_type_conversion (tree expr)
+{
+  if (CONVERT_EXPR_P (expr)
+      || TREE_CODE (expr) == VIEW_CONVERT_EXPR
+      || TREE_CODE (expr) == NON_LVALUE_EXPR)
+    return gnat_types_compatible_p (TREE_TYPE (expr),
+				    TREE_TYPE (TREE_OPERAND (expr, 0)));
+
+  return false;
+}
+
 /* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
 
 bool
@@ -2260,7 +2288,9 @@ max_size (tree exp, bool max_p)
       switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
-	  if (code == NON_LVALUE_EXPR)
+	  if (code == SAVE_EXPR)
+	    return exp;
+	  else if (code == NON_LVALUE_EXPR)
 	    return max_size (TREE_OPERAND (exp, 0), max_p);
 	  else
 	    return
@@ -2302,9 +2332,7 @@ max_size (tree exp, bool max_p)
 	  }
 
 	case 3:
-	  if (code == SAVE_EXPR)
-	    return exp;
-	  else if (code == COND_EXPR)
+	  if (code == COND_EXPR)
 	    return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
 				max_size (TREE_OPERAND (exp, 1), max_p),
 				max_size (TREE_OPERAND (exp, 2), max_p));
@@ -4219,6 +4247,92 @@ convert (tree type, tree expr)
       gcc_unreachable ();
     }
 }
+
+/* Create an expression whose value is that of EXPR converted to the common
+   index type, which is sizetype.  EXPR is supposed to be in the base type
+   of the GNAT index type.  Calling it is equivalent to doing
+
+     convert (sizetype, expr)
+
+   but we try to distribute the type conversion with the knowledge that EXPR
+   cannot overflow in its type.  This is a best-effort approach and we fall
+   back to the above expression as soon as difficulties are encountered.
+
+   This is necessary to overcome issues that arise when the GNAT base index
+   type and the GCC common index type (sizetype) don't have the same size,
+   which is quite frequent on 64-bit architectures.  In this case, and if
+   the GNAT base index type is signed but the iteration type of the loop has
+   been forced to unsigned, the loop scalar evolution engine cannot compute
+   a simple evolution for the general induction variables associated with the
+   array indices, because it will preserve the wrap-around semantics in the
+   unsigned type of their "inner" part.  As a result, many loop optimizations
+   are blocked.
+
+   The solution is to use a special (basic) induction variable that is at
+   least as large as sizetype, and to express the aforementioned general
+   induction variables in terms of this induction variable, eliminating
+   the problematic intermediate truncation to the GNAT base index type.
+   This is possible as long as the original expression doesn't overflow
+   and if the middle-end hasn't introduced artificial overflows in the
+   course of the various simplification it can make to the expression.  */
+
+tree
+convert_to_index_type (tree expr)
+{
+  enum tree_code code = TREE_CODE (expr);
+  tree type = TREE_TYPE (expr);
+
+  /* If the type is unsigned, overflow is allowed so we cannot be sure that
+     EXPR doesn't overflow.  Keep it simple if optimization is disabled.  */
+  if (TYPE_UNSIGNED (type) || !optimize)
+    return convert (sizetype, expr);
+
+  switch (code)
+    {
+    case VAR_DECL:
+      /* The main effect of the function: replace a loop parameter with its
+	 associated special induction variable.  */
+      if (DECL_LOOP_PARM_P (expr) && DECL_INDUCTION_VAR (expr))
+	expr = DECL_INDUCTION_VAR (expr);
+      break;
+
+    CASE_CONVERT:
+      {
+	tree otype = TREE_TYPE (TREE_OPERAND (expr, 0));
+	/* Bail out as soon as we suspect some sort of type frobbing.  */
+	if (TYPE_PRECISION (type) != TYPE_PRECISION (otype)
+	    || TYPE_UNSIGNED (type) != TYPE_UNSIGNED (otype))
+	  break;
+      }
+
+      /* ... fall through ... */
+
+    case NON_LVALUE_EXPR:
+      return fold_build1 (code, sizetype,
+			  convert_to_index_type (TREE_OPERAND (expr, 0)));
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+      return fold_build2 (code, sizetype,
+			  convert_to_index_type (TREE_OPERAND (expr, 0)),
+			  convert_to_index_type (TREE_OPERAND (expr, 1)));
+
+    case COMPOUND_EXPR:
+      return fold_build2 (code, sizetype, TREE_OPERAND (expr, 0),
+			  convert_to_index_type (TREE_OPERAND (expr, 1)));
+
+    case COND_EXPR:
+      return fold_build3 (code, sizetype, TREE_OPERAND (expr, 0),
+			  convert_to_index_type (TREE_OPERAND (expr, 1)),
+			  convert_to_index_type (TREE_OPERAND (expr, 2)));
+
+    default:
+      break;
+    }
+
+  return convert (sizetype, expr);
+}
 
 /* Remove all conversions that are done in EXP.  This includes converting
    from a padded type or to a justified modular type.  If TRUE_ADDRESS
@@ -4245,8 +4359,9 @@ remove_conversions (tree exp, bool true_address)
 	return remove_conversions (TREE_OPERAND (exp, 0), true_address);
       break;
 
-    case VIEW_CONVERT_EXPR:  case NON_LVALUE_EXPR:
     CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
       return remove_conversions (TREE_OPERAND (exp, 0), true_address);
 
     default:
@@ -5629,7 +5744,7 @@ def_builtin_1 (enum built_in_function fncode,
 
   /* Preserve an already installed decl.  It most likely was setup in advance
      (e.g. as part of the internal builtins) for specific reasons.  */
-  if (built_in_decls[(int) fncode] != NULL_TREE)
+  if (builtin_decl_explicit (fncode) != NULL_TREE)
     return;
 
   gcc_assert ((!both_p && !fallback_p)
@@ -5646,9 +5761,7 @@ def_builtin_1 (enum built_in_function fncode,
     add_builtin_function (libname, libtype, fncode, fnclass,
 			  NULL, fnattrs);
 
-  built_in_decls[(int) fncode] = decl;
-  if (implicit_p)
-    implicit_built_in_decls[(int) fncode] = decl;
+  set_builtin_decl (fncode, decl, implicit_p);
 }
 
 static int flag_isoc94 = 0;

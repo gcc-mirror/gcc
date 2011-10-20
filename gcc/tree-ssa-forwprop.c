@@ -465,16 +465,15 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
   gimple stmt = gsi_stmt (*gsi);
   tree tmp;
   bool cfg_changed = false;
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
 
   /* Combine the comparison with defining statements.  */
   tmp = forward_propagate_into_comparison_1 (stmt,
 					     gimple_assign_rhs_code (stmt),
-					     TREE_TYPE
-					       (gimple_assign_lhs (stmt)),
-					     rhs1, rhs2);
-  if (tmp)
+					     type, rhs1, rhs2);
+  if (tmp && useless_type_conversion_p (type, TREE_TYPE (tmp)))
     {
       gimple_assign_set_rhs_from_tree (gsi, tmp);
       fold_stmt (gsi);
@@ -598,7 +597,8 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
 	}
     }
 
-  if (tmp)
+  if (tmp
+      && is_gimple_condexpr (tmp))
     {
       if (dump_file && tmp)
 	{
@@ -1596,7 +1596,8 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	      if (!is_gimple_val (ptr1))
 		ptr1 = force_gimple_operand_gsi (gsi_p, ptr1, true, NULL_TREE,
 						 true, GSI_SAME_STMT);
-	      gimple_call_set_fndecl (stmt2, built_in_decls [BUILT_IN_MEMCPY]);
+	      gimple_call_set_fndecl (stmt2,
+				      builtin_decl_explicit (BUILT_IN_MEMCPY));
 	      gimple_call_set_arg (stmt2, 0, ptr1);
 	      gimple_call_set_arg (stmt2, 1, new_str_cst);
 	      gimple_call_set_arg (stmt2, 2,

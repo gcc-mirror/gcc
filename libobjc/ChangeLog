@@ -1,3 +1,29 @@
+2011-10-09  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/49883
+	* init.c (__objc_exec_class): Work around a bug in clang's code
+	generation.  Clang sets the class->info field to values different
+	from 0x1 or 0x2 (the only allowed values in the traditional GNU
+	Objective-C runtime ABI) to store some additional information, but
+	this breaks backwards compatibility.  Wipe out all the bits in the
+	fields other than the first two upon loading a class.
+
+2011-10-09  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* class.c (objc_lookup_class): Added back for compatibility with
+	clang which seems to emit calls to it.
+
+2011-10-08  Richard Frith-Macdonald <rfm@gnu.org>
+            Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/50428
+	* sendmsg.c (__objc_send_initialize): If a class does not have an
+	+initialize method, search for an +initialize method in the
+	superclass and in the ancestor classes and execute the first one
+	that is found.  This makes the GNU runtime behave in the same way
+	as the Apple/NeXT runtime with respect to +initialize methods and
+	subclassing.
+
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/50002

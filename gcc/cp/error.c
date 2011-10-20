@@ -2052,6 +2052,7 @@ dump_expr (tree t, int flags)
       break;
 
     CASE_CONVERT:
+    case IMPLICIT_CONV_EXPR:
     case VIEW_CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
@@ -2768,7 +2769,7 @@ static void
 cp_diagnostic_starter (diagnostic_context *context,
 		       diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context);
+  diagnostic_report_current_module (context, diagnostic->location);
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
   maybe_print_constexpr_context (context);
@@ -2778,8 +2779,9 @@ cp_diagnostic_starter (diagnostic_context *context,
 
 static void
 cp_diagnostic_finalizer (diagnostic_context *context,
-			 diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
+			 diagnostic_info *diagnostic)
 {
+  virt_loc_aware_diagnostic_finalizer (context, diagnostic);
   pp_base_destroy_prefix (context->printer);
 }
 

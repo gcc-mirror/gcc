@@ -1592,7 +1592,7 @@ package body Exp_Strm is
 
    begin
       --  (Ada 2005: AI-441): Set the null-excluding attribute because it has
-      --  no semantic meaning in Ada 95 but it is a requirement in Ada2005.
+      --  no semantic meaning in Ada 95 but it is a requirement in Ada 2005.
 
       Profile := New_List (
         Make_Parameter_Specification (Loc,
@@ -1632,7 +1632,7 @@ package body Exp_Strm is
       --  Construct function specification
 
       --  (Ada 2005: AI-441): Set the null-excluding attribute because it has
-      --  no semantic meaning in Ada 95 but it is a requirement in Ada2005.
+      --  no semantic meaning in Ada 95 but it is a requirement in Ada 2005.
 
       Spec :=
         Make_Function_Specification (Loc,
@@ -1676,7 +1676,7 @@ package body Exp_Strm is
       --  Construct procedure specification
 
       --  (Ada 2005: AI-441): Set the null-excluding attribute because it has
-      --  no semantic meaning in Ada 95 but it is a requirement in Ada2005.
+      --  no semantic meaning in Ada 95 but it is a requirement in Ada 2005.
 
       Spec :=
         Make_Procedure_Specification (Loc,

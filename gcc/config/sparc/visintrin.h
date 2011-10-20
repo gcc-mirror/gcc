@@ -627,4 +627,67 @@ __vis_fucmpeq8 (__v8qi __A, __v8qi __B)
   return __builtin_vis_fucmpeq8 (__A, __B);
 }
 
+extern __inline float
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fhadds (float __A, float __B)
+{
+  return __builtin_vis_fhadds (__A, __B);
+}
+
+extern __inline double
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fhaddd (double __A, double __B)
+{
+  return __builtin_vis_fhaddd (__A, __B);
+}
+
+extern __inline float
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fhsubs (float __A, float __B)
+{
+  return __builtin_vis_fhsubs (__A, __B);
+}
+
+extern __inline double
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fhsubd (double __A, double __B)
+{
+  return __builtin_vis_fhsubd (__A, __B);
+}
+
+extern __inline float
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fnhadds (float __A, float __B)
+{
+  return __builtin_vis_fnhadds (__A, __B);
+}
+
+extern __inline double
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fnhaddd (double __A, double __B)
+{
+  return __builtin_vis_fnhaddd (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_umulxhi (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_umulxhi (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_xmulx (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_xmulx (__A, __B);
+}
+
+extern __inline __i64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_xmulxhi (__i64 __A, __i64 __B)
+{
+  return __builtin_vis_xmulxhi (__A, __B);
+}
+
 #endif  /* _VISINTRIN_H_INCLUDED */

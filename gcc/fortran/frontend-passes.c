@@ -60,7 +60,11 @@ static gfc_code *inserted_block, **changed_statement;
 
 /* The namespace we are currently dealing with.  */
 
-gfc_namespace *current_ns;
+static gfc_namespace *current_ns;
+
+/* If we are within any forall loop.  */
+
+static int forall_level;
 
 /* Entry point - run all passes for a namespace.  So far, only an
    optimization pass is run.  */
@@ -165,6 +169,12 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  || (*e)->ts.u.cl->length->expr_type != EXPR_CONSTANT))
     return 0;
 
+  /* We don't do function elimination within FORALL statements, it can
+     lead to wrong-code in certain circumstances.  */
+
+  if (forall_level > 0)
+    return 0;
+
   /* If we don't know the shape at compile time, we create an allocatable
      temporary variable to hold the intermediate result, but only if
      allocation on assignment is active.  */
@@ -251,6 +261,7 @@ create_var (gfc_expr * e)
       (*current_code)->next = NULL;
       /* Insert the BLOCK at the right position.  */
       *current_code = inserted_block;
+      ns->parent = current_ns;
     }
   else
     ns = inserted_block->ext.block.ns;
@@ -493,13 +504,18 @@ optimize_namespace (gfc_namespace *ns)
 {
 
   current_ns = ns;
+  forall_level = 0;
 
   gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
   gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
 
+  /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
-    optimize_namespace (ns);
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	optimize_namespace (ns);
+    }
 }
 
 /* Replace code like
@@ -1132,6 +1148,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  gfc_code *b;
 	  gfc_actual_arglist *a;
 	  gfc_code *co;
+	  gfc_association_list *alist;
 
 	  /* There might be statement insertions before the current code,
 	     which must not affect the expression walker.  */
@@ -1140,6 +1157,13 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	  switch (co->op)
 	    {
+
+	    case EXEC_BLOCK:
+	      WALK_SUBCODE (co->ext.block.ns->code);
+	      for (alist = co->ext.block.assoc; alist; alist = alist->next)
+		WALK_SUBEXPR (alist->target);
+	      break;
+
 	    case EXEC_DO:
 	      WALK_SUBEXPR (co->ext.iterator->var);
 	      WALK_SUBEXPR (co->ext.iterator->start);
@@ -1193,6 +1217,8 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		    WALK_SUBEXPR (fa->end);
 		    WALK_SUBEXPR (fa->stride);
 		  }
+		if (co->op == EXEC_FORALL)
+		  forall_level ++;
 		break;
 	      }
 
@@ -1335,6 +1361,10 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (b->expr2);
 	      WALK_SUBCODE (b->next);
 	    }
+
+	  if (co->op == EXEC_FORALL)
+	    forall_level --;
+
 	}
     }
   return 0;

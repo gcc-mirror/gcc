@@ -12,7 +12,7 @@ struct X {
   X(X&&);
 };
 
-X::X(X&&)=default;		// { dg-error "implicitly deleted" }
+X::X(X&&)=default;		// { dg-message "implicitly deleted" }
 // { dg-error "does not have a move constructor" "" { target *-*-* } 15 }
 
 X f() {

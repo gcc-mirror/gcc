@@ -1,7 +1,7 @@
 // The -*- C++ -*- dynamic memory management header.
 
 // Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-// 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation
 
 // This file is part of GCC.
@@ -90,22 +90,32 @@ namespace std
  *  Placement new and delete signatures (take a memory address argument,
  *  does nothing) may not be replaced by a user's program.
 */
-void* operator new(std::size_t) throw (std::bad_alloc);
-void* operator new[](std::size_t) throw (std::bad_alloc);
-void operator delete(void*) throw();
-void operator delete[](void*) throw();
-void* operator new(std::size_t, const std::nothrow_t&) throw();
-void* operator new[](std::size_t, const std::nothrow_t&) throw();
-void operator delete(void*, const std::nothrow_t&) throw();
-void operator delete[](void*, const std::nothrow_t&) throw();
+void* operator new(std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+  __attribute__((__externally_visible__));
+void* operator new[](std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+  __attribute__((__externally_visible__));
+void operator delete(void*) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+void operator delete[](void*) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
 
 // Default placement versions of operator new.
-inline void* operator new(std::size_t, void* __p) throw() { return __p; }
-inline void* operator new[](std::size_t, void* __p) throw() { return __p; }
+inline void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+{ return __p; }
+inline void* operator new[](std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+{ return __p; }
 
 // Default placement versions of operator delete.
-inline void  operator delete  (void*, void*) throw() { }
-inline void  operator delete[](void*, void*) throw() { }
+inline void operator delete  (void*, void*) _GLIBCXX_USE_NOEXCEPT { }
+inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 //@}
 } // extern "C++"
 

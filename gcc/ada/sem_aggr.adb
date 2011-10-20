@@ -1675,8 +1675,12 @@ package body Sem_Aggr is
             --  unless the expression covers a single component, or the
             --  expander is inactive.
 
+            --  In Alfa mode, expressions that can perform side-effects will be
+            --  recognized by the gnat2why back-end, and the whole subprogram
+            --  will be ignored. So semantic analysis can be performed safely.
+
             if Single_Elmt
-              or else not Expander_Active
+              or else not Full_Expander_Active
               or else In_Spec_Expression
             then
                Analyze_And_Resolve (Expr, Component_Typ);
@@ -3121,6 +3125,13 @@ package body Sem_Aggr is
 
                         Expr := New_Copy_Tree (Expression (Parent (Compon)));
 
+                        --  Component may have no default, in which case the
+                        --  expression is empty and the component is default-
+                        --  initialized, but an association for the component
+                        --  exists, and it is not covered by an others clause.
+
+                        return Expr;
+
                      else
                         if Present (Next (Selector_Name)) then
                            Expr := New_Copy_Tree (Expression (Assoc));
@@ -3414,7 +3425,7 @@ package body Sem_Aggr is
                         Selector_Name);
                      return;
 
-                  --  (Ada2005): If this is an association with a box,
+                  --  (Ada 2005): If this is an association with a box,
                   --  indicate that the association need not represent
                   --  any component.
 

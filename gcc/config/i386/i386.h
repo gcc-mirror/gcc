@@ -2315,6 +2315,19 @@ extern void debug_dispatch_window (int);
 	((FLAGS) & (IX86_CALLCVT_CDECL | IX86_CALLCVT_STDCALL \
 		    | IX86_CALLCVT_FASTCALL | IX86_CALLCVT_THISCALL))
 
+#define RECIP_MASK_NONE		0x00
+#define RECIP_MASK_DIV		0x01
+#define RECIP_MASK_SQRT		0x02
+#define RECIP_MASK_VEC_DIV	0x04
+#define RECIP_MASK_VEC_SQRT	0x08
+#define RECIP_MASK_ALL	(RECIP_MASK_DIV | RECIP_MASK_SQRT \
+			 | RECIP_MASK_VEC_DIV | RECIP_MASK_VEC_SQRT)
+
+#define TARGET_RECIP_DIV	((recip_mask & RECIP_MASK_DIV) != 0)
+#define TARGET_RECIP_SQRT	((recip_mask & RECIP_MASK_SQRT) != 0)
+#define TARGET_RECIP_VEC_DIV	((recip_mask & RECIP_MASK_VEC_DIV) != 0)
+#define TARGET_RECIP_VEC_SQRT	((recip_mask & RECIP_MASK_VEC_SQRT) != 0)
+
 /*
 Local variables:
 version-control: t

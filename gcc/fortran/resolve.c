@@ -269,49 +269,17 @@ resolve_formal_arglist (gfc_symbol *proc)
       if (sym->attr.if_source != IFSRC_UNKNOWN)
 	resolve_formal_arglist (sym);
 
-      /* F08:C1279.  */
-      if (gfc_pure (proc)
-	  && sym->attr.flavor == FL_PROCEDURE && !gfc_pure (sym))
+      if (sym->attr.subroutine || sym->attr.external)
 	{
-	  gfc_error ("Dummy procedure '%s' of PURE procedure at %L must "
-		     "also be PURE", sym->name, &sym->declared_at);
-	  continue;
+	  if (sym->attr.flavor == FL_UNKNOWN)
+	    gfc_add_flavor (&sym->attr, FL_PROCEDURE, sym->name, &sym->declared_at);
 	}
-      
-      if (sym->attr.subroutine || sym->attr.external || sym->attr.intrinsic)
+      else
 	{
-	  if (proc->attr.implicit_pure && !gfc_pure(sym))
-	    proc->attr.implicit_pure = 0;
-
-	  /* F08:C1289.  */
-	  if (gfc_elemental (proc))
-	    {
-	      gfc_error ("Dummy procedure at %L not allowed in ELEMENTAL "
-			 "procedure", &sym->declared_at);
-	      continue;
-	    }
-
-	  if (sym->attr.function
-		&& sym->ts.type == BT_UNKNOWN
-		&& sym->attr.intrinsic)
-	    {
-	      gfc_intrinsic_sym *isym;
-	      isym = gfc_find_function (sym->name);
-	      if (isym == NULL || !isym->specific)
-		{
-		  gfc_error ("Unable to find a specific INTRINSIC procedure "
-			     "for the reference '%s' at %L", sym->name,
-			     &sym->declared_at);
-		}
-	      sym->ts = isym->ts;
-	    }
-
-	  continue;
+	  if (sym->ts.type == BT_UNKNOWN && !proc->attr.intrinsic
+	      && (!sym->attr.function || sym->result == sym))
+	    gfc_set_default_type (sym, 1, sym->ns);
 	}
-
-      if (sym->ts.type == BT_UNKNOWN && !proc->attr.intrinsic
-	  && (!sym->attr.function || sym->result == sym))
-	gfc_set_default_type (sym, 1, sym->ns);
 
       gfc_resolve_array_spec (sym->as, 0);
 
@@ -343,44 +311,64 @@ resolve_formal_arglist (gfc_symbol *proc)
       if (sym->attr.flavor == FL_UNKNOWN)
 	gfc_add_flavor (&sym->attr, FL_VARIABLE, sym->name, &sym->declared_at);
 
-      if (gfc_pure (proc) && !sym->attr.pointer
-	  && sym->attr.flavor != FL_PROCEDURE)
+      if (gfc_pure (proc))
 	{
-	  if (proc->attr.function && sym->attr.intent != INTENT_IN)
+	  if (sym->attr.flavor == FL_PROCEDURE)
 	    {
-	      if (sym->attr.value)
-		gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s' "
-				"of pure function '%s' at %L with VALUE "
-				"attribute but without INTENT(IN)", sym->name,
-				proc->name, &sym->declared_at);
-	      else
-		gfc_error ("Argument '%s' of pure function '%s' at %L must be "
-			   "INTENT(IN) or VALUE", sym->name, proc->name,
-			   &sym->declared_at);
+	      /* F08:C1279.  */
+	      if (!gfc_pure (sym))
+		{
+		  gfc_error ("Dummy procedure '%s' of PURE procedure at %L must "
+			    "also be PURE", sym->name, &sym->declared_at);
+		  continue;
+		}
 	    }
-
-	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+	  else if (!sym->attr.pointer)
 	    {
-	      if (sym->attr.value)
-		gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s' "
-				"of pure subroutine '%s' at %L with VALUE "
-				"attribute but without INTENT", sym->name,
-				proc->name, &sym->declared_at);
-	      else
-		gfc_error ("Argument '%s' of pure subroutine '%s' at %L must "
-		       "have its INTENT specified or have the VALUE "
-		       "attribute", sym->name, proc->name, &sym->declared_at);
+	      if (proc->attr.function && sym->attr.intent != INTENT_IN)
+		{
+		  if (sym->attr.value)
+		    gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s'"
+				    " of pure function '%s' at %L with VALUE "
+				    "attribute but without INTENT(IN)",
+				    sym->name, proc->name, &sym->declared_at);
+		  else
+		    gfc_error ("Argument '%s' of pure function '%s' at %L must "
+			       "be INTENT(IN) or VALUE", sym->name, proc->name,
+			       &sym->declared_at);
+		}
+
+	      if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+		{
+		  if (sym->attr.value)
+		    gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s'"
+				    " of pure subroutine '%s' at %L with VALUE "
+				    "attribute but without INTENT", sym->name,
+				    proc->name, &sym->declared_at);
+		  else
+		    gfc_error ("Argument '%s' of pure subroutine '%s' at %L "
+			       "must have its INTENT specified or have the "
+			       "VALUE attribute", sym->name, proc->name,
+			       &sym->declared_at);
+		}
 	    }
 	}
 
-      if (proc->attr.implicit_pure && !sym->attr.pointer
-	  && sym->attr.flavor != FL_PROCEDURE)
+      if (proc->attr.implicit_pure)
 	{
-	  if (proc->attr.function && sym->attr.intent != INTENT_IN)
-	    proc->attr.implicit_pure = 0;
+	  if (sym->attr.flavor == FL_PROCEDURE)
+	    {
+	      if (!gfc_pure(sym))
+		proc->attr.implicit_pure = 0;
+	    }
+	  else if (!sym->attr.pointer)
+	    {
+	      if (proc->attr.function && sym->attr.intent != INTENT_IN)
+		proc->attr.implicit_pure = 0;
 
-	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
-	    proc->attr.implicit_pure = 0;
+	      if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+		proc->attr.implicit_pure = 0;
+	    }
 	}
 
       if (gfc_elemental (proc))
@@ -2821,7 +2809,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 			 &(args->expr->where));
 			 
           /* See if we have interoperable type and type param.  */
-          if (verify_c_interop (arg_ts) == SUCCESS
+          if (gfc_verify_c_interop (arg_ts) == SUCCESS
               || gfc_check_any_c_kind (arg_ts) == SUCCESS)
             {
               if (args_sym->attr.target == 1)
@@ -4396,14 +4384,6 @@ compare_spec_to_ref (gfc_array_ref *ar)
 	  return FAILURE;
       }
 
-  if (as->corank && ar->codimen == 0)
-    {
-      int n;
-      ar->codimen = as->corank;
-      for (n = ar->dimen; n < ar->dimen + ar->codimen; n++)
-	ar->dimen_type[n] = DIMEN_THIS_IMAGE;
-    }
-
   return SUCCESS;
 }
 
@@ -4652,8 +4632,23 @@ resolve_array_ref (gfc_array_ref *ar)
 	}
     }
 
-  if (ar->type == AR_FULL && ar->as->rank == 0)
-    ar->type = AR_ELEMENT;
+  if (ar->type == AR_FULL)
+    {
+      if (ar->as->rank == 0)
+	ar->type = AR_ELEMENT;
+
+      /* Make sure array is the same as array(:,:), this way
+	 we don't need to special case all the time.  */
+      ar->dimen = ar->as->rank;
+      for (i = 0; i < ar->dimen; i++)
+	{
+	  ar->dimen_type[i] = DIMEN_RANGE;
+
+	  gcc_assert (ar->start[i] == NULL);
+	  gcc_assert (ar->end[i] == NULL);
+	  gcc_assert (ar->stride[i] == NULL);
+	}
+    }
 
   /* If the reference type is unknown, figure out what kind it is.  */
 
@@ -4671,6 +4666,14 @@ resolve_array_ref (gfc_array_ref *ar)
 
   if (!ar->as->cray_pointee && compare_spec_to_ref (ar) == FAILURE)
     return FAILURE;
+
+  if (ar->as->corank && ar->codimen == 0)
+    {
+      int n;
+      ar->codimen = ar->as->corank;
+      for (n = ar->dimen; n < ar->dimen + ar->codimen; n++)
+	ar->dimen_type[n] = DIMEN_THIS_IMAGE;
+    }
 
   return SUCCESS;
 }
@@ -10541,7 +10544,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
         {
           /* Skip implicitly typed dummy args here.  */
 	  if (curr_arg->sym->attr.implicit_type == 0)
-	    if (verify_c_interop_param (curr_arg->sym) == FAILURE)
+	    if (gfc_verify_c_interop_param (curr_arg->sym) == FAILURE)
 	      /* If something is found to fail, record the fact so we
 		 can mark the symbol for the procedure as not being
 		 BIND(C) to try and prevent multiple errors being

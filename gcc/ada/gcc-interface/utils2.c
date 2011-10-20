@@ -798,7 +798,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
       /* Then convert the right operand to its base type.  This will prevent
 	 unneeded sign conversions when sizetype is wider than integer.  */
       right_operand = convert (right_base_type, right_operand);
-      right_operand = convert (sizetype, right_operand);
+      right_operand = convert_to_index_type (right_operand);
       modulus = NULL_TREE;
       break;
 
@@ -1277,13 +1277,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
     case INDIRECT_REF:
       {
-	bool can_never_be_null;
-	tree t = operand;
-
-	while (CONVERT_EXPR_P (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR)
-	  t = TREE_OPERAND (t, 0);
-
-	can_never_be_null = DECL_P (t) && DECL_CAN_NEVER_BE_NULL_P (t);
+	tree t = remove_conversions (operand, false);
+	bool can_never_be_null = DECL_P (t) && DECL_CAN_NEVER_BE_NULL_P (t);
 
 	/* If TYPE is a thin pointer, first convert to the fat pointer.  */
 	if (TYPE_IS_THIN_POINTER_P (type)
@@ -2597,4 +2592,86 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
     TREE_THIS_NOTRAP (result) = TREE_THIS_NOTRAP (ref);
 
   return result;
+}
+
+/* If EXPR is an expression that is invariant in the current function, in the
+   sense that it can be evaluated anywhere in the function and any number of
+   times, return EXPR or an equivalent expression.  Otherwise return NULL.  */
+
+tree
+gnat_invariant_expr (tree expr)
+{
+  tree type = TREE_TYPE (expr), t;
+
+  expr = remove_conversions (expr, false);
+
+  while ((TREE_CODE (expr) == CONST_DECL
+	  || (TREE_CODE (expr) == VAR_DECL && TREE_READONLY (expr)))
+	 && decl_function_context (expr) == current_function_decl
+	 && DECL_INITIAL (expr))
+    expr = remove_conversions (DECL_INITIAL (expr), false);
+
+  if (TREE_CONSTANT (expr))
+    return fold_convert (type, expr);
+
+  t = expr;
+
+  while (true)
+    {
+      switch (TREE_CODE (t))
+	{
+	case COMPONENT_REF:
+	  if (TREE_OPERAND (t, 2) != NULL_TREE)
+	    return NULL_TREE;
+	  break;
+
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1))
+	      || TREE_OPERAND (t, 2) != NULL_TREE
+	      || TREE_OPERAND (t, 3) != NULL_TREE)
+	    return NULL_TREE;
+	  break;
+
+	case BIT_FIELD_REF:
+	case VIEW_CONVERT_EXPR:
+	case REALPART_EXPR:
+	case IMAGPART_EXPR:
+	  break;
+
+	case INDIRECT_REF:
+	  if (!TREE_READONLY (t)
+	      || TREE_SIDE_EFFECTS (t)
+	      || !TREE_THIS_NOTRAP (t))
+	    return NULL_TREE;
+	  break;
+
+	default:
+	  goto object;
+	}
+
+      t = TREE_OPERAND (t, 0);
+    }
+
+object:
+  if (TREE_SIDE_EFFECTS (t))
+    return NULL_TREE;
+
+  if (TREE_CODE (t) == CONST_DECL
+      && (DECL_EXTERNAL (t)
+	  || decl_function_context (t) != current_function_decl))
+    return fold_convert (type, expr);
+
+  if (!TREE_READONLY (t))
+    return NULL_TREE;
+
+  if (TREE_CODE (t) == PARM_DECL)
+    return fold_convert (type, expr);
+
+  if (TREE_CODE (t) == VAR_DECL
+      && (DECL_EXTERNAL (t)
+	  || decl_function_context (t) != current_function_decl))
+    return fold_convert (type, expr);
+
+  return NULL_TREE;
 }

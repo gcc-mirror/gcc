@@ -124,8 +124,10 @@ typedef struct ps_insn *ps_insn_ptr;
 /* A single instruction in the partial schedule.  */
 struct ps_insn
 {
-  /* The corresponding DDG_NODE.  */
-  ddg_node_ptr node;
+  /* Identifies the instruction to be scheduled.  Values smaller than
+     the ddg's num_nodes refer directly to ddg nodes.  A value of
+     X - num_nodes refers to register move X.  */
+  int id;
 
   /* The (absolute) cycle in which the PS instruction is scheduled.
      Same as SCHED_TIME (node).  */
@@ -137,6 +139,33 @@ struct ps_insn
 
 };
 
+/* Information about a register move that has been added to a partial
+   schedule.  */
+struct ps_reg_move_info
+{
+  /* The source of the move is defined by the ps_insn with id DEF.
+     The destination is used by the ps_insns with the ids in USES.  */
+  int def;
+  sbitmap uses;
+
+  /* The original form of USES' instructions used OLD_REG, but they
+     should now use NEW_REG.  */
+  rtx old_reg;
+  rtx new_reg;
+
+  /* The number of consecutive stages that the move occupies.  */
+  int num_consecutive_stages;
+
+  /* An instruction that sets NEW_REG to the correct value.  The first
+     move associated with DEF will have an rhs of OLD_REG; later moves
+     use the result of the previous move.  */
+  rtx insn;
+};
+
+typedef struct ps_reg_move_info ps_reg_move_info;
+DEF_VEC_O (ps_reg_move_info);
+DEF_VEC_ALLOC_O (ps_reg_move_info, heap);
+
 /* Holds the partial schedule as an array of II rows.  Each entry of the
    array points to a linked list of PS_INSNs, which represents the
    instructions that are scheduled for that row.  */
@@ -147,6 +176,10 @@ struct partial_schedule
 
   /* rows[i] points to linked list of insns scheduled in row i (0<=i<ii).  */
   ps_insn_ptr *rows;
+
+  /* All the moves added for this partial schedule.  Index X has
+     a ps_insn id of X + g->num_nodes.  */
+  VEC (ps_reg_move_info, heap) *reg_moves;
 
   /*  rows_length[i] holds the number of instructions in the row.
       It is used only (as an optimization) to back off quickly from
@@ -165,17 +198,6 @@ struct partial_schedule
   int stage_count;  /* The stage count of the partial schedule.  */
 };
 
-/* We use this to record all the register replacements we do in
-   the kernel so we can undo SMS if it is not profitable.  */
-struct undo_replace_buff_elem
-{
-  rtx insn;
-  rtx orig_reg;
-  rtx new_reg;
-  struct undo_replace_buff_elem *next;
-};
-
-
 
 static partial_schedule_ptr create_partial_schedule (int ii, ddg_ptr, int history);
 static void free_partial_schedule (partial_schedule_ptr);
@@ -183,9 +205,7 @@ static void reset_partial_schedule (partial_schedule_ptr, int new_ii);
 void print_partial_schedule (partial_schedule_ptr, FILE *);
 static void verify_partial_schedule (partial_schedule_ptr, sbitmap);
 static ps_insn_ptr ps_add_node_check_conflicts (partial_schedule_ptr,
-						ddg_node_ptr node, int cycle,
-						sbitmap must_precede,
-						sbitmap must_follow);
+						int, int, sbitmap, sbitmap);
 static void rotate_partial_schedule (partial_schedule_ptr, int);
 void set_row_column_for_ps (partial_schedule_ptr);
 static void ps_insert_empty_row (partial_schedule_ptr, int, sbitmap);
@@ -201,43 +221,27 @@ static partial_schedule_ptr sms_schedule_by_order (ddg_ptr, int, int, int *);
 static void permute_partial_schedule (partial_schedule_ptr, rtx);
 static void generate_prolog_epilog (partial_schedule_ptr, struct loop *,
                                     rtx, rtx);
-static void duplicate_insns_of_cycles (partial_schedule_ptr,
-				       int, int, int, rtx);
 static int calculate_stage_count (partial_schedule_ptr, int);
 static void calculate_must_precede_follow (ddg_node_ptr, int, int,
 					   int, int, sbitmap, sbitmap, sbitmap);
 static int get_sched_window (partial_schedule_ptr, ddg_node_ptr, 
 			     sbitmap, int, int *, int *, int *);
-static bool try_scheduling_node_in_cycle (partial_schedule_ptr, ddg_node_ptr,
-					  int, int, sbitmap, int *, sbitmap,
-					  sbitmap);
+static bool try_scheduling_node_in_cycle (partial_schedule_ptr, int, int,
+					  sbitmap, int *, sbitmap, sbitmap);
 static void remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
 
-#define SCHED_ASAP(x) (((node_sched_params_ptr)(x)->aux.info)->asap)
-#define SCHED_TIME(x) (((node_sched_params_ptr)(x)->aux.info)->time)
-#define SCHED_FIRST_REG_MOVE(x) \
-	(((node_sched_params_ptr)(x)->aux.info)->first_reg_move)
-#define SCHED_NREG_MOVES(x) \
-	(((node_sched_params_ptr)(x)->aux.info)->nreg_moves)
-#define SCHED_ROW(x) (((node_sched_params_ptr)(x)->aux.info)->row)
-#define SCHED_STAGE(x) (((node_sched_params_ptr)(x)->aux.info)->stage)
-#define SCHED_COLUMN(x) (((node_sched_params_ptr)(x)->aux.info)->column)
+#define NODE_ASAP(node) ((node)->aux.count)
+
+#define SCHED_PARAMS(x) VEC_index (node_sched_params, node_sched_param_vec, x)
+#define SCHED_TIME(x) (SCHED_PARAMS (x)->time)
+#define SCHED_ROW(x) (SCHED_PARAMS (x)->row)
+#define SCHED_STAGE(x) (SCHED_PARAMS (x)->stage)
+#define SCHED_COLUMN(x) (SCHED_PARAMS (x)->column)
 
 /* The scheduling parameters held for each node.  */
 typedef struct node_sched_params
 {
-  int asap;	/* A lower-bound on the absolute scheduling cycle.  */
-  int time;	/* The absolute scheduling cycle (time >= asap).  */
-
-  /* The following field (first_reg_move) is a pointer to the first
-     register-move instruction added to handle the modulo-variable-expansion
-     of the register defined by this node.  This register-move copies the
-     original register defined by the node.  */
-  rtx first_reg_move;
-
-  /* The number of register-move instructions added, immediately preceding
-     first_reg_move.  */
-  int nreg_moves;
+  int time;	/* The absolute scheduling cycle.  */
 
   int row;    /* Holds time % ii.  */
   int stage;  /* Holds time / ii.  */
@@ -247,6 +251,9 @@ typedef struct node_sched_params
   int column;
 } *node_sched_params_ptr;
 
+typedef struct node_sched_params node_sched_params;
+DEF_VEC_O (node_sched_params);
+DEF_VEC_ALLOC_O (node_sched_params, heap);
 
 /* The following three functions are copied from the current scheduler
    code in order to use sched_analyze() for computing the dependencies.
@@ -294,6 +301,49 @@ static struct haifa_sched_info sms_sched_info =
   NULL, NULL,
   0
 };
+
+/* Partial schedule instruction ID in PS is a register move.  Return
+   information about it.  */
+static struct ps_reg_move_info *
+ps_reg_move (partial_schedule_ptr ps, int id)
+{
+  gcc_checking_assert (id >= ps->g->num_nodes);
+  return VEC_index (ps_reg_move_info, ps->reg_moves, id - ps->g->num_nodes);
+}
+
+/* Return the rtl instruction that is being scheduled by partial schedule
+   instruction ID, which belongs to schedule PS.  */
+static rtx
+ps_rtl_insn (partial_schedule_ptr ps, int id)
+{
+  if (id < ps->g->num_nodes)
+    return ps->g->nodes[id].insn;
+  else
+    return ps_reg_move (ps, id)->insn;
+}
+
+/* Partial schedule instruction ID, which belongs to PS, occured in
+   the original (unscheduled) loop.  Return the first instruction
+   in the loop that was associated with ps_rtl_insn (PS, ID).
+   If the instruction had some notes before it, this is the first
+   of those notes.  */
+static rtx
+ps_first_note (partial_schedule_ptr ps, int id)
+{
+  gcc_assert (id < ps->g->num_nodes);
+  return ps->g->nodes[id].first_note;
+}
+
+/* Return the number of consecutive stages that are occupied by
+   partial schedule instruction ID in PS.  */
+static int
+ps_num_consecutive_stages (partial_schedule_ptr ps, int id)
+{
+  if (id < ps->g->num_nodes)
+    return 1;
+  else
+    return ps_reg_move (ps, id)->num_consecutive_stages;
+}
 
 /* Given HEAD and TAIL which are the first and last insns in a loop;
    return the register which controls the loop.  Return zero if it has
@@ -395,222 +445,34 @@ res_MII (ddg_ptr g)
 }
 
 
-/* Points to the array that contains the sched data for each node.  */
-static node_sched_params_ptr node_sched_params;
+/* A vector that contains the sched data for each ps_insn.  */
+static VEC (node_sched_params, heap) *node_sched_param_vec;
 
-/* Allocate sched_params for each node and initialize it.  Assumes that
-   the aux field of each node contain the asap bound (computed earlier),
-   and copies it into the sched_params field.  */
+/* Allocate sched_params for each node and initialize it.  */
 static void
 set_node_sched_params (ddg_ptr g)
 {
-  int i;
-
-  /* Allocate for each node in the DDG a place to hold the "sched_data".  */
-  /* Initialize ASAP/ALAP/HIGHT to zero.  */
-  node_sched_params = (node_sched_params_ptr)
-		       xcalloc (g->num_nodes,
-				sizeof (struct node_sched_params));
-
-  /* Set the pointer of the general data of the node to point to the
-     appropriate sched_params structure.  */
-  for (i = 0; i < g->num_nodes; i++)
-    {
-      /* Watch out for aliasing problems?  */
-      node_sched_params[i].asap = g->nodes[i].aux.count;
-      g->nodes[i].aux.info = &node_sched_params[i];
-    }
+  VEC_truncate (node_sched_params, node_sched_param_vec, 0);
+  VEC_safe_grow_cleared (node_sched_params, heap,
+			 node_sched_param_vec, g->num_nodes);
 }
 
+/* Make sure that node_sched_param_vec has an entry for every move in PS.  */
 static void
-print_node_sched_params (FILE *file, int num_nodes, ddg_ptr g)
+extend_node_sched_params (partial_schedule_ptr ps)
 {
-  int i;
-
-  if (! file)
-    return;
-  for (i = 0; i < num_nodes; i++)
-    {
-      node_sched_params_ptr nsp = &node_sched_params[i];
-      rtx reg_move = nsp->first_reg_move;
-      int j;
-
-      fprintf (file, "Node = %d; INSN = %d\n", i,
-	       (INSN_UID (g->nodes[i].insn)));
-      fprintf (file, " asap = %d:\n", nsp->asap);
-      fprintf (file, " time = %d:\n", nsp->time);
-      fprintf (file, " nreg_moves = %d:\n", nsp->nreg_moves);
-      for (j = 0; j < nsp->nreg_moves; j++)
-	{
-	  fprintf (file, " reg_move = ");
-	  print_rtl_single (file, reg_move);
-	  reg_move = PREV_INSN (reg_move);
-	}
-    }
-}
-
-/*
-   Breaking intra-loop register anti-dependences:
-   Each intra-loop register anti-dependence implies a cross-iteration true
-   dependence of distance 1. Therefore, we can remove such false dependencies
-   and figure out if the partial schedule broke them by checking if (for a
-   true-dependence of distance 1): SCHED_TIME (def) < SCHED_TIME (use) and
-   if so generate a register move.   The number of such moves is equal to:
-              SCHED_TIME (use) - SCHED_TIME (def)       { 0 broken
-   nreg_moves = ----------------------------------- + 1 - {   dependence.
-                            ii                          { 1 if not.
-*/
-static struct undo_replace_buff_elem *
-generate_reg_moves (partial_schedule_ptr ps, bool rescan)
-{
-  ddg_ptr g = ps->g;
-  int ii = ps->ii;
-  int i;
-  struct undo_replace_buff_elem *reg_move_replaces = NULL;
-
-  for (i = 0; i < g->num_nodes; i++)
-    {
-      ddg_node_ptr u = &g->nodes[i];
-      ddg_edge_ptr e;
-      int nreg_moves = 0, i_reg_move;
-      sbitmap *uses_of_defs;
-      rtx last_reg_move;
-      rtx prev_reg, old_reg;
-      rtx set = single_set (u->insn);
-      
-      /* Skip instructions that do not set a register.  */
-      if ((set && !REG_P (SET_DEST (set))))
-        continue;
- 
-      /* Compute the number of reg_moves needed for u, by looking at life
-	 ranges started at u (excluding self-loops).  */
-      for (e = u->out; e; e = e->next_out)
-	if (e->type == TRUE_DEP && e->dest != e->src)
-	  {
-	    int nreg_moves4e = (SCHED_TIME (e->dest) - SCHED_TIME (e->src)) / ii;
-
-            if (e->distance == 1)
-              nreg_moves4e = (SCHED_TIME (e->dest) - SCHED_TIME (e->src) + ii) / ii;
-
-	    /* If dest precedes src in the schedule of the kernel, then dest
-	       will read before src writes and we can save one reg_copy.  */
-	    if (SCHED_ROW (e->dest) == SCHED_ROW (e->src)
-		&& SCHED_COLUMN (e->dest) < SCHED_COLUMN (e->src))
-	      nreg_moves4e--;
-
-            if (nreg_moves4e >= 1)
-	      {
-		/* !single_set instructions are not supported yet and
-		   thus we do not except to encounter them in the loop
-		   except from the doloop part.  For the latter case
-		   we assume no regmoves are generated as the doloop
-		   instructions are tied to the branch with an edge.  */
-		gcc_assert (set);
-		/* If the instruction contains auto-inc register then
-		   validate that the regmov is being generated for the
-		   target regsiter rather then the inc'ed register.	*/
-		gcc_assert (!autoinc_var_is_used_p (u->insn, e->dest->insn));
-	      }
-	    
-	    nreg_moves = MAX (nreg_moves, nreg_moves4e);
-	  }
-
-      if (nreg_moves == 0)
-	continue;
-
-      /* Every use of the register defined by node may require a different
-	 copy of this register, depending on the time the use is scheduled.
-	 Set a bitmap vector, telling which nodes use each copy of this
-	 register.  */
-      uses_of_defs = sbitmap_vector_alloc (nreg_moves, g->num_nodes);
-      sbitmap_vector_zero (uses_of_defs, nreg_moves);
-      for (e = u->out; e; e = e->next_out)
-	if (e->type == TRUE_DEP && e->dest != e->src)
-	  {
-	    int dest_copy = (SCHED_TIME (e->dest) - SCHED_TIME (e->src)) / ii;
-
-	    if (e->distance == 1)
-	      dest_copy = (SCHED_TIME (e->dest) - SCHED_TIME (e->src) + ii) / ii;
-
-	    if (SCHED_ROW (e->dest) == SCHED_ROW (e->src)
-		&& SCHED_COLUMN (e->dest) < SCHED_COLUMN (e->src))
-	      dest_copy--;
-
-	    if (dest_copy)
-	      SET_BIT (uses_of_defs[dest_copy - 1], e->dest->cuid);
-	  }
-
-      /* Now generate the reg_moves, attaching relevant uses to them.  */
-      SCHED_NREG_MOVES (u) = nreg_moves;
-      old_reg = prev_reg = copy_rtx (SET_DEST (single_set (u->insn)));
-      /* Insert the reg-moves right before the notes which precede
-         the insn they relates to.  */
-      last_reg_move = u->first_note;
-
-      for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
-	{
-	  unsigned int i_use = 0;
-	  rtx new_reg = gen_reg_rtx (GET_MODE (prev_reg));
-	  rtx reg_move = gen_move_insn (new_reg, prev_reg);
-	  sbitmap_iterator sbi;
-
-	  add_insn_before (reg_move, last_reg_move, NULL);
-	  last_reg_move = reg_move;
-
-	  if (!SCHED_FIRST_REG_MOVE (u))
-	    SCHED_FIRST_REG_MOVE (u) = reg_move;
-
-	  EXECUTE_IF_SET_IN_SBITMAP (uses_of_defs[i_reg_move], 0, i_use, sbi)
-	    {
-	      struct undo_replace_buff_elem *rep;
-
-	      rep = (struct undo_replace_buff_elem *)
-		    xcalloc (1, sizeof (struct undo_replace_buff_elem));
-	      rep->insn = g->nodes[i_use].insn;
-	      rep->orig_reg = old_reg;
-	      rep->new_reg = new_reg;
-
-	      if (! reg_move_replaces)
-		reg_move_replaces = rep;
-	      else
-		{
-		  rep->next = reg_move_replaces;
-		  reg_move_replaces = rep;
-		}
-
-	      replace_rtx (g->nodes[i_use].insn, old_reg, new_reg);
-	      if (rescan)
-		df_insn_rescan (g->nodes[i_use].insn);
-	    }
-
-	  prev_reg = new_reg;
-	}
-      sbitmap_vector_free (uses_of_defs);
-    }
-  return reg_move_replaces;
-}
-
-/* Free memory allocated for the undo buffer.  */
-static void
-free_undo_replace_buff (struct undo_replace_buff_elem *reg_move_replaces)
-{
-
-  while (reg_move_replaces)
-    {
-      struct undo_replace_buff_elem *rep = reg_move_replaces;
-
-      reg_move_replaces = reg_move_replaces->next;
-      free (rep);
-    }
+  VEC_safe_grow_cleared (node_sched_params, heap, node_sched_param_vec,
+			 ps->g->num_nodes + VEC_length (ps_reg_move_info,
+							ps->reg_moves));
 }
 
 /* Update the sched_params (time, row and stage) for node U using the II,
-   the CYCLE of U and MIN_CYCLE.  
+   the CYCLE of U and MIN_CYCLE.
    We're not simply taking the following
    SCHED_STAGE (u) = CALC_STAGE_COUNT (SCHED_TIME (u), min_cycle, ii);
    because the stages may not be aligned on cycle 0.  */
 static void
-update_node_sched_params (ddg_node_ptr u, int ii, int cycle, int min_cycle)
+update_node_sched_params (int u, int ii, int cycle, int min_cycle)
 {
   int sc_until_cycle_zero;
   int stage;
@@ -634,6 +496,350 @@ update_node_sched_params (ddg_node_ptr u, int ii, int cycle, int min_cycle)
     }
 }
 
+static void
+print_node_sched_params (FILE *file, int num_nodes, partial_schedule_ptr ps)
+{
+  int i;
+
+  if (! file)
+    return;
+  for (i = 0; i < num_nodes; i++)
+    {
+      node_sched_params_ptr nsp = SCHED_PARAMS (i);
+
+      fprintf (file, "Node = %d; INSN = %d\n", i,
+	       INSN_UID (ps_rtl_insn (ps, i)));
+      fprintf (file, " asap = %d:\n", NODE_ASAP (&ps->g->nodes[i]));
+      fprintf (file, " time = %d:\n", nsp->time);
+      fprintf (file, " stage = %d:\n", nsp->stage);
+    }
+}
+
+/* Set SCHED_COLUMN for each instruction in row ROW of PS.  */
+static void
+set_columns_for_row (partial_schedule_ptr ps, int row)
+{
+  ps_insn_ptr cur_insn;
+  int column;
+
+  column = 0;
+  for (cur_insn = ps->rows[row]; cur_insn; cur_insn = cur_insn->next_in_row)
+    SCHED_COLUMN (cur_insn->id) = column++;
+}
+
+/* Set SCHED_COLUMN for each instruction in PS.  */
+static void
+set_columns_for_ps (partial_schedule_ptr ps)
+{
+  int row;
+
+  for (row = 0; row < ps->ii; row++)
+    set_columns_for_row (ps, row);
+}
+
+/* Try to schedule the move with ps_insn identifier I_REG_MOVE in PS.
+   Its single predecessor has already been scheduled, as has its
+   ddg node successors.  (The move may have also another move as its
+   successor, in which case that successor will be scheduled later.)
+
+   The move is part of a chain that satisfies register dependencies
+   between a producing ddg node and various consuming ddg nodes.
+   If some of these dependencies have a distance of 1 (meaning that
+   the use is upward-exposed) then DISTANCE1_USES is nonnull and
+   contains the set of uses with distance-1 dependencies.
+   DISTANCE1_USES is null otherwise.
+
+   MUST_FOLLOW is a scratch bitmap that is big enough to hold
+   all current ps_insn ids.
+
+   Return true on success.  */
+static bool
+schedule_reg_move (partial_schedule_ptr ps, int i_reg_move,
+		   sbitmap distance1_uses, sbitmap must_follow)
+{
+  unsigned int u;
+  int this_time, this_distance, this_start, this_end, this_latency;
+  int start, end, c, ii;
+  sbitmap_iterator sbi;
+  ps_reg_move_info *move;
+  rtx this_insn;
+  ps_insn_ptr psi;
+
+  move = ps_reg_move (ps, i_reg_move);
+  ii = ps->ii;
+  if (dump_file)
+    {
+      fprintf (dump_file, "Scheduling register move INSN %d; ii = %d"
+	       ", min cycle = %d\n\n", INSN_UID (move->insn), ii,
+	       PS_MIN_CYCLE (ps));
+      print_rtl_single (dump_file, move->insn);
+      fprintf (dump_file, "\n%11s %11s %5s\n", "start", "end", "time");
+      fprintf (dump_file, "=========== =========== =====\n");
+    }
+
+  start = INT_MIN;
+  end = INT_MAX;
+
+  /* For dependencies of distance 1 between a producer ddg node A
+     and consumer ddg node B, we have a chain of dependencies:
+
+        A --(T,L1,1)--> M1 --(T,L2,0)--> M2 ... --(T,Ln,0)--> B
+
+     where Mi is the ith move.  For dependencies of distance 0 between
+     a producer ddg node A and consumer ddg node C, we have a chain of
+     dependencies:
+
+        A --(T,L1',0)--> M1' --(T,L2',0)--> M2' ... --(T,Ln',0)--> C
+
+     where Mi' occupies the same position as Mi but occurs a stage later.
+     We can only schedule each move once, so if we have both types of
+     chain, we model the second as:
+
+        A --(T,L1',1)--> M1 --(T,L2',0)--> M2 ... --(T,Ln',-1)--> C
+
+     First handle the dependencies between the previously-scheduled
+     predecessor and the move.  */
+  this_insn = ps_rtl_insn (ps, move->def);
+  this_latency = insn_latency (this_insn, move->insn);
+  this_distance = distance1_uses && move->def < ps->g->num_nodes ? 1 : 0;
+  this_time = SCHED_TIME (move->def) - this_distance * ii;
+  this_start = this_time + this_latency;
+  this_end = this_time + ii;
+  if (dump_file)
+    fprintf (dump_file, "%11d %11d %5d %d --(T,%d,%d)--> %d\n",
+	     this_start, this_end, SCHED_TIME (move->def),
+	     INSN_UID (this_insn), this_latency, this_distance,
+	     INSN_UID (move->insn));
+
+  if (start < this_start)
+    start = this_start;
+  if (end > this_end)
+    end = this_end;
+
+  /* Handle the dependencies between the move and previously-scheduled
+     successors.  */
+  EXECUTE_IF_SET_IN_SBITMAP (move->uses, 0, u, sbi)
+    {
+      this_insn = ps_rtl_insn (ps, u);
+      this_latency = insn_latency (move->insn, this_insn);
+      if (distance1_uses && !TEST_BIT (distance1_uses, u))
+	this_distance = -1;
+      else
+	this_distance = 0;
+      this_time = SCHED_TIME (u) + this_distance * ii;
+      this_start = this_time - ii;
+      this_end = this_time - this_latency;
+      if (dump_file)
+	fprintf (dump_file, "%11d %11d %5d %d --(T,%d,%d)--> %d\n",
+		 this_start, this_end, SCHED_TIME (u), INSN_UID (move->insn),
+		 this_latency, this_distance, INSN_UID (this_insn));
+
+      if (start < this_start)
+	start = this_start;
+      if (end > this_end)
+	end = this_end;
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "----------- ----------- -----\n");
+      fprintf (dump_file, "%11d %11d %5s %s\n", start, end, "", "(max, min)");
+    }
+
+  sbitmap_zero (must_follow);
+  SET_BIT (must_follow, move->def);
+
+  start = MAX (start, end - (ii - 1));
+  for (c = end; c >= start; c--)
+    {
+      psi = ps_add_node_check_conflicts (ps, i_reg_move, c,
+					 move->uses, must_follow);
+      if (psi)
+	{
+	  update_node_sched_params (i_reg_move, ii, c, PS_MIN_CYCLE (ps));
+	  if (dump_file)
+	    fprintf (dump_file, "\nScheduled register move INSN %d at"
+		     " time %d, row %d\n\n", INSN_UID (move->insn), c,
+		     SCHED_ROW (i_reg_move));
+	  return true;
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "\nNo available slot\n\n");
+
+  return false;
+}
+
+/*
+   Breaking intra-loop register anti-dependences:
+   Each intra-loop register anti-dependence implies a cross-iteration true
+   dependence of distance 1. Therefore, we can remove such false dependencies
+   and figure out if the partial schedule broke them by checking if (for a
+   true-dependence of distance 1): SCHED_TIME (def) < SCHED_TIME (use) and
+   if so generate a register move.   The number of such moves is equal to:
+              SCHED_TIME (use) - SCHED_TIME (def)       { 0 broken
+   nreg_moves = ----------------------------------- + 1 - {   dependence.
+                            ii                          { 1 if not.
+*/
+static bool
+schedule_reg_moves (partial_schedule_ptr ps)
+{
+  ddg_ptr g = ps->g;
+  int ii = ps->ii;
+  int i;
+
+  for (i = 0; i < g->num_nodes; i++)
+    {
+      ddg_node_ptr u = &g->nodes[i];
+      ddg_edge_ptr e;
+      int nreg_moves = 0, i_reg_move;
+      rtx prev_reg, old_reg;
+      int first_move;
+      int distances[2];
+      sbitmap must_follow;
+      sbitmap distance1_uses;
+      rtx set = single_set (u->insn);
+      
+      /* Skip instructions that do not set a register.  */
+      if ((set && !REG_P (SET_DEST (set))))
+        continue;
+ 
+      /* Compute the number of reg_moves needed for u, by looking at life
+	 ranges started at u (excluding self-loops).  */
+      distances[0] = distances[1] = false;
+      for (e = u->out; e; e = e->next_out)
+	if (e->type == TRUE_DEP && e->dest != e->src)
+	  {
+	    int nreg_moves4e = (SCHED_TIME (e->dest->cuid)
+				- SCHED_TIME (e->src->cuid)) / ii;
+
+            if (e->distance == 1)
+              nreg_moves4e = (SCHED_TIME (e->dest->cuid)
+			      - SCHED_TIME (e->src->cuid) + ii) / ii;
+
+	    /* If dest precedes src in the schedule of the kernel, then dest
+	       will read before src writes and we can save one reg_copy.  */
+	    if (SCHED_ROW (e->dest->cuid) == SCHED_ROW (e->src->cuid)
+		&& SCHED_COLUMN (e->dest->cuid) < SCHED_COLUMN (e->src->cuid))
+	      nreg_moves4e--;
+
+            if (nreg_moves4e >= 1)
+	      {
+		/* !single_set instructions are not supported yet and
+		   thus we do not except to encounter them in the loop
+		   except from the doloop part.  For the latter case
+		   we assume no regmoves are generated as the doloop
+		   instructions are tied to the branch with an edge.  */
+		gcc_assert (set);
+		/* If the instruction contains auto-inc register then
+		   validate that the regmov is being generated for the
+		   target regsiter rather then the inc'ed register.	*/
+		gcc_assert (!autoinc_var_is_used_p (u->insn, e->dest->insn));
+	      }
+	    
+	    if (nreg_moves4e)
+	      {
+		gcc_assert (e->distance < 2);
+		distances[e->distance] = true;
+	      }
+	    nreg_moves = MAX (nreg_moves, nreg_moves4e);
+	  }
+
+      if (nreg_moves == 0)
+	continue;
+
+      /* Create NREG_MOVES register moves.  */
+      first_move = VEC_length (ps_reg_move_info, ps->reg_moves);
+      VEC_safe_grow_cleared (ps_reg_move_info, heap, ps->reg_moves,
+			     first_move + nreg_moves);
+      extend_node_sched_params (ps);
+
+      /* Record the moves associated with this node.  */
+      first_move += ps->g->num_nodes;
+
+      /* Generate each move.  */
+      old_reg = prev_reg = SET_DEST (single_set (u->insn));
+      for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
+	{
+	  ps_reg_move_info *move = ps_reg_move (ps, first_move + i_reg_move);
+
+	  move->def = i_reg_move > 0 ? first_move + i_reg_move - 1 : i;
+	  move->uses = sbitmap_alloc (first_move + nreg_moves);
+	  move->old_reg = old_reg;
+	  move->new_reg = gen_reg_rtx (GET_MODE (prev_reg));
+	  move->num_consecutive_stages = distances[0] && distances[1] ? 2 : 1;
+	  move->insn = gen_move_insn (move->new_reg, copy_rtx (prev_reg));
+	  sbitmap_zero (move->uses);
+
+	  prev_reg = move->new_reg;
+	}
+
+      distance1_uses = distances[1] ? sbitmap_alloc (g->num_nodes) : NULL;
+
+      /* Every use of the register defined by node may require a different
+	 copy of this register, depending on the time the use is scheduled.
+	 Record which uses require which move results.  */
+      for (e = u->out; e; e = e->next_out)
+	if (e->type == TRUE_DEP && e->dest != e->src)
+	  {
+	    int dest_copy = (SCHED_TIME (e->dest->cuid)
+			     - SCHED_TIME (e->src->cuid)) / ii;
+
+	    if (e->distance == 1)
+	      dest_copy = (SCHED_TIME (e->dest->cuid)
+			   - SCHED_TIME (e->src->cuid) + ii) / ii;
+
+	    if (SCHED_ROW (e->dest->cuid) == SCHED_ROW (e->src->cuid)
+		&& SCHED_COLUMN (e->dest->cuid) < SCHED_COLUMN (e->src->cuid))
+	      dest_copy--;
+
+	    if (dest_copy)
+	      {
+		ps_reg_move_info *move;
+
+		move = ps_reg_move (ps, first_move + dest_copy - 1);
+		SET_BIT (move->uses, e->dest->cuid);
+		if (e->distance == 1)
+		  SET_BIT (distance1_uses, e->dest->cuid);
+	      }
+	  }
+
+      must_follow = sbitmap_alloc (first_move + nreg_moves);
+      for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
+	if (!schedule_reg_move (ps, first_move + i_reg_move,
+				distance1_uses, must_follow))
+	  break;
+      sbitmap_free (must_follow);
+      if (distance1_uses)
+	sbitmap_free (distance1_uses);
+      if (i_reg_move < nreg_moves)
+	return false;
+    }
+  return true;
+}
+
+/* Emit the moves associatied with PS.  Apply the substitutions
+   associated with them.  */
+static void
+apply_reg_moves (partial_schedule_ptr ps)
+{
+  ps_reg_move_info *move;
+  int i;
+
+  FOR_EACH_VEC_ELT (ps_reg_move_info, ps->reg_moves, i, move)
+    {
+      unsigned int i_use;
+      sbitmap_iterator sbi;
+
+      EXECUTE_IF_SET_IN_SBITMAP (move->uses, 0, i_use, sbi)
+	{
+	  replace_rtx (ps->g->nodes[i_use].insn, move->old_reg, move->new_reg);
+	  df_insn_rescan (ps->g->nodes[i_use].insn);
+	}
+    }
+}
+
 /* Bump the SCHED_TIMEs of all nodes by AMOUNT.  Set the values of
    SCHED_ROW and SCHED_STAGE.  Instruction scheduled on cycle AMOUNT
    will move to cycle zero.  */
@@ -647,18 +853,19 @@ reset_sched_times (partial_schedule_ptr ps, int amount)
   for (row = 0; row < ii; row++)
     for (crr_insn = ps->rows[row]; crr_insn; crr_insn = crr_insn->next_in_row)
       {
-	ddg_node_ptr u = crr_insn->node;
+	int u = crr_insn->id;
 	int normalized_time = SCHED_TIME (u) - amount;
 	int new_min_cycle = PS_MIN_CYCLE (ps) - amount;
 
         if (dump_file)
           {
             /* Print the scheduling times after the rotation.  */
+	    rtx insn = ps_rtl_insn (ps, u);
+
             fprintf (dump_file, "crr_insn->node=%d (insn id %d), "
-                     "crr_insn->cycle=%d, min_cycle=%d", crr_insn->node->cuid,
-                     INSN_UID (crr_insn->node->insn), normalized_time,
-                     new_min_cycle);
-            if (JUMP_P (crr_insn->node->insn))
+                     "crr_insn->cycle=%d, min_cycle=%d", u,
+                     INSN_UID (insn), normalized_time, new_min_cycle);
+            if (JUMP_P (insn))
               fprintf (dump_file, " (branch)");
             fprintf (dump_file, "\n");
           }
@@ -671,22 +878,6 @@ reset_sched_times (partial_schedule_ptr ps, int amount)
       }
 }
  
-/* Set SCHED_COLUMN of each node according to its position in PS.  */
-static void
-set_columns_for_ps (partial_schedule_ptr ps)
-{
-  int row;
-
-  for (row = 0; row < ps->ii; row++)
-    {
-      ps_insn_ptr cur_insn = ps->rows[row];
-      int column = 0;
-
-      for (; cur_insn; cur_insn = cur_insn->next_in_row)
-	SCHED_COLUMN (cur_insn->node) = column++;
-    }
-}
-
 /* Permute the insns according to their order in PS, from row 0 to
    row ii-1, and position them right before LAST.  This schedules
    the insns of the loop kernel.  */
@@ -699,9 +890,18 @@ permute_partial_schedule (partial_schedule_ptr ps, rtx last)
 
   for (row = 0; row < ii ; row++)
     for (ps_ij = ps->rows[row]; ps_ij; ps_ij = ps_ij->next_in_row)
-      if (PREV_INSN (last) != ps_ij->node->insn)
-      	reorder_insns_nobb (ps_ij->node->first_note, ps_ij->node->insn,
-			    PREV_INSN (last));
+      {
+	rtx insn = ps_rtl_insn (ps, ps_ij->id);
+
+	if (PREV_INSN (last) != insn)
+	  {
+	    if (ps_ij->id < ps->g->num_nodes)
+	      reorder_insns_nobb (ps_first_note (ps, ps_ij->id), insn,
+				  PREV_INSN (last));
+	    else
+	      add_insn_before (insn, last, NULL);
+	  }
+      }
 }
 
 /* Set bitmaps TMP_FOLLOW and TMP_PRECEDE to MUST_FOLLOW and MUST_PRECEDE
@@ -750,7 +950,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
      to row ii-1.  If they are equal just bail out.  */
   stage_count = calculate_stage_count (ps, amount);
   stage_count_curr =
-    calculate_stage_count (ps, SCHED_TIME (g->closing_branch) - (ii - 1));
+    calculate_stage_count (ps, SCHED_TIME (g->closing_branch->cuid) - (ii - 1));
 
   if (stage_count == stage_count_curr)
     {
@@ -779,7 +979,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
       print_partial_schedule (ps, dump_file);
     }
 
-  if (SMODULO (SCHED_TIME (g->closing_branch), ii) == ii - 1)
+  if (SMODULO (SCHED_TIME (g->closing_branch->cuid), ii) == ii - 1)
     {
       ok = true;
       goto clear;
@@ -794,7 +994,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
     {
       bool success;
       ps_insn_ptr next_ps_i;
-      int branch_cycle = SCHED_TIME (g->closing_branch);
+      int branch_cycle = SCHED_TIME (g->closing_branch->cuid);
       int row = SMODULO (branch_cycle, ps->ii);
       int num_splits = 0;
       sbitmap must_precede, must_follow, tmp_precede, tmp_follow;
@@ -850,13 +1050,12 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
          branch so we can remove it from it's current cycle.  */
       for (next_ps_i = ps->rows[row];
 	   next_ps_i; next_ps_i = next_ps_i->next_in_row)
-	if (next_ps_i->node->cuid == g->closing_branch->cuid)
+	if (next_ps_i->id == g->closing_branch->cuid)
 	  break;
 
       remove_node_from_ps (ps, next_ps_i);
       success =
-	try_scheduling_node_in_cycle (ps, g->closing_branch,
-				      g->closing_branch->cuid, c,
+	try_scheduling_node_in_cycle (ps, g->closing_branch->cuid, c,
 				      sched_nodes, &num_splits,
 				      tmp_precede, tmp_follow);
       gcc_assert (num_splits == 0);
@@ -874,8 +1073,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 				   must_precede, branch_cycle, start, end,
 				   step);
 	  success =
-	    try_scheduling_node_in_cycle (ps, g->closing_branch,
-					  g->closing_branch->cuid,
+	    try_scheduling_node_in_cycle (ps, g->closing_branch->cuid,
 					  branch_cycle, sched_nodes,
 					  &num_splits, tmp_precede,
 					  tmp_follow);
@@ -889,7 +1087,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 	    fprintf (dump_file,
 		     "SMS success in moving branch to cycle %d\n", c);
 
-	  update_node_sched_params (g->closing_branch, ii, c,
+	  update_node_sched_params (g->closing_branch->cuid, ii, c,
 				    PS_MIN_CYCLE (ps));
 	  ok = true;
 	}
@@ -905,7 +1103,7 @@ clear:
 
 static void
 duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
-			   int to_stage, int for_prolog, rtx count_reg)
+			   int to_stage, rtx count_reg)
 {
   int row;
   ps_insn_ptr ps_ij;
@@ -913,9 +1111,9 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
   for (row = 0; row < ps->ii; row++)
     for (ps_ij = ps->rows[row]; ps_ij; ps_ij = ps_ij->next_in_row)
       {
-	ddg_node_ptr u_node = ps_ij->node;
-	int j, i_reg_moves;
-	rtx reg_move = NULL_RTX;
+	int u = ps_ij->id;
+	int first_u, last_u;
+	rtx u_insn;
 
         /* Do not duplicate any insn which refers to count_reg as it
            belongs to the control part.
@@ -923,52 +1121,20 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
            be ignored.
            TODO: This should be done by analyzing the control part of
            the loop.  */
-        if (reg_mentioned_p (count_reg, u_node->insn)
-            || JUMP_P (ps_ij->node->insn))
+	u_insn = ps_rtl_insn (ps, u);
+        if (reg_mentioned_p (count_reg, u_insn)
+            || JUMP_P (u_insn))
           continue;
 
-	if (for_prolog)
+	first_u = SCHED_STAGE (u);
+	last_u = first_u + ps_num_consecutive_stages (ps, u) - 1;
+	if (from_stage <= last_u && to_stage >= first_u)
 	  {
-	    /* SCHED_STAGE (u_node) >= from_stage == 0.  Generate increasing
-	       number of reg_moves starting with the second occurrence of
-	       u_node, which is generated if its SCHED_STAGE <= to_stage.  */
-	    i_reg_moves = to_stage - SCHED_STAGE (u_node) + 1;
-	    i_reg_moves = MAX (i_reg_moves, 0);
-	    i_reg_moves = MIN (i_reg_moves, SCHED_NREG_MOVES (u_node));
-
-	    /* The reg_moves start from the *first* reg_move backwards.  */
-	    if (i_reg_moves)
-	      {
-		reg_move = SCHED_FIRST_REG_MOVE (u_node);
-		for (j = 1; j < i_reg_moves; j++)
-		  reg_move = PREV_INSN (reg_move);
-	      }
+	    if (u < ps->g->num_nodes)
+	      duplicate_insn_chain (ps_first_note (ps, u), u_insn);
+	    else
+	      emit_insn (copy_rtx (PATTERN (u_insn)));
 	  }
-	else /* It's for the epilog.  */
-	  {
-	    /* SCHED_STAGE (u_node) <= to_stage.  Generate all reg_moves,
-	       starting to decrease one stage after u_node no longer occurs;
-	       that is, generate all reg_moves until
-	       SCHED_STAGE (u_node) == from_stage - 1.  */
-	    i_reg_moves = SCHED_NREG_MOVES (u_node)
-	    	       - (from_stage - SCHED_STAGE (u_node) - 1);
-	    i_reg_moves = MAX (i_reg_moves, 0);
-	    i_reg_moves = MIN (i_reg_moves, SCHED_NREG_MOVES (u_node));
-
-	    /* The reg_moves start from the *last* reg_move forwards.  */
-	    if (i_reg_moves)
-	      {
-		reg_move = SCHED_FIRST_REG_MOVE (u_node);
-		for (j = 1; j < SCHED_NREG_MOVES (u_node); j++)
-		  reg_move = PREV_INSN (reg_move);
-	      }
-	  }
-
-	for (j = 0; j < i_reg_moves; j++, reg_move = NEXT_INSN (reg_move))
-	  emit_insn (copy_rtx (PATTERN (reg_move)));
-	if (SCHED_STAGE (u_node) >= from_stage
-	    && SCHED_STAGE (u_node) <= to_stage)
-	  duplicate_insn_chain (u_node->first_note, u_node->insn);
       }
 }
 
@@ -1002,7 +1168,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
     }
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, 0, i, 1, count_reg);
+    duplicate_insns_of_cycles (ps, 0, i, count_reg);
 
   /* Put the prolog on the entry edge.  */
   e = loop_preheader_edge (loop);
@@ -1014,7 +1180,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
   start_sequence ();
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, i + 1, last_stage, 0, count_reg);
+    duplicate_insns_of_cycles (ps, i + 1, last_stage, count_reg);
 
   /* Put the epilogue on the exit edge.  */
   gcc_assert (single_exit (loop));
@@ -1350,10 +1516,9 @@ sms_schedule (void)
     {
       rtx head, tail;
       rtx count_reg, count_init;
-      int mii, rec_mii;
-      unsigned stage_count = 0;
+      int mii, rec_mii, stage_count, min_cycle;
       HOST_WIDEST_INT loop_count = 0;
-      bool opt_sc_p = false;
+      bool opt_sc_p;
 
       if (! (g = g_arr[loop->num]))
         continue;
@@ -1430,68 +1595,92 @@ sms_schedule (void)
 	fprintf (dump_file, "SMS iis %d %d %d (rec_mii, mii, maxii)\n",
 		 rec_mii, mii, maxii);
 
-      /* After sms_order_nodes and before sms_schedule_by_order, to copy over
-	 ASAP.  */
-      set_node_sched_params (g);
+      for (;;)
+	{
+	  set_node_sched_params (g);
 
-      ps = sms_schedule_by_order (g, mii, maxii, node_order);
-      
-      if (ps)
-	{
-	  /* Try to achieve optimized SC by normalizing the partial
-	     schedule (having the cycles start from cycle zero).
-	     The branch location must be placed in row ii-1 in the
-	     final scheduling.	If failed, shift all instructions to
-	     position the branch in row ii-1.  */
-	  opt_sc_p = optimize_sc (ps, g);
-	  if (opt_sc_p)
-	    stage_count = calculate_stage_count (ps, 0);
-	  else
+	  stage_count = 0;
+	  opt_sc_p = false;
+	  ps = sms_schedule_by_order (g, mii, maxii, node_order);
+
+	  if (ps)
 	    {
-	      /* Bring the branch to cycle ii-1.  */
-	      int amount = SCHED_TIME (g->closing_branch) - (ps->ii - 1);
-	      
+	      /* Try to achieve optimized SC by normalizing the partial
+		 schedule (having the cycles start from cycle zero).
+		 The branch location must be placed in row ii-1 in the
+		 final scheduling.	If failed, shift all instructions to
+		 position the branch in row ii-1.  */
+	      opt_sc_p = optimize_sc (ps, g);
+	      if (opt_sc_p)
+		stage_count = calculate_stage_count (ps, 0);
+	      else
+		{
+		  /* Bring the branch to cycle ii-1.  */
+		  int amount = (SCHED_TIME (g->closing_branch->cuid)
+				- (ps->ii - 1));
+
+		  if (dump_file)
+		    fprintf (dump_file, "SMS schedule branch at cycle ii-1\n");
+
+		  stage_count = calculate_stage_count (ps, amount);
+		}
+
+	      gcc_assert (stage_count >= 1);
+	    }
+
+	  /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
+	     1 means that there is no interleaving between iterations thus
+	     we let the scheduling passes do the job in this case.  */
+	  if (stage_count < PARAM_VALUE (PARAM_SMS_MIN_SC)
+	      || (count_init && (loop_count <= stage_count))
+	      || (flag_branch_probabilities && (trip_count <= stage_count)))
+	    {
 	      if (dump_file)
-		fprintf (dump_file, "SMS schedule branch at cycle ii-1\n");
-	      
-	      stage_count = calculate_stage_count (ps, amount);
+		{
+		  fprintf (dump_file, "SMS failed... \n");
+		  fprintf (dump_file, "SMS sched-failed (stage-count=%d,"
+			   " loop-count=", stage_count);
+		  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, loop_count);
+		  fprintf (dump_file, ", trip-count=");
+		  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, trip_count);
+		  fprintf (dump_file, ")\n");
+		}
+	      break;
 	    }
-	  
-	  gcc_assert (stage_count >= 1);
-	  PS_STAGE_COUNT (ps) = stage_count;
-	}
-      
-      /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
-	 1 means that there is no interleaving between iterations thus
-	 we let the scheduling passes do the job in this case.  */
-      if (stage_count < (unsigned) PARAM_VALUE (PARAM_SMS_MIN_SC)
-	  || (count_init && (loop_count <= stage_count))
-	  || (flag_branch_probabilities && (trip_count <= stage_count)))
-	{
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "SMS failed... \n");
-	      fprintf (dump_file, "SMS sched-failed (stage-count=%d, loop-count=", stage_count);
-	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, loop_count);
-	      fprintf (dump_file, ", trip-count=");
-	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, trip_count);
-	      fprintf (dump_file, ")\n");
-	    }
-	}
-      else
-	{
-	  struct undo_replace_buff_elem *reg_move_replaces;
 
           if (!opt_sc_p)
             {
 	      /* Rotate the partial schedule to have the branch in row ii-1.  */
-              int amount = SCHED_TIME (g->closing_branch) - (ps->ii - 1);
+              int amount = SCHED_TIME (g->closing_branch->cuid) - (ps->ii - 1);
 	      
               reset_sched_times (ps, amount);
               rotate_partial_schedule (ps, amount);
             }
 	  
 	  set_columns_for_ps (ps);
+
+	  min_cycle = PS_MIN_CYCLE (ps) - SMODULO (PS_MIN_CYCLE (ps), ps->ii);
+	  if (!schedule_reg_moves (ps))
+	    {
+	      mii = ps->ii + 1;
+	      free_partial_schedule (ps);
+	      continue;
+	    }
+
+	  /* Moves that handle incoming values might have been added
+	     to a new first stage.  Bump the stage count if so.
+
+	     ??? Perhaps we could consider rotating the schedule here
+	     instead?  */
+	  if (PS_MIN_CYCLE (ps) < min_cycle)
+	    {
+	      reset_sched_times (ps, 0);
+	      stage_count++;
+	    }
+
+	  /* The stage count should now be correct without rotation.  */
+	  gcc_checking_assert (stage_count == calculate_stage_count (ps, 0));
+	  PS_STAGE_COUNT (ps) = stage_count;
 
 	  canon_loop (loop);
 
@@ -1531,17 +1720,16 @@ sms_schedule (void)
 	  /* The life-info is not valid any more.  */
 	  df_set_bb_dirty (g->bb);
 
-	  reg_move_replaces = generate_reg_moves (ps, true);
+	  apply_reg_moves (ps);
 	  if (dump_file)
-	    print_node_sched_params (dump_file, g->num_nodes, g);
+	    print_node_sched_params (dump_file, g->num_nodes, ps);
 	  /* Generate prolog and epilog.  */
           generate_prolog_epilog (ps, loop, count_reg, count_init);
-
-	  free_undo_replace_buff (reg_move_replaces);
+	  break;
 	}
 
       free_partial_schedule (ps);
-      free (node_sched_params);
+      VEC_free (node_sched_params, heap, node_sched_param_vec);
       free (node_order);
       free_ddg (g);
     }
@@ -1622,7 +1810,11 @@ sms_schedule (void)
    41. endif
    42. compute epilogue & prologue
    43. finish - succeeded to schedule
-*/
+
+   ??? The algorithm restricts the scheduling window to II cycles.
+   In rare cases, it may be better to allow windows of II+1 cycles.
+   The window would then start and end on the same row, but with
+   different "must precede" and "must follow" requirements.  */
 
 /* A limit on the number of cycles that resource conflicts can span.  ??? Should
    be provided by DFA, and be dependent on the type of insn scheduled.  Currently
@@ -1688,11 +1880,11 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   if (psp_not_empty)
     for (e = u_node->in; e != 0; e = e->next_in)
       {
-	ddg_node_ptr v_node = e->src;
+	int v = e->src->cuid;
 
-	if (TEST_BIT (sched_nodes, v_node->cuid))
+	if (TEST_BIT (sched_nodes, v))
 	  {
-	    int p_st = SCHED_TIME (v_node);
+	    int p_st = SCHED_TIME (v);
 	    int earliest = p_st + e->latency - (e->distance * ii);
 	    int latest = (e->data_type == MEM_DEP ? p_st + ii - 1 : INT_MAX);
 
@@ -1716,11 +1908,11 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   if (pss_not_empty)
     for (e = u_node->out; e != 0; e = e->next_out)
       {
-	ddg_node_ptr v_node = e->dest;
+	int v = e->dest->cuid;
 
-	if (TEST_BIT (sched_nodes, v_node->cuid))
+	if (TEST_BIT (sched_nodes, v))
 	  {
-	    int s_st = SCHED_TIME (v_node);
+	    int s_st = SCHED_TIME (v);
 	    int earliest = (e->data_type == MEM_DEP ? s_st - ii + 1 : INT_MIN);
 	    int latest = s_st - e->latency + (e->distance * ii);
 
@@ -1751,7 +1943,7 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
 
   /* Get a target scheduling window no bigger than ii.  */
   if (early_start == INT_MIN && late_start == INT_MAX)
-    early_start = SCHED_ASAP (u_node);
+    early_start = NODE_ASAP (u_node);
   else if (early_start == INT_MIN)
     early_start = late_start - (ii - 1);
   late_start = MIN (late_start, early_start + (ii - 1));
@@ -1848,7 +2040,7 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
       SCHED_TIME (e->src) - (e->distance * ii) == first_cycle_in_window  */
   for (e = u_node->in; e != 0; e = e->next_in)
     if (TEST_BIT (sched_nodes, e->src->cuid)
-	&& ((SCHED_TIME (e->src) - (e->distance * ii)) ==
+	&& ((SCHED_TIME (e->src->cuid) - (e->distance * ii)) ==
              first_cycle_in_window))
       {
 	if (dump_file)
@@ -1873,7 +2065,7 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
       SCHED_TIME (e->dest) + (e->distance * ii) == last_cycle_in_window  */
   for (e = u_node->out; e != 0; e = e->next_out)
     if (TEST_BIT (sched_nodes, e->dest->cuid)
-	&& ((SCHED_TIME (e->dest) + (e->distance * ii)) ==
+	&& ((SCHED_TIME (e->dest->cuid) + (e->distance * ii)) ==
              last_cycle_in_window))
       {
 	if (dump_file)
@@ -1897,7 +2089,7 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
    last row of the scheduling window)  */
 
 static bool
-try_scheduling_node_in_cycle (partial_schedule_ptr ps, ddg_node_ptr u_node,
+try_scheduling_node_in_cycle (partial_schedule_ptr ps,
 			      int u, int cycle, sbitmap sched_nodes,
 			      int *num_splits, sbitmap must_precede,
 			      sbitmap must_follow)
@@ -1906,11 +2098,10 @@ try_scheduling_node_in_cycle (partial_schedule_ptr ps, ddg_node_ptr u_node,
   bool success = 0;
 
   verify_partial_schedule (ps, sched_nodes);
-  psi = ps_add_node_check_conflicts (ps, u_node, cycle,
-				     must_precede, must_follow);
+  psi = ps_add_node_check_conflicts (ps, u, cycle, must_precede, must_follow);
   if (psi)
     {
-      SCHED_TIME (u_node) = cycle;
+      SCHED_TIME (u) = cycle;
       SET_BIT (sched_nodes, u);
       success = 1;
       *num_splits = 0;
@@ -1990,7 +2181,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 		                           &tmp_precede, must_precede, 
                                            c, start, end, step);
                   success =
-                    try_scheduling_node_in_cycle (ps, u_node, u, c,
+                    try_scheduling_node_in_cycle (ps, u, c,
                                                   sched_nodes,
                                                   &num_splits, tmp_precede,
                                                   tmp_follow);
@@ -2090,7 +2281,7 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
       for (crr_insn = rows_new[row];
 	   crr_insn; crr_insn = crr_insn->next_in_row)
 	{
-	  ddg_node_ptr u = crr_insn->node;
+	  int u = crr_insn->id;
 	  int new_time = SCHED_TIME (u) + (SCHED_TIME (u) / ii);
 
 	  SCHED_TIME (u) = new_time;
@@ -2111,7 +2302,7 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
       for (crr_insn = rows_new[row + 1];
 	   crr_insn; crr_insn = crr_insn->next_in_row)
 	{
-	  ddg_node_ptr u = crr_insn->node;
+	  int u = crr_insn->id;
 	  int new_time = SCHED_TIME (u) + (SCHED_TIME (u) / ii) + 1;
 
 	  SCHED_TIME (u) = new_time;
@@ -2151,24 +2342,24 @@ compute_split_row (sbitmap sched_nodes, int low, int up, int ii,
 {
   ddg_edge_ptr e;
   int lower = INT_MIN, upper = INT_MAX;
-  ddg_node_ptr crit_pred = NULL;
-  ddg_node_ptr crit_succ = NULL;
+  int crit_pred = -1;
+  int crit_succ = -1;
   int crit_cycle;
 
   for (e = u_node->in; e != 0; e = e->next_in)
     {
-      ddg_node_ptr v_node = e->src;
+      int v = e->src->cuid;
 
-      if (TEST_BIT (sched_nodes, v_node->cuid)
-	  && (low == SCHED_TIME (v_node) + e->latency - (e->distance * ii)))
-	if (SCHED_TIME (v_node) > lower)
+      if (TEST_BIT (sched_nodes, v)
+	  && (low == SCHED_TIME (v) + e->latency - (e->distance * ii)))
+	if (SCHED_TIME (v) > lower)
 	  {
-	    crit_pred = v_node;
-	    lower = SCHED_TIME (v_node);
+	    crit_pred = v;
+	    lower = SCHED_TIME (v);
 	  }
     }
 
-  if (crit_pred != NULL)
+  if (crit_pred >= 0)
     {
       crit_cycle = SCHED_TIME (crit_pred) + 1;
       return SMODULO (crit_cycle, ii);
@@ -2176,17 +2367,18 @@ compute_split_row (sbitmap sched_nodes, int low, int up, int ii,
 
   for (e = u_node->out; e != 0; e = e->next_out)
     {
-      ddg_node_ptr v_node = e->dest;
-      if (TEST_BIT (sched_nodes, v_node->cuid)
-	  && (up == SCHED_TIME (v_node) - e->latency + (e->distance * ii)))
-	if (SCHED_TIME (v_node) < upper)
+      int v = e->dest->cuid;
+
+      if (TEST_BIT (sched_nodes, v)
+	  && (up == SCHED_TIME (v) - e->latency + (e->distance * ii)))
+	if (SCHED_TIME (v) < upper)
 	  {
-	    crit_succ = v_node;
-	    upper = SCHED_TIME (v_node);
+	    crit_succ = v;
+	    upper = SCHED_TIME (v);
 	  }
     }
 
-  if (crit_succ != NULL)
+  if (crit_succ >= 0)
     {
       crit_cycle = SCHED_TIME (crit_succ);
       return SMODULO (crit_cycle, ii);
@@ -2210,10 +2402,10 @@ verify_partial_schedule (partial_schedule_ptr ps, sbitmap sched_nodes)
       
       for (crr_insn = ps->rows[row]; crr_insn; crr_insn = crr_insn->next_in_row)
 	{
-	  ddg_node_ptr u = crr_insn->node;
+	  int u = crr_insn->id;
 	  
 	  length++;
-	  gcc_assert (TEST_BIT (sched_nodes, u->cuid));
+	  gcc_assert (TEST_BIT (sched_nodes, u));
 	  /* ??? Test also that all nodes of sched_nodes are in ps, perhaps by
 	     popcount (sched_nodes) == number of insns in ps.  */
 	  gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
@@ -2628,6 +2820,7 @@ create_partial_schedule (int ii, ddg_ptr g, int history)
   partial_schedule_ptr ps = XNEW (struct partial_schedule);
   ps->rows = (ps_insn_ptr *) xcalloc (ii, sizeof (ps_insn_ptr));
   ps->rows_length = (int *) xcalloc (ii, sizeof (int));
+  ps->reg_moves = NULL;
   ps->ii = ii;
   ps->history = history;
   ps->min_cycle = INT_MAX;
@@ -2662,8 +2855,16 @@ free_ps_insns (partial_schedule_ptr ps)
 static void
 free_partial_schedule (partial_schedule_ptr ps)
 {
+  ps_reg_move_info *move;
+  unsigned int i;
+
   if (!ps)
     return;
+
+  FOR_EACH_VEC_ELT (ps_reg_move_info, ps->reg_moves, i, move)
+    sbitmap_free (move->uses);
+  VEC_free (ps_reg_move_info, heap, ps->reg_moves);
+
   free_ps_insns (ps);
   free (ps->rows);
   free (ps->rows_length);
@@ -2705,12 +2906,12 @@ print_partial_schedule (partial_schedule_ptr ps, FILE *dump)
       fprintf (dump, "\n[ROW %d ]: ", i);
       while (ps_i)
 	{
-	  if (JUMP_P (ps_i->node->insn))
-	    fprintf (dump, "%d (branch), ",
-		     INSN_UID (ps_i->node->insn));
+	  rtx insn = ps_rtl_insn (ps, ps_i->id);
+
+	  if (JUMP_P (insn))
+	    fprintf (dump, "%d (branch), ", INSN_UID (insn));
 	  else
-	    fprintf (dump, "%d, ",
-		     INSN_UID (ps_i->node->insn));
+	    fprintf (dump, "%d, ", INSN_UID (insn));
 	
 	  ps_i = ps_i->next_in_row;
 	}
@@ -2719,11 +2920,11 @@ print_partial_schedule (partial_schedule_ptr ps, FILE *dump)
 
 /* Creates an object of PS_INSN and initializes it to the given parameters.  */
 static ps_insn_ptr
-create_ps_insn (ddg_node_ptr node, int cycle)
+create_ps_insn (int id, int cycle)
 {
   ps_insn_ptr ps_i = XNEW (struct ps_insn);
 
-  ps_i->node = node;
+  ps_i->id = id;
   ps_i->next_in_row = NULL;
   ps_i->prev_in_row = NULL;
   ps_i->cycle = cycle;
@@ -2788,10 +2989,11 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
        next_ps_i;
        next_ps_i = next_ps_i->next_in_row)
     {
-      if (must_follow && TEST_BIT (must_follow, next_ps_i->node->cuid)
+      if (must_follow
+	  && TEST_BIT (must_follow, next_ps_i->id)
 	  && ! first_must_follow)
         first_must_follow = next_ps_i;
-      if (must_precede && TEST_BIT (must_precede, next_ps_i->node->cuid))
+      if (must_precede && TEST_BIT (must_precede, next_ps_i->id))
         {
           /* If we have already met a node that must follow, then
 	     there is no possible column.  */
@@ -2802,8 +3004,8 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
         }
       /* The closing branch must be the last in the row.  */
       if (must_precede 
-	  && TEST_BIT (must_precede, next_ps_i->node->cuid) 
-	  && JUMP_P (next_ps_i->node->insn))     
+	  && TEST_BIT (must_precede, next_ps_i->id)
+	  && JUMP_P (ps_rtl_insn (ps, next_ps_i->id)))
 	return false;
              
        last_in_row = next_ps_i;
@@ -2812,7 +3014,7 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
   /* The closing branch is scheduled as well.  Make sure there is no
      dependent instruction after it as the branch should be the last
      instruction in the row.  */
-  if (JUMP_P (ps_i->node->insn)) 
+  if (JUMP_P (ps_rtl_insn (ps, ps_i->id)))
     {
       if (first_must_follow)
 	return false;
@@ -2863,7 +3065,6 @@ ps_insn_advance_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
 {
   ps_insn_ptr prev, next;
   int row;
-  ddg_node_ptr next_node;
 
   if (!ps || !ps_i)
     return false;
@@ -2873,11 +3074,9 @@ ps_insn_advance_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
   if (! ps_i->next_in_row)
     return false;
 
-  next_node = ps_i->next_in_row->node;
-
   /* Check if next_in_row is dependent on ps_i, both having same sched
      times (typically ANTI_DEP).  If so, ps_i cannot skip over it.  */
-  if (must_follow && TEST_BIT (must_follow, next_node->cuid))
+  if (must_follow && TEST_BIT (must_follow, ps_i->next_in_row->id))
     return false;
 
   /* Advance PS_I over its next_in_row in the doubly linked list.  */
@@ -2908,7 +3107,7 @@ ps_insn_advance_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
    before/after (respectively) the node pointed to by PS_I when scheduled
    in the same cycle.  */
 static ps_insn_ptr
-add_node_to_ps (partial_schedule_ptr ps, ddg_node_ptr node, int cycle,
+add_node_to_ps (partial_schedule_ptr ps, int id, int cycle,
 		sbitmap must_precede, sbitmap must_follow)
 {
   ps_insn_ptr ps_i;
@@ -2917,7 +3116,7 @@ add_node_to_ps (partial_schedule_ptr ps, ddg_node_ptr node, int cycle,
   if (ps->rows_length[row] >= issue_rate)
     return NULL;
 
-  ps_i = create_ps_insn (node, cycle);
+  ps_i = create_ps_insn (id, cycle);
 
   /* Finds and inserts PS_I according to MUST_FOLLOW and
      MUST_PRECEDE.  */
@@ -2969,7 +3168,7 @@ ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
 	   crr_insn;
 	   crr_insn = crr_insn->next_in_row)
 	{
-	  rtx insn = crr_insn->node->insn;
+	  rtx insn = ps_rtl_insn (ps, crr_insn->id);
 
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
@@ -3006,7 +3205,7 @@ ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
    cuid N must be come before/after (respectively) the node pointed to by
    PS_I when scheduled in the same cycle.  */
 ps_insn_ptr
-ps_add_node_check_conflicts (partial_schedule_ptr ps, ddg_node_ptr n,
+ps_add_node_check_conflicts (partial_schedule_ptr ps, int n,
    			     int c, sbitmap must_precede,
 			     sbitmap must_follow)
 {

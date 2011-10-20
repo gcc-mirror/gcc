@@ -773,18 +773,56 @@ same_succ_flush_bbs (bitmap bbs)
     }
 }
 
+/* Release the last vdef in BB, either normal or phi result.  */
+
+static void
+release_last_vdef (basic_block bb)
+{
+  gimple_stmt_iterator i;
+
+  for (i = gsi_last_bb (bb); !gsi_end_p (i); gsi_prev_nondebug (&i))
+    {
+      gimple stmt = gsi_stmt (i);
+      if (gimple_vdef (stmt) == NULL_TREE)
+	continue;
+
+      mark_virtual_operand_for_renaming (gimple_vdef (stmt));
+      return;
+    }
+
+  for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
+    {
+      gimple phi = gsi_stmt (i);
+      tree res = gimple_phi_result (phi);
+
+      if (is_gimple_reg (res))
+	continue;
+
+      mark_virtual_phi_result_for_renaming (phi);
+      return;
+    }
+  
+}
+
 /* Delete all deleted_bbs.  */
 
 static void
-purge_bbs (void)
+purge_bbs (bool update_vops)
 {
   unsigned int i;
   bitmap_iterator bi;
+  basic_block bb;
 
   same_succ_flush_bbs (deleted_bbs);
 
   EXECUTE_IF_SET_IN_BITMAP (deleted_bbs, 0, i, bi)
-    delete_basic_block (BASIC_BLOCK (i));
+    {
+      bb = BASIC_BLOCK (i);
+      if (!update_vops)
+	release_last_vdef (bb);
+
+      delete_basic_block (bb);
+    }
 
   bitmap_and_compl_into (deleted_bb_preds, deleted_bbs);
   bitmap_clear (deleted_bbs);
@@ -1470,11 +1508,14 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
   edge e;
   edge_iterator ei;
 
+  phi_vuse2 = vop_at_entry (bb2);
+  if (phi_vuse2 != NULL_TREE && TREE_CODE (phi_vuse2) != SSA_NAME)
+    phi_vuse2 = NULL_TREE;
+
   if (update_vops)
     {
       /* Find the vops at entry of bb1 and bb2.  */
       phi_vuse1 = vop_at_entry (bb1);
-      phi_vuse2 = vop_at_entry (bb2);
 
       /* If one of the 2 not found, it means there's no need to update.  */
       update_vops = phi_vuse1 != NULL_TREE && phi_vuse2 != NULL_TREE;
@@ -1507,6 +1548,9 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
       gcc_assert (pred_edge != NULL);
       if (update_vops)
 	VEC_safe_push (edge, heap, redirected_edges, pred_edge);
+      else if (phi_vuse2 && gimple_bb (SSA_NAME_DEF_STMT (phi_vuse2)) == bb2)
+	add_phi_arg (SSA_NAME_DEF_STMT (phi_vuse2), SSA_NAME_VAR (phi_vuse2),
+		     pred_edge, UNKNOWN_LOCATION);
     }
 
   /* Update the vops.  */
@@ -1665,7 +1709,7 @@ tail_merge_optimize (unsigned int todo)
 	break;
 
       free_dominance_info (CDI_DOMINATORS);
-      purge_bbs ();
+      purge_bbs (update_vops);
 
       if (iteration_nr == max_iterations)
 	break;

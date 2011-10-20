@@ -1156,6 +1156,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  mode. The caller has typically checked that the current token,
       --  an identifier, matches one of the 95 keywords.
 
+      procedure Check_Future_Keyword;
+      --  Emit a warning if the current token is a valid identifier in the
+      --  language version in use, but is a reserved word in a later language
+      --  version (unless the language version in use is Ada 83).
+
       procedure Check_Simple_Expression (E : Node_Id);
       --  Given an expression E, that has just been scanned, so that Expr_Form
       --  is still set, outputs an error if E is a non-simple expression. E is

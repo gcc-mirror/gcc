@@ -651,13 +651,13 @@ compile_file (void)
         {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
 	  ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
-					  "__gnu_slim_lto",
+					  "__gnu_lto_slim",
 					  (unsigned HOST_WIDE_INT) 1, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
-	  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_slim_lto",
+	  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
 				     (unsigned HOST_WIDE_INT) 1, 8);
 #else
-	  ASM_OUTPUT_COMMON (asm_out_file, "__gnu_slim_lto",
+	  ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
 			     (unsigned HOST_WIDE_INT) 1,
 			     (unsigned HOST_WIDE_INT) 1);
 #endif
@@ -1171,6 +1171,9 @@ general_init (const char *argv0)
      can give warnings and errors.  */
   diagnostic_initialize (global_dc, N_OPTS);
   diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
+  /* By default print macro expansion contexts in the diagnostic
+     finalizer -- for tokens resulting from macro macro expansion.  */
+  diagnostic_finalizer (global_dc) = virt_loc_aware_diagnostic_finalizer;
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   pp_format_decoder (global_dc->printer) = &default_tree_printer;
@@ -1213,6 +1216,7 @@ general_init (const char *argv0)
   line_table = ggc_alloc_line_maps ();
   linemap_init (line_table);
   line_table->reallocator = realloc_for_line_map;
+  line_table->round_alloc_size = ggc_round_alloc_size;
   init_ttree ();
 
   /* Initialize register usage now so switches may override.  */
@@ -1824,6 +1828,7 @@ target_reinit (void)
 void
 dump_memory_report (bool final)
 {
+  dump_line_table_statistics ();
   ggc_print_statistics ();
   stringpool_statistics ();
   dump_tree_statistics ();

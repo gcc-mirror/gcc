@@ -255,9 +255,9 @@ diagnostic_action_after_output (diagnostic_context *context,
 }
 
 void
-diagnostic_report_current_module (diagnostic_context *context)
+diagnostic_report_current_module (diagnostic_context *context, location_t where)
 {
-  const struct line_map *map;
+  const struct line_map *map = NULL;
 
   if (pp_needs_newline (context->printer))
     {
@@ -265,10 +265,13 @@ diagnostic_report_current_module (diagnostic_context *context)
       pp_needs_newline (context->printer) = false;
     }
 
-  if (input_location <= BUILTINS_LOCATION)
+  if (where <= BUILTINS_LOCATION)
     return;
 
-  map = linemap_lookup (line_table, input_location);
+  linemap_resolve_location (line_table, where,
+			    LRK_MACRO_DEFINITION_LOCATION,
+			    &map);
+
   if (map && diagnostic_last_module_changed (context, map))
     {
       diagnostic_set_last_module (context, map);
@@ -278,18 +281,18 @@ diagnostic_report_current_module (diagnostic_context *context)
 	  if (context->show_column)
 	    pp_verbatim (context->printer,
 			 "In file included from %s:%d:%d",
-			 map->to_file,
+			 LINEMAP_FILE (map),
 			 LAST_SOURCE_LINE (map), LAST_SOURCE_COLUMN (map));
 	  else
 	    pp_verbatim (context->printer,
 			 "In file included from %s:%d",
-			 map->to_file, LAST_SOURCE_LINE (map));
+			 LINEMAP_FILE (map), LAST_SOURCE_LINE (map));
 	  while (! MAIN_FILE_P (map))
 	    {
 	      map = INCLUDED_FROM (line_table, map);
 	      pp_verbatim (context->printer,
 			   ",\n                 from %s:%d",
-			   map->to_file, LAST_SOURCE_LINE (map));
+			   LINEMAP_FILE (map), LAST_SOURCE_LINE (map));
 	    }
 	  pp_verbatim (context->printer, ":");
 	  pp_newline (context->printer);
@@ -301,7 +304,7 @@ void
 default_diagnostic_starter (diagnostic_context *context,
 			    diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context);
+  diagnostic_report_current_module (context, diagnostic->location);
   pp_set_prefix (context->printer, diagnostic_build_prefix (context,
 							    diagnostic));
 }
@@ -459,7 +462,10 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	  /* FIXME: Stupid search.  Optimize later. */
 	  for (i = context->n_classification_history - 1; i >= 0; i --)
 	    {
-	      if (context->classification_history[i].location <= location)
+	      if (linemap_location_before_p
+		  (line_table,
+		   context->classification_history[i].location,
+		   location))
 		{
 		  if (context->classification_history[i].kind == (int) DK_POP)
 		    {

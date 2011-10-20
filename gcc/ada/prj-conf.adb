@@ -1324,6 +1324,7 @@ package body Prj.Conf is
          Prj.Proc.Process_Project_Tree_Phase_1
            (In_Tree                => Project_Tree,
             Project                => Config,
+            Packages_To_Check      => Packages_To_Check,
             Success                => Success,
             From_Project_Node      => Config_Project_Node,
             From_Project_Node_Tree => Project_Node_Tree,
@@ -1465,6 +1466,7 @@ package body Prj.Conf is
       Process_Project_Tree_Phase_1
         (In_Tree                => Project_Tree,
          Project                => Main_Project,
+         Packages_To_Check      => Packages_To_Check,
          Success                => Success,
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,

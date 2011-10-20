@@ -19,5 +19,5 @@ int main (int argc, char *argv[]) {
    return vidx(short, r1, 0);
 }
 
-/* { dg-final { scan-tree-dump-times ">> k.\[0-9_\]*" 1 "veclower" { target vect_shift_scalar } } } */
-/* { dg-final { cleanup-tree-dump "veclower" } } */
+/* { dg-final { scan-tree-dump-times ">> k.\[0-9_\]*" 1 "veclower2" } } */
+/* { dg-final { cleanup-tree-dump "veclower2" } } */

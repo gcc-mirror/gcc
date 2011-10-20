@@ -456,7 +456,7 @@ DEFHOOK
 (output_addr_const_extra,
  "",
  bool, (FILE *file, rtx x),
- default_asm_output_addr_const_extra)
+ hook_bool_FILEptr_rtx_false)
 
 /* ??? The TARGET_PRINT_OPERAND* hooks are part of the asm_out struct,
    even though that is not reflected in the macro name to override their

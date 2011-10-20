@@ -1893,25 +1893,6 @@ package body Bindgen is
                   Write_Str (Name_Buffer (1 .. Name_Len));
                   Write_Eol;
                end if;
-
-               --  Don't link with the shared library on VMS if an internal
-               --  filename object is seen. Multiply defined symbols will
-               --  result.
-
-               if OpenVMS_On_Target
-                 and then Is_Internal_File_Name
-                  (ALIs.Table
-                   (Units.Table (Elab_Order.Table (E)).My_ALI).Sfile)
-               then
-                  --  Special case for g-trasym.obj (not included in libgnat)
-
-                  Get_Name_String (ALIs.Table
-                            (Units.Table (Elab_Order.Table (E)).My_ALI).Sfile);
-
-                  if Name_Buffer (1 .. 8) /= "g-trasym" then
-                     Opt.Shared_Libgnat := False;
-                  end if;
-               end if;
             end if;
          end if;
       end loop;

@@ -443,8 +443,10 @@ const struct c_common_resword c_common_reswords[] =
   { "__asm__",		RID_ASM,	0 },
   { "__attribute",	RID_ATTRIBUTE,	0 },
   { "__attribute__",	RID_ATTRIBUTE,	0 },
+  { "__bases",          RID_BASES, D_CXXONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
+  { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, D_CONLY },
   { "__builtin_offsetof", RID_OFFSETOF, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, D_CONLY },
   { "__builtin_va_arg",	RID_VA_ARG,	0 },
@@ -453,6 +455,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__const",		RID_CONST,	0 },
   { "__const__",	RID_CONST,	0 },
   { "__decltype",       RID_DECLTYPE,   D_CXXONLY },
+  { "__direct_bases",   RID_DIRECT_BASES, D_CXXONLY },
   { "__extension__",	RID_EXTENSION,	0 },
   { "__func__",		RID_C99_FUNCTION_NAME, 0 },
   { "__has_nothrow_assign", RID_HAS_NOTHROW_ASSIGN, D_CXXONLY },
@@ -5230,15 +5233,14 @@ def_builtin_1 (enum built_in_function fncode,
   decl = add_builtin_function (name, fntype, fncode, fnclass,
 			       (fallback_p ? libname : NULL),
 			       fnattrs);
+
+  set_builtin_decl (fncode, decl, implicit_p);
+
   if (both_p
       && !flag_no_builtin && !builtin_function_disabled_p (libname)
       && !(nonansi_p && flag_no_nonansi_builtin))
     add_builtin_function (libname, libtype, fncode, fnclass,
 			  NULL, fnattrs);
-
-  built_in_decls[(int) fncode] = decl;
-  if (implicit_p)
-    implicit_built_in_decls[(int) fncode] = decl;
 }
 
 /* Nonzero if the type T promotes to int.  This is (nearly) the
@@ -9209,11 +9211,13 @@ resolve_overloaded_builtin (location_t loc, tree function, VEC(tree,gc) *params)
       {
 	int n = sync_resolve_size (function, params);
 	tree new_function, first_param, result;
+	enum built_in_function fncode;
 
 	if (n == 0)
 	  return error_mark_node;
 
-	new_function = built_in_decls[orig_code + exact_log2 (n) + 1];
+	fncode = (enum built_in_function)((int)orig_code + exact_log2 (n) + 1);
+	new_function = builtin_decl_explicit (fncode);
 	if (!sync_resolve_params (function, new_function, params))
 	  return error_mark_node;
 

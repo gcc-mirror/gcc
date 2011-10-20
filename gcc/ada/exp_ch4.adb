@@ -765,7 +765,7 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Allocator_Expression
 
    begin
-      --  In the case of an Ada2012 allocator whose initial value comes from a
+      --  In the case of an Ada 2012 allocator whose initial value comes from a
       --  function call, pass "the accessibility level determined by the point
       --  of call" (AI05-0234) to the function. Conceptually, this belongs in
       --  Expand_Call but it couldn't be done there (because the Etype of the
@@ -3526,23 +3526,28 @@ package body Exp_Ch4 is
       end if;
 
       --  Set the storage pool and find the appropriate version of Allocate to
-      --  call.
+      --  call. Do not overwrite the storage pool if it is already set, which
+      --  can happen for build-in-place function returns (see
+      --  Exp_Ch4.Expand_N_Extended_Return_Statement).
 
-      Pool := Associated_Storage_Pool (Root_Type (PtrT));
-      Set_Storage_Pool (N, Pool);
+      if No (Storage_Pool (N)) then
+         Pool := Associated_Storage_Pool (Root_Type (PtrT));
 
-      if Present (Pool) then
-         if Is_RTE (Pool, RE_SS_Pool) then
-            if VM_Target = No_VM then
-               Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
+         if Present (Pool) then
+            Set_Storage_Pool (N, Pool);
+
+            if Is_RTE (Pool, RE_SS_Pool) then
+               if VM_Target = No_VM then
+                  Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
+               end if;
+
+            elsif Is_Class_Wide_Type (Etype (Pool)) then
+               Set_Procedure_To_Call (N, RTE (RE_Allocate_Any));
+
+            else
+               Set_Procedure_To_Call (N,
+                 Find_Prim_Op (Etype (Pool), Name_Allocate));
             end if;
-
-         elsif Is_Class_Wide_Type (Etype (Pool)) then
-            Set_Procedure_To_Call (N, RTE (RE_Allocate_Any));
-
-         else
-            Set_Procedure_To_Call (N,
-              Find_Prim_Op (Etype (Pool), Name_Allocate));
          end if;
       end if;
 
@@ -5574,26 +5579,10 @@ package body Exp_Ch4 is
          Expand_Boolean_Operator (N);
 
       elsif Is_Boolean_Type (Etype (N)) then
-
-         --  Replace AND by AND THEN if Short_Circuit_And_Or active and the
-         --  type is standard Boolean (do not mess with AND that uses a non-
-         --  standard Boolean type, because something strange is going on).
-
-         if Short_Circuit_And_Or and then Typ = Standard_Boolean then
-            Rewrite (N,
-              Make_And_Then (Sloc (N),
-                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
-                Right_Opnd => Relocate_Node (Right_Opnd (N))));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise, adjust conditions
-
-         else
-            Adjust_Condition (Left_Opnd (N));
-            Adjust_Condition (Right_Opnd (N));
-            Set_Etype (N, Standard_Boolean);
-            Adjust_Result_Type (N, Typ);
-         end if;
+         Adjust_Condition (Left_Opnd (N));
+         Adjust_Condition (Right_Opnd (N));
+         Set_Etype (N, Standard_Boolean);
+         Adjust_Result_Type (N, Typ);
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
@@ -7530,26 +7519,10 @@ package body Exp_Ch4 is
          Expand_Boolean_Operator (N);
 
       elsif Is_Boolean_Type (Etype (N)) then
-
-         --  Replace OR by OR ELSE if Short_Circuit_And_Or active and the type
-         --  is standard Boolean (do not mess with AND that uses a non-standard
-         --  Boolean type, because something strange is going on).
-
-         if Short_Circuit_And_Or and then Typ = Standard_Boolean then
-            Rewrite (N,
-              Make_Or_Else (Sloc (N),
-                Left_Opnd  => Relocate_Node (Left_Opnd (N)),
-                Right_Opnd => Relocate_Node (Right_Opnd (N))));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise, adjust conditions
-
-         else
-            Adjust_Condition (Left_Opnd (N));
-            Adjust_Condition (Right_Opnd (N));
-            Set_Etype (N, Standard_Boolean);
-            Adjust_Result_Type (N, Typ);
-         end if;
+         Adjust_Condition (Left_Opnd (N));
+         Adjust_Condition (Right_Opnd (N));
+         Set_Etype (N, Standard_Boolean);
+         Adjust_Result_Type (N, Typ);
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));

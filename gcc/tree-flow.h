@@ -278,7 +278,6 @@ typedef struct immediate_use_iterator_d
 typedef struct var_ann_d *var_ann_t;
 
 static inline var_ann_t var_ann (const_tree);
-static inline var_ann_t get_var_ann (tree);
 static inline void update_stmt (gimple);
 static inline int get_lineno (const_gimple);
 
@@ -716,6 +715,7 @@ bool stmt_dominates_stmt_p (gimple, gimple);
 void mark_virtual_ops_for_renaming (gimple);
 
 /* In tree-ssa-dce.c */
+void mark_virtual_operand_for_renaming (tree);
 void mark_virtual_phi_result_for_renaming (gimple);
 
 /* In tree-ssa-threadedge.c */

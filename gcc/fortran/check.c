@@ -203,42 +203,10 @@ double_check (gfc_expr *d, int n)
 }
 
 
-/* Check whether an expression is a coarray (without array designator).  */
-
-static bool
-is_coarray (gfc_expr *e)
-{
-  bool coarray = false;
-  gfc_ref *ref;
-
-  if (e->expr_type != EXPR_VARIABLE)
-    return false;
-
-  coarray = e->symtree->n.sym->attr.codimension;
-
-  for (ref = e->ref; ref; ref = ref->next)
-    {
-      if (ref->type == REF_COMPONENT)
-	coarray = ref->u.c.component->attr.codimension;
-      else if (ref->type != REF_ARRAY || ref->u.ar.dimen != 0)
-	coarray = false;
-      else if (ref->type == REF_ARRAY && ref->u.ar.codimen != 0) 
-	{
-	  int n;
-	  for (n = 0; n < ref->u.ar.codimen; n++)
-	    if (ref->u.ar.dimen_type[n] != DIMEN_THIS_IMAGE)
-	      coarray = false;
-	}
-    }
-
-  return coarray;
-}
-
-
 static gfc_try
 coarray_check (gfc_expr *e, int n)
 {
-  if (!is_coarray (e))
+  if (!gfc_is_coarray (e))
     {
       gfc_error ("Expected coarray variable as '%s' argument to the %s "
                  "intrinsic at %L", gfc_current_intrinsic_arg[n]->name,
@@ -543,7 +511,6 @@ dim_check (gfc_expr *dim, int n, bool optional)
 static gfc_try
 dim_corank_check (gfc_expr *dim, gfc_expr *array)
 {
-  gfc_array_ref *ar;
   int corank;
 
   gcc_assert (array->expr_type == EXPR_VARIABLE);
@@ -551,8 +518,7 @@ dim_corank_check (gfc_expr *dim, gfc_expr *array)
   if (dim->expr_type != EXPR_CONSTANT)
     return SUCCESS;
 
-  ar = gfc_find_array_ref (array);
-  corank = ar->as->corank;
+  corank = gfc_get_corank (array);
 
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
       || mpz_cmp_ui (dim->value.integer, corank) > 0)
@@ -3478,8 +3444,15 @@ gfc_check_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
 
 gfc_try
-gfc_check_sizeof (gfc_expr *arg ATTRIBUTE_UNUSED)
+gfc_check_sizeof (gfc_expr *arg)
 {
+  if (arg->ts.type == BT_PROCEDURE)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L may not be a procedure",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &arg->where);
+      return FAILURE;
+    }
   return SUCCESS;
 }
 
@@ -3487,7 +3460,7 @@ gfc_check_sizeof (gfc_expr *arg ATTRIBUTE_UNUSED)
 gfc_try
 gfc_check_c_sizeof (gfc_expr *arg)
 {
-  if (verify_c_interop (&arg->ts) != SUCCESS)
+  if (gfc_verify_c_interop (&arg->ts) != SUCCESS)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be an "
 		 "interoperable data entity",

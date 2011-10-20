@@ -106,6 +106,7 @@ template<typename _Alloc>
     using _Base_type::deallocate;
     using _Base_type::construct;
     using _Base_type::destroy;
+    using _Base_type::max_size;
 
   private:
     template<typename _Ptr>
@@ -115,6 +116,7 @@ template<typename _Alloc>
       { };
 
   public:
+    // overload construct for non-standard pointer types
     template<typename _Ptr, typename... _Args>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
@@ -123,6 +125,7 @@ template<typename _Alloc>
 			      std::forward<_Args>(__args)...);
       }
 
+    // overload destroy for non-standard pointer types
     template<typename _Ptr>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       destroy(_Alloc& __a, _Ptr __p)
@@ -156,6 +159,9 @@ template<typename _Alloc>
        	|| noexcept(swap(std::declval<_Alloc&>(), std::declval<_Alloc&>()));
     }
 
+    template<typename _Tp>
+      struct rebind
+      { typedef typename _Base_type::template __rebind_alloc<_Tp>::__type other; };
 #else
 
     typedef typename _Alloc::pointer                pointer;
@@ -179,6 +185,9 @@ template<typename _Alloc>
     static void destroy(_Alloc& __a, pointer __p)
     { __a.destroy(__p); }
 
+    static size_type max_size(const _Alloc& __a)
+    { return __a.max_size(); }
+
     static const _Alloc& _S_select_on_copy(const _Alloc& __a) { return __a; }
 
     static void _S_on_swap(_Alloc& __a, _Alloc& __b)
@@ -187,6 +196,10 @@ template<typename _Alloc>
       // 431. Swapping containers with unequal allocators.
       std::__alloc_swap<_Alloc>::_S_do_it(__a, __b);
     }
+
+    template<typename _Tp>
+      struct rebind
+      { typedef typename _Alloc::template rebind<_Tp>::other other; };
 #endif
   };
 

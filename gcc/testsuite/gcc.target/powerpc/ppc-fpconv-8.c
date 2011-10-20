@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target powerpc_fprs } */
 /* { dg-options "-O3 -mcpu=750 -ffast-math" } */
 /* { dg-final { scan-assembler-times "fctiwz" 6 } } */
 /* { dg-final { scan-assembler-not "fctiwuz" } } */

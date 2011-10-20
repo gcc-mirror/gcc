@@ -1,6 +1,7 @@
 ;; Machine description for ARM processor synchronization primitives.
 ;; Copyright (C) 2010 Free Software Foundation, Inc.
 ;; Written by Marcus Shawcroft (marcus.shawcroft@arm.com)
+;; 64bit Atomics by Dave Gilbert (david.gilbert@linaro.org)
 ;;
 ;; This file is part of GCC.
 ;;
@@ -33,31 +34,24 @@
   MEM_VOLATILE_P (operands[0]) = 1;
 })
 
-(define_expand "sync_compare_and_swapsi"
-  [(set (match_operand:SI 0 "s_register_operand")
-        (unspec_volatile:SI [(match_operand:SI 1 "memory_operand")
-			     (match_operand:SI 2 "s_register_operand")
-			     (match_operand:SI 3 "s_register_operand")]
-			     VUNSPEC_SYNC_COMPARE_AND_SWAP))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omrn;
-    generator.u.omrn = gen_arm_sync_compare_and_swapsi;
-    arm_expand_sync (SImode, &generator, operands[0], operands[1], operands[2],
-                     operands[3]);
-    DONE;
-  })
 
-(define_mode_iterator NARROW [QI HI])
+(define_mode_attr sync_predtab [(SI "TARGET_HAVE_LDREX &&
+					TARGET_HAVE_MEMORY_BARRIER")
+				(QI "TARGET_HAVE_LDREXBH &&
+					TARGET_HAVE_MEMORY_BARRIER")
+				(HI "TARGET_HAVE_LDREXBH &&
+					TARGET_HAVE_MEMORY_BARRIER")
+				(DI "TARGET_HAVE_LDREXD &&
+					ARM_DOUBLEWORD_ALIGN &&
+					TARGET_HAVE_MEMORY_BARRIER")])
 
 (define_expand "sync_compare_and_swap<mode>"
-  [(set (match_operand:NARROW 0 "s_register_operand")
-        (unspec_volatile:NARROW [(match_operand:NARROW 1 "memory_operand")
-			     (match_operand:NARROW 2 "s_register_operand")
-			     (match_operand:NARROW 3 "s_register_operand")]
+  [(set (match_operand:QHSD 0 "s_register_operand")
+        (unspec_volatile:QHSD [(match_operand:QHSD 1 "memory_operand")
+			     (match_operand:QHSD 2 "s_register_operand")
+			     (match_operand:QHSD 3 "s_register_operand")]
 			     VUNSPEC_SYNC_COMPARE_AND_SWAP))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omrn;
@@ -67,25 +61,11 @@
     DONE;
   })
 
-(define_expand "sync_lock_test_and_setsi"
-  [(match_operand:SI 0 "s_register_operand")
-   (match_operand:SI 1 "memory_operand")
-   (match_operand:SI 2 "s_register_operand")]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omn;
-    generator.u.omn = gen_arm_sync_lock_test_and_setsi;
-    arm_expand_sync (SImode, &generator, operands[0], operands[1], NULL,
-                     operands[2]);
-    DONE;
-  })
-
 (define_expand "sync_lock_test_and_set<mode>"
-  [(match_operand:NARROW 0 "s_register_operand")
-   (match_operand:NARROW 1 "memory_operand")
-   (match_operand:NARROW 2 "s_register_operand")]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  [(match_operand:QHSD 0 "s_register_operand")
+   (match_operand:QHSD 1 "memory_operand")
+   (match_operand:QHSD 2 "s_register_operand")]
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omn;
@@ -115,51 +95,25 @@
 				(plus "*")
 				(minus "*")])
 
-(define_expand "sync_<sync_optab>si"
-  [(match_operand:SI 0 "memory_operand")
-   (match_operand:SI 1 "s_register_operand")
-   (syncop:SI (match_dup 0) (match_dup 1))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omn;
-    generator.u.omn = gen_arm_sync_new_<sync_optab>si;
-    arm_expand_sync (SImode, &generator, NULL, operands[0], NULL, operands[1]);
-    DONE;
-  })
-
-(define_expand "sync_nandsi"
-  [(match_operand:SI 0 "memory_operand")
-   (match_operand:SI 1 "s_register_operand")
-   (not:SI (and:SI (match_dup 0) (match_dup 1)))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omn;
-    generator.u.omn = gen_arm_sync_new_nandsi;
-    arm_expand_sync (SImode, &generator, NULL, operands[0], NULL, operands[1]);
-    DONE;
-  })
-
 (define_expand "sync_<sync_optab><mode>"
-  [(match_operand:NARROW 0 "memory_operand")
-   (match_operand:NARROW 1 "s_register_operand")
-   (syncop:NARROW (match_dup 0) (match_dup 1))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  [(match_operand:QHSD 0 "memory_operand")
+   (match_operand:QHSD 1 "s_register_operand")
+   (syncop:QHSD (match_dup 0) (match_dup 1))]
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omn;
     generator.u.omn = gen_arm_sync_new_<sync_optab><mode>;
     arm_expand_sync (<MODE>mode, &generator, NULL, operands[0], NULL,
-    		     operands[1]);
+		     operands[1]);
     DONE;
   })
 
 (define_expand "sync_nand<mode>"
-  [(match_operand:NARROW 0 "memory_operand")
-   (match_operand:NARROW 1 "s_register_operand")
-   (not:NARROW (and:NARROW (match_dup 0) (match_dup 1)))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  [(match_operand:QHSD 0 "memory_operand")
+   (match_operand:QHSD 1 "s_register_operand")
+   (not:QHSD (and:QHSD (match_dup 0) (match_dup 1)))]
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omn;
@@ -169,57 +123,27 @@
     DONE;
   })
 
-(define_expand "sync_new_<sync_optab>si"
-  [(match_operand:SI 0 "s_register_operand")
-   (match_operand:SI 1 "memory_operand")
-   (match_operand:SI 2 "s_register_operand")
-   (syncop:SI (match_dup 1) (match_dup 2))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omn;
-    generator.u.omn = gen_arm_sync_new_<sync_optab>si;
-    arm_expand_sync (SImode, &generator, operands[0], operands[1], NULL,
-                     operands[2]);
-    DONE;
-  })
-
-(define_expand "sync_new_nandsi"
-  [(match_operand:SI 0 "s_register_operand")
-   (match_operand:SI 1 "memory_operand")
-   (match_operand:SI 2 "s_register_operand")
-   (not:SI (and:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omn;
-    generator.u.omn = gen_arm_sync_new_nandsi;
-    arm_expand_sync (SImode, &generator, operands[0], operands[1], NULL,
-    		     operands[2]);
-    DONE;
-  })
-
 (define_expand "sync_new_<sync_optab><mode>"
-  [(match_operand:NARROW 0 "s_register_operand")
-   (match_operand:NARROW 1 "memory_operand")
-   (match_operand:NARROW 2 "s_register_operand")
-   (syncop:NARROW (match_dup 1) (match_dup 2))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  [(match_operand:QHSD 0 "s_register_operand")
+   (match_operand:QHSD 1 "memory_operand")
+   (match_operand:QHSD 2 "s_register_operand")
+   (syncop:QHSD (match_dup 1) (match_dup 2))]
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omn;
     generator.u.omn = gen_arm_sync_new_<sync_optab><mode>;
     arm_expand_sync (<MODE>mode, &generator, operands[0], operands[1],
-    		     NULL, operands[2]);
+		     NULL, operands[2]);
     DONE;
   })
 
 (define_expand "sync_new_nand<mode>"
-  [(match_operand:NARROW 0 "s_register_operand")
-   (match_operand:NARROW 1 "memory_operand")
-   (match_operand:NARROW 2 "s_register_operand")
-   (not:NARROW (and:NARROW (match_dup 1) (match_dup 2)))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  [(match_operand:QHSD 0 "s_register_operand")
+   (match_operand:QHSD 1 "memory_operand")
+   (match_operand:QHSD 2 "s_register_operand")
+   (not:QHSD (and:QHSD (match_dup 1) (match_dup 2)))]
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omn;
@@ -229,57 +153,27 @@
     DONE;
   });
 
-(define_expand "sync_old_<sync_optab>si"
-  [(match_operand:SI 0 "s_register_operand")
-   (match_operand:SI 1 "memory_operand")
-   (match_operand:SI 2 "s_register_operand")
-   (syncop:SI (match_dup 1) (match_dup 2))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omn;
-    generator.u.omn = gen_arm_sync_old_<sync_optab>si;
-    arm_expand_sync (SImode, &generator, operands[0], operands[1], NULL,
-                     operands[2]);
-    DONE;
-  })
-
-(define_expand "sync_old_nandsi"
-  [(match_operand:SI 0 "s_register_operand")
-   (match_operand:SI 1 "memory_operand")
-   (match_operand:SI 2 "s_register_operand")
-   (not:SI (and:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    struct arm_sync_generator generator;
-    generator.op = arm_sync_generator_omn;
-    generator.u.omn = gen_arm_sync_old_nandsi;
-    arm_expand_sync (SImode, &generator, operands[0], operands[1], NULL,
-                     operands[2]);
-    DONE;
-  })
-
 (define_expand "sync_old_<sync_optab><mode>"
-  [(match_operand:NARROW 0 "s_register_operand")
-   (match_operand:NARROW 1 "memory_operand")
-   (match_operand:NARROW 2 "s_register_operand")
-   (syncop:NARROW (match_dup 1) (match_dup 2))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  [(match_operand:QHSD 0 "s_register_operand")
+   (match_operand:QHSD 1 "memory_operand")
+   (match_operand:QHSD 2 "s_register_operand")
+   (syncop:QHSD (match_dup 1) (match_dup 2))]
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omn;
     generator.u.omn = gen_arm_sync_old_<sync_optab><mode>;
     arm_expand_sync (<MODE>mode, &generator, operands[0], operands[1],
-    		     NULL, operands[2]);
+		     NULL, operands[2]);
     DONE;
   })
 
 (define_expand "sync_old_nand<mode>"
-  [(match_operand:NARROW 0 "s_register_operand")
-   (match_operand:NARROW 1 "memory_operand")
-   (match_operand:NARROW 2 "s_register_operand")
-   (not:NARROW (and:NARROW (match_dup 1) (match_dup 2)))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  [(match_operand:QHSD 0 "s_register_operand")
+   (match_operand:QHSD 1 "memory_operand")
+   (match_operand:QHSD 2 "s_register_operand")
+   (not:QHSD (and:QHSD (match_dup 1) (match_dup 2)))]
+  "<sync_predtab>"
   {
     struct arm_sync_generator generator;
     generator.op = arm_sync_generator_omn;
@@ -289,22 +183,22 @@
     DONE;
   })
 
-(define_insn "arm_sync_compare_and_swapsi"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (unspec_volatile:SI
-	  [(match_operand:SI 1 "arm_sync_memory_operand" "+Q")
-   	   (match_operand:SI 2 "s_register_operand" "r")
-	   (match_operand:SI 3 "s_register_operand" "r")]
-	  VUNSPEC_SYNC_COMPARE_AND_SWAP))
-   (set (match_dup 1) (unspec_volatile:SI [(match_dup 2)]
+(define_insn "arm_sync_compare_and_swap<mode>"
+  [(set (match_operand:SIDI 0 "s_register_operand" "=&r")
+        (unspec_volatile:SIDI
+	 [(match_operand:SIDI 1 "arm_sync_memory_operand" "+Q")
+	  (match_operand:SIDI 2 "s_register_operand" "r")
+	  (match_operand:SIDI 3 "s_register_operand" "r")]
+	 VUNSPEC_SYNC_COMPARE_AND_SWAP))
+   (set (match_dup 1) (unspec_volatile:SIDI [(match_dup 2)]
                                           VUNSPEC_SYNC_COMPARE_AND_SWAP))
    (set (reg:CC CC_REGNUM) (unspec_volatile:CC [(match_dup 1)]
                                                 VUNSPEC_SYNC_COMPARE_AND_SWAP))
    ]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
-  } 
+  }
   [(set_attr "sync_result"          "0")
    (set_attr "sync_memory"          "1")
    (set_attr "sync_required_value"  "2")
@@ -318,7 +212,7 @@
         (zero_extend:SI
 	  (unspec_volatile:NARROW
 	    [(match_operand:NARROW 1 "arm_sync_memory_operand" "+Q")
-   	     (match_operand:SI 2 "s_register_operand" "r")
+	     (match_operand:SI 2 "s_register_operand" "r")
 	     (match_operand:SI 3 "s_register_operand" "r")]
 	    VUNSPEC_SYNC_COMPARE_AND_SWAP)))
    (set (match_dup 1) (unspec_volatile:NARROW [(match_dup 2)]
@@ -326,10 +220,10 @@
    (set (reg:CC CC_REGNUM) (unspec_volatile:CC [(match_dup 1)]
                                                 VUNSPEC_SYNC_COMPARE_AND_SWAP))
    ]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
-  } 
+  }
   [(set_attr "sync_result"          "0")
    (set_attr "sync_memory"          "1")
    (set_attr "sync_required_value"  "2")
@@ -338,18 +232,18 @@
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
-(define_insn "arm_sync_lock_test_and_setsi"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (match_operand:SI 1 "arm_sync_memory_operand" "+Q"))
+(define_insn "arm_sync_lock_test_and_set<mode>"
+  [(set (match_operand:SIDI 0 "s_register_operand" "=&r")
+	(match_operand:SIDI 1 "arm_sync_memory_operand" "+Q"))
    (set (match_dup 1)
-        (unspec_volatile:SI [(match_operand:SI 2 "s_register_operand" "r")]
-	                    VUNSPEC_SYNC_LOCK))
+	(unspec_volatile:SIDI [(match_operand:SIDI 2 "s_register_operand" "r")]
+	VUNSPEC_SYNC_LOCK))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
-  } 
+  }
   [(set_attr "sync_release_barrier" "no")
    (set_attr "sync_result"          "0")
    (set_attr "sync_memory"          "1")
@@ -364,10 +258,10 @@
         (zero_extend:SI (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q")))
    (set (match_dup 1)
         (unspec_volatile:NARROW [(match_operand:SI 2 "s_register_operand" "r")]
-	                        VUNSPEC_SYNC_LOCK))
+				VUNSPEC_SYNC_LOCK))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
   } 
@@ -380,22 +274,22 @@
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
-(define_insn "arm_sync_new_<sync_optab>si"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (unspec_volatile:SI [(syncop:SI
-                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
-                               (match_operand:SI 2 "s_register_operand" "r"))
-	                    ]
-	                    VUNSPEC_SYNC_NEW_OP))
+(define_insn "arm_sync_new_<sync_optab><mode>"
+  [(set (match_operand:SIDI 0 "s_register_operand" "=&r")
+        (unspec_volatile:SIDI [(syncop:SIDI
+			       (match_operand:SIDI 1 "arm_sync_memory_operand" "+Q")
+			       (match_operand:SIDI 2 "s_register_operand" "r"))
+			    ]
+			    VUNSPEC_SYNC_NEW_OP))
    (set (match_dup 1)
-        (unspec_volatile:SI [(match_dup 1) (match_dup 2)]
-	                    VUNSPEC_SYNC_NEW_OP))
+	(unspec_volatile:SIDI [(match_dup 1) (match_dup 2)]
+			    VUNSPEC_SYNC_NEW_OP))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
-  } 
+  }
   [(set_attr "sync_result"          "0")
    (set_attr "sync_memory"          "1")
    (set_attr "sync_new_value"       "2")
@@ -405,48 +299,23 @@
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
-(define_insn "arm_sync_new_nandsi"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (unspec_volatile:SI [(not:SI (and:SI
-                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
-                               (match_operand:SI 2 "s_register_operand" "r")))
-	                    ]
-	                    VUNSPEC_SYNC_NEW_OP))
-   (set (match_dup 1)
-        (unspec_volatile:SI [(match_dup 1) (match_dup 2)]
-	                    VUNSPEC_SYNC_NEW_OP))
-   (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    return arm_output_sync_insn (insn, operands);
-  } 
-  [(set_attr "sync_result"          "0")
-   (set_attr "sync_memory"          "1")
-   (set_attr "sync_new_value"       "2")
-   (set_attr "sync_t1"              "0")
-   (set_attr "sync_t2"              "3")
-   (set_attr "sync_op"              "nand")
-   (set_attr "conds" "clob")
-   (set_attr "predicable" "no")])
-
 (define_insn "arm_sync_new_<sync_optab><mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(syncop:SI
-                               (zero_extend:SI
-			         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
-                               (match_operand:SI 2 "s_register_operand" "r"))
-	                    ]
-	                    VUNSPEC_SYNC_NEW_OP))
+			       (zero_extend:SI
+				 (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
+			       (match_operand:SI 2 "s_register_operand" "r"))
+			    ]
+			    VUNSPEC_SYNC_NEW_OP))
    (set (match_dup 1)
-        (unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
-	                        VUNSPEC_SYNC_NEW_OP))
+	(unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
+				VUNSPEC_SYNC_NEW_OP))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
-  } 
+  }
   [(set_attr "sync_result"          "0")
    (set_attr "sync_memory"          "1")
    (set_attr "sync_new_value"       "2")
@@ -457,23 +326,21 @@
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_new_nand<mode>"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (unspec_volatile:SI
-	  [(not:SI
-	     (and:SI
-               (zero_extend:SI	  
-	         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
-               (match_operand:SI 2 "s_register_operand" "r")))
-	  ] VUNSPEC_SYNC_NEW_OP))
+  [(set (match_operand:SIDI 0 "s_register_operand" "=&r")
+        (unspec_volatile:SIDI [(not:SIDI (and:SIDI
+			       (match_operand:SIDI 1 "arm_sync_memory_operand" "+Q")
+			       (match_operand:SIDI 2 "s_register_operand" "r")))
+			    ]
+			    VUNSPEC_SYNC_NEW_OP))
    (set (match_dup 1)
-        (unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
-	                        VUNSPEC_SYNC_NEW_OP))
+	(unspec_volatile:SIDI [(match_dup 1) (match_dup 2)]
+			    VUNSPEC_SYNC_NEW_OP))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
-  } 
+  }
   [(set_attr "sync_result"          "0")
    (set_attr "sync_memory"          "1")
    (set_attr "sync_new_value"       "2")
@@ -483,20 +350,47 @@
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
-(define_insn "arm_sync_old_<sync_optab>si"
+(define_insn "arm_sync_new_nand<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (unspec_volatile:SI [(syncop:SI
-                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
-                               (match_operand:SI 2 "s_register_operand" "r"))
-	                    ]
-	                    VUNSPEC_SYNC_OLD_OP))
+        (unspec_volatile:SI
+	  [(not:SI
+	     (and:SI
+	       (zero_extend:SI
+		 (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
+	       (match_operand:SI 2 "s_register_operand" "r")))
+	  ] VUNSPEC_SYNC_NEW_OP))
    (set (match_dup 1)
-        (unspec_volatile:SI [(match_dup 1) (match_dup 2)]
-	                    VUNSPEC_SYNC_OLD_OP))
+        (unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
+				VUNSPEC_SYNC_NEW_OP))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "<sync_predtab>"
+  {
+    return arm_output_sync_insn (insn, operands);
+  }
+  [(set_attr "sync_result"          "0")
+   (set_attr "sync_memory"          "1")
+   (set_attr "sync_new_value"       "2")
+   (set_attr "sync_t1"              "0")
+   (set_attr "sync_t2"              "3")
+   (set_attr "sync_op"              "nand")
+   (set_attr "conds" "clob")
+   (set_attr "predicable" "no")])
+
+(define_insn "arm_sync_old_<sync_optab><mode>"
+  [(set (match_operand:SIDI 0 "s_register_operand" "=&r")
+	(unspec_volatile:SIDI [(syncop:SIDI
+			       (match_operand:SIDI 1 "arm_sync_memory_operand" "+Q")
+			       (match_operand:SIDI 2 "s_register_operand" "r"))
+			    ]
+			    VUNSPEC_SYNC_OLD_OP))
+   (set (match_dup 1)
+        (unspec_volatile:SIDI [(match_dup 1) (match_dup 2)]
+			      VUNSPEC_SYNC_OLD_OP))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (match_scratch:SIDI 3 "=&r"))
    (clobber (match_scratch:SI 4 "<sync_clobber>"))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
   } 
@@ -509,47 +403,21 @@
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
-(define_insn "arm_sync_old_nandsi"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (unspec_volatile:SI [(not:SI (and:SI
-                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
-                               (match_operand:SI 2 "s_register_operand" "r")))
-	                    ]
-	                    VUNSPEC_SYNC_OLD_OP))
-   (set (match_dup 1)
-        (unspec_volatile:SI [(match_dup 1) (match_dup 2)]
-	                    VUNSPEC_SYNC_OLD_OP))
-   (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:SI 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
-  "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
-  {
-    return arm_output_sync_insn (insn, operands);
-  } 
-  [(set_attr "sync_result"          "0")
-   (set_attr "sync_memory"          "1")
-   (set_attr "sync_new_value"       "2")
-   (set_attr "sync_t1"              "3")
-   (set_attr "sync_t2"              "4")
-   (set_attr "sync_op"              "nand")
-   (set_attr "conds" 		    "clob")
-   (set_attr "predicable" "no")])
-
 (define_insn "arm_sync_old_<sync_optab><mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(syncop:SI
-                               (zero_extend:SI
-			         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
-                               (match_operand:SI 2 "s_register_operand" "r"))
-	                    ]
-	                    VUNSPEC_SYNC_OLD_OP))
+			       (zero_extend:SI
+				 (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
+			       (match_operand:SI 2 "s_register_operand" "r"))
+			    ]
+			    VUNSPEC_SYNC_OLD_OP))
    (set (match_dup 1)
-        (unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
-	                    VUNSPEC_SYNC_OLD_OP))
+	(unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
+			    VUNSPEC_SYNC_OLD_OP))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "<sync_clobber>"))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
   } 
@@ -563,20 +431,46 @@
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_old_nand<mode>"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (unspec_volatile:SI [(not:SI (and:SI
-                               (zero_extend:SI
-			         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
-                               (match_operand:SI 2 "s_register_operand" "r")))
-	                    ]
-	                    VUNSPEC_SYNC_OLD_OP))
+  [(set (match_operand:SIDI 0 "s_register_operand" "=&r")
+	(unspec_volatile:SIDI [(not:SIDI (and:SIDI
+			       (match_operand:SIDI 1 "arm_sync_memory_operand" "+Q")
+			       (match_operand:SIDI 2 "s_register_operand" "r")))
+			    ]
+			    VUNSPEC_SYNC_OLD_OP))
    (set (match_dup 1)
-        (unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
+        (unspec_volatile:SIDI [(match_dup 1) (match_dup 2)]
 	                    VUNSPEC_SYNC_OLD_OP))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (match_scratch:SIDI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=&r"))]
+  "<sync_predtab>"
+  {
+    return arm_output_sync_insn (insn, operands);
+  } 
+  [(set_attr "sync_result"          "0")
+   (set_attr "sync_memory"          "1")
+   (set_attr "sync_new_value"       "2")
+   (set_attr "sync_t1"              "3")
+   (set_attr "sync_t2"              "4")
+   (set_attr "sync_op"              "nand")
+   (set_attr "conds" 		    "clob")
+   (set_attr "predicable" "no")])
+
+(define_insn "arm_sync_old_nand<mode>"
+  [(set (match_operand:SI 0 "s_register_operand" "=&r")
+	(unspec_volatile:SI [(not:SI (and:SI
+			       (zero_extend:SI
+				 (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
+			       (match_operand:SI 2 "s_register_operand" "r")))
+			    ]
+			    VUNSPEC_SYNC_OLD_OP))
+   (set (match_dup 1)
+	(unspec_volatile:NARROW [(match_dup 1) (match_dup 2)]
+			    VUNSPEC_SYNC_OLD_OP))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=&r"))]
-  "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
+  "<sync_predtab>"
   {
     return arm_output_sync_insn (insn, operands);
   } 

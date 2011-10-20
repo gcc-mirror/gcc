@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-Wno-align-commons" }
 !
 ! PR fortran/45044
 !

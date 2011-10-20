@@ -830,6 +830,7 @@ pp_cxx_cast_expression (cxx_pretty_printer *pp, tree t)
   switch (TREE_CODE (t))
     {
     case CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
       pp_cxx_type_id (pp, TREE_TYPE (t));
       pp_cxx_call_argument_list (pp, TREE_OPERAND (t, 0));
       break;
@@ -1084,6 +1085,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
       break;
 
     case CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
       pp_cxx_cast_expression (pp, t);
       break;
 

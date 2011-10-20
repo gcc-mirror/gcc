@@ -17240,10 +17240,15 @@ fi
 
 
   if test $enable_fully_dynamic_string = yes; then
-
-$as_echo "#define _GLIBCXX_FULLY_DYNAMIC_STRING 1" >>confdefs.h
-
+    enable_fully_dynamic_string_def=1
+  else
+    enable_fully_dynamic_string_def=0
   fi
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_FULLY_DYNAMIC_STRING ${enable_fully_dynamic_string_def}
+_ACEOF
+
 
 
 

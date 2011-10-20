@@ -117,7 +117,7 @@ AVR_MCU ("atmega16a",            ARCH_AVR5, "__AVR_ATmega16A__",         0, 0, 0
 AVR_MCU ("atmega161",            ARCH_AVR5, "__AVR_ATmega161__",         0, 0, 0x0060, "m161")
 AVR_MCU ("atmega162",            ARCH_AVR5, "__AVR_ATmega162__",         0, 0, 0x0100, "m162")
 AVR_MCU ("atmega163",            ARCH_AVR5, "__AVR_ATmega163__",         0, 0, 0x0060, "m163")
-AVR_MCU ("atmega164a",           ARCH_AVR5, "__AVR_ATmega164A__",        0, 0, 0x0060, "m164a")
+AVR_MCU ("atmega164a",           ARCH_AVR5, "__AVR_ATmega164A__",        0, 0, 0x0100, "m164a")
 AVR_MCU ("atmega164p",           ARCH_AVR5, "__AVR_ATmega164P__",        0, 0, 0x0100, "m164p")
 AVR_MCU ("atmega165",            ARCH_AVR5, "__AVR_ATmega165__",         0, 0, 0x0100, "m165")
 AVR_MCU ("atmega165a",           ARCH_AVR5, "__AVR_ATmega165A__",        0, 0, 0x0100, "m165a")

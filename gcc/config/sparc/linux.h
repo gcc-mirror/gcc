@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* -mcpu=native handling only makes sense with compiler running on
    a SPARC chip.  */
-#if defined(__sparc__)
+#if defined(__sparc__) && defined(__linux__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define EXTRA_SPEC_FUNCTIONS						\
   { "local_cpu_detect", host_detect_local_cpu },

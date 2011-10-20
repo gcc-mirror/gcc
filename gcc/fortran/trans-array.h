@@ -70,6 +70,8 @@ void gfc_trans_static_array_pointer (gfc_symbol *);
 gfc_ss *gfc_walk_expr (gfc_expr *);
 /* Workhorse for gfc_walk_expr.  */
 gfc_ss *gfc_walk_subexpr (gfc_ss *, gfc_expr *);
+/* Workhorse for gfc_walk_variable_expr.  */
+gfc_ss *gfc_walk_array_ref (gfc_ss *, gfc_expr *, gfc_ref * ref);
 /* Walk the arguments of an elemental function.  */
 gfc_ss *gfc_walk_elemental_function_args (gfc_ss *, gfc_actual_arglist *,
 					  gfc_ss_type);
