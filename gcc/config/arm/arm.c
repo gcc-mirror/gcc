@@ -21652,7 +21652,8 @@ thumb_unexpanded_epilogue (void)
   if (extra_pop > 0)
     {
       unsigned long extra_mask = (1 << extra_pop) - 1;
-      live_regs_mask |= extra_mask << (size / UNITS_PER_WORD);
+      live_regs_mask |= extra_mask << ((size + UNITS_PER_WORD - 1) 
+				       / UNITS_PER_WORD);
     }
 
   /* The prolog may have pushed some high registers to use as

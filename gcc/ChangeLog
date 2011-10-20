@@ -1,3 +1,9 @@
+2011-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+       PR target/50106
+       * config/arm/arm.c (thumb_unexpanded_epilogue): Handle return
+	reg size from 1-3.
+
 2011-10-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-im.c (stmt_cost): Add WIDEN_*, FMA_EXPR
