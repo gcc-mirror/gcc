@@ -583,7 +583,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
       uws.words_left = 0;
       uws.bytes_left = 3;
     }
-  else
+  else if (id < 3)
     {
       uws.words_left = (uws.data >> 16) & 0xff;
       uws.data <<= 16;
