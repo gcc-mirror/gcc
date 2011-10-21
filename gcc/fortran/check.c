@@ -1967,22 +1967,29 @@ gfc_check_ishftc (gfc_expr *i, gfc_expr *shift, gfc_expr *size)
       if (less_than_bitsize1 ("I", i, "SIZE", size, true) == FAILURE)
 	return FAILURE;
 
-      gfc_extract_int (size, &i3);
-      if (i3 <= 0)
+      if (size->expr_type == EXPR_CONSTANT)
 	{
-	  gfc_error ("SIZE at %L must be positive", &size->where);
-	  return FAILURE;
-	}
+	  gfc_extract_int (size, &i3);
+	  if (i3 <= 0)
+	    {
+	      gfc_error ("SIZE at %L must be positive", &size->where);
+	      return FAILURE;
+	    }
 
-      gfc_extract_int (shift, &i2);
-      if (i2 < 0)
-	i2 = -i2;
+	  if (shift->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_extract_int (shift, &i2);
+	      if (i2 < 0)
+		i2 = -i2;
 
-      if (i2 > i3)
-	{
-	  gfc_error ("The absolute value of SHIFT at %L must be less than "
-		     "or equal to SIZE at %L", &shift->where, &size->where);
-	  return FAILURE;
+	      if (i2 > i3)
+		{
+		  gfc_error ("The absolute value of SHIFT at %L must be less "
+			     "than or equal to SIZE at %L", &shift->where,
+			     &size->where);
+		  return FAILURE;
+		}
+	     }
 	}
     }
   else if (less_than_bitsize1 ("I", i, NULL, shift, true) == FAILURE)
