@@ -1,3 +1,8 @@
+2011-10-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gcc-dg.exp (GCC_UNDER_TEST): Set before calling
+	check_linker_plugin_available.
+
 2011-10-21  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.target/i386/branch-cost1.c: New test.

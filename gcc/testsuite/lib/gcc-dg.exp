@@ -41,6 +41,11 @@ if { [ishost "*-*-cygwin*"] } {
   setenv LANG C.ASCII
 }
 
+global GCC_UNDER_TEST
+if ![info exists GCC_UNDER_TEST] {
+    set GCC_UNDER_TEST "[find_gcc]"
+}
+
 if [info exists TORTURE_OPTIONS] {
     set DG_TORTURE_OPTIONS $TORTURE_OPTIONS
 } else {
@@ -82,12 +87,6 @@ if [check_effective_target_lto] {
 	  { -O2 -flto }
       ]
     }
-}
-
-
-global GCC_UNDER_TEST
-if ![info exists GCC_UNDER_TEST] {
-    set GCC_UNDER_TEST "[find_gcc]"
 }
 
 global orig_environment_saved
