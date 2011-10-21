@@ -1,3 +1,13 @@
+2011-10-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Pass address of X
+	instead of X to avr_legitimize_reload_address.
+	* config/avr/avr-protos.h (avr_legitimize_reload_address): Change
+	first argument's type from rtx to rtx*.
+	* config/avr/avr.c (avr_legitimize_reload_address): Ditto.
+	Pass PX to push_reload instead of &X.  Change log messages for
+	better distinction.
+
 2011-10-21  Roland Stigge  <stigge@antcom.de>
 
 	PR translation/47064

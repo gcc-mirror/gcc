@@ -375,7 +375,7 @@ typedef struct avr_args {
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_L,WIN)          \
   do {                                                                  \
-    rtx new_x = avr_legitimize_reload_address (X, MODE, OPNUM, TYPE,    \
+    rtx new_x = avr_legitimize_reload_address (&(X), MODE, OPNUM, TYPE, \
                                                ADDR_TYPE (TYPE),        \
                                                IND_L, make_memloc);     \
     if (new_x)                                                          \
