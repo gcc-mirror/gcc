@@ -79,6 +79,7 @@
   "%|%.\\tmpy\\t%$\\t%2, %1, %_MODk_0"
   [(set_attr "type" "mpy2")
    (set_attr "units" "m")
+   (set_attr "op_pattern" "sxs")
    (set_attr "cross" "n,n,y,y")])
 
 (define_insn "mulhisi3_const_VARIANT_"
@@ -102,6 +103,7 @@
   "%|%.\\tmpy\\t%$\\t%1, %2, %_MODk_0"
   [(set_attr "type" "mpy2")
    (set_attr "units" "m")
+   (set_attr "op_pattern" "ssx")
    (set_attr "cross" "n,n,y,y")])
 
 (define_insn "mulhisi3_lh_VARIANT_"

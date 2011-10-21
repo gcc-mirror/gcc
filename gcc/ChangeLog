@@ -1,3 +1,25 @@
+2011-10-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/c6x.md (attr "op_pattern"): New.
+	(load_sdata_pic, mov<mode>_insn for QIHIM and SISFVM): Set it.
+	* config/c6x/c6x-mult.md.in (mulhi3_VARIANT_, mulhisi3_insn_VARIANT_):
+	Likewise.
+	* config/c6x/c6x-mult.md: Regenerate.
+	* config/c6x/c6x.c: Include "regrename.h".
+	(unit_req_table): New typedef.
+	(unit_reqs): Use it for the declaration.
+	(unit_req_factor, get_unit_reqs, merge_unit_reqs, unit_req_imbalance,
+	get_unit_operand_masks, try_rename_operands, reshuffle_units): New
+	static functions.
+	(count_unit_reqs): New arg reqs.  All callers changed.  Use
+	get_unit_reqs, and don't merge here.
+	(res_mii): New arg reqs.  All callers changed.  Rewrite to use a loop
+	using unit_req_factor.
+	(hwloop_optimize): Call reshuffle_units.  Call merge_unit_reqs after
+	count_unit_reqs.
+	(c6x_reorg): Add reg notes problem, and call df_analyze.
+	* Makefile.in ($(out_object_file)): Depend on regrename.h.
+
 2011-10-21  Kai Tietz  <ktietz@redhat.com>
 
 	* fold-const.c (simple_operand_p_2): Handle integral
