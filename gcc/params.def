@@ -111,7 +111,7 @@ DEFPARAM (PARAM_EARLY_INLINER_MAX_ITERATIONS,
 /* Limit on probability of entry BB.  */
 DEFPARAM (PARAM_COMDAT_SHARING_PROBABILITY,
 	  "comdat-sharing-probability",
-	  "Probability that COMDAT function will be shared with different compilatoin unit",
+	  "Probability that COMDAT function will be shared with different compilation unit",
 	  20, 0, 0)
 
 /* Limit on probability of entry BB.  */
