@@ -166,6 +166,17 @@
   "n,y"
   (const_string "n"))
 
+;; This describes the relationship between operands and register files.
+;; For example, "sxs" means that operands 0 and 2 determine the side of
+;; the machine, and operand 1 can optionally use the cross path.  "dt" and
+;; "td" are used to describe loads and stores.
+;; Used for register renaming in loops for improving modulo scheduling.
+(define_attr "op_pattern"
+  "unknown,dt,td,sx,sxs,ssx"
+  (cond [(eq_attr "type" "load") (const_string "td")
+	 (eq_attr "type" "store") (const_string "dt")]
+	(const_string "unknown")))
+
 (define_attr "has_shadow"
   "n,y"
   (const_string "n"))
@@ -567,6 +578,7 @@
    %|%.\\tadda%D2\\t%$\\t%1, %2, %0"
   [(set_attr "units" "d")
    (set_attr "cross" "y,n")
+   (set_attr "op_pattern" "unknown")
    (set_attr "predicable" "no")])
 
 ;; Move instruction patterns
@@ -599,6 +611,7 @@
   [(set_attr "type" "*,*,*,*,*,*,load,load,load,load,store,store,store,store")
    (set_attr "units62" "dls,dls,ls,ls,s,s,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr")
    (set_attr "units64" "dls,dls,ls,ls,dl,s,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr")
+   (set_attr "op_pattern" "sx,sx,sx,sx,*,*,*,*,*,*,*,*,*,*")
    (set_attr "addr_regfile" "*,*,*,*,*,*,a,b,b,a,a,b,b,a")
    (set_attr "dest_regfile" "*,*,*,*,*,*,a,a,b,b,a,a,b,b")
    (set_attr "cross" "n,n,y,y,n,n,n,y,n,y,n,y,n,y")])
@@ -631,6 +644,7 @@
   [(set_attr "type" "*,*,*,*,*,*,*,*,*,load,load,load,load,store,store,store,store")
    (set_attr "units62" "dls,dls,ls,ls,s,s,d,d,*,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr")
    (set_attr "units64" "dls,dls,ls,ls,dl,s,d,d,*,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr,d_addr")
+   (set_attr "op_pattern" "sx,sx,sx,sx,*,*,*,*,*,*,*,*,*,*,*,*,*")
    (set_attr "addr_regfile" "*,*,*,*,*,*,*,*,*,a,b,b,a,a,b,b,a")
    (set_attr "dest_regfile" "*,*,*,*,*,*,*,*,*,a,a,b,b,a,a,b,b")
    (set_attr "cross" "n,n,y,y,n,n,y,n,*,n,y,n,y,n,y,n,y")
@@ -855,7 +869,7 @@
 
 (define_insn "<ext_name><mode>si2"
  [(set (match_operand:SI 0 "register_operand" "=a,b,a,?a, b,?b")
-       (any_ext: SI (match_operand:QIHIM 1 "nonimmediate_operand" "a,b,Q, R, R, Q")))]
+       (any_ext:SI (match_operand:QIHIM 1 "nonimmediate_operand" "a,b,Q, R, R, Q")))]
   ""
  "@
   %|%.\\text<u>\\t%$\\t%1, <ext_shift>, <ext_shift>, %0

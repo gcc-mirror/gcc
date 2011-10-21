@@ -81,6 +81,7 @@
   "%|%.\\tmpy\\t%$\\t%2, %1, %0"
   [(set_attr "type" "mpy2")
    (set_attr "units" "m")
+   (set_attr "op_pattern" "sxs")
    (set_attr "cross" "n,n,y,y")])
 
 (define_insn "mulhisi3_const"
@@ -104,6 +105,7 @@
   "%|%.\\tmpy\\t%$\\t%1, %2, %0"
   [(set_attr "type" "mpy2")
    (set_attr "units" "m")
+   (set_attr "op_pattern" "ssx")
    (set_attr "cross" "n,n,y,y")])
 
 (define_insn "mulhisi3_lh"
@@ -500,6 +502,7 @@
   "%|%.\\tmpy\\t%$\\t%2, %1, %k0"
   [(set_attr "type" "mpy2")
    (set_attr "units" "m")
+   (set_attr "op_pattern" "sxs")
    (set_attr "cross" "n,n,y,y")])
 
 (define_insn "mulhisi3_const_real"
@@ -523,6 +526,7 @@
   "%|%.\\tmpy\\t%$\\t%1, %2, %k0"
   [(set_attr "type" "mpy2")
    (set_attr "units" "m")
+   (set_attr "op_pattern" "ssx")
    (set_attr "cross" "n,n,y,y")])
 
 (define_insn "mulhisi3_lh_real"
