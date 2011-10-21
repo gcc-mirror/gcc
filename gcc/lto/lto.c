@@ -1481,6 +1481,8 @@ add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode
 {
   varpool_node_set_iterator vsi;
 
+  vnode = varpool_variable_node (vnode, NULL);
+
   /* If NODE is already there, we have nothing to do.  */
   vsi = varpool_node_set_find (part->varpool_set, vnode);
   if (!vsi_end_p (vsi))

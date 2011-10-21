@@ -1838,6 +1838,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " only_called_at_startup");
   if (node->only_called_at_exit)
     fprintf (f, " only_called_at_exit");
+  else if (node->alias)
+    fprintf (f, " alias");
 
   fprintf (f, "\n");
 
@@ -2567,7 +2569,7 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
   for (e = node->callers; e; e = e->next_caller)
     if (e->caller->thunk.thunk_p
 	&& (include_overwritable
-	    || cgraph_function_body_availability (e->caller)))
+	    || cgraph_function_body_availability (e->caller) > AVAIL_OVERWRITABLE))
       if (cgraph_for_node_thunks_and_aliases (e->caller, callback, data,
 					      include_overwritable))
 	return true;

@@ -1249,6 +1249,21 @@ handle_alias_pairs (void)
 	  varpool_create_variable_alias (p->decl, target_vnode->decl);
 	  VEC_unordered_remove (alias_pair, alias_pairs, i);
 	}
+      /* Weakrefs with target not defined in current unit are easy to handle; they
+	 behave just as external variables except we need to note the alias flag
+	 to later output the weakref pseudo op into asm file.  */
+      else if (lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)) != NULL
+	       && (TREE_CODE (p->decl) == FUNCTION_DECL
+		   ? (varpool_node_for_asm (p->target) == NULL)
+		   : (cgraph_node_for_asm (p->target) == NULL)))
+	{
+	  if (TREE_CODE (p->decl) == FUNCTION_DECL)
+	    cgraph_get_create_node (p->decl)->alias = true;
+	  else
+	    varpool_get_node (p->decl)->alias = true;
+	  DECL_EXTERNAL (p->decl) = 1;
+	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	}
       else
 	{
 	  if (dump_file)
@@ -2064,6 +2079,18 @@ ipa_passes (void)
   bitmap_obstack_release (NULL);
 }
 
+
+/* Return string alias is alias of.  */
+
+static tree
+get_alias_symbol (tree decl)
+{
+  tree alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl));
+  return get_identifier (TREE_STRING_POINTER
+			  (TREE_VALUE (TREE_VALUE (alias))));
+}
+
+
 /* Weakrefs may be associated to external decls and thus not output
    at expansion time.  Emit all neccesary aliases.  */
 
@@ -2073,15 +2100,17 @@ output_weakrefs (void)
   struct cgraph_node *node;
   struct varpool_node *vnode;
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->alias && node->thunk.alias && DECL_EXTERNAL (node->decl)
+    if (node->alias && DECL_EXTERNAL (node->decl)
         && !TREE_ASM_WRITTEN (node->decl))
       assemble_alias (node->decl,
-		      DECL_ASSEMBLER_NAME (node->thunk.alias));
+		      node->thunk.alias ? DECL_ASSEMBLER_NAME (node->thunk.alias)
+		      : get_alias_symbol (node->decl));
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (vnode->alias && vnode->alias_of && DECL_EXTERNAL (vnode->decl)
+    if (vnode->alias && DECL_EXTERNAL (vnode->decl)
         && !TREE_ASM_WRITTEN (vnode->decl))
       assemble_alias (vnode->decl,
-		      DECL_ASSEMBLER_NAME (vnode->alias_of));
+		      vnode->alias_of ? DECL_ASSEMBLER_NAME (vnode->alias_of)
+		      : get_alias_symbol (vnode->decl));
 }
 
 
