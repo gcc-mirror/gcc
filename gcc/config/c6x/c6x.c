@@ -5477,6 +5477,26 @@ filter_insns_above (basic_block bb, int max_uid)
     }
 }
 
+/* Implement TARGET_ASM_EMIT_EXCEPT_PERSONALITY.  */
+
+static void
+c6x_asm_emit_except_personality (rtx personality)
+{
+  fputs ("\t.personality\t", asm_out_file);
+  output_addr_const (asm_out_file, personality);
+  fputc ('\n', asm_out_file);
+}
+
+/* Use a special assembly directive rather than a regular setion for
+   unwind table data.  */
+
+static void
+c6x_asm_init_sections (void)
+{
+  exception_section = get_unnamed_section (0, output_section_asm_op,
+					   "\t.handlerdata");
+}
+
 /* A callback for the hw-doloop pass.  Called to optimize LOOP in a
    machine-specific fashion; returns true if successful and false if
    the hwloop_fail function should be called.  */
@@ -6796,6 +6816,12 @@ c6x_debug_unwind_info (void)
 /* The C6x ABI follows the ARM EABI exception handling rules.  */
 #undef TARGET_ARM_EABI_UNWINDER
 #define TARGET_ARM_EABI_UNWINDER true
+
+#undef TARGET_ASM_EMIT_EXCEPT_PERSONALITY
+#define TARGET_ASM_EMIT_EXCEPT_PERSONALITY c6x_asm_emit_except_personality
+
+#undef TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS c6x_asm_init_sections
 
 #undef TARGET_DEBUG_UNWIND_INFO
 #define TARGET_DEBUG_UNWIND_INFO  c6x_debug_unwind_info
