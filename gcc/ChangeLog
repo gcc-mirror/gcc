@@ -1,3 +1,11 @@
+2011-10-21  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (dump_cgraph_node): Dump alias flag.
+	* cgraphunit.c (handle_alias_pairs): Handle weakrefs with no destination.
+	(get_alias_symbol): New function.
+	(output_weakrefs): Output also weakrefs with no destinatoin.
+	(lto_output_node): Output weakref alias flag when at function boundary.
+
 2011-10-21  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR target/50809
