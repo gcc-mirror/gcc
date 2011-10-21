@@ -1505,6 +1505,10 @@ sd_debug_lists (rtx insn, sd_list_types_def types)
 void
 add_dependence (rtx con, rtx pro, enum reg_note dep_type)
 {
+  if (dep_type == REG_DEP_CONTROL
+      && !(current_sched_info->flags & DO_PREDICATION))
+    dep_type = REG_DEP_ANTI;
+
   /* A REG_DEP_CONTROL dependence may be eliminated through predication,
      so we must also make the insn dependent on the setter of the
      condition.  */
