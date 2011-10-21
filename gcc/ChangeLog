@@ -1,3 +1,10 @@
+2011-10-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50820
+	* config/avr/libgcc.S (__EIND__): New define to 0x3C.
+	(__tablejump__): Consistently use EIND for indirect jump/call.
+	(__tablejump_elpm__): Ditto.
+
 2011-10-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/c6x/c6x.md (attr "op_pattern"): New.
