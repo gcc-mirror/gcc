@@ -2998,7 +2998,8 @@ build_vec_init (tree base, tree maxindex, tree init,
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))
     maxindex = array_type_nelts (atype);
 
-  if (maxindex == NULL_TREE || maxindex == error_mark_node)
+  if (maxindex == NULL_TREE || maxindex == error_mark_node
+      || integer_all_onesp (maxindex))
     return error_mark_node;
 
   if (explicit_value_init_p)

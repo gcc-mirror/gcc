@@ -1,3 +1,9 @@
+2011-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45385
+	* c-common.c (conversion_warning): Remove code looking for
+	artificial operands.
+
 2011-10-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/50760

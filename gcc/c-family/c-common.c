@@ -2121,22 +2121,11 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 static void
 conversion_warning (tree type, tree expr)
 {
-  int i;
-  const int expr_num_operands = TREE_OPERAND_LENGTH (expr);
   tree expr_type = TREE_TYPE (expr);
   location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (!warn_conversion && !warn_sign_conversion)
     return;
-
-  /* If any operand is artificial, then this expression was generated
-     by the compiler and we do not warn.  */
-  for (i = 0; i < expr_num_operands; i++)
-    {
-      tree op = TREE_OPERAND (expr, i);
-      if (op && DECL_P (op) && DECL_ARTIFICIAL (op))
-	return;
-    }
 
   switch (TREE_CODE (expr))
     {
