@@ -4395,16 +4395,22 @@ selb\t%0,%4,%0,%3"
   "shufb\t%0,%1,%2,%3"
   [(set_attr "type" "shuf")])
 
+; The semantics of vec_permv16qi are nearly identical to those of the SPU
+; shufb instruction, except that we need to reduce the selector modulo 32.
 (define_expand "vec_permv16qi"
-  [(set (match_operand:V16QI 0 "spu_reg_operand" "")
+  [(set (match_dup 4) (and:V16QI (match_operand:V16QI 3 "spu_reg_operand" "")
+                                 (match_dup 6)))
+   (set (match_operand:V16QI 0 "spu_reg_operand" "")
 	(unspec:V16QI
 	  [(match_operand:V16QI 1 "spu_reg_operand" "")
 	   (match_operand:V16QI 2 "spu_reg_operand" "")
-	   (match_operand:V16QI 3 "spu_reg_operand" "")]
+	   (match_dup 5)]
 	  UNSPEC_SHUFB))]
   ""
   {
-    operands[3] = gen_lowpart (TImode, operands[3]);
+    operands[4] = gen_reg_rtx (V16QImode);
+    operands[5] = gen_lowpart (TImode, operands[4]);
+    operands[6] = spu_const (V16QImode, 31);
   })
 
 (define_insn "nop"
