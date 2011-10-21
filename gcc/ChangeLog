@@ -1,3 +1,10 @@
+2011-10-21  Paul Brook  <paul@codesourcery.com>
+
+	* config/c6x/c6x.c (c6x_asm_emit_except_personality,
+	c6x_asm_init_sections): New functions.
+	(TARGET_ASM_EMIT_EXCEPT_PERSONALITY, TARGET_ASM_INIT_SECTIONS):
+	Define.
+
 2011-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50813
