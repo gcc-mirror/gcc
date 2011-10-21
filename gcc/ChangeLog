@@ -1,3 +1,9 @@
+2011-10-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/50809
+
+	* config/arm/driver-arm.c (vendors): Make static.
+
 2011-10-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_emit_swdivsf): Force b into register.
