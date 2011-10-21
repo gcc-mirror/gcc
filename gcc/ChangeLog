@@ -1,3 +1,11 @@
+2011-10-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50820
+	Backport from Mainline r180299.
+	* config/avr/libgcc.S (__EIND__): New define to 0x3C.
+	(__tablejump__): Consistently use EIND for indirect jump/call.
+	(__tablejump_elpm__): Ditto.
+
 2011-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/50106
