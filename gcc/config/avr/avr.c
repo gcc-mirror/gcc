@@ -1356,11 +1356,13 @@ avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
    than 63 bytes or for R++ or --R addressing.  */
 
 rtx
-avr_legitimize_reload_address (rtx x, enum machine_mode mode,
+avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
                                int opnum, int type, int addr_type,
                                int ind_levels ATTRIBUTE_UNUSED,
                                rtx (*mk_memloc)(rtx,int))
 {
+  rtx x = *px;
+  
   if (avr_log.legitimize_reload_address)
     avr_edump ("\n%?:%m %r\n", mode, x);
   
@@ -1372,7 +1374,7 @@ avr_legitimize_reload_address (rtx x, enum machine_mode mode,
                    opnum, RELOAD_OTHER);
       
       if (avr_log.legitimize_reload_address)
-        avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+        avr_edump (" RCLASS.1 = %R\n IN = %r\n OUT = %r\n",
                    POINTER_REGS, XEXP (x, 0), XEXP (x, 0));
       
       return x;
@@ -1398,7 +1400,7 @@ avr_legitimize_reload_address (rtx x, enum machine_mode mode,
                            1, addr_type);
               
               if (avr_log.legitimize_reload_address)
-                avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+                avr_edump (" RCLASS.2 = %R\n IN = %r\n OUT = %r\n",
                            POINTER_REGS, XEXP (mem, 0), NULL_RTX);
               
               push_reload (mem, NULL_RTX, &XEXP (x, 0), NULL,
@@ -1406,7 +1408,7 @@ avr_legitimize_reload_address (rtx x, enum machine_mode mode,
                            opnum, type);
               
               if (avr_log.legitimize_reload_address)
-                avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+                avr_edump (" RCLASS.2 = %R\n IN = %r\n OUT = %r\n",
                            BASE_POINTER_REGS, mem, NULL_RTX);
               
               return x;
@@ -1415,12 +1417,12 @@ avr_legitimize_reload_address (rtx x, enum machine_mode mode,
       else if (! (frame_pointer_needed
                   && XEXP (x, 0) == frame_pointer_rtx))
         {
-          push_reload (x, NULL_RTX, &x, NULL,
+          push_reload (x, NULL_RTX, px, NULL,
                        POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
                        opnum, type);
           
           if (avr_log.legitimize_reload_address)
-            avr_edump (" RCLASS = %R\n IN = %r\n OUT = %r\n",
+            avr_edump (" RCLASS.3 = %R\n IN = %r\n OUT = %r\n",
                        POINTER_REGS, x, NULL_RTX);
           
           return x;
