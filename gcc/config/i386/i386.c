@@ -33638,6 +33638,8 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, enum machine_mode mode)
 
   /* a / b = a * ((rcp(b) + rcp(b)) - (b * rcp(b) * rcp (b))) */
 
+  b = force_reg (mode, b);
+
   /* x0 = rcp(b) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
@@ -33692,6 +33694,8 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
 
   /* sqrt(a)  = -0.5 * a * rsqrtss(a) * (a * rsqrtss(a) * rsqrtss(a) - 3.0)
      rsqrt(a) = -0.5     * rsqrtss(a) * (a * rsqrtss(a) * rsqrtss(a) - 3.0) */
+
+  a = force_reg (mode, a);
 
   /* x0 = rsqrt(a) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,

@@ -1,3 +1,8 @@
+2011-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_swdivsf): Force b into register.
+	(ix86_emit_swsqrtsf): Force a into register.
+
 2011-10-20  Mike Stump  <mikestump@comcast.net>
 
 	* regcprop.c (copyprop_hardreg_forward_1): Update recog_data
