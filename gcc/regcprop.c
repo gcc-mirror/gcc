@@ -840,6 +840,12 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  changed = true;
 		  goto did_replacement;
 		}
+	      /* We need to re-extract as validate_change clobbers
+		 recog_data.  */
+	      extract_insn (insn);
+	      if (! constrain_operands (1))
+		fatal_insn_not_found (insn);
+	      preprocess_constraints ();
 	    }
 
 	  /* Otherwise, try all valid registers and see if its valid.  */
@@ -862,6 +868,12 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		      changed = true;
 		      goto did_replacement;
 		    }
+		  /* We need to re-extract as validate_change clobbers
+		     recog_data.  */
+		  extract_insn (insn);
+		  if (! constrain_operands (1))
+		    fatal_insn_not_found (insn);
+		  preprocess_constraints ();
 		}
 	    }
 	}
