@@ -1,3 +1,9 @@
+2011-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Do cpuid 7 only
+	if max_level allows that.
+
 2011-10-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* reg-notes.def (DEP_CONTROL): New.
@@ -117,7 +123,8 @@
 2011-10-21  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Dump alias flag.
-	* cgraphunit.c (handle_alias_pairs): Handle weakrefs with no destination.
+	* cgraphunit.c (handle_alias_pairs): Handle weakrefs with
+	no destination.
 	(get_alias_symbol): New function.
 	(output_weakrefs): Output also weakrefs with no destinatoin.
 	(lto_output_node): Output weakref alias flag when at function boundary.
@@ -125,7 +132,6 @@
 2011-10-21  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR target/50809
-
 	* config/arm/driver-arm.c (vendors): Make static.
 
 2011-10-21  Uros Bizjak  <ubizjak@gmail.com>
