@@ -1,3 +1,9 @@
+2011-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50813
+	* config/i386/i386.c (expand_vec_perm_even_odd_1): Handle
+	V4DImode and V8SImode for !TARGET_AVX2.
+
 2011-10-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/50825
