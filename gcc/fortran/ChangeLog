@@ -1,5 +1,11 @@
 2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/50821
+	* check.c (gfc_check_ishftc): Check args are constant before 
+	extracting the integer.
+
+2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/50514
 	* check.c (less_than_bitsize1): Check |shift| <= bit_size(i).
 	(gfc_check_ishftc):  Check |shift| <= bit_size(i) and check
