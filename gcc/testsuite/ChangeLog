@@ -1,3 +1,12 @@
+2011-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50813
+	* gcc.dg/torture/vshuf-32.inc: Add broadcast permutation
+	from element other than first and reverse permutation.
+	* gcc.dg/torture/vshuf-16.inc: Likewise.
+	* gcc.dg/torture/vshuf-8.inc: Likewise.
+	* gcc.dg/torture/vshuf-4.inc: Likewise.
+
 2011-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/31423

@@ -36023,6 +36023,16 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       return expand_vec_perm_vpshufb2_vpermq_even_odd (d);
 
     case V4DImode:
+      if (!TARGET_AVX2)
+	{
+	  struct expand_vec_perm_d d_copy = *d;
+	  d_copy.vmode = V4DFmode;
+	  d_copy.target = gen_lowpart (V4DFmode, d->target);
+	  d_copy.op0 = gen_lowpart (V4DFmode, d->op0);
+	  d_copy.op1 = gen_lowpart (V4DFmode, d->op1);
+	  return expand_vec_perm_even_odd_1 (&d_copy, odd);
+	}
+
       t1 = gen_reg_rtx (V4DImode);
       t2 = gen_reg_rtx (V4DImode);
 
@@ -36039,6 +36049,16 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       break;
 
     case V8SImode:
+      if (!TARGET_AVX2)
+	{
+	  struct expand_vec_perm_d d_copy = *d;
+	  d_copy.vmode = V8SFmode;
+	  d_copy.target = gen_lowpart (V8SFmode, d->target);
+	  d_copy.op0 = gen_lowpart (V8SFmode, d->op0);
+	  d_copy.op1 = gen_lowpart (V8SFmode, d->op1);
+	  return expand_vec_perm_even_odd_1 (&d_copy, odd);
+	}
+
       t1 = gen_reg_rtx (V8SImode);
       t2 = gen_reg_rtx (V8SImode);
 
