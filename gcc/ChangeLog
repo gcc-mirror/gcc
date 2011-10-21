@@ -1,6 +1,7 @@
 2011-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
+	PR target/50740
 	* config/i386/driver-i386.c (host_detect_local_cpu): Do cpuid 7 only
 	if max_level allows that.
 
