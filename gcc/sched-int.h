@@ -424,6 +424,7 @@ struct deps_reg
   rtx uses;
   rtx sets;
   rtx implicit_sets;
+  rtx control_uses;
   rtx clobbers;
   int uses_length;
   int clobbers_length;
@@ -453,6 +454,9 @@ struct deps_desc
   /* An EXPR_LIST containing all MEM rtx's which are pending writes.  */
   rtx pending_write_mems;
 
+  /* An INSN_LIST containing all jump insns.  */
+  rtx pending_jump_insns;
+
   /* We must prevent the above lists from ever growing too large since
      the number of dependencies produced is at least O(N*N),
      and execution time is at least O(4*N*N), as a function of the
@@ -464,8 +468,9 @@ struct deps_desc
   /* Indicates the length of the pending_write list.  */
   int pending_write_list_length;
 
-  /* Length of the pending memory flush list. Large functions with no
-     calls may build up extremely large lists.  */
+  /* Length of the pending memory flush list plus the length of the pending
+     jump insn list.  Large functions with no calls may build up extremely
+     large lists.  */
   int pending_flush_length;
 
   /* The last insn upon which all memory references must depend.
@@ -699,6 +704,10 @@ struct _haifa_deps_insn_data
      condition that has been clobbered by a subsequent insn.  */
   rtx cond;
 
+  /* For a conditional insn, a list of insns that could set the condition
+     register.  Used when generating control dependencies.  */
+  rtx cond_deps;
+
   /* True if the condition in 'cond' should be reversed to get the actual
      condition.  */
   unsigned int reverse_cond : 1;
@@ -799,6 +808,10 @@ struct _haifa_insn_data
      real insns following them.  */
   unsigned int shadow_p : 1;
 
+  /* Used internally in unschedule_insns_until to mark insns that must have
+     their TODO_SPEC recomputed.  */
+  unsigned int must_recompute_spec : 1;
+
   /* '> 0' if priority is valid,
      '== 0' if priority was not yet computed,
      '< 0' if priority in invalid and should be recomputed.  */
@@ -818,6 +831,10 @@ struct _haifa_insn_data
 
   /* Original pattern of the instruction.  */
   rtx orig_pat;
+
+  /* For insns with DEP_CONTROL dependencies, the predicated pattern if it
+     was ever successfully constructed.  */
+  rtx predicated_pat;
 
   /* The following array contains info how the insn increases register
      pressure.  There is an element for each cover class of pseudos
@@ -880,6 +897,7 @@ extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
 #define INSN_SPEC_BACK_DEPS(INSN) (HDID (INSN)->spec_back_deps)
 #define INSN_CACHED_COND(INSN)	(HDID (INSN)->cond)
 #define INSN_REVERSE_COND(INSN) (HDID (INSN)->reverse_cond)
+#define INSN_COND_DEPS(INSN)	(HDID (INSN)->cond_deps)
 #define CANT_MOVE(INSN)	(HDID (INSN)->cant_move)
 #define CANT_MOVE_BY_LUID(LUID)	(VEC_index (haifa_deps_insn_data_def, h_d_i_d, \
                                             LUID)->cant_move)
@@ -893,6 +911,7 @@ extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
 #define CHECK_SPEC(INSN) (HID (INSN)->check_spec)
 #define RECOVERY_BLOCK(INSN) (HID (INSN)->recovery_block)
 #define ORIG_PAT(INSN) (HID (INSN)->orig_pat)
+#define PREDICATED_PAT(INSN) (HID (INSN)->predicated_pat)
 
 /* INSN is either a simple or a branchy speculation check.  */
 #define IS_SPECULATION_CHECK_P(INSN) \
@@ -932,10 +951,11 @@ extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
 /* We exclude sign bit.  */
 #define BITS_PER_DEP_STATUS (HOST_BITS_PER_INT - 1)
 
-/* First '4' stands for 3 dep type bits and HARD_DEP bit.
+/* First '6' stands for 4 dep type bits and the HARD_DEP and DEP_CANCELLED
+   bits.
    Second '4' stands for BEGIN_{DATA, CONTROL}, BE_IN_{DATA, CONTROL}
    dep weakness.  */
-#define BITS_PER_DEP_WEAK ((BITS_PER_DEP_STATUS - 4) / 4)
+#define BITS_PER_DEP_WEAK ((BITS_PER_DEP_STATUS - 6) / 4)
 
 /* Mask of speculative weakness in dep_status.  */
 #define DEP_WEAK_MASK ((1 << BITS_PER_DEP_WEAK) - 1)
@@ -1009,13 +1029,16 @@ enum SPEC_TYPES_OFFSETS {
 #define DEP_TRUE (((ds_t) 1) << (BE_IN_CONTROL_BITS_OFFSET + BITS_PER_DEP_WEAK))
 #define DEP_OUTPUT (DEP_TRUE << 1)
 #define DEP_ANTI (DEP_OUTPUT << 1)
+#define DEP_CONTROL (DEP_ANTI << 1)
 
-#define DEP_TYPES (DEP_TRUE | DEP_OUTPUT | DEP_ANTI)
+#define DEP_TYPES (DEP_TRUE | DEP_OUTPUT | DEP_ANTI | DEP_CONTROL)
 
 /* Instruction has non-speculative dependence.  This bit represents the
    property of an instruction - not the one of a dependence.
    Therefore, it can appear only in TODO_SPEC field of an instruction.  */
-#define HARD_DEP (DEP_ANTI << 1)
+#define HARD_DEP (DEP_CONTROL << 1)
+
+#define DEP_CANCELLED (HARD_DEP << 1)
 
 /* This represents the results of calling sched-deps.c functions,
    which modify dependencies.  */
@@ -1041,7 +1064,8 @@ enum SCHED_FLAGS {
      Requires USE_DEPS_LIST set.  */
   DO_SPECULATION = USE_DEPS_LIST << 1,
   DO_BACKTRACKING = DO_SPECULATION << 1,
-  SCHED_RGN = DO_BACKTRACKING << 1,
+  DO_PREDICATION = DO_BACKTRACKING << 1,
+  SCHED_RGN = DO_PREDICATION << 1,
   SCHED_EBB = SCHED_RGN << 1,
   /* Scheduler can possibly create new basic blocks.  Used for assertions.  */
   NEW_BBS = SCHED_EBB << 1,
@@ -1202,6 +1226,7 @@ extern struct sched_deps_info_def *sched_deps_info;
 
 
 /* Functions in sched-deps.c.  */
+extern rtx sched_get_reverse_condition_uncached (const_rtx);
 extern bool sched_insns_conditions_mutex_p (const_rtx, const_rtx);
 extern bool sched_insn_is_legitimate_for_speculation_p (const_rtx, ds_t);
 extern void add_dependence (rtx, rtx, enum reg_note);
@@ -1337,6 +1362,7 @@ extern bool sched_no_dce;
 
 extern void set_modulo_params (int, int, int, int);
 extern void record_delay_slot_pair (rtx, rtx, int, int);
+extern rtx real_insn_for_shadow (rtx);
 extern void discard_delay_pairs_above (int);
 extern void free_delay_pairs (void);
 extern void add_delay_dependencies (rtx);
@@ -1527,3 +1553,4 @@ extern void print_pattern (char *, const_rtx, int);
 extern void print_value (char *, const_rtx, int);
 
 #endif /* GCC_SCHED_INT_H */
+

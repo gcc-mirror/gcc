@@ -92,6 +92,7 @@ REG_NOTE (LABEL_OPERAND)
    respectively.  */
 REG_NOTE (DEP_OUTPUT)
 REG_NOTE (DEP_ANTI)
+REG_NOTE (DEP_CONTROL)
 
 /* REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs.  It has an
    integer value.  For jumps, it is the probability that this is a

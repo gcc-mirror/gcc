@@ -431,32 +431,23 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 		 rank.  */
 	      if (! sched_insns_conditions_mutex_p (insn, prev))
 		{
-		  dep_def _dep, *dep = &_dep;
-
-		  init_dep (dep, prev, insn, REG_DEP_ANTI);
-
-		  if (!(current_sched_info->flags & USE_DEPS_LIST))
+		  if ((current_sched_info->flags & DO_SPECULATION)
+		      && (spec_info->mask & BEGIN_CONTROL))
 		    {
-		      enum DEPS_ADJUST_RESULT res;
+		      dep_def _dep, *dep = &_dep;
 
-		      res = sd_add_or_update_dep (dep, false);
+		      init_dep (dep, prev, insn, REG_DEP_ANTI);
 
-		      /* We can't change an existing dependency with
-			 DEP_ANTI.  */
-		      gcc_assert (res != DEP_CHANGED);
+		      if (current_sched_info->flags & USE_DEPS_LIST)
+			{
+			  DEP_STATUS (dep) = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
+							   MAX_DEP_WEAK);
+
+			}
+		      sd_add_or_update_dep (dep, false);
 		    }
 		  else
-		    {
-		      if ((current_sched_info->flags & DO_SPECULATION)
-			  && (spec_info->mask & BEGIN_CONTROL))
-			DEP_STATUS (dep) = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
-							 MAX_DEP_WEAK);
-
-		      sd_add_or_update_dep (dep, false);
-
-		      /* Dep_status could have been changed.
-			 No assertion here.  */
-		    }
+		    add_dependence (insn, prev, REG_DEP_CONTROL);
 		}
 
 	      break;

@@ -234,7 +234,6 @@ static void add_branch_dependences (rtx, rtx);
 static void compute_block_dependences (int);
 
 static void schedule_region (int);
-static rtx concat_INSN_LIST (rtx, rtx);
 static void concat_insn_mem_list (rtx, rtx, rtx *, rtx *);
 static void propagate_deps (int, struct deps_desc *);
 static void free_pending_lists (void);
@@ -2552,20 +2551,6 @@ add_branch_dependences (rtx head, rtx tail)
 
 static struct deps_desc *bb_deps;
 
-/* Duplicate the INSN_LIST elements of COPY and prepend them to OLD.  */
-
-static rtx
-concat_INSN_LIST (rtx copy, rtx old)
-{
-  rtx new_rtx = old;
-  for (; copy ; copy = XEXP (copy, 1))
-    {
-      new_rtx = alloc_INSN_LIST (XEXP (copy, 0), new_rtx);
-      PUT_REG_NOTE_KIND (new_rtx, REG_NOTE_KIND (copy));
-    }
-  return new_rtx;
-}
-
 static void
 concat_insn_mem_list (rtx copy_insns, rtx copy_mems, rtx *old_insns_p,
 		      rtx *old_mems_p)
@@ -2619,6 +2604,9 @@ deps_join (struct deps_desc *succ_deps, struct deps_desc *pred_deps)
                         &succ_deps->pending_write_insns,
                         &succ_deps->pending_write_mems);
 
+  succ_deps->pending_jump_insns
+    = concat_INSN_LIST (pred_deps->pending_jump_insns,
+                        succ_deps->pending_jump_insns);
   succ_deps->last_pending_memory_flush
     = concat_INSN_LIST (pred_deps->last_pending_memory_flush,
                         succ_deps->last_pending_memory_flush);
@@ -2670,12 +2658,14 @@ propagate_deps (int bb, struct deps_desc *pred_deps)
   bb_deps[bb].pending_read_mems = pred_deps->pending_read_mems;
   bb_deps[bb].pending_write_insns = pred_deps->pending_write_insns;
   bb_deps[bb].pending_write_mems = pred_deps->pending_write_mems;
+  bb_deps[bb].pending_jump_insns = pred_deps->pending_jump_insns;
 
   /* Can't allow these to be freed twice.  */
   pred_deps->pending_read_insns = 0;
   pred_deps->pending_read_mems = 0;
   pred_deps->pending_write_insns = 0;
   pred_deps->pending_write_mems = 0;
+  pred_deps->pending_jump_insns = 0;
 }
 
 /* Compute dependences inside bb.  In a multiple blocks region:
@@ -2754,6 +2744,7 @@ free_pending_lists (void)
       free_INSN_LIST_list (&bb_deps[bb].pending_write_insns);
       free_EXPR_LIST_list (&bb_deps[bb].pending_read_mems);
       free_EXPR_LIST_list (&bb_deps[bb].pending_write_mems);
+      free_INSN_LIST_list (&bb_deps[bb].pending_jump_insns);
     }
 }
 
