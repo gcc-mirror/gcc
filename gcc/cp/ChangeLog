@@ -1,5 +1,11 @@
 2011-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/45385
+	* init.c (build_vec_init): Early return error_mark_node if
+	maxindex is -1.
+
+2011-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/31423
 	* typeck2.c (cxx_incomplete_type_diagnostic): Improve error message
 	for invalid use of member function.

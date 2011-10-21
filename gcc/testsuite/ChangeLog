@@ -1,3 +1,8 @@
+2011-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45385
+	* g++.dg/warn/Wconversion4.C: New.
+
 2011-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50813
