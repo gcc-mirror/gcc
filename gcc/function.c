@@ -2892,17 +2892,6 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   SET_DECL_RTL (parm, stack_parm);
 }
 
-/* A subroutine of assign_parm_setup_reg, called through note_stores.
-   This collects sets and clobbers of hard registers in a HARD_REG_SET,
-   which is pointed to by DATA.  */
-static void
-record_hard_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
-{
-  HARD_REG_SET *pset = (HARD_REG_SET *)data;
-  if (REG_P (x) && HARD_REGISTER_P (x))
-    add_to_hard_reg_set (pset, GET_MODE (x), REGNO (x));
-}
-
 /* A subroutine of assign_parms.  Allocate a pseudo to hold the current
    parameter.  Get it there.  Perform all ABI specified conversions.  */
 
@@ -5288,25 +5277,6 @@ prologue_epilogue_contains (const_rtx insn)
 }
 
 #ifdef HAVE_simple_return
-
-/* A for_each_rtx subroutine of record_hard_reg_sets.  */
-static int
-record_hard_reg_uses_1 (rtx *px, void *data)
-{
-  rtx x = *px;
-  HARD_REG_SET *pused = (HARD_REG_SET *)data;
-
-  if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
-    add_to_hard_reg_set (pused, GET_MODE (x), REGNO (x));
-  return 0;
-}
-
-/* Like record_hard_reg_sets, but called through note_uses.  */
-static void
-record_hard_reg_uses (rtx *px, void *data)
-{
-  for_each_rtx (px, record_hard_reg_uses_1, data);
-}
 
 /* Return true if INSN requires the stack frame to be set up.
    PROLOGUE_USED contains the hard registers used in the function

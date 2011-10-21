@@ -3927,7 +3927,7 @@ c6x_set_sched_flags (spec_info_t spec_info)
 
   if (*flags & SCHED_EBB)
     {
-      *flags |= DO_BACKTRACKING;
+      *flags |= DO_BACKTRACKING | DO_PREDICATION;
     }
 
   spec_info->mask = 0;

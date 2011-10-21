@@ -1,3 +1,85 @@
+2011-10-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* reg-notes.def (DEP_CONTROL): New.
+	* sched-ebb.c (add_deps_for_risky_insns): Add a REG_DEP_CONTROL when
+	not doing speculation.
+	* rtlanal.c (record_hard_reg_sets, find_all_hard_reg_sets,
+	record_hard_reg_uses_1, record_hard_reg_uses): New functions.
+	* function.c (record_hard_reg_sets, record_hard_reg_uses,
+	record_hard_reg_uses_1): Remove; move to rtlanal.c.
+	* lists.c (copy_INSN_LIST, concat_INSN_LIST): New functions.
+	* haifa-sched.c: Swap includes of "rtl.h" and "hard-reg-set.h".
+	(MUST_RECOMPUTE_SPEC_P): New macro.
+	(real_insn_for_shadow): New function.
+	(cond_clobbered_p, recompute_todo_spec, check_clobbered_conditions,
+	toggle_cancelled_flags): New static functions.
+	(schedule_insn): Relax an assert to only check for empty hard back
+	dependencies.  Skip cancelled dependencies.  Call
+	check_clobbered_conditions.
+	(copy_insn_list): Remove function, renamed moved to lists.c.
+	(save_backtrack_point): Use new spelling copy_INSN_LIST.
+	(unschedule_insns_until): Ensure TODO_SPEC is reset properly.
+	(restore_last_backtrack_point): Likewise.  Call toggle_cancelled_flags.
+	(estimate_insn_tick): Ignore cancelled dependencies.
+	(haifa_speculate_insn): Move declaration.
+	(try_ready): Move code into recompute_todo_spec and call it.  Tweak
+	some asserts.  Ensure predicated patterns are restored if necessary.
+	Dump DEP_CONTROL flag.
+	(haifa_change_pattern): Merge with sched_change_pattern.
+	(sched_change_pattern): Remove function.
+	* sched-deps.c (NON_FLUSH_JUMP_KIND, NON_FLUSH_JUMP): Remove.  All
+	uses changed to simply not test NON_FLUSH_JUMP_P.
+	(ds_to_dk, dk_to_ds, dump_dep, ds_to_dt, dump_ds, check_dep): Handle
+	REG_DEP_CONTROL.
+	(dep_spec_p): If DO_PREDICATION, REG_DEP_CONTROL is speculative.
+	(reg_pending_control_uses, control_dependency_cache): New static
+	variables.
+	(sched_get_reverse_condition_uncached): New function.
+	(sd_find_dep_between): Remove pointless assert.  Look in
+	control_dependency_cache.
+	(ask_dependency_caches, set_dependency_caches, sd_delete_dep,
+	extend_dependency_caches, sched_deps_finish): Handle REG_DEP_CONTROL
+	and control_dependency_cache.
+	(sd_unresolve_dep): Use dep_spec_p.
+	(add_dependence): Now a wrapper around add_dependence_1, handling
+	REG_DEP_CONTROL specially.
+	(flush_pending_lists): Clear pending_jump_insns.
+	(sched_analyze_1): Handle pending_jump_insns like a memory flush.
+	(sched_analyze_2): Unconditionally add to pending memory flushes,
+	keep previous behaviour but apply it to pending_jump_insns instead.
+	(sched_analyze_insn): Defer adding jump reg dependencies using
+	reg_pending_control_uses; add them to the control_uses list.  Handle
+	pending_jump_insns and control_uses when adding dependence lists.
+	(deps_analyze_insn): Update INSN_COND_DEPS.
+	(deps_analyze_insn): Add jumps to pending_jump_insns rather than
+	last_pending_memory_flush.
+	(init_deps): Initialize pending_jump_insns.
+	(free_deps): Free control_uses.
+	(remove_from_deps): Remove from pending_jump_insns.
+	(init_deps_global): Allocate reg_pending_control_uses).
+	(finish_deps_global): Free it.
+	(add_dependence_1): Renamed from add_dependence.  Handle
+	REG_DEP_CONTROL.
+	* rtl.h (record_hard_reg_uses, find_all_hard_reg_sets): Declare.
+	(copy_INSN_LIST, concat_INSN_LIST): Declare.
+	* sched-int.h (struct deps_reg): Add control_uses.
+	(struct deps_desc): Add pending_jump_insns.
+	(struct _haifa_deps_insn_data): Add cond_deps.
+	(struct _haifa_insn_data): Add must_recompute_spec and predicated_pat.
+	(INSN_COND_DEPS, PREDICATED_PAT): New macros.
+	(BITS_PER_DEP_WEAK): Adjust for two extra bits in the word.
+	(DEP_CONTROL): New macro.
+	(DEP_TYPES): Include it.
+	(HARD_DEP): Adjust definition.
+	(DEP_CANCELLED): New macro.
+	(enum SCHED_FLAGS): Add DO_PREDICATION.
+	(sched_get_reverse_condition_uncached, real_insn_for_shadow): Declare.
+	* sched-rgn.c (concat_INSN_LIST): Remove function.
+	(deps_join): Handle pending_jump_insns.
+	(free_pending_lists): Likewise.
+	* config/c6x/c6x.c (c6x_set_sched_flags): Set DO_PREDICATION for final
+	schedule.
+
 2011-10-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50820
