@@ -28,6 +28,13 @@ struct B6 final final {}; // { dg-error "duplicate virt-specifier" }
 
 struct B7 override {}; // { dg-error "cannot specify 'override' for a class" }
 
+namespace N
+{
+  struct C;
+}
+
+struct N::C final{};
+
 int main()
 {
   D3<B1> d;

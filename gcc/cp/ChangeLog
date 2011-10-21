@@ -1,3 +1,9 @@
+2011-10-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/50811
+	* parser.c (cp_parser_class_head): Parse virt-specifiers
+	regardless of whether an id is present
+
 2011-10-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41449
