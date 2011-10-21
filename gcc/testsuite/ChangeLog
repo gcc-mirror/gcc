@@ -1,3 +1,9 @@
+2011-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31423
+	* g++.dg/parse/error43.C: New.
+	* g++.dg/parse/error44.C: Likewise.
+
 2011-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
