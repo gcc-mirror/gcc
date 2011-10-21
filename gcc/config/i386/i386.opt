@@ -32,7 +32,7 @@ Variable
 HOST_WIDE_INT ix86_isa_flags_explicit
 
 TargetVariable
-int recip_mask
+int recip_mask = RECIP_MASK_DEFAULT
 
 Variable
 int recip_mask_explicit

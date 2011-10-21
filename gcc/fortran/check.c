@@ -286,6 +286,22 @@ less_than_bitsize1 (const char *arg1, gfc_expr *expr1, const char *arg2,
     {
       gfc_extract_int (expr2, &i2);
       i3 = gfc_validate_kind (BT_INTEGER, expr1->ts.kind, false);
+ 
+      /* For ISHFT[C], check that |shift| <= bit_size(i).  */
+      if (arg2 == NULL)
+	{
+	  if (i2 < 0)
+	    i2 = -i2;
+
+	  if (i2 > gfc_integer_kinds[i3].bit_size)
+	    {
+	      gfc_error ("The absolute value of SHIFT at %L must be less "
+			 "than or equal to BIT_SIZE('%s')",
+			 &expr2->where, arg1);
+	      return FAILURE;
+	    }
+	}
+
       if (or_equal)
 	{
 	  if (i2 > gfc_integer_kinds[i3].bit_size)
@@ -1927,6 +1943,9 @@ gfc_check_ishft (gfc_expr *i, gfc_expr *shift)
       || type_check (shift, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
 
+  if (less_than_bitsize1 ("I", i, NULL, shift, true) == FAILURE)
+    return FAILURE;
+
   return SUCCESS;
 }
 
@@ -1938,7 +1957,35 @@ gfc_check_ishftc (gfc_expr *i, gfc_expr *shift, gfc_expr *size)
       || type_check (shift, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
 
-  if (size != NULL && type_check (size, 2, BT_INTEGER) == FAILURE)
+  if (size != NULL) 
+    {
+      int i2, i3;
+
+      if (type_check (size, 2, BT_INTEGER) == FAILURE)
+	return FAILURE;
+
+      if (less_than_bitsize1 ("I", i, "SIZE", size, true) == FAILURE)
+	return FAILURE;
+
+      gfc_extract_int (size, &i3);
+      if (i3 <= 0)
+	{
+	  gfc_error ("SIZE at %L must be positive", &size->where);
+	  return FAILURE;
+	}
+
+      gfc_extract_int (shift, &i2);
+      if (i2 < 0)
+	i2 = -i2;
+
+      if (i2 > i3)
+	{
+	  gfc_error ("The absolute value of SHIFT at %L must be less than "
+		     "or equal to SIZE at %L", &shift->where, &size->where);
+	  return FAILURE;
+	}
+    }
+  else if (less_than_bitsize1 ("I", i, NULL, shift, true) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

@@ -1,5 +1,10 @@
 2011-10-20  Gary Funck  <gary@intrepid.com>
 
+        Merge trunk version 180276 into gupc branch.
+        Incorporates fix for PR bootstrap/50709.
+
+2011-10-20  Gary Funck  <gary@intrepid.com>
+
         Merge trunk version 180246 into gupc branch.
 
 2011-10-19  Gary Funck  <gary@intrepid.com>

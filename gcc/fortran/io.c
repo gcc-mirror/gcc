@@ -2548,17 +2548,31 @@ match_dt_format (gfc_dt *dt)
 
   if ((m = gfc_match_st_label (&label)) == MATCH_YES)
     {
-      if (dt->format_expr != NULL || dt->format_label != NULL)
+      char c;
+
+      /* Need to check if the format label is actually either an operand
+	 to a user-defined operator or is a kind type parameter.  That is,
+	 print 2.ip.8      ! .ip. is a user-defined operator return CHARACTER.
+	 print 1_'(I0)', i ! 1_'(I0)' is a default character string.  */
+
+      gfc_gobble_whitespace ();
+      c = gfc_peek_ascii_char ();
+      if (c == '.' || c == '_')
+	gfc_current_locus = where;
+      else
 	{
-	  gfc_free_st_label (label);
-	  goto conflict;
+	  if (dt->format_expr != NULL || dt->format_label != NULL)
+	    {
+	      gfc_free_st_label (label);
+	      goto conflict;
+	    }
+
+	  if (gfc_reference_st_label (label, ST_LABEL_FORMAT) == FAILURE)
+	    return MATCH_ERROR;
+
+	  dt->format_label = label;
+	  return MATCH_YES;
 	}
-
-      if (gfc_reference_st_label (label, ST_LABEL_FORMAT) == FAILURE)
-	return MATCH_ERROR;
-
-      dt->format_label = label;
-      return MATCH_YES;
     }
   else if (m == MATCH_ERROR)
     /* The label was zero or too large.  Emit the correct diagnosis.  */

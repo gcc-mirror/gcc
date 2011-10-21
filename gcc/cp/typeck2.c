@@ -567,6 +567,13 @@ split_nonconstant_init_1 (tree dest, tree init)
 	      code = build2 (INIT_EXPR, inner_type, sub, value);
 	      code = build_stmt (input_location, EXPR_STMT, code);
 	      add_stmt (code);
+	      if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (inner_type))
+		{
+		  code = (build_special_member_call
+			  (sub, complete_dtor_identifier, NULL, inner_type,
+			   LOOKUP_NORMAL, tf_warning_or_error));
+		  finish_eh_cleanup (code);
+		}
 
 	      num_split_elts++;
 	    }

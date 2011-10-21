@@ -1,3 +1,9 @@
+2011-10-17  Paul Brook  <paul@codesourcery.com>
+
+	* exception.cc (parse_lsda_header): hardcode ttype_encoding for older
+	ARM EABI toolchains.
+	(get_ttype_entry) Remove __ARM_EABI_UNWINDER__ variant.
+
 2011-10-16  Uros Bizjak  <ubizjak@gmail.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 

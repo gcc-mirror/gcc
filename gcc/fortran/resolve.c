@@ -4846,7 +4846,8 @@ resolve_ref (gfc_expr *expr)
 	break;
 
       case REF_SUBSTRING:
-	resolve_substring (ref);
+	if (resolve_substring (ref) == FAILURE)
+	  return FAILURE;
 	break;
       }
 

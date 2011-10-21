@@ -161,6 +161,11 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
   info->ttype_encoding = *p++;
   if (info->ttype_encoding != DW_EH_PE_omit)
     {
+#if _GLIBCXX_OVERRIDE_TTYPE_ENCODING
+      /* Older ARM EABI toolchains set this value incorrectly, so use a
+	 hardcoded OS-specific format.  */
+  info->ttype_encoding = _GLIBCXX_OVERRIDE_TTYPE_ENCODING;
+#endif
       p = read_uleb128 (p, &tmp);
       info->TType = p + tmp;
     }
@@ -176,21 +181,6 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
   return p;
 }
 
-#ifdef __ARM_EABI_UNWINDER__
-
-static void **
-get_ttype_entry(_Unwind_Context *, lsda_header_info* info, _uleb128_t i)
-{
-  _Unwind_Ptr ptr;
-
-  ptr = (_Unwind_Ptr) (info->TType - (i * 4));
-  ptr = _Unwind_decode_target2(ptr);
-  
-  return reinterpret_cast<void **>(ptr);
-}
-
-#else
-
 static void **
 get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
 {
@@ -201,8 +191,6 @@ get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
 
   return reinterpret_cast<void **>(ptr);
 }
-
-#endif
 
 // Using a different personality function name causes link failures
 // when trying to mix code using different exception handling models.

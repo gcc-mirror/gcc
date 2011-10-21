@@ -1,3 +1,13 @@
+2011-10-09  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (node_cmp, varpool_node_cmp): New functions.
+	(lto_balanced_map): Honnor -fno-toplevel-reorder of vars&functions.
+	(cmp_partitions): Rename to ...
+	(cmp_partitions_size): ... this one.
+	(cmp_partitions_order): New function.
+	(lto_wpa_write_files): Sort partitions by order when
+	-fno-toplevel-reorder is used.
+
 2011-10-09  Andi Kleen  <ak@linux.intel.com>
 
 	* lto.c (lto_section_read): Call fatal_error on IO or mmap errors.

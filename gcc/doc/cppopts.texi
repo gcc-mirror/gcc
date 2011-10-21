@@ -590,9 +590,9 @@ This option is only useful for debugging GCC.  When used with
 token in the output is preceded by the dump of the map its location
 belongs to.  The dump of the map holding the location of a token would
 be:
-@quotation
+@smallexample
 @{@samp{P}:@file{/file/path};@samp{F}:@file{/includer/path};@samp{L}:@var{line_num};@samp{C}:@var{col_num};@samp{S}:@var{system_header_p};@samp{M}:@var{map_address};@samp{E}:@var{macro_expansion_p},@samp{loc}:@var{location}@}
-@end quotation
+@end smallexample
 
 When used without @option{-E}, this option has no effect.
 
