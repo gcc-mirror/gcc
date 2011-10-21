@@ -1,3 +1,8 @@
+2011-10-20  Mike Stump  <mikestump@comcast.net>
+
+	* regcprop.c (copyprop_hardreg_forward_1): Update recog_data
+	after validate_change wipes it out.
+
 2011-10-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.md ("vec_permv16qi"): Reduce selector modulo 32
