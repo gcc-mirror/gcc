@@ -17853,8 +17853,8 @@ cp_parser_class_head (cp_parser* parser,
     {
       cp_parser_check_for_invalid_template_id (parser, id,
                                                type_start_token->location);
-      virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
     }
+  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
   /* If it's not a `:' or a `{' then we can't really be looking at a
      class-head, since a class-head only appears as part of a

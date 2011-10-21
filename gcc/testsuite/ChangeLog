@@ -1,3 +1,8 @@
+2011-10-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/50811
+	* g++.dg/cpp0x/override2.C: Add test.
+
 2011-10-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gcc-dg.exp (GCC_UNDER_TEST): Set before calling
