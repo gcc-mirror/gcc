@@ -1,3 +1,8 @@
+2011-10-21  Roland Stigge  <stigge@antcom.de>
+
+	PR translation/47064
+	* params.def: Fix typo "compilatoin" -> "compilation".
+
 2011-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
