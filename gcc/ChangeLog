@@ -1,3 +1,8 @@
+2011-10-21  Kai Tietz  <ktietz@redhat.com>
+
+	* fold-const.c (simple_operand_p_2): Handle integral
+	casts from boolean-operands.
+
 2011-10-21  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Dump alias flag.

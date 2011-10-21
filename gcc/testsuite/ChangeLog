@@ -1,3 +1,10 @@
+2011-10-21  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.target/i386/branch-cost1.c: New test.
+	* gcc.target/i386/branch-cost2.c: New test.
+	* gcc.target/i386/branch-cost3.c: New test.
+	* gcc.target/i386/branch-cost4.c: New test.
+
 2011-10-20  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/vect/vect-120.c: Add vect_floatint_cvt requirement.

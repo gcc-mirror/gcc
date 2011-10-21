@@ -3695,22 +3695,22 @@ simple_operand_p (const_tree exp)
 
 /* Subroutine for fold_truth_andor: determine if an operand is simple enough
    to be evaluated unconditionally.
-   I addition to simple_operand_p, we assume that comparisons and logic-not
-   operations are simple, if their operands are simple, too.  */
+   I addition to simple_operand_p, we assume that comparisons, conversions,
+   and logic-not operations are simple, if their operands are simple, too.  */
 
 static bool
 simple_operand_p_2 (tree exp)
 {
   enum tree_code code;
 
-  /* Strip any conversions that don't change the machine mode.  */
-  STRIP_NOPS (exp);
-
-  code = TREE_CODE (exp);
-
   if (TREE_SIDE_EFFECTS (exp)
       || tree_could_trap_p (exp))
     return false;
+
+  while (CONVERT_EXPR_P (exp))
+    exp = TREE_OPERAND (exp, 0);
+
+  code = TREE_CODE (exp);
 
   if (TREE_CODE_CLASS (code) == tcc_comparison)
     return (simple_operand_p (TREE_OPERAND (exp, 0))
