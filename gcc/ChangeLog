@@ -5,6 +5,11 @@
 	* config/sparc/sparc.c (TARGET_SECONDARY_RELOAD): Redefine.
 	(sparc_secondary_reload): New function.
 
+	* config/sparc/sparc.h (sparc_costs): Remove extern decl.
+	(struct processor_costs): Move from here..
+	* config/sparc/sparc.c (struct processor_costs): To here.
+	(sparc_costs): Mark static.
+
 2011-10-21  Paul Brook  <paul@codesourcery.com>
 
 	* config/c6x/c6x.c (c6x_asm_emit_except_personality,
