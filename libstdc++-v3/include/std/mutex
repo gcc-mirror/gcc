@@ -206,6 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return &_M_mutex; }
   };
 
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
   /// timed_mutex
   class timed_mutex
   {
@@ -417,6 +418,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return try_lock_until(__atime);
       }
   };
+#endif
 
   /// Do not acquire ownership of the mutex.
   struct defer_lock_t { };
