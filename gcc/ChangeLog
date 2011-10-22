@@ -10,6 +10,10 @@
 	* config/sparc/sparc.c (struct processor_costs): To here.
 	(sparc_costs): Mark static.
 
+	* config/sparc/sparc.c (short_branch, reg_unused_after): Delete.
+	* config/sparc/sparc-protos.h (short_branch, reg_unused_after):
+	Get rid of declarations.
+
 2011-10-21  Paul Brook  <paul@codesourcery.com>
 
 	* config/c6x/c6x.c (c6x_asm_emit_except_personality,
