@@ -1,3 +1,10 @@
+2011-10-22  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.h (SECONDARY_INPUT_RELOAD_CLASS,
+	SECONDARY_OUTPUT_RELOAD_CLASS): Delete.
+	* config/sparc/sparc.c (TARGET_SECONDARY_RELOAD): Redefine.
+	(sparc_secondary_reload): New function.
+
 2011-10-21  Paul Brook  <paul@codesourcery.com>
 
 	* config/c6x/c6x.c (c6x_asm_emit_except_personality,
