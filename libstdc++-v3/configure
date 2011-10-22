@@ -19823,8 +19823,14 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions -I${toplevel_srcdir}/gcc"
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking check whether it can be safely assumed that mutex_timedlock is available" >&5
-$as_echo_n "checking check whether it can be safely assumed that mutex_timedlock is available... " >&6; }
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  case $target_thread_file in
+    posix)
+      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+  esac
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether it can be safely assumed that mutex_timedlock is available" >&5
+$as_echo_n "checking whether it can be safely assumed that mutex_timedlock is available... " >&6; }
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -19833,7 +19839,9 @@ int
 main ()
 {
 
-      #if !defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS < 0
+      // In case of POSIX threads check _POSIX_TIMEOUTS.
+      #if (defined(_PTHREADS) \
+          && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
       #error
       #endif
 
@@ -19859,32 +19867,17 @@ _ACEOF
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_mutex_timedlock" >&5
 $as_echo "$res_mutex_timedlock" >&6; }
 
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
-  case $target_thread_file in
-    posix)
-      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
-  esac
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gthreads library" >&5
 $as_echo_n "checking for gthreads library... " >&6; }
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-                  #include "gthr.h"
-		  #include <unistd.h>
-
+#include "gthr.h"
 int
 main ()
 {
 
       #ifndef __GTHREADS_CXX0X
-      #error
-      #endif
-
-      // In case of POSIX threads check _POSIX_TIMEOUTS too.
-      #if (defined(_PTHREADS) \
-	   && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
       #error
       #endif
 

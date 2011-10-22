@@ -3358,11 +3358,19 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions -I${toplevel_srcdir}/gcc"
 
-  AC_MSG_CHECKING([check whether it can be safely assumed that mutex_timedlock is available])
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  case $target_thread_file in
+    posix)
+      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+  esac
+
+  AC_MSG_CHECKING([whether it can be safely assumed that mutex_timedlock is available])
 
   AC_TRY_COMPILE([#include <unistd.h>],
     [
-      #if !defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS < 0
+      // In case of POSIX threads check _POSIX_TIMEOUTS.
+      #if (defined(_PTHREADS) \
+          && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
       #error
       #endif
     ], [ac_gthread_use_mutex_timedlock=1], [ac_gthread_use_mutex_timedlock=0])
@@ -3374,26 +3382,11 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   else res_mutex_timedlock=no ; fi
   AC_MSG_RESULT([$res_mutex_timedlock])
 
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
-  case $target_thread_file in
-    posix)
-      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
-  esac
-
   AC_MSG_CHECKING([for gthreads library])
 
-  AC_TRY_COMPILE([
-                  #include "gthr.h"
-		  #include <unistd.h>
-                 ],
+  AC_TRY_COMPILE([#include "gthr.h"],
     [
       #ifndef __GTHREADS_CXX0X
-      #error
-      #endif
-
-      // In case of POSIX threads check _POSIX_TIMEOUTS too.
-      #if (defined(_PTHREADS) \
-	   && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
       #error
       #endif
     ], [ac_has_gthreads=yes], [ac_has_gthreads=no])
