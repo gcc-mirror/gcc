@@ -59,6 +59,81 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 
 /* Processor costs */
+
+struct processor_costs {
+  /* Integer load */
+  const int int_load;
+
+  /* Integer signed load */
+  const int int_sload;
+
+  /* Integer zeroed load */
+  const int int_zload;
+
+  /* Float load */
+  const int float_load;
+
+  /* fmov, fneg, fabs */
+  const int float_move;
+
+  /* fadd, fsub */
+  const int float_plusminus;
+
+  /* fcmp */
+  const int float_cmp;
+
+  /* fmov, fmovr */
+  const int float_cmove;
+
+  /* fmul */
+  const int float_mul;
+
+  /* fdivs */
+  const int float_div_sf;
+
+  /* fdivd */
+  const int float_div_df;
+
+  /* fsqrts */
+  const int float_sqrt_sf;
+
+  /* fsqrtd */
+  const int float_sqrt_df;
+
+  /* umul/smul */
+  const int int_mul;
+
+  /* mulX */
+  const int int_mulX;
+
+  /* integer multiply cost for each bit set past the most
+     significant 3, so the formula for multiply cost becomes:
+
+	if (rs1 < 0)
+	  highest_bit = highest_clear_bit(rs1);
+	else
+	  highest_bit = highest_set_bit(rs1);
+	if (highest_bit < 3)
+	  highest_bit = 3;
+	cost = int_mul{,X} + ((highest_bit - 3) / int_mul_bit_factor);
+
+     A value of zero indicates that the multiply costs is fixed,
+     and not variable.  */
+  const int int_mul_bit_factor;
+
+  /* udiv/sdiv */
+  const int int_div;
+
+  /* divX */
+  const int int_divX;
+
+  /* movcc, movr */
+  const int int_cmove;
+
+  /* penalty for shifts, due to scheduling rules etc. */
+  const int shift_penalty;
+};
+
 static const
 struct processor_costs cypress_costs = {
   COSTS_N_INSNS (2), /* int load */
@@ -299,7 +374,7 @@ struct processor_costs niagara3_costs = {
   0, /* shift penalty */
 };
 
-const struct processor_costs *sparc_costs = &cypress_costs;
+static const struct processor_costs *sparc_costs = &cypress_costs;
 
 #ifdef HAVE_AS_RELAX_OPTION
 /* If 'as' and 'ld' are relaxing tail call insns into branch always, use
