@@ -532,9 +532,9 @@ __extension__								\
 # define obstack_free(h,obj)						\
 ( (h)->temp = (char *) (obj) - (char *) (h)->chunk,			\
   (((h)->temp > 0 && (h)->temp < (h)->chunk_limit - (char *) (h)->chunk)\
-   ? (int) ((h)->next_free = (h)->object_base				\
-	    = (h)->temp + (char *) (h)->chunk)				\
-   : (((obstack_free) ((h), (h)->temp + (char *) (h)->chunk), 0), 0)))
+   ? (((h)->next_free = (h)->object_base				\
+	    = (h)->temp + (char *) (h)->chunk), 0)			\
+   : ((obstack_free) ((h), (h)->temp + (char *) (h)->chunk), 0)))
 
 #endif /* not __GNUC__ or not __STDC__ */
 
