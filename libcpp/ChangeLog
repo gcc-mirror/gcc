@@ -1,3 +1,13 @@
+2011-10-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/50778
+	* include/internal.h (_cpp_remaining_tokens_num_in_context): Take the
+	context to act upon.
+	* lex.c (_cpp_remaining_tokens_num_in_context): Likewise.  Update
+	comment.
+	(cpp_token_from_context_at): Likewise.
+	(cpp_peek_token): Use the context to peek tokens from.
+
 2011-10-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/50801
