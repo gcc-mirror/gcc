@@ -3176,51 +3176,6 @@ eligible_for_sibcall_delay (rtx trial)
 
   return eligible_for_restore_insn (trial, false);
 }
-
-int
-short_branch (int uid1, int uid2)
-{
-  int delta = INSN_ADDRESSES (uid1) - INSN_ADDRESSES (uid2);
-
-  /* Leave a few words of "slop".  */
-  if (delta >= -1023 && delta <= 1022)
-    return 1;
-
-  return 0;
-}
-
-/* Return nonzero if REG is not used after INSN.
-   We assume REG is a reload reg, and therefore does
-   not live past labels or calls or jumps.  */
-int
-reg_unused_after (rtx reg, rtx insn)
-{
-  enum rtx_code code, prev_code = UNKNOWN;
-
-  while ((insn = NEXT_INSN (insn)))
-    {
-      if (prev_code == CALL_INSN && call_used_regs[REGNO (reg)])
-	return 1;
-
-      code = GET_CODE (insn);
-      if (GET_CODE (insn) == CODE_LABEL)
-	return 1;
-
-      if (INSN_P (insn))
-	{
-	  rtx set = single_set (insn);
-	  int in_src = set && reg_overlap_mentioned_p (reg, SET_SRC (set));
-	  if (set && in_src)
-	    return 0;
-	  if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-	    return 1;
-	  if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
-	    return 0;
-	}
-      prev_code = code;
-    }
-  return 1;
-}
 
 /* Determine if it's legal to put X into the constant pool.  This
    is not possible if X contains the address of a symbol that is
