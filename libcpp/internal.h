@@ -652,7 +652,7 @@ extern cpp_token *_cpp_lex_direct (cpp_reader *);
 extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
 extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
-extern int _cpp_remaining_tokens_num_in_context (cpp_reader *);
+extern int _cpp_remaining_tokens_num_in_context (cpp_context *);
 
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
