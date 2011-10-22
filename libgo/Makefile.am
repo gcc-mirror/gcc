@@ -242,7 +242,6 @@ toolexeclibgoencoding_DATA = \
 toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 
 toolexeclibgoexp_DATA = \
-	exp/datafmt.gox \
 	exp/gui.gox \
 	exp/norm.gox \
 	exp/regexp.gox
@@ -1196,9 +1195,6 @@ go_encoding_hex_files = \
 go_encoding_pem_files = \
 	go/encoding/pem/pem.go
 
-go_exp_datafmt_files = \
-	go/exp/datafmt/datafmt.go \
-	go/exp/datafmt/parser.go
 go_exp_gui_files = \
 	go/exp/gui/gui.go
 go_exp_norm_files = \
@@ -1666,7 +1662,6 @@ libgo_go_objs = \
 	encoding/git85.lo \
 	encoding/hex.lo \
 	encoding/pem.lo \
-	exp/datafmt.lo \
 	exp/gui.lo \
 	exp/norm.lo \
 	exp/regexp.lo \
@@ -2592,15 +2587,6 @@ encoding/pem/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/pem/check
 
-exp/datafmt.lo: $(go_exp_datafmt_files) bytes.gox fmt.gox go/scanner.gox \
-		go/token.gox io.gox os.gox reflect.gox runtime.gox \
-		strconv.gox strings.gox
-	$(BUILDPACKAGE)
-exp/datafmt/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/datafmt
-	@$(CHECK)
-.PHONY: exp/datafmt/check
-
 exp/gui.lo: $(go_exp_gui_files) image.gox image/draw.gox os.gox
 	$(BUILDPACKAGE)
 exp/gui/check: $(CHECK_DEPS)
@@ -3234,8 +3220,6 @@ encoding/hex.gox: encoding/hex.lo
 encoding/pem.gox: encoding/pem.lo
 	$(BUILDGOX)
 
-exp/datafmt.gox: exp/datafmt.lo
-	$(BUILDGOX)
 exp/gui.gox: exp/gui.lo
 	$(BUILDGOX)
 exp/norm.gox: exp/norm.lo
@@ -3461,7 +3445,6 @@ TEST_PACKAGES = \
 	encoding/git85/check \
 	encoding/hex/check \
 	encoding/pem/check \
-	exp/datafmt/check \
 	exp/norm/check \
 	exp/regexp/check \
 	exp/regexp/syntax/check \

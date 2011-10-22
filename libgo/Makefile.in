@@ -159,17 +159,16 @@ am__DEPENDENCIES_2 = asn1/asn1.lo big/big.lo bufio/bufio.lo \
 	crypto/x509/pkix.lo debug/dwarf.lo debug/elf.lo debug/gosym.lo \
 	debug/macho.lo debug/pe.lo encoding/ascii85.lo \
 	encoding/base32.lo encoding/base64.lo encoding/binary.lo \
-	encoding/git85.lo encoding/hex.lo encoding/pem.lo \
-	exp/datafmt.lo exp/gui.lo exp/norm.lo exp/regexp.lo \
-	exp/gui/x11.lo exp/regexp/syntax.lo exp/template/html.lo \
-	go/ast.lo go/build.lo go/doc.lo go/parser.lo go/printer.lo \
-	go/scanner.lo go/token.lo go/typechecker.lo go/types.lo \
-	hash/adler32.lo hash/crc32.lo hash/crc64.lo hash/fnv.lo \
-	http/cgi.lo http/fcgi.lo http/httptest.lo http/pprof.lo \
-	http/spdy.lo image/bmp.lo image/draw.lo image/gif.lo \
-	image/jpeg.lo image/png.lo image/tiff.lo image/ycbcr.lo \
-	index/suffixarray.lo io/ioutil.lo mime/multipart.lo \
-	net/dict.lo net/textproto.lo old/template.lo \
+	encoding/git85.lo encoding/hex.lo encoding/pem.lo exp/gui.lo \
+	exp/norm.lo exp/regexp.lo exp/gui/x11.lo exp/regexp/syntax.lo \
+	exp/template/html.lo go/ast.lo go/build.lo go/doc.lo \
+	go/parser.lo go/printer.lo go/scanner.lo go/token.lo \
+	go/typechecker.lo go/types.lo hash/adler32.lo hash/crc32.lo \
+	hash/crc64.lo hash/fnv.lo http/cgi.lo http/fcgi.lo \
+	http/httptest.lo http/pprof.lo http/spdy.lo image/bmp.lo \
+	image/draw.lo image/gif.lo image/jpeg.lo image/png.lo \
+	image/tiff.lo image/ycbcr.lo index/suffixarray.lo io/ioutil.lo \
+	mime/multipart.lo net/dict.lo net/textproto.lo old/template.lo \
 	$(am__DEPENDENCIES_1) os/user.lo os/signal.lo path/filepath.lo \
 	rpc/jsonrpc.lo runtime/debug.lo runtime/pprof.lo \
 	sync/atomic.lo sync/atomic_c.lo syscalls/syscall.lo \
@@ -698,7 +697,6 @@ toolexeclibgoencoding_DATA = \
 
 toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 toolexeclibgoexp_DATA = \
-	exp/datafmt.gox \
 	exp/gui.gox \
 	exp/norm.gox \
 	exp/regexp.gox
@@ -1567,10 +1565,6 @@ go_encoding_hex_files = \
 go_encoding_pem_files = \
 	go/encoding/pem/pem.go
 
-go_exp_datafmt_files = \
-	go/exp/datafmt/datafmt.go \
-	go/exp/datafmt/parser.go
-
 go_exp_gui_files = \
 	go/exp/gui/gui.go
 
@@ -1990,7 +1984,6 @@ libgo_go_objs = \
 	encoding/git85.lo \
 	encoding/hex.lo \
 	encoding/pem.lo \
-	exp/datafmt.lo \
 	exp/gui.lo \
 	exp/norm.lo \
 	exp/regexp.lo \
@@ -2242,7 +2235,6 @@ TEST_PACKAGES = \
 	encoding/git85/check \
 	encoding/hex/check \
 	encoding/pem/check \
-	exp/datafmt/check \
 	exp/norm/check \
 	exp/regexp/check \
 	exp/regexp/syntax/check \
@@ -5171,15 +5163,6 @@ encoding/pem/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/pem/check
 
-exp/datafmt.lo: $(go_exp_datafmt_files) bytes.gox fmt.gox go/scanner.gox \
-		go/token.gox io.gox os.gox reflect.gox runtime.gox \
-		strconv.gox strings.gox
-	$(BUILDPACKAGE)
-exp/datafmt/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/datafmt
-	@$(CHECK)
-.PHONY: exp/datafmt/check
-
 exp/gui.lo: $(go_exp_gui_files) image.gox image/draw.gox os.gox
 	$(BUILDPACKAGE)
 exp/gui/check: $(CHECK_DEPS)
@@ -5808,8 +5791,6 @@ encoding/hex.gox: encoding/hex.lo
 encoding/pem.gox: encoding/pem.lo
 	$(BUILDGOX)
 
-exp/datafmt.gox: exp/datafmt.lo
-	$(BUILDGOX)
 exp/gui.gox: exp/gui.lo
 	$(BUILDGOX)
 exp/norm.gox: exp/norm.lo
