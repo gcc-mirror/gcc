@@ -1,3 +1,11 @@
+2011-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (invert_tree_comparison): Always invert EQ_EXPR/NE_EXPR.
+
+	PR tree-optimization/44683
+	* tree-ssa-dom.c (record_edge_info): Record simple equivalences only if
+	we can be sure that there are no signed zeros involved.
+
 2011-10-23  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (estimate_badness): Scale up and handle overflows.

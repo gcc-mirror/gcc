@@ -1610,12 +1610,15 @@ record_edge_info (basic_block bb)
             {
               tree cond = build2 (code, boolean_type_node, op0, op1);
               tree inverted = invert_truthvalue_loc (loc, cond);
+              bool can_infer_simple_equiv
+                = !(HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op0)))
+                    && real_zerop (op0));
               struct edge_info *edge_info;
 
               edge_info = allocate_edge_info (true_edge);
               record_conditions (edge_info, cond, inverted);
 
-              if (code == EQ_EXPR)
+              if (can_infer_simple_equiv && code == EQ_EXPR)
                 {
                   edge_info->lhs = op1;
                   edge_info->rhs = op0;
@@ -1624,7 +1627,7 @@ record_edge_info (basic_block bb)
               edge_info = allocate_edge_info (false_edge);
               record_conditions (edge_info, inverted, cond);
 
-              if (TREE_CODE (inverted) == EQ_EXPR)
+              if (can_infer_simple_equiv && TREE_CODE (inverted) == EQ_EXPR)
                 {
                   edge_info->lhs = op1;
                   edge_info->rhs = op0;
@@ -1632,17 +1635,20 @@ record_edge_info (basic_block bb)
             }
 
           else if (TREE_CODE (op0) == SSA_NAME
-                   && (is_gimple_min_invariant (op1)
-                       || TREE_CODE (op1) == SSA_NAME))
+                   && (TREE_CODE (op1) == SSA_NAME
+                       || is_gimple_min_invariant (op1)))
             {
               tree cond = build2 (code, boolean_type_node, op0, op1);
               tree inverted = invert_truthvalue_loc (loc, cond);
+              bool can_infer_simple_equiv
+                = !(HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op1)))
+                    && (TREE_CODE (op1) == SSA_NAME || real_zerop (op1)));
               struct edge_info *edge_info;
 
               edge_info = allocate_edge_info (true_edge);
               record_conditions (edge_info, cond, inverted);
 
-              if (code == EQ_EXPR)
+              if (can_infer_simple_equiv && code == EQ_EXPR)
                 {
                   edge_info->lhs = op0;
                   edge_info->rhs = op1;
@@ -1651,7 +1657,7 @@ record_edge_info (basic_block bb)
               edge_info = allocate_edge_info (false_edge);
               record_conditions (edge_info, inverted, cond);
 
-              if (TREE_CODE (inverted) == EQ_EXPR)
+              if (can_infer_simple_equiv && TREE_CODE (inverted) == EQ_EXPR)
                 {
                   edge_info->lhs = op0;
                   edge_info->rhs = op1;
