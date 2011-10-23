@@ -1,3 +1,12 @@
+2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50841
+	Revert:
+	2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50810
+	* doc/invoke.texi ([-Wnarrowing], [-Wc++0x-compat]): Update.
+
 2011-10-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (avx2_lshl<mode>3): Remove insn pattern.
