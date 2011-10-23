@@ -1,5 +1,12 @@
 2011-10-23  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.c (sparc_split_regreg_legitimate): New
+	function.
+	* config/sparc/sparc-protos.h (sparc_split_regreg_legitimate):
+	Declare it.
+	* config/sparc/sparc.md (DImode reg/reg split): Use it.
+	(DFmode reg/reg split): Likewise.
+
 	* config/sparc/sparc.md (*movdi_insn_sp32_v9): Add alternatives for
 	generating fzero and fone instructions.
 	(DImode const_int --> reg splitter): Only trigger for integer regs.
