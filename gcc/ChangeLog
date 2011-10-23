@@ -1,3 +1,9 @@
+2011-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50788
+	* config/i386/sse.md (avx_maskload<ssemodesuffix><avxmodesuffix>):
+	Remove (match_dup 0).
+
 2011-10-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50820
@@ -12,8 +18,8 @@
 	Backport from mainline.
 	2011-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-	 * config/arm/arm.c (thumb_unexpanded_epilogue): Handle return
-        reg size from 1-3.
+	* config/arm/arm.c (thumb_unexpanded_epilogue): Handle return
+	reg size from 1-3.
 
 2011-10-19  Jakub Jelinek  <jakub@redhat.com>
 
