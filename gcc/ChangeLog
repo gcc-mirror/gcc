@@ -1,5 +1,10 @@
 2011-10-23  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/predicates.md (input_operand): Disallow vector
+	constants other than 0 and -1.
+	* config/sparc/sparc.c (sparc_preferred_reload_class): Return
+	NO_REGS for vector constants other than 0 and -1.
+
 	* config/sparc/sparc.h (SPARC_FIRST_INT_REG, SPARC_LAST_INT_REG,
 	SPARC_INT_REG_P): Define.
 	(HARD_REGNO_NREGS): Use SPARC_INT_REG_P.
