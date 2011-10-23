@@ -555,8 +555,7 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 
 static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
-                                  loop_vec_info loop_vinfo, int *max_vf,
-                                  bool *data_dependence_in_bb)
+                                  loop_vec_info loop_vinfo, int *max_vf)
 {
   unsigned int i;
   struct loop *loop = NULL;
@@ -587,6 +586,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
+      gimple earlier_stmt;
+
       if (loop_vinfo)
         {
           if (vect_print_dump_info (REPORT_DR_DETAILS))
@@ -624,10 +625,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
         return true;
 
-      /* We deal with read-write dependencies in basic blocks later (by
-         verifying that all the loads in the basic block are before all the
-         stores).  */
-      *data_dependence_in_bb = true;
+      /* Check that it's not a load-after-store dependence.  */
+      earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
+      if (DR_IS_WRITE (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
+        return true;
+
       return false;
     }
 
@@ -753,8 +755,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 
 bool
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
-                                   bb_vec_info bb_vinfo, int *max_vf,
-                                   bool *data_dependence_in_bb)
+                                   bb_vec_info bb_vinfo, int *max_vf)
 {
   unsigned int i;
   VEC (ddr_p, heap) *ddrs = NULL;
@@ -769,8 +770,7 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
     ddrs = BB_VINFO_DDRS (bb_vinfo);
 
   FOR_EACH_VEC_ELT (ddr_p, ddrs, i, ddr)
-    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf,
-					  data_dependence_in_bb))
+    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
       return false;
 
   return true;

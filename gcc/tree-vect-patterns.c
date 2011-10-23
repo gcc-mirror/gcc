@@ -1225,7 +1225,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
 
   where type 'TYPE' is at least double the size of type 'type'.
 
-  Also detect unsgigned cases:
+  Also detect unsigned cases:
 
   unsigned type a_t;
   unsigned TYPE u_res_T;
