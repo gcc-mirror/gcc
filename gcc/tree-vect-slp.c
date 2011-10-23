@@ -1706,43 +1706,6 @@ vect_slp_analyze_operations (bb_vec_info bb_vinfo)
   return true;
 }
 
-/* Check if loads and stores are mixed in the basic block (in that
-   case if we are not sure that the accesses differ, we can't vectorize the
-   basic block).  Also return FALSE in case that there is statement marked as
-   not vectorizable.  */
-
-static bool
-vect_bb_vectorizable_with_dependencies (bb_vec_info bb_vinfo)
-{
-  basic_block bb = BB_VINFO_BB (bb_vinfo);
-  gimple_stmt_iterator si;
-  bool detected_store = false;
-  gimple stmt;
-  struct data_reference *dr;
-
-  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-    {
-      stmt = gsi_stmt (si);
-
-      /* We can't allow not analyzed statements, since they may contain data
-         accesses.  */ 
-      if (!STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
-        return false;
-
-      if (!STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
-        continue;
-
-      dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
-      if (DR_IS_READ (dr) && detected_store)
-        return false;
-
-      if (!DR_IS_READ (dr))
-        detected_store = true;
-    }
-
-  return true;
-}
-
 /* Check if vectorization of the basic block is profitable.  */
 
 static bool
@@ -1823,7 +1786,6 @@ vect_slp_analyze_bb_1 (basic_block bb)
   int i;
   int min_vf = 2;
   int max_vf = MAX_VECTORIZATION_FACTOR;
-  bool data_dependence_in_bb = false;
 
   bb_vinfo = new_bb_vec_info (bb);
   if (!bb_vinfo)
@@ -1850,11 +1812,8 @@ vect_slp_analyze_bb_1 (basic_block bb)
       return NULL;
     }
 
-   if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo, &max_vf, 
-                                           &data_dependence_in_bb)
-       || min_vf > max_vf
-       || (data_dependence_in_bb 
-           && !vect_bb_vectorizable_with_dependencies (bb_vinfo)))
+   if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo, &max_vf)
+       || min_vf > max_vf)
      {
        if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	 fprintf (vect_dump, "not vectorized: unhandled data dependence "
