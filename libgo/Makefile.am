@@ -1392,127 +1392,141 @@ go_testing_script_files = \
 
 # Define Syscall and Syscall6.
 if LIBGO_IS_RTEMS
-syscall_syscall_file = syscalls/syscall_stubs.go
+syscall_syscall_file = go/syscall/syscall_stubs.go
 else
-syscall_syscall_file = syscalls/syscall.go
+syscall_syscall_file = go/syscall/syscall_unix.go
+endif
+
+# Define ForkExec and Exec.
+if LIBGO_IS_RTEMS
+syscall_exec_file = go/syscall/exec_stubs.go
+else
+syscall_exec_file = go/syscall/exec_unix.go
+endif
+
+# Define Wait4.
+if HAVE_WAIT4
+syscall_wait_file = go/syscall/libcall_wait4.go
+else
+syscall_wait_file = go/syscall/libcall_waitpid.go
+endif
+
+# Define Sleep.
+if LIBGO_IS_RTEMS
+syscall_sleep_file = go/syscall/sleep_rtems.go
+else
+syscall_sleep_file = go/syscall/sleep_select.go
+endif
+
+# Define Errstr.
+if LIBGO_IS_LINUX
+syscall_errstr_file = go/syscall/errstr_linux.go
+else
+if LIBGO_IS_RTEMS
+syscall_errstr_file = go/syscall/errstr_linux.go
+else
+if HAVE_STRERROR_R
+syscall_errstr_file = go/syscall/errstr.go
+else
+syscall_errstr_file = go/syscall/errstr_nor.go
+endif
+endif
 endif
 
 # Declare libc functions that vary for largefile systems.
 if LIBGO_IS_LINUX
 # Always use lseek64 on GNU/Linux.
-syscall_filesize_file = syscalls/sysfile_largefile.go
-syscall_stat_file = syscalls/sysfile_stat_largefile.go
+syscall_size_file = go/syscall/libcall_posix_largefile.go
 else # !LIBGO_IS_LINUX
 if LIBGO_IS_SOLARIS
 if LIBGO_IS_386
 # Use lseek64 on 32-bit Solaris/x86.
-syscall_filesize_file = syscalls/sysfile_largefile.go
-syscall_stat_file = syscalls/sysfile_stat_largefile.go
+syscall_size_file = go/syscall/libcall_posix_largefile.go
 else # !LIBGO_IS_386
 if LIBGO_IS_SPARC
 # Use lseek64 on 32-bit Solaris/SPARC.
-syscall_filesize_file = syscalls/sysfile_largefile.go
-syscall_stat_file = syscalls/sysfile_stat_largefile.go
+syscall_size_file = go/syscall/libcall_posix_largefile.go
 else # !LIBGO_IS_386 && !LIBGO_IS_SPARC
 # Use lseek on 64-bit Solaris.
-syscall_filesize_file = syscalls/sysfile_regfile.go
-syscall_stat_file = syscalls/sysfile_stat_regfile.go
+syscall_size_file = go/syscall/libcall_posix_regfile.go
 endif # !LIBGO_IS_386 && !LIBGO_IS_SPARC
 endif # !LIBGO_IS_SOLARIS
 else # !LIBGO_IS_LINUX && !LIBGO_IS_SOLARIS
 # Use lseek by default.
-syscall_filesize_file = syscalls/sysfile_regfile.go
-syscall_stat_file = syscalls/sysfile_stat_regfile.go
+syscall_size_file = go/syscall/libcall_posix_regfile.go
 endif # !LIBGO_IS_SOLARIS
 endif # !LIBGO_IS_LINUX
 
-
-# Define ForkExec, PtraceForkExec, and Exec.
-if LIBGO_IS_RTEMS
-syscall_exec_os_file = syscalls/exec_stubs.go
-else
-syscall_exec_os_file = syscalls/exec.go
-endif
-
-# Define Wait4.
-if HAVE_WAIT4
-syscall_wait_file = syscalls/wait4.go
-else
-syscall_wait_file = syscalls/waitpid.go
-endif
-
-# Define Sleep.
-if LIBGO_IS_RTEMS
-syscall_sleep_file = syscalls/sleep_rtems.go
-else
-syscall_sleep_file = syscalls/sleep_select.go
-endif
-
-# Define Errstr.
-if LIBGO_IS_RTEMS
-syscall_errstr_file = syscalls/errstr_rtems.go
-else
-if HAVE_STRERROR_R
-syscall_errstr_file = syscalls/errstr.go
-else
-syscall_errstr_file = syscalls/errstr_nor.go
-endif
-endif
-
-# Declare libc_strerror_r which is the Go name for strerror_r.
-if LIBGO_IS_RTEMS
-# RTEMS uses newlib in which strerror_r returns char *.
-syscall_errstr_decl_file = syscalls/errstr_decl_rtems.go
-else
-if LIBGO_IS_LINUX
-# On GNU/Linux the POSIX strerror_r is called __xpg_strerror_r.
-syscall_errstr_decl_file = syscalls/errstr_decl_linux.go
-else
-# On other systems we hope strerror_r is just strerror_r.
-syscall_errstr_decl_file = syscalls/errstr_decl.go
-endif
-endif
-
 # Define socket sizes and types.
 if LIBGO_IS_LINUX
-syscall_socket_os_file = syscalls/socket_linux.go
+syscall_socket_file = go/syscall/socket_linux.go
 else
 if LIBGO_IS_SOLARIS
-syscall_socket_os_file = syscalls/socket_solaris.go
+syscall_socket_file = go/syscall/socket_solaris.go
 else
 if LIBGO_IS_IRIX
-syscall_socket_os_file = syscalls/socket_irix.go
+syscall_socket_file = go/syscall/socket_irix.go
 else
-syscall_socket_os_file = syscalls/socket_bsd.go
+syscall_socket_file = go/syscall/socket_bsd.go
 endif
 endif
-endif
-
-# Support for epoll.
-if LIBGO_IS_LINUX
-syscall_socket_epoll_file = syscalls/socket_epoll.go
-else
-syscall_socket_epoll_file =
 endif
 
 # Support for uname.
 if LIBGO_IS_SOLARIS
 if LIBGO_IS_386
-# 32-bit Solaris 2/x86 needs _nuname, handled in syscall_solaris_386.go.
+# 32-bit Solaris 2/x86 needs _nuname, handled in libcall_solaris_386.go.
 syscall_uname_file =
 else # !LIBGO_IS_386 && LIBGO_IS_SOLARIS
-syscall_uname_file = syscalls/syscall_uname.go
+syscall_uname_file = go/syscall/libcall_uname.go
 endif
 else # !LIBGO_IS_SOLARIS
-syscall_uname_file = syscalls/syscall_uname.go
+syscall_uname_file = go/syscall/libcall_uname.go
 endif
 
 # Support for netlink sockets and messages.
 if LIBGO_IS_LINUX
-syscall_netlink_file = syscalls/netlink_linux.go
+syscall_netlink_file = go/syscall/netlink_linux.go
 else
 syscall_netlink_file =
 endif
+
+go_base_syscall_files = \
+	go/syscall/libcall_support.go \
+	go/syscall/libcall_posix.go \
+	go/syscall/socket.go \
+	go/syscall/str.go \
+	go/syscall/syscall.go \
+	$(syscall_syscall_file) \
+	$(syscall_exec_file) \
+	$(syscall_wait_file) \
+	$(syscall_sleep_file) \
+	$(syscall_errstr_file) \
+	$(syscall_size_file) \
+	$(syscall_socket_file) \
+	$(syscall_uname_file) \
+	$(syscall_netlink_file) \
+	$(GO_LIBCALL_OS_FILE) \
+	$(GO_LIBCALL_OS_ARCH_FILE) \
+	$(GO_SYSCALL_OS_FILE) \
+	$(GO_SYSCALL_OS_ARCH_FILE)
+
+go_syscall_files = \
+	$(go_base_syscall_files) \
+	libcalls.go \
+	sysinfo.go \
+	syscall_arch.go
+go_syscall_c_files = \
+	go/syscall/errno.c \
+	go/syscall/wait.c
+
+libcalls.go: s-libcalls; @true
+s-libcalls: Makefile go/syscall/mksyscall.awk $(go_base_syscall_files)
+	rm -f libcalls.go.tmp
+	files=`echo $^ | sed -e 's/Makefile//' -e 's|[^ ]*go/syscall/mksyscall.awk||'`; \
+	$(AWK) -f $(srcdir)/go/syscall/mksyscall.awk $${files} > libcalls.go.tmp
+	$(SHELL) $(srcdir)/../move-if-change libcalls.go.tmp libcalls.go
+	$(STAMP) $@
 
 syscall_arch.go: s-syscall_arch; @true
 s-syscall_arch: Makefile
@@ -1523,30 +1537,11 @@ s-syscall_arch: Makefile
 	$(SHELL) $(srcdir)/../move-if-change syscall_arch.go.tmp syscall_arch.go
 	$(STAMP) $@
 
-go_syscall_files = \
-	$(syscall_errstr_file) \
-	$(syscall_errstr_decl_file) \
-	syscalls/exec_helpers.go \
-	$(syscall_exec_os_file) \
-	$(syscall_wait_file) \
-	$(syscall_filesize_file) \
-	$(syscall_netlink_file) \
-	$(syscall_stat_file) \
-	$(syscall_sleep_file) \
-	syscalls/socket.go \
-	$(syscall_socket_os_file) \
-	$(syscall_socket_epoll_file) \
-	$(syscall_syscall_file) \
-	$(syscall_uname_file) \
-	syscalls/syscall_unix.go \
-	syscalls/stringbyte.go \
-	syscalls/syscall_$(GOOS).go \
-	$(GO_SYSCALLS_SYSCALL_OS_ARCH_FILE) \
-	syscalls/sysfile_posix.go \
-	sysinfo.go \
-	syscall_arch.go
-go_syscall_c_files = \
-	syscalls/errno.c
+sysinfo.go: s-sysinfo; @true
+s-sysinfo: $(srcdir)/mksysinfo.sh config.h
+	CC="$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(OSCFLAGS)" $(SHELL) $(srcdir)/mksysinfo.sh
+	$(SHELL) $(srcdir)/../move-if-change tmp-sysinfo.go sysinfo.go
+	$(STAMP) $@
 
 if LIBGO_IS_LINUX
 # os_lib_inotify_lo = os/inotify.lo
@@ -1708,8 +1703,9 @@ libgo_go_objs = \
 	runtime/pprof.lo \
 	sync/atomic.lo \
 	sync/atomic_c.lo \
-	syscalls/syscall.lo \
-	syscalls/errno.lo \
+	syscall/syscall.lo \
+	syscall/errno.lo \
+	syscall/wait.lo \
 	template/parse.lo \
 	testing/testing.lo \
 	testing/iotest.lo \
@@ -2983,16 +2979,12 @@ testing/script/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: testing/script/check
 
-sysinfo.go: s-sysinfo; @true
-s-sysinfo: $(srcdir)/mksysinfo.sh config.h
-	CC="$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(OSCFLAGS)" $(SHELL) $(srcdir)/mksysinfo.sh
-	$(SHELL) $(srcdir)/../move-if-change tmp-sysinfo.go sysinfo.go
-	$(STAMP) $@
-
-syscalls/syscall.lo: $(go_syscall_files) sync.gox
+syscall/syscall.lo: $(go_syscall_files) sync.gox
 	$(BUILDPACKAGE)
-syscalls/errno.lo: $(go_syscall_c_files) syscalls/syscall.lo
-	$(LTCOMPILE) -c -o $@ $(srcdir)/syscalls/errno.c
+syscall/errno.lo: go/syscall/errno.c
+	$(LTCOMPILE) -c -o $@ $<
+syscall/wait.lo: go/syscall/wait.c
+	$(LTCOMPILE) -c -o $@ $<
 
 # How to build a .gox file from a .lo file.
 BUILDGOX = \
@@ -3079,7 +3071,7 @@ sync.gox: sync/sync.lo
 	$(BUILDGOX)
 syslog.gox: syslog/syslog.lo
 	$(BUILDGOX)
-syscall.gox: syscalls/syscall.lo
+syscall.gox: syscall/syscall.lo
 	$(BUILDGOX)
 tabwriter.gox: tabwriter/tabwriter.lo
 	$(BUILDGOX)

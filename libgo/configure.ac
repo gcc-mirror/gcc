@@ -45,6 +45,8 @@ AC_SUBST(enable_static)
 CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
 AC_SUBST(CC_FOR_BUILD)
 
+AC_PROG_AWK
+
 WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
 AC_SUBST(WARN_FLAGS)
 
@@ -249,11 +251,26 @@ AM_CONDITIONAL(LIBGO_IS_X86_64, test $is_x86_64 = yes)
 AC_SUBST(GOARCH)
 
 dnl Some files are only present when needed for specific architectures.
-GO_SYSCALLS_SYSCALL_OS_ARCH_FILE=
-if test -f ${srcdir}/syscalls/syscall_${GOOS}_${GOARCH}.go; then
-  GO_SYSCALLS_SYSCALL_OS_ARCH_FILE=syscalls/syscall_${GOOS}_${GOARCH}.go
+GO_LIBCALL_OS_FILE=
+GO_LIBCALL_OS_ARCH_FILE=
+GO_SYSCALL_OS_FILE=
+GO_SYSCALL_OS_ARCH_FILE=
+if test -f ${srcdir}/go/syscall/libcall_${GOOS}.go; then
+  GO_LIBCALL_OS_FILE=go/syscall/libcall_${GOOS}.go
 fi
-AC_SUBST(GO_SYSCALLS_SYSCALL_OS_ARCH_FILE)
+if test -f ${srcdir}/go/syscall/libcall_${GOOS}_${GOARCH}.go; then
+  GO_LIBCALL_OS_ARCH_FILE=go/syscall/libcall_${GOOS}_${GOARCH}.go
+fi
+if test -f ${srcdir}/go/syscall/syscall_${GOOS}.go; then
+  GO_SYSCALL_OS_FILE=go/syscall/syscall_${GOOS}.go
+fi
+if test -f ${srcdir}/go/syscall/syscall_${GOOS}_${GOARCH}.go; then
+  GO_SYSCALL_OS_ARCH_FILE=go/syscall/syscall_${GOOS}_${GOARCH}.go
+fi
+AC_SUBST(GO_LIBCALL_OS_FILE)
+AC_SUBST(GO_LIBCALL_OS_ARCH_FILE)
+AC_SUBST(GO_SYSCALL_OS_FILE)
+AC_SUBST(GO_SYSCALL_OS_ARCH_FILE)
 
 dnl Some targets need special flags to build sysinfo.go.
 case "$target" in

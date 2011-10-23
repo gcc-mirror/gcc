@@ -27,6 +27,17 @@ static int mygetpwuid_r(int uid, struct passwd *pwd,
 func libc_getpwnam_r(name *byte, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int __asm__ ("getpwnam_r")
 func libc_getpwuid_r(uid syscall.Uid_t, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int __asm__ ("getpwuid_r")
 
+// bytePtrToString takes a NUL-terminated array of bytes and convert
+// it to a Go string.
+func bytePtrToString(p *byte) string {
+	a := (*[10000]byte)(unsafe.Pointer(p))
+	i := 0
+	for a[i] != 0 {
+		i++
+	}
+	return string(a[:i])
+}
+
 func init() {
 	implemented = true
 }
@@ -78,9 +89,9 @@ func lookup(uid int, username string, lookupByName bool) (*User, os.Error) {
 	u := &User{
 		Uid:      int(pwd.Pw_uid),
 		Gid:      int(pwd.Pw_gid),
-		Username: syscall.BytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_name))),
-		Name:     syscall.BytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_gecos))),
-		HomeDir:  syscall.BytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_dir))),
+		Username: bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_name))),
+		Name:     bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_gecos))),
+		HomeDir:  bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_dir))),
 	}
 	// The pw_gecos field isn't quite standardized.  Some docs
 	// say: "It is expected to be a comma separated list of

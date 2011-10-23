@@ -197,16 +197,13 @@ if ! grep '^const EPOLLRDHUP' ${OUT} >/dev/null 2>&1; then
   echo "const EPOLLRDHUP = 0x2000" >> ${OUT}
 fi
 
-# Ptrace constants.  We don't expose all the PTRACE flags, just the
-# PTRACE_O_xxx and PTRACE_EVENT_xxx ones.
-grep '^const _PTRACE_O' gen-sysinfo.go |
-  sed -e 's/^\(const \)_\(PTRACE_O[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
-grep '^const _PTRACE_EVENT' gen-sysinfo.go |
-  sed -e 's/^\(const \)_\(PTRACE_EVENT[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
-# We need PTRACE_SETOPTIONS and PTRACE_GETEVENTMSG, but they are not
-# defined in older versions of glibc.
-if ! grep '^const _PTRACE_SETOPTIONS' ${OUT} > /dev/null 2>&1; then
-  echo "const _PTRACE_SETOPTIONS = 0x4200" >> ${OUT}
+# Ptrace constants.
+grep '^const _PTRACE' gen-sysinfo.go |
+  sed -e 's/^\(const \)_\(PTRACE[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+# We need some ptrace options that are not defined in older versions
+# of glibc.
+if ! grep '^const PTRACE_SETOPTIONS' ${OUT} > /dev/null 2>&1; then
+  echo "const PTRACE_SETOPTIONS = 0x4200" >> ${OUT}
 fi
 if ! grep '^const PTRACE_O_TRACESYSGOOD' ${OUT} > /dev/null 2>&1; then
   echo "const PTRACE_O_TRACESYSGOOD = 0x1" >> ${OUT}
@@ -254,7 +251,7 @@ if ! grep '^const PTRACE_EVENT_EXIT' ${OUT} > /dev/null 2>&1; then
   echo "const PTRACE_EVENT_EXIT = 6" >> ${OUT}
 fi
 if ! grep '^const _PTRACE_TRACEME' ${OUT} > /dev/null 2>&1; then
-  echo "const _PTRACE_TRACEME = 0" >> ${OUT}
+  echo "const PTRACE_TRACEME = 0" >> ${OUT}
 fi
 
 # The registers returned by PTRACE_GETREGS.  This is probably
@@ -474,6 +471,11 @@ grep '^type _ip_mreq ' gen-sysinfo.go | \
       -e 's/_in_addr/[4]byte/g' \
     >> ${OUT}
 
+# The size of the ip_mreq struct.
+if grep 'type IPMreq ' ${OUT} > /dev/null 2>&1; then
+  echo 'var SizeofIPMreq = int(unsafe.Sizeof(IPMreq{}))' >> ${OUT}
+fi
+
 # Try to guess the type to use for fd_set.
 fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`
 fds_bits_type="_C_long"
@@ -529,6 +531,25 @@ if ! grep '^const NLMSG_HDRLEN' ${OUT} > /dev/null 2>&1; then
   if grep '^type NlMsghdr ' ${OUT} > /dev/null 2>&1; then
     echo 'var NLMSG_HDRLEN = int((unsafe.Sizeof(NlMsghdr{}) + (NLMSG_ALIGNTO-1)) &^ (NLMSG_ALIGNTO-1))' >> ${OUT}
   fi
+fi
+
+# The rtmsg struct.
+grep '^type _rtmsg ' gen-sysinfo.go | \
+    sed -e 's/_rtmsg/RtMsg/' \
+      -e 's/rtm_family/Family/' \
+      -e 's/rtm_dst_len/Dst_len/' \
+      -e 's/rtm_src_len/Src_len/' \
+      -e 's/rtm_tos/Tos/' \
+      -e 's/rtm_table/Table/' \
+      -e 's/rtm_protocol/Procotol/' \
+      -e 's/rtm_scope/Scope/' \
+      -e 's/rtm_type/Type/' \
+      -e 's/rtm_flags/Flags/' \
+    >> ${OUT}
+
+# The size of the rtmsg struct.
+if grep 'type RtMsg ' ${OUT} > /dev/null 2>&1; then
+  echo 'var SizeofRtMsg = int(unsafe.Sizeof(RtMsg{}))' >> ${OUT}
 fi
 
 # The rtgenmsg struct.
