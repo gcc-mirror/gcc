@@ -125,9 +125,6 @@
    (V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
 
-(define_mode_iterator VI48_AVX2
-  [V8SI V4SI V4DI V2DI])
-
 (define_mode_iterator VI4SD_AVX2
   [V4SI V4DI])
 
@@ -246,8 +243,7 @@
    (V8SI "V8SI") (V4DI "V4DI")
    (V4SI "V4SI") (V2DI "V2DI")
    (V16HI "V16HI") (V8HI "V8HI")
-   (V32QI "V32QI") (V16QI "V16QI")
-  ])
+   (V32QI "V32QI") (V16QI "V16QI")])
 
 ;; Mapping of vector modes to a vector mode of double size
 (define_mode_attr ssedoublevecmode
@@ -276,6 +272,13 @@
    (V16QI "16") (V8HI "8") (V4SI "4") (V2DI "2")
    (V8SF "8") (V4DF "4")
    (V4SF "4") (V2DF "2")])
+
+;; SSE prefix for integer vector modes
+(define_mode_attr sseintprefix
+  [(V2DI "p") (V2DF "")
+   (V4DI "p") (V4DF "")
+   (V4SI "p") (V4SF "")
+   (V8SI "p") (V8SF "")])
 
 ;; SSE scalar suffix for vector modes
 (define_mode_attr ssescalarmodesuffix
@@ -319,16 +322,6 @@
 		       (V4DI "V4DI") (V4DF "V4DI")
 		       (V4SI "V2DI") (V4SF "V2DI")
 		       (V8SI "V4DI") (V8SF "V4DI")])
-(define_mode_attr gthrfirstp
-		      [(V2DI "p") (V2DF "")
-		       (V4DI "p") (V4DF "")
-		       (V4SI "p") (V4SF "")
-		       (V8SI "p") (V8SF "")])
-(define_mode_attr gthrlastp
-		      [(V2DI "q") (V2DF "pd")
-		       (V4DI "q") (V4DF "pd")
-		       (V4SI "d") (V4SF "ps")
-		       (V8SI "d") (V8SF "ps")])
 
 (define_mode_iterator FMAMODE [SF DF V4SF V2DF V8SF V4DF])
 
@@ -12275,76 +12268,32 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_expand "<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:V48_AVX2 0 "register_operand" "")
+(define_insn "<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:V48_AVX2 0 "register_operand" "=x")
 	(unspec:V48_AVX2
-	  [(match_operand:<sseintvecmode> 2 "register_operand" "")
-	   (match_operand:V48_AVX2 1 "memory_operand" "")]
+	  [(match_operand:<sseintvecmode> 2 "register_operand" "x")
+	   (match_operand:V48_AVX2 1 "memory_operand" "m")]
 	  UNSPEC_MASKMOV))]
-  "TARGET_AVX")
-
-(define_insn "*avx2_maskload<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VI48_AVX2 0 "register_operand" "=x")
-	(unspec:VI48_AVX2
-	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
-	   (match_operand:VI48_AVX2 2 "memory_operand" "m")]
-	  UNSPEC_MASKMOV))]
-  "TARGET_AVX2"
-  "vpmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  "TARGET_AVX"
+  "v<sseintprefix>maskmov<ssemodesuffix>\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "*avx_maskload<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VF 0 "register_operand" "=x")
-	(unspec:VF
+(define_insn "<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:V48_AVX2 0 "memory_operand" "=m")
+	(unspec:V48_AVX2
 	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
-	   (match_operand:VF 2 "memory_operand" "m")]
+	   (match_operand:V48_AVX2 2 "register_operand" "x")
+	   (match_dup 0)]
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX"
-  "vmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog1")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "<MODE>")])
-
-(define_expand "<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:V48_AVX2 0 "memory_operand" "")
-	(unspec:V48_AVX2
-	  [(match_operand:<sseintvecmode> 1 "register_operand" "")
-	   (match_operand:V48_AVX2 2 "register_operand" "")
-	   (match_dup 0)]
-	  UNSPEC_MASKMOV))]
-  "TARGET_AVX")
-
-(define_insn "*avx2_maskstore<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VI48_AVX2 0 "memory_operand" "=m")
-	(unspec:VI48_AVX2
-	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
-	   (match_operand:VI48_AVX2 2 "register_operand" "x")
-	   (match_dup 0)]
-	  UNSPEC_MASKMOV))]
-  "TARGET_AVX2"
-  "vpmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  "v<sseintprefix>maskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "*avx_maskstore<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VF 0 "memory_operand" "=m")
-	(unspec:VF
-	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
-	   (match_operand:VF 2 "register_operand" "x")
-	   (match_dup 0)]
-	  UNSPEC_MASKMOV))]
-  "TARGET_AVX"
-  "vmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog1")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "<MODE>")])
 
 (define_insn_and_split "avx_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX256MODE2P 0 "nonimmediate_operand" "=x,m")
@@ -12810,7 +12759,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<gthrfirstp>gatherd<gthrlastp>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
+  "v<sseintprefix>gatherd<ssemodesuffix>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -12840,7 +12789,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:AVXMODE48P_DI 1 "=&x"))]
   "TARGET_AVX2"
-  "v<gthrfirstp>gatherq<gthrlastp>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
+  "v<sseintprefix>gatherq<ssemodesuffix>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -12872,7 +12821,7 @@
 	  UNSPEC_GATHER)) 
    (clobber (match_scratch:VI4F_128 1 "=&x"))]
   "TARGET_AVX2"
-  "v<gthrfirstp>gatherq<gthrlastp>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
+  "v<sseintprefix>gatherq<ssemodesuffix>\t{%1, (%3, %4, %p6), %0|%0, (%3, %4, %p6), %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
