@@ -822,8 +822,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       /* Result must be integer in range 0...INT_MAX.
 	 Set the base of fixed point calculation so we don't lose much of
 	 precision for small bandesses (those are interesting) yet we don't
-	 overflow for growths that are still in interesting range.  */
-      badness = ((gcov_type)growth) * (1<<18);
+	 overflow for growths that are still in interesting range.
+
+	 Fixed point arithmetic with point at 8th bit. */
+      badness = ((gcov_type)growth) * (1<<(19+8));
       badness = (badness + div / 2) / div;
 
       /* Overall growth of inlining all calls of function matters: we want to
@@ -838,10 +840,14 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	 We might mix the valud into the fraction by taking into account
 	 relative growth of the unit, but for now just add the number
 	 into resulting fraction.  */
+      if (badness > INT_MAX / 2)
+	{
+	  badness = INT_MAX / 2;
+	  if (dump)
+	    fprintf (dump_file, "Badness overflow\n");
+	}
       growth_for_all = estimate_growth (callee);
       badness += growth_for_all;
-      if (badness > INT_MAX - 1)
-	badness = INT_MAX - 1;
       if (dump)
 	{
 	  fprintf (dump_file,
