@@ -1,3 +1,15 @@
+2011-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50788
+	* config/i386/sse.md (avx2_maskload<ssemodesuffix><avxsizesuffix>):
+	Remove (match_dup 0).
+	(*avx2_maskload<ssemodesuffix><avxsizesuffix>): New insn pattern.
+	(*avx_maskload<ssemodesuffix><avxsizesuffix>): Ditto.
+	(*avx2_maskstore<ssemodesuffix><avxsizesuffix>): Ditto.
+	(*avx_maskstore<ssemodesuffix><avxsizesuffix>): Ditto.
+	(*avx2_maskmov<ssemodesuffix><avxsizesuffix>): Remove insn pattern.
+	(*avx_maskmov<ssemodesuffix><avxsizesuffix>): Ditto.
+
 2011-10-23  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50819
@@ -36,8 +48,7 @@
 
 	* config/c6x/c6x.c (c6x_asm_emit_except_personality,
 	c6x_asm_init_sections): New functions.
-	(TARGET_ASM_EMIT_EXCEPT_PERSONALITY, TARGET_ASM_INIT_SECTIONS):
-	Define.
+	(TARGET_ASM_EMIT_EXCEPT_PERSONALITY, TARGET_ASM_INIT_SECTIONS): Define.
 
 2011-10-21  Jakub Jelinek  <jakub@redhat.com>
 
