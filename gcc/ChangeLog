@@ -1,3 +1,25 @@
+2011-10-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/50763
+	* tree-ssa-tail-merge.c (same_succ_flush_bb): New function, factored out
+	of ...
+	(same_succ_flush_bbs): Use same_succ_flush_bb.
+	(purge_bbs): Remove argument.  Remove calls to same_succ_flush_bbs,
+	release_last_vdef and delete_basic_block.
+	(unlink_virtual_phi): New function.
+	(update_vuses): Add and use vuse1_phi_args argument.  Set var to
+	SSA_NAME_VAR of vuse1 or vuse2, and use var.  Handle case that def_stmt2
+	is NULL.  Use phi result as phi arg in case vuse1 or vuse2 is NULL_TREE.
+	Replace uses of vuse1 if vuse2 is NULL_TREE.  Fix code to limit
+	replacement of uses.  Propagate phi argument for phis with a single
+	argument.
+	(replace_block_by): Update vops if phi_vuse1 or phi_vuse2 is NULL_TREE.
+	Set vuse1_phi_args if vuse1 is a phi defined in bb1.  Add vuse1_phi_args
+	as argument to call to update_vuses.  Call release_last_vdef,
+	same_succ_flush_bb, delete_basic_block.  Update CDI_DOMINATORS info.
+	(tail_merge_optimize): Remove argument in call to purge_bbs.  Remove
+	call to free_dominance_info.  Only call calculate_dominance_info once.
+
 2011-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (invert_tree_comparison): Always invert EQ_EXPR/NE_EXPR.

@@ -753,6 +753,19 @@ delete_basic_block_same_succ (basic_block bb)
     bitmap_set_bit (deleted_bb_preds, e->src->index);
 }
 
+/* Removes BB from its corresponding same_succ.  */
+
+static void
+same_succ_flush_bb (basic_block bb)
+{
+  same_succ same = BB_SAME_SUCC (bb);
+  BB_SAME_SUCC (bb) = NULL;
+  if (bitmap_single_bit_set_p (same->bbs))
+    htab_remove_elt_with_hash (same_succ_htab, same, same->hashval);
+  else
+    bitmap_clear_bit (same->bbs, bb->index);
+}
+
 /* Removes all bbs in BBS from their corresponding same_succ.  */
 
 static void
@@ -762,15 +775,7 @@ same_succ_flush_bbs (bitmap bbs)
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (bbs, 0, i, bi)
-    {
-      basic_block bb = BASIC_BLOCK (i);
-      same_succ same = BB_SAME_SUCC (bb);
-      BB_SAME_SUCC (bb) = NULL;
-      if (bitmap_single_bit_set_p (same->bbs))
-	htab_remove_elt_with_hash (same_succ_htab, same, same->hashval);
-      else
-	bitmap_clear_bit (same->bbs, i);
-    }
+    same_succ_flush_bb (BASIC_BLOCK (i));
 }
 
 /* Release the last vdef in BB, either normal or phi result.  */
@@ -807,23 +812,8 @@ release_last_vdef (basic_block bb)
 /* Delete all deleted_bbs.  */
 
 static void
-purge_bbs (bool update_vops)
+purge_bbs (void)
 {
-  unsigned int i;
-  bitmap_iterator bi;
-  basic_block bb;
-
-  same_succ_flush_bbs (deleted_bbs);
-
-  EXECUTE_IF_SET_IN_BITMAP (deleted_bbs, 0, i, bi)
-    {
-      bb = BASIC_BLOCK (i);
-      if (!update_vops)
-	release_last_vdef (bb);
-
-      delete_basic_block (bb);
-    }
-
   bitmap_and_compl_into (deleted_bb_preds, deleted_bbs);
   bitmap_clear (deleted_bbs);
 }
@@ -1363,26 +1353,56 @@ find_clusters (void)
     }
 }
 
+/* Replace uses of the result of PHI with NAME.  */
+
+static void
+unlink_virtual_phi (gimple phi, tree name)
+{
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  gimple use_stmt;
+  tree vdef = gimple_phi_result (phi);
+
+  if (!vdef
+      || TREE_CODE (vdef) != SSA_NAME)
+    return;
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vdef)
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	SET_USE (use_p, name);
+    }
+
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vdef))
+    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name) = 1;
+}
+
 /* Create or update a vop phi in BB2.  Use VUSE1 arguments for all the
    REDIRECTED_EDGES, or if VUSE1 is NULL_TREE, use BB_VOP_AT_EXIT.  If a new
    phis is created, use the phi instead of VUSE2 in BB2.  */
 
 static void
-update_vuses (tree vuse1, tree vuse2, basic_block bb2,
+update_vuses (bool vuse1_phi_args, tree vuse1, tree vuse2, basic_block bb2,
               VEC (edge,heap) *redirected_edges)
 {
   gimple stmt, phi = NULL;
-  tree lhs = NULL_TREE, arg;
+  tree lhs = NULL_TREE, arg, var;
   unsigned int i;
-  gimple def_stmt2;
+  gimple def_stmt2 = NULL;
   imm_use_iterator iter;
   use_operand_p use_p;
   edge_iterator ei;
   edge e;
 
-  def_stmt2 = SSA_NAME_DEF_STMT (vuse2);
+  if (vuse2 != NULL_TREE)
+    {
+      var = SSA_NAME_VAR (vuse2);
+      def_stmt2 =  SSA_NAME_DEF_STMT (vuse2);
+    }
+  else
+    var = SSA_NAME_VAR (vuse1);
 
-  if (gimple_bb (def_stmt2) == bb2)
+  if (def_stmt2 && gimple_bb (def_stmt2) == bb2)
     /* Update existing phi.  */
     phi = def_stmt2;
   else
@@ -1392,38 +1412,41 @@ update_vuses (tree vuse1, tree vuse2, basic_block bb2,
 	return;
 
       /* Create a phi.  */
-      lhs = make_ssa_name (SSA_NAME_VAR (vuse2), NULL);
+      lhs = make_ssa_name (var, NULL);
       VN_INFO_GET (lhs);
       phi = create_phi_node (lhs, bb2);
       SSA_NAME_DEF_STMT (lhs) = phi;
 
       /* Set default argument vuse2 for all preds.  */
+      arg = vuse2 == NULL_TREE ? gimple_phi_result (phi): vuse2;
       FOR_EACH_EDGE (e, ei, bb2->preds)
-	add_phi_arg (phi, vuse2, e, UNKNOWN_LOCATION);
+	add_phi_arg (phi, arg, e, UNKNOWN_LOCATION);
     }
 
   /* Update phi.  */
   for (i = 0; i < EDGE_COUNT (redirected_edges); ++i)
     {
       e = VEC_index (edge, redirected_edges, i);
-      if (vuse1 != NULL_TREE)
-	arg = vuse1;
-      else
+      if (vuse1_phi_args)
 	arg = BB_VOP_AT_EXIT (e->src);
+      else
+	arg = vuse1 == NULL_TREE ? gimple_phi_result (phi): vuse1;
+
       add_phi_arg (phi, arg, e, UNKNOWN_LOCATION);
     }
 
   /* Return if we updated an existing phi.  */
-  if (gimple_bb (def_stmt2) == bb2)
+  if (def_stmt2 && gimple_bb (def_stmt2) == bb2)
     return;
 
-  /* Replace relevant uses of vuse2 with the newly created phi.  */
-  FOR_EACH_IMM_USE_STMT (stmt, iter, vuse2)
+  /* Replace relevant uses with the newly created phi.  */
+  FOR_EACH_IMM_USE_STMT (stmt, iter, vuse2 == NULL_TREE ? vuse1 : vuse2)
     {
       if (stmt == phi)
 	continue;
-      if (gimple_code (stmt) != GIMPLE_PHI)
-	if (gimple_bb (stmt) != bb2)
+
+      if (gimple_code (stmt) != GIMPLE_PHI
+	  && !dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt), bb2))
 	  continue;
 
       FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
@@ -1432,8 +1455,16 @@ update_vuses (tree vuse1, tree vuse2, basic_block bb2,
 	    {
 	      unsigned int pred_index = PHI_ARG_INDEX_FROM_USE (use_p);
 	      basic_block pred = EDGE_PRED (gimple_bb (stmt), pred_index)->src;
-	      if (pred !=  bb2)
+	      if (!dominated_by_p (CDI_DOMINATORS, pred, bb2))
 		continue;
+
+	      if (pred == bb2 && EDGE_COUNT (gimple_bb (stmt)->preds) == 2)
+		{
+		  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+		  unlink_virtual_phi (stmt, lhs);
+		  remove_phi_node (&gsi, true);
+		  break;
+		}
 	    }
 	  SET_USE (use_p, lhs);
 	  update_stmt (stmt);
@@ -1507,6 +1538,8 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
   VEC (edge,heap) *redirected_edges = NULL;
   edge e;
   edge_iterator ei;
+  bool vuse1_phi_args = false;
+  VEC (basic_block,heap) *fix_dom_bb;
 
   phi_vuse2 = vop_at_entry (bb2);
   if (phi_vuse2 != NULL_TREE && TREE_CODE (phi_vuse2) != SSA_NAME)
@@ -1517,11 +1550,11 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
       /* Find the vops at entry of bb1 and bb2.  */
       phi_vuse1 = vop_at_entry (bb1);
 
-      /* If one of the 2 not found, it means there's no need to update.  */
-      update_vops = phi_vuse1 != NULL_TREE && phi_vuse2 != NULL_TREE;
+      /* If both are not found, it means there's no need to update.  */
+      update_vops = phi_vuse1 != NULL_TREE || phi_vuse2 != NULL_TREE;
     }
 
-  if (update_vops && gimple_bb (SSA_NAME_DEF_STMT (phi_vuse1)) == bb1)
+  if (phi_vuse1 && gimple_bb (SSA_NAME_DEF_STMT (phi_vuse1)) == bb1)
     {
       /* If the vop at entry of bb1 is a phi, save the phi alternatives in
 	 BB_VOP_AT_EXIT, before we lose that information by redirecting the
@@ -1531,7 +1564,7 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
 	  arg = PHI_ARG_DEF_FROM_EDGE (SSA_NAME_DEF_STMT (phi_vuse1), e);
 	  BB_VOP_AT_EXIT (e->src) = arg;
 	}
-      phi_vuse1 = NULL;
+      vuse1_phi_args = true;
     }
 
   /* Mark the basic block for later deletion.  */
@@ -1556,9 +1589,22 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
   /* Update the vops.  */
   if (update_vops)
     {
-      update_vuses (phi_vuse1, phi_vuse2, bb2, redirected_edges);
+      update_vuses (vuse1_phi_args, phi_vuse1, phi_vuse2, bb2,
+		    redirected_edges);
       VEC_free (edge, heap, redirected_edges);
     }
+  else
+    release_last_vdef (bb1);
+
+  same_succ_flush_bb (bb1);
+  delete_basic_block (bb1);
+
+  fix_dom_bb = VEC_alloc (basic_block, heap, 2);
+  VEC_safe_push (basic_block, heap, fix_dom_bb, bb2);
+  FOR_EACH_EDGE (e, ei, bb2->succs)
+    VEC_safe_push (basic_block, heap, fix_dom_bb, e->dest);
+  iterate_fix_dominators (CDI_DOMINATORS, fix_dom_bb, false);
+  VEC_free (basic_block, heap, fix_dom_bb);
 }
 
 /* Bbs for which update_debug_stmt need to be called.  */
@@ -1708,13 +1754,11 @@ tail_merge_optimize (unsigned int todo)
       if (nr_bbs_removed == 0)
 	break;
 
-      free_dominance_info (CDI_DOMINATORS);
-      purge_bbs (update_vops);
+      purge_bbs ();
 
       if (iteration_nr == max_iterations)
 	break;
 
-      calculate_dominance_info (CDI_DOMINATORS);
       update_worklist ();
     }
 
@@ -1724,7 +1768,6 @@ tail_merge_optimize (unsigned int todo)
 
   if (nr_bbs_removed_total > 0)
     {
-      calculate_dominance_info (CDI_DOMINATORS);
       update_debug_stmts ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
