@@ -1834,11 +1834,8 @@
   "reload_completed
    && (! TARGET_V9
        || (! TARGET_ARCH64
-           && ((GET_CODE (operands[0]) == REG
-                && SPARC_INT_REG_P (REGNO (operands[0])))
-               || (GET_CODE (operands[0]) == SUBREG
-                   && GET_CODE (SUBREG_REG (operands[0])) == REG
-                   && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))))"
+           && sparc_split_regreg_legitimate (operands[0],
+                                             operands[1])))"
   [(clobber (const_int 0))]
 {
   rtx set_dest = operands[0];
@@ -2247,11 +2244,8 @@
         (match_operand:DF 1 "register_operand" ""))]
   "(! TARGET_V9
     || (! TARGET_ARCH64
-        && ((GET_CODE (operands[0]) == REG
-             && SPARC_INT_REG_P (REGNO (operands[0])))
-            || (GET_CODE (operands[0]) == SUBREG
-                && GET_CODE (SUBREG_REG (operands[0])) == REG
-                && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))))
+        && sparc_split_regreg_legitimate (operands[0],
+                                          operands[1])))
    && reload_completed"
   [(clobber (const_int 0))]
 {

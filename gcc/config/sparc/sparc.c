@@ -7762,6 +7762,31 @@ sparc_splitdi_legitimate (rtx reg, rtx mem)
   return 1;
 }
 
+/* Like sparc_splitdi_legitimate but for REG <--> REG moves.  */
+
+int
+sparc_split_regreg_legitimate (rtx reg1, rtx reg2)
+{
+  int regno1, regno2;
+
+  if (GET_CODE (reg1) == SUBREG)
+    reg1 = SUBREG_REG (reg1);
+  if (GET_CODE (reg1) != REG)
+    return 0;
+  regno1 = REGNO (reg1);
+
+  if (GET_CODE (reg2) == SUBREG)
+    reg2 = SUBREG_REG (reg2);
+  if (GET_CODE (reg2) != REG)
+    return 0;
+  regno2 = REGNO (reg2);
+
+  if (SPARC_INT_REG_P (regno1) && SPARC_INT_REG_P (regno2))
+    return 1;
+
+  return 0;
+}
+
 /* Return 1 if x and y are some kind of REG and they refer to
    different hard registers.  This test is guaranteed to be
    run after reload.  */
