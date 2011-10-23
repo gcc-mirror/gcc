@@ -196,7 +196,6 @@
 
 ;; Random 256bit vector integer mode combinations
 (define_mode_iterator VI124_256 [V32QI V16HI V8SI])
-(define_mode_iterator VI248_256 [V16HI V8SI V4DI])
 
 ;; Int-float size matches
 (define_mode_iterator VI4F_128 [V4SI V4SF])
@@ -5803,21 +5802,6 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "avx2_lshl<mode>3"
-  [(set (match_operand:VI248_256 0 "register_operand" "=x")
-	(ashift:VI248_256
-	  (match_operand:VI248_256 1 "register_operand" "x")
-	  (match_operand:SI 2 "nonmemory_operand" "xN")))]
-  "TARGET_AVX2"
-  "vpsll<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sseishft")
-   (set_attr "prefix" "vex")
-   (set (attr "length_immediate")
-     (if_then_else (match_operand 2 "const_int_operand" "")
-       (const_string "1")
-       (const_string "0")))
-   (set_attr "mode" "OI")])
 
 (define_insn "ashl<mode>3"
   [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")

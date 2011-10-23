@@ -1,5 +1,14 @@
 2011-10-23  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (avx2_lshl<mode>3): Remove insn pattern.
+	(VI248_256): Remove mode iterator.
+	* config/i386/i386.c (ix86_expand_vec_perm): Use gen_ashlv4di3
+	instead of gen_avx2_lshlv4di3.
+	(bdesc_args): Use CODE_FOR_ashl{v16hi,v8si,v4di}3 instead of
+	CODE_FOR_avx2_lshl{v16hi,v8si,v4di}3.
+
+2011-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/sse.md (sseintprefix): Rename from gthrfirstp.
 	(<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>): Delete expander.
 	(<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>) Merge insn

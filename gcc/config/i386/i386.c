@@ -19490,9 +19490,9 @@ ix86_expand_vec_perm (rtx operands[])
 	     stands for other 12 bytes.  */
 	  /* The bit whether element is from the same lane or the other
 	     lane is bit 4, so shift it up by 3 to the MSB position.  */
-	  emit_insn (gen_avx2_lshlv4di3 (gen_lowpart (V4DImode, t1),
-					 gen_lowpart (V4DImode, mask),
-					 GEN_INT (3)));
+	  emit_insn (gen_ashlv4di3 (gen_lowpart (V4DImode, t1),
+				    gen_lowpart (V4DImode, mask),
+				    GEN_INT (3)));
 	  /* Clear MSB bits from the mask just in case it had them set.  */
 	  emit_insn (gen_avx2_andnotv32qi3 (t2, vt, mask));
 	  /* After this t1 will have MSB set for elements from other lane.  */
@@ -26289,12 +26289,12 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_psignv16hi3, "__builtin_ia32_psignw256", IX86_BUILTIN_PSIGNW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_psignv8si3 , "__builtin_ia32_psignd256", IX86_BUILTIN_PSIGND256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_ashlv2ti3, "__builtin_ia32_pslldqi256", IX86_BUILTIN_PSLLDQI256, UNKNOWN, (int) V4DI_FTYPE_V4DI_INT_CONVERT },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_lshlv16hi3, "__builtin_ia32_psllwi256", IX86_BUILTIN_PSLLWI256 , UNKNOWN, (int) V16HI_FTYPE_V16HI_SI_COUNT },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_lshlv16hi3, "__builtin_ia32_psllw256", IX86_BUILTIN_PSLLW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V8HI_COUNT },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_lshlv8si3, "__builtin_ia32_pslldi256", IX86_BUILTIN_PSLLDI256, UNKNOWN, (int) V8SI_FTYPE_V8SI_SI_COUNT },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_lshlv8si3, "__builtin_ia32_pslld256", IX86_BUILTIN_PSLLD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V4SI_COUNT },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_lshlv4di3, "__builtin_ia32_psllqi256", IX86_BUILTIN_PSLLQI256, UNKNOWN, (int) V4DI_FTYPE_V4DI_INT_COUNT },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_lshlv4di3, "__builtin_ia32_psllq256", IX86_BUILTIN_PSLLQ256, UNKNOWN, (int) V4DI_FTYPE_V4DI_V2DI_COUNT },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_ashlv16hi3, "__builtin_ia32_psllwi256", IX86_BUILTIN_PSLLWI256 , UNKNOWN, (int) V16HI_FTYPE_V16HI_SI_COUNT },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_ashlv16hi3, "__builtin_ia32_psllw256", IX86_BUILTIN_PSLLW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V8HI_COUNT },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_ashlv8si3, "__builtin_ia32_pslldi256", IX86_BUILTIN_PSLLDI256, UNKNOWN, (int) V8SI_FTYPE_V8SI_SI_COUNT },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_ashlv8si3, "__builtin_ia32_pslld256", IX86_BUILTIN_PSLLD256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V4SI_COUNT },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_ashlv4di3, "__builtin_ia32_psllqi256", IX86_BUILTIN_PSLLQI256, UNKNOWN, (int) V4DI_FTYPE_V4DI_INT_COUNT },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_ashlv4di3, "__builtin_ia32_psllq256", IX86_BUILTIN_PSLLQ256, UNKNOWN, (int) V4DI_FTYPE_V4DI_V2DI_COUNT },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_ashrv16hi3, "__builtin_ia32_psrawi256", IX86_BUILTIN_PSRAWI256, UNKNOWN, (int) V16HI_FTYPE_V16HI_SI_COUNT },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_ashrv16hi3, "__builtin_ia32_psraw256", IX86_BUILTIN_PSRAW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V8HI_COUNT },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_ashrv8si3, "__builtin_ia32_psradi256", IX86_BUILTIN_PSRADI256, UNKNOWN, (int) V8SI_FTYPE_V8SI_SI_COUNT },
