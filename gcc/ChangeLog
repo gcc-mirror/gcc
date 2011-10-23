@@ -1,3 +1,8 @@
+2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50810
+	* doc/invoke.texi ([-Wnarrowing], [-Wc++0x-compat]): Update.
+
 2011-10-23  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50763
