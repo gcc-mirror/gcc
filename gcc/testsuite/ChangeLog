@@ -1,3 +1,8 @@
+2011-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50788
+	* gcc.target/i386/pr50788.c: New test.
+
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50793

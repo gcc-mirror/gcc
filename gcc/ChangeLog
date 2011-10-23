@@ -1,3 +1,9 @@
+2011-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50788
+	* config/i386/sse.md (avx_maskload<ssemodesuffix><avxmodesuffix>):
+	Remove (match_dup 0).
+
 2011-10-18  Uros Bizjak  <ubizjak@gmail.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
