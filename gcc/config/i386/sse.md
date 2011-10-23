@@ -12279,10 +12279,35 @@
   [(set (match_operand:V48_AVX2 0 "register_operand" "")
 	(unspec:V48_AVX2
 	  [(match_operand:<sseintvecmode> 2 "register_operand" "")
-	   (match_operand:V48_AVX2 1 "memory_operand" "")
-	   (match_dup 0)]
+	   (match_operand:V48_AVX2 1 "memory_operand" "")]
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
+
+(define_insn "*avx2_maskload<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:VI48_AVX2 0 "register_operand" "=x")
+	(unspec:VI48_AVX2
+	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
+	   (match_operand:VI48_AVX2 2 "memory_operand" "m")]
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX2"
+  "vpmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx_maskload<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:VF 0 "register_operand" "=x")
+	(unspec:VF
+	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
+	   (match_operand:VF 2 "memory_operand" "m")]
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX"
+  "vmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<MODE>")])
 
 (define_expand "<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:V48_AVX2 0 "memory_operand" "")
@@ -12293,30 +12318,28 @@
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
 
-(define_insn "*avx2_maskmov<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VI48_AVX2 0 "nonimmediate_operand" "=x,m")
+(define_insn "*avx2_maskstore<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:VI48_AVX2 0 "memory_operand" "=m")
 	(unspec:VI48_AVX2
-	  [(match_operand:<sseintvecmode> 1 "register_operand" "x,x")
-	   (match_operand:VI48_AVX2 2 "nonimmediate_operand" "m,x")
+	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
+	   (match_operand:VI48_AVX2 2 "register_operand" "x")
 	   (match_dup 0)]
 	  UNSPEC_MASKMOV))]
-  "TARGET_AVX2
-   && (REG_P (operands[0]) == MEM_P (operands[2]))"
+  "TARGET_AVX2"
   "vpmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "*avx_maskmov<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VF 0 "nonimmediate_operand" "=x,m")
+(define_insn "*avx_maskstore<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:VF 0 "memory_operand" "=m")
 	(unspec:VF
-	  [(match_operand:<sseintvecmode> 1 "register_operand" "x,x")
-	   (match_operand:VF 2 "nonimmediate_operand" "m,x")
+	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
+	   (match_operand:VF 2 "register_operand" "x")
 	   (match_dup 0)]
 	  UNSPEC_MASKMOV))]
-  "TARGET_AVX
-   && (REG_P (operands[0]) == MEM_P (operands[2]))"
+  "TARGET_AVX"
   "vmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
