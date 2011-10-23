@@ -1,3 +1,20 @@
+2011-10-23  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.h (SPARC_FIRST_INT_REG, SPARC_LAST_INT_REG,
+	SPARC_INT_REG_P): Define.
+	(HARD_REGNO_NREGS): Use SPARC_INT_REG_P.
+	(REGNO_OK_FOR_INDEX_P): Likewise.
+	* config/sparc/sparc.c (gen_df_reg): Likewise.
+	(eligible_for_return_delay): Likewise.
+	(eligible_for_sibcall_delay): Likewise.
+	(sparc_legitimate_address_p): Likewise.
+	(emit_save_or_restore_regs): Likewise.
+	(registers_ok_for_ldd_peep): Likewise.
+	* config/spac/sparc.md (DI mode splitters): Likewise.
+	(SF mode const splitters): Likewise.
+	(DF mode splitters): Likewise.
+	(32-bit DI mode logical op splitters): Likewise.
+
 2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50841

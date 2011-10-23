@@ -597,6 +597,8 @@ extern enum cmodel sparc_cmodel;
 
 #define FIRST_PSEUDO_REGISTER 103
 
+#define SPARC_FIRST_INT_REG     0
+#define SPARC_LAST_INT_REG     31
 #define SPARC_FIRST_FP_REG     32
 /* Additional V9 fp regs.  */
 #define SPARC_FIRST_V9_FP_REG  64
@@ -613,6 +615,10 @@ extern enum cmodel sparc_cmodel;
 /* Nonzero if REGNO is an fp reg.  */
 #define SPARC_FP_REG_P(REGNO) \
 ((REGNO) >= SPARC_FIRST_FP_REG && (REGNO) <= SPARC_LAST_V9_FP_REG)
+
+/* Nonzero if REGNO is an int reg.  */
+#define SPARC_INT_REG_P(REGNO) \
+(((unsigned) (REGNO)) <= SPARC_LAST_INT_REG)
 
 /* Argument passing regs.  */
 #define SPARC_OUTGOING_INT_ARG_FIRST 8
@@ -703,7 +709,7 @@ extern enum cmodel sparc_cmodel;
 #define HARD_REGNO_NREGS(REGNO, MODE) \
   ((REGNO) == SPARC_GSR_REG ? 1 :					\
    (TARGET_ARCH64							\
-    ? ((REGNO) < 32 || (REGNO) == FRAME_POINTER_REGNUM			\
+    ? (SPARC_INT_REG_P (REGNO) || (REGNO) == FRAME_POINTER_REGNUM			\
        ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD	\
        : (GET_MODE_SIZE (MODE) + 3) / 4)				\
     : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
@@ -1382,8 +1388,8 @@ do {									\
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < (unsigned)32	\
- || (REGNO) == FRAME_POINTER_REGNUM				\
+(SPARC_INT_REG_P (REGNO) || SPARC_INT_REG_P (reg_renumber[REGNO]) \
+ || (REGNO) == FRAME_POINTER_REGNUM				  \
  || reg_renumber[REGNO] == FRAME_POINTER_REGNUM)
 
 #define REGNO_OK_FOR_BASE_P(REGNO)  REGNO_OK_FOR_INDEX_P (REGNO)
