@@ -516,6 +516,7 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
      linked-list traversal. Masked elements are set to NULL.  */
   gfc_array_size (array, &size);
   arraysize = mpz_get_ui (size);
+  mpz_clear (size);
 
   arrayvec = XCNEWVEC (gfc_expr*, arraysize);
 
