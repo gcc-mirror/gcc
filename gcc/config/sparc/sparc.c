@@ -11116,17 +11116,26 @@ sparc_conditional_register_usage (void)
 static reg_class_t
 sparc_preferred_reload_class (rtx x, reg_class_t rclass)
 {
+  enum machine_mode mode = GET_MODE (x);
   if (CONSTANT_P (x))
     {
       if (FP_REG_CLASS_P (rclass)
 	  || rclass == GENERAL_OR_FP_REGS
 	  || rclass == GENERAL_OR_EXTRA_FP_REGS
-	  || (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT && ! TARGET_FPU)
-	  || (GET_MODE (x) == TFmode && ! const_zero_operand (x, TFmode)))
+	  || (GET_MODE_CLASS (mode) == MODE_FLOAT && ! TARGET_FPU)
+	  || (mode == TFmode && ! const_zero_operand (x, mode)))
 	return NO_REGS;
 
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
+      if (GET_MODE_CLASS (mode) == MODE_INT)
 	return GENERAL_REGS;
+
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  if (! FP_REG_CLASS_P (rclass)
+	      || !(const_zero_operand (x, mode)
+		   || const_all_ones_operand (x, mode)))
+	    return NO_REGS;
+	}
     }
 
   return rclass;

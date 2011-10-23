@@ -427,8 +427,12 @@
       && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
     return true;
 
-  if ((mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)
-      || (mclass == MODE_VECTOR_INT && GET_CODE (op) == CONST_VECTOR))
+  if (mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)
+    return true;
+
+  if (mclass == MODE_VECTOR_INT && GET_CODE (op) == CONST_VECTOR
+      && (const_zero_operand (op, mode)
+          || const_all_ones_operand (op, mode)))
     return true;
 
   if (register_operand (op, mode))
