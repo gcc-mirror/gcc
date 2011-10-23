@@ -5523,7 +5523,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	  else
 	    {
 	      init = reshape_init (type, init, tf_warning_or_error);
-	      if (SCALAR_TYPE_P (type))
+	      if (cxx_dialect >= cxx0x && SCALAR_TYPE_P (type))
 		check_narrowing (type, init);
 	    }
 	}
