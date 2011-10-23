@@ -1488,9 +1488,9 @@
 
 (define_insn "*movdi_insn_sp32_v9"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-					"=T,o,T,U,o,r,r,r,?T,?f,?f,?o,?e,?e,?W")
+					"=T,o,T,U,o,r,r,r,?T,?f,?f,?o,?e,?e,?W,b,b")
         (match_operand:DI 1 "input_operand"
-					" J,J,U,T,r,o,i,r, f, T, o, f, e, W, e"))]
+					" J,J,U,T,r,o,i,r, f, T, o, f, e, W, e,J,P"))]
   "! TARGET_ARCH64
    && TARGET_V9
    && (register_operand (operands[0], DImode)
@@ -1510,10 +1510,12 @@
    #
    fmovd\\t%1, %0
    ldd\\t%1, %0
-   std\\t%1, %0"
-  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,fpload,fpstore")
-   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,*,*")
-   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*")])
+   std\\t%1, %0
+   fzero\t%0
+   fone\t%0"
+  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,fpload,fpstore,fga,fga")
+   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,*,*,*,*")
+   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,double,double")])
 
 (define_insn "*movdi_insn_sp64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,?e,?e,?W,b,b")
@@ -1757,7 +1759,13 @@
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
         (match_operand:DI 1 "const_int_operand" ""))]
-  "! TARGET_ARCH64 && reload_completed"
+  "! TARGET_ARCH64
+   && ((GET_CODE (operands[0]) == REG
+        && SPARC_INT_REG_P (REGNO (operands[0])))
+       || (GET_CODE (operands[0]) == SUBREG
+           && GET_CODE (SUBREG_REG (operands[0])) == REG
+           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))
+   && reload_completed"
   [(clobber (const_int 0))]
 {
 #if HOST_BITS_PER_WIDE_INT == 32

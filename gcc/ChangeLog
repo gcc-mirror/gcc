@@ -1,5 +1,9 @@
 2011-10-23  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.md (*movdi_insn_sp32_v9): Add alternatives for
+	generating fzero and fone instructions.
+	(DImode const_int --> reg splitter): Only trigger for integer regs.
+
 	* config/sparc/predicates.md (input_operand): Disallow vector
 	constants other than 0 and -1.
 	* config/sparc/sparc.c (sparc_preferred_reload_class): Return
