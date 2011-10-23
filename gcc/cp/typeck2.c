@@ -803,10 +803,8 @@ check_narrowing (tree type, tree init)
     }
 
   if (!ok)
-    emit_diagnostic ((cxx_dialect != cxx98) ? DK_PEDWARN : DK_WARNING,
-		     input_location, OPT_Wnarrowing,
-		     "narrowing conversion of %qE from %qT to %qT inside { }",
-		     init, ftype, type);
+    pedwarn (input_location, OPT_Wnarrowing, "narrowing conversion of %qE "
+	     "from %qT to %qT inside { }", init, ftype, type);
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting
@@ -903,7 +901,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
     {
       tree *exp;
 
-      if (nested)
+      if (cxx_dialect != cxx98 && nested)
 	check_narrowing (type, init);
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,
