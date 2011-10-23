@@ -2365,17 +2365,18 @@ an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
 by @option{-Wall}.
 
-@item -Wno-narrowing @r{(C++ and Objective-C++ only)}
+@item -Wnarrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
 @opindex Wno-narrowing
-With -std=c++0x, suppress the diagnostic required by the standard for
-narrowing conversions within @samp{@{ @}}, e.g.
+Warn when a narrowing conversion occurs within @samp{@{ @}}, e.g.
 
 @smallexample
 int i = @{ 2.2 @}; // error: narrowing from double to int
 @end smallexample
 
-This flag can be useful for compiling valid C++98 code in C++0x mode.
+This flag is included in @option{-Wall} and @option{-Wc++0x-compat}.
+With -std=c++0x, @option{-Wno-narrowing} suppresses the diagnostic
+required by the standard.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
@@ -4066,7 +4067,8 @@ ISO C and ISO C++, e.g.@: request for implicit conversion from
 @item -Wc++0x-compat @r{(C++ and Objective-C++ only)}
 Warn about C++ constructs whose meaning differs between ISO C++ 1998 and
 ISO C++ 200x, e.g., identifiers in ISO C++ 1998 that will become keywords
-in ISO C++ 200x.  This warning is enabled by @option{-Wall}.
+in ISO C++ 200x.  This warning turns on @option{-Wnarrowing} and is
+enabled by @option{-Wall}.
 
 @item -Wcast-qual
 @opindex Wcast-qual
