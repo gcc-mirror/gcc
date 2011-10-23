@@ -71,3 +71,21 @@ runtime_setcpuprofilerate(void (*fn)(uintptr*, int32), int32 hz)
 	if(hz != 0)
 		runtime_resetcpuprofiler(hz);
 }
+
+/* The entersyscall and exitsyscall functions aren't used for anything
+   yet.  Eventually they will be used to switch to a new OS thread
+   when making a potentially-blocking library call.  */
+
+void runtime_entersyscall() __asm__("libgo_syscall.syscall.entersyscall");
+
+void
+runtime_entersyscall()
+{
+}
+
+void runtime_exitsyscall() __asm__("libgo_syscall.syscall.exitsyscall");
+
+void
+runtime_exitsyscall()
+{
+}
