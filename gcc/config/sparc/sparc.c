@@ -2640,7 +2640,7 @@ gen_df_reg (rtx reg, int low)
   int regno = REGNO (reg);
 
   if ((WORDS_BIG_ENDIAN == 0) ^ (low != 0))
-    regno += (TARGET_ARCH64 && regno < 32) ? 1 : 2;
+    regno += (TARGET_ARCH64 && SPARC_INT_REG_P (regno)) ? 1 : 2;
   return gen_rtx_REG (DFmode, regno);
 }
 
@@ -3124,7 +3124,7 @@ eligible_for_return_delay (rtx trial)
   /* If this instruction sets up floating point register and we have a return
      instruction, it can probably go in.  But restore will not work
      with FP_REGS.  */
-  if (regno >= 32)
+  if (! SPARC_INT_REG_P (regno))
     return (TARGET_V9
 	    && !epilogue_renumber (&pat, 1)
 	    && get_attr_in_uncond_branch_delay (trial)
@@ -3166,7 +3166,7 @@ eligible_for_sibcall_delay (rtx trial)
      a `restore' insn can go into the delay slot.  */
   if (GET_CODE (SET_DEST (pat)) != REG
       || (REGNO (SET_DEST (pat)) >= 8 && REGNO (SET_DEST (pat)) < 24)
-      || REGNO (SET_DEST (pat)) >= 32)
+      || ! SPARC_INT_REG_P (REGNO (SET_DEST (pat))))
     return 0;
 
   /* If it mentions %o7, it can't go in, because sibcall will clobber it
@@ -3486,11 +3486,11 @@ sparc_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
     }
   else
     {
-      if ((REGNO (rs1) >= 32
+      if ((! SPARC_INT_REG_P (REGNO (rs1))
 	   && REGNO (rs1) != FRAME_POINTER_REGNUM
 	   && REGNO (rs1) < FIRST_PSEUDO_REGISTER)
 	  || (rs2
-	      && (REGNO (rs2) >= 32
+	      && (! SPARC_INT_REG_P (REGNO (rs2))
 		  && REGNO (rs2) != FRAME_POINTER_REGNUM
 		  && REGNO (rs2) < FIRST_PSEUDO_REGISTER)))
 	return 0;
@@ -4729,17 +4729,17 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 
 	  if (reg0 && reg1)
 	    {
-	      mode = i < 32 ? DImode : DFmode;
+	      mode = SPARC_INT_REG_P (i) ? DImode : DFmode;
 	      regno = i;
 	    }
 	  else if (reg0)
 	    {
-	      mode = i < 32 ? SImode : SFmode;
+	      mode = SPARC_INT_REG_P (i) ? SImode : SFmode;
 	      regno = i;
 	    }
 	  else if (reg1)
 	    {
-	      mode = i < 32 ? SImode : SFmode;
+	      mode = SPARC_INT_REG_P (i) ? SImode : SFmode;
 	      regno = i + 1;
 	      offset += 4;
 	    }
@@ -7794,7 +7794,7 @@ registers_ok_for_ldd_peep (rtx reg1, rtx reg2)
     return 0;
 
   /* Integer ldd is deprecated in SPARC V9 */
-  if (TARGET_V9 && REGNO (reg1) < 32)
+  if (TARGET_V9 && SPARC_INT_REG_P (REGNO (reg1)))
     return 0;
 
   return (REGNO (reg1) == REGNO (reg2) - 1);

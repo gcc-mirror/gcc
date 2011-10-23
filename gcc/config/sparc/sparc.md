@@ -1794,10 +1794,10 @@
    && (! TARGET_V9
        || (! TARGET_ARCH64
            && ((GET_CODE (operands[0]) == REG
-                && REGNO (operands[0]) < 32)
+                && SPARC_INT_REG_P (REGNO (operands[0])))
                || (GET_CODE (operands[0]) == SUBREG
                    && GET_CODE (SUBREG_REG (operands[0])) == REG
-                   && REGNO (SUBREG_REG (operands[0])) < 32))))"
+                   && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))))"
   [(clobber (const_int 0))]
 {
   emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
@@ -1827,10 +1827,10 @@
    && (! TARGET_V9
        || (! TARGET_ARCH64
            && ((GET_CODE (operands[0]) == REG
-                && REGNO (operands[0]) < 32)
+                && SPARC_INT_REG_P (REGNO (operands[0])))
                || (GET_CODE (operands[0]) == SUBREG
                    && GET_CODE (SUBREG_REG (operands[0])) == REG
-                   && REGNO (SUBREG_REG (operands[0])) < 32))))"
+                   && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))))"
   [(clobber (const_int 0))]
 {
   rtx set_dest = operands[0];
@@ -2050,7 +2050,7 @@
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
         (match_operand:SF 1 "fp_const_high_losum_operand" ""))]
-  "REG_P (operands[0]) && REGNO (operands[0]) < 32"
+  "REG_P (operands[0]) && SPARC_INT_REG_P (REGNO (operands[0]))"
   [(set (match_dup 0) (high:SF (match_dup 1)))
    (set (match_dup 0) (lo_sum:SF (match_dup 0) (match_dup 1)))])
 
@@ -2184,7 +2184,7 @@
         (match_operand:DF 1 "const_double_operand" ""))]
   "TARGET_FPU
    && (GET_CODE (operands[0]) == REG
-       && REGNO (operands[0]) < 32)
+       && SPARC_INT_REG_P (REGNO (operands[0])))
    && ! const_zero_operand (operands[1], GET_MODE (operands[0]))
    && reload_completed"
   [(clobber (const_int 0))]
@@ -2240,10 +2240,10 @@
   "(! TARGET_V9
     || (! TARGET_ARCH64
         && ((GET_CODE (operands[0]) == REG
-             && REGNO (operands[0]) < 32)
+             && SPARC_INT_REG_P (REGNO (operands[0])))
             || (GET_CODE (operands[0]) == SUBREG
                 && GET_CODE (SUBREG_REG (operands[0])) == REG
-                && REGNO (SUBREG_REG (operands[0])) < 32))))
+                && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))))
    && reload_completed"
   [(clobber (const_int 0))]
 {
@@ -2346,10 +2346,10 @@
   "reload_completed
    && ! TARGET_ARCH64
    && ((GET_CODE (operands[0]) == REG
-	&& REGNO (operands[0]) < 32)
+	&& SPARC_INT_REG_P (REGNO (operands[0])))
        || (GET_CODE (operands[0]) == SUBREG
 	   && GET_CODE (SUBREG_REG (operands[0])) == REG
-	   && REGNO (SUBREG_REG (operands[0])) < 32))"
+	   && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(clobber (const_int 0))]
 {
   rtx set_dest = operands[0];
@@ -4654,10 +4654,10 @@
   "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
-        && REGNO (operands[0]) < 32)
+        && SPARC_INT_REG_P (REGNO (operands[0])))
        || (GET_CODE (operands[0]) == SUBREG
            && GET_CODE (SUBREG_REG (operands[0])) == REG
-           && REGNO (SUBREG_REG (operands[0])) < 32))"
+           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))
    (set (match_dup 6) (and:SI (not:SI (match_dup 7)) (match_dup 8)))]
   "operands[3] = gen_highpart (SImode, operands[0]);
@@ -4731,10 +4731,10 @@
   "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
-        && REGNO (operands[0]) < 32)
+        && SPARC_INT_REG_P (REGNO (operands[0])))
        || (GET_CODE (operands[0]) == SUBREG
            && GET_CODE (SUBREG_REG (operands[0])) == REG
-           && REGNO (SUBREG_REG (operands[0])) < 32))"
+           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(set (match_dup 3) (ior:SI (not:SI (match_dup 4)) (match_dup 5)))
    (set (match_dup 6) (ior:SI (not:SI (match_dup 7)) (match_dup 8)))]
   "operands[3] = gen_highpart (SImode, operands[0]);
@@ -4821,10 +4821,10 @@
   "! TARGET_ARCH64
    && reload_completed
    && ((GET_CODE (operands[0]) == REG
-        && REGNO (operands[0]) < 32)
+        && SPARC_INT_REG_P (REGNO (operands[0])))
        || (GET_CODE (operands[0]) == SUBREG
            && GET_CODE (SUBREG_REG (operands[0])) == REG
-           && REGNO (SUBREG_REG (operands[0])) < 32))"
+           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(set (match_dup 4) (match_op_dup:SI 1 [(match_dup 6) (match_dup 8)]))
    (set (match_dup 5) (match_op_dup:SI 1 [(match_dup 7) (match_dup 9)]))]
 {
@@ -4856,10 +4856,10 @@
   "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
-        && REGNO (operands[0]) < 32)
+        && SPARC_INT_REG_P (REGNO (operands[0])))
        || (GET_CODE (operands[0]) == SUBREG
            && GET_CODE (SUBREG_REG (operands[0])) == REG
-           && REGNO (SUBREG_REG (operands[0])) < 32))"
+           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(set (match_dup 3) (not:SI (xor:SI (match_dup 4) (match_dup 5))))
    (set (match_dup 6) (not:SI (xor:SI (match_dup 7) (match_dup 8))))]
   "operands[3] = gen_highpart (SImode, operands[0]);
@@ -5133,10 +5133,10 @@
   "#"
   "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
-        && REGNO (operands[0]) < 32)
+        && SPARC_INT_REG_P (REGNO (operands[0])))
        || (GET_CODE (operands[0]) == SUBREG
            && GET_CODE (SUBREG_REG (operands[0])) == REG
-           && REGNO (SUBREG_REG (operands[0])) < 32))"
+           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(set (match_dup 2) (not:SI (xor:SI (match_dup 3) (const_int 0))))
    (set (match_dup 4) (not:SI (xor:SI (match_dup 5) (const_int 0))))]
   "operands[2] = gen_highpart (SImode, operands[0]);
