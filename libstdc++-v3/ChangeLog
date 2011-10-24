@@ -1,3 +1,17 @@
+2011-10-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/49894
+	* include/std/mutex (__mutex_base,__recursive_mutex_base): Define new
+	base classes to manage construction/destruction of native mutexes,
+	using NSDMI when INIT macros are defined.
+	(mutex,recursive_mutex,timed_mutex,recursive_timed_mutex): Derive from
+	new base classes.
+	* include/std/condition_variable (condition_variable): Use NSDMI when
+	INIT macro is defined. Use noexcept.
+	* src/condition_variable.cc (condition_variable): Explicitly-default
+	constructor/destructor when using NSDMI. Use noexcept.
+	(condition_variable_any): Likewise.
+
 2011-10-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/30_threads/async/49668.cc: Add missing dg-require.
