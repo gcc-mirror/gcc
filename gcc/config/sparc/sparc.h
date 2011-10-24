@@ -1040,10 +1040,13 @@ extern char leaf_reg_remap[];
 #define SPARC_SETHI32_P(X) \
   (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
 
-/* On SPARC it is not possible to directly move data between
-   GENERAL_REGS and FP_REGS.  */
+/* On SPARC when not VIS3 it is not possible to directly move data
+   between GENERAL_REGS and FP_REGS.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  (FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2))
+  ((FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)) \
+   && (! TARGET_VIS3 \
+       || GET_MODE_SIZE (MODE) > 8 \
+       || GET_MODE_SIZE (MODE) < 4))
 
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
