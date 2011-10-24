@@ -3029,6 +3029,33 @@ compiled with more aggressive optimization options that produce faster
 and larger code, while other functions can be called with less
 aggressive options.
 
+@item OS_main/OS_task
+@cindex @code{OS_main} AVR function attribute
+@cindex @code{OS_task} AVR function attribute
+On AVR, functions with the @code{OS_main} or @code{OS_task} attribute
+do not save/restore any call-saved register in their prologue/epilogue.
+
+The @code{OS_main} attribute can be used when there @emph{is
+guarantee} that interrupts are disabled at the time when the function
+is entered.  This will save resources when the stack pointer has to be
+changed to set up a frame for local variables.
+
+The @code{OS_task} attribute can be used when there is @emph{no
+guarantee} that interrupts are disabled at that time when the function
+is entered like for, e@.g@. task functions in a multi-threading operating
+system. In that case, changing the stack pointer register will be
+guarded by save/clear/restore of the global interrupt enable flag.
+
+The differences to the @code{naked} function attrubute are:
+@itemize @bullet
+@item @code{naked} functions do not have a return instruction whereas 
+@code{OS_main} and @code{OS_task} functions will have a @code{RET} or
+@code{RETI} return instruction.
+@item @code{naked} functions do not set up a frame for local variables
+or a frame pointer whereas @code{OS_main} and @code{OS_task} do this
+as needed.
+@end itemize
+
 @item pcs
 @cindex @code{pcs} function attribute
 
@@ -4517,6 +4544,19 @@ The @code{dllexport} attribute is described in @ref{Function Attributes}.
 
 @end table
 
+@subsection AVR Variable Attributes
+
+@table @code
+@item progmem
+@cindex @code{progmem} AVR variable attribute
+The @code{progmem} attribute is used on the AVR to place data in the program
+memory address space (flash). This is accomplished by putting
+respective variables into a section whose name starts with @code{.progmem}.
+
+AVR is a Harvard architecture processor and data and reas only data
+normally resides in the data memory address space (RAM).
+@end table
+
 @subsection Blackfin Variable Attributes
 
 Three attributes are currently defined for the Blackfin.
@@ -4784,16 +4824,6 @@ memory and use special opcodes to access it.  Such variables will be
 placed in either the @code{.bss_below100} section or the
 @code{.data_below100} section.
 
-@end table
-
-@subsection AVR Variable Attributes
-
-@table @code
-@item progmem
-@cindex @code{progmem} variable attribute
-The @code{progmem} attribute is used on the AVR to place data in the Program
-Memory address space. The AVR is a Harvard Architecture processor and data
-normally resides in the Data Memory address space.
 @end table
 
 @node Type Attributes

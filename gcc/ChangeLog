@@ -1,5 +1,14 @@
 2011-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/49824
+	Backport from mainline r180385
+	* doc/extend.texi (Declaring Attributes of Functions):
+	Document OS_main and OS_task attributes.
+	(Specifying Attributes of Variables): Move up
+	subsection "AVR Variable Attributes" as of alphabetical order.
+
+2011-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/50820
 	* doc/invoke.texi (AVR Options): New subsubsection to explain EIND
 	handling and indirect jump/calls on devices > 128k.
