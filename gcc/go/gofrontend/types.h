@@ -741,9 +741,9 @@ class Type
   array_type() const
   { return this->convert<const Array_type, TYPE_ARRAY>(); }
 
-  // Return whether if this is an open array type.
+  // Return whether if this is a slice type.
   bool
-  is_open_array_type() const;
+  is_slice_type() const;
 
   // If this is a map type, return it.  Otherwise, return NULL.
   Map_type*

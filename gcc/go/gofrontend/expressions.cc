@@ -234,8 +234,7 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
   else if (rhs_type->interface_type() != NULL)
     return Expression::convert_interface_to_type(context, lhs_type, rhs_type,
 						 rhs_tree, location);
-  else if (lhs_type->is_open_array_type()
-	   && rhs_type->is_nil_type())
+  else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())
     {
       // Assigning nil to an open array.
       go_assert(TREE_CODE(lhs_type_tree) == RECORD_TYPE);
@@ -3315,7 +3314,7 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
       mpfr_clear(imag);
     }
 
-  if (type->is_open_array_type() && type->named_type() == NULL)
+  if (type->is_slice_type() && type->named_type() == NULL)
     {
       Type* element_type = type->array_type()->element_type()->forwarded();
       bool is_byte = element_type == Type::lookup_integer_type("uint8");
@@ -3663,7 +3662,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 				   len);
 	}
     }
-  else if (type->is_open_array_type() && expr_type->is_string_type())
+  else if (type->is_slice_type() && expr_type->is_string_type())
     {
       Type* e = type->array_type()->element_type()->forwarded();
       go_assert(e->integer_type() != NULL);
@@ -3831,9 +3830,9 @@ Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
   source_location loc = this->location();
 
   bool use_view_convert = false;
-  if (t->is_open_array_type())
+  if (t->is_slice_type())
     {
-      go_assert(et->is_open_array_type());
+      go_assert(et->is_slice_type());
       use_view_convert = true;
     }
   else if (t->map_type() != NULL)
@@ -7302,7 +7301,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       if (args == NULL || args->empty())
 	return this;
       Type* slice_type = args->front()->type();
-      if (!slice_type->is_open_array_type())
+      if (!slice_type->is_slice_type())
 	{
 	  error_at(args->front()->location(), "argument 1 must be a slice");
 	  this->set_is_error();
@@ -7342,7 +7341,7 @@ Builtin_call_expression::lower_make()
   bool is_slice = false;
   bool is_map = false;
   bool is_chan = false;
-  if (type->is_open_array_type())
+  if (type->is_slice_type())
     is_slice = true;
   else if (type->map_type() != NULL)
     is_map = true;
@@ -7554,7 +7553,7 @@ Builtin_call_expression::do_is_constant() const
 
 	if (arg_type->points_to() != NULL
 	    && arg_type->points_to()->array_type() != NULL
-	    && !arg_type->points_to()->is_open_array_type())
+	    && !arg_type->points_to()->is_slice_type())
 	  arg_type = arg_type->points_to();
 
 	if (arg_type->array_type() != NULL
@@ -7633,7 +7632,7 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
 
       if (arg_type->points_to() != NULL
 	  && arg_type->points_to()->array_type() != NULL
-	  && !arg_type->points_to()->is_open_array_type())
+	  && !arg_type->points_to()->is_slice_type())
 	arg_type = arg_type->points_to();
 
       if (arg_type->array_type() != NULL
@@ -8080,7 +8079,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	    Type* arg_type = this->one_arg()->type();
 	    if (arg_type->points_to() != NULL
 		&& arg_type->points_to()->array_type() != NULL
-		&& !arg_type->points_to()->is_open_array_type())
+		&& !arg_type->points_to()->is_slice_type())
 	      arg_type = arg_type->points_to();
 	    if (this->code_ == BUILTIN_CAP)
 	      {
@@ -8135,7 +8134,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 		    || type->channel_type() != NULL
 		    || type->map_type() != NULL
 		    || type->function_type() != NULL
-		    || type->is_open_array_type())
+		    || type->is_slice_type())
 		  ;
 		else
 		  this->report_error(_("unsupported argument type to "
@@ -8192,7 +8191,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  break;
 
 	Type* e1;
-	if (arg1_type->is_open_array_type())
+	if (arg1_type->is_slice_type())
 	  e1 = arg1_type->array_type()->element_type();
 	else
 	  {
@@ -8201,7 +8200,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  }
 
 	Type* e2;
-	if (arg2_type->is_open_array_type())
+	if (arg2_type->is_slice_type())
 	  e2 = arg2_type->array_type()->element_type();
 	else if (arg2_type->is_string_type())
 	  e2 = Type::lookup_integer_type("uint8");
@@ -8321,7 +8320,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	  {
 	    arg_type = arg_type->points_to();
 	    go_assert(arg_type->array_type() != NULL
-		       && !arg_type->is_open_array_type());
+		       && !arg_type->is_slice_type());
 	    go_assert(POINTER_TYPE_P(TREE_TYPE(arg_tree)));
 	    arg_tree = build_fold_indirect_ref(arg_tree);
 	  }
@@ -8515,7 +8514,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 			fnname = "__go_print_interface";
 		      }
 		  }
-		else if (type->is_open_array_type())
+		else if (type->is_slice_type())
 		  {
 		    static tree print_slice_fndecl;
 		    pfndecl = &print_slice_fndecl;
@@ -8694,7 +8693,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	Type* arg2_type = arg2->type();
 	tree arg2_val;
 	tree arg2_len;
-	if (arg2_type->is_open_array_type())
+	if (arg2_type->is_slice_type())
 	  {
 	    at = arg2_type->array_type();
 	    arg2_tree = save_expr(arg2_tree);
@@ -9078,7 +9077,7 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   source_location loc = this->location();
 
   go_assert(param_count > 0);
-  go_assert(varargs_type->is_open_array_type());
+  go_assert(varargs_type->is_slice_type());
 
   size_t arg_count = this->args_ == NULL ? 0 : this->args_->size();
   if (arg_count < param_count - 1)
@@ -9903,7 +9902,7 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     return Expression::make_array_index(left, start, end, location);
   else if (type->points_to() != NULL
 	   && type->points_to()->array_type() != NULL
-	   && !type->points_to()->is_open_array_type())
+	   && !type->points_to()->is_slice_type())
     {
       Expression* deref = Expression::make_unary(OPERATOR_MULT, left,
 						 location);
@@ -10060,7 +10059,7 @@ Array_index_expression::do_type()
 	this->type_ = Type::make_error_type();
       else if (this->end_ == NULL)
 	this->type_ = type->element_type();
-      else if (type->is_open_array_type())
+      else if (type->is_slice_type())
 	{
 	  // A slice of a slice has the same type as the original
 	  // slice.
@@ -10150,7 +10149,7 @@ Array_index_expression::do_check_types(Gogo*)
 
   // A slice of an array requires an addressable array.  A slice of a
   // slice is always possible.
-  if (this->end_ != NULL && !array_type->is_open_array_type())
+  if (this->end_ != NULL && !array_type->is_slice_type())
     {
       if (!this->array_->is_addressable())
 	this->report_error(_("array is not addressable"));
@@ -10169,7 +10168,7 @@ Array_index_expression::do_is_addressable() const
     return false;
 
   // An index into a slice is addressable.
-  if (this->array_->type()->is_open_array_type())
+  if (this->array_->type()->is_slice_type())
     return true;
 
   // An index into an array is addressable if the array is
@@ -12234,7 +12233,7 @@ Expression*
 Expression::make_slice_composite_literal(Type* type, Expression_list* vals,
 					 source_location location)
 {
-  go_assert(type->is_open_array_type());
+  go_assert(type->is_slice_type());
   return new Open_array_construction_expression(type, vals, location);
 }
 

@@ -240,7 +240,7 @@ Type::points_to() const
 // Return whether this is an open array type.
 
 bool
-Type::is_open_array_type() const
+Type::is_slice_type() const
 {
   return this->array_type() != NULL && this->array_type()->length() == NULL;
 }
@@ -457,7 +457,7 @@ Type::are_compatible_for_binop(const Type* lhs, const Type* rhs)
   if (lhs->is_nil_type()
       && (rhs->points_to() != NULL
 	  || rhs->interface_type() != NULL
-	  || rhs->is_open_array_type()
+	  || rhs->is_slice_type()
 	  || rhs->map_type() != NULL
 	  || rhs->channel_type() != NULL
 	  || rhs->function_type() != NULL))
@@ -465,7 +465,7 @@ Type::are_compatible_for_binop(const Type* lhs, const Type* rhs)
   if (rhs->is_nil_type()
       && (lhs->points_to() != NULL
 	  || lhs->interface_type() != NULL
-	  || lhs->is_open_array_type()
+	  || lhs->is_slice_type()
 	  || lhs->map_type() != NULL
 	  || lhs->channel_type() != NULL
 	  || lhs->function_type() != NULL))
@@ -556,7 +556,7 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
   if (rhs->is_nil_type()
       && (lhs->points_to() != NULL
 	  || lhs->function_type() != NULL
-	  || lhs->is_open_array_type()
+	  || lhs->is_slice_type()
 	  || lhs->map_type() != NULL
 	  || lhs->channel_type() != NULL
 	  || lhs->interface_type() != NULL))
@@ -662,7 +662,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     {
       if (rhs->integer_type() != NULL)
 	return true;
-      if (rhs->is_open_array_type() && rhs->named_type() == NULL)
+      if (rhs->is_slice_type() && rhs->named_type() == NULL)
 	{
 	  const Type* e = rhs->array_type()->element_type()->forwarded();
 	  if (e->integer_type() != NULL
@@ -674,7 +674,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 
   // A string may be converted to []byte or []int.
   if (rhs->is_string_type()
-      && lhs->is_open_array_type()
+      && lhs->is_slice_type()
       && lhs->named_type() == NULL)
     {
       const Type* e = lhs->array_type()->element_type()->forwarded();
@@ -6480,7 +6480,7 @@ Find_type_use::type(Type* type)
   // essentially a pointer: a pointer, a slice, a function, a map, or
   // a channel.
   if (type->points_to() != NULL
-      || type->is_open_array_type()
+      || type->is_slice_type()
       || type->function_type() != NULL
       || type->map_type() != NULL
       || type->channel_type() != NULL)
@@ -6699,7 +6699,7 @@ Named_type::convert(Gogo* gogo)
 
     case TYPE_ARRAY:
       // Slice types were completed in create_placeholder.
-      if (!base->is_open_array_type())
+      if (!base->is_slice_type())
 	{
 	  Btype* bet = base->array_type()->get_backend_element(gogo);
 	  Bexpression* blen = base->array_type()->get_backend_length(gogo);
@@ -6789,7 +6789,7 @@ Named_type::create_placeholder(Gogo* gogo)
       break;
 
     case TYPE_ARRAY:
-      if (base->is_open_array_type())
+      if (base->is_slice_type())
 	bt = gogo->backend()->placeholder_struct_type(this->name(),
 						      this->location_);
       else
@@ -6822,7 +6822,7 @@ Named_type::create_placeholder(Gogo* gogo)
 
   this->named_btype_ = bt;
 
-  if (base->is_open_array_type())
+  if (base->is_slice_type())
     {
       // We do not record slices as dependencies of other types,
       // because we can fill them in completely here with the final

@@ -3662,7 +3662,7 @@ Variable::type_from_range(Expression* expr, bool get_index_type,
   if (t->array_type() != NULL
       || (t->points_to() != NULL
 	  && t->points_to()->array_type() != NULL
-	  && !t->points_to()->is_open_array_type()))
+	  && !t->points_to()->is_slice_type()))
     {
       if (get_index_type)
 	return Type::lookup_integer_type("int");
