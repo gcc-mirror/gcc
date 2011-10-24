@@ -1,3 +1,43 @@
+2011-10-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Earlier): make available globally. If both
+	nodes have the same sloc, the freeze node that does not come
+	from source is the later one.
+	(True_Parent): Make available globally.
+	(Previous_Instance): Subsidiary of
+	Insert_Freeze_Node_For_Instance, to check whether the generic
+	parent of the current instance is declared within a previous
+	instance in the same unit or declarative  part, in which case the
+	freeze nodes of both instances must appear in order to prevent
+	elaboration problems in gigi.
+	* sem_ch12.adb (Insert_Freeze_Node_For_Instance): A stub is a
+	freeze point, and the freeze node of a preceding instantiation
+	must be inserted before it.
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, checks.adb: Add handling of Synchronization_Check
+	* debug.adb: Add doc for -gnatd.d and -gnatd.e (disable/enable
+	atomic sync).
+	* exp_ch2.adb (Expand_Entity_Reference): Set Atomic_Sync_Required
+	flag Minor code reorganization.
+	* opt.ads (Warn_On_Atomic_Synchronization): New switch.
+	* par-prag.adb: Add dummy entries for pragma
+	Disable/Enable_Atomic_Synchronization.
+	* sem_prag.adb (Process_Suppress_Unsuppress): Handle
+	case of Atomic_Synchronization specially (not suppressed
+	by All_Checks, cannot be set from Source).
+	(Pragma Disable/Enable_Atomic_Synchronization): Add processing.
+	* sinfo.ads, sinfo.adb: Add Atomic_Sync_Required flag
+	* snames.ads-tmpl: Add entry for Atomic_Synchronization Add
+	entry for pragma Disable/Enable_Atomic_Synchronization
+	* switch-c.adb: The -gnatp switch does not disable
+	Atomic_Synchronization Add -gnatep switch to disable
+	Atomic_Synchronization.
+	* types.ads: Add entry for Synchronization_Check
+	* usage.adb: Add line for -gnated switch
+	* warnsw.adb: Settings for Warn_On_Atomic_Synchronization
+
 2011-10-24  Geert Bosch  <bosch@adacore.com>
 
 	* s-gearop.adb (Back_Substitute): Avoid overflow if matrix

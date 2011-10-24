@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -354,9 +355,9 @@ package body Exp_Ch2 is
       elsif Is_Protected_Component (E) then
          if No_Run_Time_Mode then
             return;
+         else
+            Expand_Protected_Component (N);
          end if;
-
-         Expand_Protected_Component (N);
 
       elsif Ekind (E) = E_Entry_Index_Parameter then
          Expand_Entry_Index_Parameter (N);
@@ -396,6 +397,52 @@ package body Exp_Ch2 is
          end if;
 
          Write_Eol;
+      end if;
+
+      --  Set Atomic_Sync_Required if necessary for atomic variable
+
+      if Is_Atomic (E) then
+         declare
+            Set  : Boolean;
+            MLoc : Node_Id;
+
+         begin
+            --  Always set if debug flag d.e is set
+
+            if Debug_Flag_Dot_E then
+               Set := True;
+
+            --  Never set if debug flag d.d is set
+
+            elsif Debug_Flag_Dot_D then
+               Set := False;
+
+            --  Otherwise setting comes from Atomic_Synchronization state
+
+            else
+               Set := not Atomic_Synchronization_Disabled (E);
+            end if;
+
+            --  Set flag if required
+
+            if Set then
+
+               --  Generate info message if requested
+
+               if Warn_On_Atomic_Synchronization then
+                  if Nkind (N) = N_Identifier then
+                     MLoc := N;
+                  else
+                     MLoc := Selector_Name (N);
+                  end if;
+
+                  Error_Msg_N
+                    ("?info: atomic synchronization set for &", MLoc);
+               end if;
+
+               Set_Atomic_Sync_Required (N);
+            end if;
+         end;
       end if;
 
       --  Interpret possible Current_Value for variable case

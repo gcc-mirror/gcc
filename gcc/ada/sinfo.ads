@@ -605,6 +605,12 @@ package Sinfo is
    --    Since the back end is expected to ignore generic templates, this is
    --    harmless.
 
+   --  Atomic_Sync_Required (Flag14-Sem)
+   --    This flag is set in an identifier or expanded name node if the
+   --    corresponding reference (or assignment when on the left side of
+   --    an assignment) requires atomic synchronization, as a result of
+   --    Atomic_Synchronization being enabled for the corresponding entity.
+
    --  At_End_Proc (Node1)
    --    This field is present in an N_Handled_Sequence_Of_Statements node.
    --    It contains an identifier reference for the cleanup procedure to be
@@ -1917,6 +1923,7 @@ package Sinfo is
       --  Associated_Node (Node4-Sem)
       --  Original_Discriminant (Node2-Sem)
       --  Redundant_Use (Flag13-Sem)
+      --  Atomic_Sync_Required (Flag14-Sem)
       --  Has_Private_View (Flag11-Sem) (set in generic units)
       --  plus fields for expression
 
@@ -6982,8 +6989,9 @@ package Sinfo is
       --  Selector_Name (Node2)
       --  Entity (Node4-Sem)
       --  Associated_Node (Node4-Sem)
-      --  Redundant_Use (Flag13-Sem)
       --  Has_Private_View (Flag11-Sem) set in generic units.
+      --  Redundant_Use (Flag13-Sem)
+      --  Atomic_Sync_Required (Flag14-Sem)
       --  plus fields for expression
 
       -----------------------------
@@ -8121,6 +8129,9 @@ package Sinfo is
    function Ancestor_Part
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Atomic_Sync_Required
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function Array_Aggregate
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -9095,6 +9106,9 @@ package Sinfo is
 
    procedure Set_Ancestor_Part
      (N : Node_Id; Val : Node_Id);            -- Node3
+
+   procedure Set_Atomic_Sync_Required
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Array_Aggregate
      (N : Node_Id; Val : Node_Id);            -- Node3
@@ -11764,6 +11778,7 @@ package Sinfo is
    pragma Inline (All_Present);
    pragma Inline (Alternatives);
    pragma Inline (Ancestor_Part);
+   pragma Inline (Atomic_Sync_Required);
    pragma Inline (Array_Aggregate);
    pragma Inline (Aspect_Rep_Item);
    pragma Inline (Assignment_OK);
@@ -12086,6 +12101,7 @@ package Sinfo is
    pragma Inline (Set_All_Present);
    pragma Inline (Set_Alternatives);
    pragma Inline (Set_Ancestor_Part);
+   pragma Inline (Set_Atomic_Sync_Required);
    pragma Inline (Set_Array_Aggregate);
    pragma Inline (Set_Aspect_Rep_Item);
    pragma Inline (Set_Assignment_OK);

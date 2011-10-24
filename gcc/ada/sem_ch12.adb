@@ -451,6 +451,12 @@ package body Sem_Ch12 is
    --  an instantiation in the source, or the internal instantiation that
    --  corresponds to the actual for a formal package.
 
+   function Earlier (N1, N2 : Node_Id) return Boolean;
+   --  Yields True if N1 and N2 appear in the same compilation unit,
+   --  ignoring subunits, and if N1 is to the left of N2 in a left-to-right
+   --  traversal of the tree for the unit. Used to determine the placement
+   --  of freeze nodes for instance bodies that may depend on other instances.
+
    function Find_Actual_Type
      (Typ       : Entity_Id;
       Gen_Type  : Entity_Id) return Entity_Id;
@@ -473,9 +479,11 @@ package body Sem_Ch12 is
       Inst   : Node_Id) return Boolean;
    --  True if the instantiation Inst and the given freeze_node F_Node appear
    --  within the same declarative part, ignoring subunits, but with no inter-
-   --  vening subprograms or concurrent units. If true, the freeze node
-   --  of the instance can be placed after the freeze node of the parent,
-   --  which it itself an instance.
+   --  vening subprograms or concurrent units. Used to find the proper plave
+   --  for the freeze node of an instance, when the generic is declared in a
+   --  previous instance. If predicate is true, the freeze node of the instance
+   --  can be placed after the freeze node of the previous instance, Otherwise
+   --  it has to be placed at the end of the current declarative part.
 
    function In_Main_Context (E : Entity_Id) return Boolean;
    --  Check whether an instantiation is in the context of the main unit.
@@ -728,6 +736,9 @@ package body Sem_Ch12 is
    --  later, when the expected types are known, but names have to be captured
    --  before installing parents of generics, that are not visible for the
    --  actuals themselves.
+
+   function True_Parent (N : Node_Id) return Node_Id;
+   --  For a subunit, return parent of corresponding stub
 
    procedure Valid_Default_Attribute (Nam : Entity_Id; Def : Node_Id);
    --  Verify that an attribute that appears as the default for a formal
@@ -6762,6 +6773,103 @@ package body Sem_Ch12 is
       Expander_Mode_Restore;
    end End_Generic;
 
+   -------------
+   -- Earlier --
+   -------------
+
+   function Earlier (N1, N2 : Node_Id) return Boolean is
+      D1 : Integer := 0;
+      D2 : Integer := 0;
+      P1 : Node_Id := N1;
+      P2 : Node_Id := N2;
+
+      procedure Find_Depth (P : in out Node_Id; D : in out Integer);
+      --  Find distance from given node to enclosing compilation unit
+
+      ----------------
+      -- Find_Depth --
+      ----------------
+
+      procedure Find_Depth (P : in out Node_Id; D : in out Integer) is
+      begin
+         while Present (P)
+           and then Nkind (P) /= N_Compilation_Unit
+         loop
+            P := True_Parent (P);
+            D := D + 1;
+         end loop;
+      end Find_Depth;
+
+   --  Start of processing for Earlier
+
+   begin
+      Find_Depth (P1, D1);
+      Find_Depth (P2, D2);
+
+      if P1 /= P2 then
+         return False;
+      else
+         P1 := N1;
+         P2 := N2;
+      end if;
+
+      while D1 > D2 loop
+         P1 := True_Parent (P1);
+         D1 := D1 - 1;
+      end loop;
+
+      while D2 > D1 loop
+         P2 := True_Parent (P2);
+         D2 := D2 - 1;
+      end loop;
+
+      --  At this point P1 and P2 are at the same distance from the root.
+      --  We examine their parents until we find a common declarative list,
+      --  at which point we can establish their relative placement by
+      --  comparing their ultimate slocs. If we reach the root, N1 and N2
+      --  do not descend from the same declarative list (e.g. one is nested
+      --  in the declarative part and the other is in a block in the
+      --  statement part) and the earlier one is already frozen.
+
+      while not Is_List_Member (P1)
+        or else not Is_List_Member (P2)
+        or else List_Containing (P1) /= List_Containing (P2)
+      loop
+         P1 := True_Parent (P1);
+         P2 := True_Parent (P2);
+
+         if Nkind (Parent (P1)) = N_Subunit then
+            P1 := Corresponding_Stub (Parent (P1));
+         end if;
+
+         if Nkind (Parent (P2)) = N_Subunit then
+            P2 := Corresponding_Stub (Parent (P2));
+         end if;
+
+         if P1 = P2 then
+            return False;
+         end if;
+      end loop;
+
+      --  If the sloc positions are different the result is unambiguous. If
+      --  the slocs are identical, one of them must not come from source, which
+      --  is the case for freeze nodes, whose sloc is unrelated to the point
+      --  point at which they are inserted in the tree. The source node is the
+      --  earlier one in the tree.
+
+      if Top_Level_Location (Sloc (P1)) < Top_Level_Location (Sloc (P2)) then
+         return True;
+
+      elsif
+        Top_Level_Location (Sloc (P1)) > Top_Level_Location (Sloc (P2))
+      then
+         return False;
+
+      else
+         return Comes_From_Source (P1);
+      end if;
+   end Earlier;
+
    ----------------------
    -- Find_Actual_Type --
    ----------------------
@@ -6828,11 +6936,6 @@ package body Sem_Ch12 is
       Enc_I    : Node_Id;
       F_Node   : Node_Id;
 
-      function Earlier (N1, N2 : Node_Id) return Boolean;
-      --  Yields True if N1 and N2 appear in the same compilation unit,
-      --  ignoring subunits, and if N1 is to the left of N2 in a left-to-right
-      --  traversal of the tree for the unit.
-
       function Enclosing_Body (N : Node_Id) return Node_Id;
       --  Find innermost package body that encloses the given node, and which
       --  is not a compilation unit. Freeze nodes for the instance, or for its
@@ -6842,91 +6945,6 @@ package body Sem_Ch12 is
       function Package_Freeze_Node (B : Node_Id) return Node_Id;
       --  Find entity for given package body, and locate or create a freeze
       --  node for it.
-
-      function True_Parent (N : Node_Id) return Node_Id;
-      --  For a subunit, return parent of corresponding stub
-
-      -------------
-      -- Earlier --
-      -------------
-
-      function Earlier (N1, N2 : Node_Id) return Boolean is
-         D1 : Integer := 0;
-         D2 : Integer := 0;
-         P1 : Node_Id := N1;
-         P2 : Node_Id := N2;
-
-         procedure Find_Depth (P : in out Node_Id; D : in out Integer);
-         --  Find distance from given node to enclosing compilation unit
-
-         ----------------
-         -- Find_Depth --
-         ----------------
-
-         procedure Find_Depth (P : in out Node_Id; D : in out Integer) is
-         begin
-            while Present (P)
-              and then Nkind (P) /= N_Compilation_Unit
-            loop
-               P := True_Parent (P);
-               D := D + 1;
-            end loop;
-         end Find_Depth;
-
-      --  Start of processing for Earlier
-
-      begin
-         Find_Depth (P1, D1);
-         Find_Depth (P2, D2);
-
-         if P1 /= P2 then
-            return False;
-         else
-            P1 := N1;
-            P2 := N2;
-         end if;
-
-         while D1 > D2 loop
-            P1 := True_Parent (P1);
-            D1 := D1 - 1;
-         end loop;
-
-         while D2 > D1 loop
-            P2 := True_Parent (P2);
-            D2 := D2 - 1;
-         end loop;
-
-         --  At this point P1 and P2 are at the same distance from the root.
-         --  We examine their parents until we find a common declarative list,
-         --  at which point we can establish their relative placement by
-         --  comparing their ultimate slocs. If we reach the root, N1 and N2
-         --  do not descend from the same declarative list (e.g. one is nested
-         --  in the declarative part and the other is in a block in the
-         --  statement part) and the earlier one is already frozen.
-
-         while not Is_List_Member (P1)
-           or else not Is_List_Member (P2)
-           or else List_Containing (P1) /= List_Containing (P2)
-         loop
-            P1 := True_Parent (P1);
-            P2 := True_Parent (P2);
-
-            if Nkind (Parent (P1)) = N_Subunit then
-               P1 := Corresponding_Stub (Parent (P1));
-            end if;
-
-            if Nkind (Parent (P2)) = N_Subunit then
-               P2 := Corresponding_Stub (Parent (P2));
-            end if;
-
-            if P1 = P2 then
-               return False;
-            end if;
-         end loop;
-
-         return
-           Top_Level_Location (Sloc (P1)) < Top_Level_Location (Sloc (P2));
-      end Earlier;
 
       --------------------
       -- Enclosing_Body --
@@ -6972,19 +6990,6 @@ package body Sem_Ch12 is
          Ensure_Freeze_Node (Id);
          return Freeze_Node (Id);
       end Package_Freeze_Node;
-
-      -----------------
-      -- True_Parent --
-      -----------------
-
-      function True_Parent (N : Node_Id) return Node_Id is
-      begin
-         if Nkind (Parent (N)) = N_Subunit then
-            return Parent (Corresponding_Stub (Parent (N)));
-         else
-            return Parent (N);
-         end if;
-      end True_Parent;
 
    --  Start of processing of Freeze_Subprogram_Body
 
@@ -7336,6 +7341,7 @@ package body Sem_Ch12 is
 
          elsif Nkind_In (Nod, N_Subprogram_Body,
                               N_Package_Body,
+                              N_Package_Declaration,
                               N_Task_Body,
                               N_Protected_Body,
                               N_Block_Statement)
@@ -7478,11 +7484,57 @@ package body Sem_Ch12 is
       Decls : List_Id;
       Par_N : Node_Id;
 
+      function Previous_Instance (Gen : Entity_Id) return Entity_Id;
+      --  Find the local instance, if any, that declares the generic that is
+      --  being instantiated. If present, the freeze node for this instance
+      --  must follow the freeze node for the previous instance.
+
+      -----------------------
+      -- Previous_Instance --
+      -----------------------
+
+      function Previous_Instance (Gen : Entity_Id) return Entity_Id is
+         S : Entity_Id;
+      begin
+         S := Scope (Gen);
+         while Present (S)
+           and then S /= Standard_Standard
+         loop
+            if Is_Generic_Instance (S)
+              and then In_Same_Source_Unit (S, N)
+            then
+               return S;
+            end if;
+            S := Scope (S);
+         end loop;
+         return Empty;
+      end Previous_Instance;
+
    begin
       if not Is_List_Member (F_Node) then
          Decls := List_Containing (N);
          Par_N := Parent (Decls);
          Decl  := N;
+
+         --  If this is a package instance, check whether the generic is
+         --  declared in a previous instance.
+
+         if Present (Generic_Parent (Parent (Inst)))
+           and then Is_In_Main_Unit (N)
+         then
+            declare
+               Par_I : constant Entity_Id :=
+                 Previous_Instance (Generic_Parent (Parent (Inst)));
+
+            begin
+               if Present (Par_I)
+                 and then Earlier (N, Freeze_Node (Par_I))
+               then
+                  Insert_After (Freeze_Node (Par_I), F_Node);
+                  return;
+               end if;
+            end;
+         end if;
 
          --  When the instantiation occurs in a package declaration, append the
          --  freeze node to the private declarations (if any).
@@ -7500,9 +7552,9 @@ package body Sem_Ch12 is
          --  adhere to the general rule of a package or subprogram body causing
          --  freezing of anything before it in the same declarative region. In
          --  this case, the proper freeze point of a package instantiation is
-         --  before the first source body which follows. This ensures that
-         --  entities coming from the instance are already frozen and usable
-         --  in source bodies.
+         --  before the first source body which follows, or before a stub.
+         --  This ensures that entities coming from the instance are already
+         --  frozen and usable in source bodies.
 
          if Nkind (Par_N) /= N_Package_Declaration
            and then Ekind (Inst) = E_Package
@@ -7511,7 +7563,9 @@ package body Sem_Ch12 is
              not In_Same_Source_Unit (Generic_Parent (Parent (Inst)), Inst)
          then
             while Present (Decl) loop
-               if Nkind_In (Decl, N_Package_Body, N_Subprogram_Body)
+               if (Nkind (Decl) in N_Unit_Body
+                     or else
+                   Nkind (Decl) in N_Body_Stub)
                  and then Comes_From_Source (Decl)
                then
                   Insert_Before (Decl, F_Node);
@@ -7525,6 +7579,7 @@ package body Sem_Ch12 is
          --  In a package declaration, or if no previous body, insert at end
          --  of list.
 
+         Set_Sloc (F_Node, Sloc (Last (Decls)));
          Insert_After (Last (Decls), F_Node);
       end if;
    end Insert_Freeze_Node_For_Instance;
@@ -13176,6 +13231,19 @@ package body Sem_Ch12 is
          Next_Elmt (Priv_Elmt);
       end loop;
    end Switch_View;
+
+   -----------------
+   -- True_Parent --
+   -----------------
+
+   function True_Parent (N : Node_Id) return Node_Id is
+   begin
+      if Nkind (Parent (N)) = N_Subunit then
+         return Parent (Corresponding_Stub (Parent (N)));
+      else
+         return Parent (N);
+      end if;
+   end True_Parent;
 
    -----------------------------
    -- Valid_Default_Attribute --

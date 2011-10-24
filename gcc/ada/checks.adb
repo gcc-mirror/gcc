@@ -2555,6 +2555,23 @@ package body Checks is
       end if;
    end Apply_Universal_Integer_Attribute_Checks;
 
+   -------------------------------------
+   -- Atomic_Synchronization_Disabled --
+   -------------------------------------
+
+   --  Note: internally Disable/Enable_Atomic_Synchronization is implemented
+   --  using a bogus check called Atomic_Synchronization. This is to make it
+   --  more convenient to get exactly the same semantics as [Un]Suppress.
+
+   function Atomic_Synchronization_Disabled (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Atomic_Synchronization);
+      else
+         return Scope_Suppress (Atomic_Synchronization);
+      end if;
+   end Atomic_Synchronization_Disabled;
+
    -------------------------------
    -- Build_Discriminant_Checks --
    -------------------------------
