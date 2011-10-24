@@ -1,3 +1,11 @@
+2011-10-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-5.c (dg-options): Add -mno-sse.
+	Remove -march=i386.
+	(dg-skip-if): Remove.
+	* gcc.target/i386/funcspec-1.c: Ditto.
+	* gcc.target/i386/funcspec-3.c (dg-options): Add -mno-sse3.
+
 2011-10-24  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-bool-1.c: New testcase.

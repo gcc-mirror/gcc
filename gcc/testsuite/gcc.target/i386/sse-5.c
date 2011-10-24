@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=i386" } } */
-/* { dg-options "-Winline -Wno-psabi -O2 -march=i386" } */
+/* { dg-options "-Winline -Wno-psabi -O2 -mno-sse" } */
 
 typedef double v2df __attribute__ ((vector_size (16)));
 v2df p;
