@@ -1,3 +1,18 @@
+2011-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c: Break long lines.
+	Define target hooks on the fly if applicable.
+	(TARGET_ASM_FUNCTION_RODATA_SECTION): Remove first definition
+	overridden later.
+	(targetm): Move definition to end of file.
+	(avr_can_eliminate): Make static on the fly.
+	(avr_frame_pointer_required_p): Ditto.
+	(avr_hard_regno_scratch_ok): Ditto.
+	(avr_builtin_setjmp_frame_value): Make static on the fly.
+	Indent according to coding rules.
+	(avr_case_values_threshold): Ditto.
+	(avr_attribute_table): Move down.
+
 2011-10-24  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50730
