@@ -1,3 +1,8 @@
+2011-10-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* builtins.c (set_builtin_user_assembler_name): Remove extra
+	newline added in October 11th, 2011 change.
+
 2011-10-24  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (cpu_feature, enabled): New attributes.
