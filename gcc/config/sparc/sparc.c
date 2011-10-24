@@ -1029,10 +1029,6 @@ sparc_option_override (void)
       sparc_cpu_and_features = def->processor;
     }
 
-  if ((target_flags & MASK_V8PLUS)
-      && sparc_cpu_and_features < PROCESSOR_V9)
-    sparc_cpu_and_features = PROCESSOR_V9;
-
   if (!global_options_set.x_sparc_cpu)
     sparc_cpu = sparc_cpu_and_features;
 
