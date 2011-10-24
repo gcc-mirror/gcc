@@ -1401,16 +1401,19 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
 	ppc64)
     LIBGNAT_TARGET_PAIRS = \
     $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+    TOOLS_TARGET_PAIRS = \
+    indepsw.adb<indepsw-aix.adb
   else
     LIBGNAT_TARGET_PAIRS = \
     $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+    TOOLS_TARGET_PAIRS = \
+    indepsw.adb<indepsw-gnu.adb
   endif
 
   THREADSLIB = -lpthreads
   EH_MECHANISM=-gcc
-  TOOLS_TARGET_PAIRS = \
-  mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb \
-  indepsw.adb<indepsw-aix.adb
+  TOOLS_TARGET_PAIRS += \
+  mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb
 
   GMEM_LIB = gmemlib
 endif

@@ -1,3 +1,8 @@
+2011-10-16  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/Makefile.in: Use GNU ld switches to generate map files
+	on AIX.
+
 2011-10-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Earlier): make available globally. If both
