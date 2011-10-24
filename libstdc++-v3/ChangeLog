@@ -1,5 +1,10 @@
 2011-10-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/50834
+	* doc/xml/manual/using.xml: Update thread safety docs w.r.t. C++11.
+
+2011-10-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/50196
 	* acinclude.m4 (GLIBCXX_HAS_GTHREADS): Don't depend on _POSIX_TIMEOUTS.
 	* configure: Regenerate.
