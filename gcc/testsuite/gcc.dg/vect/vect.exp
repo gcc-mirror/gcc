@@ -269,6 +269,13 @@ lappend DEFAULT_VECTCFLAGS "-fno-tree-fre" "-fno-tree-pre"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-fre-pre*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# -fno-tree-sra
+set VECT_SLP_CFLAGS $SAVED_VECT_SLP_CFLAGS
+lappend VECT_SLP_CFLAGS "-fno-tree-sra"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-sra-bb-slp-*.\[cS\]]]  \
+        "" $VECT_SLP_CFLAGS
+
+
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}
 

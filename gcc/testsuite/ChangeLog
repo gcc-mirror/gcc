@@ -1,3 +1,10 @@
+2011-10-24  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50730
+	* gcc.dg/vect/no-tree-sra-bb-slp-pr50730.c: New test.
+	* gcc.dg/vect/vect.exp: Run no-tree-sra-bb-slp* tests with
+	-fno-tree-sra and SLP flags.
+
 2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50841

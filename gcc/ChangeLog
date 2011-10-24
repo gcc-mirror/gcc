@@ -1,3 +1,9 @@
+2011-10-24  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50730
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Stop basic block
+	analysis if encountered unsupported data-ref.
+
 2011-10-23  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (sparc_option_override): Remove -mv8plus
