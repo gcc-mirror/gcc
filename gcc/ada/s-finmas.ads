@@ -74,13 +74,23 @@ package System.Finalization_Masters is
    for Finalization_Master_Ptr'Storage_Size use 0;
 
    procedure Attach (N : not null FM_Node_Ptr; L : not null FM_Node_Ptr);
+   --  Compiler interface, do not call from withing the run-time. Prepend a
+   --  node to a specific finalization master.
+
+   procedure Attach_Unprotected
+     (N : not null FM_Node_Ptr;
+      L : not null FM_Node_Ptr);
    --  Prepend a node to a specific finalization master
 
-   procedure Delete_Finalize_Address (Obj : System.Address);
+   procedure Delete_Finalize_Address_Unprotected (Obj : System.Address);
    --  Destroy the relation pair object - Finalize_Address from the internal
    --  hash table.
 
    procedure Detach (N : not null FM_Node_Ptr);
+   --  Compiler interface, do not call from within the run-time. Remove a node
+   --  from an arbitrary finalization master.
+
+   procedure Detach_Unprotected (N : not null FM_Node_Ptr);
    --  Remove a node from an arbitrary finalization master
 
    overriding procedure Finalize (Master : in out Finalization_Master);
@@ -93,7 +103,7 @@ package System.Finalization_Masters is
    --  Return a reference to the TSS primitive Finalize_Address associated with
    --  a master.
 
-   function Finalize_Address
+   function Finalize_Address_Unprotected
      (Obj : System.Address) return Finalize_Address_Ptr;
    --  Retrieve the Finalize_Address primitive associated with a particular
    --  object.
@@ -119,9 +129,15 @@ package System.Finalization_Masters is
    procedure Set_Finalize_Address
      (Master       : in out Finalization_Master;
       Fin_Addr_Ptr : Finalize_Address_Ptr);
+   --  Compiler interface, do not call from within the run-time. Set the clean
+   --  up routine of a finalization master
+
+   procedure Set_Finalize_Address_Unprotected
+     (Master       : in out Finalization_Master;
+      Fin_Addr_Ptr : Finalize_Address_Ptr);
    --  Set the clean up routine of a finalization master
 
-   procedure Set_Heterogeneous_Finalize_Address
+   procedure Set_Heterogeneous_Finalize_Address_Unprotected
      (Obj          : System.Address;
       Fin_Addr_Ptr : Finalize_Address_Ptr);
    --  Add a relation pair object - Finalize_Address to the internal hash
@@ -165,11 +181,9 @@ private
       --  is used only when the master is in homogeneous mode.
 
       Finalization_Started : Boolean := False;
-      pragma Atomic (Finalization_Started);
       --  A flag used to detect allocations which occur during the finalization
       --  of a master. The allocations must raise Program_Error. This scenario
-      --  may arise in a multitask environment. The flag is atomic because it
-      --  is accessed without Lock_Task / Unlock_Task.
+      --  may arise in a multitask environment.
    end record;
 
    --  Since RTSfind cannot contain names of the form RE_"+", the following

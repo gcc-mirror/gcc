@@ -19570,17 +19570,16 @@ package body Sem_Ch3 is
    --  do not know the exact end points at the time of the declaration. This
    --  is true for three reasons:
 
-   --     A size clause may affect the fudging of the end-points
-   --     A small clause may affect the values of the end-points
-   --     We try to include the end-points if it does not affect the size
+   --     A size clause may affect the fudging of the end-points.
+   --     A small clause may affect the values of the end-points.
+   --     We try to include the end-points if it does not affect the size.
 
-   --  This means that the actual end-points must be established at the point
-   --  when the type is frozen. Meanwhile, we first narrow the range as
-   --  permitted (so that it will fit if necessary in a small specified size),
-   --  and then build a range subtree with these narrowed bounds.
-
-   --  Set_Fixed_Range constructs the range from real literal values, and sets
-   --  the range as the Scalar_Range of the given fixed-point type entity.
+   --  This means that the actual end-points must be established at the
+   --  point when the type is frozen. Meanwhile, we first narrow the range
+   --  as permitted (so that it will fit if necessary in a small specified
+   --  size), and then build a range subtree with these narrowed bounds.
+   --  Set_Fixed_Range constructs the range from real literal values, and
+   --  sets the range as the Scalar_Range of the given fixed-point type entity.
 
    --  The parent of this range is set to point to the entity so that it is
    --  properly hooked into the tree (unlike normal Scalar_Range entries for
@@ -19605,6 +19604,12 @@ package body Sem_Ch3 is
    begin
       Set_Scalar_Range (E, S);
       Set_Parent (S, E);
+
+      --  Before the freeze point, the bounds of a fixed point are universal
+      --  and carry the corresponding type.
+
+      Set_Etype (Low_Bound (S),  Universal_Real);
+      Set_Etype (High_Bound (S), Universal_Real);
    end Set_Fixed_Range;
 
    ----------------------------------

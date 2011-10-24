@@ -109,6 +109,9 @@ package body System.Storage_Pools.Subpools is
       N_Size  : Storage_Count;
       Subpool : Subpool_Handle := null;
 
+      Allocation_Locked : Boolean;
+      --  This flag stores the state of the associated collection
+
       Header_And_Padding : Storage_Offset;
       --  This offset includes the size of a FM_Node plus any additional
       --  padding due to a larger alignment.
@@ -156,22 +159,22 @@ package body System.Storage_Pools.Subpools is
          --  failed to create one. This is a serious error.
 
          if Context_Master = null then
-            raise Program_Error with "missing master in pool allocation";
-         end if;
+            raise Program_Error
+              with "missing master in pool allocation";
 
          --  If a subpool is present, then this is the result of erroneous
          --  allocator expansion. This is not a serious error, but it should
          --  still be detected.
 
-         if Context_Subpool /= null then
-            raise Program_Error with "subpool not required in pool allocation";
-         end if;
+         elsif Context_Subpool /= null then
+            raise Program_Error
+              with "subpool not required in pool allocation";
 
          --  If the allocation is intended to be on a subpool, but the access
          --  type's pool does not support subpools, then this is the result of
          --  erroneous end-user code.
 
-         if On_Subpool then
+         elsif On_Subpool then
             raise Program_Error
               with "pool of access type does not support subpools";
          end if;
@@ -187,10 +190,18 @@ package body System.Storage_Pools.Subpools is
 
       if Is_Controlled then
 
+         --  Synchronization:
+         --    Read  - allocation, finalization
+         --    Write - finalization
+
+         Lock_Task.all;
+         Allocation_Locked := Finalization_Started (Master.all);
+         Unlock_Task.all;
+
          --  Do not allow the allocation of controlled objects while the
          --  associated master is being finalized.
 
-         if Finalization_Started (Master.all) then
+         if Allocation_Locked then
             raise Program_Error with "allocation after finalization started";
          end if;
 
@@ -240,6 +251,7 @@ package body System.Storage_Pools.Subpools is
       --  Step 4: Attachment
 
       if Is_Controlled then
+         Lock_Task.all;
 
          --  Map the allocated memory into a FM_Node record. This converts the
          --  top of the allocated bits into a list header. If there is padding
@@ -262,7 +274,10 @@ package body System.Storage_Pools.Subpools is
 
          --  Prepend the allocated object to the finalization master
 
-         Attach (N_Ptr, Objects (Master.all));
+         --  Synchronization:
+         --    Write - allocation, deallocation, finalization
+
+         Attach_Unprotected (N_Ptr, Objects (Master.all));
 
          --  Move the address from the hidden list header to the start of the
          --  object. This operation effectively hides the list header.
@@ -275,8 +290,17 @@ package body System.Storage_Pools.Subpools is
          --    2) Named access types
          --    3) Most cases of anonymous access types usage
 
+         --  Synchronization:
+         --    Read  - allocation, finalization
+         --    Write - outside
+
          if Master.Is_Homogeneous then
-            Set_Finalize_Address (Master.all, Fin_Address);
+
+            --  Synchronization:
+            --    Read  - finalization
+            --    Write - allocation, outside
+
+            Set_Finalize_Address_Unprotected (Master.all, Fin_Address);
 
          --  Heterogeneous masters service the following:
 
@@ -284,9 +308,15 @@ package body System.Storage_Pools.Subpools is
          --    2) Certain cases of anonymous access types usage
 
          else
-            Set_Heterogeneous_Finalize_Address (Addr, Fin_Address);
+            --  Synchronization:
+            --    Read  - finalization
+            --    Write - allocation, deallocation
+
+            Set_Heterogeneous_Finalize_Address_Unprotected (Addr, Fin_Address);
             Finalize_Address_Table_In_Use := True;
          end if;
+
+         Unlock_Task.all;
 
       --  Non-controlled allocation
 
@@ -341,12 +371,18 @@ package body System.Storage_Pools.Subpools is
       --  Step 1: Detachment
 
       if Is_Controlled then
+         Lock_Task.all;
 
          --  Destroy the relation pair object - Finalize_Address since it is no
          --  longer needed.
 
          if Finalize_Address_Table_In_Use then
-            Delete_Finalize_Address (Addr);
+
+            --  Synchronization:
+            --    Read  - finalization
+            --    Write - allocation, deallocation
+
+            Delete_Finalize_Address_Unprotected (Addr);
          end if;
 
          --  Account for possible padding space before the header due to a
@@ -376,7 +412,10 @@ package body System.Storage_Pools.Subpools is
          --  action does not need to know the prior context used during
          --  allocation.
 
-         Detach (N_Ptr);
+         --  Synchronization:
+         --    Write - allocation, deallocation, finalization
+
+         Detach_Unprotected (N_Ptr);
 
          --  Move the address from the object to the beginning of the list
          --  header.
@@ -387,6 +426,8 @@ package body System.Storage_Pools.Subpools is
          --  hidden list header.
 
          N_Size := Storage_Size + Header_And_Padding;
+
+         Unlock_Task.all;
 
       else
          N_Addr := Addr;
