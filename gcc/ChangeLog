@@ -1,5 +1,10 @@
 2011-10-23  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.c (sparc_option_override): Remove -mv8plus
+	cpu adjustment.
+	* config/sparc/linux64.h (CC1_SPEC): When defaulting to 64-bit,
+	append -mcpu=v9 when -mv8plus is given.
+
 	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED): We can move
 	between float and non-float regs when VIS3.
 	* config/sparc/sparc.c (eligible_for_restore_insn): We can't
