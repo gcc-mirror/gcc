@@ -3460,7 +3460,7 @@ package body Exp_Ch5 is
                    End_Label => End_Label (N)));
 
                --  The loop parameter's entity must be removed from the loop
-               --  scope's entity list, since itw will now be located in the
+               --  scope's entity list, since it will now be located in the
                --  new block scope. Any other entities already associated with
                --  the loop scope, such as the loop parameter's subtype, will
                --  remain there.

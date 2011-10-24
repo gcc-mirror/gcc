@@ -160,7 +160,7 @@ package body Sem_Disp is
                   while Present (Elmt) loop
                      Iface_Prim := Node (Elmt);
 
-                     if Chars (E) = Chars (Prim)
+                     if Chars (Iface) = Chars (Prim)
                        and then Is_Interface_Conformant
                                   (Tagged_Type, Iface_Prim, Prim)
                      then

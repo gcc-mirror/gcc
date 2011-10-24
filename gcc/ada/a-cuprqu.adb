@@ -72,8 +72,29 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          Success  : out Boolean)
       is
       begin
+         --  This operation dequeues a high priority item if it exists in the
+         --  queue. By "high priority" we mean an item whose priority is equal
+         --  or greater than the value At_Least. The generic formal operation
+         --  Before has the meaning "has higher priority than". To dequeue an
+         --  item (meaning that we return True as our Success value), we need
+         --  as our predicate the equivalent of "has equal or higher priority
+         --  than", but we cannot say that directly, so we require some logical
+         --  gymnastics to make it so.
+
+         --  If E is the element at the head of the queue, and symbol ">"
+         --  refers to the "is higher priority than" function Before, then we
+         --  derive our predicate as follows:
+         --    original: P(E) >= At_Least
+         --    same as:  not (P(E) < At_Least)
+         --    same as:  not (At_Least > P(E))
+         --    same as:  not Before (At_Least, P(E))
+
+         --  But that predicate needs to be true in order to successfully
+         --  dequeue an item. If it's false, it means no item is dequeued, and
+         --  we return False as the Success value.
+
          if List.Length = 0
-           or else not Before (At_Least, Get_Priority (List.First.Element))
+           or else Before (At_Least, Get_Priority (List.First.Element))
          then
             Success := False;
             return;

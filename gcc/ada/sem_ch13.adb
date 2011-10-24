@@ -1403,7 +1403,10 @@ package body Sem_Ch13 is
 
                   Comp_Expr := First (Expressions (Expr));
                   while Present (Comp_Expr) loop
-                     Append (Relocate_Node (Comp_Expr), Args);
+                     Append
+                       (Make_Pragma_Argument_Association (Sloc (Comp_Expr),
+                          Expression => Relocate_Node (Comp_Expr)),
+                       Args);
                      Next (Comp_Expr);
                   end loop;
 

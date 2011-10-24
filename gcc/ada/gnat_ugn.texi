@@ -21143,6 +21143,13 @@ On OpenVMS Alpha, HP Ada provides the following strongly-typed bindings:
 GNAT provides implementations of these HP bindings in the @code{DECLIB}
 directory, on both the Alpha and I64 OpenVMS platforms.
 
+The X components of DECLIB compatibility package are located in a separate
+library, called XDECGNAT, which is not linked with by default; this library
+must be explicitly linked with any application that makes use of any X facilities,
+with a command similar to
+
+@code{GNAT MAKE USE_X /LINK /LIBRARY=XDECGNAT}
+
 The X/Motif bindings used to build @code{DECLIB} are whatever versions are
 in the
 HP Ada @file{ADA$PREDEFINED} directory with extension @file{.ADC}.
