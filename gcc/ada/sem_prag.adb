@@ -7884,7 +7884,8 @@ package body Sem_Prag is
                --  All other cases: diagnose error
 
                Error_Msg
-                 ("argument of pragma% is not procedure call", Sloc (Call));
+                 ("argument of pragma ""Debug"" is not procedure call",
+                  Sloc (Call));
                return;
             end if;
 

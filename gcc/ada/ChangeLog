@@ -1,3 +1,44 @@
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem.adb (Initialize): Fix bug that blew up if called a second
+	time.
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* tb-alvxw.c, tracebak.c, expect.c, initflt.c, tb-alvms.c,
+	tb-ivms.c, tb-gcc.c: Update headers to GPL 3.
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Debug): Give proper pragma
+	name in error msg.
+
+2011-10-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat_rm.texi Add an entry for restriction No_Finalization.
+
+2011-10-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Insert_Freeze_Node_For_Instance):  If the
+	current instance is within the one that contains the generic,
+	the freeze node for the current one must appear in the current
+	declarative part. Ditto if the current instance is within another
+	package instance. In both of these cases the freeze node of the
+	previous instance is not relevant.
+
+2011-10-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Add recognition
+	of AAMP-specific switches -univ and -aamp_target.
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* a-tienau.adb (Put): Deal properly with limited line length.
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb, sem_ch12.adb: Minor reformatting.
+
 2011-10-16  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/Makefile.in: Use GNU ld switches to generate map files

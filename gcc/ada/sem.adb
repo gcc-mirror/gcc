@@ -845,11 +845,9 @@ package body Sem is
          return;
       end if;
 
-      --  First search the local entity suppress stack, we search this in
-      --  reverse order so that we get the innermost entry that applies to
-      --  this case if there are nested entries. Note that for the purpose
-      --  of this procedure we are ONLY looking for entries corresponding
-      --  to a two-argument Suppress, where the second argument matches From.
+      --  First search the global entity suppress table for a matching entry.
+      --  We also search this in reverse order so that if there are multiple
+      --  pragmas for the same entity, the last one applies.
 
       Search_Stack (Global_Suppress_Stack_Top, Found);
 
@@ -857,9 +855,11 @@ package body Sem is
          return;
       end if;
 
-      --  Now search the global entity suppress table for a matching entry.
-      --  We also search this in reverse order so that if there are multiple
-      --  pragmas for the same entity, the last one applies.
+      --  Now search the local entity suppress stack, we search this in
+      --  reverse order so that we get the innermost entry that applies to
+      --  this case if there are nested entries. Note that for the purpose
+      --  of this procedure we are ONLY looking for entries corresponding
+      --  to a two-argument Suppress, where the second argument matches From.
 
       Search_Stack (Local_Suppress_Stack_Top, Found);
    end Copy_Suppress_Status;
@@ -936,7 +936,6 @@ package body Sem is
 
       else
          Scop := Scope (E);
-
          while Present (Scop) loop
             if Scop = Outer_Generic_Scope then
                return False;
@@ -966,7 +965,7 @@ package body Sem is
       --  of the compiler (in the normal case this loop does nothing).
 
       while Suppress_Stack_Entries /= null loop
-         Next := Global_Suppress_Stack_Top.Next;
+         Next := Suppress_Stack_Entries.Next;
          Free (Suppress_Stack_Entries);
          Suppress_Stack_Entries := Next;
       end loop;
