@@ -1,3 +1,9 @@
+2011-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50816
+	* dwarf2out.c (dwarf2out_source_line): Emit discriminators only if
+	-gdwarf-4 or not -gstrict-dwarf.
+
 2011-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49824

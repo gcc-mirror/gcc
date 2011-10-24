@@ -22060,7 +22060,8 @@ dwarf2out_source_line (unsigned int line, const char *filename,
 	      fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
 	      last_is_stmt = is_stmt;
 	    }
-	  if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
+	  if (SUPPORTS_DISCRIMINATOR && discriminator != 0
+	      && (dwarf_version >= 4 || !dwarf_strict))
 	    fprintf (asm_out_file, " discriminator %d", discriminator);
 	  fputc ('\n', asm_out_file);
 
