@@ -29,6 +29,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
+with Exp_Disp; use Exp_Disp;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
@@ -399,6 +400,13 @@ package body Sem_Ch12 is
    --  package cannot be inlined by the front-end because front-end inlining
    --  requires a strict linear order of elaboration.
 
+   function Check_Hidden_Primitives (Assoc_List : List_Id) return Elist_Id;
+   --  Check if some association between formals and actuals requires to make
+   --  visible primitives of a tagged type, and make those primitives visible.
+   --  Return the list of primitives whose visibility is modified (to restore
+   --  their visibility later through Restore_Hidden_Primitives). If no
+   --  candidate is found then return No_Elist.
+
    procedure Check_Hidden_Child_Unit
      (N           : Node_Id;
       Gen_Unit    : Entity_Id;
@@ -555,6 +563,18 @@ package body Sem_Ch12 is
 
    procedure Remove_Parent (In_Body : Boolean := False);
    --  Reverse effect after instantiation of child is complete
+
+   procedure Install_Hidden_Primitives
+     (Prims_List : in out Elist_Id;
+      Gen_T      : Entity_Id;
+      Act_T      : Entity_Id);
+   --  Remove suffix 'P' from hidden primitives of Act_T to match the
+   --  visibility of primitives of Gen_T. The list of primitives to which
+   --  the suffix is removed is added to Prims_List to restore them later.
+
+   procedure Restore_Hidden_Primitives (Prims_List : in out Elist_Id);
+   --  Restore suffix 'P' to primitives of Prims_List and leave Prims_List
+   --  set to No_Elist.
 
    procedure Inline_Instance_Body
      (N        : Node_Id;
@@ -884,7 +904,6 @@ package body Sem_Ch12 is
       Formals : List_Id;
       F_Copy  : List_Id) return List_Id
    is
-
       Actual_Types    : constant Elist_Id  := New_Elmt_List;
       Assoc           : constant List_Id   := New_List;
       Default_Actuals : constant Elist_Id  := New_Elmt_List;
@@ -2039,6 +2058,10 @@ package body Sem_Ch12 is
       Renaming_In_Par  : Entity_Id;
       Associations     : Boolean := True;
 
+      Vis_Prims_List : Elist_Id := No_Elist;
+      --  List of primitives made temporarily visible in the instantiation
+      --  to match the visibility of the formal type
+
       function Build_Local_Package return Node_Id;
       --  The formal package is rewritten so that its parameters are replaced
       --  with corresponding declarations. For parameters with bona fide
@@ -2124,9 +2147,11 @@ package body Sem_Ch12 is
 
                Decls :=
                  Analyze_Associations
-                   (Original_Node (N),
-                      Generic_Formal_Declarations (Act_Tree),
-                      Generic_Formal_Declarations (Gen_Decl));
+                   (I_Node  => Original_Node (N),
+                    Formals => Generic_Formal_Declarations (Act_Tree),
+                    F_Copy  => Generic_Formal_Declarations (Gen_Decl));
+
+               Vis_Prims_List := Check_Hidden_Primitives (Decls);
             end;
          end if;
 
@@ -2263,6 +2288,7 @@ package body Sem_Ch12 is
             Enter_Name (Formal);
             Set_Ekind  (Formal, E_Variable);
             Set_Etype  (Formal, Any_Type);
+            Restore_Hidden_Primitives (Vis_Prims_List);
 
             if Parent_Installed then
                Remove_Parent;
@@ -2336,6 +2362,7 @@ package body Sem_Ch12 is
       end;
 
       End_Package_Scope (Formal);
+      Restore_Hidden_Primitives (Vis_Prims_List);
 
       if Parent_Installed then
          Remove_Parent;
@@ -3131,6 +3158,12 @@ package body Sem_Ch12 is
          return False;
       end Might_Inline_Subp;
 
+      --  Local declarations
+
+      Vis_Prims_List : Elist_Id := No_Elist;
+      --  List of primitives made temporarily visible in the instantiation
+      --  to match the visibility of the formal type
+
    --  Start of processing for Analyze_Package_Instantiation
 
    begin
@@ -3308,9 +3341,11 @@ package body Sem_Ch12 is
 
          Renaming_List :=
            Analyze_Associations
-             (N,
-              Generic_Formal_Declarations (Act_Tree),
-              Generic_Formal_Declarations (Gen_Decl));
+             (I_Node  => N,
+              Formals => Generic_Formal_Declarations (Act_Tree),
+              F_Copy  => Generic_Formal_Declarations (Gen_Decl));
+
+         Vis_Prims_List := Check_Hidden_Primitives (Renaming_List);
 
          Set_Instance_Env (Gen_Unit, Act_Decl_Id);
          Set_Defining_Unit_Name (Act_Spec, Act_Decl_Name);
@@ -3696,6 +3731,7 @@ package body Sem_Ch12 is
 
          Check_Formal_Packages (Act_Decl_Id);
 
+         Restore_Hidden_Primitives (Vis_Prims_List);
          Restore_Private_Views (Act_Decl_Id);
 
          Inherit_Context (Gen_Decl, N);
@@ -4277,6 +4313,12 @@ package body Sem_Ch12 is
          end if;
       end Analyze_Instance_And_Renamings;
 
+      --  Local variables
+
+      Vis_Prims_List : Elist_Id := No_Elist;
+      --  List of primitives made temporarily visible in the instantiation
+      --  to match the visibility of the formal type
+
    --  Start of processing for Analyze_Subprogram_Instantiation
 
    begin
@@ -4376,6 +4418,7 @@ package body Sem_Ch12 is
             Error_Msg_NE
               ("circular Instantiation: & instantiated in &!", N, Gen_Unit);
             Circularity_Detected := True;
+            Restore_Hidden_Primitives (Vis_Prims_List);
             goto Leave;
          end if;
 
@@ -4402,9 +4445,11 @@ package body Sem_Ch12 is
 
          Renaming_List :=
            Analyze_Associations
-             (N,
-              Generic_Formal_Declarations (Act_Tree),
-              Generic_Formal_Declarations (Gen_Decl));
+             (I_Node  => N,
+              Formals => Generic_Formal_Declarations (Act_Tree),
+              F_Copy  => Generic_Formal_Declarations (Gen_Decl));
+
+         Vis_Prims_List := Check_Hidden_Primitives (Renaming_List);
 
          --  The subprogram itself cannot contain a nested instance, so the
          --  current parent is left empty.
@@ -4554,6 +4599,7 @@ package body Sem_Ch12 is
             Remove_Parent;
          end if;
 
+         Restore_Hidden_Primitives (Vis_Prims_List);
          Restore_Env;
          Env_Installed := False;
          Generic_Renamings.Set_Last (0);
@@ -5855,6 +5901,49 @@ package body Sem_Ch12 is
          end if;
       end if;
    end Check_Private_View;
+
+   -----------------------------
+   -- Check_Hidden_Primitives --
+   -----------------------------
+
+   function Check_Hidden_Primitives (Assoc_List : List_Id) return Elist_Id is
+      Actual : Node_Id;
+      Gen_T  : Entity_Id;
+      Result : Elist_Id := No_Elist;
+
+   begin
+      if No (Assoc_List) then
+         return No_Elist;
+      end if;
+
+      --  Traverse the list of associations between formals and actuals
+      --  searching for renamings of tagged types
+
+      Actual := First (Assoc_List);
+      while Present (Actual) loop
+         if Nkind (Actual) = N_Subtype_Declaration then
+            Gen_T := Generic_Parent_Type (Actual);
+
+            if Present (Gen_T)
+              and then Is_Tagged_Type (Gen_T)
+            then
+               --  Traverse the list of primitives of the actual types
+               --  searching for hidden primitives that are visible in the
+               --  corresponding generic formal; leave them visible and
+               --  append them to Result to restore their decoration later.
+
+               Install_Hidden_Primitives
+                 (Prims_List => Result,
+                  Gen_T      => Gen_T,
+                  Act_T      => Entity (Subtype_Indication (Actual)));
+            end if;
+         end if;
+
+         Next (Actual);
+      end loop;
+
+      return Result;
+   end Check_Hidden_Primitives;
 
    --------------------------
    -- Contains_Instance_Of --
@@ -7893,6 +7982,138 @@ package body Sem_Ch12 is
       end if;
    end Install_Parent;
 
+   -------------------------------
+   -- Install_Hidden_Primitives --
+   -------------------------------
+
+   procedure Install_Hidden_Primitives
+     (Prims_List : in out Elist_Id;
+      Gen_T      : Entity_Id;
+      Act_T      : Entity_Id)
+   is
+      Elmt        : Elmt_Id;
+      List        : Elist_Id := No_Elist;
+      Prim_G_Elmt : Elmt_Id;
+      Prim_A_Elmt : Elmt_Id;
+      Prim_G      : Node_Id;
+      Prim_A      : Node_Id;
+
+   begin
+      --  No action needed in case of serious errors because we cannot trust
+      --  in the order of primitives
+
+      if Serious_Errors_Detected > 0 then
+         return;
+
+      --  No action possible if we don't have available the list of primitive
+      --  operations
+
+      elsif No (Gen_T)
+        or else not Is_Record_Type (Gen_T)
+        or else not Is_Tagged_Type (Gen_T)
+        or else not Is_Record_Type (Act_T)
+        or else not Is_Tagged_Type (Act_T)
+      then
+         return;
+
+      --  There is no need to handle interface types since their primitives
+      --  cannot be hidden
+
+      elsif Is_Interface (Gen_T) then
+         return;
+      end if;
+
+      Prim_G_Elmt := First_Elmt (Primitive_Operations (Gen_T));
+
+      if not Is_Class_Wide_Type (Act_T) then
+         Prim_A_Elmt := First_Elmt (Primitive_Operations (Act_T));
+      else
+         Prim_A_Elmt := First_Elmt (Primitive_Operations (Root_Type (Act_T)));
+      end if;
+
+      loop
+         --  Skip predefined primitives in the generic formal
+
+         while Present (Prim_G_Elmt)
+           and then Is_Predefined_Dispatching_Operation (Node (Prim_G_Elmt))
+         loop
+            Next_Elmt (Prim_G_Elmt);
+         end loop;
+
+         --  Skip predefined primitives in the generic actual
+
+         while Present (Prim_A_Elmt)
+           and then Is_Predefined_Dispatching_Operation (Node (Prim_A_Elmt))
+         loop
+            Next_Elmt (Prim_A_Elmt);
+         end loop;
+
+         exit when No (Prim_G_Elmt) or else No (Prim_A_Elmt);
+
+         Prim_G := Node (Prim_G_Elmt);
+         Prim_A := Node (Prim_A_Elmt);
+
+         --  There is no need to handle interface primitives because their
+         --  primitives are not hidden
+
+         exit when Present (Interface_Alias (Prim_G));
+
+         if Chars (Prim_G) /= Chars (Prim_A)
+           and then Has_Suffix (Prim_A, 'P')
+           and then Remove_Suffix (Prim_A, 'P') = Chars (Prim_G)
+         then
+            Set_Chars (Prim_A, Chars (Prim_G));
+
+            if List = No_Elist then
+               List := New_Elmt_List;
+            end if;
+
+            Append_Elmt (Prim_A, List);
+         end if;
+
+         Next_Elmt (Prim_A_Elmt);
+         Next_Elmt (Prim_G_Elmt);
+      end loop;
+
+      --  Append the elements to the list of temporarily visible primitives
+      --  avoiding duplicates
+
+      if Present (List) then
+         if No (Prims_List) then
+            Prims_List := New_Elmt_List;
+         end if;
+
+         Elmt := First_Elmt (List);
+         while Present (Elmt) loop
+            Append_Unique_Elmt (Node (Elmt), Prims_List);
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+   end Install_Hidden_Primitives;
+
+   -------------------------------
+   -- Restore_Hidden_Primitives --
+   -------------------------------
+
+   procedure Restore_Hidden_Primitives (Prims_List : in out Elist_Id) is
+      Prim_Elmt : Elmt_Id;
+      Prim      : Node_Id;
+
+   begin
+      if Prims_List /= No_Elist then
+         Prim_Elmt := First_Elmt (Prims_List);
+
+         while Present (Prim_Elmt) loop
+            Prim := Node (Prim_Elmt);
+            Set_Chars (Prim, Add_Suffix (Prim, 'P'));
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+
+         Prims_List := No_Elist;
+      end if;
+   end Restore_Hidden_Primitives;
+
    --------------------------------
    -- Instantiate_Formal_Package --
    --------------------------------
@@ -9065,6 +9286,10 @@ package body Sem_Ch12 is
       Par_Ent : Entity_Id := Empty;
       Par_Vis : Boolean   := False;
 
+      Vis_Prims_List : Elist_Id := No_Elist;
+      --  List of primitives made temporarily visible in the instantiation
+      --  to match the visibility of the formal type
+
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
 
@@ -9133,6 +9358,29 @@ package body Sem_Ch12 is
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);
          Check_Generic_Actuals (Act_Decl_Id, False);
+
+         --  Install primitives hidden at the point of the instantiation but
+         --  visible when processing the generic formals
+
+         declare
+            E : Entity_Id;
+
+         begin
+            E := First_Entity (Act_Decl_Id);
+            while Present (E) loop
+               if Is_Type (E)
+                 and then Is_Generic_Actual_Type (E)
+                 and then Is_Tagged_Type (E)
+               then
+                  Install_Hidden_Primitives
+                    (Prims_List => Vis_Prims_List,
+                     Gen_T      => Generic_Parent_Type (Parent (E)),
+                     Act_T      => E);
+               end if;
+
+               Next_Entity (E);
+            end loop;
+         end;
 
          --  If it is a child unit, make the parent instance (which is an
          --  instance of the parent of the generic) visible. The parent
@@ -9226,6 +9474,7 @@ package body Sem_Ch12 is
             Set_Is_Immediately_Visible (Par_Ent, Par_Vis);
          end if;
 
+         Restore_Hidden_Primitives (Vis_Prims_List);
          Restore_Private_Views (Act_Decl_Id);
 
          --  Remove the current unit from visibility if this is an instance

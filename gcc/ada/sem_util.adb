@@ -5965,6 +5965,29 @@ package body Sem_Util is
       return Name_Buffer (Name_Len) = Suffix;
    end Has_Suffix;
 
+   ----------------
+   -- Add_Suffix --
+   ----------------
+
+   function Add_Suffix (E : Entity_Id; Suffix : Character) return Name_Id is
+   begin
+      Get_Name_String (Chars (E));
+      Add_Char_To_Name_Buffer (Suffix);
+      return Name_Find;
+   end Add_Suffix;
+
+   -------------------
+   -- Remove_Suffix --
+   -------------------
+
+   function Remove_Suffix (E : Entity_Id; Suffix : Character) return Name_Id is
+   begin
+      pragma Assert (Has_Suffix (E, Suffix));
+      Get_Name_String (Chars (E));
+      Name_Len := Name_Len - 1;
+      return Name_Find;
+   end Remove_Suffix;
+
    --------------------------
    -- Has_Tagged_Component --
    --------------------------
