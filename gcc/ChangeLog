@@ -1,3 +1,12 @@
+2011-10-24  Anatoly Sokolov  <aesok@post.ru>
+	    Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49824
+	* doc/extend.texi (Declaring Attributes of Functions):
+	Document OS_main and OS_task attributes.
+	(Specifying Attributes of Variables): Move up
+	subsection "AVR Variable Attributes" as of alphabetical order.
+
 2011-10-24  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Convert constants
