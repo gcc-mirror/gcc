@@ -1930,8 +1930,8 @@
 })
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=d, d,f,  *r,*r,*r,*r, f, f,*r, m,   m")
-	(match_operand:SF 1 "input_operand"        "GY,ZC,f,*rRY, Q, S, f,*r, m, m, f,*rGY"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=d,d,f, *r,*r,*r,*r, f, f,*r, m,   m")
+	(match_operand:SF 1 "input_operand"         "G,C,f,*rR, Q, S, f,*r, m, m, f,*rG"))]
   "(register_operand (operands[0], SFmode)
     || register_or_zero_or_all_ones_operand (operands[1], SFmode))"
 {
@@ -2027,8 +2027,8 @@
 })
 
 (define_insn "*movdf_insn_sp32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,e,*r, f,  e, T,W,U,T,  f,     *r,   o,o")
-        (match_operand:DF 1 "input_operand"        "GY,ZC,e,e, f,*r,W#F,GY,e,T,U,o#F,*roGYDF,*rGY,f"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,e,*r, f,  e,T,W,U,T,  f,   *r,  o,o")
+        (match_operand:DF 1 "input_operand"         "G,C,e,e, f,*r,W#F,G,e,T,U,o#F,*roGF,*rG,f"))]
   "! TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
@@ -2054,8 +2054,8 @@
    (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,fpu,*,*,fpu")])
 
 (define_insn "*movdf_insn_sp64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,*r, e,  e,W,  *r,*r,   m,*r")
-        (match_operand:DF 1 "input_operand"        "GY,ZC,e, e,*r,W#F,e,*rGY, m,*rGY,DF"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,W, *r,*r,  m,*r")
+        (match_operand:DF 1 "input_operand"         "G,C,e, e,*r,W#F,e,*rG, m,*rG, F"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
@@ -7669,8 +7669,8 @@
 })
 
 (define_insn "*mov<VM32:mode>_insn"
-  [(set (match_operand:VM32 0 "nonimmediate_operand" "=f, f,f,f,m, m,*r, m,*r,*r, f")
-	(match_operand:VM32 1 "input_operand"        "GY,ZC,f,m,f,GY, m,*r,*r, f,*r"))]
+  [(set (match_operand:VM32 0 "nonimmediate_operand" "=f,f,f,f,m,m,*r, m,*r,*r, f")
+	(match_operand:VM32 1 "input_operand"         "Y,Z,f,m,f,Y, m,*r,*r, f,*r"))]
   "TARGET_VIS
    && (register_operand (operands[0], <VM32:MODE>mode)
        || register_or_zero_or_all_ones_operand (operands[1], <VM32:MODE>mode))"
@@ -7690,8 +7690,8 @@
    (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,*,vis3,vis3")])
 
 (define_insn "*mov<VM64:mode>_insn_sp64"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,e,m, m,*r, m,*r, f,*r")
-	(match_operand:VM64 1 "input_operand"        "GY,ZC,e,m,e,GY, m,*r, f,*r,*r"))]
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,m,m,*r, m,*r, f,*r")
+	(match_operand:VM64 1 "input_operand"         "Y,C,e,m,e,Y, m,*r, f,*r,*r"))]
   "TARGET_VIS
    && TARGET_ARCH64
    && (register_operand (operands[0], <VM64:MODE>mode)
@@ -7712,8 +7712,8 @@
    (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,vis3,vis3,*")])
 
 (define_insn "*mov<VM64:mode>_insn_sp32"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,*r, f,e,m, m,U,T, o,*r")
-	(match_operand:VM64 1 "input_operand"        "GY,ZC,e, f,*r,m,e,GY,T,U,*r,*r"))]
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,*r, f,e,m,m,U,T, o,*r")
+	(match_operand:VM64 1 "input_operand"         "Y,C,e, f,*r,m,e,Y,T,U,*r,*r"))]
   "TARGET_VIS
    && ! TARGET_ARCH64
    && (register_operand (operands[0], <VM64:MODE>mode)
