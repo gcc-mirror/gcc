@@ -1,3 +1,28 @@
+2011-10-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb (Process_Expression_Variable_Decl): No special
+	handling for Project_Path unless it is an attribute.
+
+2011-10-24  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch12.adb (Check_Hidden_Primitives): New subprogram.
+	(Install_Hidden_Primitives): New subprogram.
+	(Restore_Hidden_Primitives): New subprogram.
+	(Analyze_Formal_Package_Declaration,
+	Analyze_Package_Instantiation, Analyze_Subprogram_Instantiation):
+	Invoke Check_Hidden_Primitives after every call to
+	Analyze_Associations, and invoke Restore_Hidden_Primitives to
+	restore their visibility after processing the instantiation.
+	(Instantiate_Package_Body): Install visible primitives before
+	analyzing the instantiation and uninstall them to restore their
+	visibility when the instantiation has been analyzed.
+	* sem_util.ads, sem_util.adb (Add_Suffix): New subprogram
+	(Remove_Suffix): New subprogram
+	* sem_ch3.adb (Derive_Subprogram): When handling
+	a derived subprogram for the instantiation of a formal derived
+	tagged type, inherit the dispatching attributes from the actual
+	subprogram (not from the parent type).
+
 2011-10-24  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* gnat_ugn.texi: Document explicit use of XDECGNAT library.

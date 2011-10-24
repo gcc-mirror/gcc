@@ -691,6 +691,12 @@ package Sem_Util is
    function Has_Suffix (E : Entity_Id; Suffix : Character) return Boolean;
    --  Returns true if the last character of E is Suffix. Used in Assertions.
 
+   function Add_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
+   --  Returns the name of E adding Suffix
+
+   function Remove_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
+   --  Returns the name of E without Suffix
+
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
    --  Returns True if Typ is a composite type (array or record) which is
    --  either itself a tagged type, or has a component (recursively) which is

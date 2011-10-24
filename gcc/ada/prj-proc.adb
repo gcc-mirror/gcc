@@ -2053,7 +2053,7 @@ package body Prj.Proc is
             Shared.Variable_Elements.Table (Var).Value := New_Value;
          end if;
 
-         if Name = Snames.Name_Project_Path then
+         if Is_Attribute and then Name = Snames.Name_Project_Path then
             if In_Tree.Is_Root_Tree then
                declare
                   Val : String_List_Id := New_Value.Values;

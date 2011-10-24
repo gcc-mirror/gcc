@@ -13318,18 +13318,18 @@ package body Sem_Ch3 is
 
       --  Check for case of a derived subprogram for the instantiation of a
       --  formal derived tagged type, if so mark the subprogram as dispatching
-      --  and inherit the dispatching attributes of the parent subprogram. The
+      --  and inherit the dispatching attributes of the actual subprogram. The
       --  derived subprogram is effectively renaming of the actual subprogram,
       --  so it needs to have the same attributes as the actual.
 
       if Present (Actual_Subp)
-        and then Is_Dispatching_Operation (Parent_Subp)
+        and then Is_Dispatching_Operation (Actual_Subp)
       then
          Set_Is_Dispatching_Operation (New_Subp);
 
-         if Present (DTC_Entity (Parent_Subp)) then
-            Set_DTC_Entity (New_Subp, DTC_Entity (Parent_Subp));
-            Set_DT_Position (New_Subp, DT_Position (Parent_Subp));
+         if Present (DTC_Entity (Actual_Subp)) then
+            Set_DTC_Entity (New_Subp, DTC_Entity (Actual_Subp));
+            Set_DT_Position (New_Subp, DT_Position (Actual_Subp));
          end if;
       end if;
 
