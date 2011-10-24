@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,19 +46,20 @@ package Checks is
    --  Called for each new main source program, to initialize internal
    --  variables used in the package body of the Checks unit.
 
-   function Access_Checks_Suppressed        (E : Entity_Id) return Boolean;
-   function Accessibility_Checks_Suppressed (E : Entity_Id) return Boolean;
-   function Alignment_Checks_Suppressed     (E : Entity_Id) return Boolean;
-   function Discriminant_Checks_Suppressed  (E : Entity_Id) return Boolean;
-   function Division_Checks_Suppressed      (E : Entity_Id) return Boolean;
-   function Elaboration_Checks_Suppressed   (E : Entity_Id) return Boolean;
-   function Index_Checks_Suppressed         (E : Entity_Id) return Boolean;
-   function Length_Checks_Suppressed        (E : Entity_Id) return Boolean;
-   function Overflow_Checks_Suppressed      (E : Entity_Id) return Boolean;
-   function Range_Checks_Suppressed         (E : Entity_Id) return Boolean;
-   function Storage_Checks_Suppressed       (E : Entity_Id) return Boolean;
-   function Tag_Checks_Suppressed           (E : Entity_Id) return Boolean;
-   function Validity_Checks_Suppressed      (E : Entity_Id) return Boolean;
+   function Access_Checks_Suppressed          (E : Entity_Id) return Boolean;
+   function Accessibility_Checks_Suppressed   (E : Entity_Id) return Boolean;
+   function Alignment_Checks_Suppressed       (E : Entity_Id) return Boolean;
+   function Atomic_Synchronization_Disabled   (E : Entity_Id) return Boolean;
+   function Discriminant_Checks_Suppressed    (E : Entity_Id) return Boolean;
+   function Division_Checks_Suppressed        (E : Entity_Id) return Boolean;
+   function Elaboration_Checks_Suppressed     (E : Entity_Id) return Boolean;
+   function Index_Checks_Suppressed           (E : Entity_Id) return Boolean;
+   function Length_Checks_Suppressed          (E : Entity_Id) return Boolean;
+   function Overflow_Checks_Suppressed        (E : Entity_Id) return Boolean;
+   function Range_Checks_Suppressed           (E : Entity_Id) return Boolean;
+   function Storage_Checks_Suppressed         (E : Entity_Id) return Boolean;
+   function Tag_Checks_Suppressed             (E : Entity_Id) return Boolean;
+   function Validity_Checks_Suppressed        (E : Entity_Id) return Boolean;
    --  These functions check to see if the named check is suppressed, either
    --  by an active scope suppress setting, or because the check has been
    --  specifically suppressed for the given entity. If no entity is relevant

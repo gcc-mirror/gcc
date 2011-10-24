@@ -249,6 +249,15 @@ package body Sinfo is
       return Node3 (N);
    end Ancestor_Part;
 
+   function Atomic_Sync_Required
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Expanded_Name
+        or else NT (N).Nkind = N_Identifier);
+      return Flag14 (N);
+   end Atomic_Sync_Required;
+
    function Array_Aggregate
       (N : Node_Id) return Node_Id is
    begin
@@ -3308,6 +3317,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Extension_Aggregate);
       Set_Node3_With_Parent (N, Val);
    end Set_Ancestor_Part;
+
+   procedure Set_Atomic_Sync_Required
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Expanded_Name
+        or else NT (N).Nkind = N_Identifier);
+      Set_Flag14 (N, Val);
+   end Set_Atomic_Sync_Required;
 
    procedure Set_Array_Aggregate
       (N : Node_Id; Val : Node_Id) is

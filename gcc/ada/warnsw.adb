@@ -67,6 +67,7 @@ package body Warnsw is
             Warn_On_All_Unread_Out_Parameters   := True;
             Warn_On_Assertion_Failure           := True;
             Warn_On_Assumed_Low_Bound           := True;
+            Warn_On_Atomic_Synchronization      := True;
             Warn_On_Bad_Fixed_Value             := True;
             Warn_On_Biased_Representation       := True;
             Warn_On_Constant                    := True;
@@ -119,6 +120,12 @@ package body Warnsw is
 
          when 'M' =>
             Warn_On_Suspicious_Modulus_Value    := False;
+
+         when 'n' =>
+            Warn_On_Atomic_Synchronization      := True;
+
+         when 'N' =>
+            Warn_On_Atomic_Synchronization      := False;
 
          when 'o' =>
             Warn_On_All_Unread_Out_Parameters   := True;
@@ -202,6 +209,7 @@ package body Warnsw is
       Warn_On_All_Unread_Out_Parameters   := False;
       Warn_On_Assertion_Failure           := True;
       Warn_On_Assumed_Low_Bound           := True;
+      Warn_On_Atomic_Synchronization      := False;
       Warn_On_Bad_Fixed_Value             := True;
       Warn_On_Biased_Representation       := True;
       Warn_On_Constant                    := True;

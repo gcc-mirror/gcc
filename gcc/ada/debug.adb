@@ -94,8 +94,8 @@ package body Debug is
    --  d.a  Force Target_Strict_Alignment mode to True
    --  d.b  Dump backend types
    --  d.c  Generate inline concatenation, do not call procedure
-   --  d.d
-   --  d.e
+   --  d.d  Disable atomic synchronization
+   --  d.e  Enable atomic synchronization
    --  d.f  Inhibit folding of static expressions
    --  d.g  Enable conversion of raise into goto
    --  d.h
@@ -512,6 +512,13 @@ package body Debug is
    --  d.c  Generate inline concatenation, instead of calling one of the
    --       System.Concat_n.Str_Concat_n routines in cases where the latter
    --       routines would normally be called.
+
+   --  d.d  Disable atomic synchronization for all atomic variable references.
+   --       Pragma Enable_Atomic_Synchronization is ignored.
+
+   --  d.e  Enable atomic synchronization for all atomic variable references.
+   --       Pragma Disable_Atomic_Synchronization is ignored, and also the
+   --       compiler switch -gnated is ignored.
 
    --  d.f  Suppress folding of static expressions. This of course results
    --       in seriously non-conforming behavior, but is useful sometimes
