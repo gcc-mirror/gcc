@@ -5,6 +5,9 @@
 
 2011-10-24  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.md: Only use F, G, and C constraints in FP
+	insns.  Only use D, Y, and Z constraints in vector insns.
+
 	* config/sparc/sparc.md (cpu_feature, enabled): New attributes.
 	(*movsi_insn_novis3, *movsi_insn_vis3): Consolidate into one pattern
 	called *movsi_insn.
