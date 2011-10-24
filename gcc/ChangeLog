@@ -1,3 +1,14 @@
+2011-10-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* tree-ssa-strlen.c (get_string_length): Change assertion to STPCPY.
+	(zero_length_string): Change assertion to accept strinfo without
+	length but with stmt instead.
+	Set the endptr pointer also if starting a new chain.
+	(adjust_related_strinfos): Ignore strinfos marked for delayed
+	length computation.
+	(handle_builtin_strcpy): Mark earlier strinfo elements also for
+	delayed length computation.
+
 2011-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50820
