@@ -1,3 +1,19 @@
+2011-10-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Convert constants
+	to vector element type.
+	(vectorizable_assignment): Bail out for non-mode-precision operations.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_type_demotion): Likewise.
+	(vectorizable_type_promotion): Likewise.
+	(vectorizable_store): Handle non-mode-precision stores.
+	(vectorizable_load): Handle non-mode-precision loads.
+	(get_vectype_for_scalar_type_and_size): Return a vector type
+	for non-mode-precision integers.
+	* tree-vect-loop.c (vectorizable_reduction): Bail out for
+	non-mode-precision reductions.
+
 2011-10-24  Julian Brown  <julian@codesourcery.com>
 
 	* config/m68k/m68k.c (notice_update_cc): Tighten condition for

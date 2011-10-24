@@ -1,5 +1,9 @@
 2011-10-24  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/vect/vect-bool-1.c: New testcase.
+
+2011-10-24  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50838
 	* gcc.dg/torture/pr50838.c: New testcase.
 
