@@ -5791,7 +5791,7 @@ thread_prologue_and_epilogue_insns (void)
 	 to convert jumps to it to (potentially conditional) return
 	 insns later.  This means we don't necessarily need a prologue
 	 for paths reaching it.  */
-      if (last_bb)
+      if (last_bb && optimize)
 	{
 	  if (!last_bb_active)
 	    bitmap_clear_bit (&bb_flags, last_bb->index);
