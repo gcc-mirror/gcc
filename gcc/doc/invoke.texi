@@ -10723,6 +10723,117 @@ sbiw r26, const
 @end example
 @end table
 
+@subsubsection @code{EIND} and Devices with more than 128k Bytes of Flash
+
+Pointers in the implementation are 16 bits wide.
+The address of a function or label is represented as word address so
+that indirect jumps and calls can address any code address in the
+range of 64k words.
+
+In order to faciliate indirect jump on devices with more than 128k
+bytes of program memory space, there is a special function register called
+@code{EIND} that serves as most significant part of the target address
+when @code{EICALL} or @code{EIJMP} instructions are used.
+
+Indirect jumps and calls on these devices are handled as follows and
+are subject to some limitations:
+
+@itemize @bullet
+
+@item
+The compiler never sets @code{EIND}.
+
+@item
+The startup code from libgcc never sets @code{EIND}.
+Notice that startup code is a blend of code from libgcc and avr-libc.
+For the impact of avr-libc on @code{EIND}, see the
+@w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc user manual}}.
+
+@item
+The compiler uses @code{EIND} implicitely in @code{EICALL}/@code{EIJMP}
+instructions or might read @code{EIND} directly.
+
+@item
+The compiler assumes that @code{EIND} never changes during the startup
+code or run of the application. In particular, @code{EIND} is not
+saved/restored in function or interrupt service routine
+prologue/epilogue.
+
+@item
+It is legitimate for user-specific startup code to set up @code{EIND}
+early, for example by means of initialization code located in
+section @code{.init3}, and thus prior to general startup code that
+initializes RAM and calls constructors.
+
+@item
+For indirect calls to functions and computed goto, the linker will
+generate @emph{stubs}. Stubs are jump pads sometimes also called
+@emph{trampolines}. Thus, the indirect call/jump will jump to such a stub.
+The stub contains a direct jump to the desired address.
+
+@item
+Stubs will be generated automatically by the linker if
+the following two conditions are met:
+@itemize @minus
+
+@item The address of a label is taken by means of the @code{gs} modifier
+(short for @emph{generate stubs}) like so:
+@example
+LDI r24, lo8(gs(@var{func}))
+LDI r25, hi8(gs(@var{func}))
+@end example
+@item The final location of that label is in a code segment
+@emph{outside} the segment where the stubs are located.
+@end itemize
+
+@item
+The compiler will emit such @code{gs} modifiers for code labels in the
+following situations:
+@itemize @minus
+@item Taking address of a function or code label.
+@item Computed goto.
+@item If prologue-save function is used, see @option{-mcall-prologues}
+command line option.
+@item Switch/case dispatch tables. If you do not want such dispatch
+tables you can specify the @option{-fno-jump-tables} command line option.
+@item C and C++ constructors/destructors called during startup/shutdown.
+@item If the tools hit a @code{gs()} modifier explained above.
+@end itemize
+
+@item
+The default linker script is arranged for code with @code{EIND = 0}.
+If code is supposed to work for a setup with @code{EIND != 0}, a custom
+linker script has to be used in order to place the sections whose
+name start with @code{.trampolines} into the segment where @code{EIND}
+points to.
+
+@item
+Jumping to non-symbolic addresses like so is @emph{not} supported:
+
+@example
+int main (void)
+@{
+    /* Call function at word address 0x2 */
+    return ((int(*)(void)) 0x2)();
+@}
+@end example
+
+Instead, a stub has to be set up:
+
+@example
+int main (void)
+@{
+    extern int func_4 (void);
+
+    /* Call function at byte address 0x4 */
+    return func_4();
+@}
+@end example
+
+and the application be linked with @code{-Wl,--defsym,func_4=0x4}.
+Alternatively, @code{func_4} can be defined in the linker script.
+@end itemize
+
 @node Blackfin Options
 @subsection Blackfin Options
 @cindex Blackfin Options

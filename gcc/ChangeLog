@@ -1,3 +1,10 @@
+2011-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50820
+	Port from 4.6 branch r180379
+	* doc/invoke.texi (AVR Options): New subsubsection to explain EIND
+	handling and indirect jump/calls on devices > 128k.
+
 2011-10-24  Anatoly Sokolov  <aesok@post.ru>
 	    Georg-Johann Lay  <avr@gjlay.de>
 
