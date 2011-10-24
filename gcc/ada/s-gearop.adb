@@ -33,11 +33,11 @@ with Ada.Numerics; use Ada.Numerics;
 
 package body System.Generic_Array_Operations is
 
-   --  The local function Check_Unit_Last computes the index
-   --  of the last element returned by Unit_Vector or Unit_Matrix.
-   --  A separate function is needed to allow raising Constraint_Error
-   --  before declaring the function result variable. The result variable
-   --  needs to be declared first, to allow front-end inlining.
+   --  The local function Check_Unit_Last computes the index of the last
+   --  element returned by Unit_Vector or Unit_Matrix. A separate function is
+   --  needed to allow raising Constraint_Error before declaring the function
+   --  result variable. The result variable needs to be declared first, to
+   --  allow front-end inlining.
 
    function Check_Unit_Last
      (Index : Integer;
@@ -50,7 +50,6 @@ package body System.Generic_Array_Operations is
    --------------
 
    function Diagonal (A : Matrix) return Vector is
-
       N : constant Natural := Natural'Min (A'Length (1), A'Length (2));
       R : Vector (A'First (1) .. A'First (1) + N - 1);
 
@@ -82,13 +81,14 @@ package body System.Generic_Array_Operations is
    function Check_Unit_Last
       (Index : Integer;
        Order : Positive;
-       First : Integer) return Integer is
+       First : Integer) return Integer
+   is
    begin
       --  Order the tests carefully to avoid overflow
 
       if Index < First
-           or else First > Integer'Last - Order + 1
-           or else Index > First + (Order - 1)
+        or else First > Integer'Last - Order + 1
+        or else Index > First + (Order - 1)
       then
          raise Constraint_Error;
       end if;
@@ -101,10 +101,9 @@ package body System.Generic_Array_Operations is
    ---------------------
 
    procedure Back_Substitute (M, N : in out Matrix) is
-      pragma Assert (M'First (1) = N'First (1) and then
+      pragma Assert (M'First (1) = N'First (1)
+                       and then
                      M'Last  (1) = N'Last (1));
-
-      Max_Col : Integer := M'Last (2);
 
       procedure Sub_Row
         (M      : in out Matrix;
@@ -126,27 +125,47 @@ package body System.Generic_Array_Operations is
          end loop;
       end Sub_Row;
 
+      --  Local declarations
+
+      Max_Col : Integer := M'Last (2);
+
    --  Start of processing for Back_Substitute
 
    begin
-      for Row in reverse M'Range (1) loop
-         Find_Non_Zero : for Col in M'First (2) .. Max_Col loop
+      Do_Rows : for Row in reverse M'Range (1) loop
+         Find_Non_Zero : for Col in reverse M'First (2) .. Max_Col loop
             if Is_Non_Zero (M (Row, Col)) then
 
-               --  Found first non-zero element, so subtract a multiple
-               --  of this row from all higher rows, to reduce all other
-               --  elements in this column to zero.
+               --  Found first non-zero element, so subtract a multiple of this
+               --  element  from all higher rows, to reduce all other elements
+               --  in this column to zero.
 
-               for J in M'First (1) .. Row - 1 loop
-                  Sub_Row (N, J, Row, (M (J, Col) / M (Row, Col)));
-                  Sub_Row (M, J, Row, (M (J, Col) / M (Row, Col)));
-               end loop;
+               declare
+                  --  We can't use a for loop, as we'd need to iterate to
+                  --  Row - 1, but that expression will overflow if M'First
+                  --  equals Integer'First, which is true for aggregates
+                  --  without explicit bounds..
+
+                  J : Integer := M'First (1);
+
+               begin
+                  while J < Row loop
+                     Sub_Row (N, J, Row, (M (J, Col) / M (Row, Col)));
+                     Sub_Row (M, J, Row, (M (J, Col) / M (Row, Col)));
+                     J := J + 1;
+                  end loop;
+               end;
+
+               --  Avoid potential overflow in the subtraction below
+
+               exit Do_Rows when Col = M'First (2);
 
                Max_Col := Col - 1;
+
                exit Find_Non_Zero;
             end if;
          end loop Find_Non_Zero;
-      end loop;
+      end loop Do_Rows;
    end Back_Substitute;
 
    -----------------------
@@ -158,7 +177,8 @@ package body System.Generic_Array_Operations is
       N   : in out Matrix;
       Det : out Scalar)
    is
-      pragma Assert (M'First (1) = N'First (1) and then
+      pragma Assert (M'First (1) = N'First (1)
+                       and then
                      M'Last  (1) = N'Last (1));
 
       --  The following are variations of the elementary matrix row operations:
@@ -168,7 +188,7 @@ package body System.Generic_Array_Operations is
       --  a reciprocal, we divide.
 
       procedure Sub_Row
-        (M : in out Matrix;
+        (M      : in out Matrix;
          Target : Integer;
          Source : Integer;
          Factor : Scalar);
@@ -196,7 +216,7 @@ package body System.Generic_Array_Operations is
          Target : Integer;
          Source : Integer;
          Factor : Scalar)
-         is
+      is
       begin
          for J in M'Range (2) loop
             M (Target, J) := M (Target, J) - Factor * M (Source, J);
@@ -220,8 +240,8 @@ package body System.Generic_Array_Operations is
          end loop;
 
          for J in N'Range (2) loop
-            N (Row - M'First (1) + N'First (1), J)
-               := N (Row - M'First (1) + N'First (1), J) / Scale;
+            N (Row - M'First (1) + N'First (1), J) :=
+              N (Row - M'First (1) + N'First (1), J) / Scale;
          end loop;
       end Divide_Row;
 
@@ -260,6 +280,8 @@ package body System.Generic_Array_Operations is
             end loop;
          end if;
       end Switch_Row;
+
+      --  Local declarations
 
       Row : Integer := M'First (1);
 
@@ -301,7 +323,9 @@ package body System.Generic_Array_Operations is
                Row := Row + 1;
 
             else
-               Det := Zero; --  Zero, but we don't have literals
+               --  Set zero (note that we do not have literals)
+
+               Det := Zero;
             end if;
          end;
       end loop;
@@ -313,8 +337,7 @@ package body System.Generic_Array_Operations is
 
    function Inner_Product
      (Left  : Left_Vector;
-      Right : Right_Vector)
-      return  Result_Scalar
+      Right : Right_Vector) return  Result_Scalar
    is
       R : Result_Scalar := Zero;
 
@@ -336,7 +359,8 @@ package body System.Generic_Array_Operations is
    -------------
 
    function L2_Norm (X : X_Vector) return Result_Real'Base is
-      Sum    : Result_Real'Base := 0.0;
+      Sum : Result_Real'Base := 0.0;
+
    begin
       for J in X'Range loop
          Sum := Sum + Result_Real'Base (abs X (J))**2;
@@ -383,17 +407,17 @@ package body System.Generic_Array_Operations is
 
    function Matrix_Matrix_Elementwise_Operation
      (Left  : Left_Matrix;
-      Right : Right_Matrix)
-      return Result_Matrix
+      Right : Right_Matrix) return Result_Matrix
    is
       R : Result_Matrix (Left'Range (1), Left'Range (2));
 
    begin
       if Left'Length (1) /= Right'Length (1)
-        or else Left'Length (2) /= Right'Length (2)
+           or else
+         Left'Length (2) /= Right'Length (2)
       then
          raise Constraint_Error with
-            "matrices are of different dimension in elementwise operation";
+           "matrices are of different dimension in elementwise operation";
       end if;
 
       for J in R'Range (1) loop
@@ -423,10 +447,11 @@ package body System.Generic_Array_Operations is
 
    begin
       if X'Length (1) /= Y'Length (1)
-        or else X'Length (2) /= Y'Length (2)
+           or else
+         X'Length (2) /= Y'Length (2)
       then
          raise Constraint_Error with
-            "matrices are of different dimension in elementwise operation";
+           "matrices are of different dimension in elementwise operation";
       end if;
 
       for J in R'Range (1) loop
@@ -456,7 +481,7 @@ package body System.Generic_Array_Operations is
    begin
       if Left'Length /= Right'Length then
          raise Constraint_Error with
-            "vectors are of different length in elementwise operation";
+           "vectors are of different length in elementwise operation";
       end if;
 
       for J in R'Range loop
@@ -480,7 +505,7 @@ package body System.Generic_Array_Operations is
    begin
       if X'Length /= Y'Length then
          raise Constraint_Error with
-            "vectors are of different length in elementwise operation";
+           "vectors are of different length in elementwise operation";
       end if;
 
       for J in R'Range loop
@@ -584,6 +609,7 @@ package body System.Generic_Array_Operations is
          end if;
 
       elsif X > Real'Base'Last then
+
          --  X is infinity, which is its own square root
 
          return X;
@@ -629,7 +655,7 @@ package body System.Generic_Array_Operations is
    begin
       if Left'Length (2) /= Right'Length (1) then
          raise Constraint_Error with
-            "incompatible dimensions in matrix multiplication";
+           "incompatible dimensions in matrix multiplication";
       end if;
 
       for J in R'Range (1) loop
@@ -639,8 +665,8 @@ package body System.Generic_Array_Operations is
 
             begin
                for M in Left'Range (2) loop
-                  S := S + Left (J, M)
-                            * Right (M - Left'First (2) + Right'First (1), K);
+                  S := S + Left (J, M) *
+                             Right (M - Left'First (2) + Right'First (1), K);
                end loop;
 
                R (J, K) := S;
@@ -690,9 +716,9 @@ package body System.Generic_Array_Operations is
    ----------------------------
 
    function Matrix_Matrix_Solution (A, X : Matrix) return Matrix is
-      N  : constant Natural := A'Length (1);
-      MA : Matrix (A'Range (2), A'Range (2));
-      MB : Matrix (A'Range (2), X'Range (2));
+      N   : constant Natural := A'Length (1);
+      MA  : Matrix (A'Range (2), A'Range (2));
+      MB  : Matrix (A'Range (2), X'Range (2));
       Det : Scalar;
 
    begin
@@ -810,7 +836,7 @@ package body System.Generic_Array_Operations is
         or else X'Length (2) /= Y'Length (2)
       then
          raise Constraint_Error with
-            "matrices are of different dimension in update operation";
+           "matrices are of different dimension in update operation";
       end if;
 
       for J in X'Range (1) loop
@@ -829,7 +855,7 @@ package body System.Generic_Array_Operations is
    begin
       if X'Length /= Y'Length then
          raise Constraint_Error with
-            "vectors are of different length in update operation";
+           "vectors are of different length in update operation";
       end if;
 
       for J in X'Range loop
@@ -888,7 +914,7 @@ package body System.Generic_Array_Operations is
    begin
       if Left'Length /= Right'Length (2) then
          raise Constraint_Error with
-            "incompatible dimensions in vector-matrix multiplication";
+           "incompatible dimensions in vector-matrix multiplication";
       end if;
 
       for J in Right'Range (2) loop

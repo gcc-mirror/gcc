@@ -8058,6 +8058,8 @@ package body Sem_Ch12 is
 
          exit when Present (Interface_Alias (Prim_G));
 
+         --  Here we install one hidden primitive
+
          if Chars (Prim_G) /= Chars (Prim_A)
            and then Has_Suffix (Prim_A, 'P')
            and then Remove_Suffix (Prim_A, 'P') = Chars (Prim_G)
@@ -8076,7 +8078,7 @@ package body Sem_Ch12 is
       end loop;
 
       --  Append the elements to the list of temporarily visible primitives
-      --  avoiding duplicates
+      --  avoiding duplicates.
 
       if Present (List) then
          if No (Prims_List) then

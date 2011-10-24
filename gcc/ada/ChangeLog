@@ -1,3 +1,17 @@
+2011-10-24  Geert Bosch  <bosch@adacore.com>
+
+	* s-gearop.adb (Back_Substitute): Avoid overflow if matrix
+	bounds start at Integer'First.
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb, s-gearop.adb: Minor reformatting
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* warnsw.adb: Add some missing warnings to Set_GNAT_Mode_Warnings
+	* warnsw.ads: Add comments to Set_GNAT_Mode_Warnings
+
 2011-10-24  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb (Process_Expression_Variable_Decl): No special
