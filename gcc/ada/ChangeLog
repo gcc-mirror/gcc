@@ -1,3 +1,44 @@
+2011-10-24  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_ugn.texi: Document explicit use of XDECGNAT library.
+
+2011-10-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Assignment): Add local constant N_Loc and
+	update its uses.
+	(Build_Discriminant_Assignments): Add local variable D_Loc and update
+	its uses.
+	(Build_Init_Statements): Add local variables Comp_Loc, Decl_Loc and
+	Var_Loc and update their uses.
+	(Build_Record_Init_Proc): Code reformatting.
+	(Increment_Counter): Add formal parameter Loc.
+	(Make_Counter): Add formal parameter Loc.
+
+2011-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_disp.adb (Covers_Some_Interface): Fix typo.
+
+2011-10-24  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cuprqu.adb, a-cbprqu.adb (Dequeue_Only_High_Priority):
+	Predicate had wrong sense.
+
+2011-10-24  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications/Aspect_Test_Case):
+	Translate arguments in positional notation into pragma argument
+	association arguments for the generated pragma.
+
+2011-10-24  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch5.adb: Fix minor typo.
+
+2011-10-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Is_Visible_Component): Refine predicate for
+	the case of a component reference in an instance body, when the
+	enclosing type is private.
+
 2011-10-24  Sergey Rybin  <rybin@adacore.com frybin>
 
 	* gnat_ugn.texi: For gnatelim, move the note about using the GNAT

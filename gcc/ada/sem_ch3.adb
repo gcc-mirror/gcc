@@ -16178,19 +16178,41 @@ package body Sem_Ch3 is
       elsif not Comes_From_Source (Original_Comp) then
          return True;
 
-      --  If we are in the body of an instantiation, the component is visible
-      --  even when the parent type (possibly defined in an enclosing unit or
-      --  in a parent unit) might not.
-
-      elsif In_Instance_Body then
-         return True;
-
       --  Discriminants are always visible
 
       elsif Ekind (Original_Comp) = E_Discriminant
         and then not Has_Unknown_Discriminants (Original_Scope)
       then
          return True;
+
+      --  If we are in the body of an instantiation, the component is visible
+      --  if the parent type is non-private, or in  an enclosing scope. The
+      --  scope stack is not present when analyzing an instance body, so we
+      --  must inspect the chain of scopes explicitly.
+
+      elsif In_Instance_Body then
+         if not Is_Private_Type (Scope (C)) then
+            return True;
+
+         else
+            declare
+               S : Entity_Id;
+
+            begin
+               S := Current_Scope;
+               while Present (S)
+                 and then S /= Standard_Standard
+               loop
+                  if S = Type_Scope then
+                     return True;
+                  end if;
+
+                  S := Scope (S);
+               end loop;
+
+               return False;
+            end;
+         end if;
 
       --  If the component has been declared in an ancestor which is currently
       --  a private type, then it is not visible. The same applies if the

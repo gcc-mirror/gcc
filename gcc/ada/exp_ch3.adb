@@ -1538,13 +1538,13 @@ package body Exp_Ch3 is
    ----------------------------
 
    procedure Build_Record_Init_Proc (N : Node_Id; Rec_Ent : Entity_Id) is
-      Decls       : constant List_Id  := New_List;
-      Discr_Map   : constant Elist_Id := New_Elmt_List;
-      Counter     : Int := 0;
-      Loc         : Source_Ptr := Sloc (N);
-      Proc_Id     : Entity_Id;
-      Rec_Type    : Entity_Id;
-      Set_Tag     : Entity_Id := Empty;
+      Decls     : constant List_Id  := New_List;
+      Discr_Map : constant Elist_Id := New_Elmt_List;
+      Loc       : constant Source_Ptr := Sloc (Rec_Ent);
+      Counter   : Int := 0;
+      Proc_Id   : Entity_Id;
+      Rec_Type  : Entity_Id;
+      Set_Tag   : Entity_Id := Empty;
 
       function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id;
       --  Build an assignment statement which assigns the default expression
@@ -1621,18 +1621,18 @@ package body Exp_Ch3 is
       ----------------------
 
       function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id is
-         Typ  : constant Entity_Id := Underlying_Type (Etype (Id));
-         Exp  : Node_Id := N;
-         Kind : Node_Kind := Nkind (N);
-         Lhs  : Node_Id;
-         Res  : List_Id;
+         N_Loc : constant Source_Ptr := Sloc (N);
+         Typ   : constant Entity_Id := Underlying_Type (Etype (Id));
+         Exp   : Node_Id := N;
+         Kind  : Node_Kind := Nkind (N);
+         Lhs   : Node_Id;
+         Res   : List_Id;
 
       begin
-         Loc := Sloc (N);
          Lhs :=
-           Make_Selected_Component (Loc,
+           Make_Selected_Component (N_Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
-             Selector_Name => New_Occurrence_Of (Id, Loc));
+             Selector_Name => New_Occurrence_Of (Id, N_Loc));
          Set_Assignment_OK (Lhs);
 
          --  Case of an access attribute applied to the current instance.
@@ -1653,9 +1653,9 @@ package body Exp_Ch3 is
            and then Entity (Prefix (N)) = Rec_Type
          then
             Exp :=
-              Make_Attribute_Reference (Loc,
+              Make_Attribute_Reference (N_Loc,
                 Prefix         =>
-                  Make_Identifier (Loc, Name_uInit),
+                  Make_Identifier (N_Loc, Name_uInit),
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
@@ -1681,13 +1681,13 @@ package body Exp_Ch3 is
            and then Tagged_Type_Expansion
          then
             Append_To (Res,
-              Make_Assignment_Statement (Loc,
+              Make_Assignment_Statement (N_Loc,
                 Name       =>
-                  Make_Selected_Component (Loc,
+                  Make_Selected_Component (N_Loc,
                     Prefix        =>
                       New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                     Selector_Name =>
-                      New_Reference_To (First_Tag_Component (Typ), Loc)),
+                      New_Reference_To (First_Tag_Component (Typ), N_Loc)),
 
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
@@ -1695,7 +1695,7 @@ package body Exp_Ch3 is
                       (Node
                         (First_Elmt
                           (Access_Disp_Table (Underlying_Type (Typ)))),
-                       Loc))));
+                       N_Loc))));
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
@@ -1729,6 +1729,7 @@ package body Exp_Ch3 is
       procedure Build_Discriminant_Assignments (Statement_List : List_Id) is
          Is_Tagged : constant Boolean := Is_Tagged_Type (Rec_Type);
          D         : Entity_Id;
+         D_Loc     : Source_Ptr;
 
       begin
          if Has_Discriminants (Rec_Type)
@@ -1748,10 +1749,10 @@ package body Exp_Ch3 is
                   null;
 
                else
-                  Loc := Sloc (D);
+                  D_Loc := Sloc (D);
                   Append_List_To (Statement_List,
                     Build_Assignment (D,
-                      New_Reference_To (Discriminal (D), Loc)));
+                      New_Reference_To (Discriminal (D), D_Loc)));
                end if;
 
                Next_Discriminant (D);
@@ -2458,6 +2459,7 @@ package body Exp_Ch3 is
       function Build_Init_Statements (Comp_List : Node_Id) return List_Id is
          Checks     : constant List_Id := New_List;
          Actions    : List_Id   := No_List;
+         Comp_Loc   : Source_Ptr;
          Counter_Id : Entity_Id := Empty;
          Decl       : Node_Id;
          Has_POC    : Boolean;
@@ -2466,11 +2468,11 @@ package body Exp_Ch3 is
          Stmts      : List_Id;
          Typ        : Entity_Id;
 
-         procedure Increment_Counter;
+         procedure Increment_Counter (Loc : Source_Ptr);
          --  Generate an "increment by one" statement for the current counter
          --  and append it to the list Stmts.
 
-         procedure Make_Counter;
+         procedure Make_Counter (Loc : Source_Ptr);
          --  Create a new counter for the current component list. The routine
          --  creates a new defining Id, adds an object declaration and sets
          --  the Id generator for the next variant.
@@ -2479,7 +2481,7 @@ package body Exp_Ch3 is
          -- Increment_Counter --
          -----------------------
 
-         procedure Increment_Counter is
+         procedure Increment_Counter (Loc : Source_Ptr) is
          begin
             --  Generate:
             --    Counter := Counter + 1;
@@ -2497,7 +2499,7 @@ package body Exp_Ch3 is
          -- Make_Counter --
          ------------------
 
-         procedure Make_Counter is
+         procedure Make_Counter (Loc : Source_Ptr) is
          begin
             --  Increment the Id generator
 
@@ -2582,11 +2584,11 @@ package body Exp_Ch3 is
 
          Decl := First_Non_Pragma (Component_Items (Comp_List));
          while Present (Decl) loop
-            Loc := Sloc (Decl);
+            Comp_Loc := Sloc (Decl);
             Build_Record_Checks
               (Subtype_Indication (Component_Definition (Decl)), Checks);
 
-            Id := Defining_Identifier (Decl);
+            Id  := Defining_Identifier (Decl);
             Typ := Etype (Id);
 
             --  Leave any processing of per-object constrained component for
@@ -2606,12 +2608,13 @@ package body Exp_Ch3 is
                   if Is_CPP_Constructor_Call (Expression (Decl)) then
                      Actions :=
                        Build_Initialization_Call
-                         (Loc,
+                         (Comp_Loc,
                           Id_Ref          =>
-                            Make_Selected_Component (Loc,
+                            Make_Selected_Component (Comp_Loc,
                               Prefix        =>
-                                Make_Identifier (Loc, Name_uInit),
-                              Selector_Name => New_Occurrence_Of (Id, Loc)),
+                                Make_Identifier (Comp_Loc, Name_uInit),
+                              Selector_Name =>
+                                New_Occurrence_Of (Id, Comp_Loc)),
                           Typ             => Typ,
                           In_Init_Proc    => True,
                           Enclos_Type     => Rec_Type,
@@ -2628,10 +2631,11 @@ package body Exp_Ch3 is
                then
                   Actions :=
                     Build_Initialization_Call
-                      (Loc,
-                       Make_Selected_Component (Loc,
-                         Prefix        => Make_Identifier (Loc, Name_uInit),
-                         Selector_Name => New_Occurrence_Of (Id, Loc)),
+                      (Comp_Loc,
+                       Make_Selected_Component (Comp_Loc,
+                         Prefix        =>
+                           Make_Identifier (Comp_Loc, Name_uInit),
+                         Selector_Name => New_Occurrence_Of (Id, Comp_Loc)),
                        Typ,
                        In_Init_Proc => True,
                        Enclos_Type  => Rec_Type,
@@ -2665,10 +2669,10 @@ package body Exp_Ch3 is
                     and then Needs_Finalization (Typ)
                   then
                      if No (Counter_Id) then
-                        Make_Counter;
+                        Make_Counter (Comp_Loc);
                      end if;
 
-                     Increment_Counter;
+                     Increment_Counter (Comp_Loc);
                   end if;
                end if;
             end if;
@@ -2724,6 +2728,7 @@ package body Exp_Ch3 is
                              Corresponding_Concurrent_Type (Rec_Type);
                Task_Decl : constant Node_Id := Parent (Task_Type);
                Task_Def  : constant Node_Id := Task_Definition (Task_Decl);
+               Decl_Loc  : Source_Ptr;
                Ent       : Entity_Id;
                Vis_Decl  : Node_Id;
 
@@ -2731,7 +2736,7 @@ package body Exp_Ch3 is
                if Present (Task_Def) then
                   Vis_Decl := First (Visible_Declarations (Task_Def));
                   while Present (Vis_Decl) loop
-                     Loc := Sloc (Vis_Decl);
+                     Decl_Loc := Sloc (Vis_Decl);
 
                      if Nkind (Vis_Decl) = N_Attribute_Definition_Clause then
                         if Get_Attribute_Id (Chars (Vis_Decl)) =
@@ -2741,18 +2746,19 @@ package body Exp_Ch3 is
 
                            if Ekind (Ent) = E_Entry then
                               Append_To (Stmts,
-                                Make_Procedure_Call_Statement (Loc,
+                                Make_Procedure_Call_Statement (Decl_Loc,
                                   Name =>
                                     New_Reference_To (RTE (
-                                      RE_Bind_Interrupt_To_Entry), Loc),
+                                      RE_Bind_Interrupt_To_Entry), Decl_Loc),
                                   Parameter_Associations => New_List (
-                                    Make_Selected_Component (Loc,
+                                    Make_Selected_Component (Decl_Loc,
                                       Prefix        =>
-                                        Make_Identifier (Loc, Name_uInit),
+                                        Make_Identifier (Decl_Loc, Name_uInit),
                                       Selector_Name =>
-                                        Make_Identifier (Loc, Name_uTask_Id)),
+                                        Make_Identifier
+                                         (Decl_Loc, Name_uTask_Id)),
                                     Entry_Index_Expression
-                                      (Loc, Ent, Empty, Task_Type),
+                                      (Decl_Loc, Ent, Empty, Task_Type),
                                     Expression (Vis_Decl))));
                            end if;
                         end if;
@@ -2789,7 +2795,7 @@ package body Exp_Ch3 is
          if Has_POC then
             Decl := First_Non_Pragma (Component_Items (Comp_List));
             while Present (Decl) loop
-               Loc := Sloc (Decl);
+               Comp_Loc := Sloc (Decl);
                Id := Defining_Identifier (Decl);
                Typ := Etype (Id);
 
@@ -2798,10 +2804,11 @@ package body Exp_Ch3 is
                then
                   if Has_Non_Null_Base_Init_Proc (Typ) then
                      Append_List_To (Stmts,
-                       Build_Initialization_Call (Loc,
-                         Make_Selected_Component (Loc,
-                           Prefix        => Make_Identifier (Loc, Name_uInit),
-                           Selector_Name => New_Occurrence_Of (Id, Loc)),
+                       Build_Initialization_Call (Comp_Loc,
+                         Make_Selected_Component (Comp_Loc,
+                           Prefix        =>
+                             Make_Identifier (Comp_Loc, Name_uInit),
+                           Selector_Name => New_Occurrence_Of (Id, Comp_Loc)),
                          Typ,
                          In_Init_Proc => True,
                          Enclos_Type  => Rec_Type,
@@ -2814,10 +2821,10 @@ package body Exp_Ch3 is
 
                      if Needs_Finalization (Typ) then
                         if No (Counter_Id) then
-                           Make_Counter;
+                           Make_Counter (Comp_Loc);
                         end if;
 
-                        Increment_Counter;
+                        Increment_Counter (Comp_Loc);
                      end if;
 
                   elsif Component_Needs_Simple_Initialization (Typ) then
@@ -2836,15 +2843,16 @@ package body Exp_Ch3 is
          if Present (Variant_Part (Comp_List)) then
             declare
                Variant_Alts : constant List_Id := New_List;
+               Var_Loc      : Source_Ptr;
                Variant      : Node_Id;
 
             begin
                Variant :=
                  First_Non_Pragma (Variants (Variant_Part (Comp_List)));
                while Present (Variant) loop
-                  Loc := Sloc (Variant);
+                  Var_Loc := Sloc (Variant);
                   Append_To (Variant_Alts,
-                    Make_Case_Statement_Alternative (Loc,
+                    Make_Case_Statement_Alternative (Var_Loc,
                       Discrete_Choices =>
                         New_Copy_List (Discrete_Choices (Variant)),
                       Statements =>
@@ -2857,10 +2865,10 @@ package body Exp_Ch3 is
                --  formal parameter of the initialization procedure.
 
                Append_To (Stmts,
-                 Make_Case_Statement (Loc,
+                 Make_Case_Statement (Var_Loc,
                    Expression =>
                      New_Reference_To (Discriminal (
-                       Entity (Name (Variant_Part (Comp_List)))), Loc),
+                       Entity (Name (Variant_Part (Comp_List)))), Var_Loc),
                    Alternatives => Variant_Alts));
             end;
          end if;
