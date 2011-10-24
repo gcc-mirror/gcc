@@ -1,3 +1,9 @@
+2011-10-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50838
+	* tree-data-ref.c (dr_analyze_indices): Properly canonicalize
+	a MEM_REF base if we change it.
+
 2011-10-24  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/50836

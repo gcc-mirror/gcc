@@ -855,7 +855,7 @@ static void
 dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 {
   VEC (tree, heap) *access_fns = NULL;
-  tree ref, aref, op;
+  tree ref, *aref, op;
   tree base, off, access_fn;
   basic_block before_loop;
 
@@ -886,50 +886,58 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
     }
 
   /* Analyze access functions of dimensions we know to be independent.  */
-  aref = ref;
-  while (handled_component_p (aref))
+  aref = &ref;
+  while (handled_component_p (*aref))
     {
-      if (TREE_CODE (aref) == ARRAY_REF)
+      if (TREE_CODE (*aref) == ARRAY_REF)
 	{
-	  op = TREE_OPERAND (aref, 1);
+	  op = TREE_OPERAND (*aref, 1);
 	  access_fn = analyze_scalar_evolution (loop, op);
 	  access_fn = instantiate_scev (before_loop, loop, access_fn);
 	  VEC_safe_push (tree, heap, access_fns, access_fn);
 	  /* For ARRAY_REFs the base is the reference with the index replaced
 	     by zero if we can not strip it as the outermost component.  */
-	  if (aref == ref)
-	    ref = TREE_OPERAND (ref, 0);
+	  if (*aref == ref)
+	    {
+	      *aref = TREE_OPERAND (*aref, 0);
+	      continue;
+	    }
 	  else
-	    TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
+	    TREE_OPERAND (*aref, 1) = build_int_cst (TREE_TYPE (op), 0);
 	}
 
-      aref = TREE_OPERAND (aref, 0);
+      aref = &TREE_OPERAND (*aref, 0);
     }
 
   /* If the address operand of a MEM_REF base has an evolution in the
      analyzed nest, add it as an additional independent access-function.  */
-  if (TREE_CODE (aref) == MEM_REF)
+  if (TREE_CODE (*aref) == MEM_REF)
     {
-      op = TREE_OPERAND (aref, 0);
+      op = TREE_OPERAND (*aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (before_loop, loop, access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
+	  tree orig_type;
 	  base = initial_condition (access_fn);
+	  orig_type = TREE_TYPE (base);
+	  STRIP_USELESS_TYPE_CONVERSION (base);
 	  split_constant_offset (base, &base, &off);
 	  /* Fold the MEM_REF offset into the evolutions initial
 	     value to make more bases comparable.  */
-	  if (!integer_zerop (TREE_OPERAND (aref, 1)))
+	  if (!integer_zerop (TREE_OPERAND (*aref, 1)))
 	    {
 	      off = size_binop (PLUS_EXPR, off,
 				fold_convert (ssizetype,
-					      TREE_OPERAND (aref, 1)));
-	      TREE_OPERAND (aref, 1)
-		= build_int_cst (TREE_TYPE (TREE_OPERAND (aref, 1)), 0);
+					      TREE_OPERAND (*aref, 1)));
+	      TREE_OPERAND (*aref, 1)
+		= build_int_cst (TREE_TYPE (TREE_OPERAND (*aref, 1)), 0);
 	    }
 	  access_fn = chrec_replace_initial_condition
-	      (access_fn, fold_convert (TREE_TYPE (base), off));
-	  TREE_OPERAND (aref, 0) = base;
+	      (access_fn, fold_convert (orig_type, off));
+	  *aref = fold_build2_loc (EXPR_LOCATION (*aref),
+				   MEM_REF, TREE_TYPE (*aref),
+				   base, TREE_OPERAND (*aref, 1));
 	  VEC_safe_push (tree, heap, access_fns, access_fn);
 	}
     }
