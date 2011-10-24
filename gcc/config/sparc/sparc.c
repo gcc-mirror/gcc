@@ -2996,10 +2996,23 @@ eligible_for_restore_insn (rtx trial, bool return_p)
 {
   rtx pat = PATTERN (trial);
   rtx src = SET_SRC (pat);
+  bool src_is_freg = false;
+  rtx src_reg;
+
+  /* Since we now can do moves between float and integer registers when
+     VIS3 is enabled, we have to catch this case.  We can allow such
+     moves when doing a 'return' however.  */
+  src_reg = src;
+  if (GET_CODE (src_reg) == SUBREG)
+    src_reg = SUBREG_REG (src_reg);
+  if (GET_CODE (src_reg) == REG
+      && SPARC_FP_REG_P (REGNO (src_reg)))
+    src_is_freg = true;
 
   /* The 'restore src,%g0,dest' pattern for word mode and below.  */
   if (GET_MODE_CLASS (GET_MODE (src)) != MODE_FLOAT
-      && arith_operand (src, GET_MODE (src)))
+      && arith_operand (src, GET_MODE (src))
+      && ! src_is_freg)
     {
       if (TARGET_ARCH64)
         return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
@@ -3009,7 +3022,8 @@ eligible_for_restore_insn (rtx trial, bool return_p)
 
   /* The 'restore src,%g0,dest' pattern for double-word mode.  */
   else if (GET_MODE_CLASS (GET_MODE (src)) != MODE_FLOAT
-	   && arith_double_operand (src, GET_MODE (src)))
+	   && arith_double_operand (src, GET_MODE (src))
+	   && ! src_is_freg)
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
 
   /* The 'restore src,%g0,dest' pattern for float if no FPU.  */
@@ -7784,6 +7798,13 @@ sparc_split_regreg_legitimate (rtx reg1, rtx reg2)
   if (SPARC_INT_REG_P (regno1) && SPARC_INT_REG_P (regno2))
     return 1;
 
+  if (TARGET_VIS3)
+    {
+      if ((SPARC_INT_REG_P (regno1) && SPARC_FP_REG_P (regno2))
+	  || (SPARC_FP_REG_P (regno1) && SPARC_INT_REG_P (regno2)))
+	return 1;
+    }
+
   return 0;
 }
 
@@ -10302,10 +10323,28 @@ static int
 sparc_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t from, reg_class_t to)
 {
-  if ((FP_REG_CLASS_P (from) && general_or_i64_p (to))
-      || (general_or_i64_p (from) && FP_REG_CLASS_P (to))
-      || from == FPCC_REGS
-      || to == FPCC_REGS)  
+  bool need_memory = false;
+
+  if (from == FPCC_REGS || to == FPCC_REGS)
+    need_memory = true;
+  else if ((FP_REG_CLASS_P (from) && general_or_i64_p (to))
+	   || (general_or_i64_p (from) && FP_REG_CLASS_P (to)))
+    {
+      if (TARGET_VIS3)
+	{
+	  int size = GET_MODE_SIZE (mode);
+	  if (size == 8 || size == 4)
+	    {
+	      if (! TARGET_ARCH32 || size == 4)
+		return 4;
+	      else
+		return 6;
+	    }
+	}
+      need_memory = true;
+    }
+
+  if (need_memory)
     {
       if (sparc_cpu == PROCESSOR_ULTRASPARC
 	  || sparc_cpu == PROCESSOR_ULTRASPARC3
@@ -11163,6 +11202,18 @@ sparc_preferred_reload_class (rtx x, reg_class_t rclass)
 	}
     }
 
+  if (TARGET_VIS3
+      && ! TARGET_ARCH64
+      && (rclass == EXTRA_FP_REGS
+	  || rclass == GENERAL_OR_EXTRA_FP_REGS))
+    {
+      int regno = true_regnum (x);
+
+      if (SPARC_INT_REG_P (regno))
+	return (rclass == EXTRA_FP_REGS
+		? FP_REGS : GENERAL_OR_FP_REGS);
+    }
+
   return rclass;
 }
 
@@ -11275,6 +11326,9 @@ sparc_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 {
   enum reg_class rclass = (enum reg_class) rclass_i;
 
+  sri->icode = CODE_FOR_nothing;
+  sri->extra_cost = 0;
+
   /* We need a temporary when loading/storing a HImode/QImode value
      between memory and the FPU registers.  This can happen when combine puts
      a paradoxical subreg in a float/fix conversion insn.  */
@@ -11305,6 +11359,25 @@ sparc_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       else
 	sri->icode = direct_optab_handler (reload_out_optab, mode);
       return NO_REGS;
+    }
+
+  if (TARGET_VIS3 && TARGET_ARCH32)
+    {
+      int regno = true_regnum (x);
+
+      /* When using VIS3 fp<-->int register moves, on 32-bit we have
+	 to move 8-byte values in 4-byte pieces.  This only works via
+	 FP_REGS, and not via EXTRA_FP_REGS.  Therefore if we try to
+	 move between EXTRA_FP_REGS and GENERAL_REGS, we will need
+	 an FP_REGS intermediate move.  */
+      if ((rclass == EXTRA_FP_REGS && SPARC_INT_REG_P (regno))
+	  || ((general_or_i64_p (rclass)
+	       || rclass == GENERAL_OR_FP_REGS)
+	      && SPARC_FP_REG_P (regno)))
+	{
+	  sri->extra_cost = 2;
+	  return FP_REGS;
+	}
     }
 
   return NO_REGS;

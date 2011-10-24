@@ -1,5 +1,46 @@
 2011-10-23  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED): We can move
+	between float and non-float regs when VIS3.
+	* config/sparc/sparc.c (eligible_for_restore_insn): We can't
+	use a restore when the source is a float register.
+	(sparc_split_regreg_legitimate): When VIS3 allow moves between
+	float and integer regs.
+	(sparc_register_move_cost): Adjust to account for VIS3 moves.
+	(sparc_preferred_reload_class): On 32-bit with VIS3 when moving an
+	integer reg to a class containing EXTRA_FP_REGS, constrain to
+	FP_REGS.
+	(sparc_secondary_reload): On 32-bit with VIS3 when moving between
+	float and integer regs we sometimes need a FP_REGS class
+	intermediate move to satisfy the reload.  When this happens
+	specify an extra cost of 2.
+	(*movsi_insn): Rename to have "_novis3" suffix and add !VIS3
+	guard.
+	(*movdi_insn_sp32_v9): Likewise.
+	(*movdi_insn_sp64): Likewise.
+	(*movsf_insn): Likewise.
+	(*movdf_insn_sp32_v9): Likewise.
+	(*movdf_insn_sp64): Likewise.
+	(*zero_extendsidi2_insn_sp64): Likewise.
+	(*sign_extendsidi2_insn): Likewise.
+	(*movsi_insn_vis3): New insn.
+	(*movdi_insn_sp32_v9_vis3): New insn.
+	(*movdi_insn_sp64_vis3): New insn.
+	(*movsf_insn_vis3): New insn.
+	(*movdf_insn_sp32_v9_vis3): New insn.
+	(*movdf_insn_sp64_vis3): New insn.
+	(*zero_extendsidi2_insn_sp64_vis3): New insn.
+	(*sign_extendsidi2_insn_vis3): New insn.
+	(TFmode reg/reg split): Make sure both REG operands are float.
+	(*mov<VM32:mode>_insn): Add "_novis3" suffix and !VIS3 guard. Remove
+	easy constant to integer reg alternatives.
+	(*mov<VM64:mode>_insn_sp64): Likewise.
+	(*mov<VM64:mode>_insn_sp32_novis3): Likewise.
+	(*mov<VM32:mode>_insn_vis3): New insn.
+	(*mov<VM64:mode>_insn_sp64_vis3): New insn.
+	(*mov<VM64:mode>_insn_sp32_vis3): New insn.
+	(VM64 reg<-->reg split): New spliiter for 32-bit.
+
 	* config/sparc/sparc.c (sparc_split_regreg_legitimate): New
 	function.
 	* config/sparc/sparc-protos.h (sparc_split_regreg_legitimate):
