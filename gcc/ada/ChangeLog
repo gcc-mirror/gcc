@@ -1,3 +1,63 @@
+2011-10-24  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: For gnatelim, move the note about using the GNAT
+	driver for getting the project support into gnatelim section.
+
+2011-10-24  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor correction to documentation on address
+	clause.
+
+2011-10-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-finmas.adb (Attach): Synchronize and call the unprotected version.
+	(Attach_Unprotected): New routine.
+	(Delete_Finalize_Address): Removed.
+	(Delete_Finalize_Address_Unprotected): New routine.
+	(Detach): Synchronize and call the unprotected version.
+	(Detach_Unprotected): Remove locking.
+	(Finalize): Add various comment on synchronization. Lock the critical
+	region and call the unprotected versions of routines.
+	(Finalize_Address): Removed.
+	(Finalize_Address_Unprotected): New routine.
+	(Set_Finalize_Address): Synchronize and call
+	the unprotected version.
+	(Set_Finalize_Address_Unprotected): New routine.
+	(Set_Heterogeneous_Finalize_Address): Removed.
+	(Set_Heterogeneous_Finalize_Address_Unprotected): New routine.
+	(Set_Is_Heterogeneous): Add comment on synchronization and
+	locking.
+	* s-finmas.ads: Flag Finalization_Started is no longer atomic
+	because synchronization uses task locking / unlocking.
+	(Attach): Add comment on usage.
+	(Attach_Unprotected): New routine.
+	(Delete_Finalize_Address): Renamed to
+	Delete_Finalize_Address_Unprotected.
+	(Detach): Add comment on usage.
+	(Detach_Unprotected): New routine.
+	(Finalize_Address): Renamed to Finalize_Address_Unprotected.
+	(Set_Finalize_Address): Add comment on usage.
+	(Set_Finalize_Address_Unprotected): New routine.
+	(Set_Heterogeneous_Finalize_Address): Renamed to
+	Set_Heterogeneous_Finalize_Address_Unprotected.
+	* s-stposu.adb (Allocate_Any_Controlled): Add local variable
+	Allocation_Locked. Add various comments on synchronization. Lock
+	the critical region and call the unprotected version of
+	routines.
+	(Deallocate_Any_Controlled): Add various comments on
+	synchronization. Lock the critical region and call the unprotected
+	version of routines.
+
+2011-10-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Set_Fixed_Range): The bounds of a fixed point type
+	are universal and must carry the corresponding type.
+	* sem_eval.adb (Check_Non_Static_Context): If the type of the
+	expression is universal real, as may be the case for a fixed point
+	expression with constant operands in the context of a conversion,
+	there is nothing to check.
+	* s-finmas.adb: Minor reformatting
+
 2011-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (create_concat_name): Add explicit cast.

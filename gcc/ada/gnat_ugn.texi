@@ -10092,9 +10092,6 @@ and some of the techniques for making your program run faster.
 It then documents the @command{gnatelim} tool and unused subprogram/data
 elimination feature, which can reduce the size of program executables.
 
-Note: to invoke @command{gnatelim} with a project file, use the @code{gnat}
-driver (see @ref{The GNAT Driver and Project Files}).
-
 @ifnottex
 @menu
 * Performance Considerations::
@@ -11017,6 +11014,10 @@ Quiet warning mode - some warnings are suppressed. In particular warnings that
 indicate that the analysed set of sources is incomplete to make up a
 partition and that some subprogram bodies are missing are not generated.
 @end table
+
+@noindent
+Note: to invoke @command{gnatelim} with a project file, use the @code{gnat}
+driver (see @ref{The GNAT Driver and Project Files}).
 
 @node Processing Precompiled Libraries
 @subsection Processing Precompiled Libraries
@@ -12832,6 +12833,7 @@ the configuration file describing the corresponding naming scheme;
 see the description of the @command{gnatpp}
 switches below. Another possibility is to use a project file and to
 call @command{gnatpp} through the @command{gnat} driver
+(see @ref{The GNAT Driver and Project Files}).
 
 The @command{gnatpp} command has the form
 
@@ -13959,7 +13961,7 @@ in files with names that do not follow the GNAT file naming rules, you have to
 provide the configuration file describing the corresponding naming scheme (see
 the description of the @command{gnatmetric} switches below.)
 Alternatively, you may use a project file and invoke @command{gnatmetric}
-through the @command{gnat} driver.
+through the @command{gnat} driver (see @ref{The GNAT Driver and Project Files}).
 
 The @command{gnatmetric} command has the form
 

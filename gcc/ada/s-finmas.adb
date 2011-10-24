@@ -77,17 +77,27 @@ package body System.Finalization_Masters is
    procedure Attach (N : not null FM_Node_Ptr; L : not null FM_Node_Ptr) is
    begin
       Lock_Task.all;
-
-      L.Next.Prev := N;
-      N.Next := L.Next;
-      L.Next := N;
-      N.Prev := L;
-
+      Attach_Unprotected (N, L);
       Unlock_Task.all;
 
       --  Note: No need to unlock in case of an exception because the above
       --  code can never raise one.
    end Attach;
+
+   ------------------------
+   -- Attach_Unprotected --
+   ------------------------
+
+   procedure Attach_Unprotected
+     (N : not null FM_Node_Ptr;
+      L : not null FM_Node_Ptr)
+   is
+   begin
+      L.Next.Prev := N;
+      N.Next := L.Next;
+      L.Next := N;
+      N.Prev := L;
+   end Attach_Unprotected;
 
    ---------------
    -- Base_Pool --
@@ -100,16 +110,14 @@ package body System.Finalization_Masters is
       return Master.Base_Pool;
    end Base_Pool;
 
-   -----------------------------
-   -- Delete_Finalize_Address --
-   -----------------------------
+   -----------------------------------------
+   -- Delete_Finalize_Address_Unprotected --
+   -----------------------------------------
 
-   procedure Delete_Finalize_Address (Obj : System.Address) is
+   procedure Delete_Finalize_Address_Unprotected (Obj : System.Address) is
    begin
-      Lock_Task.all;
       Finalize_Address_Table.Remove (Obj);
-      Unlock_Task.all;
-   end Delete_Finalize_Address;
+   end Delete_Finalize_Address_Unprotected;
 
    ------------
    -- Detach --
@@ -117,20 +125,27 @@ package body System.Finalization_Masters is
 
    procedure Detach (N : not null FM_Node_Ptr) is
    begin
-      if N.Prev /= null and then N.Next /= null then
-         Lock_Task.all;
+      Lock_Task.all;
+      Detach_Unprotected (N);
+      Unlock_Task.all;
 
+      --  Note: No need to unlock in case of an exception because the above
+      --  code can never raise one.
+   end Detach;
+
+   ------------------------
+   -- Detach_Unprotected --
+   ------------------------
+
+   procedure Detach_Unprotected (N : not null FM_Node_Ptr) is
+   begin
+      if N.Prev /= null and then N.Next /= null then
          N.Prev.Next := N.Next;
          N.Next.Prev := N.Prev;
          N.Prev := null;
          N.Next := null;
-
-         Unlock_Task.all;
-
-         --  Note: No need to unlock in case of an exception because the above
-         --  code can never raise one.
       end if;
-   end Detach;
+   end Detach_Unprotected;
 
    --------------
    -- Finalize --
@@ -158,10 +173,14 @@ package body System.Finalization_Masters is
    --  Start of processing for Finalize
 
    begin
-      --  It is possible for multiple tasks to cause the finalization of the
-      --  same master. Let only one task finalize the objects.
+      Lock_Task.all;
+
+      --  Synchronization:
+      --    Read  - allocation, finalization
+      --    Write - finalization
 
       if Master.Finalization_Started then
+         Unlock_Task.all;
          return;
       end if;
 
@@ -170,12 +189,19 @@ package body System.Finalization_Masters is
       --  is explicitly deallocated or the associated access type is about to
       --  go out of scope.
 
+      --  Synchronization:
+      --    Read  - allocation, finalization
+      --    Write - finalization
+
       Master.Finalization_Started := True;
 
       while not Is_Empty_List (Master.Objects'Unchecked_Access) loop
          Curr_Ptr := Master.Objects.Next;
 
-         Detach (Curr_Ptr);
+         --  Synchronization:
+         --    Write - allocation, deallocation, finalization
+
+         Detach_Unprotected (Curr_Ptr);
 
          --  Skip the list header in order to offer proper object layout for
          --  finalization.
@@ -185,20 +211,28 @@ package body System.Finalization_Masters is
          --  Retrieve TSS primitive Finalize_Address depending on the master's
          --  mode of operation.
 
+         --  Synchronization:
+         --    Read  - allocation, finalization
+         --    Write - outside
+
          if Master.Is_Homogeneous then
+
+            --  Synchronization:
+            --    Read  - finalization
+            --    Write - allocation, outside
+
             Cleanup := Master.Finalize_Address;
+
          else
-            Cleanup := Finalize_Address (Obj_Addr);
+            --  Synchronization:
+            --    Read  - finalization
+            --    Write - allocation, deallocation
+
+            Cleanup := Finalize_Address_Unprotected (Obj_Addr);
          end if;
-
-         --  If Finalize_Address is not available, then this is most likely an
-         --  error in the expansion of the designated type or the allocator.
-
-         pragma Assert (Cleanup /= null);
 
          begin
             Cleanup (Obj_Addr);
-
          exception
             when Fin_Occur : others =>
                if not Raised then
@@ -210,10 +244,21 @@ package body System.Finalization_Masters is
          --  When the master is a heterogeneous collection, destroy the object
          --  - Finalize_Address pair since it is no longer needed.
 
+         --  Synchronization:
+         --    Read  - finalization
+         --    Write - outside
+
          if not Master.Is_Homogeneous then
-            Delete_Finalize_Address (Obj_Addr);
+
+            --  Synchronization:
+            --    Read  - finalization
+            --    Write - allocation, deallocation, finalization
+
+            Delete_Finalize_Address_Unprotected (Obj_Addr);
          end if;
       end loop;
+
+      Unlock_Task.all;
 
       --  If the finalization of a particular object failed or Finalize_Address
       --  was not set, reraise the exception now.
@@ -234,20 +279,16 @@ package body System.Finalization_Masters is
       return Master.Finalize_Address;
    end Finalize_Address;
 
-   ----------------------
-   -- Finalize_Address --
-   ----------------------
+   ----------------------------------
+   -- Finalize_Address_Unprotected --
+   ----------------------------------
 
-   function Finalize_Address
+   function Finalize_Address_Unprotected
      (Obj : System.Address) return Finalize_Address_Ptr
    is
-      Result : Finalize_Address_Ptr;
    begin
-      Lock_Task.all;
-      Result := Finalize_Address_Table.Get (Obj);
-      Unlock_Task.all;
-      return Result;
-   end Finalize_Address;
+      return Finalize_Address_Table.Get (Obj);
+   end Finalize_Address_Unprotected;
 
    --------------------------
    -- Finalization_Started --
@@ -463,36 +504,40 @@ package body System.Finalization_Masters is
       Fin_Addr_Ptr : Finalize_Address_Ptr)
    is
    begin
-      --  TSS primitive Finalize_Address is set at the point of allocation,
-      --  either through Allocate_Any_Controlled or through this routine.
-      --  Since multiple tasks can allocate on the same finalization master,
-      --  access to this attribute must be protected.
+      --  Synchronization:
+      --    Read  - finalization
+      --    Write - allocation, outside
 
       Lock_Task.all;
-
-      if Master.Finalize_Address = null then
-         Master.Finalize_Address := Fin_Addr_Ptr;
-      end if;
-
+      Set_Finalize_Address_Unprotected (Master, Fin_Addr_Ptr);
       Unlock_Task.all;
    end Set_Finalize_Address;
 
-   ----------------------------------------
-   -- Set_Heterogeneous_Finalize_Address --
-   ----------------------------------------
+   --------------------------------------
+   -- Set_Finalize_Address_Unprotected --
+   --------------------------------------
 
-   procedure Set_Heterogeneous_Finalize_Address
+   procedure Set_Finalize_Address_Unprotected
+     (Master       : in out Finalization_Master;
+      Fin_Addr_Ptr : Finalize_Address_Ptr)
+   is
+   begin
+      if Master.Finalize_Address = null then
+         Master.Finalize_Address := Fin_Addr_Ptr;
+      end if;
+   end Set_Finalize_Address_Unprotected;
+
+   ----------------------------------------------------
+   -- Set_Heterogeneous_Finalize_Address_Unprotected --
+   ----------------------------------------------------
+
+   procedure Set_Heterogeneous_Finalize_Address_Unprotected
      (Obj          : System.Address;
       Fin_Addr_Ptr : Finalize_Address_Ptr)
    is
    begin
-      --  Protected access is required in this case because
-      --  Finalize_Address_Table is a global data structure.
-
-      Lock_Task.all;
       Finalize_Address_Table.Set (Obj, Fin_Addr_Ptr);
-      Unlock_Task.all;
-   end Set_Heterogeneous_Finalize_Address;
+   end Set_Heterogeneous_Finalize_Address_Unprotected;
 
    --------------------------
    -- Set_Is_Heterogeneous --
@@ -500,7 +545,13 @@ package body System.Finalization_Masters is
 
    procedure Set_Is_Heterogeneous (Master : in out Finalization_Master) is
    begin
+      --  Synchronization:
+      --    Read  - finalization
+      --    Write - outside
+
+      Lock_Task.all;
       Master.Is_Homogeneous := False;
+      Unlock_Task.all;
    end Set_Is_Heterogeneous;
 
 end System.Finalization_Masters;

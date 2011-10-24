@@ -11925,9 +11925,7 @@ The type of the item is non-elementary (e.g.@: a record or array).
 
 @item
 There is explicit or implicit initialization required for the object.
-Note that access values are always implicitly initialized, and also
-in GNAT, certain bit-packed arrays (those having a dynamic length or
-a length greater than 64) will also be implicitly initialized to zero.
+Note that access values are always implicitly initialized.
 
 @item
 The address value is non-static.  Here GNAT is more permissive than the
