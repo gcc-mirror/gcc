@@ -4319,7 +4319,7 @@ Send_statement::do_get_backend(Translate_context* context)
 
     case Type::TYPE_ARRAY:
       is_small = false;
-      can_take_address = !element_type->is_open_array_type();
+      can_take_address = !element_type->is_slice_type();
       break;
 
     default:
@@ -5181,7 +5181,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   Type* range_type = this->range_->type();
   if (range_type->points_to() != NULL
       && range_type->points_to()->array_type() != NULL
-      && !range_type->points_to()->is_open_array_type())
+      && !range_type->points_to()->is_slice_type())
     range_type = range_type->points_to();
 
   Type* index_type;
