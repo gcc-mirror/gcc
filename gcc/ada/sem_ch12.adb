@@ -7517,7 +7517,8 @@ package body Sem_Ch12 is
          Decl  := N;
 
          --  If this is a package instance, check whether the generic is
-         --  declared in a previous instance.
+         --  declared in a previous instance and the current instance is
+         --  not within the previous one.
 
          if Present (Generic_Parent (Parent (Inst)))
            and then Is_In_Main_Unit (N)
@@ -7525,13 +7526,45 @@ package body Sem_Ch12 is
             declare
                Par_I : constant Entity_Id :=
                  Previous_Instance (Generic_Parent (Parent (Inst)));
+               Scop  : Entity_Id;
 
             begin
                if Present (Par_I)
                  and then Earlier (N, Freeze_Node (Par_I))
                then
-                  Insert_After (Freeze_Node (Par_I), F_Node);
-                  return;
+                  Scop := Scope (Inst);
+
+                  --  If the current instance is within the one that contains
+                  --  the generic, the freeze node for the current one must
+                  --  appear in the current declarative part. Ditto, if the
+                  --  current instance is within another package instance. In
+                  --  both of these cases the freeze node of the previous
+                  --  instance is not relevant.
+
+                  while Present (Scop)
+                    and then Scop /= Standard_Standard
+                  loop
+                     exit when Scop = Par_I
+                       or else Is_Generic_Instance (Scop);
+                     Scop := Scope (Scop);
+                  end loop;
+
+                  if Scop = Par_I then
+
+                     --  Previous instance encloses current instance
+
+                     null;
+
+                  elsif Is_Generic_Instance (Scop) then
+
+                     --  Current instance is within an unrelated instance
+
+                     null;
+
+                  else
+                     Insert_After (Freeze_Node (Par_I), F_Node);
+                     return;
+                  end if;
                end if;
             end;
          end if;

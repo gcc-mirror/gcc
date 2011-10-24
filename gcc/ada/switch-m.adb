@@ -196,6 +196,24 @@ package body Switch.M is
                      Add_Switch_Component ("-mrtp");
                   end if;
 
+               --  Switch for universal addressing on AAMP target
+
+               elsif Switch_Chars'Length >= 5
+                 and then
+                   Switch_Chars
+                     (Switch_Chars'First .. Switch_Chars'First + 4) = "-univ"
+               then
+                  Add_Switch_Component (Switch_Chars);
+
+               --  Switch for specifying AAMP target library
+
+               elsif Switch_Chars'Length > 13
+                 and then
+                   Switch_Chars (Switch_Chars'First .. Switch_Chars'First + 12)
+                     = "-aamp_target="
+               then
+                  Add_Switch_Component (Switch_Chars);
+
                --  Take only into account switches that are transmitted to
                --  gnat1 by the gcc driver and stored by gnat1 in the ALI file.
 

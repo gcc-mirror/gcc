@@ -9016,6 +9016,32 @@ in a distributed environment. If this exception is active, then the generated
 code is simplified by omitting the otherwise-required global registration
 of exceptions when they are declared.
 
+@item No_Finalization
+@findex No_Finalization
+This restriction disables the language features described in chapter 7.6 of the
+Ada 2005 RM as well as all form of code generation performed by the compiler to
+support these features. The following types are no longer considered controlled
+when this restriction is in effect:
+@itemize @bullet
+@item
+@code{Ada.Finalization.Controlled}
+@item
+@code{Ada.Finalization.Limited_Controlled}
+@item
+Derivations from @code{Controlled} or @code{Limited_Controlled}
+@item
+Class-wide types
+@item
+Protected types
+@item
+Task types
+@item
+Array and record types with controlled components
+@end itemize
+The compiler no longer generates code to initialize, finalize or adjust an
+object or a nested component, either declared on the stack or on the heap. The
+deallocation of a controlled object no longer finalizes its contents.
+
 @item No_Implicit_Aliasing
 @findex No_Implicit_Aliasing
 

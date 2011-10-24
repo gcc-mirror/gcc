@@ -1407,7 +1407,7 @@ package body Sem_Warn is
 
                      --  Case of warning on any unread OUT parameter (note
                      --  such indications are only set if the appropriate
-                     --  warning options were set, so no need to recheck here.
+                     --  warning options were set, so no need to recheck here.)
 
                      or else
                        Referenced_As_Out_Parameter_Check_Spec (E1))

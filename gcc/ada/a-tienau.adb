@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,6 +126,25 @@ package body Ada.Text_IO.Enumeration_Aux is
       Actual_Width : constant Count := Count'Max (Count (Width), Item'Length);
 
    begin
+      --  Deal with limited line length
+
+      if Line_Length /= 0 then
+
+         --  If actual width exceeds line length, raise Layout_Error
+
+         if Actual_Width > Line_Length then
+            raise Layout_Error;
+         end if;
+
+         --  If full width cannot fit on current line move to new line
+
+         if Actual_Width + (Col - 1) > Line_Length then
+            New_Line (File);
+         end if;
+      end if;
+
+      --  Output in lower case if necessary
+
       if Set = Lower_Case and then Item (Item'First) /= ''' then
          declare
             Iteml : String (Item'First .. Item'Last);
@@ -138,9 +157,13 @@ package body Ada.Text_IO.Enumeration_Aux is
             Put_Item (File, Iteml);
          end;
 
+      --  Otherwise output in upper case
+
       else
          Put_Item (File, Item);
       end if;
+
+      --  Fill out item with spaces to width
 
       for J in 1 .. Actual_Width - Item'Length loop
          Put (File, ' ');
