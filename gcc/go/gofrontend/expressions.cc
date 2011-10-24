@@ -8228,6 +8228,17 @@ Builtin_call_expression::do_check_types(Gogo*)
 	    this->report_error(_("too many arguments"));
 	    break;
 	  }
+
+	// The language permits appending a string to a []byte, as a
+	// special case.
+	if (args->back()->type()->is_string_type())
+	  {
+	    const Array_type* at = args->front()->type()->array_type();
+	    const Type* e = at->element_type()->forwarded();
+	    if (e == Type::lookup_integer_type("uint8"))
+	      break;
+	  }
+
 	std::string reason;
 	if (!Type::are_assignable(args->front()->type(), args->back()->type(),
 				  &reason))
@@ -8766,29 +8777,49 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	  return error_mark_node;
 
 	Array_type* at = arg1->type()->array_type();
-	Type* element_type = at->element_type();
+	Type* element_type = at->element_type()->forwarded();
 
-	arg2_tree = Expression::convert_for_assignment(context, at,
-						       arg2->type(),
-						       arg2_tree,
-						       location);
-	if (arg2_tree == error_mark_node)
-	  return error_mark_node;
+	tree arg2_val;
+	tree arg2_len;
+	tree element_size;
+	if (arg2->type()->is_string_type()
+	    && element_type == Type::lookup_integer_type("uint8"))
+	  {
+	    arg2_tree = save_expr(arg2_tree);
+	    arg2_val = String_type::bytes_tree(gogo, arg2_tree);
+	    arg2_len = String_type::length_tree(gogo, arg2_tree);
+	    element_size = size_int(1);
+	  }
+	else
+	  {
+	    arg2_tree = Expression::convert_for_assignment(context, at,
+							   arg2->type(),
+							   arg2_tree,
+							   location);
+	    if (arg2_tree == error_mark_node)
+	      return error_mark_node;
 
-	arg2_tree = save_expr(arg2_tree);
-	tree arg2_val = at->value_pointer_tree(gogo, arg2_tree);
-	tree arg2_len = at->length_tree(gogo, arg2_tree);
-	if (arg2_val == error_mark_node || arg2_len == error_mark_node)
-	  return error_mark_node;
+	    arg2_tree = save_expr(arg2_tree);
+
+	     arg2_val = at->value_pointer_tree(gogo, arg2_tree);
+	     arg2_len = at->length_tree(gogo, arg2_tree);
+
+	     Btype* element_btype = element_type->get_backend(gogo);
+	     tree element_type_tree = type_to_tree(element_btype);
+	     if (element_type_tree == error_mark_node)
+	       return error_mark_node;
+	     element_size = TYPE_SIZE_UNIT(element_type_tree);
+	  }
+
 	arg2_val = fold_convert_loc(location, ptr_type_node, arg2_val);
 	arg2_len = fold_convert_loc(location, size_type_node, arg2_len);
-
-	tree element_type_tree = type_to_tree(element_type->get_backend(gogo));
-	if (element_type_tree == error_mark_node)
-	  return error_mark_node;
-	tree element_size = TYPE_SIZE_UNIT(element_type_tree);
 	element_size = fold_convert_loc(location, size_type_node,
 					element_size);
+
+	if (arg2_val == error_mark_node
+	    || arg2_len == error_mark_node
+	    || element_size == error_mark_node)
+	  return error_mark_node;
 
 	// We rebuild the decl each time since the slice types may
 	// change.
