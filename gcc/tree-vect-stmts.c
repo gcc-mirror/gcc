@@ -1204,7 +1204,9 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "Create vector_cst. nunits = %d", nunits);
 
-        vec_cst = build_vector_from_val (vector_type, op);
+        vec_cst = build_vector_from_val (vector_type,
+					 fold_convert (TREE_TYPE (vector_type),
+						       op));
         return vect_init_vector (stmt, vec_cst, vector_type, NULL);
       }
 
@@ -2173,6 +2175,25 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
 	      != GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
     return false;
 
+  /* We do not handle bit-precision changes.  */
+  if ((CONVERT_EXPR_CODE_P (code)
+       || code == VIEW_CONVERT_EXPR)
+      && INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+      && ((TYPE_PRECISION (TREE_TYPE (scalar_dest))
+	   != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
+	  || ((TYPE_PRECISION (TREE_TYPE (op))
+	       != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op))))))
+      /* But a conversion that does not change the bit-pattern is ok.  */
+      && !((TYPE_PRECISION (TREE_TYPE (scalar_dest))
+	    > TYPE_PRECISION (TREE_TYPE (op)))
+	   && TYPE_UNSIGNED (TREE_TYPE (op))))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "type conversion to/from bit-precision "
+		 "unsupported.");
+      return false;
+    }
+
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
@@ -2326,6 +2347,13 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
 
   scalar_dest = gimple_assign_lhs (stmt);
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  if (TYPE_PRECISION (TREE_TYPE (scalar_dest))
+      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "bit-precision shifts not supported.");
+      return false;
+    }
 
   op0 = gimple_assign_rhs1 (stmt);
   if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
@@ -2659,6 +2687,20 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 
   scalar_dest = gimple_assign_lhs (stmt);
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+
+  /* Most operations cannot handle bit-precision types without extra
+     truncations.  */
+  if ((TYPE_PRECISION (TREE_TYPE (scalar_dest))
+       != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
+      /* Exception are bitwise binary operations.  */
+      && code != BIT_IOR_EXPR
+      && code != BIT_XOR_EXPR
+      && code != BIT_AND_EXPR)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "bit-precision arithmetic not supported.");
+      return false;
+    }
 
   op0 = gimple_assign_rhs1 (stmt);
   if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
@@ -3082,9 +3124,20 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
   if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
 	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
-	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
-	     && CONVERT_EXPR_CODE_P (code))))
+	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0)))))
     return false;
+
+  if (INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+      && ((TYPE_PRECISION (TREE_TYPE (scalar_dest))
+	   != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
+	  || ((TYPE_PRECISION (TREE_TYPE (op0))
+	       != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op0)))))))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "type demotion to/from bit-precision unsupported.");
+      return false;
+    }
+
   if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
 			     &def_stmt, &def, &dt[0], &vectype_in))
     {
@@ -3365,6 +3418,19 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
 	     && CONVERT_EXPR_CODE_P (code))))
     return false;
+
+  if (INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+      && ((TYPE_PRECISION (TREE_TYPE (scalar_dest))
+	   != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
+	  || ((TYPE_PRECISION (TREE_TYPE (op0))
+	       != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op0)))))))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "type promotion to/from bit-precision "
+		 "unsupported.");
+      return false;
+    }
+
   if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
 			     &def_stmt, &def, &dt[0], &vectype_in))
     {
@@ -3673,17 +3739,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       return false;
     }
 
-  /* The scalar rhs type needs to be trivially convertible to the vector
-     component type.  This should always be the case.  */
   elem_type = TREE_TYPE (vectype);
-  if (!useless_type_conversion_p (elem_type, TREE_TYPE (op)))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "???  operands of different types");
-      return false;
-    }
-
   vec_mode = TYPE_MODE (vectype);
+
   /* FORNOW. In some cases can vectorize even if data-type not supported
      (e.g. - array initialization with 0).  */
   if (optab_handler (mov_optab, vec_mode) == CODE_FOR_nothing)
@@ -4117,7 +4175,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   bool strided_load = false;
   bool load_lanes_p = false;
   gimple first_stmt;
-  tree scalar_type;
   bool inv_p;
   bool negative;
   bool compute_in_loop = false;
@@ -4192,7 +4249,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       return false;
     }
 
-  scalar_type = TREE_TYPE (DR_REF (dr));
+  elem_type = TREE_TYPE (vectype);
   mode = TYPE_MODE (vectype);
 
   /* FORNOW. In some cases can vectorize even if data-type not supported
@@ -4201,16 +4258,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Aligned load, but unsupported type.");
-      return false;
-    }
-
-  /* The vector component type needs to be trivially convertible to the
-     scalar lhs.  This should always be the case.  */
-  elem_type = TREE_TYPE (vectype);
-  if (!useless_type_conversion_p (TREE_TYPE (scalar_dest), elem_type))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "???  operands of different types");
       return false;
     }
 
@@ -4560,7 +4607,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		    msq = new_temp;
 
 		    bump = size_binop (MULT_EXPR, vs_minus_1,
-				       TYPE_SIZE_UNIT (scalar_type));
+				       TYPE_SIZE_UNIT (elem_type));
 		    ptr = bump_vector_ptr (dataref_ptr, NULL, gsi, stmt, bump);
 		    new_stmt = gimple_build_assign_with_ops
 				 (BIT_AND_EXPR, NULL_TREE, ptr,
@@ -5441,13 +5488,14 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
   if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
     return NULL_TREE;
 
-  /* If we'd build a vector type of elements whose mode precision doesn't
-     match their types precision we'll get mismatched types on vector
-     extracts via BIT_FIELD_REFs.  This effectively means we disable
-     vectorization of bool and/or enum types in some languages.  */
+  /* For vector types of elements whose mode precision doesn't
+     match their types precision we use a element type of mode
+     precision.  The vectorization routines will have to make sure
+     they support the proper result truncation/extension.  */
   if (INTEGRAL_TYPE_P (scalar_type)
       && GET_MODE_BITSIZE (inner_mode) != TYPE_PRECISION (scalar_type))
-    return NULL_TREE;
+    scalar_type = build_nonstandard_integer_type (GET_MODE_BITSIZE (inner_mode),
+						  TYPE_UNSIGNED (scalar_type));
 
   if (GET_MODE_CLASS (inner_mode) != MODE_INT
       && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)

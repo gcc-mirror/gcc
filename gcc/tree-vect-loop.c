@@ -4422,6 +4422,11 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       && !SCALAR_FLOAT_TYPE_P (scalar_type))
     return false;
 
+  /* Do not try to vectorize bit-precision reductions.  */
+  if ((TYPE_PRECISION (scalar_type)
+       != GET_MODE_PRECISION (TYPE_MODE (scalar_type))))
+    return false;
+
   /* All uses but the last are expected to be defined in the loop.
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
