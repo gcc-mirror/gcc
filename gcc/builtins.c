@@ -13499,8 +13499,7 @@ set_builtin_user_assembler_name (tree decl, const char *asmspec)
 	      && asmspec != 0);
 
   builtin = builtin_decl_explicit (DECL_FUNCTION_CODE (decl));
-  set_user_assembler_name (
-builtin, asmspec);
+  set_user_assembler_name (builtin, asmspec);
   switch (DECL_FUNCTION_CODE (decl))
     {
     case BUILT_IN_MEMCPY:
