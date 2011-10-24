@@ -1,3 +1,8 @@
+2011-10-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/strlenopt-22.c: New testcase.
+	* gcc.dg/strlenopt-4.c: Change scan value for s390(x).
+
 2011-10-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-5.c (dg-options): Add -mno-sse.
