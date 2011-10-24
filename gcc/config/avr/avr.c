@@ -56,7 +56,9 @@
 
 #define AVR_SECTION_PROGMEM (SECTION_MACH_DEP << 0)
 
-static void avr_option_override (void);
+
+/* Prototypes for local helper functions.  */
+
 static int avr_naked_function_p (tree);
 static int interrupt_function_p (tree);
 static int signal_function_p (tree);
@@ -68,53 +70,15 @@ static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
 static const char *cond_string (enum rtx_code);
 static int avr_num_arg_regs (enum machine_mode, const_tree);
-
-static rtx avr_legitimize_address (rtx, rtx, enum machine_mode);
-static tree avr_handle_progmem_attribute (tree *, tree, tree, int, bool *);
-static tree avr_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
-static tree avr_handle_fntype_attribute (tree *, tree, tree, int, bool *);
-static bool avr_assemble_integer (rtx, unsigned int, int);
-static void avr_file_start (void);
-static void avr_file_end (void);
-static bool avr_legitimate_address_p (enum machine_mode, rtx, bool);
-static void avr_asm_function_end_prologue (FILE *);
-static void avr_asm_function_begin_epilogue (FILE *);
-static bool avr_cannot_modify_jumps_p (void);
-static rtx avr_function_value (const_tree, const_tree, bool);
-static rtx avr_libcall_value (enum machine_mode, const_rtx);
-static bool avr_function_value_regno_p (const unsigned int);
-static void avr_insert_attributes (tree, tree *);
-static void avr_asm_init_sections (void);
-static unsigned int avr_section_type_flags (tree, const char *, int);
-
-static void avr_reorg (void);
-static void avr_asm_out_ctor (rtx, int);
-static void avr_asm_out_dtor (rtx, int);
-static int avr_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
-static int avr_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static int avr_operand_rtx_cost (rtx, enum machine_mode, enum rtx_code,
 				 int, bool);
-static bool avr_rtx_costs (rtx, int, int, int, int *, bool);
-static int avr_address_cost (rtx, bool);
-static bool avr_return_in_memory (const_tree, const_tree);
 static struct machine_function * avr_init_machine_status (void);
-static void avr_init_builtins (void);
-static rtx avr_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static rtx avr_builtin_setjmp_frame_value (void);
-static bool avr_hard_regno_scratch_ok (unsigned int);
-static unsigned int avr_case_values_threshold (void);
-static bool avr_frame_pointer_required_p (void);
-static bool avr_can_eliminate (const int, const int);
-static bool avr_class_likely_spilled_p (reg_class_t c);
-static rtx avr_function_arg (cumulative_args_t , enum machine_mode,
-			     const_tree, bool);
-static void avr_function_arg_advance (cumulative_args_t, enum machine_mode,
-				      const_tree, bool);
-static bool avr_function_ok_for_sibcall (tree, tree);
-static void avr_asm_named_section (const char *name, unsigned int flags, tree decl);
-static void avr_encode_section_info (tree, rtx, int);
-static section* avr_asm_function_rodata_section (tree);
-static section* avr_asm_select_section (tree, int, unsigned HOST_WIDE_INT);
+
+
+/* Prototypes for hook implementors if needed before their implementation.  */
+
+static bool avr_rtx_costs (rtx, int, int, int, int *, bool);
+
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -147,25 +111,6 @@ static GTY(()) section *progmem_section;
 bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
 
-/* AVR attributes.  */
-static const struct attribute_spec avr_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute,
-    false },
-  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false },
-  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false },
-  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false },
-  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false },
-  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false },
-  { NULL,        0, 0, false, false, false, NULL, false }
-};
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -197,8 +142,6 @@ static const struct attribute_spec avr_attribute_table[] =
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
-#undef TARGET_ASM_FUNCTION_RODATA_SECTION
-#define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS
@@ -274,7 +217,6 @@ static const struct attribute_spec avr_attribute_table[] =
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION avr_asm_function_rodata_section
 
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 
 /* Custom function to replace string prefix.
@@ -535,7 +477,7 @@ avr_regs_to_save (HARD_REG_SET *set)
 
 /* Return true if register FROM can be eliminated via register TO.  */
 
-bool
+static bool
 avr_can_eliminate (const int from, const int to)
 {
   return ((from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
@@ -566,10 +508,11 @@ avr_initial_elimination_offset (int from, int to)
    Using saved frame = virtual_stack_vars_rtx - STARTING_FRAME_OFFSET
    avoids creating add/sub of offset in nonlocal goto and setjmp.  */
 
-rtx avr_builtin_setjmp_frame_value (void)
+static rtx
+avr_builtin_setjmp_frame_value (void)
 {
   return gen_rtx_MINUS (Pmode, virtual_stack_vars_rtx, 
-			 gen_int_mode (STARTING_FRAME_OFFSET, Pmode));
+                        gen_int_mode (STARTING_FRAME_OFFSET, Pmode));
 }
 
 /* Return contents of MEM at frame pointer + stack size + 1 (+2 if 3 byte PC).
@@ -1474,7 +1417,8 @@ ptrreg_to_str (int regno)
     case REG_Y: return "Y";
     case REG_Z: return "Z";
     default:
-      output_operand_lossage ("address operand requires constraint for X, Y, or Z register");
+      output_operand_lossage ("address operand requires constraint for"
+                              " X, Y, or Z register");
     }
   return NULL;
 }
@@ -1539,14 +1483,15 @@ print_operand_address (FILE *file, rtx addr)
 	  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x,1)) == CONST_INT)
 	    {
 	      /* Assembler gs() will implant word address. Make offset 
-		 a byte offset inside gs() for assembler. This is 
-		 needed because the more logical (constant+gs(sym)) is not 
-		 accepted by gas. For 128K and lower devices this is ok. For
-		 large devices it will create a Trampoline to offset from symbol 
-		 which may not be what the user really wanted.  */
+                 a byte offset inside gs() for assembler. This is 
+                 needed because the more logical (constant+gs(sym)) is not 
+                 accepted by gas. For 128K and lower devices this is ok.
+                 For large devices it will create a Trampoline to offset
+                 from symbol which may not be what the user really wanted.  */
 	      fprintf (file, "gs(");
 	      output_addr_const (file, XEXP (x,0));
-	      fprintf (file,"+" HOST_WIDE_INT_PRINT_DEC ")", 2 * INTVAL (XEXP (x,1)));
+              fprintf (file, "+" HOST_WIDE_INT_PRINT_DEC ")",
+                       2 * INTVAL (XEXP (x, 1)));
 	      if (AVR_3_BYTE_PC)
 	        if (warning (0, "pointer offset from symbol maybe incorrect"))
 		  {
@@ -1598,19 +1543,21 @@ print_operand (FILE *file, rtx x, int code)
     fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) + abcd);
   else if (GET_CODE (x) == MEM)
     {
-      rtx addr = XEXP (x,0);
+      rtx addr = XEXP (x, 0);
+      
       if (code == 'm')
 	{
-	   if (!CONSTANT_P (addr))
-	    fatal_insn ("bad address, not a constant):", addr);
-	  /* Assembler template with m-code is data - not progmem section */
-	  if (text_segment_operand (addr, VOIDmode))
-	    if (warning ( 0, "accessing data memory with program memory address"))
-	      {
-		output_addr_const (stderr, addr);
-		fprintf(stderr,"\n");
-	      }
-	  output_addr_const (file, addr);
+          if (!CONSTANT_P (addr))
+            fatal_insn ("bad address, not a constant):", addr);
+          /* Assembler template with m-code is data - not progmem section */
+          if (text_segment_operand (addr, VOIDmode))
+            if (warning (0, "accessing data memory with"
+                         " program memory address"))
+              {
+                output_addr_const (stderr, addr);
+                fprintf(stderr,"\n");
+              }
+          output_addr_const (file, addr);
 	}
       else if (code == 'o')
 	{
@@ -1645,7 +1592,8 @@ print_operand (FILE *file, rtx x, int code)
     {
       /* Constant progmem address - like used in jmp or call */
       if (0 == text_segment_operand (x, VOIDmode))
-	    if (warning ( 0, "accessing program  memory with data memory address"))
+        if (warning (0, "accessing program memory"
+                     " with data memory address"))
 	  {
 	    output_addr_const (stderr, x);
 	    fprintf(stderr,"\n");
@@ -3117,7 +3065,7 @@ out_movhi_mr_r (rtx insn, rtx op[], int *l)
 
 /* Return 1 if frame pointer for current function required.  */
 
-bool
+static bool
 avr_frame_pointer_required_p (void)
 {
   return (cfun->calls_alloca
@@ -5636,6 +5584,28 @@ avr_handle_fntype_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+
+/* AVR attributes.  */
+static const struct attribute_spec
+avr_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute,
+    false },
+  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute,
+    false },
+  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
+    false },
+  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute,
+    false },
+  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
+    false },
+  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
+    false },
+  { NULL,        0, 0, false, false, false, NULL, false }
+};
+
 /* Look for attribute `progmem' in DECL
    if found return 1, otherwise 0.  */
 
@@ -5701,8 +5671,10 @@ avr_insert_attributes (tree node, tree *attributes)
 /* Track need of __do_clear_bss.  */
 
 void
-avr_asm_output_aligned_decl_common (FILE * stream, const_tree decl ATTRIBUTE_UNUSED,
-                                    const char *name, unsigned HOST_WIDE_INT size,
+avr_asm_output_aligned_decl_common (FILE * stream,
+                                    const_tree decl ATTRIBUTE_UNUSED,
+                                    const char *name,
+                                    unsigned HOST_WIDE_INT size,
                                     unsigned int align, bool local_p)
 {
   avr_need_clear_bss_p = true;
@@ -5821,7 +5793,8 @@ avr_asm_function_rodata_section (tree decl)
 
           if (STR_PREFIX_P (name, old_prefix))
             {
-              const char *rname = avr_replace_prefix (name, old_prefix, new_prefix);
+              const char *rname = avr_replace_prefix (name,
+                                                      old_prefix, new_prefix);
 
               flags &= ~SECTION_CODE;
               flags |= AVR_HAVE_JMP_CALL ? 0 : SECTION_CODE;
@@ -5936,7 +5909,8 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 
           if (STR_PREFIX_P (name, old_prefix))
             {
-              const char *sname = avr_replace_prefix (name, old_prefix, new_prefix);
+              const char *sname = avr_replace_prefix (name,
+                                                      old_prefix, new_prefix);
 
               return get_section (sname, sect->common.flags, sect->named.decl);
             }
@@ -6062,7 +6036,8 @@ avr_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* Implement `TARGET_MEMORY_MOVE_COST' */
 
 static int
-avr_memory_move_cost (enum machine_mode mode, reg_class_t rclass ATTRIBUTE_UNUSED,
+avr_memory_move_cost (enum machine_mode mode,
+                      reg_class_t rclass ATTRIBUTE_UNUSED,
                       bool in ATTRIBUTE_UNUSED)
 {
   return (mode == QImode ? 2
@@ -7750,7 +7725,7 @@ avr_output_addr_vec_elt (FILE *stream, int value)
 /* Returns true if SCRATCH are safe to be allocated as a scratch
    registers (for a define_peephole2) in the current function.  */
 
-bool
+static bool
 avr_hard_regno_scratch_ok (unsigned int regno)
 {
   /* Interrupt functions can only use registers that have already been saved
@@ -7904,7 +7879,8 @@ avr_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 /* Worker function for CASE_VALUES_THRESHOLD.  */
 
-unsigned int avr_case_values_threshold (void)
+static unsigned int
+avr_case_values_threshold (void)
 {
   return (!AVR_HAVE_JMP_CALL || TARGET_CALL_PROLOGUES) ? 8 : 17;
 }
@@ -8210,7 +8186,8 @@ avr_expand_builtin (tree exp, rtx target,
         op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
         if (! CONST_INT_P (op0))
-          error ("__builtin_avr_delay_cycles expects a compile time integer constant.");
+          error ("__builtin_avr_delay_cycles expects a"
+                 " compile time integer constant.");
 
         avr_expand_delay_cycles (op0);
         return 0;
@@ -8228,5 +8205,6 @@ avr_expand_builtin (tree exp, rtx target,
   gcc_unreachable ();
 }
 
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-avr.h"
