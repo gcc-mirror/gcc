@@ -236,9 +236,6 @@ func FDZero(set *FdSet) {
 //sysnb	Getrusage(who int, rusage *Rusage) (errno int)
 //getrusage(who int, rusage *Rusage) int
 
-//sysnb	Gettid() (tid int)
-//gettid() Pid_t
-
 //sysnb	gettimeofday(tv *Timeval, tz *byte) (errno int)
 //gettimeofday(tv *Timeval, tz *byte) int
 func Gettimeofday(tv *Timeval) (errno int) {
@@ -334,7 +331,7 @@ func Settimeofday(tv *Timeval) (errno int) {
 // //times(tms *Tms) _clock_t
 
 //sysnb	Umask(mask int) (oldmask int)
-//umark(mask Mode_t) Mode_t
+//umask(mask Mode_t) Mode_t
 
 //sys	Unlink(path string) (errno int)
 //unlink(path *byte) int

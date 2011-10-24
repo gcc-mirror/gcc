@@ -196,6 +196,10 @@ func PtraceDetach(pid int) (errno int) { return ptrace(PTRACE_DETACH, pid, 0, 0)
 // //sys	Fstatfs(fd int, buf *Statfs_t) (errno int)
 // //fstatfs(fd int, buf *Statfs_t) int
 
+// FIXME: Only available as a syscall.
+// //sysnb	Gettid() (tid int)
+// //gettid() Pid_t
+
 //sys	Ioperm(from int, num int, on int) (errno int)
 //ioperm(from _C_long, num _C_long, on int) int
 
@@ -298,8 +302,9 @@ func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n i
 //sys	Tee(rfd int, wfd int, len int, flags int) (n int64, errno int)
 //tee(rfd int, wfd int, len Size_t, flags uint) Ssize_t
 
-//sysnb	Tgkill(tgid int, tid int, sig int) (errno int)
-//tgkill(tgid int, tid int, sig int) int
+// FIXME: Only available as a syscall.
+// //sysnb	Tgkill(tgid int, tid int, sig int) (errno int)
+// //tgkill(tgid int, tid int, sig int) int
 
 //sys	unlinkat(dirfd int, path string, flags int) (errno int)
 //unlinkat(dirfd int, path *byte, flags int) int
