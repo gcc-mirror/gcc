@@ -3,6 +3,10 @@
 	PR bootstrap/50836
 	* rtlanal.c: Swap includes of "hard-reg-set.h" and "rtl.h".
 
+	PR rtl-optimization/50833
+	* function.c (thread_prologue_and_epilogue_insns): Expect the
+	return insn optimization only if optimize.
+
 2011-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c: Break long lines.
