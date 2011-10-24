@@ -1,3 +1,34 @@
+2011-10-24  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (cpu_feature, enabled): New attributes.
+	(*movsi_insn_novis3, *movsi_insn_vis3): Consolidate into one pattern
+	called *movsi_insn.
+	(*movdi_insn_sp32_v9_novis3, *movdi_insn_sp32_v9_vis3): Consolidate
+	into *movdi_insn_sp32.
+	(*movdi_insn_sp64_novis3, *movdi_insn_sp64_vis3): Consolidate into
+	one pattern called *movdi_insn_sp64.
+	(*movsf_insn_novis3, *movsf_insn_vis3, *movsf_insn_no_fpu):
+	Consolidate into one pattern called *movsf_insn.
+	(*movdf_insn_sp32_no_fpu, *movdf_insn_sp32_v9_novis3,
+	*movdf_insn_sp32_v9_vis3, *movdf_insn_sp32_v9_no_fpu): Consolidate
+	into *movdf_insn_sp32.
+	(*movdf_insn_sp64_novis3, *movdf_insn_sp64_vis3,
+	*movdf_insn_sp64_no_fpu): Consolidate into one pattern called
+	*movdf_insn_sp64.
+	(*zero_extendsidi2_insn_sp64_novis3,
+	*zero_extendsidi2_insn_sp64_vis3): Consolidate into one pattern
+	called *zero_extendsidi2_insn_sp64.
+	(*sign_extendsidi2_insn_novis3, *sign_extendsidi2_insn_vis3):
+	Consolidate into one pattern named *sign_extendsidi2_insn.
+	(*mov<VM32:mode>_insn_novis3, *mov<VM32:mode>_insn_vis3):
+	Consolidate into one pattern named *mov<VM32:mode>_insn.
+	(*mov<VM64:mode>_insn_sp64_novis3,
+	*mov<VM64:mode>_insn_sp64_novis3): Consolidate into one pattern
+	named *mov<VM64:mode>_insn_sp64.
+	(*mov<VM64:mode>_insn_sp32_novis3,
+	*mov<VM64:mode>_insn_sp32_vis3): Consolidate into one pattern
+	named *mov<VM64:mode>_insn_sp32.
+
 2011-10-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* tree-ssa-strlen.c (get_string_length): Change assertion to STPCPY.

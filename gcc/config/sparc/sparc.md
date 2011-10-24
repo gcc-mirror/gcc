@@ -240,6 +240,17 @@
 	 (symbol_ref "TARGET_SPARCLET") (const_string "sparclet")]
 	(const_string "v7"))))
 
+(define_attr "cpu_feature" "none,fpu,fpunotv9,v9,vis,vis3" (const_string "none"))
+
+(define_attr "enabled" ""
+  (cond [(eq_attr "cpu_feature" "none") (const_int 1)
+         (eq_attr "cpu_feature" "fpu") (symbol_ref "TARGET_FPU")
+	 (eq_attr "cpu_feature" "fpunotv9") (symbol_ref "TARGET_FPU && ! TARGET_V9")
+         (eq_attr "cpu_feature" "v9") (symbol_ref "TARGET_V9")
+         (eq_attr "cpu_feature" "vis") (symbol_ref "TARGET_VIS")
+         (eq_attr "cpu_feature" "vis3") (symbol_ref "TARGET_VIS3")]
+        (const_int 0)))
+
 ;; Insn type.
 (define_attr "type"
   "ialu,compare,shift,
@@ -1312,30 +1323,11 @@
     DONE;
 })
 
-(define_insn "*movsi_insn_novis3"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,m,!f,!f,!m,d,d")
-	(match_operand:SI 1 "input_operand"   "rI,K,m,rJ,f,m,f,J,P"))]
-  "(! TARGET_VIS3
-    && (register_operand (operands[0], SImode)
-        || register_or_zero_or_all_ones_operand (operands[1], SImode)))"
-  "@
-   mov\t%1, %0
-   sethi\t%%hi(%a1), %0
-   ld\t%1, %0
-   st\t%r1, %0
-   fmovs\t%1, %0
-   ld\t%1, %0
-   st\t%1, %0
-   fzeros\t%0
-   fones\t%0"
-  [(set_attr "type" "*,*,load,store,fpmove,fpload,fpstore,fga,fga")])
-
-(define_insn "*movsi_insn_vis3"
+(define_insn "*movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m, r,*f,*f,*f, m,d,d")
 	(match_operand:SI 1 "input_operand"        "rI,K,m,rJ,*f, r, f, m,*f,J,P"))]
-  "(TARGET_VIS3
-    && (register_operand (operands[0], SImode)
-        || register_or_zero_or_all_ones_operand (operands[1], SImode)))"
+  "register_operand (operands[0], SImode)
+   || register_or_zero_or_all_ones_operand (operands[1], SImode)"
   "@
    mov\t%1, %0
    sethi\t%%hi(%a1), %0
@@ -1348,7 +1340,8 @@
    st\t%1, %0
    fzeros\t%0
    fones\t%0"
-  [(set_attr "type" "*,*,load,store,*,*,fpmove,fpload,fpstore,fga,fga")])
+  [(set_attr "type" "*,*,load,store,*,*,fpmove,fpload,fpstore,fga,fga")
+   (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")])
 
 (define_insn "*movsi_lo_sum"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1485,68 +1478,10 @@
 
 (define_insn "*movdi_insn_sp32"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-				"=o,T,U,o,r,r,r,?T,?f,?f,?o,?f")
+					"=T,o,T,U,o,r,r,r,?T,?*f,?*f,?o,?*e,?*e,  r,?*f,?*e,?W,b,b")
         (match_operand:DI 1 "input_operand"
-				" J,U,T,r,o,i,r, f, T, o, f, f"))]
-  "! TARGET_V9
-   && (register_operand (operands[0], DImode)
-       || register_or_zero_operand (operands[1], DImode))"
-  "@
-   #
-   std\t%1, %0
-   ldd\t%1, %0
-   #
-   #
-   #
-   #
-   std\t%1, %0
-   ldd\t%1, %0
-   #
-   #
-   #"
-  [(set_attr "type" "store,store,load,*,*,*,*,fpstore,fpload,*,*,*")
-   (set_attr "length" "2,*,*,2,2,2,2,*,*,2,2,2")])
-
-(define_insn "*movdi_insn_sp32_v9_novis3"
-  [(set (match_operand:DI 0 "nonimmediate_operand"
-					"=T,o,T,U,o,r,r,r,?T,?f,?f,?o,?e,?e,?W,b,b")
-        (match_operand:DI 1 "input_operand"
-					" J,J,U,T,r,o,i,r, f, T, o, f, e, W, e,J,P"))]
+					" J,J,U,T,r,o,i,r,*f,  T,  o,*f, *e, *e,?*f,  r,  W,*e,J,P"))]
   "! TARGET_ARCH64
-   && TARGET_V9
-   && ! TARGET_VIS3
-   && (register_operand (operands[0], DImode)
-       || register_or_zero_operand (operands[1], DImode))"
-  "@
-   stx\t%%g0, %0
-   #
-   std\t%1, %0
-   ldd\t%1, %0
-   #
-   #
-   #
-   #
-   std\t%1, %0
-   ldd\t%1, %0
-   #
-   #
-   fmovd\\t%1, %0
-   ldd\\t%1, %0
-   std\\t%1, %0
-   fzero\t%0
-   fone\t%0"
-  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,fpload,fpstore,fga,fga")
-   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,*,*,*,*")
-   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,double,double")])
-
-(define_insn "*movdi_insn_sp32_v9_vis3"
-  [(set (match_operand:DI 0 "nonimmediate_operand"
-					"=T,o,T,U,o,r,r,r,?T,?*f,?*f,?o,?*e,  r,?*f,?*e,?W,b,b")
-        (match_operand:DI 1 "input_operand"
-					" J,J,U,T,r,o,i,r,*f,  T,  o,*f, *e,?*f,  r,  W,*e,J,P"))]
-  "! TARGET_ARCH64
-   && TARGET_V9
-   && TARGET_VIS3
    && (register_operand (operands[0], DImode)
        || register_or_zero_operand (operands[1], DImode))"
   "@
@@ -1565,39 +1500,20 @@
    fmovd\t%1, %0
    #
    #
+   #
    ldd\t%1, %0
    std\t%1, %0
    fzero\t%0
    fone\t%0"
-  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,*,*,fpmove,fpload,fpstore,fga,fga")
-   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,2,2,*,*,*,*")
-   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,double,double")])
+  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,*,*,*,fpload,fpstore,fga,fga")
+   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
+   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
+   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")])
 
-(define_insn "*movdi_insn_sp64_novis3"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,?e,?e,?W,b,b")
-        (match_operand:DI 1 "input_operand"   "rI,N,m,rJ,e,W,e,J,P"))]
-  "TARGET_ARCH64
-   && ! TARGET_VIS3
-   && (register_operand (operands[0], DImode)
-       || register_or_zero_or_all_ones_operand (operands[1], DImode))"
-  "@
-   mov\t%1, %0
-   sethi\t%%hi(%a1), %0
-   ldx\t%1, %0
-   stx\t%r1, %0
-   fmovd\t%1, %0
-   ldd\t%1, %0
-   std\t%1, %0
-   fzero\t%0
-   fone\t%0"
-  [(set_attr "type" "*,*,load,store,fpmove,fpload,fpstore,fga,fga")
-   (set_attr "fptype" "*,*,*,*,double,*,*,double,double")])
-
-(define_insn "*movdi_insn_sp64_vis3"
+(define_insn "*movdi_insn_sp64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,?W,b,b")
         (match_operand:DI 1 "input_operand"        "rI,N,m,rJ,*e, r, *e,  W,*e,J,P"))]
   "TARGET_ARCH64
-   && TARGET_VIS3
    && (register_operand (operands[0], DImode)
        || register_or_zero_or_all_ones_operand (operands[1], DImode))"
   "@
@@ -1613,7 +1529,8 @@
    fzero\t%0
    fone\t%0"
   [(set_attr "type" "*,*,load,store,*,*,fpmove,fpload,fpstore,fga,fga")
-   (set_attr "fptype" "*,*,*,*,*,*,double,*,*,double,double")])
+   (set_attr "fptype" "*,*,*,*,*,*,double,*,*,double,double")
+   (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")])
 
 (define_expand "movdi_pic_label_ref"
   [(set (match_dup 3) (high:DI
@@ -2012,60 +1929,11 @@
     DONE;
 })
 
-(define_insn "*movsf_insn_novis3"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=d, d,f,  *r,*r,*r,f,*r,m,   m")
-	(match_operand:SF 1 "input_operand"        "GY,ZC,f,*rRY, Q, S,m, m,f,*rGY"))]
-  "TARGET_FPU
-   && ! TARGET_VIS3
-   && (register_operand (operands[0], SFmode)
-       || register_or_zero_or_all_ones_operand (operands[1], SFmode))"
-{
-  if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && (which_alternative == 3
-          || which_alternative == 4
-          || which_alternative == 5))
-    {
-      REAL_VALUE_TYPE r;
-      long i;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-      REAL_VALUE_TO_TARGET_SINGLE (r, i);
-      operands[1] = GEN_INT (i);
-    }
-
-  switch (which_alternative)
-    {
-    case 0:
-      return "fzeros\t%0";
-    case 1:
-      return "fones\t%0";
-    case 2:
-      return "fmovs\t%1, %0";
-    case 3:
-      return "mov\t%1, %0";
-    case 4:
-      return "sethi\t%%hi(%a1), %0";
-    case 5:
-      return "#";
-    case 6:
-    case 7:
-      return "ld\t%1, %0";
-    case 8:
-    case 9:
-      return "st\t%r1, %0";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "fga,fga,fpmove,*,*,*,fpload,load,fpstore,store")])
-
-(define_insn "*movsf_insn_vis3"
+(define_insn "*movsf_insn"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=d, d,f,  *r,*r,*r,*r, f, f,*r, m,   m")
 	(match_operand:SF 1 "input_operand"        "GY,ZC,f,*rRY, Q, S, f,*r, m, m, f,*rGY"))]
-  "TARGET_FPU
-   && TARGET_VIS3
-   && (register_operand (operands[0], SFmode)
-       || register_or_zero_or_all_ones_operand (operands[1], SFmode))"
+  "(register_operand (operands[0], SFmode)
+    || register_or_zero_or_all_ones_operand (operands[1], SFmode))"
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE
       && (which_alternative == 3
@@ -2108,49 +1976,8 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "fga,fga,fpmove,*,*,*,*,*,fpload,load,fpstore,store")])
-
-;; Exactly the same as above, except that all `f' cases are deleted.
-;; This is necessary to prevent reload from ever trying to use a `f' reg
-;; when -mno-fpu.
-
-(define_insn "*movsf_insn_no_fpu"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r,r,m")
-	(match_operand:SF 1 "input_operand"    "rR,Q,S,m,rG"))]
-  "! TARGET_FPU
-   && (register_operand (operands[0], SFmode)
-       || register_or_zero_operand (operands[1], SFmode))"
-{
-  if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && (which_alternative == 0
-          || which_alternative == 1
-          || which_alternative == 2))
-    {
-      REAL_VALUE_TYPE r;
-      long i;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-      REAL_VALUE_TO_TARGET_SINGLE (r, i);
-      operands[1] = GEN_INT (i);
-    }
-
-  switch (which_alternative)
-    {
-    case 0:
-      return "mov\t%1, %0";
-    case 1:
-      return "sethi\t%%hi(%a1), %0";
-    case 2:
-      return "#";
-    case 3:
-      return "ld\t%1, %0";
-    case 4:
-      return "st\t%r1, %0";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "*,*,*,load,store")])
+  [(set_attr "type" "fga,fga,fpmove,*,*,*,*,*,fpload,load,fpstore,store")
+   (set_attr "cpu_feature" "vis,vis,fpu,*,*,*,vis3,vis3,fpu,*,fpu,*")])
 
 ;; The following 3 patterns build SFmode constants in integer registers.
 
@@ -2199,77 +2026,10 @@
     DONE;
 })
 
-;; Be careful, fmovd does not exist when !v9.
 (define_insn "*movdf_insn_sp32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,W,U,T,o,e,  *r, o,  e,o")
-	(match_operand:DF 1 "input_operand"       "W#F,e,T,U,G,e,*rFo,*r,o#F,e"))]
-  "TARGET_FPU
-   && ! TARGET_V9
-   && (register_operand (operands[0], DFmode)
-       || register_or_zero_operand (operands[1], DFmode))"
-  "@
-  ldd\t%1, %0
-  std\t%1, %0
-  ldd\t%1, %0
-  std\t%1, %0
-  #
-  #
-  #
-  #
-  #
-  #"
- [(set_attr "type" "fpload,fpstore,load,store,*,*,*,*,*,*")
-  (set_attr "length" "*,*,*,*,2,2,2,2,2,2")])
-
-(define_insn "*movdf_insn_sp32_no_fpu"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=U,T,o,r,o")
-	(match_operand:DF 1 "input_operand"    "T,U,G,ro,r"))]
-  "! TARGET_FPU
-   && ! TARGET_V9
-   && (register_operand (operands[0], DFmode)
-       || register_or_zero_operand (operands[1], DFmode))"
-  "@
-  ldd\t%1, %0
-  std\t%1, %0
-  #
-  #
-  #"
-  [(set_attr "type" "load,store,*,*,*")
-   (set_attr "length" "*,*,2,2,2")])
-
-;; We have available v9 double floats but not 64-bit integer registers.
-(define_insn "*movdf_insn_sp32_v9_novis3"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,  e, T,W,U,T,  f,     *r,    o")
-        (match_operand:DF 1 "input_operand"        "GY,ZC,e,W#F,GY,e,T,U,o#F,*roGYDF,*rGYf"))]
-  "TARGET_FPU
-   && TARGET_V9
-   && ! TARGET_VIS3
-   && ! TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
-  "@
-  fzero\t%0
-  fone\t%0
-  fmovd\t%1, %0
-  ldd\t%1, %0
-  stx\t%r1, %0
-  std\t%1, %0
-  ldd\t%1, %0
-  std\t%1, %0
-  #
-  #
-  #"
-  [(set_attr "type" "fga,fga,fpmove,load,store,store,load,store,*,*,*")
-   (set_attr "length" "*,*,*,*,*,*,*,*,2,2,2")
-   (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*")])
-
-(define_insn "*movdf_insn_sp32_v9_vis3"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,*r, f,  e, T,W,U,T,  f,     *r,    o")
-        (match_operand:DF 1 "input_operand"        "GY,ZC,e, f,*r,W#F,GY,e,T,U,o#F,*roGYDF,*rGYf"))]
-  "TARGET_FPU
-   && TARGET_V9
-   && TARGET_VIS3
-   && ! TARGET_ARCH64
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,e,*r, f,  e, T,W,U,T,  f,     *r,   o,o")
+        (match_operand:DF 1 "input_operand"        "GY,ZC,e,e, f,*r,W#F,GY,e,T,U,o#F,*roGYDF,*rGY,f"))]
+  "! TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
   "@
@@ -2278,6 +2038,7 @@
   fmovd\t%1, %0
   #
   #
+  #
   ldd\t%1, %0
   stx\t%r1, %0
   std\t%1, %0
@@ -2285,57 +2046,17 @@
   std\t%1, %0
   #
   #
-  #"
-  [(set_attr "type" "fga,fga,fpmove,*,*,load,store,store,load,store,*,*,*")
-   (set_attr "length" "*,*,*,2,2,*,*,*,*,*,2,2,2")
-   (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*,*,*")])
-
-(define_insn "*movdf_insn_sp32_v9_no_fpu"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=U,T,T,r,o")
-	(match_operand:DF 1 "input_operand"    "T,U,G,ro,rG"))]
-  "! TARGET_FPU
-   && TARGET_V9
-   && ! TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_or_zero_operand (operands[1], DFmode))"
-  "@
-  ldd\t%1, %0
-  std\t%1, %0
-  stx\t%r1, %0
   #
   #"
-  [(set_attr "type" "load,store,store,*,*")
-   (set_attr "length" "*,*,*,2,2")])
+  [(set_attr "type" "fga,fga,fpmove,*,*,*,fpload,store,fpstore,load,store,*,*,*,*")
+   (set_attr "length" "*,*,*,2,2,2,*,*,*,*,*,2,2,2,2")
+   (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*,*,*,*,*")
+   (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,fpu,*,*,fpu")])
 
-;; We have available both v9 double floats and 64-bit integer registers.
-(define_insn "*movdf_insn_sp64_novis3"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,  e,W,  *r,*r,   m,*r")
-        (match_operand:DF 1 "input_operand"        "GY,ZC,e,W#F,e,*rGY, m,*rGY,DF"))]
-  "TARGET_FPU
-   && ! TARGET_VIS3
-   && TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
-  "@
-  fzero\t%0
-  fone\t%0
-  fmovd\t%1, %0
-  ldd\t%1, %0
-  std\t%1, %0
-  mov\t%r1, %0
-  ldx\t%1, %0
-  stx\t%r1, %0
-  #"
-  [(set_attr "type" "fga,fga,fpmove,load,store,*,load,store,*")
-   (set_attr "length" "*,*,*,*,*,*,*,*,2")
-   (set_attr "fptype" "double,double,double,*,*,*,*,*,*")])
-
-(define_insn "*movdf_insn_sp64_vis3"
+(define_insn "*movdf_insn_sp64"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=b, b,e,*r, e,  e,W,  *r,*r,   m,*r")
         (match_operand:DF 1 "input_operand"        "GY,ZC,e, e,*r,W#F,e,*rGY, m,*rGY,DF"))]
-  "TARGET_FPU
-   && TARGET_ARCH64
-   && TARGET_VIS3
+  "TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
   "@
@@ -2352,20 +2073,8 @@
   #"
   [(set_attr "type" "fga,fga,fpmove,*,*,load,store,*,load,store,*")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,2")
-   (set_attr "fptype" "double,double,double,double,double,*,*,*,*,*,*")])
-
-(define_insn "*movdf_insn_sp64_no_fpu"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
-        (match_operand:DF 1 "input_operand"    "r,m,rG"))]
-  "! TARGET_FPU
-   && TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_or_zero_operand (operands[1], DFmode))"
-  "@
-  mov\t%1, %0
-  ldx\t%1, %0
-  stx\t%r1, %0"
-  [(set_attr "type" "*,load,store")])
+   (set_attr "fptype" "double,double,double,double,double,*,*,*,*,*,*")
+   (set_attr "cpu_feature" "vis,vis,fpu,vis3,vis3,fpu,fpu,*,*,*,*")])
 
 ;; This pattern builds DFmode constants in integer registers.
 (define_split
@@ -3129,28 +2838,17 @@
   ""
   "")
 
-(define_insn "*zero_extendsidi2_insn_sp64_novis3"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (match_operand:SI 1 "input_operand" "r,m")))]
-  "TARGET_ARCH64
-   && ! TARGET_VIS3
-   && GET_CODE (operands[1]) != CONST_INT"
-  "@
-   srl\t%1, 0, %0
-   lduw\t%1, %0"
-  [(set_attr "type" "shift,load")])
-
-(define_insn "*zero_extendsidi2_insn_sp64_vis3"
+(define_insn "*zero_extendsidi2_insn_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
 	(zero_extend:DI (match_operand:SI 1 "input_operand" "r,m,*f")))]
   "TARGET_ARCH64
-   && TARGET_VIS3
    && GET_CODE (operands[1]) != CONST_INT"
   "@
    srl\t%1, 0, %0
    lduw\t%1, %0
    movstouw\t%1, %0"
-  [(set_attr "type" "shift,load,*")])
+  [(set_attr "type" "shift,load,*")
+   (set_attr "cpu_feature" "*,*,vis3")])
 
 (define_insn_and_split "*zero_extendsidi2_insn_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3475,26 +3173,17 @@
   "TARGET_ARCH64"
   "")
 
-(define_insn "*sign_extendsidi2_insn_novis3"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(sign_extend:DI (match_operand:SI 1 "input_operand" "r,m")))]
-  "TARGET_ARCH64 && ! TARGET_VIS3"
-  "@
-  sra\t%1, 0, %0
-  ldsw\t%1, %0"
-  [(set_attr "type" "shift,sload")
-   (set_attr "us3load_type" "*,3cycle")])
-
-(define_insn "*sign_extendsidi2_insn_vis3"
+(define_insn "*sign_extendsidi2_insn"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
 	(sign_extend:DI (match_operand:SI 1 "input_operand" "r,m,*f")))]
-  "TARGET_ARCH64 && TARGET_VIS3"
+  "TARGET_ARCH64"
   "@
   sra\t%1, 0, %0
   ldsw\t%1, %0
   movstosw\t%1, %0"
   [(set_attr "type" "shift,sload,*")
-   (set_attr "us3load_type" "*,3cycle,*")])
+   (set_attr "us3load_type" "*,3cycle,*")
+   (set_attr "cpu_feature" "*,*,vis3")])
 
 
 ;; Special pattern for optimizing bit-field compares.  This is needed
@@ -7979,30 +7668,10 @@
     DONE;
 })
 
-(define_insn "*mov<VM32:mode>_insn_novis3"
-  [(set (match_operand:VM32 0 "nonimmediate_operand" "=f, f,f,f,m, m,r,m,*r")
-	(match_operand:VM32 1 "input_operand"        "GY,ZC,f,m,f,GY,m,r,*r"))]
-  "TARGET_VIS
-   && ! TARGET_VIS3
-   && (register_operand (operands[0], <VM32:MODE>mode)
-       || register_or_zero_or_all_ones_operand (operands[1], <VM32:MODE>mode))"
-  "@
-  fzeros\t%0
-  fones\t%0
-  fsrc1s\t%1, %0
-  ld\t%1, %0
-  st\t%1, %0
-  st\t%r1, %0
-  ld\t%1, %0
-  st\t%1, %0
-  mov\t%1, %0"
-  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*")])
-
-(define_insn "*mov<VM32:mode>_insn_vis3"
+(define_insn "*mov<VM32:mode>_insn"
   [(set (match_operand:VM32 0 "nonimmediate_operand" "=f, f,f,f,m, m,*r, m,*r,*r, f")
 	(match_operand:VM32 1 "input_operand"        "GY,ZC,f,m,f,GY, m,*r,*r, f,*r"))]
   "TARGET_VIS
-   && TARGET_VIS3
    && (register_operand (operands[0], <VM32:MODE>mode)
        || register_or_zero_or_all_ones_operand (operands[1], <VM32:MODE>mode))"
   "@
@@ -8017,33 +7686,13 @@
   mov\t%1, %0
   movstouw\t%1, %0
   movwtos\t%1, %0"
-  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*,*")])
+  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*,*")
+   (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,*,vis3,vis3")])
 
-(define_insn "*mov<VM64:mode>_insn_sp64_novis3"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,e,m, m,r,m,*r")
-	(match_operand:VM64 1 "input_operand"        "GY,ZC,e,m,e,GY,m,r,*r"))]
-  "TARGET_VIS
-   && ! TARGET_VIS3
-   && TARGET_ARCH64
-   && (register_operand (operands[0], <VM64:MODE>mode)
-       || register_or_zero_or_all_ones_operand (operands[1], <VM64:MODE>mode))"
-  "@
-  fzero\t%0
-  fone\t%0
-  fsrc1\t%1, %0
-  ldd\t%1, %0
-  std\t%1, %0
-  stx\t%r1, %0
-  ldx\t%1, %0
-  stx\t%1, %0
-  mov\t%1, %0"
-  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*")])
-
-(define_insn "*mov<VM64:mode>_insn_sp64_vis3"
+(define_insn "*mov<VM64:mode>_insn_sp64"
   [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,e,m, m,*r, m,*r, f,*r")
 	(match_operand:VM64 1 "input_operand"        "GY,ZC,e,m,e,GY, m,*r, f,*r,*r"))]
   "TARGET_VIS
-   && TARGET_VIS3
    && TARGET_ARCH64
    && (register_operand (operands[0], <VM64:MODE>mode)
        || register_or_zero_or_all_ones_operand (operands[1], <VM64:MODE>mode))"
@@ -8059,35 +7708,13 @@
   movdtox\t%1, %0
   movxtod\t%1, %0
   mov\t%1, %0"
-  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*,*")])
+  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*,*")
+   (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,vis3,vis3,*")])
 
-(define_insn "*mov<VM64:mode>_insn_sp32_novis3"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,e,m, m,U,T,o,*r")
-	(match_operand:VM64 1 "input_operand"        "GY,ZC,e,m,e,GY,T,U,r,*r"))]
-  "TARGET_VIS
-   && ! TARGET_VIS3
-   && ! TARGET_ARCH64
-   && (register_operand (operands[0], <VM64:MODE>mode)
-       || register_or_zero_or_all_ones_operand (operands[1], <VM64:MODE>mode))"
-  "@
-  fzero\t%0
-  fone\t%0
-  fsrc1\t%1, %0
-  ldd\t%1, %0
-  std\t%1, %0
-  stx\t%r1, %0
-  ldd\t%1, %0
-  std\t%1, %0
-  #
-  #"
-  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*")
-   (set_attr "length" "*,*,*,*,*,*,*,*,2,2")])
-
-(define_insn "*mov<VM64:mode>_insn_sp32_vis3"
+(define_insn "*mov<VM64:mode>_insn_sp32"
   [(set (match_operand:VM64 0 "nonimmediate_operand" "=e, e,e,*r, f,e,m, m,U,T, o,*r")
 	(match_operand:VM64 1 "input_operand"        "GY,ZC,e, f,*r,m,e,GY,T,U,*r,*r"))]
   "TARGET_VIS
-   && TARGET_VIS3
    && ! TARGET_ARCH64
    && (register_operand (operands[0], <VM64:MODE>mode)
        || register_or_zero_or_all_ones_operand (operands[1], <VM64:MODE>mode))"
@@ -8105,7 +7732,8 @@
   #
   #"
   [(set_attr "type" "fga,fga,fga,*,*,fpload,fpstore,store,load,store,*,*")
-   (set_attr "length" "*,*,*,2,2,*,*,*,*,*,2,2")])
+   (set_attr "length" "*,*,*,2,2,*,*,*,*,*,2,2")
+   (set_attr "cpu_feature" "vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*")])
 
 (define_split
   [(set (match_operand:VM64 0 "memory_operand" "")
