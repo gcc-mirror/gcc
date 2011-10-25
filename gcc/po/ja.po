@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-06-21 10:27+0000\n"
-"PO-Revision-Date: 2011-09-02 18:40+0900\n"
+"PO-Revision-Date: 2011-10-25 22:36+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -3819,27 +3819,27 @@ msgstr "%s: %qs のインスタンス内:\n"
 #: cp/error.c:2897
 #, c-format
 msgid "%s:%d:%d:   recursively instantiated from %qs\n"
-msgstr ""
+msgstr "%s:%d:%d:   %qs から再帰的に実体化されました\n"
 
 #: cp/error.c:2898
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d:   instantiated from %qs\n"
-msgstr "%s:%d:   `%s' から実体化されました\n"
+msgstr "%s:%d:%d:   %qs から実体化されました\n"
 
 #: cp/error.c:2903 cp/error.c:2904
 #, c-format
 msgid "%s:%d:   recursively instantiated from %qs\n"
-msgstr ""
+msgstr "%s:%d:   %qs から再帰的に実体化されました\n"
 
 #: cp/error.c:2912
 #, c-format
 msgid "%s:%d:%d:   recursively instantiated from here"
-msgstr ""
+msgstr "%s:%d:%d:   ここから再帰的に実体化されました"
 
 #: cp/error.c:2913
 #, fuzzy, c-format
 msgid "%s:%d:%d:   instantiated from here"
-msgstr "%s:%d:   ここで実体化されました\n"
+msgstr "%s:%d:%d:   ここから実体化されました"
 
 #: cp/error.c:2918
 #, c-format
@@ -3947,9 +3947,8 @@ msgid "wrong type argument to conjugation"
 msgstr "複素共役(~)への引数の型が間違っています"
 
 #: cp/typeck.c:5063
-#, fuzzy
 msgid "in argument to unary !"
-msgstr "単項プラスへの引数の型が間違っています"
+msgstr ""
 
 #: cp/typeck.c:5112
 msgid "no pre-increment operator for type"
@@ -29221,14 +29220,14 @@ msgid "%qE does not have class type"
 msgstr ""
 
 #: cp/parser.c:5612 cp/typeck.c:2326
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %qD"
-msgstr "`restrict' の用法が不適切です"
+msgstr "無効な %qD の使用です"
 
 #: cp/parser.c:5875
 #, gcc-internal-format
 msgid "non-scalar type"
-msgstr ""
+msgstr "非スカラー型"
 
 #: cp/parser.c:5964
 #, fuzzy, gcc-internal-format
@@ -29303,12 +29302,12 @@ msgstr "仮引数 `%s' で指定された記憶クラス"
 #: cp/parser.c:8218
 #, gcc-internal-format
 msgid "expected labeled-statement"
-msgstr ""
+msgstr "ラベル付き文が予期されます"
 
 #: cp/parser.c:8256
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label %qE not within a switch statement"
-msgstr "case ラベルが switch 文の中にありません"
+msgstr "case ラベル %qE が switch 文の中にありません"
 
 #: cp/parser.c:8331
 #, gcc-internal-format
@@ -29374,14 +29373,14 @@ msgstr ""
 #: cp/parser.c:9886
 #, gcc-internal-format
 msgid "%<friend%> used outside of class"
-msgstr ""
+msgstr "%<friend%> がクラスの外側で使用されています"
 
 #. Complain about `auto' as a storage specifier, if
 #. we're complaining about C++0x compatibility.
 #: cp/parser.c:9945
 #, gcc-internal-format
 msgid "%<auto%> will change meaning in C++0x; please remove it"
-msgstr ""
+msgstr "%<auto%> は C++0x で意味が変更になります。削除してください"
 
 #: cp/parser.c:9981
 #, gcc-internal-format
@@ -29401,7 +29400,7 @@ msgstr ""
 #: cp/parser.c:10182
 #, gcc-internal-format
 msgid "invalid linkage-specification"
-msgstr ""
+msgstr "無効なリンク指定です"
 
 #: cp/parser.c:10309
 #, gcc-internal-format
@@ -29436,7 +29435,7 @@ msgstr ""
 #: cp/parser.c:11103
 #, gcc-internal-format
 msgid "expected operator"
-msgstr ""
+msgstr "演算子が予期されます"
 
 #. Warn that we do not support `export'.
 #: cp/parser.c:11140
@@ -29467,7 +29466,7 @@ msgstr ""
 #: cp/parser.c:11671 cp/parser.c:20945
 #, gcc-internal-format
 msgid "expected %<<%>"
-msgstr ""
+msgstr "%<<%> が予期されます"
 
 #: cp/parser.c:11678
 #, gcc-internal-format
@@ -29488,13 +29487,13 @@ msgstr "マクロ引数リストにあり得ないトークン"
 #: cp/parser.c:11828 cp/parser.c:11943 cp/parser.c:12153
 #, gcc-internal-format
 msgid "expected template-name"
-msgstr ""
+msgstr "テンプレート名が予期されます"
 
 #. Explain what went wrong.
 #: cp/parser.c:11874
 #, gcc-internal-format
 msgid "non-template %qD used as template"
-msgstr ""
+msgstr "非テンプレート %qD がテンプレートとして使用されています"
 
 #: cp/parser.c:11876
 #, gcc-internal-format
@@ -29509,7 +29508,7 @@ msgstr ""
 #: cp/parser.c:12118 cp/parser.c:12136 cp/parser.c:12277
 #, gcc-internal-format
 msgid "expected template-argument"
-msgstr ""
+msgstr "テンプレート引数が予期されます"
 
 #: cp/parser.c:12260
 #, gcc-internal-format
@@ -29534,7 +29533,7 @@ msgstr ""
 #: cp/parser.c:12654
 #, gcc-internal-format
 msgid "expected type specifier"
-msgstr ""
+msgstr "型指定が予期されます"
 
 #: cp/parser.c:12871
 #, gcc-internal-format
@@ -29544,7 +29543,7 @@ msgstr ""
 #: cp/parser.c:12898
 #, gcc-internal-format
 msgid "expected type-name"
-msgstr ""
+msgstr "型名が予期されます"
 
 #: cp/parser.c:13085
 #, gcc-internal-format
@@ -29552,9 +29551,9 @@ msgid "elaborated-type-specifier for a scoped enum must not use the %<%D%> keywo
 msgstr ""
 
 #: cp/parser.c:13269
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration %qD does not declare anything"
-msgstr "宣言が何も宣言していません"
+msgstr "宣言 %qD が何も宣言していません"
 
 #: cp/parser.c:13355
 #, fuzzy, gcc-internal-format
@@ -29584,7 +29583,7 @@ msgstr ""
 #: cp/parser.c:13559
 #, gcc-internal-format
 msgid "expected %<;%> or %<{%>"
-msgstr ""
+msgstr "%<;%> または %<{%> が予期されます"
 
 #: cp/parser.c:13606
 #, gcc-internal-format
@@ -29602,9 +29601,9 @@ msgid "declaration of %qD in %qD which does not enclose %qD"
 msgstr ""
 
 #: cp/parser.c:13643
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multiple definition of %q#T"
-msgstr "`%s' が再定義されました"
+msgstr "%q#T が複数定義されています"
 
 #: cp/parser.c:13669
 #, gcc-internal-format
@@ -29617,19 +29616,19 @@ msgid "opaque-enum-specifier must use a simple identifier"
 msgstr ""
 
 #: cp/parser.c:13847
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a namespace-name"
-msgstr "\"%s\" は正常なファイル名ではありません"
+msgstr "%qD は名前空間名ではありません"
 
 #: cp/parser.c:13848
 #, gcc-internal-format
 msgid "expected namespace-name"
-msgstr ""
+msgstr "名前空間名が予期されます"
 
 #: cp/parser.c:13973
 #, gcc-internal-format
 msgid "%<namespace%> definition is not allowed here"
-msgstr ""
+msgstr "ここでは %<namespace%> 定義は許可されていません"
 
 #: cp/parser.c:14114
 #, gcc-internal-format
@@ -29639,7 +29638,7 @@ msgstr ""
 #: cp/parser.c:14536
 #, gcc-internal-format
 msgid "a function-definition is not allowed here"
-msgstr ""
+msgstr "ここでは関数定義は許可されていません"
 
 #: cp/parser.c:14548
 #, fuzzy, gcc-internal-format
@@ -29709,32 +29708,32 @@ msgstr ""
 #: cp/parser.c:15323
 #, gcc-internal-format
 msgid "invalid declarator"
-msgstr ""
+msgstr "無効な宣言子です"
 
 #: cp/parser.c:15389
 #, gcc-internal-format
 msgid "expected declarator"
-msgstr ""
+msgstr "宣言子が予期されます"
 
 #: cp/parser.c:15484
 #, gcc-internal-format
 msgid "%qD is a namespace"
-msgstr ""
+msgstr "%qD は名前空間です"
 
 #: cp/parser.c:15500
 #, gcc-internal-format
 msgid "expected ptr-operator"
-msgstr ""
+msgstr "ポインタ演算子が予期されます"
 
 #: cp/parser.c:15559
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate cv-qualifier"
-msgstr "重複した case の値"
+msgstr ""
 
 #: cp/parser.c:15681 cp/typeck2.c:427
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %<auto%>"
-msgstr "`restrict' の用法が不適切です"
+msgstr "無効な %<auto%> の使用です"
 
 #: cp/parser.c:15700
 #, fuzzy, gcc-internal-format
@@ -29744,12 +29743,12 @@ msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 #: cp/parser.c:15781
 #, gcc-internal-format
 msgid "expected type-specifier"
-msgstr ""
+msgstr "型指定子が予期されます"
 
 #: cp/parser.c:16025
 #, gcc-internal-format
 msgid "expected %<,%> or %<...%>"
-msgstr ""
+msgstr "%<,%> または %<...%> が予期されます"
 
 #: cp/parser.c:16082
 #, fuzzy, gcc-internal-format
@@ -29757,9 +29756,9 @@ msgid "types may not be defined in parameter types"
 msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 
 #: cp/parser.c:16306
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "file ends in default argument"
-msgstr "無効なデフォルトテンプレート引数"
+msgstr "デフォルト引数内でファイルが終了しています"
 
 #: cp/parser.c:16352
 #, gcc-internal-format
@@ -29782,24 +29781,24 @@ msgid "expected class-name"
 msgstr ""
 
 #: cp/parser.c:17063
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%> after class definition"
-msgstr "認識できない wide sub 命令です"
+msgstr "クラス定義の後には %<;%> が予期されます"
 
 #: cp/parser.c:17065
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%> after struct definition"
-msgstr "認識できない wide sub 命令です"
+msgstr "構造体定義の後には %<;%> が予期されます"
 
 #: cp/parser.c:17067
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%> after union definition"
-msgstr "`%s' の extern 宣言がネストしています"
+msgstr "共用体定義の後には %<;%> が予期されます"
 
 #: cp/parser.c:17351
 #, gcc-internal-format
 msgid "expected %<{%> or %<:%>"
-msgstr ""
+msgstr "%<{%> または %<:%> が予期されます"
 
 #: cp/parser.c:17363
 #, gcc-internal-format
@@ -29812,9 +29811,9 @@ msgid "qualified name does not name a class"
 msgstr ""
 
 #: cp/parser.c:17382
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid class name in declaration of %qD"
-msgstr "`%s' の宣言において複数の保存クラス"
+msgstr "%qD の宣言内に無効なクラス名です"
 
 #: cp/parser.c:17415
 #, gcc-internal-format
@@ -29829,7 +29828,7 @@ msgstr ""
 #: cp/parser.c:17457
 #, gcc-internal-format
 msgid "function template %qD redeclared as a class template"
-msgstr ""
+msgstr "関数テンプレート %qD がクラステンプレートとして再定義されました"
 
 #: cp/parser.c:17488
 #, gcc-internal-format
@@ -29837,9 +29836,9 @@ msgid "could not resolve typename type"
 msgstr ""
 
 #: cp/parser.c:17540
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous definition of %q+#T"
-msgstr "前方での `%s' の宣言"
+msgstr "%q+#T の前の定義"
 
 #: cp/parser.c:17604 cp/parser.c:20990
 #, gcc-internal-format
@@ -29852,9 +29851,9 @@ msgid "a class-key must be used when declaring a friend"
 msgstr ""
 
 #: cp/parser.c:17832
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "friend declaration does not name a class or function"
-msgstr "friend 宣言がクラス定義の中にありません"
+msgstr ""
 
 #: cp/parser.c:18016
 #, gcc-internal-format
@@ -29864,7 +29863,7 @@ msgstr ""
 #: cp/parser.c:18064
 #, gcc-internal-format
 msgid "expected %<;%> at end of member declaration"
-msgstr ""
+msgstr "メンバ宣言の最後には %<;%> が予期されます"
 
 #: cp/parser.c:18130
 #, gcc-internal-format
@@ -29983,137 +29982,137 @@ msgstr "テンプレート型統一中 `%s' が使用されました"
 #: cp/parser.c:20750
 #, gcc-internal-format
 msgid "%<__thread%> before %qD"
-msgstr ""
+msgstr "%<__thread%> が %qD の前にあります"
 
 #: cp/parser.c:20854
 #, gcc-internal-format
 msgid "expected %<new%>"
-msgstr ""
+msgstr "%<new%> が予期されます"
 
 #: cp/parser.c:20857
 #, gcc-internal-format
 msgid "expected %<delete%>"
-msgstr ""
+msgstr "%<delete%> が予期されます"
 
 #: cp/parser.c:20860
 #, gcc-internal-format
 msgid "expected %<return%>"
-msgstr ""
+msgstr "%<return%> が予期されます"
 
 #: cp/parser.c:20866
 #, gcc-internal-format
 msgid "expected %<extern%>"
-msgstr ""
+msgstr "%<extern%> が予期されます"
 
 #: cp/parser.c:20869
 #, gcc-internal-format
 msgid "expected %<static_assert%>"
-msgstr ""
+msgstr "%<static_assert%> が予期されます"
 
 #: cp/parser.c:20872
 #, gcc-internal-format
 msgid "expected %<decltype%>"
-msgstr ""
+msgstr "%<decltype%> が予期されます"
 
 #: cp/parser.c:20875
 #, gcc-internal-format
 msgid "expected %<operator%>"
-msgstr ""
+msgstr "%<operator%> が予期されます"
 
 #: cp/parser.c:20878
 #, gcc-internal-format
 msgid "expected %<class%>"
-msgstr ""
+msgstr "%<class%> が予期されます"
 
 #: cp/parser.c:20881
 #, gcc-internal-format
 msgid "expected %<template%>"
-msgstr ""
+msgstr "%<template%> が予期されます"
 
 #: cp/parser.c:20884
 #, gcc-internal-format
 msgid "expected %<namespace%>"
-msgstr ""
+msgstr "%<namespace%> が予期されます"
 
 #: cp/parser.c:20887
 #, gcc-internal-format
 msgid "expected %<using%>"
-msgstr ""
+msgstr "%<using%> が予期されます"
 
 #: cp/parser.c:20890
 #, gcc-internal-format
 msgid "expected %<asm%>"
-msgstr ""
+msgstr "%<asm%> が予期されます"
 
 #: cp/parser.c:20893
 #, gcc-internal-format
 msgid "expected %<try%>"
-msgstr ""
+msgstr "%<try%> が予期されます"
 
 #: cp/parser.c:20896
 #, gcc-internal-format
 msgid "expected %<catch%>"
-msgstr ""
+msgstr "%<catch%> が予期されます"
 
 #: cp/parser.c:20899
 #, gcc-internal-format
 msgid "expected %<throw%>"
-msgstr ""
+msgstr "%<throw%> が予期されます"
 
 #: cp/parser.c:20902
 #, gcc-internal-format
 msgid "expected %<__label__%>"
-msgstr ""
+msgstr "%<__label__%> が予期されます"
 
 #: cp/parser.c:20905
 #, gcc-internal-format
 msgid "expected %<@try%>"
-msgstr ""
+msgstr "%<@try%> が予期されます"
 
 #: cp/parser.c:20908
 #, gcc-internal-format
 msgid "expected %<@synchronized%>"
-msgstr ""
+msgstr "%<@synchronized%> が予期されます"
 
 #: cp/parser.c:20911
 #, gcc-internal-format
 msgid "expected %<@throw%>"
-msgstr ""
+msgstr "%<@throw%> が予期されます"
 
 #: cp/parser.c:20936
 #, gcc-internal-format
 msgid "expected %<[%>"
-msgstr ""
+msgstr "%<[%> が予期されます"
 
 #: cp/parser.c:20942
 #, gcc-internal-format
 msgid "expected %<::%>"
-msgstr ""
+msgstr "%<::%> が予期されます"
 
 #: cp/parser.c:20954
 #, gcc-internal-format
 msgid "expected %<...%>"
-msgstr ""
+msgstr "%<...%> が予期されます"
 
 #: cp/parser.c:20957
 #, gcc-internal-format
 msgid "expected %<*%>"
-msgstr ""
+msgstr "%<*%> が予期されます"
 
 #: cp/parser.c:20960
 #, gcc-internal-format
 msgid "expected %<~%>"
-msgstr ""
+msgstr "%<~%> が予期されます"
 
 #: cp/parser.c:20966
 #, gcc-internal-format
 msgid "expected %<:%> or %<::%>"
-msgstr ""
+msgstr "%<:%> または %<::%> が予期されます"
 
 #: cp/parser.c:20994
 #, gcc-internal-format
 msgid "expected %<class%>, %<typename%>, or %<template%>"
-msgstr ""
+msgstr "%<class%>、%<typename%>、または %<template%> が予期されます"
 
 #: cp/parser.c:21225
 #, gcc-internal-format
@@ -30293,14 +30292,14 @@ msgid "specialization of %qD after instantiation"
 msgstr ""
 
 #: cp/pt.c:1728
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s %+#D"
-msgstr "%s: %s"
+msgstr "%s %+#D"
 
 #: cp/pt.c:1811
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a function template"
-msgstr "キャストによる関数の型が適合しません"
+msgstr "%qD は関数テンプレートではありません"
 
 #: cp/pt.c:2020
 #, gcc-internal-format
@@ -30335,16 +30334,14 @@ msgid "definition provided for explicit instantiation"
 msgstr ""
 
 #: cp/pt.c:2295
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many template parameter lists in declaration of %qD"
-msgstr "%s: 警告: `%s' の宣言での仮引数リストが多すぎます\n"
+msgstr "%qD の宣言内でテンプレート仮引数リストが多すぎます"
 
 #: cp/pt.c:2298
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few template parameter lists in declaration of %qD"
-msgstr ""
-"\n"
-"%s: 警告: `%s' の宣言での仮引数リストが少なすぎます\n"
+msgstr "%qD の宣言内でテンプレート仮引数リストが少なすぎます"
 
 #: cp/pt.c:2300
 #, gcc-internal-format
@@ -30362,14 +30359,14 @@ msgid "default argument specified in explicit specialization"
 msgstr ""
 
 #: cp/pt.c:2381
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a template function"
-msgstr "`%s' は通常、非 static な関数です"
+msgstr "%qD はテンプレート関数ではありません"
 
 #: cp/pt.c:2389
 #, gcc-internal-format
 msgid "%qD is not declared in %qD"
-msgstr ""
+msgstr "%qD は %qD 内では宣言されていません"
 
 #. From [temp.expl.spec]:
 #.
@@ -30385,9 +30382,9 @@ msgid "specialization of implicitly-declared special member function"
 msgstr ""
 
 #: cp/pt.c:2495
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no member function %qD declared in %qT"
-msgstr "ネストした関数 `%s' は `extern' に宣言されました"
+msgstr "メンバ関数 %qD は %qT 内では宣言されていません"
 
 #: cp/pt.c:3114
 #, gcc-internal-format
@@ -30412,17 +30409,17 @@ msgstr ""
 #: cp/pt.c:3233 cp/pt.c:4253
 #, gcc-internal-format
 msgid "        %qD"
-msgstr ""
+msgstr "        %qD"
 
 #: cp/pt.c:3235
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "        <anonymous>"
-msgstr "<無名 %s>"
+msgstr "        <無名>"
 
 #: cp/pt.c:3352
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %q+#D"
-msgstr "`%s' が再宣言されました"
+msgstr "%q+#D の宣言です"
 
 #: cp/pt.c:3353
 #, gcc-internal-format
@@ -30467,19 +30464,19 @@ msgid "partial specialization of %qT after instantiation of %qT"
 msgstr ""
 
 #: cp/pt.c:4503
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no default argument for %qD"
-msgstr "フォーマットへの引数が少なすぎます"
+msgstr "%qD 用のデフォルト引数がありません"
 
 #: cp/pt.c:4524
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter pack %qE must be at the end of the template parameter list"
-msgstr "仮引数リストからの仮引数名を欠いています"
+msgstr ""
 
 #: cp/pt.c:4527
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter pack %qT must be at the end of the template parameter list"
-msgstr "仮引数リストからの仮引数名を欠いています"
+msgstr ""
 
 #: cp/pt.c:4564
 #, gcc-internal-format
@@ -30509,7 +30506,7 @@ msgstr "クロスコンパイル時の実数値テンプレート仮引数"
 #: cp/pt.c:4720
 #, gcc-internal-format
 msgid "template class without a name"
-msgstr ""
+msgstr "名前無しテンプレートクラスです"
 
 #. [temp.mem]
 #.
@@ -30517,7 +30514,7 @@ msgstr ""
 #: cp/pt.c:4730
 #, gcc-internal-format
 msgid "destructor %qD declared as member template"
-msgstr ""
+msgstr "デストラクタ %qD がメンバテンプレートとして宣言されています"
 
 #. [basic.stc.dynamic.allocation]
 #.
@@ -30525,14 +30522,14 @@ msgstr ""
 #. template. ... Template allocation functions shall
 #. have two or more parameters.
 #: cp/pt.c:4745
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid template declaration of %qD"
-msgstr "`%s' の extern 宣言がネストしています"
+msgstr "%qD の無効なテンプレート宣言です"
 
 #: cp/pt.c:4862
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template definition of non-template %q#D"
-msgstr "インスタンスメソッド `%s' の定義が重複しています。"
+msgstr "非テンプレート %q#D のテンプレート定義です"
 
 #: cp/pt.c:4905
 #, gcc-internal-format
@@ -30565,14 +30562,14 @@ msgid "use template<> for an explicit specialization"
 msgstr ""
 
 #: cp/pt.c:5043
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a template type"
-msgstr "`%s' は不完全型です"
+msgstr "%qT はテンプレート型ではありません"
 
 #: cp/pt.c:5056
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template specifiers not specified in declaration of %qD"
-msgstr "friend 関数宣言内の記憶クラス指定子は無効です"
+msgstr ""
 
 #: cp/pt.c:5067
 #, gcc-internal-format, gfc-internal-format
@@ -30589,14 +30586,14 @@ msgstr[0] "`%s' の宣言は仮引数を覆い隠します"
 msgstr[1] "`%s' の宣言は仮引数を覆い隠します"
 
 #: cp/pt.c:5108
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template parameter %q+#D"
-msgstr "マクロ仮引数 \"%s\" が重複しています"
+msgstr "テンプレート仮引数 %q+#D です"
 
 #: cp/pt.c:5109
 #, gcc-internal-format
 msgid "redeclared here as %q#D"
-msgstr ""
+msgstr "ここで %q#D として再宣言されています"
 
 #. We have in [temp.param]:
 #.
@@ -30605,12 +30602,12 @@ msgstr ""
 #: cp/pt.c:5119
 #, gcc-internal-format
 msgid "redefinition of default argument for %q#D"
-msgstr ""
+msgstr "%q#D 用のデフォルト引数の再定義です"
 
 #: cp/pt.c:5121
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "original definition appeared here"
-msgstr "関数の定義が `typedef' と宣言されました"
+msgstr "元の定義はここに出現しています"
 
 #: cp/pt.c:5209
 #, gcc-internal-format
@@ -30618,9 +30615,9 @@ msgid "%qE is not a valid template argument for type %qT because function %qD ha
 msgstr ""
 
 #: cp/pt.c:5231 cp/pt.c:5571
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT"
-msgstr "`%s' の引数として無効な型"
+msgstr ""
 
 #: cp/pt.c:5233
 #, gcc-internal-format
@@ -31558,17 +31555,17 @@ msgstr "%qE は初期化されていません"
 #: cp/semantics.c:6843
 #, gcc-internal-format
 msgid "%q#D is not const"
-msgstr ""
+msgstr "%q#D は const ではありません"
 
 #: cp/semantics.c:6846
 #, gcc-internal-format
 msgid "%q#D is volatile"
-msgstr ""
+msgstr "%q#D は volatile です"
 
 #: cp/semantics.c:6849
 #, gcc-internal-format
 msgid "%qD was not initialized with a constant expression"
-msgstr ""
+msgstr "%qD は定数式で初期化されませんでした"
 
 #: cp/semantics.c:6858
 #, gcc-internal-format
