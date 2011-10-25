@@ -582,6 +582,18 @@ class Expression
   must_eval_in_order() const
   { return this->do_must_eval_in_order(); }
 
+  // Return whether subexpressions of this expression must be
+  // evaluated in order.  This is true of index expressions and
+  // pointer indirections.  This sets *SKIP to the number of
+  // subexpressions to skip during traversing, as index expressions
+  // only requiring moving the index, not the array.
+  bool
+  must_eval_subexpressions_in_order(int* skip) const
+  {
+    *skip = 0;
+    return this->do_must_eval_subexpressions_in_order(skip);
+  }
+
   // Return the tree for this expression.
   tree
   get_tree(Translate_context*);
@@ -715,6 +727,13 @@ class Expression
   // in order.
   virtual bool
   do_must_eval_in_order() const
+  { return false; }
+
+  // Child class implements whether this expressions requires that
+  // subexpressions be evaluated in order.  The child implementation
+  // may set *SKIP if it should be non-zero.
+  virtual bool
+  do_must_eval_subexpressions_in_order(int* /* skip */) const
   { return false; }
 
   // Child class implements conversion to tree.
@@ -1526,6 +1545,13 @@ class Index_expression : public Parser_expression
 				this->location());
   }
 
+  bool
+  do_must_eval_subexpressions_in_order(int* skip) const
+  {
+    *skip = 1;
+    return true;
+  }
+
   void
   do_dump_expression(Ast_dump_context*) const;
 
@@ -1621,6 +1647,13 @@ class Map_index_expression : public Expression
     return Expression::make_map_index(this->map_->copy(),
 				      this->index_->copy(),
 				      this->location());
+  }
+
+  bool
+  do_must_eval_subexpressions_in_order(int* skip) const
+  {
+    *skip = 1;
+    return true;
   }
 
   // A map index expression is an lvalue but it is not addressable.
