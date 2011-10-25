@@ -1,3 +1,8 @@
+2011-10-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49996
+	* g++.dg/cpp0x/initlist59.C: New.
+
 2011-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50858

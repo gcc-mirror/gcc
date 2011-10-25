@@ -1,3 +1,9 @@
+2011-10-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49996
+	* tree.c (stabilize_init): Stabilize scalar elements of a
+	CONSTRUCTOR, too.
+
 2011-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50858
