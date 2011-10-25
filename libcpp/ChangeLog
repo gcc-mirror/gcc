@@ -1,5 +1,9 @@
 2011-10-24  Dodji Seketeli  <dodji@redhat.com>
 
+	* line-map.c (linemap_macro_map_lookup): Fix logic.
+
+2011-10-24  Dodji Seketeli  <dodji@redhat.com>
+
 	* include/line-map.h (linemap_expand_location): Take a line table
 	parameter.  Update comment.
 	(linemap_resolve_location): Update comment.

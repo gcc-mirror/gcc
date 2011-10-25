@@ -588,14 +588,14 @@ linemap_macro_map_lookup (struct line_maps *set, source_location line)
       mn = 0;
     }
 
-  do 
+  while (mn < mx)
     {
       md = (mx + mn) / 2;
       if (MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (set, md)) > line)
-	mn = md;
+	mn = md + 1;
       else
 	mx = md;
-    } while (mx - mn > 1);
+    }
 
   LINEMAPS_MACRO_CACHE (set) = mx;
   result = LINEMAPS_MACRO_MAP_AT (set, LINEMAPS_MACRO_CACHE (set));
