@@ -4395,35 +4395,6 @@
   DONE;
 })
 
-;; Modes handled by vec_extract_even/odd pattern.
-(define_mode_iterator VEC_EXTRACT_EVENODD_MODE
-  [(V32QI "TARGET_AVX2") (V16QI "TARGET_SSE2")
-   (V16HI "TARGET_AVX2") (V8HI "TARGET_SSE2")
-   (V8SI "TARGET_AVX2") (V4SI "TARGET_SSE2")
-   (V4DI "TARGET_AVX2") (V2DI "TARGET_SSE2")
-   (V8SF "TARGET_AVX") V4SF
-   (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
-
-(define_expand "vec_extract_even<mode>"
-  [(match_operand:VEC_EXTRACT_EVENODD_MODE 0 "register_operand" "")
-   (match_operand:VEC_EXTRACT_EVENODD_MODE 1 "register_operand" "")
-   (match_operand:VEC_EXTRACT_EVENODD_MODE 2 "register_operand" "")]
-  "TARGET_SSE"
-{
-  ix86_expand_vec_extract_even_odd (operands[0], operands[1], operands[2], 0);
-  DONE;
-})
-
-(define_expand "vec_extract_odd<mode>"
-  [(match_operand:VEC_EXTRACT_EVENODD_MODE 0 "register_operand" "")
-   (match_operand:VEC_EXTRACT_EVENODD_MODE 1 "register_operand" "")
-   (match_operand:VEC_EXTRACT_EVENODD_MODE 2 "register_operand" "")]
-  "TARGET_SSE"
-{
-  ix86_expand_vec_extract_even_odd (operands[0], operands[1], operands[2], 1);
-  DONE;
-})
-
 ;; punpcklqdq and punpckhqdq are shorter than shufpd.
 (define_insn "avx2_interleave_highv4di"
   [(set (match_operand:V4DI 0 "register_operand" "=x")
