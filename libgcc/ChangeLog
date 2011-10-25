@@ -1,3 +1,8 @@
+2011-10-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/pr-support.c (__gnu_unwind_24bit): Correct logic for the
+	case where B3 isn't the return register.
+
 2011-10-25  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config/rs6000/t-freebsd: Add wildcard.
