@@ -2429,6 +2429,7 @@
   "stvrxl %1,%y0"
   [(set_attr "type" "vecstore")])
 
+;; ??? This is still used directly by vector.md
 (define_expand "vec_extract_evenv4si"
  [(set (match_operand:V4SI 0 "register_operand" "")
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "")
@@ -2462,6 +2463,7 @@
   DONE;
 }")
 
+;; ??? This is still used directly by vector.md
 (define_expand "vec_extract_evenv4sf"
  [(set (match_operand:V4SF 0 "register_operand" "")
         (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "")
@@ -2492,138 +2494,6 @@
   emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_v4sf (operands[0], operands[1], operands[2], mask));
   
-  DONE;
-}")
-
-(define_expand "vec_extract_evenv8hi"
- [(set (match_operand:V8HI 0 "register_operand" "")
-        (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "")
-                      (match_operand:V8HI 2 "register_operand" "")]
-                      UNSPEC_EXTEVEN_V8HI))]
-  "TARGET_ALTIVEC"
-  "
-{ 
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-  
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 0);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 1);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 4);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 5);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 8);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 9);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 12);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 13);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 20);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 21);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 24);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 25);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 28);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 29);
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_altivec_vperm_v8hi (operands[0], operands[1], operands[2], mask));
-  
-  DONE;
-}")
-
-(define_expand "vec_extract_evenv16qi"
- [(set (match_operand:V16QI 0 "register_operand" "")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "")
-                       (match_operand:V16QI 2 "register_operand" "")]
-                      UNSPEC_EXTEVEN_V16QI))]
-  "TARGET_ALTIVEC"
-  "
-{ 
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-  
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 0);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 2);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 4);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 6);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 8);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 10);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 12);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 14);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 18);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 20);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 22);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 24);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 26);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 28);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 30);
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_altivec_vperm_v16qi (operands[0], operands[1], operands[2], mask));
-  
-  DONE;
-}")
-
-(define_expand "vec_extract_oddv4si"
- [(set (match_operand:V4SI 0 "register_operand" "")
-        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "")
-                      (match_operand:V4SI 2 "register_operand" "")]
-                      UNSPEC_EXTODD_V4SI))]
-  "TARGET_ALTIVEC"
-  "
-{
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 4);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 5);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 6);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 7);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 12);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 13);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 14);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 15);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 20);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 21);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 22);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 23);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 28);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 29);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 30);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 31);
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_altivec_vperm_v4si (operands[0], operands[1], operands[2], mask));
-  
-  DONE;
-}")
-
-(define_expand "vec_extract_oddv4sf"
- [(set (match_operand:V4SF 0 "register_operand" "")
-        (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "")
-                      (match_operand:V4SF 2 "register_operand" "")]
-                      UNSPEC_EXTODD_V4SF))]
-  "TARGET_ALTIVEC"
-  "
-{
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 4);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 5);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 6);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 7);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 12);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 13);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 14);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 15);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 20);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 21);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 22);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 23);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 28);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 29);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 30);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 31);
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_altivec_vperm_v4sf (operands[0], operands[1], operands[2], mask));
-
   DONE;
 }")
 
