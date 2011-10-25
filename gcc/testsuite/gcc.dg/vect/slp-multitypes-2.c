@@ -1,5 +1,4 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-xfail-run-if "PR rtl-optimization/46603" { sparc*-*-* && { ilp32 && gas } } } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

@@ -1,5 +1,11 @@
 2011-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR rtl-optimization/46603
+	* reload.c (push_reload): In the out case, reload the subreg as well
+	as the reg if it has word mode.
+
+2011-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* dwarf2out.c (add_gnat_descriptive_type_attribute): Temporarily
 	suppress debug info for the parent type.
 

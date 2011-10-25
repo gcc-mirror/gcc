@@ -1117,10 +1117,10 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 
   /* Similarly for paradoxical and problematical SUBREGs on the output.
      Note that there is no reason we need worry about the previous value
-     of SUBREG_REG (out); even if wider than out,
-     storing in a subreg is entitled to clobber it all
-     (except in the case of STRICT_LOW_PART,
-     and in that case the constraint should label it input-output.)  */
+     of SUBREG_REG (out); even if wider than out, storing in a subreg is
+     entitled to clobber it all (except in the case of a word mode subreg
+     or of a STRICT_LOW_PART, in that latter case the constraint should
+     label it input-output.)  */
   if (out != 0 && GET_CODE (out) == SUBREG
       && (subreg_lowpart_p (out) || strict_low)
 #ifdef CANNOT_CHANGE_MODE_CLASS
@@ -1142,16 +1142,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 			   / UNITS_PER_WORD)))
 #endif
 		  ))
-	  || (REG_P (SUBREG_REG (out))
-	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
-	      && ((GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
-		   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
-		       > UNITS_PER_WORD)
-		   && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
-			/ UNITS_PER_WORD)
-		       != (int) hard_regno_nregs[REGNO (SUBREG_REG (out))]
-						[GET_MODE (SUBREG_REG (out))]))
-		  || ! HARD_REGNO_MODE_OK (subreg_regno (out), outmode)))
 	  || (secondary_reload_class (0, rclass, outmode, out) != NO_REGS
 	      && (secondary_reload_class (0, rclass, GET_MODE (SUBREG_REG (out)),
 					  SUBREG_REG (out))
