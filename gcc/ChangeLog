@@ -1,3 +1,7 @@
+2011-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.c (ia64_profile_hook): Fix thinko.
+
 2011-10-25  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/sse.md (VEC_EXTRACT_EVENODD_MODE): Remove.
@@ -54,11 +58,11 @@
 	(VEC_EXTRACT_ODD_EXPR, VEC_INTERLEAVE_HIGH_EXPR,
 	VEC_INTERLEAVE_LOW_EXPR): Likewise.
 
-2011-10-21  Mike Stump  <mikestump@comcast.net>
+2011-10-25  Mike Stump  <mikestump@comcast.net>
 
 	* reload.c (regno_clobbered_p): Fix typo.
 
-2011-10-24  Dodji Seketeli  <dodji@redhat.com>
+2011-10-25  Dodji Seketeli  <dodji@redhat.com>
 
 	* input.c (expand_location): Rewrite using
 	linemap_resolve_location and linemap_expand_location.  Add a
