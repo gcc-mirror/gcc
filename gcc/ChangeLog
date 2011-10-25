@@ -1,3 +1,12 @@
+2011-10-25  Ian Lance Taylor  <iant@google.com>
+
+	* tree-eh.c (do_return_redirection): Remove return_value_p
+	parameter.  Change all callers.
+	(lower_try_finally_nofallthru): Remove local return_val.
+	(lower_try_finally_onedest): Likewise.
+	(lower_try_finally_copy): Likewise.
+	(lower_try_finally_switch): Likewise.
+
 2011-10-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/mmx.md (*mmx_maskmovq): Replace :SI with :P and
