@@ -8752,9 +8752,11 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       goto binop;
 
     case VEC_PERM_EXPR:
-      target = expand_vec_perm_expr (type, treeop0, treeop1, treeop2, target);
-      gcc_assert (target);
-      return target;
+      expand_operands (treeop0, treeop1, target, &op0, &op1, EXPAND_NORMAL);
+      op2 = expand_normal (treeop2);
+      temp = expand_vec_perm (mode, op0, op1, op2, target);
+      gcc_assert (temp);
+      return temp;
 
     case DOT_PROD_EXPR:
       {

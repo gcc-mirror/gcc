@@ -1,5 +1,25 @@
 2011-10-25  Richard Henderson  <rth@redhat.com>
 
+	* target.def (vec_perm_const_ok): Change parameters to mode and
+	array of indicies.
+	* doc/tm.texi: Rebuild.
+	* config/i386/i386.c (ix86_vectorize_vec_perm_const_ok): Change
+	parameters to mode and array of indicies.
+	* expr.c (expand_expr_real_2) [VEC_PERM_EXPR]: Expand operands here.
+	* optabs.c (can_vec_perm_p): Rename from can_vec_perm_expr_p.
+	Change parameters to mode and array of indicies.
+	(expand_vec_perm_1): Rename from expand_vec_perm_expr_1.
+	(expand_vec_perm): Rename from expand_vec_perm_expr.  Change
+	parameters to mode and rtx inputs.  Try lowering to QImode
+	vec_perm_const before trying fully variable permutation.
+	* optabs.h: Update decls.
+	* tree-vect-generic.c (lower_vec_perm): Extract array of indices from
+	VECTOR_CST to pass to can_vec_perm_p.
+	* tree-vect-slp.c (vect_get_mask_element): Change mask parameter type
+	from int pointer to unsigned char pointer.
+	(vect_transform_slp_perm_load): Update for change to can_vec_perm_p.
+	* tree-vect-stmts.c (perm_mask_for_reverse): Likewise.
+
 	* tree.def (VEC_EXTRACT_EVEN_EXPR): Fix typo in text name.
 	(VEC_EXTRACT_ODD_EXPR, VEC_INTERLEAVE_HIGH_EXPR,
 	VEC_INTERLEAVE_LOW_EXPR): Likewise.

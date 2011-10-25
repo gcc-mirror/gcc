@@ -2356,7 +2356,7 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
 static bool
 vect_get_mask_element (gimple stmt, int first_mask_element, int m,
                        int mask_nunits, bool only_one_vec, int index,
-                       int *mask, int *current_mask_element,
+		       unsigned char *mask, int *current_mask_element,
                        bool *need_next_vector, int *number_of_mask_fixes,
                        bool *mask_fixed, bool *needs_first_vector)
 {
@@ -2443,14 +2443,18 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
   gimple next_scalar_stmt;
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
   int first_mask_element;
-  int index, unroll_factor, *mask, current_mask_element, ncopies;
+  int index, unroll_factor, current_mask_element, ncopies;
+  unsigned char *mask;
   bool only_one_vec = false, need_next_vector = false;
   int first_vec_index, second_vec_index, orig_vec_stmts_num, vect_stmts_counter;
   int number_of_mask_fixes = 1;
   bool mask_fixed = false;
   bool needs_first_vector = false;
+  enum machine_mode mode;
 
-  if (!can_vec_perm_expr_p (vectype, NULL_TREE))
+  mode = TYPE_MODE (vectype);
+
+  if (!can_vec_perm_p (mode, false, NULL))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {
@@ -2467,7 +2471,7 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
     (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (vectype))), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  mask = (int *) xmalloc (sizeof (int) * nunits);
+  mask = XALLOCAVEC (unsigned char, nunits);
   unroll_factor = SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
 
   /* The number of vector stmts to generate based only on SLP_NODE_INSTANCE
@@ -2529,6 +2533,18 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
                 {
 		  tree mask_vec = NULL;
 
+		  if (!can_vec_perm_p (mode, false, mask))
+		    {
+		      if (vect_print_dump_info (REPORT_DETAILS))
+			{
+			  fprintf (vect_dump, "unsupported vect permute { ");
+			  for (i = 0; i < nunits; ++i)
+			    fprintf (vect_dump, "%d ", mask[i]);
+			  fprintf (vect_dump, "}\n");
+			}
+		      return false;
+		    }
+
 		  while (--index >= 0)
 		    {
 		      tree t = build_int_cst (mask_element_type, mask[index]);
@@ -2536,17 +2552,6 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 		    }
 		  mask_vec = build_vector (mask_type, mask_vec);
 		  index = 0;
-
-		  if (!can_vec_perm_expr_p (vectype, mask_vec))
-		    {
-		      if (vect_print_dump_info (REPORT_DETAILS))
-			{
-			  fprintf (vect_dump, "unsupported vect permute ");
-			  print_generic_expr (vect_dump, mask_vec, 0);
-			}
-		      free (mask);
-		      return false;
-		    }
 
                   if (!analyze_only)
                     {
@@ -2569,7 +2574,6 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
         }
     }
 
-  free (mask);
   return true;
 }
 
