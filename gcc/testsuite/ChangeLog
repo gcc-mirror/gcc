@@ -1,5 +1,8 @@
 2011-10-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50866
+	* g++.dg/init/aggr7.C: New.
+
 	PR c++/49996
 	* g++.dg/cpp0x/initlist59.C: New.
 

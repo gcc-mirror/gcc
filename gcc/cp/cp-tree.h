@@ -5372,6 +5372,7 @@ extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
 extern tree do_poplevel				(tree);
 extern void add_decl_expr			(tree);
+extern tree maybe_cleanup_point_expr_void	(tree);
 extern tree finish_expr_stmt			(tree);
 extern tree begin_if_stmt			(void);
 extern void finish_if_stmt_cond			(tree, tree);
