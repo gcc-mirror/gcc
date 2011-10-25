@@ -24,6 +24,19 @@
 
 2011-10-24  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/little-endian.opt: Delete.
+	* config.gcc: Remove references to config/sparc/little-endian.opt
+	* doc/invoke.texi: Remove documentation of -mlittl-endian on sparc.
+	* config/sparc/linux64.h: Delete references to -mlittle-endian.
+	* config/sparc/netbsd-elf.h: Likewise.
+	* config/sparc/openbsd64.h: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sp64-elf.h: Likewise and delete overrides for
+	BYTES_BIG_ENDIAN and WORDS_BIG_ENDIAN.
+	* config/sparc/sparc.c (dump_target_flag_bits): Remove reference
+	to MASK_LITTLE_ENDIAN.
+	* config/sparc/sparc.opt (Mask(LITTLE_ENDIAN)): Delete.
+
 	* config/sparc/sparc.md: Only use F, G, and C constraints in FP
 	insns.  Only use D, Y, and Z constraints in vector insns.
 
