@@ -3467,7 +3467,7 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
 bool
 vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
-  optab interleave_high_optab, interleave_low_optab;
+  optab ih_optab, il_optab;
   enum machine_mode mode;
 
   mode = TYPE_MODE (vectype);
@@ -3482,26 +3482,22 @@ vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
     }
 
   /* Check that the operation is supported.  */
-  interleave_high_optab = optab_for_tree_code (VEC_INTERLEAVE_HIGH_EXPR,
-					       vectype, optab_default);
-  interleave_low_optab = optab_for_tree_code (VEC_INTERLEAVE_LOW_EXPR,
-					      vectype, optab_default);
-  if (!interleave_high_optab || !interleave_low_optab)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "no optab for interleave.");
-      return false;
-    }
+  ih_optab = optab_for_tree_code (VEC_INTERLEAVE_HIGH_EXPR,
+				  vectype, optab_default);
+  il_optab = optab_for_tree_code (VEC_INTERLEAVE_LOW_EXPR,
+				  vectype, optab_default);
+  if (il_optab && ih_optab
+      && optab_handler (ih_optab, mode) != CODE_FOR_nothing
+      && optab_handler (il_optab, mode) != CODE_FOR_nothing)
+    return true;
 
-  if (optab_handler (interleave_high_optab, mode) == CODE_FOR_nothing
-      || optab_handler (interleave_low_optab, mode) == CODE_FOR_nothing)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "interleave op not supported by target.");
-      return false;
-    }
+  if (can_vec_perm_for_code_p (VEC_INTERLEAVE_HIGH_EXPR, mode, NULL)
+      && can_vec_perm_for_code_p (VEC_INTERLEAVE_LOW_EXPR, mode, NULL))
+    return true;
 
-  return true;
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "interleave op not supported by target.");
+  return false;
 }
 
 
@@ -3923,7 +3919,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
 bool
 vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
-  optab perm_even_optab, perm_odd_optab;
+  optab ee_optab, eo_optab;
   enum machine_mode mode;
 
   mode = TYPE_MODE (vectype);
@@ -3937,38 +3933,22 @@ vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
       return false;
     }
 
-  perm_even_optab = optab_for_tree_code (VEC_EXTRACT_EVEN_EXPR, vectype,
-					 optab_default);
-  if (!perm_even_optab)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "no optab for perm_even.");
-      return false;
-    }
+  ee_optab = optab_for_tree_code (VEC_EXTRACT_EVEN_EXPR,
+				  vectype, optab_default);
+  eo_optab = optab_for_tree_code (VEC_EXTRACT_ODD_EXPR,
+				  vectype, optab_default);
+  if (ee_optab && eo_optab
+      && optab_handler (ee_optab, mode) != CODE_FOR_nothing
+      && optab_handler (eo_optab, mode) != CODE_FOR_nothing)
+    return true;
 
-  if (optab_handler (perm_even_optab, mode) == CODE_FOR_nothing)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "perm_even op not supported by target.");
-      return false;
-    }
+  if (can_vec_perm_for_code_p (VEC_EXTRACT_EVEN_EXPR, mode, NULL)
+      && can_vec_perm_for_code_p (VEC_EXTRACT_ODD_EXPR, mode, NULL))
+    return true;
 
-  perm_odd_optab = optab_for_tree_code (VEC_EXTRACT_ODD_EXPR, vectype,
-					optab_default);
-  if (!perm_odd_optab)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "no optab for perm_odd.");
-      return false;
-    }
-
-  if (optab_handler (perm_odd_optab, mode) == CODE_FOR_nothing)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "perm_odd op not supported by target.");
-      return false;
-    }
-  return true;
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "extract even/odd not supported by target");
+  return false;
 }
 
 /* Return TRUE if vec_load_lanes is available for COUNT vectors of
