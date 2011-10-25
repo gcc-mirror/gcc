@@ -16,9 +16,6 @@ import (
 //sysnb	raw_fork() (pid Pid_t, errno int)
 //fork() Pid_t
 
-//sysnb raw_ptrace(request int, pid int, addr *byte, data *byte) (errno int)
-//ptrace(request int, pid Pid_t, addr *byte, data *byte) _C_long
-
 //sysnb raw_setsid() (errno int)
 //setsid() Pid_t
 
