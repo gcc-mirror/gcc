@@ -755,11 +755,11 @@ linemap_location_in_system_header_p (struct line_maps *set,
 {
   const struct line_map *map = NULL;
 
-  if (location < RESERVED_LOCATION_COUNT)
-    return false;
-
   location =
     linemap_resolve_location (set, location, LRK_SPELLING_LOCATION, &map);
+
+  if (location < RESERVED_LOCATION_COUNT)
+    return false;
 
   return LINEMAP_SYSP (map);
 }
@@ -1039,7 +1039,10 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
    LRK_SPELLING_LOCATION.
 
    If MAP is non-NULL, *MAP is set to the map of the resolved
-   location.  */
+   location.  Note that if the resturned location wasn't originally
+   encoded by a map, the *MAP is set to NULL.  This can happen if LOC
+   resolves to a location reserved for the client code, like
+   UNKNOWN_LOCATION or BUILTINS_LOCATION in GCC.  */
 
 source_location
 linemap_resolve_location (struct line_maps *set,
@@ -1047,7 +1050,15 @@ linemap_resolve_location (struct line_maps *set,
 			  enum location_resolution_kind lrk,
 			  const struct line_map **map)
 {
-  linemap_assert (set && loc >= RESERVED_LOCATION_COUNT);
+  if (loc < RESERVED_LOCATION_COUNT)
+    {
+      /* A reserved location wasn't encoded in a map.  Let's return a
+	 NULL map here, just like what linemap_ordinary_map_lookup
+	 does.  */
+      if (map)
+	*map = NULL;
+      return loc;
+    }
 
   switch (lrk)
     {
@@ -1101,37 +1112,44 @@ linemap_unwind_toward_expansion (struct line_maps *set,
 }
 
 /* Expand source code location LOC and return a user readable source
-   code location.  LOC must be a spelling (non-virtual) location.  */
+   code location.  LOC must be a spelling (non-virtual) location.  If
+   it's a location < RESERVED_LOCATION_COUNT a zeroed expanded source
+   location is returned.  */
 
 expanded_location
-linemap_expand_location (const struct line_map *map,
+linemap_expand_location (struct line_maps *set,
+			 const struct line_map *map,
 			 source_location loc)
 
 {
   expanded_location xloc;
 
-  xloc.file = LINEMAP_FILE (map);
-  xloc.line = SOURCE_LINE (map, loc);
-  xloc.column = SOURCE_COLUMN (map, loc);
-  xloc.sysp = LINEMAP_SYSP (map) != 0;
+  memset (&xloc, 0, sizeof (xloc));
 
-  return xloc;
-}
+  if (loc < RESERVED_LOCATION_COUNT)
+    /* The location for this token wasn't generated from a line map.
+       It was probably a location for a builtin token, chosen by some
+       client code.  Let's not try to expand the location in that
+       case.  */;
+  else if (map == NULL)
+    /* We shouldn't be getting a NULL map with a location that is not
+       reserved by the client code.  */
+    abort ();
+  else
+    {
+      /* MAP must be an ordinary map and LOC must be non-virtual,
+	 encoded into this map, obviously; the accessors used on MAP
+	 below ensure it is ordinary.  Let's just assert the
+	 non-virtualness of LOC here.  */
+      if (linemap_location_from_macro_expansion_p (set, loc))
+	abort ();
 
-/* Expand source code location LOC and return a user readable source
-   code location.  LOC can be a virtual location.  The LRK parameter
-   is the same as for linemap_resolve_location.  */
+      xloc.file = LINEMAP_FILE (map);
+      xloc.line = SOURCE_LINE (map, loc);
+      xloc.column = SOURCE_COLUMN (map, loc);
+      xloc.sysp = LINEMAP_SYSP (map) != 0;
+    }
 
-expanded_location
-linemap_expand_location_full (struct line_maps *set,
-			      source_location loc,
-			      enum location_resolution_kind lrk)
-{
-  const struct line_map *map;
-  expanded_location xloc;
-
-  loc = linemap_resolve_location (set, loc, lrk, &map);
-  xloc = linemap_expand_location (map, loc);
   return xloc;
 }
 
@@ -1145,32 +1163,37 @@ linemap_dump_location (struct line_maps *set,
 {
   const struct line_map *map;
   source_location location;
-  const char *path, *from;
-  int l,c,s,e;
+  const char *path = "", *from = "";
+  int l = -1, c = -1, s = -1, e = -1;
 
   if (loc == 0)
     return;
 
   location =
     linemap_resolve_location (set, loc, LRK_MACRO_DEFINITION_LOCATION, &map);
-  path = LINEMAP_FILE (map);
 
-  l = SOURCE_LINE (map, location);
-  c = SOURCE_COLUMN (map, location);
-  s = LINEMAP_SYSP (map) != 0;
-  e = location != loc;
-
-  if (e)
-    from = "N/A";
+  if (map == NULL)
+    /* Only reserved locations can be tolerated in this case.  */
+    linemap_assert (location < RESERVED_LOCATION_COUNT);
   else
-    from = (INCLUDED_FROM (set, map))
-      ? LINEMAP_FILE (INCLUDED_FROM (set, map))
-      : "<NULL>";
+    {
+      path = LINEMAP_FILE (map);
+      l = SOURCE_LINE (map, location);
+      c = SOURCE_COLUMN (map, location);
+      s = LINEMAP_SYSP (map) != 0;
+      e = location != loc;
+      if (e)
+	from = "N/A";
+      else
+	from = (INCLUDED_FROM (set, map))
+	  ? LINEMAP_FILE (INCLUDED_FROM (set, map))
+	  : "<NULL>";
+    }
 
   /* P: path, L: line, C: column, S: in-system-header, M: map address,
-     E: macro expansion?.   */
-  fprintf (stream, "{P:%s;F:%s;L:%d;C:%d;S:%d;M:%p;E:%d,LOC:%d}",
-	   path, from, l, c, s, (void*)map, e, loc);
+     E: macro expansion?, LOC: original location, R: resolved location   */
+  fprintf (stream, "{P:%s;F:%s;L:%d;C:%d;S:%d;M:%p;E:%d,LOC:%d,R:%d}",
+	   path, from, l, c, s, (void*)map, e, loc, location);
 }
 
 /* Compute and return statistics about the memory consumption of some

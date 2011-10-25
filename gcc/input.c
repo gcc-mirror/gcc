@@ -30,20 +30,23 @@ location_t input_location;
 
 struct line_maps *line_table;
 
+/* Expand the source location LOC into a human readable location.  If
+   LOC resolves to a builtin location, the file name of the readable
+   location is set to the string "<built-in>".  */
+
 expanded_location
 expand_location (source_location loc)
 {
   expanded_location xloc;
+  const struct line_map *map;
+
+  loc = linemap_resolve_location (line_table, loc,
+				  LRK_SPELLING_LOCATION, &map);
+  xloc = linemap_expand_location (line_table, map, loc);
+
   if (loc <= BUILTINS_LOCATION)
-    {
-      xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");
-      xloc.line = 0;
-      xloc.column = 0;
-      xloc.sysp = 0;
-    }
-  else
-    xloc = linemap_expand_location_full (line_table, loc,
-					 LRK_SPELLING_LOCATION);
+    xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");
+
   return xloc;
 }
 

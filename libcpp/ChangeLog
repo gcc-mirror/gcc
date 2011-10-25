@@ -1,3 +1,21 @@
+2011-10-24  Dodji Seketeli  <dodji@redhat.com>
+
+	* include/line-map.h (linemap_expand_location): Take a line table
+	parameter.  Update comment.
+	(linemap_resolve_location): Update comment.
+	(linemap_expand_location_full): Remove.
+	* line-map.c (linemap_resolve_location):  Handle reserved
+	locations; return a NULL map in those cases.
+	(linemap_expand_location): If location is reserved, return a
+	zeroed expanded location.  Update comment.  Take a line table to
+	assert that the function takes non-virtual locations only.
+	(linemap_expand_location_full): remove.
+	(linemap_dump_location): Handle the fact that
+	linemap_resolve_location can return NULL line maps when the
+	location resolves to a reserved location.
+
+	* line-map.c (linemap_macro_map_lookup): Fix logic.
+
 2011-10-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/50778

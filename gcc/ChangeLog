@@ -1,3 +1,9 @@
+2011-10-24  Dodji Seketeli  <dodji@redhat.com>
+
+	* input.c (expand_location): Rewrite using
+	linemap_resolve_location and linemap_expand_location.  Add a
+	comment.
+
 2011-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50596
