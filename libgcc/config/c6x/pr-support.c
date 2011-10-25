@@ -153,10 +153,7 @@ pop_compact_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
 {
   int size;
   _uw test;
-  int i;
-  int regno;
-  int regno2;
-  int nregs;
+  int i, regno, nregs;
 
   size = 0;
   nregs = __builtin_popcount (mask);
@@ -167,13 +164,11 @@ pop_compact_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
 	continue;
 
       regno = unwind_frame_regs[12 - i];
-      /* The last slot is a sigle word, so cannot store a register pair.  */
-      if (nregs > 2)
-	regno2 = unwind_frame_regs[13 - i];
-      else
-	regno2 = 0xff;
 
-      if ((mask & (test << 1)) != 0 && regno2 == regno + 1 && (regno & 1) == 0)
+      if (i < 12 && nregs > 2
+	  && (mask & (test << 1)) != 0
+	  && unwind_frame_regs[11 - i] == regno + 1
+	  && (regno & 1) == 0)
 	{
 	  i++;
 	  nregs--;
@@ -196,12 +191,11 @@ pop_compact_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
 	continue;
 
       regno = unwind_frame_regs[12 - i];
-      if (nregs > 2)
-	regno2 = unwind_frame_regs[13 - i];
-      else
-	regno2 = 0xff;
 
-      if ((mask & (test << 1)) != 0 && regno2 == regno + 1 && (regno & 1) == 0)
+      if (i < 12 && nregs > 2
+	  && (mask & (test << 1)) != 0
+	  && unwind_frame_regs[11 - i] == regno + 1
+	  && (regno & 1) == 0)
 	{
 	  /* Register pair.  */
 	  unwind_restore_pair (context, regno, ptr);
@@ -243,7 +237,7 @@ pop_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
       if ((mask & (1 << i)) == 0)
 	continue;
       regno = unwind_frame_regs[12 - i];
-      if (i < 12 && unwind_frame_regs[13 - i] == (regno + 1)
+      if (i < 12 && unwind_frame_regs[11 - i] == (regno + 1)
 	  && (mask & (1 << (i + 1))) != 0
 	  && (((_uw)ptr) & 4) == 0
 	  && (regno & 1) == 0)
