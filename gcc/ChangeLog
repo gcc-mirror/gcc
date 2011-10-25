@@ -1,3 +1,9 @@
+2011-10-25  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (VEC_EXTRACT_EVEN_EXPR): Fix typo in text name.
+	(VEC_EXTRACT_ODD_EXPR, VEC_INTERLEAVE_HIGH_EXPR,
+	VEC_INTERLEAVE_LOW_EXPR): Likewise.
+
 2011-10-21  Mike Stump  <mikestump@comcast.net>
 
 	* reload.c (regno_clobbered_p): Fix typo.
