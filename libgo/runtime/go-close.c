@@ -16,6 +16,9 @@ __go_builtin_close (struct __go_channel *channel)
 {
   int i;
 
+  if (channel == NULL)
+    __go_panic_msg ("close of nil channel");
+
   i = pthread_mutex_lock (&channel->lock);
   __go_assert (i == 0);
 

@@ -8153,6 +8153,8 @@ Builtin_call_expression::do_check_types(Gogo*)
 	{
 	  if (this->one_arg()->type()->channel_type() == NULL)
 	    this->report_error(_("argument must be channel"));
+	  else if (!this->one_arg()->type()->channel_type()->may_send())
+	    this->report_error(_("cannot close receive-only channel"));
 	}
       break;
 
