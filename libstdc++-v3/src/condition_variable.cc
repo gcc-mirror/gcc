@@ -31,8 +31,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __GTHREAD_COND_INIT
-  condition_variable::condition_variable() = default;
-  condition_variable::~condition_variable() = default;
+  condition_variable::condition_variable() noexcept = default;
+  condition_variable::~condition_variable() noexcept = default;
 #else
   condition_variable::condition_variable() noexcept
   {

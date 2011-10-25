@@ -1,5 +1,13 @@
 2011-10-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/condition_variable (condition_variable_any): Remove
+	unused native_handle_type typedef.
+	* src/condition_variable.cc (condition_variable): Add missing noexcept
+	specifications.
+	* 30_threads/condition_variable_any/requirements/typedefs.cc: Remove.
+
+2011-10-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/50862
 	* include/std/condition_variable (condition_variable_any::wait): Fix
 	deadlock and ensure _Lock::lock() is called on exit.

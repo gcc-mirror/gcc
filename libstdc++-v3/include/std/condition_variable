@@ -177,7 +177,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     mutex				_M_mutex;
 
   public:
-    typedef condition_variable::native_handle_type	native_handle_type;
 
     condition_variable_any() noexcept;
     ~condition_variable_any() noexcept;
