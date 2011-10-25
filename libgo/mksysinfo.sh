@@ -251,7 +251,7 @@ if ! grep '^const PTRACE_EVENT_EXIT' ${OUT} > /dev/null 2>&1; then
   echo "const PTRACE_EVENT_EXIT = 6" >> ${OUT}
 fi
 if ! grep '^const _PTRACE_TRACEME' ${OUT} > /dev/null 2>&1; then
-  echo "const PTRACE_TRACEME = 0" >> ${OUT}
+  echo "const _PTRACE_TRACEME = 0" >> ${OUT}
 fi
 
 # The registers returned by PTRACE_GETREGS.  This is probably
