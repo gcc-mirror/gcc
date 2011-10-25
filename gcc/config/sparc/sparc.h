@@ -307,7 +307,6 @@ extern enum cmodel sparc_cmodel;
 
 /* Macros to distinguish the endianness, window model and FP support.  */
 #define CPP_OTHER_SPEC "\
-%{mlittle-endian:-D__LITTLE_ENDIAN__} \
 %{mflat:-D_FLAT} \
 %{msoft-float:-D_SOFT_FLOAT} \
 "

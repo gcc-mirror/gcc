@@ -815,8 +815,6 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "VIS3 ");
   if (flags & MASK_DEPRECATED_V8_INSNS)
     fprintf (stderr, "DEPRECATED_V8_INSNS ");
-  if (flags & MASK_LITTLE_ENDIAN)
-    fprintf (stderr, "LITTLE_ENDIAN ");
   if (flags & MASK_SPARCLET)
     fprintf (stderr, "SPARCLET ");
   if (flags & MASK_SPARCLITE)

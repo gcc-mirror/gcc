@@ -880,7 +880,6 @@ See RS/6000 and PowerPC Options.
 -mfaster-structs  -mno-faster-structs  -mflat  -mno-flat @gol
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
 -mhard-quad-float  -msoft-quad-float @gol
--mlittle-endian @gol
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
@@ -17709,11 +17708,6 @@ These @samp{-m} options are supported in addition to the above
 on SPARC-V9 processors in 64-bit environments:
 
 @table @gcctabopt
-@item -mlittle-endian
-@opindex mlittle-endian
-Generate code for a processor running in little-endian mode.  It is only
-available for a few configurations and most notably not on Solaris and Linux.
-
 @item -m32
 @itemx -m64
 @opindex m32

@@ -133,7 +133,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef  LINK_SPEC
 #define LINK_SPEC "\
 %(link_arch) \
-%{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
 "
 
@@ -209,7 +208,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
       %{rdynamic:-export-dynamic} \
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "} \
     %{static:-static}} \
-%{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
 "
 
@@ -221,7 +219,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 -s \
 %{fpic|fPIC|fpie|fPIE:-K PIC} \
 %{!.c:%{findirect-dispatch:-K PIC}} \
-%{mlittle-endian:-EL} \
 %(asm_cpu) %(asm_arch) %(asm_relax)"
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
