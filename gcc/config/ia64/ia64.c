@@ -10716,7 +10716,7 @@ ia64_profile_hook (int labelno)
       char buf[30];
       const char *label_name;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
-      label_name = (*targetm.strip_name_encoding) (ggc_strdup (buf));
+      label_name = ggc_strdup ((*targetm.strip_name_encoding) (buf));
       label = gen_rtx_SYMBOL_REF (Pmode, label_name);
       SYMBOL_REF_FLAGS (label) = SYMBOL_FLAG_LOCAL;
     }
