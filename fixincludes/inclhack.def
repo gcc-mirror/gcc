@@ -4585,6 +4585,7 @@ fix = {
     files     = sys/types.h;
     /* avoid changing C++ friendly NULL */
     bypass    = __cplusplus;
+    bypass    = __null;
     select    = "^#[ \t]*define[ \t]+NULL[ \t]+\\(\\(void[ \t]*\\*\\)0\\)";
     c_fix     = format;
     c_fix_arg = "#define NULL 0";
