@@ -8390,6 +8390,10 @@ ix86_frame_pointer_required (void)
   if (SUBTARGET_FRAME_POINTER_REQUIRED)
     return true;
 
+  /* For older 32-bit runtimes setjmp requires valid frame-pointer.  */
+  if (TARGET_32BIT_MS_ABI && cfun->calls_setjmp)
+    return true;
+
   /* In ix86_option_override_internal, TARGET_OMIT_LEAF_FRAME_POINTER
      turns off the frame pointer by default.  Turn it back on now if
      we've not got a leaf function.  */

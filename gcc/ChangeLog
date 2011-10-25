@@ -1,3 +1,8 @@
+2011-10-25  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/i386.c (ix86_frame_pointer_required): Require
+	frame-pointer, if setjmp is used for 32-bit ms-abi.
+
 2011-10-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* builtins.c (set_builtin_user_assembler_name): Remove extra
