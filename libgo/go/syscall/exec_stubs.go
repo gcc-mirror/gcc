@@ -17,3 +17,7 @@ func Exec(argv0 string, argv []string, envv []string) (err int) {
 func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, errno int) {
 	return -1, ENOSYS;
 }
+
+func raw_ptrace(request int, pid int, addr *byte, data *byte) int {
+	return ENOSYS
+}

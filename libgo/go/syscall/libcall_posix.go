@@ -199,9 +199,6 @@ func FDZero(set *FdSet) {
 //sys	Fdatasync(fd int) (errno int)
 //fdatasync(fd int) int
 
-//sys	Flock(fd int, how int) (errno int)
-//flock(fd int, how int) int
-
 //sys	Fsync(fd int) (errno int)
 //fsync(fd int) int
 

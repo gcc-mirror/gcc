@@ -29,6 +29,9 @@ func Futimes(fd int, tv []Timeval) (errno int) {
 //sys	ptrace(request int, pid int, addr uintptr, data uintptr) (errno int)
 //ptrace(request int, pid Pid_t, addr *byte, data *byte) _C_long
 
+//sysnb raw_ptrace(request int, pid int, addr *byte, data *byte) (errno int)
+//ptrace(request int, pid Pid_t, addr *byte, data *byte) _C_long
+
 func ptracePeek(req int, pid int, addr uintptr, out []byte) (count int, errno int) {
 	// The peek requests are machine-size oriented, so we wrap it
 	// to retrieve arbitrary-length data.
@@ -191,6 +194,9 @@ func PtraceDetach(pid int) (errno int) { return ptrace(PTRACE_DETACH, pid, 0, 0)
 
 //sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (errno int)
 //fchownat(dirfd int, path *byte, owner Uid_t, group Gid_t, flags int) int
+
+//sys	Flock(fd int, how int) (errno int)
+//flock(fd int, how int) int
 
 // FIXME: mksysinfo statfs
 // //sys	Fstatfs(fd int, buf *Statfs_t) (errno int)
