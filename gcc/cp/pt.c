@@ -13511,6 +13511,9 @@ tsubst_copy_and_build (tree t,
 		tree unq = (tsubst_copy_and_build
 			    (function, args, complain, in_decl, true,
 			     integral_constant_expression_p));
+		if (unq == error_mark_node)
+		  return error_mark_node;
+
 		if (unq != function)
 		  {
 		    tree fn = unq;

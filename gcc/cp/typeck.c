@@ -510,8 +510,12 @@ composite_pointer_type_r (tree t1, tree t2,
 	    && TREE_CODE (pointee2) == POINTER_TYPE)
 	   || (TYPE_PTR_TO_MEMBER_P (pointee1)
 	       && TYPE_PTR_TO_MEMBER_P (pointee2)))
-    result_type = composite_pointer_type_r (pointee1, pointee2, operation,
-					    complain);
+    {
+      result_type = composite_pointer_type_r (pointee1, pointee2, operation,
+					      complain);
+      if (result_type == error_mark_node)
+	return error_mark_node;
+    }
   else
     {
       if (complain & tf_error)
