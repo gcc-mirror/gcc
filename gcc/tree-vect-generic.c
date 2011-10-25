@@ -641,12 +641,22 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   location_t loc = gimple_location (gsi_stmt (*gsi));
   unsigned i;
 
-  if (can_vec_perm_expr_p (vect_type, mask))
+  if (TREE_CODE (mask) == VECTOR_CST)
+    {
+      unsigned char *sel_int = XALLOCAVEC (unsigned char, elements);
+      tree vals = TREE_VECTOR_CST_ELTS (mask);
+
+      for (i = 0; i < elements; ++i, vals = TREE_CHAIN (vals))
+	sel_int[i] = TREE_INT_CST_LOW (TREE_VALUE (vals));
+
+      if (can_vec_perm_p (TYPE_MODE (vect_type), false, sel_int))
+	return;
+    }
+  else if (can_vec_perm_p (TYPE_MODE (vect_type), true, NULL))
     return;
   
   warning_at (loc, OPT_Wvector_operation_performance,
               "vector shuffling operation will be expanded piecewise");
-
 
   v = VEC_alloc (constructor_elt, gc, elements);
   for (i = 0; i < elements; i++)

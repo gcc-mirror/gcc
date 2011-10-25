@@ -4090,24 +4090,28 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 static tree
 perm_mask_for_reverse (tree vectype)
 {
-  tree mask_element_type, mask_type, mask_vec = NULL;
+  tree mask_elt_type, mask_type, mask_vec;
   int i, nunits;
+  unsigned char *sel;
 
-  if (!can_vec_perm_expr_p (vectype, NULL_TREE))
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  sel = XALLOCAVEC (unsigned char, nunits);
+
+  for (i = 0; i < nunits; ++i)
+    sel[i] = nunits - 1 - i;
+
+  if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
     return NULL;
 
-  mask_element_type
+  mask_elt_type
     = lang_hooks.types.type_for_size
     (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (vectype))), 1);
-  mask_type = get_vectype_for_scalar_type (mask_element_type);
-  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
+  mask_vec = NULL;
   for (i = 0; i < nunits; i++)
-    mask_vec = tree_cons (NULL, build_int_cst (mask_element_type, i), mask_vec);
+    mask_vec = tree_cons (NULL, build_int_cst (mask_elt_type, i), mask_vec);
   mask_vec = build_vector (mask_type, mask_vec);
-
-  if (!can_vec_perm_expr_p (vectype, mask_vec))
-    return NULL;
 
   return mask_vec;
 }

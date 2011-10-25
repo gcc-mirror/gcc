@@ -36477,14 +36477,14 @@ ix86_expand_vec_perm_const (rtx operands[4])
 /* Implement targetm.vectorize.vec_perm_const_ok.  */
 
 static bool
-ix86_vectorize_vec_perm_const_ok (tree vec_type, tree mask)
+ix86_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+				  const unsigned char *sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
   bool ret, one_vec;
-  tree list;
 
-  d.vmode = TYPE_MODE (vec_type);
+  d.vmode = vmode;
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = true;
 
@@ -36505,19 +36505,13 @@ ix86_vectorize_vec_perm_const_ok (tree vec_type, tree mask)
 
   /* Extract the values from the vector CST into the permutation
      array in D.  */
-  list = TREE_VECTOR_CST_ELTS (mask);
-  for (i = which = 0; i < nelt; ++i, list = TREE_CHAIN (list))
+  memcpy (d.perm, sel, nelt);
+  for (i = which = 0; i < nelt; ++i)
     {
-      unsigned HOST_WIDE_INT e;
-
-      gcc_checking_assert (host_integerp (TREE_VALUE (list), 1));
-      e = tree_low_cst (TREE_VALUE (list), 1);
+      unsigned char e = d.perm[i];
       gcc_assert (e < 2 * nelt);
-
       which |= (e < nelt ? 1 : 2);
-      d.perm[i] = e;
     }
-  gcc_assert (list == NULL);
 
   /* For all elements from second vector, fold the elements to first.  */
   if (which == 2)
