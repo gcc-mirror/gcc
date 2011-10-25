@@ -573,6 +573,7 @@ split_nonconstant_init_1 (tree dest, tree init)
 
 	      code = build2 (INIT_EXPR, inner_type, sub, value);
 	      code = build_stmt (input_location, EXPR_STMT, code);
+	      code = maybe_cleanup_point_expr_void (code);
 	      add_stmt (code);
 	      if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (inner_type))
 		{

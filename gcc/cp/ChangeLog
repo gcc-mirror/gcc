@@ -1,5 +1,12 @@
 2011-10-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50866
+	PR c++/41449
+	* semantics.c (maybe_cleanup_point_expr_void): No longer static.
+	* typeck2.c (split_nonconstant_init_1): Use it.
+	* cp-tree.h: Declare it.
+	* decl.c (wrap_cleanups_r): Stop at CLEANUP_POINT_EXPR.
+
 	PR c++/49996
 	* tree.c (stabilize_init): Stabilize scalar elements of a
 	CONSTRUCTOR, too.

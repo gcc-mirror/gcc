@@ -424,7 +424,7 @@ maybe_cleanup_point_expr (tree expr)
    expression.  The reason why we do this is because the original type might be
    an aggregate and we cannot create a temporary variable for that type.  */
 
-static tree
+tree
 maybe_cleanup_point_expr_void (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
