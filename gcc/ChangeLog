@@ -1,3 +1,17 @@
+2011-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50596
+	* tree-vect-stmts.c (vect_mark_relevant): Only use
+	FOR_EACH_IMM_USE_FAST if lhs is SSA_NAME.
+	(vectorizable_store): If is_pattern_stmt_p look through
+	VIEW_CONVERT_EXPR on lhs.
+	* tree-vect-patterns.c (check_bool_pattern, adjust_bool_pattern):
+	Use unsigned type instead of signed.
+	(vect_recog_bool_pattern): Optimize also stores into bool memory in
+	addition to casts from bool to integral types.
+	(vect_mark_pattern_stmts): If pattern_stmt already has vinfo
+	created, don't create it again.
+
 2011-10-25  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/i386.c (ix86_frame_pointer_required): Require

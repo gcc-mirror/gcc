@@ -1,3 +1,8 @@
+2011-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50596
+	* gcc.dg/vect/vect-cond-10.c: New test.
+
 2011-10-24  Joey Ye  <joey.ye@arm.com>
 
 	* gcc.target/arm/pr42575.c: Remove architecture option.

@@ -1617,7 +1617,7 @@ check_bool_pattern (tree var, loop_vec_info loop_vinfo)
 	    {
 	      enum machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
 	      tree itype
-		= build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 0);
+		= build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
 	      vecitype = get_vectype_for_scalar_type (itype);
 	      if (vecitype == NULL_TREE)
 		return false;
@@ -1813,11 +1813,11 @@ adjust_bool_pattern (tree var, tree out_type, tree trueval,
     default:
       gcc_assert (TREE_CODE_CLASS (rhs_code) == tcc_comparison);
       if (TREE_CODE (TREE_TYPE (rhs1)) != INTEGER_TYPE
-	  || TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+	  || !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
 	{
 	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (rhs1));
 	  itype
-	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 0);
+	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
 	}
       else
 	itype = TREE_TYPE (rhs1);
@@ -1933,6 +1933,44 @@ vect_recog_bool_pattern (VEC (gimple, heap) **stmts, tree *type_in,
       VEC_safe_push (gimple, heap, *stmts, last_stmt);
       return pattern_stmt;
     }
+  else if (rhs_code == SSA_NAME
+	   && STMT_VINFO_DATA_REF (stmt_vinfo))
+    {
+      stmt_vec_info pattern_stmt_info;
+      vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
+      gcc_assert (vectype != NULL_TREE);
+      if (!check_bool_pattern (var, loop_vinfo))
+	return NULL;
+
+      rhs = adjust_bool_pattern (var, TREE_TYPE (vectype), NULL_TREE, stmts);
+      lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vectype), lhs);
+      if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
+	{
+	  tree rhs2 = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
+	  gimple cast_stmt
+	    = gimple_build_assign_with_ops (NOP_EXPR, rhs2, rhs, NULL_TREE);
+	  STMT_VINFO_PATTERN_DEF_STMT (stmt_vinfo) = cast_stmt;
+	  rhs = rhs2;
+	}
+      pattern_stmt
+	= gimple_build_assign_with_ops (SSA_NAME, lhs, rhs, NULL_TREE);
+      pattern_stmt_info = new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL);
+      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+      STMT_VINFO_DATA_REF (pattern_stmt_info)
+	= STMT_VINFO_DATA_REF (stmt_vinfo);
+      STMT_VINFO_DR_BASE_ADDRESS (pattern_stmt_info)
+	= STMT_VINFO_DR_BASE_ADDRESS (stmt_vinfo);
+      STMT_VINFO_DR_INIT (pattern_stmt_info) = STMT_VINFO_DR_INIT (stmt_vinfo);
+      STMT_VINFO_DR_OFFSET (pattern_stmt_info)
+	= STMT_VINFO_DR_OFFSET (stmt_vinfo);
+      STMT_VINFO_DR_STEP (pattern_stmt_info) = STMT_VINFO_DR_STEP (stmt_vinfo);
+      STMT_VINFO_DR_ALIGNED_TO (pattern_stmt_info)
+	= STMT_VINFO_DR_ALIGNED_TO (stmt_vinfo);
+      *type_out = vectype;
+      *type_in = vectype;
+      VEC_safe_push (gimple, heap, *stmts, last_stmt);
+      return pattern_stmt;
+    }
   else
     return NULL;
 }
@@ -1949,19 +1987,22 @@ vect_mark_pattern_stmts (gimple orig_stmt, gimple pattern_stmt,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (orig_stmt_info);
   gimple def_stmt;
 
-  set_vinfo_for_stmt (pattern_stmt,
-                      new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL));
-  gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt));
   pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
+  if (pattern_stmt_info == NULL)
+    {
+      pattern_stmt_info = new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL);
+      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+    }
+  gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt));
 
   STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt;
   STMT_VINFO_DEF_TYPE (pattern_stmt_info)
-	= STMT_VINFO_DEF_TYPE (orig_stmt_info);
+    = STMT_VINFO_DEF_TYPE (orig_stmt_info);
   STMT_VINFO_VECTYPE (pattern_stmt_info) = pattern_vectype;
   STMT_VINFO_IN_PATTERN_P (orig_stmt_info) = true;
   STMT_VINFO_RELATED_STMT (orig_stmt_info) = pattern_stmt;
   STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info)
-	= STMT_VINFO_PATTERN_DEF_STMT (orig_stmt_info);
+    = STMT_VINFO_PATTERN_DEF_STMT (orig_stmt_info);
   if (STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info))
     {
       def_stmt = STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info);

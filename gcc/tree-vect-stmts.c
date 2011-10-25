@@ -159,19 +159,20 @@ vect_mark_relevant (VEC(gimple,heap) **worklist, gimple stmt,
           /* This use is out of pattern use, if LHS has other uses that are
              pattern uses, we should mark the stmt itself, and not the pattern
              stmt.  */
-          FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-            {
-              if (is_gimple_debug (USE_STMT (use_p)))
-                continue;
-              use_stmt = USE_STMT (use_p);
+	  if (TREE_CODE (lhs) == SSA_NAME)
+	    FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+	      {
+		if (is_gimple_debug (USE_STMT (use_p)))
+		  continue;
+		use_stmt = USE_STMT (use_p);
 
-              if (vinfo_for_stmt (use_stmt)
-                  && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (use_stmt)))
-                {
-                  found = true;
-                  break;
-                }
-            }
+		if (vinfo_for_stmt (use_stmt)
+		    && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (use_stmt)))
+		  {
+		    found = true;
+		    break;
+		  }
+	      }
         }
 
       if (!found)
@@ -3722,6 +3723,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     return false;
 
   scalar_dest = gimple_assign_lhs (stmt);
+  if (TREE_CODE (scalar_dest) == VIEW_CONVERT_EXPR
+      && is_pattern_stmt_p (stmt_info))
+    scalar_dest = TREE_OPERAND (scalar_dest, 0);
   if (TREE_CODE (scalar_dest) != ARRAY_REF
       && TREE_CODE (scalar_dest) != INDIRECT_REF
       && TREE_CODE (scalar_dest) != COMPONENT_REF
