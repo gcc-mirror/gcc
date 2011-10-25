@@ -45,6 +45,12 @@ func mapassign2(h *Hmap, key *byte, val *byte, p bool) {
 	}
 }
 
+/* Delete a key from a map.  */
+
+func mapdelete(h *Hmap, key *byte) {
+	__go_map_delete(h, key);
+}
+
 /* Initialize a range over a map.  */
 
 func mapiterinit(h *Hmap, it *hiter) {
