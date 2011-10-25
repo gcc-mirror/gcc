@@ -903,6 +903,9 @@ extern rtx expand_vec_shift_expr (sepops, rtx);
 /* Return tree if target supports vector operations for VEC_PERM_EXPR.  */
 extern bool can_vec_perm_p (enum machine_mode, bool, const unsigned char *);
 
+/* Return true if target supports vector operations using VEC_PERM_EXPR.  */
+extern bool can_vec_perm_for_code_p (enum tree_code, enum machine_mode, rtx *);
+
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm (enum machine_mode, rtx, rtx, rtx, rtx);
 

@@ -1,5 +1,20 @@
 2011-10-25  Richard Henderson  <rth@redhat.com>
 
+	* expr.c (expand_expr_real_2) [VEC_EXTRACT_EVEN_EXPR]: Use binop.
+	[VEC_EXTRACT_ODD_EXPR, VEC_INTERLEAVE_HIGH_EXPR]: Likewise.
+	[VEC_INTERLEAVE_LOW_EXPR]: Likewise.
+	* optabs.c (expand_binop): Implement vec_interleave_high_optab,
+	vec_interleave_low_optab, vec_extract_even_optab,
+	vec_extract_odd_optab with expand_vec_perm.
+	(can_vec_perm_for_code_p): New.
+	* optabs.h: Update.
+	* tree-vect-data-refs.c (vect_strided_store_supported): Allow for
+	fallback via can_vec_perm_for_code_p.
+	(vect_strided_load_supported): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Never lower
+	VEC_INTERLEAVE_HIGH_EXPR, VEC_INTERLEAVE_LOW_EXPR,
+	VEC_EXTRACT_EVEN_EXPR, VEC_EXTRACT_ODD_EXPR.
+
 	* target.def (vec_perm_const_ok): Change parameters to mode and
 	array of indicies.
 	* doc/tm.texi: Rebuild.
