@@ -1,3 +1,7 @@
+2011-10-21  Mike Stump  <mikestump@comcast.net>
+
+	* reload.c (regno_clobbered_p): Fix typo.
+
 2011-10-24  Dodji Seketeli  <dodji@redhat.com>
 
 	* input.c (expand_location): Rewrite using

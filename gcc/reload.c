@@ -7231,7 +7231,7 @@ regno_clobbered_p (unsigned int regno, rtx insn, enum machine_mode mode,
 	{
 	  rtx elt = XVECEXP (PATTERN (insn), 0, i);
 	  if ((GET_CODE (elt) == CLOBBER
-	       || (sets == 1 && GET_CODE (PATTERN (insn)) == SET))
+	       || (sets == 1 && GET_CODE (elt) == SET))
 	      && REG_P (XEXP (elt, 0)))
 	    {
 	      unsigned int test = REGNO (XEXP (elt, 0));
