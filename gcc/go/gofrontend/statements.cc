@@ -652,6 +652,47 @@ Statement::make_assignment(Expression* lhs, Expression* rhs,
   return new Assignment_statement(lhs, rhs, location);
 }
 
+// The Move_subexpressions class is used to move all top-level
+// subexpressions of an expression.  This is used for things like
+// index expressions in which we must evaluate the index value before
+// it can be changed by a multiple assignment.
+
+class Move_subexpressions : public Traverse
+{
+ public:
+  Move_subexpressions(int skip, Block* block)
+    : Traverse(traverse_expressions),
+      skip_(skip), block_(block)
+  { }
+
+ protected:
+  int
+  expression(Expression**);
+
+ private:
+  // The number of subexpressions to skip moving.  This is used to
+  // avoid moving the array itself, as we only need to move the index.
+  int skip_;
+  // The block where new temporary variables should be added.
+  Block* block_;
+};
+
+int
+Move_subexpressions::expression(Expression** pexpr)
+{
+  if (this->skip_ > 0)
+    --this->skip_;
+  else if ((*pexpr)->temporary_reference_expression() == NULL)
+    {
+      source_location loc = (*pexpr)->location();
+      Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
+      this->block_->add_statement(temp);
+      *pexpr = Expression::make_temporary_reference(temp, loc);
+    }
+  // We only need to move top-level subexpressions.
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
 // The Move_ordered_evals class is used to find any subexpressions of
 // an expression that have an evaluation order dependency.  It creates
 // temporary variables to hold them.
@@ -679,6 +720,15 @@ Move_ordered_evals::expression(Expression** pexpr)
   // We have to look at subexpressions first.
   if ((*pexpr)->traverse_subexpressions(this) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
+
+  int i;
+  if ((*pexpr)->must_eval_subexpressions_in_order(&i))
+    {
+      Move_subexpressions ms(i, this->block_);
+      if ((*pexpr)->traverse_subexpressions(&ms) == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
+    }
+
   if ((*pexpr)->must_eval_in_order())
     {
       source_location loc = (*pexpr)->location();
@@ -901,10 +951,10 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   // First move out any subexpressions on the left hand side.  The
   // right hand side will be evaluated in the required order anyhow.
   Move_ordered_evals moe(b);
-  for (Expression_list::const_iterator plhs = this->lhs_->begin();
+  for (Expression_list::iterator plhs = this->lhs_->begin();
        plhs != this->lhs_->end();
        ++plhs)
-    (*plhs)->traverse_subexpressions(&moe);
+    Expression::traverse(&*plhs, &moe);
 
   std::vector<Temporary_statement*> temps;
   temps.reserve(this->lhs_->size());

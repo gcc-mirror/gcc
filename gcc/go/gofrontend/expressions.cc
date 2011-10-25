@@ -3993,6 +3993,10 @@ class Unary_expression : public Expression
   }
 
   bool
+  do_must_eval_subexpressions_in_order(int*) const
+  { return this->op_ == OPERATOR_MULT; }
+
+  bool
   do_is_addressable() const
   { return this->op_ == OPERATOR_MULT; }
 
@@ -10037,6 +10041,13 @@ class Array_index_expression : public Expression
   }
 
   bool
+  do_must_eval_subexpressions_in_order(int* skip) const
+  {
+    *skip = 1;
+    return true;
+  }
+
+  bool
   do_is_addressable() const;
 
   void
@@ -10459,6 +10470,13 @@ class String_index_expression : public Expression
 					  ? NULL
 					  : this->end_->copy()),
 					 this->location());
+  }
+
+  bool
+  do_must_eval_subexpressions_in_order(int* skip) const
+  {
+    *skip = 1;
+    return true;
   }
 
   tree
