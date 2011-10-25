@@ -94,6 +94,9 @@ DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2",
 DEF_GO_RUNTIME(MAPASSIGN2, "runtime.mapassign2",
 	       P4(MAP, POINTER, POINTER, BOOL), R0())
 
+// Delete a key from a map.
+DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P2(MAP, POINTER), R0())
+
 // Begin a range over a map.
 DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P2(MAP, MAPITER), R0())
 

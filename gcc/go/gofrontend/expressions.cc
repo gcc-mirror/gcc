@@ -7048,6 +7048,7 @@ class Builtin_call_expression : public Call_expression
       BUILTIN_CLOSE,
       BUILTIN_COMPLEX,
       BUILTIN_COPY,
+      BUILTIN_DELETE,
       BUILTIN_IMAG,
       BUILTIN_LEN,
       BUILTIN_MAKE,
@@ -7113,6 +7114,8 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     this->code_ = BUILTIN_COMPLEX;
   else if (name == "copy")
     this->code_ = BUILTIN_COPY;
+  else if (name == "delete")
+    this->code_ = BUILTIN_DELETE;
   else if (name == "imag")
     this->code_ = BUILTIN_IMAG;
   else if (name == "len")
@@ -7206,34 +7209,15 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
   if (this->classification() == EXPRESSION_ERROR)
     return this;
 
+  source_location loc = this->location();
+
   if (this->is_varargs() && this->code_ != BUILTIN_APPEND)
     {
       this->report_error(_("invalid use of %<...%> with builtin function"));
-      return Expression::make_error(this->location());
+      return Expression::make_error(loc);
     }
 
-  if (this->code_ == BUILTIN_NEW)
-    {
-      const Expression_list* args = this->args();
-      if (args == NULL || args->size() < 1)
-	this->report_error(_("not enough arguments"));
-      else if (args->size() > 1)
-	this->report_error(_("too many arguments"));
-      else
-	{
-	  Expression* arg = args->front();
-	  if (!arg->is_type_expression())
-	    {
-	      error_at(arg->location(), "expected type");
-	      this->set_is_error();
-	    }
-	  else
-	    return Expression::make_allocation(arg->type(), this->location());
-	}
-    }
-  else if (this->code_ == BUILTIN_MAKE)
-    return this->lower_make();
-  else if (this->is_constant())
+  if (this->is_constant())
     {
       // We can only lower len and cap if there are no function calls
       // in the arguments.  Otherwise we have to make the call.
@@ -7254,8 +7238,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       Type* type;
       if (this->integer_constant_value(true, ival, &type))
 	{
-	  Expression* ret = Expression::make_integer(&ival, type,
-						     this->location());
+	  Expression* ret = Expression::make_integer(&ival, type, loc);
 	  mpz_clear(ival);
 	  return ret;
 	}
@@ -7265,8 +7248,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       mpfr_init(rval);
       if (this->float_constant_value(rval, &type))
 	{
-	  Expression* ret = Expression::make_float(&rval, type,
-						   this->location());
+	  Expression* ret = Expression::make_float(&rval, type, loc);
 	  mpfr_clear(rval);
 	  return ret;
 	}
@@ -7275,8 +7257,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       mpfr_init(imag);
       if (this->complex_constant_value(rval, imag, &type))
 	{
-	  Expression* ret = Expression::make_complex(&rval, &imag, type,
-						     this->location());
+	  Expression* ret = Expression::make_complex(&rval, &imag, type, loc);
 	  mpfr_clear(rval);
 	  mpfr_clear(imag);
 	  return ret;
@@ -7284,34 +7265,100 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       mpfr_clear(rval);
       mpfr_clear(imag);
     }
-  else if (this->code_ == BUILTIN_RECOVER)
+
+  switch (this->code_)
     {
+    default:
+      break;
+
+    case BUILTIN_NEW:
+      {
+	const Expression_list* args = this->args();
+	if (args == NULL || args->size() < 1)
+	  this->report_error(_("not enough arguments"));
+	else if (args->size() > 1)
+	  this->report_error(_("too many arguments"));
+	else
+	  {
+	    Expression* arg = args->front();
+	    if (!arg->is_type_expression())
+	      {
+		error_at(arg->location(), "expected type");
+		this->set_is_error();
+	      }
+	    else
+	      return Expression::make_allocation(arg->type(), loc);
+	  }
+      }
+      break;
+
+    case BUILTIN_MAKE:
+      return this->lower_make();
+
+    case BUILTIN_RECOVER:
       if (function != NULL)
 	function->func_value()->set_calls_recover();
       else
 	{
 	  // Calling recover outside of a function always returns the
 	  // nil empty interface.
-	  Type* eface = Type::make_interface_type(NULL, this->location());
-	  return Expression::make_cast(eface,
-				       Expression::make_nil(this->location()),
-				       this->location());
+	  Type* eface = Type::make_interface_type(NULL, loc);
+	  return Expression::make_cast(eface, Expression::make_nil(loc), loc);
 	}
-    }
-  else if (this->code_ == BUILTIN_APPEND)
-    {
-      // Lower the varargs.
-      const Expression_list* args = this->args();
-      if (args == NULL || args->empty())
-	return this;
-      Type* slice_type = args->front()->type();
-      if (!slice_type->is_slice_type())
-	{
-	  error_at(args->front()->location(), "argument 1 must be a slice");
-	  this->set_is_error();
+      break;
+
+    case BUILTIN_APPEND:
+      {
+	// Lower the varargs.
+	const Expression_list* args = this->args();
+	if (args == NULL || args->empty())
 	  return this;
-	}
-      this->lower_varargs(gogo, function, inserter, slice_type, 2);
+	Type* slice_type = args->front()->type();
+	if (!slice_type->is_slice_type())
+	  {
+	    error_at(args->front()->location(), "argument 1 must be a slice");
+	    this->set_is_error();
+	    return this;
+	  }
+	this->lower_varargs(gogo, function, inserter, slice_type, 2);
+      }
+      break;
+
+    case BUILTIN_DELETE:
+      {
+	// Lower to a runtime function call.
+	const Expression_list* args = this->args();
+	if (args == NULL || args->size() < 2)
+	  this->report_error(_("not enough arguments"));
+	else if (args->size() > 2)
+	  this->report_error(_("too many arguments"));
+	else if (args->front()->type()->map_type() == NULL)
+	  this->report_error(_("argument 1 must be a map"));
+	else
+	  {
+	    // Since this function returns no value it must appear in
+	    // a statement by itself, so we don't have to worry about
+	    // order of evaluation of values around it.  Evaluate the
+	    // map first to get order of evaluation right.
+	    Map_type* mt = args->front()->type()->map_type();
+	    Temporary_statement* map_temp =
+	      Statement::make_temporary(mt, args->front(), loc);
+	    inserter->insert(map_temp);
+
+	    Temporary_statement* key_temp =
+	      Statement::make_temporary(mt->key_type(), args->back(), loc);
+	    inserter->insert(key_temp);
+
+	    Expression* e1 = Expression::make_temporary_reference(map_temp,
+								  loc);
+	    Expression* e2 = Expression::make_temporary_reference(key_temp,
+								  loc);
+	    e2 = Expression::make_unary(OPERATOR_AND, e2, loc);
+	    return Runtime::make_call(Runtime::MAPDELETE, this->location(),
+				      2, e1, e2);
+	  }
+      }
+      break;
     }
 
   return this;
@@ -7845,6 +7892,7 @@ Builtin_call_expression::do_discarding_value()
 
     case BUILTIN_CLOSE:
     case BUILTIN_COPY:
+    case BUILTIN_DELETE:
     case BUILTIN_PANIC:
     case BUILTIN_PRINT:
     case BUILTIN_PRINTLN:
@@ -7882,6 +7930,7 @@ Builtin_call_expression::do_type()
       return Type::lookup_integer_type("int");
 
     case BUILTIN_CLOSE:
+    case BUILTIN_DELETE:
     case BUILTIN_PANIC:
     case BUILTIN_PRINT:
     case BUILTIN_PRINTLN:

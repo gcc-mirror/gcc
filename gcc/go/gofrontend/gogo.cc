@@ -201,6 +201,11 @@ Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
   imag_type->set_is_varargs();
   imag_type->set_is_builtin();
   this->globals_->add_function_declaration("imag", NULL, imag_type, loc);
+
+  Function_type* delete_type = Type::make_function_type(NULL, NULL, NULL, loc);
+  delete_type->set_is_varargs();
+  delete_type->set_is_builtin();
+  this->globals_->add_function_declaration("delete", NULL, delete_type, loc);
 }
 
 // Munge name for use in an error message.
