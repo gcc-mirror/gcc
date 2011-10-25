@@ -1656,24 +1656,12 @@
   "TARGET_SSE || TARGET_3DNOW_A")
 
 (define_insn "*mmx_maskmovq"
-  [(set (mem:V8QI (match_operand:SI 0 "register_operand" "D"))
+  [(set (mem:V8QI (match_operand:P 0 "register_operand" "D"))
 	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "y")
 		      (match_operand:V8QI 2 "register_operand" "y")
 		      (mem:V8QI (match_dup 0))]
 		     UNSPEC_MASKMOV))]
-  "(TARGET_SSE || TARGET_3DNOW_A) && !TARGET_64BIT"
-  ;; @@@ check ordering of operands in intel/nonintel syntax
-  "maskmovq\t{%2, %1|%1, %2}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
-
-(define_insn "*mmx_maskmovq_rex"
-  [(set (mem:V8QI (match_operand:DI 0 "register_operand" "D"))
-	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "y")
-		      (match_operand:V8QI 2 "register_operand" "y")
-		      (mem:V8QI (match_dup 0))]
-		     UNSPEC_MASKMOV))]
-  "(TARGET_SSE || TARGET_3DNOW_A) && TARGET_64BIT"
+  "TARGET_SSE || TARGET_3DNOW_A"
   ;; @@@ check ordering of operands in intel/nonintel syntax
   "maskmovq\t{%2, %1|%1, %2}"
   [(set_attr "type" "mmxcvt")

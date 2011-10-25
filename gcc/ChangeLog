@@ -1,3 +1,9 @@
+2011-10-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/mmx.md (*mmx_maskmovq): Replace :SI with :P and
+	remove "&& !TARGET_64BIT"
+	(*mmx_maskmovq_rex): Removed.
+
 2011-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/46603
