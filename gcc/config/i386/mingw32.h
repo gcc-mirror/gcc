@@ -239,3 +239,9 @@ __enable_execute_stack (void *addr)					\
 /* We should find a way to not have to update this manually.  */
 #define LIBGCJ_SONAME "libgcj" /*LIBGCC_EH_EXTN*/ "-12.dll"
 
+/* For 32-bit Windows we need valid frame-pointer for function using
+   setjmp.  */
+#undef SUBTARGET_FRAME_POINTER_REQUIRED
+#define SUBTARGET_FRAME_POINTER_REQUIRED \
+  (!TARGET_64BIT && cfun->calls_setjmp)
+

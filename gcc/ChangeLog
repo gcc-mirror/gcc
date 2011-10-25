@@ -1,3 +1,8 @@
+2011-10-25  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/mingw32.h (SUBTARGET_FRAME_POINTER_REQUIRED):
+	Use for 32-bit frame-pointer, if setjmp is used.
+
 2011-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/50816
