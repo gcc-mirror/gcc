@@ -1,3 +1,7 @@
+2011-10-25  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config/rs6000/t-freebsd: Add wildcard.
+
 2011-10-21  Paul Brook  <paul@codesourcery.com>
 
 	* unwind-arm-common.inc: Handle ID3/4 unwinding data.
