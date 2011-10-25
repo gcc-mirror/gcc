@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -march=armv7-a" }  */
+/* { dg-options "-O2" }  */
 /* Make sure RA does good job allocating registers and avoids
    unnecessary moves.  */
 /* { dg-final { scan-assembler-not "mov" } } */
