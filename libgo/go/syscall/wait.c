@@ -95,7 +95,7 @@ extern int TrapCause (uint32_t *w)
   __asm__ ("libgo_syscall.syscall.TrapCause.N32_libgo_syscall.syscall.WaitStatus");
 
 int
-TrapCause (uint32_t *w)
+TrapCause (uint32_t *w __attribute__ ((unused)))
 {
 #ifndef __linux__
   return -1;
