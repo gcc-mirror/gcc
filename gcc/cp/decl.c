@@ -8592,7 +8592,7 @@ grokdeclarator (const cp_declarator *declarator,
       error ("declaration of %qD as non-function", dname);
       return error_mark_node;
     }
- 
+
   if (dname
       && TREE_CODE (dname) == IDENTIFIER_NODE
       && UDLIT_OPER_P (dname)
