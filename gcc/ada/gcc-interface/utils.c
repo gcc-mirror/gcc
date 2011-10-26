@@ -726,9 +726,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       tree this_size = DECL_SIZE (field);
       tree this_ada_size;
 
-      if ((TREE_CODE (type) == RECORD_TYPE
-	   || TREE_CODE (type) == UNION_TYPE
-	   || TREE_CODE (type) == QUAL_UNION_TYPE)
+      if (RECORD_OR_UNION_TYPE_P (type)
 	  && !TYPE_FAT_POINTER_P (type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (type)
 	  && TYPE_ADA_SIZE (type))

@@ -1,3 +1,23 @@
+
+2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Try to
+	make a packable type for fields of union types as well.
+	<is_type>: Use RECORD_OR_UNION_TYPE_P predicate.
+	(gnat_to_gnu_component_type): Try to make a packable type for fields
+	of union types as well.
+	(make_packable_type): Use RECORD_OR_UNION_TYPE_P predicate.
+	(maybe_pad_type): Try to make a packable type for fields of union types
+	as well.
+	(gnat_to_gnu_field): Likewise.
+	(is_variable_size): Use RECORD_OR_UNION_TYPE_P predicate.
+	(set_rm_size): Likewise.
+	(rm_size): Likewise.
+	* gcc-interface/misc.c (gnat_type_max_size): Likewise.
+	* gcc-interface/trans.c (add_decl_expr): Likewise.
+	* gcc-interface/utils.c (finish_record_type): Likewise.
+	* gcc-interface/utils2.c (build_simple_component_ref): Likewise.
+
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_field): Always check components

@@ -6754,10 +6754,8 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	}
       /* In any case, we have to deal with our own TYPE_ADA_SIZE field.  */
       else if (TREE_CODE (gnu_decl) == TYPE_DECL
-	       && ((TREE_CODE (type) == RECORD_TYPE
-		    && !TYPE_FAT_POINTER_P (type))
-		   || TREE_CODE (type) == UNION_TYPE
-		   || TREE_CODE (type) == QUAL_UNION_TYPE))
+	       && RECORD_OR_UNION_TYPE_P (type)
+	       && !TYPE_FAT_POINTER_P (type))
 	MARK_VISITED (TYPE_ADA_SIZE (type));
     }
   else if (!DECL_EXTERNAL (gnu_decl))

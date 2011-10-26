@@ -556,9 +556,8 @@ gnat_type_max_size (const_tree gnu_type)
   /* If we don't have a constant, see what we can get from TYPE_ADA_SIZE,
      which should stay untouched.  */
   if (!host_integerp (max_unitsize, 1)
-      && (TREE_CODE (gnu_type) == RECORD_TYPE
-	  || TREE_CODE (gnu_type) == UNION_TYPE
-	  || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+      && RECORD_OR_UNION_TYPE_P (gnu_type)
+      && !TYPE_FAT_POINTER_P (gnu_type)
       && TYPE_ADA_SIZE (gnu_type))
     {
       tree max_adasize = max_size (TYPE_ADA_SIZE (gnu_type), true);

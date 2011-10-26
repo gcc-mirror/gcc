@@ -1,5 +1,11 @@
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/unchecked_union.ads: Rename to...
+	* gnat.dg/specs/unchecked_union1.ads: ...this.
+	* gnat.dg/specs/unchecked_union2.ads: New test.
+
+2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/atomic1.ads: New test.
 
 2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
