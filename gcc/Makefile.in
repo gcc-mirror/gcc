@@ -2069,12 +2069,13 @@ collect2-aix.o : collect2-aix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(OBSTACK_H) collect2.h intl.h $(DIAGNOSTIC_CORE_H)
 
-lto-wrapper$(exeext): lto-wrapper.o $(LIBDEPS)
-	+$(LINKER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ lto-wrapper.o $(LIBS)
+lto-wrapper$(exeext): lto-wrapper.o ggc-none.o libcommon-target.a $(LIBDEPS)
+	+$(LINKER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ \
+	    lto-wrapper.o ggc-none.o libcommon-target.a $(LIBS)
 	mv -f T$@ $@
 
 lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h \
-	$(OBSTACK_H) $(DIAGNOSTIC_H)
+	$(OBSTACK_H) $(DIAGNOSTIC_H) $(OPTS_H) $(OPTIONS_H)
 
 # Files used by all variants of C.
 c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
