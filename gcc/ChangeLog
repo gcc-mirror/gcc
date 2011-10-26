@@ -1,3 +1,12 @@
+2011-10-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41844
+	* Makefile.in (lto-wrapper): Depend on and link against
+	opts-common.o.
+	(lto-wrapper.o): Depend on $(OPTS_H) and $(OPTIONS_H).
+	* lto-wrapper.c (get_options_from_collect_gcc_options): New function.
+	(run_gcc): Use it.  Filter out language specific options.
+
 2011-10-26  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config/i386/freebsd64.h (LINK_SPEC): Emit the same warning as the
