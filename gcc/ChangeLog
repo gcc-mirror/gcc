@@ -1,3 +1,7 @@
+2011-10-26  Release Manager
+
+	* GCC 4.6.2 released.
+
 2011-10-25  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/mingw32.h (SUBTARGET_FRAME_POINTER_REQUIRED):
