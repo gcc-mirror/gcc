@@ -181,6 +181,7 @@ static void write_template_prefix (const tree);
 static void write_unqualified_name (const tree);
 static void write_conversion_operator_name (const tree);
 static void write_source_name (tree);
+static void write_literal_operator_name (tree);
 static void write_unnamed_type_name (const tree);
 static void write_closure_type_name (const tree);
 static int hwint_to_ascii (unsigned HOST_WIDE_INT, const unsigned int, char *,
@@ -1174,6 +1175,8 @@ write_unqualified_id (tree identifier)
 	  }
       write_string (mangled_name);
     }
+  else if (UDLIT_OPER_P (identifier))
+    write_literal_operator_name (identifier);
   else
     write_source_name (identifier);
 }
@@ -1227,6 +1230,8 @@ write_unqualified_name (const tree decl)
 
 	  write_string (oni[DECL_OVERLOADED_OPERATOR_P (decl)].mangled_name);
 	}
+      else if (UDLIT_OPER_P (DECL_NAME (decl)))
+	write_literal_operator_name (DECL_NAME (decl));
       else
 	found = false;
 
@@ -1284,6 +1289,21 @@ write_source_name (tree identifier)
 
   write_unsigned_number (IDENTIFIER_LENGTH (identifier));
   write_identifier (IDENTIFIER_POINTER (identifier));
+}
+
+/* Write a user-defined literal operator.
+   IDENTIFIER is an LITERAL_IDENTIFIER_NODE.  */
+
+static void
+write_literal_operator_name (tree identifier)
+{
+  const char* suffix = UDLIT_OP_SUFFIX (identifier);
+  char* buffer = XNEWVEC (char, strlen (UDLIT_OP_MANGLED_PREFIX)
+			      + strlen (suffix) + 10);
+  sprintf (buffer, UDLIT_OP_MANGLED_FORMAT, suffix);
+
+  write_unsigned_number (strlen (buffer));
+  write_identifier (buffer);
 }
 
 /* Encode 0 as _, and 1+ as n-1_.  */

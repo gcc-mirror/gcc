@@ -47,6 +47,12 @@ DEFTREECODE (C_MAYBE_CONST_EXPR, "c_maybe_const_expr", tcc_expression, 2)
    evaluated.  */
 DEFTREECODE (EXCESS_PRECISION_EXPR, "excess_precision_expr", tcc_expression, 1)
 
+/* Used to represent a user-defined literal.
+   The operands are an IDENTIFIER for the suffix, the VALUE of the literal,
+   and for numeric literals the original string representation of the
+   number.  */
+DEFTREECODE (USERDEF_LITERAL, "userdef_literal", tcc_exceptional, 3)
+
 /*
 Local variables:
 mode:c

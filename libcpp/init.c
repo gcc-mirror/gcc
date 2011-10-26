@@ -80,22 +80,23 @@ struct lang_flags
   char digraphs;
   char uliterals;
   char rliterals;
+  char user_literals;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid std  //   digr ulit rlit */
-  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0,   0 },
-  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1 },
-  /* GNUC1X   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1 },
-  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0,   0 },
-  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0,   0 },
-  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0,   0 },
-  /* STDC1X   */  { 1,  0,  1,   0,  1,   1,   1,   1,   0 },
-  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0,   0 },
-  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0,   0 },
-  /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1,   1,   1 },
-  /* CXX0X    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1 },
-  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0,   0 }
+{ /*              c99 c++ xnum xid std  //   digr ulit rlit user_literals */
+  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0,   0,    0 },
+  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,    0 },
+  /* GNUC1X   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,    0 },
+  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0,   0,    0 },
+  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0,   0,    0 },
+  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0,   0,    0 },
+  /* STDC1X   */  { 1,  0,  1,   0,  1,   1,   1,   1,   0,    0 },
+  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0,   0,    0 },
+  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0,   0,    0 },
+  /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1,   1,   1,    1 },
+  /* CXX0X    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1,    1 },
+  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0,   0,    0 }
   /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX0X, and
      CXX0X when no longer experimental (when all uses of identifiers
      in the compiler have been audited for correct handling of
@@ -120,6 +121,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, digraphs)			 = l->digraphs;
   CPP_OPTION (pfile, uliterals)			 = l->uliterals;
   CPP_OPTION (pfile, rliterals)			 = l->rliterals;
+  CPP_OPTION (pfile, user_literals)		 = l->user_literals;
 }
 
 /* Initialize library global state.  */

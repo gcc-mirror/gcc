@@ -1534,6 +1534,8 @@ dump_function_name (tree t, int flags)
     }
   else if (name && IDENTIFIER_OPNAME_P (name))
     pp_cxx_tree_identifier (cxx_pp, name);
+  else if (name && UDLIT_OPER_P (name))
+    pp_cxx_tree_identifier (cxx_pp, name);
   else
     dump_decl (name, flags);
 
@@ -1754,6 +1756,10 @@ dump_expr (tree t, int flags)
     case STRING_CST:
     case COMPLEX_CST:
       pp_constant (cxx_pp, t);
+      break;
+
+    case USERDEF_LITERAL:
+      pp_cxx_userdef_literal (cxx_pp, t);
       break;
 
     case THROW_EXPR:
@@ -3233,7 +3239,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 	pedwarn (input_location, OPT_pedantic,
 		 "inline namespaces "
 		 "only available with -std=c++0x or -std=gnu++0x");
-	break;	
+	break;
       case CPP0X_OVERRIDE_CONTROLS:
 	pedwarn (input_location, 0,
 		 "override controls (override/final) "
@@ -3244,8 +3250,13 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "non-static data member initializers "
 		 "only available with -std=c++0x or -std=gnu++0x");
         break;
+      case CPP0X_USER_DEFINED_LITERALS:
+	pedwarn (input_location, 0,
+		 "user-defined literals "
+		 "only available with -std=c++0x or -std=gnu++0x");
+	break;
       default:
-	gcc_unreachable();
+	gcc_unreachable ();
       }
 }
 

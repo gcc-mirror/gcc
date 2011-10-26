@@ -1,6 +1,6 @@
 /* Parse C expressions for cpplib.
    Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
-   2002, 2004, 2008, 2009, 2010 Free Software Foundation.
+   2002, 2004, 2008, 2009, 2010, 2011 Free Software Foundation.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
@@ -185,6 +185,13 @@ interpret_float_suffix (const uchar *s, size_t len)
 	     q ? CPP_N_MD_Q : CPP_N_DEFAULT));
 }
 
+/* Return the classification flags for a float suffix.  */
+unsigned int
+cpp_interpret_float_suffix (const char *s, size_t len)
+{
+  return interpret_float_suffix ((const unsigned char *)s, len);
+}
+
 /* Subroutine of cpp_classify_number.  S points to an integer suffix
    of length LEN, possibly zero. Returns 0 for an invalid suffix, or a
    flag vector describing the suffix.  */
@@ -219,17 +226,152 @@ interpret_int_suffix (const uchar *s, size_t len)
 	     : (l == 1) ? CPP_N_MEDIUM : CPP_N_LARGE));
 }
 
+/* Return the classification flags for an int suffix.  */
+unsigned int
+cpp_interpret_int_suffix (const char *s, size_t len)
+{
+  return interpret_int_suffix ((const unsigned char *)s, len);
+}
+
+/* Return the string type corresponding to the the input user-defined string
+   literal type.  If the input type is not a user-defined string literal
+   type return the input type.  */
+enum cpp_ttype
+cpp_userdef_string_remove_type (enum cpp_ttype type)
+{
+  if (type == CPP_STRING_USERDEF)
+    return CPP_STRING;
+  else if (type == CPP_WSTRING_USERDEF)
+    return CPP_WSTRING;
+  else if (type == CPP_STRING16_USERDEF)
+    return CPP_STRING16;
+  else if (type == CPP_STRING32_USERDEF)
+    return CPP_STRING32;
+  else if (type == CPP_UTF8STRING_USERDEF)
+    return CPP_UTF8STRING;
+  else
+    return type;
+}
+
+/* Return the user-defined string literal type corresponding to the input
+   string type.  If the input type is not a string type return the input
+   type.  */
+enum cpp_ttype
+cpp_userdef_string_add_type (enum cpp_ttype type)
+{
+  if (type == CPP_STRING)
+    return CPP_STRING_USERDEF;
+  else if (type == CPP_WSTRING)
+    return CPP_WSTRING_USERDEF;
+  else if (type == CPP_STRING16)
+    return CPP_STRING16_USERDEF;
+  else if (type == CPP_STRING32)
+    return CPP_STRING32_USERDEF;
+  else if (type == CPP_UTF8STRING)
+    return CPP_UTF8STRING_USERDEF;
+  else
+    return type;
+}
+
+/* Return the char type corresponding to the the input user-defined char
+   literal type.  If the input type is not a user-defined char literal
+   type return the input type.  */
+enum cpp_ttype
+cpp_userdef_char_remove_type (enum cpp_ttype type)
+{
+  if (type == CPP_CHAR_USERDEF)
+    return CPP_CHAR;
+  else if (type == CPP_WCHAR_USERDEF)
+    return CPP_WCHAR;
+  else if (type == CPP_CHAR16_USERDEF)
+    return CPP_STRING16;
+  else if (type == CPP_CHAR32_USERDEF)
+    return CPP_STRING32;
+  else
+    return type;
+}
+
+/* Return the user-defined char literal type corresponding to the input
+   char type.  If the input type is not a char type return the input
+   type.  */
+enum cpp_ttype
+cpp_userdef_char_add_type (enum cpp_ttype type)
+{
+  if (type == CPP_CHAR)
+    return CPP_CHAR_USERDEF;
+  else if (type == CPP_WCHAR)
+    return CPP_WCHAR_USERDEF;
+  else if (type == CPP_CHAR16)
+    return CPP_CHAR16_USERDEF;
+  else if (type == CPP_CHAR32)
+    return CPP_CHAR32_USERDEF;
+  else
+    return type;
+}
+
+/* Return true if the token type is a user-defined string literal.  */
+bool
+cpp_userdef_string_p (enum cpp_ttype type)
+{
+  if (type == CPP_STRING_USERDEF
+   || type == CPP_WSTRING_USERDEF
+   || type == CPP_STRING16_USERDEF
+   || type == CPP_STRING32_USERDEF
+   || type == CPP_UTF8STRING_USERDEF)
+    return true;
+  else
+    return false;
+}
+
+/* Return true if the token type is a user-defined char literal.  */
+bool
+cpp_userdef_char_p (enum cpp_ttype type)
+{
+  if (type == CPP_CHAR_USERDEF
+   || type == CPP_WCHAR_USERDEF
+   || type == CPP_CHAR16_USERDEF
+   || type == CPP_CHAR32_USERDEF)
+    return true;
+  else
+    return false;
+}
+
+/* Extract the suffix from a user-defined literal string or char.  */
+const char *
+cpp_get_userdef_suffix (const cpp_token *tok)
+{
+  unsigned int len = tok->val.str.len;
+  const char *text = (const char *)tok->val.str.text;
+  char delim;
+  unsigned int i;
+  for (i = 0; i < len; ++i)
+    if (text[i] == '\'' || text[i] == '"')
+      break;
+  if (i == len)
+    return text + len;
+  delim = text[i];
+  for (i = len; i > 0; --i)
+    if (text[i - 1] == delim)
+      break;
+  return text + i;
+}
+
 /* Categorize numeric constants according to their field (integer,
    floating point, or invalid), radix (decimal, octal, hexadecimal),
-   and type suffixes.  */
+   and type suffixes.  In C++0X if UD_SUFFIX is non null it will be
+   assigned any unrecognized suffix for a user-defined literal.  */
 unsigned int
-cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
+cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
+		     const char **ud_suffix)
 {
   const uchar *str = token->val.str.text;
   const uchar *limit;
   unsigned int max_digit, result, radix;
   enum {NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON} float_flag;
   bool seen_digit;
+
+  if (ud_suffix)
+    *ud_suffix = NULL;
 
   /* If the lexer has done its job, length one can only be a single
      digit.  Fast-path this very common case.  */
@@ -361,10 +503,19 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       result = interpret_float_suffix (str, limit - str);
       if (result == 0)
 	{
-	  cpp_error (pfile, CPP_DL_ERROR,
-		     "invalid suffix \"%.*s\" on floating constant",
-		     (int) (limit - str), str);
-	  return CPP_N_INVALID;
+	  if (CPP_OPTION (pfile, user_literals))
+	    {
+	      if (ud_suffix)
+		*ud_suffix = (const char *) str;
+	      result = CPP_N_LARGE | CPP_N_USERDEF;
+	    }
+	  else
+	    {
+	      cpp_error (pfile, CPP_DL_ERROR,
+			 "invalid suffix \"%.*s\" on floating constant",
+			 (int) (limit - str), str);
+	      return CPP_N_INVALID;
+	    }
 	}
 
       /* Traditional C didn't accept any floating suffixes.  */
@@ -406,10 +557,19 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       result = interpret_int_suffix (str, limit - str);
       if (result == 0)
 	{
-	  cpp_error (pfile, CPP_DL_ERROR,
-		     "invalid suffix \"%.*s\" on integer constant",
-		     (int) (limit - str), str);
-	  return CPP_N_INVALID;
+	  if (CPP_OPTION (pfile, user_literals))
+	    {
+	      if (ud_suffix)
+		*ud_suffix = (const char *) str;
+	      result = CPP_N_UNSIGNED | CPP_N_LARGE | CPP_N_USERDEF;
+	    }
+	  else
+	    {
+	      cpp_error (pfile, CPP_DL_ERROR,
+			 "invalid suffix \"%.*s\" on integer constant",
+			 (int) (limit - str), str);
+	      return CPP_N_INVALID;
+	    }
 	}
 
       /* Traditional C only accepted the 'L' suffix.
@@ -539,7 +699,7 @@ cpp_interpret_integer (cpp_reader *pfile, const cpp_token *token,
 	    }
 	}
 
-      if (overflow)
+      if (overflow && !(type & CPP_N_USERDEF))
 	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "integer constant is too large for its type");
       /* If too big to be signed, consider it unsigned.  Only warn for
@@ -748,7 +908,10 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
   switch (token->type)
     {
     case CPP_NUMBER:
-      temp = cpp_classify_number (pfile, token);
+      temp = cpp_classify_number (pfile, token, NULL);
+      if (temp & CPP_N_USERDEF)
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "user-defined literal in preprocessor expression");
       switch (temp & CPP_N_CATEGORY)
 	{
 	case CPP_N_FLOATING:

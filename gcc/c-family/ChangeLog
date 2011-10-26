@@ -1,3 +1,12 @@
+2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++11 user-defined literals.
+	* c-common.c (build_userdef_literal): New.
+	* c-common.def: New tree code.
+	* c-common.h (tree_userdef_literal): New tree struct and accessors.
+	* c-lex.c (interpret_float): Add suffix parm.
+	(c_lex_with_flags): Build literal tokens.
+
 2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50841

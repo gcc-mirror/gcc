@@ -1067,4 +1067,27 @@ c_tree_chain_next (tree t)
   return NULL;
 }
 
+/* A suffix-identifier value doublet that represents user-defined literals
+   for C++-0x.  */
+struct GTY(()) tree_userdef_literal {
+  struct tree_base base;
+  tree suffix_id;
+  tree value;
+  tree num_string;
+};
+
+#define USERDEF_LITERAL_SUFFIX_ID(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->suffix_id)
+
+#define USERDEF_LITERAL_VALUE(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->value)
+
+#define USERDEF_LITERAL_NUM_STRING(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->num_string)
+
+#define USERDEF_LITERAL_TYPE(NODE) \
+  (TREE_TYPE (USERDEF_LITERAL_VALUE (NODE)))
+
+extern tree build_userdef_literal (tree suffix_id, tree value, tree num_string);
+
 #endif /* ! GCC_C_COMMON_H */
