@@ -5329,7 +5329,7 @@ arg_assoc (struct arg_lookup *k, tree n)
     n = TREE_OPERAND (n, 1);
   while (TREE_CODE (n) == TREE_LIST)
     n = TREE_VALUE (n);
-  if (TREE_CODE (n) == BASELINK)
+  if (BASELINK_P (n))
     n = BASELINK_FUNCTIONS (n);
 
   if (TREE_CODE (n) == FUNCTION_DECL)

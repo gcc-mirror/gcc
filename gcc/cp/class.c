@@ -6873,7 +6873,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 	}
     }
 
-  if (TREE_CODE (rhs) == BASELINK)
+  if (BASELINK_P (rhs))
     {
       access_path = BASELINK_ACCESS_BINFO (rhs);
       rhs = BASELINK_FUNCTIONS (rhs);

@@ -5277,7 +5277,7 @@ convert_nontype_argument_function (tree type, tree expr)
   fn_no_ptr = fn;
   if (TREE_CODE (fn_no_ptr) == ADDR_EXPR)
     fn_no_ptr = TREE_OPERAND (fn_no_ptr, 0);
-  if (TREE_CODE (fn_no_ptr) == BASELINK)
+  if (BASELINK_P (fn_no_ptr))
     fn_no_ptr = BASELINK_FUNCTIONS (fn_no_ptr);
  
   /* [temp.arg.nontype]/1
@@ -7801,7 +7801,7 @@ uses_template_parms (tree t)
 	   || EXPR_P (t)
 	   || TREE_CODE (t) == TEMPLATE_PARM_INDEX
 	   || TREE_CODE (t) == OVERLOAD
-	   || TREE_CODE (t) == BASELINK
+	   || BASELINK_P (t)
 	   || TREE_CODE (t) == IDENTIFIER_NODE
 	   || TREE_CODE (t) == TRAIT_EXPR
 	   || TREE_CODE (t) == CONSTRUCTOR
@@ -11993,7 +11993,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 					 base, name,
 					 /*template_p=*/false);
 	  }
-	else if (TREE_CODE (name) == BASELINK)
+	else if (BASELINK_P (name))
 	  name = tsubst_baselink (name,
 				  non_reference (TREE_TYPE (object)),
 				  args, complain,
@@ -15197,7 +15197,7 @@ resolve_nondeduced_context (tree orig_expr)
       offset = expr;
       expr = TREE_OPERAND (expr, 1);
     }
-  if (TREE_CODE (expr) == BASELINK)
+  if (BASELINK_P (expr))
     {
       baselink = expr;
       expr = BASELINK_FUNCTIONS (expr);
@@ -19314,7 +19314,7 @@ type_dependent_expression_p (tree expression)
       if (TREE_CODE (expression) == SCOPE_REF)
 	return false;
 
-      if (TREE_CODE (expression) == BASELINK)
+      if (BASELINK_P (expression))
 	expression = BASELINK_FUNCTIONS (expression);
 
       if (TREE_CODE (expression) == TEMPLATE_ID_EXPR)
