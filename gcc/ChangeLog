@@ -1,3 +1,8 @@
+2011-10-26  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config/i386/freebsd64.h (LINK_SPEC): Emit the same warning as the
+	32-bit target does.
+
 2011-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR driver/46617
