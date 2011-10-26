@@ -8162,20 +8162,11 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	}
       return;
 
-      /* These are used by the conditional move instructions.  */
-    case 'c' :
+      /* This is used by the conditional move instructions.  */
     case 'C':
       {
 	enum rtx_code rc = GET_CODE (x);
 	
-	if (code == 'c')
-	  {
-	    enum machine_mode mode = GET_MODE (XEXP (x, 0));
-	    if (mode == CCFPmode || mode == CCFPEmode)
-	      rc = reverse_condition_maybe_unordered (GET_CODE (x));
-	    else
-	      rc = reverse_condition (GET_CODE (x));
-	  }
 	switch (rc)
 	  {
 	  case NE: fputs ("ne", file); break;
@@ -8196,20 +8187,15 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	  case UNGT: fputs ("ug", file); break;
 	  case UNGE: fputs ("uge", file); break;
 	  case UNEQ: fputs ("ue", file); break;
-	  default: output_operand_lossage (code == 'c'
-					   ? "invalid %%c operand"
-					   : "invalid %%C operand");
+	  default: output_operand_lossage ("invalid %%C operand");
 	  }
 	return;
       }
 
-      /* These are used by the movr instruction pattern.  */
-    case 'd':
+      /* This are used by the movr instruction pattern.  */
     case 'D':
       {
-	enum rtx_code rc = (code == 'd'
-			    ? reverse_condition (GET_CODE (x))
-			    : GET_CODE (x));
+	enum rtx_code rc = GET_CODE (x);
 	switch (rc)
 	  {
 	  case NE: fputs ("ne", file); break;
@@ -8218,9 +8204,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	  case LT: fputs ("lz", file); break;
 	  case LE: fputs ("lez", file); break;
 	  case GT: fputs ("gz", file); break;
-	  default: output_operand_lossage (code == 'd'
-					   ? "invalid %%d operand"
-					   : "invalid %%D operand");
+	  default: output_operand_lossage ("invalid %%D operand");
 	  }
 	return;
       }
@@ -11375,6 +11359,60 @@ sparc_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     }
 
   return NO_REGS;
+}
+
+bool
+sparc_expand_conditional_move (enum machine_mode mode, rtx *operands)
+{
+  enum rtx_code rc = GET_CODE (operands[1]);
+  enum machine_mode cmp_mode;
+  rtx cc_reg, dst, cmp;
+
+  cmp = operands[1];
+  cmp_mode = GET_MODE (XEXP (cmp, 0));
+  if (cmp_mode == DImode && !TARGET_ARCH64)
+    return false;
+
+  dst = operands[0];
+
+  if (! rtx_equal_p (operands[2], dst)
+      && ! rtx_equal_p (operands[3], dst))
+    {
+      if (reg_overlap_mentioned_p (dst, cmp))
+	dst = gen_reg_rtx (mode);
+
+      emit_move_insn (dst, operands[3]);
+    }
+  else if (operands[2] == dst)
+    {
+      operands[2] = operands[3];
+
+      if (GET_MODE_CLASS (cmp_mode) == MODE_FLOAT)
+        rc = reverse_condition_maybe_unordered (rc);
+      else
+        rc = reverse_condition (rc);
+    }
+
+  if (cmp_mode == TFmode && !TARGET_HARD_QUAD)
+    cmp = sparc_emit_float_lib_cmp (XEXP (cmp, 0), XEXP (cmp, 1), rc);
+
+  if (XEXP (cmp, 1) == const0_rtx
+      && GET_CODE (XEXP (cmp, 0)) == REG
+      && cmp_mode == DImode
+      && v9_regcmp_p (rc))
+    cc_reg = XEXP (cmp, 0);
+  else
+    cc_reg = gen_compare_reg_1 (rc, XEXP (cmp, 0), XEXP (cmp, 1));
+
+  cmp = gen_rtx_fmt_ee (rc, GET_MODE (cc_reg), cc_reg, const0_rtx);
+
+  emit_insn (gen_rtx_SET (VOIDmode, dst,
+			  gen_rtx_IF_THEN_ELSE (mode, cmp, operands[2], dst)));
+
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
+
+  return true;
 }
 
 #include "gt-sparc.h"

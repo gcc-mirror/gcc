@@ -2456,6 +2456,9 @@
 ;; Note that emit_conditional_move canonicalizes operands 2,3 so that operand
 ;; 3 contains the constant if one is present, but we handle either for
 ;; generality (sparc.c puts a constant in operand 2).
+;;
+;; Our instruction patterns, on the other hand, canonicalize such that
+;; operand 3 must be the set destination.
 
 (define_expand "mov<I:mode>cc"
   [(set (match_operand:I 0 "register_operand" "")
@@ -2464,27 +2467,9 @@
 			(match_operand:I 3 "arith10_operand" "")))]
   "TARGET_V9 && !(<I:MODE>mode == DImode && TARGET_ARCH32)"
 {
-  rtx cc_reg;
-
-  if (GET_MODE (XEXP (operands[1], 0)) == DImode && !TARGET_ARCH64)
+  if (! sparc_expand_conditional_move (<I:MODE>mode, operands))
     FAIL;
-
-  if (GET_MODE (XEXP (operands[1], 0)) == TFmode && !TARGET_HARD_QUAD)
-    operands[1]
-      = sparc_emit_float_lib_cmp (XEXP (operands[1], 0), XEXP (operands[1], 1),
-				  GET_CODE (operands[1]));
-
-  if (XEXP (operands[1], 1) == const0_rtx
-      && GET_CODE (XEXP (operands[1], 0)) == REG
-      && GET_MODE (XEXP (operands[1], 0)) == DImode
-      && v9_regcmp_p (GET_CODE (operands[1])))
-    cc_reg = XEXP (operands[1], 0);
-  else
-    cc_reg = gen_compare_reg (operands[1]);
-
-  operands[1]
-    = gen_rtx_fmt_ee (GET_CODE (operands[1]), GET_MODE (cc_reg), cc_reg,
-		      const0_rtx);
+  DONE;
 })
 
 (define_expand "mov<F:mode>cc"
@@ -2494,146 +2479,112 @@
 			(match_operand:F 3 "register_operand" "")))]
   "TARGET_V9 && TARGET_FPU"
 {
-  rtx cc_reg;
-
-  if (GET_MODE (XEXP (operands[1], 0)) == DImode && !TARGET_ARCH64)
+  if (! sparc_expand_conditional_move (<F:MODE>mode, operands))
     FAIL;
-
-  if (GET_MODE (XEXP (operands[1], 0)) == TFmode && !TARGET_HARD_QUAD)
-    operands[1]
-      = sparc_emit_float_lib_cmp (XEXP (operands[1], 0), XEXP (operands[1], 1),
-				  GET_CODE (operands[1]));
-
-  if (XEXP (operands[1], 1) == const0_rtx
-      && GET_CODE (XEXP (operands[1], 0)) == REG
-      && GET_MODE (XEXP (operands[1], 0)) == DImode
-      && v9_regcmp_p (GET_CODE (operands[1])))
-    cc_reg = XEXP (operands[1], 0);
-  else
-    cc_reg = gen_compare_reg (operands[1]);
-
-  operands[1]
-    = gen_rtx_fmt_ee (GET_CODE (operands[1]), GET_MODE (cc_reg), cc_reg,
-		      const0_rtx);
+  DONE;
 })
 
 ;; Conditional move define_insns
 
 (define_insn "*mov<I:mode>_cc_v9"
-  [(set (match_operand:I 0 "register_operand" "=r,r")
+  [(set (match_operand:I 0 "register_operand" "=r")
 	(if_then_else:I (match_operator 1 "comparison_operator"
-			       [(match_operand 2 "icc_or_fcc_register_operand" "X,X")
+			       [(match_operand 2 "icc_or_fcc_register_operand" "X")
 				(const_int 0)])
-			(match_operand:I 3 "arith11_operand" "rL,0")
-			(match_operand:I 4 "arith11_operand" "0,rL")))]
+			(match_operand:I 3 "arith11_operand" "rL")
+			(match_operand:I 4 "register_operand" "0")))]
   "TARGET_V9 && !(<I:MODE>mode == DImode && TARGET_ARCH32)"
-  "@
-   mov%C1\t%x2, %3, %0
-   mov%c1\t%x2, %4, %0"
+  "mov%C1\t%x2, %3, %0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*mov<I:mode>_cc_reg_sp64"
-  [(set (match_operand:I 0 "register_operand" "=r,r")
+  [(set (match_operand:I 0 "register_operand" "=r")
 	(if_then_else:I (match_operator 1 "v9_register_compare_operator"
-				[(match_operand:DI 2 "register_operand" "r,r")
+				[(match_operand:DI 2 "register_operand" "r")
 				 (const_int 0)])
-			(match_operand:I 3 "arith10_operand" "rM,0")
-			(match_operand:I 4 "arith10_operand" "0,rM")))]
+			(match_operand:I 3 "arith10_operand" "rM")
+			(match_operand:I 4 "register_operand" "0")))]
   "TARGET_ARCH64"
-  "@
-   movr%D1\t%2, %r3, %0
-   movr%d1\t%2, %r4, %0"
+  "movr%D1\t%2, %r3, %0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movsf_cc_v9"
-  [(set (match_operand:SF 0 "register_operand" "=f,f")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(if_then_else:SF (match_operator 1 "comparison_operator"
-				[(match_operand 2 "icc_or_fcc_register_operand" "X,X")
+				[(match_operand 2 "icc_or_fcc_register_operand" "X")
 				 (const_int 0)])
-			 (match_operand:SF 3 "register_operand" "f,0")
-			 (match_operand:SF 4 "register_operand" "0,f")))]
+			 (match_operand:SF 3 "register_operand" "f")
+			 (match_operand:SF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
-  "@
-   fmovs%C1\t%x2, %3, %0
-   fmovs%c1\t%x2, %4, %0"
+  "fmovs%C1\t%x2, %3, %0"
   [(set_attr "type" "fpcmove")])
 
 (define_insn "*movsf_cc_reg_sp64"
-  [(set (match_operand:SF 0 "register_operand" "=f,f")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(if_then_else:SF (match_operator 1 "v9_register_compare_operator"
-				[(match_operand:DI 2 "register_operand" "r,r")
+				[(match_operand:DI 2 "register_operand" "r")
 				 (const_int 0)])
-			 (match_operand:SF 3 "register_operand" "f,0")
-			 (match_operand:SF 4 "register_operand" "0,f")))]
+			 (match_operand:SF 3 "register_operand" "f")
+			 (match_operand:SF 4 "register_operand" "0")))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "@
-   fmovrs%D1\t%2, %3, %0
-   fmovrs%d1\t%2, %4, %0"
+  "fmovrs%D1\t%2, %3, %0"
   [(set_attr "type" "fpcrmove")])
 
 ;; Named because invoked by movtf_cc_v9
 (define_insn "movdf_cc_v9"
-  [(set (match_operand:DF 0 "register_operand" "=e,e")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(if_then_else:DF (match_operator 1 "comparison_operator"
-				[(match_operand 2 "icc_or_fcc_register_operand" "X,X")
+				[(match_operand 2 "icc_or_fcc_register_operand" "X")
 				 (const_int 0)])
-			 (match_operand:DF 3 "register_operand" "e,0")
-			 (match_operand:DF 4 "register_operand" "0,e")))]
+			 (match_operand:DF 3 "register_operand" "e")
+			 (match_operand:DF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
-  "@
-   fmovd%C1\t%x2, %3, %0
-   fmovd%c1\t%x2, %4, %0"
+  "fmovd%C1\t%x2, %3, %0"
   [(set_attr "type" "fpcmove")
    (set_attr "fptype" "double")])
 
 ;; Named because invoked by movtf_cc_reg_sp64
 (define_insn "movdf_cc_reg_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e,e")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(if_then_else:DF (match_operator 1 "v9_register_compare_operator"
-				[(match_operand:DI 2 "register_operand" "r,r")
+				[(match_operand:DI 2 "register_operand" "r")
 				 (const_int 0)])
-			 (match_operand:DF 3 "register_operand" "e,0")
-			 (match_operand:DF 4 "register_operand" "0,e")))]
+			 (match_operand:DF 3 "register_operand" "e")
+			 (match_operand:DF 4 "register_operand" "0")))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "@
-   fmovrd%D1\t%2, %3, %0
-   fmovrd%d1\t%2, %4, %0"
+  "fmovrd%D1\t%2, %3, %0"
   [(set_attr "type" "fpcrmove")
    (set_attr "fptype" "double")])
 
 (define_insn "*movtf_cc_hq_v9"
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else:TF (match_operator 1 "comparison_operator"
-				[(match_operand 2 "icc_or_fcc_register_operand" "X,X")
+				[(match_operand 2 "icc_or_fcc_register_operand" "X")
 				 (const_int 0)])
-			 (match_operand:TF 3 "register_operand" "e,0")
-			 (match_operand:TF 4 "register_operand" "0,e")))]
+			 (match_operand:TF 3 "register_operand" "e")
+			 (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
-  "@
-   fmovq%C1\t%x2, %3, %0
-   fmovq%c1\t%x2, %4, %0"
+  "fmovq%C1\t%x2, %3, %0"
   [(set_attr "type" "fpcmove")])
 
 (define_insn "*movtf_cc_reg_hq_sp64"
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else:TF (match_operator 1 "v9_register_compare_operator"
-				[(match_operand:DI 2 "register_operand" "r,r")
+				[(match_operand:DI 2 "register_operand" "r")
 				 (const_int 0)])
-			 (match_operand:TF 3 "register_operand" "e,0")
-			 (match_operand:TF 4 "register_operand" "0,e")))]
+			 (match_operand:TF 3 "register_operand" "e")
+			 (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_ARCH64 && TARGET_FPU && TARGET_HARD_QUAD"
-  "@
-   fmovrq%D1\t%2, %3, %0
-   fmovrq%d1\t%2, %4, %0"
+  "fmovrq%D1\t%2, %3, %0"
   [(set_attr "type" "fpcrmove")])
 
 (define_insn_and_split "*movtf_cc_v9"
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else:TF (match_operator 1 "comparison_operator"
-			    [(match_operand 2 "icc_or_fcc_register_operand" "X,X")
+			    [(match_operand 2 "icc_or_fcc_register_operand" "X")
 			     (const_int 0)])
-			 (match_operand:TF 3 "register_operand" "e,0")
-			 (match_operand:TF 4 "register_operand" "0,e")))]
+			 (match_operand:TF 3 "register_operand" "e")
+			 (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU && !TARGET_HARD_QUAD"
   "#"
   "&& reload_completed"
@@ -2641,42 +2592,35 @@
 {
   rtx set_dest = operands[0];
   rtx set_srca = operands[3];
-  rtx set_srcb = operands[4];
-  int third = rtx_equal_p (set_dest, set_srca);
   rtx dest1, dest2;
-  rtx srca1, srca2, srcb1, srcb2;
+  rtx srca1, srca2;
 
   dest1 = gen_df_reg (set_dest, 0);
   dest2 = gen_df_reg (set_dest, 1);
   srca1 = gen_df_reg (set_srca, 0);
   srca2 = gen_df_reg (set_srca, 1);
-  srcb1 = gen_df_reg (set_srcb, 0);
-  srcb2 = gen_df_reg (set_srcb, 1);
 
-  /* Now emit using the real source and destination we found, swapping
-     the order if we detect overlap.  */
-  if ((third && reg_overlap_mentioned_p (dest1, srcb2))
-      || (!third && reg_overlap_mentioned_p (dest1, srca2)))
+  if (reg_overlap_mentioned_p (dest1, srca2))
     {
-      emit_insn (gen_movdf_cc_v9 (dest2, operands[1], operands[2], srca2, srcb2));
-      emit_insn (gen_movdf_cc_v9 (dest1, operands[1], operands[2], srca1, srcb1));
+      emit_insn (gen_movdf_cc_v9 (dest2, operands[1], operands[2], srca2, dest2));
+      emit_insn (gen_movdf_cc_v9 (dest1, operands[1], operands[2], srca1, dest1));
     }
   else
     {
-      emit_insn (gen_movdf_cc_v9 (dest1, operands[1], operands[2], srca1, srcb1));
-      emit_insn (gen_movdf_cc_v9 (dest2, operands[1], operands[2], srca2, srcb2));
+      emit_insn (gen_movdf_cc_v9 (dest1, operands[1], operands[2], srca1, dest1));
+      emit_insn (gen_movdf_cc_v9 (dest2, operands[1], operands[2], srca2, dest2));
     }
   DONE;
 }
   [(set_attr "length" "2")])
 
 (define_insn_and_split "*movtf_cc_reg_sp64"
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else:TF (match_operator 1 "v9_register_compare_operator"
-				[(match_operand:DI 2 "register_operand" "r,r")
+				[(match_operand:DI 2 "register_operand" "r")
 				 (const_int 0)])
-			 (match_operand:TF 3 "register_operand" "e,0")
-			 (match_operand:TF 4 "register_operand" "0,e")))]
+			 (match_operand:TF 3 "register_operand" "e")
+			 (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_ARCH64 && TARGET_FPU && ! TARGET_HARD_QUAD"
   "#"
   "&& reload_completed"
@@ -2684,30 +2628,23 @@
 {
   rtx set_dest = operands[0];
   rtx set_srca = operands[3];
-  rtx set_srcb = operands[4];
-  int third = rtx_equal_p (set_dest, set_srca);
   rtx dest1, dest2;
-  rtx srca1, srca2, srcb1, srcb2;
+  rtx srca1, srca2;
 
   dest1 = gen_df_reg (set_dest, 0);
   dest2 = gen_df_reg (set_dest, 1);
   srca1 = gen_df_reg (set_srca, 0);
   srca2 = gen_df_reg (set_srca, 1);
-  srcb1 = gen_df_reg (set_srcb, 0);
-  srcb2 = gen_df_reg (set_srcb, 1);
 
-  /* Now emit using the real source and destination we found, swapping
-     the order if we detect overlap.  */
-  if ((third && reg_overlap_mentioned_p (dest1, srcb2))
-      || (!third && reg_overlap_mentioned_p (dest1, srca2)))
+  if (reg_overlap_mentioned_p (dest1, srca2))
     {
-      emit_insn (gen_movdf_cc_reg_sp64 (dest2, operands[1], operands[2], srca2, srcb2));
-      emit_insn (gen_movdf_cc_reg_sp64 (dest1, operands[1], operands[2], srca1, srcb1));
+      emit_insn (gen_movdf_cc_reg_sp64 (dest2, operands[1], operands[2], srca2, dest2));
+      emit_insn (gen_movdf_cc_reg_sp64 (dest1, operands[1], operands[2], srca1, dest1));
     }
   else
     {
-      emit_insn (gen_movdf_cc_reg_sp64 (dest1, operands[1], operands[2], srca1, srcb1));
-      emit_insn (gen_movdf_cc_reg_sp64 (dest2, operands[1], operands[2], srca2, srcb2));
+      emit_insn (gen_movdf_cc_reg_sp64 (dest1, operands[1], operands[2], srca1, dest1));
+      emit_insn (gen_movdf_cc_reg_sp64 (dest2, operands[1], operands[2], srca2, dest2));
     }
   DONE;
 }
