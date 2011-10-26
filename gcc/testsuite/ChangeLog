@@ -1,3 +1,8 @@
+2011-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50870
+	* g++.dg/cpp0x/decltype34.C: New.
+
 2011-10-26  Tom de Vries <tom@codesourcery.com>
 
 	* gcc.c-torture/unsorted/HIcmp.c: Fix unaligned pointer.

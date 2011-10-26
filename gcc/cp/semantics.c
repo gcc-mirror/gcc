@@ -5115,7 +5115,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
            step.  */
         expr = TREE_OPERAND (expr, 1);
 
-      if (TREE_CODE (expr) == BASELINK)
+      if (BASELINK_P (expr))
         /* See through BASELINK nodes to the underlying function.  */
         expr = BASELINK_FUNCTIONS (expr);
 

@@ -4174,7 +4174,7 @@ mark_used (tree decl)
      like the DECL for the function.  Otherwise, if the BASELINK is
      for an overloaded function, we don't know which function was
      actually used until after overload resolution.  */
-  if (TREE_CODE (decl) == BASELINK)
+  if (BASELINK_P (decl))
     {
       decl = BASELINK_FUNCTIONS (decl);
       if (really_overloaded_fn (decl))
