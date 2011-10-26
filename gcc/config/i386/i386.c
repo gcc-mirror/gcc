@@ -14231,7 +14231,20 @@ ix86_print_operand_address (FILE *file, rtx addr)
   struct ix86_address parts;
   rtx base, index, disp;
   int scale;
-  int ok = ix86_decompose_address (addr, &parts);
+  int ok;
+  bool vsib = false;
+
+  if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_VSIBADDR)
+    {
+      ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
+      gcc_assert (parts.index == NULL_RTX);
+      parts.index = XVECEXP (addr, 0, 1);
+      parts.scale = INTVAL (XVECEXP (addr, 0, 2));
+      addr = XVECEXP (addr, 0, 0);
+      vsib = true;
+    }
+  else
+    ok = ix86_decompose_address (addr, &parts);
 
   gcc_assert (ok);
 
@@ -14328,8 +14341,8 @@ ix86_print_operand_address (FILE *file, rtx addr)
 	  if (index)
 	    {
 	      putc (',', file);
-	      print_reg (index, code, file);
-	      if (scale != 1)
+	      print_reg (index, vsib ? 0 : code, file);
+	      if (scale != 1 || vsib)
 		fprintf (file, ",%d", scale);
 	    }
 	  putc (')', file);
@@ -14379,8 +14392,8 @@ ix86_print_operand_address (FILE *file, rtx addr)
 	  if (index)
 	    {
 	      putc ('+', file);
-	      print_reg (index, code, file);
-	      if (scale != 1)
+	      print_reg (index, vsib ? 0 : code, file);
+	      if (scale != 1 || vsib)
 		fprintf (file, "*%d", scale);
 	    }
 	  putc (']', file);

@@ -825,6 +825,42 @@
   return parts.seg == SEG_DEFAULT;
 })
 
+;; Return true if op if a valid base register, displacement or
+;; sum of base register and displacement for VSIB addressing.
+(define_predicate "vsib_address_operand"
+  (match_operand 0 "address_operand")
+{
+  struct ix86_address parts;
+  int ok;
+  rtx disp;
+
+  ok = ix86_decompose_address (op, &parts);
+  gcc_assert (ok);
+  if (parts.index || parts.seg != SEG_DEFAULT)
+    return false;
+
+  /* VSIB addressing doesn't support (%rip).  */
+  if (parts.disp && GET_CODE (parts.disp) == CONST)
+    {
+      disp = XEXP (parts.disp, 0);
+      if (GET_CODE (disp) == PLUS)
+	disp = XEXP (disp, 0);
+      if (GET_CODE (disp) == UNSPEC)
+	switch (XINT (disp, 1))
+	  {
+	  case UNSPEC_GOTPCREL:
+	  case UNSPEC_PCREL:
+	  case UNSPEC_GOTNTPOFF:
+	    return false;
+	  }
+    }
+
+  return true;
+})
+
+(define_predicate "vsib_mem_operator"
+  (match_code "mem"))
+
 ;; Return true if the rtx is known to be at least 32 bits aligned.
 (define_predicate "aligned_operand"
   (match_operand 0 "general_operand")

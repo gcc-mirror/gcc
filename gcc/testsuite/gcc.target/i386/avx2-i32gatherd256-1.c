@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx2 -O2" } */
-/* { dg-final { scan-assembler "vpgatherdd\[ \\t\]+\[^\n\]*%ymm\[0-9\]" } } */
+/* { dg-final { scan-assembler "vpgatherdd\[ \\t\]+\[^\n\]*ymm\[0-9\]\[^\n\]*ymm\[0-9\]\[^\n\]*ymm\[0-9\]" } } */
 
 #include <immintrin.h>
 

@@ -1,3 +1,16 @@
+2011-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (UNSPEC_VSIBADDR): New.
+	* config/i386/predicates.md (vsib_address_operand,
+	vsib_mem_operator): New predicates.
+	* config/i386/i386.c (ix86_print_operand_address): Handle
+	UNSPEC_VSIBADDR addresses.
+	* config/i386/sse.md (avx2_gathersi<mode>, avx2_gatherdi<mode>,
+	avx2_gatherdi<mode>256): Adjust expanders to use MEM with
+	UNSPEC_VSIBADDR address.
+	(*avx2_gathersi<mode>, *avx2_gatherdi<mode>, *avx2_gatherdi<mode>256):
+	Adjust insns to use MEM with UNSPEC_VSIBADDR address.
+
 2011-10-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50763
