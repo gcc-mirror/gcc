@@ -1,5 +1,5 @@
 /* simple-object-mach-o.c -- routines to manipulate Mach-O object files.
-   Copyright 2010 Free Software Foundation, Inc.
+   Copyright 2010, 2011 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 This program is free software; you can redistribute it and/or modify it
@@ -174,6 +174,15 @@ struct mach_o_section_64
 
 #define GNU_SECTION_NAMES "__section_names"
 
+/* A GNU-specific extension to wrap multiple sections using three
+   mach-o sections within a given segment.  The section '__wrapper_sects'
+   is subdivided according to the index '__wrapper_index' and each sub
+   sect is named according to the names supplied in '__wrapper_names'.  */
+
+#define GNU_WRAPPER_SECTS "__wrapper_sects"
+#define GNU_WRAPPER_INDEX "__wrapper_index"
+#define GNU_WRAPPER_NAMES "__wrapper_names"
+
 /* Private data for an simple_object_read.  */
 
 struct simple_object_mach_o_read
@@ -214,7 +223,18 @@ struct simple_object_mach_o_attributes
   unsigned int reserved;
 };
 
-/* See if we have a Mach-O file.  */
+/* See if we have a Mach-O MH_OBJECT file:
+
+   A standard MH_OBJECT (from as) will have three load commands:
+   0 - LC_SEGMENT/LC_SEGMENT64
+   1 - LC_SYMTAB
+   2 - LC_DYSYMTAB
+
+   The LC_SEGMENT/LC_SEGMENT64 will introduce a single anonymous segment
+   containing all the sections.
+
+   Files written by simple-object will have only the segment command
+   (no symbol tables).  */
 
 static void *
 simple_object_mach_o_match (
@@ -356,8 +376,29 @@ simple_object_mach_o_section_info (int is_big_endian, int is_32,
     }
 }
 
-/* Handle a segment in a Mach-O file.  Return 1 if we should continue,
-   0 if the caller should return.  */
+/* Handle a segment in a Mach-O Object file.
+
+   This will callback to the function pfn for each "section found" the meaning
+   of which depends on gnu extensions to mach-o:
+
+   If we find mach-o sections (with the segment name as specified) which also
+   contain: a 'sects' wrapper, an index, and a  name table, we expand this into
+   as many sections as are specified in the index.  In this case, there will
+   be a callback for each of these.
+
+   We will also allow an extension that permits long names (more than 16
+   characters) to be used with mach-o.  In this case, the section name has
+   a specific format embedding an index into a name table, and the file must
+   contain such name table.
+
+   Return 1 if we should continue, 0 if the caller should return.  */
+
+#define SOMO_SECTS_PRESENT 0x01
+#define SOMO_INDEX_PRESENT 0x02
+#define SOMO_NAMES_PRESENT 0x04
+#define SOMO_LONGN_PRESENT 0x08
+#define SOMO_WRAPPING (SOMO_SECTS_PRESENT | SOMO_INDEX_PRESENT \
+		       | SOMO_NAMES_PRESENT)
 
 static int
 simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
@@ -378,9 +419,20 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
   unsigned int nsects;
   unsigned char *secdata;
   unsigned int i;
+  unsigned int gnu_sections_found;
   unsigned int strtab_index;
+  unsigned int index_index;
+  unsigned int nametab_index;
+  unsigned int sections_index;
   char *strtab;
+  char *nametab;
+  unsigned char *index;
   size_t strtab_size;
+  size_t nametab_size;
+  size_t index_size;
+  unsigned int n_wrapped_sects;
+  size_t wrapper_sect_size;
+  off_t wrapper_sect_offset;
 
   fetch_32 = (omr->is_big_endian
 	      ? simple_object_fetch_big_32
@@ -409,6 +461,8 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
 					nsects));
     }
 
+  /* Fetch the section headers from the segment command.  */
+
   secdata = XNEWVEC (unsigned char, nsects * sechdrsize);
   if (!simple_object_internal_read (sobj->descriptor, offset + seghdrsize,
 				    secdata, nsects * sechdrsize, errmsg, err))
@@ -417,9 +471,13 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
       return 0;
     }
 
-  /* Scan for a __section_names section.  This is in effect a GNU
-     extension that permits section names longer than 16 chars.  */
+  /* Scan for special sections that signal GNU extensions to the format.  */
 
+  gnu_sections_found = 0;
+  index_index = nsects;
+  sections_index = nsects;
+  strtab_index = nsects;
+  nametab_index = nsects;
   for (i = 0; i < nsects; ++i)
     {
       size_t nameoff;
@@ -427,18 +485,103 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
       nameoff = i * sechdrsize + segname_offset;
       if (strcmp ((char *) secdata + nameoff, omr->segment_name) != 0)
 	continue;
+
       nameoff = i * sechdrsize + sectname_offset;
-      if (strcmp ((char *) secdata + nameoff, GNU_SECTION_NAMES) == 0)
-	break;
+      if (strcmp ((char *) secdata + nameoff, GNU_WRAPPER_NAMES) == 0)
+	{
+	  nametab_index = i;
+	  gnu_sections_found |= SOMO_NAMES_PRESENT;
+	}
+      else if (strcmp ((char *) secdata + nameoff, GNU_WRAPPER_INDEX) == 0)
+	{
+	  index_index = i;
+	  gnu_sections_found |= SOMO_INDEX_PRESENT;
+	}
+      else if (strcmp ((char *) secdata + nameoff, GNU_WRAPPER_SECTS) == 0)
+	{
+	  sections_index = i;
+	  gnu_sections_found |= SOMO_SECTS_PRESENT;
+	}
+      else if (strcmp ((char *) secdata + nameoff, GNU_SECTION_NAMES) == 0)
+	{
+	  strtab_index = i;
+	  gnu_sections_found |= SOMO_LONGN_PRESENT;
+	}
     }
 
-  strtab_index = i;
-  if (strtab_index >= nsects)
+  /* If any of the special wrapper section components is present, then
+     they all should be.  */
+
+  if ((gnu_sections_found & SOMO_WRAPPING) != 0)
     {
-      strtab = NULL;
-      strtab_size = 0;
+      off_t nametab_offset;
+      off_t index_offset;
+
+      if ((gnu_sections_found & SOMO_WRAPPING) != SOMO_WRAPPING)
+	{
+	  *errmsg = "GNU Mach-o section wrapper: required section missing";
+	  *err = 0; /* No useful errno.  */
+	  XDELETEVEC (secdata);
+	  return 0;
+	}
+
+      /* Fetch the name table.  */
+
+      simple_object_mach_o_section_info (omr->is_big_endian, is_32,
+					 secdata + nametab_index * sechdrsize,
+					 &nametab_offset, &nametab_size);
+      nametab = XNEWVEC (char, nametab_size);
+      if (!simple_object_internal_read (sobj->descriptor,
+					sobj->offset + nametab_offset,
+					(unsigned char *) nametab, nametab_size,
+					errmsg, err))
+	{
+	  XDELETEVEC (nametab);
+	  XDELETEVEC (secdata);
+	  return 0;
+	}
+
+      /* Fetch the index.  */
+
+      simple_object_mach_o_section_info (omr->is_big_endian, is_32,
+					 secdata + index_index * sechdrsize,
+					 &index_offset, &index_size);
+      index = XNEWVEC (unsigned char, index_size);
+      if (!simple_object_internal_read (sobj->descriptor,
+					sobj->offset + index_offset,
+					index, index_size,
+					errmsg, err))
+	{
+	  XDELETEVEC (index);
+	  XDELETEVEC (nametab);
+	  XDELETEVEC (secdata);
+	  return 0;
+	}
+
+      /* The index contains 4 unsigned ints per sub-section:
+	 sub-section offset/length, sub-section name/length.
+	 We fix this for both 32 and 64 bit mach-o for now, since
+	 other fields limit the maximum size of an object to 4G.  */
+      n_wrapped_sects = index_size / 16;
+
+      /* Get the parameters for the wrapper too.  */
+      simple_object_mach_o_section_info (omr->is_big_endian, is_32,
+					 secdata + sections_index * sechdrsize,
+					 &wrapper_sect_offset,
+					 &wrapper_sect_size);
     }
   else
+    {
+      index = NULL;
+      index_size = 0;
+      nametab = NULL;
+      nametab_size = 0;
+      n_wrapped_sects = 0;
+    }
+
+  /* If we have a long names section, fetch it.  */
+
+  if ((gnu_sections_found & SOMO_LONGN_PRESENT) != 0)
     {
       off_t strtab_offset;
 
@@ -452,9 +595,17 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
 					errmsg, err))
 	{
 	  XDELETEVEC (strtab);
+	  XDELETEVEC (index);
+	  XDELETEVEC (nametab);
 	  XDELETEVEC (secdata);
 	  return 0;
 	}
+    }
+  else
+    {
+      strtab = NULL;
+      strtab_size = 0;
+      strtab_index = nsects;
     }
 
   /* Process the sections.  */
@@ -462,40 +613,100 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
   for (i = 0; i < nsects; ++i)
     {
       const unsigned char *sechdr;
-      char namebuf[MACH_O_NAME_LEN + 1];
+      char namebuf[MACH_O_NAME_LEN * 2 + 2];
       char *name;
       off_t secoffset;
       size_t secsize;
-
-      if (i == strtab_index)
-	continue;
+      int l;
 
       sechdr = secdata + i * sechdrsize;
+
+      /* We've already processed the long section names.  */
+
+      if ((gnu_sections_found & SOMO_LONGN_PRESENT) != 0
+	  && i == strtab_index)
+	continue;
+
+      /* We only act on the segment named.  */
 
       if (strcmp ((char *) sechdr + segname_offset, omr->segment_name) != 0)
 	continue;
 
-      memcpy (namebuf, sechdr + sectname_offset, MACH_O_NAME_LEN);
-      namebuf[MACH_O_NAME_LEN] = '\0';
+      /* Process sections associated with the wrapper.  */
 
-      name = &namebuf[0];
-      if (strtab != NULL && name[0] == '_' && name[1] == '_')
+      if ((gnu_sections_found & SOMO_WRAPPING) != 0)
 	{
-	  unsigned long stringoffset;
+	  if (i == nametab_index || i == index_index)
+	    continue;
 
-	  if (sscanf (name + 2, "%08lX", &stringoffset) == 1)
+	  if (i == sections_index)
 	    {
-	      if (stringoffset >= strtab_size)
+	      unsigned int j;
+	      for (j = 0; j < n_wrapped_sects; ++j)
 		{
-		  *errmsg = "section name offset out of range";
-		  *err = 0;
-		  XDELETEVEC (strtab);
-		  XDELETEVEC (secdata);
-		  return 0;
-		}
+		  unsigned int subsect_offset, subsect_length, name_offset;
+		  subsect_offset = (*fetch_32) (index + 16 * j);
+		  subsect_length = (*fetch_32) (index + 16 * j + 4);
+		  name_offset = (*fetch_32) (index + 16 * j + 8);
+		  /* We don't need the name_length yet.  */
 
-	      name = strtab + stringoffset;
+		  secoffset = wrapper_sect_offset + subsect_offset;
+		  secsize = subsect_length;
+		  name = nametab + name_offset;
+
+		  if (!(*pfn) (data, name, secoffset, secsize))
+		    {
+		      *errmsg = NULL;
+		      *err = 0;
+		      XDELETEVEC (index);
+		      XDELETEVEC (nametab);
+		      XDELETEVEC (strtab);
+		      XDELETEVEC (secdata);
+		      return 0;
+		    }
+		}
+	      continue;
 	    }
+	}
+
+      if ((gnu_sections_found & SOMO_LONGN_PRESENT) != 0)
+	{
+	  memcpy (namebuf, sechdr + sectname_offset, MACH_O_NAME_LEN);
+	  namebuf[MACH_O_NAME_LEN] = '\0';
+
+	  name = &namebuf[0];
+	  if (strtab != NULL && name[0] == '_' && name[1] == '_')
+	    {
+	      unsigned long stringoffset;
+
+	      if (sscanf (name + 2, "%08lX", &stringoffset) == 1)
+		{
+		  if (stringoffset >= strtab_size)
+		    {
+		      *errmsg = "section name offset out of range";
+		      *err = 0;
+		      XDELETEVEC (index);
+		      XDELETEVEC (nametab);
+		      XDELETEVEC (strtab);
+		      XDELETEVEC (secdata);
+		      return 0;
+		    }
+
+		  name = strtab + stringoffset;
+		}
+	  }
+	}
+      else
+	{
+	   /* Otherwise, make a name like __segment,__section as per the
+	      convention in mach-o asm.  */
+	  name = &namebuf[0];
+	  memset (namebuf, 0, MACH_O_NAME_LEN * 2 + 2);
+	  memcpy (namebuf, (char *) sechdr + segname_offset, MACH_O_NAME_LEN);
+	  l = strlen (namebuf);
+	  namebuf[l] = ',';
+	  memcpy (namebuf + l + 1, (char *) sechdr + sectname_offset,
+		  MACH_O_NAME_LEN);
 	}
 
       simple_object_mach_o_section_info (omr->is_big_endian, is_32, sechdr,
@@ -505,12 +716,16 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
 	{
 	  *errmsg = NULL;
 	  *err = 0;
+	  XDELETEVEC (index);
+	  XDELETEVEC (nametab);
 	  XDELETEVEC (strtab);
 	  XDELETEVEC (secdata);
 	  return 0;
 	}
     }
 
+  XDELETEVEC (index);
+  XDELETEVEC (nametab);
   XDELETEVEC (strtab);
   XDELETEVEC (secdata);
 
@@ -724,9 +939,9 @@ static int
 simple_object_mach_o_write_section_header (simple_object_write *sobj,
 					   int descriptor,
 					   size_t sechdr_offset,
-					   const char *name, size_t secaddr,
-					   size_t secsize, size_t offset,
-					   unsigned int align,
+					   const char *name, const char *segn,
+					   size_t secaddr, size_t secsize,
+					   size_t offset, unsigned int align,
 					   const char **errmsg, int *err)
 {
   struct simple_object_mach_o_attributes *attrs =
@@ -748,7 +963,7 @@ simple_object_mach_o_write_section_header (simple_object_write *sobj,
       strncpy ((char *) hdr + offsetof (struct mach_o_section_32, sectname),
 	       name, MACH_O_NAME_LEN);
       strncpy ((char *) hdr + offsetof (struct mach_o_section_32, segname),
-	       sobj->segment_name, MACH_O_NAME_LEN);
+	       segn, MACH_O_NAME_LEN);
       set_32 (hdr + offsetof (struct mach_o_section_32, addr), secaddr);
       set_32 (hdr + offsetof (struct mach_o_section_32, size), secsize);
       set_32 (hdr + offsetof (struct mach_o_section_32, offset), offset);
@@ -773,7 +988,7 @@ simple_object_mach_o_write_section_header (simple_object_write *sobj,
       strncpy ((char *) hdr + offsetof (struct mach_o_section_64, sectname),
 	       name, MACH_O_NAME_LEN);
       strncpy ((char *) hdr + offsetof (struct mach_o_section_64, segname),
-	       sobj->segment_name, MACH_O_NAME_LEN);
+	       segn, MACH_O_NAME_LEN);
       set_64 (hdr + offsetof (struct mach_o_section_64, addr), secaddr);
       set_64 (hdr + offsetof (struct mach_o_section_64, size), secsize);
       set_32 (hdr + offsetof (struct mach_o_section_64, offset), offset);
@@ -793,11 +1008,25 @@ simple_object_mach_o_write_section_header (simple_object_write *sobj,
 				       sechdrsize, errmsg, err);
 }
 
-/* Write out the single segment and the sections of a Mach-O file.  */
+/* Write out the single (anonymous) segment containing the sections of a Mach-O
+   Object file.
+
+   As a GNU extension to mach-o, when the caller specifies a segment name in
+   sobj->segment_name, all the sections passed will be output under a single
+   mach-o section header.  The caller's sections are indexed within this
+   'wrapper' section by a table stored in a second mach-o section.  Finally,
+   arbitrary length section names are permitted by the extension and these are
+   stored in a table in a third mach-o section.
+
+   Note that this is only likely to make any sense for the __GNU_LTO segment
+   at present.
+
+   If the wrapper extension is not in force, we assume that the section name
+   is in the form __SEGMENT_NAME,__section_name as per Mach-O asm.  */
 
 static int
 simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
-				    size_t nsects, const char **errmsg,
+				    size_t *nsects, const char **errmsg,
 				    int *err)
 {
   struct simple_object_mach_o_attributes *attrs =
@@ -814,6 +1043,10 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
   simple_object_write_section *section;
   unsigned char hdrbuf[sizeof (struct mach_o_segment_command_64)];
   unsigned char *hdr;
+  size_t nsects_in;
+  unsigned int *index;
+  char *snames;
+  unsigned int sect;
 
   set_32 = (attrs->is_big_endian
 	    ? simple_object_set_big_32
@@ -834,19 +1067,62 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
       sechdrsize = sizeof (struct mach_o_section_64);
     }
 
-  sechdr_offset = hdrsize + seghdrsize;
-  cmdsize = seghdrsize + nsects * sechdrsize;
-  offset = hdrsize + cmdsize;
   name_offset = 0;
-  secaddr = 0;
+  *nsects = nsects_in = 0;
+
+  /* Count the number of sections we start with.  */
 
   for (section = sobj->sections; section != NULL; section = section->next)
+    nsects_in++;
+
+  if (sobj->segment_name != NULL)
+    {
+      /* We will only write 3 sections: wrapped data, index and names.  */
+
+      *nsects = 3;
+
+      /* The index has four entries per wrapped section:
+	   Section Offset, length,  Name offset, length.
+	 Where the offsets are based at the start of the wrapper and name
+	 sections respectively.
+	 The values are stored as 32 bit int for both 32 and 64 bit mach-o
+	 since the size of a mach-o MH_OBJECT cannot exceed 4G owing to
+	 other constraints.  */
+
+      index = XNEWVEC (unsigned int, nsects_in * 4);
+
+      /* We now need to figure out the size of the names section.  This just
+	 stores the names as null-terminated c strings, packed without any
+	 alignment padding.  */
+
+      for (section = sobj->sections, sect = 0; section != NULL;
+	   section = section->next, sect++)
+	{
+	  index[sect*4+2] = name_offset;
+	  index[sect*4+3] = strlen (section->name) + 1;
+	  name_offset += strlen (section->name) + 1;
+	}
+      snames = XNEWVEC (char, name_offset);
+    }
+  else
+    {
+      *nsects = nsects_in;
+      index = NULL;
+      snames = NULL;
+    }
+
+  sechdr_offset = hdrsize + seghdrsize;
+  cmdsize = seghdrsize + *nsects * sechdrsize;
+  offset = hdrsize + cmdsize;
+  secaddr = 0;
+
+  for (section = sobj->sections, sect = 0;
+       section != NULL; section = section->next, sect++)
     {
       size_t mask;
       size_t new_offset;
       size_t secsize;
       struct simple_object_write_section_buffer *buffer;
-      char namebuf[MACH_O_NAME_LEN + 1];
 
       mask = (1U << section->align) - 1;
       new_offset = offset + mask;
@@ -877,39 +1153,126 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
 	  secsize += buffer->size;
 	}
 
-      snprintf (namebuf, sizeof namebuf, "__%08X", name_offset);
-      if (!simple_object_mach_o_write_section_header (sobj, descriptor,
-						      sechdr_offset, namebuf,
-						      secaddr, secsize, offset,
-						      section->align,
-						      errmsg, err))
-	return 0;
+      if (sobj->segment_name != NULL)
+	{
+	  index[sect*4+0] = (unsigned int) offset;
+	  index[sect*4+1] = secsize;
+	  /* Stash the section name in our table.  */
+	  memcpy (snames + index[sect * 4 + 2], section->name,
+		  index[sect * 4 + 3]);
+	}
+      else
+	{
+	  char namebuf[MACH_O_NAME_LEN + 1];
+	  char segnbuf[MACH_O_NAME_LEN + 1];
+	  char *comma;
 
-      sechdr_offset += sechdrsize;
+	  /* Try to extract segment,section from the input name.  */
+
+	  memset (namebuf, 0, sizeof namebuf);
+	  memset (segnbuf, 0, sizeof segnbuf);
+	  comma = strchr (section->name, ',');
+	  if (comma != NULL)
+	    {
+	      int len = comma - section->name;
+	      len = len > MACH_O_NAME_LEN ? MACH_O_NAME_LEN : len;
+	      strncpy (namebuf, section->name, len);
+	      strncpy (segnbuf, comma + 1, MACH_O_NAME_LEN);
+	    }
+	  else /* just try to copy the name, leave segment blank.  */
+	    strncpy (namebuf, section->name, MACH_O_NAME_LEN);
+
+	  if (!simple_object_mach_o_write_section_header (sobj, descriptor,
+							  sechdr_offset,
+							  namebuf, segnbuf,
+							  secaddr, secsize,
+							  offset,
+							  section->align,
+							  errmsg, err))
+	    return 0;
+	  sechdr_offset += sechdrsize;
+	}
+
       offset += secsize;
-      name_offset += strlen (section->name) + 1;
       secaddr += secsize;
     }
 
-  /* Write out the section names.  */
-
-  if (!simple_object_mach_o_write_section_header (sobj, descriptor,
-						  sechdr_offset,
-						  GNU_SECTION_NAMES, secaddr,
-						  name_offset, offset, 0,
-						  errmsg, err))
-    return 0;
-
-  for (section = sobj->sections; section != NULL; section = section->next)
+  if (sobj->segment_name != NULL)
     {
-      size_t namelen;
+      size_t secsize;
+      unsigned int i;
 
-      namelen = strlen (section->name) + 1;
-      if (!simple_object_internal_write (descriptor, offset,
-					 (const unsigned char *) section->name,
-					 namelen, errmsg, err))
+      /* Write the section header for the wrapper.  */
+      /* Account for any initial aligment - which becomes the alignment for this
+	 created section.  */
+
+      secsize = (offset - index[0]);
+      if (!simple_object_mach_o_write_section_header (sobj, descriptor,
+						      sechdr_offset,
+						      GNU_WRAPPER_SECTS,
+						      sobj->segment_name,
+						      0 /*secaddr*/,
+						      secsize, index[0],
+						      sobj->sections->align,
+						      errmsg, err))
 	return 0;
-      offset += namelen;
+
+      /* Subtract the wrapper section start from the begining of each sub
+	 section.  */
+
+      for (i = 1; i < nsects_in; ++i)
+	index[4 * i] -= index[0];
+      index[0] = 0;
+
+      sechdr_offset += sechdrsize;
+
+      /* Write out the section names.
+	 ... the header ...
+	 name_offset contains the length of the section.  It is not aligned.  */
+
+      if (!simple_object_mach_o_write_section_header (sobj, descriptor,
+						      sechdr_offset,
+						      GNU_WRAPPER_NAMES,
+						      sobj->segment_name,
+						      0 /*secaddr*/,
+						      name_offset,
+						      offset,
+						      0, errmsg, err))
+	return 0;
+
+      /* ... and the content.. */
+      if (!simple_object_internal_write (descriptor, offset,
+					 (const unsigned char *) snames,
+					 name_offset, errmsg, err))
+	return 0;
+
+      sechdr_offset += sechdrsize;
+      secaddr += name_offset;
+      offset += name_offset;
+
+      /* Now do the index, we'll align this to 4 bytes although the read code
+	 will handle unaligned.  */
+
+      offset += 3;
+      offset &= ~0x03;
+      if (!simple_object_mach_o_write_section_header (sobj, descriptor,
+						      sechdr_offset,
+						      GNU_WRAPPER_INDEX,
+						      sobj->segment_name,
+						      0 /*secaddr*/,
+						      nsects_in * 16,
+						      offset,
+						      2, errmsg, err))
+	return 0;
+
+      /* ... and the content.. */
+      if (!simple_object_internal_write (descriptor, offset,
+					 (const unsigned char *) index,
+					 nsects_in*16, errmsg, err))
+	return 0;
+
+      XDELETEVEC (index);
+      XDELETEVEC (snames);
     }
 
   /* Write out the segment header.  */
@@ -923,9 +1286,8 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
 	      MACH_O_LC_SEGMENT);
       set_32 (hdr + offsetof (struct mach_o_segment_command_32, cmdsize),
 	      cmdsize);
-      strncpy (((char *) hdr
-		+ offsetof (struct mach_o_segment_command_32, segname)),
-	       sobj->segment_name, MACH_O_NAME_LEN);
+     /* MH_OBJECTS have a single, anonymous, segment - so the segment name
+	 is left empty.  */
       /* vmaddr left as zero.  */
       /* vmsize left as zero.  */
       set_32 (hdr + offsetof (struct mach_o_segment_command_32, fileoff),
@@ -935,7 +1297,7 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
       /* maxprot left as zero.  */
       /* initprot left as zero.  */
       set_32 (hdr + offsetof (struct mach_o_segment_command_32, nsects),
-	      nsects);
+	      *nsects);
       /* flags left as zero.  */
     }
   else
@@ -951,9 +1313,8 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
 	      MACH_O_LC_SEGMENT);
       set_32 (hdr + offsetof (struct mach_o_segment_command_64, cmdsize),
 	      cmdsize);
-      strncpy (((char *) hdr
-		+ offsetof (struct mach_o_segment_command_64, segname)),
-	       sobj->segment_name, MACH_O_NAME_LEN);
+      /* MH_OBJECTS have a single, anonymous, segment - so the segment name
+	 is left empty.  */
       /* vmaddr left as zero.  */
       /* vmsize left as zero.  */
       set_64 (hdr + offsetof (struct mach_o_segment_command_64, fileoff),
@@ -963,7 +1324,7 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
       /* maxprot left as zero.  */
       /* initprot left as zero.  */
       set_32 (hdr + offsetof (struct mach_o_segment_command_64, nsects),
-	      nsects);
+	      *nsects);
       /* flags left as zero.  */
 #endif
     }
@@ -978,21 +1339,15 @@ static const char *
 simple_object_mach_o_write_to_file (simple_object_write *sobj, int descriptor,
 				    int *err)
 {
-  size_t nsects;
-  simple_object_write_section *section;
+  size_t nsects = 0;
   const char *errmsg;
 
-  /* Start at 1 for symbol_names section.  */
-  nsects = 1;
-  for (section = sobj->sections; section != NULL; section = section->next)
-    ++nsects;
+  if (!simple_object_mach_o_write_segment (sobj, descriptor, &nsects,
+					   &errmsg, err))
+    return errmsg;
 
   if (!simple_object_mach_o_write_header (sobj, descriptor, nsects,
 					  &errmsg, err))
-    return errmsg;
-
-  if (!simple_object_mach_o_write_segment (sobj, descriptor, nsects,
-					   &errmsg, err))
     return errmsg;
 
   return NULL;

@@ -1,3 +1,16 @@
+2011-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/48108
+	* config/darwin.c (top level): Amend comments concerning LTO output.
+	(lto_section_num): New variable.  (darwin_lto_section_e): New GTY.
+	(LTO_SECTS_SECTION, LTO_INDEX_SECTION): New.
+	(LTO_NAMES_SECTION): Rename.
+	(darwin_asm_named_section): Record LTO section counts and switches
+	in a vec of darwin_lto_section_e.
+	(darwin_file_start): Remove unused code.
+	(darwin_file_end): Put an LTO section termination label.  Handle
+	output of the wrapped LTO sections, index and names table.
+
 2011-10-26  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_make_savres_rtx): Delete unneeded
