@@ -566,6 +566,11 @@ DEFPARAM(PARAM_MAX_RELOAD_SEARCH_INSNS,
 	 "The maximum number of instructions to search backward when looking for equivalent reload",
 	 100, 0, 0)
 
+DEFPARAM(PARAM_SINK_FREQUENCY_THRESHOLD,
+	 "sink-frequency-threshold",
+	 "Target block's relative execution frequency (as a percentage) required to sink a statement",
+	 75, 0, 100)
+
 DEFPARAM(PARAM_MAX_SCHED_REGION_BLOCKS,
 	 "max-sched-region-blocks",
 	 "The maximum number of blocks in a region to be considered for interblock scheduling",

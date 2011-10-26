@@ -1,3 +1,11 @@
+2011-10-26  Jeff Law  <law@redhat.com>
+
+	* doc/invoke.texi (sink-frequency-threshold): Document.
+	* tree-ssa-sink.c: Include params.h.
+	(select_best_block): New function.
+	(statement_sink_location): Use it.
+	* params.def (SINK_FREQUENCY_THRESHOLD): New PARAM.
+
 2011-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/48108
