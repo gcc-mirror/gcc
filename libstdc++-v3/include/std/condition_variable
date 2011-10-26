@@ -205,7 +205,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// scoped unlock - unlocks in ctor, re-locks in dtor
 	struct _Unlock {
 	  explicit _Unlock(_Lock& __lk) : _M_lock(__lk) { __lk.unlock(); }
-	  ~_Unlock() { _M_lock.lock(); }
+	  ~_Unlock() noexcept(false)
+	  {
+	    if (uncaught_exception())
+	      __try { _M_lock.lock(); } __catch(...) { }
+	    else
+	      _M_lock.lock();
+	  }
 	  _Lock& _M_lock;
 	};
 
