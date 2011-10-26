@@ -1,3 +1,9 @@
+2011-10-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/50763
+	* tree-ssa-tail-merge.c (replace_block_by): Update vops if phi_vuse1 or
+	phi_vuse2 is NULL_TREE only if bb1 dominates or is dominated by bb2.
+
 2011-10-26  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41844
