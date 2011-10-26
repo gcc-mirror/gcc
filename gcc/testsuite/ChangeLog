@@ -1,3 +1,7 @@
+2011-10-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/pad-4.c: Skip for Windows targets.
+
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/discr1.ads: New test.
