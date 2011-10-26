@@ -1,3 +1,14 @@
+2011-10-26  Tom de Vries <tom@codesourcery.com>
+
+	* gcc.c-torture/unsorted/HIcmp.c: Fix unaligned pointer.
+	* gcc.c-torture/unsorted/HIset.c: Same.
+	* gcc.c-torture/unsorted/SIcmp.c: Same.
+	* gcc.c-torture/unsorted/SIset.c: Same.
+	* gcc.c-torture/unsorted/SFset.c: Same.
+	* gcc.c-torture/unsorted/UHIcmp.c: Same.
+	* gcc.c-torture/unsorted/USIcmp.c: Same.
+	* gcc.c-torture/unsorted/DFcmp.c: Same.
+
 2011-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx2-i32gatherd-1.c: Adjust scan-assembler regex
