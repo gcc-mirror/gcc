@@ -1551,7 +1551,12 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
       phi_vuse1 = vop_at_entry (bb1);
 
       /* If both are not found, it means there's no need to update.  */
-      update_vops = phi_vuse1 != NULL_TREE || phi_vuse2 != NULL_TREE;
+      if (phi_vuse1 == NULL_TREE && phi_vuse2 == NULL_TREE)
+	update_vops = false;
+      else if (phi_vuse1 == NULL_TREE)
+	update_vops = dominated_by_p (CDI_DOMINATORS, bb1, bb2);
+      else if (phi_vuse2 == NULL_TREE)
+	update_vops = dominated_by_p (CDI_DOMINATORS, bb2, bb1);
     }
 
   if (phi_vuse1 && gimple_bb (SSA_NAME_DEF_STMT (phi_vuse1)) == bb1)
