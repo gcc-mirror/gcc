@@ -7865,6 +7865,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     case TEMPLATE_PARM_INDEX:
     case TRAIT_EXPR:
     case IDENTIFIER_NODE:
+    case USERDEF_LITERAL:
       /* We can see a FIELD_DECL in a pointer-to-member expression.  */
     case FIELD_DECL:
     case PARM_DECL:

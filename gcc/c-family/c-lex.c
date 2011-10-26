@@ -45,7 +45,7 @@ int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
 
 static tree interpret_integer (const cpp_token *, unsigned int);
-static tree interpret_float (const cpp_token *, unsigned int);
+static tree interpret_float (const cpp_token *, unsigned int, const char *);
 static tree interpret_fixed (const cpp_token *, unsigned int);
 static enum integer_type_kind narrowest_unsigned_type
 	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
@@ -314,7 +314,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
     case CPP_NUMBER:
       {
-	unsigned int flags = cpp_classify_number (parse_in, tok);
+	const char *suffix = NULL;
+	unsigned int flags = cpp_classify_number (parse_in, tok, &suffix);
 
 	switch (flags & CPP_N_CATEGORY)
 	  {
@@ -332,11 +333,26 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	    break;
 
 	  case CPP_N_FLOATING:
-	    *value = interpret_float (tok, flags);
+	    *value = interpret_float (tok, flags, suffix);
 	    break;
 
 	  default:
 	    gcc_unreachable ();
+	  }
+
+	if (flags & CPP_N_USERDEF)
+	  {
+	    tree suffix_id = get_identifier (suffix);
+	    int len = tok->val.str.len - strlen (suffix);
+	    tree num_string = build_string (len + 1,
+					    (const char *) tok->val.str.text);
+	    TREE_TYPE (num_string) = char_array_type_node;
+	    num_string = fix_string_type (num_string);
+	    char *str = CONST_CAST (char *, TREE_STRING_POINTER (num_string));
+	    str[len] = '\0';
+	    tree literal = build_userdef_literal (suffix_id, *value,
+						  num_string);
+	    *value = literal;
 	  }
       }
       break;
@@ -415,11 +431,43 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       }
       goto retry;
 
+    case CPP_CHAR_USERDEF:
+    case CPP_WCHAR_USERDEF:
+    case CPP_CHAR16_USERDEF:
+    case CPP_CHAR32_USERDEF:
+      {
+	tree literal;
+	cpp_token temp_tok = *tok;
+	const char *suffix = cpp_get_userdef_suffix (tok);
+	temp_tok.val.str.len -= strlen (suffix);
+	temp_tok.type = cpp_userdef_char_remove_type (type);
+	literal = build_userdef_literal (get_identifier (suffix),
+					 lex_charconst (&temp_tok), NULL_TREE);
+	*value = literal;
+      }
+      break;
+
     case CPP_CHAR:
     case CPP_WCHAR:
     case CPP_CHAR16:
     case CPP_CHAR32:
       *value = lex_charconst (tok);
+      break;
+
+    case CPP_STRING_USERDEF:
+    case CPP_WSTRING_USERDEF:
+    case CPP_STRING16_USERDEF:
+    case CPP_STRING32_USERDEF:
+    case CPP_UTF8STRING_USERDEF:
+      {
+	tree literal, string;
+	const char *suffix = cpp_get_userdef_suffix (tok);
+	string = build_string (tok->val.str.len - strlen (suffix),
+			       (const char *) tok->val.str.text);
+	literal = build_userdef_literal (get_identifier (suffix),
+					 string, NULL_TREE);
+	*value = literal;
+      }
       break;
 
     case CPP_STRING:
@@ -621,9 +669,10 @@ interpret_integer (const cpp_token *token, unsigned int flags)
 }
 
 /* Interpret TOKEN, a floating point number with FLAGS as classified
-   by cpplib.  */
+   by cpplib.  For C++0X SUFFIX may contain a user-defined literal suffix.  */
 static tree
-interpret_float (const cpp_token *token, unsigned int flags)
+interpret_float (const cpp_token *token, unsigned int flags,
+		 const char *suffix)
 {
   tree type;
   tree const_type;
@@ -702,7 +751,9 @@ interpret_float (const cpp_token *token, unsigned int flags)
      has any suffixes, cut them off; REAL_VALUE_ATOF/ REAL_VALUE_HTOF
      can't handle them.  */
   copylen = token->val.str.len;
-  if (flags & CPP_N_DFLOAT)
+  if (flags & CPP_N_USERDEF)
+    copylen -= strlen (suffix);
+  else if (flags & CPP_N_DFLOAT)
     copylen -= 2;
   else
     {

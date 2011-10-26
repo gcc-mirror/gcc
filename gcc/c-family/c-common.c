@@ -9912,4 +9912,17 @@ c_common_init_ts (void)
   MARK_TS_TYPED (EXCESS_PRECISION_EXPR);
 }
 
+/* Build a user-defined numeric literal out of an integer constant type VALUE
+   with identifier SUFFIX.  */
+
+tree
+build_userdef_literal (tree suffix_id, tree value, tree num_string)
+{
+  tree literal = make_node (USERDEF_LITERAL);
+  USERDEF_LITERAL_SUFFIX_ID (literal) = suffix_id;
+  USERDEF_LITERAL_VALUE (literal) = value;
+  USERDEF_LITERAL_NUM_STRING (literal) = num_string;
+  return literal;
+}
+
 #include "gt-c-family-c-common.h"

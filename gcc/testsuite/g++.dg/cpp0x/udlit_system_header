@@ -1,0 +1,6 @@
+
+#pragma GCC system_header
+
+char
+operator"" stdsuffix(char __c)
+{ return __c/2; }

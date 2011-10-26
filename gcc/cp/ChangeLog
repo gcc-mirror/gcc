@@ -1,3 +1,29 @@
+2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++11 user-defined literals.
+	* cp-objcp-common.c: (cp_tree_size) Return size of USERDEF_LITERAL tree.
+	* cp-tree.h: (UDLIT_OP_*, UDLIT_OPER_P): Literal operator
+	name tools. New tree code for user-defined literals.
+	* cxx-pretty-print.h: (pp_cxx_userdef_literal) New.
+	* cxx-pretty-print.c: (pp_cxx_userdef_literal) New.
+	(pp_cxx_primary_expression, pp_cxx_expression): Use it.
+	* decl.c: (cp_tree_node_structure): Return new tree code.
+	(duplicate_decls): Check for raw vs. template operator conflicts.
+	(grokfndecl, grokdeclarator): New checks for literal operators.
+	* error.c: (dump_expr): Warn about user-defined literals
+	in C++98 mode. (dump_function_name): Pretty printing.
+	* mangle.c: (write_literal_operator_name): New.
+	(write_unqualified_id, write_unqualified_name): Use it.
+	* parser.c: (cp_parser_operator): Handle operator"".
+	(cp_parser_userdef_char_literal, cp_parser_userdef_numeric_literal,
+	cp_parser_userdef_string_literal): New.
+	(cp_parser_primary_expression): Handle new user-defined literal tokens
+	with new functions.
+	* semantics.c: (potential_constant_expression_1): Add
+	user-defined literals.
+	* typeck.c (check_raw_literal_operator,
+	check_literal_operator_args): New.
+
 2011-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_build_addr_expr_1): Use BASELINK_P.

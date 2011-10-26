@@ -131,6 +131,16 @@ struct _cpp_file;
   TK(OBJC_STRING,	LITERAL) /* @"string" - Objective-C */		\
   TK(HEADER_NAME,	LITERAL) /* <stdio.h> in #include */		\
 									\
+  TK(CHAR_USERDEF,	LITERAL) /* 'char'_suffix - C++-0x */		\
+  TK(WCHAR_USERDEF,	LITERAL) /* L'char'_suffix - C++-0x */		\
+  TK(CHAR16_USERDEF,	LITERAL) /* u'char'_suffix - C++-0x */		\
+  TK(CHAR32_USERDEF,	LITERAL) /* U'char'_suffix - C++-0x */		\
+  TK(STRING_USERDEF,	LITERAL) /* "string"_suffix - C++-0x */		\
+  TK(WSTRING_USERDEF,	LITERAL) /* L"string"_suffix - C++-0x */	\
+  TK(STRING16_USERDEF,	LITERAL) /* u"string"_suffix - C++-0x */	\
+  TK(STRING32_USERDEF,	LITERAL) /* U"string"_suffix - C++-0x */	\
+  TK(UTF8STRING_USERDEF,LITERAL) /* u8"string"_suffix - C++-0x */	\
+									\
   TK(COMMENT,		LITERAL) /* Only if output comments.  */	\
 				 /* SPELL_LITERAL happens to DTRT.  */	\
   TK(MACRO_ARG,		NONE)	 /* Macro argument.  */			\
@@ -413,6 +423,9 @@ struct cpp_options
 
   /* True for traditional preprocessing.  */
   unsigned char traditional;
+
+  /* Nonzero for C++ 2011 Standard user-defnied literals.  */
+  unsigned char user_literals;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
@@ -829,13 +842,22 @@ struct cpp_num
 #define CPP_N_FRACT	0x100000 /* Fract types.  */
 #define CPP_N_ACCUM	0x200000 /* Accum types.  */
 
+#define CPP_N_USERDEF	0x1000000 /* C++0x user-defined literal.  */
+
 /* Classify a CPP_NUMBER token.  The return value is a combination of
    the flags from the above sets.  */
-extern unsigned cpp_classify_number (cpp_reader *, const cpp_token *);
+extern unsigned cpp_classify_number (cpp_reader *, const cpp_token *,
+				     const char **);
+
+/* Return the classification flags for a float suffix.  */
+extern unsigned int cpp_interpret_float_suffix (const char *, size_t);
+
+/* Return the classification flags for an int suffix.  */
+extern unsigned int cpp_interpret_int_suffix (const char *, size_t);
 
 /* Evaluate a token classified as category CPP_N_INTEGER.  */
 extern cpp_num cpp_interpret_integer (cpp_reader *, const cpp_token *,
-				      unsigned int type);
+				      unsigned int);
 
 /* Sign extend a number, with PRECISION significant bits and all
    others assumed clear, to fill out a cpp_num structure.  */
@@ -1004,5 +1026,21 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 /* In lex.c */
 extern void cpp_force_token_locations (cpp_reader *, source_location *);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
+
+/* In expr.c */
+extern enum cpp_ttype cpp_userdef_string_remove_type
+  (enum cpp_ttype type);
+extern enum cpp_ttype cpp_userdef_string_add_type
+  (enum cpp_ttype type);
+extern enum cpp_ttype cpp_userdef_char_remove_type
+  (enum cpp_ttype type);
+extern enum cpp_ttype cpp_userdef_char_add_type
+  (enum cpp_ttype type);
+extern bool cpp_userdef_string_p
+  (enum cpp_ttype type);
+extern bool cpp_userdef_char_p
+  (enum cpp_ttype type);
+extern const char * cpp_get_userdef_suffix
+  (const cpp_token *);
 
 #endif /* ! LIBCPP_CPPLIB_H */

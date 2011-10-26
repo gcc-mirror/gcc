@@ -1,3 +1,38 @@
+2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++11 user-defined literals.
+	* g++.dg/cpp0x/udlit-addr.C: New.
+	* g++.dg/cpp0x/udlit-args.C: New.
+	* g++.dg/cpp0x/udlit-args-neg.C: New.
+	* g++.dg/cpp0x/udlit-clink-neg.C: New.
+	* g++.dg/cpp0x/udlit-concat.C: New.
+	* g++.dg/cpp0x/udlit-concat-neg.C: New.
+	* g++.dg/cpp0x/udlit-constexpr.C: New.
+	* g++.dg/cpp0x/udlit-cpp98-neg.C: New.
+	* g++.dg/cpp0x/udlit-declare-neg.C: New.
+	* g++.dg/cpp0x/udlit-friend.C: New.
+	* g++.dg/cpp0x/udlit-general.C: New.
+	* g++.dg/cpp0x/udlit-inline.C: New.
+	* g++.dg/cpp0x/udlit-linkage-neg.C: New.
+	* g++.dg/cpp0x/udlit-member-neg.C: New.
+	* g++.dg/cpp0x/udlit-namespace.C: New.
+	* g++.dg/cpp0x/udlit-nofunc-neg.C: New.
+	* g++.dg/cpp0x/udlit-nonempty-str-neg.C: New.
+	* g++.dg/cpp0x/udlit-nospace-neg.C: New.
+	* g++.dg/cpp0x/udlit-nosuffix-neg.C: New.
+	* g++.dg/cpp0x/udlit-nounder-neg.C: New.
+	* g++.dg/cpp0x/udlit-operator-neg.C: New.
+	* g++.dg/cpp0x/udlit-raw-str.C: New.
+	* g++.dg/cpp0x/udlit-shadow-neg.C: New.
+	* g++.dg/cpp0x/udlit-suffix-neg.C: New.
+	* g++.dg/cpp0x/udlit-systemheader.C: New.
+	* g++.dg/cpp0x/udlit-template.C: New.
+	* g++.dg/cpp0x/udlit-tmpl-arg.C: New.
+	* g++.dg/cpp0x/udlit-tmpl-arg-neg.C: New.
+	* g++.dg/cpp0x/udlit-tmpl-parms.C: New.
+	* g++.dg/cpp0x/udlit-tmpl-parms-neg.C: New.
+	* g++.dg/cpp0x/udlit_system_header: New.
+
 2011-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50870

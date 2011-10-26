@@ -1203,6 +1203,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       || TREE_TYPE (olddecl) == error_mark_node)
     return error_mark_node;
 
+  if (UDLIT_OPER_P (DECL_NAME (newdecl))
+      && UDLIT_OPER_P (DECL_NAME (olddecl)))
+    {
+      if (TREE_CODE (newdecl) == TEMPLATE_DECL
+	  && TREE_CODE (olddecl) != TEMPLATE_DECL
+	  && check_raw_literal_operator (olddecl))
+	error ("literal operator template %q+D conflicts with"
+	       " raw literal operator %qD", newdecl, olddecl);
+      else if (TREE_CODE (newdecl) != TEMPLATE_DECL
+	       && TREE_CODE (olddecl) == TEMPLATE_DECL
+	       && check_raw_literal_operator (newdecl))
+	error ("raw literal operator %q+D conflicts with"
+	       " literal operator template %qD", newdecl, olddecl);
+    }
+
   if (DECL_P (olddecl)
       && TREE_CODE (newdecl) == FUNCTION_DECL
       && TREE_CODE (olddecl) == FUNCTION_DECL
@@ -7345,6 +7360,47 @@ grokfndecl (tree ctype,
   if (IDENTIFIER_OPNAME_P (DECL_NAME (decl))
       && !grok_op_properties (decl, /*complain=*/true))
     return NULL_TREE;
+  else if (UDLIT_OPER_P (DECL_NAME (decl)))
+    {
+      bool long_long_unsigned_p;
+      bool long_double_p;
+      const char *suffix = NULL;
+      /* [over.literal]/6: Literal operators shall not have C linkage. */
+      if (DECL_LANGUAGE (decl) == lang_c)
+	{
+	  error ("literal operator with C linkage");
+	  return NULL_TREE;
+	}
+
+      if (DECL_NAMESPACE_SCOPE_P (decl))
+	{
+	  if (!check_literal_operator_args (decl, &long_long_unsigned_p,
+					    &long_double_p))
+	    {
+	      error ("%qD has invalid argument list", decl);
+	      return NULL_TREE;
+	    }
+
+	  suffix = UDLIT_OP_SUFFIX (DECL_NAME (decl));
+	  if (long_long_unsigned_p)
+	    {
+	      if (cpp_interpret_int_suffix (suffix, strlen (suffix)))
+		warning (0, "integer suffix %<%s%>"
+			    " shadowed by implementation", suffix);
+	    }
+	  else if (long_double_p)
+	    {
+	      if (cpp_interpret_float_suffix (suffix, strlen (suffix)))
+		warning (0, "floating point suffix %<%s%>"
+			    " shadowed by implementation", suffix);
+	    }
+	}
+      else
+	{
+	  error ("%qD must be a non-member function", decl);
+	  return NULL_TREE;
+	}
+    }
 
   if (funcdef_flag)
     /* Make the init_value nonzero so pushdecl knows this is not
@@ -8532,6 +8588,15 @@ grokdeclarator (const cp_declarator *declarator,
   if (((dname && IDENTIFIER_OPNAME_P (dname)) || flags == TYPENAME_FLAG)
       && innermost_code != cdk_function
       && ! (ctype && !declspecs->any_specifiers_p))
+    {
+      error ("declaration of %qD as non-function", dname);
+      return error_mark_node;
+    }
+ 
+  if (dname
+      && TREE_CODE (dname) == IDENTIFIER_NODE
+      && UDLIT_OPER_P (dname)
+      && innermost_code != cdk_function)
     {
       error ("declaration of %qD as non-function", dname);
       return error_mark_node;
@@ -13754,6 +13819,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;
     case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
     case TEMPLATE_INFO:		return TS_CP_TEMPLATE_INFO;
+    case USERDEF_LITERAL:	return TS_CP_USERDEF_LITERAL;
     default:			return TS_CP_GENERIC;
     }
 }

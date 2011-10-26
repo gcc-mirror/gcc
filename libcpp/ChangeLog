@@ -1,3 +1,17 @@
+2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++11 user-defined literals.
+	* expr.c: (cpp_interpret_float_suffix, cpp_interpret_int_suffix,
+	cpp_userdef_string_remove_type, cpp_userdef_string_add_type,
+	cpp_userdef_char_remove_type, cpp_userdef_char_add_type,
+	cpp_userdef_string_p, cpp_userdef_char_p, cpp_get_userdef_suffix): New.
+	(cpp_classify_number): Classify unrecognized tokens as user-defined
+	literals.
+	* include/cpplib.h: Add new tokens for user-defined literals.
+	* init.c: Add new preprocessor flag (cxx11).
+	* lex.c: (lex_string, lex_raw_string): Handle user-defined literals
+	including concatenation and promotion with suffixes.
+
 2011-10-24  Dodji Seketeli  <dodji@redhat.com>
 
 	* line-map.c (linemap_macro_map_lookup): Fix logic.

@@ -1478,6 +1478,18 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
     }
  break_outer_loop:
 
+  if (CPP_OPTION (pfile, user_literals))
+    {
+      /* Grab user defined literal suffix.  */
+      if (ISIDST (*cur))
+	{
+	  type = cpp_userdef_string_add_type (type);
+	  ++cur;
+	}
+      while (ISIDNUM (*cur))
+	++cur;
+    }
+
   pfile->buffer->cur = cur;
   if (first_buff == NULL)
     create_literal (pfile, token, base, cur - base, type);
@@ -1580,6 +1592,19 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
   if (type == CPP_OTHER && CPP_OPTION (pfile, lang) != CLK_ASM)
     cpp_error (pfile, CPP_DL_PEDWARN, "missing terminating %c character",
 	       (int) terminator);
+
+  if (CPP_OPTION (pfile, user_literals))
+    {
+      /* Grab user defined literal suffix.  */
+      if (ISIDST (*cur))
+	{
+	  type = cpp_userdef_char_add_type (type);
+	  type = cpp_userdef_string_add_type (type);
+          ++cur;
+	}
+      while (ISIDNUM (*cur))
+	++cur;
+    }
 
   pfile->buffer->cur = cur;
   create_literal (pfile, token, base, cur - base, type);
