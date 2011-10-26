@@ -1,3 +1,7 @@
+2011-10-26  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (check_literal_operator_args): Avoid building types.
+
 2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement C++11 user-defined literals.

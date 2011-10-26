@@ -8405,12 +8405,6 @@ check_literal_operator_args (const_tree decl,
       bool found_string_p = false;
       bool maybe_raw_p = false;
       bool found_size_p = false;
-      tree const_wchar_ptr_type_node
-	   = build_pointer_type (build_type_variant (wchar_type_node, 1, 0));
-      tree const_char16_ptr_type_node
-	   = build_pointer_type (build_type_variant (char16_type_node, 1, 0));
-      tree const_char32_ptr_type_node
-	   = build_pointer_type (build_type_variant (char32_type_node, 1, 0));
 
       *long_long_unsigned_p = false;
       *long_double_p = false;
@@ -8423,17 +8417,26 @@ check_literal_operator_args (const_tree decl,
 	  tree t = TREE_VALUE (argtype);
 	  ++arity;
 
-	  if (same_type_p (t, const_string_type_node))
+	  if (TREE_CODE (t) == POINTER_TYPE)
 	    {
-	      found_string_p = true;
-	      maybe_raw_p = true;
+	      t = TREE_TYPE (t);
+	      if (cp_type_quals (t) != TYPE_QUAL_CONST)
+		return false;
+	      t = TYPE_MAIN_VARIANT (t);
+	      if (same_type_p (t, char_type_node))
+		{
+		  found_string_p = true;
+		  maybe_raw_p = true;
+		}
+	      else if (same_type_p (t, wchar_type_node))
+		found_string_p = true;
+	      else if (same_type_p (t, char16_type_node))
+		found_string_p = true;
+	      else if (same_type_p (t, char32_type_node))
+		found_string_p = true;
+	      else
+		return false;
 	    }
-	  else if (same_type_p (t, const_wchar_ptr_type_node))
-	    found_string_p = true;
-	  else if (same_type_p (t, const_char16_ptr_type_node))
-	    found_string_p = true;
-	  else if (same_type_p (t, const_char32_ptr_type_node))
-	    found_string_p = true;
 	  else if (same_type_p (t, size_type_node))
 	    {
 	      if (!found_string_p)
