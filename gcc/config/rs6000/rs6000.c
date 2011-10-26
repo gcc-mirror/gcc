@@ -899,8 +899,6 @@ static const char *rs6000_mangle_type (const_tree);
 static void rs6000_set_default_type_attributes (tree);
 static rtx rs6000_savres_routine_sym (rs6000_stack_t *, bool, bool, bool);
 static rtx rs6000_emit_stack_reset (rs6000_stack_t *, rtx, rtx, int, bool);
-static rtx rs6000_make_savres_rtx (rs6000_stack_t *, rtx, int,
-				   enum machine_mode, bool, bool, bool);
 static bool rs6000_reg_live_or_pic_offset_p (int);
 static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
 static tree rs6000_builtin_vectorized_function (tree, tree, tree);
@@ -19643,8 +19641,10 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
       if (sp_offset != 0)
 	{
 	  rtx dest_reg = savres ? gen_rtx_REG (Pmode, 11) : sp_reg_rtx;
-	  return emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx,
-					   GEN_INT (sp_offset)));
+	  rtx insn = emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx,
+					       GEN_INT (sp_offset)));
+	  if (!savres)
+	    return insn;
 	}
       else if (!savres)
 	return emit_move_insn (sp_reg_rtx, frame_reg_rtx);
@@ -19668,10 +19668,11 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
 }
 
 /* Construct a parallel rtx describing the effect of a call to an
-   out-of-line register save/restore routine.  */
+   out-of-line register save/restore routine, and emit the insn
+   or jump_insn as appropriate.  */
 
 static rtx
-rs6000_make_savres_rtx (rs6000_stack_t *info,
+rs6000_emit_savres_rtx (rs6000_stack_t *info,
 			rtx frame_reg_rtx, int save_area_offset,
 			enum machine_mode reg_mode,
 			bool savep, bool gpr, bool lr)
@@ -19681,6 +19682,7 @@ rs6000_make_savres_rtx (rs6000_stack_t *info,
   int reg_size = GET_MODE_SIZE (reg_mode);
   rtx sym;
   rtvec p;
+  rtx par, insn;
 
   offset = 0;
   start_reg = (gpr
@@ -19694,7 +19696,7 @@ rs6000_make_savres_rtx (rs6000_stack_t *info,
     RTVEC_ELT (p, offset++) = ret_rtx;
 
   RTVEC_ELT (p, offset++)
-    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 65));
+    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
 
   sym = rs6000_savres_routine_sym (info, savep, gpr, lr);
   RTVEC_ELT (p, offset++) = gen_rtx_USE (VOIDmode, sym);
@@ -19727,7 +19729,16 @@ rs6000_make_savres_rtx (rs6000_stack_t *info,
       RTVEC_ELT (p, i + offset) = gen_rtx_SET (VOIDmode, mem, reg);
     }
 
-  return gen_rtx_PARALLEL (VOIDmode, p);
+  par = gen_rtx_PARALLEL (VOIDmode, p);
+
+  if (!savep && lr)
+    {
+      insn = emit_jump_insn (par);
+      JUMP_LABEL (insn) = ret_rtx;
+    }
+  else
+    insn = emit_insn (par);
+  return insn;
 }
 
 /* Determine whether the gp REG is really used.  */
@@ -20026,16 +20037,13 @@ rs6000_emit_prologue (void)
     }
   else if (!WORLD_SAVE_P (info) && info->first_fp_reg_save != 64)
     {
-      rtx par;
-
-      par = rs6000_make_savres_rtx (info, frame_reg_rtx,
-				    info->fp_save_offset + sp_offset,
-				    DFmode,
-				    /*savep=*/true, /*gpr=*/false,
-				    /*lr=*/(strategy
-					    & SAVE_NOINLINE_FPRS_SAVES_LR)
-					   != 0);
-      insn = emit_insn (par);
+      insn = rs6000_emit_savres_rtx (info, frame_reg_rtx,
+				     info->fp_save_offset + sp_offset,
+				     DFmode,
+				     /*savep=*/true, /*gpr=*/false,
+				     /*lr=*/((strategy
+					      & SAVE_NOINLINE_FPRS_SAVES_LR)
+					     != 0));
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
 			    NULL_RTX, NULL_RTX);
     }
@@ -20125,13 +20133,10 @@ rs6000_emit_prologue (void)
 	}
       else
 	{
-	  rtx par;
-
-	  par = rs6000_make_savres_rtx (info, gen_rtx_REG (Pmode, 11),
-					0, reg_mode,
-					/*savep=*/true, /*gpr=*/true,
-					/*lr=*/false);
-	  insn = emit_insn (par);
+	  insn = rs6000_emit_savres_rtx (info, gen_rtx_REG (Pmode, 11),
+					 0, reg_mode,
+					 /*savep=*/true, /*gpr=*/true,
+					 /*lr=*/false);
 	  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
 				NULL_RTX, NULL_RTX);
 	}
@@ -20143,8 +20148,6 @@ rs6000_emit_prologue (void)
     }
   else if (!WORLD_SAVE_P (info) && !saving_GPRs_inline)
     {
-      rtx par;
-
       /* Need to adjust r11 (r12) if we saved any FPRs.  */
       if (info->first_fp_reg_save != 64)
         {
@@ -20155,14 +20158,13 @@ rs6000_emit_prologue (void)
 	  emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx, offset));
         }
 
-      par = rs6000_make_savres_rtx (info, frame_reg_rtx,
-				    info->gp_save_offset + sp_offset,
-				    reg_mode,
-				    /*savep=*/true, /*gpr=*/true,
-				    /*lr=*/(strategy
-					    & SAVE_NOINLINE_GPRS_SAVES_LR)
-					   != 0);
-      insn = emit_insn (par);
+      insn = rs6000_emit_savres_rtx (info, frame_reg_rtx,
+				     info->gp_save_offset + sp_offset,
+				     reg_mode,
+				     /*savep=*/true, /*gpr=*/true,
+				     /*lr=*/((strategy
+					      & SAVE_NOINLINE_GPRS_SAVES_LR)
+					     != 0));
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
 			    NULL_RTX, NULL_RTX);
     }
@@ -20611,6 +20613,20 @@ offset_below_red_zone_p (HOST_WIDE_INT offset)
 		   : TARGET_32BIT ? -220 : -288);
 }
 
+/* Append CFA_RESTORES to any existing REG_NOTES on the last insn.  */
+
+static void
+emit_cfa_restores (rtx cfa_restores)
+{
+  rtx insn = get_last_insn ();
+  rtx *loc = &REG_NOTES (insn);
+
+  while (*loc)
+    loc = &XEXP (*loc, 1);
+  *loc = cfa_restores;
+  RTX_FRAME_RELATED_P (insn) = 1;
+}
+
 /* Emit function epilogue as insns.  */
 
 void
@@ -20708,6 +20724,14 @@ rs6000_emit_epilogue (int sibcall)
 	rtx mem = gen_frame_mem (reg_mode, addr);
 
 	RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
+
+	if (flag_shrink_wrap)
+	  {
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+					   gen_rtx_REG (Pmode, LR_REGNO),
+					   cfa_restores);
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
+	  }
       }
 
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
@@ -20719,6 +20743,8 @@ rs6000_emit_epilogue (int sibcall)
 	  rtx mem = gen_frame_mem (reg_mode, addr);
 
 	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
+	  if (flag_shrink_wrap)
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
       for (i = 0; info->first_altivec_reg_save + i <= LAST_ALTIVEC_REGNO; i++)
 	{
@@ -20729,6 +20755,8 @@ rs6000_emit_epilogue (int sibcall)
 	  rtx mem = gen_frame_mem (V4SImode, addr);
 
 	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
+	  if (flag_shrink_wrap)
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
       for (i = 0; info->first_fp_reg_save + i <= 63; i++)
 	{
@@ -20742,6 +20770,8 @@ rs6000_emit_epilogue (int sibcall)
 				     ? DFmode : SFmode), addr);
 
 	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
+	  if (flag_shrink_wrap)
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
       RTVEC_ELT (p, j++)
 	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 0));
@@ -20753,8 +20783,14 @@ rs6000_emit_epilogue (int sibcall)
 	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 8));
       RTVEC_ELT (p, j++)
 	= gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, 10));
-      emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
+      insn = emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
 
+      if (flag_shrink_wrap)
+	{
+	  REG_NOTES (insn) = cfa_restores;
+	  add_reg_note (insn, REG_CFA_DEF_CFA, sp_reg_rtx);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
       return;
     }
 
@@ -20799,9 +20835,10 @@ rs6000_emit_epilogue (int sibcall)
 
 	    reg = gen_rtx_REG (V4SImode, i);
 	    emit_move_insn (reg, mem);
-	    if (offset_below_red_zone_p (info->altivec_save_offset
-					 + (i - info->first_altivec_reg_save)
-					   * 16))
+	    if (flag_shrink_wrap
+		|| offset_below_red_zone_p (info->altivec_save_offset
+					    + (i - info->first_altivec_reg_save)
+					    * 16))
 	      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
 					     cfa_restores);
 	  }
@@ -20940,7 +20977,7 @@ rs6000_emit_epilogue (int sibcall)
 
 	    reg = gen_rtx_REG (V4SImode, i);
 	    emit_move_insn (reg, mem);
-	    if (DEFAULT_ABI == ABI_V4)
+	    if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
 	      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
 					     cfa_restores);
 	  }
@@ -20990,8 +21027,7 @@ rs6000_emit_epilogue (int sibcall)
       emit_move_insn (cr_save_reg, mem);
     }
 
-  /* Set LR here to try to overlap restores below.  LR is always saved
-     above incoming stack, so it never needs REG_CFA_RESTORE.  */
+  /* Set LR here to try to overlap restores below.  */
   if (restore_lr && restoring_GPRs_inline)
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNO),
 		    gen_rtx_REG (Pmode, 0));
@@ -21029,7 +21065,7 @@ rs6000_emit_epilogue (int sibcall)
   /* Restore GPRs.  This is done as a PARALLEL if we are using
      the load-multiple instructions.  */
   if (TARGET_SPE_ABI
-      && info->spe_64bit_regs_used != 0
+      && info->spe_64bit_regs_used
       && info->first_gp_reg_save != 32)
     {
       /* Determine whether we can address all of the registers that need
@@ -21053,7 +21089,7 @@ rs6000_emit_epilogue (int sibcall)
 	  int ool_adjust = (restoring_GPRs_inline
 			    ? 0
 			    : (info->first_gp_reg_save
-			       - (FIRST_SAVRES_REGISTER+1))*8);
+			       - (FIRST_SAVRES_REGISTER + 1)) * 8);
 
 	  if (frame_reg_rtx == sp_reg_rtx)
 	    frame_reg_rtx = gen_rtx_REG (Pmode, 11);
@@ -21084,48 +21120,28 @@ rs6000_emit_epilogue (int sibcall)
 		mem = gen_rtx_MEM (V2SImode, addr);
 		reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
-		insn = emit_move_insn (reg, mem);
-		if (DEFAULT_ABI == ABI_V4)
-		  {
-		    if (frame_pointer_needed
-			&& info->first_gp_reg_save + i
-			   == HARD_FRAME_POINTER_REGNUM)
-		      {
-			add_reg_note (insn, REG_CFA_DEF_CFA,
-				      plus_constant (frame_reg_rtx,
-						     sp_offset));
-			RTX_FRAME_RELATED_P (insn) = 1;
-		      }
-
-		    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-						   cfa_restores);
-		  }
+		emit_move_insn (reg, mem);
 	      }
 	}
       else
-	{
-	  rtx par;
-
-	  par = rs6000_make_savres_rtx (info, gen_rtx_REG (Pmode, 11),
-					0, reg_mode,
-					/*savep=*/false, /*gpr=*/true,
-					/*lr=*/true);
-	  emit_jump_insn (par);
-	  /* We don't want anybody else emitting things after we jumped
-	     back.  */
-	  return;
-	}
+	rs6000_emit_savres_rtx (info, gen_rtx_REG (Pmode, 11),
+				0, reg_mode,
+				/*savep=*/false, /*gpr=*/true,
+				/*lr=*/true);
     }
   else if (!restoring_GPRs_inline)
     {
       /* We are jumping to an out-of-line function.  */
       bool can_use_exit = info->first_fp_reg_save == 64;
-      rtx par;
 
       /* Emit stack reset code if we need it.  */
       if (can_use_exit)
-	rs6000_emit_stack_reset (info, sp_reg_rtx, frame_reg_rtx,
-				 sp_offset, can_use_exit);
+	{
+	  rs6000_emit_stack_reset (info, sp_reg_rtx, frame_reg_rtx,
+				   sp_offset, can_use_exit);
+	  if (info->cr_save_p)
+	    rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
+	}
       else
 	{
 	  emit_insn (gen_add3_insn (gen_rtx_REG (Pmode, DEFAULT_ABI == ABI_AIX
@@ -21136,45 +21152,10 @@ rs6000_emit_epilogue (int sibcall)
 	    sp_offset += info->fp_size;
 	}
 
-      par = rs6000_make_savres_rtx (info, frame_reg_rtx,
-				    info->gp_save_offset, reg_mode,
-				    /*savep=*/false, /*gpr=*/true,
-				    /*lr=*/can_use_exit);
-
-      if (can_use_exit)
-	{
-	  if (info->cr_save_p)
-	    {
-	      rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
-	      if (DEFAULT_ABI == ABI_V4)
-		cfa_restores
-		  = alloc_reg_note (REG_CFA_RESTORE,
-				    gen_rtx_REG (SImode, CR2_REGNO),
-				    cfa_restores);
-	    }
-
-	  emit_jump_insn (par);
-
-	  /* We don't want anybody else emitting things after we jumped
-	     back.  */
-	  return;
-	}
-
-      insn = emit_insn (par);
-      if (DEFAULT_ABI == ABI_V4)
-	{
-	  if (frame_pointer_needed)
-	    {
-	      add_reg_note (insn, REG_CFA_DEF_CFA,
-			    plus_constant (frame_reg_rtx, sp_offset));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-
-	  for (i = info->first_gp_reg_save; i < 32; i++)
-	    cfa_restores
-	      = alloc_reg_note (REG_CFA_RESTORE,
-				gen_rtx_REG (reg_mode, i), cfa_restores);
-	}
+      rs6000_emit_savres_rtx (info, frame_reg_rtx,
+			      info->gp_save_offset, reg_mode,
+			      /*savep=*/false, /*gpr=*/true,
+			      /*lr=*/can_use_exit);
     }
   else if (using_load_multiple)
     {
@@ -21190,17 +21171,8 @@ rs6000_emit_epilogue (int sibcall)
 	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
 	  RTVEC_ELT (p, i) = gen_rtx_SET (VOIDmode, reg, mem);
-	  if (DEFAULT_ABI == ABI_V4)
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-					   cfa_restores);
 	}
-      insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
-      if (DEFAULT_ABI == ABI_V4 && frame_pointer_needed)
-	{
-	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (frame_reg_rtx, sp_offset));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
     }
   else
     {
@@ -21214,22 +21186,68 @@ rs6000_emit_epilogue (int sibcall)
             rtx mem = gen_frame_mem (reg_mode, addr);
 	    rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
-	    insn = emit_move_insn (reg, mem);
-	    if (DEFAULT_ABI == ABI_V4)
-	      {
-	        if (frame_pointer_needed
-		    && info->first_gp_reg_save + i
-		       == HARD_FRAME_POINTER_REGNUM)
-		  {
-		    add_reg_note (insn, REG_CFA_DEF_CFA,
-				  plus_constant (frame_reg_rtx, sp_offset));
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		  }
-
-		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-					       cfa_restores);
-	      }
+	    emit_move_insn (reg, mem);
           }
+    }
+
+  if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+    {
+      /* If the frame pointer was used then we can't delay emitting
+	 a REG_CFA_DEF_CFA note.  This must happen on the insn that
+	 restores the frame pointer, r31.  We may have already emitted
+	 a REG_CFA_DEF_CFA note, but that's OK;  A duplicate is
+	 discarded by dwarf2cfi.c/dwarf2out.c, and in any case would
+	 be harmless if emitted.  */
+      if (frame_pointer_needed)
+	{
+	  insn = get_last_insn ();
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (frame_reg_rtx, sp_offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      /* Set up cfa_restores.  We always need these when
+	 shrink-wrapping.  If not shrink-wrapping then we only need
+	 the cfa_restore when the stack location is no longer valid.
+	 The cfa_restores must be emitted on or before the insn that
+	 invalidates the stack, and of course must not be emitted
+	 before the insn that actually does the restore.  The latter
+	 is why the LR cfa_restore condition below is a little
+	 complicated.  It's also why it is a bad idea to emit the
+	 cfa_restores as a group on the last instruction here that
+	 actually does a restore: That insn may be reordered with
+	 respect to others doing restores.  */
+      if (info->cr_save_p)
+	cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+				       gen_rtx_REG (SImode, CR2_REGNO),
+				       cfa_restores);
+      if (flag_shrink_wrap
+	  && (restore_lr
+	      || (info->lr_save_p
+		  && !restoring_GPRs_inline
+		  && info->first_fp_reg_save == 64)))
+	cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+				       gen_rtx_REG (Pmode, LR_REGNO),
+				       cfa_restores);
+
+      for (i = info->first_gp_reg_save; i < 32; i++)
+	if (!restoring_GPRs_inline
+	    || using_load_multiple
+	    || rs6000_reg_live_or_pic_offset_p (i))
+	  {
+	    rtx reg = gen_rtx_REG (reg_mode, i);
+
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
+	  }
+    }
+
+  if (!restoring_GPRs_inline
+      && info->first_fp_reg_save == 64)
+    {
+      /* We are jumping to an out-of-line function.  */
+      if (cfa_restores)
+	emit_cfa_restores (cfa_restores);
+      return;
     }
 
   if (restore_lr && !restoring_GPRs_inline)
@@ -21245,8 +21263,8 @@ rs6000_emit_epilogue (int sibcall)
   /* Restore fpr's if we need to do it without calling a function.  */
   if (restoring_FPRs_inline)
     for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-      if ((df_regs_ever_live_p (info->first_fp_reg_save+i)
-	   && ! call_used_regs[info->first_fp_reg_save+i]))
+      if ((df_regs_ever_live_p (info->first_fp_reg_save + i)
+	   && !call_used_regs[info->first_fp_reg_save + i]))
 	{
 	  rtx addr, mem, reg;
 	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
@@ -21260,20 +21278,13 @@ rs6000_emit_epilogue (int sibcall)
 			     info->first_fp_reg_save + i);
 
  	  emit_move_insn (reg, mem);
-	  if (DEFAULT_ABI == ABI_V4)
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-					   cfa_restores);
+	  if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
 
   /* If we saved cr, restore it here.  Just those that were used.  */
   if (info->cr_save_p)
-    {
-      rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
-      if (DEFAULT_ABI == ABI_V4)
-	cfa_restores
-	  = alloc_reg_note (REG_CFA_RESTORE, gen_rtx_REG (SImode, CR2_REGNO),
-			    cfa_restores);
-    }
+    rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
 
   /* If this is V.4, unwind the stack pointer after all of the loads
      have been done.  */
@@ -21301,15 +21312,40 @@ rs6000_emit_epilogue (int sibcall)
       rtvec p;
       bool lr = (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
       if (! restoring_FPRs_inline)
-	p = rtvec_alloc (4 + 64 - info->first_fp_reg_save);
+	{
+	  p = rtvec_alloc (4 + 64 - info->first_fp_reg_save);
+	  RTVEC_ELT (p, 0) = ret_rtx;
+	}
       else
-	p = rtvec_alloc (2);
+	{
+	  if (cfa_restores)
+	    {
+	      /* We can't hang the cfa_restores off a simple return,
+		 since the shrink-wrap code sometimes uses an existing
+		 return.  This means there might be a path from
+		 pre-prologue code to this return, and dwarf2cfi code
+		 wants the eh_frame unwinder state to be the same on
+		 all paths to any point.  So we need to emit the
+		 cfa_restores before the return.  For -m64 we really
+		 don't need epilogue cfa_restores at all, except for
+		 this irritating dwarf2cfi with shrink-wrap
+		 requirement;  The stack red-zone means eh_frame info
+		 from the prologue telling the unwinder to restore
+		 from the stack is perfectly good right to the end of
+		 the function.  */
+	      emit_insn (gen_blockage ());
+	      emit_cfa_restores (cfa_restores);
+	      cfa_restores = NULL_RTX;
+	    }
+	  p = rtvec_alloc (2);
+	  RTVEC_ELT (p, 0) = simple_return_rtx;
+	}
 
-      RTVEC_ELT (p, 0) = ret_rtx;
       RTVEC_ELT (p, 1) = ((restoring_FPRs_inline || !lr)
-			  ? gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, 65))
+			  ? gen_rtx_USE (VOIDmode,
+					 gen_rtx_REG (Pmode, LR_REGNO))
 			  : gen_rtx_CLOBBER (VOIDmode,
-					     gen_rtx_REG (Pmode, 65)));
+					     gen_rtx_REG (Pmode, LR_REGNO)));
 
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
@@ -21317,6 +21353,12 @@ rs6000_emit_epilogue (int sibcall)
 	{
 	  int i;
 	  rtx sym;
+
+	  if ((DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+	      && lr)
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+					   gen_rtx_REG (Pmode, LR_REGNO),
+					   cfa_restores);
 
 	  sym = rs6000_savres_routine_sym (info,
 					   /*savep=*/false,
@@ -21329,19 +21371,31 @@ rs6000_emit_epilogue (int sibcall)
 						       ? 1 : 11));
 	  for (i = 0; i < 64 - info->first_fp_reg_save; i++)
 	    {
-	      rtx addr, mem;
-	      addr = gen_rtx_PLUS (Pmode, sp_reg_rtx,
-				   GEN_INT (info->fp_save_offset + 8*i));
-	      mem = gen_frame_mem (DFmode, addr);
+	      rtx addr, mem, reg;
 
-	      RTVEC_ELT (p, i+4) =
-		gen_rtx_SET (VOIDmode,
-			     gen_rtx_REG (DFmode, info->first_fp_reg_save + i),
-			     mem);
+	      addr = gen_rtx_PLUS (Pmode, sp_reg_rtx,
+				   GEN_INT (info->fp_save_offset + 8 * i));
+	      mem = gen_frame_mem (DFmode, addr);
+	      reg = gen_rtx_REG (DFmode, info->first_fp_reg_save + i);
+
+	      RTVEC_ELT (p, i + 4) = gen_rtx_SET (VOIDmode, reg, mem);
+	      if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					       cfa_restores);
 	    }
 	}
 
       emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
+    }
+
+  if (cfa_restores)
+    {
+      if (sibcall)
+	/* Ensure the cfa_restores are hung off an insn that won't
+	   be reordered above other restores.  */
+	emit_insn (gen_blockage ());
+
+      emit_cfa_restores (cfa_restores);
     }
 }
 
@@ -21707,7 +21761,7 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			gen_rtx_USE (VOIDmode,
 				     gen_rtx_REG (SImode,
 						  LR_REGNO)),
-			ret_rtx)));
+			simple_return_rtx)));
   SIBLING_CALL_P (insn) = 1;
   emit_barrier ();
 

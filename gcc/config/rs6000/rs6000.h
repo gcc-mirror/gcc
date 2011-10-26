@@ -894,10 +894,11 @@ extern unsigned rs6000_pointer_size;
 	cr1		(not saved, but used for FP operations)
 	cr0		(not saved, but used for arithmetic operations)
 	cr4, cr3, cr2	(saved)
-	r0		(not saved; cannot be base reg)
 	r9		(not saved; best for TImode)
-	r11, r10, r8-r4	(not saved; highest used first to make less conflict)
+	r10, r8-r4	(not saved; highest first for less conflict with params)
 	r3		(not saved; return value register)
+	r11		(not saved; later alloc to help shrink-wrap)
+	r0		(not saved; cannot be base reg)
 	r31 - r13	(saved; order given to save least number)
 	r12		(not saved; if used for DImode or DFmode would use r13)
 	mq		(not saved; best to use it if we can)
@@ -922,6 +923,14 @@ extern unsigned rs6000_pointer_size;
 #define MAYBE_R2_FIXED
 #endif
 
+#if FIXED_R13 == 1
+#define EARLY_R12 12,
+#define LATE_R12
+#else
+#define EARLY_R12
+#define LATE_R12 12,
+#endif
+
 #define REG_ALLOC_ORDER						\
   {32,								\
    45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34,		\
@@ -929,11 +938,11 @@ extern unsigned rs6000_pointer_size;
    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51,		\
    50, 49, 48, 47, 46,						\
    75, 74, 69, 68, 72, 71, 70,					\
-   0, MAYBE_R2_AVAILABLE					\
-   9, 11, 10, 8, 7, 6, 5, 4,					\
-   3,								\
+   MAYBE_R2_AVAILABLE						\
+   9, 10, 8, 7, 6, 5, 4,					\
+   3, EARLY_R12 11, 0,						\
    31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19,		\
-   18, 17, 16, 15, 14, 13, 12,					\
+   18, 17, 16, 15, 14, 13, LATE_R12				\
    64, 66, 65,							\
    73, 1, MAYBE_R2_FIXED 67, 76,				\
    /* AltiVec registers.  */					\
