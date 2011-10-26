@@ -1,3 +1,8 @@
+2011-10-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/ms_c90-printf-1.c, gcc.dg/format/ms_c90-scanf-1.c:
+	Update expected messages.
+
 2011-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vect/slp-multitypes-2.c: Do not XFAIL on SPARC 32-bit.
