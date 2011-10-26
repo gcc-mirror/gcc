@@ -1,3 +1,8 @@
+2011-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR translation/46617
+	* gcc.c (main): Fix fatal_error string for translation.
+
 2011-10-25  Ian Lance Taylor  <iant@google.com>
 
 	* tree-eh.c (do_return_redirection): Remove return_value_p
