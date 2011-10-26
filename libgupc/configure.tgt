@@ -21,7 +21,7 @@ case "${target}" in
   *-*-hpux*)
 	case "${target}" in
 	  *-*-hpux11*)
-	     # HPUX v11.x requires -lrt to resolve sem_init in libupc.la
+	     # HPUX v11.x requires -lrt to resolve sem_init in libgupc.la
 	     XLDFLAGS="${XLDFLAGS} -lrt"
 	     ;;
 	esac
@@ -42,7 +42,7 @@ case "${target}" in
 	;;
 
   mips-sgi-irix6*)
-	# Need to link with -lpthread so libupc.so is self-contained.
+	# Need to link with -lpthread so libgupc.so is self-contained.
 	XLDFLAGS="${XLDFLAGS} -lpthread"
 	;;
   *)
@@ -53,7 +53,7 @@ esac
 #  The logic above sets configuration directories that may
 #  be currently unsupported.  Remove non-existent directories
 #  from the 'config_path' variable.  It is assumed that higher
-#  level logic will check for valid libupc targets.
+#  level logic will check for valid libgupc targets.
 #
 _config_path=
 for cfg_dir in ${config_path}; do
@@ -95,13 +95,13 @@ LIBS="-lm $LIBS"
 if test "${upc_numa}" = "yes"; then
   LIBS="-lnuma $LIBS"
 fi
-libupc_spec="%{!fupc-pthreads*:-lupc;:-lupc_pt -lpthread}"
+libgupc_spec="%{!fupc-pthreads*:-lgupc;:-lgupc_pt -lpthread}"
 if test "$enable_upc_link_script" = yes; then
-  libupc_spec="-T gccupc.ld%s ${libupc_spec}"
+  libgupc_spec="-T gupc.ld%s ${libgupc_spec}"
 fi
-# Set up the set of libraries that we need to link against for libupc.
+# Set up the set of libraries that we need to link against for libgupc.
 if test "$enable_shared" = "yes"; then
-  link_upc_spec="${libupc_spec} %{static: $LIBS}"
+  link_upc_spec="${libgupc_spec} %{static: $LIBS}"
 else
-  link_upc_spec="${libupc_spec} $LIBS"
+  link_upc_spec="${libgupc_spec} $LIBS"
 fi 

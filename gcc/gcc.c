@@ -676,7 +676,7 @@ proper position among the other output files.  */
     %{!nostdlib:%{!nostartfiles:%{fupc-link:%:include(upc-crtbegin.spec)%(upc_crtbegin)}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
-    %{fupc-link:%:include(libupc.spec)%(link_upc)}\
+    %{fupc-link:%:include(libgupc.spec)%(link_upc)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\

@@ -253,8 +253,8 @@
 /* Define to 1 if `vfork' works. */
 #undef HAVE_WORKING_VFORK
 
-/* Define to 1 if GNU symbol versioning is used for libupc. */
-#undef LIBUPC_GNU_SYMBOL_VERSIONING
+/* Define to 1 if GNU symbol versioning is used for libgupc. */
+#undef LIBGUPC_GNU_SYMBOL_VERSIONING
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */

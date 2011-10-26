@@ -2,10 +2,10 @@
 use strict;
 #
 #
-# usage: gen-gccupc-inline-lib template.in [input-file ...]
+# usage: gen-gupc-inline-lib template.in [input-file ...]
 #
 # Create a file from template.in that implements selectively inline'd
-# GCC/UPC runtime routines.
+# GUPC runtime routines.
 #
 # The files are read first.  This processes lines with the
 # following syntax.  Note, the '//' sequence must begin in column one.

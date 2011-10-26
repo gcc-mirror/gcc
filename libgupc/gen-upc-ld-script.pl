@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# Define linkage sections required by GCC/UPC by editing
+# Define linkage sections required by GUPC by editing
 # the default GNU ld script.
 #
 use strict;

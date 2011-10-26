@@ -555,11 +555,11 @@ MAKEFLAGS=
 
 # Identity of this package.
 PACKAGE_NAME='GNU UPC Runtime Library'
-PACKAGE_TARNAME='libupc'
+PACKAGE_TARNAME='libgupc'
 PACKAGE_VERSION='1.0'
 PACKAGE_STRING='GNU UPC Runtime Library 1.0'
 PACKAGE_BUGREPORT=''
-PACKAGE_URL='http://www.gnu.org/software/libupc/'
+PACKAGE_URL='http://www.gnu.org/software/libgupc/'
 
 ac_unique_file="include/upc.h"
 # Factoring default headers for most tests.
@@ -601,22 +601,22 @@ ac_includes_default="\
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-LIBUPC_GUM_FALSE
-LIBUPC_GUM_TRUE
-LIBUPC_NUMA_FALSE
-LIBUPC_NUMA_TRUE
-LIBUPC_AFFINITY_FALSE
-LIBUPC_AFFINITY_TRUE
-LIBUPC_PTHREADS_FALSE
-LIBUPC_PTHREADS_TRUE
-LIBUPC_GENERIC_COLLECTIVES_FALSE
-LIBUPC_GENERIC_COLLECTIVES_TRUE
-LIBUPC_LINK_SCRIPT_FALSE
-LIBUPC_LINK_SCRIPT_TRUE
-LIBUPC_CRTSTUFF_FALSE
-LIBUPC_CRTSTUFF_TRUE
-LIBUPC_SMP_RUNTIME_FALSE
-LIBUPC_SMP_RUNTIME_TRUE
+LIBGUPC_GUM_FALSE
+LIBGUPC_GUM_TRUE
+LIBGUPC_NUMA_FALSE
+LIBGUPC_NUMA_TRUE
+LIBGUPC_AFFINITY_FALSE
+LIBGUPC_AFFINITY_TRUE
+LIBGUPC_PTHREADS_FALSE
+LIBGUPC_PTHREADS_TRUE
+LIBGUPC_GENERIC_COLLECTIVES_FALSE
+LIBGUPC_GENERIC_COLLECTIVES_TRUE
+LIBGUPC_LINK_SCRIPT_FALSE
+LIBGUPC_LINK_SCRIPT_TRUE
+LIBGUPC_CRTSTUFF_FALSE
+LIBGUPC_CRTSTUFF_TRUE
+LIBGUPC_SMP_RUNTIME_FALSE
+LIBGUPC_SMP_RUNTIME_TRUE
 upc_crtstuff_objs
 upc_crtstuff_mak
 upc_crtend_spec
@@ -626,8 +626,8 @@ link_upc_spec
 XLDFLAGS
 XCFLAGS
 config_path
-LIBUPC_BUILD_VERSIONED_SHLIB_FALSE
-LIBUPC_BUILD_VERSIONED_SHLIB_TRUE
+LIBGUPC_BUILD_VERSIONED_SHLIB_FALSE
+LIBGUPC_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
 LIBOBJS
@@ -1376,7 +1376,7 @@ Fine tuning of the installation directories:
   --infodir=DIR           info documentation [DATAROOTDIR/info]
   --localedir=DIR         locale-dependent data [DATAROOTDIR/locale]
   --mandir=DIR            man documentation [DATAROOTDIR/man]
-  --docdir=DIR            documentation root [DATAROOTDIR/doc/libupc]
+  --docdir=DIR            documentation root [DATAROOTDIR/doc/libgupc]
   --htmldir=DIR           html documentation [DOCDIR]
   --dvidir=DIR            dvi documentation [DOCDIR]
   --pdfdir=DIR            pdf documentation [DOCDIR]
@@ -1465,7 +1465,7 @@ Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
 
 Report bugs to the package provider.
-GNU UPC Runtime Library home page: <http://www.gnu.org/software/libupc/>.
+GNU UPC Runtime Library home page: <http://www.gnu.org/software/libgupc/>.
 General help using GNU software: <http://www.gnu.org/gethelp/>.
 _ACEOF
 ac_status=$?
@@ -3182,7 +3182,7 @@ fi
 
 
 # Define the identity of the package.
- PACKAGE='libupc'
+ PACKAGE='libgupc'
  VERSION='1.0'
 
 
@@ -3322,8 +3322,8 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_cv_compiler_exists" >&5
 $as_echo "$upc_cv_compiler_exists" >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if UPC driver, 'xupc' and 'upc-cmd',  has been built" >&5
-$as_echo_n "checking if UPC driver, 'xupc' and 'upc-cmd',  has been built... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if UPC driver, 'xgupc' and 'gupc',  has been built" >&5
+$as_echo_n "checking if UPC driver, 'xgupc' and 'gupc',  has been built... " >&6; }
 if test "${upc_cv_driver_exists+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -3331,8 +3331,8 @@ else
   upc_cv_driver_exists=yes
   if test -n "$r"; then
     if test -d "$r"/gcc; then
-      if (test -f "$r"/gcc/xupc && test -f "$r"/gcc/upc-cmd) \
-          || (test -f "$r"/gcc/xupc.exe && "$r"/gcc/upc-cmd.exe); then
+      if (test -f "$r"/gcc/xgupc && test -f "$r"/gcc/gupc) \
+          || (test -f "$r"/gcc/xgupc.exe && "$r"/gcc/gupc.exe); then
 	true
       else
 	upc_cv_driver_exists=no
@@ -4338,7 +4338,7 @@ if test "x$GCC" = "xyes"; then
 fi
 
 if echo "$CC" | grep '/xgcc ' >/dev/null 2>&1; then
-  UPC=`echo "$CC" | sed -e 's=/xgcc =/xupc ='`
+  UPC=`echo "$CC" | sed -e 's=/xgcc =/xgupc ='`
 else
   as_fn_error "Can't create UPC from CC because it doesn't contain the
   string '/xgcc '.  The value of CC is: \"$CC\"" "$LINENO" 5
@@ -11755,7 +11755,7 @@ CC="$lt_save_CC"
 
 
 if test "$enabled_shared" = "yes"; then
-  as_fn_error "libupc shared library support currently unimplemented." "$LINENO" 5
+  as_fn_error "libgupc shared library support currently unimplemented." "$LINENO" 5
 fi
 
 
@@ -12715,8 +12715,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Pthreads are not supported in this libupc build" >&5
-$as_echo "$as_me: Pthreads are not supported in this libupc build" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Pthreads are not supported in this libgupc build" >&5
+$as_echo "$as_me: Pthreads are not supported in this libgupc build" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -13941,7 +13941,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports hidden visibility" >&5
 $as_echo_n "checking whether the target supports hidden visibility... " >&6; }
-if test "${libupc_cv_have_attribute_visibility+set}" = set; then :
+if test "${libgupc_cv_have_attribute_visibility+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -13959,16 +13959,16 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  libupc_cv_have_attribute_visibility=yes
+  libgupc_cv_have_attribute_visibility=yes
 else
-  libupc_cv_have_attribute_visibility=no
+  libgupc_cv_have_attribute_visibility=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$save_CFLAGS"
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libupc_cv_have_attribute_visibility" >&5
-$as_echo "$libupc_cv_have_attribute_visibility" >&6; }
-  if test $libupc_cv_have_attribute_visibility = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgupc_cv_have_attribute_visibility" >&5
+$as_echo "$libgupc_cv_have_attribute_visibility" >&6; }
+  if test $libgupc_cv_have_attribute_visibility = yes; then
 
 $as_echo "#define HAVE_ATTRIBUTE_VISIBILITY 1" >>confdefs.h
 
@@ -13976,7 +13976,7 @@ $as_echo "#define HAVE_ATTRIBUTE_VISIBILITY 1" >>confdefs.h
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports dllexport" >&5
 $as_echo_n "checking whether the target supports dllexport... " >&6; }
-if test "${libupc_cv_have_attribute_dllexport+set}" = set; then :
+if test "${libgupc_cv_have_attribute_dllexport+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -13994,16 +13994,16 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  libupc_cv_have_attribute_dllexport=yes
+  libgupc_cv_have_attribute_dllexport=yes
 else
-  libupc_cv_have_attribute_dllexport=no
+  libgupc_cv_have_attribute_dllexport=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$save_CFLAGS"
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libupc_cv_have_attribute_dllexport" >&5
-$as_echo "$libupc_cv_have_attribute_dllexport" >&6; }
-  if test $libupc_cv_have_attribute_dllexport = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgupc_cv_have_attribute_dllexport" >&5
+$as_echo "$libgupc_cv_have_attribute_dllexport" >&6; }
+  if test $libgupc_cv_have_attribute_dllexport = yes; then
 
 $as_echo "#define HAVE_ATTRIBUTE_DLLEXPORT 1" >>confdefs.h
 
@@ -14011,7 +14011,7 @@ $as_echo "#define HAVE_ATTRIBUTE_DLLEXPORT 1" >>confdefs.h
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports symbol aliases" >&5
 $as_echo_n "checking whether the target supports symbol aliases... " >&6; }
-if test "${libupc_cv_have_attribute_alias+set}" = set; then :
+if test "${libgupc_cv_have_attribute_alias+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -14029,16 +14029,16 @@ bar();
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  libupc_cv_have_attribute_alias=yes
+  libgupc_cv_have_attribute_alias=yes
 else
-  libupc_cv_have_attribute_alias=no
+  libgupc_cv_have_attribute_alias=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libupc_cv_have_attribute_alias" >&5
-$as_echo "$libupc_cv_have_attribute_alias" >&6; }
-  if test $libupc_cv_have_attribute_alias = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgupc_cv_have_attribute_alias" >&5
+$as_echo "$libgupc_cv_have_attribute_alias" >&6; }
+  if test $libgupc_cv_have_attribute_alias = yes; then
 
 $as_echo "#define HAVE_ATTRIBUTE_ALIAS 1" >>confdefs.h
 
@@ -14179,15 +14179,15 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  libupc_ld_is_gold=no
+  libgupc_ld_is_gold=no
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
-    libupc_ld_is_gold=yes
+    libgupc_ld_is_gold=yes
   fi
 
   ldver=`$LD --version 2>/dev/null |
          sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
-  libupc_gnu_ld_version=`echo $ldver | \
+  libgupc_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
@@ -14269,13 +14269,13 @@ fi
 
 
 
-# If we never went through the LIBUPC_CHECK_LINKER_FEATURES macro, then we
+# If we never went through the LIBGUPC_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
 
 # FIXME  The following test is too strict, in theory.
 if test $enable_shared = no ||
         test "x$LD" = x ||
-        test x$libupc_gnu_ld_version = x; then
+        test x$libgupc_gnu_ld_version = x; then
   enable_symvers=no
 fi
 
@@ -14297,24 +14297,24 @@ return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  libupc_shared_libgcc=yes
+  libgupc_shared_libgcc=yes
 else
-  libupc_shared_libgcc=no
+  libgupc_shared_libgcc=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
   CFLAGS="$ac_save_CFLAGS"
-  if test $libupc_shared_libgcc = no; then
+  if test $libgupc_shared_libgcc = no; then
     cat > conftest.c <<EOF
 int main (void) { return 0; }
 EOF
-    libupc_libgcc_s_suffix=`${CC-cc} $CFLAGS $CPPFLAGS $LDFLAGS \
+    libgupc_libgcc_s_suffix=`${CC-cc} $CFLAGS $CPPFLAGS $LDFLAGS \
 			     -shared -shared-libgcc -o conftest.so \
 			     conftest.c -v 2>&1 >/dev/null \
 			     | sed -n 's/^.* -lgcc_s\([^ ]*\) .*$/\1/p'`
     rm -f conftest.c conftest.so
-    if test x${libupc_libgcc_s_suffix+set} = xset; then
-      CFLAGS=" -lgcc_s$libupc_libgcc_s_suffix"
+    if test x${libgupc_libgcc_s_suffix+set} = xset; then
+      CFLAGS=" -lgcc_s$libgupc_libgcc_s_suffix"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -14327,43 +14327,43 @@ return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  libupc_shared_libgcc=yes
+  libgupc_shared_libgcc=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
       CFLAGS="$ac_save_CFLAGS"
     fi
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libupc_shared_libgcc" >&5
-$as_echo "$libupc_shared_libgcc" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgupc_shared_libgcc" >&5
+$as_echo "$libgupc_shared_libgcc" >&6; }
 fi
 
 # For GNU ld, we need at least this version.  The format is described in
-# LIBUPC_CHECK_LINKER_FEATURES above.
-libupc_min_gnu_ld_version=21400
-# XXXXXXXXXXX libupc_gnu_ld_version=21390
+# LIBGUPC_CHECK_LINKER_FEATURES above.
+libgupc_min_gnu_ld_version=21400
+# XXXXXXXXXXX libgupc_gnu_ld_version=21390
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
 if test $enable_symvers = yes; then
   if test $with_gnu_ld = yes &&
-     test $libupc_shared_libgcc = yes;
+     test $libgupc_shared_libgcc = yes;
   then
-    if test $libupc_gnu_ld_version -ge $libupc_min_gnu_ld_version ; then
+    if test $libgupc_gnu_ld_version -ge $libgupc_min_gnu_ld_version ; then
       enable_symvers=gnu
-    elif test $libupc_ld_is_gold = yes ; then
+    elif test $libgupc_ld_is_gold = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Linker version $libupc_gnu_ld_version is too old for" >&5
-$as_echo "$as_me: WARNING: === Linker version $libupc_gnu_ld_version is too old for" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Linker version $libgupc_gnu_ld_version is too old for" >&5
+$as_echo "$as_me: WARNING: === Linker version $libgupc_gnu_ld_version is too old for" >&2;}
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === full symbol versioning support in this release of GCC." >&5
 $as_echo "$as_me: WARNING: === full symbol versioning support in this release of GCC." >&2;}
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You would need to upgrade your binutils to version" >&5
 $as_echo "$as_me: WARNING: === You would need to upgrade your binutils to version" >&2;}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === $libupc_min_gnu_ld_version or later and rebuild GCC." >&5
-$as_echo "$as_me: WARNING: === $libupc_min_gnu_ld_version or later and rebuild GCC." >&2;}
-      if test $libupc_gnu_ld_version -ge 21200 ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === $libgupc_min_gnu_ld_version or later and rebuild GCC." >&5
+$as_echo "$as_me: WARNING: === $libgupc_min_gnu_ld_version or later and rebuild GCC." >&2;}
+      if test $libgupc_gnu_ld_version -ge 21200 ; then
         # Globbing fix is present, proper block support is not.
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
 $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
@@ -14391,7 +14391,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports .symver directive" >&5
 $as_echo_n "checking whether the target supports .symver directive... " >&6; }
-if test "${libupc_cv_have_as_symver_directive+set}" = set; then :
+if test "${libgupc_cv_have_as_symver_directive+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -14407,26 +14407,26 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  libupc_cv_have_as_symver_directive=yes
+  libgupc_cv_have_as_symver_directive=yes
 else
-  libupc_cv_have_as_symver_directive=no
+  libgupc_cv_have_as_symver_directive=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libupc_cv_have_as_symver_directive" >&5
-$as_echo "$libupc_cv_have_as_symver_directive" >&6; }
-if test $libupc_cv_have_as_symver_directive = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgupc_cv_have_as_symver_directive" >&5
+$as_echo "$libgupc_cv_have_as_symver_directive" >&6; }
+if test $libgupc_cv_have_as_symver_directive = yes; then
 
 $as_echo "#define HAVE_AS_SYMVER_DIRECTIVE 1" >>confdefs.h
 
 fi
 
  if test $enable_symvers != no; then
-  LIBUPC_BUILD_VERSIONED_SHLIB_TRUE=
-  LIBUPC_BUILD_VERSIONED_SHLIB_FALSE='#'
+  LIBGUPC_BUILD_VERSIONED_SHLIB_TRUE=
+  LIBGUPC_BUILD_VERSIONED_SHLIB_FALSE='#'
 else
-  LIBUPC_BUILD_VERSIONED_SHLIB_TRUE='#'
-  LIBUPC_BUILD_VERSIONED_SHLIB_FALSE=
+  LIBGUPC_BUILD_VERSIONED_SHLIB_TRUE='#'
+  LIBGUPC_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: versioning on shared library symbols is $enable_symvers" >&5
@@ -14435,7 +14435,7 @@ $as_echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
 
 if test $enable_symvers = gnu; then
 
-$as_echo "#define LIBUPC_GNU_SYMBOL_VERSIONING 1" >>confdefs.h
+$as_echo "#define LIBGUPC_GNU_SYMBOL_VERSIONING 1" >>confdefs.h
 
 fi
 
@@ -14446,7 +14446,7 @@ CFLAGS="$save_CFLAGS $XCFLAGS"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports __sync_*_compare_and_swap" >&5
 $as_echo_n "checking whether the target supports __sync_*_compare_and_swap... " >&6; }
-if test "${libupc_cv_have_sync_builtins+set}" = set; then :
+if test "${libgupc_cv_have_sync_builtins+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -14462,16 +14462,16 @@ int foo, bar; bar = __sync_val_compare_and_swap(&foo, 0, 1);
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  libupc_cv_have_sync_builtins=yes
+  libgupc_cv_have_sync_builtins=yes
 else
-  libupc_cv_have_sync_builtins=no
+  libgupc_cv_have_sync_builtins=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libupc_cv_have_sync_builtins" >&5
-$as_echo "$libupc_cv_have_sync_builtins" >&6; }
-  if test $libupc_cv_have_sync_builtins = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgupc_cv_have_sync_builtins" >&5
+$as_echo "$libgupc_cv_have_sync_builtins" >&6; }
+  if test $libgupc_cv_have_sync_builtins = yes; then
 
 $as_echo "#define HAVE_SYNC_BUILTINS 1" >>confdefs.h
 
@@ -14729,9 +14729,9 @@ fi
 
 if test "$enable_upc_link_script" = yes; then
   if test "$with_gnu_ld" = yes; then
-    gen_ld_script=${srcdir}/${targ_runtime}/gen-gccupc-ld-script.pl
+    gen_ld_script=${srcdir}/${targ_runtime}/gen-upc-ld-script.pl
     if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
-      # if gen-gccupc-ld-script did not accept the output of the linker
+      # if gen-upc-ld-script did not accept the output of the linker
       # then disable UPC link script support.
       as_fn_error "Selected linker does not support linker scripts." "$LINENO" 5
     fi
@@ -14962,69 +14962,69 @@ fi #### End: SMP runtime configuration
 
 
  if test "$upc_runtime_model" = "smp"; then
-  LIBUPC_SMP_RUNTIME_TRUE=
-  LIBUPC_SMP_RUNTIME_FALSE='#'
+  LIBGUPC_SMP_RUNTIME_TRUE=
+  LIBGUPC_SMP_RUNTIME_FALSE='#'
 else
-  LIBUPC_SMP_RUNTIME_TRUE='#'
-  LIBUPC_SMP_RUNTIME_FALSE=
+  LIBGUPC_SMP_RUNTIME_TRUE='#'
+  LIBGUPC_SMP_RUNTIME_FALSE=
 fi
 
 
  if test "$upc_crtstuff" = "yes"; then
-  LIBUPC_CRTSTUFF_TRUE=
-  LIBUPC_CRTSTUFF_FALSE='#'
+  LIBGUPC_CRTSTUFF_TRUE=
+  LIBGUPC_CRTSTUFF_FALSE='#'
 else
-  LIBUPC_CRTSTUFF_TRUE='#'
-  LIBUPC_CRTSTUFF_FALSE=
+  LIBGUPC_CRTSTUFF_TRUE='#'
+  LIBGUPC_CRTSTUFF_FALSE=
 fi
 
  if test "$enable_upc_link_script" = "yes"; then
-  LIBUPC_LINK_SCRIPT_TRUE=
-  LIBUPC_LINK_SCRIPT_FALSE='#'
+  LIBGUPC_LINK_SCRIPT_TRUE=
+  LIBGUPC_LINK_SCRIPT_FALSE='#'
 else
-  LIBUPC_LINK_SCRIPT_TRUE='#'
-  LIBUPC_LINK_SCRIPT_FALSE=
+  LIBGUPC_LINK_SCRIPT_TRUE='#'
+  LIBGUPC_LINK_SCRIPT_FALSE=
 fi
 
  if test "$use_generic_collectives" = "yes"; then
-  LIBUPC_GENERIC_COLLECTIVES_TRUE=
-  LIBUPC_GENERIC_COLLECTIVES_FALSE='#'
+  LIBGUPC_GENERIC_COLLECTIVES_TRUE=
+  LIBGUPC_GENERIC_COLLECTIVES_FALSE='#'
 else
-  LIBUPC_GENERIC_COLLECTIVES_TRUE='#'
-  LIBUPC_GENERIC_COLLECTIVES_FALSE=
+  LIBGUPC_GENERIC_COLLECTIVES_TRUE='#'
+  LIBGUPC_GENERIC_COLLECTIVES_FALSE=
 fi
 
 
  if test "$targ_runtime_pthreads" = "yes"; then
-  LIBUPC_PTHREADS_TRUE=
-  LIBUPC_PTHREADS_FALSE='#'
+  LIBGUPC_PTHREADS_TRUE=
+  LIBGUPC_PTHREADS_FALSE='#'
 else
-  LIBUPC_PTHREADS_TRUE='#'
-  LIBUPC_PTHREADS_FALSE=
+  LIBGUPC_PTHREADS_TRUE='#'
+  LIBGUPC_PTHREADS_FALSE=
 fi
 
  if test "$upc_affinity" = "yes"; then
-  LIBUPC_AFFINITY_TRUE=
-  LIBUPC_AFFINITY_FALSE='#'
+  LIBGUPC_AFFINITY_TRUE=
+  LIBGUPC_AFFINITY_FALSE='#'
 else
-  LIBUPC_AFFINITY_TRUE='#'
-  LIBUPC_AFFINITY_FALSE=
+  LIBGUPC_AFFINITY_TRUE='#'
+  LIBGUPC_AFFINITY_FALSE=
 fi
 
  if test "$upc_numa" = "yes"; then
-  LIBUPC_NUMA_TRUE=
-  LIBUPC_NUMA_FALSE='#'
+  LIBGUPC_NUMA_TRUE=
+  LIBGUPC_NUMA_FALSE='#'
 else
-  LIBUPC_NUMA_TRUE='#'
-  LIBUPC_NUMA_FALSE=
+  LIBGUPC_NUMA_TRUE='#'
+  LIBGUPC_NUMA_FALSE=
 fi
 
  if test "$upc_gum_debug" = "yes"; then
-  LIBUPC_GUM_TRUE=
-  LIBUPC_GUM_FALSE='#'
+  LIBGUPC_GUM_TRUE=
+  LIBGUPC_GUM_FALSE='#'
 else
-  LIBUPC_GUM_TRUE='#'
-  LIBUPC_GUM_FALSE=
+  LIBGUPC_GUM_TRUE='#'
+  LIBGUPC_GUM_FALSE=
 fi
 
 
@@ -15035,7 +15035,7 @@ fi
 
 ac_config_files="$ac_config_files Makefile testsuite/Makefile"
 
-ac_config_files="$ac_config_files upc-crtbegin.spec libupc.spec upc-crtend.spec"
+ac_config_files="$ac_config_files upc-crtbegin.spec libgupc.spec upc-crtend.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -15166,40 +15166,40 @@ if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error "conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBUPC_BUILD_VERSIONED_SHLIB_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_BUILD_VERSIONED_SHLIB\" was never defined.
+if test -z "${LIBGUPC_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBGUPC_BUILD_VERSIONED_SHLIB_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_BUILD_VERSIONED_SHLIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_SMP_RUNTIME_TRUE}" && test -z "${LIBUPC_SMP_RUNTIME_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_SMP_RUNTIME\" was never defined.
+if test -z "${LIBGUPC_SMP_RUNTIME_TRUE}" && test -z "${LIBGUPC_SMP_RUNTIME_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_SMP_RUNTIME\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_CRTSTUFF_TRUE}" && test -z "${LIBUPC_CRTSTUFF_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_CRTSTUFF\" was never defined.
+if test -z "${LIBGUPC_CRTSTUFF_TRUE}" && test -z "${LIBGUPC_CRTSTUFF_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_CRTSTUFF\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_LINK_SCRIPT_TRUE}" && test -z "${LIBUPC_LINK_SCRIPT_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_LINK_SCRIPT\" was never defined.
+if test -z "${LIBGUPC_LINK_SCRIPT_TRUE}" && test -z "${LIBGUPC_LINK_SCRIPT_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_LINK_SCRIPT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_GENERIC_COLLECTIVES_TRUE}" && test -z "${LIBUPC_GENERIC_COLLECTIVES_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_GENERIC_COLLECTIVES\" was never defined.
+if test -z "${LIBGUPC_GENERIC_COLLECTIVES_TRUE}" && test -z "${LIBGUPC_GENERIC_COLLECTIVES_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_GENERIC_COLLECTIVES\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_PTHREADS_TRUE}" && test -z "${LIBUPC_PTHREADS_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_PTHREADS\" was never defined.
+if test -z "${LIBGUPC_PTHREADS_TRUE}" && test -z "${LIBGUPC_PTHREADS_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_PTHREADS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_AFFINITY_TRUE}" && test -z "${LIBUPC_AFFINITY_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_AFFINITY\" was never defined.
+if test -z "${LIBGUPC_AFFINITY_TRUE}" && test -z "${LIBGUPC_AFFINITY_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_AFFINITY\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_NUMA_TRUE}" && test -z "${LIBUPC_NUMA_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_NUMA\" was never defined.
+if test -z "${LIBGUPC_NUMA_TRUE}" && test -z "${LIBGUPC_NUMA_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_NUMA\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBUPC_GUM_TRUE}" && test -z "${LIBUPC_GUM_FALSE}"; then
-  as_fn_error "conditional \"LIBUPC_GUM\" was never defined.
+if test -z "${LIBGUPC_GUM_TRUE}" && test -z "${LIBGUPC_GUM_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_GUM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -15670,7 +15670,7 @@ Configuration commands:
 $config_commands
 
 Report bugs to the package provider.
-GNU UPC Runtime Library home page: <http://www.gnu.org/software/libupc/>.
+GNU UPC Runtime Library home page: <http://www.gnu.org/software/libgupc/>.
 General help using GNU software: <http://www.gnu.org/gethelp/>."
 
 _ACEOF
@@ -16097,7 +16097,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
     "upc-crtbegin.spec") CONFIG_FILES="$CONFIG_FILES upc-crtbegin.spec" ;;
-    "libupc.spec") CONFIG_FILES="$CONFIG_FILES libupc.spec" ;;
+    "libgupc.spec") CONFIG_FILES="$CONFIG_FILES libgupc.spec" ;;
     "upc-crtend.spec") CONFIG_FILES="$CONFIG_FILES upc-crtend.spec" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;

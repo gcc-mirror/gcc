@@ -1,3 +1,28 @@
+2011-10-26  Gary Funck  <gary@intrepid.com>
+
+	Rename "GCC/UPC" to "GNU UPC", "UPC" to "GUPC", and
+	"libupc" to "libgupc".
+	* top-level/configure.ac: Implement support for cross-builds, and
+	  adjust for rename of libupc to libgupc.
+	* top-level/Makefile.tpl: Ditto.
+        * top-level/Makefile.def: Ditto.
+	* top-level/configure: Re-generate.
+	* top-level/Makefile.in: Re-generate.
+	* top-level/contrib/gcc_update: Adjust for rename of libupc to libgupc.
+	* doc/tm.texi.in: Adjust for rename of libupc to libgupc.
+	* doc/tm.texi: Re-generate.
+	* tree-pretty-print.c (dump_block_node): Delete unused variable.
+	* gcc.c: Adjust for rename of libupc to libgupc.
+	* testsuite/lib/upc.exp: Adjust for rename of libupc to libgupc.
+	Change "GCC_UNDER_TEST" to "GUPC_UNDER_TEST". 
+	Change "xupc" to "xgupc".
+	* configure.ac: Change "GCC UPC" to "GNU UPC".
+	* Makefile.in (CRTSTUFF_CFLAGS): Adjust $(INCLUDES_FOR_TARGET)
+	so that they are absolute paths.  This his needed because
+	the upc-crtstuff builds are in the libgupc library build
+	directories which are not at the same level as libgcc.
+	* config/darwin.h: Adjust for rename of libupc to libgupc.
+
 2011-10-20  Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 180276 into gupc branch.

@@ -123,7 +123,7 @@ target_modules = { module= libgcc; bootstrap=true; no_check=true; };
 target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
-target_modules = { module= libupc; };
+target_modules = { module= libgupc; };
 target_modules = { module= libgo; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
@@ -501,7 +501,7 @@ dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgo
 dependencies = { module=all-target-libstdc++-v3; on=configure-target-libgomp; };
 // Installing UPC headers must follow gcc install because
 // gcc removes and then recreates the include directory.
-dependencies = { module=install-target-libupc; on=install-gcc; };
+dependencies = { module=install-target-libgupc; on=install-gcc; };
 
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=libtermcap; };
@@ -528,7 +528,7 @@ languages = { language=ada;	gcc-check-target=check-ada;
 languages = { language=objc;	gcc-check-target=check-objc;
 				lib-check-target=check-target-libobjc; };
 languages = { language=upc;	gcc-check-target=check-upc;
-				lib-check-target=check-target-libupc; };
+				lib-check-target=check-target-libgupc; };
 languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-target-libgo; };

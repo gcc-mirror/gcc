@@ -1,7 +1,7 @@
 # Process this file with automake to produce Makefile.in
 
  WARN_CFLAGS =
-if LIBUPC_SMP_RUNTIME
+if LIBGUPC_SMP_RUNTIME
   targ_runtime_dir = smp
   WARN_CFLAGS += -W -Wall -Wwrite-strings -Wstrict-prototypes -Werror
   INC_CFLAGS =
@@ -43,7 +43,7 @@ AM_UPCFLAGS = $(WARN_CFLAGS)
 SUBDIRS = testsuite
 
 
-if LIBUPC_GENERIC_COLLECTIVES
+if LIBGUPC_GENERIC_COLLECTIVES
   collectives_dir = $(addprefix $(top_srcdir)/, collectives)
 else
   collectives_dir =
@@ -64,40 +64,40 @@ AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
 ### Explicit build rules
 
-LIBUPC_SRCDIR = $(top_srcdir)/$(targ_runtime_dir)
+LIBGUPC_SRCDIR = $(top_srcdir)/$(targ_runtime_dir)
 
 EXTRA_DIST =
 MOSTLYCLEANFILES =
 UPC_RUNTIME_SRC =
 
-if LIBUPC_SMP_RUNTIME
+if LIBGUPC_SMP_RUNTIME
 
 EXTRA_DIST += gcc-upc-lib.in \
-              gen-gccupc-inline-lib.pl \
-              gen-gccupc-ld-script.pl
+              gen-inline-libgupc.pl \
+              gen-upc-ld-script.pl
 
-if LIBUPC_PTHREADS
-libupc_pt = libupc_pt.la
+if LIBGUPC_PTHREADS
+libgupc_pt = libgupc_pt.la
 else
-libupc_pt =
+libgupc_pt =
 endif
 
 # Even though we're using vpath, we have to qualify the
-# filenames with "smp/", because the libupc_pt.la rules
+# filenames with "smp/", because the libgupc_pt.la rules
 # won't find the dependents because the name of the target
 # doesn't match (ie, upc_access.c compiles into pt_upc_access_pt.lo)
 
-if LIBUPC_AFFINITY
+if LIBGUPC_AFFINITY
   UPC_AFFINITY_SUP = smp/upc_affinity.c
 else
   UPC_AFFINITY_SUP = smp/upc_affinity_stub.c
 endif
-if LIBUPC_GUM
+if LIBGUPC_GUM
   UPC_GUM_SUP = smp/upc_gum.c
 else
   UPC_GUM_SUP =
 endif
-if LIBUPC_NUMA
+if LIBGUPC_NUMA
   UPC_NUMA_SUP = smp/upc_numa.c
 else
   UPC_NUMA_SUP = smp/upc_numa_stub.c
@@ -118,15 +118,15 @@ UPC_RUNTIME_SRC_INLINE = config.h smp/upc_access.c smp/upc_access.h \
         smp/upc_config.h smp/upc_defs.h smp/upc_mem.h smp/upc_pts.h \
         smp/upc_sup.h smp/upc_sync.h
 
-endif   ### LIBUPC_SMP_RUNTIME ####
+endif   ### LIBGUPC_SMP_RUNTIME ####
 
-if LIBUPC_GENERIC_COLLECTIVES
+if LIBGUPC_GENERIC_COLLECTIVES
 
 # We need full pathnames here, because vpath won't find
 # the files if they don't exist yet.
-LIBUPC_COLL_SRCDIR=$(top_srcdir)/collectives
-UPC_COLL_PREFIX_REDUCE_UPC = $(LIBUPC_COLL_SRCDIR)/upc_coll_prefix_reduce.upc
-UPC_COLL_REDUCE_UPC = $(LIBUPC_COLL_SRCDIR)/upc_coll_reduce.upc
+LIBGUPC_COLL_SRCDIR=$(top_srcdir)/collectives
+UPC_COLL_PREFIX_REDUCE_UPC = $(LIBGUPC_COLL_SRCDIR)/upc_coll_prefix_reduce.upc
+UPC_COLL_REDUCE_UPC = $(LIBGUPC_COLL_SRCDIR)/upc_coll_reduce.upc
 
 if MAINTAINER_MODE
 $(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl \
@@ -153,10 +153,10 @@ EXTRA_DIST += gen-upc-coll-reduce.pl \
 
 endif
 
-toolexeclib_LTLIBRARIES = libupc.la $(libupc_pt)
-nodist_toolexeclib_HEADERS = upc-crtbegin.spec libupc.spec upc-crtend.spec
+toolexeclib_LTLIBRARIES = libgupc.la $(libgupc_pt)
+nodist_toolexeclib_HEADERS = upc-crtbegin.spec libgupc.spec upc-crtend.spec
 
-gcc-upc-lib.h: gen-gccupc-inline-lib.pl gcc-upc-lib.in \
+gcc-upc-lib.h: gen-inline-libgupc.pl gcc-upc-lib.in \
                $(UPC_RUNTIME_SRC_INLINE)
 	$(PERL) $+ > $@
 
@@ -164,9 +164,9 @@ libsubinclude_HEADERS += gcc-upc-lib.h
 
 BUILT_SOURCES = gcc-upc-lib.h
 
-if LIBUPC_LINK_SCRIPT
-UPC_LINK_SCRIPT = gccupc.ld
-$(UPC_LINK_SCRIPT): gen-gccupc-ld-script.pl
+if LIBGUPC_LINK_SCRIPT
+UPC_LINK_SCRIPT = gupc.ld
+$(UPC_LINK_SCRIPT): gen-upc-ld-script.pl
 	-$(CC) $(LDFLAGS) -Xlinker --verbose -x none /dev/null 2>&1 | \
 	 $(PERL) $+ > $@
 BUILT_SOURCES += $(UPC_LINK_SCRIPT)
@@ -176,23 +176,23 @@ endif
 toolexeclib_SCRIPTS = $(UPC_LINK_SCRIPT)
 
 
-libupc_la_SOURCES = $(UPC_RUNTIME_SRC)
-libupc_version_info = -version-info $(libtool_VERSION)
-libupc_la_LDFLAGS = $(libupc_version_info)
-libupc_la_LINK = $(LINK) $(libupc_la_LDFLAGS)
-libupc_la_LIBADD =
-libupc_la_DEPENDENCIES = $(libupc_la_LIBADD)
+libgupc_la_SOURCES = $(UPC_RUNTIME_SRC)
+libgupc_version_info = -version-info $(libtool_VERSION)
+libgupc_la_LDFLAGS = $(libgupc_version_info)
+libgupc_la_LINK = $(LINK) $(libgupc_la_LDFLAGS)
+libgupc_la_LIBADD =
+libgupc_la_DEPENDENCIES = $(libgupc_la_LIBADD)
 
-if LIBUPC_PTHREADS
-nodist_libupc_pt_la_SOURCES = $(UPC_RUNTIME_SRC)
-libupc_pt_la_LIBADD =
-libupc_pt_la_DEPENDENCIES = $(libupc_pt_la_LIBADD)
-libupc_pt_la_CPPFLAGS = $(AM_CPPFLAGS) -DGUPCR_USE_PTHREADS=1
-libupc_pt_la_UPCFLAGS = $(AM_UPCFLAGS) -fupc-pthreads-model-tls
-libupc_pt_la_LINK = $(libupc_la_LINK)
+if LIBGUPC_PTHREADS
+nodist_libgupc_pt_la_SOURCES = $(UPC_RUNTIME_SRC)
+libgupc_pt_la_LIBADD =
+libgupc_pt_la_DEPENDENCIES = $(libgupc_pt_la_LIBADD)
+libgupc_pt_la_CPPFLAGS = $(AM_CPPFLAGS) -DGUPCR_USE_PTHREADS=1
+libgupc_pt_la_UPCFLAGS = $(AM_UPCFLAGS) -fupc-pthreads-model-tls
+libgupc_pt_la_LINK = $(libgupc_la_LINK)
 endif
 
-if LIBUPC_CRTSTUFF
+if LIBGUPC_CRTSTUFF
 
 toolexeclib_DATA = @upc_crtstuff_objs@
 
@@ -210,7 +210,7 @@ TEXINFO_TEX   = ../../gcc/doc/include/texinfo.tex
 
 # Defines info, dvi, pdf and html targets
 MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
-info_TEXINFOS = libupc.texi
+info_TEXINFOS = libgupc.texi
 
 # AM_CONDITIONAL on configure option --generated-files-in-srcdir
 if GENINSRC
@@ -228,15 +228,15 @@ endif
 
 all-local: $(STAMP_GENINSRC)
 
-stamp-geninsrc: libupc.info
-	cp -p $(top_builddir)/libupc.info $(srcdir)/libupc.info
+stamp-geninsrc: libgupc.info
+	cp -p $(top_builddir)/libgupc.info $(srcdir)/libgupc.info
 	@touch $@
 
-libupc.info: $(STAMP_BUILD_INFO)
+libgupc.info: $(STAMP_BUILD_INFO)
 
-stamp-build-info: libupc.texi
-	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libupc.info $(srcdir)/libupc.texi
+stamp-build-info: libgupc.texi
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libgupc.info $(srcdir)/libgupc.texi
 	@touch $@
 
-CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libupc.info
-MAINTAINERCLEANFILES = $(srcdir)/libupc.info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libgupc.info
+MAINTAINERCLEANFILES = $(srcdir)/libgupc.info

@@ -1,8 +1,8 @@
 \input texinfo @c -*-texinfo-*-
 
 @c %**start of header
-@setfilename libupc.info
-@settitle GNU libupc
+@setfilename libgupc.info
+@settitle GNU libgupc
 @c %**end of header
 
 
@@ -32,7 +32,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @ifinfo
 @dircategory GNU Libraries
 @direntry
-* libupc: (libupc).                    GNU UPC runtime library
+* libgupc: (libgupc).                    GNU UPC runtime library
 @end direntry
 
 This manual documents the GNU implementation of the UPC runtime.
@@ -70,7 +70,7 @@ Boston, MA 02110-1301, USA@*
 @top Introduction
 @cindex Introduction
 
-This manual documents the usage of libupc, the GNU implementation of the 
+This manual documents the usage of libgupc, the GNU implementation of the 
 @uref{http://www.openmp.org, UPC} Application Programming Interface (API)
 for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 
@@ -87,10 +87,10 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
                                interface.
 * Environment Variables::      Influencing runtime behavior with environment 
                                variables.
-* The libupc ABI::             Notes on the external ABI presented by libupc.
+* The libgupc ABI::             Notes on the external ABI presented by libgupc.
 * Reporting Bugs::             How to report bugs in GNU UPC.
 * Copying::                    GNU general public license says
-                               how you can copy and share libupc.
+                               how you can copy and share libgupc.
 * GNU Free Documentation License::
                                How you can copy and share this manual.
 * Funding::                    How to help assure continued work for free 
@@ -115,11 +115,11 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 @chapter Runtime Library Routines
 
 @c ---------------------------------------------------------------------
-@c The libupc ABI
+@c The libgupc ABI
 @c ---------------------------------------------------------------------
 
-@node The libupc ABI
-@chapter The libupc ABI
+@node The libgupc ABI
+@chapter The libgupc ABI
 
 @c ---------------------------------------------------------------------
 @c Environment Variables

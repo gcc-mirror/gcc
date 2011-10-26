@@ -67,7 +67,7 @@ static void upc_init_ts (void);
    and adds to them.  */
 
 #undef LANG_HOOKS_NAME
-#define LANG_HOOKS_NAME "GCC UPC"
+#define LANG_HOOKS_NAME "GNU UPC"
 #undef LANG_HOOKS_EXPAND_CONSTANT
 #define LANG_HOOKS_EXPAND_CONSTANT upc_pts_build_constant
 #undef LANG_HOOKS_GET_ALIAS_SET

@@ -593,7 +593,6 @@ dump_block_node (pretty_printer *buffer, tree block, int spc, int flags)
 static void
 dump_upc_type_quals (pretty_printer *buffer, tree type, int quals)
 {
-  tree block_factor;
   gcc_assert (type && TYPE_CHECK (type));
   gcc_assert (quals & TYPE_QUAL_SHARED);
   if (quals & TYPE_QUAL_STRICT)

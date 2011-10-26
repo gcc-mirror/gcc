@@ -7,25 +7,25 @@
 #   Contributed by Gary Funck <gary@intrepid.com>
 #   Derived from libgomp/configure.ac
 #
-#This file is part of GCC UPC.
+#This file is part of GNU UPC.
 #
-#GCC UPC is free software; you can redistribute it and/or modify
+#GNU UPC is free software; you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation; either version 2, or (at your option)
 #any later version.
 #
-#GCC UPC is distributed in the hope that it will be useful,
+#GNU UPC is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 #
 #You should have received a copy of the GNU General Public License
-#along with GCC UPC; see the file COPYING.  If not, write to
+#along with GNU UPC; see the file COPYING.  If not, write to
 #the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #02111-1307, USA.
 
 AC_PREREQ(2.64)
-AC_INIT([GNU UPC Runtime Library], 1.0,,[libupc])
+AC_INIT([GNU UPC Runtime Library], 1.0,,[libgupc])
 AC_CONFIG_SRCDIR([include/upc.h])
 AC_CONFIG_HEADERS([config.h])
 
@@ -34,7 +34,7 @@ AC_CONFIG_HEADERS([config.h])
 # -------
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
-LIBUPC_ENABLE(version-specific-runtime-libs, no, ,
+LIBGUPC_ENABLE(version-specific-runtime-libs, no, ,
    [Specify that runtime libraries should be installed in a compiler-specific directory],
    permit yes|no)
 AC_MSG_RESULT($enable_version_specific_runtime_libs)
@@ -45,7 +45,7 @@ AC_MSG_RESULT($enable_version_specific_runtime_libs)
 # sources.  Therefore we have --enable-generated-files-in-srcdir to do 
 # just that.
 AC_MSG_CHECKING([for --enable-generated-files-in-srcdir])
-LIBUPC_ENABLE(generated-files-in-srcdir, no, ,
+LIBGUPC_ENABLE(generated-files-in-srcdir, no, ,
    [put copies of generated files in source dir intended for creating source 
     tarballs for users without texinfo bison or flex.],
    permit yes|no)
@@ -144,14 +144,14 @@ AC_CACHE_VAL(upc_cv_compiler_exists,
   fi
 ])
 AC_MSG_RESULT($upc_cv_compiler_exists)
-AC_MSG_CHECKING([if UPC driver, 'xupc' and 'upc-cmd',  has been built])
+AC_MSG_CHECKING([if UPC driver, 'xgupc' and 'gupc',  has been built])
 AC_CACHE_VAL(upc_cv_driver_exists,
 [ 
   upc_cv_driver_exists=yes
   if test -n "$r"; then
     if test -d "$r"/gcc; then
-      if (test -f "$r"/gcc/xupc && test -f "$r"/gcc/upc-cmd) \
-          || (test -f "$r"/gcc/xupc.exe && "$r"/gcc/upc-cmd.exe); then
+      if (test -f "$r"/gcc/xgupc && test -f "$r"/gcc/gupc) \
+          || (test -f "$r"/gcc/xgupc.exe && "$r"/gcc/gupc.exe); then
 	true
       else
 	upc_cv_driver_exists=no
@@ -204,7 +204,7 @@ dnl The UPC compiler is used to compile some parts of the runtime
 dnl This hack makes sure that we pick up the multiflags that
 dnl may have been tacked onto the $CC command.
 if echo "$CC" | grep '/xgcc ' >/dev/null 2>&1; then
-  UPC=`echo "$CC" | sed -e 's=/xgcc =/xupc ='`
+  UPC=`echo "$CC" | sed -e 's=/xgcc =/xgupc ='`
 else
   AC_MSG_ERROR([Can't create UPC from CC because it doesn't contain the
   string '/xgcc '.  The value of CC is: "$CC"])
@@ -231,7 +231,7 @@ AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
 AC_DISABLE_SHARED
 AM_PROG_LIBTOOL
 if test "$enabled_shared" = "yes"; then
-  AC_MSG_ERROR([libupc shared library support currently unimplemented.])
+  AC_MSG_ERROR([libgupc shared library support currently unimplemented.])
 fi
 
 AM_MAINTAINER_MODE
@@ -279,7 +279,7 @@ AC_LINK_IFELSE(
      void *g(void *d) { return NULL; }],
     [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
    [],
-   [AC_MSG_NOTICE([Pthreads are not supported in this libupc build])])])
+   [AC_MSG_NOTICE([Pthreads are not supported in this libgupc build])])])
 
 # Check for functions needed.
 AC_FUNC_FORK
@@ -335,21 +335,21 @@ fi
 GCC_CHECK_TLS
 
 # See what sort of export controls are availible.
-LIBUPC_CHECK_ATTRIBUTE_VISIBILITY
-LIBUPC_CHECK_ATTRIBUTE_DLLEXPORT
-LIBUPC_CHECK_ATTRIBUTE_ALIAS
-LIBUPC_ENABLE_SYMVERS
+LIBGUPC_CHECK_ATTRIBUTE_VISIBILITY
+LIBGUPC_CHECK_ATTRIBUTE_DLLEXPORT
+LIBGUPC_CHECK_ATTRIBUTE_ALIAS
+LIBGUPC_ENABLE_SYMVERS
 
 if test $enable_symvers = gnu; then
-  AC_DEFINE(LIBUPC_GNU_SYMBOL_VERSIONING, 1,
-	    [Define to 1 if GNU symbol versioning is used for libupc.])
+  AC_DEFINE(LIBGUPC_GNU_SYMBOL_VERSIONING, 1,
+	    [Define to 1 if GNU symbol versioning is used for libgupc.])
 fi
 
 CFLAGS="$save_CFLAGS $XCFLAGS"
 
 # Check for __sync_val_compare_and_swap, but only after the target has
 # had a chance to set XCFLAGS.
-LIBUPC_CHECK_SYNC_BUILTINS
+LIBGUPC_CHECK_SYNC_BUILTINS
 
 XCFLAGS="$XCFLAGS"
 
@@ -500,9 +500,9 @@ AC_ARG_ENABLE(upc-link-script,
 ])
 if test "$enable_upc_link_script" = yes; then
   if test "$with_gnu_ld" = yes; then
-    gen_ld_script=${srcdir}/${targ_runtime}/gen-gccupc-ld-script.pl
+    gen_ld_script=${srcdir}/${targ_runtime}/gen-upc-ld-script.pl
     if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
-      # if gen-gccupc-ld-script did not accept the output of the linker
+      # if gen-upc-ld-script did not accept the output of the linker
       # then disable UPC link script support.
       AC_MSG_ERROR([Selected linker does not support linker scripts.])
     fi
@@ -516,7 +516,7 @@ fi
 
 if test "$upc_runtime_model" = "smp"; then
   targ_runtime_pthreads=
-  LIBUPC_GCC_TLS_SUPPORTED
+  LIBGUPC_GCC_TLS_SUPPORTED
   if test "$upc_cv_gcc_tls_supported"x = "yes"x ; then
     targ_runtime_pthreads=yes
   fi
@@ -627,18 +627,18 @@ AH_BOTTOM([
 ])
 
 dnl Build the runtime, based upon the --with-upc-runtime setting.
-AM_CONDITIONAL(LIBUPC_SMP_RUNTIME, [test "$upc_runtime_model" = "smp"])
+AM_CONDITIONAL(LIBGUPC_SMP_RUNTIME, [test "$upc_runtime_model" = "smp"])
 
-AM_CONDITIONAL(LIBUPC_CRTSTUFF, [test "$upc_crtstuff" = "yes"])
-AM_CONDITIONAL(LIBUPC_LINK_SCRIPT, [test "$enable_upc_link_script" = "yes"])
-AM_CONDITIONAL(LIBUPC_GENERIC_COLLECTIVES,
+AM_CONDITIONAL(LIBGUPC_CRTSTUFF, [test "$upc_crtstuff" = "yes"])
+AM_CONDITIONAL(LIBGUPC_LINK_SCRIPT, [test "$enable_upc_link_script" = "yes"])
+AM_CONDITIONAL(LIBGUPC_GENERIC_COLLECTIVES,
                [test "$use_generic_collectives" = "yes"])
 
 dnl 'smp' runtime specific settings
-AM_CONDITIONAL(LIBUPC_PTHREADS, [test "$targ_runtime_pthreads" = "yes"])
-AM_CONDITIONAL(LIBUPC_AFFINITY, [test "$upc_affinity" = "yes"])
-AM_CONDITIONAL(LIBUPC_NUMA, [test "$upc_numa" = "yes"])
-AM_CONDITIONAL(LIBUPC_GUM, [test "$upc_gum_debug" = "yes"])
+AM_CONDITIONAL(LIBGUPC_PTHREADS, [test "$targ_runtime_pthreads" = "yes"])
+AM_CONDITIONAL(LIBGUPC_AFFINITY, [test "$upc_affinity" = "yes"])
+AM_CONDITIONAL(LIBGUPC_NUMA, [test "$upc_numa" = "yes"])
+AM_CONDITIONAL(LIBGUPC_GUM, [test "$upc_gum_debug" = "yes"])
 
 AH_TOP(
 [/* Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
@@ -678,5 +678,5 @@ AH_BOTTOM(
 ])
 
 AC_CONFIG_FILES([Makefile testsuite/Makefile])
-AC_CONFIG_FILES([upc-crtbegin.spec libupc.spec upc-crtend.spec])
+AC_CONFIG_FILES([upc-crtbegin.spec libgupc.spec upc-crtend.spec])
 AC_OUTPUT

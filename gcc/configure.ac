@@ -794,7 +794,7 @@ fi
 ],
 [
 if test x"$lang_upc_enabled" = x"yes" ; then
-  # GCC UPC packed pointer representation defaults.
+  # GNU UPC packed pointer representation defaults.
   case "$target" in
     i[356]86* )
       UPC_PTS_PHASE_SIZE=20

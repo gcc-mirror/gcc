@@ -1,4 +1,4 @@
-/* GCC UPC Runtime Operating System and Target Platform Dependent Support
+/* GNU UPC Runtime Operating System and Target Platform Dependent Support
    Copyright (C) 2003 Free Software Foundation, Inc.
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime Library.

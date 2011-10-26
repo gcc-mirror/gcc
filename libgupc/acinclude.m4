@@ -11,9 +11,9 @@ dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
 dnl
-dnl LIBUPC_GCC_TLS_SUPPORTED
+dnl LIBGUPC_GCC_TLS_SUPPORTED
 dnl
-AC_DEFUN([LIBUPC_GCC_TLS_SUPPORTED], [
+AC_DEFUN([LIBGUPC_GCC_TLS_SUPPORTED], [
 AC_CACHE_CHECK([whether the GCC __threads extension is supported.],
                upc_cv_gcc_tls_supported,
 [SAVE_LIBS="$LIBS"
@@ -92,55 +92,55 @@ dnl ----------------------------------------------------------------------
 dnl This whole bit snagged from libgfortran.
 
 dnl Check whether the target supports __sync_*_compare_and_swap.
-AC_DEFUN([LIBUPC_CHECK_SYNC_BUILTINS], [
+AC_DEFUN([LIBGUPC_CHECK_SYNC_BUILTINS], [
   AC_CACHE_CHECK([whether the target supports __sync_*_compare_and_swap],
-		 libupc_cv_have_sync_builtins, [
+		 libgupc_cv_have_sync_builtins, [
   AC_TRY_LINK([], [int foo, bar; bar = __sync_val_compare_and_swap(&foo, 0, 1);],
-	      libupc_cv_have_sync_builtins=yes, libupc_cv_have_sync_builtins=no)])
-  if test $libupc_cv_have_sync_builtins = yes; then
+	      libgupc_cv_have_sync_builtins=yes, libgupc_cv_have_sync_builtins=no)])
+  if test $libgupc_cv_have_sync_builtins = yes; then
     AC_DEFINE(HAVE_SYNC_BUILTINS, 1,
 	      [Define to 1 if the target supports __sync_*_compare_and_swap])
   fi])
 
 dnl Check whether the target supports hidden visibility.
-AC_DEFUN([LIBUPC_CHECK_ATTRIBUTE_VISIBILITY], [
+AC_DEFUN([LIBGUPC_CHECK_ATTRIBUTE_VISIBILITY], [
   AC_CACHE_CHECK([whether the target supports hidden visibility],
-		 libupc_cv_have_attribute_visibility, [
+		 libgupc_cv_have_attribute_visibility, [
   save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
   AC_TRY_COMPILE([void __attribute__((visibility("hidden"))) foo(void) { }],
-		 [], libupc_cv_have_attribute_visibility=yes,
-		 libupc_cv_have_attribute_visibility=no)
+		 [], libgupc_cv_have_attribute_visibility=yes,
+		 libgupc_cv_have_attribute_visibility=no)
   CFLAGS="$save_CFLAGS"])
-  if test $libupc_cv_have_attribute_visibility = yes; then
+  if test $libgupc_cv_have_attribute_visibility = yes; then
     AC_DEFINE(HAVE_ATTRIBUTE_VISIBILITY, 1,
       [Define to 1 if the target supports __attribute__((visibility(...))).])
   fi])
 
 dnl Check whether the target supports dllexport
-AC_DEFUN([LIBUPC_CHECK_ATTRIBUTE_DLLEXPORT], [
+AC_DEFUN([LIBGUPC_CHECK_ATTRIBUTE_DLLEXPORT], [
   AC_CACHE_CHECK([whether the target supports dllexport],
-		 libupc_cv_have_attribute_dllexport, [
+		 libgupc_cv_have_attribute_dllexport, [
   save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
   AC_TRY_COMPILE([void __attribute__((dllexport)) foo(void) { }],
-		 [], libupc_cv_have_attribute_dllexport=yes,
-		 libupc_cv_have_attribute_dllexport=no)
+		 [], libgupc_cv_have_attribute_dllexport=yes,
+		 libgupc_cv_have_attribute_dllexport=no)
   CFLAGS="$save_CFLAGS"])
-  if test $libupc_cv_have_attribute_dllexport = yes; then
+  if test $libgupc_cv_have_attribute_dllexport = yes; then
     AC_DEFINE(HAVE_ATTRIBUTE_DLLEXPORT, 1,
       [Define to 1 if the target supports __attribute__((dllexport)).])
   fi])
 
 dnl Check whether the target supports symbol aliases.
-AC_DEFUN([LIBUPC_CHECK_ATTRIBUTE_ALIAS], [
+AC_DEFUN([LIBGUPC_CHECK_ATTRIBUTE_ALIAS], [
   AC_CACHE_CHECK([whether the target supports symbol aliases],
-		 libupc_cv_have_attribute_alias, [
+		 libgupc_cv_have_attribute_alias, [
   AC_TRY_LINK([
 void foo(void) { }
 extern void bar(void) __attribute__((alias("foo")));],
-    [bar();], libupc_cv_have_attribute_alias=yes, libupc_cv_have_attribute_alias=no)])
-  if test $libupc_cv_have_attribute_alias = yes; then
+    [bar();], libgupc_cv_have_attribute_alias=yes, libgupc_cv_have_attribute_alias=no)])
+  if test $libgupc_cv_have_attribute_alias = yes; then
     AC_DEFINE(HAVE_ATTRIBUTE_ALIAS, 1,
       [Define to 1 if the target supports __attribute__((alias(...))).])
   fi])
@@ -159,14 +159,14 @@ dnl ----------------------------------------------------------------------
 dnl This whole bit snagged from libstdc++-v3.
 
 dnl
-dnl LIBUPC_ENABLE
+dnl LIBGUPC_ENABLE
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING)
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, permit a|b|c)
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, SHELL-CODE-HANDLER)
 dnl
 dnl See docs/html/17_intro/configury.html#enable for documentation.
 dnl
-m4_define([LIBUPC_ENABLE],[dnl
+m4_define([LIBGUPC_ENABLE],[dnl
 m4_define([_g_switch],[--enable-$1])dnl
 m4_define([_g_help],[AC_HELP_STRING(_g_switch$3,[$4 @<:@default=$2@:>@])])dnl
  AC_ARG_ENABLE($1,_g_help,
@@ -205,13 +205,13 @@ dnl  OPT_LDFLAGS='-Wl,-O1' if possible
 dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
-dnl  libupc_ld_is_gold (possibly)
-dnl  libupc_gnu_ld_version (possibly)
+dnl  libgupc_ld_is_gold (possibly)
+dnl  libgupc_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
-dnl set libupc_gnu_ld_version to 12345.  Zeros cause problems.
+dnl set libgupc_gnu_ld_version to 12345.  Zeros cause problems.
 dnl
-AC_DEFUN([LIBUPC_CHECK_LINKER_FEATURES], [
+AC_DEFUN([LIBGUPC_CHECK_LINKER_FEATURES], [
   # If we're not using GNU ld, then there's no point in even trying these
   # tests.  Check for that first.  We should have already tested for gld
   # by now (in libtool), but require it now just to be safe...
@@ -237,15 +237,15 @@ AC_DEFUN([LIBUPC_CHECK_LINKER_FEATURES], [
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  libupc_ld_is_gold=no
+  libgupc_ld_is_gold=no
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
-    libupc_ld_is_gold=yes
+    libgupc_ld_is_gold=yes
   fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
          sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
   changequote([,])
-  libupc_gnu_ld_version=`echo $ldver | \
+  libgupc_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
 
   # Set --gc-sections.
@@ -304,24 +304,24 @@ dnl --enable-symvers=style adds a version script to the linker call when
 dnl       creating the shared library.  The choice of version script is
 dnl       controlled by 'style'.
 dnl --disable-symvers does not.
-dnl  +  Usage:  LIBUPC_ENABLE_SYMVERS[(DEFAULT)]
+dnl  +  Usage:  LIBGUPC_ENABLE_SYMVERS[(DEFAULT)]
 dnl       Where DEFAULT is either 'yes' or 'no'.  Passing `yes' tries to
 dnl       choose a default style based on linker characteristics.  Passing
 dnl       'no' disables versioning.
 dnl
-AC_DEFUN([LIBUPC_ENABLE_SYMVERS], [
+AC_DEFUN([LIBGUPC_ENABLE_SYMVERS], [
 
-LIBUPC_ENABLE(symvers,yes,[=STYLE],
+LIBGUPC_ENABLE(symvers,yes,[=STYLE],
   [enables symbol versioning of the shared library],
   [permit yes|no|gnu])
 
-# If we never went through the LIBUPC_CHECK_LINKER_FEATURES macro, then we
+# If we never went through the LIBGUPC_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
-AC_REQUIRE([LIBUPC_CHECK_LINKER_FEATURES])
+AC_REQUIRE([LIBGUPC_CHECK_LINKER_FEATURES])
 # FIXME  The following test is too strict, in theory.
 if test $enable_shared = no ||
         test "x$LD" = x ||
-        test x$libupc_gnu_ld_version = x; then
+        test x$libgupc_gnu_ld_version = x; then
   enable_symvers=no
 fi
 
@@ -330,50 +330,50 @@ if test $enable_symvers != no; then
   AC_MSG_CHECKING([for shared libgcc])
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS=' -lgcc_s'
-  AC_TRY_LINK(, [return 0;], libupc_shared_libgcc=yes, libupc_shared_libgcc=no)
+  AC_TRY_LINK(, [return 0;], libgupc_shared_libgcc=yes, libgupc_shared_libgcc=no)
   CFLAGS="$ac_save_CFLAGS"
-  if test $libupc_shared_libgcc = no; then
+  if test $libgupc_shared_libgcc = no; then
     cat > conftest.c <<EOF
 int main (void) { return 0; }
 EOF
 changequote(,)dnl
-    libupc_libgcc_s_suffix=`${CC-cc} $CFLAGS $CPPFLAGS $LDFLAGS \
+    libgupc_libgcc_s_suffix=`${CC-cc} $CFLAGS $CPPFLAGS $LDFLAGS \
 			     -shared -shared-libgcc -o conftest.so \
 			     conftest.c -v 2>&1 >/dev/null \
 			     | sed -n 's/^.* -lgcc_s\([^ ]*\) .*$/\1/p'`
 changequote([,])dnl
     rm -f conftest.c conftest.so
-    if test x${libupc_libgcc_s_suffix+set} = xset; then
-      CFLAGS=" -lgcc_s$libupc_libgcc_s_suffix"
-      AC_TRY_LINK(, [return 0;], libupc_shared_libgcc=yes)
+    if test x${libgupc_libgcc_s_suffix+set} = xset; then
+      CFLAGS=" -lgcc_s$libgupc_libgcc_s_suffix"
+      AC_TRY_LINK(, [return 0;], libgupc_shared_libgcc=yes)
       CFLAGS="$ac_save_CFLAGS"
     fi
   fi
-  AC_MSG_RESULT($libupc_shared_libgcc)
+  AC_MSG_RESULT($libgupc_shared_libgcc)
 fi
 
 # For GNU ld, we need at least this version.  The format is described in
-# LIBUPC_CHECK_LINKER_FEATURES above.
-libupc_min_gnu_ld_version=21400
-# XXXXXXXXXXX libupc_gnu_ld_version=21390
+# LIBGUPC_CHECK_LINKER_FEATURES above.
+libgupc_min_gnu_ld_version=21400
+# XXXXXXXXXXX libgupc_gnu_ld_version=21390
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
 if test $enable_symvers = yes; then
   if test $with_gnu_ld = yes &&
-     test $libupc_shared_libgcc = yes;
+     test $libgupc_shared_libgcc = yes;
   then
-    if test $libupc_gnu_ld_version -ge $libupc_min_gnu_ld_version ; then
+    if test $libgupc_gnu_ld_version -ge $libgupc_min_gnu_ld_version ; then
       enable_symvers=gnu
-    elif test $libupc_ld_is_gold = yes ; then
+    elif test $libgupc_ld_is_gold = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
-      AC_MSG_WARN(=== Linker version $libupc_gnu_ld_version is too old for)
+      AC_MSG_WARN(=== Linker version $libgupc_gnu_ld_version is too old for)
       AC_MSG_WARN(=== full symbol versioning support in this release of GCC.)
       AC_MSG_WARN(=== You would need to upgrade your binutils to version)
-      AC_MSG_WARN(=== $libupc_min_gnu_ld_version or later and rebuild GCC.)
-      if test $libupc_gnu_ld_version -ge 21200 ; then
+      AC_MSG_WARN(=== $libgupc_min_gnu_ld_version or later and rebuild GCC.)
+      if test $libgupc_gnu_ld_version -ge 21200 ; then
         # Globbing fix is present, proper block support is not.
         dnl AC_MSG_WARN([=== Dude, you are soooo close.  Maybe we can fake it.])
         dnl enable_symvers=???
@@ -396,15 +396,15 @@ if test $enable_symvers = yes; then
 fi
 
 AC_CACHE_CHECK([whether the target supports .symver directive],
-	       libupc_cv_have_as_symver_directive, [
+	       libgupc_cv_have_as_symver_directive, [
   AC_TRY_COMPILE([void foo (void); __asm (".symver foo, bar@SYMVER");],
-		 [], libupc_cv_have_as_symver_directive=yes,
-		 libupc_cv_have_as_symver_directive=no)])
-if test $libupc_cv_have_as_symver_directive = yes; then
+		 [], libgupc_cv_have_as_symver_directive=yes,
+		 libgupc_cv_have_as_symver_directive=no)])
+if test $libgupc_cv_have_as_symver_directive = yes; then
   AC_DEFINE(HAVE_AS_SYMVER_DIRECTIVE, 1,
     [Define to 1 if the target assembler supports .symver directive.])
 fi
 
-AM_CONDITIONAL(LIBUPC_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
+AM_CONDITIONAL(LIBGUPC_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 ])

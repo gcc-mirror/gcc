@@ -136,11 +136,11 @@ libgomp/Makefile.in: libgomp/Makefile.am libgomp/aclocal.m4
 libgomp/testsuite/Makefile.in: libgomp/Makefile.am libgomp/aclocal.m4
 libgomp/configure: libgomp/configure.ac libgomp/aclocal.m4
 libgomp/config.h.in: libgomp/configure.ac libgomp/aclocal.m4
-libupc/aclocal.m4: libupc/configure.ac libupc/acinclude.m4
-libupc/config.h.in: libupc/configure.ac
-libupc/configure: libupc/configure.ac libupc/aclocal.m4 libupc/acinclude.m4
-libupc/Makefile.in: libupc/Makefile.am libupc/aclocal.m4
-libupc/testsuite/Makefile.in: libupc/Makefile.am libupc/aclocal.m4
+libgupc/aclocal.m4: libgupc/configure.ac libgupc/acinclude.m4
+libgupc/config.h.in: libgupc/configure.ac
+libgupc/configure: libgupc/configure.ac libgupc/aclocal.m4 libgupc/acinclude.m4
+libgupc/Makefile.in: libgupc/Makefile.am libgupc/aclocal.m4
+libgupc/testsuite/Makefile.in: libgupc/Makefile.am libgupc/aclocal.m4
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4

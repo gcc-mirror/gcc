@@ -10243,7 +10243,7 @@ as determined by the @code{TARGET_ADDR_SPACE_SUBSET_P} target hook.
 
 @node UPC Language
 @section UPC Language Support
-@cindex UPC, pointer-to-shared, libupc
+@cindex UPC, pointer-to-shared, libgupc
 
 @defmac HAVE_UPC_PTS_VADDR_FIRST
 If non-zero, the @var{vaddr} (virtual address) field of the UPC

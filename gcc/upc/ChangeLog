@@ -1,3 +1,18 @@
+2011-10-26  Gary Funck  <gary@intrepid.com>
+
+	Rename "GCC/UPC" to "GNU UPC", "UPC" to "GUPC", and
+	"libupc" to "libgupc".
+	* gupc.c: Rename from upc-cmd.c and adjust for rename
+	of libupc to libgupc.
+	* upc-lang.c (LANG_HOOKS_NAME): Change "GCC UPC" to "GNU UPC".
+	* config-lang.in: Adjust for rename of libupc to libgupc.
+	* gupc.1: Rename from upc.1.  Change "GCC UPC" references to "GNU UPC".
+	Adjust for rename of libupc to libgupc.  Improve formatting.
+	* gupc-manpage.html: Rename from upc-manpage.html.  Re-generate.
+	* Make-lang.in: Change "upc" to "gupc".  Change "xupc" to "xgupc".
+	Adjust for rename of libupc to libgupc.  Install target symlink from
+	"upc" to "gupc".  Install target/version-specific hard links to "gupc".
+
 2011-10-17  Gary Funck  <gary@intrepid.com>
 
 	Fix a regression caused by the previous commit.

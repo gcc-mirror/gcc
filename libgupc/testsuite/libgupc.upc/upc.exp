@@ -6,7 +6,7 @@ if [info exists lang_test_file] then {
     unset lang_test_file
 }
 
-load_lib libupc-dg.exp
+load_lib libgupc-dg.exp
 
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {

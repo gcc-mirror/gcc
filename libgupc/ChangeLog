@@ -1,3 +1,33 @@
+2011-10-26  Gary Funck  <gary@intrepid.com>
+
+	Rename "GCC/UPC" to "GNU UPC", "UPC" to "GUPC", and
+	"libupc" to "libgupc".
+	* top-level/libgupc: rename from libupc.
+	* configure.ac: Change "GCC UPC" references to "GNU UPC".
+	Change "libupc" references to "libgupc".  Change "xupc" references
+	to "xgupc".  Change "upc-cmd" references to "gupc".
+	Change "gen-gccupc-ld-script.pl" references to "gen-upc-ld-script.pl".
+	Change "libupc.spec" references to "libgupc.spec".
+	* configure: Re-generate.
+	* Makefile.am: Change "libupc" references to "libgupc".
+	* Makefile.in: Re-generate.
+	* config.h.in: Adjust for rename of libupc to libgupc.
+	* configure.tgt: Ditto.
+	* acinclude.m4: Ditto.
+	* gen-inline-libgupc.pl: Re-name from gen-gccupc-inline-lib.pl
+	Change "GCC/UPC" to "GUPC".
+	* gen-upc-ld-script.pl: Re-name from gen-gccupc-ld-script.pl.
+	* libgupc.texi: Re-name from libupc.texi.
+	* libgupc.spec.in: Re-name from libupc.spec.in.
+	* smp/upc_pgm_info.c (__upc_validate_pgm_info): Change "GCC/UPC"
+	references to "GUPC".
+	* smp/upc_main.c (__upc_run_threads): Ditto.
+	* smp/upc_gasp.c: Ditto.
+	* smp/upc_sysdep.h: Ditto.
+        * testsuite/lib/libgupc-dg.exp: Re-name form libupc-dg.exp.
+	* testsuite/lib/libgupc.exp: Re-name from libupc.a.
+	* testsuite/libgupc.upc: Re-name from libupc.upc.
+
 2011-10-18  Nenad Vukicevic <nenad@intrepid.com>
 
 	Fix support for large file support on 32-bit machines.

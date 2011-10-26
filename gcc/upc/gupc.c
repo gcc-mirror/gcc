@@ -1,4 +1,4 @@
-/* upc-cmd.c: the UPC compiler driver program
+/* gupc.c: the UPC compiler driver program
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
    2010, 2011
    Free Software Foundation, Inc.
@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #define MULTI_DIR_SWITCH "-print-multi-directory"
-#define FIND_LIBUPC_SWITCH "-print-file-name=libupc.a"
+#define FIND_LIBGUPC_SWITCH "-print-file-name=libgupc.a"
 
 #define GCC_SWITCH_TAKES_ARG(CHAR) \
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
@@ -265,55 +265,55 @@ get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
 }
 
 /* Return the path of the library directory,
-   where libupc can be found.  LIB_PATH will be defined
+   where libgupc can be found.  LIB_PATH will be defined
    when the development version of the 'upc' command is
    being built; use that path, and add the multilib
    suffix if required.  Otherwise, for the installed
-   'upc' command, use -print-file-name to find the "libupc.a"
+   'upc' command, use -print-file-name to find the "libgupc.a"
    library file, and return the containing directory.  */
 
 static const char *
-get_libupc_path (const char *exec_args[], int n_args)
+get_libgupc_path (const char *exec_args[], int n_args)
 {
-  const char *libupc_path = NULL;
+  const char *libgupc_path = NULL;
 #ifdef LIB_PATH
   {
     const char *lib_suffix;
-    libupc_path = LIB_PATH;
+    libgupc_path = LIB_PATH;
     lib_suffix = get_print_cmd (exec_args, n_args, MULTI_DIR_SWITCH);
     if (debug)
       fprintf (stderr, "lib suffix = %s\n",
 	       lib_suffix ? lib_suffix : "<none>");
     if (lib_suffix && *lib_suffix && (strcmp (lib_suffix, ".") != 0))
-      libupc_path = concat (libupc_path, "/", lib_suffix, END_ARGS);
-    libupc_path = concat (libupc_path, "/libupc", END_ARGS);
+      libgupc_path = concat (libgupc_path, "/", lib_suffix, END_ARGS);
+    libgupc_path = concat (libgupc_path, "/libgupc", END_ARGS);
   }
 #else
   {
-    const char *libupc_archive;
-    libupc_archive = get_print_cmd (exec_args, n_args, FIND_LIBUPC_SWITCH);
+    const char *libgupc_archive;
+    libgupc_archive = get_print_cmd (exec_args, n_args, FIND_LIBGUPC_SWITCH);
     if (debug)
-      fprintf (stderr, "libupc.a path = %s\n",
-	       libupc_archive ? libupc_archive : "<none>");
-    if (libupc_archive[0] == '/')
+      fprintf (stderr, "libgupc.a path = %s\n",
+	       libgupc_archive ? libgupc_archive : "<none>");
+    if (libgupc_archive[0] == '/')
       {
 	const char *s, *last_slash;
 	char *path;
 	size_t slen;
-	for (s = libupc_archive; *s; ++s)
+	for (s = libgupc_archive; *s; ++s)
 	  if (*s == '/')
 	    last_slash = s;
-	slen = (last_slash - libupc_archive);
+	slen = (last_slash - libgupc_archive);
 	path = (char *) xmalloc (slen + 1);
-	memcpy (path, libupc_archive, slen);
+	memcpy (path, libgupc_archive, slen);
 	path[slen] = '\0';
-	libupc_path = (const char *) path;
+	libgupc_path = (const char *) path;
       }
   }
 #endif
   if (debug)
-    fprintf (stderr, "lib path = %s\n", libupc_path ? libupc_path : "<none>");
-  return libupc_path;
+    fprintf (stderr, "lib path = %s\n", libgupc_path ? libgupc_path : "<none>");
+  return libgupc_path;
 }
 
 int
@@ -551,7 +551,7 @@ main (int argc, char *argv[])
 
   if (!info_only)
     {
-      lib_dir = get_libupc_path (exec_args, nargs);
+      lib_dir = get_libgupc_path (exec_args, nargs);
       if (!lib_dir)
 	{
 	  fprintf (stderr, "Cannot find UPC library directory.\n");
@@ -563,24 +563,24 @@ main (int argc, char *argv[])
 	  exec_args[nargs++] = xstrdup ("-isystem");
 	  exec_args[nargs++] = lib_dir;
 	}
-      /* add -B <lib_dir>/ so that we can find libupc.spec.  */
+      /* add -B <lib_dir>/ so that we can find libgupc.spec.  */
       exec_args[nargs++] = concat ("-B", lib_dir, "/", END_ARGS);
     }
 
   if (invoke_linker)
     {
-      /* The -fupc-link switch triggers per-target libupc compiler specs
-         via %:include(libupc.spec). */
+      /* The -fupc-link switch triggers per-target libgupc compiler specs
+         via %:include(libgupc.spec). */
       exec_args[nargs++] = "-fupc-link";
       if (!no_default_libs && lib_dir)
 	{
 	  const char *link_lib_dir = lib_dir;
 	  /* If we're building the development version of the UPC
-	     driver ("xupc"), then we need to add the .libs suffix
-	     because that's where libtool hides libupc.a */
+	     driver ("xgupc"), then we need to add the .libs suffix
+	     because that's where libtool hides libgupc.a */
 	  if (is_dev_compiler)
 	    link_lib_dir = concat (link_lib_dir, "/.libs", END_ARGS);
-	  /* Add the link library path where libupc.a is located.  */
+	  /* Add the link library path where libgupc.a is located.  */
 	  exec_args[nargs++] =
 	    concat (xstrdup ("-L"), link_lib_dir, END_ARGS);
 	}

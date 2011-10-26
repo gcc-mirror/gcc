@@ -257,7 +257,7 @@ __upc_validate_pgm_info (char *pgm)
 #ifndef GUPCR_USE_PTHREADS
   if (__upc_compiled_thread_info->threads_model != upc_threads_model_process)
     {
-      fprintf (stderr, "%s: The selected GCC/UPC runtime library"
+      fprintf (stderr, "%s: The selected GUPC runtime library"
                        " supports only the process model."
 		       " Did you link with the correct runtime library?\n",
 		       pgm);
@@ -266,7 +266,7 @@ __upc_validate_pgm_info (char *pgm)
 #else
   if (__upc_compiled_thread_info->threads_model != upc_threads_model_pthreads_tls)
     {
-      fprintf (stderr, "%s: The selected GCC/UPC runtime library"
+      fprintf (stderr, "%s: The selected GUPC runtime library"
                        " supports only the POSIX threads model."
 		       " Did you link with the correct runtime library?\n",
 		       pgm);

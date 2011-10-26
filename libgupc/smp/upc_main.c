@@ -886,7 +886,7 @@ __upc_run_threads (upc_info_p u, int argc, char *argv[])
   if (THREADS != UPC_PTHREADS)
     {
       fprintf (stderr,
-	       "GCC/UPC pthreads implementation requires that PTHREADS be to THREADS.\n");
+	       "GUPC pthreads implementation requires that PTHREADS be to THREADS.\n");
       abort ();
     }
 
@@ -900,7 +900,7 @@ __upc_run_threads (upc_info_p u, int argc, char *argv[])
       perror ("pthread_attr_getstacksize");
       abort ();
     }
-  /* Add the GCC/UPC's default per-thread stack size to the
+  /* Add the GUPC's default per-thread stack size to the
      operating system default.  The OS default will often
      include enough space to account for TLS variables declared
      using the __thread qualifier.  */

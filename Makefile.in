@@ -157,6 +157,8 @@ BUILD_EXPORTS = \
 	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
 	GOC="$(GOC_FOR_BUILD)"; export GOC; \
 	GOCFLAGS="$(GOCFLAGS_FOR_BUILD)"; export GOCFLAGS; \
+	GUPC="$(GUPC_FOR_BUILD)"; export GUPC; \
+	GUPCFLAGS="$(GUPCFLAGS_FOR_BUILD)"; export GUPCFLAGS; \
 	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
 	LD="$(LD_FOR_BUILD)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
@@ -194,6 +196,7 @@ HOST_EXPORTS = \
 	GCJ="$(GCJ)"; export GCJ; \
 	GFORTRAN="$(GFORTRAN)"; export GFORTRAN; \
 	GOC="$(GOC)"; export GOC; \
+	GUPC="$(GUPC)"; export GUPC; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
@@ -278,6 +281,7 @@ BASE_TARGET_EXPORTS = \
 	GCJ="$(GCJ_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GCJ; \
 	GFORTRAN="$(GFORTRAN_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GFORTRAN; \
 	GOC="$(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GOC; \
+	GUPC="$(GUPC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GUPC; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(COMPILER_LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -347,6 +351,7 @@ DLLTOOL_FOR_BUILD = @DLLTOOL_FOR_BUILD@
 GCJ_FOR_BUILD = @GCJ_FOR_BUILD@
 GFORTRAN_FOR_BUILD = @GFORTRAN_FOR_BUILD@
 GOC_FOR_BUILD = @GOC_FOR_BUILD@
+GUPC_FOR_BUILD = @GUPC_FOR_BUILD@
 LDFLAGS_FOR_BUILD = @LDFLAGS_FOR_BUILD@
 LD_FOR_BUILD = @LD_FOR_BUILD@
 NM_FOR_BUILD = @NM_FOR_BUILD@
@@ -410,6 +415,7 @@ LIBCFLAGS = $(CFLAGS)
 CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 GOCFLAGS = $(CFLAGS)
+GUPCFLAGS = $(CFLAGS)
 
 TFLAGS =
 
@@ -548,6 +554,7 @@ RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@
 GCJ_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCJ_FOR_TARGET@
 GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@
 GOC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GOC_FOR_TARGET@
+GUPC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GUPC_FOR_TARGET@
 DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
 LD_FOR_TARGET=@LD_FOR_TARGET@
 
@@ -570,6 +577,7 @@ LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
 LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
 LDFLAGS_FOR_TARGET = @LDFLAGS_FOR_TARGET@
 GOCFLAGS_FOR_TARGET = -O2 -g
+GUPCFLAGS_FOR_TARGET = -O2 -g
 
 FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
@@ -810,6 +818,7 @@ EXTRA_HOST_FLAGS = \
 	'GCJ=$(GCJ)' \
 	'GFORTRAN=$(GFORTRAN)' \
 	'GOC=$(GOC)' \
+	'GUPC=$(GUPC)' \
 	'LD=$(LD)' \
 	'LIPO=$(LIPO)' \
 	'NM=$(NM)' \
@@ -848,6 +857,8 @@ EXTRA_TARGET_FLAGS = \
 	'GFORTRAN=$$(GFORTRAN_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GOC=$$(GOC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GOCFLAGS=$$(GOCFLAGS_FOR_TARGET)' \
+	'GUPC=$$(GUPC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'GUPCFLAGS=$$(GUPCFLAGS_FOR_TARGET)' \
 	'LD=$(COMPILER_LD_FOR_TARGET)' \
 	'LDFLAGS=$$(LDFLAGS_FOR_TARGET)' \
 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
@@ -940,7 +951,7 @@ configure-target:  \
     maybe-configure-target-libquadmath \
     maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
-    maybe-configure-target-libupc \
+    maybe-configure-target-libgupc \
     maybe-configure-target-libgo \
     maybe-configure-target-libtermcap \
     maybe-configure-target-winsup \
@@ -1085,7 +1096,7 @@ all-target: maybe-all-target-libgcc
 all-target: maybe-all-target-libquadmath
 all-target: maybe-all-target-libgfortran
 all-target: maybe-all-target-libobjc
-all-target: maybe-all-target-libupc
+all-target: maybe-all-target-libgupc
 all-target: maybe-all-target-libgo
 all-target: maybe-all-target-libtermcap
 all-target: maybe-all-target-winsup
@@ -1170,7 +1181,7 @@ info-target: maybe-info-target-libgcc
 info-target: maybe-info-target-libquadmath
 info-target: maybe-info-target-libgfortran
 info-target: maybe-info-target-libobjc
-info-target: maybe-info-target-libupc
+info-target: maybe-info-target-libgupc
 info-target: maybe-info-target-libgo
 info-target: maybe-info-target-libtermcap
 info-target: maybe-info-target-winsup
@@ -1248,7 +1259,7 @@ dvi-target: maybe-dvi-target-libgcc
 dvi-target: maybe-dvi-target-libquadmath
 dvi-target: maybe-dvi-target-libgfortran
 dvi-target: maybe-dvi-target-libobjc
-dvi-target: maybe-dvi-target-libupc
+dvi-target: maybe-dvi-target-libgupc
 dvi-target: maybe-dvi-target-libgo
 dvi-target: maybe-dvi-target-libtermcap
 dvi-target: maybe-dvi-target-winsup
@@ -1326,7 +1337,7 @@ pdf-target: maybe-pdf-target-libgcc
 pdf-target: maybe-pdf-target-libquadmath
 pdf-target: maybe-pdf-target-libgfortran
 pdf-target: maybe-pdf-target-libobjc
-pdf-target: maybe-pdf-target-libupc
+pdf-target: maybe-pdf-target-libgupc
 pdf-target: maybe-pdf-target-libgo
 pdf-target: maybe-pdf-target-libtermcap
 pdf-target: maybe-pdf-target-winsup
@@ -1404,7 +1415,7 @@ html-target: maybe-html-target-libgcc
 html-target: maybe-html-target-libquadmath
 html-target: maybe-html-target-libgfortran
 html-target: maybe-html-target-libobjc
-html-target: maybe-html-target-libupc
+html-target: maybe-html-target-libgupc
 html-target: maybe-html-target-libgo
 html-target: maybe-html-target-libtermcap
 html-target: maybe-html-target-winsup
@@ -1482,7 +1493,7 @@ TAGS-target: maybe-TAGS-target-libgcc
 TAGS-target: maybe-TAGS-target-libquadmath
 TAGS-target: maybe-TAGS-target-libgfortran
 TAGS-target: maybe-TAGS-target-libobjc
-TAGS-target: maybe-TAGS-target-libupc
+TAGS-target: maybe-TAGS-target-libgupc
 TAGS-target: maybe-TAGS-target-libgo
 TAGS-target: maybe-TAGS-target-libtermcap
 TAGS-target: maybe-TAGS-target-winsup
@@ -1560,7 +1571,7 @@ install-info-target: maybe-install-info-target-libgcc
 install-info-target: maybe-install-info-target-libquadmath
 install-info-target: maybe-install-info-target-libgfortran
 install-info-target: maybe-install-info-target-libobjc
-install-info-target: maybe-install-info-target-libupc
+install-info-target: maybe-install-info-target-libgupc
 install-info-target: maybe-install-info-target-libgo
 install-info-target: maybe-install-info-target-libtermcap
 install-info-target: maybe-install-info-target-winsup
@@ -1638,7 +1649,7 @@ install-pdf-target: maybe-install-pdf-target-libgcc
 install-pdf-target: maybe-install-pdf-target-libquadmath
 install-pdf-target: maybe-install-pdf-target-libgfortran
 install-pdf-target: maybe-install-pdf-target-libobjc
-install-pdf-target: maybe-install-pdf-target-libupc
+install-pdf-target: maybe-install-pdf-target-libgupc
 install-pdf-target: maybe-install-pdf-target-libgo
 install-pdf-target: maybe-install-pdf-target-libtermcap
 install-pdf-target: maybe-install-pdf-target-winsup
@@ -1716,7 +1727,7 @@ install-html-target: maybe-install-html-target-libgcc
 install-html-target: maybe-install-html-target-libquadmath
 install-html-target: maybe-install-html-target-libgfortran
 install-html-target: maybe-install-html-target-libobjc
-install-html-target: maybe-install-html-target-libupc
+install-html-target: maybe-install-html-target-libgupc
 install-html-target: maybe-install-html-target-libgo
 install-html-target: maybe-install-html-target-libtermcap
 install-html-target: maybe-install-html-target-winsup
@@ -1794,7 +1805,7 @@ installcheck-target: maybe-installcheck-target-libgcc
 installcheck-target: maybe-installcheck-target-libquadmath
 installcheck-target: maybe-installcheck-target-libgfortran
 installcheck-target: maybe-installcheck-target-libobjc
-installcheck-target: maybe-installcheck-target-libupc
+installcheck-target: maybe-installcheck-target-libgupc
 installcheck-target: maybe-installcheck-target-libgo
 installcheck-target: maybe-installcheck-target-libtermcap
 installcheck-target: maybe-installcheck-target-winsup
@@ -1872,7 +1883,7 @@ mostlyclean-target: maybe-mostlyclean-target-libgcc
 mostlyclean-target: maybe-mostlyclean-target-libquadmath
 mostlyclean-target: maybe-mostlyclean-target-libgfortran
 mostlyclean-target: maybe-mostlyclean-target-libobjc
-mostlyclean-target: maybe-mostlyclean-target-libupc
+mostlyclean-target: maybe-mostlyclean-target-libgupc
 mostlyclean-target: maybe-mostlyclean-target-libgo
 mostlyclean-target: maybe-mostlyclean-target-libtermcap
 mostlyclean-target: maybe-mostlyclean-target-winsup
@@ -1950,7 +1961,7 @@ clean-target: maybe-clean-target-libgcc
 clean-target: maybe-clean-target-libquadmath
 clean-target: maybe-clean-target-libgfortran
 clean-target: maybe-clean-target-libobjc
-clean-target: maybe-clean-target-libupc
+clean-target: maybe-clean-target-libgupc
 clean-target: maybe-clean-target-libgo
 clean-target: maybe-clean-target-libtermcap
 clean-target: maybe-clean-target-winsup
@@ -2028,7 +2039,7 @@ distclean-target: maybe-distclean-target-libgcc
 distclean-target: maybe-distclean-target-libquadmath
 distclean-target: maybe-distclean-target-libgfortran
 distclean-target: maybe-distclean-target-libobjc
-distclean-target: maybe-distclean-target-libupc
+distclean-target: maybe-distclean-target-libgupc
 distclean-target: maybe-distclean-target-libgo
 distclean-target: maybe-distclean-target-libtermcap
 distclean-target: maybe-distclean-target-winsup
@@ -2106,7 +2117,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-libgcc
 maintainer-clean-target: maybe-maintainer-clean-target-libquadmath
 maintainer-clean-target: maybe-maintainer-clean-target-libgfortran
 maintainer-clean-target: maybe-maintainer-clean-target-libobjc
-maintainer-clean-target: maybe-maintainer-clean-target-libupc
+maintainer-clean-target: maybe-maintainer-clean-target-libgupc
 maintainer-clean-target: maybe-maintainer-clean-target-libgo
 maintainer-clean-target: maybe-maintainer-clean-target-libtermcap
 maintainer-clean-target: maybe-maintainer-clean-target-winsup
@@ -2239,7 +2250,7 @@ check-target:  \
     maybe-check-target-libquadmath \
     maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
-    maybe-check-target-libupc \
+    maybe-check-target-libgupc \
     maybe-check-target-libgo \
     maybe-check-target-libtermcap \
     maybe-check-target-winsup \
@@ -2389,7 +2400,7 @@ install-target:  \
     maybe-install-target-libquadmath \
     maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
-    maybe-install-target-libupc \
+    maybe-install-target-libgupc \
     maybe-install-target-libgo \
     maybe-install-target-libtermcap \
     maybe-install-target-winsup \
@@ -2486,7 +2497,7 @@ install-strip-target:  \
     maybe-install-strip-target-libquadmath \
     maybe-install-strip-target-libgfortran \
     maybe-install-strip-target-libobjc \
-    maybe-install-strip-target-libupc \
+    maybe-install-strip-target-libgupc \
     maybe-install-strip-target-libgo \
     maybe-install-strip-target-libtermcap \
     maybe-install-strip-target-winsup \
@@ -34682,139 +34693,139 @@ maintainer-clean-target-libobjc:
 
 
 
-.PHONY: configure-target-libupc maybe-configure-target-libupc
-maybe-configure-target-libupc:
+.PHONY: configure-target-libgupc maybe-configure-target-libgupc
+maybe-configure-target-libgupc:
 @if gcc-bootstrap
-configure-target-libupc: stage_current
+configure-target-libgupc: stage_current
 @endif gcc-bootstrap
-@if target-libupc
-maybe-configure-target-libupc: configure-target-libupc
-configure-target-libupc: 
+@if target-libgupc
+maybe-configure-target-libgupc: configure-target-libgupc
+configure-target-libgupc: 
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for libupc..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libupc ; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libupc/multilib.tmp 2> /dev/null ; \
-	if test -r $(TARGET_SUBDIR)/libupc/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libupc/multilib.tmp $(TARGET_SUBDIR)/libupc/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libupc/multilib.tmp; \
+	echo "Checking multilib configuration for libgupc..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgupc ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgupc/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgupc/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgupc/multilib.tmp $(TARGET_SUBDIR)/libgupc/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgupc/multilib.tmp; \
 	  else \
-	    rm -f $(TARGET_SUBDIR)/libupc/Makefile; \
-	    mv $(TARGET_SUBDIR)/libupc/multilib.tmp $(TARGET_SUBDIR)/libupc/multilib.out; \
+	    rm -f $(TARGET_SUBDIR)/libgupc/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgupc/multilib.tmp $(TARGET_SUBDIR)/libgupc/multilib.out; \
 	  fi; \
 	else \
-	  mv $(TARGET_SUBDIR)/libupc/multilib.tmp $(TARGET_SUBDIR)/libupc/multilib.out; \
+	  mv $(TARGET_SUBDIR)/libgupc/multilib.tmp $(TARGET_SUBDIR)/libgupc/multilib.out; \
 	fi; \
-	test ! -f $(TARGET_SUBDIR)/libupc/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libupc ; \
+	test ! -f $(TARGET_SUBDIR)/libgupc/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgupc ; \
 	$(NORMAL_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/libupc; \
-	cd "$(TARGET_SUBDIR)/libupc" || exit 1; \
+	echo Configuring in $(TARGET_SUBDIR)/libgupc; \
+	cd "$(TARGET_SUBDIR)/libgupc" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libupc/ | \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgupc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libupc"; \
-	libsrcdir="$$s/libupc"; \
+	srcdiroption="--srcdir=$${topdir}/libgupc"; \
+	libsrcdir="$$s/libgupc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
-@endif target-libupc
+@endif target-libgupc
 
 
 
 
 
-.PHONY: all-target-libupc maybe-all-target-libupc
-maybe-all-target-libupc:
+.PHONY: all-target-libgupc maybe-all-target-libgupc
+maybe-all-target-libgupc:
 @if gcc-bootstrap
-all-target-libupc: stage_current
+all-target-libgupc: stage_current
 @endif gcc-bootstrap
-@if target-libupc
-TARGET-target-libupc=all
-maybe-all-target-libupc: all-target-libupc
-all-target-libupc: configure-target-libupc
+@if target-libgupc
+TARGET-target-libgupc=all
+maybe-all-target-libgupc: all-target-libgupc
+all-target-libgupc: configure-target-libgupc
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
-		$(TARGET-target-libupc))
-@endif target-libupc
+		$(TARGET-target-libgupc))
+@endif target-libgupc
 
 
 
 
 
-.PHONY: check-target-libupc maybe-check-target-libupc
-maybe-check-target-libupc:
-@if target-libupc
-maybe-check-target-libupc: check-target-libupc
+.PHONY: check-target-libgupc maybe-check-target-libgupc
+maybe-check-target-libgupc:
+@if target-libgupc
+maybe-check-target-libgupc: check-target-libgupc
 
-check-target-libupc:
+check-target-libgupc:
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: install-target-libupc maybe-install-target-libupc
-maybe-install-target-libupc:
-@if target-libupc
-maybe-install-target-libupc: install-target-libupc
+.PHONY: install-target-libgupc maybe-install-target-libgupc
+maybe-install-target-libgupc:
+@if target-libgupc
+maybe-install-target-libgupc: install-target-libgupc
 
-install-target-libupc: installdirs
+install-target-libgupc: installdirs
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: install-strip-target-libupc maybe-install-strip-target-libupc
-maybe-install-strip-target-libupc:
-@if target-libupc
-maybe-install-strip-target-libupc: install-strip-target-libupc
+.PHONY: install-strip-target-libgupc maybe-install-strip-target-libgupc
+maybe-install-strip-target-libgupc:
+@if target-libgupc
+maybe-install-strip-target-libgupc: install-strip-target-libgupc
 
-install-strip-target-libupc: installdirs
+install-strip-target-libgupc: installdirs
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
-@endif target-libupc
+@endif target-libgupc
 
 # Other targets (info, dvi, pdf, etc.)
 
-.PHONY: maybe-info-target-libupc info-target-libupc
-maybe-info-target-libupc:
-@if target-libupc
-maybe-info-target-libupc: info-target-libupc
+.PHONY: maybe-info-target-libgupc info-target-libgupc
+maybe-info-target-libgupc:
+@if target-libgupc
+maybe-info-target-libgupc: info-target-libgupc
 
-info-target-libupc: \
-    configure-target-libupc 
+info-target-libgupc: \
+    configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing info in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -34822,25 +34833,25 @@ info-target-libupc: \
 	           info) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-dvi-target-libupc dvi-target-libupc
-maybe-dvi-target-libupc:
-@if target-libupc
-maybe-dvi-target-libupc: dvi-target-libupc
+.PHONY: maybe-dvi-target-libgupc dvi-target-libgupc
+maybe-dvi-target-libgupc:
+@if target-libgupc
+maybe-dvi-target-libgupc: dvi-target-libgupc
 
-dvi-target-libupc: \
-    configure-target-libupc 
+dvi-target-libgupc: \
+    configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -34848,25 +34859,25 @@ dvi-target-libupc: \
 	           dvi) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-pdf-target-libupc pdf-target-libupc
-maybe-pdf-target-libupc:
-@if target-libupc
-maybe-pdf-target-libupc: pdf-target-libupc
+.PHONY: maybe-pdf-target-libgupc pdf-target-libgupc
+maybe-pdf-target-libgupc:
+@if target-libgupc
+maybe-pdf-target-libgupc: pdf-target-libgupc
 
-pdf-target-libupc: \
-    configure-target-libupc 
+pdf-target-libgupc: \
+    configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -34874,25 +34885,25 @@ pdf-target-libupc: \
 	           pdf) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-html-target-libupc html-target-libupc
-maybe-html-target-libupc:
-@if target-libupc
-maybe-html-target-libupc: html-target-libupc
+.PHONY: maybe-html-target-libgupc html-target-libgupc
+maybe-html-target-libgupc:
+@if target-libgupc
+maybe-html-target-libgupc: html-target-libgupc
 
-html-target-libupc: \
-    configure-target-libupc 
+html-target-libgupc: \
+    configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing html in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -34900,25 +34911,25 @@ html-target-libupc: \
 	           html) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-TAGS-target-libupc TAGS-target-libupc
-maybe-TAGS-target-libupc:
-@if target-libupc
-maybe-TAGS-target-libupc: TAGS-target-libupc
+.PHONY: maybe-TAGS-target-libgupc TAGS-target-libgupc
+maybe-TAGS-target-libgupc:
+@if target-libgupc
+maybe-TAGS-target-libgupc: TAGS-target-libgupc
 
-TAGS-target-libupc: \
-    configure-target-libupc 
+TAGS-target-libgupc: \
+    configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -34926,26 +34937,26 @@ TAGS-target-libupc: \
 	           TAGS) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-install-info-target-libupc install-info-target-libupc
-maybe-install-info-target-libupc:
-@if target-libupc
-maybe-install-info-target-libupc: install-info-target-libupc
+.PHONY: maybe-install-info-target-libgupc install-info-target-libgupc
+maybe-install-info-target-libgupc:
+@if target-libgupc
+maybe-install-info-target-libgupc: install-info-target-libgupc
 
-install-info-target-libupc: \
-    configure-target-libupc \
-    info-target-libupc 
+install-info-target-libgupc: \
+    configure-target-libgupc \
+    info-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -34953,26 +34964,26 @@ install-info-target-libupc: \
 	           install-info) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-install-pdf-target-libupc install-pdf-target-libupc
-maybe-install-pdf-target-libupc:
-@if target-libupc
-maybe-install-pdf-target-libupc: install-pdf-target-libupc
+.PHONY: maybe-install-pdf-target-libgupc install-pdf-target-libgupc
+maybe-install-pdf-target-libgupc:
+@if target-libgupc
+maybe-install-pdf-target-libgupc: install-pdf-target-libgupc
 
-install-pdf-target-libupc: \
-    configure-target-libupc \
-    pdf-target-libupc 
+install-pdf-target-libgupc: \
+    configure-target-libgupc \
+    pdf-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -34980,26 +34991,26 @@ install-pdf-target-libupc: \
 	           install-pdf) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-install-html-target-libupc install-html-target-libupc
-maybe-install-html-target-libupc:
-@if target-libupc
-maybe-install-html-target-libupc: install-html-target-libupc
+.PHONY: maybe-install-html-target-libgupc install-html-target-libgupc
+maybe-install-html-target-libgupc:
+@if target-libgupc
+maybe-install-html-target-libgupc: install-html-target-libgupc
 
-install-html-target-libupc: \
-    configure-target-libupc \
-    html-target-libupc 
+install-html-target-libgupc: \
+    configure-target-libgupc \
+    html-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -35007,25 +35018,25 @@ install-html-target-libupc: \
 	           install-html) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-installcheck-target-libupc installcheck-target-libupc
-maybe-installcheck-target-libupc:
-@if target-libupc
-maybe-installcheck-target-libupc: installcheck-target-libupc
+.PHONY: maybe-installcheck-target-libgupc installcheck-target-libgupc
+maybe-installcheck-target-libgupc:
+@if target-libgupc
+maybe-installcheck-target-libgupc: installcheck-target-libgupc
 
-installcheck-target-libupc: \
-    configure-target-libupc 
+installcheck-target-libgupc: \
+    configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -35033,24 +35044,24 @@ installcheck-target-libupc: \
 	           installcheck) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-mostlyclean-target-libupc mostlyclean-target-libupc
-maybe-mostlyclean-target-libupc:
-@if target-libupc
-maybe-mostlyclean-target-libupc: mostlyclean-target-libupc
+.PHONY: maybe-mostlyclean-target-libgupc mostlyclean-target-libgupc
+maybe-mostlyclean-target-libgupc:
+@if target-libgupc
+maybe-mostlyclean-target-libgupc: mostlyclean-target-libgupc
 
-mostlyclean-target-libupc: 
+mostlyclean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -35058,24 +35069,24 @@ mostlyclean-target-libupc:
 	           mostlyclean) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-clean-target-libupc clean-target-libupc
-maybe-clean-target-libupc:
-@if target-libupc
-maybe-clean-target-libupc: clean-target-libupc
+.PHONY: maybe-clean-target-libgupc clean-target-libgupc
+maybe-clean-target-libgupc:
+@if target-libgupc
+maybe-clean-target-libgupc: clean-target-libgupc
 
-clean-target-libupc: 
+clean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing clean in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -35083,24 +35094,24 @@ clean-target-libupc:
 	           clean) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-distclean-target-libupc distclean-target-libupc
-maybe-distclean-target-libupc:
-@if target-libupc
-maybe-distclean-target-libupc: distclean-target-libupc
+.PHONY: maybe-distclean-target-libgupc distclean-target-libgupc
+maybe-distclean-target-libgupc:
+@if target-libgupc
+maybe-distclean-target-libgupc: distclean-target-libgupc
 
-distclean-target-libupc: 
+distclean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -35108,24 +35119,24 @@ distclean-target-libupc:
 	           distclean) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
-.PHONY: maybe-maintainer-clean-target-libupc maintainer-clean-target-libupc
-maybe-maintainer-clean-target-libupc:
-@if target-libupc
-maybe-maintainer-clean-target-libupc: maintainer-clean-target-libupc
+.PHONY: maybe-maintainer-clean-target-libgupc maintainer-clean-target-libgupc
+maybe-maintainer-clean-target-libgupc:
+@if target-libgupc
+maybe-maintainer-clean-target-libgupc: maintainer-clean-target-libgupc
 
-maintainer-clean-target-libupc: 
+maintainer-clean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libupc" ; \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgupc" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	(cd $(TARGET_SUBDIR)/libupc && \
+	(cd $(TARGET_SUBDIR)/libgupc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -35133,7 +35144,7 @@ maintainer-clean-target-libupc:
 	           maintainer-clean) \
 	  || exit 1
 
-@endif target-libupc
+@endif target-libgupc
 
 
 
@@ -40701,7 +40712,7 @@ check-gcc-upc:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-upc);
-check-upc: check-gcc-upc check-target-libupc
+check-upc: check-gcc-upc check-target-libgupc
 
 .PHONY: check-gcc-obj-c++ check-obj-c++
 check-gcc-obj-c++:
@@ -42703,7 +42714,7 @@ configure-stagefeedback-target-libgcc: maybe-all-stagefeedback-gcc
 configure-target-libquadmath: stage_last
 configure-target-libgfortran: stage_last
 configure-target-libobjc: stage_last
-configure-target-libupc: stage_last
+configure-target-libgupc: stage_last
 configure-target-libgo: stage_last
 configure-target-libtermcap: stage_last
 configure-target-winsup: stage_last
@@ -42731,7 +42742,7 @@ configure-target-libgcc: maybe-all-gcc
 configure-target-libquadmath: maybe-all-gcc
 configure-target-libgfortran: maybe-all-gcc
 configure-target-libobjc: maybe-all-gcc
-configure-target-libupc: maybe-all-gcc
+configure-target-libgupc: maybe-all-gcc
 configure-target-libgo: maybe-all-gcc
 configure-target-libtermcap: maybe-all-gcc
 configure-target-winsup: maybe-all-gcc
@@ -43470,7 +43481,7 @@ all-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
 all-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 all-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
-install-target-libupc: maybe-install-gcc
+install-target-libgupc: maybe-install-gcc
 all-target-libgloss: maybe-all-target-newlib
 all-target-winsup: maybe-all-target-libtermcap
 configure-target-newlib: maybe-all-binutils
@@ -43506,7 +43517,7 @@ configure-target-newlib: maybe-all-target-libgcc
 configure-target-libquadmath: maybe-all-target-libgcc
 configure-target-libgfortran: maybe-all-target-libgcc
 configure-target-libobjc: maybe-all-target-libgcc
-configure-target-libupc: maybe-all-target-libgcc
+configure-target-libgupc: maybe-all-target-libgcc
 configure-target-libgo: maybe-all-target-libgcc
 configure-target-libtermcap: maybe-all-target-libgcc
 configure-target-winsup: maybe-all-target-libgcc
@@ -43535,7 +43546,7 @@ configure-target-libgfortran: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libobjc: maybe-all-target-newlib maybe-all-target-libgloss
 
-configure-target-libupc: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-libgupc: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libgo: maybe-all-target-newlib maybe-all-target-libgloss
 

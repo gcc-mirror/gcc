@@ -162,7 +162,7 @@ target_libraries="target-libgcc \
 		target-boehm-gc \
 		${libgcj} \
 		target-libobjc \
-		target-libupc \
+		target-libgupc \
 		target-libada \
 		target-libgo"
 
@@ -496,10 +496,10 @@ if test x$enable_libgomp = x -a $posix_based_os = "no" ; then
     noconfigdirs="$noconfigdirs target-libgomp"
 fi
 
-# Enable libupc by default on POSIX hosted systems.
-if test x$enable_libupc = x -a $posix_based_os = "no" ; then
-    # Disable libupc on non POSIX hosted systems.
-    noconfigdirs="$noconfigdirs target-libupc"
+# Enable libgupc by default on POSIX hosted systems.
+if test x$enable_libgupc = x -a $posix_based_os = "no" ; then
+    # Disable libgupc on non POSIX hosted systems.
+    noconfigdirs="$noconfigdirs target-libgupc"
 fi
 
 # Disable libssp for some systems.
@@ -1096,6 +1096,7 @@ if test "${build}" != "${host}" ; then
   GCJ_FOR_BUILD=${GCJ_FOR_BUILD-gcj}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
+  GUPC_FOR_BUILD=${GUPC_FOR_BUILD-gupc}
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
   LD_FOR_BUILD=${LD_FOR_BUILD-ld}
   NM_FOR_BUILD=${NM_FOR_BUILD-nm}
@@ -1110,6 +1111,7 @@ else
   GCJ_FOR_BUILD="\$(GCJ)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
   GOC_FOR_BUILD="\$(GOC)"
+  GUPC_FOR_BUILD="\$(GUPC)"
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
   LD_FOR_BUILD="\$(LD)"
   NM_FOR_BUILD="\$(NM)"
@@ -3031,6 +3033,7 @@ AC_SUBST(DLLTOOL_FOR_BUILD)
 AC_SUBST(GCJ_FOR_BUILD)
 AC_SUBST(GFORTRAN_FOR_BUILD)
 AC_SUBST(GOC_FOR_BUILD)
+AC_SUBST(GUPC_FOR_BUILD)
 AC_SUBST(LDFLAGS_FOR_BUILD)
 AC_SUBST(LD_FOR_BUILD)
 AC_SUBST(NM_FOR_BUILD)
@@ -3140,6 +3143,7 @@ NCN_STRICT_CHECK_TARGET_TOOLS(GCC_FOR_TARGET, gcc, ${CC_FOR_TARGET})
 NCN_STRICT_CHECK_TARGET_TOOLS(GCJ_FOR_TARGET, gcj)
 NCN_STRICT_CHECK_TARGET_TOOLS(GFORTRAN_FOR_TARGET, gfortran)
 NCN_STRICT_CHECK_TARGET_TOOLS(GOC_FOR_TARGET, gccgo)
+NCN_STRICT_CHECK_TARGET_TOOLS(GUPC_FOR_TARGET, gupc)
 
 ACX_CHECK_INSTALLED_TARGET_TOOL(AR_FOR_TARGET, ar)
 ACX_CHECK_INSTALLED_TARGET_TOOL(AS_FOR_TARGET, as)
@@ -3173,6 +3177,8 @@ GCC_TARGET_TOOL(gfortran, GFORTRAN_FOR_TARGET, GFORTRAN,
 		[gcc/gfortran -B$$r/$(HOST_SUBDIR)/gcc/], fortran)
 GCC_TARGET_TOOL(gccgo, GOC_FOR_TARGET, GOC,
 		[gcc/gccgo -B$$r/$(HOST_SUBDIR)/gcc/], go)
+GCC_TARGET_TOOL(gupc, GUPC_FOR_TARGET, GUPC,
+		[gcc/gupc -B$$r/$(HOST_SUBDIR)/gcc/], upc)
 GCC_TARGET_TOOL(ld, LD_FOR_TARGET, LD, [ld/ld-new])
 GCC_TARGET_TOOL(lipo, LIPO_FOR_TARGET, LIPO)
 GCC_TARGET_TOOL(nm, NM_FOR_TARGET, NM, [binutils/nm-new])

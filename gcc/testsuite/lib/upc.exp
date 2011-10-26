@@ -22,7 +22,7 @@ load_lib gcc.exp
 set dg-do-what-default run
 
 #
-# GCC_UNDER_TEST is the compiler under test.
+# GUPC_UNDER_TEST is the compiler under test.
 #
 
 set upc_compile_options ""
@@ -46,12 +46,12 @@ proc upc_init { args } {
     global ALWAYS_CFLAGS
     global CFLAGS
     global TOOL_EXECUTABLE TOOL_OPTIONS
-    global GCC_UNDER_TEST
+    global GUPC_UNDER_TEST
     global TESTING_IN_BUILD_TREE
     global target_triplet
     global always_ld_library_path
 
-    set blddir [lookfor_file [get_multilibs] upc]
+    set blddir [lookfor_file [get_multilibs] gupc]
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
@@ -65,21 +65,20 @@ proc upc_init { args } {
       setenv LANG C.ASCII
     }
 
-    if ![info exists GCC_UNDER_TEST] then {
+    if ![info exists GUPC_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
-	    set GCC_UNDER_TEST $TOOL_EXECUTABLE
+	    set GUPC_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
-	    set GCC_UNDER_TEST "[find_gcc]"
+            set file [lookfor_file $tool_root_dir xgupc]
+	    if { $file == "" } {
+	      set file [lookfor_file $tool_root_dir gcc/xgupc]
+	    }
+	    if { $file != "" } {
+	      set GUPC_UNDER_TEST $file
+	    } else {
+	      set GUPC_UNDER_TEST [transform gupc]
+	    }
 	}
-    }
-
-    # substitute the trailing gcc as "upc" (if there is one)
-    if [regexp {/xgcc -B.*$} $GCC_UNDER_TEST] {
-      regsub {/xgcc -B.*$} $GCC_UNDER_TEST "/xupc" GCC_UNDER_TEST
-    } else {
-      if [regexp {gcc$} $GCC_UNDER_TEST] {
-        regsub {gcc$} $GCC_UNDER_TEST "upc" GCC_UNDER_TEST
-      }
     }
 
     if ![info exists tmpdir] {
@@ -111,7 +110,7 @@ proc upc_init { args } {
 	    append always_ld_library_path ":${gccdir}/pthread"
 	}
 	append always_ld_library_path ":${gccdir}"
-	set compiler [lindex $GCC_UNDER_TEST 0]
+	set compiler [lindex $GUPC_UNDER_TEST 0]
 
 	if { [is_remote host] == 0 && [which $compiler] != 0 } {
 	  foreach i "[exec $compiler --print-multi-lib]" {
@@ -131,7 +130,7 @@ proc upc_init { args } {
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
-        # targets that use libupc.a%s in their specs need a -B option
+        # targets that use libgupc.a%s in their specs need a -B option
         # for uninstalled testing.
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
@@ -162,7 +161,7 @@ proc upc_target_compile { source dest type options } {
     global upc_compile_options
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
-    global GCC_UNDER_TEST
+    global GUPC_UNDER_TEST
     global lang_test_file
     global lang_library_path
     global lang_link_flags
@@ -184,7 +183,7 @@ proc upc_target_compile { source dest type options } {
 
     lappend options "additional_flags=[libio_include_flags]"
     lappend options "timeout=[timeout_value]"
-    lappend options "compiler=$GCC_UNDER_TEST"
+    lappend options "compiler=$GUPC_UNDER_TEST"
 
     set options [concat $upc_compile_options $options]
 

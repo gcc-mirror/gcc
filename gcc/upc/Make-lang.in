@@ -43,7 +43,7 @@
 # - the compiler proper (eg: cc1upc)
 # - define the names for selecting the language in LANGUAGES.
 
-UPC_EXE = cc1upc$(exeext) xupc$(exeext) upc-cmd$(exeext)
+UPC_EXE = cc1upc$(exeext) xgupc$(exeext) gupc$(exeext)
 
 #
 # Define the names for selecting UPC in LANGUAGES.
@@ -79,9 +79,9 @@ cc1upc$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o \
 		$(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o \
 		$(BACKEND) $(LIBS) $(BACKENDLIBS)
 
-xupc$(exeext): $(srcdir)/upc/upc-cmd.c Makefile cc1upc$(exeext) $(LIBDEPS)
+xgupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
 	thisdir=`pwd` ; \
-	incdir=`cd $(srcdir)/../libupc/include; pwd`; \
+	incdir=`cd $(srcdir)/../libgupc/include; pwd`; \
 	libdir=`dirname $${thisdir}`/$(target); \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	    $(DRIVER_DEFINES) \
@@ -90,19 +90,19 @@ xupc$(exeext): $(srcdir)/upc/upc-cmd.c Makefile cc1upc$(exeext) $(LIBDEPS)
 	    "-DBIN_PATH=\"$${thisdir}\"" \
 	    "-DLIB_PATH=\"$${libdir}\"" \
 	    "-DINC_PATH=\"$${incdir}\"" \
-	    -c $(srcdir)/upc/upc-cmd.c -o xupc-tmp.o
-	$(CC) xupc-tmp.o -o xupc$(exeext) $(LIBS)
-	rm -f xupc-tmp.o
+	    -c $(srcdir)/upc/gupc.c -o xgupc-tmp.o
+	$(CC) xgupc-tmp.o -o xgupc$(exeext) $(LIBS)
+	rm -f xgupc-tmp.o
 
-upc-cmd$(exeext): $(srcdir)/upc/upc-cmd.c Makefile cc1upc$(exeext) $(LIBDEPS)
+gupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
 	thisdir=`pwd` ; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	    $(DRIVER_DEFINES) \
 	    "-DCOMPILER=\"gcc\"" \
 	    "-DBIN_PATH=\"$(bindir)\"" \
-	    -c $(srcdir)/upc/upc-cmd.c -o upc-cmd-tmp.o
-	$(CC) upc-cmd-tmp.o -o upc-cmd$(exeext) $(LIBS)
-	rm -f upc-cmd-tmp.o
+	    -c $(srcdir)/upc/gupc.c -o gupc-tmp.o
+	$(CC) gupc-tmp.o -o gupc$(exeext) $(LIBS)
+	rm -f gupc-tmp.o
 
 #
 # UPC language specific files.
@@ -183,9 +183,17 @@ lang_checks += check-upc
 
 upc.install-normal:
 
-upc.install-common: cc1upc$(exeext) upc-cmd$(exeext) installdirs
-	-rm -f $(DESTDIR)$(bindir)/upc
-	$(INSTALL_PROGRAM) -m 755 upc-cmd$(exeext) $(DESTDIR)$(bindir)/upc
+upc.install-common: cc1upc$(exeext) gupc$(exeext) installdirs
+	-rm -f $(DESTDIR)$(bindir)/gupc$(exeext)
+	$(INSTALL_PROGRAM) -m 755 gupc$(exeext) $(DESTDIR)$(bindir)
+	-rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gupc$(exeext)
+	cd $(DESTDIR)$(bindir) && \
+	   $(LN) gupc$(exeext) $(target_noncanonical)-gupc$(exeext) 
+	-rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gupc-$(version)$(exeext)
+	cd $(DESTDIR)$(bindir) && \
+	   $(LN) gupc$(exeext) $(target_noncanonical)-gupc-$(version)$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/upc$(exeext)
+	cd $(DESTDIR)$(bindir) && $(LN_S) gupc$(exeext) upc$(exeext)
 
 
 .PHONY: upc.pdf upc.html
@@ -200,14 +208,15 @@ $(build_htmldir)/upc/index.html: $(srcdir)/upc/upc-manpage.html
 
 # Make sure `installdirs' target (from gcc Makefile) has been
 # run, since we use libsubdir to store our `flag' file, lang-upc.
-upc.install-man: $(srcdir)/upc/upc.1 installdirs
+upc.install-man: $(srcdir)/upc/gupc.1 installdirs
 	case "$(LANGUAGES)" in \
 	  *[Uu][Pp][Cc]*) touch $(DESTDIR)$(libsubdir)/lang-upc;; \
 	  *) rm -f $(DESTDIR)$(libsubdir)/lang-upc;; \
 	esac
 	-if [ -f $(DESTDIR)$(libsubdir)/lang-upc -a -f cc1upc$(exeext) ] ; then \
 	    rm -f $(DESTDIR)$(man1dir)/upc$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/upc/upc.1 $(DESTDIR)$(man1dir)/upc$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/upc/gupc.1 \
+	      $(DESTDIR)$(man1dir)/upc$(man1ext); \
 	    chmod a-x $(DESTDIR)$(man1dir)/upc$(man1ext); \
 	else true; fi
 	rm -f $(DESTDIR)$(libsubdir)/lang-upc

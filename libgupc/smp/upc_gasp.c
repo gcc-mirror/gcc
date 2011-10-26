@@ -31,9 +31,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "upc_defs.h"
 #include "gasp.h"
 
-/* Since libupc contains references to these functions, we provide dummy
+/* Since libgupc contains references to these functions, we provide dummy
    implementations to prevent linker warnings when GASP support has been
-   compiled into GCC UPC, but the user compiles their app regularly.
+   compiled into GNU UPC, but the user compiles their app regularly.
    We define these as weak symbols so tools can override them
    appropriately.  */
 

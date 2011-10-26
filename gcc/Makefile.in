@@ -689,8 +689,17 @@ LIBGCC2_INCLUDES =
 # Additional target-dependent options for compiling libgcc2.a.
 TARGET_LIBGCC2_CFLAGS =
 
+# Translate all paths of the form -Ipath into -Iabsolute_path.
+absincpath = $(addprefix -I, $(abspath $(patsubst -I%, %, $(1))))
+
+# Define ABS_INC_FOR_TARGET so that CRTSTUFF_CFLAGS can be used
+# from a directory level other than just parallel to 'gcc'.
+# (Some runtime libraries, such a libgupc build a variant of
+# crtbegin/end inside the (possibly multi-lib'ed) target dependent library.)
+ABS_INC_FOR_TARGET = $(call absincpath, $(INCLUDES_FOR_TARGET))
+
 # Options to use when compiling crtbegin/end.
-CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES_FOR_TARGET) $(MULTILIB_CFLAGS) \
+CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(ABS_INC_FOR_TARGET) $(MULTILIB_CFLAGS) \
   -g0 -finhibit-size-directive -fno-inline -fno-exceptions \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
   -fno-stack-protector \
