@@ -3667,6 +3667,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 /* Parse a user-defined string constant.  Returns a call to a user-defined
    literal operator taking a character pointer and the length of the string
    as arguments.  */
+
 static tree
 cp_parser_userdef_string_literal (cp_token *token)
 {

@@ -1525,6 +1525,7 @@ build_real_from_int_cst (tree type, const_tree i)
 
 /* Return a newly constructed STRING_CST node whose value is
    the LEN characters at STR.
+   Note that for a C string literal, LEN should include the trailing NUL.
    The TREE_TYPE is not initialized.  */
 
 tree

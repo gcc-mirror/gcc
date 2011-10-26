@@ -344,6 +344,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	  {
 	    tree suffix_id = get_identifier (suffix);
 	    int len = tok->val.str.len - strlen (suffix);
+	    /* If this is going to be used as a C string to pass to a
+	       raw literal operator, we need to add a trailing NUL.  */
 	    tree num_string = build_string (len + 1,
 					    (const char *) tok->val.str.text);
 	    TREE_TYPE (num_string) = char_array_type_node;
