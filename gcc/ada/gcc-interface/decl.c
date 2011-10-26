@@ -6853,10 +6853,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	}
     }
 
-  /* If we are packing the record and the field is BLKmode, round the
-     size up to a byte boundary.  */
-  if (packed && TYPE_MODE (gnu_field_type) == BLKmode && gnu_size)
-    gnu_size = round_up (gnu_size, BITS_PER_UNIT);
+  if (Is_Atomic (gnat_field))
+    check_ok_for_atomic (gnu_field_type, gnat_field, false);
 
   if (Present (Component_Clause (gnat_field)))
     {
@@ -6946,9 +6944,6 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	      gnu_pos = NULL_TREE;
 	    }
 	}
-
-      if (Is_Atomic (gnat_field))
-	check_ok_for_atomic (gnu_field_type, gnat_field, false);
     }
 
   /* If the record has rep clauses and this is the tag field, make a rep
@@ -6961,7 +6956,14 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     }
 
   else
-    gnu_pos = NULL_TREE;
+    {
+      gnu_pos = NULL_TREE;
+
+      /* If we are packing the record and the field is BLKmode, round the
+	 size up to a byte boundary.  */
+      if (packed && TYPE_MODE (gnu_field_type) == BLKmode && gnu_size)
+	gnu_size = round_up (gnu_size, BITS_PER_UNIT);
+    }
 
   /* We need to make the size the maximum for the type if it is
      self-referential and an unconstrained type.  In that case, we can't
