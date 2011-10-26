@@ -1,5 +1,7 @@
 2011-10-26  David S. Miller  <davem@davemloft.net>
 
+	* gcc.target/sparc/fmaf-1.c: New test.
+
 	* gcc.target/sparc/setcc-1.c: New test.
 	* gcc.target/sparc/setcc-2.c: New test.
 
