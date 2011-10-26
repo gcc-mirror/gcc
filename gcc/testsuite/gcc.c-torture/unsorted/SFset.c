@@ -8,7 +8,7 @@
 #define adrx0 (E0[x0])
 #define regx0 (p0[x0])
 
-#define E1 ((type *)11111111)
+#define E1 ((type *)(11111111 & ~(__alignof__ (type) - 1)))
 #define reg1 r1
 #define indreg1 (*p1)
 #define imm1 33
