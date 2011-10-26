@@ -1,5 +1,10 @@
 2011-10-26  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.target/i386/pr37843-4.c: Allow for leading underscores on
+	symbol names.
+
+2011-10-26  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.target/i386/pad-4.c: Skip for Windows targets.
 
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
