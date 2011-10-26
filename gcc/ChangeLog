@@ -1,3 +1,9 @@
+2011-10-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/50826
+	* var-tracking.c (rtx_debug_expr_p): New.
+	(use_type): Don't use debug exprs to track non-VTA variables.
+
 2011-10-26  Jeff Law  <law@redhat.com>
 
 	* doc/invoke.texi (sink-frequency-threshold): Document.
