@@ -1,5 +1,10 @@
 2011-10-26  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/tls/thr-cse-1.c: For i?86-*-mingw*, check for multiple
+	calls.
+
+2011-10-26  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/graphite/run-id-1.c: Pass -Wl,--stack,12582912 option for
 	Windows targets.
 
