@@ -2541,14 +2541,6 @@ emit_scc_insn (rtx operands[])
         }
     }
 
-  /* For the rest, on v9 we can use conditional moves.  */
-
-  if (TARGET_V9)
-    {
-      if (gen_v9_scc (operands[0], code, x, y))
-        return true;
-    }
-
   /* We can do LTU and GEU using the addx/subx instructions too.  And
      for GTU/LEU, if both operands are registers swap them and fall
      back to the easy case.  */
@@ -2572,6 +2564,12 @@ emit_scc_insn (rtx operands[])
 					      const0_rtx)));
       return true;
     }
+
+  /* All the posibilities to use addx/subx based sequences has been
+     exhausted, try for a 3 instruction sequence using v9 conditional
+     moves.  */
+  if (TARGET_V9 && gen_v9_scc (operands[0], code, x, y))
+    return true;
 
   /* Nope, do branches.  */
   return false;

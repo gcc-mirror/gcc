@@ -713,6 +713,22 @@
   ""
   [(set_attr "length" "2")])
 
+(define_insn_and_split "*neg_snesi_sign_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (neg:DI (ne:DI (match_operand:SI 1 "register_operand" "r")
+                      (const_int 0))))
+   (clobber (reg:CC CC_REG))]
+  "TARGET_ARCH64"
+  "#"
+  "&& 1"
+  [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (minus:SI (const_int 0)
+                                                     (match_dup 1))
+                                           (const_int 0)))
+   (set (match_dup 0) (sign_extend:DI (neg:SI (ltu:SI (reg:CC CC_REG)
+                                                      (const_int 0)))))]
+  ""
+  [(set_attr "length" "2")])
+
 (define_insn_and_split "*snedi_zero"
   [(set (match_operand:DI 0 "register_operand" "=&r")
         (ne:DI (match_operand:DI 1 "register_operand" "r")
@@ -801,6 +817,21 @@
                                                           (const_int -1))
                                                 (ltu:SI (reg:CC_NOOV CC_REG)
                                                         (const_int 0)))))]
+  ""
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "*neg_seqsi_sign_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(neg:DI (eq:DI (match_operand:SI 1 "register_operand" "r")
+		       (const_int 0))))
+   (clobber (reg:CC CC_REG))]
+  "TARGET_ARCH64"
+  "#"
+  "&& 1"
+  [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (neg:SI (match_dup 1))
+					   (const_int 0)))
+   (set (match_dup 0) (sign_extend:DI (neg:SI (geu:SI (reg:CC CC_REG)
+                                                      (const_int 0)))))]
   ""
   [(set_attr "length" "2")])
 
@@ -928,10 +959,24 @@
   "addx\t%%g0, 0, %0"
   [(set_attr "type" "ialuX")])
 
+(define_insn "*sltu_extend_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ltu:DI (reg:CC CC_REG) (const_int 0)))]
+  "TARGET_ARCH64"
+  "addx\t%%g0, 0, %0"
+  [(set_attr "type" "ialuX")])
+
 (define_insn "*neg_sltu_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (ltu:SI (reg:CC CC_REG) (const_int 0))))]
   ""
+  "subx\t%%g0, 0, %0"
+  [(set_attr "type" "ialuX")])
+
+(define_insn "*neg_sltu_extend_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (neg:SI (ltu:SI (reg:CC CC_REG) (const_int 0)))))]
+  "TARGET_ARCH64"
   "subx\t%%g0, 0, %0"
   [(set_attr "type" "ialuX")])
 
@@ -959,10 +1004,24 @@
   "subx\t%%g0, -1, %0"
   [(set_attr "type" "ialuX")])
 
+(define_insn "*sgeu_extend_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(geu:DI (reg:CC CC_REG) (const_int 0)))]
+  "TARGET_ARCH64"
+  "subx\t%%g0, -1, %0"
+  [(set_attr "type" "ialuX")])
+
 (define_insn "*neg_sgeu_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (geu:SI (reg:CC CC_REG) (const_int 0))))]
   ""
+  "addx\t%%g0, -1, %0"
+  [(set_attr "type" "ialuX")])
+
+(define_insn "*neg_sgeu_extend_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (neg:SI (geu:SI (reg:CC CC_REG) (const_int 0)))))]
+  "TARGET_ARCH64"
   "addx\t%%g0, -1, %0"
   [(set_attr "type" "ialuX")])
 
