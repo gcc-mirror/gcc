@@ -1,3 +1,20 @@
+2011-10-26  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc-protos.h (sparc_expand_conditional_move): Declare.
+	* config/sparc/sparc.md (mov<I:mode>cc, mov<F:mode>cc): Call it.
+	(*mov<I:mode>_cc_v9): Normalize to expect operand 0 always in operand 4.
+	(*mov<I:mode>_cc_reg_sp64): Likewise.
+	(*movsf_cc_v9): Likewise.
+	(*movsf_cc_reg_sp64): Likewise.
+	(*movdf_cc_v9): Likewise.
+	(*movdf_cc_reg_sp64): Likewise.
+	(*movtf_cc_hq_v9): Likewise.
+	(*movtf_cc_reg_hq_sp64): Likewise.
+	(*movtf_cc_v9): Likewise.
+	(*movtf_cc_reg_sp64): Likewise.
+	* config/sparc/sparc.c (sparc_expand_conditional_move): New function.
+	(sparc_print_operand): Delete 'c' and 'd' handling, no longer used.
+
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reload.c (reload_inner_reg_of_subreg): Change type of return value
