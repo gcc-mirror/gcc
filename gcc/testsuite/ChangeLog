@@ -1,3 +1,8 @@
+2011-10-26  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/setcc-1.c: New test.
+	* gcc.target/sparc/setcc-2.c: New test.
+
 2011-10-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/tls/thr-cse-1.c: For i?86-*-mingw*, check for multiple

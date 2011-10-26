@@ -1,5 +1,13 @@
 2011-10-26  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.c (emit_scc_insn): Do not try v9 sequences until
+	LEU/LTU/GEU/GTU is attempted.
+	* config/sparc/sparc.md (*neg_snesi_sign_extend): New 64-bit insn
+	and split.
+	(*neg_seqsi_sign_extend): Likewise.
+	(*sltu_extend_sp64, *neg_sltu_extend_sp64, *sgeu_extend_sp64,
+	*neg_sgeu_extend_sp64): New insns.
+
 	* config/sparc/sparc-protos.h (sparc_expand_conditional_move): Declare.
 	* config/sparc/sparc.md (mov<I:mode>cc, mov<F:mode>cc): Call it.
 	(*mov<I:mode>_cc_v9): Normalize to expect operand 0 always in operand 4.
