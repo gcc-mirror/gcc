@@ -26,6 +26,9 @@ var illegalInputs = []interface{}{
 	`package p; func f() { for _ = range x ; ; {} };`,
 	`package p; func f() { for ; ; _ = range x {} };`,
 	`package p; func f() { for ; _ = range x ; {} };`,
+	`package p; func f() { switch t = t.(type) {} };`,
+	`package p; func f() { switch t, t = t.(type) {} };`,
+	`package p; func f() { switch t = t.(type), t {} };`,
 	`package p; var a = [1]int; /* illegal expression */`,
 	`package p; var a = [...]int; /* illegal expression */`,
 	`package p; var a = struct{} /* illegal expression */`,
@@ -61,6 +64,9 @@ var validPrograms = []interface{}{
 	`package p; func f(...T);`,
 	`package p; func f(float, ...int);`,
 	`package p; func f(x int, a ...int) { f(0, a...); f(1, a...,) };`,
+	`package p; func f(int,) {};`,
+	`package p; func f(...int,) {};`,
+	`package p; func f(x ...int,) {};`,
 	`package p; type T []int; var a []bool; func f() { if a[T{42}[0]] {} };`,
 	`package p; type T []int; func g(int) bool { return true }; func f() { if g(T{42}[0]) {} };`,
 	`package p; type T []int; func f() { for _ = range []int{T{42}[0]} {} };`,
@@ -74,7 +80,7 @@ var validPrograms = []interface{}{
 
 func TestParseValidPrograms(t *testing.T) {
 	for _, src := range validPrograms {
-		_, err := ParseFile(fset, "", src, 0)
+		_, err := ParseFile(fset, "", src, SpuriousErrors)
 		if err != nil {
 			t.Errorf("ParseFile(%q): %v", src, err)
 		}

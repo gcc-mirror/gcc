@@ -86,9 +86,11 @@ func searchFiles(a []*File, x int) int {
 }
 
 func (s *FileSet) file(p Pos) *File {
+	// common case: p is in last file touched
 	if f := s.last; f != nil && f.base <= int(p) && int(p) <= f.base+f.size {
 		return f
 	}
+	// p is not in last file touched - search all files
 	if i := searchFiles(s.files, int(p)); i >= 0 {
 		f := s.files[i]
 		// f.base <= int(p) by definition of searchFiles
@@ -123,10 +125,6 @@ func (f *File) position(p Pos) (pos Position) {
 // Position converts a Pos in the fileset into a general Position.
 func (s *FileSet) Position(p Pos) (pos Position) {
 	if p != NoPos {
-		// TODO(gri) consider optimizing the case where p
-		//           is in the last file added, or perhaps
-		//           looked at - will eliminate one level
-		//           of search
 		s.mutex.RLock()
 		if f := s.file(p); f != nil {
 			pos = f.position(p)
@@ -136,10 +134,14 @@ func (s *FileSet) Position(p Pos) (pos Position) {
 	return
 }
 
+// A lineInfo object describes alternative file and line number
+// information (such as provided via a //line comment in a .go
+// file) for a given file offset.
 type lineInfo struct {
-	offset   int
-	filename string
-	line     int
+	// fields are exported to make them accessible to gob
+	Offset   int
+	Filename string
+	Line     int
 }
 
 // AddLineInfo adds alternative file and line number information for
@@ -152,7 +154,7 @@ type lineInfo struct {
 //
 func (f *File) AddLineInfo(offset int, filename string, line int) {
 	f.set.mutex.Lock()
-	if i := len(f.infos); i == 0 || f.infos[i-1].offset < offset && offset < f.size {
+	if i := len(f.infos); i == 0 || f.infos[i-1].Offset < offset && offset < f.size {
 		f.infos = append(f.infos, lineInfo{offset, filename, line})
 	}
 	f.set.mutex.Unlock()
@@ -317,7 +319,7 @@ func searchInts(a []int, x int) int {
 }
 
 func searchLineInfos(a []lineInfo, x int) int {
-	return sort.Search(len(a), func(i int) bool { return a[i].offset > x }) - 1
+	return sort.Search(len(a), func(i int) bool { return a[i].Offset > x }) - 1
 }
 
 // info returns the file name, line, and column number for a file offset.
@@ -330,9 +332,9 @@ func (f *File) info(offset int) (filename string, line, column int) {
 		// almost no files have extra line infos
 		if i := searchLineInfos(f.infos, offset); i >= 0 {
 			alt := &f.infos[i]
-			filename = alt.filename
-			if i := searchInts(f.lines, alt.offset); i >= 0 {
-				line += alt.line - i - 1
+			filename = alt.Filename
+			if i := searchInts(f.lines, alt.Offset); i >= 0 {
+				line += alt.Line - i - 1
 			}
 		}
 	}

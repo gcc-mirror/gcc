@@ -6,6 +6,7 @@
 
 #include "go-alloc.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 void *

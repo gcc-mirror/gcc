@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 #ifndef MAP_ANON

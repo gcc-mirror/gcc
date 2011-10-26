@@ -72,15 +72,23 @@ var wincleantests = []PathTest{
 	{`c:\abc`, `c:\abc`},
 	{`c:abc\..\..\.\.\..\def`, `c:..\..\def`},
 	{`c:\abc\def\..\..`, `c:\`},
+	{`c:\..\abc`, `c:\abc`},
 	{`c:..\abc`, `c:..\abc`},
 	{`\`, `\`},
 	{`/`, `\`},
+	{`\\i\..\c$`, `\c$`},
+	{`\\i\..\i\c$`, `\i\c$`},
+	{`\\i\..\I\c$`, `\I\c$`},
+	{`\\host\share\foo\..\bar`, `\\host\share\bar`},
+	{`//host/share/foo/../baz`, `\\host\share\baz`},
+	{`\\a\b\..\c`, `\\a\b\c`},
+	{`\\a\b`, `\\a\b`},
 }
 
 func TestClean(t *testing.T) {
 	tests := cleantests
 	if runtime.GOOS == "windows" {
-		for i, _ := range tests {
+		for i := range tests {
 			tests[i].result = filepath.FromSlash(tests[i].result)
 		}
 		tests = append(tests, wincleantests...)
@@ -145,9 +153,25 @@ var unixsplittests = []SplitTest{
 	{"/", "/", ""},
 }
 
+var winsplittests = []SplitTest{
+	{`c:`, `c:`, ``},
+	{`c:/`, `c:/`, ``},
+	{`c:/foo`, `c:/`, `foo`},
+	{`c:/foo/bar`, `c:/foo/`, `bar`},
+	{`//host/share`, `//host/share`, ``},
+	{`//host/share/`, `//host/share/`, ``},
+	{`//host/share/foo`, `//host/share/`, `foo`},
+	{`\\host\share`, `\\host\share`, ``},
+	{`\\host\share\`, `\\host\share\`, ``},
+	{`\\host\share\foo`, `\\host\share\`, `foo`},
+}
+
 func TestSplit(t *testing.T) {
 	var splittests []SplitTest
 	splittests = unixsplittests
+	if runtime.GOOS == "windows" {
+		splittests = append(splittests, winsplittests...)
+	}
 	for _, test := range splittests {
 		if d, f := filepath.Split(test.path); d != test.dir || f != test.file {
 			t.Errorf("Split(%q) = %q, %q, want %q, %q", test.path, d, f, test.dir, test.file)
@@ -185,6 +209,8 @@ var winjointests = []JoinTest{
 	{[]string{`C:\Windows\`, ``}, `C:\Windows`},
 	{[]string{`C:\`, `Windows`}, `C:\Windows`},
 	{[]string{`C:`, `Windows`}, `C:\Windows`},
+	{[]string{`\\host\share`, `foo`}, `\\host\share\foo`},
+	{[]string{`//host/share`, `foo/bar`}, `\\host\share\foo\bar`},
 }
 
 // join takes a []string and passes it to Join.
@@ -279,9 +305,9 @@ func makeTree(t *testing.T) {
 
 func markTree(n *Node) { walkTree(n, "", func(path string, n *Node) { n.mark++ }) }
 
-func checkMarks(t *testing.T) {
+func checkMarks(t *testing.T, report bool) {
 	walkTree(tree, tree.name, func(path string, n *Node) {
-		if n.mark != 1 {
+		if n.mark != 1 && report {
 			t.Errorf("node %s mark = %d; expected 1", path, n.mark)
 		}
 		n.mark = 0
@@ -289,44 +315,41 @@ func checkMarks(t *testing.T) {
 }
 
 // Assumes that each node name is unique. Good enough for a test.
-func mark(name string) {
-	name = filepath.ToSlash(name)
+// If clear is true, any incoming error is cleared before return. The errors
+// are always accumulated, though.
+func mark(path string, info *os.FileInfo, err os.Error, errors *[]os.Error, clear bool) os.Error {
+	if err != nil {
+		*errors = append(*errors, err)
+		if clear {
+			return nil
+		}
+		return err
+	}
 	walkTree(tree, tree.name, func(path string, n *Node) {
-		if n.name == name {
+		if n.name == info.Name {
 			n.mark++
 		}
 	})
-}
-
-type TestVisitor struct{}
-
-func (v *TestVisitor) VisitDir(path string, f *os.FileInfo) bool {
-	mark(f.Name)
-	return true
-}
-
-func (v *TestVisitor) VisitFile(path string, f *os.FileInfo) {
-	mark(f.Name)
+	return nil
 }
 
 func TestWalk(t *testing.T) {
 	makeTree(t)
-
-	// 1) ignore error handling, expect none
-	v := &TestVisitor{}
-	filepath.Walk(tree.name, v, nil)
-	checkMarks(t)
-
-	// 2) handle errors, expect none
-	errors := make(chan os.Error, 64)
-	filepath.Walk(tree.name, v, errors)
-	select {
-	case err := <-errors:
-		t.Errorf("no error expected, found: %s", err)
-	default:
-		// ok
+	errors := make([]os.Error, 0, 10)
+	clear := true
+	markFn := func(path string, info *os.FileInfo, err os.Error) os.Error {
+		return mark(path, info, err, &errors, clear)
 	}
-	checkMarks(t)
+	// Expect no errors.
+	err := filepath.Walk(tree.name, markFn)
+	if err != nil {
+		t.Errorf("no error expected, found: %s", err)
+	}
+	if len(errors) != 0 {
+		t.Errorf("unexpected errors: %s", errors)
+	}
+	checkMarks(t, true)
+	errors = errors[0:0]
 
 	// Test permission errors.  Only possible if we're not root
 	// and only on some file systems (AFS, FAT).  To avoid errors during
@@ -335,40 +358,50 @@ func TestWalk(t *testing.T) {
 		// introduce 2 errors: chmod top-level directories to 0
 		os.Chmod(filepath.Join(tree.name, tree.entries[1].name), 0)
 		os.Chmod(filepath.Join(tree.name, tree.entries[3].name), 0)
+
+		// 3) capture errors, expect two.
 		// mark respective subtrees manually
 		markTree(tree.entries[1])
 		markTree(tree.entries[3])
 		// correct double-marking of directory itself
 		tree.entries[1].mark--
 		tree.entries[3].mark--
-
-		// 3) handle errors, expect two
-		errors = make(chan os.Error, 64)
-		os.Chmod(filepath.Join(tree.name, tree.entries[1].name), 0)
-		filepath.Walk(tree.name, v, errors)
-	Loop:
-		for i := 1; i <= 2; i++ {
-			select {
-			case <-errors:
-				// ok
-			default:
-				t.Errorf("%d. error expected, none found", i)
-				break Loop
-			}
+		err := filepath.Walk(tree.name, markFn)
+		if err != nil {
+			t.Errorf("expected no error return from Walk, %s", err)
 		}
-		select {
-		case err := <-errors:
-			t.Errorf("only two errors expected, found 3rd: %v", err)
-		default:
-			// ok
+		if len(errors) != 2 {
+			t.Errorf("expected 2 errors, got %d: %s", len(errors), errors)
 		}
 		// the inaccessible subtrees were marked manually
-		checkMarks(t)
+		checkMarks(t, true)
+		errors = errors[0:0]
+
+		// 4) capture errors, stop after first error.
+		// mark respective subtrees manually
+		markTree(tree.entries[1])
+		markTree(tree.entries[3])
+		// correct double-marking of directory itself
+		tree.entries[1].mark--
+		tree.entries[3].mark--
+		clear = false // error will stop processing
+		err = filepath.Walk(tree.name, markFn)
+		if err == nil {
+			t.Errorf("expected error return from Walk")
+		}
+		if len(errors) != 1 {
+			t.Errorf("expected 1 error, got %d: %s", len(errors), errors)
+		}
+		// the inaccessible subtrees were marked manually
+		checkMarks(t, false)
+		errors = errors[0:0]
+
+		// restore permissions
+		os.Chmod(filepath.Join(tree.name, tree.entries[1].name), 0770)
+		os.Chmod(filepath.Join(tree.name, tree.entries[3].name), 0770)
 	}
 
 	// cleanup
-	os.Chmod(filepath.Join(tree.name, tree.entries[1].name), 0770)
-	os.Chmod(filepath.Join(tree.name, tree.entries[3].name), 0770)
 	if err := os.RemoveAll(tree.name); err != nil {
 		t.Errorf("removeTree: %v", err)
 	}
@@ -421,6 +454,8 @@ var winisabstests = []IsAbsTest{
 	{`\`, false},
 	{`\Windows`, false},
 	{`c:a\b`, false},
+	{`\\host\share\foo`, true},
+	{`//host/share/foo/bar`, true},
 }
 
 func TestIsAbs(t *testing.T) {
@@ -540,10 +575,11 @@ var abstests = []string{
 	"pkg/../../AUTHORS",
 	"Make.pkg",
 	"pkg/Makefile",
-
-	// Already absolute
+	".",
 	"$GOROOT/src/Make.pkg",
 	"$GOROOT/src/../src/Make.pkg",
+	"$GOROOT/misc/cgo",
+	"$GOROOT",
 }
 
 func TestAbs(t *testing.T) {
@@ -557,13 +593,14 @@ func TestAbs(t *testing.T) {
 	os.Chdir(cwd)
 	for _, path := range abstests {
 		path = strings.Replace(path, "$GOROOT", goroot, -1)
-		abspath, err := filepath.Abs(path)
-		if err != nil {
-			t.Errorf("Abs(%q) error: %v", path, err)
-		}
 		info, err := os.Stat(path)
 		if err != nil {
 			t.Errorf("%s: %s", path, err)
+		}
+
+		abspath, err := filepath.Abs(path)
+		if err != nil {
+			t.Errorf("Abs(%q) error: %v", path, err)
 		}
 		absinfo, err := os.Stat(abspath)
 		if err != nil || absinfo.Ino != info.Ino {
@@ -579,3 +616,114 @@ func TestAbs(t *testing.T) {
 }
 
 */
+
+type RelTests struct {
+	root, path, want string
+}
+
+var reltests = []RelTests{
+	{"a/b", "a/b", "."},
+	{"a/b/.", "a/b", "."},
+	{"a/b", "a/b/.", "."},
+	{"./a/b", "a/b", "."},
+	{"a/b", "./a/b", "."},
+	{"ab/cd", "ab/cde", "../cde"},
+	{"ab/cd", "ab/c", "../c"},
+	{"a/b", "a/b/c/d", "c/d"},
+	{"a/b", "a/b/../c", "../c"},
+	{"a/b/../c", "a/b", "../b"},
+	{"a/b/c", "a/c/d", "../../c/d"},
+	{"a/b", "c/d", "../../c/d"},
+	{"../../a/b", "../../a/b/c/d", "c/d"},
+	{"/a/b", "/a/b", "."},
+	{"/a/b/.", "/a/b", "."},
+	{"/a/b", "/a/b/.", "."},
+	{"/ab/cd", "/ab/cde", "../cde"},
+	{"/ab/cd", "/ab/c", "../c"},
+	{"/a/b", "/a/b/c/d", "c/d"},
+	{"/a/b", "/a/b/../c", "../c"},
+	{"/a/b/../c", "/a/b", "../b"},
+	{"/a/b/c", "/a/c/d", "../../c/d"},
+	{"/a/b", "/c/d", "../../c/d"},
+	{"/../../a/b", "/../../a/b/c/d", "c/d"},
+	{".", "a/b", "a/b"},
+	{".", "..", ".."},
+
+	// can't do purely lexically
+	{"..", ".", "err"},
+	{"..", "a", "err"},
+	{"../..", "..", "err"},
+	{"a", "/a", "err"},
+	{"/a", "a", "err"},
+}
+
+var winreltests = []RelTests{
+	{`C:a\b\c`, `C:a/b/d`, `..\d`},
+	{`C:\`, `D:\`, `err`},
+	{`C:`, `D:`, `err`},
+}
+
+func TestRel(t *testing.T) {
+	tests := append([]RelTests{}, reltests...)
+	if runtime.GOOS == "windows" {
+		for i := range tests {
+			tests[i].want = filepath.FromSlash(tests[i].want)
+		}
+		tests = append(tests, winreltests...)
+	}
+	for _, test := range tests {
+		got, err := filepath.Rel(test.root, test.path)
+		if test.want == "err" {
+			if err == nil {
+				t.Errorf("Rel(%q, %q)=%q, want error", test.root, test.path, got)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("Rel(%q, %q): want %q, got error: %s", test.root, test.path, test.want, err)
+		}
+		if got != test.want {
+			t.Errorf("Rel(%q, %q)=%q, want %q", test.root, test.path, got, test.want)
+		}
+	}
+}
+
+type VolumeNameTest struct {
+	path string
+	vol  string
+}
+
+var volumenametests = []VolumeNameTest{
+	{`c:/foo/bar`, `c:`},
+	{`c:`, `c:`},
+	{``, ``},
+	{`\\\host`, ``},
+	{`\\\host\`, ``},
+	{`\\\host\share`, ``},
+	{`\\\host\\share`, ``},
+	{`\\host`, ``},
+	{`//host`, ``},
+	{`\\host\`, ``},
+	{`//host/`, ``},
+	{`\\host\share`, `\\host\share`},
+	{`//host/share`, `//host/share`},
+	{`\\host\share\`, `\\host\share`},
+	{`//host/share/`, `//host/share`},
+	{`\\host\share\foo`, `\\host\share`},
+	{`//host/share/foo`, `//host/share`},
+	{`\\host\share\\foo\\\bar\\\\baz`, `\\host\share`},
+	{`//host/share//foo///bar////baz`, `//host/share`},
+	{`\\host\share\foo\..\bar`, `\\host\share`},
+	{`//host/share/foo/../bar`, `//host/share`},
+}
+
+func TestVolumeName(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		return
+	}
+	for _, v := range volumenametests {
+		if vol := filepath.VolumeName(v.path); vol != v.vol {
+			t.Errorf("VolumeName(%q)=%q, want %q", v.path, vol, v.vol)
+		}
+	}
+}

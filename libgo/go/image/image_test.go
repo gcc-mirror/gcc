@@ -6,17 +6,18 @@ package image_test
 
 import (
 	. "image"
+	"image/color"
 	"testing"
 )
 
 type image interface {
 	Image
 	Opaque() bool
-	Set(int, int, Color)
+	Set(int, int, color.Color)
 	SubImage(Rectangle) Image
 }
 
-func cmp(t *testing.T, cm ColorModel, c0, c1 Color) bool {
+func cmp(t *testing.T, cm color.Model, c0, c1 color.Color) bool {
 	r0, g0, b0, a0 := cm.Convert(c0).RGBA()
 	r1, g1, b1, a1 := cm.Convert(c1).RGBA()
 	return r0 == r1 && g0 == g1 && b0 == b1 && a0 == a1
@@ -24,15 +25,15 @@ func cmp(t *testing.T, cm ColorModel, c0, c1 Color) bool {
 
 func TestImage(t *testing.T) {
 	testImage := []image{
-		NewRGBA(10, 10),
-		NewRGBA64(10, 10),
-		NewNRGBA(10, 10),
-		NewNRGBA64(10, 10),
-		NewAlpha(10, 10),
-		NewAlpha16(10, 10),
-		NewGray(10, 10),
-		NewGray16(10, 10),
-		NewPaletted(10, 10, PalettedColorModel{
+		NewRGBA(Rect(0, 0, 10, 10)),
+		NewRGBA64(Rect(0, 0, 10, 10)),
+		NewNRGBA(Rect(0, 0, 10, 10)),
+		NewNRGBA64(Rect(0, 0, 10, 10)),
+		NewAlpha(Rect(0, 0, 10, 10)),
+		NewAlpha16(Rect(0, 0, 10, 10)),
+		NewGray(Rect(0, 0, 10, 10)),
+		NewGray16(Rect(0, 0, 10, 10)),
+		NewPaletted(Rect(0, 0, 10, 10), color.Palette{
 			Transparent,
 			Opaque,
 		}),
@@ -82,14 +83,14 @@ func TestImage(t *testing.T) {
 }
 
 func Test16BitsPerColorChannel(t *testing.T) {
-	testColorModel := []ColorModel{
-		RGBA64ColorModel,
-		NRGBA64ColorModel,
-		Alpha16ColorModel,
-		Gray16ColorModel,
+	testColorModel := []color.Model{
+		color.RGBA64Model,
+		color.NRGBA64Model,
+		color.Alpha16Model,
+		color.Gray16Model,
 	}
 	for _, cm := range testColorModel {
-		c := cm.Convert(RGBA64Color{0x1234, 0x1234, 0x1234, 0x1234}) // Premultiplied alpha.
+		c := cm.Convert(color.RGBA64{0x1234, 0x1234, 0x1234, 0x1234}) // Premultiplied alpha.
 		r, _, _, _ := c.RGBA()
 		if r != 0x1234 {
 			t.Errorf("%T: want red value 0x%04x got 0x%04x", c, 0x1234, r)
@@ -97,13 +98,13 @@ func Test16BitsPerColorChannel(t *testing.T) {
 		}
 	}
 	testImage := []image{
-		NewRGBA64(10, 10),
-		NewNRGBA64(10, 10),
-		NewAlpha16(10, 10),
-		NewGray16(10, 10),
+		NewRGBA64(Rect(0, 0, 10, 10)),
+		NewNRGBA64(Rect(0, 0, 10, 10)),
+		NewAlpha16(Rect(0, 0, 10, 10)),
+		NewGray16(Rect(0, 0, 10, 10)),
 	}
 	for _, m := range testImage {
-		m.Set(1, 2, NRGBA64Color{0xffff, 0xffff, 0xffff, 0x1357}) // Non-premultiplied alpha.
+		m.Set(1, 2, color.NRGBA64{0xffff, 0xffff, 0xffff, 0x1357}) // Non-premultiplied alpha.
 		r, _, _, _ := m.At(1, 2).RGBA()
 		if r != 0x1357 {
 			t.Errorf("%T: want red value 0x%04x got 0x%04x", m, 0x1357, r)

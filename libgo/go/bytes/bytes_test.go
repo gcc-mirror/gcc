@@ -829,8 +829,14 @@ var ReplaceTests = []ReplaceTest{
 
 func TestReplace(t *testing.T) {
 	for _, tt := range ReplaceTests {
-		if s := string(Replace([]byte(tt.in), []byte(tt.old), []byte(tt.new), tt.n)); s != tt.out {
+		in := append([]byte(tt.in), "<spare>"...)
+		in = in[:len(tt.in)]
+		out := Replace(in, []byte(tt.old), []byte(tt.new), tt.n)
+		if s := string(out); s != tt.out {
 			t.Errorf("Replace(%q, %q, %q, %d) = %q, want %q", tt.in, tt.old, tt.new, tt.n, s, tt.out)
+		}
+		if cap(in) == cap(out) && &in[:1][0] == &out[:1][0] {
+			t.Errorf("Replace(%q, %q, %q, %d) didn't copy", tt.in, tt.old, tt.new, tt.n)
 		}
 	}
 }
@@ -853,6 +859,34 @@ func TestTitle(t *testing.T) {
 	for _, tt := range TitleTests {
 		if s := string(Title([]byte(tt.in))); s != tt.out {
 			t.Errorf("Title(%q) = %q, want %q", tt.in, s, tt.out)
+		}
+	}
+}
+
+var EqualFoldTests = []struct {
+	s, t string
+	out  bool
+}{
+	{"abc", "abc", true},
+	{"ABcd", "ABcd", true},
+	{"123abc", "123ABC", true},
+	{"αβδ", "ΑΒΔ", true},
+	{"abc", "xyz", false},
+	{"abc", "XYZ", false},
+	{"abcdefghijk", "abcdefghijX", false},
+	{"abcdefghijk", "abcdefghij\u212A", true},
+	{"abcdefghijK", "abcdefghij\u212A", true},
+	{"abcdefghijkz", "abcdefghij\u212Ay", false},
+	{"abcdefghijKz", "abcdefghij\u212Ay", false},
+}
+
+func TestEqualFold(t *testing.T) {
+	for _, tt := range EqualFoldTests {
+		if out := EqualFold([]byte(tt.s), []byte(tt.t)); out != tt.out {
+			t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.s, tt.t, out, tt.out)
+		}
+		if out := EqualFold([]byte(tt.t), []byte(tt.s)); out != tt.out {
+			t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.t, tt.s, out, tt.out)
 		}
 	}
 }

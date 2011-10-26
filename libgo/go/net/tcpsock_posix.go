@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin freebsd linux openbsd windows
+
 // TCP sockets
 
 package net
@@ -11,6 +13,11 @@ import (
 	"os"
 	"syscall"
 )
+
+// BUG(rsc): On OpenBSD, listening on the "tcp" network does not listen for
+// both IPv4 and IPv6 connections. This is due to the fact that IPv4 traffic
+// will not be routed to an IPv6 socket - two separate sockets are required
+// if both AFs are to be supported. See inet6(4) on OpenBSD for details.
 
 func sockaddrToTCP(sa syscall.Sockaddr) Addr {
 	switch sa := sa.(type) {
@@ -23,7 +30,7 @@ func sockaddrToTCP(sa syscall.Sockaddr) Addr {
 }
 
 func (a *TCPAddr) family() int {
-	if a == nil || len(a.IP) <= 4 {
+	if a == nil || len(a.IP) <= IPv4len {
 		return syscall.AF_INET
 	}
 	if a.IP.To4() != nil {
@@ -91,6 +98,24 @@ func (c *TCPConn) Close() os.Error {
 	err := c.fd.Close()
 	c.fd = nil
 	return err
+}
+
+// CloseRead shuts down the reading side of the TCP connection.
+// Most callers should just use Close.
+func (c *TCPConn) CloseRead() os.Error {
+	if !c.ok() {
+		return os.EINVAL
+	}
+	return c.fd.CloseRead()
+}
+
+// CloseWrite shuts down the writing side of the TCP connection.
+// Most callers should just use Close.
+func (c *TCPConn) CloseWrite() os.Error {
+	if !c.ok() {
+		return os.EINVAL
+	}
+	return c.fd.CloseWrite()
 }
 
 // LocalAddr returns the local network address, a *TCPAddr.

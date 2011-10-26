@@ -17,6 +17,7 @@
 #include "go-panic.h"
 #include "go-alloc.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 #ifdef USING_SPLIT_STACK
@@ -561,7 +562,7 @@ __go_cachestats (void)
 /* Start the other threads after garbage collection.  */
 
 void
-runtime_starttheworld (void)
+runtime_starttheworld (bool extra __attribute__ ((unused)))
 {
   int i;
   pthread_t me;

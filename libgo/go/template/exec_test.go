@@ -231,7 +231,7 @@ var execTests = []execTest{
 	{"dot complex", "<{{.}}>", "<(16.2-17i)>", 16.2 - 17i, true},
 	{"dot string", "<{{.}}>", "<hello>", "hello", true},
 	{"dot slice", "<{{.}}>", "<[-1 -2 -3]>", []int{-1, -2, -3}, true},
-	{"dot map", "<{{.}}>", "<map[two:22 one:11]>", map[string]int{"one": 11, "two": 22}, true},
+	{"dot map", "<{{.}}>", "<map[two:22]>", map[string]int{"two": 22}, true},
 	{"dot struct", "<{{.}}>", "<{7 seven}>", struct {
 		a int
 		b string
@@ -493,6 +493,50 @@ func TestExecute(t *testing.T) {
 	testExecute(execTests, nil, t)
 }
 
+var delimPairs = []string{
+	"", "", // default
+	"{{", "}}", // same as default
+	"<<", ">>", // distinct
+	"|", "|", // same
+	"(日)", "(本)", // peculiar
+}
+
+func TestDelims(t *testing.T) {
+	const hello = "Hello, world"
+	var value = struct{ Str string }{hello}
+	for i := 0; i < len(delimPairs); i += 2 {
+		text := ".Str"
+		left := delimPairs[i+0]
+		trueLeft := left
+		right := delimPairs[i+1]
+		trueRight := right
+		if left == "" { // default case
+			trueLeft = "{{"
+		}
+		if right == "" { // default case
+			trueRight = "}}"
+		}
+		text = trueLeft + text + trueRight
+		// Now add a comment
+		text += trueLeft + "/*comment*/" + trueRight
+		// Now add  an action containing a string.
+		text += trueLeft + `"` + trueLeft + `"` + trueRight
+		// At this point text looks like `{{.Str}}{{/*comment*/}}{{"{{"}}`.
+		tmpl, err := New("delims").Delims(left, right).Parse(text)
+		if err != nil {
+			t.Fatalf("delim %q text %q parse err %s", left, text, err)
+		}
+		var b = new(bytes.Buffer)
+		err = tmpl.Execute(b, value)
+		if err != nil {
+			t.Fatalf("delim %q exec err %s", left, err)
+		}
+		if b.String() != hello+trueLeft {
+			t.Errorf("expected %q got %q", hello+trueLeft, b.String())
+		}
+	}
+}
+
 // Check that an error from a method flows back to the top.
 func TestExecuteError(t *testing.T) {
 	b := new(bytes.Buffer)
@@ -538,18 +582,19 @@ type Tree struct {
 	Left, Right *Tree
 }
 
+// Use different delimiters to test Set.Delims.
 const treeTemplate = `
-	{{define "tree"}}
+	(define "tree")
 	[
-		{{.Val}}
-		{{with .Left}}
-			{{template "tree" .}}
-		{{end}}
-		{{with .Right}}
-			{{template "tree" .}}
-		{{end}}
+		(.Val)
+		(with .Left)
+			(template "tree" .)
+		(end)
+		(with .Right)
+			(template "tree" .)
+		(end)
 	]
-	{{end}}
+	(end)
 `
 
 func TestTree(t *testing.T) {
@@ -590,7 +635,7 @@ func TestTree(t *testing.T) {
 		},
 	}
 	set := new(Set)
-	_, err := set.Parse(treeTemplate)
+	_, err := set.Delims("(", ")").Parse(treeTemplate)
 	if err != nil {
 		t.Fatal("parse error:", err)
 	}

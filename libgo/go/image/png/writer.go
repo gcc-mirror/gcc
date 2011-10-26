@@ -9,6 +9,7 @@ import (
 	"compress/zlib"
 	"hash/crc32"
 	"image"
+	"image/color"
 	"io"
 	"os"
 	"strconv"
@@ -125,7 +126,7 @@ func (e *encoder) writeIHDR() {
 	e.writeChunk(e.tmp[0:13], "IHDR")
 }
 
-func (e *encoder) writePLTE(p image.PalettedColorModel) {
+func (e *encoder) writePLTE(p color.Palette) {
 	if len(p) < 1 || len(p) > 256 {
 		e.err = FormatError("bad palette length: " + strconv.Itoa(len(p)))
 		return
@@ -139,7 +140,7 @@ func (e *encoder) writePLTE(p image.PalettedColorModel) {
 	e.writeChunk(e.tmp[0:3*len(p)], "PLTE")
 }
 
-func (e *encoder) maybeWritetRNS(p image.PalettedColorModel) {
+func (e *encoder) maybeWritetRNS(p color.Palette) {
 	last := -1
 	for i, c := range p {
 		_, _, _, a := c.RGBA()
@@ -160,10 +161,6 @@ func (e *encoder) maybeWritetRNS(p image.PalettedColorModel) {
 //
 // This method should only be called from writeIDATs (via writeImage).
 // No other code should treat an encoder as an io.Writer.
-//
-// Note that, because the zlib Reader may involve an io.Pipe, e.Write calls may
-// occur on a separate go-routine than the e.writeIDATs call, and care should be
-// taken that e's state (such as its tmp buffer) is not modified concurrently.
 func (e *encoder) Write(b []byte) (int, os.Error) {
 	e.writeChunk(b, "IDAT")
 	if e.err != nil {
@@ -310,7 +307,7 @@ func writeImage(w io.Writer, m image.Image, cb int) os.Error {
 		switch cb {
 		case cbG8:
 			for x := b.Min.X; x < b.Max.X; x++ {
-				c := image.GrayColorModel.Convert(m.At(x, y)).(image.GrayColor)
+				c := color.GrayModel.Convert(m.At(x, y)).(color.Gray)
 				cr[0][i] = c.Y
 				i++
 			}
@@ -336,13 +333,20 @@ func writeImage(w io.Writer, m image.Image, cb int) os.Error {
 				}
 			}
 		case cbP8:
-			paletted := m.(*image.Paletted)
-			offset := (y - b.Min.Y) * paletted.Stride
-			copy(cr[0][1:], paletted.Pix[offset:offset+b.Dx()])
+			if p, _ := m.(*image.Paletted); p != nil {
+				offset := (y - b.Min.Y) * p.Stride
+				copy(cr[0][1:], p.Pix[offset:offset+b.Dx()])
+			} else {
+				pi := m.(image.PalettedImage)
+				for x := b.Min.X; x < b.Max.X; x++ {
+					cr[0][i] = pi.ColorIndexAt(x, y)
+					i += 1
+				}
+			}
 		case cbTCA8:
 			// Convert from image.Image (which is alpha-premultiplied) to PNG's non-alpha-premultiplied.
 			for x := b.Min.X; x < b.Max.X; x++ {
-				c := image.NRGBAColorModel.Convert(m.At(x, y)).(image.NRGBAColor)
+				c := color.NRGBAModel.Convert(m.At(x, y)).(color.NRGBA)
 				cr[0][i+0] = c.R
 				cr[0][i+1] = c.G
 				cr[0][i+2] = c.B
@@ -351,7 +355,7 @@ func writeImage(w io.Writer, m image.Image, cb int) os.Error {
 			}
 		case cbG16:
 			for x := b.Min.X; x < b.Max.X; x++ {
-				c := image.Gray16ColorModel.Convert(m.At(x, y)).(image.Gray16Color)
+				c := color.Gray16Model.Convert(m.At(x, y)).(color.Gray16)
 				cr[0][i+0] = uint8(c.Y >> 8)
 				cr[0][i+1] = uint8(c.Y)
 				i += 2
@@ -371,7 +375,7 @@ func writeImage(w io.Writer, m image.Image, cb int) os.Error {
 		case cbTCA16:
 			// Convert from image.Image (which is alpha-premultiplied) to PNG's non-alpha-premultiplied.
 			for x := b.Min.X; x < b.Max.X; x++ {
-				c := image.NRGBA64ColorModel.Convert(m.At(x, y)).(image.NRGBA64Color)
+				c := color.NRGBA64Model.Convert(m.At(x, y)).(color.NRGBA64)
 				cr[0][i+0] = uint8(c.R >> 8)
 				cr[0][i+1] = uint8(c.R)
 				cr[0][i+2] = uint8(c.G >> 8)
@@ -432,16 +436,21 @@ func Encode(w io.Writer, m image.Image) os.Error {
 	var e encoder
 	e.w = w
 	e.m = m
-	pal, _ := m.(*image.Paletted)
+
+	var pal color.Palette
+	// cbP8 encoding needs PalettedImage's ColorIndexAt method.
+	if _, ok := m.(image.PalettedImage); ok {
+		pal, _ = m.ColorModel().(color.Palette)
+	}
 	if pal != nil {
 		e.cb = cbP8
 	} else {
 		switch m.ColorModel() {
-		case image.GrayColorModel:
+		case color.GrayModel:
 			e.cb = cbG8
-		case image.Gray16ColorModel:
+		case color.Gray16Model:
 			e.cb = cbG16
-		case image.RGBAColorModel, image.NRGBAColorModel, image.AlphaColorModel:
+		case color.RGBAModel, color.NRGBAModel, color.AlphaModel:
 			if opaque(m) {
 				e.cb = cbTC8
 			} else {
@@ -459,8 +468,8 @@ func Encode(w io.Writer, m image.Image) os.Error {
 	_, e.err = io.WriteString(w, pngHeader)
 	e.writeIHDR()
 	if pal != nil {
-		e.writePLTE(pal.Palette)
-		e.maybeWritetRNS(pal.Palette)
+		e.writePLTE(pal)
+		e.maybeWritetRNS(pal)
 	}
 	e.writeIDATs()
 	e.writeIEND()

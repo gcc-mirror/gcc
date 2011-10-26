@@ -463,7 +463,7 @@ echo $msghdr | \
       -e 's/msg_flags/Flags/' \
     >> ${OUT}
 
-# The ip_mreq struct
+# The ip_mreq struct.
 grep '^type _ip_mreq ' gen-sysinfo.go | \
     sed -e 's/_ip_mreq/IPMreq/' \
       -e 's/imr_multiaddr/Multiaddr/' \
@@ -475,6 +475,14 @@ grep '^type _ip_mreq ' gen-sysinfo.go | \
 if grep 'type IPMreq ' ${OUT} > /dev/null 2>&1; then
   echo 'var SizeofIPMreq = int(unsafe.Sizeof(IPMreq{}))' >> ${OUT}
 fi
+
+# The ipv6_mreq struct.
+grep '^type _ipv6_mreq ' gen-sysinfo.go | \
+    sed -e 's/_ipv6_mreq/IPv6Mreq/' \
+      -e 's/ipv6mr_multiaddr/Multiaddr/' \
+      -e 's/ipv6mr_interface/Interface/' \
+      -e 's/_in6_addr/[16]byte/' \
+    >> ${OUT}
 
 # Try to guess the type to use for fd_set.
 fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`
@@ -503,6 +511,10 @@ grep '^type _passwd ' gen-sysinfo.go | \
 # The ioctl flags for the controlling TTY.
 grep '^const _TIOC' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(TIOC[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The ioctl flags for terminal control
+grep '^const _TC[GS]ET' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(TC[GS]ET[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # ioctl constants.  Might fall back to 0 if TIOCNXCL is missing, too, but
 # needs handling in syscalls.exec.go.
@@ -618,5 +630,34 @@ grep '^type _rtattr ' gen-sysinfo.go | \
 if grep 'type RtAttr ' ${OUT} > /dev/null 2>&1; then
   echo 'var SizeofRtAttr = int(unsafe.Sizeof(RtAttr{}))' >> ${OUT}
 fi
+
+# The termios struct.
+grep '^type _termios ' gen-sysinfo.go | \
+    sed -e 's/_termios/Termios/' \
+      -e 's/c_iflag/Iflag/' \
+      -e 's/c_oflag/Oflag/' \
+      -e 's/c_cflag/Cflag/' \
+      -e 's/c_lflag/Lflag/' \
+      -e 's/c_line/Line/' \
+      -e 's/c_cc/Cc/' \
+      -e 's/c_ispeed/Ispeed/' \
+      -e 's/c_ospeed/Ospeed/' \
+    >> ${OUT}
+
+# The termios constants.  The ones starting with 'E' were picked up above.
+for n in IGNBRK BRKINT IGNPAR PARMRK INPCK ISTRIP INLCR IGNCR ICRNL IUCLC \
+    IXON IXANY IXOFF IMAXBEL IUTF8 OPOST OLCUC ONLCR OCRNL ONOCR ONLRET \
+    OFILL OFDEL NLDLY NL0 NL1 CRDLY CR0 CR1 CR2 CR3 TABDLY BSDLY VTDLY \
+    FFDLY CBAUD CBAUDEX CSIZE CSTOPB CREAD PARENB PARODD HUPCL CLOCAL \
+    LOBLK CIBAUD CMSPAR CRTSCTS ISIG ICANON XCASE DEFECHK FLUSHO NOFLSH \
+    TOSTOP PENDIN IEXTEN VINTR VQUIT VERASE VKILL VEOF VMIN VEOL VTIME VEOL2 \
+    VSWTCH VSTART VSTOP VSUSP VDSUSP VLNEXT VWERASE VREPRINT VDISCARD VSTATUS \
+    TCSANOW TCSADRAIN, TCSAFLUSH TCIFLUSH TCOFLUSH TCIOFLUSH TCOOFF TCOON \
+    TCIOFF TCION B0 B50 B75 B110 B134 B150 B200 B300 B600 B1200 B1800 B2400 \
+    B4800 B9600 B19200 B38400 B57600 B115200 B230400; do
+
+    grep "^const _$n " gen-sysinfo.go | \
+	sed -e 's/^\(const \)_\([^=]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+done
 
 exit $?

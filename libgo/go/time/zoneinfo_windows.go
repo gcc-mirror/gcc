@@ -27,9 +27,30 @@ type zone struct {
 	prev                  *zone
 }
 
+// BUG(rsc): On Windows, time zone abbreviations are unavailable.
+// This package constructs them using the capital letters from a longer
+// time zone description.
+
 // Populate zone struct with Windows supplied information. Returns true, if data is valid.
 func (z *zone) populate(bias, biasdelta int32, d *syscall.Systemtime, name []uint16) (dateisgood bool) {
-	z.name = syscall.UTF16ToString(name)
+	// name is 'Pacific Standard Time' but we want 'PST'.
+	// Extract just capital letters.  It's not perfect but the
+	// information we need is not available from the kernel.
+	// Because time zone abbreviations are not unique,
+	// Windows refuses to expose them.
+	//
+	// http://social.msdn.microsoft.com/Forums/eu/vclanguage/thread/a87e1d25-fb71-4fe0-ae9c-a9578c9753eb
+	// http://stackoverflow.com/questions/4195948/windows-time-zone-abbreviations-in-asp-net
+	short := make([]uint16, len(name))
+	w := 0
+	for _, c := range name {
+		if 'A' <= c && c <= 'Z' {
+			short[w] = c
+			w++
+		}
+	}
+	z.name = syscall.UTF16ToString(short[:w])
+
 	z.offset = int(bias)
 	z.year = int64(d.Year)
 	z.month = int(d.Month)
@@ -49,7 +70,15 @@ func (z *zone) populate(bias, biasdelta int32, d *syscall.Systemtime, name []uin
 // Pre-calculate cutoff time in seconds since the Unix epoch, if data is supplied in "absolute" format.
 func (z *zone) preCalculateAbsSec() {
 	if z.year != 0 {
-		z.abssec = (&Time{z.year, int(z.month), int(z.day), int(z.hour), int(z.minute), int(z.second), 0, 0, 0, ""}).Seconds()
+		t := &Time{
+			Year:   z.year,
+			Month:  int(z.month),
+			Day:    int(z.day),
+			Hour:   int(z.hour),
+			Minute: int(z.minute),
+			Second: int(z.second),
+		}
+		z.abssec = t.Seconds()
 		// Time given is in "local" time. Adjust it for "utc".
 		z.abssec -= int64(z.prev.offset)
 	}
@@ -62,9 +91,16 @@ func (z *zone) cutoffSeconds(year int64) int64 {
 	// z.dayofweek is appropriate weekday (Sunday=0 to Saturday=6)
 	// z.day is week within the month (1 to 5, where 5 is last week of the month)
 	// z.hour, z.minute and z.second are absolute time
-	t := &Time{year, int(z.month), 1, int(z.hour), int(z.minute), int(z.second), 0, 0, 0, ""}
+	t := &Time{
+		Year:   year,
+		Month:  int(z.month),
+		Day:    1,
+		Hour:   int(z.hour),
+		Minute: int(z.minute),
+		Second: int(z.second),
+	}
 	t = SecondsToUTC(t.Seconds())
-	i := int(z.dayofweek) - t.Weekday
+	i := int(z.dayofweek) - t.Weekday()
 	if i < 0 {
 		i += 7
 	}
@@ -129,6 +165,10 @@ func setupZone() {
 		initError = os.NewSyscallError("GetTimeZoneInformation", e)
 		return
 	}
+	setupZoneFromTZI(&i)
+}
+
+func setupZoneFromTZI(i *syscall.Timezoneinformation) {
 	if !tz.std.populate(i.Bias, i.StandardBias, &i.StandardDate, i.StandardName[0:]) {
 		tz.disabled = true
 		tz.offsetIfDisabled = tz.std.offset
@@ -142,6 +182,23 @@ func setupZone() {
 	// Is january 1 standard time this year?
 	t := UTC()
 	tz.januaryIsStd = tz.dst.cutoffSeconds(t.Year) < tz.std.cutoffSeconds(t.Year)
+}
+
+var usPacific = syscall.Timezoneinformation{
+	Bias: 8 * 60,
+	StandardName: [32]uint16{
+		'P', 'a', 'c', 'i', 'f', 'i', 'c', ' ', 'S', 't', 'a', 'n', 'd', 'a', 'r', 'd', ' ', 'T', 'i', 'm', 'e',
+	},
+	StandardDate: syscall.Systemtime{Month: 11, Day: 1, Hour: 2},
+	DaylightName: [32]uint16{
+		'P', 'a', 'c', 'i', 'f', 'i', 'c', ' ', 'D', 'a', 'y', 'l', 'i', 'g', 'h', 't', ' ', 'T', 'i', 'm', 'e',
+	},
+	DaylightDate: syscall.Systemtime{Month: 3, Day: 2, Hour: 2},
+	DaylightBias: -60,
+}
+
+func setupTestingZone() {
+	setupZoneFromTZI(&usPacific)
 }
 
 // Look up the correct time zone (daylight savings or not) for the given unix time, in the current location.

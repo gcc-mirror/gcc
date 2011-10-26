@@ -120,6 +120,13 @@ enum
 #else
 	MHeapMap_Bits = 20,
 #endif
+
+	// Max number of threads to run garbage collection.
+	// 2, 3, and 4 are all plausible maximums depending
+	// on the hardware details of the machine.  The second
+	// proc is the one that helps the most (after the first),
+	// so start with just 2 for now.
+	MaxGcproc = 2,
 };
 
 // A generic linked list of blocks.  (Typically the block is bigger than sizeof(MLink).)
@@ -192,7 +199,7 @@ struct MStats
 	uint64	nlookup;	// number of pointer lookups
 	uint64	nmalloc;	// number of mallocs
 	uint64	nfree;  // number of frees
-	
+
 	// Statistics about malloc heap.
 	// protected by mheap.Lock
 	uint64	heap_alloc;	// bytes allocated and still in use
@@ -210,7 +217,7 @@ struct MStats
 	uint64	mcache_inuse;	// MCache structures
 	uint64	mcache_sys;
 	uint64	buckhash_sys;	// profiling bucket hash table
-	
+
 	// Statistics about garbage collector.
 	// Protected by stopping the world during GC.
 	uint64	next_gc;	// next GC (in heap_alloc time)
@@ -219,7 +226,7 @@ struct MStats
 	uint32	numgc;
 	bool	enablegc;
 	bool	debuggc;
-	
+
 	// Statistics about allocation size classes.
 	struct {
 		uint32 size;
@@ -240,7 +247,7 @@ extern MStats mstats
 //
 // class_to_size[i] = largest size in class i
 // class_to_allocnpages[i] = number of pages to allocate when
-// 	making new objects in class i
+//	making new objects in class i
 // class_to_transfercount[i] = number of objects to move when
 //	taking a bunch of objects out of the central lists
 //	and putting them in the thread free list.
@@ -279,7 +286,7 @@ struct MCache
 		int64 nmalloc;
 		int64 nfree;
 	} local_by_size[NumSizeClasses];
-	
+
 };
 
 void*	runtime_MCache_Alloc(MCache *c, int32 sizeclass, uintptr size, int32 zeroed);
@@ -352,14 +359,14 @@ struct MHeap
 	byte *arena_start;
 	byte *arena_used;
 	byte *arena_end;
-	
+
 	// central free lists for small size classes.
 	// the union makes sure that the MCentrals are
-	// spaced 64 bytes apart, so that each MCentral.Lock
+	// spaced CacheLineSize bytes apart, so that each MCentral.Lock
 	// gets its own cache line.
 	union {
 		MCentral;
-		byte pad[64];
+		byte pad[CacheLineSize];
 	} central[NumSizeClasses];
 
 	FixAlloc spanalloc;	// allocator for Span*
@@ -387,7 +394,7 @@ int32	runtime_checking;
 void	runtime_markspan(void *v, uintptr size, uintptr n, bool leftover);
 void	runtime_unmarkspan(void *v, uintptr size);
 bool	runtime_blockspecial(void*);
-void	runtime_setblockspecial(void*);
+void	runtime_setblockspecial(void*, bool);
 void	runtime_purgecachedstats(M*);
 
 enum
@@ -402,6 +409,8 @@ void	runtime_Mprof_Init(void);
 void	runtime_MProf_Malloc(void*, uintptr);
 void	runtime_MProf_Free(void*, uintptr);
 void	runtime_MProf_Mark(void (*scan)(byte *, int64));
+int32	runtime_helpgc(bool*);
+void	runtime_gchelper(void);
 
 // Malloc profiling settings.
 // Must match definition in extern.go.
@@ -412,13 +421,6 @@ enum {
 };
 extern int32 runtime_malloc_profile;
 
-typedef struct Finalizer Finalizer;
-struct Finalizer
-{
-	Finalizer *next;	// for use by caller of getfinalizer
-	void (*fn)(void*);
-	void *arg;
-	const struct __go_func_type *ft;
-};
-
-Finalizer*	runtime_getfinalizer(void*, bool);
+struct __go_func_type;
+bool	runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_func_type **ft);
+void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte*, int64));

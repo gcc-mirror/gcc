@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 #include "go-alloc.h"
 #include "go-defer.h"

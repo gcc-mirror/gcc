@@ -575,6 +575,91 @@ func TestGobMapInterfaceEncode(t *testing.T) {
 	enc := NewEncoder(buf)
 	err := enc.Encode(m)
 	if err != nil {
-		t.Errorf("gob.Encode map: %s", err)
+		t.Errorf("encode map: %s", err)
+	}
+}
+
+func TestSliceReusesMemory(t *testing.T) {
+	buf := bytes.NewBuffer(nil)
+	// Bytes
+	{
+		x := []byte("abcd")
+		enc := NewEncoder(buf)
+		err := enc.Encode(x)
+		if err != nil {
+			t.Errorf("bytes: encode: %s", err)
+		}
+		// Decode into y, which is big enough.
+		y := []byte("ABCDE")
+		addr := &y[0]
+		dec := NewDecoder(buf)
+		err = dec.Decode(&y)
+		if err != nil {
+			t.Fatal("bytes: decode:", err)
+		}
+		if !bytes.Equal(x, y) {
+			t.Errorf("bytes: expected %q got %q\n", x, y)
+		}
+		if addr != &y[0] {
+			t.Errorf("bytes: unnecessary reallocation")
+		}
+	}
+	// general slice
+	{
+		x := []int("abcd")
+		enc := NewEncoder(buf)
+		err := enc.Encode(x)
+		if err != nil {
+			t.Errorf("ints: encode: %s", err)
+		}
+		// Decode into y, which is big enough.
+		y := []int("ABCDE")
+		addr := &y[0]
+		dec := NewDecoder(buf)
+		err = dec.Decode(&y)
+		if err != nil {
+			t.Fatal("ints: decode:", err)
+		}
+		if !reflect.DeepEqual(x, y) {
+			t.Errorf("ints: expected %q got %q\n", x, y)
+		}
+		if addr != &y[0] {
+			t.Errorf("ints: unnecessary reallocation")
+		}
+	}
+}
+
+// Used to crash: negative count in recvMessage.
+func TestBadCount(t *testing.T) {
+	b := []byte{0xfb, 0xa5, 0x82, 0x2f, 0xca, 0x1}
+	if err := NewDecoder(bytes.NewBuffer(b)).Decode(nil); err == nil {
+		t.Error("expected error from bad count")
+	} else if err.String() != errBadCount.String() {
+		t.Error("expected bad count error; got", err)
+	}
+}
+
+// Verify that sequential Decoders built on a single input will
+// succeed if the input implements ReadByte and there is no
+// type information in the stream.
+func TestSequentialDecoder(t *testing.T) {
+	b := new(bytes.Buffer)
+	enc := NewEncoder(b)
+	const count = 10
+	for i := 0; i < count; i++ {
+		s := fmt.Sprintf("%d", i)
+		if err := enc.Encode(s); err != nil {
+			t.Error("encoder fail:", err)
+		}
+	}
+	for i := 0; i < count; i++ {
+		dec := NewDecoder(b)
+		var s string
+		if err := dec.Decode(&s); err != nil {
+			t.Fatal("decoder fail:", err)
+		}
+		if s != fmt.Sprintf("%d", i) {
+			t.Fatalf("decode expected %d got %s", i, s)
+		}
 	}
 }

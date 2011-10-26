@@ -53,7 +53,7 @@ func (sa *RawSockaddrUnix) getLen() (int, int) {
 	}
 
 	// Assume path ends at NUL.
-	// This is not technically the Linux semantics for
+	// This is not technically the GNU/Linux semantics for
 	// abstract Unix domain sockets--they are supposed
 	// to be uninterpreted fixed-size binary blobs--but
 	// everyone uses this convention.

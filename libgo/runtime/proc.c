@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"	/* so that acid generated from proc.c includes malloc data structures */
 
 typedef struct Sched Sched;

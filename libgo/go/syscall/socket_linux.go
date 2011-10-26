@@ -1,4 +1,4 @@
-// socket_linux.go -- Socket handling specific to Linux.
+// socket_linux.go -- Socket handling specific to GNU/Linux.
 
 // Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -98,7 +98,7 @@ func (sa *RawSockaddrUnix) getLen() (int, int) {
 	}
 
 	// Assume path ends at NUL.
-	// This is not technically the Linux semantics for
+	// This is not technically the GNU/Linux semantics for
 	// abstract Unix domain sockets--they are supposed
 	// to be uninterpreted fixed-size binary blobs--but
 	// everyone uses this convention.

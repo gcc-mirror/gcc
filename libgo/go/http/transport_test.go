@@ -78,7 +78,7 @@ func TestTransportConnectionCloseOnResponse(t *testing.T) {
 		fetch := func(n int) string {
 			req := new(Request)
 			var err os.Error
-			req.URL, err = url.Parse(ts.URL + fmt.Sprintf("?close=%v", connectionClose))
+			req.URL, err = url.Parse(ts.URL + fmt.Sprintf("/?close=%v", connectionClose))
 			if err != nil {
 				t.Fatalf("URL parse error: %v", err)
 			}
@@ -362,32 +362,6 @@ func TestTransportHeadChunkedResponse(t *testing.T) {
 	}
 }
 
-func TestTransportNilURL(t *testing.T) {
-	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
-		fmt.Fprintf(w, "Hi")
-	}))
-	defer ts.Close()
-
-	req := new(Request)
-	req.URL = nil // what we're actually testing
-	req.Method = "GET"
-	req.RawURL = ts.URL
-	req.Proto = "HTTP/1.1"
-	req.ProtoMajor = 1
-	req.ProtoMinor = 1
-	req.Header = make(Header)
-
-	tr := &Transport{}
-	res, err := tr.RoundTrip(req)
-	if err != nil {
-		t.Fatalf("unexpected RoundTrip error: %v", err)
-	}
-	body, err := ioutil.ReadAll(res.Body)
-	if g, e := string(body), "Hi"; g != e {
-		t.Fatalf("Expected response body of %q; got %q", e, g)
-	}
-}
-
 var roundTripTests = []struct {
 	accept       string
 	expectAccept string
@@ -398,7 +372,8 @@ var roundTripTests = []struct {
 	// Requests with other accept-encoding should pass through unmodified
 	{"foo", "foo", false},
 	// Requests with accept-encoding == gzip should be passed through
-	{"gzip", "gzip", true}}
+	{"gzip", "gzip", true},
+}
 
 // Test that the modification made to the Request by the RoundTripper is cleaned up
 func TestRoundTripGzip(t *testing.T) {
@@ -406,7 +381,8 @@ func TestRoundTripGzip(t *testing.T) {
 	ts := httptest.NewServer(HandlerFunc(func(rw ResponseWriter, req *Request) {
 		accept := req.Header.Get("Accept-Encoding")
 		if expect := req.FormValue("expect_accept"); accept != expect {
-			t.Errorf("Accept-Encoding = %q, want %q", accept, expect)
+			t.Errorf("in handler, test %v: Accept-Encoding = %q, want %q",
+				req.FormValue("testnum"), accept, expect)
 		}
 		if accept == "gzip" {
 			rw.Header().Set("Content-Encoding", "gzip")
@@ -422,8 +398,10 @@ func TestRoundTripGzip(t *testing.T) {
 
 	for i, test := range roundTripTests {
 		// Test basic request (no accept-encoding)
-		req, _ := NewRequest("GET", ts.URL+"?expect_accept="+test.expectAccept, nil)
-		req.Header.Set("Accept-Encoding", test.accept)
+		req, _ := NewRequest("GET", fmt.Sprintf("%s/?testnum=%d&expect_accept=%s", ts.URL, i, test.expectAccept), nil)
+		if test.accept != "" {
+			req.Header.Set("Accept-Encoding", test.accept)
+		}
 		res, err := DefaultTransport.RoundTrip(req)
 		var body []byte
 		if test.compressed {
@@ -435,16 +413,16 @@ func TestRoundTripGzip(t *testing.T) {
 		}
 		if err != nil {
 			t.Errorf("%d. Error: %q", i, err)
-		} else {
-			if g, e := string(body), responseBody; g != e {
-				t.Errorf("%d. body = %q; want %q", i, g, e)
-			}
-			if g, e := req.Header.Get("Accept-Encoding"), test.accept; g != e {
-				t.Errorf("%d. Accept-Encoding = %q; want %q", i, g, e)
-			}
-			if g, e := res.Header.Get("Content-Encoding"), test.accept; g != e {
-				t.Errorf("%d. Content-Encoding = %q; want %q", i, g, e)
-			}
+			continue
+		}
+		if g, e := string(body), responseBody; g != e {
+			t.Errorf("%d. body = %q; want %q", i, g, e)
+		}
+		if g, e := req.Header.Get("Accept-Encoding"), test.accept; g != e {
+			t.Errorf("%d. Accept-Encoding = %q; want %q (it was mutated, in violation of RoundTrip contract)", i, g, e)
+		}
+		if g, e := res.Header.Get("Content-Encoding"), test.accept; g != e {
+			t.Errorf("%d. Content-Encoding = %q; want %q", i, g, e)
 		}
 	}
 
@@ -474,7 +452,7 @@ func TestTransportGzip(t *testing.T) {
 		gz, _ := gzip.NewWriter(w)
 		gz.Write([]byte(testString))
 		if req.FormValue("body") == "large" {
-			io.Copyn(gz, rand.Reader, nRandBytes)
+			io.CopyN(gz, rand.Reader, nRandBytes)
 		}
 		gz.Close()
 	}))
@@ -484,7 +462,7 @@ func TestTransportGzip(t *testing.T) {
 		c := &Client{Transport: &Transport{}}
 
 		// First fetch something large, but only read some of it.
-		res, err := c.Get(ts.URL + "?body=large&chunked=" + chunked)
+		res, err := c.Get(ts.URL + "/?body=large&chunked=" + chunked)
 		if err != nil {
 			t.Fatalf("large get: %v", err)
 		}
@@ -504,7 +482,7 @@ func TestTransportGzip(t *testing.T) {
 		}
 
 		// Then something small.
-		res, err = c.Get(ts.URL + "?chunked=" + chunked)
+		res, err = c.Get(ts.URL + "/?chunked=" + chunked)
 		if err != nil {
 			t.Fatal(err)
 		}

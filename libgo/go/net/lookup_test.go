@@ -26,6 +26,15 @@ func TestGoogleSRV(t *testing.T) {
 	if len(addrs) == 0 {
 		t.Errorf("no results")
 	}
+
+	// Non-standard back door.
+	_, addrs, err = LookupSRV("", "", "_xmpp-server._tcp.google.com")
+	if err != nil {
+		t.Errorf("back door failed: %s", err)
+	}
+	if len(addrs) == 0 {
+		t.Errorf("back door no results")
+	}
 }
 
 func TestGmailMX(t *testing.T) {
@@ -38,6 +47,24 @@ func TestGmailMX(t *testing.T) {
 		t.Errorf("failed: %s", err)
 	}
 	if len(mx) == 0 {
+		t.Errorf("no results")
+	}
+}
+
+func TestGmailTXT(t *testing.T) {
+	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
+		t.Logf("LookupTXT is not implemented on Windows or Plan 9")
+		return
+	}
+	if testing.Short() || avoidMacFirewall {
+		t.Logf("skipping test to avoid external network")
+		return
+	}
+	txt, err := LookupTXT("gmail.com")
+	if err != nil {
+		t.Errorf("failed: %s", err)
+	}
+	if len(txt) == 0 || len(txt[0]) == 0 {
 		t.Errorf("no results")
 	}
 }

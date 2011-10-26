@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin freebsd linux openbsd windows
+
 // Sockets
 
 package net
@@ -50,6 +52,7 @@ func socket(net string, f, p, t int, la, ra syscall.Sockaddr, toAddr func(syscal
 
 	if ra != nil {
 		if err = fd.connect(ra); err != nil {
+			closesocket(s)
 			fd.Close()
 			return nil, err
 		}

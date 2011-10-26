@@ -24,8 +24,11 @@ import (
 // Marshal returns the JSON encoding of v.
 //
 // Marshal traverses the value v recursively.
-// If an encountered value implements the Marshaler interface,
-// Marshal calls its MarshalJSON method to produce JSON.
+// If an encountered value implements the Marshaler interface
+// and is not a nil pointer, Marshal calls its MarshalJSON method
+// to produce JSON.  The nil pointer exception is not strictly necessary
+// but mimics a similar, necessary exception in the behavior of
+// UnmarshalJSON.
 //
 // Otherwise, Marshal uses the following type-dependent default encodings:
 //
@@ -40,18 +43,23 @@ import (
 // []byte encodes as a base64-encoded string.
 //
 // Struct values encode as JSON objects. Each exported struct field
-// becomes a member of the object unless the field is empty and its tag
-// specifies the "omitempty" option. The empty values are false, 0, any
+// becomes a member of the object unless
+//   - the field's tag is "-", or
+//   - the field is empty and its tag specifies the "omitempty" option.
+// The empty values are false, 0, any
 // nil pointer or interface value, and any array, slice, map, or string of
 // length zero. The object's default key string is the struct field name
 // but can be specified in the struct field's tag value. The "json" key in
 // struct field's tag value is the key name, followed by an optional comma
 // and options. Examples:
 //
-//   // Specifies that Field appears in JSON as key "myName"
+//   // Field is ignored by this package.
+//   Field int `json:"-"`
+//
+//   // Field appears in JSON as key "myName".
 //   Field int `json:"myName"`
 //
-//   // Specifies that Field appears in JSON as key "myName" and
+//   // Field appears in JSON as key "myName" and
 //   // the field is omitted from the object if its value is empty,
 //   // as defined above.
 //   Field int `json:"myName,omitempty"`
@@ -240,7 +248,7 @@ func (e *encodeState) reflectValueQuoted(v reflect.Value, quoted bool) {
 		return
 	}
 
-	if j, ok := v.Interface().(Marshaler); ok {
+	if j, ok := v.Interface().(Marshaler); ok && (v.Kind() != reflect.Ptr || !v.IsNil()) {
 		b, err := j.MarshalJSON()
 		if err == nil {
 			// copy JSON into buffer, checking validity.
@@ -298,6 +306,9 @@ func (e *encodeState) reflectValueQuoted(v reflect.Value, quoted bool) {
 			}
 			tag, omitEmpty, quoted := f.Name, false, false
 			if tv := f.Tag.Get("json"); tv != "" {
+				if tv == "-" {
+					continue
+				}
 				name, opts := parseTag(tv)
 				if isValidTag(name) {
 					tag = name

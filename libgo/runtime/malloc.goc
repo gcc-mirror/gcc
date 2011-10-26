@@ -12,6 +12,7 @@ package runtime
 #include <stdlib.h>
 #include "go-alloc.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 #include "go-string.h"
 #include "interface.h"
@@ -96,11 +97,12 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 			m->mcache->next_sample -= size;
 		else {
 			// pick next profile time
+			// If you change this, also change allocmcache.
 			if(rate > 0x3fffffff)	// make 2*rate not overflow
 				rate = 0x3fffffff;
 			m->mcache->next_sample = runtime_fastrand1() % (2*rate);
 		profile:
-			runtime_setblockspecial(v);
+			runtime_setblockspecial(v, true);
 			runtime_MProf_Malloc(v, size);
 		}
 	}
@@ -224,6 +226,7 @@ runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **sp)
 MCache*
 runtime_allocmcache(void)
 {
+	int32 rate;
 	MCache *c;
 
 	if(!__sync_bool_compare_and_swap(&m->mallocing, 0, 1))
@@ -238,6 +241,13 @@ runtime_allocmcache(void)
 	mstats.mcache_inuse = runtime_mheap.cachealloc.inuse;
 	mstats.mcache_sys = runtime_mheap.cachealloc.sys;
 	runtime_unlock(&runtime_mheap);
+
+	// Set first allocation sample size.
+	rate = runtime_MemProfileRate;
+	if(rate > 0x3fffffff)	// make 2*rate not overflow
+		rate = 0x3fffffff;
+	if(rate != 0)
+		c->next_sample = runtime_fastrand1() % (2*rate);
 
 	__sync_bool_compare_and_swap(&m->mallocing, 1, 0);
 	if(__sync_bool_compare_and_swap(&m->gcing, 1, 0))
@@ -280,6 +290,7 @@ runtime_mallocinit(void)
 	byte *p;
 	uintptr arena_size, bitmap_size;
 	extern byte end[];
+	byte *want;
 
 	runtime_sizeof_C_MStats = sizeof(MStats);
 
@@ -341,9 +352,13 @@ runtime_mallocinit(void)
 		// not as an absolute requirement.  If we ask for the end
 		// of the data segment but the operating system requires
 		// a little more space before we can start allocating, it will
-		// give out a slightly higher pointer.  That's fine.  
-		// Run with what we get back.
-		p = runtime_SysReserve(end, bitmap_size + arena_size);
+		// give out a slightly higher pointer.  Except QEMU, which
+		// is buggy, as usual: it won't adjust the pointer upward.
+		// So adjust it upward a little bit ourselves: 1/4 MB to get
+		// away from the running binary image and then round up
+		// to a MB boundary.
+		want = (byte*)(((uintptr)end + (1<<18) + (1<<20) - 1)&~((1<<20)-1));
+		p = runtime_SysReserve(want, bitmap_size + arena_size);
 		if(p == nil)
 			runtime_throw("runtime: cannot reserve arena virtual address space");
 	}
@@ -418,8 +433,9 @@ runtime_mal(uintptr n)
 	return runtime_mallocgc(n, 0, 1, 1);
 }
 
-func new(n uint32) (ret *uint8) {
-	ret = runtime_mal(n);
+func new(typ *Type) (ret *uint8) {
+	uint32 flag = typ->__code&GO_NO_POINTERS ? FlagNoPointers : 0;
+	ret = runtime_mallocgc(typ->__size, flag, 1, 1);
 }
 
 func Alloc(n uintptr) (p *byte) {
@@ -444,9 +460,8 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	const FuncType *ft;
 
 	if(obj.__type_descriptor == nil) {
-		// runtime_printf("runtime.SetFinalizer: first argument is nil interface\n");
-	throw:
-		runtime_throw("runtime.SetFinalizer");
+		// runtime·printf("runtime.SetFinalizer: first argument is nil interface\n");
+		goto throw;
 	}
 	if(obj.__type_descriptor->__code != GO_PTR) {
 		// runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *obj.type->string);
@@ -458,19 +473,21 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	}
 	ft = nil;
 	if(finalizer.__type_descriptor != nil) {
-		if(finalizer.__type_descriptor->__code != GO_FUNC) {
-		badfunc:
-			// runtime_printf("runtime.SetFinalizer: second argument is %S, not func(%S)\n", *finalizer.type->string, *obj.type->string);
-			goto throw;
-		}
+		if(finalizer.__type_descriptor->__code != GO_FUNC)
+			goto badfunc;
 		ft = (const FuncType*)finalizer.__type_descriptor;
 		if(ft->__dotdotdot || ft->__in.__count != 1 || !__go_type_descriptors_equal(*(Type**)ft->__in.__values, obj.__type_descriptor))
 			goto badfunc;
-
-		if(runtime_getfinalizer(obj.__object, 0)) {
-			// runtime_printf("runtime.SetFinalizer: finalizer already set");
-			goto throw;
-		}
 	}
-	runtime_addfinalizer(obj.__object, finalizer.__type_descriptor != nil ? *(void**)finalizer.__object : nil, ft);
+
+	if(!runtime_addfinalizer(obj.__object, finalizer.__type_descriptor != nil ? *(void**)finalizer.__object : nil, ft)) {
+		runtime_printf("runtime.SetFinalizer: finalizer already set\n");
+		goto throw;
+	}
+	return;
+
+badfunc:
+	// runtime_printf("runtime.SetFinalizer: second argument is %S, not func(%S)\n", *finalizer.type->string, *obj.type->string);
+throw:
+	runtime_throw("runtime.SetFinalizer");
 }

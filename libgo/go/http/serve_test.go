@@ -9,14 +9,15 @@ package http_test
 import (
 	"bufio"
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	. "http"
 	"http/httptest"
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
 	"net"
+	"os"
 	"reflect"
 	"strings"
 	"syscall"
@@ -356,18 +357,17 @@ func TestIdentityResponse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error writing: %v", err)
 	}
-	// The next ReadAll will hang for a failing test, so use a Timer instead
-	// to fail more traditionally
-	timer := time.AfterFunc(2e9, func() {
-		t.Fatalf("Timeout expired in ReadAll.")
+
+	// The ReadAll will hang for a failing test, so use a Timer to
+	// fail explicitly.
+	goTimeout(t, 2e9, func() {
+		got, _ := ioutil.ReadAll(conn)
+		expectedSuffix := "\r\n\r\ntoo short"
+		if !strings.HasSuffix(string(got), expectedSuffix) {
+			t.Errorf("Expected output to end with %q; got response body %q",
+				expectedSuffix, string(got))
+		}
 	})
-	defer timer.Stop()
-	got, _ := ioutil.ReadAll(conn)
-	expectedSuffix := "\r\n\r\ntoo short"
-	if !strings.HasSuffix(string(got), expectedSuffix) {
-		t.Fatalf("Expected output to end with %q; got response body %q",
-			expectedSuffix, string(got))
-	}
 }
 
 func testTcpConnectionCloses(t *testing.T, req string, h Handler) {
@@ -535,6 +535,25 @@ func TestHeadResponses(t *testing.T) {
 	}
 }
 
+func TestTLSHandshakeTimeout(t *testing.T) {
+	ts := httptest.NewUnstartedServer(HandlerFunc(func(w ResponseWriter, r *Request) {}))
+	ts.Config.ReadTimeout = 250e6
+	ts.StartTLS()
+	defer ts.Close()
+	conn, err := net.Dial("tcp", ts.Listener.Addr().String())
+	if err != nil {
+		t.Fatalf("Dial: %v", err)
+	}
+	defer conn.Close()
+	goTimeout(t, 10e9, func() {
+		var buf [1]byte
+		n, err := conn.Read(buf[:])
+		if err == nil || n != 0 {
+			t.Errorf("Read = %d, %v; want an error and no bytes", n, err)
+		}
+	})
+}
+
 func TestTLSServer(t *testing.T) {
 	ts := httptest.NewTLSServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 		if r.TLS != nil {
@@ -545,23 +564,46 @@ func TestTLSServer(t *testing.T) {
 		}
 	}))
 	defer ts.Close()
-	if !strings.HasPrefix(ts.URL, "https://") {
-		t.Fatalf("expected test TLS server to start with https://, got %q", ts.URL)
-	}
-	res, err := Get(ts.URL)
+
+	// Connect an idle TCP connection to this server before we run
+	// our real tests.  This idle connection used to block forever
+	// in the TLS handshake, preventing future connections from
+	// being accepted. It may prevent future accidental blocking
+	// in newConn.
+	idleConn, err := net.Dial("tcp", ts.Listener.Addr().String())
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Dial: %v", err)
 	}
-	if res == nil {
-		t.Fatalf("got nil Response")
-	}
-	defer res.Body.Close()
-	if res.Header.Get("X-TLS-Set") != "true" {
-		t.Errorf("expected X-TLS-Set response header")
-	}
-	if res.Header.Get("X-TLS-HandshakeComplete") != "true" {
-		t.Errorf("expected X-TLS-HandshakeComplete header")
-	}
+	defer idleConn.Close()
+	goTimeout(t, 10e9, func() {
+		if !strings.HasPrefix(ts.URL, "https://") {
+			t.Errorf("expected test TLS server to start with https://, got %q", ts.URL)
+			return
+		}
+		noVerifyTransport := &Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+		client := &Client{Transport: noVerifyTransport}
+		res, err := client.Get(ts.URL)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if res == nil {
+			t.Errorf("got nil Response")
+			return
+		}
+		defer res.Body.Close()
+		if res.Header.Get("X-TLS-Set") != "true" {
+			t.Errorf("expected X-TLS-Set response header")
+			return
+		}
+		if res.Header.Get("X-TLS-HandshakeComplete") != "true" {
+			t.Errorf("expected X-TLS-HandshakeComplete header")
+		}
+	})
 }
 
 type serverExpectTest struct {
@@ -646,7 +688,41 @@ func TestServerExpect(t *testing.T) {
 	}
 }
 
-func TestServerConsumesRequestBody(t *testing.T) {
+// Under a ~256KB (maxPostHandlerReadBytes) threshold, the server
+// should consume client request bodies that a handler didn't read.
+func TestServerUnreadRequestBodyLittle(t *testing.T) {
+	conn := new(testConn)
+	body := strings.Repeat("x", 100<<10)
+	conn.readBuf.Write([]byte(fmt.Sprintf(
+		"POST / HTTP/1.1\r\n"+
+			"Host: test\r\n"+
+			"Content-Length: %d\r\n"+
+			"\r\n", len(body))))
+	conn.readBuf.Write([]byte(body))
+
+	done := make(chan bool)
+
+	ls := &oneConnListener{conn}
+	go Serve(ls, HandlerFunc(func(rw ResponseWriter, req *Request) {
+		defer close(done)
+		if conn.readBuf.Len() < len(body)/2 {
+			t.Errorf("on request, read buffer length is %d; expected about 100 KB", conn.readBuf.Len())
+		}
+		rw.WriteHeader(200)
+		if g, e := conn.readBuf.Len(), 0; g != e {
+			t.Errorf("after WriteHeader, read buffer length is %d; want %d", g, e)
+		}
+		if c := rw.Header().Get("Connection"); c != "" {
+			t.Errorf(`Connection header = %q; want ""`, c)
+		}
+	}))
+	<-done
+}
+
+// Over a ~256KB (maxPostHandlerReadBytes) threshold, the server
+// should ignore client request bodies that a handler didn't read
+// and close the connection.
+func TestServerUnreadRequestBodyLarge(t *testing.T) {
 	conn := new(testConn)
 	body := strings.Repeat("x", 1<<20)
 	conn.readBuf.Write([]byte(fmt.Sprintf(
@@ -660,14 +736,17 @@ func TestServerConsumesRequestBody(t *testing.T) {
 
 	ls := &oneConnListener{conn}
 	go Serve(ls, HandlerFunc(func(rw ResponseWriter, req *Request) {
+		defer close(done)
 		if conn.readBuf.Len() < len(body)/2 {
 			t.Errorf("on request, read buffer length is %d; expected about 1MB", conn.readBuf.Len())
 		}
 		rw.WriteHeader(200)
-		if g, e := conn.readBuf.Len(), 0; g != e {
-			t.Errorf("after WriteHeader, read buffer length is %d; want %d", g, e)
+		if conn.readBuf.Len() < len(body)/2 {
+			t.Errorf("post-WriteHeader, read buffer length is %d; expected about 1MB", conn.readBuf.Len())
 		}
-		done <- true
+		if c := rw.Header().Get("Connection"); c != "close" {
+			t.Errorf(`Connection header = %q; want "close"`, c)
+		}
 	}))
 	<-done
 }
@@ -785,6 +864,14 @@ func TestZeroLengthPostAndResponse(t *testing.T) {
 }
 
 func TestHandlerPanic(t *testing.T) {
+	testHandlerPanic(t, false)
+}
+
+func TestHandlerPanicWithHijack(t *testing.T) {
+	testHandlerPanic(t, true)
+}
+
+func testHandlerPanic(t *testing.T, withHijack bool) {
 	// Unlike the other tests that set the log output to ioutil.Discard
 	// to quiet the output, this test uses a pipe.  The pipe serves three
 	// purposes:
@@ -805,7 +892,14 @@ func TestHandlerPanic(t *testing.T) {
 	log.SetOutput(pw)
 	defer log.SetOutput(os.Stderr)
 
-	ts := httptest.NewServer(HandlerFunc(func(ResponseWriter, *Request) {
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if withHijack {
+			rwc, _, err := w.(Hijacker).Hijack()
+			if err != nil {
+				t.Logf("unexpected error: %v", err)
+			}
+			defer rwc.Close()
+		}
 		panic("intentional death for testing")
 	}))
 	defer ts.Close()
@@ -891,9 +985,110 @@ func TestRequestLimit(t *testing.T) {
 		// we do support it (at least currently), so we expect a response below.
 		t.Fatalf("Do: %v", err)
 	}
-	if res.StatusCode != 400 {
-		t.Fatalf("expected 400 response status; got: %d %s", res.StatusCode, res.Status)
+	if res.StatusCode != 413 {
+		t.Fatalf("expected 413 response status; got: %d %s", res.StatusCode, res.Status)
 	}
+}
+
+type neverEnding byte
+
+func (b neverEnding) Read(p []byte) (n int, err os.Error) {
+	for i := range p {
+		p[i] = byte(b)
+	}
+	return len(p), nil
+}
+
+type countReader struct {
+	r io.Reader
+	n *int64
+}
+
+func (cr countReader) Read(p []byte) (n int, err os.Error) {
+	n, err = cr.r.Read(p)
+	*cr.n += int64(n)
+	return
+}
+
+func TestRequestBodyLimit(t *testing.T) {
+	const limit = 1 << 20
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		r.Body = MaxBytesReader(w, r.Body, limit)
+		n, err := io.Copy(ioutil.Discard, r.Body)
+		if err == nil {
+			t.Errorf("expected error from io.Copy")
+		}
+		if n != limit {
+			t.Errorf("io.Copy = %d, want %d", n, limit)
+		}
+	}))
+	defer ts.Close()
+
+	nWritten := int64(0)
+	req, _ := NewRequest("POST", ts.URL, io.LimitReader(countReader{neverEnding('a'), &nWritten}, limit*200))
+
+	// Send the POST, but don't care it succeeds or not.  The
+	// remote side is going to reply and then close the TCP
+	// connection, and HTTP doesn't really define if that's
+	// allowed or not.  Some HTTP clients will get the response
+	// and some (like ours, currently) will complain that the
+	// request write failed, without reading the response.
+	//
+	// But that's okay, since what we're really testing is that
+	// the remote side hung up on us before we wrote too much.
+	_, _ = DefaultClient.Do(req)
+
+	if nWritten > limit*100 {
+		t.Errorf("handler restricted the request body to %d bytes, but client managed to write %d",
+			limit, nWritten)
+	}
+}
+
+// TestClientWriteShutdown tests that if the client shuts down the write
+// side of their TCP connection, the server doesn't send a 400 Bad Request.
+func TestClientWriteShutdown(t *testing.T) {
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {}))
+	defer ts.Close()
+	conn, err := net.Dial("tcp", ts.Listener.Addr().String())
+	if err != nil {
+		t.Fatalf("Dial: %v", err)
+	}
+	err = conn.(*net.TCPConn).CloseWrite()
+	if err != nil {
+		t.Fatalf("Dial: %v", err)
+	}
+	donec := make(chan bool)
+	go func() {
+		defer close(donec)
+		bs, err := ioutil.ReadAll(conn)
+		if err != nil {
+			t.Fatalf("ReadAll: %v", err)
+		}
+		got := string(bs)
+		if got != "" {
+			t.Errorf("read %q from server; want nothing", got)
+		}
+	}()
+	select {
+	case <-donec:
+	case <-time.After(10e9):
+		t.Fatalf("timeout")
+	}
+}
+
+// goTimeout runs f, failing t if f takes more than ns to complete.
+func goTimeout(t *testing.T, ns int64, f func()) {
+	ch := make(chan bool, 2)
+	timer := time.AfterFunc(ns, func() {
+		t.Errorf("Timeout expired after %d ns", ns)
+		ch <- true
+	})
+	defer timer.Stop()
+	go func() {
+		defer func() { ch <- true }()
+		f()
+	}()
+	<-ch
 }
 
 type errorListener struct {
