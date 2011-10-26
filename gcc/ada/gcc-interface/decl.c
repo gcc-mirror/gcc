@@ -3302,7 +3302,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			        == INTEGER_CST)
 		      {
 			gnu_size = DECL_SIZE (gnu_old_field);
-			if (TREE_CODE (gnu_field_type) == RECORD_TYPE
+			if (RECORD_OR_UNION_TYPE_P (gnu_field_type)
 			    && !TYPE_FAT_POINTER_P (gnu_field_type)
 			    && host_integerp (TYPE_SIZE (gnu_field_type), 1))
 			  gnu_field_type
@@ -4645,13 +4645,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      tree size;
 
 	      /* If a size was specified, take it into account.  Otherwise
-		 use the RM size for records as the type size has already
-		 been adjusted to the alignment.  */
+		 use the RM size for records or unions as the type size has
+		 already been adjusted to the alignment.  */
 	      if (gnu_size)
 		size = gnu_size;
-	      else if ((TREE_CODE (gnu_type) == RECORD_TYPE
-			|| TREE_CODE (gnu_type) == UNION_TYPE
-			|| TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+	      else if (RECORD_OR_UNION_TYPE_P (gnu_type)
 		       && !TYPE_FAT_POINTER_P (gnu_type))
 		size = rm_size (gnu_type);
 	      else
@@ -5300,7 +5298,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && !Is_Bit_Packed_Array (gnat_array)
       && !Has_Aliased_Components (gnat_array)
       && !Strict_Alignment (gnat_type)
-      && TREE_CODE (gnu_type) == RECORD_TYPE
+      && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && host_integerp (TYPE_SIZE (gnu_type), 1))
     gnu_type = make_packable_type (gnu_type, false);
@@ -6357,9 +6355,7 @@ make_packable_type (tree type, bool in_record)
       tree new_field_type = TREE_TYPE (old_field);
       tree new_field, new_size;
 
-      if ((TREE_CODE (new_field_type) == RECORD_TYPE
-	   || TREE_CODE (new_field_type) == UNION_TYPE
-	   || TREE_CODE (new_field_type) == QUAL_UNION_TYPE)
+      if (RECORD_OR_UNION_TYPE_P (new_field_type)
 	  && !TYPE_FAT_POINTER_P (new_field_type)
 	  && host_integerp (TYPE_SIZE (new_field_type), 1))
 	new_field_type = make_packable_type (new_field_type, true);
@@ -6369,9 +6365,7 @@ make_packable_type (tree type, bool in_record)
 	 packable version of the record type, see finish_record_type.  */
       if (!DECL_CHAIN (old_field)
 	  && !TYPE_PACKED (type)
-	  && (TREE_CODE (new_field_type) == RECORD_TYPE
-	      || TREE_CODE (new_field_type) == UNION_TYPE
-	      || TREE_CODE (new_field_type) == QUAL_UNION_TYPE)
+	  && RECORD_OR_UNION_TYPE_P (new_field_type)
 	  && !TYPE_FAT_POINTER_P (new_field_type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (new_field_type)
 	  && TYPE_ADA_SIZE (new_field_type))
@@ -6533,7 +6527,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      between them and it might be hard to overcome afterwards, including
      at the RTL level when the stand-alone object is accessed as a whole.  */
   if (align != 0
-      && TREE_CODE (type) == RECORD_TYPE
+      && RECORD_OR_UNION_TYPE_P (type)
       && TYPE_MODE (type) == BLKmode
       && !TREE_ADDRESSABLE (type)
       && TREE_CODE (orig_size) == INTEGER_CST
@@ -6833,7 +6827,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      effects on the outer record type.  A typical case is a field known to be
      byte-aligned and not to share a byte with another field.  */
   if (!needs_strict_alignment
-      && TREE_CODE (gnu_field_type) == RECORD_TYPE
+      && RECORD_OR_UNION_TYPE_P (gnu_field_type)
       && !TYPE_FAT_POINTER_P (gnu_field_type)
       && host_integerp (TYPE_SIZE (gnu_field_type), 1)
       && (packed == 1
@@ -7047,9 +7041,7 @@ is_variable_size (tree type)
       && !TREE_CONSTANT (DECL_SIZE (TYPE_FIELDS (type))))
     return true;
 
-  if (TREE_CODE (type) != RECORD_TYPE
-      && TREE_CODE (type) != UNION_TYPE
-      && TREE_CODE (type) != QUAL_UNION_TYPE)
+  if (!RECORD_OR_UNION_TYPE_P (type))
     return false;
 
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -8090,9 +8082,7 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
     SET_TYPE_RM_SIZE (gnu_type, size);
 
   /* ...or the Ada size for record and union types.  */
-  else if ((TREE_CODE (gnu_type) == RECORD_TYPE
-	    || TREE_CODE (gnu_type) == UNION_TYPE
-	    || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (gnu_type)
 	   && !TYPE_FAT_POINTER_P (gnu_type))
     SET_TYPE_ADA_SIZE (gnu_type, size);
 }
@@ -8944,10 +8934,8 @@ rm_size (tree gnu_type)
 		  rm_size (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)))),
 		  DECL_SIZE (TYPE_FIELDS (gnu_type)));
 
-  /* For record types, we store the size explicitly.  */
-  if ((TREE_CODE (gnu_type) == RECORD_TYPE
-       || TREE_CODE (gnu_type) == UNION_TYPE
-       || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+  /* For record or union types, we store the size explicitly.  */
+  if (RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && TYPE_ADA_SIZE (gnu_type))
     return TYPE_ADA_SIZE (gnu_type);

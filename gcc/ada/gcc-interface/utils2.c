@@ -1748,9 +1748,7 @@ build_simple_component_ref (tree record_variable, tree component,
   tree record_type = TYPE_MAIN_VARIANT (TREE_TYPE (record_variable));
   tree ref, inner_variable;
 
-  gcc_assert ((TREE_CODE (record_type) == RECORD_TYPE
-	       || TREE_CODE (record_type) == UNION_TYPE
-	       || TREE_CODE (record_type) == QUAL_UNION_TYPE)
+  gcc_assert (RECORD_OR_UNION_TYPE_P (record_type)
 	      && COMPLETE_TYPE_P (record_type)
 	      && (component == NULL_TREE) != (field == NULL_TREE));
 
