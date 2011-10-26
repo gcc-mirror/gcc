@@ -339,7 +339,6 @@ run_gcc (unsigned argc, char *argv[])
   char *list_option_full = NULL;
   const char *linker_output = NULL;
   const char *collect_gcc, *collect_gcc_options;
-  struct obstack env_obstack;
   int parallel = 0;
   int jobserver = 0;
   bool no_partition = false;
@@ -517,11 +516,13 @@ run_gcc (unsigned argc, char *argv[])
     {
       FILE *stream = fopen (ltrans_output_file, "r");
       FILE *mstream = NULL;
+      struct obstack env_obstack;
 
       if (!stream)
 	fatal_perror ("fopen: %s", ltrans_output_file);
 
       /* Parse the list of LTRANS inputs from the WPA stage.  */
+      obstack_init (&env_obstack);
       nr = 0;
       for (;;)
 	{
@@ -574,7 +575,6 @@ cont:
 
 	  /* Replace the .o suffix with a .ltrans.o suffix and write
 	     the resulting name to the LTRANS output list.  */
-	  obstack_init (&env_obstack);
 	  obstack_grow (&env_obstack, input_name, strlen (input_name) - 2);
 	  obstack_grow (&env_obstack, ".ltrans.o", sizeof (".ltrans.o"));
 	  output_name = XOBFINISH (&env_obstack, char *);
@@ -654,9 +654,8 @@ cont:
       free (output_names);
       free (input_names);
       free (list_option_full);
+      obstack_free (&env_obstack, NULL);
     }
-
-  obstack_free (&env_obstack, NULL);
 }
 
 
