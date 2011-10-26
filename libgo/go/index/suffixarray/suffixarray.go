@@ -18,6 +18,9 @@ package suffixarray
 
 import (
 	"bytes"
+	"encoding/binary"
+	"io"
+	"os"
 	"regexp"
 	"sort"
 )
@@ -25,13 +28,136 @@ import (
 // Index implements a suffix array for fast substring search.
 type Index struct {
 	data []byte
-	sa   []int // suffix array for data
+	sa   []int // suffix array for data; len(sa) == len(data)
 }
 
 // New creates a new Index for data.
 // Index creation time is O(N*log(N)) for N = len(data).
 func New(data []byte) *Index {
 	return &Index{data, qsufsort(data)}
+}
+
+// writeInt writes an int x to w using buf to buffer the write.
+func writeInt(w io.Writer, buf []byte, x int) os.Error {
+	binary.PutVarint(buf, int64(x))
+	_, err := w.Write(buf[0:binary.MaxVarintLen64])
+	return err
+}
+
+// readInt reads an int x from r using buf to buffer the read and returns x.
+func readInt(r io.Reader, buf []byte) (int, os.Error) {
+	_, err := io.ReadFull(r, buf[0:binary.MaxVarintLen64]) // ok to continue with error
+	x, _ := binary.Varint(buf)
+	return int(x), err
+}
+
+// writeSlice writes data[:n] to w and returns n.
+// It uses buf to buffer the write.
+func writeSlice(w io.Writer, buf []byte, data []int) (n int, err os.Error) {
+	// encode as many elements as fit into buf
+	p := binary.MaxVarintLen64
+	for ; n < len(data) && p+binary.MaxVarintLen64 <= len(buf); n++ {
+		p += binary.PutUvarint(buf[p:], uint64(data[n]))
+	}
+
+	// update buffer size
+	binary.PutVarint(buf, int64(p))
+
+	// write buffer
+	_, err = w.Write(buf[0:p])
+	return
+}
+
+// readSlice reads data[:n] from r and returns n.
+// It uses buf to buffer the read.
+func readSlice(r io.Reader, buf []byte, data []int) (n int, err os.Error) {
+	// read buffer size
+	var size int
+	size, err = readInt(r, buf)
+	if err != nil {
+		return
+	}
+
+	// read buffer w/o the size
+	if _, err = io.ReadFull(r, buf[binary.MaxVarintLen64:size]); err != nil {
+		return
+	}
+
+	// decode as many elements as present in buf
+	for p := binary.MaxVarintLen64; p < size; n++ {
+		x, w := binary.Uvarint(buf[p:])
+		data[n] = int(x)
+		p += w
+	}
+
+	return
+}
+
+const bufSize = 16 << 10 // reasonable for BenchmarkSaveRestore
+
+// Read reads the index from r into x; x must not be nil.
+func (x *Index) Read(r io.Reader) os.Error {
+	// buffer for all reads
+	buf := make([]byte, bufSize)
+
+	// read length
+	n, err := readInt(r, buf)
+	if err != nil {
+		return err
+	}
+
+	// allocate space
+	if 2*n < cap(x.data) || cap(x.data) < n {
+		// new data is significantly smaller or larger then
+		// existing buffers - allocate new ones
+		x.data = make([]byte, n)
+		x.sa = make([]int, n)
+	} else {
+		// re-use existing buffers
+		x.data = x.data[0:n]
+		x.sa = x.sa[0:n]
+	}
+
+	// read data
+	if _, err := io.ReadFull(r, x.data); err != nil {
+		return err
+	}
+
+	// read index
+	for sa := x.sa; len(sa) > 0; {
+		n, err := readSlice(r, buf, sa)
+		if err != nil {
+			return err
+		}
+		sa = sa[n:]
+	}
+	return nil
+}
+
+// Write writes the index x to w.
+func (x *Index) Write(w io.Writer) os.Error {
+	// buffer for all writes
+	buf := make([]byte, bufSize)
+
+	// write length
+	if err := writeInt(w, buf, len(x.data)); err != nil {
+		return err
+	}
+
+	// write data
+	if _, err := w.Write(x.data); err != nil {
+		return err
+	}
+
+	// write index
+	for sa := x.sa; len(sa) > 0; {
+		n, err := writeSlice(w, buf, sa)
+		if err != nil {
+			return err
+		}
+		sa = sa[n:]
+	}
+	return nil
 }
 
 // Bytes returns the data over which the index was created.
@@ -65,9 +191,10 @@ func (x *Index) lookupAll(s []byte) []int {
 func (x *Index) Lookup(s []byte, n int) (result []int) {
 	if len(s) > 0 && n != 0 {
 		matches := x.lookupAll(s)
-		if len(matches) < n || n < 0 {
+		if n < 0 || len(matches) < n {
 			n = len(matches)
 		}
+		// 0 <= n <= len(matches)
 		if n > 0 {
 			result = make([]int, n)
 			copy(result, matches)

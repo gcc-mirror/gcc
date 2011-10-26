@@ -56,9 +56,10 @@ type RoundTripper interface {
 	// higher-level protocol details such as redirects,
 	// authentication, or cookies.
 	//
-	// RoundTrip may modify the request. The request Headers field is
-	// guaranteed to be initialized.
-	RoundTrip(req *Request) (resp *Response, err os.Error)
+	// RoundTrip should not modify the request, except for
+	// consuming the Body.  The request's URL and Header fields
+	// are guaranteed to be initialized.
+	RoundTrip(*Request) (*Response, os.Error)
 }
 
 // Given a string of the form "host", "host:port", or "[ipv6::address]:port",
@@ -76,7 +77,12 @@ type readClose struct {
 // Do sends an HTTP request and returns an HTTP response, following
 // policy (e.g. redirects, cookies, auth) as configured on the client.
 //
-// Callers should close resp.Body when done reading from it.
+// A non-nil response always contains a non-nil resp.Body.
+//
+// Callers should close resp.Body when done reading from it. If
+// resp.Body is not closed, the Client's underlying RoundTripper
+// (typically Transport) may not be able to re-use a persistent TCP
+// connection to the server for a subsequent "keep-alive" request.
 //
 // Generally Get, Post, or PostForm will be used instead of Do.
 func (c *Client) Do(req *Request) (resp *Response, err os.Error) {
@@ -91,9 +97,13 @@ func send(req *Request, t RoundTripper) (resp *Response, err os.Error) {
 	if t == nil {
 		t = DefaultTransport
 		if t == nil {
-			err = os.NewError("no http.Client.Transport or http.DefaultTransport")
+			err = os.NewError("http: no Client.Transport or DefaultTransport")
 			return
 		}
+	}
+
+	if req.URL == nil {
+		return nil, os.NewError("http: nil Request.URL")
 	}
 
 	// Most the callers of send (Get, Post, et al) don't need
@@ -105,9 +115,6 @@ func send(req *Request, t RoundTripper) (resp *Response, err os.Error) {
 
 	info := req.URL.RawUserinfo
 	if len(info) > 0 {
-		if req.Header == nil {
-			req.Header = make(Header)
-		}
 		req.Header.Set("Authorization", "Basic "+base64.URLEncoding.EncodeToString([]byte(info)))
 	}
 	return t.RoundTrip(req)
@@ -165,6 +172,10 @@ func (c *Client) doFollowingRedirects(ireq *Request) (r *Response, err os.Error)
 		redirectChecker = defaultCheckRedirect
 	}
 	var via []*Request
+
+	if ireq.URL == nil {
+		return nil, os.NewError("http: nil Request.URL")
+	}
 
 	req := ireq
 	urlStr := "" // next relative or absolute URL to fetch (after first request)

@@ -20,108 +20,59 @@ import (
 	"time"
 )
 
-// pkcs1PrivateKey is a structure which mirrors the PKCS#1 ASN.1 for an RSA private key.
-type pkcs1PrivateKey struct {
-	Version int
-	N       *big.Int
-	E       int
-	D       *big.Int
-	P       *big.Int
-	Q       *big.Int
-	// We ignore these values, if present, because rsa will calculate them.
-	Dp   *big.Int `asn1:"optional"`
-	Dq   *big.Int `asn1:"optional"`
-	Qinv *big.Int `asn1:"optional"`
-
-	AdditionalPrimes []pkcs1AdditionalRSAPrime `asn1:"optional"`
+// pkixPublicKey reflects a PKIX public key structure. See SubjectPublicKeyInfo
+// in RFC 3280.
+type pkixPublicKey struct {
+	Algo      pkix.AlgorithmIdentifier
+	BitString asn1.BitString
 }
 
-type pkcs1AdditionalRSAPrime struct {
-	Prime *big.Int
-
-	// We ignore these values because rsa will calculate them.
-	Exp   *big.Int
-	Coeff *big.Int
-}
-
-// ParsePKCS1PrivateKey returns an RSA private key from its ASN.1 PKCS#1 DER encoded form.
-func ParsePKCS1PrivateKey(der []byte) (key *rsa.PrivateKey, err os.Error) {
-	var priv pkcs1PrivateKey
-	rest, err := asn1.Unmarshal(der, &priv)
-	if len(rest) > 0 {
-		err = asn1.SyntaxError{"trailing data"}
+// ParsePKIXPublicKey parses a DER encoded public key. These values are
+// typically found in PEM blocks with "BEGIN PUBLIC KEY".
+func ParsePKIXPublicKey(derBytes []byte) (pub interface{}, err os.Error) {
+	var pki publicKeyInfo
+	if _, err = asn1.Unmarshal(derBytes, &pki); err != nil {
 		return
 	}
-	if err != nil {
-		return
+	algo := getPublicKeyAlgorithmFromOID(pki.Algorithm.Algorithm)
+	if algo == UnknownPublicKeyAlgorithm {
+		return nil, os.NewError("ParsePKIXPublicKey: unknown public key algorithm")
 	}
-
-	if priv.Version > 1 {
-		return nil, os.NewError("x509: unsupported private key version")
-	}
-
-	if priv.N.Sign() <= 0 || priv.D.Sign() <= 0 || priv.P.Sign() <= 0 || priv.Q.Sign() <= 0 {
-		return nil, os.NewError("private key contains zero or negative value")
-	}
-
-	key = new(rsa.PrivateKey)
-	key.PublicKey = rsa.PublicKey{
-		E: priv.E,
-		N: priv.N,
-	}
-
-	key.D = priv.D
-	key.Primes = make([]*big.Int, 2+len(priv.AdditionalPrimes))
-	key.Primes[0] = priv.P
-	key.Primes[1] = priv.Q
-	for i, a := range priv.AdditionalPrimes {
-		if a.Prime.Sign() <= 0 {
-			return nil, os.NewError("private key contains zero or negative prime")
-		}
-		key.Primes[i+2] = a.Prime
-		// We ignore the other two values because rsa will calculate
-		// them as needed.
-	}
-
-	err = key.Validate()
-	if err != nil {
-		return nil, err
-	}
-	key.Precompute()
-
-	return
+	return parsePublicKey(algo, &pki)
 }
 
-// MarshalPKCS1PrivateKey converts a private key to ASN.1 DER encoded form.
-func MarshalPKCS1PrivateKey(key *rsa.PrivateKey) []byte {
-	key.Precompute()
+// MarshalPKIXPublicKey serialises a public key to DER-encoded PKIX format.
+func MarshalPKIXPublicKey(pub interface{}) ([]byte, os.Error) {
+	var pubBytes []byte
 
-	version := 0
-	if len(key.Primes) > 2 {
-		version = 1
+	switch pub := pub.(type) {
+	case *rsa.PublicKey:
+		pubBytes, _ = asn1.Marshal(rsaPublicKey{
+			N: pub.N,
+			E: pub.E,
+		})
+	default:
+		return nil, os.NewError("MarshalPKIXPublicKey: unknown public key type")
 	}
 
-	priv := pkcs1PrivateKey{
-		Version: version,
-		N:       key.N,
-		E:       key.PublicKey.E,
-		D:       key.D,
-		P:       key.Primes[0],
-		Q:       key.Primes[1],
-		Dp:      key.Precomputed.Dp,
-		Dq:      key.Precomputed.Dq,
-		Qinv:    key.Precomputed.Qinv,
+	pkix := pkixPublicKey{
+		Algo: pkix.AlgorithmIdentifier{
+			Algorithm: []int{1, 2, 840, 113549, 1, 1, 1},
+			// This is a NULL parameters value which is technically
+			// superfluous, but most other code includes it and, by
+			// doing this, we match their public key hashes.
+			Parameters: asn1.RawValue{
+				Tag: 5,
+			},
+		},
+		BitString: asn1.BitString{
+			Bytes:     pubBytes,
+			BitLength: 8 * len(pubBytes),
+		},
 	}
 
-	priv.AdditionalPrimes = make([]pkcs1AdditionalRSAPrime, len(key.Precomputed.CRTValues))
-	for i, values := range key.Precomputed.CRTValues {
-		priv.AdditionalPrimes[i].Prime = key.Primes[2+i]
-		priv.AdditionalPrimes[i].Exp = values.Exp
-		priv.AdditionalPrimes[i].Coeff = values.Coeff
-	}
-
-	b, _ := asn1.Marshal(priv)
-	return b
+	ret, _ := asn1.Marshal(pkix)
+	return ret, nil
 }
 
 // These structures reflect the ASN.1 structure of X.509 certificates.:
@@ -138,9 +89,9 @@ type tbsCertificate struct {
 	Version            int `asn1:"optional,explicit,default:1,tag:0"`
 	SerialNumber       *big.Int
 	SignatureAlgorithm pkix.AlgorithmIdentifier
-	Issuer             pkix.RDNSequence
+	Issuer             asn1.RawValue
 	Validity           validity
-	Subject            pkix.RDNSequence
+	Subject            asn1.RawValue
 	PublicKey          publicKeyInfo
 	UniqueId           asn1.BitString   `asn1:"optional,tag:1"`
 	SubjectUniqueId    asn1.BitString   `asn1:"optional,tag:2"`
@@ -339,6 +290,8 @@ type Certificate struct {
 	Raw                     []byte // Complete ASN.1 DER content (certificate, signature algorithm and signature).
 	RawTBSCertificate       []byte // Certificate part of raw ASN.1 DER content.
 	RawSubjectPublicKeyInfo []byte // DER encoded SubjectPublicKeyInfo.
+	RawSubject              []byte // DER encoded Subject
+	RawIssuer               []byte // DER encoded Issuer
 
 	Signature          []byte
 	SignatureAlgorithm SignatureAlgorithm
@@ -483,11 +436,6 @@ type basicConstraints struct {
 	MaxPathLen int  `asn1:"optional"`
 }
 
-type rsaPublicKey struct {
-	N *big.Int
-	E int
-}
-
 // RFC 5280 4.2.1.4
 type policyInformation struct {
 	Policy asn1.ObjectIdentifier
@@ -556,6 +504,8 @@ func parseCertificate(in *certificate) (*Certificate, os.Error) {
 	out.Raw = in.Raw
 	out.RawTBSCertificate = in.TBSCertificate.Raw
 	out.RawSubjectPublicKeyInfo = in.TBSCertificate.PublicKey.Raw
+	out.RawSubject = in.TBSCertificate.Subject.FullBytes
+	out.RawIssuer = in.TBSCertificate.Issuer.FullBytes
 
 	out.Signature = in.SignatureValue.RightAlign()
 	out.SignatureAlgorithm =
@@ -575,8 +525,18 @@ func parseCertificate(in *certificate) (*Certificate, os.Error) {
 
 	out.Version = in.TBSCertificate.Version + 1
 	out.SerialNumber = in.TBSCertificate.SerialNumber
-	out.Issuer.FillFromRDNSequence(&in.TBSCertificate.Issuer)
-	out.Subject.FillFromRDNSequence(&in.TBSCertificate.Subject)
+
+	var issuer, subject pkix.RDNSequence
+	if _, err := asn1.Unmarshal(in.TBSCertificate.Subject.FullBytes, &subject); err != nil {
+		return nil, err
+	}
+	if _, err := asn1.Unmarshal(in.TBSCertificate.Issuer.FullBytes, &issuer); err != nil {
+		return nil, err
+	}
+
+	out.Issuer.FillFromRDNSequence(&issuer)
+	out.Subject.FillFromRDNSequence(&subject)
+
 	out.NotBefore = in.TBSCertificate.Validity.NotBefore
 	out.NotAfter = in.TBSCertificate.Validity.NotAfter
 
@@ -968,14 +928,23 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.P
 		return
 	}
 
+	asn1Issuer, err := asn1.Marshal(parent.Issuer.ToRDNSequence())
+	if err != nil {
+		return
+	}
+	asn1Subject, err := asn1.Marshal(parent.Subject.ToRDNSequence())
+	if err != nil {
+		return
+	}
+
 	encodedPublicKey := asn1.BitString{BitLength: len(asn1PublicKey) * 8, Bytes: asn1PublicKey}
 	c := tbsCertificate{
 		Version:            2,
 		SerialNumber:       template.SerialNumber,
 		SignatureAlgorithm: pkix.AlgorithmIdentifier{Algorithm: oidSHA1WithRSA},
-		Issuer:             parent.Subject.ToRDNSequence(),
+		Issuer:             asn1.RawValue{FullBytes: asn1Issuer},
 		Validity:           validity{template.NotBefore, template.NotAfter},
-		Subject:            template.Subject.ToRDNSequence(),
+		Subject:            asn1.RawValue{FullBytes: asn1Subject},
 		PublicKey:          publicKeyInfo{nil, pkix.AlgorithmIdentifier{Algorithm: oidRSA}, encodedPublicKey},
 		Extensions:         extensions,
 	}

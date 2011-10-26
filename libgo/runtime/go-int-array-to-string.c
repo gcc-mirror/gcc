@@ -7,6 +7,7 @@
 #include "go-assert.h"
 #include "go-string.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 struct __go_string

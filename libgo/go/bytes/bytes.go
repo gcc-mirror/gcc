@@ -572,13 +572,18 @@ func Runes(s []byte) []int {
 // non-overlapping instances of old replaced by new.
 // If n < 0, there is no limit on the number of replacements.
 func Replace(s, old, new []byte, n int) []byte {
-	if n == 0 {
-		return s // avoid allocation
+	m := 0
+	if n != 0 {
+		// Compute number of replacements.
+		m = Count(s, old)
 	}
-	// Compute number of replacements.
-	if m := Count(s, old); m == 0 {
-		return s // avoid allocation
-	} else if n <= 0 || m < n {
+	if m == 0 {
+		// Nothing to do. Just copy.
+		t := make([]byte, len(s))
+		copy(t, s)
+		return t
+	}
+	if n < 0 || m < n {
 		n = m
 	}
 
@@ -602,4 +607,59 @@ func Replace(s, old, new []byte, n int) []byte {
 	}
 	w += copy(t[w:], s[start:])
 	return t[0:w]
+}
+
+// EqualFold reports whether s and t, interpreted as UTF-8 strings,
+// are equal under Unicode case-folding.
+func EqualFold(s, t []byte) bool {
+	for len(s) != 0 && len(t) != 0 {
+		// Extract first rune from each.
+		var sr, tr int
+		if s[0] < utf8.RuneSelf {
+			sr, s = int(s[0]), s[1:]
+		} else {
+			r, size := utf8.DecodeRune(s)
+			sr, s = r, s[size:]
+		}
+		if t[0] < utf8.RuneSelf {
+			tr, t = int(t[0]), t[1:]
+		} else {
+			r, size := utf8.DecodeRune(t)
+			tr, t = r, t[size:]
+		}
+
+		// If they match, keep going; if not, return false.
+
+		// Easy case.
+		if tr == sr {
+			continue
+		}
+
+		// Make sr < tr to simplify what follows.
+		if tr < sr {
+			tr, sr = sr, tr
+		}
+		// Fast check for ASCII.
+		if tr < utf8.RuneSelf && 'A' <= sr && sr <= 'Z' {
+			// ASCII, and sr is upper case.  tr must be lower case.
+			if tr == sr+'a'-'A' {
+				continue
+			}
+			return false
+		}
+
+		// General case.  SimpleFold(x) returns the next equivalent rune > x
+		// or wraps around to smaller values.
+		r := unicode.SimpleFold(sr)
+		for r != sr && r < tr {
+			r = unicode.SimpleFold(r)
+		}
+		if r == tr {
+			continue
+		}
+		return false
+	}
+
+	// One string is empty.  Are both?
+	return len(s) == len(t)
 }

@@ -32,13 +32,14 @@ import (
 var trailingPort = regexp.MustCompile(`:([0-9]+)$`)
 
 var osDefaultInheritEnv = map[string][]string{
-	"darwin":  []string{"DYLD_LIBRARY_PATH"},
-	"freebsd": []string{"LD_LIBRARY_PATH"},
-	"hpux":    []string{"LD_LIBRARY_PATH", "SHLIB_PATH"},
-	"irix":    []string{"LD_LIBRARY_PATH", "LD_LIBRARYN32_PATH", "LD_LIBRARY64_PATH"},
-	"linux":   []string{"LD_LIBRARY_PATH"},
-	"solaris": []string{"LD_LIBRARY_PATH", "LD_LIBRARY_PATH_32", "LD_LIBRARY_PATH_64"},
-	"windows": []string{"SystemRoot", "COMSPEC", "PATHEXT", "WINDIR"},
+	"darwin":  {"DYLD_LIBRARY_PATH"},
+	"freebsd": {"LD_LIBRARY_PATH"},
+	"hpux":    {"LD_LIBRARY_PATH", "SHLIB_PATH"},
+	"irix":    {"LD_LIBRARY_PATH", "LD_LIBRARYN32_PATH", "LD_LIBRARY64_PATH"},
+	"linux":   {"LD_LIBRARY_PATH"},
+	"openbsd": {"LD_LIBRARY_PATH"},
+	"solaris": {"LD_LIBRARY_PATH", "LD_LIBRARY_PATH_32", "LD_LIBRARY_PATH_64"},
+	"windows": {"SystemRoot", "COMSPEC", "PATHEXT", "WINDIR"},
 }
 
 // Handler runs an executable in a subprocess with a CGI environment.
@@ -66,6 +67,31 @@ type Handler struct {
 	// If nil, a CGI response with a local URI path is instead sent
 	// back to the client and not redirected internally.
 	PathLocationHandler http.Handler
+}
+
+// removeLeadingDuplicates remove leading duplicate in environments.
+// It's possible to override environment like following.
+//    cgi.Handler{
+//      ...
+//      Env: []string{"SCRIPT_FILENAME=foo.php"},
+//    }
+func removeLeadingDuplicates(env []string) (ret []string) {
+	n := len(env)
+	for i := 0; i < n; i++ {
+		e := env[i]
+		s := strings.SplitN(e, "=", 2)[0]
+		found := false
+		for j := i + 1; j < n; j++ {
+			if s == strings.SplitN(env[j], "=", 2)[0] {
+				found = true
+				break
+			}
+		}
+		if !found {
+			ret = append(ret, e)
+		}
+	}
+	return
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -148,6 +174,8 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			env = append(env, e+"="+v)
 		}
 	}
+
+	env = removeLeadingDuplicates(env)
 
 	var cwd, path string
 	if h.Dir != "" {
@@ -294,7 +322,6 @@ func (h *Handler) handleInternalRedirect(rw http.ResponseWriter, req *http.Reque
 	newReq := &http.Request{
 		Method:     "GET",
 		URL:        url,
-		RawURL:     path,
 		Proto:      "HTTP/1.1",
 		ProtoMajor: 1,
 		ProtoMinor: 1,

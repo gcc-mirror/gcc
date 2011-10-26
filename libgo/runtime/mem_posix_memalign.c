@@ -1,6 +1,7 @@
 #include <errno.h>
 
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 void*

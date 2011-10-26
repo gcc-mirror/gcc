@@ -64,8 +64,15 @@ func (e *badStringError) String() string { return fmt.Sprintf("%s %q", e.what, e
 
 // Headers that Request.Write handles itself and should be skipped.
 var reqWriteExcludeHeader = map[string]bool{
-	"Host":              true,
+	"Host":              true, // not in Header map anyway
 	"User-Agent":        true,
+	"Content-Length":    true,
+	"Transfer-Encoding": true,
+	"Trailer":           true,
+}
+
+var reqWriteExcludeHeaderDump = map[string]bool{
+	"Host":              true, // not in Header map anyway
 	"Content-Length":    true,
 	"Transfer-Encoding": true,
 	"Trailer":           true,
@@ -73,9 +80,8 @@ var reqWriteExcludeHeader = map[string]bool{
 
 // A Request represents a parsed HTTP request header.
 type Request struct {
-	Method string   // GET, POST, PUT, etc.
-	RawURL string   // The raw URL given in the request.
-	URL    *url.URL // Parsed URL.
+	Method string // GET, POST, PUT, etc.
+	URL    *url.URL
 
 	// The protocol version for incoming requests.
 	// Outgoing requests always use HTTP/1.1.
@@ -234,8 +240,8 @@ func (r *Request) multipartReader() (*multipart.Reader, os.Error) {
 	if v == "" {
 		return nil, ErrNotMultipart
 	}
-	d, params := mime.ParseMediaType(v)
-	if d != "multipart/form-data" {
+	d, params, err := mime.ParseMediaType(v)
+	if err != nil || d != "multipart/form-data" {
 		return nil, ErrNotMultipart
 	}
 	boundary, ok := params["boundary"]
@@ -258,7 +264,7 @@ const defaultUserAgent = "Go http package"
 // Write writes an HTTP/1.1 request -- header and body -- in wire format.
 // This method consults the following fields of req:
 //	Host
-//	RawURL, if non-empty, or else URL
+//	URL
 //	Method (defaults to "GET")
 //	Header
 //	ContentLength
@@ -269,19 +275,66 @@ const defaultUserAgent = "Go http package"
 // hasn't been set to "identity", Write adds "Transfer-Encoding:
 // chunked" to the header. Body is closed after it is sent.
 func (req *Request) Write(w io.Writer) os.Error {
-	return req.write(w, false)
+	return req.write(w, false, nil)
 }
 
 // WriteProxy is like Write but writes the request in the form
-// expected by an HTTP proxy.  It includes the scheme and host
-// name in the URI instead of using a separate Host: header line.
-// If req.RawURL is non-empty, WriteProxy uses it unchanged
-// instead of URL but still omits the Host: header.
+// expected by an HTTP proxy.  In particular, WriteProxy writes the
+// initial Request-URI line of the request with an absolute URI, per
+// section 5.1.2 of RFC 2616, including the scheme and host. In
+// either case, WriteProxy also writes a Host header, using either
+// req.Host or req.URL.Host.
 func (req *Request) WriteProxy(w io.Writer) os.Error {
-	return req.write(w, true)
+	return req.write(w, true, nil)
 }
 
-func (req *Request) write(w io.Writer, usingProxy bool) os.Error {
+func (req *Request) dumpWrite(w io.Writer) os.Error {
+	// TODO(bradfitz): RawPath here?
+	urlStr := valueOrDefault(req.URL.EncodedPath(), "/")
+	if req.URL.RawQuery != "" {
+		urlStr += "?" + req.URL.RawQuery
+	}
+
+	bw := bufio.NewWriter(w)
+	fmt.Fprintf(bw, "%s %s HTTP/%d.%d\r\n", valueOrDefault(req.Method, "GET"), urlStr,
+		req.ProtoMajor, req.ProtoMinor)
+
+	host := req.Host
+	if host == "" && req.URL != nil {
+		host = req.URL.Host
+	}
+	if host != "" {
+		fmt.Fprintf(bw, "Host: %s\r\n", host)
+	}
+
+	// Process Body,ContentLength,Close,Trailer
+	tw, err := newTransferWriter(req)
+	if err != nil {
+		return err
+	}
+	err = tw.WriteHeader(bw)
+	if err != nil {
+		return err
+	}
+
+	err = req.Header.WriteSubset(bw, reqWriteExcludeHeaderDump)
+	if err != nil {
+		return err
+	}
+
+	io.WriteString(bw, "\r\n")
+
+	// Write body and trailer
+	err = tw.WriteBody(bw)
+	if err != nil {
+		return err
+	}
+	bw.Flush()
+	return nil
+}
+
+// extraHeaders may be nil
+func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header) os.Error {
 	host := req.Host
 	if host == "" {
 		if req.URL == nil {
@@ -290,9 +343,12 @@ func (req *Request) write(w io.Writer, usingProxy bool) os.Error {
 		host = req.URL.Host
 	}
 
-	urlStr := req.RawURL
+	urlStr := req.URL.RawPath
+	if strings.HasPrefix(urlStr, "?") {
+		urlStr = "/" + urlStr // Issue 2344
+	}
 	if urlStr == "" {
-		urlStr = valueOrDefault(req.URL.EncodedPath(), "/")
+		urlStr = valueOrDefault(req.URL.RawPath, valueOrDefault(req.URL.EncodedPath(), "/"))
 		if req.URL.RawQuery != "" {
 			urlStr += "?" + req.URL.RawQuery
 		}
@@ -303,6 +359,7 @@ func (req *Request) write(w io.Writer, usingProxy bool) os.Error {
 			urlStr = req.URL.Scheme + "://" + host + urlStr
 		}
 	}
+	// TODO(bradfitz): escape at least newlines in urlStr?
 
 	bw := bufio.NewWriter(w)
 	fmt.Fprintf(bw, "%s %s HTTP/1.1\r\n", valueOrDefault(req.Method, "GET"), urlStr)
@@ -336,6 +393,13 @@ func (req *Request) write(w io.Writer, usingProxy bool) os.Error {
 	err = req.Header.WriteSubset(bw, reqWriteExcludeHeader)
 	if err != nil {
 		return err
+	}
+
+	if extraHeaders != nil {
+		err = extraHeaders.Write(bw)
+		if err != nil {
+			return err
+		}
 	}
 
 	io.WriteString(bw, "\r\n")
@@ -542,13 +606,14 @@ func ReadRequest(b *bufio.Reader) (req *Request, err os.Error) {
 	if f = strings.SplitN(s, " ", 3); len(f) < 3 {
 		return nil, &badStringError{"malformed HTTP request", s}
 	}
-	req.Method, req.RawURL, req.Proto = f[0], f[1], f[2]
+	var rawurl string
+	req.Method, rawurl, req.Proto = f[0], f[1], f[2]
 	var ok bool
 	if req.ProtoMajor, req.ProtoMinor, ok = ParseHTTPVersion(req.Proto); !ok {
 		return nil, &badStringError{"malformed HTTP version", req.Proto}
 	}
 
-	if req.URL, err = url.ParseRequest(req.RawURL); err != nil {
+	if req.URL, err = url.ParseRequest(rawurl); err != nil {
 		return nil, err
 	}
 
@@ -608,27 +673,77 @@ func ReadRequest(b *bufio.Reader) (req *Request, err os.Error) {
 	return req, nil
 }
 
-// ParseForm parses the raw query.
-// For POST requests, it also parses the request body as a form.
+// MaxBytesReader is similar to io.LimitReader but is intended for
+// limiting the size of incoming request bodies. In contrast to
+// io.LimitReader, MaxBytesReader's result is a ReadCloser, returns a
+// non-EOF error for a Read beyond the limit, and Closes the
+// underlying reader when its Close method is called.
+//
+// MaxBytesReader prevents clients from accidentally or maliciously
+// sending a large request and wasting server resources.
+func MaxBytesReader(w ResponseWriter, r io.ReadCloser, n int64) io.ReadCloser {
+	return &maxBytesReader{w: w, r: r, n: n}
+}
+
+type maxBytesReader struct {
+	w       ResponseWriter
+	r       io.ReadCloser // underlying reader
+	n       int64         // max bytes remaining
+	stopped bool
+}
+
+func (l *maxBytesReader) Read(p []byte) (n int, err os.Error) {
+	if l.n <= 0 {
+		if !l.stopped {
+			l.stopped = true
+			if res, ok := l.w.(*response); ok {
+				res.requestTooLarge()
+			}
+		}
+		return 0, os.NewError("http: request body too large")
+	}
+	if int64(len(p)) > l.n {
+		p = p[:l.n]
+	}
+	n, err = l.r.Read(p)
+	l.n -= int64(n)
+	return
+}
+
+func (l *maxBytesReader) Close() os.Error {
+	return l.r.Close()
+}
+
+// ParseForm parses the raw query from the URL.
+//
+// For POST or PUT requests, it also parses the request body as a form.
+// If the request Body's size has not already been limited by MaxBytesReader,
+// the size is capped at 10MB.
+//
 // ParseMultipartForm calls ParseForm automatically.
 // It is idempotent.
 func (r *Request) ParseForm() (err os.Error) {
 	if r.Form != nil {
 		return
 	}
-
 	if r.URL != nil {
 		r.Form, err = url.ParseQuery(r.URL.RawQuery)
 	}
-	if r.Method == "POST" {
+	if r.Method == "POST" || r.Method == "PUT" {
 		if r.Body == nil {
 			return os.NewError("missing form body")
 		}
 		ct := r.Header.Get("Content-Type")
-		switch strings.SplitN(ct, ";", 2)[0] {
-		case "text/plain", "application/x-www-form-urlencoded", "":
-			const maxFormSize = int64(10 << 20) // 10 MB is a lot of text.
-			b, e := ioutil.ReadAll(io.LimitReader(r.Body, maxFormSize+1))
+		ct, _, err := mime.ParseMediaType(ct)
+		switch {
+		case ct == "text/plain" || ct == "application/x-www-form-urlencoded" || ct == "":
+			var reader io.Reader = r.Body
+			maxFormSize := int64(1<<63 - 1)
+			if _, ok := r.Body.(*maxBytesReader); !ok {
+				maxFormSize = int64(10 << 20) // 10 MB is a lot of text.
+				reader = io.LimitReader(r.Body, maxFormSize+1)
+			}
+			b, e := ioutil.ReadAll(reader)
 			if e != nil {
 				if err == nil {
 					err = e
@@ -652,8 +767,13 @@ func (r *Request) ParseForm() (err os.Error) {
 					r.Form.Add(k, value)
 				}
 			}
-		case "multipart/form-data":
-			// handled by ParseMultipartForm
+		case ct == "multipart/form-data":
+			// handled by ParseMultipartForm (which is calling us, or should be)
+			// TODO(bradfitz): there are too many possible
+			// orders to call too many functions here.
+			// Clean this up and write more tests.
+			// request_test.go contains the start of this,
+			// in TestRequestMultipartCallOrder.
 		default:
 			return &badStringError{"unknown Content-Type", ct}
 		}

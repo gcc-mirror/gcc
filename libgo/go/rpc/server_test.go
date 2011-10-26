@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -466,6 +467,32 @@ func TestCountMallocsOverHTTP(t *testing.T) {
 	fmt.Printf("mallocs per HTTP rpc round trip: %d\n", countMallocs(dialHTTP, t))
 }
 
+type writeCrasher struct{}
+
+func (writeCrasher) Close() os.Error {
+	return nil
+}
+
+func (writeCrasher) Read(p []byte) (int, os.Error) {
+	return 0, os.EOF
+}
+
+func (writeCrasher) Write(p []byte) (int, os.Error) {
+	return 0, os.NewError("fake write failure")
+}
+
+func TestClientWriteError(t *testing.T) {
+	c := NewClient(writeCrasher{})
+	res := false
+	err := c.Call("foo", 1, &res)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if err.String() != "fake write failure" {
+		t.Error("unexpected value of error:", err)
+	}
+}
+
 func benchmarkEndToEnd(dial func() (*Client, os.Error), b *testing.B) {
 	b.StopTimer()
 	once.Do(startServer)
@@ -477,19 +504,79 @@ func benchmarkEndToEnd(dial func() (*Client, os.Error), b *testing.B) {
 
 	// Synchronous calls
 	args := &Args{7, 8}
-	reply := new(Reply)
+	procs := runtime.GOMAXPROCS(-1)
+	N := int32(b.N)
+	var wg sync.WaitGroup
+	wg.Add(procs)
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		err = client.Call("Arith.Add", args, reply)
-		if err != nil {
-			fmt.Printf("Add: expected no error but got string %q", err.String())
-			break
-		}
-		if reply.C != args.A+args.B {
-			fmt.Printf("Add: expected %d got %d", reply.C, args.A+args.B)
-			break
-		}
+
+	for p := 0; p < procs; p++ {
+		go func() {
+			reply := new(Reply)
+			for atomic.AddInt32(&N, -1) >= 0 {
+				err = client.Call("Arith.Add", args, reply)
+				if err != nil {
+					fmt.Printf("Add: expected no error but got string %q", err.String())
+					panic("rpc error")
+				}
+				if reply.C != args.A+args.B {
+					fmt.Printf("Add: expected %d got %d", reply.C, args.A+args.B)
+					panic("rpc error")
+				}
+			}
+			wg.Done()
+		}()
 	}
+	wg.Wait()
+}
+
+func benchmarkEndToEndAsync(dial func() (*Client, os.Error), b *testing.B) {
+	const MaxConcurrentCalls = 100
+	b.StopTimer()
+	once.Do(startServer)
+	client, err := dial()
+	if err != nil {
+		fmt.Println("error dialing", err)
+		return
+	}
+
+	// Asynchronous calls
+	args := &Args{7, 8}
+	procs := 4 * runtime.GOMAXPROCS(-1)
+	send := int32(b.N)
+	recv := int32(b.N)
+	var wg sync.WaitGroup
+	wg.Add(procs)
+	gate := make(chan bool, MaxConcurrentCalls)
+	res := make(chan *Call, MaxConcurrentCalls)
+	b.StartTimer()
+
+	for p := 0; p < procs; p++ {
+		go func() {
+			for atomic.AddInt32(&send, -1) >= 0 {
+				gate <- true
+				reply := new(Reply)
+				client.Go("Arith.Add", args, reply, res)
+			}
+		}()
+		go func() {
+			for call := range res {
+				a := call.Args.(*Args).A
+				b := call.Args.(*Args).B
+				c := call.Reply.(*Reply).C
+				if a+b != c {
+					fmt.Printf("Add: expected %d got %d", a+b, c)
+					panic("incorrect reply")
+				}
+				<-gate
+				if atomic.AddInt32(&recv, -1) == 0 {
+					close(res)
+				}
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }
 
 func BenchmarkEndToEnd(b *testing.B) {
@@ -498,4 +585,12 @@ func BenchmarkEndToEnd(b *testing.B) {
 
 func BenchmarkEndToEndHTTP(b *testing.B) {
 	benchmarkEndToEnd(dialHTTP, b)
+}
+
+func BenchmarkEndToEndAsync(b *testing.B) {
+	benchmarkEndToEndAsync(dialDirect, b)
+}
+
+func BenchmarkEndToEndAsyncHTTP(b *testing.B) {
+	benchmarkEndToEndAsync(dialHTTP, b)
 }

@@ -39,6 +39,7 @@
 package runtime
 #include "config.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 #include "defs.h"
 

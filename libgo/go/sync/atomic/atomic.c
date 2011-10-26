@@ -51,6 +51,15 @@ CompareAndSwapUintptr (uintptr_t *val, uintptr_t old, uintptr_t new)
   return __sync_bool_compare_and_swap (val, old, new);
 }
 
+_Bool CompareAndSwapPointer (void **, void *, void *)
+  asm ("libgo_sync.atomic.CompareAndSwapPointer");
+
+_Bool
+CompareAndSwapPointer (void **val, void *old, void *new)
+{
+  return __sync_bool_compare_and_swap (val, old, new);
+}
+
 int32_t AddInt32 (int32_t *, int32_t)
   asm ("libgo_sync.atomic.AddInt32");
 
@@ -110,6 +119,20 @@ LoadInt32 (int32_t *addr)
   return v;
 }
 
+int64_t LoadInt64 (int64_t *addr)
+  asm ("libgo_sync.atomic.LoadInt64");
+
+int64_t
+LoadInt64 (int64_t *addr)
+{
+  int64_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, v))
+    v = *addr;
+  return v;
+}
+
 uint32_t LoadUint32 (uint32_t *addr)
   asm ("libgo_sync.atomic.LoadUint32");
 
@@ -122,4 +145,124 @@ LoadUint32 (uint32_t *addr)
   while (! __sync_bool_compare_and_swap (addr, v, v))
     v = *addr;
   return v;
+}
+
+uint64_t LoadUint64 (uint64_t *addr)
+  asm ("libgo_sync.atomic.LoadUint64");
+
+uint64_t
+LoadUint64 (uint64_t *addr)
+{
+  uint64_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, v))
+    v = *addr;
+  return v;
+}
+
+uintptr_t LoadUintptr (uintptr_t *addr)
+  asm ("libgo_sync.atomic.LoadUintptr");
+
+uintptr_t
+LoadUintptr (uintptr_t *addr)
+{
+  uintptr_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, v))
+    v = *addr;
+  return v;
+}
+
+void *LoadPointer (void **addr)
+  asm ("libgo_sync.atomic.LoadPointer");
+
+void *
+LoadPointer (void **addr)
+{
+  void *v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, v))
+    v = *addr;
+  return v;
+}
+
+void StoreInt32 (int32_t *addr, int32_t val)
+  asm ("libgo_sync.atomic.StoreInt32");
+
+void
+StoreInt32 (int32_t *addr, int32_t val)
+{
+  int32_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, val))
+    v = *addr;
+}
+
+void StoreInt64 (int64_t *addr, int64_t val)
+  asm ("libgo_sync.atomic.StoreInt64");
+
+void
+StoreInt64 (int64_t *addr, int64_t val)
+{
+  int64_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, val))
+    v = *addr;
+}
+
+void StoreUint32 (uint32_t *addr, uint32_t val)
+  asm ("libgo_sync.atomic.StoreUint32");
+
+void
+StoreUint32 (uint32_t *addr, uint32_t val)
+{
+  uint32_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, val))
+    v = *addr;
+}
+
+void StoreUint64 (uint64_t *addr, uint64_t val)
+  asm ("libgo_sync.atomic.StoreUint64");
+
+void
+StoreUint64 (uint64_t *addr, uint64_t val)
+{
+  uint64_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, val))
+    v = *addr;
+}
+
+void StoreUintptr (uintptr_t *addr, uintptr_t val)
+  asm ("libgo_sync.atomic.StoreUintptr");
+
+void
+StoreUintptr (uintptr_t *addr, uintptr_t val)
+{
+  uintptr_t v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, val))
+    v = *addr;
+}
+
+void StorePointer (void **addr, void *val)
+  asm ("libgo_sync.atomic.StorePointer");
+
+void
+StorePointer (void **addr, void *val)
+{
+  void *v;
+
+  v = *addr;
+  while (! __sync_bool_compare_and_swap (addr, v, val))
+    v = *addr;
 }

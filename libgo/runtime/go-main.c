@@ -19,6 +19,7 @@
 #include "go-string.h"
 
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 #undef int

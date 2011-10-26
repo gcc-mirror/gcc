@@ -331,6 +331,10 @@ localname() {
 	pattern='Benchmark([^a-z].*)?'
 	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
 
+	# examples are named ExampleFoo
+	pattern='Example([^a-z].*)?'
+	examples=$($NM -p -v _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+
 	# package spec
 	echo 'package main'
 	echo
@@ -353,6 +357,7 @@ localname() {
 		echo '	{"'$i'", '$j'},'
 	done
 	echo '}'
+
 	# benchmark array
 	# The comment makes the multiline declaration
 	# gofmt-safe even when there are no benchmarks.
@@ -363,6 +368,17 @@ localname() {
 		echo '	{"'$i'", '$j'},'
 	done
 	echo '}'
+
+	# examples array
+	echo 'var examples = []testing.InternalExample{ //'
+	# This doesn't work because we don't pick up the output.
+	#for i in $examples
+	#do
+	#	j=$(localname $i)
+	#	echo '	{"'$i'", '$j', ""},'
+	#done
+	echo '}'
+
 	# body
 	echo \
 '
@@ -381,7 +397,7 @@ func matchString(pat, str string) (result bool, err __os__.Error) {
 }
 
 func main() {
-	testing.Main(matchString, tests, benchmarks)
+	testing.Main(matchString, tests, benchmarks, examples)
 }'
 }>_testmain.go
 

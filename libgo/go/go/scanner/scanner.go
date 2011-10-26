@@ -90,9 +90,8 @@ func (S *Scanner) next() {
 // They control scanner behavior.
 //
 const (
-	ScanComments      = 1 << iota // return comments as COMMENT tokens
-	AllowIllegalChars             // do not report an error for illegal chars
-	InsertSemis                   // automatically insert semicolons
+	ScanComments = 1 << iota // return comments as COMMENT tokens
+	InsertSemis              // automatically insert semicolons
 )
 
 // Init prepares the scanner S to tokenize the text src by setting the
@@ -152,7 +151,7 @@ func (S *Scanner) interpretLineComment(text []byte) {
 					filename = filepath.Join(S.dir, filename)
 				}
 				// update scanner position
-				S.file.AddLineInfo(S.lineOffset, filename, line-1) // -1 since comment applies to next line
+				S.file.AddLineInfo(S.lineOffset+len(text)+1, filename, line) // +len(text)+1 since comment applies to next line
 			}
 		}
 	}
@@ -652,9 +651,7 @@ scanAgain:
 		case '|':
 			tok = S.switch3(token.OR, token.OR_ASSIGN, '|', token.LOR)
 		default:
-			if S.mode&AllowIllegalChars == 0 {
-				S.error(offs, fmt.Sprintf("illegal character %#U", ch))
-			}
+			S.error(offs, fmt.Sprintf("illegal character %#U", ch))
 			insertSemi = S.insertSemi // preserve insertSemi info
 		}
 	}

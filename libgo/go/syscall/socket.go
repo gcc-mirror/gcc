@@ -296,13 +296,9 @@ func SetsockoptIPMreqn(fd, level, opt int, mreq *IPMreqn) (errno int) {
 
 */
 
-/* FIXME: mksysinfo needs to support IPv6Mreq.
-
 func SetsockoptIPv6Mreq(fd, level, opt int, mreq *IPv6Mreq) (errno int) {
 	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(mreq)), Socklen_t(unsafe.Sizeof(*mreq)))
 }
-
-*/
 
 func SetsockoptString(fd, level, opt int, s string) (errno int) {
 	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(&[]byte(s)[0])), Socklen_t(len(s)))

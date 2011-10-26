@@ -587,7 +587,6 @@ func (p *parser) parseStructType() *ast.StructType {
 	}
 	rbrace := p.expect(token.RBRACE)
 
-	// TODO(gri): store struct scope in AST
 	return &ast.StructType{pos, &ast.FieldList{lbrace, list, rbrace}, false}
 }
 
@@ -611,9 +610,6 @@ func (p *parser) tryVarType(isParam bool) ast.Expr {
 			p.error(pos, "'...' parameter is missing type")
 			typ = &ast.BadExpr{pos, p.pos}
 		}
-		if p.tok != token.RPAREN {
-			p.error(pos, "can use '...' with last parameter type only")
-		}
 		return &ast.Ellipsis{pos, typ}
 	}
 	return p.tryIdentOrType(false)
@@ -636,21 +632,21 @@ func (p *parser) parseVarList(isParam bool) (list []ast.Expr, typ ast.Expr) {
 	}
 
 	// a list of identifiers looks like a list of type names
-	for {
-		// parseVarType accepts any type (including parenthesized ones)
-		// even though the syntax does not permit them here: we
-		// accept them all for more robust parsing and complain
-		// afterwards
-		list = append(list, p.parseVarType(isParam))
+	//
+	// parse/tryVarType accepts any type (including parenthesized
+	// ones) even though the syntax does not permit them here: we
+	// accept them all for more robust parsing and complain later
+	for typ := p.parseVarType(isParam); typ != nil; {
+		list = append(list, typ)
 		if p.tok != token.COMMA {
 			break
 		}
 		p.next()
+		typ = p.tryVarType(isParam) // maybe nil as in: func f(int,) {}
 	}
 
 	// if we had a list of identifiers, it must be followed by a type
-	typ = p.tryVarType(isParam)
-	if typ != nil {
+	if typ = p.tryVarType(isParam); typ != nil {
 		p.resolve(typ)
 	}
 
@@ -800,7 +796,6 @@ func (p *parser) parseInterfaceType() *ast.InterfaceType {
 	}
 	rbrace := p.expect(token.RBRACE)
 
-	// TODO(gri): store interface scope in AST
 	return &ast.InterfaceType{pos, &ast.FieldList{lbrace, list, rbrace}, false}
 }
 
@@ -1436,14 +1431,14 @@ func (p *parser) parseSimpleStmt(mode int) (ast.Stmt, bool) {
 	case token.ARROW:
 		// send statement
 		arrow := p.pos
-		p.next() // consume "<-"
+		p.next()
 		y := p.parseRhs()
 		return &ast.SendStmt{x[0], arrow, y}, false
 
 	case token.INC, token.DEC:
 		// increment or decrement
 		s := &ast.IncDecStmt{x[0], p.pos, p.tok}
-		p.next() // consume "++" or "--"
+		p.next()
 		return s, false
 	}
 
@@ -1591,7 +1586,7 @@ func (p *parser) parseTypeList() (list []ast.Expr) {
 	return
 }
 
-func (p *parser) parseCaseClause(exprSwitch bool) *ast.CaseClause {
+func (p *parser) parseCaseClause(typeSwitch bool) *ast.CaseClause {
 	if p.trace {
 		defer un(trace(p, "CaseClause"))
 	}
@@ -1600,10 +1595,10 @@ func (p *parser) parseCaseClause(exprSwitch bool) *ast.CaseClause {
 	var list []ast.Expr
 	if p.tok == token.CASE {
 		p.next()
-		if exprSwitch {
-			list = p.parseRhsList()
-		} else {
+		if typeSwitch {
 			list = p.parseTypeList()
+		} else {
+			list = p.parseRhsList()
 		}
 	} else {
 		p.expect(token.DEFAULT)
@@ -1617,15 +1612,19 @@ func (p *parser) parseCaseClause(exprSwitch bool) *ast.CaseClause {
 	return &ast.CaseClause{pos, list, colon, body}
 }
 
-func isExprSwitch(s ast.Stmt) bool {
-	if s == nil {
-		return true
-	}
-	if e, ok := s.(*ast.ExprStmt); ok {
-		if a, ok := e.X.(*ast.TypeAssertExpr); ok {
-			return a.Type != nil // regular type assertion
-		}
-		return true
+func isTypeSwitchAssert(x ast.Expr) bool {
+	a, ok := x.(*ast.TypeAssertExpr)
+	return ok && a.Type == nil
+}
+
+func isTypeSwitchGuard(s ast.Stmt) bool {
+	switch t := s.(type) {
+	case *ast.ExprStmt:
+		// x.(nil)
+		return isTypeSwitchAssert(t.X)
+	case *ast.AssignStmt:
+		// v := x.(nil)
+		return len(t.Lhs) == 1 && t.Tok == token.DEFINE && len(t.Rhs) == 1 && isTypeSwitchAssert(t.Rhs[0])
 	}
 	return false
 }
@@ -1651,28 +1650,41 @@ func (p *parser) parseSwitchStmt() ast.Stmt {
 			s1 = s2
 			s2 = nil
 			if p.tok != token.LBRACE {
+				// A TypeSwitchGuard may declare a variable in addition
+				// to the variable declared in the initial SimpleStmt.
+				// Introduce extra scope to avoid redeclaration errors:
+				//
+				//	switch t := 0; t := x.(T) { ... }
+				//
+				// (this code is not valid Go because the first t will
+				// cannot be accessed and thus is never used, the extra
+				// scope is needed for the correct error message).
+				//
+				// If we don't have a type switch, s2 must be an expression.
+				// Having the extra nested but empty scope won't affect it.
+				p.openScope()
+				defer p.closeScope()
 				s2, _ = p.parseSimpleStmt(basic)
 			}
 		}
 		p.exprLev = prevLev
 	}
 
-	exprSwitch := isExprSwitch(s2)
+	typeSwitch := isTypeSwitchGuard(s2)
 	lbrace := p.expect(token.LBRACE)
 	var list []ast.Stmt
 	for p.tok == token.CASE || p.tok == token.DEFAULT {
-		list = append(list, p.parseCaseClause(exprSwitch))
+		list = append(list, p.parseCaseClause(typeSwitch))
 	}
 	rbrace := p.expect(token.RBRACE)
 	p.expectSemi()
 	body := &ast.BlockStmt{lbrace, list, rbrace}
 
-	if exprSwitch {
-		return &ast.SwitchStmt{pos, s1, p.makeExpr(s2), body}
+	if typeSwitch {
+		return &ast.TypeSwitchStmt{pos, s1, s2, body}
 	}
-	// type switch
-	// TODO(gri): do all the checks!
-	return &ast.TypeSwitchStmt{pos, s1, s2, body}
+
+	return &ast.SwitchStmt{pos, s1, p.makeExpr(s2), body}
 }
 
 func (p *parser) parseCommClause() *ast.CommClause {
@@ -2001,14 +2013,12 @@ func (p *parser) parseReceiver(scope *ast.Scope) *ast.FieldList {
 		defer un(trace(p, "Receiver"))
 	}
 
-	pos := p.pos
 	par := p.parseParameters(scope, false)
 
 	// must have exactly one receiver
 	if par.NumFields() != 1 {
-		p.errorExpected(pos, "exactly one receiver")
-		// TODO determine a better range for BadExpr below
-		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{pos, pos}}}
+		p.errorExpected(par.Opening, "exactly one receiver")
+		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{par.Opening, par.Closing + 1}}}
 		return par
 	}
 

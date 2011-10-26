@@ -6,6 +6,7 @@ package suffixarray
 
 import (
 	"bytes"
+	"rand"
 	"regexp"
 	"sort"
 	"strings"
@@ -213,18 +214,91 @@ func (a *index) at(i int) []byte    { return a.data[a.sa[i]:] }
 
 func testConstruction(t *testing.T, tc *testCase, x *Index) {
 	if !sort.IsSorted((*index)(x)) {
-		t.Errorf("testConstruction failed %s", tc.name)
+		t.Errorf("failed testConstruction %s", tc.name)
 	}
+}
+
+func equal(x, y *Index) bool {
+	if !bytes.Equal(x.data, y.data) {
+		return false
+	}
+	for i, j := range x.sa {
+		if j != y.sa[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// returns the serialized index size
+func testSaveRestore(t *testing.T, tc *testCase, x *Index) int {
+	var buf bytes.Buffer
+	if err := x.Write(&buf); err != nil {
+		t.Errorf("failed writing index %s (%s)", tc.name, err)
+	}
+	size := buf.Len()
+	var y Index
+	if err := y.Read(&buf); err != nil {
+		t.Errorf("failed reading index %s (%s)", tc.name, err)
+	}
+	if !equal(x, &y) {
+		t.Errorf("restored index doesn't match saved index %s", tc.name)
+	}
+	return size
 }
 
 func TestIndex(t *testing.T) {
 	for _, tc := range testCases {
 		x := New([]byte(tc.source))
 		testConstruction(t, &tc, x)
+		testSaveRestore(t, &tc, x)
 		testLookups(t, &tc, x, 0)
 		testLookups(t, &tc, x, 1)
 		testLookups(t, &tc, x, 10)
 		testLookups(t, &tc, x, 2e9)
 		testLookups(t, &tc, x, -1)
+	}
+}
+
+// Of all possible inputs, the random bytes have the least amount of substring
+// repetition, and the repeated bytes have the most. For most algorithms,
+// the running time of every input will be between these two.
+func benchmarkNew(b *testing.B, random bool) {
+	b.StopTimer()
+	data := make([]byte, 1e6)
+	if random {
+		for i := range data {
+			data[i] = byte(rand.Intn(256))
+		}
+	}
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		New(data)
+	}
+}
+
+func BenchmarkNewIndexRandom(b *testing.B) {
+	benchmarkNew(b, true)
+}
+func BenchmarkNewIndexRepeat(b *testing.B) {
+	benchmarkNew(b, false)
+}
+
+func BenchmarkSaveRestore(b *testing.B) {
+	b.StopTimer()
+	r := rand.New(rand.NewSource(0x5a77a1)) // guarantee always same sequence
+	data := make([]byte, 10<<20)            // 10MB of data to index
+	for i := range data {
+		data[i] = byte(r.Intn(256))
+	}
+	x := New(data)
+	size := testSaveRestore(nil, nil, x)       // verify correctness
+	buf := bytes.NewBuffer(make([]byte, size)) // avoid growing
+	b.SetBytes(int64(size))
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		x.Write(buf)
+		var y Index
+		y.Read(buf)
 	}
 }

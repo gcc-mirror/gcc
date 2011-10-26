@@ -80,13 +80,13 @@ func dumpLevel(w io.Writer, n *Node, level int) os.Error {
 	case DocumentNode:
 		return os.NewError("unexpected DocumentNode")
 	case ElementNode:
-		fmt.Fprintf(w, "<%s>", EscapeString(n.Data))
+		fmt.Fprintf(w, "<%s>", n.Data)
 	case TextNode:
-		fmt.Fprintf(w, "%q", EscapeString(n.Data))
+		fmt.Fprintf(w, "%q", n.Data)
 	case CommentNode:
 		return os.NewError("COMMENT")
 	case DoctypeNode:
-		fmt.Fprintf(w, "<!DOCTYPE %s>", EscapeString(n.Data))
+		fmt.Fprintf(w, "<!DOCTYPE %s>", n.Data)
 	case scopeMarkerNode:
 		return os.NewError("unexpected scopeMarkerNode")
 	default:
@@ -123,7 +123,7 @@ func TestParser(t *testing.T) {
 		rc := make(chan io.Reader)
 		go readDat(filename, rc)
 		// TODO(nigeltao): Process all test cases, not just a subset.
-		for i := 0; i < 25; i++ {
+		for i := 0; i < 27; i++ {
 			// Parse the #data section.
 			b, err := ioutil.ReadAll(<-rc)
 			if err != nil {
@@ -134,7 +134,7 @@ func TestParser(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			actual, err := dump(doc)
+			got, err := dump(doc)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -147,9 +147,26 @@ func TestParser(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			expected := string(b)
-			if actual != expected {
-				t.Errorf("%s test #%d %q, actual vs expected:\n----\n%s----\n%s----", filename, i, text, actual, expected)
+			if want := string(b); got != want {
+				t.Errorf("%s test #%d %q, got vs want:\n----\n%s----\n%s----", filename, i, text, got, want)
+				continue
+			}
+			// Check that rendering and re-parsing results in an identical tree.
+			pr, pw := io.Pipe()
+			go func() {
+				pw.CloseWithError(Render(pw, doc))
+			}()
+			doc1, err := Parse(pr)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got1, err := dump(doc1)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != got1 {
+				t.Errorf("%s test #%d %q, got vs got1:\n----\n%s----\n%s----", filename, i, text, got, got1)
+				continue
 			}
 		}
 	}

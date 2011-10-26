@@ -5,6 +5,7 @@
 package x509
 
 import (
+	"crypto/x509/pkix"
 	"encoding/pem"
 	"os"
 	"strings"
@@ -31,7 +32,7 @@ var verifyTests = []verifyTest{
 		dnsName:       "www.google.com",
 
 		expectedChains: [][]string{
-			[]string{"Google", "Thawte", "VeriSign"},
+			{"Google", "Thawte", "VeriSign"},
 		},
 	},
 	{
@@ -68,7 +69,7 @@ var verifyTests = []verifyTest{
 		dnsName:       "www.google.com",
 
 		expectedChains: [][]string{
-			[]string{"Google", "Thawte", "VeriSign"},
+			{"Google", "Thawte", "VeriSign"},
 		},
 	},
 	{
@@ -78,7 +79,7 @@ var verifyTests = []verifyTest{
 		currentTime:   1302726541,
 
 		expectedChains: [][]string{
-			[]string{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority"},
+			{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority"},
 		},
 	},
 	{
@@ -88,8 +89,8 @@ var verifyTests = []verifyTest{
 		currentTime:   1302726541,
 
 		expectedChains: [][]string{
-			[]string{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority"},
-			[]string{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority", "StartCom Certification Authority"},
+			{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority"},
+			{"dnssec-exp", "StartCom Class 1", "StartCom Certification Authority", "StartCom Certification Authority"},
 		},
 	},
 }
@@ -209,6 +210,10 @@ func chainToDebugString(chain []*Certificate) string {
 		chainStr += nameToKey(&cert.Subject)
 	}
 	return chainStr
+}
+
+func nameToKey(name *pkix.Name) string {
+	return strings.Join(name.Country, ",") + "/" + strings.Join(name.Organization, ",") + "/" + strings.Join(name.OrganizationalUnit, ",") + "/" + name.CommonName
 }
 
 const verisignRoot = `-----BEGIN CERTIFICATE-----

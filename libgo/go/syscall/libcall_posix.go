@@ -73,7 +73,7 @@ func Getgroups() (gids []int, errno int) {
 		return nil, 0
 	}
 
-	// Sanity check group count.  Max is 1<<16 on Linux.
+	// Sanity check group count.  Max is 1<<16 on GNU/Linux.
 	if n < 0 || n > 1<<20 {
 		return nil, EINVAL
 	}

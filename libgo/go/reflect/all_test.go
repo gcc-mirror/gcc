@@ -6,7 +6,7 @@ package reflect_test
 
 import (
 	"bytes"
-	"container/vector"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -877,19 +877,20 @@ func TestMap(t *testing.T) {
 		t.Errorf("Len = %d, want %d", n, len(m))
 	}
 	keys := mv.MapKeys()
-	i := 0
 	newmap := MakeMap(mv.Type())
 	for k, v := range m {
 		// Check that returned Keys match keys in range.
-		// These aren't required to be in the same order,
-		// but they are in this implementation, which makes
-		// the test easier.
-		if i >= len(keys) {
-			t.Errorf("Missing key #%d %q", i, k)
-		} else if kv := keys[i]; kv.String() != k {
-			t.Errorf("Keys[%q] = %d, want %d", i, kv.Int(), k)
+		// These aren't required to be in the same order.
+		seen := false
+		for _, kv := range keys {
+			if kv.String() == k {
+				seen = true
+				break
+			}
 		}
-		i++
+		if !seen {
+			t.Errorf("Missing key %q", k)
+		}
 
 		// Check that value lookup is correct.
 		vv := mv.MapIndex(ValueOf(k))
@@ -1322,8 +1323,8 @@ func TestFieldByName(t *testing.T) {
 }
 
 func TestImportPath(t *testing.T) {
-	if path := TypeOf(vector.Vector{}).PkgPath(); path != "libgo_container.vector" {
-		t.Errorf("TypeOf(vector.Vector{}).PkgPath() = %q, want \"libgo_container.vector\"", path)
+	if path := TypeOf(&base64.Encoding{}).Elem().PkgPath(); path != "libgo_encoding.base64" {
+		t.Errorf(`TypeOf(&base64.Encoding{}).Elem().PkgPath() = %q, want "libgo_encoding.base64"`, path)
 	}
 }
 
@@ -1564,6 +1565,31 @@ func TestTagGet(t *testing.T) {
 		if v := tt.Tag.Get(tt.Key); v != tt.Value {
 			t.Errorf("StructTag(%#q).Get(%#q) = %#q, want %#q", tt.Tag, tt.Key, v, tt.Value)
 		}
+	}
+}
+
+func TestBytes(t *testing.T) {
+	type B []byte
+	x := B{1, 2, 3, 4}
+	y := ValueOf(x).Bytes()
+	if !bytes.Equal(x, y) {
+		t.Fatalf("ValueOf(%v).Bytes() = %v", x, y)
+	}
+	if &x[0] != &y[0] {
+		t.Errorf("ValueOf(%p).Bytes() = %p", &x[0], &y[0])
+	}
+}
+
+func TestSetBytes(t *testing.T) {
+	type B []byte
+	var x B
+	y := []byte{1, 2, 3, 4}
+	ValueOf(&x).Elem().SetBytes(y)
+	if !bytes.Equal(x, y) {
+		t.Fatalf("ValueOf(%v).Bytes() = %v", x, y)
+	}
+	if &x[0] != &y[0] {
+		t.Errorf("ValueOf(%p).Bytes() = %p", &x[0], &y[0])
 	}
 }
 

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd
-
 // Fork, exec, wait, etc.
 
 package syscall
@@ -87,10 +85,10 @@ import (
 // 2) Socket.  Does not block.  Use the ForkLock.
 // 3) Accept.  If using non-blocking mode, use the ForkLock.
 //             Otherwise, live with the race.
-// 4) Open.    Can block.  Use O_CLOEXEC if available (Linux).
+// 4) Open.    Can block.  Use O_CLOEXEC if available (GNU/Linux).
 //             Otherwise, live with the race.
 // 5) Dup.     Does not block.  Use the ForkLock.
-//             On Linux, could use fcntl F_DUPFD_CLOEXEC
+//             On GNU/Linux, could use fcntl F_DUPFD_CLOEXEC
 //             instead of the ForkLock, but only for dup(fd, -1).
 
 var ForkLock sync.RWMutex
@@ -254,8 +252,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 			continue
 		}
 		if fd[i] == int(i) {
-			// Dup2(i, i) won't clear close-on-exec flag on Linux,
-			// probably not elsewhere either.
+			// Dup2(i, i) won't clear close-on-exec flag on
+			// GNU/Linux, probably not elsewhere either.
 			_, err1 = raw_fcntl(fd[i], F_SETFD, 0)
 			if err1 != 0 {
 				goto childerror

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin freebsd linux openbsd
+
 package net
 
 import (
@@ -150,7 +152,7 @@ func (s *pollServer) LookupFD(fd int, mode int) *netFD {
 	if !ok {
 		return nil
 	}
-	s.pending[key] = nil, false
+	delete(s.pending, key)
 	return netfd
 }
 
@@ -193,7 +195,7 @@ func (s *pollServer) CheckDeadlines() {
 		}
 		if t > 0 {
 			if t <= now {
-				s.pending[key] = nil, false
+				delete(s.pending, key)
 				if mode == 'r' {
 					s.poll.DelFD(fd.sysfd, mode)
 					fd.rdeadline = -1
@@ -354,6 +356,25 @@ func (fd *netFD) Close() os.Error {
 	fd.closing = true
 	fd.decref()
 	return nil
+}
+
+func (fd *netFD) shutdown(how int) os.Error {
+	if fd == nil || fd.sysfile == nil {
+		return os.EINVAL
+	}
+	errno := syscall.Shutdown(fd.sysfd, how)
+	if errno != 0 {
+		return &OpError{"shutdown", fd.net, fd.laddr, os.Errno(errno)}
+	}
+	return nil
+}
+
+func (fd *netFD) CloseRead() os.Error {
+	return fd.shutdown(syscall.SHUT_RD)
+}
+
+func (fd *netFD) CloseWrite() os.Error {
+	return fd.shutdown(syscall.SHUT_WR)
 }
 
 func (fd *netFD) Read(p []byte) (n int, err os.Error) {

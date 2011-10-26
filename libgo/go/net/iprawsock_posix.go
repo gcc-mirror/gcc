@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin freebsd linux openbsd windows
+
 // (Raw) IP sockets
 
 package net
 
 import (
 	"os"
-	"sync"
 	"syscall"
 )
-
-var onceReadProtocols sync.Once
 
 func sockaddrToIP(sa syscall.Sockaddr) Addr {
 	switch sa := sa.(type) {
@@ -25,7 +24,7 @@ func sockaddrToIP(sa syscall.Sockaddr) Addr {
 }
 
 func (a *IPAddr) family() int {
-	if a == nil || len(a.IP) <= 4 {
+	if a == nil || len(a.IP) <= IPv4len {
 		return syscall.AF_INET
 	}
 	if a.IP.To4() != nil {
@@ -158,7 +157,7 @@ func (c *IPConn) ReadFromIP(b []byte) (n int, addr *IPAddr, err os.Error) {
 	switch sa := sa.(type) {
 	case *syscall.SockaddrInet4:
 		addr = &IPAddr{sa.Addr[0:]}
-		if len(b) >= 4 { // discard ipv4 header
+		if len(b) >= IPv4len { // discard ipv4 header
 			hsize := (int(b[0]) & 0xf) * 4
 			copy(b, b[hsize:])
 			n -= hsize
@@ -207,33 +206,7 @@ func (c *IPConn) WriteTo(b []byte, addr Addr) (n int, err os.Error) {
 	return c.WriteToIP(b, a)
 }
 
-var protocols map[string]int
-
-func readProtocols() {
-	protocols = make(map[string]int)
-	if file, err := open("/etc/protocols"); err == nil {
-		for line, ok := file.readLine(); ok; line, ok = file.readLine() {
-			// tcp    6   TCP    # transmission control protocol
-			if i := byteIndex(line, '#'); i >= 0 {
-				line = line[0:i]
-			}
-			f := getFields(line)
-			if len(f) < 2 {
-				continue
-			}
-			if proto, _, ok := dtoi(f[1], 0); ok {
-				protocols[f[0]] = proto
-				for _, alias := range f[2:] {
-					protocols[alias] = proto
-				}
-			}
-		}
-		file.close()
-	}
-}
-
 func splitNetProto(netProto string) (net string, proto int, err os.Error) {
-	onceReadProtocols.Do(readProtocols)
 	i := last(netProto, ':')
 	if i < 0 { // no colon
 		return "", 0, os.NewError("no IP protocol specified")
@@ -242,13 +215,12 @@ func splitNetProto(netProto string) (net string, proto int, err os.Error) {
 	protostr := netProto[i+1:]
 	proto, i, ok := dtoi(protostr, 0)
 	if !ok || i != len(protostr) {
-		// lookup by name
-		proto, ok = protocols[protostr]
-		if ok {
-			return
+		proto, err = lookupProtocol(protostr)
+		if err != nil {
+			return "", 0, err
 		}
 	}
-	return
+	return net, proto, nil
 }
 
 // DialIP connects to the remote address raddr on the network net,
@@ -303,3 +275,8 @@ func (c *IPConn) BindToDevice(device string) os.Error {
 	defer c.fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.BindToDevice(c.fd.sysfd, device))
 }
+
+// File returns a copy of the underlying os.File, set to blocking mode.
+// It is the caller's responsibility to close f when finished.
+// Closing c does not affect f, and closing f does not affect c.
+func (c *IPConn) File() (f *os.File, err os.Error) { return c.fd.dup() }

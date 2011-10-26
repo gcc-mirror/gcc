@@ -23,7 +23,7 @@ var initErr os.Error
 
 func init() {
 	var d syscall.WSAData
-	e := syscall.WSAStartup(uint32(0x101), &d)
+	e := syscall.WSAStartup(uint32(0x202), &d)
 	if e != 0 {
 		initErr = os.NewSyscallError("WSAStartup", e)
 	}
@@ -52,15 +52,27 @@ type anOp struct {
 	// of the struct, as our code rely on it.
 	o syscall.Overlapped
 
-	resultc chan ioResult // io completion results
-	errnoc  chan int      // io submit / cancel operation errors
+	resultc chan ioResult
+	errnoc  chan int
 	fd      *netFD
 }
 
-func (o *anOp) Init(fd *netFD) {
+func (o *anOp) Init(fd *netFD, mode int) {
 	o.fd = fd
-	o.resultc = make(chan ioResult, 1)
-	o.errnoc = make(chan int)
+	var i int
+	if mode == 'r' {
+		i = 0
+	} else {
+		i = 1
+	}
+	if fd.resultc[i] == nil {
+		fd.resultc[i] = make(chan ioResult, 1)
+	}
+	o.resultc = fd.resultc[i]
+	if fd.errnoc[i] == nil {
+		fd.errnoc[i] = make(chan int)
+	}
+	o.errnoc = fd.errnoc[i]
 }
 
 func (o *anOp) Op() *anOp {
@@ -74,8 +86,8 @@ type bufOp struct {
 	buf syscall.WSABuf
 }
 
-func (o *bufOp) Init(fd *netFD, buf []byte) {
-	o.anOp.Init(fd)
+func (o *bufOp) Init(fd *netFD, buf []byte, mode int) {
+	o.anOp.Init(fd, mode)
 	o.buf.Len = uint32(len(buf))
 	if len(buf) == 0 {
 		o.buf.Buf = nil
@@ -208,12 +220,14 @@ type netFD struct {
 	closing bool
 
 	// immutable until Close
-	sysfd  syscall.Handle
-	family int
-	proto  int
-	net    string
-	laddr  Addr
-	raddr  Addr
+	sysfd   syscall.Handle
+	family  int
+	proto   int
+	net     string
+	laddr   Addr
+	raddr   Addr
+	resultc [2]chan ioResult // read/write completion results
+	errnoc  [2]chan int      // read/write submit or cancel operation errors
 
 	// owned by client
 	rdeadline_delta int64
@@ -298,6 +312,25 @@ func (fd *netFD) Close() os.Error {
 	return nil
 }
 
+func (fd *netFD) shutdown(how int) os.Error {
+	if fd == nil || fd.sysfd == syscall.InvalidHandle {
+		return os.EINVAL
+	}
+	errno := syscall.Shutdown(fd.sysfd, how)
+	if errno != 0 {
+		return &OpError{"shutdown", fd.net, fd.laddr, os.Errno(errno)}
+	}
+	return nil
+}
+
+func (fd *netFD) CloseRead() os.Error {
+	return fd.shutdown(syscall.SHUT_RD)
+}
+
+func (fd *netFD) CloseWrite() os.Error {
+	return fd.shutdown(syscall.SHUT_WR)
+}
+
 // Read from network.
 
 type readOp struct {
@@ -325,7 +358,7 @@ func (fd *netFD) Read(buf []byte) (n int, err os.Error) {
 		return 0, os.EINVAL
 	}
 	var o readOp
-	o.Init(fd, buf)
+	o.Init(fd, buf, 'r')
 	n, err = iosrv.ExecIO(&o, fd.rdeadline_delta)
 	if err == nil && n == 0 {
 		err = os.EOF
@@ -365,7 +398,7 @@ func (fd *netFD) ReadFrom(buf []byte) (n int, sa syscall.Sockaddr, err os.Error)
 		return 0, nil, os.EINVAL
 	}
 	var o readFromOp
-	o.Init(fd, buf)
+	o.Init(fd, buf, 'r')
 	o.rsan = int32(unsafe.Sizeof(o.rsa))
 	n, err = iosrv.ExecIO(&o, fd.rdeadline_delta)
 	if err != nil {
@@ -402,7 +435,7 @@ func (fd *netFD) Write(buf []byte) (n int, err os.Error) {
 		return 0, os.EINVAL
 	}
 	var o writeOp
-	o.Init(fd, buf)
+	o.Init(fd, buf, 'w')
 	return iosrv.ExecIO(&o, fd.wdeadline_delta)
 }
 
@@ -437,7 +470,7 @@ func (fd *netFD) WriteTo(buf []byte, sa syscall.Sockaddr) (n int, err os.Error) 
 		return 0, os.EINVAL
 	}
 	var o writeToOp
-	o.Init(fd, buf)
+	o.Init(fd, buf, 'w')
 	o.sa = sa
 	return iosrv.ExecIO(&o, fd.wdeadline_delta)
 }
@@ -487,7 +520,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err os.
 
 	// Submit accept request.
 	var o acceptOp
-	o.Init(fd)
+	o.Init(fd, 'r')
 	o.newsock = s
 	_, err = iosrv.ExecIO(&o, 0)
 	if err != nil {
