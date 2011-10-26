@@ -1,3 +1,28 @@
+2011-10-26  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_make_savres_rtx): Delete unneeded
+	declaration.
+	(rs6000_emit_stack_reset): Only return insn emitted when it adjusts sp.
+	(rs6000_make_savres_rtx): Rename to rs6000_emit_savres_rtx.  Use
+	simple_return in pattern, emit instruction, and set jump_label.
+	(rs6000_emit_prologue): Update for rs6000_emit_savres_rtx.  Use
+	simple_return rather than return.
+	(emit_cfa_restores): New function.
+	(rs6000_emit_epilogue): Emit cfa_restores when flag_shrink_wrap.
+	Add missing cfa_restores for SAVE_WORLD.  Add missing LR cfa_restore
+	when using out-of-line gpr restore.  Add missing LR and FP regs
+	cfa_restores for out-of-line fpr restore.  Consolidate code setting
+	up cfa_restores.  Formatting.  Use LR_REGNO define.
+	(rs6000_output_mi_thunk): Use simple_return rather than return.
+	* config/rs6000/rs6000.md (sibcall*, sibcall_value*): Likewise.
+	(return_internal*): Likewise.
+	(any_return, return_pred, return_str): New iterators.
+	(return, conditional return insns): Provide both return and
+	simple_return variants.
+	* config/rs6000/rs6000.h (EARLY_R12, LATE_R12): Define.
+	(REG_ALLOC_ORDER): Move r12 before call-saved regs when FIXED_R13.
+	Move r11 and r0 later to suit shrink-wrapping.
+
 2011-10-26  Richard Guenther  <rguenther@suse.de>
 
 	* lto-wrapper.c (run_gcc): Properly init/free obstack.
