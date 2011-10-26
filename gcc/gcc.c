@@ -6851,7 +6851,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 						 LTOPLUGINSONAME, R_OK,
 						 false);
 	  if (!linker_plugin_file_spec)
-	    fatal_error ("-fuse-linker-plugin, but " LTOPLUGINSONAME " not found");
+	    fatal_error ("-fuse-linker-plugin, but %s not found", LTOPLUGINSONAME);
 	}
 #endif
       lto_gcc_spec = argv[0];
