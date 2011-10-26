@@ -6085,7 +6085,8 @@ static tree
 elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 			bool definition, bool need_debug)
 {
-  const bool expr_global_p = Is_Public (gnat_entity) || global_bindings_p ();
+  const bool expr_public_p = Is_Public (gnat_entity);
+  const bool expr_global_p = expr_public_p || global_bindings_p ();
   bool expr_variable_p, use_variable;
 
   /* In most cases, we won't see a naked FIELD_DECL because a discriminant
@@ -6153,11 +6154,10 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
   if (use_variable || need_debug)
     {
       tree gnu_decl
-	= create_var_decl (create_concat_name (gnat_entity,
-					       IDENTIFIER_POINTER (gnu_name)),
-			   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
-			   !need_debug, Is_Public (gnat_entity),
-			   !definition, expr_global_p, NULL, gnat_entity);
+	= create_var_decl_1
+	  (create_concat_name (gnat_entity, IDENTIFIER_POINTER (gnu_name)),
+	   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr, true, expr_public_p,
+	   !definition, expr_global_p, !need_debug, NULL, gnat_entity);
 
       if (use_variable)
 	return gnu_decl;
