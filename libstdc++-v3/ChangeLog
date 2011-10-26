@@ -1,3 +1,10 @@
+2011-10-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/50862
+	* include/std/condition_variable (condition_variable_any::wait): Avoid
+	terminating if relocking user mutex throws during stack-unwinding.
+	* testsuite/30_threads/condition_variable_any/50862.cc: Add dg-require.
+
 2011-10-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/condition_variable (condition_variable_any): Remove
