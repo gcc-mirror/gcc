@@ -1,6 +1,11 @@
 
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (elaborate_expression_1): Add EXPR_PUBLIC_P local
+	variable.  Always create the elaboration variable, if any, as constant.
+
+2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Try to
 	make a packable type for fields of union types as well.
 	<is_type>: Use RECORD_OR_UNION_TYPE_P predicate.

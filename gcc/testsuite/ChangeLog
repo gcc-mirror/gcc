@@ -1,5 +1,10 @@
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/discr1.ads: New test.
+	* gnat.dg/specs/discr1_pkg.ads: New helper.
+
+2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/unchecked_union.ads: Rename to...
 	* gnat.dg/specs/unchecked_union1.ads: ...this.
 	* gnat.dg/specs/unchecked_union2.ads: New test.
