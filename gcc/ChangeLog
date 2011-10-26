@@ -1,3 +1,13 @@
+2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reload.c (reload_inner_reg_of_subreg): Change type of return value
+	and type of OUTPUT parameter to bool and adjust.  Document MODE and
+	OUTPUT parameters.  Use HARD_REGISTER_P.  Reorder final condition
+	and improve associated comment.
+	(push_reload): Clarify and update comments about reloading of subregs.
+	Adjust calls to reload_inner_reg_of_subreg.  Compute the class upfront
+	for the reloading of subregs in the out case as well.
+
 2011-10-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/50826
@@ -12,7 +22,7 @@
 	(statement_sink_location): Use it.
 	* params.def (SINK_FREQUENCY_THRESHOLD): New PARAM.
 
-2011-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+2011-10-26  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/48108
 	* config/darwin.c (top level): Amend comments concerning LTO output.
