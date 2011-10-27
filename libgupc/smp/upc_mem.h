@@ -84,7 +84,7 @@ __upc_memget (void *dest, upc_shared_ptr_t src, size_t n)
       if (!n)
         break;
       GUPCR_PTS_INCR_VADDR (src, n_copy);
-      dest += n_copy;
+      dest = (char *) dest + n_copy;
     }
 }
 
@@ -108,7 +108,7 @@ __upc_memput (upc_shared_ptr_t dest, const void *src, size_t n)
       if (!n)
         break;
       GUPCR_PTS_INCR_VADDR (dest, n_copy);
-      src += n_copy;
+      src = (char *) src + n_copy;
     }
 }
 

@@ -1,5 +1,12 @@
 2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
 
+	* smp/upc_sup.h (__upc_sptr_to_addr): Fixed the warning where
+	  'void *' type was used in arithmetic.
+	* smp/upc_mem.h (__upc_memget): Ditto.
+	* (__upc_memput): Ditto.
+
+2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
+
 	* upc-crtstuff.c: Remove unnecessary includes that caused
 	multiple defined warnings.
 

@@ -94,9 +94,9 @@ __upc_sptr_to_addr (upc_shared_ptr_t p)
   pn = (offset >> GUPCR_VM_OFFSET_BITS) & GUPCR_VM_PAGE_MASK;
   this_page = (pn << GUPCR_THREAD_SIZE) | GUPCR_PTS_THREAD (p);
   if (this_page == __upc_page1_ref)
-    addr = __upc_page1_base + p_offset;
+    addr = (char *) __upc_page1_base + p_offset;
   else if (this_page == __upc_page2_ref)
-    addr = __upc_page2_base + p_offset;
+    addr = (char *) __upc_page2_base + p_offset;
   else
     addr = __upc_vm_map_addr (p);
   return addr;
