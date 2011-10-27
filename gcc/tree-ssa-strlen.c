@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
 #include "params.h"
+#include "expr.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -176,7 +177,7 @@ get_addr_stridx (tree exp)
 static int
 get_stridx (tree exp)
 {
-  tree l;
+  tree s, o;
 
   if (TREE_CODE (exp) == SSA_NAME)
     return VEC_index (int, ssa_ver_to_stridx, SSA_NAME_VERSION (exp));
@@ -188,14 +189,17 @@ get_stridx (tree exp)
 	return idx;
     }
 
-  l = c_strlen (exp, 0);
-  if (l != NULL_TREE
-      && host_integerp (l, 1))
+  s = string_constant (exp, &o);
+  if (s != NULL_TREE
+      && (o == NULL_TREE || host_integerp (o, 0))
+      && TREE_STRING_LENGTH (s) > 0)
     {
-      unsigned HOST_WIDE_INT len = tree_low_cst (l, 1);
-      if (len == (unsigned int) len
-	  && (int) len >= 0)
-	return ~(int) len;
+      HOST_WIDE_INT offset = o ? tree_low_cst (o, 0) : 0;
+      const char *p = TREE_STRING_POINTER (s);
+      int max = TREE_STRING_LENGTH (s) - 1;
+
+      if (p[max] == '\0' && offset >= 0 && offset <= max)
+	return ~(int) strlen (p + offset);
     }
   return 0;
 }
