@@ -4521,15 +4521,14 @@
   [(set (match_operand:V4DF 0 "register_operand"         "=x,x")
 	(vec_select:V4DF
 	  (vec_concat:V8DF
-	    (match_operand:V4DF 1 "nonimmediate_operand" "xm,x")
-	    (match_operand:V4DF 2 "nonimmediate_operand" " 1,xm"))
+	    (match_operand:V4DF 1 "nonimmediate_operand" " x,m")
+	    (match_operand:V4DF 2 "nonimmediate_operand" "xm,1"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 6)])))]
-  "TARGET_AVX
-   && (!MEM_P (operands[1]) || rtx_equal_p (operands[1], operands[2]))"
+  "TARGET_AVX"
   "@
-   vmovddup\t{%1, %0|%0, %1}
-   vunpcklpd\t{%2, %1, %0|%0, %1, %2}"
+   vunpcklpd\t{%2, %1, %0|%0, %1, %2}
+   vmovddup\t{%1, %0|%0, %1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
