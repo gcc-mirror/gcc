@@ -1,3 +1,27 @@
+2011-10-27  Nick Clifton  <nickc@redhat.com>
+
+	* config.sub: Import these changes from the config project:
+
+	2011-10-08  Joern Rennecke <joern.rennecke@embecosm.com>
+	    Ben Elliston  <bje@gnu.org>
+
+	* config.sub (epiphany): New.
+
+	2011-09-09  Linas Vepstas  <linasvepstas@gmail.com>
+	    Ben Elliston  <bje@gnu.org>
+
+        * config.sub (hexagon, hexagon-*): New.
+
+	2011-08-23  Roland McGrath  <mcgrathr@google.com>
+
+	* config.sub: Rename 32eb to be32, 32el to le32, 64el to le64, and
+	64eb to be64.
+
+	2011-08-16  Roland McGrath  <mcgrathr@google.com>
+
+	* config.sub (32eb, 32el, 64eb, 64el): New (pseudo-)CPUs.
+	(nacl): Grok as alias for 32el-unknown-nacl.
+
 2011-10-25  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
