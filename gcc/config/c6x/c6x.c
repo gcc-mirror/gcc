@@ -3325,7 +3325,7 @@ unit_req_imbalance (unit_req_table reqs)
 
   for (i = 0; i < UNIT_REQ_MAX; i++)
     {
-      int factor = unit_req_factor (i);
+      int factor = unit_req_factor ((enum unitreqs) i);
       int diff = abs (reqs[0][i] - reqs[1][i]);
       val += (diff + factor - 1) / factor / 2;
     }
@@ -3343,7 +3343,7 @@ res_mii (unit_req_table reqs)
   for (side = 0; side < 2; side++)
     for (req = 0; req < UNIT_REQ_MAX; req++)
       {
-	int factor = unit_req_factor (req);
+	int factor = unit_req_factor ((enum unitreqs) req);
 	worst = MAX ((reqs[side][UNIT_REQ_D] + factor - 1) / factor, worst);
       }
 
@@ -3357,8 +3357,6 @@ res_mii (unit_req_table reqs)
 static bool
 get_unit_operand_masks (rtx insn, unsigned int *pmask1, unsigned int *pmask2)
 {
-  enum attr_units units;
-  enum attr_type type;
   enum attr_op_pattern op_pat;
 
   if (recog_memoized (insn) < 0)
@@ -3417,7 +3415,6 @@ try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
 {
   enum reg_class super_class = orig_side == 0 ? B_REGS : A_REGS;
   HARD_REG_SET unavailable;
-  unit_req_table new_unit_reqs;
   du_head_p this_head;
   struct du_chain *chain;
   int i;
@@ -3520,11 +3517,9 @@ reshuffle_units (basic_block loop)
   rtx head = BB_HEAD (loop);
   rtx tail = BB_END (loop);
   rtx insn;
-  int side;
   unit_req_table reqs;
   edge e;
   edge_iterator ei;
-  basic_block first = NULL;
   bitmap_head bbs;
 
   count_unit_reqs (reqs, head, PREV_INSN (tail));
@@ -3535,17 +3530,14 @@ reshuffle_units (basic_block loop)
   bitmap_initialize (&bbs, &bitmap_default_obstack);
 
   FOR_EACH_EDGE (e, ei, loop->preds)
-    {
-      bitmap_set_bit (&bbs, e->src->index);
-      first = e->src;
-    }
+    bitmap_set_bit (&bbs, e->src->index);
+
   bitmap_set_bit (&bbs, loop->index);
   regrename_analyze (&bbs);
 
   for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
     {
       enum attr_units units;
-      enum attr_cross cross;
       int count, side1, side2, req1, req2;
       unsigned int mask1, mask2;
       insn_rr_info *info;
@@ -5507,7 +5499,7 @@ hwloop_optimize (hwloop_info loop)
   basic_block entry_bb, bb;
   rtx seq, insn, prev, entry_after, end_packet;
   rtx head_insn, tail_insn, new_insns, last_insn;
-  int loop_earliest, entry_earliest, entry_end_cycle;
+  int loop_earliest;
   int n_execute_packets;
   edge entry_edge;
   unsigned ix;
