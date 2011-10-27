@@ -1,3 +1,7 @@
+2011-10-27  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/tree-ssa/pr45605.C: Scan fre1 dump and unxfail.
+
 2011-10-27  Uros Bizjak  <ubizjak@gmail.com>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
