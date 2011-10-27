@@ -1,5 +1,8 @@
 2011-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (build/gencheck.o): Depend on tree.def and
+	c-family/c-common.def.
+
 	* tree-ssa-strlen.c: Include expr.h.
 	(get_stridx): Don't use c_strlen, instead use string_constant
 	and compute string length from it.
