@@ -6912,7 +6912,7 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   enum insn_code icode;
   enum machine_mode qimode;
   unsigned int i, w, e, u;
-  rtx tmp, sel_qi;
+  rtx tmp, sel_qi = NULL;
   rtvec vec;
 
   if (!target || GET_MODE (target) != mode)
@@ -6946,23 +6946,23 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
       /* Fall back to a constant byte-based permutation.  */
       if (qimode != VOIDmode)
 	{
+	  vec = rtvec_alloc (w);
+	  for (i = 0; i < e; ++i)
+	    {
+	      unsigned int j, this_e;
+
+	      this_e = INTVAL (XVECEXP (sel, 0, i));
+	      this_e &= 2 * e - 1;
+	      this_e *= u;
+
+	      for (j = 0; j < u; ++j)
+		RTVEC_ELT (vec, i * u + j) = GEN_INT (this_e + j);
+	    }
+	  sel_qi = gen_rtx_CONST_VECTOR (qimode, vec);
+
 	  icode = direct_optab_handler (vec_perm_const_optab, qimode);
 	  if (icode != CODE_FOR_nothing)
 	    {
-	      vec = rtvec_alloc (w);
-	      for (i = 0; i < e; ++i)
-		{
-		  unsigned int j, this_e;
-
-		  this_e = INTVAL (XVECEXP (sel, 0, i));
-		  this_e &= 2 * e - 1;
-		  this_e *= u;
-
-		  for (j = 0; j < u; ++j)
-		    RTVEC_ELT (vec, i * u + j) = GEN_INT (this_e + j);
-		}
-	      sel_qi = gen_rtx_CONST_VECTOR (qimode, vec);
-
 	      tmp = expand_vec_perm_1 (icode, gen_lowpart (qimode, target),
 				       gen_lowpart (qimode, v0),
 				       gen_lowpart (qimode, v1), sel_qi);
@@ -6989,46 +6989,52 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   if (icode == CODE_FOR_nothing)
     return NULL_RTX;
 
-  /* Multiply each element by its byte size.  */
-  if (u == 2)
-    sel = expand_simple_binop (mode, PLUS, sel, sel, sel, 0, OPTAB_DIRECT);
-  else
-    sel = expand_simple_binop (mode, ASHIFT, sel, GEN_INT (exact_log2 (u)),
-			       sel, 0, OPTAB_DIRECT);
-  gcc_assert (sel != NULL);
-
-  /* Broadcast the low byte each element into each of its bytes.  */
-  vec = rtvec_alloc (w);
-  for (i = 0; i < w; ++i)
+  if (sel_qi == NULL)
     {
-      int this_e = i / u * u;
-      if (BYTES_BIG_ENDIAN)
-	this_e += u - 1;
-      RTVEC_ELT (vec, i) = GEN_INT (this_e);
-    }
-  tmp = gen_rtx_CONST_VECTOR (qimode, vec);
-  sel = gen_lowpart (qimode, sel);
-  sel = expand_vec_perm (qimode, sel, sel, tmp, NULL);
-  gcc_assert (sel != NULL);
+      /* Multiply each element by its byte size.  */
+      enum machine_mode selmode = GET_MODE (sel);
+      if (u == 2)
+	sel = expand_simple_binop (selmode, PLUS, sel, sel,
+				   sel, 0, OPTAB_DIRECT);
+      else
+	sel = expand_simple_binop (selmode, ASHIFT, sel,
+				   GEN_INT (exact_log2 (u)),
+				   sel, 0, OPTAB_DIRECT);
+      gcc_assert (sel != NULL);
 
-  /* Add the byte offset to each byte element.  */
-  /* Note that the definition of the indicies here is memory ordering,
-     so there should be no difference between big and little endian.  */
-  vec = rtvec_alloc (w);
-  for (i = 0; i < w; ++i)
-    RTVEC_ELT (vec, i) = GEN_INT (i % u);
-  tmp = gen_rtx_CONST_VECTOR (qimode, vec);
-  sel = expand_simple_binop (qimode, PLUS, sel, tmp, sel, 0, OPTAB_DIRECT);
-  gcc_assert (sel != NULL);
+      /* Broadcast the low byte each element into each of its bytes.  */
+      vec = rtvec_alloc (w);
+      for (i = 0; i < w; ++i)
+	{
+	  int this_e = i / u * u;
+	  if (BYTES_BIG_ENDIAN)
+	    this_e += u - 1;
+	  RTVEC_ELT (vec, i) = GEN_INT (this_e);
+	}
+      tmp = gen_rtx_CONST_VECTOR (qimode, vec);
+      sel = gen_lowpart (qimode, sel);
+      sel = expand_vec_perm (qimode, sel, sel, tmp, NULL);
+      gcc_assert (sel != NULL);
+
+      /* Add the byte offset to each byte element.  */
+      /* Note that the definition of the indicies here is memory ordering,
+	 so there should be no difference between big and little endian.  */
+      vec = rtvec_alloc (w);
+      for (i = 0; i < w; ++i)
+	RTVEC_ELT (vec, i) = GEN_INT (i % u);
+      tmp = gen_rtx_CONST_VECTOR (qimode, vec);
+      sel_qi = expand_simple_binop (qimode, PLUS, sel, tmp,
+				    sel, 0, OPTAB_DIRECT);
+      gcc_assert (sel_qi != NULL);
+    }
 
   tmp = expand_vec_perm_1 (icode, gen_lowpart (qimode, target),
 			   gen_lowpart (qimode, v0),
-			   gen_lowpart (qimode, v1), sel);
+			   gen_lowpart (qimode, v1), sel_qi);
   if (tmp)
     tmp = gen_lowpart (mode, tmp);
   return tmp;
 }
-
 
 /* Return insn code for a conditional operator with a comparison in
    mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
