@@ -1,3 +1,10 @@
+2011-10-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/c6x.c (unit_req_imbalance, res_mii): Cast the first arg
+	to unit_req_factor to the right enum type.
+	(get_unit_operand_masks, reshuffle_units, try_rename_operands,
+	hwloop_optimize): Remove unused variables.
+
 2010-10-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50731
