@@ -1,5 +1,9 @@
 2011-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (avx_cvtpd2dq256_2, avx_cvttpd2dq256_2,
+	vec_pack_sfix_trunc_v4df, vec_pack_sfix_v4df): New expanders.
+	(*avx_cvtpd2dq256_2, *avx_cvttpd2dq256_2): New insns.
+
 	* config/i386/i386.c (ix86_print_operand): Handle 'q' and 'x'
 	overrides for -masm=intel memory.
 	* config/i386/sse.md (sse2_cvtdq2pd, sse2_cvtps2pd,

@@ -1,3 +1,12 @@
+2011-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/sse2-cvt-1.c: New test.
+	* gcc.target/i386/sse2-cvt-2.c: New test.
+	* gcc.target/i386/avx-cvt-1.c: New test.
+	* gcc.target/i386/avx-cvt-2.c: New test.
+	* gcc.target/i386/avx2-cvt-1.c: New test.
+	* gcc.target/i386/avx2-cvt-2.c: New test.
+
 2011-10-27  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/tree-ssa/pr45605.C: Scan fre1 dump and unxfail.
