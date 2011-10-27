@@ -1,5 +1,8 @@
 2011-10-26  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.c (emit_scc_insn): Force attempt of v9 sequences
+	if we're comparing DImode and comparison is other than EQ or NE.
+
 	* config/sparc/sparc.c (emit_scc_insn): Do not try v9 sequences until
 	LEU/LTU/GEU/GTU is attempted.
 	* config/sparc/sparc.md (*neg_snesi_sign_extend): New 64-bit insn

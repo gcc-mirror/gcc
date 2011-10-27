@@ -2541,6 +2541,11 @@ emit_scc_insn (rtx operands[])
         }
     }
 
+  if (TARGET_V9
+      && GET_MODE (x) == DImode
+      && gen_v9_scc (operands[0], code, x, y))
+    return true;
+
   /* We can do LTU and GEU using the addx/subx instructions too.  And
      for GTU/LEU, if both operands are registers swap them and fall
      back to the easy case.  */
