@@ -3625,7 +3625,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    && DECL_TEMPLATE_RESULT (NODE) != NULL_TREE			\
    && DECL_IMPLICIT_TYPEDEF_P (DECL_TEMPLATE_RESULT (NODE)))
 
-/* Nonzero if NODE which declares a type.  */
+/* Nonzero for a NODE which declares a type.  */
 #define DECL_DECLARES_TYPE_P(NODE) \
   (TREE_CODE (NODE) == TYPE_DECL || DECL_CLASS_TEMPLATE_P (NODE))
 
