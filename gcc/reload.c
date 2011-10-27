@@ -1140,6 +1140,14 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 			   / UNITS_PER_WORD)))
 #endif
 		  ))
+	  || (REG_P (SUBREG_REG (out))
+	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
+	      /* The case of a word mode subreg
+		 is handled differently in the following statement.  */
+	      && ! (GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
+		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
+		        > UNITS_PER_WORD))
+	      && ! HARD_REGNO_MODE_OK (subreg_regno (out), outmode))
 	  || (secondary_reload_class (0, rclass, outmode, out) != NO_REGS
 	      && (secondary_reload_class (0, rclass, GET_MODE (SUBREG_REG (out)),
 					  SUBREG_REG (out))
