@@ -25,20 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef USED_FOR_TARGET
 
-/* FIXME: Including auto-host is incorrect, but until we have
-   identified the set of defines that need to go into auto-target.h,
-   this will have to do.  */
-#include "auto-host.h"
-#undef pid_t
-#undef rlim_t
-#undef ssize_t
-#undef vfork
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "config.h"
-#include "unwind-dw2-fde.h"
 #include "upc-crt-config.h"
 
 /* Only define secton start/end if no link script is used */

@@ -1,3 +1,8 @@
+2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
+
+	* upc-crtstuff.c: Remove unnecessary includes that caused
+	multiple defined warnings.
+
 2011-10-26  Gary Funck  <gary@intrepid.com>
 
 	Rename "GCC/UPC" to "GNU UPC", "UPC" to "GUPC", and
