@@ -3866,6 +3866,62 @@
   DONE;
 })
 
+(define_insn_and_split "*sse4_1_extractps"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=rm,x,x")
+	(vec_select:SF
+	  (match_operand:V4SF 1 "register_operand" "x,0,x")
+	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n,n")])))]
+  "TARGET_SSE4_1"
+  "@
+   %vextractps\t{%2, %1, %0|%0, %1, %2}
+   #
+   #"
+  "&& reload_completed && SSE_REG_P (operands[0])"
+  [(const_int 0)]
+{
+  rtx dest = gen_rtx_REG (V4SFmode, REGNO (operands[0]));
+  switch (INTVAL (operands[2]))
+    {
+    case 1:
+    case 3:
+      emit_insn (gen_sse_shufps_v4sf (dest, operands[1], operands[1],
+				      operands[2], operands[2],
+				      GEN_INT (INTVAL (operands[2]) + 4),
+				      GEN_INT (INTVAL (operands[2]) + 4)));
+      break;
+    case 2:
+      emit_insn (gen_vec_interleave_highv4sf (dest, operands[1], operands[1]));
+      break;
+    default:
+      /* 0 should be handled by the *vec_extractv4sf_0 pattern above.  */
+      gcc_unreachable ();
+    }
+  DONE;
+}
+  [(set_attr "isa" "*,noavx,avx")
+   (set_attr "type" "sselog,*,*")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix_extra" "1,*,*")
+   (set_attr "length_immediate" "1,*,*")
+   (set_attr "prefix" "maybe_vex,*,*")
+   (set_attr "mode" "V4SF,*,*")])
+
+(define_insn_and_split "*vec_extract_v4sf_mem"
+  [(set (match_operand:SF 0 "register_operand" "=x,*r,f")
+       (vec_select:SF
+	 (match_operand:V4SF 1 "memory_operand" "o,o,o")
+	 (parallel [(match_operand 2 "const_0_to_3_operand" "n,n,n")])))]
+  "TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  int i = INTVAL (operands[2]);
+
+  emit_move_insn (operands[0], adjust_address (operands[1], SFmode, i*4));
+  DONE;
+})
+
 (define_expand "avx_vextractf128<mode>"
   [(match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "")
    (match_operand:V_256 1 "register_operand" "")
@@ -4043,62 +4099,6 @@
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
-
-(define_insn_and_split "*sse4_1_extractps"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=rm,x,x")
-	(vec_select:SF
-	  (match_operand:V4SF 1 "register_operand" "x,0,x")
-	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n,n")])))]
-  "TARGET_SSE4_1"
-  "@
-   %vextractps\t{%2, %1, %0|%0, %1, %2}
-   #
-   #"
-  "&& reload_completed && SSE_REG_P (operands[0])"
-  [(const_int 0)]
-{
-  rtx dest = gen_rtx_REG (V4SFmode, REGNO (operands[0]));
-  switch (INTVAL (operands[2]))
-    {
-    case 1:
-    case 3:
-      emit_insn (gen_sse_shufps_v4sf (dest, operands[1], operands[1],
-				      operands[2], operands[2],
-				      GEN_INT (INTVAL (operands[2]) + 4),
-				      GEN_INT (INTVAL (operands[2]) + 4)));
-      break;
-    case 2:
-      emit_insn (gen_vec_interleave_highv4sf (dest, operands[1], operands[1]));
-      break;
-    default:
-      /* 0 should be handled by the *vec_extractv4sf_0 pattern above.  */
-      gcc_unreachable ();
-    }
-  DONE;
-}
-  [(set_attr "isa" "*,noavx,avx")
-   (set_attr "type" "sselog,*,*")
-   (set_attr "prefix_data16" "1,*,*")
-   (set_attr "prefix_extra" "1,*,*")
-   (set_attr "length_immediate" "1,*,*")
-   (set_attr "prefix" "maybe_vex,*,*")
-   (set_attr "mode" "V4SF,*,*")])
-
-(define_insn_and_split "*vec_extract_v4sf_mem"
-  [(set (match_operand:SF 0 "register_operand" "=x*rf")
-       (vec_select:SF
-	 (match_operand:V4SF 1 "memory_operand" "o")
-	 (parallel [(match_operand 2 "const_0_to_3_operand" "n")])))]
-  "TARGET_SSE"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-{
-  int i = INTVAL (operands[2]);
-
-  emit_move_insn (operands[0], adjust_address (operands[1], SFmode, i*4));
-  DONE;
-})
 
 ;; Modes handled by vec_extract patterns.
 (define_mode_iterator VEC_EXTRACT_MODE

@@ -1,3 +1,9 @@
+2011-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37191
+	* config/i386/sse.md (*vec_extract_v4sf_mem): Avoid combining registers
+	from different units in a single alternative.
+
 2011-10-26  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (emit_scc_insn): Force attempt of v9 sequences
@@ -114,8 +120,7 @@
 2011-10-26  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41844
-	* Makefile.in (lto-wrapper): Depend on and link against
-	opts-common.o.
+	* Makefile.in (lto-wrapper): Depend on and link against opts-common.o.
 	(lto-wrapper.o): Depend on $(OPTS_H) and $(OPTIONS_H).
 	* lto-wrapper.c (get_options_from_collect_gcc_options): New function.
 	(run_gcc): Use it.  Filter out language specific options.
@@ -223,8 +228,7 @@
 2011-10-25  Dodji Seketeli  <dodji@redhat.com>
 
 	* input.c (expand_location): Rewrite using
-	linemap_resolve_location and linemap_expand_location.  Add a
-	comment.
+	linemap_resolve_location and linemap_expand_location.  Add a comment.
 
 2011-10-25  Jakub Jelinek  <jakub@redhat.com>
 
@@ -265,8 +269,8 @@
 	to MASK_LITTLE_ENDIAN.
 	* config/sparc/sparc.opt (Mask(LITTLE_ENDIAN)): Delete.
 
-	* config/sparc/sparc.md: Only use F, G, and C constraints in FP
-	insns.  Only use D, Y, and Z constraints in vector insns.
+	* config/sparc/sparc.md: Only use F, G, and C constraints in FP insns.
+	Only use D, Y, and Z constraints in vector insns.
 
 	* config/sparc/sparc.md (cpu_feature, enabled): New attributes.
 	(*movsi_insn_novis3, *movsi_insn_vis3): Consolidate into one pattern
@@ -343,7 +347,7 @@
 2011-10-24  Julian Brown  <julian@codesourcery.com>
 
 	* config/m68k/m68k.c (notice_update_cc): Tighten condition for
-	setting CC_REVERSED for FP comparisons.  
+	setting CC_REVERSED for FP comparisons.
 
 2011-10-24  Richard Guenther  <rguenther@suse.de>
 
@@ -396,14 +400,12 @@
 	float and integer regs.
 	(sparc_register_move_cost): Adjust to account for VIS3 moves.
 	(sparc_preferred_reload_class): On 32-bit with VIS3 when moving an
-	integer reg to a class containing EXTRA_FP_REGS, constrain to
-	FP_REGS.
+	integer reg to a class containing EXTRA_FP_REGS, constrain to FP_REGS.
 	(sparc_secondary_reload): On 32-bit with VIS3 when moving between
 	float and integer regs we sometimes need a FP_REGS class
 	intermediate move to satisfy the reload.  When this happens
 	specify an extra cost of 2.
-	(*movsi_insn): Rename to have "_novis3" suffix and add !VIS3
-	guard.
+	(*movsi_insn): Rename to have "_novis3" suffix and add !VIS3 guard.
 	(*movdi_insn_sp32_v9): Likewise.
 	(*movdi_insn_sp64): Likewise.
 	(*movsf_insn): Likewise.
@@ -429,8 +431,7 @@
 	(*mov<VM64:mode>_insn_sp32_vis3): New insn.
 	(VM64 reg<-->reg split): New spliiter for 32-bit.
 
-	* config/sparc/sparc.c (sparc_split_regreg_legitimate): New
-	function.
+	* config/sparc/sparc.c (sparc_split_regreg_legitimate): New function.
 	* config/sparc/sparc-protos.h (sparc_split_regreg_legitimate):
 	Declare it.
 	* config/sparc/sparc.md (DImode reg/reg split): Use it.
