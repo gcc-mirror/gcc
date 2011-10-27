@@ -1690,6 +1690,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    * (__z.real() + __z.imag()) - _Tp(1.0),
 			    _Tp(2.0) * __z.real() * __z.imag());
       __t = std::sqrt(__t);
+      if (__z.real() < _Tp(-0.0))
+	__t = -__t;
 
       return std::log(__t + __z);
     }
