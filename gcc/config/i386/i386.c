@@ -14118,13 +14118,18 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	      gcc_unreachable ();
 	    }
 
-	  /* Check for explicit size override (codes 'b', 'w' and 'k')  */
+	  /* Check for explicit size override (codes 'b', 'w', 'k',
+	     'q' and 'x')  */
 	  if (code == 'b')
 	    size = "BYTE";
 	  else if (code == 'w')
 	    size = "WORD";
 	  else if (code == 'k')
 	    size = "DWORD";
+	  else if (code == 'q')
+	    size = "QWORD";
+	  else if (code == 'x')
+	    size = "XMMWORD";
 
 	  fputs (size, file);
 	  fputs (" PTR ", file);
