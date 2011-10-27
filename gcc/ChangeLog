@@ -1,3 +1,10 @@
+2011-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-strlen.c: Include expr.h.
+	(get_stridx): Don't use c_strlen, instead use string_constant
+	and compute string length from it.
+	* Makefile.in (tree-ssa-strlen.o): Depend on $(EXPR_H).
+
 2011-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/46603
