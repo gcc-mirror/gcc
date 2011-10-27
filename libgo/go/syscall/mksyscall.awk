@@ -44,33 +44,63 @@ BEGIN {
 	blocking = 1
     }
 
-    if (match($0, "//sys(nb)?[ 	]*([a-zA-Z0-9_]+)\\(([^()]*)\\) *(\\(([^()]+)\\))?", gosig) == 0) {
+    line = $0
+
+    if (match(line, "//sys(nb)?[ 	]*[a-zA-Z0-9_]+\\([^()]*\\) *(\\(([^()]+)\\))?") == 0) {
 	print "unmatched line:", $0 | "cat 1>&2"
 	status = 1
 	next
     }
 
-    gofnname = gosig[2]
-    gofnparams = gosig[3]
-    gofnresults = gosig[5]
+    # Sets a[1] = //sysnb, a[2] == function name.
+    split(line, a, "[ 	(]*")
+    gofnname = a[2]
+
+    off = match(line, "\\([^()]*\\)")
+    end = index(substr(line, off, length(line) - off + 1), ")")
+    gofnparams = substr(line, off + 1, end - 2)
+
+    line = substr(line, off + end, length(line) - (off + end) + 1)
+    off = match(line, "\\([^()]*\\)")
+    if (off == 0) {
+	gofnresults = ""
+    } else {
+	end = index(substr(line, off, length(line) - off + 1), ")")
+	gofnresults = substr(line, off + 1, end - 2)
+    }
 
     getline
+    line = $0
 
-    if (match($0, "//([a-zA-Z0-9_]+)\\(([^()]*)\\) *(.*)$", csig) == 0) {
+    if (match(line, "//[a-zA-Z0-9_]+\\([^()]*\\)") == 0) {
 	print "unmatched C line", $0, "after", gofnname | "cat 1>&2"
 	status = 1
 	next
     }
 
-    cfnname = csig[1]
-    cfnparams = csig[2]
-    cfnresult = csig[3]
+    split(line, a, "[ 	(]*")
+    cfnname = substr(a[1], 3, length(a[1]) - 2)
+
+    off = match(line, "\\([^()]*\\)")
+    end = index(substr(line, off, length(line) - off + 1), ")")
+    cfnparams = substr(line, off + 1, end - 2)
+
+    line = substr(line, off + end + 1, length(line) - (off + end) + 1)
+    while (substr(line, 1, 1) == " ") {
+	line = substr(line, 2, length(line) - 1)
+    }
+    end = index(line, " ")
+    if (end != 0) {
+	line = substr(line, 1, end)
+    }
+    cfnresult = line
 
     printf("// Automatically generated wrapper for %s/%s\n", gofnname, cfnname)
     printf("func c_%s(%s) %s%s__asm__(\"%s\")\n",
 	   cfnname, cfnparams, cfnresult, cfnresult == "" ? "" : " ", cfnname)
-    printf("func %s(%s) %s%s{\n",
-	   gofnname, gofnparams, gosig[4], gosig[4] == "" ? "" : " ")
+    printf("func %s(%s) %s%s%s%s{\n",
+	   gofnname, gofnparams, gofnresults == "" ? "" : "(", gofnresults,
+	   gofnresults == "" ? "" : ")", gofnresults == "" ? "" : " ")
 
     if (blocking) {
 	print "\tentersyscall()"
@@ -91,22 +121,22 @@ BEGIN {
 	    args = args ", "
 	}
 
-	if (match(goargs[goarg], "^([^ ]*) ([^ ]*)$", goparam) == 0) {
+	if (split(goargs[goarg], a) != 2) {
 	    print loc, "bad parameter:", goargs[goarg] | "cat 1>&2"
 	    status = 1
 	    next
 	}
 
-	goname = goparam[1]
-	gotype = goparam[2]
+	goname = a[1]
+	gotype = a[2]
 
-	if (match(cargs[carg], "^([^ ]*) ([^ ]*)$", cparam) == 0) {
+	if (split(cargs[carg], a) != 2) {
 	    print loc, "bad C parameter:", cargs[carg] | "cat 1>&2"
 	    status = 1
 	    next
 	}
 
-	ctype = cparam[2]
+	ctype = a[2]
 
 	if (gotype ~ /^\*/) {
 	    if (gotype != ctype) {
