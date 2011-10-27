@@ -1,3 +1,9 @@
+2011-10-27  Richard Henderson  <rth@redhat.com>
+
+	* optabs.c (expand_vec_perm): Use the correct mode for scaling the
+	selector.  Save the qimode constant selector for later use by the
+	qimode vec_perm pattern.
+
 2011-10-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/c6x/c6x.c (unit_req_imbalance, res_mii): Cast the first arg
