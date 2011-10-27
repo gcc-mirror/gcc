@@ -1,3 +1,14 @@
+2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
+
+	Apply patch for Darwin build - PR49992.
+
+	* top-level/configure.ac: Don't run ranlib with '-c' option for Darwin.
+	* gcc/configure.ac: Ditto.
+	* gcc/ada/mlib-tgt-specific-darwin.adb: Ditto.
+	* gcc/ada/gcc-interface/Makefile.in: Ditto.
+	* top-level/configure: Re-generate.
+	* gcc/configure: Re-genrate.
+
 2011-10-26  Gary Funck  <gary@intrepid.com>
 
 	Rename "GCC/UPC" to "GNU UPC", "UPC" to "GUPC", and

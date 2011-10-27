@@ -68,7 +68,7 @@ package body MLib.Tgt.Specific is
 
    function Archive_Indexer_Options return String_List_Access is
    begin
-      return new String_List'(1 => new String'("-c"));
+      return new String_List'(1 => new String'(""));
    end Archive_Indexer_Options;
 
    ---------------------------
