@@ -1,3 +1,14 @@
+2011-10-27  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (compute_pass_through_member_ptrs): Rename parm_info
+	to parm_ainfo.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+	(ipa_compute_jump_functions): Likewise.
+	(ipa_analyze_indirect_call_uses): Likewise.
+	(ipa_analyze_call_uses): Likewise.
+	(ipa_analyze_params_uses): Likewise.
+	(ipa_analyze_node): Likewise.
+
 2011-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50875
