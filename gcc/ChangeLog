@@ -1,3 +1,10 @@
+2011-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/46603
+	PR bootstrap/50879
+	* reload.c (push_reload): In the out case, restore previous behavior
+	for subregs that don't have word mode.
+
 2011-10-27  Ian Lance Taylor  <iant@google.com>
 
 	* cppdefault.c: Undef NATIVE_SYSTEM_HEADER_DIR if
