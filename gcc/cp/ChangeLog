@@ -1,3 +1,7 @@
+2011-10-27  Dodji Seketeli  <dodji@redhat.com>
+
+	* cp-tree.h (DECL_DECLARES_TYPE_P): Fix comment.
+
 2011-10-26  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (check_literal_operator_args): Avoid building types.
