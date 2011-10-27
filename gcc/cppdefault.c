@@ -32,6 +32,7 @@
 
 #if defined (CROSS_DIRECTORY_STRUCTURE) && !defined (TARGET_SYSTEM_ROOT)
 # undef LOCAL_INCLUDE_DIR
+# undef NATIVE_SYSTEM_HEADER_DIR
 #else
 # undef CROSS_INCLUDE_DIR
 #endif
@@ -84,8 +85,10 @@ const struct default_include cpp_include_defaults[]
     /* Another place the target system's headers might be.  */
     { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1, 0, 0 },
 #endif
+#ifdef NATIVE_SYSTEM_HEADER_DIR
     /* /usr/include comes dead last.  */
     { NATIVE_SYSTEM_HEADER_DIR, NATIVE_SYSTEM_HEADER_COMPONENT, 0, 0, 1, 0 },
+#endif
     { 0, 0, 0, 0, 0, 0 }
   };
 #endif /* no INCLUDE_DEFAULTS */

@@ -1,3 +1,11 @@
+2011-10-27  Ian Lance Taylor  <iant@google.com>
+
+	* cppdefault.c: Undef NATIVE_SYSTEM_HEADER_DIR if
+	CROSS_DIRECTORY_STRUCTURE is defined and TARGET_SYSTEM_ROOT is
+	not.
+	(cpp_include_defaults): Only use NATIVE_SYSTEM_HEADER_DIR if it is
+	defined.
+
 2011-10-27  Richard Henderson  <rth@redhat.com>
 
 	* optabs.c (expand_vec_perm): Use the correct mode for scaling the
