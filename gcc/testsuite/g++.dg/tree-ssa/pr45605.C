@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-ssa" } */
+/* { dg-options "-O1 -fdump-tree-fre1" } */
 extern "C" void abort(); 
 bool destructor_called = false; 
 
@@ -33,5 +33,5 @@ int main() {
 
 
 /* We should devirtualize call to D::Run */
-/* { dg-final { scan-tree-dump-times "D::Run \\(" 1 "ssa" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "ssa" } } */
+/* { dg-final { scan-tree-dump-times "D::Run \\(" 1 "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
