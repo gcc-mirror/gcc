@@ -1,3 +1,8 @@
+2011-10-28  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR rtl-optimization/49720
+	* g++.dg/torture/pr49720.C: New test.
+
 2011-10-27  David S. Miller  <davem@davemloft.net>
 
 	* gcc.target/sparc/setcc-3.c: New test.

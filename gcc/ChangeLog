@@ -1,3 +1,10 @@
+2011-10-28  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR rtl-optimization/49720
+	* simplify-rtx.c (simplify_relational_operation_1): Detect
+	infinite recursion condition in "(eq/ne (plus x cst1) cst2)
+	simplifies to (eq/ne x (cst2 - cst1))" case.
+
 2011-10-27  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (snedi_special): Only match when not VIS3.
