@@ -1,3 +1,8 @@
+2011-10-27  David S. Miller  <davem@davemloft.net>
+
+	* regcprop.c (copyprop_hardreg_forward_1): Reject the
+	transformation when we narrow the mode on big endian.
+
 2011-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (avx_cvtpd2dq256_2, avx_cvttpd2dq256_2,

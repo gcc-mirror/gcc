@@ -824,6 +824,14 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      if (hard_regno_nregs[regno][mode]
 		  > hard_regno_nregs[regno][vd->e[regno].mode])
 		goto no_move_special_case;
+
+	      /* And likewise, if we are narrowing on big endian the transformation
+		 is also invalid.  */
+	      if (hard_regno_nregs[regno][mode]
+		  < hard_regno_nregs[regno][vd->e[regno].mode]
+		  && (GET_MODE_SIZE (vd->e[regno].mode) > UNITS_PER_WORD
+		      ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
+		goto no_move_special_case;
 	    }
 
 	  /* If the destination is also a register, try to find a source
