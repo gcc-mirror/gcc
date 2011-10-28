@@ -121,7 +121,6 @@ THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
 MISCLIB =
-SYMDEPS = $(LIBINTL_DEP)
 OUTPUT_OPTION = @OUTPUT_OPTION@
 
 objext = .o
@@ -175,12 +174,12 @@ top_builddir = ../..
 LIBINTL = @LIBINTL@
 LIBINTL_DEP = @LIBINTL_DEP@
 
+# Character encoding conversion library.
+LIBICONV = @LIBICONV@
+LIBICONV_DEP = @LIBICONV_DEP@
+
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
-
-# List of extra object files linked in with various programs.
-EXTRA_GNATTOOLS_OBJS = ../../libcommon-target.a ../../libcommon.a \
-	../../../libcpp/libcpp.a
 
 # List extra gnattools
 EXTRA_GNATTOOLS =
@@ -242,11 +241,13 @@ LIBIBERTY = ../../libiberty/libiberty.a
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(LIBINTL) $(LIBIBERTY) $(SYSLIBS)
-LIBDEPS = $(LIBINTL_DEP) $(LIBIBERTY)
+LIBS = $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(SYSLIBS)
+LIBDEPS = $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBIBERTY)
 # Default is no TGT_LIB; one might be passed down or something
 TGT_LIB =
-TOOLS_LIBS = $(EXTRA_GNATTOOLS_OBJS) targext.o link.o $(LIBGNAT) $(LIBINTL) ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
+TOOLS_LIBS = targext.o link.o ../../libcommon-target.a ../../libcommon.a \
+  ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
+  ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
 
 # Convert the target variable into a space separated list of architecture,
 # manufacturer, and operating system and assign each of those to its own
