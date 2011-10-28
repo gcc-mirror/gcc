@@ -1,5 +1,19 @@
 2011-10-27  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.md (snedi_special): Only match when not VIS3.
+	(*snedi_zero): Likewise.
+	(*snedi_zero_trunc): Likewise.
+	(snedi_special_vis3): New expander.
+	(*snedi_zero_vis3): New insn.
+	(*snedi_zero_trunc_vis3): Likewise.
+	(*sltu_insn_vis3): Likewise.
+	(*sltu_insn_vis3_trunc): Likewise.
+	(addxc): Likewise.
+	(*addxc_trunc_sp64_vis3): Likewise.
+	* config/sparc/sparc.c (emit_scc_insn): When VIS3 use the
+	gen_snedi_special_vis3 expander, and try GTU/LTU addx based
+	sequences on DImode values.
+
 	* config/sparc/sparc.md (64-bit vector moves): Use 'e' not 'f'
 	constraint.
 
