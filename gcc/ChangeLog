@@ -1,3 +1,8 @@
+2011-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (vectorizable_shift): Give up if op1 has different
+	vector mode from vectype's mode.
+
 2011-10-28  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR rtl-optimization/49720
