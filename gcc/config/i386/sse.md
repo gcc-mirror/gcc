@@ -5831,7 +5831,7 @@
   "TARGET_SSE2"
   "@
    p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
-   v<vshift><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+   vp<vshift><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseishft")
    (set (attr "length_immediate")
