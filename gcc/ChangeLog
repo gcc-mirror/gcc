@@ -1,5 +1,8 @@
 2011-10-27  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.md (64-bit vector moves): Use 'e' not 'f'
+	constraint.
+
 	* regcprop.c (copyprop_hardreg_forward_1): Reject the
 	transformation when we narrow the mode on big endian.
 
