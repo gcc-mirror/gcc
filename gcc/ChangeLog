@@ -1,3 +1,27 @@
+2011-10-28  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Add vecdouble.
+	* config/rs6000/vsx.md (VStype_simple, VStype_mul): Use vecdouble
+	type for V2DF.
+	(VStype_div): Use vector types for V2DF/V4SF.
+	(VStype_sqrt): Use *sqrt types.
+	(VS_spdp_type): Change type to vecdouble.
+	(*vsx_fmav2df4, *vsx_nfmsv2df4, vsx_xvcvdpsxws, vsx_xvcvdpuxws,
+	vsx_xvcvuxdsp, vsx_xvcvsxwdp, vsx_xvcvuxwdp, vsx_xvcvspsxds,
+	vsx_xvcvspuxds): Likewise.
+	(*vsx_fms<mode>4): Set type via <VStype_mul>.
+	(*vsx_eq_<mode>_p, *vsx_gt_<mode>_p, *vsx_ge_<mode>_p): Set type via
+	<VStype_simple>.
+	* config/rs6000/power7.md (power7-vecstore): Correct VSU pipe.
+	(power7-fpcompare, power7-sdiv, power7-ddiv, power7-sqrt,
+	power7-dsqrt): Correct insn latency.
+	(power7-vecsimple): Add veccmp type and correct dispatch/VSU values.
+	(power7-veccmp): Delete.
+	(power7-vecfloat): Correct latency/dispatch/VSU values.
+	(define_bypass "power7-vecfloat"): Correct latency and types.
+	(power7-veccomplex, power7-vecperm): Correct dispatch/VSU values.
+	(power7-vecdouble, power7-vecfdiv, power7-vecdiv): New.
+
 2011-10-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (shift_insn): Rename code attribute from

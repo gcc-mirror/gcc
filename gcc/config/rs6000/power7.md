@@ -139,7 +139,7 @@
 (define_insn_reservation "power7-vecstore" 6
   (and (eq_attr "type" "vecstore")
        (eq_attr "cpu" "power7"))
-  "DU_power7,LSU_power7+VSU_power7")
+  "DU_power7,LSU_power7+vsu2_power7")
 
 (define_insn_reservation "power7-sync" 11
   (and (eq_attr "type" "sync")
@@ -265,54 +265,69 @@
 
 (define_bypass 8 "power7-fp" "power7-branch")
 
-(define_insn_reservation "power7-fpcompare" 4
+(define_insn_reservation "power7-fpcompare" 8
   (and (eq_attr "type" "fpcompare")
        (eq_attr "cpu" "power7"))
   "DU_power7,VSU_power7")
 
-(define_insn_reservation "power7-sdiv" 26
+(define_insn_reservation "power7-sdiv" 27
   (and (eq_attr "type" "sdiv")
        (eq_attr "cpu" "power7"))
   "DU_power7,VSU_power7")
 
-(define_insn_reservation "power7-ddiv" 32
+(define_insn_reservation "power7-ddiv" 33
   (and (eq_attr "type" "ddiv")
        (eq_attr "cpu" "power7"))
   "DU_power7,VSU_power7")
 
-(define_insn_reservation "power7-sqrt" 31
+(define_insn_reservation "power7-sqrt" 32
   (and (eq_attr "type" "ssqrt")
        (eq_attr "cpu" "power7"))
   "DU_power7,VSU_power7")
 
-(define_insn_reservation "power7-dsqrt" 43
+(define_insn_reservation "power7-dsqrt" 44
   (and (eq_attr "type" "dsqrt")
        (eq_attr "cpu" "power7"))
   "DU_power7,VSU_power7")
 
 (define_insn_reservation "power7-vecsimple" 2
-  (and (eq_attr "type" "vecsimple")
+  (and (eq_attr "type" "vecsimple,veccmp")
        (eq_attr "cpu" "power7"))
-  "du1_power7,VSU_power7")
+  "DU_power7,vsu1_power7")
 
-(define_insn_reservation "power7-veccmp" 7
-  (and (eq_attr "type" "veccmp")
-       (eq_attr "cpu" "power7"))
-  "du1_power7,VSU_power7")
-
-(define_insn_reservation "power7-vecfloat" 7
+(define_insn_reservation "power7-vecfloat" 6
   (and (eq_attr "type" "vecfloat")
        (eq_attr "cpu" "power7"))
-  "du1_power7,VSU_power7")
+  "DU_power7,vsu1_power7")
 
-(define_bypass 6 "power7-vecfloat" "power7-vecfloat")
+(define_bypass 7 "power7-vecfloat" "power7-vecsimple,power7-veccomplex,\
+				    power7-vecperm")
 
 (define_insn_reservation "power7-veccomplex" 7
   (and (eq_attr "type" "veccomplex")
        (eq_attr "cpu" "power7"))
-  "du1_power7,VSU_power7")
+  "DU_power7,vsu1_power7")
 
 (define_insn_reservation "power7-vecperm" 3
   (and (eq_attr "type" "vecperm")
        (eq_attr "cpu" "power7"))
-  "du2_power7,VSU_power7")
+  "DU_power7,vsu2_power7")
+
+(define_insn_reservation "power7-vecdouble" 6
+  (and (eq_attr "type" "vecdouble")
+       (eq_attr "cpu" "power7"))
+  "DU_power7,VSU_power7")
+
+(define_bypass 7 "power7-vecdouble" "power7-vecsimple,power7-veccomplex,\
+				    power7-vecperm")
+
+(define_insn_reservation "power7-vecfdiv" 26
+  (and (eq_attr "type" "vecfdiv")
+       (eq_attr "cpu" "power7"))
+  "DU_power7,VSU_power7")
+
+(define_insn_reservation "power7-vecdiv" 32
+  (and (eq_attr "type" "vecdiv")
+       (eq_attr "cpu" "power7"))
+  "DU_power7,VSU_power7")
+

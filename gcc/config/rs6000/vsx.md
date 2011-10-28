@@ -120,7 +120,7 @@
 			 (DF    "s")])
 
 ;; Appropriate type for add ops (and other simple FP ops)
-(define_mode_attr VStype_simple	[(V2DF "vecfloat")
+(define_mode_attr VStype_simple	[(V2DF "vecdouble")
 				 (V4SF "vecfloat")
 				 (DF   "fp")])
 
@@ -129,7 +129,7 @@
 				   (DF   "fp_addsub_d")])
 
 ;; Appropriate type for multiply ops
-(define_mode_attr VStype_mul	[(V2DF "vecfloat")
+(define_mode_attr VStype_mul	[(V2DF "vecdouble")
 				 (V4SF "vecfloat")
 				 (DF   "dmul")])
 
@@ -137,10 +137,9 @@
 				 (V4SF "fp_mul_s")
 				 (DF   "fp_mul_d")])
 
-;; Appropriate type for divide ops.  For now, just lump the vector divide with
-;; the scalar divides
-(define_mode_attr VStype_div	[(V2DF "ddiv")
-				 (V4SF "sdiv")
+;; Appropriate type for divide ops.
+(define_mode_attr VStype_div	[(V2DF "vecdiv")
+				 (V4SF "vecfdiv")
 				 (DF   "ddiv")])
 
 (define_mode_attr VSfptype_div	[(V2DF "fp_div_d")
@@ -150,8 +149,8 @@
 ;; Appropriate type for sqrt ops.  For now, just lump the vector sqrt with
 ;; the scalar sqrt
 (define_mode_attr VStype_sqrt	[(V2DF "dsqrt")
-				 (V4SF "sdiv")
-				 (DF   "ddiv")])
+				 (V4SF "ssqrt")
+				 (DF   "dsqrt")])
 
 (define_mode_attr VSfptype_sqrt	[(V2DF "fp_sqrt_d")
 				 (V4SF "fp_sqrt_s")
@@ -171,8 +170,8 @@
 				(V2DF	"xvcvdpsp")])
 
 (define_mode_attr VS_spdp_type [(DF	"fp")
-				(V4SF	"vecfloat")
-				(V2DF	"vecfloat")])
+				(V4SF	"vecdouble")
+				(V2DF	"vecdouble")])
 
 ;; Map the scalar mode for a vector type
 (define_mode_attr VS_scalar [(V2DF	"DF")
@@ -572,7 +571,7 @@
    xvmaddmdp %x0,%x1,%x3
    xvmaddadp %x0,%x1,%x2
    xvmaddmdp %x0,%x1,%x3"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 (define_insn "*vsx_fmsdf4"
   [(set (match_operand:DF 0 "vsx_register_operand" "=ws,ws,?wa,?wa,d")
@@ -604,7 +603,7 @@
    x<VSv>msubm<VSs> %x0,%x1,%x3
    x<VSv>msuba<VSs> %x0,%x1,%x2
    x<VSv>msubm<VSs> %x0,%x1,%x3"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "<VStype_mul>")])
 
 (define_insn "*vsx_nfmadf4"
   [(set (match_operand:DF 0 "vsx_register_operand" "=ws,ws,?wa,?wa,d")
@@ -688,7 +687,7 @@
    xvnmsubmdp %x0,%x1,%x3
    xvnmsubadp %x0,%x1,%x2
    xvnmsubmdp %x0,%x1,%x3"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 ;; Vector conditional expressions (no scalar version for these instructions)
 (define_insn "vsx_eq<mode>"
@@ -741,7 +740,7 @@
 		  (match_dup 2)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcmpeq<VSs>. %x0,%x1,%x2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_gt_<mode>_p"
   [(set (reg:CC 74)
@@ -754,7 +753,7 @@
 		  (match_dup 2)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcmpgt<VSs>. %x0,%x1,%x2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_ge_<mode>_p"
   [(set (reg:CC 74)
@@ -767,7 +766,7 @@
 		  (match_dup 2)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcmpge<VSs>. %x0,%x1,%x2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "<VStype_simple>")])
 
 ;; Vector select
 (define_insn "*vsx_xxsel<mode>"
@@ -948,7 +947,7 @@
 		     UNSPEC_VSX_CVDPSXWS))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvdpsxws %x0,%x1"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvdpuxws"
   [(set (match_operand:V4SI 0 "vsx_register_operand" "=v,?wa")
@@ -956,7 +955,7 @@
 		     UNSPEC_VSX_CVDPUXWS))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvdpuxws %x0,%x1"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvsxdsp"
   [(set (match_operand:V4SI 0 "vsx_register_operand" "=wd,?wa")
@@ -972,7 +971,7 @@
 		     UNSPEC_VSX_CVUXDSP))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvuxwdp %x0,%x1"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 ;; Convert from 32-bit to 64-bit types
 (define_insn "vsx_xvcvsxwdp"
@@ -981,7 +980,7 @@
 		     UNSPEC_VSX_CVSXWDP))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvsxwdp %x0,%x1"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvuxwdp"
   [(set (match_operand:V2DF 0 "vsx_register_operand" "=wd,?wa")
@@ -989,7 +988,7 @@
 		     UNSPEC_VSX_CVUXWDP))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvuxwdp %x0,%x1"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvspsxds"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=v,?wa")
@@ -997,7 +996,7 @@
 		     UNSPEC_VSX_CVSPSXDS))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvspsxds %x0,%x1"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvspuxds"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=v,?wa")
@@ -1005,7 +1004,7 @@
 		     UNSPEC_VSX_CVSPUXDS))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvspuxds %x0,%x1"
-  [(set_attr "type" "vecfloat")])
+  [(set_attr "type" "vecdouble")])
 
 ;; Only optimize (float (fix x)) -> frz if we are in fast-math mode, since
 ;; since the xsrdpiz instruction does not truncate the value if the floating
