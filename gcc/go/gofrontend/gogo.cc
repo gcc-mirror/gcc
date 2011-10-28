@@ -85,6 +85,10 @@ Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
   Named_object* byte_type = this->declare_type("byte", loc);
   byte_type->set_type_value(uint8_type);
 
+  // "rune" is an alias for "int".
+  Named_object* rune_type = this->declare_type("rune", loc);
+  rune_type->set_type_value(int_type);
+
   this->add_named_type(Type::make_integer_type("uintptr", true,
 					       pointer_size,
 					       RUNTIME_TYPE_KIND_UINTPTR));
