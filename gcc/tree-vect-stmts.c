@@ -2318,6 +2318,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   int nunits_in;
   int nunits_out;
   tree vectype_out;
+  tree op1_vectype;
   int ncopies;
   int j, i;
   VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
@@ -2387,7 +2388,8 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   op1 = gimple_assign_rhs2 (stmt);
-  if (!vect_is_simple_use (op1, loop_vinfo, bb_vinfo, &def_stmt, &def, &dt[1]))
+  if (!vect_is_simple_use_1 (op1, loop_vinfo, bb_vinfo, &def_stmt, &def,
+			     &dt[1], &op1_vectype))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "use not simple.");
@@ -2444,6 +2446,13 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
       optab = optab_for_tree_code (code, vectype, optab_vector);
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "vector/vector shift/rotate found.");
+      if (TYPE_MODE (op1_vectype) != TYPE_MODE (vectype))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "unusable type for last operand in"
+				" vector/vector shift/rotate.");
+	  return false;
+	}
     }
   /* See if the machine has a vector shifted by scalar insn and if not
      then see if it has a vector shifted by vector insn.  */
