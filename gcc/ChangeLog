@@ -1,3 +1,23 @@
+2011-10-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/t-darwin (LIB2FUNCS_STATIC_EXTRA): 
+	Move darwin-fpsave.asm from here to ... LIB2FUNCS_EXTRA.
+	(LIB2FUNCS_EXTRA):  Add darwin-gpsave.asm.
+	(TARGET_LIBGCC2_CFLAGS): Ensure that fPIC and -pipe are inherited from
+	config/t-darwin.
+	* config/rs6000/darwin.h (FP_SAVE_INLINE): Adjust to enable.
+	(GP_SAVE_INLINE): Likewise.
+	(SAVE_FP_PREFIX,  SAVE_FP_SUFFIX, RESTORE_FP_PREFIX,
+	RESTORE_FP_SUFFIX): Set to empty strings.
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): Implement for Darwin.
+	(debug_stack_info): Print savres_strategy.
+	(rs6000_savres_routine_name): Implement for Darwin.
+	(rs6000_make_savres_rtx): Adjust used register for Darwin.
+	(rs6000_emit_prologue): Implement out-of-line saves for Darwin.
+	(rs6000_output_function_prologue): Don't emit .extern for Mach-O.
+	(rs6000_emit_epilogue): Implement out-of-line saves for Darwin.
+	* config/rs6000/darwin-gpsave.asm: New file.
+
 2011-10-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (VI4SD_AVX2): Removed.

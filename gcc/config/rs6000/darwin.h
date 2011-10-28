@@ -173,17 +173,26 @@ extern int darwin_emit_branch_islands;
   (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
    + (STACK_POINTER_OFFSET))
 
-/* Define cutoff for using external functions to save floating point.
-   Currently on Darwin, always use inline stores.  */
+/* Define cutoff for using out-of-line functions to save registers.
+   Currently on Darwin, we implement FP and GPR out-of-line-saves plus the
+   special routine for 'save everything'.  */
 
-#undef	FP_SAVE_INLINE
-#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 64)
+#undef FP_SAVE_INLINE
+#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) > 60 && (FIRST_REG) < 64)
+
 #undef GP_SAVE_INLINE
-#define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 32)
+#define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) > 29 && (FIRST_REG) < 32)
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
+
 #undef WORLD_SAVE_P
 #define WORLD_SAVE_P(INFO) ((INFO)->world_save_p)
+
+/* We don't use these on Darwin, they are just place-holders.  */
+#define SAVE_FP_PREFIX ""
+#define SAVE_FP_SUFFIX ""
+#define RESTORE_FP_PREFIX ""
+#define RESTORE_FP_SUFFIX ""
 
 /* The assembler wants the alternate register names, but without
    leading percent sign.  */
@@ -233,12 +242,6 @@ extern int darwin_emit_branch_islands;
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START ";"
-
-/* FP save and restore routines.  */
-#define	SAVE_FP_PREFIX "._savef"
-#define SAVE_FP_SUFFIX ""
-#define	RESTORE_FP_PREFIX "._restf"
-#define RESTORE_FP_SUFFIX ""
 
 /* This is how to output an assembler line that says to advance
    the location counter to a multiple of 2**LOG bytes using the
