@@ -1,3 +1,13 @@
+2011-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/50842
+	* gcc-interface/Makefile.in (SYMDEPS): Delete.
+	(LIBICONV): New variable.
+	(LIBICONV_DEP): Likewise.
+	(LIBS): Add $(LIBICONV).
+	(LIBDEPS): Add $(LIBICONV_DEP).
+	(EXTRA_GNATTOOLS_OBJS): Merge into...
+	(TOOLS_LIBS): ...this.  Add $(LIBICONV).
 
 2011-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
