@@ -15715,7 +15715,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
         }
       else
 	{
-	  tree bad_old_arg, bad_new_arg;
+	  tree bad_old_arg = NULL_TREE, bad_new_arg = NULL_TREE;
 	  tree old_args = ARGUMENT_PACK_ARGS (old_pack);
 
 	  if (!comp_template_args_with_info (old_args, new_args,
