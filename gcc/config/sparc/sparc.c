@@ -2519,7 +2519,7 @@ emit_scc_insn (rtx operands[])
         }
       else if (GET_MODE (x) == DImode)
         {
-          rtx pat = gen_seqdi_special (operands[0], x, y);
+	  rtx pat = gen_seqdi_special (operands[0], x, y);
           emit_insn (pat);
           return true;
         }
@@ -2535,14 +2535,21 @@ emit_scc_insn (rtx operands[])
         }
       else if (GET_MODE (x) == DImode)
         {
-          rtx pat = gen_snedi_special (operands[0], x, y);
+	  rtx pat;
+	  if (TARGET_VIS3)
+	    pat = gen_snedi_special_vis3 (operands[0], x, y);
+	  else
+	    pat = gen_snedi_special (operands[0], x, y);
           emit_insn (pat);
           return true;
         }
     }
 
   if (TARGET_V9
+      && TARGET_ARCH64
       && GET_MODE (x) == DImode
+      && !(TARGET_VIS3
+	   && (code == GTU || code == LTU))
       && gen_v9_scc (operands[0], code, x, y))
     return true;
 
@@ -2561,7 +2568,8 @@ emit_scc_insn (rtx operands[])
         }
     }
 
-  if (code == LTU || code == GEU)
+  if (code == LTU
+      || (!TARGET_VIS3 && code == GEU))
     {
       emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			      gen_rtx_fmt_ee (code, SImode,

@@ -656,7 +656,17 @@
 		(match_operand:DI 2 "register_operand" "")))
    (set (match_operand:SI 0 "register_operand" "")
 	(ne:SI (match_dup 3) (const_int 0)))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64 && ! TARGET_VIS3"
+  { operands[3] = gen_reg_rtx (DImode); })
+
+(define_expand "snedi_special_vis3"
+  [(set (match_dup 3)
+	(xor:DI (match_operand:DI 1 "register_operand" "")
+		(match_operand:DI 2 "register_operand" "")))
+   (parallel [(set (match_operand:SI 0 "register_operand" "")
+		   (ne:SI (match_dup 3) (const_int 0)))
+	      (clobber (reg:CCX CC_REG))])]
+  "TARGET_ARCH64 && TARGET_VIS3"
   { operands[3] = gen_reg_rtx (DImode); })
 
 
@@ -733,7 +743,7 @@
   [(set (match_operand:DI 0 "register_operand" "=&r")
         (ne:DI (match_operand:DI 1 "register_operand" "r")
                (const_int 0)))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64 && ! TARGET_VIS3"
   "#"
   "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
@@ -741,6 +751,20 @@
                                               (const_int 0))
                                        (const_int 1)
                                        (match_dup 0)))]
+  ""
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "*snedi_zero_vis3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ne:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CCX CC_REG))]
+  "TARGET_ARCH64 && TARGET_VIS3"
+  "#"
+  ""
+  [(set (reg:CCX_NOOV CC_REG) (compare:CCX_NOOV (neg:DI (match_dup 1))
+					        (const_int 0)))
+   (set (match_dup 0) (ltu:DI (reg:CCX CC_REG) (const_int 0)))]
   ""
   [(set_attr "length" "2")])
 
@@ -763,7 +787,7 @@
   [(set (match_operand:SI 0 "register_operand" "=&r")
         (ne:SI (match_operand:DI 1 "register_operand" "r")
                (const_int 0)))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64 && ! TARGET_VIS3"
   "#"
   "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
@@ -771,6 +795,20 @@
                                               (const_int 0))
                                        (const_int 1)
                                        (match_dup 0)))]
+  ""
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "*snedi_zero_trunc_vis3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ne:SI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CCX CC_REG))]
+  "TARGET_ARCH64 && TARGET_VIS3"
+  "#"
+  ""
+  [(set (reg:CCX_NOOV CC_REG) (compare:CCX_NOOV (neg:DI (match_dup 1))
+					        (const_int 0)))
+   (set (match_dup 0) (ltu:SI (reg:CCX CC_REG) (const_int 0)))]
   ""
   [(set_attr "length" "2")])
 
@@ -957,6 +995,20 @@
 	(ltu:SI (reg:CC CC_REG) (const_int 0)))]
   ""
   "addx\t%%g0, 0, %0"
+  [(set_attr "type" "ialuX")])
+
+(define_insn "*sltu_insn_vis3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ltu:DI (reg:CCX CC_REG) (const_int 0)))]
+  "TARGET_ARCH64 && TARGET_VIS3"
+  "addxc\t%%g0, %%g0, %0"
+  [(set_attr "type" "ialuX")])
+
+(define_insn "*sltu_insn_vis3_trunc"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ltu:SI (reg:CCX CC_REG) (const_int 0)))]
+  "TARGET_ARCH64 && TARGET_VIS3"
+  "addxc\t%%g0, %%g0, %0"
   [(set_attr "type" "ialuX")])
 
 (define_insn "*sltu_extend_sp64"
@@ -3543,6 +3595,15 @@
   "addx\t%1, %2, %0"
   [(set_attr "type" "ialuX")])
 
+(define_insn "addxc"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (plus:DI (match_operand:DI 1 "register_or_zero_operand" "%rJ")
+			  (match_operand:DI 2 "register_or_zero_operand" "rJ"))
+		 (ltu:DI (reg:CCX_NOOV CC_REG) (const_int 0))))]
+  "TARGET_ARCH64 && TARGET_VIS3"
+  "addxc\t%r1, %r2, %0"
+  [(set_attr "type" "ialuX")])
+
 (define_insn_and_split "*addx_extend_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (plus:SI (plus:SI
@@ -3562,10 +3623,19 @@
 (define_insn "*addx_extend_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (plus:SI (plus:SI (match_operand:SI 1 "register_or_zero_operand" "%rJ")
-                                          (match_operand:SI 2 "arith_operand" "rI"))
+                                          (match_operand:SI 2 "register_or_zero_operand" "rJ"))
                                  (ltu:SI (reg:CC_NOOV CC_REG) (const_int 0)))))]
   "TARGET_ARCH64"
-  "addx\t%r1, %2, %0"
+  "addx\t%r1, %r2, %0"
+  [(set_attr "type" "ialuX")])
+
+(define_insn "*addxc_trunc_sp64_vis3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (plus:SI (match_operand:SI 1 "register_or_zero_operand" "%rJ")
+                          (match_operand:SI 2 "register_or_zero_operand" "rJ"))
+                 (ltu:SI (reg:CCX_NOOV CC_REG) (const_int 0))))]
+  "TARGET_ARCH64 && TARGET_VIS3"
+  "addxc\t%r1, %r2, %0"
   [(set_attr "type" "ialuX")])
 
 (define_insn_and_split "*adddi3_extend_sp32"
