@@ -2120,7 +2120,7 @@ if the runtime routine is not available.
 @item -fvisibility-inlines-hidden
 @opindex fvisibility-inlines-hidden
 This switch declares that the user does not attempt to compare
-pointers to inline methods where the addresses of the two functions
+pointers to inline functions or methods where the addresses of the two functions
 were taken in different shared objects.
 
 The effect of this is that GCC may, effectively, mark inline methods with

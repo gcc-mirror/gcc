@@ -1,3 +1,10 @@
+2011-10-27  Roberto Agostino Vitillo  <ravitillo@lbl.gov>
+
+	PR c++/30066
+	* decl2.c (determine_hidden_inline): New function.
+	(determine_visibility): fvisibility-inlines-hidden affects inline
+	functions.
+
 2011-10-27  Dodji Seketeli  <dodji@redhat.com>
 
 	* cp-tree.h (DECL_DECLARES_TYPE_P): Fix comment.
