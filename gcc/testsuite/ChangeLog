@@ -1,3 +1,8 @@
+2011-10-27  Roberto Agostino Vitillo  <ravitillo@lbl.gov>
+
+	PR c++/30066
+	* g++.dg/ext/visibility/fvisibility-inlines-hidden-4.C: New test.
+
 2011-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/sse2-cvt-1.c: New test.
