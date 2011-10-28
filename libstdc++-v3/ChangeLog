@@ -1,3 +1,8 @@
+2011-10-28  Richard B. Kreckel  <kreckel@ginac.de>
+
+	* include/std/complex (__complex_acosh): Just use '< _Tp()'.
+	* include/tr1/complex (__complex_acosh): Likewise.
+
 2011-10-27  Richard B. Kreckel  <kreckel@ginac.de>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
