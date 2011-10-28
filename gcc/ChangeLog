@@ -1,3 +1,11 @@
+2011-10-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49313
+	* config/avr/avr.md (parityhi2): Expand allowing pseudos.
+	(*parityhi2): New pre-reload insn-and-split to map 16-bit parity
+	to the libgcc insn.
+	(*parityqihi2): Same for 8-bit parity.
+
 2011-10-28  Julian Brown  <julian@codesourcery.com>
 
 	PR rtl-optimization/47918

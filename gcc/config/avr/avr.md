@@ -4288,15 +4288,41 @@
 
 ;; Parity
 
+;; Postpone expansion of 16-bit parity to libgcc call until after combine for
+;; better 8-bit parity recognition.
+
 (define_expand "parityhi2"
+  [(parallel [(set (match_operand:HI 0 "register_operand" "")
+                   (parity:HI (match_operand:HI 1 "register_operand" "")))
+              (clobber (reg:HI 24))])])
+
+(define_insn_and_split "*parityhi2"
+  [(set (match_operand:HI 0 "register_operand"           "=r")
+        (parity:HI (match_operand:HI 1 "register_operand" "r")))
+   (clobber (reg:HI 24))]
+  "!reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
   [(set (reg:HI 24)
-        (match_operand:HI 1 "register_operand" ""))
+        (match_dup 1))
    (set (reg:HI 24)
         (parity:HI (reg:HI 24)))
-   (set (match_operand:HI 0 "register_operand" "")
-        (reg:HI 24))]
-  ""
-  "")
+   (set (match_dup 0)
+        (reg:HI 24))])
+
+(define_insn_and_split "*parityqihi2"
+  [(set (match_operand:HI 0 "register_operand"           "=r")
+        (parity:HI (match_operand:QI 1 "register_operand" "r")))
+   (clobber (reg:HI 24))]
+  "!reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (reg:QI 24)
+        (match_dup 1))
+   (set (reg:HI 24)
+        (zero_extend:HI (parity:QI (reg:QI 24))))
+   (set (match_dup 0)
+        (reg:HI 24))])
 
 (define_expand "paritysi2"
   [(set (reg:SI 22)
