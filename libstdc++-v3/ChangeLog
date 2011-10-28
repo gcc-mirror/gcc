@@ -1,3 +1,21 @@
+2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/30_threads/condition_variable_any/50862.cc: Trivial
+	formatting fixes.
+
+2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/unordered_map/operations/count.cc: New.
+	* testsuite/23_containers/multimap/operations/count.cc: Likewise.
+	* testsuite/23_containers/set/operations/count.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/operations/count.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/operations/count.cc: Likewise.
+	* testsuite/23_containers/multiset/operations/count.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/operations/count.cc:
+	Likewise.
+	* testsuite/23_containers/map/operations/count.cc: Likewise.
+
 2011-10-28  Richard B. Kreckel  <kreckel@ginac.de>
 
 	* include/std/complex (__complex_acosh): Just use '< _Tp()'.
