@@ -1,3 +1,11 @@
+2011-10-28  Iain Sandoe  <iains@gcc.gnu.org>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50678
+	* init.c (Darwin/__gnat_error_handler): Apply a work-around to the
+	bug [filed as radar #10302855], which is inconsistent unwind data
+	for sigtramp.
+
 2011-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/50842
