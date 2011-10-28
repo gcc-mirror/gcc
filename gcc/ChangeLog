@@ -3,15 +3,21 @@
 	* config/i386/i386.md (shift_insn): Rename code attribute from
 	shiftrt_insn.  Also handle ashift RTX.
 	(shift): Rename code attribute from shiftrt.  Also handle ashift RTX.
+	(vshift): New code attribute.
 	(<shift_insn>*): Rename from <shiftrt_insn>*. Update asm templates.
-	* config/i386/sse.md (any_lshift): Rename code iterator from lshift.
+	(any_lshift): Move and rename code iterator from ...
+	* config/i386/sse.md (lshift): ... here.
 	(lshift_insn): Remove code attribute.
 	(lshift): Remove code attribute.
 	(vlshr<mode>3): Use lshiftrt RTX.
-	(vashr<mode>3): Use ashiftrt RTX.
-	(vashl<mode>3): Use ashift RTX.
+	(vashr<mode>3, ashrv16qi3, ashrv2di3): Use ashiftrt RTX.
+	(vashl<mode>3, ashlv16qi3): Use ashift RTX.
 	(avx2_<lshift>v<mode>): Rename from avx2_<shift_insn>v<mode>.  Use
 	any_lshift code iterator.  Update asm template.
+	(<shift_insn><mode>3): Macroize insn from lshr<mode>3 and ashl<mode>3
+	usign any_lshift code iterator.
+	* config/i386/mmx.md (mmx_<shift_insn><mode>3): Macroize insn from
+	mmx_lshr<mode>3 and mmx_ashl<mode>3 usign any_lshift code iterator.
 	* config/i386/i386.c (bdesc_args) <__builtin_ia32_psll>: Update.
 
 2011-10-28  Georg-Johann Lay  <avr@gjlay.de>

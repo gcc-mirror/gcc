@@ -167,9 +167,6 @@
    (V4SI "vec") (V8SI "avx2")
    (V2DI "vec") (V4DI "avx2")])
 
-;; Mapping of logic-shift operators
-(define_code_iterator any_lshift [ashift lshiftrt])
-
 (define_mode_attr ssedoublemode
   [(V16HI "V16SI") (V8HI "V8SI")])
 
@@ -5826,34 +5823,15 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "lshr<mode>3"
+(define_insn "<shift_insn><mode>3"
   [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")
-	(lshiftrt:VI248_AVX2
+	(any_lshift:VI248_AVX2
 	  (match_operand:VI248_AVX2 1 "register_operand" "0,x")
 	  (match_operand:SI 2 "nonmemory_operand" "xN,xN")))]
   "TARGET_SSE2"
   "@
-   psrl<ssemodesuffix>\t{%2, %0|%0, %2}
-   vpsrl<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "sseishft")
-   (set (attr "length_immediate")
-     (if_then_else (match_operand 2 "const_int_operand" "")
-       (const_string "1")
-       (const_string "0")))
-   (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "ashl<mode>3"
-  [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")
-	(ashift:VI248_AVX2
-	  (match_operand:VI248_AVX2 1 "register_operand" "0,x")
-	  (match_operand:SI 2 "nonmemory_operand" "xN,xN")))]
-  "TARGET_SSE2"
-  "@
-   psll<ssemodesuffix>\t{%2, %0|%0, %2}
-   vpsll<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+   p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
+   v<vshift><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseishft")
    (set (attr "length_immediate")
@@ -11406,9 +11384,10 @@
 
 ;; SSE2 doesn't have some shift varients, so define versions for XOP
 (define_expand "ashlv16qi3"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:SI 2 "nonmemory_operand" "")]
+  [(set (match_operand:V16QI 0 "register_operand" "")
+	(ashift:V16QI
+	  (match_operand:V16QI 1 "register_operand" "")
+	  (match_operand:SI 2 "nonmemory_operand" "")))]
   "TARGET_XOP"
 {
   rtvec vs = rtvec_alloc (16);
@@ -11442,9 +11421,10 @@
 })
 
 (define_expand "ashrv16qi3"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:SI 2 "nonmemory_operand" "")]
+  [(set (match_operand:V16QI 0 "register_operand" "")
+	(ashiftrt:V16QI
+	  (match_operand:V16QI 1 "register_operand" "")
+	  (match_operand:SI 2 "nonmemory_operand" "")))]
   "TARGET_XOP"
 {
   rtvec vs = rtvec_alloc (16);
@@ -11473,9 +11453,10 @@
 })
 
 (define_expand "ashrv2di3"
-  [(match_operand:V2DI 0 "register_operand" "")
-   (match_operand:V2DI 1 "register_operand" "")
-   (match_operand:DI 2 "nonmemory_operand" "")]
+  [(set (match_operand:V2DI 0 "register_operand" "")
+	(ashiftrt:V2DI
+	  (match_operand:V2DI 1 "register_operand" "")
+	  (match_operand:DI 2 "nonmemory_operand" "")))]
   "TARGET_XOP"
 {
   rtvec vs = rtvec_alloc (2);
@@ -12484,7 +12465,7 @@
 	  (match_operand:VI48_AVX2 1 "register_operand" "x")
 	  (match_operand:VI48_AVX2 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2"
-  "vp<shift>v<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  "vp<vshift>v<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseishft")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
