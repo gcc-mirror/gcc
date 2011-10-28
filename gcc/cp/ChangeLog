@@ -1,3 +1,9 @@
+2011-10-27  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (cxx_eval_outermost_constant_expr): Check
+	cp_has_mutable_p.
+	(cxx_eval_component_reference): Check DECL_MUTABLE_P.
+
 2011-10-27  Roberto Agostino Vitillo  <ravitillo@lbl.gov>
 
 	PR c++/30066
