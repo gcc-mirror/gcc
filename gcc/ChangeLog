@@ -1,3 +1,21 @@
+2011-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (VI4SD_AVX2): Removed.
+	(VI48_AVX2, VI128_128, VI48_128, VI48_256): New mode iterators.
+	(vashl<mode>3): Use VI12_128 iterator instead of VI124_128.
+	Add another expander using VI48_128 iterator for
+	TARGET_AVX2 || TARGET_XOP and another using VI48_256 iterator
+	for TARGET_AVX2.
+	(vlshr<mode>3): Likewise.  Change register_operand predicate to
+	nonimmediate_operand on last operand in the VI12_128 expander.
+	(vashr<mode>3): Use VI128_128 iterator instead of VI124_128.
+	(vashrv4si3, vashrv8si3): New expanders.
+	(avx2_ashrvv8si, avx2_ashrvv4si, avx2_<lshift>vv8si,
+	avx2_<lshift>vv2di): Removed.
+	(avx2_ashrv<mode>): New insn with VI4_AVX2 iterator.
+	(avx2_<lshift>v<mode>): Macroize using VI48_AVX2
+	iterator.  Simplify pattern.
+
 2010-10-28  Richard Guenther  <rguenther@suse.de>
 
 	PR driver/50876
