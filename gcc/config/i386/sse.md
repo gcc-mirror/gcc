@@ -168,13 +168,7 @@
    (V2DI "vec") (V4DI "avx2")])
 
 ;; Mapping of logic-shift operators
-(define_code_iterator lshift [lshiftrt ashift])
-
-;; Base name for define_insn
-(define_code_attr lshift_insn [(lshiftrt "srl") (ashift "sll")])
-
-;; Base name for insn mnemonic
-(define_code_attr lshift [(lshiftrt "lshr") (ashift "lshl")])
+(define_code_iterator any_lshift [ashift lshiftrt])
 
 (define_mode_attr ssedoublemode
   [(V16HI "V16SI") (V8HI "V8SI")])
@@ -11270,9 +11264,10 @@
 
 ;; XOP packed shift instructions.
 (define_expand "vlshr<mode>3"
-  [(match_operand:VI12_128 0 "register_operand" "")
-   (match_operand:VI12_128 1 "register_operand" "")
-   (match_operand:VI12_128 2 "nonimmediate_operand" "")]
+  [(set (match_operand:VI12_128 0 "register_operand" "")
+	(lshiftrt:VI12_128
+	  (match_operand:VI12_128 1 "register_operand" "")
+	  (match_operand:VI12_128 2 "nonimmediate_operand" "")))]
   "TARGET_XOP"
 {
   rtx neg = gen_reg_rtx (<MODE>mode);
@@ -11305,9 +11300,10 @@
   "TARGET_AVX2")
 
 (define_expand "vashr<mode>3"
-  [(match_operand:VI128_128 0 "register_operand" "")
-   (match_operand:VI128_128 1 "register_operand" "")
-   (match_operand:VI128_128 2 "nonimmediate_operand" "")]
+  [(set (match_operand:VI128_128 0 "register_operand" "")
+	(ashiftrt:VI128_128
+	  (match_operand:VI128_128 1 "register_operand" "")
+	  (match_operand:VI128_128 2 "nonimmediate_operand" "")))]
   "TARGET_XOP"
 {
   rtx neg = gen_reg_rtx (<MODE>mode);
@@ -11338,9 +11334,10 @@
   "TARGET_AVX2")
 
 (define_expand "vashl<mode>3"
-  [(match_operand:VI12_128 0 "register_operand" "")
-   (match_operand:VI12_128 1 "register_operand" "")
-   (match_operand:VI12_128 2 "register_operand" "")]
+  [(set (match_operand:VI12_128 0 "register_operand" "")
+	(ashift:VI12_128
+	  (match_operand:VI12_128 1 "register_operand" "")
+	  (match_operand:VI12_128 2 "nonimmediate_operand" "")))]
   "TARGET_XOP"
 {
   emit_insn (gen_xop_ashl<mode>3 (operands[0], operands[1], operands[2]));
@@ -12472,22 +12469,22 @@
 
 (define_insn "avx2_ashrv<mode>"
   [(set (match_operand:VI4_AVX2 0 "register_operand" "=x")
-	(ashiftrt:VI4_AVX2 (match_operand:VI4_AVX2 1 "register_operand" "x")
-			   (match_operand:VI4_AVX2 2 "nonimmediate_operand"
-						     "xm")))]
+	(ashiftrt:VI4_AVX2
+	  (match_operand:VI4_AVX2 1 "register_operand" "x")
+	  (match_operand:VI4_AVX2 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2"
   "vpsravd\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseishft")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx2_<lshift>v<mode>"
+(define_insn "avx2_<shift_insn>v<mode>"
   [(set (match_operand:VI48_AVX2 0 "register_operand" "=x")
-	(lshift:VI48_AVX2 (match_operand:VI48_AVX2 1 "register_operand" "x")
-			  (match_operand:VI48_AVX2 2 "nonimmediate_operand"
-						     "xm")))]
+	(any_lshift:VI48_AVX2
+	  (match_operand:VI48_AVX2 1 "register_operand" "x")
+	  (match_operand:VI48_AVX2 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX2"
-  "vp<lshift_insn>v<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  "vp<shift>v<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseishft")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])

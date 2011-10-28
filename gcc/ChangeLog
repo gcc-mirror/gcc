@@ -1,3 +1,19 @@
+2011-10-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (shift_insn): Rename code attribute from
+	shiftrt_insn.  Also handle ashift RTX.
+	(shift): Rename code attribute from shiftrt.  Also handle ashift RTX.
+	(<shift_insn>*): Rename from <shiftrt_insn>*. Update asm templates.
+	* config/i386/sse.md (any_lshift): Rename code iterator from lshift.
+	(lshift_insn): Remove code attribute.
+	(lshift): Remove code attribute.
+	(vlshr<mode>3): Use lshiftrt RTX.
+	(vashr<mode>3): Use ashiftrt RTX.
+	(vashl<mode>3): Use ashift RTX.
+	(avx2_<lshift>v<mode>): Rename from avx2_<shift_insn>v<mode>.  Use
+	any_lshift code iterator.  Update asm template.
+	* config/i386/i386.c (bdesc_args) <__builtin_ia32_psll>: Update.
+
 2011-10-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49313
@@ -9,13 +25,12 @@
 2011-10-28  Julian Brown  <julian@codesourcery.com>
 
 	PR rtl-optimization/47918
-
 	* reload1.c (set_initial_label_offsets): Use initial offsets
 	for labels on the nonlocal_goto_handler_labels chain.
 
 2011-10-28  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* config/rs6000/t-darwin (LIB2FUNCS_STATIC_EXTRA): 
+	* config/rs6000/t-darwin (LIB2FUNCS_STATIC_EXTRA):
 	Move darwin-fpsave.asm from here to ... LIB2FUNCS_EXTRA.
 	(LIB2FUNCS_EXTRA):  Add darwin-gpsave.asm.
 	(TARGET_LIBGCC2_CFLAGS): Ensure that fPIC and -pipe are inherited from
@@ -123,7 +138,7 @@
 2011-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50875
-	* config/i386/sse.md (*avx2_unpcklpd256): Remove extra insn
+	* config/i386/sse.md (*avx_unpcklpd256): Remove extra insn
 	constraints.  Change alternative 1 to "x,m,1".
 
 2011-10-27  Jakub Jelinek  <jakub@redhat.com>
