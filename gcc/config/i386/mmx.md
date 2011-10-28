@@ -1037,27 +1037,13 @@
        (const_string "0")))
    (set_attr "mode" "DI")])
 
-(define_insn "mmx_lshr<mode>3"
+(define_insn "mmx_<shift_insn><mode>3"
   [(set (match_operand:MMXMODE248 0 "register_operand" "=y")
-        (lshiftrt:MMXMODE248
+        (any_lshift:MMXMODE248
 	  (match_operand:MMXMODE248 1 "register_operand" "0")
 	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
-  "psrl<mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
-   (set (attr "length_immediate")
-     (if_then_else (match_operand 2 "const_int_operand" "")
-       (const_string "1")
-       (const_string "0")))
-   (set_attr "mode" "DI")])
-
-(define_insn "mmx_ashl<mode>3"
-  [(set (match_operand:MMXMODE248 0 "register_operand" "=y")
-        (ashift:MMXMODE248
-	  (match_operand:MMXMODE248 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
-  "TARGET_MMX"
-  "psll<mmxvecsize>\t{%2, %0|%0, %2}"
+  "p<vshift><mmxvecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")
    (set (attr "length_immediate")
      (if_then_else (match_operand 2 "const_int_operand" "")
