@@ -296,8 +296,8 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
   const char **argv;
   int i, j, argc;
 
-  /* Count arguments.  */
-  argc = 0;
+  /* Count arguments, account for the program name.  */
+  argc = 2;
   for (j = 0; collect_gcc_options[j] != '\0'; ++j)
     if (collect_gcc_options[j] == '\'')
       ++argc;
@@ -344,6 +344,8 @@ run_gcc (unsigned argc, char *argv[])
   bool no_partition = false;
   struct cl_decoded_option *decoded_options;
   unsigned int decoded_options_count;
+  struct obstack argv_obstack;
+  int new_head_argc;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -358,19 +360,17 @@ run_gcc (unsigned argc, char *argv[])
 					&decoded_options_count);
 
   /* Initalize the common arguments for the driver.  */
-  new_argv = (const char **) xmalloc ((15 + decoded_options_count + argc)
-				      * sizeof (char *));
-  argv_ptr = new_argv;
-  *argv_ptr++ = collect_gcc;
-  *argv_ptr++ = "-xlto";
-  *argv_ptr++ = "-c";
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, collect_gcc);
+  obstack_ptr_grow (&argv_obstack, "-xlto");
+  obstack_ptr_grow (&argv_obstack, "-c");
   for (j = 1; j < decoded_options_count; ++j)
     {
       struct cl_decoded_option *option = &decoded_options[j];
 
-      /* Do not pass on frontend specific flags.  */
+      /* Do not pass on frontend specific flags not suitable for lto.  */
       if (!(cl_options[option->opt_index].flags
-	    & (CL_COMMON|CL_TARGET|CL_DRIVER)))
+	    & (CL_COMMON|CL_TARGET|CL_DRIVER|CL_LTO)))
 	continue;
 
       switch (option->opt_index)
@@ -416,7 +416,8 @@ run_gcc (unsigned argc, char *argv[])
 	}
 
       /* Pass the option on.  */
-      *argv_ptr++ = option->orig_option_with_args_text;
+      for (i = 0; i < option->canonical_option_num_elements; ++i)
+	obstack_ptr_grow (&argv_obstack, option->canonical_option[i]);
     }
 
   if (no_partition)
@@ -446,22 +447,23 @@ run_gcc (unsigned argc, char *argv[])
 	}
       if (!bit_bucket)
 	{
-	  *argv_ptr++ = "-dumpdir";
-	  *argv_ptr++ = output_dir;
+	  obstack_ptr_grow (&argv_obstack, "-dumpdir");
+	  obstack_ptr_grow (&argv_obstack, output_dir);
 	}
 
-      *argv_ptr++ = "-dumpbase";
+      obstack_ptr_grow (&argv_obstack, "-dumpbase");
     }
-  else
-    argv_ptr--;
+
+  /* Remember at which point we can scrub args to re-use the commons.  */
+  new_head_argc = obstack_object_size (&argv_obstack) / sizeof (void *);
 
   if (lto_mode == LTO_MODE_LTO)
     {
       flto_out = make_temp_file (".lto.o");
       if (linker_output)
-	argv_ptr[0] = linker_output;
-      argv_ptr[1] = "-o";
-      argv_ptr[2] = flto_out;
+	obstack_ptr_grow (&argv_obstack, linker_output);
+      obstack_ptr_grow (&argv_obstack, "-o");
+      obstack_ptr_grow (&argv_obstack, flto_out);
     }
   else 
     {
@@ -475,7 +477,7 @@ run_gcc (unsigned argc, char *argv[])
 					     + sizeof (".wpa") + 1);
 	  strcpy (dumpbase, linker_output);
 	  strcat (dumpbase, ".wpa");
-	  argv_ptr[0] = dumpbase;
+	  obstack_ptr_grow (&argv_obstack, dumpbase);
 	}
 
       if (linker_output && debug)
@@ -491,19 +493,21 @@ run_gcc (unsigned argc, char *argv[])
 		         (strlen (ltrans_output_file) + list_option_len + 1));
       tmp = list_option_full;
 
-      argv_ptr[1] = tmp;
+      obstack_ptr_grow (&argv_obstack, tmp);
       strcpy (tmp, list_option);
       tmp += list_option_len;
       strcpy (tmp, ltrans_output_file);
 
-      argv_ptr[2] = "-fwpa";
+      obstack_ptr_grow (&argv_obstack, "-fwpa");
     }
 
   /* Append the input objects and possible preceeding arguments.  */
   for (i = 1; i < argc; ++i)
-    argv_ptr[2 + i] = argv[i];
-  argv_ptr[2 + i] = NULL;
+    obstack_ptr_grow (&argv_obstack, argv[i]);
+  obstack_ptr_grow (&argv_obstack, NULL);
 
+  new_argv = XOBFINISH (&argv_obstack, const char **);
+  argv_ptr = &new_argv[new_head_argc];
   fork_execute (CONST_CAST (char **, new_argv));
 
   if (lto_mode == LTO_MODE_LTO)
@@ -656,6 +660,8 @@ cont:
       free (list_option_full);
       obstack_free (&env_obstack, NULL);
     }
+
+  obstack_free (&argv_obstack, NULL);
 }
 
 
