@@ -1,3 +1,9 @@
+2011-10-28  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/morestack.S: Correct CFI information to do proper
+	returns throughout function.  In 32-bit mode, save %ebx so that it
+	is restored on unwind.
+
 2011-10-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/c6x/pr-support.c (__gnu_unwind_24bit): Correct logic for the
