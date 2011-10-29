@@ -59,14 +59,14 @@
 
 (define_predicate "cint_ior_operand"
   (and (match_code "const_int")
-       (match_test "ior_mask_p (INTVAL (op))")))
+       (match_test "pa_ior_mask_p (INTVAL (op))")))
 
 ;; True iff OP is CONST_INT that can be moved in one instruction
 ;; into a general register.
 
 (define_predicate "cint_move_operand"
   (and (match_code "const_int")
-       (match_test "cint_ok_for_move (INTVAL (op))")))
+       (match_test "pa_cint_ok_for_move (INTVAL (op))")))
 
 ;; True iff OP is a CONST0_RTX for MODE.
 
@@ -91,7 +91,7 @@
 (define_predicate "and_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_int")
-	    (match_test "and_mask_p (INTVAL (op))"))))
+	    (match_test "pa_and_mask_p (INTVAL (op))"))))
 
 ;; Return truth value of whether OP can be used as an operand in a
 ;; three operand arithmetic insn that accepts registers of mode MODE
@@ -179,7 +179,7 @@
 	  && ((REG_P (op) && REGNO (op) == 25)
 	      || (CONST_INT_P (op)
 		  && INTVAL (op) > 0 && INTVAL (op) < 16
-		  && magic_milli[INTVAL (op)])));
+		  && pa_magic_milli[INTVAL (op)])));
 })
 
 ;; True iff OP is a reloading floating point register
@@ -304,7 +304,7 @@
     return true;
 
   if (CONST_INT_P (op))
-    return cint_ok_for_move (INTVAL (op));
+    return pa_cint_ok_for_move (INTVAL (op));
 
   if (GET_MODE (op) != mode)
     return false;
@@ -452,7 +452,7 @@
 
 (define_predicate "shadd_operand"
   (and (match_code "const_int")
-       (match_test "shadd_constant_p (INTVAL (op))")))
+       (match_test "pa_shadd_constant_p (INTVAL (op))")))
 
 ;; Return truth value of statement that OP is a symbolic memory operand.
 
@@ -463,7 +463,7 @@
     op = SUBREG_REG (op);
   if (!MEM_P (op))
     return false;
-  return symbolic_expression_p (XEXP (op, 0));
+  return pa_symbolic_expression_p (XEXP (op, 0));
 })
 
 ;; True iff OP is a symbolic operand.

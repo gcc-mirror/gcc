@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
     {								\
       int fsize;						\
 								\
-      fsize = compute_frame_size (get_frame_size (), 0);	\
+      fsize = pa_compute_frame_size (get_frame_size (), 0);	\
       if ((TO) == FRAME_POINTER_REGNUM				\
 	  && (FROM) == ARG_POINTER_REGNUM)			\
 	{							\

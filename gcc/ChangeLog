@@ -1,3 +1,37 @@
+2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/50617
+	* config/pa/protos.h (attr_length_save_restore_dltp): Delete.
+	(cmpib_comparison_operator): Likewise.
+	(following_cal, output_and, output_ior, output_move_double,
+	output_fp_move_double, output_block_move, output_block_clear,
+	output_cbranch, output_lbranch, output_bb, output_bvb, output_dbra,
+	output_movb, output_parallel_movb, output_parallel_addb, output_call,
+	output_indirect_call, output_millicode_call, output_mul_insn,
+	output_div_insn, output_mod_insn, singlemove_string,
+	output_arg_descriptor, output_global_address, print_operand,
+	legitimize_pic_address, hppa_encode_label, symbolic_expression_p,
+	fmpyaddoperands, fmpysuboperands, emit_bcond_fp, emit_move_sequence,
+	emit_hpdiv_const, is_function_label_plus_const, jump_in_call_delay,
+	hppa_fpstore_bypass_p, attr_length_millicode_call, attr_length_call,
+	attr_length_indirect_call, return_addr_rtx, function_arg_padding,
+	insn_refs_are_delayed, get_deferred_plabel, ldil_cint_p, zdepi_cint_p,
+	output_ascii, compute_frame_size, and_mask_p, cint_ok_for_move,
+	hppa_expand_prologue, hppa_expand_epilogue, ior_mask_p,
+	compute_zdepdi_operands, output_64bit_and, output_64bit_ior,
+	reloc_needed, magic_milli, shadd_constant_p): Consistently prefix
+	exported functions and variables with "pa_".
+	* config/pa/predicates.md: Likewise.
+	* config/pa/pa64-hpux.h: likewise.
+	* config/pa/som.h: Likewise.
+	* config/pa/elf.h: Likewise.
+	* config/pa/pa64-linux.h: Likewise.
+	* config/pa/pa.md: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pa/pa-linux.h: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/pa/constraints.md: Likewise.
+
 2011-10-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (xop_sha<mode>3): Rename from xop_ashl<mode>3.
