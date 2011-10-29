@@ -1,5 +1,14 @@
 2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	Revert:
+        2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50864
+	* pt.c (tsubst_copy_and_build): Fix qualified_name_lookup_error
+	call in case COMPONENT_REF.
+
+2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* pt.c (unify_pack_expansion): Initialize bad_old_arg and bad_new_arg.
 
 2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
