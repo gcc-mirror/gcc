@@ -1,3 +1,9 @@
+2011-10-21  Andi Kleen  <ak@linux.intel.com>
+
+	* ggc-page (PAGE_ALIGN): Add.
+	(alloc_page, ggc_pch_total_size, ggc_pch_this_base, ggc_pch_read):
+	Replace ROUND_UP with PAGE_ALIGN.
+
 2011-10-20  Andi Kleen  <ak@linux.intel.com>
 
 	* ggc-page (alloc_anon): Add check argument.
