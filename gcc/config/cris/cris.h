@@ -676,17 +676,18 @@ enum reg_class
   /* Just an indirect register (happens to also be	\
      "all" slottable memory addressing modes not	\
      covered by other constraints, i.e. '>').  */	\
-  MEM_P (X) && BASE_P (XEXP (X, 0))			\
+  MEM_P (X)						\
+  && cris_base_p (XEXP (X, 0), reload_in_progress || reload_completed) \
  )
 
 #define EXTRA_CONSTRAINT_R(X)					\
  (								\
   /* An operand to BDAP or BIAP:				\
      A BIAP; r.S? */						\
-  BIAP_INDEX_P (X)						\
+  cris_biap_index_p (X, reload_in_progress || reload_completed)  \
   /* A [reg] or (int) [reg], maybe with post-increment.  */	\
-  || BDAP_INDEX_P (X)						\
-  || CONSTANT_INDEX_P (X)					\
+  || cris_bdap_index_p (X, reload_in_progress || reload_completed) \
+  || cris_constant_index_p (X)					\
  )
 
 #define EXTRA_CONSTRAINT_T(X)						\
@@ -695,25 +696,33 @@ enum reg_class
   MEM_P (X)								\
   && ((MEM_P (XEXP (X, 0))						\
        /* Double indirect: [[reg]] or [[reg+]]?  */			\
-       && (BASE_OR_AUTOINCR_P (XEXP (XEXP (X, 0), 0))))			\
+       && (cris_base_or_autoincr_p (XEXP (XEXP (X, 0), 0),		\
+			      reload_in_progress || reload_completed)))	\
       /* Just an explicit indirect reference: [const]?  */		\
       || CONSTANT_P (XEXP (X, 0))					\
       /* Something that is indexed; [...+...]?  */			\
       || (GET_CODE (XEXP (X, 0)) == PLUS				\
 	  /* A BDAP constant: [reg+(8|16|32)bit offset]?  */		\
-	  && ((BASE_P (XEXP (XEXP (X, 0), 0))				\
-	       && CONSTANT_INDEX_P (XEXP (XEXP (X, 0), 1)))		\
+	  && ((cris_base_p (XEXP (XEXP (X, 0), 0),			\
+			       reload_in_progress || reload_completed)	\
+	       && cris_constant_index_p (XEXP (XEXP (X, 0), 1)))	\
 	      /* A BDAP register: [reg+[reg(+)].S]?  */			\
-	      || (BASE_P (XEXP (XEXP (X, 0), 0))			\
-		  && BDAP_INDEX_P(XEXP(XEXP(X, 0), 1)))			\
+	      || (cris_base_p (XEXP (XEXP (X, 0), 0),			\
+			       reload_in_progress || reload_completed)	\
+		  && cris_bdap_index_p (XEXP(XEXP(X, 0), 1),		\
+		 	       reload_in_progress || reload_completed))	\
 	      /* Same, but with swapped arguments (no canonical		\
 		 ordering between e.g. REG and MEM as of LAST_UPDATED	\
 		 "Thu May 12 03:59:11 UTC 2005").  */			\
-	      || (BASE_P (XEXP (XEXP (X, 0), 1))			\
-		  && BDAP_INDEX_P (XEXP (XEXP (X, 0), 0)))		\
+	      || (cris_base_p (XEXP (XEXP (X, 0), 1),			\
+		reload_in_progress | reload_completed)			\
+		  && cris_bdap_index_p (XEXP (XEXP (X, 0), 0),		\
+			       reload_in_progress || reload_completed))	\
 	      /* A BIAP: [reg+reg.S] (MULT comes first).  */		\
-	      || (BASE_P (XEXP (XEXP (X, 0), 1))			\
-		  && BIAP_INDEX_P (XEXP (XEXP (X, 0), 0))))))		\
+	      || (cris_base_p (XEXP (XEXP (X, 0), 1),			\
+				reload_in_progress || reload_completed)	\
+		  && cris_biap_index_p (XEXP (XEXP (X, 0), 0),		\
+			    reload_in_progress || reload_completed)))))	\
  )
 
 /* PIC-constructs for symbols.  */
@@ -887,118 +896,6 @@ struct cum_args {int regs;};
 /* Must be a compile-time constant, so we go with the highest value
    among all CRIS variants.  */
 #define MAX_REGS_PER_ADDRESS 2
-
-/* There are helper macros defined here which are used only in
-   GO_IF_LEGITIMATE_ADDRESS.
-
-   Note that you *have to* reject invalid addressing modes for mode
-   MODE, even if it is legal for normal addressing modes.  You cannot
-   rely on the constraints to do this work.  They can only be used to
-   doublecheck your intentions.  One example is that you HAVE TO reject
-   (mem:DI (plus:SI (reg:SI x) (reg:SI y))) because for some reason
-   this cannot be reloaded.  (Which of course you can argue that gcc
-   should have done.)  FIXME:  Strange.  Check.  */
-
-/* No symbol can be used as an index (or more correct, as a base) together
-   with a register with PIC; the PIC register must be there.  */
-#define CONSTANT_INDEX_P(X) \
- (CONSTANT_P (X) && (!flag_pic || cris_valid_pic_const (X, true)))
-
-/* True if X is a valid base register.  */
-#define BASE_P(X) \
- (REG_P (X) && REG_OK_FOR_BASE_P (X))
-
-/* True if X is a valid base register with or without autoincrement.  */
-#define BASE_OR_AUTOINCR_P(X)				\
- (BASE_P (X)						\
-  || (GET_CODE (X) == POST_INC				\
-      && BASE_P (XEXP (X, 0))				\
-      && REGNO (XEXP (X, 0)) != CRIS_ACR_REGNUM))
-
-/* True if X is a valid (register) index for BDAP, i.e. [Rs].S or [Rs+].S.  */
-#define BDAP_INDEX_P(X)					\
- ((MEM_P (X) && GET_MODE (X) == SImode			\
-   && BASE_OR_AUTOINCR_P (XEXP (X, 0)))			\
-  || (GET_CODE (X) == SIGN_EXTEND			\
-      && MEM_P (XEXP (X, 0))				\
-      && (GET_MODE (XEXP (X, 0)) == HImode		\
-	  || GET_MODE (XEXP (X, 0)) == QImode)		\
-      && BASE_OR_AUTOINCR_P (XEXP (XEXP (X, 0), 0))))
-
-/* True if X is a valid (register) index for BIAP, i.e. Rd.m.  */
-#define BIAP_INDEX_P(X)				\
- ((BASE_P (X) && REG_OK_FOR_INDEX_P (X))	\
-  || (GET_CODE (X) == MULT			\
-      && BASE_P (XEXP (X, 0))			\
-      && REG_OK_FOR_INDEX_P (XEXP (X, 0))	\
-      && CONST_INT_P (XEXP (X, 1))		\
-      && (INTVAL (XEXP (X, 1)) == 2		\
-	  || INTVAL (XEXP (X, 1)) == 4)))
-
-/* A PIC operand looks like a normal symbol here.  At output we dress it
-   in "[rPIC+symbol:GOT]" (global symbol) or "rPIC+symbol:GOTOFF" (local
-   symbol) so we exclude all addressing modes where we can't replace a
-   plain "symbol" with that.  A global PIC symbol does not fit anywhere
-   here (but is thankfully a general_operand in itself).  A local PIC
-   symbol is valid for the plain "symbol + offset" case.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
- {								\
-   rtx x1, x2;							\
-   if (BASE_OR_AUTOINCR_P (X))					\
-     goto ADDR;							\
-   else if (TARGET_V32)						\
-     /* Nothing else is valid then.  */				\
-     ;								\
-   else if (CONSTANT_INDEX_P (X))				\
-     goto ADDR;							\
-   /* Indexed?  */						\
-   else if (GET_CODE (X) == PLUS)				\
-     {								\
-       x1 = XEXP (X, 0);					\
-       x2 = XEXP (X, 1);					\
-       /* BDAP o, Rd.  */					\
-       if ((BASE_P (x1) && CONSTANT_INDEX_P (x2))		\
-	   || (BASE_P (x2) && CONSTANT_INDEX_P (x1))		\
-	    /* BDAP Rs[+], Rd.  */				\
-	   || (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD		\
-	       && ((BASE_P (x1) && BDAP_INDEX_P (x2))		\
-		   || (BASE_P (x2) && BDAP_INDEX_P (x1))	\
-		   /* BIAP.m Rs, Rd */				\
-		   || (BASE_P (x1) && BIAP_INDEX_P (x2))	\
-		   || (BASE_P (x2) && BIAP_INDEX_P (x1)))))	\
-	 goto ADDR;						\
-     }								\
-   else if (MEM_P (X))						\
-     {								\
-       /* DIP (Rs).  Reject [[reg+]] and [[reg]] for		\
-	  DImode (long long).  */				\
-       if (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD		\
-	   && (BASE_P (XEXP (X, 0))				\
-	       || BASE_OR_AUTOINCR_P (XEXP (X, 0))))		\
-	 goto ADDR;						\
-     }								\
- }
-
-#ifndef REG_OK_STRICT
- /* Nonzero if X is a hard reg that can be used as a base reg
-    or if it is a pseudo reg.  */
-# define REG_OK_FOR_BASE_P(X)			\
- (REGNO (X) <= CRIS_LAST_GENERAL_REGISTER	\
-  || REGNO (X) == ARG_POINTER_REGNUM		\
-  || REGNO (X) >= FIRST_PSEUDO_REGISTER)
-#else
- /* Nonzero if X is a hard reg that can be used as a base reg.  */
-# define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#endif
-
-#ifndef REG_OK_STRICT
- /* Nonzero if X is a hard reg that can be used as an index
-    or if it is a pseudo reg.  */
-# define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
-#else
- /* Nonzero if X is a hard reg that can be used as an index.  */
-# define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-#endif
 
 /* Fix reloads known to cause suboptimal spilling.  */
 #define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, INDL, WIN)	\

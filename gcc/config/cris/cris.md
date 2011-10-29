@@ -4680,7 +4680,7 @@
 	(match_operator 4 "cris_mem_op" [(match_dup 0)]))]
   "GET_MODE_SIZE (GET_MODE (operands[4])) <= UNITS_PER_WORD
    && REGNO (operands[3]) != REGNO (operands[0])
-   && (BASE_P (operands[1]) || BASE_P (operands[2]))
+   && (cris_base_p (operands[1], true) || cris_base_p (operands[2], true))
    && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
    && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
    && (INTVAL (operands[2]) >= -128 && INTVAL (operands[2]) < 128)
@@ -4716,7 +4716,7 @@
 	(match_operand 4 "register_operand" ""))]
   "GET_MODE_SIZE (GET_MODE (operands[4])) <= UNITS_PER_WORD
    && REGNO (operands[4]) != REGNO (operands[0])
-   && (BASE_P (operands[1]) || BASE_P (operands[2]))
+   && (cris_base_p (operands[1], true) || cris_base_p (operands[2], true))
    && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
    && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
    && (INTVAL (operands[2]) >= -128 && INTVAL (operands[2]) < 128)
