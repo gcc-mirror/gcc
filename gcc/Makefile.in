@@ -1545,7 +1545,8 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
- $(SPECS) collect2$(exeext) lto-wrapper$(exeext) \
+ $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
+ gcc-ranlib$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
  gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
  libcommon-target.a libcommon.a libgcc.mk
@@ -1791,7 +1792,8 @@ rest.encap: lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
-	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2) lto-wrapper$(exeext)
+	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2) lto-wrapper$(exeext) \
+	gcc-ar$(exeext) gcc-nm$(exeext) gcc-ranlib$(exeext)
 
 ifeq ($(enable_plugin),yes)
 native: gengtype$(exeext)
@@ -2048,6 +2050,46 @@ graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) $
 sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(BASIC_BLOCK_H)
 ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(EBITMAP_H)
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
+
+AR_LIBS = @COLLECT2_LIBS@
+
+gcc-ar$(exeext): gcc-ar.o $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) gcc-ar.o -o $@ \
+		$(LIBS) $(AR_LIBS)
+
+gcc-nm$(exeext): gcc-nm.o $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) gcc-nm.o -o $@ \
+		$(LIBS) $(AR_LIBS)
+
+gcc-ranlib$(exeext): gcc-ranlib.o $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) gcc-ranlib.o -o $@ \
+		$(LIBS) $(AR_LIBS)
+
+CFLAGS-gcc-ar.o += $(DRIVER_DEFINES) \
+	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
+	@TARGET_SYSTEM_ROOT_DEFINE@ -DPERSONALITY=\"ar\"
+
+gcc-ar.o: gcc-ar.c $(CONFIG_H) $(SYSTEM_H) $(LIBIBERTY_H)
+
+CFLAGS-gcc-ranlib.o += $(DRIVER_DEFINES) \
+	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
+	@TARGET_SYSTEM_ROOT_DEFINE@ -DPERSONALITY=\"ranlib\"
+
+gcc-ranlib.o: gcc-ranlib.c $(CONFIG_H) $(SYSTEM_H) $(LIBIBERTY_H)
+
+CFLAGS-gcc-nm.o += $(DRIVER_DEFINES) \
+	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
+	@TARGET_SYSTEM_ROOT_DEFINE@ -DPERSONALITY=\"nm\"
+
+gcc-nm.o: gcc-nm.c $(CONFIG_H) $(SYSTEM_H) $(LIBIBERTY_H)
+
+# ??? the implicit rules dont trigger if the source file has a different name
+# so copy instead
+gcc-ranlib.c: gcc-ar.c
+	cp $^ $@
+
+gcc-nm.c: gcc-ar.c
+	cp $^ $@
 
 COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
@@ -4579,7 +4621,7 @@ maintainer-clean:
 # broken is small.
 install: install-common $(INSTALL_HEADERS) \
     install-cpp install-man install-info install-@POSUB@ \
-    install-driver install-lto-wrapper
+    install-driver install-lto-wrapper install-gcc-ar
 
 ifeq ($(enable_plugin),yes)
 install: install-plugin
@@ -4904,6 +4946,23 @@ install-collect2: collect2 installdirs
 install-lto-wrapper: lto-wrapper$(exeext)
 	$(INSTALL_PROGRAM) lto-wrapper$(exeext) $(DESTDIR)$(libexecsubdir)/lto-wrapper$(exeext)
 
+install-gcc-ar:
+	set -e ; \
+	for i in ar nm ranlib ; do \
+	  install_name=`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ;\
+	  target_install_name=$(target_noncanonical)-`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ; \
+	  binname=gcc-$$i$(exeext) ; \
+	  rm -f $(DESTDIR)$(bindir)/$$install_name ; \
+	  rm -f $(DESTDIR)$(bindir)/$$target_install_name ; \
+	  $(INSTALL_PROGRAM) $$binname $(DESTDIR)$(bindir)/$$install_name ;\
+	  if test -f $(DESTDIR)$(bindir)$$target_install_name ; then \
+	    :; \
+	  else \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $$install_name $$target_install_name ) ; \
+	  fi ; \
+	done
+
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall
 	-rm -rf $(DESTDIR)$(libsubdir)
@@ -4918,6 +4977,12 @@ uninstall: lang.uninstall
 	-rm -rf $(DESTDIR)$(man1dir)/cpp$(man1ext)
 	-rm -f $(DESTDIR)$(infodir)/cpp.info* $(DESTDIR)$(infodir)/gcc.info*
 	-rm -f $(DESTDIR)$(infodir)/cppinternals.info* $(DESTDIR)$(infodir)/gccint.info*
+	for i in ar nm ranlib ; do \
+	  install_name=`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ;\
+	  target_install_name=$(target_noncanonical)-`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ; \
+	  rm -f $(DESTDIR)$(bindir)/$$install_name ; \
+	  rm -f $(DESTDIR)$(bindir)/$$target_install_name ; \
+	done
 #
 # These targets are for the dejagnu testsuites. The file site.exp
 # contains global variables that all the testsuites will use.

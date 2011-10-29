@@ -1,3 +1,14 @@
+2011-10-19  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.in (MOSTLYCLEANFILES): Add gcc-ar/nm/ranlib.
+	(native): Add gcc-ar, gcc-nm, gcc-ranlib.
+	(AR_LIBS, gcc-ar, gcc-ar.o, gcc-ranlib, gcc-ranlib.o,
+         gcc-nm, gcc-nm.o, gcc-ranlib.c, gcc-nm.c): Add.
+	(install): Depend on install-gcc-ar.
+	(install-gcc-ar): Add.
+	(uninstall): Uninstall gcc-ar, gcc-nm, gcc-ranlib.
+	* gcc-ar.c: Add new file.
+
 2011-10-28  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.md (define_attr "type"): Add vecdouble.
