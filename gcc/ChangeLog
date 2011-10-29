@@ -1,3 +1,7 @@
+2011-10-29  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc-ar.c (target_machine): Add.
+
 2011-10-29  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/cris/cris.c (reg_ok_for_base_p, reg_ok_for_index_p,
