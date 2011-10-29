@@ -1781,6 +1781,11 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
   /* Handle the most common case: storing into a register.  */
   else if (register_operand (operand0, mode))
     {
+      /* Legitimize TLS symbol references.  This happens for references
+	 that aren't a legitimate constant.  */
+      if (PA_SYMBOL_REF_TLS_P (operand1))
+	operand1 = legitimize_tls_address (operand1);
+
       if (register_operand (operand1, mode)
 	  || (GET_CODE (operand1) == CONST_INT
 	      && cint_ok_for_move (INTVAL (operand1)))
@@ -10270,6 +10275,16 @@ pa_legitimate_constant_p (enum machine_mode mode, rtx x)
 
   if (!NEW_HP_ASSEMBLER && !TARGET_GAS && GET_CODE (x) == LABEL_REF)
     return false;
+
+  /* TLS_MODEL_GLOBAL_DYNAMIC and TLS_MODEL_LOCAL_DYNAMIC are not
+     legitimate constants.  */
+  if (PA_SYMBOL_REF_TLS_P (x))
+   {
+     enum tls_model model = SYMBOL_REF_TLS_MODEL (x);
+
+     if (model == TLS_MODEL_GLOBAL_DYNAMIC || model == TLS_MODEL_LOCAL_DYNAMIC)
+       return false;
+   }
 
   if (TARGET_64BIT && GET_CODE (x) == CONST_DOUBLE)
     return false;
