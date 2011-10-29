@@ -1,3 +1,10 @@
+2011-10-29  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/47997
+	* objc-act.c (objc_build_string_object): Remove redundant second
+	call to fix_string_type ().  Add a checking assert that we are,
+	indeed, passed a STRING_CST.
+
 2011-10-18  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR objc/50743
