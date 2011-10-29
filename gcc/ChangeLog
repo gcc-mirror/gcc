@@ -1,3 +1,10 @@
+2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/50691
+	* config/pa/pa.c (emit_move_sequence): Legitimize TLS symbol references.
+	* config/pa/pa.h (LEGITIMATE_CONSTANT_P): Return false for
+	TLS_MODEL_GLOBAL_DYNAMIC and TLS_MODEL_LOCAL_DYNAMIC symbol references.
+
 2011-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50875
