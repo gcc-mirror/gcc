@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static const char standard_libexec_prefix[] = STANDARD_LIBEXEC_PREFIX;
 static const char standard_bin_prefix[] = STANDARD_BINDIR_PREFIX;
+static const char *const target_machine = TARGET_MACHINE;
 
 static const char dir_separator[] = { DIR_SEPARATOR, 0 };
 
