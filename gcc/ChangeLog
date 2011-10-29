@@ -1,7 +1,17 @@
+2011-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (lshlv16qi3): Remove expander.
+	(lshrv16qi3): New expander.
+	(<shift_insn>v16qi3): Macroize expander from ashrv16qi3 and lshrv16qi3
+	using any_shiftrt code iterator. Cleanup.
+	(ashlv16qi3): Cleanup.
+	(ashrv2di3): Ditto.
+
 2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/50691
-	config/pa/pa.c (emit_move_sequence): Legitimize TLS symbol references.
+	* config/pa/pa.c (emit_move_sequence): Legitimize TLS symbol
+	references.
 	(pa_legitimate_constant_p): Return false for TLS_MODEL_GLOBAL_DYNAMIC
 	and TLS_MODEL_LOCAL_DYNAMIC symbol references.
 
@@ -94,7 +104,7 @@
 	* Makefile.in (MOSTLYCLEANFILES): Add gcc-ar/nm/ranlib.
 	(native): Add gcc-ar, gcc-nm, gcc-ranlib.
 	(AR_LIBS, gcc-ar, gcc-ar.o, gcc-ranlib, gcc-ranlib.o,
-         gcc-nm, gcc-nm.o, gcc-ranlib.c, gcc-nm.c): Add.
+	gcc-nm, gcc-nm.o, gcc-ranlib.c, gcc-nm.c): Add.
 	(install): Depend on install-gcc-ar.
 	(install-gcc-ar): Add.
 	(uninstall): Uninstall gcc-ar, gcc-nm, gcc-ranlib.
