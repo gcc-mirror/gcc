@@ -236,7 +236,7 @@ do {								\
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)			\
 do {								\
   if (!FUNCTION_NAME_P (XSTR (FUN, 0)))				\
-    hppa_encode_label (FUN);					\
+    pa_encode_label (FUN);					\
   ASM_OUTPUT_TYPE_DIRECTIVE (FILE, XSTR (FUN, 0), "function");	\
 } while (0)
 

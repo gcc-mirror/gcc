@@ -80,7 +80,7 @@ do {  \
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, RTL) \
   do { fputs ("\t.IMPORT ", FILE);					\
        if (!function_label_operand (RTL, VOIDmode))			\
-	 hppa_encode_label (RTL);					\
+	 pa_encode_label (RTL);						\
        assemble_name (FILE, XSTR ((RTL), 0));		       		\
        fputs (",ENTRY\n", FILE);					\
      } while (0)
