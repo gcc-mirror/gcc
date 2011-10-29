@@ -1,3 +1,7 @@
+2011-10-28  Ian Lance Taylor  <iant@google.com>
+
+	* setproctitle.c (setproctitle): Use "GNU/Linux" in comment.
+
 2011-10-26  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/48108
