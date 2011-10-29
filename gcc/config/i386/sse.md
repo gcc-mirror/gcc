@@ -11253,7 +11253,7 @@
 {
   rtx neg = gen_reg_rtx (<MODE>mode);
   emit_insn (gen_neg<mode>2 (neg, operands[2]));
-  emit_insn (gen_xop_lshl<mode>3 (operands[0], operands[1], neg));
+  emit_insn (gen_xop_shl<mode>3 (operands[0], operands[1], neg));
   DONE;
 })
 
@@ -11268,7 +11268,7 @@
     {
       rtx neg = gen_reg_rtx (<MODE>mode);
       emit_insn (gen_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_xop_lshl<mode>3 (operands[0], operands[1], neg));
+      emit_insn (gen_xop_shl<mode>3 (operands[0], operands[1], neg));
       DONE;
     }
 })
@@ -11289,7 +11289,7 @@
 {
   rtx neg = gen_reg_rtx (<MODE>mode);
   emit_insn (gen_neg<mode>2 (neg, operands[2]));
-  emit_insn (gen_xop_ashl<mode>3 (operands[0], operands[1], neg));
+  emit_insn (gen_xop_sha<mode>3 (operands[0], operands[1], neg));
   DONE;
 })
 
@@ -11303,7 +11303,7 @@
     {
       rtx neg = gen_reg_rtx (V4SImode);
       emit_insn (gen_negv4si2 (neg, operands[2]));
-      emit_insn (gen_xop_ashlv4si3 (operands[0], operands[1], neg));
+      emit_insn (gen_xop_shav4si3 (operands[0], operands[1], neg));
       DONE;
     }
 })
@@ -11321,7 +11321,7 @@
 	  (match_operand:VI12_128 2 "nonimmediate_operand" "")))]
   "TARGET_XOP"
 {
-  emit_insn (gen_xop_ashl<mode>3 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_xop_sha<mode>3 (operands[0], operands[1], operands[2]));
   DONE;
 })
 
@@ -11335,7 +11335,7 @@
   if (!TARGET_AVX2)
     {
       operands[2] = force_reg (<MODE>mode, operands[2]);
-      emit_insn (gen_xop_ashl<mode>3 (operands[0], operands[1], operands[2]));
+      emit_insn (gen_xop_sha<mode>3 (operands[0], operands[1], operands[2]));
       DONE;
     }
 })
@@ -11347,7 +11347,7 @@
 	  (match_operand:VI48_256 2 "nonimmediate_operand" "")))]
   "TARGET_AVX2")
 
-(define_insn "xop_ashl<mode>3"
+(define_insn "xop_sha<mode>3"
   [(set (match_operand:VI_128 0 "register_operand" "=x,x")
 	(if_then_else:VI_128
 	 (ge:VI_128
@@ -11366,7 +11366,7 @@
    (set_attr "prefix_extra" "2")
    (set_attr "mode" "TI")])
 
-(define_insn "xop_lshl<mode>3"
+(define_insn "xop_shl<mode>3"
   [(set (match_operand:VI_128 0 "register_operand" "=x,x")
 	(if_then_else:VI_128
 	 (ge:VI_128
@@ -11402,7 +11402,7 @@
     XVECEXP (par, 0, i) = operands[2];
 
   emit_insn (gen_vec_initv16qi (reg, par));
-  emit_insn (gen_xop_ashlv16qi3 (operands[0], operands[1], reg));
+  emit_insn (gen_xop_shav16qi3 (operands[0], operands[1], reg));
   DONE;
 })
 
@@ -11434,9 +11434,9 @@
     emit_insn (gen_negv16qi2 (reg, reg));
 
   if (<CODE> == LSHIFTRT)
-    shift_insn = gen_xop_lshlv16qi3;
+    shift_insn = gen_xop_shlv16qi3;
   else
-    shift_insn = gen_xop_ashlv16qi3;
+    shift_insn = gen_xop_shav16qi3;
 
   emit_insn (shift_insn (operands[0], operands[1], reg));
   DONE;
@@ -11468,7 +11468,7 @@
   if (negate)
     emit_insn (gen_negv2di2 (reg, reg));
 
-  emit_insn (gen_xop_ashlv2di3 (operands[0], operands[1], reg));
+  emit_insn (gen_xop_shav2di3 (operands[0], operands[1], reg));
   DONE;
 })
 

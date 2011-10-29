@@ -1,5 +1,12 @@
 2011-10-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (xop_sha<mode>3): Rename from xop_ashl<mode>3.
+	Update all uses.
+	(xop_shl<mode>3): Rename from xop_lshl<mode>3.  Update all uses.
+	* config/i386/i386.c: Update all uses.
+
+2011-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (lshlv16qi3): Remove expander.
 	(lshrv16qi3): New expander.
 	(<shift_insn>v16qi3): Macroize expander from ashrv16qi3 and lshrv16qi3
