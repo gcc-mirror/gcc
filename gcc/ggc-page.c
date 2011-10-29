@@ -973,6 +973,54 @@ release_pages (void)
   page_entry *p, *start_p;
   char *start;
   size_t len;
+  size_t mapped_len;
+  page_entry *next, *prev, *newprev;
+  size_t free_unit = (GGC_QUIRE_SIZE/2) * G.pagesize;
+
+  /* First free larger continuous areas to the OS.
+     This allows other allocators to grab these areas if needed.
+     This is only done on larger chunks to avoid fragmentation. 
+     This does not always work because the free_pages list is only
+     approximately sorted. */
+
+  p = G.free_pages;
+  prev = NULL;
+  while (p)
+    {
+      start = p->page;
+      start_p = p;
+      len = 0;
+      mapped_len = 0;
+      newprev = prev;
+      while (p && p->page == start + len)
+        {
+          len += p->bytes;
+	  if (!p->discarded)
+	      mapped_len += p->bytes;
+	  newprev = p;
+          p = p->next;
+        }
+      if (len >= free_unit)
+        {
+          while (start_p != p)
+            {
+              next = start_p->next;
+              free (start_p);
+              start_p = next;
+            }
+          munmap (start, len);
+	  if (prev)
+	    prev->next = p;
+          else
+            G.free_pages = p;
+          G.bytes_mapped -= mapped_len;
+	  continue;
+        }
+      prev = newprev;
+   }
+
+  /* Now give back the fragmented pages to the OS, but keep the address 
+     space to reuse it next time. */
 
   for (p = G.free_pages; p; )
     {

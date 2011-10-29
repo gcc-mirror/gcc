@@ -1,5 +1,10 @@
 2011-10-18  Andi Kleen  <ak@linux.intel.com>
 
+	* ggc-page (release_pages): First free large continuous
+	chunks in the madvise path.
+
+2011-10-18  Andi Kleen  <ak@linux.intel.com>
+
 	* ggc-page.c (alloc_pages): Always round up entry_size.
 
 2011-10-19  Andi Kleen  <ak@linux.intel.com>
