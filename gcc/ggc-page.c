@@ -483,7 +483,7 @@ static int ggc_allocated_p (const void *);
 static page_entry *lookup_page_table_entry (const void *);
 static void set_page_table_entry (void *, page_entry *);
 #ifdef USING_MMAP
-static char *alloc_anon (char *, size_t);
+static char *alloc_anon (char *, size_t, bool check);
 #endif
 #ifdef USING_MALLOC_PAGE_GROUPS
 static size_t page_group_index (char *, char *);
@@ -662,7 +662,7 @@ debug_print_page_list (int order)
    compile error unless exactly one of the HAVE_* is defined.  */
 
 static inline char *
-alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
+alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size, bool check)
 {
 #ifdef HAVE_MMAP_ANON
   char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
@@ -675,6 +675,8 @@ alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
 
   if (page == (char *) MAP_FAILED)
     {
+      if (!check)
+        return NULL;
       perror ("virtual memory exhausted");
       exit (FATAL_EXIT_CODE);
     }
@@ -777,13 +779,18 @@ alloc_page (unsigned order)
 	 extras on the freelist.  (Can only do this optimization with
 	 mmap for backing store.)  */
       struct page_entry *e, *f = G.free_pages;
-      int i;
+      int i, entries = GGC_QUIRE_SIZE;
 
-      page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE);
+      page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE, false);
+      if (page == NULL)
+     	{
+	  page = alloc_anon(NULL, G.pagesize, true);
+          entries = 1;
+	}
 
       /* This loop counts down so that the chain will be in ascending
 	 memory order.  */
-      for (i = GGC_QUIRE_SIZE - 1; i >= 1; i--)
+      for (i = entries - 1; i >= 1; i--)
 	{
 	  e = XCNEWVAR (struct page_entry, page_entry_size);
 	  e->order = order;
@@ -796,7 +803,7 @@ alloc_page (unsigned order)
       G.free_pages = f;
     }
   else
-    page = alloc_anon (NULL, entry_size);
+    page = alloc_anon (NULL, entry_size, true);
 #endif
 #ifdef USING_MALLOC_PAGE_GROUPS
   else
@@ -1649,14 +1656,14 @@ init_ggc (void)
      believe, is an unaligned page allocation, which would cause us to
      hork badly if we tried to use it.  */
   {
-    char *p = alloc_anon (NULL, G.pagesize);
+    char *p = alloc_anon (NULL, G.pagesize, true);
     struct page_entry *e;
     if ((size_t)p & (G.pagesize - 1))
       {
 	/* How losing.  Discard this one and try another.  If we still
 	   can't get something useful, give up.  */
 
-	p = alloc_anon (NULL, G.pagesize);
+	p = alloc_anon (NULL, G.pagesize, true);
 	gcc_assert (!((size_t)p & (G.pagesize - 1)));
       }
 
