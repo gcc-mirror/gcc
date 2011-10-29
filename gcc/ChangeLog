@@ -1,3 +1,7 @@
+2011-10-18  Andi Kleen  <ak@linux.intel.com>
+
+	* ggc-page.c (alloc_pages): Always round up entry_size.
+
 2011-10-19  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.in (MOSTLYCLEANFILES): Add gcc-ar/nm/ranlib.

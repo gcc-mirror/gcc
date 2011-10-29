@@ -737,6 +737,7 @@ alloc_page (unsigned order)
   entry_size = num_objects * OBJECT_SIZE (order);
   if (entry_size < G.pagesize)
     entry_size = G.pagesize;
+  entry_size = ROUND_UP (entry_size, G.pagesize);
 
   entry = NULL;
   page = NULL;
