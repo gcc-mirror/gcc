@@ -24,5 +24,5 @@ main ()
   if (ecx & bit_XOP)
     do_test ();
 
-  exit (0);
+  return 0;
 }

@@ -1,3 +1,9 @@
+2011-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/fma-check.h (main): Use return 0 instead of exit (0).
+	* gcc.target/i386/fma4-check.h (main): Ditto.
+	* gcc.target/i386/xop-check.h (main): Ditto.
+
 2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
