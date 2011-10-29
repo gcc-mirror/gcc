@@ -1,3 +1,9 @@
+2011-10-20  Andi Kleen  <ak@linux.intel.com>
+
+	* ggc-page (alloc_anon): Add check argument.
+	(alloc_page): Add fallback to 1 page allocation.
+	Adjust alloc_anon calls to new argument.
+
 2011-10-18  Andi Kleen  <ak@linux.intel.com>
 
 	* ggc-page (release_pages): First free large continuous
