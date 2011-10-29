@@ -5940,8 +5940,9 @@
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI8_AVX2 0 "register_operand" "")
-	(maxmin:VI8_AVX2 (match_operand:VI8_AVX2 1 "register_operand" "")
-			 (match_operand:VI8_AVX2 2 "register_operand" "")))]
+	(maxmin:VI8_AVX2
+	  (match_operand:VI8_AVX2 1 "register_operand" "")
+	  (match_operand:VI8_AVX2 2 "register_operand" "")))]
   "TARGET_SSE4_2"
 {
   enum rtx_code code;
@@ -5974,8 +5975,9 @@
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI124_128 0 "register_operand" "")
-	(smaxmin:VI124_128 (match_operand:VI124_128 1 "nonimmediate_operand" "")
-			   (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
+	(smaxmin:VI124_128
+	  (match_operand:VI124_128 1 "nonimmediate_operand" "")
+	  (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1 || <MODE>mode == V8HImode)
@@ -6043,8 +6045,9 @@
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI124_128 0 "register_operand" "")
-	(umaxmin:VI124_128 (match_operand:VI124_128 1 "nonimmediate_operand" "")
-			   (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
+	(umaxmin:VI124_128
+	  (match_operand:VI124_128 1 "nonimmediate_operand" "")
+	  (match_operand:VI124_128 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1 || <MODE>mode == V16QImode)
@@ -11382,7 +11385,7 @@
    (set_attr "prefix_extra" "2")
    (set_attr "mode" "TI")])
 
-;; SSE2 doesn't have some shift varients, so define versions for XOP
+;; SSE2 doesn't have some shift variants, so define versions for XOP
 (define_expand "ashlv16qi3"
   [(set (match_operand:V16QI 0 "register_operand" "")
 	(ashift:V16QI
@@ -11390,65 +11393,52 @@
 	  (match_operand:SI 2 "nonmemory_operand" "")))]
   "TARGET_XOP"
 {
-  rtvec vs = rtvec_alloc (16);
-  rtx par = gen_rtx_PARALLEL (V16QImode, vs);
   rtx reg = gen_reg_rtx (V16QImode);
+  rtx par;
   int i;
+
+  par = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
   for (i = 0; i < 16; i++)
-    RTVEC_ELT (vs, i) = operands[2];
+    XVECEXP (par, 0, i) = operands[2];
 
   emit_insn (gen_vec_initv16qi (reg, par));
   emit_insn (gen_xop_ashlv16qi3 (operands[0], operands[1], reg));
   DONE;
 })
 
-(define_expand "lshlv16qi3"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:SI 2 "nonmemory_operand" "")]
-  "TARGET_XOP"
-{
-  rtvec vs = rtvec_alloc (16);
-  rtx par = gen_rtx_PARALLEL (V16QImode, vs);
-  rtx reg = gen_reg_rtx (V16QImode);
-  int i;
-  for (i = 0; i < 16; i++)
-    RTVEC_ELT (vs, i) = operands[2];
-
-  emit_insn (gen_vec_initv16qi (reg, par));
-  emit_insn (gen_xop_lshlv16qi3 (operands[0], operands[1], reg));
-  DONE;
-})
-
-(define_expand "ashrv16qi3"
+(define_expand "<shift_insn>v16qi3"
   [(set (match_operand:V16QI 0 "register_operand" "")
-	(ashiftrt:V16QI
+	(any_shiftrt:V16QI
 	  (match_operand:V16QI 1 "register_operand" "")
 	  (match_operand:SI 2 "nonmemory_operand" "")))]
   "TARGET_XOP"
 {
-  rtvec vs = rtvec_alloc (16);
-  rtx par = gen_rtx_PARALLEL (V16QImode, vs);
   rtx reg = gen_reg_rtx (V16QImode);
+  rtx par;
+  bool negate = false;
+  rtx (*shift_insn)(rtx, rtx, rtx);
   int i;
-  rtx ele = ((CONST_INT_P (operands[2]))
-	     ? GEN_INT (- INTVAL (operands[2]))
-	     : operands[2]);
 
+  if (CONST_INT_P (operands[2]))
+    operands[2] = GEN_INT (-INTVAL (operands[2]));
+  else
+    negate = true;
+
+  par = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
   for (i = 0; i < 16; i++)
-    RTVEC_ELT (vs, i) = ele;
+    XVECEXP (par, 0, i) = operands[2];
 
   emit_insn (gen_vec_initv16qi (reg, par));
 
-  if (!CONST_INT_P (operands[2]))
-    {
-      rtx neg = gen_reg_rtx (V16QImode);
-      emit_insn (gen_negv16qi2 (neg, reg));
-      emit_insn (gen_xop_ashlv16qi3 (operands[0], operands[1], neg));
-    }
-  else
-    emit_insn (gen_xop_ashlv16qi3 (operands[0], operands[1], reg));
+  if (negate)
+    emit_insn (gen_negv16qi2 (reg, reg));
 
+  if (<CODE> == LSHIFTRT)
+    shift_insn = gen_xop_lshlv16qi3;
+  else
+    shift_insn = gen_xop_ashlv16qi3;
+
+  emit_insn (shift_insn (operands[0], operands[1], reg));
   DONE;
 })
 
@@ -11459,29 +11449,25 @@
 	  (match_operand:DI 2 "nonmemory_operand" "")))]
   "TARGET_XOP"
 {
-  rtvec vs = rtvec_alloc (2);
-  rtx par = gen_rtx_PARALLEL (V2DImode, vs);
   rtx reg = gen_reg_rtx (V2DImode);
-  rtx ele;
+  rtx par;
+  bool negate = false;
+  int i;
 
   if (CONST_INT_P (operands[2]))
-    ele = GEN_INT (- INTVAL (operands[2]));
-  else if (GET_MODE (operands[2]) != DImode)
-    {
-      rtx move = gen_reg_rtx (DImode);
-      ele = gen_reg_rtx (DImode);
-      convert_move (move, operands[2], false);
-      emit_insn (gen_negdi2 (ele, move));
-    }
+    operands[2] = GEN_INT (-INTVAL (operands[2]));
   else
-    {
-      ele = gen_reg_rtx (DImode);
-      emit_insn (gen_negdi2 (ele, operands[2]));
-    }
+    negate = true;
 
-  RTVEC_ELT (vs, 0) = ele;
-  RTVEC_ELT (vs, 1) = ele;
+  par = gen_rtx_PARALLEL (V2DImode, rtvec_alloc (2));
+  for (i = 0; i < 2; i++)
+    XVECEXP (par, 0, i) = operands[2];
+
   emit_insn (gen_vec_initv2di (reg, par));
+
+  if (negate)
+    emit_insn (gen_negv2di2 (reg, reg));
+
   emit_insn (gen_xop_ashlv2di3 (operands[0], operands[1], reg));
   DONE;
 })
