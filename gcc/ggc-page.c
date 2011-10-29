@@ -221,6 +221,10 @@ static const size_t extra_order_size_table[] = {
 
 #define ROUND_UP(x, f) (CEIL (x, f) * (f))
 
+/* Round X to next multiple of the page size */
+
+#define PAGE_ALIGN(x) (((x) + G.pagesize - 1) & ~(G.pagesize - 1))
+
 /* The Ith entry is the number of objects on a page or order I.  */
 
 static unsigned objects_per_page_table[NUM_ORDERS];
@@ -739,7 +743,7 @@ alloc_page (unsigned order)
   entry_size = num_objects * OBJECT_SIZE (order);
   if (entry_size < G.pagesize)
     entry_size = G.pagesize;
-  entry_size = ROUND_UP (entry_size, G.pagesize);
+  entry_size = PAGE_ALIGN (entry_size);
 
   entry = NULL;
   page = NULL;
@@ -2236,7 +2240,7 @@ ggc_pch_total_size (struct ggc_pch_data *d)
   unsigned i;
 
   for (i = 0; i < NUM_ORDERS; i++)
-    a += ROUND_UP (d->d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+    a += PAGE_ALIGN (d->d.totals[i] * OBJECT_SIZE (i));
   return a;
 }
 
@@ -2249,7 +2253,7 @@ ggc_pch_this_base (struct ggc_pch_data *d, void *base)
   for (i = 0; i < NUM_ORDERS; i++)
     {
       d->base[i] = a;
-      a += ROUND_UP (d->d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+      a += PAGE_ALIGN (d->d.totals[i] * OBJECT_SIZE (i));
     }
 }
 
@@ -2442,7 +2446,7 @@ ggc_pch_read (FILE *f, void *addr)
       if (d.totals[i] == 0)
 	continue;
 
-      bytes = ROUND_UP (d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+      bytes = PAGE_ALIGN (d.totals[i] * OBJECT_SIZE (i));
       num_objs = bytes / OBJECT_SIZE (i);
       entry = XCNEWVAR (struct page_entry, (sizeof (struct page_entry)
 					    - sizeof (long)
