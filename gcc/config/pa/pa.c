@@ -6722,7 +6722,7 @@ output_lbranch (rtx dest, rtx insn, int xdelay)
    above.  it returns the appropriate output template to emit the branch.  */
 
 const char *
-output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
+pa_output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
 {
   static char buf[100];
   bool useskip;

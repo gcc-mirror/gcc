@@ -40,7 +40,7 @@ extern const char *output_block_move (rtx *, int);
 extern const char *output_block_clear (rtx *, int);
 extern const char *output_cbranch (rtx *, int, rtx);
 extern const char *output_lbranch (rtx, rtx, int);
-extern const char *output_bb (rtx *, int, rtx, int);
+extern const char *pa_output_bb (rtx *, int, rtx, int);
 extern const char *output_bvb (rtx *, int, rtx, int);
 extern const char *output_dbra (rtx *, rtx, int);
 extern const char *output_movb (rtx *, rtx, int, int);

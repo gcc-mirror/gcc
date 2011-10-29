@@ -1507,7 +1507,7 @@
   ""
   "*
 {
-  return output_bb (operands, 0, insn, 0);
+  return pa_output_bb (operands, 0, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
@@ -1535,7 +1535,7 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, 0, insn, 0);
+  return pa_output_bb (operands, 0, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
@@ -1563,7 +1563,7 @@
   ""
   "*
 {
-  return output_bb (operands, 1, insn, 0);
+  return pa_output_bb (operands, 1, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
@@ -1591,7 +1591,7 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, 1, insn, 0);
+  return pa_output_bb (operands, 1, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
@@ -1619,7 +1619,7 @@
   ""
   "*
 {
-  return output_bb (operands, 0, insn, 1);
+  return pa_output_bb (operands, 0, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
@@ -1647,7 +1647,7 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, 0, insn, 1);
+  return pa_output_bb (operands, 0, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
@@ -1675,7 +1675,7 @@
   ""
   "*
 {
-  return output_bb (operands, 1, insn, 1);
+  return pa_output_bb (operands, 1, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
@@ -1703,7 +1703,7 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, 1, insn, 1);
+  return pa_output_bb (operands, 1, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")

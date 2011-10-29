@@ -1,5 +1,10 @@
 2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR target/50617
+	* config/pa/pa-protos.h (output_bb): Rename to pa_output_bb.
+	* config/pa/pa.md: Likewise.
+	* config/pa/pa.c: Likewise.
+
 	PR target/50691
 	* config/pa/pa.c (emit_move_sequence): Legitimize TLS symbol references.
 	* config/pa/pa.h (LEGITIMATE_CONSTANT_P): Return false for
