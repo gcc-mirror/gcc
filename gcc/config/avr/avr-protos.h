@@ -32,6 +32,7 @@ extern int avr_initial_elimination_offset (int from, int to);
 extern int avr_simple_epilogue (void);
 extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
 extern rtx avr_return_addr_rtx (int count, rtx tem);
+extern bool avr_accumulate_outgoing_args (void);
 
 #ifdef TREE_CODE
 extern void avr_asm_output_aligned_decl_common (FILE*, const_tree, const char*, unsigned HOST_WIDE_INT, unsigned int, bool);
@@ -77,6 +78,7 @@ extern bool avr_rotate_bytes (rtx operands[]);
 extern void expand_prologue (void);
 extern void expand_epilogue (bool);
 extern int avr_epilogue_uses (int regno);
+extern int avr_starting_frame_offset (void);
 
 extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);

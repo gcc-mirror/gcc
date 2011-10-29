@@ -1,3 +1,36 @@
+2011-10-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50887
+	* config/avr/avr.opt (-maccumulate-args): New option.
+	* config/avr/avr.h (STARTING_FRAME_OFFSET): Redefine to
+	avr_starting_frame_offset.
+	(ACCUMULATE_OUTGOING_ARGS): Define to avr_accumulate_outgoing_args.
+	* config/avr/avr.md (UNSPECV_WRITE_SP_IRQ_ON): Remove.
+	(UNSPECV_WRITE_SP_IRQ_OFF): Remove.
+	(UNSPECV_WRITE_SP): New constant.
+	(*addhi3_sp_R): Rewrite to...
+	(*addhi3_sp): ...this new insn.
+	(movhi_sp_r_irq_off, movhi_sp_r_irq_on): Combine to...
+	(movhi_sp_r): ...this new insn.
+	* config/avr/avr-protos.h (avr_accumulate_outgoing_args): New.
+	(avr_starting_frame_offset): New.
+	* config/avr/avr.c (avr_accumulate_outgoing_args): New function.
+	(avr_starting_frame_offset): New function.
+	(avr_outgoing_args_size): New static function.
+	(avr_initial_elimination_offset): Use it.
+	(avr_simple_epilogue): Use it.
+	(avr_asm_function_end_prologue): Use it.
+	(expand_epilogue): Use it.
+	(expand_prologue): Use it.  Break out code to...
+	(avr_prologue_setup_frame): ...this new static function.
+	(avr_can_eliminate): Allow eliminating to frame pointer if there
+	is one.
+	(avr_frame_pointer_required_p): Use frame pointer if target has a
+	nonlocal label.
+	* config/avr/constraints.md (R): Remove.
+	(Csp): New constraint.
+	* config/avr/predicates.md (avr_sp_immediate_operand): Use it.
+
 2011-10-29  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc-ar.c (target_machine): Add.

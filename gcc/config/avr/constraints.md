@@ -98,11 +98,6 @@
   (and (match_code "const_double")
        (match_test "op == CONST0_RTX (SFmode)")))
 
-(define_constraint "R"
-  "Integer constant in the range -6 @dots{} 5."
-  (and (match_code "const_int")
-       (match_test "ival >= -6 && ival <= 5")))
-       
 (define_memory_constraint "Q"
   "A memory address based on Y or Z pointer with displacement."
   (and (match_code "mem")
@@ -162,3 +157,8 @@
   "Constant 4-byte integer that allows XOR without clobber register."
   (and (match_code "const_int")
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<8))")))
+
+(define_constraint "Csp"
+  "Integer constant in the range -6 @dots{} 6."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -6, 6)")))

@@ -62,6 +62,10 @@ mpmem-wrap-around
 Target Report
 Make the linker relaxation machine assume that a program counter wrap-around occurs.
 
+maccumulate-args
+Target Report Mask(ACCUMULATE_OUTGOING_ARGS)
+Accumulate outgoing function arguments and acquire/release the needed stack space for outpoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
+
 mstrict-X
 Target Report Var(avr_strict_X) Init(0)
 When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.

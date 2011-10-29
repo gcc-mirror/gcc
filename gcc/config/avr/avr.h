@@ -324,7 +324,7 @@ enum reg_class {
 
 #define STACK_GROWS_DOWNWARD
 
-#define STARTING_FRAME_OFFSET 1
+#define STARTING_FRAME_OFFSET avr_starting_frame_offset()
 
 #define STACK_POINTER_OFFSET 1
 
@@ -635,3 +635,5 @@ struct GTY(()) machine_function
 /* AVR does not round pushes, but the existance of this macro is
    required in order for pushes to be generated.  */
 #define PUSH_ROUNDING(X)	(X)
+
+#define ACCUMULATE_OUTGOING_ARGS avr_accumulate_outgoing_args()
