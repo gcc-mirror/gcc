@@ -21,5 +21,5 @@ main ()
   if (ecx & bit_FMA)
     do_test ();
 
-  exit (0);
+  return 0;
 }

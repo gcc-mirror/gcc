@@ -23,5 +23,5 @@ main ()
   if (ecx & bit_FMA4)
     do_test ();
 
-  exit (0);
+  return 0;
 }
