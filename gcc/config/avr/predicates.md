@@ -135,7 +135,7 @@
 ;;
 (define_predicate "avr_sp_immediate_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= -6 && INTVAL (op) <= 5")))
+       (match_test "satisfies_constraint_Csp (op)")))
 
 ;; True for EQ & NE
 (define_predicate "eqne_operator"

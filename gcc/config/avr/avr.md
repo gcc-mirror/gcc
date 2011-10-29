@@ -62,8 +62,7 @@
 (define_c_enum "unspecv"
   [UNSPECV_PROLOGUE_SAVES
    UNSPECV_EPILOGUE_RESTORES
-   UNSPECV_WRITE_SP_IRQ_ON
-   UNSPECV_WRITE_SP_IRQ_OFF
+   UNSPECV_WRITE_SP
    UNSPECV_GOTO_RECEIVER
    UNSPECV_ENABLE_IRQS
    UNSPECV_NOP
@@ -380,26 +379,24 @@
     }
 }")
 
-(define_insn "movhi_sp_r_irq_off"
-  [(set (match_operand:HI 0 "stack_register_operand" "=q")
-        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r")] 
-			    UNSPECV_WRITE_SP_IRQ_OFF))]
-  ""
-  "out __SP_H__, %B1
-	out __SP_L__, %A1"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
 
-(define_insn "movhi_sp_r_irq_on"
-  [(set (match_operand:HI 0 "stack_register_operand" "=q")
-        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r")] 
-			    UNSPECV_WRITE_SP_IRQ_ON))]
+;; Move register $1 to the Stack Pointer register SP.
+;; This insn is emit during function prologue/epilogue generation.
+;;    $2 = 0: We know that IRQs are off
+;;    $2 = 1: We know that IRQs are on
+;; Remaining cases when the state of the I-Flag is unknown are
+;; handled by generic movhi insn.
+
+(define_insn "movhi_sp_r"
+  [(set (match_operand:HI 0 "stack_register_operand"                "=q,q")
+        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r,r")
+                             (match_operand:HI 2 "const_int_operand" "L,P")]
+                            UNSPECV_WRITE_SP))]
   ""
-  "cli
-        out __SP_H__, %B1
-	sei
-	out __SP_L__, %A1"
-  [(set_attr "length" "4")
+  "@
+	out __SP_H__,%B1\;out __SP_L__,%A1
+	cli\;out __SP_H__,%B1\;sei\;out __SP_L__,%A1"
+  [(set_attr "length" "2,4")
    (set_attr "cc" "none")])
 
 (define_peephole2
@@ -800,15 +797,15 @@
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
 
-(define_insn "*addhi3_sp_R"
-  [(set (match_operand:HI 1 "stack_register_operand" "=q")
-        (plus:HI (match_operand:HI 2 "stack_register_operand" "q")
-                 (match_operand:HI 0 "avr_sp_immediate_operand" "R")))]
+(define_insn "*addhi3_sp"
+  [(set (match_operand:HI 1 "stack_register_operand"           "=q")
+        (plus:HI (match_operand:HI 2 "stack_register_operand"   "q")
+                 (match_operand:HI 0 "avr_sp_immediate_operand" "Csp")))]
   ""
   {
     return avr_out_addto_sp (operands, NULL);
   }
-  [(set_attr "length" "5")
+  [(set_attr "length" "6")
    (set_attr "adjust_len" "addto_sp")])
 
 (define_insn "*addhi3"
