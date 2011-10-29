@@ -1,3 +1,29 @@
+2011-10-29  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/cris/cris.c (reg_ok_for_base_p, reg_ok_for_index_p,
+	cris_constant_index_p, cris_base_p, cris_index_p,
+	cris_base_or_autoincr_p, cris_bdap_index_p, cris_biap_index_p,
+	cris_legitimate_address_p): New functions.
+	(TARGET_LEGITIMATE_ADDRESS_P): Define.
+	(cris_pic_symbol_type, cris_valid_pic_const): Change arguments type
+	from rtx to const_rtx.
+	(cris_print_operand_address, cris_address_cost,
+	cris_side_effect_mode_ok):  Use
+	cris_constant_index_p, cris_base_p, cris_base_or_autoincr_p,
+	cris_biap_index_p and cris_bdap_index_p.
+	* config/cris/cris.h (CONSTANT_INDEX_P, BASE_P, BASE_OR_AUTOINCR_P,
+	BDAP_INDEX_P, BIAP_INDEX_P, GO_IF_LEGITIMATE_ADDRESS,
+	REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P): Remove.
+	(EXTRA_CONSTRAINT_Q, EXTRA_CONSTRAINT_R, EXTRA_CONSTRAINT_T): Use
+	cris_constant_index_p, cris_base_p, cris_base_or_autoincr_p,
+	cris_biap_index_p and cris_bdap_index_p.
+	* config/cris/cris.md (moversideqi movemsideqi peephole2): Use
+	cris_base_p.
+	* config/cris/cris-protos.h (cris_constant_index_p, cris_base_p,
+	cris_base_or_autoincr_p, cris_bdap_index_p, cris_biap_index_p): New
+	prototype.
+	(cris_pic_symbol_type, cris_valid_pic_const): Update prototype.
+
 2011-10-21  Andi Kleen  <ak@linux.intel.com>
 
 	* ggc-page (PAGE_ALIGN): Add.
