@@ -1,4 +1,5 @@
 /* { dg-do compile } */   
+/* { dg-options "-fno-common" { target hppa*-*-hpux* } } */
 
 /* Test for C_MAYBE_CONST are folded correctly when 
    expanding an expression to vector.  */

@@ -1,3 +1,24 @@
+2011-10-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/scal-to-vec2.c (dg-options): Add -fno-common to options on
+	hppa*-*-hpux*.
+	* gcc.dg/torture/vshuf-v8hi.c: Likewise.
+	* gcc.dg/torture/vshuf-v4si.c: Likewise.
+	* gcc.dg/torture/vshuf-v8si.c: Likewise.
+	* gcc.dg/torture/vshuf-v32qi.c: Likewise.
+	* gcc.dg/torture/vshuf-v4di.c: Likewise.
+	* gcc.dg/torture/vshuf-v2df.c: Likewise.
+	* gcc.dg/torture/vshuf-v16qi.c: Likewise.
+	* gcc.dg/torture/vshuf-v4sf.c: Likewise.
+	* gcc.dg/torture/vshuf-v8sf.c: Likewise.
+	* gcc.dg/torture/vshuf-v2di.c: Likewise.
+	* gcc.dg/torture/vshuf-v16hi.c: Likewise.
+	* gcc.dg/torture/vshuf-v4df.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-31.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-33.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-34.c: Likewise.
+	* gcc.dg/vector-compare-2.c: Likewise.
+
 2011-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50901
