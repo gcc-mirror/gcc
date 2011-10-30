@@ -1,3 +1,10 @@
+2011-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vectorizer.h (NUM_PATTERNS): Bump to 9.
+	* tree-vect-patterns.c (vect_recog_vector_vector_shift_pattern): New
+	function.
+	(vect_vect_recog_func_ptrs): Add it.
+
 2011-10-30  David S. Miller  <davem@davemloft.net>
 
 	* reorg.c (label_before_next_insn): New function.

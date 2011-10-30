@@ -902,7 +902,7 @@ extern void vect_slp_transform_bb (basic_block);
    Additional pattern recognition functions can (and will) be added
    in the future.  */
 typedef gimple (* vect_recog_func_ptr) (VEC (gimple, heap) **, tree *, tree *);
-#define NUM_PATTERNS 8
+#define NUM_PATTERNS 9
 void vect_pattern_recog (loop_vec_info);
 
 /* In tree-vectorizer.c.  */
