@@ -883,6 +883,12 @@ extern void expand_float (rtx, rtx, int);
 /* Return the insn_code for a FLOAT_EXPR.  */
 enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
 
+/* Check whether an operation represented by the code CODE is a
+   convert operation that is supported by the target platform in
+   vector form */
+bool supportable_convert_operation (enum tree_code, tree, tree, tree *, 
+                                    enum tree_code *);
+
 /* Generate code for a FIX_EXPR.  */
 extern void expand_fix (rtx, rtx, int);
 

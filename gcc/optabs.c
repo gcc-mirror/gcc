@@ -4824,6 +4824,60 @@ can_float_p (enum machine_mode fltmode, enum machine_mode fixmode,
   tab = unsignedp ? ufloat_optab : sfloat_optab;
   return convert_optab_handler (tab, fltmode, fixmode);
 }
+
+/* Function supportable_convert_operation
+
+   Check whether an operation represented by the code CODE is a
+   convert operation that is supported by the target platform in
+   vector form (i.e., when operating on arguments of type VECTYPE_IN
+   producing a result of type VECTYPE_OUT).
+   
+   Convert operations we currently support directly are FIX_TRUNC and FLOAT.
+   This function checks if these operations are supported
+   by the target platform either directly (via vector tree-codes), or via
+   target builtins.
+   
+   Output:
+   - CODE1 is code of vector operation to be used when
+   vectorizing the operation, if available.
+   - DECL is decl of target builtin functions to be used
+   when vectorizing the operation, if available.  In this case,
+   CODE1 is CALL_EXPR.  */
+
+bool
+supportable_convert_operation (enum tree_code code,
+                                    tree vectype_out, tree vectype_in,
+                                    tree *decl, enum tree_code *code1)
+{
+  enum machine_mode m1,m2;
+  int truncp;
+
+  m1 = TYPE_MODE (vectype_out);
+  m2 = TYPE_MODE (vectype_in);
+
+  /* First check if we can done conversion directly.  */
+  if ((code == FIX_TRUNC_EXPR 
+       && can_fix_p (m1,m2,TYPE_UNSIGNED (vectype_out), &truncp) 
+          != CODE_FOR_nothing)
+      || (code == FLOAT_EXPR
+          && can_float_p (m1,m2,TYPE_UNSIGNED (vectype_in))
+	     != CODE_FOR_nothing))
+    {
+      *code1 = code;
+      return true;
+    }
+
+  /* Now check for builtin.  */
+  if (targetm.vectorize.builtin_conversion
+      && targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in))
+    {
+      *code1 = CALL_EXPR;
+      *decl = targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in);
+      return true;
+    }
+  return false;
+}
+
 
 /* Generate code to convert FROM to floating point
    and store in TO.  FROM must be fixed point and not VOIDmode.
