@@ -1,3 +1,10 @@
+2011-10-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* faq.xml (Who's in charge of it?): Refer to the Linux kernel
+	instead of just Linux.
+	(How do I install libstdc++?): Refer to GNU/Linux instead of
+	just Linux.
+
 2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/30_threads/condition_variable_any/50862.cc: Trivial

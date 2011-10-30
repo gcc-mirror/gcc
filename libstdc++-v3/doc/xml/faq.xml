@@ -87,7 +87,7 @@
   <answer xml:id="a-who">
     <para>
      The libstdc++ project is contributed to by several developers
-     all over the world, in the same way as GCC or Linux.
+     all over the world, in the same way as GCC or the Linux kernel.
      Benjamin Kosnik, Gabriel Dos Reis, Phil Edwards, Ulrich Drepper,
      Loren James Rittle, and Paolo Carlini are the lead maintainers of
      the SVN archive.
@@ -261,7 +261,7 @@
   <answer xml:id="a-how_to_install">
     <para>
     Often libstdc++ comes pre-installed as an integral part of many
-    existing Linux and Unix systems, as well as many embedded
+    existing GNU/Linux and Unix systems, as well as many embedded
     development tools. It may be necessary to install extra
     development packages to get the headers, or the documentation, or
     the source: please consult your vendor for details.
