@@ -3794,20 +3794,25 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab Shall be of type @code{INTEGER}.
-@item @var{J} @tab Shall be of type @code{INTEGER}, and of the same kind
-as @var{I}.
-@item @var{SHIFT} @tab Shall be of type @code{INTEGER}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or a BOZ constant.
+@item @var{J} @tab Shall be of type @code{INTEGER} or a BOZ constant.
+If both @var{I} and @var{J} have integer type, then they shall have
+the same kind type parameter. @var{I} and @var{J} shall not both be
+BOZ constants.
+@item @var{SHIFT} @tab Shall be of type @code{INTEGER}. It shall
+be nonnegative.  If @var{I} is not a BOZ constant, then @var{SHIFT}
+shall be less than or equal to @code{BIT_SIZE(I)}; otherwise,
+@var{SHIFT} shall be less than or equal to @code{BIT_SIZE(J)}.
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind as @var{I}.
+If either @var{I} or @var{J} is a BOZ constant, it is first converted
+as if by the intrinsic function @code{INT} to an integer type with the
+kind type parameter of the other.
 
 @item @emph{See also}:
 @ref{DSHIFTR}
-
 @end table
-
 
 
 @node DSHIFTR
@@ -3834,20 +3839,25 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab Shall be of type @code{INTEGER}.
-@item @var{J} @tab Shall be of type @code{INTEGER}, and of the same kind
-as @var{I}.
-@item @var{SHIFT} @tab Shall be of type @code{INTEGER}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or a BOZ constant.
+@item @var{J} @tab Shall be of type @code{INTEGER} or a BOZ constant.
+If both @var{I} and @var{J} have integer type, then they shall have
+the same kind type parameter. @var{I} and @var{J} shall not both be
+BOZ constants.
+@item @var{SHIFT} @tab Shall be of type @code{INTEGER}. It shall
+be nonnegative.  If @var{I} is not a BOZ constant, then @var{SHIFT}
+shall be less than or equal to @code{BIT_SIZE(I)}; otherwise,
+@var{SHIFT} shall be less than or equal to @code{BIT_SIZE(J)}.
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind as @var{I}.
+If either @var{I} or @var{J} is a BOZ constant, it is first converted
+as if by the intrinsic function @code{INT} to an integer type with the
+kind type parameter of the other.
 
 @item @emph{See also}:
 @ref{DSHIFTL}
-
 @end table
-
 
 
 @node DTIME

@@ -1,3 +1,10 @@
+2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/50573
+	* check.c (gfc_check_dshift): Update argument checking for BOZ.
+	Update checking SHIFT against BITSIZE of I or J.
+	* intrinsic.texi: Update docs for DSHIFTL and DSHIFTR.
+
 2011-10-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* check.c (gfc_check_atan_2): Typo in comment.
