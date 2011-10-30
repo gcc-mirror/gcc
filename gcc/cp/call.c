@@ -4996,6 +4996,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case POSTDECREMENT_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case ABS_EXPR:
       return cp_build_unary_op (code, arg1, candidates != 0, complain);
 
     case ARRAY_REF:

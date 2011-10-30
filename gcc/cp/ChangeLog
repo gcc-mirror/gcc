@@ -1,3 +1,9 @@
+2011-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50901
+	* call.c (build_new_op_1): Handle ABS_EXPR together with the
+	other unary EXPR.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.
