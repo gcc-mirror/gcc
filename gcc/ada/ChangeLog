@@ -2,9 +2,8 @@
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/50678
-	* init.c (Darwin/__gnat_error_handler): Apply a work-around to the
-	bug [filed as radar #10302855], which is inconsistent unwind data
-	for sigtramp.
+	* init.c (__gnat_error_handler) [Darwin]: Apply a work-around to the
+	bug filed as radar #10302855 (inconsistent unwind data for sigtramp).
 
 2011-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -48,8 +47,7 @@
 
 2011-10-24  Robert Dewar  <dewar@adacore.com>
 
-	* sem.adb (Initialize): Fix bug that blew up if called a second
-	time.
+	* sem.adb (Initialize): Fix bug that blew up if called a second time.
 
 2011-10-24  Robert Dewar  <dewar@adacore.com>
 
@@ -63,7 +61,7 @@
 
 2011-10-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* gnat_rm.texi Add an entry for restriction No_Finalization.
+	* gnat_rm.texi: Add an entry for restriction No_Finalization.
 
 2011-10-24  Ed Schonberg  <schonberg@adacore.com>
 
@@ -134,17 +132,17 @@
 
 2011-10-24  Geert Bosch  <bosch@adacore.com>
 
-	* s-gearop.adb (Back_Substitute): Avoid overflow if matrix
-	bounds start at Integer'First.
+	* s-gearop.adb (Back_Substitute): Avoid overflow if matrix bounds start
+	at Integer'First.
 
 2011-10-24  Robert Dewar  <dewar@adacore.com>
 
-	* sem_ch12.adb, s-gearop.adb: Minor reformatting
+	* sem_ch12.adb, s-gearop.adb: Minor reformatting.
 
 2011-10-24  Robert Dewar  <dewar@adacore.com>
 
-	* warnsw.adb: Add some missing warnings to Set_GNAT_Mode_Warnings
-	* warnsw.ads: Add comments to Set_GNAT_Mode_Warnings
+	* warnsw.adb: Add some missing warnings to Set_GNAT_Mode_Warnings.
+	* warnsw.ads: Add comments to Set_GNAT_Mode_Warnings.
 
 2011-10-24  Emmanuel Briot  <briot@adacore.com>
 
@@ -193,8 +191,8 @@
 
 2011-10-24  Matthew Heaney  <heaney@adacore.com>
 
-	* a-cuprqu.adb, a-cbprqu.adb (Dequeue_Only_High_Priority):
-	Predicate had wrong sense.
+	* a-cuprqu.adb, a-cbprqu.adb (Dequeue_Only_High_Priority): Fix sense
+	of predicate.
 
 2011-10-24  Yannick Moy  <moy@adacore.com>
 
@@ -219,8 +217,7 @@
 
 2011-10-24  Robert Dewar  <dewar@adacore.com>
 
-	* gnat_rm.texi: Minor correction to documentation on address
-	clause.
+	* gnat_rm.texi: Minor correction to documentation on address clause.
 
 2011-10-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
@@ -298,8 +295,8 @@
 2011-10-16  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
-	* gcc-interface/trans.c (gigi, Sloc_to_locus): Adjust to use the
-	new public ordinary map interface.
+	* gcc-interface/trans.c (gigi, Sloc_to_locus): Adjust to use the new
+	public ordinary map interface.
 
 2011-10-16  Tristan Gingold  <gingold@adacore.com>
 
@@ -639,13 +636,13 @@
 
 2011-10-13  Nicolas Roche  <roche@adacore.com>
 
-	* gnatlink.adb: Ensure that -mrtp is passed when
-	runtime name ends with 'rtp'.
+	* gnatlink.adb: Ensure that -mrtp is passed when runtime name ends
+	with 'rtp'.
 
 2011-10-13  Ed Schonberg  <schonberg@adacore.com>
 
-	* sem_prag.adb (Analyze_Pragma, case Unchecked_Union): an
-	unchecked union type can be limited.
+	* sem_prag.adb (Analyze_Pragma, case Unchecked_Union): Take into
+	account that an unchecked union type can be limited.
 
 2011-10-13  Olivier Hainque  <hainque@adacore.com>
 
@@ -656,8 +653,8 @@
 
 2011-10-13  Yannick Moy  <moy@adacore.com>
 
-	* sem_aggr.adb (Resolve_Aggr_Expr): Always perform semantic
-	analysis in Alfa mode.
+	* sem_aggr.adb (Resolve_Aggr_Expr): Always perform semantic analysis
+	in Alfa mode.
 
 2011-10-13  Ed Schonberg  <schonberg@adacore.com>
 
@@ -723,9 +720,8 @@
 
 2011-10-13  Ed Schonberg  <schonberg@adacore.com>
 
-	* sem_attr.adb (Check_Enum_Image, Analyze_Attribute case
-	'Value): Mark literals as referenced only if reference is in
-	current source unit.
+	* sem_attr.adb (Check_Enum_Image, Analyze_Attribute case 'Value): Mark
+	literals as referenced only if reference is in current source unit.
 
 2011-10-13  Matthew Heaney  <heaney@adacore.com>
 
