@@ -1173,6 +1173,8 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
   /* Put the prolog on the entry edge.  */
   e = loop_preheader_edge (loop);
   split_edge_and_insert (e, get_insns ());
+  if (!flag_resched_modulo_sched)
+    e->dest->flags |= BB_DISABLE_SCHEDULE;
 
   end_sequence ();
 
@@ -1186,7 +1188,22 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
   gcc_assert (single_exit (loop));
   e = single_exit (loop);
   split_edge_and_insert (e, get_insns ());
+  if (!flag_resched_modulo_sched)
+    e->dest->flags |= BB_DISABLE_SCHEDULE;
+
   end_sequence ();
+}
+
+/* Mark LOOP as software pipelined so the later
+   scheduling passes don't touch it.  */
+static void
+mark_loop_unsched (struct loop *loop)
+{
+  unsigned i;
+  basic_block *bbs = get_loop_body (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    bbs[i]->flags |= BB_DISABLE_SCHEDULE;
 }
 
 /* Return true if all the BBs of the loop are empty except the
@@ -1714,9 +1731,10 @@ sms_schedule (void)
 	  permute_partial_schedule (ps, g->closing_branch->first_note);
 
           /* Mark this loop as software pipelined so the later
-	     scheduling passes doesn't touch it.  */
+	     scheduling passes don't touch it.  */
 	  if (! flag_resched_modulo_sched)
-	    g->bb->flags |= BB_DISABLE_SCHEDULE;
+	    mark_loop_unsched (loop);
+	  
 	  /* The life-info is not valid any more.  */
 	  df_set_bb_dirty (g->bb);
 

@@ -1,3 +1,10 @@
+2011-10-30  Revital Eres  <revital.eres@linaro.org>
+
+	* modulo-sched.c (generate_prolog_epilog): Mark prolog and epilog
+	as BB_DISABLE_SCHEDULE.
+	(mark_loop_unsched): New function.
+	(sms_schedule): Call it.
+
 2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/50617
