@@ -1,3 +1,15 @@
+2011-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (avx2_vec_dup<mode>): Macroize insn from
+	avx2_vec_dup{v8sf,v4sf} using VF1 mode iterator.
+	(vec_dupv4sf): Remove expander.
+	(vec_dupv4sf): Merge from *vec_dupv4sf and *vec_dupv4sf_avx.
+	(vec_dupv2df): Remove expander.
+	(vec_dupv2df): Merge from *vec_dupv2df and *vec_dupv2df_sse3.
+	(*vec_concatv2df): Merge *vec_concatv2df_sse3.
+	(*vec_dupv4si): Merge *vec_dupv4si_avx.
+	(*vec_dupv2di): Merge *vec_dupv2di_sse3.
+
 2011-10-30  Dmitry Plotnikov  <dplotnikov@ispras.ru>
 
 	* tree-cfg.c (verify_gimple_assign_unary): Allow vector conversions.
