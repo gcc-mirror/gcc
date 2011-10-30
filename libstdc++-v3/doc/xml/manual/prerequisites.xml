@@ -57,9 +57,9 @@
 
 	<listitem>
 	<para>
-	  If gcc 3.1.0 or later on is being used on linux, an attempt
+	  If GCC 3.1.0 or later on is being used on GNU/Linux, an attempt
 	  will be made to use "C" library functionality necessary for
-	  C++ named locale support.  For gcc 4.6.0 and later, this
+	  C++ named locale support.  For GCC 4.6.0 and later, this
 	  means that glibc 2.3 or later is required.
 	</para>
 
@@ -110,32 +110,12 @@ zh_TW               BIG5
       <itemizedlist>
 	<listitem>
 	  <para>install all locales</para>
-	  <itemizedlist>
-	    <listitem>
-	      <para>with RedHat Linux:
-	      </para>
-	      <para> <code> export LC_ALL=C </code>
-	      </para>
-	      <para> <code> rpm -e glibc-common --nodeps </code>
-	      </para>
-	      <para>
-		<code> rpm -i --define "_install_langs all"
-		 glibc-common-2.2.5-34.i386.rpm
-		</code>
-	      </para>
-	    </listitem>
-	     <listitem>
-	     <para>
-	       Instructions for other operating systems solicited.
-	     </para>
-	     </listitem>
-	  </itemizedlist>
 	</listitem>
 	<listitem>
 	  <para>install just the necessary locales</para>
 	  <itemizedlist>
 	    <listitem>
-	      <para>with Debian Linux:</para>
+	      <para>with Debian GNU/Linux:</para>
 	      <para> Add the above list, as shown, to the file
 	      <code>/etc/locale.gen</code> </para>
 	      <para> run <code>/usr/sbin/locale-gen</code> </para>
