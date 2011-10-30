@@ -1,3 +1,12 @@
+2011-10-30  Dmitry Plotnikov  <dplotnikov@ispras.ru>
+
+	* tree-cfg.c (verify_gimple_assign_unary): Allow vector conversions.
+	* optabs.c (supportable_convert_operation): New function.
+	* optabs.h (supportable_convert_operation): New prototype.
+	* tree-vect-stmts.c (vectorizable_conversion): Change condition and
+	behavior for NONE modifier case.
+	* tree.h (VECTOR_INTEGER_TYPE_P): New macro.
+
 2011-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vectorizer.h (NUM_PATTERNS): Bump to 9.

@@ -3342,7 +3342,9 @@ verify_gimple_assign_unary (gimple stmt)
 
     case FLOAT_EXPR:
       {
-	if (!INTEGRAL_TYPE_P (rhs1_type) || !SCALAR_FLOAT_TYPE_P (lhs_type))
+	if ((!INTEGRAL_TYPE_P (rhs1_type) || !SCALAR_FLOAT_TYPE_P (lhs_type))
+	    && (!VECTOR_INTEGER_TYPE_P (rhs1_type)
+	        || !VECTOR_FLOAT_TYPE_P(lhs_type)))
 	  {
 	    error ("invalid types in conversion to floating point");
 	    debug_generic_expr (lhs_type);
@@ -3355,7 +3357,9 @@ verify_gimple_assign_unary (gimple stmt)
 
     case FIX_TRUNC_EXPR:
       {
-	if (!INTEGRAL_TYPE_P (lhs_type) || !SCALAR_FLOAT_TYPE_P (rhs1_type))
+        if ((!INTEGRAL_TYPE_P (lhs_type) || !SCALAR_FLOAT_TYPE_P (rhs1_type))
+            && (!VECTOR_INTEGER_TYPE_P (lhs_type)
+                || !VECTOR_FLOAT_TYPE_P(rhs1_type)))
 	  {
 	    error ("invalid types in conversion to integer");
 	    debug_generic_expr (lhs_type);
