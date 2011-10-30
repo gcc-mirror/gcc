@@ -1483,7 +1483,14 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (type_check (j, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
 
-  if (same_type_check (i, 0, j, 1) == FAILURE)
+  if (i->is_boz && j->is_boz)
+    {
+      gfc_error ("'I' at %L and 'J' at %L cannot both be BOZ literal "
+		 "constants", &i->where, &j->where);
+      return FAILURE;
+    }
+
+  if (!i->is_boz && !j->is_boz && same_type_check (i, 0, j, 1) == FAILURE)
     return FAILURE;
 
   if (type_check (shift, 2, BT_INTEGER) == FAILURE)
@@ -1492,8 +1499,18 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (nonnegative_check ("SHIFT", shift) == FAILURE)
     return FAILURE;
 
-  if (less_than_bitsize1 ("I", i, "SHIFT", shift, true) == FAILURE)
-    return FAILURE;
+  if (i->is_boz)
+    {
+      if (less_than_bitsize1 ("J", j, "SHIFT", shift, true) == FAILURE)
+    	return FAILURE;
+      i->ts.kind = j->ts.kind;
+    }
+  else
+    {
+      if (less_than_bitsize1 ("I", i, "SHIFT", shift, true) == FAILURE)
+    	return FAILURE;
+      j->ts.kind = i->ts.kind;
+    }
 
   return SUCCESS;
 }
