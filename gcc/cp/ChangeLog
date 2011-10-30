@@ -1,3 +1,8 @@
+2011-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* NEWS (GCC 2.95): Refer to GNU/Linux instead of Linux.
+	(EGCS 1.0): Ditto.
+
 2011-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50901

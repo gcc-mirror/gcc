@@ -168,7 +168,7 @@
 
 * Unused virtual functions can be discarded on some targets by specifying
   -ffunction-sections -fvtable-gc to the compiler and --gc-sections to the
-  linker.  Unfortunately, this only works on Linux if you're linking
+  linker.  Unfortunately, this only works on GNU/Linux if you're linking
   statically.
 
 * Lots of bugs stomped.
@@ -343,7 +343,7 @@
   translation units.
 
 * -fvtable-thunks is supported for all targets, and is the default for
-  Linux with glibc 2.x (also called libc 6.x).
+  GNU/Linux with glibc 2.x (also called libc 6.x).
 
 * bool is now always the same size as another built-in type. Previously,
   a 64-bit RISC target using a 32-bit ABI would have 32-bit pointers and a
