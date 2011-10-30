@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-06-21 10:27+0000\n"
-"PO-Revision-Date: 2011-10-25 22:36+0900\n"
+"PO-Revision-Date: 2011-10-30 18:48+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -834,12 +834,12 @@ msgstr "  -v, --version                   バージョン番号を表示して�
 #: gcov.c:420
 #, c-format
 msgid "  -a, --all-blocks                Show information for every basic block\n"
-msgstr ""
+msgstr "  -a, --all-blocks                各基本ブロックに関する情報を表示する\n"
 
 #: gcov.c:421
 #, c-format
 msgid "  -b, --branch-probabilities      Include branch probabilities in output\n"
-msgstr ""
+msgstr "  -b, --branch-probabilities      出力に分岐可能性情報を含める\n"
 
 #: gcov.c:422
 #, c-format
@@ -847,6 +847,8 @@ msgid ""
 "  -c, --branch-counts             Given counts of branches taken\n"
 "                                    rather than percentages\n"
 msgstr ""
+"  -c, --branch-counts             分岐に関する百分率では無く行われた\n"
+"                                    回数を取得する\n"
 
 #: gcov.c:424
 #, c-format
@@ -859,21 +861,23 @@ msgid ""
 "  -l, --long-file-names           Use long output file names for included\n"
 "                                    source files\n"
 msgstr ""
+"  -l, --long-file-names           インクルードされたソースファイルに関する長い\n"
+"                                    出力ファイル名を使用する\n"
 
 #: gcov.c:427
 #, c-format
 msgid "  -f, --function-summaries        Output summaries for each function\n"
-msgstr ""
+msgstr "  -f, --function-summaries        各関数に関する要約を出力する\n"
 
 #: gcov.c:428
 #, c-format
 msgid "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n"
-msgstr ""
+msgstr "  -o, --object-directory DIR|FILE オブジェクトファイルを DIR 内または呼び出し用 FILE 内で検索する\n"
 
 #: gcov.c:429
 #, c-format
 msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-msgstr ""
+msgstr "  -p, --preserve-paths            すべてのパス名要素を保護する\n"
 
 #: gcov.c:430
 #, c-format
@@ -977,7 +981,7 @@ msgstr "%s: 破損しています\n"
 #: gcov.c:1045
 #, c-format
 msgid "%s:cannot open data file, assuming not executed\n"
-msgstr ""
+msgstr "%s:データファイルを開けません。実行されていないと見なします\n"
 
 #: gcov.c:1052
 #, c-format
@@ -1027,7 +1031,7 @@ msgstr ""
 #: gcov.c:1379
 #, c-format
 msgid "%s:graph is unsolvable for '%s'\n"
-msgstr ""
+msgstr "%s: '%s' 用のグラフが解決できません\n"
 
 #: gcov.c:1459
 #, c-format
@@ -1037,7 +1041,7 @@ msgstr "%s '%s'\n"
 #: gcov.c:1462
 #, c-format
 msgid "Lines executed:%s of %d\n"
-msgstr ""
+msgstr "実行された行:%s of %d\n"
 
 #: gcov.c:1466
 #, c-format
@@ -1047,7 +1051,7 @@ msgstr "実行可能な行がありません\n"
 #: gcov.c:1472
 #, c-format
 msgid "Branches executed:%s of %d\n"
-msgstr ""
+msgstr "実行された分岐:%s of %d\n"
 
 #: gcov.c:1476
 #, c-format
@@ -1057,12 +1061,12 @@ msgstr ""
 #: gcov.c:1482
 #, c-format
 msgid "No branches\n"
-msgstr ""
+msgstr "分岐がありません\n"
 
 #: gcov.c:1484
 #, c-format
 msgid "Calls executed:%s of %d\n"
-msgstr ""
+msgstr "実行された呼び出し:%s of %d\n"
 
 #: gcov.c:1488
 #, c-format
@@ -1075,24 +1079,24 @@ msgid "%s:no lines for '%s'\n"
 msgstr "%s: '%s' に対する行がありません\n"
 
 #: gcov.c:1843
-#, fuzzy, c-format
+#, c-format
 msgid "call   %2d returned %s\n"
-msgstr "呼び出し %d の戻り = %d\n"
+msgstr ""
 
 #: gcov.c:1848
-#, fuzzy, c-format
+#, c-format
 msgid "call   %2d never executed\n"
-msgstr "呼び出し %d は一度も実行せず\n"
+msgstr ""
 
 #: gcov.c:1853
-#, fuzzy, c-format
+#, c-format
 msgid "branch %2d taken %s%s\n"
-msgstr "ブランチ %d 受理 = %d%%\n"
+msgstr ""
 
 #: gcov.c:1857
-#, fuzzy, c-format
+#, c-format
 msgid "branch %2d never executed\n"
-msgstr "ブランチ %d は一度も実行されず\n"
+msgstr ""
 
 #: gcov.c:1862
 #, c-format
@@ -1100,9 +1104,9 @@ msgid "unconditional %2d taken %s\n"
 msgstr ""
 
 #: gcov.c:1865
-#, fuzzy, c-format
+#, c-format
 msgid "unconditional %2d never executed\n"
-msgstr "呼び出し %d は一度も実行せず\n"
+msgstr ""
 
 #: gcov.c:1901
 #, c-format
@@ -1412,11 +1416,11 @@ msgstr "次のオプションは文書化されていません"
 
 #: opts.c:1183
 msgid "The following options take separate arguments"
-msgstr ""
+msgstr "次のオプションは分離した引数を取ります"
 
 #: opts.c:1185
 msgid "The following options take joined arguments"
-msgstr ""
+msgstr "次のオプションは結合した引数を取ります"
 
 #: opts.c:1196
 msgid "The following options are language-related"
@@ -1472,7 +1476,7 @@ msgstr "命令が制約を満たしません:"
 #: targhooks.c:1469
 #, c-format
 msgid "created and used with differing settings of '%s'"
-msgstr ""
+msgstr "作成時と使用時で '%s' の設定が異なります"
 
 #: targhooks.c:1471
 msgid "out of memory"
@@ -1480,11 +1484,11 @@ msgstr "メモリが足りません"
 
 #: targhooks.c:1486
 msgid "created and used with different settings of -fpic"
-msgstr ""
+msgstr "作成時と使用時で -fpic の設定が異なります"
 
 #: targhooks.c:1488
 msgid "created and used with different settings of -fpie"
-msgstr ""
+msgstr "作成時と使用時で -fpie の設定が異なります"
 
 #: tlink.c:386
 #, c-format
@@ -1717,11 +1721,11 @@ msgstr ""
 
 #: params.def:100
 msgid "The maximum depth of recursive inlining for inline functions"
-msgstr ""
+msgstr "インライン関数を再帰的にインライン化する時の最大深度"
 
 #: params.def:105
 msgid "The maximum depth of recursive inlining for non-inline functions"
-msgstr ""
+msgstr "非インライン関数を再帰的にインライン化する時の最大深度"
 
 #: params.def:110
 msgid "Inline recursively only when the probability of call being executed exceeds the parameter"
@@ -1761,16 +1765,15 @@ msgstr ""
 
 #: params.def:180
 msgid "The size of function body to be considered large"
-msgstr ""
+msgstr "大きいと見なされる関数本体のサイズ"
 
 #: params.def:184
 msgid "Maximal growth due to inlining of large function (in percent)"
 msgstr ""
 
 #: params.def:188
-#, fuzzy
 msgid "The size of translation unit to be considered large"
-msgstr "翻訳単位全体をファイルにダンプする"
+msgstr "大きいと見なされる翻訳単位のサイズ"
 
 #: params.def:192
 msgid "How much can given compilation unit grow because of the inlining (in percent)"
@@ -1786,20 +1789,19 @@ msgstr ""
 
 #: params.def:204
 msgid "The size of stack frame to be considered large"
-msgstr ""
+msgstr "大きいと見なされるスタックフレームのサイズ"
 
 #: params.def:208
 msgid "Maximal stack frame growth due to inlining (in percent)"
-msgstr ""
+msgstr "インライン化によって増加するスタックフレームの最大量 (百分率)"
 
 #: params.def:215
 msgid "The maximum amount of memory to be allocated by GCSE"
-msgstr ""
+msgstr "GCSE によって配置されるメモリの最大量"
 
 #: params.def:222
-#, fuzzy
 msgid "The maximum ratio of insertions to deletions of expressions in GCSE"
-msgstr "RPTS 用の最大反復数を指定する"
+msgstr ""
 
 #: params.def:233
 msgid "The threshold ratio for performing partial redundancy elimination after reload"
@@ -1963,9 +1965,8 @@ msgid "Bound on number of candidates below that all candidates are considered in
 msgstr ""
 
 #: params.def:470
-#, fuzzy
 msgid "Bound on number of iv uses in loop optimized in iv optimizations"
-msgstr "目立たない、コストのかかる最適化を行なう"
+msgstr ""
 
 #: params.def:478
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization"
@@ -2044,9 +2045,8 @@ msgid "The minimum probability of reaching a source block for interblock specula
 msgstr ""
 
 #: params.def:594
-#, fuzzy
 msgid "The maximum number of iterations through CFG to extend regions"
-msgstr "RPTS 用の最大反復数を指定する"
+msgstr ""
 
 #: params.def:599
 msgid "The maximum conflict delay for an insn to be considered for speculative motion"
@@ -2077,9 +2077,8 @@ msgid "The maximum number of RTL nodes that can be recorded as combiner's last v
 msgstr ""
 
 #: params.def:637
-#, fuzzy
 msgid "The upper bound for sharing integer constants"
-msgstr "`%s' の列挙値が整数定数ではありません"
+msgstr "整数定数を共有するための上限値"
 
 #: params.def:656
 msgid "Minimum number of virtual mappings to consider switching to full virtual renames"
@@ -2111,11 +2110,11 @@ msgstr ""
 
 #: params.def:714
 msgid "The number of insns executed before prefetch is completed"
-msgstr ""
+msgstr "プリフェッチが完了する前に実行される命令数"
 
 #: params.def:721
 msgid "The number of prefetches that can run at the same time"
-msgstr ""
+msgstr "同時に実行可能なプリフェッチの数"
 
 #: params.def:728
 msgid "The size of L1 cache"
@@ -2162,9 +2161,8 @@ msgid "size of tiles for loop blocking"
 msgstr ""
 
 #: params.def:806
-#, fuzzy
 msgid "maximum number of parameters in a SCoP"
-msgstr "RPTS 用の最大反復数を指定する"
+msgstr "SCoP 内のパラメータの最大数"
 
 #: params.def:813
 msgid "maximum number of basic blocks per function to be analyzed by Graphite"
@@ -2597,9 +2595,9 @@ msgid "invalid %%E value"
 msgstr "無効な %%E 値"
 
 #: config/alpha/alpha.c:5431 config/alpha/alpha.c:5479
-#, fuzzy, c-format
+#, c-format
 msgid "unknown relocation unspec"
-msgstr "不明な設定済コンストラクタ型です"
+msgstr ""
 
 #: config/alpha/alpha.c:5440 config/crx/crx.c:1119
 #: config/rs6000/rs6000.c:16490 config/spu/spu.c:1726
@@ -3000,32 +2998,32 @@ msgstr "被演算子コード '%c' に無効な被演算子型が使用されま
 #: config/i386/i386.c:14106 config/i386/i386.c:14146
 #, c-format
 msgid "operand is not a condition code, invalid operand code 'D'"
-msgstr ""
+msgstr "被演算子は条件コードではありません。無効な被演算子コード 'D' です"
 
 #: config/i386/i386.c:14172
 #, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'C'"
-msgstr ""
+msgstr "被演算子は定数でも条件コードでもありません。無効な被演算子コード 'C' です"
 
 #: config/i386/i386.c:14182
 #, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'F'"
-msgstr ""
+msgstr "被演算子は定数でも条件コードでもありません。無効な被演算子コード 'F' です"
 
 #: config/i386/i386.c:14200
 #, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'c'"
-msgstr ""
+msgstr "被演算子は定数でも条件コードでもありません。無効な被演算子コード 'c' です"
 
 #: config/i386/i386.c:14210
 #, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'f'"
-msgstr ""
+msgstr "被演算子は定数でも条件コードでもありません。無効な被演算子コード 'f' です"
 
 #: config/i386/i386.c:14313
 #, c-format
 msgid "operand is not a condition code, invalid operand code 'Y'"
-msgstr ""
+msgstr "被演算子は条件コードではありません。無効な被演算子コード 'Y' です"
 
 #: config/i386/i386.c:14339
 #, c-format
@@ -3098,7 +3096,7 @@ msgstr "%%d、%%x、または %%X の無効な使用法です"
 #: config/lm32/lm32.c:529
 #, c-format
 msgid "only 0.0 can be loaded as an immediate"
-msgstr ""
+msgstr "即値としてロードできるのは 0.0 のみです"
 
 #: config/lm32/lm32.c:599
 msgid "bad operand"
@@ -3138,15 +3136,15 @@ msgstr "%%N コードへの無効な被演算子です"
 
 #: config/m32r/m32r.c:2290
 msgid "pre-increment address is not a register"
-msgstr ""
+msgstr "前置増分アドレスがレジスタではありません"
 
 #: config/m32r/m32r.c:2297
 msgid "pre-decrement address is not a register"
-msgstr ""
+msgstr "前置減分アドレスがレジスタではありません"
 
 #: config/m32r/m32r.c:2304
 msgid "post-increment address is not a register"
-msgstr ""
+msgstr "後置増分アドレスがレジスタではありません"
 
 #: config/m32r/m32r.c:2380 config/m32r/m32r.c:2394
 #: config/rs6000/rs6000.c:25500
@@ -3252,7 +3250,7 @@ msgstr "stack/frame/arg ポインタ無しで mips_debugger_offset が呼ばれ�
 
 #: config/mmix/mmix.c:1589 config/mmix/mmix.c:1719
 msgid "MMIX Internal: Expected a CONST_INT, not this"
-msgstr ""
+msgstr "MMIX 内部: CONST_INT が予期されますが、異なっています"
 
 #: config/mmix/mmix.c:1668
 msgid "MMIX Internal: Bad value for 'm', not a CONST_INT"
@@ -3260,11 +3258,11 @@ msgstr "MMIX 内部: 'm' に対する誤った値です。CONST_INT ではあり
 
 #: config/mmix/mmix.c:1687
 msgid "MMIX Internal: Expected a register, not this"
-msgstr ""
+msgstr "MMIX 内部: レジスタが予期されますが、異なっています"
 
 #: config/mmix/mmix.c:1697
 msgid "MMIX Internal: Expected a constant, not this"
-msgstr ""
+msgstr "MMIX 内部: 定数が予期されますが、異なっています"
 
 #. We need the original here.
 #: config/mmix/mmix.c:1781
@@ -3301,7 +3299,7 @@ msgstr ""
 
 #: config/picochip/picochip.c:2983 config/picochip/picochip.c:3015
 msgid "Bad address, not (reg+disp):"
-msgstr ""
+msgstr "誤ったアドレスです。 (reg+disp) ではありません:"
 
 #: config/picochip/picochip.c:3029
 msgid "Bad address, not register:"
@@ -3526,15 +3524,15 @@ msgstr "%%S への無効な被演算子です"
 
 #: config/sh/sh.c:9271
 msgid "created and used with different architectures / ABIs"
-msgstr ""
+msgstr "作成時と使用時で アーキテクチャ/ABI が異なります"
 
 #: config/sh/sh.c:9273
 msgid "created and used with different ABIs"
-msgstr ""
+msgstr "作成時と使用時で ABI が異なります"
 
 #: config/sh/sh.c:9275
 msgid "created and used with different endianness"
-msgstr ""
+msgstr "作成時と使用時でエンディアンが異なります"
 
 #: config/sparc/sparc.c:7445 config/sparc/sparc.c:7451
 #, c-format
@@ -3617,7 +3615,7 @@ msgstr ""
 #: config/vax/vax.c:427
 #, c-format
 msgid "symbol with offset used in PIC mode"
-msgstr ""
+msgstr "PIC モードで使用されるオフセット付きのシンボルです"
 
 #: config/vax/vax.c:513
 #, c-format
@@ -3837,19 +3835,19 @@ msgid "%s:%d:%d:   recursively instantiated from here"
 msgstr "%s:%d:%d:   ここから再帰的に実体化されました"
 
 #: cp/error.c:2913
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d:   instantiated from here"
 msgstr "%s:%d:%d:   ここから実体化されました"
 
 #: cp/error.c:2918
 #, c-format
 msgid "%s:%d:   recursively instantiated from here"
-msgstr ""
+msgstr "%s:%d:   ここから再帰的に実体化されました"
 
 #: cp/error.c:2919
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:   instantiated from here"
-msgstr "%s:%d:   ここで実体化されました\n"
+msgstr "%s:%d:   ここから実体化されました"
 
 #: cp/error.c:2962
 #, c-format
@@ -4029,22 +4027,21 @@ msgstr "致命的エラー:"
 #: fortran/expr.c:607
 #, c-format
 msgid "Constant expression required at %C"
-msgstr ""
+msgstr "%C では定数式が要求されます"
 
 #: fortran/expr.c:610
 #, c-format
 msgid "Integer expression required at %C"
-msgstr ""
+msgstr "%C では整数式が要求されます"
 
 #: fortran/expr.c:615
-#, fuzzy, c-format
+#, c-format
 msgid "Integer value too large in expression at %C"
-msgstr "式の整数がオーバーフローしました"
+msgstr "%C の式内で整数値が大きすぎます"
 
 #: fortran/expr.c:3147
-#, fuzzy
 msgid "array assignment"
-msgstr "代入"
+msgstr "配列代入"
 
 #: fortran/gfortranspec.c:303
 #, c-format
@@ -4080,7 +4077,7 @@ msgstr "非負の幅が必要です"
 
 #: fortran/io.c:551
 msgid "Unexpected element '%c' in format string at %L"
-msgstr ""
+msgstr "予期しない要素 '%c' が書式文字列内 (位置 %L) にあります"
 
 #: fortran/io.c:553
 msgid "Unexpected end of format string"
@@ -4088,15 +4085,15 @@ msgstr "予期しない書式文字列終了です"
 
 #: fortran/io.c:554
 msgid "Zero width in format descriptor"
-msgstr ""
+msgstr "幅 0 の書式記述子です"
 
 #: fortran/io.c:574
 msgid "Missing leading left parenthesis"
-msgstr ""
+msgstr "前に左小括弧がありません"
 
 #: fortran/io.c:603
 msgid "Left parenthesis required after '*'"
-msgstr ""
+msgstr "'*' の後には左小括弧が必要です"
 
 #: fortran/io.c:634
 msgid "Expected P edit descriptor"
@@ -4116,9 +4113,8 @@ msgid "Positive width required with T descriptor"
 msgstr ""
 
 #: fortran/io.c:844
-#, fuzzy
 msgid "E specifier not allowed with g0 descriptor"
-msgstr "型指定子 `%s' は struct や class の後には使えません"
+msgstr ""
 
 #: fortran/io.c:914
 msgid "Positive exponent width required"
@@ -4362,9 +4358,8 @@ msgid "Start expression in DO loop"
 msgstr ""
 
 #: fortran/resolve.c:6233
-#, fuzzy
 msgid "End expression in DO loop"
-msgstr "オペランドとして無効な式"
+msgstr ""
 
 #: fortran/resolve.c:6237
 msgid "Step expression in DO loop"
@@ -4564,7 +4559,7 @@ msgstr "  --bootclasspath PATH    組み込みクラスパスを上書きする\
 #: java/jcf-dump.c:1148
 #, c-format
 msgid "  --extdirs PATH          Set extensions directory path\n"
-msgstr ""
+msgstr "  --extdirs PATH          拡張のディレクトリパスを設定する\n"
 
 #: java/jcf-dump.c:1149
 #, c-format
@@ -4734,18 +4729,18 @@ msgstr "静的リンクはサポートされていません"
 #: config/pa/pa-hpux11.h:111 config/pa/pa64-hpux.h:30 config/pa/pa64-hpux.h:33
 #: config/pa/pa64-hpux.h:42 config/pa/pa64-hpux.h:45
 msgid "warning: consider linking with '-static' as system libraries with"
-msgstr ""
+msgstr "警告: システムライブラリとリンクする時は '-static' を指定することを検討してください"
 
 #: config/pa/pa-hpux10.h:90 config/pa/pa-hpux10.h:93 config/pa/pa-hpux10.h:101
 #: config/pa/pa-hpux10.h:104 config/pa/pa-hpux11.h:109
 #: config/pa/pa-hpux11.h:112 config/pa/pa64-hpux.h:31 config/pa/pa64-hpux.h:34
 #: config/pa/pa64-hpux.h:43 config/pa/pa64-hpux.h:46
 msgid "  profiling support are only provided in archive format"
-msgstr ""
+msgstr "  プロファイリングサポートは書庫フォーマット内でのみ提供されます"
 
 #: config/rs6000/darwin.h:99
 msgid " conflicting code gen style switches are used"
-msgstr ""
+msgstr " 競合しているコード生成スタイルスイッチが使用されています"
 
 #: config/arm/arm.h:178
 msgid "-msoft-float and -mhard_float may not be used together"
@@ -4805,7 +4800,7 @@ msgstr "-femit-class-file は -fsyntax-only に合わせて使用してくださ
 
 #: config/i386/linux-unwind.h:186
 msgid "ax ; {int $0x80 | syscall"
-msgstr ""
+msgstr "ax ; {int $0x80 | syscall"
 
 #: config/s390/tpf.h:120
 msgid "static is not supported on TPF-OS"
@@ -4869,7 +4864,7 @@ msgstr "--encoding=<encoding>\t入力エンコーディングを選択する (�
 
 #: java/lang.opt:206
 msgid "--extdirs=<path>\tSet the extension directory path"
-msgstr ""
+msgstr "--extdirs=<path>\t拡張のディレクトリパスを設定する"
 
 #: java/lang.opt:216
 msgid "Input file is a file with a list of filenames to compile"
@@ -5388,7 +5383,7 @@ msgstr ""
 
 #: config/frv/frv.opt:31
 msgid "Enable label alignment optimizations"
-msgstr ""
+msgstr "ラベル整列最適化を有効にする"
 
 #: config/frv/frv.opt:35
 msgid "Dynamically allocate cc registers"
@@ -5452,7 +5447,7 @@ msgstr "64 個の汎用レジスタ (GPR) を使用する"
 
 #: config/frv/frv.opt:116
 msgid "Enable use of GPREL for read-only data in FDPIC"
-msgstr ""
+msgstr "FDPIC 内の読み取り専用データ用 GPREL の使用を有効にする"
 
 #: config/frv/frv.opt:120 config/rs6000/rs6000.opt:216
 #: config/pdp11/pdp11.opt:67
@@ -5460,9 +5455,8 @@ msgid "Use hardware floating point"
 msgstr "ハードウェア浮動小数点を利用する"
 
 #: config/frv/frv.opt:124 config/bfin/bfin.opt:77
-#, fuzzy
 msgid "Enable inlining of PLT in function calls"
-msgstr "関数呼び出しの前後でレジスタの保存を有効にする"
+msgstr "関数呼び出し内で PLT のインライン化を有効にする"
 
 #: config/frv/frv.opt:128
 msgid "Enable PIC support for building libraries"
@@ -5478,7 +5472,7 @@ msgstr "大域関数の直接呼び出しを無効にする"
 
 #: config/frv/frv.opt:140
 msgid "Use media instructions"
-msgstr ""
+msgstr "media 命令を使用する"
 
 #: config/frv/frv.opt:144
 msgid "Use multiply add/subtract instructions"
@@ -5494,7 +5488,7 @@ msgstr "入れ子にされた条件付き実行の最適化を有効にする"
 
 #: config/frv/frv.opt:157
 msgid "Do not mark ABI switches in e_flags"
-msgstr ""
+msgstr "e_flags 内の ABI スイッチをマークしない"
 
 #: config/frv/frv.opt:161
 msgid "Remove redundant membars"
@@ -5506,7 +5500,7 @@ msgstr ""
 
 #: config/frv/frv.opt:169
 msgid "Enable setting GPRs to the result of comparisons"
-msgstr ""
+msgstr "比較結果を汎用レジスタに設定することを有効にする"
 
 #: config/frv/frv.opt:173
 msgid "Change the amount of scheduler lookahead"
@@ -5565,9 +5559,8 @@ msgid "Return pointers in both a0 and d0"
 msgstr ""
 
 #: config/mn10300/mn10300.opt:56
-#, fuzzy
 msgid "Allow gcc to generate LIW instructions"
-msgstr "gcc が repeat/erepeat 命令を使用することを許可する"
+msgstr "gcc が LIW 命令を生成することを許可する"
 
 #: config/s390/tpf.opt:23
 msgid "Enable TPF-OS tracing code"
@@ -5640,11 +5633,11 @@ msgstr ""
 
 #: config/s390/s390.opt:91
 msgid "Warn if a function uses alloca or creates an array with dynamic size"
-msgstr ""
+msgstr "関数で alloca を使用するか、または動的サイズの配列を作成した場合に、警告する"
 
 #: config/s390/s390.opt:95
 msgid "Warn if a single function's framesize exceeds the given framesize"
-msgstr ""
+msgstr "一つの関数のフレームサイズが与えられたフレームサイズを超過する場合に警告する"
 
 #: config/s390/s390.opt:99
 msgid "z/Architecture"
@@ -5692,7 +5685,7 @@ msgstr "GP レジスタ不使用のコードを生成する"
 
 #: config/ia64/ia64.opt:56
 msgid "gp is constant (but save/restore gp on indirect calls)"
-msgstr "gp を定数とする（但、間接呼び出しでは gp を save/restore する）"
+msgstr "gp を定数とする（ただし、間接呼び出しでは gp を save/restore する）"
 
 #: config/ia64/ia64.opt:60
 msgid "Generate self-relocatable code"
@@ -5741,39 +5734,39 @@ msgstr "より良いスケジューリング用に事前にストップビット
 #: config/ia64/ia64.opt:107 config/spu/spu.opt:72 config/sh/sh.opt:258
 #: config/pa/pa.opt:51
 msgid "Specify range of registers to make fixed"
-msgstr ""
+msgstr "固定するレジスタの範囲を指定する"
 
 #: config/ia64/ia64.opt:119
 msgid "Use data speculation before reload"
-msgstr ""
+msgstr "reload 前にデータ投機を使用する"
 
 #: config/ia64/ia64.opt:123
 msgid "Use data speculation after reload"
-msgstr ""
+msgstr "reload 後にデータ投機を使用する"
 
 #: config/ia64/ia64.opt:127
 msgid "Use control speculation"
-msgstr ""
+msgstr "制御投機を使用する"
 
 #: config/ia64/ia64.opt:131
 msgid "Use in block data speculation before reload"
-msgstr ""
+msgstr "reload 前にブロック内データ投機を使用する"
 
 #: config/ia64/ia64.opt:135
 msgid "Use in block data speculation after reload"
-msgstr ""
+msgstr "reload 後にブロック内データ投機を使用する"
 
 #: config/ia64/ia64.opt:139
 msgid "Use in block control speculation"
-msgstr ""
+msgstr "ブロック内制御投機を使用する"
 
 #: config/ia64/ia64.opt:143
 msgid "Use simple data speculation check"
-msgstr ""
+msgstr "単純データ投機検査を使用する"
 
 #: config/ia64/ia64.opt:147
 msgid "Use simple data speculation check for control speculation"
-msgstr ""
+msgstr "制御投機用の単純データ投機検査を使用する"
 
 #: config/ia64/ia64.opt:151
 msgid "If set, data speculative instructions will be chosen for schedule only if there are no other choices at the moment "
@@ -5789,7 +5782,7 @@ msgstr ""
 
 #: config/ia64/ia64.opt:163
 msgid "Place a stop bit after every cycle when scheduling"
-msgstr ""
+msgstr "スケジューリング時の各サイクル後にストップビットを配置する"
 
 #: config/ia64/ia64.opt:167
 msgid "Assume that floating-point stores and loads are not likely to cause conflict when placed into one instruction group"
@@ -5805,7 +5798,7 @@ msgstr ""
 
 #: config/ia64/ia64.opt:179
 msgid "Don't generate checks for control speculation in selective scheduling"
-msgstr ""
+msgstr "選択的スケジューリング内では制御投機用の検査を生成しない"
 
 #: config/ia64/vms_symvec_libgcc_s.opt:3
 msgid "! It would be better to auto-generate this file."
@@ -6109,7 +6102,7 @@ msgstr "'rtd' を使用する異なる呼び出し規約を使用する"
 
 #: config/m68k/m68k.opt:160 config/bfin/bfin.opt:61
 msgid "Enable separate data segment"
-msgstr ""
+msgstr "分離データセグメントを有効にする"
 
 #: config/m68k/m68k.opt:164 config/bfin/bfin.opt:57
 msgid "ID of shared library to build"
@@ -6149,7 +6142,7 @@ msgstr "無視される (廃止)"
 
 #: config/i386/mingw.opt:23
 msgid "Warn about none ISO msvcrt scanf/printf width extensions"
-msgstr ""
+msgstr "非 ISO の msvcrt scanf/printf の幅拡張に関して警告する"
 
 #: config/i386/mingw.opt:27
 msgid "For nested functions on stack executable permission is set."
@@ -6201,7 +6194,7 @@ msgstr "分岐のコストを指定する (1-5, 任意の個数)"
 
 #: config/i386/i386.opt:114
 msgid "Data greater than given threshold will go into .ldata section in x86-64 medium model"
-msgstr ""
+msgstr "x86-64 メディアモデルでは与えられた閾値より大きいデータを .ldata セクションに配置する"
 
 #: config/i386/i386.opt:118
 msgid "Use given x86-64 code model"
@@ -6217,16 +6210,15 @@ msgstr "FPU 用の sin, cos, sqrt を生成する"
 
 #: config/i386/i386.opt:129
 msgid "Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack"
-msgstr ""
+msgstr "スタックを再整列するために動的再整列引数ポインタ (Dynamic Realigned Argument Pointer, DRAP) を常に使用する"
 
 #: config/i386/i386.opt:133
 msgid "Return values of functions in FPU registers"
 msgstr "FPU レジスタ内の機能の値を返す"
 
 #: config/i386/i386.opt:137
-#, fuzzy
 msgid "Generate floating point mathematics using given instruction set"
-msgstr "ハードウェア浮動小数点命令を使用する"
+msgstr "与えられた命令集合を使用して浮動小数数値計算を生成する"
 
 #: config/i386/i386.opt:149
 msgid "Inline all known string operations"
@@ -6314,8 +6306,9 @@ msgid "Return 8-byte vectors in memory"
 msgstr "8 バイトベクトルをメモリに返す"
 
 #: config/i386/i386.opt:253
+#, fuzzy
 msgid "Generate reciprocals instead of divss and sqrtss."
-msgstr ""
+msgstr "divss および sqrtss の代わりに逆数 (reciprocal) を生成する"
 
 #: config/i386/i386.opt:257
 msgid "Generate cld instruction in the function prologue."
@@ -6331,7 +6324,7 @@ msgstr ""
 
 #: config/i386/i386.opt:271
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
-msgstr ""
+msgstr "自動ベクトル化で 256 ビット AVX 命令の代わりに 128 ビット AVX 命令を使用する"
 
 #: config/i386/i386.opt:277
 msgid "Generate 32bit i386 code"
@@ -6382,9 +6375,8 @@ msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
 msgstr "SSE4.1 と SSE4.2 の組み込み関数とコード生成をサポートしない"
 
 #: config/i386/i386.opt:328
-#, fuzzy
 msgid "%<-msse5%> was removed"
-msgstr "'-msse5' は削除されました"
+msgstr "%<-msse5%> は削除されました"
 
 #: config/i386/i386.opt:333
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation"
@@ -6544,7 +6536,7 @@ msgstr "PowerPC-64 命令セットを使用する"
 
 #: config/rs6000/rs6000.opt:152
 msgid "Use PowerPC General Purpose group optional instructions"
-msgstr "PowerPC 一般用途グループオプション命令を使用する"
+msgstr "PowerPC 汎用グループオプション命令を使用する"
 
 #: config/rs6000/rs6000.opt:156
 msgid "Use PowerPC Graphics group optional instructions"
@@ -7002,7 +6994,7 @@ msgstr "リトルエンディアンコードを生成する"
 
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
 msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line"
-msgstr ""
+msgstr "実行時サポートが提供されると見なし、リンカコマンドラインに -lsim を含めない"
 
 #: config/mcore/mcore.opt:60
 msgid "Use arbitrary sized immediates in bit operations"
@@ -7014,7 +7006,7 @@ msgstr "バイトアクセスよりワードアクセスを選ぶ"
 
 #: config/mcore/mcore.opt:71
 msgid "Set the maximum amount for a single stack increment operation"
-msgstr "単一のスタックインクリメント操作の最大値を設定する"
+msgstr "単一のスタック増分操作の最大値を設定する"
 
 #: config/mcore/mcore.opt:75
 msgid "Always treat bitfields as int-sized"
@@ -7234,7 +7226,7 @@ msgstr "double を 64 ビット境界に整列する"
 
 #: config/sh/sh.opt:246
 msgid "Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table"
-msgstr ""
+msgstr "除算戦略、次のいずれか: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table"
 
 #: config/sh/sh.opt:250
 msgid "Specify name for 32 bit signed division function"
@@ -7282,7 +7274,7 @@ msgstr "リトルエンディアンモードでコードを生成する"
 
 #: config/sh/sh.opt:298
 msgid "Mark MAC register as call-clobbered"
-msgstr ""
+msgstr "MAC レジスタを呼び出しで破壊されるとマークする"
 
 #: config/sh/sh.opt:304
 msgid "Make structs a multiple of 4 bytes (warning: ABI altered)"
@@ -7960,7 +7952,7 @@ msgstr "68HCS12 用にコンパイルする"
 
 #: config/m68hc11/m68hc11.opt:49
 msgid "Auto pre/post decrement increment allowed"
-msgstr "自動 pre/post デクリメント インクリメントを許容する"
+msgstr "自動 前置/後置 減分/増分 を許容する"
 
 #: config/m68hc11/m68hc11.opt:53
 msgid "Min/max instructions allowed"
@@ -7972,7 +7964,7 @@ msgstr "関数呼び出しと戻り用に call と rtc を使用する"
 
 #: config/m68hc11/m68hc11.opt:61
 msgid "Auto pre/post decrement increment not allowed"
-msgstr "自動 pre/post デクリメント インクリメントを許容しない"
+msgstr "自動 前置/後置 減分/増分を許容しない"
 
 #: config/m68hc11/m68hc11.opt:65
 msgid "Use jsr and rts for function calls and returns"
@@ -8346,7 +8338,7 @@ msgstr ""
 
 #: config/bfin/bfin.opt:69
 msgid "Link with the fast floating-point library"
-msgstr ""
+msgstr "高速な浮動小数ライブラリとリンクする"
 
 #: config/bfin/bfin.opt:81
 msgid "Do stack checking using bounds in L1 scratch memory"
@@ -8382,7 +8374,7 @@ msgstr ""
 
 #: config/picochip/picochip.opt:31
 msgid "Specify whether the byte access instructions should be used. Enabled by default."
-msgstr ""
+msgstr "バイトアクセス命令を使用するかどうかを指定する。デフォルトでは有効となる"
 
 #: config/picochip/picochip.opt:35
 msgid "Enable debug output to be generated."
@@ -8390,11 +8382,11 @@ msgstr "デバッグ出力の生成を有効にする"
 
 #: config/picochip/picochip.opt:39
 msgid "Allow a symbol value to be used as an immediate value in an instruction."
-msgstr ""
+msgstr "命令内でシンボル値が即値として使用されることを許可する"
 
 #: config/picochip/picochip.opt:43
 msgid "Generate warnings when inefficient code is known to be generated."
-msgstr ""
+msgstr "非効率なコードが生成された時に警告する"
 
 #: config/vxworks.opt:36
 msgid "Assume the VxWorks RTP environment"
@@ -8418,7 +8410,7 @@ msgstr "コンパイル時 CFString オブジェクトを生成する"
 
 #: config/darwin.opt:205
 msgid "Warn if constant CFString objects contain non-portable characters"
-msgstr ""
+msgstr "定数 CFString オブジェクトが移植性の無い文字を含む場合に警告する"
 
 #: config/darwin.opt:210
 msgid "Generate AT&T-style stubs for Mach-O"
@@ -8430,7 +8422,7 @@ msgstr "実行可能ファイル用 (共有ライブラリではなく) に適�
 
 #: config/darwin.opt:218
 msgid "Generate code suitable for fast turn around debugging"
-msgstr ""
+msgstr "デバッグを高速に行うために適したコードを生成する"
 
 #: config/darwin.opt:227
 msgid "The earliest MacOS X version on which this program will run"
@@ -8442,15 +8434,15 @@ msgstr "sizeof(bool) を 1 に設定する"
 
 #: config/darwin.opt:235
 msgid "Generate code for darwin loadable kernel extensions"
-msgstr ""
+msgstr "darwin ロード可能カーネル拡張用のコードを生成する"
 
 #: config/darwin.opt:239
 msgid "Generate code for the kernel or loadable kernel extensions"
-msgstr ""
+msgstr "カーネル用、またはロード可能カーネル拡張用のコードを生成する"
 
 #: config/darwin.opt:243
 msgid "-iframework <dir>\tAdd <dir> to the end of the system framework include path"
-msgstr ""
+msgstr "-iframework <dir>\t<dir> をシステムフレームワークインクルードパスの末尾に加える"
 
 #: config/lynx.opt:23
 msgid "Support legacy multi-threading"
@@ -8737,7 +8729,6 @@ msgid "Use multiply high instructions for high part of 32x32 multiply"
 msgstr ""
 
 #: config/microblaze/microblaze.opt:92
-#, fuzzy
 msgid "Use hardware floating point conversion instructions"
 msgstr "ハードウェア浮動小数点変換命令を使用する"
 
@@ -8862,7 +8853,7 @@ msgstr ""
 
 #: c-family/c.opt:249
 msgid "-MT <target>\tAdd an unquoted target"
-msgstr ""
+msgstr "-MT <target>\tターゲット (引用符を付けない) を追加する"
 
 #: c-family/c.opt:253
 msgid "Do not generate #line directives"
@@ -8898,11 +8889,11 @@ msgstr "組み込み前処理マクロが未定義になるか再定義された
 
 #: c-family/c.opt:288
 msgid "Warn about C constructs that are not in the common subset of C and C++"
-msgstr ""
+msgstr "C と C++ の共通部分集合では無い C 構文に関して警告する"
 
 #: c-family/c.opt:292
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 200x"
-msgstr ""
+msgstr "ISO C++ 1998 と ISO C++ 200x で意味が異なる C++ 構文に関して警告する"
 
 #: c-family/c.opt:296
 msgid "Warn about casts which discard qualifiers"
@@ -8962,7 +8953,7 @@ msgstr "if または else 文の中身が空の場合に警告する"
 
 #: c-family/c.opt:352
 msgid "Warn about stray tokens after #elif and #endif"
-msgstr ""
+msgstr "#elif および #endif の後にあるはぐれたトークンに関して警告する"
 
 #: c-family/c.opt:356
 msgid "Warn about comparison of different enum types"
@@ -8977,9 +8968,8 @@ msgid "Warn if testing floating point numbers for equality"
 msgstr "浮動小数点数の等価比較に関して警告する"
 
 #: c-family/c.opt:372
-#, fuzzy
 msgid "Warn about printf/scanf/strftime/strfmon format string anomalies"
-msgstr "printf/scanf/strftime/strfmon 形式の変則的なものに関して警告する"
+msgstr "printf/scanf/strftime/strfmon 書式文字列異常に関して警告する"
 
 #: c-family/c.opt:376
 msgid "Warn if passing too many arguments to a function for its format string"
@@ -8998,9 +8988,8 @@ msgid "Warn about possible security problems with format functions"
 msgstr "セキュリティ問題になる可能性がある書式関数に関して警告する"
 
 #: c-family/c.opt:392
-#, fuzzy
 msgid "Warn about strftime formats yielding 2-digit years"
-msgstr "strftime 形式が二桁で年を表している時の警告しない"
+msgstr "strftime 書式が 2 桁の年の場合に警告する"
 
 #: c-family/c.opt:396
 msgid "Warn about zero-length formats"
@@ -9409,7 +9398,7 @@ msgstr "フレンド関数を囲まれた名前空間内に入れる"
 
 #: c-family/c.opt:823
 msgid "Don't emit dllexported inline functions unless needed"
-msgstr ""
+msgstr "必要が無い限り dllexported インライン関数を発行しない"
 
 #: c-family/c.opt:830
 msgid "Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types."
@@ -9501,7 +9490,7 @@ msgstr "自動テンプレート実体化を有効にする"
 
 #: c-family/c.opt:942
 msgid "Generate run time type descriptor information"
-msgstr ""
+msgstr "実行時型記述子情報を生成する"
 
 #: c-family/c.opt:946
 msgid "Use the same size for double as for float"
@@ -9889,19 +9878,16 @@ msgid "Warn about functions which might be candidates for __attribute__((pure))"
 msgstr "関数が __attribute__((pure)) の候補となりそうな場合に警告する"
 
 #: common.opt:608
-#, fuzzy
 msgid "Warn about enumerated switches, with no default, missing a case"
-msgstr "列挙定数の switch で case 指定が欠けているものに関して警告する"
+msgstr "列挙定数を使用した switch 文で default 文が無いか特定の case が無い場合に警告する"
 
 #: common.opt:612
-#, fuzzy
 msgid "Warn about enumerated switches missing a \"default:\" statement"
-msgstr "列挙定数の switch で case 指定が欠けているものに関して警告する"
+msgstr "列挙定数を使用した switch 文で \"default:\" 文が無い場合に警告する"
 
 #: common.opt:616
-#, fuzzy
 msgid "Warn about all enumerated switches missing a specific case"
-msgstr "列挙定数の switch で case 指定が欠けているものに関して警告する"
+msgstr "列挙定数を使用した switch 文で特定の case が無い場合に警告する"
 
 #: common.opt:620
 msgid "Do not suppress warnings from system headers"
@@ -10000,9 +9986,8 @@ msgid "Generate auto-inc/dec instructions"
 msgstr "自動増加/減少命令を生成する"
 
 #: common.opt:821
-#, fuzzy
 msgid "Generate code to check bounds before indexing arrays"
-msgstr "配列の添字と添字境界を検査するコードを生成する"
+msgstr "配列の添え字を使用する前に境界検査を行うコードを生成する"
 
 #: common.opt:825
 #, fuzzy
@@ -10043,7 +10028,7 @@ msgstr ""
 
 #: common.opt:864
 msgid "Looks for opportunities to reduce stack adjustments and stack references."
-msgstr ""
+msgstr "スタック調整およびスタック参照を削減する機会を探す"
 
 #: common.opt:868
 msgid "Do not put uninitialized globals in the common section"
@@ -10058,18 +10043,16 @@ msgid "Run only the second compilation of -fcompare-debug"
 msgstr ""
 
 #: common.opt:884
-#, fuzzy
 msgid "Perform comparison elimination after register allocation has finished"
-msgstr "グローバル共通部分式を除去する"
+msgstr "レジスタは位置が完了した後に比較の除去を行う"
 
 #: common.opt:888
 msgid "Do not perform optimizations increasing noticeably stack usage"
-msgstr ""
+msgstr "スタック使用量を著しく増加させる最適化を行わない"
 
 #: common.opt:892
-#, fuzzy
 msgid "Perform a register copy-propagation optimization pass"
-msgstr "最適化過程のレジスタつけ変えを行なう"
+msgstr ""
 
 #: common.opt:896
 msgid "Perform cross-jumping optimization"
@@ -10101,7 +10084,7 @@ msgstr "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tデバッグカウ�
 
 #: common.opt:928
 msgid "Map one directory name to another in debug information"
-msgstr ""
+msgstr "デバッグ情報内のディレクトリー名を他のものにマップする"
 
 #: common.opt:934
 msgid "Defer popping functions args from stack until later"
@@ -10116,9 +10099,8 @@ msgid "Delete useless null pointer checks"
 msgstr "無意味な null ポインタ検査を削除する"
 
 #: common.opt:946
-#, fuzzy
 msgid "Try to convert virtual calls to direct ones."
-msgstr "リンカが PIC 呼び出しを直接呼び出しに変更することを許可するように試みる"
+msgstr "仮想呼び出しを直接呼び出しに変換することを試みる"
 
 #: common.opt:950
 #, fuzzy
@@ -10137,7 +10119,7 @@ msgstr "-fdump-<type>\t様々なコンパイラ内部情報をファイルにダ
 
 #: common.opt:978
 msgid "-fdump-final-insns=filename\tDump to filename the insns at the end of translation"
-msgstr ""
+msgstr "-fdump-final-insns=filename\t翻訳終了時に filename へ命令をダンプする"
 
 #: common.opt:982
 msgid "-fdump-go-spec=filename\tWrite all declarations to file as Go code"
@@ -10173,7 +10155,7 @@ msgstr ""
 
 #: common.opt:1014 common.opt:1018
 msgid "Perform unused type elimination in debug info"
-msgstr ""
+msgstr "デバッグ情報内で使用されていない型の除去を行う"
 
 #: common.opt:1022
 msgid "Do not suppress C++ class debug information."
@@ -10181,25 +10163,24 @@ msgstr "C++ クラスデバッグ情報を抑止しない。"
 
 #: common.opt:1026
 msgid "Generate debug information to support Identical Code Folding (ICF)"
-msgstr ""
+msgstr "Identical Code Folding (ICF) をサポートするためのデバッグ情報を生成する"
 
 #: common.opt:1030
 msgid "Enable exception handling"
 msgstr "例外処理を有効にする"
 
 #: common.opt:1034
-#, fuzzy
 msgid "Perform a number of minor, expensive optimizations"
-msgstr "目立たない、コストのかかる最適化を行なう"
+msgstr "多くの、目立たないがコストが高い最適化を行う"
 
 #: common.opt:1038
 msgid "-fexcess-precision=[fast|standard]\tSpecify handling of excess floating-point precision"
-msgstr ""
+msgstr "-fexcess-precision=[fast|standard]\t余分な浮動小数点精度の取り扱いを指定する"
 
 #: common.opt:1041
 #, c-format
 msgid "unknown excess precision style %qs"
-msgstr ""
+msgstr "不明な余分な精度スタイル %qs です"
 
 #: common.opt:1054
 msgid "Assume no NaNs or infinities are generated"
@@ -10222,52 +10203,45 @@ msgid "-ffp-contract=[off|on|fast] Perform floating-point expression contraction
 msgstr ""
 
 #: common.opt:1077
-#, fuzzy, c-format
+#, c-format
 msgid "unknown floating point contraction style %qs"
-msgstr "浮動小数点定数を TOC 内に配置する"
+msgstr "不明な浮動小数短縮形 %qs です"
 
 #: common.opt:1094
 msgid "Allow function addresses to be held in registers"
 msgstr "関数アドレスをレジスタに持たせる事を許可する"
 
 #: common.opt:1098
-#, fuzzy
 msgid "Place each function into its own section"
-msgstr "各々の関数をそれ自身のセクションに配置する"
+msgstr "それぞれの関数をそれ自身のセクションに配置する"
 
 #: common.opt:1102
-#, fuzzy
 msgid "Perform global common subexpression elimination"
-msgstr "グローバル共通部分式を除去する"
+msgstr "大域共通部分式の除去を行う"
 
 #: common.opt:1106
-#, fuzzy
 msgid "Perform enhanced load motion during global common subexpression elimination"
-msgstr "グローバル共通部分式を除去する"
+msgstr ""
 
 #: common.opt:1110
-#, fuzzy
 msgid "Perform store motion after global common subexpression elimination"
-msgstr "グローバル共通部分式を除去する"
+msgstr ""
 
 #: common.opt:1114
 msgid "Perform redundant load after store elimination in global common subexpression"
 msgstr ""
 
 #: common.opt:1119
-#, fuzzy
 msgid "Perform global common subexpression elimination after register allocation"
-msgstr "グローバル共通部分式を除去する"
+msgstr "レジスタ配置後に大域共通部分式の除去を行う"
 
 #: common.opt:1125
-#, fuzzy
 msgid "Enable in and out of Graphite representation"
-msgstr "自動テンプレート実体化を有効にする"
+msgstr ""
 
 #: common.opt:1129
-#, fuzzy
 msgid "Enable Graphite Identity transformation"
-msgstr "呼び出しグラフ情報を送出する"
+msgstr ""
 
 #: common.opt:1133
 msgid "Mark all loops as parallel"
@@ -10306,9 +10280,8 @@ msgid "Perform conversion of conditional jumps to branchless equivalents"
 msgstr ""
 
 #: common.opt:1173
-#, fuzzy
 msgid "Perform conversion of conditional jumps to conditional execution"
-msgstr "条件的な実行への変更のための閾値を変更する"
+msgstr ""
 
 #: common.opt:1177
 msgid "Convert conditional jumps in innermost loops to branchless equivalents"
@@ -10376,13 +10349,12 @@ msgid "Perform interprocedural points-to analysis"
 msgstr ""
 
 #: common.opt:1253
-#, fuzzy
 msgid "Discover pure and const functions"
-msgstr "使われない仮想関数を切り捨てる"
+msgstr "純粋および定数関数を見つける"
 
 #: common.opt:1257
 msgid "Discover readonly and non addressable static variables"
-msgstr ""
+msgstr "読み取り専用およびアドレス付けできない静的変数を見つける"
 
 #: common.opt:1261
 msgid "Perform matrix layout flattening and transposing based"
@@ -10415,9 +10387,8 @@ msgid "Use IRA based register pressure calculation"
 msgstr ""
 
 #: common.opt:1305
-#, fuzzy
 msgid "Share slots for saving different hard registers."
-msgstr "引数レジスタにローカルのものを格納する"
+msgstr ""
 
 #: common.opt:1309
 msgid "Share stack slots for spilled pseudo-registers."
@@ -10621,19 +10592,19 @@ msgstr "ループ内の配列で、可能であればプリフェッチ命令を
 
 #: common.opt:1521
 msgid "Enable basic program profiling code"
-msgstr ""
+msgstr "基本プログラムプロファイリングコードを有効にする"
 
 #: common.opt:1525
 msgid "Insert arc-based program profiling code"
-msgstr ""
+msgstr "円弧ベースプログラムプロファイリングコードを挿入する"
 
 #: common.opt:1529
 msgid "Set the top-level directory for storing the profile data."
-msgstr ""
+msgstr "プロファイルデータ保存用の最上位ディレクリーを設定する"
 
 #: common.opt:1534
 msgid "Enable correction of flow inconsistent profile data input"
-msgstr ""
+msgstr "フロー一貫性が無いデータ入力の訂正を有効にする"
 
 #: common.opt:1538
 msgid "Enable common options for generating profile info for profile feedback directed optimizations"
@@ -10653,7 +10624,7 @@ msgstr ""
 
 #: common.opt:1554
 msgid "Insert code to profile values of expressions"
-msgstr ""
+msgstr "式の値をプロファイルするためのコードを挿入する"
 
 #: common.opt:1561
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>"
@@ -11836,7 +11807,7 @@ msgstr "ラベル %q+D が使用されましたが、定義されていません
 #: c-decl.c:1150
 #, gcc-internal-format
 msgid "nested function %q+D declared but never defined"
-msgstr ""
+msgstr "入れ子になった関数 %q+D が宣言されましたが定義されていません"
 
 #: c-decl.c:1162
 #, gcc-internal-format
@@ -11893,7 +11864,7 @@ msgstr ""
 #: c-decl.c:1613
 #, gcc-internal-format
 msgid "prototype for %q+D follows non-prototype definition"
-msgstr ""
+msgstr "非プロトタイプ定義に続いて %q+D 用のプロトタイプがあります"
 
 #: c-decl.c:1628
 #, gcc-internal-format
@@ -11969,9 +11940,9 @@ msgid "redefinition of typedef %q+D with different type"
 msgstr "%q+D が異なる型で再定義されました"
 
 #: c-decl.c:1818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redefinition of typedef %q+D with variably modified type"
-msgstr "%q+D が異なる型で再定義されました"
+msgstr ""
 
 #: c-decl.c:1825
 #, gcc-internal-format
@@ -12016,17 +11987,17 @@ msgstr "%q+D の非スレッド局所宣言の後にスレッド局所宣言が�
 #: c-decl.c:2001
 #, gcc-internal-format
 msgid "extern declaration of %q+D follows declaration with no linkage"
-msgstr ""
+msgstr "リンク無し宣言の後に %q+D の extern 宣言が続いています"
 
 #: c-decl.c:2037
 #, gcc-internal-format
 msgid "declaration of %q+D with no linkage follows extern declaration"
-msgstr ""
+msgstr "extern 宣言の後にリンク無し %q+D の宣言が続いています"
 
 #: c-decl.c:2043
 #, gcc-internal-format
 msgid "redeclaration of %q+D with no linkage"
-msgstr ""
+msgstr "リンク無し %q+D の再定義です"
 
 #: c-decl.c:2069
 #, gcc-internal-format
@@ -12354,7 +12325,7 @@ msgstr "ISO C は前方仮引数宣言を禁じます"
 #: c-decl.c:4614
 #, gcc-internal-format
 msgid "defining a type in a compound literal is invalid in C++"
-msgstr ""
+msgstr "複合リテラル内での型定義は C++ では無効です"
 
 #: c-decl.c:4666 c-decl.c:4681
 #, gcc-internal-format
@@ -13393,23 +13364,23 @@ msgstr "文字列リテラルが予期されます"
 #: c-parser.c:1829
 #, gcc-internal-format
 msgid "expression in static assertion is not an integer"
-msgstr ""
+msgstr "静的アサーション内の式が整数ではありません"
 
 #: c-parser.c:1836
 #, gcc-internal-format
 msgid "expression in static assertion is not an integer constant expression"
-msgstr ""
+msgstr "静的アサーション内の式が整数定数式ではありません"
 
 #: c-parser.c:1841
 #, gcc-internal-format
 msgid "expression in static assertion is not constant"
-msgstr ""
+msgstr "静的アサーション内の式が定数ではありません"
 
 #. Report the error.
 #: c-parser.c:1846 cp/semantics.c:4719
 #, gcc-internal-format
 msgid "static assertion failed: %E"
-msgstr ""
+msgstr "静的アサーションに失敗しました: %E"
 
 #: c-parser.c:2207 c-parser.c:3063 c-parser.c:3709 c-parser.c:3983
 #: c-parser.c:5084 c-parser.c:5175 c-parser.c:5800 c-parser.c:6083
@@ -14125,12 +14096,12 @@ msgstr "単項感嘆符(!)への引数の型が間違っています"
 #: c-typeck.c:3578
 #, gcc-internal-format
 msgid "increment of enumeration value is invalid in C++"
-msgstr "列挙値のインクリメントは C++ では無効です"
+msgstr "列挙値の増分は C++ では無効です"
 
 #: c-typeck.c:3581
 #, gcc-internal-format
 msgid "decrement of enumeration value is invalid in C++"
-msgstr "列挙値のデクリメントは C++ では無効です"
+msgstr "列挙値の減分は C++ では無効です"
 
 #: c-typeck.c:3594
 #, gcc-internal-format
@@ -14140,22 +14111,22 @@ msgstr "ISO C は複素数型に関する %<++%> と %<--%> をサポートし�
 #: c-typeck.c:3613 c-typeck.c:3645
 #, gcc-internal-format
 msgid "wrong type argument to increment"
-msgstr "インクリメントする引数の型が間違っています"
+msgstr "増分する引数の型が間違っています"
 
 #: c-typeck.c:3615 c-typeck.c:3648
 #, gcc-internal-format
 msgid "wrong type argument to decrement"
-msgstr "デクリメントする引数の型が間違っています"
+msgstr "減分する引数の型が間違っています"
 
 #: c-typeck.c:3635
 #, gcc-internal-format
 msgid "increment of pointer to unknown structure"
-msgstr "不明な構造体へのポインタのインクリメントです"
+msgstr "不明な構造体へのポインタの増分です"
 
 #: c-typeck.c:3638
 #, gcc-internal-format
 msgid "decrement of pointer to unknown structure"
-msgstr "不明な構造体へのポインタのデクリメントです"
+msgstr "不明な構造体へのポインタの減分です"
 
 #: c-typeck.c:3722
 #, gcc-internal-format
@@ -14170,12 +14141,12 @@ msgstr "読み取り専用位置 %qE への代入です"
 #: c-typeck.c:3895 c-family/c-common.c:8658
 #, gcc-internal-format
 msgid "increment of read-only location %qE"
-msgstr "読み取り専用位置 %qE のインクリメントです"
+msgstr "読み取り専用位置 %qE の増分です"
 
 #: c-typeck.c:3898 c-family/c-common.c:8659
 #, gcc-internal-format
 msgid "decrement of read-only location %qE"
-msgstr "読み取り専用位置 %qE のデクリメントです"
+msgstr "読み取り専用位置 %qE の減分です"
 
 #: c-typeck.c:3939
 #, gcc-internal-format
@@ -19787,12 +19758,12 @@ msgstr "読み取り専用オブジェクト内のメンバ %qD への代入で�
 #: c-family/c-common.c:8611
 #, gcc-internal-format
 msgid "increment of member %qD in read-only object"
-msgstr "読み取り専用オブジェクト内のメンバ %qD のインクリメントです"
+msgstr "読み取り専用オブジェクト内のメンバ %qD の増分です"
 
 #: c-family/c-common.c:8613
 #, gcc-internal-format
 msgid "decrement of member %qD in read-only object"
-msgstr "読み取り専用オブジェクト内のメンバ %qD のデクリメントです"
+msgstr "読み取り専用オブジェクト内のメンバ %qD の減分です"
 
 #: c-family/c-common.c:8615
 #, gcc-internal-format
@@ -19807,12 +19778,12 @@ msgstr "読み取り専用メンバ %qD への代入です"
 #: c-family/c-common.c:8620
 #, gcc-internal-format
 msgid "increment of read-only member %qD"
-msgstr "読み取り専用メンバ %qD のインクリメントです"
+msgstr "読み取り専用メンバ %qD の増分です"
 
 #: c-family/c-common.c:8621
 #, gcc-internal-format
 msgid "decrement of read-only member %qD"
-msgstr "読み取り専用メンバ %qD のデクリメントです"
+msgstr "読み取り専用メンバ %qD の減分です"
 
 #: c-family/c-common.c:8622
 #, gcc-internal-format
@@ -19827,12 +19798,12 @@ msgstr "読み取り専用変数 %qD への代入です"
 #: c-family/c-common.c:8627
 #, gcc-internal-format
 msgid "increment of read-only variable %qD"
-msgstr "読み取り専用変数 %qD のインクリメントです"
+msgstr "読み取り専用変数 %qD の増分です"
 
 #: c-family/c-common.c:8628
 #, gcc-internal-format
 msgid "decrement of read-only variable %qD"
-msgstr "読み取り専用変数 %qD のデクリメントです"
+msgstr "読み取り専用変数 %qD の減分です"
 
 #: c-family/c-common.c:8629
 #, gcc-internal-format
@@ -19847,12 +19818,12 @@ msgstr "読み取り専用パラメータ %qD への代入です"
 #: c-family/c-common.c:8633
 #, gcc-internal-format
 msgid "increment of read-only parameter %qD"
-msgstr "読み取り専用パラメータ %qD のインクリメントです"
+msgstr "読み取り専用パラメータ %qD の増分です"
 
 #: c-family/c-common.c:8634
 #, gcc-internal-format
 msgid "decrement of read-only parameter %qD"
-msgstr "読み取り専用パラメータ %qD のデクリメントです"
+msgstr "読み取り専用パラメータ %qD の減分です"
 
 #: c-family/c-common.c:8635
 #, gcc-internal-format
@@ -19867,12 +19838,12 @@ msgstr "読み取り専用名前付き戻り値 %qD への代入です"
 #: c-family/c-common.c:8642
 #, gcc-internal-format
 msgid "increment of read-only named return value %qD"
-msgstr "読み取り専用名前付き戻り値 %qD のインクリメントです"
+msgstr "読み取り専用名前付き戻り値 %qD の増分です"
 
 #: c-family/c-common.c:8644
 #, gcc-internal-format
 msgid "decrement of read-only named return value %qD"
-msgstr "読み取り専用名前付き戻り値 %qD のデクリメントです"
+msgstr "読み取り専用名前付き戻り値 %qD の減分です"
 
 #: c-family/c-common.c:8646
 #, gcc-internal-format
@@ -19887,12 +19858,12 @@ msgstr "関数 %qD への代入です"
 #: c-family/c-common.c:8652
 #, gcc-internal-format
 msgid "increment of function %qD"
-msgstr "関数 %qD のインクリメントです"
+msgstr "関数 %qD の増分です"
 
 #: c-family/c-common.c:8653
 #, gcc-internal-format
 msgid "decrement of function %qD"
-msgstr "関数 %qD のデクリメントです"
+msgstr "関数 %qD の減分です"
 
 #: c-family/c-common.c:8654
 #, gcc-internal-format
@@ -19912,12 +19883,12 @@ msgstr "代入の左側の被演算子として左辺値が必要です"
 #: c-family/c-common.c:8677
 #, gcc-internal-format
 msgid "lvalue required as increment operand"
-msgstr "インクリメントの被演算子として左辺値が必要です"
+msgstr "増分の被演算子として左辺値が必要です"
 
 #: c-family/c-common.c:8680
 #, gcc-internal-format
 msgid "lvalue required as decrement operand"
-msgstr "デクリメントの被演算子として左辺値が必要です"
+msgstr "減分の被演算子として左辺値が必要です"
 
 #: c-family/c-common.c:8683
 #, gcc-internal-format
@@ -20556,12 +20527,12 @@ msgstr ""
 #: c-family/c-omp.c:375 cp/semantics.c:4431
 #, gcc-internal-format
 msgid "missing increment expression"
-msgstr "インクリメント式がありません"
+msgstr "増分式がありません"
 
 #: c-family/c-omp.c:444 cp/semantics.c:4287
 #, gcc-internal-format
 msgid "invalid increment expression"
-msgstr "無効なインクリメント式です"
+msgstr "無効な増分式です"
 
 #: c-family/c-opts.c:303
 #, gcc-internal-format
@@ -20571,7 +20542,7 @@ msgstr "-I- が二回指定されました"
 #: c-family/c-opts.c:306
 #, gcc-internal-format
 msgid "obsolete option -I- used, please use -iquote instead"
-msgstr "廃止あれたオプション -I- が使用されています。代わりに -iquote を使用してください"
+msgstr "廃止されたオプション -I- が使用されています。代わりに -iquote を使用してください"
 
 #: c-family/c-opts.c:486
 #, gcc-internal-format
