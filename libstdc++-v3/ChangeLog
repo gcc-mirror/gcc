@@ -1,5 +1,12 @@
 2011-10-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* prerequisites.xml: Refer to GCC (instead of gcc) and GNU/Linux.
+	Remove an obsolete reference to a Red Hat release we do not
+	support any longer.
+	Refer to Debian GNU/Linux.
+
+2011-10-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* faq.xml (Who's in charge of it?): Refer to the Linux kernel
 	instead of just Linux.
 	(How do I install libstdc++?): Refer to GNU/Linux instead of
