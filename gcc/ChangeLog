@@ -1,3 +1,10 @@
+2011-10-30  David S. Miller  <davem@davemloft.net>
+
+	* reorg.c (label_before_next_insn): New function.
+	(relax_delay_slots): Use it instead of prev_label.
+	* rtl.h (prev_label): Delete declaration.
+	* emit-rtl.c (prev_label): Remove.
+
 2011-10-30  Revital Eres  <revital.eres@linaro.org>
 
 	* modulo-sched.c (generate_prolog_epilog): Mark prolog and epilog
