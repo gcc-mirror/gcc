@@ -3209,7 +3209,8 @@ gfc_new_charlen (gfc_namespace *ns, gfc_charlen *old_cl)
 /* Free the charlen list from cl to end (end is not freed). 
    Free the whole list if end is NULL.  */
 
-void gfc_free_charlen (gfc_charlen *cl, gfc_charlen *end)
+void
+gfc_free_charlen (gfc_charlen *cl, gfc_charlen *end)
 {
   gfc_charlen *cl2;
 
