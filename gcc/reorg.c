@@ -3349,6 +3349,21 @@ delete_jump (rtx insn)
     delete_computation (insn);
 }
 
+static rtx
+label_before_next_insn (rtx x, rtx scan_limit)
+{
+  rtx insn = next_active_insn (x);
+  while (insn)
+    {
+      insn = PREV_INSN (insn);
+      if (insn == scan_limit || insn == NULL_RTX)
+	return NULL_RTX;
+      if (LABEL_P (insn))
+	break;
+    }
+  return insn;
+}
+
 
 /* Once we have tried two ways to fill a delay slot, make a pass over the
    code to try to improve the results and to do such things as more jump
@@ -3634,7 +3649,7 @@ relax_delay_slots (rtx first)
 	 identical to the one in its delay slot.  In this case, we can just
 	 delete the branch and the insn in its delay slot.  */
       if (next && NONJUMP_INSN_P (next)
-	  && prev_label (next_active_insn (next)) == target_label
+	  && label_before_next_insn (next, insn) == target_label
 	  && simplejump_p (insn)
 	  && XVECLEN (pat, 0) == 2
 	  && rtx_equal_p (PATTERN (next), PATTERN (XVECEXP (pat, 0, 1))))
