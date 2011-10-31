@@ -153,7 +153,7 @@ static const st_option async_opt[] =
 static void
 test_endfile (gfc_unit * u)
 {
-  if (u->endfile == NO_ENDFILE && file_length (u->s) == stell (u->s))
+  if (u->endfile == NO_ENDFILE && ssize (u->s) == stell (u->s))
     u->endfile = AT_ENDFILE;
 }
 

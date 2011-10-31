@@ -719,7 +719,7 @@ update_position (gfc_unit *u)
     return;
   else if (cur == 0)
     u->flags.position = POSITION_REWIND;
-  else if (file_length (u->s) == cur)
+  else if (ssize (u->s) == cur)
     u->flags.position = POSITION_APPEND;
   else
     u->flags.position = POSITION_ASIS;

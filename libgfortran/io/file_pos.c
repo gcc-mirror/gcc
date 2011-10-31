@@ -408,7 +408,7 @@ st_rewind (st_parameter_filepos *fpp)
 	    generate_error (&fpp->common, LIBERROR_OS, NULL);
 
 	  /* Set this for compatibilty with g77 for /dev/null.  */
-	  if (file_length (u->s) == 0)
+	  if (ssize (u->s) == 0)
 	    u->endfile = AT_ENDFILE;
 	  else
 	    {

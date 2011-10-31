@@ -1,5 +1,24 @@
 2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* io/unix.h (struct stream): Add size function pointer.
+	(ssize): New inline function.
+	(file_length): Remove prototype.
+	* io/unix.c (raw_size): New function.
+	(raw_init): Initialize st.size pointer.
+	(buf_size): New function.
+	(buf_init): Initialize st.size pointer.
+	(open_internal): Likewise.
+	(open_internal4): Likewise.
+	(file_length): Remove function.
+	* io/file_pos.c (st_rewind): Use ssize instead of file_length.
+	* io/open.c (test_endfile): Likewise.
+	* io/transfer.c (data_transfer_init): Likewise.
+	(next_record_r): Likewise.
+	(next_record_w): Likewise.
+	* io/unit.c (update_position): Likewise.
+
+2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* io/file_pos.c (st_rewind): Handle regular and special files
 	identically.
 	* io/intrinsics.c (fseek_sub): Don't check whether we think the
