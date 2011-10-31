@@ -1,5 +1,7 @@
 2011-10-31  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.md (cmask patterns): Allow zero operand.
+
 	* dwarf2out.c (cached_next_real_insn): New.
 	(dwarf2out_end_epilogue): Set it to NULL_RTX.
 	(dwarf2out_var_location): Remove cached_next_real_insn local static.
