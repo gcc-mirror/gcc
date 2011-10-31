@@ -98,6 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx last_var_location_insn;
+static rtx cached_next_real_insn;
 
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
@@ -1090,6 +1091,7 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   last_var_location_insn = NULL_RTX;
+  cached_next_real_insn = NULL_RTX;
 
   if (dwarf2out_do_cfi_asm ())
     fprintf (asm_out_file, "\t.cfi_endproc\n");
@@ -20132,7 +20134,6 @@ dwarf2out_var_location (rtx loc_note)
   static const char *last_postcall_label;
   static bool last_in_cold_section_p;
   static rtx expected_next_loc_note;
-  static rtx cached_next_real_insn;
   tree decl;
   bool var_loc_p;
 

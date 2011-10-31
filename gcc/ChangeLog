@@ -1,3 +1,9 @@
+2011-10-31  David S. Miller  <davem@davemloft.net>
+
+	* dwarf2out.c (cached_next_real_insn): New.
+	(dwarf2out_end_epilogue): Set it to NULL_RTX.
+	(dwarf2out_var_location): Remove cached_next_real_insn local static.
+
 2011-10-31  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/sse.md (floatv8siv8sf2): Rename from avx_cvtdq2ps256.
