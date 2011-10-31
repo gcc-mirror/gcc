@@ -2823,18 +2823,12 @@ skip_record (st_parameter_dt *dtp, ssize_t bytes)
   if (dtp->u.p.current_unit->bytes_left_subrecord == 0)
     return;
 
-  if (is_seekable (dtp->u.p.current_unit->s))
+  /* Direct access files do not generate END conditions,
+     only I/O errors.  */
+  if (sseek (dtp->u.p.current_unit->s, 
+	     dtp->u.p.current_unit->bytes_left_subrecord, SEEK_CUR) < 0)
     {
-      /* Direct access files do not generate END conditions,
-	 only I/O errors.  */
-      if (sseek (dtp->u.p.current_unit->s, 
-		 dtp->u.p.current_unit->bytes_left_subrecord, SEEK_CUR) < 0)
-	generate_error (&dtp->common, LIBERROR_OS, NULL);
-
-      dtp->u.p.current_unit->bytes_left_subrecord = 0;
-    }
-  else
-    {			/* Seek by reading data.  */
+      /* Seeking failed, fall back to seeking by reading data.  */
       while (dtp->u.p.current_unit->bytes_left_subrecord > 0)
 	{
 	  rlength = 
@@ -2850,8 +2844,9 @@ skip_record (st_parameter_dt *dtp, ssize_t bytes)
 
 	  dtp->u.p.current_unit->bytes_left_subrecord -= readb;
 	}
+      return;
     }
-
+  dtp->u.p.current_unit->bytes_left_subrecord = 0;
 }
 
 

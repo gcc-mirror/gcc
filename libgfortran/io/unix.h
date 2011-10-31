@@ -158,12 +158,6 @@ internal_proto(inquire_readwrite);
 extern gfc_offset file_length (stream *);
 internal_proto(file_length);
 
-extern int is_seekable (stream *);
-internal_proto(is_seekable);
-
-extern int is_special (stream *);
-internal_proto(is_special);
-
 extern void flush_if_preconnected (stream *);
 internal_proto(flush_if_preconnected);
 
