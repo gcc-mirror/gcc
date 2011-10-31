@@ -418,24 +418,36 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
       if (u == NULL || u->flags.access == ACCESS_DIRECT)
         p = undefined;
       else
-        switch (u->flags.position)
-          {
-             case POSITION_REWIND:
-               p = "REWIND";
-               break;
-             case POSITION_APPEND:
-               p = "APPEND";
-               break;
-             case POSITION_ASIS:
-               p = "ASIS";
-               break;
-             default:
-               /* if not direct access, it must be
-                  either REWIND, APPEND, or ASIS.
-                  ASIS seems to be the best default */
-               p = "ASIS";
-               break;
-          }
+	{
+	  /* If the position is unspecified, check if we can figure
+	     out whether it's at the beginning or end.  */
+	  if (u->flags.position == POSITION_UNSPECIFIED)
+	    {
+	      gfc_offset cur = stell (u->s);
+	      if (cur == 0)
+		u->flags.position = POSITION_REWIND;
+	      else if (cur != -1 && (ssize (u->s) == cur))
+		u->flags.position = POSITION_APPEND;
+	    }
+	  switch (u->flags.position)
+	    {
+	    case POSITION_REWIND:
+	      p = "REWIND";
+	      break;
+	    case POSITION_APPEND:
+	      p = "APPEND";
+	      break;
+	    case POSITION_ASIS:
+	      p = "ASIS";
+	      break;
+	    default:
+	      /* If the position has changed and is not rewind or
+		 append, it must be set to a processor-dependent
+		 value.  */
+	      p = "UNSPECIFIED";
+	      break;
+	    }
+	}
       cf_strcpy (iqp->position, iqp->position_len, p);
     }
 

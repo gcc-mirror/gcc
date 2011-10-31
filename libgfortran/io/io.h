@@ -608,9 +608,6 @@ internal_proto(get_unit);
 extern void unlock_unit (gfc_unit *);
 internal_proto(unlock_unit);
 
-extern void update_position (gfc_unit *);
-internal_proto(update_position);
-
 extern void finish_last_advance_record (gfc_unit *u);
 internal_proto (finish_last_advance_record);
 

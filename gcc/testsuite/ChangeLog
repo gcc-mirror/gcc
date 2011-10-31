@@ -1,3 +1,8 @@
+2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/inquire_5.f90: Update testcase to match the standard
+	and current implementation.
+
 2011-10-31  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/constructor-1.c: New test.

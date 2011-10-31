@@ -706,26 +706,6 @@ close_units (void)
 }
 
 
-/* update_position()-- Update the flags position for later use by inquire.  */
-
-void
-update_position (gfc_unit *u)
-{
-  /* If unit is not seekable, this makes no sense (and the standard is
-     silent on this matter), and thus we don't change the position for
-     a non-seekable file.  */
-  gfc_offset cur = stell (u->s);
-  if (cur == -1)
-    return;
-  else if (cur == 0)
-    u->flags.position = POSITION_REWIND;
-  else if (ssize (u->s) == cur)
-    u->flags.position = POSITION_APPEND;
-  else
-    u->flags.position = POSITION_ASIS;
-}
-
-
 /* High level interface to truncate a file, i.e. flush format buffers,
    and generate an error or set some flags.  Just like POSIX
    ftruncate, returns 0 on success, -1 on failure.  */
