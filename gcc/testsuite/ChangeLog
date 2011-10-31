@@ -1,3 +1,7 @@
+2011-10-31  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/constructor-1.c: New test.
+
 2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/50753

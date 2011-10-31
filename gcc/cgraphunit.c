@@ -2366,6 +2366,10 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
   SET_DECL_RTL (new_decl, NULL);
 
+  /* When the old decl was a con-/destructor make sure the clone isn't.  */
+  DECL_STATIC_CONSTRUCTOR(new_decl) = 0;
+  DECL_STATIC_DESTRUCTOR(new_decl) = 0;
+
   /* Create the new version's call-graph node.
      and update the edges of the new node. */
   new_version_node =
