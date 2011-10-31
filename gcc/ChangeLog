@@ -1,3 +1,8 @@
+2011-10-30  David S. Miller  <davem@davemloft.net>
+
+	* dwarf2out.c (dwarf2out_var_location): When processing several
+	consecutive location notes, cache the result of next_real_insn().
+
 2011-10-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (avx2_vec_dup<mode>): Macroize insn from
