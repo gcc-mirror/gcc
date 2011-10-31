@@ -170,7 +170,7 @@ BEGIN {
 	    printf("\t}\n")
 
 	    ++carg
-	    if (match(cargs[carg], "^([^ ]*) ([^ ]*)$", cparam) == 0) {
+	    if (split(cargs[carg], cparam) != 2) {
 		print loc, "bad C parameter:", cargs[carg] | "cat 1>&2"
 		status = 1
 		next
@@ -207,7 +207,7 @@ BEGIN {
 	}
 	usedr = 0
 	for (goresult = 1; goresults[goresult] != ""; goresult++) {
-	    if (match(goresults[goresult], "^([^ ]*) ([^ ]*)$", goparam) == 0) {
+	    if (split(goresults[goresult], goparam) != 2) {
 		print loc, "bad result:", goresults[goresult] | "cat 1>&2"
 		status = 1
 		next
