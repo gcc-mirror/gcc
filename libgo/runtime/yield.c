@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <pthread.h>
+#include <sched.h>
 #include <unistd.h>
 
 #ifdef HAVE_SYS_SELECT_H
@@ -38,7 +38,7 @@ runtime_procyield (uint32 cnt)
 void
 runtime_osyield (void)
 {
-  pthread_yield ();
+  sched_yield ();
 }
 
 /* Sleep for some number of microseconds.  */
