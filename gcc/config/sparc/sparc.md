@@ -8452,7 +8452,7 @@
 ;; Conditional moves are possible via fcmpX --> cmaskX -> bshuffle
 (define_insn "cmask8<P:mode>_vis"
   [(set (reg:DI GSR_REG)
-        (unspec:DI [(match_operand:P 0 "register_operand" "r")
+        (unspec:DI [(match_operand:P 0 "register_or_zero_operand" "rJ")
 	            (reg:DI GSR_REG)]
                    UNSPEC_CMASK8))]
   "TARGET_VIS3"
@@ -8460,7 +8460,7 @@
 
 (define_insn "cmask16<P:mode>_vis"
   [(set (reg:DI GSR_REG)
-        (unspec:DI [(match_operand:P 0 "register_operand" "r")
+        (unspec:DI [(match_operand:P 0 "register_or_zero_operand" "rJ")
 	            (reg:DI GSR_REG)]
                    UNSPEC_CMASK16))]
   "TARGET_VIS3"
@@ -8468,7 +8468,7 @@
 
 (define_insn "cmask32<P:mode>_vis"
   [(set (reg:DI GSR_REG)
-        (unspec:DI [(match_operand:P 0 "register_operand" "r")
+        (unspec:DI [(match_operand:P 0 "register_or_zero_operand" "rJ")
 	            (reg:DI GSR_REG)]
                    UNSPEC_CMASK32))]
   "TARGET_VIS3"
