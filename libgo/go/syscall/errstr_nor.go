@@ -11,7 +11,7 @@ import (
 	"unsafe"
 )
 
-//sysnb	strerror(errnum int) *byte
+//sysnb	strerror(errnum int) (buf *byte)
 //strerror(errnum int) *byte
 
 var errstr_lock sync.Mutex
@@ -19,7 +19,7 @@ var errstr_lock sync.Mutex
 func Errstr(errno int) string {
 	errstr_lock.Lock()
 
-	bp := libc_strerror(errno)
+	bp := strerror(errno)
 	b := (*[1000]byte)(unsafe.Pointer(bp))
 	i := 0
 	for b[i] != 0 {
