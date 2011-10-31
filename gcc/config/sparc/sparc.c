@@ -11279,6 +11279,67 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
     }
 }
 
+static void
+vector_init_bshuffle (rtx target, rtx elt, enum machine_mode mode,
+		      enum machine_mode inner_mode)
+{
+      rtx t1, final_insn;
+      int bmask;
+
+      t1 = gen_reg_rtx (mode);
+
+      elt = convert_modes (SImode, inner_mode, elt, true);
+      emit_move_insn (gen_lowpart(SImode, t1), elt);
+
+      switch (mode)
+	{
+	case V2SImode:
+	  final_insn = gen_bshufflev2si_vis (target, t1, t1);
+	  bmask = 0x45674567;
+	  break;
+	case V4HImode:
+	  final_insn = gen_bshufflev4hi_vis (target, t1, t1);
+	  bmask = 0x67676767;
+	  break;
+	case V8QImode:
+	  final_insn = gen_bshufflev8qi_vis (target, t1, t1);
+	  bmask = 0x77777777;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), CONST0_RTX (SImode),
+				  force_reg (SImode, GEN_INT (bmask))));
+      emit_insn (final_insn);
+}
+
+static void
+vector_init_fpmerge (rtx target, rtx elt, enum machine_mode inner_mode)
+{
+  rtx t1, t2, t3, t3_low;
+
+  t1 = gen_reg_rtx (V4QImode);
+  elt = convert_modes (SImode, inner_mode, elt, true);
+  emit_move_insn (gen_lowpart (SImode, t1), elt);
+
+  t2 = gen_reg_rtx (V4QImode);
+  emit_move_insn (t2, t1);
+
+  t3 = gen_reg_rtx (V8QImode);
+  t3_low = gen_lowpart (V4QImode, t3);
+
+  emit_insn (gen_fpmerge_vis (t3, t1, t2));
+  emit_move_insn (t1, t3_low);
+  emit_move_insn (t2, t3_low);
+
+  emit_insn (gen_fpmerge_vis (t3, t1, t2));
+  emit_move_insn (t1, t3_low);
+  emit_move_insn (t2, t3_low);
+
+  emit_insn (gen_fpmerge_vis (gen_lowpart (V8QImode, target), t1, t2));
+}
+
 void
 sparc_expand_vector_init (rtx target, rtx vals)
 {
@@ -11286,19 +11347,63 @@ sparc_expand_vector_init (rtx target, rtx vals)
   enum machine_mode inner_mode = GET_MODE_INNER (mode);
   int n_elts = GET_MODE_NUNITS (mode);
   int i, n_var = 0;
+  bool all_same;
   rtx mem;
 
+  all_same = true;
   for (i = 0; i < n_elts; i++)
     {
       rtx x = XVECEXP (vals, 0, i);
       if (!CONSTANT_P (x))
 	n_var++;
+
+      if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
+	all_same = false;
     }
 
   if (n_var == 0)
     {
       emit_move_insn (target, gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0)));
       return;
+    }
+
+  if (GET_MODE_SIZE (inner_mode) == GET_MODE_SIZE (mode))
+    {
+      if (GET_MODE_SIZE (inner_mode) == 4)
+	{
+	  emit_move_insn (gen_lowpart (SImode, target),
+			  gen_lowpart (SImode, XVECEXP (vals, 0, 0)));
+	  return;
+	}
+      else if (GET_MODE_SIZE (inner_mode) == 8)
+	{
+	  emit_move_insn (gen_lowpart (DImode, target),
+			  gen_lowpart (DImode, XVECEXP (vals, 0, 0)));
+	  return;
+	}
+    }
+  else if (GET_MODE_SIZE (inner_mode) == GET_MODE_SIZE (word_mode)
+	   && GET_MODE_SIZE (mode) == 2 * GET_MODE_SIZE (word_mode))
+    {
+      emit_move_insn (gen_highpart (word_mode, target),
+		      gen_lowpart (word_mode, XVECEXP (vals, 0, 0)));
+      emit_move_insn (gen_lowpart (word_mode, target),
+		      gen_lowpart (word_mode, XVECEXP (vals, 0, 1)));
+      return;
+    }
+
+  if (all_same && GET_MODE_SIZE (mode) == 8)
+    {
+      if (TARGET_VIS2)
+	{
+	  vector_init_bshuffle (target, XVECEXP (vals, 0, 0), mode, inner_mode);
+	  return;
+	}
+      if (mode == V8QImode)
+	{
+	  vector_init_fpmerge (target, XVECEXP (vals, 0, 0), inner_mode);
+	  return;
+	}
     }
 
   mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
