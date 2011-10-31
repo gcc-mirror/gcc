@@ -1,3 +1,10 @@
+2011-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (vectorizable_shift): If op1 is vect_external_def
+	in a loop and has different type from op0, cast it to op0's type
+	before the loop first.  For slp give up.  Don't crash if op1_vectype
+	is NULL.
+
 2011-10-31  Paul Brook  <paul@codesourcery.com>
 
 	* cgraphunit.c: Don't mark clones as static constructors.
