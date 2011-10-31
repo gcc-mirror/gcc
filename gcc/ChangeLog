@@ -1,4 +1,8 @@
-2011-10-31   Diego Novillo  <dnovillo@google.com>
+2011-10-31  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc-ar: Do not include stdio.h.
+
+2011-10-31  Diego Novillo  <dnovillo@google.com>
 
 	* tree-streamer-out.c (pack_ts_base_value_fields): Emit
 	TYPE_ADDR_SPACE.
