@@ -1,5 +1,9 @@
 2011-10-30  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.c (vector_init_bshuffle): New function.
+	(vector_init_fpmerge): New function.
+	(sparc_expand_vector_init): Use them to improve non-const cases.
+
 	* dwarf2out.c (dwarf2out_var_location): When processing several
 	consecutive location notes, cache the result of next_real_insn().
 
