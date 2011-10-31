@@ -2453,7 +2453,10 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
       optab = optab_for_tree_code (code, vectype, optab_vector);
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "vector/vector shift/rotate found.");
-      if (TYPE_MODE (op1_vectype) != TYPE_MODE (vectype))
+      if (!op1_vectype)
+	op1_vectype = get_same_sized_vectype (TREE_TYPE (op1), vectype_out);
+      if (op1_vectype == NULL_TREE
+	  || TYPE_MODE (op1_vectype) != TYPE_MODE (vectype))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "unusable type for last operand in"
@@ -2487,9 +2490,28 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
               /* Unlike the other binary operators, shifts/rotates have
                  the rhs being int, instead of the same type as the lhs,
                  so make sure the scalar is the right type if we are
-                 dealing with vectors of short/char.  */
+		 dealing with vectors of long long/long/short/char.  */
               if (dt[1] == vect_constant_def)
                 op1 = fold_convert (TREE_TYPE (vectype), op1);
+	      else if (!useless_type_conversion_p (TREE_TYPE (vectype),
+						   TREE_TYPE (op1)))
+		{
+		  if (slp_node
+		      && TYPE_MODE (TREE_TYPE (vectype))
+			 != TYPE_MODE (TREE_TYPE (op1)))
+		    {
+		      if (vect_print_dump_info (REPORT_DETAILS))
+		      fprintf (vect_dump, "unusable type for last operand in"
+					  " vector/vector shift/rotate.");
+			return false;
+		    }
+		  if (vec_stmt && !slp_node)
+		    {
+		      op1 = fold_convert (TREE_TYPE (vectype), op1);
+		      op1 = vect_init_vector (stmt, op1,
+					      TREE_TYPE (vectype), NULL);
+		    }
+		}
             }
         }
     }
