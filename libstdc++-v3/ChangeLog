@@ -1,3 +1,8 @@
+2011-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50920
+	* include/bits/c++0x_warning.h: Change -std=c++0x to -std=c++11.
+
 2011-10-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* prerequisites.xml: Refer to GCC (instead of gcc) and GNU/Linux.

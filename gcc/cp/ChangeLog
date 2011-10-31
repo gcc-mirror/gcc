@@ -1,3 +1,11 @@
+2011-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50920
+	* class.c (check_field_decl): Change c++0x in diags to c++11.
+	* error.c (maybe_warn_cpp0x): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	* pt.c (check_default_tmpl_args): Likewise.
+
 2011-10-31   Diego Novillo  <dnovillo@google.com>
 
 	* mangle.c (get_mangled_id): Factor from ...

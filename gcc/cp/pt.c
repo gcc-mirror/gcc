@@ -4650,7 +4650,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
 	     "friend declarations");
   else if (TREE_CODE (decl) == FUNCTION_DECL && (cxx_dialect == cxx98))
     msg = G_("default template arguments may not be used in function templates "
-	     "without -std=c++0x or -std=gnu++0x");
+	     "without -std=c++11 or -std=gnu++11");
   else if (is_partial)
     msg = G_("default template arguments may not be used in "
 	     "partial specializations");
