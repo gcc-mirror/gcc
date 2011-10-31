@@ -100,7 +100,10 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TREE_PROTECTED (expr), 1);
   bp_pack_value (bp, TREE_DEPRECATED (expr), 1);
   if (TYPE_P (expr))
-    bp_pack_value (bp, TYPE_SATURATING (expr), 1);
+    {
+      bp_pack_value (bp, TYPE_SATURATING (expr), 1);
+      bp_pack_value (bp, TYPE_ADDR_SPACE (expr), 8);
+    }
   else if (TREE_CODE (expr) == SSA_NAME)
     bp_pack_value (bp, SSA_NAME_IS_DEFAULT_DEF (expr), 1);
   else
