@@ -1,3 +1,10 @@
+2011-10-31   Diego Novillo  <dnovillo@google.com>
+
+	* tree-streamer-out.c (pack_ts_base_value_fields): Emit
+	TYPE_ADDR_SPACE.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Read
+	TYPE_ADDR_SPACE.
+
 2011-10-30  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (vector_init_bshuffle): New function.
