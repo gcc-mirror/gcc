@@ -1,3 +1,20 @@
+2011-10-31  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (floatv8siv8sf2): Rename from avx_cvtdq2ps256.
+	(floatv4siv4sf2): Rename from sse2_cvtdq2ps.
+	(floatunsv4siv4sf2): Rename from sse2_cvtudq2ps.
+	(fix_truncv8sfv8si2): Rename from avx_cvttps2dq256.
+	(fix_truncv4sfv4si2): Rename from sse2_cvttps2dq.
+	(floatv4siv4df2): Rename from avx_cvtdq2pd256.
+	(fix_truncv4dfv4si2): Rename from avx_cvttpd2dq256.
+	(vec_unpacku_float_hi_v8si): Update for insn pattern name changes.
+	* config/i386/i386.md (splitters for int-float conversion): Likewise.
+	* config/i386/i386.c (ix86_split_convert_uns_si_sse): Likewise.
+	(bdesc_args): Likewise.
+	(enum ix86_builtins) [IX86_BUILTIN_CVTUDQ2PS]: Remove.
+	(ix86_vectorize_builtin_conversion): Remove.
+	(TARGET_VECTORIZE_BUILTIN_CONVERSION): Remove.
+
 2011-10-31  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (mark_modified): Moved up in the file.

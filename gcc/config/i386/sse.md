@@ -2224,7 +2224,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "DI")])
 
-(define_insn "avx_cvtdq2ps256"
+(define_insn "floatv8siv8sf2"
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(float:V8SF (match_operand:V8SI 1 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
@@ -2233,7 +2233,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "sse2_cvtdq2ps"
+(define_insn "floatv4siv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(float:V4SF (match_operand:V4SI 1 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2"
@@ -2242,7 +2242,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "V4SF")])
 
-(define_expand "sse2_cvtudq2ps"
+(define_expand "floatunsv4siv4sf2"
   [(set (match_dup 5)
 	(float:V4SF (match_operand:V4SI 1 "nonimmediate_operand" "")))
    (set (match_dup 6)
@@ -2293,7 +2293,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
-(define_insn "avx_cvttps2dq256"
+(define_insn "fix_truncv8sfv8si2"
   [(set (match_operand:V8SI 0 "register_operand" "=x")
 	(fix:V8SI (match_operand:V8SF 1 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
@@ -2302,7 +2302,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_insn "sse2_cvttps2dq"
+(define_insn "fix_truncv4sfv4si2"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(fix:V4SI (match_operand:V4SF 1 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2"
@@ -2495,7 +2495,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "DI")])
 
-(define_insn "avx_cvtdq2pd256"
+(define_insn "floatv4siv4df2"
   [(set (match_operand:V4DF 0 "register_operand" "=x")
 	(float:V4DF (match_operand:V4SI 1 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
@@ -2591,7 +2591,7 @@
    (set_attr "athlon_decode" "vector")
    (set_attr "bdver1_decode" "double")])
 
-(define_insn "avx_cvttpd2dq256"
+(define_insn "fix_truncv4dfv4si2"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(fix:V4SI (match_operand:V4DF 1 "nonimmediate_operand" "xm")))]
   "TARGET_AVX"
@@ -2995,7 +2995,7 @@
   for (i = 2; i < 5; i++)
     tmp[i] = gen_reg_rtx (V4DFmode);
   emit_insn (gen_vec_extract_hi_v8si (tmp[5], operands[1]));
-  emit_insn (gen_avx_cvtdq2pd256 (tmp[2], tmp[5]));
+  emit_insn (gen_floatv4siv4df2 (tmp[2], tmp[5]));
   emit_insn (gen_rtx_SET (VOIDmode, tmp[3],
 			  gen_rtx_LT (V4DFmode, tmp[2], tmp[0])));
   emit_insn (gen_andv4df3 (tmp[4], tmp[3], tmp[1]));

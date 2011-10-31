@@ -16857,7 +16857,7 @@ ix86_split_convert_uns_si_sse (rtx operands[])
 
   x = gen_rtx_REG (V4SImode, REGNO (value));
   if (vecmode == V4SFmode)
-    emit_insn (gen_sse2_cvttps2dq (x, value));
+    emit_insn (gen_fix_truncv4sfv4si2 (x, value));
   else
     emit_insn (gen_sse2_cvttpd2dq (x, value));
   value = x;
@@ -25077,8 +25077,6 @@ enum ix86_builtins
   IX86_BUILTIN_CPYSGNPS256,
   IX86_BUILTIN_CPYSGNPD256,
 
-  IX86_BUILTIN_CVTUDQ2PS,
-
   /* FMA4 instructions.  */
   IX86_BUILTIN_VFMADDSS,
   IX86_BUILTIN_VFMADDSD,
@@ -25791,8 +25789,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pmovmskb, "__builtin_ia32_pmovmskb128", IX86_BUILTIN_PMOVMSKB128, UNKNOWN, (int) INT_FTYPE_V16QI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sqrtv2df2, "__builtin_ia32_sqrtpd", IX86_BUILTIN_SQRTPD, UNKNOWN, (int) V2DF_FTYPE_V2DF },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtdq2pd, "__builtin_ia32_cvtdq2pd", IX86_BUILTIN_CVTDQ2PD, UNKNOWN, (int) V2DF_FTYPE_V4SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtdq2ps, "__builtin_ia32_cvtdq2ps", IX86_BUILTIN_CVTDQ2PS, UNKNOWN, (int) V4SF_FTYPE_V4SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtudq2ps, "__builtin_ia32_cvtudq2ps", IX86_BUILTIN_CVTUDQ2PS, UNKNOWN, (int) V4SF_FTYPE_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_floatv4siv4sf2, "__builtin_ia32_cvtdq2ps", IX86_BUILTIN_CVTDQ2PS, UNKNOWN, (int) V4SF_FTYPE_V4SI },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtpd2dq, "__builtin_ia32_cvtpd2dq", IX86_BUILTIN_CVTPD2DQ, UNKNOWN, (int) V4SI_FTYPE_V2DF },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtpd2pi, "__builtin_ia32_cvtpd2pi", IX86_BUILTIN_CVTPD2PI, UNKNOWN, (int) V2SI_FTYPE_V2DF },
@@ -25809,7 +25806,7 @@ static const struct builtin_description bdesc_args[] =
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtps2dq, "__builtin_ia32_cvtps2dq", IX86_BUILTIN_CVTPS2DQ, UNKNOWN, (int) V4SI_FTYPE_V4SF },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtps2pd, "__builtin_ia32_cvtps2pd", IX86_BUILTIN_CVTPS2PD, UNKNOWN, (int) V2DF_FTYPE_V4SF },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvttps2dq, "__builtin_ia32_cvttps2dq", IX86_BUILTIN_CVTTPS2DQ, UNKNOWN, (int) V4SI_FTYPE_V4SF },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_fix_truncv4sfv4si2, "__builtin_ia32_cvttps2dq", IX86_BUILTIN_CVTTPS2DQ, UNKNOWN, (int) V4SI_FTYPE_V4SF },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_addv2df3, "__builtin_ia32_addpd", IX86_BUILTIN_ADDPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_subv2df3, "__builtin_ia32_subpd", IX86_BUILTIN_SUBPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
@@ -26147,14 +26144,14 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vextractf128v4df, "__builtin_ia32_vextractf128_pd256", IX86_BUILTIN_EXTRACTF128PD256, UNKNOWN, (int) V2DF_FTYPE_V4DF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vextractf128v8sf, "__builtin_ia32_vextractf128_ps256", IX86_BUILTIN_EXTRACTF128PS256, UNKNOWN, (int) V4SF_FTYPE_V8SF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vextractf128v8si, "__builtin_ia32_vextractf128_si256", IX86_BUILTIN_EXTRACTF128SI256, UNKNOWN, (int) V4SI_FTYPE_V8SI_INT },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtdq2pd256, "__builtin_ia32_cvtdq2pd256", IX86_BUILTIN_CVTDQ2PD256, UNKNOWN, (int) V4DF_FTYPE_V4SI },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtdq2ps256, "__builtin_ia32_cvtdq2ps256", IX86_BUILTIN_CVTDQ2PS256, UNKNOWN, (int) V8SF_FTYPE_V8SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_floatv4siv4df2, "__builtin_ia32_cvtdq2pd256", IX86_BUILTIN_CVTDQ2PD256, UNKNOWN, (int) V4DF_FTYPE_V4SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_floatv8siv8sf2, "__builtin_ia32_cvtdq2ps256", IX86_BUILTIN_CVTDQ2PS256, UNKNOWN, (int) V8SF_FTYPE_V8SI },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtpd2ps256, "__builtin_ia32_cvtpd2ps256", IX86_BUILTIN_CVTPD2PS256, UNKNOWN, (int) V4SF_FTYPE_V4DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtps2dq256, "__builtin_ia32_cvtps2dq256", IX86_BUILTIN_CVTPS2DQ256, UNKNOWN, (int) V8SI_FTYPE_V8SF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtps2pd256, "__builtin_ia32_cvtps2pd256", IX86_BUILTIN_CVTPS2PD256, UNKNOWN, (int) V4DF_FTYPE_V4SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvttpd2dq256, "__builtin_ia32_cvttpd2dq256", IX86_BUILTIN_CVTTPD2DQ256, UNKNOWN, (int) V4SI_FTYPE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_fix_truncv4sfv4si2, "__builtin_ia32_cvttpd2dq256", IX86_BUILTIN_CVTTPD2DQ256, UNKNOWN, (int) V4SI_FTYPE_V4DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtpd2dq256, "__builtin_ia32_cvtpd2dq256", IX86_BUILTIN_CVTPD2DQ256, UNKNOWN, (int) V4SI_FTYPE_V4DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvttps2dq256, "__builtin_ia32_cvttps2dq256", IX86_BUILTIN_CVTTPS2DQ256, UNKNOWN, (int) V8SI_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_fix_truncv8sfv8si2, "__builtin_ia32_cvttps2dq256", IX86_BUILTIN_CVTTPS2DQ256, UNKNOWN, (int) V8SI_FTYPE_V8SF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vperm2f128v4df3, "__builtin_ia32_vperm2f128_pd256", IX86_BUILTIN_VPERM2F128PD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vperm2f128v8sf3, "__builtin_ia32_vperm2f128_ps256", IX86_BUILTIN_VPERM2F128PS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vperm2f128v8si3, "__builtin_ia32_vperm2f128_si256", IX86_BUILTIN_VPERM2F128SI256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI_INT },
@@ -29404,96 +29401,6 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
   TREE_READONLY (new_fndecl) = 1;
 
   return new_fndecl;
-}
-
-
-/* Returns a decl of a function that implements conversion of an integer vector
-   into a floating-point vector, or vice-versa.  DEST_TYPE and SRC_TYPE
-   are the types involved when converting according to CODE.
-   Return NULL_TREE if it is not available.  */
-
-static tree
-ix86_vectorize_builtin_conversion (unsigned int code,
-				   tree dest_type, tree src_type)
-{
-  if (! TARGET_SSE2)
-    return NULL_TREE;
-
-  switch (code)
-    {
-    case FLOAT_EXPR:
-      switch (TYPE_MODE (src_type))
-	{
-	case V4SImode:
-	  switch (TYPE_MODE (dest_type))
-	    {
-	    case V4SFmode:
-	      return (TYPE_UNSIGNED (src_type)
-		      ? ix86_builtins[IX86_BUILTIN_CVTUDQ2PS]
-		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PS]);
-	    case V4DFmode:
-	      return (TYPE_UNSIGNED (src_type)
-		      ? NULL_TREE
-		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PD256]);
-	    default:
-	      return NULL_TREE;
-	    }
-	  break;
-	case V8SImode:
-	  switch (TYPE_MODE (dest_type))
-	    {
-	    case V8SFmode:
-	      return (TYPE_UNSIGNED (src_type)
-		      ? NULL_TREE
-		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PS256]);
-	    default:
-	      return NULL_TREE;
-	    }
-	  break;
-	default:
-	  return NULL_TREE;
-	}
-
-    case FIX_TRUNC_EXPR:
-      switch (TYPE_MODE (dest_type))
-	{
-	case V4SImode:
-	  switch (TYPE_MODE (src_type))
-	    {
-	    case V4SFmode:
-	      return (TYPE_UNSIGNED (dest_type)
-		      ? NULL_TREE
-		      : ix86_builtins[IX86_BUILTIN_CVTTPS2DQ]);
-	    case V4DFmode:
-	      return (TYPE_UNSIGNED (dest_type)
-		      ? NULL_TREE
-		      : ix86_builtins[IX86_BUILTIN_CVTTPD2DQ256]);
-	    default:
-	      return NULL_TREE;
-	    }
-	  break;
-
-	case V8SImode:
-	  switch (TYPE_MODE (src_type))
-	    {
-	    case V8SFmode:
-	      return (TYPE_UNSIGNED (dest_type)
-		      ? NULL_TREE
-		      : ix86_builtins[IX86_BUILTIN_CVTTPS2DQ256]);
-	    default:
-	      return NULL_TREE;
-	    }
-	  break;
-
-	default:
-	  return NULL_TREE;
-	}
-
-    default:
-      return NULL_TREE;
-    }
-
-  return NULL_TREE;
 }
 
 /* Returns a code for a target-specific builtin that implements
@@ -37694,9 +37601,6 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   ix86_builtin_vectorized_function
-
-#undef TARGET_VECTORIZE_BUILTIN_CONVERSION
-#define TARGET_VECTORIZE_BUILTIN_CONVERSION ix86_vectorize_builtin_conversion
 
 #undef TARGET_BUILTIN_RECIPROCAL
 #define TARGET_BUILTIN_RECIPROCAL ix86_builtin_reciprocal
