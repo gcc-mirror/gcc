@@ -1,5 +1,8 @@
 2011-10-31  Jason Merrill  <jason@redhat.com>
 
+	PR libstdc++/1773
+	* init.c (cpp_init_builtins): Set __cplusplus for C++11.
+
 	PR c++/50920
 	* include/cpplib.h (enum c_lang): Rename CLK_CXX0X to CLK_CXX11,
 	CLK_GNUCXX0X to CLK_GNUCXX11.

@@ -461,7 +461,13 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__STDC__ 1");
 
   if (CPP_OPTION (pfile, cplusplus))
-    _cpp_define_builtin (pfile, "__cplusplus 199711L");
+    {
+      if (CPP_OPTION (pfile, lang) == CLK_CXX11
+	   || CPP_OPTION (pfile, lang) == CLK_GNUCXX11)
+	_cpp_define_builtin (pfile, "__cplusplus 201103L");
+      else
+	_cpp_define_builtin (pfile, "__cplusplus 199711L");
+    }
   else if (CPP_OPTION (pfile, lang) == CLK_ASM)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC94)
