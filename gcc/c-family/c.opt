@@ -289,7 +289,11 @@ Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
 C++ ObjC++ Var(warn_cxx0x_compat) Warning
-Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 200x
+Deprecated in favor of -Wc++11-compat
+
+Wc++11-compat
+C++ ObjC++ Warning Alias(Wc++0x-compat)
+Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 2011
 
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
@@ -1175,12 +1179,13 @@ std=c++03
 C++ ObjC++ Alias(std=c++98)
 Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum
 
-std=c++0x
+std=c++11
 C++ ObjC++
-Conform to the ISO 1998 C++ standard, with extensions that are likely to
-become a part of the upcoming ISO C++ standard, dubbed C++0x. Note that the
-extensions enabled by this mode are experimental and may be removed in
-future releases of GCC.
+Conform to the ISO 2011 C++ standard (experimental and incomplete support)
+
+std=c++0x
+C++ ObjC++ Alias(std=c++11)
+Deprecated in favor of -std=c++11
 
 std=c1x
 C ObjC
@@ -1204,14 +1209,21 @@ Deprecated in favor of -std=c99
 
 std=gnu++98
 C++ ObjC++
-Conform to the ISO 1998 C++ standard with GNU extensions
+Conform to the ISO 1998 C++ standard revised by the 2003 technical
+corrigendum with GNU extensions
+
+std=gnu++03
+C++ ObjC++ Alias(std=gnu++98)
+Conform to the ISO 1998 C++ standard revised by the 2003 technical
+corrigendum with GNU extensions
+
+std=gnu++11
+C++ ObjC++
+Conform to the ISO 2011 C++ standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++0x
-C++ ObjC++
-Conform to the ISO 1998 C++ standard, with GNU extensions and
-extensions that are likely to become a part of the upcoming ISO C++
-standard, dubbed C++0x. Note that the extensions enabled by this mode
-are experimental and may be removed in future releases of GCC.
+C++ ObjC++ Alias(std=gnu++11)
+Deprecated in favor of -std=gnu++11
 
 std=gnu1x
 C ObjC

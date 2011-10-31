@@ -643,11 +643,12 @@ extern int flag_use_repository;
 /* The supported C++ dialects.  */
 
 enum cxx_dialect {
-  /* C++98  */
+  /* C++98 with TC1  */
   cxx98,
-  /* Experimental features that are likely to become part of
-     C++0x.  */
-  cxx0x
+  cxx03 = cxx98,
+  /* C++11  */
+  cxx0x,
+  cxx11 = cxx0x
 };
 
 /* The C++ dialect being used. C++98 is the default.  */

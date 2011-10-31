@@ -2924,7 +2924,7 @@ check_field_decl (tree field,
 	  if (!warned && errorcount > oldcount)
 	    {
 	      inform (DECL_SOURCE_LOCATION (field), "unrestricted unions "
-		      "only available with -std=c++0x or -std=gnu++0x");
+		      "only available with -std=c++11 or -std=gnu++11");
 	      warned = true;
 	    }
 	}

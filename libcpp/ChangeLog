@@ -1,3 +1,9 @@
+2011-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50920
+	* include/cpplib.h (enum c_lang): Rename CLK_CXX0X to CLK_CXX11,
+	CLK_GNUCXX0X to CLK_GNUCXX11.
+
 2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement C++11 user-defined literals.

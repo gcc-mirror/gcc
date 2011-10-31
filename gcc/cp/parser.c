@@ -2759,8 +2759,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 
 	 The user should have said "typename A<T>::X".  */
       if (cxx_dialect < cxx0x && id == ridpointers[(int)RID_CONSTEXPR])
-	inform (location, "C++0x %<constexpr%> only available with "
-		"-std=c++0x or -std=gnu++0x");
+	inform (location, "C++11 %<constexpr%> only available with "
+		"-std=c++11 or -std=gnu++11");
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{
