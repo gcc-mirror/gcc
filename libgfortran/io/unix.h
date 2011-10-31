@@ -35,6 +35,7 @@ struct stream
   ssize_t (*write) (struct stream *, const void *, ssize_t);
   gfc_offset (*seek) (struct stream *, gfc_offset, int);
   gfc_offset (*tell) (struct stream *);
+  gfc_offset (*size) (struct stream *);
   /* Avoid keyword truncate due to AIX namespace collision.  */
   int (*trunc) (struct stream *, gfc_offset);
   int (*flush) (struct stream *);
@@ -65,6 +66,12 @@ static inline gfc_offset
 stell (stream * s)
 {
   return s->tell (s);
+}
+
+static inline gfc_offset
+ssize (stream * s)
+{
+  return s->size (s);
 }
 
 static inline int
@@ -154,9 +161,6 @@ internal_proto(inquire_write);
 
 extern const char *inquire_readwrite (const char *, int);
 internal_proto(inquire_readwrite);
-
-extern gfc_offset file_length (stream *);
-internal_proto(file_length);
 
 extern void flush_if_preconnected (stream *);
 internal_proto(flush_if_preconnected);

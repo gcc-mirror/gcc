@@ -332,6 +332,16 @@ raw_tell (unix_stream * s)
   return lseek (s->fd, 0, SEEK_CUR);
 }
 
+static gfc_offset
+raw_size (unix_stream * s)
+{
+  struct stat statbuf;
+  int ret = fstat (s->fd, &statbuf);
+  if (ret == -1)
+    return ret;
+  return statbuf.st_size;
+}
+
 static int
 raw_truncate (unix_stream * s, gfc_offset length)
 {
@@ -398,6 +408,7 @@ raw_init (unix_stream * s)
   s->st.write = (void *) raw_write;
   s->st.seek = (void *) raw_seek;
   s->st.tell = (void *) raw_tell;
+  s->st.size = (void *) raw_size;
   s->st.trunc = (void *) raw_truncate;
   s->st.close = (void *) raw_close;
   s->st.flush = (void *) raw_flush;
@@ -584,6 +595,12 @@ buf_tell (unix_stream * s)
   return buf_seek (s, 0, SEEK_CUR);
 }
 
+static gfc_offset
+buf_size (unix_stream * s)
+{
+  return s->file_length;
+}
+
 static int
 buf_truncate (unix_stream * s, gfc_offset length)
 {
@@ -613,6 +630,7 @@ buf_init (unix_stream * s)
   s->st.write = (void *) buf_write;
   s->st.seek = (void *) buf_seek;
   s->st.tell = (void *) buf_tell;
+  s->st.size = (void *) buf_size;
   s->st.trunc = (void *) buf_truncate;
   s->st.close = (void *) buf_close;
   s->st.flush = (void *) buf_flush;
@@ -884,6 +902,9 @@ open_internal (char *base, int length, gfc_offset offset)
   s->st.close = (void *) mem_close;
   s->st.seek = (void *) mem_seek;
   s->st.tell = (void *) mem_tell;
+  /* buf_size is not a typo, we just reuse an identical
+     implementation.  */
+  s->st.size = (void *) buf_size;
   s->st.trunc = (void *) mem_truncate;
   s->st.read = (void *) mem_read;
   s->st.write = (void *) mem_write;
@@ -912,6 +933,9 @@ open_internal4 (char *base, int length, gfc_offset offset)
   s->st.close = (void *) mem_close;
   s->st.seek = (void *) mem_seek;
   s->st.tell = (void *) mem_tell;
+  /* buf_size is not a typo, we just reuse an identical
+     implementation.  */
+  s->st.size = (void *) buf_size;
   s->st.trunc = (void *) mem_truncate;
   s->st.read = (void *) mem_read4;
   s->st.write = (void *) mem_write4;
@@ -1737,21 +1761,6 @@ const char *
 inquire_readwrite (const char *string, int len)
 {
   return inquire_access (string, len, R_OK | W_OK);
-}
-
-
-/* file_length()-- Return the file length in bytes, -1 if unknown */
-
-gfc_offset
-file_length (stream * s)
-{
-  gfc_offset curr, end;
-  curr = stell (s);
-  if (curr == -1)
-    return curr;
-  end = sseek (s, 0, SEEK_END);
-  sseek (s, curr, SEEK_SET);
-  return end;
 }
 
 
