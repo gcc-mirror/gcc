@@ -246,7 +246,7 @@ fseek_sub (int * unit, GFC_IO_INT * offset, int * whence, int * status)
   gfc_unit * u = find_unit (*unit);
   ssize_t result = -1;
 
-  if (u != NULL && is_seekable(u->s))
+  if (u != NULL)
     {
       result = sseek(u->s, *offset, *whence);
 

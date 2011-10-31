@@ -407,20 +407,15 @@ st_rewind (st_parameter_filepos *fpp)
 	  if (sseek (u->s, 0, SEEK_SET) < 0)
 	    generate_error (&fpp->common, LIBERROR_OS, NULL);
 
-	  /* Handle special files like /dev/null differently.  */
-	  if (!is_special (u->s))
+	  /* Set this for compatibilty with g77 for /dev/null.  */
+	  if (file_length (u->s) == 0)
+	    u->endfile = AT_ENDFILE;
+	  else
 	    {
 	      /* We are rewinding so we are not at the end.  */
 	      u->endfile = NO_ENDFILE;
 	    }
-	  else
-	    {
-	      /* Set this for compatibilty with g77 for /dev/null.  */
-	      if (file_length (u->s) == 0  && stell (u->s) == 0)
-		u->endfile = AT_ENDFILE;
-	      /* Future refinements on special files can go here.  */
-	    }
-
+	  
 	  u->current_record = 0;
 	  u->strm_pos = 1;
 	  u->read_bad = 0;

@@ -714,23 +714,21 @@ update_position (gfc_unit *u)
   /* If unit is not seekable, this makes no sense (and the standard is
      silent on this matter), and thus we don't change the position for
      a non-seekable file.  */
-  if (is_seekable (u->s))
-    {
-      gfc_offset cur = stell (u->s);
-      if (cur == 0)
-	u->flags.position = POSITION_REWIND;
-      else if (cur != -1 && (file_length (u->s) == cur))
-	u->flags.position = POSITION_APPEND;
-      else
-	u->flags.position = POSITION_ASIS;
-    }
+  gfc_offset cur = stell (u->s);
+  if (cur == -1)
+    return;
+  else if (cur == 0)
+    u->flags.position = POSITION_REWIND;
+  else if (file_length (u->s) == cur)
+    u->flags.position = POSITION_APPEND;
+  else
+    u->flags.position = POSITION_ASIS;
 }
 
 
-/* High level interface to truncate a file safely, i.e. flush format
-   buffers, check that it's a regular file, and generate error if that
-   occurs.  Just like POSIX ftruncate, returns 0 on success, -1 on
-   failure.  */
+/* High level interface to truncate a file, i.e. flush format buffers,
+   and generate an error or set some flags.  Just like POSIX
+   ftruncate, returns 0 on success, -1 on failure.  */
 
 int
 unit_truncate (gfc_unit * u, gfc_offset pos, st_parameter_common * common)
@@ -746,24 +744,12 @@ unit_truncate (gfc_unit * u, gfc_offset pos, st_parameter_common * common)
 	fbuf_flush (u, u->mode);
     }
   
-  /* Don't try to truncate a special file, just pretend that it
-     succeeds.  */
-  if (is_special (u->s) || !is_seekable (u->s))
-    {
-      sflush (u->s);
-      return 0;
-    }
-
   /* struncate() should flush the stream buffer if necessary, so don't
      bother calling sflush() here.  */
   ret = struncate (u->s, pos);
 
   if (ret != 0)
-    {
-      generate_error (common, LIBERROR_OS, NULL);
-      u->endfile = NO_ENDFILE;
-      u->flags.position = POSITION_ASIS;
-    }
+    generate_error (common, LIBERROR_OS, NULL);
   else
     {
       u->endfile = AT_ENDFILE;

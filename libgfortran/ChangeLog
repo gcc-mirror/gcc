@@ -1,3 +1,23 @@
+2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/file_pos.c (st_rewind): Handle regular and special files
+	identically.
+	* io/intrinsics.c (fseek_sub): Don't check whether we think the
+	file is seekable, just do what the caller says.
+	* io/transfer.c (skip_record): First try to seek, then fallback to
+	reading and throwing away what we read.
+	* io/unit.c (update_position): Don't check whether file is
+	seekable, just try to do what we're told.
+	(unit_truncate): Likewise.
+	* io/unix.c (struct unix_stream): Remove special_file flag.
+	(buf_flush): Remove code for handling unseekable files.
+	(buf_seek): Likewise.
+	(fd_to_stream): Use buffered IO only for regular files.
+	(file_length): Remove is_seekable() call.
+	(is_seekable): Remove function.
+	(is_special): Likewise.
+	* io/unix.h: Remove prototypes for is_seekable and is_special.
+
 2011-09-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/49479
