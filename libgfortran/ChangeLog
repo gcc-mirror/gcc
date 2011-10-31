@@ -1,5 +1,15 @@
 2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* io/inquire.c (inquire_via_unit): Check whether we're at the
+	beginning or end if the position is unspecified. If the position
+	is not one of the 3 standard ones, return unspecified.
+	* io/io.h (update_position): Remove prototype.
+	* io/transfer.c (next_record): Set the position to unspecified,
+	letting inquire figure it out more exactly when needed.
+	* io/unit.c (update_position): Remove function.
+
+2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* io/unix.h (struct stream): Add size function pointer.
 	(ssize): New inline function.
 	(file_length): Remove prototype.
