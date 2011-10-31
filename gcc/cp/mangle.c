@@ -3177,13 +3177,21 @@ mangle_decl_string (const tree decl)
   return result;
 }
 
+/* Return an identifier for the external mangled name of DECL.  */
+
+static tree
+get_mangled_id (tree decl)
+{
+  tree id = mangle_decl_string (decl);
+  return targetm.mangle_decl_assembler_name (decl, id);
+}
+
 /* Create an identifier for the external mangled name of DECL.  */
 
 void
 mangle_decl (const tree decl)
 {
-  tree id = mangle_decl_string (decl);
-  id = targetm.mangle_decl_assembler_name (decl, id);
+  tree id = get_mangled_id (decl);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
   if (G.need_abi_warning)

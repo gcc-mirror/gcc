@@ -1,3 +1,9 @@
+2011-10-31   Diego Novillo  <dnovillo@google.com>
+
+	* mangle.c (get_mangled_id): Factor from ...
+	(mangle_decl): ... here.
+	Call get_mangled_id.
+
 2011-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* NEWS (GCC 2.95): Refer to GNU/Linux instead of Linux.
