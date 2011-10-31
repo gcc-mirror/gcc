@@ -1,3 +1,7 @@
+2011-10-31  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-4.c: New test.
+
 2011-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vshift-3.c: New test.

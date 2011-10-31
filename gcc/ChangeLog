@@ -1,3 +1,13 @@
+2011-10-31  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (mark_modified): Moved up in the file.
+	(is_parm_modified_before_call): Renamed to
+	is_parm_modified_before_stmt, moved up in the file.
+	(load_from_unmodified_param): New function.
+	(compute_complex_assign_jump_func): Also attempt to create pass
+	through jump functions for values loaded from (addressable)
+	parameters.
+
 2011-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-stmts.c (vectorizable_shift): If op1 is vect_external_def
