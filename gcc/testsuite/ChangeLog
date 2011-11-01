@@ -1,3 +1,10 @@
+2011-11-01  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/50908
+	* gcc.dg/pr50908.c: New test.
+	* gcc.dg/pr50908-2.c: Same.
+	* gcc.dg/pr50908-3.c: Same.
+
 2011-11-01  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/no-scevccp-outer-6-global.c: Expect to vectorize
