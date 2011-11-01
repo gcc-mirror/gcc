@@ -4058,7 +4058,7 @@ cp_build_binary_op (location_t location,
      	  else 
 	    {
 	      op0 = build_ptrmemfunc_access_expr (op0, pfn_identifier);
-	      op1 = cp_convert (TREE_TYPE (op0), integer_zero_node); 
+	      op1 = cp_convert (TREE_TYPE (op0), op1);
 	    }
 	  result_type = TREE_TYPE (op0);
 	}
@@ -4668,7 +4668,17 @@ cp_truthvalue_conversion (tree expr)
   tree type = TREE_TYPE (expr);
   if (TYPE_PTRMEM_P (type))
     return build_binary_op (EXPR_LOCATION (expr),
-			    NE_EXPR, expr, integer_zero_node, 1);
+			    NE_EXPR, expr, nullptr_node, 1);
+  else if (TYPE_PTR_P (type) || TYPE_PTRMEMFUNC_P (type))
+    {
+      /* With -Wzero-as-null-pointer-constant do not warn for an
+	 'if (p)' or a 'while (!p)', where p is a pointer.  */
+      tree ret;
+      ++c_inhibit_evaluation_warnings;
+      ret = c_common_truthvalue_conversion (input_location, expr);
+      --c_inhibit_evaluation_warnings;
+      return ret;
+    }
   else
     return c_common_truthvalue_conversion (input_location, expr);
 }
@@ -7148,7 +7158,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
   /* Handle null pointer to member function conversions.  */
   if (null_ptr_cst_p (pfn))
     {
-      pfn = build_c_cast (input_location, type, integer_zero_node);
+      pfn = build_c_cast (input_location, type, nullptr_node);
       return build_ptrmemfunc1 (to_type,
 				integer_zero_node,
 				pfn);

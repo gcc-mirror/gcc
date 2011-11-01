@@ -1,3 +1,9 @@
+2011-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44277
+	* g++.dg/warn/Wzero-as-null-pointer-constant-1.C: New.
+	* g++.dg/cpp0x/Wzero-as-null-pointer-constant-1.C: Likewise.
+
 2011-11-01  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50908
