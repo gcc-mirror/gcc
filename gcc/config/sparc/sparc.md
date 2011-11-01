@@ -8299,6 +8299,36 @@
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
 
+(define_expand "vcond<mode><mode>"
+  [(match_operand:GCM 0 "register_operand" "")
+   (match_operand:GCM 1 "register_operand" "")
+   (match_operand:GCM 2 "register_operand" "")
+   (match_operator 3 ""
+     [(match_operand:GCM 4 "register_operand" "")
+      (match_operand:GCM 5 "register_operand" "")])]
+  "TARGET_VIS3"
+{
+  sparc_expand_vcond (<MODE>mode, operands,
+                      UNSPEC_CMASK<gcm_name>,
+                      UNSPEC_FCMP);
+  DONE;
+})
+
+(define_expand "vconduv8qiv8qi"
+  [(match_operand:V8QI 0 "register_operand" "")
+   (match_operand:V8QI 1 "register_operand" "")
+   (match_operand:V8QI 2 "register_operand" "")
+   (match_operator 3 ""
+     [(match_operand:V8QI 4 "register_operand" "")
+      (match_operand:V8QI 5 "register_operand" "")])]
+  "TARGET_VIS3"
+{
+  sparc_expand_vcond (V8QImode, operands,
+                      UNSPEC_CMASK8,
+                      UNSPEC_FUCMP);
+  DONE;
+})
+
 (define_insn "array8<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_operand:P 1 "register_or_zero_operand" "rJ")

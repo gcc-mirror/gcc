@@ -11531,4 +11531,41 @@ sparc_expand_conditional_move (enum machine_mode mode, rtx *operands)
   return true;
 }
 
+void
+sparc_expand_vcond (enum machine_mode mode, rtx *operands, int ccode, int fcode)
+{
+  rtx mask, cop0, cop1, fcmp, cmask, bshuf, gsr;
+  enum rtx_code code = GET_CODE (operands[3]);
+
+  mask = gen_reg_rtx (Pmode);
+  cop0 = operands[4];
+  cop1 = operands[5];
+  if (code == LT || code == GE)
+    {
+      rtx t;
+
+      code = swap_condition (code);
+      t = cop0; cop0 = cop1; cop1 = t;
+    }
+
+  gsr = gen_rtx_REG (DImode, SPARC_GSR_REG);
+
+  fcmp = gen_rtx_UNSPEC (Pmode,
+			 gen_rtvec (1, gen_rtx_fmt_ee (code, mode, cop0, cop1)),
+			 fcode);
+
+  cmask = gen_rtx_UNSPEC (DImode,
+			  gen_rtvec (2, mask, gsr),
+			  ccode);
+
+  bshuf = gen_rtx_UNSPEC (mode,
+			  gen_rtvec (3, operands[1], operands[2], gsr),
+			  UNSPEC_BSHUFFLE);
+
+  emit_insn (gen_rtx_SET (VOIDmode, mask, fcmp));
+  emit_insn (gen_rtx_SET (VOIDmode, gsr, cmask));
+
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], bshuf));
+}
+
 #include "gt-sparc.h"
