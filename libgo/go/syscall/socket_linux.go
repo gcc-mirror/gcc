@@ -164,15 +164,6 @@ func anyToSockaddrOS(rsa *RawSockaddrAny) (Sockaddr, int) {
 	return nil, EAFNOSUPPORT
 }
 
-// We don't take this type directly from the header file because it
-// uses a union.  FIXME.
-
-type EpollEvent struct {
-	Events uint32
-	Fd int32
-	Pad int32
-}
-
 //sysnb	EpollCreate(size int) (fd int, errno int)
 //epoll_create(size int) int
 
