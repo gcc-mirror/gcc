@@ -1,3 +1,13 @@
+2011-11-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50910
+	* config/avr/avr.opt (-mbranch-cost=): New option.
+	* config/avr/avr.h (BRANCH_COST): Define to avr_branch_cost.
+	* config/avr/avr.c (avr_rtx_costs_1): Adjust [U]DIV/[U]MOD costs.
+	* config/avr/avr.md (*addqi3.lt0, *addhi3.lt0, *addsi3.lt0): New insns.
+	(*addhi3_zero_extend1): Remov % in constraint of operand 1.
+	(*addhi3.sign_extend1, *subhi3.sign_extend2): New insns.
+
 2011-11-01  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50908
