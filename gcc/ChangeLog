@@ -1,3 +1,7 @@
+2011-11-01  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Recognize generic-armv7 tuning.
+
 2011-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (splitters for int-float conversion): Use
