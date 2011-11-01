@@ -185,7 +185,7 @@ static cselib_val dummy_val;
    that is constant through the whole function and should never be
    eliminated.  */
 static cselib_val *cfa_base_preserved_val;
-static unsigned int cfa_base_preserved_regno;
+static unsigned int cfa_base_preserved_regno = INVALID_REGNUM;
 
 /* Used to list all values that contain memory reference.
    May or may not contain the useless values - the list is compacted
@@ -1451,7 +1451,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 	  if (GET_MODE (l->elt->val_rtx) == GET_MODE (orig))
 	    {
 	      rtx result;
-	      int regno = REGNO (orig);
+	      unsigned regno = REGNO (orig);
 
 	      /* The only thing that we are not willing to do (this
 		 is requirement of dse and if others potential uses
@@ -1471,7 +1471,8 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 		 make the frame assumptions.  */
 	      if (regno == STACK_POINTER_REGNUM
 		  || regno == FRAME_POINTER_REGNUM
-		  || regno == HARD_FRAME_POINTER_REGNUM)
+		  || regno == HARD_FRAME_POINTER_REGNUM
+		  || regno == cfa_base_preserved_regno)
 		return orig;
 
 	      bitmap_set_bit (evd->regs_active, regno);
