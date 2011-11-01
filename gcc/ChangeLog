@@ -76,6 +76,9 @@
 
 2011-11-01  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/sparc.c (vector_init_faligndata): New function.
+	(sparc_expand_vector_init): Use it for V4HImode on VIS1.
+
 	* config/sparc/sparc.c (sparc_expand_vcond): New function.
 	* config/sparc/sparc-protos.h (sparc_expand_vcond): Declare it.
 	* config/sparc/sparc.md (vcond<mode><mode>): New VIS3 expander.

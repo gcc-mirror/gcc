@@ -11340,6 +11340,25 @@ vector_init_fpmerge (rtx target, rtx elt, enum machine_mode inner_mode)
   emit_insn (gen_fpmerge_vis (gen_lowpart (V8QImode, target), t1, t2));
 }
 
+static void
+vector_init_faligndata (rtx target, rtx elt, enum machine_mode inner_mode)
+{
+  rtx t1 = gen_reg_rtx (V4HImode);
+
+  elt = convert_modes (SImode, inner_mode, elt, true);
+
+  emit_move_insn (gen_lowpart (SImode, t1), elt);
+
+  emit_insn (gen_alignaddrsi_vis (gen_reg_rtx (SImode),
+				  force_reg (SImode, GEN_INT (6)),
+				  CONST0_RTX (SImode)));
+
+  emit_insn (gen_faligndatav4hi_vis (target, t1, target));
+  emit_insn (gen_faligndatav4hi_vis (target, t1, target));
+  emit_insn (gen_faligndatav4hi_vis (target, t1, target));
+  emit_insn (gen_faligndatav4hi_vis (target, t1, target));
+}
+
 void
 sparc_expand_vector_init (rtx target, rtx vals)
 {
@@ -11402,6 +11421,11 @@ sparc_expand_vector_init (rtx target, rtx vals)
       if (mode == V8QImode)
 	{
 	  vector_init_fpmerge (target, XVECEXP (vals, 0, 0), inner_mode);
+	  return;
+	}
+      if (mode == V4HImode)
+	{
+	  vector_init_faligndata (target, XVECEXP (vals, 0, 0), inner_mode);
 	  return;
 	}
     }
