@@ -35,7 +35,9 @@
 #include <bits/c++config.h>
 #include <bits/stl_pair.h>
 #include <bits/stl_iterator_base_types.h>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <initializer_list>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

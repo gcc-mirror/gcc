@@ -58,7 +58,9 @@
 #define _STL_MULTIMAP_H 1
 
 #include <bits/concept_check.h>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <initializer_list>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
