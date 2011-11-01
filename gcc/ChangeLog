@@ -1,3 +1,8 @@
+2011-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (floatsi<mode>2_vector_sse_with_temp splitter):
+	Compare <ssevecmode>mode with V4SFmode, not V4SImode.
+
 2011-11-01  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-linux*): Add powerpc*-*-linux*ppc476* variant.
