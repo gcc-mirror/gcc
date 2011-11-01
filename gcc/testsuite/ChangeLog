@@ -1,3 +1,8 @@
+2011-11-01  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/no-scevccp-outer-6-global.c: Expect to vectorize
+	the outer loop.  Remove comment.  Don't check for widen-mult.
+
 2011-10-31  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/ipcp-4.c: New test.

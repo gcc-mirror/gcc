@@ -52,7 +52,5 @@ int main (void)
   return 0;
 }
 
-/* "Too many BBs in loop"  */
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { xfail vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
