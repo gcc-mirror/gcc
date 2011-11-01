@@ -3899,6 +3899,10 @@ set_initial_label_offsets (void)
     if (XEXP (x, 0))
       set_label_offsets (XEXP (x, 0), NULL_RTX, 1);
 
+  for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
+    if (XEXP (x, 0))
+      set_label_offsets (XEXP (x, 0), NULL_RTX, 1);
+
   for_each_eh_label (set_initial_eh_label_offset);
 }
 

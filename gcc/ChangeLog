@@ -1,3 +1,10 @@
+2011-11-01  Julian Brown  <julian@codesourcery.com>
+
+	PR rtl-optimization/47918
+
+	* reload1.c (set_initial_label_offsets): Use initial offsets
+	for labels on the nonlocal_goto_handler_labels chain.
+
 2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/50691
