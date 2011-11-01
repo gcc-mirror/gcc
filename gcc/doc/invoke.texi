@@ -1907,9 +1907,9 @@ to @var{n}.  A limit is needed to detect endless recursion during
 constant expression evaluation.  The minimum specified by the standard
 is 512.
 
-@item -fno-deduce-init-list
-@opindex fno-deduce-init-list
-Disable deduction of a template type parameter as
+@item -fdeduce-init-list
+@opindex fdeduce-init-list
+Enable deduction of a template type parameter as
 std::initializer_list from a brace-enclosed initializer list, i.e.
 
 @smallexample
@@ -1924,9 +1924,10 @@ void f()
 @}
 @end smallexample
 
-This option is present because this deduction is an extension to the
-current specification in the C++0x working draft, and there was
-some concern about potential overload resolution problems.
+This deduction was implemented as a possible extension to the
+originally proposed semantics for the C++11 standard, but was not part
+of the final standard, so it is disabled by default.  This option is
+deprecated, and may be removed in a future version of G++.
 
 @item -ffriend-injection
 @opindex ffriend-injection
