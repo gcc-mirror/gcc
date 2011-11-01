@@ -2322,6 +2322,35 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
+(define_expand "fixuns_trunc<mode><sseintvecmodelower>2"
+  [(set (match_dup 4)
+	(unspec:VF1
+	  [(match_operand:VF1 1 "register_operand" "")
+	   (match_dup 2)
+	   (const_int 29)] UNSPEC_PCMP))
+   (set (match_dup 5)
+	(and:VF1 (match_dup 4) (match_dup 3)))
+   (set (match_dup 6)
+	(plus:VF1 (match_dup 1) (match_dup 5)))
+   (set (match_operand:<sseintvecmode> 0 "register_operand" "")
+	(fix:<sseintvecmode> (match_dup 6)))]
+  "TARGET_AVX"
+{
+  REAL_VALUE_TYPE MTWO32r, TWO31r;
+  int i;
+
+  real_ldexp (&TWO31r, &dconst1, 31);
+  operands[2] = const_double_from_real_value (TWO31r, SFmode);
+  operands[2] = ix86_build_const_vector (<MODE>mode, 1, operands[2]);
+  operands[2] = force_reg (<MODE>mode, operands[2]);
+  real_ldexp (&MTWO32r, &dconstm1, 32);
+  operands[3] = const_double_from_real_value (MTWO32r, SFmode);
+  operands[3] = ix86_build_const_vector (<MODE>mode, 1, operands[3]);
+  operands[3] = force_reg (<MODE>mode, operands[3]);
+  for (i = 4; i < 7; i++)
+    operands[i] = gen_reg_rtx (<MODE>mode);
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel double-precision floating point conversion operations

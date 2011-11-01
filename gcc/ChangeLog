@@ -1,5 +1,8 @@
 2011-11-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (fixuns_trunc<mode><sseintvecmodelower>2): New
+	expander.
+
 	* config/i386/sse.md (sseintvecmode): Remove duplicate modes.
 	(sseintvecmodelower): New mode iterator.
 	(floatv8siv8sf2, floatunsv4siv4sf2): Macroize into...
