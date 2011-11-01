@@ -7764,7 +7764,7 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
   bool pending_recursion;
   rtx loc_from = NULL;
   struct elt_loc_list *cloc = NULL;
-  int depth, saved_depth = elcd->depth;
+  int depth = 0, saved_depth = elcd->depth;
 
   /* Clear all backlinks pointing at this, so that we're not notified
      while we're active.  */
@@ -7841,6 +7841,8 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
   gcc_checking_assert (!result || !pending_recursion);
   VAR_LOC_FROM (var) = loc_from;
   VAR_LOC_DEPTH (var) = depth;
+
+  gcc_checking_assert (!depth == !result);
 
   elcd->depth = update_depth (saved_depth, depth);
 

@@ -1,3 +1,11 @@
+2011-11-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/50869
+	* cselib.c (cfa_base_preserved_regno): Initialize.
+	(cselib_expand_value_rtx_1): Don't expand it.
+	* var-tracking.c (vt_expand_var_loc_chain): Initialize depth.
+	Check it's only zero if result is NULL.
+
 2011-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (fixuns_trunc<mode><sseintvecmodelower>2): New
