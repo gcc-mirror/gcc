@@ -2323,32 +2323,13 @@
    (set_attr "mode" "TI")])
 
 (define_expand "fixuns_trunc<mode><sseintvecmodelower>2"
-  [(set (match_dup 4)
-	(unspec:VF1
-	  [(match_operand:VF1 1 "register_operand" "")
-	   (match_dup 2)
-	   (const_int 29)] UNSPEC_PCMP))
-   (set (match_dup 5)
-	(and:VF1 (match_dup 4) (match_dup 3)))
-   (set (match_dup 6)
-	(plus:VF1 (match_dup 1) (match_dup 5)))
-   (set (match_operand:<sseintvecmode> 0 "register_operand" "")
-	(fix:<sseintvecmode> (match_dup 6)))]
+  [(match_operand:<sseintvecmode> 0 "register_operand" "")
+   (match_operand:VF1 1 "register_operand" "")]
   "TARGET_AVX"
 {
-  REAL_VALUE_TYPE MTWO32r, TWO31r;
-  int i;
-
-  real_ldexp (&TWO31r, &dconst1, 31);
-  operands[2] = const_double_from_real_value (TWO31r, SFmode);
-  operands[2] = ix86_build_const_vector (<MODE>mode, 1, operands[2]);
-  operands[2] = force_reg (<MODE>mode, operands[2]);
-  real_ldexp (&MTWO32r, &dconstm1, 32);
-  operands[3] = const_double_from_real_value (MTWO32r, SFmode);
-  operands[3] = ix86_build_const_vector (<MODE>mode, 1, operands[3]);
-  operands[3] = force_reg (<MODE>mode, operands[3]);
-  for (i = 4; i < 7; i++)
-    operands[i] = gen_reg_rtx (<MODE>mode);
+  rtx tmp = ix86_expand_adjust_ufix_to_sfix_si (operands[1]);
+  emit_insn (gen_fix_trunc<mode><sseintvecmodelower>2 (operands[0], tmp));
+  DONE;
 })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3124,6 +3105,22 @@
   emit_insn (gen_vec_interleave_lowv2di (gen_lowpart (V2DImode, operands[0]),
 					 gen_lowpart (V2DImode, r1),
 					 gen_lowpart (V2DImode, r2)));
+  DONE;
+})
+
+(define_mode_attr ssepackfltmode
+  [(V4DF "V8SI") (V2DF "V4SI")])
+
+(define_expand "vec_pack_ufix_trunc_<mode>"
+  [(match_operand:<ssepackfltmode> 0 "register_operand" "")
+   (match_operand:VF2 1 "register_operand" "")
+   (match_operand:VF2 2 "register_operand" "")]
+  "TARGET_AVX"
+{
+  rtx tmp[2];
+  tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1]);
+  tmp[1] = ix86_expand_adjust_ufix_to_sfix_si (operands[2]);
+  emit_insn (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp[0], tmp[1]));
   DONE;
 })
 

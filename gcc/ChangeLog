@@ -1,3 +1,14 @@
+2011-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-protos.h (ix86_expand_adjust_ufix_to_sfix_si): New
+	prototype.
+	* config/i386/i386.c (ix86_expand_adjust_ufix_to_sfix_si): New
+	function.
+	* config/i386/sse.md (fixuns_trunc<mode><sseintvecmodelower>2): Use
+	it.
+	(ssepackfltmode): New mode attr.
+	(vec_pack_ufix_trunc_<mode>): New expander.
+
 2011-10-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (floatsi<mode>2_vector_sse_with_temp splitter):

@@ -17016,6 +17016,46 @@ ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
     emit_move_insn (target, fp_hi);
 }
 
+/* Adjust a V*SFmode/V*DFmode value VAL so that *sfix_trunc* resp. fix_trunc*
+   pattern can be used on it instead of *ufix_trunc* resp. fixuns_trunc*.
+   This is done by subtracting 0x1p32 from VAL if VAL is greater or equal
+   (non-signalling) than 0x1p31.  */
+
+rtx
+ix86_expand_adjust_ufix_to_sfix_si (rtx val)
+{
+  REAL_VALUE_TYPE MTWO32r, TWO31r;
+  rtx two31r, mtwo32r, tmp[3];
+  enum machine_mode mode = GET_MODE (val);
+  enum machine_mode scalarmode = GET_MODE_INNER (mode);
+  rtx (*cmp) (rtx, rtx, rtx, rtx);
+  int i;
+
+  for (i = 0; i < 3; i++)
+    tmp[i] = gen_reg_rtx (mode);
+  real_ldexp (&TWO31r, &dconst1, 31);
+  two31r = const_double_from_real_value (TWO31r, scalarmode);
+  two31r = ix86_build_const_vector (mode, 1, two31r);
+  two31r = force_reg (mode, two31r);
+  real_ldexp (&MTWO32r, &dconstm1, 32);
+  mtwo32r = const_double_from_real_value (MTWO32r, scalarmode);
+  mtwo32r = ix86_build_const_vector (mode, 1, mtwo32r);
+  mtwo32r = force_reg (mode, mtwo32r);
+  switch (mode)
+    {
+    case V8SFmode: cmp = gen_avx_cmpv8sf3; break;
+    case V4SFmode: cmp = gen_avx_cmpv4sf3; break;
+    case V4DFmode: cmp = gen_avx_cmpv4df3; break;
+    case V2DFmode: cmp = gen_avx_cmpv2df3; break;
+    default: gcc_unreachable ();
+    }
+  emit_insn (cmp (tmp[0], val, two31r, GEN_INT (29)));
+  tmp[1] = expand_simple_binop (mode, AND, tmp[0], mtwo32r, tmp[1],
+				0, OPTAB_DIRECT);
+  return expand_simple_binop (mode, PLUS, val, tmp[1], tmp[2],
+			      0, OPTAB_DIRECT);
+}
+
 /* A subroutine of ix86_build_signbit_mask.  If VECT is true,
    then replicate the value for all elements of the vector
    register.  */
