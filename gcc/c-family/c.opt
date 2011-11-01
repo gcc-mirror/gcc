@@ -752,8 +752,8 @@ C ObjC C++ ObjC++
 Emit debug annotations during preprocessing
 
 fdeduce-init-list
-C++ ObjC++ Var(flag_deduce_init_list) Init(1)
--fno-deduce-init-list	disable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
+C++ ObjC++ Var(flag_deduce_init_list) Init(0)
+-fdeduce-init-list	enable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
 
 fdefault-inline
 C++ ObjC++ Ignore

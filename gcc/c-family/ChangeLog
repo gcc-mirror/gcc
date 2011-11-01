@@ -1,5 +1,7 @@
 2011-10-31  Jason Merrill  <jason@redhat.com>
 
+	* c.opt (-fdeduce-init-list): Off by default.
+
 	PR c++/50920
 	* c-common.h (cxx_dialect): Add cxx11 and cxx03.
 	* c.opt: Add -std=c++11, -std=gnu++11, -std=gnu++03,
