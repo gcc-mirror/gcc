@@ -58,6 +58,7 @@
 #define BE8_LINK_SPEC \
   " %{mbig-endian:%{march=armv7-a|mcpu=cortex-a5	\
    |mcpu=cortex-a8|mcpu=cortex-a9|mcpu=cortex-a15	\
+   |mcpu=generic-armv7-a				\
    |march=armv7-m|mcpu=cortex-m3			\
    |march=armv7e-m|mcpu=cortex-m4			\
    |march=armv6-m|mcpu=cortex-m0			\
