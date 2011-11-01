@@ -1586,8 +1586,10 @@ ${pch3_output}: ${pch3_source} ${pch2_output}
 # are installed by libsupc++, so only the first four and the sub-includes
 # are copied here.
 install-freestanding-headers:
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/bits
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
+	$(INSTALL_DATA) ${glibcxx_srcdir}/include/bits/c++0x_warning.h \
+	  $(DESTDIR)${gxx_include_dir}/bits
 	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h \
 	  ${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h \
 	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \

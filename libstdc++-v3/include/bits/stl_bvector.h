@@ -57,7 +57,9 @@
 #ifndef _STL_BVECTOR_H
 #define _STL_BVECTOR_H 1
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <initializer_list>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

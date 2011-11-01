@@ -32,7 +32,9 @@
 
 #pragma GCC system_header
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# include <bits/c++0x_warning.h>
+#endif // C++0x
 
 #pragma GCC visibility push(default)
 
@@ -99,5 +101,4 @@ namespace std
 }
 
 #pragma GCC visibility pop
-#endif // C++0x
 #endif // _INITIALIZER_LIST

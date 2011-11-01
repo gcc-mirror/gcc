@@ -1,3 +1,9 @@
+2011-10-31  Jason Merrill  <jason@redhat.com>
+
+	* include/Makefile.am (install-freestanding-headers): Install
+	c++0x_warning.h.
+	* libsupc++/initializer_list: Include it.
+
 2011-10-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* acinclude.m4 (GLIBCXX_CONFIGURE): Refer to GNU/Linux.
