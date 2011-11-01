@@ -1335,10 +1335,11 @@ lookup_conversion_operator (tree class_type, tree type)
 }
 
 /* TYPE is a class type. Return the index of the fields within
-   the method vector with name NAME, or -1 if no such field exists.  */
+   the method vector with name NAME, or -1 if no such field exists.
+   Does not lazily declare implicitly-declared member functions.  */
 
-int
-lookup_fnfields_1 (tree type, tree name)
+static int
+lookup_fnfields_idx_nolazy (tree type, tree name)
 {
   VEC(tree,gc) *method_vec;
   tree fn;
@@ -1347,34 +1348,6 @@ lookup_fnfields_1 (tree type, tree name)
 
   if (!CLASS_TYPE_P (type))
     return -1;
-
-  if (COMPLETE_TYPE_P (type))
-    {
-      if ((name == ctor_identifier
-	   || name == base_ctor_identifier
-	   || name == complete_ctor_identifier))
-	{
-	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
-	    lazily_declare_fn (sfk_constructor, type);
-	  if (CLASSTYPE_LAZY_COPY_CTOR (type))
-	    lazily_declare_fn (sfk_copy_constructor, type);
-	  if (CLASSTYPE_LAZY_MOVE_CTOR (type))
-	    lazily_declare_fn (sfk_move_constructor, type);
-	}
-      else if (name == ansi_assopname (NOP_EXPR))
-	{
-	  if (CLASSTYPE_LAZY_COPY_ASSIGN (type))
-	    lazily_declare_fn (sfk_copy_assignment, type);
-	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (type))
-	    lazily_declare_fn (sfk_move_assignment, type);
-	}
-      else if ((name == dtor_identifier
-		|| name == base_dtor_identifier
-		|| name == complete_dtor_identifier
-		|| name == deleting_dtor_identifier)
-	       && CLASSTYPE_LAZY_DESTRUCTOR (type))
-	lazily_declare_fn (sfk_destructor, type);
-    }
 
   method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
@@ -1445,6 +1418,46 @@ lookup_fnfields_1 (tree type, tree name)
   return -1;
 }
 
+/* TYPE is a class type. Return the index of the fields within
+   the method vector with name NAME, or -1 if no such field exists.  */
+
+int
+lookup_fnfields_1 (tree type, tree name)
+{
+  if (!CLASS_TYPE_P (type))
+    return -1;
+
+  if (COMPLETE_TYPE_P (type))
+    {
+      if ((name == ctor_identifier
+	   || name == base_ctor_identifier
+	   || name == complete_ctor_identifier))
+	{
+	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
+	    lazily_declare_fn (sfk_constructor, type);
+	  if (CLASSTYPE_LAZY_COPY_CTOR (type))
+	    lazily_declare_fn (sfk_copy_constructor, type);
+	  if (CLASSTYPE_LAZY_MOVE_CTOR (type))
+	    lazily_declare_fn (sfk_move_constructor, type);
+	}
+      else if (name == ansi_assopname (NOP_EXPR))
+	{
+	  if (CLASSTYPE_LAZY_COPY_ASSIGN (type))
+	    lazily_declare_fn (sfk_copy_assignment, type);
+	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (type))
+	    lazily_declare_fn (sfk_move_assignment, type);
+	}
+      else if ((name == dtor_identifier
+		|| name == base_dtor_identifier
+		|| name == complete_dtor_identifier
+		|| name == deleting_dtor_identifier)
+	       && CLASSTYPE_LAZY_DESTRUCTOR (type))
+	lazily_declare_fn (sfk_destructor, type);
+    }
+
+  return lookup_fnfields_idx_nolazy (type, name);
+}
+
 /* TYPE is a class type. Return the field within the method vector with
    name NAME, or NULL_TREE if no such field exists.  */
 
@@ -1452,6 +1465,17 @@ tree
 lookup_fnfields_slot (tree type, tree name)
 {
   int ix = lookup_fnfields_1 (complete_type (type), name);
+  if (ix < 0)
+    return NULL_TREE;
+  return VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
+}
+
+/* As above, but avoid lazily declaring functions.  */
+
+tree
+lookup_fnfields_slot_nolazy (tree type, tree name)
+{
+  int ix = lookup_fnfields_idx_nolazy (complete_type (type), name);
   if (ix < 0)
     return NULL_TREE;
   return VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
