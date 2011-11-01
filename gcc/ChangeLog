@@ -1,3 +1,10 @@
+2011-11-01  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.c (sparc_expand_vcond): New function.
+	* config/sparc/sparc-protos.h (sparc_expand_vcond): Declare it.
+	* config/sparc/sparc.md (vcond<mode><mode>): New VIS3 expander.
+	(vconduv8qiv8qi): Likewise.
+
 2011-11-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/50869
