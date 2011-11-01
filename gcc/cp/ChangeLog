@@ -1,3 +1,14 @@
+2011-11-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50500
+	DR 1082
+	* search.c (lookup_fnfields_idx_nolazy): Split out from...
+	(lookup_fnfields_1): ...here.
+	(lookup_fnfields_slot_nolazy): Use it.
+	* cp-tree.h: Declare it.
+	* class.c (type_has_move_assign): Use it.
+	(type_has_user_declared_move_assign): Likewise.
+
 2011-10-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50920
