@@ -776,26 +776,35 @@
 
 
 (define_insn "*addhi3_zero_extend"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(plus:HI (zero_extend:HI
-		  (match_operand:QI 1 "register_operand" "r"))
-		 (match_operand:HI 2 "register_operand" "0")))]
+  [(set (match_operand:HI 0 "register_operand"                         "=r")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                 (match_operand:HI 2 "register_operand"                 "0")))]
   ""
-  "add %A0,%1
-	adc %B0,__zero_reg__"
+  "add %A0,%1\;adc %B0,__zero_reg__"
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
 
 (define_insn "*addhi3_zero_extend1"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(plus:HI (match_operand:HI 1 "register_operand" "%0")
-		 (zero_extend:HI
-		  (match_operand:QI 2 "register_operand" "r"))))]
+  [(set (match_operand:HI 0 "register_operand"                         "=r")
+        (plus:HI (match_operand:HI 1 "register_operand"                 "0")
+                 (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   ""
-  "add %A0,%2
-	adc %B0,__zero_reg__"
+  "add %A0,%2\;adc %B0,__zero_reg__"
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
+
+(define_insn "*addhi3.sign_extend1"
+  [(set (match_operand:HI 0 "register_operand"                         "=r")
+        (plus:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                 (match_operand:HI 2 "register_operand"                 "0")))]
+  ""
+  {
+    return reg_overlap_mentioned_p (operands[0], operands[1])
+      ? "mov __tmp_reg__,%1\;add %A0,%1\;adc %B0,__zero_reg__\;sbrc __tmp_reg__,7\;dec %B0"
+      : "add %A0,%1\;adc %B0,__zero_reg__\;sbrc %1,7\;dec %B0";
+  }
+  [(set_attr "length" "5")
+   (set_attr "cc" "clobber")])
 
 (define_insn "*addhi3_sp"
   [(set (match_operand:HI 1 "stack_register_operand"           "=q")
@@ -956,6 +965,19 @@
   [(set_attr "length" "2")
    (set_attr "cc" "set_czn")])
 
+(define_insn "*subhi3.sign_extend2"
+  [(set (match_operand:HI 0 "register_operand"                          "=r")
+        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
+                  (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
+  ""
+  {
+    return reg_overlap_mentioned_p (operands[0], operands[2])
+      ? "mov __tmp_reg__,%2\;sub %A0,%2\;sbc %B0,__zero_reg__\;sbrc __tmp_reg__,7\;inc %B0"
+      : "sub %A0,%2\;sbc %B0,__zero_reg__\;sbrc %2,7\;inc %B0";
+  }
+  [(set_attr "length" "5")
+   (set_attr "cc" "clobber")])
+
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand"          "=r")
         (minus:SI (match_operand:SI 1 "register_operand" "0")
@@ -1053,6 +1075,41 @@
   "sbrc %2,7\;inc %0"
   [(set_attr "length" "2")
    (set_attr "cc" "clobber")])
+
+(define_insn "*addqi3.lt0"
+  [(set (match_operand:QI 0 "register_operand"                 "=r")
+        (plus:QI (lt:QI (match_operand:QI 1 "register_operand"  "r")
+                        (const_int 0))
+                 (match_operand:QI 2 "register_operand"         "0")))]
+  ""
+  "sbrc %1,7\;inc %0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*addhi3.lt0"
+  [(set (match_operand:HI 0 "register_operand"                   "=w,r")
+        (plus:HI (lt:HI (match_operand:QI 1 "register_operand"    "r,r")
+                        (const_int 0))
+                 (match_operand:HI 2 "register_operand"           "0,0")))
+   (clobber (match_scratch:QI 3                                  "=X,&1"))]
+  ""
+  "@
+	sbrc %1,7\;adiw %0,1
+	lsl %1\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__"
+  [(set_attr "length" "2,3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*addsi3.lt0"
+  [(set (match_operand:SI 0 "register_operand"                       "=r")
+        (plus:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"  "r")
+                              (const_int 31))
+                 (match_operand:SI 2 "register_operand"               "0")))]
+  ""
+  "mov __tmp_reg__,%D1\;lsl __tmp_reg__
+	adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
+  [(set_attr "length" "6")
+   (set_attr "cc" "clobber")])
+  
 
 ;; "umulqihi3"
 ;; "mulqihi3"

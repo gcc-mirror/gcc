@@ -6477,11 +6477,16 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
     case UDIV:
     case UMOD:
       if (!speed)
-	*total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 2 : 1);
+        *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 2 : 1);
       else
-	return false;
+        *total = COSTS_N_INSNS (15 * GET_MODE_SIZE (mode));
       *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+      /* For div/mod with const-int divisor we have at least the cost of
+         loading the divisor. */
+      if (CONST_INT_P (XEXP (x, 1)))
+        *total += COSTS_N_INSNS (GET_MODE_SIZE (mode));
+      /* Add some overall penaly for clobbering and moving around registers */
+      *total += COSTS_N_INSNS (2);
       return true;
 
     case ROTATE:
