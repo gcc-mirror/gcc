@@ -233,11 +233,18 @@
 (define_mode_attr sseintvecmode
   [(V8SF "V8SI") (V4DF "V4DI")
    (V4SF "V4SI") (V2DF "V2DI")
-   (V4DF "V4DI") (V8SF "V8SI")
    (V8SI "V8SI") (V4DI "V4DI")
    (V4SI "V4SI") (V2DI "V2DI")
    (V16HI "V16HI") (V8HI "V8HI")
    (V32QI "V32QI") (V16QI "V16QI")])
+
+(define_mode_attr sseintvecmodelower
+  [(V8SF "v8si") (V4DF "v4di")
+   (V4SF "v4si") (V2DF "v2di")
+   (V8SI "v8si") (V4DI "v4di")
+   (V4SI "v4si") (V2DI "v2di")
+   (V16HI "v16hi") (V8HI "v8hi")
+   (V32QI "v32qi") (V16QI "v16qi")])
 
 ;; Mapping of vector modes to a vector mode of double size
 (define_mode_attr ssedoublevecmode
@@ -2224,33 +2231,26 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "DI")])
 
-(define_insn "floatv8siv8sf2"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
-	(float:V8SF (match_operand:V8SI 1 "nonimmediate_operand" "xm")))]
-  "TARGET_AVX"
-  "vcvtdq2ps\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "floatv4siv4sf2"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
-	(float:V4SF (match_operand:V4SI 1 "nonimmediate_operand" "xm")))]
+(define_insn "float<sseintvecmodelower><mode>2"
+  [(set (match_operand:VF1 0 "register_operand" "=x")
+	(float:VF1
+	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2"
   "%vcvtdq2ps\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "V4SF")])
+   (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "floatunsv4siv4sf2"
+(define_expand "floatuns<sseintvecmodelower><mode>2"
   [(set (match_dup 5)
-	(float:V4SF (match_operand:V4SI 1 "nonimmediate_operand" "")))
+	(float:VF1
+	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "")))
    (set (match_dup 6)
-	(lt:V4SF (match_dup 5) (match_dup 3)))
+	(lt:VF1 (match_dup 5) (match_dup 3)))
    (set (match_dup 7)
-	(and:V4SF (match_dup 6) (match_dup 4)))
-   (set (match_operand:V4SF 0 "register_operand" "")
-	(plus:V4SF (match_dup 5) (match_dup 7)))]
+	(and:VF1 (match_dup 6) (match_dup 4)))
+   (set (match_operand:VF1 0 "register_operand" "")
+	(plus:VF1 (match_dup 5) (match_dup 7)))]
   "TARGET_SSE2"
 {
   REAL_VALUE_TYPE TWO32r;
@@ -2260,12 +2260,12 @@
   real_ldexp (&TWO32r, &dconst1, 32);
   x = const_double_from_real_value (TWO32r, SFmode);
 
-  operands[3] = force_reg (V4SFmode, CONST0_RTX (V4SFmode));
-  operands[4] = force_reg (V4SFmode,
-			   ix86_build_const_vector (V4SFmode, 1, x));
+  operands[3] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+  operands[4] = force_reg (<MODE>mode,
+			   ix86_build_const_vector (<MODE>mode, 1, x));
 
   for (i = 5; i < 8; i++)
-    operands[i] = gen_reg_rtx (V4SFmode);
+    operands[i] = gen_reg_rtx (<MODE>mode);
 })
 
 (define_insn "avx_cvtps2dq256"
