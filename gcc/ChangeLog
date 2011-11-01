@@ -1,3 +1,12 @@
+2011-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (sseintvecmode): Remove duplicate modes.
+	(sseintvecmodelower): New mode iterator.
+	(floatv8siv8sf2, floatunsv4siv4sf2): Macroize into...
+	(float<sseintvecmodelower><mode>2): ... this using VF1 iterator.
+	(floatunsv4siv4sf2): Macroize into...
+	(floatuns<sseintvecmodelower><mode>2): ... this using VF1 iterator.
+
 2011-10-31  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (cmask patterns): Allow zero operand.
