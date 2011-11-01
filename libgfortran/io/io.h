@@ -576,10 +576,6 @@ gfc_unit;
 extern gfc_offset max_offset;
 internal_proto(max_offset);
 
-/* Unit number to be assigned when NEWUNIT is used in an OPEN statement.  */
-extern GFC_INTEGER_4 next_available_newunit;
-internal_proto(next_available_newunit);
-
 /* Unit tree root.  */
 extern gfc_unit *unit_root;
 internal_proto(unit_root);

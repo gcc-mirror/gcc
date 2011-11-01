@@ -71,8 +71,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Subroutines related to units */
 
-GFC_INTEGER_4 next_available_newunit;
+/* Unit number to be assigned when NEWUNIT is used in an OPEN statement.  */
 #define GFC_FIRST_NEWUNIT -10
+static GFC_INTEGER_4 next_available_newunit = GFC_FIRST_NEWUNIT;
 
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
@@ -525,8 +526,6 @@ init_units (void)
   __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
 #endif
 
-  next_available_newunit = GFC_FIRST_NEWUNIT;
-
   if (options.stdin_unit >= 0)
     {				/* STDIN */
       u = insert_unit (options.stdin_unit);
@@ -808,16 +807,19 @@ get_unique_unit_number (st_parameter_open *opp)
 {
   GFC_INTEGER_4 num;
 
+#ifdef HAVE_SYNC_FETCH_AND_ADD
+  num = __sync_fetch_and_add (&next_available_newunit, -1);
+#else
   __gthread_mutex_lock (&unit_lock);
   num = next_available_newunit--;
+  __gthread_mutex_unlock (&unit_lock);
+#endif
 
   /* Do not allow NEWUNIT numbers to wrap.  */
-  if (next_available_newunit >=  GFC_FIRST_NEWUNIT )
+  if (num > GFC_FIRST_NEWUNIT )
     {
-      __gthread_mutex_unlock (&unit_lock);
       generate_error (&opp->common, LIBERROR_INTERNAL, "NEWUNIT exhausted");
       return 0;
     }
-  __gthread_mutex_unlock (&unit_lock);
   return num;
 }

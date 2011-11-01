@@ -1,3 +1,11 @@
+2011-11-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/io.h (next_available_newunit): Remove prototype.
+	* io/unit.h (next_available_newunit): Make variable static,
+	initialize it.
+	(init_units): Don't initialize next_available_newunit.
+	(get_unique_unit_number): Use atomic builtin if available.
+
 2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/inquire.c (inquire_via_unit): Check whether we're at the
