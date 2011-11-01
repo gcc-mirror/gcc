@@ -1,3 +1,14 @@
+2011-11-01  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/50908
+	* tree-ssa-tail-merge.c (update_vuses): Now that edges are removed
+	before update_vuses, test for 1 predecessor rather than two.
+	(delete_block_update_dominator_info): New function, part of it factored
+	out of ...
+	(replace_block_by): Use delete_block_update_dominator_info.  Call
+	update_vuses after deleting bb1 and updating dominator info, instead of
+	before.
+
 2011-11-01  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (sparc_expand_vcond): New function.

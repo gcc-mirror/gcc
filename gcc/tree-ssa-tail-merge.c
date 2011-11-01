@@ -1458,7 +1458,7 @@ update_vuses (bool vuse1_phi_args, tree vuse1, tree vuse2, basic_block bb2,
 	      if (!dominated_by_p (CDI_DOMINATORS, pred, bb2))
 		continue;
 
-	      if (pred == bb2 && EDGE_COUNT (gimple_bb (stmt)->preds) == 2)
+	      if (pred == bb2 && EDGE_COUNT (gimple_bb (stmt)->preds) == 1)
 		{
 		  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 		  unlink_virtual_phi (stmt, lhs);
@@ -1526,6 +1526,88 @@ vop_at_entry (basic_block bb)
 	  : NULL_TREE);
 }
 
+/* Given that all incoming edges of BB1 have been redirected to BB2, delete BB1
+   and recompute dominator info.  */
+
+static void
+delete_block_update_dominator_info (basic_block bb1, basic_block bb2)
+{
+  VEC (basic_block,heap) *fix_dom_bb;
+  unsigned int i;
+  basic_block bb, dom;
+  edge e;
+  edge_iterator ei;
+
+  /* Consider the following cfg, where A is the direct dominator of I:
+
+                A
+               / \
+              B   \
+             / \   \
+                C   D
+               /|   |\
+                E   F
+                |\ /|
+                | x |
+                |/ \|
+                G   H
+                 \ /
+                  I
+
+     Say E and F are duplicates, and F is removed.  The cfg then looks like
+     this:
+
+                A
+               / \
+              B   \
+             / \   \
+                C   D
+               / \ / \
+                  E
+                 / \
+                G   H
+                 \ /
+                  I
+
+     E is now the new direct dominator of I.
+
+     In order to calculate the new dominator info, we take the nearest common
+     dominator (A) of bb1 (F) and bb2 (E), and get the set of bbs immediately
+     dominated by it.  Some of this set may now be directly dominated by bb2.
+
+     Ideally we would have a means to determine which bbs in the set are now
+     dominated by bb2, and call set_immediate_dominator for those bbs, but we
+     don't, so instead we let iterate_fix_dominators figure it out.  */
+
+  /* Add bbs immediately dominated by the most common dominator.  */
+  dom = nearest_common_dominator (CDI_DOMINATORS, bb1, bb2);
+  fix_dom_bb = get_dominated_by (CDI_DOMINATORS, dom);
+
+  if (get_immediate_dominator (CDI_DOMINATORS, bb1) == dom)
+    for (i = 0; VEC_iterate (basic_block, fix_dom_bb, i, bb); ++i)
+      {
+	if (bb != bb1)
+	  continue;
+	VEC_unordered_remove (basic_block, fix_dom_bb, i);
+	break;
+      }
+
+  /* Add bb2, but not twice.  */
+  if (get_immediate_dominator (CDI_DOMINATORS, bb2) != dom)
+    VEC_safe_push (basic_block, heap, fix_dom_bb, bb2);
+  /* Add succs of bb2, but not twice.  */
+  FOR_EACH_EDGE (e, ei, bb2->succs)
+    if (get_immediate_dominator (CDI_DOMINATORS, e->dest) != dom)
+      VEC_safe_push (basic_block, heap, fix_dom_bb, e->dest);
+
+  delete_basic_block (bb1);
+  iterate_fix_dominators (CDI_DOMINATORS, fix_dom_bb, false);
+#if defined (ENABLE_CHECKING)
+  verify_dominators (CDI_DOMINATORS);
+#endif
+  VEC_free (basic_block, heap, fix_dom_bb);
+}
+
 /* Redirect all edges from BB1 to BB2, marks BB1 for removal, and if
    UPDATE_VOPS, inserts vop phis.  */
 
@@ -1539,7 +1621,6 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
   edge e;
   edge_iterator ei;
   bool vuse1_phi_args = false;
-  VEC (basic_block,heap) *fix_dom_bb;
 
   phi_vuse2 = vop_at_entry (bb2);
   if (phi_vuse2 != NULL_TREE && TREE_CODE (phi_vuse2) != SSA_NAME)
@@ -1550,7 +1631,8 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
       /* Find the vops at entry of bb1 and bb2.  */
       phi_vuse1 = vop_at_entry (bb1);
 
-      /* If both are not found, it means there's no need to update.  */
+      /* If both are not found, it means there's no need to update.  Uses old
+	 dominator info.  */
       if (phi_vuse1 == NULL_TREE && phi_vuse2 == NULL_TREE)
 	update_vops = false;
       else if (phi_vuse1 == NULL_TREE)
@@ -1591,25 +1673,20 @@ replace_block_by (basic_block bb1, basic_block bb2, bool update_vops)
 		     pred_edge, UNKNOWN_LOCATION);
     }
 
-  /* Update the vops.  */
+  /* Do updates that use bb1, before deleting bb1.  */
+  if (!update_vops)
+    release_last_vdef (bb1);
+  same_succ_flush_bb (bb1);
+
+  delete_block_update_dominator_info (bb1, bb2);
+
+  /* Update the vops.  Uses new dominator info.  */
   if (update_vops)
     {
       update_vuses (vuse1_phi_args, phi_vuse1, phi_vuse2, bb2,
 		    redirected_edges);
       VEC_free (edge, heap, redirected_edges);
     }
-  else
-    release_last_vdef (bb1);
-
-  same_succ_flush_bb (bb1);
-  delete_basic_block (bb1);
-
-  fix_dom_bb = VEC_alloc (basic_block, heap, 2);
-  VEC_safe_push (basic_block, heap, fix_dom_bb, bb2);
-  FOR_EACH_EDGE (e, ei, bb2->succs)
-    VEC_safe_push (basic_block, heap, fix_dom_bb, e->dest);
-  iterate_fix_dominators (CDI_DOMINATORS, fix_dom_bb, false);
-  VEC_free (basic_block, heap, fix_dom_bb);
 }
 
 /* Bbs for which update_debug_stmt need to be called.  */
