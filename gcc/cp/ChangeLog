@@ -1,3 +1,16 @@
+2011-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44277
+	* cvt.c (cp_convert_to_pointer): Warn for zero as null pointer
+	constant.
+	* typeck.c (cp_truthvalue_conversion): Handle pointers and member
+	function pointers under c_inhibit_evaluation_warnings; use
+	nullptr_node for data member pointers.
+	(cp_build_binary_op): Tweak, just forward to cp_convert op1,
+	either a nullptr_node or an integer_zero_node.
+	(build_ptrmemfunc): Use nullptr_node.
+	* init.c (build_zero_init_1): Likewise.
+
 2011-11-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50500

@@ -4142,6 +4142,12 @@ unsigned integers are disabled by default in C++ unless
 Do not warn for conversions between @code{NULL} and non-pointer
 types. @option{-Wconversion-null} is enabled by default.
 
+@item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
+@opindex Wzero-as-null-pointer-constant
+@opindex Wno-zero-as-null-pointer-constant
+Warn when a literal '0' is used as null pointer constant.  This can
+be useful to facilitate the conversion to @code{nullptr} in C++11.
+
 @item -Wempty-body
 @opindex Wempty-body
 @opindex Wno-empty-body

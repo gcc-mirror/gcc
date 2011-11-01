@@ -198,6 +198,11 @@ cp_convert_to_pointer (tree type, tree expr)
 
   if (null_ptr_cst_p (expr))
     {
+      if (c_inhibit_evaluation_warnings == 0
+	  && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
+	warning (OPT_Wzero_as_null_pointer_constant,
+		 "zero as null pointer constant");
+
       if (TYPE_PTRMEMFUNC_P (type))
 	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
 				 /*c_cast_p=*/false, tf_warning_or_error);
