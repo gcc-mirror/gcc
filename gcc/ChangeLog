@@ -5,7 +5,7 @@
 2011-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (splitters for int-float conversion): Use
-	reg_or_subregno in splitter constraints.
+	SUBREG_REG on SUBREGs in splitter constraints.
 
 2011-11-01  Jakub Jelinek  <jakub@redhat.com>
 
