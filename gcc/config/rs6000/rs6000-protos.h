@@ -173,6 +173,7 @@ extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern const char * output_isel (rtx *);
 extern void rs6000_call_indirect_aix (rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
+extern void get_ppc476_thunk_name (char name[32]);
 
 /* Declare functions in rs6000-c.c */
 

@@ -1,3 +1,28 @@
+2011-11-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config.gcc (powerpc*-*-linux*): Add powerpc*-*-linux*ppc476* variant.
+	* config/rs6000/476.h: New file.
+	* config/rs6000/476.opt: Likewise.
+	* config/rs6000/rs6000.h (TARGET_LINK_STACK): New define.
+	(SET_TARGET_LINK_STACK): Likewise.
+	(TARGET_ASM_CODE_END): Define.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Enable
+	TARGET_LINK_STACK for -mtune=476 and -mtune=476fp.
+	(rs6000_legitimize_tls_address): Emit the link stack preserving GOT
+	code if TARGET_LINK_STACK.
+	(rs6000_emit_load_toc_table): Likewise.
+	(output_function_profiler): Likewise
+	(macho_branch_islands): Likewise
+	(machopic_output_stub): Likewise
+	(get_ppc476_thunk_name): New function.
+	(rs6000_code_end): Likewise.
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_1, load_toc_v4_PIC_1b):
+	Convert to a define_expand.
+	(load_toc_v4_PIC_1_normal): New define_insn.
+	(load_toc_v4_PIC_1_476): Likewise.
+	(load_toc_v4_PIC_1b_normal): Likewise.
+	(load_toc_v4_PIC_1b_476): Likewise.
+
 2011-11-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50910
