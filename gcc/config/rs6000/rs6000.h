@@ -313,6 +313,14 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HAVE_AS_TLS 0
 #endif
 
+#ifndef TARGET_LINK_STACK
+#define TARGET_LINK_STACK 0
+#endif
+
+#ifndef SET_TARGET_LINK_STACK
+#define SET_TARGET_LINK_STACK(X) do { } while (0)
+#endif
+
 /* Return 1 for a symbol ref for a thread-local storage symbol.  */
 #define RS6000_SYMBOL_REF_TLS_P(RTX) \
   (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)

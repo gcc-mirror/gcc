@@ -1613,7 +1613,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P rs6000_legitimate_constant_p
 
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 
 /* Simplifications for entries below.  */
@@ -3238,6 +3237,11 @@ rs6000_option_override_internal (bool global_init_p)
   if (global_init_p)
     target_option_default_node = target_option_current_node
       = build_target_option_node ();
+
+  /* If not explicitly specified via option, decide whether to generate the
+     extra blr's required to preserve the link stack on some cpus (eg, 476).  */
+  if (TARGET_LINK_STACK == -1)
+    SET_TARGET_LINK_STACK (rs6000_cpu == PROCESSOR_PPC476 && flag_pic);
 
   return ret;
 }
@@ -5868,6 +5872,8 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		  lab = gen_label_rtx ();
 		  emit_insn (gen_load_toc_v4_PIC_1b (gsym, lab));
 		  emit_move_insn (tmp1, gen_rtx_REG (Pmode, LR_REGNO));
+		  if (TARGET_LINK_STACK)
+		    emit_insn (gen_addsi3 (tmp1, tmp1, GEN_INT (4)));
 		  emit_move_insn (tmp2, mem);
 		  last = emit_insn (gen_addsi3 (got, tmp1, tmp2));
 		  set_unique_reg_note (last, REG_EQUAL, gsym);
@@ -18866,6 +18872,8 @@ rs6000_emit_load_toc_table (int fromprolog)
 	  lab = gen_label_rtx ();
 	  emit_insn (gen_load_toc_v4_PIC_1b (tocsym, lab));
 	  emit_move_insn (dest, gen_rtx_REG (Pmode, LR_REGNO));
+	  if (TARGET_LINK_STACK)
+	    emit_insn (gen_addsi3 (dest, dest, GEN_INT (4)));
 	  emit_move_insn (temp0, gen_rtx_MEM (Pmode, dest));
 	}
       emit_insn (gen_addsi3 (dest, temp0, dest));
@@ -22526,7 +22534,15 @@ output_function_profiler (FILE *file, int labelno)
 	}
       else if (TARGET_SECURE_PLT && flag_pic)
 	{
-	  asm_fprintf (file, "\tbcl 20,31,1f\n1:\n\t{st|stw} %s,4(%s)\n",
+	  if (TARGET_LINK_STACK)
+	    {
+	      char name[32];
+	      get_ppc476_thunk_name (name);
+	      asm_fprintf (file, "\tbl %s\n", name);
+	    }
+	  else
+	    asm_fprintf (file, "\tbcl 20,31,1f\n1:\n");
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
 		       reg_names[0], reg_names[1]);
 	  asm_fprintf (file, "\tmflr %s\n", reg_names[12]);
 	  asm_fprintf (file, "\t{cau|addis} %s,%s,",
@@ -22551,10 +22567,24 @@ output_function_profiler (FILE *file, int labelno)
 	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
 		       reg_names[0], reg_names[1]);
 	  /* Now, we need to get the address of the label.  */
-	  fputs ("\tbcl 20,31,1f\n\t.long ", file);
-	  assemble_name (file, buf);
-	  fputs ("-.\n1:", file);
-	  asm_fprintf (file, "\tmflr %s\n", reg_names[11]);
+	  if (TARGET_LINK_STACK)
+	    {
+	      char name[32];
+	      get_ppc476_thunk_name (name);
+	      asm_fprintf (file, "\tbl %s\n\tb 1f\n\t.long ", name);
+	      assemble_name (file, buf);
+	      fputs ("-.\n1:", file);
+	      asm_fprintf (file, "\tmflr %s\n", reg_names[11]);
+	      asm_fprintf (file, "\taddi %s,%s,4\n",
+			   reg_names[11], reg_names[11]);
+	    }
+	  else
+	    {
+	      fputs ("\tbcl 20,31,1f\n\t.long ", file);
+	      assemble_name (file, buf);
+	      fputs ("-.\n1:", file);
+	      asm_fprintf (file, "\tmflr %s\n", reg_names[11]);
+	    }
 	  asm_fprintf (file, "\t{l|lwz} %s,0(%s)\n",
 		       reg_names[0], reg_names[11]);
 	  asm_fprintf (file, "\t{cax|add} %s,%s,%s\n",
@@ -25037,11 +25067,24 @@ macho_branch_islands (void)
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       if (flag_pic)
 	{
-	  strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
-	  strcat (tmp_buf, label);
-	  strcat (tmp_buf, "_pic\n");
-	  strcat (tmp_buf, label);
-	  strcat (tmp_buf, "_pic:\n\tmflr r11\n");
+	  if (TARGET_LINK_STACK)
+	    {
+	      char name[32];
+	      get_ppc64_thunk_name (name);
+	      strcat (tmp_buf, ":\n\tmflr r0\n\tbl ");
+	      strcat (tmp_buf, name);
+	      strcat (tmp_buf, "\n");
+	      strcat (tmp_buf, label);
+	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
+	    }
+	  else
+	    {
+	      strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
+	      strcat (tmp_buf, label);
+	      strcat (tmp_buf, "_pic\n");
+	      strcat (tmp_buf, label);
+	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
+	    }
 
 	  strcat (tmp_buf, "\taddis r11,r11,ha16(");
 	  strcat (tmp_buf, name_buf);
@@ -25187,8 +25230,18 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       sprintf (local_label_0, "\"L%011d$spb\"", label);
 
       fprintf (file, "\tmflr r0\n");
-      fprintf (file, "\tbcl 20,31,%s\n", local_label_0);
-      fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
+      if (TARGET_LINK_STACK)
+	{
+	  char name[32];
+	  get_ppc476_thunk_name (name);
+	  fprintf (file, "\tbl %s\n", name);
+	  fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
+	}
+      else
+	{
+	  fprintf (file, "\tbcl 20,31,%s\n", local_label_0);
+	  fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
+	}
       fprintf (file, "\taddis r11,r11,ha16(%s-%s)\n",
 	       lazy_ptr_name, local_label_0);
       fprintf (file, "\tmtlr r0\n");
@@ -27894,5 +27947,74 @@ rs6000_save_toc_in_prologue_p (void)
 {
   return (cfun && cfun->machine && cfun->machine->save_toc_in_prologue);
 }
+
+/* Fills in the label name that should be used for a 476 link stack thunk.  */
+
+void
+get_ppc476_thunk_name (char name[32])
+{
+  gcc_assert (TARGET_LINK_STACK);
+
+  if (HAVE_GAS_HIDDEN)
+    sprintf (name, "__ppc476.get_thunk");
+  else
+    ASM_GENERATE_INTERNAL_LABEL (name, "LPPC476_", 0);
+}
+
+/* This function emits the simple thunk routine that is used to preserve
+   the link stack on the 476 cpu.  */
+
+static void
+rs6000_code_end (void)
+{
+  char name[32];
+  tree decl;
+
+  if (!TARGET_LINK_STACK)
+    return;
+
+  get_ppc476_thunk_name (name);
+
+  decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL, get_identifier (name),
+		     build_function_type_list (void_type_node, NULL_TREE));
+  DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
+				   NULL_TREE, void_type_node);
+  TREE_PUBLIC (decl) = 1;
+  TREE_STATIC (decl) = 1;
+
+  if (HAVE_GAS_HIDDEN)
+    {
+      DECL_COMDAT_GROUP (decl) = DECL_ASSEMBLER_NAME (decl);
+      targetm.asm_out.unique_section (decl, 0);
+      switch_to_section (get_named_section (decl, NULL, 0));
+      DECL_WEAK (decl) = 1;
+      ASM_WEAKEN_DECL (asm_out_file, decl, name, 0);
+      targetm.asm_out.globalize_label (asm_out_file, name);
+      targetm.asm_out.assemble_visibility (decl, VISIBILITY_HIDDEN);
+      ASM_DECLARE_FUNCTION_NAME (asm_out_file, name, decl);
+    }
+  else
+    {
+      switch_to_section (text_section);
+      ASM_OUTPUT_LABEL (asm_out_file, name);
+    }
+
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  current_function_decl = decl;
+  init_function_start (decl);
+  first_function_block_is_cold = false;
+  /* Make sure unwind info is emitted for the thunk if needed.  */
+  final_start_function (emit_barrier (), asm_out_file, 1);
+
+  fputs ("\tblr\n", asm_out_file);
+
+  final_end_function ();
+  init_insn_lengths ();
+  free_after_compilation (cfun);
+  set_cfun (NULL);
+  current_function_decl = NULL;
+}
+
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"

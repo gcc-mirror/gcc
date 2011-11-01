@@ -2145,6 +2145,9 @@ powerpc-*-linux* | powerpc64-*-linux*)
 	esac
 	tmake_file="${tmake_file} t-slibgcc-libgcc"
 	case ${target} in
+	    powerpc*-*-linux*ppc476*)
+		tm_file="${tm_file} rs6000/476.h"
+		extra_options="${extra_options} rs6000/476.opt" ;;
 	    powerpc*-*-linux*altivec*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
 	    powerpc*-*-linux*spe*)
