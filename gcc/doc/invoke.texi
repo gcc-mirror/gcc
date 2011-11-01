@@ -235,7 +235,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
--Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
+-Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wno-deprecated  @gol
 -Wno-deprecated-declarations -Wdisabled-optimization  @gol
@@ -1574,16 +1574,13 @@ C++ code.
 GNU dialect of @option{-std=c++98}.  This is the default for
 C++ code.
 
-@item c++0x
-The working draft of the upcoming ISO C++0x standard. This option
-enables experimental features that are likely to be included in
-C++0x. The working draft is constantly changing, and any feature that is
-enabled by this flag may be removed from future versions of GCC if it is
-not part of the C++0x standard.
+@item c++11
+The 2011 ISO C++ standard plus amendments.  Support for C++11 is still
+experimental, and may change in incompatible ways in future releases.
 
-@item gnu++0x
-GNU dialect of @option{-std=c++0x}. This option enables
-experimental features that may be removed in future versions of GCC.
+@item gnu++11
+GNU dialect of @option{-std=c++11}. Support for C++11 is still
+experimental, and may change in incompatible ways in future releases.
 @end table
 
 @item -fgnu89-inline
@@ -1870,7 +1867,7 @@ Version 5 corrects the mangling of attribute const/volatile on
 function pointer types, decltype of a plain decl, and use of a
 function parameter in the declaration of another parameter.
 
-Version 6 corrects the promotion behavior of C++0x scoped enums.
+Version 6 corrects the promotion behavior of C++11 scoped enums.
 
 See also @option{-Wabi}.
 
@@ -1905,7 +1902,7 @@ been added for putting variables into BSS without making them common.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
-Set the maximum nested evaluation depth for C++0x constexpr functions
+Set the maximum nested evaluation depth for C++11 constexpr functions
 to @var{n}.  A limit is needed to detect endless recursion during
 constant expression evaluation.  The minimum specified by the standard
 is 512.
@@ -2093,7 +2090,7 @@ Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation.  ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17
-(changed to 1024 in C++0x).  The default value is 900, as the compiler
+(changed to 1024 in C++11).  The default value is 900, as the compiler
 can run out of stack space before hitting 1024 in some situations.
 
 @item -fno-threadsafe-statics
@@ -2368,14 +2365,14 @@ by @option{-Wall}.
 @item -Wno-narrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
 @opindex Wno-narrowing
-With -std=c++0x, suppress the diagnostic required by the standard for
+With -std=c++11, suppress the diagnostic required by the standard for
 narrowing conversions within @samp{@{ @}}, e.g.
 
 @smallexample
 int i = @{ 2.2 @}; // error: narrowing from double to int
 @end smallexample
 
-This flag can be useful for compiling valid C++98 code in C++0x mode
+This flag can be useful for compiling valid C++98 code in C++11 mode.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
@@ -2993,7 +2990,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
--Wc++0x-compat  @gol
+-Wc++11-compat  @gol
 -Wchar-subscripts  @gol
 -Wenum-compare @r{(in C/Objc; this is on by default in C++)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
@@ -4063,10 +4060,10 @@ Warn about ISO C constructs that are outside of the common subset of
 ISO C and ISO C++, e.g.@: request for implicit conversion from
 @code{void *} to a pointer to non-@code{void} type.
 
-@item -Wc++0x-compat @r{(C++ and Objective-C++ only)}
+@item -Wc++11-compat @r{(C++ and Objective-C++ only)}
 Warn about C++ constructs whose meaning differs between ISO C++ 1998 and
-ISO C++ 200x, e.g., identifiers in ISO C++ 1998 that will become keywords
-in ISO C++ 200x.  This warning is enabled by @option{-Wall}.
+ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that will become keywords
+in ISO C++ 2011.  This warning is enabled by @option{-Wall}.
 
 @item -Wcast-qual
 @opindex Wcast-qual
