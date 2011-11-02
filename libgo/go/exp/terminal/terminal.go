@@ -17,7 +17,6 @@ package terminal
 import (
 	"os"
 	"syscall"
-	"unsafe"
 )
 
 // State contains the state of a terminal.
@@ -28,7 +27,7 @@ type State struct {
 // IsTerminal returns true if the given file descriptor is a terminal.
 func IsTerminal(fd int) bool {
 	var termios syscall.Termios
-	_, _, e := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCGETS), uintptr(unsafe.Pointer(&termios)), 0, 0, 0)
+	e := syscall.Tcgetattr(fd, &termios)
 	return e == 0
 }
 
@@ -37,14 +36,14 @@ func IsTerminal(fd int) bool {
 // restored.
 func MakeRaw(fd int) (*State, os.Error) {
 	var oldState State
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCGETS), uintptr(unsafe.Pointer(&oldState.termios)), 0, 0, 0); e != 0 {
+	if e := syscall.Tcgetattr(fd, &oldState.termios); e != 0 {
 		return nil, os.Errno(e)
 	}
 
 	newState := oldState.termios
 	newState.Iflag &^= syscall.ISTRIP | syscall.INLCR | syscall.ICRNL | syscall.IGNCR | syscall.IXON | syscall.IXOFF
 	newState.Lflag &^= syscall.ECHO | syscall.ICANON | syscall.ISIG
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCSETS), uintptr(unsafe.Pointer(&newState)), 0, 0, 0); e != 0 {
+	if e := syscall.Tcsetattr(fd, syscall.TCSANOW, &newState); e != 0 {
 		return nil, os.Errno(e)
 	}
 
@@ -54,7 +53,7 @@ func MakeRaw(fd int) (*State, os.Error) {
 // Restore restores the terminal connected to the given file descriptor to a
 // previous state.
 func Restore(fd int, state *State) os.Error {
-	_, _, e := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCSETS), uintptr(unsafe.Pointer(&state.termios)), 0, 0, 0)
+	e := syscall.Tcsetattr(fd, syscall.TCSANOW, &state.termios)
 	return os.Errno(e)
 }
 
@@ -63,18 +62,18 @@ func Restore(fd int, state *State) os.Error {
 // returned does not include the \n.
 func ReadPassword(fd int) ([]byte, os.Error) {
 	var oldState syscall.Termios
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCGETS), uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
+	if e := syscall.Tcgetattr(fd, &oldState); e != 0 {
 		return nil, os.Errno(e)
 	}
 
 	newState := oldState
 	newState.Lflag &^= syscall.ECHO
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCSETS), uintptr(unsafe.Pointer(&newState)), 0, 0, 0); e != 0 {
+	if e := syscall.Tcsetattr(fd, syscall.TCSANOW, &newState); e != 0 {
 		return nil, os.Errno(e)
 	}
 
 	defer func() {
-		syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCSETS), uintptr(unsafe.Pointer(&oldState)), 0, 0, 0)
+		syscall.Tcsetattr(fd, syscall.TCSANOW, &oldState)
 	}()
 
 	var buf [16]byte
