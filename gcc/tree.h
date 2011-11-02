@@ -1521,6 +1521,7 @@ struct GTY(()) tree_fixed_cst {
 };
 
 /* In a STRING_CST */
+/* In C terms, this is sizeof, not strlen.  */
 #define TREE_STRING_LENGTH(NODE) (STRING_CST_CHECK (NODE)->string.length)
 #define TREE_STRING_POINTER(NODE) \
   ((const char *)(STRING_CST_CHECK (NODE)->string.str))
