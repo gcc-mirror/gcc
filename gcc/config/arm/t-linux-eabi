@@ -1,4 +1,4 @@
-# Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -30,10 +30,6 @@ MULTILIB_DIRNAMES	=
 
 # Use a version of div0 which raises SIGFPE, and a special __clear_cache.
 LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx _clear_cache
-
-# Multilib the standard Linux files.  Don't include crti.o or crtn.o,
-# which are provided by glibc.
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
 
 LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic.c
 LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic-64bit.c

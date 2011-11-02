@@ -19,5 +19,3 @@
 MULTILIB_OPTIONS = mabi=n32/mabi=32/mabi=64
 MULTILIB_DIRNAMES = n32 32 64
 MULTILIB_OSDIRNAMES = ../lib32 ../lib ../lib64
-
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o

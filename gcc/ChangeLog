@@ -1,3 +1,277 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (extra_parts): Remove.
+	(*-*-freebsd*): Remove extra_parts.
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,
+	*-*-gnu*, *-*-kopensolaris*-gnu): Likewise.
+	(*-*-netbsd*): Remove t-libc-ok, t-netbsd from tmake_file.
+	Remove extra_parts for *-*-netbsd*1.[7-9]*, *-*-netbsd[2-9]*,
+	*-*-netbsdelf[2-9]*.
+	(*-*-openbsd*): Remove t-libc-ok from tmake_file.
+	(alpha*-*-linux*): Remove extra_parts.
+	(alpha*-*-freebsd*): Likewise.
+	(bfin*-linux-uclibc*): Likewise.
+	(fr30-*-elf): Likewise.
+	(moxie-*-elf): Likewise.
+	(moxie-*-uclinux*): Likewise.
+	(h8300-*-rtems*): Remove h8300/t-elf from tmake_file.
+	(h8300-*-elf*): Likewise.
+	(hppa*64*-*-hpux11*): Remove extra_parts.
+	(i[34567]86-*-elf*): Remove i386/t-i386elf, i386/t-crtstuff from
+	tmake_file.
+	(x86_64-*-elf*): Likewise.
+	(i[34567]86-*-freebsd*): Remove tmake_file.
+	(x86_64-*-freebsd*): Likewise.
+	(x86_64-*-netbsd*): Likewise.
+	(i[34567]86-*-openbsd2.*, i[34567]86-*openbsd3.[0123]): Remove
+	t-libc-ok from tmake_file.
+	(i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu,
+	i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*,
+	i[34567]86-*-kopensolaris*-gnu): Remove i386/t-crtstuff from tmake_file.
+	Remove extra_parts.
+	(x86_64-*-linux*, x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu):
+	Remove i386/t-crtstuff from tmake_file.
+	(i[34567]86-*-lynxos*): Likewise.
+	Remove extra_parts.
+	(ia64*-*-elf*): Remove extra_parts.
+	(ia64*-*-freebsd*): Likewise.
+	(ia64*-*-linux*): Likewise.
+	(ia64-hp-*vms*): Remove ia64/t-vms from tmake_file.
+	(m32r-*-elf*): Remove extra_parts.
+	(m32rle-*-elf*): Likewise.
+	(m32r-*-rtems*): Likewise.
+	(m68k-*-elf*, fido-*-elf*): Likewise.
+	(m68k*-*-openbsd*): Remove t-libc-ok from tmake_file.
+	(m68k-*-rtems*): Remove extra_parts.
+	(mep-*-*): Likewise.
+	(microblaze*-linux*): Likewise.
+	(mips64*-*-linux*, mipsisa64*-*-linux*): Likewise.
+	(mips*-*-linux*): Likewise.
+	(powerpc-*-lynxos*): Likewise.
+	(s390x-ibm-tpf*): Likewise.
+	(score-*-elf): Likewise.
+	Remove tmake_file.
+	(sh-*-elf*, sh[12346l]*-*-elf*, sh-*-linux*, sh[2346lbe]*-*-linux*,
+	sh-*-netbsdelf*, shl*-*-netbsdelf*, sh5-*-netbsd*, sh5l*-*-netbsd*,
+	sh64-*-netbsd*, sh64l*-*-netbsd*): Remove sh/t-elf from tmake_file.
+	Remove sh/t-superh from tmake_file for sh*-superh-elf.
+	Remove sh/t-linux64 from tmake_file for sh64*-*-linux*.
+	(sh-*-rtems*): Remove sh/t-elf from tmake_file.
+	(sh-wrs-vxworks): Likewise.
+	(sparc-*-linux*): Remove extra_parts.
+	(sparc64-*-linux*): Likewise.
+	(sparc64-*-freebsd*, ultrasparc-*-freebsd*): Likewise.
+	(xstormy16-*-elf): Likewise.
+	(xtensa*-*-linux*): Remove xtensa/t-linux from tmake_file.
+	(am33_2.0-*-linux*): Remove extra_parts.
+	* configure.ac (extra_parts): Don't substitute.
+	* configure: Regenerate.
+	* crtstuff.c: Move to ../libgcc.
+	* Makefile.in (CRTSTUFF_CFLAGS): Remove.
+	(EXTRA_PARTS): Remove.
+	(CRTSTUFF_T_CFLAGS): Remove.
+	(MOSTLYCLEANFILES): Remove $(EXTRA_PARTS).
+	(GCC_EXTRA_PARTS): Remove.
+	(libgcc.mvars): Remove GCC_EXTRA_PARTS, CRTSTUFF_CFLAGS,
+	CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S.
+	Emit GCC_CFLAGS, INHIBIT_LIBC_CFLAGS.
+	($(T)crtbegin.o, $(T)crtend.o, $(T)crtbeginS.o, $(T)crtendS.o)
+	($(T)crtbeginT.o): Remove.
+	* config/alpha/t-vms (EXTRA_PARTS): Remove.
+	($(T)vms-dwarf2.o, $(T)vms-dwarf2eh.o): Remove.
+	* config/alpha/vms-dwarf2.asm: Move to
+	../libgcc/config/alpha/vms-dwarf2.S.
+	* config/alpha/vms-dwarf2eh.asm: Move to
+	../libgcc/config/alpha/vms-dwarf2eh.S.
+	* config/arm/crti.asm: Move to ../libgcc/config/arm/crti.S.
+	* config/arm/crtn.asm: Move to ../libgcc/config/arm/crtn.S.
+	* config/arm/t-arm-elf (EXTRA_MULTILIB_PARTS): Remove.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	* config/arm/t-linux: Remove comment.
+	* config/arm/t-linux-eabi (EXTRA_MULTILIB_PARTS): Remove.
+	* config/arm/t-strongarm-elf (EXTRA_MULTILIB_PARTS): Remove.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	* config/arm/t-symbian (EXTRA_MULTILIB_PARTS): Remove.
+	* config/bfin/crti.s: Move to ../libgcc/config/bfin/crti.S.
+	* config/bfin/crtn.s: Move to ../libgcc/config/bfin/crtn.S.
+	* config/bfin/crtlibid.s: Move to ../libgcc/config/bfin/crtlibid.S.
+	* config/bfin/t-bfin (EXTRA_PARTS): Remove.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	* config/bfin/t-bfin-elf (CRTSTUFF_T_CFLAGS): Remove.
+	($(T)crti.o, $(T)crtn.o, $(T)crtlibid.o): Remove
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/bfin/t-bfin-linux (CRTSTUFF_T_CFLAGS,
+	EXTRA_MULTILIB_PARTS): Remove.
+	* config/bfin/t-bfin-uclinux (CRTSTUFF_T_CFLAGS): Remove.
+	($(T)crtlibid.o): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/c6x/crti.s: Move to ../libgcc/config/c6x/crti.S.
+	* config/c6x/crtn.s: Move to ../libgcc/config/c6x/crtn.S.
+	* config/c6x/t-c6x-elf ($(T)crti.o, $(T)crtn.o): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	(CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/c6x/t-c6x-uclinux (CRTSTUFF_T_CFLAGS,
+	CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/cris/t-elfmulti (CRTSTUFF_T_CFLAGS): Remove.
+	* config/cris/t-linux (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/fr30/crti.asm: Move to ../libgcc/config/fr30/crti.S.
+	* config/fr30/crtn.asm: Move to ../libgcc/config/fr30/crtn.S.
+	* config/fr30/t-fr30 ($(T)crti.o, $(T)crtn.o): Remove.
+	* config/frv/frvbegin.c, config/frv/frvend.c: Move to
+	../libgcc/config/frv.
+	* config/frv/t-frv (EXTRA_MULTILIB_PARTS): Remove.
+	(FRVSTUFF_CFLAGS, $(T)frvbegin$(objext), $(T)frvend$(objext)): Remove.
+	* config/frv/t-linux (EXTRA_MULTILIB_PARTS): Remove.
+	(CRTSTUFF_T_CFLAGS): Remove.
+	* config/h8300/crti.asm: Move to ../libgcc/config/h8300/crti.S.
+	* config/h8300/crtn.asm: Move to ../libgcc/config/h8300/crtn.S.
+	* config/h8300/t-elf: Remove.
+	* config/i386/cygming-crtbegin.c, config/i386/cygming-crtend.c:
+	Move to ../libgcc/config/i386.
+	* config/i386/t-crtstuff: Remove.
+	* config/i386/t-i386elf: Remove.
+	* config/i386/t-linux64 (EXTRA_MULTILIB_PARTS): Remove.
+	* config/i386/t-nto (CRTSTUFF_T_CFLAGS, EXTRA_PARTS): Remove.
+	* config/ia64/crtbegin.asm: Move to
+	../libgcc/config/ia64/crtbegin.S.
+	* config/ia64/crtend.asm: Move to
+	../libgcc/config/ia64/crtend.S.
+	* config/ia64/crti.asm: Move to ../libgcc/config/ia64/crti.S.
+	* config/ia64/crtn.asm: Move to ../libgcc/config/ia64/crtn.S.
+	* config/ia64/t-vms: Remove.
+	* config/ia64/vms-crtinit.asm: Move to
+	../libgcc/config/ia64/vms-crtinit.S.
+	* config/m32c/t-m32c (EXTRA_MULTILIB_PARTS): Remove.
+	* config/m32r/initfini.c: Move to ../libgcc/config/m32r.
+	* config/m32r/t-linux (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/m32r/t-m32r (CRTSTUFF_T_CFLAGS): Remove.
+	($(T)crtinit.o, $(T)crtfini.o): Remove.
+	(m32rx, m32r2): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/m68k/crti.s: Move to ../libgcc/config/m68k/crti.S.
+	* config/m68k/crtn.s: Move to ../libgcc/config/m68k/crtn.S.
+	* config/m68k/t-crtstuff: Remove.
+	* config/m68k/t-linux (EXTRA_MULTILIB_PARTS): Remove.
+	* config/m68k/t-m68kelf: Remove.
+	* config/m68k/t-uclinux (EXTRA_MULTILIB_PARTS): Remove.
+	* config/mcore/crti.asm: Move to ../libgcc/config/mcore/crti.S.
+	* config/mcore/crtn.asm: Move to ../libgcc/config/mcore/crtn.S.
+	* config/mcore/t-mcore ($(T)crti.o, $(T)crtn.o): Remove.
+	(EXTRA_PARTS, EXTRA_MULTILIB_PARTS): Remove.
+	* config/mep/t-mep (CRTSTUFF_CFLAGS): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/microblaze/crti.s: Move to ../libgcc/config/microblaze/crti.S.
+	* config/microblaze/crtn.s: Move to ../libgcc/config/microblaze/crtn.S.
+	* config/microblaze/t-microblaze (EXTRA_MULTILIB_PARTS,
+	EXTRA_PARTS): Remove.
+	($(T)crti$(objext), $(T)crtn$(objext)): Remove.
+	* config/mips/crti.asm: Move to ../libgcc/config/mips/crti.S.
+	* config/mips/crtn.asm: Move to ../libgcc/config/mips/crtn.S.
+	* config/mips/t-elf (CRTSTUFF_T_CFLAGS): Remove.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/mips/t-isa3264: Likewise.
+	* config/mips/t-linux64 (EXTRA_MULTILIB_PARTS): Remove.
+	* config/mips/t-r3900 (EXTRA_MULTILIB_PARTS): Remove.
+	(CRTSTUFF_T_CFLAGS): Remove.
+	* config/mips/t-sde (CRTSTUFF_T_CFLAGS): Remove.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/mips/t-sr71k (EXTRA_MULTILIB_PARTS, CRTSTUFF_T_CFLAGS):
+	Remove.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	* config/mips/t-st (EXTRA_MULTILIB_PARTS): Remove.
+	* config/mips/t-vr (CRTSTUFF_T_CFLAGS): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	* config/mmix/crti.asm: Move to ../libgcc/config/crti.S.
+	* config/mmix/crtn.asm: Move to ../libgcc/config/crtn.S.
+	* config/mmix/t-mmix (CRTSTUFF_T_CFLAGS): Remove.
+	* config/moxie/crti.asm, config/moxie/crtn.asm: Remove.
+	* config/pa/stublib.c: Move to libgcc/config/pa.
+	* config/pa/t-linux (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/pa/t-linux64 (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/pa/t-pa-hpux11 (LIBGCCSTUB_OBJS, stublib.c): Remove.
+	(pthread_default_stacksize_np-stub.o, pthread_mutex_lock-stub.o)
+	(pthread_mutex_unlock-stub.o, pthread_once-stub.o)
+	($(T)libgcc_stub.a): Remove.
+	* config/pa/t-pa64 (LIBGCCSTUB_OBJS, stublib.c): Remove.
+	(rfi-stub.o, dfi-stub.o, cxaf-stub.o, jvrc-stub.o)
+	(pthread_default_stacksize_np-stub.o, pthread_mutex_lock-stub.o)
+	(pthread_mutex_unlock-stub.o, pthread_once-stub.o)
+	($(T)libgcc_stub.a): Remove.
+	* config/rs6000/eabi-cn.asm: Move to
+	../../../libgcc/config/rs6000/eabi-cn.S.
+	* config/rs6000/eabi-ci.asm: Move to
+	../../../libgcc/config/rs6000/eabi-ci.S.
+	* config/rs6000/sol-ci.asm: Move to
+	../../../libgcc/config/rs6000/sol-ci.S.
+	* config/rs6000/sol-cn.asm: Move to
+	../../../libgcc/config/rs6000/sol-cn.S.
+	* config/rs6000/t-lynx (EXTRA_MULTILIB_PARTS): Remove.
+	(CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/rs6000/t-netbsd (CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S):
+	Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/rs6000/t-ppccomm (EXTRA_MULTILIB_PARTS): Remove.
+	(ecrti.S, ecrtn.S, ncrti.S, ncrtn.S): Remove.
+	($(T)ecrti$(objext), $(T)ecrtn$(objext), $(T)ncrti$(objext),
+	$(T)ncrtn$(objext)): Remove.
+	(CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/rs6000/t-vxworks (EXTRA_MULTILIB_PARTS): Remove.
+	* config/rx/t-rx (EXTRA_MULTILIB_PARTS): Remove.
+	* config/score/crti.asm: Move to ../libgcc/config/score/crti.S.
+	* config/score/crtn.asm: Move to ../libgcc/config/score/crtn.S.
+	* config/score/t-score-elf: Remove.
+	* config/sh/crt1.asm: Move to ../libgcc/config/sh/crt1.S.
+	* config/sh/crti.asm: Move to ../libgcc/config/sh/crti.S.
+	* config/sh/crtn.asm: Move to ../libgcc/config/sh/crtn.S.
+	* config/sh/lib1funcs-4-300.asm: Move to
+	../../../libgcc/config/sh/lib1funcs-4-300.S.
+	* config/sh/lib1funcs-Os-4-200.asm: Move to
+	../libgcc/config/sh/lib1funcs-Os-4-200.S.
+	* config/sh/t-elf: Remove.
+	* config/sh/t-linux (EXTRA_MULTILIB_PARTS): Remove.
+	* config/sh/t-linux64: Remove.
+	* config/sh/t-netbsd (EXTRA_MULTILIB_PARTS): Remove.
+	* config/sh/t-sh ($(T)crt1.o, $(T)crti.o, $(T)crtn.o): Remove.
+	(IC_EXTRA_PARTS, OPT_EXTRA_PARTS, EXTRA_MULTILIB_PARTS): Remove.
+	($(T)ic_invalidate_array_4-100.o)
+	($(T)libic_invalidate_array_4-100.a)
+	($(T)ic_invalidate_array_4-200.o)
+	($(T)libic_invalidate_array_4-200.a, $(T)ic_invalidate_array_4a.o)
+	($(T)libic_invalidate_array_4a.a, $(T)sdivsi3_i4i-Os-4-200.o)
+	($(T)udivsi3_i4i-Os-4-200.o, $(T)unwind-dw2-Os-4-200.o)
+	($(T)libgcc-Os-4-200.a, $(T)div_table-4-300.o)
+	($(T)libgcc-4-300.a): Remove.
+	* config/sh/t-superh: Remove.
+	* config/sh/t-vxworks (EXTRA_MULTILIB_PARTS): Remove.
+	* config/sparc/t-linux64 (CRTSTUFF_T_CFLAGS): Remove.
+	* config/spu/cache.S: Move to ../libgcc/config/spu.
+	* config/spu/cachemgr.c: Move to ../libgcc/config/spu.
+	* config/spu/t-spu-elf (CRTSTUFF_T_CFLAGS): Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	($(T)cachemgr.o, $(T)cachemgr_nonatomic.o, $(T)libgcc_%.a): Remove.
+	($(T)cache8k.o, $(T)cache16k.o, $(T)cache32k.o, $(T)cache32k.o)
+	($(T)cache64k.o, $(T)cache128k.o): Remove.
+	* config/t-freebsd (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/t-libc-ok: Remove.
+	* config/t-linux (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/t-lynx (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/t-netbsd: Remove.
+	* config/t-svr4 (CRTSTUFF_T_CFLAGS_S): Remove.
+	* config/t-vxworks (EXTRA_MULTILIB_PARTS): Remove.
+	* config/vms/t-vms (VMS_EXTRA_PARTS): Remove.
+	($(T)vcrt0.o, $(T)pcrt0.o): Remove.
+	* config/vms/vms-ucrt0.c: Move to ../libgcc/config/vms.
+	* config/xtensa/crti.asm: Move to ../libgcc/config/xtensa/crti.S.
+	* config/xtensa/crtn.asm: Move to ../libgcc/config/xtensa/crtn.S.
+	* config/xtensa/t-elf (CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S):
+	Remove.
+	(EXTRA_MULTILIB_PARTS): Remove.
+	* config/xtensa/t-linux: Remove.
+	* config/xtensa/t-xtensa ($(T)crti.o, $(T)crtn.o): Remove.
+
 2011-11-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (bdesc_args) [IX86_BUILTIN_CVTTPD2DQ256]: Use

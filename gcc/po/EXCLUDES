@@ -23,7 +23,6 @@
 
 #   These files are part of libgcc, or target headers provided by gcc.
 config/vxlib.c
-crtstuff.c
 gbl-ctors.h
 gcov-io.h
 gcov-iov.c

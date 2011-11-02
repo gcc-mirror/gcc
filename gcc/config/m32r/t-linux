@@ -24,15 +24,6 @@ CROSS_LIBGCC1 =
 
 TARGET_LIBGCC2_CFLAGS = -G 0 -fPIC
 
-# We need to use -fpic when we are using gcc to compile the routines in
-# initfini.c.  This is only really needed when we are going to use gcc/g++
-# to produce a shared library, but since we don't know ahead of time when
-# we will be doing that, we just always use -fpic when compiling the
-# routines in initfini.c.
-# -fpic currently isn't supported for the m32r.
-
-CRTSTUFF_T_CFLAGS_S = -fPIC
-
 # Don't install "assert.h" in gcc. We use the one in glibc.
 INSTALL_ASSERT_H =
  

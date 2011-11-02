@@ -1,1 +1,15 @@
+# Cannot use default rules due to $(CRTSTUFF_T_CFLAGS).
+CUSTOM_CRTIN = yes
+
+# Assemble startup files.
+crti.o: $(srcdir)/config/c6x/crti.S
+	$(crt_compile) -c $(CRTSTUFF_T_CFLAGS) $<
+
+crtn.o: $(srcdir)/config/c6x/crtn.S
+	$(crt_compile) -c $(CRTSTUFF_T_CFLAGS) $<
+
+# Avoid failures when the user's GOT becomes too large.
+CRTSTUFF_T_CFLAGS = -msdata=none
+CRTSTUFF_T_CFLAGS_S = -msdata=none
+
 SHLIB_MAPFILES += $(srcdir)/config/c6x/libgcc-eabi.ver

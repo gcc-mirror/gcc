@@ -1,0 +1,11 @@
+# Compile crt1-mmu.o as crt1.o with -DMMU_SUPPORT
+crt1-mmu.o: $(srcdir)/config/sh/crt1.S
+	$(gcc_compile) -c -DMMU_SUPPORT $<
+
+# Compile gcrt1-mmu.o as crt1-mmu.o with -DPROFILE
+gcrt1-mmu.o: $(srcdir)/config/sh/crt1.S
+	$(gcc_compile) -c -DPROFILE -DMMU_SUPPORT $<
+
+# For sh4-400: Compile gcrt1.o as crt1.o with -DPROFILE
+gcrt1.o: $(srcdir)/config/sh/crt1.S
+	$(gcc_compile) -c -DPROFILE $<

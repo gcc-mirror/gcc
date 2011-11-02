@@ -4,5 +4,4 @@
 # we will be doing that, we just always use -fPIC when compiling the
 # routines in crtstuff.c.  Likewise for libgcc2.c.
 
-CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -fPIC
 TARGET_LIBGCC2_CFLAGS = -fPIC

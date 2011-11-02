@@ -32,15 +32,6 @@ MULTILIB_DIRNAMES   += altivec
 
 MULTILIB_EXCEPTIONS = *msoft-float/*maltivec*
 
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o 
-
-# If .sdata is enabled __CTOR_{LIST,END}__ go into .sdata instead of
-# .ctors.
-CRTSTUFF_T_CFLAGS = -mno-sdata 
- 
-# Compile crtbeginS.o and crtendS.o with pic. 
-CRTSTUFF_T_CFLAGS_S = -fPIC -mno-sdata 
-
 Local Variables:
 mode: makefile
 End:

@@ -19,17 +19,6 @@
 
 LIB2FUNCS_EXTRA = $(srcdir)/config/alpha/vms-gcc_shell_handler.c
 
-EXTRA_PARTS = vms-dwarf2.o vms-dwarf2eh.o $(VMS_EXTRA_PARTS) \
-  crtbegin.o crtbeginS.o crtend.o crtendS.o
-
-# This object must be linked with in order to make the executable debuggable.
-# vms-ld handles it automatically when passed -g.
-$(T)vms-dwarf2.o : $(srcdir)/config/alpha/vms-dwarf2.asm
-	$(GCC_FOR_TARGET) -c -x assembler $< -o $@
-
-$(T)vms-dwarf2eh.o : $(srcdir)/config/alpha/vms-dwarf2eh.asm
-	$(GCC_FOR_TARGET) -c -x assembler $< -o $@
-
 MULTILIB_OPTIONS = mcpu=ev6
 MULTILIB_DIRNAMES = ev6
 MULTILIB_OSDIRNAMES = ev6

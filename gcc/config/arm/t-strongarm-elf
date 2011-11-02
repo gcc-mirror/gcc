@@ -23,7 +23,6 @@ MULTILIB_OPTIONS     = mlittle-endian/mbig-endian mfloat-abi=hard/mfloat-abi=sof
 MULTILIB_DIRNAMES    = le be fpu soft
 MULTILIB_EXCEPTIONS  =
 MULTILIB_MATCHES     = mbig-endian=mbe mlittle-endian=mle
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
@@ -32,12 +31,3 @@ INSTALL_LIBGCC = install-multilib
 # or scheduling code that is breaking _fpmul_parts in fp-bit.c.
 # Disabling function inlining is a workaround for this problem.
 TARGET_LIBGCC2_CFLAGS = -fno-inline
-
-# Assemble startup files.
-$(T)crti.o: $(srcdir)/config/arm/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/arm/crti.asm
-
-$(T)crtn.o: $(srcdir)/config/arm/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/arm/crtn.asm

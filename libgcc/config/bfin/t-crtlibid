@@ -1,0 +1,3 @@
+# Assemble startup files.
+crtlibid.o: $(srcdir)/config/bfin/crtlibid.S
+	$(gcc_compile) -c -x assembler-with-cpp $<

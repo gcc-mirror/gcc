@@ -1,0 +1,2 @@
+# Use -O0 instead of -O2 so we don't get complex relocations
+CRTSTUFF_CFLAGS += -O0

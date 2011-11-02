@@ -40,7 +40,3 @@ MULTILIB_OSDIRNAMES+= mx32=../libx32
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o \
-		     crtbeginT.o crtprec32.o crtprec64.o crtprec80.o \
-		     crtfastmath.o

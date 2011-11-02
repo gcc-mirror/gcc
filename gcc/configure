@@ -645,7 +645,6 @@ gcc_config_arguments
 float_h_file
 extra_programs
 extra_passes
-extra_parts
 extra_objs
 extra_headers_list
 user_headers_inc_next_post
@@ -18069,7 +18068,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18072 "configure"
+#line 18071 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18175,7 +18174,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18178 "configure"
+#line 18177 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26955,7 +26954,6 @@ fi
 
 
 # Substitute configuration variables
-
 
 
 

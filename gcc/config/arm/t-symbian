@@ -40,6 +40,3 @@ LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/arm/fp16.c
 # enabled, so there are no separate thumb-mode libraries.
 MULTILIB_OPTIONS     = mfloat-abi=softfp
 MULTILIB_DIRNAMES    = softfp
-
-# Symbian OS provides its own startup code.
-EXTRA_MULTILIB_PARTS=

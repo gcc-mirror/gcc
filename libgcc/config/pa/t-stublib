@@ -1,0 +1,21 @@
+LIBGCCSTUB_OBJS = pthread_default_stacksize_np-stub.o \
+	pthread_mutex_lock-stub.o \
+	pthread_mutex_unlock-stub.o \
+	pthread_once-stub.o
+
+pthread_default_stacksize_np-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_default_stacksize_np $<
+
+pthread_mutex_lock-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_mutex_lock $<
+
+pthread_mutex_unlock-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_mutex_unlock $<
+
+pthread_once-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_once $<
+
+libgcc_stub.a: $(LIBGCCSTUB_OBJS)
+	-rm -rf $@
+	$(AR) rc $@ $<
+	$(RANLIB) $@

@@ -31,4 +31,3 @@ MULTILIB_MATCHES = \
 MULTILIB_EXTRA_OPTS = mbest-lib-options
 INSTALL_LIBGCC = install-multilib
 LIBGCC = stmp-multilib
-CRTSTUFF_T_CFLAGS = -moverride-best-lib-options

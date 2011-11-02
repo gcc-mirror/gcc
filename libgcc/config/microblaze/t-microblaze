@@ -8,5 +8,3 @@ LIB2ADD += \
         $(srcdir)/config/microblaze/udivsi3.asm \
         $(srcdir)/config/microblaze/umodsi3.asm \
         $(srcdir)/config/microblaze/divsi3_table.c
-
-MULTILIB_OPTIONS = mxl-barrel-shift mno-xl-soft-mul mxl-multiply-high

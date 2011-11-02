@@ -1,4 +1,4 @@
-# Copyright (C) 2008, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
-
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
 
 # Only include multilibs for 680x0 and ColdFire CPUs with an MMU.
 M68K_MLIB_CPU += && ((CPU ~ "^m680") || (CPU ~ "^mcf")) && (FLAGS ~ "FL_MMU")

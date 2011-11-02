@@ -1,0 +1,3 @@
+# Build CRT files and libgcc with the "longcalls" option
+CRTSTUFF_T_CFLAGS += -mlongcalls
+CRTSTUFF_T_CFLAGS_S += -mlongcalls

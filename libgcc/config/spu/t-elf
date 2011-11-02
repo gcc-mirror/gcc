@@ -1,3 +1,35 @@
+# Don't let CTOR_LIST end up in sdata section.
+# FIXME: This is the default.
+CRTSTUFF_T_CFLAGS =
+
+# Neither gcc or newlib seem to have a standard way to generate multiple
+# crt*.o files.  So we don't use the standard crt0.o name anymore.
+
+cachemgr.o: $(srcdir)/config/spu/cachemgr.c
+	$(gcc_compile) -c $<
+
+# Specialised rule to add a -D flag.
+cachemgr_nonatomic.o: $(srcdir)/config/spu/cachemgr.c
+	$(gcc_compile) -DNONATOMIC -c $<
+
+libgcc_%.a: %.o
+	$(AR_FOR_TARGET) -rcs $@ $<
+
+cache8k.o: $(srcdir)/config/spu/cache.S
+	$(gcc_compile) -D__CACHE_SIZE__=8 -c $<
+
+cache16k.o: $(srcdir)/config/spu/cache.S
+	$(gcc_compile) -D__CACHE_SIZE__=16 -c $<
+
+cache32k.o: $(srcdir)/config/spu/cache.S
+	$(gcc_compile) -D__CACHE_SIZE__=32 -c $<
+
+cache64k.o: $(srcdir)/config/spu/cache.S
+	$(gcc_compile) -D__CACHE_SIZE__=64 -c $<
+
+cache128k.o: $(srcdir)/config/spu/cache.S
+	$(gcc_compile) -D__CACHE_SIZE__=128 -c $<
+
 # We provide our own version of __divdf3 that performs better and has
 # better support for non-default rounding modes.
 DPBIT_FUNCS := $(filter-out _div_df, $(DPBIT_FUNCS))

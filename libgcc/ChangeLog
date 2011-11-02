@@ -1,5 +1,279 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* crtstuff.c: New file.
+	* Makefile.in (CRTSTUFF_CFLAGS): Define.
+	(CRTSTUFF_T_CFLAGS): Define.
+	(extra-parts, INSTALL_PARTS): Remove conditional assignments.
+	(crtbegin$(objext), crtend$(objext), crtbeginS$(objext))
+	(crtendS$(objext), crtbeginT.o): Use $(srcdir) to refer to
+	crtstuff.c.
+	Use $<.
+	(crtbeginT.o): Use $(objext).
+	[!CUSTOM_CRTIN] (crti$(objext), crtn$(objext)): New rules.
+	(libgcc-extra-parts): Don't compare EXTRA_PARTS, GCC_EXTRA_PARTS.
+	(gcc-extra-parts): Remove.
+	* config.host (*-*-freebsd*): Add t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,
+	*-*-gnu*): Also handle *-*-kopensolaris*-gnu.
+	Add t-crtstuff-pic to tmake_file.
+	(*-*-lynxos*): New case.
+	Set tmake_file, extra_parts.
+	(*-*-netbsd*): Add t-crtstuff-pic to tmake_file.
+	Set extra_parts for *-*-netbsd*1.[7-9]*, *-*-netbsd[2-9]*,
+	*-*-netbsdelf[2-9]*.
+	(*-*-openbsd*): Add t-crtstuff-pic to tmake_file.
+	(*-*-rtems*): Set extra_parts.
+	(*-*-solaris2*): Remove t-crtin from tmake_file for Solaris < 10.
+	(*-*-uclinux*): New case.
+	Set extra_parts.
+	(*-*-vms*): New case.
+	Set tmake_file, extra_parts.
+	(*-*-elf): Set extra_parts.
+	(alpha*-*-freebsd*): Add crtbeginT.o to extra_parts.
+	(alpha64-dec-*vms*): Append to tmake_file, remove vms/t-vms,
+	vms/t-vms64.
+	Set extra_parts.
+	(alpha*-dec-*vms*): Append to tmake_file, remove vms/t-vms.
+	Set extra_parts.
+	(arm*-*-freebsd*): Add t-crtin to tmake_file.
+	Add crtbegin.o, crtend.o, crti.o, crtn.o to extra_parts.
+	(arm-wrs-vxworks): Append to tmake_file.
+	Set extra_parts.
+	(arm*-*-uclinux*): Set extra_parts.
+	(arm*-*-ecos-elf): Likewise.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Set extra_parts for
+	arm*-*-eabi*.
+	(arm*-*-rtems*): Set extra_parts.
+	(arm*-*-elf): Likewise.
+	(avr-*-rtems*): Clear extra_parts.
+	(bfin*-elf*): Add bfin/t-crtlibid, bfin/t-crtstuff to extra_parts.
+	Set extra_parts.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Add bfin/t-crtstuff to tmake_file.
+	(bfin*-rtems*): Append to tmake_file.
+	Set extra_parts.
+	(bfin*-*): Likewise.
+	(crisv32-*-elf, crisv32-*-none, cris-*-elf, cris-*-none): Split into ...
+	(crisv32-*-elf): ... this.
+	(crisv32-*-none): ... this.
+	(cris-*-elf, cris-*-none): New cases.
+	Add cris/t-elfmulti to tmake_file.
+	(fr30-*-elf): Append to tmake_file.
+	Set extra_parts.
+	(frv-*-elf): Append to tmake_file, add frv/t-frv.
+	Set extra_parts.
+	(h8300-*-rtems*): Append to tmake_file.
+	Set extra_parts.
+	(h8300-*-elf*): Likewise.
+	(hppa*64*-*-hpux11*): Add pa/t-stublib, pa/t-stublib64 to tmake_file.
+	Set extra_parts.
+	(hppa[12]*-*-hpux11*): Add pa/t-stublib to tmake_file.
+	Set extra_parts.
+	(i[34567]86-*-elf*): Add i386/t-crtstuff, t-crtstuff-pic to tmake_file.
+	(x86_64-*-elf*): Likewise.
+	(i[34567]86-*-freebsd*): Add i386/t-crtstuff to tmake_file.
+	(x86_64-*-freebsd*): Likewise.
+	(x86_64-*-netbsd*): Likewise.
+	(i[34567]86-*-linux*): Likewise.
+	(i[34567]86-*-kfreebsd*-gnu, i[34567]86-*-knetbsd*-gnu)
+	(i[34567]86-*-gnu*, i[34567]86-*-kopensolaris*-gnu): Likewise.
+	(x86_64-*-linux*): Likewise.
+	(x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu): Likewise.
+	(i[34567]86-*-lynxos*): Add t-crtstuff-pic, i386/t-crtstuff to
+	tmake_file.
+	Set extra_parts.
+	(i[34567]86-*-nto-qnx*): Set tmake_file, extra_parts.
+	(i[34567]86-*-rtems*): Append to tmake_file, remove t-crtin.
+	Append to extra_parts, remove crtbegin.o, crtend.o.
+	(ia64*-*-elf*): Append to extra_parts, remove crtbegin.o, crtend.o.
+	(ia64*-*-freebsd*): Append to extra_parts, remove crtbegin.o,
+	crtend.o, crtbeginS.o, crtendS.o.
+	(ia64*-*-linux*): Comment extra_parts.
+	(ia64-hp-*vms*): Append to tmake_file, remove vms/t-vms, vms/t-vms64.
+	Set extra_parts.
+	(iq2000*-*-elf*): Clear extra_parts.
+	(lm32-*-elf*, lm32-*-rtems*): Add t-crtin to tmake_file.
+	(lm32-*-uclinux*): Add to extra_parts, remove crtbegin.o, crtend.o
+	(m32r-*-elf*, m32r-*-rtems*): Split off ...
+	(m32r-*-rtems*): ... this.
+	Add m32r/t-m32r to tmake_file.
+	(m68k-*-elf*): Add t-crtin to tmake_file.
+	(m68k-*-rtems*): Add crti.o, crtn.o to extra_parts.
+	(mcore-*-elf): Likewise.
+	(microblaze*-*-*): Set extra_parts.
+	(mips*-sde-elf*): New case.
+	Set tmake_file, extra_parts.
+	(mipsisa32-*-elf*, mipsisa32el-*-elf*, mipsisa32r2-*-elf*)
+	(mipsisa32r2el-*-elf*, mipsisa64-*-elf*, mipsisa64el-*-elf*)
+	(mipsisa64r2-*-elf*, mipsisa64r2el-*-elf*): Add mips/t-crtstuff to
+	tmake_file.
+	Set extra_parts.
+	(mipsisa64sr71k-*-elf*): Likewise.
+	(mipsisa64sb1-*-elf*, mipsisa64sb1el-*-elf*): Likewise.
+	(mips-*-elf*, mipsel-*-elf*): Likewise.
+	(mips64-*-elf*, mips64el-*-elf*): Likewise.
+	(mips64vr-*-elf*, mips64vrel-*-elf*): Likewise.
+	(mips64orion-*-elf*,  mips64orionel-*-elf*): Likewise.
+	(mips*-*-rtems*): Likewise.
+	(mipstx39-*-elf*, mipstx39el-*-elf*): Likewise.
+	(moxie-*-*): Split into ...
+	(moxie-*-elf, moxie-*-uclinux*): ... this.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(moxie-*-rtems*): New case.
+	Set tmake_file.
+	Clear extra_parts.
+	(powerpc-*-freebsd*): Add rs6000/t-crtstuff to tmake_file.
+	Set extra_parts.
+	(powerpc-*-netbsd*): Add rs6000/t-netbsd to tmake_file.
+	(powerpc-*-eabispe*): Add rs6000/t-crtstuff, t-crtstuff-pic to
+	tmake_file.
+	Set extra_parts.
+	(powerpc-*-eabisimaltivec*): Add to tmake_file, add rs6000/t-ppccomm,
+	rs6000/t-crtstuff, t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(powerpc-*-eabisim*): Likewise.
+	(powerpc-*-elf*): Likewise.
+	(powerpc-*-eabialtivec*): Likewise.
+	(powerpc-xilinx-eabi*): Likewise.
+	(powerpc-*-eabi*): Likewise.
+	(powerpc-*-rtems*): Likewise.
+	(powerpc-*-linux*, powerpc64-*-linux*): Add rs6000/t-crtstuff to
+	tmake_file.
+	Set extra_parts.
+	(powerpc-*-lynxos*): Add to tmake_file.
+	(powerpcle-*-elf*): Add to tmake_file, add rs6000/t-ppccomm,
+	rs6000/t-crtstuff, t-crtstuff-pic.
+	Set extra_parts.
+	(powerpcle-*-eabisim*): Likewise.
+	(powerpcle-*-eabi*): Likewise.
+	(rx-*-elf): Remove extra_parts.
+	(s390x-ibm-tpf*): Set extra_parts.
+	(score-*-elf): Set extra_parts.
+	(sh-*-elf*, sh[12346l]*-*-elf*, sh-*-linux*)
+	(sh[2346lbe]*-*-linux*, sh-*-netbsdelf*, shl*-*-netbsdelf*)
+	(sh5-*-netbsd*, sh5l*-*-netbsd*, sh64-*-netbsd*)
+	(sh64l*-*-netbsd*): Split into ...
+	(sh-*-elf*, sh[12346l]*-*-elf*): ... this.
+	Add t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(sh-*-rtems*): Add to tmake_file, add t-crtstuff-pic.
+	Set extra_parts.
+	(sh-wrs-vxworks): Add to tmake_file, add t-crtstuff-pic.
+	(sparc-*-elf*): Remove t-crtin from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc-*-linux*): Add sparc/t-linux64 to tmake_file.
+	(sparc64-*-linux*): Likewise.
+	(sparc-*-rtems*): Remove sparc/t-elf from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc64-*-elf*): Remove t-crtin from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc64-*-rtems*): Remove t-crtin from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc64-*-freebsd*, ultrasparc-*-freebsd*): Add to extra_parts.
+	(sparc64-*-linux*): Add sparc/t-linux64 to tmake_file.
+	(spu-*-elf*): Add to tmake_file, add spu/t-elf.
+	Set extra_parts.
+	(tic6x-*-uclinux): Add c6x/t-uxlinux, t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(tic6x-*-*): Change to ...
+	(tic6x-*-elf): ... this.
+	Set extra_parts.
+	(xtensa*-*-elf*): Add to tmake_file, add xtensa/t-elf.
+	Set extra_parts.
+	(am33_2.0-*-linux*): Add comment.
+	(mep*-*-*): Add mep/t-mep to tmake_file.
+	Set extra_parts.
+	* config/alpha/t-vms: New file.
+	* config/alpha/vms-dwarf2.S, config/alpha/vms-dwarf2eh.S: New files.
+	* config/arm/crti.S, config/arm/crtn.S: New files.
+	* config/bfin/crti.S, config/bfin/crtn.S: New files.
+	* config/bfin/crtlibid.S: New file.
+	* config/bfin/t-crtlibid, config/bfin/t-crtstuff: New files.
+	* config/c6x/crti.S, config/c6x/crtn.S: New files.
+	* config/c6x/t-elf (CUSTOM_CRTIN): Set.
+	(crti.o, crtin.o): New rules.
+	(CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Set.
+	* config/c6x/t-uclinux: New file.
+	* config/cris/t-elfmulti: New file.
+	* config/cris/t-linux (CRTSTUFF_T_CFLAGS_S): Set.
+	* config/fr30/crti.S, config/fr30/crtn.S: New files.
+	* config/frv/frvbegin.c, config/frv/frvend.c: New files.
+	* config/frv/t-frv: New file.
+	* config/frv/t-linux (CRTSTUFF_T_CFLAGS): Set.
+	* config/h8300/crti.S, config/h8300/crtn.S: New files.
+	* config/i386/cygming-crtbegin.c, config/i386/cygming-crtend.c:
+	New files.
+	* config/i386/t-cygming (crtbegin.o, crtend.o): Use $(srcdir) to
+	refer to cygming-crtbegin.c, cygming-crtend.c.
+	Use $<.
+	* config/i386/t-nto: New file.
+	* config/ia64/crtbegin.S, config/ia64/crtend.S: New files.
+	* config/ia64/crti.S, config/ia64/crtn.S: New files.
+	* config/ia64/t-ia64 (crtbegin.o, crtend.o, crtbeginS.o,
+	crtendS.o): Use $(srcdir) to refer to crtbegin.S, crtend.S.
+	Use .S extension.
+	Use $<.
+	* config/ia64/t-vms (CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Set.
+	(crtinitS.o): New rule.
+	* config/ia64/vms-crtinit.S: New file.
+	* config/lm32/t-elf ($(T)crti.o, $(T)crtn.o): Remove.
+	* config/m32r/initfini.c: New file.
+	* config/m32r/t-linux, config/m32r/t-m32r: New files.
+	* config/m68k/crti.S, config/m68k/crtn.S: New files.
+	* config/mcore/crti.S, config/mcore/crtn.S: New files.
+	* config/mep/t-mep: New file.
+	* config/microblaze/crti.S, config/microblaze/crtn.S: New files.
+	* config/microblaze/t-microblaze (MULTILIB_OPTIONS): Remove.
+	* config/mips/crti.S, config/mips/crtn.S: New files.
+	* config/mips/t-crtstuff: New file.
+	* config/mmix/crti.S, config/mmix/crtn.S: New files.
+	* config/mmix/t-mmix (CRTSTUFF_T_CFLAGS): Set.
+	(CUSTOM_CRTIN): Set.
+	($(T)crti.o, $(T)crtn.o): Remove $(T),
+	dependencies.
+	Use $(srcdir) to refer to crti.S, crtn.S.
+	Use .S extension, $<.
+	* config/moxie/crti.asm: Rename to ...
+	* config/moxie/crti.S: ... this.
+	* config/moxie/crtn.asm: Rename to ...
+	* config/moxie/crtn.S: ... this.
+	* config/moxie/t-moxie: Remove.
+	* config/pa/stublib.c: New file.
+	* config/pa/t-stublib, config/pa/t-stublib64: New files.
+	* config/rs6000/eabi-ci.S, config/rs6000/eabi-cn.S: New files.
+	* config/rs6000/sol-ci.S, config/rs6000/sol-cn.S: New files.
+	* config/rs6000/t-crtstuff: New file.
+	* config/rs6000/t-ppccomm (EXTRA_PARTS): Remove.
+	(ecrti.S, ecrtn.S, ncrti.S, ncrtn.S): Remove.
+	(ecrti$(objext)): Depend on $(srcdir)/config/rs6000/eabi-ci.S.
+	Make output file explicit.
+	(ecrtn$(objext)): Depend on $(srcdir)/config/rs6000/eabi-cn.S.
+	Make output file explicit.
+	(ncrti$(objext): Depend on $(srcdir)/config/rs6000/sol-ci.S.
+	Make output file explicit.
+	(ncrtn$(objext)): Depend on $(srcdir)/config/rs6000/sol-cn.S.
+	Make output file explicit.
+	* config/score/crti.S, config/score/crtn.S: New files.
+	* config/sh/crt1.S, config/sh/crti.S, config/sh/crtn.S: New files.
+	* config/sh/lib1funcs-4-300.S, config/sh/lib1funcs-Os-4-200.S: New
+	files.
+	* config/sh/t-sh, config/sh/t-superh: New files.
+	* config/sparc/t-linux64: New file.
+	* config/spu/cache.S, config/spu/cachemgr.c: New files.
+	* config/spu/t-elf (CRTSTUFF_T_CFLAGS): Set.
+	(cachemgr.o, cachemgr_nonatomic.o, libgcc_%.a, cache8k.o)
+	(cache16k.o, cache32k.o, cache64k.o, cache128k.o): New rules.
+	* config/t-crtin: Remove.
+	* config/t-crtstuff-pic: New file.
+	* config/t-sol2 (CUSTOM_CRTIN): Set.
+	(crti.o, crtn.o): New rules.
+	* config/vms/t-vms: New file.
+	* config/vms/vms-ucrt0.c: New file.
+	* config/xtensa/t-elf: New file.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (SHLIB_NM_FLAGS): Set.
 	* mkmap-flat.awk, mkmap-symver.awk: New files.
 	* configure.ac (libgcc_cv_lib_sjlj_exceptions): Check for SjLj

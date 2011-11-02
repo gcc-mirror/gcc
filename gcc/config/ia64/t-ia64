@@ -38,9 +38,6 @@ LIB1ASMFUNCS  = __divxf3 __divdf3 __divsf3 \
 # to support the Intel assembler.
 #LIBGCC2_DEBUG_CFLAGS = -g1 -P
 
-# Effectively disable the crtbegin/end rules using crtstuff.c
-T = disable
-
 ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) $(CPPLIB_H) $(C_COMMON_H) $(C_PRAGMA_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

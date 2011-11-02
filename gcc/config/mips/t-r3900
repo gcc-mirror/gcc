@@ -1,5 +1,5 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2007 Free Software Foundation, Inc.
+# 2007, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -20,10 +20,6 @@
 # We must build libgcc2.a with -G 0, in case the user wants to link
 # without the $gp register.
 TARGET_LIBGCC2_CFLAGS = -G 0
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
-# Don't let CTOR_LIST end up in sdata section.
-CRTSTUFF_T_CFLAGS = -G 0
 
 # Build the libraries for both hard and soft floating point
 
