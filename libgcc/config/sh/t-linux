@@ -1,3 +1,5 @@
+LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
+
 HOST_LIBGCC2_CFLAGS = -fpic -mieee -DNO_FPSCR_VALUES
 
 # Override t-slibgcc-elf-ver to export some libgcc symbols with

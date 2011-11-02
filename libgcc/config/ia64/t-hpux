@@ -1,1 +1,6 @@
+# On HP-UX we do not want _fixtfdi, _fixunstfdi, or _floatditf from
+# LIB1ASMSRC.  These functions map the 128 bit conversion function names
+# to 80 bit conversions and were done for Linux backwards compatibility.
+LIB1ASMFUNCS := $(filter-out _fixtfdi _fixunstfdi _floatditf,$(LIB1ASMFUNCS))
+
 LIB2ADDEH = $(srcdir)/unwind-c.c

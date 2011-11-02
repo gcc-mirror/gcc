@@ -35,14 +35,6 @@ LIB2FUNCS_EXTRA = \
 	$(srcdir)/config/picochip/libgccExtras/parityhi2.asm		\
 	$(srcdir)/config/picochip/libgccExtras/popcounthi2.asm
 
-# Prevent some of the more complicated libgcc functions from being
-# compiled. This is because they are generally too big to fit into an
-# AE anyway, so there is no point in having them. Also, some don't
-# compile properly so we'll ignore them for the moment.
-
-LIB1ASMFUNCS = _mulsc3 _divsc3
-LIB1ASMSRC = picochip/libgccExtras/fake_libgcc.asm
-
 # Turn off ranlib on target libraries.
 RANLIB_FOR_TARGET = cat
 

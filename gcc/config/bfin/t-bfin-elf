@@ -18,10 +18,6 @@
 
 ## Target part of the Makefile
 
-LIB1ASMSRC = bfin/lib1funcs.asm
-LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _muldi3 _umulsi3_highpart
-LIB1ASMFUNCS += _smulsi3_highpart
-
 TARGET_LIBGCC2_CFLAGS = -fpic
 
 MULTILIB_OPTIONS=mcpu=bf532-none

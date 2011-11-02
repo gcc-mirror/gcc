@@ -1,3 +1,6 @@
+# Add the bpabi.S functions.
+LIB1ASMFUNCS += _aeabi_lcmp _aeabi_ulcmp _aeabi_ldivmod _aeabi_uldivmod
+
 LIB2ADDEH = $(srcdir)/config/arm/unwind-arm.c \
   $(srcdir)/config/arm/libunwind.S \
   $(srcdir)/config/arm/pr-support.c $(srcdir)/unwind-c.c

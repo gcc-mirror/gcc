@@ -23495,7 +23495,7 @@ arm_small_register_classes_for_mode_p (enum machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  SImode shifts use normal
    ARM insns and therefore guarantee that the shift count is modulo 256.
-   DImode shifts (those implemented by lib1funcs.asm or by optabs.c)
+   DImode shifts (those implemented by lib1funcs.S or by optabs.c)
    guarantee no particular behavior for out-of-range counts.  */
 
 static unsigned HOST_WIDE_INT

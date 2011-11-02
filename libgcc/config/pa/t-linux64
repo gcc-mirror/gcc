@@ -1,0 +1,4 @@
+# Plug millicode routines into libgcc.a  We want these on both native and
+# cross compiles.
+# FIXME: Explain.
+LIB1ASMFUNCS := $(filter-out _dyncall, $(LIB1ASMFUNCS))

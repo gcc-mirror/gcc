@@ -1,0 +1,2 @@
+# Use a version of div0 which raises SIGFPE, and a special __clear_cache.
+LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx _clear_cache

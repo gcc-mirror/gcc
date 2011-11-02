@@ -1,2 +1,9 @@
+# Prevent some of the more complicated libgcc functions from being
+# compiled.  This is because they are generally too big to fit into an
+# AE anyway, so there is no point in having them.  Also, some don't
+# compile properly so we'll ignore them for the moment.
+LIB1ASMSRC = picochip/lib1funcs.S
+LIB1ASMFUNCS = _mulsc3 _divsc3
+
 # Turn off the building of exception handling libraries.
 LIB2ADDEH =

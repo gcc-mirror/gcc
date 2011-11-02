@@ -17,26 +17,33 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+LIB1ASMSRC = sh/lib1funcs.S
+LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movmem \
+  _movmem_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
+  _div_table _udiv_qrnnd_16 \
+  $(LIB1ASMFUNCS_CACHE)
+LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
+
 crt1.o: $(srcdir)/config/sh/crt1.S
 	$(gcc_compile) -c $<
 
-ic_invalidate_array_4-100.o: $(gcc_srcdir)/config/sh/lib1funcs.asm
+ic_invalidate_array_4-100.o: $(srcdir)/config/sh/lib1funcs.S
 	$(gcc_compile) -c -DL_ic_invalidate_array -DWAYS=1 -DWAY_SIZE=0x2000 $<
 libic_invalidate_array_4-100.a: ic_invalidate_array_4-100.o
 	$(AR_CREATE_FOR_TARGET) $@ $<
 
-ic_invalidate_array_4-200.o: $(gcc_srcdir)/config/sh/lib1funcs.asm
+ic_invalidate_array_4-200.o: $(srcdir)/config/sh/lib1funcs.S
 	$(gcc_compile) -c -DL_ic_invalidate_array -DWAYS=2 -DWAY_SIZE=0x2000 $<
 libic_invalidate_array_4-200.a: ic_invalidate_array_4-200.o
 	$(AR_CREATE_FOR_TARGET) $@ $<
 
-ic_invalidate_array_4a.o: $(gcc_srcdir)/config/sh/lib1funcs.asm
+ic_invalidate_array_4a.o: $(srcdir)/config/sh/lib1funcs.S
 	$(gcc_compile) -c -DL_ic_invalidate_array -D__FORCE_SH4A__ $<
 libic_invalidate_array_4a.a: ic_invalidate_array_4a.o
 	$(AR_CREATE_FOR_TARGET) $@ $<
 
 sdivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.S
-	$(gcc_compile) -c -DL_sdivsi3_i4i $<
+	$(compile) -c -DL_sdivsi3_i4i $<
 udivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.S
 	$(gcc_compile) -c -DL_udivsi3_i4i $<
 unwind-dw2-Os-4-200.o: $(gcc_srcdir)/unwind-dw2.c

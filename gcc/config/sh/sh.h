@@ -1983,7 +1983,7 @@ struct sh_args {
    that the native compiler puts too large (> 32) immediate shift counts
    into a register and shifts by the register, letting the SH decide what
    to do instead of doing that itself.  */
-/* ??? The library routines in lib1funcs.asm truncate the shift count.
+/* ??? The library routines in lib1funcs.S truncate the shift count.
    However, the SH3 has hardware shifts that do not truncate exactly as gcc
    expects - the sign bit is significant - so it appears that we need to
    leave this zero for correct SH3 code.  */

@@ -26,24 +26,12 @@ MULTILIB_OPTIONS = milp32/mlp64
 MULTILIB_DIRNAMES = hpux32 hpux64
 MULTILIB_MATCHES =
 
-# On HP-UX we do not want _fixtfdi, _fixunstfdi, or _floatditf from
-# LIB1ASMSRC.  These functions map the 128 bit conversion function names
-# to 80 bit conversions and were done for Linux backwards compatibility.
-
-LIB1ASMFUNCS := $(filter-out _fixtfdi _fixunstfdi _floatditf,$(LIB1ASMFUNCS))
-
 # Support routines for HP-UX 128 bit floats.
 
 LIB2FUNCS_EXTRA=quadlib.c $(srcdir)/config/floatunsitf.c
 
 quadlib.c: $(srcdir)/config/ia64/quadlib.c
 	cat $(srcdir)/config/ia64/quadlib.c > quadlib.c
-
-# We get an undefined main when building a cross compiler because our
-# linkspec has "-u main" and we want that for linking but it makes
-# LIBGCC1_TEST fail because it uses -nostdlib -nostartup.
-
-LIBGCC1_TEST =
 
 # We do not want to include the EH stuff that linux uses, we want to use
 # the HP-UX libunwind library.

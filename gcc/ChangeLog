@@ -1,5 +1,111 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.in (LIB1ASMSRC): Don't export.
+	(libgcc.mvars): Don't emit LIB1ASMFUNCS, LIB1ASMSRC.
+	* config/arm/arm.c: Update lib1funcs.asm filename.
+	* config/arm/linux-eabi.h: Likewise.
+	* config/arm/bpabi-v6m.S, config/arm/bpabi.S,
+	config/arm/ieee754-df.S, config/arm/ieee754-sf.S: Move to
+	../libgcc/config/arm.
+	* config/arm/lib1funcs.asm: Move to ../libgcc/config/arm/lib1funcs.S.
+	* config/arm/t-arm (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/arm/t-arm-elf (LIB1ASMFUNCS): Remove.
+	* config/arm/t-bpabi: Likewise.
+	* config/arm/t-linux (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/arm/t-linux-eabi (LIB1ASMFUNCS): Remove.
+	* config/arm/t-strongarm-elf: Likewise.
+	* config/arm/t-symbian: Likewise.
+	* config/arm/t-vxworks: Likewise.
+	* config/arm/t-wince-pe: Likewise.
+	* config/avr/libgcc.S: Move to ../libgcc/config/avr.
+	* config/avr/t-avr (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/bfin/lib1funcs.asm: Move to
+	../libgcc/config/bfin/lib1funcs.S.
+	* config/bfin/t-bfin: Remove.
+	* config/bfin/t-bfin-elf (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/bfin/t-bfin-linux: Likewise.
+	* config/bfin/t-bfin-uclinux: Likewise.
+	* config/c6x/lib1funcs.asm: Move to
+	../libgcc/config/c6x/lib1funcs.S.
+	* config/c6x/t-c6x-elf (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/fr30/lib1funcs.asm: Move to
+	../libgcc/config/fr30/lib1funcs.S.
+	* config/fr30/t-fr30 (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/frv/lib1funcs.asm: Move to
+	../libgcc/config/frv/lib1funcs.S.
+	* config/frv/t-frv (CROSS_LIBGCC1, LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/h8300/fixunssfsi.c: Update lib1funcs.asm filename.
+	* config/h8300/lib1funcs.asm: Move to
+	../libgcc/config/h8300/lib1funcs.S.
+	* config/h8300/t-h8300 (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/i386/cygwin.asm: Move to ../libgcc/config/i386/cygwin.S.
+	* config/i386/t-cygming (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/i386/t-interix: Likewise.
+	* config/ia64/lib1funcs.asm: Move to
+	../libgcc/config/ia64/lib1funcs.S.
+	* config/ia64/t-hpux (LIB1ASMFUNCS, LIBGCC1_TEST): Remove.
+	* config/ia64/t-ia64 (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/iq2000/t-iq2000 (LIBGCC1, CROSS_LIBGCC1): Remove.
+	* config/m32c/m32c.c: Update m32c-lib1.S filename.
+	* config/m32c/m32c-lib1.S: Move to ../libgcc/config/m32c/lib1funcs.S.
+	* config/m32c/t-m32c (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/m32r/t-linux (CROSS_LIBGCC1, LIBGCC1, LIBGCC1_TEST): Remove.
+	* config/m68k/lb1sf68.asm: Move to ../libgcc/config/m68k/lb1sf68.S.
+	* config/m68k/t-floatlib (LIB1ASMSRC, LIB1ASMFUNCS): New file.
+	* config/mcore/lib1.asm: Move to ../libgcc/config/mcore/lib1funcs.S.
+	* config/mcore/t-mcore (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/mep/mep-lib1.asm: Move to ../libgcc/config/mep/lib1funcs.S.
+	* config/mep/t-mep (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/mips/mips16.S: Move to ../libgcc/config/mips.
+	* config/mips/t-libgcc-mips16: Remove.
+	* config/mips/t-sr71k (LIBGCC1, CROSS_LIBGCC1): Remove.
+	* config/pa/milli64.S: Move to ../libgcc/config/pa.
+	* config/pa/t-linux (LIB1ASMFUNCS, LIB1ASMSRC): Remove.
+	* config/pa/t-linux64: Likewise.
+	* config/picochip/libgccExtras/fake_libgcc.asm: Move to
+	../libgcc/config/picochip/lib1funcs.S.
+	* config/picochip/t-picochip (LIB1ASMFUNCS, LIB1ASMSRC): Remove.
+	* config/sh/lib1funcs.asm: Move to ../libgcc/config/sh/lib1funcs.S.
+	* config/sh/lib1funcs.h: Move to ../libgcc/config/sh.
+	* config/sh/sh.h: Update lib1funcs.asm filename.
+	* config/sh/t-linux (LIB1ASMFUNCS_CACHE): Remove.
+	* config/sh/t-netbsd: Likewise.
+	* config/sh/t-sh (LIB1ASMSRC, LIB1ASMFUNCS, LIB1ASMFUNCS_CACHE):
+	Remove.
+	* config/sh/t-sh64 (LIB1ASMFUNCS): Remove.
+	* config/sparc/lb1spc.asm: Move to ../libgcc/config/sparc/lb1spc.S.
+	* config/sparc/lb1spl.asm: Remove.
+	* config/sparc/t-elf (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config/sparc/t-leon: Likewise.
+	* config/spu/t-spu-elf (LIBGCC1, CROSS_LIBGCC1): Remove.
+	* config/v850/lib1funcs.asm: Move to ../libgcc/config/v850/lib1funcs.S.
+	* config/v850/t-v850 (LIB1ASMSRC, LIB1ASMFUNCS): Remove
+	* config/vax/lib1funcs.asm: Move to ../libgcc/config/vax/lib1funcs.S.
+	* config/vax/t-linux: Remove.
+	* config/xtensa/ieee754-df.S, config/xtensa/ieee754-sf.S: Move to
+	../libgcc/config/xtensa.
+	* config/xtensa/lib1funcs.asm: Move to
+	../libgcc/config/xtensa/lib1funcs.S.
+	* config/xtensa/t-xtensa (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
+	* config.gcc (bfin*-rtems*): Remove bfin/t-bfin from tmake_file.
+	(bfin*-*): Likewise.
+	(mips64*-*-linux*, mipsisa64*-*-linux*): Remove
+	mips/t-libgcc-mips16 from tmake_file.
+	(mips*-*-linux*): Likewise.
+	(mips*-sde-elf*): Likewise.
+	(mipsisa32-*-elf*, mipsisa32el-*-elf*, mipsisa32r2-*-elf*)
+	(mipsisa32r2el-*-elf*, mipsisa64-*-elf*, mipsisa64el-*-elf*)
+	(mipsisa64r2-*-elf*, mipsisa64r2el-*-elf*): Likewise.
+	(mipsisa64sb1-*-elf*, mipsisa64sb1el-*-elf*): Likewise.
+	(mips-*-elf*, mipsel-*-elf*): Likewise.
+	(mips64-*-elf*, mips64el-*-elf*): Likewise.
+	(mips64orion-*-elf*, mips64orionel-*-elf*): Likewise.
+	(mips*-*-rtems*): Likewise.
+	(mipstx39-*-elf*, mipstx39el-*-elf*): Likewise.
+	(vax-*-linux*): Remove vax/t-linux from tmake_file.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc (extra_parts): Remove.
 	(*-*-freebsd*): Remove extra_parts.
 	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,

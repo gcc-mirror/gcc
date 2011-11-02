@@ -1,0 +1,3 @@
+LIB1ASMSRC = h8300/lib1funcs.S
+LIB1ASMFUNCS = _cmpsi2 _ucmpsi2 _divhi3 _divsi3 _mulhi3 _mulsi3 \
+  _fixunssfsi_asm

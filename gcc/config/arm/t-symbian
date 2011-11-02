@@ -16,20 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMFUNCS += _bb_init_func _call_via_rX _interwork_call_via_rX _clzsi2 _clzdi2
-
-# These functions have __aeabi equivalents and will never be called by GCC.  
-# By putting them in LIB1ASMFUNCS, we avoid the standard libgcc2.c code being
-# used -- and we make sure that definitions are not available in lib1funcs.asm,
-# either, so they end up undefined.
-LIB1ASMFUNCS += \
-	_ashldi3 _ashrdi3 _divdi3 _floatdidf _udivmoddi4 _umoddi3 \
-	_udivdi3 _lshrdi3 _moddi3 _muldi3 _negdi2 _cmpdi2 \
-	_fixdfdi _fixsfdi _fixunsdfdi _fixunssfdi _floatdisf \
-	_negdf2 _addsubdf3 _muldivdf3 _cmpdf2 _unorddf2 _fixdfsi _fixunsdfsi \
-	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2 \
-	_fixsfsi _fixunssfsi
-
 EXTRA_HEADERS += $(srcdir)/ginclude/unwind-arm-common.h
 # Include half-float helpers.
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/arm/fp16.c

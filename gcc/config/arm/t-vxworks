@@ -16,8 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMFUNCS += _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func _call_via_rX _interwork_call_via_rX _clzsi2 _clzdi2
-
 MULTILIB_OPTIONS = \
   mrtp fPIC \
   t4/t4be/t4t/t4tbe/t5/t5be/t5t/t5tbe/tstrongarm/txscale/txscalebe

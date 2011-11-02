@@ -1110,7 +1110,6 @@ export DESTDIR
 export GCC_FOR_TARGET
 export INCLUDES
 export INSTALL_DATA
-export LIB1ASMSRC
 export LIBGCC2_CFLAGS
 export LIPO_FOR_TARGET
 export MACHMODE_H
@@ -1878,8 +1877,6 @@ libgcc-support: libgcc.mvars stmp-int-hdrs $(TCONFIG_H) \
 libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 		xgcc$(exeext)
 	: > tmp-libgcc.mvars
-	echo LIB1ASMFUNCS = '$(LIB1ASMFUNCS)' >> tmp-libgcc.mvars
-	echo LIB1ASMSRC = '$(LIB1ASMSRC)' >> tmp-libgcc.mvars
 	echo LIB2FUNCS_ST = '$(LIB2FUNCS_ST)' >> tmp-libgcc.mvars
 	echo LIB2FUNCS_EXCLUDE = '$(LIB2FUNCS_EXCLUDE)' >> tmp-libgcc.mvars
 	echo LIB2ADD = '$(call srcdirify,$(LIB2ADD))' >> tmp-libgcc.mvars

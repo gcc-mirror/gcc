@@ -16,9 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMSRC = sparc/lb1spc.asm
-LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3
-
 # Multilibs for LEON
 # LEON is a SPARC-V8, but the AT697 implementation has a bug in the
 # V8-specific instructions.

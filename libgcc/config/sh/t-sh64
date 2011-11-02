@@ -1,0 +1,6 @@
+LIB1ASMFUNCS = \
+  _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
+  _shcompact_call_trampoline _shcompact_return_trampoline \
+  _shcompact_incoming_args _ic_invalidate _nested_trampoline \
+  _push_pop_shmedia_regs \
+  _udivdi3 _divdi3 _umoddi3 _moddi3 _div_table

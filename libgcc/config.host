@@ -306,22 +306,25 @@ alpha*-dec-*vms*)
 	md_unwind_header=alpha/vms-unwind.h
 	;;
 arm-wrs-vxworks)
-	tmake_file="$tmake_file t-fdpbit"
+	tmake_file="$tmake_file arm/t-arm arm/t-vxworks t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-*-freebsd*)
-	tmake_file="$tmake_file t-fdpbit"
+	tmake_file="$tmake_file arm/t-arm arm/t-strongarm-elf t-fdpbit"
 	;;
 arm*-*-netbsdelf*)
-	tmake_file="$tmake_file t-slibgcc-gld-nover"
+	tmake_file="$tmake_file arm/t-arm t-slibgcc-gld-nover"
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
+	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix"
 	case ${host} in
 	arm*-*-linux-*eabi)
-	  tmake_file="${tmake_file} arm/t-bpabi t-slibgcc-libgcc"
+	  tmake_file="${tmake_file} arm/t-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
 	  unwind_header=config/arm/unwind-arm.h
 	  ;;
+	*)
+	  tmake_file="$tmake_file arm/t-linux"
+ 	  ;;
 	esac
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	;;
@@ -333,15 +336,15 @@ arm*-*-uclinux*)		# ARM ucLinux
 	  unwind_header=config/arm/unwind-arm.h
 	  ;;
 	esac
-	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-*-ecos-elf)
-	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* )
-	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
+	tmake_file="${tmake_file} arm/t-arm arm/t-elf t-fixedpoint-gnu-prefix"
 	case ${host} in
 	arm*-*-eabi*)
 	  tmake_file="${tmake_file} arm/t-bpabi"
@@ -356,17 +359,18 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	unwind_header=config/arm/unwind-arm.h
 	;;
 arm*-*-rtems*)
-	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-*-elf)
-	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-wince-pe*)
+	tmake_file="$tmake_file arm/t-arm arm/t-wince-pe"
 	;;
 avr-*-rtems*)
-	tmake_file=t-fpbit
+	tmake_file="$tmake_file avr/t-avr t-fpbit"
 	# Don't use default.
 	extra_parts=
 	;;
@@ -375,27 +379,27 @@ avr-*-*)
 	tmake_file="${cpu_type}/t-avr t-fpbit"
 	;;
 bfin*-elf*)
-	tmake_file="bfin/t-crtlibid bfin/t-crtstuff t-fdpbit"
+	tmake_file="bfin/t-bfin bfin/t-crtlibid bfin/t-crtstuff t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o crtlibid.o"
         ;;
 bfin*-uclinux*)
-	tmake_file="bfin/t-crtlibid bfin/t-crtstuff t-fdpbit"
+	tmake_file="bfin/t-bfin bfin/t-crtlibid bfin/t-crtstuff t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtlibid.o"
 	md_unwind_header=bfin/linux-unwind.h
         ;;
 bfin*-linux-uclibc*)
-	tmake_file="$tmake_file bfin/t-crtstuff t-fdpbit bfin/t-linux"
+	tmake_file="$tmake_file bfin/t-bfin bfin/t-crtstuff t-fdpbit bfin/t-linux"
 	# No need to build crtbeginT.o on uClibc systems.  Should probably
 	# be moved to the OS specific section above.
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	md_unwind_header=bfin/linux-unwind.h
 	;;
 bfin*-rtems*)
-	tmake_file="$tmake_file t-fdpbit"
+	tmake_file="$tmake_file bfin/t-bfin t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 bfin*-*)
-	tmake_file="$tmake_file t-fdpbit"
+	tmake_file="$tmake_file bfin/t-bfin t-fdpbit"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
         ;;
 crisv32-*-elf)
@@ -415,10 +419,8 @@ cris-*-none)
 cris-*-linux* | crisv32-*-linux*)
 	tmake_file="$tmake_file t-fdpbit cris/t-linux"
 	;;
-fido-*-elf)
-	;;
 fr30-*-elf)
-	tmake_file="$tmake_file t-fdpbit"
+	tmake_file="$tmake_file fr30/t-fr30 t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 frv-*-elf)
@@ -427,20 +429,21 @@ frv-*-elf)
 	extra_parts="frvbegin.o frvend.o"
 	;;
 frv-*-*linux*)
-	tmake_file="$tmake_file t-fdpbit frv/t-linux"
+	tmake_file="$tmake_file frv/t-frv frv/t-linux t-fdpbit"
 	;;
 h8300-*-rtems*)
-	tmake_file="$tmake_file t-fpbit"
+	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 h8300-*-elf*)
-	tmake_file="$tmake_file t-fpbit"
+	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 hppa*64*-*-linux*)
+	tmake_file="$tmake_file pa/t-linux pa/t-linux64"
 	;;
 hppa*-*-linux*)
-	tmake_file="$tmake_file t-slibgcc-libgcc"
+	tmake_file="$tmake_file pa/t-linux t-slibgcc-libgcc"
 	# Set the libgcc version number
 	if test x$enable_sjlj_exceptions = xyes; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
@@ -565,7 +568,7 @@ i[34567]86-*-cygwin*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-cygwin i386/t-crtfm t-dfprules"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-cygwin i386/t-crtfm i386/t-chkstk t-dfprules"
 	case ${target_thread_file} in
 	  posix)
 	    tmake_file="i386/t-mingw-pthread $tmake_file"
@@ -586,7 +589,7 @@ i[34567]86-*-mingw*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 i386/t-crtfm t-dfprules"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 i386/t-crtfm i386/t-chkstk t-dfprules"
 	md_unwind_header=i386/w32-unwind.h
 	;;
 x86_64-*-mingw*)
@@ -602,10 +605,11 @@ x86_64-*-mingw*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-mingw32 t-dfprules i386/t-crtfm"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-mingw32 t-dfprules i386/t-crtfm i386/t-chkstk"
 	extra_parts="$extra_parts crtfastmath.o"
 	;;
 i[34567]86-*-interix3*)
+	tmake_file="$tmake_file i386/t-chkstk"
 	;;
 ia64*-*-elf*)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
@@ -625,10 +629,10 @@ ia64*-*-linux*)
 	md_unwind_header=ia64/linux-unwind.h
 	;;
 ia64*-*-hpux*)
-	tmake_file="ia64/t-hpux t-slibgcc ia64/t-slibgcc-hpux t-slibgcc-hpux"
+	tmake_file="ia64/t-ia64 ia64/t-hpux t-slibgcc ia64/t-slibgcc-hpux t-slibgcc-hpux"
 	;;
 ia64-hp-*vms*)
-	tmake_file="$tmake_file ia64/t-eh-ia64 ia64/t-vms t-slibgcc-vms"
+	tmake_file="$tmake_file ia64/t-ia64 ia64/t-eh-ia64 ia64/t-vms t-slibgcc-vms"
 	extra_parts="$extra_parts crtinitS.o"
 	md_unwind_header=ia64/vms-unwind.h
 	;;
@@ -660,18 +664,21 @@ m32r-*-linux*)
 m32rle-*-linux*)
 	tmake_file="$tmake_file m32r/t-linux t-fdpbit"
 	;;
-m68k-*-elf*)
+m68k-*-elf* | fido-*-elf)
+	tmake_file="$tmake_file m68k/t-floatlib"
 	;;
 m68k*-*-netbsdelf*)
 	;;
 m68k*-*-openbsd*)
 	;;
 m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux with uClibc
+	tmake_file="$tmake_file m68k/t-floatlib"
 	md_unwind_header=m68k/linux-unwind.h
 	;;
 m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
+	tmake_file="$tmake_file m68k/t-floatlib"
 	# If not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number.
 	if test x$enable_sjlj_exceptions != xyes; then
@@ -680,10 +687,11 @@ m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 	md_unwind_header=m68k/linux-unwind.h
 	;;
 m68k-*-rtems*)
+	tmake_file="$tmake_file m68k/t-floatlib"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 mcore-*-elf)
-	tmake_file=t-fdpbit
+	tmake_file="mcore/t-mcore t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 microblaze*-linux*)
@@ -905,6 +913,10 @@ sh-*-elf* | sh[12346l]*-*-elf*)
 		libic_invalidate_array_4-200.a \
 		libic_invalidate_array_4a.a \
 		libgcc-Os-4-200.a libgcc-4-300.a"
+	case ${host} in sh64*-*-*)
+		tmake_file="$tmake_file sh/t-sh64"
+		;;
+	esac
 	case ${host} in
 	sh*-superh-elf)
 		tmake_file="$tmake_file sh/t-superh"
@@ -913,23 +925,33 @@ sh-*-elf* | sh[12346l]*-*-elf*)
  	esac
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
-	tmake_file="${tmake_file} t-slibgcc-libgcc sh/t-linux t-fdpbit"
+	tmake_file="${tmake_file} sh/t-sh t-slibgcc-libgcc sh/t-linux t-fdpbit"
+	case ${host} in sh64*-*-linux*)
+		tmake_file="$tmake_file sh/t-sh64"
+		;;
+	esac
 	md_unwind_header=sh/linux-unwind.h
 	;;
 sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
   sh64-*-netbsd* | sh64l*-*-netbsd*)
+	tmake_file="$tmake_file sh/t-sh sh/t-netbsd"
+	case ${host} in
+	sh5*-*-netbsd* | sh64*-netbsd*)
+		tmake_file="$tmake_file sh/t-sh64"
+		;;
+	esac
 	# NetBSD's C library includes a fast software FP library that
 	# has support for setting/setting the rounding mode, exception
 	# mask, etc.  Therefore, we don't want to include software FP
 	# in libgcc.
 	;;
 sh-*-rtems*)
-	tmake_file="$tmake_file t-crtstuff-pic t-fdpbit"
+	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crt1.o crti.o crtn.o crtbeginS.o crtendS.o \
 		$sh_ic_extra_parts $sh_opt_extra_parts"
 	;;
 sh-wrs-vxworks)
-	tmake_file="$tmake_file t-crtstuff-pic t-fdpbit"
+	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-fdpbit"
 	;;
 sparc-*-netbsdelf*)
 	;;
@@ -955,6 +977,13 @@ sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	*)
 		tmake_file="${tmake_file} sparc/t-linux"
 		;;
+	esac
+	case ${host} in
+	*-leon[3-9]*)
+		;;
+	*)
+	  	tmake_file="$tmake_file sparc/t-softmul"
+	  	;;
 	esac
 	extra_parts="$extra_parts crtfastmath.o"
 	md_unwind_header=sparc/linux-unwind.h
@@ -1007,9 +1036,10 @@ tic6x-*-elf)
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
 v850*-*-*)
-	tmake_file=t-fdpbit
+	tmake_file="v850/t-v850 t-fdpbit"
 	;;
 vax-*-linux*)
+	tmake_file="$tmake_file vax/t-linux"
 	;;
 vax-*-netbsdelf*)
 	;;
@@ -1032,6 +1062,7 @@ am33_2.0-*-linux*)
 	tmake_file="$tmake_file t-fdpbit"
 	;;
 m32c-*-elf*|m32c-*-rtems*)
+	tmake_file="$tmake_file m32c/t-m32c"
  	;;
 mep*-*-*)
 	tmake_file="mep/t-mep t-fdpbit"

@@ -17,8 +17,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMFUNCS += _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _call_via_rX _interwork_call_via_rX _clzsi2 _clzdi2
-
 pe.o: $(srcdir)/config/arm/pe.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) output.h flags.h $(TREE_H) expr.h $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

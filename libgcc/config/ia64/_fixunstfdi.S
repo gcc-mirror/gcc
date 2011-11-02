@@ -3,7 +3,7 @@
 #endif
 
 #define L_fixunstfdi
-#include "config/ia64/lib1funcs.asm"
+#include "config/ia64/lib1funcs.S"
 
 #ifdef SHARED
 #undef __fixunstfti

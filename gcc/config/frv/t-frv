@@ -16,15 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Name of assembly file containing libgcc1 functions.
-# This entry must be present, but it can be empty if the target does
-# not need any assembler functions to support its code generation.
-#
-# Alternatively if assembler functions *are* needed then define the
-# entries below:
-CROSS_LIBGCC1	= libgcc1-asm.a
-LIB1ASMSRC	= frv/lib1funcs.asm
-LIB1ASMFUNCS	= _cmpll _cmpf _cmpd _addll _subll _andll _orll _xorll _notll _cmov
 LIB2FUNCS_EXTRA	= cmovh.c cmovw.c cmovd.c modi.c umodi.c uitof.c uitod.c ulltof.c ulltod.c
 
 # If any special flags are necessary when building libgcc2 put them here.

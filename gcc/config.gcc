@@ -950,11 +950,10 @@ bfin*-linux-uclibc*)
 	;;
 bfin*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h bfin/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="bfin/t-bfin t-rtems bfin/t-rtems"
+	tmake_file="t-rtems bfin/t-rtems"
 	;;
 bfin*-*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h bfin/elf.h"
-	tmake_file=bfin/t-bfin
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
@@ -1737,7 +1736,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h"
-	tmake_file="${tmake_file} mips/t-linux64 mips/t-libgcc-mips16"
+	tmake_file="${tmake_file} mips/t-linux64"
 	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	case ${target} in
 		mips64el-st-linux-gnu)
@@ -1758,7 +1757,6 @@ mips64*-*-linux* | mipsisa64*-*-linux*)
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
         tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h"
-	tmake_file="${tmake_file} mips/t-libgcc-mips16"
 	if test x$enable_targets = xall; then
 		tm_file="${tm_file} mips/gnu-user64.h mips/linux64.h"
 		tmake_file="${tmake_file} mips/t-linux64"
@@ -1785,7 +1783,7 @@ mips*-*-openbsd*)
 	;;
 mips*-sde-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h"
-	tmake_file="mips/t-sde mips/t-libgcc-mips16"
+	tmake_file="mips/t-sde"
 	extra_options="${extra_options} mips/sde.opt"
 	case "${with_newlib}" in
 	  yes)
@@ -1822,7 +1820,7 @@ mipsisa32r2-*-elf* | mipsisa32r2el-*-elf* | \
 mipsisa64-*-elf* | mipsisa64el-*-elf* | \
 mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
-	tmake_file="mips/t-isa3264 mips/t-libgcc-mips16"
+	tmake_file="mips/t-isa3264"
 	case ${target} in
 	  mipsisa32r2*)
 	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
@@ -1859,17 +1857,17 @@ mipsisa64sr71k-*-elf*)
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
-	tmake_file="mips/t-elf mips/t-libgcc-mips16 mips/t-sb1"
+	tmake_file="mips/t-elf mips/t-sb1"
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips-*-elf* | mipsel-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
-	tmake_file="mips/t-elf mips/t-libgcc-mips16"
+	tmake_file="mips/t-elf"
 	;;
 mips64-*-elf* | mips64el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
-	tmake_file="mips/t-elf mips/t-libgcc-mips16"
+	tmake_file="mips/t-elf"
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
@@ -1880,13 +1878,13 @@ mips64vr-*-elf* | mips64vrel-*-elf*)
         ;;
 mips64orion-*-elf* | mips64orionel-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elforion.h mips/elf.h"
-	tmake_file="mips/t-elf mips/t-libgcc-mips16"
+	tmake_file="mips/t-elf"
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/rtems.h rtems.h"
-	tmake_file="mips/t-elf mips/t-libgcc-mips16 t-rtems mips/t-rtems"
+	tmake_file="mips/t-elf t-rtems mips/t-rtems"
 	;;
 mips-wrs-vxworks)
 	tm_file="elfos.h ${tm_file} mips/elf.h vx-common.h vxworks.h mips/vxworks.h"
@@ -1894,7 +1892,7 @@ mips-wrs-vxworks)
 	;;
 mipstx39-*-elf* | mipstx39el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/r3900.h mips/elf.h"
-	tmake_file="mips/t-r3900 mips/t-libgcc-mips16"
+	tmake_file="mips/t-r3900"
 	;;
 mmix-knuth-mmixware)
 	tm_file="${tm_file} newlib-stdint.h"
@@ -2511,7 +2509,6 @@ v850*-*-*)
 vax-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h vax/elf.h vax/linux.h"
 	extra_options="${extra_options} vax/elf.opt"
-	tmake_file="${tmake_file} vax/t-linux"
 	;;
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
