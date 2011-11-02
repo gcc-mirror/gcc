@@ -471,9 +471,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
-      for (size_t __i = 0; __i < __n - 1; ++__i)
+      for (size_t __i = 0; __i < __n; ++__i)
 	__os << __x._M_x[__i] << __space;
-      __os << __x._M_x[__n - 1];
+      __os << __x._M_p;
 
       __os.flags(__flags);
       __os.fill(__fill);
@@ -498,6 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       for (size_t __i = 0; __i < __n; ++__i)
 	__is >> __x._M_x[__i];
+      __is >> __x._M_p;
 
       __is.flags(__flags);
       return __is;
@@ -627,7 +628,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       for (size_t __i = 0; __i < __r; ++__i)
 	__os << __x._M_x[__i] << __space;
-      __os << __x._M_carry;
+      __os << __x._M_carry << __space << __x._M_p;
 
       __os.flags(__flags);
       __os.fill(__fill);
@@ -649,6 +650,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (size_t __i = 0; __i < __r; ++__i)
 	__is >> __x._M_x[__i];
       __is >> __x._M_carry;
+      __is >> __x._M_p;
 
       __is.flags(__flags);
       return __is;
