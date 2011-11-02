@@ -612,8 +612,6 @@ prefix_to_exec_prefix := \
 dollar = @dollar@
 # Used in install-cross.
 gcc_tooldir = @gcc_tooldir@
-# Used to install the shared libgcc.
-slibdir = @slibdir@
 # Since gcc_tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
 build_tooldir = $(exec_prefix)/$(target_noncanonical)
 # Directory in which the compiler finds target-independent g++ includes.
@@ -695,9 +693,6 @@ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES_FOR_TARGET) $(MULTILIB_CFLAGS) \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
   -fno-stack-protector \
   $(INHIBIT_LIBC_CFLAGS)
-
-# nm flags to list global symbols in libgcc object files.
-SHLIB_NM_FLAGS = -pg
 
 # List of extra executables that should be compiled for this target machine
 # that are used for compiling from source code to object code.
@@ -1137,7 +1132,6 @@ export NM_FOR_TARGET
 export STRIP_FOR_TARGET
 export RANLIB_FOR_TARGET
 export libsubdir
-export slibdir
 
 FLAGS_TO_PASS = \
 	"ADA_CFLAGS=$(ADA_CFLAGS)" \
@@ -1911,14 +1905,6 @@ libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 	echo LIB2_SIDITI_CONV_FUNCS = '$(LIB2_SIDITI_CONV_FUNCS)' >> tmp-libgcc.mvars
 	echo LIB2_DIVMOD_FUNCS = '$(LIB2_DIVMOD_FUNCS)' >> tmp-libgcc.mvars
 	echo GCC_EXTRA_PARTS = '$(GCC_EXTRA_PARTS)' >> tmp-libgcc.mvars
-	echo SHLIB_LINK = '$(subst $(GCC_FOR_TARGET),$$(GCC_FOR_TARGET),$(SHLIB_LINK))' >> tmp-libgcc.mvars
-	echo SHLIB_INSTALL = '$(SHLIB_INSTALL)' >> tmp-libgcc.mvars
-	echo SHLIB_DLLDIR = '$(SHLIB_DLLDIR)' >> tmp-libgcc.mvars
-	echo SHLIB_EXT = '$(SHLIB_EXT)' >> tmp-libgcc.mvars
-	echo SHLIB_MKMAP = '$(call srcdirify,$(SHLIB_MKMAP))' >> tmp-libgcc.mvars
-	echo SHLIB_MKMAP_OPTS = '$(SHLIB_MKMAP_OPTS)' >> tmp-libgcc.mvars
-	echo SHLIB_MAPFILES = '$(call srcdirify,$(SHLIB_MAPFILES))' >> tmp-libgcc.mvars
-	echo SHLIB_NM_FLAGS = '$(SHLIB_NM_FLAGS)' >> tmp-libgcc.mvars
 	echo LIBGCC2_CFLAGS = '$(LIBGCC2_CFLAGS)' >> tmp-libgcc.mvars
 	echo TARGET_LIBGCC2_CFLAGS = '$(TARGET_LIBGCC2_CFLAGS)' >> tmp-libgcc.mvars
 	echo CRTSTUFF_CFLAGS = '$(CRTSTUFF_CFLAGS)' >> tmp-libgcc.mvars
@@ -2228,20 +2214,20 @@ DRIVER_DEFINES = \
   -DTOOLDIR_BASE_PREFIX=\"$(libsubdir_to_prefix)$(prefix_to_exec_prefix)\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
-  `test "X$${SHLIB_LINK}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"` \
+  `test "X$${SHLIB}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"` \
   -DCONFIGURE_SPECS="\"@CONFIGURE_SPECS@\""
 
 gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) specs.h prefix.h $(GCC_H) $(FLAGS_H) \
     configargs.h $(OBSTACK_H) $(OPTS_H) $(DIAGNOSTIC_H) $(VEC_H) $(PARAMS_H)
-	(SHLIB_LINK='$(SHLIB_LINK)'; \
+	(SHLIB='$(SHLIB)'; \
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gcc.c $(OUTPUT_OPTION))
 
 gccspec.o: gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
     $(OPTS_H)
-	(SHLIB_LINK='$(SHLIB_LINK)'; \
+	(SHLIB='$(SHLIB)'; \
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gccspec.c $(OUTPUT_OPTION))
@@ -4651,7 +4637,6 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(mkinstalldirs) $(DESTDIR)$(includedir)
 	$(mkinstalldirs) $(DESTDIR)$(infodir)
-	$(mkinstalldirs) $(DESTDIR)$(slibdir)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
 

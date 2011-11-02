@@ -671,7 +671,6 @@ all_gtfiles
 all_compilers
 srcdir
 subdirs
-slibdir
 dollar
 gcc_tooldir
 enable_lto
@@ -918,7 +917,6 @@ with_gc
 with_system_zlib
 enable_maintainer_mode
 enable_version_specific_runtime_libs
-with_slibdir
 enable_plugin
 enable_libquadmath_support
 with_linker_hash_style
@@ -1674,7 +1672,6 @@ Optional Packages:
   --with-gc={page,zone}   choose the garbage collection mechanism to use with
                           the compiler
   --with-system-zlib      use installed libz
-  --with-slibdir=DIR      shared libraries in DIR [LIBDIR]
   --with-linker-hash-style={sysv,gnu,both}
                           specify the linker hash style
 
@@ -18072,7 +18069,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18075 "configure"
+#line 18072 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18178,7 +18175,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18181 "configure"
+#line 18178 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26955,22 +26952,6 @@ gcc_tooldir='$(libsubdir)/$(libsubdir_to_prefix)$(target_noncanonical)'
 if test "${enable_version_specific_runtime_libs+set}" = set; then :
   enableval=$enable_version_specific_runtime_libs;
 fi
-
-
-
-# Check whether --with-slibdir was given.
-if test "${with_slibdir+set}" = set; then :
-  withval=$with_slibdir; slibdir="$with_slibdir"
-else
-  if test "${enable_version_specific_runtime_libs+set}" = set; then
-  slibdir='$(libsubdir)'
-elif test "$host" != "$target"; then
-  slibdir='$(build_tooldir)/lib'
-else
-  slibdir='$(libdir)'
-fi
-fi
-
 
 
 # Substitute configuration variables

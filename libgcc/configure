@@ -694,6 +694,7 @@ enable_maintainer_mode
 with_build_libsubdir
 enable_decimal_float
 with_system_libunwind
+enable_sjlj_exceptions
 enable_tls
 '
       ac_precious_vars='build_alias
@@ -1328,6 +1329,8 @@ Optional Features:
 			enable decimal float extension to C.  Selecting 'bid'
 			or 'dpd' choses which decimal floating point format
 			to use
+  --enable-sjlj-exceptions
+                          force use of builtin_setjmp for exceptions
   --enable-tls            Use thread-local storage [default=yes]
 
 Optional Packages:
@@ -4407,6 +4410,72 @@ $as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
 
   fi
 
+
+# The sjlj test is almost duplicated here and in libgo/configure.ac (for C),
+# libstdc++-v3/acinclude.m4 and libjava/configure.ac (for C++), and
+# libobjc/configure.ac (for Objective-C).
+# FIXME: This should be centralized in config/sjlj.m4.
+# Check whether --enable-sjlj-exceptions was given.
+if test "${enable_sjlj_exceptions+set}" = set; then :
+  enableval=$enable_sjlj_exceptions; case "$enableval" in
+   yes|no|auto) ;;
+   *) as_fn_error "unknown argument to --enable-sjlj-exceptions" "$LINENO" 5 ;;
+   esac
+else
+  enable_sjlj_exceptions=auto
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use setjmp/longjmp exceptions" >&5
+$as_echo_n "checking whether to use setjmp/longjmp exceptions... " >&6; }
+if test "${libgcc_cv_lib_sjlj_exceptions+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+void bar ();
+void clean (int *);
+void foo ()
+{
+  int i __attribute__ ((cleanup (clean)));
+  bar();
+}
+
+_ACEOF
+CFLAGS_hold=$CFLAGS
+CFLAGS="--save-temps -fexceptions"
+libgcc_cv_lib_sjlj_exceptions=unknown
+if ac_fn_c_try_compile; then :
+  if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1; then
+    libgcc_cv_lib_sjlj_exceptions=yes
+  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1; then
+    libgcc_cv_lib_sjlj_exceptions=no
+  fi
+fi
+CFLAGS=$CFLAGS_hold
+rm -f conftest*
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_lib_sjlj_exceptions" >&5
+$as_echo "$libgcc_cv_lib_sjlj_exceptions" >&6; }
+
+if test "$enable_sjlj_exceptions" = "auto"; then
+  enable_sjlj_exceptions=$libgcc_cv_lib_sjlj_exceptions
+fi
+
+case $enable_sjlj_exceptions in
+yes)
+
+$as_echo "#define LIBGCC_SJLJ_EXCEPTIONS 1" >>confdefs.h
+
+  ;;
+no)
+  ;;
+*)
+  as_fn_error "unable to detect exception model" "$LINENO" 5
+  ;;
+esac
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the linker ($LD) is GNU ld" >&5
 $as_echo_n "checking if the linker ($LD) is GNU ld... " >&6; }

@@ -41,5 +41,3 @@ INSTALL_ASSERT_H =
 LIBGCC1 = 
 CROSS_LIBGCC1 =
 LIBGCC1_TEST =
-
-SHLIB_MAPFILES += $(srcdir)/config/m32r/libgcc-glibc.ver

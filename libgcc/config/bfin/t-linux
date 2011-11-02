@@ -1,0 +1,1 @@
+SHLIB_MAPFILES = $(srcdir)/config/bfin/libgcc-glibc.ver

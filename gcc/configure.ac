@@ -4921,18 +4921,6 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
                 [specify that runtime libraries should be
                  installed in a compiler-specific directory])])
 
-AC_ARG_WITH(slibdir,
-[AS_HELP_STRING([--with-slibdir=DIR], [shared libraries in DIR @<:@LIBDIR@:>@])],
-slibdir="$with_slibdir",
-if test "${enable_version_specific_runtime_libs+set}" = set; then
-  slibdir='$(libsubdir)'
-elif test "$host" != "$target"; then
-  slibdir='$(build_tooldir)/lib'
-else
-  slibdir='$(libdir)'
-fi)
-AC_SUBST(slibdir)
-
 # Substitute configuration variables
 AC_SUBST(subdirs)
 AC_SUBST(srcdir)

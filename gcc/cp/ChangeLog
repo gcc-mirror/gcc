@@ -1,3 +1,7 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (g++spec.o): Pass SHLIB instead of SHLIB_LINK.
+
 2011-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44277

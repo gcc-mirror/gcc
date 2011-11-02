@@ -37,6 +37,3 @@ LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 	_m16stubsc9 _m16stubsc10 \
 	_m16stubdc0 _m16stubdc1 _m16stubdc2 _m16stubdc5 _m16stubdc6 \
 	_m16stubdc9 _m16stubdc10
-
-# Version these symbols if building libgcc.so.
-SHLIB_MAPFILES += $(srcdir)/config/mips/libgcc-mips16.ver

@@ -559,7 +559,7 @@ case ${target} in
   extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
   fbsd_major=`echo ${target} | sed -e 's/.*freebsd//g' | sed -e 's/\..*//g'`
   tm_defines="${tm_defines} FBSD_MAJOR=${fbsd_major}"
-  tmake_file="t-slibgcc-elf-ver t-freebsd"
+  tmake_file="t-freebsd t-slibgcc"
   case ${enable_threads} in
     no)
       fbsd_tm_file="${fbsd_tm_file} freebsd-nthr.h"
@@ -567,13 +567,6 @@ case ${target} in
     "" | yes | posix)
       thread_file='posix'
       tmake_file="${tmake_file} t-freebsd-thread"
-      # Before 5.0, FreeBSD can't bind shared libraries to -lc
-      # when "optionally" threaded via weak pthread_* checks.
-      case ${target} in
-        *-*-freebsd[34] | *-*-freebsd[34].*)
-          tmake_file="${tmake_file} t-slibgcc-nolc-override"
-          ;;
-      esac
       ;;
     *)
       echo 'Unknown thread configuration for FreeBSD'
@@ -599,7 +592,7 @@ case ${target} in
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
-  tmake_file="t-slibgcc-elf-ver t-linux"
+  tmake_file="t-linux t-slibgcc"
   case $target in
     *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-kopensolaris*-gnu)
       :;;
@@ -647,7 +640,7 @@ case ${target} in
   esac
   ;;
 *-*-netbsd*)
-  tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
+  tmake_file="t-libc-ok t-netbsd t-libgcc-pic t-slibgcc"
   gas=yes
   gnu_ld=yes
 
@@ -730,7 +723,7 @@ case ${target} in
     tm_file="usegas.h ${tm_file}"
   fi
   tm_p_file="${tm_p_file} sol2-protos.h"
-  tmake_file="${tmake_file} t-sol2 t-slibgcc-dummy"
+  tmake_file="${tmake_file} t-sol2 t-slibgcc"
   c_target_objs="${c_target_objs} sol2-c.o"
   cxx_target_objs="${cxx_target_objs} sol2-c.o sol2-cxx.o"
   extra_objs="sol2.o sol2-stubs.o"
@@ -744,7 +737,7 @@ case ${target} in
 *-*-*vms*)
   extra_options="${extra_options} vms/vms.opt"
   xmake_file=vms/x-vms
-  tmake_file="vms/t-vms"
+  tmake_file="vms/t-vms t-slibgcc"
   extra_objs="vms.o"
   target_gtfiles="$target_gtfiles \$(srcdir)/config/vms/vms.c"
   tm_p_file="${tm_p_file} vms/vms-protos.h"
@@ -777,7 +770,7 @@ alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	extra_options="${extra_options} alpha/elf.opt"
 	target_cpu_default="MASK_GAS"
-	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee alpha/t-linux"
+	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
 	extra_parts="${extra_parts} crtfastmath.o"
 	;;
 alpha*-*-freebsd*)
@@ -814,7 +807,7 @@ alpha*-dec-osf5.1*)
 		extra_passes="mips-tfile mips-tdump"
 	fi
 	use_collect2=yes
-	tmake_file="t-slibgcc-dummy"
+	tmake_file="t-slibgcc"
 	tm_file="${tm_file} alpha/osf5.h"
 	tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
 	extra_options="${extra_options} rpath.opt alpha/osf5.opt"
@@ -862,7 +855,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	arm*-*-linux-*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
 	    libgcc_tm_file="$libgcc_tm_file arm/bpabi-lib.h"
-	    tmake_file="$tmake_file arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
+	    tmake_file="$tmake_file arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	    # Define multilib configuration for arm-linux-androideabi.
 	    case ${target} in
 	    *-androideabi)
@@ -969,7 +962,7 @@ bfin*-uclinux*)
 	;;
 bfin*-linux-uclibc*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h gnu-user.h linux.h glibc-stdint.h bfin/linux.h ./linux-sysroot-suffix.h"
-	tmake_file="t-slibgcc-elf-ver bfin/t-bfin-linux"
+	tmake_file="bfin/t-bfin-linux t-slibgcc"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	use_collect2=no
 	;;
@@ -1001,7 +994,7 @@ cris-*-elf | cris-*-none)
 crisv32-*-linux* | cris-*-linux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h cris/linux.h"
 	# We need to avoid using t-linux, so override default tmake_file
-	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
+	tmake_file="cris/t-cris cris/t-linux t-slibgcc"
 	extra_options="${extra_options} cris/linux.opt"
 	case $target in
 	  cris-*-*)
@@ -1069,13 +1062,7 @@ hppa*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS"
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
-	tmake_file="${tmake_file} pa/t-linux t-slibgcc-libgcc"
-	# Set the libgcc version number
-	if test x$sjlj = x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
+	tmake_file="${tmake_file} pa/t-linux"
 	;;
 # port not yet contributed.
 #hppa*-*-openbsd*)
@@ -1098,7 +1085,7 @@ hppa[12]*-*-hpux10*)
 	esac
 	use_gcc_stdint=provide
 	tm_file="${tm_file} hpux-stdint.h"
-	tmake_file="pa/t-pa-hpux10 pa/t-pa-hpux pa/t-hpux-shlib"
+	tmake_file="pa/t-pa-hpux10 pa/t-pa-hpux t-slibgcc"
 	case ${enable_threads} in
 	  "")
 	    if test x$have_pthread_h = xyes ; then
@@ -1109,12 +1096,6 @@ hppa[12]*-*-hpux10*)
 	    tmake_file="${tmake_file} pa/t-dce-thr"
 	    ;;
 	esac
-	# Set the libgcc version number
-	if test x$sjlj = x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
 	use_collect2=yes
 	gas=yes
 	if test "x$with_dwarf2" != x; then
@@ -1147,13 +1128,7 @@ hppa*64*-*-hpux11*)
 	extra_options="${extra_options} pa/pa-hpux.opt \
 		       pa/pa-hpux1010.opt pa/pa64-hpux.opt hpux11.opt"
 	need_64bit_hwint=yes
-	tmake_file="pa/t-pa64 pa/t-pa-hpux pa/t-hpux-shlib"
-	# Set the libgcc version number
-	if test x$sjlj = x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
+	tmake_file="pa/t-pa64 pa/t-pa-hpux t-slibgcc"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 		     libgcc_stub.a"
 	case x${enable_threads} in
@@ -1193,13 +1168,7 @@ hppa[12]*-*-hpux11*)
 		extra_options="${extra_options} pa/pa-hpux1131.opt"
 		;;
 	esac
-	tmake_file="pa/t-pa-hpux11 pa/t-pa-hpux pa/t-hpux-shlib"
-	# Set the libgcc version number
-	if test x$sjlj = x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
+	tmake_file="pa/t-pa-hpux11 pa/t-pa-hpux t-slibgcc"
 	extra_parts="libgcc_stub.a"
 	case x${enable_threads} in
 	x | xyes | xposix )
@@ -1227,12 +1196,12 @@ i[34567]86-*-darwin*)
 	need_64bit_isa=yes
 	# Baseline choice for a machine that allows m64 support.
 	with_cpu=${with_cpu:-core2}
-	tmake_file="${tmake_file} t-slibgcc-dummy"
+	tmake_file="${tmake_file} t-slibgcc"
 	libgcc_tm_file="$libgcc_tm_file i386/darwin-lib.h"
 	;;
 x86_64-*-darwin*)
 	with_cpu=${with_cpu:-core2}
-	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc-dummy"
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
 	tm_file="${tm_file} ${cpu_type}/darwin64.h"
 	libgcc_tm_file="$libgcc_tm_file i386/darwin-lib.h"
 	;;
@@ -1460,19 +1429,7 @@ i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h i386/cygwin-stdint.h"
 	xm_file=i386/xm-cygwin.h
-	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
-	if test x$sjlj = x0; then
-		tmake_eh_file="i386/t-dw2-eh"
-	else
-		tmake_eh_file="i386/t-sjlj-eh"
-	fi
-	# Shared libgcc DLL install dir depends on cross/native build.
-	if test x${host} = x${target} ; then
-		tmake_dlldir_file="i386/t-dlldir"
-	else
-		tmake_dlldir_file="i386/t-dlldir-x"
-	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-cygming i386/t-cygwin"
+	tmake_file="${tmake_file} i386/t-cygming i386/t-cygwin t-slibgcc"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt"
 	extra_objs="winnt.o winnt-stubs.o"
@@ -1525,19 +1482,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			;;
 	esac
 	tm_file="${tm_file} i386/mingw-stdint.h"
-	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
-	if test x$sjlj = x0; then
-		tmake_eh_file="i386/t-dw2-eh"
-	else
-		tmake_eh_file="i386/t-sjlj-eh"
-	fi
-	# Shared libgcc DLL install dir depends on cross/native build.
-	if test x${host} = x${target} ; then
-		tmake_dlldir_file="i386/t-dlldir"
-	else
-		tmake_dlldir_file="i386/t-dlldir-x"
-	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-cygming"
+	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
         case ${target} in
                x86_64-w64-*)
                		tmake_file="${tmake_file} i386/t-mingw-w64"
@@ -1545,9 +1490,6 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	       i[34567]86-w64-*)
 			tmake_file="${tmake_file} i386/t-mingw-w32"
 			;;
-               *)
-               		tmake_file="${tmake_file} i386/t-mingw32"
-                     	;;
 	esac
         native_system_header_dir=/mingw/include
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
@@ -1570,7 +1512,6 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	    ;;
 	  posix)
 	    thread_file='posix'
-	    tmake_file="i386/t-mingw-pthread ${tmake_file}"
 	    ;;
 	esac
 	case ${target} in
@@ -1616,13 +1557,13 @@ ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
-	tmake_file="${tmake_file} ia64/t-ia64 t-libunwind ia64/t-glibc"
+	tmake_file="${tmake_file} ia64/t-ia64 t-libunwind"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
 ia64*-*-hpux*)
 	tm_file="${tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/hpux.h"
-	tmake_file="ia64/t-ia64 ia64/t-hpux"
+	tmake_file="ia64/t-ia64 ia64/t-hpux t-slibgcc"
 	target_cpu_default="MASK_GNU_AS"
 	case x$enable_threads in
 	x | xyes | xposix )
@@ -1687,7 +1628,7 @@ m32r-*-rtems*)
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?
-	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
+	tmake_file="m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -1696,7 +1637,7 @@ m32r-*-linux*)
 m32rle-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?
-	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
+	tmake_file="m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -1772,11 +1713,6 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 	extra_options="${extra_options} m68k/ieee.opt"
 	tm_defines="${tm_defines} MOTOROLA=1"
 	tmake_file="${tmake_file} m68k/t-floatlib m68k/t-linux m68k/t-mlibs"
-	# if not configured with --enable-sjlj-exceptions, bump the
-	# libgcc version number
-	if test x$sjlj != x1; then
-	    tmake_file="$tmake_file m68k/t-slibgcc-elf-ver"
-	fi
 	;;
 m68k-*-rtems*)
 	default_m68k_cpu=68020
@@ -1807,7 +1743,7 @@ microblaze*-linux*)
 	tm_file="${tm_file} dbxelf.h gnu-user.h linux.h microblaze/linux.h"
 	c_target_objs="${c_target_objs} microblaze-c.o"
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
-	tmake_file="${tmake_file} t-slibgcc-elf-ver t-slibgcc-nolc-override t-linux microblaze/t-microblaze"
+	tmake_file="${tmake_file} t-linux microblaze/t-microblaze"
         extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o crtbeginT.o"
 	;;
 microblaze*-*-*)
@@ -1818,7 +1754,7 @@ microblaze*-*-*)
         ;;
 mips-sgi-irix6.5*)
 	tm_file="elfos.h ${tm_file} mips/iris6.h"
-	tmake_file="mips/t-irix6 t-slibgcc-dummy"
+	tmake_file="mips/t-irix6 t-slibgcc"
 	extra_options="${extra_options} rpath.opt mips/iris6.opt"
 	target_cpu_default="MASK_ABICALLS"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
@@ -2045,19 +1981,18 @@ powerpc-*-darwin*)
 	  *-darwin[0-6]*)
 	    ;;
 	esac
-	tmake_file="${tmake_file} t-slibgcc-dummy"
+	tmake_file="${tmake_file} t-slibgcc"
 	extra_headers=altivec.h
 	;;
 powerpc64-*-darwin*)
 	extra_options="${extra_options} ${cpu_type}/darwin.opt"
-	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc-dummy"
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
 	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
 	extra_headers=altivec.h
 	;;
 powerpc-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
-	tmake_file="${tmake_file} t-slibgcc-libgcc"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
 powerpc-*-netbsd*)
@@ -2143,7 +2078,6 @@ powerpc-*-linux* | powerpc64-*-linux*)
 		tm_file="${tm_file} rs6000/linux.h glibc-stdint.h"
 		;;
 	esac
-	tmake_file="${tmake_file} t-slibgcc-libgcc"
 	case ${target} in
 	    powerpc*-*-linux*ppc476*)
 		tm_file="${tm_file} rs6000/476.h"
@@ -2203,7 +2137,7 @@ powerpcle-*-eabi*)
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix43.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file=rs6000/t-aix43
+	tmake_file="rs6000/t-aix43 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
 	thread_file='aix'
@@ -2213,7 +2147,7 @@ rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix51.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	extra_options="${extra_options} rs6000/aix64.opt"
-	tmake_file=rs6000/t-aix43
+	tmake_file="rs6000/t-aix43 t-slibgcc"
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
@@ -2221,7 +2155,7 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	;;
 rs6000-ibm-aix5.2.* | powerpc-ibm-aix5.2.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix52.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file=rs6000/t-aix52
+	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
 	thread_file='aix'
@@ -2230,7 +2164,7 @@ rs6000-ibm-aix5.2.* | powerpc-ibm-aix5.2.*)
 	;;
 rs6000-ibm-aix5.3.* | powerpc-ibm-aix5.3.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix53.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file=rs6000/t-aix52
+	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
 	thread_file='aix'
@@ -2239,7 +2173,7 @@ rs6000-ibm-aix5.3.* | powerpc-ibm-aix5.3.*)
 	;;
 rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix61.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file=rs6000/t-aix52
+	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
 	thread_file='aix'
@@ -2497,7 +2431,7 @@ sparc-*-linux*)
 		tmake_file="${tmake_file} sparc/t-sparc sparc/t-leon3"
 		;;
 	    *)
-		tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux"
+		tmake_file="${tmake_file} sparc/t-sparc"
 		;;
 	esac
 	if test x$enable_targets = xall; then
@@ -2543,7 +2477,7 @@ sparc64-*-rtems*)
 sparc64-*-linux*)
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
-	tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux sparc/t-linux64"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux64"
 	extra_parts="${extra_parts} crtfastmath.o"
 	;;
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
@@ -2594,7 +2528,7 @@ tic6x-*-uclinux)
 	tm_file="${tm_file} dbxelf.h tm-dwarf2.h glibc-stdint.h"
 	tm_file="${tm_file} ./sysroot-suffix.h"
 	libgcc_tm_file="${libgcc_tm_file} c6x/c6x-abi.h"
-	tmake_file="t-slibgcc-elf-ver t-sysroot-suffix"
+	tmake_file="t-sysroot-suffix t-slibgcc"
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
 	use_collect2=no
 	;;
@@ -3610,7 +3544,6 @@ case ${target} in
 	i[34567]86-*-linux* | x86_64-*-linux* | \
 	  i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
 	  i[34567]86-*-gnu*)
-		tmake_file="${tmake_file} i386/t-linux"
 		;;
 	i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 		;;

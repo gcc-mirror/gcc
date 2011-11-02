@@ -1,0 +1,2 @@
+# Cause ENABLE_SHARED_LIBGCC to be defined in gcc/Makefile.in (DRIVER_DEFINES).
+SHLIB = true

@@ -1,0 +1,28 @@
+shlib_version:=$(shell $(CC) --version 2>&1 | \
+	sed -n 's/^.*(GCC).* \([0-9]*\.[0-9.]*\).*$/\1/p' | \
+	sed -e 's/\./,/' -e 's/\.//g')
+SHLIB_EXT = .exe
+SHLIB_OBJS = @shlib_objs@
+SHLIB_NAME = @shlib_base_name@.exe
+SHLIB_MULTILIB =
+SHLIB_INSTALL = $(INSTALL_DATA) $(SHLIB_NAME) $(DESTDIR)$(libsubdir)/$(SHLIB_NAME)
+SHLIB_SYMVEC = \
+  grep -F -e "\$$BSS\$$" -e "\$$DATA\$$" -e " sdata " -e " data.rel " -e " data.rel.ro " -e " sbss " \
+        -e "\$$LINK\$$" -e "\$$READONLY\$$" | \
+  sed -e "s/.*\$$LINK\$$   \(.*\)/SYMBOL_VECTOR=(\1=PROCEDURE)/" \
+      -e "s/.*\$$DATA\$$   \(.*\)/SYMBOL_VECTOR=(\1=DATA)/" \
+      -e "s/.* sbss     \(.*\)/SYMBOL_VECTOR=(\1=DATA)/" \
+      -e "s/.* sdata    \(.*\)/SYMBOL_VECTOR=(\1=DATA)/" \
+      -e "s/.* data.rel \(.*\)/SYMBOL_VECTOR=(\1=DATA)/" \
+      -e "s/.* data.rel.ro \(.*\)/SYMBOL_VECTOR=(\1=DATA)/" \
+      -e "s/.*\$$BSS\$$    \(.*\)/SYMBOL_VECTOR=(\1=DATA)/" \
+      -e "s/.*\$$READONLY\$$ \(.*\)/SYMBOL_VECTOR=(\1=DATA)/"
+SHLIB_LINK = \
+  echo "case_sensitive=yes" > SYMVEC_$$$$.opt; \
+  objdump --syms $(SHLIB_OBJS) | \
+  $(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt ; \
+  echo "case_sensitive=NO" >> SYMVEC_$$$$.opt; \
+  $(CC) $(LIBGCC2_CFLAGS) -nodefaultlibs \
+  -shared --for-linker=/noinform -o $(SHLIB_NAME) $(SHLIB_OBJS) \
+  --for-linker=SYMVEC_$$$$.opt \
+  --for-linker=gsmatch=equal,$(shlib_version)

@@ -1,0 +1,1 @@
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/m32r/libgcc-glibc.ver

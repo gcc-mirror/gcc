@@ -13,3 +13,5 @@ crtbeginS.o: $(gcc_srcdir)/config/ia64/crtbegin.asm
 crtendS.o: $(gcc_srcdir)/config/ia64/crtend.asm
 	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
 		-o $@ -DSHARED $(gcc_srcdir)/config/ia64/crtend.asm
+
+SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-ia64.ver

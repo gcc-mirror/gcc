@@ -1,2 +1,5 @@
 SYNC = yes
 SYNC_CFLAGS = -mno-mips16
+
+# Version these symbols if building libgcc.so.
+SHLIB_MAPFILES += $(srcdir)/config/mips/libgcc-mips16.ver

@@ -1,3 +1,161 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR translation/45116
+	* Makefile.in (slibdir): Remove, don't export.
+	(SHLIB_NM_FLAGS): Remove.
+	(libgcc.mvars): Don't emit SHLIB_LINK, SHLIB_INSTALL,
+	SHLIB_DLLDIR, SHLIB_EXT, SHLIB_MKMAP, SHLIB_MKMAP_OPTS,
+	SHLIB_MAPFILES, SHLIB_NM_FLAGS.
+	(DRIVER_DEFINES): Test SHLIB instead of SHLIB_LINK.
+	(gcc.o): Pass SHLIB instead of SHLIB_LINK.
+	(gccspec.o): Likewise.
+	(installdirs): Don't create $(DESTDIR)$(slibdir).
+	* configure.ac (slibdir): Remove.
+	* configure: Regenerate.
+	* libgcc-libsystem.ver: Move to ../libgcc/config.
+	* mkmap-flat.awk, mkmap-symver.awk: Move to ../libgcc.
+	* config/libgcc-glibc.ver: Move to ../libgcc/config.
+	* config/t-libunwind (SHLIB_LC): Remove.
+	* config/t-linux (SHLIB_MAPFILES): Remove.
+	* config/t-slibgcc-dummy: Rename to config/t-slibgcc.
+	* config/t-slibgcc-elf-ver: Remove.
+	* config/t-slibgcc-libgcc, config/t-slibgcc-nolc-override: Move to
+	../libgcc/config.
+	* config/alpha/libgcc-alpha-ldbl.ver, config/alpha/t-linux: Move
+	to ../libgcc/config/alpha.
+	* config/alpha/t-vms (shlib_version, SHLIB_EXT, SHLIB_OBJS,
+	SHLIB_NAME, SHLIB_MULTILIB, SHLIB_INSTALL, SHLIB_SYMVEC,
+	SHLIB_SYMVECX2, SHLIB_LINK): Remove.
+	* config/arm/libgcc-bpabi.ver: Move to ../libgcc/config/arm.
+	* config/arm/t-bpabi (SHLIB_MAPFILES): Remove.
+	* config/arm/t-netbsd (SHLIB_EXT, SHLIB_NAME, SHLIB_SONAME,
+	SHLIB_OBJS, SHLIB_LINK, SHLIB_INSTALL): Remove.
+	* config/arm/t-symbian (SHLIB_LC): Remove.
+	* config/bfin/libgcc-bfin.ver: Move to
+	../libgcc/config/bfin/libgcc-glibc.ver.
+	* config/bfin/t-bfin-linux (SHLIB_MAPFILES): Remove.
+	* config/c6x/libgcc-c6xeabi.ver: Move to
+	../libgcc/config/c6x/libgcc-eabi.ver.
+	* config/c6x/t-c6x-elf (SHLIB_MAPFILES): Remove.
+	* config/cris/libgcc.ver: Move to
+	../libgcc/config/cris/libgcc-glibc.ver.
+	* config/cris/t-linux (SHLIB_MAPFILES): Remove.
+	* config/frv/libgcc-frv.ver: Move to ../libgcc/config/frv.
+	* config/frv/t-linux (SHLIB_MAPFILES): Remove.
+	* config/i386/darwin-libgcc.10.4.ver: Move to
+	../libgcc/config/i386/libgcc-darwin.10.4.ver.
+	* config/i386/darwin-libgcc.10.5.ver: Move to
+	../libgcc/config/i386/libgcc-darwin.10.5.ver.
+	* config/i386/libgcc-glibc.ver: Move to ../libgcc/config/i386.
+	* config/i386/t-cygming (SHLIB_EXT, SHLIB_IMPLIB, SHLIB_SOVERSION,
+	SHLIB_SONAME, SHLIB_MAP, SHLIB_OBJS, SHLIB_DIR, SHLIB_SLIBDIR_QUAL)
+	SHLIB_PTHREAD_CFLAG, SHLIB_PTHREAD_LDFLAG, SHLIB_LINK,
+	SHLIB_INSTALL, SHLIB_MKMAP, SHLIB_MKMAP_OPTS, SHLIB_MAPFILES):
+	Remove.
+	* config/i386/t-cygwin (SHLIB_LC, SHLIB_EH_EXTENSION,
+	SHLIB_IMPLIB, SHLIB_SONAME, SHLIB_MKMAP_OPTS): Remove.
+	* config/i386/t-dlldir, config/i386/t-dlldir-x: Move to
+	../libgcc/config/i386.
+	* config/i386/t-dw2-eh, config/i386/t-sjlj-eh: Move to
+	../libgcc/config/i386.
+	* config/i386/t-linux: Move to ../libgcc/config/i386.
+	* config/i386/t-mingw-pthread: Move to ../libgcc/config/i386.
+	* config/i386/t-mingw-w32 (SHLIB_LC): Remove.
+	* config/i386/t-mingw-w64: Likewise.
+	* config/i386/t-mingw32: Remove.
+	* config/ia64/libgcc-glibc.ver, config/ia64/libgcc-ia64.ver: Move
+	to ../libgcc/config/ia64.
+	* config/ia64/t-glibc: Remove.
+	* config/ia64/t-hpux (SHLIB_EXT, SHLIB_LINK, SHLIB_INSTALL): Remove.
+	* config/ia64/t-ia64 (SHLIB_MAPFILES): Remove.
+	* config/ia64/t-vms (shlib_version, SHLIB_EXT, SHLIB_OBJS,
+	SHLIB_NAME, SHLIB_MULTILIB, SHLIB_INSTALL, SHLIB_LINK): Remove.
+	* config/ia64/vms_symvec_libgcc_s.opt: Remove.
+	* config/m32r/libgcc-glibc.ver: Move to ../libgcc/config/m32r.
+	* config/m32r/t-linux (SHLIB_MAPFILES): Remove.
+	* config/m68k/t-slibgcc-elf-ver: Move to ../libgcc/config/m68k.
+	* config/mips/t-libgcc-mips16 (SHLIB_MAPFILES): Remove.
+	* config/pa/t-hpux-shlib: Move to ../libgcc/config/pa/t-slibgcc-hpux.
+	* config/pa/t-slibgcc-dwarf-ver, config/pa/t-slibgcc-sjsj-ver:
+	Move to ../libgcc/config/pa.
+	* config/rs6000/darwin-libgcc.10.4.ver: Move to
+	../libgcc/config/rs6000/libgcc-darwin.10.4.ver.
+	* config/rs6000/darwin-libgcc.10.5.ver: Move to
+	../libgcc/config/rs6000/libgcc-darwin.10.5.ver.
+	* config/rs6000/t-aix43 (SHLIB_EXT, SHLIB_LINK, SHLIB_INSTALL,
+	SHLIB_LIBS, SHLIB_MKMAP, SHLIB_NM_FLAGS, AR_FLAGS_FOR_TARGET): Remove.
+	* config/rs6000/t-aix52: Likewise.
+	* config/sh/libgcc-excl.ver, config/sh/libgcc-glibc.ver: Move to
+	../libgcc/config/sh.
+	* config/sparc/libgcc-sparc-glibc.ver: Move to
+	../libgcc/config/sparc/libgcc-glibc.ver.
+	* config/sparc/t-linux: Move to ../libgcc/config/sparc.
+	* config/xtensa/t-linux (SHLIB_MAPFILES): Remove.
+	* config/xtensa/libgcc-xtensa.ver: Move to
+	../libgcc/config/xtensa/libgcc-glibc.ver.
+	* config.gcc (*-*-freebsd*): Replace t-slibgcc-elf-ver with
+	t-slibgcc in tmake_file.
+	Remove t-slibgcc-nolc-override for *-*-freebsd[34],
+	*-*-freebsd[34].* with pthreads.
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu,
+	*-*-knetbsd*-gnu, *-*-gnu*, *-*-kopensolaris*-gnu): Replace
+	t-slibgcc-elf-ver with t-slibgcc in tmake_file.
+	(*-*-netbsd*): Likewise.
+	(*-*-solaris2*): Replace t-slibgcc-dummy with t-slibgcc in tmake_file.
+	(*-*-*vms*): Add t-slibgcc to tmake_file.
+	(alpha*-*-linux*): Remove alpha/t-linux from tmake_file.
+	(alpha*-dec-osf5.1*): Replace t-slibgcc-dummy with t-slibgcc in
+	tmake_file.
+	(arm*-*-linux*): Remove t-slibgcc-libgcc from tmake_file for
+	arm*-*-linux-*eabi.
+	(bfin*-linux-uclibc*): Replace t-slibgcc-dummy with t-slibgcc in
+	tmake_file.
+	(crisv32-*-linux*, cris-*-linux*): Likewise.
+	(hppa*-*-linux*): Remove t-slibgcc-libgcc, pa/t-slibgcc-sjlj-ver,
+	pa/t-slibgcc-dwarf-ver from tmake_file.
+	(hppa[12]*-*-hpux10*): Replace pa/t-hpux-shlib with t-slibgcc in
+	tmake_file.
+	Remove pa/t-slibgcc-sjlj-ver, pa/t-slibgcc-dwarf-ver from tmake_file.
+	(hppa*64*-*-hpux11*): Likewise.
+	(hppa[12]*-*-hpux11*): Likewise.
+	(i[34567]86-*-darwin*): Replace t-slibgcc-dummy in t-slibgcc in
+	tmake_file.
+	(x86_64-*-darwin*): Likewise.
+	(i[34567]86-*-cygwin*): Remove tmake_eh_file, tmake_dlldir_file.
+	Add t-slibgcc to tmake_file.
+	(i[34567]86-*-mingw*, x86_64-*-mingw*): Likewise.
+	Remove i386/t-mingw32 from tmake_file unless x86_64-w64-*,
+	i[34567]86-w64-*.
+	Remove i386/t-mingw-pthread from tmake_file.
+	(ia64*-*-linux*): Remove ia64/t-glibc from tmake_file.
+	(ia64*-*-hpux*): Add t-slibgcc to tmake_file.
+	(ia64-hp-*vms*): Likewise.
+	(m32r-*-linux*): Replace t-slibgcc-elf-ver with t-slibgcc in
+	tmake_file.
+	(m32rle-*-linux*): Likewise.
+	(m68k-*-linux*): Remove m68k/t-slibgcc-elf-ver from tmake_file.
+	(microblaze*-linux*): Remove t-slibgcc-elf-ver,
+	t-slibgcc-nolc-override from tmake_file.
+	(mips-sgi-irix6.5*): Replace t-slibgcc-dummy with t-slibgcc in
+	tmake_file.
+	(powerpc-*-darwin*): Likewise.
+	(powerpc64-*-darwin*): Likewise.
+	(powerpc-*-freebsd*): Remove t-slibgcc-libgcc from tmake_file.
+	(powerpc-*-linux*, powerpc64-*-linux*): Likewise.
+	(rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*): Add
+	t-slibgcc to tmake_file.
+	(rs6000-ibm-aix5.1.*, powerpc-ibm-aix5.1.*): Likewise.
+	(rs6000-ibm-aix5.2.*, powerpc-ibm-aix5.2.*): Likewise.
+	(rs6000-ibm-aix5.3.*, powerpc-ibm-aix5.3.*): Likewise.
+	(rs6000-ibm-aix[6789].*, powerpc-ibm-aix[6789].*): Likewise.
+	(sparc-*-linux*): Remove sparc/t-linux from tmake_file.
+	(sparc64-*-linux*): Likewise.
+	(tic6x-*-uclinux): Replace t-slibgcc-elf-ver with t-slibgcc in
+	tmake_file.
+	(i[34567]86-*-linux*, x86_64-*-linux*, i[34567]86-*-kfreebsd*-gnu,
+	x86_64-*-kfreebsd*-gnu, i[34567]86-*-gnu*): Remove i386/t-linux
+	from tmake_file.
+
 2011-11-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50902

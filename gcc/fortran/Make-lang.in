@@ -79,7 +79,7 @@ fortran: f951$(exeext)
 
 gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
 	$(CONFIG_H) coretypes.h intl.h $(OPTS_H)
-	(SHLIB_LINK='$(SHLIB_LINK)'; \
+	(SHLIB='$(SHLIB)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c)
 

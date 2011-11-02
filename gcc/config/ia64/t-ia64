@@ -38,8 +38,6 @@ LIB1ASMFUNCS  = __divxf3 __divdf3 __divsf3 \
 # to support the Intel assembler.
 #LIBGCC2_DEBUG_CFLAGS = -g1 -P
 
-SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-ia64.ver
-
 # Effectively disable the crtbegin/end rules using crtstuff.c
 T = disable
 

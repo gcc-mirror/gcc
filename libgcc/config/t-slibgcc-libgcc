@@ -1,4 +1,4 @@
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -29,4 +29,4 @@ SHLIB_MAKE_SOLINK = \
 	) > $(SHLIB_DIR)/$(SHLIB_SOLINK)
 SHLIB_INSTALL_SOLINK = \
 	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_SOLINK) \
-	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
+	  $(DESTDIR)$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)

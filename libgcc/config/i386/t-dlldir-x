@@ -1,0 +1,3 @@
+# In a cross build, bindir contains host not target binaries, so target DLLs
+# instead go in toolexeclibdir, alongside other target binaries and static libs.
+SHLIB_DLLDIR = $(toolexeclibdir)

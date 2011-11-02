@@ -1,3 +1,6 @@
 LIB2ADDEH = $(srcdir)/config/arm/unwind-arm.c \
   $(srcdir)/config/arm/libunwind.S \
   $(srcdir)/config/arm/pr-support.c $(srcdir)/unwind-c.c
+
+# Add the BPABI names.
+SHLIB_MAPFILES += $(srcdir)/config/arm/libgcc-bpabi.ver

@@ -6,5 +6,3 @@ crt2.o: $(srcdir)/config/rs6000/darwin-crt2.c
 LIB2ADD += $(srcdir)/config/rs6000/ppc64-fp.c
 
 LIB2ADDEH += $(srcdir)/config/rs6000/darwin-fallback.c
-
-SHLIB_VERPFX = $(gcc_srcdir)/config/rs6000/darwin-libgcc

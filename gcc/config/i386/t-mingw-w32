@@ -2,8 +2,5 @@ MULTILIB_OPTIONS = m64/m32
 MULTILIB_DIRNAMES = 64 32
 MULTILIB_OSDIRNAMES = ../lib64 ../lib
 
-# MinGW-specific parts of LIB_SPEC
-SHLIB_LC = -lmingwthrd -lmingw32 -lmingwex -lmoldname -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32
-
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
