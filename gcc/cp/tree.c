@@ -1889,6 +1889,10 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
 	u = build_target_expr_with_type (TREE_OPERAND (t, 1), TREE_TYPE (t),
 					 tf_warning_or_error);
 
+      TARGET_EXPR_IMPLICIT_P (u) = TARGET_EXPR_IMPLICIT_P (t);
+      TARGET_EXPR_LIST_INIT_P (u) = TARGET_EXPR_LIST_INIT_P (t);
+      TARGET_EXPR_DIRECT_INIT_P (u) = TARGET_EXPR_DIRECT_INIT_P (t);
+
       /* Map the old variable to the new one.  */
       splay_tree_insert (target_remap,
 			 (splay_tree_key) TREE_OPERAND (t, 0),

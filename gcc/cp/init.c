@@ -1377,6 +1377,8 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   TREE_THIS_VOLATILE (exp) = 0;
 
   if (init && TREE_CODE (init) != TREE_LIST
+      && !(TREE_CODE (init) == TARGET_EXPR
+	   && TARGET_EXPR_DIRECT_INIT_P (init))
       && !(BRACE_ENCLOSED_INITIALIZER_P (init)
 	   && CONSTRUCTOR_IS_DIRECT_INIT (init)))
     flags |= LOOKUP_ONLYCONVERTING;
@@ -1459,10 +1461,28 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CP_AGGREGATE_TYPE_P (type))
+    /* A brace-enclosed initializer for an aggregate.  In C++0x this can
+       happen for direct-initialization, too.  */
+    init = digest_init (type, init, complain);
+
+  /* A CONSTRUCTOR of the target's type is a previously digested
+     initializer, whether that happened just above or in
+     cp_parser_late_parsing_nsdmi.
+
+     A TARGET_EXPR with TARGET_EXPR_DIRECT_INIT_P or TARGET_EXPR_LIST_INIT_P
+     set represents the whole initialization, so we shouldn't build up
+     another ctor call.  */
+  if (init
+      && (TREE_CODE (init) == CONSTRUCTOR
+	  || (TREE_CODE (init) == TARGET_EXPR
+	      && (TARGET_EXPR_DIRECT_INIT_P (init)
+		  || TARGET_EXPR_LIST_INIT_P (init))))
+      && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init), type))
     {
-      /* A brace-enclosed initializer for an aggregate.  In C++0x this can
-	 happen for direct-initialization, too.  */
-      init = digest_init (type, init, complain);
+      /* Early initialization via a TARGET_EXPR only works for
+	 complete objects.  */
+      gcc_assert (TREE_CODE (init) == CONSTRUCTOR || true_exp == exp);
+
       init = build2 (INIT_EXPR, TREE_TYPE (exp), exp, init);
       TREE_SIDE_EFFECTS (init) = 1;
       finish_expr_stmt (init);

@@ -5655,10 +5655,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    && CONSTRUCTOR_NELTS (expr) == 0
 	    && TYPE_HAS_DEFAULT_CONSTRUCTOR (totype))
 	  {
+	    bool direct = CONSTRUCTOR_IS_DIRECT_INIT (expr);
 	    expr = build_value_init (totype, complain);
 	    expr = get_target_expr_sfinae (expr, complain);
 	    if (expr != error_mark_node)
-	      TARGET_EXPR_LIST_INIT_P (expr) = true;
+	      {
+		TARGET_EXPR_LIST_INIT_P (expr) = true;
+		TARGET_EXPR_DIRECT_INIT_P (expr) = direct;
+	      }
 	    return expr;
 	  }
 

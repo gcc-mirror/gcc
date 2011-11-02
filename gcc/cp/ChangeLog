@@ -1,5 +1,15 @@
 2011-11-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50930
+	* init.c (build_aggr_init): Don't set LOOKUP_ONLYCONVERTING
+	if the initializer has TARGET_EXPR_DIRECT_INIT_P.
+	(expand_default_init): An initializer with TARGET_EXPR_DIRECT_INIT_P
+	or TARGET_EXPR_LIST_INIT_P doesn't need more processing.
+	* tree.c (bot_manip): Propagate TARGET_EXPR_IMPLICIT_P,
+	TARGET_EXPR_LIST_INIT_P, TARGET_EXPR_DIRECT_INIT_P.
+	* call.c (convert_like_real): Set TARGET_EXPR_DIRECT_INIT_P
+	as appropriate on list-value-initialization.
+
 	* parser.c (cp_parser_decl_specifier_seq): Change "C++0x" to
 	"C++11" in warnings.
 	(cp_lexer_get_preprocessor_token): Likewise.
