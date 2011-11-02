@@ -1,3 +1,13 @@
+2011-11-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future (promise): Add constructors for uses-allocator
+	construction from rvalue promise.
+	(packaged_task): Implement LWG 2067. Add additional constructors for
+	uses-allocator construction.
+	* testsuite/30_threads/packaged_task/cons/3.cc: New.
+	* testsuite/30_threads/packaged_task/cons/alloc2.cc: New.
+	* testsuite/30_threads/promise/cons/alloc2.cc: New.
+
 2011-10-31  Jason Merrill  <jason@redhat.com>
 
 	* include/Makefile.am (install-freestanding-headers): Install
