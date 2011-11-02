@@ -1176,6 +1176,7 @@ static void rs6000_trampoline_init (rtx, tree, rtx);
 static bool rs6000_cannot_force_const_mem (enum machine_mode, rtx);
 static bool rs6000_legitimate_constant_p (enum machine_mode, rtx);
 static bool rs6000_save_toc_in_prologue_p (void);
+static void rs6000_code_end (void) ATTRIBUTE_UNUSED;
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
