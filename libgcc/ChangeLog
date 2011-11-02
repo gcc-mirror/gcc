@@ -1,3 +1,7 @@
+2011-11-02  Jason Merrill  <jason@redhat.com>
+
+	* config/rs6000/t-ppccomm: Add missing \.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gthr-single.h, gthr.h: New files.
