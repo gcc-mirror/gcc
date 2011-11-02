@@ -739,8 +739,8 @@ static inline int ustrcmp (const unsigned char *, const unsigned char *);
 static inline int ustrncmp (const unsigned char *, const unsigned char *,
 			    size_t);
 static inline size_t ustrlen (const unsigned char *);
-static inline unsigned char *uxstrdup (const unsigned char *);
-static inline unsigned char *ustrchr (const unsigned char *, int);
+static inline const unsigned char *uxstrdup (const unsigned char *);
+static inline const unsigned char *ustrchr (const unsigned char *, int);
 static inline int ufputs (const unsigned char *, FILE *);
 
 /* Use a const char for the second parameter since it is usually a literal.  */
@@ -770,16 +770,16 @@ ustrlen (const unsigned char *s1)
   return strlen ((const char *)s1);
 }
 
-static inline unsigned char *
+static inline const unsigned char *
 uxstrdup (const unsigned char *s1)
 {
-  return (unsigned char *) xstrdup ((const char *)s1);
+  return (const unsigned char *) xstrdup ((const char *)s1);
 }
 
-static inline unsigned char *
+static inline const unsigned char *
 ustrchr (const unsigned char *s1, int c)
 {
-  return (unsigned char *) strchr ((const char *)s1, c);
+  return (const unsigned char *) strchr ((const char *)s1, c);
 }
 
 static inline int

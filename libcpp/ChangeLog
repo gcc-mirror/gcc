@@ -1,3 +1,7 @@
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* internal.h (uxstrdup, ustrchr): Return const unsigned char *.
+
 2011-11-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50810
