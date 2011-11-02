@@ -1,3 +1,7 @@
+2011-11-01  DJ Delorie  <dj@redhat.com>
+
+	* config.sub: Update to version 2011-10-29 (added rl78)
+
 2011-10-27  Nick Clifton  <nickc@redhat.com>
 
 	* config.sub: Import these changes from the config project:
