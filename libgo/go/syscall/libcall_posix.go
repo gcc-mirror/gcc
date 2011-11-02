@@ -377,3 +377,9 @@ func NsecToTimeval(nsec int64) (tv Timeval) {
 	tv.Usec = Timeval_usec_t(nsec % 1e9 / 1e3)
 	return
 }
+
+//sysnb	Tcgetattr(fd int, p *Termios) (errno int)
+//tcgetattr(fd int, p *Termios) int
+
+//sys	Tcsetattr(fd int, actions int, p *Termios) (errno int)
+//tcsetattr(fd int, actions int, p *Termios) int
