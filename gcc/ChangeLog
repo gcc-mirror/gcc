@@ -1,3 +1,8 @@
+2011-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (bdesc_args) [IX86_BUILTIN_CVTTPD2DQ256]: Use
+	CODE_FOR_fix_truncv4dfv4si2, not CODE_FOR_fix_truncv4sfv4si2.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR translation/45116
@@ -50,8 +55,7 @@
 	* config/i386/t-cygming (SHLIB_EXT, SHLIB_IMPLIB, SHLIB_SOVERSION,
 	SHLIB_SONAME, SHLIB_MAP, SHLIB_OBJS, SHLIB_DIR, SHLIB_SLIBDIR_QUAL)
 	SHLIB_PTHREAD_CFLAG, SHLIB_PTHREAD_LDFLAG, SHLIB_LINK,
-	SHLIB_INSTALL, SHLIB_MKMAP, SHLIB_MKMAP_OPTS, SHLIB_MAPFILES):
-	Remove.
+	SHLIB_INSTALL, SHLIB_MKMAP, SHLIB_MKMAP_OPTS, SHLIB_MAPFILES): Remove.
 	* config/i386/t-cygwin (SHLIB_LC, SHLIB_EH_EXTENSION,
 	SHLIB_IMPLIB, SHLIB_SONAME, SHLIB_MKMAP_OPTS): Remove.
 	* config/i386/t-dlldir, config/i386/t-dlldir-x: Move to
@@ -185,8 +189,7 @@
 	print anything to go_dump_file.
 	(go_print_macro): New static function.
 	(go_finish): Traverse macro_hash with go_print_macro.
-	(dump_go_spec_init): Update macro_hash creation for
-	macro_hash_value.
+	(dump_go_spec_init): Update macro_hash creation for macro_hash_value.
 
 2011-11-02  Alan Modra  <amodra@gmail.com>
 
