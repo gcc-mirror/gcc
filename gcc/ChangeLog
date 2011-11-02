@@ -1,3 +1,20 @@
+2011-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50945
+	* config/sparc/sparc.md (movsf_insn): Reindent constraints.
+	(movsf_insn_no_fpu): Likewise.
+	(movdf_insn_sp32): Likewise.
+	(movdf_insn_sp32_no_fpu): Likewise.
+	(movdf_insn_sp32_v9): Likewise.  Remove redundant GY constraint.
+	(movdf_insn_sp32_v9_no_fpu): Likewise.
+	(movdf_insn_sp64): Likewise.
+	(movdf_insn_sp64_no_fpu): Likewise.
+	(movtf_insn_sp32): Likewise.
+	(movtf_insn_sp32_no_fpu): Likewise.
+	(movtf_insn_sp64): Likewise.
+	(movtf_insn_sp64_hq): Likewise.
+	(movtf_insn_sp64_no_fpu): Likewise.
+
 2011-11-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* cfgcleanup.c (try_head_merge_bb): If get_condition returns
