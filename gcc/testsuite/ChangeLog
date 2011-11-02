@@ -1,3 +1,11 @@
+2011-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-cvt-2.c (dg-options): Add -mtune=generic.
+	* gcc.target/i386/avx2-cvt-2.c (dg-options): Ditto.
+	* gcc.target/i386/sse2-cvt-2.c (dg-options): Ditto.
+
+	* gcc.target/i386/vectorize4-avx.c (dg-final): Remove xfail *-*-*.
+
 2011-11-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50902
@@ -85,7 +93,7 @@
 2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
-        2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+	2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50864
 	* g++.dg/template/crash109.C: New.

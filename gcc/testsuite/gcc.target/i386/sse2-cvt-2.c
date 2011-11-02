@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -msse2 -mno-sse3 -fdump-tree-vect-details" } */
+/* { dg-options "-O3 -msse2 -mno-sse3 -mtune=generic -fdump-tree-vect-details" } */
 
 #include "sse2-cvt-1.c"
 
