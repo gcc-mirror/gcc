@@ -1,0 +1,2 @@
+# In a native build, target DLLs go in bindir, where they can be executed.
+SHLIB_DLLDIR = $(bindir)

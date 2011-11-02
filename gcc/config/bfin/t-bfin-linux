@@ -49,8 +49,6 @@ MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf549m-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf561-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf592-none
 
-SHLIB_MAPFILES=$(srcdir)/config/bfin/libgcc-bfin.ver
-
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o
 
 # This rule uses MULTILIB_MATCHES to generate a definition of

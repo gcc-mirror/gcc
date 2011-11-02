@@ -1,0 +1,7 @@
+# Build a shared libgcc library with the HP-UX linker.
+
+SHLIB_LDFLAGS = -Wl,+h,$(SHLIB_SONAME)
+
+INSTALL_SHLIB = $(INSTALL_DATA) -m 555
+
+SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk

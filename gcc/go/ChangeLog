@@ -1,3 +1,7 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (gospec.o): Pass SHLIB instead of SHLIB_LINK.
+
 2011-08-24  Roberto Lublinerman  <rluble@gmail.com>
 
 	* lang.opt: Add fgo-optimize-.

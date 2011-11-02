@@ -279,6 +279,9 @@ LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
 LIB2ADDEHSTATIC = $(LIB2ADDEH)
 LIB2ADDEHSHARED = $(LIB2ADDEH)
 
+# nm flags to list global symbols in libgcc object files.
+SHLIB_NM_FLAGS = -pg
+
 # Don't build libunwind by default.
 LIBUNWIND =
 SHLIBUNWIND_LINK =

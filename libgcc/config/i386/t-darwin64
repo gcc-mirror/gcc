@@ -1,1 +1,0 @@
-SHLIB_VERPFX = $(gcc_srcdir)/config/i386/darwin-libgcc

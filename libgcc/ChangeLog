@@ -1,3 +1,156 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (SHLIB_NM_FLAGS): Set.
+	* mkmap-flat.awk, mkmap-symver.awk: New files.
+	* configure.ac (libgcc_cv_lib_sjlj_exceptions): Check for SjLj
+	exceptions.
+	* configure: Regenerate.
+	* config/libgcc-glibc.ver: New file.
+	* config/libgcc-libsystem.ver: New file.
+	* config/t-libunwind (SHLIB_LC): Set.
+	* config/t-linux: New file.
+	* config/t-slibgcc (INSTALL_SHLIB): New.
+	(SHLIB_INSTALL): Use it.
+	* config/t-slibgcc-darwin (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-symver.awk.
+	(SHLIB_MAPFILES): Don't append, adapt pathname.
+	(SHLIB_VERPFX): Set.
+	* config/t-slibgcc-elf-ver (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-symver.awk.
+	* config/t-slibgcc-gld-nover, config/t-slibgcc-hpux,
+	config/t-slibgcc-libgcc, config/t-slibgcc-vms: New files.
+	* config/alpha/libgcc-alpha-ldbl.ver, config/alpha/t-linux: New files.
+	* config/alpha/t-slibgcc-osf (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-flat.awk.
+	* config/arm/t-bpabi (SHLIB_MAPFILES): Set.
+	* config/bfin/libgcc-glibc.ver, config/bfin/t-linux: New files.
+	* config/c6x/libgcc-eabi.ver, config/c6x/t-elf: New files.
+	* config/cris/libgcc-glibc.ver, config/cris/t-linux: New files.
+	* config/frv/libgcc-frv.ver, config/frv/t-linux: New files.
+	* config/i386/libgcc-darwin.10.4.ver,
+	config/i386/libgcc-darwin.10.5.ver, config/i386/libgcc-glibc.ver:
+	New files.
+	* config/i386/t-darwin: Remove.
+	* config/i386/t-darwin64: Likewise.
+	* config/i386/t-dw2-eh, config/i386/t-sjlj-eh: New files.
+	* config/i386/t-slibgcc-cygming, config/i386/t-cygwin,
+	config/i386/t-dlldir, config/i386/t-dlldir-x: New files.
+	* config/i386/t-linux: New file.
+	* config/i386/t-mingw32: New file.
+	* config/ia64/libgcc-glibc.ver, config/ia64/libgcc-ia64.ver: New files.
+	* config/ia64/t-glibc: Rename to ...
+	* config/ia64/t-linux: ... this.
+	(SHLIB_MAPFILES): Set.
+	* config/ia64/t-glibc-libunwind: Rename to ...
+	* config/ia64/t-linux-libunwind: ... this.
+	* config/ia64/t-ia64 (SHLIB_MAPFILES): Set.
+	* config/ia64/t-slibgcc-hpux: New file.
+	* config/m32r/libgcc-glibc.ver, config/m32r/t-linux: New files.
+	* config/m68k/t-slibgcc-elf-ver: New file.
+	* config/mips/t-mips16 (SHLIB_MAPFILES): Set.
+	* config/mips/t-slibgcc-irix (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-flat.awk.
+	* config/pa/t-slibgcc-hpux: New file.
+	* config/pa/t-slibgcc-dwarf-ver, config/pa/t-slibgcc-sjsj-ver: New
+	files.
+	* config/rs6000/libgcc-darwin.10.4.ver,
+	config/rs6000/libgcc-darwin.10.5.ver: New files.
+	* config/rs6000/libgcc-ppc-glibc.ver: Rename to
+	config/rs6000/libgcc-glibc.ver.
+	* config/rs6000/libgcc-ppc64.ver: Rename to
+	config/rs6000/libgcc-ibm-ldouble.ver.
+	* config/rs6000/t-darwin (SHLIB_VERPFX): Remove.
+	* config/rs6000/t-ibm-ldouble (SHLIB_MAPFILES): Adapt filename.
+	* config/rs6000/t-ldbl128: Rename to ...
+	* config/rs6000/t-linux: ... this.
+	(SHLIB_MAPFILES): Adapt filename.
+	* config/rs6000/t-slibgcc-aix: New file.
+	* config/sh/libgcc-excl.ver, config/sh/libgcc-glibc.ver: New files.
+	* config/sh/t-linux (SHLIB_MAPFILES): Use $(srcdir) to refer to
+	libgcc-excl.ver, libgcc-glibc.ver.
+	(SHLIB_LINK, SHLIB_INSTALL): Remove.
+	* config/sparc/libgcc-glibc.ver: New file.
+	* config/sparc/t-linux: New file.
+	* config/xtensa/libgcc-glibc.ver, config/xtensa/t-linux: New files.
+	* config.host (*-*-freebsd*): Add t-slibgcc, t-slibgcc-gld,
+	t-slibgcc-elf-ver to tmake_file.
+	Add t-slibgcc-nolc-override to tmake_file for posix threads on
+	*-*-freebsd[34].
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,
+	*-*-gnu*, *-*-kopensolaris*-gnu): Add t-slibgcc, t-slibgcc-gld,
+	t-slibgcc-elf-ver, t-linux to tmake_file.
+	(*-*-netbsd*): Add t-slibgcc, t-slibgcc-gld, t-slibgcc-elf-ver to
+	tmake_file.
+	(alpha*-*-linux*): Add alpha/t-linux to tmake_file.
+	(alpha64-dec-*vms*): Add t-slibgcc-vms to tmake_file.
+	(alpha*-dec-*vms*): Likewise.
+	(arm*-*-freebsd*): Append to tmake_file.
+	(arm*-*-netbsdelf*): Add t-slibgcc-gld-nover to tmake_file.
+	(arm*-*-linux*): Add t-slibgcc-libgcc to tmake_file for
+	arm*-*-linux-*eabi.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Add t-slibgcc-nolc-override to
+	tmake_file for arm*-*-symbianelf*.
+	(bfin*-linux-uclibc*): Append to tmake_file, add bfin/t-linux.
+	(cris-*-linux*, crisv32-*-linux*): Append to tmake_file, add
+	cris/t-linux.
+	(frv-*-*linux*): Append to tmake_file, add frv/t-linux.
+	(hppa*-*-linux*): Add t-slibgcc-libgcc, pa/t-slibgcc-sjlj-ver,
+	pa/t-slibgcc-dwarf-ver to tmake_file.
+	(hppa[12]*-*-hpux10*): Add t-slibgcc, pa/t-slibgcc-sjlj-ver,
+	pa/t-slibgcc-dwarf-ver, t-slibgcc-hpux, pa/t-slibgcc-hpux to tmake_file.
+	(hppa*64*-*-hpux11*): Likewise.
+	(hppa[12]*-*-hpux11*): Likewise.
+	(x86_64-*-darwin*): Don't override tmake_file, but only keep
+	i386/t-crtpc, i386/t-crtfm.
+	(i[34567]86-*-cygwin*): Set tmake_eh_file, tmake_dlldir_file.
+	Prepend $tmake_eh_file, $tmake_dlldir_file, i386/t-slibgcc-cygming
+	to tmake_file.
+	Add i386/t-cygwin to tmake_file.
+	Prepent i386/t-mingw-pthread to tmake_file for posix threads.
+	(i[34567]86-*-mingw*): Set tmake_eh_file, tmake_dlldir_file.
+	Prepend $tmake_eh_file, $tmake_dlldir_file, i386/t-slibgcc-cygming
+	to tmake_file.
+	Add i386/t-mingw32 to tmake_file.
+	(x86_64-*-mingw*): Likewise.
+	(ia64*-*-freebsd*): Append to tmake_file.
+	(ia64*-*-linux*): Append to tmake_file.
+	Replace ia64/t-glibc by ia64/t-linux.
+	Replace ia64/t-glibc-libunwind by ia64/t-linux-libunwind if using
+	system libunwind.
+	(ia64*-*-hpux*): Add t-slibgcc, ia64/t-slibgcc-hpux,
+	t-slibgcc-hpux to tmake_file.
+	(ia64-hp-*vms*): Add t-slibgcc-vms to tmake_file.
+	(m32r-*-linux*): Append to tmake_file, add m32r/t-linux.
+	(m32rle-*-linux*): Likewise.
+	(m68k-*-linux*)): Add m68k/t-slibgcc-elf-ver to tmake_file unless
+	sjlj exceptions.
+	(microblaze*-linux*): New case.
+	Append to tmake_file, add t-slibgcc-nolc-override.
+	(powerpc-*-freebsd*): Add t-slibgcc-libgcc to tmake_file.
+	(powerpc-*-linux*, powerpc64-*-linux*): Likewise.
+	Replace rs6000/t-ldbl128 by rs6000/t-linux in tmake_file.
+	(rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*): Add
+	rs6000/t-slibgcc-aix to tmake_file.
+	(rs6000-ibm-aix5.1.*, powerpc-ibm-aix5.1.*): Likewise.
+	(rs6000-ibm-aix[56789].*, powerpc-ibm-aix[56789].*): Likewise.
+	(sh-*-elf*, sh[12346l]*-*-elf*, sh-*-linux*)
+	(sh[2346lbe]*-*-linux*, sh-*-netbsdelf*, shl*-*-netbsdelf*)
+	(sh5-*-netbsd*, sh5l*-*-netbsd*, sh64-*-netbsd*)
+	(sh64l*-*-netbsd*): Add t-slibgcc-libgcc to tmake_file for
+	sh*-*-linux*.
+	(sparc-*-linux*): Append to tmake_file for *-leon*.
+	Add sparc/t-linux to tmake_file for non-Leon targets.
+	(sparc64-*-linux*): Add sparc/t-linux to tmake_file.
+	(tic6x-*-uclinux): New case.
+	Add t-slibgcc, t-slibgcc-gld, t-slibgcc-elf-ver to tmake_file.
+	(tic6x-*-*): Add c6x/t-elf to tmake_file.
+	(xtensa*-*-linux*): Append to tmake_file, add xtensa/t-linux.
+	(am33_2.0-*-linux*): Append to tmake_file.
+	(i[34567]86-*-linux*, x86_64-*-linux*, i[34567]86-*-kfreebsd*-gnu)
+	(i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*): Also handle
+	x86_64-*-kfreebsd*-gnu.
+	Add i386/t-linux to tmake_file.
+
 2011-10-28  Ian Lance Taylor  <iant@google.com>
 
 	* config/i386/morestack.S: Correct CFI information to do proper

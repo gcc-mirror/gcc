@@ -63,5 +63,3 @@ EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o crti.o crtn.o
 CRTSTUFF_T_CFLAGS = -msdata=none
 CRTSTUFF_T_CFLAGS_S = -msdata=none
 TARGET_LIBGCC2_CFLAGS = -msdata=none
-
-SHLIB_MAPFILES += $(srcdir)/config/c6x/libgcc-c6xeabi.ver

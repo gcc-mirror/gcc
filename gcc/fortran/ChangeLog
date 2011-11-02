@@ -1,3 +1,7 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makef-lang.in (gfortranspec.o): Pass SHLIB instead of SHLIB_LINK.
+
 2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/50573

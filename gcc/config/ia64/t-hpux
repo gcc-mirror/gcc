@@ -49,25 +49,3 @@ LIBGCC1_TEST =
 # the HP-UX libunwind library.
 
 T_CFLAGS += -DUSE_LIBUNWIND_EXCEPTIONS
-
-SHLIB_EXT = .so
-# Must include -lunwind in the link, so that libgcc_s.so has the necessary
-# DT_NEEDED entry for libunwind.
-SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,+h,@shlib_base_name@.so.0 \
-	-o @multilib_dir@/@shlib_base_name@.so @multilib_flags@ \
-	@shlib_objs@ -lunwind -lc && \
-	rm -f @multilib_dir@/@shlib_base_name@.so.0 && \
-	$(LN_S) @shlib_base_name@.so @multilib_dir@/@shlib_base_name@.so.0
-# $(slibdir) double quoted to protect it from expansion while building
-# libgcc.mk.  We want this delayed until actual install time.
-SHLIB_INSTALL = \
-        $$(mkinstalldirs) $$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@; \
-	$(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.so \
-	$$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so.0; \
-	rm -f $$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so; \
-	$(LN_S) @shlib_base_name@.so.0 \
-	$$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so; \
-	chmod +x $$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so
-
-SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk

@@ -1,3 +1,0 @@
-SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc-glibc.ver
-
-HOST_LIBGCC2_CFLAGS += -mlong-double-128
