@@ -1,3 +1,20 @@
+2011-11-02  Richard B. Kreckel  <kreckel@ginac.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50880
+	* include/std/complex (__complex_acosh): Fix in a better way,
+	use Kahan's formula.
+	* include/tr1/complex (__complex_acosh): Likewise.
+
+2011-11-02  Richard B. Kreckel  <kreckel@ginac.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50880
+	* include/std/complex (__complex_acosh): Fix for __z.real() < 0.
+	* include/tr1/complex (__complex_acosh): Likewise.
+	* testsuite/26_numerics/complex/50880.cc: New.
+	* testsuite/tr1/8_c_compatibility/complex/50880.cc: Likewise.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.

@@ -185,12 +185,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     std::complex<_Tp>
     __complex_acosh(const std::complex<_Tp>& __z)
     {
-      std::complex<_Tp> __t((__z.real() - __z.imag())
-			    * (__z.real() + __z.imag()) - _Tp(1.0),
-			    _Tp(2.0) * __z.real() * __z.imag());
-      __t = std::sqrt(__t);
-
-      return std::log(__t + __z);
+      // Kahan's formula.
+      return _Tp(2.0) * std::log(std::sqrt(_Tp(0.5) * (__z + _Tp(1.0)))
+				 + std::sqrt(_Tp(0.5) * (__z - _Tp(1.0))));
     }
 
 #if _GLIBCXX_USE_C99_COMPLEX_TR1
