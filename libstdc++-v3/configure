@@ -707,7 +707,6 @@ BASIC_FILE_H
 CSTDIO_H
 SECTION_FLAGS
 WERROR
-glibcxx_thread_h
 glibcxx_PCHFLAGS
 GLIBCXX_BUILD_PCH_FALSE
 GLIBCXX_BUILD_PCH_TRUE
@@ -741,6 +740,7 @@ AR
 AS
 LN_S
 toplevel_srcdir
+toplevel_builddir
 glibcxx_srcdir
 glibcxx_builddir
 ac_ct_CXX
@@ -4870,7 +4870,9 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
     \\/$* | ?:\\/*) glibcxx_srcdir=${srcdir} ;;
     *) glibcxx_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
   esac
+  toplevel_builddir=${glibcxx_builddir}/..
   toplevel_srcdir=${glibcxx_srcdir}/..
+
 
 
 
@@ -11485,7 +11487,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11488 "configure"
+#line 11490 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11591,7 +11593,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11594 "configure"
+#line 11596 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14949,7 +14951,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14952 "configure"
+#line 14954 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15076,23 +15078,6 @@ $as_echo_n "checking for thread model used by GCC... " >&6; }
   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
 $as_echo "$target_thread_file" >&6; }
-
-  if test $target_thread_file != single; then
-
-$as_echo "#define HAVE_GTHR_DEFAULT 1" >>confdefs.h
-
-  fi
-
-  glibcxx_thread_h=gthr-$target_thread_file.h
-
-    gthread_file=${toplevel_srcdir}/gcc/${glibcxx_thread_h}
-  if grep __GTHREADS $gthread_file >/dev/null 2>&1 ; then
-    enable_thread=yes
-  else
-   enable_thread=no
-  fi
-
-
 
 
 
@@ -15317,7 +15302,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15320 "configure"
+#line 15305 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15354,7 +15339,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15357 "configure"
+#line 15342 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15391,7 +15376,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15394 "configure"
+#line 15379 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15429,7 +15414,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15432 "configure"
+#line 15417 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15505,7 +15490,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15508 "configure"
+#line 15493 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15547,7 +15532,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15550 "configure"
+#line 15535 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15581,7 +15566,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15584 "configure"
+#line 15569 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -19821,7 +19806,8 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -fno-exceptions -I${toplevel_srcdir}/gcc"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions \
+	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
 
   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   case $target_thread_file in

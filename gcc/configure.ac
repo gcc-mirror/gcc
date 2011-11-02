@@ -1416,19 +1416,6 @@ if test x${thread_file} = x; then
   thread_file=${target_thread_file}
 fi
 
-# Make gthr-default.h if we have a thread file.
-gthread_flags=
-if test $thread_file != single; then
-  echo "#include \"gthr-${thread_file}.h\"" > gthr-default.h-t
-  if diff gthr-default.h-t gthr-default.h 2>/dev/null; then
-    rm -f gthr-default.h-t
-  else
-    mv -f gthr-default.h-t gthr-default.h
-  fi
-  gthread_flags=-DHAVE_GTHR_DEFAULT
-fi
-AC_SUBST(gthread_flags)
-
 # --------
 # UNSORTED
 # --------
@@ -4961,7 +4948,6 @@ AC_SUBST(out_file)
 AC_SUBST(out_object_file)
 AC_SUBST(common_out_file)
 AC_SUBST(common_out_object_file)
-AC_SUBST(thread_file)
 AC_SUBST(tm_file_list)
 AC_SUBST(tm_include_list)
 AC_SUBST(tm_defines)

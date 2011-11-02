@@ -1,5 +1,11 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* EXCLUDES (gthr-aix.h, gthr-dce.h, gthr-posix.c, gthr-posix.h)
+	(gthr-rtems.h, gthr-single.h, gthr-solaris.h, gthr-vxworks.h)
+	(gthr-win32.h, gthr.h): Remove.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* EXCLUDES (config/vxlib.c, gbl-ctors.h, libgcc2.c, libgcc2.h)
 	(longlong.h): Remove.
 

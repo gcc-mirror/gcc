@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc for
    LynxOS.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2004, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2004, 2008, 2009, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,7 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  GTHREAD_USE_WEAK
 #define GTHREAD_USE_WEAK 0
 
-#include "gthr-posix.h"
+#include "config/gthr-posix.h"
 
 #else
 #include "gthr-single.h"

@@ -83,17 +83,6 @@ if (foovar > 10) return __sync_add_and_fetch (&foovar, -1);]])],
 	      [Define to 1 if the target supports __sync_fetch_and_add])
   fi])
 
-dnl Check if threads are supported.
-AC_DEFUN([LIBGFOR_CHECK_GTHR_DEFAULT], [
-  AC_CACHE_CHECK([configured target thread model],
-		 libgfor_cv_target_thread_file, [
-libgfor_cv_target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`])
-
-  if test $libgfor_cv_target_thread_file != single; then
-    AC_DEFINE(HAVE_GTHR_DEFAULT, 1,
-	      [Define if the compiler has a thread header that is non single.])
-  fi])
-
 dnl Check for pragma weak.
 AC_DEFUN([LIBGFOR_GTHREAD_WEAK], [
   AC_CACHE_CHECK([whether pragma weak works],

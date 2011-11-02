@@ -621,7 +621,6 @@ tm_p_file_list
 tm_defines
 tm_include_list
 tm_file_list
-thread_file
 common_out_object_file
 common_out_file
 out_object_file
@@ -724,7 +723,6 @@ LIBINTL
 USE_NLS
 extra_opt_files
 extra_modes_file
-gthread_flags
 NATIVE_SYSTEM_HEADER_DIR
 objext
 manext
@@ -11353,19 +11351,6 @@ if test x${thread_file} = x; then
   thread_file=${target_thread_file}
 fi
 
-# Make gthr-default.h if we have a thread file.
-gthread_flags=
-if test $thread_file != single; then
-  echo "#include \"gthr-${thread_file}.h\"" > gthr-default.h-t
-  if diff gthr-default.h-t gthr-default.h 2>/dev/null; then
-    rm -f gthr-default.h-t
-  else
-    mv -f gthr-default.h-t gthr-default.h
-  fi
-  gthread_flags=-DHAVE_GTHR_DEFAULT
-fi
-
-
 # --------
 # UNSORTED
 # --------
@@ -18059,7 +18044,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18062 "configure"
+#line 18047 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18165,7 +18150,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18168 "configure"
+#line 18153 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26945,7 +26930,6 @@ fi
 
 
 # Substitute configuration variables
-
 
 
 

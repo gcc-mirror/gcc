@@ -25704,25 +25704,6 @@ $as_echo "#define HAVE_SYNC_FETCH_AND_ADD 1" >>confdefs.h
 
   fi
 
-# Check out thread support.
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking configured target thread model" >&5
-$as_echo_n "checking configured target thread model... " >&6; }
-if test "${libgfor_cv_target_thread_file+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-libgfor_cv_target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_target_thread_file" >&5
-$as_echo "$libgfor_cv_target_thread_file" >&6; }
-
-  if test $libgfor_cv_target_thread_file != single; then
-
-$as_echo "#define HAVE_GTHR_DEFAULT 1" >>confdefs.h
-
-  fi
-
 # Check out #pragma weak.
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether pragma weak works" >&5

@@ -237,7 +237,6 @@ glibcxx_builddir = @glibcxx_builddir@
 glibcxx_localedir = @glibcxx_localedir@
 glibcxx_prefixdir = @glibcxx_prefixdir@
 glibcxx_srcdir = @glibcxx_srcdir@
-glibcxx_thread_h = @glibcxx_thread_h@
 glibcxx_toolexecdir = @glibcxx_toolexecdir@
 glibcxx_toolexeclibdir = @glibcxx_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
@@ -277,6 +276,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+toplevel_builddir = @toplevel_builddir@
 toplevel_srcdir = @toplevel_srcdir@
 
 # May be used by various substitution variables.
