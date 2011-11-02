@@ -1,3 +1,7 @@
+2011-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20111102-1.c: New test.
+
 2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50956

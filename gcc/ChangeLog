@@ -1,3 +1,16 @@
+2011-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50945
+	* config/sparc/sparc.md (movsf_insn): Reindent constraints.
+	(movdf_insn_sp32): Likewise.  Remove redundant G constraint.
+	(movdf_insn_sp64): Likewise.
+	(DFmode splitter): Do not test TARGET_FPU.
+	(movtf_insn_sp32): Reindent constraints.
+	(movtf_insn_sp32_no_fpu): Likewise.
+	(movtf_insn_sp64): Likewise.
+	(movtf_insn_sp64_hq): Likewise.
+	(movtf_insn_sp64_no_fpu): Likewise.
+
 2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50956

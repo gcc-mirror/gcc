@@ -2041,8 +2041,8 @@
 })
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=d,d,f, *r,*r,*r,*r, f, f,*r, m,   m")
-	(match_operand:SF 1 "input_operand"         "G,C,f,*rR, Q, S, f,*r, m, m, f,*rG"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=d,d,f, *r,*r,*r,*r, f,f,*r,m,  m")
+	(match_operand:SF 1 "input_operand"         "G,C,f,*rR, Q, S, f,*r,m, m,f,*rG"))]
   "(register_operand (operands[0], SFmode)
     || register_or_zero_or_all_ones_operand (operands[1], SFmode))"
 {
@@ -2138,8 +2138,8 @@
 })
 
 (define_insn "*movdf_insn_sp32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,e,*r, f,  e,T,W,U,T,  f,   *r,  o,o")
-        (match_operand:DF 1 "input_operand"         "G,C,e,e, f,*r,W#F,G,e,T,U,o#F,*roGF,*rG,f"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,e,*r, f,  e,T,W,U,T,  f,  *r,  o,o")
+	(match_operand:DF 1 "input_operand"         "G,C,e,e, f,*r,W#F,G,e,T,U,o#F,*roF,*rG,f"))]
   "! TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
@@ -2166,7 +2166,7 @@
 
 (define_insn "*movdf_insn_sp64"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,W, *r,*r,  m,*r")
-        (match_operand:DF 1 "input_operand"         "G,C,e, e,*r,W#F,e,*rG, m,*rG, F"))]
+	(match_operand:DF 1 "input_operand"         "G,C,e, e,*r,W#F,e,*rG, m,*rG, F"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
@@ -2191,9 +2191,8 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
         (match_operand:DF 1 "const_double_operand" ""))]
-  "TARGET_FPU
-   && (GET_CODE (operands[0]) == REG
-       && SPARC_INT_REG_P (REGNO (operands[0])))
+  "REG_P (operands[0])
+   && SPARC_INT_REG_P (REGNO (operands[0]))
    && ! const_zero_operand (operands[1], GET_MODE (operands[0]))
    && reload_completed"
   [(clobber (const_int 0))]
@@ -2378,8 +2377,8 @@
 })
 
 (define_insn "*movtf_insn_sp32"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=b,e,o,U,r")
-	(match_operand:TF 1 "input_operand"    "G,oe,GeUr,o,roG"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,   o,U,  r")
+	(match_operand:TF 1 "input_operand"        " G,oe,GeUr,o,roG"))]
   "TARGET_FPU
    && ! TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
@@ -2392,8 +2391,8 @@
 ;; when -mno-fpu.
 
 (define_insn "*movtf_insn_sp32_no_fpu"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=o,U,o,r,o")
-	(match_operand:TF 1 "input_operand"    "G,o,U,roG,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=o,U,o,  r,o")
+	(match_operand:TF 1 "input_operand"        " G,o,U,roG,r"))]
   "! TARGET_FPU
    && ! TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
@@ -2402,8 +2401,8 @@
   [(set_attr "length" "4")])
 
 (define_insn "*movtf_insn_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=b,e,o,r")
-        (match_operand:TF 1 "input_operand"    "G,oe,Ger,roG"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,  o,  r")
+	(match_operand:TF 1 "input_operand"         "G,oe,Ger,roG"))]
   "TARGET_FPU
    && TARGET_ARCH64
    && ! TARGET_HARD_QUAD
@@ -2413,8 +2412,8 @@
   [(set_attr "length" "2")])
 
 (define_insn "*movtf_insn_sp64_hq"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=b,e,e,m,o,r")
-        (match_operand:TF 1 "input_operand"    "G,e,m,e,rG,roG"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=b,e,e,m, o,  r")
+	(match_operand:TF 1 "input_operand"         "G,e,m,e,rG,roG"))]
   "TARGET_FPU
    && TARGET_ARCH64
    && TARGET_HARD_QUAD
@@ -2431,8 +2430,8 @@
    (set_attr "length" "2,*,*,*,2,2")])
 
 (define_insn "*movtf_insn_sp64_no_fpu"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
-        (match_operand:TF 1 "input_operand"    "orG,rG"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=  r, o")
+	(match_operand:TF 1 "input_operand"         "orG,rG"))]
   "! TARGET_FPU
    && TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
