@@ -1057,53 +1057,82 @@ gimple_extract_devirt_binfo_from_cst (tree cst)
    simplifies to a constant value. Return true if any changes were made.
    It is assumed that the operands have been previously folded.  */
 
-bool
+static bool
 gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 {
   gimple stmt = gsi_stmt (*gsi);
   tree callee;
+  bool changed = false;
+  unsigned i;
 
-  /* Check for builtins that CCP can handle using information not
-     available in the generic fold routines.  */
-  callee = gimple_call_fndecl (stmt);
-  if (!inplace && callee && DECL_BUILT_IN (callee))
-    {
-      tree result = gimple_fold_builtin (stmt);
-
-      if (result)
-	{
-          if (!update_call_from_tree (gsi, result))
-	    gimplify_and_update_call_from_tree (gsi, result);
-	  return true;
-	}
-    }
+  /* Fold *& in call arguments.  */
+  for (i = 0; i < gimple_call_num_args (stmt); ++i)
+    if (REFERENCE_CLASS_P (gimple_call_arg (stmt, i)))
+      {
+	tree tmp = maybe_fold_reference (gimple_call_arg (stmt, i), false);
+	if (tmp)
+	  {
+	    gimple_call_set_arg (stmt, i, tmp);
+	    changed = true;
+	  }
+      }
 
   /* Check for virtual calls that became direct calls.  */
   callee = gimple_call_fn (stmt);
   if (callee && TREE_CODE (callee) == OBJ_TYPE_REF)
     {
-      tree binfo, fndecl, obj;
-      HOST_WIDE_INT token;
-
       if (gimple_call_addr_fndecl (OBJ_TYPE_REF_EXPR (callee)) != NULL_TREE)
 	{
 	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
-	  return true;
+	  changed = true;
 	}
-
-      obj = OBJ_TYPE_REF_OBJECT (callee);
-      binfo = gimple_extract_devirt_binfo_from_cst (obj);
-      if (!binfo)
-	return false;
-      token = TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
-      fndecl = gimple_get_virt_method_for_binfo (token, binfo);
-      if (!fndecl)
-	return false;
-      gimple_call_set_fndecl (stmt, fndecl);
-      return true;
+      else
+	{
+	  tree obj = OBJ_TYPE_REF_OBJECT (callee);
+	  tree binfo = gimple_extract_devirt_binfo_from_cst (obj);
+	  if (binfo)
+	    {
+	      HOST_WIDE_INT token
+		= TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
+	      tree fndecl = gimple_get_virt_method_for_binfo (token, binfo);
+	      if (fndecl)
+		{
+		  gimple_call_set_fndecl (stmt, fndecl);
+		  changed = true;
+		}
+	    }
+	}
     }
 
-  return false;
+  /* Check whether propagating into the function address made the
+     call direct, and thus possibly non-inlineable.
+     ???  This asks for a more conservative setting of the non-inlinable
+     flag, namely true for all indirect calls.  But that would require
+     that we can re-compute the flag conservatively, thus it isn't
+     ever initialized from something else than return/argument type
+     checks .  */
+  callee = gimple_call_fndecl (stmt);
+  if (callee
+      && !gimple_check_call_matching_types (stmt, callee))
+    gimple_call_set_cannot_inline (stmt, true);
+
+  if (inplace)
+    return changed;
+
+  /* Check for builtins that CCP can handle using information not
+     available in the generic fold routines.  */
+  if (callee && DECL_BUILT_IN (callee))
+    {
+      tree result = gimple_fold_builtin (stmt);
+      if (result)
+	{
+          if (!update_call_from_tree (gsi, result))
+	    gimplify_and_update_call_from_tree (gsi, result);
+	  changed = true;
+	}
+    }
+
+  return changed;
 }
 
 /* Worker for both fold_stmt and fold_stmt_inplace.  The INPLACE argument
@@ -1162,17 +1191,6 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
       break;
 
     case GIMPLE_CALL:
-      /* Fold *& in call arguments.  */
-      for (i = 0; i < gimple_call_num_args (stmt); ++i)
-	if (REFERENCE_CLASS_P (gimple_call_arg (stmt, i)))
-	  {
-	    tree tmp = maybe_fold_reference (gimple_call_arg (stmt, i), false);
-	    if (tmp)
-	      {
-		gimple_call_set_arg (stmt, i, tmp);
-		changed = true;
-	      }
-	  }
       changed |= gimple_fold_call (gsi, inplace);
       break;
 

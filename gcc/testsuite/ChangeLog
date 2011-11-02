@@ -1,3 +1,8 @@
+2010-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50890
+	* gcc.dg/torture/pr50890.c: New testcase.
+
 2011-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44277

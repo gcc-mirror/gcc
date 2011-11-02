@@ -1,3 +1,13 @@
+2010-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50890
+	* gimple.h (gimple_fold_call): Remove.
+	* gimple-fold.c (fold_stmt_1): Move all call related code to ...
+	(gimple_fold_call): ... here.  Make static.  Update the
+	cannot-inline flag on direct calls.
+	* ipa-inline.c (early_inliner): Copy the cannot-inline flag
+	from the statements to the edges.
+
 2011-11-01  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (struct macro_hash_value): Define.
