@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002, 2003, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -19,13 +19,6 @@
 # See "Target Fragment" in GCC info.  That same order is used here.
 
 TARGET_LIBGCC2_CFLAGS = -mlibfuncs -O2
-
-# We need to turn off some assumptions on normality for code in crtstuff.c
-# and crt{i,n}.asm, specifically about execution not continuing past the
-# end of the section in the file being compiled.  Thus we must stop the
-# assembler from generating stubbable PUSHJ relocs, because that will add
-# stubs at the end of the current section when necessary.
-CRTSTUFF_T_CFLAGS = -Wa,--no-stubs
 
 MULTILIB_OPTIONS = mabi=gnu
 MULTILIB_DIRNAMES = gnuabi

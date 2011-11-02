@@ -1,5 +1,5 @@
 # Copyright (C) 2001, 2002, 2003, 2004, 2007,
-# 2008 Free Software Foundation, Inc.
+# 2008, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,18 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
-
-# Don't let CTOR_LIST end up in sdata section.
-CRTSTUFF_T_CFLAGS = -G 0
-
-# Assemble startup files.
-$(T)crti.o: $(srcdir)/config/mips/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/mips/crti.asm
-
-$(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/mips/crtn.asm
 
 # We must build libgcc2.a with -G 0, in case the user wants to link
 # without the $gp register.
@@ -48,7 +36,6 @@ MULTILIB_EXCLUSIONS = !mips32r2/mfp64
 endif
 endif
 MULTILIB_MATCHES = EL=mel EB=meb
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

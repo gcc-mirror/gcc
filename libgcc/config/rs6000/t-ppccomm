@@ -17,26 +17,10 @@ LIB2ADD_ST += crtsavfpr.S crtresfpr.S \
   e500crtsavg64gpr.S \
   e500crtsavg64gprctr.S
 
-EXTRA_PARTS += crtbegin$(objext) crtend$(objext) \
-  crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext) \
-  ecrti$(objext) ecrtn$(objext) ncrti$(objext) ncrtn$(objext)
-
 # We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
 
 # Assemble startup files.
-ecrti.S: $(gcc_srcdir)/config/rs6000/eabi-ci.asm
-	cat $(gcc_srcdir)/config/rs6000/eabi-ci.asm >ecrti.S
-
-ecrtn.S: $(gcc_srcdir)/config/rs6000/eabi-cn.asm
-	cat $(gcc_srcdir)/config/rs6000/eabi-cn.asm >ecrtn.S
-
-ncrti.S: $(gcc_srcdir)/config/rs6000/sol-ci.asm
-	cat $(gcc_srcdir)/config/rs6000/sol-ci.asm >ncrti.S
-
-ncrtn.S: $(gcc_srcdir)/config/rs6000/sol-cn.asm
-	cat $(gcc_srcdir)/config/rs6000/sol-cn.asm >ncrtn.S
-
 crtsavfpr.S: $(gcc_srcdir)/config/rs6000/crtsavfpr.asm
 	cat $(gcc_srcdir)/config/rs6000/crtsavfpr.asm >crtsavfpr.S
 
@@ -94,14 +78,14 @@ e500crtsavg64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg64gpr.asm
 e500crtsavg64gprctr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg64gprctr.asm
 	cat $(gcc_srcdir)/config/rs6000/e500crtsavg64gprctr.asm >e500crtsavg64gprctr.S
 
-ecrti$(objext): ecrti.S
+ecrti$(objext): $(srcdir)/config/rs6000/eabi-ci.S
 	$(crt_compile) -c ecrti.S
 
-ecrtn$(objext): ecrtn.S
+ecrtn$(objext): $(srcdir)/config/rs6000/eabi-cn.S
 	$(crt_compile) -c ecrtn.S
 
-ncrti$(objext): ncrti.S
+ncrti$(objext): $(srcdir)/config/rs6000/sol-ci.S
 	$(crt_compile) -c ncrti.S
 
-ncrtn$(objext): ncrtn.S
+ncrtn$(objext): $(srcdir)/config/rs6000/sol-cn.S
 	$(crt_compile) -c ncrtn.S

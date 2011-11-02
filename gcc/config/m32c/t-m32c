@@ -53,5 +53,3 @@ m32c-pragma.o: $(srcdir)/config/m32c/m32c-pragma.c $(RTL_H) $(TREE_H) $(CONFIG_H
 MULTILIB_OPTIONS = mcpu=m32cm
 MULTILIB_DIRNAMES = m32cm
 MULTILIB_MATCHES = mcpu?m32cm=mcpu?m32c mcpu?r8c=mcpu?m16c
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o

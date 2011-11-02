@@ -24,12 +24,6 @@
 
 GTM_H = tm.h $(tm_file_list) $(srcdir)/config/mep/mep-intrin.h insn-constants.h
 
-# Use -O0 instead of -O2 so we don't get complex relocations
-
-CRTSTUFF_CFLAGS = -O0 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-  -finhibit-size-directive -fno-inline-functions -fno-exceptions \
-  -fno-zero-initialized-in-bss -fno-unit-at-a-time
-
 TCFLAGS = -mlibrary
 
 mep-pragma.o: $(srcdir)/config/mep/mep-pragma.c $(CONFIG_H) $(SYSTEM_H) \
@@ -56,8 +50,6 @@ LIB2FUNCS_EXTRA = \
 
 MULTILIB_OPTIONS = mel mall-opts mfar
 MULTILIB_DIRNAMES = el allopt far
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 
 MD_INCLUDES = \
 	$(srcdir)/config/mep/intrinsics.md \

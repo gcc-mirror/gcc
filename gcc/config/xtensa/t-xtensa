@@ -31,11 +31,4 @@ LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3 _udivsi3 _umodsi3 \
 
 LIB2FUNCS_EXTRA = $(srcdir)/config/xtensa/lib2funcs.S
 
-$(T)crti.o: $(srcdir)/config/xtensa/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/xtensa/crti.asm
-$(T)crtn.o: $(srcdir)/config/xtensa/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/xtensa/crtn.asm
-
 $(out_object_file): gt-xtensa.h

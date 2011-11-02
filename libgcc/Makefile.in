@@ -50,6 +50,8 @@ target_noncanonical = @target_noncanonical@
 # The rules for compiling them should be in the t-* file for the machine.
 EXTRA_PARTS = @extra_parts@
 
+extra-parts = libgcc-extra-parts
+
 # Multilib support variables.
 MULTISRCTOP =
 MULTIBUILDTOP =
@@ -62,6 +64,7 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 mkinstalldirs = $(SHELL) $(libgcc_topdir)/mkinstalldirs
+INSTALL_PARTS = $(EXTRA_PARTS)
 
 objext = .o
 
@@ -238,6 +241,16 @@ override CFLAGS := $(filter-out -fprofile-generate -fprofile-use,$(CFLAGS))
 INTERNAL_CFLAGS = $(CFLAGS) $(LIBGCC2_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
 		  $(INCLUDES) @set_have_cc_tls@ @set_use_emutls@
 
+# Options to use when compiling crtbegin/end.
+CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+  -finhibit-size-directive -fno-inline -fno-exceptions \
+  -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
+  -fno-stack-protector \
+  $(INHIBIT_LIBC_CFLAGS)
+
+# Extra flags to use when compiling crt{begin,end}.o.
+CRTSTUFF_T_CFLAGS =
+
 MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
 MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
 
@@ -333,16 +346,6 @@ else
 iterator = $(srcdir)/empty.mk $(patsubst %,$(srcdir)/static-object.mk,$(iter-items))
 vis_hide =
 gen-hide-list = echo > \$@
-endif
-
-ifneq ($(EXTRA_PARTS),)
-  extra-parts = libgcc-extra-parts
-  INSTALL_PARTS = $(EXTRA_PARTS)
-else
-ifneq ($(GCC_EXTRA_PARTS),)
-  extra-parts = gcc-extra-parts
-  INSTALL_PARTS = $(GCC_EXTRA_PARTS)
-endif
 endif
 
 LIB2ADD += enable-execute-stack.c
@@ -900,88 +903,45 @@ ALL_CRT_CFLAGS = $(CFLAGS) $(CRTSTUFF_CFLAGS) $(INCLUDES)
 crt_compile = $(CC) $(ALL_CRT_CFLAGS) -o $@ $(compile_deps)
 
 ifeq ($(CUSTOM_CRTSTUFF),)
-crtbegin$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN
+# Compile two additional files that are linked with every program
+# linked using GCC on systems using COFF or ELF, for the sake of C++
+# constructors.
+crtbegin$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN
 
-crtend$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_END
+crtend$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_END
 
 # These are versions of crtbegin and crtend for shared libraries.
-crtbeginS$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFS_O
+crtbeginS$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $< -DCRT_BEGIN -DCRTSTUFFS_O
 
-crtendS$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O
+crtendS$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $< -DCRT_END -DCRTSTUFFS_O
 
 # This is a version of crtbegin for -static links.
-crtbeginT.o: $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFT_O
+crtbeginT$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN -DCRTSTUFFT_O
+endif
+
+ifeq ($(CUSTOM_CRTIN),)
+# -x assembler-with-cpp is only needed on case-insensitive filesystem.
+crti$(objext): $(srcdir)/config/$(cpu_type)/crti.S
+	$(crt_compile) -c -x assembler-with-cpp $<
+
+crtn$(objext): $(srcdir)/config/$(cpu_type)/crtn.S
+	$(crt_compile) -c -x assembler-with-cpp $<
 endif
 
 # Build extra startfiles in the libgcc directory.
 .PHONY: libgcc-extra-parts
 libgcc-extra-parts: $(EXTRA_PARTS)
-ifneq ($(GCC_EXTRA_PARTS),)
-ifneq ($(sort $(EXTRA_PARTS)),$(GCC_EXTRA_PARTS))
-	# If the gcc directory specifies which extra parts to
-	# build for this target, and the libgcc configuration also
-	# specifies, make sure they match.  This can be removed
-	# when the gcc directory no longer holds libgcc configuration;
-	# it is useful when migrating a target.
-	@echo "Configuration mismatch!"
-	@echo "Extra parts from gcc directory: $(GCC_EXTRA_PARTS)"
-	@echo "Extra parts from libgcc: $(EXTRA_PARTS)"
-	exit 1
-endif
-endif
 
 	# Early copyback; see "all" above for the rationale.  The
 	# early copy is necessary so that the gcc -B options find
 	# the right startup files when linking shared libgcc.
 	$(mkinstalldirs) $(gcc_objdir)$(MULTISUBDIR)
 	parts="$(EXTRA_PARTS)";					\
-	for file in $$parts; do					\
-	  rm -f $(gcc_objdir)$(MULTISUBDIR)/$$file;		\
-	  $(INSTALL_DATA) $$file $(gcc_objdir)$(MULTISUBDIR)/;	\
-	  case $$file in 					\
-	    *.a)						\
-	      $(RANLIB) $(gcc_objdir)$(MULTISUBDIR)/$$file ;;	\
-	  esac;							\
-	done
-
-# Build extra startfiles in the gcc directory, for unconverted
-# targets.
-.PHONY: gcc-extra-parts
-gcc-extra-parts:
-	# Recursively invoke make in the GCC directory to build any
-	# startfiles (for now).  We must do this just once, passing
-	# it all the GCC_EXTRA_PARTS as simultaneous goal targets,
-	# so that rules which cannot execute simultaneously are properly
-	# serialized.  We indirect through T_TARGET in case any multilib
-	# directories contain an equals sign, to prevent make from
-	# interpreting any of the goals as variable assignments.
-
-	# We must use cd && make rather than make -C, or else the stage
-	# number will be embedded in debug information.
-
-	T=`$(PWD_COMMAND)`/ \
-	&& cd $(gcc_objdir) \
-	&& $(MAKE) GCC_FOR_TARGET="$(CC)" \
-	  MULTILIB_CFLAGS="$(CFLAGS)" \
-	  T=$$T \
-	  T_TARGET="$(patsubst %,$${T}%,$(GCC_EXTRA_PARTS))" \
-	  T_TARGET
-
-	# Early copyback; see "all" above for the rationale.  The
-	# early copy is necessary so that the gcc -B options find
-	# the right startup files when linking shared libgcc.
-	$(mkinstalldirs) $(gcc_objdir)$(MULTISUBDIR)
-	parts="$(GCC_EXTRA_PARTS)";				\
 	for file in $$parts; do					\
 	  rm -f $(gcc_objdir)$(MULTISUBDIR)/$$file;		\
 	  $(INSTALL_DATA) $$file $(gcc_objdir)$(MULTISUBDIR)/;	\

@@ -138,9 +138,6 @@
 #  extra_passes		List of extra executables compiled for this target
 #			machine, used for compiling from source to object.
 #
-#  extra_parts		List of extra object files that should be compiled
-#			for this target machine.
-#
 #  extra_programs	Like extra_passes, but these are used when linking.
 #
 #  extra_options	List of target-dependent .opt files.
@@ -215,7 +212,6 @@ user_headers_inc_next_post=
 use_gcc_tgmath=yes
 use_gcc_stdint=none
 extra_passes=
-extra_parts=
 extra_programs=
 extra_objs=
 extra_gcc_objs=
@@ -556,7 +552,6 @@ case ${target} in
   # pleases around the provided core setting.
   gas=yes
   gnu_ld=yes
-  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
   fbsd_major=`echo ${target} | sed -e 's/.*freebsd//g' | sed -e 's/\..*//g'`
   tm_defines="${tm_defines} FBSD_MAJOR=${fbsd_major}"
   tmake_file="t-freebsd t-slibgcc"
@@ -586,7 +581,6 @@ case ${target} in
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
   extra_options="$extra_options gnu-user.opt"
-  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
   gas=yes
   gnu_ld=yes
   case ${enable_threads} in
@@ -640,7 +634,7 @@ case ${target} in
   esac
   ;;
 *-*-netbsd*)
-  tmake_file="t-libc-ok t-netbsd t-libgcc-pic t-slibgcc"
+  tmake_file="t-libgcc-pic t-slibgcc"
   gas=yes
   gnu_ld=yes
 
@@ -661,15 +655,6 @@ case ${target} in
       ;;
   esac
 
-  # NetBSD 1.7 and later are set up to use GCC's crtstuff for
-  # ELF configurations.  We will clear extra_parts in the
-  # a.out configurations.
-  case ${target} in
-    *-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-      extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-      ;;
-  esac
-
   # NetBSD 2.0 and later provide __cxa_atexit(), which we use by
   # default (unless overridden by --disable-__cxa_atexit).
   case ${target} in
@@ -679,7 +664,7 @@ case ${target} in
   esac
   ;;
 *-*-openbsd*)
-  tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
+  tmake_file="t-openbsd t-libgcc-pic"
   case ${enable_threads} in
     yes)
       thread_file='posix'
@@ -771,14 +756,12 @@ alpha*-*-linux*)
 	extra_options="${extra_options} alpha/elf.opt"
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
-	extra_parts="${extra_parts} crtfastmath.o"
 	;;
 alpha*-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
 	extra_options="${extra_options} alpha/elf.opt"
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o crtfastmath.o"
 	;;
 alpha*-*-netbsd*)
 	tm_file="${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
@@ -963,7 +946,6 @@ bfin*-uclinux*)
 bfin*-linux-uclibc*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h gnu-user.h linux.h glibc-stdint.h bfin/linux.h ./linux-sysroot-suffix.h"
 	tmake_file="bfin/t-bfin-linux t-slibgcc"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	use_collect2=no
 	;;
 bfin*-rtems*)
@@ -1008,7 +990,6 @@ crisv32-*-linux* | cris-*-linux*)
 fr30-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file=fr30/t-fr30
-	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
 frv-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
@@ -1025,14 +1006,12 @@ moxie-*-elf)
 	gas=yes
 	gnu_ld=yes
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	tmake_file="${tmake_file} moxie/t-moxie"
 	;;
 moxie-*-uclinux*)
 	gas=yes
 	gnu_ld=yes
 	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h moxie/uclinux.h"
-	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	tmake_file="${tmake_file} moxie/t-moxie"
 	;;
 moxie-*-rtems*)
@@ -1040,12 +1019,12 @@ moxie-*-rtems*)
 	tm_file="moxie/moxie.h dbxelf.h elfos.h moxie/rtems.h rtems.h newlib-stdint.h"
 	;;
 h8300-*-rtems*)
-	tmake_file="h8300/t-h8300 h8300/t-elf t-rtems h8300/t-rtems"
+	tmake_file="h8300/t-h8300 t-rtems h8300/t-rtems"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h h8300/rtems.h rtems.h newlib-stdint.h"
 	libgcc_tm_file="$libgcc_tm_file h8300/h8300-lib.h"
 	;;
 h8300-*-elf*)
-	tmake_file="h8300/t-h8300 h8300/t-elf"
+	tmake_file="h8300/t-h8300"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h newlib-stdint.h h8300/elf.h"
 	libgcc_tm_file="$libgcc_tm_file h8300/h8300-lib.h"
 	;;
@@ -1129,8 +1108,6 @@ hppa*64*-*-hpux11*)
 		       pa/pa-hpux1010.opt pa/pa64-hpux.opt hpux11.opt"
 	need_64bit_hwint=yes
 	tmake_file="pa/t-pa64 pa/t-pa-hpux t-slibgcc"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
-		     libgcc_stub.a"
 	case x${enable_threads} in
 	x | xyes | xposix )
 		thread_file=posix
@@ -1169,7 +1146,6 @@ hppa[12]*-*-hpux11*)
 		;;
 	esac
 	tmake_file="pa/t-pa-hpux11 pa/t-pa-hpux t-slibgcc"
-	extra_parts="libgcc_stub.a"
 	case x${enable_threads} in
 	x | xyes | xposix )
 		thread_file=posix
@@ -1207,19 +1183,17 @@ x86_64-*-darwin*)
 	;;
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h"
-	tmake_file="${tmake_file} i386/t-i386elf i386/t-crtstuff t-svr4"
+	tmake_file="${tmake_file} t-svr4"
 	;;
 x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
-	tmake_file="${tmake_file} i386/t-i386elf i386/t-crtstuff t-svr4"
+	tmake_file="${tmake_file} t-svr4"
 	;;
 i[34567]86-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/freebsd.h"
-	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 x86_64-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/x86-64.h i386/freebsd.h i386/freebsd64.h"
-	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 i[34567]86-*-netbsdelf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/netbsd-elf.h"
@@ -1228,13 +1202,12 @@ i[34567]86-*-netbsdelf*)
 x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
-	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
 	tm_file="i386/i386.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h i386/openbsd.h"
 	extra_options="${extra_options} openbsd.opt"
 	# needed to unconfuse gdb
-	tmake_file="${tmake_file} t-libc-ok t-openbsd i386/t-openbsd"
+	tmake_file="${tmake_file} t-openbsd i386/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
@@ -1306,10 +1279,6 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 		tm_file="$tm_file i386/gnu-user.h gnu.h i386/gnu.h"
 		;;
 	esac
-	tmake_file="${tmake_file} i386/t-crtstuff"
-	# This is a hack to avoid a configuration mismatch
-	# until the toplevel libgcc move is complete.
-	extra_parts="${extra_parts} crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h \
@@ -1327,7 +1296,7 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 		tm_file="${tm_file} knetbsd-gnu.h"
 		;;
 	esac
-	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff"
+	tmake_file="${tmake_file} i386/t-linux64"
 	x86_multilibs="${with_multilib_list}"
 	if test "$x86_multilibs" = "default"; then
 		x86_multilibs="m64,m32"
@@ -1357,8 +1326,7 @@ i[34567]86-pc-msdosdjgpp*)
 i[34567]86-*-lynxos*)
 	xm_defines=POSIX
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/lynx.h lynx.h"
-	tmake_file="${tmake_file} i386/t-crtstuff t-lynx"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	tmake_file="${tmake_file} t-lynx"
 	extra_options="${extra_options} lynx.opt"
 	thread_file=lynx
 	gnu_ld=yes
@@ -1547,19 +1515,16 @@ ia64*-*-elf*)
 	then
 		target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
 	fi
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
 ia64*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} ia64/sysv4.h ia64/freebsd.h"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	tmake_file="${tmake_file} ia64/t-ia64"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
 ia64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
 	tmake_file="${tmake_file} ia64/t-ia64 t-libunwind"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
 ia64*-*-hpux*)
 	tm_file="${tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/hpux.h"
@@ -1585,7 +1550,7 @@ ia64*-*-hpux*)
 ia64-hp-*vms*)
 	tm_file="${tm_file} elfos.h ia64/sysv4.h ia64/elf.h ia64/vms.h ia64/vms64.h"
 	xm_file="vms/xm-vms.h vms/xm-vms64.h"
-	tmake_file="${tmake_file} vms/t-vms64 ia64/t-ia64 ia64/t-vms"
+	tmake_file="${tmake_file} vms/t-vms64 ia64/t-ia64"
 	target_cpu_default="0"
 	if test x$gas = xyes
 	then
@@ -1614,16 +1579,13 @@ lm32-*-uclinux*)
         ;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	extra_parts="crtinit.o crtfini.o"
  	;;
 m32rle-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
-	extra_parts="crtinit.o crtfini.o m32rx/crtinit.o m32rx/crtfini.o"
 	;;
 m32r-*-rtems*)
 	tm_file="dbxelf.h elfos.h ${tm_file} m32r/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="m32r/t-m32r t-rtems"
-	extra_parts="crtinit.o crtfini.o"
  	;;
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
@@ -1673,7 +1635,6 @@ m68k-*-elf* | fido-*-elf*)
 		tmake_file="$tmake_file m68k/t-mlibs"
 		;;
 	esac
-	extra_parts="crtbegin.o crtend.o"
 	;;
 m68k*-*-netbsdelf*)
 	default_m68k_cpu=68020
@@ -1689,7 +1650,7 @@ m68k*-*-openbsd*)
 	tm_defines="${tm_defines} OBSD_OLD_GAS"
 	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h m68k/openbsd.h"
 	extra_options="${extra_options} openbsd.opt"
-	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
+	tmake_file="t-openbsd m68k/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
@@ -1703,7 +1664,7 @@ m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
  	tm_defines="${tm_defines} MOTOROLA=1"
 	tmake_file="m68k/t-floatlib m68k/t-uclinux m68k/t-mlibs"
 	;;
-m68k-*-linux*)		# Motorola m68k's running GNU/Linux
+m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
 	default_m68k_cpu=68020
@@ -1720,7 +1681,6 @@ m68k-*-rtems*)
 	tmake_file="m68k/t-floatlib m68k/t-m68kbare m68k/t-crtstuff t-rtems m68k/t-rtems m68k/t-mlibs"
 	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h m68k/rtemself.h rtems.h newlib-stdint.h"
 	tm_defines="${tm_defines} MOTOROLA=1"
-	extra_parts="crtbegin.o crtend.o"
 	;;
 mcore-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} mcore/mcore-elf.h"
@@ -1730,7 +1690,6 @@ mcore-*-elf)
 mep-*-*)
 	tm_file="dbxelf.h elfos.h ${tm_file}"
 	tmake_file=mep/t-mep
-	extra_parts="crtbegin.o crtend.o"
 	c_target_objs="mep-pragma.o"
 	cxx_target_objs="mep-pragma.o"
 	if test -d "${srcdir}/../newlib/libc/include" &&
@@ -1744,7 +1703,6 @@ microblaze*-linux*)
 	c_target_objs="${c_target_objs} microblaze-c.o"
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
 	tmake_file="${tmake_file} t-linux microblaze/t-microblaze"
-        extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o crtbeginT.o"
 	;;
 microblaze*-*-*)
         tm_file="${tm_file} dbxelf.h"
@@ -1794,7 +1752,6 @@ mips64*-*-linux* | mipsisa64*-*-linux*)
 			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
 			;;
 	esac
-	extra_parts="$extra_parts crtfastmath.o"
 	gnu_ld=yes
 	gas=yes
 	test x$with_llsc != x || with_llsc=yes
@@ -1813,7 +1770,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
         mipsisa32*)
 		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
         esac
-	extra_parts="$extra_parts crtfastmath.o"
 	test x$with_llsc != x || with_llsc=yes
 	;;
 mips*-*-openbsd*)
@@ -2113,7 +2069,6 @@ powerpc-*-lynxos*)
 	tm_file="${tm_file} dbxelf.h elfos.h rs6000/sysv4.h rs6000/lynx.h lynx.h"
 	tmake_file="t-lynx rs6000/t-lynx"
 	extra_options="${extra_options} rs6000/sysv4.opt lynx.opt"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	thread_file=lynx
 	gnu_ld=yes
 	gas=yes
@@ -2205,7 +2160,6 @@ s390x-ibm-tpf*)
         md_file=s390/s390.md
         extra_modes=s390/s390-modes.def
         out_file=s390/s390.c
-        extra_parts="crtbeginS.o crtendS.o"
         thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
 	;;
@@ -2213,13 +2167,11 @@ score-*-elf)
 	gas=yes
 	gnu_ld=yes
         tm_file="dbxelf.h elfos.h score/elf.h score/score.h newlib-stdint.h"
-	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
-        tmake_file="${tmake_file} score/t-score-elf"
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
-   sh64-*-netbsd* | sh64l*-*-netbsd*)
+  sh64-*-netbsd* | sh64l*-*-netbsd*)
 	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
 	if test x${with_endian} = x; then
 		case ${target} in
@@ -2260,7 +2212,6 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
                         fi
 			tm_file="${tm_file} sh/embed-elf.h"
 			tm_file="${tm_file} sh/superh.h"
-			tmake_file="${tmake_file} sh/t-superh"
 			extra_options="${extra_options} sh/superh.opt" ;;
 	*)		if test x$with_newlib = xyes \
 			   && test x$with_libgloss = xyes; then
@@ -2281,7 +2232,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
                 tmake_file="${tmake_file} sh/t-netbsd"
 		;;
 	sh64*-*-linux*)
-		tmake_file="${tmake_file} sh/t-sh64 sh/t-linux64"
+		tmake_file="${tmake_file} sh/t-sh64"
 		tm_file="${tm_file} sh/sh64.h"
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
 		;;
@@ -2395,11 +2346,11 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	tmake_file="$tmake_file t-sysroot-suffix"
 	;;
 sh-*-rtems*)
-	tmake_file="sh/t-sh sh/t-elf t-rtems sh/t-rtems"
+	tmake_file="sh/t-sh t-rtems sh/t-rtems"
 	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h newlib-stdint.h"
 	;;
 sh-wrs-vxworks)
-	tmake_file="$tmake_file sh/t-sh sh/t-elf sh/t-vxworks"
+	tmake_file="$tmake_file sh/t-sh sh/t-vxworks"
 	tm_file="${tm_file} elfos.h sh/elf.h sh/embed-elf.h vx-common.h vxworks.h sh/vxworks.h"
 	;;
 sparc-*-elf*)
@@ -2440,7 +2391,6 @@ sparc-*-linux*)
 	else
 		tm_file="${tm_file} sparc/linux.h"
 	fi
-	extra_parts="${extra_parts} crtfastmath.o"
 	;;
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
@@ -2478,7 +2428,6 @@ sparc64-*-linux*)
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux64"
-	extra_parts="${extra_parts} crtfastmath.o"
 	;;
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/freebsd.h"
@@ -2488,7 +2437,6 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 		x) with_cpu=ultrasparc ;;
 		*) echo "$with_cpu not supported for freebsd target"; exit 1 ;;
 	esac
-	extra_parts="${extra_parts} crtfastmath.o"
 	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc64-*-netbsd*)
@@ -2582,7 +2530,6 @@ xstormy16-*-elf)
 	out_file=stormy16/stormy16.c
 	extra_options=stormy16/stormy16.opt
 	tmake_file="stormy16/t-stormy16"
-	extra_parts="crtbegin.o crtend.o"
 	;;
 xtensa*-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h xtensa/elf.h"
@@ -2591,12 +2538,11 @@ xtensa*-*-elf*)
 	;;
 xtensa*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
-	tmake_file="${tmake_file} xtensa/t-xtensa xtensa/t-linux"
+	tmake_file="${tmake_file} xtensa/t-xtensa"
 	;;
 am33_2.0-*-linux*)
 	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
 	gas=yes gnu_ld=yes
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	use_collect2=no
 	;;
 m32c-*-rtems*)

@@ -22,7 +22,6 @@ LIB1ASMSRC = bfin/lib1funcs.asm
 LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _muldi3 _umulsi3_highpart
 LIB1ASMFUNCS += _smulsi3_highpart
 
-CRTSTUFF_T_CFLAGS = -fpic
 TARGET_LIBGCC2_CFLAGS = -fpic
 
 MULTILIB_OPTIONS=mcpu=bf532-none
@@ -48,8 +47,6 @@ MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf549-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf549m-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf561-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf592-none
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o
 
 # This rule uses MULTILIB_MATCHES to generate a definition of
 # SYSROOT_SUFFIX_SPEC.

@@ -1,0 +1,2 @@
+CRTSTUFF_T_CFLAGS = `if test x$$($(CC) -print-multi-os-directory) \
+			= x../lib64; then echo -mcmodel=medany; fi`

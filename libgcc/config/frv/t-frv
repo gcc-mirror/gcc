@@ -1,0 +1,9 @@
+# Compile two additional files that are linked with every program
+# linked using GCC on systems using COFF or ELF, for the sake of C++
+# constructors.
+
+frvbegin$(objext): $(srcdir)/config/frv/frvbegin.c
+	$(gcc_compile) -c $<
+
+frvend$(objext): $(srcdir)/config/frv/frvend.c
+	$(gcc_compile) -c $<

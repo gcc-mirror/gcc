@@ -20,10 +20,16 @@
 gmon.o:	$(srcdir)/config/gmon-sol2.c
 	$(gcc_compile) -c $<
 
+CUSTOM_CRTIN = yes
+
 # Assemble startup files.
 crt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
 	$(crt_compile) -c $<
 gcrt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
 	$(crt_compile) -c -DGCRT1 $<
+crti.o: $(srcdir)/config/$(cpu_type)/sol2-ci.S
+	$(crt_compile) -c $<
+crtn.o: $(srcdir)/config/$(cpu_type)/sol2-cn.S
+	$(crt_compile) -c $<
 
 HOST_LIBGCC2_CFLAGS = -fPIC

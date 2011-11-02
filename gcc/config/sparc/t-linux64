@@ -1,5 +1,5 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004,
-# 2006, 2010 Free Software Foundation, Inc.
+# 2006, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -30,7 +30,3 @@ MULTILIB_OSDIRNAMES = ../lib64 $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR)
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-CRTSTUFF_T_CFLAGS = `if test x$$($(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) \
-				 -print-multi-os-directory) \
-			= x../lib64; then echo -mcmodel=medany; fi`
