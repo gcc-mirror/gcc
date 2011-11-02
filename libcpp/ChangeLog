@@ -1,3 +1,8 @@
+2011-11-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50810
+	* configure.ac: Add -Wno-narrowing to warning options.
+
 2011-10-31  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/1773

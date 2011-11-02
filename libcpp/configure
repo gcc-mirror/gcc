@@ -4687,7 +4687,7 @@ test -n "$AUTOHEADER" || AUTOHEADER="$MISSING autoheader"
 
 warn=
 save_CFLAGS="$CFLAGS"
-for option in -W -Wall -Wwrite-strings \
+for option in -W -Wall -Wno-narrowing -Wwrite-strings \
 			  -Wmissing-format-attribute; do
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 

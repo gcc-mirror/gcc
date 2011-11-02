@@ -6394,11 +6394,12 @@ fi
 # * 'long long'
 # * variadic macros
 # * overlong strings
+# * C++11 narrowing conversions in { }
 # So, we only use -pedantic if we can disable those warnings.
 
 loose_warn=
 save_CFLAGS="$CFLAGS"
-for option in -W -Wall -Wwrite-strings -Wcast-qual; do
+for option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5

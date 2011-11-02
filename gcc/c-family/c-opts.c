@@ -406,6 +406,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	  warn_reorder = value;
           warn_cxx0x_compat = value;
           warn_delnonvdtor = value;
+	  warn_narrowing = value;
 	}
 
       cpp_opts->warn_trigraphs = value;
@@ -434,6 +435,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       if (warn_jump_misses_init == -1 && value)
 	warn_jump_misses_init = value;
       cpp_opts->warn_cxx_operator_names = value;
+      break;
+
+    case OPT_Wc__0x_compat:
+      warn_narrowing = value;
       break;
 
     case OPT_Wdeprecated:
@@ -997,10 +1002,17 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_function_declaration == -1)
     warn_implicit_function_declaration = flag_isoc99;
 
-  /* If we're allowing C++0x constructs, don't warn about C++0x
-     compatibility problems.  */
   if (cxx_dialect == cxx0x)
-    warn_cxx0x_compat = 0;
+    {
+      /* If we're allowing C++0x constructs, don't warn about C++98
+	 identifiers which are keywords in C++0x.  */
+      warn_cxx0x_compat = 0;
+
+      if (warn_narrowing == -1)
+	warn_narrowing = 1;
+    }
+  else if (warn_narrowing == -1)
+    warn_narrowing = 0;
 
   if (flag_preprocess_only)
     {
