@@ -955,6 +955,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_storage(__future_base::_S_allocate_result<_Res>(__a))
         { }
 
+      template<typename _Allocator>
+        promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
+        : _M_future(std::move(__rhs._M_future)),
+	  _M_storage(std::move(__rhs._M_storage))
+        { }
+
       promise(const promise&) = delete;
 
       ~promise()
@@ -1047,6 +1053,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_storage(__future_base::_S_allocate_result<_Res&>(__a))
         { }
 
+      template<typename _Allocator>
+        promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
+        : _M_future(std::move(__rhs._M_future)),
+	  _M_storage(std::move(__rhs._M_storage))
+        { }
+
       promise(const promise&) = delete;
 
       ~promise()
@@ -1120,6 +1132,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         promise(allocator_arg_t, const _Allocator& __a)
         : _M_future(std::allocate_shared<_State>(__a)),
 	  _M_storage(__future_base::_S_allocate_result<void>(__a))
+        { }
+
+      template<typename _Allocator>
+        promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
+        : _M_future(std::move(__rhs._M_future)),
+	  _M_storage(std::move(__rhs._M_storage))
         { }
 
       promise(const promise&) = delete;
@@ -1270,6 +1288,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { return std::forward<_Tp>(__t); }
     };
 
+  template<typename _Task, typename _Fn, bool
+           = is_same<_Task, typename remove_reference<_Fn>::type>::value>
+    struct __is_same_pkgdtask
+    { typedef void __type; };
+
+  template<typename _Task, typename _Fn>
+    struct __is_same_pkgdtask<_Task, _Fn, true>
+    { };
+
   /// packaged_task
   template<typename _Res, typename... _ArgTypes>
     class packaged_task<_Res(_ArgTypes...)>
@@ -1281,13 +1308,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Construction and destruction
       packaged_task() noexcept { }
 
-      template<typename _Fn>
+      template<typename _Allocator>
+        explicit
+        packaged_task(allocator_arg_t, const _Allocator& __a) noexcept
+        { }
+
+      template<typename _Fn, typename = typename
+               __is_same_pkgdtask<packaged_task, _Fn>::__type>
         explicit
         packaged_task(_Fn&& __fn)
         : _M_state(std::make_shared<_State_type>(std::forward<_Fn>(__fn)))
         { }
 
-      template<typename _Fn, typename _Allocator>
+      template<typename _Fn, typename _Allocator, typename = typename
+               __is_same_pkgdtask<packaged_task, _Fn>::__type>
         explicit
         packaged_task(allocator_arg_t, const _Allocator& __a, _Fn&& __fn)
         : _M_state(std::allocate_shared<_State_type>(__a,
@@ -1301,12 +1335,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // No copy
-      packaged_task(packaged_task&) = delete;
-      packaged_task& operator=(packaged_task&) = delete;
+      packaged_task(const packaged_task&) = delete;
+      packaged_task& operator=(const packaged_task&) = delete;
+
+      template<typename _Allocator>
+        explicit
+        packaged_task(allocator_arg_t, const _Allocator&,
+                      const packaged_task&) = delete;
 
       // Move support
       packaged_task(packaged_task&& __other) noexcept
       { this->swap(__other); }
+
+      template<typename _Allocator>
+        explicit
+        packaged_task(allocator_arg_t, const _Allocator&,
+                      packaged_task&& __other) noexcept
+        { this->swap(__other); }
 
       packaged_task& operator=(packaged_task&& __other) noexcept
       {
