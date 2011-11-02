@@ -744,7 +744,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
               /* Warn about the C++0x keyword (but still treat it as
                  an identifier).  */
               warning (OPT_Wc__0x_compat, 
-                       "identifier %qE will become a keyword in C++0x",
+                       "identifier %qE is a keyword in C++11",
                        token->u.value);
 
               /* Clear out the C_RID_CODE so we don't warn about this
@@ -7198,8 +7198,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
           && !parser->greater_than_is_operator_p)
         {
           if (warning_at (token->location, OPT_Wc__0x_compat, 
-			  "%<>>%> operator will be treated as"
-			  " two right angle brackets in C++0x"))
+			  "%<>>%> operator is treated as"
+			  " two right angle brackets in C++11"))
 	    inform (token->location,
 		    "suggest parentheses around %<>>%> expression");
         }
@@ -10528,7 +10528,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
               /* Complain about `auto' as a storage specifier, if
                  we're complaining about C++0x compatibility.  */
               warning_at (token->location, OPT_Wc__0x_compat, "%<auto%>"
-			  " will change meaning in C++0x; please remove it");
+			  " changes meaning in C++11; please remove it");
 
               /* Set the storage class anyway.  */
               cp_parser_set_storage_class (parser, decl_specs, RID_AUTO,
