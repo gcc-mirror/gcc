@@ -4,7 +4,7 @@
 	* gcc.target/i386/avx2-cvt-2.c (dg-options): Ditto.
 	* gcc.target/i386/sse2-cvt-2.c (dg-options): Ditto.
 
-	* gcc.target/i386/vectorize4-avx.c (dg-final): Remove xfail *-*-*.
+	* gcc.target/i386/vectorize4-avx.c (scan-assembler): Remove xfail.
 
 2011-11-02  Richard Guenther  <rguenther@suse.de>
 
