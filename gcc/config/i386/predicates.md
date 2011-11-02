@@ -1162,7 +1162,7 @@
 
 ;; Return true if OP is a binary operator that can be promoted to wider mode.
 (define_predicate "promotable_binary_operator"
-  (ior (match_code "plus,and,ior,xor,ashift")
+  (ior (match_code "plus,minus,and,ior,xor,ashift")
        (and (match_code "mult")
 	    (match_test "TARGET_TUNE_PROMOTE_HIMODE_IMUL"))))
 

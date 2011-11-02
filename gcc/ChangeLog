@@ -1,3 +1,8 @@
+2011-11-02  Teresa Johnson  <tejohnson@google.com>
+
+	* config/i386/predicates.md (promotable_binary_operator): Add minus
+	to the list of promotable operators.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gthr-single.h, gthr.h: Move to ../libgcc.
