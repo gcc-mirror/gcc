@@ -1,3 +1,32 @@
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50951
+	* include/bits/random.tcc (operator<<(basic_ostream<>&,
+	const mersenne_twister_engine<>&): Output _M_p too.
+	(operator<<(basic_ostream<>&, const
+	subtract_with_carry_engine<>&): Likewise.
+	(operator>>(basic_istream<>&, mersenne_twister_engine<>&):
+	Reload it.
+	(operator>>(basic_istream<>&, subtract_with_carry_engine<>&):
+	Likewise.
+	* include/bits/random.h (mersenne_twister_engine<>::operator==):
+	Compare _M_p too.
+	(subtract_with_carry_engine<>::operator==): Compare _M_carry
+	and _M_p too.
+	(shuffle_order_engine<>::operator==): Compare _M_v(s) and _M_y too.
+	* testsuite/26_numerics/random/independent_bits_engine/
+	operators/serialize.cc: Extend.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	operators/serialize.cc: Likewise.
+
 2011-11-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config: Add tr2 to versioned namespaces.
