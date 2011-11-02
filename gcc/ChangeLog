@@ -1,3 +1,9 @@
+2011-11-02  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* cfgcleanup.c (try_head_merge_bb): If get_condition returns
+	NULL for a jump that is a cc0 insn, pick the previous insn for
+	move_before.
+
 2011-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (splitters for int-float conversion): Use

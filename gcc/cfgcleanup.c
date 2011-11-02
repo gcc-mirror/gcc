@@ -1969,7 +1969,14 @@ try_head_merge_bb (basic_block bb)
 
   cond = get_condition (jump, &move_before, true, false);
   if (cond == NULL_RTX)
-    move_before = jump;
+    {
+#ifdef HAVE_cc0
+      if (reg_mentioned_p (cc0_rtx, jump))
+	move_before = prev_nonnote_nondebug_insn (jump);
+      else
+#endif
+	move_before = jump;
+    }
 
   for (ix = 0; ix < nedges; ix++)
     if (EDGE_SUCC (bb, ix)->dest == EXIT_BLOCK_PTR)
@@ -2131,7 +2138,14 @@ try_head_merge_bb (basic_block bb)
       jump = BB_END (final_dest_bb);
       cond = get_condition (jump, &move_before, true, false);
       if (cond == NULL_RTX)
-	move_before = jump;
+	{
+#ifdef HAVE_cc0
+	  if (reg_mentioned_p (cc0_rtx, jump))
+	    move_before = prev_nonnote_nondebug_insn (jump);
+	  else
+#endif
+	    move_before = jump;
+	}
     }
 
   do

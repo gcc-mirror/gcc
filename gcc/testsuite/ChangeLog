@@ -1,3 +1,7 @@
+2011-11-02  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/compile/20110907.c: New file.
+
 2011-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50901
