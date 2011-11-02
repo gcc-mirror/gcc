@@ -20,7 +20,6 @@
 # Create target-specific versions of the libraries
 MULTILIB_OPTIONS  = mv850/mv850e/mv850e2/mv850e2v3
 MULTILIB_DIRNAMES = v850 v850e v850e2 v850e2v3
-INSTALL_LIBGCC    = install-multilib
 MULTILIB_MATCHES  = mv850e=mv850e1 
 
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow

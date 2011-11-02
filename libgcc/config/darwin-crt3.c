@@ -1,5 +1,5 @@
 /* __cxa_atexit backwards-compatibility support for Darwin.
-   Copyright (C) 2006, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,10 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Don't do anything if we are compiling for a kext multilib. */
 #ifdef __PIC__
-
-/* It is incorrect to include config.h here, because this file is being
-   compiled for the target, and hence definitions concerning only the host
-   do not apply.  */
 
 #include "tconfig.h"
 #include "tsystem.h"

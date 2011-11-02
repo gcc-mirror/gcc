@@ -19,17 +19,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA += tramp.S
-
-# These can't end up in shared libgcc
-LIB2FUNCS_STATIC_EXTRA = eabi.S
-
-eabi.S: $(srcdir)/config/rs6000/eabi.asm
-	cat $(srcdir)/config/rs6000/eabi.asm > eabi.S
-
-tramp.S: $(srcdir)/config/rs6000/tramp.asm
-	cat $(srcdir)/config/rs6000/tramp.asm > tramp.S
-
 # Switch synonyms
 MULTILIB_MATCHES_ENDIAN	= mlittle=mlittle-endian mbig=mbig-endian
 MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi mcall-sysv=mcall-linux mcall-sysv=mcall-netbsd

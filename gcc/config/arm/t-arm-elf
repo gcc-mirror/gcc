@@ -89,11 +89,3 @@ MULTILIB_EXCEPTIONS    += *mthumb/*mfloat-abi=hard*
 # MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm600
 # MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm610
 # MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm620
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
-# Currently there is a bug somewhere in GCC's alias analysis
-# or scheduling code that is breaking _fpmul_parts in fp-bit.c.
-# Disabling function inlining is a workaround for this problem.
-TARGET_LIBGCC2_CFLAGS = -fno-inline

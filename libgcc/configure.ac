@@ -6,6 +6,7 @@ sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
 sinclude(../config/lib-ld.m4)
 sinclude(../config/override.m4)
+sinclude(../config/picflag.m4)
 sinclude(../config/dfp.m4)
 sinclude(../config/unwind_ipinfo.m4)
 
@@ -57,6 +58,9 @@ AC_ARG_ENABLE(shared,
   esac
 ], [enable_shared=yes])
 AC_SUBST(enable_shared)
+
+GCC_PICFLAG
+AC_SUBST(PICFLAG)
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,

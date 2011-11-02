@@ -37,6 +37,3 @@ MULTILIB_DIRNAMES   = $(patsubst m%, %, $(subst /, ,$(MULTILIB_OPTIONS)))
 MULTILIB_OSDIRNAMES = m64=../lib64
 MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
 MULTILIB_OSDIRNAMES+= mx32=../libx32
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

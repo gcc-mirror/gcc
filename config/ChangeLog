@@ -1,3 +1,7 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* mh-interix (LIBGCC2_DEBUG_CFLAGS): Remove.
+
 2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* picflag.m4: New file.

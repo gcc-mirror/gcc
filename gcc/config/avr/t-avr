@@ -39,14 +39,6 @@ $(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh \
 	$(SHELL) $(srcdir)/config/avr/genopt.sh $(srcdir)/config/avr > \
 		$(srcdir)/config/avr/avr-tables.opt
 
-LIB2FUNCS_EXCLUDE = \
-	_clz
-
-# We do not have the DF type.
-# Most of the C functions in libgcc2 use almost all registers,
-# so use -mcall-prologues for smaller code size.
-TARGET_LIBGCC2_CFLAGS = -DDF=SF -Dinhibit_libc -mcall-prologues -Os
-
 MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6
 MULTILIB_DIRNAMES = avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6
 
@@ -195,6 +187,3 @@ MULTILIB_MATCHES = \
 	mmcu?avr6=mmcu?atmega2561
 
 MULTILIB_EXCEPTIONS =
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

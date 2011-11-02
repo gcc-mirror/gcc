@@ -1,5 +1,7 @@
 # Use the system libunwind library.
 
+HOST_LIBGCC2_CFLAGS += -DUSE_GAS_SYMVER
+
 LIB2ADDEH = $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c \
   $(srcdir)/unwind-compat.c $(srcdir)/unwind-dw2-fde-compat.c
 LIB2ADDEHSTATIC = $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c

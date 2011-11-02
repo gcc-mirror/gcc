@@ -1,3 +1,8 @@
+# If we are building next to winsup, this will let us find the real
+# limits.h when building libgcc2.  Otherwise, winsup must be installed
+# first.
+LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/w32api/include
+
 CUSTOM_CRTSTUFF = yes
 
 crtbegin.o: $(srcdir)/config/i386/cygming-crtbegin.c

@@ -1,4 +1,2 @@
-CRTSTUFF_T_CFLAGS_S = $(HOST_LIBGCC2_CFLAGS)
-
 # Override t-linux default.
 SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/cris/libgcc-glibc.ver

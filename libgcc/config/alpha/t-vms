@@ -5,3 +5,5 @@ vms-dwarf2.o: $(srcdir)/config/alpha/vms-dwarf2.S
 
 vms-dwarf2eh.o: $(srcdir)/config/alpha/vms-dwarf2eh.S
 	$(gcc_compile) -c -x assembler-with-cpp $<
+
+LIB2ADD += $(srcdir)/config/alpha/vms-gcc_shell_handler.c

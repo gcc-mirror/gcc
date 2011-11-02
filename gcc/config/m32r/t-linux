@@ -16,10 +16,5 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Turn off the SDA while compiling libgcc2.  There are no headers for it
-# and we want maximal upward compatibility here.
-
-TARGET_LIBGCC2_CFLAGS = -G 0 -fPIC
-
 # Don't install "assert.h" in gcc. We use the one in glibc.
 INSTALL_ASSERT_H =

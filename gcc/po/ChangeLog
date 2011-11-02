@@ -1,5 +1,10 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* EXCLUDES (config/vxlib.c, gbl-ctors.h, libgcc2.c, libgcc2.h)
+	(longlong.h): Remove.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* EXCLUDES (crtstuff.c): Remove.
 
 2011-10-30  Joseph Myers  <joseph@codesourcery.com>

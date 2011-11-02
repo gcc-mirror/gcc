@@ -17,6 +17,4 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA = $(srcdir)/config/xtensa/lib2funcs.S
-
 $(out_object_file): gt-xtensa.h

@@ -19,6 +19,3 @@
 
 MULTILIB_OPTIONS = mam33/mam33-2/mam34
 MULTILIB_DIRNAMES = am33 am33-2 am34
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

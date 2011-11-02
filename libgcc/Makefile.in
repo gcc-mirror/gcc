@@ -22,7 +22,6 @@
 libgcc_topdir = @libgcc_topdir@
 host_subdir = @host_subdir@
 
-gcc_srcdir = $(libgcc_topdir)/gcc
 gcc_objdir = $(MULTIBUILDTOP)../../$(host_subdir)/gcc
 
 srcdir = @srcdir@
@@ -220,6 +219,42 @@ else
 DECNUMINC =
 endif
 
+# Options to use when compiling libgcc2.a.
+#
+LIBGCC2_DEBUG_CFLAGS = -g
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
+		 $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) \
+		 -DIN_LIBGCC2 \
+		 -fbuilding-libgcc -fno-stack-protector \
+		 $(INHIBIT_LIBC_CFLAGS)
+
+# Additional options to use when compiling libgcc2.a.
+# Some targets override this to -isystem include
+LIBGCC2_INCLUDES =
+
+# Additional target-dependent options for compiling libgcc2.a.
+HOST_LIBGCC2_CFLAGS =
+
+PICFLAG = @PICFLAG@
+
+# Defined in libgcc2.c, included only in the static library.
+LIB2FUNCS_ST = _eprintf __gcc_bcmp
+
+# List of functions not to build from libgcc2.c.
+LIB2FUNCS_EXCLUDE =
+
+# These might cause a divide overflow trap and so are compiled with
+# unwinder info.
+LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
+
+# List of extra C and assembler files to add to static and shared libgcc2.
+# Assembler files should have names ending in `.S'.
+LIB2ADD = 
+
+# List of extra C and assembler files to add to static libgcc2.
+# Assembler files should have names ending in `.S'.
+LIB2ADD_ST =
+
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
 # so that *config.h will be found in the compilation
@@ -416,15 +451,14 @@ endif
 
 # Build lib2funcs.  For the static library also include LIB2FUNCS_ST.
 lib2funcs-o = $(patsubst %,%$(objext),$(lib2funcs) $(LIB2FUNCS_ST))
-$(lib2funcs-o): %$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c \
-	  $(vis_hide)
+$(lib2funcs-o): %$(objext): $(srcdir)/libgcc2.c
+	$(gcc_compile) -DL$* -c $< $(vis_hide)
 libgcc-objects += $(lib2funcs-o)
 
 ifeq ($(enable_shared),yes)
 lib2funcs-s-o = $(patsubst %,%_s$(objext),$(lib2funcs))
-$(lib2funcs-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_s_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c
+$(lib2funcs-s-o): %_s$(objext): $(srcdir)/libgcc2.c
+	$(gcc_s_compile) -DL$* -c $<
 libgcc-s-objects += $(lib2funcs-s-o)
 endif
 
@@ -452,15 +486,15 @@ endif
 
 # Build LIB2_DIVMOD_FUNCS.
 lib2-divmod-o = $(patsubst %,%$(objext),$(LIB2_DIVMOD_FUNCS))
-$(lib2-divmod-o): %$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c \
+$(lib2-divmod-o): %$(objext): $(srcdir)/libgcc2.c
+	$(gcc_compile) -DL$* -c $< \
 	  -fexceptions -fnon-call-exceptions $(vis_hide)
 libgcc-objects += $(lib2-divmod-o)
 
 ifeq ($(enable_shared),yes)
 lib2-divmod-s-o = $(patsubst %,%_s$(objext),$(LIB2_DIVMOD_FUNCS))
-$(lib2-divmod-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_s_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c \
+$(lib2-divmod-s-o): %_s$(objext): $(srcdir)/libgcc2.c
+	$(gcc_s_compile) -DL$* -c $< \
 	  -fexceptions -fnon-call-exceptions
 libgcc-s-objects += $(lib2-divmod-s-o)
 endif
@@ -1027,11 +1061,3 @@ install-strip: install
 .NOEXPORT:
 
 include $(srcdir)/empty.mk $(wildcard *.dep)
-
-# TODO QUEUE:
-#   Garbage collect in gcc/:
-#     $(LIBGCC) settings in t-* are now unused
-#
-#   Remove use of $(gcc_srcdir).  Source files referenced using $(gcc_srcdir)
-#   should move into the libgcc directory.
-

@@ -2,4 +2,4 @@
 HOST_LIBGCC2_CFLAGS += -pthread
 
 # Provide dummy POSIX threads functions
-LIB2ADD += $(gcc_srcdir)/gthr-posix.c
+LIB2ADD += $(srcdir)/config/alpha/gthr-posix.c

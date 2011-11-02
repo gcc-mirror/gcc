@@ -25,6 +25,3 @@ MULTILIB_OPTIONS	= pthread maix64
 MULTILIB_DIRNAMES	= pthread ppc64
 
 MULTILIB_MATCHES	= 
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

@@ -1,0 +1,3 @@
+LIB2_SIDITI_CONV_FUNCS = yes
+LIB2ADD = $(srcdir)/config/darwin-64.c
+LIB2FUNCS_EXCLUDE = _fixtfdi _fixunstfdi _floatditf _floatunditf

@@ -16,25 +16,17 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# could use -msifilter to be safe from interrupt/jmp interactions and others.
-TARGET_LIBGCC2_CFLAGS=-O3 -DNO_FLOATLIB_FIXUNSDFSI #-msifilter
-
 # We have values for float.h.
 CROSS_FLOAT_H = $(srcdir)/config/mcore/gfloat.h
 
 # If support for -m4align is ever re-enabled then comment out the
-# following line and uncomment the mutlilib lines below.
+# following line and uncomment the multilib lines below.
 
 # MULTILIB_OPTIONS     = m8align/m4align
 # MULTILIB_DIRNAMES    = align8 align4
 # MULTILIB_MATCHES     = 
 # MULTILIB_EXTRA_OPTS  = 
 # MULTILIB_EXCEPTIONS  =
-# LIBGCC               = stmp-multilib
-# INSTALL_LIBGCC       = install-multilib
 
 MULTILIB_OPTIONS     = mbig-endian/mlittle-endian m210/m340
 MULTILIB_DIRNAMES    = big little m210 m340
-
-LIBGCC               = stmp-multilib
-INSTALL_LIBGCC       = install-multilib

@@ -7,7 +7,7 @@
 # We must also enable optimization to avoid having any code appear after
 # the call & alignment statement, but before we switch back to the
 # .text section.
-CRTSTUFF_T_CFLAGS = -fPIC -O2
+CRTSTUFF_T_CFLAGS = $(PICFLAG) -O2
 
 # Add support for the introduction of 128-bit long double.
 SHLIB_MAPFILES += $(srcdir)/config/i386/libgcc-sol2.ver

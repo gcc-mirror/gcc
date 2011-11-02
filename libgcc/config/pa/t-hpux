@@ -1,0 +1,3 @@
+LIB2ADD = $(srcdir)/config/pa/lib2funcs.S $(srcdir)/config/pa/quadlib.c
+
+HOST_LIBGCC2_CFLAGS += -frandom-seed=fixed-seed

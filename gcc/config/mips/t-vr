@@ -16,17 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# BEGIN boiler-plate MIPS stuff
-
-# We must build libgcc2.a with -G 0, in case the user wants to link
-# without the $gp register.
-TARGET_LIBGCC2_CFLAGS = -G 0
-
-LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/mips/mips16.S \
-			 $(srcdir)/config/mips/vr4120-div.S
-
-# END boiler-plate
-
 # Main multilibs
 # --------------
 #

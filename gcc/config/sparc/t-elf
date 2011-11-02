@@ -20,6 +20,3 @@
 MULTILIB_OPTIONS = msoft-float mcpu=v8 mflat
 MULTILIB_DIRNAMES = soft v8 flat
 MULTILIB_MATCHES = msoft-float=mno-fpu
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

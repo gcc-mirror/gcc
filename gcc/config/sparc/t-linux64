@@ -27,6 +27,3 @@
 MULTILIB_OPTIONS = m64/m32
 MULTILIB_DIRNAMES = 64 32
 MULTILIB_OSDIRNAMES = ../lib64 $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

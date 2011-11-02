@@ -17,15 +17,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# We must build libgcc2.a with -G 0, in case the user wants to link
-# without the $gp register.
-TARGET_LIBGCC2_CFLAGS = -G 0
-
 # Build the libraries for both hard and soft floating point
 
 MULTILIB_OPTIONS = msoft-float EL/EB
 MULTILIB_DIRNAMES = soft-float el eb
 MULTILIB_MATCHES = EL=mel EB=meb
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

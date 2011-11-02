@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2005, 2006, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2005, 2006, 2008, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -33,6 +33,3 @@ MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
 MULTILIB_OPTIONS = msoft-float
 MULTILIB_DIRNAMES = soft-float
 MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

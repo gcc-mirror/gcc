@@ -17,10 +17,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA = $(srcdir)/config/alpha/vms-gcc_shell_handler.c
-
 MULTILIB_OPTIONS = mcpu=ev6
 MULTILIB_DIRNAMES = ev6
 MULTILIB_OSDIRNAMES = ev6
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
