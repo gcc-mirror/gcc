@@ -33,7 +33,3 @@ MULTILIB_EXCLUSIONS += !mips32/!mips32r2/mips16
 else
 MULTILIB_EXCLUSIONS += mips64/mips16 mips64r2/mips16
 endif
-
-# Build the multilibs.
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

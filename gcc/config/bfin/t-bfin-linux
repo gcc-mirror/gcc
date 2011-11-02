@@ -18,8 +18,6 @@
 
 ## Target part of the Makefile
 
-TARGET_LIBGCC2_CFLAGS = -fpic
-
 MULTILIB_OPTIONS=mcpu=bf532-none
 MULTILIB_DIRNAMES=bf532-none
 

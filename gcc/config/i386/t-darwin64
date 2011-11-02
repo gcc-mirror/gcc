@@ -1,8 +1,2 @@
-LIB2_SIDITI_CONV_FUNCS=yes
-LIB2FUNCS_EXTRA = $(srcdir)/config/darwin-64.c
-
 MULTILIB_OPTIONS = m32
 MULTILIB_DIRNAMES = i386
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

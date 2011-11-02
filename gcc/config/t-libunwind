@@ -19,4 +19,3 @@
 # Use the system libunwind library.
 
 T_CFLAGS += -DUSE_LIBUNWIND_EXCEPTIONS
-TARGET_LIBGCC2_CFLAGS += -DUSE_GAS_SYMVER

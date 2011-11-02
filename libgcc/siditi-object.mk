@@ -11,12 +11,12 @@ iter-labels := $(wordlist 2,$(words $(iter-labels)),$(iter-labels))
 $o-size := $(firstword $(iter-sizes))
 iter-sizes := $(wordlist 2,$(words $(iter-sizes)),$(iter-sizes))
 
-$o$(objext): %$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_compile) -DL$($*-label) -c $(gcc_srcdir)/libgcc2.c $(vis_hide) \
+$o$(objext): %$(objext): $(srcdir)/libgcc2.c
+	$(gcc_compile) -DL$($*-label) -c $< $(vis_hide) \
 		-DLIBGCC2_UNITS_PER_WORD=$($*-size)
 
 ifeq ($(enable_shared),yes)
-$(o)_s$(objext): %_s$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_s_compile) -DL$($*-label) -c $(gcc_srcdir)/libgcc2.c \
+$(o)_s$(objext): %_s$(objext): $(srcdir)/libgcc2.c
+	$(gcc_s_compile) -DL$($*-label) -c $< \
 		-DLIBGCC2_UNITS_PER_WORD=$($*-size)
 endif

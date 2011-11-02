@@ -3,4 +3,7 @@
 # to 80 bit conversions and were done for Linux backwards compatibility.
 LIB1ASMFUNCS := $(filter-out _fixtfdi _fixunstfdi _floatditf,$(LIB1ASMFUNCS))
 
+# Support routines for HP-UX 128 bit floats.
+LIB2ADD = $(srcdir)/config/ia64/quadlib.c $(srcdir)/floatunsitf.c
+
 LIB2ADDEH = $(srcdir)/unwind-c.c

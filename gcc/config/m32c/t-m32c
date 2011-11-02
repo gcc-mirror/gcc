@@ -19,8 +19,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA = $(srcdir)/config/m32c/m32c-lib2.c $(srcdir)/config/m32c/m32c-lib2-trapv.c
-
 # target-specific files
 
 md_file = md

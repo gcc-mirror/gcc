@@ -17,31 +17,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Build libgcc using the multilib mechanism
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
-# No special flags needed for libgcc.a
-TARGET_LIBGCC2_CFLAGS =
-
-# Don't build libgcc.a with debug info
-LIBGCC2_DEBUG_CFLAGS =
-
-# Extra libgcc2 modules used by gthr-vxworks.h functions
-LIB2FUNCS_EXTRA = $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
-
 # Some runtime modules need these.  Can't set extra_headers in config.gcc
 # because the paths are always made absolute to the cpu config dir.
 EXTRA_HEADERS += $(srcdir)/gthr-vxworks.h gthr-default.h
-
-# This ensures that the correct target headers are used; some
-# VxWorks system headers have names that collide with GCC's
-# internal (host) headers, e.g. regs.h.
-LIBGCC2_INCLUDES = -nostdinc -I \
-  `case "/$$(MULTIDIR)" in \
-     */mrtp*) echo $(WIND_USR)/h ;; \
-     *) echo $(WIND_BASE)/target/h ;; \
-   esac`
 
 # Both the kernel and RTP headers provide limits.h.
 LIMITS_H_TEST = true

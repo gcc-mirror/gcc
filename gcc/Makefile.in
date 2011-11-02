@@ -671,22 +671,6 @@ ifeq ($(inhibit_libc),true)
 INHIBIT_LIBC_CFLAGS = -Dinhibit_libc
 endif
 
-# Options to use when compiling libgcc2.a.
-#
-LIBGCC2_DEBUG_CFLAGS = -g
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(INCLUDES_FOR_TARGET) $(GCC_CFLAGS) \
-		 $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) \
-		 $(GTHREAD_FLAGS) -DIN_LIBGCC2 \
-		 -fbuilding-libgcc -fno-stack-protector \
-		 $(INHIBIT_LIBC_CFLAGS)
-
-# Additional options to use when compiling libgcc2.a.
-# Some targets override this to -isystem include
-LIBGCC2_INCLUDES =
-
-# Additional target-dependent options for compiling libgcc2.a.
-TARGET_LIBGCC2_CFLAGS =
-
 # List of extra executables that should be compiled for this target machine
 # that are used for compiling from source code to object code.
 # The rules for compiling them should be in the t-* file for the machine.
@@ -716,17 +700,6 @@ USE_GCC_STDINT = @use_gcc_stdint@
 # (non-Unix) host which can not build collect2, for which it will be
 # set to empty.
 COLLECT2 = @collect2@
-
-# List of extra C and assembler files to add to static and shared libgcc2.
-# Assembler files should have names ending in `.asm'.
-LIB2FUNCS_EXTRA =
-
-# List of extra C and assembler files to add to static libgcc2.
-# Assembler files should have names ending in `.asm'.
-LIB2FUNCS_STATIC_EXTRA =
-
-# List of functions not to build from libgcc2.c.
-LIB2FUNCS_EXCLUDE =
 
 # Program to convert libraries.
 LIBCONVERT =
@@ -789,14 +762,6 @@ RUNTEST = `if [ -f $${srcdir}/../dejagnu/runtest ] ; then \
 	       echo $${srcdir}/../dejagnu/runtest ; \
 	    else echo runtest; fi`
 RUNTESTFLAGS =
-
-# "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
-T =
-
-# Should T contain a `=', libgcc/Makefile will make T_TARGET, setting
-# $(T_TARGET) to the name of the actual target filename.
-T_TARGET =
-T_TARGET : $(T_TARGET)
 
 # This should name the specs file that we're going to install.  Target
 # Makefiles may override it and name another file to be generated from
@@ -1085,9 +1050,6 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   $(CPPINC) $(GMPINC) $(DECNUMINC) \
 	   $(PPLINC) $(CLOOGINC)
 
-INCLUDES_FOR_TARGET = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
-	   -I$(srcdir)/../include $(DECNUMINC) -I$(srcdir)/../libgcc
-
 .c.o:
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
 
@@ -1110,7 +1072,6 @@ export DESTDIR
 export GCC_FOR_TARGET
 export INCLUDES
 export INSTALL_DATA
-export LIBGCC2_CFLAGS
 export LIPO_FOR_TARGET
 export MACHMODE_H
 export NM_FOR_TARGET
@@ -1530,13 +1491,6 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
  libcommon-target.a libcommon.a libgcc.mk
 
-# Defined in libgcc2.c, included only in the static library.
-LIB2FUNCS_ST = _eprintf __gcc_bcmp
-
-# These might cause a divide overflow trap and so are compiled with
-# unwinder info.
-LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
-
 #
 # Language makefile fragments.
 
@@ -1857,35 +1811,13 @@ cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 #
 # Build libgcc.a.
 
-LIB2ADD = $(LIB2FUNCS_EXTRA)
-LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
-
-# All source files for libgcc are either generated in the libgcc build
-# directory which will be substituted for $$(libgcc_objdir), in the
-# source directory (in which case they will start with $(srcdir)), or
-# generated into the build directory (in which case they will be
-# relative paths).
-srcdirify = $(patsubst $$(libgcc_objdir)/%,%, \
-		$(filter $$(libgcc_objdir)%,$(1))) \
-	    $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
-	    $(patsubst %,$$(gcc_objdir)/%, \
-		$(filter-out $(srcdir)% $$(libgcc_objdir)%,$(1)))
-
 libgcc-support: libgcc.mvars stmp-int-hdrs $(TCONFIG_H) \
-	$(MACHMODE_H) $(LIB2ADD) $(LIB2ADD_ST) gcov-iov.h
+	$(MACHMODE_H) gcov-iov.h
 
-libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
-		xgcc$(exeext)
+libgcc.mvars: config.status Makefile specs xgcc$(exeext)
 	: > tmp-libgcc.mvars
-	echo LIB2FUNCS_ST = '$(LIB2FUNCS_ST)' >> tmp-libgcc.mvars
-	echo LIB2FUNCS_EXCLUDE = '$(LIB2FUNCS_EXCLUDE)' >> tmp-libgcc.mvars
-	echo LIB2ADD = '$(call srcdirify,$(LIB2ADD))' >> tmp-libgcc.mvars
-	echo LIB2ADD_ST = '$(call srcdirify,$(LIB2ADD_ST))' >> tmp-libgcc.mvars
-	echo LIB2_SIDITI_CONV_FUNCS = '$(LIB2_SIDITI_CONV_FUNCS)' >> tmp-libgcc.mvars
-	echo LIB2_DIVMOD_FUNCS = '$(LIB2_DIVMOD_FUNCS)' >> tmp-libgcc.mvars
-	echo LIBGCC2_CFLAGS = '$(LIBGCC2_CFLAGS)' >> tmp-libgcc.mvars
-	echo TARGET_LIBGCC2_CFLAGS = '$(TARGET_LIBGCC2_CFLAGS)' >> tmp-libgcc.mvars
 	echo GCC_CFLAGS = '$(GCC_CFLAGS)' >> tmp-libgcc.mvars
+	echo GTHREAD_FLAGS = '$(GTHREAD_FLAGS)' >> tmp-libgcc.mvars
 	echo INHIBIT_LIBC_CFLAGS = '$(INHIBIT_LIBC_CFLAGS)' >> tmp-libgcc.mvars
 	echo TARGET_SYSTEM_ROOT = '$(TARGET_SYSTEM_ROOT)' >> tmp-libgcc.mvars
 

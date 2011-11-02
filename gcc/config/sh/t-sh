@@ -22,8 +22,6 @@ sh-c.o: $(srcdir)/config/sh/sh-c.c \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/sh/sh-c.c
 
-TARGET_LIBGCC2_CFLAGS = -mieee
-
 DEFAULT_ENDIAN = $(word 1,$(TM_ENDIAN_CONFIG))
 OTHER_ENDIAN = $(word 2,$(TM_ENDIAN_CONFIG))
 
@@ -83,9 +81,6 @@ MULTILIB_OSDIRNAMES = \
 	m5-compact-nofpu=!m5-compact-nofpu $(OTHER_ENDIAN)/m5-compact-nofpu=!$(OTHER_ENDIAN)/m5-compact-nofpu \
 	m5-64media=!m5-64media $(OTHER_ENDIAN)/m5-64media=!$(OTHER_ENDIAN)/m5-64media \
 	m5-64media-nofpu=!m5-64media-nofpu $(OTHER_ENDIAN)/m5-64media-nofpu=!$(OTHER_ENDIAN)/m5-64media-nofpu
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
 
 $(out_object_file): gt-sh.h
 gt-sh.h : s-gtype ; @true

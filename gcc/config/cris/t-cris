@@ -25,17 +25,5 @@
 # section "Target Fragment" in the gcc info-files (or the paper copy) of
 # "Using and Porting GCC"
 
-LIB2FUNCS_EXTRA = _udivsi3.c _divsi3.c _umodsi3.c _modsi3.c
-CRIS_LIB1CSRC = $(srcdir)/config/cris/arit.c
-
-# The fixed-point arithmetic code is in one file, arit.c,
-# similar to libgcc2.c (or the old libgcc1.c).  We need to
-# "split it up" with one file per define.
-$(LIB2FUNCS_EXTRA): $(CRIS_LIB1CSRC)
-	name=`echo $@ | sed -e 's,.*/,,' | sed -e 's,.c$$,,'`; \
-	echo "#define L$$name" > tmp-$@ \
-	&& echo '#include "$<"' >> tmp-$@ \
-	&& mv -f tmp-$@ $@
-
 $(out_object_file): gt-cris.h
 gt-cris.h : s-gtype ; @true

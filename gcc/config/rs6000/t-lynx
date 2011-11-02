@@ -16,14 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA = tramp.S
-
-tramp.S: $(srcdir)/config/rs6000/tramp.asm
-	cat $(srcdir)/config/rs6000/tramp.asm > tramp.S
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
 MULTILIB_OPTIONS    += msoft-float
 MULTILIB_DIRNAMES   += soft-float
 

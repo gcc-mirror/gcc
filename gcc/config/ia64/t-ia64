@@ -18,13 +18,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# ??? Hack to get -P option used when compiling lib1funcs.asm, because Intel
-# assembler does not accept # line number as a comment.
-# ??? This breaks C++ pragma interface/implementation, which is used in the
-# C++ part of libgcc2, hence it had to be disabled.  Must find some other way
-# to support the Intel assembler.
-#LIBGCC2_DEBUG_CFLAGS = -g1 -P
-
 ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) $(CPPLIB_H) $(C_COMMON_H) $(C_PRAGMA_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

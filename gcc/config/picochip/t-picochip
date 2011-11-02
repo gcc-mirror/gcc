@@ -16,37 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Compile the extra library functions.
-
-LIB2FUNCS_EXTRA = \
-	$(srcdir)/config/picochip/libgccExtras/ashrsi3.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/ashlsi3.asm		\
-	$(srcdir)/config/picochip/libgccExtras/divmodhi4.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/udivmodhi4.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/divmodsi4.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/udivmodsi4.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/divmod15.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/ucmpsi2.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/cmpsi2.asm 		\
-	$(srcdir)/config/picochip/libgccExtras/clzsi2.asm			\
-	$(srcdir)/config/picochip/libgccExtras/adddi3.asm			\
-	$(srcdir)/config/picochip/libgccExtras/subdi3.asm			\
-	$(srcdir)/config/picochip/libgccExtras/lshrsi3.asm		\
-	$(srcdir)/config/picochip/libgccExtras/parityhi2.asm		\
-	$(srcdir)/config/picochip/libgccExtras/popcounthi2.asm
-
-# Turn off ranlib on target libraries.
-RANLIB_FOR_TARGET = cat
-
-# Special libgcc setup. Make single/double floating point the same,
-# and use our own include files.
-TARGET_LIBGCC2_CFLAGS = -DDF=SF -I../../includes/
-
-# Switch off all debugging for the embedded libraries.
-# (embedded processors need small libraries by default).
-# NOTE: If the debug level is increased, turn off instruction scheduling.
-LIBGCC2_DEBUG_CFLAGS = -g0
-
 # Build all combinations of library for different multiply units, and
 # presence/absence of byte access.
 MULTILIB_OPTIONS = mmul-type=none/mmul-type=mac/mmul-type=mul mno-byte-access/mbyte-access

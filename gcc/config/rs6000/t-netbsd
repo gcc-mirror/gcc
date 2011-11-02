@@ -18,33 +18,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA = tramp.S
-
-LIB2FUNCS_STATIC_EXTRA = crtsavfpr.S crtresfpr.S \
-  crtsavgpr.S crtresgpr.S \
-  crtresxfpr.S crtresxgpr.S
-
-tramp.S: $(srcdir)/config/rs6000/tramp.asm
-	cat $(srcdir)/config/rs6000/tramp.asm > tramp.S
-
-crtsavfpr.S: $(srcdir)/config/rs6000/crtsavfpr.asm
-	cat $(srcdir)/config/rs6000/crtsavfpr.asm >crtsavfpr.S
-
-crtresfpr.S: $(srcdir)/config/rs6000/crtresfpr.asm
-	cat $(srcdir)/config/rs6000/crtresfpr.asm >crtresfpr.S
-
-crtsavgpr.S: $(srcdir)/config/rs6000/crtsavgpr.asm
-	cat $(srcdir)/config/rs6000/crtsavgpr.asm >crtsavgpr.S
-
-crtresgpr.S: $(srcdir)/config/rs6000/crtresgpr.asm
-	cat $(srcdir)/config/rs6000/crtresgpr.asm >crtresgpr.S
-
-crtresxfpr.S: $(srcdir)/config/rs6000/crtresxfpr.asm
-	cat $(srcdir)/config/rs6000/crtresxfpr.asm >crtresxfpr.S
-
-crtresxgpr.S: $(srcdir)/config/rs6000/crtresxgpr.asm
-	cat $(srcdir)/config/rs6000/crtresxgpr.asm >crtresxgpr.S
-
 # Switch synonyms
 MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
 			  msoft-float=mcpu?403 \
@@ -61,24 +34,3 @@ MULTILIB_EXTRA_OPTS	= fPIC mstrict-align
 MULTILIB_EXCEPTIONS	=
 
 MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
-$(T)crtsavfpr$(objext): crtsavfpr.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavfpr.S -o $(T)crtsavfpr$(objext)
-
-$(T)crtresfpr$(objext): crtresfpr.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresfpr.S -o $(T)crtresfpr$(objext)
-
-$(T)crtsavgpr$(objext): crtsavgpr.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavgpr.S -o $(T)crtsavgpr$(objext)
-
-$(T)crtresgpr$(objext): crtresgpr.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresgpr.S -o $(T)crtresgpr$(objext)
-
-$(T)crtresxfpr$(objext): crtresxfpr.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresxfpr.S -o $(T)crtresxfpr$(objext)
-
-$(T)crtresxgpr$(objext): crtresxgpr.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresxgpr.S -o $(T)crtresxgpr$(objext)

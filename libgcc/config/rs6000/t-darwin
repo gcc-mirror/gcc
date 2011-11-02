@@ -3,6 +3,21 @@ DARWIN_EXTRA_CRT_BUILD_CFLAGS = -mlongcall -mmacosx-version-min=10.4
 crt2.o: $(srcdir)/config/rs6000/darwin-crt2.c
 	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -c $<
 
-LIB2ADD += $(srcdir)/config/rs6000/ppc64-fp.c
+LIB2ADD = $(srcdir)/config/rs6000/darwin-tramp.S \
+	  $(srcdir)/config/darwin-64.c \
+	  $(srcdir)/config/rs6000/darwin-fpsave.S  \
+	  $(srcdir)/config/rs6000/darwin-gpsave.S  \
+	  $(srcdir)/config/rs6000/darwin-world.S \
+	  $(srcdir)/config/rs6000/ppc64-fp.c
+
+LIB2ADD_ST = \
+	  $(srcdir)/config/rs6000/darwin-vecsave.S
+
+# The .S files above are designed to run on all processors, even though
+# they use AltiVec instructions.
+# -Wa is used because -force_cpusubtype_ALL doesn't work with -dynamiclib.
+# -mmacosx-version-min=10.4 is used to provide compatibility for code from
+# earlier OSX versions.
+HOST_LIBGCC2_CFLAGS += -Wa,-force_cpusubtype_ALL -mmacosx-version-min=10.4
 
 LIB2ADDEH += $(srcdir)/config/rs6000/darwin-fallback.c

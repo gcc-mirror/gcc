@@ -29,7 +29,3 @@ MULTILIB_DIRNAMES = fpu
 # yet... 
 # MULTILIB_OPTIONS += thumb
 # MULTILIB_DIRNAMES += thumb
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-TARGET_LIBGCC2_CFLAGS = 

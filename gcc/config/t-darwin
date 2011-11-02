@@ -41,9 +41,3 @@ darwin-driver.o: $(srcdir)/config/darwin-driver.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) opts.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/darwin-driver.c
-
-# -pipe because there's an assembler bug, 4077127, which causes
-# it to not properly process the first # directive, causing temporary
-# file names to appear in stabs, causing the bootstrap to fail.  Using -pipe
-# works around this by not having any temporary file names.
-TARGET_LIBGCC2_CFLAGS = -fPIC -pipe

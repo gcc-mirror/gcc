@@ -17,8 +17,6 @@
 # <http://www.gnu.org/licenses/>.
 
 EXTRA_HEADERS += $(srcdir)/ginclude/unwind-arm-common.h
-# Include half-float helpers.
-LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/arm/fp16.c
 
 # Create a multilib for processors with VFP floating-point, and a
 # multilib for those without -- using the soft-float ABI in both

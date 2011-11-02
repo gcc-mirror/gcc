@@ -16,14 +16,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Compile libgcc2.a with pic.
-TARGET_LIBGCC2_CFLAGS = -fPIC
-
 MULTILIB_OPTIONS = mthreads
 MULTILIB_DIRNAMES = thread
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
 
 Local Variables:
 mode: makefile

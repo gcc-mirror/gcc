@@ -12,5 +12,8 @@ LIB1ASMFUNCS += \
 	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2 \
 	_fixsfsi _fixunssfsi
 
+# Include half-float helpers.
+LIB2ADD_ST += $(srcdir)/config/arm/fp16.c
+
 # Include the gcc personality routine
 LIB2ADDEH = $(srcdir)/unwind-c.c $(srcdir)/config/arm/pr-support.c

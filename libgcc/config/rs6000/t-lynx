@@ -1,0 +1,1 @@
+LIB2ADD = $(srcdir)/config/rs6000/tramp.S

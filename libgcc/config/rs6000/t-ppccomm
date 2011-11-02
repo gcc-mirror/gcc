@@ -1,83 +1,33 @@
-LIB2ADD += $(srcdir)/config/rs6000/ibm-ldouble.c
+LIB2ADD += $(srcdir)/config/rs6000/ibm-ldouble.c \
+	   $(srcdir)/config/rs6000/tramp.S
 
-LIB2ADD_ST += crtsavfpr.S crtresfpr.S \
-  crtsavgpr.S crtresgpr.S \
-  crtresxfpr.S crtresxgpr.S \
-  e500crtres32gpr.S \
-  e500crtres64gpr.S \
-  e500crtres64gprctr.S \
-  e500crtrest32gpr.S \
-  e500crtrest64gpr.S \
-  e500crtresx32gpr.S \
-  e500crtresx64gpr.S \
-  e500crtsav32gpr.S \
-  e500crtsav64gpr.S \
-  e500crtsav64gprctr.S \
-  e500crtsavg32gpr.S \
-  e500crtsavg64gpr.S \
-  e500crtsavg64gprctr.S
+# These can't end up in shared libgcc
+LIB2ADD_ST += \
+	   $(srcdir)/config/rs6000/crtsavfpr.S \
+	   $(srcdir)/config/rs6000/crtresfpr.S \
+	   $(srcdir)/config/rs6000/crtsavgpr.S \
+	   $(srcdir)/config/rs6000/crtresgpr.S \
+	   $(srcdir)/config/rs6000/crtresxfpr.S 
+	   $(srcdir)/config/rs6000/crtresxgpr.S \
+	   $(srcdir)/config/rs6000/e500crtres32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtres64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtres64gprctr.S \
+	   $(srcdir)/config/rs6000/e500crtrest32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtrest64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtresx32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtresx64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsav32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsav64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsav64gprctr.S \
+	   $(srcdir)/config/rs6000/e500crtsavg32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsavg64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsavg64gprctr.S
+	   $(srcdir)/config/rs6000/eabi.S
 
 # We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
 
 # Assemble startup files.
-crtsavfpr.S: $(gcc_srcdir)/config/rs6000/crtsavfpr.asm
-	cat $(gcc_srcdir)/config/rs6000/crtsavfpr.asm >crtsavfpr.S
-
-crtresfpr.S: $(gcc_srcdir)/config/rs6000/crtresfpr.asm
-	cat $(gcc_srcdir)/config/rs6000/crtresfpr.asm >crtresfpr.S
-
-crtsavgpr.S: $(gcc_srcdir)/config/rs6000/crtsavgpr.asm
-	cat $(gcc_srcdir)/config/rs6000/crtsavgpr.asm >crtsavgpr.S
-
-crtresgpr.S: $(gcc_srcdir)/config/rs6000/crtresgpr.asm
-	cat $(gcc_srcdir)/config/rs6000/crtresgpr.asm >crtresgpr.S
-
-crtresxfpr.S: $(gcc_srcdir)/config/rs6000/crtresxfpr.asm
-	cat $(gcc_srcdir)/config/rs6000/crtresxfpr.asm >crtresxfpr.S
-
-crtresxgpr.S: $(gcc_srcdir)/config/rs6000/crtresxgpr.asm
-	cat $(gcc_srcdir)/config/rs6000/crtresxgpr.asm >crtresxgpr.S
-
-e500crtres32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtres32gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtres32gpr.asm >e500crtres32gpr.S
-
-e500crtres64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtres64gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtres64gpr.asm >e500crtres64gpr.S
-
-e500crtres64gprctr.S: $(gcc_srcdir)/config/rs6000/e500crtres64gprctr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtres64gprctr.asm >e500crtres64gprctr.S
-
-e500crtrest32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtrest32gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtrest32gpr.asm >e500crtrest32gpr.S
-
-e500crtrest64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtrest64gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtrest64gpr.asm >e500crtrest64gpr.S
-
-e500crtresx32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtresx32gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtresx32gpr.asm >e500crtresx32gpr.S
-
-e500crtresx64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtresx64gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtresx64gpr.asm >e500crtresx64gpr.S
-
-e500crtsav32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsav32gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtsav32gpr.asm >e500crtsav32gpr.S
-
-e500crtsav64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsav64gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtsav64gpr.asm >e500crtsav64gpr.S
-
-e500crtsav64gprctr.S: $(gcc_srcdir)/config/rs6000/e500crtsav64gprctr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtsav64gprctr.asm >e500crtsav64gprctr.S
-
-e500crtsavg32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg32gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtsavg32gpr.asm >e500crtsavg32gpr.S
-
-e500crtsavg64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg64gpr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtsavg64gpr.asm >e500crtsavg64gpr.S
-
-e500crtsavg64gprctr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg64gprctr.asm
-	cat $(gcc_srcdir)/config/rs6000/e500crtsavg64gprctr.asm >e500crtsavg64gprctr.S
-
 ecrti$(objext): $(srcdir)/config/rs6000/eabi-ci.S
 	$(crt_compile) -c ecrti.S
 

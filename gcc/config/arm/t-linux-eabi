@@ -16,9 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# These functions are included in shared libraries.
-TARGET_LIBGCC2_CFLAGS = -fPIC
-
 # We do not build a Thumb multilib for Linux because the definition of
 # CLEAR_INSN_CACHE in linux-gas.h does not work in Thumb mode.
 MULTILIB_OPTIONS	=
@@ -27,6 +24,3 @@ MULTILIB_DIRNAMES	=
 #MULTILIB_OPTIONS     += mcpu=fa606te/mcpu=fa626te/mcpu=fmp626/mcpu=fa726te
 #MULTILIB_DIRNAMES    += fa606te fa626te fmp626 fa726te
 #MULTILIB_EXCEPTIONS  += *mthumb/*mcpu=fa606te *mthumb/*mcpu=fa626te *mthumb/*mcpu=fmp626 *mthumb/*mcpu=fa726te*
-
-LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic.c
-LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic-64bit.c

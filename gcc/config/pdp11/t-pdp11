@@ -17,11 +17,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TARGET_LIBGCC2_CFLAGS = -O2 -mfloat32
-LIB2FUNCS_EXTRA = $(srcdir)/config/udivmod.c $(srcdir)/config/udivmodsi4.c \
-    $(srcdir)/config/memcmp.c $(srcdir)/config/memcpy.c \
-    $(srcdir)/config/memmove.c $(srcdir)/config/memset.c
-
 MULTILIB_OPTIONS = msoft-float
 
 # Because the pdp11 POINTER_SIZE is only 16, in dwarf2out.c,

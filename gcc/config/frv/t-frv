@@ -16,38 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA	= cmovh.c cmovw.c cmovd.c modi.c umodi.c uitof.c uitod.c ulltof.c ulltod.c
-
-# If any special flags are necessary when building libgcc2 put them here.
-TARGET_LIBGCC2_CFLAGS =
-
-cmovh.c: $(srcdir)/config/frv/cmovh.c
-	$(LN_S) $(srcdir)/config/frv/cmovh.c .
-
-cmovw.c: $(srcdir)/config/frv/cmovw.c
-	$(LN_S) $(srcdir)/config/frv/cmovw.c .
-
-cmovd.c: $(srcdir)/config/frv/cmovd.c
-	$(LN_S) $(srcdir)/config/frv/cmovd.c .
-
-modi.c: $(srcdir)/config/frv/modi.c
-	$(LN_S) $(srcdir)/config/frv/modi.c .
-
-umodi.c: $(srcdir)/config/frv/umodi.c
-	$(LN_S) $(srcdir)/config/frv/umodi.c .
-
-uitof.c: $(srcdir)/config/frv/uitof.c
-	$(LN_S) $(srcdir)/config/frv/uitof.c .
-
-uitod.c: $(srcdir)/config/frv/uitod.c
-	$(LN_S) $(srcdir)/config/frv/uitod.c .
-
-ulltof.c: $(srcdir)/config/frv/ulltof.c
-	$(LN_S) $(srcdir)/config/frv/ulltof.c .
-
-ulltod.c: $(srcdir)/config/frv/ulltod.c
-	$(LN_S) $(srcdir)/config/frv/ulltod.c .
-
 # Enable the following if multilibs are needed.
 # See gcc/genmultilib, gcc/gcc.texi and gcc/tm.texi for a
 # description of the options and their values.
@@ -64,8 +32,5 @@ MULTILIB_MATCHES	= mcpu?simple=mcpu?fr300 \
 			  mlibrary-pic=multilib-library-pic \
 			  mcpu?fr400=mcpu?fr405 mcpu?fr400=mcpu?fr450
 MULTILIB_EXCEPTIONS	= mcpu=frv/mno-pack* mcpu=simple/mno-pack*
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
 
 EXTRA_HEADERS = $(srcdir)/config/frv/frv-asm.h

@@ -1,0 +1,9 @@
+LIB2ADD = $(srcdir)/config/rs6000/tramp.S
+
+LIB2ADD_ST = \
+	$(srcdir)/config/rs6000/crtsavfpr.S \
+	$(srcdir)/config/rs6000/crtresfpr.S \
+	$(srcdir)/config/rs6000/crtsavgpr.S \
+	$(srcdir)/config/rs6000/crtresgpr.S \
+	$(srcdir)/config/rs6000/crtresxfpr.S \
+	$(srcdir)/config/rs6000/crtresxgpr.S

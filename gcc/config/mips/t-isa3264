@@ -17,10 +17,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# We must build libgcc2.a with -G 0, in case the user wants to link
-# without the $gp register.
-TARGET_LIBGCC2_CFLAGS = -G 0
-
 # Build the libraries for both hard and soft floating point
 
 ifneq ($(filter MIPS_ABI_DEFAULT=ABI_EABI,$(tm_defines)),)
@@ -36,6 +32,3 @@ MULTILIB_EXCLUSIONS = !mips32r2/mfp64
 endif
 endif
 MULTILIB_MATCHES = EL=mel EB=meb
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

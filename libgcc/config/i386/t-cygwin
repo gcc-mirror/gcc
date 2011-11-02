@@ -1,3 +1,9 @@
+# If we are building next to winsup, this will let us find the real
+# limits.h when building libgcc2.  Otherwise, winsup must be installed
+# first.
+LIBGCC2_INCLUDES += -I$(srcdir)/../winsup/include \
+	-I$(srcdir)/../winsup/cygwin/include
+
 # Cygwin-specific parts of LIB_SPEC
 SHLIB_LC = -lcygwin -ladvapi32 -lshell32 -luser32 -lkernel32
 

@@ -1,5 +1,334 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.in (LIBGCC2_DEBUG_CFLAGS LIBGCC2_CFLAGS)
+	(LIBGCC2_INCLUDES, TARGET_LIBGCC2_CFLAGS, LIB2FUNCS_EXTRA)
+	(LIB2FUNCS_STATIC_EXTRA, LIB2FUNCS_EXCLUDE, T, T_TARGET)
+	(INCLUDES_FOR_TARGET): Remove.
+	(LIBGCC2_CFLAGS): Don't export.
+	(LIB2FUNCS_ST, LIB2_DIVMOD_FUNCS, LIB2ADD, LIB2ADD_ST, srcdirify):
+	Remove.
+	(libgcc-support): Remove $(LIB2ADD), $(LIB2ADD_ST) dependencies.
+	(libgcc.mvars): Likewise.
+	Don't emit LIB2FUNCS_ST, LIB2FUNCS_EXCLUDE, LIB2ADD, LIB2ADD_ST,
+	LIB2_SIDITI_CONV_FUNCS, LIB2_DIVMOD_FUNCS, LIBGCC2_CFLAGS,
+	TARGET_LIBGCC2_CFLAGS.
+	Emit GTHREAD_FLAGS.
+	* libgcc2.c, libgcc2.h, gbl-ctors.h, longlong.h: Move to ../libgcc.
+	* config/darwin-64.c: Move to ../libgcc/config.
+	* config/divmod.c, config/floatunsidf.c, config/floatunsisf.c,
+	config/floatunsitf.c, config/floatunsixf.c, config/udivmod.c,
+	config/udivmodsi4.c: Move to ../libgcc/config.
+	* config/gthr-posix.c: Move to ../libgcc/config/alpha.
+	* config/memcmp.c, config/memcpy.c, config/memmove.c,
+	config/memset.c: Move to ../libgcc/config.
+	* config/t-darwin (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/t-freebsd: Remove.
+	* config/t-freebsd-thread: Move to ../libgcc/config.
+	* config/t-libgcc-pic: Move to ../libgcc/config.
+	* config/t-libunwind (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/t-linux: Remove.
+	* config/t-lynx (TARGET_LIBGCC2_CFLAGS, LIBGCC, INSTALL_LIBGCC):
+	Remove
+	* config/t-openbsd-thread: Move to ../libgcc/config.
+	* config/t-rtems (LIBGCC2_INCLUDES): Remove.
+	* config/t-sol2 (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/t-svr4: Remove.
+	* config/t-vxworks (LIBGCC, INSTALL_LIBGCC, TARGET_LIBGCC2_CFLAGS)
+	(LIBGCC2_DEBUG_CFLAGS, LIB2FUNCS_EXTRA, LIBGCC2_INCLUDES): Remove.
+	* config/vxlib.c, config/vxlib-tls.c: Move to ../libgcc/config.
+	* config/alpha/qrnnd.asm: Move to ../libgcc/config/alpha/qrnnd.S.
+	* config/alpha/t-alpha, config/alpha/t-ieee: Remove.
+	* config/alpha/t-vms (LIB2FUNCS_EXTRA, LIBGCC, INSTALL_LIBGCC):
+	Remove.
+	* config/alpha/vms-gcc_shell_handler.c: Move to ../libgcc/config/alpha.
+	* config/arm/bpabi.c, config/arm/unaligned-funcs.c,
+	config/arm/fp16.c, config/arm/linux-atomic.c,
+	config/arm/linux-atomic-64bit.c: Move to ../libgcc/config/arm.
+	* config/arm/t-arm-elf (LIBGCC, INSTALL_LIBGCC)
+	(TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/arm/t-bpabi, config/arm/t-linux: Remove.
+	* config/arm/t-linux-eabi (TARGET_LIBGCC2_CFLAGS)
+	(LIB2FUNCS_STATIC_EXTRA): Remove.
+	* config/arm/t-netbsd: Remove.
+	* config/arm/t-strongarm-elf (LIBGCC, INSTALL_LIBGCC)
+	(TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/arm/t-symbian (LIB2FUNCS_STATIC_EXTRA): Remove.
+	* config/arm/t-wince-pe (LIBGCC, INSTALL_LIBGCC)
+	(TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE, TARGET_LIBGCC2_CFLAGS)
+	(LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/bfin/t-bfin-elf (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/bfin/t-bfin-linux: Likewise.
+	* config/bfin/t-bfin-uclinux: Likewise.
+	* config/c6x/eqd.c, config/c6x/eqf.c, config/c6x/ged.c,
+	config/c6x/gef.c, config/c6x/gtd.c, config/c6x/gtf.c,
+	config/c6x/led.c, config/c6x/lef.c, config/c6x/ltd.c,
+	config/c6x/ltf.c: Move to ../libgcc/config/c6x.
+	* config/c6x/t-c6x-elf (LIB2FUNCS_EXCLUDE, LIB2FUNCS_EXTRA):
+	Remove.
+	* config/c6x/t-c6x-uclinux (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/cris/arit.c: Move to ../libgcc/config/cris.
+	* config/cris/cris_abi_symbol.c: Remove.
+	* config/cris/cris.h: Remove obsolete comment.
+	* config/cris/mulsi3.asm: Move to ../libgcc/config/cris/mulsi3.S.
+	* config/cris/t-cris (LIB2FUNCS_EXTRA, CRIS_LIB1CSRC)
+	($(LIB2FUNCS_EXTRA)): Remove.
+	* config/cris/t-elfmulti (LIB2FUNCS_STATIC_EXTRA, INSTALL_LIBGCC)
+	(LIBGCC): Remove.
+	* config/cris/t-linux (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/fr30/t-fr30: Remove.
+	* config/frv/cmovd.c, config/frv/cmovh.c, config/frv/cmovw.c,
+	config/frv/modi.c, config/frv/uitod.c, config/frv/uitof.c,
+	config/frv/ulltod.c, config/frv/ulltof.c, config/frv/umodi.c: Move
+	to ../libgcc/config/frv.
+	* config/frv/t-frv (LIB2FUNCS_EXTRA, TARGET_LIBGCC2_CFLAGS)
+	(cmovh.c, cmovw.c, cmovd.c, modi.c, umodi.c, uitof.c, uitod.c)
+	(ulltof.c, LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/frv/t-linux (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/h8300/clzhi2.c, config/h8300/ctzhi2.c,
+	config/h8300/fixunssfsi.c, config/h8300/parityhi2.c,
+	config/h8300/popcounthi2.c: Move to ../libgcc/config/h8300.
+	* config/h8300/t-h8300 (LIB2FUNCS_EXTRA, TARGET_LIBGCC2_CFLAGS)
+	(LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/i386/gthr-win32.c: Move to ../libgcc/config/i386.
+	* config/i386/t-cygming (LIBGCC2_INCLUDES): Remove.
+	* config/i386/t-cygwin: Remove.
+	* config/i386/t-darwin (LIB2_SIDITI_CONV_FUNCS, LIB2FUNCS_EXTRA)
+	(LIB2FUNCS_EXCLUDE): Remove.
+	* config/i386/t-darwin64 (LIB2_SIDITI_CONV_FUNCS, LIB2FUNCS_EXTRA)
+	(LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/i386/t-gthr-win32: Move to ../libgcc/config/i386.
+	* config/i386/t-linux64 (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/i386/t-mingw-w32: Likewise.
+	* config/i386/t-mingw-w64: Likewise.
+	* config/i386/t-openbsd: Likewise.
+	* config/i386/t-nto: Remove.
+	* config/ia64/quadlib.c: Move to ../libgcc/config/ia64.
+	* config/ia64/t-hpux (LIBGCC, INSTALL_LIBGCC, LIB2FUNCS_EXTRA)
+	(quadlib.c): Remove.
+	* config/ia64/t-ia64: Remove comment.
+	* config/iq2000/lib2extra-funcs.c: Move to
+	../libgcc/config/iq2000/lib2funcs.c.
+	* config/iq2000/t-iq2000: Remove.
+	* config/m32c/m32c-lib2.c: Move to ../libgcc/config/m32c/lib2funcs.c.
+	* config/m32c/m32c-lib2-trapv.c: Move to ../libgcc/config/m32c/trapv.c.
+	* config/m32r/t-linux (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/m32c/t-m32c (LIB2FUNCS_EXTRA): Remove.
+	* config/m32r/t-m32r (TARGET_LIBGCC2_CFLAGS, LIBGCC)
+	(INSTALL_LIBGCC): Remove.
+	* config/m68k/fpgnulib.c: Move to ../libgcc/config/m68k.
+	* config/m68k/t-floatlib: Remove.
+	* config/m68k/t-mlibs (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/mcore/t-mcore (TARGET_LIBGCC2_CFLAGS): Remove.
+	Fix typo.
+	(LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/mep/mep-lib2.c: Move to ../libgcc/config/mep/lib2funcs.c.
+	* config/mep/mep-tramp.c: Move to ../libgcc/config/mep/tramp.c.
+	* config/mep/t-mep (LIB2FUNCS_EXTRA): Remove.
+	* config/mips/t-elf (TARGET_LIBGCC2_CFLAGS, LIBGCC)
+	(INSTALL_LIBGCC): Remove.
+	* config/mips/t-isa3264: Likewise.
+	* config/mips/t-mips (LIB2_SIDITI_CONV_FUNCS): Remove.
+	* config/mips/t-r3900 (TARGET_LIBGCC2_CFLAGS, LIBGCC)
+	(INSTALL_LIBGCC): Remove.
+	* config/mips/t-sde (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/mips/t-sr71k (TARGET_LIBGCC2_CFLAGS, LIBGCC)
+	(INSTALL_LIBGCC): Remove.
+	* config/mips/t-vr (TARGET_LIBGCC2_CFLAGS)
+	(LIB2FUNCS_STATIC_EXTRA): Remove.
+	* config/mips/vr4120-div.S: Move to ../libgcc/config/mips.
+	* config/mmix/t-mmix (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/mn10300/t-mn10300 (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/pa/fptr.c, config/pa/linux-atomic.c: Move to
+	../libgcc/config/pa.
+	* config/pa/lib2funcs.asm: Move to ../libgcc/config/pa/lib2funcs.S.
+	* config/pa/quadlib.c: Move to ../libgcc/config/pa.
+	* config/pa/t-dce-thr (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/pa/t-linux, config/pa/t-linux64: Remove.
+	* config/pa/t-pa-hpux, config/pa/t-pa-hpux10,
+	config/pa/t-pa-hpux11, config/pa/t-pa64: Remove.
+	* config/pdp11/t-pdp11 (TARGET_LIBGCC2_CFLAGS, LIB2FUNCS_EXTRA):
+	Remove.
+	* config/picochip/libgccExtras: Move to ../libgcc/config/picochip.
+	* config/picochip/t-picochip (LIB2FUNCS_EXTRA, RANLIB_FOR_TARGET)
+	(TARGET_LIBGCC2_CFLAGS, LIBGCC2_DEBUG_CFLAGS): Remove.
+	* config/rs6000/crtresfpr.asm: Move to
+	../libgcc/config/rs6000/crtresfpr.S.
+	* config/rs6000/crtresgpr.asm: Move to
+	../libgcc/config/rs6000/crtresgpr.S.
+	* config/rs6000/crtresxfpr.asm: Move to
+	../libgcc/config/rs6000/crtresxfpr.S.
+	* config/rs6000/crtresxgpr.asm: Move to
+	../libgcc/config/rs6000/crtresxgpr.S.
+	* config/rs6000/crtsavfpr.asm: Move to
+	../libgcc/config/rs6000/crtsavfpr.S.
+	* config/rs6000/crtsavgpr.asm: Move to
+	../libgcc/config/rs6000/crtsavgpr.S.
+	* config/rs6000/darwin-asm.h: Move to ../libgcc/config/rs6000.
+	* config/rs6000/darwin-fpsave.asm: Move to
+	../libgcc/config/rs6000/darwin-fpsave.S.
+	* config/rs6000/darwin-gpsave.asm: Move to
+	../libgcc/config/rs6000/darwin-gpsave.S.
+	* config/rs6000/darwin-tramp.asm: Move to
+	../libgcc/config/rs6000/darwin-tramp.S.
+	* config/rs6000/darwin-vecsave.asm: Move to
+	../libgcc/config/rs6000/darwin-vecsave.S.
+	* config/rs6000/darwin-world.asm: Move to
+	../libgcc/config/rs6000/darwin-world.S.
+	* config/rs6000/e500crtres32gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtres32gpr.S.
+	* config/rs6000/e500crtres64gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtres64gpr.S.
+	* config/rs6000/e500crtres64gprctr.asm: Move to
+	../libgcc/config/rs6000/e500crtres64gprctr.S.
+	* config/rs6000/e500crtrest32gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtrest32gpr.S.
+	* config/rs6000/e500crtrest64gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtrest64gpr.S.
+	* config/rs6000/e500crtresx32gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtresx32gpr.S.
+	* config/rs6000/e500crtresx64gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtresx64gpr.S.
+	* config/rs6000/e500crtsav32gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtsav32gpr.S.
+	* config/rs6000/e500crtsav64gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtsav64gpr.S.
+	* config/rs6000/e500crtsav64gprctr.asm: Move to
+	../libgcc/config/rs6000/e500crtsav64gprctr.S.
+	* config/rs6000/e500crtsavg32gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtsavg32gpr.S.
+	* config/rs6000/e500crtsavg64gpr.asm: Move to
+	../libgcc/config/rs6000/e500crtsavg64gpr.S.
+	* config/rs6000/e500crtsavg64gprctr.asm: Move to
+	../libgcc/config/rs6000/e500crtsavg64gprctr.S.
+	* config/rs6000/eabi.asm: Move to ../libgcc/config/rs6000/eabi.S.
+	* config/rs6000/t-aix43 (LIBGCC, INSTALL_LIBGCC, LIB2FUNCS_EXTRA)
+	(TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/rs6000/t-aix52: Likewise.
+	* config/rs6000/t-darwin: Remove.
+	* config/rs6000/t-darwin64 (LIB2_SIDITI_CONV_FUNCS)
+	(LIB2FUNCS_EXTRA): Remove.
+	* config/rs6000/t-fprules (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/rs6000/t-linux64 (TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/rs6000/t-lynx (LIB2FUNCS_EXTRA, tramp.S, LIBGCC)
+	(INSTALL_LIBGCC): Remove.
+	* config/rs6000/t-netbsd (LIB2FUNCS_EXTRA)
+	(LIB2FUNCS_STATIC_EXTRA, tramp.S, crtsavfpr.S, crtresfpr.S)
+	(crtsavgpr.S, crtresgpr.S, crtresxfpr.S, crtresxgpr.S, LIBGCC)
+	(INSTALL_LIBGCC, $(T)crtsavfpr$(objext), $(T)crtresfpr$(objext))
+	(($(T)crtsavgpr$(objext), $(T)crtresgpr$(objext),
+	$(T)crtresxfpr$(objext), $(T)crtresxgpr$(objext)): Remove.
+	* config/rs6000/t-ppccomm (LIB2FUNCS_EXTRA)
+	(LIB2FUNCS_STATIC_EXTRA, eabi.S, tramp.S): Remove.
+	* config/rs6000/t-spe (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/rs6000/t-vxworks: Remove comment.
+	* config/rs6000/tramp.asm: Move to ../libgcc/config/rs6000/tramp.S.
+	* config/rx/t-rx (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/sh/linux-atomic.asm: Move to
+	../libgcc/config/sh/linux-atomic.S.
+	* config/sh/t-linux (LIB2FUNCS_EXTRA): Remove.
+	* config/sh/t-netbsd: Remove.
+	* config/sh/t-sh (TARGET_LIBGCC2_CFLAGS, LIBGCC, INSTALL_LIBGCC):
+	Remove.
+	* config/sparc/t-elf (LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/sparc/t-leon: Likewise.
+	* config/sparc/t-leon3: Likewise.
+	* config/sparc/t-linux64: Likewise.
+	* config/sparc/t-netbsd64: Fix typo.
+	Remove comment.
+	* config/spu/divmodti4.c, config/spu/divv2df3.c,
+	config/spu/float_disf.c, config/spu/float_unsdidf.c,
+	config/spu/float_unsdisf.c, config/spu/float_unssidf.c,
+	config/spu/mfc_multi_tag_release.c,
+	config/spu/mfc_multi_tag_reserve.c, config/spu/mfc_tag_release.c,
+	config/spu/mfc_tag_reserve.c, config/spu/mfc_tag_table.c,
+	config/spu/multi3.c: Move to ../libgcc/config/spu.
+	* config/spu/t-spu-elf (TARGET_LIBGCC2_CFLAGS, LIB2FUNCS_EXCLUDE)
+	(LIB2FUNCS_STATIC_EXTRA, LIB2_SIDITI_CONV_FUNCS, LIBGCC)
+	(INSTALL_LIBGCC): Remove.
+	* config/stormy16/stormy16-lib2.c: Move to
+	../libgcc/config/stormy16/lib2.c.
+	* config/stormy16/stormy16-lib2-ashlsi3.c: Move to
+	../libgcc/config/stormy16/ashlsi3.c.
+	* config/stormy16/stormy16-lib2-ashrsi3.c: Move to
+	../libgcc/config/stormy16/ashrsi3.c.
+	* config/stormy16/stormy16-lib2-clzhi2.c: Move to
+	../libgcc/config/stormy16/clzhi2.c.
+	* config/stormy16/stormy16-lib2-cmpsi2.c: Move to
+	../libgcc/config/stormy16/cmpsi2.c.
+	* config/stormy16/stormy16-lib2-ctzhi2.c: Move to
+	../libgcc/config/stormy16/ctzhi2.c.
+	* config/stormy16/stormy16-lib2-divsi3.c: Move to
+	../libgcc/config/stormy16/divsi3.c.
+	* config/stormy16/stormy16-lib2-ffshi2.c: Move to
+	../libgcc/config/stormy16/ffshi2.c.
+	* config/stormy16/stormy16-lib2-lshrsi3.c: Move to
+	../libgcc/config/stormy16/lshrsi3.c.
+	* config/stormy16/stormy16-lib2-modsi3.c: Move to
+	../libgcc/config/stormy16/modsi3.c.
+	* config/stormy16/stormy16-lib2-parityhi2.c: Move to
+	../libgcc/config/stormy16/parityhi2.c.
+	* config/stormy16/stormy16-lib2-popcounthi2.c: Move to
+	../libgcc/config/stormy16/popcounthi2.c.
+	* config/stormy16/stormy16-lib2-ucmpsi2.c: Move to
+	../libgcc/config/stormy16/ucmpsi2.c.
+	* config/stormy16/stormy16-lib2-udivmodsi4.c: Move to
+	../libgcc/config/stormy16/udivmodsi4.c.
+	* config/stormy16/stormy16-lib2-udivsi3.c: Move to
+	../libgcc/config/stormy16/udivsi3.c.
+	* config/stormy16/stormy16-lib2-umodsi3.c: Move to
+	../libgcc/config/stormy16/umodsi3.c.
+	* config/stormy16/t-stormy16: Move to ../libgcc/config/t-stormy16.
+	* config/v850/t-v850 (INSTALL_LIBGCC): Remove.
+	* config/xtensa/lib2funcs.S: Move to ../libgcc/config/xtensa.
+	* config/xtensa/t-elf: Remove.
+	* config/xtensa/t-xtensa (LIB2FUNCS_EXTRA): Remove.
+	* config.gcc (*-*-freebsd*): Remove t-freebsd, t-freebsd-thread
+	from tmake_file.
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,
+	*-*-gnu*, *-*-kopensolaris*-gnu): Remove t-linux from tmake_file.
+	(*-*-netbsd*): Remove t-libgcc-pic from tmake_file.
+	(*-*-openbsd*): Likewise.
+	Remove t-openbsd-thread for posix threads.
+	(alpha*-*-linux*): Remove alpha/t-alpha, alpha/t-ieee
+	from tmake_file.
+	(alpha*-*-freebsd*): Likewise.
+	(alpha*-*-netbsd*): Likewise.
+	(alpha*-*-openbsd*): Likewise.
+	(alpha64-dec-*vms*): Likewise.
+	(alpha*-dec-*vms*): Likewise.
+	(arm*-*-netbsdelf*): Remove arm/t-netbsd from tmake_file.
+	(arm*-*-linux*): Remove t-linux from tmake_file.
+	Remove arm/t-bpabi from tmake_file for arm*-*-linux-*eabi.
+	(arm*-*-uclinux*): Remove arm/t-bpabi from tmake_file for
+	arm*-*-uclinux*eabi.
+	(arm*-*-eabi*, arm*-*-symbianelf* ): Remove arm/t-bpabi from
+	tmake_file for arm*-*-eabi*.
+	(fr30-*-elf): Remove tmake_file.
+	(hppa*64*-*-linux*): Remove tmake_file.
+	(hppa*-*-linux*): Likewise.
+	(hppa[12]*-*-hpux10*): Remove pa/t-pa-hpux10, pa/t-pa-hpux from
+	tmake_file.
+	(hppa*64*-*-hpux11*): Remove pa/t-pa64, pa/t-pa-hpux from tmake_file.
+	(hppa[12]*-*-hpux11*): Remove pa/t-pa-hpux11, pa/t-pa-hpux from
+	tmake_file.
+	(i[34567]86-*-elf*): Remove tmake_file.
+	(x86_64-*-elf*): Likewise.
+	(i[34567]86-*-nto-qnx*): Likewise.
+	(i[34567]86-*-cygwin*): Remove i386/t-cygwin from tmake_file.
+	(i[34567]86-*-mingw*, x86_64-*-mingw*): Remove i386/t-gthr-win32
+	from tmake_file if using win32 threads.
+	(iq2000*-*-elf*): Remove tmake-file.
+	(microblaze*-linux*): Likewise.
+	(sh-*-elf*, sh[12346l]*-*-elf*, sh-*-linux*)
+	(sh[2346lbe]*-*-linux*, sh-*-netbsdelf*, shl*-*-netbsdelf*)
+	(sh5-*-netbsd*, sh5l*-*-netbsd*, sh64-*-netbsd*)
+	(sh64l*-*-netbsd*): Remove sh/t-netbsd from tmake_file for
+	sh5*-*-netbsd*, sh64*-netbsd*, *-*-netbsd.
+	(xtensa*-*-elf*): Remove tmake_file.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (LIB1ASMSRC): Don't export.
 	(libgcc.mvars): Don't emit LIB1ASMFUNCS, LIB1ASMSRC.
 	* config/arm/arm.c: Update lib1funcs.asm filename.

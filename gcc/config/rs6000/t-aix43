@@ -44,6 +44,3 @@ MULTILIB_MATCHES	= mcpu?power=mcpu?power \
 			  mcpu?powerpc=mcpu?604e \
 			  mcpu?powerpc=mcpu?620 \
 			  mcpu?powerpc=mcpu?630
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

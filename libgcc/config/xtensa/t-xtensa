@@ -10,5 +10,7 @@ LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3 _udivsi3 _umodsi3 \
 	_floatdidf _floatundidf \
 	_truncdfsf2 _extendsfdf2
 
+LIB2ADD = $(srcdir)/config/xtensa/lib2funcs.S
+
 LIB2ADDEH = $(srcdir)/config/xtensa/unwind-dw2-xtensa.c \
    $(srcdir)/unwind-dw2-fde.c $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c

@@ -1,6 +1,6 @@
 # Multilibs for VxWorks.
 #
-# Copyright (C) 2002, 2005, 2006 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2005, 2006, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,8 +23,3 @@ MULTILIB_OPTIONS = mrtp fPIC msoft-float
 MULTILIB_DIRNAMES =
 MULTILIB_MATCHES = fPIC=fpic
 MULTILIB_EXCEPTIONS = fPIC*
-
-# Similarily, LIB2FUNCS_EXTRA is set from config/t-vxworks and
-# t-ppccomm *adds* to it, but the common contents are useful to us.
-# In particular the base trampoline_setup bits are expected to be
-# provided there.

@@ -16,8 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2_SIDITI_CONV_FUNCS=yes
-
 $(srcdir)/config/mips/mips-tables.opt: $(srcdir)/config/mips/genopt.sh \
   $(srcdir)/config/mips/mips-cpus.def
 	$(SHELL) $(srcdir)/config/mips/genopt.sh $(srcdir)/config/mips > \
