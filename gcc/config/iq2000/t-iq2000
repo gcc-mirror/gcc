@@ -16,11 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Suppress building libgcc1.a, since the MIPS compiler port is complete
-# and does not need anything from libgcc1.a.
-LIBGCC1 =
-CROSS_LIBGCC1 =
-
 LIB2FUNCS_EXTRA = $(srcdir)/config/udivmod.c $(srcdir)/config/divmod.c $(srcdir)/config/udivmodsi4.c $(srcdir)/config/iq2000/lib2extra-funcs.c
 
 # Enable the following if multilibs are needed.

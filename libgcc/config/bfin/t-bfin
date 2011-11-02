@@ -1,0 +1,3 @@
+LIB1ASMSRC = bfin/lib1funcs.S
+LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _muldi3 _umulsi3_highpart
+LIB1ASMFUNCS += _smulsi3_highpart

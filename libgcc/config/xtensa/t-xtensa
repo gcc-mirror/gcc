@@ -1,2 +1,14 @@
+LIB1ASMSRC = xtensa/lib1funcs.S
+LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3 _udivsi3 _umodsi3 \
+	_umulsidi3 _clz _clzsi2 _ctzsi2 _ffssi2 \
+	_ashldi3 _ashrdi3 _lshrdi3 \
+	_negsf2 _addsubsf3 _mulsf3 _divsf3 _cmpsf2 _fixsfsi _fixsfdi \
+	_fixunssfsi _fixunssfdi _floatsisf _floatunsisf \
+	_floatdisf _floatundisf \
+	_negdf2 _addsubdf3 _muldf3 _divdf3 _cmpdf2 _fixdfsi _fixdfdi \
+	_fixunsdfsi _fixunsdfdi _floatsidf _floatunsidf \
+	_floatdidf _floatundidf \
+	_truncdfsf2 _extendsfdf2
+
 LIB2ADDEH = $(srcdir)/config/xtensa/unwind-dw2-xtensa.c \
    $(srcdir)/unwind-dw2-fde.c $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c

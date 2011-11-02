@@ -394,25 +394,22 @@ LIB2_DIVMOD_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS), \
 ifeq ($(enable_shared),yes)
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
-$(lib1asmfuncs-o): %$(objext): $(gcc_srcdir)/config/$(LIB1ASMSRC) %.vis
-	$(gcc_compile) -DL$* -xassembler-with-cpp \
-	  -c $(gcc_srcdir)/config/$(LIB1ASMSRC) -include $*.vis
+$(lib1asmfuncs-o): %$(objext): $(srcdir)/config/$(LIB1ASMSRC) %.vis
+	$(gcc_compile) -DL$* -xassembler-with-cpp -c $< -include $*.vis
 $(patsubst %,%.vis,$(LIB1ASMFUNCS)): %.vis: %_s$(objext)
 	$(gen-hide-list)
 libgcc-objects += $(lib1asmfuncs-o)
 
 lib1asmfuncs-s-o = $(patsubst %,%_s$(objext),$(LIB1ASMFUNCS))
-$(lib1asmfuncs-s-o): %_s$(objext): $(gcc_srcdir)/config/$(LIB1ASMSRC)
-	$(gcc_s_compile) -DL$* -xassembler-with-cpp \
-	  -c $(gcc_srcdir)/config/$(LIB1ASMSRC)
+$(lib1asmfuncs-s-o): %_s$(objext): $(srcdir)/config/$(LIB1ASMSRC)
+	$(gcc_s_compile) -DL$* -xassembler-with-cpp -c $<
 libgcc-s-objects += $(lib1asmfuncs-s-o)
 
 else
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
-$(lib1asmfuncs-o): %$(objext): $(gcc_srcdir)/config/$(LIB1ASMSRC)
-	$(gcc_compile) -DL$* -xassembler-with-cpp \
-	  -c $(gcc_srcdir)/config/$(LIB1ASMSRC)
+$(lib1asmfuncs-o): %$(objext): $(srcdir)/config/$(LIB1ASMSRC)
+	$(gcc_compile) -DL$* -xassembler-with-cpp -c $<
 libgcc-objects += $(lib1asmfuncs-o)
 
 endif

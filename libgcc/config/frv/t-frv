@@ -1,3 +1,6 @@
+LIB1ASMSRC	= frv/lib1funcs.S
+LIB1ASMFUNCS	= _cmpll _cmpf _cmpd _addll _subll _andll _orll _xorll _notll _cmov
+
 # Compile two additional files that are linked with every program
 # linked using GCC on systems using COFF or ELF, for the sake of C++
 # constructors.

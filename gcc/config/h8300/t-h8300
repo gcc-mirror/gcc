@@ -17,10 +17,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMSRC = h8300/lib1funcs.asm
-LIB1ASMFUNCS = _cmpsi2 _ucmpsi2 _divhi3 _divsi3 _mulhi3 _mulsi3 \
-  _fixunssfsi_asm
-
 LIB2FUNCS_EXTRA = \
 	$(srcdir)/config/h8300/clzhi2.c \
 	$(srcdir)/config/h8300/ctzhi2.c \

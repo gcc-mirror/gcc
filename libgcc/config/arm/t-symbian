@@ -1,2 +1,16 @@
+LIB1ASMFUNCS += _bb_init_func _call_via_rX _interwork_call_via_rX _clzsi2 _clzdi2
+
+# These functions have __aeabi equivalents and will never be called by GCC.  
+# By putting them in LIB1ASMFUNCS, we avoid the standard libgcc2.c code being
+# used -- and we make sure that definitions are not available in lib1funcs.S,
+# either, so they end up undefined.
+LIB1ASMFUNCS += \
+	_ashldi3 _ashrdi3 _divdi3 _floatdidf _udivmoddi4 _umoddi3 \
+	_udivdi3 _lshrdi3 _moddi3 _muldi3 _negdi2 _cmpdi2 \
+	_fixdfdi _fixsfdi _fixunsdfdi _fixunssfdi _floatdisf \
+	_negdf2 _addsubdf3 _muldivdf3 _cmpdf2 _unorddf2 _fixdfsi _fixunsdfsi \
+	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2 \
+	_fixsfsi _fixunssfsi
+
 # Include the gcc personality routine
 LIB2ADDEH = $(srcdir)/unwind-c.c $(srcdir)/config/arm/pr-support.c

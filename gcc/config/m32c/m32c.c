@@ -391,7 +391,7 @@ class_can_hold_mode (reg_class_t rclass, enum machine_mode mode)
    we allow the user to limit the number of memregs available, in
    order to try to persuade gcc to try harder to use real registers.
 
-   Memregs are provided by m32c-lib1.S.
+   Memregs are provided by lib1funcs.S.
 */
 
 int ok_to_change_target_memregs = TRUE;

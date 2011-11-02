@@ -1,3 +1,16 @@
+LIB1ASMSRC    = ia64/lib1funcs.S
+
+# We use different names for the DImode div/mod files so that they won't
+# conflict with libgcc2.c files.  We used to use __ia64 as a prefix, now
+# we use __ as the prefix.  Note that L_divdi3 in libgcc2.c actually defines
+# a TImode divide function, so there is no actual overlap here between
+# libgcc2.c and lib1funcs.S.
+LIB1ASMFUNCS  = __divxf3 __divdf3 __divsf3 \
+	__divdi3 __moddi3 __udivdi3 __umoddi3 \
+	__divsi3 __modsi3 __udivsi3 __umodsi3 __save_stack_nonlocal \
+	__nonlocal_goto __restore_stack_nonlocal __trampoline \
+	_fixtfdi _fixunstfdi _floatditf
+
 CUSTOM_CRTSTUFF = yes
 
 # Assemble startup files.

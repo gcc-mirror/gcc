@@ -18,11 +18,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMSRC = c6x/lib1funcs.asm
-LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _udivmodsi4 _divmodsi4
-LIB1ASMFUNCS += _strasgi _strasgi_64plus _clzsi2 _clzdi2 _clz
-LIB1ASMFUNCS += _push_rts _pop_rts _call_stub
-
 LIB2FUNCS_EXCLUDE = _cmpdi2 _ucmpdi2 _gcc_bcmp _eprintf _clzsi _clzdi
 EXTRA_HEADERS += $(srcdir)/ginclude/unwind-arm-common.h
 

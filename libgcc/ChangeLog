@@ -1,5 +1,125 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.in ($(lib1asmfuncs-o), $(lib1asmfuncs-s-o)): Use
+	$(srcdir) to refer to $(LIB1ASMSRC).
+	Use $<.
+	* config/arm/bpabi-v6m.S, config/arm/bpabi.S,
+	config/arm/ieee754-df.S, config/arm/ieee754-sf.S,
+	config/arm/lib1funcs.S: New files.
+	* config/arm/libunwind.S [!__symbian__]: Use lib1funcs.S.
+	* config/arm/t-arm: New file.
+	* config/arm/t-bpabi (LIB1ASMFUNCS): Set.
+	* config/arm/t-elf, config/arm/t-linux, config/arm/t-linux-eabi,
+	config/arm/t-strongarm-elf: New files.
+	* config/arm/t-symbian (LIB1ASMFUNCS): Set.
+	* config/arm/t-vxworks, config/arm/t-wince-pe: New files.
+	* config/avr/lib1funcs.S: New file.
+	* config/avr/t-avr (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/bfin/lib1funcs.S, config/bfin/t-bfin: New files.
+	* config/c6x/lib1funcs.S: New file.
+	* config/c6x/t-elf (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/fr30/lib1funcs.S, config/fr30/t-fr30: New files.
+	* config/frv/lib1funcs.S: New file.
+	* config/frv/t-frv (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/h8300/lib1funcs.S, config/h8300/t-h8300: New files.
+	* config/i386/cygwin.S, config/i386/t-chkstk: New files.
+	* config/ia64/__divxf3.asm: Rename to ...
+	* config/ia64/__divxf3.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/_fixtfdi.asm: Rename to ...
+	* config/ia64/_fixtfdi.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/_fixunstfdi.asm: Rename to ...
+	* config/ia64/_fixunstfdi.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/_floatditf.asm: Rename to ...
+	* config/ia64/_floatditf.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/lib1funcs.S: New file.
+	* config/ia64/t-hpux (LIB1ASMFUNCS): Set.
+	* config/ia64/t-ia64 (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/ia64/t-softfp-compat (libgcc1-tf-compats): Adapt suffix.
+	* config/m32c/lib1funcs.S, config/m32c/t-m32c: New files.
+	* config/m68k/lb1sf68.S, config/m68k/t-floatlib: New files.
+	* config/mcore/lib1funcs.S, config/mcore/t-mcore: New files.
+	* config/mep/lib1funcs.S: New file.
+	* config/mep/t-mep (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/mips/mips16.S: New file.
+	* config/mips/t-mips16 (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/pa/milli64.S: New file.
+	* config/pa/t-linux, config/pa/t-linux64: New files.
+	* config/picochip/lib1funcs.S: New file.
+	* config/picochip/t-picochip (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/sh/lib1funcs.S, config/sh/lib1funcs.h: New files.
+	* config/sh/t-linux (LIB1ASMFUNCS_CACHE): Set.
+	* config/sh/t-netbsd: New file.
+	* config/sh/t-sh (LIB1ASMSRC, LIB1ASMFUNCS, LIB1ASMFUNCS_CACHE): Set.
+	Use $(srcdir) to refer to lib1funcs.S, adapt filename.
+	* config/sh/t-sh64: New file.
+	* config/sparc/lb1spc.S: New file.
+	* config/sparc/t-softmul (LIB1ASMSRC): Adapt sparc/lb1spc.asm
+	filename.
+	* config/v850/lib1funcs.S, config/v850/t-v850: New files.
+	* config/vax/lib1funcs.S, config/vax/t-linux: New files.
+	* config/xtensa/ieee754-df.S, config/xtensa/ieee754-sf.S,
+	config/xtensa/lib1funcs.S: New files.
+	* config/xtensa/t-xtensa (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config.host (arm-wrs-vxworks): Add arm/t-arm, arm/t-vxworks to
+	tmake_file.
+	(arm*-*-freebsd*): Add arm/t-arm, arm/t-strongarm-elf to tmake_file.
+	(arm*-*-netbsdelf*): Add arm/t-arm to tmake_file.
+	(arm*-*-linux*): Likewise.
+	Add arm/t-elf, arm/t-bpabi, arm/t-linux-eabi to tmake_file for
+	arm*-*-linux-*eabi, add arm/t-linux otherwise.
+	(arm*-*-uclinux*): Add arm/t-arm, arm/t-elf to tmake_file.
+	(arm*-*-ecos-elf): Likewise.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Likewise.
+	(arm*-*-rtems*): Likewise.
+	(arm*-*-elf): Likewise.
+	(arm*-wince-pe*): Add arm/t-arm, arm/t-wince-pe to tmake_file.
+	(avr-*-rtems*): Add to tmake_file, add avr/t-avr.
+	(bfin*-elf*): Add bfin/t-bfin to tmake_file.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Likewise.
+	(bfin*-rtems*): Likewise.
+	(bfin*-*): Likewise.
+	(fido-*-elf): Merge into m68k-*-elf*.
+	(fr30-*-elf)): Add fr30/t-fr30 to tmake_file.
+	(frv-*-*linux*): Add frv/t-frv to tmake_file.
+	(h8300-*-rtems*): Add h8300/t-h8300 to tmake_file.
+	(h8300-*-elf*): Likewise.
+	(hppa*64*-*-linux*): Add pa/t-linux, pa/t-linux64 to tmake_file.
+	(hppa*-*-linux*): Add pa/t-linux to tmake_file.
+	(i[34567]86-*-cygwin*): Add i386/t-chkstk to tmake_file.
+	(i[34567]86-*-mingw*): Likewise.
+	(x86_64-*-mingw*): Likewise.
+	(i[34567]86-*-interix3*): Likewise.
+	(ia64*-*-hpux*): Add ia64/t-ia64, ia64/t-hpux to tmake_file.
+	(ia64-hp-*vms*): Add ia64/t-ia64 to tmake_file.
+	(m68k-*-elf*): Also handle fido-*-elf.
+	Add m68k/t-floatlib to tmake_file.
+	(m68k-*-uclinux*): Add m68k/t-floatlib to tmake_file.
+	(m68k-*-linux*): Likewise.
+	(m68k-*-rtems*): Likewise.
+	(mcore-*-elf): Add mcore/t-mcore to tmake_file.
+	(sh-*-elf*, sh[12346l]*-*-elf*): Add sh/t-sh64 to tmake_file for
+	sh64*-*-*.
+	(sh-*-linux*, sh[2346lbe]*-*-linux*): Add sh/t-sh to tmake_file.
+	Add sh/t-sh64 to tmake_file for sh64*-*-linux*.
+	(sh-*-netbsdelf*, shl*-*-netbsdelf*, sh5-*-netbsd*)
+	(sh5l*-*-netbsd*, sh64-*-netbsd*, sh64l*-*-netbsd*): Add sh/t-sh,
+	sh/t-netbsd to tmake_file.
+	Add sh/t-sh64 to tmake_file for sh5*-*-netbsd*, sh64*-netbsd*.
+	(sh-*-rtems*): Add sh/t-sh to tmake_file.
+	(sh-wrs-vxworks): Likewise.
+	(sparc-*-linux*): Add sparc/t-softmul to tmake_file except for
+	*-leon[3-9]*.
+	(v850*-*-*): Add v850/t-v850 to tmake_file.
+	(vax-*-linux*): Add vax/t-linux to tmake_file.
+	(m32c-*-elf*, m32c-*-rtems*): Add m32c/t-m32c to tmake_file.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* crtstuff.c: New file.
 	* Makefile.in (CRTSTUFF_CFLAGS): Define.
 	(CRTSTUFF_T_CFLAGS): Define.

@@ -28,8 +28,5 @@ MULTILIB_DIRNAMES	=
 #MULTILIB_DIRNAMES    += fa606te fa626te fmp626 fa726te
 #MULTILIB_EXCEPTIONS  += *mthumb/*mcpu=fa606te *mthumb/*mcpu=fa626te *mthumb/*mcpu=fmp626 *mthumb/*mcpu=fa726te*
 
-# Use a version of div0 which raises SIGFPE, and a special __clear_cache.
-LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx _clear_cache
-
 LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic.c
 LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic-64bit.c
