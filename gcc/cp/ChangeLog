@@ -1,3 +1,9 @@
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50956
+	* typeck.c (build_const_cast_1): Fix -Wcast-qual for false
+	comp_ptr_ttypes_const.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (g++spec.o): Pass SHLIB instead of SHLIB_LINK.

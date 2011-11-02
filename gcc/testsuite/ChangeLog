@@ -1,3 +1,8 @@
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50956
+	* g++.dg/warn/Wcast-qual2.C: New.
+
 2011-11-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50763

@@ -6345,34 +6345,41 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 	return error_mark_node;
     }
 
-  if ((TYPE_PTR_P (src_type) || TYPE_PTRMEM_P (src_type))
-      && comp_ptr_ttypes_const (dst_type, src_type))
+  if (TYPE_PTR_P (src_type) || TYPE_PTRMEM_P (src_type))
     {
-      if (valid_p)
+      if (comp_ptr_ttypes_const (dst_type, src_type))
 	{
-	  *valid_p = true;
-	  /* This cast is actually a C-style cast.  Issue a warning if
-	     the user is making a potentially unsafe cast.  */
-	  check_for_casting_away_constness (src_type, dst_type, CAST_EXPR,
-					    complain);
+	  if (valid_p)
+	    {
+	      *valid_p = true;
+	      /* This cast is actually a C-style cast.  Issue a warning if
+		 the user is making a potentially unsafe cast.  */
+	      check_for_casting_away_constness (src_type, dst_type,
+						CAST_EXPR, complain);
+	    }
+	  if (reference_type)
+	    {
+	      expr = cp_build_addr_expr (expr, complain);
+	      expr = build_nop (reference_type, expr);
+	      return convert_from_reference (expr);
+	    }
+	  else
+	    {
+	      expr = decay_conversion (expr);
+	      /* build_c_cast puts on a NOP_EXPR to make the result not an
+		 lvalue.  Strip such NOP_EXPRs if VALUE is being used in
+		 non-lvalue context.  */
+	      if (TREE_CODE (expr) == NOP_EXPR
+		  && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
+		expr = TREE_OPERAND (expr, 0);
+	      return build_nop (dst_type, expr);
+	    }
 	}
-      if (reference_type)
-	{
-	  expr = cp_build_addr_expr (expr, complain);
-	  expr = build_nop (reference_type, expr);
-	  return convert_from_reference (expr);
-	}
-      else
-	{
-	  expr = decay_conversion (expr);
-	  /* build_c_cast puts on a NOP_EXPR to make the result not an
-	     lvalue.  Strip such NOP_EXPRs if VALUE is being used in
-	     non-lvalue context.  */
-	  if (TREE_CODE (expr) == NOP_EXPR
-	      && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
-	    expr = TREE_OPERAND (expr, 0);
-	  return build_nop (dst_type, expr);
-	}
+      else if (valid_p
+	       && !at_least_as_qualified_p (TREE_TYPE (dst_type),
+					    TREE_TYPE (src_type)))
+	check_for_casting_away_constness (src_type, dst_type, CAST_EXPR,
+					  complain);
     }
 
   if (complain & tf_error)
