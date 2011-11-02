@@ -1,5 +1,5 @@
 /* This is a software fixed-point library.
-   Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,6 +46,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 
 #ifndef MIN_UNITS_PER_WORD
 #define MIN_UNITS_PER_WORD UNITS_PER_WORD

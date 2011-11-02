@@ -84,12 +84,6 @@
 #			build-directory files by prefixing them with "./".
 #			All other files should relative to $srcdir/config.
 #
-#  libgcc_tm_file	A list of target macro files used only for code
-#			built for the target, not the host.  These files
-#			are relative to $srcdir/../libgcc/config and
-#			must not have the same names as files in
-#			$srcdir/config.
-#
 #  tm_p_file		Location of file with declarations for functions
 #			in $out_file.
 #
@@ -223,7 +217,6 @@ target_has_targetcm=no
 target_has_targetm_common=yes
 tm_defines=
 xm_defines=
-libgcc_tm_file=
 # Set this to force installation and use of collect2.
 use_collect2=
 # Set this to override the default target model.
@@ -831,7 +824,6 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	case ${target} in
 	arm*-*-linux-*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
-	    libgcc_tm_file="$libgcc_tm_file arm/bpabi-lib.h"
 	    tmake_file="$tmake_file arm/t-arm-elf arm/t-linux-eabi"
 	    # Define multilib configuration for arm-linux-androideabi.
 	    case ${target} in
@@ -859,7 +851,6 @@ arm*-*-uclinux*)		# ARM ucLinux
 	case ${target} in
 	arm*-*-uclinux*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h"
-	    libgcc_tm_file="$libgcc_tm_file arm/bpabi-lib.h"
   	    # The BPABI long long divmod functions return a 128-bit value in
 	    # registers r0-r3.  Correctly modeling that requires the use of
 	    # TImode.
@@ -880,7 +871,6 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	need_64bit_hwint=yes
 	default_use_cxa_atexit=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
-	libgcc_tm_file="$libgcc_tm_file arm/bpabi-lib.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	case ${target} in
 	arm*-*-eabi*)
@@ -889,7 +879,6 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	  ;;
 	arm*-*-symbianelf*)
 	  tm_file="${tm_file} arm/symbian.h"
-	  libgcc_tm_file="$libgcc_tm_file arm/symbian-lib.h"
 	  # We do not include t-bpabi for Symbian OS because the system
 	  # provides its own implementation of the BPABI functions.
 	  tmake_file="${tmake_file} arm/t-symbian"
@@ -913,14 +902,12 @@ arm*-wince-pe*)
 	;;
 avr-*-rtems*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
-	libgcc_tm_file="$libgcc_tm_file avr/avr-lib.h"
 	tmake_file="avr/t-avr t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h newlib-stdint.h"
-	libgcc_tm_file="$libgcc_tm_file avr/avr-lib.h"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
@@ -983,13 +970,11 @@ fr30-*-elf)
 	;;
 frv-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	libgcc_tm_file="${libgcc_tm_file} frv/frv-abi.h"
 	tmake_file=frv/t-frv
 	;;
 frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} \
 	         gnu-user.h linux.h glibc-stdint.h frv/linux.h"
-	libgcc_tm_file="${libgcc_tm_file} frv/frv-abi.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
 	;;
 moxie-*-elf)
@@ -1011,12 +996,10 @@ moxie-*-rtems*)
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 t-rtems h8300/t-rtems"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h h8300/rtems.h rtems.h newlib-stdint.h"
-	libgcc_tm_file="$libgcc_tm_file h8300/h8300-lib.h"
 	;;
 h8300-*-elf*)
 	tmake_file="h8300/t-h8300"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h newlib-stdint.h h8300/elf.h"
-	libgcc_tm_file="$libgcc_tm_file h8300/h8300-lib.h"
 	;;
 hppa*64*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
@@ -1161,13 +1144,11 @@ i[34567]86-*-darwin*)
 	# Baseline choice for a machine that allows m64 support.
 	with_cpu=${with_cpu:-core2}
 	tmake_file="${tmake_file} t-slibgcc"
-	libgcc_tm_file="$libgcc_tm_file i386/darwin-lib.h"
 	;;
 x86_64-*-darwin*)
 	with_cpu=${with_cpu:-core2}
 	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
 	tm_file="${tm_file} ${cpu_type}/darwin64.h"
-	libgcc_tm_file="$libgcc_tm_file i386/darwin-lib.h"
 	;;
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h"
@@ -2119,7 +2100,6 @@ rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	;;
 rx-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	libgcc_tm_file="${libgcc_tm_file} rx/rx-abi.h rx/rx-lib.h"
 	tmake_file="${tmake_file} rx/t-rx"
 	;;
 s390-*-linux*)
@@ -2448,7 +2428,6 @@ spu-*-elf*)
 tic6x-*-elf)
 	tm_file="elfos.h ${tm_file} c6x/elf-common.h c6x/elf.h"
 	tm_file="${tm_file} dbxelf.h tm-dwarf2.h newlib-stdint.h"
-	libgcc_tm_file="${libgcc_tm_file} c6x/c6x-abi.h"
 	tmake_file="c6x/t-c6x c6x/t-c6x-elf"
 	use_collect2=no
 	;;
@@ -2456,7 +2435,6 @@ tic6x-*-uclinux)
 	tm_file="elfos.h ${tm_file} gnu-user.h linux.h c6x/elf-common.h c6x/uclinux-elf.h"
 	tm_file="${tm_file} dbxelf.h tm-dwarf2.h glibc-stdint.h"
 	tm_file="${tm_file} ./sysroot-suffix.h"
-	libgcc_tm_file="${libgcc_tm_file} c6x/c6x-abi.h"
 	tmake_file="t-sysroot-suffix t-slibgcc"
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
 	use_collect2=no
@@ -2544,7 +2522,6 @@ esac
 case ${target} in
 i[34567]86-*-linux* | x86_64-*-linux*)
 	tmake_file="${tmake_file} i386/t-pmm_malloc i386/t-i386"
-	libgcc_tm_file="${libgcc_tm_file} i386/value-unwind.h"
 	;;
 i[34567]86-*-* | x86_64-*-*)
 	tmake_file="${tmake_file} i386/t-gmm_malloc i386/t-i386"

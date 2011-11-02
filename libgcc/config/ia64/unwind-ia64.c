@@ -31,6 +31,7 @@
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include "unwind.h"
 #include "unwind-ia64.h"
 #include "unwind-compat.h"

@@ -29,6 +29,7 @@
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>

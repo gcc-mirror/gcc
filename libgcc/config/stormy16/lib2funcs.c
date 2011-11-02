@@ -4,7 +4,7 @@
    files.  On this glorious day maybe this code can be integrated into
    it too.  */
 
-/* Copyright (C) 2005, 2008, 2009, 2010  Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2010, 2011  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -31,6 +31,7 @@
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 
 #ifdef HAVE_GAS_HIDDEN
 #define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))

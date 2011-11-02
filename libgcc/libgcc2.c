@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 
 #ifdef HAVE_GAS_HIDDEN
 #define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))

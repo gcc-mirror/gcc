@@ -1,5 +1,58 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (tm_file_): New variable.
+	Determine from tm_file.
+	(tm_file, tm_defines): Substitute.
+	* configure: Regenerate.
+	* mkheader.sh: New file.
+	* Makefile.in (clean): Remove libgcc_tm.h.
+	($(objects)): Depend on libgcc_tm.h.
+	(libgcc_tm_defines, libgcc_tm_file): New variables.
+	(libgcc_tm.h, libgcc_tm.stamp): New targets.
+	($(libgcc-objects), $(libgcc-s-objects), $(libgcc-eh-objects))
+	($(libgcov-objects), $(libunwind-objects), $(libunwind-s-objects))
+	($(extra-parts)): Depend on libgcc_tm.h.
+	* config.host (tm_defines, tm_file): New variable.
+	(arm*-*-linux*): Set tm_file for arm*-*-linux-*eabi.
+	(arm*-*-uclinux*): Set tm_file for arm*-*-uclinux*eabi.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Set tm_file.
+	(avr-*-rtems*): Likewise.
+	(avr-*-*): Likewise.
+	(frv-*-elf): Likewise.
+	(frv-*-*linux*): Likewise.
+	(h8300-*-rtems*): Likewise.
+	(h8300-*-elf*): Likewise.
+	(i[34567]86-*-darwin*): Likewise.
+	(x86_64-*-darwin*): Likewise.
+	(rx-*-elf): Likewise.
+	(tic6x-*-uclinux): Likewise.
+	(tic6x-*-elf): Likewise.
+	(i[34567]86-*-linux*, x86_64-*-linux*): Likewise.
+	* config/alpha/gthr-posix.c: Include libgcc_tm.h.
+	* config/i386/cygming-crtbegin.c: Likewise.
+	* config/i386/cygming-crtend.c: Likewise.
+	* config/ia64/fde-vms.c: Likewise.
+	* config/ia64/unwind-ia64.c: Likewise.
+	* config/libbid/bid_gcc_intrinsics.h: Likewise.
+	* config/rs6000/darwin-fallback.c: Likewise.
+	* config/stormy16/lib2funcs.c: Likewise.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise.
+	* crtstuff.c: Likewise.
+	* dfp-bit.h: Likewise.
+	* emutls.c: Likewise.
+	* fixed-bit.c: Likewise.
+	* fp-bit.c: Likewise.
+	* generic-morestack-thread.c: Likewise.
+	* generic-morestack.c: Likewise.
+	* libgcc2.c: Likewise.
+	* libgcov.c: Likewise.
+	* unwind-dw2-fde-dip.c: Likewise.
+	* unwind-dw2-fde.c: Likewise.
+	* unwind-dw2.c: Likewise.
+	* unwind-sjlj.c: Likewise.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac: Include ../config/picflag.m4.
 	(GCC_PICFLAG): Call it.
 	Substitute.

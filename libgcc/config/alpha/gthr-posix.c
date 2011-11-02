@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "tconfig.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 # define __gthrw_pragma(pragma) _Pragma (#pragma)
 /* Define so we provide weak definitions of functions used by libobjc only.  */
 #define _LIBOBJC_WEAK

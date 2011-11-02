@@ -1,5 +1,5 @@
 /* TLS emulation.
-   Copyright (C) 2006, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 This file is part of GCC.
@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include "gthr.h"
 
 typedef unsigned int word __attribute__((mode(word)));

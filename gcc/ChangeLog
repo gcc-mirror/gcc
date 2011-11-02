@@ -1,4 +1,32 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list):
+	Remove.
+	* configure: Regenerate.
+	* Makefile.in (libgcc_tm_file_list, libgcc_tm_include_list): Remove.
+	(TM_H): Remove libgcc_tm.h, $(libgcc_tm_file_list).
+	(libgcc_tm.h, cs-libgcc_tm.h): Remove.
+	(clean): Remove libgcc_tm.h
+	* mkconfig.sh: Don't include libgcc_tm.h in tm.h.
+	* config.gcc (libgcc_tm_file): Remove.
+	(arm*-*-linux*): Remove libgcc_tm_file for arm*-*-linux-*eabi.
+	(arm*-*-uclinux*): Remove libgcc_tm_file for arm*-*-uclinux*eabi.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Remove libgcc_tm_file.
+	(avr-*-rtems*): Likewise.
+	(avr-*-*): Likewise.
+	(frv-*-elf): Likewise.
+	(frv-*-*linux*): Likewise.
+	(h8300-*-rtems*): Likewise.
+	(h8300-*-elf*): Likewise.
+	(i[34567]86-*-darwin*): Likewise.
+	(x86_64-*-darwin*): Likewise.
+	(rx-*-elf*): Likewise.
+	(tic6x-*-elf): Likewise.
+	(tic6x-*-uclinux): Likewise.
+	(i[34567]86-*-linux*, x86_64-*-linux*): Likewise.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (LIBGCC2_DEBUG_CFLAGS LIBGCC2_CFLAGS)
 	(LIBGCC2_INCLUDES, TARGET_LIBGCC2_CFLAGS, LIB2FUNCS_EXTRA)

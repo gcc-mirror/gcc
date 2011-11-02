@@ -354,6 +354,16 @@ done
 tmake_file="${tmake_file_}"
 AC_SUBST(tmake_file)
 
+# Likewise export definitions for libgcc_tm.h
+tm_file_=
+for f in ${tm_file}
+do
+	tm_file_="${tm_file_} \$(srcdir)/config/$f"
+done
+tm_file="${tm_file_}"
+AC_SUBST(tm_file)
+AC_SUBST(tm_defines)
+
 # Substitute configuration variables
 AC_SUBST(cpu_type)
 AC_SUBST(extra_parts)

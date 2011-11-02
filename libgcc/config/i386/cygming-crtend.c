@@ -1,5 +1,5 @@
 /* crtend object for windows32 targets.
-   Copyright (C) 2007, 2008, 2009, 2010  Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Contributed by Danny Smith <dannysmith@users.sourceforge.net>
 
@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include "unwind-dw2-fde.h"
 
 #if defined(HAVE_LD_RO_RW_SECTION_MIXING)
