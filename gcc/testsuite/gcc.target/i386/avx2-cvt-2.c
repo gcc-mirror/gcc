@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx2 -fdump-tree-vect-details" } */
+/* { dg-options "-O3 -mavx2 -mtune=generic -fdump-tree-vect-details" } */
 
 #include "avx2-cvt-1.c"
 
