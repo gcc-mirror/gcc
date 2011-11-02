@@ -494,8 +494,8 @@ C ObjC C++ ObjC++ Warning
 Warn about use of multi-character character constants
 
 Wnarrowing
-C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(1)
--Wno-narrowing	  In C++0x mode, ignore ill-formed narrowing conversions within { }
+C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1)
+Warn about narrowing conversions within { } that are ill-formed in C++11
 
 Wnested-externs
 C ObjC Var(warn_nested_externs) Warning

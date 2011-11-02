@@ -2363,17 +2363,22 @@ an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
 by @option{-Wall}.
 
-@item -Wno-narrowing @r{(C++ and Objective-C++ only)}
+@item -Wnarrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
 @opindex Wno-narrowing
-With -std=c++11, suppress the diagnostic required by the standard for
-narrowing conversions within @samp{@{ @}}, e.g.
+Warn when a narrowing conversion prohibited by C++11 occurs within
+@samp{@{ @}}, e.g.
 
 @smallexample
 int i = @{ 2.2 @}; // error: narrowing from double to int
 @end smallexample
 
-This flag can be useful for compiling valid C++98 code in C++11 mode.
+This flag is included in @option{-Wall} and @option{-Wc++11-compat}.
+
+With -std=c++11, @option{-Wno-narrowing} suppresses the diagnostic
+required by the standard.  Note that this does not affect the meaning
+of well-formed code; narrowing conversions are still considered
+ill-formed in SFINAE context.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
@@ -4062,9 +4067,10 @@ ISO C and ISO C++, e.g.@: request for implicit conversion from
 @code{void *} to a pointer to non-@code{void} type.
 
 @item -Wc++11-compat @r{(C++ and Objective-C++ only)}
-Warn about C++ constructs whose meaning differs between ISO C++ 1998 and
-ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that will become keywords
-in ISO C++ 2011.  This warning is enabled by @option{-Wall}.
+Warn about C++ constructs whose meaning differs between ISO C++ 1998
+and ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that are keywords
+in ISO C++ 2011.  This warning turns on @option{-Wnarrowing} and is
+enabled by @option{-Wall}.
 
 @item -Wcast-qual
 @opindex Wcast-qual

@@ -804,8 +804,16 @@ check_narrowing (tree type, tree init)
     }
 
   if (!ok)
-    pedwarn (input_location, OPT_Wnarrowing, "narrowing conversion of %qE "
-	     "from %qT to %qT inside { }", init, ftype, type);
+    {
+      if (cxx_dialect >= cxx0x)
+	pedwarn (EXPR_LOC_OR_HERE (init), OPT_Wnarrowing,
+		 "narrowing conversion of %qE from %qT to %qT inside { }",
+		 init, ftype, type);
+      else
+	warning_at (EXPR_LOC_OR_HERE (init), OPT_Wnarrowing,
+		    "narrowing conversion of %qE from %qT to %qT inside { } "
+		    "is ill-formed in C++11", init, ftype, type);
+    }
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting
@@ -902,7 +910,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
     {
       tree *exp;
 
-      if (cxx_dialect != cxx98 && nested)
+      if (nested)
 	check_narrowing (type, init);
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,

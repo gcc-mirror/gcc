@@ -1,5 +1,13 @@
 2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/50810
+	* typeck2.c (check_narrowing): Adjust OPT_Wnarrowing diagnostics.
+	(digest_init_r): Call check_narrowing irrespective of the C++ dialect.
+	* decl.c (check_initializer): Likewise.
+	* semantics.c (finish_compound_literal): Likewise.
+
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/50956
 	* typeck.c (build_const_cast_1): Fix -Wcast-qual for false
 	comp_ptr_ttypes_const.

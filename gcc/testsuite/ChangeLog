@@ -1,3 +1,9 @@
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50810
+	* g++.dg/cpp0x/warn_cxx0x2.C: New.
+	* g++.dg/cpp0x/warn_cxx0x3.C: Likewise.
+
 2011-11-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50769
