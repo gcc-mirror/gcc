@@ -121,7 +121,7 @@ installcheck:
 .PHONY: all clean
 
 clean:
-	-rm -f config.h stamp-h stmp-ldirs libgcc.map
+	-rm -f config.h libgcc_tm.h stamp-h stmp-ldirs libgcc.map
 	-rm -f *$(objext)
 	-rm -f *.dep
 	-rm -f *.a
@@ -337,6 +337,16 @@ SHLIBUNWIND_INSTALL =
 
 tmake_file = @tmake_file@
 include $(srcdir)/empty.mk $(tmake_file)
+
+# Collect target defines and headers from config.host.
+libgcc_tm_defines = @tm_defines@
+libgcc_tm_file = @tm_file@
+libgcc_tm.h: libgcc_tm.stamp; @true
+libgcc_tm.stamp:
+	DEFINES='$(libgcc_tm_defines)' HEADERS='$(libgcc_tm_file)' \
+		$(srcdir)/mkheader.sh > tmp-libgcc_tm.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-libgcc_tm.h libgcc_tm.h
+	echo timestamp > $@
 
 # Only handle shared libraries if both:
 #   - the user requested them
@@ -983,6 +993,11 @@ libgcc-extra-parts: $(EXTRA_PARTS)
 	done
 
 all: $(extra-parts)
+
+$(libgcc-objects) $(libgcc-s-objects) $(libgcc-eh-objects) \
+	$(libgcov-objects) \
+	$(libunwind-objects) $(libunwind-s-objects) \
+	$(extra-parts): libgcc_tm.h
 
 install-unwind_h:
 	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \

@@ -1715,13 +1715,6 @@ for f in $tm_file; do
   esac
 done
 
-libgcc_tm_file_list=
-libgcc_tm_include_list=
-for f in $libgcc_tm_file; do
-  libgcc_tm_file_list="${libgcc_tm_file_list} \$(srcdir)/../libgcc/config/$f"
-  libgcc_tm_include_list="${libgcc_tm_include_list} ../libgcc/config/$f"
-done
-
 tm_p_file_list=
 tm_p_include_list=
 for f in $tm_p_file; do
@@ -4972,8 +4965,6 @@ AC_SUBST(thread_file)
 AC_SUBST(tm_file_list)
 AC_SUBST(tm_include_list)
 AC_SUBST(tm_defines)
-AC_SUBST(libgcc_tm_file_list)
-AC_SUBST(libgcc_tm_include_list)
 AC_SUBST(tm_p_file_list)
 AC_SUBST(tm_p_include_list)
 AC_SUBST(xm_file_list)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2007, 2009, 2010  Free Software Foundation, Inc.
+/* Copyright (C) 2007, 2009, 2010, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 
 #ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE

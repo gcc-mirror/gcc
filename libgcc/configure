@@ -593,6 +593,8 @@ LIBOBJS
 asm_hidden_op
 extra_parts
 cpu_type
+tm_defines
+tm_file
 tmake_file
 sfp_machine_header
 set_use_emutls
@@ -4783,6 +4785,16 @@ do
 	fi
 done
 tmake_file="${tmake_file_}"
+
+
+# Likewise export definitions for libgcc_tm.h
+tm_file_=
+for f in ${tm_file}
+do
+	tm_file_="${tm_file_} \$(srcdir)/config/$f"
+done
+tm_file="${tm_file_}"
+
 
 
 # Substitute configuration variables

@@ -490,8 +490,6 @@ md_file=$(srcdir)/config/@md_file@
 tm_file_list=@tm_file_list@
 tm_include_list=@tm_include_list@
 tm_defines=@tm_defines@
-libgcc_tm_file_list=@libgcc_tm_file_list@
-libgcc_tm_include_list=@libgcc_tm_include_list@
 tm_p_file_list=@tm_p_file_list@
 tm_p_include_list=@tm_p_include_list@
 build_xm_file_list=@build_xm_file_list@
@@ -790,8 +788,7 @@ CONFIG_H  = config.h  $(host_xm_file_list)
 TCONFIG_H = tconfig.h $(xm_file_list)
 TM_P_H    = tm_p.h    $(tm_p_file_list)
 GTM_H     = tm.h      $(tm_file_list) insn-constants.h
-TM_H      = $(GTM_H) libgcc_tm.h $(libgcc_tm_file_list) insn-flags.h \
-	$(OPTIONS_H)
+TM_H      = $(GTM_H) insn-flags.h $(OPTIONS_H)
 
 # Variables for version information.
 BASEVER     := $(srcdir)/BASE-VER  # 4.x.y
@@ -1599,7 +1596,6 @@ config.h: cs-config.h ; @true
 bconfig.h: cs-bconfig.h ; @true
 tconfig.h: cs-tconfig.h ; @true
 tm.h: cs-tm.h ; @true
-libgcc_tm.h: cs-libgcc_tm.h ; @true
 tm_p.h: cs-tm_p.h ; @true
 
 cs-config.h: Makefile
@@ -1621,11 +1617,6 @@ cs-tm.h: Makefile
 	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
 	HEADERS="$(tm_include_list)" DEFINES="$(tm_defines)" \
 	$(SHELL) $(srcdir)/mkconfig.sh tm.h
-
-cs-libgcc_tm.h: Makefile
-	TARGET_CPU_DEFAULT="" \
-	HEADERS="$(libgcc_tm_include_list)" DEFINES="" \
-	$(SHELL) $(srcdir)/mkconfig.sh libgcc_tm.h
 
 cs-tm_p.h: Makefile
 	TARGET_CPU_DEFAULT="" \
@@ -4425,7 +4416,7 @@ clean: mostlyclean lang.clean
 	-rm -f libgcc.a libgcc_eh.a libgcov.a
 	-rm -f libgcc_s*
 	-rm -f libunwind*
-	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h libgcc_tm.h
+	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h
 	-rm -f options.c options.h optionlist
 	-rm -f cs-*
 	-rm -f doc/*.dvi

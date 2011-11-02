@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 
 /* If inhibit_libc is defined, we can not compile this file.  The
    effect is that people will not be able to use -fsplit-stack.  That

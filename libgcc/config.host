@@ -60,6 +60,11 @@
 #  tmake_file		A list of machine-description-specific
 #			makefile-fragments, if different from
 #			"$cpu_type/t-$cpu_type".
+#  tm_defines		List of target macros to define for all compilations.
+#  tm_file		A list of target macro files used only for code
+#			built for the target, not the host.  These files
+#			are relative to $srcdir/config and must not have
+#			the same names as files in $srcdir/../gcc/config.
 #  unwind_header	The name of the header file declaring the unwind
 #			runtime interface routines.
 
@@ -67,6 +72,8 @@ asm_hidden_op=.hidden
 enable_execute_stack=
 extra_parts=
 tmake_file=
+tm_file=
+tm_define=
 md_unwind_header=no-unwind.h
 unwind_header=unwind-generic.h
 
@@ -329,6 +336,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	case ${host} in
 	arm*-*-linux-*eabi)
 	  tmake_file="${tmake_file} arm/t-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
+	  tm_file="$tm_file arm/bpabi-lib.h"
 	  unwind_header=config/arm/unwind-arm.h
 	  ;;
 	*)
@@ -342,6 +350,7 @@ arm*-*-uclinux*)		# ARM ucLinux
 	case ${host} in
 	arm*-*-uclinux*eabi)
 	  tmake_file="${tmake_file} arm/t-bpabi"
+	  tm_file="$tm_file arm/bpabi-lib.h"
 	  unwind_header=config/arm/unwind-arm.h
 	  ;;
 	esac
@@ -354,6 +363,7 @@ arm*-*-ecos-elf)
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* )
 	tmake_file="${tmake_file} arm/t-arm arm/t-elf t-fixedpoint-gnu-prefix"
+	tm_file="$tm_file arm/bpabi-lib.h"
 	case ${host} in
 	arm*-*-eabi*)
 	  tmake_file="${tmake_file} arm/t-bpabi"
@@ -361,6 +371,7 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	  ;;
 	arm*-*-symbianelf*)
 	  tmake_file="${tmake_file} arm/t-symbian t-slibgcc-nolc-override"
+	  tm_file="$tm_file arm/symbian-lib.h"
 	  # Symbian OS provides its own startup code.
 	  ;;
 	esac
@@ -380,12 +391,14 @@ arm*-wince-pe*)
 	;;
 avr-*-rtems*)
 	tmake_file="$tmake_file avr/t-avr t-fpbit"
+	tm_file="$tm_file avr/avr-lib.h"
 	# Don't use default.
 	extra_parts=
 	;;
 avr-*-*)
 	# Make HImode functions for AVR
 	tmake_file="${cpu_type}/t-avr t-fpbit"
+	tm_file="$tm_file avr/avr-lib.h"
 	;;
 bfin*-elf*)
 	tmake_file="bfin/t-bfin bfin/t-elf bfin/t-crtlibid bfin/t-crtstuff t-fdpbit"
@@ -434,18 +447,22 @@ fr30-*-elf)
 	;;
 frv-*-elf)
 	tmake_file="$tmake_file frv/t-frv t-fdpbit"
+	tm_file="$tm_file frv/frv-abi.h"
 	# Don't use crtbegin.o, crtend.o.
 	extra_parts="frvbegin.o frvend.o"
 	;;
 frv-*-*linux*)
 	tmake_file="$tmake_file frv/t-frv frv/t-linux t-fdpbit"
+	tm_file="$tm_file frv/frv-abi.h"
 	;;
 h8300-*-rtems*)
 	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
+	tm_file="$tm_file h8300/h8300-lib.h"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 h8300-*-elf*)
 	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
+	tm_file="$tm_file h8300/h8300-lib.h"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 hppa*64*-*-linux*)
@@ -499,10 +516,12 @@ hppa[12]*-*-hpux11*)
 	;;
 i[34567]86-*-darwin*)
 	tmake_file="$tmake_file i386/t-crtpc i386/t-crtfm"
+	tm_file="$tm_file i386/darwin-lib.h"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
 x86_64-*-darwin*)
 	tmake_file="$tmake_file i386/t-crtpc i386/t-crtfm"
+	tm_file="$tm_file i386/darwin-lib.h"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
 i[34567]86-*-elf*)
@@ -907,6 +926,7 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	;;
 rx-*-elf)
 	tmake_file="rx/t-rx t-fdpbit"
+	tm_file="$tm_file rx/rx-abi.h rx/rx-lib.h"
 	;;
 s390-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
@@ -1046,11 +1066,13 @@ spu-*-elf*)
 	;;
 tic6x-*-uclinux)
 	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp c6x/t-elf  c6x/t-uclinux t-crtstuff-pic t-libgcc-pic t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-gnu-prefix"
+	tm_file="$tm_file c6x/c6x-abi.h"
 	extra_parts="crtbeginS.o crtendS.o crti.o crtn.o"
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
 tic6x-*-elf)
 	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix c6x/t-elf"
+	tm_file="$tm_file c6x/c6x-abi.h"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o"
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
@@ -1127,5 +1149,6 @@ i[34567]86-*-linux* | x86_64-*-linux*)
 	if test "${host_address}" = 64; then
 		tmake_file="${tmake_file} i386/${host_address}/t-softfp-compat"
 	fi
+	tm_file="${tm_file} i386/value-unwind.h"
 	;;
 esac

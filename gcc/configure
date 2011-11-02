@@ -618,8 +618,6 @@ xm_include_list
 xm_file_list
 tm_p_include_list
 tm_p_file_list
-libgcc_tm_include_list
-libgcc_tm_file_list
 tm_defines
 tm_include_list
 tm_file_list
@@ -11789,13 +11787,6 @@ for f in $tm_file; do
   esac
 done
 
-libgcc_tm_file_list=
-libgcc_tm_include_list=
-for f in $libgcc_tm_file; do
-  libgcc_tm_file_list="${libgcc_tm_file_list} \$(srcdir)/../libgcc/config/$f"
-  libgcc_tm_include_list="${libgcc_tm_include_list} ../libgcc/config/$f"
-done
-
 tm_p_file_list=
 tm_p_include_list=
 for f in $tm_p_file; do
@@ -18068,7 +18059,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18071 "configure"
+#line 18062 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18174,7 +18165,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18177 "configure"
+#line 18168 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26954,8 +26945,6 @@ fi
 
 
 # Substitute configuration variables
-
-
 
 
 
