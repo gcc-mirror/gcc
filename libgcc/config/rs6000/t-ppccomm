@@ -7,7 +7,7 @@ LIB2ADD_ST += \
 	   $(srcdir)/config/rs6000/crtresfpr.S \
 	   $(srcdir)/config/rs6000/crtsavgpr.S \
 	   $(srcdir)/config/rs6000/crtresgpr.S \
-	   $(srcdir)/config/rs6000/crtresxfpr.S 
+	   $(srcdir)/config/rs6000/crtresxfpr.S \
 	   $(srcdir)/config/rs6000/crtresxgpr.S \
 	   $(srcdir)/config/rs6000/e500crtres32gpr.S \
 	   $(srcdir)/config/rs6000/e500crtres64gpr.S \
@@ -21,7 +21,7 @@ LIB2ADD_ST += \
 	   $(srcdir)/config/rs6000/e500crtsav64gprctr.S \
 	   $(srcdir)/config/rs6000/e500crtsavg32gpr.S \
 	   $(srcdir)/config/rs6000/e500crtsavg64gpr.S \
-	   $(srcdir)/config/rs6000/e500crtsavg64gprctr.S
+	   $(srcdir)/config/rs6000/e500crtsavg64gprctr.S \
 	   $(srcdir)/config/rs6000/eabi.S
 
 # We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
