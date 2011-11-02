@@ -4726,11 +4726,20 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      /* 4. Handle invariant-load.  */
 	      if (inv_p && !bb_vinfo)
 		{
-		  tree vec_inv;
+		  tree tem, vec_inv;
 		  gimple_stmt_iterator gsi2 = *gsi;
 		  gcc_assert (!strided_load);
 		  gsi_next (&gsi2);
-		  vec_inv = build_vector_from_val (vectype, scalar_dest);
+		  tem = scalar_dest;
+		  if (!useless_type_conversion_p (TREE_TYPE (vectype),
+						  TREE_TYPE (tem)))
+		    {
+		      tem = fold_convert (TREE_TYPE (vectype), tem);
+		      tem = force_gimple_operand_gsi (&gsi2, tem, true,
+						      NULL_TREE, true,
+						      GSI_SAME_STMT);
+		    }
+		  vec_inv = build_vector_from_val (vectype, tem);
 		  new_temp = vect_init_vector (stmt, vec_inv,
 					       vectype, &gsi2);
 		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
