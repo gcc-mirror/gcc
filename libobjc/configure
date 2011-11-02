@@ -11248,18 +11248,6 @@ done
 # Miscellanea
 # -----------
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for thread model used by GCC" >&5
-$as_echo_n "checking for thread model used by GCC... " >&6; }
-target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
-$as_echo "$target_thread_file" >&6; }
-
-if test $target_thread_file != single; then
-
-$as_echo "#define HAVE_GTHR_DEFAULT 1" >>confdefs.h
-
-fi
-
 # Check if we have thread-local storage
 
 
@@ -11483,7 +11471,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 11486 "configure"
+#line 11474 "configure"
 @interface Frob
 @end
 @implementation Frob

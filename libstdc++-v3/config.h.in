@@ -171,10 +171,6 @@
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 
-/* Define if gthr-default.h exists (meaning that threading support is
-   enabled). */
-#undef HAVE_GTHR_DEFAULT
-
 /* Define to 1 if you have the `hypot' function. */
 #undef HAVE_HYPOT
 

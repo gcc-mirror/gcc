@@ -27,6 +27,26 @@
 	* testsuite/26_numerics/random/shuffle_order_engine/
 	operators/serialize.cc: Likewise.
 
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE): Determine and substitute
+	toplevel_builddir.
+	(GLIBCXX_ENABLE_THREADS): Remove glibcxx_thread_h,
+	HAVE_GTHR_DEFAULT, enable_thread.
+	(GLIBCXX_CHECK_GTHREADS): Reflect gthr move to libgcc.
+	* include/Makefile.am (thread_host_headers): Remove
+	${host_builddir}/gthr-tpf.h.
+	(${host_builddir}/gthr.h): Reflect gthr move to libgcc.
+	Use $<.
+	(${host_builddir}/gthr-single.h): Likewise.
+	(${host_builddir}/gthr-posix.h): Likewise.
+	(${host_builddir}/gthr-tpf.h): Remove.
+	(${host_builddir}/gthr-default.h): Likewise.
+	* configure, config.h.in: Regenerate.
+	* Makefile.in, doc/Makefile.in, include/Makefile.in,
+	libsupc++/Makefile.in, po/Makefile.in, python/Makefile.in,
+	src/Makefile.intestsuite/Makefile.in: Regenerate.
+
 2011-11-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config: Add tr2 to versioned namespaces.

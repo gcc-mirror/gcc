@@ -2273,7 +2273,7 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
 
-  # FIXME: Do we need something for CFLAGS below?
+
 
 case "${host}" in
     # PIC is the default on some targets or must not be used.
@@ -2288,24 +2288,23 @@ case "${host}" in
     hppa*64*-*-hpux*)
 	# PIC is the default for 64-bit PA HP-UX.
 	;;
-    i3456786-*-cygwin* | i3456786-*-mingw* | x86_64-*-mingw*)
+    i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
 	;;
-    i3456786-*-interix3*)
+    i[34567]86-*-interix3*)
 	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
 	# Instead, we relocate shared libraries at runtime.
 	;;
-    i3456786-*-nto-qnx*)
+    i[34567]86-*-nto-qnx*)
 	# QNX uses GNU C++, but need to define -shared option too, otherwise
 	# it will coredump.
 	PICFLAG='-fPIC -shared'
 	;;
-    i3456786-pc-msdosdjgpp*)
+    i[34567]86-pc-msdosdjgpp*)
 	# DJGPP does not support shared libraries at all.
 	;;
     ia64*-*-hpux*)
 	# On IA64 HP-UX, PIC is the default but the pic flag
 	# sets the default TLS model and affects inlining.
-	# FIXME: Still in gcc 4.7?
 	PICFLAG=-fPIC
 	;;
     mips-sgi-irix6*)
@@ -2317,7 +2316,7 @@ case "${host}" in
 
     # Some targets support both -fPIC and -fpic, but prefer the latter.
     # FIXME: Why?
-    i3456786-*-* | x86_64-*-*)
+    i[34567]86-*-* | x86_64-*-*)
 	PICFLAG=-fpic
 	;;
     m68k-*-*)
@@ -2327,7 +2326,7 @@ case "${host}" in
 	PICFLAG=-fpic
 	;;
     # FIXME: Override -fPIC default in libgcc only?
-    sh-*-linux* | sh2346lbe*-*-linux*)
+    sh-*-linux* | sh[2346lbe]*-*-linux*)
 	PICFLAG=-fpic
 	;;
     # FIXME: Simplify to sh*-*-netbsd*?
@@ -2335,18 +2334,18 @@ case "${host}" in
       sh64-*-netbsd* | sh64l*-*-netbsd*)
 	PICFLAG=-fpic
 	;;
-    sparc*-*-*)
-	# FIXME: This could be done everywhere -fpic and -fPIC differ.
-	case "${CFLAGS}" in
-	    *-fpic*)
-		PICFLAG=-fpic
-		;;
-	    *)
-		PICFLAG=-fPIC
-		;;
-	esac ;;
     # Default to -fPIC unless specified otherwise.
     *)
+	PICFLAG=-fPIC
+	;;
+esac
+
+# If the user explicitly uses -fpic/-fPIC, keep that.
+case "${CFLAGS}" in
+    *-fpic*)
+	PICFLAG=-fpic
+	;;
+    *-fPIC*)
 	PICFLAG=-fPIC
 	;;
 esac
@@ -4797,6 +4796,20 @@ tm_file="${tm_file_}"
 
 
 
+# Map from thread model to thread header.
+case $target_thread_file in
+    aix)	thread_header=config/rs6000/gthr-aix.h ;;
+    dce)	thread_header=config/pa/gthr-dce.h ;;
+    lynx)	thread_header=config/gthr-lynx.h ;;
+    mipssde)	thread_header=config/mips/gthr-mipssde.h ;;
+    posix)	thread_header=config/gthr-posix.h ;;
+    rtems)	thread_header=config/gthr-rtems.h ;;
+    single)	thread_header=gthr-single.h ;;
+    tpf)	thread_header=config/s390/gthr-tpf.h ;;
+    vxworks)	thread_header=config/gthr-vxworks.h ;;
+    win32)	thread_header=config/i386/gthr-win32.h ;;
+esac
+
 # Substitute configuration variables
 
 
@@ -4808,6 +4821,8 @@ ac_config_links="$ac_config_links unwind.h:$unwind_header"
 ac_config_links="$ac_config_links md-unwind-support.h:config/$md_unwind_header"
 
 ac_config_links="$ac_config_links sfp-machine.h:config/$sfp_machine_header"
+
+ac_config_links="$ac_config_links gthr-default.h:$thread_header"
 
 
 # We need multilib support.
@@ -5538,6 +5553,7 @@ do
     "unwind.h") CONFIG_LINKS="$CONFIG_LINKS unwind.h:$unwind_header" ;;
     "md-unwind-support.h") CONFIG_LINKS="$CONFIG_LINKS md-unwind-support.h:config/$md_unwind_header" ;;
     "sfp-machine.h") CONFIG_LINKS="$CONFIG_LINKS sfp-machine.h:config/$sfp_machine_header" ;;
+    "gthr-default.h") CONFIG_LINKS="$CONFIG_LINKS gthr-default.h:$thread_header" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 

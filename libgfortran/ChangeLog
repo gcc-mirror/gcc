@@ -1,3 +1,13 @@
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (AM_CPPFLAGS): Add
+	-I$(srcdir)/$(MULTISRCTOP)../libgcc, -I$(MULTIBUILDTOP)../libgcc.
+	* Makefile.in: Regenerate.
+	* acinclude.m4 (LIBGFOR_CHECK_GTHR_DEFAULT): Remove.
+	* configure.ac (LIBGFOR_CHECK_GTHR_DEFAULT): Likewise.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2011-11-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/io.h (next_available_newunit): Remove prototype.

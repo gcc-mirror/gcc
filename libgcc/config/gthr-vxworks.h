@@ -1,6 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc for VxWorks.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2008, 2009, 2011
+   Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@wrs.com>.
 
 This file is part of GCC.
@@ -30,7 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef _LIBOBJC
 
 /* libobjc requires the optional pthreads component.  */
-#include "gthr-posix.h"
+#include "config/gthr-posix.h"
 
 #else
 #ifdef __cplusplus

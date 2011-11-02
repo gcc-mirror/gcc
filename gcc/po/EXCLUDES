@@ -24,16 +24,6 @@
 #   These files are part of libgcc, or target headers provided by gcc.
 gcov-io.h
 gcov-iov.c
-gthr-aix.h
-gthr-dce.h
-gthr-posix.c
-gthr-posix.h
-gthr-rtems.h
-gthr-single.h
-gthr-solaris.h
-gthr-vxworks.h
-gthr-win32.h
-gthr.h
 limitx.h
 limity.h
 

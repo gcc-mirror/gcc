@@ -17,10 +17,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Some runtime modules need these.  Can't set extra_headers in config.gcc
-# because the paths are always made absolute to the cpu config dir.
-EXTRA_HEADERS += $(srcdir)/gthr-vxworks.h gthr-default.h
-
 # Both the kernel and RTP headers provide limits.h.
 LIMITS_H_TEST = true
 

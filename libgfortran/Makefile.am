@@ -56,7 +56,9 @@ libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
 ## use -iquote
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config $(LIBQUADINCLUDE) \
-	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc
+	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc \
+	      -I$(srcdir)/$(MULTISRCTOP)../libgcc \
+	      -I$(MULTIBUILDTOP)../libgcc
 
 # Fortran rules for complex multiplication and division
 AM_CFLAGS += -fcx-fortran-rules

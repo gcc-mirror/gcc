@@ -550,9 +550,6 @@ LIBGFOR_CHECK_ATTRIBUTE_ALIAS
 # Check out sync builtins support.
 LIBGFOR_CHECK_SYNC_FETCH_AND_ADD
 
-# Check out thread support.
-LIBGFOR_CHECK_GTHR_DEFAULT
-
 # Check out #pragma weak.
 LIBGFOR_GTHREAD_WEAK
 

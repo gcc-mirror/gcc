@@ -217,15 +217,6 @@ AC_CHECK_HEADERS(sched.h)
 # Miscellanea
 # -----------
 
-AC_MSG_CHECKING([for thread model used by GCC])
-target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-AC_MSG_RESULT([$target_thread_file]) 
-
-if test $target_thread_file != single; then
-  AC_DEFINE(HAVE_GTHR_DEFAULT, 1,
-        [Define if the compiler has a thread header that is non single.])
-fi 
-
 # Check if we have thread-local storage
 GCC_CHECK_TLS
 

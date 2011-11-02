@@ -1,4 +1,25 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gthr-single.h, gthr.h: Move to ../libgcc.
+	* gthr-aix.h: Move to ../libgcc/config/rs6000.
+	* gthr-dce.h: Move to ../libgcc/config/pa.
+	* gthr-lynx.h: Move to ../libgcc/config.
+	* gthr-mipssde.h: Move to ../libgcc/config/mips.
+	* gthr-posix.h: Move to ../libgcc/config.
+	* gthr-rtems.h: Likewise.
+	* gthr-tpf.h: Move to ../libgcc/config/s390.
+	* gthr-vxworks.h: Move to ../libgcc/config.
+	* gthr-win32.h: Move to ../libgcc/config/i386.
+	* configure.ac (gthread_flags): Remove
+	(gthr-default.h): Don't create.
+	(thread_file): Don't substitute.
+	* configure: Regenerate.
+	* Makefile.in (GCC_THREAD_FILE): Remove.
+	(GTHREAD_FLAGS): Remove.
+	(libgcc.mvars): Remove GTHREAD_FLAGS.
+	* config/t-vxworks (EXTRA_HEADERS): Remove.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list):

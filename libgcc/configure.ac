@@ -364,6 +364,20 @@ tm_file="${tm_file_}"
 AC_SUBST(tm_file)
 AC_SUBST(tm_defines)
 
+# Map from thread model to thread header.
+case $target_thread_file in
+    aix)	thread_header=config/rs6000/gthr-aix.h ;;
+    dce)	thread_header=config/pa/gthr-dce.h ;;
+    lynx)	thread_header=config/gthr-lynx.h ;;
+    mipssde)	thread_header=config/mips/gthr-mipssde.h ;;
+    posix)	thread_header=config/gthr-posix.h ;;
+    rtems)	thread_header=config/gthr-rtems.h ;;
+    single)	thread_header=gthr-single.h ;;
+    tpf)	thread_header=config/s390/gthr-tpf.h ;;
+    vxworks)	thread_header=config/gthr-vxworks.h ;;
+    win32)	thread_header=config/i386/gthr-win32.h ;;
+esac
+
 # Substitute configuration variables
 AC_SUBST(cpu_type)
 AC_SUBST(extra_parts)
@@ -372,6 +386,7 @@ AC_CONFIG_LINKS([enable-execute-stack.c:$enable_execute_stack])
 AC_CONFIG_LINKS([unwind.h:$unwind_header])
 AC_CONFIG_LINKS([md-unwind-support.h:config/$md_unwind_header])
 AC_CONFIG_LINKS([sfp-machine.h:config/$sfp_machine_header])
+AC_CONFIG_LINKS([gthr-default.h:$thread_header])
 
 # We need multilib support.
 AC_CONFIG_FILES([Makefile])

@@ -1,5 +1,19 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gthr-single.h, gthr.h: New files.
+	* config/gthr-lynx.h, config/gthr-posix.h., config/gthr-rtems.h,
+	config/gthr-vxworks.h, config/i386/gthr-win32.h,
+	config/mips/gthr-mipssde.h, config/pa/gthr-dce.h,
+	config/rs6000/gthr-aix.h, config/s390/gthr-tpf.h: New files.
+	* config/i386/gthr-win32.c: Include "gthr-win32.h".
+	* configure.ac (thread_header): New variable.
+	Set it depending on target_thread_file.
+	(gthr-default.h): Link from $thread_header.
+	* configure: Regenerate.
+	* Makefile.in (LIBGCC2_CFLAGS): Remove $(GTHREAD_FLAGS).
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (tm_file_): New variable.
 	Determine from tm_file.
 	(tm_file, tm_defines): Substitute.
