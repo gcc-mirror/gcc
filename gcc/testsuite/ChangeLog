@@ -1,5 +1,10 @@
 2011-11-02  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/50763
+	* g++.dg/pr50763-3.C: New test.
+
+2011-11-02  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/50672
 	* g++.dg/pr50672.C: New test.
 
