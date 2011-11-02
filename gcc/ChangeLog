@@ -1,3 +1,19 @@
+2011-11-01  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (struct macro_hash_value): Define.
+	(macro_hash_hashval): New static function.
+	(macro_hash_eq, macro_hash_del): New static functions.
+	(go_define): Use macro_hash_value to store values in macro_hash.
+	Replace an old value on a redefinition.  Don't print anything to
+	go_dump_file.
+	(go_undef): Delete the entry from the hash table.
+	(go_output_typedef): For an enum, use macro_hash_value, and don't
+	print anything to go_dump_file.
+	(go_print_macro): New static function.
+	(go_finish): Traverse macro_hash with go_print_macro.
+	(dump_go_spec_init): Update macro_hash creation for
+	macro_hash_value.
+
 2011-11-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_code_end): Declare ATTRIBUTE_UNUSED.

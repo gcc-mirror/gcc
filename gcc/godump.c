@@ -62,7 +62,47 @@ static GTY(()) VEC(tree,gc) *queue;
 
 static htab_t macro_hash;
 
-/* For the hash tables.  */
+/* The type of a value in macro_hash.  */
+
+struct macro_hash_value
+{
+  /* The name stored in the hash table.  */
+  char *name;
+  /* The value of the macro.  */
+  char *value;
+};
+
+/* Calculate the hash value for an entry in the macro hash table.  */
+
+static hashval_t
+macro_hash_hashval (const void *val)
+{
+  const struct macro_hash_value *mhval = (const struct macro_hash_value *) val;
+  return htab_hash_string (mhval->name);
+}
+
+/* Compare values in the macro hash table for equality.  */
+
+static int
+macro_hash_eq (const void *v1, const void *v2)
+{
+  const struct macro_hash_value *mhv1 = (const struct macro_hash_value *) v1;
+  const struct macro_hash_value *mhv2 = (const struct macro_hash_value *) v2;
+  return strcmp (mhv1->name, mhv2->name) == 0;
+}
+
+/* Free values deleted from the macro hash table.  */
+
+static void
+macro_hash_del (void *v)
+{
+  struct macro_hash_value *mhv = (struct macro_hash_value *) v;
+  XDELETEVEC (mhv->name);
+  XDELETEVEC (mhv->value);
+  XDELETE (mhv);
+}
+
+/* For the string hash tables.  */
 
 static int
 string_hash_eq (const void *y1, const void *y2)
@@ -77,10 +117,12 @@ go_define (unsigned int lineno, const char *buffer)
 {
   const char *p;
   const char *name_end;
+  size_t out_len;
   char *out_buffer;
   char *q;
   bool saw_operand;
   bool need_operand;
+  struct macro_hash_value *mhval;
   char *copy;
   hashval_t hashval;
   void **slot;
@@ -105,17 +147,17 @@ go_define (unsigned int lineno, const char *buffer)
   memcpy (copy, buffer, name_end - buffer);
   copy[name_end - buffer] = '\0';
 
+  mhval = XNEW (struct macro_hash_value);
+  mhval->name = copy;
+  mhval->value = NULL;
+
   hashval = htab_hash_string (copy);
-  slot = htab_find_slot_with_hash (macro_hash, copy, hashval, NO_INSERT);
-  if (slot != NULL)
-    {
-      XDELETEVEC (copy);
-      return;
-    }
+  slot = htab_find_slot_with_hash (macro_hash, mhval, hashval, NO_INSERT);
 
   /* For simplicity, we force all names to be hidden by adding an
      initial underscore, and let the user undo this as needed.  */
-  out_buffer = XNEWVEC (char, strlen (p) * 2 + 1);
+  out_len = strlen (p) * 2 + 1;
+  out_buffer = XNEWVEC (char, out_len);
   q = out_buffer;
   saw_operand = false;
   need_operand = false;
@@ -141,6 +183,7 @@ go_define (unsigned int lineno, const char *buffer)
 	       don't worry about them.  */
 	    const char *start;
 	    char *n;
+	    struct macro_hash_value idval;
 
 	    if (saw_operand)
 	      goto unknown;
@@ -151,8 +194,9 @@ go_define (unsigned int lineno, const char *buffer)
 	    n = XALLOCAVEC (char, p - start + 1);
 	    memcpy (n, start, p - start);
 	    n[p - start] = '\0';
-	    slot = htab_find_slot (macro_hash, n, NO_INSERT);
-	    if (slot == NULL || *slot == NULL)
+	    idval.name = n;
+	    idval.value = NULL;
+	    if (htab_find (macro_hash, &idval) == NULL)
 	      {
 		/* This is a reference to a name which was not defined
 		   as a macro.  */
@@ -382,18 +426,30 @@ go_define (unsigned int lineno, const char *buffer)
   if (need_operand)
     goto unknown;
 
+  gcc_assert ((size_t) (q - out_buffer) < out_len);
   *q = '\0';
 
-  slot = htab_find_slot_with_hash (macro_hash, copy, hashval, INSERT);
-  *slot = copy;
+  mhval->value = out_buffer;
 
-  fprintf (go_dump_file, "const _%s = %s\n", copy, out_buffer);
+  if (slot == NULL)
+    {
+      slot = htab_find_slot_with_hash (macro_hash, mhval, hashval, INSERT);
+      gcc_assert (slot != NULL && *slot == NULL);
+    }
+  else
+    {
+      if (*slot != NULL)
+	macro_hash_del (*slot);
+    }
 
-  XDELETEVEC (out_buffer);
+  *slot = mhval;
+
   return;
 
  unknown:
   fprintf (go_dump_file, "// unknowndefine %s\n", buffer);
+  if (slot != NULL)
+    htab_clear_slot (macro_hash, slot);
   XDELETEVEC (out_buffer);
   XDELETEVEC (copy);
 }
@@ -403,16 +459,16 @@ go_define (unsigned int lineno, const char *buffer)
 static void
 go_undef (unsigned int lineno, const char *buffer)
 {
+  struct macro_hash_value mhval;
   void **slot;
 
   real_debug_hooks->undef (lineno, buffer);
 
-  slot = htab_find_slot (macro_hash, buffer, NO_INSERT);
-  if (slot == NULL)
-    return;
-  fprintf (go_dump_file, "// undef _%s\n", buffer);
-  /* We don't delete the slot from the hash table because that will
-     cause a duplicate const definition.  */
+  mhval.name = CONST_CAST (char *, buffer);
+  mhval.value = NULL;
+  slot = htab_find_slot (macro_hash, &mhval, NO_INSERT);
+  if (slot != NULL)
+    htab_clear_slot (macro_hash, slot);
 }
 
 /* A function or variable decl.  */
@@ -909,32 +965,37 @@ go_output_typedef (struct godump_container *container, tree decl)
 	   element = TREE_CHAIN (element))
 	{
 	  const char *name;
+	  struct macro_hash_value *mhval;
 	  void **slot;
+	  char buf[100];
 
 	  name = IDENTIFIER_POINTER (TREE_PURPOSE (element));
 
 	  /* Sometimes a name will be defined as both an enum constant
 	     and a macro.  Avoid duplicate definition errors by
 	     treating enum constants as macros.  */
-	  slot = htab_find_slot (macro_hash, name, INSERT);
-	  if (*slot == NULL)
-	    {
-	      *slot = CONST_CAST (char *, name);
-	      fprintf (go_dump_file, "const _%s = ", name);
-	      if (host_integerp (TREE_VALUE (element), 0))
-		fprintf (go_dump_file, HOST_WIDE_INT_PRINT_DEC,
-			 tree_low_cst (TREE_VALUE (element), 0));
-	      else if (host_integerp (TREE_VALUE (element), 1))
-		fprintf (go_dump_file, HOST_WIDE_INT_PRINT_UNSIGNED,
-			 ((unsigned HOST_WIDE_INT)
-			  tree_low_cst (TREE_VALUE (element), 1)));
-	      else
-		fprintf (go_dump_file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-			 ((unsigned HOST_WIDE_INT)
-			  TREE_INT_CST_HIGH (TREE_VALUE (element))),
-			 TREE_INT_CST_LOW (TREE_VALUE (element)));
-	      fprintf (go_dump_file, "\n");
-	    }
+	  mhval = XNEW (struct macro_hash_value);
+	  mhval->name = xstrdup (name);
+	  mhval->value = NULL;
+	  slot = htab_find_slot (macro_hash, mhval, INSERT);
+	  if (*slot != NULL)
+	    macro_hash_del (*slot);
+
+	  if (host_integerp (TREE_VALUE (element), 0))
+	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DEC,
+		     tree_low_cst (TREE_VALUE (element), 0));
+	  else if (host_integerp (TREE_VALUE (element), 1))
+	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
+		     ((unsigned HOST_WIDE_INT)
+		      tree_low_cst (TREE_VALUE (element), 1)));
+	  else
+	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+		     ((unsigned HOST_WIDE_INT)
+		      TREE_INT_CST_HIGH (TREE_VALUE (element))),
+		     TREE_INT_CST_LOW (TREE_VALUE (element)));
+
+	  mhval->value = xstrdup (buf);
+	  *slot = mhval;
 	}
       pointer_set_insert (container->decls_seen, TREE_TYPE (decl));
       if (TYPE_CANONICAL (TREE_TYPE (decl)) != NULL_TREE)
@@ -1039,6 +1100,17 @@ go_output_var (struct godump_container *container, tree decl)
     }
 }
 
+/* Output the final value of a preprocessor macro or enum constant.
+   This is called via htab_traverse_noresize.  */
+
+static int
+go_print_macro (void **slot, void *arg ATTRIBUTE_UNUSED)
+{
+  struct macro_hash_value *mhval = (struct macro_hash_value *) *slot;
+  fprintf (go_dump_file, "const _%s = %s\n", mhval->name, mhval->value);
+  return 1;
+}
+
 /* Build a hash table with the Go keywords.  */
 
 static const char * const keywords[] = {
@@ -1123,6 +1195,8 @@ go_finish (const char *filename)
 	}
     }
 
+  htab_traverse_noresize (macro_hash, go_print_macro, NULL);
+
   /* To emit dummy definitions.  */
   pointer_set_traverse (container.pot_dummy_types, find_dummy_types,
                         (void *) &container);
@@ -1163,7 +1237,8 @@ dump_go_spec_init (const char *filename, const struct gcc_debug_hooks *hooks)
   go_debug_hooks.global_decl = go_global_decl;
   go_debug_hooks.type_decl = go_type_decl;
 
-  macro_hash = htab_create (100, htab_hash_string, string_hash_eq, NULL);
+  macro_hash = htab_create (100, macro_hash_hashval, macro_hash_eq,
+			    macro_hash_del);
 
   return &go_debug_hooks;
 }
