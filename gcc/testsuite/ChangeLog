@@ -1,3 +1,8 @@
+2011-11-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/50769
+	* gfortran.dg/pr50769.f90: New test.
+
 2011-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20111102-1.c: New test.
