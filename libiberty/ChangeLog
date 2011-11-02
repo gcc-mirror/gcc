@@ -1,6 +1,6 @@
 2011-11-02  Doug Evans  <dje@google.com>
 
-	* Makefile.in (CFILES): Add it.
+	* Makefile.in (CFILES): Add timeval-utils.c.
 	(REQUIRED_OFILES): Add timeval-utils.$(objext).
 	(INSTALLED_HEADERS): Add timeval-utils.h.
 	(timeval-utils.$(objext)): Add rule.
