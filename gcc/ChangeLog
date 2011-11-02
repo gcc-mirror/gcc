@@ -1,3 +1,8 @@
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50956
+	* builtins.c (fold_builtin_memchr): Fix cast.
+
 2011-11-02  Teresa Johnson  <tejohnson@google.com>
 
 	* config/i386/predicates.md (promotable_binary_operator): Add minus
