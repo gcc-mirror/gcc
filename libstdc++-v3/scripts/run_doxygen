@@ -339,6 +339,10 @@ for f in std_tr1_*; do
     newname=`echo $f | sed 's/^std_tr1_/std::tr1::/'`
     mv $f $newname
 done
+for f in std_tr2_*; do
+    newname=`echo $f | sed 's/^std_tr2_/std::tr2::/'`
+    mv $f $newname
+done
 for f in std_*; do
     newname=`echo $f | sed 's/^std_/std::/'`
     mv $f $newname
