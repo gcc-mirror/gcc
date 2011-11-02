@@ -152,7 +152,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 strcasecmp.c strchr.c strdup.c strerror.c strncasecmp.c	\
 	 strncmp.c strrchr.c strsignal.c strstr.c strtod.c strtol.c	\
 	 strtoul.c strndup.c strverscmp.c				\
-	tmpnam.c							\
+	timeval-utils.c tmpnam.c					\
 	unlink-if-ordinary.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
 	waitpid.c							\
@@ -184,8 +184,8 @@ REQUIRED_OFILES =							\
 	./simple-object-elf.$(objext) ./simple-object-mach-o.$(objext)	\
 	./sort.$(objext) ./spaces.$(objext)				\
 	./splay-tree.$(objext) ./stack-limit.$(objext)			\
-	./strerror.$(objext)						\
-	./strsignal.$(objext) ./unlink-if-ordinary.$(objext)		\
+	./strerror.$(objext) ./strsignal.$(objext)			\
+	./timeval-utils.$(objext) ./unlink-if-ordinary.$(objext)	\
 	./xatexit.$(objext) ./xexit.$(objext) ./xmalloc.$(objext)	\
 	./xmemdup.$(objext) ./xstrdup.$(objext) ./xstrerror.$(objext)	\
 	./xstrndup.$(objext)
@@ -235,7 +235,8 @@ INSTALLED_HEADERS =                                                     \
 	$(INCDIR)/partition.h                                           \
 	$(INCDIR)/safe-ctype.h                                          \
 	$(INCDIR)/sort.h                                                \
-	$(INCDIR)/splay-tree.h
+	$(INCDIR)/splay-tree.h \
+	$(INCDIR)/timeval-utils.h
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	-rm -f $(TARGETLIB) pic/$(TARGETLIB)
@@ -1140,6 +1141,13 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strverscmp.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strverscmp.c $(OUTPUT_OPTION)
+
+./timeval-utils.$(objext): $(srcdir)/timeval-utils.c config.h \
+	$(INCDIR)/timeval-utils.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/timeval-utils.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/timeval-utils.c $(OUTPUT_OPTION)
 
 ./tmpnam.$(objext): $(srcdir)/tmpnam.c
 	if [ x"$(PICFLAG)" != x ]; then \
