@@ -5268,7 +5268,7 @@ encoding/pem/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/pem/check
 
-exp/ebnf.lo: $(go_exp_ebnf_files) go/scanner.gox go/token.gox os.gox \
+exp/ebnf.lo: $(go_exp_ebnf_files) scanner.gox go/token.gox os.gox \
 		strconv.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 exp/ebnf/check: $(CHECK_DEPS)
