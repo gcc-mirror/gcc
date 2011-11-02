@@ -1,3 +1,9 @@
+2011-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50902
+	* tree-vect-stmts.c (vectorizable_load): Properly convert
+	an invariant initializer element.
+
 2010-11-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50890
