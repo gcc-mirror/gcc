@@ -2893,7 +2893,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     {
       if (!sym->attr.elemental)
 	{
-	  gcc_assert (se->ss->type == GFC_SS_FUNCTION);
+	  gcc_assert (se->ss->info->type == GFC_SS_FUNCTION);
 	  if (se->ss->useflags)
 	    {
 	      gcc_assert ((!comp && gfc_return_by_reference (sym)
@@ -4239,8 +4239,11 @@ is_zero_initializer_p (gfc_expr * expr)
 static void
 gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
 {
-  gcc_assert (se->ss != NULL && se->ss != gfc_ss_terminator);
-  gcc_assert (se->ss->expr == expr && se->ss->type == GFC_SS_CONSTRUCTOR);
+  gfc_ss *ss;
+
+  ss = se->ss;
+  gcc_assert (ss != NULL && ss != gfc_ss_terminator);
+  gcc_assert (ss->expr == expr && ss->info->type == GFC_SS_CONSTRUCTOR);
 
   gfc_conv_tmp_array_ref (se);
 }
@@ -4821,13 +4824,17 @@ gfc_conv_substring_expr (gfc_se * se, gfc_expr * expr)
 void
 gfc_conv_expr (gfc_se * se, gfc_expr * expr)
 {
-  if (se->ss && se->ss->expr == expr
-      && (se->ss->type == GFC_SS_SCALAR || se->ss->type == GFC_SS_REFERENCE))
+  gfc_ss *ss;
+
+  ss = se->ss;
+  if (ss && ss->expr == expr
+      && (ss->info->type == GFC_SS_SCALAR
+	  || ss->info->type == GFC_SS_REFERENCE))
     {
       /* Substitute a scalar expression evaluated outside the scalarization
          loop.  */
       se->expr = se->ss->data.scalar.expr;
-      if (se->ss->type == GFC_SS_REFERENCE)
+      if (ss->info->type == GFC_SS_REFERENCE)
 	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
       se->string_length = se->ss->string_length;
       gfc_advance_se_ss_chain (se);
@@ -4946,10 +4953,12 @@ gfc_conv_expr_type (gfc_se * se, gfc_expr * expr, tree type)
 void
 gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 {
+  gfc_ss *ss;
   tree var;
 
-  if (se->ss && se->ss->expr == expr
-      && se->ss->type == GFC_SS_REFERENCE)
+  ss = se->ss;
+  if (ss && ss->expr == expr
+      && ss->info->type == GFC_SS_REFERENCE)
     {
       /* Returns a reference to the scalar evaluated outside the loop
 	 for this case.  */
@@ -6154,7 +6163,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
       /* Find a non-scalar SS from the lhs.  */
       while (lss_section != gfc_ss_terminator
-	     && lss_section->type != GFC_SS_SECTION)
+	     && lss_section->info->type != GFC_SS_SECTION)
 	lss_section = lss_section->next;
 
       gcc_assert (lss_section != gfc_ss_terminator);
