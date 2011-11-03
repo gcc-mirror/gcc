@@ -34,7 +34,15 @@
       AFAIK, none of this is properly documented anywhere other than
       in ``gcc -dumpspecs'' (look at lib and cpp entries).
    </p></div><div class="section" title="Thread Safety"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.thread_safety"/>Thread Safety</h3></div></div></div><p>
-We currently use the <a class="link" href="http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</a> definition of thread safety.
+In the terms of the 2011 C++ standard a thread-safe program is one which
+does not perform any conflicting non-atomic operations on memory locations
+and so does not contain any data races.
+The standard places requirements on the library to ensure that no data
+races are caused by the library itself or by programs which use the
+library correctly (as described below).
+The C++11 memory model and library requirements are a more formal version
+of the <a class="link" href="http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</a> definition of thread safety, which the library used
+prior to the 2011 standard.
 </p><p>The library strives to be thread-safe when all of the following
 	 conditions are met:
       </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>The system's libc is itself thread-safe,
@@ -58,37 +66,96 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
        </p></li><li class="listitem"><p>
 	   An implementation of atomicity.h functions
 	   exists for the architecture in question. See the internals documentation for more <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">details</a>.
-       </p></li></ul></div><p>The user-code must guard against concurrent method calls which may
-	 access any particular library object's state.  Typically, the
-	 application programmer may infer what object locks must be held
-	 based on the objects referenced in a method call.  Without getting
+       </p></li></ul></div><p>The user code must guard against concurrent function calls which
+         access any particular library object's state when one or more of
+         those accesses modifies the state. An object will be modified by
+         invoking a non-const member function on it or passing it as a
+         non-const argument to a library function. An object will not be
+         modified by invoking a const member function on it or passing it to
+         a function as a pointer- or reference-to-const.
+         Typically, the application
+         programmer may infer what object locks must be held based on the
+         objects referenced in a function call and whether the objects are
+         accessed as const or non-const.  Without getting
 	 into great detail, here is an example which requires user-level
 	 locks:
       </p><pre class="programlisting">
      library_class_a shared_object_a;
 
-     thread_main () {
+     void thread_main () {
        library_class_b *object_b = new library_class_b;
        shared_object_a.add_b (object_b);   // must hold lock for shared_object_a
        shared_object_a.mutate ();          // must hold lock for shared_object_a
      }
 
      // Multiple copies of thread_main() are started in independent threads.</pre><p>Under the assumption that object_a and object_b are never exposed to
-	 another thread, here is an example that should not require any
+	 another thread, here is an example that does not require any
 	 user-level locks:
       </p><pre class="programlisting">
-     thread_main () {
+     void thread_main () {
        library_class_a object_a;
        library_class_b *object_b = new library_class_b;
        object_a.add_b (object_b);
        object_a.mutate ();
-     } </pre><p>All library objects are safe to use in a multithreaded program as
-	 long as each thread carefully locks out access by any other
-	 thread while it uses any object visible to another thread, i.e.,
-	 treat library objects like any other shared resource.  In general,
-	 this requirement includes both read and write access to objects;
-	 unless otherwise documented as safe, do not assume that two threads
-	 may access a shared standard library object at the same time.
+     } </pre><p>All library types are safe to use in a multithreaded program
+         if objects are not shared between threads or as
+	 long each thread carefully locks out access by any other
+	 thread while it modifies any object visible to another thread.
+	 Unless otherwise documented, the only exceptions to these rules
+         are atomic operations on the types in
+         <code class="filename">&lt;atomic&gt;</code>
+         and lock/unlock operations on the standard mutex types in
+         <code class="filename">&lt;mutex&gt;</code>. These
+         atomic operations allow concurrent accesses to the same object
+         without introducing data races.
+      </p><p>The following member functions of standard containers can be
+         considered to be const for the purposes of avoiding data races:
+         <code class="code">begin</code>, <code class="code">end</code>, <code class="code">rbegin</code>, <code class="code">rend</code>,
+         <code class="code">front</code>, <code class="code">back</code>, <code class="code">data</code>,
+         <code class="code">find</code>, <code class="code">lower_bound</code>, <code class="code">upper_bound</code>,
+         <code class="code">equal_range</code>, <code class="code">at</code> 
+         and, except in associative or unordered associative containers,
+         <code class="code">operator[]</code>. In other words, although they are non-const
+         so that they can return mutable iterators, those member functions
+         will not modify the container.
+         Accessing an iterator might cause a non-modifying access to
+         the container the iterator refers to (for example incrementing a
+         list iterator must access the pointers between nodes, which are part
+         of the container and so conflict with other accesses to the container).
+      </p><p>Programs which follow the rules above will not encounter data
+         races in library code, even when using library types which share
+         state between distinct objects.  In the example below the
+         <code class="code">shared_ptr</code> objects share a reference count, but
+         because the code does not perform any non-const operations on the
+         globally-visible object, the library ensures that the reference
+         count updates are atomic and do not introduce data races:
+      </p><pre class="programlisting">
+    std::shared_ptr&lt;int&gt; global_sp;
+
+    void thread_main() {
+      auto local_sp = global_sp;  // OK, copy constructor's parameter is reference-to-const
+
+      int i = *global_sp;         // OK, operator* is const
+      int j = *local_sp;          // OK, does not operate on global_sp
+
+      // *global_sp = 2;          // NOT OK, modifies int visible to other threads      
+      // *local_sp = 2;           // NOT OK, modifies int visible to other threads      
+
+      // global_sp.reset();       // NOT OK, reset is non-const
+      local_sp.reset();           // OK, does not operate on global_sp
+    }
+
+    int main() {
+      global_sp.reset(new int(1));
+      std::thread t1(thread_main);
+      std::thread t2(thread_main);
+      t1.join();
+      t2.join();
+    }
+      </pre><p>For further details of the C++11 memory model see Hans-J. Boehm's
+      <a class="link" href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/user-faq.html">Threads
+      and memory model for C++</a> pages, particularly the <a class="link" href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/threadsintro.html">introduction</a> 
+      and <a class="link" href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/user-faq.html">FAQ</a>.
       </p></div><div class="section" title="Atomics"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.atomics"/>Atomics</h3></div></div></div><p>
     </p></div><div class="section" title="IO"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"/>IO</h3></div></div></div><p>This gets a bit tricky.  Please read carefully, and bear with me.
    </p><div class="section" title="Structure"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.structure"/>Structure</h4></div></div></div><p>A wrapper
