@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_scalarizing_loops): Stop loop before end
+	marker, not after it.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_loop_setup): Also skip temporary arrays.
 
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
