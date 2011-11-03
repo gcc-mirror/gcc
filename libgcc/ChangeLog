@@ -1,3 +1,10 @@
+2011-11-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/rs6000/t-ppccomm (ecrti$(objext)): Use $<.
+	(ecrtn$(objext)): Likewise.
+	(ncrti$(objext)): Likewise.
+	(ncrtn$(objext)): Likewise.
+
 2011-11-03  Andreas Schwab  <schwab@redhat.com>
 
 	* config/ia64/t-ia64 (crtbeginS.o): Fix whitespace damage.
