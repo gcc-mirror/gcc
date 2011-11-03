@@ -1,3 +1,8 @@
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Move array reference
+	initialisation earlier. Factor subsequent array references.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makef-lang.in (gfortranspec.o): Pass SHLIB instead of SHLIB_LINK.

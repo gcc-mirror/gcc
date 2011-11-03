@@ -2842,6 +2842,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
   gfc_ss_info *info;
   gfc_ss *ss;
   gfc_se se;
+  gfc_array_ref *ar;
   int i;
 
   /* This code will be executed before entering the scalarization loop
@@ -2861,6 +2862,18 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
       if (dim >= info->dimen)
 	continue;
 
+      if (info->ref)
+	{
+	  ar = &info->ref->u.ar;
+	  i = loop->order[dim + 1];
+	}
+      else
+	{
+	  ar = NULL;
+	  i = dim + 1;
+	}
+
+
       if (dim == info->dimen - 1)
 	{
 	  /* For the outermost loop calculate the offset due to any
@@ -2868,9 +2881,9 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	     base offset of the array.  */
 	  if (info->ref)
 	    {
-	      for (i = 0; i < info->ref->u.ar.dimen; i++)
+	      for (i = 0; i < ar->dimen; i++)
 		{
-		  if (info->ref->u.ar.dimen_type[i] != DIMEN_ELEMENT)
+		  if (ar->dimen_type[i] != DIMEN_ELEMENT)
 		    continue;
 
 		  gfc_init_se (&se, NULL);
@@ -2878,8 +2891,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 		  se.expr = info->descriptor;
 		  stride = gfc_conv_array_stride (info->descriptor, i);
 		  index = gfc_conv_array_index_offset (&se, info, i, -1,
-						       &info->ref->u.ar,
-						       stride);
+						       ar, stride);
 		  gfc_add_block_to_block (pblock, &se.pre);
 
 		  info->offset = fold_build2_loc (input_location, PLUS_EXPR,
@@ -2903,19 +2915,6 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
       else
 	{
 	  /* Add the offset for the previous loop dimension.  */
-	  gfc_array_ref *ar;
-
-	  if (info->ref)
-	    {
-	      ar = &info->ref->u.ar;
-	      i = loop->order[dim + 1];
-	    }
-	  else
-	    {
-	      ar = NULL;
-	      i = dim + 1;
-	    }
-
 	  gfc_init_se (&se, NULL);
 	  se.loop = loop;
 	  se.expr = info->descriptor;
