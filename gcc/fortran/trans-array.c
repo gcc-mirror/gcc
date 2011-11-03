@@ -807,9 +807,12 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
    */
 
 static int
-get_array_ref_dim (gfc_ss_info *info, int loop_dim)
+get_array_ref_dim (gfc_ss *ss, int loop_dim)
 {
   int n, array_dim, array_ref_dim;
+  gfc_ss_info *info;
+
+  info = &ss->data.info;
 
   array_ref_dim = 0;
   array_dim = info->dim[loop_dim];
@@ -884,7 +887,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 	 to the n'th dimension of the array. We need to reconstruct loop infos
 	 in the right order before using it to set the descriptor
 	 bounds.  */
-      tmp_dim = get_array_ref_dim (info, n);
+      tmp_dim = get_array_ref_dim (ss, n);
       from[tmp_dim] = loop->from[n];
       to[tmp_dim] = loop->to[n];
 
@@ -3976,7 +3979,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	  && INTEGER_CST_P (info->stride[dim]))
 	{
 	  loop->from[n] = info->start[dim];
-	  mpz_set (i, cshape[get_array_ref_dim (info, n)]);
+	  mpz_set (i, cshape[get_array_ref_dim (loopspec[n], n)]);
 	  mpz_sub_ui (i, i, 1);
 	  /* To = from + (size - 1) * stride.  */
 	  tmp = gfc_conv_mpz_to_tree (i, gfc_index_integer_kind);

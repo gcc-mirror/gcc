@@ -1,5 +1,11 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (get_array_ref_dim): Change argument type and name.
+	Obtain previous argument from the new argument in the body.
+	(gfc_trans_create_temp_arry, gfc_conv_loop_setup): Update calls.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_set_vector_loop_bounds, set_vector_loop_bounds):
 	Rename the former to the latter.  Change type and name of argument.
 	Get previous argument from the new one.
