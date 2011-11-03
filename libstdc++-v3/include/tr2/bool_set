@@ -26,16 +26,6 @@
  *  This is a TR2 C++ Library header.
  */
 
-//
-//  Sort of an implementation of bool_set in n2136 Hervé Brönnimann,
-//  Guillaume Melquiond, Sylvain Pion.
-//
-//  The implicit conversion to bool is slippery!  I may use the new
-//  explicit conversion.  This has been specialized in the language so
-//  that in contexts requiring a bool the conversion happens
-//  implicitly.  Thus most objections should be eliminated.
-//
-
 #ifndef _GLIBCXX_TR2_BOOL_SET
 #define _GLIBCXX_TR2_BOOL_SET 1
 
@@ -50,6 +40,17 @@ namespace tr2
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   *  bool_set
+   *
+   *  See N2136, Bool_set: multi-valued logic
+   *  by Hervé Brönnimann, Guillaume Melquiond, Sylvain Pion.
+   *
+   *  The implicit conversion to bool is slippery!  I may use the new
+   *  explicit conversion.  This has been specialized in the language
+   *  so that in contexts requiring a bool the conversion happens
+   *  implicitly.  Thus most objections should be eliminated.
+   */
   class bool_set
   {
   public:
@@ -60,7 +61,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ///  Constructor from bool.
     bool_set(bool __t) : _M_b(_Bool_set_val(__t)) { }
 
-    ///
     // I'm not sure about this.
     bool contains(bool_set __b) const
     { return this->is_singleton() && this->equals(__b); }

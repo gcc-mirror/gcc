@@ -120,11 +120,11 @@ public:
       }
 
       void
-      _M_assign(const __dynamic_bitset_base<block_type, allocator_type>& __b)
+      _M_assign(const __dynamic_bitset_base& __b)
       { this->_M_w = __b._M_w; }
 
       void
-      _M_swap(__dynamic_bitset_base<block_type, allocator_type>& __b)
+      _M_swap(__dynamic_bitset_base& __b)
       { this->_M_w.swap(__b._M_w); }
 
       void
@@ -178,7 +178,7 @@ public:
       { return this->_M_w[_M_w.size() - 1]; }
 
       void
-      _M_do_and(const __dynamic_bitset_base<block_type, allocator_type>& __x)
+      _M_do_and(const __dynamic_bitset_base& __x)
       {
 	if (__x._M_w.size() == this->_M_w.size())
 	  for (size_t __i = 0; __i < this->_M_w.size(); ++__i)
@@ -188,7 +188,7 @@ public:
       }
 
       void
-      _M_do_or(const __dynamic_bitset_base<block_type, allocator_type>& __x)
+      _M_do_or(const __dynamic_bitset_base& __x)
       {
 	if (__x._M_w.size() == this->_M_w.size())
 	  for (size_t __i = 0; __i < this->_M_w.size(); ++__i)
@@ -198,7 +198,7 @@ public:
       }
 
       void
-      _M_do_xor(const __dynamic_bitset_base<block_type, allocator_type>& __x)
+      _M_do_xor(const __dynamic_bitset_base& __x)
       {
 	if (__x._M_w.size() == this->_M_w.size())
 	  for (size_t __i = 0; __i < this->_M_w.size(); ++__i)
@@ -208,7 +208,7 @@ public:
       }
 
       void
-      _M_do_dif(const __dynamic_bitset_base<block_type, allocator_type>& __x)
+      _M_do_dif(const __dynamic_bitset_base& __x)
       {
 	if (__x._M_w.size() == this->_M_w.size())
 	  for (size_t __i = 0; __i < this->_M_w.size(); ++__i)
@@ -245,7 +245,7 @@ public:
       }
 
       bool
-      _M_is_equal(const __dynamic_bitset_base<block_type, allocator_type>& __x) const
+      _M_is_equal(const __dynamic_bitset_base& __x) const
       {
 	if (__x.size() == this->size())
 	  {
@@ -259,7 +259,7 @@ public:
       }
 
       bool
-      _M_is_less(const __dynamic_bitset_base<block_type, allocator_type>& __x) const
+      _M_is_less(const __dynamic_bitset_base& __x) const
       {
 	if (__x.size() == this->size())
 	  {
@@ -296,7 +296,7 @@ public:
       }
 
       bool
-      _M_is_subset_of(const __dynamic_bitset_base<block_type, allocator_type>& __b)
+      _M_is_subset_of(const __dynamic_bitset_base& __b)
       {
 	if (__b.size() == this->size())
 	  {
@@ -310,7 +310,7 @@ public:
       }
 
       bool
-      _M_is_proper_subset_of(const __dynamic_bitset_base<block_type, allocator_type>& __b) const
+      _M_is_proper_subset_of(const __dynamic_bitset_base& __b) const
       {
 	if (this->is_subset_of(__b))
 	  {
@@ -387,7 +387,7 @@ public:
 	      this->_M_w[__wshift] = this->_M_w[0] << __offset;
 	    }
 
-	  ////std::fill(this->_M_w.begin(), this->_M_w.begin() + __wshift,
+	  //// std::fill(this->_M_w.begin(), this->_M_w.begin() + __wshift,
 	  ////          static_cast<_WordT>(0));
 	}
     }

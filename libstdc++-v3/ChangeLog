@@ -1,5 +1,12 @@
 2011-11-03  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* doc/doxygen/doxygroups.cc: Add markup for namespace tr2.
+	* include/tr2/bool_set: Adjust doxygen markup.
+	* include/tr2/dynamic_bitset: Same.
+	* include/tr2/type_traits: Same.
+
+2011-11-03  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* doc/html/*: Regenerate.
 
 2011-11-02  Richard B. Kreckel  <kreckel@ginac.de>
