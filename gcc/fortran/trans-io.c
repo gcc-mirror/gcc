@@ -1937,6 +1937,7 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
   int n;
   gfc_ss *ss;
   gfc_se se;
+  gfc_array_info *ss_array;
 
   gfc_start_block (&block);
   gfc_init_se (&se, NULL);
@@ -1948,19 +1949,20 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
 
   ss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
 			 GFC_SS_COMPONENT);
-  ss->shape = gfc_get_shape (cm->as->rank);
-  ss->data.info.descriptor = expr;
-  ss->data.info.data = gfc_conv_array_data (expr);
-  ss->data.info.offset = gfc_conv_array_offset (expr);
+  ss_array = &ss->data.info;
+  ss_array->shape = gfc_get_shape (cm->as->rank);
+  ss_array->descriptor = expr;
+  ss_array->data = gfc_conv_array_data (expr);
+  ss_array->offset = gfc_conv_array_offset (expr);
   for (n = 0; n < cm->as->rank; n++)
     {
-      ss->data.info.start[n] = gfc_conv_array_lbound (expr, n);
-      ss->data.info.stride[n] = gfc_index_one_node;
+      ss_array->start[n] = gfc_conv_array_lbound (expr, n);
+      ss_array->stride[n] = gfc_index_one_node;
 
-      mpz_init (ss->shape[n]);
-      mpz_sub (ss->shape[n], cm->as->upper[n]->value.integer,
+      mpz_init (ss_array->shape[n]);
+      mpz_sub (ss_array->shape[n], cm->as->upper[n]->value.integer,
                cm->as->lower[n]->value.integer);
-      mpz_add_ui (ss->shape[n], ss->shape[n], 1);
+      mpz_add_ui (ss_array->shape[n], ss_array->shape[n], 1);
     }
 
   /* Once we got ss, we use scalarizer to create the loop.  */
@@ -1995,8 +1997,8 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
   gfc_add_block_to_block (&block, &loop.pre);
   gfc_add_block_to_block (&block, &loop.post);
 
-  gcc_assert (ss->shape != NULL);
-  gfc_free_shape (&ss->shape, cm->as->rank);
+  gcc_assert (ss_array->shape != NULL);
+  gfc_free_shape (&ss_array->shape, cm->as->rank);
   gfc_cleanup_loop (&loop);
 
   return gfc_finish_block (&block);

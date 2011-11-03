@@ -4344,6 +4344,7 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   gfc_se lse;
   gfc_ss *rss;
   gfc_ss *lss;
+  gfc_array_info *lss_array;
   stmtblock_t body;
   stmtblock_t block;
   gfc_loopinfo loop;
@@ -4367,19 +4368,20 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   /* Create a SS for the destination.  */
   lss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
 			  GFC_SS_COMPONENT);
-  lss->shape = gfc_get_shape (cm->as->rank);
-  lss->data.info.descriptor = dest;
-  lss->data.info.data = gfc_conv_array_data (dest);
-  lss->data.info.offset = gfc_conv_array_offset (dest);
+  lss_array = &lss->data.info;
+  lss_array->shape = gfc_get_shape (cm->as->rank);
+  lss_array->descriptor = dest;
+  lss_array->data = gfc_conv_array_data (dest);
+  lss_array->offset = gfc_conv_array_offset (dest);
   for (n = 0; n < cm->as->rank; n++)
     {
-      lss->data.info.start[n] = gfc_conv_array_lbound (dest, n);
-      lss->data.info.stride[n] = gfc_index_one_node;
+      lss_array->start[n] = gfc_conv_array_lbound (dest, n);
+      lss_array->stride[n] = gfc_index_one_node;
 
-      mpz_init (lss->shape[n]);
-      mpz_sub (lss->shape[n], cm->as->upper[n]->value.integer,
+      mpz_init (lss_array->shape[n]);
+      mpz_sub (lss_array->shape[n], cm->as->upper[n]->value.integer,
 	       cm->as->lower[n]->value.integer);
-      mpz_add_ui (lss->shape[n], lss->shape[n], 1);
+      mpz_add_ui (lss_array->shape[n], lss_array->shape[n], 1);
     }
   
   /* Associate the SS with the loop.  */
@@ -4422,8 +4424,8 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   gfc_add_block_to_block (&block, &loop.pre);
   gfc_add_block_to_block (&block, &loop.post);
 
-  gcc_assert (lss->shape != NULL);
-  gfc_free_shape (&lss->shape, cm->as->rank);
+  gcc_assert (lss_array->shape != NULL);
+  gfc_free_shape (&lss_array->shape, cm->as->rank);
   gfc_cleanup_loop (&loop);
 
   return gfc_finish_block (&block);

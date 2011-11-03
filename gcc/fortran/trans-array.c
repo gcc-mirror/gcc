@@ -3302,8 +3302,12 @@ done:
   /* Loop over all the SS in the chain.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
-      if (ss->expr && ss->expr->shape && !ss->shape)
-	ss->shape = ss->expr->shape;
+      gfc_array_info *info;
+
+      info = &ss->data.info;
+
+      if (ss->expr && ss->expr->shape && !info->shape)
+	info->shape = ss->expr->shape;
 
       switch (ss->type)
 	{
@@ -3891,12 +3895,12 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	      spec_dim = 0;
 	    }
 
-	  if (ss->shape)
+	  if (info->shape)
 	    {
-	      gcc_assert (ss->shape[dim]);
+	      gcc_assert (info->shape[dim]);
 	      /* The frontend has worked out the size for us.  */
 	      if (!loopspec[n]
-		  || !loopspec[n]->shape
+		  || !specinfo->shape
 		  || !integer_zerop (specinfo->start[spec_dim]))
 		/* Prefer zero-based descriptors if possible.  */
 		loopspec[n] = ss;
@@ -3973,7 +3977,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
       dim = loopspec[n]->dim[n];
 
       /* Set the extents of this range.  */
-      cshape = loopspec[n]->shape;
+      cshape = info->shape;
       if (cshape && INTEGER_CST_P (info->start[dim])
 	  && INTEGER_CST_P (info->stride[dim]))
 	{
