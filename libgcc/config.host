@@ -425,18 +425,10 @@ bfin*-*)
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
         ;;
 crisv32-*-elf)
-	tmake_file="cris/t-cris t-fdpbit"
+	tmake_file="$tmake_file cris/t-cris t-fdpbit"
  	;;
-crisv32-*-none)
-	tmake_file="cris/t-cris t-fdpbit"
-	extra_parts="crtbegin.o crtend.o"
-	;;
 cris-*-elf)
-	tmake_file="$tmake_file cris/t-cris cris/t-elfmulti"
-	;;
-cris-*-none)
-	tmake_file="$tmake_file cris/t-cris cris/t-elfmulti"
- 	extra_parts="crtbegin.o crtend.o"
+	tmake_file="$tmake_file cris/t-cris t-fdpbit cris/t-elfmulti"
 	;;
 cris-*-linux* | crisv32-*-linux*)
 	tmake_file="$tmake_file cris/t-cris t-fdpbit cris/t-linux"
