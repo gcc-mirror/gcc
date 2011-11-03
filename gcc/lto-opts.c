@@ -1,6 +1,6 @@
 /* LTO IL options.
 
-   Copyright 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.
@@ -33,390 +33,89 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "diagnostic.h"
 #include "lto-streamer.h"
-
-/* When a file is initially compiled, the options used when generating
-   the IL are not necessarily the same as those used when linking the
-   objects into the final executable.  In general, most build systems
-   will proceed with something along the lines of:
-
-   	$ gcc <cc-flags> -flto -c f1.c -o f1.o
-	$ gcc <cc-flags> -flto -c f2.c -o f2.o
-	...
-	$ gcc <cc-flags> -flto -c fN.c -o fN.o
-
-   And the final link may or may not include the same <cc-flags> used
-   to generate the initial object files:
-
-   	$ gcc <ld-flags> -flto -o prog f1.o ... fN.o
-
-   Since we will be generating final code during the link step, some
-   of the flags used during the compile step need to be re-applied
-   during the link step.  For instance, flags in the -m family.
-
-   The idea is to save a selected set of <cc-flags> in a special
-   section of the initial object files.  This section is then read
-   during linking and the options re-applied.
-
-   FIXME lto.  Currently the scheme is limited in that only the
-   options saved on the first object file (f1.o) are read back during
-   the link step.  This means that the options used to compile f1.o
-   will be applied to ALL the object files in the final link step.
-   More work needs to be done to implement a merging and validation
-   mechanism, as this will not be enough for all cases.  */
-
-/* Saved options hold the type of the option (currently CL_TARGET or
-   CL_COMMON), and the code, argument, and value.  */
-
-typedef struct GTY(()) opt_d
-{
-  unsigned int type;
-  size_t code;
-  char *arg;
-  int value;
-} opt_t;
-
-DEF_VEC_O (opt_t);
-DEF_VEC_ALLOC_O (opt_t, heap);
-
-
-/* Options are held in two vectors, one for those registered by
-   command line handling code, and the other for those read in from
-   any LTO IL input.  */
-static VEC(opt_t, heap) *user_options = NULL;
-static VEC(opt_t, heap) *file_options = NULL;
-
-/* Iterate FROM in reverse, writing option codes not yet in CODES into *TO.
-   Mark each new option code encountered in CODES.  */
-
-static void
-reverse_iterate_options (VEC(opt_t, heap) *from, VEC(opt_t, heap) **to,
-			 bitmap codes)
-{
-  int i;
-
-  for (i = VEC_length (opt_t, from); i > 0; i--)
-    {
-      const opt_t *const o = VEC_index (opt_t, from, i - 1);
-
-      if (bitmap_set_bit (codes, o->code))
-	VEC_safe_push (opt_t, heap, *to, o);
-    }
-}
-
-/* Concatenate options vectors FIRST and SECOND, rationalize so that only the
-   final of any given option remains, and return the result.  */
-
-static VEC(opt_t, heap) *
-concatenate_options (VEC(opt_t, heap) *first, VEC(opt_t, heap) *second)
-{
-  VEC(opt_t, heap) *results = NULL;
-  bitmap codes = lto_bitmap_alloc ();
-
-  reverse_iterate_options (second, &results, codes);
-  reverse_iterate_options (first, &results, codes);
-
-  lto_bitmap_free (codes);
-  return results;
-}
-
-/* Clear the options vector in *OPTS_P and set it to NULL.  */
-
-static void
-clear_options (VEC(opt_t, heap) **opts_p)
-{
-  int i;
-  opt_t *o;
-
-  FOR_EACH_VEC_ELT (opt_t, *opts_p, i, o)
-    free (o->arg);
-
-  VEC_free (opt_t, heap, *opts_p);
-}
-
-/* Write LENGTH bytes from ADDR to STREAM.  */
-
-static void
-output_data_stream (struct lto_output_stream *stream,
-                    const void *addr, size_t length)
-{
-  lto_output_data_stream (stream, addr, length);
-}
-
-/* Write string STRING to STREAM.  */
-
-static void
-output_string_stream (struct lto_output_stream *stream, const char *string)
-{
-  bool flag = false;
-
-  if (string != NULL)
-    {
-      const size_t length = strlen (string);
-
-      flag = true;
-      output_data_stream (stream, &flag, sizeof (flag));
-      output_data_stream (stream, &length, sizeof (length));
-      output_data_stream (stream, string, length);
-    }
-  else
-    output_data_stream (stream, &flag, sizeof (flag));
-}
-
-/* Return a string from IB.  The string is allocated, and the caller is
-   responsible for freeing it.  */
-
-static char *
-input_string_block (struct lto_input_block *ib)
-{
-  bool flag;
-
-  lto_input_data_block (ib, &flag, sizeof (flag));
-  if (flag)
-    {
-      size_t length;
-      char *string;
-
-      lto_input_data_block (ib, &length, sizeof (length));
-      string = (char *) xcalloc (1, length + 1);
-      lto_input_data_block (ib, string, length);
-
-      return string;
-    }
-  else
-    return NULL;
-}
-
-/* Return true if this option is one we need to save in LTO output files.
-   At present, we pass along all target options, and common options that
-   involve position independent code.
-
-   TODO This list of options requires expansion and rationalization.
-   Among others, optimization options may well be appropriate here.  */
-
-static bool
-register_user_option_p (size_t code, unsigned int type)
-{
-  if (type == CL_TARGET)
-    return true;
-  else if (type == CL_COMMON)
-    {
-      return (code == OPT_fPIC
-	      || code == OPT_fpic
-	      || code == OPT_fPIE
-	      || code == OPT_fpie
-	      || code == OPT_fcommon
-	      || code == OPT_fexceptions);
-    }
-
-  return false;
-}
-
-/* Note command line option with the given TYPE and CODE, ARG, and VALUE.
-   If relevant to LTO, save it in the user options vector.  */
-
-void
-lto_register_user_option (size_t code, const char *arg, int value,
-			  unsigned int type)
-{
-  if (register_user_option_p (code, type))
-    {
-      opt_t o;
-
-      o.type = type;
-      o.code = code;
-      if (arg != NULL)
-	{
-	  o.arg = (char *) xmalloc (strlen (arg) + 1);
-	  strcpy (o.arg, arg);
-	}
-      else
-	o.arg = NULL;
-      o.value = value;
-      VEC_safe_push (opt_t, heap, user_options, &o);
-    }
-}
-
-/* Empty the saved user options vector.  */
-
-void
-lto_clear_user_options (void)
-{
-  clear_options (&user_options);
-}
-
-/* Empty the saved file options vector.  */
-
-void
-lto_clear_file_options (void)
-{
-  clear_options (&file_options);
-}
-
-/* Concatenate the user options and any file options read from an LTO IL
-   file, and serialize them to STREAM.  File options precede user options
-   so that the latter override the former when reissued.  */
-
-static void
-output_options (struct lto_output_stream *stream)
-{
-  VEC(opt_t, heap) *opts = concatenate_options (file_options, user_options);
-  const size_t length = VEC_length (opt_t, opts);
-  int i;
-  opt_t *o;
-
-  output_data_stream (stream, &length, sizeof (length));
-
-  FOR_EACH_VEC_ELT (opt_t, opts, i, o)
-    {
-      output_data_stream (stream, &o->type, sizeof (o->type));
-      output_data_stream (stream, &o->code, sizeof (o->code));
-      output_string_stream (stream, o->arg);
-      output_data_stream (stream, &o->value, sizeof (o->value));
-    }
-
-  VEC_free (opt_t, heap, opts);
-}
+#include "toplev.h"
 
 /* Write currently held options to an LTO IL section.  */
 
 void
 lto_write_options (void)
 {
-  char *const section_name = lto_get_section_name (LTO_section_opts, NULL, NULL);
   struct lto_output_stream stream;
-  struct lto_simple_header header;
-  struct lto_output_stream *header_stream;
+  char *section_name;
+  struct obstack temporary_obstack;
+  unsigned int i, j;
+  char *args;
 
-  /* Targets and languages can provide defaults for -fexceptions but
-     we only process user options from the command-line.  Until we
-     serialize out a white list of options from the new global state
-     explicitly append important options as user options here.  */
-  if (flag_exceptions)
-    lto_register_user_option (OPT_fexceptions, NULL, 1, CL_COMMON);
-
-  lto_begin_section (section_name, !flag_wpa);
-  free (section_name);
-
+  section_name = lto_get_section_name (LTO_section_opts, NULL, NULL);
+  lto_begin_section (section_name, false);
   memset (&stream, 0, sizeof (stream));
-  output_options (&stream);
 
-  memset (&header, 0, sizeof (header));
-  header.lto_header.major_version = LTO_major_version;
-  header.lto_header.minor_version = LTO_minor_version;
-  header.lto_header.section_type = LTO_section_opts;
+  obstack_init (&temporary_obstack);
+  for (i = 1; i < save_decoded_options_count; ++i)
+    {
+      struct cl_decoded_option *option = &save_decoded_options[i];
+      const char *q, *p;
 
-  header.compressed_size = 0;
-  header.main_size = stream.total_size;
+      /* Skip frontend and driver specific options here.  */
+      if (!(cl_options[option->opt_index].flags & (CL_COMMON|CL_TARGET|CL_LTO)))
+	continue;
 
-  header_stream = ((struct lto_output_stream *)
-		   xcalloc (1, sizeof (*header_stream)));
-  lto_output_data_stream (header_stream, &header, sizeof (header));
-  lto_write_stream (header_stream);
-  free (header_stream);
+      /* Drop options created from the gcc driver that will be rejected
+	 when passed on to the driver again.  */
+      if (cl_options[option->opt_index].cl_reject_driver)
+	continue;
+
+      /* Also drop all options that are handled by the driver as well,
+         which includes things like -o and -v or -fhelp for example.
+	 We do not need those.  Also drop all diagnostic options.  */
+      if (cl_options[option->opt_index].flags & (CL_DRIVER|CL_WARNING))
+	continue;
+
+      /* Skip explicitly some common options that we do not need.  */
+      switch (option->opt_index)
+	{
+	case OPT_dumpbase:
+	case OPT_SPECIAL_input_file:
+	  continue;
+
+	default:
+	  break;
+	}
+
+      if (i != 1)
+	obstack_grow (&temporary_obstack, " ", 1);
+      obstack_grow (&temporary_obstack, "'", 1);
+      q = option->canonical_option[0];
+      while ((p = strchr (q, '\'')))
+	{
+	  obstack_grow (&temporary_obstack, q, p - q);
+	  obstack_grow (&temporary_obstack, "'\\''", 4);
+	  q = ++p;
+	}
+      obstack_grow (&temporary_obstack, q, strlen (q));
+      obstack_grow (&temporary_obstack, "'", 1);
+
+      for (j = 1; j < option->canonical_option_num_elements; ++j)
+	{
+	  obstack_grow (&temporary_obstack, " '", 2);
+	  q = option->canonical_option[j];
+	  while ((p = strchr (q, '\'')))
+	    {
+	      obstack_grow (&temporary_obstack, q, p - q);
+	      obstack_grow (&temporary_obstack, "'\\''", 4);
+	      q = ++p;
+	    }
+	  obstack_grow (&temporary_obstack, q, strlen (q));
+	  obstack_grow (&temporary_obstack, "'", 1);
+	}
+    }
+  obstack_grow (&temporary_obstack, "\0", 1);
+  args = XOBFINISH (&temporary_obstack, char *);
+  lto_output_data_stream (&stream, args, strlen (args) + 1);
 
   lto_write_stream (&stream);
   lto_end_section ();
-}
 
-/* Unserialize an options vector from IB, and append to file_options.  */
-
-static void
-input_options (struct lto_input_block *ib)
-{
-  size_t length, i;
-
-  lto_input_data_block (ib, &length, sizeof (length));
-
-  for (i = 0; i < length; i++)
-    {
-      opt_t o;
-
-      lto_input_data_block (ib, &o.type, sizeof (o.type));
-      lto_input_data_block (ib, &o.code, sizeof (o.code));
-      o.arg = input_string_block (ib);
-      lto_input_data_block (ib, &o.value, sizeof (o.value));
-      VEC_safe_push (opt_t, heap, file_options, &o);
-    }
-}
-
-/* Read options from an LTO IL section.  */
-
-void
-lto_read_file_options (struct lto_file_decl_data *file_data)
-{
-  size_t len, l, skip;
-  const char *data, *p;
-  const struct lto_simple_header *header;
-  int32_t opts_offset;
-  struct lto_input_block ib;
-
-  data = lto_get_section_data (file_data, LTO_section_opts, NULL, &len);
-  if (!data)
-	  return;
-
-  /* Option could be multiple sections merged (through ld -r) 
-     Keep reading all options.  This is ok right now because
-     the options just get mashed together anyways.
-     This will have to be done differently once lto-opts knows
-     how to associate options with different files. */
-  l = len;
-  p = data;
-  do 
-    { 
-      header = (const struct lto_simple_header *) p;
-      opts_offset = sizeof (*header);
-
-      lto_check_version (header->lto_header.major_version,
-			 header->lto_header.minor_version);
-      
-      LTO_INIT_INPUT_BLOCK (ib, p + opts_offset, 0, header->main_size);
-      input_options (&ib);
-      
-      skip = header->main_size + opts_offset;
-      l -= skip;
-      p += skip;
-    } 
-  while (l > 0);
-
-  lto_free_section_data (file_data, LTO_section_opts, 0, data, len);
-}
-
-/* Concatenate the user options and any file options read from an LTO IL
-   file, and reissue them as if all had just been read in from the command
-   line.  As with serialization, file options precede user options.  */
-
-void
-lto_reissue_options (void)
-{
-  VEC(opt_t, heap) *opts = concatenate_options (file_options, user_options);
-  int i;
-  opt_t *o;
-
-  FOR_EACH_VEC_ELT (opt_t, opts, i, o)
-    {
-      void *flag_var = option_flag_var (o->code, &global_options);
-
-      if (flag_var)
-	set_option (&global_options, &global_options_set,
-		    o->code, o->value, o->arg,
-		    DK_UNSPECIFIED, UNKNOWN_LOCATION, global_dc);
-
-      if (o->type == CL_TARGET)
-	{
-	  struct cl_decoded_option decoded;
-	  generate_option (o->code, o->arg, o->value, CL_TARGET, &decoded);
-	  targetm_common.handle_option (&global_options, &global_options_set,
-					&decoded, UNKNOWN_LOCATION);
-	}
-      else if (o->type == CL_COMMON)
-	gcc_assert (flag_var);
-      else
-	gcc_unreachable ();
-    }
-
-  /* Flag_shlib is usually set by finish_options, but we are issuing flag_pic
-     too late.  */
-  if (flag_pic && !flag_pie)
-    flag_shlib = 1;
-  VEC_free (opt_t, heap, opts);
+  obstack_free (&temporary_obstack, NULL);
+  free (section_name);
 }

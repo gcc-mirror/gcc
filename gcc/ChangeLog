@@ -1,5 +1,25 @@
 2011-11-03  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/44965
+	* lto-opts.c: Re-implement.
+	* lto-streamer.h (lto_register_user_option): Remove.
+	(lto_read_file_options): Likewise.
+	(lto_reissue_options): Likewise.
+	(lto_clear_user_options): Likewise.
+	(lto_clear_file_options): Likewise.
+	* opts-global.c (post_handling_callback): Remove.
+	(set_default_handlers): Do not set post_handling_callback.
+	(decode_options): Remove LTO specific code.
+	* lto-wrapper.c (merge_and_complain): New function.
+	(run_gcc): Read all input file options and
+	prepend a merged set before the linker driver options.
+	* gcc.c (driver_post_handling_callback): Remove.
+	(set_option_handlers): Do not set post_handling_callback.
+	* opts-common.c (handle_option): Do not call post_handling_callback.
+	* opts.h (struct cl_option_handlers): Remove post_handling_callback.
+
+2011-11-03  Richard Guenther  <rguenther@suse.de>
+
 	* collect2.c (main): Guard object_nbr variable with TARGET_AIX_VERSION.
 
 2011-11-03  Martin Jambor  <mjambor@suse.cz>

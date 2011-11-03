@@ -2494,60 +2494,6 @@ lto_fixup_decls (struct lto_file_decl_data **files)
     }
 }
 
-/* Read the options saved from each file in the command line.  Called
-   from lang_hooks.post_options which is called by process_options
-   right before all the options are used to initialize the compiler.
-   This assumes that decode_options has already run, so the
-   num_in_fnames and in_fnames are properly set.
-
-   Note that this assumes that all the files had been compiled with
-   the same options, which is not a good assumption.  In general,
-   options ought to be read from all the files in the set and merged.
-   However, it is still unclear what the merge rules should be.  */
-
-void
-lto_read_all_file_options (void)
-{
-  size_t i;
-
-  /* Clear any file options currently saved.  */
-  lto_clear_file_options ();
-
-  /* Set the hooks to read ELF sections.  */
-  lto_set_in_hooks (NULL, get_section_data, free_section_data);
-  if (!quiet_flag)
-    fprintf (stderr, "Reading command line options:");
-
-  for (i = 0; i < num_in_fnames; i++)
-    {
-      struct lto_file_decl_data *file_data;
-      lto_file *file = lto_obj_file_open (in_fnames[i], false);
-      if (!file)
-	break;
-      if (!quiet_flag)
-	{
-	  fprintf (stderr, " %s", in_fnames[i]);
-	  fflush (stderr);
-	}
-
-      file_data = XCNEW (struct lto_file_decl_data);
-      file_data->file_name = file->filename;
-      file_data->section_hash_table = lto_obj_build_section_table (file, NULL);
-
-      lto_read_file_options (file_data);
-
-      lto_obj_file_close (file);
-      htab_delete (file_data->section_hash_table);
-      free (file_data);
-    }
-
-  if (!quiet_flag)
-    fprintf (stderr, "\n");
-
-  /* Apply globally the options read from all the files.  */
-  lto_reissue_options ();
-}
-
 static GTY((length ("lto_stats.num_input_files + 1"))) struct lto_file_decl_data **all_file_decl_data;
 
 /* Turn file datas for sub files into a single array, so that they look
@@ -2921,6 +2867,7 @@ lto_init (void)
   lto_process_name ();
   lto_streamer_hooks_init ();
   lto_reader_init ();
+  lto_set_in_hooks (NULL, get_section_data, free_section_data);
   memset (&lto_stats, 0, sizeof (lto_stats));
   bitmap_obstack_initialize (NULL);
   gimple_register_cfg_hooks ();

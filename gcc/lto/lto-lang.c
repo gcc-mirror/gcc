@@ -692,8 +692,6 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
      support.  */
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
 
-  lto_read_all_file_options ();
-
   /* Initialize the compiler back end.  */
   return false;
 }

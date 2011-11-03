@@ -45,6 +45,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "opts.h"
 #include "options.h"
+#include "simple-object.h"
+
+/* From lto-streamer.h which we cannot include with -fkeep-inline-functions.
+   ???  Split out a lto-streamer-core.h.  */
+
+#define LTO_SECTION_NAME_PREFIX         ".gnu.lto_"
+
+/* End of lto-streamer.h copy.  */
 
 int debug;				/* true if -save-temps.  */
 int verbose;				/* true if -v.  */
@@ -336,6 +344,78 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
   obstack_free (&argv_obstack, NULL);
 }
 
+/* Append OPTION to the options array DECODED_OPTIONS with size
+   DECODED_OPTIONS_COUNT.  */
+
+static void
+append_option (struct cl_decoded_option **decoded_options,
+	       unsigned int *decoded_options_count,
+	       struct cl_decoded_option *option)
+{
+  ++*decoded_options_count;
+  *decoded_options
+    = (struct cl_decoded_option *)
+	xrealloc (*decoded_options,
+		  (*decoded_options_count
+		   * sizeof (struct cl_decoded_option)));
+  memcpy (&(*decoded_options)[*decoded_options_count - 1], option,
+	  sizeof (struct cl_decoded_option));
+}
+
+/* Try to merge and complain about options FDECODED_OPTIONS when applied
+   ontop of DECODED_OPTIONS.  */
+
+static void
+merge_and_complain (struct cl_decoded_option **decoded_options,
+		    unsigned int *decoded_options_count,
+		    struct cl_decoded_option *fdecoded_options,
+		    unsigned int fdecoded_options_count)
+{
+  unsigned int i, j;
+
+  /* ???  Merge options from files.  Most cases can be
+     handled by either unioning or intersecting
+     (for example -fwrapv is a case for unioning,
+     -ffast-math is for intersection).  Most complaints
+     about real conflicts between different options can
+     be deferred to the compiler proper.  Options that
+     we can neither safely handle by intersection nor
+     unioning would need to be complained about here.
+     Ideally we'd have a flag in the opt files that
+     tells whether to union or intersect or reject.
+     In absence of that it's unclear what a good default is.
+     It's also difficult to get positional handling correct.  */
+
+  /* The following does what the old LTO option code did,
+     union all target and a selected set of common options.  */
+  for (i = 0; i < fdecoded_options_count; ++i)
+    {
+      struct cl_decoded_option *foption = &fdecoded_options[i];
+      switch (foption->opt_index)
+	{
+	default:
+	  if (!(cl_options[foption->opt_index].flags & CL_TARGET))
+	    break;
+
+	  /* Fallthru.  */
+	case OPT_fPIC:
+	case OPT_fpic:
+	case OPT_fpie:
+	case OPT_fcommon:
+	case OPT_fexceptions:
+	  /* Do what the old LTO code did - collect exactly one option
+	     setting per OPT code, we pick the first we encounter.
+	     ???  This doesn't make too much sense, but when it doesn't
+	     then we should complain.  */
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == foption->opt_index)
+	      break;
+	  if (j == *decoded_options_count)
+	    append_option (decoded_options, decoded_options_count, foption);
+	  break;
+	}
+    }
+}
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
@@ -351,6 +431,8 @@ run_gcc (unsigned argc, char *argv[])
   int parallel = 0;
   int jobserver = 0;
   bool no_partition = false;
+  struct cl_decoded_option *fdecoded_options = NULL;
+  unsigned int fdecoded_options_count = 0;
   struct cl_decoded_option *decoded_options;
   unsigned int decoded_options_count;
   struct obstack argv_obstack;
@@ -368,11 +450,125 @@ run_gcc (unsigned argc, char *argv[])
 					&decoded_options,
 					&decoded_options_count);
 
+  /* Look at saved options in the IL files.  */
+  for (i = 1; i < argc; ++i)
+    {
+      char *data, *p;
+      char *fopts;
+      int fd;
+      const char *errmsg;
+      int err;
+      off_t file_offset = 0, offset, length;
+      long loffset;
+      simple_object_read *sobj;
+      int consumed;
+      struct cl_decoded_option *f2decoded_options;
+      unsigned int f2decoded_options_count;
+      char *filename = argv[i];
+      if ((p = strrchr (argv[i], '@'))
+	  && p != argv[i] 
+	  && sscanf (p, "@%li%n", &loffset, &consumed) >= 1
+	  && strlen (p) == (unsigned int) consumed)
+	{
+	  filename = XNEWVEC (char, p - argv[i] + 1);
+	  memcpy (filename, argv[i], p - argv[i]);
+	  filename[p - argv[i]] = '\0';
+	  file_offset = (off_t) loffset;
+	}
+      fd = open (argv[i], O_RDONLY);
+      if (fd == -1)
+	continue;
+      sobj = simple_object_start_read (fd, file_offset, NULL, &errmsg, &err);
+      if (!sobj)
+	{
+	  close (fd);
+	  continue;
+	}
+      if (!simple_object_find_section (sobj, LTO_SECTION_NAME_PREFIX "." "opts",
+				       &offset, &length, &errmsg, &err))
+	{
+	  simple_object_release_read (sobj);
+	  close (fd);
+	  continue;
+	}
+      lseek (fd, file_offset + offset, SEEK_SET);
+      data = (char *)xmalloc (length);
+      read (fd, data, length);
+      fopts = data;
+      do
+	{
+	  get_options_from_collect_gcc_options (collect_gcc,
+						fopts, CL_LANG_ALL,
+						&f2decoded_options,
+						&f2decoded_options_count);
+	  if (!fdecoded_options)
+	    {
+	      fdecoded_options = f2decoded_options;
+	      fdecoded_options_count = f2decoded_options_count;
+	    }
+	  else
+	    merge_and_complain (&fdecoded_options,
+				&fdecoded_options_count,
+				f2decoded_options, f2decoded_options_count);
+
+	  fopts += strlen (fopts) + 1;
+	}
+      while (fopts - data < length);
+
+      free (data);
+      simple_object_release_read (sobj);
+      close (fd);
+    }
+
   /* Initalize the common arguments for the driver.  */
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, collect_gcc);
   obstack_ptr_grow (&argv_obstack, "-xlto");
   obstack_ptr_grow (&argv_obstack, "-c");
+
+  /* Append compiler driver arguments as far as they were merged.  */
+  for (j = 1; j < fdecoded_options_count; ++j)
+    {
+      struct cl_decoded_option *option = &fdecoded_options[j];
+
+      /* File options have been properly filtered by lto-opts.c.  */
+      switch (option->opt_index)
+	{
+	  /* Drop arguments that we want to take from the link line.  */
+	  case OPT_flto_:
+	  case OPT_flto:
+	  case OPT_flto_partition_none:
+	  case OPT_flto_partition_1to1:
+	  case OPT_flto_partition_balanced:
+	      continue;
+
+	  default:
+	      break;
+	}
+
+      /* For now do what the original LTO option code was doing - pass
+	 on any CL_TARGET flag and a few selected others.  */
+      switch (option->opt_index)
+	{
+	case OPT_fPIC:
+	case OPT_fpic:
+	case OPT_fpie:
+	case OPT_fcommon:
+	case OPT_fexceptions:
+	  break;
+
+	default:
+	  if (!(cl_options[option->opt_index].flags & CL_TARGET))
+	    continue;
+	}
+
+      /* Pass the option on.  */
+      for (i = 0; i < option->canonical_option_num_elements; ++i)
+	obstack_ptr_grow (&argv_obstack, option->canonical_option[i]);
+    }
+
+  /* Append linker driver arguments.  Compiler options from the linker
+     driver arguments will override / merge with those from the compiler.  */
   for (j = 1; j < decoded_options_count; ++j)
     {
       struct cl_decoded_option *option = &decoded_options[j];
