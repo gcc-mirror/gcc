@@ -1,5 +1,16 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_array_bound_check,
+	trans_array_bound_check): Rename the former to the latter.
+	Replace descriptor argument with ss argument.  Get descriptor from ss.
+	(gfc_conv_array_index_offset, conv_array_index_offset): Rename the
+	former to the latter.  Update call to trans_array_bound_check.
+	Replace info argument with ss argument.  Get info from ss.
+	(gfc_conv_scalarized_array_ref): Update call to conv_array_index_offset.
+	(add_array_offset): Ditto
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_constant_array_constructor,
 	trans_constant_array_constructor): Rename the former to the latter.
 	Don't set the rank of the temporary for the loop.  Remove then unused
