@@ -1,5 +1,12 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (gfc_inline_intrinsic_function_p): Move prototype...
+	* gfortran.h (gfc_inline_intrinsic_function_p): ... here.
+	* dependency.c (gfc_check_argument_var_dependency): Check dependencies
+	of inline intrinsics' arguments.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_preloop_setup): New pointers to outer
 	dimension's ss and loop. Use them.
 

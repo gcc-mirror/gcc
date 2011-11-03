@@ -713,6 +713,17 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
 	    return gfc_check_fncall_dependency (var, intent, NULL,
 						expr->value.function.actual,
 						ELEM_CHECK_VARIABLE);
+
+	  if (gfc_inline_intrinsic_function_p (expr))
+	    {
+	      /* The TRANSPOSE case should have been caught in the
+		 noncopying intrinsic case above.  */
+	      gcc_assert (expr->value.function.isym->id != GFC_ISYM_TRANSPOSE);
+
+	      return gfc_check_fncall_dependency (var, intent, NULL,
+						  expr->value.function.actual,
+						  ELEM_CHECK_VARIABLE);
+	    }
 	}
       return 0;
 
