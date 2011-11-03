@@ -1,5 +1,17 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.h (gfc_trans_create_temp_array): Remove loop argument.
+	* trans-array.c (gfc_trans_create_temp_array): Ditto.  Get loop from ss.
+	Update reference to loop.  Remove loop argument.
+	(gfc_trans_array_constructor, gfc_conv_loop_setup): Update calls to
+	gfc_trans_create_temp_array.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+	Set loop before calling gfc_trans_create_temp_array.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_create_temp_array): New variable total_dim.
 	Set total_dim to loop's rank. Replace usages of loop's rank.
 

@@ -888,15 +888,14 @@ get_array_ref_dim (gfc_ss *ss, int loop_dim)
    callee allocated array.
 
    PRE, POST, INITIAL, DYNAMIC and DEALLOC are as for
-   gfc_trans_allocate_array_storage.
- */
+   gfc_trans_allocate_array_storage.  */
 
 tree
-gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
-			     gfc_loopinfo * loop, gfc_ss * ss,
+gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 			     tree eltype, tree initial, bool dynamic,
 			     bool dealloc, bool callee_alloc, locus * where)
 {
+  gfc_loopinfo *loop;
   gfc_array_info *info;
   tree from[GFC_MAX_DIMENSIONS], to[GFC_MAX_DIMENSIONS];
   tree type;
@@ -915,11 +914,12 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   info = &ss->info->data.array;
 
   gcc_assert (ss->dimen > 0);
-  gcc_assert (loop->dimen == ss->dimen);
+  gcc_assert (ss->loop->dimen == ss->dimen);
 
   if (gfc_option.warn_array_temp && where)
     gfc_warning ("Creating array temporary at %L", where);
 
+  loop = ss->loop;
   total_dim = loop->dimen;
   /* Set the lower bound to zero.  */
   for (n = 0; n < loop->dimen; n++)
@@ -1065,8 +1065,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   gfc_trans_allocate_array_storage (pre, post, info, size, nelem, initial,
 				    dynamic, dealloc);
 
-  if (ss->dimen > loop->temp_dim)
-    loop->temp_dim = ss->dimen;
+  if (ss->dimen > ss->loop->temp_dim)
+    ss->loop->temp_dim = ss->dimen;
 
   return size;
 }
@@ -2113,8 +2113,8 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   if (TREE_CODE (loop->to[0]) == VAR_DECL)
     dynamic = true;
 
-  gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, ss,
-			       type, NULL_TREE, dynamic, true, false, where);
+  gfc_trans_create_temp_array (&loop->pre, &loop->post, ss, type, NULL_TREE,
+			       dynamic, true, false, where);
 
   desc = ss_info->data.array.descriptor;
   offset = gfc_index_zero_node;
@@ -4211,9 +4211,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
       gcc_assert (tmp_ss->dimen != 0);
 
-      gfc_trans_create_temp_array (&loop->pre, &loop->post, loop,
-				   tmp_ss, tmp, NULL_TREE,
-				   false, true, false, where);
+      gfc_trans_create_temp_array (&loop->pre, &loop->post, tmp_ss, tmp,
+				   NULL_TREE, false, true, false, where);
     }
 
   /* For array parameters we don't have loop variables, so don't calculate the
