@@ -604,6 +604,7 @@ gfc_get_scalar_ss (gfc_ss *next, gfc_expr *expr)
 void
 gfc_cleanup_loop (gfc_loopinfo * loop)
 {
+  gfc_loopinfo *loop_next, **ploop;
   gfc_ss *ss;
   gfc_ss *next;
 
@@ -614,6 +615,23 @@ gfc_cleanup_loop (gfc_loopinfo * loop)
       next = ss->loop_chain;
       gfc_free_ss (ss);
       ss = next;
+    }
+
+  /* Remove reference to self in the parent loop.  */
+  if (loop->parent)
+    for (ploop = &loop->parent->nested; *ploop; ploop = &(*ploop)->next)
+      if (*ploop == loop)
+	{
+	  *ploop = loop->next;
+	  break;
+	}
+
+  /* Free non-freed nested loops.  */
+  for (loop = loop->nested; loop; loop = loop_next)
+    {
+      loop_next = loop->next;
+      gfc_cleanup_loop (loop);
+      free (loop);
     }
 }
 
@@ -664,10 +682,15 @@ gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
 	     added one, to avoid duplicate nested loops.  */
 	  if (nested_loop != loop->nested)
 	    {
+	      gcc_assert (nested_loop->parent == NULL);
+	      nested_loop->parent = loop;
+
 	      gcc_assert (nested_loop->next == NULL);
 	      nested_loop->next = loop->nested;
 	      loop->nested = nested_loop;
 	    }
+	  else
+	    gcc_assert (nested_loop->parent == loop);
 	}
 
       if (ss->next == gfc_ss_terminator)
@@ -2158,6 +2181,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
       mpz_t size;
 
       /* We should have a 1-dimensional, zero-based loop.  */
+      gcc_assert (loop->parent == NULL && loop->nested == NULL);
       gcc_assert (loop->dimen == 1);
       gcc_assert (integer_zerop (loop->from[0]));
 
@@ -4302,6 +4326,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
       tmp_ss_info = tmp_ss->info;
       gcc_assert (tmp_ss_info->type == GFC_SS_TEMP);
+      gcc_assert (loop->parent == NULL);
 
       /* Make absolutely sure that this is a complete type.  */
       if (tmp_ss_info->string_length)

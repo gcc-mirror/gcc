@@ -1,5 +1,13 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_loopinfo): New field parent.
+	* trans-array.c (gfc_cleanup_loop): Free nested loops.
+	(gfc_add_ss_to_loop): Set nested_loop's parent loop.
+	(gfc_trans_array_constructor): Update assertion.
+	(gfc_conv_loop_setup): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_add_loop_ss_code): Skip non-nestedmost ss.
 	Call recursively gfc_add_loop_ss_code for all the nested loops.
 	(gfc_conv_ss_startstride): Only get the descriptor for the outermost
