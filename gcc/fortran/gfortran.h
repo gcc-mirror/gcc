@@ -2880,6 +2880,9 @@ void gfc_generate_code (gfc_namespace *);
 void gfc_generate_module_code (gfc_namespace *);
 void gfc_init_coarray_decl (bool);
 
+/* trans-intrinsic.c */
+bool gfc_inline_intrinsic_function_p (gfc_expr *);
+
 /* bbt.c */
 typedef int (*compare_fn) (void *, void *);
 void gfc_insert_bbt (void *, void *, compare_fn);

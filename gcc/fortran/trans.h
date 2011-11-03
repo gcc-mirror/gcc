@@ -396,9 +396,6 @@ tree gfc_builtin_decl_for_float_kind (enum built_in_function, int);
 tree gfc_conv_intrinsic_subroutine (gfc_code *);
 void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
 
-/* Is the intrinsic expanded inline.  */
-bool gfc_inline_intrinsic_function_p (gfc_expr *);
-
 /* Does an intrinsic map directly to an external library call
    This is true for array-returning intrinsics, unless
    gfc_inline_intrinsic_function_p returns true.  */
