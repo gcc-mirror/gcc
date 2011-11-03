@@ -1,3 +1,7 @@
+2011-11-03  Tristan Gingold  <gingold@adacore.com>
+
+	* collect2.c (main): Add support of -f (response file) on AIX.
+
 2011-11-03  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50912
