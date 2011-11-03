@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss): New field nested_ss.
+	* trans-expr.c (gfc_advance_se_ss_chain): Update assertion.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (set_vector_loop_bounds): Loop over the parents.
 
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
