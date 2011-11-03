@@ -1,3 +1,7 @@
+2011-11-03  Richard Guenther  <rguenther@suse.de>
+
+	* collect2.c (main): Guard object_nbr variable with TARGET_AIX_VERSION.
+
 2011-11-03  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (type_change_info): New fields offset, object,

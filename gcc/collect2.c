@@ -1091,7 +1091,9 @@ main (int argc, char **argv)
   const char **ld2;
   char **object_lst;
   const char **object;
+#ifdef TARGET_AIX_VERSION
   int object_nbr = argc;
+#endif
   int first_file;
   int num_c_args;
   char **old_argv;
