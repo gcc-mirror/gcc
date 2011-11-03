@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_create_temp_array): Move invariant condition
+	out of the containing loop. 
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_loop_setup, gfc_trans_create_temp_array):
 	Move specloop arrays clearing from the former to the latter.
 
