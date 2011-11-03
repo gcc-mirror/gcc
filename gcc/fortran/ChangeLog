@@ -1,5 +1,13 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_constant_array_constructor,
+	trans_constant_array_constructor): Rename the former to the latter.
+	Don't set the rank of the temporary for the loop.  Remove then unused
+	loop argument.
+	(gfc_trans_array_constructor): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_scalarizing_loops): Stop loop before end
 	marker, not after it.
 
