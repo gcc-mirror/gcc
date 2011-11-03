@@ -3347,9 +3347,11 @@ done:
 	case GFC_SS_FUNCTION:
 	  for (n = 0; n < ss->data.info.dimen; n++)
 	    {
-	      ss->data.info.start[n] = gfc_index_zero_node;
-	      ss->data.info.end[n] = gfc_index_zero_node;
-	      ss->data.info.stride[n] = gfc_index_one_node;
+	      int dim = ss->data.info.dim[n];
+
+	      ss->data.info.start[dim]  = gfc_index_zero_node;
+	      ss->data.info.end[dim]    = gfc_index_zero_node;
+	      ss->data.info.stride[dim] = gfc_index_one_node;
 	    }
 	  break;
 
