@@ -5659,13 +5659,16 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
 
 /* Helper function to check dimensions.  */
 static bool
-dim_ok (gfc_ss_info *info)
+transposed_dims (gfc_ss *ss)
 {
+  gfc_ss_info *info;
   int n;
+
+  info = &ss->data.info;
   for (n = 0; n < info->dimen; n++)
     if (info->dim[n] != n)
-      return false;
-  return true;
+      return true;
+  return false;
 }
 
 /* Convert an array for passing as an actual argument.  Expressions and
@@ -5752,7 +5755,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       else
 	full = gfc_full_array_ref_p (info->ref, NULL);
 
-      if (full && dim_ok (info))
+      if (full && !transposed_dims (ss))
 	{
 	  if (se->direct_byref && !se->byref_noassign)
 	    {
@@ -5949,7 +5952,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       desc = loop.temp_ss->data.info.descriptor;
     }
-  else if (expr->expr_type == EXPR_FUNCTION && dim_ok (info))
+  else if (expr->expr_type == EXPR_FUNCTION && !transposed_dims (ss))
     {
       desc = info->descriptor;
       se->string_length = ss->string_length;
