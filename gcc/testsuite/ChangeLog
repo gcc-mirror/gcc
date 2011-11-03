@@ -1,3 +1,10 @@
+2011-11-03  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/devirt-c-1.C: Add dump scans.
+	* g++.dg/ipa/devirt-c-2.C: Likewise.
+	* g++.dg/ipa/devirt-c-7.C: New test.
+	* g++.dg/ipa/devirt-c-8.C: Likewise.
+
 2011-11-03  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50912

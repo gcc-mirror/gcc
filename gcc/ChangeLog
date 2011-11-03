@@ -1,3 +1,16 @@
+2011-11-03  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (type_change_info): New fields offset, object,
+	known_current_type and multiple_types_encountered.
+	(extr_type_from_vtbl_ptr_store): New function.
+	(check_stmt_for_type_change): Use it, set multiple_types_encountered if
+        the result is different from the previous one.
+	(detect_type_change): Renamed to detect_type_change_1. New parameter
+	comp_type.  Set up new fields in tci, build known type jump
+	functions if the new type can be identified.
+	(detect_type_change): New function.
+	* tree.h (DECL_CONTEXT): Comment new use.
+
 2011-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48217
