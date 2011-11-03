@@ -188,6 +188,17 @@ typedef struct gfc_ss_info
   gfc_ss_type type;
   gfc_expr *expr;
   tree string_length;
+
+  union
+  {
+    /* If type is GFC_SS_SCALAR or GFC_SS_REFERENCE.  */
+    struct
+    {
+      tree value;
+    }
+    scalar;
+  }
+  data;
 }
 gfc_ss_info;
 
@@ -208,13 +219,6 @@ typedef struct gfc_ss
 
   union
   {
-    /* If type is GFC_SS_SCALAR or GFC_SS_REFERENCE.  */
-    struct
-    {
-      tree expr;
-    }
-    scalar;
-
     /* GFC_SS_TEMP.  */
     struct
     {

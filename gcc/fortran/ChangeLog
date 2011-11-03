@@ -1,5 +1,15 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move member struct
+	gfc_ss::data::scalar into newly created union gfc_ss_info::data,
+	and rename subfield expr to value.
+	* trans-array.c (gfc_add_loop_ss_code, gfc_conv_array_index_offset,
+	gfc_conv_expr_descriptor): Update reference chains.
+	* trans-const.c (gfc_conv_constant): Ditto.
+	* trans-expr.c (gfc_conv_expr): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
 	string_length from the former struct to the latter.
 	* trans-array.c

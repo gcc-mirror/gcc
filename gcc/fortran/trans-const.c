@@ -392,7 +392,7 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
       gcc_assert (ss_info->type == GFC_SS_SCALAR);
       gcc_assert (ss_info->expr == expr);
 
-      se->expr = se->ss->data.scalar.expr;
+      se->expr = ss_info->data.scalar.value;
       se->string_length = ss_info->string_length;
       gfc_advance_se_ss_chain (se);
       return;

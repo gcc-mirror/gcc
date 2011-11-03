@@ -2208,7 +2208,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  else
 	    gfc_add_block_to_block (&loop->post, &se.post);
 
-	  ss->data.scalar.expr = se.expr;
+	  ss_info->data.scalar.value = se.expr;
 	  ss_info->string_length = se.string_length;
 	  break;
 
@@ -2220,7 +2220,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  gfc_add_block_to_block (&loop->pre, &se.pre);
 	  gfc_add_block_to_block (&loop->post, &se.post);
 
-	  ss->data.scalar.expr = gfc_evaluate_now (se.expr, &loop->pre);
+	  ss_info->data.scalar.value = gfc_evaluate_now (se.expr, &loop->pre);
 	  ss_info->string_length = se.string_length;
 	  break;
 
@@ -2571,7 +2571,7 @@ conv_array_index_offset (gfc_se * se, gfc_ss * ss, int dim, int i,
 	  gcc_assert (info->subscript[dim]
 		      && info->subscript[dim]->info->type == GFC_SS_SCALAR);
 	  /* We've already translated this value outside the loop.  */
-	  index = info->subscript[dim]->data.scalar.expr;
+	  index = info->subscript[dim]->info->data.scalar.value;
 
 	  index = trans_array_bound_check (se, ss, index, dim, &ar->where,
 					   ar->as->type != AS_ASSUMED_SIZE
@@ -6134,7 +6134,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    {
 	      gcc_assert (info->subscript[n]
 			  && info->subscript[n]->info->type == GFC_SS_SCALAR);
-	      start = info->subscript[n]->data.scalar.expr;
+	      start = info->subscript[n]->info->data.scalar.value;
 	    }
 	  else
 	    {
