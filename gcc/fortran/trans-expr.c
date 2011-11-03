@@ -613,6 +613,7 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
 static void
 gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 {
+  gfc_ss *ss;
   gfc_ref *ref;
   gfc_symbol *sym;
   tree parent_decl = NULL_TREE;
@@ -622,11 +623,12 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
   bool entry_master;
 
   sym = expr->symtree->n.sym;
-  if (se->ss != NULL)
+  ss = se->ss;
+  if (ss != NULL)
     {
       /* Check that something hasn't gone horribly wrong.  */
-      gcc_assert (se->ss != gfc_ss_terminator);
-      gcc_assert (se->ss->expr == expr);
+      gcc_assert (ss != gfc_ss_terminator);
+      gcc_assert (ss->info->expr == expr);
 
       /* A scalarized term.  We already know the descriptor.  */
       se->expr = se->ss->data.info.descriptor;
@@ -3604,8 +3606,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  callee_alloc = comp->attr.allocatable || comp->attr.pointer;
 	  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop, se->ss,
 				       tmp, NULL_TREE, false,
-				       !comp->attr.pointer,
-				       callee_alloc, &se->ss->expr->where);
+				       !comp->attr.pointer, callee_alloc,
+				       &se->ss->info->expr->where);
 
 	  /* Pass the temporary as the first argument.  */
 	  result = info->descriptor;
@@ -3640,8 +3642,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  callee_alloc = sym->attr.allocatable || sym->attr.pointer;
 	  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop, se->ss,
 				       tmp, NULL_TREE, false,
-				       !sym->attr.pointer,
-				       callee_alloc, &se->ss->expr->where);
+				       !sym->attr.pointer, callee_alloc,
+				       &se->ss->info->expr->where);
 
 	  /* Pass the temporary as the first argument.  */
 	  result = info->descriptor;
@@ -4243,7 +4245,7 @@ gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
 
   ss = se->ss;
   gcc_assert (ss != NULL && ss != gfc_ss_terminator);
-  gcc_assert (ss->expr == expr && ss->info->type == GFC_SS_CONSTRUCTOR);
+  gcc_assert (ss->info->expr == expr && ss->info->type == GFC_SS_CONSTRUCTOR);
 
   gfc_conv_tmp_array_ref (se);
 }
@@ -4827,7 +4829,7 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
   gfc_ss *ss;
 
   ss = se->ss;
-  if (ss && ss->expr == expr
+  if (ss && ss->info->expr == expr
       && (ss->info->type == GFC_SS_SCALAR
 	  || ss->info->type == GFC_SS_REFERENCE))
     {
@@ -4957,7 +4959,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
   tree var;
 
   ss = se->ss;
-  if (ss && ss->expr == expr
+  if (ss && ss->info->expr == expr
       && ss->info->type == GFC_SS_REFERENCE)
     {
       /* Returns a reference to the scalar evaluated outside the loop

@@ -186,6 +186,7 @@ gfc_ss_type;
 typedef struct gfc_ss_info
 {
   gfc_ss_type type;
+  gfc_expr *expr;
 }
 gfc_ss_info;
 
@@ -204,7 +205,6 @@ typedef struct gfc_ss
 {
   gfc_ss_info *info;
 
-  gfc_expr *expr;
   tree string_length;
   union
   {

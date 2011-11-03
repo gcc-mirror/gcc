@@ -220,7 +220,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
       info = NULL;
       for (ss = loopse->ss; ss && ss != gfc_ss_terminator; ss = ss->next)
 	{
-	  if (ss->expr != e)
+	  if (ss->info->expr != e)
 	    continue;
 	  info = &ss->data.info;
 	  break;

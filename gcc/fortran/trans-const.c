@@ -385,9 +385,12 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
   ss = se->ss;
   if (ss != NULL)
     {
+      gfc_ss_info *ss_info;
+
+      ss_info = ss->info;
       gcc_assert (ss != gfc_ss_terminator);
-      gcc_assert (ss->info->type == GFC_SS_SCALAR);
-      gcc_assert (se->ss->expr == expr);
+      gcc_assert (ss_info->type == GFC_SS_SCALAR);
+      gcc_assert (ss_info->expr == expr);
 
       se->expr = se->ss->data.scalar.expr;
       se->string_length = se->ss->string_length;
