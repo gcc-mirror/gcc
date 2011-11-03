@@ -1,3 +1,7 @@
+2011-11-03  Andreas Schwab  <schwab@redhat.com>
+
+	* config/ia64/t-ia64 (crtbeginS.o): Fix whitespace damage.
+
 2011-11-02  David S. Miller  <davem@davemloft.net>
 
 	* configure.ac: Set host_address on sparc too.
