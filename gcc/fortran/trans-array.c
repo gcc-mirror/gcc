@@ -3881,7 +3881,12 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	 loop for this dimension.  We try to pick the simplest term.  */
       for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
 	{
-	  if (ss->type == GFC_SS_SCALAR || ss->type == GFC_SS_REFERENCE)
+	  gfc_ss_type ss_type;
+
+	  ss_type = ss->type;
+	  if (ss_type == GFC_SS_SCALAR
+	      || ss_type == GFC_SS_TEMP
+	      || ss_type == GFC_SS_REFERENCE)
 	    continue;
 
 	  info = &ss->data.info;
