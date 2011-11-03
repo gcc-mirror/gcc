@@ -902,6 +902,11 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 			pre);
       loop->from[n] = gfc_index_zero_node;
 
+      /* We have just changed the loop bounds, we must clear the
+	 corresponding specloop, so that delta calculation is not skipped
+	 later in set_delta.  */
+      loop->specloop[n] = NULL;
+
       /* We are constructing the temporary's descriptor based on the loop
 	 dimensions. As the dimensions may be accessed in arbitrary order
 	 (think of transpose) the size taken from the n'th loop may not map
@@ -4136,7 +4141,6 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 {
   gfc_ss *tmp_ss;
   tree tmp;
-  int n;
 
   set_loop_bounds (loop);
 
@@ -4171,9 +4175,6 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 				   tmp_ss, tmp, NULL_TREE,
 				   false, true, false, where);
     }
-
-  for (n = 0; n < loop->temp_dim; n++)
-    loop->specloop[loop->order[n]] = NULL;
 
   /* For array parameters we don't have loop variables, so don't calculate the
      translations.  */
