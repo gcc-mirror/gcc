@@ -1008,7 +1008,10 @@ sparc-*-elf*)
 	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
-	tmake_file="${tmake_file} t-crtfm sparc/t-linux64"
+	tmake_file="${tmake_file} t-crtfm"
+	if test "${host_address}" = 64; then
+		tmake_file="$tmake_file sparc/t-linux64"
+	fi
 	case ${host} in
 	*-leon*)
 		tmake_file="${tmake_file} t-fdpbit"
@@ -1021,7 +1024,9 @@ sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	*-leon[3-9]*)
 		;;
 	*)
-	  	tmake_file="$tmake_file sparc/t-softmul"
+		if test "${host_address}" = 32; then
+			tmake_file="$tmake_file sparc/t-softmul"
+		fi
 	  	;;
 	esac
 	extra_parts="$extra_parts crtfastmath.o"
@@ -1052,7 +1057,13 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm sparc/t-linux sparc/t-linux64"
+	tmake_file="${tmake_file} t-crtfm sparc/t-linux"
+	if test "${host_address}" = 64; then
+		tmake_file="${tmake_file} sparc/t-linux64"
+	fi
+	if test "${host_address}" = 32; then
+		tmake_file="${tmake_file} sparc/t-softmul"
+	fi
 	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc64-*-netbsd*)

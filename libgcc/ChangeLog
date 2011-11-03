@@ -1,3 +1,11 @@
+2011-11-02  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac: Set host_address on sparc too.
+	* configure: Regenerate.
+	* config.host: Add sparc/t-linux64 and sparc/t-softmul conditionally
+	based upon host_address.
+	* config/sparc/t-linux64: Set CRTSTUFF_T_CFLAGS unconditionally.
+
 2011-11-02  Jason Merrill  <jason@redhat.com>
 
 	* config/rs6000/t-ppccomm: Add missing \.
