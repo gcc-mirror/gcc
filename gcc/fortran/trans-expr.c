@@ -3606,7 +3606,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     returns a pointer, the temporary will be a shallow copy and
 	     mustn't be deallocated.  */
 	  callee_alloc = comp->attr.allocatable || comp->attr.pointer;
-	  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop, se->ss,
+	  gfc_trans_create_temp_array (&se->pre, &se->post, se->ss,
 				       tmp, NULL_TREE, false,
 				       !comp->attr.pointer, callee_alloc,
 				       &se->ss->info->expr->where);
@@ -3642,7 +3642,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     returns a pointer, the temporary will be a shallow copy and
 	     mustn't be deallocated.  */
 	  callee_alloc = sym->attr.allocatable || sym->attr.pointer;
-	  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop, se->ss,
+	  gfc_trans_create_temp_array (&se->pre, &se->post, se->ss,
 				       tmp, NULL_TREE, false,
 				       !sym->attr.pointer, callee_alloc,
 				       &se->ss->info->expr->where);
