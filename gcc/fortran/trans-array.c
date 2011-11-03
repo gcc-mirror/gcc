@@ -2203,7 +2203,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 		 scalarization loop, except for WHERE assignments.  */
 	      if (subscript)
 		se.expr = convert(gfc_array_index_type, se.expr);
-	      if (!ss->where)
+	      if (!ss_info->where)
 		se.expr = gfc_evaluate_now (se.expr, &loop->pre);
 	      gfc_add_block_to_block (&loop->pre, &se.post);
 	    }

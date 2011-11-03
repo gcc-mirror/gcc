@@ -1,6 +1,14 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	gfc_ss::where into gfc_ss_info.
+	* trans-array.c (gfc_add_loop_ss_code):
+	Update reference chains.
+	* trans-stmt.c (gfc_trans_where_assign, gfc_trans_where_3): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
 	gfc_ss::useflags into gfc_ss_info.
 	* trans-array.c (gfc_mark_ss_chain_used, gfc_trans_preloop_setup,
 	gfc_trans_scalarizing_loops, gfc_trans_scalarized_boundary):
