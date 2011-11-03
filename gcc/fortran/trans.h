@@ -279,6 +279,9 @@ typedef struct gfc_loopinfo
   /* The SS describing the temporary used in an assignment.  */
   gfc_ss *temp_ss;
 
+  /* Non-null if this loop is nested in another one.  */
+  struct gfc_loopinfo *parent;
+
   /* Chain of nested loops.  */
   struct gfc_loopinfo *nested, *next;
 
