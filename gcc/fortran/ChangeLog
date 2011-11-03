@@ -1,5 +1,23 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss_info, struct gfc_array_info):
+	Rename the former to the latter.
+	* trans-array.c (gfc_get_array_ss, gfc_trans_allocate_array_storage,
+	get_array_ref_dim, gfc_trans_create_temp_array,
+	gfc_trans_constant_array_constructor, gfc_set_vector_loop_bounds,
+	gfc_conv_array_index_offset, gfc_conv_scalarized_array_ref,
+	add_array_offset, gfc_trans_preloop_setup, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_conv_loop_setup, transposed_dims,
+	gfc_conv_expr_descriptor): Update all uses.
+	* trans-expr.c (gfc_conv_subref_array_arg, gfc_conv_procedure_call):
+	Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer,
+	walk_inline_intrinsic_transpose): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies,
+	gfc_trans_pointer_assign_need_temp): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (dim_ok, transposed_dims): Rename the former to the
 	latter.  Change argument type.  Invert return value.
 	(gfc_conv_expr_descriptor): Update calls.

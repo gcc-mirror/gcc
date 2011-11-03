@@ -517,7 +517,7 @@ gfc_ss *
 gfc_get_array_ss (gfc_ss *next, gfc_expr *expr, int dimen, gfc_ss_type type)
 {
   gfc_ss *ss;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   int i;
 
   ss = gfc_get_ss ();
@@ -685,7 +685,7 @@ gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping * mapping,
 
 static void
 gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
-				  gfc_ss_info * info, tree size, tree nelem,
+				  gfc_array_info * info, tree size, tree nelem,
 				  tree initial, bool dynamic, bool dealloc)
 {
   tree tmp;
@@ -810,7 +810,7 @@ static int
 get_array_ref_dim (gfc_ss *ss, int loop_dim)
 {
   int n, array_dim, array_ref_dim;
-  gfc_ss_info *info;
+  gfc_array_info *info;
 
   info = &ss->data.info;
 
@@ -845,7 +845,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 			     tree eltype, tree initial, bool dynamic,
 			     bool dealloc, bool callee_alloc, locus * where)
 {
-  gfc_ss_info *info;
+  gfc_array_info *info;
   tree from[GFC_MAX_DIMENSIONS], to[GFC_MAX_DIMENSIONS];
   tree type;
   tree desc;
@@ -1857,7 +1857,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 static void
 trans_constant_array_constructor (gfc_ss * ss, tree type)
 {
-  gfc_ss_info *info;
+  gfc_array_info *info;
   tree tmp;
   int i;
 
@@ -2099,7 +2099,7 @@ finish:
 static void
 set_vector_loop_bounds (gfc_loopinfo * loop, gfc_ss * ss)
 {
-  gfc_ss_info *info;
+  gfc_array_info *info;
   gfc_se se;
   tree tmp;
   tree desc;
@@ -2516,7 +2516,7 @@ static tree
 conv_array_index_offset (gfc_se * se, gfc_ss * ss, int dim, int i,
 			 gfc_array_ref * ar, tree stride)
 {
-  gfc_ss_info *info;
+  gfc_array_info *info;
   tree index;
   tree desc;
   tree data;
@@ -2629,7 +2629,7 @@ conv_array_index_offset (gfc_se * se, gfc_ss * ss, int dim, int i,
 static void
 gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 {
-  gfc_ss_info *info;
+  gfc_array_info *info;
   tree decl = NULL_TREE;
   tree index;
   tree tmp;
@@ -2827,7 +2827,7 @@ add_array_offset (stmtblock_t *pblock, gfc_loopinfo *loop, gfc_ss *ss,
 		  gfc_array_ref *ar, int array_dim, int loop_dim)
 {
   gfc_se se;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   tree stride, index;
 
   info = &ss->data.info;
@@ -2854,7 +2854,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 			 stmtblock_t * pblock)
 {
   tree stride;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   gfc_ss *ss;
   gfc_array_ref *ar;
   int i;
@@ -3205,7 +3205,7 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
   gfc_expr *stride = NULL;
   tree desc;
   gfc_se se;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   gfc_array_ref *ar;
 
   gcc_assert (ss->type == GFC_SS_SECTION);
@@ -3356,7 +3356,7 @@ done:
       tree end;
       tree size[GFC_MAX_DIMENSIONS];
       tree stride_pos, stride_neg, non_zerosized, tmp2, tmp3;
-      gfc_ss_info *info;
+      gfc_array_info *info;
       char *msg;
       int dim;
 
@@ -3851,8 +3851,8 @@ void
 gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 {
   int n, dim, spec_dim;
-  gfc_ss_info *info;
-  gfc_ss_info *specinfo;
+  gfc_array_info *info;
+  gfc_array_info *specinfo;
   gfc_ss *ss;
   tree tmp;
   gfc_ss *loopspec[GFC_MAX_DIMENSIONS];
@@ -4061,7 +4061,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
       tmp = loop->temp_ss->data.temp.type;
       n = loop->temp_ss->data.temp.dimen;
-      memset (&loop->temp_ss->data.info, 0, sizeof (gfc_ss_info));
+      memset (&loop->temp_ss->data.info, 0, sizeof (gfc_array_info));
       loop->temp_ss->type = GFC_SS_SECTION;
       loop->temp_ss->data.info.dimen = n;
 
@@ -5661,7 +5661,7 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
 static bool
 transposed_dims (gfc_ss *ss)
 {
-  gfc_ss_info *info;
+  gfc_array_info *info;
   int n;
 
   info = &ss->data.info;
@@ -5704,7 +5704,7 @@ void
 gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 {
   gfc_loopinfo loop;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   int need_tmp;
   int n;
   tree tmp;

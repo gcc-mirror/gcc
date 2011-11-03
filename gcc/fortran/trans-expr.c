@@ -2359,7 +2359,7 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
   gfc_ss *rss;
   gfc_loopinfo loop;
   gfc_loopinfo loop2;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   tree offset;
   tree tmp_index;
   tree tmp;
@@ -2854,7 +2854,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   tree fntype;
   gfc_se parmse;
   gfc_ss *argss;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   int byref;
   int parm_kind;
   tree type;
