@@ -557,11 +557,11 @@ gfc_get_temp_ss (tree type, tree string_length, int dimen)
 
   ss_info = gfc_get_ss_info ();
   ss_info->type = GFC_SS_TEMP;
+  ss_info->string_length = string_length;
 
   ss = gfc_get_ss ();
   ss->info = ss_info;
   ss->next = gfc_ss_terminator;
-  ss->string_length = string_length;
   ss->data.temp.type = type;
   ss->dimen = dimen;
   for (i = 0; i < ss->dimen; i++)
@@ -1953,6 +1953,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
   bool dynamic;
   bool old_first_len, old_typespec_chararray_ctor;
   tree old_first_len_val;
+  gfc_ss_info *ss_info;
   gfc_expr *expr;
 
   /* Save the old values for nested checking.  */
@@ -1960,7 +1961,8 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
   old_first_len_val = first_len_val;
   old_typespec_chararray_ctor = typespec_chararray_ctor;
 
-  expr = ss->info->expr;
+  ss_info = ss->info;
+  expr = ss_info->expr;
 
   /* Do bounds-checking here and in gfc_trans_array_ctor_element only if no
      typespec was given for the array constructor.  */
@@ -1993,21 +1995,21 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
 	  gfc_init_se (&length_se, NULL);
 	  gfc_conv_expr_type (&length_se, expr->ts.u.cl->length,
 			      gfc_charlen_type_node);
-	  ss->string_length = length_se.expr;
+	  ss_info->string_length = length_se.expr;
 	  gfc_add_block_to_block (&loop->pre, &length_se.pre);
 	  gfc_add_block_to_block (&loop->post, &length_se.post);
 	}
       else
 	const_string = get_array_ctor_strlen (&loop->pre, c,
-					      &ss->string_length);
+					      &ss_info->string_length);
 
       /* Complex character array constructors should have been taken care of
 	 and not end up here.  */
-      gcc_assert (ss->string_length);
+      gcc_assert (ss_info->string_length);
 
-      expr->ts.u.cl->backend_decl = ss->string_length;
+      expr->ts.u.cl->backend_decl = ss_info->string_length;
 
-      type = gfc_get_character_type_len (expr->ts.kind, ss->string_length);
+      type = gfc_get_character_type_len (expr->ts.kind, ss_info->string_length);
       if (const_string)
 	type = build_pointer_type (type);
     }
@@ -2207,7 +2209,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	    gfc_add_block_to_block (&loop->post, &se.post);
 
 	  ss->data.scalar.expr = se.expr;
-	  ss->string_length = se.string_length;
+	  ss_info->string_length = se.string_length;
 	  break;
 
 	case GFC_SS_REFERENCE:
@@ -2219,7 +2221,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  gfc_add_block_to_block (&loop->post, &se.post);
 
 	  ss->data.scalar.expr = gfc_evaluate_now (se.expr, &loop->pre);
-	  ss->string_length = se.string_length;
+	  ss_info->string_length = se.string_length;
 	  break;
 
 	case GFC_SS_SECTION:
@@ -2254,19 +2256,19 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  gfc_conv_expr (&se, expr);
 	  gfc_add_block_to_block (&loop->pre, &se.pre);
 	  gfc_add_block_to_block (&loop->post, &se.post);
-	  ss->string_length = se.string_length;
+	  ss_info->string_length = se.string_length;
 	  break;
 
 	case GFC_SS_CONSTRUCTOR:
 	  if (expr->ts.type == BT_CHARACTER
-	      && ss->string_length == NULL
+	      && ss_info->string_length == NULL
 	      && expr->ts.u.cl
 	      && expr->ts.u.cl->length)
 	    {
 	      gfc_init_se (&se, NULL);
 	      gfc_conv_expr_type (&se, expr->ts.u.cl->length,
 				  gfc_charlen_type_node);
-	      ss->string_length = se.expr;
+	      ss_info->string_length = se.expr;
 	      gfc_add_block_to_block (&loop->pre, &se.pre);
 	      gfc_add_block_to_block (&loop->post, &se.post);
 	    }
@@ -2304,7 +2306,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
   gfc_conv_expr_lhs (&se, ss_info->expr);
   gfc_add_block_to_block (block, &se.pre);
   ss->data.info.descriptor = se.expr;
-  ss->string_length = se.string_length;
+  ss_info->string_length = se.string_length;
 
   if (base)
     {
@@ -2697,7 +2699,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 void
 gfc_conv_tmp_array_ref (gfc_se * se)
 {
-  se->string_length = se->ss->string_length;
+  se->string_length = se->ss->info->string_length;
   gfc_conv_scalarized_array_ref (se, NULL);
   gfc_advance_se_ss_chain (se);
 }
@@ -3899,7 +3901,7 @@ temporary:
       if (GFC_ARRAY_TYPE_P (base_type)
 	  || GFC_DESCRIPTOR_TYPE_P (base_type))
 	base_type = gfc_get_element_type (base_type);
-      loop->temp_ss = gfc_get_temp_ss (base_type, dest->string_length,
+      loop->temp_ss = gfc_get_temp_ss (base_type, dest->info->string_length,
 				       loop->dimen);
       gfc_add_ss_to_loop (loop, loop->temp_ss);
     }
@@ -4124,11 +4126,11 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
       gcc_assert (tmp_ss_info->type == GFC_SS_TEMP);
 
       /* Make absolutely sure that this is a complete type.  */
-      if (loop->temp_ss->string_length)
+      if (tmp_ss_info->string_length)
 	loop->temp_ss->data.temp.type
 		= gfc_get_character_type_len_for_eltype
 			(TREE_TYPE (loop->temp_ss->data.temp.type),
-			 loop->temp_ss->string_length);
+			 tmp_ss_info->string_length);
 
       tmp = loop->temp_ss->data.temp.type;
       memset (&loop->temp_ss->data.info, 0, sizeof (gfc_array_info));
@@ -5973,7 +5975,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 				       : NULL),
 				      loop.dimen);
 
-      se->string_length = loop.temp_ss->string_length;
+      se->string_length = loop.temp_ss->info->string_length;
       gcc_assert (loop.temp_ss->dimen == loop.dimen);
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
@@ -6030,7 +6032,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   else if (expr->expr_type == EXPR_FUNCTION && !transposed_dims (ss))
     {
       desc = info->descriptor;
-      se->string_length = ss->string_length;
+      se->string_length = ss_info->string_length;
     }
   else
     {
