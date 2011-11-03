@@ -3537,8 +3537,8 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
 
   /* Get the loop-entry arguments.  */
   if (slp_node)
-    vect_get_slp_defs (reduction_op, NULL_TREE, slp_node, &vec_initial_defs,
-                       NULL, reduc_index);
+    vect_get_vec_defs (reduction_op, NULL_TREE, stmt, &vec_initial_defs,
+                       NULL, slp_node, reduc_index);
   else
     {
       vec_initial_defs = VEC_alloc (tree, heap, 1);
@@ -4792,8 +4792,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
             }
 
           if (slp_node)
-            vect_get_slp_defs (op0, op1, slp_node, &vec_oprnds0, &vec_oprnds1,
-                               -1);
+            vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0, &vec_oprnds1,
+                               slp_node, -1);
           else
             {
               loop_vec_def0 = vect_get_vec_def_for_operand (ops[!reduc_index],
