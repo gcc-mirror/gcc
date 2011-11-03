@@ -1004,7 +1004,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
       gcc_assert (!expr->value.function.actual->next->expr);
       gcc_assert (corank > 0);
       gcc_assert (se->loop->dimen == 1);
-      gcc_assert (se->ss->expr == expr);
+      gcc_assert (se->ss->info->expr == expr);
 
       dim_arg = se->loop->loopvar[0];
       dim_arg = fold_build2_loc (input_location, PLUS_EXPR,
@@ -1321,7 +1321,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
       /* Create an implicit second parameter from the loop variable.  */
       gcc_assert (!arg2->expr);
       gcc_assert (se->loop->dimen == 1);
-      gcc_assert (se->ss->expr == expr);
+      gcc_assert (se->ss->info->expr == expr);
       gfc_advance_se_ss_chain (se);
       bound = se->loop->loopvar[0];
       bound = fold_build2_loc (input_location, MINUS_EXPR,
@@ -1515,7 +1515,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
       gcc_assert (!arg2->expr);
       gcc_assert (corank > 0);
       gcc_assert (se->loop->dimen == 1);
-      gcc_assert (se->ss->expr == expr);
+      gcc_assert (se->ss->info->expr == expr);
 
       bound = se->loop->loopvar[0];
       bound = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
@@ -2323,7 +2323,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
   gfc_symbol *sym;
   VEC(tree,gc) *append_args;
 
-  gcc_assert (!se->ss || se->ss->expr == expr);
+  gcc_assert (!se->ss || se->ss->info->expr == expr);
 
   if (se->ss)
     gcc_assert (expr->rank > 0);
@@ -6800,7 +6800,7 @@ walk_inline_intrinsic_function (gfc_ss * ss, gfc_expr * expr)
 void
 gfc_add_intrinsic_ss_code (gfc_loopinfo * loop ATTRIBUTE_UNUSED, gfc_ss * ss)
 {
-  switch (ss->expr->value.function.isym->id)
+  switch (ss->info->expr->value.function.isym->id)
     {
     case GFC_ISYM_UBOUND:
     case GFC_ISYM_LBOUND:
