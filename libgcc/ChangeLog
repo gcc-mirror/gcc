@@ -1,3 +1,9 @@
+2011-11-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.host (crisv32-*-none, cris-*-none): Remove.
+	(crisv32-*-elf): Append to tmake_file, don't just set it.
+	(cris-*-elf): Add missing t-fdpbit to tmake_file.
+
 2011-11-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/rs6000/t-ppccomm (ecrti$(objext)): Use $<.
