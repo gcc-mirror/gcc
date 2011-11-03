@@ -1,5 +1,9 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_preloop_setup): Move code earlier.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_preloop_setup): Move array reference
 	initialisation earlier. Factor subsequent array references.
 
