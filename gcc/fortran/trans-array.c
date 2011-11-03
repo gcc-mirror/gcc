@@ -2197,14 +2197,18 @@ set_vector_loop_bounds (gfc_ss * ss)
   int dim;
 
   info = &ss->info->data.array;
-  loop = ss->loop;
 
-  for (n = 0; n < loop->dimen; n++)
+  for (; ss; ss = ss->parent)
     {
-      dim = ss->dim[n];
-      if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR
-	  && loop->to[n] == NULL)
+      loop = ss->loop;
+
+      for (n = 0; n < loop->dimen; n++)
 	{
+	  dim = ss->dim[n];
+	  if (info->ref->u.ar.dimen_type[dim] != DIMEN_VECTOR
+	      || loop->to[n] != NULL)
+	    continue;
+
 	  /* Loop variable N indexes vector dimension DIM, and we don't
 	     yet know the upper bound of loop variable N.  Set it to the
 	     difference between the vector's upper and lower bounds.  */
