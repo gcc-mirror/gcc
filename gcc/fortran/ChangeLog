@@ -1,5 +1,29 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	gfc_ss::data::info into gfc_ss_info::data and remove empty union
+	gfc_ss::data.
+	* trans-array.c (gfc_free_ss, gfc_trans_create_temp_array,
+	gfc_trans_constant_array_constructor, gfc_trans_array_constructor,
+	gfc_set_vector_loop_bounds, gfc_add_loop_ss_code,
+	gfc_conv_ss_descriptor, gfc_trans_array_bound_check,
+	gfc_conv_array_index_offset, gfc_conv_scalarized_array_ref,
+	add_array_offset, gfc_trans_preloop_setup,
+	gfc_trans_scalarized_boundary, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_could_be_alias,
+	gfc_conv_loop_setup, gfc_conv_expr_descriptor,
+	gfc_alloc_allocatable_for_assignment, gfc_walk_array_ref):
+	Update reference chains and factor them where possible.
+	* trans-expr.c (gfc_conv_variable, gfc_conv_subref_array_arg,
+	gfc_conv_procedure_call, gfc_trans_subarray_assign): Updata reference
+	chains.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Ditto.
+	* trans-io.c (transfer_array_component): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies,
+	gfc_trans_pointer_assign_need_temp): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss, struct gfc_ss_info): Move member struct
 	gfc_ss::data::temp into gfc_ss_info::data.
 	* trans-array.c (gfc_get_temp_ss, gfc_conv_loop_setup): Update reference

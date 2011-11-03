@@ -633,9 +633,9 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       gcc_assert (ss_info->expr == expr);
 
       /* A scalarized term.  We already know the descriptor.  */
-      se->expr = se->ss->data.info.descriptor;
+      se->expr = ss_info->data.array.descriptor;
       se->string_length = ss_info->string_length;
-      for (ref = se->ss->data.info.ref; ref; ref = ref->next)
+      for (ref = ss_info->data.array.ref; ref; ref = ref->next)
 	if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
 	  break;
     }
@@ -2413,7 +2413,7 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
   gfc_conv_loop_setup (&loop, &expr->where);
 
   /* Pass the temporary descriptor back to the caller.  */
-  info = &loop.temp_ss->data.info;
+  info = &loop.temp_ss->info->data.array;
   parmse->expr = info->descriptor;
 
   /* Setup the gfc_se structures.  */
@@ -2492,7 +2492,7 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
      dimensions, so this is very simple.  The offset is only computed
      outside the innermost loop, so the overall transfer could be
      optimized further.  */
-  info = &rse.ss->data.info;
+  info = &rse.ss->info->data.array;
   dimen = rse.ss->dimen;
 
   tmp_index = gfc_index_zero_node;
@@ -2910,7 +2910,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      return 0;
 	    }
 	}
-      info = &se->ss->data.info;
+      info = &se->ss->info->data.array;
     }
   else
     info = NULL;
@@ -4375,7 +4375,7 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   /* Create a SS for the destination.  */
   lss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
 			  GFC_SS_COMPONENT);
-  lss_array = &lss->data.info;
+  lss_array = &lss->info->data.array;
   lss_array->shape = gfc_get_shape (cm->as->rank);
   lss_array->descriptor = dest;
   lss_array->data = gfc_conv_array_data (dest);

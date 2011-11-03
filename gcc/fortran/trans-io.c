@@ -1949,7 +1949,7 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
 
   ss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
 			 GFC_SS_COMPONENT);
-  ss_array = &ss->data.info;
+  ss_array = &ss->info->data.array;
   ss_array->shape = gfc_get_shape (cm->as->rank);
   ss_array->descriptor = expr;
   ss_array->data = gfc_conv_array_data (expr);
