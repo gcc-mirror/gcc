@@ -2830,6 +2830,34 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 }
 
 
+/* Add the offset corresponding to array's ARRAY_DIM dimension and loop's
+   LOOP_DIM dimension (if any) to array's offset.  */
+
+static void
+add_array_offset (stmtblock_t *pblock, gfc_loopinfo *loop, gfc_ss *ss,
+		  gfc_array_ref *ar, int array_dim, int loop_dim)
+{
+  gfc_se se;
+  gfc_ss_info *info;
+  tree stride, index;
+
+  info = &ss->data.info;
+
+  gfc_init_se (&se, NULL);
+  se.loop = loop;
+  se.expr = info->descriptor;
+  stride = gfc_conv_array_stride (info->descriptor, array_dim);
+  index = gfc_conv_array_index_offset (&se, info, array_dim, loop_dim, ar,
+				       stride);
+  gfc_add_block_to_block (pblock, &se.pre);
+
+  info->offset = fold_build2_loc (input_location, PLUS_EXPR,
+				  gfc_array_index_type,
+				  info->offset, index);
+  info->offset = gfc_evaluate_now (info->offset, pblock);
+}
+
+
 /* Generate the code to be executed immediately before entering a
    scalarization loop.  */
 
@@ -2837,11 +2865,9 @@ static void
 gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 			 stmtblock_t * pblock)
 {
-  tree index;
   tree stride;
   gfc_ss_info *info;
   gfc_ss *ss;
-  gfc_se se;
   gfc_array_ref *ar;
   int i;
 
@@ -2896,36 +2922,13 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 		  if (ar->dimen_type[i] != DIMEN_ELEMENT)
 		    continue;
 
-		  gfc_init_se (&se, NULL);
-		  se.loop = loop;
-		  se.expr = info->descriptor;
-		  stride = gfc_conv_array_stride (info->descriptor, i);
-		  index = gfc_conv_array_index_offset (&se, info, i, -1,
-						       ar, stride);
-		  gfc_add_block_to_block (pblock, &se.pre);
-
-		  info->offset = fold_build2_loc (input_location, PLUS_EXPR,
-						  gfc_array_index_type,
-						  info->offset, index);
-		  info->offset = gfc_evaluate_now (info->offset, pblock);
+		  add_array_offset (pblock, loop, ss, ar, i, /* unused */ -1);
 		}
 	    }
 	}
       else
-	{
-	  /* Add the offset for the previous loop dimension.  */
-	  gfc_init_se (&se, NULL);
-	  se.loop = loop;
-	  se.expr = info->descriptor;
-	  stride = gfc_conv_array_stride (info->descriptor, info->dim[i]);
-	  index = gfc_conv_array_index_offset (&se, info, info->dim[i], i,
-					       ar, stride);
-	  gfc_add_block_to_block (pblock, &se.pre);
-	  info->offset = fold_build2_loc (input_location, PLUS_EXPR,
-					  gfc_array_index_type, info->offset,
-					  index);
-	  info->offset = gfc_evaluate_now (info->offset, pblock);
-	}
+	/* Add the offset for the previous loop dimension.  */
+	add_array_offset (pblock, loop, ss, ar, info->dim[i], i);
 
       /* Remember this offset for the second loop.  */
       if (dim == loop->temp_dim - 1)
