@@ -4062,7 +4062,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
     {
       /* The rhs is scalar.  Add a ss for the expression.  */
       rss = gfc_get_scalar_ss (gfc_ss_terminator, expr2);
-      rss->where = 1;
+      rss->info->where = 1;
     }
 
   /* Associate the SS with the loop.  */
@@ -4501,7 +4501,7 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
   if (tsss == gfc_ss_terminator)
     {
       tsss = gfc_get_scalar_ss (gfc_ss_terminator, tsrc);
-      tsss->where = 1;
+      tsss->info->where = 1;
     }
   gfc_add_ss_to_loop (&loop, tdss);
   gfc_add_ss_to_loop (&loop, tsss);
@@ -4516,7 +4516,7 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
       if (esss == gfc_ss_terminator)
 	{
 	  esss = gfc_get_scalar_ss (gfc_ss_terminator, esrc);
-	  esss->where = 1;
+	  esss->info->where = 1;
 	}
       gfc_add_ss_to_loop (&loop, edss);
       gfc_add_ss_to_loop (&loop, esss);
