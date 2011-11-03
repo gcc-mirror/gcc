@@ -5,19 +5,6 @@
 
 extern "C" void abort (void);
 
-class Distraction
-{
-public:
-  float f;
-  double d;
-  Distraction ()
-  {
-    f = 8.3;
-    d = 10.2;
-  }
-  virtual float bar (float z);
-};
-
 class A
 {
 public:
@@ -26,17 +13,18 @@ public:
   virtual int foo (int i);
 };
 
-class B : public Distraction, public A
+class B : public A
+{
+public:
+  B();
+  virtual int foo (int i);
+};
+
+class C : public A
 {
 public:
   virtual int foo (int i);
 };
-
-float Distraction::bar (float z)
-{
-  f += z;
-  return f/2;
-}
 
 int A::foo (int i)
 {
@@ -48,20 +36,30 @@ int B::foo (int i)
   return i + 2;
 }
 
+int C::foo (int i)
+{
+  return i + 3;
+}
+
+static int __attribute__ ((noinline))
+middleman (class A *obj, int i)
+{
+  return obj->foo (i);
+}
+
 int __attribute__ ((noinline,noclone)) get_input(void)
 {
   return 1;
 }
 
-static int middleman (class A *obj, int i)
-{
-  return obj->foo (i);
-}
-
-A::A()
+inline __attribute__ ((always_inline)) A::A ()
 {
   if (middleman (this, get_input ()) != 2)
     abort ();
+}
+
+inline __attribute__ ((always_inline)) B::B ()
+{
 }
 
 static void bah ()

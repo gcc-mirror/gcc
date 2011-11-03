@@ -271,8 +271,20 @@ ipa_print_all_jump_functions (FILE *f)
 
 struct type_change_info
 {
+  /* Offset into the object where there is the virtual method pointer we are
+     looking for.  */
+  HOST_WIDE_INT offset;
+  /* The declaration or SSA_NAME pointer of the base that we are checking for
+     type change.  */
+  tree object;
+  /* If we actually can tell the type that the object has changed to, it is
+     stored in this field.  Otherwise it remains NULL_TREE.  */
+  tree known_current_type;
   /* Set to true if dynamic type change has been detected.  */
   bool type_maybe_changed;
+  /* Set to true if multiple types have been encountered.  known_current_type
+     must be disregarded in that case.  */
+  bool multiple_types_encountered;
 };
 
 /* Return true if STMT can modify a virtual method table pointer.
@@ -338,6 +350,50 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
   return true;
 }
 
+/* If STMT can be proved to be an assignment to the virtual method table
+   pointer of ANALYZED_OBJ and the type associated with the new table
+   identified, return the type.  Otherwise return NULL_TREE.  */
+
+static tree
+extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
+{
+  HOST_WIDE_INT offset, size, max_size;
+  tree lhs, rhs, base;
+
+  if (!gimple_assign_single_p (stmt))
+    return NULL_TREE;
+
+  lhs = gimple_assign_lhs (stmt);
+  rhs = gimple_assign_rhs1 (stmt);
+  if (TREE_CODE (lhs) != COMPONENT_REF
+      || !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1))
+      || TREE_CODE (rhs) != ADDR_EXPR)
+    return NULL_TREE;
+  rhs = get_base_address (TREE_OPERAND (rhs, 0));
+  if (!rhs
+      || TREE_CODE (rhs) != VAR_DECL
+      || !DECL_VIRTUAL_P (rhs))
+    return NULL_TREE;
+
+  base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
+  if (offset != tci->offset
+      || size != POINTER_SIZE
+      || max_size != POINTER_SIZE)
+    return NULL_TREE;
+  if (TREE_CODE (base) == MEM_REF)
+    {
+      if (TREE_CODE (tci->object) != MEM_REF
+	  || TREE_OPERAND (tci->object, 0) != TREE_OPERAND (base, 0)
+	  || !tree_int_cst_equal (TREE_OPERAND (tci->object, 1),
+				  TREE_OPERAND (base, 1)))
+	return NULL_TREE;
+    }
+  else if (tci->object != base)
+    return NULL_TREE;
+
+  return DECL_CONTEXT (rhs);
+}
+
 /* Callback of walk_aliased_vdefs and a helper function for
    detect_type_change to check whether a particular statement may modify
    the virtual table pointer, and if possible also determine the new type of
@@ -352,11 +408,71 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 
   if (stmt_may_be_vtbl_ptr_store (stmt))
     {
+      tree type;
+      type = extr_type_from_vtbl_ptr_store (stmt, tci);
+      if (tci->type_maybe_changed
+	  && type != tci->known_current_type)
+	tci->multiple_types_encountered = true;
+      tci->known_current_type = type;
       tci->type_maybe_changed = true;
       return true;
     }
   else
     return false;
+}
+
+
+
+/* Like detect_type_change but with extra argument COMP_TYPE which will become
+   the component type part of new JFUNC of dynamic type change is detected and
+   the new base type is identified.  */
+
+static bool
+detect_type_change_1 (tree arg, tree base, tree comp_type, gimple call,
+		      struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
+{
+  struct type_change_info tci;
+  ao_ref ao;
+
+  gcc_checking_assert (DECL_P (arg)
+		       || TREE_CODE (arg) == MEM_REF
+		       || handled_component_p (arg));
+  /* Const calls cannot call virtual methods through VMT and so type changes do
+     not matter.  */
+  if (!flag_devirtualize || !gimple_vuse (call))
+    return false;
+
+  ao.ref = arg;
+  ao.base = base;
+  ao.offset = offset;
+  ao.size = POINTER_SIZE;
+  ao.max_size = ao.size;
+  ao.ref_alias_set = -1;
+  ao.base_alias_set = -1;
+
+  tci.offset = offset;
+  tci.object = get_base_address (arg);
+  tci.known_current_type = NULL_TREE;
+  tci.type_maybe_changed = false;
+  tci.multiple_types_encountered = false;
+
+  walk_aliased_vdefs (&ao, gimple_vuse (call), check_stmt_for_type_change,
+		      &tci, NULL);
+  if (!tci.type_maybe_changed)
+    return false;
+
+  if (!tci.known_current_type
+      || tci.multiple_types_encountered
+      || offset != 0)
+    jfunc->type = IPA_JF_UNKNOWN;
+  else
+    {
+      jfunc->type = IPA_JF_KNOWN_TYPE;
+      jfunc->value.known_type.base_type = tci.known_current_type;
+      jfunc->value.known_type.component_type = comp_type;
+    }
+
+  return true;
 }
 
 /* Detect whether the dynamic type of ARG has changed (before callsite CALL) by
@@ -370,34 +486,7 @@ static bool
 detect_type_change (tree arg, tree base, gimple call,
 		    struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
 {
-  struct type_change_info tci;
-  ao_ref ao;
-
-  gcc_checking_assert (DECL_P (arg)
-		       || TREE_CODE (arg) == MEM_REF
-		       || handled_component_p (arg));
-  /* Const calls cannot call virtual methods through VMT and so type changes do
-     not matter.  */
-  if (!flag_devirtualize || !gimple_vuse (call))
-    return false;
-
-  tci.type_maybe_changed = false;
-
-  ao.ref = arg;
-  ao.base = base;
-  ao.offset = offset;
-  ao.size = POINTER_SIZE;
-  ao.max_size = ao.size;
-  ao.ref_alias_set = -1;
-  ao.base_alias_set = -1;
-
-  walk_aliased_vdefs (&ao, gimple_vuse (call), check_stmt_for_type_change,
-		      &tci, NULL);
-  if (!tci.type_maybe_changed)
-    return false;
-
-  jfunc->type = IPA_JF_UNKNOWN;
-  return true;
+  return detect_type_change_1 (arg, base, TREE_TYPE (arg), call, jfunc, offset);
 }
 
 /* Like detect_type_change but ARG is supposed to be a non-dereferenced pointer
@@ -407,16 +496,19 @@ detect_type_change (tree arg, tree base, gimple call,
 static bool
 detect_type_change_ssa (tree arg, gimple call, struct ipa_jump_func *jfunc)
 {
+  tree comp_type;
+
   gcc_checking_assert (TREE_CODE (arg) == SSA_NAME);
   if (!flag_devirtualize
       || !POINTER_TYPE_P (TREE_TYPE (arg))
       || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != RECORD_TYPE)
     return false;
 
+  comp_type = TREE_TYPE (TREE_TYPE (arg));
   arg = build2 (MEM_REF, ptr_type_node, arg,
-                build_int_cst (ptr_type_node, 0));
+		build_int_cst (ptr_type_node, 0));
 
-  return detect_type_change (arg, arg, call, jfunc, 0);
+  return detect_type_change_1 (arg, arg, comp_type, call, jfunc, 0);
 }
 
 /* Callback of walk_aliased_vdefs.  Flags that it has been invoked to the

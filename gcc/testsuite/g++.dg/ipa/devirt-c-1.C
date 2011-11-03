@@ -1,7 +1,7 @@
 /* Verify that ipa-cp correctly detects the dynamic type of an object
    under construction when doing devirtualization.  */
 /* { dg-do run } */
-/* { dg-options "-O3 -fno-early-inlining -fno-inline"  } */
+/* { dg-options "-O3 -fno-early-inlining -fno-inline -fdump-ipa-cp -fdump-tree-optimized"  } */
 
 extern "C" void abort (void);
 
@@ -69,3 +69,8 @@ int main (int argc, char *argv[])
     bah ();
   return 0;
 }
+
+/* { dg-final { scan-ipa-dump "Discovered a virtual call to a known target.*A::foo"  "cp"  } } */
+/* { dg-final { scan-tree-dump-times "OBJ_TYPE_REF" 0 "optimized"} } */
+/* { dg-final { cleanup-ipa-dump "cp" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
