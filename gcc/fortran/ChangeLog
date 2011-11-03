@@ -1,5 +1,13 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss): New field parent.
+	* trans-array.c (gfc_trans_scalarizing_loops): Skip clearing if a
+	parent exists.
+	* trans-expr.c (gfc_advance_se_ss_chain): Move to parent ss at the
+	end of the chain.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.h (gfc_trans_create_temp_array): Remove loop argument.
 	* trans-array.c (gfc_trans_create_temp_array): Ditto.  Get loop from ss.
 	Update reference to loop.  Remove loop argument.

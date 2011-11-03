@@ -83,6 +83,7 @@ void
 gfc_advance_se_ss_chain (gfc_se * se)
 {
   gfc_se *p;
+  gfc_ss *ss;
 
   gcc_assert (se != NULL && se->ss != NULL && se->ss != gfc_ss_terminator);
 
@@ -93,7 +94,15 @@ gfc_advance_se_ss_chain (gfc_se * se)
       /* Simple consistency check.  */
       gcc_assert (p->parent == NULL || p->parent->ss == p->ss);
 
-      p->ss = p->ss->next;
+      /* If we were in a nested loop, the next scalarized expression can be
+	 on the parent ss' next pointer.  Thus we should not take the next
+	 pointer blindly, but rather go up one nest level as long as next
+	 is the end of chain.  */
+      ss = p->ss;
+      while (ss->next == gfc_ss_terminator && ss->parent != NULL)
+	ss = ss->parent;
+
+      p->ss = ss->next;
 
       p = p->parent;
     }
