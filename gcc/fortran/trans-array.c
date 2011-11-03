@@ -1953,6 +1953,7 @@ trans_constant_array_constructor (gfc_ss * ss, tree type)
     }
 }
 
+
 /* Helper routine of gfc_trans_array_constructor to determine if the
    bounds of the loop specified by LOOP are constant and simple enough
    to use with trans_constant_array_constructor.  Returns the
@@ -2010,6 +2011,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   gfc_loopinfo *loop;
   gfc_ss_info *ss_info;
   gfc_expr *expr;
+  gfc_ss *s;
 
   /* Save the old values for nested checking.  */
   old_first_len = first_len;
@@ -2078,16 +2080,20 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   if (expr->shape && loop->dimen > 1 && loop->to[0] == NULL_TREE)
     {
       /* We have a multidimensional parameter.  */
-      int n;
-      for (n = 0; n < expr->rank; n++)
-      {
-	loop->from[n] = gfc_index_zero_node;
-	loop->to[n] = gfc_conv_mpz_to_tree (expr->shape [n],
-					    gfc_index_integer_kind);
-	loop->to[n] = fold_build2_loc (input_location, MINUS_EXPR,
-			  	       gfc_array_index_type,
-				       loop->to[n], gfc_index_one_node);
-      }
+      for (s = ss; s; s = s->parent)
+	{
+	  int n;
+	  for (n = 0; n < s->loop->dimen; n++)
+	    {
+	      s->loop->from[n] = gfc_index_zero_node;
+	      s->loop->to[n] = gfc_conv_mpz_to_tree (expr->shape[s->dim[n]],
+						     gfc_index_integer_kind);
+	      s->loop->to[n] = fold_build2_loc (input_location, MINUS_EXPR,
+						gfc_array_index_type,
+						s->loop->to[n],
+						gfc_index_one_node);
+	    }
+	}
     }
 
   if (loop->to[0] == NULL_TREE)
