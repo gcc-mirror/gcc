@@ -1,3 +1,9 @@
+2011-11-03  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48217
+	* lto-wrapper.c (get_options_from_collect_gcc_options): Properly
+	decode an encoded literal '.
+
 2011-11-03  Tristan Gingold  <gingold@adacore.com>
 
 	* collect2.c (main): Add support of -f (response file) on AIX.

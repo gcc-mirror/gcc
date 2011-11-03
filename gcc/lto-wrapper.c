@@ -292,39 +292,48 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
 				      struct cl_decoded_option **decoded_options,
 				      unsigned int *decoded_options_count)
 {
+  struct obstack argv_obstack;
   char *argv_storage;
   const char **argv;
-  int i, j, argc;
+  int j, k, argc;
 
-  /* Count arguments, account for the program name.  */
-  argc = 2;
-  for (j = 0; collect_gcc_options[j] != '\0'; ++j)
-    if (collect_gcc_options[j] == '\'')
-      ++argc;
-  if (argc % 2 != 0)
-    fatal ("malformed COLLECT_GCC_OPTIONS");
-
-  /* Copy the options to a argv-like array.  */
-  argc /= 2;
-  argv = (const char **) xmalloc ((argc + 2) * sizeof (char *));
-  argv[0] = collect_gcc;
   argv_storage = xstrdup (collect_gcc_options);
-  for (i = 1, j = 0; argv_storage[j] != '\0'; ++j)
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, collect_gcc);
+
+  for (j = 0, k = 0; argv_storage[j] != '\0'; ++j)
     {
       if (argv_storage[j] == '\'')
 	{
-	  argv[i++] = &argv_storage[++j];
-	  while (argv_storage[j] != '\'')
-	    ++j;
-	  argv_storage[j] = '\0';
+	  obstack_ptr_grow (&argv_obstack, &argv_storage[k]);
+	  ++j;
+	  do
+	    {
+	      if (argv_storage[j] == '\0')
+		fatal ("malformed COLLECT_GCC_OPTIONS");
+	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
+		{
+		  argv_storage[k++] = '\'';
+		  j += 4;
+		}
+	      else if (argv_storage[j] == '\'')
+		break;
+	      else
+		argv_storage[k++] = argv_storage[j++];
+	    }
+	  while (1);
+	  argv_storage[k++] = '\0';
 	}
     }
-  argv[i] = NULL;
+
+  obstack_ptr_grow (&argv_obstack, NULL);
+  argc = obstack_object_size (&argv_obstack) / sizeof (void *) - 1;
+  argv = XOBFINISH (&argv_obstack, const char **);
 
   decode_cmdline_options_to_array (argc, (const char **)argv,
 				   lang_mask,
 				   decoded_options, decoded_options_count);
-  free (argv);
+  obstack_free (&argv_obstack, NULL);
 }
 
 
