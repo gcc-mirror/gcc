@@ -1,5 +1,13 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss_info): New field refcount.
+	* trans-array.c (free_ss_info): Decrement refcount. Return early if
+	still non-zero.
+	(gfc_get_array_ss, gfc_get_temp_ss, gfc_get_scalar_ss): Increment
+	refcount.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_create_temp_array): Move invariant condition
 	out of the containing loop. 
 
