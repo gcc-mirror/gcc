@@ -1,5 +1,11 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_loopinfo): New fields nested and next.
+	* trans-array.c (gfc_add_ss_to_loop): Update list of nested list if
+	ss has non-null nested_ss field.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_create_temp_array): Loop over the parents.
 
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
