@@ -358,6 +358,10 @@ fi
 AC_SUBST(warn_cflags)
 AC_SUBST(warn_cxxflags)
 
+# Disable exceptions and RTTI if building with g++
+ACX_PROG_CC_WARNING_OPTS(
+	m4_quote(m4_do([-fno-exceptions -fno-rtti])), [noexception_flags])
+	
 # Enable expensive internal checks
 is_release=
 if test x"`cat $srcdir/DEV-PHASE`" != xexperimental; then

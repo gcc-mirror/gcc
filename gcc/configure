@@ -771,6 +771,7 @@ valgrind_path_defines
 valgrind_path
 TREEBROWSER
 nocommon_flag
+noexception_flags
 warn_cxxflags
 warn_cflags
 c_strict_warn
@@ -6611,6 +6612,47 @@ if test "x$GCC" = "xyes"; then
   warn_cxxflags='$(GCC_WARN_CXXFLAGS)'
 fi
 
+
+
+# Disable exceptions and RTTI if building with g++
+noexception_flags=
+save_CFLAGS="$CFLAGS"
+for option in -fno-exceptions -fno-rtti; do
+  as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
+$as_echo_n "checking whether $CC supports $option... " >&6; }
+if { as_var=$as_acx_Woption; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS="$option"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$as_acx_Woption=yes"
+else
+  eval "$as_acx_Woption=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+eval ac_res=\$$as_acx_Woption
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
+  noexception_flags="$noexception_flags${noexception_flags:+ }$option"
+fi
+  done
+CFLAGS="$save_CFLAGS"
 
 
 # Enable expensive internal checks
@@ -18045,7 +18087,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18047 "configure"
+#line 18090 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18151,7 +18193,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18153 "configure"
+#line 18196 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
