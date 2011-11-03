@@ -1,3 +1,9 @@
+2011-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (lround<X87MODEF:mode><SWI248x:mode>2,
+	rint<mode>2, floor<mode>2, lfloor<MODEF:mode><SWI48:mode>2,
+	btrunc<mode>2, lwp_lwpval<mode>3): Use operands[N] instead of operandN.
+
 2011-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/50945
