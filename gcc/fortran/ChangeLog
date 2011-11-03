@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_preloop_setup): Move common code...
+	(add_array_offset): ...into that new function.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_preloop_setup): Use loop's dimension instead
 	of array's dimention. Check that it is indeed the same.
 
