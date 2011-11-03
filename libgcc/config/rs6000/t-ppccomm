@@ -29,13 +29,13 @@ LIB2ADD_ST += \
 
 # Assemble startup files.
 ecrti$(objext): $(srcdir)/config/rs6000/eabi-ci.S
-	$(crt_compile) -c ecrti.S
+	$(crt_compile) -c $<
 
 ecrtn$(objext): $(srcdir)/config/rs6000/eabi-cn.S
-	$(crt_compile) -c ecrtn.S
+	$(crt_compile) -c $<
 
 ncrti$(objext): $(srcdir)/config/rs6000/sol-ci.S
-	$(crt_compile) -c ncrti.S
+	$(crt_compile) -c $<
 
 ncrtn$(objext): $(srcdir)/config/rs6000/sol-cn.S
-	$(crt_compile) -c ncrtn.S
+	$(crt_compile) -c $<
