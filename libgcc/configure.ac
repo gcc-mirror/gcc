@@ -255,11 +255,12 @@ AC_CACHE_CHECK([whether assembler supports CFI directives], [libgcc_cv_cfi],
   [libgcc_cv_cfi=yes],
   [libgcc_cv_cfi=no])])
 
-# Check 32bit or 64bit for x86.
+# Check 32bit or 64bit for x86 and sparc.
 case ${host} in
-i?86*-*-* | x86_64*-*-*)
+i?86*-*-* | x86_64*-*-* | sparc*-*-*)
   cat > conftest.c <<EOF
-#ifdef __x86_64__
+#if defined(__x86_64__) || \
+    (defined(__sparc__) && defined(__arch64__))
 host_address=64
 #else
 host_address=32
