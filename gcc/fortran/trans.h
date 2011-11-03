@@ -246,6 +246,9 @@ typedef struct gfc_ss
   struct gfc_ss *loop_chain;
   struct gfc_ss *next;
 
+  /* The loop this gfc_ss is in.  */
+  struct gfc_loopinfo *loop;
+
   unsigned is_alloc_lhs:1;
 }
 gfc_ss;

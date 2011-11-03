@@ -1,5 +1,11 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss): New field loop.
+	* trans-array.c (set_ss_loop): New function.
+	(gfc_add_ss_to_loop): Call set_ss_loop.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss_info): New field refcount.
 	* trans-array.c (free_ss_info): Decrement refcount. Return early if
 	still non-zero.
