@@ -511,6 +511,12 @@ print_value (char *buf, const_rtx x, int verbose)
       sprintf (t, "#%d", SUBREG_BYTE (x));
       cur = safe_concat (buf, cur, t);
       break;
+    case STRICT_LOW_PART:
+      print_value (t, XEXP (x, 0), verbose);
+      cur = safe_concat (buf, cur, "strict_low_part(");
+      cur = safe_concat (buf, cur, t);
+      cur = safe_concat (buf, cur, ")");
+      break;
     case SCRATCH:
       cur = safe_concat (buf, cur, "scratch");
       break;
