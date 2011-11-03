@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_set_loop_bounds_from_array_spec): Loop over the
+	parents.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss): New field parent.
 	* trans-array.c (gfc_trans_scalarizing_loops): Skip clearing if a
 	parent exists.
