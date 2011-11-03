@@ -2377,45 +2377,30 @@
 })
 
 (define_insn "*movtf_insn_sp32"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,   o,U,  r")
-	(match_operand:TF 1 "input_operand"        " G,oe,GeUr,o,roG"))]
-  "TARGET_FPU
-   && ! TARGET_ARCH64
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,o,  o,U,  r")
+	(match_operand:TF 1 "input_operand"        " G,oe,e,rGU,o,roG"))]
+  "! TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
        || register_or_zero_operand (operands[1], TFmode))"
   "#"
-  [(set_attr "length" "4")])
-
-;; Exactly the same as above, except that all `e' cases are deleted.
-;; This is necessary to prevent reload from ever trying to use a `e' reg
-;; when -mno-fpu.
-
-(define_insn "*movtf_insn_sp32_no_fpu"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=o,U,o,  r,o")
-	(match_operand:TF 1 "input_operand"        " G,o,U,roG,r"))]
-  "! TARGET_FPU
-   && ! TARGET_ARCH64
-   && (register_operand (operands[0], TFmode)
-       || register_or_zero_operand (operands[1], TFmode))"
-  "#"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4,4,4,4,4,4")
+   (set_attr "cpu_feature" "fpu,fpu,fpu,*,*,*")])
 
 (define_insn "*movtf_insn_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,  o,  r")
-	(match_operand:TF 1 "input_operand"         "G,oe,Ger,roG"))]
-  "TARGET_FPU
-   && TARGET_ARCH64
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,o, o,  r")
+	(match_operand:TF 1 "input_operand"         "G,oe,e,rG,roG"))]
+  "TARGET_ARCH64
    && ! TARGET_HARD_QUAD
    && (register_operand (operands[0], TFmode)
        || register_or_zero_operand (operands[1], TFmode))"
   "#"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "2,2,2,2,2")
+   (set_attr "cpu_feature" "fpu,fpu,fpu,*,*")])
 
 (define_insn "*movtf_insn_sp64_hq"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=b,e,e,m, o,  r")
 	(match_operand:TF 1 "input_operand"         "G,e,m,e,rG,roG"))]
-  "TARGET_FPU
-   && TARGET_ARCH64
+  "TARGET_ARCH64
    && TARGET_HARD_QUAD
    && (register_operand (operands[0], TFmode)
        || register_or_zero_operand (operands[1], TFmode))"
@@ -2428,16 +2413,6 @@
   #"
   [(set_attr "type" "*,fpmove,fpload,fpstore,*,*")
    (set_attr "length" "2,*,*,*,2,2")])
-
-(define_insn "*movtf_insn_sp64_no_fpu"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=  r, o")
-	(match_operand:TF 1 "input_operand"         "orG,rG"))]
-  "! TARGET_FPU
-   && TARGET_ARCH64
-   && (register_operand (operands[0], TFmode)
-       || register_or_zero_operand (operands[1], TFmode))"
-  "#"
-  [(set_attr "length" "2")])
 
 ;; Now all the splits to handle multi-insn TF mode moves.
 (define_split
