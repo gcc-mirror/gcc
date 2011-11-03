@@ -1,5 +1,9 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (set_vector_loop_bounds): Loop over the parents.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_array_constructor): Loop over the parents.
 
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
