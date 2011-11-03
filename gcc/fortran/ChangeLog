@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_create_temp_array): New variable total_dim.
+	Set total_dim to loop's rank. Replace usages of loop's rank.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_array_constructor, trans_array_constructor):
 	Rename the former to the later.  Get loop from ss.
 	Remove loop argument.

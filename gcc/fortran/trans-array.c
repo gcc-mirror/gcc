@@ -907,6 +907,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   tree cond;
   tree or_expr;
   int n, dim, tmp_dim;
+  int total_dim = 0;
 
   memset (from, 0, sizeof (from));
   memset (to, 0, sizeof (to));
@@ -919,6 +920,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   if (gfc_option.warn_array_temp && where)
     gfc_warning ("Creating array temporary at %L", where);
 
+  total_dim = loop->dimen;
   /* Set the lower bound to zero.  */
   for (n = 0; n < loop->dimen; n++)
     {
@@ -956,7 +958,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   /* Initialize the descriptor.  */
   type =
-    gfc_get_array_type_bounds (eltype, ss->dimen, 0, from, to, 1,
+    gfc_get_array_type_bounds (eltype, total_dim, 0, from, to, 1,
 			       GFC_ARRAY_UNKNOWN, true);
   desc = gfc_create_var (type, "atmp");
   GFC_DECL_PACKED_ARRAY (desc) = 1;
@@ -985,8 +987,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   /* If there is at least one null loop->to[n], it is a callee allocated
      array.  */
-  for (n = 0; n < loop->dimen; n++)
-    if (loop->to[n] == NULL_TREE)
+  for (n = 0; n < total_dim; n++)
+    if (to[n] == NULL_TREE)
       {
 	size = NULL_TREE;
 	break;
@@ -1009,7 +1011,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
     }
   else
     {
-      for (n = 0; n < loop->dimen; n++)
+      for (n = 0; n < total_dim; n++)
 	{
 	  /* Store the stride and bound components in the descriptor.  */
 	  gfc_conv_descriptor_stride_set (pre, desc, gfc_rank_cst[n], size);
