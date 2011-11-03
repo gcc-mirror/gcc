@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_array_bound_check): Use ss argument
+	to get name.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_array_bound_check,
 	trans_array_bound_check): Rename the former to the latter.
 	Replace descriptor argument with ss argument.  Get descriptor from ss.

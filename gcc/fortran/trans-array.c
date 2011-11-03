@@ -2443,28 +2443,8 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
   index = gfc_evaluate_now (index, &se->pre);
 
   /* We find a name for the error message.  */
-  if (se->ss)
-    name = se->ss->expr->symtree->name;
-
-  if (!name && se->loop && se->loop->ss && se->loop->ss->expr
-      && se->loop->ss->expr->symtree)
-    name = se->loop->ss->expr->symtree->name;
-
-  if (!name && se->loop && se->loop->ss && se->loop->ss->loop_chain
-      && se->loop->ss->loop_chain->expr
-      && se->loop->ss->loop_chain->expr->symtree)
-    name = se->loop->ss->loop_chain->expr->symtree->name;
-
-  if (!name && se->loop && se->loop->ss && se->loop->ss->expr)
-    {
-      if (se->loop->ss->expr->expr_type == EXPR_FUNCTION
-	  && se->loop->ss->expr->value.function.name)
-	name = se->loop->ss->expr->value.function.name;
-      else
-	if (se->loop->ss->type == GFC_SS_CONSTRUCTOR
-	    || se->loop->ss->type == GFC_SS_SCALAR)
-	  name = "unnamed constant";
-    }
+  name = ss->expr->symtree->n.sym->name;
+  gcc_assert (name != NULL);
 
   if (TREE_CODE (descriptor) == VAR_DECL)
     name = IDENTIFIER_POINTER (DECL_NAME (descriptor));
