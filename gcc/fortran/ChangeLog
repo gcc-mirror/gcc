@@ -1,3 +1,8 @@
+2011-11-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50960
+	* trans-decl.c (gfc_finish_var_decl): Mark PARAMETER as TREE_READONLY.
+
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field

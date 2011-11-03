@@ -517,6 +517,10 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   /* If it wasn't used we wouldn't be getting it.  */
   TREE_USED (decl) = 1;
 
+  if (sym->attr.flavor == FL_PARAMETER
+      && (sym->attr.dimension || sym->ts.type == BT_DERIVED))
+    TREE_READONLY (decl) = 1;
+
   /* Chain this decl to the pending declarations.  Don't do pushdecl()
      because this would add them to the current scope rather than the
      function scope.  */
