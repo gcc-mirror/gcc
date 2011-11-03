@@ -688,41 +688,54 @@ void
 gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping * mapping,
 				     gfc_se * se, gfc_array_spec * as)
 {
-  int n, dim;
+  int n, dim, total_dim;
   gfc_se tmpse;
+  gfc_ss *ss;
   tree lower;
   tree upper;
   tree tmp;
 
-  if (as && as->type == AS_EXPLICIT)
-    for (n = 0; n < se->loop->dimen; n++)
-      {
-	dim = se->ss->dim[n];
-	gcc_assert (dim < as->rank);
-	gcc_assert (se->loop->dimen == as->rank);
-	if (se->loop->to[n] == NULL_TREE)
-	  {
-	    /* Evaluate the lower bound.  */
-	    gfc_init_se (&tmpse, NULL);
-	    gfc_apply_interface_mapping (mapping, &tmpse, as->lower[dim]);
-	    gfc_add_block_to_block (&se->pre, &tmpse.pre);
-	    gfc_add_block_to_block (&se->post, &tmpse.post);
-	    lower = fold_convert (gfc_array_index_type, tmpse.expr);
+  total_dim = 0;
 
-	    /* ...and the upper bound.  */
-	    gfc_init_se (&tmpse, NULL);
-	    gfc_apply_interface_mapping (mapping, &tmpse, as->upper[dim]);
-	    gfc_add_block_to_block (&se->pre, &tmpse.pre);
-	    gfc_add_block_to_block (&se->post, &tmpse.post);
-	    upper = fold_convert (gfc_array_index_type, tmpse.expr);
+  if (!as || as->type != AS_EXPLICIT)
+    return;
 
-	    /* Set the upper bound of the loop to UPPER - LOWER.  */
-	    tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				   gfc_array_index_type, upper, lower);
-	    tmp = gfc_evaluate_now (tmp, &se->pre);
-	    se->loop->to[n] = tmp;
-	  }
-      }
+  for (ss = se->ss; ss; ss = ss->parent)
+    {
+      total_dim += ss->loop->dimen;
+      for (n = 0; n < ss->loop->dimen; n++)
+	{
+	  /* The bound is known, nothing to do.  */
+	  if (ss->loop->to[n] != NULL_TREE)
+	    continue;
+
+	  dim = ss->dim[n];
+	  gcc_assert (dim < as->rank);
+	  gcc_assert (ss->loop->dimen <= as->rank);
+
+	  /* Evaluate the lower bound.  */
+	  gfc_init_se (&tmpse, NULL);
+	  gfc_apply_interface_mapping (mapping, &tmpse, as->lower[dim]);
+	  gfc_add_block_to_block (&se->pre, &tmpse.pre);
+	  gfc_add_block_to_block (&se->post, &tmpse.post);
+	  lower = fold_convert (gfc_array_index_type, tmpse.expr);
+
+	  /* ...and the upper bound.  */
+	  gfc_init_se (&tmpse, NULL);
+	  gfc_apply_interface_mapping (mapping, &tmpse, as->upper[dim]);
+	  gfc_add_block_to_block (&se->pre, &tmpse.pre);
+	  gfc_add_block_to_block (&se->post, &tmpse.post);
+	  upper = fold_convert (gfc_array_index_type, tmpse.expr);
+
+	  /* Set the upper bound of the loop to UPPER - LOWER.  */
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				 gfc_array_index_type, upper, lower);
+	  tmp = gfc_evaluate_now (tmp, &se->pre);
+	  ss->loop->to[n] = tmp;
+	}
+    }
+
+  gcc_assert (total_dim == as->rank);
 }
 
 
