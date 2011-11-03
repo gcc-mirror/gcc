@@ -1,5 +1,9 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (get_array_ref_dim): Remove redundant condition.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_preloop_setup): Move common code...
 	(add_array_offset): ...into that new function.
 
