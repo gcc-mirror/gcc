@@ -25071,7 +25071,7 @@ macho_branch_islands (void)
 	  if (TARGET_LINK_STACK)
 	    {
 	      char name[32];
-	      get_ppc64_thunk_name (name);
+	      get_ppc476_thunk_name (name);
 	      strcat (tmp_buf, ":\n\tmflr r0\n\tbl ");
 	      strcat (tmp_buf, name);
 	      strcat (tmp_buf, "\n");
@@ -27949,6 +27949,12 @@ rs6000_save_toc_in_prologue_p (void)
   return (cfun && cfun->machine && cfun->machine->save_toc_in_prologue);
 }
 
+#ifdef HAVE_GAS_HIDDEN
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
+#endif
+
 /* Fills in the label name that should be used for a 476 link stack thunk.  */
 
 void
@@ -27956,7 +27962,7 @@ get_ppc476_thunk_name (char name[32])
 {
   gcc_assert (TARGET_LINK_STACK);
 
-  if (HAVE_GAS_HIDDEN)
+  if (USE_HIDDEN_LINKONCE)
     sprintf (name, "__ppc476.get_thunk");
   else
     ASM_GENERATE_INTERNAL_LABEL (name, "LPPC476_", 0);
@@ -27983,7 +27989,7 @@ rs6000_code_end (void)
   TREE_PUBLIC (decl) = 1;
   TREE_STATIC (decl) = 1;
 
-  if (HAVE_GAS_HIDDEN)
+  if (USE_HIDDEN_LINKONCE)
     {
       DECL_COMDAT_GROUP (decl) = DECL_ASSEMBLER_NAME (decl);
       targetm.asm_out.unique_section (decl, 0);

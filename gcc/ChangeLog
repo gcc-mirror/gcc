@@ -1,3 +1,11 @@
+2011-11-02  Peter Bergner  <bergner@vnet.ibm.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (USE_HIDDEN_LINKONCE): New define.
+	(get_ppc476_thunk_name): Use it.
+	(rs6000_code_end): Likewise.
+	(macho_branch_islands): Fix typo.
+
 2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
