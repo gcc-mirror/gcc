@@ -405,7 +405,7 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
     return 1;
 
   /* Compare type via the rules of the standard.  Both types must have
-     the SEQUENCE attribute to be equal.  */
+     the SEQUENCE or BIND(C) attribute to be equal.  */
 
   if (strcmp (derived1->name, derived2->name))
     return 0;
@@ -414,7 +414,8 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       || derived2->component_access == ACCESS_PRIVATE)
     return 0;
 
-  if (derived1->attr.sequence == 0 || derived2->attr.sequence == 0)
+  if (!(derived1->attr.sequence && derived2->attr.sequence)
+      && !(derived1->attr.is_bind_c && derived2->attr.is_bind_c))
     return 0;
 
   dt1 = derived1->components;

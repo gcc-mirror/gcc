@@ -1,5 +1,10 @@
 2011-11-03  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/50933
+	* gfortran.dg/bind_c_dts_5.f90: New.
+
+2011-11-03  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/50960
 	* gfortran.dg/module_parameter_array_refs_2.f90: New.
 

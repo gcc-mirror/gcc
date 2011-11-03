@@ -1,5 +1,10 @@
 2011-11-03  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/50933
+	* interface.c (gfc_compare_derived_types): Fix check for BIND(C).
+
+2011-11-03  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/50960
 	* trans-decl.c (gfc_finish_var_decl): Mark PARAMETER as TREE_READONLY.
 
