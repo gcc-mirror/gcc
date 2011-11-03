@@ -1091,6 +1091,7 @@ main (int argc, char **argv)
   const char **ld2;
   char **object_lst;
   const char **object;
+  int object_nbr = argc;
   int first_file;
   int num_c_args;
   char **old_argv;
@@ -1440,6 +1441,57 @@ main (int argc, char **argv)
 			 "configuration");
 #endif
 		}
+#ifdef TARGET_AIX_VERSION
+	      else
+		{
+		  /* File containing a list of input files to process.  */
+
+		  FILE *stream;
+                  char buf[MAXPATHLEN + 2];
+		  /* Number of additionnal object files.  */
+		  int add_nbr = 0;
+		  /* Maximum of additionnal object files before vector
+		     expansion.  */
+		  int add_max = 0;
+		  const char *list_filename = arg + 2;
+
+		  /* Accept -fFILENAME and -f FILENAME.  */
+		  if (*list_filename == '\0' && argv[1])
+		    {
+		      ++argv;
+		      list_filename = *argv;
+		      *ld1++ = *ld2++ = *argv;
+		    }
+
+		  stream = fopen (list_filename, "r");
+		  if (stream == NULL)
+		    fatal_error ("can't open %s: %m", list_filename);
+
+		  while (fgets (buf, sizeof buf, stream) != NULL)
+		    {
+		      /* Remove end of line.  */
+		      int len = strlen (buf);
+		      if (len >= 1 && buf[len - 1] =='\n')
+			buf[len - 1] = '\0';
+
+		      /* Put on object vector.
+			 Note: we only expanse vector here, so we must keep
+			 extra space for remaining arguments.  */
+		      if (add_nbr >= add_max)
+			{
+			  int pos = object - (const char **)object_lst;
+			  add_max = (add_max == 0) ? 16 : add_max * 2;
+			  object_lst = XRESIZEVEC (char *, object_lst,
+                                                   object_nbr + add_max);
+			  object = (const char **) object_lst + pos;
+			  object_nbr += add_max;
+			}
+		      *object++ = xstrdup (buf);
+		      add_nbr++;
+		    }
+		  fclose (stream);
+		}
+#endif
               break;
 
 	    case 'l':
