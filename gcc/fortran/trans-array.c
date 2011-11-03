@@ -2108,6 +2108,16 @@ get_loop_upper_bound_for_array (gfc_ss *array, int array_dim)
 }
 
 
+static gfc_loopinfo *
+outermost_loop (gfc_loopinfo * loop)
+{
+  while (loop->parent != NULL)
+    loop = loop->parent;
+
+  return loop;
+}
+
+
 /* Array constructors are handled by constructing a temporary, then using that
    within the scalarization loop.  This is not optimal, but seems by far the
    simplest method.  */
@@ -2125,7 +2135,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   bool dynamic;
   bool old_first_len, old_typespec_chararray_ctor;
   tree old_first_len_val;
-  gfc_loopinfo *loop;
+  gfc_loopinfo *loop, *outer_loop;
   gfc_ss_info *ss_info;
   gfc_expr *expr;
   gfc_ss *s;
@@ -2136,6 +2146,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   old_typespec_chararray_ctor = typespec_chararray_ctor;
 
   loop = ss->loop;
+  outer_loop = outermost_loop (loop);
   ss_info = ss->info;
   expr = ss_info->expr;
 
@@ -2171,11 +2182,11 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	  gfc_conv_expr_type (&length_se, expr->ts.u.cl->length,
 			      gfc_charlen_type_node);
 	  ss_info->string_length = length_se.expr;
-	  gfc_add_block_to_block (&loop->pre, &length_se.pre);
-	  gfc_add_block_to_block (&loop->post, &length_se.post);
+	  gfc_add_block_to_block (&outer_loop->pre, &length_se.pre);
+	  gfc_add_block_to_block (&outer_loop->post, &length_se.post);
 	}
       else
-	const_string = get_array_ctor_strlen (&loop->pre, c,
+	const_string = get_array_ctor_strlen (&outer_loop->pre, c,
 					      &ss_info->string_length);
 
       /* Complex character array constructors should have been taken care of
@@ -2252,15 +2263,15 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   if (TREE_CODE (*loop_ubound0) == VAR_DECL)
     dynamic = true;
 
-  gfc_trans_create_temp_array (&loop->pre, &loop->post, ss, type, NULL_TREE,
-			       dynamic, true, false, where);
+  gfc_trans_create_temp_array (&outer_loop->pre, &outer_loop->post, ss, type,
+			       NULL_TREE, dynamic, true, false, where);
 
   desc = ss_info->data.array.descriptor;
   offset = gfc_index_zero_node;
   offsetvar = gfc_create_var_np (gfc_array_index_type, "offset");
   TREE_NO_WARNING (offsetvar) = 1;
   TREE_USED (offsetvar) = 0;
-  gfc_trans_array_constructor_value (&loop->pre, type, desc, c,
+  gfc_trans_array_constructor_value (&outer_loop->pre, type, desc, c,
 				     &offset, &offsetvar, dynamic);
 
   /* If the array grows dynamically, the upper bound of the loop variable
@@ -2270,10 +2281,10 @@ trans_array_constructor (gfc_ss * ss, locus * where)
       tmp = fold_build2_loc (input_location, MINUS_EXPR,
 			     gfc_array_index_type,
 			     offsetvar, gfc_index_one_node);
-      tmp = gfc_evaluate_now (tmp, &loop->pre);
+      tmp = gfc_evaluate_now (tmp, &outer_loop->pre);
       gfc_conv_descriptor_ubound_set (&loop->pre, desc, gfc_rank_cst[0], tmp);
       if (*loop_ubound0 && TREE_CODE (*loop_ubound0) == VAR_DECL)
-	gfc_add_modify (&loop->pre, *loop_ubound0, tmp);
+	gfc_add_modify (&outer_loop->pre, *loop_ubound0, tmp);
       else
 	*loop_ubound0 = tmp;
     }
@@ -2307,7 +2318,7 @@ finish:
 static void
 set_vector_loop_bounds (gfc_ss * ss)
 {
-  gfc_loopinfo *loop;
+  gfc_loopinfo *loop, *outer_loop;
   gfc_array_info *info;
   gfc_se se;
   tree tmp;
@@ -2315,6 +2326,8 @@ set_vector_loop_bounds (gfc_ss * ss)
   tree zero;
   int n;
   int dim;
+
+  outer_loop = outermost_loop (ss->loop);
 
   info = &ss->info->data.array;
 
@@ -2343,7 +2356,7 @@ set_vector_loop_bounds (gfc_ss * ss)
 			     gfc_array_index_type,
 			     gfc_conv_descriptor_ubound_get (desc, zero),
 			     gfc_conv_descriptor_lbound_get (desc, zero));
-	  tmp = gfc_evaluate_now (tmp, &loop->pre);
+	  tmp = gfc_evaluate_now (tmp, &outer_loop->pre);
 	  loop->to[n] = tmp;
 	}
     }
@@ -2358,13 +2371,15 @@ static void
 gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 		      locus * where)
 {
-  gfc_loopinfo *nested_loop;
+  gfc_loopinfo *nested_loop, *outer_loop;
   gfc_se se;
   gfc_ss_info *ss_info;
   gfc_array_info *info;
   gfc_expr *expr;
   bool skip_nested = false;
   int n;
+
+  outer_loop = outermost_loop (loop);
 
   /* TODO: This can generate bad code if there are ordering dependencies,
      e.g., a callee allocated function and an unknown size constructor.  */
@@ -2389,7 +2404,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	     dimension indices, but not array section bounds.  */
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr (&se, expr);
-	  gfc_add_block_to_block (&loop->pre, &se.pre);
+	  gfc_add_block_to_block (&outer_loop->pre, &se.pre);
 
 	  if (expr->ts.type != BT_CHARACTER)
 	    {
@@ -2398,11 +2413,11 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	      if (subscript)
 		se.expr = convert(gfc_array_index_type, se.expr);
 	      if (!ss_info->where)
-		se.expr = gfc_evaluate_now (se.expr, &loop->pre);
-	      gfc_add_block_to_block (&loop->pre, &se.post);
+		se.expr = gfc_evaluate_now (se.expr, &outer_loop->pre);
+	      gfc_add_block_to_block (&outer_loop->pre, &se.post);
 	    }
 	  else
-	    gfc_add_block_to_block (&loop->post, &se.post);
+	    gfc_add_block_to_block (&outer_loop->post, &se.post);
 
 	  ss_info->data.scalar.value = se.expr;
 	  ss_info->string_length = se.string_length;
@@ -2413,10 +2428,11 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	     now.  */
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr (&se, expr);
-	  gfc_add_block_to_block (&loop->pre, &se.pre);
-	  gfc_add_block_to_block (&loop->post, &se.post);
+	  gfc_add_block_to_block (&outer_loop->pre, &se.pre);
+	  gfc_add_block_to_block (&outer_loop->post, &se.post);
 
-	  ss_info->data.scalar.value = gfc_evaluate_now (se.expr, &loop->pre);
+	  ss_info->data.scalar.value = gfc_evaluate_now (se.expr,
+							 &outer_loop->pre);
 	  ss_info->string_length = se.string_length;
 	  break;
 
@@ -2438,8 +2454,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  /* Get the vector's descriptor and store it in SS.  */
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr_descriptor (&se, expr, gfc_walk_expr (expr));
-	  gfc_add_block_to_block (&loop->pre, &se.pre);
-	  gfc_add_block_to_block (&loop->post, &se.post);
+	  gfc_add_block_to_block (&outer_loop->pre, &se.pre);
+	  gfc_add_block_to_block (&outer_loop->post, &se.post);
 	  info->descriptor = se.expr;
 	  break;
 
@@ -2454,8 +2470,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  se.loop = loop;
 	  se.ss = ss;
 	  gfc_conv_expr (&se, expr);
-	  gfc_add_block_to_block (&loop->pre, &se.pre);
-	  gfc_add_block_to_block (&loop->post, &se.post);
+	  gfc_add_block_to_block (&outer_loop->pre, &se.pre);
+	  gfc_add_block_to_block (&outer_loop->post, &se.post);
 	  ss_info->string_length = se.string_length;
 	  break;
 
@@ -2469,8 +2485,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	      gfc_conv_expr_type (&se, expr->ts.u.cl->length,
 				  gfc_charlen_type_node);
 	      ss_info->string_length = se.expr;
-	      gfc_add_block_to_block (&loop->pre, &se.pre);
-	      gfc_add_block_to_block (&loop->post, &se.post);
+	      gfc_add_block_to_block (&outer_loop->pre, &se.pre);
+	      gfc_add_block_to_block (&outer_loop->post, &se.post);
 	    }
 	  trans_array_constructor (ss, where);
 	  break;

@@ -1,5 +1,11 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (outermost_loop): New function.
+	(gfc_trans_array_constructor, gfc_set_vector_loop_bounds,
+	gfc_add_loop_ss_code): Put generated code out of the outermost loop.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (constant_array_constructor_loop_size):
 	Handle multiple loops.
 
