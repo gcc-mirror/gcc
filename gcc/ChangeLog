@@ -1,3 +1,39 @@
+2011-11-03  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50912
+	* tree-vectorizer.h (slp_void_p): New.
+	(struct _slp_tree): Replace left and right with children.  Update
+	documentation.
+	(struct _slp_oprnd_info): New.
+	(vect_get_vec_defs): Declare.
+	(vect_get_slp_defs): Update arguments.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Call
+	vect_get_vec_defs instead of vect_get_slp_defs.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_defs): Remove static, add argument.
+	Update call to vect_get_slp_defs.
+	(vectorizable_conversion): Update call to vect_get_vec_defs.
+	(vectorizable_assignment, vectorizable_shift,
+	vectorizable_operation): Likewise.
+	(vectorizable_type_demotion): Call vect_get_vec_defs instead of
+	vect_get_slp_defs.
+	(vectorizable_type_promotion, vectorizable_store): Likewise.
+	(vect_analyze_stmt): Fix typo.
+	* tree-vect-slp.c (vect_free_slp_tree): Update SLP tree traversal.
+	(vect_print_slp_tree, vect_mark_slp_stmts,
+	vect_mark_slp_stmts_relevant, vect_slp_rearrange_stmts,
+	vect_detect_hybrid_slp_stmts, vect_slp_analyze_node_operations,
+	vect_schedule_slp_instance): Likewise.
+	(vect_create_new_slp_node): New.
+	(vect_create_oprnd_info, vect_free_oprnd_info): Likewise.
+	(vect_get_and_check_slp_defs): Pass information about defs using
+	oprnds_info, allow any number of operands.
+	(vect_build_slp_tree): Likewise.  Update calls to
+	vect_get_and_check_slp_defs.  Fix comments.
+	(vect_analyze_slp_instance): Move node creation to
+	vect_create_new_slp_node.
+	(vect_get_slp_defs): Allow any number of operands.
+
 2011-11-02  Peter Bergner  <bergner@vnet.ibm.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 

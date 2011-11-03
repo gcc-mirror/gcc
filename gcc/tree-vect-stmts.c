@@ -1399,16 +1399,35 @@ vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
 }
 
 
-/* Get vectorized definitions for OP0 and OP1, or SLP_NODE if it is not
-   NULL.  */
+/* Get vectorized definitions for OP0 and OP1.
+   REDUC_INDEX is the index of reduction operand in case of reduction,
+   and -1 otherwise.  */
 
-static void
+void
 vect_get_vec_defs (tree op0, tree op1, gimple stmt,
-		   VEC(tree,heap) **vec_oprnds0, VEC(tree,heap) **vec_oprnds1,
-		   slp_tree slp_node)
+		   VEC (tree, heap) **vec_oprnds0,
+		   VEC (tree, heap) **vec_oprnds1,
+		   slp_tree slp_node, int reduc_index)
 {
   if (slp_node)
-    vect_get_slp_defs (op0, op1, slp_node, vec_oprnds0, vec_oprnds1, -1);
+    {
+      int nops = (op1 == NULL_TREE) ? 1 : 2;
+      VEC (tree, heap) *ops = VEC_alloc (tree, heap, nops);
+      VEC (slp_void_p, heap) *vec_defs = VEC_alloc (slp_void_p, heap, nops);
+
+      VEC_quick_push (tree, ops, op0);
+      if (op1)
+        VEC_quick_push (tree, ops, op1);
+
+      vect_get_slp_defs (ops, slp_node, &vec_defs, reduc_index);
+
+      *vec_oprnds0 = (VEC (tree, heap) *) VEC_index (slp_void_p, vec_defs, 0);
+      if (op1)
+        *vec_oprnds1 = (VEC (tree, heap) *) VEC_index (slp_void_p, vec_defs, 1);
+
+      VEC_free (tree, heap, ops);
+      VEC_free (slp_void_p, heap, vec_defs);
+    }
   else
     {
       tree vec_oprnd;
@@ -1986,7 +2005,8 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
       for (j = 0; j < ncopies; j++)
 	{
 	  if (j == 0)
-	    vect_get_vec_defs (op0, NULL, stmt, &vec_oprnds0, NULL, slp_node);
+	    vect_get_vec_defs (op0, NULL, stmt, &vec_oprnds0, NULL, slp_node,
+			       -1);
 	  else
 	    vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, NULL);
 
@@ -2223,7 +2243,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
     {
       /* Handle uses.  */
       if (j == 0)
-        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node);
+        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node, -1);
       else
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
 
@@ -2617,10 +2637,10 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
              operand 1 should be of a vector type (the usual case).  */
           if (vec_oprnd1)
             vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
-                               slp_node);
+                               slp_node, -1);
           else
             vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0, &vec_oprnds1,
-                               slp_node);
+                               slp_node, -1);
         }
       else
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, &vec_oprnds1);
@@ -2942,10 +2962,10 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	{
 	  if (op_type == binary_op || op_type == ternary_op)
 	    vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0, &vec_oprnds1,
-			       slp_node);
+			       slp_node, -1);
 	  else
 	    vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
-			       slp_node);
+			       slp_node, -1);
 	  if (op_type == ternary_op)
 	    {
 	      vec_oprnds2 = VEC_alloc (tree, heap, 1);
@@ -3268,7 +3288,8 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
     {
       /* Handle uses.  */
       if (slp_node)
-        vect_get_slp_defs (op0, NULL_TREE, slp_node, &vec_oprnds0, NULL, -1);
+        vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
+			   slp_node, -1);
       else
         {
           VEC_free (tree, heap, vec_oprnds0);
@@ -3627,12 +3648,12 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
                   for (k = 0; k < slp_node->vec_stmts_size - 1; k++)
                     VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
 
-    		  vect_get_slp_defs (op0, NULL_TREE, slp_node, &vec_oprnds0, NULL,
- 	                             -1);
+    		  vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
+ 	                             slp_node, -1);
                 }
               else
-                vect_get_slp_defs (op0, op1, slp_node, &vec_oprnds0,
-                                   &vec_oprnds1, -1);
+                vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0,
+                                   &vec_oprnds1, slp_node, -1);
 	    }
 	  else
             {
@@ -3870,6 +3891,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
           vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
           first_stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0); 
           first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
+	  op = gimple_assign_rhs1 (first_stmt);
         } 
       else
         /* VEC_NUM is the number of vect stmts to be created for this 
@@ -3952,8 +3974,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
           if (slp)
             {
 	      /* Get vectorized arguments for SLP_NODE.  */
-              vect_get_slp_defs (NULL_TREE, NULL_TREE, slp_node, &vec_oprnds,
-                                 NULL, -1);
+              vect_get_vec_defs (op, NULL_TREE, stmt, &vec_oprnds,
+                                 NULL, slp_node, -1);
 
               vec_oprnd = VEC_index (tree, vec_oprnds, 0);
             }
@@ -5069,7 +5091,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
      In basic blocks we only analyze statements that are a part of some SLP
      instance, therefore, all the statements are relevant.
 
-     Pattern statement need to be analyzed instead of the original statement
+     Pattern statement needs to be analyzed instead of the original statement
      if the original statement is not relevant.  Otherwise, we analyze both
      statements.  */
 
