@@ -5269,7 +5269,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   gfc_actual_arglist *arg;
   gfc_se argse;
   gfc_ss *ss;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   stmtblock_t block;
   int n;
   bool scalar_mold;
@@ -6757,7 +6757,7 @@ walk_inline_intrinsic_transpose (gfc_ss *ss, gfc_expr *expr)
 	  && tmp_ss->type != GFC_SS_REFERENCE)
 	{
 	  int tmp_dim;
-	  gfc_ss_info *info;
+	  gfc_array_info *info;
 
 	  info = &tmp_ss->data.info;
 	  gcc_assert (info->dimen == 2);

@@ -108,15 +108,10 @@ typedef enum
 gfc_coarray_type;
 
 
-/* Scalarization State chain.  Created by walking an expression tree before
-   creating the scalarization loops. Then passed as part of a gfc_se structure
-   to translate the expression inside the loop.  Note that these chains are
-   terminated by gfc_se_terminator, not NULL.  A NULL pointer in a gfc_se
-   indicates to gfc_conv_* that this is a scalar expression.
-   Note that some member arrays correspond to scalarizer rank and others
-   are the variable rank.  */
+/* The array-specific scalarization informations.  The array members of
+   this struct are indexed by actual array index, and thus can be sparse.  */
 
-typedef struct gfc_ss_info
+typedef struct gfc_array_info
 {
   int dimen;
   /* The ref that holds information on this section.  */
@@ -144,7 +139,7 @@ typedef struct gfc_ss_info
      actual_dim = dim[loop_dim]  */
   int dim[GFC_MAX_DIMENSIONS];
 }
-gfc_ss_info;
+gfc_array_info;
 
 typedef enum
 {
@@ -190,8 +185,15 @@ typedef enum
 }
 gfc_ss_type;
 
-/* SS structures can only belong to a single loopinfo.  They must be added
+
+/* Scalarization State chain.  Created by walking an expression tree before
+   creating the scalarization loops.  Then passed as part of a gfc_se structure
+   to translate the expression inside the loop.  Note that these chains are
+   terminated by gfc_ss_terminator, not NULL.  A NULL pointer in a gfc_se
+   indicates to gfc_conv_* that this is a scalar expression.
+   SS structures can only belong to a single loopinfo.  They must be added
    otherwise they will not get freed.  */
+
 typedef struct gfc_ss
 {
   gfc_ss_type type;
@@ -217,7 +219,7 @@ typedef struct gfc_ss
     }
     temp;
     /* All other types.  */
-    gfc_ss_info info;
+    gfc_array_info info;
   }
   data;
 

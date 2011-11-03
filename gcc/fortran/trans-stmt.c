@@ -193,7 +193,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
   gfc_loopinfo tmp_loop;
   gfc_se parmse;
   gfc_ss *ss;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   gfc_symbol *fsym;
   gfc_ref *ref;
   int n;
@@ -3306,7 +3306,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
   gfc_ss *lss, *rss;
   gfc_se lse;
   gfc_se rse;
-  gfc_ss_info *info;
+  gfc_array_info *info;
   gfc_loopinfo loop;
   tree desc;
   tree parm;
