@@ -3137,16 +3137,6 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
 		 &decoded->canonical_option[1], false);
 }
 
-/* Note that an option (index OPT_INDEX, argument ARG, value VALUE)
-   has been successfully handled with a handler for mask MASK.  */
-
-static void
-driver_post_handling_callback (const struct cl_decoded_option *decoded ATTRIBUTE_UNUSED,
-			       unsigned int mask ATTRIBUTE_UNUSED)
-{
-  /* Nothing to do here.  */
-}
-
 static const char *spec_lang = 0;
 static int last_language_n_infiles;
 
@@ -3533,7 +3523,6 @@ set_option_handlers (struct cl_option_handlers *handlers)
 {
   handlers->unknown_option_callback = driver_unknown_option_callback;
   handlers->wrong_lang_callback = driver_wrong_lang_callback;
-  handlers->post_handling_callback = driver_post_handling_callback;
   handlers->num_handlers = 3;
   handlers->handlers[0].handler = driver_handle_option;
   handlers->handlers[0].mask = CL_DRIVER;

@@ -882,12 +882,7 @@ extern GTY(()) VEC(tree,gc) *lto_global_var_decls;
 
 
 /* In lto-opts.c.  */
-extern void lto_register_user_option (size_t, const char *, int, unsigned int);
-extern void lto_read_file_options (struct lto_file_decl_data *);
 extern void lto_write_options (void);
-extern void lto_reissue_options (void);
-void lto_clear_user_options (void);
-void lto_clear_file_options (void);
 
 
 /* In lto-wpa-fixup.c  */

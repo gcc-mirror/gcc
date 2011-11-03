@@ -878,9 +878,6 @@ handle_option (struct gcc_options *opts,
 					    lang_mask, kind, loc,
 					    handlers, dc))
 	  return false;
-	else
-	  handlers->post_handling_callback (decoded,
-					    handlers->handlers[i].mask);
       }
   
   return true;
