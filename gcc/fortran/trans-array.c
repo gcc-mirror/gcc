@@ -2885,8 +2885,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 
       info = &ss->data.info;
 
-      if (dim >= info->dimen)
-	continue;
+      gcc_assert (dim < info->dimen);
       gcc_assert (info->dimen == loop->dimen);
 
       if (info->ref)
