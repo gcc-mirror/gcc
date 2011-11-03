@@ -27,7 +27,8 @@ crtbegin.o: $(srcdir)/config/ia64/crtbegin.S
 crtend.o: $(srcdir)/config/ia64/crtend.S
 	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp $<
 crtbeginS.o: $(srcdir)/config/ia64/crtbegin.S
-	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \			-o $@ -DSHARED $<
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ -DSHARED $<
 crtendS.o: $(srcdir)/config/ia64/crtend.S
 	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
 		-o $@ -DSHARED $<
