@@ -39,6 +39,10 @@ ACX_PROG_CC_WARNING_OPTS([-Wstrict-prototypes -Wmissing-prototypes \
 			  -Wold-style-definition -Wc++-compat], [c_warn])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([-Wno-long-long])
 
+# Disable exceptions and RTTI if building with g++
+ACX_PROG_CC_WARNING_OPTS(
+       m4_quote(m4_do([-fno-exceptions -fno-rtti])), [noexception_flags])
+
 # Only enable with --enable-werror-always until existing warnings are
 # corrected.
 ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])

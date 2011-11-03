@@ -1,3 +1,11 @@
+2011-11-03  Michael Matz  <matz@suse.de>
+
+	PR bootstrap/50857
+	* configure.ac: Check for -fno-exceptions -fno-rtti.
+	* configure: Regenerate.
+	* Makefile.in (NOEXCEPTION_FLAGS): New flag.
+	(ALL_CXXFLAGS): Use it.
+
 2011-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Use {} for multi-line preparation statements.
@@ -45,7 +53,7 @@
 	known_current_type and multiple_types_encountered.
 	(extr_type_from_vtbl_ptr_store): New function.
 	(check_stmt_for_type_change): Use it, set multiple_types_encountered if
-        the result is different from the previous one.
+	the result is different from the previous one.
 	(detect_type_change): Renamed to detect_type_change_1. New parameter
 	comp_type.  Set up new fields in tci, build known type jump
 	functions if the new type can be identified.
