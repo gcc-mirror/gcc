@@ -279,6 +279,9 @@ typedef struct gfc_loopinfo
   /* The SS describing the temporary used in an assignment.  */
   gfc_ss *temp_ss;
 
+  /* Chain of nested loops.  */
+  struct gfc_loopinfo *nested, *next;
+
   /* The scalarization loop index variables.  */
   tree loopvar[GFC_MAX_DIMENSIONS];
 

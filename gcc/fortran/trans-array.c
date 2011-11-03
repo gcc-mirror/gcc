@@ -645,6 +645,7 @@ void
 gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
 {
   gfc_ss *ss;
+  gfc_loopinfo *nested_loop;
 
   if (head == gfc_ss_terminator)
     return;
@@ -654,6 +655,21 @@ gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
   ss = head;
   for (; ss && ss != gfc_ss_terminator; ss = ss->next)
     {
+      if (ss->nested_ss)
+	{
+	  nested_loop = ss->nested_ss->loop;
+
+	  /* More than one ss can belong to the same loop.  Hence, we add the
+	     loop to the chain only if it is different from the previously
+	     added one, to avoid duplicate nested loops.  */
+	  if (nested_loop != loop->nested)
+	    {
+	      gcc_assert (nested_loop->next == NULL);
+	      nested_loop->next = loop->nested;
+	      loop->nested = nested_loop;
+	    }
+	}
+
       if (ss->next == gfc_ss_terminator)
 	ss->loop_chain = loop->ss;
       else
