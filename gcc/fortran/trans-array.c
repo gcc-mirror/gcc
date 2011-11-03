@@ -2053,32 +2053,38 @@ get_rank (gfc_loopinfo *loop)
    iteration count of the loop if suitable, and NULL_TREE otherwise.  */
 
 static tree
-constant_array_constructor_loop_size (gfc_loopinfo * loop)
+constant_array_constructor_loop_size (gfc_loopinfo * l)
 {
+  gfc_loopinfo *loop;
   tree size = gfc_index_one_node;
   tree tmp;
-  int i;
+  int i, total_dim;
 
-  for (i = 0; i < loop->dimen; i++)
+  total_dim = get_rank (l);
+
+  for (loop = l; loop; loop = loop->parent)
     {
-      /* If the bounds aren't constant, return NULL_TREE.  */
-      if (!INTEGER_CST_P (loop->from[i]) || !INTEGER_CST_P (loop->to[i]))
-	return NULL_TREE;
-      if (!integer_zerop (loop->from[i]))
+      for (i = 0; i < loop->dimen; i++)
 	{
-	  /* Only allow nonzero "from" in one-dimensional arrays.  */
-	  if (loop->dimen != 1)
+	  /* If the bounds aren't constant, return NULL_TREE.  */
+	  if (!INTEGER_CST_P (loop->from[i]) || !INTEGER_CST_P (loop->to[i]))
 	    return NULL_TREE;
-	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 gfc_array_index_type,
-				 loop->to[i], loop->from[i]);
+	  if (!integer_zerop (loop->from[i]))
+	    {
+	      /* Only allow nonzero "from" in one-dimensional arrays.  */
+	      if (total_dim != 1)
+		return NULL_TREE;
+	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				     gfc_array_index_type,
+				     loop->to[i], loop->from[i]);
+	    }
+	  else
+	    tmp = loop->to[i];
+	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
+				 gfc_array_index_type, tmp, gfc_index_one_node);
+	  size = fold_build2_loc (input_location, MULT_EXPR,
+				  gfc_array_index_type, size, tmp);
 	}
-      else
-	tmp = loop->to[i];
-      tmp = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
-			     tmp, gfc_index_one_node);
-      size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
-			      size, tmp);
     }
 
   return size;
