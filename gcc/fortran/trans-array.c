@@ -489,6 +489,11 @@ gfc_free_ss_chain (gfc_ss * ss)
 static void
 free_ss_info (gfc_ss_info *ss_info)
 {
+  ss_info->refcount--;
+  if (ss_info->refcount > 0)
+    return;
+
+  gcc_assert (ss_info->refcount == 0);
   free (ss_info);
 }
 
@@ -532,6 +537,7 @@ gfc_get_array_ss (gfc_ss *next, gfc_expr *expr, int dimen, gfc_ss_type type)
   int i;
 
   ss_info = gfc_get_ss_info ();
+  ss_info->refcount++;
   ss_info->type = type;
   ss_info->expr = expr;
 
@@ -556,6 +562,7 @@ gfc_get_temp_ss (tree type, tree string_length, int dimen)
   int i;
 
   ss_info = gfc_get_ss_info ();
+  ss_info->refcount++;
   ss_info->type = GFC_SS_TEMP;
   ss_info->string_length = string_length;
   ss_info->data.temp.type = type;
@@ -580,6 +587,7 @@ gfc_get_scalar_ss (gfc_ss *next, gfc_expr *expr)
   gfc_ss_info *ss_info;
 
   ss_info = gfc_get_ss_info ();
+  ss_info->refcount++;
   ss_info->type = GFC_SS_SCALAR;
   ss_info->expr = expr;
 

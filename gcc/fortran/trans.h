@@ -185,6 +185,7 @@ gfc_ss_type;
 
 typedef struct gfc_ss_info
 {
+  int refcount;
   gfc_ss_type type;
   gfc_expr *expr;
   tree string_length;
