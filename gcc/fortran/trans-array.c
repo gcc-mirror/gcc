@@ -558,11 +558,11 @@ gfc_get_temp_ss (tree type, tree string_length, int dimen)
   ss_info = gfc_get_ss_info ();
   ss_info->type = GFC_SS_TEMP;
   ss_info->string_length = string_length;
+  ss_info->data.temp.type = type;
 
   ss = gfc_get_ss ();
   ss->info = ss_info;
   ss->next = gfc_ss_terminator;
-  ss->data.temp.type = type;
   ss->dimen = dimen;
   for (i = 0; i < ss->dimen; i++)
     ss->dim[i] = i;
@@ -4127,12 +4127,12 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
       /* Make absolutely sure that this is a complete type.  */
       if (tmp_ss_info->string_length)
-	loop->temp_ss->data.temp.type
+	tmp_ss_info->data.temp.type
 		= gfc_get_character_type_len_for_eltype
-			(TREE_TYPE (loop->temp_ss->data.temp.type),
+			(TREE_TYPE (tmp_ss_info->data.temp.type),
 			 tmp_ss_info->string_length);
 
-      tmp = loop->temp_ss->data.temp.type;
+      tmp = tmp_ss_info->data.temp.type;
       memset (&loop->temp_ss->data.info, 0, sizeof (gfc_array_info));
       tmp_ss_info->type = GFC_SS_SECTION;
 

@@ -197,6 +197,13 @@ typedef struct gfc_ss_info
       tree value;
     }
     scalar;
+
+    /* GFC_SS_TEMP.  */
+    struct
+    {
+      tree type;
+    }
+    temp;
   }
   data;
 }
@@ -219,12 +226,6 @@ typedef struct gfc_ss
 
   union
   {
-    /* GFC_SS_TEMP.  */
-    struct
-    {
-      tree type;
-    }
-    temp;
     /* All other types.  */
     gfc_array_info info;
   }
