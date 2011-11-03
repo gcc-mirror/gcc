@@ -2867,7 +2867,10 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
       else
 	ar = NULL;
 
-      i = dim + 1;
+      if (dim == info->dimen - 1)
+	i = 0;
+      else
+	i = dim + 1;
 
       /* For the time being, there is no loop reordering.  */
       gcc_assert (i == loop->order[i]);
@@ -2875,10 +2878,6 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 
       if (dim == info->dimen - 1)
 	{
-	  i = loop->order[0];
-	  /* For the time being, the innermost loop is unconditionally on
-	     the first dimension of the scalarization loop.  */
-	  gcc_assert (i == 0);
 	  stride = gfc_conv_array_stride (info->descriptor, info->dim[i]);
 
 	  /* Calculate the stride of the innermost loop.  Hopefully this will
