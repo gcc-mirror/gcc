@@ -463,7 +463,7 @@ void
 gfc_mark_ss_chain_used (gfc_ss * ss, unsigned flags)
 {
   for (; ss != gfc_ss_terminator; ss = ss->next)
-    ss->useflags = flags;
+    ss->info->useflags = flags;
 }
 
 static void gfc_free_ss (gfc_ss *);
@@ -2906,7 +2906,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
     {
       ss_info = ss->info;
 
-      if ((ss->useflags & flag) == 0)
+      if ((ss_info->useflags & flag) == 0)
 	continue;
 
       ss_type = ss_info->type;
@@ -3148,7 +3148,7 @@ gfc_trans_scalarizing_loops (gfc_loopinfo * loop, stmtblock_t * body)
 
   /* Clear all the used flags.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
-    ss->useflags = 0;
+    ss->info->useflags = 0;
 }
 
 
@@ -3185,7 +3185,7 @@ gfc_trans_scalarized_loop_boundary (gfc_loopinfo * loop, stmtblock_t * body)
 
       ss_info = ss->info;
 
-      if ((ss->useflags & 2) == 0)
+      if ((ss_info->useflags & 2) == 0)
 	continue;
 
       ss_type = ss_info->type;

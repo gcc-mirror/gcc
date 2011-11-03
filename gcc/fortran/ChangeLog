@@ -1,6 +1,16 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	gfc_ss::useflags into gfc_ss_info.
+	* trans-array.c (gfc_mark_ss_chain_used, gfc_trans_preloop_setup,
+	gfc_trans_scalarizing_loops, gfc_trans_scalarized_boundary):
+	Update reference chains.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
 	gfc_ss::data::info into gfc_ss_info::data and remove empty union
 	gfc_ss::data.
 	* trans-array.c (gfc_free_ss, gfc_trans_create_temp_array,

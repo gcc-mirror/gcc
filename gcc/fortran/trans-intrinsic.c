@@ -6634,7 +6634,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_TRANSFER:
-      if (se->ss && se->ss->useflags)
+      if (se->ss && se->ss->info->useflags)
 	/* Access the previously obtained result.  */
 	gfc_conv_tmp_array_ref (se);
       else

@@ -2898,7 +2898,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (!sym->attr.elemental)
 	{
 	  gcc_assert (se->ss->info->type == GFC_SS_FUNCTION);
-	  if (se->ss->useflags)
+	  if (se->ss->info->useflags)
 	    {
 	      gcc_assert ((!comp && gfc_return_by_reference (sym)
 			   && sym->result->attr.dimension)
@@ -2983,7 +2983,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_init_se (&parmse, se);
 	  gfc_conv_derived_to_class (&parmse, e, fsym->ts);
 	}
-      else if (se->ss && se->ss->useflags)
+      else if (se->ss && se->ss->info->useflags)
 	{
 	  /* An elemental function inside a scalarized loop.  */
 	  gfc_init_se (&parmse, se);
