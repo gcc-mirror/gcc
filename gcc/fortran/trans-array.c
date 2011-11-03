@@ -2295,10 +2295,12 @@ static void
 gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 		      locus * where)
 {
+  gfc_loopinfo *nested_loop;
   gfc_se se;
   gfc_ss_info *ss_info;
   gfc_array_info *info;
   gfc_expr *expr;
+  bool skip_nested = false;
   int n;
 
   /* TODO: This can generate bad code if there are ordering dependencies,
@@ -2308,6 +2310,10 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
   for (; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
       gcc_assert (ss);
+
+      /* Cross loop arrays are handled from within the most nested loop.  */
+      if (ss->nested_ss != NULL)
+	continue;
 
       ss_info = ss->info;
       expr = ss_info->expr;
@@ -2355,7 +2361,12 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  /* Add the expressions for scalar and vector subscripts.  */
 	  for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
 	    if (info->subscript[n])
-	      gfc_add_loop_ss_code (loop, info->subscript[n], true, where);
+	      {
+		gfc_add_loop_ss_code (loop, info->subscript[n], true, where);
+		/* The recursive call will have taken care of the nested loops.
+		   No need to do it twice.  */
+		skip_nested = true;
+	      }
 
 	  set_vector_loop_bounds (ss);
 	  break;
@@ -2410,6 +2421,11 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  gcc_unreachable ();
 	}
     }
+
+  if (!skip_nested)
+    for (nested_loop = loop->nested; nested_loop;
+	 nested_loop = nested_loop->next)
+      gfc_add_loop_ss_code (nested_loop, nested_loop->ss, subscript, where);
 }
 
 
@@ -3495,8 +3511,10 @@ done:
       switch (ss_info->type)
 	{
 	case GFC_SS_SECTION:
-	  /* Get the descriptor for the array.  */
-	  gfc_conv_ss_descriptor (&loop->pre, ss, !loop->array_parameter);
+	  /* Get the descriptor for the array.  If it is a cross loops array,
+	     we got the descriptor already in the outermost loop.  */
+	  if (ss->parent == NULL)
+	    gfc_conv_ss_descriptor (&loop->pre, ss, !loop->array_parameter);
 
 	  for (n = 0; n < ss->dimen; n++)
 	    gfc_conv_section_startstride (loop, ss, ss->dim[n]);
@@ -3785,6 +3803,9 @@ done:
       tmp = gfc_finish_block (&block);
       gfc_add_expr_to_block (&loop->pre, tmp);
     }
+
+  for (loop = loop->nested; loop; loop = loop->next)
+    gfc_conv_ss_startstride (loop);
 }
 
 /* Return true if both symbols could refer to the same data object.  Does
@@ -4246,6 +4267,9 @@ set_loop_bounds (gfc_loopinfo *loop)
 	}
     }
   mpz_clear (i);
+
+  for (loop = loop->nested; loop; loop = loop->next)
+    set_loop_bounds (loop);
 }
 
 
@@ -4356,6 +4380,9 @@ set_delta (gfc_loopinfo *loop)
 	    }
 	}
     }
+
+  for (loop = loop->nested; loop; loop = loop->next)
+    set_delta (loop);
 }
 
 
