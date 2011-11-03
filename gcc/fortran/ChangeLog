@@ -1,5 +1,32 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss_info): New struct.
+	(gfc_get_ss_info): New macro.
+	(struct gfc_ss): Move type field to struct gfc_ss_info.
+	Add an info field of type gfc_ss_info.
+	* trans-array.c (free_ss_info): New function.
+	(gfc_free_ss): Call free_ss_info.
+	(gfc_get_array_ss, gfc_get_temp_ss, gfc_get_scalar_ss):
+	Allocate gfc_ss_info field.
+	(gfc_get_array_ss, gfc_get_temp_ss, gfc_get_scalar_ss,
+	gfc_set_vector_loop_bounds, gfc_add_loop_ss_code,
+	gfc_conv_array_index_offset, gfc_trans_preloop_setup,
+	gfc_trans_scalarized_loop_boundary, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_conv_resolve_dependencies,
+	gfc_conv_loop_setup, transposed_dims, gfc_conv_expr_descriptor,
+	gfc_walk_elemental_function_args): Update references to type.
+	* trans-const.c (gfc_conv_constant): Factor common reference chains
+	and update reference to type.
+	* trans-expr.c (gfc_conv_procedure_call, gfc_trans_assignment_1):
+	Update reference to type.
+	(gfc_conv_array_constructor_expr, gfc_conv_expr,
+	gfc_conv_expr_reference): Ditto. Factor common reference chains.
+	* trans-intrinsic.c (walk_inline_intrinsic_transpose): Update references
+	to type
+	* trans-stmt.c (gfc_trans_where_assign): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss, struct gfc_array_info): Move shape field
 	from the former struct to the latter.
 	* trans-array.c (gfc_conv_ss_startstride, gfc_conv_loop_setup):

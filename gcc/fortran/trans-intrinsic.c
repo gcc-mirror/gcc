@@ -6753,8 +6753,8 @@ walk_inline_intrinsic_transpose (gfc_ss *ss, gfc_expr *expr)
 
   for (tmp_ss = arg_ss; ; tmp_ss = tmp_ss->next)
     {
-      if (tmp_ss->type != GFC_SS_SCALAR
-	  && tmp_ss->type != GFC_SS_REFERENCE)
+      if (tmp_ss->info->type != GFC_SS_SCALAR
+	  && tmp_ss->info->type != GFC_SS_REFERENCE)
 	{
 	  int tmp_dim;
 

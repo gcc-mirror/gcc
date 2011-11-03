@@ -183,6 +183,15 @@ typedef enum
 gfc_ss_type;
 
 
+typedef struct gfc_ss_info
+{
+  gfc_ss_type type;
+}
+gfc_ss_info;
+
+#define gfc_get_ss_info() XCNEW (gfc_ss_info)
+
+
 /* Scalarization State chain.  Created by walking an expression tree before
    creating the scalarization loops.  Then passed as part of a gfc_se structure
    to translate the expression inside the loop.  Note that these chains are
@@ -193,7 +202,8 @@ gfc_ss_type;
 
 typedef struct gfc_ss
 {
-  gfc_ss_type type;
+  gfc_ss_info *info;
+
   gfc_expr *expr;
   tree string_length;
   union

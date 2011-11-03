@@ -4048,7 +4048,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 
   /* Find a non-scalar SS from the lhs.  */
   while (lss_section != gfc_ss_terminator
-         && lss_section->type != GFC_SS_SECTION)
+	 && lss_section->info->type != GFC_SS_SECTION)
     lss_section = lss_section->next;
 
   gcc_assert (lss_section != gfc_ss_terminator);
