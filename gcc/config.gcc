@@ -824,7 +824,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	case ${target} in
 	arm*-*-linux-*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
-	    tmake_file="$tmake_file arm/t-arm-elf arm/t-linux-eabi"
+	    tmake_file="$tmake_file arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	    # Define multilib configuration for arm-linux-androideabi.
 	    case ${target} in
 	    *-androideabi)
@@ -851,6 +851,7 @@ arm*-*-uclinux*)		# ARM ucLinux
 	case ${target} in
 	arm*-*-uclinux*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h"
+	    tmake_file="$tmake_file arm/t-bpabi"
   	    # The BPABI long long divmod functions return a 128-bit value in
 	    # registers r0-r3.  Correctly modeling that requires the use of
 	    # TImode.
@@ -875,6 +876,7 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	case ${target} in
 	arm*-*-eabi*)
 	  tm_file="$tm_file newlib-stdint.h"
+	  tmake_file="${tmake_file} arm/t-bpabi"
 	  use_gcc_stdint=wrap
 	  ;;
 	arm*-*-symbianelf*)
