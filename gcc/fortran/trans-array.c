@@ -961,12 +961,12 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 	break;
       }
 
-  for (n = 0; n < loop->dimen; n++)
+  if (size == NULL_TREE)
     {
-      dim = ss->dim[n];
-
-      if (size == NULL_TREE)
+      for (n = 0; n < loop->dimen; n++)
 	{
+	  dim = ss->dim[n];
+
 	  /* For a callee allocated array express the loop bounds in terms
 	     of the descriptor fields.  */
 	  tmp = fold_build2_loc (input_location,
@@ -974,39 +974,42 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]),
 		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]));
 	  loop->to[n] = tmp;
-	  continue;
 	}
-	
-      /* Store the stride and bound components in the descriptor.  */
-      gfc_conv_descriptor_stride_set (pre, desc, gfc_rank_cst[n], size);
+    }
+  else
+    {
+      for (n = 0; n < loop->dimen; n++)
+	{
+	  /* Store the stride and bound components in the descriptor.  */
+	  gfc_conv_descriptor_stride_set (pre, desc, gfc_rank_cst[n], size);
 
-      gfc_conv_descriptor_lbound_set (pre, desc, gfc_rank_cst[n],
-				      gfc_index_zero_node);
+	  gfc_conv_descriptor_lbound_set (pre, desc, gfc_rank_cst[n],
+					  gfc_index_zero_node);
 
-      gfc_conv_descriptor_ubound_set (pre, desc, gfc_rank_cst[n],
-				      to[n]);
+	  gfc_conv_descriptor_ubound_set (pre, desc, gfc_rank_cst[n], to[n]);
 
-      tmp = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
-			     to[n], gfc_index_one_node);
+	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
+				 gfc_array_index_type,
+				 to[n], gfc_index_one_node);
 
-      /* Check whether the size for this dimension is negative.  */
-      cond = fold_build2_loc (input_location, LE_EXPR, boolean_type_node, tmp,
-			      gfc_index_zero_node);
-      cond = gfc_evaluate_now (cond, pre);
+	  /* Check whether the size for this dimension is negative.  */
+	  cond = fold_build2_loc (input_location, LE_EXPR, boolean_type_node,
+				  tmp, gfc_index_zero_node);
+	  cond = gfc_evaluate_now (cond, pre);
 
-      if (n == 0)
-	or_expr = cond;
-      else
-	or_expr = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				   boolean_type_node, or_expr, cond);
+	  if (n == 0)
+	    or_expr = cond;
+	  else
+	    or_expr = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+				       boolean_type_node, or_expr, cond);
 
-      size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
-			      size, tmp);
-      size = gfc_evaluate_now (size, pre);
+	  size = fold_build2_loc (input_location, MULT_EXPR,
+				  gfc_array_index_type, size, tmp);
+	  size = gfc_evaluate_now (size, pre);
+	}
     }
 
   /* Get the size of the array.  */
-
   if (size && !callee_alloc)
     {
       /* If or_expr is true, then the extent in at least one
