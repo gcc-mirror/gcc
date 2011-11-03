@@ -1,3 +1,7 @@
+2011-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Use {} for multi-line preparation statements.
+
 2011-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (movtf_insn_sp32_no_fpu): Consolidate into...
@@ -156,8 +160,7 @@
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
-	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list):
-	Remove.
+	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list): Remove.
 	* configure: Regenerate.
 	* Makefile.in (libgcc_tm_file_list, libgcc_tm_include_list): Remove.
 	(TM_H): Remove libgcc_tm.h, $(libgcc_tm_file_list).
@@ -211,7 +214,7 @@
 	* config/t-libunwind (TARGET_LIBGCC2_CFLAGS): Remove.
 	* config/t-linux: Remove.
 	* config/t-lynx (TARGET_LIBGCC2_CFLAGS, LIBGCC, INSTALL_LIBGCC):
-	Remove
+	Remove.
 	* config/t-openbsd-thread: Move to ../libgcc/config.
 	* config/t-rtems (LIBGCC2_INCLUDES): Remove.
 	* config/t-sol2 (TARGET_LIBGCC2_CFLAGS): Remove.
@@ -221,8 +224,7 @@
 	* config/vxlib.c, config/vxlib-tls.c: Move to ../libgcc/config.
 	* config/alpha/qrnnd.asm: Move to ../libgcc/config/alpha/qrnnd.S.
 	* config/alpha/t-alpha, config/alpha/t-ieee: Remove.
-	* config/alpha/t-vms (LIB2FUNCS_EXTRA, LIBGCC, INSTALL_LIBGCC):
-	Remove.
+	* config/alpha/t-vms (LIB2FUNCS_EXTRA, LIBGCC, INSTALL_LIBGCC): Remove.
 	* config/alpha/vms-gcc_shell_handler.c: Move to ../libgcc/config/alpha.
 	* config/arm/bpabi.c, config/arm/unaligned-funcs.c,
 	config/arm/fp16.c, config/arm/linux-atomic.c,
@@ -247,8 +249,7 @@
 	config/c6x/gef.c, config/c6x/gtd.c, config/c6x/gtf.c,
 	config/c6x/led.c, config/c6x/lef.c, config/c6x/ltd.c,
 	config/c6x/ltf.c: Move to ../libgcc/config/c6x.
-	* config/c6x/t-c6x-elf (LIB2FUNCS_EXCLUDE, LIB2FUNCS_EXTRA):
-	Remove.
+	* config/c6x/t-c6x-elf (LIB2FUNCS_EXCLUDE, LIB2FUNCS_EXTRA): Remove.
 	* config/c6x/t-c6x-uclinux (TARGET_LIBGCC2_CFLAGS): Remove.
 	* config/cris/arit.c: Move to ../libgcc/config/cris.
 	* config/cris/cris_abi_symbol.c: Remove.
@@ -399,8 +400,8 @@
 	(LIB2FUNCS_STATIC_EXTRA, tramp.S, crtsavfpr.S, crtresfpr.S)
 	(crtsavgpr.S, crtresgpr.S, crtresxfpr.S, crtresxgpr.S, LIBGCC)
 	(INSTALL_LIBGCC, $(T)crtsavfpr$(objext), $(T)crtresfpr$(objext))
-	(($(T)crtsavgpr$(objext), $(T)crtresgpr$(objext),
-	$(T)crtresxfpr$(objext), $(T)crtresxgpr$(objext)): Remove.
+	($(T)crtsavgpr$(objext), $(T)crtresgpr$(objext))
+	($(T)crtresxfpr$(objext), $(T)crtresxgpr$(objext)): Remove.
 	* config/rs6000/t-ppccomm (LIB2FUNCS_EXTRA)
 	(LIB2FUNCS_STATIC_EXTRA, eabi.S, tramp.S): Remove.
 	* config/rs6000/t-spe (LIBGCC, INSTALL_LIBGCC): Remove.
@@ -473,8 +474,7 @@
 	(*-*-netbsd*): Remove t-libgcc-pic from tmake_file.
 	(*-*-openbsd*): Likewise.
 	Remove t-openbsd-thread for posix threads.
-	(alpha*-*-linux*): Remove alpha/t-alpha, alpha/t-ieee
-	from tmake_file.
+	(alpha*-*-linux*): Remove alpha/t-alpha, alpha/t-ieee from tmake_file.
 	(alpha*-*-freebsd*): Likewise.
 	(alpha*-*-netbsd*): Likewise.
 	(alpha*-*-openbsd*): Likewise.
@@ -531,20 +531,16 @@
 	* config/arm/t-wince-pe: Likewise.
 	* config/avr/libgcc.S: Move to ../libgcc/config/avr.
 	* config/avr/t-avr (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
-	* config/bfin/lib1funcs.asm: Move to
-	../libgcc/config/bfin/lib1funcs.S.
+	* config/bfin/lib1funcs.asm: Move to ../libgcc/config/bfin/lib1funcs.S.
 	* config/bfin/t-bfin: Remove.
 	* config/bfin/t-bfin-elf (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
 	* config/bfin/t-bfin-linux: Likewise.
 	* config/bfin/t-bfin-uclinux: Likewise.
-	* config/c6x/lib1funcs.asm: Move to
-	../libgcc/config/c6x/lib1funcs.S.
+	* config/c6x/lib1funcs.asm: Move to ../libgcc/config/c6x/lib1funcs.S.
 	* config/c6x/t-c6x-elf (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
-	* config/fr30/lib1funcs.asm: Move to
-	../libgcc/config/fr30/lib1funcs.S.
+	* config/fr30/lib1funcs.asm: Move to ../libgcc/config/fr30/lib1funcs.S.
 	* config/fr30/t-fr30 (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
-	* config/frv/lib1funcs.asm: Move to
-	../libgcc/config/frv/lib1funcs.S.
+	* config/frv/lib1funcs.asm: Move to ../libgcc/config/frv/lib1funcs.S.
 	* config/frv/t-frv (CROSS_LIBGCC1, LIB1ASMSRC, LIB1ASMFUNCS): Remove.
 	* config/h8300/fixunssfsi.c: Update lib1funcs.asm filename.
 	* config/h8300/lib1funcs.asm: Move to
@@ -553,8 +549,7 @@
 	* config/i386/cygwin.asm: Move to ../libgcc/config/i386/cygwin.S.
 	* config/i386/t-cygming (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
 	* config/i386/t-interix: Likewise.
-	* config/ia64/lib1funcs.asm: Move to
-	../libgcc/config/ia64/lib1funcs.S.
+	* config/ia64/lib1funcs.asm: Move to ../libgcc/config/ia64/lib1funcs.S.
 	* config/ia64/t-hpux (LIB1ASMFUNCS, LIBGCC1_TEST): Remove.
 	* config/ia64/t-ia64 (LIB1ASMSRC, LIB1ASMFUNCS): Remove.
 	* config/iq2000/t-iq2000 (LIBGCC1, CROSS_LIBGCC1): Remove.
@@ -645,7 +640,8 @@
 	t-libc-ok from tmake_file.
 	(i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu,
 	i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*,
-	i[34567]86-*-kopensolaris*-gnu): Remove i386/t-crtstuff from tmake_file.
+	i[34567]86-*-kopensolaris*-gnu): Remove i386/t-crtstuff from
+	tmake_file.
 	Remove extra_parts.
 	(x86_64-*-linux*, x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu):
 	Remove i386/t-crtstuff from tmake_file.
@@ -750,10 +746,8 @@
 	* config/i386/t-i386elf: Remove.
 	* config/i386/t-linux64 (EXTRA_MULTILIB_PARTS): Remove.
 	* config/i386/t-nto (CRTSTUFF_T_CFLAGS, EXTRA_PARTS): Remove.
-	* config/ia64/crtbegin.asm: Move to
-	../libgcc/config/ia64/crtbegin.S.
-	* config/ia64/crtend.asm: Move to
-	../libgcc/config/ia64/crtend.S.
+	* config/ia64/crtbegin.asm: Move to ../libgcc/config/ia64/crtbegin.S.
+	* config/ia64/crtend.asm: Move to ../libgcc/config/ia64/crtend.S.
 	* config/ia64/crti.asm: Move to ../libgcc/config/ia64/crti.S.
 	* config/ia64/crtn.asm: Move to ../libgcc/config/ia64/crtn.S.
 	* config/ia64/t-vms: Remove.
@@ -834,7 +828,7 @@
 	* config/rs6000/t-ppccomm (EXTRA_MULTILIB_PARTS): Remove.
 	(ecrti.S, ecrtn.S, ncrti.S, ncrtn.S): Remove.
 	($(T)ecrti$(objext), $(T)ecrtn$(objext), $(T)ncrti$(objext),
-	$(T)ncrtn$(objext)): Remove.
+	($(T)ncrtn$(objext)): Remove.
 	(CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Remove.
 	* config/rs6000/t-vxworks (EXTRA_MULTILIB_PARTS): Remove.
 	* config/rx/t-rx (EXTRA_MULTILIB_PARTS): Remove.
@@ -884,8 +878,7 @@
 	* config/vms/vms-ucrt0.c: Move to ../libgcc/config/vms.
 	* config/xtensa/crti.asm: Move to ../libgcc/config/xtensa/crti.S.
 	* config/xtensa/crtn.asm: Move to ../libgcc/config/xtensa/crtn.S.
-	* config/xtensa/t-elf (CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S):
-	Remove.
+	* config/xtensa/t-elf (CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Remove.
 	(EXTRA_MULTILIB_PARTS): Remove.
 	* config/xtensa/t-linux: Remove.
 	* config/xtensa/t-xtensa ($(T)crti.o, $(T)crtn.o): Remove.
@@ -1115,7 +1108,7 @@
 
 	PR target/50940
 	* config/i386/i386.md (floatsi<mode>2_vector_sse_with_temp splitter):
-	Compare <ssevecmode>mode with V4SFmode, not V4SImode.
+	Compare <ssevecmode>mode to V4SFmode, not V4SImode.
 
 2011-11-01  Peter Bergner  <bergner@vnet.ibm.com>
 
