@@ -3440,7 +3440,7 @@ sparc_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
 	     REG+REG address, then only one of them gets converted to an
 	     offsettable address.  */
 	  if (mode == TFmode
-	      && ! (TARGET_FPU && TARGET_ARCH64 && TARGET_HARD_QUAD))
+	      && ! (TARGET_ARCH64 && TARGET_HARD_QUAD))
 	    return 0;
 
 	  /* We prohibit REG + REG on ARCH32 if not optimizing for
