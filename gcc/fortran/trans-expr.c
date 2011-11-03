@@ -2489,7 +2489,7 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
      outside the innermost loop, so the overall transfer could be
      optimized further.  */
   info = &rse.ss->data.info;
-  dimen = info->dimen;
+  dimen = rse.ss->dimen;
 
   tmp_index = gfc_index_zero_node;
   for (n = dimen - 1; n > 0; n--)
@@ -3582,7 +3582,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  /* Set the type of the array.  */
 	  tmp = gfc_typenode_for_spec (&comp->ts);
-	  gcc_assert (info->dimen == se->loop->dimen);
+	  gcc_assert (se->ss->dimen == se->loop->dimen);
 
 	  /* Evaluate the bounds of the result, if known.  */
 	  gfc_set_loop_bounds_from_array_spec (&mapping, se, comp->as);
@@ -3618,7 +3618,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  /* Set the type of the array.  */
 	  tmp = gfc_typenode_for_spec (&ts);
-	  gcc_assert (info->dimen == se->loop->dimen);
+	  gcc_assert (se->ss->dimen == se->loop->dimen);
 
 	  /* Evaluate the bounds of the result, if known.  */
 	  gfc_set_loop_bounds_from_array_spec (&mapping, se, sym->result->as);

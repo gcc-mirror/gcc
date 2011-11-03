@@ -241,8 +241,8 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  /* Make a local loopinfo for the temporary creation, so that
 	     none of the other ss->info's have to be renormalized.  */
 	  gfc_init_loopinfo (&tmp_loop);
-	  tmp_loop.dimen = info->dimen;
-	  for (n = 0; n < info->dimen; n++)
+	  tmp_loop.dimen = ss->dimen;
+	  for (n = 0; n < ss->dimen; n++)
 	    {
 	      tmp_loop.to[n] = loopse->loop->to[n];
 	      tmp_loop.from[n] = loopse->loop->from[n];
@@ -320,7 +320,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 
 	  /* Calculate the offset for the temporary.  */
 	  offset = gfc_index_zero_node;
-	  for (n = 0; n < info->dimen; n++)
+	  for (n = 0; n < ss->dimen; n++)
 	    {
 	      tmp = gfc_conv_descriptor_stride_get (info->descriptor,
 						    gfc_rank_cst[n]);

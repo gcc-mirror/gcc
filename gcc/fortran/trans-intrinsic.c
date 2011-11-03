@@ -6757,15 +6757,13 @@ walk_inline_intrinsic_transpose (gfc_ss *ss, gfc_expr *expr)
 	  && tmp_ss->type != GFC_SS_REFERENCE)
 	{
 	  int tmp_dim;
-	  gfc_array_info *info;
 
-	  info = &tmp_ss->data.info;
-	  gcc_assert (info->dimen == 2);
+	  gcc_assert (tmp_ss->dimen == 2);
 
 	  /* We just invert dimensions.  */
-	  tmp_dim = info->dim[0];
-	  info->dim[0] = info->dim[1];
-	  info->dim[1] = tmp_dim;
+	  tmp_dim = tmp_ss->dim[0];
+	  tmp_ss->dim[0] = tmp_ss->dim[1];
+	  tmp_ss->dim[1] = tmp_dim;
 	}
 
       /* Stop when tmp_ss points to the last valid element of the chain...  */
