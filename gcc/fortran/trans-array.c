@@ -943,6 +943,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 			     bool dealloc, bool callee_alloc, locus * where)
 {
   gfc_loopinfo *loop;
+  gfc_ss *s;
   gfc_array_info *info;
   tree from[GFC_MAX_DIMENSIONS], to[GFC_MAX_DIMENSIONS];
   tree type;
@@ -966,41 +967,45 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   if (gfc_option.warn_array_temp && where)
     gfc_warning ("Creating array temporary at %L", where);
 
-  loop = ss->loop;
-  total_dim = loop->dimen;
   /* Set the lower bound to zero.  */
-  for (n = 0; n < loop->dimen; n++)
+  for (s = ss; s; s = s->parent)
     {
-      dim = ss->dim[n];
+      loop = s->loop;
 
-      /* Callee allocated arrays may not have a known bound yet.  */
-      if (loop->to[n])
-	loop->to[n] = gfc_evaluate_now (
+      total_dim += loop->dimen;
+      for (n = 0; n < loop->dimen; n++)
+	{
+	  dim = s->dim[n];
+
+	  /* Callee allocated arrays may not have a known bound yet.  */
+	  if (loop->to[n])
+	    loop->to[n] = gfc_evaluate_now (
 			fold_build2_loc (input_location, MINUS_EXPR,
 					 gfc_array_index_type,
 					 loop->to[n], loop->from[n]),
 			pre);
-      loop->from[n] = gfc_index_zero_node;
+	  loop->from[n] = gfc_index_zero_node;
 
-      /* We have just changed the loop bounds, we must clear the
-	 corresponding specloop, so that delta calculation is not skipped
-	 later in set_delta.  */
-      loop->specloop[n] = NULL;
+	  /* We have just changed the loop bounds, we must clear the
+	     corresponding specloop, so that delta calculation is not skipped
+	     later in set_delta.  */
+	  loop->specloop[n] = NULL;
 
-      /* We are constructing the temporary's descriptor based on the loop
-	 dimensions. As the dimensions may be accessed in arbitrary order
-	 (think of transpose) the size taken from the n'th loop may not map
-	 to the n'th dimension of the array. We need to reconstruct loop infos
-	 in the right order before using it to set the descriptor
-	 bounds.  */
-      tmp_dim = get_scalarizer_dim_for_array_dim (ss, dim);
-      from[tmp_dim] = loop->from[n];
-      to[tmp_dim] = loop->to[n];
+	  /* We are constructing the temporary's descriptor based on the loop
+	     dimensions.  As the dimensions may be accessed in arbitrary order
+	     (think of transpose) the size taken from the n'th loop may not map
+	     to the n'th dimension of the array.  We need to reconstruct loop
+	     infos in the right order before using it to set the descriptor
+	     bounds.  */
+	  tmp_dim = get_scalarizer_dim_for_array_dim (ss, dim);
+	  from[tmp_dim] = loop->from[n];
+	  to[tmp_dim] = loop->to[n];
 
-      info->delta[dim] = gfc_index_zero_node;
-      info->start[dim] = gfc_index_zero_node;
-      info->end[dim] = gfc_index_zero_node;
-      info->stride[dim] = gfc_index_one_node;
+	  info->delta[dim] = gfc_index_zero_node;
+	  info->start[dim] = gfc_index_zero_node;
+	  info->end[dim] = gfc_index_zero_node;
+	  info->stride[dim] = gfc_index_one_node;
+	}
     }
 
   /* Initialize the descriptor.  */
@@ -1042,8 +1047,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
       }
 
   if (size == NULL_TREE)
-    {
-      for (n = 0; n < loop->dimen; n++)
+    for (s = ss; s; s = s->parent)
+      for (n = 0; n < s->loop->dimen; n++)
 	{
 	  dim = get_scalarizer_dim_for_array_dim (ss, ss->dim[n]);
 
@@ -1053,9 +1058,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 		MINUS_EXPR, gfc_array_index_type,
 		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]),
 		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]));
-	  loop->to[n] = tmp;
+	  s->loop->to[n] = tmp;
 	}
-    }
   else
     {
       for (n = 0; n < total_dim; n++)
@@ -1111,6 +1115,9 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 
   gfc_trans_allocate_array_storage (pre, post, info, size, nelem, initial,
 				    dynamic, dealloc);
+
+  while (ss->parent)
+    ss = ss->parent;
 
   if (ss->dimen > ss->loop->temp_dim)
     ss->loop->temp_dim = ss->dimen;

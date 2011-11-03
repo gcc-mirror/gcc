@@ -1,5 +1,9 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_create_temp_array): Loop over the parents.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (get_array_ref_dim, get_scalarizer_dim_for_array_dim): 
 	Rename the former to the latter and loop over the parents.
 	(innermost_ss): New function.
