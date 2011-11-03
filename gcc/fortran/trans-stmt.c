@@ -310,7 +310,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  data = gfc_create_var (pvoid_type_node, NULL);
 	  gfc_init_block (&temp_post);
 	  tmp = gfc_trans_create_temp_array (&se->pre, &temp_post,
-					     &tmp_loop, info, temptype,
+					     &tmp_loop, ss, temptype,
 					     initial,
 					     false, true, false,
 					     &arg->expr->where);

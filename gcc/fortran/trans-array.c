@@ -838,10 +838,11 @@ get_array_ref_dim (gfc_ss_info *info, int loop_dim)
 
 tree
 gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
-			     gfc_loopinfo * loop, gfc_ss_info * info,
+			     gfc_loopinfo * loop, gfc_ss * ss,
 			     tree eltype, tree initial, bool dynamic,
 			     bool dealloc, bool callee_alloc, locus * where)
 {
+  gfc_ss_info *info;
   tree from[GFC_MAX_DIMENSIONS], to[GFC_MAX_DIMENSIONS];
   tree type;
   tree desc;
@@ -854,6 +855,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   memset (from, 0, sizeof (from));
   memset (to, 0, sizeof (to));
+
+  info = &ss->data.info;
 
   gcc_assert (info->dimen > 0);
   gcc_assert (loop->dimen == info->dimen);
@@ -2038,7 +2041,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
   if (TREE_CODE (loop->to[0]) == VAR_DECL)
     dynamic = true;
 
-  gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, &ss->data.info,
+  gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, ss,
 			       type, NULL_TREE, dynamic, true, false, where);
 
   desc = ss->data.info.descriptor;
@@ -4061,7 +4064,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	loop->temp_ss->data.info.dim[n] = n;
 
       gfc_trans_create_temp_array (&loop->pre, &loop->post, loop,
-				   &loop->temp_ss->data.info, tmp, NULL_TREE,
+				   loop->temp_ss, tmp, NULL_TREE,
 				   false, true, false, where);
     }
 

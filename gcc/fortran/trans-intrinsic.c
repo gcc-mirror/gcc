@@ -5502,7 +5502,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   /* Build a destination descriptor, using the pointer, source, as the
      data field.  */
   gfc_trans_create_temp_array (&se->pre, &se->post, se->loop,
-			       info, mold_type, NULL_TREE, false, true, false,
+			       se->ss, mold_type, NULL_TREE, false, true, false,
 			       &expr->where);
 
   /* Cast the pointer to the result.  */

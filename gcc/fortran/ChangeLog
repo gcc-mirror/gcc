@@ -1,5 +1,16 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.h (gfc_trans_create_temp_array): Replace info argument
+	with ss argument.
+	* trans-array.c (gfc_trans_create_temp_array): Ditto. Get info from ss.
+	(gfc_trans_array_constructor, gfc_conv_loop_setup): Update call to
+	gfc_trans_create_temp_array.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_array_bound_check): Use ss argument
 	to get name.
 
