@@ -2863,16 +2863,15 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	continue;
 
       if (info->ref)
-	{
-	  ar = &info->ref->u.ar;
-	  i = loop->order[dim + 1];
-	}
+	ar = &info->ref->u.ar;
       else
-	{
-	  ar = NULL;
-	  i = dim + 1;
-	}
+	ar = NULL;
 
+      i = dim + 1;
+
+      /* For the time being, there is no loop reordering.  */
+      gcc_assert (i == loop->order[i]);
+      i = loop->order[i];
 
       if (dim == info->dimen - 1)
 	{
