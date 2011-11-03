@@ -1,5 +1,12 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_array_constructor, trans_array_constructor):
+	Rename the former to the later.  Get loop from ss.
+	Remove loop argument.
+	(gfc_add_loop_ss_code): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_set_vector_loop_bounds): Get loop from ss.
 	Remove loop argument.
 	(gfc_add_loop_ss_code): Update call.

@@ -1981,7 +1981,7 @@ constant_array_constructor_loop_size (gfc_loopinfo * loop)
    simplest method.  */
 
 static void
-gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
+trans_array_constructor (gfc_ss * ss, locus * where)
 {
   gfc_constructor_base c;
   tree offset;
@@ -1992,6 +1992,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
   bool dynamic;
   bool old_first_len, old_typespec_chararray_ctor;
   tree old_first_len_val;
+  gfc_loopinfo *loop;
   gfc_ss_info *ss_info;
   gfc_expr *expr;
 
@@ -2000,6 +2001,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
   old_first_len_val = first_len_val;
   old_typespec_chararray_ctor = typespec_chararray_ctor;
 
+  loop = ss->loop;
   ss_info = ss->info;
   expr = ss_info->expr;
 
@@ -2314,7 +2316,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	      gfc_add_block_to_block (&loop->pre, &se.pre);
 	      gfc_add_block_to_block (&loop->post, &se.post);
 	    }
-	  gfc_trans_array_constructor (loop, ss, where);
+	  trans_array_constructor (ss, where);
 	  break;
 
         case GFC_SS_TEMP:
