@@ -1849,8 +1849,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
    gfc_build_constant_array_constructor.  */
 
 static void
-gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
-				      gfc_ss * ss, tree type)
+trans_constant_array_constructor (gfc_ss * ss, tree type)
 {
   gfc_ss_info *info;
   tree tmp;
@@ -1871,14 +1870,11 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
       info->end[i] = gfc_index_zero_node;
       info->stride[i] = gfc_index_one_node;
     }
-
-  if (info->dimen > loop->temp_dim)
-    loop->temp_dim = info->dimen;
 }
 
 /* Helper routine of gfc_trans_array_constructor to determine if the
    bounds of the loop specified by LOOP are constant and simple enough
-   to use with gfc_trans_constant_array_constructor.  Returns the
+   to use with trans_constant_array_constructor.  Returns the
    iteration count of the loop if suitable, and NULL_TREE otherwise.  */
 
 static tree
@@ -2033,7 +2029,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
 	  tree size = constant_array_constructor_loop_size (loop);
 	  if (size && compare_tree_int (size, nelem) == 0)
 	    {
-	      gfc_trans_constant_array_constructor (loop, ss, type);
+	      trans_constant_array_constructor (ss, type);
 	      goto finish;
 	    }
 	}
