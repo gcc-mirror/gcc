@@ -1,3 +1,13 @@
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (set_loop_bounds): Separate the beginning of
+	gfc_conv_loop_setup into a function of its own.
+	(set_delta): Separate the end of gfc_conv_loop_setup into a function
+	of its own.
+	(gfc_conv_loop_setup): Call set_loop_bounds and set delta.
+	(set_loop_bounds, set_delta, gfc_conv_loop_setup): Make loopspec a
+	pointer to the specloop field from the loop struct.
+
 2011-11-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50933

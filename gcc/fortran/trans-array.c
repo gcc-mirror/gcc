@@ -3919,24 +3919,24 @@ temporary:
 }
 
 
-/* Initialize the scalarization loop.  Creates the loop variables.  Determines
-   the range of the loop variables.  Creates a temporary if required.
-   Calculates how to transform from loop variables to array indices for each
-   expression.  Also generates code for scalar expressions which have been
-   moved outside the loop.  */
+/* Browse through each array's information from the scalarizer and set the loop
+   bounds according to the "best" one (per dimension), i.e. the one which
+   provides the most information (constant bounds, shape, etc).  */
 
-void
-gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
+static void
+set_loop_bounds (gfc_loopinfo *loop)
 {
   int n, dim, spec_dim;
   gfc_array_info *info;
   gfc_array_info *specinfo;
-  gfc_ss *ss, *tmp_ss;
+  gfc_ss *ss;
   tree tmp;
-  gfc_ss *loopspec[GFC_MAX_DIMENSIONS];
+  gfc_ss **loopspec;
   bool dynamic[GFC_MAX_DIMENSIONS];
   mpz_t *cshape;
   mpz_t i;
+
+  loopspec = loop->specloop;
 
   mpz_init (i);
   for (n = 0; n < loop->dimen; n++)
@@ -4119,6 +4119,26 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	  loop->from[n] = gfc_index_zero_node;
 	}
     }
+  mpz_clear (i);
+}
+
+
+static void set_delta (gfc_loopinfo *loop);
+
+
+/* Initialize the scalarization loop.  Creates the loop variables.  Determines
+   the range of the loop variables.  Creates a temporary if required.
+   Also generates code for scalar expressions which have been
+   moved outside the loop.  */
+
+void
+gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
+{
+  gfc_ss *tmp_ss;
+  tree tmp;
+  int n;
+
+  set_loop_bounds (loop);
 
   /* Add all the scalar code that can be taken out of the loops.
      This may include calculating the loop bounds, so do it before
@@ -4153,14 +4173,30 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
     }
 
   for (n = 0; n < loop->temp_dim; n++)
-    loopspec[loop->order[n]] = NULL;
-
-  mpz_clear (i);
+    loop->specloop[loop->order[n]] = NULL;
 
   /* For array parameters we don't have loop variables, so don't calculate the
      translations.  */
   if (loop->array_parameter)
     return;
+
+  set_delta (loop);
+}
+
+
+/* Calculates how to transform from loop variables to array indices for each
+   array: once loop bounds are chosen, sets the difference (DELTA field) between
+   loop bounds and array reference bounds, for each array info.  */
+
+static void
+set_delta (gfc_loopinfo *loop)
+{
+  gfc_ss *ss, **loopspec;
+  gfc_array_info *info;
+  tree tmp;
+  int n, dim;
+
+  loopspec = loop->specloop;
 
   /* Calculate the translation from loop variables to array indices.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
