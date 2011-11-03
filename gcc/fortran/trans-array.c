@@ -7637,7 +7637,7 @@ gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
       switch (ar->type)
 	{
 	case AR_ELEMENT:
-	  for (n = ar->dimen + ar->codimen - 1; n >= 0; n--)
+	  for (n = ar->dimen - 1; n >= 0; n--)
 	    ss = gfc_get_scalar_ss (ss, ar->start[n]);
 	  break;
 
