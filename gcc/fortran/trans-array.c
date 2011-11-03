@@ -618,6 +618,27 @@ gfc_cleanup_loop (gfc_loopinfo * loop)
 }
 
 
+static void
+set_ss_loop (gfc_ss *ss, gfc_loopinfo *loop)
+{
+  int n;
+
+  for (; ss != gfc_ss_terminator; ss = ss->next)
+    {
+      ss->loop = loop;
+
+      if (ss->info->type == GFC_SS_SCALAR
+	  || ss->info->type == GFC_SS_REFERENCE
+	  || ss->info->type == GFC_SS_TEMP)
+	continue;
+
+      for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
+	if (ss->info->data.array.subscript[n] != NULL)
+	  set_ss_loop (ss->info->data.array.subscript[n], loop);
+    }
+}
+
+
 /* Associate a SS chain with a loop.  */
 
 void
@@ -627,6 +648,8 @@ gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
 
   if (head == gfc_ss_terminator)
     return;
+
+  set_ss_loop (head, loop);
 
   ss = head;
   for (; ss && ss != gfc_ss_terminator; ss = ss->next)
