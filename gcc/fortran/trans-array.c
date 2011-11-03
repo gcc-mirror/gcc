@@ -3193,7 +3193,8 @@ gfc_trans_scalarizing_loops (gfc_loopinfo * loop, stmtblock_t * body)
 
   /* Clear all the used flags.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
-    ss->info->useflags = 0;
+    if (ss->parent == NULL)
+      ss->info->useflags = 0;
 }
 
 

@@ -246,6 +246,9 @@ typedef struct gfc_ss
   struct gfc_ss *loop_chain;
   struct gfc_ss *next;
 
+  /* Non-null if the ss is part of a nested loop.  */
+  struct gfc_ss *parent;
+
   /* The loop this gfc_ss is in.  */
   struct gfc_loopinfo *loop;
 
