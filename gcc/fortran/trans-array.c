@@ -2861,13 +2861,14 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 
       if (dim >= info->dimen)
 	continue;
+      gcc_assert (info->dimen == loop->dimen);
 
       if (info->ref)
 	ar = &info->ref->u.ar;
       else
 	ar = NULL;
 
-      if (dim == info->dimen - 1)
+      if (dim == loop->dimen - 1)
 	i = 0;
       else
 	i = dim + 1;
@@ -2876,7 +2877,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
       gcc_assert (i == loop->order[i]);
       i = loop->order[i];
 
-      if (dim == info->dimen - 1)
+      if (dim == loop->dimen - 1)
 	{
 	  stride = gfc_conv_array_stride (info->descriptor, info->dim[i]);
 
