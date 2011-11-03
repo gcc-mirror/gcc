@@ -1,5 +1,19 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	string_length from the former struct to the latter.
+	* trans-array.c
+	(gfc_get_temp_ss, gfc_trans_array_constructor, gfc_add_loop_ss_code,
+	gfc_conv_ss_descriptor, gfc_conv_scalarized_array_ref,
+	gfc_conv_resolve_dependencies, gfc_conv_loop_setup,
+	gfc_conv_expr_descriptor): Update references to string_length and
+	factor common reference chains where possible.
+	* trans-const.c (gfc_conv_constant): Ditto.
+	* trans-expr.c (gfc_conv_variable, gfc_conv_subref_array_arg,
+	gfc_conv_expr): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field expr from
 	the former struct to the latter.
 	* trans-array.c

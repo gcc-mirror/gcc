@@ -626,13 +626,15 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
   ss = se->ss;
   if (ss != NULL)
     {
+      gfc_ss_info *ss_info = ss->info;
+
       /* Check that something hasn't gone horribly wrong.  */
       gcc_assert (ss != gfc_ss_terminator);
-      gcc_assert (ss->info->expr == expr);
+      gcc_assert (ss_info->expr == expr);
 
       /* A scalarized term.  We already know the descriptor.  */
       se->expr = se->ss->data.info.descriptor;
-      se->string_length = se->ss->string_length;
+      se->string_length = ss_info->string_length;
       for (ref = se->ss->data.info.ref; ref; ref = ref->next)
 	if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
 	  break;
@@ -2402,7 +2404,7 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
 					      : NULL),
 				  loop.dimen);
 
-  parmse->string_length = loop.temp_ss->string_length;
+  parmse->string_length = loop.temp_ss->info->string_length;
 
   /* Associate the SS with the loop.  */
   gfc_add_ss_to_loop (&loop, loop.temp_ss);
@@ -4833,12 +4835,15 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
       && (ss->info->type == GFC_SS_SCALAR
 	  || ss->info->type == GFC_SS_REFERENCE))
     {
+      gfc_ss_info *ss_info;
+
+      ss_info = ss->info;
       /* Substitute a scalar expression evaluated outside the scalarization
          loop.  */
       se->expr = se->ss->data.scalar.expr;
-      if (ss->info->type == GFC_SS_REFERENCE)
+      if (ss_info->type == GFC_SS_REFERENCE)
 	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
-      se->string_length = se->ss->string_length;
+      se->string_length = ss_info->string_length;
       gfc_advance_se_ss_chain (se);
       return;
     }
