@@ -1,5 +1,15 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_ss, struct gfc_array_info): Move shape field
+	from the former struct to the latter.
+	* trans-array.c (gfc_conv_ss_startstride, gfc_conv_loop_setup):
+	Update field references.
+	* trans-expr.c (gfc_trans_subarray_assign): Update field references
+	and factor common reference chains.
+	* trans-io.c (transfer_array_component): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_array_info): Move dim and dimen fields...
 	(struct gfc_ss): ... here.  Remove gfc_ss::data::temp::dimen field.
 	* trans-array.c (gfc_conv_loop_setup): Remove temp_ss dim array

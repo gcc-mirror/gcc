@@ -113,6 +113,8 @@ gfc_coarray_type;
 
 typedef struct gfc_array_info
 {
+  mpz_t *shape;
+
   /* The ref that holds information on this section.  */
   gfc_ref *ref;
   /* The descriptor of this array.  */
@@ -193,7 +195,6 @@ typedef struct gfc_ss
 {
   gfc_ss_type type;
   gfc_expr *expr;
-  mpz_t *shape;
   tree string_length;
   union
   {
