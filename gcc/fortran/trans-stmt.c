@@ -222,7 +222,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	{
 	  if (ss->info->expr != e)
 	    continue;
-	  info = &ss->data.info;
+	  info = &ss->info->data.array;
 	  break;
 	}
 
@@ -3388,7 +3388,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
 
       gfc_conv_loop_setup (&loop, &expr2->where);
 
-      info = &rss->data.info;
+      info = &rss->info->data.array;
       desc = info->descriptor;
 
       /* Make a new descriptor.  */

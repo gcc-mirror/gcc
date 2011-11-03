@@ -5276,7 +5276,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   info = NULL;
   if (se->loop)
-    info = &se->ss->data.info;
+    info = &se->ss->info->data.array;
 
   /* Convert SOURCE.  The output from this stage is:-
 	source_bytes = length of the source in bytes

@@ -204,6 +204,9 @@ typedef struct gfc_ss_info
       tree type;
     }
     temp;
+
+    /* All other types.  */
+    gfc_array_info array;
   }
   data;
 }
@@ -223,13 +226,6 @@ gfc_ss_info;
 typedef struct gfc_ss
 {
   gfc_ss_info *info;
-
-  union
-  {
-    /* All other types.  */
-    gfc_array_info info;
-  }
-  data;
 
   int dimen;
   /* Translation from loop dimensions to actual array dimensions.
