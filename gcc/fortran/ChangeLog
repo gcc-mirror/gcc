@@ -1,5 +1,12 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_set_vector_loop_bounds, set_vector_loop_bounds):
+	Rename the former to the latter.  Change type and name of argument.
+	Get previous argument from the new one.
+	(gfc_add_loop_ss_code): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.h (gfc_trans_create_temp_array): Replace info argument
 	with ss argument.
 	* trans-array.c (gfc_trans_create_temp_array): Ditto. Get info from ss.
