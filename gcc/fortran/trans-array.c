@@ -3116,7 +3116,8 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
   gfc_ss_info *ss_info;
   gfc_array_info *info;
   gfc_ss_type ss_type;
-  gfc_ss *ss;
+  gfc_ss *ss, *pss;
+  gfc_loopinfo *ploop;
   gfc_array_ref *ar;
   int i;
 
@@ -3146,18 +3147,37 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
       else
 	ar = NULL;
 
+      if (dim == loop->dimen - 1 && loop->parent != NULL)
+	{
+	  /* If we are in the outermost dimension of this loop, the previous
+	     dimension shall be in the parent loop.  */
+	  gcc_assert (ss->parent != NULL);
+
+	  pss = ss->parent;
+	  ploop = loop->parent;
+
+	  /* ss and ss->parent are about the same array.  */
+	  gcc_assert (ss_info == pss->info);
+	}
+      else
+	{
+	  ploop = loop;
+	  pss = ss;
+	}
+
       if (dim == loop->dimen - 1)
 	i = 0;
       else
 	i = dim + 1;
 
       /* For the time being, there is no loop reordering.  */
-      gcc_assert (i == loop->order[i]);
-      i = loop->order[i];
+      gcc_assert (i == ploop->order[i]);
+      i = ploop->order[i];
 
-      if (dim == loop->dimen - 1)
+      if (dim == loop->dimen - 1 && loop->parent == NULL)
 	{
-	  stride = gfc_conv_array_stride (info->descriptor, ss->dim[i]);
+	  stride = gfc_conv_array_stride (info->descriptor,
+					  innermost_ss (ss)->dim[i]);
 
 	  /* Calculate the stride of the innermost loop.  Hopefully this will
 	     allow the backend optimizers to do their stuff more effectively.
@@ -3180,10 +3200,10 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	}
       else
 	/* Add the offset for the previous loop dimension.  */
-	add_array_offset (pblock, loop, ss, ar, ss->dim[i], i);
+	add_array_offset (pblock, ploop, ss, ar, pss->dim[i], i);
 
       /* Remember this offset for the second loop.  */
-      if (dim == loop->temp_dim - 1)
+      if (dim == loop->temp_dim - 1 && loop->parent == NULL)
         info->saved_offset = info->offset;
     }
 }

@@ -1,5 +1,10 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_preloop_setup): New pointers to outer
+	dimension's ss and loop. Use them.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (outermost_loop): New function.
 	(gfc_trans_array_constructor, gfc_set_vector_loop_bounds,
 	gfc_add_loop_ss_code): Put generated code out of the outermost loop.
