@@ -1,5 +1,11 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (dim_ok, transposed_dims): Rename the former to the
+	latter.  Change argument type.  Invert return value.
+	(gfc_conv_expr_descriptor): Update calls.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (get_array_ref_dim): Change argument type and name.
 	Obtain previous argument from the new argument in the body.
 	(gfc_trans_create_temp_arry, gfc_conv_loop_setup): Update calls.
