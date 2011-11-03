@@ -1,5 +1,11 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (get_rank, get_loop_upper_bound_for_array):
+	New functions.
+	(gfc_trans_array_constructor): Handle multiple loops.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_loopinfo): New field parent.
 	* trans-array.c (gfc_cleanup_loop): Free nested loops.
 	(gfc_add_ss_to_loop): Set nested_loop's parent loop.

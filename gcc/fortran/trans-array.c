@@ -2034,6 +2034,19 @@ trans_constant_array_constructor (gfc_ss * ss, tree type)
 }
 
 
+static int
+get_rank (gfc_loopinfo *loop)
+{
+  int rank;
+
+  rank = 0;
+  for (; loop; loop = loop->parent)
+    rank += loop->dimen;
+
+  return rank;
+}
+
+
 /* Helper routine of gfc_trans_array_constructor to determine if the
    bounds of the loop specified by LOOP are constant and simple enough
    to use with trans_constant_array_constructor.  Returns the
@@ -2072,6 +2085,23 @@ constant_array_constructor_loop_size (gfc_loopinfo * loop)
 }
 
 
+static tree *
+get_loop_upper_bound_for_array (gfc_ss *array, int array_dim)
+{
+  gfc_ss *ss;
+  int n;
+
+  gcc_assert (array->nested_ss == NULL);
+
+  for (ss = array; ss; ss = ss->parent)
+    for (n = 0; n < ss->loop->dimen; n++)
+      if (array_dim == get_array_ref_dim_for_loop_dim (ss, n))
+	return &(ss->loop->to[n]);
+
+  gcc_unreachable ();
+}
+
+
 /* Array constructors are handled by constructing a temporary, then using that
    within the scalarization loop.  This is not optimal, but seems by far the
    simplest method.  */
@@ -2085,6 +2115,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   tree desc;
   tree type;
   tree tmp;
+  tree *loop_ubound0;
   bool dynamic;
   bool old_first_len, old_typespec_chararray_ctor;
   tree old_first_len_val;
@@ -2114,7 +2145,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
       first_len = true;
     }
 
-  gcc_assert (ss->dimen == loop->dimen);
+  gcc_assert (ss->dimen == ss->loop->dimen);
 
   c = expr->value.constructor;
   if (expr->ts.type == BT_CHARACTER)
@@ -2157,7 +2188,9 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   /* See if the constructor determines the loop bounds.  */
   dynamic = false;
 
-  if (expr->shape && loop->dimen > 1 && loop->to[0] == NULL_TREE)
+  loop_ubound0 = get_loop_upper_bound_for_array (ss, 0);
+
+  if (expr->shape && get_rank (loop) > 1 && *loop_ubound0 == NULL_TREE)
     {
       /* We have a multidimensional parameter.  */
       for (s = ss; s; s = s->parent)
@@ -2176,7 +2209,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	}
     }
 
-  if (loop->to[0] == NULL_TREE)
+  if (*loop_ubound0 == NULL_TREE)
     {
       mpz_t size;
 
@@ -2210,7 +2243,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	}
     }
 
-  if (TREE_CODE (loop->to[0]) == VAR_DECL)
+  if (TREE_CODE (*loop_ubound0) == VAR_DECL)
     dynamic = true;
 
   gfc_trans_create_temp_array (&loop->pre, &loop->post, ss, type, NULL_TREE,
@@ -2233,10 +2266,10 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 			     offsetvar, gfc_index_one_node);
       tmp = gfc_evaluate_now (tmp, &loop->pre);
       gfc_conv_descriptor_ubound_set (&loop->pre, desc, gfc_rank_cst[0], tmp);
-      if (loop->to[0] && TREE_CODE (loop->to[0]) == VAR_DECL)
-	gfc_add_modify (&loop->pre, loop->to[0], tmp);
+      if (*loop_ubound0 && TREE_CODE (*loop_ubound0) == VAR_DECL)
+	gfc_add_modify (&loop->pre, *loop_ubound0, tmp);
       else
-	loop->to[0] = tmp;
+	*loop_ubound0 = tmp;
     }
 
   if (TREE_USED (offsetvar))
