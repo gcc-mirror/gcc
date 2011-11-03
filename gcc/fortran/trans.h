@@ -113,7 +113,6 @@ gfc_coarray_type;
 
 typedef struct gfc_array_info
 {
-  int dimen;
   /* The ref that holds information on this section.  */
   gfc_ref *ref;
   /* The descriptor of this array.  */
@@ -134,10 +133,6 @@ typedef struct gfc_array_info
   tree end[GFC_MAX_DIMENSIONS];
   tree stride[GFC_MAX_DIMENSIONS];
   tree delta[GFC_MAX_DIMENSIONS];
-
-  /* Translation from loop dimensions to actual dimensions.
-     actual_dim = dim[loop_dim]  */
-  int dim[GFC_MAX_DIMENSIONS];
 }
 gfc_array_info;
 
@@ -212,9 +207,6 @@ typedef struct gfc_ss
     /* GFC_SS_TEMP.  */
     struct
     {
-      /* The rank of the temporary.  May be less than the rank of the
-         assigned expression.  */
-      int dimen;
       tree type;
     }
     temp;
@@ -222,6 +214,11 @@ typedef struct gfc_ss
     gfc_array_info info;
   }
   data;
+
+  int dimen;
+  /* Translation from loop dimensions to actual array dimensions.
+     actual_dim = dim[loop_dim]  */
+  int dim[GFC_MAX_DIMENSIONS];
 
   /* All the SS in a loop and linked through loop_chain.  The SS for an
      expression are linked by the next pointer.  */

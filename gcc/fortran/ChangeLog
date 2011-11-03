@@ -1,5 +1,25 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.h (struct gfc_array_info): Move dim and dimen fields...
+	(struct gfc_ss): ... here.  Remove gfc_ss::data::temp::dimen field.
+	* trans-array.c (gfc_conv_loop_setup): Remove temp_ss dim array
+	initialization.
+	(gfc_get_temp_ss): Initialize dim and dimen.
+	(gfc_free_ss, gfc_get_array_ss, gfc_get_temp_ss,
+	gfc_set_loop_bounds_from_array_spec, get_array_ref_dim,
+	gfc_trans_create_temp_array, gfc_trans_constant_array_constructor,
+	gfc_set_vector_loop_bounds, gfc_conv_scalarized_array_ref,
+	gfc_trans_preloop_setup, gfc_conv_ss_startstride,
+	gfc_conv_resolve_dependencies, gfc_conv_loop_setup, transposed_dims,
+	gfc_conv_expr_descriptor, gfc_alloc_allocatable_for_assignment,
+	gfc_walk_array_ref): Update field references.
+	* trans-expr.c (gfc_conv_subref_array_arg, gfc_conv_procedure_call):
+	Ditto.
+	* trans-intrinsic.c (walk_inline_intrinsic_transpose): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss_info, struct gfc_array_info):
 	Rename the former to the latter.
 	* trans-array.c (gfc_get_array_ss, gfc_trans_allocate_array_storage,
