@@ -2162,8 +2162,9 @@ finish:
    loop bounds.  */
 
 static void
-set_vector_loop_bounds (gfc_loopinfo * loop, gfc_ss * ss)
+set_vector_loop_bounds (gfc_ss * ss)
 {
+  gfc_loopinfo *loop;
   gfc_array_info *info;
   gfc_se se;
   tree tmp;
@@ -2173,6 +2174,7 @@ set_vector_loop_bounds (gfc_loopinfo * loop, gfc_ss * ss)
   int dim;
 
   info = &ss->info->data.array;
+  loop = ss->loop;
 
   for (n = 0; n < loop->dimen; n++)
     {
@@ -2271,7 +2273,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	    if (info->subscript[n])
 	      gfc_add_loop_ss_code (loop, info->subscript[n], true, where);
 
-	  set_vector_loop_bounds (loop, ss);
+	  set_vector_loop_bounds (ss);
 	  break;
 
 	case GFC_SS_VECTOR:

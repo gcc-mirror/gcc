@@ -1,5 +1,11 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_set_vector_loop_bounds): Get loop from ss.
+	Remove loop argument.
+	(gfc_add_loop_ss_code): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss): New field loop.
 	* trans-array.c (set_ss_loop): New function.
 	(gfc_add_ss_to_loop): Call set_ss_loop.
