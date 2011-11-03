@@ -815,7 +815,7 @@ get_array_ref_dim (gfc_ss_info *info, int loop_dim)
   array_dim = info->dim[loop_dim];
 
   for (n = 0; n < info->dimen; n++)
-    if (n != loop_dim && info->dim[n] < array_dim)
+    if (info->dim[n] < array_dim)
       array_ref_dim++;
 
   return array_ref_dim;
