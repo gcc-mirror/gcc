@@ -1,5 +1,14 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (get_array_ref_dim, get_scalarizer_dim_for_array_dim): 
+	Rename the former to the latter and loop over the parents.
+	(innermost_ss): New function.
+	(get_array_ref_dim_for_loop_dim): New function.
+	(gfc_trans_create_temp_array): Use get_scalarizer_dim_for_array_dim.
+	(set_loop_bounds): Use get_array_dim_for_loop_dim).
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.h (struct gfc_ss): New field nested_ss.
 	* trans-expr.c (gfc_advance_se_ss_chain): Update assertion.
 

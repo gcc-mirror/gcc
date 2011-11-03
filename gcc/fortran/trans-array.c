@@ -868,25 +868,59 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 }
 
 
+/* Get the scalarizer array dimension corresponding to actual array dimension
+   given by ARRAY_DIM.
+
+   For example, if SS represents the array ref a(1,:,:,1), it is a
+   bidimensional scalarizer array, and the result would be 0 for ARRAY_DIM=1,
+   and 1 for ARRAY_DIM=2.
+   If SS represents transpose(a(:,1,1,:)), it is again a bidimensional
+   scalarizer array, and the result would be 1 for ARRAY_DIM=0 and 0 for
+   ARRAY_DIM=3.
+   If SS represents sum(a(:,:,:,1), dim=1), it is a 2+1-dimensional scalarizer
+   array.  If called on the inner ss, the result would be respectively 0,1,2 for
+   ARRAY_DIM=0,1,2.  If called on the outer ss, the result would be 0,1
+   for ARRAY_DIM=1,2.  */
+
+static int
+get_scalarizer_dim_for_array_dim (gfc_ss *ss, int array_dim)
+{
+  int array_ref_dim;
+  int n;
+
+  array_ref_dim = 0;
+
+  for (; ss; ss = ss->parent)
+    for (n = 0; n < ss->dimen; n++)
+      if (ss->dim[n] < array_dim)
+	array_ref_dim++;
+
+  return array_ref_dim;
+}
+
+
+static gfc_ss *
+innermost_ss (gfc_ss *ss)
+{
+  while (ss->nested_ss != NULL)
+    ss = ss->nested_ss;
+
+  return ss;
+}
+
+
+
 /* Get the array reference dimension corresponding to the given loop dimension.
    It is different from the true array dimension given by the dim array in
-   the case of a partial array reference
+   the case of a partial array reference (i.e. a(:,:,1,:) for example)
    It is different from the loop dimension in the case of a transposed array.
    */
 
 static int
-get_array_ref_dim (gfc_ss *ss, int loop_dim)
+get_array_ref_dim_for_loop_dim (gfc_ss *ss, int loop_dim)
 {
-  int n, array_dim, array_ref_dim;
-
-  array_ref_dim = 0;
-  array_dim = ss->dim[loop_dim];
-
-  for (n = 0; n < ss->dimen; n++)
-    if (ss->dim[n] < array_dim)
-      array_ref_dim++;
-
-  return array_ref_dim;
+  return get_scalarizer_dim_for_array_dim (innermost_ss (ss),
+					   ss->dim[loop_dim]);
 }
 
 
@@ -959,7 +993,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 	 to the n'th dimension of the array. We need to reconstruct loop infos
 	 in the right order before using it to set the descriptor
 	 bounds.  */
-      tmp_dim = get_array_ref_dim (ss, n);
+      tmp_dim = get_scalarizer_dim_for_array_dim (ss, dim);
       from[tmp_dim] = loop->from[n];
       to[tmp_dim] = loop->to[n];
 
@@ -1011,7 +1045,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
     {
       for (n = 0; n < loop->dimen; n++)
 	{
-	  dim = ss->dim[n];
+	  dim = get_scalarizer_dim_for_array_dim (ss, ss->dim[n]);
 
 	  /* For a callee allocated array express the loop bounds in terms
 	     of the descriptor fields.  */
@@ -4126,7 +4160,7 @@ set_loop_bounds (gfc_loopinfo *loop)
 	  && INTEGER_CST_P (info->stride[dim]))
 	{
 	  loop->from[n] = info->start[dim];
-	  mpz_set (i, cshape[get_array_ref_dim (loopspec[n], n)]);
+	  mpz_set (i, cshape[get_array_ref_dim_for_loop_dim (loopspec[n], n)]);
 	  mpz_sub_ui (i, i, 1);
 	  /* To = from + (size - 1) * stride.  */
 	  tmp = gfc_conv_mpz_to_tree (i, gfc_index_integer_kind);
