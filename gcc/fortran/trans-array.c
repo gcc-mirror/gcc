@@ -2426,16 +2426,19 @@ gfc_conv_array_ubound (tree descriptor, int dim)
 /* Generate code to perform an array index bound check.  */
 
 static tree
-gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
-			     locus * where, bool check_upper)
+trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
+			 locus * where, bool check_upper)
 {
   tree fault;
   tree tmp_lo, tmp_up;
+  tree descriptor;
   char *msg;
   const char * name = NULL;
 
   if (!(gfc_option.rtcheck & GFC_RTCHECK_BOUNDS))
     return index;
+
+  descriptor = ss->data.info.descriptor;
 
   index = gfc_evaluate_now (index, &se->pre);
 
@@ -2521,12 +2524,15 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
    DIM is the array dimension, I is the loop dimension.  */
 
 static tree
-gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
-			     gfc_array_ref * ar, tree stride)
+conv_array_index_offset (gfc_se * se, gfc_ss * ss, int dim, int i,
+			 gfc_array_ref * ar, tree stride)
 {
+  gfc_ss_info *info;
   tree index;
   tree desc;
   tree data;
+
+  info = &ss->data.info;
 
   /* Get the index into the array for this dimension.  */
   if (ar)
@@ -2544,10 +2550,9 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 	  /* We've already translated this value outside the loop.  */
 	  index = info->subscript[dim]->data.scalar.expr;
 
-	  index = gfc_trans_array_bound_check (se, info->descriptor,
-			index, dim, &ar->where,
-			ar->as->type != AS_ASSUMED_SIZE
-			|| dim < ar->dimen - 1);
+	  index = trans_array_bound_check (se, ss, index, dim, &ar->where,
+					   ar->as->type != AS_ASSUMED_SIZE
+					   || dim < ar->dimen - 1);
 	  break;
 
 	case DIMEN_VECTOR:
@@ -2574,10 +2579,9 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 	  index = fold_convert (gfc_array_index_type, index);
 
 	  /* Do any bounds checking on the final info->descriptor index.  */
-	  index = gfc_trans_array_bound_check (se, info->descriptor,
-			index, dim, &ar->where,
-			ar->as->type != AS_ASSUMED_SIZE
-			|| dim < ar->dimen - 1);
+	  index = trans_array_bound_check (se, ss, index, dim, &ar->where,
+					   ar->as->type != AS_ASSUMED_SIZE
+					   || dim < ar->dimen - 1);
 	  break;
 
 	case DIMEN_RANGE:
@@ -2648,7 +2652,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   else
     n = 0;
 
-  index = gfc_conv_array_index_offset (se, info, info->dim[n], n, ar,
+  index = conv_array_index_offset (se, se->ss, info->dim[n], n, ar,
 				       info->stride0);
   /* Add the offset for this dimension to the stored offset for all other
      dimensions.  */
@@ -2843,8 +2847,7 @@ add_array_offset (stmtblock_t *pblock, gfc_loopinfo *loop, gfc_ss *ss,
   se.loop = loop;
   se.expr = info->descriptor;
   stride = gfc_conv_array_stride (info->descriptor, array_dim);
-  index = gfc_conv_array_index_offset (&se, info, array_dim, loop_dim, ar,
-				       stride);
+  index = conv_array_index_offset (&se, ss, array_dim, loop_dim, ar, stride);
   gfc_add_block_to_block (pblock, &se.pre);
 
   info->offset = fold_build2_loc (input_location, PLUS_EXPR,
