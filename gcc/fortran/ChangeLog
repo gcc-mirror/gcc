@@ -1,5 +1,9 @@
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_conv_loop_setup): Also skip temporary arrays.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_ss_startstride): Access array bounds along
 	array dimensions instead of loop dimensions.
 
