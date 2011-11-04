@@ -204,6 +204,10 @@ package Ada.Containers.Indefinite_Vectors is
       Position  : Cursor;
       Process   : not null access procedure (Element : in out Element_Type));
 
+   procedure Assign (Target : in out Vector; Source : Vector);
+
+   function Copy (Source : Vector; Capacity : Count_Type := 0) return Vector;
+
    procedure Move (Target : in out Vector; Source : in out Vector);
 
    procedure Insert

@@ -96,6 +96,10 @@ package Ada.Containers.Indefinite_Ordered_Maps is
       Process   : not null access procedure (Key     : Key_Type;
                                              Element : in out Element_Type));
 
+   procedure Assign (Target : in out Map; Source : Map);
+
+   function Copy (Source : Map) return Map;
+
    procedure Move (Target : in out Map; Source : in out Map);
 
    procedure Insert

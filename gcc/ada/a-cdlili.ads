@@ -90,6 +90,10 @@ package Ada.Containers.Doubly_Linked_Lists is
       Position  : Cursor;
       Process   : not null access procedure (Element : in out Element_Type));
 
+   procedure Assign (Target : in out List; Source : List);
+
+   function Copy (Source : List) return List;
+
    procedure Move
      (Target : in out List;
       Source : in out List);

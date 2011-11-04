@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,6 +117,10 @@ package Ada.Containers.Indefinite_Ordered_Multisets is
    --  Position as the parameter. This call locks the container, so attempts to
    --  change the value of the element while Process is executing (to "tamper
    --  with elements") will raise Program_Error.
+
+   procedure Assign (Target : in out Set; Source : Set);
+
+   function Copy (Source : Set) return Set;
 
    procedure Move (Target : in out Set; Source : in out Set);
    --  If Target denotes the same object as Source, the operation does

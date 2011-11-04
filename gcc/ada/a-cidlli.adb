@@ -171,6 +171,27 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Insert (Container, No_Element, New_Item, Count);
    end Append;
 
+   ------------
+   -- Assign --
+   ------------
+
+   procedure Assign (Target : in out List; Source : List) is
+      Node : Node_Access;
+
+   begin
+      if Target'Address = Source'Address then
+         return;
+      end if;
+
+      Target.Clear;
+
+      Node := Source.First;
+      while Node /= null loop
+         Target.Append (Node.Element.all);
+         Node := Node.Next;
+      end loop;
+   end Assign;
+
    -----------
    -- Clear --
    -----------
@@ -229,6 +250,17 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    begin
       return Find (Container, Item) /= No_Element;
    end Contains;
+
+   ----------
+   -- Copy --
+   ----------
+
+   function Copy (Source : List) return List is
+   begin
+      return Target : List do
+         Target.Assign (Source);
+      end return;
+   end Copy;
 
    ------------
    -- Delete --

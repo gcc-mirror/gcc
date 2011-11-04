@@ -38,6 +38,8 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Keys);
 with Ada.Containers.Red_Black_Trees.Generic_Set_Operations;
 pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Set_Operations);
 
+with System; use type System.Address;
+
 package body Ada.Containers.Ordered_Sets is
 
    type Iterator is new
@@ -281,6 +283,20 @@ package body Ada.Containers.Ordered_Sets is
       Adjust (Container.Tree);
    end Adjust;
 
+   ------------
+   -- Assign --
+   ------------
+
+   procedure Assign (Target : in out Set; Source : Set) is
+   begin
+      if Target'Address = Source'Address then
+         return;
+      end if;
+
+      Target.Clear;
+      Target.Union (Source);
+   end Assign;
+
    -------------
    -- Ceiling --
    -------------
@@ -324,6 +340,17 @@ package body Ada.Containers.Ordered_Sets is
    begin
       return Find (Container, Item) /= No_Element;
    end Contains;
+
+   ----------
+   -- Copy --
+   ----------
+
+   function Copy (Source : Set) return Set is
+   begin
+      return Target : Set do
+         Target.Assign (Source);
+      end return;
+   end Copy;
 
    ---------------
    -- Copy_Node --

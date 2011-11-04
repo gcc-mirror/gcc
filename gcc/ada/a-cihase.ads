@@ -153,6 +153,10 @@ package Ada.Containers.Indefinite_Hashed_Sets is
       Position  : Cursor)
    return Constant_Reference_Type;
 
+   procedure Assign (Target : in out Set; Source : Set);
+
+   function Copy (Source : Set; Capacity : Count_Type := 0) return Set;
+
    procedure Move (Target : in out Set; Source : in out Set);
    --  Clears Target (if it's not empty), and then moves (not copies) the
    --  buckets array and nodes from Source to Target.

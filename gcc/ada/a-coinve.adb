@@ -616,6 +616,20 @@ package body Ada.Containers.Indefinite_Vectors is
          Count);
    end Append;
 
+   ------------
+   -- Assign --
+   ------------
+
+   procedure Assign (Target : in out Vector; Source : Vector) is
+   begin
+      if Target'Address = Source'Address then
+         return;
+      end if;
+
+      Target.Clear;
+      Target.Append (Source);
+   end Assign;
+
    --------------
    -- Capacity --
    --------------
@@ -697,6 +711,34 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       return Find_Index (Container, Item) /= No_Index;
    end Contains;
+
+   ----------
+   -- Copy --
+   ----------
+
+   function Copy
+     (Source   : Vector;
+      Capacity : Count_Type := 0) return Vector
+   is
+      C : Count_Type;
+
+   begin
+      if Capacity = 0 then
+         C := Source.Length;
+
+      elsif Capacity >= Source.Length then
+         C := Capacity;
+
+      else
+         raise Capacity_Error
+           with "Requested capacity is less than Source length";
+      end if;
+
+      return Target : Vector do
+         Target.Reserve_Capacity (C);
+         Target.Assign (Source);
+      end return;
+   end Copy;
 
    ------------
    -- Delete --

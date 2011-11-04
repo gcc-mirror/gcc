@@ -1,3 +1,20 @@
+2011-11-04  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cdlili.ad[sb], a-cidlli.ad[sb], a-coorse.ad[sb], a-ciorse.ad[sb],
+	a-coorma.ad[sb], a-ciorma.ad[sb], a-coormu.ad[sb], a-ciormu.ad[sb],
+	a-cohama.ad[sb], a-cihama.ad[sb], a-cohase.ad[sb], a-cihase.ad[sb],
+	a-convec.ad[sb], a-coinve.ad[sb] (Assign, Copy): New operations
+	added to package.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting
+
+2011-11-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb (Gen_Elab_Calls): In the case of the AAMP target,
+	initialize elaboration entities to zero when specs are processed.
+
 2011-10-28  Iain Sandoe  <iains@gcc.gnu.org>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 

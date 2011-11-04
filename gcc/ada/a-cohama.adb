@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,8 @@ pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Operations);
 
 with Ada.Containers.Hash_Tables.Generic_Keys;
 pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Keys);
+
+with System; use type System.Address;
 
 package body Ada.Containers.Hashed_Maps is
 
@@ -131,6 +133,41 @@ package body Ada.Containers.Hashed_Maps is
       HT_Ops.Adjust (Container.HT);
    end Adjust;
 
+   ------------
+   -- Assign --
+   ------------
+
+   procedure Assign (Target : in out Map; Source : Map) is
+      procedure Insert_Item (Node : Node_Access);
+      pragma Inline (Insert_Item);
+
+      procedure Insert_Items is new HT_Ops.Generic_Iteration (Insert_Item);
+
+      -----------------
+      -- Insert_Item --
+      -----------------
+
+      procedure Insert_Item (Node : Node_Access) is
+      begin
+         Target.Insert (Key => Node.Key, New_Item => Node.Element);
+      end Insert_Item;
+
+   --  Start of processing for Assign
+
+   begin
+      if Target'Address = Source'Address then
+         return;
+      end if;
+
+      Target.Clear;
+
+      if Target.Capacity < Source.Length then
+         Target.Reserve_Capacity (Source.Length);
+      end if;
+
+      Insert_Items (Target.HT);
+   end Assign;
+
    --------------
    -- Capacity --
    --------------
@@ -157,6 +194,34 @@ package body Ada.Containers.Hashed_Maps is
    begin
       return Find (Container, Key) /= No_Element;
    end Contains;
+
+   ----------
+   -- Copy --
+   ----------
+
+   function Copy
+     (Source   : Map;
+      Capacity : Count_Type := 0) return Map
+   is
+      C : Count_Type;
+
+   begin
+      if Capacity = 0 then
+         C := Source.Length;
+
+      elsif Capacity >= Source.Length then
+         C := Capacity;
+
+      else
+         raise Capacity_Error
+           with "Requested capacity is less than Source length";
+      end if;
+
+      return Target : Map do
+         Target.Reserve_Capacity (C);
+         Target.Assign (Source);
+      end return;
+   end Copy;
 
    ---------------
    -- Copy_Node --
