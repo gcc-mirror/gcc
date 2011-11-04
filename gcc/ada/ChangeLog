@@ -1,5 +1,23 @@
 2011-11-04  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch2.adb (Expand_Entity_Reference): Do not set
+	Atomic_Sync_Required for the case of a prefix of an attribute.
+	* exp_ch4.adb (Expand_N_Explicit_Dereference): May require
+	atomic synchronization
+	(Expand_N_Indexed_Component): Ditto.
+	(Expand_B_Selected_Component): Ditto.
+	* sem_prag.adb (Process_Suppress_Unsuppress):
+	Disable/Enable_Atomic_Synchronization can now occur for array
+	types with pragma Atomic_Components.
+	* sinfo.ads, sinfo.adb (Atomic_Sync_Required): Can now occur on
+	N_Explicit_Dereference nodes and on N_Indexed_Component nodes.
+
+2011-11-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_ugn.texi: Editorial corrections for gnattest section.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb: Minor reformatting.
 	* gnat_rm.texi: Update documentation for pragma Warnings (Off,
 	"***") usage.

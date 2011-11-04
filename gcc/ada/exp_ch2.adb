@@ -404,6 +404,15 @@ package body Exp_Ch2 is
       if Nkind_In (N, N_Identifier, N_Expanded_Name)
         and then Ekind (E) = E_Variable
         and then (Is_Atomic (E) or else Is_Atomic (Etype (E)))
+
+         --  Don't go setting the flag for the prefix of an attribute because
+         --  we don't want atomic sync for X'Size, X'Access etc.
+
+         --  Is this right in all cases of attributes???
+         --  Are there other exemptions required ???
+
+        and then (Nkind (Parent (N)) /= N_Attribute_Reference
+                    or else Prefix (Parent (N)) /= N)
       then
          declare
             Set  : Boolean;
@@ -444,6 +453,7 @@ package body Exp_Ch2 is
             --  Set flag if required
 
             if Set then
+               Set_Atomic_Sync_Required (N);
 
                --  Generate info message if requested
 
@@ -457,8 +467,6 @@ package body Exp_Ch2 is
                   Error_Msg_N
                     ("?info: atomic synchronization set for &", MLoc);
                end if;
-
-               Set_Atomic_Sync_Required (N);
             end if;
          end;
       end if;

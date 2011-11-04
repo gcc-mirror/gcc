@@ -5462,7 +5462,7 @@ package body Sem_Prag is
             --  a non-atomic variable.
 
             if C = Atomic_Synchronization
-              and then not Is_Atomic (E)
+              and then not (Is_Atomic (E) or else Has_Atomic_Components (E))
             then
                Error_Msg_N
                  ("pragma & requires atomic type or variable",
