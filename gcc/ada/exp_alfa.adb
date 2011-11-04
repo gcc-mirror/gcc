@@ -28,11 +28,13 @@ with Einfo;    use Einfo;
 with Exp_Attr; use Exp_Attr;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
+with Exp_Ch8;  use Exp_Ch8;
 with Exp_Dbug; use Exp_Dbug;
 with Nlists;   use Nlists;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
+with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
@@ -56,11 +58,18 @@ package body Exp_Alfa is
    procedure Expand_Alfa_N_In (N : Node_Id);
    --  Expand set membership into individual ones
 
+   procedure Expand_Alfa_N_Object_Renaming_Declaration (N : Node_Id);
+   --  Perform name evaluation for a renamed object
+
    procedure Expand_Alfa_N_Simple_Return_Statement (N : Node_Id);
    --  Insert conversion on function return if necessary
 
    procedure Expand_Alfa_Simple_Function_Return (N : Node_Id);
    --  Expand simple return from function
+
+   procedure Expand_Potential_Renaming (N : Node_Id);
+   --  N denotes a N_Identifier or N_Expanded_Name. If N references a renaming,
+   --  replace N with the renamed object.
 
    -----------------
    -- Expand_Alfa --
@@ -69,28 +78,34 @@ package body Exp_Alfa is
    procedure Expand_Alfa (N : Node_Id) is
    begin
       case Nkind (N) is
+         when N_Attribute_Reference =>
+            Expand_Alfa_N_Attribute_Reference (N);
 
-         when N_Package_Body        |
+         when N_Block_Statement     |
+              N_Package_Body        |
               N_Package_Declaration |
-              N_Subprogram_Body     |
-              N_Block_Statement     =>
+              N_Subprogram_Body     =>
             Qualify_Entity_Names (N);
-
-         when N_Simple_Return_Statement =>
-            Expand_Alfa_N_Simple_Return_Statement (N);
 
          when N_Function_Call            |
               N_Procedure_Call_Statement =>
             Expand_Alfa_Call (N);
 
-         when N_Attribute_Reference =>
-            Expand_Alfa_N_Attribute_Reference (N);
+         when N_Expanded_Name |
+              N_Identifier    =>
+            Expand_Potential_Renaming (N);
 
          when N_In =>
             Expand_Alfa_N_In (N);
 
          when N_Not_In =>
             Expand_N_Not_In (N);
+
+         when N_Object_Renaming_Declaration =>
+            Expand_Alfa_N_Object_Renaming_Declaration (N);
+
+         when N_Simple_Return_Statement =>
+            Expand_Alfa_N_Simple_Return_Statement (N);
 
          when others =>
             null;
@@ -157,7 +172,6 @@ package body Exp_Alfa is
 
          Set_Entity (Name (Call_Node), Parent_Subp);
       end if;
-
    end Expand_Alfa_Call;
 
    ---------------------------------------
@@ -186,9 +200,19 @@ package body Exp_Alfa is
    begin
       if Present (Alternatives (N)) then
          Expand_Set_Membership (N);
-         return;
       end if;
    end Expand_Alfa_N_In;
+
+   -----------------------------------------------
+   -- Expand_Alfa_N_Object_Renaming_Declaration --
+   -----------------------------------------------
+
+   procedure Expand_Alfa_N_Object_Renaming_Declaration (N : Node_Id) is
+   begin
+      --  Unconditionally remove all side effects from the name
+
+      Evaluate_Name (Name (N));
+   end Expand_Alfa_N_Object_Renaming_Declaration;
 
    -------------------------------------------
    -- Expand_Alfa_N_Simple_Return_Statement --
@@ -218,7 +242,6 @@ package body Exp_Alfa is
               E_Entry             |
               E_Entry_Family      |
               E_Return_Statement =>
-            --  Expand_Non_Function_Return (N);
             null;
 
          when others =>
@@ -264,5 +287,24 @@ package body Exp_Alfa is
          Analyze_And_Resolve (Exp, R_Type);
       end if;
    end Expand_Alfa_Simple_Function_Return;
+
+   -------------------------------
+   -- Expand_Potential_Renaming --
+   -------------------------------
+
+   procedure Expand_Potential_Renaming (N : Node_Id) is
+      E : constant Entity_Id := Entity (N);
+      T : constant Entity_Id := Etype (N);
+
+   begin
+      --  Substitute a reference to a renaming with the actual renamed object
+
+      if Present (Renamed_Object (E)) then
+         Rewrite (N, New_Copy_Tree (Renamed_Object (E)));
+
+         Reset_Analyzed_Flags (N);
+         Analyze_And_Resolve (N, T);
+      end if;
+   end Expand_Potential_Renaming;
 
 end Exp_Alfa;

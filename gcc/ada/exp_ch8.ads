@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,4 +32,9 @@ package Exp_Ch8 is
    procedure Expand_N_Object_Renaming_Declaration     (N : Node_Id);
    procedure Expand_N_Package_Renaming_Declaration    (N : Node_Id);
    procedure Expand_N_Subprogram_Renaming_Declaration (N : Node_Id);
+
+   procedure Evaluate_Name (Nam : Node_Id);
+   --  Remove the all side effects from a name except for the outermost
+   --  construct.
+
 end Exp_Ch8;

@@ -9124,6 +9124,17 @@ only declared at the library level.
 This restriction ensures at compile time that there are no allocator
 expressions that attempt to allocate protected objects.
 
+@item No_Relative_Delay
+@findex No_Relative_Delay
+This restriction ensures at compile time that there are no delay relative
+statements and prevents expressions such as @code{delay 1.23;} from appearing
+in source code.
+
+@item No_Requeue_Statements
+@findex No_Requeue_Statements
+This restriction ensures at compile time that no requeue statements are
+permitted and prevents keyword @code{requeue} from being used in source code.
+
 @item No_Secondary_Stack
 @findex No_Secondary_Stack
 This restriction ensures at compile time that the generated code does not
@@ -9144,6 +9155,14 @@ This restriction ensures at compile time that no access types
 use the standard default storage pool.  Any access type declared must
 have an explicit Storage_Pool attribute defined specifying a
 user-defined storage pool.
+
+@item No_Stream_Optimizations
+@findex No_Stream_Optimizations
+This restriction affects the performance of stream operations on types
+@code{String}, @code{Wide_String} and @code{Wide_Wide_String}. By default, the
+compiler uses block reads and writes when manipulating @code{String} objects
+due to their supperior performance. When this restriction is in effect, the
+compiler performs all IO operations on a per-character basis.
 
 @item No_Streams
 @findex No_Streams

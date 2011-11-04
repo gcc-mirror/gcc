@@ -6531,32 +6531,57 @@ package body Exp_Util is
             end;
          end if;
 
-         Ref_Type := Make_Temporary (Loc, 'A');
-
-         Ptr_Typ_Decl :=
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Ref_Type,
-             Type_Definition =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present => True,
-                 Subtype_Indication =>
-                   New_Reference_To (Exp_Type, Loc)));
-
-         E := Exp;
-         Insert_Action (Exp, Ptr_Typ_Decl);
-
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Set_Etype (Def_Id, Exp_Type);
 
-         Res :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => New_Reference_To (Def_Id, Loc));
+         --  The regular expansion of functions with side effects involves the
+         --  generation of an access type to capture the return value found on
+         --  the secondary stack. Since Alfa (and why) cannot process access
+         --  types, use a different approach which ignores the secondary stack
+         --  and "copies" the returned object.
 
+         if Alfa_Mode then
+            Res := New_Reference_To (Def_Id, Loc);
+            Ref_Type := Exp_Type;
+
+         --  Regular expansion utilizing an access type and 'reference
+
+         else
+            Res :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Reference_To (Def_Id, Loc));
+
+            --  Generate:
+            --    type Ann is access all <Exp_Type>;
+
+            Ref_Type := Make_Temporary (Loc, 'A');
+
+            Ptr_Typ_Decl :=
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ref_Type,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present        => True,
+                    Subtype_Indication =>
+                      New_Reference_To (Exp_Type, Loc)));
+
+            Insert_Action (Exp, Ptr_Typ_Decl);
+         end if;
+
+         E := Exp;
          if Nkind (E) = N_Explicit_Dereference then
             New_Exp := Relocate_Node (Prefix (E));
          else
             E := Relocate_Node (E);
-            New_Exp := Make_Reference (Loc, E);
+
+            --  Do not generate a 'reference in Alfa since the access type is
+            --  not generated.
+
+            if Alfa_Mode then
+               New_Exp := E;
+            else
+               New_Exp := Make_Reference (Loc, E);
+            end if;
          end if;
 
          if Is_Delayed_Aggregate (E) then
