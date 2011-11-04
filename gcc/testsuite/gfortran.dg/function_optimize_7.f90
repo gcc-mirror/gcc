@@ -12,6 +12,7 @@ subroutine xx(n, m, a, b, c, d, x, z, i, s_in, s_out)
   real, intent(out) :: z
   character(60) :: line
   real, external :: ext_func
+  integer :: one = 1
   interface
      elemental function element(x)
        real, intent(in) :: x
@@ -33,7 +34,7 @@ subroutine xx(n, m, a, b, c, d, x, z, i, s_in, s_out)
   z = element(x) + element(x)
   i = mypure(x) - mypure(x)
   z = elem_impure(x) - elem_impure(x)
-  s_out = sum(s_in,1) + 3.14 / sum(s_in,1) ! { dg-warning "Creating array temporary" }
+  s_out = sum(s_in,one) + 3.14 / sum(s_in,one) ! { dg-warning "Creating array temporary" }
 end subroutine xx
 ! { dg-final { scan-tree-dump-times "matmul_r4" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_sinf" 1 "original" } }
