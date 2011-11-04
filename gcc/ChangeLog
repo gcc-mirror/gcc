@@ -1,3 +1,10 @@
+2011-11-03  David S. Miller  <davem@davemloft.net>
+
+	PR target/49965
+	* config/sparc/sparc.c (sparc_expand_conditional_move): Handle the
+	fact that sparc_emit_float_lib_cmp modifies the comparison in
+	operands[1].
+
 2011-11-05	Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config/lm32/t-rtems: New.
@@ -67,7 +74,7 @@
 	(avr_init_builtin_int24): New static function to define built-in
 	24-bit types __int24 and __uint24.
 	(avr_init_builtins): Use it.
-	
+
 2011-11-04  Thomas Doerfler <thomas.doerfler@embedded-brains.de>
 
 	PR target/50989

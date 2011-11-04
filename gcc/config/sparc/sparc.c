@@ -11509,12 +11509,16 @@ sparc_expand_conditional_move (enum machine_mode mode, rtx *operands)
   rtx cc_reg, dst, cmp;
 
   cmp = operands[1];
-  cmp_mode = GET_MODE (XEXP (cmp, 0));
-  if (cmp_mode == DImode && !TARGET_ARCH64)
+  if (GET_MODE (XEXP (cmp, 0)) == DImode && !TARGET_ARCH64)
     return false;
 
-  dst = operands[0];
+  if (GET_MODE (XEXP (cmp, 0)) == TFmode && !TARGET_HARD_QUAD)
+    cmp = sparc_emit_float_lib_cmp (XEXP (cmp, 0), XEXP (cmp, 1), rc);
 
+  cmp_mode = GET_MODE (XEXP (cmp, 0));
+  rc = GET_CODE (cmp);
+
+  dst = operands[0];
   if (! rtx_equal_p (operands[2], dst)
       && ! rtx_equal_p (operands[3], dst))
     {
@@ -11532,9 +11536,6 @@ sparc_expand_conditional_move (enum machine_mode mode, rtx *operands)
       else
         rc = reverse_condition (rc);
     }
-
-  if (cmp_mode == TFmode && !TARGET_HARD_QUAD)
-    cmp = sparc_emit_float_lib_cmp (XEXP (cmp, 0), XEXP (cmp, 1), rc);
 
   if (XEXP (cmp, 1) == const0_rtx
       && GET_CODE (XEXP (cmp, 0)) == REG
