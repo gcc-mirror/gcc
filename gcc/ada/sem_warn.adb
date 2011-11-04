@@ -3993,39 +3993,59 @@ package body Sem_Warn is
                --  Case of assigned value never referenced
 
                if No (N) then
+                  declare
+                     LA : constant Node_Id := Last_Assignment (Ent);
 
-                  --  Don't give this for OUT and IN OUT formals, since
-                  --  clearly caller may reference the assigned value. Also
-                  --  never give such warnings for internal variables.
+                  begin
+                     --  Don't give this for OUT and IN OUT formals, since
+                     --  clearly caller may reference the assigned value. Also
+                     --  never give such warnings for internal variables.
 
-                  if Ekind (Ent) = E_Variable
-                    and then not Is_Internal_Name (Chars (Ent))
-                  then
-                     if Referenced_As_Out_Parameter (Ent) then
-                        Error_Msg_NE
-                          ("?& modified by call, but value never referenced",
-                           Last_Assignment (Ent), Ent);
-                     else
-                        Error_Msg_NE -- CODEFIX
-                          ("?useless assignment to&, value never referenced!",
-                           Last_Assignment (Ent), Ent);
+                     if Ekind (Ent) = E_Variable
+                       and then not Is_Internal_Name (Chars (Ent))
+                     then
+                        --  Give appropriate message, distinguishing between
+                        --  assignment statements and out parameters.
+
+                        if Nkind_In (Parent (LA), N_Procedure_Call_Statement,
+                                                  N_Parameter_Association)
+                        then
+                           Error_Msg_NE
+                             ("?& modified by call, but value never "
+                              & "referenced", LA, Ent);
+
+                        else
+                           Error_Msg_NE -- CODEFIX
+                             ("?useless assignment to&, value never "
+                              & "referenced!", LA, Ent);
+                        end if;
                      end if;
-                  end if;
+                  end;
 
                --  Case of assigned value overwritten
 
                else
-                  Error_Msg_Sloc := Sloc (N);
+                  declare
+                     LA : constant Node_Id := Last_Assignment (Ent);
 
-                  if Referenced_As_Out_Parameter (Ent) then
-                     Error_Msg_NE
-                       ("?& modified by call, but value overwritten #!",
-                        Last_Assignment (Ent), Ent);
-                  else
-                     Error_Msg_NE -- CODEFIX
-                       ("?useless assignment to&, value overwritten #!",
-                        Last_Assignment (Ent), Ent);
-                  end if;
+                  begin
+                     Error_Msg_Sloc := Sloc (N);
+
+                     --  Give appropriate message, distinguishing between
+                     --  assignment statements and out parameters.
+
+                     if Nkind_In (Parent (LA), N_Procedure_Call_Statement,
+                                               N_Parameter_Association)
+                     then
+                        Error_Msg_NE
+                          ("?& modified by call, but value overwritten #!",
+                           LA, Ent);
+                     else
+                        Error_Msg_NE -- CODEFIX
+                          ("?useless assignment to&, value overwritten #!",
+                           LA, Ent);
+                     end if;
+                  end;
                end if;
 
                --  Clear last assignment indication and we are done

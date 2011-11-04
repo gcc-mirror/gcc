@@ -1,12 +1,16 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               I N T E R F A C E S . F O R T R A N . B L A S              --
+--                ADA.STRINGS.BOUNDED.EQUAL_CASE_INSENSITIVE                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2006-2009, Free Software Foundation, Inc.          --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--                                                                          --
+-- This specification is derived from the Ada Reference Manual for use with --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the  contents of the part following the private keyword. --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,22 +28,15 @@
 -- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
 -- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
--- GNAT was originally developed  by the GNAT team at  New York University. --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
---                                                                          --
+-- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
---  This package provides a thin binding to the standard Fortran BLAS library.
---  Documentation and a reference BLAS implementation is available from
---  ftp://ftp.netlib.org. The main purpose of this package is to facilitate
---  implementation of the Ada 2005 Ada.Numerics.Generic_Real_Arrays and
---  Ada.Numerics.Generic_Complex_Arrays packages. Bindings to other BLAS
---  routines may be added over time.
+generic
+   with package Bounded is
+     new Ada.Strings.Bounded.Generic_Bounded_Length (<>);
 
---  This unit is not implemented in this GNAT configuration
+function Ada.Strings.Bounded.Equal_Case_Insensitive
+  (Left, Right : Bounded.Bounded_String)
+  return Boolean;
 
-package Interfaces.Fortran.BLAS is
-
-   pragma Unimplemented_Unit;
-
-end Interfaces.Fortran.BLAS;
+pragma Preelaborate (Ada.Strings.Bounded.Equal_Case_Insensitive);

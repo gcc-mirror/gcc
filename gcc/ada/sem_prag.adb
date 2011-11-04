@@ -10952,7 +10952,8 @@ package body Sem_Prag is
 
          --  pragma Long_Float (D_Float | G_Float);
 
-         when Pragma_Long_Float =>
+         when Pragma_Long_Float => Long_Float : declare
+         begin
             GNAT_Pragma;
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (1);
@@ -10967,22 +10968,42 @@ package body Sem_Prag is
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_D_Float then
                if Opt.Float_Format_Long = 'G' then
-                  Error_Pragma ("G_Float previously specified");
-               end if;
+                  Error_Pragma_Arg
+                    ("G_Float previously specified", Arg1);
 
-               Opt.Float_Format_Long := 'D';
+               elsif Current_Sem_Unit /= Main_Unit
+                 and then Opt.Float_Format_Long /= 'D'
+               then
+                  Error_Pragma_Arg
+                    ("main unit not compiled with pragma Long_Float (D_Float)",
+                     "\pragma% must be used consistently for whole partition",
+                     Arg1);
+
+               else
+                  Opt.Float_Format_Long := 'D';
+               end if;
 
             --  G_Float case (this is the default, does not need overriding)
 
             else
                if Opt.Float_Format_Long = 'D' then
                   Error_Pragma ("D_Float previously specified");
-               end if;
 
-               Opt.Float_Format_Long := 'G';
+               elsif Current_Sem_Unit /= Main_Unit
+                 and then Opt.Float_Format_Long /= 'G'
+               then
+                  Error_Pragma_Arg
+                    ("main unit not compiled with pragma Long_Float (G_Float)",
+                     "\pragma% must be used consistently for whole partition",
+                     Arg1);
+
+               else
+                  Opt.Float_Format_Long := 'G';
+               end if;
             end if;
 
             Set_Standard_Fpt_Formats;
+         end Long_Float;
 
          -----------------------
          -- Machine_Attribute --

@@ -487,9 +487,6 @@ package body Impunit is
     ("a-ciormu", F),  -- Ada.Containers.Indefinite_Ordered_Multisets
     ("a-coormu", F),  -- Ada.Containers.Ordered_Multisets
     ("a-crdlli", F),  -- Ada.Containers.Restricted_Doubly_Linked_Lists
-    ("a-secain", F),  -- Ada.Strings.Equal_Case_Insensitive
-    ("a-shcain", F),  -- Ada.Strings.Hash_Case_Insensitive
-    ("a-slcain", F),  -- Ada.Strings.Less_Case_Insensitive
     ("a-szuzti", F),  -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO
     ("a-zchuni", F),  -- Ada.Wide_Wide_Characters.Unicode
     ("a-ztcstr", F),  -- Ada.Wide_Wide_Text_IO.C_Streams
@@ -497,6 +494,18 @@ package body Impunit is
       --  Note: strictly the following should be Ada 2012 units, but it seems
       --  harmless (and useful) to make then available in Ada 2005 mode.
 
+    ("a-secain", T),  -- Ada.Strings.Equal_Case_Insensitive
+    ("a-shcain", T),  -- Ada.Strings.Hash_Case_Insensitive
+    ("a-slcain", T),  -- Ada.Strings.Less_Case_Insensitive
+    ("a-sfecin", T),  -- Ada.Strings.Fixed.Equal_Case_Insensitive
+    ("a-sfhcin", T),  -- Ada.Strings.Fixed.Hash_Case_Insensitive
+    ("a-sflcin", T),  -- Ada.Strings.Fixed.Less_Case_Insensitive
+    ("a-sbecin", T),  -- Ada.Strings.Bounded.Equal_Case_Insensitive
+    ("a-sbhcin", T),  -- Ada.Strings.Bounded.Hash_Case_Insensitive
+    ("a-sblcin", T),  -- Ada.Strings.Bounded.Less_Case_Insensitive
+    ("a-suecin", T),  -- Ada.Strings.Unbounded.Equal_Case_Insensitive
+    ("a-suhcin", T),  -- Ada.Strings.Unbounded.Hash_Case_Insensitive
+    ("a-sulcin", T),  -- Ada.Strings.Unbounded.Less_Case_Insensitive
     ("a-suezst", T),  -- Ada.Strings.UTF_Encoding.Wide_Wide_Strings
 
    ---------------------------

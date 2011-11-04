@@ -2116,7 +2116,6 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   SO_OPTS = -shared-libgcc
   LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
-    i-forbla.adb<i-forbla-darwin.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-osinte.adb<s-osinte-darwin.adb \
     s-osinte.ads<s-osinte-darwin.ads \
@@ -2238,10 +2237,8 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o cio.o cstreams.o ctrl_c.o	\
 
 include $(fsrcdir)/ada/Makefile.rtl
 
-GNATRTL_LINEARALGEBRA_OBJS = i-forbla.o i-forlap.o
-
 GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
-  $(GNATRTL_LINEARALGEBRA_OBJS) memtrack.o
+  memtrack.o
 
 # Default run time files
 
@@ -2538,9 +2535,6 @@ gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR)
 	$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgnarl$(arext) \
 	   $(addprefix $(RTSDIR)/,$(GNATRTL_TASKING_OBJS))
 	$(RANLIB_FOR_TARGET) $(RTSDIR)/libgnarl$(arext)
-	$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgnala$(arext) \
-	   $(addprefix $(RTSDIR)/,$(GNATRTL_LINEARALGEBRA_OBJS))
-	$(RANLIB_FOR_TARGET) $(RTSDIR)/libgnala$(arext)
         ifeq ($(GMEM_LIB),gmemlib)
 		$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgmem$(arext) \
 		  $(RTSDIR)/memtrack.o
