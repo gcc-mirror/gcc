@@ -22,6 +22,10 @@ LIB2ADD = $(srcdir)/config/c6x/gef.c \
 # Avoid failures when the user's GOT becomes too large.
 HOST_LIBGCC2_CFLAGS = -msdata=none
 
+LIB2ADDEH = $(srcdir)/config/c6x/unwind-c6x.c \
+  $(srcdir)/config/c6x/libunwind.S \
+  $(srcdir)/config/c6x/pr-support.c $(srcdir)/unwind-c.c
+
 # Assemble startup files.
 crti.o: $(srcdir)/config/c6x/crti.S
 	$(crt_compile) -c $(CRTSTUFF_T_CFLAGS) $<
