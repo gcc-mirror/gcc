@@ -2726,7 +2726,7 @@ build_x_indirect_ref (tree expr, ref_operator errorstring,
 
 /* Helper function called from c-common.  */
 tree
-build_indirect_ref (location_t loc __attribute__ ((__unused__)),
+build_indirect_ref (location_t loc ATTRIBUTE_UNUSED,
 		    tree ptr, ref_operator errorstring)
 {
   return cp_build_indirect_ref (ptr, errorstring, tf_warning_or_error);
