@@ -1773,11 +1773,12 @@ ada/exp_alfa.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
    ada/atree.adb ada/casing.ads ada/debug.ads ada/einfo.ads ada/einfo.adb \
    ada/exp_alfa.ads ada/exp_alfa.adb ada/exp_attr.ads ada/exp_ch4.ads \
-   ada/exp_ch6.ads ada/exp_dbug.ads ada/gnat.ads ada/g-htable.ads \
-   ada/hostparm.ads ada/interfac.ads ada/namet.ads ada/namet.adb \
-   ada/nlists.ads ada/nlists.adb ada/opt.ads ada/output.ads \
-   ada/rtsfind.ads ada/sem_aux.ads ada/sem_aux.adb ada/sem_res.ads \
-   ada/sinfo.ads ada/sinfo.adb ada/sinput.ads ada/snames.ads ada/stand.ads \
+   ada/exp_ch6.ads ada/exp_ch8.ads ada/exp_dbug.ads ada/exp_tss.ads \
+   ada/gnat.ads ada/g-htable.ads ada/hostparm.ads ada/interfac.ads \
+   ada/namet.ads ada/namet.adb ada/nlists.ads ada/nlists.adb ada/nmake.ads \
+   ada/opt.ads ada/output.ads ada/rtsfind.ads ada/sem_aux.ads \
+   ada/sem_aux.adb ada/sem_res.ads ada/sem_util.ads ada/sinfo.ads \
+   ada/sinfo.adb ada/sinput.ads ada/snames.ads ada/stand.ads \
    ada/system.ads ada/s-exctab.ads ada/s-htable.ads ada/s-imenne.ads \
    ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads ada/s-secsta.ads \
    ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads \
