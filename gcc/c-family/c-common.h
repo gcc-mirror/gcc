@@ -916,7 +916,8 @@ extern bool c_dump_tree (void *, tree);
 
 extern void verify_sequence_points (tree);
 
-extern tree fold_offsetof (tree, tree);
+extern tree fold_offsetof_1 (tree);
+extern tree fold_offsetof (tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and

@@ -3802,11 +3802,7 @@ build_unary_op (location_t location,
       if (val && TREE_CODE (val) == INDIRECT_REF
           && TREE_CONSTANT (TREE_OPERAND (val, 0)))
 	{
-	  tree op0 = fold_convert_loc (location, sizetype,
-				       fold_offsetof (arg, val)), op1;
-
-	  op1 = fold_convert_loc (location, argtype, TREE_OPERAND (val, 0));
-	  ret = fold_build2_loc (location, POINTER_PLUS_EXPR, argtype, op1, op0);
+	  ret = fold_convert_loc (location, argtype, fold_offsetof_1 (arg));
 	  goto return_build_unary_op;
 	}
 

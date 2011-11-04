@@ -1,5 +1,12 @@
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR c++/50608
+	* c-parser.c (c_parser_postfix_expression) <RID_OFFSETOF>: Adjust call
+	to fold_offsetof.
+	* c-typeck.c (build_unary_op) <ADDR_EXPR>: Call fold_offsetof_1.
+
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/50979
 	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=v8.
 

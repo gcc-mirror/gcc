@@ -4835,9 +4835,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       && TREE_CONSTANT (TREE_OPERAND (val, 0)))
     {
       tree type = build_pointer_type (argtype);
-      tree op0 = fold_convert (type, TREE_OPERAND (val, 0));
-      tree op1 = fold_convert (sizetype, fold_offsetof (arg, val));
-      return fold_build2 (POINTER_PLUS_EXPR, type, op0, op1);
+      return fold_convert (type, fold_offsetof_1 (arg));
     }
 
   /* Handle complex lvalues (when permitted)

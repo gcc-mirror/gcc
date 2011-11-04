@@ -1,3 +1,9 @@
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/50608
+	* semantics.c (finish_offsetof): Adjust call to fold_offsetof.
+	* typeck.c (cp_build_addr_expr_1): Call fold_offsetof_1.
+
 2011-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50901

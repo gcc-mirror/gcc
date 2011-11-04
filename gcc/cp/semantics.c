@@ -3348,7 +3348,7 @@ finish_offsetof (tree expr)
     }
   if (TREE_CODE (expr) == INDIRECT_REF && REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
-  return fold_offsetof (expr, NULL_TREE);
+  return fold_offsetof (expr);
 }
 
 /* Replace the AGGR_INIT_EXPR at *TP with an equivalent CALL_EXPR.  This

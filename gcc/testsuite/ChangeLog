@@ -1,3 +1,7 @@
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/offsetof7.C: New test.
+
 2011-11-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc.c-torture/compile/20110907.c: New file.

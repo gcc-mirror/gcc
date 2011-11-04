@@ -6294,7 +6294,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      c_parser_error (parser, "expected identifier");
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
-	    expr.value = fold_offsetof (offsetof_ref, NULL_TREE);
+	    expr.value = fold_offsetof (offsetof_ref);
 	  }
 	  break;
 	case RID_CHOOSE_EXPR:

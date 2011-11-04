@@ -1,3 +1,15 @@
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/50608
+	* c-common.c (c_fully_fold_internal) <ADDR_EXPR>: Call fold_offsetof_1.
+	(fold_offsetof_1): Make global.  Remove STOP_REF argument and adjust.
+	<INDIRECT_REF>: Return the argument.
+	<ARRAY_REF>: Remove special code for negative offset.
+	Call fold_build_pointer_plus instead of size_binop.
+	(fold_offsetof): Remove STOP_REF argument and adjust.
+	* c-common.h (fold_offsetof_1): Declare.
+	(fold_offsetof): Remove STOP_REF argument.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.

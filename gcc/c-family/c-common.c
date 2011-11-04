@@ -1236,13 +1236,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  && (op1 = get_base_address (op0)) != NULL_TREE
 	  && TREE_CODE (op1) == INDIRECT_REF
 	  && TREE_CONSTANT (TREE_OPERAND (op1, 0)))
-	{
-	  tree offset = fold_offsetof (op0, op1);
-	  op1
-	    = fold_convert_loc (loc, TREE_TYPE (expr), TREE_OPERAND (op1, 0));
-	  ret = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (expr), op1,
-				 offset);
-	}
+	ret = fold_convert_loc (loc, TREE_TYPE (expr), fold_offsetof_1 (op0));
       else if (op0 != orig_op0 || in_init)
 	ret = in_init
 	  ? fold_build1_initializer_loc (loc, code, TREE_TYPE (expr), op0)
@@ -8459,19 +8453,14 @@ c_common_to_target_charset (HOST_WIDE_INT c)
     return uc;
 }
 
-/* Build the result of __builtin_offsetof.  EXPR is a nested sequence of
-   component references, with STOP_REF, or alternatively an INDIRECT_REF of
-   NULL, at the bottom; much like the traditional rendering of offsetof as a
-   macro.  Returns the folded and properly cast result.  */
+/* Fold an offsetof-like expression.  EXPR is a nested sequence of component
+   references with an INDIRECT_REF of a constant at the bottom; much like the
+   traditional rendering of offsetof as a macro.  Return the folded result.  */
 
-static tree
-fold_offsetof_1 (tree expr, tree stop_ref)
+tree
+fold_offsetof_1 (tree expr)
 {
-  enum tree_code code = PLUS_EXPR;
   tree base, off, t;
-
-  if (expr == stop_ref && TREE_CODE (expr) != ERROR_MARK)
-    return size_zero_node;
 
   switch (TREE_CODE (expr))
     {
@@ -8489,15 +8478,15 @@ fold_offsetof_1 (tree expr, tree stop_ref)
 
     case NOP_EXPR:
     case INDIRECT_REF:
-      if (!integer_zerop (TREE_OPERAND (expr, 0)))
+      if (!TREE_CONSTANT (TREE_OPERAND (expr, 0)))
 	{
 	  error ("cannot apply %<offsetof%> to a non constant address");
 	  return error_mark_node;
 	}
-      return size_zero_node;
+      return TREE_OPERAND (expr, 0);
 
     case COMPONENT_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), stop_ref);
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
       if (base == error_mark_node)
 	return base;
 
@@ -8515,21 +8504,14 @@ fold_offsetof_1 (tree expr, tree stop_ref)
       break;
 
     case ARRAY_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), stop_ref);
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
       if (base == error_mark_node)
 	return base;
 
       t = TREE_OPERAND (expr, 1);
-      if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)
-	{
-	  code = MINUS_EXPR;
-	  t = fold_build1_loc (input_location, NEGATE_EXPR, TREE_TYPE (t), t);
-	}
-      t = convert (sizetype, t);
-      off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
 
       /* Check if the offset goes beyond the upper bound of the array.  */
-      if (code == PLUS_EXPR && TREE_CODE (t) == INTEGER_CST)
+      if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) >= 0)
 	{
 	  tree upbound = array_ref_up_bound (expr);
 	  if (upbound != NULL_TREE
@@ -8569,26 +8551,30 @@ fold_offsetof_1 (tree expr, tree stop_ref)
 		}
 	    }
 	}
+
+      t = convert (sizetype, t);
+      off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
       break;
 
     case COMPOUND_EXPR:
       /* Handle static members of volatile structs.  */
       t = TREE_OPERAND (expr, 1);
       gcc_assert (TREE_CODE (t) == VAR_DECL);
-      return fold_offsetof_1 (t, stop_ref);
+      return fold_offsetof_1 (t);
 
     default:
       gcc_unreachable ();
     }
 
-  return size_binop (code, base, off);
+  return fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (base), base, off);
 }
 
+/* Likewise, but convert it to the return type of offsetof.  */
+
 tree
-fold_offsetof (tree expr, tree stop_ref)
+fold_offsetof (tree expr)
 {
-  /* Convert back from the internal sizetype to size_t.  */
-  return convert (size_type_node, fold_offsetof_1 (expr, stop_ref));
+  return convert (size_type_node, fold_offsetof_1 (expr));
 }
 
 /* Warn for A ?: C expressions (with B omitted) where A is a boolean 
