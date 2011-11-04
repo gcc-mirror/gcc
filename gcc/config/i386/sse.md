@@ -2325,10 +2325,13 @@
 (define_expand "fixuns_trunc<mode><sseintvecmodelower>2"
   [(match_operand:<sseintvecmode> 0 "register_operand" "")
    (match_operand:VF1 1 "register_operand" "")]
-  "TARGET_AVX"
+  "TARGET_SSE2"
 {
-  rtx tmp = ix86_expand_adjust_ufix_to_sfix_si (operands[1]);
-  emit_insn (gen_fix_trunc<mode><sseintvecmodelower>2 (operands[0], tmp));
+  rtx tmp[3];
+  tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1], &tmp[2]);
+  tmp[1] = gen_reg_rtx (<sseintvecmode>mode);
+  emit_insn (gen_fix_trunc<mode><sseintvecmodelower>2 (tmp[1], tmp[0]));
+  emit_insn (gen_xor<sseintvecmodelower>3 (operands[0], tmp[1], tmp[2]));
   DONE;
 })
 
@@ -3115,12 +3118,29 @@
   [(match_operand:<ssepackfltmode> 0 "register_operand" "")
    (match_operand:VF2 1 "register_operand" "")
    (match_operand:VF2 2 "register_operand" "")]
-  "TARGET_AVX"
+  "TARGET_SSE2"
 {
-  rtx tmp[2];
-  tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1]);
-  tmp[1] = ix86_expand_adjust_ufix_to_sfix_si (operands[2]);
-  emit_insn (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp[0], tmp[1]));
+  rtx tmp[7];
+  tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1], &tmp[2]);
+  tmp[1] = ix86_expand_adjust_ufix_to_sfix_si (operands[2], &tmp[3]);
+  tmp[4] = gen_reg_rtx (<ssepackfltmode>mode);
+  emit_insn (gen_vec_pack_sfix_trunc_<mode> (tmp[4], tmp[0], tmp[1]));
+  if (<ssepackfltmode>mode == V4SImode || TARGET_AVX2)
+    {
+      tmp[5] = gen_reg_rtx (<ssepackfltmode>mode);
+      ix86_expand_vec_extract_even_odd (tmp[5], tmp[2], tmp[3], 0);
+    }
+  else
+    {
+      tmp[5] = gen_reg_rtx (V8SFmode);
+      ix86_expand_vec_extract_even_odd (tmp[5], gen_lowpart (V8SFmode, tmp[2]),
+					gen_lowpart (V8SFmode, tmp[3]), 0);
+      tmp[5] = gen_lowpart (V8SImode, tmp[5]);
+    }
+  tmp[6] = expand_simple_binop (<ssepackfltmode>mode, XOR, tmp[4], tmp[5],
+				operands[0], 0, OPTAB_DIRECT);
+  if (tmp[6] != operands[0])
+    emit_move_insn (operands[0], tmp[6]);
   DONE;
 })
 

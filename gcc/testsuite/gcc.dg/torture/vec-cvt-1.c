@@ -197,7 +197,7 @@ main ()
   flttointtestsl ();
   flttointtestuc ();
   flttointtestus ();
-//  flttointtestui ();
+  flttointtestui ();
   flttointtestul ();
   inttoflttestsc ();
   inttoflttestss ();
