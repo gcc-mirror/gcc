@@ -1,5 +1,14 @@
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-expr.c (gfc_conv_procedure_call): Handle temporaries for
+	arguments to elemental calls.
+	* trans-stmt.c (replace_ss): New function.
+	(gfc_conv_elemental_dependencies): Remove temporary loop handling.
+	Create a new ss for the temporary and replace the original one with it.
+	Remove fake array references. Recalculate all offsets.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.h (gfc_free_ss, gfc_set_delta): New prototypes.
 	* trans-array.c (gfc_free_ss): Remove forward declaration.
 	Make non-static.

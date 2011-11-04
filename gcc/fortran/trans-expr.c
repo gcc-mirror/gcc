@@ -2997,8 +2997,19 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	{
 	  /* An elemental function inside a scalarized loop.  */
 	  gfc_init_se (&parmse, se);
-	  gfc_conv_expr_reference (&parmse, e);
 	  parm_kind = ELEMENTAL;
+
+	  if (se->ss->dimen > 0
+	      && se->ss->info->data.array.ref == NULL)
+	    {
+	      gfc_conv_tmp_array_ref (&parmse);
+	      if (e->ts.type == BT_CHARACTER)
+		gfc_conv_string_parameter (&parmse);
+	      else
+		parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
+	    }
+	  else
+	    gfc_conv_expr_reference (&parmse, e);
 	}
       else
 	{
