@@ -1,5 +1,12 @@
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Set loop's
+	temporary rank to the loop rank. Mark ss chains for multiple loop
+	if necessary.  Use gfc_trans_scalarized_loop_boundary to end one loop
+	and start another.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Don't calculate
 	offset twice in generated code.
 

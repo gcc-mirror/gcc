@@ -3061,6 +3061,23 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
+
+  /* The code generated can have more than one loop in sequence (see the
+     comment at the function header).  This doesn't work well with the
+     scalarizer, which changes arrays' offset when the scalarization loops
+     are generated (see gfc_trans_preloop_setup).  Fortunately, {min,max}loc
+     are  currently inlined in the scalar case only (for which loop is of rank
+     one).  As there is no dependency to care about in that case, there is no
+     temporary, so that we can use the scalarizer temporary code to handle
+     multiple loops.  Thus, we set temp_dim here, we call gfc_mark_ss_chain_used
+     with flag=3 later, and we use gfc_trans_scalarized_loop_boundary even later
+     to restore offset.
+     TODO: this prevents inlining of rank > 0 minmaxloc calls, so this
+     should eventually go away.  We could either create two loops properly,
+     or find another way to save/restore the array offsets between the two
+     loops (without conflicting with temporary management), or use a single
+     loop minmaxloc implementation.  See PR 31067.  */
+  loop.temp_dim = loop.dimen;
   gfc_conv_loop_setup (&loop, &expr->where);
 
   gcc_assert (loop.dimen == 1);
@@ -3098,9 +3115,9 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 			 gfc_index_one_node, loop.from[0]);
   gfc_add_modify (&loop.pre, offset, tmp);
 
-  gfc_mark_ss_chain_used (arrayss, 1);
+  gfc_mark_ss_chain_used (arrayss, lab1 ? 3 : 1);
   if (maskss)
-    gfc_mark_ss_chain_used (maskss, 1);
+    gfc_mark_ss_chain_used (maskss, lab1 ? 3 : 1);
   /* Generate the loop body.  */
   gfc_start_scalarized_body (&loop, &body);
 
@@ -3186,7 +3203,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (lab1)
     {
-      gfc_trans_scalarized_loop_end (&loop, 0, &body);
+      gfc_trans_scalarized_loop_boundary (&loop, &body);
 
       if (HONOR_NANS (DECL_MODE (limit)))
 	{
@@ -3201,7 +3218,6 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
       gfc_add_expr_to_block (&loop.code[0], build1_v (GOTO_EXPR, lab2));
       gfc_add_expr_to_block (&loop.code[0], build1_v (LABEL_EXPR, lab1));
-      gfc_start_block (&body);
 
       /* If we have a mask, only check this element if the mask is set.  */
       if (maskss)
