@@ -466,11 +466,10 @@ print_rtx (const_rtx in_rtx)
 	    const char *name;
 
 #ifndef GENERATOR_FILE
-	    if (REG_P (in_rtx) && value < FIRST_PSEUDO_REGISTER)
-	      fprintf (outfile, " %d %s", REGNO (in_rtx),
-		       reg_names[REGNO (in_rtx)]);
+	    if (REG_P (in_rtx) && (unsigned) value < FIRST_PSEUDO_REGISTER)
+	      fprintf (outfile, " %d %s", value, reg_names[value]);
 	    else if (REG_P (in_rtx)
-		     && value <= LAST_VIRTUAL_REGISTER)
+		     && (unsigned) value <= LAST_VIRTUAL_REGISTER)
 	      {
 		if (value == VIRTUAL_INCOMING_ARGS_REGNUM)
 		  fprintf (outfile, " %d virtual-incoming-args", value);

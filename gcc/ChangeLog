@@ -1,3 +1,8 @@
+2011-11-05  Alan Modra  <amodra@gmail.com>
+
+	* reload1.c (gen_reload): Don't use REGNO on SUBREGs.
+	* print-rtl.c (print_rtx): Don't segfault on negative regno.
+
 2011-11-03  David S. Miller  <davem@davemloft.net>
 
 	PR target/49965
