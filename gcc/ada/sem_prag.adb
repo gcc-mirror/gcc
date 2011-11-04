@@ -5465,7 +5465,7 @@ package body Sem_Prag is
               and then not Is_Atomic (E)
             then
                Error_Msg_N
-                 ("pragma & requires atomic variable",
+                 ("pragma & requires atomic type or variable",
                   Pragma_Identifier (Original_Node (N)));
             end if;
 
