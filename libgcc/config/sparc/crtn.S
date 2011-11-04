@@ -1,4 +1,4 @@
-! crtn.s for solaris 2.0.
+! crtn.S for SPARC
 
 !   Copyright (C) 1992, 2008, 2009, 2011 Free Software Foundation, Inc.
 !   Written By David Vinayak Henkel-Wallace, June 1992
