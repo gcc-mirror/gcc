@@ -1,5 +1,17 @@
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/43829
+	* trans-array.c (gfc_conv_expr_descriptor): Accept the inline intrinsic
+	case in the assertion.
+	* trans-intrinsic (enter_nested_loop): New function.
+	(gfc_conv_intrinsic_arith): Support non-scalar cases.
+	(nest_loop_dimension, walk_inline_intrinsic_arith): New functions.
+	(walk_inline_intrinsic_function): Handle sum and product.
+	(gfc_inline_intrinsic_function_p): Ditto.
+	* trans.h (gfc_get_loopinfo): New macro.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-intrinsic.c (gfc_conv_intrinsic_arith): Introduce parent
 	expression variable.  Use it.
 
