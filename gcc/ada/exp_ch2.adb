@@ -404,35 +404,15 @@ package body Exp_Ch2 is
       if Nkind_In (N, N_Identifier, N_Expanded_Name)
         and then Ekind (E) = E_Variable
         and then (Is_Atomic (E) or else Is_Atomic (Etype (E)))
-
-         --  Don't go setting the flag for the prefix of an attribute because
-         --  we don't want atomic sync for X'Size, X'Access etc.
-
-         --  Is this right in all cases of attributes???
-         --  Are there other exemptions required ???
-
-        and then (Nkind (Parent (N)) /= N_Attribute_Reference
-                    or else Prefix (Parent (N)) /= N)
       then
          declare
             Set  : Boolean;
-            MLoc : Node_Id;
 
          begin
-            --  Always set if debug flag d.e is set
-
-            if Debug_Flag_Dot_E then
-               Set := True;
-
-            --  Never set if debug flag d.d is set
-
-            elsif Debug_Flag_Dot_D then
-               Set := False;
-
             --  If variable is atomic, but type is not, setting depends on
             --  disable/enable state for the variable.
 
-            elsif Is_Atomic (E) and then not Is_Atomic (Etype (E)) then
+            if Is_Atomic (E) and then not Is_Atomic (Etype (E)) then
                Set := not Atomic_Synchronization_Disabled (E);
 
             --  If variable is not atomic, but its type is atomic, setting
@@ -453,20 +433,7 @@ package body Exp_Ch2 is
             --  Set flag if required
 
             if Set then
-               Set_Atomic_Sync_Required (N);
-
-               --  Generate info message if requested
-
-               if Warn_On_Atomic_Synchronization then
-                  if Nkind (N) = N_Identifier then
-                     MLoc := N;
-                  else
-                     MLoc := Selector_Name (N);
-                  end if;
-
-                  Error_Msg_N
-                    ("?info: atomic synchronization set for &", MLoc);
-               end if;
+               Activate_Atomic_Synchronization (N);
             end if;
          end;
       end if;

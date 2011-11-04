@@ -895,9 +895,13 @@ package Atree is
    -----------------------------------
 
    --  This subpackage provides the functions for accessing and procedures for
-   --  setting fields that are normally referenced by their logical synonyms
-   --  defined in packages Sinfo and Einfo. The implementations of these
-   --  packages use the package Atree.Unchecked_Access.
+   --  setting fields that are normally referenced by wrapper subprograms (e.g.
+   --  logical synonyms defined in packages Sinfo and Einfo, or specialized
+   --  routines such as Rewrite (for Original_Node), or the node creation
+   --  routines (for Set_Nkind). The implementations of these wrapper
+   --  subprograms use the package Atree.Unchecked_Access as do various
+   --  special case accesses where no wrapper applies. Documentation is always
+   --  required for such a special case access explaining why it is needed.
 
    package Unchecked_Access is
 

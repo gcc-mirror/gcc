@@ -528,9 +528,9 @@ package body Sem_Prag is
       --  case, and if found, issues an appropriate error message.
 
       procedure Check_Expr_Is_Static_Expression
-        (Argx : Node_Id;
+        (Expr : Node_Id;
          Typ  : Entity_Id := Empty);
-      --  Check the specified expression Argx to make sure that it is a static
+      --  Check the specified expression Expr to make sure that it is a static
       --  expression of the given type (i.e. it will be analyzed and resolved
       --  using this type, which can be any valid argument to Resolve, e.g.
       --  Any_Integer is OK). If not, given error and raise Pragma_Exit. If
@@ -1456,20 +1456,20 @@ package body Sem_Prag is
       -------------------------------------
 
       procedure Check_Expr_Is_Static_Expression
-        (Argx : Node_Id;
+        (Expr : Node_Id;
          Typ  : Entity_Id := Empty)
       is
       begin
          if Present (Typ) then
-            Analyze_And_Resolve (Argx, Typ);
+            Analyze_And_Resolve (Expr, Typ);
          else
-            Analyze_And_Resolve (Argx);
+            Analyze_And_Resolve (Expr);
          end if;
 
-         if Is_OK_Static_Expression (Argx) then
+         if Is_OK_Static_Expression (Expr) then
             return;
 
-         elsif Etype (Argx) = Any_Type then
+         elsif Etype (Expr) = Any_Type then
             raise Pragma_Exit;
 
          --  An interesting special case, if we have a string literal and we
@@ -1479,14 +1479,14 @@ package body Sem_Prag is
          --  warnings as usual, but will not cause errors.
 
          elsif Ada_Version = Ada_83
-           and then Nkind (Argx) = N_String_Literal
+           and then Nkind (Expr) = N_String_Literal
          then
             return;
 
          --  Static expression that raises Constraint_Error. This has already
          --  been flagged, so just exit from pragma processing.
 
-         elsif Is_Static_Expression (Argx) then
+         elsif Is_Static_Expression (Expr) then
             raise Pragma_Exit;
 
          --  Finally, we have a real error
@@ -1499,7 +1499,7 @@ package body Sem_Prag is
                        "argument for pragma% must be a static expression!";
             begin
                Fix_Error (Msg);
-               Flag_Non_Static_Expr (Msg, Argx);
+               Flag_Non_Static_Expr (Msg, Expr);
             end;
 
             raise Pragma_Exit;

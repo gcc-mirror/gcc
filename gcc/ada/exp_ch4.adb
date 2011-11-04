@@ -4478,13 +4478,7 @@ package body Exp_Ch4 is
       if Is_Atomic (Etype (N))
         and then not Atomic_Synchronization_Disabled (Etype (N))
       then
-         Set_Atomic_Sync_Required (N);
-
-         --  Generate info message if requested
-
-         if Warn_On_Atomic_Synchronization then
-            Error_Msg_N ("?info: atomic synchronization set", N);
-         end if;
+         Activate_Atomic_Synchronization (N);
       end if;
    end Expand_N_Explicit_Dereference;
 
@@ -5326,13 +5320,7 @@ package body Exp_Ch4 is
         or else (Is_Atomic (Typ)
                   and then not Atomic_Synchronization_Disabled (Typ))
       then
-         Set_Atomic_Sync_Required (N);
-
-         --  Generate info message if requested
-
-         if Warn_On_Atomic_Synchronization then
-            Error_Msg_N ("?info: atomic synchronization set", N);
-         end if;
+         Activate_Atomic_Synchronization (N);
       end if;
 
       --  All done for the non-packed case
@@ -8216,14 +8204,7 @@ package body Exp_Ch4 is
         and then Is_Atomic (Etype (N))
         and then not Atomic_Synchronization_Disabled (Etype (N))
       then
-         Set_Atomic_Sync_Required (Selector_Name (N));
-
-         --  Generate info message if requested
-
-         if Warn_On_Atomic_Synchronization then
-            Error_Msg_N
-              ("?info: atomic synchronization set for &", Selector_Name (N));
-         end if;
+         Activate_Atomic_Synchronization (N);
       end if;
    end Expand_N_Selected_Component;
 

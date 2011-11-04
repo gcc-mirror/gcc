@@ -1,3 +1,26 @@
+2011-11-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb: Minor refactoring (renaming of a parameter).
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads: Minor reformatting.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Atomic_Synchronization_Disabled): Check -gnatd.d
+	and -gnatd.e here
+	* exp_ch2.adb (Expand_Entity_Reference): Use
+	Activate_Atomic_Synchronization
+	* exp_ch4.adb (Expand_N_Explicit_Dereference): Use
+	Activate_Atomic_Synchronization (Expand_N_Indexed_Compoonent):
+	Activate_Atomic_Synchronization (Expand_N_Selected_Component):
+	Use Activate_Atomic_Synchronization
+	* exp_util.ads, exp_util.adb (Activate_Atomic_Synchronization): New
+	procedure.
+	* sinfo.ads, sinfo.adb (Atomic_Sync_Required): Can now apply to
+	N_Selected_Component node
+
 2011-11-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, atree.ads, prj-env.adb, prj-env.ads: Minor reformatting.
