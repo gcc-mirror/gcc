@@ -1,5 +1,10 @@
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-intrinsic.c (gfc_conv_intrinsic.c): Introduce current loop
+	pointer.  Use it.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-intrinsic.c (gfc_conv_intrinsic_arith): Small argument handling
 	cleanup.
 

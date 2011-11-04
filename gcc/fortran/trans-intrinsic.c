@@ -2568,7 +2568,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   stmtblock_t body;
   stmtblock_t block;
   tree tmp;
-  gfc_loopinfo loop;
+  gfc_loopinfo loop, *ploop;
   gfc_actual_arglist *arg_array, *arg_mask;
   gfc_ss *arrayss;
   gfc_ss *maskss;
@@ -2646,14 +2646,16 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskexpr && maskexpr->rank > 0)
     gfc_mark_ss_chain_used (maskss, 1);
+
+  ploop = &loop;
   /* Generate the loop body.  */
-  gfc_start_scalarized_body (&loop, &body);
+  gfc_start_scalarized_body (ploop, &body);
 
   /* If we have a mask, only add this element if the mask is set.  */
   if (maskexpr && maskexpr->rank > 0)
     {
       gfc_init_se (&maskse, NULL);
-      gfc_copy_loopinfo_to_se (&maskse, &loop);
+      gfc_copy_loopinfo_to_se (&maskse, ploop);
       maskse.ss = maskss;
       gfc_conv_expr_val (&maskse, maskexpr);
       gfc_add_block_to_block (&body, &maskse.pre);
@@ -2665,7 +2667,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
 
   /* Do the actual summation/product.  */
   gfc_init_se (&arrayse, NULL);
-  gfc_copy_loopinfo_to_se (&arrayse, &loop);
+  gfc_copy_loopinfo_to_se (&arrayse, ploop);
   arrayse.ss = arrayss;
   gfc_conv_expr_val (&arrayse, arrayexpr);
   gfc_add_block_to_block (&block, &arrayse.pre);
@@ -2753,7 +2755,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
     tmp = gfc_finish_block (&block);
   gfc_add_expr_to_block (&body, tmp);
 
-  gfc_trans_scalarizing_loops (&loop, &body);
+  gfc_trans_scalarizing_loops (ploop, &body);
 
   /* For a scalar mask, enclose the loop in an if statement.  */
   if (maskexpr && maskexpr->rank == 0)
@@ -2761,8 +2763,8 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
       gfc_init_se (&maskse, NULL);
       gfc_conv_expr_val (&maskse, maskexpr);
       gfc_init_block (&block);
-      gfc_add_block_to_block (&block, &loop.pre);
-      gfc_add_block_to_block (&block, &loop.post);
+      gfc_add_block_to_block (&block, &ploop->pre);
+      gfc_add_block_to_block (&block, &ploop->post);
       tmp = gfc_finish_block (&block);
 
       tmp = build3_v (COND_EXPR, maskse.expr, tmp,
@@ -2772,11 +2774,11 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
     }
   else
     {
-      gfc_add_block_to_block (&se->pre, &loop.pre);
-      gfc_add_block_to_block (&se->pre, &loop.post);
+      gfc_add_block_to_block (&se->pre, &ploop->pre);
+      gfc_add_block_to_block (&se->pre, &ploop->post);
     }
 
-  gfc_cleanup_loop (&loop);
+  gfc_cleanup_loop (ploop);
 
   if (norm2)
     {
