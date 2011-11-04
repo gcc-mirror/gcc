@@ -5575,7 +5575,7 @@ as possibly modified by compiler switches. Then each pragma Warning
 modifies this set of warnings as specified. This form of the pragma may
 also be used as a configuration pragma.
 
-The fourth form, with an On|Off parameter and a string, is used to
+The fourth form, with an @code{On|Off} parameter and a string, is used to
 control individual messages, based on their text. The string argument
 is a pattern that is used to match against the text of individual
 warning messages (not including the initial "warning: " tag).
@@ -5587,7 +5587,7 @@ message @code{warning: 960 bits of "a" unused}. No other regular
 expression notations are permitted. All characters other than asterisk in
 these three specific cases are treated as literal characters in the match.
 
-There are two ways to use this pragma. The OFF form can be used as a
+There are two ways to use the pragma in this form. The OFF form can be used as a
 configuration pragma. The effect is to suppress all warnings (if any)
 that match the pattern string throughout the compilation.
 
@@ -5603,6 +5603,13 @@ pragma Warnings (On, Pattern);
 @noindent
 In this usage, the pattern string must match in the Off and On pragmas,
 and at least one matching warning must be suppressed.
+
+Note: to write a string that will match any warning, use the string
+@code{"***"}. It will not work to use a single asterisk or two asterisks
+since this looks like an operator name. This form with three asterisks
+is similar in effect to specifying @code{pragma Warnings (Off)} except that a
+matching @code{pragma Warnings (On, "***")} will be required. This can be
+helpful in avoiding forgetting to turn warnings back on.
 
 Note: the debug flag -gnatd.i (@code{/NOWARNINGS_PRAGMAS} in VMS) can be
 used to cause the compiler to entirely ignore all WARNINGS pragmas. This can

@@ -1,5 +1,14 @@
 2011-11-04  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb: Minor reformatting.
+	* gnat_rm.texi: Update documentation for pragma Warnings (Off,
+	"***") usage.
+	* exp_ch2.adb (Expand_Entity_Reference): Only set
+	Atomic_Sync_Required on entities that are variables. Doesn't
+	make any sense on anything else.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch2.adb (Expand_Entity_Reference): Extend handling of
 	atomic sync to type case.
 	* sem_prag.adb (Process_Suppress_Unsuppress): Atomic Sync can

@@ -402,6 +402,7 @@ package body Exp_Ch2 is
       --  Set Atomic_Sync_Required if necessary for atomic variable
 
       if Nkind_In (N, N_Identifier, N_Expanded_Name)
+        and then Ekind (E) = E_Variable
         and then (Is_Atomic (E) or else Is_Atomic (Etype (E)))
       then
          declare
