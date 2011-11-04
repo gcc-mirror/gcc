@@ -1,3 +1,38 @@
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor reformatting.
+
+2011-11-04  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb, a-coinve.adb, a-cobove.adb (Merge): Raise PE
+	when Target and Source denote same non-empty object
+	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb (Merge): Ditto
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Minor reformatting.
+
+2011-11-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Record): Do not generate a
+	discriminant assignment within an initialization proc if the
+	record is an unchecked union, as it can only come from the
+	initialization of an unchecked union component.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor reformatting.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* par-labl.adb (Rewrite_As_Loop): Generate info msg rather than
+	warning message.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor code reorganization (remove junk obsolete
+	var Save_Space).
+
 2011-11-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_alfa.adb: Add local constant

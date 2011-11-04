@@ -1461,7 +1461,22 @@ package body Exp_Ch5 is
                   end if;
 
                   if Is_Unchecked_Union (Base_Type (R_Typ)) then
-                     Insert_Action (N, Make_Field_Assign (CF, True));
+
+                     --  Within an initialization procedure this is the
+                     --  assignment to an unchecked union component, in which
+                     --  case there is no discriminant to initialize.
+
+                     if Inside_Init_Proc then
+                        null;
+
+                     else
+                        --  The assignment is part of a conversion from a
+                        --  derived unchecked union type with an inferable
+                        --  discriminant, to a parent type.
+
+                        Insert_Action (N, Make_Field_Assign (CF, True));
+                     end if;
+
                   else
                      Insert_Action (N, Make_Field_Assign (CF));
                   end if;

@@ -4046,13 +4046,13 @@ package body Exp_Attr is
 
          X   : constant Node_Id := Prefix (N);
          Y   : constant Node_Id := First (Expressions (N));
-         --  The argumens
+         --  The arguments
 
          X_Addr, Y_Addr : Node_Id;
-         --  the expressions for their addresses
+         --  Rhe expressions for their addresses
 
          X_Size, Y_Size : Node_Id;
-         --  the expressions for their sizes
+         --  Rhe expressions for their sizes
 
       begin
          --  The attribute is expanded as:

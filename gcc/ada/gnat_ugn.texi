@@ -5658,8 +5658,8 @@ This switch activates warnings to be generated for entities that
 are declared but not referenced, and for units that are @code{with}'ed
 and not
 referenced. In the case of packages, a warning is also generated if
-no entities in the package are referenced. This means that if the package
-is referenced but the only references are in @code{use}
+no entities in the package are referenced. This means that if a with'ed
+package is referenced but the only references are in @code{use}
 clauses or @code{renames}
 declarations, a warning is still generated. A warning is also generated
 for a generic package that is @code{with}'ed but never instantiated.

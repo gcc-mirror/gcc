@@ -788,16 +788,26 @@ package body Ada.Containers.Bounded_Vectors is
          I, J : Count_Type;
 
       begin
-         if Target.Is_Empty then
-            Move (Target => Target, Source => Source);
+
+         --  The semantics of Merge changed slightly per AI05-0021. It was
+         --  originally the case that if Target and Source denoted the same
+         --  container object, then the GNAT implementation of Merge did
+         --  nothing. However, it was argued that RM05 did not precisely
+         --  specify the semantics for this corner case. The decision of the
+         --  ARG was that if Target and Source denote the same non-empty
+         --  container object, then Program_Error is raised.
+
+         if Source.Is_Empty then
             return;
          end if;
 
          if Target'Address = Source'Address then
-            return;
+            raise Program_Error with
+              "Target and Source denote same non-empty container";
          end if;
 
-         if Source.Is_Empty then
+         if Target.Is_Empty then
+            Move (Target => Target, Source => Source);
             return;
          end if;
 

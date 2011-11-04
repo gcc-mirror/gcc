@@ -5318,7 +5318,7 @@ This pragma signals that the entities whose names are listed are
 deliberately not referenced in the current source unit. This
 suppresses warnings about the
 entities being unreferenced, and in addition a warning will be
-generated if one of these entities is in fact referenced in the
+generated if one of these entities is in fact subsequently referenced in the
 same unit as the pragma (or in the corresponding body, or one
 of its subunits).
 
@@ -10222,7 +10222,7 @@ floating-point standard.
 
 Note that on machines that are not fully compliant with the IEEE
 floating-point standard, such as Alpha, the @option{-mieee} compiler flag
-must be used for achieving IEEE confirming behavior (although at the cost
+must be used for achieving IEEE conforming behavior (although at the cost
 of a significant performance penalty), so infinite and NaN values are
 properly generated.
 
