@@ -2569,7 +2569,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   stmtblock_t block;
   tree tmp;
   gfc_loopinfo loop;
-  gfc_actual_arglist *actual;
+  gfc_actual_arglist *arg_array, *arg_mask;
   gfc_ss *arrayss;
   gfc_ss *maskss;
   gfc_se arrayse;
@@ -2608,9 +2608,10 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
 
   gfc_add_modify (&se->pre, resvar, tmp);
 
+  arg_array = expr->value.function.actual;
+
   /* Walk the arguments.  */
-  actual = expr->value.function.actual;
-  arrayexpr = actual->expr;
+  arrayexpr = arg_array->expr;
   arrayss = gfc_walk_expr (arrayexpr);
   gcc_assert (arrayss != gfc_ss_terminator);
 
@@ -2619,9 +2620,9 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
     maskexpr = NULL;
   else
     {
-      actual = actual->next->next;
-      gcc_assert (actual);
-      maskexpr = actual->expr;
+      arg_mask  = arg_array->next->next;
+      gcc_assert (arg_mask != NULL);
+      maskexpr = arg_mask->expr;
     }
 
   if (maskexpr && maskexpr->rank > 0)
