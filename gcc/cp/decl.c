@@ -71,7 +71,7 @@ static void require_complete_types_for_parms (tree);
 static int ambi_op_p (enum tree_code);
 static int unary_op_p (enum tree_code);
 static void push_local_name (tree);
-static tree grok_reference_init (tree, tree, tree, tree *, int);
+static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, const cp_decl_specifier_seq *,
 			 int, int, tree);
 static int check_static_variable_definition (tree, tree);
@@ -91,7 +91,7 @@ static tree lookup_and_check_tag (enum tag_types, tree, tag_scope, bool);
 static int walk_namespaces_r (tree, walk_namespaces_fn, void *);
 static void maybe_deduce_size_from_array_init (tree, tree);
 static void layout_var_decl (tree);
-static tree check_initializer (tree, tree, int, tree *);
+static tree check_initializer (tree, tree, int, VEC(tree,gc) **);
 static void make_rtl_for_nonlocal_decl (tree, tree, const char *);
 static void save_function_data (tree);
 static void copy_type_enum (tree , tree);
@@ -4611,11 +4611,8 @@ start_decl_1 (tree decl, bool initialized)
    Quotes on semantics can be found in ARM 8.4.3.  */
 
 static tree
-grok_reference_init (tree decl, tree type, tree init, tree *cleanup,
-		     int flags)
+grok_reference_init (tree decl, tree type, tree init, int flags)
 {
-  tree tmp;
-
   if (init == NULL_TREE)
     {
       if ((DECL_LANG_SPECIFIC (decl) == 0
@@ -4641,62 +4638,8 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup,
      DECL_INITIAL for local references (instead assigning to them
      explicitly); we need to allow the temporary to be initialized
      first.  */
-  tmp = initialize_reference (type, init, decl, cleanup, flags,
-			      tf_warning_or_error);
-  if (DECL_DECLARED_CONSTEXPR_P (decl))
-    {
-      tmp = cxx_constant_value (tmp);
-      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
-	= reduced_constant_expression_p (tmp);
-    }
-
-  if (tmp == error_mark_node)
-    return NULL_TREE;
-  else if (tmp == NULL_TREE)
-    {
-      error ("cannot initialize %qT from %qT", type, TREE_TYPE (init));
-      return NULL_TREE;
-    }
-
-  if (TREE_STATIC (decl) && !TREE_CONSTANT (tmp))
-    return tmp;
-
-  DECL_INITIAL (decl) = tmp;
-
-  return NULL_TREE;
-}
-
-/* Subroutine of check_initializer.  We're initializing a DECL of
-   std::initializer_list<T> TYPE from a braced-init-list INIT, and need to
-   extend the lifetime of the underlying array to match that of the decl,
-   just like for reference initialization.  CLEANUP is as for
-   grok_reference_init.  */
-
-static tree
-build_init_list_var_init (tree decl, tree type, tree init, tree *array_init,
-			  tree *cleanup)
-{
-  tree aggr_init, array, arrtype;
-  init = perform_implicit_conversion (type, init, tf_warning_or_error);
-  if (error_operand_p (init))
-    return error_mark_node;
-
-  aggr_init = TARGET_EXPR_INITIAL (init);
-  array = CONSTRUCTOR_ELT (aggr_init, 0)->value;
-  arrtype = TREE_TYPE (array);
-  STRIP_NOPS (array);
-  gcc_assert (TREE_CODE (array) == ADDR_EXPR);
-  array = TREE_OPERAND (array, 0);
-  /* If the array is constant, finish_compound_literal already made it a
-     static variable and we don't need to do anything here.  */
-  if (decl && TREE_CODE (array) == TARGET_EXPR)
-    {
-      tree var = set_up_extended_ref_temp (decl, array, cleanup, array_init);
-      var = build_address (var);
-      var = convert (arrtype, var);
-      CONSTRUCTOR_ELT (aggr_init, 0)->value = var;
-    }
-  return init;
+  return initialize_reference (type, init, flags,
+			       tf_warning_or_error);
 }
 
 /* Designated initializers in arrays are not supported in GNU C++.
@@ -5440,7 +5383,7 @@ build_aggr_init_full_exprs (tree decl, tree init, int flags)
    evaluated dynamically to initialize DECL.  */
 
 static tree
-check_initializer (tree decl, tree init, int flags, tree *cleanup)
+check_initializer (tree decl, tree init, int flags, VEC(tree,gc) **cleanups)
 {
   tree type = TREE_TYPE (decl);
   tree init_code = NULL;
@@ -5509,19 +5452,26 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     }
   else if (!init && DECL_REALLY_EXTERN (decl))
     ;
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
-    init = grok_reference_init (decl, type, init, cleanup, flags);
-  else if (init || type_build_ctor_call (type))
+  else if (init || type_build_ctor_call (type)
+	   || TREE_CODE (type) == REFERENCE_TYPE)
     {
-      if (!init)
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	{
+	  init = grok_reference_init (decl, type, init, flags);
+	  flags |= LOOKUP_ALREADY_DIGESTED;
+	}
+      else if (!init)
 	check_for_uninitialized_const_var (decl);
       /* Do not reshape constructors of vectors (they don't need to be
 	 reshaped.  */
       else if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  if (is_std_init_list (type))
-	    init = build_init_list_var_init (decl, type, init,
-					     &extra_init, cleanup);
+	    {
+	      init = perform_implicit_conversion (type, init,
+						  tf_warning_or_error);
+	      flags |= LOOKUP_ALREADY_DIGESTED;
+	    }
 	  else if (TYPE_NON_AGGREGATE_CLASS (type))
 	    {
 	      /* Don't reshape if the class has constructors.  */
@@ -5550,9 +5500,10 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       if (type == error_mark_node)
 	return NULL_TREE;
 
-      if (type_build_ctor_call (type)
-	  || (CLASS_TYPE_P (type)
-	      && !(init && BRACE_ENCLOSED_INITIALIZER_P (init))))
+      if ((type_build_ctor_call (type) || CLASS_TYPE_P (type))
+	  && !(flags & LOOKUP_ALREADY_DIGESTED)
+	  && !(init && BRACE_ENCLOSED_INITIALIZER_P (init)
+	       && CP_AGGREGATE_TYPE_P (type)))
 	{
 	  init_code = build_aggr_init_full_exprs (decl, init, flags);
 
@@ -5594,7 +5545,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 
       if (init && TREE_CODE (init) != TREE_VEC)
 	{
-	  init_code = store_init_value (decl, init, flags);
+	  init_code = store_init_value (decl, init, cleanups, flags);
 	  if (pedantic && TREE_CODE (type) == ARRAY_TYPE
 	      && DECL_INITIAL (decl)
 	      && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
@@ -5956,7 +5907,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		tree asmspec_tree, int flags)
 {
   tree type;
-  tree cleanup;
+  VEC(tree,gc) *cleanups = NULL;
   const char *asmspec = NULL;
   int was_readonly = 0;
   bool var_definition_p = false;
@@ -5978,9 +5929,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   type = TREE_TYPE (decl);
   if (type == error_mark_node)
     return;
-
-  /* Assume no cleanup is required.  */
-  cleanup = NULL_TREE;
 
   /* If a name was specified, get the string.  */
   if (at_namespace_scope_p ())
@@ -6101,7 +6049,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  /* This variable seems to be a non-dependent constant, so process
 	     its initializer.  If check_initializer returns non-null the
 	     initialization wasn't constant after all.  */
-	  tree init_code = check_initializer (decl, init, flags, &cleanup);
+	  tree init_code = check_initializer (decl, init, flags, &cleanups);
 	  if (init_code == NULL_TREE)
 	    init = NULL_TREE;
 	}
@@ -6202,7 +6150,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		error ("Java object %qD not allocated with %<new%>", decl);
 	      init = NULL_TREE;
 	    }
-	  init = check_initializer (decl, init, flags, &cleanup);
+	  init = check_initializer (decl, init, flags, &cleanups);
 	  /* Thread-local storage cannot be dynamically initialized.  */
 	  if (DECL_THREAD_LOCAL_P (decl) && init)
 	    {
@@ -6367,8 +6315,12 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   /* If a CLEANUP_STMT was created to destroy a temporary bound to a
      reference, insert it in the statement-tree now.  */
-  if (cleanup)
-    push_cleanup (decl, cleanup, false);
+  if (cleanups)
+    {
+      unsigned i; tree t;
+      FOR_EACH_VEC_ELT_REVERSE (tree, cleanups, i, t)
+	push_cleanup (decl, t, false);
+    }
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;

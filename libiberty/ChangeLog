@@ -1,3 +1,9 @@
+2011-11-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48370
+	* cp-demangle.c (d_special_name, d_print_comp): Handle a
+	discriminator number on DEMANGLE_COMPONENT_REFTEMP.
+
 2011-11-02  Doug Evans  <dje@google.com>
 
 	* Makefile.in (CFILES): Add timeval-utils.c.

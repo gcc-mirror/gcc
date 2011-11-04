@@ -1877,10 +1877,12 @@ maybe_emit_vtables (tree ctype)
 
       if (TREE_TYPE (DECL_INITIAL (vtbl)) == 0)
 	{
-	  tree expr = store_init_value (vtbl, DECL_INITIAL (vtbl), LOOKUP_NORMAL);
+	  VEC(tree,gc)* cleanups = NULL;
+	  tree expr = store_init_value (vtbl, DECL_INITIAL (vtbl), &cleanups,
+					LOOKUP_NORMAL);
 
 	  /* It had better be all done at compile-time.  */
-	  gcc_assert (!expr);
+	  gcc_assert (!expr && !cleanups);
 	}
 
       /* Write it out.  */

@@ -8502,6 +8502,44 @@ perform_direct_initialization_if_possible (tree type,
   return expr;
 }
 
+/* When initializing a reference that lasts longer than a full-expression,
+   this special rule applies:
+
+     [class.temporary]
+
+     The temporary to which the reference is bound or the temporary
+     that is the complete object to which the reference is bound
+     persists for the lifetime of the reference.
+
+     The temporaries created during the evaluation of the expression
+     initializing the reference, except the temporary to which the
+     reference is bound, are destroyed at the end of the
+     full-expression in which they are created.
+
+   In that case, we store the converted expression into a new
+   VAR_DECL in a new scope.
+
+   However, we want to be careful not to create temporaries when
+   they are not required.  For example, given:
+
+     struct B {};
+     struct D : public B {};
+     D f();
+     const B& b = f();
+
+   there is no need to copy the return value from "f"; we can just
+   extend its lifetime.  Similarly, given:
+
+     struct S {};
+     struct T { operator S(); };
+     T t;
+     const S& s = t;
+
+  we can extend the lifetime of the return value of the conversion
+  operator.
+
+  The next several functions are involved in this lifetime extension.  */
+
 /* DECL is a VAR_DECL whose type is a REFERENCE_TYPE.  The reference
    is being bound to a temporary.  Create and return a new VAR_DECL
    with the indicated TYPE; this variable will store the value to
@@ -8519,6 +8557,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
   if (TREE_STATIC (decl))
     {
       /* Namespace-scope or local static; give it a mangled name.  */
+      /* FIXME share comdat with decl?  */
       tree name;
 
       TREE_STATIC (var) = 1;
@@ -8540,8 +8579,9 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
    cleanup for the new variable is returned through CLEANUP, and the
    code to initialize the new variable is returned through INITP.  */
 
-tree
-set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
+static tree
+set_up_extended_ref_temp (tree decl, tree expr, VEC(tree,gc) **cleanups,
+			  tree *initp)
 {
   tree init;
   tree type;
@@ -8561,6 +8601,10 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
      VAR.  */
   if (TREE_CODE (expr) != TARGET_EXPR)
     expr = get_target_expr (expr);
+
+  /* Recursively extend temps in this initializer.  */
+  TARGET_EXPR_INITIAL (expr)
+    = extend_ref_init_temps (decl, TARGET_EXPR_INITIAL (expr), cleanups);
 
   /* If the initializer is constant, put it in DECL_INITIAL so we get
      static initialization and use in constant expressions.  */
@@ -8595,7 +8639,11 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
       if (TREE_STATIC (var))
 	init = add_stmt_to_compound (init, register_dtor_fn (var));
       else
-	*cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error);
+	{
+	  tree cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error);
+	  if (cleanup)
+	    VEC_safe_push (tree, gc, *cleanups, cleanup);
+	}
 
       /* We must be careful to destroy the temporary only
 	 after its initialization has taken place.  If the
@@ -8629,18 +8677,10 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
 }
 
 /* Convert EXPR to the indicated reference TYPE, in a way suitable for
-   initializing a variable of that TYPE.  If DECL is non-NULL, it is
-   the VAR_DECL being initialized with the EXPR.  (In that case, the
-   type of DECL will be TYPE.)  If DECL is non-NULL, then CLEANUP must
-   also be non-NULL, and with *CLEANUP initialized to NULL.  Upon
-   return, if *CLEANUP is no longer NULL, it will be an expression
-   that should be pushed as a cleanup after the returned expression
-   is used to initialize DECL.
-
-   Return the converted expression.  */
+   initializing a variable of that TYPE.  */
 
 tree
-initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
+initialize_reference (tree type, tree expr,
 		      int flags, tsubst_flags_t complain)
 {
   conversion *conv;
@@ -8674,103 +8714,77 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
       return error_mark_node;
     }
 
-  /* If DECL is non-NULL, then this special rule applies:
-
-       [class.temporary]
-
-       The temporary to which the reference is bound or the temporary
-       that is the complete object to which the reference is bound
-       persists for the lifetime of the reference.
-
-       The temporaries created during the evaluation of the expression
-       initializing the reference, except the temporary to which the
-       reference is bound, are destroyed at the end of the
-       full-expression in which they are created.
-
-     In that case, we store the converted expression into a new
-     VAR_DECL in a new scope.
-
-     However, we want to be careful not to create temporaries when
-     they are not required.  For example, given:
-
-       struct B {};
-       struct D : public B {};
-       D f();
-       const B& b = f();
-
-     there is no need to copy the return value from "f"; we can just
-     extend its lifetime.  Similarly, given:
-
-       struct S {};
-       struct T { operator S(); };
-       T t;
-       const S& s = t;
-
-    we can extend the lifetime of the return value of the conversion
-    operator.  */
   gcc_assert (conv->kind == ck_ref_bind);
-  if (decl)
-    {
-      tree var;
-      tree base_conv_type;
 
-      gcc_assert (complain == tf_warning_or_error);
-
-      /* Skip over the REF_BIND.  */
-      conv = conv->u.next;
-      /* If the next conversion is a BASE_CONV, skip that too -- but
-	 remember that the conversion was required.  */
-      if (conv->kind == ck_base)
-	{
-	  base_conv_type = conv->type;
-	  conv = conv->u.next;
-	}
-      else
-	base_conv_type = NULL_TREE;
-      /* Perform the remainder of the conversion.  */
-      expr = convert_like_real (conv, expr,
-				/*fn=*/NULL_TREE, /*argnum=*/0,
-				/*inner=*/-1,
-				/*issue_conversion_warnings=*/true,
-				/*c_cast_p=*/false,
-				complain);
-      if (error_operand_p (expr))
-	expr = error_mark_node;
-      else
-	{
-	  if (!lvalue_or_rvalue_with_address_p (expr))
-	    {
-	      tree init;
-	      var = set_up_extended_ref_temp (decl, expr, cleanup, &init);
-	      /* Use its address to initialize the reference variable.  */
-	      expr = build_address (var);
-	      if (base_conv_type)
-		expr = convert_to_base (expr,
-					build_pointer_type (base_conv_type),
-					/*check_access=*/true,
-					/*nonnull=*/true, complain);
-	      if (init)
-		expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
-	    }
-	  else
-	    /* Take the address of EXPR.  */
-	    expr = cp_build_addr_expr (expr, complain);
-	  /* If a BASE_CONV was required, perform it now.  */
-	  if (base_conv_type)
-	    expr = (perform_implicit_conversion
-		    (build_pointer_type (base_conv_type), expr,
-		     complain));
-	  expr = build_nop (type, expr);
-	}
-    }
-  else
-    /* Perform the conversion.  */
-    expr = convert_like (conv, expr, complain);
+  /* Perform the conversion.  */
+  expr = convert_like (conv, expr, complain);
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
 
   return expr;
+}
+
+/* Subroutine of extend_ref_init_temps.  Possibly extend one initializer,
+   which is bound either to a reference or a std::initializer_list.  */
+
+static tree
+extend_ref_init_temps_1 (tree decl, tree init, VEC(tree,gc) **cleanups)
+{
+  tree sub = init;
+  tree *p;
+  STRIP_NOPS (sub);
+  if (TREE_CODE (sub) != ADDR_EXPR)
+    return init;
+  /* Deal with binding to a subobject.  */
+  for (p = &TREE_OPERAND (sub, 0); TREE_CODE (*p) == COMPONENT_REF; )
+    p = &TREE_OPERAND (*p, 0);
+  if (TREE_CODE (*p) == TARGET_EXPR)
+    {
+      tree subinit = NULL_TREE;
+      *p = set_up_extended_ref_temp (decl, *p, cleanups, &subinit);
+      if (subinit)
+	init = build2 (COMPOUND_EXPR, TREE_TYPE (init), subinit, init);
+    }
+  return init;
+}
+
+/* INIT is part of the initializer for DECL.  If there are any
+   reference or initializer lists being initialized, extend their
+   lifetime to match that of DECL.  */
+
+tree
+extend_ref_init_temps (tree decl, tree init, VEC(tree,gc) **cleanups)
+{
+  tree type = TREE_TYPE (init);
+  if (processing_template_decl)
+    return init;
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    init = extend_ref_init_temps_1 (decl, init, cleanups);
+  else if (is_std_init_list (type))
+    {
+      /* The temporary array underlying a std::initializer_list
+	 is handled like a reference temporary.  */
+      tree ctor = init;
+      if (TREE_CODE (ctor) == TARGET_EXPR)
+	ctor = TARGET_EXPR_INITIAL (ctor);
+      if (TREE_CODE (ctor) == CONSTRUCTOR)
+	{
+	  tree array = CONSTRUCTOR_ELT (ctor, 0)->value;
+	  array = extend_ref_init_temps_1 (decl, array, cleanups);
+	  CONSTRUCTOR_ELT (ctor, 0)->value = array;
+	}
+    }
+  else if (TREE_CODE (init) == CONSTRUCTOR)
+    {
+      unsigned i;
+      constructor_elt *p;
+      VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (init);
+      FOR_EACH_VEC_ELT (constructor_elt, elts, i, p)
+	p->value = extend_ref_init_temps (decl, p->value, cleanups);
+    }
+
+  return init;
 }
 
 /* Returns true iff TYPE is some variant of std::initializer_list.  */

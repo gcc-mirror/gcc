@@ -1846,8 +1846,11 @@ d_special_name (struct d_info *di)
 	  return d_make_comp (di, DEMANGLE_COMPONENT_GUARD, d_name (di), NULL);
 
 	case 'R':
-	  return d_make_comp (di, DEMANGLE_COMPONENT_REFTEMP, d_name (di),
-			      NULL);
+	  {
+	    struct demangle_component *name = d_name (di);
+	    return d_make_comp (di, DEMANGLE_COMPONENT_REFTEMP, name,
+				d_number_component (di));
+	  }
 
 	case 'A':
 	  return d_make_comp (di, DEMANGLE_COMPONENT_HIDDEN_ALIAS,
@@ -3921,7 +3924,9 @@ d_print_comp (struct d_print_info *dpi, int options,
       return;
 
     case DEMANGLE_COMPONENT_REFTEMP:
-      d_append_string (dpi, "reference temporary for ");
+      d_append_string (dpi, "reference temporary #");
+      d_print_comp (dpi, options, d_right (dc));
+      d_append_string (dpi, " for ");
       d_print_comp (dpi, options, d_left (dc));
       return;
 

@@ -1,3 +1,11 @@
+2011-11-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48370
+	* g++.dg/cpp0x/initlist-lifetime1.C: New.
+	* g++.dg/init/lifetime1.C: New.
+	* g++.dg/init/ref21.C: New.
+	* g++.dg/eh/array1.C: New.
+
 2011-11-04  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/50763

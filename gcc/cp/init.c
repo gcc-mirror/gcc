@@ -1597,12 +1597,14 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
   if (init && TREE_CODE (exp) == VAR_DECL
       && COMPOUND_LITERAL_P (init))
     {
+      VEC(tree,gc)* cleanups = NULL;
       /* If store_init_value returns NULL_TREE, the INIT has been
 	 recorded as the DECL_INITIAL for EXP.  That means there's
 	 nothing more we have to do.  */
-      init = store_init_value (exp, init, flags);
+      init = store_init_value (exp, init, &cleanups, flags);
       if (init)
 	finish_expr_stmt (init);
+      gcc_assert (!cleanups);
       return;
     }
 
@@ -3150,6 +3152,9 @@ build_vec_init (tree base, tree maxindex, tree init,
       bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
 			&& (literal_type_p (inner_elt_type)
 			    || TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
+      /* If the constructor already has the array type, it's been through
+	 digest_init, so we shouldn't try to do anything more.  */
+      bool digested = same_type_p (atype, TREE_TYPE (init));
       bool saw_non_const = false;
       bool saw_const = false;
       /* If we're initializing a static array, we want to do static
@@ -3172,7 +3177,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  num_initialized_elts++;
 
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-	  if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
+	  if (digested)
+	    one_init = build2 (INIT_EXPR, type, baseref, elt);
+	  else if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    one_init = build_aggr_init (baseref, elt, 0, complain);
 	  else
 	    one_init = cp_build_modify_expr (baseref, NOP_EXPR,
