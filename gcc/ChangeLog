@@ -1,3 +1,8 @@
+2011-11-05	Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config/lm32/t-rtems: New.
+	* config.gcc (lm32-*-rtems*): Add t-rtems.
+
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/50979

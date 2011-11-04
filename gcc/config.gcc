@@ -1539,6 +1539,7 @@ lm32-*-rtems*)
 	tm_file="dbxelf.h elfos.h ${tm_file} lm32/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="${tmake_file} lm32/t-lm32"
 	tmake_file="${tmake_file} t-rtems"
+	tmake_file="${tmake_file} lm32/t-rtems"
          ;;
 lm32-*-uclinux*)
         tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h lm32/uclinux-elf.h"
