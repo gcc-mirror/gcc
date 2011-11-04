@@ -3503,12 +3503,17 @@ mangle_guard_variable (const tree variable)
    initialize a static reference.  This isn't part of the ABI, but we might
    as well call them something readable.  */
 
+static GTY(()) int temp_count;
+
 tree
 mangle_ref_init_variable (const tree variable)
 {
   start_mangling (variable);
   write_string ("_ZGR");
   write_name (variable, /*ignore_local_scope=*/0);
+  /* Avoid name clashes with aggregate initialization of multiple
+     references at once.  */
+  write_unsigned_number (temp_count++);
   return finish_mangling_get_identifier (/*warn=*/false);
 }
 

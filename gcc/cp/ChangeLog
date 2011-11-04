@@ -1,3 +1,26 @@
+2011-11-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48370
+	* call.c (extend_ref_init_temps, extend_ref_init_temps_1): New.
+	(set_up_extended_ref_temp): Use it.  Change cleanup parm to VEC.
+	(initialize_reference): Just call convert_like.
+	* decl.c (grok_reference_init): Just call initialize_reference.
+	(build_init_list_var_init): Remove.
+	(check_initializer): Change cleanup parm to VEC.  Handle references
+	like other types.  Call perform_implicit_conversion instead
+	of build_init_list_var_init.  Don't use build_aggr_init for
+	aggregate initialization of arrays.
+	(cp_finish_decl): Change cleanup to VEC.
+	* typeck2.c (store_init_value): Call extend_ref_init_temps.
+	Use build_vec_init for non-constant arrays.
+	* init.c (expand_aggr_init_1): Adjust.
+	(build_vec_init): Avoid re-converting an initializer
+	that's already digested.
+	* mangle.c (mangle_ref_init_variable): Add a discriminator.
+	* cp-tree.h: Adjust.
+	* typeck.c (convert_for_initialization): Adjust.
+	* decl2.c (maybe_emit_vtables): Adjust.
+
 2011-11-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50930
