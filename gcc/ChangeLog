@@ -1,4 +1,58 @@
-2011-11-04	Thomas Doerfler <thomas.doerfler@embedded-brains.de>
+2011-11-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50931
+	* config/avr/avr-modes.def: New file defining PSImode.
+	* config/avr/avr-c.c (__INT24_MAX__, __INT24_MIN__,
+	__UINT24_MAX__): New built-in defines.
+	* config/avr/avr.md (adjust_len): Add tstpsi, mov24,  reload_in24,
+	ashlpsi, ashrpsi, lshrpsi.
+	(QISO, QIDI, HISI, HIDI, MPUSH, rotx, rotsmode): Add PSI.
+	(MOVMODE): New mode iterator.
+	(movpsi): New expander.
+	(movqi, movhi, movsi, movsf, movpsi): Write as one using MOVMODE.
+	(*reload_inpsi, *movpsi): New insns.
+	(*reload_inpsi): New RTL peephole.
+	(addpsi3, *addpsi3_zero_extend.qi, *addpsi3_zero_extend.hi,
+	*addpsi3_sign_extend.hi): New insns.
+	(subpsi3, *subpsi3_zero_extend.qi, *subpsi3_zero_extend.hi,
+	*subpsi3_sign_extend.hi): New insns.
+	(divmodpsi4, udivmodpsi4): New define insn-and-split.
+	(*divmodpsi4_call, *udivmodpsi4_call): New insns.
+	(andpsi3, iorpsi3, xorpsi3): New insns.
+	(*rotlpsi2.1, *rotlpsi2.23): New insns.
+	(*rotw<mode>): Insn condition only allow even-sized modes.
+	(*rotb<mode>): Insn condition allows odd-sized modes.
+	(ashlpsi3, ashrpsi3, lshrpsi3, *addpsi3.lt0): New insns.
+	(negpsi2, one_cmplpsi2): New insns.
+	(extendqipsi2, extendhipsi2, extendpsisi2): New insns.
+	(zero_extendqipsi2, zero_extendhipsi2, zero_extendpsisi2): New
+	insn-and-splits.
+	(*cmppsi, *negated_tstpsi, *reversed_tstpsi): New insns.
+	(cbranchpsi4): New expander.
+	* config/avr/constraints.md (Ca3, Co3, Cx3): New constraints.
+	* config/avr/avr-protos.h (avr_out_tstpsi, avr_out_movpsi,
+	avr_out_ashlpsi3, avr_out_ashrpsi3, avr_out_lshrpsi3,
+	avr_out_reload_inpsi): New prototypes.
+
+	* config/avr/avr.c (TARGET_SCALAR_MODE_SUPPORTED_P): Define to...
+	(avr_scalar_mode_supported_p): ...this new static function.
+	(avr_asm_len): Always return "".
+	(avr_out_load_psi, avr_out_store_psi): New static functions.
+	(avr_out_movpsi, avr_out_reload_inpsi): New functions.
+	(avr_out_tstpsi): New function.
+	(avr_out_ashlpsi3, avr_out_ashrpsi3, avr_out_lshrpsi3): New functions.
+	(avr_out_plus_1, output_reload_in_const): Handle 3-byte types.
+	(avr_simplify_comparison_p): Ditto.
+	(adjust_insn_length): Handle ADJUST_LEN_RELOAD_IN24,
+	ADJUST_LEN_MOV24, ADJUST_LEN_TSTPSI, ADJUST_LEN_ASHLPSI,
+	ADJUST_LEN_ASHRPSI, ADJUST_LEN_LSHRPSI.
+	(avr_rtx_costs_1): Report PSI costs.
+	(avr_libcall_value): Handle odd-sized parameters.
+	(avr_init_builtin_int24): New static function to define built-in
+	24-bit types __int24 and __uint24.
+	(avr_init_builtins): Use it.
+	
+2011-11-04  Thomas Doerfler <thomas.doerfler@embedded-brains.de>
 
 	PR target/50989
 	* config/arm/rtems-elf.h, config/arm/t-rtems: Add optional

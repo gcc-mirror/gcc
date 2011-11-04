@@ -217,6 +217,9 @@ bool avr_need_copy_data_p = false;
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION avr_asm_function_rodata_section
 
+#undef  TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P avr_scalar_mode_supported_p
+
 
 
 /* Custom function to replace string prefix.
@@ -368,6 +371,17 @@ avr_regno_reg_class (int r)
   
   return ALL_REGS;
 }
+
+
+static bool
+avr_scalar_mode_supported_p (enum machine_mode mode)
+{
+  if (PSImode == mode)
+    return true;
+
+  return default_scalar_mode_supported_p (mode);
+}
+
 
 /* A helper for the subsequent function attribute used to dig for
    attribute 'name' in a FUNCTION_DECL or FUNCTION_TYPE */
@@ -1487,7 +1501,7 @@ avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
 
 
 /* Helper function to print assembler resp. track instruction
-   sequence lengths.
+   sequence lengths.  Always return "".
    
    If PLEN == NULL:
        Output assembler code from template TPL with operands supplied
@@ -1499,7 +1513,7 @@ avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
        Don't output anything.
 */
 
-static void
+static const char*
 avr_asm_len (const char* tpl, rtx* operands, int* plen, int n_words)
 {
   if (NULL == plen)
@@ -1513,6 +1527,8 @@ avr_asm_len (const char* tpl, rtx* operands, int* plen, int n_words)
       else
         *plen += n_words;
     }
+
+  return "";
 }
 
 
@@ -1562,6 +1578,8 @@ cond_string (enum rtx_code code)
     default:
       gcc_unreachable ();
     }
+
+  return "";
 }
 
 /* Output ADDR to FILE as address.  */
@@ -1968,6 +1986,7 @@ avr_simplify_comparison_p (enum machine_mode mode, RTX_CODE op, rtx x)
 {
   unsigned int max = (mode == QImode ? 0xff :
                       mode == HImode ? 0xffff :
+                      mode == PSImode ? 0xffffff :
                       mode == SImode ? 0xffffffff : 0);
   if (max && op && GET_CODE (x) == CONST_INT)
     {
@@ -2956,6 +2975,306 @@ output_movsisf (rtx insn, rtx operands[], int *l)
   return "";
 }
 
+
+/* Handle loads of 24-bit types from memory to register.  */
+
+static const char*
+avr_out_load_psi (rtx insn, rtx *op, int *plen)
+{
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx base = XEXP (src, 0);
+  int reg_dest = true_regnum (dest);
+  int reg_base = true_regnum (base);
+  
+  if (reg_base > 0)
+    {
+      if (reg_base == REG_X)        /* (R26) */
+        {
+          if (reg_dest == REG_X)
+            /* "ld r26,-X" is undefined */
+            return avr_asm_len ("adiw r26,2"        CR_TAB
+                                "ld r28,X"          CR_TAB
+                                "ld __tmp_reg__,-X" CR_TAB
+                                "sbiw r26,1"        CR_TAB
+                                "ld r26,X"          CR_TAB
+                                "mov r27,__tmp_reg__", op, plen, -6);
+          else
+            {
+              avr_asm_len ("ld %A0,X+" CR_TAB
+                           "ld %B0,X+" CR_TAB
+                           "ld %C0,X", op, plen, -3);
+
+              if (reg_dest != REG_X - 2
+                  && !reg_unused_after (insn, base))
+                {
+                  avr_asm_len ("sbiw r26,2", op, plen, 1);
+                }
+
+              return "";
+            }
+        }
+      else /* reg_base != REG_X */
+        {
+          if (reg_dest == reg_base)
+            return avr_asm_len ("ldd %C0,%1+2"          CR_TAB
+                                "ldd __tmp_reg__,%1+1"  CR_TAB
+                                "ld  %A0,%1"            CR_TAB
+                                "mov %B0,__tmp_reg__", op, plen, -4);
+          else
+            return avr_asm_len ("ld  %A0,%1"    CR_TAB
+                                "ldd %B0,%1+1"  CR_TAB
+                                "ldd %C0,%1+2", op, plen, -3);
+        }
+    }
+  else if (GET_CODE (base) == PLUS) /* (R + i) */
+    {
+      int disp = INTVAL (XEXP (base, 1));
+      
+      if (disp > MAX_LD_OFFSET (GET_MODE (src)))
+        {
+          if (REGNO (XEXP (base, 0)) != REG_Y)
+            fatal_insn ("incorrect insn:",insn);
+
+          if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
+            return avr_asm_len ("adiw r28,%o1-61" CR_TAB
+                                "ldd %A0,Y+61"    CR_TAB
+                                "ldd %B0,Y+62"    CR_TAB
+                                "ldd %C0,Y+63"    CR_TAB
+                                "sbiw r28,%o1-61", op, plen, -5);
+
+          return avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
+                              "sbci r29,hi8(-%o1)" CR_TAB
+                              "ld  %A0,Y"           CR_TAB
+                              "ldd %B0,Y+1"        CR_TAB
+                              "ldd %C0,Y+2"        CR_TAB
+                              "subi r28,lo8(%o1)"  CR_TAB
+                              "sbci r29,hi8(%o1)", op, plen, -7);
+        }
+
+      reg_base = true_regnum (XEXP (base, 0));
+      if (reg_base == REG_X)
+        {
+          /* R = (X + d) */
+          if (reg_dest == REG_X)
+            {
+              /* "ld r26,-X" is undefined */
+              return avr_asm_len ("adiw r26,%o1+2"     CR_TAB
+                                  "ld  r28,X"          CR_TAB
+                                  "ld  __tmp_reg__,-X" CR_TAB
+                                  "sbiw r26,1"         CR_TAB
+                                  "ld  r26,X"          CR_TAB
+                                  "mov r27,__tmp_reg__", op, plen, -6);
+            }
+          
+            avr_asm_len ("adiw r26,%o1"      CR_TAB
+                         "ld r24,X+"         CR_TAB
+                         "ld r25,X+"         CR_TAB
+                         "ld r26,X", op, plen, -4);
+
+            if (reg_dest != REG_X - 2)
+              avr_asm_len ("sbiw r26,%o1+2", op, plen, 1);
+
+            return "";
+        }
+      
+      if (reg_dest == reg_base)
+        return avr_asm_len ("ldd %C0,%C1" CR_TAB
+                            "ldd __tmp_reg__,%B1"  CR_TAB
+                            "ldd %A0,%A1" CR_TAB
+                            "mov %B0,__tmp_reg__", op, plen, -4);
+
+        return avr_asm_len ("ldd %A0,%A1" CR_TAB
+                            "ldd %B0,%B1" CR_TAB
+                            "ldd %C0,%C1", op, plen, -3);
+    }
+  else if (GET_CODE (base) == PRE_DEC) /* (--R) */
+    return avr_asm_len ("ld %C0,%1" CR_TAB
+                        "ld %B0,%1" CR_TAB
+                        "ld %A0,%1", op, plen, -3);
+  else if (GET_CODE (base) == POST_INC) /* (R++) */
+    return avr_asm_len ("ld %A0,%1" CR_TAB
+                        "ld %B0,%1" CR_TAB
+                        "ld %C0,%1", op, plen, -3);
+
+  else if (CONSTANT_ADDRESS_P (base))
+    return avr_asm_len ("lds %A0,%m1" CR_TAB
+                        "lds %B0,%m1+1" CR_TAB
+                        "lds %C0,%m1+2", op, plen , -6);
+  
+  fatal_insn ("unknown move insn:",insn);
+  return "";
+}
+
+/* Handle store of 24-bit type from register or zero to memory.  */
+
+static const char*
+avr_out_store_psi (rtx insn, rtx *op, int *plen)
+{
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx base = XEXP (dest, 0);
+  int reg_base = true_regnum (base);
+  
+  if (CONSTANT_ADDRESS_P (base))
+    return avr_asm_len ("sts %m0,%A1"   CR_TAB
+                        "sts %m0+1,%B1" CR_TAB
+                        "sts %m0+2,%C1", op, plen, -6);
+  
+  if (reg_base > 0)                 /* (r) */
+    {
+      if (reg_base == REG_X)        /* (R26) */
+        {
+          gcc_assert (!reg_overlap_mentioned_p (base, src));
+          
+          avr_asm_len ("st %0+,%A1"  CR_TAB
+                       "st %0+,%B1" CR_TAB
+                       "st %0,%C1", op, plen, -3);
+
+          if (!reg_unused_after (insn, base))
+            avr_asm_len ("sbiw r26,2", op, plen, 1);
+
+          return "";
+        }
+      else
+        return avr_asm_len ("st %0,%A1"    CR_TAB
+                            "std %0+1,%B1" CR_TAB
+                            "std %0+2,%C1", op, plen, -3);
+    }
+  else if (GET_CODE (base) == PLUS) /* (R + i) */
+    {
+      int disp = INTVAL (XEXP (base, 1));
+      reg_base = REGNO (XEXP (base, 0));
+
+      if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
+        {
+          if (reg_base != REG_Y)
+            fatal_insn ("incorrect insn:",insn);
+
+          if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
+            return avr_asm_len ("adiw r28,%o0-61" CR_TAB
+                                "std Y+61,%A1"    CR_TAB
+                                "std Y+62,%B1"    CR_TAB
+                                "std Y+63,%C1"    CR_TAB
+                                "sbiw r28,%o0-60", op, plen, -5);
+
+          return avr_asm_len ("subi r28,lo8(-%o0)" CR_TAB
+                              "sbci r29,hi8(-%o0)" CR_TAB
+                              "st Y,%A1"           CR_TAB
+                              "std Y+1,%B1"        CR_TAB
+                              "std Y+2,%C1"        CR_TAB
+                              "subi r28,lo8(%o0)"  CR_TAB
+                              "sbci r29,hi8(%o0)", op, plen, -7);
+        }
+      if (reg_base == REG_X)
+        {
+          /* (X + d) = R */
+          gcc_assert (!reg_overlap_mentioned_p (XEXP (base, 0), src));
+          
+          avr_asm_len ("adiw r26,%o0" CR_TAB
+                       "st X+,%A1"    CR_TAB
+                       "st X+,%B1"    CR_TAB
+                       "st X,%C1", op, plen, -4);
+
+          if (!reg_unused_after (insn, XEXP (base, 0)))
+            avr_asm_len ("sbiw r26,%o0+2", op, plen, 1);
+
+          return "";
+        }
+      
+      return avr_asm_len ("std %A0,%A1" CR_TAB
+                          "std %B0,%B1" CR_TAB
+                          "std %C0,%C1", op, plen, -3);
+    }
+  else if (GET_CODE (base) == PRE_DEC) /* (--R) */
+    return avr_asm_len ("st %0,%C1" CR_TAB
+                        "st %0,%B1" CR_TAB
+                        "st %0,%A1", op, plen, -3);
+  else if (GET_CODE (base) == POST_INC) /* (R++) */
+    return avr_asm_len ("st %0,%A1" CR_TAB
+                        "st %0,%B1" CR_TAB
+                        "st %0,%C1", op, plen, -3);
+
+  fatal_insn ("unknown move insn:",insn);
+  return "";
+}
+
+
+/* Move around 24-bit stuff.  */
+
+const char *
+avr_out_movpsi (rtx insn, rtx *op, int *plen)
+{
+  rtx dest = op[0];
+  rtx src = op[1];
+  
+  if (register_operand (dest, VOIDmode))
+    {
+      if (register_operand (src, VOIDmode)) /* mov r,r */
+        {
+          if (true_regnum (dest) > true_regnum (src))
+            {
+              avr_asm_len ("mov %C0,%C1", op, plen, -1);
+
+              if (AVR_HAVE_MOVW)
+                return avr_asm_len ("movw %A0,%A1", op, plen, 1);
+              else
+                return avr_asm_len ("mov %B0,%B1"  CR_TAB
+                                    "mov %A0,%A1", op, plen, 2);
+            }
+          else
+            {
+              if (AVR_HAVE_MOVW)
+                avr_asm_len ("movw %A0,%A1", op, plen, -1);
+              else
+                avr_asm_len ("mov %A0,%A1"  CR_TAB
+                             "mov %B0,%B1", op, plen, -2);
+              
+              return avr_asm_len ("mov %C0,%C1", op, plen, 1);
+            }
+        }
+      else if (CONST_INT_P (src))
+        {
+          return avr_out_reload_inpsi (op, NULL_RTX, plen);
+        }
+      else if (CONSTANT_P (src))
+        {
+          if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
+            {
+              return avr_asm_len ("ldi %A0,lo8(%1)" CR_TAB
+                                  "ldi %B0,hi8(%1)" CR_TAB
+                                  "ldi %C0,hh8(%1)", op, plen, -3);
+            }
+          
+          /* Last resort, better than loading from memory.  */
+          return avr_asm_len ("mov __tmp_reg__,r31" CR_TAB
+                              "ldi r31,lo8(%1)" CR_TAB
+                              "mov %A0,r31"     CR_TAB
+                              "ldi r31,hi8(%1)" CR_TAB
+                              "mov %B0,r31"     CR_TAB
+                              "ldi r31,hh8(%1)" CR_TAB
+                              "mov %C0,r31"     CR_TAB
+                              "mov r31,__tmp_reg__", op, plen, -8);
+        }
+      else if (MEM_P (src))
+        return avr_out_load_psi (insn, op, plen); /* mov r,m */
+    }
+  else if (MEM_P (dest))
+    {
+      if (src == CONST0_RTX (GET_MODE (dest)))
+        op[1] = zero_reg_rtx;
+      
+      avr_out_store_psi (insn, op, plen);
+      
+      op[1] = src;
+      return "";
+    }
+    
+  fatal_insn ("invalid insn:", insn);
+  return "";
+}
+
+
 const char *
 out_movqi_mr_r (rtx insn, rtx op[], int *l)
 {
@@ -3280,22 +3599,24 @@ avr_out_compare (rtx insn, rtx *xop, int *plen)
           avr_asm_len ("dec %A0" CR_TAB
                        "or %A0,%B0", xop, plen, 2);
           
-          if (n_bytes == 4)
-            avr_asm_len ("or %A0,%C0" CR_TAB
-                         "or %A0,%D0", xop, plen, 2);
+          if (n_bytes >= 3)
+            avr_asm_len ("or %A0,%C0", xop, plen, 1);
+
+          if (n_bytes >= 4)
+            avr_asm_len ("or %A0,%D0", xop, plen, 1);
 
           return "";
         }
       else if (xval == constm1_rtx)
         {
-          if (n_bytes == 4)
-            avr_asm_len ("and %A0,%D0" CR_TAB
-                         "and %A0,%C0", xop, plen, 2);
+          if (n_bytes >= 4)
+            avr_asm_len ("and %A0,%D0", xop, plen, 1);
           
-          avr_asm_len ("and %A0,%B0" CR_TAB
-                       "com %A0", xop, plen, 2);
+          if (n_bytes >= 3)
+            avr_asm_len ("and %A0,%C0", xop, plen, 1);
           
-          return "";
+          return avr_asm_len ("and %A0,%B0" CR_TAB
+                              "com %A0", xop, plen, 2);
         }
     }
 
@@ -3335,8 +3656,7 @@ avr_out_compare (rtx insn, rtx *xop, int *plen)
               && compare_eq_p (insn)
               && reg_unused_after (insn, xreg))
             {
-              avr_asm_len ("adiw %0,%n1", xop, plen, 1);
-              break;
+              return avr_asm_len ("adiw %0,%n1", xop, plen, 1);
             }
         }
 
@@ -3400,6 +3720,31 @@ avr_out_tsthi (rtx insn, rtx *op, int *plen)
     {
       /* Faster than sbiw if we can clobber the operand.  */
       avr_asm_len ("or %A0,%B0", op, plen, -1);
+    }
+  else
+    {
+      avr_out_compare (insn, op, plen);
+    }
+
+  return "";
+}
+
+
+/* Output test instruction for PSImode.  */
+
+const char*
+avr_out_tstpsi (rtx insn, rtx *op, int *plen)
+{
+  if (compare_sign_p (insn))
+    {
+      avr_asm_len ("tst %C0", op, plen, -1);
+    }
+  else if (reg_unused_after (insn, op[0])
+           && compare_eq_p (insn))
+    {
+      /* Faster than sbiw if we can clobber the operand.  */
+      avr_asm_len ("or %A0,%B0" CR_TAB
+                   "or %A0,%C0", op, plen, -2);
     }
   else
     {
@@ -3938,6 +4283,69 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 }
 
 
+/* 24-bit shift left */
+
+const char*
+avr_out_ashlpsi3 (rtx insn, rtx *op, int *plen)
+{
+  if (plen)
+    *plen = 0;
+  
+  if (CONST_INT_P (op[2]))
+    {
+      switch (INTVAL (op[2]))
+        {
+        default:
+          if (INTVAL (op[2]) < 24)
+            break;
+
+          return avr_asm_len ("clr %A0" CR_TAB
+                              "clr %B0" CR_TAB
+                              "clr %C0", op, plen, 3);
+
+        case 8:
+          {
+            int reg0 = REGNO (op[0]);
+            int reg1 = REGNO (op[1]);
+            
+            if (reg0 >= reg1)
+              return avr_asm_len ("mov %C0,%B1"  CR_TAB
+                                  "mov %B0,%A1"  CR_TAB
+                                  "clr %A0", op, plen, 3);
+            else
+              return avr_asm_len ("clr %A0"      CR_TAB
+                                  "mov %B0,%A1"  CR_TAB
+                                  "mov %C0,%B1", op, plen, 3);
+          }
+
+        case 16:
+          {
+            int reg0 = REGNO (op[0]);
+            int reg1 = REGNO (op[1]);
+
+            if (reg0 + 2 != reg1)
+              avr_asm_len ("mov %C0,%A0", op, plen, 1);
+            
+            return avr_asm_len ("clr %B0"  CR_TAB
+                                "clr %A0", op, plen, 2);
+          }
+
+        case 23:
+          return avr_asm_len ("clr %C0" CR_TAB
+                              "lsr %A0" CR_TAB
+                              "ror %C0" CR_TAB
+                              "clr %B0" CR_TAB
+                              "clr %A0", op, plen, 5);
+        }
+    }
+  
+  out_shift_with_cnt ("lsl %A0" CR_TAB
+                      "rol %B0" CR_TAB
+                      "rol %C0", insn, op, plen, 3);
+  return "";
+}
+
+
 /* 32bit shift left ((long)x << i)   */
 
 const char *
@@ -4260,6 +4668,65 @@ ashrhi3_out (rtx insn, rtx operands[], int *len)
   out_shift_with_cnt ((AS1 (asr,%B0) CR_TAB
 		       AS1 (ror,%A0)),
 		       insn, operands, len, 2);
+  return "";
+}
+
+
+/* 24-bit arithmetic shift right */
+
+const char*
+avr_out_ashrpsi3 (rtx insn, rtx *op, int *plen)
+{
+  int dest = REGNO (op[0]);
+  int src = REGNO (op[1]);
+
+  if (CONST_INT_P (op[2]))
+    {
+      if (plen)
+        *plen = 0;
+      
+      switch (INTVAL (op[2]))
+        {
+        case 8:
+          if (dest <= src)
+            return avr_asm_len ("mov %A0,%B1" CR_TAB
+                                "mov %B0,%C1" CR_TAB
+                                "clr %C0"     CR_TAB
+                                "sbrc %B0,7"  CR_TAB
+                                "dec %C0", op, plen, 5);
+          else
+            return avr_asm_len ("clr %C0"     CR_TAB
+                                "sbrc %C1,7"  CR_TAB
+                                "dec %C0"     CR_TAB
+                                "mov %B0,%C1" CR_TAB
+                                "mov %A0,%B1", op, plen, 5);
+          
+        case 16:
+          if (dest != src + 2)
+            avr_asm_len ("mov %A0,%C1", op, plen, 1);
+          
+          return avr_asm_len ("clr %B0"     CR_TAB
+                              "sbrc %A0,7"  CR_TAB
+                              "com %B0"     CR_TAB
+                              "mov %C0,%B0", op, plen, 4);
+
+        default:
+          if (INTVAL (op[2]) < 24)
+            break;
+
+          /* fall through */
+
+        case 31:
+          return avr_asm_len ("lsl %C0"     CR_TAB
+                              "sbc %A0,%A0" CR_TAB
+                              "mov %B0,%A0" CR_TAB
+                              "mov %C0,%A0", op, plen, 4);
+        } /* switch */
+    }
+  
+  out_shift_with_cnt ("asr %C0" CR_TAB
+                      "ror %B0" CR_TAB
+                      "ror %A0", insn, op, plen, 3);
   return "";
 }
 
@@ -4714,6 +5181,61 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
   return "";
 }
 
+
+/* 24-bit logic shift right */
+
+const char*
+avr_out_lshrpsi3 (rtx insn, rtx *op, int *plen)
+{
+  int dest = REGNO (op[0]);
+  int src = REGNO (op[1]);
+
+  if (CONST_INT_P (op[2]))
+    {
+      if (plen)
+        *plen = 0;
+      
+      switch (INTVAL (op[2]))
+        {
+        case 8:
+          if (dest <= src)
+            return avr_asm_len ("mov %A0,%B1" CR_TAB
+                                "mov %B0,%C1" CR_TAB
+                                "clr %C0", op, plen, 3);
+          else
+            return avr_asm_len ("clr %C0"     CR_TAB
+                                "mov %B0,%C1" CR_TAB
+                                "mov %A0,%B1", op, plen, 3);
+          
+        case 16:
+          if (dest != src + 2)
+            avr_asm_len ("mov %A0,%C1", op, plen, 1);
+          
+          return avr_asm_len ("clr %B0"  CR_TAB
+                              "clr %C0", op, plen, 2);
+
+        default:
+          if (INTVAL (op[2]) < 24)
+            break;
+
+          /* fall through */
+
+        case 23:
+          return avr_asm_len ("clr %A0"    CR_TAB
+                              "sbrc %C0,7" CR_TAB
+                              "inc %A0"    CR_TAB
+                              "clr %B0"    CR_TAB
+                              "clr %C0", op, plen, 5);
+        } /* switch */
+    }
+  
+  out_shift_with_cnt ("lsr %C0" CR_TAB
+                      "ror %B0" CR_TAB
+                      "ror %A0", insn, op, plen, 3);
+  return "";
+}
+
+
 /* 32bit logic shift right ((unsigned int)x >> i) */
 
 const char *
@@ -4874,7 +5396,9 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
       if (i && !started)
         *pcc = CC_CLOBBER;
       
-      if (!started && i % 2 == 0
+      if (!started
+          && i % 2 == 0
+          && i + 2 <= n_bytes
           && test_hard_reg_class (ADDW_REGS, reg8))
         {
           rtx xval16 = simplify_gen_subreg (HImode, xval, mode, i);
@@ -4911,11 +5435,11 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
       else if ((val8 == 1 || val8 == 0xff)
                && !started
                && i == n_bytes - 1)
-      {
+        {
           avr_asm_len ((code == PLUS) ^ (val8 == 1) ? "dec %0" : "inc %0",
                        op, plen, 1);
           break;
-      }
+        }
 
       switch (code)
         {
@@ -5399,6 +5923,7 @@ adjust_insn_length (rtx insn, int len)
   switch (adjust_len)
     {
     case ADJUST_LEN_RELOAD_IN16: output_reload_inhi (op, op[2], &len); break;
+    case ADJUST_LEN_RELOAD_IN24: avr_out_reload_inpsi (op, op[2], &len); break;
     case ADJUST_LEN_RELOAD_IN32: output_reload_insisf (op, op[2], &len); break;
       
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
@@ -5411,9 +5936,11 @@ adjust_insn_length (rtx insn, int len)
       
     case ADJUST_LEN_MOV8:  output_movqi (insn, op, &len); break;
     case ADJUST_LEN_MOV16: output_movhi (insn, op, &len); break;
+    case ADJUST_LEN_MOV24: avr_out_movpsi (insn, op, &len); break;
     case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
       
     case ADJUST_LEN_TSTHI: avr_out_tsthi (insn, op, &len); break;
+    case ADJUST_LEN_TSTPSI: avr_out_tstpsi (insn, op, &len); break;
     case ADJUST_LEN_TSTSI: avr_out_tstsi (insn, op, &len); break;
     case ADJUST_LEN_COMPARE: avr_out_compare (insn, op, &len); break;
 
@@ -5429,6 +5956,10 @@ adjust_insn_length (rtx insn, int len)
     case ADJUST_LEN_ASHLHI: ashlhi3_out (insn, op, &len); break;
     case ADJUST_LEN_ASHLSI: ashlsi3_out (insn, op, &len); break;
       
+    case ADJUST_LEN_ASHLPSI: avr_out_ashlpsi3 (insn, op, &len); break;
+    case ADJUST_LEN_ASHRPSI: avr_out_ashrpsi3 (insn, op, &len); break;
+    case ADJUST_LEN_LSHRPSI: avr_out_lshrpsi3 (insn, op, &len); break;
+
     case ADJUST_LEN_CALL: len = AVR_HAVE_JMP_CALL ? 2 : 1; break;
 
     default:
@@ -6228,13 +6759,11 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	  *total = COSTS_N_INSNS (1);
 	  break;
 
-	case HImode:
-	  *total = COSTS_N_INSNS (3);
-	  break;
-
-	case SImode:
-	  *total = COSTS_N_INSNS (7);
-	  break;
+        case HImode:
+        case PSImode:
+        case SImode:
+          *total = COSTS_N_INSNS (2 * GET_MODE_SIZE (mode) - 1);
+          break;
 
 	default:
 	  return false;
@@ -6320,6 +6849,19 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	    *total = COSTS_N_INSNS (2);
 	  break;
 
+        case PSImode:
+          if (!CONST_INT_P (XEXP (x, 1)))
+            {
+              *total = COSTS_N_INSNS (3);
+              *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1,
+                                              speed);
+            }
+          else if (INTVAL (XEXP (x, 1)) >= -63 && INTVAL (XEXP (x, 1)) <= 63)
+            *total = COSTS_N_INSNS (2);
+          else
+            *total = COSTS_N_INSNS (3);
+          break;
+
 	case SImode:
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	    {
@@ -6367,6 +6909,7 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
             *total = COSTS_N_INSNS (1) + *total;
           return true;
         }
+      /* FALLTHRU */
     case AND:
     case IOR:
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
@@ -6436,6 +6979,13 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	  else
 	    return false;
 	  break;
+
+        case PSImode:
+          if (!speed)
+            *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 2 : 1);
+          else
+            *total = 10;
+          break;
 
 	case SImode:
 	  if (AVR_HAVE_MUL)
@@ -6611,6 +7161,31 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	      }
 	  break;
 
+        case PSImode:
+          if (!CONST_INT_P (XEXP (x, 1)))
+            {
+              *total = COSTS_N_INSNS (!speed ? 6 : 73);
+            }
+          else
+            switch (INTVAL (XEXP (x, 1)))
+              {
+              case 0:
+                *total = 0;
+                break;
+              case 1:
+              case 8:
+              case 16:
+                *total = COSTS_N_INSNS (3);
+                break;
+              case 23:
+                *total = COSTS_N_INSNS (5);
+                break;
+              default:
+                *total = COSTS_N_INSNS (!speed ? 5 : 3 * INTVAL (XEXP (x, 1)));
+                break;
+              }
+          break;
+
 	case SImode:
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	    {
@@ -6720,6 +7295,33 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 						speed);
 	      }
 	  break;
+
+        case PSImode:
+          if (!CONST_INT_P (XEXP (x, 1)))
+            {
+              *total = COSTS_N_INSNS (!speed ? 6 : 73);
+            }
+          else
+            switch (INTVAL (XEXP (x, 1)))
+              {
+              case 0:
+                *total = 0;
+                break;
+              case 1:
+                *total = COSTS_N_INSNS (3);
+                break;
+              case 16:
+              case 8:
+                *total = COSTS_N_INSNS (5);
+                break;
+              case 23:
+                *total = COSTS_N_INSNS (4);
+                break;
+              default:
+                *total = COSTS_N_INSNS (!speed ? 5 : 3 * INTVAL (XEXP (x, 1)));
+                break;
+              }
+          break;
 
 	case SImode:
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
@@ -6832,6 +7434,31 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	      }
 	  break;
 
+        case PSImode:
+          if (!CONST_INT_P (XEXP (x, 1)))
+            {
+              *total = COSTS_N_INSNS (!speed ? 6 : 73);
+            }
+          else
+            switch (INTVAL (XEXP (x, 1)))
+              {
+              case 0:
+                *total = 0;
+                break;
+              case 1:
+              case 8:
+              case 16:
+                *total = COSTS_N_INSNS (3);
+                break;
+              case 23:
+                *total = COSTS_N_INSNS (5);
+                break;
+              default:
+                *total = COSTS_N_INSNS (!speed ? 5 : 3 * INTVAL (XEXP (x, 1)));
+                break;
+              }
+          break;
+
 	case SImode:
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	    {
@@ -6887,6 +7514,12 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
             *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
 	  else if (INTVAL (XEXP (x, 1)) != 0)
 	    *total += COSTS_N_INSNS (1);
+          break;
+
+        case PSImode:
+          *total = COSTS_N_INSNS (3);
+          if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) != 0)
+            *total += COSTS_N_INSNS (2);
           break;
 
         case SImode:
@@ -7310,8 +7943,10 @@ avr_libcall_value (enum machine_mode mode,
 		   const_rtx func ATTRIBUTE_UNUSED)
 {
   int offs = GET_MODE_SIZE (mode);
-  if (offs < 2)
-    offs = 2;
+  
+  if (offs <= 4)
+    offs = (offs + 1) & ~1;
+  
   return gen_rtx_REG (mode, avr_ret_register () + 2 - offs);
 }
 
@@ -7537,10 +8172,11 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   /* (REG:SI 14) is special: It's neither in LD_REGS nor in NO_LD_REGS
      but has some subregs that are in LD_REGS.  Use the MSB (REG:QI 17).  */
   
-  if (14 == REGNO (dest)
-      && 4 == GET_MODE_SIZE (mode))
+  if (REGNO (dest) < 16
+      && REGNO (dest) + GET_MODE_SIZE (mode) > 16)
     {
-      clobber_reg = gen_rtx_REG (QImode, 17);
+      clobber_reg = gen_rtx_REG (QImode,
+                                 REGNO (dest) + GET_MODE_SIZE (mode) - 1);
     }
 
   /* We might need a clobber reg but don't have one.  Look at the value
@@ -7577,6 +8213,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
       /* Look if we can reuse the low word by means of MOVW.  */
       
       if (n == 2
+          && GET_MODE_SIZE (mode) >= 4
           && AVR_HAVE_MOVW)
         {
           rtx lo16 = simplify_gen_subreg (HImode, src, mode, 0);
@@ -7815,6 +8452,16 @@ output_reload_insisf (rtx *op, rtx clobber_reg, int *len)
     }
 
   /* Default: destination not pre-cleared.  */
+
+  output_reload_in_const (op, clobber_reg, len, false);
+  return "";
+}
+
+const char *
+avr_out_reload_inpsi (rtx *op, rtx clobber_reg, int *len)
+{
+  gcc_assert (REG_P (op[0])
+              && CONST_INT_P (op[1]));
 
   output_reload_in_const (op, clobber_reg, len, false);
   return "";
@@ -8078,6 +8725,16 @@ enum avr_builtin_id
     AVR_BUILTIN_DELAY_CYCLES
   };
 
+static void
+avr_init_builtin_int24 (void)
+{
+  tree int24_type  = make_signed_type (GET_MODE_BITSIZE (PSImode));
+  tree uint24_type = make_unsigned_type (GET_MODE_BITSIZE (PSImode));
+
+  (*lang_hooks.types.register_builtin_type) (int24_type, "__int24");
+  (*lang_hooks.types.register_builtin_type) (uint24_type, "__uint24");
+}
+
 #define DEF_BUILTIN(NAME, TYPE, CODE)                                   \
   do                                                                    \
     {                                                                   \
@@ -8133,6 +8790,8 @@ avr_init_builtins (void)
                AVR_BUILTIN_FMULS);
   DEF_BUILTIN ("__builtin_avr_fmulsu", int_ftype_char_uchar, 
                AVR_BUILTIN_FMULSU);
+
+  avr_init_builtin_int24 ();
 }
 
 #undef DEF_BUILTIN
