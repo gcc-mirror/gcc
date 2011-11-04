@@ -31,8 +31,8 @@ int main()
 {
   A a1;
   if (a1.i != 42) return 1;
-  A a2 = { 24 };
-  if (a2.i != 24) return 2;
+  A a2{};
+  if (a2.i != 42) return 2;
   A a3[1];
   if (a3[0].i != 42) return 3;
 
@@ -43,7 +43,7 @@ int main()
 
   C<int,3> c1;
   if (c1.m != 3) return 5;
-  C<int,3> c2 { 5 };
+  C<int,5> c2 {};
   if (c2.m != 5) return 6;
 
   D<int,3> d1;

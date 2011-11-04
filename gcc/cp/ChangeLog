@@ -1,3 +1,9 @@
+2011-11-04  Olivier Goffart  <olivier@woboq.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/50965
+	* class.c (check_field_decls): NSDMI makes a class non-aggregate.
+
 2011-11-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48420
