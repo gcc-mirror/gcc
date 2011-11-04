@@ -606,16 +606,8 @@ package Sinfo is
    --    harmless.
 
    --  Atomic_Sync_Required (Flag14-Sem)
-   --    This flag is set in an identifier or expanded name node if the
-   --    corresponding reference (or assignment when on the left side of
-   --    an assignment) requires atomic synchronization, as a result of
-   --    Atomic_Synchronization being enabled for the corresponding entity
-   --    or its type. Also set for Selector_Name of an N_Selected Component
-   --    node if the type is atomic and requires atomic synchronization.
-   --    Also set on an N_Explicit Dereference node if the resulting type
-   --    is atomic and requires atomic synchronization. Finally it is set
-   --    on an N_Indexed_Component node if the resulting type is Atomic, or
-   --    if the array type or the array has pragma Atomic_Components set.
+   --    This flag is set on a node for which atomic synchronization is
+   --    required for the corresponding reference or modification.
 
    --  At_End_Proc (Node1)
    --    This field is present in an N_Handled_Sequence_Of_Statements node.
@@ -3248,6 +3240,7 @@ package Sinfo is
       --  Associated_Node (Node4-Sem)
       --  Do_Discriminant_Check (Flag13-Sem)
       --  Is_In_Discriminant_Check (Flag11-Sem)
+      --  Atomic_Sync_Required (Flag14-Sem)
       --  plus fields for expression
 
       --------------------------

@@ -256,7 +256,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Expanded_Name
         or else NT (N).Nkind = N_Explicit_Dereference
         or else NT (N).Nkind = N_Identifier
-        or else NT (N).Nkind = N_Indexed_Component);
+        or else NT (N).Nkind = N_Indexed_Component
+        or else NT (N).Nkind = N_Selected_Component);
       return Flag14 (N);
    end Atomic_Sync_Required;
 
@@ -3327,7 +3328,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Expanded_Name
         or else NT (N).Nkind = N_Explicit_Dereference
         or else NT (N).Nkind = N_Identifier
-        or else NT (N).Nkind = N_Indexed_Component);
+        or else NT (N).Nkind = N_Indexed_Component
+        or else NT (N).Nkind = N_Selected_Component);
       Set_Flag14 (N, Val);
    end Set_Atomic_Sync_Required;
 
