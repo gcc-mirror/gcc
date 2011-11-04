@@ -1,3 +1,31 @@
+2011-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (vectorizable_conversion): Rewritten to handle
+	not just FLOAT_EXPR and FIX_TRUNC_EXPR, but also CONVERT_EXPR_CODE_P,
+	WIDEN_MULT_EXPR and WIDEN_LSHIFT_EXPR to handle what
+	vectorizable_type_demotion and vectorizable_type_promotion did.
+	Additionally handle FLOAT_EXPR and FIX_TRUNC_EXPR where the integer
+	is {,un}signed {char,short}.
+	(vect_create_vectorized_demotion_stmts): Fix comment typo.  For
+	recursive calls unconditionally use VEC_PACK_TRUNC_EXPR.
+	Push vec_dest back to the vec_dsts vector at the end.
+	(vect_create_vectorized_promotion_stmts): Don't recurse, do just
+	one step.  Removed multi_step_cvt, vec_dsts, slp_node and
+	prev_stmt_info arguments, add vec_dest argument.  Push always
+	into vec_tmp, not just when multi_step_cvt != 0, replace *vec_oprdn0
+	with vec_tmp at the end after freeing old *vec_oprnd0 vector.
+	(vectorizable_type_demotion, vectorizable_type_promotion): Removed.
+	(vect_analyze_stmt): Don't call vectorizable_type_demotion and
+	vectorizable_type_promotion.  Call vectorizable_conversion even
+	for SLP bb vectorization.
+	(vect_transform_stmt): Call vectorizable_conversion instead of
+	vectorizable_type_demotion and vectorizable_type_promotion.
+	(supportable_widening_operation): Clear *multi_step_cvt first,
+	simplify c1/c2 computation, free *interm_types vector on failure.
+	(supportable_narrowing_operation): Clear *multi_step_cvt first,
+	free *interm_types vector on failure, handle multi-step
+	FIX_TRUNC_EXPR.
+
 2011-11-04  Tristan Gingold  <gingold@adacore.com>
 
 	* config/alpha/alpha.c (alpha_write_linkage): Remove fundecl
