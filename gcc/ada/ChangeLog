@@ -1,3 +1,32 @@
+2011-11-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb (Gen_Elab_Calls): In the case
+	of the AAMP target, set elaboration entities to 1 rather than
+	incrementing.
+
+2011-11-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Install_Limited_With_Unit): To establish the
+	proper entities on the ancestors of a child unit that appear
+	in a limited_with clause, follow the unit links because the
+	units are not analyzed and scope information is incomplete.
+
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Selected_Component): Refine code
+	setting the Atomic_Sync_Required flag to detect one more case.
+	* exp_util.adb (Activate_Atomic_Synchronization): Refine code
+	setting the Atomic_Sync_Required flag to exclude more cases,
+	depending on the parent of the node to be examined.
+
+2011-11-04  Bob Duff  <duff@adacore.com>
+
+	* g-excact.adb: Minor: use named notation.
+
+2011-11-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Improve error messages for illegal iterators.
+
 2011-11-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_alfa.adb: Add with and use clauses for Exp_Ch8 and

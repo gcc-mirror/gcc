@@ -5013,12 +5013,16 @@ package body Sem_Ch10 is
 
                --  Set entity of parent identifiers if the unit is a child
                --  unit. This ensures that the tree is properly formed from
-               --  semantic point of view (e.g. for ASIS queries).
+               --  semantic point of view (e.g. for ASIS queries). The unit
+               --  entities are not fully analyzed, so we need to follow unit
+               --  links in the tree.
 
                Set_Entity (Nam, Ent);
 
                Nam := Prefix (Nam);
-               Ent := Scope (Ent);
+               Ent :=
+                 Defining_Entity
+                   (Unit (Parent_Spec (Unit_Declaration_Node (Ent))));
 
                --  Set entity of last ancestor
 

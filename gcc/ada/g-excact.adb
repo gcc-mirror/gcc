@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,7 +97,7 @@ package body GNAT.Exception_Actions is
 
    function Name_To_Id (Name : String) return Exception_Id is
    begin
-      return To_Id (Internal_Exception (Name, False));
+      return To_Id (Internal_Exception (Name, Create_If_Not_Exist => False));
    end Name_To_Id;
 
    ---------------------------------

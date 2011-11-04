@@ -168,14 +168,30 @@ package body Exp_Util is
       Msg_Node : Node_Id;
 
    begin
-      --  Nothing to do if we are the prefix of an attribute, since we do not
-      --  want an atomic sync operation for things like A'Adress or A'Size).
 
-      if Nkind (Parent (N)) = N_Attribute_Reference
-        and then Prefix (Parent (N)) = N
-      then
-         return;
-      end if;
+      case Nkind (Parent (N)) is
+         when N_Attribute_Reference |
+
+            --  Nothing to do if we are the prefix of an attribute, since we
+            --  do not want an atomic sync operation for things like 'Size.
+
+              N_Reference           |
+
+            --  Likewise for a mere reference
+
+              N_Indexed_Component   |
+              N_Selected_Component  |
+              N_Slice               =>
+
+            --  The C.6(15) clause says that only reads and updates of the
+            --  object as a whole require atomic synchronization.
+
+            if Prefix (Parent (N)) = N then
+               return;
+            end if;
+
+         when others => null;
+      end case;
 
       --  Go ahead and set the flag
 
