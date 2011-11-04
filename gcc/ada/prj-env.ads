@@ -210,6 +210,16 @@ package Prj.Env is
    --  Override the value of the project path. This also removes the implicit
    --  default search directories.
 
+   generic
+      with function Check_Filename (Name : String) return Boolean;
+   function Find_Name_In_Path (Self : Project_Search_Path;
+                               Path : String) return String_Access;
+   --  Find a name in the project search path of Self. Check_Filename is
+   --  the predicate to valid the search.  If Path is an absolute filename,
+   --  simply calls the predicate with Path. Otherwise, calls the predicate
+   --  for each component of the path. Stops as soon as the predicate
+   --  returns True and returns the name, or returns null in case of failure.
+
    procedure Find_Project
      (Self               : in out Project_Search_Path;
       Project_File_Name  : String;

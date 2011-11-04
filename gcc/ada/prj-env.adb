@@ -2058,6 +2058,75 @@ package body Prj.Env is
       Projects_Paths.Reset (Self.Cache);
    end Set_Path;
 
+   -----------------------
+   -- Find_Name_In_Path --
+   -----------------------
+
+   function Find_Name_In_Path (Self : Project_Search_Path;
+                               Path : String) return String_Access is
+      First  : Natural;
+      Last   : Natural;
+
+   begin
+      if Current_Verbosity = High then
+         Debug_Output ("Trying " & Path);
+      end if;
+
+      if Is_Absolute_Path (Path) then
+         if Check_Filename (Path) then
+            return new String'(Path);
+         else
+            return null;
+         end if;
+
+      else
+         --  Because we don't want to resolve symbolic links, we cannot use
+         --  Locate_Regular_File. So, we try each possible path
+         --  successively.
+
+         First := Self.Path'First;
+         while First <= Self.Path'Last loop
+            while First <= Self.Path'Last
+              and then Self.Path (First) = Path_Separator
+            loop
+               First := First + 1;
+            end loop;
+
+            exit when First > Self.Path'Last;
+
+            Last := First;
+            while Last < Self.Path'Last
+              and then Self.Path (Last + 1) /= Path_Separator
+            loop
+               Last := Last + 1;
+            end loop;
+
+            Name_Len := 0;
+
+            if not Is_Absolute_Path (Self.Path (First .. Last)) then
+               Add_Str_To_Name_Buffer (Get_Current_Dir);  -- ??? System call
+               Add_Char_To_Name_Buffer (Directory_Separator);
+            end if;
+
+            Add_Str_To_Name_Buffer (Self.Path (First .. Last));
+            Add_Char_To_Name_Buffer (Directory_Separator);
+            Add_Str_To_Name_Buffer (Path);
+
+            if Current_Verbosity = High then
+               Debug_Output ("Testing file " & Name_Buffer (1 .. Name_Len));
+            end if;
+
+            if Check_Filename (Name_Buffer (1 .. Name_Len)) then
+               return new String'(Name_Buffer (1 .. Name_Len));
+            end if;
+
+            First := Last + 1;
+         end loop;
+      end if;
+
+      return null;
+   end Find_Name_In_Path;
+
    ------------------
    -- Find_Project --
    ------------------
@@ -2072,77 +2141,9 @@ package body Prj.Env is
       --  Have to do a copy, in case the parameter is Name_Buffer, which we
       --  modify below
 
-      function Try_Path_Name (Path : String) return String_Access;
-      pragma Inline (Try_Path_Name);
-      --  Try the specified Path
-
-      -------------------
-      -- Try_Path_Name --
-      -------------------
-
-      function Try_Path_Name (Path : String) return String_Access is
-         First  : Natural;
-         Last   : Natural;
-         Result : String_Access := null;
-
-      begin
-         if Current_Verbosity = High then
-            Debug_Output ("Trying " & Path);
-         end if;
-
-         if Is_Absolute_Path (Path) then
-            if Is_Regular_File (Path) then
-               Result := new String'(Path);
-            end if;
-
-         else
-            --  Because we don't want to resolve symbolic links, we cannot use
-            --  Locate_Regular_File. So, we try each possible path
-            --  successively.
-
-            First := Self.Path'First;
-            while First <= Self.Path'Last loop
-               while First <= Self.Path'Last
-                 and then Self.Path (First) = Path_Separator
-               loop
-                  First := First + 1;
-               end loop;
-
-               exit when First > Self.Path'Last;
-
-               Last := First;
-               while Last < Self.Path'Last
-                 and then Self.Path (Last + 1) /= Path_Separator
-               loop
-                  Last := Last + 1;
-               end loop;
-
-               Name_Len := 0;
-
-               if not Is_Absolute_Path (Self.Path (First .. Last)) then
-                  Add_Str_To_Name_Buffer (Get_Current_Dir);  -- ??? System call
-                  Add_Char_To_Name_Buffer (Directory_Separator);
-               end if;
-
-               Add_Str_To_Name_Buffer (Self.Path (First .. Last));
-               Add_Char_To_Name_Buffer (Directory_Separator);
-               Add_Str_To_Name_Buffer (Path);
-
-               if Current_Verbosity = High then
-                  Debug_Output ("Testing file " & Name_Buffer (1 .. Name_Len));
-               end if;
-
-               if Is_Regular_File (Name_Buffer (1 .. Name_Len)) then
-                  Result := new String'(Name_Buffer (1 .. Name_Len));
-                  exit;
-               end if;
-
-               First := Last + 1;
-            end loop;
-         end if;
-
-         return Result;
-      end Try_Path_Name;
+      function Try_Path_Name is new Find_Name_In_Path
+        (Check_Filename => Is_Regular_File);
+      --  Find a file in the project search path.
 
       --  Local Declarations
 
@@ -2194,27 +2195,30 @@ package body Prj.Env is
 
          if not Has_Dot then
             Result := Try_Path_Name
-              (Directory & Directory_Separator &
+              (Self,
+               Directory & Directory_Separator &
                File & Project_File_Extension);
          end if;
 
          --  Then we try <directory>/<file_name>
 
          if Result = null then
-            Result := Try_Path_Name (Directory & Directory_Separator & File);
+            Result := Try_Path_Name
+              (Self,
+               Directory & Directory_Separator & File);
          end if;
       end if;
 
       --  Then we try <file_name>.<extension>
 
       if Result = null and then not Has_Dot then
-         Result := Try_Path_Name (File & Project_File_Extension);
+         Result := Try_Path_Name (Self, File & Project_File_Extension);
       end if;
 
       --  Then we try <file_name>
 
       if Result = null then
-         Result := Try_Path_Name (File);
+         Result := Try_Path_Name (Self, File);
       end if;
 
       --  If we cannot find the project file, we return an empty string

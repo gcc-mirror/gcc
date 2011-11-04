@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---              ADA.CONTAINERS.GENERIC_ANONYMOUS_ARRAY_SORT                 --
+--                       ADA.CONTAINERS.GENERIC_SORT                        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,21 +27,101 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
---  This unit was originally a GNAT-specific addition to Ada 2005. A unit
---  providing the same feature, Ada.Containers.Generic_Sort, was defined for
---  Ada 2012.  We retain Generic_Anonymous_Array_Sort for compatibility, but
---  implement it in terms of the official unit, Generic_Sort.
+--  This algorithm was adapted from GNAT.Heap_Sort (see g-heasor.ad[sb])
 
-with Ada.Containers.Generic_Sort;
+with System;
 
-procedure Ada.Containers.Generic_Anonymous_Array_Sort
-  (First, Last : Index_Type'Base)
-is
-   procedure Sort is new Ada.Containers.Generic_Sort
-     (Index_Type => Index_Type,
-      Before     => Less,
-      Swap       => Swap);
+procedure Ada.Containers.Generic_Sort (First, Last : Index_Type'Base) is
+   type T is range System.Min_Int .. System.Max_Int;
+
+   function To_Index (J : T) return Index_Type;
+   pragma Inline (To_Index);
+
+   function Lt (J, K : T) return Boolean;
+   pragma Inline (Lt);
+
+   procedure Xchg (J, K : T);
+   pragma Inline (Xchg);
+
+   procedure Sift (S : T);
+
+   --------------
+   -- To_Index --
+   --------------
+
+   function To_Index (J : T) return Index_Type is
+      K : constant T'Base := Index_Type'Pos (First) + J - T'(1);
+   begin
+      return Index_Type'Val (K);
+   end To_Index;
+
+   --------
+   -- Lt --
+   --------
+
+   function Lt (J, K : T) return Boolean is
+   begin
+      return Before (To_Index (J), To_Index (K));
+   end Lt;
+
+   ----------
+   -- Xchg --
+   ----------
+
+   procedure Xchg (J, K : T) is
+   begin
+      Swap (To_Index (J), To_Index (K));
+   end Xchg;
+
+   Max : T := Index_Type'Pos (Last) - Index_Type'Pos (First) + T'(1);
+
+   ----------
+   -- Sift --
+   ----------
+
+   procedure Sift (S : T) is
+      C      : T := S;
+      Son    : T;
+      Father : T;
+
+   begin
+      loop
+         Son := C + C;
+
+         if Son < Max then
+            if Lt (Son, Son + 1) then
+               Son := Son + 1;
+            end if;
+         elsif Son > Max then
+            exit;
+         end if;
+
+         Xchg (Son, C);
+         C := Son;
+      end loop;
+
+      while C /= S loop
+         Father := C / 2;
+
+         if Lt (Father, C) then
+            Xchg (Father, C);
+            C := Father;
+         else
+            exit;
+         end if;
+      end loop;
+   end Sift;
+
+--  Start of processing for Generic_Sort
 
 begin
-   Sort (First, Last);
-end Ada.Containers.Generic_Anonymous_Array_Sort;
+   for J in reverse 1 .. Max / 2 loop
+      Sift (J);
+   end loop;
+
+   while Max > 1 loop
+      Xchg (1, Max);
+      Max := Max - 1;
+      Sift (1);
+   end loop;
+end Ada.Containers.Generic_Sort;

@@ -1,3 +1,44 @@
+2011-11-04  Yannick Moy  <moy@adacore.com>
+
+	* atree.adb, atree.ads (Set_Original_Node): New set procedure.
+	* sem_ch13.adb (Analyze_Aspect_Specifications/Pre_Post_Aspects):
+	In ASIS mode, no splitting of aspects between conjuncts.
+	(Analyze_Aspect_Specifications/Aspect_Test_Case): Make pragma
+	expressions refer to the original aspect expressions through
+	the Original_Node link. This is used in semantic analysis for
+	ASIS mode, so that the original expression also gets analyzed.
+	* sem_prag.adb (Preanalyze_TC_Args,
+	Check_Precondition_Postcondition,
+	Analyze_Pragma/Pragma_Test_Case): In ASIS mode, for a pragma
+	generated from a source aspect, also analyze the original aspect
+	expression.
+	(Check_Expr_Is_Static_Expression): New procedure
+	similar to existing procedure Check_Arg_Is_Static_Expression,
+	except called on expression inside pragma.
+
+2011-11-04  Tristan Gingold  <gingold@adacore.com>
+
+	* prj-env.adb, prj-env.ads (Find_Name_In_Path): New function, from
+	Find_Project.Try_Path_Name.
+	(Find_Project): Use Find_Name_In_Path to implement Try_Path_Name.
+
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-atocou.ads (Atomic_Counter): Remove redundant pragma Volatile.
+
+2011-11-04  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi: Add short description for qualifiers aggregate
+	and aggregate library.
+
+2011-11-04  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Added a-cogeso.ad[sb]
+	* a-cgaaso.adb: Replaced implementation with instantiation
+	of Generic_Sort.
+	* a-cogeso.ad[sb] This is the new Ada 2012 unit
+	Ada.Containers.Generic_Sort
+
 2011-11-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch2.adb (Expand_Entity_Reference): Do not set

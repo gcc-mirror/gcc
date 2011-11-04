@@ -2915,8 +2915,10 @@ The current list of qualifiers is:
   qualified abstract project.
 @item @b{standard}: a standard project is a non library project with sources.
   This is the default (implicit) qualifier.
-@item @b{aggregate}: for future extension
-@item @b{aggregate library}: for future extension
+@item @b{aggregate}: a project whose sources are aggregated from other
+project files.
+@item @b{aggregate library}: a library whose sources are aggregated
+from other project or library project files.
 @item @b{library}: a library project must declare both attributes
   @code{Library_Name} and @code{Library_Dir}.
 @item @b{configuration}: a configuration project cannot be in a project tree.
