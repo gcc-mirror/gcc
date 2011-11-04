@@ -4559,10 +4559,26 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 							  loc);
       Statement* s = Statement::make_tuple_receive_assignment(val, closed, ref,
 							      true, loc);
+
       // We have to put S in STATEMENTS_, because that is where the
       // variables are declared.
+
       go_assert(this->statements_ != NULL);
-      this->statements_->add_statement_at_front(s);
+
+      // Skip the variable declaration statements themselves.
+      size_t skip = 1;
+      if (this->var_ != NULL)
+	skip = 2;
+
+      // Verify that we are only skipping variable declarations.
+      size_t i = 0;
+      for (Block::iterator p = this->statements_->begin();
+	   i < skip && p != this->statements_->end();
+	   ++p, ++i)
+	go_assert((*p)->variable_declaration_statement() != NULL);
+
+      this->statements_->insert_statement_before(skip, s);
+
       // We have to lower STATEMENTS_ again, to lower the tuple
       // receive assignment we just added.
       gogo->lower_block(function, this->statements_);
@@ -4655,7 +4671,8 @@ Select_clauses::Select_clause::dump_clause(
         {
           ast_dump_context->dump_expression(this->channel_);
           ast_dump_context->ostream() << " <- " ;
-          ast_dump_context->dump_expression(this->val_);
+	  if (this->val_ != NULL)
+	    ast_dump_context->dump_expression(this->val_);
         }
       else
         {
@@ -4667,8 +4684,7 @@ Select_clauses::Select_clause::dump_clause(
               ast_dump_context->ostream() << " , " ;
               ast_dump_context->dump_expression(this->closed_);
             }
-          if (this->closedvar_ != NULL ||
-              this->var_ != NULL)
+          if (this->closedvar_ != NULL || this->var_ != NULL)
             ast_dump_context->ostream() << " := " ;
 
           ast_dump_context->ostream() << " <- " ;
