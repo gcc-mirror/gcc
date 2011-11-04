@@ -4273,9 +4273,14 @@ package body Exp_Util is
          return True;
       end if;
 
-      --  Case of component reference
+      --  Case of indexed component reference: test whether prefix is unaligned
 
-      if Nkind (N) = N_Selected_Component then
+      if Nkind (N) = N_Indexed_Component then
+         return Is_Possibly_Unaligned_Object (Prefix (N));
+
+      --  Case of selected component reference
+
+      elsif Nkind (N) = N_Selected_Component then
          declare
             P : constant Node_Id   := Prefix (N);
             C : constant Entity_Id := Entity (Selector_Name (N));

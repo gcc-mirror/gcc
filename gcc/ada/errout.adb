@@ -439,7 +439,6 @@ package body Errout is
                      Error_Msg_Internal
                        ("?in inlined body #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
-
                   else
                      Error_Msg_Internal
                        ("error in inlined body #",
@@ -453,7 +452,6 @@ package body Errout is
                      Error_Msg_Internal
                        ("?in instantiation #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
-
                   else
                      Error_Msg_Internal
                        ("instantiation error #",
