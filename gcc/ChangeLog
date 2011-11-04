@@ -1,3 +1,8 @@
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/50979
+	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=v8.
+
 2011-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (lround<X87MODEF:mode><SWI248x:mode>2,
