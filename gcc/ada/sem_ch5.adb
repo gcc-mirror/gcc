@@ -2429,8 +2429,17 @@ package body Sem_Ch5 is
             --  The type of the loop variable is the Iterator_Element aspect of
             --  the container type.
 
-            Set_Etype (Def_Id,
-              Entity (Find_Aspect (Typ, Aspect_Iterator_Element)));
+            declare
+               Element : constant Entity_Id :=
+                 Find_Aspect (Typ, Aspect_Iterator_Element);
+            begin
+               if No (Element) then
+                  Error_Msg_NE ("cannot iterate over&", N, Typ);
+                  return;
+               else
+                  Set_Etype (Def_Id, Entity (Element));
+               end if;
+            end;
 
          else
             --  For an iteration of the form IN, the name must denote an
@@ -2440,12 +2449,18 @@ package body Sem_Ch5 is
             if Is_Entity_Name (Original_Node (Name (N)))
               and then not Is_Iterator (Typ)
             then
-               Error_Msg_N
-                 ("name must be an iterator, not a container", Name (N));
+               if No (Find_Aspect (Typ, Aspect_Iterator_Element)) then
+                  Error_Msg_NE
+                    ("cannot iterate over&", Name (N), Typ);
+               else
+
+                  Error_Msg_N
+                    ("name must be an iterator, not a container", Name (N));
+               end if;
 
                Error_Msg_NE
-                 ("\to iterate directly over a container, write `of &`",
-                    Name (N), Original_Node (Name (N)));
+                 ("\to iterate directly over the elements of a container, " &
+                   "write `of &`", Name (N), Original_Node (Name (N)));
             end if;
 
             --  The result type of Iterate function is the classwide type of

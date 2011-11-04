@@ -1060,18 +1060,31 @@ package body Bindgen is
                then
                   Set_String ("      E");
                   Set_Unit_Number (Unum_Spec);
-                  Set_String (" := E");
-                  Set_Unit_Number (Unum_Spec);
-                  Set_String (" + 1;");
+
+                  --  The AAMP target has no notion of shared libraries, and
+                  --  there's no possibility of reelaboration, so we treat the
+                  --  the elaboration var as a flag instead of a counter and
+                  --  simply set it.
+
+                  if AAMP_On_Target then
+                     Set_String (" := 1;");
+
+                  --  Otherwise (normal case), increment elaboration counter
+
+                  else
+                     Set_String (" := E");
+                     Set_Unit_Number (Unum_Spec);
+                     Set_String (" + 1;");
+                  end if;
+
                   Write_Statement_Buffer;
 
                --  In the special case where the target is AAMP and the unit is
                --  a spec with a body, the elaboration entity is initialized
                --  here. This is done because it's the only way to accomplish
-               --  initialization of such entities, because there's not any
-               --  mechanism provided to initialize global variables at load
-               --  time on AAMP. (Also note that there is no notion of shared
-               --  libraries for AAMP, so no possibility of reelaboration.)
+               --  initialization of such entities, as there is no mechanism
+               --  provided for initializing global variables at load time on
+               --  AAMP.
 
                elsif AAMP_On_Target
                  and then U.Utype = Is_Spec
@@ -1106,10 +1119,9 @@ package body Bindgen is
                --  In the special case where the target is AAMP and the unit is
                --  a spec with a body, the elaboration entity is initialized
                --  here. This is done because it's the only way to accomplish
-               --  initialization of such entities, because there's not any
-               --  mechanism provided to initialize global variables at load
-               --  time on AAMP. (Also note that there is no notion of shared
-               --  libraries for AAMP, so no possibility of reelaboration.)
+               --  initialization of such entities, as there is no mechanism
+               --  provided for initializing global variables at load time on
+               --  AAMP.
 
                if AAMP_On_Target
                  and then U.Utype = Is_Spec
@@ -1185,9 +1197,23 @@ package body Bindgen is
                then
                   Set_String ("      E");
                   Set_Unit_Number (Unum_Spec);
-                  Set_String (" := E");
-                  Set_Unit_Number (Unum_Spec);
-                  Set_String (" + 1;");
+
+                  --  The AAMP target has no notion of shared libraries, and
+                  --  there's no possibility of reelaboration, so we treat the
+                  --  the elaboration var as a flag instead of a counter and
+                  --  simply set it.
+
+                  if AAMP_On_Target then
+                     Set_String (" := 1;");
+
+                  --  Otherwise (normal case), increment elaboration counter
+
+                  else
+                     Set_String (" := E");
+                     Set_Unit_Number (Unum_Spec);
+                     Set_String (" + 1;");
+                  end if;
+
                   Write_Statement_Buffer;
                end if;
             end if;

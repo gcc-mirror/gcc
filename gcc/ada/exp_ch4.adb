@@ -8196,15 +8196,44 @@ package body Exp_Ch4 is
          Analyze (N);
       end if;
 
-      --  If we still have a selected component, and the type is an Atomic
-      --  type for which Atomic_Sync is enabled, then we set the atomic sync
-      --  flag on the selector.
+      --  Set Atomic_Sync_Required if necessary for atomic component
 
-      if Nkind (N) = N_Selected_Component
-        and then Is_Atomic (Etype (N))
-        and then not Atomic_Synchronization_Disabled (Etype (N))
-      then
-         Activate_Atomic_Synchronization (N);
+      if Nkind (N) = N_Selected_Component then
+         declare
+            E   : constant Entity_Id := Entity (Selector_Name (N));
+            Set : Boolean;
+
+         begin
+            --  If component is atomic, but type is not, setting depends on
+            --  disable/enable state for the component.
+
+            if Is_Atomic (E) and then not Is_Atomic (Etype (E)) then
+               Set := not Atomic_Synchronization_Disabled (E);
+
+            --  If component is not atomic, but its type is atomic, setting
+            --  depends on disable/enable state for the type.
+
+            elsif not Is_Atomic (E) and then Is_Atomic (Etype (E)) then
+               Set := not Atomic_Synchronization_Disabled (Etype (E));
+
+            --  If both component and type are atomic, we disable if either
+            --  component or its type have sync disabled.
+
+            elsif Is_Atomic (E) and then Is_Atomic (Etype (E)) then
+               Set := (not Atomic_Synchronization_Disabled (E))
+                        and then
+                      (not Atomic_Synchronization_Disabled (Etype (E)));
+
+            else
+               Set := False;
+            end if;
+
+            --  Set flag if required
+
+            if Set then
+               Activate_Atomic_Synchronization (N);
+            end if;
+         end;
       end if;
    end Expand_N_Selected_Component;
 
