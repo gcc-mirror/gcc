@@ -1843,9 +1843,168 @@ vect_gen_widened_results_half (enum tree_code code,
   return new_stmt;
 }
 
+
+/* Get vectorized definitions for loop-based vectorization.  For the first
+   operand we call vect_get_vec_def_for_operand() (with OPRND containing
+   scalar operand), and for the rest we get a copy with
+   vect_get_vec_def_for_stmt_copy() using the previous vector definition
+   (stored in OPRND). See vect_get_vec_def_for_stmt_copy() for details.
+   The vectors are collected into VEC_OPRNDS.  */
+
+static void
+vect_get_loop_based_defs (tree *oprnd, gimple stmt, enum vect_def_type dt,
+			  VEC (tree, heap) **vec_oprnds, int multi_step_cvt)
+{
+  tree vec_oprnd;
+
+  /* Get first vector operand.  */
+  /* All the vector operands except the very first one (that is scalar oprnd)
+     are stmt copies.  */
+  if (TREE_CODE (TREE_TYPE (*oprnd)) != VECTOR_TYPE)
+    vec_oprnd = vect_get_vec_def_for_operand (*oprnd, stmt, NULL);
+  else
+    vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, *oprnd);
+
+  VEC_quick_push (tree, *vec_oprnds, vec_oprnd);
+
+  /* Get second vector operand.  */
+  vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+  VEC_quick_push (tree, *vec_oprnds, vec_oprnd);
+
+  *oprnd = vec_oprnd;
+
+  /* For conversion in multiple steps, continue to get operands
+     recursively.  */
+  if (multi_step_cvt)
+    vect_get_loop_based_defs (oprnd, stmt, dt, vec_oprnds,  multi_step_cvt - 1);
+}
+
+
+/* Create vectorized demotion statements for vector operands from VEC_OPRNDS.
+   For multi-step conversions store the resulting vectors and call the function
+   recursively.  */
+
+static void
+vect_create_vectorized_demotion_stmts (VEC (tree, heap) **vec_oprnds,
+				       int multi_step_cvt, gimple stmt,
+				       VEC (tree, heap) *vec_dsts,
+				       gimple_stmt_iterator *gsi,
+				       slp_tree slp_node, enum tree_code code,
+				       stmt_vec_info *prev_stmt_info)
+{
+  unsigned int i;
+  tree vop0, vop1, new_tmp, vec_dest;
+  gimple new_stmt;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+  vec_dest = VEC_pop (tree, vec_dsts);
+
+  for (i = 0; i < VEC_length (tree, *vec_oprnds); i += 2)
+    {
+      /* Create demotion operation.  */
+      vop0 = VEC_index (tree, *vec_oprnds, i);
+      vop1 = VEC_index (tree, *vec_oprnds, i + 1);
+      new_stmt = gimple_build_assign_with_ops (code, vec_dest, vop0, vop1);
+      new_tmp = make_ssa_name (vec_dest, new_stmt);
+      gimple_assign_set_lhs (new_stmt, new_tmp);
+      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+      if (multi_step_cvt)
+	/* Store the resulting vector for next recursive call.  */
+	VEC_replace (tree, *vec_oprnds, i/2, new_tmp);
+      else
+	{
+	  /* This is the last step of the conversion sequence. Store the
+	     vectors in SLP_NODE or in vector info of the scalar statement
+	     (or in STMT_VINFO_RELATED_STMT chain).  */
+	  if (slp_node)
+	    VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt);
+	  else
+	    {
+	      if (!*prev_stmt_info)
+		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+	      else
+		STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
+
+	      *prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    }
+	}
+    }
+
+  /* For multi-step demotion operations we first generate demotion operations
+     from the source type to the intermediate types, and then combine the
+     results (stored in VEC_OPRNDS) in demotion operation to the destination
+     type.  */
+  if (multi_step_cvt)
+    {
+      /* At each level of recursion we have half of the operands we had at the
+	 previous level.  */
+      VEC_truncate (tree, *vec_oprnds, (i+1)/2);
+      vect_create_vectorized_demotion_stmts (vec_oprnds, multi_step_cvt - 1,
+					     stmt, vec_dsts, gsi, slp_node,
+					     VEC_PACK_TRUNC_EXPR,
+					     prev_stmt_info);
+    }
+
+  VEC_quick_push (tree, vec_dsts, vec_dest);
+}
+
+
+/* Create vectorized promotion statements for vector operands from VEC_OPRNDS0
+   and VEC_OPRNDS1 (for binary operations).  For multi-step conversions store
+   the resulting vectors and call the function recursively.  */
+
+static void
+vect_create_vectorized_promotion_stmts (VEC (tree, heap) **vec_oprnds0,
+					VEC (tree, heap) **vec_oprnds1,
+					gimple stmt, tree vec_dest,
+					gimple_stmt_iterator *gsi,
+					enum tree_code code1,
+					enum tree_code code2, tree decl1,
+					tree decl2, int op_type)
+{
+  int i;
+  tree vop0, vop1, new_tmp1, new_tmp2;
+  gimple new_stmt1, new_stmt2;
+  VEC (tree, heap) *vec_tmp = NULL;
+
+  vec_tmp = VEC_alloc (tree, heap, VEC_length (tree, *vec_oprnds0) * 2);
+  FOR_EACH_VEC_ELT (tree, *vec_oprnds0, i, vop0)
+    {
+      if (op_type == binary_op)
+	vop1 = VEC_index (tree, *vec_oprnds1, i);
+      else
+	vop1 = NULL_TREE;
+
+      /* Generate the two halves of promotion operation.  */
+      new_stmt1 = vect_gen_widened_results_half (code1, decl1, vop0, vop1,
+						 op_type, vec_dest, gsi, stmt);
+      new_stmt2 = vect_gen_widened_results_half (code2, decl2, vop0, vop1,
+						 op_type, vec_dest, gsi, stmt);
+      if (is_gimple_call (new_stmt1))
+	{
+	  new_tmp1 = gimple_call_lhs (new_stmt1);
+	  new_tmp2 = gimple_call_lhs (new_stmt2);
+	}
+      else
+	{
+	  new_tmp1 = gimple_assign_lhs (new_stmt1);
+	  new_tmp2 = gimple_assign_lhs (new_stmt2);
+	}
+
+      /* Store the results for the next step.  */
+      VEC_quick_push (tree, vec_tmp, new_tmp1);
+      VEC_quick_push (tree, vec_tmp, new_tmp2);
+    }
+
+  VEC_free (tree, heap, *vec_oprnds0);
+  *vec_oprnds0 = vec_tmp;
+}
+
+
 /* Check if STMT performs a conversion operation, that can be vectorized.
    If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
 
 static bool
@@ -1854,11 +2013,12 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 {
   tree vec_dest;
   tree scalar_dest;
-  tree op0;
+  tree op0, op1 = NULL_TREE;
   tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
+  enum tree_code codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
   tree decl1 = NULL_TREE, decl2 = NULL_TREE;
   tree new_temp;
   tree def;
@@ -1869,21 +2029,22 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   int nunits_in;
   int nunits_out;
   tree vectype_out, vectype_in;
-  int ncopies, j;
-  tree rhs_type;
+  int ncopies, i, j;
+  tree lhs_type, rhs_type;
   enum { NARROW, NONE, WIDEN } modifier;
-  int i;
-  VEC(tree,heap) *vec_oprnds0 = NULL;
+  VEC (tree,heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   tree vop0;
-  VEC(tree,heap) *dummy = NULL;
-  int dummy_int;
+  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+  int multi_step_cvt = 0;
+  VEC (tree, heap) *vec_dsts = NULL, *interm_types = NULL;
+  tree last_oprnd, intermediate_type, cvt_type = NULL_TREE;
+  int op_type;
+  enum machine_mode rhs_mode;
+  unsigned short fltsz;
 
   /* Is STMT a vectorizable conversion?   */
 
-  /* FORNOW: unsupported in basic block SLP.  */
-  gcc_assert (loop_vinfo);
-
-  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
@@ -1896,23 +2057,74 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   code = gimple_assign_rhs_code (stmt);
-  if (code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
+  if (!CONVERT_EXPR_CODE_P (code)
+      && code != FIX_TRUNC_EXPR
+      && code != FLOAT_EXPR
+      && code != WIDEN_MULT_EXPR
+      && code != WIDEN_LSHIFT_EXPR)
     return false;
+
+  op_type = TREE_CODE_LENGTH (code);
 
   /* Check types of lhs and rhs.  */
   scalar_dest = gimple_assign_lhs (stmt);
+  lhs_type = TREE_TYPE (scalar_dest);
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
 
   op0 = gimple_assign_rhs1 (stmt);
   rhs_type = TREE_TYPE (op0);
+
+  if ((code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
+      && !((INTEGRAL_TYPE_P (lhs_type)
+	    && INTEGRAL_TYPE_P (rhs_type))
+	   || (SCALAR_FLOAT_TYPE_P (lhs_type)
+	       && SCALAR_FLOAT_TYPE_P (rhs_type))))
+    return false;
+
+  if ((INTEGRAL_TYPE_P (lhs_type)
+       && (TYPE_PRECISION (lhs_type)
+	   != GET_MODE_PRECISION (TYPE_MODE (lhs_type))))
+      || (INTEGRAL_TYPE_P (rhs_type)
+	  && (TYPE_PRECISION (rhs_type)
+	      != GET_MODE_PRECISION (TYPE_MODE (rhs_type)))))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump,
+		 "type conversion to/from bit-precision unsupported.");
+      return false;
+    }
+
   /* Check the operands of the operation.  */
-  if (!vect_is_simple_use_1 (op0, loop_vinfo, NULL,
+  if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
 			     &def_stmt, &def, &dt[0], &vectype_in))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "use not simple.");
       return false;
     }
+  if (op_type == binary_op)
+    {
+      bool ok;
+
+      op1 = gimple_assign_rhs2 (stmt);
+      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR);
+      /* For WIDEN_MULT_EXPR, if OP0 is a constant, use the type of
+	 OP1.  */
+      if (CONSTANT_CLASS_P (op0))
+	ok = vect_is_simple_use_1 (op1, loop_vinfo, NULL,
+				   &def_stmt, &def, &dt[1], &vectype_in);
+      else
+	ok = vect_is_simple_use (op1, loop_vinfo, NULL, &def_stmt, &def,
+				 &dt[1]);
+
+      if (!ok)
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "use not simple.");
+	  return false;
+	}
+    }
+
   /* If op0 is an external or constant defs use a vector type of
      the same size as the output vector type.  */
   if (!vectype_in)
@@ -1922,82 +2134,222 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   if (!vectype_in)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "no vectype for scalar type ");
-          print_generic_expr (vect_dump, rhs_type, TDF_SLIM);
-        }
+	{
+	  fprintf (vect_dump, "no vectype for scalar type ");
+	  print_generic_expr (vect_dump, rhs_type, TDF_SLIM);
+	}
 
       return false;
     }
 
-  /* FORNOW */
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-  if (nunits_in == nunits_out / 2)
+  if (nunits_in < nunits_out)
     modifier = NARROW;
   else if (nunits_out == nunits_in)
     modifier = NONE;
-  else if (nunits_out == nunits_in / 2)
+  else
     modifier = WIDEN;
-  else
-    return false;
-
-  if (modifier == NARROW)
-    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
-  else
-    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
   if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
+  else if (modifier == NARROW)
+    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
+  else
+    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
 
   /* Sanity check: make sure that at least one copy of the vectorized stmt
      needs to be generated.  */
   gcc_assert (ncopies >= 1);
 
   /* Supportable by target?  */
-  if ((modifier == NONE
-       && !supportable_convert_operation (code, vectype_out, vectype_in, &decl1, &code1))
-      || (modifier == WIDEN
-	  && !supportable_widening_operation (code, stmt,
-					      vectype_out, vectype_in,
-					      &decl1, &decl2,
-					      &code1, &code2,
-                                              &dummy_int, &dummy))
-      || (modifier == NARROW
-	  && !supportable_narrowing_operation (code, vectype_out, vectype_in,
-					       &code1, &dummy_int, &dummy)))
+  switch (modifier)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "conversion not supported by target.");
-      return false;
-    }
-
-  if (modifier != NONE)
-    {
-      /* FORNOW: SLP not supported.  */
-      if (STMT_SLP_TYPE (stmt_info))
+    case NONE:
+      if (code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
 	return false;
+      if (supportable_convert_operation (code, vectype_out, vectype_in,
+					 &decl1, &code1))
+	break;
+      /* FALLTHRU */
+    unsupported:
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "conversion not supported by target.");
+      return false;
+
+    case WIDEN:
+      if (supportable_widening_operation (code, stmt, vectype_out, vectype_in,
+					  &decl1, &decl2, &code1, &code2,
+					  &multi_step_cvt, &interm_types))
+	{
+	  /* Binary widening operation can only be supported directly by the
+	     architecture.  */
+	  gcc_assert (!(multi_step_cvt && op_type == binary_op));
+	  break;
+	}
+
+      if (code != FLOAT_EXPR
+	  || (GET_MODE_SIZE (TYPE_MODE (lhs_type))
+	      <= GET_MODE_SIZE (TYPE_MODE (rhs_type))))
+	goto unsupported;
+
+      rhs_mode = TYPE_MODE (rhs_type);
+      fltsz = GET_MODE_SIZE (TYPE_MODE (lhs_type));
+      for (rhs_mode = GET_MODE_2XWIDER_MODE (TYPE_MODE (rhs_type));
+	   rhs_mode != VOIDmode && GET_MODE_SIZE (rhs_mode) <= fltsz;
+	   rhs_mode = GET_MODE_2XWIDER_MODE (rhs_mode))
+	{
+	  cvt_type
+	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (rhs_mode), 0);
+	  cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
+	  if (cvt_type == NULL_TREE)
+	    goto unsupported;
+
+	  if (GET_MODE_SIZE (rhs_mode) == fltsz)
+	    {
+	      if (!supportable_convert_operation (code, vectype_out,
+						  cvt_type, &decl1, &codecvt1))
+		goto unsupported;
+	    }
+	  else if (!supportable_widening_operation (code, stmt, vectype_out,
+						    cvt_type, &decl1, &decl2,
+						    &codecvt1, &codecvt2,
+						    &multi_step_cvt,
+						    &interm_types))
+	    continue;
+	  else
+	    gcc_assert (multi_step_cvt == 0);
+
+	  if (supportable_widening_operation (NOP_EXPR, stmt, cvt_type,
+					      vectype_in, NULL, NULL, &code1,
+					      &code2, &multi_step_cvt,
+					      &interm_types))
+	    break;
+	}
+
+      if (rhs_mode == VOIDmode || GET_MODE_SIZE (rhs_mode) > fltsz)
+	goto unsupported;
+
+      if (GET_MODE_SIZE (rhs_mode) == fltsz)
+	codecvt2 = ERROR_MARK;
+      else
+	{
+	  multi_step_cvt++;
+	  VEC_safe_push (tree, heap, interm_types, cvt_type);
+	  cvt_type = NULL_TREE;
+	}
+      break;
+
+    case NARROW:
+      gcc_assert (op_type == unary_op);
+      if (supportable_narrowing_operation (code, vectype_out, vectype_in,
+					   &code1, &multi_step_cvt,
+					   &interm_types))
+	break;
+
+      if (code != FIX_TRUNC_EXPR
+	  || (GET_MODE_SIZE (TYPE_MODE (lhs_type))
+	      >= GET_MODE_SIZE (TYPE_MODE (rhs_type))))
+	goto unsupported;
+
+      rhs_mode = TYPE_MODE (rhs_type);
+      cvt_type
+	= build_nonstandard_integer_type (GET_MODE_BITSIZE (rhs_mode), 0);
+      cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
+      if (cvt_type == NULL_TREE)
+	goto unsupported;
+      if (!supportable_convert_operation (code, cvt_type, vectype_in,
+					  &decl1, &codecvt1))
+	goto unsupported;
+      if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
+					   &code1, &multi_step_cvt,
+					   &interm_types))
+	break;
+      goto unsupported;
+
+    default:
+      gcc_unreachable ();
     }
 
   if (!vec_stmt)		/* transformation not required.  */
     {
-      STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "=== vectorizable_conversion ===");
+      if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
+	STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
+      else if (modifier == NARROW)
+	{
+	  STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
+	  vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+	}
+      else
+	{
+	  STMT_VINFO_TYPE (stmt_info) = type_promotion_vec_info_type;
+	  vect_model_simple_cost (stmt_info, 2 * ncopies, dt, NULL);
+	}
+      VEC_free (tree, heap, interm_types);
       return true;
     }
 
   /** Transform.  **/
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "transform conversion.");
+    fprintf (vect_dump, "transform conversion. ncopies = %d.", ncopies);
 
-  /* Handle def.  */
+  if (op_type == binary_op)
+    {
+      if (CONSTANT_CLASS_P (op0))
+	op0 = fold_convert (TREE_TYPE (op1), op0);
+      else if (CONSTANT_CLASS_P (op1))
+	op1 = fold_convert (TREE_TYPE (op0), op1);
+    }
+
+  /* In case of multi-step conversion, we first generate conversion operations
+     to the intermediate types, and then from that types to the final one.
+     We create vector destinations for the intermediate type (TYPES) received
+     from supportable_*_operation, and store them in the correct order
+     for future use in vect_create_vectorized_*_stmts ().  */
+  vec_dsts = VEC_alloc (tree, heap, multi_step_cvt + 1);
   vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
+  VEC_quick_push (tree, vec_dsts, vec_dest);
 
-  if (modifier == NONE && !slp_node)
-    vec_oprnds0 = VEC_alloc (tree, heap, 1);
+  if (multi_step_cvt)
+    {
+      for (i = VEC_length (tree, interm_types) - 1;
+	   VEC_iterate (tree, interm_types, i, intermediate_type); i--)
+	{
+	  vec_dest = vect_create_destination_var (scalar_dest,
+						  intermediate_type);
+	  VEC_quick_push (tree, vec_dsts, vec_dest);
+	}
+    }
 
+  if (cvt_type)
+    vec_dest = vect_create_destination_var (scalar_dest, cvt_type);
+
+  if (!slp_node)
+    {
+      if (modifier == NONE)
+	vec_oprnds0 = VEC_alloc (tree, heap, 1);
+      else if (modifier == WIDEN)
+	{
+	  vec_oprnds0 = VEC_alloc (tree, heap,
+				   (multi_step_cvt
+				    ? vect_pow2 (multi_step_cvt) : 1));
+	  if (op_type == binary_op)
+	    vec_oprnds1 = VEC_alloc (tree, heap, 1);
+	}
+      else
+	vec_oprnds0 = VEC_alloc (tree, heap,
+				 2 * (multi_step_cvt
+				      ? vect_pow2 (multi_step_cvt) : 1));
+    }
+  else if (code == WIDEN_LSHIFT_EXPR)
+    vec_oprnds1 = VEC_alloc (tree, heap, slp_node->vec_stmts_size);
+
+  last_oprnd = op0;
   prev_stmt_info = NULL;
   switch (modifier)
     {
@@ -2011,27 +2363,28 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	    vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, NULL);
 
 	  FOR_EACH_VEC_ELT (tree, vec_oprnds0, i, vop0)
-          {
-            /* Arguments are ready, create the new vector stmt.  */
-            if (code1 == CALL_EXPR)
-              {
-                new_stmt = gimple_build_call (decl1, 1, vop0);
-                new_temp = make_ssa_name (vec_dest, new_stmt);
-                gimple_call_set_lhs (new_stmt, new_temp);
-              }
-            else
-              {
-                gcc_assert (TREE_CODE_LENGTH (code) == unary_op);
-                new_stmt = gimple_build_assign_with_ops (code, vec_dest, vop0,
-                                                        NULL);
-                new_temp = make_ssa_name (vec_dest, new_stmt);
-                gimple_assign_set_lhs (new_stmt, new_temp);
-              }
+	    {
+	      /* Arguments are ready, create the new vector stmt.  */
+	      if (code1 == CALL_EXPR)
+		{
+		  new_stmt = gimple_build_call (decl1, 1, vop0);
+		  new_temp = make_ssa_name (vec_dest, new_stmt);
+		  gimple_call_set_lhs (new_stmt, new_temp);
+		}
+	      else
+		{
+		  gcc_assert (TREE_CODE_LENGTH (code1) == unary_op);
+		  new_stmt = gimple_build_assign_with_ops (code1, vec_dest,
+							   vop0, NULL);
+		  new_temp = make_ssa_name (vec_dest, new_stmt);
+		  gimple_assign_set_lhs (new_stmt, new_temp);
+		}
 
-            vect_finish_stmt_generation (stmt, new_stmt, gsi);
-            if (slp_node)
-              VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt);
-          }
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      if (slp_node)
+		VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node),
+				new_stmt);
+	    }
 
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
@@ -2048,30 +2401,117 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	 the vector stmt by a factor VF/nunits.  */
       for (j = 0; j < ncopies; j++)
 	{
+	  /* Handle uses.  */
 	  if (j == 0)
-	    vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
-	  else
-	    vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+	    {
+	      if (slp_node)
+		{
+		  if (code == WIDEN_LSHIFT_EXPR)
+		    {
+		      unsigned int k;
 
-	  /* Generate first half of the widened result:  */
-	  new_stmt
-	    = vect_gen_widened_results_half (code1, decl1,
-					     vec_oprnd0, vec_oprnd1,
-					     unary_op, vec_dest, gsi, stmt);
-	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
-	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		      vec_oprnd1 = op1;
+		      /* Store vec_oprnd1 for every vector stmt to be created
+			 for SLP_NODE.  We check during the analysis that all
+			 the shift arguments are the same.  */
+		      for (k = 0; k < slp_node->vec_stmts_size - 1; k++)
+			VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
 
-	  /* Generate second half of the widened result:  */
-	  new_stmt
-	    = vect_gen_widened_results_half (code2, decl2,
-					     vec_oprnd0, vec_oprnd1,
-					     unary_op, vec_dest, gsi, stmt);
-	  STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		      vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
+					 slp_node, -1);
+		    }
+		  else
+		    vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0,
+				       &vec_oprnds1, slp_node, -1);
+		}
+	      else
+		{
+		  vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
+		  VEC_quick_push (tree, vec_oprnds0, vec_oprnd0);
+		  if (op_type == binary_op)
+		    {
+		      if (code == WIDEN_LSHIFT_EXPR)
+			vec_oprnd1 = op1;
+		      else
+			vec_oprnd1 = vect_get_vec_def_for_operand (op1, stmt,
+								   NULL);
+		      VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
+		    }
+		}
+	    }
+	  else
+	    {
+	      vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+	      VEC_truncate (tree, vec_oprnds0, 0);
+	      VEC_quick_push (tree, vec_oprnds0, vec_oprnd0);
+	      if (op_type == binary_op)
+		{
+		  if (code == WIDEN_LSHIFT_EXPR)
+		    vec_oprnd1 = op1;
+		  else
+		    vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[1],
+								 vec_oprnd1);
+		  VEC_truncate (tree, vec_oprnds1, 0);
+		  VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
+		}
+	    }
+
+	  /* Arguments are ready.  Create the new vector stmts.  */
+	  for (i = multi_step_cvt; i >= 0; i--)
+	    {
+	      tree this_dest = VEC_index (tree, vec_dsts, i);
+	      enum tree_code c1 = code1, c2 = code2;
+	      if (i == 0 && codecvt2 != ERROR_MARK)
+		{
+		  c1 = codecvt1;
+		  c2 = codecvt2;
+		}
+	      vect_create_vectorized_promotion_stmts (&vec_oprnds0,
+						      &vec_oprnds1,
+						      stmt, this_dest, gsi,
+						      c1, c2, decl1, decl2,
+						      op_type);
+	    }
+
+	  FOR_EACH_VEC_ELT (tree, vec_oprnds0, i, vop0)
+	    {
+	      if (cvt_type)
+		{
+		  if (codecvt1 == CALL_EXPR)
+		    {
+		      new_stmt = gimple_build_call (decl1, 1, vop0);
+		      new_temp = make_ssa_name (vec_dest, new_stmt);
+		      gimple_call_set_lhs (new_stmt, new_temp);
+		    }
+		  else
+		    {
+		      gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
+		      new_temp = make_ssa_name (vec_dest, NULL);
+		      new_stmt = gimple_build_assign_with_ops (codecvt1,
+							       new_temp,
+							       vop0, NULL);
+		    }
+
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		}
+	      else
+		new_stmt = SSA_NAME_DEF_STMT (vop0);
+
+	      if (slp_node)
+		VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node),
+				new_stmt);
+	      else
+		{
+		  if (!prev_stmt_info)
+		    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+		  else
+		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+		  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		}
+	    }
 	}
+
+      *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
       break;
 
     case NARROW:
@@ -2082,37 +2522,52 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
       for (j = 0; j < ncopies; j++)
 	{
 	  /* Handle uses.  */
-	  if (j == 0)
-	    {
-	      vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
-	      vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
-	    }
+	  if (slp_node)
+	    vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
+			       slp_node, -1);
 	  else
 	    {
-	      vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd1);
-	      vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+	      VEC_truncate (tree, vec_oprnds0, 0);
+	      vect_get_loop_based_defs (&last_oprnd, stmt, dt[0], &vec_oprnds0,
+					vect_pow2 (multi_step_cvt) - 1);
 	    }
 
-	  /* Arguments are ready.  Create the new vector stmt.  */
-	  new_stmt = gimple_build_assign_with_ops (code1, vec_dest, vec_oprnd0,
-						   vec_oprnd1);
-	  new_temp = make_ssa_name (vec_dest, new_stmt);
-	  gimple_assign_set_lhs (new_stmt, new_temp);
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  /* Arguments are ready.  Create the new vector stmts.  */
+	  if (cvt_type)
+	    FOR_EACH_VEC_ELT (tree, vec_oprnds0, i, vop0)
+	      {
+		if (codecvt1 == CALL_EXPR)
+		  {
+		    new_stmt = gimple_build_call (decl1, 1, vop0);
+		    new_temp = make_ssa_name (vec_dest, new_stmt);
+		    gimple_call_set_lhs (new_stmt, new_temp);
+		  }
+		else
+		  {
+		    gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
+		    new_temp = make_ssa_name (vec_dest, NULL);
+		    new_stmt = gimple_build_assign_with_ops (codecvt1, new_temp,
+							     vop0, NULL);
+		  }
 
-	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
-	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+		vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		VEC_replace (tree, vec_oprnds0, i, new_temp);
+	      }
 
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	  vect_create_vectorized_demotion_stmts (&vec_oprnds0, multi_step_cvt,
+						 stmt, vec_dsts, gsi,
+						 slp_node, code1,
+						 &prev_stmt_info);
 	}
 
       *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+      break;
     }
 
-  if (vec_oprnds0)
-    VEC_free (tree, heap, vec_oprnds0);
+  VEC_free (tree, heap, vec_oprnds0);
+  VEC_free (tree, heap, vec_oprnds1);
+  VEC_free (tree, heap, vec_dsts);
+  VEC_free (tree, heap, interm_types);
 
   return true;
 }
@@ -3017,689 +3472,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (vec_oprnds2)
     VEC_free (tree, heap, vec_oprnds2);
 
-  return true;
-}
-
-
-/* Get vectorized definitions for loop-based vectorization.  For the first
-   operand we call vect_get_vec_def_for_operand() (with OPRND containing
-   scalar operand), and for the rest we get a copy with
-   vect_get_vec_def_for_stmt_copy() using the previous vector definition
-   (stored in OPRND). See vect_get_vec_def_for_stmt_copy() for details.
-   The vectors are collected into VEC_OPRNDS.  */
-
-static void
-vect_get_loop_based_defs (tree *oprnd, gimple stmt, enum vect_def_type dt,
-                          VEC (tree, heap) **vec_oprnds, int multi_step_cvt)
-{
-  tree vec_oprnd;
-
-  /* Get first vector operand.  */
-  /* All the vector operands except the very first one (that is scalar oprnd)
-     are stmt copies.  */
-  if (TREE_CODE (TREE_TYPE (*oprnd)) != VECTOR_TYPE)
-    vec_oprnd = vect_get_vec_def_for_operand (*oprnd, stmt, NULL);
-  else
-    vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, *oprnd);
-
-  VEC_quick_push (tree, *vec_oprnds, vec_oprnd);
-
-  /* Get second vector operand.  */
-  vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
-  VEC_quick_push (tree, *vec_oprnds, vec_oprnd);
-
-  *oprnd = vec_oprnd;
-
-  /* For conversion in multiple steps, continue to get operands
-     recursively.  */
-  if (multi_step_cvt)
-    vect_get_loop_based_defs (oprnd, stmt, dt, vec_oprnds,  multi_step_cvt - 1);
-}
-
-
-/* Create vectorized demotion statements for vector operands from VEC_OPRNDS.
-   For multi-step conversions store the resulting vectors and call the function
-   recursively.  */
-
-static void
-vect_create_vectorized_demotion_stmts (VEC (tree, heap) **vec_oprnds,
-                                       int multi_step_cvt, gimple stmt,
-                                       VEC (tree, heap) *vec_dsts,
-                                       gimple_stmt_iterator *gsi,
-                                       slp_tree slp_node, enum tree_code code,
-                                       stmt_vec_info *prev_stmt_info)
-{
-  unsigned int i;
-  tree vop0, vop1, new_tmp, vec_dest;
-  gimple new_stmt;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-  vec_dest = VEC_pop (tree, vec_dsts);
-
-  for (i = 0; i < VEC_length (tree, *vec_oprnds); i += 2)
-    {
-      /* Create demotion operation.  */
-      vop0 = VEC_index (tree, *vec_oprnds, i);
-      vop1 = VEC_index (tree, *vec_oprnds, i + 1);
-      new_stmt = gimple_build_assign_with_ops (code, vec_dest, vop0, vop1);
-      new_tmp = make_ssa_name (vec_dest, new_stmt);
-      gimple_assign_set_lhs (new_stmt, new_tmp);
-      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-      if (multi_step_cvt)
-        /* Store the resulting vector for next recursive call.  */
-        VEC_replace (tree, *vec_oprnds, i/2, new_tmp);
-      else
-        {
-          /* This is the last step of the conversion sequence. Store the
-             vectors in SLP_NODE or in vector info of the scalar statement
-             (or in STMT_VINFO_RELATED_STMT chain).  */
-          if (slp_node)
-            VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt);
-          else
-            {
-              if (!*prev_stmt_info)
-                STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
-              else
-                STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
-
-              *prev_stmt_info = vinfo_for_stmt (new_stmt);
-            }
-        }
-    }
-
-  /* For multi-step demotion operations we first generate demotion operations
-     from the source type to the intermediate types, and then combine the
-     results (stored in VEC_OPRNDS) in demotion operation to the destination
-     type.  */
-  if (multi_step_cvt)
-    {
-      /* At each level of recursion we have have of the operands we had at the
-         previous level.  */
-      VEC_truncate (tree, *vec_oprnds, (i+1)/2);
-      vect_create_vectorized_demotion_stmts (vec_oprnds, multi_step_cvt - 1,
-                                             stmt, vec_dsts, gsi, slp_node,
-                                             code, prev_stmt_info);
-    }
-}
-
-
-/* Function vectorizable_type_demotion
-
-   Check if STMT performs a binary or unary operation that involves
-   type demotion, and if it can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
-
-static bool
-vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
-			    gimple *vec_stmt, slp_tree slp_node)
-{
-  tree vec_dest;
-  tree scalar_dest;
-  tree op0;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  enum tree_code code, code1 = ERROR_MARK;
-  tree def;
-  gimple def_stmt;
-  enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
-  stmt_vec_info prev_stmt_info;
-  int nunits_in;
-  int nunits_out;
-  tree vectype_out;
-  int ncopies;
-  int j, i;
-  tree vectype_in;
-  int multi_step_cvt = 0;
-  VEC (tree, heap) *vec_oprnds0 = NULL;
-  VEC (tree, heap) *vec_dsts = NULL, *interm_types = NULL, *tmp_vec_dsts = NULL;
-  tree last_oprnd, intermediate_type;
-  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-
-  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
-    return false;
-
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
-    return false;
-
-  /* Is STMT a vectorizable type-demotion operation?  */
-  if (!is_gimple_assign (stmt))
-    return false;
-
-  if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
-    return false;
-
-  code = gimple_assign_rhs_code (stmt);
-  if (!CONVERT_EXPR_CODE_P (code))
-    return false;
-
-  scalar_dest = gimple_assign_lhs (stmt);
-  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
-
-  /* Check the operands of the operation.  */
-  op0 = gimple_assign_rhs1 (stmt);
-  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
-	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
-	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0)))))
-    return false;
-
-  if (INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-      && ((TYPE_PRECISION (TREE_TYPE (scalar_dest))
-	   != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
-	  || ((TYPE_PRECISION (TREE_TYPE (op0))
-	       != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op0)))))))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "type demotion to/from bit-precision unsupported.");
-      return false;
-    }
-
-  if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
-			     &def_stmt, &def, &dt[0], &vectype_in))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "use not simple.");
-      return false;
-    }
-  /* If op0 is an external def use a vector type with the
-     same size as the output vector type if possible.  */
-  if (!vectype_in)
-    vectype_in = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
-  if (vec_stmt)
-    gcc_assert (vectype_in);
-  if (!vectype_in)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "no vectype for scalar type ");
-          print_generic_expr (vect_dump, TREE_TYPE (op0), TDF_SLIM);
-        }
-
-      return false;
-    }
-
-  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
-  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-  if (nunits_in >= nunits_out)
-    return false;
-
-  /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node || PURE_SLP_STMT (stmt_info))
-    ncopies = 1;
-  else
-    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
-  gcc_assert (ncopies >= 1);
-
-  /* Supportable by target?  */
-  if (!supportable_narrowing_operation (code, vectype_out, vectype_in,
-					&code1, &multi_step_cvt, &interm_types))
-    return false;
-
-  if (!vec_stmt) /* transformation not required.  */
-    {
-      STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "=== vectorizable_demotion ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
-      return true;
-    }
-
-  /** Transform.  **/
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "transform type demotion operation. ncopies = %d.",
-	     ncopies);
-
-  /* In case of multi-step demotion, we first generate demotion operations to
-     the intermediate types, and then from that types to the final one.
-     We create vector destinations for the intermediate type (TYPES) received
-     from supportable_narrowing_operation, and store them in the correct order
-     for future use in vect_create_vectorized_demotion_stmts().  */
-  if (multi_step_cvt)
-    vec_dsts = VEC_alloc (tree, heap, multi_step_cvt + 1);
-  else
-    vec_dsts = VEC_alloc (tree, heap, 1);
-
-  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
-  VEC_quick_push (tree, vec_dsts, vec_dest);
-
-  if (multi_step_cvt)
-    {
-      for (i = VEC_length (tree, interm_types) - 1;
-           VEC_iterate (tree, interm_types, i, intermediate_type); i--)
-        {
-          vec_dest = vect_create_destination_var (scalar_dest,
-                                                  intermediate_type);
-          VEC_quick_push (tree, vec_dsts, vec_dest);
-        }
-    }
-
-  /* In case the vectorization factor (VF) is bigger than the number
-     of elements that we can fit in a vectype (nunits), we have to generate
-     more than one vector stmt - i.e - we need to "unroll" the
-     vector stmt by a factor VF/nunits.   */
-  last_oprnd = op0;
-  prev_stmt_info = NULL;
-  for (j = 0; j < ncopies; j++)
-    {
-      /* Handle uses.  */
-      if (slp_node)
-        vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
-			   slp_node, -1);
-      else
-        {
-          VEC_free (tree, heap, vec_oprnds0);
-          vec_oprnds0 = VEC_alloc (tree, heap,
-                        (multi_step_cvt ? vect_pow2 (multi_step_cvt) * 2 : 2));
-          vect_get_loop_based_defs (&last_oprnd, stmt, dt[0], &vec_oprnds0,
-                                    vect_pow2 (multi_step_cvt) - 1);
-        }
-
-      /* Arguments are ready.  Create the new vector stmts.  */
-      tmp_vec_dsts = VEC_copy (tree, heap, vec_dsts);
-      vect_create_vectorized_demotion_stmts (&vec_oprnds0,
-                                             multi_step_cvt, stmt, tmp_vec_dsts,
-                                             gsi, slp_node, code1,
-                                             &prev_stmt_info);
-    }
-
-  VEC_free (tree, heap, vec_oprnds0);
-  VEC_free (tree, heap, vec_dsts);
-  VEC_free (tree, heap, tmp_vec_dsts);
-  VEC_free (tree, heap, interm_types);
-
-  *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
-  return true;
-}
-
-
-/* Create vectorized promotion statements for vector operands from VEC_OPRNDS0
-   and VEC_OPRNDS1 (for binary operations).  For multi-step conversions store
-   the resulting vectors and call the function recursively.  */
-
-static void
-vect_create_vectorized_promotion_stmts (VEC (tree, heap) **vec_oprnds0,
-                                        VEC (tree, heap) **vec_oprnds1,
-                                        int multi_step_cvt, gimple stmt,
-                                        VEC (tree, heap) *vec_dsts,
-                                        gimple_stmt_iterator *gsi,
-                                        slp_tree slp_node, enum tree_code code1,
-                                        enum tree_code code2, tree decl1,
-                                        tree decl2, int op_type,
-                                        stmt_vec_info *prev_stmt_info)
-{
-  int i;
-  tree vop0, vop1, new_tmp1, new_tmp2, vec_dest;
-  gimple new_stmt1, new_stmt2;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  VEC (tree, heap) *vec_tmp;
-
-  vec_dest = VEC_pop (tree, vec_dsts);
-  vec_tmp = VEC_alloc (tree, heap, VEC_length (tree, *vec_oprnds0) * 2);
-
-  FOR_EACH_VEC_ELT (tree, *vec_oprnds0, i, vop0)
-    {
-      if (op_type == binary_op)
-        vop1 = VEC_index (tree, *vec_oprnds1, i);
-      else
-        vop1 = NULL_TREE;
-
-      /* Generate the two halves of promotion operation.  */
-      new_stmt1 = vect_gen_widened_results_half (code1, decl1, vop0, vop1,
-                                                 op_type, vec_dest, gsi, stmt);
-      new_stmt2 = vect_gen_widened_results_half (code2, decl2, vop0, vop1,
-                                                 op_type, vec_dest, gsi, stmt);
-      if (is_gimple_call (new_stmt1))
-        {
-          new_tmp1 = gimple_call_lhs (new_stmt1);
-          new_tmp2 = gimple_call_lhs (new_stmt2);
-        }
-      else
-        {
-          new_tmp1 = gimple_assign_lhs (new_stmt1);
-          new_tmp2 = gimple_assign_lhs (new_stmt2);
-        }
-
-      if (multi_step_cvt)
-        {
-          /* Store the results for the recursive call.  */
-          VEC_quick_push (tree, vec_tmp, new_tmp1);
-          VEC_quick_push (tree, vec_tmp, new_tmp2);
-        }
-      else
-        {
-          /* Last step of promotion sequience - store the results.  */
-          if (slp_node)
-            {
-              VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt1);
-              VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt2);
-            }
-          else
-            {
-              if (!*prev_stmt_info)
-                STMT_VINFO_VEC_STMT (stmt_info) = new_stmt1;
-              else
-                STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt1;
-
-              *prev_stmt_info = vinfo_for_stmt (new_stmt1);
-              STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt2;
-              *prev_stmt_info = vinfo_for_stmt (new_stmt2);
-            }
-        }
-    }
-
-  if (multi_step_cvt)
-    {
-      /* For multi-step promotion operation we first generate we call the
-         function recurcively for every stage.  We start from the input type,
-         create promotion operations to the intermediate types, and then
-         create promotions to the output type.  */
-      *vec_oprnds0 = VEC_copy (tree, heap, vec_tmp);
-      vect_create_vectorized_promotion_stmts (vec_oprnds0, vec_oprnds1,
-                                              multi_step_cvt - 1, stmt,
-                                              vec_dsts, gsi, slp_node, code1,
-                                              code2, decl2, decl2, op_type,
-                                              prev_stmt_info);
-    }
-
-  VEC_free (tree, heap, vec_tmp);
-}
-
-
-/* Function vectorizable_type_promotion
-
-   Check if STMT performs a binary or unary operation that involves
-   type promotion, and if it can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
-
-static bool
-vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
-			     gimple *vec_stmt, slp_tree slp_node)
-{
-  tree vec_dest;
-  tree scalar_dest;
-  tree op0, op1 = NULL;
-  tree vec_oprnd0=NULL, vec_oprnd1=NULL;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
-  tree decl1 = NULL_TREE, decl2 = NULL_TREE;
-  int op_type;
-  tree def;
-  gimple def_stmt;
-  enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
-  stmt_vec_info prev_stmt_info;
-  int nunits_in;
-  int nunits_out;
-  tree vectype_out;
-  int ncopies;
-  int j, i;
-  tree vectype_in;
-  tree intermediate_type = NULL_TREE;
-  int multi_step_cvt = 0;
-  VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
-  VEC (tree, heap) *vec_dsts = NULL, *interm_types = NULL, *tmp_vec_dsts = NULL;
-  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  unsigned int k;
-
-  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
-    return false;
-
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
-    return false;
-
-  /* Is STMT a vectorizable type-promotion operation?  */
-  if (!is_gimple_assign (stmt))
-    return false;
-
-  if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
-    return false;
-
-  code = gimple_assign_rhs_code (stmt);
-  if (!CONVERT_EXPR_CODE_P (code)
-      && code != WIDEN_MULT_EXPR
-      && code != WIDEN_LSHIFT_EXPR)
-    return false;
-
-  scalar_dest = gimple_assign_lhs (stmt);
-  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
-
-  /* Check the operands of the operation.  */
-  op0 = gimple_assign_rhs1 (stmt);
-  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
-	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
-	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
-	     && CONVERT_EXPR_CODE_P (code))))
-    return false;
-
-  if (INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-      && ((TYPE_PRECISION (TREE_TYPE (scalar_dest))
-	   != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
-	  || ((TYPE_PRECISION (TREE_TYPE (op0))
-	       != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op0)))))))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "type promotion to/from bit-precision "
-		 "unsupported.");
-      return false;
-    }
-
-  if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
-			     &def_stmt, &def, &dt[0], &vectype_in))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "use not simple.");
-      return false;
-    }
-
-  op_type = TREE_CODE_LENGTH (code);
-  if (op_type == binary_op)
-    {
-      bool ok;
-
-      op1 = gimple_assign_rhs2 (stmt);
-      if (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR)
-        {
-	  /* For WIDEN_MULT_EXPR, if OP0 is a constant, use the type of
-	     OP1.  */
-          if (CONSTANT_CLASS_P (op0))
-            ok = vect_is_simple_use_1 (op1, loop_vinfo, NULL,
-                             &def_stmt, &def, &dt[1], &vectype_in);
-          else
-            ok = vect_is_simple_use (op1, loop_vinfo, NULL, &def_stmt, &def,
-                                     &dt[1]);
-
-          if (!ok)
-            {
-	      if (vect_print_dump_info (REPORT_DETAILS))
-	        fprintf (vect_dump, "use not simple.");
-              return false;
-            }
-        }        
-    }
-
-  /* If op0 is an external or constant def use a vector type with
-     the same size as the output vector type.  */
-  if (!vectype_in)
-    vectype_in = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
-  if (vec_stmt)
-    gcc_assert (vectype_in);
-  if (!vectype_in)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "no vectype for scalar type ");
-          print_generic_expr (vect_dump, TREE_TYPE (op0), TDF_SLIM);
-        }
-
-      return false;
-    }
-
-  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
-  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-  if (nunits_in <= nunits_out)
-    return false;
-
-  /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node || PURE_SLP_STMT (stmt_info))
-    ncopies = 1;
-  else
-    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
-
-  gcc_assert (ncopies >= 1);
-
-  /* Supportable by target?  */
-  if (!supportable_widening_operation (code, stmt, vectype_out, vectype_in,
-				       &decl1, &decl2, &code1, &code2,
-                                       &multi_step_cvt, &interm_types))
-    return false;
-
-  /* Binary widening operation can only be supported directly by the
-     architecture.  */
-  gcc_assert (!(multi_step_cvt && op_type == binary_op));
-
-  if (!vec_stmt) /* transformation not required.  */
-    {
-      STMT_VINFO_TYPE (stmt_info) = type_promotion_vec_info_type;
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "=== vectorizable_promotion ===");
-      vect_model_simple_cost (stmt_info, 2*ncopies, dt, NULL);
-      return true;
-    }
-
-  /** Transform.  **/
-
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "transform type promotion operation. ncopies = %d.",
-                        ncopies);
-
-  if (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR)
-    {
-      if (CONSTANT_CLASS_P (op0))
-	op0 = fold_convert (TREE_TYPE (op1), op0);
-      else if (CONSTANT_CLASS_P (op1))
-	op1 = fold_convert (TREE_TYPE (op0), op1);
-    }
-
-  /* Handle def.  */
-  /* In case of multi-step promotion, we first generate promotion operations
-     to the intermediate types, and then from that types to the final one.
-     We store vector destination in VEC_DSTS in the correct order for
-     recursive creation of promotion operations in
-     vect_create_vectorized_promotion_stmts(). Vector destinations are created
-     according to TYPES recieved from supportable_widening_operation().   */
-  if (multi_step_cvt)
-    vec_dsts = VEC_alloc (tree, heap, multi_step_cvt + 1);
-  else
-    vec_dsts = VEC_alloc (tree, heap, 1);
-
-  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
-  VEC_quick_push (tree, vec_dsts, vec_dest);
-
-  if (multi_step_cvt)
-    {
-      for (i = VEC_length (tree, interm_types) - 1;
-           VEC_iterate (tree, interm_types, i, intermediate_type); i--)
-        {
-          vec_dest = vect_create_destination_var (scalar_dest,
-                                                  intermediate_type);
-          VEC_quick_push (tree, vec_dsts, vec_dest);
-        }
-    }
-
-  if (!slp_node)
-    {
-      vec_oprnds0 = VEC_alloc (tree, heap,
-                            (multi_step_cvt ? vect_pow2 (multi_step_cvt) : 1));
-      if (op_type == binary_op)
-        vec_oprnds1 = VEC_alloc (tree, heap, 1);
-    }
-  else if (code == WIDEN_LSHIFT_EXPR)
-    vec_oprnds1 = VEC_alloc (tree, heap, slp_node->vec_stmts_size);
-
-  /* In case the vectorization factor (VF) is bigger than the number
-     of elements that we can fit in a vectype (nunits), we have to generate
-     more than one vector stmt - i.e - we need to "unroll" the
-     vector stmt by a factor VF/nunits.   */
-
-  prev_stmt_info = NULL;
-  for (j = 0; j < ncopies; j++)
-    {
-      /* Handle uses.  */
-      if (j == 0)
-        {
-          if (slp_node)
-	    {
-	      if (code == WIDEN_LSHIFT_EXPR)
-                {
-                  vec_oprnd1 = op1;
-		  /* Store vec_oprnd1 for every vector stmt to be created
-		     for SLP_NODE.  We check during the analysis that all
-		     the shift arguments are the same.  */
-                  for (k = 0; k < slp_node->vec_stmts_size - 1; k++)
-                    VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
-
-    		  vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
- 	                             slp_node, -1);
-                }
-              else
-                vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0,
-                                   &vec_oprnds1, slp_node, -1);
-	    }
-	  else
-            {
-              vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
-              VEC_quick_push (tree, vec_oprnds0, vec_oprnd0);
-              if (op_type == binary_op)
-                {
-                  if (code == WIDEN_LSHIFT_EXPR)
-                    vec_oprnd1 = op1;
-                  else
-                    vec_oprnd1 = vect_get_vec_def_for_operand (op1, stmt, NULL);
-                  VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
-                }
-            }
-        }
-      else
-        {
-          vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
-          VEC_replace (tree, vec_oprnds0, 0, vec_oprnd0);
-          if (op_type == binary_op)
-            {
-              if (code == WIDEN_LSHIFT_EXPR)
-                vec_oprnd1 = op1;
-              else
-                vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[1], vec_oprnd1);
-              VEC_replace (tree, vec_oprnds1, 0, vec_oprnd1);
-            }
-        }
-
-      /* Arguments are ready.  Create the new vector stmts.  */
-      tmp_vec_dsts = VEC_copy (tree, heap, vec_dsts);
-      vect_create_vectorized_promotion_stmts (&vec_oprnds0, &vec_oprnds1,
-                                              multi_step_cvt, stmt,
-                                              tmp_vec_dsts,
-                                              gsi, slp_node, code1, code2,
-                                              decl1, decl2, op_type,
-                                              &prev_stmt_info);
-    }
-
-  VEC_free (tree, heap, vec_dsts);
-  VEC_free (tree, heap, tmp_vec_dsts);
-  VEC_free (tree, heap, interm_types);
-  VEC_free (tree, heap, vec_oprnds0);
-  VEC_free (tree, heap, vec_oprnds1);
-
-  *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
   return true;
 }
 
@@ -5216,9 +4988,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
    if (!bb_vinfo
        && (STMT_VINFO_RELEVANT_P (stmt_info)
            || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
-      ok = (vectorizable_type_promotion (stmt, NULL, NULL, NULL)
-            || vectorizable_type_demotion (stmt, NULL, NULL, NULL)
-            || vectorizable_conversion (stmt, NULL, NULL, NULL)
+      ok = (vectorizable_conversion (stmt, NULL, NULL, NULL)
             || vectorizable_shift (stmt, NULL, NULL, NULL)
             || vectorizable_operation (stmt, NULL, NULL, NULL)
             || vectorizable_assignment (stmt, NULL, NULL, NULL)
@@ -5230,9 +5000,8 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
     else
       {
         if (bb_vinfo)
-          ok = (vectorizable_type_promotion (stmt, NULL, NULL, node)
-                || vectorizable_type_demotion (stmt, NULL, NULL, node)
-               || vectorizable_shift (stmt, NULL, NULL, node)
+	  ok = (vectorizable_conversion (stmt, NULL, NULL, node)
+		|| vectorizable_shift (stmt, NULL, NULL, node)
                 || vectorizable_operation (stmt, NULL, NULL, node)
                 || vectorizable_assignment (stmt, NULL, NULL, node)
                 || vectorizable_load (stmt, NULL, NULL, node, NULL)
@@ -5293,15 +5062,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
   switch (STMT_VINFO_TYPE (stmt_info))
     {
     case type_demotion_vec_info_type:
-      done = vectorizable_type_demotion (stmt, gsi, &vec_stmt, slp_node);
-      gcc_assert (done);
-      break;
-
     case type_promotion_vec_info_type:
-      done = vectorizable_type_promotion (stmt, gsi, &vec_stmt, slp_node);
-      gcc_assert (done);
-      break;
-
     case type_conversion_vec_info_type:
       done = vectorizable_conversion (stmt, gsi, &vec_stmt, slp_node);
       gcc_assert (done);
@@ -5877,12 +5638,17 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
   tree vectype = vectype_in;
   tree wide_vectype = vectype_out;
   enum tree_code c1, c2;
+  int i;
+  tree prev_type, intermediate_type;
+  enum machine_mode intermediate_mode, prev_mode;
+  optab optab3, optab4;
 
+  *multi_step_cvt = 0;
   if (loop_info)
     vect_loop = LOOP_VINFO_LOOP (loop_info);
 
   /* The result of a vectorized widening operation usually requires two vectors
-     (because the widened results do not fit int one vector). The generated
+     (because the widened results do not fit into one vector). The generated
      vector results would normally be expected to be generated in the same
      order as in the original scalar computation, i.e. if 8 results are
      generated in each vector iteration, they are to be organized as follows:
@@ -5927,55 +5693,23 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
   switch (code)
     {
     case WIDEN_MULT_EXPR:
-      if (BYTES_BIG_ENDIAN)
-        {
-          c1 = VEC_WIDEN_MULT_HI_EXPR;
-          c2 = VEC_WIDEN_MULT_LO_EXPR;
-        }
-      else
-        {
-          c2 = VEC_WIDEN_MULT_HI_EXPR;
-          c1 = VEC_WIDEN_MULT_LO_EXPR;
-        }
+      c1 = VEC_WIDEN_MULT_LO_EXPR;
+      c2 = VEC_WIDEN_MULT_HI_EXPR;
       break;
 
     case WIDEN_LSHIFT_EXPR:
-      if (BYTES_BIG_ENDIAN)
-        {
-          c1 = VEC_WIDEN_LSHIFT_HI_EXPR;
-          c2 = VEC_WIDEN_LSHIFT_LO_EXPR;
-        }
-      else
-        {
-          c2 = VEC_WIDEN_LSHIFT_HI_EXPR;
-          c1 = VEC_WIDEN_LSHIFT_LO_EXPR;
-        }
+      c1 = VEC_WIDEN_LSHIFT_LO_EXPR;
+      c2 = VEC_WIDEN_LSHIFT_HI_EXPR;
       break;
 
     CASE_CONVERT:
-      if (BYTES_BIG_ENDIAN)
-        {
-          c1 = VEC_UNPACK_HI_EXPR;
-          c2 = VEC_UNPACK_LO_EXPR;
-        }
-      else
-        {
-          c2 = VEC_UNPACK_HI_EXPR;
-          c1 = VEC_UNPACK_LO_EXPR;
-        }
+      c1 = VEC_UNPACK_LO_EXPR;
+      c2 = VEC_UNPACK_HI_EXPR;
       break;
 
     case FLOAT_EXPR:
-      if (BYTES_BIG_ENDIAN)
-        {
-          c1 = VEC_UNPACK_FLOAT_HI_EXPR;
-          c2 = VEC_UNPACK_FLOAT_LO_EXPR;
-        }
-      else
-        {
-          c2 = VEC_UNPACK_FLOAT_HI_EXPR;
-          c1 = VEC_UNPACK_FLOAT_LO_EXPR;
-        }
+      c1 = VEC_UNPACK_FLOAT_LO_EXPR;
+      c2 = VEC_UNPACK_FLOAT_HI_EXPR;
       break;
 
     case FIX_TRUNC_EXPR:
@@ -5986,6 +5720,13 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
 
     default:
       gcc_unreachable ();
+    }
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      enum tree_code ctmp = c1;
+      c1 = c2;
+      c2 = ctmp;
     }
 
   if (code == FIX_TRUNC_EXPR)
@@ -6008,65 +5749,60 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
        || (icode2 = optab_handler (optab2, vec_mode)) == CODE_FOR_nothing)
     return false;
 
-  /* Check if it's a multi-step conversion that can be done using intermediate
-     types.  */
-  if (insn_data[icode1].operand[0].mode != TYPE_MODE (wide_vectype)
-       || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
-    {
-      int i;
-      tree prev_type = vectype, intermediate_type;
-      enum machine_mode intermediate_mode, prev_mode = vec_mode;
-      optab optab3, optab4;
-
-      if (!CONVERT_EXPR_CODE_P (code))
-        return false;
-
-      *code1 = c1;
-      *code2 = c2;
-
-      /* We assume here that there will not be more than MAX_INTERM_CVT_STEPS
-         intermediate steps in promotion sequence.  We try
-         MAX_INTERM_CVT_STEPS to get to NARROW_VECTYPE, and fail if we do
-         not.  */
-      *interm_types = VEC_alloc (tree, heap, MAX_INTERM_CVT_STEPS);
-      for (i = 0; i < 3; i++)
-        {
-          intermediate_mode = insn_data[icode1].operand[0].mode;
-          intermediate_type = lang_hooks.types.type_for_mode (intermediate_mode,
-                                                     TYPE_UNSIGNED (prev_type));
-          optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
-          optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
-
-          if (!optab3 || !optab4
-              || ((icode1 = optab_handler (optab1, prev_mode))
-		  == CODE_FOR_nothing)
-              || insn_data[icode1].operand[0].mode != intermediate_mode
-              || ((icode2 = optab_handler (optab2, prev_mode))
-		  == CODE_FOR_nothing)
-              || insn_data[icode2].operand[0].mode != intermediate_mode
-              || ((icode1 = optab_handler (optab3, intermediate_mode))
-		  == CODE_FOR_nothing)
-              || ((icode2 = optab_handler (optab4, intermediate_mode))
-		  == CODE_FOR_nothing))
-            return false;
-
-          VEC_quick_push (tree, *interm_types, intermediate_type);
-          (*multi_step_cvt)++;
-
-          if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
-              && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
-            return true;
-
-          prev_type = intermediate_type;
-          prev_mode = intermediate_mode;
-        }
-
-       return false;
-    }
-
   *code1 = c1;
   *code2 = c2;
-  return true;
+
+  if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
+      && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
+    return true;
+
+  /* Check if it's a multi-step conversion that can be done using intermediate
+     types.  */
+
+  prev_type = vectype;
+  prev_mode = vec_mode;
+
+  if (!CONVERT_EXPR_CODE_P (code))
+    return false;
+
+  /* We assume here that there will not be more than MAX_INTERM_CVT_STEPS
+     intermediate steps in promotion sequence.  We try
+     MAX_INTERM_CVT_STEPS to get to NARROW_VECTYPE, and fail if we do
+     not.  */
+  *interm_types = VEC_alloc (tree, heap, MAX_INTERM_CVT_STEPS);
+  for (i = 0; i < MAX_INTERM_CVT_STEPS; i++)
+    {
+      intermediate_mode = insn_data[icode1].operand[0].mode;
+      intermediate_type
+	= lang_hooks.types.type_for_mode (intermediate_mode,
+					  TYPE_UNSIGNED (prev_type));
+      optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
+      optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
+
+      if (!optab3 || !optab4
+          || (icode1 = optab_handler (optab1, prev_mode)) == CODE_FOR_nothing
+	  || insn_data[icode1].operand[0].mode != intermediate_mode
+	  || (icode2 = optab_handler (optab2, prev_mode)) == CODE_FOR_nothing
+	  || insn_data[icode2].operand[0].mode != intermediate_mode
+	  || ((icode1 = optab_handler (optab3, intermediate_mode))
+	      == CODE_FOR_nothing)
+	  || ((icode2 = optab_handler (optab4, intermediate_mode))
+	      == CODE_FOR_nothing))
+	break;
+
+      VEC_quick_push (tree, *interm_types, intermediate_type);
+      (*multi_step_cvt)++;
+
+      if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
+	  && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
+	return true;
+
+      prev_type = intermediate_type;
+      prev_mode = intermediate_mode;
+    }
+
+  VEC_free (tree, heap, *interm_types);
+  return false;
 }
 
 
@@ -6102,9 +5838,12 @@ supportable_narrowing_operation (enum tree_code code,
   tree vectype = vectype_in;
   tree narrow_vectype = vectype_out;
   enum tree_code c1;
-  tree intermediate_type, prev_type;
+  tree intermediate_type;
+  enum machine_mode intermediate_mode, prev_mode;
   int i;
+  bool uns;
 
+  *multi_step_cvt = 0;
   switch (code)
     {
     CASE_CONVERT:
@@ -6137,47 +5876,70 @@ supportable_narrowing_operation (enum tree_code code,
   if ((icode1 = optab_handler (optab1, vec_mode)) == CODE_FOR_nothing)
     return false;
 
+  *code1 = c1;
+
+  if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
+    return true;
+
   /* Check if it's a multi-step conversion that can be done using intermediate
      types.  */
-  if (insn_data[icode1].operand[0].mode != TYPE_MODE (narrow_vectype))
+  prev_mode = vec_mode;
+  if (code == FIX_TRUNC_EXPR)
+    uns = TYPE_UNSIGNED (vectype_out);
+  else
+    uns = TYPE_UNSIGNED (vectype);
+
+  /* For multi-step FIX_TRUNC_EXPR prefer signed floating to integer
+     conversion over unsigned, as unsigned FIX_TRUNC_EXPR is often more
+     costly than signed.  */
+  if (code == FIX_TRUNC_EXPR && uns)
     {
-      enum machine_mode intermediate_mode, prev_mode = vec_mode;
+      enum insn_code icode2;
 
-      *code1 = c1;
-      prev_type = vectype;
-      /* We assume here that there will not be more than MAX_INTERM_CVT_STEPS
-         intermediate steps in promotion sequence.  We try
-         MAX_INTERM_CVT_STEPS to get to NARROW_VECTYPE, and fail if we do
-         not.  */
-      *interm_types = VEC_alloc (tree, heap, MAX_INTERM_CVT_STEPS);
-      for (i = 0; i < 3; i++)
-        {
-          intermediate_mode = insn_data[icode1].operand[0].mode;
-          intermediate_type = lang_hooks.types.type_for_mode (intermediate_mode,
-                                                     TYPE_UNSIGNED (prev_type));
-          interm_optab = optab_for_tree_code (c1, intermediate_type,
-                                              optab_default);
-          if (!interm_optab
-              || ((icode1 = optab_handler (optab1, prev_mode))
-		  == CODE_FOR_nothing)
-              || insn_data[icode1].operand[0].mode != intermediate_mode
-              || ((icode1 = optab_handler (interm_optab, intermediate_mode))
-		  == CODE_FOR_nothing))
-            return false;
-
-          VEC_quick_push (tree, *interm_types, intermediate_type);
-          (*multi_step_cvt)++;
-
-          if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
-            return true;
-
-          prev_type = intermediate_type;
-          prev_mode = intermediate_mode;
-        }
-
-      return false;
+      intermediate_type
+	= lang_hooks.types.type_for_mode (TYPE_MODE (vectype_out), 0);
+      interm_optab
+	= optab_for_tree_code (c1, intermediate_type, optab_default);
+      if (interm_optab != NULL
+	  && (icode2 = optab_handler (optab1, vec_mode)) != CODE_FOR_nothing
+	  && insn_data[icode1].operand[0].mode
+	     == insn_data[icode2].operand[0].mode)
+	{
+	  uns = false;
+	  optab1 = interm_optab;
+	  icode1 = icode2;
+	}
     }
 
-  *code1 = c1;
-  return true;
+  /* We assume here that there will not be more than MAX_INTERM_CVT_STEPS
+     intermediate steps in promotion sequence.  We try
+     MAX_INTERM_CVT_STEPS to get to NARROW_VECTYPE, and fail if we do not.  */
+  *interm_types = VEC_alloc (tree, heap, MAX_INTERM_CVT_STEPS);
+  for (i = 0; i < MAX_INTERM_CVT_STEPS; i++)
+    {
+      intermediate_mode = insn_data[icode1].operand[0].mode;
+      intermediate_type
+	= lang_hooks.types.type_for_mode (intermediate_mode, uns);
+      interm_optab
+	= optab_for_tree_code (VEC_PACK_TRUNC_EXPR, intermediate_type,
+			       optab_default);
+      if (!interm_optab
+	  || ((icode1 = optab_handler (optab1, prev_mode)) == CODE_FOR_nothing)
+	  || insn_data[icode1].operand[0].mode != intermediate_mode
+	  || ((icode1 = optab_handler (interm_optab, intermediate_mode))
+	      == CODE_FOR_nothing))
+	break;
+
+      VEC_quick_push (tree, *interm_types, intermediate_type);
+      (*multi_step_cvt)++;
+
+      if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
+	return true;
+
+      prev_mode = intermediate_mode;
+      optab1 = interm_optab;
+    }
+
+  VEC_free (tree, heap, *interm_types);
+  return false;
 }
