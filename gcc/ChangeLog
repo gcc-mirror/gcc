@@ -1,5 +1,12 @@
 2011-11-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_vector_convert_uns_vsivsf): New
+	function.
+	* config/i386/i386-protos.h (ix86_expand_vector_convert_uns_vsivsf):
+	New prototype.
+	* config/i386/sse.md (floatuns<sseintvecmodelower><mode>2): Use it.
+	For floatunsv8siv8sf2 require TARGET_AVX2.
+
 	* config/i386/i386.c (ix86_expand_adjust_ufix_to_sfix_si): Add
 	XORP argument.  Subtract 0x1p31 instead of 0x1p32.  Use normal
 	signalling comparison instead of non-signalling.  Store into
