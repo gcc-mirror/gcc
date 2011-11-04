@@ -1339,7 +1339,7 @@ nested_anon_class_index (tree type)
 /* <unnamed-type-name> ::= Ut [ <nonnegative number> ] _ */
 
 static void
-write_unnamed_type_name (const tree type __attribute__ ((__unused__)))
+write_unnamed_type_name (const tree type ATTRIBUTE_UNUSED)
 {
   int discriminator;
   MANGLE_TRACE_TREE ("unnamed-type-name", type);

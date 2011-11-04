@@ -1,4 +1,9 @@
-2011-10-09  Magnus Fromreide  <magfr@lysator.liu.se>
+2011-11-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (build_indirect_ref): Use ATTRIBUTE_UNUSED.
+	* mangle.c (write_unnamed_type_name): Likewise.
+
+2011-11-04  Magnus Fromreide  <magfr@lysator.liu.se>
 
         * parser.c (cp_parser_enumerator_list): Do not warn about
         trailing commas in C++0x mode.
