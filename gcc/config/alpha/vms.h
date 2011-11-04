@@ -236,15 +236,16 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION vms_asm_named_section
 
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
-  do {	fprintf ((FILE), "\t.literals\n");				\
-	in_section = NULL;						\
-	fprintf ((FILE), "\t");						\
-	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, " = ");						\
-	assemble_name (FILE, LABEL2);					\
-	fprintf (FILE, "\n");						\
-  } while (0)
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)      \
+  do                                            \
+    {                                           \
+      fprintf ((FILE), "\t");                   \
+      assemble_name (FILE, LABEL1);             \
+      fprintf (FILE, " = ");                    \
+      assemble_name (FILE, LABEL2);             \
+      fprintf (FILE, "\n");                     \
+    }                                           \
+ while (0)
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
