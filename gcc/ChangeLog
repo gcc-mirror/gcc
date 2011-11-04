@@ -1,3 +1,7 @@
+2011-11-04  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/vms.h (ASM_OUTPUT_DEF): Do not switch section.
+
 2011-11-04  Ira Rosen  <ira.rosen@linaro.org>
 
 	Unrevert:
