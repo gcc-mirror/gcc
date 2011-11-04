@@ -1,3 +1,8 @@
+2011-11-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48420
+	* g++.dg/warn/Wconversion-null-3.C: New.
+
 2011-11-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/50941

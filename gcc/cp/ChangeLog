@@ -1,3 +1,9 @@
+2011-11-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48420
+	* call.c (conversion_null_warnings): For 'false' to NULL pointer,
+	just check that TREE_TYPE (expr) is a BOOLEAN_TYPE.
+
 2011-11-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/50941
