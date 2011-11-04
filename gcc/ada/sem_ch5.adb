@@ -2431,7 +2431,7 @@ package body Sem_Ch5 is
 
             declare
                Element : constant Entity_Id :=
-                 Find_Aspect (Typ, Aspect_Iterator_Element);
+                           Find_Aspect (Typ, Aspect_Iterator_Element);
             begin
                if No (Element) then
                   Error_Msg_NE ("cannot iterate over&", N, Typ);
@@ -2453,7 +2453,6 @@ package body Sem_Ch5 is
                   Error_Msg_NE
                     ("cannot iterate over&", Name (N), Typ);
                else
-
                   Error_Msg_N
                     ("name must be an iterator, not a container", Name (N));
                end if;
