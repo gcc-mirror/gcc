@@ -2624,7 +2624,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
       maskexpr = actual->expr;
     }
 
-  if (maskexpr && maskexpr->rank != 0)
+  if (maskexpr && maskexpr->rank > 0)
     {
       maskss = gfc_walk_expr (maskexpr);
       gcc_assert (maskss != gfc_ss_terminator);
@@ -2635,7 +2635,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
   gfc_add_ss_to_loop (&loop, arrayss);
-  if (maskss)
+  if (maskexpr && maskexpr->rank > 0)
     gfc_add_ss_to_loop (&loop, maskss);
 
   /* Initialize the loop.  */
@@ -2643,13 +2643,13 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   gfc_conv_loop_setup (&loop, &expr->where);
 
   gfc_mark_ss_chain_used (arrayss, 1);
-  if (maskss)
+  if (maskexpr && maskexpr->rank > 0)
     gfc_mark_ss_chain_used (maskss, 1);
   /* Generate the loop body.  */
   gfc_start_scalarized_body (&loop, &body);
 
   /* If we have a mask, only add this element if the mask is set.  */
-  if (maskss)
+  if (maskexpr && maskexpr->rank > 0)
     {
       gfc_init_se (&maskse, NULL);
       gfc_copy_loopinfo_to_se (&maskse, &loop);
@@ -2740,7 +2740,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
 
   gfc_add_block_to_block (&block, &arrayse.post);
 
-  if (maskss)
+  if (maskexpr && maskexpr->rank > 0)
     {
       /* We enclose the above in if (mask) {...} .  */
 
@@ -2755,7 +2755,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   gfc_trans_scalarizing_loops (&loop, &body);
 
   /* For a scalar mask, enclose the loop in an if statement.  */
-  if (maskexpr && maskss == NULL)
+  if (maskexpr && maskexpr->rank == 0)
     {
       gfc_init_se (&maskse, NULL);
       gfc_conv_expr_val (&maskse, maskexpr);

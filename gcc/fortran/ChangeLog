@@ -1,5 +1,9 @@
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-intrinsic.c (gfc_conv_intrinsic_arith): Update conditions.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* frontend-passes.c (cfe_register_funcs): Return early in the case
 	of an inline intrinsic function.
 	(optimize_binop_array_assignment): Skip optimization in the case of
