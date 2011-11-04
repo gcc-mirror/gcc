@@ -1215,7 +1215,8 @@ package body Sem_Prag is
 
       procedure Check_Arg_Is_Static_Expression
         (Arg : Node_Id;
-         Typ : Entity_Id := Empty) is
+         Typ : Entity_Id := Empty)
+      is
       begin
          Check_Expr_Is_Static_Expression (Get_Pragma_Arg (Arg), Typ);
       end Check_Arg_Is_Static_Expression;
@@ -1456,7 +1457,8 @@ package body Sem_Prag is
 
       procedure Check_Expr_Is_Static_Expression
         (Argx : Node_Id;
-         Typ  : Entity_Id := Empty) is
+         Typ  : Entity_Id := Empty)
+      is
       begin
          if Present (Typ) then
             Analyze_And_Resolve (Argx, Typ);
@@ -15140,7 +15142,6 @@ package body Sem_Prag is
       --  expressions (i.e. similar to a default expression).
 
       if Present (Arg_Req) then
-
          Preanalyze_Spec_Expression
            (Get_Pragma_Arg (Arg_Req), Standard_Boolean);
 
@@ -15156,7 +15157,6 @@ package body Sem_Prag is
       end if;
 
       if Present (Arg_Ens) then
-
          Preanalyze_Spec_Expression
            (Get_Pragma_Arg (Arg_Ens), Standard_Boolean);
 
