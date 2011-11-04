@@ -761,6 +761,9 @@ package Atree is
    procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Has_Aspects);
 
+   procedure Set_Original_Node (N : Node_Id; Val : Node_Id);
+   pragma Inline (Set_Original_Node);
+
    ------------------------------
    -- Entity Update Procedures --
    ------------------------------

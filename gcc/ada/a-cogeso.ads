@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---              ADA.CONTAINERS.GENERIC_ANONYMOUS_ARRAY_SORT                 --
+--                       ADA.CONTAINERS.GENERIC_SORT                        --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,21 +27,14 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
---  This unit was originally a GNAT-specific addition to Ada 2005. A unit
---  providing the same feature, Ada.Containers.Generic_Sort, was defined for
---  Ada 2012.  We retain Generic_Anonymous_Array_Sort for compatibility, but
---  implement it in terms of the official unit, Generic_Sort.
+--  Allows an anonymous array (or array-like container) to be sorted. Generic
+--  formal Before returns the result of comparing the elements designated by
+--  the indexes, and generic formal Swap exchanges the designated elements.
 
-with Ada.Containers.Generic_Sort;
+generic
+   type Index_Type is (<>);
+   with function Before (Left, Right : Index_Type) return Boolean;
+   with procedure Swap (Left, Right : Index_Type);
 
-procedure Ada.Containers.Generic_Anonymous_Array_Sort
-  (First, Last : Index_Type'Base)
-is
-   procedure Sort is new Ada.Containers.Generic_Sort
-     (Index_Type => Index_Type,
-      Before     => Less,
-      Swap       => Swap);
-
-begin
-   Sort (First, Last);
-end Ada.Containers.Generic_Anonymous_Array_Sort;
+procedure Ada.Containers.Generic_Sort (First, Last : Index_Type'Base);
+pragma Pure (Ada.Containers.Generic_Sort);

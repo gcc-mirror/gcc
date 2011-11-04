@@ -494,6 +494,7 @@ package body Impunit is
       --  Note: strictly the following should be Ada 2012 units, but it seems
       --  harmless (and useful) to make then available in Ada 2005 mode.
 
+    ("a-cogeso", T),  -- Ada.Containers.Generic_Sort
     ("a-secain", T),  -- Ada.Strings.Equal_Case_Insensitive
     ("a-shcain", T),  -- Ada.Strings.Hash_Case_Insensitive
     ("a-slcain", T),  -- Ada.Strings.Less_Case_Insensitive

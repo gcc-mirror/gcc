@@ -1231,8 +1231,13 @@ package body Sem_Ch13 is
                   --  We do not do this for Pre'Class, since we have to put
                   --  these conditions together in a complex OR expression
 
-                  if Pname = Name_Postcondition
-                    or else not Class_Present (Aspect)
+                  --  We do not do this in ASIS mode, as ASIS relies on the
+                  --  original node representing the complete expression, when
+                  --  retrieving it through the source aspect table.
+
+                  if not ASIS_Mode
+                    and then (Pname = Name_Postcondition
+                               or else not Class_Present (Aspect))
                   then
                      while Nkind (Expr) = N_And_Then loop
                         Insert_After (Aspect,
@@ -1385,6 +1390,7 @@ package body Sem_Ch13 is
                   Args      : List_Id;
                   Comp_Expr : Node_Id;
                   Comp_Assn : Node_Id;
+                  New_Expr  : Node_Id;
 
                begin
                   Args := New_List;
@@ -1401,11 +1407,18 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
+                  --  Make pragma expressions refer to the original aspect
+                  --  expressions through the Original_Node link. This is used
+                  --  in semantic analysis for ASIS mode, so that the original
+                  --  expression also gets analyzed.
+
                   Comp_Expr := First (Expressions (Expr));
                   while Present (Comp_Expr) loop
+                     New_Expr := Relocate_Node (Comp_Expr);
+                     Set_Original_Node (New_Expr, Comp_Expr);
                      Append
                        (Make_Pragma_Argument_Association (Sloc (Comp_Expr),
-                          Expression => Relocate_Node (Comp_Expr)),
+                          Expression => New_Expr),
                        Args);
                      Next (Comp_Expr);
                   end loop;
@@ -1421,10 +1434,12 @@ package body Sem_Ch13 is
                         goto Continue;
                      end if;
 
+                     New_Expr := Relocate_Node (Expression (Comp_Assn));
+                     Set_Original_Node (New_Expr, Expression (Comp_Assn));
                      Append (Make_Pragma_Argument_Association (
                        Sloc       => Sloc (Comp_Assn),
                        Chars      => Chars (First (Choices (Comp_Assn))),
-                       Expression => Relocate_Node (Expression (Comp_Assn))),
+                       Expression => New_Expr),
                        Args);
                      Next (Comp_Assn);
                   end loop;
@@ -8732,8 +8747,8 @@ package body Sem_Ch13 is
             Source : constant Entity_Id  := T.Source;
             Target : constant Entity_Id  := T.Target;
 
-            Source_Siz    : Uint;
-            Target_Siz    : Uint;
+            Source_Siz : Uint;
+            Target_Siz : Uint;
 
          begin
             --  This validation check, which warns if we have unequal sizes for

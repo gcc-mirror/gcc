@@ -122,6 +122,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-ciormu$(objext) \
   a-ciorse$(objext) \
   a-clrefi$(objext) \
+  a-cogeso$(objext) \
   a-cohama$(objext) \
   a-cohase$(objext) \
   a-cohata$(objext) \

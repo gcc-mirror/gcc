@@ -72,7 +72,6 @@ private
    type Atomic_Counter is limited record
       Value : aliased Unsigned_32 := 1;
       pragma Atomic (Value);
-      pragma Volatile (Value);
    end record;
 
 end System.Atomic_Counters;
