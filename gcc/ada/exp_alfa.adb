@@ -42,6 +42,8 @@ with Tbuild;   use Tbuild;
 
 package body Exp_Alfa is
 
+   Disable_Processing_Of_Renamings : constant Boolean := True;
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -209,6 +211,10 @@ package body Exp_Alfa is
 
    procedure Expand_Alfa_N_Object_Renaming_Declaration (N : Node_Id) is
    begin
+      if Disable_Processing_Of_Renamings then
+         return;
+      end if;
+
       --  Unconditionally remove all side effects from the name
 
       Evaluate_Name (Name (N));
@@ -297,6 +303,10 @@ package body Exp_Alfa is
       T : constant Entity_Id := Etype (N);
 
    begin
+      if Disable_Processing_Of_Renamings then
+         return;
+      end if;
+
       --  Substitute a reference to a renaming with the actual renamed object
 
       if Present (Renamed_Object (E)) then
