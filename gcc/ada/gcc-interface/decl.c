@@ -4185,7 +4185,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* The failure of this assertion will very likely come from an
 	       order of elaboration issue for the type of the parameter.  */
 	    gcc_assert (kind == E_Subprogram_Type
-			|| !TYPE_IS_DUMMY_P (gnu_param_type));
+			|| !TYPE_IS_DUMMY_P (gnu_param_type)
+			|| type_annotate_only);
 
 	    if (gnu_param)
 	      {
