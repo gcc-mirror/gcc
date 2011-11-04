@@ -12,6 +12,7 @@ LIB1ASMFUNCS = \
 	_divmodqi4 \
 	_udivmodhi4 \
 	_divmodhi4 \
+	_divmodpsi4 _udivmodpsi4 \
 	_udivmodsi4 \
 	_divmodsi4 \
 	_prologue \

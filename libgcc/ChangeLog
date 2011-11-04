@@ -1,3 +1,9 @@
+2011-11-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50931
+	* config/t-avr (LIB1ASMFUNCS): Add _divmodpsi4, _udivmodpsi4.
+	* config/lib1funcs.S (__udivmodpsi4, __divmodpsi4): New functions.
+
 2011-11-04  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	PR target/50989

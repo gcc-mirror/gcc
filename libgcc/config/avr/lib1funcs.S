@@ -599,7 +599,142 @@ ENDF __divmodhi4
 #undef r_arg2L 
              	
 #undef r_cnt   	
-	
+
+/*******************************************************
+       Division 24 / 24 => (result + remainder)
+*******************************************************/
+
+;; A[0..2]: In: Dividend; Out: Quotient
+#define A0  22
+#define A1  A0+1
+#define A2  A0+2
+
+;; B[0..2]: In: Divisor;   Out: Remainder
+#define B0  18
+#define B1  B0+1
+#define B2  B0+2
+
+;; C[0..2]: Expand remainder
+#define C0  __zero_reg__
+#define C1  26
+#define C2  25
+
+;; Loop counter
+#define r_cnt   21
+
+#if defined (L_udivmodpsi4)
+;; R24:R22 = R24:R22  udiv  R20:R18
+;; R20:R18 = R24:R22  umod  R20:R18
+;; Clobbers: R21, R25, R26
+
+DEFUN __udivmodpsi4
+    ; init loop counter
+    ldi     r_cnt, 24+1
+    ; Clear remainder and carry.  C0 is already 0
+    clr     C1
+    sub     C2, C2
+    ; jump to entry point
+    rjmp    __udivmodpsi4_start
+__udivmodpsi4_loop:
+    ; shift dividend into remainder
+    rol     C0
+    rol     C1
+    rol     C2
+    ; compare remainder & divisor
+    cp      C0, B0
+    cpc     C1, B1
+    cpc     C2, B2
+    brcs    __udivmodpsi4_start ; remainder <= divisor
+    sub     C0, B0              ; restore remainder
+    sbc     C1, B1
+    sbc     C2, B2
+__udivmodpsi4_start:
+    ; shift dividend (with CARRY)
+    rol     A0
+    rol     A1
+    rol     A2
+    ; decrement loop counter
+    dec     r_cnt
+    brne    __udivmodpsi4_loop
+    com     A0
+    com     A1
+    com     A2
+    ; div/mod results to return registers
+    ; remainder
+    mov     B0, C0
+    mov     B1, C1
+    mov     B2, C2
+    clr     __zero_reg__ ; C0
+    ret
+ENDF __udivmodpsi4
+#endif /* defined (L_udivmodpsi4) */
+
+#if defined (L_divmodpsi4)
+;; R24:R22 = R24:R22  div  R20:R18
+;; R20:R18 = R24:R22  mod  R20:R18
+;; Clobbers: T, __tmp_reg__, R21, R25, R26
+
+DEFUN __divmodpsi4
+    ; R0.7 will contain the sign of the result:
+    ; R0.7 = A.sign ^ B.sign
+    mov __tmp_reg__, B2
+    ; T-flag = sign of dividend
+    bst     A2, 7
+    brtc    0f
+    com     __tmp_reg__
+    ; Adjust dividend's sign
+    rcall   __divmodpsi4_negA
+0:
+    ; Adjust divisor's sign
+    sbrc    B2, 7
+    rcall   __divmodpsi4_negB
+
+    ; Do the unsigned div/mod
+    XCALL   __udivmodpsi4
+
+    ; Adjust quotient's sign
+    sbrc    __tmp_reg__, 7
+    rcall   __divmodpsi4_negA
+
+    ; Adjust remainder's sign
+    brtc    __divmodpsi4_end
+
+__divmodpsi4_negB:
+    ; Correct divisor/remainder sign
+    com     B2
+    com     B1
+    neg     B0
+    sbci    B1, -1
+    sbci    B2, -1
+    ret
+
+    ; Correct dividend/quotient sign
+__divmodpsi4_negA:
+    com     A2
+    com     A1
+    neg     A0
+    sbci    A1, -1
+    sbci    A2, -1
+__divmodpsi4_end:
+    ret
+
+ENDF __divmodpsi4
+#endif /* defined (L_divmodpsi4) */
+
+#undef A0
+#undef A1
+#undef A2
+
+#undef B0
+#undef B1
+#undef B2
+
+#undef C0
+#undef C1
+#undef C2
+
+#undef r_cnt
+
 /*******************************************************
        Division 32 / 32 => (result + remainder)
 *******************************************************/
