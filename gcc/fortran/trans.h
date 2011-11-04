@@ -310,6 +310,7 @@ typedef struct gfc_loopinfo
 }
 gfc_loopinfo;
 
+#define gfc_get_loopinfo() XCNEW (gfc_loopinfo)
 
 /* Information about a symbol that has been shadowed by a temporary.  */
 typedef struct

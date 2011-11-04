@@ -6187,7 +6187,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    gcc_assert ((expr->value.function.esym != NULL
 			 && expr->value.function.esym->attr.elemental)
 			|| (expr->value.function.isym != NULL
-			    && expr->value.function.isym->elemental));
+			    && expr->value.function.isym->elemental)
+			|| gfc_inline_intrinsic_function_p (expr));
 	  else
 	    gcc_assert (ss_type == GFC_SS_INTRINSIC);
 
