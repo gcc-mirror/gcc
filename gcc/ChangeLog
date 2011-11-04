@@ -1,5 +1,17 @@
 2011-11-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_adjust_ufix_to_sfix_si): Add
+	XORP argument.  Subtract 0x1p31 instead of 0x1p32.  Use normal
+	signalling comparison instead of non-signalling.  Store into
+	*XORP pseudo holding 0x80000000 integers if 0x1p31 has been
+	subtracted and 0 otherwise.
+	* config/i386/i386-protos.h (ix86_expand_adjust_ufix_to_sfix_si):
+	Adjust prototype.
+	* config/i386/sse.md (fixuns_trunc<mode><sseintvecmodelower>2): Enable
+	already for TARGET_SSE2.  Xor in vector initialized by
+	ix86_expand_adjust_ufix_to_sfix_si at the end.
+	(vec_pack_ufix_trunc_<mode>): Likewise.
+
 	* tree-vect-stmts.c (vectorizable_conversion): Rewritten to handle
 	not just FLOAT_EXPR and FIX_TRUNC_EXPR, but also CONVERT_EXPR_CODE_P,
 	WIDEN_MULT_EXPR and WIDEN_LSHIFT_EXPR to handle what

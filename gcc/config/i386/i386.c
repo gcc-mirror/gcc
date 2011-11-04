@@ -17018,16 +17018,17 @@ ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
 
 /* Adjust a V*SFmode/V*DFmode value VAL so that *sfix_trunc* resp. fix_trunc*
    pattern can be used on it instead of *ufix_trunc* resp. fixuns_trunc*.
-   This is done by subtracting 0x1p32 from VAL if VAL is greater or equal
-   (non-signalling) than 0x1p31.  */
+   This is done by doing just signed conversion if < 0x1p31, and otherwise by
+   subtracting 0x1p31 first and xoring in 0x80000000 from *XORP afterwards.  */
 
 rtx
-ix86_expand_adjust_ufix_to_sfix_si (rtx val)
+ix86_expand_adjust_ufix_to_sfix_si (rtx val, rtx *xorp)
 {
-  REAL_VALUE_TYPE MTWO32r, TWO31r;
-  rtx two31r, mtwo32r, tmp[3];
+  REAL_VALUE_TYPE TWO31r;
+  rtx two31r, tmp[4];
   enum machine_mode mode = GET_MODE (val);
   enum machine_mode scalarmode = GET_MODE_INNER (mode);
+  enum machine_mode intmode = GET_MODE_SIZE (mode) == 32 ? V8SImode : V4SImode;
   rtx (*cmp) (rtx, rtx, rtx, rtx);
   int i;
 
@@ -17037,22 +17038,33 @@ ix86_expand_adjust_ufix_to_sfix_si (rtx val)
   two31r = const_double_from_real_value (TWO31r, scalarmode);
   two31r = ix86_build_const_vector (mode, 1, two31r);
   two31r = force_reg (mode, two31r);
-  real_ldexp (&MTWO32r, &dconstm1, 32);
-  mtwo32r = const_double_from_real_value (MTWO32r, scalarmode);
-  mtwo32r = ix86_build_const_vector (mode, 1, mtwo32r);
-  mtwo32r = force_reg (mode, mtwo32r);
   switch (mode)
     {
-    case V8SFmode: cmp = gen_avx_cmpv8sf3; break;
-    case V4SFmode: cmp = gen_avx_cmpv4sf3; break;
-    case V4DFmode: cmp = gen_avx_cmpv4df3; break;
-    case V2DFmode: cmp = gen_avx_cmpv2df3; break;
+    case V8SFmode: cmp = gen_avx_maskcmpv8sf3; break;
+    case V4SFmode: cmp = gen_sse_maskcmpv4sf3; break;
+    case V4DFmode: cmp = gen_avx_maskcmpv4df3; break;
+    case V2DFmode: cmp = gen_sse2_maskcmpv2df3; break;
     default: gcc_unreachable ();
     }
-  emit_insn (cmp (tmp[0], val, two31r, GEN_INT (29)));
-  tmp[1] = expand_simple_binop (mode, AND, tmp[0], mtwo32r, tmp[1],
+  tmp[3] = gen_rtx_LE (mode, two31r, val);
+  emit_insn (cmp (tmp[0], two31r, val, tmp[3]));
+  tmp[1] = expand_simple_binop (mode, AND, tmp[0], two31r, tmp[1],
 				0, OPTAB_DIRECT);
-  return expand_simple_binop (mode, PLUS, val, tmp[1], tmp[2],
+  if (intmode == V4SImode || TARGET_AVX2)
+    *xorp = expand_simple_binop (intmode, ASHIFT,
+				 gen_lowpart (intmode, tmp[0]),
+				 GEN_INT (31), NULL_RTX, 0,
+				 OPTAB_DIRECT);
+  else
+    {
+      rtx two31 = GEN_INT ((unsigned HOST_WIDE_INT) 1 << 31);
+      two31 = ix86_build_const_vector (intmode, 1, two31);
+      *xorp = expand_simple_binop (intmode, AND,
+				   gen_lowpart (intmode, tmp[0]),
+				   two31, NULL_RTX, 0,
+				   OPTAB_DIRECT);
+    }
+  return expand_simple_binop (mode, MINUS, val, tmp[1], tmp[2],
 			      0, OPTAB_DIRECT);
 }
 

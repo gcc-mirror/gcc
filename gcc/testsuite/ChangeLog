@@ -1,5 +1,7 @@
 2011-11-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/torture/vec-cvt-1.c: Enable flttointtestui test.
+
 	* gcc.dg/torture/vec-cvt-1.c: New test.
 
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
