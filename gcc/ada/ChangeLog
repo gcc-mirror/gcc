@@ -1,3 +1,7 @@
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, atree.ads, prj-env.adb, prj-env.ads: Minor reformatting.
+
 2011-11-04  Yannick Moy  <moy@adacore.com>
 
 	* atree.adb, atree.ads (Set_Original_Node): New set procedure.

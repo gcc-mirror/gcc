@@ -212,8 +212,9 @@ package Prj.Env is
 
    generic
       with function Check_Filename (Name : String) return Boolean;
-   function Find_Name_In_Path (Self : Project_Search_Path;
-                               Path : String) return String_Access;
+   function Find_Name_In_Path
+     (Self : Project_Search_Path;
+      Path : String) return String_Access;
    --  Find a name in the project search path of Self. Check_Filename is
    --  the predicate to valid the search.  If Path is an absolute filename,
    --  simply calls the predicate with Path. Otherwise, calls the predicate

@@ -763,6 +763,11 @@ package Atree is
 
    procedure Set_Original_Node (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Original_Node);
+   --  Note that this routine is used only in very peculiar cases. In normal
+   --  cases, the Original_Node link is set by calls to Rewrite. We currently
+   --  use it in ASIS mode to manually set the link from pragma expressions
+   --  to their aspect original source expressions, so that the original source
+   --  expressions accessed by ASIS are also semantically analyzed.
 
    ------------------------------
    -- Entity Update Procedures --

@@ -2062,8 +2062,10 @@ package body Prj.Env is
    -- Find_Name_In_Path --
    -----------------------
 
-   function Find_Name_In_Path (Self : Project_Search_Path;
-                               Path : String) return String_Access is
+   function Find_Name_In_Path
+     (Self : Project_Search_Path;
+      Path : String) return String_Access
+   is
       First  : Natural;
       Last   : Natural;
 
@@ -2081,8 +2083,7 @@ package body Prj.Env is
 
       else
          --  Because we don't want to resolve symbolic links, we cannot use
-         --  Locate_Regular_File. So, we try each possible path
-         --  successively.
+         --  Locate_Regular_File. So, we try each possible path successively.
 
          First := Self.Path'First;
          while First <= Self.Path'Last loop
@@ -2204,8 +2205,7 @@ package body Prj.Env is
 
          if Result = null then
             Result := Try_Path_Name
-              (Self,
-               Directory & Directory_Separator & File);
+                       (Self, Directory & Directory_Separator & File);
          end if;
       end if;
 
