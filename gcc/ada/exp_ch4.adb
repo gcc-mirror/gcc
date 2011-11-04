@@ -2614,12 +2614,7 @@ package body Exp_Ch4 is
       --  Result of the concatenation (of type Ityp)
 
       Actions : constant List_Id := New_List;
-      --  Collect actions to be inserted if Save_Space is False
-
-      Save_Space : Boolean;
-      pragma Warnings (Off, Save_Space);
-      --  Set to True if we are saving generated code space by calling routines
-      --  in packages System.Concat_n.
+      --  Collect actions to be inserted
 
       Known_Non_Null_Operand_Seen : Boolean;
       --  Set True during generation of the assignments of operands into
