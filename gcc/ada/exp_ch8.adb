@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,100 @@ with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 
 package body Exp_Ch8 is
+
+   -------------------
+   -- Evaluate_Name --
+   -------------------
+
+   procedure Evaluate_Name (Nam : Node_Id) is
+      K : constant Node_Kind := Nkind (Nam);
+
+   begin
+      --  For an explicit dereference, we simply force the evaluation of the
+      --  name expression. The dereference provides a value that is the address
+      --  for the renamed object, and it is precisely this value that we want
+      --  to preserve.
+
+      if K = N_Explicit_Dereference then
+         Force_Evaluation (Prefix (Nam));
+
+      --  For a selected component, we simply evaluate the prefix
+
+      elsif K = N_Selected_Component then
+         Evaluate_Name (Prefix (Nam));
+
+      --  For an indexed component, or an attribute reference, we evaluate the
+      --  prefix, which is itself a name, recursively, and then force the
+      --  evaluation of all the subscripts (or attribute expressions).
+
+      elsif Nkind_In (K, N_Indexed_Component, N_Attribute_Reference) then
+         Evaluate_Name (Prefix (Nam));
+
+         declare
+            E : Node_Id;
+
+         begin
+            E := First (Expressions (Nam));
+            while Present (E) loop
+               Force_Evaluation (E);
+
+               if Original_Node (E) /= E then
+                  Set_Do_Range_Check (E, Do_Range_Check (Original_Node (E)));
+               end if;
+
+               Next (E);
+            end loop;
+         end;
+
+      --  For a slice, we evaluate the prefix, as for the indexed component
+      --  case and then, if there is a range present, either directly or as the
+      --  constraint of a discrete subtype indication, we evaluate the two
+      --  bounds of this range.
+
+      elsif K = N_Slice then
+         Evaluate_Name (Prefix (Nam));
+
+         declare
+            DR     : constant Node_Id := Discrete_Range (Nam);
+            Constr : Node_Id;
+            Rexpr  : Node_Id;
+
+         begin
+            if Nkind (DR) = N_Range then
+               Force_Evaluation (Low_Bound (DR));
+               Force_Evaluation (High_Bound (DR));
+
+            elsif Nkind (DR) = N_Subtype_Indication then
+               Constr := Constraint (DR);
+
+               if Nkind (Constr) = N_Range_Constraint then
+                  Rexpr := Range_Expression (Constr);
+
+                  Force_Evaluation (Low_Bound (Rexpr));
+                  Force_Evaluation (High_Bound (Rexpr));
+               end if;
+            end if;
+         end;
+
+      --  For a type conversion, the expression of the conversion must be the
+      --  name of an object, and we simply need to evaluate this name.
+
+      elsif K = N_Type_Conversion then
+         Evaluate_Name (Expression (Nam));
+
+      --  For a function call, we evaluate the call
+
+      elsif K = N_Function_Call then
+         Force_Evaluation (Nam);
+
+      --  The remaining cases are direct name, operator symbol and character
+      --  literal. In all these cases, we do nothing, since we want to
+      --  reevaluate each time the renamed object is used.
+
+      else
+         return;
+      end if;
+   end Evaluate_Name;
 
    ---------------------------------------------
    -- Expand_N_Exception_Renaming_Declaration --
@@ -91,114 +185,17 @@ package body Exp_Ch8 is
 
    procedure Expand_N_Object_Renaming_Declaration (N : Node_Id) is
       Nam  : constant Node_Id := Name (N);
-      T    : Entity_Id;
       Decl : Node_Id;
-
-      procedure Evaluate_Name (Fname : Node_Id);
-      --  A recursive procedure used to freeze a name in the sense described
-      --  above, i.e. any variable references or function calls are removed.
-      --  Of course the outer level variable reference must not be removed.
-      --  For example in A(J,F(K)), A is left as is, but J and F(K) are
-      --  evaluated and removed.
+      T    : Entity_Id;
 
       function Evaluation_Required (Nam : Node_Id) return Boolean;
-      --  Determines whether it is necessary to do static name evaluation
-      --  for renaming of Nam. It is considered necessary if evaluating the
-      --  name involves indexing a packed array, or extracting a component
-      --  of a record to which a component clause applies. Note that we are
-      --  only interested in these operations if they occur as part of the
-      --  name itself, subscripts are just values that are computed as part
-      --  of the evaluation, so their form is unimportant.
-
-      -------------------
-      -- Evaluate_Name --
-      -------------------
-
-      procedure Evaluate_Name (Fname : Node_Id) is
-         K : constant Node_Kind := Nkind (Fname);
-         E : Node_Id;
-
-      begin
-         --  For an explicit dereference, we simply force the evaluation
-         --  of the name expression. The dereference provides a value that
-         --  is the address for the renamed object, and it is precisely
-         --  this value that we want to preserve.
-
-         if K = N_Explicit_Dereference then
-            Force_Evaluation (Prefix (Fname));
-
-         --  For a selected component, we simply evaluate the prefix
-
-         elsif K = N_Selected_Component then
-            Evaluate_Name (Prefix (Fname));
-
-         --  For an indexed component, or an attribute reference, we evaluate
-         --  the prefix, which is itself a name, recursively, and then force
-         --  the evaluation of all the subscripts (or attribute expressions).
-
-         elsif Nkind_In (K, N_Indexed_Component, N_Attribute_Reference) then
-            Evaluate_Name (Prefix (Fname));
-
-            E := First (Expressions (Fname));
-            while Present (E) loop
-               Force_Evaluation (E);
-
-               if Original_Node (E) /= E then
-                  Set_Do_Range_Check (E, Do_Range_Check (Original_Node (E)));
-               end if;
-
-               Next (E);
-            end loop;
-
-         --  For a slice, we evaluate the prefix, as for the indexed component
-         --  case and then, if there is a range present, either directly or
-         --  as the constraint of a discrete subtype indication, we evaluate
-         --  the two bounds of this range.
-
-         elsif K = N_Slice then
-            Evaluate_Name (Prefix (Fname));
-
-            declare
-               DR     : constant Node_Id := Discrete_Range (Fname);
-               Constr : Node_Id;
-               Rexpr  : Node_Id;
-
-            begin
-               if Nkind (DR) = N_Range then
-                  Force_Evaluation (Low_Bound (DR));
-                  Force_Evaluation (High_Bound (DR));
-
-               elsif Nkind (DR) = N_Subtype_Indication then
-                  Constr := Constraint (DR);
-
-                  if Nkind (Constr) = N_Range_Constraint then
-                     Rexpr := Range_Expression (Constr);
-
-                     Force_Evaluation (Low_Bound (Rexpr));
-                     Force_Evaluation (High_Bound (Rexpr));
-                  end if;
-               end if;
-            end;
-
-         --  For a type conversion, the expression of the conversion must be
-         --  the name of an object, and we simply need to evaluate this name.
-
-         elsif K = N_Type_Conversion then
-            Evaluate_Name (Expression (Fname));
-
-         --  For a function call, we evaluate the call
-
-         elsif K = N_Function_Call then
-            Force_Evaluation (Fname);
-
-         --  The remaining cases are direct name, operator symbol and
-         --  character literal. In all these cases, we do nothing, since
-         --  we want to reevaluate each time the renamed object is used.
-
-         else
-            return;
-         end if;
-      end Evaluate_Name;
+      --  Determines whether it is necessary to do static name evaluation for
+      --  renaming of Nam. It is considered necessary if evaluating the name
+      --  involves indexing a packed array, or extracting a component of a
+      --  record to which a component clause applies. Note that we are only
+      --  interested in these operations if they occur as part of the name
+      --  itself, subscripts are just values that are computed as part of the
+      --  evaluation, so their form is unimportant.
 
       -------------------------
       -- Evaluation_Required --

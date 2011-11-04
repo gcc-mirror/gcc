@@ -1,3 +1,31 @@
+2011-11-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_alfa.adb: Add with and use clauses for Exp_Ch8 and
+	Sem_Util.
+	(Expand_Alfa): Alphabetize cases on first choice. Add
+	processing for object renaming declarations, identifiers and
+	expanded names.
+	(Expand_Alfa_N_In): Remove useless return.
+	(Expand_Alfa_N_Object_Renaming_Declaration): New routine.
+	(Expand_Potential_Renaming): New routine.
+	* exp_ch8.adb (Evaluate_Name): Moved to the top level.
+	(Expand_N_Object_Declaration): Alphabetize local variables. Move
+	Evaluate_Name out to the top level.
+	* exp_ch8.ads (Evaluate_Name): Moved from body to package spec.
+	* exp_util.adb (Remove_Side_Effects): Add processing for
+	functions with side effects in Alfa mode.
+
+2011-11-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat_rm.texi: Add entries for
+	restrictions No_Relative_Delay, No_Requeue_Statements and
+	No_Stream_Optimizations.
+
+2011-11-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb: Set type of entity in prefixed call, for
+	completeness in a generic context.
+
 2011-11-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb: Minor refactoring (renaming of a parameter).

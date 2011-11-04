@@ -6863,7 +6863,8 @@ package body Sem_Ch4 is
          First_Actual := First (Parameter_Associations (Call_Node));
 
          --  For cross-reference purposes, treat the new node as being in
-         --  the source if the original one is.
+         --  the source if the original one is. Set entity and type, even
+         --  though they may be overwritten during resolution if overloaded.
 
          Set_Comes_From_Source (Subprog, Comes_From_Source (N));
          Set_Comes_From_Source (Call_Node, Comes_From_Source (N));
@@ -6872,6 +6873,7 @@ package body Sem_Ch4 is
            and then not Inside_A_Generic
          then
             Set_Entity (Selector_Name (N), Entity (Subprog));
+            Set_Etype  (Selector_Name (N), Etype (Entity (Subprog)));
          end if;
 
          --  If need be, rewrite first actual as an explicit dereference
