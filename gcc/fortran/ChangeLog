@@ -1,5 +1,12 @@
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* frontend-passes.c (cfe_register_funcs): Return early in the case
+	of an inline intrinsic function.
+	(optimize_binop_array_assignment): Skip optimization in the case of
+	an inline intrinsic function.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* array.c (match_subscript): Skip whitespaces before setting locus.
 	* matchexp.c (match_level_1): Ditto.
 
