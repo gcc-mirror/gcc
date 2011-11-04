@@ -99,8 +99,7 @@ extern void alpha_split_lock_test_and_set_12 (enum machine_mode, rtx, rtx,
 					      rtx, rtx, rtx);
 #endif
 
-extern rtx alpha_need_linkage (const char *, int);
-extern rtx alpha_use_linkage (rtx, tree, int, int);
+extern rtx alpha_use_linkage (rtx, bool, bool);
 
 #if TARGET_ABI_OPEN_VMS
 extern enum avms_arg_type alpha_arg_type (enum machine_mode);

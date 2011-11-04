@@ -1,3 +1,25 @@
+2011-11-04  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/alpha.c (alpha_write_linkage): Remove fundecl
+	argument.  Conditionally generate crash debug info.  Adjust
+	for alpha_funcs_tree removal.
+	(machine_function): Add links field.
+	(alpha_start_function): Conditionally generate crash debug info.
+	(alpha_end_function): Adjust call to alpha_write_linkage.
+	(alpha_funcs): Remove.
+	(links_kind): Remove.
+	(alpha_links): Remove num, target and lkind field.  Add func field.
+	(alpha_links_tree): Remove.
+	(alpha_funcs_tree): Remove.
+	(alpha_need_linkage): Remove.
+	(alpha_use_linkage): Change prototype.  Adjust.
+	(alpha_write_one_linkage): Use ASM_OUTPUT_INTERNAL_LABEL.
+	Use SYMBOL_REF_EXTERNAL_P and SYMBOL_REF_LOCAL_P macro.
+	* config/alpha/alpha-protos.h (alpha_use_linkage): Update.
+	(alpha_need_linkage): Remove.
+	* config/alpha/alpha.md: Update calls to alpha_use_linkage.
+	Adjust calls to alpha_need_linkage.
+
 2011-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* sched-vis.c (print_value): Handle STRICT_LOW_PART.

@@ -3965,8 +3965,6 @@
   emit_move_insn (gen_rtx_REG (DImode, 25), operands[1]);
   if (GET_CODE (operands[0]) == SYMBOL_REF)
     {
-      alpha_need_linkage (XSTR (operands[0], 0), 0);
-
       operands[2] = const0_rtx;
     }
   else
@@ -4042,8 +4040,6 @@
   emit_move_insn (gen_rtx_REG (DImode, 25), operands[2]);
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
-      alpha_need_linkage (XSTR (operands[1], 0), 0);
-
       operands[3] = const0_rtx;
     }
   else
@@ -4244,8 +4240,8 @@
     case 0:
    	return "mov %2,$27\;jsr $26,0\;ldq $27,0($29)";
     case 1:
-	operands [2] = alpha_use_linkage (operands [0], cfun->decl, 1, 0);
-	operands [3] = alpha_use_linkage (operands [0], cfun->decl, 0, 0);
+	operands [2] = alpha_use_linkage (operands [0], true, false);
+	operands [3] = alpha_use_linkage (operands [0], false, false);
    	return "ldq $26,%3\;ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)";
     default:
       gcc_unreachable ();
@@ -5472,7 +5468,7 @@
 	      (clobber (reg:DI 27))])]
   "TARGET_ABI_OPEN_VMS"
 {
-  operands[4] = alpha_need_linkage ("OTS$MOVE", 0);
+  operands[4] = gen_rtx_SYMBOL_REF (Pmode, "OTS$MOVE");
 })
 
 (define_insn "*movmemdi_1"
@@ -5491,7 +5487,7 @@
    (clobber (reg:DI 27))]
   "TARGET_ABI_OPEN_VMS"
 {
-  operands [5] = alpha_use_linkage (operands [4], cfun->decl, 0, 1);
+  operands [5] = alpha_use_linkage (operands [4], false, true);
   switch (which_alternative)
     {
     case 0:
@@ -5539,7 +5535,7 @@
   if (operands[2] != const0_rtx)
     FAIL;
 
-  operands[4] = alpha_need_linkage ("OTS$ZERO", 0);
+  operands[4] = gen_rtx_SYMBOL_REF (Pmode, "OTS$ZERO");
 })
 
 (define_insn "*clrmemdi_1"
@@ -5555,7 +5551,7 @@
    (clobber (reg:DI 27))]
   "TARGET_ABI_OPEN_VMS"
 {
-  operands [4] = alpha_use_linkage (operands [3], cfun->decl, 0, 1);
+  operands [4] = alpha_use_linkage (operands [3], false, true);
   switch (which_alternative)
     {
     case 0:
@@ -6825,8 +6821,8 @@
     case 0:
    	return "mov %3,$27\;jsr $26,0\;ldq $27,0($29)";
     case 1:
-	operands [3] = alpha_use_linkage (operands [1], cfun->decl, 1, 0);
-	operands [4] = alpha_use_linkage (operands [1], cfun->decl, 0, 0);
+	operands [3] = alpha_use_linkage (operands [1], true, false);
+	operands [4] = alpha_use_linkage (operands [1], false, false);
    	return "ldq $26,%4\;ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)";
     default:
       gcc_unreachable ();
