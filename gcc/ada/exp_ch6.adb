@@ -5679,10 +5679,14 @@ package body Exp_Ch6 is
       end if;
 
       --  If local-exception-to-goto optimization active, insert dummy push
-      --  statements at start, and dummy pop statements at end.
+      --  statements at start, and dummy pop statements at end, but inhibit
+      --  this if we have No_Exception_Handlers, since they are useless and
+      --  intefere with analysis, e.g. by codepeer.
 
       if (Debug_Flag_Dot_G
            or else Restriction_Active (No_Exception_Propagation))
+        and then not Restriction_Active (No_Exception_Handlers)
+        and then not CodePeer_Mode
         and then Is_Non_Empty_List (L)
       then
          declare

@@ -334,7 +334,7 @@ package body Exp_Ch11 is
       --  raise statements into gotos, e.g. all N_Raise_xxx_Error nodes are
       --  left unchanged and passed to the back end.
 
-      --  Instead, the front end generates two nodes
+      --  Instead, the front end generates three nodes
 
       --     N_Push_Constraint_Error_Label
       --     N_Push_Program_Error_Label
@@ -355,6 +355,10 @@ package body Exp_Ch11 is
       --  front end will still generate the Push and Pop nodes, but the label
       --  field in the Push node will be empty signifying that for this region
       --  of code, no optimization is possible.
+
+      --  These Push/Pop nodes are inhibited if No_Exception_Handlers is set
+      --  since they are useless in this case, and in CodePeer mode, where
+      --  they serve no purpose and can intefere with the analysis.
 
       --  The back end must maintain three stacks, one for each exception case,
       --  the Push node pushes an entry onto the corresponding stack, and Pop
@@ -503,6 +507,12 @@ package body Exp_Ch11 is
 
          procedure Generate_Push_Pop (H : Node_Id) is
          begin
+            if Restriction_Active (No_Exception_Handlers)
+              or else CodePeer_Mode
+            then
+               return;
+            end if;
+
             if Exc_Locally_Handled then
                return;
             else

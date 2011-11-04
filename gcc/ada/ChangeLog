@@ -1,5 +1,47 @@
 2011-11-04  Robert Dewar  <dewar@adacore.com>
 
+	* sprint.adb (Sprint_Node_Actual, case Qualified_Expression):
+	Avoid junk semicolon after argument of machine code Asm operand.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch11.adb (Generate_Push_Pop): Inhibit push/pop nodes in
+	CodePeer mode or if restriction No_Exception_Handlers is present.
+	* exp_ch6.adb (Expand_N_Subprogram_Body): (Inhibit push/pop
+	nodes in CodePeer mode or if restriction No_Exception_Handlers
+	is present.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* s-tassta.adb, atree.ads, errout.adb, sinput.adb: Minor reformatting.
+
+2011-11-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Specification): The
+	specification is legal if it is a function that returns an
+	abstract type, if it comes from an attribute renaming of a stream
+	attribute of an abstract type.
+
+2011-11-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Is_Possibly_Unaligned_Object): In case of indexed
+	components, check whether recursively check whether the prefix
+	denotes an unaligned object.
+
+2011-11-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Debug): The argument of
+	the pragma is legal if it is an expanded name that denotes a
+	procedure that be can called without parameters.
+
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi (Performance Considerations) <Vectorization
+	of loops>: New sub-section.  <Other Optimization Switches>:
+	Minor tweak.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Minor reformatting.
 
 2011-11-04  Matthew Heaney  <heaney@adacore.com>

@@ -7902,10 +7902,13 @@ package body Sem_Prag is
                  N_Indexed_Component,
                  N_Function_Call,
                  N_Identifier,
+                 N_Expanded_Name,
                  N_Selected_Component)
             then
                --  If this pragma Debug comes from source, its argument was
                --  parsed as a name form (which is syntactically identical).
+               --  In a generic context a parameterless call will be left as
+               --  an expanded name (if global) or selected_component if local.
                --  Change it to a procedure call statement now.
 
                Change_Name_To_Procedure_Call_Statement (Call);

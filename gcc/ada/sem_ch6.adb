@@ -3415,14 +3415,17 @@ package body Sem_Ch6 is
 
          --  Ada 2005 (AI-251): If the return type is abstract, verify that
          --  the subprogram is abstract also. This does not apply to renaming
-         --  declarations, where abstractness is inherited.
+         --  declarations, where abstractness is inherited, and to subprogram
+         --  bodies generated for stream operations, which become renamings as
+         --  bodies.
 
          --  In case of primitives associated with abstract interface types
          --  the check is applied later (see Analyze_Subprogram_Declaration).
 
-         if not Nkind_In (Parent (N), N_Subprogram_Renaming_Declaration,
-                                      N_Abstract_Subprogram_Declaration,
-                                      N_Formal_Abstract_Subprogram_Declaration)
+         if not Nkind_In (Original_Node (Parent (N)),
+                            N_Subprogram_Renaming_Declaration,
+                            N_Abstract_Subprogram_Declaration,
+                            N_Formal_Abstract_Subprogram_Declaration)
          then
             if Is_Abstract_Type (Etype (Designator))
               and then not Is_Interface (Etype (Designator))

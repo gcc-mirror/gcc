@@ -1156,7 +1156,7 @@ package body System.Tasking.Stages is
       Stack_Guard (Self_ID, True);
 
       --  Initialize low-level TCB components, that cannot be initialized by
-      --  the creator. Enter_Task sets Self_ID.LL.Thread
+      --  the creator. Enter_Task sets Self_ID.LL.Thread.
 
       Enter_Task (Self_ID);
 
