@@ -1,5 +1,12 @@
 2011-11-04  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch2.adb (Expand_Entity_Reference): Extend handling of
+	atomic sync to type case.
+	* sem_prag.adb (Process_Suppress_Unsuppress): Atomic Sync can
+	apply to types.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
 	* sem_warn.adb (Warn_On_Useless_Assignment): More accurate test
 	for call vs assign.
 	* gcc-interface/Make-lang.in: Update dependencies.
