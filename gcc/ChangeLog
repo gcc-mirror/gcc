@@ -1,16 +1,23 @@
-2011-11-05  Alan Modra  <amodra@gmail.com>
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/50608
+	* c-parser.c (c_parser_postfix_expression) <RID_OFFSETOF>: Adjust call
+	to fold_offsetof.
+	* c-typeck.c (build_unary_op) <ADDR_EXPR>: Call fold_offsetof_1.
+
+2011-11-04  Alan Modra  <amodra@gmail.com>
 
 	* reload1.c (gen_reload): Don't use REGNO on SUBREGs.
 	* print-rtl.c (print_rtx): Don't segfault on negative regno.
 
-2011-11-03  David S. Miller  <davem@davemloft.net>
+2011-11-04  David S. Miller  <davem@davemloft.net>
 
 	PR target/49965
 	* config/sparc/sparc.c (sparc_expand_conditional_move): Handle the
 	fact that sparc_emit_float_lib_cmp modifies the comparison in
 	operands[1].
 
-2011-11-05	Ralf Corsépius <ralf.corsepius@rtems.org>
+2011-11-04  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config/lm32/t-rtems: New.
 	* config.gcc (lm32-*-rtems*): Add t-rtems.
