@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -132,6 +132,10 @@ package Ada.Containers.Hashed_Sets is
       Process  : not null access procedure (Element : Element_Type));
    --  Calls Process with the element (having only a constant view) of the node
    --  designed by the cursor.
+
+   procedure Assign (Target : in out Set; Source : Set);
+
+   function Copy (Source : Set; Capacity : Count_Type := 0) return Set;
 
    procedure Move (Target : in out Set; Source : in out Set);
    --  Clears Target (if it's not empty), and then moves (not copies) the

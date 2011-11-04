@@ -7549,16 +7549,14 @@ package body Sem_Ch12 is
                      Scop := Scope (Scop);
                   end loop;
 
+                  --  Previous instance encloses current instance
+
                   if Scop = Par_I then
-
-                     --  Previous instance encloses current instance
-
                      null;
 
+                  --  Current instance is within an unrelated instance
+
                   elsif Is_Generic_Instance (Scop) then
-
-                     --  Current instance is within an unrelated instance
-
                      null;
 
                   else

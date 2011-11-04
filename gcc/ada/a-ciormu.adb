@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,8 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Keys);
 
 with Ada.Containers.Red_Black_Trees.Generic_Set_Operations;
 pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Set_Operations);
+
+with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Ordered_Multisets is
 
@@ -298,6 +300,20 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       Adjust (Container.Tree);
    end Adjust;
 
+   ------------
+   -- Assign --
+   ------------
+
+   procedure Assign (Target : in out Set; Source : Set) is
+   begin
+      if Target'Address = Source'Address then
+         return;
+      end if;
+
+      Target.Clear;
+      Target.Union (Source);
+   end Assign;
+
    -------------
    -- Ceiling --
    -------------
@@ -343,6 +359,17 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    begin
       return Find (Container, Item) /= No_Element;
    end Contains;
+
+   ----------
+   -- Copy --
+   ----------
+
+   function Copy (Source : Set) return Set is
+   begin
+      return Target : Set do
+         Target.Assign (Source);
+      end return;
+   end Copy;
 
    ---------------
    -- Copy_Node --

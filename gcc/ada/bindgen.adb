@@ -1050,9 +1050,8 @@ package body Bindgen is
                          or else U.Unit_Kind /= 's')
             then
 
-               --  The only case in which we have to do something is if this
-               --  is a body, with a separate spec, where the separate spec
-               --  has an elaboration entity defined. In that case, this is
+               --  In the case of a body with a separate spec, where the
+               --  separate spec has an elaboration entity defined, this is
                --  where we increment the elaboration entity.
 
                if U.Utype = Is_Body
@@ -1064,6 +1063,23 @@ package body Bindgen is
                   Set_String (" := E");
                   Set_Unit_Number (Unum_Spec);
                   Set_String (" + 1;");
+                  Write_Statement_Buffer;
+
+               --  In the special case where the target is AAMP and the unit is
+               --  a spec with a body, the elaboration entity is initialized
+               --  here. This is done because it's the only way to accomplish
+               --  initialization of such entities, because there's not any
+               --  mechanism provided to initialize global variables at load
+               --  time on AAMP. (Also note that there is no notion of shared
+               --  libraries for AAMP, so no possibility of reelaboration.)
+
+               elsif AAMP_On_Target
+                 and then U.Utype = Is_Spec
+                 and then Units.Table (Unum_Spec).Set_Elab_Entity
+               then
+                  Set_String ("      E");
+                  Set_Unit_Number (Unum_Spec);
+                  Set_String (" := 0;");
                   Write_Statement_Buffer;
                end if;
 
@@ -1087,6 +1103,24 @@ package body Bindgen is
             --  variables, only calls to 'Elab* subprograms.
 
             else
+               --  In the special case where the target is AAMP and the unit is
+               --  a spec with a body, the elaboration entity is initialized
+               --  here. This is done because it's the only way to accomplish
+               --  initialization of such entities, because there's not any
+               --  mechanism provided to initialize global variables at load
+               --  time on AAMP. (Also note that there is no notion of shared
+               --  libraries for AAMP, so no possibility of reelaboration.)
+
+               if AAMP_On_Target
+                 and then U.Utype = Is_Spec
+                 and then Units.Table (Unum_Spec).Set_Elab_Entity
+               then
+                  Set_String ("      E");
+                  Set_Unit_Number (Unum_Spec);
+                  Set_String (" := 0;");
+                  Write_Statement_Buffer;
+               end if;
+
                Check_Elab_Flag :=
                  not CodePeer_Mode
                    and then (Force_Checking_Of_Elaboration_Flags
