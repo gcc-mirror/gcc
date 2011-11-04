@@ -1,3 +1,16 @@
+2011-11-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2-ci.S: Rename to ...
+	* config/i386/crti.S: ... this.
+	* config/i386/sol2-cn.S: Rename to ...
+	* config/i386/crtn.S: ... this.
+	* config/sparc/sol2-ci.S: Rename to ...
+	* config/sparc/crti.S: ... this.
+	* config/sparc/sol2-cn.S: Rename to ...
+	* config/sparc/crtn.S: ... this.
+	* config/t-sol2 (CUSTOM_CRTIN): Remove.
+	(crti.o, crtn.o): Remove.
+
 2011-11-04  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/fde-vms.c: Do not include md-unwind-support.h
