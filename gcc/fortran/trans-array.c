@@ -466,8 +466,6 @@ gfc_mark_ss_chain_used (gfc_ss * ss, unsigned flags)
     ss->info->useflags = flags;
 }
 
-static void gfc_free_ss (gfc_ss *);
-
 
 /* Free a gfc_ss chain.  */
 
@@ -500,7 +498,7 @@ free_ss_info (gfc_ss_info *ss_info)
 
 /* Free a SS.  */
 
-static void
+void
 gfc_free_ss (gfc_ss * ss)
 {
   gfc_ss_info *ss_info;
@@ -1027,7 +1025,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 
 	  /* We have just changed the loop bounds, we must clear the
 	     corresponding specloop, so that delta calculation is not skipped
-	     later in set_delta.  */
+	     later in gfc_set_delta.  */
 	  loop->specloop[n] = NULL;
 
 	  /* We are constructing the temporary's descriptor based on the loop
@@ -4372,9 +4370,6 @@ set_loop_bounds (gfc_loopinfo *loop)
 }
 
 
-static void set_delta (gfc_loopinfo *loop);
-
-
 /* Initialize the scalarization loop.  Creates the loop variables.  Determines
    the range of the loop variables.  Creates a temporary if required.
    Also generates code for scalar expressions which have been
@@ -4422,10 +4417,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
   /* For array parameters we don't have loop variables, so don't calculate the
      translations.  */
-  if (loop->array_parameter)
-    return;
-
-  set_delta (loop);
+  if (!loop->array_parameter)
+    gfc_set_delta (loop);
 }
 
 
@@ -4433,8 +4426,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
    array: once loop bounds are chosen, sets the difference (DELTA field) between
    loop bounds and array reference bounds, for each array info.  */
 
-static void
-set_delta (gfc_loopinfo *loop)
+void
+gfc_set_delta (gfc_loopinfo *loop)
 {
   gfc_ss *ss, **loopspec;
   gfc_array_info *info;
@@ -4482,7 +4475,7 @@ set_delta (gfc_loopinfo *loop)
     }
 
   for (loop = loop->nested; loop; loop = loop->next)
-    set_delta (loop);
+    gfc_set_delta (loop);
 }
 
 

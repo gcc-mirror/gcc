@@ -1,3 +1,11 @@
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.h (gfc_free_ss, gfc_set_delta): New prototypes.
+	* trans-array.c (gfc_free_ss): Remove forward declaration.
+	Make non-static.
+	(set_delta, gfc_set_delta): Remove forward declaration.
+	Make non-static and rename the former to the later. Update uses.
+
 2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans.h (gfc_inline_intrinsic_function_p): Move prototype...

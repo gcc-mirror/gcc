@@ -88,6 +88,8 @@ void gfc_add_ss_to_loop (gfc_loopinfo *, gfc_ss *);
 void gfc_mark_ss_chain_used (gfc_ss *, unsigned);
 /* Free a gfc_ss chain.  */
 void gfc_free_ss_chain (gfc_ss *);
+/* Free a single gfc_ss element.  */
+void gfc_free_ss (gfc_ss *);
 /* Allocate a new array type ss.  */
 gfc_ss *gfc_get_array_ss (gfc_ss *, gfc_expr *, int, gfc_ss_type);
 /* Allocate a new temporary type ss.  */
@@ -111,6 +113,8 @@ void gfc_trans_scalarizing_loops (gfc_loopinfo *, stmtblock_t *);
 void gfc_trans_scalarized_loop_boundary (gfc_loopinfo *, stmtblock_t *);
 /* Initialize the scalarization loop parameters.  */
 void gfc_conv_loop_setup (gfc_loopinfo *, locus *);
+/* Set each array's delta.  */
+void gfc_set_delta (gfc_loopinfo *);
 /* Resolve array assignment dependencies.  */
 void gfc_conv_resolve_dependencies (gfc_loopinfo *, gfc_ss *, gfc_ss *);
 /* Build a null array descriptor constructor.  */
