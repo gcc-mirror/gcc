@@ -1,3 +1,14 @@
+2011-11-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_alfa.adb: Add local constant
+	Disable_Processing_Of_Renamings;
+	(Expand_Alfa_N_Object_Renaming_Declaration): Disable
+	the name evaluation of object renamings for now.
+	(Expand_Potential_Renaming): Do not perform the substitution
+	for now.
+	* exp_util.adb (Remove_Side_Effects): Remove processing for
+        functions with side effects in Alfa mode.
+
 2011-11-04  Gary Dismukes  <dismukes@adacore.com>
 
 	* bindgen.adb (Gen_Elab_Calls): In the case

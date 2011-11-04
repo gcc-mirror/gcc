@@ -168,23 +168,30 @@ package body Exp_Util is
       Msg_Node : Node_Id;
 
    begin
-
       case Nkind (Parent (N)) is
-         when N_Attribute_Reference |
 
-            --  Nothing to do if we are the prefix of an attribute, since we
-            --  do not want an atomic sync operation for things like 'Size.
+         --  Check for cases of appearing in the prefix of a construct where
+         --  we don't need atomic synchronization for this kind of usage.
+
+         when
+              --  Nothing to do if we are the prefix of an attribute, since we
+              --  do not want an atomic sync operation for things like 'Size.
+
+              N_Attribute_Reference |
+
+              --  The N_Reference node is like an attribute
 
               N_Reference           |
 
-            --  Likewise for a mere reference
+              --  Nothing to do for a reference to a component (or components)
+              --  of a composite object. Only reads and updates of the object
+              --  as a whole require atomic synchronization (RM C.6 (15)).
 
               N_Indexed_Component   |
               N_Selected_Component  |
               N_Slice               =>
 
-            --  The C.6(15) clause says that only reads and updates of the
-            --  object as a whole require atomic synchronization.
+            --  For all the above cases, nothing to do if we are the prefix
 
             if Prefix (Parent (N)) = N then
                return;
@@ -6547,57 +6554,32 @@ package body Exp_Util is
             end;
          end if;
 
+         Ref_Type := Make_Temporary (Loc, 'A');
+
+         Ptr_Typ_Decl :=
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => Ref_Type,
+             Type_Definition =>
+               Make_Access_To_Object_Definition (Loc,
+                 All_Present => True,
+                 Subtype_Indication =>
+                   New_Reference_To (Exp_Type, Loc)));
+
+         E := Exp;
+         Insert_Action (Exp, Ptr_Typ_Decl);
+
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Set_Etype (Def_Id, Exp_Type);
 
-         --  The regular expansion of functions with side effects involves the
-         --  generation of an access type to capture the return value found on
-         --  the secondary stack. Since Alfa (and why) cannot process access
-         --  types, use a different approach which ignores the secondary stack
-         --  and "copies" the returned object.
+         Res :=
+           Make_Explicit_Dereference (Loc,
+             Prefix => New_Reference_To (Def_Id, Loc));
 
-         if Alfa_Mode then
-            Res := New_Reference_To (Def_Id, Loc);
-            Ref_Type := Exp_Type;
-
-         --  Regular expansion utilizing an access type and 'reference
-
-         else
-            Res :=
-              Make_Explicit_Dereference (Loc,
-                Prefix => New_Reference_To (Def_Id, Loc));
-
-            --  Generate:
-            --    type Ann is access all <Exp_Type>;
-
-            Ref_Type := Make_Temporary (Loc, 'A');
-
-            Ptr_Typ_Decl :=
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Ref_Type,
-                Type_Definition     =>
-                  Make_Access_To_Object_Definition (Loc,
-                    All_Present        => True,
-                    Subtype_Indication =>
-                      New_Reference_To (Exp_Type, Loc)));
-
-            Insert_Action (Exp, Ptr_Typ_Decl);
-         end if;
-
-         E := Exp;
          if Nkind (E) = N_Explicit_Dereference then
             New_Exp := Relocate_Node (Prefix (E));
          else
             E := Relocate_Node (E);
-
-            --  Do not generate a 'reference in Alfa since the access type is
-            --  not generated.
-
-            if Alfa_Mode then
-               New_Exp := E;
-            else
-               New_Exp := Make_Reference (Loc, E);
-            end if;
+            New_Exp := Make_Reference (Loc, E);
          end if;
 
          if Is_Delayed_Aggregate (E) then
