@@ -73,6 +73,13 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 }
 
 set LTO_TORTURE_OPTIONS ""
+
+# Some torture-options cause intermediate code output, unusable for
+# testing using e.g. scan-assembler.  In this variable are the options
+# how to force it, when needed.
+global gcc_force_conventional_output
+set gcc_force_conventional_output ""
+
 if [check_effective_target_lto] {
     # When having plugin test both slim and fat LTO and plugin/nonplugin
     # path.
@@ -81,6 +88,7 @@ if [check_effective_target_lto] {
 	  { -O2 -flto -fno-use-linker-plugin -flto-partition=none } \
 	  { -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects }
       ]
+      set gcc_force_conventional_output "-ffat-lto-objects"
     } else {
       set LTO_TORTURE_OPTIONS [list \
 	  { -O2 -flto -flto-partition=none } \
@@ -153,6 +161,19 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 	default {
 	    perror "$do_what: not a valid dg-do keyword"
 	    return ""
+	}
+    }
+
+    # Let { dg-final { action } } force options as returned by an
+    # optional proc ${action}_required_options.
+    upvar 2 dg-final-code finalcode
+    foreach x [split $finalcode "\n"] {
+	set finalcmd [lindex $x 0]
+	if { [info procs ${finalcmd}_required_options] != "" } {
+	    set req [${finalcmd}_required_options]
+	    if { $req != "" } {
+		lappend extra_tool_flags $req
+	    }
 	}
     }
 

@@ -1,3 +1,11 @@
+2011-11-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/gcc-dg.exp (gcc_force_conventional_output): New global
+	variable, default empty, -ffat-lto-objects for effective_target_lto.
+	(gcc-dg-test-1): Add options from dg-final methods.
+	* lib/scanasm.exp (scan-assembler_required_options)
+	(scan-assembler-not_required_options): New procs.
+
 2011-10-09  Magnus Fromreide  <magfr@lysator.liu.se>
 
         * g++.dg/cpp0x/enum21a.C: Test that enum x { y, } does
