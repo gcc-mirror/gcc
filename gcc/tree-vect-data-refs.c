@@ -2524,7 +2524,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
   VEC (data_reference_p, heap) *datarefs;
   struct data_reference *dr;
   tree scalar_type;
-  bool res;
+  bool res, stop_bb_analysis = false;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_data_refs ===\n");
@@ -2586,6 +2586,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
 
+      if (stop_bb_analysis)
+        {
+          STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+          continue;
+        }
+
       /* Check that analysis of the data-ref succeeded.  */
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
           || !DR_STEP (dr))
@@ -2596,6 +2602,13 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
             }
 
+          if (bb_vinfo)
+            {
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              stop_bb_analysis = true;
+              continue;
+            }
+
           return false;
         }
 
@@ -2604,7 +2617,15 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             fprintf (vect_dump, "not vectorized: base addr of dr is a "
                      "constant");
-          return false;
+
+          if (bb_vinfo)
+            {
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              stop_bb_analysis = true;
+              continue;
+            }
+
+           return false;
         }
 
       if (TREE_THIS_VOLATILE (DR_REF (dr)))
@@ -2614,6 +2635,14 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               fprintf (vect_dump, "not vectorized: volatile type ");
               print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
             }
+
+          if (bb_vinfo)
+            {
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              stop_bb_analysis = true;
+              continue;
+            }
+
           return false;
         }
 
@@ -2629,6 +2658,14 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
                        "exception ");
               print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
             }
+
+          if (bb_vinfo)
+            {
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              stop_bb_analysis = true;
+              continue;
+            }
+
           return false;
         }
 
@@ -2746,6 +2783,14 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
                        "not vectorized: more than one data ref in stmt: ");
               print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
             }
+
+          if (bb_vinfo)
+            {
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              stop_bb_analysis = true;
+              continue;
+            }
+
           return false;
         }
 
@@ -2770,6 +2815,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
             {
               /* Mark the statement as not vectorizable.  */
               STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              stop_bb_analysis = true;
               continue;
             }
           else

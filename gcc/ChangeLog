@@ -1,3 +1,12 @@
+2011-11-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	Unrevert:
+	2011-10-24  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50730
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Stop basic block
+	analysis if encountered unsupported data-ref.
+
 2011-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_vector_convert_uns_vsivsf): New
