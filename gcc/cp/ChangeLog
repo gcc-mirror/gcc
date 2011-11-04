@@ -1,3 +1,8 @@
+2011-11-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/50941
+	* parser.c (cp_parser_userdef_string_literal): Fix string length.
+
 2011-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48370

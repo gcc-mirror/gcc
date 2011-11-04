@@ -3681,8 +3681,8 @@ cp_parser_userdef_string_literal (cp_token *token)
   suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
   name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   value = USERDEF_LITERAL_VALUE (literal);
-  len = TREE_STRING_LENGTH (value) - 1;
-
+  len = TREE_STRING_LENGTH (value)
+	/ TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
   vec = make_tree_vector ();
