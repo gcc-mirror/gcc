@@ -1,3 +1,10 @@
+2011-10-09  Magnus Fromreide  <magfr@lysator.liu.se>
+
+        * g++.dg/cpp0x/enum21a.C: Test that enum x { y, } does
+        generate a pedwarn in c++98-mode.
+        * g++.dg/cpp0x/enum21b.C: Test that enum x { y, }
+        don't generate a pedwarn in c++0x-mode.
+
 2011-11-04  Olivier Goffart  <olivier@woboq.com>
 
 	PR c++/50965
