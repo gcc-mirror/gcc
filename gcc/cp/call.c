@@ -5544,7 +5544,8 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
     }
 
   /* Issue warnings if "false" is converted to a NULL pointer */
-  else if (expr == boolean_false_node && TYPE_PTR_P (totype))
+  else if (TREE_CODE (TREE_TYPE (expr)) == BOOLEAN_TYPE
+	   && TYPE_PTR_P (totype))
     {
       if (fn)
 	warning_at (input_location, OPT_Wconversion_null,
