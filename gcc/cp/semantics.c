@@ -3568,7 +3568,7 @@ finish_offsetof (tree expr)
       if (!complete_type_or_else (TREE_TYPE (object), object))
 	return error_mark_node;
     }
-  return fold_offsetof (expr, NULL_TREE);
+  return fold_offsetof (expr);
 }
 
 /* Replace the AGGR_INIT_EXPR at *TP with an equivalent CALL_EXPR.  This
