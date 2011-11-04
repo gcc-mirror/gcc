@@ -178,6 +178,41 @@ gfc_trans_entry (gfc_code * code)
 }
 
 
+/* Replace a gfc_ss structure by another both in the gfc_se struct
+   and the gfc_loopinfo struct.  This is used in gfc_conv_elemental_dependencies
+   to replace a variable ss by the corresponding temporary.  */
+
+static void
+replace_ss (gfc_se *se, gfc_ss *old_ss, gfc_ss *new_ss)
+{
+  gfc_ss **sess, **loopss;
+
+  /* The old_ss is a ss for a single variable.  */
+  gcc_assert (old_ss->info->type == GFC_SS_SECTION);
+
+  for (sess = &(se->ss); *sess != gfc_ss_terminator; sess = &((*sess)->next))
+    if (*sess == old_ss)
+      break;
+  gcc_assert (*sess != gfc_ss_terminator);
+
+  *sess = new_ss;
+  new_ss->next = old_ss->next;
+
+
+  for (loopss = &(se->loop->ss); *loopss != gfc_ss_terminator;
+       loopss = &((*loopss)->loop_chain))
+    if (*loopss == old_ss)
+      break;
+  gcc_assert (*loopss != gfc_ss_terminator);
+
+  *loopss = new_ss;
+  new_ss->loop_chain = old_ss->loop_chain;
+  new_ss->loop = old_ss->loop;
+
+  gfc_free_ss (old_ss);
+}
+
+
 /* Check for dependencies between INTENT(IN) and INTENT(OUT) arguments of
    elemental subroutines.  Make temporaries for output arguments if any such
    dependencies are found.  Output arguments are chosen because internal_unpack
@@ -190,15 +225,10 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
   gfc_actual_arglist *arg0;
   gfc_expr *e;
   gfc_formal_arglist *formal;
-  gfc_loopinfo tmp_loop;
   gfc_se parmse;
   gfc_ss *ss;
-  gfc_array_info *info;
   gfc_symbol *fsym;
-  gfc_ref *ref;
-  int n;
   tree data;
-  tree offset;
   tree size;
   tree tmp;
 
@@ -217,14 +247,9 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	continue;
 
       /* Obtain the info structure for the current argument.  */ 
-      info = NULL;
       for (ss = loopse->ss; ss && ss != gfc_ss_terminator; ss = ss->next)
-	{
-	  if (ss->info->expr != e)
-	    continue;
-	  info = &ss->info->data.array;
+	if (ss->info->expr == e)
 	  break;
-	}
 
       /* If there is a dependency, create a temporary and use it
 	 instead of the variable.  */
@@ -237,49 +262,17 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	{
 	  tree initial, temptype;
 	  stmtblock_t temp_post;
+	  gfc_ss *tmp_ss;
 
-	  /* Make a local loopinfo for the temporary creation, so that
-	     none of the other ss->info's have to be renormalized.  */
-	  gfc_init_loopinfo (&tmp_loop);
-	  tmp_loop.dimen = ss->dimen;
-	  for (n = 0; n < ss->dimen; n++)
-	    {
-	      tmp_loop.to[n] = loopse->loop->to[n];
-	      tmp_loop.from[n] = loopse->loop->from[n];
-	      tmp_loop.order[n] = loopse->loop->order[n];
-	    }
+	  tmp_ss = gfc_get_array_ss (gfc_ss_terminator, NULL, ss->dimen,
+				     GFC_SS_SECTION);
+	  gfc_mark_ss_chain_used (tmp_ss, 1);
+	  tmp_ss->info->expr = ss->info->expr;
+	  replace_ss (loopse, ss, tmp_ss);
 
 	  /* Obtain the argument descriptor for unpacking.  */
 	  gfc_init_se (&parmse, NULL);
 	  parmse.want_pointer = 1;
-
-	  /* The scalarizer introduces some specific peculiarities when
-	     handling elemental subroutines; the stride can be needed up to
-	     the dim_array - 1, rather than dim_loop - 1 to calculate
-	     offsets outside the loop.  For this reason, we make sure that
-	     the descriptor has the dimensionality of the array by converting
-	     trailing elements into ranges with end = start.  */
-	  for (ref = e->ref; ref; ref = ref->next)
-	    if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
-	      break;
-
-	  if (ref)
-	    {
-	      bool seen_range = false;
-	      for (n = 0; n < ref->u.ar.dimen; n++)
-		{
-		  if (ref->u.ar.dimen_type[n] == DIMEN_RANGE)
-		    seen_range = true;
-
-		  if (!seen_range
-			|| ref->u.ar.dimen_type[n] != DIMEN_ELEMENT)
-		    continue;
-
-		  ref->u.ar.end[n] = gfc_copy_expr (ref->u.ar.start[n]);
-		  ref->u.ar.dimen_type[n] = DIMEN_RANGE;
-		}
-	    }
-
 	  gfc_conv_expr_descriptor (&parmse, e, gfc_walk_expr (e));
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 
@@ -309,28 +302,15 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  size = gfc_create_var (gfc_array_index_type, NULL);
 	  data = gfc_create_var (pvoid_type_node, NULL);
 	  gfc_init_block (&temp_post);
-	  ss->loop = &tmp_loop;
-	  tmp = gfc_trans_create_temp_array (&se->pre, &temp_post, ss,
+	  tmp = gfc_trans_create_temp_array (&se->pre, &temp_post, tmp_ss,
 					     temptype, initial, false, true,
 					     false, &arg->expr->where);
 	  gfc_add_modify (&se->pre, size, tmp);
-	  tmp = fold_convert (pvoid_type_node, info->data);
+	  tmp = fold_convert (pvoid_type_node, tmp_ss->info->data.array.data);
 	  gfc_add_modify (&se->pre, data, tmp);
 
-	  /* Calculate the offset for the temporary.  */
-	  offset = gfc_index_zero_node;
-	  for (n = 0; n < ss->dimen; n++)
-	    {
-	      tmp = gfc_conv_descriptor_stride_get (info->descriptor,
-						    gfc_rank_cst[n]);
-	      tmp = fold_build2_loc (input_location, MULT_EXPR,
-				     gfc_array_index_type,
-				     loopse->loop->from[n], tmp);
-	      offset = fold_build2_loc (input_location, MINUS_EXPR,
-					gfc_array_index_type, offset, tmp);
-	    }
-	  info->offset = gfc_create_var (gfc_array_index_type, NULL);	  
-	  gfc_add_modify (&se->pre, info->offset, offset);
+	  /* Update other ss' delta.  */
+	  gfc_set_delta (loopse->loop);
 
 	  /* Copy the result back using unpack.  */
 	  tmp = build_call_expr_loc (input_location,
