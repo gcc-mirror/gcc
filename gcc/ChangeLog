@@ -1,3 +1,9 @@
+2011-11-04	Thomas Doerfler <thomas.doerfler@embedded-brains.de>
+
+	PR target/50989
+	* config/arm/rtems-elf.h, config/arm/t-rtems: Add optional
+	support for VFP floating point model.
+
 2011-11-04  Tristan Gingold  <gingold@adacore.com>
 
 	* config/alpha/vms.h (ASM_OUTPUT_DEF): Do not switch section.

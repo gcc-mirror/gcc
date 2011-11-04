@@ -35,7 +35,7 @@
  */
 #undef SUBTARGET_EXTRA_ASM_SPEC
 #define SUBTARGET_EXTRA_ASM_SPEC "\
-  %{!mfloat-abi=hard: %{!mfloat-abi=soft:-mfpu=softfpa}}"
+  %{!mfloat-abi=hard: %{!mfpu=vfp: %{!mfloat-abi=soft:-mfpu=softfpa}}}"
 
 /*
  *  The default includes --start-group and --end-group which conflicts
