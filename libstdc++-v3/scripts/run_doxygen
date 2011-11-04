@@ -261,7 +261,7 @@ for f in $problematic; do
     # this is also slow, but safe and easy to debug
     oldh=`sed -n '/fC#include </s/.*<\(.*\)>.*/\1/p' $f`
     newh=`echo $oldh | ./stdheader`
-    sed "s=${oldh}=${newh}=" $f > TEMP
+    sed 's=${oldh}=${newh}=' $f > TEMP
     mv TEMP $f
 done
 rm stdheader
