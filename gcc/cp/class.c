@@ -3189,6 +3189,12 @@ check_field_decls (tree t, tree *access_decls,
 			  no_const_asn_ref_p,
 			  &any_default_members);
 
+      /* Now that we've removed bit-field widths from DECL_INITIAL,
+	 anything left in DECL_INITIAL is an NSDMI that makes the class
+	 non-aggregate.  */
+      if (DECL_INITIAL (x))
+	CLASSTYPE_NON_AGGREGATE (t) = true;
+
       /* If any field is const, the structure type is pseudo-const.  */
       if (CP_TYPE_CONST_P (type))
 	{

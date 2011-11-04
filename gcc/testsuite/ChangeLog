@@ -1,3 +1,8 @@
+2011-11-04  Olivier Goffart  <olivier@woboq.com>
+
+	PR c++/50965
+	* g++.dg/cpp0x/nsdmi1.C: Add more cases.
+
 2011-11-04  Jiangning Liu  <jiangning.liu@arm.com>
 
 	PR rtl-optimization/38644
