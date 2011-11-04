@@ -3090,6 +3090,14 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       TREE_USED (lab2) = 1;
     }
 
+  /* An offset must be added to the loop
+     counter to obtain the required position.  */
+  gcc_assert (loop.from[0]);
+
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			 gfc_index_one_node, loop.from[0]);
+  gfc_add_modify (&loop.pre, offset, tmp);
+
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskss)
     gfc_mark_ss_chain_used (maskss, 1);
@@ -3122,16 +3130,6 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   /* Assign the value to the limit...  */
   gfc_add_modify (&ifblock, limit, arrayse.expr);
-
-  /* Remember where we are.  An offset must be added to the loop
-     counter to obtain the required position.  */
-  if (loop.from[0])
-    tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
-			   gfc_index_one_node, loop.from[0]);
-  else
-    tmp = gfc_index_one_node;
-
-  gfc_add_modify (&block, offset, tmp);
 
   if (nonempty == NULL && HONOR_NANS (DECL_MODE (limit)))
     {
@@ -3231,16 +3229,6 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
       /* Assign the value to the limit...  */
       gfc_add_modify (&ifblock, limit, arrayse.expr);
-
-      /* Remember where we are.  An offset must be added to the loop
-	 counter to obtain the required position.  */
-      if (loop.from[0])
-	tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
-			       gfc_index_one_node, loop.from[0]);
-      else
-	tmp = gfc_index_one_node;
-
-      gfc_add_modify (&block, offset, tmp);
 
       tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos),
 			     loop.loopvar[0], offset);

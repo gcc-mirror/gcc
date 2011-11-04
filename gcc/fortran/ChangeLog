@@ -1,5 +1,10 @@
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Don't calculate
+	offset twice in generated code.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-expr.c (gfc_conv_procedure_call): Handle temporaries for
 	arguments to elemental calls.
 	* trans-stmt.c (replace_ss): New function.
