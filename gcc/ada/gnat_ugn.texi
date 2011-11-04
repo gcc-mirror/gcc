@@ -337,6 +337,7 @@ Performance Considerations
 * Optimization Levels::
 * Debugging Optimized Code::
 * Inlining of Subprograms::
+* Vectorization of loops::
 * Other Optimization Switches::
 * Optimization and Strict Aliasing::
 @ifset vms
@@ -10150,6 +10151,7 @@ some guidelines on debugging optimized code.
 * Optimization Levels::
 * Debugging Optimized Code::
 * Inlining of Subprograms::
+* Vectorization of loops::
 * Other Optimization Switches::
 * Optimization and Strict Aliasing::
 
@@ -10595,6 +10597,103 @@ that you should not automatically assume that @option{-O3} is better than
 @option{-O2}, and indeed you should use @option{-O3} only if tests show that
 it actually improves performance.
 
+@node Vectorization of loops
+@subsection Vectorization of loops
+@cindex Optimization Switches
+
+You can take advantage of the auto-vectorizer present in the @command{gcc}
+back end to vectorize loops with GNAT.  The corresponding command line switch
+is @option{-ftree-vectorize} but, as it is enabled by default at @option{-O3}
+and other aggressive optimizations helpful for vectorization also are enabled
+by default at this level, using @option{-O3} directly is recommended.
+
+You also need to make sure that the target architecture features a supported
+SIMD instruction set.  For example, for the x86 architecture, you should at
+least specify @option{-msse2} to get significant vectorization (but you don't
+need to specify it for x86-64 as it is part of the base 64-bit architecture).
+Similarly, for the PowerPC architecture, you should specify @option{-maltivec}.
+
+The preferred loop form for vectorization is the @code{for} iteration scheme.
+Loops with a @code{while} iteration scheme can also be vectorized if they are
+very simple, but the vectorizer will quickly give up otherwise.  With either
+iteration scheme, the flow of control must be straight, in particular no
+@code{exit} statement may appear in the loop body.  The loop may however
+contain a single nested loop, if it can be vectorized when considered alone:
+
+@smallexample @c ada
+@cartouche
+   A : array (1..4, 1..4) of Long_Float;
+   S : array (1..4) of Long_Float;
+
+   procedure Sum is
+   begin
+      for I in A'Range(1) loop
+         for J in A'Range(2) loop
+            S (I) := S (I) + A (I, J);
+         end loop;
+      end loop;
+   end Sum;
+@end cartouche
+@end smallexample
+
+The vectorizable operations depend on the targeted SIMD instruction set, but
+the adding and some of the multiplying operators are generally supported, as
+well as the logical operators for modular types.  Note that, in the former
+case, enabling overflow checks, for example with @option{-gnato}, totally
+disables vectorization.  The other checks are not supposed to have the same
+definitive effect, although compiling with @option{-gnatp} might well reveal
+cases where some checks do thwart vectorization.
+
+Type conversions may also prevent vectorization if they involve semantics that
+are not directly supported by the code generator or the SIMD instruction set.
+A typical example is direct conversion from floating-point to integer types.
+The solution in this case is to use the following idiom:
+
+@smallexample @c ada
+   Integer (S'Truncation (F))
+@end smallexample
+
+@noindent
+if @code{S} is the subtype of floating-point object @code{F}.
+
+In most cases, the vectorizable loops are loops that iterate over arrays.
+All kinds of array types are supported, i.e. constrained array types with
+static bounds:
+
+@smallexample @c ada
+   type Array_Type is array (1 .. 4) of Long_Float;
+@end smallexample
+
+@noindent
+constrained array types with dynamic bounds:
+
+@smallexample @c ada
+   type Array_Type is array (1 .. Q.N) of Long_Float;
+
+   type Array_Type is array (Q.K .. 4) of Long_Float;
+
+   type Array_Type is array (Q.K .. Q.N) of Long_Float;
+@end smallexample
+
+@noindent
+or unconstrained array types:
+
+@smallexample @c ada
+  type Array_Type is array (Positive range <>) of Long_Float;
+@end smallexample
+
+@noindent
+The quality of the generated code decreases when the dynamic aspect of the
+array type increases, the worst code being generated for unconstrained array
+types.  This is so because, the less information the compiler has about the
+bounds of the array, the more fallback code it needs to generate in order to
+fix things up at run time.
+
+You can obtain information about the vectorization performed by the compiler
+by specifying @option{-ftree-vectorizer-verbose=N}.  For more details of
+this switch, see @ref{Debugging Options,,Options for Debugging Your Program
+or GCC, gcc, Using the GNU Compiler Collection (GCC)}.
+
 @node Other Optimization Switches
 @subsection Other Optimization Switches
 @cindex Optimization Switches
@@ -10602,10 +10701,9 @@ it actually improves performance.
 Since @code{GNAT} uses the @command{gcc} back end, all the specialized
 @command{gcc} optimization switches are potentially usable. These switches
 have not been extensively tested with GNAT but can generally be expected
-to work. Examples of switches in this category are
-@option{-funroll-loops} and
-the various target-specific @option{-m} options (in particular, it has been
-observed that @option{-march=pentium4} can significantly improve performance
+to work. Examples of switches in this category are @option{-funroll-loops}
+and the various target-specific @option{-m} options (in particular, it has
+been observed that @option{-march=xxx} can significantly improve performance
 on appropriate machines). For full details of these switches, see
 @ref{Submodel Options,, Hardware Models and Configurations, gcc, Using
 the GNU Compiler Collection (GCC)}.
