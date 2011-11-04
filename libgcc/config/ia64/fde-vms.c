@@ -33,7 +33,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "md-unwind-support.h"
 #include "unwind-ia64.h"
 
 #define __int64 long
