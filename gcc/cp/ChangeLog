@@ -1,3 +1,8 @@
+2011-10-09  Magnus Fromreide  <magfr@lysator.liu.se>
+
+        * parser.c (cp_parser_enumerator_list): Do not warn about
+        trailing commas in C++0x mode.
+
 2011-11-04  Olivier Goffart  <olivier@woboq.com>
 	    Jason Merrill  <jason@redhat.com>
 
