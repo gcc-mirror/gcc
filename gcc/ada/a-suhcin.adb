@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               I N T E R F A C E S . F O R T R A N . B L A S              --
+--               ADA.STRINGS.UNBOUNDED.HASH_CASE_INSENSITIVE                --
 --                                                                          --
---                                 B o d y                                  --
+--                                B o d y                                   --
 --                                                                          --
---         Copyright (C) 2006-2009, Free Software Foundation, Inc.          --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,19 +24,20 @@
 -- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
 -- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
--- GNAT was originally developed  by the GNAT team at  New York University. --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
---                                                                          --
+-- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
---  This Interfaces.Fortran.Blas package body contains the required linker
---  pragmas for automatically linking with the LAPACK linear algebra support
---  library, and the systems math library. Alternative bodies can be supplied
---  if different sets of libraries are needed.
+with Ada.Strings.Unbounded.Aux;
+with Ada.Strings.Hash_Case_Insensitive;
 
-package body Interfaces.Fortran.BLAS is
-   pragma Linker_Options ("-lgnala");
-   pragma Linker_Options ("-llapack");
-   pragma Linker_Options ("-lblas");
-   pragma Linker_Options ("-lm");
-end Interfaces.Fortran.BLAS;
+function Ada.Strings.Unbounded.Hash_Case_Insensitive
+  (Key : Unbounded.Unbounded_String)
+  return Containers.Hash_Type
+is
+   S : Aux.Big_String_Access;
+   L : Natural;
+
+begin
+   Aux.Get_String (Key, S, L);
+   return Ada.Strings.Hash_Case_Insensitive (S (1 .. L));
+end Ada.Strings.Unbounded.Hash_Case_Insensitive;

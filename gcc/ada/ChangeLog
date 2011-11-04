@@ -1,7 +1,30 @@
-2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+2011-11-04  Robert Dewar  <dewar@adacore.com>
 
-	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Function>: Do not assert
-	that the type of the parameters isn't dummy in type_annotate_only mode.
+	* sem_warn.adb (Warn_On_Useless_Assignment): More accurate test
+	for call vs assign.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-11-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Detect more cases of Long_Float inconsistencies at
+	compile time.
+
+2011-11-04  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Added a-sfecin.ads,
+	* a-sfhcin.ads, a-sflcin.ads, a-sbecin.ad[sb], a-sbhcin.ad[sb],
+	a-sblcin.ad[sb], a-suecin.ad[sb], a-suhcin.ad[sb], a-sulcin.ad[sb]
+	* a-sfecin.ads, a-sfhcin.ads, a-sflcin.ads, a-sbecin.ad[sb],
+	a-sbhcin.ad[sb], a-sblcin.ad[sb], a-suecin.ad[sb], a-suhcin.ad[sb],
+	a-sulcin.ad[sb]: New files.
+
+2011-11-04  Geert Bosch  <bosch@adacore.com>
+
+	* i-forbla-unimplemented.ads, s-gecola.adb, s-gecola.ads,
+	s-gerebl.adb, s-gerebl.ads, i-forbla.adb, i-forbla.ads,
+	i-forlap.ads, i-forbla-darwin.adb, s-gecobl.adb, s-gecobl.ads,
+	s-gerela.adb, s-gerela.ads: Remove partial interface to BLAS/LAPACK.
+	* gcc-interface/Makefile.in: Remove libgnala and related objects.
 
 2011-11-04  Matthew Heaney  <heaney@adacore.com>
 
@@ -10,6 +33,11 @@
 	a-cohama.ad[sb], a-cihama.ad[sb], a-cohase.ad[sb], a-cihase.ad[sb],
 	a-convec.ad[sb], a-coinve.ad[sb] (Assign, Copy): New operations
 	added to package.
+
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Function>: Do not assert
+	that the type of the parameters isn't dummy in type_annotate_only mode.
 
 2011-11-04  Robert Dewar  <dewar@adacore.com>
 
