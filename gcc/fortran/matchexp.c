@@ -201,6 +201,7 @@ match_level_1 (gfc_expr **result)
   locus where;
   match m;
 
+  gfc_gobble_whitespace ();
   where = gfc_current_locus;
   uop = NULL;
   m = match_defined_operator (&uop);

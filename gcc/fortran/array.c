@@ -70,6 +70,7 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
 
   i = ar->dimen + ar->codimen;
 
+  gfc_gobble_whitespace ();
   ar->c_where[i] = gfc_current_locus;
   ar->start[i] = ar->end[i] = ar->stride[i] = NULL;
 
