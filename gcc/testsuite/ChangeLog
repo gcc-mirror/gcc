@@ -1,3 +1,8 @@
+2011-11-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/50941
+	* g++.dg/cpp0x/udlit-strint-length.C: New.
+
 2011-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48370
