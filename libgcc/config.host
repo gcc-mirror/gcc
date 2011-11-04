@@ -1025,7 +1025,7 @@ sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc-*-rtems*)
-	tmake_file="sparc/t-elf t-crtfm t-rtems t-fdpbit"
+	tmake_file="sparc/t-elf sparc/t-softmul t-crtfm t-rtems t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
 	;;
 sparc*-*-solaris2*)
