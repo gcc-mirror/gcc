@@ -205,7 +205,7 @@ main ()
   inttoflttestsl ();
   inttoflttestuc ();
   inttoflttestus ();
-//  inttoflttestui ();
+  inttoflttestui ();
   inttoflttestul ();
   return 0;
 }

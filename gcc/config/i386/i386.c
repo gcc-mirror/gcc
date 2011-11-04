@@ -17016,6 +17016,43 @@ ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
     emit_move_insn (target, fp_hi);
 }
 
+/* floatunsv{4,8}siv{4,8}sf2 expander.  Expand code to convert
+   a vector of unsigned ints VAL to vector of floats TARGET.  */
+
+void
+ix86_expand_vector_convert_uns_vsivsf (rtx target, rtx val)
+{
+  rtx tmp[8];
+  REAL_VALUE_TYPE TWO16r;
+  enum machine_mode intmode = GET_MODE (val);
+  enum machine_mode fltmode = GET_MODE (target);
+  rtx (*cvt) (rtx, rtx);
+
+  if (intmode == V4SImode)
+    cvt = gen_floatv4siv4sf2;
+  else
+    cvt = gen_floatv8siv8sf2;
+  tmp[0] = ix86_build_const_vector (intmode, 1, GEN_INT (0xffff));
+  tmp[0] = force_reg (intmode, tmp[0]);
+  tmp[1] = expand_simple_binop (intmode, AND, val, tmp[0], NULL_RTX, 1,
+				OPTAB_DIRECT);
+  tmp[2] = expand_simple_binop (intmode, LSHIFTRT, val, GEN_INT (16),
+				NULL_RTX, 1, OPTAB_DIRECT);
+  tmp[3] = gen_reg_rtx (fltmode);
+  emit_insn (cvt (tmp[3], tmp[1]));
+  tmp[4] = gen_reg_rtx (fltmode);
+  emit_insn (cvt (tmp[4], tmp[2]));
+  real_ldexp (&TWO16r, &dconst1, 16);
+  tmp[5] = const_double_from_real_value (TWO16r, SFmode);
+  tmp[5] = force_reg (fltmode, ix86_build_const_vector (fltmode, 1, tmp[5]));
+  tmp[6] = expand_simple_binop (fltmode, MULT, tmp[4], tmp[5], NULL_RTX, 1,
+				OPTAB_DIRECT);
+  tmp[7] = expand_simple_binop (fltmode, PLUS, tmp[3], tmp[6], target, 1,
+				OPTAB_DIRECT);
+  if (tmp[7] != target)
+    emit_move_insn (target, tmp[7]);
+}
+
 /* Adjust a V*SFmode/V*DFmode value VAL so that *sfix_trunc* resp. fix_trunc*
    pattern can be used on it instead of *ufix_trunc* resp. fixuns_trunc*.
    This is done by doing just signed conversion if < 0x1p31, and otherwise by

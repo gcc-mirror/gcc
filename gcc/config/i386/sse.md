@@ -2242,30 +2242,12 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "floatuns<sseintvecmodelower><mode>2"
-  [(set (match_dup 5)
-	(float:VF1
-	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "")))
-   (set (match_dup 6)
-	(lt:VF1 (match_dup 5) (match_dup 3)))
-   (set (match_dup 7)
-	(and:VF1 (match_dup 6) (match_dup 4)))
-   (set (match_operand:VF1 0 "register_operand" "")
-	(plus:VF1 (match_dup 5) (match_dup 7)))]
-  "TARGET_SSE2"
+  [(match_operand:VF1 0 "register_operand" "")
+   (match_operand:<sseintvecmode> 1 "register_operand" "")]
+  "TARGET_SSE2 && (<MODE>mode == V4SFmode || TARGET_AVX2)"
 {
-  REAL_VALUE_TYPE TWO32r;
-  rtx x;
-  int i;
-
-  real_ldexp (&TWO32r, &dconst1, 32);
-  x = const_double_from_real_value (TWO32r, SFmode);
-
-  operands[3] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
-  operands[4] = force_reg (<MODE>mode,
-			   ix86_build_const_vector (<MODE>mode, 1, x));
-
-  for (i = 5; i < 8; i++)
-    operands[i] = gen_reg_rtx (<MODE>mode);
+  ix86_expand_vector_convert_uns_vsivsf (operands[0], operands[1]);
+  DONE;
 })
 
 (define_insn "avx_cvtps2dq256"
