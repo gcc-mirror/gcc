@@ -591,8 +591,7 @@ package body Exp_Ch4 is
                --  1) Get access to the allocated object
 
                Rewrite (N,
-                 Make_Explicit_Dereference (Loc,
-                   Relocate_Node (N)));
+                 Make_Explicit_Dereference (Loc, Relocate_Node (N)));
                Set_Etype (N, Etyp);
                Set_Analyzed (N);
 
@@ -4472,6 +4471,21 @@ package body Exp_Ch4 is
       --  Insert explicit dereference call for the checked storage pool case
 
       Insert_Dereference_Action (Prefix (N));
+
+      --  If the type is an Atomic type for which Atomic_Sync is enabled, then
+      --  we set the atomic sync flag.
+
+      if Is_Atomic (Etype (N))
+        and then not Atomic_Synchronization_Disabled (Etype (N))
+      then
+         Set_Atomic_Sync_Required (N);
+
+         --  Generate info message if requested
+
+         if Warn_On_Atomic_Synchronization then
+            Error_Msg_N ("?info: atomic synchronization set", N);
+         end if;
+      end if;
    end Expand_N_Explicit_Dereference;
 
    --------------------------------------
@@ -5245,6 +5259,7 @@ package body Exp_Ch4 is
       Typ : constant Entity_Id  := Etype (N);
       P   : constant Node_Id    := Prefix (N);
       T   : constant Entity_Id  := Etype (P);
+      Atp : Entity_Id;
 
    begin
       --  A special optimization, if we have an indexed component that is
@@ -5290,6 +5305,9 @@ package body Exp_Ch4 is
       if Is_Access_Type (T) then
          Insert_Explicit_Dereference (P);
          Analyze_And_Resolve (P, Designated_Type (T));
+         Atp := Designated_Type (T);
+      else
+         Atp := T;
       end if;
 
       --  Generate index and validity checks
@@ -5298,6 +5316,23 @@ package body Exp_Ch4 is
 
       if Validity_Checks_On and then Validity_Check_Subscripts then
          Apply_Subscript_Validity_Checks (N);
+      end if;
+
+      --  If selecting from an array with atomic components, and atomic sync
+      --  is not suppressed for this array type, set atomic sync flag.
+
+      if (Has_Atomic_Components (Atp)
+           and then not Atomic_Synchronization_Disabled (Atp))
+        or else (Is_Atomic (Typ)
+                  and then not Atomic_Synchronization_Disabled (Typ))
+      then
+         Set_Atomic_Sync_Required (N);
+
+         --  Generate info message if requested
+
+         if Warn_On_Atomic_Synchronization then
+            Error_Msg_N ("?info: atomic synchronization set", N);
+         end if;
       end if;
 
       --  All done for the non-packed case
@@ -7869,9 +7904,6 @@ package body Exp_Ch4 is
    -- Expand_N_Selected_Component --
    ---------------------------------
 
-   --  If the selector is a discriminant of a concurrent object, rewrite the
-   --  prefix to denote the corresponding record type.
-
    procedure Expand_N_Selected_Component (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Par   : constant Node_Id    := Parent (N);
@@ -8174,6 +8206,24 @@ package body Exp_Ch4 is
 
          Rewrite (N, New_N);
          Analyze (N);
+      end if;
+
+      --  If we still have a selected component, and the type is an Atomic
+      --  type for which Atomic_Sync is enabled, then we set the atomic sync
+      --  flag on the selector.
+
+      if Nkind (N) = N_Selected_Component
+        and then Is_Atomic (Etype (N))
+        and then not Atomic_Synchronization_Disabled (Etype (N))
+      then
+         Set_Atomic_Sync_Required (Selector_Name (N));
+
+         --  Generate info message if requested
+
+         if Warn_On_Atomic_Synchronization then
+            Error_Msg_N
+              ("?info: atomic synchronization set for &", Selector_Name (N));
+         end if;
       end if;
    end Expand_N_Selected_Component;
 
