@@ -2574,6 +2574,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   gfc_ss *maskss;
   gfc_se arrayse;
   gfc_se maskse;
+  gfc_se *parent_se;
   gfc_expr *arrayexpr;
   gfc_expr *maskexpr;
 
@@ -2582,6 +2583,8 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
       gfc_conv_intrinsic_funcall (se, expr);
       return;
     }
+  else
+    parent_se = NULL;
 
   type = gfc_typenode_for_spec (&expr->ts);
   /* Initialize the result.  */
@@ -2654,7 +2657,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
   /* If we have a mask, only add this element if the mask is set.  */
   if (maskexpr && maskexpr->rank > 0)
     {
-      gfc_init_se (&maskse, NULL);
+      gfc_init_se (&maskse, parent_se);
       gfc_copy_loopinfo_to_se (&maskse, ploop);
       maskse.ss = maskss;
       gfc_conv_expr_val (&maskse, maskexpr);
@@ -2666,7 +2669,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
     gfc_init_block (&block);
 
   /* Do the actual summation/product.  */
-  gfc_init_se (&arrayse, NULL);
+  gfc_init_se (&arrayse, parent_se);
   gfc_copy_loopinfo_to_se (&arrayse, ploop);
   arrayse.ss = arrayss;
   gfc_conv_expr_val (&arrayse, arrayexpr);
