@@ -5907,7 +5907,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		tree asmspec_tree, int flags)
 {
   tree type;
-  VEC(tree,gc) *cleanups = NULL;
+  VEC(tree,gc) *cleanups = make_tree_vector ();
+  unsigned i; tree t;
   const char *asmspec = NULL;
   int was_readonly = 0;
   bool var_definition_p = false;
@@ -6315,12 +6316,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   /* If a CLEANUP_STMT was created to destroy a temporary bound to a
      reference, insert it in the statement-tree now.  */
-  if (cleanups)
-    {
-      unsigned i; tree t;
-      FOR_EACH_VEC_ELT_REVERSE (tree, cleanups, i, t)
-	push_cleanup (decl, t, false);
-    }
+  FOR_EACH_VEC_ELT (tree, cleanups, i, t)
+    push_cleanup (decl, t, false);
+  release_tree_vector (cleanups);
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;
