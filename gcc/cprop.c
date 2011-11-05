@@ -712,8 +712,8 @@ find_used_regs (rtx *xptr, void *data ATTRIBUTE_UNUSED)
     }
 }
 
-/* Try to replace all non-SET_DEST occurrences of FROM in INSN with TO.
-   Returns nonzero is successful.  */
+/* Try to replace all uses of FROM in INSN with TO.
+   Return nonzero if successful.  */
 
 static int
 try_replace_reg (rtx from, rtx to, rtx insn)
@@ -762,6 +762,18 @@ try_replace_reg (rtx from, rtx to, rtx insn)
 	 to not lose information.  */
       if (!success && note == 0 && set != 0 && REG_P (SET_DEST (set)))
 	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
+    }
+
+  if (set && MEM_P (SET_DEST (set)) && reg_mentioned_p (from, SET_DEST (set)))
+    {
+      /* Registers can also appear as uses in SET_DEST if it is a MEM.
+         We could perhaps try this for multiple SETs, but it probably
+         won't buy us anything.  */
+      rtx dest = simplify_replace_rtx (SET_DEST (set), from, to);
+      
+      if (!rtx_equal_p (dest, SET_DEST (set))
+          && validate_change (insn, &SET_DEST (set), dest, 0))
+        success = 1;
     }
 
   /* REG_EQUAL may get simplified into register.

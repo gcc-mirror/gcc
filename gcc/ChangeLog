@@ -1,3 +1,9 @@
+2011-11-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/50448
+	* cprop.c (try_replace_reg): Also try to replace uses of FROM that
+	appear in SET_DEST.
+
 2011-11-05  Peter Dufault  <dufault@hda.com>,
 	    Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
