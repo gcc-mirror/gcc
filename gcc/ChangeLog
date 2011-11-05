@@ -1,5 +1,5 @@
 2011-11-05  Peter Dufault  <dufault@hda.com>,
-	    Sebastian Huber <sebastian.huber@embedded-brains.de>
+	    Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rs6000/rtems.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
 	Extend rs6000_spe handling.
@@ -37,7 +37,7 @@
 	fact that sparc_emit_float_lib_cmp modifies the comparison in
 	operands[1].
 
-2011-11-04  Ralf Corsépius <ralf.corsepius@rtems.org>
+2011-11-04  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/lm32/t-rtems: New.
 	* config.gcc (lm32-*-rtems*): Add t-rtems.
