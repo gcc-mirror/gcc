@@ -67,7 +67,7 @@
 	__UINT24_MAX__): New built-in defines.
 	* config/avr/avr.md (adjust_len): Add tstpsi, mov24,  reload_in24,
 	ashlpsi, ashrpsi, lshrpsi.
-	(QISO, QIDI, HISI, HIDI, MPUSH, rotx, rotsmode): Add PSI.
+	(QISI, QIDI, HISI, HIDI, MPUSH, rotx, rotsmode): Add PSI.
 	(MOVMODE): New mode iterator.
 	(movpsi): New expander.
 	(movqi, movhi, movsi, movsf, movpsi): Write as one using MOVMODE.
