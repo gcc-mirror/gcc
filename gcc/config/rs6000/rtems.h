@@ -49,8 +49,19 @@
 %{mcpu=604:  %{!Dppc*: %{!Dmpc*: -Dmpc604}  } } \
 %{mcpu=750:  %{!Dppc*: %{!Dmpc*: -Dmpc750}  } } \
 %{mcpu=821:  %{!Dppc*: %{!Dmpc*: -Dmpc821}  } } \
-%{mcpu=860:  %{!Dppc*: %{!Dmpc*: -Dmpc860}  } }" 
+%{mcpu=860:  %{!Dppc*: %{!Dmpc*: -Dmpc860}  } } \
+%{mcpu=8540: %{!Dppc*: %{!Dmpc*: -Dppc8540}  } }" 
 
 #undef  SUBSUBTARGET_EXTRA_SPECS
 #define SUBSUBTARGET_EXTRA_SPECS \
   { "cpp_os_rtems",		CPP_OS_RTEMS_SPEC }
+
+#undef SUBSUBTARGET_OVERRIDE_OPTIONS
+#define SUBSUBTARGET_OVERRIDE_OPTIONS					\
+  do {									\
+    if (TARGET_E500)							\
+      {									\
+        if (TARGET_HARD_FLOAT && !rs6000_explicit_options.float_gprs)	\
+          rs6000_float_gprs = 1; 					\
+      }									\
+  } while(0)

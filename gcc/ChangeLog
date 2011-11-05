@@ -1,3 +1,11 @@
+2011-11-05  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config/rs6000/t-rtems: Add -mcpu=8540/-mfloat-gprs=double multilib.
+	Remove -mcpu=601 multilib.
+	Remove -Dmpc8260 multilib.
+	* config/rs6000/rtems.h: Allow --float-gprs=... to override grps
+	on E500 targets.	
+
 2011-11-05  Quentin Neill  <quentin.neill@amd.com>
 
 	Piledriver f16cintrin.h fix.
