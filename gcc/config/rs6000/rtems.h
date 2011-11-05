@@ -63,5 +63,9 @@
       {									\
         if (TARGET_HARD_FLOAT && !rs6000_explicit_options.float_gprs)	\
           rs6000_float_gprs = 1; 					\
+        if (rs6000_float_gprs != 0 && !rs6000_explicit_options.spe)	\
+          rs6000_spe = 1;						\
+        if (rs6000_spe && !rs6000_explicit_options.spe_abi)		\
+          rs6000_spe_abi = 1;						\
       }									\
   } while(0)
