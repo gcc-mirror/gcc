@@ -1,3 +1,7 @@
+2011-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/quad_2.f90: New.
+
 2011-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/strlenopt-22g.c: New wrapper around...
@@ -26,10 +30,10 @@
 
 2011-10-09  Magnus Fromreide  <magfr@lysator.liu.se>
 
-        * g++.dg/cpp0x/enum21a.C: Test that enum x { y, } does
-        generate a pedwarn in c++98-mode.
-        * g++.dg/cpp0x/enum21b.C: Test that enum x { y, }
-        don't generate a pedwarn in c++0x-mode.
+	* g++.dg/cpp0x/enum21a.C: Test that enum x { y, } does
+	generate a pedwarn in c++98-mode.
+	* g++.dg/cpp0x/enum21b.C: Test that enum x { y, }
+	don't generate a pedwarn in c++0x-mode.
 
 2011-11-04  Olivier Goffart  <olivier@woboq.com>
 
