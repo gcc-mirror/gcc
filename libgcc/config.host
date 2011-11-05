@@ -390,7 +390,7 @@ arm*-wince-pe*)
 	tmake_file="$tmake_file arm/t-arm arm/t-wince-pe"
 	;;
 avr-*-rtems*)
-	tmake_file="$tmake_file avr/t-avr t-fpbit"
+	tmake_file="$tmake_file avr/t-avr avr/t-rtems t-fpbit"
 	tm_file="$tm_file avr/avr-lib.h"
 	# Don't use default.
 	extra_parts=
