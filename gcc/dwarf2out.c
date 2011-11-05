@@ -18020,6 +18020,14 @@ gen_label_die (tree decl, dw_die_ref context_die)
 	  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (insn));
 	  add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
 	}
+      else if (insn
+	       && NOTE_P (insn)
+	       && NOTE_KIND (insn) == NOTE_INSN_DELETED_DEBUG_LABEL
+	       && CODE_LABEL_NUMBER (insn) != -1)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (label, "LDL", CODE_LABEL_NUMBER (insn));
+	  add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
+	}
     }
 }
 

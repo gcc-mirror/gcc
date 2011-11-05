@@ -9517,6 +9517,12 @@ vt_initialize (void)
   return true;
 }
 
+/* This is *not* reset after each function.  It gives each
+   NOTE_INSN_DELETED_DEBUG_LABEL in the entire compilation
+   a unique label number.  */
+
+static int debug_label_num = 1;
+
 /* Get rid of all debug insns from the insn stream.  */
 
 static void
@@ -9532,7 +9538,22 @@ delete_debug_insns (void)
     {
       FOR_BB_INSNS_SAFE (bb, insn, next)
 	if (DEBUG_INSN_P (insn))
-	  delete_insn (insn);
+	  {
+	    tree decl = INSN_VAR_LOCATION_DECL (insn);
+	    if (TREE_CODE (decl) == LABEL_DECL
+		&& DECL_NAME (decl)
+		&& !DECL_RTL_SET_P (decl))
+	      {
+		PUT_CODE (insn, NOTE);
+		NOTE_KIND (insn) = NOTE_INSN_DELETED_DEBUG_LABEL;
+		NOTE_DELETED_LABEL_NAME (insn)
+		  = IDENTIFIER_POINTER (DECL_NAME (decl));
+		SET_DECL_RTL (decl, insn);
+		CODE_LABEL_NUMBER (insn) = debug_label_num++;
+	      }
+	    else
+	      delete_insn (insn);
+	  }
     }
 }
 
