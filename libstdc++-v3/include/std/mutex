@@ -760,11 +760,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   private:
     typedef __gthread_once_t __native_type;
-    __native_type  _M_once;
+    __native_type  _M_once = __GTHREAD_ONCE_INIT;
 
   public:
     /// Constructor
-    constexpr once_flag() noexcept : _M_once(__GTHREAD_ONCE_INIT) { }
+    constexpr once_flag() noexcept = default;
 
     /// Deleted copy constructor
     once_flag(const once_flag&) = delete;
