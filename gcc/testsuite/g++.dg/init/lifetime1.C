@@ -2,12 +2,13 @@
 // { dg-do run }
 
 extern "C" void abort();
-bool ok;
+
+int last = 4;
 
 struct A {
   int i;
   A(int i): i(i) { }
-  ~A() { if (!ok) abort(); }
+  ~A() { if (i > last) abort(); last = i; }
 };
 
 struct D { int i; };
@@ -25,5 +26,4 @@ struct C
 int main()
 {
   C c = { 1, B(2), E(3) };
-  ok = true;
 }
