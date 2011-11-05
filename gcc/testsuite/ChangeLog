@@ -1,5 +1,9 @@
 2011-11-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26714
+	* g++.dg/init/lifetime2.C: New.
+	* g++.dg/cpp0x/initlist-lifetime2.C: New.
+
 	PR c++/48370
 	* g++.dg/init/lifetime1.C: Test cleanup order.
 

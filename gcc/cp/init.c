@@ -507,7 +507,15 @@ perform_member_init (tree member, tree init)
 		 tf_warning_or_error, member, /*function_p=*/false,
 		 /*integral_constant_expression_p=*/false));
       else
-	init = break_out_target_exprs (DECL_INITIAL (member));
+	{
+	  init = DECL_INITIAL (member);
+	  /* Strip redundant TARGET_EXPR so we don't need to remap it, and
+	     so the aggregate init code below will see a CONSTRUCTOR.  */
+	  if (init && TREE_CODE (init) == TARGET_EXPR
+	      && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (init))))
+	    init = TARGET_EXPR_INITIAL (init);
+	  init = break_out_target_exprs (init);
+	}
     }
 
   /* Effective C++ rule 12 requires that all data members be
@@ -564,6 +572,42 @@ perform_member_init (tree member, tree init)
 	  init = build2 (INIT_EXPR, type, decl, TREE_VALUE (init));
 	  finish_expr_stmt (init);
 	}
+    }
+  else if (init
+	   && (TREE_CODE (type) == REFERENCE_TYPE
+	       /* Pre-digested NSDMI.  */
+	       || (((TREE_CODE (init) == CONSTRUCTOR
+		     && TREE_TYPE (init) == type)
+		    /* { } mem-initializer.  */
+		    || (TREE_CODE (init) == TREE_LIST
+			&& TREE_CODE (TREE_VALUE (init)) == CONSTRUCTOR
+			&& CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init))))
+		   && (CP_AGGREGATE_TYPE_P (type)
+		       || is_std_init_list (type)))))
+    {
+      /* With references and list-initialization, we need to deal with
+	 extending temporary lifetimes.  12.2p5: "A temporary bound to a
+	 reference member in a constructor’s ctor-initializer (12.6.2)
+	 persists until the constructor exits."  */
+      unsigned i; tree t;
+      VEC(tree,gc) *cleanups = make_tree_vector ();
+      if (TREE_CODE (init) == TREE_LIST)
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      if (TREE_TYPE (init) != type)
+	init = digest_init (type, init, tf_warning_or_error);
+      if (init == error_mark_node)
+	return;
+      /* Use 'this' as the decl, as it has the lifetime we want.  */
+      init = extend_ref_init_temps (current_class_ptr, init, &cleanups);
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))
+	init = build_vec_init_expr (type, init, tf_warning_or_error);
+      init = build2 (INIT_EXPR, type, decl, init);
+      finish_expr_stmt (init);
+      FOR_EACH_VEC_ELT (tree, cleanups, i, t)
+	push_cleanup (decl, t, false);
+      release_tree_vector (cleanups);
     }
   else if (type_build_ctor_call (type)
 	   || (init && CLASS_TYPE_P (strip_array_types (type))))

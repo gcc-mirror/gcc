@@ -1,5 +1,9 @@
 2011-11-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26714
+	* init.c (perform_member_init): Strip TARGET_EXPR around NSDMI.
+	Do temporary lifetime extension.
+
 	PR c++/48370
 	* decl.c (cp_finish_decl): Run cleanups in the right order.
 
