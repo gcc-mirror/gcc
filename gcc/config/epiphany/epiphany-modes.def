@@ -1,0 +1,40 @@
+/* Definitions of target machine for GNU compiler, Adapteva Epiphany cpu.
+   Copyright (C) 2002, 2007, 2009, 2011 Free Software Foundation, Inc.
+   Contributed by Embecosm on behalf of Adapteva, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+CC_MODE (CC_Z);      /* only Z valid - for add, testing result.  */
+CC_MODE (CC_N_NE);   /* N for not-equal (for lsl).  */
+CC_MODE (CC_C_LTU);  /* C for unsigned-less-than (for add with carry).  */
+CC_MODE (CC_C_GTU);  /* C for unsigned-greater-than (for sub with carry).  */
+CC_MODE (CC_FP);
+CC_MODE (CC_FP_EQ);  /* AZ for equal.  */
+CC_MODE (CC_FP_ORD); /* AZ || ~AC for ordered.  */
+CC_MODE (CC_FP_UNEQ); /* AZ || ~AC for unordered / equal.  */
+CC_MODE (CC_FP_GTE); /* ~AC  / AZ for greater than / equal.  */
+#if 0 /* This would be needed for simplified NaN testing.  */
+RESET_FLOAT_FORMAT (SF, motorola_single_format);
+RESET_FLOAT_FORMAT (DF, motorola_double_format);
+#endif
+VECTOR_MODES (INT, 4);		/* V4QI V2HI */
+VECTOR_MODES (INT, 8);		/* V8QI V4HI V2SI */
+VECTOR_MODE (FLOAT, SF, 2);	/* V2SF */
+ADJUST_ALIGNMENT (V8QI, epiphany_vect_align);
+ADJUST_ALIGNMENT (V4HI, epiphany_vect_align);
+ADJUST_ALIGNMENT (V2SI, epiphany_vect_align);
+ADJUST_ALIGNMENT (V2SF, epiphany_vect_align);

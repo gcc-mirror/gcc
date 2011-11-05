@@ -20,6 +20,8 @@ extern void abort (void);
 /* No pic register.  */
 #elif defined(__cris__)
 # define PIC_REG  "0"
+#elif defined(__epiphany__)
+#define PIC_REG "r28"
 #elif defined(__fr30__)
 /* No pic register.  */
 #elif defined(__H8300__) || defined(__H8300H__) || defined(__H8300S__)

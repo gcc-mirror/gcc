@@ -1,3 +1,20 @@
+2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x:
+	Disable test on Epiphany.
+	* gcc.c-torture/execute/20101011-1.c: Disable test on Epiphany.
+	* gcc.dg/stack-usage-1.c [__epiphany__] (SIZE): Define.
+	* gcc.dg/pragma-pack-3.c: Disable test on Epiphany.
+	* g++.dg/parse/pragma3.C: Likewise.
+	* stackalign/builtin-apply-2.c (STACK_ARGUMENTS_SIZE): Define.
+	(bar): Use it.
+	* gcc.dg/weak/typeof-2.c [epiphany-*-*]: Add option -mshort-calls.
+	* gcc.dg/tls/thr-cse-1.c: Likewise.
+	* g++.dg/opt/devirt2.C: Likewise.
+	* gcc.dg/20020312-2.c [epiphany-*-*] (PIC_REG): Define.
+	* gcc.dg/builtin-apply2.c [__epiphany__]: (STACK_ARGUMENTS_SIZE): 20.
+	* gcc.target/epiphany: New directory.
+
 2011-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/quad_2.f90: New.

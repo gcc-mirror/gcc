@@ -1,3 +1,18 @@
+2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config.gcc (epiphany-*-*): New architecture.
+	(epiphany-*-elf): New configuration.
+	* config/epiphany, common/config/epiphany : New directories.
+	* doc/extend.texi (disinterrupt attribute): Add Epiphany.
+	(interrupt attribute): Add Epiphany.
+	(long_call, short_call attribute): Add Epiphany.
+	* doc/invoke.texi (Options): Add Epiphany options.
+	* doc/md.texi (Machine Constraints): Add Epiphany constraints.
+	* doc/install.texi (Options specification):
+	Add --with-stack-offset=@var{num} description.
+	(host/target specific issues): Add epiphany-*-elf.
+	* doc/contrib.texi (Contributors): Mention Epiphany port.
+
 2011-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50693

@@ -1,5 +1,6 @@
 // PR c++/25294
-// { dg-do run }
+// Epiphany makes struct S 8-byte aligned.
+// { dg-do run { target { ! epiphany-*-* } } }
 
 extern "C" void abort (void);
 

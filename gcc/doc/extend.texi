@@ -2192,7 +2192,7 @@ types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
 @item disinterrupt
 @cindex @code{disinterrupt} attribute
-On MeP targets, this attribute causes the compiler to emit
+On Epiphany and MeP targets, this attribute causes the compiler to emit
 instructions to disable interrupts for the duration of the given
 function.
 
@@ -2551,7 +2551,7 @@ This attribute is ignored for R8C target.
 
 @item interrupt
 @cindex interrupt handler functions
-Use this attribute on the ARM, AVR, M32C, M32R/D, m68k, MeP, MIPS,
+Use this attribute on the ARM, AVR, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
 RX and Xstormy16 ports to indicate that the specified function is an
 interrupt handler.  The compiler will generate function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
@@ -2723,7 +2723,8 @@ attribute is not allowed on types to annotate indirect calls.
 @item long_call/short_call
 @cindex indirect calls on ARM
 This attribute specifies how a particular function is called on
-ARM@.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
+ARM and Epiphany.  Both attributes override the
+@option{-mlong-calls} (@pxref{ARM Options})
 command-line switch and @code{#pragma long_calls} settings.  The
 @code{long_call} attribute indicates that the function might be far
 away from the call site and require a different (more expensive)
