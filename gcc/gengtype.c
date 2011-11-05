@@ -1015,6 +1015,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	  {
 	  case NOTE_INSN_MAX:
 	  case NOTE_INSN_DELETED_LABEL:
+	  case NOTE_INSN_DELETED_DEBUG_LABEL:
 	    note_flds = create_field (note_flds, &string_type, "rt_str");
 	    break;
 

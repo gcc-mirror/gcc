@@ -283,6 +283,7 @@ print_rtx (const_rtx in_rtx)
 	        }
 
 	      case NOTE_INSN_DELETED_LABEL:
+	      case NOTE_INSN_DELETED_DEBUG_LABEL:
 		{
 		  const char *label = NOTE_DELETED_LABEL_NAME (in_rtx);
 		  if (label)
@@ -442,7 +443,8 @@ print_rtx (const_rtx in_rtx)
 	  {
 	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	       other times often contains garbage from INSN->NOTE death.  */
-	    if (NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_LABEL)
+	    if (NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_LABEL
+		|| NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_DEBUG_LABEL)
 	      fprintf (outfile, " %d",  XINT (in_rtx, i));
 	  }
 #if !defined(GENERATOR_FILE) && NUM_UNSPECV_VALUES > 0

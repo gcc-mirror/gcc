@@ -1,3 +1,28 @@
+2011-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50693
+	* tree-cfg.c (gimple_can_merge_blocks_p): Allow merging with
+	non-forced user labels.
+	(gimple_merge_blocks): Turn non-forced user labels into
+	debug bind stmt with the label as first operand and reset value.
+	(gimple_duplicate_bb): Don't duplicate label debug stmts.
+	* dwarf2out.c (gen_label_die): Handle NOTE_INSN_DELETED_DEBUG_LABEL.
+	* final.c (final_scan_insn): Likewise.
+	(rest_of_clean_state): Don't dump NOTE_INSN_DELETED_DEBUG_LABEL.
+	* var-tracking.c (debug_label_num): New variable.
+	(delete_debug_insns): Don't delete DEBUG_INSNs for LABEL_DECLs,
+	instead turn them into NOTE_INSN_DELETED_DEBUG_LABEL notes.
+	* cfglayout.c (skip_insns_after_block, duplicate_insn_chain): Handle
+	NOTE_INSN_DELETED_DEBUG_LABEL.
+	(duplicate_insn_chain): Don't duplicate LABEL_DECL DEBUG_INSNs.
+	* insn-notes.def (DELETED_DEBUG_LABEL): New note kind.
+	* print-rtl.c (print_rtx): Handle NOTE_INSN_DELETED_DEBUG_LABEL.
+	* gengtype.c (adjust_field_rtx_def): Likewise.
+	* config/i386/i386.c (ix86_output_function_epilogue): For MachO
+	clear CODE_LABEL_NUMBER of NOTE_INSN_DELETED_DEBUG_LABEL
+	if their are at the end of function and nop hasn't been emitted.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Likewise.
+
 2011-11-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR rtl-optimization/50448

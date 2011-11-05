@@ -36,6 +36,10 @@ INSN_NOTE (DELETED)
 
 /* Generated in place of user-declared labels when they are deleted.  */
 INSN_NOTE (DELETED_LABEL)
+/* Similarly, but for labels that have been present in debug stmts
+   earlier and thus will only appear with -g.  These must use different
+   label namespace.  */
+INSN_NOTE (DELETED_DEBUG_LABEL)
 
 /* These are used to mark the beginning and end of a lexical block.
    See NOTE_BLOCK and reorder_blocks.  */
