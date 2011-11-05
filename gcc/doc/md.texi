@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -1776,6 +1776,77 @@ A memory address based on Y or Z pointer with displacement.
 
 @item C04
 Constant integer 4
+@end table
+
+@item Epiphany---@file{config/epiphany/constraints.md}
+@table @code
+@item U16
+An unsigned 16-bit constant.
+
+@item K
+An unsigned 5-bit constant.
+
+@item L
+A signed 11-bit constant.
+
+@item Cm1
+A signed 11-bit constant added to @minus{}1.
+Can only match when the @option{-m1reg-@var{reg}} option is active.
+
+@item Cl1
+Left-shift of @minus{}1, i.e., a bit mask with a block of leading ones, the rest
+being a block of trailing zeroes.
+Can only match when the @option{-m1reg-@var{reg}} option is active.
+
+@item Cr1
+Right-shift of @minus{}1, i.e., a bit mask with a trailing block of ones, the
+rest being zeroes.  Or to put it another way, one less than a power of two.
+Can only match when the @option{-m1reg-@var{reg}} option is active.
+
+@item Cal
+Constant for arithmetic/logical operations.
+This is like @code{i}, except that for position independent code,
+no symbols / expressions needing relocations are allowed.
+
+@item Csy
+Symbolic constant for call/jump instruction.
+
+@item Rcs
+The register class usable in short insns.  This is a register class
+constraint, and can thus drive register allocation.
+This constraint won't match unless @option{-mprefer-short-insn-regs} is
+in effect.
+
+@item Rsc
+The the register class of registers that can be used to hold a
+sibcall call address.  I.e., a caller-saved register.
+
+@item Rct
+Core control register class.
+
+@item Rgs
+The register group usable in short insns.
+This constraint does not use a register class, so that it only
+passively matches suitable registers, and doesn't drive register allocation.
+
+@ifset INTERNALS
+@item Car
+Constant suitable for the addsi3_r pattern.  This is a valid offset
+For byte, halfword, or word addressing.
+@end ifset
+
+@item Rra
+Matches the return address if it can be replaced with the link register.
+
+@item Rcc
+Matches the integer condition code register.
+
+@item Sra
+Matches the return address if it is in a stack slot.
+
+@item Cfm
+Matches control register values to switch fp mode, which are encapsulated in
+@code{UNSPEC_FP_MODE}.
 @end table
 
 @item Hewlett-Packard PA-RISC---@file{config/pa/pa.h}

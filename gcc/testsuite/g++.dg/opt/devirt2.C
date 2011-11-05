@@ -1,5 +1,8 @@
 // { dg-do compile }
 // { dg-options "-O2" }
+/* Using -mshort-calls avoids loading the function addresses in
+   registers and thus getting the counts wrong.  */
+// { dg-additional-options "-mshort-calls" {target epiphany-*-*} }
 // { dg-final { scan-assembler-times "xyzzy" 2 { target { ! { alpha*-*-* hppa*-*-* ia64*-*-hpux* sparc*-*-* } } } } }
 // The IA64 and HPPA compilers generate external declarations in addition
 // to the call so those scans need to be more specific.

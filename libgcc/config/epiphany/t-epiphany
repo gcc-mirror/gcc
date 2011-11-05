@@ -1,0 +1,35 @@
+# Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003,
+# 2004, 2009, 2010, 2011 Free Software Foundation, Inc.
+# Contributed by Embecosm on behalf of Adapteva, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+LIB2ADD_ST = $(srcdir)/config/epiphany/modsi3-float.S \
+	     $(srcdir)/config/epiphany/divsi3-float.S \
+	     $(srcdir)/config/epiphany/udivsi3-float.S \
+	     $(srcdir)/config/epiphany/umodsi3-float.S \
+	     $(srcdir)/config/epiphany/ieee-754/eqsf2.S \
+	     $(srcdir)/config/epiphany/ieee-754/gtesf2.S \
+	     $(srcdir)/config/epiphany/ieee-754/ordsf2.S \
+	     $(srcdir)/config/epiphany/ieee-754/uneqsf2.S \
+	     $(srcdir)/config/epiphany/ieee-754/fast_div.S
+
+# .init/.fini section routines
+
+crtint.o crtrunc.o crtm1reg-r43.o crtm1reg-r63.o : \
+  %.o: $(srcdir)/config/epiphany/%.S $(GCC_PASSES) $(CONFIG_H)
+	$(crt_compile) -c -x assembler-with-cpp $<

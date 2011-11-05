@@ -1,3 +1,8 @@
+if [istarget "epiphany-*-*"] {
+    # The Epiphany single-precision floating point format does not
+    # support subnormals.
+    return 1
+}
 if [istarget "mips-sgi-irix6*"] {
     # IRIX 6 sets the MIPS IV flush to zero bit by default, so this test
     # isn't expected to work for n32 and n64 on MIPS IV targets.

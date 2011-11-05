@@ -18,7 +18,8 @@ LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   arm-linux-androideabi arm-uclinux_eabi arm-ecos-elf arm-eabi \
   arm-symbianelf arm-rtems arm-elf arm-wince-pe avr-rtems avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
-  c6x-elf c6x-uclinux cris-elf cris-linux crisv32-elf crisv32-linux fido-elf \
+  c6x-elf c6x-uclinux cris-elf cris-linux crisv32-elf crisv32-linux \
+  epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux h8300-elf h8300-rtems hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
   hppa2.0-hpux10.1 hppa64-hpux11.3 \

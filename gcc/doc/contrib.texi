@@ -746,7 +746,7 @@ Volker Reichelt for keeping up with the problem reports.
 
 @item
 Joern Rennecke for maintaining the sh port, loop, regmove & reload
-hacking.
+hacking and developing and maintaining the Epiphany port.
 
 @item
 Loren J. Rittle for improvements to libstdc++-v3 including the FreeBSD

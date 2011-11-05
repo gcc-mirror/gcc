@@ -5,6 +5,9 @@
 /* { dg-require-weak "" } */
 /* { dg-require-alias "" } */
 /* { dg-options "-O2" } */
+/* Using -mshort-calls avoids loading the function addresses in
+   registers and thus getting the counts wrong.  */
+/* { dg-additional-options "-mshort-calls" { target epiphany-*-* } } */
 
 extern int foo1 (int x) __asm ("baz1");
 int bar1 (int x) { return x; }

@@ -1,3 +1,8 @@
+2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config.host (epiphany-*-elf*): New configuration.
+	* config/epiphany: New Directory.
+
 2011-11-05  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.host (avr-*-rtems*): Add config/avr/t-rtems.

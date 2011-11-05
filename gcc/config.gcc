@@ -967,6 +967,14 @@ crisv32-*-linux* | cris-*-linux*)
 		;;
 	esac
 	;;
+epiphany-*-elf )
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tmake_file="epiphany/t-epiphany"
+	extra_options="${extra_options} fused-madd.opt"
+	extra_objs="$extra_objs mode-switch-use.o resolve-sw-modes.o"
+	tm_defines="${tm_defines} EPIPHANY_STACK_OFFSET=${with_stack_offset:-8}"
+	extra_headers="epiphany_intrinsics.h"
+	;;
 fr30-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	;;

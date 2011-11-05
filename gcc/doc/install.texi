@@ -1208,6 +1208,11 @@ of the arguments depend on the target.
 Specify if the compiler should default to @option{-marm} or @option{-mthumb}.
 This option is only supported on ARM targets.
 
+@item --with-stack-offset=@var{num}
+This option sets the default for the -mstack-offset=@var{num} option,
+and will thus generally also control the setting of this option for
+libraries.  This option is only supported on Epiphany targets.
+
 @item --with-fpmath=@var{isa}
 This options sets @option{-mfpmath=sse} by default and specifies the default
 ISA for floating-point arithmetics.  You can select either @samp{sse} which
@@ -3311,6 +3316,13 @@ You cannot install GCC by itself on MSDOS; it will not compile under
 any MSDOS compiler except itself.  You need to get the complete
 compilation package DJGPP, which includes binaries as well as sources,
 and includes all the necessary compilation tools and libraries.
+
+@html
+<hr />
+@end html
+@heading @anchor{epiphany-x-elf}epiphany-*-elf
+Adapteva Epiphany.
+This configuration is intended for embedded systems.
 
 @html
 <hr />

@@ -12,7 +12,7 @@
 
 #define INTEGER_ARG  5
 
-#ifdef __ARM_PCS
+#if defined(__ARM_PCS) || defined(__epiphany__)
 /* For Base AAPCS, NAME is passed in r0.  D is passed in r2 and r3.
    E, F and G are passed on stack.  So the size of the stack argument
    data is 20.  */

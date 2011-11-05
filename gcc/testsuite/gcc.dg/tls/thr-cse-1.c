@@ -1,5 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O1" } */
+/* Using -mshort-calls avoids loading the function addresses in
+   registers and thus getting the counts wrong.  */
+/* { dg-additional-options "-mshort-calls" { target epiphany-*-* } } */
 /* { dg-require-effective-target tls_emulated } */
 
 /* Test that we only get one call to emutls_get_address when CSE is
