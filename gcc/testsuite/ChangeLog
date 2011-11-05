@@ -1,3 +1,8 @@
+2011-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/strlenopt-22g.c: New wrapper around...
+	* gcc.dg/strlenopt-22.c: ...this.  Do not define USE_GNU and adjust.
+
 2011-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26714
