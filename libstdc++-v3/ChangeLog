@@ -1,3 +1,9 @@
+2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/44436
+	* doc/xml/manual/status_cxx200x.xml: Document emplace members are
+	missing.
+
 2011-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/49894
