@@ -376,6 +376,7 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/varargs.h \
 	 $(srcdir)/ginclude/stdfix.h \
 	 $(srcdir)/ginclude/stdnoreturn.h \
+	 $(srcdir)/ginclude/stdalign.h \
 	 $(EXTRA_HEADERS)
 
 USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@

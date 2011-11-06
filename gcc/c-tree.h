@@ -238,6 +238,10 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
+  /* The base-2 log of the greatest alignment required by an _Alignas
+     specifier, in bytes, or -1 if no such specifiers with nonzero
+     alignment.  */
+  int align_log;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
   /* Any type specifier keyword used such as "int", not reflecting
@@ -294,6 +298,9 @@ struct c_declspecs {
   BOOL_BITFIELD restrict_p : 1;
   /* Whether "_Sat" was specified.  */
   BOOL_BITFIELD saturating_p : 1;
+  /* Whether any alignment specifier (even with zero alignment) was
+     specified.  */
+  BOOL_BITFIELD alignas_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -510,6 +517,7 @@ extern struct c_declspecs *declspecs_add_scspec (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_attrs (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_addrspace (struct c_declspecs *,
 						    addr_space_t);
+extern struct c_declspecs *declspecs_add_alignas (struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 
 /* in c-objc-common.c */

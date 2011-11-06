@@ -1,3 +1,12 @@
+2011-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp0x/alignof3.C, gcc.dg/c1x-align-1.c,
+	gcc.dg/c1x-align-2.c, gcc.dg/c1x-align-3.c, gcc.dg/c1x-align-4.c,
+	gcc.dg/c90-align-1.c, gcc.dg/c99-align-1.c: New tests.
+	* gcc.dg/gnu89-const-expr-1.c, gcc.dg/gnu90-const-expr-1.c,
+	gcc.dg/gnu99-const-expr-1.c, gcc.dg/gnu99-static-1.c: Update
+	expected diagnostics.
+
 2011-11-06  Andrew MacLeod  <amacleod@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>

@@ -650,6 +650,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_FRACT:
 	case RID_ACCUM:
 	case RID_SAT:
+	case RID_ALIGNAS:
 	  return true;
 	default:
 	  return false;
@@ -1120,6 +1121,7 @@ static struct c_typespec c_parser_enum_specifier (c_parser *);
 static struct c_typespec c_parser_struct_or_union_specifier (c_parser *);
 static tree c_parser_struct_declaration (c_parser *);
 static struct c_typespec c_parser_typeof_specifier (c_parser *);
+static tree c_parser_alignas_specifier (c_parser *);
 static struct c_declarator *c_parser_declarator (c_parser *, bool, c_dtr_syn,
 						 bool *);
 static struct c_declarator *c_parser_direct_declarator (c_parser *, bool,
@@ -1890,9 +1892,11 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
      type-specifier declaration-specifiers[opt]
      type-qualifier declaration-specifiers[opt]
      function-specifier declaration-specifiers[opt]
+     alignment-specifier declaration-specifiers[opt]
 
    Function specifiers (inline) are from C99, and are currently
-   handled as storage class specifiers, as is __thread.
+   handled as storage class specifiers, as is __thread.  Alignment
+   specifiers are from C1X.
 
    C90 6.5.1, C99 6.7.1:
    storage-class-specifier:
@@ -1991,6 +1995,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
     {
       struct c_typespec t;
       tree attrs;
+      tree align;
       location_t loc = c_parser_peek_token (parser)->location;
 
       /* If we cannot accept a type, exit if the next token must start
@@ -2168,6 +2173,10 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	    goto out;
 	  attrs = c_parser_attributes (parser);
 	  declspecs_add_attrs (specs, attrs);
+	  break;
+	case RID_ALIGNAS:
+	  align = c_parser_alignas_specifier (parser);
+	  declspecs_add_alignas (specs, align);
 	  break;
 	default:
 	  goto out;
@@ -2747,6 +2756,45 @@ c_parser_typeof_specifier (c_parser *parser)
 	ret.expr = c_fully_fold (expr.value, false, &ret.expr_const_operands);
       pop_maybe_used (was_vm);
     }
+  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+  return ret;
+}
+
+/* Parse an alignment-specifier.
+
+   C1X 6.7.5:
+
+   alignment-specifier:
+     _Alignas ( type-name )
+     _Alignas ( constant-expression )
+*/
+
+static tree
+c_parser_alignas_specifier (c_parser * parser)
+{
+  tree ret = error_mark_node;
+  location_t loc = c_parser_peek_token (parser)->location;
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNAS));
+  c_parser_consume_token (parser);
+  if (!flag_isoc1x)
+    {
+      if (flag_isoc99)
+	pedwarn (loc, OPT_pedantic,
+		 "ISO C99 does not support %<_Alignas%>");
+      else
+	pedwarn (loc, OPT_pedantic,
+		 "ISO C90 does not support %<_Alignas%>");
+    }
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return ret;
+  if (c_parser_next_tokens_start_typename (parser, cla_prefer_id))
+    {
+      struct c_type_name *type = c_parser_type_name (parser);
+      if (type != NULL)
+	ret = c_alignof (loc, groktypename (type, NULL, NULL));
+    }
+  else
+    ret = c_parser_expr_no_commas (parser, NULL).value;
   c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
   return ret;
 }
@@ -5759,6 +5807,8 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
      __alignof__ ( type-name )
      && identifier
 
+   (C1X permits _Alignof with type names only.)
+
    unary-operator: one of
      __extension__ __real__ __imag__
 
@@ -5942,7 +5992,21 @@ c_parser_alignof_expression (c_parser *parser)
 {
   struct c_expr expr;
   location_t loc = c_parser_peek_token (parser)->location;
+  tree alignof_spelling = c_parser_peek_token (parser)->value;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNOF));
+  /* A diagnostic is not required for the use of this identifier in
+     the implementation namespace; only diagnose it for the C1X
+     spelling because of existing code using the other spellings.  */
+  if (!flag_isoc1x
+      && strcmp (IDENTIFIER_POINTER (alignof_spelling), "_Alignof") == 0)
+    {
+      if (flag_isoc99)
+	pedwarn (loc, OPT_pedantic, "ISO C99 does not support %qE",
+		 alignof_spelling);
+      else
+	pedwarn (loc, OPT_pedantic, "ISO C90 does not support %qE",
+		 alignof_spelling);
+    }
   c_parser_consume_token (parser);
   c_inhibit_evaluation_warnings++;
   in_alignof++;
@@ -5991,6 +6055,8 @@ c_parser_alignof_expression (c_parser *parser)
       mark_exp_read (expr.value);
       c_inhibit_evaluation_warnings--;
       in_alignof--;
+      pedwarn (loc, OPT_pedantic, "ISO C does not allow %<%E (expression)%>",
+	       alignof_spelling);
       ret.value = c_alignof_expr (loc, expr.value);
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;

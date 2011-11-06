@@ -404,6 +404,8 @@ static int resort_field_decl_cmp (const void *, const void *);
 */
 const struct c_common_resword c_common_reswords[] =
 {
+  { "_Alignas",		RID_ALIGNAS,   D_CONLY },
+  { "_Alignof",		RID_ALIGNOF,   D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
@@ -4332,7 +4334,18 @@ c_sizeof_or_alignof_type (location_t loc,
 	  value = size_one_node;
 	}
       else
-	value = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+	{
+	  if (complain)
+	    {
+	      if (c_dialect_cxx ())
+		pedwarn (loc, OPT_pedantic, "ISO C++ does not permit "
+			 "%<alignof%> applied to a function type");
+	      else
+		pedwarn (loc, OPT_pedantic, "ISO C does not permit "
+			 "%<_Alignof%> applied to a function type");
+	    }
+	  value = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+	}
     }
   else if (type_code == VOID_TYPE || type_code == ERROR_MARK)
     {
@@ -6670,6 +6683,36 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   return NULL_TREE;
 }
 
+/* Check whether ALIGN is a valid user-specified alignment.  If so,
+   return its base-2 log; if not, output an error and return -1.  If
+   ALLOW_ZERO then 0 is valid and should result in a return of -1 with
+   no error.  */
+int
+check_user_alignment (const_tree align, bool allow_zero)
+{
+  int i;
+
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (align))
+      || TREE_CODE (align) != INTEGER_CST)
+    {
+      error ("requested alignment is not an integer constant");
+      return -1;
+    }
+  else if (allow_zero && integer_zerop (align))
+    return -1;
+  else if ((i = tree_log2 (align)) == -1)
+    {
+      error ("requested alignment is not a power of 2");
+      return -1;
+    }
+  else if (i >= HOST_BITS_PER_INT - BITS_PER_UNIT_LOG)
+    {
+      error ("requested alignment is too large");
+      return -1;
+    }
+  return i;
+}
+
 /* Handle a "aligned" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -6693,21 +6736,8 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   else if (TYPE_P (*node))
     type = node, is_type = 1;
 
-  if (TREE_CODE (align_expr) != INTEGER_CST)
-    {
-      error ("requested alignment is not a constant");
-      *no_add_attrs = true;
-    }
-  else if ((i = tree_log2 (align_expr)) == -1)
-    {
-      error ("requested alignment is not a power of 2");
-      *no_add_attrs = true;
-    }
-  else if (i >= HOST_BITS_PER_INT - BITS_PER_UNIT_LOG)
-    {
-      error ("requested alignment is too large");
-      *no_add_attrs = true;
-    }
+  if ((i = check_user_alignment (align_expr, false)) == -1)
+    *no_add_attrs = true;
   else if (is_type)
     {
       if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
