@@ -190,13 +190,13 @@ endif
 
 # Sources present in the src directory, always present.
 sources = \
-	atomic.cc \
 	bitmap_allocator.cc \
 	pool_allocator.cc \
 	mt_allocator.cc \
 	codecvt.cc \
 	compatibility.cc \
 	compatibility-c++0x.cc \
+	compatibility-atomic-c++0x.cc \
 	compatibility-debug_list.cc \
 	compatibility-debug_list-2.cc \
 	compatibility-list.cc \
@@ -323,6 +323,11 @@ compatibility-c++0x.lo: compatibility-c++0x.cc
 compatibility-c++0x.o: compatibility-c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
+compatibility-atomic-c++0x.lo: compatibility-atomic-c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+compatibility-atomic-c++0x.o: compatibility-atomic-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 functional.lo: functional.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 functional.o: functional.cc
@@ -341,11 +346,6 @@ hashtable_c++0x.o: hashtable_c++0x.cc
 limits.lo: limits.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 limits.o: limits.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-atomic.lo: atomic.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-atomic.o: atomic.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 fstream-inst.lo: fstream-inst.cc

@@ -83,8 +83,6 @@ bits_headers = \
 	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
-	${bits_srcdir}/atomic_0.h \
-	${bits_srcdir}/atomic_2.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \

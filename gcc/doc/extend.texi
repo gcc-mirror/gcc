@@ -79,7 +79,8 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Return Address::      Getting the return or frame address of a function.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
-* Atomic Builtins::     Built-in functions for atomic memory access.
+* __sync Builtins::     Legacy built-in functions for atomic memory access.
+* __atomic Builtins::   Atomic built-in functions with memory model.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
 * Other Builtins::      Other built-in functions.
@@ -6683,8 +6684,8 @@ is a suitable definition of the @code{offsetof} macro.  In C++, @var{type}
 may be dependent.  In either case, @var{member} may consist of a single
 identifier, or a sequence of member accesses and array references.
 
-@node Atomic Builtins
-@section Built-in functions for atomic memory access
+@node __sync Builtins
+@section Legacy __sync built-in functions for atomic memory access
 
 The following builtins are intended to be compatible with those described
 in the @cite{Intel Itanium Processor-specific Application Binary Interface},
@@ -6815,6 +6816,238 @@ This means that all previous memory stores are globally visible, and all
 previous memory loads have been satisfied, but following memory reads
 are not prevented from being speculated to before the barrier.
 @end table
+
+@node __atomic Builtins
+@section Built-in functions for memory model aware atomic operations
+
+The following built-in functions approximately match the requirements for
+C++11 memory model. Many are similar to the @samp{__sync} prefixed built-in
+functions, but all also have a memory model parameter.  These are all
+identified by being prefixed with @samp{__atomic}, and most are overloaded
+such that they work with multiple types.
+
+GCC will allow any integral scalar or pointer type that is 1, 2, 4, or 8
+bytes in length. 16-byte integral types are also allowed if
+@samp{__int128} (@pxref{__int128}) is supported by the architecture.
+
+Target architectures are encouraged to provide their own patterns for
+each of these built-in functions.  If no target is provided, the original 
+non-memory model set of @samp{__sync} atomic built-in functions will be
+utilized, along with any required synchronization fences surrounding it in
+order to achieve the proper behaviour.  Execution in this case is subject
+to the same restrictions as those built-in functions.
+
+If there is no pattern or mechanism to provide a lock free instruction
+sequence, a call is made to an external routine with the same parameters
+to be resolved at runtime.
+
+The four non-arithmetic functions (load, store, exchange, and 
+compare_exchange) all have a generic version as well.  This generic
+version will work on any data type.  If the data type size maps to one
+of the integral sizes which may have lock free support, the generic
+version will utilize the lock free built-in function.  Otherwise an
+external call is left to be resolved at runtime.  This external call will
+be the same format with the addition of a @samp{size_t} parameter inserted
+as the first parameter indicating the size of the object being pointed to.
+All objects must be the same size.
+
+There are 6 different memory models which can be specified.  These map
+to the same names in the C++11 standard.  Refer there or to the
+@uref{http://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync,GCC wiki on
+atomic synchronization} for more detailed definitions.  These memory
+models integrate both barriers to code motion as well as synchronization
+requirements with other threads. These are listed in approximately
+ascending order of strength.
+
+@table  @code
+@item __ATOMIC_RELAXED
+No barriers or synchronization.
+@item __ATOMIC_CONSUME
+Data dependency only for both barrier and synchronization with another
+thread.
+@item __ATOMIC_ACQUIRE
+Barrier to hoisting of code and synchronizes with release (or stronger)
+semantic stores from another thread.
+@item __ATOMIC_RELEASE
+Barrier to sinking of code and synchronizes with acquire (or stronger)
+semantic loads from another thread.
+@item __ATOMIC_ACQ_REL
+Full barrier in both directions and synchronizes with acquire loads and
+release stores in another thread.
+@item __ATOMIC_SEQ_CST
+Full barrier in both directions and synchronizes with acquire loads and
+release stores in all threads.
+@end table
+
+When implementing patterns for these built-in functions , the memory model
+parameter can be ignored as long as the pattern implements the most
+restrictive @code{__ATOMIC_SEQ_CST} model.  Any of the other memory models
+will execute correctly with this memory model but they may not execute as
+efficiently as they could with a more appropriate implemention of the
+relaxed requirements.
+
+Note that the C++11 standard allows for the memory model parameter to be
+determined at runtime rather than at compile time.  These built-in
+functions will map any runtime value to @code{__ATOMIC_SEQ_CST} rather
+than invoke a runtime library call or inline a switch statement.  This is
+standard compliant, safe, and the simplest approach for now.
+
+@deftypefn {Built-in Function} @var{type} __atomic_load_n (@var{type} *ptr, int memmodel)
+This built-in function implements an atomic load operation.  It returns the
+contents of @code{*@var{ptr}}.
+
+The valid memory model variants are
+@code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, @code{__ATOMIC_ACQUIRE},
+and @code{__ATOMIC_CONSUME}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __atomic_load (@var{type} *ptr, @var{type} *ret, int memmodel)
+This is the generic version of an atomic load.  It will return the
+contents of @code{*@var{ptr}} in @code{*@var{ret}}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __atomic_store_n (@var{type} *ptr, @var{type} val, int memmodel)
+This built-in function implements an atomic store operation.  It writes 
+@code{@var{val}} into @code{*@var{ptr}}.  On targets which are limited,
+0 may be the only valid value. This mimics the behaviour of
+@code{__sync_lock_release} on such hardware.
+
+The valid memory model variants are
+@code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, and @code{__ATOMIC_RELEASE}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __atomic_store (@var{type} *ptr, @var{type} *val, int memmodel)
+This is the generic version of an atomic store.  It will store the value
+of @code{*@var{val}} into @code{*@var{ptr}}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __atomic_exchange_n (@var{type} *ptr, @var{type} val, int memmodel)
+This built-in function implements an atomic exchange operation.  It writes
+@var{val} into @code{*@var{ptr}}, and returns the previous contents of
+@code{*@var{ptr}}.
+
+On targets which are limited, a value of 1 may be the only valid value
+written.  This mimics the behaviour of @code{__sync_lock_test_and_set} on
+such hardware.
+
+The valid memory model variants are
+@code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, @code{__ATOMIC_ACQUIRE},
+@code{__ATOMIC_RELEASE}, and @code{__ATOMIC_ACQ_REL}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __atomic_exchange (@var{type} *ptr, @var{type} *val, @var{type} *ret, int memmodel)
+This is the generic version of an atomic exchange.  It will store the
+contents of @code{*@var{val}} into @code{*@var{ptr}}. The original value
+of @code{*@var{ptr}} will be copied into @code{*@var{ret}}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} bool __atomic_compare_exchange_n (@var{type} *ptr, @var{type} *expected, @var{type} desired, bool weak, int success_memmodel, int failure_memmodel)
+This built-in function implements an atomic compare and exchange operation.
+This compares the contents of @code{*@var{ptr}} with the contents of
+@code{*@var{expected}} and if equal, writes @var{desired} into
+@code{*@var{ptr}}.  If they are not equal, the current contents of
+@code{*@var{ptr}} is written into @code{*@var{expected}}.
+
+True is returned if @code{*@var{desired}} is written into
+@code{*@var{ptr}} and the execution is considered to conform to the
+memory model specified by @var{success_memmodel}.  There are no
+restrictions on what memory model can be used here.
+
+False is returned otherwise, and the execution is considered to conform
+to @var{failure_memmodel}. This memory model cannot be
+@code{__ATOMIC_RELEASE} nor @code{__ATOMIC_ACQ_REL}.  It also cannot be a
+stronger model than that specified by @var{success_memmodel}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} bool __atomic_compare_exchange (@var{type} *ptr, @var{type} *expected, @var{type} *desired, bool weak, int success_memmodel, int failure_memmodel)
+This built-in function implements the generic version of
+@code{__atomic_compare_exchange}.  The function is virtually identical to
+@code{__atomic_compare_exchange_n}, except the desired value is also a
+pointer.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __atomic_add_fetch (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_sub_fetch (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_and_fetch (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_xor_fetch (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_or_fetch (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_nand_fetch (@var{type} *ptr, @var{type} val, int memmodel)
+These built-in functions perform the operation suggested by the name, and
+return the result of the operation. That is,
+
+@smallexample
+@{ *ptr @var{op}= val; return *ptr; @}
+@end smallexample
+
+All memory models are valid.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __atomic_fetch_add (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_fetch_sub (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_fetch_and (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_fetch_xor (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_fetch_or (@var{type} *ptr, @var{type} val, int memmodel)
+@deftypefnx {Built-in Function} @var{type} __atomic_fetch_nand (@var{type} *ptr, @var{type} val, int memmodel)
+These built-in functions perform the operation suggested by the name, and
+return the value that had previously been in @code{*@var{ptr}}.  That is,
+
+@smallexample
+@{ tmp = *ptr; *ptr @var{op}= val; return tmp; @}
+@end smallexample
+
+All memory models are valid.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __atomic_thread_fence (int memmodel)
+
+This built-in function acts as a synchronization fence between threads
+based on the specified memory model.
+
+All memory orders are valid.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __atomic_signal_fence (int memmodel)
+
+This built-in function acts as a synchronization fence between a thread
+and signal handlers based in the same thread.
+
+All memory orders are valid.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} bool __atomic_always_lock_free (size_t size)
+
+This built-in function returns true if objects of size bytes will always
+generate lock free atomic instructions for the target architecture.
+Otherwise false is returned.
+
+size must resolve to a compile time constant.
+
+@smallexample
+if (_atomic_always_lock_free (sizeof (long long)))
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} bool __atomic_is_lock_free (size_t size)
+
+This built-in function returns true if objects of size bytes will always
+generate lock free atomic instructions for the target architecture.  If
+it is not known to be lock free a call is made to a runtime routine named
+@code{__atomic_is_lock_free}.
+
+@end deftypefn
 
 @node Object Size Checking
 @section Object Size Checking Builtins

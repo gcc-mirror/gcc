@@ -3978,7 +3978,7 @@ PREPROCESSOR_DEFINES = \
 
 CFLAGS-cppbuiltin.o += $(PREPROCESSOR_DEFINES) -DBASEVER=$(BASEVER_s)
 cppbuiltin.o: cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	cppbuiltin.h Makefile
+	$(TREE_H) cppbuiltin.h Makefile
 
 CFLAGS-cppdefault.o += $(PREPROCESSOR_DEFINES)
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

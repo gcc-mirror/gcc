@@ -695,6 +695,34 @@ enum direct_optab_index
   /* Atomic clear with release semantics.  */
   DOI_sync_lock_release,
 
+  /* Atomic operations with memory model parameters. */
+  DOI_atomic_exchange,
+  DOI_atomic_compare_and_swap,
+  DOI_atomic_load,
+  DOI_atomic_store,
+  DOI_atomic_add_fetch,
+  DOI_atomic_sub_fetch,
+  DOI_atomic_and_fetch,
+  DOI_atomic_nand_fetch,
+  DOI_atomic_xor_fetch,
+  DOI_atomic_or_fetch,
+  DOI_atomic_fetch_add,
+  DOI_atomic_fetch_sub,
+  DOI_atomic_fetch_and,
+  DOI_atomic_fetch_nand,
+  DOI_atomic_fetch_xor,
+  DOI_atomic_fetch_or,
+  DOI_atomic_add,
+  DOI_atomic_sub,
+  DOI_atomic_and,
+  DOI_atomic_nand,
+  DOI_atomic_xor,
+  DOI_atomic_or,
+  DOI_atomic_always_lock_free,
+  DOI_atomic_is_lock_free,
+  DOI_atomic_thread_fence,
+  DOI_atomic_signal_fence,
+
   /* Vector permutation.  */
   DOI_vec_perm,
   DOI_vec_perm_const,
@@ -744,6 +772,60 @@ typedef struct direct_optab_d *direct_optab;
   (&direct_optab_table[(int) DOI_sync_lock_test_and_set])
 #define sync_lock_release_optab \
   (&direct_optab_table[(int) DOI_sync_lock_release])
+
+#define atomic_exchange_optab \
+  (&direct_optab_table[(int) DOI_atomic_exchange])
+#define atomic_compare_and_swap_optab \
+  (&direct_optab_table[(int) DOI_atomic_compare_and_swap])
+#define atomic_load_optab \
+  (&direct_optab_table[(int) DOI_atomic_load])
+#define atomic_store_optab \
+  (&direct_optab_table[(int) DOI_atomic_store])
+#define atomic_add_fetch_optab \
+  (&direct_optab_table[(int) DOI_atomic_add_fetch])
+#define atomic_sub_fetch_optab \
+  (&direct_optab_table[(int) DOI_atomic_sub_fetch])
+#define atomic_and_fetch_optab \
+  (&direct_optab_table[(int) DOI_atomic_and_fetch])
+#define atomic_nand_fetch_optab \
+  (&direct_optab_table[(int) DOI_atomic_nand_fetch])
+#define atomic_xor_fetch_optab \
+  (&direct_optab_table[(int) DOI_atomic_xor_fetch])
+#define atomic_or_fetch_optab \
+  (&direct_optab_table[(int) DOI_atomic_or_fetch])
+#define atomic_fetch_add_optab \
+  (&direct_optab_table[(int) DOI_atomic_fetch_add])
+#define atomic_fetch_sub_optab \
+  (&direct_optab_table[(int) DOI_atomic_fetch_sub])
+#define atomic_fetch_and_optab \
+  (&direct_optab_table[(int) DOI_atomic_fetch_and])
+#define atomic_fetch_nand_optab \
+  (&direct_optab_table[(int) DOI_atomic_fetch_nand])
+#define atomic_fetch_xor_optab \
+  (&direct_optab_table[(int) DOI_atomic_fetch_xor])
+#define atomic_fetch_or_optab \
+  (&direct_optab_table[(int) DOI_atomic_fetch_or])
+#define atomic_add_optab \
+  (&direct_optab_table[(int) DOI_atomic_add])
+#define atomic_sub_optab \
+  (&direct_optab_table[(int) DOI_atomic_sub])
+#define atomic_and_optab \
+  (&direct_optab_table[(int) DOI_atomic_and])
+#define atomic_nand_optab \
+  (&direct_optab_table[(int) DOI_atomic_nand])
+#define atomic_xor_optab \
+  (&direct_optab_table[(int) DOI_atomic_xor])
+#define atomic_or_optab \
+  (&direct_optab_table[(int) DOI_atomic_or])
+#define atomic_always_lock_free_optab \
+  (&direct_optab_table[(int) DOI_atomic_always_lock_free])
+#define atomic_is_lock_free_optab \
+  (&direct_optab_table[(int) DOI_atomic_is_lock_free])
+#define atomic_thread_fence_optab \
+  (&direct_optab_table[(int) DOI_atomic_thread_fence])
+#define atomic_signal_fence_optab \
+  (&direct_optab_table[(int) DOI_atomic_signal_fence])
+
 #define vec_perm_optab (&direct_optab_table[DOI_vec_perm])
 #define vec_perm_const_optab (&direct_optab_table[(int) DOI_vec_perm_const])
 
@@ -882,6 +964,13 @@ extern void expand_float (rtx, rtx, int);
 
 /* Return the insn_code for a FLOAT_EXPR.  */
 enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
+
+/* Return true if there is an inline compare and swap pattern.  */
+extern bool can_compare_and_swap_p (enum machine_mode);
+
+/* Generate code for a compare and swap.  */
+extern bool expand_atomic_compare_and_swap (rtx *, rtx *, rtx, rtx, rtx, bool,
+					    enum memmodel, enum memmodel);
 
 /* Check whether an operation represented by the code CODE is a
    convert operation that is supported by the target platform in

@@ -20,78 +20,36 @@
 
 #include <atomic>
 
-namespace gnu
-{
 #ifndef ATOMIC_CHAR_LOCK_FREE 
 # error "ATOMIC_CHAR_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_CHAR_LOCK_FREE != 0 \
-    && ATOMIC_CHAR_LOCK_FREE != 1 && ATOMIC_CHAR_LOCK_FREE != 2
-# error "ATOMIC_CHAR_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_CHAR16_T_LOCK_FREE 
 # error "ATOMIC_CHAR16_T_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_CHAR16_T_LOCK_FREE != 0 \
-    && ATOMIC_CHAR16_T_LOCK_FREE != 1 && ATOMIC_CHAR16_T_LOCK_FREE != 2
-# error "ATOMIC_CHAR16_T_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_CHAR32_T_LOCK_FREE 
 # error "ATOMIC_CHAR32_T_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_CHAR32_T_LOCK_FREE != 0 \
-    && ATOMIC_CHAR32_T_LOCK_FREE != 1 && ATOMIC_CHAR32_T_LOCK_FREE != 2
-# error "ATOMIC_CHAR32_T_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_WCHAR_T_LOCK_FREE 
 # error "ATOMIC_WCHAR_T_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_WCHAR_T_LOCK_FREE != 0 \
-    && ATOMIC_WCHAR_T_LOCK_FREE != 1 && ATOMIC_WCHAR_T_LOCK_FREE != 2
-# error "ATOMIC_WCHAR_T_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_SHORT_LOCK_FREE 
 # error "ATOMIC_SHORT_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_SHORT_LOCK_FREE != 0 \
-    && ATOMIC_SHORT_LOCK_FREE != 1 && ATOMIC_SHORT_LOCK_FREE != 2
-# error "ATOMIC_SHORT_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_INT_LOCK_FREE 
 # error "ATOMIC_INT_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_INT_LOCK_FREE != 0 \
-    && ATOMIC_INT_LOCK_FREE != 1 && ATOMIC_INT_LOCK_FREE != 2
-# error "ATOMIC_INT_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_LONG_LOCK_FREE 
 # error "ATOMIC_LONG_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_LONG_LOCK_FREE != 0 \
-    && ATOMIC_LONG_LOCK_FREE != 1 && ATOMIC_LONG_LOCK_FREE != 2
-# error "ATOMIC_LONG_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_LLONG_LOCK_FREE 
 # error "ATOMIC_LLONG_LOCK_FREE must be a macro"
-#else
-# if ATOMIC_LLONG_LOCK_FREE != 0 \
-    && ATOMIC_LLONG_LOCK_FREE != 1 && ATOMIC_LLONG_LOCK_FREE != 2
-# error "ATOMIC_LLONG_LOCK_FREE must be 0, 1, or 2"
-# endif
 #endif
 
 #ifndef ATOMIC_FLAG_INIT
@@ -101,4 +59,41 @@ namespace gnu
 #ifndef ATOMIC_VAR_INIT
     #error "ATOMIC_VAR_INIT_must_be_a_macro"
 #endif
+
+
+extern void abort(void);
+
+main ()
+{
+ if (ATOMIC_CHAR_LOCK_FREE != 0 && ATOMIC_CHAR_LOCK_FREE != 1
+     && ATOMIC_CHAR_LOCK_FREE != 2)
+   abort ();
+
+ if (ATOMIC_CHAR16_T_LOCK_FREE != 0 && ATOMIC_CHAR16_T_LOCK_FREE != 1
+     && ATOMIC_CHAR16_T_LOCK_FREE != 2)
+   abort ();
+
+ if (ATOMIC_CHAR32_T_LOCK_FREE != 0 && ATOMIC_CHAR32_T_LOCK_FREE != 1
+     && ATOMIC_CHAR32_T_LOCK_FREE != 2)
+   abort ();
+
+ if (ATOMIC_WCHAR_T_LOCK_FREE != 0 && ATOMIC_WCHAR_T_LOCK_FREE != 1
+     && ATOMIC_WCHAR_T_LOCK_FREE != 2)
+   abort ();
+
+ if (ATOMIC_SHORT_LOCK_FREE != 0 && ATOMIC_SHORT_LOCK_FREE != 1
+     && ATOMIC_SHORT_LOCK_FREE != 2)
+   abort ();
+
+ if (ATOMIC_INT_LOCK_FREE != 0 && ATOMIC_INT_LOCK_FREE != 1
+     && ATOMIC_INT_LOCK_FREE != 2)
+   abort ();
+
+ if (ATOMIC_LONG_LOCK_FREE != 0 && ATOMIC_LONG_LOCK_FREE != 1
+     && ATOMIC_LONG_LOCK_FREE != 2)
+   abort ();
+
+ if (ATOMIC_LLONG_LOCK_FREE != 0 && ATOMIC_LLONG_LOCK_FREE != 1
+     && ATOMIC_LLONG_LOCK_FREE != 2)
+   abort ();
 }

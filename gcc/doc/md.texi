@@ -5699,6 +5699,155 @@ released only after all previous memory operations have completed.
 If this pattern is not defined, then a @code{memory_barrier} pattern
 will be emitted, followed by a store of the value to the memory operand.
 
+@cindex @code{atomic_compare_and_swap@var{mode}} instruction pattern
+@item @samp{atomic_compare_and_swap@var{mode}} 
+This pattern, if defined, emits code for an atomic compare-and-swap
+operation with memory model semantics.  Operand 2 is the memory on which
+the atomic operation is performed.  Operand 0 is an output operand which
+is set to true or false based on whether the operation succeeded.  Operand
+1 is an output operand which is set to the contents of the memory before
+the operation was attempted.  Operand 3 is the value that is expected to
+be in memory.  Operand 4 is the value to put in memory if the expected
+value is found there.  Operand 5 is set to 1 if this compare and swap is to
+be treated as a weak operation.  Operand 6 is the memory model to be used
+if the operation is a success.  Operand 7 is the memory model to be used
+if the operation fails.
+
+If memory referred to in operand 2 contains the value in operand 3, then
+operand 4 is stored in memory pointed to by operand 2 and fencing based on
+the memory model in operand 6 is issued.  
+
+If memory referred to in operand 2 does not contain the value in operand 3,
+then fencing based on the memory model in operand 7 is issued.
+
+If a target does not support weak compare-and-swap operations, or the port
+elects not to implement weak operations, the argument in operand 5 can be
+ignored.  Note a strong implementation must be provided.
+
+If this pattern is not provided, the @code{__atomic_compare_exchange}
+built-in functions will utilize the legacy @code{sync_compare_and_swap}
+pattern with an @code{__ATOMIC_SEQ_CST} memory model.
+
+@cindex @code{atomic_load@var{mode}} instruction pattern
+@item @samp{atomic_load@var{mode}}
+This pattern implements an atomic load operation with memory model
+semantics.  Operand 1 is the memory address being loaded from.  Operand 0
+is the result of the load.  Operand 2 is the memory model to be used for
+the load operation.
+
+If not present, the @code{__atomic_load} built-in function will either
+resort to a normal load with memory barriers, or a compare-and-swap
+operation if a normal load would not be atomic.
+
+@cindex @code{atomic_store@var{mode}} instruction pattern
+@item @samp{atomic_store@var{mode}}
+This pattern implements an atomic store operation with memory model
+semantics.  Operand 0 is the memory address being stored to.  Operand 1
+is the value to be written.  Operand 2 is the memory model to be used for
+the operation.
+
+If not present, the @code{__atomic_store} built-in function will attempt to
+perform a normal store and surround it with any required memory fences.  If
+the store would not be atomic, then an @code{__atomic_exchange} is
+attempted with the result being ignored.
+
+@cindex @code{atomic_exchange@var{mode}} instruction pattern
+@item @samp{atomic_exchange@var{mode}}
+This pattern implements an atomic exchange operation with memory model
+semantics.  Operand 1 is the memory location the operation is performed on.
+Operand 0 is an output operand which is set to the original value contained
+in the memory pointed to by operand 1.  Operand 2 is the value to be
+stored.  Operand 3 is the memory model to be used.
+
+If this pattern is not present, the built-in function
+@code{__atomic_exchange} will attempt to preform the operation with a
+compare and swap loop.
+
+@cindex @code{atomic_add@var{mode}} instruction pattern
+@cindex @code{atomic_sub@var{mode}} instruction pattern
+@cindex @code{atomic_or@var{mode}} instruction pattern
+@cindex @code{atomic_and@var{mode}} instruction pattern
+@cindex @code{atomic_xor@var{mode}} instruction pattern
+@cindex @code{atomic_nand@var{mode}} instruction pattern
+@item @samp{atomic_add@var{mode}}, @samp{atomic_sub@var{mode}}
+@itemx @samp{atomic_or@var{mode}}, @samp{atomic_and@var{mode}}
+@itemx @samp{atomic_xor@var{mode}}, @samp{atomic_nand@var{mode}}
+
+These patterns emit code for an atomic operation on memory with memory
+model semantics. Operand 0 is the memory on which the atomic operation is
+performed.  Operand 1 is the second operand to the binary operator.
+Operand 2 is the memory model to be used by the operation.
+
+If these patterns are not defined, attempts will be made to use legacy
+@code{sync} patterns, or equivilent patterns which return a result.  If
+none of these are available a compare-and-swap loop will be used.
+
+@cindex @code{atomic_fetch_add@var{mode}} instruction pattern
+@cindex @code{atomic_fetch_sub@var{mode}} instruction pattern
+@cindex @code{atomic_fetch_or@var{mode}} instruction pattern
+@cindex @code{atomic_fetch_and@var{mode}} instruction pattern
+@cindex @code{atomic_fetch_xor@var{mode}} instruction pattern
+@cindex @code{atomic_fetch_nand@var{mode}} instruction pattern
+@item @samp{atomic_fetch_add@var{mode}}, @samp{atomic_fetch_sub@var{mode}}
+@itemx @samp{atomic_fetch_or@var{mode}}, @samp{atomic_fetch_and@var{mode}}
+@itemx @samp{atomic_fetch_xor@var{mode}}, @samp{atomic_fetch_nand@var{mode}}
+
+These patterns emit code for an atomic operation on memory with memory
+model semantics, and return the original value. Operand 0 is an output 
+operand which contains the value of the memory location before the 
+operation was performed.  Operand 1 is the memory on which the atomic 
+operation is performed.  Operand 2 is the second operand to the binary
+operator.  Operand 3 is the memory model to be used by the operation.
+
+If these patterns are not defined, attempts will be made to use legacy
+@code{sync} patterns.  If none of these are available a compare-and-swap
+loop will be used.
+
+@cindex @code{atomic_add_fetch@var{mode}} instruction pattern
+@cindex @code{atomic_sub_fetch@var{mode}} instruction pattern
+@cindex @code{atomic_or_fetch@var{mode}} instruction pattern
+@cindex @code{atomic_and_fetch@var{mode}} instruction pattern
+@cindex @code{atomic_xor_fetch@var{mode}} instruction pattern
+@cindex @code{atomic_nand_fetch@var{mode}} instruction pattern
+@item @samp{atomic_add_fetch@var{mode}}, @samp{atomic_sub_fetch@var{mode}}
+@itemx @samp{atomic_or_fetch@var{mode}}, @samp{atomic_and_fetch@var{mode}}
+@itemx @samp{atomic_xor_fetch@var{mode}}, @samp{atomic_nand_fetch@var{mode}}
+
+These patterns emit code for an atomic operation on memory with memory
+model semantics and return the result after the operation is performed.
+Operand 0 is an output operand which contains the value after the
+operation.  Operand 1 is the memory on which the atomic operation is
+performed.  Operand 2 is the second operand to the binary operator.
+Operand 3 is the memory model to be used by the operation.
+
+If these patterns are not defined, attempts will be made to use legacy
+@code{sync} patterns, or equivilent patterns which return the result before
+the operation followed by the arithmetic operation required to produce the
+result.  If none of these are available a compare-and-swap loop will be
+used.
+
+@cindex @code{mem_thread_fence@var{mode}} instruction pattern
+@item @samp{mem_thread_fence@var{mode}}
+This pattern emits code required to implement a thread fence with
+memory model semantics.  Operand 0 is the memory model to be used.
+
+If this pattern is not specified, all memory models except
+@code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
+barrier pattern.
+
+@cindex @code{mem_signal_fence@var{mode}} instruction pattern
+@item @samp{mem_signal_fence@var{mode}}
+This pattern emits code required to implement a signal fence with
+memory model semantics.  Operand 0 is the memory model to be used.
+
+This pattern should impact the compiler optimizers the same way that
+mem_signal_fence does, but it does not need to issue any barrier
+instructions.
+
+If this pattern is not specified, all memory models except
+@code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
+barrier pattern.
+
 @cindex @code{stack_protect_set} instruction pattern
 @item @samp{stack_protect_set}
 

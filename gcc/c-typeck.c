@@ -2717,6 +2717,10 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 
       name = DECL_NAME (function);
       fundecl = function;
+      /* Atomic functions have type checking/casting already done.  They are 
+	 often rewritten and don't match the original parameter list.  */
+      if (name && !strncmp (IDENTIFIER_POINTER (name), "__atomic_", 9))
+        origtypes = NULL;
     }
   if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
     function = function_to_pointer_conversion (loc, function);
