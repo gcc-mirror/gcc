@@ -112,8 +112,8 @@ reload_cse_simplify (rtx insn, rtx testreg)
 	  if (REG_P (value)
 	      && ! REG_FUNCTION_VALUE_P (value))
 	    value = 0;
-	  check_for_inc_dec (insn);
-	  delete_insn_and_edges (insn);
+	  if (check_for_inc_dec (insn))
+	    delete_insn_and_edges (insn);
 	  return;
 	}
 
@@ -164,8 +164,8 @@ reload_cse_simplify (rtx insn, rtx testreg)
 
       if (i < 0)
 	{
-	  check_for_inc_dec (insn);
-	  delete_insn_and_edges (insn);
+	  if (check_for_inc_dec (insn))
+	    delete_insn_and_edges (insn);
 	  /* We're done with this insn.  */
 	  return;
 	}

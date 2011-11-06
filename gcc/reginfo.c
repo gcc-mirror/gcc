@@ -1,7 +1,7 @@
 /* Compute different info about registers.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996
    1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010  Free Software Foundation, Inc.
+   2009, 2010, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -93,6 +93,9 @@ static tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
 /* Same information as REGS_INVALIDATED_BY_CALL but in regset form to be used
    in dataflow more conveniently.  */
 regset regs_invalidated_by_call_regset;
+
+/* Same information as FIXED_REG_SET but in regset form.  */
+regset fixed_reg_set_regset;
 
 /* The bitmap_obstack is used to hold some static variables that
    should not be reset after each function is compiled.  */
@@ -451,6 +454,10 @@ init_reg_sets_1 (void)
     }
   else
     CLEAR_REG_SET (regs_invalidated_by_call_regset);
+  if (!fixed_reg_set_regset)
+    fixed_reg_set_regset = ALLOC_REG_SET (&persistent_obstack);
+  else
+    CLEAR_REG_SET (fixed_reg_set_regset);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -462,7 +469,10 @@ init_reg_sets_1 (void)
 #endif
 
       if (fixed_regs[i])
-	SET_HARD_REG_BIT (fixed_reg_set, i);
+	{
+	  SET_HARD_REG_BIT (fixed_reg_set, i);
+	  SET_REGNO_REG_SET (fixed_reg_set_regset, i);
+	}
 
       if (call_used_regs[i])
 	SET_HARD_REG_BIT (call_used_reg_set, i);
