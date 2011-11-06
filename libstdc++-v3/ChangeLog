@@ -1,3 +1,9 @@
+2011-11-06  François Dumont <fdumont@gcc.gnu.org>
+
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Add
+	tests to check performance with or without cache of hash code and with
+	string type that has a costlier hash functor than int type.
+
 2011-11-06  Benjamin Kosnik  <bkoz@redhat.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
 
