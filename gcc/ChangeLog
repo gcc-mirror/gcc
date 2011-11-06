@@ -1,3 +1,23 @@
+2011-11-06  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vectorizer.h (vectorizable_condition): Add argument.
+	* tree-vect-loop.c (vectorizable_reduction): Fail for condition
+	in SLP.  Update calls to vectorizable_condition.
+	* tree-vect-stmts.c (vect_is_simple_cond): Add basic block info to
+	the arguments.  Pass it to vect_is_simple_use_1.
+	(vectorizable_condition): Add slp_node to the arguments.  Support
+	vectorization of basic blocks.  Fail for reduction in SLP.  Update
+	calls to vect_is_simple_cond and vect_is_simple_use.  Support SLP:
+	call vect_get_slp_defs to get vector operands.
+	(vect_analyze_stmt): Update calls to vectorizable_condition.
+	(vect_transform_stmt): Likewise.
+	* tree-vect-slp.c (vect_create_new_slp_node): Handle COND_EXPR.
+	(vect_get_and_check_slp_defs): Handle COND_EXPR.  Allow pattern
+	def stmts.
+	(vect_build_slp_tree): Handle COND_EXPR.
+	(vect_analyze_slp_instance): Push pattern statements to root node.
+	(vect_get_constant_vectors): Fix comments.  Handle COND_EXPR.
+
 2011-11-05  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (UNSPEC_SHORT_LOAD): New unspec.

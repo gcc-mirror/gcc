@@ -1,3 +1,9 @@
+2011-11-06  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: New test.
+	* gcc.dg/vect/slp-cond-1.c: New test.
+	* gcc.dg/vect/slp-cond-2.c: New test.
+
 2011-11-05  David S. Miller  <davem@davemloft.net>
 
 	* lib/test-supports.exp
