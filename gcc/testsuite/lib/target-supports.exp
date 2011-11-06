@@ -2449,6 +2449,24 @@ proc check_effective_target_ultrasparc_hw { } {
     } "-mcpu=ultrasparc"]
 }
 
+# Return 1 if the test environment supports executing UltraSPARC VIS2
+# instructions.  We check this by attempting: "bmask %g0, %g0, %g0"
+
+proc check_effective_target_ultrasparc_vis2_hw { } {
+    return [check_runtime ultrasparc_hw {
+	int main() { __asm__(".word 0x81b00320"); return 0; }
+    } "-mcpu=ultrasparc3"]
+}
+
+# Return 1 if the test environment supports executing UltraSPARC VIS3
+# instructions.  We check this by attempting: "addxc %g0, %g0, %g0"
+
+proc check_effective_target_ultrasparc_vis3_hw { } {
+    return [check_runtime ultrasparc_hw {
+	int main() { __asm__(".word 0x81b00220"); return 0; }
+    } "-mcpu=niagara3"]
+}
+
 # Return 1 if the target supports hardware vector shift operation.
 
 proc check_effective_target_vect_shift { } {
