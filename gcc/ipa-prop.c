@@ -2568,8 +2568,11 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
   gimple_set_block (new_stmt, gimple_block (stmt));
   if (gimple_has_location (stmt))
     gimple_set_location (new_stmt, gimple_location (stmt));
-  gimple_call_copy_flags (new_stmt, stmt);
   gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
+  gimple_call_copy_flags (new_stmt, stmt);
+  if (gimple_call_cannot_inline_p (stmt))
+    gimple_call_set_cannot_inline
+      (new_stmt, !gimple_check_call_matching_types (new_stmt, callee_decl));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
