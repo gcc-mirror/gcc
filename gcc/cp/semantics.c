@@ -3286,8 +3286,9 @@ finish_id_expression (tree id_expression,
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
 
-	  if (!really_overloaded_fn (decl))
-	    mark_used (first_fn);
+	  if (!really_overloaded_fn (decl)
+	      && !mark_used (first_fn))
+	    return error_mark_node;
 
 	  if (!template_arg_p
 	      && TREE_CODE (first_fn) == FUNCTION_DECL

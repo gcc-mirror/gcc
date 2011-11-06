@@ -1,3 +1,10 @@
+2011-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47695
+	* decl2.c (mark_used): Early return false after error or sorry.
+	* cp-tree.h (mark_used): Adjust declaration.
+	* semantics.c (finish_id_expression): Check mark_used return value.
+
 2011-11-05  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_finish_decl): Mostly revert previous change.
