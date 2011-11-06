@@ -2831,7 +2831,7 @@ void gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);
 void gfc_ppc_use (gfc_component *, gfc_actual_arglist **, locus *);
 gfc_symbol *gfc_search_interface (gfc_interface *, int,
 				  gfc_actual_arglist **);
-gfc_try gfc_extend_expr (gfc_expr *, bool *);
+match gfc_extend_expr (gfc_expr *);
 void gfc_free_formal_arglist (gfc_formal_arglist *);
 gfc_try gfc_extend_assign (gfc_code *, gfc_namespace *);
 gfc_try gfc_add_interface (gfc_symbol *);

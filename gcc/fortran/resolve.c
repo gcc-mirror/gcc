@@ -4034,11 +4034,10 @@ resolve_operator (gfc_expr *e)
 bad_op:
 
   {
-    bool real_error;
-    if (gfc_extend_expr (e, &real_error) == SUCCESS)
+    match m = gfc_extend_expr (e);
+    if (m == MATCH_YES)
       return SUCCESS;
-
-    if (real_error)
+    if (m == MATCH_ERROR)
       return FAILURE;
   }
 
