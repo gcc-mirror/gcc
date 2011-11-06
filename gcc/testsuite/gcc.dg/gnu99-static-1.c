@@ -11,7 +11,7 @@
 
 /* __alignof__, OK.  */
 static int f0(void);
-void g0(void) { __alignof__(f0()); }
+void g0(void) { __alignof__(f0()); } /* { dg-error "__alignof__ \\(expression\\)" } */
 
 /* __typeof__ not variably modified, OK.  */
 static int f1(void);

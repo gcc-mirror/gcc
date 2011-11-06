@@ -1,3 +1,14 @@
+2011-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_common_reswords): Add _Alignas and _Alignof.
+	(c_sizeof_or_alignof_type): Diagnose alignof applied to a function
+	type.
+	(check_user_alignment): New.  Split out of
+	handle_aligned_attribute.  Disallow integer constants with
+	noninteger types.  Conditionally allow zero.
+	(handle_aligned_attribute): Use check_user_alignment.
+	* c-common.h (RID_ALIGNAS, check_user_alignment): New.
+
 2011-11-06  Andrew MacLeod  <amacleod@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 

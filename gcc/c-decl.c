@@ -3707,6 +3707,17 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      warned = 1;
 	      pending_xref_error ();
 	    }
+	  else if (declspecs->typespec_kind != ctsk_tagdef
+                   && declspecs->typespec_kind != ctsk_tagfirstref
+		   && declspecs->alignas_p)
+	    {
+	      if (warned != 1)
+		pedwarn (input_location, 0,
+			 "empty declaration with %<_Alignas%> "
+			  "does not redeclare tag");
+	      warned = 1;
+	      pending_xref_error ();
+	    }
 	  else
 	    {
 	      pending_invalid_xref = 0;
@@ -3779,6 +3790,12 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 				       || declspecs->address_space))
     {
       warning (0, "useless type qualifier in empty declaration");
+      warned = 2;
+    }
+
+  if (!warned && !in_system_header && declspecs->alignas_p)
+    {
+      warning (0, "useless %<_Alignas%> in empty declaration");
       warned = 2;
     }
 
@@ -4894,6 +4911,7 @@ grokdeclarator (const struct c_declarator *declarator,
   tree expr_dummy;
   bool expr_const_operands_dummy;
   enum c_declarator_kind first_non_attr_kind;
+  unsigned int alignas_align = 0;
 
   if (TREE_CODE (type) == ERROR_MARK)
     return error_mark_node;
@@ -5737,6 +5755,46 @@ grokdeclarator (const struct c_declarator *declarator,
   if (bitfield)
     check_bitfield_type_and_width (&type, width, name);
 
+  /* Reject invalid uses of _Alignas.  */
+  if (declspecs->alignas_p)
+    {
+      if (storage_class == csc_typedef)
+	error_at (loc, "alignment specified for typedef %qE", name);
+      else if (storage_class == csc_register)
+	error_at (loc, "alignment specified for %<register%> object %qE",
+		  name);
+      else if (decl_context == PARM)
+	{
+	  if (name)
+	    error_at (loc, "alignment specified for parameter %qE", name);
+	  else
+	    error_at (loc, "alignment specified for unnamed parameter");
+	}
+      else if (bitfield)
+	{
+	  if (name)
+	    error_at (loc, "alignment specified for bit-field %qE", name);
+	  else
+	    error_at (loc, "alignment specified for unnamed bit-field");
+	}
+      else if (TREE_CODE (type) == FUNCTION_TYPE)
+	error_at (loc, "alignment specified for function %qE", name);
+      else if (declspecs->align_log != -1)
+	{
+	  alignas_align = 1U << declspecs->align_log;
+	  if (alignas_align < TYPE_ALIGN_UNIT (type))
+	    {
+	      if (name)
+		error_at (loc, "%<_Alignas%> specifiers cannot reduce "
+			  "alignment of %qE", name);
+	      else
+		error_at (loc, "%<_Alignas%> specifiers cannot reduce "
+			  "alignment of unnamed field");
+	      alignas_align = 0;
+	    }
+	}
+    }
+
   /* Did array size calculations overflow?  */
 
   if (TREE_CODE (type) == ARRAY_TYPE
@@ -6116,6 +6174,13 @@ grokdeclarator (const struct c_declarator *declarator,
 
     /* Record constancy and volatility.  */
     c_apply_type_quals_to_decl (type_quals, decl);
+
+    /* Apply _Alignas specifiers.  */
+    if (alignas_align)
+      {
+	DECL_ALIGN (decl) = alignas_align * BITS_PER_UNIT;
+	DECL_USER_ALIGN (decl) = 1;
+      }
 
     /* If a type has volatile components, it should be stored in memory.
        Otherwise, the fact that those components are volatile
@@ -8709,6 +8774,7 @@ build_null_declspecs (void)
   ret->expr = 0;
   ret->decl_attr = 0;
   ret->attrs = 0;
+  ret->align_log = -1;
   ret->typespec_word = cts_none;
   ret->storage_class = csc_none;
   ret->expr_const_operands = true;
@@ -8732,6 +8798,7 @@ build_null_declspecs (void)
   ret->volatile_p = false;
   ret->restrict_p = false;
   ret->saturating_p = false;
+  ret->alignas_p = false;
   ret->address_space = ADDR_SPACE_GENERIC;
   return ret;
 }
@@ -9519,6 +9586,22 @@ declspecs_add_attrs (struct c_declspecs *specs, tree attrs)
 {
   specs->attrs = chainon (attrs, specs->attrs);
   specs->declspecs_seen_p = true;
+  return specs;
+}
+
+/* Add an _Alignas specifier (expression ALIGN, or type whose
+   alignment is ALIGN) to the declaration specifiers SPECS, returning
+   SPECS.  */
+struct c_declspecs *
+declspecs_add_alignas (struct c_declspecs *specs, tree align)
+{
+  int align_log;
+  specs->alignas_p = true;
+  if (align == error_mark_node)
+    return specs;
+  align_log = check_user_alignment (align, true);
+  if (align_log > specs->align_log)
+    specs->align_log = align_log;
   return specs;
 }
 

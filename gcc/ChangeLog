@@ -1,3 +1,21 @@
+2011-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (shadow_tag_warned, grokdeclarator): Handle _Alignas
+	specifiers.
+	(build_null_declspecs): Initialize align_log and alignas_p fields.
+	(declspecs_add_alignas): New.
+	* c-parser.c (c_token_starts_declspecs): Handle RID_ALIGNAS.
+	(c_parser_declspecs): Handle _Alignas specifiers.
+	(c_parser_alignas_specifier): New.
+	(c_parser_alignof_expression): Diagnose alignof use for non-C1X.
+	Diagnose _Alignof (expression).
+	* c-tree.h (struct c_declspecs): Add align_log and alignas_p
+	fields.
+	(declspecs_add_alignas): Declare.
+	* ginclude/stddef.h (max_align_t): Define for C1X and C++11.
+	* ginclude/stdalign.h: New.
+	* Makefile.in (USER_H): Add stdalign.h.
+
 2011-11-06  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
