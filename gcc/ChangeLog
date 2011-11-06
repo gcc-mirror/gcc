@@ -1,3 +1,8 @@
+2011-11-6  Richard Guenther  <rguenther@suse.de>
+
+	* ipa-prop.c (ipa_modify_call_arguments): Re-compute
+	inlinable flag.
+
 2011-11-06  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vectorizer.h (vectorizable_condition): Add argument.
