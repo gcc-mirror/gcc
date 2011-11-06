@@ -3221,12 +3221,11 @@ build_compcall_for_operator (gfc_expr* e, gfc_actual_arglist* actual,
    with the operator.  This subroutine builds an actual argument list
    corresponding to the operands, then searches for a compatible
    interface.  If one is found, the expression node is replaced with
-   the appropriate function call.
-   real_error is an additional output argument that specifies if FAILURE
-   is because of some real error and not because no match was found.  */
+   the appropriate function call. We use the 'match' enum to specify
+   whether a replacement has been made or not, or if an error occurred.  */
 
-gfc_try
-gfc_extend_expr (gfc_expr *e, bool *real_error)
+match
+gfc_extend_expr (gfc_expr *e)
 {
   gfc_actual_arglist *actual;
   gfc_symbol *sym;
@@ -3240,7 +3239,6 @@ gfc_extend_expr (gfc_expr *e, bool *real_error)
   actual = gfc_get_actual_arglist ();
   actual->expr = e->value.op.op1;
 
-  *real_error = false;
   gname = NULL;
 
   if (e->value.op.op2 != NULL)
@@ -3344,16 +3342,16 @@ gfc_extend_expr (gfc_expr *e, bool *real_error)
 
 	  result = gfc_resolve_expr (e);
 	  if (result == FAILURE)
-	    *real_error = true;
+	    return MATCH_ERROR;
 
-	  return result;
+	  return MATCH_YES;
 	}
 
       /* Don't use gfc_free_actual_arglist().  */
       free (actual->next);
       free (actual);
 
-      return FAILURE;
+      return MATCH_NO;
     }
 
   /* Change the expression node to a function call.  */
@@ -3366,12 +3364,9 @@ gfc_extend_expr (gfc_expr *e, bool *real_error)
   e->user_operator = 1;
 
   if (gfc_resolve_expr (e) == FAILURE)
-    {
-      *real_error = true;
-      return FAILURE;
-    }
+    return MATCH_ERROR;
 
-  return SUCCESS;
+  return MATCH_YES;
 }
 
 

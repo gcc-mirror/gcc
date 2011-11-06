@@ -1,3 +1,10 @@
+2011-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.h (gfc_extend_expr): Modified prototype.
+	* interface.c (gfc_extend_expr): Return 'match' instead of 'gfc_try'.
+	Remove argument 'real_error'.
+	* resolve.c (resolve_operator): Modified call to 'gfc_extend_expr'.
+
 2011-11-06  Andrew MacLeod  <amacleod@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
