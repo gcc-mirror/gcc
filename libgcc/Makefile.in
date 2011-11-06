@@ -996,7 +996,7 @@ all: $(extra-parts)
 $(libgcc-objects) $(libgcc-s-objects) $(libgcc-eh-objects) \
 	$(libgcov-objects) \
 	$(libunwind-objects) $(libunwind-s-objects) \
-	$(extra-parts): libgcc_tm.h
+	$(EXTRA_PARTS): libgcc_tm.h
 
 install-unwind_h:
 	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \
