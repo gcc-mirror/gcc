@@ -392,10 +392,10 @@ Example 1: Testing compilation only
 // { dg-do compile }
 
 Example 2: Testing for expected warnings on line 36, which all targets fail
-// { dg-warning "string literals" "" { xfail *-*-* } 36
+// { dg-warning "string literals" "" { xfail *-*-* } 36 }
 
 Example 3: Testing for expected warnings on line 36
-// { dg-warning "string literals" "" { target *-*-* } 36
+// { dg-warning "string literals" "" { target *-*-* } 36 }
 
 Example 4: Testing for compilation errors on line 41
 // { dg-do compile }
@@ -493,7 +493,7 @@ only default variables.
        reporting functions including:
        </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>time_counter</p></li><li class="listitem"><p>resource_counter</p></li><li class="listitem"><p>report_performance</p></li></ul></div></li></ul></div></div></div><div class="section" title="Special Topics"><div class="titlepage"><div><div><h3 class="title"><a id="test.special"/>Special Topics</h3></div></div></div><div class="section" title="Qualifying Exception Safety Guarantees"><div class="titlepage"><div><div><h4 class="title"><a id="test.exception.safety"/>
   Qualifying Exception Safety Guarantees
-  <a id="id535489" class="indexterm"/>
+  <a id="id515735" class="indexterm"/>
 </h4></div></div></div><div class="section" title="Overview"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.overview"/>Overview</h5></div></div></div><p>
 	 Testing is composed of running a particular test sequence,
 	 and looking at what happens to the surrounding code when
@@ -548,7 +548,7 @@ container uses an extension
 allocator, <code class="classname">__gnu_cxx::throw_allocator_random</code>,
 as the allocator type.
        </p></li><li class="listitem"><p>
-	 C++0x Container Requirements.
+	 C++11 Container Requirements.
        </p><p>
 	 Coverage is currently limited to testing container
 	 requirements for exception safety,
@@ -563,8 +563,8 @@ as the allocator type.
 	 instrumentation to <code class="classname">iterator</code>
 	 and <code class="classname">const_iterator</code> types that throw
 	 conditionally on iterator operations.
-       </p></li></ul></div></div><div class="section" title="C++0x Requirements Test Sequence Descriptions"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.containers"/>
-C++0x Requirements Test Sequence Descriptions
+       </p></li></ul></div></div><div class="section" title="C++11 Requirements Test Sequence Descriptions"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.containers"/>
+C++11 Requirements Test Sequence Descriptions
 </h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
 	 Basic
        </p><p>

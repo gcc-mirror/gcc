@@ -201,7 +201,7 @@ extensions, be aware of two things:
      The SGI hashing classes <classname>hash_set</classname> and
      <classname>hash_set</classname> have been deprecated by the
      unordered_set, unordered_multiset, unordered_map,
-     unordered_multimap containers in TR1 and the upcoming C++0x, and
+     unordered_multimap containers in TR1 and C++11, and
      may be removed in future releases.
    </para>
 

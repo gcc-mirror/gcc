@@ -7,7 +7,7 @@
     Standard Contents
   </th><td align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 7.  Strings"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings"/>Chapter 7. 
   Strings
-  <a id="id477648" class="indexterm"/>
+  <a id="id457894" class="indexterm"/>
 </h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl><dt><span class="section"><a href="strings.html#std.strings.string">String Classes</a></span></dt><dd><dl><dt><span class="section"><a href="strings.html#strings.string.simple">Simple Transformations</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.case">Case Sensitivity</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.character_types">Arbitrary Character Types</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.token">Tokenizing</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.shrink">Shrink to Fit</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.Cstring">CString (MFC)</a></span></dt></dl></dd></dl></div><div class="section" title="String Classes"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings.string"/>String Classes</h2></div></div></div><div class="section" title="Simple Transformations"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.simple"/>Simple Transformations</h3></div></div></div><p>
       Here are Standard, simple, and portable ways to perform common
       transformations on a <code class="code">string</code> instance, such as
@@ -269,7 +269,7 @@ stringtok(Container &amp;container, string const &amp;in,
       (see <a class="link" href="../faq.html#faq.size_equals_capacity" title="7.8.">this FAQ
       entry</a>) but the regular copy constructor cannot be used
       because libstdc++'s <code class="code">string</code> is Copy-On-Write.
-   </p><p>In <a class="link" href="status.html#status.iso.200x" title="C++ 200x">C++0x</a> mode you can call
+   </p><p>In <a class="link" href="status.html#status.iso.2011" title="C++ 2011">C++11</a> mode you can call
       <code class="code">s.shrink_to_fit()</code> to achieve the same effect as
       <code class="code">s.reserve(s.size())</code>.
    </p></div><div class="section" title="CString (MFC)"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.Cstring"/>CString (MFC)</h3></div></div></div><p>

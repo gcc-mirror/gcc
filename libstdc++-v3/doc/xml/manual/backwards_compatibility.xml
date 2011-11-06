@@ -693,14 +693,15 @@ other usage is correct.
 
       <para>At this time most of the features of the SGI STL extension have been
 	 replaced by standardized libraries.
-	 In particular, the unordered_map and unordered_set containers of TR1
-	 are suitable replacement for the non-standard hash_map and hash_set
-	 containers in the SGI STL.
+	 In particular, the <code>unordered_map</code> and
+	 <code>unordered_set</code> containers of TR1 and C++ 2011 are suitable
+	 replacements for the non-standard <code>hash_map</code> and
+	 <code>hash_set</code> containers in the SGI STL.
       </para>
 <para> Header files <filename class="headerfile">hash_map</filename> and <filename class="headerfile">hash_set</filename> moved
 to <filename class="headerfile">ext/hash_map</filename> and  <filename class="headerfile">ext/hash_set</filename>,
 respectively. At the same time, all types in these files are enclosed
-in <code>namespace __gnu_cxx</code>. Later versions move deprecate
+in <code>namespace __gnu_cxx</code>. Later versions deprecate
 these files, and suggest using TR1's  <filename class="headerfile">unordered_map</filename>
 and  <filename class="headerfile">unordered_set</filename> instead.
 </para>
@@ -832,7 +833,7 @@ No <code>stream::attach(int fd)</code>
 </para>
 </section>
 
-<section><info><title>
+<section xml:id="backwards.support_cxx98"><info><title>
 Support for C++98 dialect.
 </title></info>
 
@@ -908,7 +909,7 @@ AC_DEFUN([AC_HEADER_STDCXX_98], [
 </programlisting>
 </section>
 
-<section><info><title>
+<section xml:id="backwards.support_tr1"><info><title>
 Support for C++TR1 dialect.
 </title></info>
 
@@ -1000,19 +1001,19 @@ AC_DEFUN([AC_HEADER_TR1_UNORDERED_SET], [
 </section>
 
 
-<section><info><title>
-Support for C++0x dialect.
+<section xml:id="backwards.support_cxx11"><info><title>
+Support for C++11 dialect.
 </title></info>
 
 
-<para>Check for baseline language coverage in the compiler for the C++0xstandard.
+<para>Check for baseline language coverage in the compiler for the C++11 standard.
 </para>
 
 <programlisting>
-# AC_COMPILE_STDCXX_OX
-AC_DEFUN([AC_COMPILE_STDCXX_0X], [
-  AC_CACHE_CHECK(if g++ supports C++0x features without additional flags,
-  ac_cv_cxx_compile_cxx0x_native,
+# AC_COMPILE_STDCXX_11
+AC_DEFUN([AC_COMPILE_STDCXX_11], [
+  AC_CACHE_CHECK(if g++ supports C++11 features without additional flags,
+  ac_cv_cxx_compile_cxx11_native,
   [AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   AC_TRY_COMPILE([
@@ -1030,16 +1031,16 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
     typedef check&lt;int&gt; check_type;
     check_type c;
     check_type&amp;&amp; cr = c;],,
-  ac_cv_cxx_compile_cxx0x_native=yes, ac_cv_cxx_compile_cxx0x_native=no)
+  ac_cv_cxx_compile_cxx11_native=yes, ac_cv_cxx_compile_cxx11_native=no)
   AC_LANG_RESTORE
   ])
 
-  AC_CACHE_CHECK(if g++ supports C++0x features with -std=c++0x,
-  ac_cv_cxx_compile_cxx0x_cxx,
+  AC_CACHE_CHECK(if g++ supports C++11 features with -std=c++11,
+  ac_cv_cxx_compile_cxx11_cxx,
   [AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=c++0x"
+  CXXFLAGS="$CXXFLAGS -std=c++11"
   AC_TRY_COMPILE([
   template &lt;typename T&gt;
     struct check
@@ -1055,17 +1056,17 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
     typedef check&lt;int&gt; check_type;
     check_type c;
     check_type&amp;&amp; cr = c;],,
-  ac_cv_cxx_compile_cxx0x_cxx=yes, ac_cv_cxx_compile_cxx0x_cxx=no)
+  ac_cv_cxx_compile_cxx11_cxx=yes, ac_cv_cxx_compile_cxx11_cxx=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
   ])
 
-  AC_CACHE_CHECK(if g++ supports C++0x features with -std=gnu++0x,
-  ac_cv_cxx_compile_cxx0x_gxx,
+  AC_CACHE_CHECK(if g++ supports C++11 features with -std=gnu++11,
+  ac_cv_cxx_compile_cxx11_gxx,
   [AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
   AC_TRY_COMPILE([
   template &lt;typename T&gt;
     struct check
@@ -1081,33 +1082,33 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
     typedef check&lt;int&gt; check_type;
     check_type c;
     check_type&amp;&amp; cr = c;],,
-  ac_cv_cxx_compile_cxx0x_gxx=yes, ac_cv_cxx_compile_cxx0x_gxx=no)
+  ac_cv_cxx_compile_cxx11_gxx=yes, ac_cv_cxx_compile_cxx11_gxx=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
   ])
 
-  if test "$ac_cv_cxx_compile_cxx0x_native" = yes ||
-     test "$ac_cv_cxx_compile_cxx0x_cxx" = yes ||
-     test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
-    AC_DEFINE(HAVE_STDCXX_0X,,[Define if g++ supports C++0x features. ])
+  if test "$ac_cv_cxx_compile_cxx11_native" = yes ||
+     test "$ac_cv_cxx_compile_cxx11_cxx" = yes ||
+     test "$ac_cv_cxx_compile_cxx11_gxx" = yes; then
+    AC_DEFINE(HAVE_STDCXX_11,,[Define if g++ supports C++11 features. ])
   fi
 ])
 </programlisting>
 
 
-<para>Check for library coverage of the C++0xstandard.
+<para>Check for library coverage of the C++2011 standard.
 </para>
 
 <programlisting>
-# AC_HEADER_STDCXX_0X
-AC_DEFUN([AC_HEADER_STDCXX_0X], [
-  AC_CACHE_CHECK(for ISO C++ 0x include files,
-  ac_cv_cxx_stdcxx_0x,
-  [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
+# AC_HEADER_STDCXX_11
+AC_DEFUN([AC_HEADER_STDCXX_11], [
+  AC_CACHE_CHECK(for ISO C++11 include files,
+  ac_cv_cxx_stdcxx_11,
+  [AC_REQUIRE([AC_COMPILE_STDCXX_11])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
 
   AC_TRY_COMPILE([
     #include &lt;cassert&gt;
@@ -1175,12 +1176,12 @@ AC_DEFUN([AC_HEADER_STDCXX_0X], [
     #include &lt;valarray&gt;
     #include &lt;vector&gt;
   ],,
-  ac_cv_cxx_stdcxx_0x=yes, ac_cv_cxx_stdcxx_0x=no)
+  ac_cv_cxx_stdcxx_11=yes, ac_cv_cxx_stdcxx_11=no)
   AC_LANG_RESTORE
   CXXFLAGS="$ac_save_CXXFLAGS"
   ])
-  if test "$ac_cv_cxx_stdcxx_0x" = yes; then
-    AC_DEFINE(STDCXX_0X_HEADERS,,[Define if ISO C++ 0x header files are present. ])
+  if test "$ac_cv_cxx_stdcxx_11" = yes; then
+    AC_DEFINE(STDCXX_11_HEADERS,,[Define if ISO C++11 header files are present. ])
   fi
 ])
 </programlisting>
@@ -1193,11 +1194,11 @@ AC_DEFUN([AC_HEADER_STDCXX_0X], [
 AC_DEFUN([AC_HEADER_UNORDERED_MAP], [
   AC_CACHE_CHECK(for unordered_map,
   ac_cv_cxx_unordered_map,
-  [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
+  [AC_REQUIRE([AC_COMPILE_STDCXX_11])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
   AC_TRY_COMPILE([#include &lt;unordered_map&gt;], [using std::unordered_map;],
   ac_cv_cxx_unordered_map=yes, ac_cv_cxx_unordered_map=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
@@ -1214,11 +1215,11 @@ AC_DEFUN([AC_HEADER_UNORDERED_MAP], [
 AC_DEFUN([AC_HEADER_UNORDERED_SET], [
   AC_CACHE_CHECK(for unordered_set,
   ac_cv_cxx_unordered_set,
-  [AC_REQUIRE([AC_COMPILE_STDCXX_0X])
+  [AC_REQUIRE([AC_COMPILE_STDCXX_11])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
   AC_TRY_COMPILE([#include &lt;unordered_set&gt;], [using std::unordered_set;],
   ac_cv_cxx_unordered_set=yes, ac_cv_cxx_unordered_set=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
@@ -1229,6 +1230,17 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
   fi
 ])
 </programlisting>
+
+<para>
+  Some C++11 features first appeared in GCC 4.3 and could be enabled by
+  <option>-std=c++0x</option> and <option>-std=gnu++0x</option> for GCC
+  releases which pre-date the 2011 standard. Those C++11 features and GCC's
+  support for them were still changing until the 2011 standard was finished,
+  but the autoconf checks above could be extended to test for incomplete
+  C++11 support with <option>-std=c++0x</option> and
+  <option>-std=gnu++0x</option>.
+</para>
+
 </section>
 
 <section><info><title>
@@ -1237,7 +1249,7 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
 
 
 <para>
-  This is a change in behavior from the previous version. Now, most
+  This is a change in behavior from older versions. Now, most
   <type>iterator_type</type> typedefs in container classes are POD
   objects, not <type>value_type</type> pointers.
 </para>

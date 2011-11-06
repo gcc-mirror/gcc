@@ -896,7 +896,7 @@ as the allocator type.
 
      <listitem>
        <para>
-	 C++0x Container Requirements.
+	 C++11 Container Requirements.
        </para>
 
        <para>
@@ -924,7 +924,7 @@ as the allocator type.
 
 
 <section xml:id="test.exception.safety.containers"><info><title>
-C++0x Requirements Test Sequence Descriptions
+C++11 Requirements Test Sequence Descriptions
 </title></info>
 
 

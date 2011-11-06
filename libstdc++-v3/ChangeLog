@@ -1,3 +1,24 @@
+2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/faq.xml: Replace references to C++0x with C++11.
+	* doc/xml/manual/intro.xml: Likewise.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/shared_ptr.xml: Likewise.
+	* doc/xml/manual/configure.xml: Likewise.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/strings.xml: Likewise.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/diagnostics.xml: Likewise.
+	* doc/xml/manual/test.xml: Likewise.
+	* doc/xml/manual/status_cxx200x.xml: Likewise, and rename to...
+	* doc/xml/manual/status_cxx2011.xml: Here.
+	* doc/Makefile.am: Rename status_cxx200x.xml.
+	* doc/Makefile.in: Regenerate.
+	* doc/html/*: Regenerate.
+
 2011-11-06  François Dumont <fdumont@gcc.gnu.org>
 
 	* testsuite/performance/23_containers/insert_erase/41975.cc: Add

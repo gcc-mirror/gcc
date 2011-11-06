@@ -33,14 +33,6 @@ and implements shared ownership semantics.
   </para>
 
   <para>
-    At the time of writing the C++0x working paper doesn't mention how
-    threads affect shared_ptr, but it is likely to follow the existing
-    practice set by <classname>boost::shared_ptr</classname>.  The
-    shared_ptr in libstdc++ is derived from Boost's, so the same rules
-    apply.
-  </para>
-
-  <para>
   </para>
 </section>
 
@@ -163,10 +155,10 @@ that simplifies the implementation slightly.
     
 
     <para>
-C++0x-only features are: rvalue-ref/move support, allocator support,
+C++11-only features are: rvalue-ref/move support, allocator support,
 aliasing constructor, make_shared &amp; allocate_shared. Additionally,
 the constructors taking <classname>auto_ptr</classname> parameters are
-deprecated in C++0x mode.
+deprecated in C++11 mode.
     </para>
 
 <para>
@@ -293,20 +285,20 @@ used when libstdc++ is built without <literal>--enable-threads</literal>.
      </para>
   </section>
 
-  <section><info><title>Dual C++0x and TR1 Implementation</title></info>
+  <section><info><title>Dual C++11 and TR1 Implementation</title></info>
     
 
 <para>
-The interface of <classname>tr1::shared_ptr</classname> was extended for C++0x
+The interface of <classname>tr1::shared_ptr</classname> was extended for C++11
 with support for rvalue-references and the other features from N2351.
 The <classname>_Sp_counted_base</classname> base class is implemented in
 <filename>tr1/boost_sp_shared_count.h</filename> and is common to the TR1
-and C++0x versions of <classname>shared_ptr</classname>.
+and C++11 versions of <classname>shared_ptr</classname>.
 </para>
 
 <para>
 The classes derived from <classname>_Sp_counted_base</classname> (see Class Hierarchy
-above) and <classname>__shared_count</classname> are implemented separately for C++0x
+above) and <classname>__shared_count</classname> are implemented separately for C++11
 and TR1, in <filename>bits/shared_ptr.h</filename> and
 <filename>tr1/shared_ptr.h</filename> respectively.
 </para>
@@ -314,9 +306,9 @@ and TR1, in <filename>bits/shared_ptr.h</filename> and
 <para>
 The TR1 implementation is considered relatively stable, so is unlikely to
 change unless bug fixes require it.  If the code that is common to both
-C++0x and TR1 modes needs to diverge further then it might be necessary to
+C++11 and TR1 versions needs to diverge further then it might be necessary to
 duplicate <classname>_Sp_counted_base</classname> and only make changes to
-the C++0x version.
+the C++11 version.
 </para>
 </section>
 
@@ -332,9 +324,9 @@ the C++0x version.
     <para>
 As noted in N2351, these functions can be implemented non-intrusively using
 the alias constructor.  However the aliasing constructor is only available
-in C++0x mode, so in TR1 mode these casts rely on three non-standard
+in C++11 mode, so in TR1 mode these casts rely on three non-standard
 constructors in shared_ptr and __shared_ptr.
-In C++0x mode these constructors and the related tag types are not needed.
+In C++11 mode these constructors and the related tag types are not needed.
     </para>
   </listitem>
 </varlistentry>
@@ -431,7 +423,7 @@ the following types, depending on how the shared_ptr is constructed.
     
     <para>
       The <emphasis><classname>shared_ptr</classname> atomic access</emphasis>
-      clause in the C++0x working draft is not implemented in GCC.
+      clause in the C++11 standard is not implemented in GCC.
     </para>
 
     <para>
@@ -445,7 +437,7 @@ the following types, depending on how the shared_ptr is constructed.
     <para>
       Unlike Boost, this implementation does not use separate classes
       for the pointer+deleter and pointer+deleter+allocator cases in
-      C++0x mode, combining both into _Sp_counted_deleter and using
+      C++11 mode, combining both into _Sp_counted_deleter and using
       <classname>allocator</classname> when the user doesn't specify
       an allocator.  If it was found to be beneficial an additional
       class could easily be added.  With the current implementation,
