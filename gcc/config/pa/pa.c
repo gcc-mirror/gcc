@@ -155,9 +155,7 @@ static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
 #ifdef ASM_OUTPUT_EXTERNAL_REAL
 static void pa_hpux_file_end (void);
 #endif
-#if HPUX_LONG_DOUBLE_LIBRARY
-static void pa_hpux_init_libfuncs (void);
-#endif
+static void pa_init_libfuncs (void);
 static rtx pa_struct_value_rtx (tree, int);
 static bool pa_pass_by_reference (cumulative_args_t, enum machine_mode,
 				  const_tree, bool);
@@ -316,10 +314,8 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG pa_reorg
 
-#if HPUX_LONG_DOUBLE_LIBRARY
 #undef TARGET_INIT_LIBFUNCS
-#define TARGET_INIT_LIBFUNCS pa_hpux_init_libfuncs
-#endif
+#define TARGET_INIT_LIBFUNCS pa_init_libfuncs
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE pa_promote_function_mode
@@ -5542,47 +5538,56 @@ output_deferred_plabels (void)
     }
 }
 
-#if HPUX_LONG_DOUBLE_LIBRARY
-/* Initialize optabs to point to HPUX long double emulation routines.  */
+/* Initialize optabs to point to emulation routines.  */
+
 static void
-pa_hpux_init_libfuncs (void)
+pa_init_libfuncs (void)
 {
-  set_optab_libfunc (add_optab, TFmode, "_U_Qfadd");
-  set_optab_libfunc (sub_optab, TFmode, "_U_Qfsub");
-  set_optab_libfunc (smul_optab, TFmode, "_U_Qfmpy");
-  set_optab_libfunc (sdiv_optab, TFmode, "_U_Qfdiv");
-  set_optab_libfunc (smin_optab, TFmode, "_U_Qmin");
-  set_optab_libfunc (smax_optab, TFmode, "_U_Qfmax");
-  set_optab_libfunc (sqrt_optab, TFmode, "_U_Qfsqrt");
-  set_optab_libfunc (abs_optab, TFmode, "_U_Qfabs");
-  set_optab_libfunc (neg_optab, TFmode, "_U_Qfneg");
+  if (HPUX_LONG_DOUBLE_LIBRARY)
+    {
+      set_optab_libfunc (add_optab, TFmode, "_U_Qfadd");
+      set_optab_libfunc (sub_optab, TFmode, "_U_Qfsub");
+      set_optab_libfunc (smul_optab, TFmode, "_U_Qfmpy");
+      set_optab_libfunc (sdiv_optab, TFmode, "_U_Qfdiv");
+      set_optab_libfunc (smin_optab, TFmode, "_U_Qmin");
+      set_optab_libfunc (smax_optab, TFmode, "_U_Qfmax");
+      set_optab_libfunc (sqrt_optab, TFmode, "_U_Qfsqrt");
+      set_optab_libfunc (abs_optab, TFmode, "_U_Qfabs");
+      set_optab_libfunc (neg_optab, TFmode, "_U_Qfneg");
 
-  set_optab_libfunc (eq_optab, TFmode, "_U_Qfeq");
-  set_optab_libfunc (ne_optab, TFmode, "_U_Qfne");
-  set_optab_libfunc (gt_optab, TFmode, "_U_Qfgt");
-  set_optab_libfunc (ge_optab, TFmode, "_U_Qfge");
-  set_optab_libfunc (lt_optab, TFmode, "_U_Qflt");
-  set_optab_libfunc (le_optab, TFmode, "_U_Qfle");
-  set_optab_libfunc (unord_optab, TFmode, "_U_Qfunord");
+      set_optab_libfunc (eq_optab, TFmode, "_U_Qfeq");
+      set_optab_libfunc (ne_optab, TFmode, "_U_Qfne");
+      set_optab_libfunc (gt_optab, TFmode, "_U_Qfgt");
+      set_optab_libfunc (ge_optab, TFmode, "_U_Qfge");
+      set_optab_libfunc (lt_optab, TFmode, "_U_Qflt");
+      set_optab_libfunc (le_optab, TFmode, "_U_Qfle");
+      set_optab_libfunc (unord_optab, TFmode, "_U_Qfunord");
 
-  set_conv_libfunc (sext_optab,   TFmode, SFmode, "_U_Qfcnvff_sgl_to_quad");
-  set_conv_libfunc (sext_optab,   TFmode, DFmode, "_U_Qfcnvff_dbl_to_quad");
-  set_conv_libfunc (trunc_optab,  SFmode, TFmode, "_U_Qfcnvff_quad_to_sgl");
-  set_conv_libfunc (trunc_optab,  DFmode, TFmode, "_U_Qfcnvff_quad_to_dbl");
+      set_conv_libfunc (sext_optab, TFmode, SFmode, "_U_Qfcnvff_sgl_to_quad");
+      set_conv_libfunc (sext_optab, TFmode, DFmode, "_U_Qfcnvff_dbl_to_quad");
+      set_conv_libfunc (trunc_optab, SFmode, TFmode, "_U_Qfcnvff_quad_to_sgl");
+      set_conv_libfunc (trunc_optab, DFmode, TFmode, "_U_Qfcnvff_quad_to_dbl");
 
-  set_conv_libfunc (sfix_optab,   SImode, TFmode, TARGET_64BIT
-						  ? "__U_Qfcnvfxt_quad_to_sgl"
-						  : "_U_Qfcnvfxt_quad_to_sgl");
-  set_conv_libfunc (sfix_optab,   DImode, TFmode, "_U_Qfcnvfxt_quad_to_dbl");
-  set_conv_libfunc (ufix_optab,   SImode, TFmode, "_U_Qfcnvfxt_quad_to_usgl");
-  set_conv_libfunc (ufix_optab,   DImode, TFmode, "_U_Qfcnvfxt_quad_to_udbl");
+      set_conv_libfunc (sfix_optab, SImode, TFmode,
+			TARGET_64BIT ? "__U_Qfcnvfxt_quad_to_sgl"
+				     : "_U_Qfcnvfxt_quad_to_sgl");
+      set_conv_libfunc (sfix_optab, DImode, TFmode,
+			"_U_Qfcnvfxt_quad_to_dbl");
+      set_conv_libfunc (ufix_optab, SImode, TFmode,
+			"_U_Qfcnvfxt_quad_to_usgl");
+      set_conv_libfunc (ufix_optab, DImode, TFmode,
+			"_U_Qfcnvfxt_quad_to_udbl");
 
-  set_conv_libfunc (sfloat_optab, TFmode, SImode, "_U_Qfcnvxf_sgl_to_quad");
-  set_conv_libfunc (sfloat_optab, TFmode, DImode, "_U_Qfcnvxf_dbl_to_quad");
-  set_conv_libfunc (ufloat_optab, TFmode, SImode, "_U_Qfcnvxf_usgl_to_quad");
-  set_conv_libfunc (ufloat_optab, TFmode, DImode, "_U_Qfcnvxf_udbl_to_quad");
+      set_conv_libfunc (sfloat_optab, TFmode, SImode,
+			"_U_Qfcnvxf_sgl_to_quad");
+      set_conv_libfunc (sfloat_optab, TFmode, DImode,
+			"_U_Qfcnvxf_dbl_to_quad");
+      set_conv_libfunc (ufloat_optab, TFmode, SImode,
+			"_U_Qfcnvxf_usgl_to_quad");
+      set_conv_libfunc (ufloat_optab, TFmode, DImode,
+			"_U_Qfcnvxf_udbl_to_quad");
+    }
 }
-#endif
 
 /* HP's millicode routines mean something special to the assembler.
    Keep track of which ones we have used.  */

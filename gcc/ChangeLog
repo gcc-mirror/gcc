@@ -1,3 +1,9 @@
+2011-11-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.c (pa_hpux_init_libfuncs): Rename to pa_init_libfuncs.
+	Remove dependence of declaration and target define on definition of
+	HPUX_LONG_DOUBLE_LIBRARY.  Update implementation.
+
 2011-11-06  Andrew Macleod  <amacleod@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
