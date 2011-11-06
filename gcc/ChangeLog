@@ -1,3 +1,25 @@
+2011-11-06  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* regset.h (fixed_reg_set_regset): Declare.
+	* dse.c: Include regset.h .
+	(struct insn_info): Add member fixed_regs_live.
+	(note_add_store_info): New typedef.
+	(note_add_store): New function.
+	(emit_inc_dec_insn_before): Expect arg to be of type insn_info_t .
+	Use gen_add3_insn / gen_move_insn.
+	Check new insn for unwanted clobbers before emitting it.
+	(check_for_inc_dec): Rename to...
+	(check_for_inc_dec_1:) ... this.  Return bool.  Take insn_info
+	parameter.  Changed all callers in file.
+	(check_for_inc_dec, copy_fixed_regs): New functions.
+	(scan_insn): Set fixed_regs_live field of insn_info.
+	* rtl.h (check_for_inc_dec): Update prototype.
+	* postreload.c (reload_cse_simplify): Take new signature of
+	check_ind_dec into account.
+	* reginfo.c (fixed_reg_set_regset): New variable.
+	(init_reg_sets_1): Initialize it.
+
 2011-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-cfg.c (gimple_can_merge_blocks_p): For -O0 don't remove

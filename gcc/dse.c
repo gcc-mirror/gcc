@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "regset.h"
 #include "flags.h"
 #include "df.h"
 #include "cselib.h"
@@ -377,6 +378,13 @@ struct insn_info
      created.  */
   read_info_t read_rec;
 
+  /* The live fixed registers.  We assume only fixed registers can
+     cause trouble by being clobbered from an expanded pattern;
+     storing only the live fixed registers (rather than all registers)
+     means less memory needs to be allocated / copied for the individual
+     stores.  */
+  regset fixed_regs_live;
+
   /* The prev insn in the basic block.  */
   struct insn_info * prev_insn;
 
@@ -448,9 +456,9 @@ struct bb_info
   /* The following bitvector is indexed by the reg number.  It
      contains the set of regs that are live at the current instruction
      being processed.  While it contains info for all of the
-     registers, only the pseudos are actually examined.  It is used to
-     assure that shift sequences that are inserted do not accidently
-     clobber live hard regs.  */
+     registers, only the hard registers are actually examined.  It is used
+     to assure that shift and/or add sequences that are inserted do not
+     accidently clobber live hard regs.  */
   bitmap regs_live;
 };
 
@@ -827,6 +835,51 @@ free_store_info (insn_info_t insn_info)
   insn_info->store_rec = NULL;
 }
 
+typedef struct
+{
+  rtx first, current;
+  regset fixed_regs_live;
+  bool failure;
+} note_add_store_info;
+
+/* Callback for emit_inc_dec_insn_before via note_stores.
+   Check if a register is clobbered which is live afterwards.  */
+
+static void
+note_add_store (rtx loc, const_rtx expr ATTRIBUTE_UNUSED, void *data)
+{
+  rtx insn;
+  note_add_store_info *info = (note_add_store_info *) data;
+  int r, n;
+
+  if (!REG_P (loc))
+    return;
+
+  /* If this register is referenced by the current or an earlier insn,
+     that's OK.  E.g. this applies to the register that is being incremented
+     with this addition.  */
+  for (insn = info->first;
+       insn != NEXT_INSN (info->current);
+       insn = NEXT_INSN (insn))
+    if (reg_referenced_p (loc, PATTERN (insn)))
+      return;
+
+  /* If we come here, we have a clobber of a register that's only OK
+     if that register is not live.  If we don't have liveness information
+     available, fail now.  */
+  if (!info->fixed_regs_live)
+    {
+      info->failure =  true;
+      return;
+    }
+  /* Now check if this is a live fixed register.  */
+  r = REGNO (loc);
+  n = hard_regno_nregs[r][GET_MODE (loc)];
+  while (--n >=  0)
+    if (REGNO_REG_SET_P (info->fixed_regs_live, r+n))
+      info->failure =  true;
+}
+
 /* Callback for for_each_inc_dec that emits an INSN that sets DEST to
    SRC + SRCOFF before insn ARG.  */
 
@@ -835,30 +888,67 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
 			  rtx op ATTRIBUTE_UNUSED,
 			  rtx dest, rtx src, rtx srcoff, void *arg)
 {
-  rtx insn = (rtx)arg;
-
-  if (srcoff)
-    src = gen_rtx_PLUS (GET_MODE (src), src, srcoff);
+  insn_info_t insn_info = (insn_info_t) arg;
+  rtx insn = insn_info->insn, new_insn, cur;
+  note_add_store_info info;
 
   /* We can reuse all operands without copying, because we are about
      to delete the insn that contained it.  */
+  if (srcoff)
+    new_insn = gen_add3_insn (dest, src, srcoff);
+  else
+    new_insn = gen_move_insn (dest, src);
+  info.first = new_insn;
+  info.fixed_regs_live = insn_info->fixed_regs_live;
+  info.failure = false;
+  for (cur = new_insn; cur; cur = NEXT_INSN (cur))
+    {
+      info.current = cur;
+      note_stores (PATTERN (cur), note_add_store, &info);
+    }
 
-  emit_insn_before (gen_rtx_SET (VOIDmode, dest, src), insn);
+  /* If a failure was flagged above, return 1 so that for_each_inc_dec will
+     return it immediately, communicating the failure to its caller.  */
+  if (info.failure)
+    return 1;
+
+  emit_insn_before (new_insn, insn);
 
   return -1;
 }
 
-/* Before we delete INSN, make sure that the auto inc/dec, if it is
-   there, is split into a separate insn.  */
+/* Before we delete INSN_INFO->INSN, make sure that the auto inc/dec, if it
+   is there, is split into a separate insn.
+   Return true on success (or if there was nothing to do), false on failure.  */
 
-void
-check_for_inc_dec (rtx insn)
+static bool
+check_for_inc_dec_1 (insn_info_t insn_info)
 {
+  rtx insn = insn_info->insn;
   rtx note = find_reg_note (insn, REG_INC, NULL_RTX);
   if (note)
-    for_each_inc_dec (&insn, emit_inc_dec_insn_before, insn);
+    return for_each_inc_dec (&insn, emit_inc_dec_insn_before, insn_info) == 0;
+  return true;
 }
 
+
+/* Entry point for postreload.  If you work on reload_cse, or you need this
+   anywhere else, consider if you can provide register liveness information
+   and add a parameter to this function so that it can be passed down in
+   insn_info.fixed_regs_live.  */
+bool
+check_for_inc_dec (rtx insn)
+{
+  struct insn_info insn_info;
+  rtx note;
+
+  insn_info.insn = insn;
+  insn_info.fixed_regs_live = NULL;
+  note = find_reg_note (insn, REG_INC, NULL_RTX);
+  if (note)
+    return for_each_inc_dec (&insn, emit_inc_dec_insn_before, &insn_info) == 0;
+  return true;
+}
 
 /* Delete the insn and free all of the fields inside INSN_INFO.  */
 
@@ -870,7 +960,8 @@ delete_dead_store_insn (insn_info_t insn_info)
   if (!dbg_cnt (dse))
     return;
 
-  check_for_inc_dec (insn_info->insn);
+  if (!check_for_inc_dec_1 (insn_info))
+    return;
   if (dump_file)
     {
       fprintf (dump_file, "Locally deleting insn %d ",
@@ -2375,6 +2466,17 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
   return true;
 }
 
+/* Return a bitmap of the fixed registers contained in IN.  */
+
+static bitmap
+copy_fixed_regs (const_bitmap in)
+{
+  bitmap ret;
+
+  ret = ALLOC_REG_SET (NULL);
+  bitmap_and (ret, in, fixed_reg_set_regset);
+  return ret;
+}
 
 /* Apply record_store to all candidate stores in INSN.  Mark INSN
    if some part of it is not a candidate store and assigns to a
@@ -2529,6 +2631,8 @@ scan_insn (bb_info_t bb_info, rtx insn)
 			  active_local_stores_len = 1;
 			  active_local_stores = NULL;
 			}
+		      insn_info->fixed_regs_live
+			= copy_fixed_regs (bb_info->regs_live);
 		      insn_info->next_local_store = active_local_stores;
 		      active_local_stores = insn_info;
 		    }
@@ -2579,6 +2683,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 	  active_local_stores_len = 1;
 	  active_local_stores = NULL;
 	}
+      insn_info->fixed_regs_live = copy_fixed_regs (bb_info->regs_live);
       insn_info->next_local_store = active_local_stores;
       active_local_stores = insn_info;
     }
@@ -3622,9 +3727,9 @@ dse_step5_nospill (void)
 		}
 	      if (deleted)
 		{
-		  if (dbg_cnt (dse))
+		  if (dbg_cnt (dse)
+		      && check_for_inc_dec_1 (insn_info))
 		    {
-		      check_for_inc_dec (insn_info->insn);
 		      delete_insn (insn_info->insn);
 		      insn_info->insn = NULL;
 		      globally_deleted++;
@@ -3702,12 +3807,12 @@ dse_step5_spill (void)
 		    deleted = false;
 		  store_info = store_info->next;
 		}
-	      if (deleted && dbg_cnt (dse))
+	      if (deleted && dbg_cnt (dse)
+		  && check_for_inc_dec_1 (insn_info))
 		{
 		  if (dump_file)
 		    fprintf (dump_file, "Spill deleting insn %d\n",
 			     INSN_UID (insn_info->insn));
-		  check_for_inc_dec (insn_info->insn);
 		  delete_insn (insn_info->insn);
 		  spill_deleted++;
 		  insn_info->insn = NULL;
