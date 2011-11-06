@@ -1,5 +1,9 @@
 2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/test.xml: Fix dg-warning examples.
+
+2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/44436
 	* doc/xml/manual/status_cxx200x.xml: Document emplace members are
 	missing.
