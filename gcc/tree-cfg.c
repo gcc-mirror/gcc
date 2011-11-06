@@ -1454,8 +1454,8 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
 	break;
       lab = gimple_label_label (stmt);
 
-      /* Do not remove user forced labels.  */
-      if (!DECL_ARTIFICIAL (lab) && FORCED_LABEL (lab))
+      /* Do not remove user forced labels or for -O0 any user labels.  */
+      if (!DECL_ARTIFICIAL (lab) && (!optimize || FORCED_LABEL (lab)))
 	return false;
     }
 
