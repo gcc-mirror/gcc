@@ -92,6 +92,7 @@
    (UNSPEC_MUL8			86)
    (UNSPEC_MUL8SU		87)
    (UNSPEC_MULDSU		88)
+   (UNSPEC_SHORT_LOAD		89)
   ])
 
 (define_constants
@@ -7829,6 +7830,48 @@
     }
   DONE;
 })
+
+(define_expand "zero_extend_v8qi_vis"
+  [(set (match_operand:V8QI 0 "register_operand" "")
+        (unspec:V8QI [(match_operand:QI 1 "memory_operand" "")]
+                     UNSPEC_SHORT_LOAD))]
+  "TARGET_VIS"
+{
+  if (! REG_P (XEXP (operands[1], 0)))
+    {
+      rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+      operands[1] = replace_equiv_address (operands[1], addr);
+    }
+})
+
+(define_expand "zero_extend_v4hi_vis"
+  [(set (match_operand:V4HI 0 "register_operand" "")
+        (unspec:V4HI [(match_operand:HI 1 "memory_operand" "")]
+                     UNSPEC_SHORT_LOAD))]
+  "TARGET_VIS"
+{
+  if (! REG_P (XEXP (operands[1], 0)))
+    {
+      rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+      operands[1] = replace_equiv_address (operands[1], addr);
+    }
+})
+
+(define_insn "*zero_extend_v8qi_<P:mode>_insn"
+  [(set (match_operand:V8QI 0 "register_operand" "=e")
+        (unspec:V8QI [(mem:QI
+                       (match_operand:P 1 "register_operand" "r"))]
+                     UNSPEC_SHORT_LOAD))]
+  "TARGET_VIS"
+  "ldda\t[%1] 0xd0, %0")
+
+(define_insn "*zero_extend_v4hi_<P:mode>_insn"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+        (unspec:V4HI [(mem:HI
+                       (match_operand:P 1 "register_operand" "r"))]
+                     UNSPEC_SHORT_LOAD))]
+  "TARGET_VIS"
+  "ldda\t[%1] 0xd2, %0")
 
 (define_expand "vec_init<mode>"
   [(match_operand:VMALL 0 "register_operand" "")

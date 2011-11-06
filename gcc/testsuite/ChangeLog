@@ -1,3 +1,21 @@
+2011-11-05  David S. Miller  <davem@davemloft.net>
+
+	* lib/test-supports.exp
+	(check_effective_target_ultrasparc_vis2_hw): New proc.
+	(check_effective_target_ultrasparc_vis3_hw): New proc.
+	* gcc.target/sparc/vec-init-1.inc: New vector init common code.
+	* gcc.target/sparc/vec-init-2.inc: Likewise.
+	* gcc.target/sparc/vec-init-3.inc: Likewise.
+	* gcc.target/sparc/vec-init-1-vis1.c: New test.
+	* gcc.target/sparc/vec-init-1-vis2.c: New test.
+	* gcc.target/sparc/vec-init-1-vis3.c: New test.
+	* gcc.target/sparc/vec-init-2-vis1.c: New test.
+	* gcc.target/sparc/vec-init-2-vis2.c: New test.
+	* gcc.target/sparc/vec-init-2-vis3.c: New test.
+	* gcc.target/sparc/vec-init-3-vis1.c: New test.
+	* gcc.target/sparc/vec-init-3-vis2.c: New test.
+	* gcc.target/sparc/vec-init-3-vis3.c: New test.
+
 2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x:

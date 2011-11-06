@@ -1,3 +1,17 @@
+2011-11-05  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (UNSPEC_SHORT_LOAD): New unspec.
+	(zero-extend_v8qi_vis, zero_extend_v4hi_vis): New expanders.
+	(*zero_extend_v8qi_<P:mode>_insn,
+	*zero_extend_v4hi_<P:mode>_insn): New insns.
+	* config/sparc/sparc.c (vector_init_move_words,
+	vector_init_prepare_elts, sparc_expand_vector_init_vis2,
+	sparc_expand_vector_init_vis1): New functions.
+	(vector_init_bshuffle): Rewrite to handle more cases and make use
+	of locs[] array prepared by vector_init_prepare_elts.
+	(vector_init_fpmerge, vector_init_faligndata): Delete.
+	(sparc_expand_vector_init): Rewrite using new infrastructure.
+
 2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config.gcc (epiphany-*-*): New architecture.
@@ -56,7 +70,7 @@
 	Remove -mcpu=601 multilib.
 	Remove -Dmpc8260 multilib.
 	* config/rs6000/rtems.h: Allow --float-gprs=... to override grps
-	on E500 targets.	
+	on E500 targets.
 
 2011-11-05  Quentin Neill  <quentin.neill@amd.com>
 
