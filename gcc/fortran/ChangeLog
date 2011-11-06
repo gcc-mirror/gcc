@@ -1,3 +1,16 @@
+2011-11-06  Andrew MacLeod  <amacleod@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	Merged from cxx-mem-model.
+
+	* types.def: (BT_SIZE, BT_CONST_VOLATILE_PTR, BT_FN_VOID_INT,
+	BT_FN_I{1,2,4,8,16}_CONST_VPTR_INT, BT_FN_VOID_VPTR_INT,
+	BT_FN_BOOL_VPTR_INT, BT_FN_BOOL_SIZE_CONST_VPTR,
+	BT_FN_VOID_VPTR_I{1,2,4,8,16}_INT, BT_FN_VOID_SIZE_VPTR_PTR_INT,
+	BT_FN_VOID_SIZE_CONST_VPTR_PTR_INT, BT_FN_VOID_SIZE_VPTR_PTR_PTR_INT,
+	BT_FN_BOOL_VPTR_PTR_I{1,2,4,8,16}_BOOL_INT_INT,
+	BT_FN_I{1,2,4,8,16}_VPTR_I{1,2,4,8,16}_INT): New types.
+
 2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/43829

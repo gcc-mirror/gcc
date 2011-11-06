@@ -921,9 +921,24 @@ DEFPARAM (PARAM_CASE_VALUES_THRESHOLD,
           0, 0, 0)
 
 /* Data race flags for C++0x memory model compliance.  */
+DEFPARAM (PARAM_ALLOW_LOAD_DATA_RACES,
+	  "allow-load-data-races",
+	  "Allow new data races on loads to be introduced",
+	  1, 0, 1)
+
 DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
 	  "allow-store-data-races",
 	  "Allow new data races on stores to be introduced",
+	  1, 0, 1)
+
+DEFPARAM (PARAM_ALLOW_PACKED_LOAD_DATA_RACES,
+	  "allow-packed-load-data-races",
+	  "Allow new data races on packed data loads to be introduced",
+	  1, 0, 1)
+
+DEFPARAM (PARAM_ALLOW_PACKED_STORE_DATA_RACES,
+	  "allow-packed-store-data-races",
+	  "Allow new data races on packed data stores to be introduced",
 	  1, 0, 1)
 
 /* Reassociation width to be used by tree reassoc optimization.  */

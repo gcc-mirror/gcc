@@ -9163,8 +9163,23 @@ The maximum number of conditional stores paires that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
 
+@item allow-load-data-races
+Allow optimizers to introduce new data races on loads.
+Set to 1 to allow, otherwise to 0.  This option is enabled by default
+unless implicitly set by the @option{-fmemory-model=} option.
+
 @item allow-store-data-races
 Allow optimizers to introduce new data races on stores.
+Set to 1 to allow, otherwise to 0.  This option is enabled by default
+unless implicitly set by the @option{-fmemory-model=} option.
+
+@item allow-packed-load-data-races
+Allow optimizers to introduce new data races on packed data loads.
+Set to 1 to allow, otherwise to 0.  This option is enabled by default
+unless implicitly set by the @option{-fmemory-model=} option.
+
+@item allow-packed-store-data-races
+Allow optimizers to introduce new data races on packed data stores.
 Set to 1 to allow, otherwise to 0.  This option is enabled by default
 unless implicitly set by the @option{-fmemory-model=} option.
 
@@ -13180,7 +13195,8 @@ This option will enable GCC to use CMPXCHG16B instruction in generated code.
 CMPXCHG16B allows for atomic operations on 128-bit double quadword (or oword)
 data types.  This is useful for high resolution counters that could be updated
 by multiple processors (or cores).  This instruction is generated as part of
-atomic built-in functions: see @ref{Atomic Builtins} for details.
+atomic built-in functions: see @ref{__sync Builtins} or
+@ref{__atomic Builtins} for details.
 
 @item -msahf
 @opindex msahf

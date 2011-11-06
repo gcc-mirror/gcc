@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do link { xfail *-*-* } }
+// { dg-do link }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ struct dwordp
 void atomics()
 {
   std::atomic<dwordp> a;
-  bool b = a.is_lock_free(); // { dg-excess-errors "undefined reference to" }
+  bool b = a.is_lock_free();
 }
 
 int main()

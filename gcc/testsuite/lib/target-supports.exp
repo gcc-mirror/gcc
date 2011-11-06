@@ -655,6 +655,28 @@ proc check_effective_target_tls_runtime {} {
     } [add_options_for_tls ""]]
 }
 
+# Return 1 if atomic compare-and-swap is supported on 'int'
+
+proc check_effective_target_cas_char {} {
+    return [check_no_compiler_messages cas_char assembly {
+	#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
+	#error unsupported
+	#endif
+    } ""]
+}
+
+proc check_effective_target_cas_int {} {
+    return [check_no_compiler_messages cas_int assembly {
+	#if __INT_MAX__ == 0x7fff && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+        /* ok */
+        #elif __INT_MAX__ == 0x7fffffff && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+	/* ok */
+	#else
+	#error unsupported
+	#endif
+    } ""]
+}
+
 # Return 1 if -ffunction-sections is supported, 0 otherwise.
 
 proc check_effective_target_function_sections {} {
@@ -3515,6 +3537,44 @@ proc check_effective_target_section_anchors { } {
 
     verbose "check_effective_target_section_anchors: returning $et_section_anchors_saved" 2
     return $et_section_anchors_saved
+}
+
+# Return 1 if the target supports atomic operations on "int_128" values.
+
+proc check_effective_target_sync_int_128 { } {
+    global et_sync_int_128_saved
+
+    if [info exists et_sync_int_128_saved] {
+        verbose "check_effective_target_sync_int_128: using cached result" 2
+    } else {
+        set et_sync_int_128_saved 0
+        if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	     && ![is-effective-target ia32] } {
+           set et_sync_int_128_saved 1
+        }
+    }
+
+    verbose "check_effective_target_sync_int_128: returning $et_sync_int_128_saved" 2
+    return $et_sync_int_128_saved
+}
+
+# Return 1 if the target supports atomic operations on "long long".
+
+proc check_effective_target_sync_long_long { } {
+    global et_sync_long_long_saved
+
+    if [info exists et_sync_long_long_saved] {
+        verbose "check_effective_target_sync_long_long: using cached result" 2
+    } else {
+        set et_sync_long_long_saved 0
+        if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	     && ![is-effective-target ia32] } {
+           set et_sync_long_long_saved 1
+        }
+    }
+
+    verbose "check_effective_target_sync_long_long: returning $et_sync_long_long_saved" 2
+    return $et_sync_long_long_saved
 }
 
 # Return 1 if the target supports atomic operations on "int" and "long".

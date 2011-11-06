@@ -551,6 +551,10 @@ Winline
 Common Var(warn_inline) Warning
 Warn when an inlined function cannot be inlined
 
+Winvalid-memory-model
+Common Var(warn_invalid_memory_model) Init(1) Warning
+Warn when an atomic memory model parameter is known to be outside the valid range.
+
 Wlarger-than-
 Common RejectNegative Joined Warning Undocumented Alias(Wlarger-than=)
 
@@ -1265,6 +1269,10 @@ Common RejectNegative Joined Alias(finline-limit=)
 finline-limit=
 Common RejectNegative Joined UInteger
 -finline-limit=<number>	Limit the size of inlined functions to <number>
+
+finline-atomics
+Common Report Var(flag_inline_atomics) Init(1) Optimization
+Inline __atomic operations when a lock free instruction sequence is available.
 
 finstrument-functions
 Common Report Var(flag_instrument_function_entry_exit)

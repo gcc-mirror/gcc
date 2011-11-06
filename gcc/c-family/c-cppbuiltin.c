@@ -758,30 +758,50 @@ c_cpp_builtins (cpp_reader *pfile)
 
   /* Tell source code if the compiler makes sync_compare_and_swap
      builtins available.  */
-#ifdef HAVE_sync_compare_and_swapqi
-  if (HAVE_sync_compare_and_swapqi)
+#ifndef HAVE_sync_compare_and_swapqi
+#define HAVE_sync_compare_and_swapqi 0
+#endif
+#ifndef HAVE_atomic_compare_and_swapqi
+#define HAVE_atomic_compare_and_swapqi 0
+#endif
+  if (HAVE_sync_compare_and_swapqi || HAVE_atomic_compare_and_swapqi)
     cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1");
-#endif
 
-#ifdef HAVE_sync_compare_and_swaphi
-  if (HAVE_sync_compare_and_swaphi)
+#ifndef HAVE_sync_compare_and_swaphi
+#define HAVE_sync_compare_and_swaphi 0
+#endif
+#ifndef HAVE_atomic_compare_and_swaphi
+#define HAVE_atomic_compare_and_swaphi 0
+#endif
+  if (HAVE_sync_compare_and_swaphi || HAVE_atomic_compare_and_swaphi)
     cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2");
-#endif
 
-#ifdef HAVE_sync_compare_and_swapsi
-  if (HAVE_sync_compare_and_swapsi)
+#ifndef HAVE_sync_compare_and_swapsi
+#define HAVE_sync_compare_and_swapsi 0
+#endif
+#ifndef HAVE_atomic_compare_and_swapsi
+#define HAVE_atomic_compare_and_swapsi 0
+#endif
+  if (HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi)
     cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4");
-#endif
 
-#ifdef HAVE_sync_compare_and_swapdi
-  if (HAVE_sync_compare_and_swapdi)
+#ifndef HAVE_sync_compare_and_swapdi
+#define HAVE_sync_compare_and_swapdi 0
+#endif
+#ifndef HAVE_atomic_compare_and_swapdi
+#define HAVE_atomic_compare_and_swapdi 0
+#endif
+  if (HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi)
     cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8");
-#endif
 
-#ifdef HAVE_sync_compare_and_swapti
-  if (HAVE_sync_compare_and_swapti)
-    cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16");
+#ifndef HAVE_sync_compare_and_swapti
+#define HAVE_sync_compare_and_swapti 0
 #endif
+#ifndef HAVE_atomic_compare_and_swapti
+#define HAVE_atomic_compare_and_swapti 0
+#endif
+  if (HAVE_sync_compare_and_swapti || HAVE_atomic_compare_and_swapti)
+    cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16");
 
 #ifdef DWARF2_UNWIND_INFO
   if (dwarf2out_do_cfi_asm ())

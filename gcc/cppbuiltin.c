@@ -66,6 +66,12 @@ define__GNUC__ (cpp_reader *pfile)
   cpp_define_formatted (pfile, "__GNUC_MINOR__=%d", minor);
   cpp_define_formatted (pfile, "__GNUC_PATCHLEVEL__=%d", patchlevel);
   cpp_define_formatted (pfile, "__VERSION__=\"%s\"", version_string);
+  cpp_define_formatted (pfile, "__ATOMIC_RELAXED=%d", MEMMODEL_RELAXED);
+  cpp_define_formatted (pfile, "__ATOMIC_SEQ_CST=%d", MEMMODEL_SEQ_CST);
+  cpp_define_formatted (pfile, "__ATOMIC_ACQUIRE=%d", MEMMODEL_ACQUIRE);
+  cpp_define_formatted (pfile, "__ATOMIC_RELEASE=%d", MEMMODEL_RELEASE);
+  cpp_define_formatted (pfile, "__ATOMIC_ACQ_REL=%d", MEMMODEL_ACQ_REL);
+  cpp_define_formatted (pfile, "__ATOMIC_CONSUME=%d", MEMMODEL_CONSUME);
 }
 
 

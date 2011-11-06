@@ -1,3 +1,67 @@
+2011-11-06  Andrew MacLeod  <amacleod@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	Merged from cxx-mem-model.
+
+	* lib/target-supports.exp (check_effective_target_sync_int_128,
+	check_effective_target_sync_long_long): Check whether the target
+	supports 64 and 128 bit __sync builtins.
+	(check_effective_target_cas_char): New.
+	(check_effective_target_cas_int): New.
+	* gcc.dg/dg.exp: Exclude simulate-thread tests.
+	* gcc.dg/atomic-noinline[-aux].c: New.  Make a variety of atomics calls.
+	* gcc.dg/atomic-generic[-aux].c: New. Test that generic functions
+	produce the expected library calls.
+	* gcc.dg/atomic-fence.c: New functional tests.
+	* gcc.dg/atomic-param.c: New.  Checl for illegal number of parameters.
+	* gcc.dg/atomic-invalid.c: New.  Test invalid parameters.
+	* gcc.dg/atomic-lockfree[-aux].c: New tests.
+	* gcc.dg/atomic-compare-exchange-{1-5}.c: New functional tests.
+	* gcc.dg/atomic-op-[1-5].c: New.  Test atomic fetch functionality.
+	* gcc.dg/atomic-exchange-{1-5}.c: New functional tests.
+	* gcc.dg/atomic-load-{1-5}.c: New functional tests.
+	* gcc.dg/atomic-store-{1-5}.c: New functional tests.
+	* gcc.dg/simulate-thread/atomic-load-int128.c: New. Verify int128 loads
+	are atomic.
+	* gcc.dg/simulate-thread/atomic-load-longlong.c: New. Verify 8 byte
+	loads are atomic.
+	* gcc.dg/simulate-thread/atomic-load-int.c: New. Verify 4 byte loads
+	are atomic.
+	* gcc.dg/simulate-thread/atomic-load-short.c: New. Verify 2 byte loads
+	are atomic.
+	* gcc.dg/simulate-thread/atomic-other-int128.c: New. Verify other
+	int128 operations are atomic.
+	* gcc.dg/simulate-thread/atomic-other-int.c: New. Verify other 4 byte
+	operations are atomic.
+	* gcc.dg/simulate-thread/atomic-other-longlong.c: New. Verify 8 byte
+	operations are atomic.
+	* gcc.dg/simulate-thread/atomic-other-short.c: New. Verify other 2 byte
+	operations are atomic.
+	* gcc.dg/simulate-thread/speculative-store.c: New. Verify speculative
+	stores aren't moved out of a loop.
+	* gcc.dg/simulate-thread/strict-align-global.c: New. Verify small
+	globals don't overwrite neighbouring globals.
+	* gcc.dg/simulate-thread/subfields.c: New. Verify struct component
+	writes dont overwrite neighbouring components.
+	* c-c++-common/gomp/atomic-10.c: Use cas_int; match __atomic builtin.
+	* c-c++-common/gomp/atomic-3.c: Likewise.
+	* c-c++-common/gomp/atomic-9.c: Likewise.
+	* gcc.dg/gomp/atomic-1.c, gcc.dg/gomp/atomic-2.c,
+	gcc.dg/gomp/atomic-3.c, gcc.dg/gomp/atomic-4.c, gcc.dg/gomp/atomic-7.c,
+	gcc.dg/gomp/atomic-8.c, gcc.dg/gomp/atomic-9.c,
+	gcc.dg/gomp/atomic-10.c, gcc.dg/gomp/atomic-12.c,
+	gcc.dg/gomp/atomic-13.c, gcc.dg/gomp/atomic-14.c,
+	gcc.dg/gomp/atomic-15.c: Move to c-c++-common/gomp/.
+	* g++.dg/gomp/atomic-1.C, g++.dg/gomp/atomic-2.C,
+	g++.dg/gomp/atomic-3.C, g++.dg/gomp/atomic-4.C, g++.dg/gomp/atomic-7.C,
+	g++.dg/gomp/atomic-8.C, g++.dg/gomp/atomic-9.C,
+	g++.dg/gomp/atomic-10.C, g++.dg/gomp/atomic-11.C,
+	g++.dg/gomp/atomic-12.C, g++.dg/gomp/atomic-13.C,
+	g++.dg/gomp/atomic-15.C: Remove.
+	* gcc.dg/gomp/gomp.exp, g++.dg/gomp/gomp.exp: Run c-c++-common tests.
+	* gcc.dg/gomp/atomic-11.c: Remove test.
+
 2011-11-06  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/bb-slp-cond-1.c: New test.

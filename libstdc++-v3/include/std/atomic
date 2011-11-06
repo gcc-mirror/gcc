@@ -39,8 +39,6 @@
 #endif
 
 #include <bits/atomic_base.h>
-#include <bits/atomic_0.h>
-#include <bits/atomic_2.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -167,69 +165,116 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr atomic(_Tp __i) noexcept : _M_i(__i) { }
 
-      operator _Tp() const noexcept;
+      operator _Tp() const noexcept
+      { return load(); }
 
-      operator _Tp() const volatile noexcept;
+      operator _Tp() const volatile noexcept
+      { return load(); }
 
       _Tp
-      operator=(_Tp __i) noexcept { store(__i); return __i; }
+      operator=(_Tp __i) noexcept 
+      { store(__i); return __i; }
 
       _Tp
-      operator=(_Tp __i) volatile noexcept { store(__i); return __i; }
+      operator=(_Tp __i) volatile noexcept 
+      { store(__i); return __i; }
 
       bool
-      is_lock_free() const noexcept;
+      is_lock_free() const noexcept
+      { return __atomic_is_lock_free(sizeof(_M_i), &_M_i); }
 
       bool
-      is_lock_free() const volatile noexcept;
+      is_lock_free() const volatile noexcept
+      { return __atomic_is_lock_free(sizeof(_M_i), &_M_i); }
 
       void
-      store(_Tp, memory_order = memory_order_seq_cst) noexcept;
+      store(_Tp __i, memory_order _m = memory_order_seq_cst) noexcept
+      { __atomic_store(&_M_i, &__i, _m); }
 
       void
-      store(_Tp, memory_order = memory_order_seq_cst) volatile noexcept;
+      store(_Tp __i, memory_order _m = memory_order_seq_cst) volatile noexcept
+      { __atomic_store(&_M_i, &__i, _m); }
 
       _Tp
-      load(memory_order = memory_order_seq_cst) const noexcept;
+      load(memory_order _m = memory_order_seq_cst) const noexcept
+      { 
+        _Tp tmp;
+	__atomic_load(&_M_i, &tmp, _m); 
+	return tmp;
+      }
 
       _Tp
-      load(memory_order = memory_order_seq_cst) const volatile noexcept;
+      load(memory_order _m = memory_order_seq_cst) const volatile noexcept
+      { 
+        _Tp tmp;
+	__atomic_load(&_M_i, &tmp, _m); 
+	return tmp;
+      }
 
       _Tp
-      exchange(_Tp __i, memory_order = memory_order_seq_cst) noexcept;
+      exchange(_Tp __i, memory_order _m = memory_order_seq_cst) noexcept
+      { 
+        _Tp tmp;
+	__atomic_exchange(&_M_i, &__i, &tmp, _m); 
+	return tmp;
+      }
 
       _Tp
-      exchange(_Tp __i, memory_order = memory_order_seq_cst) volatile noexcept;
+      exchange(_Tp __i, 
+	       memory_order _m = memory_order_seq_cst) volatile noexcept
+      { 
+        _Tp tmp;
+	__atomic_exchange(&_M_i, &__i, &tmp, _m); 
+	return tmp;
+      }
 
       bool
-      compare_exchange_weak(_Tp&, _Tp, memory_order, memory_order) noexcept;
+      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
+			    memory_order __f) noexcept
+      {
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f); 
+      }
 
       bool
-      compare_exchange_weak(_Tp&, _Tp, memory_order,
-			    memory_order) volatile noexcept;
+      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
+			    memory_order __f) volatile noexcept
+      {
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f); 
+      }
 
       bool
-      compare_exchange_weak(_Tp&, _Tp,
-			    memory_order = memory_order_seq_cst) noexcept;
+      compare_exchange_weak(_Tp& __e, _Tp __i,
+			    memory_order __m = memory_order_seq_cst) noexcept
+      { return compare_exchange_weak(__e, __i, __m, __m); }
 
       bool
-      compare_exchange_weak(_Tp&, _Tp,
-		       memory_order = memory_order_seq_cst) volatile noexcept;
+      compare_exchange_weak(_Tp& __e, _Tp __i,
+		     memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return compare_exchange_weak(__e, __i, __m, __m); }
 
       bool
-      compare_exchange_strong(_Tp&, _Tp, memory_order, memory_order) noexcept;
+      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
+			      memory_order __f) noexcept
+      {
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f); 
+      }
 
       bool
-      compare_exchange_strong(_Tp&, _Tp, memory_order,
-			      memory_order) volatile noexcept;
+      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
+			      memory_order __f) volatile noexcept
+      {
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f); 
+      }
 
       bool
-      compare_exchange_strong(_Tp&, _Tp,
-			      memory_order = memory_order_seq_cst) noexcept;
+      compare_exchange_strong(_Tp& __e, _Tp __i,
+			       memory_order __m = memory_order_seq_cst) noexcept
+      { return compare_exchange_strong(__e, __i, __m, __m); }
 
       bool
-      compare_exchange_strong(_Tp&, _Tp,
-		       memory_order = memory_order_seq_cst) volatile noexcept;
+      compare_exchange_strong(_Tp& __e, _Tp __i,
+		     memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return compare_exchange_strong(__e, __i, __m, __m); }
     };
 
 

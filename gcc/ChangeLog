@@ -1,3 +1,111 @@
+2011-11-06  Andrew Macleod  <amacleod@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	Merged from cxx-mem-model.
+
+	* cppbuiltin.c (define__GNUC__): Define __ATOMIC memory models
+	* coretypes.h (enum memmodel): New.  enumerated memory model type.
+	* Makefile.in (cppbuiltin.o) Add missing dependency on $(TREE_H)
+	* genopinit,c (optabs): Add atomic direct optab handlers.
+	* sync-builtins.def (BUILT_IN_ATOMIC_*): New builtins.
+	* builtin-types.def (BT_CONST_VOLATILE_PTR,
+	BT_FN_I{1,2,4,8,16}_CONST_VPTR_INT, BT_FN_VOID_VPTR_INT,
+	BT_FN_BOOL_VPTR_INT, BT_FN_BOOL_SIZE_CONST_VPTR,
+	BT_FN_I{1,2,4,8,16}_VPTR_I{1,2,4,8,16}_INT,
+	BT_FN_VOID_VPTR_I{1,2,4,8,16}_INT, BT_FN_VOID_SIZE_VPTR_PTR_INT,
+	BT_FN_VOID_SIZE_CONST_VPTR_PTR_INT, BT_FN_VOID_SIZE_VPTR_PTR_PTR_INT,
+	BT_FN_BOOL_VPTR_PTR_I{1,2,4,8,16}_BOOL_INT_INT): New builtin types.
+	* expr.h (expand_atomic_*): Add prototypes.
+	(expand_{bool,val}_compare_and_swap): Remove prototypes.
+	* c-typeck.c (build_function_call_vec): Don't reprocess __atomic
+	parameters.
+	* common.opt (Winvalid-memory-model): New warning flag.
+	(finline-atomics): New. Flag to disable atomic inlining.
+	* params.h (ALLOW_LOAD_DATA_RACES): New.
+	(ALLOW_PACKED_LOAD_DATA_RACES): New.
+	(ALLOW_PACKED_STORE_DATA_RACES): New.
+	* params.def (PARAM_ALLOW_LOAD_DATA_RACES): New.
+	(PARAM_ALLOW_PACKED_LOAD_DATA_RACES): New.
+	(PARAM_ALLOW_PACKED_STORE_DATA_RACES): New.
+	* builtins.c (is_builtin_name): Handle __atomic.
+	(get_memmodel): New.  Extract memory model.
+	(expand_expr_force_mode): New. Factor out common code for ensuring an
+	integer argument is in the proper mode.
+	(expand_builtin_sync_operation): Remove ignore param.  Always call
+	expand_atomic_fetch_op instead of the old expanders.
+	(expand_builtin_compare_and_swap,
+	expand_builtin_sync_lock_test_and_set): Use expand_expr_force_mode,
+	call atomic expanders instead of sync expanders.
+	(expand_builtin_sync_lock_release): Call atomic_store expander.
+	(expand_builtin_atomic_compare_exchange, expand_builtin_atomic_load,
+	expand_builtin_atomic_store, expand_builtin_atomic_fetch_op): New.
+	(expand_builtin_atomic_exchange): New.
+	(fold_builtin_atomic_always_lock_free,
+	expand_builtin_atomic_always_lock_free,
+	fold_builtin_atomic_is_lock_free, expand_builtin_atomic_is_lock_free):
+	New.
+	(expand_builtin_mem_thread_fence, expand_builtin_atomic_thread_fence,
+	expand_builtin_atomic_signal_fence): New.
+	(expand_builtin_mem_signal_fence): New.
+	(expand_builtin): Add cases for BUILT_IN_ATOMIC_*.
+	(fold_builtin_2): Add cases for BUILT_IN_ATOMIC_{IS,ALWAYS}_LOCK_FREE.
+	* optabs.h (DOI_atomic_*): Define new atomics.
+	(atomic_*_optab): Define.
+	(can_compare_and_swap_p, expand_atomic_compare_and_swap): New
+	prototypes.
+	* optabs.c (expand_sync_operation, expand_sync_fetch_operation): Remove.
+	(expand_sync_lock_test_and_set): Remove.
+	(expand_atomic_load, expand_atomic_store): New.
+	(expand_atomic_exchange): New. 
+	(expand_atomic_compare_and_swap): New.  Implements
+	atomic_compare_exchange via compare and swap.
+	(struct atomic_op_functions): Opcode table struct for fetch ops.
+	(get_atomic_op_for_code): New.  Return an opcode table entry.
+	(maybe_emit_op): New.  Try to emit a fetch op.
+	(expand_atomic_fetch_op): New.
+	(expand_val_compare_and_swap_1): Remove.
+	(expand_val_compare_and_swap, expand_bool_compare_and_swap): Remove.
+	(expand_atomic_compare_and_swap): Rename from
+	expand_atomic_compare_exchange.  Rewrite to return both success and
+	oldval return values; expand via both atomic and sync optabs.
+	(can_compare_and_swap_p): New.
+	(expand_compare_and_swap_loop): Use expand_atomic_compare_and_swap.
+	(maybe_gen_insn): Handle 7 and 8 operands.
+	* omp-low.c (expand_omp_atomic_fetch_op): Don't test individual
+	fetch_op optabs, only test can_compare_and_swap_p.  Use __atomic
+	builtins instead of __sync builtins.
+	(expand_omp_atomic_pipeline): Use can_compare_and_swap_p.
+	* doc/extend.texi: Document __atomic built-in functions.
+	* doc/invoke.texi: Document data race parameters.
+	* doc/md.texi: Document atomic patterns.
+	* config/i386/i386.md (UNSPEC_MOVA): New.
+	(UNSPECV_CMPXCHG): Split into ...
+	(UNSPECV_CMPXCHG_1, UNSPECV_CMPXCHG_2,
+	UNSPECV_CMPXCHG_3, UNSPECV_CMPXCHG_4): New.
+	* config/i386/sync.md (ATOMIC): New mode iterator.
+	(atomic_load<ATOMIC>, atomic_store<ATOMIC>): New.
+	(atomic_loaddi_fpu, atomic_storedi_fpu, movdi_via_fpu): New.
+	(mem_thread_fence): Rename from memory_barrier.
+	Handle the added memory model parameter.
+	(mfence_nosse): Rename from memory_barrier_nosse.
+	(sync_compare_and_swap<CASMODE>): Split into ...
+	(atomic_compare_and_swap<SWI124>): this and ...
+	(atomic_compare_and_swap<CASMODE>): this.  Handle the new parameters.
+	(atomic_compare_and_swap_single<SWI>): Rename from
+	sync_compare_and_swap<SWI>; rewrite to use split unspecs.
+	(atomic_compare_and_swap_double<DCASMODE>): Rename from
+	sync_double_compare_and_swap<DCASMODE>; rewrite to use split unspecs.
+	(*atomic_compare_and_swap_doubledi_pic): Rename from
+	sync_double_compare_and_swapdi_pic; rewrite to use split unspecs.
+	(atomic_fetch_add<SWI>): Rename from sync_old_add<SWI>; add memory
+	model parameter.
+	(*atomic_fetch_add_cmp<SWI>): Similarly.
+	(atomic_add<SWI>, atomic<any_logic><SWI>): Similarly.
+	(atomic_sub<SWI>): Similarly.  Use x86_maybe_negate_const_int.
+	(sync_lock_test_and_set<SWI>): Merge with ...
+	(atomic_exchange<SWI>): ... this.
+
 2011-11-6  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-prop.c (ipa_modify_call_arguments): Re-compute
