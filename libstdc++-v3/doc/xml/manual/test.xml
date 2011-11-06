@@ -609,10 +609,10 @@ Example 1: Testing compilation only
 // { dg-do compile }
 
 Example 2: Testing for expected warnings on line 36, which all targets fail
-// { dg-warning "string literals" "" { xfail *-*-* } 36
+// { dg-warning "string literals" "" { xfail *-*-* } 36 }
 
 Example 3: Testing for expected warnings on line 36
-// { dg-warning "string literals" "" { target *-*-* } 36
+// { dg-warning "string literals" "" { target *-*-* } 36 }
 
 Example 4: Testing for compilation errors on line 41
 // { dg-do compile }
