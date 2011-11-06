@@ -109,7 +109,11 @@ vect_create_new_slp_node (VEC (gimple, heap) *scalar_stmts)
   if (is_gimple_call (stmt))
     nops = gimple_call_num_args (stmt);
   else if (is_gimple_assign (stmt))
-    nops = gimple_num_ops (stmt) - 1;
+    {
+      nops = gimple_num_ops (stmt) - 1;
+      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+	nops++;
+    }
   else
     return NULL;
 
@@ -191,19 +195,40 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   bool different_types = false;
   bool pattern = false;
   slp_oprnd_info oprnd_info, oprnd0_info, oprnd1_info;
+  int op_idx = 1;
+  tree compare_rhs = NULL_TREE;
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   if (is_gimple_call (stmt))
     number_of_oprnds = gimple_call_num_args (stmt);
+  else if (is_gimple_assign (stmt))
+    {
+      number_of_oprnds = gimple_num_ops (stmt) - 1;
+      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+        number_of_oprnds++;
+    }
   else
-    number_of_oprnds = gimple_num_ops (stmt) - 1;
+    return false;
 
   for (i = 0; i < number_of_oprnds; i++)
     {
-      oprnd = gimple_op (stmt, i + 1);
+      if (compare_rhs)
+	{
+	  oprnd = compare_rhs;
+	  compare_rhs = NULL_TREE;
+	}
+      else
+        oprnd = gimple_op (stmt, op_idx++);
+
       oprnd_info = VEC_index (slp_oprnd_info, *oprnds_info, i);
+
+      if (COMPARISON_CLASS_P (oprnd))
+        {
+          compare_rhs = TREE_OPERAND (oprnd, 1);
+          oprnd = TREE_OPERAND (oprnd, 0);
+	}
 
       if (!vect_is_simple_use (oprnd, loop_vinfo, bb_vinfo, &def_stmt, &def,
                                &dt)
@@ -244,8 +269,7 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
           def_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
           dt = STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt));
 
-          if (dt == vect_unknown_def_type
-	      || STMT_VINFO_PATTERN_DEF_STMT (vinfo_for_stmt (def_stmt)))
+          if (dt == vect_unknown_def_type)
             {
               if (vect_print_dump_info (REPORT_DETAILS))
                 fprintf (vect_dump, "Unsupported pattern.");
@@ -424,6 +448,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   VEC (gimple, heap) *stmts = SLP_TREE_SCALAR_STMTS (*node);
   gimple stmt = VEC_index (gimple, stmts, 0);
   enum tree_code first_stmt_code = ERROR_MARK, rhs_code = ERROR_MARK;
+  enum tree_code first_cond_code = ERROR_MARK;
   tree lhs;
   bool stop_recursion = false, need_same_oprnds = false;
   tree vectype, scalar_type, first_op1 = NULL_TREE;
@@ -440,11 +465,18 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   VEC (slp_oprnd_info, heap) *oprnds_info;
   unsigned int nops;
   slp_oprnd_info oprnd_info;
+  tree cond;
 
   if (is_gimple_call (stmt))
     nops = gimple_call_num_args (stmt);
+  else if (is_gimple_assign (stmt))
+    {
+      nops = gimple_num_ops (stmt) - 1;
+      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+	nops++;
+    }
   else
-    nops = gimple_num_ops (stmt) - 1;
+    return false;
 
   oprnds_info = vect_create_oprnd_info (nops, group_size);
 
@@ -484,6 +516,22 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  vect_free_oprnd_info (&oprnds_info, true);
 	  return false;
 	}
+
+       if (is_gimple_assign (stmt)
+	   && gimple_assign_rhs_code (stmt) == COND_EXPR
+           && (cond = gimple_assign_rhs1 (stmt))
+           && !COMPARISON_CLASS_P (cond))
+        {
+          if (vect_print_dump_info (REPORT_SLP))
+            {
+              fprintf (vect_dump,
+                       "Build SLP failed: condition is not comparison ");
+              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+            }
+
+          vect_free_oprnd_info (&oprnds_info, true);
+          return false;
+        }
 
       scalar_type = vect_get_smallest_scalar_type (stmt, &dummy, &dummy);
       vectype = get_vectype_for_scalar_type (scalar_type);
@@ -737,7 +785,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
 	  /* Not memory operation.  */
 	  if (TREE_CODE_CLASS (rhs_code) != tcc_binary
-	      && TREE_CODE_CLASS (rhs_code) != tcc_unary)
+	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
+              && rhs_code != COND_EXPR)
 	    {
 	      if (vect_print_dump_info (REPORT_SLP))
 		{
@@ -749,6 +798,26 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	      vect_free_oprnd_info (&oprnds_info, true);
 	      return false;
 	    }
+
+          if (rhs_code == COND_EXPR)
+            {
+              tree cond_expr = gimple_assign_rhs1 (stmt);
+
+	      if (i == 0)
+		first_cond_code = TREE_CODE (cond_expr);
+              else if (first_cond_code != TREE_CODE (cond_expr))
+                {
+                  if (vect_print_dump_info (REPORT_SLP))
+                    {
+                      fprintf (vect_dump, "Build SLP failed: different"
+					  " operation");
+                      print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+                    }
+
+		  vect_free_oprnd_info (&oprnds_info, true);
+                  return false;
+		}
+            }
 
 	  /* Find the def-stmts.  */
 	  if (!vect_get_and_check_slp_defs (loop_vinfo, bb_vinfo, *node, stmt,
@@ -1402,7 +1471,12 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       /* Collect the stores and store them in SLP_TREE_SCALAR_STMTS.  */
       while (next)
         {
-          VEC_safe_push (gimple, heap, scalar_stmts, next);
+	  if (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (next))
+	      && STMT_VINFO_RELATED_STMT (vinfo_for_stmt (next)))
+	    VEC_safe_push (gimple, heap, scalar_stmts,
+			STMT_VINFO_RELATED_STMT (vinfo_for_stmt (next)));
+	  else
+            VEC_safe_push (gimple, heap, scalar_stmts, next);
           next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
         }
     }
@@ -1411,7 +1485,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       /* Collect reduction statements.  */
       VEC (gimple, heap) *reductions = LOOP_VINFO_REDUCTIONS (loop_vinfo);
       for (i = 0; VEC_iterate (gimple, reductions, i, next); i++)
-        VEC_safe_push (gimple, heap, scalar_stmts, next);
+	VEC_safe_push (gimple, heap, scalar_stmts, next);
     }
 
   node = vect_create_new_slp_node (scalar_stmts);
@@ -2150,15 +2224,15 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
      For example, we have two scalar operands, s1 and s2 (e.g., group of
      strided accesses of size two), while NUNITS is four (i.e., four scalars
-     of this type can be packed in a vector). The output vector will contain
-     two copies of each scalar operand: {s1, s2, s1, s2}. (NUMBER_OF_COPIES
+     of this type can be packed in a vector).  The output vector will contain
+     two copies of each scalar operand: {s1, s2, s1, s2}.  (NUMBER_OF_COPIES
      will be 2).
 
      If GROUP_SIZE > NUNITS, the scalars will be split into several vectors
      containing the operands.
 
      For example, NUNITS is four as before, and the group size is 8
-     (s1, s2, ..., s8). We will create two vectors {s1, s2, s3, s4} and
+     (s1, s2, ..., s8).  We will create two vectors {s1, s2, s3, s4} and
      {s5, s6, s7, s8}.  */
 
   number_of_copies = least_common_multiple (nunits, group_size) / group_size;
@@ -2170,8 +2244,23 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
         {
           if (is_store)
             op = gimple_assign_rhs1 (stmt);
-          else
+          else if (gimple_assign_rhs_code (stmt) != COND_EXPR)
             op = gimple_op (stmt, op_num + 1);
+	  else
+	    {
+	      if (op_num == 0 || op_num == 1)
+		{
+		  tree cond = gimple_assign_rhs1 (stmt);
+		  op = TREE_OPERAND (cond, op_num);
+		}
+	      else
+		{
+		  if (op_num == 2)
+		    op = gimple_assign_rhs2 (stmt);
+		  else
+		    op = gimple_assign_rhs3 (stmt);
+		}
+	    }
 
           if (reduc_index != -1)
             {
