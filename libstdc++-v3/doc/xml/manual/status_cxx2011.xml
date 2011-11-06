@@ -253,10 +253,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.10</entry>
       <entry>Other runtime support</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <filename class="headerfile">&lt;cstdalign&gt;</filename> </entry>
     </row>
     <row>
       <entry>
@@ -1141,10 +1142,13 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.7</entry>
       <entry>Null-terminated sequence utilities</entry>
-      <entry>Y</entry>
-      <entry>C library dependency</entry>
+      <entry>Partial</entry>
+      <entry>C library dependency.
+      Missing <filename class="headerfile">&lt;cuchar&gt;</filename>
+      </entry>
     </row>
     <row>
       <entry>

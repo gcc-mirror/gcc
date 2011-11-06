@@ -1,5 +1,10 @@
 2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Document <cuchar> and
+	<cstdalign> as missing.
+
+2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/faq.xml: Replace references to C++0x with C++11.
 	* doc/xml/manual/intro.xml: Likewise.
 	* doc/xml/manual/backwards_compatibility.xml: Likewise.
