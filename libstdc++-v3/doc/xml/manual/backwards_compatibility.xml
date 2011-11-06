@@ -42,24 +42,24 @@ Committee couldn't include everything, and so a lot of those
 
 <para>Portability notes and known implementation limitations are as follows.</para>
 
-<section><info><title>No <code>ios_base</code></title></info>
+<section xml:id="backwards.first.ios_base"><info><title>No <code>ios_base</code></title></info>
   
 
 <para> At least some older implementations don't have <code>std::ios_base</code>, so you should use <code>std::ios::badbit</code>, <code>std::ios::failbit</code> and <code>std::ios::eofbit</code> and <code>std::ios::goodbit</code>.
 </para>
 </section>
 
-<section><info><title>No <code>cout</code> in <code>ostream.h</code>, no <code>cin</code> in <code>istream.h</code></title></info>
+<section xml:id="backwards.first.cout_cin"><info><title>No <code>cout</code> in <filename class="headerfile">&lt;ostream.h&gt;</filename>, no <code>cin</code> in <filename class="headerfile">&lt;istream.h&gt;</filename></title></info>
 
 
 <para>
 	In earlier versions of the standard,
-	<filename class="headerfile">fstream.h</filename>,
-	<filename class="headerfile">ostream.h</filename>
-	and <filename class="headerfile">istream.h</filename>
+	<filename class="headerfile">&lt;fstream.h&gt;</filename>,
+	<filename class="headerfile">&lt;ostream.h&gt;</filename>
+	and <filename class="headerfile">&lt;istream.h&gt;</filename>
 	used to define
 	<code>cout</code>, <code>cin</code> and so on. ISO C++ specifies that one needs to include
-	<filename class="headerfile">iostream</filename>
+	<filename class="headerfile">&lt;iostream&gt;</filename>
 	explicitly to get the required definitions.
  </para>
 <para> Some include adjustment may be required.</para>
@@ -96,7 +96,7 @@ considered replaced and rewritten.
   Portability notes and known implementation limitations are as follows.
 </para>
 
-<section><info><title>Namespace <code>std::</code> not supported</title></info>
+<section xml:id="backwards.second.std"><info><title>Namespace <code>std::</code> not supported</title></info>
   
 
   <para>
@@ -114,7 +114,7 @@ considered replaced and rewritten.
     First, see if the compiler has a flag for this. Namespace
     back-portability-issues are generally not a problem for g++
     compilers that do not have libstdc++ in <code>std::</code>, as the
-    compilers use <code>-fno-honor-std</code> (ignore
+    compilers use <option>-fno-honor-std</option> (ignore
     <code>std::</code>, <code>:: = std::</code>) by default. That is,
     the responsibility for enabling or disabling <code>std::</code> is
     on the user; the maintainer does not have to care about it. This
@@ -182,7 +182,7 @@ AC_DEFUN([AC_CXX_NAMESPACE_STD], [
 </programlisting>
 </section>
 
-<section><info><title>Illegal iterator usage</title></info>
+<section xml:id="backwards.second.iterators"><info><title>Illegal iterator usage</title></info>
 
 <para>
   The following illustrate implementation-allowed illegal iterator
@@ -212,12 +212,12 @@ AC_DEFUN([AC_CXX_NAMESPACE_STD], [
 </itemizedlist>
 </section>
 
-<section><info><title><code>isspace</code> from <filename class="headerfile">cctype</filename> is a macro
+<section xml:id="backwards.second.isspace"><info><title><code>isspace</code> from <filename class="headerfile">&lt;cctype&gt;</filename> is a macro
   </title></info>
   
 
   <para>
-    Glibc 2.0.x and 2.1.x define <filename class="headerfile">ctype.h</filename> functionality as macros
+    Glibc 2.0.x and 2.1.x define <filename class="headerfile">&lt;ctype.h&gt;</filename> functionality as macros
     (isspace, isalpha etc.).
   </para>
 
@@ -242,7 +242,7 @@ std:: (__ctype_b[(int) ( ( 'X' ) )] &amp; (unsigned short int) _ISspace ) ;
 
 <para>
   A solution is to modify a header-file so that the compiler tells
-  <filename class="headerfile">ctype.h</filename> to define functions
+  <filename class="headerfile">&lt;ctype.h&gt;</filename> to define functions
   instead of macros:
 </para>
 
@@ -254,20 +254,21 @@ std:: (__ctype_b[(int) ( ( 'X' ) )] &amp; (unsigned short int) _ISspace ) ;
 </programlisting>
 
 <para>
-  Then, include <filename class="headerfile">ctype.h</filename>
+  Then, include <filename class="headerfile">&lt;ctype.h&gt;</filename>
 </para>
 
 <para>
   Another problem arises if you put a <code>using namespace
-  std;</code> declaration at the top, and include <filename class="headerfile">ctype.h</filename>. This will result in
-  ambiguities between the definitions in the global namespace
-  (<filename class="headerfile">ctype.h</filename>) and the
+  std;</code> declaration at the top, and include
+  <filename class="headerfile">&lt;ctype.h&gt;</filename>. This will
+  result in ambiguities between the definitions in the global namespace
+  (<filename class="headerfile">&lt;ctype.h&gt;</filename>) and the
   definitions in namespace <code>std::</code>
   (<code>&lt;cctype&gt;</code>).
 </para>
 </section>
 
-<section><info><title>No <code>vector::at</code>, <code>deque::at</code>, <code>string::at</code></title></info>
+<section xml:id="backwards.second.at"><info><title>No <code>vector::at</code>, <code>deque::at</code>, <code>string::at</code></title></info>
 
 
 <para>
@@ -304,7 +305,7 @@ AC_DEFINE(HAVE_CONTAINER_AT)],
 
 </section>
 
-<section><info><title>No <code>std::char_traits&lt;char&gt;::eof</code></title></info>
+<section xml:id="backwards.second.eof"><info><title>No <code>std::char_traits&lt;char&gt;::eof</code></title></info>
 
 
 <para>
@@ -321,7 +322,7 @@ AC_DEFINE(HAVE_CONTAINER_AT)],
 
 </section>
 
-<section><info><title>No <code>string::clear</code></title></info>
+<section xml:id="backwards.second.stringclear"><info><title>No <code>string::clear</code></title></info>
 
 
 <para>
@@ -351,7 +352,7 @@ erase(size_type __pos = 0, size_type __n = npos)
 </para>
 </section>
 
-<section><info><title>
+<section xml:id="backwards.second.ostreamform_istreamscan"><info><title>
   Removal of <code>ostream::form</code> and <code>istream::scan</code>
   extensions
 </title></info>
@@ -362,14 +363,14 @@ erase(size_type __pos = 0, size_type __n = npos)
 </para>
 </section>
 
-<section><info><title>No <code>basic_stringbuf</code>, <code>basic_stringstream</code></title></info>
+<section xml:id="backwards.second.stringstreams"><info><title>No <code>basic_stringbuf</code>, <code>basic_stringstream</code></title></info>
 
 
 <para>
   Although the ISO standard <code>i/ostringstream</code>-classes are
-  provided, (<filename class="headerfile">sstream</filename>), for
+  provided, (<filename class="headerfile">&lt;sstream&gt;</filename>), for
   compatibility with older implementations the pre-ISO
-  <code>i/ostrstream</code> (<filename class="headerfile">strstream</filename>) interface is also provided,
+  <code>i/ostrstream</code> (<filename class="headerfile">&lt;strstream&gt;</filename>) interface is also provided,
   with these caveats:
 </para>
 
@@ -490,7 +491,7 @@ particular <quote>info iostream</quote>.
 </para>
 </section>
 
-<section><info><title>Little or no wide character support</title></info>
+<section xml:id="backwards.second.wchar"><info><title>Little or no wide character support</title></info>
   
   <para>
     Classes <classname>wstring</classname> and
@@ -499,7 +500,7 @@ particular <quote>info iostream</quote>.
   </para>
 </section>
 
-<section><info><title>No templatized iostreams</title></info>
+<section xml:id="backwards.second.iostream_templates"><info><title>No templatized iostreams</title></info>
   
   <para>
     Classes <classname>wfilebuf</classname> and
@@ -507,7 +508,7 @@ particular <quote>info iostream</quote>.
   </para>
 </section>
 
-<section><info><title>Thread safety issues</title></info>
+<section xml:id="backwards.second.thread_safety"><info><title>Thread safety issues</title></info>
 
 
   <para>
@@ -601,11 +602,12 @@ libstdc++-v3.
 
 <para>Portability notes and known implementation limitations are as follows.</para>
 
-<section><info><title>Pre-ISO headers moved to backwards or removed</title></info>
+<section xml:id="backwards.third.headers"><info><title>Pre-ISO headers moved to backwards or removed</title></info>
 
 
 <para> The pre-ISO C++ headers
-      (<code>iostream.h</code>, <code>defalloc.h</code> etc.) are
+      (<filename class="headerfile">&lt;iostream.h&gt;</filename>,
+      <filename class="headerfile">&lt;defalloc.h&gt;</filename> etc.) are
       available, unlike previous libstdc++ versions, but inclusion
       generates a warning that you are using deprecated headers.
 </para>
@@ -681,29 +683,30 @@ AC_DEFUN([AC_HEADER_PRE_STDCXX], [
 </programlisting>
 
 <para>Porting between pre-ISO headers and ISO headers is simple: headers
-like <filename class="headerfile">vector.h</filename> can be replaced with <filename class="headerfile">vector</filename> and a using
+like <filename class="headerfile">&lt;vector.h&gt;</filename> can be replaced with <filename class="headerfile">&lt;vector&gt;</filename> and a using
 directive <code>using namespace std;</code> can be put at the global
 scope. This should be enough to get this code compiling, assuming the
 other usage is correct.
 </para>
 </section>
 
-<section><info><title>Extension headers hash_map, hash_set moved to ext or backwards</title></info>
+<section xml:id="backwards.third.hash"><info><title>Extension headers hash_map, hash_set moved to ext or backwards</title></info>
 
 
       <para>At this time most of the features of the SGI STL extension have been
 	 replaced by standardized libraries.
-	 In particular, the <code>unordered_map</code> and
-	 <code>unordered_set</code> containers of TR1 and C++ 2011 are suitable
-	 replacements for the non-standard <code>hash_map</code> and
-	 <code>hash_set</code> containers in the SGI STL.
+	 In particular, the <classname>unordered_map</classname> and
+	 <classname>unordered_set</classname> containers of TR1 and C++ 2011
+	 are suitable replacements for the non-standard
+	 <classname>hash_map</classname> and <classname>hash_set</classname>
+	 containers in the SGI STL.
       </para>
-<para> Header files <filename class="headerfile">hash_map</filename> and <filename class="headerfile">hash_set</filename> moved
-to <filename class="headerfile">ext/hash_map</filename> and  <filename class="headerfile">ext/hash_set</filename>,
+<para> Header files <filename class="headerfile">&lt;hash_map&gt;</filename> and <filename class="headerfile">&lt;hash_set&gt;</filename> moved
+to <filename class="headerfile">&lt;ext/hash_map&gt;</filename> and  <filename class="headerfile">&lt;ext/hash_set&gt;</filename>,
 respectively. At the same time, all types in these files are enclosed
 in <code>namespace __gnu_cxx</code>. Later versions deprecate
-these files, and suggest using TR1's  <filename class="headerfile">unordered_map</filename>
-and  <filename class="headerfile">unordered_set</filename> instead.
+these files, and suggest using TR1's  <filename class="headerfile">&lt;unordered_map&gt;</filename>
+and  <filename class="headerfile">&lt;unordered_set&gt;</filename> instead.
 </para>
 
       <para>The extensions are no longer in the global or <code>std</code>
@@ -779,7 +782,7 @@ AC_DEFUN([AC_HEADER_EXT_HASH_SET], [
 </programlisting>
 </section>
 
-<section><info><title>No <code>ios::nocreate/ios::noreplace</code>.
+<section xml:id="backwards.third.nocreate_noreplace"><info><title>No <code>ios::nocreate/ios::noreplace</code>.
 </title></info>
 
 
@@ -798,7 +801,7 @@ and <code>trunc</code> (except for <code>app</code> ?).
 </para>
 </section>
 
-<section><info><title>
+<section xml:id="backwards.third.streamattach"><info><title>
 No <code>stream::attach(int fd)</code>
 </title></info>
 
@@ -820,7 +823,7 @@ No <code>stream::attach(int fd)</code>
 
 <para>
       An extension is available that implements this.
-      <filename class="headerfile">ext/stdio_filebuf.h</filename> contains a derived class called
+      <filename class="headerfile">&lt;ext/stdio_filebuf.h&gt;</filename> contains a derived class called
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></link>.
       This class can be constructed from a C <code>FILE*</code> or a file
       descriptor, and provides the <code>fd()</code> function.
@@ -833,7 +836,7 @@ No <code>stream::attach(int fd)</code>
 </para>
 </section>
 
-<section xml:id="backwards.support_cxx98"><info><title>
+<section xml:id="backwards.third.support_cxx98"><info><title>
 Support for C++98 dialect.
 </title></info>
 
@@ -909,7 +912,7 @@ AC_DEFUN([AC_HEADER_STDCXX_98], [
 </programlisting>
 </section>
 
-<section xml:id="backwards.support_tr1"><info><title>
+<section xml:id="backwards.third.support_tr1"><info><title>
 Support for C++TR1 dialect.
 </title></info>
 
@@ -1001,7 +1004,7 @@ AC_DEFUN([AC_HEADER_TR1_UNORDERED_SET], [
 </section>
 
 
-<section xml:id="backwards.support_cxx11"><info><title>
+<section xml:id="backwards.third.support_cxx11"><info><title>
 Support for C++11 dialect.
 </title></info>
 
@@ -1018,9 +1021,9 @@ AC_DEFUN([AC_COMPILE_STDCXX_11], [
   AC_LANG_CPLUSPLUS
   AC_TRY_COMPILE([
   template &lt;typename T&gt;
-    struct check
+    struct check final
     {
-      static_assert(sizeof(int) &lt;= sizeof(T), "not big enough");
+      static constexpr T value{ __cplusplus };
     };
 
     typedef check&lt;check&lt;bool&gt;&gt; right_angle_brackets;
@@ -1029,8 +1032,10 @@ AC_DEFUN([AC_COMPILE_STDCXX_11], [
     decltype(a) b;
 
     typedef check&lt;int&gt; check_type;
-    check_type c;
-    check_type&amp;&amp; cr = c;],,
+    check_type c{};
+    check_type&amp;&amp; cr = static_cast&lt;check_type&amp;&amp;&gt;(c);
+
+    static_assert(check_type::value == 201103L, "C++11 compiler");],,
   ac_cv_cxx_compile_cxx11_native=yes, ac_cv_cxx_compile_cxx11_native=no)
   AC_LANG_RESTORE
   ])
@@ -1043,9 +1048,9 @@ AC_DEFUN([AC_COMPILE_STDCXX_11], [
   CXXFLAGS="$CXXFLAGS -std=c++11"
   AC_TRY_COMPILE([
   template &lt;typename T&gt;
-    struct check
+    struct check final
     {
-      static_assert(sizeof(int) &lt;= sizeof(T), "not big enough");
+      static constexpr T value{ __cplusplus };
     };
 
     typedef check&lt;check&lt;bool&gt;&gt; right_angle_brackets;
@@ -1054,8 +1059,10 @@ AC_DEFUN([AC_COMPILE_STDCXX_11], [
     decltype(a) b;
 
     typedef check&lt;int&gt; check_type;
-    check_type c;
-    check_type&amp;&amp; cr = c;],,
+    check_type c{};
+    check_type&amp;&amp; cr = static_cast&lt;check_type&amp;&amp;&gt;(c);
+
+    static_assert(check_type::value == 201103L, "C++11 compiler");],,
   ac_cv_cxx_compile_cxx11_cxx=yes, ac_cv_cxx_compile_cxx11_cxx=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -1069,9 +1076,9 @@ AC_DEFUN([AC_COMPILE_STDCXX_11], [
   CXXFLAGS="$CXXFLAGS -std=gnu++11"
   AC_TRY_COMPILE([
   template &lt;typename T&gt;
-    struct check
+    struct check final
     {
-      static_assert(sizeof(int) &lt;= sizeof(T), "not big enough");
+      static constexpr T value{ __cplusplus };
     };
 
     typedef check&lt;check&lt;bool&gt;&gt; right_angle_brackets;
@@ -1080,8 +1087,10 @@ AC_DEFUN([AC_COMPILE_STDCXX_11], [
     decltype(a) b;
 
     typedef check&lt;int&gt; check_type;
-    check_type c;
-    check_type&amp;&amp; cr = c;],,
+    check_type c{};
+    check_type&amp;&amp; cr = static_cast&lt;check_type&amp;&amp;&gt;(c);
+
+    static_assert(check_type::value == 201103L, "C++11 compiler");],,
   ac_cv_cxx_compile_cxx11_gxx=yes, ac_cv_cxx_compile_cxx11_gxx=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -1097,6 +1106,8 @@ AC_DEFUN([AC_COMPILE_STDCXX_11], [
 
 
 <para>Check for library coverage of the C++2011 standard.
+  (Some library headers are commented out in this check, they are
+  not currently provided by libstdc++).
 </para>
 
 <programlisting>
@@ -1124,6 +1135,7 @@ AC_DEFUN([AC_HEADER_STDCXX_11], [
     #include &lt;cmath&gt;
     #include &lt;csetjmp&gt;
     #include &lt;csignal&gt;
+    // #include &lt;cstdalign&gt;
     #include &lt;cstdarg&gt;
     #include &lt;cstdbool&gt;
     #include &lt;cstddef&gt;
@@ -1133,21 +1145,29 @@ AC_DEFUN([AC_HEADER_STDCXX_11], [
     #include &lt;cstring&gt;
     #include &lt;ctgmath&gt;
     #include &lt;ctime&gt;
+    // #include &lt;cuchar&gt;
     #include &lt;cwchar&gt;
     #include &lt;cwctype&gt;
 
     #include &lt;algorithm&gt;
     #include &lt;array&gt;
+    #include &lt;atomic&gt;
     #include &lt;bitset&gt;
+    #include &lt;chrono&gt;
+    // #include &lt;codecvt&gt;
     #include &lt;complex&gt;
+    #include &lt;condition_variable&gt;
     #include &lt;deque&gt;
     #include &lt;exception&gt;
+    #include &lt;forward_list&gt;
     #include &lt;fstream&gt;
     #include &lt;functional&gt;
+    #include &lt;future&gt;
     #include &lt;iomanip&gt;
     #include &lt;ios&gt;
     #include &lt;iosfwd&gt;
     #include &lt;iostream&gt;
+    #include &lt;initializer_list&gt;
     #include &lt;istream&gt;
     #include &lt;iterator&gt;
     #include &lt;limits&gt;
@@ -1155,19 +1175,25 @@ AC_DEFUN([AC_HEADER_STDCXX_11], [
     #include &lt;locale&gt;
     #include &lt;map&gt;
     #include &lt;memory&gt;
+    #include &lt;mutex&gt;
     #include &lt;new&gt;
     #include &lt;numeric&gt;
     #include &lt;ostream&gt;
     #include &lt;queue&gt;
     #include &lt;random&gt;
+    #include &lt;ratio&gt;
     #include &lt;regex&gt;
+    #include &lt;scoped_allocator&gt;
     #include &lt;set&gt;
     #include &lt;sstream&gt;
     #include &lt;stack&gt;
     #include &lt;stdexcept&gt;
     #include &lt;streambuf&gt;
     #include &lt;string&gt;
+    #include &lt;system_error&gt;
+    #include &lt;thread&gt;
     #include &lt;tuple&gt;
+    #include &lt;typeindex&gt;
     #include &lt;typeinfo&gt;
     #include &lt;type_traits&gt;
     #include &lt;unordered_map&gt;
@@ -1186,7 +1212,8 @@ AC_DEFUN([AC_HEADER_STDCXX_11], [
 ])
 </programlisting>
 
-<para>As is the case for TR1 support, these autoconf macros can be made for a finer-grained, per-header-file check. For &lt;unordered_map&gt;
+<para>As is the case for TR1 support, these autoconf macros can be made for a finer-grained, per-header-file check. For
+<filename class="headerfile">&lt;unordered_map&gt;</filename>
 </para>
 
 <programlisting>
@@ -1243,8 +1270,8 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
 
 </section>
 
-<section><info><title>
-  Container::iterator_type is not necessarily Container::value_type*
+<section xml:id="backwards.third.iterator_type"><info><title>
+  <code>Container::iterator_type</code> is not necessarily <code>Container::value_type*</code>
 </title></info>
 
 

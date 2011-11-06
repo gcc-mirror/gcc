@@ -1,5 +1,13 @@
 2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/backwards_compatibility.xml: Fix autoconf tests for
+	C++11 compiler features and library headers. Add stable id
+	attributes. Use <filename> element for headers and surround in angle
+	brackets. Use <classname> for classes.
+	* doc/html/*: Regenerate.
+
+2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/status_cxx2011.xml: Document <cuchar> and
 	<cstdalign> as missing.
 
