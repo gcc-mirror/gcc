@@ -117,7 +117,7 @@
 
  <para>
    Please note that the checks are based on the requirements in the original
-   C++ standard, some of which have changed in the upcoming C++0x revision.
+   C++ standard, some of which have changed in the new C++11 revision.
    Additionally, some correct code might be rejected by the concept checks,
    for example template argument types may need to be complete when used in
    a template definition, rather than at the point of instantiation.

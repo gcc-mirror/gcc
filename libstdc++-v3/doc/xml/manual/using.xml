@@ -8,7 +8,7 @@
     <para>
       The set of features available in the GNU C++ library is shaped
       by
-      several <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Invoking-GCC.html">GCC
+      several <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.3.2/gcc/Invoking-GCC.html">GCC
       Command Options</link>. Options that impact libstdc++ are
       enumerated and detailed in the table below.
     </para>
@@ -43,12 +43,12 @@
     </row>
 
     <row>
-      <entry><literal>-std=c++0x</literal></entry>
-      <entry>Use the working draft of the upcoming ISO C++0x standard.</entry>
+      <entry><literal>-std=c++11</literal></entry>
+      <entry>Use the 2011 ISO C++ standard.</entry>
     </row>
 
     <row>
-      <entry><literal>-std=gnu++0x</literal></entry>
+      <entry><literal>-std=gnu++11</literal></entry>
       <entry>As directly above, with GNU extensions.</entry>
     </row>
 
@@ -64,7 +64,7 @@
 
     <row>
       <entry><literal>-pthread</literal> or <literal>-pthreads</literal></entry>
-      <entry>For ISO C++0x &lt;thread&gt;, &lt;future&gt;,
+      <entry>For ISO C++11 &lt;thread&gt;, &lt;future&gt;,
       &lt;mutex&gt;, or &lt;condition_variable&gt;.</entry>
     </row>
 
@@ -108,8 +108,7 @@
 
    <para>
      Two dialects of standard headers are supported, corresponding to
-     the 1998 standard as updated for 2003, and the draft of the
-     upcoming 200x standard.
+     the 1998 standard as updated for 2003, and the current 2011 standard.
    </para>
 
    <para>
@@ -218,13 +217,13 @@
 </table>
 
 <para>
-C++0x include files. These are only available in C++0x compilation
-mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
+C++11 include files. These are only available in C++11 compilation
+mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
 </para>
 
 <para/>
 <table frame="all">
-<title>C++ 200x Library Headers</title>
+<title>C++ 2011 Library Headers</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
 <colspec colname="c1"/>
@@ -310,7 +309,7 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 <para/>
 
 <table frame="all">
-<title>C++ 200x Library Headers for C Library Facilities</title>
+<title>C++ 2011 Library Headers for C Library Facilities</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
 <colspec colname="c1"/>
@@ -632,22 +631,22 @@ possible. It's an all-or-nothing affair. Thus, code like
 #include &lt;functional&gt;
 </programlisting>
 
-<para>Implies C++0x mode. To use the entities in &lt;array&gt;, the C++0x
-compilation mode must be used, which implies the C++0x functionality
+<para>Implies C++11 mode. To use the entities in &lt;array&gt;, the C++11
+compilation mode must be used, which implies the C++11 functionality
 (and deprecations) in &lt;functional&gt; will be present.
 </para>
 
 <para>Second, the other headers can be included with either dialect of
-the standard headers, although features and types specific to C++0x
-are still only enabled when in C++0x compilation mode. So, to use
+the standard headers, although features and types specific to C++11
+are still only enabled when in C++11 compilation mode. So, to use
 rvalue references with <code>__gnu_cxx::vstring</code>, or to use the
 debug-mode versions of <code>std::unordered_map</code>, one must use
-the <code>std=gnu++0x</code> compiler flag. (Or <code>std=c++0x</code>, of course.)
+the <code>std=gnu++11</code> compiler flag. (Or <code>std=c++11</code>, of course.)
 </para>
 
-<para>A special case of the second rule is the mixing of TR1 and C++0x
+<para>A special case of the second rule is the mixing of TR1 and C++11
 facilities. It is possible (although not especially prudent) to
-include both the TR1 version and the C++0x version of header in the
+include both the TR1 version and the C++11 version of header in the
 same translation unit:
 </para>
 
@@ -656,7 +655,7 @@ same translation unit:
 #include &lt;type_traits&gt;
 </programlisting>
 
-<para> Several parts of C++0x diverge quite substantially from TR1 predecessors.
+<para> Several parts of C++11 diverge quite substantially from TR1 predecessors.
 </para>
     </section>
 
@@ -841,7 +840,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	removes older ARM-style iostreams code, and other anachronisms
 	from the API.  This macro is dependent on the version of the
 	standard being tracked, and as a result may give different results for
-	<code>-std=c++98</code> and <code>-std=c++0x</code>. This may
+	<code>-std=c++98</code> and <code>-std=c++11</code>. This may
 	be useful in updating old C++ code which no longer meet the
 	requirements of the language, or for checking current code
 	against new language standards.
@@ -1093,7 +1092,7 @@ namespace gtk
 
       <para>
 	In the
-	C++0x <link linkend="manual.intro.using.flags">dialect</link> add
+	C++11 <link linkend="manual.intro.using.flags">dialect</link> add
       </para>
 
       <itemizedlist>

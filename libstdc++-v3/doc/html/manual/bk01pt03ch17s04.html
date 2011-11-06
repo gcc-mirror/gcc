@@ -193,7 +193,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   and making the debug mode easier to incorporate into development
   environments by minimizing dependencies.</p><p>Achieving link- and run-time coexistence is not a trivial
   implementation task. To achieve this goal we required a small
-  extension to the GNU C++ compiler (since incorporated into the C++0x language specification, described in the GCC Manual for the C++ language as
+  extension to the GNU C++ compiler (since incorporated into the C++11 language specification, described in the GCC Manual for the C++ language as
   <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Namespace-Association.html#Namespace-Association">namespace
   association</a>), and a complex organization of debug- and
   release-modes. The end result is that we have achieved per-use
@@ -224,7 +224,7 @@ namespace std
 defined in the namespace <code class="code">__cxx1998</code>) and also the
 debug-mode container. The debug-mode container is defined within the
 namespace <code class="code">__debug</code>, which is associated with namespace
-<code class="code">std</code> via the C++0x namespace association language feature.  This
+<code class="code">std</code> via the C++11 namespace association language feature.  This
 method allows the debug and release versions of the same component to
 coexist at compile-time and link-time without causing an unreasonable
 maintenance burden, while minimizing confusion. Again, this boils down

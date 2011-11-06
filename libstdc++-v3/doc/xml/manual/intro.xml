@@ -29,8 +29,8 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx1998.xml">
     </xi:include>
 
-    <!-- Section 01.2 : Status C++ 200x -->
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx200x.xml">
+    <!-- Section 01.2 : Status C++ 2011 -->
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx2011.xml">
     </xi:include>
 
     <!-- Section 01.3 : Status C++ TR1 -->
@@ -577,7 +577,7 @@ requirements of the license of GCC.
 	<emphasis>std::complex over-encapsulated</emphasis>
     </term>
     <listitem><para>Add the <code>real(T)</code> and <code>imag(T)</code>
-		    members;  in C++0x mode, also adjust the existing
+		    members;  in C++11 mode, also adjust the existing
 		    <code>real()</code> and <code>imag()</code> members and
 		    free functions.
     </para></listitem></varlistentry>
@@ -709,7 +709,7 @@ requirements of the license of GCC.
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#550">550</link>:
 	<emphasis>What should the return type of pow(float,int) be?</emphasis>
     </term>
-    <listitem><para>In C++0x mode, remove the pow(float,int), etc., signatures.
+    <listitem><para>In C++11 mode, remove the pow(float,int), etc., signatures.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#586">586</link>:
@@ -739,7 +739,7 @@ requirements of the license of GCC.
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#691">691</link>:
 	<emphasis>const_local_iterator cbegin, cend missing from TR1</emphasis>
     </term>
-    <listitem><para>In C++0x mode add cbegin(size_type) and cend(size_type)
+    <listitem><para>In C++11 mode add cbegin(size_type) and cend(size_type)
 		    to the unordered containers.
     </para></listitem></varlistentry>
 
@@ -764,7 +764,7 @@ requirements of the license of GCC.
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#761">761</link>:
 	<emphasis>unordered_map needs an at() member function</emphasis>
     </term>
-    <listitem><para>In C++0x mode, add at() and at() const.
+    <listitem><para>In C++11 mode, add at() and at() const.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#775">775</link>:
@@ -776,13 +776,13 @@ requirements of the license of GCC.
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#776">776</link>:
 	<emphasis>Undescribed assign function of std::array</emphasis>
     </term>
-    <listitem><para>In C++0x mode, remove assign, add fill.
+    <listitem><para>In C++11 mode, remove assign, add fill.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#781">781</link>:
 	<emphasis>std::complex should add missing C99 functions</emphasis>
     </term>
-    <listitem><para>In C++0x mode, add std::proj.
+    <listitem><para>In C++11 mode, add std::proj.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#809">809</link>:
@@ -794,7 +794,7 @@ requirements of the license of GCC.
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#844">844</link>:
 	<emphasis>complex pow return type is ambiguous</emphasis>
     </term>
-    <listitem><para>In C++0x mode, remove the pow(complex&lt;T&gt;, int) signature.
+    <listitem><para>In C++11 mode, remove the pow(complex&lt;T&gt;, int) signature.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#853">853</link>:

@@ -1,14 +1,14 @@
 <section xmlns="http://docbook.org/ns/docbook" version="5.0" 
-	 xml:id="status.iso.200x" xreflabel="Status C++ 200x">
-<?dbhtml filename="status_iso_cxx200x.html"?>
+	 xml:id="status.iso.2011" xreflabel="Status C++ 2011">
+<?dbhtml filename="status_iso_cxx2011.html"?>
 
-<info><title>C++ 200x</title>
+<info><title>C++ 2011</title>
   <keywordset>
     <keyword>
       ISO C++
     </keyword>
     <keyword>
-      200x
+      2011
     </keyword>
   </keywordset>
 </info>
@@ -20,8 +20,8 @@ Final Draft International Standard, Standard for Programming Language C++
 </para>
 
 <para>
-In this implementation <literal>-std=gnu++0x</literal> or
-<literal>-std=c++0x</literal> flags must be used to enable language
+In this implementation <literal>-std=gnu++11</literal> or
+<literal>-std=c++11</literal> flags must be used to enable language
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
@@ -30,7 +30,7 @@ presence of the required flag.
 </para>
 
 <para>
-This page describes the C++0x support in mainline GCC SVN, not in any
+This page describes the C++11 support in mainline GCC SVN, not in any
 particular release.
 </para>
 
@@ -44,7 +44,7 @@ particular release.
       <?dbhtml bgcolor="#B0B0B0" ?>
 -->
 <table frame="all">
-<title>C++ 200x Implementation Status</title>
+<title>C++ 2011 Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">
 <colspec colname="c1"/>
@@ -1122,10 +1122,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.4</entry>
       <entry>Class template <code>basic_string</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing pop_back</entry>
     </row>
     <row>
       <entry>21.5</entry>

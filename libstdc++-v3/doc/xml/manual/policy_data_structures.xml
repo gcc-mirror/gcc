@@ -1365,7 +1365,7 @@
 	  <classname>__gnu_pbds::cc_hash_table</classname> instead of
 	  <classname>std::unordered_map</classname>, since <quote>unordered
 	  map</quote> does not necessarily mean a hash-based map as implied by
-	  the C++ library (C++0x or TR1). For example, list-based associative
+	  the C++ library (C++11 or TR1). For example, list-based associative
 	  containers, which are very useful for the construction of
 	  "multimaps," are also unordered.
 	</para>

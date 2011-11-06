@@ -399,7 +399,7 @@ Backward include edit.
   </para>
   </listitem>
   <listitem>
-    <para>Added in C++0x</para>
+    <para>Added in C++11</para>
   <para>
     <filename class="headerfile">auto_ptr.h</filename> and <filename class="headerfile">binders.h</filename>
   </para>
