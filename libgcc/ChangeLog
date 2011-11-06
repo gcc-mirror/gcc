@@ -1,3 +1,9 @@
+2011-11-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR other/50991
+	* Makefile.in: Make EXTRA_PARTS depend on libgcc_tm.h instead of
+	extra-parts.
+
 2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config.host (epiphany-*-elf*): New configuration.
