@@ -717,6 +717,8 @@ case ${target} in
   extra_objs="vms.o"
   target_gtfiles="$target_gtfiles \$(srcdir)/config/vms/vms.c"
   tm_p_file="${tm_p_file} vms/vms-protos.h"
+  c_target_objs="vms-c.o"
+  cxx_target_objs="vms-c.o"
   if test x$gnu_ld != xyes; then
     # Build wrappers for native case.
     extra_programs="ld\$(exeext) ar\$(exeext)"
