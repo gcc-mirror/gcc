@@ -52,7 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  GTHREAD_USE_WEAK
 #define GTHREAD_USE_WEAK 0
 
-#include "config/gthr-posix.h"
+#include "gthr-posix.h"
 
 #else
 #include "gthr-single.h"

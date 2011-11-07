@@ -1,3 +1,14 @@
+2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/50982
+	* config/gthr-posix.h: Move ...
+	* gthr-posix.h: ... here.
+	* config/gthr-lynx.h: Reflect this.
+	* config/gthr-vxworks.h: Likewise.
+	* config/rs6000/gthr-aix.h: Likewise.
+	* configure.ac (target_thread_file): Likewise.
+	* configure: Regenerate.
+
 2011-11-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.host (arm*-*-rtemseabi*): New target.

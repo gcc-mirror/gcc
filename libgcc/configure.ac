@@ -366,7 +366,7 @@ case $target_thread_file in
     dce)	thread_header=config/pa/gthr-dce.h ;;
     lynx)	thread_header=config/gthr-lynx.h ;;
     mipssde)	thread_header=config/mips/gthr-mipssde.h ;;
-    posix)	thread_header=config/gthr-posix.h ;;
+    posix)	thread_header=gthr-posix.h ;;
     rtems)	thread_header=config/gthr-rtems.h ;;
     single)	thread_header=gthr-single.h ;;
     tpf)	thread_header=config/s390/gthr-tpf.h ;;

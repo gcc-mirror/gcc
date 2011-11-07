@@ -31,7 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef _LIBOBJC
 
 /* libobjc requires the optional pthreads component.  */
-#include "config/gthr-posix.h"
+#include "gthr-posix.h"
 
 #else
 #ifdef __cplusplus

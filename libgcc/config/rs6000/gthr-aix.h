@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GCC_GTHR_AIX_H
 
 #ifdef _THREAD_SAFE
-#include "config/gthr-posix.h"
+#include "gthr-posix.h"
 #else
 #include "gthr-single.h"
 #endif
