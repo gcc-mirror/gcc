@@ -1,7 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++0x" }
-
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -10,7 +7,7 @@
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without Pred the implied warranty of
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
@@ -18,20 +15,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 24.6.5, range access [iterator.range]
+// 21.4.6.5 basic_string::pop_back
+// { dg-options "-std=gnu++0x" }
 
 #include <string>
+#include <testsuite_hooks.h>
 
-void
-test01()
+void test01()
 {
-  std::string s("Hello, World!");
-  std::begin(s);
-  std::end(s);
+  bool test __attribute__((unused)) = true;
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-  std::wstring ws(L"Hello, World!");
-  std::begin(ws);
-  std::end(ws);
-#endif
+  const std::string cstr("Badger");
+  std::string str = cstr;
+  str.pop_back();
+  VERIFY( str.size() == cstr.size() - 1 );
+
+  str += cstr.back();
+  VERIFY( str == cstr );
+}
+
+int main()
+{ 
+  test01();
+  return 0;
 }
