@@ -1,3 +1,10 @@
+2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/50982
+	* include/Makefile.am (${host_builddir}/gthr-posix.h): Reflect
+	gthr-posix.h move.
+	* include/Makefile.in: Regenerate.
+
 2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SC_NPROC_ONLN): Define.
