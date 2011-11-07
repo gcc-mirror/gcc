@@ -790,12 +790,12 @@ alpha*-dec-osf5.1*)
 	esac
 	;;
 alpha64-dec-*vms*)
-	tm_file="${tm_file} alpha/vms.h alpha/vms64.h"
+	tm_file="${tm_file} vms/vms.h vms/vms64.h alpha/vms.h"
 	xm_file="alpha/xm-vms.h vms/xm-vms64.h"
 	tmake_file="${tmake_file} vms/t-vms64 alpha/t-vms"
 	;;
 alpha*-dec-*vms*)
-	tm_file="${tm_file} alpha/vms.h"
+	tm_file="${tm_file} vms/vms.h alpha/vms.h"
 	xm_file="alpha/xm-vms.h"
 	tmake_file="${tmake_file} alpha/t-vms"
 	;;
@@ -1528,7 +1528,7 @@ ia64*-*-hpux*)
 	esac
 	;;
 ia64-hp-*vms*)
-	tm_file="${tm_file} elfos.h ia64/sysv4.h ia64/elf.h ia64/vms.h ia64/vms64.h"
+	tm_file="${tm_file} elfos.h ia64/sysv4.h ia64/elf.h vms/vms.h vms/vms64.h ia64/vms.h"
 	xm_file="vms/xm-vms.h vms/xm-vms64.h"
 	tmake_file="${tmake_file} vms/t-vms64 ia64/t-ia64"
 	target_cpu_default="0"

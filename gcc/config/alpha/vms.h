@@ -19,9 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define TARGET_OBJECT_SUFFIX ".obj"
-#define TARGET_EXECUTABLE_SUFFIX ".exe"
-
 /* Alpha/VMS object format is not really Elf, but this makes compiling
    crtstuff.c and dealing with shared library initialization much easier.  */
 #define OBJECT_FORMAT_ELF
@@ -33,36 +30,25 @@ along with GCC; see the file COPYING3.  If not see
 
 #define NO_EXTERNAL_INDIRECT_ADDRESS
 
-#define TARGET_OS_CPP_BUILTINS()		\
+#define SUBTARGET_OS_CPP_BUILTINS()		\
     do {					\
-	builtin_define_std ("vms");		\
-	builtin_define_std ("VMS");		\
-	builtin_define ("__ALPHA");		\
-	builtin_assert ("system=vms");		\
-	if (TARGET_FLOAT_VAX)			\
-	  builtin_define ("__G_FLOAT");		\
-	else					\
-	  builtin_define ("__IEEE_FLOAT");	\
+      builtin_define ("__ALPHA");		\
+      if (TARGET_FLOAT_VAX)			\
+        builtin_define ("__G_FLOAT");		\
+      else					\
+        builtin_define ("__IEEE_FLOAT");	\
     } while (0)
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_FPREGS|MASK_GAS)
-#undef TARGET_ABI_OPEN_VMS
-#define TARGET_ABI_OPEN_VMS 1
+#if POINTER_SIZE == 64
+#define TARGET_DEFAULT (MASK_FPREGS | MASK_GAS | MASK_MALLOC64)
+#else
+#define TARGET_DEFAULT (MASK_FPREGS | MASK_GAS)
+#endif
 
 #define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
 
 #undef PCC_STATIC_STRUCT_RETURN
-
-/* "long" is 32 bits, but 64 bits for Ada.  */
-#undef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE 32
-#define ADA_LONG_TYPE_SIZE 64
-
-/* Pointer is 32 bits but the hardware has 64-bit addresses, sign extended.  */
-#undef POINTER_SIZE
-#define POINTER_SIZE 32
-#define POINTERS_EXTEND_UNSIGNED 0
 
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
@@ -169,6 +155,12 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
   (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+#if POINTER_SIZE == 64
+/* Eventhough pointers are 64bits, only 32bit ever remain significant in code
+   addresses.  */
+#define MASK_RETURN_ADDR (GEN_INT (0xffffffff))
+#endif
 
 #undef  ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE, NAME)                            \

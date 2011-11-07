@@ -18,41 +18,23 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define TARGET_OBJECT_SUFFIX ".obj"
-#define TARGET_EXECUTABLE_SUFFIX ".exe"
-
 #define OBJECT_FORMAT_ELF
 
-#define TARGET_OS_CPP_BUILTINS()		\
+#define SUBTARGET_OS_CPP_BUILTINS()		\
     do {					\
-	builtin_define_std ("vms");		\
-	builtin_define_std ("VMS");		\
 	builtin_define ("__IA64");		\
-	builtin_assert ("system=vms");		\
 	builtin_define ("__IEEE_FLOAT");	\
     } while (0)
 
-/* By default, allow $ to be part of an identifier.  */
-#define DOLLARS_IN_IDENTIFIERS 2
-
-#undef TARGET_ABI_OPEN_VMS
-#define TARGET_ABI_OPEN_VMS 1
-
 /* Need .debug_line info generated from gcc and gas.  */
 #undef TARGET_DEFAULT
+#if POINTER_SIZE == 64
+#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS | MASK_MALLOC64)
+#else
 #define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS)
+#endif
 
 #define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
-
-/* "long" is 32 bits, but 64 bits for Ada.  */
-#undef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE 32
-#define ADA_LONG_TYPE_SIZE 64
-
-/* Pointer is 32 bits but the hardware has 64-bit addresses, sign extended.  */
-#undef POINTER_SIZE
-#define POINTER_SIZE 32
-#define POINTERS_EXTEND_UNSIGNED 0
 
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
