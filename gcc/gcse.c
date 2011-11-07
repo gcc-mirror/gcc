@@ -23,10 +23,6 @@ along with GCC; see the file COPYING3.  If not see
    - do rough calc of how many regs are needed in each block, and a rough
      calc of how many regs are available in each class and use that to
      throttle back the code in cases where RTX_COST is minimal.
-   - a store to the same address as a load does not kill the load if the
-     source of the store is also the destination of the load.  Handling this
-     allows more load motion, particularly out of loops.
-
 */
 
 /* References searched while implementing this.
@@ -267,7 +263,7 @@ struct reg_use {rtx reg_rtx; };
 
 struct expr
 {
-  /* The expression (SET_SRC for expressions, PATTERN for assignments).  */
+  /* The expression.  */
   rtx expr;
   /* Index in the available expression bitmaps.  */
   int bitmap_index;
@@ -346,14 +342,12 @@ static struct hash_table_d expr_hash_table;
 
 /* This is a list of expressions which are MEMs and will be used by load
    or store motion.
-   Load motion tracks MEMs which aren't killed by
-   anything except itself. (i.e., loads and stores to a single location).
+   Load motion tracks MEMs which aren't killed by anything except itself,
+   i.e. loads and stores to a single location.
    We can then allow movement of these MEM refs with a little special
    allowance. (all stores copy the same value to the reaching reg used
    for the loads).  This means all values used to store into memory must have
-   no side effects so we can re-issue the setter value.
-   Store Motion uses this structure as an expression table to track stores
-   which look interesting, and might be moveable towards the exit block.  */
+   no side effects so we can re-issue the setter value.  */
 
 struct ls_expr
 {
@@ -454,14 +448,14 @@ static int load_killed_in_block_p (const_basic_block, int, const_rtx, int);
 static void canon_list_insert (rtx, const_rtx, void *);
 static void alloc_pre_mem (int, int);
 static void free_pre_mem (void);
-static void compute_pre_data (void);
+static struct edge_list *compute_pre_data (void);
 static int pre_expr_reaches_here_p (basic_block, struct expr *,
 				    basic_block);
 static void insert_insn_end_basic_block (struct expr *, basic_block);
 static void pre_insert_copy_insn (struct expr *, rtx);
 static void pre_insert_copies (void);
 static int pre_delete (void);
-static int pre_gcse (void);
+static int pre_gcse (struct edge_list *);
 static int one_pre_gcse_pass (void);
 static void add_label_notes (rtx, rtx);
 static void alloc_code_hoist_mem (int, int);
@@ -478,11 +472,9 @@ static int pre_expr_reaches_here_p_work (basic_block, struct expr *,
 					 basic_block, char *);
 static struct ls_expr * ldst_entry (rtx);
 static void free_ldst_entry (struct ls_expr *);
-static void free_ldst_mems (void);
+static void free_ld_motion_mems (void);
 static void print_ldst_list (FILE *);
 static struct ls_expr * find_rtx_in_ldst (rtx);
-static inline struct ls_expr * first_ls_expr (void);
-static inline struct ls_expr * next_ls_expr (struct ls_expr *);
 static int simple_mem (const_rtx);
 static void invalidate_any_buried_refs (rtx);
 static void compute_ld_motion_mems (void);
@@ -555,7 +547,6 @@ can_copy_p (enum machine_mode mode)
 
   return can_copy[mode] != 0;
 }
-
 
 /* Cover function to xmalloc to record bytes allocated.  */
 
@@ -713,7 +704,6 @@ struct reg_avail_info
 
 static struct reg_avail_info *reg_avail_info;
 static basic_block current_bb;
-
 
 /* See whether X, the source of a set, is something we want to consider for
    GCSE.  */
@@ -935,25 +925,29 @@ oprs_unchanged_p (const_rtx x, const_rtx insn, int avail_p)
   return 1;
 }
 
-/* Used for communication between mems_conflict_for_gcse_p and
-   load_killed_in_block_p.  Nonzero if mems_conflict_for_gcse_p finds a
-   conflict between two memory references.  */
-static int gcse_mems_conflict_p;
+/* Info passed from load_killed_in_block_p to mems_conflict_for_gcse_p.  */
 
-/* Used for communication between mems_conflict_for_gcse_p and
-   load_killed_in_block_p.  A memory reference for a load instruction,
-   mems_conflict_for_gcse_p will see if a memory store conflicts with
-   this memory load.  */
-static const_rtx gcse_mem_operand;
+struct mem_conflict_info
+{
+  /* A memory reference for a load instruction, mems_conflict_for_gcse_p will
+     see if a memory store conflicts with this memory load.  */
+  const_rtx mem;
 
-/* DEST is the output of an instruction.  If it is a memory reference, and
-   possibly conflicts with the load found in gcse_mem_operand, then set
-   gcse_mems_conflict_p to a nonzero value.  */
+  /* True if mems_conflict_for_gcse_p finds a conflict between two memory
+     references.  */
+  bool conflict;
+};
+
+/* DEST is the output of an instruction.  If it is a memory reference and
+   possibly conflicts with the load found in DATA, then communicate this
+   information back through DATA.  */
 
 static void
 mems_conflict_for_gcse_p (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
-			  void *data ATTRIBUTE_UNUSED)
+			  void *data)
 {
+  struct mem_conflict_info *mci = (struct mem_conflict_info *) data;
+
   while (GET_CODE (dest) == SUBREG
 	 || GET_CODE (dest) == ZERO_EXTRACT
 	 || GET_CODE (dest) == STRICT_LOW_PART)
@@ -967,17 +961,15 @@ mems_conflict_for_gcse_p (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
 
   /* If we are setting a MEM in our list of specially recognized MEMs,
      don't mark as killed this time.  */
-
-  if (expr_equiv_p (dest, gcse_mem_operand) && pre_ldst_mems != NULL)
+  if (pre_ldst_mems != NULL && expr_equiv_p (dest, mci->mem))
     {
       if (!find_rtx_in_ldst (dest))
-	gcse_mems_conflict_p = 1;
+	mci->conflict = true;
       return;
     }
 
-  if (true_dependence (dest, GET_MODE (dest), gcse_mem_operand,
-		       rtx_addr_varies_p))
-    gcse_mems_conflict_p = 1;
+  if (true_dependence (dest, GET_MODE (dest), mci->mem, rtx_addr_varies_p))
+    mci->conflict = true;
 }
 
 /* Return nonzero if the expression in X (a memory reference) is killed
@@ -989,7 +981,8 @@ mems_conflict_for_gcse_p (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
    AVAIL_P to 0.  */
 
 static int
-load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x, int avail_p)
+load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x,
+			int avail_p)
 {
   VEC (rtx,heap) *list = modify_mem_list[bb->index];
   rtx setter;
@@ -1001,6 +994,8 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x, int av
 
   FOR_EACH_VEC_ELT_REVERSE (rtx, list, ix, setter)
     {
+      struct mem_conflict_info mci;
+
       /* Ignore entries in the list that do not apply.  */
       if ((avail_p
 	   && DF_INSN_LUID (setter) < uid_limit)
@@ -1015,14 +1010,11 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x, int av
 	return 1;
 
       /* SETTER must be an INSN of some kind that sets memory.  Call
-	 note_stores to examine each hunk of memory that is modified.
-
-	 The note_stores interface is pretty limited, so we have to
-	 communicate via global variables.  Yuk.  */
-      gcse_mem_operand = x;
-      gcse_mems_conflict_p = 0;
-      note_stores (PATTERN (setter), mems_conflict_for_gcse_p, NULL);
-      if (gcse_mems_conflict_p)
+	 note_stores to examine each hunk of memory that is modified.  */
+      mci.mem = x;
+      mci.conflict = false;
+      note_stores (PATTERN (setter), mems_conflict_for_gcse_p, &mci);
+      if (mci.conflict)
 	return 1;
     }
   return 0;
@@ -1061,8 +1053,7 @@ hash_expr (const_rtx x, enum machine_mode mode, int *do_not_record_p,
 
   *do_not_record_p = 0;
 
-  hash = hash_rtx (x, mode, do_not_record_p,
-		   NULL,  /*have_reg_qty=*/false);
+  hash = hash_rtx (x, mode, do_not_record_p, NULL, /*have_reg_qty=*/false);
   return hash % hash_table_size;
 }
 
@@ -1190,13 +1181,13 @@ insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
     }
 }
 
-/* Scan pattern PAT of INSN and add an entry to the hash TABLE.  */
+/* Scan SET present in INSN and add an entry to the hash TABLE.  */
 
 static void
-hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
+hash_scan_set (rtx set, rtx insn, struct hash_table_d *table)
 {
-  rtx src = SET_SRC (pat);
-  rtx dest = SET_DEST (pat);
+  rtx src = SET_SRC (set);
+  rtx dest = SET_DEST (set);
   rtx note;
 
   if (GET_CODE (src) == CALL)
@@ -1227,7 +1218,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
 	  && want_to_gcse_p (XEXP (note, 0), NULL))
-	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
+	src = XEXP (note, 0), set = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Only record sets of pseudo-regs in the hash table.  */
       if (regno >= FIRST_PSEUDO_REGISTER
@@ -1242,7 +1233,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	  /* Is SET_SRC something we want to gcse?  */
 	  && want_to_gcse_p (src, &max_distance)
 	  /* Don't CSE a nop.  */
-	  && ! set_noop_p (pat)
+	  && ! set_noop_p (set)
 	  /* Don't GCSE if it has attached REG_EQUIV note.
 	     At this point this only function parameters should have
 	     REG_EQUIV notes and if the argument slot is used somewhere
@@ -1286,7 +1277,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	   /* Is SET_DEST something we want to gcse?  */
 	   && want_to_gcse_p (dest, &max_distance)
 	   /* Don't CSE a nop.  */
-	   && ! set_noop_p (pat)
+	   && ! set_noop_p (set)
 	   /* Don't GCSE if it has attached REG_EQUIV note.
 	      At this point this only function parameters should have
 	      REG_EQUIV notes and if the argument slot is used somewhere
@@ -1325,16 +1316,7 @@ hash_scan_call (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
   /* Currently nothing to do.  */
 }
 
-/* Process INSN and add hash table entries as appropriate.
-
-   Only available expressions that set a single pseudo-reg are recorded.
-
-   Single sets in a PARALLEL could be handled, but it's an extra complication
-   that isn't dealt with right now.  The trick is handling the CLOBBERs that
-   are also in the PARALLEL.  Later.
-
-   If SET_P is nonzero, this is for the assignment hash table,
-   otherwise it is for the expression hash table.  */
+/* Process INSN and add hash table entries as appropriate.  */
 
 static void
 hash_scan_insn (rtx insn, struct hash_table_d *table)
@@ -1347,6 +1329,13 @@ hash_scan_insn (rtx insn, struct hash_table_d *table)
 
   if (GET_CODE (pat) == SET)
     hash_scan_set (pat, insn, table);
+
+  else if (GET_CODE (pat) == CLOBBER)
+    hash_scan_clobber (pat, insn, table);
+
+  else if (GET_CODE (pat) == CALL)
+    hash_scan_call (pat, insn, table);
+
   else if (GET_CODE (pat) == PARALLEL)
     for (i = 0; i < XVECLEN (pat, 0); i++)
       {
@@ -1359,12 +1348,9 @@ hash_scan_insn (rtx insn, struct hash_table_d *table)
 	else if (GET_CODE (x) == CALL)
 	  hash_scan_call (x, insn, table);
       }
-
-  else if (GET_CODE (pat) == CLOBBER)
-    hash_scan_clobber (pat, insn, table);
-  else if (GET_CODE (pat) == CALL)
-    hash_scan_call (pat, insn, table);
 }
+
+/* Dump the hash table TABLE to file FILE under the name NAME.  */
 
 static void
 dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
@@ -1429,13 +1415,12 @@ record_last_reg_set_info (rtx insn, int regno)
     }
 }
 
-
 /* Record all of the canonicalized MEMs of record_last_mem_set_info's insn.
    Note we store a pair of elements in the list, so they have to be
    taken off pairwise.  */
 
 static void
-canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx unused1 ATTRIBUTE_UNUSED,
+canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
 		   void * v_insn)
 {
   rtx dest_addr, insn;
@@ -1634,7 +1619,6 @@ free_modify_mem_tables (void)
   modify_mem_list = 0;
   canon_modify_mem_list = 0;
 }
-
 
 /* For each block, compute whether X is transparent.  X is either an
    expression or an assignment [though we don't care which, for this context
@@ -1745,11 +1729,11 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 	  compute_transp (XVECEXP (x, i, j), indx, bmap);
     }
 }
-
 
 /* Compute PRE+LCM working variables.  */
 
 /* Local properties of expressions.  */
+
 /* Nonzero for expressions that are transparent in the block.  */
 static sbitmap *transp;
 
@@ -1771,9 +1755,6 @@ static sbitmap *pre_insert_map;
 
 /* Nonzero for expressions which should be deleted in a specific block.  */
 static sbitmap *pre_delete_map;
-
-/* Contains the edge_list returned by pre_edge_lcm.  */
-static struct edge_list *edge_list;
 
 /* Allocate vars used for PRE analysis.  */
 
@@ -1826,6 +1807,7 @@ static void
 prune_expressions (bool pre_p)
 {
   sbitmap prune_exprs;
+  struct expr *expr;
   unsigned int ui;
   basic_block bb;
 
@@ -1833,17 +1815,16 @@ prune_expressions (bool pre_p)
   sbitmap_zero (prune_exprs);
   for (ui = 0; ui < expr_hash_table.size; ui++)
     {
-      struct expr *e;
-      for (e = expr_hash_table.table[ui]; e != NULL; e = e->next_same_hash)
+      for (expr = expr_hash_table.table[ui]; expr; expr = expr->next_same_hash)
 	{
 	  /* Note potentially trapping expressions.  */
-	  if (may_trap_p (e->expr))
+	  if (may_trap_p (expr->expr))
 	    {
-	      SET_BIT (prune_exprs, e->bitmap_index);
+	      SET_BIT (prune_exprs, expr->bitmap_index);
 	      continue;
 	    }
 
-	  if (!pre_p && MEM_P (e->expr))
+	  if (!pre_p && MEM_P (expr->expr))
 	    /* Note memory references that can be clobbered by a call.
 	       We do not split abnormal edges in hoisting, so would
 	       a memory reference get hoisted along an abnormal edge,
@@ -1851,13 +1832,13 @@ prune_expressions (bool pre_p)
 	       constant memory references can be hoisted along abnormal
 	       edges.  */
 	    {
-	      if (GET_CODE (XEXP (e->expr, 0)) == SYMBOL_REF
-		  && CONSTANT_POOL_ADDRESS_P (XEXP (e->expr, 0)))
+	      if (GET_CODE (XEXP (expr->expr, 0)) == SYMBOL_REF
+		  && CONSTANT_POOL_ADDRESS_P (XEXP (expr->expr, 0)))
 		continue;
 
-	      if (MEM_READONLY_P (e->expr)
-		  && !MEM_VOLATILE_P (e->expr)
-		  && MEM_NOTRAP_P (e->expr))
+	      if (MEM_READONLY_P (expr->expr)
+		  && !MEM_VOLATILE_P (expr->expr)
+		  && MEM_NOTRAP_P (expr->expr))
 		/* Constant memory reference, e.g., a PIC address.  */
 		continue;
 
@@ -1865,7 +1846,7 @@ prune_expressions (bool pre_p)
 		 analysis to determine if this mem is actually killed
 		 by this call.  */
 
-	      SET_BIT (prune_exprs, e->bitmap_index);
+	      SET_BIT (prune_exprs, expr->bitmap_index);
 	    }
 	}
     }
@@ -1976,9 +1957,10 @@ prune_insertions_deletions (int n_elems)
 
 /* Top level routine to do the dataflow analysis needed by PRE.  */
 
-static void
+static struct edge_list *
 compute_pre_data (void)
 {
+  struct edge_list *edge_list;
   basic_block bb;
 
   compute_local_properties (transp, comp, antloc, &expr_hash_table);
@@ -2004,6 +1986,8 @@ compute_pre_data (void)
   ae_kill = NULL;
 
   prune_insertions_deletions (expr_hash_table.n_elems);
+
+  return edge_list;
 }
 
 /* PRE utilities */
@@ -2022,7 +2006,8 @@ compute_pre_data (void)
    the closest such expression.  */
 
 static int
-pre_expr_reaches_here_p_work (basic_block occr_bb, struct expr *expr, basic_block bb, char *visited)
+pre_expr_reaches_here_p_work (basic_block occr_bb, struct expr *expr,
+			      basic_block bb, char *visited)
 {
   edge pred;
   edge_iterator ei;
@@ -2079,15 +2064,13 @@ pre_expr_reaches_here_p (basic_block occr_bb, struct expr *expr, basic_block bb)
   return rval;
 }
 
-
-/* Given an expr, generate RTL which we can insert at the end of a BB,
-   or on an edge.  Set the block number of any insns generated to
-   the value of BB.  */
+/* Generate RTL to copy an EXPR to its `reaching_reg' and return it.  */
 
 static rtx
 process_insert_insn (struct expr *expr)
 {
   rtx reg = expr->reaching_reg;
+  /* Copy the expression to make sure we don't have any sharing issues.  */
   rtx exp = copy_rtx (expr->expr);
   rtx pat;
 
@@ -2099,8 +2082,7 @@ process_insert_insn (struct expr *expr)
     emit_move_insn (reg, exp);
 
   /* Otherwise, make a new insn to compute this expression and make sure the
-     insn will be recognized (this also adds any needed CLOBBERs).  Copy the
-     expression to make sure we don't have any sharing issues.  */
+     insn will be recognized (this also adds any needed CLOBBERs).  */
   else
     {
       rtx insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
@@ -2108,7 +2090,6 @@ process_insert_insn (struct expr *expr)
       if (insn_invalid_p (insn))
 	gcc_unreachable ();
     }
-
 
   pat = get_insns ();
   end_sequence ();
@@ -2254,7 +2235,9 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 	{
 	  SBITMAP_ELT_TYPE insert = pre_insert_map[e]->elms[i];
 
-	  for (j = indx; insert && j < (int) expr_hash_table.n_elems; j++, insert >>= 1)
+	  for (j = indx;
+	       insert && j < (int) expr_hash_table.n_elems;
+	       j++, insert >>= 1)
 	    if ((insert & 1) != 0 && index_map[j]->reaching_reg != NULL_RTX)
 	      {
 		struct expr *expr = index_map[j];
@@ -2430,7 +2413,7 @@ pre_insert_copies (void)
      Need to do some profiling.  */
 
   for (i = 0; i < expr_hash_table.size; i++)
-    for (expr = expr_hash_table.table[i]; expr != NULL; expr = expr->next_same_hash)
+    for (expr = expr_hash_table.table[i]; expr; expr = expr->next_same_hash)
       {
 	/* If the basic block isn't reachable, PPOUT will be TRUE.  However,
 	   we don't want to insert a copy here because the expression may not
@@ -2481,8 +2464,9 @@ pre_insert_copies (void)
 
 /* Emit move from SRC to DEST noting the equivalence with expression computed
    in INSN.  */
+
 static rtx
-gcse_emit_move_after (rtx src, rtx dest, rtx insn)
+gcse_emit_move_after (rtx dest, rtx src, rtx insn)
 {
   rtx new_rtx;
   rtx set = single_set (insn), set2;
@@ -2513,7 +2497,7 @@ gcse_emit_move_after (rtx src, rtx dest, rtx insn)
    the expression into the result of the SET.  It is left to later passes
    (cprop, cse2, flow, combine, regmove) to propagate the copy or eliminate it.
 
-   Returns nonzero if a change is made.  */
+   Return nonzero if a change is made.  */
 
 static int
 pre_delete (void)
@@ -2525,15 +2509,11 @@ pre_delete (void)
 
   changed = 0;
   for (i = 0; i < expr_hash_table.size; i++)
-    for (expr = expr_hash_table.table[i];
-	 expr != NULL;
-	 expr = expr->next_same_hash)
+    for (expr = expr_hash_table.table[i]; expr; expr = expr->next_same_hash)
       {
 	int indx = expr->bitmap_index;
 
-	/* We only need to search antic_occr since we require
-	   ANTLOC != 0.  */
-
+	/* We only need to search antic_occr since we require ANTLOC != 0.  */
 	for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
 	  {
 	    rtx insn = occr->insn;
@@ -2551,7 +2531,7 @@ pre_delete (void)
 		if (expr->reaching_reg == NULL)
 		  expr->reaching_reg = gen_reg_rtx_and_attrs (SET_DEST (set));
 
-		gcse_emit_move_after (expr->reaching_reg, SET_DEST (set), insn);
+		gcse_emit_move_after (SET_DEST (set), expr->reaching_reg, insn);
 		delete_insn (insn);
 		occr->deleted_p = 1;
 		changed = 1;
@@ -2593,7 +2573,7 @@ pre_delete (void)
    redundancies.  */
 
 static int
-pre_gcse (void)
+pre_gcse (struct edge_list *edge_list)
 {
   unsigned int i;
   int did_insert, changed;
@@ -2605,7 +2585,7 @@ pre_gcse (void)
 
   index_map = XCNEWVEC (struct expr *, expr_hash_table.n_elems);
   for (i = 0; i < expr_hash_table.size; i++)
-    for (expr = expr_hash_table.table[i]; expr != NULL; expr = expr->next_same_hash)
+    for (expr = expr_hash_table.table[i]; expr; expr = expr->next_same_hash)
       index_map[expr->bitmap_index] = expr;
 
   /* Delete the redundant insns first so that
@@ -2659,20 +2639,23 @@ one_pre_gcse_pass (void)
     compute_ld_motion_mems ();
 
   compute_hash_table (&expr_hash_table);
-  trim_ld_motion_mems ();
+  if (flag_gcse_lm)
+    trim_ld_motion_mems ();
   if (dump_file)
     dump_hash_table (dump_file, "Expression", &expr_hash_table);
 
   if (expr_hash_table.n_elems > 0)
     {
+      struct edge_list *edge_list;
       alloc_pre_mem (last_basic_block, expr_hash_table.n_elems);
-      compute_pre_data ();
-      changed |= pre_gcse ();
+      edge_list = compute_pre_data ();
+      changed |= pre_gcse (edge_list);
       free_edge_list (edge_list);
       free_pre_mem ();
     }
 
-  free_ldst_mems ();
+  if (flag_gcse_lm)
+    free_ld_motion_mems ();
   remove_fake_exit_edges ();
   free_hash_table (&expr_hash_table);
 
@@ -2924,6 +2907,7 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
 }
 
 /* Find occurence in BB.  */
+
 static struct occr *
 find_occr_in_bb (struct occr *occr, basic_block bb)
 {
@@ -2955,7 +2939,7 @@ hoist_code (void)
 
   index_map = XCNEWVEC (struct expr *, expr_hash_table.n_elems);
   for (i = 0; i < expr_hash_table.size; i++)
-    for (expr = expr_hash_table.table[i]; expr != NULL; expr = expr->next_same_hash)
+    for (expr = expr_hash_table.table[i]; expr; expr = expr->next_same_hash)
       index_map[expr->bitmap_index] = expr;
 
   /* Calculate sizes of basic blocks and note how far
@@ -3145,7 +3129,7 @@ hoist_code (void)
 		    expr->reaching_reg
 		      = gen_reg_rtx_and_attrs (SET_DEST (set));
 
-		  gcse_emit_move_after (expr->reaching_reg, SET_DEST (set),
+		  gcse_emit_move_after (SET_DEST (set), expr->reaching_reg,
 					insn);
 		  delete_insn (insn);
 		  occr->deleted_p = 1;
@@ -3233,9 +3217,9 @@ one_code_hoisting_pass (void)
   return changed;
 }
 
-/*  Here we provide the things required to do store motion towards
-    the exit. In order for this to be effective, gcse also needed to
-    be taught how to move a load when it is kill only by a store to itself.
+/*  Here we provide the things required to do store motion towards the exit.
+    In order for this to be effective, gcse also needed to be taught how to
+    move a load when it is killed only by a store to itself.
 
 	    int i;
 	    float a[10];
@@ -3251,7 +3235,7 @@ one_code_hoisting_pass (void)
     of the loop.
 
       The 'Load Motion' referred to and implemented in this file is
-    an enhancement to gcse which when using edge based lcm, recognizes
+    an enhancement to gcse which when using edge based LCM, recognizes
     this situation and allows gcse to move the load out of the loop.
 
       Once gcse has hoisted the load, store motion can then push this
@@ -3263,7 +3247,8 @@ pre_ldst_expr_hash (const void *p)
 {
   int do_not_record_p = 0;
   const struct ls_expr *const x = (const struct ls_expr *) p;
-  return hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
+  return
+    hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
 }
 
 static int
@@ -3326,7 +3311,7 @@ free_ldst_entry (struct ls_expr * ptr)
 /* Free up all memory associated with the ldst list.  */
 
 static void
-free_ldst_mems (void)
+free_ld_motion_mems (void)
 {
   if (pre_ldst_table)
     htab_delete (pre_ldst_table);
@@ -3353,7 +3338,7 @@ print_ldst_list (FILE * file)
 
   fprintf (file, "LDST list: \n");
 
-  for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
+  for (ptr = pre_ldst_mems; ptr != NULL; ptr = ptr->next)
     {
       fprintf (file, "  Pattern (%3d): ", ptr->index);
 
@@ -3394,35 +3379,16 @@ find_rtx_in_ldst (rtx x)
     return NULL;
   return (struct ls_expr *) *slot;
 }
-
-/* Return first item in the list.  */
-
-static inline struct ls_expr *
-first_ls_expr (void)
-{
-  return pre_ldst_mems;
-}
-
-/* Return the next item in the list after the specified one.  */
-
-static inline struct ls_expr *
-next_ls_expr (struct ls_expr * ptr)
-{
-  return ptr->next;
-}
 
 /* Load Motion for loads which only kill themselves.  */
 
-/* Return true if x is a simple MEM operation, with no registers or
-   side effects. These are the types of loads we consider for the
-   ld_motion list, otherwise we let the usual aliasing take care of it.  */
+/* Return true if x, a MEM, is a simple access with no side effects.
+   These are the types of loads we consider for the ld_motion list,
+   otherwise we let the usual aliasing take care of it.  */
 
 static int
 simple_mem (const_rtx x)
 {
-  if (! MEM_P (x))
-    return 0;
-
   if (MEM_VOLATILE_P (x))
     return 0;
 
@@ -3499,8 +3465,8 @@ compute_ld_motion_mems (void)
   rtx insn;
 
   pre_ldst_mems = NULL;
-  pre_ldst_table = htab_create (13, pre_ldst_expr_hash,
-				pre_ldst_expr_eq, NULL);
+  pre_ldst_table
+    = htab_create (13, pre_ldst_expr_hash, pre_ldst_expr_eq, NULL);
 
   FOR_EACH_BB (bb)
     {
@@ -3641,7 +3607,7 @@ update_ld_motion_stores (struct expr * expr)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "PRE:  store updated with reaching reg ");
-	      print_rtl (dump_file, expr->reaching_reg);
+	      print_rtl (dump_file, reg);
 	      fprintf (dump_file, ":\n	");
 	      print_inline_rtx (dump_file, insn, 8);
 	      fprintf (dump_file, "\n");
@@ -3698,7 +3664,6 @@ is_too_expensive (const char *pass)
 
   return false;
 }
-
 
 /* All the passes implemented in this file.  Each pass has its
    own gate and execute function, and at the end of the file a
