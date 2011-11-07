@@ -831,6 +831,9 @@
 /* Define if NLS translations are to be used. */
 #undef _GLIBCXX_USE_NLS
 
+/* Define if pthreads_num_processors_np is available in <pthread.h>. */
+#undef _GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP
+
 /* Define if /dev/random and /dev/urandom are available for the random_device
    of TR1 (Chapter 5.1). */
 #undef _GLIBCXX_USE_RANDOM_TR1
@@ -840,6 +843,12 @@
 
 /* Define if _SC_NPROCESSORS_ONLN is available in <unistd.h>. */
 #undef _GLIBCXX_USE_SC_NPROCESSORS_ONLN
+
+/* Define if _SC_NPROC_ONLN is available in <unistd.h>. */
+#undef _GLIBCXX_USE_SC_NPROC_ONLN
+
+/* Define if sysctl(), CTL_HW and HW_NCPU are available in <sys/sysctl.h>. */
+#undef _GLIBCXX_USE_SYSCTL_HW_NCPU
 
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T

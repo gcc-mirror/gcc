@@ -1,5 +1,16 @@
 2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* acinclude.m4 (GLIBCXX_CHECK_SC_NPROC_ONLN): Define.
+	(GLIBCXX_CHECK_PTHREADS_NUM_PROCESSORS_NP): Define.
+	(GLIBCXX_CHECK_SYSCTL_HW_NCPU): Define.
+	* configure.ac: Use new checks.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* src/thread.cc: Check new config macros.
+	* testsuite/lib/libstdc++.exp: Likewise.
+
+2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* config/abi/pre/gnu.ver: Fix exports for string::pop_back.
 
 2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
