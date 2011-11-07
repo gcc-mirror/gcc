@@ -1,3 +1,9 @@
+2011-11-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/30282
+	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Always emit
+	blockage for ABI_V4.
+
 2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/50691
