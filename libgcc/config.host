@@ -58,8 +58,7 @@
 #  			Defaults to "$cpu_type/sfp-machine.h" if it exists,
 #			no-sfp-machine.h otherwise.
 #  tmake_file		A list of machine-description-specific
-#			makefile-fragments, if different from
-#			"$cpu_type/t-$cpu_type".
+#			makefile fragments.
 #  tm_defines		List of target macros to define for all compilations.
 #  tm_file		A list of target macro files used only for code
 #			built for the target, not the host.  These files
@@ -402,16 +401,16 @@ avr-*-*)
 	tm_file="$tm_file avr/avr-lib.h"
 	;;
 bfin*-elf*)
-	tmake_file="bfin/t-bfin bfin/t-elf bfin/t-crtlibid bfin/t-crtstuff t-fdpbit"
+	tmake_file="bfin/t-bfin bfin/t-crtlibid bfin/t-crtstuff t-libgcc-pic t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o crtlibid.o"
         ;;
 bfin*-uclinux*)
-	tmake_file="bfin/t-bfin bfin/t-elf bfin/t-crtlibid bfin/t-crtstuff t-fdpbit"
+	tmake_file="bfin/t-bfin bfin/t-crtlibid bfin/t-crtstuff t-libgcc-pic t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtlibid.o"
 	md_unwind_header=bfin/linux-unwind.h
         ;;
 bfin*-linux-uclibc*)
-	tmake_file="$tmake_file bfin/t-bfin bfin/t-elf bfin/t-crtstuff t-fdpbit bfin/t-linux"
+	tmake_file="$tmake_file bfin/t-bfin bfin/t-crtstuff t-libgcc-pic t-fdpbit bfin/t-linux"
 	# No need to build crtbeginT.o on uClibc systems.  Should probably
 	# be moved to the OS specific section above.
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -1099,7 +1098,7 @@ vax-*-netbsdelf*)
 vax-*-openbsd*)
 	;;
 xstormy16-*-elf)
-	tmake_file=t-fdpbit
+	tmake_file="stormy16/t-stormy16 t-fdpbit"
 	;;
 xtensa*-*-elf*)
 	tmake_file="$tmake_file xtensa/t-xtensa xtensa/t-elf"

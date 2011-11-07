@@ -25,7 +25,7 @@ LIB2ADD = \
 
 # Special libgcc setup. Make single/double floating point the same,
 # and use our own include files.
-HOST_LIBGCC2_CFLAGS = -DDF=SF -I../../includes/
+HOST_LIBGCC2_CFLAGS += -DDF=SF -I../../includes/
 
 # Switch off all debugging for the embedded libraries.
 # (embedded processors need small libraries by default).

@@ -10,4 +10,4 @@ LIB2ADD = \
 	$(srcdir)/config/h8300/fixunssfsi.c
 
 # We do not have DF type, so fake out the libgcc2 compilation.
-HOST_LIBGCC2_CFLAGS = -DDF=SF
+HOST_LIBGCC2_CFLAGS += -DDF=SF

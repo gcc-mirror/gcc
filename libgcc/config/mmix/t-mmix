@@ -1,4 +1,4 @@
-HOST_LIBGCC2_CFLAGS = -mlibfuncs -O2
+HOST_LIBGCC2_CFLAGS += -mlibfuncs -O2
 
 # We need to turn off some assumptions on normality for code in crtstuff.c
 # and crt{i,n}.S, specifically about execution not continuing past the
