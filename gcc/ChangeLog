@@ -1,5 +1,12 @@
 2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
 
+	* optabs.c (get_atomic_op_for_code): Fill in optab table at runtime so
+	SWITCHABLE_TARGET can change the values during compilation.
+	(expand_atomic_fetch_op): Handle parameter change ripples for 
+	get_atomic_op_for_code call.
+
+2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
+
 	* doc/extend.texi: Docuemnt behaviour change for __atomic_exchange and
 	__atomic_store.
 	* optabs.c (expand_atomic_exchange): Expand to __sync_lock_test_and_set
