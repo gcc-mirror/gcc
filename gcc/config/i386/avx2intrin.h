@@ -1252,7 +1252,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_i32gather_pd (double const *base, __m128i index, const int scale)
 {
   __v4df src = _mm256_setzero_pd ();
-  __v4df mask = _mm256_set1_pd((double)(long long int) -1);
+  __v4df mask = _mm256_cmp_pd (src, src, _CMP_EQ_OQ);
 
   return (__m256d) __builtin_ia32_gathersiv4df (src,
 						base,
@@ -1304,7 +1304,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_i64gather_pd (double const *base, __m256i index, const int scale)
 {
   __v4df src = _mm256_setzero_pd ();
-  __v4df mask = _mm256_set1_pd((double)(long long int) -1);
+  __v4df mask = _mm256_cmp_pd (src, src, _CMP_EQ_OQ);
 
   return (__m256d) __builtin_ia32_gatherdiv4df (src,
 						base,
@@ -1356,7 +1356,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_i32gather_ps (float const *base, __m256i index, const int scale)
 {
   __v8sf src = _mm256_setzero_ps ();
-  __v8sf mask = _mm256_set1_ps((float)(int) -1);
+  __v8sf mask = _mm256_cmp_ps (src, src, _CMP_EQ_OQ);
 
   return (__m256) __builtin_ia32_gathersiv8sf (src,
 					       base,
