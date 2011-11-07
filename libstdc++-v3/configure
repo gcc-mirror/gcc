@@ -19105,6 +19105,20 @@ fi
 done
 
 
+  # Check for the existence of the <stdalign.h> header.
+  for ac_header in stdalign.h
+do :
+  ac_fn_cxx_check_header_mongrel "$LINENO" "stdalign.h" "ac_cv_header_stdalign_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdalign_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_STDALIGN_H 1
+_ACEOF
+
+fi
+
+done
+
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'

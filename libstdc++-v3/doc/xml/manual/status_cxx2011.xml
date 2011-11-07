@@ -253,11 +253,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.10</entry>
       <entry>Other runtime support</entry>
-      <entry>Partial</entry>
-      <entry>Missing <filename class="headerfile">&lt;cstdalign&gt;</filename> </entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>

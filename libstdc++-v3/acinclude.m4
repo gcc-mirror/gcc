@@ -1641,6 +1641,9 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   # Check for the existence of the <stdbool.h> header.
   AC_CHECK_HEADERS(stdbool.h)
 
+  # Check for the existence of the <stdalign.h> header.
+  AC_CHECK_HEADERS(stdalign.h)
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])

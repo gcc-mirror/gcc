@@ -634,6 +634,7 @@ c_base_headers = \
 	${c_base_srcdir}/cmath \
 	${c_base_srcdir}/csetjmp \
 	${c_base_srcdir}/csignal \
+	${c_base_srcdir}/cstdalign \
 	${c_base_srcdir}/cstdarg \
 	${c_base_srcdir}/cstdbool \
 	${c_base_srcdir}/cstddef \
