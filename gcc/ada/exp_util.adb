@@ -1759,6 +1759,100 @@ package body Exp_Util is
           and then not Restriction_Active (No_Local_Allocators);
    end Entry_Names_OK;
 
+   -------------------
+   -- Evaluate_Name --
+   -------------------
+
+   procedure Evaluate_Name (Nam : Node_Id) is
+      K : constant Node_Kind := Nkind (Nam);
+
+   begin
+      --  For an explicit dereference, we simply force the evaluation of the
+      --  name expression. The dereference provides a value that is the address
+      --  for the renamed object, and it is precisely this value that we want
+      --  to preserve.
+
+      if K = N_Explicit_Dereference then
+         Force_Evaluation (Prefix (Nam));
+
+      --  For a selected component, we simply evaluate the prefix
+
+      elsif K = N_Selected_Component then
+         Evaluate_Name (Prefix (Nam));
+
+      --  For an indexed component, or an attribute reference, we evaluate the
+      --  prefix, which is itself a name, recursively, and then force the
+      --  evaluation of all the subscripts (or attribute expressions).
+
+      elsif Nkind_In (K, N_Indexed_Component, N_Attribute_Reference) then
+         Evaluate_Name (Prefix (Nam));
+
+         declare
+            E : Node_Id;
+
+         begin
+            E := First (Expressions (Nam));
+            while Present (E) loop
+               Force_Evaluation (E);
+
+               if Original_Node (E) /= E then
+                  Set_Do_Range_Check (E, Do_Range_Check (Original_Node (E)));
+               end if;
+
+               Next (E);
+            end loop;
+         end;
+
+      --  For a slice, we evaluate the prefix, as for the indexed component
+      --  case and then, if there is a range present, either directly or as the
+      --  constraint of a discrete subtype indication, we evaluate the two
+      --  bounds of this range.
+
+      elsif K = N_Slice then
+         Evaluate_Name (Prefix (Nam));
+
+         declare
+            DR     : constant Node_Id := Discrete_Range (Nam);
+            Constr : Node_Id;
+            Rexpr  : Node_Id;
+
+         begin
+            if Nkind (DR) = N_Range then
+               Force_Evaluation (Low_Bound (DR));
+               Force_Evaluation (High_Bound (DR));
+
+            elsif Nkind (DR) = N_Subtype_Indication then
+               Constr := Constraint (DR);
+
+               if Nkind (Constr) = N_Range_Constraint then
+                  Rexpr := Range_Expression (Constr);
+
+                  Force_Evaluation (Low_Bound (Rexpr));
+                  Force_Evaluation (High_Bound (Rexpr));
+               end if;
+            end if;
+         end;
+
+      --  For a type conversion, the expression of the conversion must be the
+      --  name of an object, and we simply need to evaluate this name.
+
+      elsif K = N_Type_Conversion then
+         Evaluate_Name (Expression (Nam));
+
+      --  For a function call, we evaluate the call
+
+      elsif K = N_Function_Call then
+         Force_Evaluation (Nam);
+
+      --  The remaining cases are direct name, operator symbol and character
+      --  literal. In all these cases, we do nothing, since we want to
+      --  reevaluate each time the renamed object is used.
+
+      else
+         return;
+      end if;
+   end Evaluate_Name;
+
    ---------------------
    -- Evolve_And_Then --
    ---------------------
@@ -5921,11 +6015,11 @@ package body Exp_Util is
       Exp_Type     : constant Entity_Id      := Etype (Exp);
       Svg_Suppress : constant Suppress_Array := Scope_Suppress;
       Def_Id       : Entity_Id;
+      E            : Node_Id;
+      New_Exp      : Node_Id;
+      Ptr_Typ_Decl : Node_Id;
       Ref_Type     : Entity_Id;
       Res          : Node_Id;
-      Ptr_Typ_Decl : Node_Id;
-      New_Exp      : Node_Id;
-      E            : Node_Id;
 
       function Side_Effect_Free (N : Node_Id) return Boolean;
       --  Determines if the tree N represents an expression that is known not
@@ -6160,7 +6254,7 @@ package body Exp_Util is
 
             --  A binary operator is side effect free if and both operands are
             --  side effect free. For this purpose binary operators include
-            --  membership tests and short circuit forms
+            --  membership tests and short circuit forms.
 
             when N_Binary_Op | N_Membership_Test | N_Short_Circuit =>
                return Side_Effect_Free (Left_Opnd  (N))
@@ -6528,6 +6622,15 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the value
 
       else
+         --  An expression which is in Alfa mode is considered side effect free
+         --  if the resulting value is captured by a variable or a constant.
+
+         if Alfa_Mode
+           and then Nkind (Parent (Exp)) = N_Object_Declaration
+         then
+            return;
+         end if;
+
          --  Special processing for function calls that return a limited type.
          --  We need to build a declaration that will enable build-in-place
          --  expansion of the call. This is not done if the context is already
@@ -6536,10 +6639,10 @@ package body Exp_Util is
          --  This is relevant only in Ada 2005 mode. In Ada 95 programs we have
          --  to accommodate functions returning limited objects by reference.
 
-         if Nkind (Exp) = N_Function_Call
+         if Ada_Version >= Ada_2005
+           and then Nkind (Exp) = N_Function_Call
            and then Is_Immutably_Limited_Type (Etype (Exp))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
-           and then Ada_Version >= Ada_2005
          then
             declare
                Obj  : constant Entity_Id := Make_Temporary (Loc, 'F', Exp);
@@ -6559,32 +6662,57 @@ package body Exp_Util is
             end;
          end if;
 
-         Ref_Type := Make_Temporary (Loc, 'A');
-
-         Ptr_Typ_Decl :=
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Ref_Type,
-             Type_Definition =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present => True,
-                 Subtype_Indication =>
-                   New_Reference_To (Exp_Type, Loc)));
-
-         E := Exp;
-         Insert_Action (Exp, Ptr_Typ_Decl);
-
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Set_Etype (Def_Id, Exp_Type);
 
-         Res :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => New_Reference_To (Def_Id, Loc));
+         --  The regular expansion of functions with side effects involves the
+         --  generation of an access type to capture the return value found on
+         --  the secondary stack. Since Alfa (and why) cannot process access
+         --  types, use a different approach which ignores the secondary stack
+         --  and "copies" the returned object.
 
+         if Alfa_Mode then
+            Res := New_Reference_To (Def_Id, Loc);
+            Ref_Type := Exp_Type;
+
+         --  Regular expansion utilizing an access type and 'reference
+
+         else
+            Res :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Reference_To (Def_Id, Loc));
+
+            --  Generate:
+            --    type Ann is access all <Exp_Type>;
+
+            Ref_Type := Make_Temporary (Loc, 'A');
+
+            Ptr_Typ_Decl :=
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ref_Type,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present        => True,
+                    Subtype_Indication =>
+                      New_Reference_To (Exp_Type, Loc)));
+
+            Insert_Action (Exp, Ptr_Typ_Decl);
+         end if;
+
+         E := Exp;
          if Nkind (E) = N_Explicit_Dereference then
             New_Exp := Relocate_Node (Prefix (E));
          else
             E := Relocate_Node (E);
-            New_Exp := Make_Reference (Loc, E);
+
+            --  Do not generate a 'reference in Alfa mode since the access type
+            --  is not created in the first place.
+
+            if Alfa_Mode then
+               New_Exp := E;
+            else
+               New_Exp := Make_Reference (Loc, E);
+            end if;
          end if;
 
          if Is_Delayed_Aggregate (E) then

@@ -33,8 +33,4 @@ package Exp_Ch8 is
    procedure Expand_N_Package_Renaming_Declaration    (N : Node_Id);
    procedure Expand_N_Subprogram_Renaming_Declaration (N : Node_Id);
 
-   procedure Evaluate_Name (Nam : Node_Id);
-   --  Remove the all side effects from a name except for the outermost
-   --  construct.
-
 end Exp_Ch8;
