@@ -1,3 +1,9 @@
+2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/45723
+        * io/open.c (new_unit): Don't check file size before attempting
+        seek.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (AM_CPPFLAGS): Add

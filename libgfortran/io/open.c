@@ -554,7 +554,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   if (flags->position == POSITION_APPEND)
     {
-      if (file_size (opp->file, opp->file_len) > 0 && sseek (u->s, 0, SEEK_END) < 0)
+      if (sseek (u->s, 0, SEEK_END) < 0)
 	generate_error (&opp->common, LIBERROR_OS, NULL);
       u->endfile = AT_ENDFILE;
     }
