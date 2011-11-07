@@ -1,3 +1,8 @@
+2011-11-05  Quentin Neill  <quentin.neill@amd.com>
+
+	Fix r180999.
+	* config.gcc: Add f16cintrin.h.
+
 2011-11-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (arm*-*-rtemseabi*): New target.
@@ -319,7 +324,7 @@
 
 	Piledriver f16cintrin.h fix.
 	* config/i386/f16cintrin.h: Contents moved from immintrin.h.
-	* config/config.gcc: Add f16cintrin.h.
+	* config.gcc: Add f16cintrin.h.
 
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
