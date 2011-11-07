@@ -209,7 +209,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Note: assumes long is at least 32 bits.
   enum { _S_num_primes = 29 };
 
-  static const unsigned long __stl_prime_list[_S_num_primes] =
+  template<typename _PrimeType>
+    struct _Hashtable_prime_list
+    {
+      static const _PrimeType  __stl_prime_list[_S_num_primes];
+
+      static const _PrimeType*
+      _S_get_prime_list();
+    };
+
+  template<typename _PrimeType> const _PrimeType
+  _Hashtable_prime_list<_PrimeType>::__stl_prime_list[_S_num_primes] =
     {
       5ul,          53ul,         97ul,         193ul,       389ul,
       769ul,        1543ul,       3079ul,       6151ul,      12289ul,
@@ -219,11 +229,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       805306457ul,  1610612741ul, 3221225473ul, 4294967291ul
     };
 
+ template<class _PrimeType> inline const _PrimeType*
+ _Hashtable_prime_list<_PrimeType>::_S_get_prime_list()
+ {
+   return __stl_prime_list;
+ }
+
   inline unsigned long
   __stl_next_prime(unsigned long __n)
   {
-    const unsigned long* __first = __stl_prime_list;
-    const unsigned long* __last = __stl_prime_list + (int)_S_num_primes;
+    const unsigned long* __first = _Hashtable_prime_list<unsigned long>::_S_get_prime_list();
+    const unsigned long* __last = __first + (int)_S_num_primes;
     const unsigned long* pos = std::lower_bound(__first, __last, __n);
     return pos == __last ? *(__last - 1) : *pos;
   }
@@ -417,7 +433,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       max_bucket_count() const
-      { return __stl_prime_list[(int)_S_num_primes - 1]; }
+      { return _Hashtable_prime_list<unsigned long>::
+               _S_get_prime_list()[(int)_S_num_primes - 1];
+      }
 
       size_type
       elems_in_bucket(size_type __bucket) const

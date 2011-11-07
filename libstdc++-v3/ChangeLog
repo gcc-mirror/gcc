@@ -1,3 +1,8 @@
+2011-11-07  Xinliang David Li  <davidxl@google.com>
+
+	* include/backward/hashtable.h: Make __stl_prime_list
+	in comdat section.
+
 2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/basic_string.h (basic_string::at): Move adjacent to other
