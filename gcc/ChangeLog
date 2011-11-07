@@ -1,5 +1,13 @@
 2011-11-07  Tristan Gingold  <gingold@adacore.com>
 
+	* config.gcc (*-*-*vms*): Set c_target_objs, cxx_target_objs.
+	* config/vms/t-vms: Add vms-c.o rule.
+	* config/vms/vms-c.c: New file.
+	* config/vms/vms-protos.h (vms_c_register_pragma): New prototype.
+	* config/vms/vms.h (REGISTER_TARGET_PRAGMAS): Define.
+
+2011-11-07  Tristan Gingold  <gingold@adacore.com>
+
 	* config/alpha/vms.h (TARGET_OBJECT_SUFFIX,
 	TARGET_EXECUTABLE_SUFFIX, TARGET_OS_CPP_BUILTINS,
 	TARGET_ABI_OPEN_VMS, LONG_TYPE_SIZE, ADA_LONG_TYPE_SIZE,

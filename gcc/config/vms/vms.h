@@ -34,6 +34,9 @@ along with GCC; see the file COPYING3.  If not see
       }                                              \
   } while (0)
 
+/* Tell compiler we want to support VMS pragmas */
+#define REGISTER_TARGET_PRAGMAS() vms_c_register_pragma ()
+
 /* By default, allow $ to be part of an identifier.  */
 #define DOLLARS_IN_IDENTIFIERS 2
 
