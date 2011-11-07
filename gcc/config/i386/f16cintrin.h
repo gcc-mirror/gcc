@@ -88,7 +88,7 @@ _mm256_cvtps_ph (__m256 __A, const int __I)
 
 #define _mm256_cvtps_ph(A, I) \
   ((__m128i) __builtin_ia32_vcvtps2ph256 ((__v8sf)(__m256) A, (int) (I)))
-#endif
-
+#endif /* __OPTIMIZE */
+#endif /* _F16CINTRIN_H_INCLUDED */
 #endif /* __F16C__ */
-#endif
+#endif /* _X86INTRIN_H_INCLUDED */

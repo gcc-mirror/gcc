@@ -1,7 +1,8 @@
-2011-11-05  Quentin Neill  <quentin.neill@amd.com>
+2011-11-06  Quentin Neill  <quentin.neill@amd.com>
 
-	Fix r180999.
+	Fix r180999, update ChangeLog
 	* config.gcc: Add f16cintrin.h.
+	* f16cintrin.h: Add missing endif.
 
 2011-11-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
@@ -324,7 +325,9 @@
 
 	Piledriver f16cintrin.h fix.
 	* config/i386/f16cintrin.h: Contents moved from immintrin.h.
-	* config.gcc: Add f16cintrin.h.
+	* config/i386/immintrin.h: Include f16cintrin.h.
+	* config.gcc (i[34567]86-*-*, x86_64-*-*): Add f16cintrin.h.
+
 
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
