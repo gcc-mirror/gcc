@@ -1,3 +1,44 @@
+2011-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov.c (object_summary): Replace with ...
+	(object_runs): ... this.
+	(process_file): Remove functions with no data.
+	(generate_results): Ignore files with no lines.
+	(release_function): New helper, broken out of ...
+	(release_structures): ... here.  Use it.
+	(read_count_file): Adjust for new data file format.
+	(output_lines): Use object_runs.
+	* gcov-io.h (GCOV_TAG_OBJECT_SUMMARY): Obsolete.
+	(struct gcov_ctr_info): Move definition.
+	(struct gcov_fn_info): Add key field, use gcov_ctr_info for
+	trailing array.
+	(struct gcov_info): Add merge function array, remove mask and
+	counts.  Trailing array is array of pointers to function info.
+	* coverage.c (struct function_list): Replace counter numbers with
+	counter arrays.  Add fndecl field.  GTYify.
+	(counts_entry): Remove chain workspace.
+	(functions_head): GTYify.
+	(prg_n_ctrs): Remove.
+	(fn_v_ctrs): New.
+	(tree_ctr_tables): Remove.
+	(read_counts_file): Cope with blank entries and expect program
+	summaries before functions.  Don't warn on missing entries.
+	(coverage_counter_alloc): Allocate individual function arrays.
+	(tree_coverage_counter_ref, tree_coverage_counter_addr): Adjust
+	for individual function arrays.
+	(coverage_end_function): GTYify function list object. Finalize
+	function's counter arrays.
+	(build_var): New.  Create a counter-related variable with
+	appropriate linkage.
+	(build_fn_info_type): Adjust for new runtime structure.
+	(build_fn_info_value): Rename to ...
+	(build_fn_info): ... here.  Build new format data.
+	(build_ctr_info_type, build_ctr_info_value): Remove.
+	(build_info_type): New. Build new format data structure.
+	(build_info): Adjust for new format data.
+	(create_coverage): Likewise.
+	* gcov-dump.c (tag_function): Recognize placeholders.
+
 2011-11-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/constraints.md (Cm2): New constraint for int -2.
