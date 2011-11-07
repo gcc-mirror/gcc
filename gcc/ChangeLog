@@ -1,4 +1,21 @@
-2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
+2011-11-07  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/vms.h (TARGET_OBJECT_SUFFIX,
+	TARGET_EXECUTABLE_SUFFIX, TARGET_OS_CPP_BUILTINS,
+	TARGET_ABI_OPEN_VMS, LONG_TYPE_SIZE, ADA_LONG_TYPE_SIZE,
+	POINTER_SIZE, POINTERS_EXTEND_UNSIGNED): Move to config/vms/vms.h
+	(SUBTARGET_OS_CPP_BUILTINS): Define.
+	(TARGET_DEFAULT): Tune according to POINTER_SIZE.
+	(MASK_RETURN_ADDR): Define in 64 bit mode.
+	* config/ia64/vms.h: Likewise.
+	* config/vms/vms.h: New file.
+	* config/vms/vms64.h: New file.
+	* config/alpha/vms64.h: Removed.
+	* config/ia64/vms64.h: Removed.
+	* config.gcc (alpha64-dec-*vms*, alpha*-dec-*vms*, ia64-hp-*vms*):
+	Adjust for above change.
+
+ 2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	PR rtl-optimization/47698
 	* ifconv.c (noce_operand_ok): prevent CMOV generation
