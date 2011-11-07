@@ -288,6 +288,10 @@ static void
 add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
 {
   gfc_component *c;
+
+  if (tb->non_overridable)
+    return;
+  
   c = gfc_find_component (vtype, name, true, true);
 
   if (c == NULL)
