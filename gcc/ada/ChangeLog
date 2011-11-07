@@ -1,3 +1,25 @@
+2011-11-07  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Unique_Entity): For a parameter on a subprogram
+	body that has a corresponding parameter on the subprogram
+	declaration, define the unique entity as being the declaration
+	one.
+
+2011-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Return_Type): In Ada 2012 mode, if the
+	return type of a function is the class-wide type of an incomplete
+	type T, T can be a Taft-amendment type and does not have to be
+	completed in the current private part.
+
+2011-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads (Inherited_Aspect): Map that indicates type aspects
+	that are inherited by default, and apply to the class-wide type
+	as well.
+	* aspects.adb (Find_Aspect): If the entity is class-wide and the
+	aspect is inherited, use the aspect of the specific type.
+
 2011-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_alfa.adb: Remove with and use clause for
