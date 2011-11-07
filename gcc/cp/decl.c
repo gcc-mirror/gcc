@@ -6049,9 +6049,12 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  /* This variable seems to be a non-dependent constant, so process
 	     its initializer.  If check_initializer returns non-null the
 	     initialization wasn't constant after all.  */
-	  tree init_code = check_initializer (decl, init, flags, &cleanups);
+	  tree init_code;
+	  cleanups = make_tree_vector ();
+	  init_code = check_initializer (decl, init, flags, &cleanups);
 	  if (init_code == NULL_TREE)
 	    init = NULL_TREE;
+	  release_tree_vector (cleanups);
 	}
       else if (!DECL_PRETTY_FUNCTION_P (decl))
 	/* Deduce array size even if the initializer is dependent.  */
@@ -6150,6 +6153,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		error ("Java object %qD not allocated with %<new%>", decl);
 	      init = NULL_TREE;
 	    }
+	  cleanups = make_tree_vector ();
 	  init = check_initializer (decl, init, flags, &cleanups);
 	  /* Thread-local storage cannot be dynamically initialized.  */
 	  if (DECL_THREAD_LOCAL_P (decl) && init)
@@ -6320,6 +6324,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       unsigned i; tree t;
       FOR_EACH_VEC_ELT (tree, cleanups, i, t)
 	push_cleanup (decl, t, false);
+      release_tree_vector (cleanups);
     }
 
   if (was_readonly)
