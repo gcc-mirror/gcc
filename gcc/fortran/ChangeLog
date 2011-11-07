@@ -1,3 +1,8 @@
+2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsic.texi (MCLOCK, MCLOCK8, TIME, TIME8): Functions clock
+	and time are part of the C standard library.
+
 2011-11-06  Janus Weil  <janus@gcc.gnu.org>
 
 	* gfortran.h (gfc_extend_expr): Modified prototype.
