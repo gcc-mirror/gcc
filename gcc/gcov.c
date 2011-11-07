@@ -265,7 +265,7 @@ static unsigned source_index;
 
 /* This holds data summary information.  */
 
-static struct gcov_summary object_summary;
+static unsigned object_runs;
 static unsigned program_count;
 
 /* Modification time of graph file.  */
@@ -362,6 +362,7 @@ static int output_branch_count (FILE *, int, const arc_t *);
 static void output_lines (FILE *, const source_t *);
 static char *make_gcov_file_name (const char *, const char *);
 static void release_structures (void);
+static void release_function (function_t *);
 extern int main (int, char **);
 
 int
@@ -537,7 +538,7 @@ static void
 process_file (const char *file_name)
 {
   function_t *fn;
-  function_t *fn_p;
+  function_t **fn_p;
   function_t *old_functions;
 
   /* Save and clear the list of current functions.  They will be appended
@@ -558,11 +559,25 @@ process_file (const char *file_name)
   if (read_count_file ())
     return;
 
-  for (fn_p = NULL, fn = functions; fn; fn_p = fn, fn = fn->next)
-    solve_flow_graph (fn);
+  fn_p = &functions;
+  while ((fn = *fn_p) != NULL)
+    {
+      if (fn->counts)
+	{
+	  solve_flow_graph (fn);
+	  fn_p = &fn->next;
+	}
+      else
+	{
+	  /* The function was not in the executable -- some other
+	     instance must have been selected.  */
+	  function_t *next = fn->next;
+	  release_function (fn);
+	  *fn_p = next;
+	}
+    }
 
-  if (fn_p)
-    fn_p->next = old_functions;
+  *fn_p = old_functions;
 }
 
 static void
@@ -591,7 +606,7 @@ generate_results (const char *file_name)
     {
       accumulate_line_counts (src);
       function_summary (&src->coverage, "File");
-      if (flag_gcov_file)
+      if (flag_gcov_file && src->coverage.lines)
 	{
 	  char *gcov_file_name = make_gcov_file_name (file_name, src->name);
 	  FILE *gcov_file = fopen (gcov_file_name, "w");
@@ -615,6 +630,28 @@ generate_results (const char *file_name)
     }
 }
 
+/* Release a function structure */
+
+static void
+release_function (function_t *fn)
+{
+  unsigned ix;
+  block_t *block;
+
+  for (ix = fn->num_blocks, block = fn->blocks; ix--; block++)
+    {
+      arc_t *arc, *arc_n;
+
+      for (arc = block->succ; arc; arc = arc_n)
+	{
+	  arc_n = arc->succ_next;
+	  free (arc);
+	}
+    }
+  free (fn->blocks);
+  free (fn->counts);
+}
+
 /* Release all memory used.  */
 
 static void
@@ -633,22 +670,8 @@ release_structures (void)
 
   while ((fn = functions))
     {
-      unsigned ix;
-      block_t *block;
-
       functions = fn->next;
-      for (ix = fn->num_blocks, block = fn->blocks; ix--; block++)
-	{
-	  arc_t *arc, *arc_n;
-
-	  for (arc = block->succ; arc; arc = arc_n)
-	    {
-	      arc_n = arc->succ_next;
-	      free (arc);
-	    }
-	}
-      free (fn->blocks);
-      free (fn->counts);
+      release_function (fn);
     }
 }
 
@@ -1085,35 +1108,39 @@ read_count_file (void)
       unsigned length = gcov_read_unsigned ();
       unsigned long base = gcov_position ();
 
-      if (tag == GCOV_TAG_OBJECT_SUMMARY)
-	gcov_read_summary (&object_summary);
-      else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
-	program_count++;
-      else if (tag == GCOV_TAG_FUNCTION)
+      if (tag == GCOV_TAG_PROGRAM_SUMMARY)
 	{
-	  {
-	    unsigned ident = gcov_read_unsigned ();
-	    struct function_info *fn_n = functions;
+	  struct gcov_summary summary;
+	  gcov_read_summary (&summary);
+	  object_runs += summary.ctrs[GCOV_COUNTER_ARCS].runs;
+	  program_count++;
+	}
+      else if (tag == GCOV_TAG_FUNCTION && !length)
+	; /* placeholder  */
+      else if (tag == GCOV_TAG_FUNCTION && length == GCOV_TAG_FUNCTION_LENGTH)
+	{
+	  unsigned ident;
+	  struct function_info *fn_n;
 
-	    /* Try to find the function in the list.
-	       To speed up the search, first start from the last function
-	       found.   */
-	    for (fn = fn ? fn->next : NULL; ; fn = fn->next)
-	      {
-		if (fn)
-		  ;
-		else if ((fn = fn_n))
-		  fn_n = NULL;
-		else
-		  {
-		    fnotice (stderr, "%s:unknown function '%u'\n",
-			     da_file_name, ident);
-		    break;
-		  }
-		if (fn->ident == ident)
+	  /* Try to find the function in the list.  To speed up the
+	     search, first start from the last function found.  */
+	  ident = gcov_read_unsigned ();
+	  fn_n = functions;
+	  for (fn = fn ? fn->next : NULL; ; fn = fn->next)
+	    {
+	      if (fn)
+		;
+	      else if ((fn = fn_n))
+		fn_n = NULL;
+	      else
+		{
+		  fnotice (stderr, "%s:unknown function '%u'\n",
+			   da_file_name, ident);
 		  break;
-	      }
-	  }
+		}
+	      if (fn->ident == ident)
+		break;
+	    }
 
 	  if (!fn)
 	    ;
@@ -1908,8 +1935,7 @@ output_lines (FILE *gcov_file, const source_t *src)
       fprintf (gcov_file, "%9s:%5d:Graph:%s\n", "-", 0, bbg_file_name);
       fprintf (gcov_file, "%9s:%5d:Data:%s\n", "-", 0,
 	       no_data_file ? "-" : da_file_name);
-      fprintf (gcov_file, "%9s:%5d:Runs:%u\n", "-", 0,
-	       object_summary.ctrs[GCOV_COUNTER_ARCS].runs);
+      fprintf (gcov_file, "%9s:%5d:Runs:%u\n", "-", 0, object_runs);
     }
   fprintf (gcov_file, "%9s:%5d:Programs:%u\n", "-", 0, program_count);
 

@@ -1,3 +1,14 @@
+2011-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/profile-dir-1.c: Adjust final scan.
+	* gcc.dg/profile-dir-2.c: Adjust final scan.
+	* gcc.dg/profile-dir-3.c: Adjust final scan.
+	* gcc.misc-tests/gcov.exp: Adjust regexp.
+	* gcc.misc-tests/gcov-12.c: New.
+	* gcc.misc-tests/gcov-13.c: New.
+	* gcc.misc-tests/gcovpart-13b.c: New.
+	* gcc.misc-tests/gcov-14.c: New.
+
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35688
