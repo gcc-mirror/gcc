@@ -12835,6 +12835,11 @@ package body Sem_Util is
                U := Corresponding_Spec (P);
             end if;
 
+         when Formal_Kind =>
+            if Present (Spec_Entity (E)) then
+               U := Spec_Entity (E);
+            end if;
+
          when others =>
             null;
       end case;

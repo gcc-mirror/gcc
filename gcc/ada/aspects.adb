@@ -127,7 +127,19 @@ package body Aspects is
       Ritem : Node_Id;
 
    begin
-      Ritem := First_Rep_Item (Ent);
+
+      --  If the aspect is an inherited one and the entity is a class-wide
+      --  type, use the aspect of the specific type.
+
+      if Is_Type (Ent)
+        and then Is_Class_Wide_Type (Ent)
+        and then Inherited_Aspect (A)
+      then
+         Ritem := First_Rep_Item (Etype (Ent));
+      else
+         Ritem := First_Rep_Item (Ent);
+      end if;
+
       while Present (Ritem) loop
          if Nkind (Ritem) = N_Aspect_Specification
            and then Get_Aspect_Id (Chars (Identifier (Ritem))) = A

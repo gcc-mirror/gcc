@@ -1641,10 +1641,13 @@ package body Sem_Ch6 is
 
                   --  The type must be completed in the current package. This
                   --  is checked at the end of the package declaraton, when
-                  --  Taft amemdment types are identified.
+                  --  Taft-amendment types are identified. If the return type
+                  --  is class-wide, there is no required check, the type can
+                  --  be a bona fide TAT.
 
                   if Ekind (Scope (Current_Scope)) = E_Package
                     and then In_Private_Part (Scope (Current_Scope))
+                    and then not Is_Class_Wide_Type (Typ)
                   then
                      Append_Elmt (Designator, Private_Dependents (Typ));
                   end if;
