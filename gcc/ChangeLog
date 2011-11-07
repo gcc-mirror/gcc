@@ -27,7 +27,15 @@
 	* config.gcc (alpha64-dec-*vms*, alpha*-dec-*vms*, ia64-hp-*vms*):
 	Adjust for above change.
 
- 2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
+2011-11-07  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	PR target/50962
+	* config/i386/i386-protos.h (ix86_use_lea_for_mov): New.
+	* config/i386/i386.c (ix86_use_lea_for_mov): Likewise.
+	* config/i386/i386.md (movsi_internal): Emit lea if profitable.
+	(movdi_internal_rex64): Likewise.
+
+2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	PR rtl-optimization/47698
 	* ifconv.c (noce_operand_ok): prevent CMOV generation for volatile mem.
