@@ -1,3 +1,11 @@
+2011-11-06  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (UNSPEC_SHORT_LOAD): Delete.
+	(zero_extend_v8qi_vis, zero_extend_v4hi_vis,
+	*zero_extend_v8qi_<P:mode>_insn,
+	*zero_extend_v4hi_<P:mode>_insn): Express using vec_merge
+	and vec_duplicate instead of using an UNSPEC.
+
 2011-11-07  Alan Modra  <amodra@gmail.com>
 
 	PR target/30282
