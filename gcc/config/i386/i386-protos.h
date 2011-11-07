@@ -93,6 +93,7 @@ extern bool ix86_binary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
 extern bool ix86_lea_outperforms (rtx, unsigned int, unsigned int,
 				  unsigned int, unsigned int);
 extern bool ix86_avoid_lea_for_add (rtx, rtx[]);
+extern bool ix86_use_lea_for_mov (rtx, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx, rtx[]);
 extern void ix86_split_lea_for_addr (rtx[], enum machine_mode);
 extern bool ix86_lea_for_add_ok (rtx, rtx[]);

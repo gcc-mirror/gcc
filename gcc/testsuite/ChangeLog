@@ -1,3 +1,10 @@
+2011-11-07  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	PR target/50962
+	* config/i386/i386-protos.h (ix86_use_lea_for_mov): New.
+	* config/i386/i386.c (ix86_use_lea_for_mov): Likewise.
+	* config/i386/i386.md (movsi_internal): Emit lea if profitable.
+	(movdi_internal_rex64): Likewise.
 
 2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
