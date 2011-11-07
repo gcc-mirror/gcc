@@ -1,5 +1,9 @@
 2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* config/abi/pre/gnu.ver: Fix exports for string::pop_back.
+
+2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* acinclude.m4: Check for <stdalign.h>
 	* configure: Regenerate.
 	* config.h.in: Likewise.
