@@ -16509,6 +16509,29 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
     return !ix86_lea_outperforms (insn, regno0, regno1, regno2, 1);
 }
 
+/* Return true if we should emit lea instruction instead of mov
+   instruction.  */
+
+bool
+ix86_use_lea_for_mov (rtx insn, rtx operands[])
+{
+  unsigned int regno0;
+  unsigned int regno1;
+
+  /* Check if we need to optimize.  */
+  if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
+    return false;
+
+  /* Use lea for reg to reg moves only.  */
+  if (!REG_P (operands[0]) || !REG_P (operands[1]))
+    return false;
+
+  regno0 = true_regnum (operands[0]);
+  regno1 = true_regnum (operands[1]);
+
+  return ix86_lea_outperforms (insn, regno0, regno1, -1, 0);
+}
+
 /* Return true if we need to split lea into a sequence of
    instructions to avoid AGU stalls. */
 
