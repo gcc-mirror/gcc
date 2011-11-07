@@ -427,7 +427,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
 		    field = fields[i--];
 		  while (i >= lo && DECL_NAME (fields[i]) == name);
 		  if (TREE_CODE (field) != TYPE_DECL
-		      && !DECL_CLASS_TEMPLATE_P (field))
+		      && !DECL_TYPE_TEMPLATE_P (field))
 		    field = NULL_TREE;
 		}
 	      else
@@ -478,7 +478,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
       if (DECL_NAME (field) == name
 	  && (!want_type
 	      || TREE_CODE (field) == TYPE_DECL
-	      || DECL_CLASS_TEMPLATE_P (field)))
+	      || DECL_TYPE_TEMPLATE_P (field)))
 	return field;
     }
   /* Not found.  */
@@ -1046,7 +1046,7 @@ lookup_field_r (tree binfo, void *data)
   /* If we're looking up a type (as with an elaborated type specifier)
      we ignore all non-types we find.  */
   if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL
-      && !DECL_CLASS_TEMPLATE_P (nval))
+      && !DECL_TYPE_TEMPLATE_P (nval))
     {
       if (lfi->name == TYPE_IDENTIFIER (type))
 	{

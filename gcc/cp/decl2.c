@@ -848,9 +848,6 @@ grokfield (const cp_declarator *declarator,
       DECL_NONLOCAL (value) = 1;
       DECL_CONTEXT (value) = current_class_type;
 
-      if (processing_template_decl)
-	value = push_template_decl (value);
-
       if (attrlist)
 	{
 	  int attrflags = 0;
@@ -868,6 +865,12 @@ grokfield (const cp_declarator *declarator,
           && TREE_TYPE (value) != error_mark_node
           && TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (value))) != value)
 	set_underlying_type (value);
+
+      /* It's important that push_template_decl below follows
+	 set_underlying_type above so that the created template
+	 carries the properly set type of VALUE.  */
+      if (processing_template_decl)
+	value = push_template_decl (value);
 
       record_locally_defined_typedef (value);
       return value;
