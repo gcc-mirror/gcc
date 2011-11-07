@@ -12567,6 +12567,26 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "*avx2_gathersi<mode>_2"
+  [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "=&x")
+	(unspec:VEC_GATHER_MODE
+	  [(pc)
+	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
+	     [(unspec:P
+		[(match_operand:P 2 "vsib_address_operand" "p")
+		 (match_operand:<VEC_GATHER_IDXSI> 3 "register_operand" "x")
+		 (match_operand:SI 5 "const1248_operand" "n")]
+		UNSPEC_VSIBADDR)])
+	   (mem:BLK (scratch))
+	   (match_operand:VEC_GATHER_MODE 4 "register_operand" "1")]
+	  UNSPEC_GATHER))
+   (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
+  "TARGET_AVX2"
+  "v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %6, %0|%0, %6, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_expand "avx2_gatherdi<mode>"
   [(parallel [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "")
 		   (unspec:VEC_GATHER_MODE
@@ -12605,6 +12625,30 @@
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
   "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %2|%2, %7, %5}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx2_gatherdi<mode>_2"
+  [(set (match_operand:VEC_GATHER_MODE 0 "register_operand" "=&x")
+	(unspec:VEC_GATHER_MODE
+	  [(pc)
+	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
+	     [(unspec:P
+		[(match_operand:P 2 "vsib_address_operand" "p")
+		 (match_operand:<VEC_GATHER_IDXDI> 3 "register_operand" "x")
+		 (match_operand:SI 5 "const1248_operand" "n")]
+		UNSPEC_VSIBADDR)])
+	   (mem:BLK (scratch))
+	   (match_operand:<VEC_GATHER_SRCDI> 4 "register_operand" "1")]
+	  UNSPEC_GATHER))
+   (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
+  "TARGET_AVX2"
+{
+  if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
+    return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %x0|%x0, %6, %4}";
+  return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}";
+}
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])

@@ -1,5 +1,15 @@
 2011-11-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_builtin): If gather mask
+	argument is known to have all high bits set, pass pc_rtx as
+	second argument to the expander instead of op0.
+	* config/i386/sse.md (*avx2_gathersi<mode>_2,
+	*avx2_gatherdi<mode>_2): New patterns.
+	* config/i386/avx2intrin.h (_mm256_i32gather_pd,
+	_mm256_i64gather_pd, _mm256_i32gather_ps): Set mask using
+	_mm256_cmp_pd with zero vector arguments and _CMP_EQ_OQ instead of
+	_mm256_set1_pd.
+
 	PR tree-optimization/50789
 	* tree-vect-stmts.c (process_use): Add force argument, avoid
 	exist_non_indexing_operands_for_use_p check if true.

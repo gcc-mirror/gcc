@@ -29087,6 +29087,71 @@ rdrand_step:
           error ("last argument must be scale 1, 2, 4, 8");
           return const0_rtx;
 	}
+
+      /* Optimize.  If mask is known to have all high bits set,
+	 replace op0 with pc_rtx to signal that the instruction
+	 overwrites the whole destination and doesn't use its
+	 previous contents.  */
+      if (optimize)
+	{
+	  if (TREE_CODE (arg3) == VECTOR_CST)
+	    {
+	      tree elt;
+	      unsigned int negative = 0;
+	      for (elt = TREE_VECTOR_CST_ELTS (arg3);
+		   elt; elt = TREE_CHAIN (elt))
+		{
+		  tree cst = TREE_VALUE (elt);
+		  if (TREE_CODE (cst) == INTEGER_CST
+		      && tree_int_cst_sign_bit (cst))
+		    negative++;
+		  else if (TREE_CODE (cst) == REAL_CST
+			   && REAL_VALUE_NEGATIVE (TREE_REAL_CST (cst)))
+		    negative++;
+		}
+	      if (negative == TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg3)))
+		op0 = pc_rtx;
+	    }
+	  else if (TREE_CODE (arg3) == SSA_NAME)
+	    {
+	      /* Recognize also when mask is like:
+		 __v2df src = _mm_setzero_pd ();
+		 __v2df mask = _mm_cmpeq_pd (src, src);
+		 or
+		 __v8sf src = _mm256_setzero_ps ();
+		 __v8sf mask = _mm256_cmp_ps (src, src, _CMP_EQ_OQ);
+		 as that is a cheaper way to load all ones into
+		 a register than having to load a constant from
+		 memory.  */
+	      gimple def_stmt = SSA_NAME_DEF_STMT (arg3);
+	      if (is_gimple_call (def_stmt))
+		{
+		  tree fndecl = gimple_call_fndecl (def_stmt);
+		  if (fndecl
+		      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+		    switch ((unsigned int) DECL_FUNCTION_CODE (fndecl))
+		      {
+		      case IX86_BUILTIN_CMPPD:
+		      case IX86_BUILTIN_CMPPS:
+		      case IX86_BUILTIN_CMPPD256:
+		      case IX86_BUILTIN_CMPPS256:
+			if (!integer_zerop (gimple_call_arg (def_stmt, 2)))
+			  break;
+			/* FALLTHRU */
+		      case IX86_BUILTIN_CMPEQPD:
+		      case IX86_BUILTIN_CMPEQPS:
+			if (initializer_zerop (gimple_call_arg (def_stmt, 0))
+			    && initializer_zerop (gimple_call_arg (def_stmt,
+								   1)))
+			  op0 = pc_rtx;
+			break;
+		      default:
+			break;
+		      }
+		}
+	    }
+	}
+
       pat = GEN_FCN (icode) (subtarget, op0, op1, op2, op3, op4);
       if (! pat)
 	return const0_rtx;
