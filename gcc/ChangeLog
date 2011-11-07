@@ -1,3 +1,36 @@
+2011-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcse.c: Adjust outdated comments throughout.
+	(struct mem_conflict_info): New structure.
+	(mems_conflict_for_gcse_p): Use it to communicate with caller.
+	(load_killed_in_block_p): Pass it to note_stores.
+	(hash_expr): Remove superfluous line break.
+	(hash_scan_set): Rename PAT parameter into SET.
+	(hash_scan_insn): Reorder cases.
+	(canon_list_insert): Fix long line.
+	(edge_list): Delete.
+	(prune_expressions): Rename E local variable into EXPR.
+	(compute_pre_data): Return struct edge_list * object.
+	(pre_expr_reaches_here_p_work): Fix formatting.
+	(process_insert_insn): Move around comment.
+	(pre_edge_insert): Fix long line.
+	(pre_insert_copies): Likewise.
+	(gcse_emit_move_after): Swap SRC and DEST parameters.
+	(pre_delete): Adjust call to gcse_emit_move_after.
+	(pre_gcse): Take struct edge_list * parameter.  Fix long line.
+	(one_pre_gcse_pass): Use flag_gcse_lm condition for all routines.
+	Use a local list of edges.
+	(hoist_code): Fix long line.  Adjust call to gcse_emit_move_after.
+	(pre_ldst_expr_hash): Fix long line.
+	(free_ldst_mems): Rename into...
+	(free_ld_motion_mems): ...this.
+	(first_ls_expr): Delete.
+	(next_ls_expr): Likewise.
+	(print_ldst_list): Do not use above two functions.
+	(simple_mem): Adjust interface.
+	(compute_ld_motion_mems): Fix formatting.
+	(update_ld_motion_stores): Reuse local variable.
+
 2011-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (shadow_tag_warned, grokdeclarator): Handle _Alignas
