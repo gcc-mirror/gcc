@@ -1,3 +1,9 @@
+2011-11-07  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/51007
+	* quadmath-imp.h (ieee854_float128): Adjust
+	for ms-bitfield layout.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* printf/gmp-impl.h: Adapt path to longlong.h.
