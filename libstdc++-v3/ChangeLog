@@ -1,3 +1,9 @@
+2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/50982
+	* include/std/mutex (__once_proxy): Use void parameter list to
+	work on implicit extern "C" systems.
+
 2011-11-07  Xinliang David Li  <davidxl@google.com>
 
 	* include/backward/hashtable.h: Make __stl_prime_list
