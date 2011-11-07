@@ -24830,6 +24830,7 @@ enum ix86_builtins
   IX86_BUILTIN_VEC_SET_V16QI,
 
   IX86_BUILTIN_VEC_PACK_SFIX,
+  IX86_BUILTIN_VEC_PACK_SFIX256,
 
   /* SSE4.2.  */
   IX86_BUILTIN_CRC32QI,
@@ -26357,6 +26358,8 @@ static const struct builtin_description bdesc_args[] =
 
   { OPTION_MASK_ISA_AVX, CODE_FOR_copysignv8sf3,  "__builtin_ia32_copysignps256", IX86_BUILTIN_CPYSGNPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_copysignv4df3,  "__builtin_ia32_copysignpd256", IX86_BUILTIN_CPYSGNPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_vec_pack_sfix_v4df, "__builtin_ia32_vec_pack_sfix256 ", IX86_BUILTIN_VEC_PACK_SFIX256, UNKNOWN, (int) V8SI_FTYPE_V4DF_V4DF },
 
   /* AVX2 */
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_mpsadbw, "__builtin_ia32_mpsadbw256", IX86_BUILTIN_MPSADBW256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI_INT },
@@ -28048,6 +28051,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V32QI_FTYPE_V32QI_V32QI:
     case V16HI_FTYPE_V32QI_V32QI:
     case V16HI_FTYPE_V16HI_V16HI:
+    case V8SI_FTYPE_V4DF_V4DF:
     case V8SI_FTYPE_V8SI_V8SI:
     case V8SI_FTYPE_V16HI_V16HI:
     case V4DI_FTYPE_V4DI_V4DI:
@@ -29271,9 +29275,13 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
     case BUILT_IN_IRINT:
     case BUILT_IN_LRINT:
     case BUILT_IN_LLRINT:
-      if (out_mode == SImode && out_n == 4
-	  && in_mode == DFmode && in_n == 2)
-	return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX];
+      if (out_mode == SImode && in_mode == DFmode)
+	{
+	  if (out_n == 4 && in_n == 2)
+	    return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX];
+	  else if (out_n == 8 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX256];
+	}
       break;
 
     case BUILT_IN_IRINTF:
