@@ -1,3 +1,28 @@
+2011-11-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/cris/constraints.md: New file.
+	* config/cris/cris.h (REG_CLASS_FROM_LETTER, CONSTRAINT_LEN,
+	CRIS_CONST_OK_FOR_LETTER_P, CONST_OK_FOR_CONSTRAINT_P,
+	CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_MEMORY_CONSTRAINT,
+	EXTRA_CONSTRAINT, EXTRA_CONSTRAINT_Q, EXTRA_CONSTRAINT_R,
+	EXTRA_CONSTRAINT_T, EXTRA_CONSTRAINT_S, EXTRA_CONSTRAINT_U): Remove.
+	* config/cris/cris.c: Incule "tm-constrs.h".
+	(cris_print_operand): Use satisfies_constraint_O.
+	(cris_normal_notice_update_cc, cris_rtx_costs): Use
+	satisfies_constraint_I.
+	(cris_address_cost): Use satisfies_constraint_L.
+	* config/cris/cris.md: Include "constraints.md".
+	(*mov_side<mode>, *mov_sidesisf, *mov_side<mode>_mem,
+	*mov_sidesisf_mem, *clear_side<mode>, *ext_sideqihi,
+	*ext_side<mode>si, *op_side<mode>, *op_swap_side<mode>,
+	*extopqihi_side, *extop<mode>si_side, *extopqihi_swap_side,
+	*extop<mode>si_swap_side): Use satisfies_constraint_N and
+	satisfies_constraint_J.
+	(moversideqi movemsideqi mover2side peephole2): Use
+	satisfies_constraint_N and satisfies_constraint_J.
+	(andu peephole2): Use satisfies_constraint_I and
+	satisfies_constraint_O.
+
 2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_builtin_vectorized_function): Handle
