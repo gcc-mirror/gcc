@@ -21,6 +21,7 @@
 
 2011-11-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48370
 	* decl.c (cp_finish_decl): Mostly revert previous change.
 
 2011-11-04  Jason Merrill  <jason@redhat.com>
