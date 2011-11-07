@@ -1,3 +1,8 @@
+2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex (call_once): Store closure in __once_functor
+	as bound function wrapper might not be copyable.
+
 2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* include/bits/atomic_base.h (atomic_thread_fence): Revert.
