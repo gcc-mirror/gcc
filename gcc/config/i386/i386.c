@@ -25190,6 +25190,13 @@ enum ix86_builtins
   IX86_BUILTIN_GATHERDIV4SI,
   IX86_BUILTIN_GATHERDIV8SI,
 
+  /* Alternate 4 element gather for the vectorizer where
+     all operands are 32-byte wide.  */
+  IX86_BUILTIN_GATHERALTSIV4DF,
+  IX86_BUILTIN_GATHERALTDIV8SF,
+  IX86_BUILTIN_GATHERALTSIV4DI,
+  IX86_BUILTIN_GATHERALTDIV8SI,
+
   /* TFmode support builtins.  */
   IX86_BUILTIN_INFQ,
   IX86_BUILTIN_HUGE_VALQ,
@@ -26967,6 +26974,22 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4si256",
 	       V4SI_FTYPE_V4SI_PCINT_V4DI_V4SI_INT,
 	       IX86_BUILTIN_GATHERDIV8SI);
+
+  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltsiv4df ",
+	       V4DF_FTYPE_V4DF_PCDOUBLE_V8SI_V4DF_INT,
+	       IX86_BUILTIN_GATHERALTSIV4DF);
+
+  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4sf256 ",
+	       V8SF_FTYPE_V8SF_PCFLOAT_V4DI_V8SF_INT,
+	       IX86_BUILTIN_GATHERALTDIV8SF);
+
+  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltsiv4di ",
+	       V4DI_FTYPE_V4DI_PCINT64_V8SI_V4DI_INT,
+	       IX86_BUILTIN_GATHERALTSIV4DI);
+
+  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4si256 ",
+	       V8SI_FTYPE_V8SI_PCINT_V4DI_V8SI_INT,
+	       IX86_BUILTIN_GATHERALTDIV8SI);
 
   /* MMX access to the vec_init patterns.  */
   def_builtin_const (OPTION_MASK_ISA_MMX, "__builtin_ia32_vec_init_v2si",
@@ -28954,7 +28977,7 @@ rdrand_step:
       icode = CODE_FOR_avx2_gatherdiv4sf;
       goto gather_gen;
     case IX86_BUILTIN_GATHERDIV8SF:
-      icode = CODE_FOR_avx2_gatherdiv4sf256;
+      icode = CODE_FOR_avx2_gatherdiv8sf;
       goto gather_gen;
     case IX86_BUILTIN_GATHERSIV2DI:
       icode = CODE_FOR_avx2_gathersiv2di;
@@ -28978,7 +29001,20 @@ rdrand_step:
       icode = CODE_FOR_avx2_gatherdiv4si;
       goto gather_gen;
     case IX86_BUILTIN_GATHERDIV8SI:
-      icode = CODE_FOR_avx2_gatherdiv4si256;
+      icode = CODE_FOR_avx2_gatherdiv8si;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHERALTSIV4DF:
+      icode = CODE_FOR_avx2_gathersiv4df;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHERALTDIV8SF:
+      icode = CODE_FOR_avx2_gatherdiv8sf;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHERALTSIV4DI:
+      icode = CODE_FOR_avx2_gathersiv4df;
+      goto gather_gen;
+    case IX86_BUILTIN_GATHERALTDIV8SI:
+      icode = CODE_FOR_avx2_gatherdiv8si;
+      goto gather_gen;
 
     gather_gen:
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -28997,8 +29033,39 @@ rdrand_step:
       mode3 = insn_data[icode].operand[4].mode;
       mode4 = insn_data[icode].operand[5].mode;
 
-      if (target == NULL_RTX)
-	target = gen_reg_rtx (insn_data[icode].operand[0].mode);
+      if (target == NULL_RTX
+	  || GET_MODE (target) != insn_data[icode].operand[0].mode)
+	subtarget = gen_reg_rtx (insn_data[icode].operand[0].mode);
+      else
+	subtarget = target;
+
+      if (fcode == IX86_BUILTIN_GATHERALTSIV4DF
+	  || fcode == IX86_BUILTIN_GATHERALTSIV4DI)
+	{
+	  rtx half = gen_reg_rtx (V4SImode);
+	  if (!nonimmediate_operand (op2, V8SImode))
+	    op2 = copy_to_mode_reg (V8SImode, op2);
+	  emit_insn (gen_vec_extract_lo_v8si (half, op2));
+	  op2 = half;
+	}
+      else if (fcode == IX86_BUILTIN_GATHERALTDIV8SF
+	       || fcode == IX86_BUILTIN_GATHERALTDIV8SI)
+	{
+	  rtx (*gen) (rtx, rtx);
+	  rtx half = gen_reg_rtx (mode0);
+	  if (mode0 == V4SFmode)
+	    gen = gen_vec_extract_lo_v8sf;
+	  else
+	    gen = gen_vec_extract_lo_v8si;
+	  if (!nonimmediate_operand (op0, GET_MODE (op0)))
+	    op0 = copy_to_mode_reg (GET_MODE (op0), op0);
+	  emit_insn (gen (half, op0));
+	  op0 = half;
+	  if (!nonimmediate_operand (op3, GET_MODE (op3)))
+	    op3 = copy_to_mode_reg (GET_MODE (op3), op3);
+	  emit_insn (gen (half, op3));
+	  op3 = half;
+	}
 
       /* Force memory operand only with base register here.  But we
 	 don't want to do it on memory operand for other builtin
@@ -29020,10 +29087,26 @@ rdrand_step:
           error ("last argument must be scale 1, 2, 4, 8");
           return const0_rtx;
 	}
-      pat = GEN_FCN (icode) (target, op0, op1, op2, op3, op4);
+      pat = GEN_FCN (icode) (subtarget, op0, op1, op2, op3, op4);
       if (! pat)
 	return const0_rtx;
       emit_insn (pat);
+
+      if (fcode == IX86_BUILTIN_GATHERDIV8SF
+	  || fcode == IX86_BUILTIN_GATHERDIV8SI)
+	{
+	  enum machine_mode tmode = GET_MODE (subtarget) == V8SFmode
+				    ? V4SFmode : V4SImode;
+	  if (target == NULL_RTX)
+	    target = gen_reg_rtx (tmode);
+	  if (tmode == V4SFmode)
+	    emit_insn (gen_vec_extract_lo_v8sf (target, subtarget));
+	  else
+	    emit_insn (gen_vec_extract_lo_v8si (target, subtarget));
+	}
+      else
+	target = subtarget;
+
       return target;
 
     default:
@@ -29526,6 +29609,73 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
   TREE_READONLY (new_fndecl) = 1;
 
   return new_fndecl;
+}
+
+/* Returns a decl of a function that implements gather load with
+   memory type MEM_VECTYPE and index type INDEX_VECTYPE and SCALE.
+   Return NULL_TREE if it is not available.  */
+
+static tree
+ix86_vectorize_builtin_gather (const_tree mem_vectype,
+			       const_tree index_type, int scale)
+{
+  bool si;
+  enum ix86_builtins code;
+
+  if (! TARGET_AVX2)
+    return NULL_TREE;
+
+  if ((TREE_CODE (index_type) != INTEGER_TYPE
+       && !POINTER_TYPE_P (index_type))
+      || (TYPE_MODE (index_type) != SImode
+	  && TYPE_MODE (index_type) != DImode))
+    return NULL_TREE;
+
+  if (TYPE_PRECISION (index_type) > POINTER_SIZE)
+    return NULL_TREE;
+
+  /* v*gather* insn sign extends index to pointer mode.  */
+  if (TYPE_PRECISION (index_type) < POINTER_SIZE
+      && TYPE_UNSIGNED (index_type))
+    return NULL_TREE;
+
+  if (scale <= 0
+      || scale > 8
+      || (scale & (scale - 1)) != 0)
+    return NULL_TREE;
+
+  si = TYPE_MODE (index_type) == SImode;
+  switch (TYPE_MODE (mem_vectype))
+    {
+    case V2DFmode:
+      code = si ? IX86_BUILTIN_GATHERSIV2DF : IX86_BUILTIN_GATHERDIV2DF;
+      break;
+    case V4DFmode:
+      code = si ? IX86_BUILTIN_GATHERALTSIV4DF : IX86_BUILTIN_GATHERDIV4DF;
+      break;
+    case V2DImode:
+      code = si ? IX86_BUILTIN_GATHERSIV2DI : IX86_BUILTIN_GATHERDIV2DI;
+      break;
+    case V4DImode:
+      code = si ? IX86_BUILTIN_GATHERALTSIV4DI : IX86_BUILTIN_GATHERDIV4DI;
+      break;
+    case V4SFmode:
+      code = si ? IX86_BUILTIN_GATHERSIV4SF : IX86_BUILTIN_GATHERDIV4SF;
+      break;
+    case V8SFmode:
+      code = si ? IX86_BUILTIN_GATHERSIV8SF : IX86_BUILTIN_GATHERALTDIV8SF;
+      break;
+    case V4SImode:
+      code = si ? IX86_BUILTIN_GATHERSIV4SI : IX86_BUILTIN_GATHERDIV4SI;
+      break;
+    case V8SImode:
+      code = si ? IX86_BUILTIN_GATHERSIV8SI : IX86_BUILTIN_GATHERALTDIV8SI;
+      break;
+    default:
+      return NULL_TREE;
+    }
+
+  return ix86_builtins[code];
 }
 
 /* Returns a code for a target-specific builtin that implements
@@ -37726,6 +37876,9 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   ix86_builtin_vectorized_function
+
+#undef TARGET_VECTORIZE_BUILTIN_GATHER
+#define TARGET_VECTORIZE_BUILTIN_GATHER ix86_vectorize_builtin_gather
 
 #undef TARGET_BUILTIN_RECIPROCAL
 #define TARGET_BUILTIN_RECIPROCAL ix86_builtin_reciprocal

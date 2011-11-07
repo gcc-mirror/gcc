@@ -535,6 +535,9 @@ typedef struct _stmt_vec_info {
   /* Is this statement vectorizable or should it be skipped in (partial)
      vectorization.  */
   bool vectorizable;
+
+  /* For loads only, true if this is a gather load.  */
+  bool gather_p;
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -548,6 +551,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VEC_STMT(S)             (S)->vectorized_stmt
 #define STMT_VINFO_VECTORIZABLE(S)         (S)->vectorizable
 #define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
+#define STMT_VINFO_GATHER_P(S)		   (S)->gather_p
 
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
 #define STMT_VINFO_DR_INIT(S)              (S)->dr_init
@@ -858,6 +862,8 @@ extern bool vect_analyze_data_refs_alignment (loop_vec_info, bb_vec_info);
 extern bool vect_verify_datarefs_alignment (loop_vec_info, bb_vec_info);
 extern bool vect_analyze_data_ref_accesses (loop_vec_info, bb_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
+extern tree vect_check_gather (gimple, loop_vec_info, tree *, tree *,
+			       int *);
 extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *);
 extern tree vect_create_data_ref_ptr (gimple, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,

@@ -2497,6 +2497,199 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   return true;
 }
 
+/* Check whether a non-affine read in stmt is suitable for gather load
+   and if so, return a builtin decl for that operation.  */
+
+tree
+vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
+		   tree *offp, int *scalep)
+{
+  HOST_WIDE_INT scale = 1, pbitpos, pbitsize;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  tree offtype = NULL_TREE;
+  tree decl, base, off;
+  enum machine_mode pmode;
+  int punsignedp, pvolatilep;
+
+  /* The gather builtins need address of the form
+     loop_invariant + vector * {1, 2, 4, 8}
+     or
+     loop_invariant + sign_extend (vector) * { 1, 2, 4, 8 }.
+     Unfortunately DR_BASE_ADDRESS/DR_OFFSET can be a mixture
+     of loop invariants/SSA_NAMEs defined in the loop, with casts,
+     multiplications and additions in it.  To get a vector, we need
+     a single SSA_NAME that will be defined in the loop and will
+     contain everything that is not loop invariant and that can be
+     vectorized.  The following code attempts to find such a preexistng
+     SSA_NAME OFF and put the loop invariants into a tree BASE
+     that can be gimplified before the loop.  */
+  base = get_inner_reference (DR_REF (dr), &pbitsize, &pbitpos, &off,
+			      &pmode, &punsignedp, &pvolatilep, false);
+  gcc_assert (base != NULL_TREE && (pbitpos % BITS_PER_UNIT) == 0);
+
+  if (TREE_CODE (base) == MEM_REF)
+    {
+      if (!integer_zerop (TREE_OPERAND (base, 1)))
+	{
+	  if (off == NULL_TREE)
+	    {
+	      double_int moff = mem_ref_offset (base);
+	      off = double_int_to_tree (sizetype, moff);
+	    }
+	  else
+	    off = size_binop (PLUS_EXPR, off,
+			      fold_convert (sizetype, TREE_OPERAND (base, 1)));
+	}
+      base = TREE_OPERAND (base, 0);
+    }
+  else
+    base = build_fold_addr_expr (base);
+
+  if (off == NULL_TREE)
+    off = size_zero_node;
+
+  /* If base is not loop invariant, either off is 0, then we start with just
+     the constant offset in the loop invariant BASE and continue with base
+     as OFF, otherwise give up.
+     We could handle that case by gimplifying the addition of base + off
+     into some SSA_NAME and use that as off, but for now punt.  */
+  if (!expr_invariant_in_loop_p (loop, base))
+    {
+      if (!integer_zerop (off))
+	return NULL_TREE;
+      off = base;
+      base = size_int (pbitpos / BITS_PER_UNIT);
+    }
+  /* Otherwise put base + constant offset into the loop invariant BASE
+     and continue with OFF.  */
+  else
+    {
+      base = fold_convert (sizetype, base);
+      base = size_binop (PLUS_EXPR, base, size_int (pbitpos / BITS_PER_UNIT));
+    }
+
+  /* OFF at this point may be either a SSA_NAME or some tree expression
+     from get_inner_reference.  Try to peel off loop invariants from it
+     into BASE as long as possible.  */
+  STRIP_NOPS (off);
+  while (offtype == NULL_TREE)
+    {
+      enum tree_code code;
+      tree op0, op1, add = NULL_TREE;
+
+      if (TREE_CODE (off) == SSA_NAME)
+	{
+	  gimple def_stmt = SSA_NAME_DEF_STMT (off);
+
+	  if (expr_invariant_in_loop_p (loop, off))
+	    return NULL_TREE;
+
+	  if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
+	    break;
+
+	  op0 = gimple_assign_rhs1 (def_stmt);
+	  code = gimple_assign_rhs_code (def_stmt);
+	  op1 = gimple_assign_rhs2 (def_stmt);
+	}
+      else
+	{
+	  if (get_gimple_rhs_class (TREE_CODE (off)) == GIMPLE_TERNARY_RHS)
+	    return NULL_TREE;
+	  code = TREE_CODE (off);
+	  extract_ops_from_tree (off, &code, &op0, &op1);
+	}
+      switch (code)
+	{
+	case POINTER_PLUS_EXPR:
+	case PLUS_EXPR:
+	  if (expr_invariant_in_loop_p (loop, op0))
+	    {
+	      add = op0;
+	      off = op1;
+	    do_add:
+	      add = fold_convert (sizetype, add);
+	      if (scale != 1)
+		add = size_binop (MULT_EXPR, add, size_int (scale));
+	      base = size_binop (PLUS_EXPR, base, add);
+	      continue;
+	    }
+	  if (expr_invariant_in_loop_p (loop, op1))
+	    {
+	      add = op1;
+	      off = op0;
+	      goto do_add;
+	    }
+	  break;
+	case MINUS_EXPR:
+	  if (expr_invariant_in_loop_p (loop, op1))
+	    {
+	      add = fold_convert (sizetype, op1);
+	      add = size_binop (MINUS_EXPR, size_zero_node, add);
+	      off = op0;
+	      goto do_add;
+	    }
+	  break;
+	case MULT_EXPR:
+	  if (scale == 1 && host_integerp (op1, 0))
+	    {
+	      scale = tree_low_cst (op1, 0);
+	      off = op0;
+	      continue;
+	    }
+	  break;
+	case SSA_NAME:
+	  off = op0;
+	  continue;
+	CASE_CONVERT:
+	  if (!POINTER_TYPE_P (TREE_TYPE (op0))
+	      && !INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+	    break;
+	  if (TYPE_PRECISION (TREE_TYPE (op0))
+	      == TYPE_PRECISION (TREE_TYPE (off)))
+	    {
+	      off = op0;
+	      continue;
+	    }
+	  if (TYPE_PRECISION (TREE_TYPE (op0))
+	      < TYPE_PRECISION (TREE_TYPE (off)))
+	    {
+	      off = op0;
+	      offtype = TREE_TYPE (off);
+	      STRIP_NOPS (off);
+	      continue;
+	    }
+	  break;
+	default:
+	  break;
+	}
+      break;
+    }
+
+  /* If at the end OFF still isn't a SSA_NAME or isn't
+     defined in the loop, punt.  */
+  if (TREE_CODE (off) != SSA_NAME
+      || expr_invariant_in_loop_p (loop, off))
+    return NULL_TREE;
+
+  if (offtype == NULL_TREE)
+    offtype = TREE_TYPE (off);
+
+  decl = targetm.vectorize.builtin_gather (STMT_VINFO_VECTYPE (stmt_info),
+					   offtype, scale);
+  if (decl == NULL_TREE)
+    return NULL_TREE;
+
+  if (basep)
+    *basep = base;
+  if (offp)
+    *offp = off;
+  if (scalep)
+    *scalep = scale;
+  return decl;
+}
+
 
 /* Function vect_analyze_data_refs.
 
@@ -2573,6 +2766,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       gimple stmt;
       stmt_vec_info stmt_info;
       tree base, offset, init;
+      bool gather = false;
       int vf;
 
       if (!dr || !DR_REF (dr))
@@ -2594,22 +2788,51 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       /* Check that analysis of the data-ref succeeded.  */
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
-          || !DR_STEP (dr))
+	  || !DR_STEP (dr))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-            {
-              fprintf (vect_dump, "not vectorized: data ref analysis failed ");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
-            }
+	  /* If target supports vector gather loads, see if they can't
+	     be used.  */
+	  if (loop_vinfo
+	      && DR_IS_READ (dr)
+	      && !TREE_THIS_VOLATILE (DR_REF (dr))
+	      && targetm.vectorize.builtin_gather != NULL
+	      && !nested_in_vect_loop_p (loop, stmt))
+	    {
+	      struct data_reference *newdr
+		= create_data_ref (NULL, loop_containing_stmt (stmt),
+				   DR_REF (dr), stmt, true);
+	      gcc_assert (newdr != NULL && DR_REF (newdr));
+	      if (DR_BASE_ADDRESS (newdr)
+		  && DR_OFFSET (newdr)
+		  && DR_INIT (newdr)
+		  && DR_STEP (newdr)
+		  && integer_zerop (DR_STEP (newdr)))
+		{
+		  dr = newdr;
+		  gather = true;
+		}
+	      else
+		free_data_ref (newdr);
+	    }
 
-          if (bb_vinfo)
-            {
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              stop_bb_analysis = true;
-              continue;
-            }
+	  if (!gather)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+		{
+		  fprintf (vect_dump, "not vectorized: data ref analysis "
+				      "failed ");
+		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		}
 
-          return false;
+	      if (bb_vinfo)
+		{
+		  STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+		  stop_bb_analysis = true;
+		  continue;
+		}
+
+	      return false;
+	    }
         }
 
       if (TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
@@ -2625,7 +2848,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               continue;
             }
 
-           return false;
+	  if (gather)
+	    free_data_ref (dr);
+	  return false;
         }
 
       if (TREE_THIS_VOLATILE (DR_REF (dr)))
@@ -2666,6 +2891,8 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               continue;
             }
 
+	  if (gather)
+	    free_data_ref (dr);
           return false;
         }
 
@@ -2791,6 +3018,8 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               continue;
             }
 
+	  if (gather)
+	    free_data_ref (dr);
           return false;
         }
 
@@ -2818,8 +3047,13 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               stop_bb_analysis = true;
               continue;
             }
-          else
-            return false;
+
+	  if (gather)
+	    {
+	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
+	      free_data_ref (dr);
+	    }
+	  return false;
         }
 
       /* Adjust the minimal vectorization factor according to the
@@ -2827,6 +3061,86 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       vf = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
       if (vf > *min_vf)
 	*min_vf = vf;
+
+      if (gather)
+	{
+	  unsigned int j, k, n;
+	  struct data_reference *olddr
+	    = VEC_index (data_reference_p, datarefs, i);
+	  VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
+	  struct data_dependence_relation *ddr, *newddr;
+	  bool bad = false;
+	  tree off;
+	  VEC (loop_p, heap) *nest = LOOP_VINFO_LOOP_NEST (loop_vinfo);
+
+	  if (!vect_check_gather (stmt, loop_vinfo, NULL, &off, NULL)
+	      || get_vectype_for_scalar_type (TREE_TYPE (off)) == NULL_TREE)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+		{
+		  fprintf (vect_dump,
+			   "not vectorized: not suitable for gather ");
+		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		}
+	      return false;
+	    }
+
+	  n = VEC_length (data_reference_p, datarefs) - 1;
+	  for (j = 0, k = i - 1; j < i; j++)
+	    {
+	      ddr = VEC_index (ddr_p, ddrs, k);
+	      gcc_assert (DDR_B (ddr) == olddr);
+	      newddr = initialize_data_dependence_relation (DDR_A (ddr), dr,
+							    nest);
+	      VEC_replace (ddr_p, ddrs, k, newddr);
+	      free_dependence_relation (ddr);
+	      if (!bad
+		  && DR_IS_WRITE (DDR_A (newddr))
+		  && DDR_ARE_DEPENDENT (newddr) != chrec_known)
+		bad = true;
+	      k += --n;
+	    }
+
+	  k++;
+	  n = k + VEC_length (data_reference_p, datarefs) - i - 1;
+	  for (; k < n; k++)
+	    {
+	      ddr = VEC_index (ddr_p, ddrs, k);
+	      gcc_assert (DDR_A (ddr) == olddr);
+	      newddr = initialize_data_dependence_relation (dr, DDR_B (ddr),
+							    nest);
+	      VEC_replace (ddr_p, ddrs, k, newddr);
+	      free_dependence_relation (ddr);
+	      if (!bad
+		  && DR_IS_WRITE (DDR_B (newddr))
+		  && DDR_ARE_DEPENDENT (newddr) != chrec_known)
+		bad = true;
+	    }
+
+	  k = VEC_length (ddr_p, ddrs)
+	      - VEC_length (data_reference_p, datarefs) + i;
+	  ddr = VEC_index (ddr_p, ddrs, k);
+	  gcc_assert (DDR_A (ddr) == olddr && DDR_B (ddr) == olddr);
+	  newddr = initialize_data_dependence_relation (dr, dr, nest);
+	  compute_self_dependence (newddr);
+	  VEC_replace (ddr_p, ddrs, k, newddr);
+	  free_dependence_relation (ddr);
+	  VEC_replace (data_reference_p, datarefs, i, dr);
+
+	  if (bad)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+		{
+		  fprintf (vect_dump,
+			   "not vectorized: data dependence conflict"
+			   " prevents gather");
+		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		}
+	      return false;
+	    }
+
+	  STMT_VINFO_GATHER_P (stmt_info) = true;
+	}
     }
 
   return true;

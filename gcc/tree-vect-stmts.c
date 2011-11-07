@@ -332,6 +332,8 @@ exist_non_indexing_operands_for_use_p (tree use, gimple stmt)
    - LIVE_P, RELEVANT - enum values to be set in the STMT_VINFO of the stmt
      that defined USE.  This is done by calling mark_relevant and passing it
      the WORKLIST (to add DEF_STMT to the WORKLIST in case it is relevant).
+   - FORCE is true if exist_non_indexing_operands_for_use_p check shouldn't
+     be performed.
 
    Outputs:
    Generally, LIVE_P and RELEVANT are used to define the liveness and
@@ -351,7 +353,8 @@ exist_non_indexing_operands_for_use_p (tree use, gimple stmt)
 
 static bool
 process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
-	     enum vect_relevant relevant, VEC(gimple,heap) **worklist)
+	     enum vect_relevant relevant, VEC(gimple,heap) **worklist,
+	     bool force)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
@@ -363,7 +366,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
 
   /* case 1: we are only interested in uses that need to be vectorized.  Uses
      that are used for address computation are not considered relevant.  */
-  if (!exist_non_indexing_operands_for_use_p (use, stmt))
+  if (!force && !exist_non_indexing_operands_for_use_p (use, stmt))
      return true;
 
   if (!vect_is_simple_use (use, loop_vinfo, NULL, &def_stmt, &def, &dt))
@@ -646,7 +649,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
             break;
         }
 
-      if (is_pattern_stmt_p (vinfo_for_stmt (stmt)))
+      if (is_pattern_stmt_p (stmt_vinfo))
         {
           /* Pattern statements are not inserted into the code, so
              FOR_EACH_PHI_OR_STMT_USE optimizes their operands out, and we
@@ -660,9 +663,9 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      if (rhs_code == COND_EXPR && COMPARISON_CLASS_P (op))
 		{
 		  if (!process_use (stmt, TREE_OPERAND (op, 0), loop_vinfo,
-				    live_p, relevant, &worklist)
+				    live_p, relevant, &worklist, false)
 		      || !process_use (stmt, TREE_OPERAND (op, 1), loop_vinfo,
-				       live_p, relevant, &worklist))
+				       live_p, relevant, &worklist, false))
 		    {
 		      VEC_free (gimple, heap, worklist);
 		      return false;
@@ -673,7 +676,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
                 {
 		  op = gimple_op (stmt, i);
                   if (!process_use (stmt, op, loop_vinfo, live_p, relevant,
-                                    &worklist))
+				    &worklist, false))
                     {
                       VEC_free (gimple, heap, worklist);
                       return false;
@@ -686,7 +689,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
                 {
                   tree arg = gimple_call_arg (stmt, i);
                   if (!process_use (stmt, arg, loop_vinfo, live_p, relevant,
-                                    &worklist))
+				    &worklist, false))
                     {
                       VEC_free (gimple, heap, worklist);
                       return false;
@@ -699,12 +702,25 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
           {
             tree op = USE_FROM_PTR (use_p);
             if (!process_use (stmt, op, loop_vinfo, live_p, relevant,
-                              &worklist))
+			      &worklist, false))
               {
                 VEC_free (gimple, heap, worklist);
                 return false;
               }
           }
+
+      if (STMT_VINFO_GATHER_P (stmt_vinfo))
+	{
+	  tree off;
+	  tree decl = vect_check_gather (stmt, loop_vinfo, NULL, &off, NULL);
+	  gcc_assert (decl);
+	  if (!process_use (stmt, off, loop_vinfo, live_p, relevant,
+			    &worklist, true))
+	    {
+	      VEC_free (gimple, heap, worklist);
+	      return false;
+	    }
+	}
     } /* while worklist */
 
   VEC_free (gimple, heap, worklist);
@@ -3914,23 +3930,17 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   return true;
 }
 
-/* Given a vector type VECTYPE returns a builtin DECL to be used
-   for vector permutation and returns the mask that implements
-   reversal of the vector elements.  If that is impossible to do,
-   returns NULL.  */
+/* Given a vector type VECTYPE and permutation SEL returns
+   the VECTOR_CST mask that implements the permutation of the
+   vector elements.  If that is impossible to do, returns NULL.  */
 
 static tree
-perm_mask_for_reverse (tree vectype)
+gen_perm_mask (tree vectype, unsigned char *sel)
 {
   tree mask_elt_type, mask_type, mask_vec;
   int i, nunits;
-  unsigned char *sel;
 
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  sel = XALLOCAVEC (unsigned char, nunits);
-
-  for (i = 0; i < nunits; ++i)
-    sel[i] = nunits - 1 - i;
 
   if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
     return NULL;
@@ -3941,33 +3951,52 @@ perm_mask_for_reverse (tree vectype)
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
   mask_vec = NULL;
-  for (i = 0; i < nunits; i++)
-    mask_vec = tree_cons (NULL, build_int_cst (mask_elt_type, i), mask_vec);
+  for (i = nunits - 1; i >= 0; i--)
+    mask_vec = tree_cons (NULL, build_int_cst (mask_elt_type, sel[i]),
+			  mask_vec);
   mask_vec = build_vector (mask_type, mask_vec);
 
   return mask_vec;
 }
 
-/* Given a vector variable X, that was generated for the scalar LHS of
-   STMT, generate instructions to reverse the vector elements of X,
-   insert them a *GSI and return the permuted vector variable.  */
+/* Given a vector type VECTYPE returns the VECTOR_CST mask that implements
+   reversal of the vector elements.  If that is impossible to do,
+   returns NULL.  */
 
 static tree
-reverse_vec_elements (tree x, gimple stmt, gimple_stmt_iterator *gsi)
+perm_mask_for_reverse (tree vectype)
+{
+  int i, nunits;
+  unsigned char *sel;
+
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  sel = XALLOCAVEC (unsigned char, nunits);
+
+  for (i = 0; i < nunits; ++i)
+    sel[i] = nunits - 1 - i;
+
+  return gen_perm_mask (vectype, sel);
+}
+
+/* Given a vector variable X and Y, that was generated for the scalar
+   STMT, generate instructions to permute the vector elements of X and Y
+   using permutation mask MASK_VEC, insert them at *GSI and return the
+   permuted vector variable.  */
+
+static tree
+permute_vec_elements (tree x, tree y, tree mask_vec, gimple stmt,
+		      gimple_stmt_iterator *gsi)
 {
   tree vectype = TREE_TYPE (x);
-  tree mask_vec, perm_dest, data_ref;
+  tree perm_dest, data_ref;
   gimple perm_stmt;
 
-  mask_vec = perm_mask_for_reverse (vectype);
-
   perm_dest = vect_create_destination_var (gimple_assign_lhs (stmt), vectype);
+  data_ref = make_ssa_name (perm_dest, NULL);
 
   /* Generate the permute statement.  */
-  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
-					     x, x, mask_vec);
-  data_ref = make_ssa_name (perm_dest, perm_stmt);
-  gimple_set_lhs (perm_stmt, data_ref);
+  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, data_ref,
+					     x, y, mask_vec);
   vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 
   return data_ref;
@@ -4026,6 +4055,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
   tree aggr_type;
+  tree gather_base = NULL_TREE, gather_off = NULL_TREE;
+  tree gather_off_vectype = NULL_TREE, gather_decl = NULL_TREE;
+  int gather_scale = 1;
+  enum vect_def_type gather_dt = vect_unknown_def_type;
 
   if (loop_vinfo)
     {
@@ -4106,7 +4139,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       strided_load = true;
       /* FORNOW */
-      gcc_assert (! nested_in_vect_loop);
+      gcc_assert (! nested_in_vect_loop && !STMT_VINFO_GATHER_P (stmt_info));
 
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       if (!slp && !PURE_SLP_STMT (stmt_info))
@@ -4121,7 +4154,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   if (negative)
     {
-      gcc_assert (!strided_load);
+      gcc_assert (!strided_load && !STMT_VINFO_GATHER_P (stmt_info));
       alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
       if (alignment_support_scheme != dr_aligned
 	  && alignment_support_scheme != dr_unaligned_supported)
@@ -4138,6 +4171,23 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	}
     }
 
+  if (STMT_VINFO_GATHER_P (stmt_info))
+    {
+      gimple def_stmt;
+      tree def;
+      gather_decl = vect_check_gather (stmt, loop_vinfo, &gather_base,
+				       &gather_off, &gather_scale);
+      gcc_assert (gather_decl);
+      if (!vect_is_simple_use_1 (gather_off, loop_vinfo, bb_vinfo,
+				 &def_stmt, &def, &gather_dt,
+				 &gather_off_vectype))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "gather index use not simple.");
+	  return false;
+	}
+    }
+
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
@@ -4149,6 +4199,161 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     fprintf (vect_dump, "transform load. ncopies = %d", ncopies);
 
   /** Transform.  **/
+
+  if (STMT_VINFO_GATHER_P (stmt_info))
+    {
+      tree vec_oprnd0 = NULL_TREE, op;
+      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gather_decl));
+      tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
+      tree ptr, mask, var, scale, perm_mask = NULL_TREE, prev_res = NULL_TREE;
+      edge pe = loop_preheader_edge (loop);
+      gimple_seq seq;
+      basic_block new_bb;
+      enum { NARROW, NONE, WIDEN } modifier;
+      int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gather_off_vectype);
+
+      if (nunits == gather_off_nunits)
+	modifier = NONE;
+      else if (nunits == gather_off_nunits / 2)
+	{
+	  unsigned char *sel = XALLOCAVEC (unsigned char, gather_off_nunits);
+	  modifier = WIDEN;
+
+	  for (i = 0; i < gather_off_nunits; ++i)
+	    sel[i] = i | nunits;
+
+	  perm_mask = gen_perm_mask (gather_off_vectype, sel);
+	  gcc_assert (perm_mask != NULL_TREE);
+	}
+      else if (nunits == gather_off_nunits * 2)
+	{
+	  unsigned char *sel = XALLOCAVEC (unsigned char, nunits);
+	  modifier = NARROW;
+
+	  for (i = 0; i < nunits; ++i)
+	    sel[i] = i < gather_off_nunits
+		     ? i : i + nunits - gather_off_nunits;
+
+	  perm_mask = gen_perm_mask (vectype, sel);
+	  gcc_assert (perm_mask != NULL_TREE);
+	  ncopies *= 2;
+	}
+      else
+	gcc_unreachable ();
+
+      rettype = TREE_TYPE (TREE_TYPE (gather_decl));
+      srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      ptrtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      scaletype = TREE_VALUE (arglist);
+      gcc_checking_assert (types_compatible_p (srctype, rettype)
+			   && types_compatible_p (srctype, masktype));
+
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+
+      ptr = fold_convert (ptrtype, gather_base);
+      if (!is_gimple_min_invariant (ptr))
+	{
+	  ptr = force_gimple_operand (ptr, &seq, true, NULL_TREE);
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
+	  gcc_assert (!new_bb);
+	}
+
+      /* Currently we support only unconditional gather loads,
+	 so mask should be all ones.  */
+      if (TREE_CODE (TREE_TYPE (masktype)) == INTEGER_TYPE)
+	mask = build_int_cst (TREE_TYPE (masktype), -1);
+      else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (masktype)))
+	{
+	  REAL_VALUE_TYPE r;
+	  long tmp[6];
+	  for (j = 0; j < 6; ++j)
+	    tmp[j] = -1;
+	  real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (masktype)));
+	  mask = build_real (TREE_TYPE (masktype), r);
+	}
+      else
+	gcc_unreachable ();
+      mask = build_vector_from_val (masktype, mask);
+      mask = vect_init_vector (stmt, mask, masktype, NULL);
+
+      scale = build_int_cst (scaletype, gather_scale);
+
+      prev_stmt_info = NULL;
+      for (j = 0; j < ncopies; ++j)
+	{
+	  if (modifier == WIDEN && (j & 1))
+	    op = permute_vec_elements (vec_oprnd0, vec_oprnd0,
+				       perm_mask, stmt, gsi);
+	  else if (j == 0)
+	    op = vec_oprnd0
+	      = vect_get_vec_def_for_operand (gather_off, stmt, NULL);
+	  else
+	    op = vec_oprnd0
+	      = vect_get_vec_def_for_stmt_copy (gather_dt, vec_oprnd0);
+
+	  if (!useless_type_conversion_p (idxtype, TREE_TYPE (op)))
+	    {
+	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op))
+			  == TYPE_VECTOR_SUBPARTS (idxtype));
+	      var = vect_get_new_vect_var (idxtype, vect_simple_var, NULL);
+	      add_referenced_var (var);
+	      var = make_ssa_name (var, NULL);
+	      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
+	      new_stmt
+		= gimple_build_assign_with_ops (VIEW_CONVERT_EXPR, var,
+						op, NULL_TREE);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      op = var;
+	    }
+
+	  new_stmt
+	    = gimple_build_call (gather_decl, 5, mask, ptr, op, mask, scale);
+
+	  if (!useless_type_conversion_p (vectype, rettype))
+	    {
+	      gcc_assert (TYPE_VECTOR_SUBPARTS (vectype)
+			  == TYPE_VECTOR_SUBPARTS (rettype));
+	      var = vect_get_new_vect_var (rettype, vect_simple_var, NULL);
+	      add_referenced_var (var);
+	      op = make_ssa_name (var, new_stmt);
+	      gimple_call_set_lhs (new_stmt, op);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      var = make_ssa_name (vec_dest, NULL);
+	      op = build1 (VIEW_CONVERT_EXPR, vectype, op);
+	      new_stmt
+		= gimple_build_assign_with_ops (VIEW_CONVERT_EXPR, var, op,
+						NULL_TREE);
+	    }
+	  else
+	    {
+	      var = make_ssa_name (vec_dest, new_stmt);
+	      gimple_call_set_lhs (new_stmt, var);
+	    }
+
+	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+	  if (modifier == NARROW)
+	    {
+	      if ((j & 1) == 0)
+		{
+		  prev_res = var;
+		  continue;
+		}
+	      var = permute_vec_elements (prev_res, var,
+					  perm_mask, stmt, gsi);
+	      new_stmt = SSA_NAME_DEF_STMT (var);
+	    }
+
+	  if (prev_stmt_info == NULL)
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	  else
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	}
+      return true;
+    }
 
   if (strided_load)
     {
@@ -4541,7 +4746,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
 	      if (negative)
 		{
-		  new_temp = reverse_vec_elements (new_temp, stmt, gsi);
+		  tree perm_mask = perm_mask_for_reverse (vectype);
+		  new_temp = permute_vec_elements (new_temp, new_temp,
+						   perm_mask, stmt, gsi);
 		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
 		}
 

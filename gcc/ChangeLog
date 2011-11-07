@@ -1,3 +1,52 @@
+2011-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50789
+	* tree-vect-stmts.c (process_use): Add force argument, avoid
+	exist_non_indexing_operands_for_use_p check if true.
+	(vect_mark_stmts_to_be_vectorized): Adjust callers.  Handle
+	STMT_VINFO_GATHER_P.
+	(gen_perm_mask): New function.
+	(perm_mask_for_reverse): Use it.
+	(reverse_vec_element): Rename to...
+	(permute_vec_elements): ... this.  Add Y and MASK_VEC arguments,
+	generalize for any permutations.
+	(vectorizable_load): Adjust caller.  Handle STMT_VINFO_GATHER_P.
+	* target.def (TARGET_VECTORIZE_BUILTIN_GATHER): New hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_GATHER): Document it.
+	* doc/tm.texi: Regenerate.
+	* tree-data-ref.c (initialize_data_dependence_relation,
+	compute_self_dependence): No longer static.
+	* tree-data-ref.h (initialize_data_dependence_relation,
+	compute_self_dependence): New prototypes.
+	* tree-vect-data-refs.c (vect_check_gather): New function.
+	(vect_analyze_data_refs): Detect possible gather load data
+	refs.
+	* tree-vectorizer.h (struct _stmt_vec_info): Add gather_p field.
+	(STMT_VINFO_GATHER_P): Define.
+	(vect_check_gather): New prototype.
+	* config/i386/i386-builtin-types.def: Add types for alternate
+	gather builtins.
+	* config/i386/sse.md (AVXMODE48P_DI): Remove.
+	(VEC_GATHER_MODE): Rename mode_attr to...
+	(VEC_GATHER_IDXSI): ... this.
+	(VEC_GATHER_IDXDI, VEC_GATHER_SRCDI): New mode_attrs.
+	(avx2_gathersi<mode>, *avx2_gathersi<mode>): Use <VEC_GATHER_IDXSI>
+	instead of <VEC_GATHER_MODE>.
+	(avx2_gatherdi<mode>): Use <VEC_GATHER_IDXDI> instead of
+	<<AVXMODE48P_DI> and <VEC_GATHER_SRCDI> instead of VEC_GATHER_MODE
+	on src and mask operands.
+	(*avx2_gatherdi<mode>): Likewise.  Use VEC_GATHER_MODE iterator
+	instead of AVXMODE48P_DI.
+	(avx2_gatherdi<mode>256, *avx2_gatherdi<mode>256): Removed.
+	* config/i386/i386.c (enum ix86_builtins): Add
+	IX86_BUILTIN_GATHERALTSIV4DF, IX86_BUILTIN_GATHERALTDIV8SF,
+	IX86_BUILTIN_GATHERALTSIV4DI and IX86_BUILTIN_GATHERALTDIV8SI.
+	(ix86_init_mmx_sse_builtins): Create those builtins.
+	(ix86_expand_builtin): Handle those builtins and adjust expansions
+	of other gather builtins.
+	(ix86_vectorize_builtin_gather): New function.
+	(TARGET_VECTORIZE_BUILTIN_GATHER): Define.
+
 2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/f16cintrin: Remove extra _X86INTRIN_H_INCLUDED check.

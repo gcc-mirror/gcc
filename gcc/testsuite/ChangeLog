@@ -1,3 +1,11 @@
+2011-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50789
+	* gcc.target/i386/avx2-gather-1.c: New test.
+	* gcc.target/i386/avx2-gather-2.c: New test.
+	* gcc.target/i386/avx2-gather-3.c: New test.
+	* gcc.target/i386/avx2-gather-4.c: New test.
+
 2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr49781-1.c (dg-options): Add -mtune=generic.

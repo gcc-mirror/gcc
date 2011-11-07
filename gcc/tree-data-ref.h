@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
@@ -423,6 +423,9 @@ extern bool graphite_find_data_references_in_stmt (loop_p, loop_p, gimple,
 						   VEC (data_reference_p, heap) **);
 struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple, bool);
 extern bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
+extern struct data_dependence_relation *initialize_data_dependence_relation
+     (struct data_reference *, struct data_reference *, VEC (loop_p, heap) *); 
+extern void compute_self_dependence (struct data_dependence_relation *);
 extern void compute_all_dependences (VEC (data_reference_p, heap) *,
 				     VEC (ddr_p, heap) **, VEC (loop_p, heap) *,
 				     bool);
