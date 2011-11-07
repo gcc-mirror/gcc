@@ -1,5 +1,17 @@
 2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* acinclude.m4: Check for <stdalign.h>
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* include/Makefile.am: Add <cstdalign>.
+	* include/Makefile.in: Regenerate.
+	* include/c_global/cstdalign: New.
+	* testsuite/18_support/headers/cstdalign/std_c++0x_neg.cc: New.
+	* doc/xml/manual/backwards_compatibility.xml: Update.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+
+2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/50982
 	* include/std/mutex (__once_proxy): Use void parameter list to
 	work on implicit extern "C" systems.

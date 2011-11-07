@@ -1135,7 +1135,7 @@ AC_DEFUN([AC_HEADER_STDCXX_11], [
     #include &lt;cmath&gt;
     #include &lt;csetjmp&gt;
     #include &lt;csignal&gt;
-    // #include &lt;cstdalign&gt;
+    #include &lt;cstdalign&gt;
     #include &lt;cstdarg&gt;
     #include &lt;cstdbool&gt;
     #include &lt;cstddef&gt;
