@@ -180,13 +180,13 @@ package Aspects is
    --  to the class-wide type as well.
 
    Inherited_Aspect : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Constant_Indexing    => True,
-      Aspect_Default_Iterator     => True,
-      Aspect_Implicit_Dereference => True,
-      Aspect_Iterator_Element     => True,
-      Aspect_Remote_Types         => True,
-      Aspect_Variable_Indexing    => True,
-      others                      => False);
+                        (Aspect_Constant_Indexing    => True,
+                         Aspect_Default_Iterator     => True,
+                         Aspect_Implicit_Dereference => True,
+                         Aspect_Iterator_Element     => True,
+                         Aspect_Remote_Types         => True,
+                         Aspect_Variable_Indexing    => True,
+                         others                      => False);
 
    --  The following subtype defines aspects corresponding to library unit
    --  pragmas, these can only validly appear as aspects for library units,

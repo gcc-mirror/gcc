@@ -846,8 +846,8 @@ package body Ada.Containers.Hashed_Maps is
    ---------------
 
    function Constant_Reference
-     (Container : aliased Map; Position : Cursor)
-   return Constant_Reference_Type
+     (Container : aliased Map;
+      Position  : Cursor) return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
    begin
@@ -855,8 +855,8 @@ package body Ada.Containers.Hashed_Maps is
    end Constant_Reference;
 
    function Reference
-     (Container : aliased in out Map; Position : Cursor)
-   return Reference_Type
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type
    is
       pragma Unreferenced (Container);
    begin
@@ -864,16 +864,16 @@ package body Ada.Containers.Hashed_Maps is
    end Reference;
 
    function Constant_Reference
-     (Container : aliased Map; Key : Key_Type)
-   return Constant_Reference_Type
+     (Container : aliased Map;
+      Key       : Key_Type) return Constant_Reference_Type
    is
    begin
       return (Element => Container.Element (Key)'Unrestricted_Access);
    end Constant_Reference;
 
    function Reference
-     (Container : aliased in out Map; Key : Key_Type)
-   return Reference_Type
+     (Container : aliased in out Map;
+      Key       : Key_Type) return Reference_Type
    is
    begin
       return (Element => Container.Element (Key)'Unrestricted_Access);

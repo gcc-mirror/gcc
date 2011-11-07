@@ -3926,16 +3926,16 @@ package body Sem_Res is
                if Is_Atomic_Object (A)
                  and then not Is_Atomic (Etype (F))
                then
-                  Error_Msg_N
-                    ("cannot pass atomic argument to non-atomic formal",
-                     N);
+                  Error_Msg_NE
+                    ("cannot pass atomic argument to non-atomic formal&",
+                     A, F);
 
                elsif Is_Volatile_Object (A)
                  and then not Is_Volatile (Etype (F))
                then
-                  Error_Msg_N
-                    ("cannot pass volatile argument to non-volatile formal",
-                     N);
+                  Error_Msg_NE
+                    ("cannot pass volatile argument to non-volatile formal&",
+                     A, F);
                end if;
             end if;
 

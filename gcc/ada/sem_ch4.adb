@@ -6507,7 +6507,6 @@ package body Sem_Ch4 is
                   --  Add implicit dereference interpretation
 
                   Disc := First_Discriminant (Etype (It.Nam));
-
                   while Present (Disc) loop
                      if Has_Implicit_Dereference (Disc) then
                         Add_One_Interp
@@ -6517,6 +6516,7 @@ package body Sem_Ch4 is
 
                      Next_Discriminant (Disc);
                   end loop;
+
                   exit;
                end if;
                Get_Next_Interp (I, It);

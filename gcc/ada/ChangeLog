@@ -1,3 +1,39 @@
+2011-11-07  Olivier Hainque  <hainque@adacore.com>
+
+	* sigtramp-ppcvxw.c: Add general comments.
+	(CFI_COMMON_REGS): Remove rule for r1, as in other unwinders. Add
+	rules for r2 to r13, plus CTR and XER.
+	(CFA_REG): New, register number used to hold the local CFA.
+	(CFI_DEF_CFA, SIGTRAMP_BODY): Use it.
+	Make that 15, not 14, with documentation.
+	(TCR): Undef before definition, preventing conflict with reg number in
+	VxWorks headers.
+
+2011-11-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.ads, exp_alfa.adb, a-cohama.adb, a-cohama.ads, sem_ch4.adb,
+	aspects.ads, exp_ch8.adb, exp_ch8.ads, atree.ads: Minor reformatting.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb: A tagged type is a legal actual for an aliased
+	formal.
+
+2011-11-07  Pascal Obry  <obry@adacore.com>
+
+	* g-socket.adb, g-socket.ads: Minor reformatting.
+
+2011-11-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Minor error message improvement.
+
+2011-11-07  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add discussion of default mode handling of
+	source representation with no -gnatW option given, in particular
+	noting that NEL (next line) is not recognized in this context.
+
 2011-11-07  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Note_Possible_Modification): In Alfa mode,

@@ -311,28 +311,28 @@ package Ada.Containers.Hashed_Maps is
    for Reference_Type'Read use Read;
 
    function Constant_Reference
-     (Container : aliased Map; Position : Cursor)
-   return Constant_Reference_Type;
+     (Container : aliased Map;
+      Position  : Cursor) return Constant_Reference_Type;
 
    function Reference
-     (Container : aliased in out Map; Position : Cursor)
-   return Reference_Type;
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type;
 
    function Constant_Reference
-     (Container : aliased Map; Key : Key_Type)
-   return Constant_Reference_Type;
+     (Container : aliased Map;
+      Key       : Key_Type) return Constant_Reference_Type;
 
    function Reference
-     (Container : aliased in out Map; Key : Key_Type)
-   return Reference_Type;
+     (Container : aliased in out Map;
+      Key       : Key_Type) return Reference_Type;
 
    procedure Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
    --  Calls Process for each node in the map
 
-   function Iterate (Container : Map)
-      return Map_Iterator_Interfaces.Forward_Iterator'class;
+   function Iterate
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class;
 
 private
    pragma Inline ("=");

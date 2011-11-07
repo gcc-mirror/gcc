@@ -2652,10 +2652,13 @@ package body Exp_Ch6 is
             end if;
          end if;
 
-         --  For Ada 2012, if a parameter is aliased, the actual must be an
-         --  aliased object.
+         --  For Ada 2012, if a parameter is aliased, the actual must be a
+         --  tagged type or an aliased view of an object.
 
-         if Is_Aliased (Formal) and then not Is_Aliased_View (Actual) then
+         if Is_Aliased (Formal)
+           and then not Is_Aliased_View (Actual)
+           and then not Is_Tagged_Type (Etype (Formal))
+         then
             Error_Msg_NE
               ("actual for aliased formal& must be aliased object",
                Actual, Formal);

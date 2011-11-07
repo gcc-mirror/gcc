@@ -32,5 +32,4 @@ package Exp_Ch8 is
    procedure Expand_N_Object_Renaming_Declaration     (N : Node_Id);
    procedure Expand_N_Package_Renaming_Declaration    (N : Node_Id);
    procedure Expand_N_Subprogram_Renaming_Declaration (N : Node_Id);
-
 end Exp_Ch8;

@@ -7155,7 +7155,10 @@ used, it must be used consistently throughout the program. However,
 since brackets encoding is always recognized, it may be conveniently
 used in standard libraries, allowing these libraries to be used with
 any of the available coding schemes.
-scheme.
+
+Note that brackets encoding only applies to program text. Within comments,
+brackets are considered to be normal graphic characters, and bracket sequences
+are never recognized as wide characters.
 
 If no @option{-gnatW?} parameter is present, then the default
 representation is normally Brackets encoding only. However, if the
@@ -7169,6 +7172,27 @@ for Wide_Text_IO files if not specifically overridden by a WCEM form
 parameter.
 
 @end table
+
+When no @option{-gnatW?} is specified, then characters (other than wide
+characters represented using brackets notation) are treated as 8-bit
+Latin-1 codes. The codes recognized are the Latin-1 graphic characters,
+and ASCII format effectors (CR, LF, HT, VT). Other lower half control
+characters in the range 16#00#..16#1F# are not accepted in program text
+or in comments. Upper half control characters (16#80#..16#9F#) are rejected
+in program text, but allowed and ignored in comments. Note in particular
+that the Next Line (NEL) character whose encoding is 16#85# is not recognized
+as an end of line in this default mode. If your source program contains
+instances of the NEL character used as a line terminator,
+you must use UTF-8 encoding for the whole
+source program. In default mode, all lines must be ended by a standard
+end of line sequence (CR, CR/LF, or LF).
+
+Note that the convention of simply accepting all upper half characters in
+comments means that programs that use standard ASCII for program text, but
+UTF-8 encoding for comments are accepted in default mode, providing that the
+comments are ended by an appropriate (CR, or CR/LF, or LF) line terminator.
+This is a common mode for many programs with foreign language comments.
+
 @node File Naming Control
 @subsection File Naming Control
 

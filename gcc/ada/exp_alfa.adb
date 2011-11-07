@@ -297,13 +297,10 @@ package body Exp_Alfa is
       T : constant Entity_Id := Etype (N);
 
    begin
-      --  Substitute a reference to a renaming with the actual renamed object
+      --  Replace a reference to a renaming with the actual renamed object
 
-      if Ekind (E) in Object_Kind
-        and then Present (Renamed_Object (E))
-      then
+      if Ekind (E) in Object_Kind and then Present (Renamed_Object (E)) then
          Rewrite (N, New_Copy_Tree (Renamed_Object (E)));
-
          Reset_Analyzed_Flags (N);
          Analyze_And_Resolve (N, T);
       end if;
