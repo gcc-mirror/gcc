@@ -71,7 +71,8 @@ static const char *ptrreg_to_str (int);
 static const char *cond_string (enum rtx_code);
 static int avr_num_arg_regs (enum machine_mode, const_tree);
 static int avr_operand_rtx_cost (rtx, enum machine_mode, enum rtx_code,
-				 int, bool);
+                                 int, bool);
+static void output_reload_in_const (rtx*, rtx, int*, bool);
 static struct machine_function * avr_init_machine_status (void);
 
 
@@ -2201,52 +2202,10 @@ output_movqi (rtx insn, rtx operands[], int *l)
 	  return AS2 (mov,%0,%1);
 	}
       else if (CONSTANT_P (src))
-	{
-	  if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
-	    return AS2 (ldi,%0,lo8(%1));
-	  
-	  if (GET_CODE (src) == CONST_INT)
-	    {
-	      if (src == const0_rtx) /* mov r,L */
-		return AS1 (clr,%0);
-	      else if (src == const1_rtx)
-		{
-		  *l = 2;
-		  return (AS1 (clr,%0) CR_TAB
-			  AS1 (inc,%0));
-		}
-	      else if (src == constm1_rtx)
-		{
-		  /* Immediate constants -1 to any register */
-		  *l = 2;
-		  return (AS1 (clr,%0) CR_TAB
-			  AS1 (dec,%0));
-		}
-	      else
-		{
-		  int bit_nr = exact_log2 (INTVAL (src));
-
-		  if (bit_nr >= 0)
-		    {
-		      *l = 3;
-		      if (!real_l)
-			output_asm_insn ((AS1 (clr,%0) CR_TAB
-					  "set"), operands);
-		      if (!real_l)
-			avr_output_bld (operands, bit_nr);
-
-		      return "";
-		    }
-		}
-	    }
-	  
-	  /* Last resort, larger than loading from memory.  */
-	  *l = 4;
-	  return (AS2 (mov,__tmp_reg__,r31) CR_TAB
-		  AS2 (ldi,r31,lo8(%1))     CR_TAB
-		  AS2 (mov,%0,r31)          CR_TAB
-		  AS2 (mov,r31,__tmp_reg__));
-	}
+        {
+          output_reload_in_const (operands, NULL_RTX, real_l, false);
+          return "";
+        }
       else if (GET_CODE (src) == MEM)
 	return out_movqi_r_mr (insn, operands, real_l); /* mov r,m */
     }
@@ -8163,8 +8122,10 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   bool set_p = false;
   unsigned int n;
   enum machine_mode mode = GET_MODE (dest);
+  int n_bytes = GET_MODE_SIZE (mode);
   
-  gcc_assert (REG_P (dest));
+  gcc_assert (REG_P (dest)
+              && CONSTANT_P (src));
 
   if (len)
     *len = 0;
@@ -8175,18 +8136,18 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   if (REGNO (dest) < 16
       && REGNO (dest) + GET_MODE_SIZE (mode) > 16)
     {
-      clobber_reg = gen_rtx_REG (QImode,
-                                 REGNO (dest) + GET_MODE_SIZE (mode) - 1);
+      clobber_reg = gen_rtx_REG (QImode, REGNO (dest) + n_bytes - 1);
     }
 
-  /* We might need a clobber reg but don't have one.  Look at the value
-     to be loaded more closely.  A clobber is only needed if it contains
-     a byte that is neither 0, -1 or a power of 2.  */
+  /* We might need a clobber reg but don't have one.  Look at the value to
+     be loaded more closely.  A clobber is only needed if it is a symbol
+     or contains a byte that is neither 0, -1 or a power of 2.  */
   
   if (NULL_RTX == clobber_reg
       && !test_hard_reg_class (LD_REGS, dest)
-      && !avr_popcount_each_byte (src, GET_MODE_SIZE (mode),
-                                  (1 << 0) | (1 << 1) | (1 << 8)))
+      && (! (CONST_INT_P (src) || CONST_DOUBLE_P (src))
+          || !avr_popcount_each_byte (src, n_bytes,
+                                      (1 << 0) | (1 << 1) | (1 << 8))))
     {
       /* We have no clobber register but need one.  Cook one up.
          That's cheaper than loading from constant pool.  */
@@ -8198,22 +8159,49 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
   /* Now start filling DEST from LSB to MSB.  */
   
-  for (n = 0; n < GET_MODE_SIZE (mode); n++)
+  for (n = 0; n < n_bytes; n++)
     {
+      int ldreg_p;
       bool done_byte = false;
       unsigned int j;
       rtx xop[3];
 
-      /* Crop the n-th sub-byte.  */
-      
-      xval = simplify_gen_subreg (QImode, src, mode, n);
+      /* Crop the n-th destination byte.  */
+
       xdest[n] = simplify_gen_subreg (QImode, dest, mode, n);
+      ldreg_p = test_hard_reg_class (LD_REGS, xdest[n]);
+
+      if (!CONST_INT_P (src)
+          && !CONST_DOUBLE_P (src))
+        {
+          static const char* const asm_code[][2] =
+            {
+              { "ldi %2,lo8(%1)"  CR_TAB "mov %0,%2",    "ldi %0,lo8(%1)"  },
+              { "ldi %2,hi8(%1)"  CR_TAB "mov %0,%2",    "ldi %0,hi8(%1)"  },
+              { "ldi %2,hlo8(%1)" CR_TAB "mov %0,%2",    "ldi %0,hlo8(%1)" },
+              { "ldi %2,hhi8(%1)" CR_TAB "mov %0,%2",    "ldi %0,hhi8(%1)" }
+            };
+          
+          xop[0] = xdest[n];
+          xop[1] = src;
+          xop[2] = clobber_reg;
+
+          if (n >= 2)
+            avr_asm_len ("clr %0", xop, len, 1);
+          else
+            avr_asm_len (asm_code[n][ldreg_p], xop, len, ldreg_p ? 1 : 2);
+          continue;
+        }
+
+      /* Crop the n-th source byte.  */
+
+      xval = simplify_gen_subreg (QImode, src, mode, n);
       ival[n] = INTVAL (xval);
 
       /* Look if we can reuse the low word by means of MOVW.  */
       
       if (n == 2
-          && GET_MODE_SIZE (mode) >= 4
+          && n_bytes >= 4
           && AVR_HAVE_MOVW)
         {
           rtx lo16 = simplify_gen_subreg (HImode, src, mode, 0);
@@ -8250,7 +8238,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
       /* LD_REGS can use LDI to move a constant value */
       
-      if (test_hard_reg_class (LD_REGS, xdest[n]))
+      if (ldreg_p)
         {
           xop[0] = xdest[n];
           xop[1] = xval;
@@ -8353,45 +8341,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 const char*
 output_reload_inhi (rtx *op, rtx clobber_reg, int *plen)
 {
-  if (CONST_INT_P (op[1]))
-    {
-      output_reload_in_const (op, clobber_reg, plen, false);
-    }
-  else if (test_hard_reg_class (LD_REGS, op[0]))
-    {
-      avr_asm_len ("ldi %A0,lo8(%1)" CR_TAB
-                   "ldi %B0,hi8(%1)", op, plen, -2);
-    }
-  else
-    {
-      rtx xop[3];
-
-      xop[0] = op[0];
-      xop[1] = op[1];
-      xop[2] = clobber_reg;
-      
-      if (plen)
-        *plen = 0;
-      
-      if (clobber_reg == NULL_RTX)
-        {
-          /* No scratch register provided: cook une up.  */
-          
-          xop[2] = gen_rtx_REG (QImode, REG_Z + 1);
-          avr_asm_len ("mov __tmp_reg__,%2", xop, plen, 1);
-        }
-      
-      avr_asm_len ("ldi %2,lo8(%1)" CR_TAB
-                   "mov %A0,%2"     CR_TAB
-                   "ldi %2,hi8(%1)" CR_TAB
-                   "mov %B0,%2", xop, plen, 4);
-
-      if (clobber_reg == NULL_RTX)
-        {
-          avr_asm_len ("mov %2,__tmp_reg__", xop, plen, 1);
-        }
-    }
-
+  output_reload_in_const (op, clobber_reg, plen, false);
   return "";
 }
 
@@ -8411,9 +8361,6 @@ output_reload_inhi (rtx *op, rtx clobber_reg, int *plen)
 const char *
 output_reload_insisf (rtx *op, rtx clobber_reg, int *len)
 {
-  gcc_assert (REG_P (op[0])
-              && CONSTANT_P (op[1]));
-
   if (AVR_HAVE_MOVW
       && !test_hard_reg_class (LD_REGS, op[0]))
     {
@@ -8460,9 +8407,6 @@ output_reload_insisf (rtx *op, rtx clobber_reg, int *len)
 const char *
 avr_out_reload_inpsi (rtx *op, rtx clobber_reg, int *len)
 {
-  gcc_assert (REG_P (op[0])
-              && CONST_INT_P (op[1]));
-
   output_reload_in_const (op, clobber_reg, len, false);
   return "";
 }
