@@ -1,3 +1,10 @@
+2011-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35688
+	* c-common.c (decl_has_visibility_attr): Split out from...
+	(c_determine_visibility): ...here.
+	* c-common.h: Declare it.
+
 2011-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_common_reswords): Add _Alignas and _Alignof.

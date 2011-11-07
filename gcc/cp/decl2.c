@@ -1974,8 +1974,11 @@ constrain_visibility (tree decl, int visibility)
 	    DECL_NOT_REALLY_EXTERN (decl) = 1;
 	}
     }
+  /* We check decl_has_visibility_attr rather than
+     DECL_VISIBILITY_SPECIFIED here because we want other considerations
+     to override visibility from a namespace or #pragma.  */
   else if (visibility > DECL_VISIBILITY (decl)
-	   && !DECL_VISIBILITY_SPECIFIED (decl))
+	   && !decl_has_visibility_attr (decl))
     {
       DECL_VISIBILITY (decl) = (enum symbol_visibility) visibility;
       return true;

@@ -1,3 +1,9 @@
+2011-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35688
+	* decl2.c (constrain_visibility): Check decl_has_visibility_attr
+	rather than DECL_VISIBILITY_SPECIFIED.
+
 2011-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/47695
