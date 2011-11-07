@@ -30,9 +30,27 @@
 #if defined(_GLIBCXX_USE_GET_NPROCS)
 # include <sys/sysinfo.h>
 # define _GLIBCXX_NPROCS get_nprocs()
+#elif defined(_GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP)
+# define _GLIBCXX_NPROCS pthread_num_processors_np()
+#elif defined(_GLIBCXX_USE_SYSCTL_HW_NCPU)
+# include <stddef.h>
+# include <sys/sysctl.h>
+static inline int get_nprocs()
+{
+ int count;
+ size_t size = sizeof(count);
+ int mib[] = { CTL_HW, HW_NCPU };
+ if (!sysctl(mib, 2, &count, &size, NULL, 0))
+   return count;
+ return 0;
+}
+# define _GLIBCXX_NPROCS get_nprocs()
 #elif defined(_GLIBCXX_USE_SC_NPROCESSORS_ONLN)
 # include <unistd.h>
 # define _GLIBCXX_NPROCS sysconf(_SC_NPROCESSORS_ONLN)
+#elif defined(_GLIBCXX_USE_SC_NPROC_ONLN)
+# include <unistd.h>
+# define _GLIBCXX_NPROCS sysconf(_SC_NPROC_ONLN)
 #else
 # define _GLIBCXX_NPROCS 0
 #endif

@@ -1673,13 +1673,12 @@ proc check_v3_target_nprocs { } {
 	set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
 	puts $f "#if defined(_GLIBCXX_USE_GET_NPROCS)"
-	puts $f "#elif defined(_GLIBCXX_USE_SYSCONF)"
-        puts $f "# include <unistd.h>"
-	puts $f "# if !defined(_SC_NPROCESSORS_ONLN)"
-	puts $f "#  error No sysconf option"
-	puts $f "# endif"
+	puts $f "#elif defined(_GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP)"
+	puts $f "#elif defined(_GLIBCXX_USE_SYSCTL_HW_NCPU)"
+	puts $f "#elif defined(_GLIBCXX_USE_SC_NPROCESSORS_ONLN)"
+	puts $f "#elif defined(_GLIBCXX_USE_SC_NPROC_ONLN)"
 	puts $f "#else"
-	puts $f "#  error No get_nprocs or sysconf"
+	puts $f "#  error hardware_concurrency not implemented"
 	puts $f "#endif"
 	close $f
 
