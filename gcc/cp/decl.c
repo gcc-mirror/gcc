@@ -3270,7 +3270,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
       return error_mark_node;
     }
 
-  if (want_template && !DECL_CLASS_TEMPLATE_P (t))
+  if (want_template && !DECL_TYPE_TEMPLATE_P (t))
     {
       if (complain & tf_error)
 	error ("%<typename %T::%D%> names %q#T, which is not a class template",
@@ -3338,7 +3338,7 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
       if (tmpl && TREE_CODE (tmpl) == TYPE_DECL)
 	tmpl = maybe_get_template_decl_from_type_decl (tmpl);
 
-      if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
+      if (!tmpl || !DECL_TYPE_TEMPLATE_P (tmpl))
 	{
 	  if (complain & tf_error)
 	    error ("no class template named %q#T in %q#T", name, context);
@@ -9746,6 +9746,11 @@ grokdeclarator (const cp_declarator *declarator,
       bad_specifiers (decl, BSP_TYPE, virtualp,
 		      memfn_quals != TYPE_UNQUALIFIED,
 		      inlinep, friendp, raises != NULL_TREE);
+
+      if (declspecs->specs[(int)ds_alias])
+	/* Acknowledge that this was written:
+	     `using analias = atype;'.  */
+	TYPE_DECL_ALIAS_P (decl) = 1;
 
       return decl;
     }

@@ -1,4 +1,78 @@
 2011-11-07  Jason Merrill  <jason@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	Support C++11 alias-declaration
+	PR c++/45114
+	* cp-tree.h (TYPE_DECL_ALIAS_P, TYPE_ALIAS_P)
+	(DECL_TYPE_TEMPLATE_P, DECL_ALIAS_TEMPLATE_P): New accessor
+	macros.
+	(TYPE_TEMPLATE_INFO): Get template info of an alias template
+	specializations from its TYPE_DECL.
+	(SET_TYPE_TEMPLATE_INFO): Set template info of alias template
+	specializations into its TYPE_DECL.
+	(DECL_CLASS_TEMPLATE_P): Re-write using the new
+	DECL_TYPE_TEMPLATE_P.
+	(enum cp_decl_spec): Add new ds_alias enumerator.
+	(alias_type_or_template_p, alias_template_specialization_p):
+	Declare new functions.
+	* parser.c (cp_parser_alias_declaration): New static function.
+	(cp_parser_check_decl_spec): Add "using" name for the `alias'
+	declspec.
+	(cp_parser_type_name): Update comment.  Support simple-template-id
+	representing alias template specializations in c++0x mode.
+	(cp_parser_qualifying_entity): Update comment.  Use
+	cp_parser_type_name.
+	(cp_parser_block_declaration): Handle alias-declaration in c++11.
+	Update comment.
+	(cp_parser_template_id): Handle specializations of alias
+	templates.
+	(cp_parser_member_declaration): Add alias-declaration production
+	to comment.  Support alias-declarations.
+	(cp_parser_template_declaration_after_export): Handle alias
+	templates in c++11.
+	* decl.c (make_typename_type, make_unbound_class_template): Accept
+	alias templates.
+	(grokdeclarator): Set TYPE_DECL_ALIAS_P on alias
+	declarations.
+	* decl2.c (grokfield): Move template creation after setting up the
+	TYPE_DECL of the alias, so that the TEMPLATE_DECL of the alias
+	template actually carries the right type-id of the alias
+	declaration.
+	* pt.c (alias_type_or_template_p)
+	(alias_template_specialization_p): Define new public functions.
+	(maybe_process_partial_specialization): Reject partial
+	specializations of alias templates.
+	(primary_template_instantiation_p): Consider alias template
+	instantiations.
+	(push_template_decl_real): Assert that TYPE_DECLs of alias
+	templates are different from those of class template.  Store
+	template info onto the TYPE_DECL of the alias template.
+	(convert_template_argument): Strip aliases from template
+	arguments.
+	(lookup_template_class_1): Handle the creation of the
+	specialization of an alias template.
+	(tsubst_decl): Create a substituted copy of the TYPE_DECL of an
+	member alias template.
+	(tsubst): Handle substituting into the type of an alias template.
+	Handle substituting UNBOUND_CLASS_TEMPLATE into
+	BOUND_TEMPLATE_TEMPLATE_PARM.
+	(do_type_instantiation): Better diagnostics when trying to
+	explicitely instantiate a non-class template.
+	* search.c (lookup_field_1, lookup_field_r): Support looking up
+	alias templates.
+	* semantics.c (finish_template_type): For instantiations of alias
+	templates, return the TYPE_DECL of the actual alias and not the
+	one of the aliased type.
+	* error.c (dump_alias_template_specialization): New static
+	function.
+	(dump_type): Handle printing of alias templates and their
+	specializations.  templates.
+	(dump_aggr_type): For specialization of alias templates, fetch
+	arguments from the right place.
+	(dump_decl): Print an alias-declaration like `using decl = type;'
+	(dump_template_decl):  Support printing of alias templates.
+
+2011-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35688
 	* decl2.c (constrain_visibility): Return void.  Add tmpl parm

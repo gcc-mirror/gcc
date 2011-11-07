@@ -2733,15 +2733,17 @@ finish_template_decl (tree parms)
 tree
 finish_template_type (tree name, tree args, int entering_scope)
 {
-  tree decl;
+  tree type;
 
-  decl = lookup_template_class (name, args,
+  type = lookup_template_class (name, args,
 				NULL_TREE, NULL_TREE, entering_scope,
 				tf_warning_or_error | tf_user);
-  if (decl != error_mark_node)
-    decl = TYPE_STUB_DECL (decl);
-
-  return decl;
+  if (type == error_mark_node)
+    return type;
+  else if (CLASS_TYPE_P (type) && !alias_type_or_template_p (type))
+    return TYPE_STUB_DECL (type);
+  else
+    return TYPE_NAME (type);
 }
 
 /* Finish processing a BASE_CLASS with the indicated ACCESS_SPECIFIER.
