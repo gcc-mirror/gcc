@@ -1,5 +1,21 @@
 2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.host (*-*-rtems*): Add t-rtems to tmake_file.
+	(i[34567]86-*-rtems*): Remove t-rtems from tmake_file.
+	(lm32-*-elf*, lm32-*-rtems*): Split into ...
+	(lm32-*-elf*): ... this.
+	(lm32-*-rtems*): ... and this.
+	Add to tmake_file.
+	(m32r-*-rtems*): Add to tmake_file.
+	(moxie-*-rtems*): Likewise.
+	(sparc-*-rtems*): Likewise.
+	Remove t-rtems from tmake_file.
+	(sparc64-*-rtems*): Likewise.
+	* config/t-rtems (HOST_LIBGCC2_CFLAGS): Use LIBGCC2_INCLUDES
+	instead.
+
+2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR bootstrap/50982
 	* config/gthr-posix.h: Move ...
 	* gthr-posix.h: ... here.

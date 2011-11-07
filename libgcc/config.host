@@ -229,6 +229,7 @@ case ${host} in
   esac
   ;;
 *-*-rtems*)
+  tmake_file="$tmake_file t-rtems"
   extra_parts="crtbegin.o crtend.o"
   ;;
 *-*-solaris2*)
@@ -568,8 +569,8 @@ i[34567]86-*-nto-qnx*)
 	extra_parts=crtbegin.o
 	;;
 i[34567]86-*-rtems*)
+	tmake_file="$tmake_file i386/t-softfp i386/t-crtstuff"
 	extra_parts="$extra_parts crti.o crtn.o"
-	tmake_file="${tmake_file} i386/t-softfp i386/t-crtstuff t-rtems"
 	;;
 i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	tmake_file="$tmake_file i386/t-crtpc i386/t-crtfm"
@@ -675,9 +676,13 @@ iq2000*-*-elf*)
 	# Don't use default.
 	extra_parts=
         ;;
-lm32-*-elf*|lm32-*-rtems*)
+lm32-*-elf*)
         extra_parts="$extra_parts crti.o crtn.o"
         tmake_file="lm32/t-lm32 lm32/t-elf t-softfp-sfdf t-softfp"
+	;;
+lm32-*-rtems*)
+        tmake_file="$tmake_file lm32/t-lm32 lm32/t-elf t-softfp-sfdf t-softfp"
+        extra_parts="$extra_parts crti.o crtn.o"
 	;;
 lm32-*-uclinux*)
         extra_parts="$extra_parts crtbegin.o crtendS.o crtbeginT.o"
@@ -687,7 +692,7 @@ m32r-*-elf*)
 	tmake_file=t-fdpbit
  	;;
 m32r-*-rtems*)
-	tmake_file="m32r/t-m32r t-fdpbit"
+	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
 	;;
 m32rle-*-elf*)
 	tmake_file=t-fdpbit
@@ -819,7 +824,7 @@ moxie-*-elf | moxie-*-uclinux*)
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 moxie-*-rtems*)
-	tmake_file="moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
+	tmake_file="$tmake_file moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
 	# Don't use default.
 	extra_parts=
 	;;
@@ -1029,7 +1034,7 @@ sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc-*-rtems*)
-	tmake_file="sparc/t-elf sparc/t-softmul t-crtfm t-rtems t-fdpbit"
+	tmake_file="$tmake_file sparc/t-elf sparc/t-softmul t-crtfm t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
 	;;
 sparc*-*-solaris2*)
@@ -1042,7 +1047,7 @@ sparc64-*-elf*)
 	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
 	;;
 sparc64-*-rtems*)
-	tmake_file="sparc/t-elf t-crtfm t-rtems"
+	tmake_file="$tmake_file sparc/t-elf t-crtfm"
 	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
 	;;
 sparc-wrs-vxworks)
