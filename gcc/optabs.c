@@ -7579,43 +7579,74 @@ struct atomic_op_functions
   enum rtx_code reverse_code;
 };
 
-static const struct atomic_op_functions *
-get_atomic_op_for_code (enum rtx_code code)
-{
-  static const struct atomic_op_functions add_op = {
-    atomic_fetch_add_optab, atomic_add_fetch_optab, atomic_add_optab,
-    sync_old_add_optab, sync_new_add_optab, sync_add_optab, MINUS
-  }, sub_op = {
-    atomic_fetch_sub_optab, atomic_sub_fetch_optab, atomic_sub_optab,
-    sync_old_sub_optab, sync_new_sub_optab, sync_sub_optab, PLUS
-  }, xor_op = {
-    atomic_fetch_xor_optab, atomic_xor_fetch_optab, atomic_xor_optab,
-    sync_old_xor_optab, sync_new_xor_optab, sync_xor_optab, XOR
-  }, and_op = {
-    atomic_fetch_and_optab, atomic_and_fetch_optab, atomic_and_optab,
-    sync_old_and_optab, sync_new_and_optab, sync_and_optab, UNKNOWN
-  }, nand_op = {
-    atomic_fetch_nand_optab, atomic_nand_fetch_optab, atomic_nand_optab,
-    sync_old_nand_optab, sync_new_nand_optab, sync_nand_optab, UNKNOWN
-  }, ior_op = {
-    atomic_fetch_or_optab, atomic_or_fetch_optab, atomic_or_optab,
-    sync_old_ior_optab, sync_new_ior_optab, sync_ior_optab, UNKNOWN
-  };
 
+/* Fill in structure pointed to by OP with the various optab entries for an 
+   operation of type CODE.  */
+
+static void
+get_atomic_op_for_code (struct atomic_op_functions *op, enum rtx_code code)
+{
+  gcc_assert (op!= NULL);
+
+  /* If SWITCHABLE_TARGET is defined, then subtargets can be switched
+     in the source code during compilation, and the optab entries are not
+     computable until runtime.  Fill in the values at runtime.  */
   switch (code)
     {
     case PLUS:
-      return &add_op;
+      op->mem_fetch_before = atomic_fetch_add_optab;
+      op->mem_fetch_after = atomic_add_fetch_optab;
+      op->mem_no_result = atomic_add_optab;
+      op->fetch_before = sync_old_add_optab;
+      op->fetch_after = sync_new_add_optab;
+      op->no_result = sync_add_optab;
+      op->reverse_code = MINUS;
+      break;
     case MINUS:
-      return &sub_op;
+      op->mem_fetch_before = atomic_fetch_sub_optab;
+      op->mem_fetch_after = atomic_sub_fetch_optab;
+      op->mem_no_result = atomic_sub_optab;
+      op->fetch_before = sync_old_sub_optab;
+      op->fetch_after = sync_new_sub_optab;
+      op->no_result = sync_sub_optab;
+      op->reverse_code = PLUS;
+      break;
     case XOR:
-      return &xor_op;
+      op->mem_fetch_before = atomic_fetch_xor_optab;
+      op->mem_fetch_after = atomic_xor_fetch_optab;
+      op->mem_no_result = atomic_xor_optab;
+      op->fetch_before = sync_old_xor_optab;
+      op->fetch_after = sync_new_xor_optab;
+      op->no_result = sync_xor_optab;
+      op->reverse_code = XOR;
+      break;
     case AND:
-      return &and_op;
+      op->mem_fetch_before = atomic_fetch_and_optab;
+      op->mem_fetch_after = atomic_and_fetch_optab;
+      op->mem_no_result = atomic_and_optab;
+      op->fetch_before = sync_old_and_optab;
+      op->fetch_after = sync_new_and_optab;
+      op->no_result = sync_and_optab;
+      op->reverse_code = UNKNOWN;
+      break;
     case IOR:
-      return &ior_op;
+      op->mem_fetch_before = atomic_fetch_or_optab;
+      op->mem_fetch_after = atomic_or_fetch_optab;
+      op->mem_no_result = atomic_or_optab;
+      op->fetch_before = sync_old_ior_optab;
+      op->fetch_after = sync_new_ior_optab;
+      op->no_result = sync_ior_optab;
+      op->reverse_code = UNKNOWN;
+      break;
     case NOT:
-      return &nand_op;
+      op->mem_fetch_before = atomic_fetch_nand_optab;
+      op->mem_fetch_after = atomic_nand_fetch_optab;
+      op->mem_no_result = atomic_nand_optab;
+      op->fetch_before = sync_old_nand_optab;
+      op->fetch_after = sync_new_nand_optab;
+      op->no_result = sync_nand_optab;
+      op->reverse_code = UNKNOWN;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -7701,22 +7732,22 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 			enum memmodel model, bool after)
 {
   enum machine_mode mode = GET_MODE (mem);
-  const struct atomic_op_functions *optab;
+  struct atomic_op_functions optab;
   rtx result;
   bool unused_result = (target == const0_rtx);
 
-  optab = get_atomic_op_for_code (code);
+  get_atomic_op_for_code (&optab, code);
 
   /* Check for the case where the result isn't used and try those patterns.  */
   if (unused_result)
     {
       /* Try the memory model variant first.  */
-      result = maybe_emit_op (optab, target, mem, val, true, model, true);
+      result = maybe_emit_op (&optab, target, mem, val, true, model, true);
       if (result)
         return result;
 
       /* Next try the old style withuot a memory model.  */
-      result = maybe_emit_op (optab, target, mem, val, false, model, true);
+      result = maybe_emit_op (&optab, target, mem, val, false, model, true);
       if (result)
         return result;
 
@@ -7725,23 +7756,23 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
     }
 
   /* Try the __atomic version.  */
-  result = maybe_emit_op (optab, target, mem, val, true, model, after);
+  result = maybe_emit_op (&optab, target, mem, val, true, model, after);
   if (result)
     return result;
 
   /* Try the older __sync version.  */
-  result = maybe_emit_op (optab, target, mem, val, false, model, after);
+  result = maybe_emit_op (&optab, target, mem, val, false, model, after);
   if (result)
     return result;
 
   /* If the fetch value can be calculated from the other variation of fetch,
      try that operation.  */
-  if (after || optab->reverse_code != UNKNOWN || target == const0_rtx) 
+  if (after || optab.reverse_code != UNKNOWN || target == const0_rtx) 
     {
       /* Try the __atomic version, then the older __sync version.  */
-      result = maybe_emit_op (optab, target, mem, val, true, model, !after);
+      result = maybe_emit_op (&optab, target, mem, val, true, model, !after);
       if (!result)
-	result = maybe_emit_op (optab, target, mem, val, false, model, !after);
+	result = maybe_emit_op (&optab, target, mem, val, false, model, !after);
 
       if (result)
 	{
@@ -7752,7 +7783,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	  /* Issue compensation code.  Fetch_after  == fetch_before OP val.
 	     Fetch_before == after REVERSE_OP val.  */
 	  if (!after)
-	    code = optab->reverse_code;
+	    code = optab.reverse_code;
 	  result = expand_simple_binop (mode, code, result, val, NULL_RTX, true,
 					OPTAB_LIB_WIDEN);
 	  return result;
