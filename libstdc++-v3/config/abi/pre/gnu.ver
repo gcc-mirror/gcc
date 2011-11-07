@@ -188,7 +188,7 @@ GLIBCXX_3.4 {
     _ZNSs[0-58-9]a*;
     _ZNSs5beginEv;
     _ZNSs[0-58-9][c-e]*;
-    _ZNSs[0-58-9][g-z]*;
+    _ZNSs[0-59][g-z]*;
 #   _ZNSs[67][a-z]*E[PRcjmvy]*;
     _ZNSs6appendE[PRcjmvy]*;
     _ZNSs6assignE[PRcjmvy]*;
@@ -225,10 +225,9 @@ GLIBCXX_3.4 {
     _ZNKSs[0-3][a-b]*;
     _ZNKSs[5-9][a-b]*;
     _ZNKSs[0-9][d-e]*;
-    _ZNKSs[0-79][g-z]*;
+    _ZNKSs[0-9][g-z]*;
     _ZNKSs[0-9][0-9][a-z]*;
     _ZNKSs4find*;
-    _ZNKSs8max_size*;
     _ZNKSs[a-z]*;
     _ZNKSs4_Rep12_M_is_leakedEv;
     _ZNKSs4_Rep12_M_is_sharedEv;
@@ -250,7 +249,7 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9]a*;
     _ZNSbIwSt11char_traitsIwESaIwEE5beginEv;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9][c-e]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9][g-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-59][g-z]*;
 #   _ZNSbIwSt11char_traitsIwESaIwEE[67][a-b]*E[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6appendE[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6assignE[PRwjmvy]*;
@@ -287,11 +286,10 @@ GLIBCXX_3.4 {
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-3][a-b]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[5-9][a-b]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][d-e]*;
-    _ZNKSbIwSt11char_traitsIwESaIwEE[0-79][g-z]*;
+    _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][g-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][0-9][a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE4find*;
-    _ZNKSbIwSt11char_traitsIwESaIwEE8max_size*;
     _ZNKSbIwSt11char_traitsIwESaIwEE4_Rep12_M_is_leakedEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE4_Rep12_M_is_sharedEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE6_M_repEv;
