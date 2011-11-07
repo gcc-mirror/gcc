@@ -1,3 +1,27 @@
+2011-11-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_alfa.adb: Remove with and use clause for
+	Exp_Ch8. Add with and use clause for Exp_Util.
+	Remove local constant Disable_Processing_Of_Renamings.
+	(Expand_Alfa_N_Object_Renaming_Declaration): The expansion of
+	object renamings has been reenabled.
+	(Expand_Possible_Renaming):
+	The expansion of identifier and expanded names has been
+	reenabled. Perform the substitutions only for entities that
+	denote an object.
+	* exp_ch8.ads, exp_ch8.adb (Evaluate_Name): Moved to Exp_Util.
+	* exp_util.adb (Evaluate_Name): Moved from Exp_Ch8.
+	(Remove_Side_Effects): Alphabetize local variables. Add a guard
+	to avoid the infinite expansion of an expression in Alfa mode. Add
+	processing for function calls in Alfa mode.
+	* exp_util.ads (Evaliate_Name): Moved from Exp_Ch8.
+
+2011-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): If the entity is an access to
+	subprogram whose designated type is itself a subprogram type,
+	its own return type must be decorated with size information.
+
 2011-11-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

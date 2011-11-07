@@ -28,8 +28,8 @@ with Einfo;    use Einfo;
 with Exp_Attr; use Exp_Attr;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch8;  use Exp_Ch8;
 with Exp_Dbug; use Exp_Dbug;
+with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
@@ -41,8 +41,6 @@ with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 
 package body Exp_Alfa is
-
-   Disable_Processing_Of_Renamings : constant Boolean := True;
 
    -----------------------
    -- Local Subprograms --
@@ -211,10 +209,6 @@ package body Exp_Alfa is
 
    procedure Expand_Alfa_N_Object_Renaming_Declaration (N : Node_Id) is
    begin
-      if Disable_Processing_Of_Renamings then
-         return;
-      end if;
-
       --  Unconditionally remove all side effects from the name
 
       Evaluate_Name (Name (N));
@@ -303,13 +297,11 @@ package body Exp_Alfa is
       T : constant Entity_Id := Etype (N);
 
    begin
-      if Disable_Processing_Of_Renamings then
-         return;
-      end if;
-
       --  Substitute a reference to a renaming with the actual renamed object
 
-      if Present (Renamed_Object (E)) then
+      if Ekind (E) in Object_Kind
+        and then Present (Renamed_Object (E))
+      then
          Rewrite (N, New_Copy_Tree (Renamed_Object (E)));
 
          Reset_Analyzed_Flags (N);

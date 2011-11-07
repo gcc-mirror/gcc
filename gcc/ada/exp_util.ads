@@ -351,6 +351,10 @@ package Exp_Util is
    --  which represent entry [family member] names. These strings are created
    --  by the compiler and used by GDB.
 
+   procedure Evaluate_Name (Nam : Node_Id);
+   --  Remove the all side effects from a name which appears as part of an
+   --  object renaming declaration.
+
    procedure Evolve_And_Then (Cond : in out Node_Id; Cond1 : Node_Id);
    --  Rewrites Cond with the expression: Cond and then Cond1. If Cond is
    --  Empty, then simply returns Cond1 (this allows the use of Empty to
