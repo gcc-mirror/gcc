@@ -1,3 +1,9 @@
+2011-11-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/cygwin.h (LIBGCJ_SONAME): Updated to match recent
+	libgcj version bump.
+	* config/i386/mingw32.h (LIBGCJ_SONAME): Likewise.
+
 2011-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcse.c: Adjust outdated comments throughout.
