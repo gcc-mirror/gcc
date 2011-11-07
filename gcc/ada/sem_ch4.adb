@@ -6427,38 +6427,20 @@ package body Sem_Ch4 is
       Func      : Entity_Id;
       Func_Name : Node_Id;
       Indexing  : Node_Id;
-      Is_Var    : Boolean;
-      Ritem     : Node_Id;
 
    begin
 
       --  Check whether type has a specified indexing aspect
 
       Func_Name := Empty;
-      Is_Var := False;
 
-      Ritem := First_Rep_Item (Etype (Prefix));
-      while Present (Ritem) loop
-         if Nkind (Ritem) = N_Aspect_Specification then
+      if Is_Variable (Prefix) then
+         Func_Name := Find_Aspect (Etype (Prefix), Aspect_Variable_Indexing);
+      end if;
 
-            --  Prefer Variable_Indexing, but will settle for Constant
-
-            if Get_Aspect_Id (Chars (Identifier (Ritem))) =
-                                                 Aspect_Constant_Indexing
-            then
-               Func_Name := Expression (Ritem);
-
-            elsif Get_Aspect_Id (Chars (Identifier (Ritem))) =
-                                                 Aspect_Variable_Indexing
-            then
-               Func_Name :=  Expression (Ritem);
-               Is_Var := True;
-               exit;
-            end if;
-         end if;
-
-         Next_Rep_Item (Ritem);
-      end loop;
+      if No (Func_Name) then
+         Func_Name := Find_Aspect (Etype (Prefix), Aspect_Constant_Indexing);
+      end if;
 
       --  If aspect does not exist the expression is illegal. Error is
       --  diagnosed in caller.
@@ -6476,12 +6458,6 @@ package body Sem_Ch4 is
          else
             return False;
          end if;
-      end if;
-
-      if Is_Var
-        and then not Is_Variable (Prefix)
-      then
-         Error_Msg_N ("Variable indexing cannot be applied to a constant", N);
       end if;
 
       if not Is_Overloaded (Func_Name) then
@@ -6526,6 +6502,7 @@ package body Sem_Ch4 is
                Analyze_One_Call (N, It.Nam, False, Success);
                if Success then
                   Set_Etype (Name (N), It.Typ);
+                  Set_Entity (Name (N), It.Nam);
 
                   --  Add implicit dereference interpretation
 
@@ -6540,10 +6517,18 @@ package body Sem_Ch4 is
 
                      Next_Discriminant (Disc);
                   end loop;
+                  exit;
                end if;
                Get_Next_Interp (I, It);
             end loop;
          end;
+      end if;
+
+      if Etype (N) = Any_Type then
+         Error_Msg_NE ("container cannot be indexed with&", N, Etype (Expr));
+         Rewrite (N, New_Occurrence_Of (Any_Id, Loc));
+      else
+         Analyze (N);
       end if;
 
       return True;

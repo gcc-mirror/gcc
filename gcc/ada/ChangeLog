@@ -1,5 +1,22 @@
 2011-11-07  Yannick Moy  <moy@adacore.com>
 
+	* sem_util.adb (Note_Possible_Modification): In Alfa mode,
+	generate a reference for a modification even when the modification
+	does not come from source.
+
+2011-11-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): For the "of" iterator form,
+	use the indexing attributes rather than the Element function,
+	to obtain variable references.
+	* sem_ch4.adb (Try_Container_Indexing): Code cleanup. Use
+	Find_Aspect rather than iterating over representation
+	items. Improve error message.
+	* a-cohama.adb, a-cohama.ads Update to latest RM, with two versions
+	of Reference functions.
+
+2011-11-07  Yannick Moy  <moy@adacore.com>
+
 	* sem_util.adb (Unique_Entity): For a parameter on a subprogram
 	body that has a corresponding parameter on the subprogram
 	declaration, define the unique entity as being the declaration
