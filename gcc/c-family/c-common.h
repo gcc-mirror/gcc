@@ -775,7 +775,6 @@ extern void overflow_warning (location_t, tree);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
 extern void check_main_parameter_types (tree decl);
-extern bool decl_has_visibility_attr (tree);
 extern bool c_determine_visibility (tree);
 extern bool same_scalar_type_ignoring_signedness (tree, tree);
 extern void mark_valid_location_for_stdc_pragma (bool);
