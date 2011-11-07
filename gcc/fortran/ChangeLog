@@ -1,3 +1,11 @@
+2011-11-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50919
+	* class.c (add_proc_comp): Don't add non-overridable procedures to the
+	vtable.
+	* resolve.c (resolve_typebound_function,resolve_typebound_subroutine):
+	Don't generate a dynamic _vptr call for non-overridable procedures.
+
 2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsic.texi (MCLOCK, MCLOCK8, TIME, TIME8): Functions clock

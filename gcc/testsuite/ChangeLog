@@ -1,3 +1,8 @@
+2011-11-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50919
+	* gfortran.dg/typebound_call_21.f03: New.
+
 2011-11-07  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/profile-dir-1.c: Adjust final scan.

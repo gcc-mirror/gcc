@@ -5868,11 +5868,13 @@ resolve_typebound_function (gfc_expr* e)
   const char *name;
   gfc_typespec ts;
   gfc_expr *expr;
+  bool overridable;
 
   st = e->symtree;
 
   /* Deal with typebound operators for CLASS objects.  */
   expr = e->value.compcall.base_object;
+  overridable = !e->value.compcall.tbp->non_overridable;
   if (expr && expr->ts.type == BT_CLASS && e->value.compcall.name)
     {
       /* Since the typebound operators are generic, we have to ensure
@@ -5923,22 +5925,26 @@ resolve_typebound_function (gfc_expr* e)
     return FAILURE;
   ts = e->ts;
 
-  /* Then convert the expression to a procedure pointer component call.  */
-  e->value.function.esym = NULL;
-  e->symtree = st;
+  if (overridable)
+    {
+      /* Convert the expression to a procedure pointer component call.  */
+      e->value.function.esym = NULL;
+      e->symtree = st;
 
-  if (new_ref)  
-    e->ref = new_ref;
+      if (new_ref)  
+	e->ref = new_ref;
 
-  /* '_vptr' points to the vtab, which contains the procedure pointers.  */
-  gfc_add_vptr_component (e);
-  gfc_add_component_ref (e, name);
+      /* '_vptr' points to the vtab, which contains the procedure pointers.  */
+      gfc_add_vptr_component (e);
+      gfc_add_component_ref (e, name);
 
-  /* Recover the typespec for the expression.  This is really only
-     necessary for generic procedures, where the additional call
-     to gfc_add_component_ref seems to throw the collection of the
-     correct typespec.  */
-  e->ts = ts;
+      /* Recover the typespec for the expression.  This is really only
+	necessary for generic procedures, where the additional call
+	to gfc_add_component_ref seems to throw the collection of the
+	correct typespec.  */
+      e->ts = ts;
+    }
+
   return SUCCESS;
 }
 
@@ -5957,11 +5963,13 @@ resolve_typebound_subroutine (gfc_code *code)
   const char *name;
   gfc_typespec ts;
   gfc_expr *expr;
+  bool overridable;
 
   st = code->expr1->symtree;
 
   /* Deal with typebound operators for CLASS objects.  */
   expr = code->expr1->value.compcall.base_object;
+  overridable = !code->expr1->value.compcall.tbp->non_overridable;
   if (expr && expr->ts.type == BT_CLASS && code->expr1->value.compcall.name)
     {
       /* Since the typebound operators are generic, we have to ensure
@@ -6006,22 +6014,26 @@ resolve_typebound_subroutine (gfc_code *code)
     return FAILURE;
   ts = code->expr1->ts;
 
-  /* Then convert the expression to a procedure pointer component call.  */
-  code->expr1->value.function.esym = NULL;
-  code->expr1->symtree = st;
+  if (overridable)
+    {
+      /* Convert the expression to a procedure pointer component call.  */
+      code->expr1->value.function.esym = NULL;
+      code->expr1->symtree = st;
 
-  if (new_ref)
-    code->expr1->ref = new_ref;
+      if (new_ref)
+	code->expr1->ref = new_ref;
 
-  /* '_vptr' points to the vtab, which contains the procedure pointers.  */
-  gfc_add_vptr_component (code->expr1);
-  gfc_add_component_ref (code->expr1, name);
+      /* '_vptr' points to the vtab, which contains the procedure pointers.  */
+      gfc_add_vptr_component (code->expr1);
+      gfc_add_component_ref (code->expr1, name);
 
-  /* Recover the typespec for the expression.  This is really only
-     necessary for generic procedures, where the additional call
-     to gfc_add_component_ref seems to throw the collection of the
-     correct typespec.  */
-  code->expr1->ts = ts;
+      /* Recover the typespec for the expression.  This is really only
+	necessary for generic procedures, where the additional call
+	to gfc_add_component_ref seems to throw the collection of the
+	correct typespec.  */
+      code->expr1->ts = ts;
+    }
+
   return SUCCESS;
 }
 
