@@ -1,8 +1,13 @@
+2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_builtin_vectorized_function): Handle
+	BUILT_IN_IRINT, BUILT_IN_IRINTF, BUILT_IN_LLRINT and BUILT_IN_LLRINTF.
+
 2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* optabs.c (get_atomic_op_for_code): Fill in optab table at runtime so
 	SWITCHABLE_TARGET can change the values during compilation.
-	(expand_atomic_fetch_op): Handle parameter change ripples for 
+	(expand_atomic_fetch_op): Handle parameter change ripples for
 	get_atomic_op_for_code call.
 
 2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
@@ -19,7 +24,7 @@
 	call originated from here.
 	(expand_builtin_atomic_exchange): Add origination flag.
 	(expand_builtin_atomic_store): Add origination flag.
-	* expr.h (expand_atomic_exchange, expand_atomic_store): Add boolean 
+	* expr.h (expand_atomic_exchange, expand_atomic_store): Add boolean
 	parameters to indicate implementation fall back options.
 
 2011-11-07  Georg-Johann Lay  <avr@gjlay.de>
