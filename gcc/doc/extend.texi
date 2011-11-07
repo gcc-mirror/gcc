@@ -6910,9 +6910,7 @@ contents of @code{*@var{ptr}} in @code{*@var{ret}}.
 
 @deftypefn {Built-in Function} void __atomic_store_n (@var{type} *ptr, @var{type} val, int memmodel)
 This built-in function implements an atomic store operation.  It writes 
-@code{@var{val}} into @code{*@var{ptr}}.  On targets which are limited,
-0 may be the only valid value. This mimics the behaviour of
-@code{__sync_lock_release} on such hardware.
+@code{@var{val}} into @code{*@var{ptr}}.  
 
 The valid memory model variants are
 @code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, and @code{__ATOMIC_RELEASE}.
@@ -6929,10 +6927,6 @@ of @code{*@var{val}} into @code{*@var{ptr}}.
 This built-in function implements an atomic exchange operation.  It writes
 @var{val} into @code{*@var{ptr}}, and returns the previous contents of
 @code{*@var{ptr}}.
-
-On targets which are limited, a value of 1 may be the only valid value
-written.  This mimics the behaviour of @code{__sync_lock_test_and_set} on
-such hardware.
 
 The valid memory model variants are
 @code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, @code{__ATOMIC_ACQUIRE},

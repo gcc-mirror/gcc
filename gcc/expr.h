@@ -215,9 +215,9 @@ rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
 rtx expand_sync_operation (rtx, rtx, enum rtx_code);
 rtx expand_sync_fetch_operation (rtx, rtx, enum rtx_code, bool, rtx);
 
-rtx expand_atomic_exchange (rtx, rtx, rtx, enum memmodel);
+rtx expand_atomic_exchange (rtx, rtx, rtx, enum memmodel, bool);
 rtx expand_atomic_load (rtx, rtx, enum memmodel);
-rtx expand_atomic_store (rtx, rtx, enum memmodel);
+rtx expand_atomic_store (rtx, rtx, enum memmodel, bool);
 rtx expand_atomic_fetch_op (rtx, rtx, rtx, enum rtx_code, enum memmodel, 
 			      bool);
 void expand_atomic_thread_fence (enum memmodel);

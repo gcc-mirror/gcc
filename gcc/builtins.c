@@ -5221,7 +5221,7 @@ expand_builtin_sync_lock_test_and_set (enum machine_mode mode, tree exp,
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 1), mode);
 
-  return expand_atomic_exchange (target, mem, val, MEMMODEL_ACQUIRE);
+  return expand_atomic_exchange (target, mem, val, MEMMODEL_ACQUIRE, true);
 }
 
 /* Expand the __sync_lock_release intrinsic.  EXP is the CALL_EXPR.  */
@@ -5234,7 +5234,7 @@ expand_builtin_sync_lock_release (enum machine_mode mode, tree exp)
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
 
-  expand_atomic_store (mem, const0_rtx, MEMMODEL_RELEASE);
+  expand_atomic_store (mem, const0_rtx, MEMMODEL_RELEASE, true);
 }
 
 /* Given an integer representing an ``enum memmodel'', verify its
@@ -5285,7 +5285,7 @@ expand_builtin_atomic_exchange (enum machine_mode mode, tree exp, rtx target)
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 1), mode);
 
-  return expand_atomic_exchange (target, mem, val, model);
+  return expand_atomic_exchange (target, mem, val, model, false);
 }
 
 /* Expand the __atomic_compare_exchange intrinsic:
@@ -5402,7 +5402,7 @@ expand_builtin_atomic_store (enum machine_mode mode, tree exp)
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 1), mode);
 
-  return expand_atomic_store (mem, val, model);
+  return expand_atomic_store (mem, val, model, false);
 }
 
 /* Expand the __atomic_fetch_XXX intrinsic:

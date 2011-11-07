@@ -1,3 +1,20 @@
+2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* doc/extend.texi: Docuemnt behaviour change for __atomic_exchange and
+	__atomic_store.
+	* optabs.c (expand_atomic_exchange): Expand to __sync_lock_test_and_set
+	only when originated from that builtin.
+	(expand_atomic_store): Expand to __sync_lock_release when originated
+	from that builtin.
+	* builtins.c (expand_builtin_sync_lock_test_and_set): Add flag that
+	expand_atomic_exchange call originated from here.
+	(expand_builtin_sync_lock_release): Add flag that expand_atomic_store
+	call originated from here.
+	(expand_builtin_atomic_exchange): Add origination flag.
+	(expand_builtin_atomic_store): Add origination flag.
+	* expr.h (expand_atomic_exchange, expand_atomic_store): Add boolean 
+	parameters to indicate implementation fall back options.
+
 2011-11-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (output_reload_in_const): Can handle CONSTANT_P
