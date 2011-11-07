@@ -3542,39 +3542,23 @@ proc check_effective_target_section_anchors { } {
 # Return 1 if the target supports atomic operations on "int_128" values.
 
 proc check_effective_target_sync_int_128 { } {
-    global et_sync_int_128_saved
-
-    if [info exists et_sync_int_128_saved] {
-        verbose "check_effective_target_sync_int_128: using cached result" 2
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	 && ![is-effective-target ia32] } {
+	return 1
     } else {
-        set et_sync_int_128_saved 0
-        if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
-	     && ![is-effective-target ia32] } {
-           set et_sync_int_128_saved 1
-        }
+	return 0
     }
-
-    verbose "check_effective_target_sync_int_128: returning $et_sync_int_128_saved" 2
-    return $et_sync_int_128_saved
 }
 
 # Return 1 if the target supports atomic operations on "long long".
 
 proc check_effective_target_sync_long_long { } {
-    global et_sync_long_long_saved
-
-    if [info exists et_sync_long_long_saved] {
-        verbose "check_effective_target_sync_long_long: using cached result" 2
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	 && ![is-effective-target ia32] } {
+	return 1
     } else {
-        set et_sync_long_long_saved 0
-        if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
-	     && ![is-effective-target ia32] } {
-           set et_sync_long_long_saved 1
-        }
+	return 0
     }
-
-    verbose "check_effective_target_sync_long_long: returning $et_sync_long_long_saved" 2
-    return $et_sync_long_long_saved
 }
 
 # Return 1 if the target supports atomic operations on "int" and "long".

@@ -1,10 +1,8 @@
-2011-11-07  Enkovich Ilya  <ilya.enkovich@intel.com>
+2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/50962
-	* config/i386/i386-protos.h (ix86_use_lea_for_mov): New.
-	* config/i386/i386.c (ix86_use_lea_for_mov): Likewise.
-	* config/i386/i386.md (movsi_internal): Emit lea if profitable.
-	(movdi_internal_rex64): Likewise.
+	* lib/target-supports.exp (check_effective_target_sync_int_128):
+	Don't cache the result.
+	(check_effective_target_sync_long_long): Ditto.
 
 2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
