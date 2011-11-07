@@ -5595,6 +5595,17 @@ be able to take the destination of the @code{MODE_CC} set and pass it
 to the @code{cbranchcc4} or @code{cstorecc4} pattern as the first
 operand of the comparison (the second will be @code{(const_int 0)}).
 
+For targets where the operating system may provide support for this
+operation via library calls, the @code{sync_compare_and_swap_optab}
+may be initialized to a function with the same interface as the
+@code{__sync_val_compare_and_swap_@var{n}} built-in.  If the entire
+set of @var{__sync} builtins are supported via library calls, the
+target can initialize all of the optabs at once with
+@code{init_sync_libfuncs}.
+For the purposes of C++11 @code{std::atomic::is_lock_free}, it is
+assumed that these library calls do @emph{not} use any kind of
+interruptable locking.
+
 @cindex @code{sync_add@var{mode}} instruction pattern
 @cindex @code{sync_sub@var{mode}} instruction pattern
 @cindex @code{sync_ior@var{mode}} instruction pattern

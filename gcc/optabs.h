@@ -386,6 +386,30 @@ enum optab_index
   /* Perform a raise to the power of integer.  */
   OTI_powi,
 
+  /* Atomic compare and swap.  */
+  OTI_sync_compare_and_swap,
+
+  /* Atomic exchange with acquire semantics.  */
+  OTI_sync_lock_test_and_set,
+
+  /* This second set is atomic operations in which we return the value
+     that existed in memory before the operation.  */
+  OTI_sync_old_add,
+  OTI_sync_old_sub,
+  OTI_sync_old_ior,
+  OTI_sync_old_and,
+  OTI_sync_old_xor,
+  OTI_sync_old_nand,
+
+  /* This third set is atomic operations in which we return the value
+     that resulted after performing the operation.  */
+  OTI_sync_new_add,
+  OTI_sync_new_sub,
+  OTI_sync_new_ior,
+  OTI_sync_new_and,
+  OTI_sync_new_xor,
+  OTI_sync_new_nand,
+
   OTI_MAX
 };
 
@@ -570,6 +594,23 @@ enum optab_index
 
 #define powi_optab (&optab_table[OTI_powi])
 
+#define sync_compare_and_swap_optab \
+  (&optab_table[(int) OTI_sync_compare_and_swap])
+#define sync_lock_test_and_set_optab \
+  (&optab_table[(int) OTI_sync_lock_test_and_set])
+#define sync_old_add_optab (&optab_table[(int) OTI_sync_old_add])
+#define sync_old_sub_optab (&optab_table[(int) OTI_sync_old_sub])
+#define sync_old_ior_optab (&optab_table[(int) OTI_sync_old_ior])
+#define sync_old_and_optab (&optab_table[(int) OTI_sync_old_and])
+#define sync_old_xor_optab (&optab_table[(int) OTI_sync_old_xor])
+#define sync_old_nand_optab (&optab_table[(int) OTI_sync_old_nand])
+#define sync_new_add_optab (&optab_table[(int) OTI_sync_new_add])
+#define sync_new_sub_optab (&optab_table[(int) OTI_sync_new_sub])
+#define sync_new_ior_optab (&optab_table[(int) OTI_sync_new_ior])
+#define sync_new_and_optab (&optab_table[(int) OTI_sync_new_and])
+#define sync_new_xor_optab (&optab_table[(int) OTI_sync_new_xor])
+#define sync_new_nand_optab (&optab_table[(int) OTI_sync_new_nand])
+
 /* Conversion optabs have their own table and indexes.  */
 enum convert_optab_index
 {
@@ -659,41 +700,16 @@ enum direct_optab_index
   DOI_cmpstrn,
   DOI_cmpmem,
 
-  /* Synchronization primitives.  This first set is atomic operation for
-     which we don't care about the resulting value.  */
+  /* Atomic clear with release semantics.  */
+  DOI_sync_lock_release,
+
+  /* Atomic operation with no resulting value.  */
   DOI_sync_add,
   DOI_sync_sub,
   DOI_sync_ior,
   DOI_sync_and,
   DOI_sync_xor,
   DOI_sync_nand,
-
-  /* This second set is atomic operations in which we return the value
-     that existed in memory before the operation.  */
-  DOI_sync_old_add,
-  DOI_sync_old_sub,
-  DOI_sync_old_ior,
-  DOI_sync_old_and,
-  DOI_sync_old_xor,
-  DOI_sync_old_nand,
-
-  /* This third set is atomic operations in which we return the value
-     that resulted after performing the operation.  */
-  DOI_sync_new_add,
-  DOI_sync_new_sub,
-  DOI_sync_new_ior,
-  DOI_sync_new_and,
-  DOI_sync_new_xor,
-  DOI_sync_new_nand,
-
-  /* Atomic compare and swap.  */
-  DOI_sync_compare_and_swap,
-
-  /* Atomic exchange with acquire semantics.  */
-  DOI_sync_lock_test_and_set,
-
-  /* Atomic clear with release semantics.  */
-  DOI_sync_lock_release,
 
   /* Atomic operations with memory model parameters. */
   DOI_atomic_exchange,
@@ -748,30 +764,14 @@ typedef struct direct_optab_d *direct_optab;
 #define cmpstr_optab (&direct_optab_table[(int) DOI_cmpstr])
 #define cmpstrn_optab (&direct_optab_table[(int) DOI_cmpstrn])
 #define cmpmem_optab (&direct_optab_table[(int) DOI_cmpmem])
+#define sync_lock_release_optab \
+  (&direct_optab_table[(int) DOI_sync_lock_release])
 #define sync_add_optab (&direct_optab_table[(int) DOI_sync_add])
 #define sync_sub_optab (&direct_optab_table[(int) DOI_sync_sub])
 #define sync_ior_optab (&direct_optab_table[(int) DOI_sync_ior])
 #define sync_and_optab (&direct_optab_table[(int) DOI_sync_and])
 #define sync_xor_optab (&direct_optab_table[(int) DOI_sync_xor])
 #define sync_nand_optab (&direct_optab_table[(int) DOI_sync_nand])
-#define sync_old_add_optab (&direct_optab_table[(int) DOI_sync_old_add])
-#define sync_old_sub_optab (&direct_optab_table[(int) DOI_sync_old_sub])
-#define sync_old_ior_optab (&direct_optab_table[(int) DOI_sync_old_ior])
-#define sync_old_and_optab (&direct_optab_table[(int) DOI_sync_old_and])
-#define sync_old_xor_optab (&direct_optab_table[(int) DOI_sync_old_xor])
-#define sync_old_nand_optab (&direct_optab_table[(int) DOI_sync_old_nand])
-#define sync_new_add_optab (&direct_optab_table[(int) DOI_sync_new_add])
-#define sync_new_sub_optab (&direct_optab_table[(int) DOI_sync_new_sub])
-#define sync_new_ior_optab (&direct_optab_table[(int) DOI_sync_new_ior])
-#define sync_new_and_optab (&direct_optab_table[(int) DOI_sync_new_and])
-#define sync_new_xor_optab (&direct_optab_table[(int) DOI_sync_new_xor])
-#define sync_new_nand_optab (&direct_optab_table[(int) DOI_sync_new_nand])
-#define sync_compare_and_swap_optab \
-  (&direct_optab_table[(int) DOI_sync_compare_and_swap])
-#define sync_lock_test_and_set_optab \
-  (&direct_optab_table[(int) DOI_sync_lock_test_and_set])
-#define sync_lock_release_optab \
-  (&direct_optab_table[(int) DOI_sync_lock_release])
 
 #define atomic_exchange_optab \
   (&direct_optab_table[(int) DOI_atomic_exchange])
@@ -956,6 +956,9 @@ extern void set_optab_libfunc (optab, enum machine_mode, const char *);
 extern void set_conv_libfunc (convert_optab, enum machine_mode,
 			      enum machine_mode, const char *);
 
+/* Call this to install all of the __sync libcalls up to size MAX.  */
+extern void init_sync_libfuncs (int max);
+
 /* Generate code for a FIXED_CONVERT_EXPR.  */
 extern void expand_fixed_convert (rtx, rtx, int, int);
 
@@ -966,7 +969,7 @@ extern void expand_float (rtx, rtx, int);
 enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
 
 /* Return true if there is an inline compare and swap pattern.  */
-extern bool can_compare_and_swap_p (enum machine_mode);
+extern bool can_compare_and_swap_p (enum machine_mode, bool);
 
 /* Generate code for a compare and swap.  */
 extern bool expand_atomic_compare_and_swap (rtx *, rtx *, rtx, rtx, rtx, bool,

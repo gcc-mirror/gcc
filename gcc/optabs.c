@@ -6586,6 +6586,57 @@ init_optabs (void)
   targetm.init_libfuncs ();
 }
 
+/* A helper function for init_sync_libfuncs.  Using the basename BASE,
+   install libfuncs into TAB for BASE_N for 1 <= N <= MAX.  */
+
+static void
+init_sync_libfuncs_1 (optab tab, const char *base, int max)
+{
+  enum machine_mode mode;
+  char buf[64];
+  size_t len = strlen (base);
+  int i;
+
+  gcc_assert (max <= 8);
+  gcc_assert (len + 3 < sizeof (buf));
+
+  memcpy (buf, base, len);
+  buf[len] = '_';
+  buf[len + 1] = '0';
+  buf[len + 2] = '\0';
+
+  mode = QImode;
+  for (i = 1; i < max; i *= 2)
+    {
+      buf[len + 1] = '0' + i;
+      set_optab_libfunc (tab, mode, buf);
+      mode = GET_MODE_2XWIDER_MODE (mode);
+    }
+}
+
+void
+init_sync_libfuncs (int max)
+{
+  init_sync_libfuncs_1 (sync_compare_and_swap_optab,
+			"__sync_val_compare_and_swap", max);
+  init_sync_libfuncs_1 (sync_lock_test_and_set_optab,
+			"__sync_lock_test_and_set", max);
+
+  init_sync_libfuncs_1 (sync_old_add_optab, "__sync_fetch_and_add", max);
+  init_sync_libfuncs_1 (sync_old_sub_optab, "__sync_fetch_and_sub", max);
+  init_sync_libfuncs_1 (sync_old_ior_optab, "__sync_fetch_and_ior", max);
+  init_sync_libfuncs_1 (sync_old_and_optab, "__sync_fetch_and_and", max);
+  init_sync_libfuncs_1 (sync_old_xor_optab, "__sync_fetch_and_xor", max);
+  init_sync_libfuncs_1 (sync_old_nand_optab, "__sync_fetch_and_nand", max);
+
+  init_sync_libfuncs_1 (sync_new_add_optab, "__sync_add_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_sub_optab, "__sync_sub_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_ior_optab, "__sync_ior_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_and_optab, "__sync_and_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_xor_optab, "__sync_xor_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_nand_optab, "__sync_nand_and_fetch", max);
+}
+
 /* Print information about the current contents of the optabs on
    STDERR.  */
 
@@ -7165,19 +7216,21 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 /* Return true if there is a compare_and_swap pattern.  */
 
 bool
-can_compare_and_swap_p (enum machine_mode mode)
+can_compare_and_swap_p (enum machine_mode mode, bool allow_libcall)
 {
   enum insn_code icode;
-
-  /* Check for __sync_compare_and_swap.  */
-  icode = direct_optab_handler (sync_compare_and_swap_optab, mode);
-  if (icode != CODE_FOR_nothing)
-      return true;
 
   /* Check for __atomic_compare_and_swap.  */
   icode = direct_optab_handler (atomic_compare_and_swap_optab, mode);
   if (icode != CODE_FOR_nothing)
-      return true;
+    return true;
+
+  /* Check for __sync_compare_and_swap.  */
+  icode = optab_handler (sync_compare_and_swap_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    return true;
+  if (allow_libcall && optab_libfunc (sync_compare_and_swap_optab, mode))
+    return true;
 
   /* No inline compare and swap.  */
   return false;
@@ -7266,7 +7319,6 @@ expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model,
 {
   enum machine_mode mode = GET_MODE (mem);
   enum insn_code icode;
-  rtx last_insn;
 
   /* If the target supports the exchange directly, great.  */
   icode = direct_optab_handler (atomic_exchange_optab, mode);
@@ -7296,16 +7348,17 @@ expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model,
 
   if (use_test_and_set)
     {
-      icode = direct_optab_handler (sync_lock_test_and_set_optab, mode);
-      last_insn = get_last_insn ();
-      if ((icode != CODE_FOR_nothing) && (model == MEMMODEL_SEQ_CST || 
-					  model == MEMMODEL_RELEASE ||
-					  model == MEMMODEL_ACQ_REL))
-	expand_builtin_mem_thread_fence (model);
+      icode = optab_handler (sync_lock_test_and_set_optab, mode);
 
       if (icode != CODE_FOR_nothing)
 	{
 	  struct expand_operand ops[3];
+	  rtx last_insn = get_last_insn ();
+
+	  if (model == MEMMODEL_SEQ_CST
+	      || model == MEMMODEL_RELEASE
+	      || model == MEMMODEL_ACQ_REL)
+	    expand_builtin_mem_thread_fence (model);
 
 	  create_output_operand (&ops[0], target, mode);
 	  create_fixed_operand (&ops[1], mem);
@@ -7313,16 +7366,35 @@ expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model,
 	  create_convert_operand_to (&ops[2], val, mode, true);
 	  if (maybe_expand_insn (icode, 3, ops))
 	    return ops[0].value;
+
+	  delete_insns_since (last_insn);
 	}
 
-      /* Remove any fence that was inserted since a compare and swap loop is
-	 already a full memory barrier.  */
-      if (last_insn != get_last_insn ())
-	delete_insns_since (last_insn);
+      /* If an external test-and-set libcall is provided, use that instead of
+	 any external compare-and-swap that we might get from the compare-and-
+	 swap-loop expansion below.  */
+      if (!can_compare_and_swap_p (mode, false))
+	{
+	  rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, mode);
+	  if (libfunc != NULL)
+	    {
+	      rtx addr;
+
+	      if (model == MEMMODEL_SEQ_CST
+		  || model == MEMMODEL_RELEASE
+		  || model == MEMMODEL_ACQ_REL)
+		expand_builtin_mem_thread_fence (model);
+
+	      addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
+	      return emit_library_call_value (libfunc, target, LCT_NORMAL,
+					      mode, 2, addr, ptr_mode,
+					      val, mode);
+	    }
+	}
     }
 
   /* Otherwise, use a compare-and-swap loop for the exchange.  */
-  if (can_compare_and_swap_p (mode))
+  if (can_compare_and_swap_p (mode, true))
     {
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
@@ -7356,7 +7428,8 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   enum machine_mode mode = GET_MODE (mem);
   struct expand_operand ops[8];
   enum insn_code icode;
-  rtx target_bool, target_oval;
+  rtx target_oval, target_bool = NULL_RTX;
+  rtx libfunc;
 
   /* Load expected into a register for the compare and swap.  */
   if (MEM_P (expected))
@@ -7400,7 +7473,7 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
 
   /* Otherwise fall back to the original __sync_val_compare_and_swap
      which is always seq-cst.  */
-  icode = direct_optab_handler (sync_compare_and_swap_optab, mode);
+  icode = optab_handler (sync_compare_and_swap_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
       rtx cc_reg;
@@ -7413,7 +7486,6 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
 	return false;
 
       target_oval = ops[0].value;
-      target_bool = NULL_RTX;
 
       /* If the caller isn't interested in the boolean return value,
 	 skip the computation of it.  */
@@ -7424,17 +7496,37 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
       cc_reg = NULL_RTX;
       if (have_insn_for (COMPARE, CCmode))
 	note_stores (PATTERN (get_last_insn ()), find_cc_set, &cc_reg);
-
-      target_bool
-	= (cc_reg
-	   ? emit_store_flag_force (target_bool, EQ, cc_reg,
-				    const0_rtx, VOIDmode, 0, 1)
-	   : emit_store_flag_force (target_bool, EQ, target_oval,
-				    expected, VOIDmode, 1, 1));
-      goto success;
+      if (cc_reg)
+	{
+	  target_bool = emit_store_flag_force (target_bool, EQ, cc_reg,
+					       const0_rtx, VOIDmode, 0, 1);
+	  goto success;
+	}
+      goto success_bool_from_val;
     }
+
+  /* Also check for library support for __sync_val_compare_and_swap.  */
+  libfunc = optab_libfunc (sync_compare_and_swap_optab, mode);
+  if (libfunc != NULL)
+    {
+      rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
+      target_oval = emit_library_call_value (libfunc, target_oval, LCT_NORMAL,
+					     mode, 3, addr, ptr_mode,
+					     expected, mode, desired, mode);
+
+      /* Compute the boolean return value only if requested.  */
+      if (ptarget_bool)
+	goto success_bool_from_val;
+      else
+	goto success;
+    }
+
+  /* Failure.  */
   return false;
 
+ success_bool_from_val:
+   target_bool = emit_store_flag_force (target_bool, EQ, target_oval,
+					expected, VOIDmode, 1, 1);
  success:
   /* Make sure that the oval output winds up where the caller asked.  */
   if (ptarget_oval)
@@ -7570,12 +7662,12 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 
 struct atomic_op_functions
 {
-  struct direct_optab_d *mem_fetch_before;
-  struct direct_optab_d *mem_fetch_after;
-  struct direct_optab_d *mem_no_result;
-  struct direct_optab_d *fetch_before;
-  struct direct_optab_d *fetch_after;
-  struct direct_optab_d *no_result;
+  direct_optab mem_fetch_before;
+  direct_optab mem_fetch_after;
+  direct_optab mem_no_result;
+  optab fetch_before;
+  optab fetch_after;
+  direct_optab no_result;
   enum rtx_code reverse_code;
 };
 
@@ -7666,7 +7758,6 @@ maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
 	       rtx val, bool use_memmodel, enum memmodel model, bool after)
 {
   enum machine_mode mode = GET_MODE (mem);
-  struct direct_optab_d *this_optab;
   struct expand_operand ops[4];
   enum insn_code icode;
   int op_counter = 0;
@@ -7677,13 +7768,13 @@ maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
     {
       if (use_memmodel)
         {
-	  this_optab = optab->mem_no_result;
+	  icode = direct_optab_handler (optab->mem_no_result, mode);
 	  create_integer_operand (&ops[2], model);
 	  num_ops = 3;
 	}
       else
         {
-	  this_optab = optab->no_result;
+	  icode = direct_optab_handler (optab->no_result, mode);
 	  num_ops = 2;
 	}
     }
@@ -7692,19 +7783,19 @@ maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
     {
       if (use_memmodel)
         {
-	  this_optab = after ? optab->mem_fetch_after : optab->mem_fetch_before;
+	  icode = direct_optab_handler (after ? optab->mem_fetch_after
+					: optab->mem_fetch_before, mode);
 	  create_integer_operand (&ops[3], model);
-	  num_ops= 4;
+	  num_ops = 4;
 	}
       else
 	{
-	  this_optab = after ? optab->fetch_after : optab->fetch_before;
+	  icode = optab_handler (after ? optab->fetch_after
+				 : optab->fetch_before, mode);
 	  num_ops = 3;
 	}
       create_output_operand (&ops[op_counter++], target, mode);
     }
-
-  icode = direct_optab_handler (this_optab, mode);
   if (icode == CODE_FOR_nothing)
     return NULL_RTX;
 
@@ -7713,7 +7804,7 @@ maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
   create_convert_operand_to (&ops[op_counter++], val, mode, true);
 
   if (maybe_expand_insn (icode, num_ops, ops))
-    return ((target == const0_rtx) ? const0_rtx : ops[0].value);
+    return (target == const0_rtx ? const0_rtx : ops[0].value);
 
   return NULL_RTX;
 } 
@@ -7767,7 +7858,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 
   /* If the fetch value can be calculated from the other variation of fetch,
      try that operation.  */
-  if (after || optab.reverse_code != UNKNOWN || target == const0_rtx) 
+  if (after || unused_result || optab.reverse_code != UNKNOWN)
     {
       /* Try the __atomic version, then the older __sync version.  */
       result = maybe_emit_op (&optab, target, mem, val, true, model, !after);
@@ -7784,14 +7875,46 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	     Fetch_before == after REVERSE_OP val.  */
 	  if (!after)
 	    code = optab.reverse_code;
-	  result = expand_simple_binop (mode, code, result, val, NULL_RTX, true,
+	  result = expand_simple_binop (mode, code, result, val, target, true,
 					OPTAB_LIB_WIDEN);
 	  return result;
 	}
     }
 
+  /* Try the __sync libcalls only if we can't do compare-and-swap inline.  */
+  if (!can_compare_and_swap_p (mode, false))
+    {
+      rtx libfunc;
+      bool fixup = false;
+
+      libfunc = optab_libfunc (after ? optab.fetch_after
+			       : optab.fetch_before, mode);
+      if (libfunc == NULL
+	  && (after || unused_result || optab.reverse_code != UNKNOWN))
+	{
+	  fixup = true;
+	  if (!after)
+	    code = optab.reverse_code;
+	  libfunc = optab_libfunc (after ? optab.fetch_before
+				   : optab.fetch_after, mode);
+	}
+      if (libfunc != NULL)
+	{
+	  rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
+	  result = emit_library_call_value (libfunc, NULL, LCT_NORMAL, mode,
+					    2, addr, ptr_mode, val, mode);
+
+	  if (unused_result)
+	    return target;
+	  if (fixup)
+	    result = expand_simple_binop (mode, code, result, val, target,
+					  true, OPTAB_LIB_WIDEN);
+	  return result;
+	}
+    }
+
   /* If nothing else has succeeded, default to a compare and swap loop.  */
-  if (can_compare_and_swap_p (mode))
+  if (can_compare_and_swap_p (mode, true))
     {
       rtx insn;
       rtx t0 = gen_reg_rtx (mode), t1;

@@ -1,3 +1,10 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (compareAndSwapInt_builtin): Use can_compare_and_swap_p.
+	(compareAndSwapLong_builtin): Likewise.
+	(compareAndSwapObject_builtin): Likewise.
+	(VMSupportsCS8_builtin): Likewise.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (jvspec.o): Pass SHLIB instead of SHLIB_LINK.

@@ -1,3 +1,36 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+
+	* optabs.h (OTI_sync_compare_and_swap, OTI_sync_lock_test_and_set,
+	OTI_sync_old_add, OTI_sync_old_sub, OTI_sync_old_ior,
+	OTI_sync_old_and, OTI_sync_old_xor, OTI_sync_old_nand,
+	OTI_sync_new_add, OTI_sync_new_sub, OTI_sync_new_ior,
+	OTI_sync_new_and, OTI_sync_new_xor, OTI_sync_new_nand): Move and
+	rename from the direct_optab_index enum.
+	(sync_compare_and_swap_optab, sync_lock_test_and_set_optab,
+	sync_old_add_optab, sync_old_sub_optab, sync_old_ior_optab,
+	sync_old_and_optab, sync_old_xor_optab, sync_old_nand_optab,
+	sync_new_add_optab, sync_new_sub_optab, sync_new_ior_optab,
+	sync_new_and_optab, sync_new_xor_optab, sync_new_nand_optab): Read
+	from the optab_table, not the direct_optab_table.
+	(init_sync_libfuncs): Declare.
+	(can_compare_and_swap_p): Update parameters.
+	* optabs.c (init_sync_libfuncs_1, init_sync_libfuncs): New.
+	(can_compare_and_swap_p): Add allow_libcall parameter; if true,
+	test for the legacy compare-and-swap libcall.
+	(expand_atomic_exchange): Use the legacy test-and-set libcall.
+	(expand_atomic_compare_and_swap): Use the legacy CAS libcall.
+	(struct atomic_op_functions): Update for optab type changes.
+	(maybe_emit_op): Likewise.
+	(expand_atomic_fetch_op): Use the legacy fetch-op libcalls.
+	* builtins.c (fold_builtin_atomic_always_lock_free): Update call
+	to can_compare_and_swap_p.
+	* omp-low.c (expand_omp_atomic_fetch_op): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+	* genopinit.c (optabs): Make sync_old_*_optab, sync_new_*_optab,
+	sync_compare_and_swap_optab, sync_lock_test_and_set_optab regular
+	optabs.
+	* doc/md.texi (sync_compare_and_swap): Update docs for libcalls.
+
 2011-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386-bultin-types.def (V8SI_FTYPE_V4DF_V4DF): Add.
