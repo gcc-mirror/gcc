@@ -29268,13 +29268,17 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
+    case BUILT_IN_IRINT:
     case BUILT_IN_LRINT:
+    case BUILT_IN_LLRINT:
       if (out_mode == SImode && out_n == 4
 	  && in_mode == DFmode && in_n == 2)
 	return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX];
       break;
 
+    case BUILT_IN_IRINTF:
     case BUILT_IN_LRINTF:
+    case BUILT_IN_LLRINTF:
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
