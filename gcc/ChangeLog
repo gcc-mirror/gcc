@@ -1,3 +1,7 @@
+2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/f16cintrin: Remove extra _X86INTRIN_H_INCLUDED check.
+
 2011-11-07  Tristan Gingold  <gingold@adacore.com>
 
 	* config.gcc (*-*-*vms*): Set c_target_objs, cxx_target_objs.
@@ -26,8 +30,7 @@
  2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	PR rtl-optimization/47698
-	* ifconv.c (noce_operand_ok): prevent CMOV generation
-	for volatile mem.
+	* ifconv.c (noce_operand_ok): prevent CMOV generation for volatile mem.
 
 2011-11-07  Tristan Gingold  <gingold@adacore.com>
 
@@ -42,7 +45,7 @@
 
 	Fix r180999, update ChangeLog
 	* config.gcc: Add f16cintrin.h.
-	* f16cintrin.h: Add missing endif.
+	* config/i386/f16cintrin.h: Add missing endif.
 
 2011-11-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
@@ -114,8 +117,7 @@
 	(c_parser_alignas_specifier): New.
 	(c_parser_alignof_expression): Diagnose alignof use for non-C1X.
 	Diagnose _Alignof (expression).
-	* c-tree.h (struct c_declspecs): Add align_log and alignas_p
-	fields.
+	* c-tree.h (struct c_declspecs): Add align_log and alignas_p fields.
 	(declspecs_add_alignas): Declare.
 	* ginclude/stddef.h (max_align_t): Define for C1X and C++11.
 	* ginclude/stdalign.h: New.
@@ -129,7 +131,7 @@
 	(struct insn_info): Add member fixed_regs_live.
 	(note_add_store_info): New typedef.
 	(note_add_store): New function.
-	(emit_inc_dec_insn_before): Expect arg to be of type insn_info_t .
+	(emit_inc_dec_insn_before): Expect arg to be of type insn_info_t.
 	Use gen_add3_insn / gen_move_insn.
 	Check new insn for unwanted clobbers before emitting it.
 	(check_for_inc_dec): Rename to...

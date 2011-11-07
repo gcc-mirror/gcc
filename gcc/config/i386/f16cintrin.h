@@ -1,5 +1,4 @@
-/* Copyright (C) 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,8 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef _X86INTRIN_H_INCLUDED
-#if (!defined(_X86INTRIN_H_INCLUDED) && !defined(_IMMINTRIN_H_INCLUDED))
+#if !defined _X86INTRIN_H_INCLUDED && !defined _IMMINTRIN_H_INCLUDED
 # error "Never use <f16intrin.h> directly; include <x86intrin.h> or <immintrin.h> instead."
 #endif
 
@@ -89,6 +87,6 @@ _mm256_cvtps_ph (__m256 __A, const int __I)
 #define _mm256_cvtps_ph(A, I) \
   ((__m128i) __builtin_ia32_vcvtps2ph256 ((__v8sf)(__m256) A, (int) (I)))
 #endif /* __OPTIMIZE */
+
 #endif /* _F16CINTRIN_H_INCLUDED */
 #endif /* __F16C__ */
-#endif /* _X86INTRIN_H_INCLUDED */
