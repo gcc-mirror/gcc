@@ -1,2 +1,2 @@
 CRTSTUFF_T_CFLAGS = -G 0 -msign-extend-enabled
-HOST_LIBGCC2_CFLAGS = -G 0 -msign-extend-enabled
+HOST_LIBGCC2_CFLAGS += -G 0 -msign-extend-enabled

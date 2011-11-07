@@ -20,7 +20,7 @@ LIB2ADD = $(srcdir)/config/c6x/gef.c \
           $(srcdir)/config/c6x/eqd.c
 
 # Avoid failures when the user's GOT becomes too large.
-HOST_LIBGCC2_CFLAGS = -msdata=none
+HOST_LIBGCC2_CFLAGS += -msdata=none
 
 LIB2ADDEH = $(srcdir)/config/c6x/unwind-c6x.c \
   $(srcdir)/config/c6x/libunwind.S \

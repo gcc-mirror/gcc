@@ -36,4 +36,4 @@ LIB2ADD = \
 	$(srcdir)/config/stormy16/cmpsi2.c \
 	$(srcdir)/config/stormy16/ucmpsi2.c
 
-HOST_LIBGCC2_CFLAGS = -O2
+HOST_LIBGCC2_CFLAGS += -O2

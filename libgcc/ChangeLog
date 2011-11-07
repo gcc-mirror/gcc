@@ -1,5 +1,33 @@
 2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.host (tmake_file): Correct comment.
+	(bfin*-elf*): Remove bfin/t-elf from tmake_file, add
+	t-libgcc-pic.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Likewise.
+	(xstormy16-*-elf): Add stormy16/t-stormy16 to tmake_file.
+
+	* config/arm/t-elf (HOST_LIBGCC2_CFLAGS): Append instead of
+	assigning.
+	* config/arm/t-strongarm-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/avr/t-avr (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/c6x/t-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/h8300/t-h8300 (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/lm32/t-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/m32r/t-m32r (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/mcore/t-mcore (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/mips/t-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/mmix/t-mmix (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/pdp11/t-pdp11 (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/picochip/t-picochip (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/stormy16/t-stormy16 (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/t-openbsd-thread (HOST_LIBGCC2_CFLAGS): Likewise.
+
+	* config/bfin/t-elf: Remove.
+	* config/t-vxworks (HOST_LIBGCC2_CFLAGS): Remove.
+
+2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.host (*-*-rtems*): Add t-rtems to tmake_file.
 	(i[34567]86-*-rtems*): Remove t-rtems from tmake_file.
 	(lm32-*-elf*, lm32-*-rtems*): Split into ...
