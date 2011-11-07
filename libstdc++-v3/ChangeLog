@@ -1,5 +1,10 @@
 2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
 
+	* include/bits/atomic_base.h (atomic_thread_fence): Revert.
+	(atomic_signal_fence): Revert.
+
+2011-11-07  Andrew MacLeod  <amacleod@redhat.com>
+
 	* include/bits/atomic_base.h (atomic_thread_fence): Call builtin.
 	(atomic_signal_fence): Call builtin.
 	(atomic_flag::test_and_set): Call __atomic_exchange when it is lockfree,
