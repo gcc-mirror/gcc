@@ -1140,6 +1140,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return iterator(this->_M_data() + __pos);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Remove the last character.
+       *
+       *  The string must be non-empty.
+       */
+      void
+      pop_back()
+      { this->_M_erase(size()-1, 1); }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
       /**
        *  @brief  Replace characters with value from another string.
        *  @param __pos  Index of first character to replace.

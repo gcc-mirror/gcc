@@ -225,9 +225,10 @@ GLIBCXX_3.4 {
     _ZNKSs[0-3][a-b]*;
     _ZNKSs[5-9][a-b]*;
     _ZNKSs[0-9][d-e]*;
-    _ZNKSs[0-9][g-z]*;
+    _ZNKSs[0-79][g-z]*;
     _ZNKSs[0-9][0-9][a-z]*;
     _ZNKSs4find*;
+    _ZNKSs8max_size*;
     _ZNKSs[a-z]*;
     _ZNKSs4_Rep12_M_is_leakedEv;
     _ZNKSs4_Rep12_M_is_sharedEv;
@@ -286,10 +287,11 @@ GLIBCXX_3.4 {
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-3][a-b]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[5-9][a-b]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][d-e]*;
-    _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][g-z]*;
+    _ZNKSbIwSt11char_traitsIwESaIwEE[0-79][g-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][0-9][a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE4find*;
+    _ZNKSbIwSt11char_traitsIwESaIwEE8max_size*;
     _ZNKSbIwSt11char_traitsIwESaIwEE4_Rep12_M_is_leakedEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE4_Rep12_M_is_sharedEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE6_M_repEv;
@@ -1301,6 +1303,11 @@ GLIBCXX_3.4.17 {
     # std::numeric_limits<__int128> and <unsigned __int128>
     _ZNSt14numeric_limitsInE*;
     _ZNSt14numeric_limitsIoE*;
+
+    # std::string::pop_back()
+    _ZNSs8pop_backEv;
+    # std::wstring::pop_back()
+    _ZNSbIwSt11char_traitsIwESaIwEE8pop_backEv;
 
 } GLIBCXX_3.4.16;
 

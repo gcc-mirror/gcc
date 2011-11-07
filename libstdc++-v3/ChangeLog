@@ -1,3 +1,19 @@
+2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/basic_string.h (basic_string::at): Move adjacent to other
+	overload.
+	(basic_string::pop_back): Define.
+	* include/debug/string (__gnu_debug::basic_string::pop_back): Likewise.
+	* include/ext/vstring.h (__versa_string::pop_back): Likewise.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* testsuite/21_strings/basic_string/modifiers/char/pop_back.cc: New.
+	* testsuite/21_strings/basic_string/modifiers/wchar_t/pop_back.cc: New.
+	* testsuite/21_strings/basic_string/range_access.cc: Split to ...
+	* testsuite/21_strings/basic_string/range_access/char/1.cc: Here and ...
+	* testsuite/21_strings/basic_string/range_access/wchar_t/1.cc: Here.
+	* testsuite/ext/vstring/modifiers/char/pop_back.cc: New.
+	* testsuite/ext/vstring/modifiers/wchar_t/pop_back.cc: New.
+
 2011-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/backwards_compatibility.xml: Fix autoconf tests for

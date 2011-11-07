@@ -865,6 +865,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_data()[__n];
       }
 
+      /**
+       *  @brief  Provides access to the data contained in the %string.
+       *  @param __n The index of the character to access.
+       *  @return  Read/write reference to the character.
+       *  @throw  std::out_of_range  If @a n is an invalid index.
+       *
+       *  This function provides for safer data access.  The parameter is
+       *  first checked that it is in the range of the string.  The function
+       *  throws out_of_range if the check fails.  Success results in
+       *  unsharing the string.
+       */
+      reference
+      at(size_type __n)
+      {
+	if (__n >= size())
+	  __throw_out_of_range(__N("basic_string::at"));
+	_M_leak();
+	return _M_data()[__n];
+      }
+
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  Returns a read/write reference to the data at the first
@@ -898,26 +918,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       back() const
       { return operator[](this->size() - 1); }
 #endif
-
-      /**
-       *  @brief  Provides access to the data contained in the %string.
-       *  @param __n The index of the character to access.
-       *  @return  Read/write reference to the character.
-       *  @throw  std::out_of_range  If @a n is an invalid index.
-       *
-       *  This function provides for safer data access.  The parameter is
-       *  first checked that it is in the range of the string.  The function
-       *  throws out_of_range if the check fails.  Success results in
-       *  unsharing the string.
-       */
-      reference
-      at(size_type __n)
-      {
-	if (__n >= size())
-	  __throw_out_of_range(__N("basic_string::at"));
-	_M_leak();
-	return _M_data()[__n];
-      }
 
       // Modifiers:
       /**
@@ -1394,6 +1394,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       erase(iterator __first, iterator __last);
  
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Remove the last character.
+       *
+       *  The string must be non-empty.
+       */
+      void
+      pop_back()
+      { erase(size()-1, 1); }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
       /**
        *  @brief  Replace characters with value from another string.
        *  @param __pos  Index of first character to replace.
