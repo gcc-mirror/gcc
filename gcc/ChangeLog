@@ -1,3 +1,12 @@
+2011-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (output_reload_in_const): Can handle CONSTANT_P
+	now, not only CONST_INT and CONST_DOUBLE.
+	(output_movqi): Use output_reload_in_const.
+	(output_reload_inhi): Ditto.
+	(output_reload_insisf): Move assertion to output_reload_in_const.
+	(avr_out_reload_inpsi): Ditto.
+
 2011-11-07  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov.c (object_summary): Replace with ...
