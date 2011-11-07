@@ -752,17 +752,19 @@
 ; add bytes
 
 (define_insn "addqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,d,r,r")
-        (plus:QI (match_operand:QI 1 "register_operand" "%0,0,0,0")
-                 (match_operand:QI 2 "nonmemory_operand" "r,i,P,N")))]
+  [(set (match_operand:QI 0 "register_operand"          "=r,d,r,r,r,r")
+        (plus:QI (match_operand:QI 1 "register_operand" "%0,0,0,0,0,0")
+                 (match_operand:QI 2 "nonmemory_operand" "r,i,P,N,K,Cm2")))]
   ""
   "@
 	add %0,%2
 	subi %0,lo8(-(%2))
 	inc %0
-	dec %0"
-  [(set_attr "length" "1,1,1,1")
-   (set_attr "cc" "set_czn,set_czn,set_zn,set_zn")])
+	dec %0
+	inc %0\;inc %0
+	dec %0\;dec %0"
+  [(set_attr "length" "1,1,1,1,2,2")
+   (set_attr "cc" "set_czn,set_czn,set_zn,set_zn,set_zn,set_zn")])
 
 
 (define_expand "addhi3"
@@ -3385,6 +3387,14 @@
   "neg %0"
   [(set_attr "length" "1")
    (set_attr "cc" "set_zn")])
+
+(define_insn "*negqihi2"
+  [(set (match_operand:HI 0 "register_operand"                        "=r")
+        (neg:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "0"))))]
+  ""
+  "clr %B0\;neg %A0\;brge .+2\;com %B0"
+  [(set_attr "length" "4")
+   (set_attr "cc" "set_n")])
 
 (define_insn "neghi2"
   [(set (match_operand:HI 0 "register_operand"       "=!d,r,&r")

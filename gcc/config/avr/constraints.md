@@ -103,6 +103,11 @@
   (and (match_code "mem")
        (match_test "extra_constraint_Q (op)")))
 
+(define_constraint "Cm2"
+  "Constant integer @minus{}2."
+  (and (match_code "const_int")
+       (match_test "ival == -2")))
+
 (define_constraint "C03"
   "Constant integer 3."
   (and (match_code "const_int")

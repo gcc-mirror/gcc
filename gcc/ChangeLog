@@ -1,3 +1,9 @@
+2011-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/constraints.md (Cm2): New constraint for int -2.
+	* config/avr/avr.md (addqi3): Use it. New alternatives for +/-2.
+	(*negqihi2): New insn.
+
 2011-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* dwarf2cfi.c (dwarf2out_frame_debug_expr): Check
