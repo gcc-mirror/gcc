@@ -1,3 +1,13 @@
+2011-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-bultin-types.def (V8SI_FTYPE_V4DF_V4DF): Add.
+	* config/i386/i386.c (enum ix86_builtins): Add
+	IX86_BUILTIN_VEC_PACK_SFIX256.
+	(bdesc_args): Add __builtin_ia32_vec_pack_sfix256.
+	(ix86_expand_args_builtin): Handle V8SI_FTYPE_V4DF_V4DF.
+	(ix86_builtin_vectorized_function): Also vectorize lrint using
+	256-bit vectors for -mavx.
+
 2011-11-07  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/cris/constraints.md: New file.
