@@ -1470,13 +1470,15 @@ If @var{Y} is zero, then @var{X} must be nonzero.
 @end multitable
 
 @item @emph{Return value}:
-The return value has the same type and kind type parameter as @var{Y}.
-It is the principal value of the complex number @math{X + i Y}.  If
-@var{X} is nonzero, then it lies in the range @math{-\pi \le \atan (x) \leq \pi}.
+The return value has the same type and kind type parameter as @var{Y}. It
+is the principal value of the complex number @math{X + i Y}.  If @var{X}
+is nonzero, then it lies in the range @math{-\pi \le \atan (x) \leq \pi}.
 The sign is positive if @var{Y} is positive.  If @var{Y} is zero, then
-the return value is zero if @var{X} is positive and @math{\pi} if @var{X}
-is negative.  Finally, if @var{X} is zero, then the magnitude of the result
-is @math{\pi/2}.
+the return value is zero if @var{X} is strictly positive, @math{\pi} if
+@var{X} is negative and @var{Y} is positive zero (or the processor does
+not handle signed zeros), and @math{-\pi} if @var{X} is negative and
+@var{Y} is negative zero.  Finally, if @var{X} is zero, then the
+magnitude of the result is @math{\pi/2}.
 
 @item @emph{Example}:
 @smallexample
@@ -2484,7 +2486,7 @@ The return value is of type integer and of the system-dependent kind
 number of bytes occupied by the argument.  If the argument has the
 @code{POINTER} attribute, the number of bytes of the storage area pointed
 to is returned.  If the argument is of a derived type with @code{POINTER}
-or @code{ALLOCATABLE} components, the return value doesn't account for
+or @code{ALLOCATABLE} components, the return value does not account for
 the sizes of the data pointed to by these components.
 
 @item @emph{Example}:
@@ -11467,7 +11469,7 @@ The return value is of type integer and of the system-dependent kind
 number of bytes occupied by the argument.  If the argument has the
 @code{POINTER} attribute, the number of bytes of the storage area pointed
 to is returned.  If the argument is of a derived type with @code{POINTER}
-or @code{ALLOCATABLE} components, the return value doesn't account for
+or @code{ALLOCATABLE} components, the return value does not account for
 the sizes of the data pointed to by these components. If the argument is
 polymorphic, the size according to the declared type is returned. The argument
 may not be a procedure or procedure pointer.
