@@ -810,8 +810,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
       unique_lock<mutex> __functor_lock(__get_once_mutex());
-      __once_functor = std::__bind_simple(std::forward<_Callable>(__f),
+      auto __callable = std::__bind_simple(std::forward<_Callable>(__f),
           std::forward<_Args>(__args)...);
+      __once_functor = [&]() { __callable(); };
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif
 
