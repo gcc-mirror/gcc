@@ -1,5 +1,8 @@
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/33255
+	* decl.c (save_function_data): Clear local_typedefs.
+
 	* decl.c (cp_finish_decl): Only make_tree_vector if we're calling
 	check_initializer.
 
