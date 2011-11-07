@@ -1,3 +1,13 @@
+2011-11-07  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/49188
+	PR libfortran/49336
+	* invoke.texi: Fix documentation of fsign-zero option. Remove
+	contractions.
+	* intrinsic.texi: Fix ATAN2 documentation for signed zeros.
+	Remove contractions.
+	* gfortran.texi: Remove contractions.
+
 2011-11-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50919

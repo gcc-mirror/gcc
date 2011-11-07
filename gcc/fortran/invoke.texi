@@ -459,7 +459,7 @@ let the compiler know the current working directory at the time of
 preprocessing. When this option is enabled, the preprocessor will emit,
 after the initial linemarker, a second linemarker with the current
 working directory followed by two slashes. GCC will use this directory,
-when it's present in the preprocessed input, as the directory emitted
+when it is present in the preprocessed input, as the directory emitted
 as the current working directory in some debugging information formats.
 This option is implicitly enabled if debugging information is enabled,
 but this can be inhibited with the negated form
@@ -659,7 +659,7 @@ messages produced.
 @item -fsyntax-only
 @opindex @code{fsyntax-only}
 @cindex syntax checking
-Check the code for syntax errors, but don't actually compile it.  This
+Check the code for syntax errors, but do not actually compile it.  This
 will generate module files for each module present in the code, but no
 other output file.
 
@@ -1088,10 +1088,10 @@ really useful for use by the gfortran testsuite.
 @opindex @code{fsign-zero}
 When enabled, floating point numbers of value zero with the sign bit set
 are written as negative number in formatted output and treated as
-negative in the @code{SIGN} intrinsic.  @code{fno-sign-zero} does not
-print the negative sign of zero values and regards zero as positive
-number in the @code{SIGN} intrinsic for compatibility with F77.
-Default behavior is to show the negative sign.
+negative in the @code{SIGN} intrinsic.  @option{-fno-sign-zero} does not
+print the negative sign of zero values (or values rounded to zero for I/O)
+and regards zero as positive number in the @code{SIGN} intrinsic for
+compatibility with Fortran 77. The default is @option{-fsign-zero}.
 @end table
 
 @node Code Gen Options
@@ -1394,7 +1394,7 @@ The default value for @var{n} is 32768.
 @opindex @code{fstack-arrays}
 Adding this option will make the fortran compiler put all local arrays,
 even those of unknown size onto stack memory.  If your program uses very
-large local arrays it's possible that you'll have to extend your runtime
+large local arrays it is possible that you will have to extend your runtime
 limits for stack memory on some operating systems. This flag is enabled
 by default at optimization level @option{-Ofast}.
 

@@ -222,7 +222,7 @@ compiler.
 The GNU Fortran compiler front end was
 designed initially as a free replacement for,
 or alternative to, the unix @command{f95} command;
-@command{gfortran} is the command you'll use to invoke the compiler.
+@command{gfortran} is the command you will use to invoke the compiler.
 
 @menu
 * About GNU Fortran::    What you should know about the GNU Fortran compiler.
@@ -261,7 +261,7 @@ place.  The result after compilation of a program is
 @dfn{machine code},
 code designed to be efficiently translated and processed
 by a machine such as your computer.
-Humans usually aren't as good writing machine code
+Humans usually are not as good writing machine code
 as they are at writing Fortran (or C++, Ada, or Java),
 because it is easy to make tiny mistakes writing machine code.
 
@@ -580,8 +580,8 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_STDOUT_UNIT:: Unit number for standard output
 * GFORTRAN_STDERR_UNIT:: Unit number for standard error
 * GFORTRAN_TMPDIR:: Directory for scratch files
-* GFORTRAN_UNBUFFERED_ALL:: Don't buffer I/O for all units.
-* GFORTRAN_UNBUFFERED_PRECONNECTED:: Don't buffer I/O for preconnected units.
+* GFORTRAN_UNBUFFERED_ALL:: Do not buffer I/O for all units.
+* GFORTRAN_UNBUFFERED_PRECONNECTED:: Do not buffer I/O for preconnected units.
 * GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
 * GFORTRAN_OPTIONAL_PLUS:: Print leading + where permitted
 * GFORTRAN_DEFAULT_RECL:: Default record length for new files
@@ -620,7 +620,7 @@ GNU Fortran searches for the environment variable @env{TMP}, then @env{TEMP}.
 If these are missing, the default is @file{/tmp}.
 
 @node GFORTRAN_UNBUFFERED_ALL
-@section @env{GFORTRAN_UNBUFFERED_ALL}---Don't buffer I/O on all units
+@section @env{GFORTRAN_UNBUFFERED_ALL}---Do not buffer I/O on all units
 
 This environment variable controls whether all I/O is unbuffered.  If
 the first letter is @samp{y}, @samp{Y} or @samp{1}, all I/O is
@@ -629,7 +629,7 @@ the first letter is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.
 This is the default.
 
 @node GFORTRAN_UNBUFFERED_PRECONNECTED
-@section @env{GFORTRAN_UNBUFFERED_PRECONNECTED}---Don't buffer I/O on preconnected units
+@section @env{GFORTRAN_UNBUFFERED_PRECONNECTED}---Do not buffer I/O on preconnected units
 
 The environment variable named @env{GFORTRAN_UNBUFFERED_PRECONNECTED} controls
 whether I/O on a preconnected unit (i.e.@: STDOUT or STDERR) is unbuffered.  If 
@@ -642,7 +642,7 @@ is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.  This is the default.
 
 If the first letter is @samp{y}, @samp{Y} or @samp{1}, filename and
 line numbers for runtime errors are printed.  If the first letter is
-@samp{n}, @samp{N} or @samp{0}, don't print filename and line numbers
+@samp{n}, @samp{N} or @samp{0}, do not print filename and line numbers
 for runtime errors.  The default is to print the location.
 
 @node GFORTRAN_OPTIONAL_PLUS
@@ -1953,7 +1953,7 @@ store_catalog(7)%id = 7831
 store_catalog(7)%description = "milk bottle"
 store_catalog(7)%price = 1.2
 
-! Assignments of a whole variable don't change
+! Assignments of a whole variable do not change
 store_catalog(12) = pear
 print *, store_catalog(12)
 @end example
@@ -1974,7 +1974,7 @@ print *, store_catalog(12)
 @cindex @code{ENCODE}
 @cindex @code{DECODE}
 
-GNU Fortran doesn't support the @code{ENCODE} and @code{DECODE}
+GNU Fortran does not support the @code{ENCODE} and @code{DECODE}
 statements.  These statements are best replaced by @code{READ} and
 @code{WRITE} statements involving internal files (@code{CHARACTER}
 variables and arrays), which have been part of the Fortran standard since
@@ -2334,10 +2334,10 @@ Procedure pointers are handled analogously to pointers; the C type is
 @code{TYPE(C_FUNPTR)} and the intrinsic conversion procedures are
 @code{C_F_PROCPOINTER} and @code{C_FUNLOC}.
 
-Let's consider two examples of actually passing a procedure pointer from
+Let us consider two examples of actually passing a procedure pointer from
 C to Fortran and vice versa.  Note that these examples are also very
-similar to passing ordinary pointers between both languages.
-First, consider this code in C:
+similar to passing ordinary pointers between both languages. First,
+consider this code in C:
 
 @smallexample
 /* Procedure implemented in Fortran.  */
@@ -2827,7 +2827,7 @@ some are completely orthogonal to the rest of what is
 happening on GNU Fortran,
 but others are ``mainstream'' projects in need of enthusiastic hackers.
 All of these projects are important!
-We'll eventually get around to the things here,
+We will eventually get around to the things here,
 but they are also things doable by someone who is willing and able.
 
 @menu
