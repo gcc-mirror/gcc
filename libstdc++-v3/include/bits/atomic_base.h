@@ -69,16 +69,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  atomic_thread_fence(memory_order __m) noexcept
-  {
-    __atomic_thread_fence (__m);
-  }
+  atomic_thread_fence(memory_order __m) noexcept;
 
   void
-  atomic_signal_fence(memory_order __m) noexcept
-  {
-    __atomic_signal_fence (__m);
-  }
+  atomic_signal_fence(memory_order __m) noexcept;
 
   /// kill_dependency
   template<typename _Tp>
