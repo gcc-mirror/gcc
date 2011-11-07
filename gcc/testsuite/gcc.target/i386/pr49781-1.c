@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fpic" } */
+/* { dg-options "-O2 -fpic -mtune=generic" } */
 /* { dg-require-effective-target fpic } */
 
 static int heap[2*(256 +1+29)+1];
