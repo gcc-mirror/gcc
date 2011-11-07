@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_dsp } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O1 -fexpensive-optimizations" } */
 
 int mac(const int *a, const int *b, long long sqr, long long *sum)
 {
