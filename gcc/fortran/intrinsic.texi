@@ -8639,7 +8639,7 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 @table @asis
 @item @emph{Description}:
 Returns the number of clock ticks since the start of the process, based
-on the UNIX function @code{clock(3)}.
+on the function @code{clock(3)} in the C standard library.
 
 This intrinsic is not fully portable, such as to systems with 32-bit
 @code{INTEGER} types but supporting times wider than 32 bits. Therefore,
@@ -8677,7 +8677,7 @@ the system does not support @code{clock(3)}.
 @table @asis
 @item @emph{Description}:
 Returns the number of clock ticks since the start of the process, based
-on the UNIX function @code{clock(3)}.
+on the function @code{clock(3)} in the C standard library.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{clock(3)}. On a system with a 32-bit
@@ -12222,8 +12222,8 @@ END IF
 @table @asis
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
-UNIX function @code{time(3)}). This value is suitable for passing to
-@code{CTIME}, @code{GMTIME}, and @code{LTIME}.
+function @code{time(3)} in the C standard library). This value is
+suitable for passing to @code{CTIME}, @code{GMTIME}, and @code{LTIME}.
 
 This intrinsic is not fully portable, such as to systems with 32-bit
 @code{INTEGER} types but supporting times wider than 32 bits. Therefore,
@@ -12263,8 +12263,8 @@ The return value is a scalar of type @code{INTEGER(4)}.
 @table @asis
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
-UNIX function @code{time(3)}). This value is suitable for passing to
-@code{CTIME}, @code{GMTIME}, and @code{LTIME}.
+function @code{time(3)} in the C standard library). This value is
+suitable for passing to @code{CTIME}, @code{GMTIME}, and @code{LTIME}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{time(3)}. On a system with a 32-bit
