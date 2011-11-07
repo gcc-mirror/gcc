@@ -1351,13 +1351,11 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
   return refs_may_alias_p (addr_a, addr_b);
 }
 
-static void compute_self_dependence (struct data_dependence_relation *);
-
 /* Initialize a data dependence relation between data accesses A and
    B.  NB_LOOPS is the number of loops surrounding the references: the
    size of the classic distance/direction vectors.  */
 
-static struct data_dependence_relation *
+struct data_dependence_relation *
 initialize_data_dependence_relation (struct data_reference *a,
 				     struct data_reference *b,
  				     VEC (loop_p, heap) *loop_nest)
@@ -4121,7 +4119,7 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
 /* This computes the dependence relation for the same data
    reference into DDR.  */
 
-static void
+void
 compute_self_dependence (struct data_dependence_relation *ddr)
 {
   unsigned int i;

@@ -1021,6 +1021,14 @@ DEFHOOK
  (void),
  default_autovectorize_vector_sizes)
 
+/* Target builtin that implements vector gather operation.  */
+DEFHOOK
+(builtin_gather,
+ "",
+ tree,
+ (const_tree mem_vectype, const_tree index_type, int scale),
+ NULL)
+
 HOOK_VECTOR_END (vectorize)
 
 #undef HOOK_PREFIX
