@@ -7256,10 +7256,13 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
    atomically store VAL in MEM and return the previous value in MEM.
 
    MEMMODEL is the memory model variant to use.
-   TARGET is an option place to stick the return value.  */
+   TARGET is an optional place to stick the return value.  
+   USE_TEST_AND_SET indicates whether __sync_lock_test_and_set should be used
+   as a fall back if the atomic_exchange pattern does not exist.  */
 
 rtx
-expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
+expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model,
+			bool use_test_and_set)			
 {
   enum machine_mode mode = GET_MODE (mem);
   enum insn_code icode;
@@ -7284,31 +7287,39 @@ expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
      acquire barrier.  If the pattern exists, and the memory model is stronger
      than acquire, add a release barrier before the instruction.
      The barrier is not needed if sync_lock_test_and_set doesn't exist since
-     it will expand into a compare-and-swap loop.  */
+     it will expand into a compare-and-swap loop.
 
-  icode = direct_optab_handler (sync_lock_test_and_set_optab, mode);
-  last_insn = get_last_insn ();
-  if ((icode != CODE_FOR_nothing) && (model == MEMMODEL_SEQ_CST || 
-				      model == MEMMODEL_RELEASE ||
-				      model == MEMMODEL_ACQ_REL))
-    expand_builtin_mem_thread_fence (model);
+     Some targets have non-compliant test_and_sets, so it would be incorrect
+     to emit a test_and_set in place of an __atomic_exchange.  The test_and_set
+     builtin shares this expander since exchange can always replace the
+     test_and_set.  */
 
-  if (icode != CODE_FOR_nothing)
+  if (use_test_and_set)
     {
-      struct expand_operand ops[3];
+      icode = direct_optab_handler (sync_lock_test_and_set_optab, mode);
+      last_insn = get_last_insn ();
+      if ((icode != CODE_FOR_nothing) && (model == MEMMODEL_SEQ_CST || 
+					  model == MEMMODEL_RELEASE ||
+					  model == MEMMODEL_ACQ_REL))
+	expand_builtin_mem_thread_fence (model);
 
-      create_output_operand (&ops[0], target, mode);
-      create_fixed_operand (&ops[1], mem);
-      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
-      create_convert_operand_to (&ops[2], val, mode, true);
-      if (maybe_expand_insn (icode, 3, ops))
-	return ops[0].value;
+      if (icode != CODE_FOR_nothing)
+	{
+	  struct expand_operand ops[3];
+
+	  create_output_operand (&ops[0], target, mode);
+	  create_fixed_operand (&ops[1], mem);
+	  /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
+	  create_convert_operand_to (&ops[2], val, mode, true);
+	  if (maybe_expand_insn (icode, 3, ops))
+	    return ops[0].value;
+	}
+
+      /* Remove any fence that was inserted since a compare and swap loop is
+	 already a full memory barrier.  */
+      if (last_insn != get_last_insn ())
+	delete_insns_since (last_insn);
     }
-
-  /* Remove any fence we may have inserted since a compare and swap loop is a
-     full memory barrier.  */
-  if (last_insn != get_last_insn ())
-    delete_insns_since (last_insn);
 
   /* Otherwise, use a compare-and-swap loop for the exchange.  */
   if (can_compare_and_swap_p (mode))
@@ -7489,10 +7500,11 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
 /* This function expands the atomic store operation:
    Atomically store VAL in MEM.
    MEMMODEL is the memory model variant to use.
+   USE_RELEASE is true if __sync_lock_release can be used as a fall back.
    function returns const0_rtx if a pattern was emitted.  */
 
 rtx
-expand_atomic_store (rtx mem, rtx val, enum memmodel model)
+expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 {
   enum machine_mode mode = GET_MODE (mem);
   enum insn_code icode;
@@ -7509,12 +7521,30 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model)
 	return const0_rtx;
     }
 
+  /* If using __sync_lock_release is a viable alternative, try it.  */
+  if (use_release)
+    {
+      icode = direct_optab_handler (sync_lock_release_optab, mode);
+      if (icode != CODE_FOR_nothing)
+	{
+	  create_fixed_operand (&ops[0], mem);
+	  create_input_operand (&ops[1], const0_rtx, mode);
+	  if (maybe_expand_insn (icode, 2, ops))
+	    {
+	      /* lock_release is only a release barrier.  */
+	      if (model == MEMMODEL_SEQ_CST)
+		expand_builtin_mem_thread_fence (model);
+	      return const0_rtx;
+	    }
+	}
+    }
+
   /* If the size of the object is greater than word size on this target,
      a default store will not be atomic, Try a mem_exchange and throw away
      the result.  If that doesn't work, don't do anything.  */
   if (GET_MODE_PRECISION(mode) > BITS_PER_WORD)
     {
-      rtx target = expand_atomic_exchange (NULL_RTX, mem, val, model);
+      rtx target = expand_atomic_exchange (NULL_RTX, mem, val, model, false);
       if (target)
         return const0_rtx;
       else

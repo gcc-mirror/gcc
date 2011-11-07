@@ -69,10 +69,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  atomic_thread_fence(memory_order) noexcept;
+  atomic_thread_fence(memory_order __m) noexcept
+  {
+    __atomic_thread_fence (__m);
+  }
 
   void
-  atomic_signal_fence(memory_order) noexcept;
+  atomic_signal_fence(memory_order __m) noexcept
+  {
+    __atomic_signal_fence (__m);
+  }
 
   /// kill_dependency
   template<typename _Tp>
@@ -261,13 +267,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     test_and_set(memory_order __m = memory_order_seq_cst) noexcept
     {
-      return __atomic_exchange_n(&_M_i, 1, __m);
+      /* The standard *requires* this to be lock free.  If exchange is not
+	 always lock free, the resort to the old test_and_set.  */
+      if (__atomic_always_lock_free (sizeof (_M_i), 0))
+	return __atomic_exchange_n(&_M_i, 1, __m);
+      else
+        {
+	  /* Sync test and set is only guaranteed to be acquire.  */
+	  if (__m == memory_order_seq_cst || __m == memory_order_release
+	      || __m == memory_order_acq_rel)
+	    atomic_thread_fence (__m);
+	  return __sync_lock_test_and_set (&_M_i, 1);
+	}
     }
 
     bool
     test_and_set(memory_order __m = memory_order_seq_cst) volatile noexcept
     {
-      return __atomic_exchange_n(&_M_i, 1, __m);
+      /* The standard *requires* this to be lock free.  If exchange is not
+	 always lock free, the resort to the old test_and_set.  */
+      if (__atomic_always_lock_free (sizeof (_M_i), 0))
+	return __atomic_exchange_n(&_M_i, 1, __m);
+      else
+        {
+	  /* Sync test and set is only guaranteed to be acquire.  */
+	  if (__m == memory_order_seq_cst || __m == memory_order_release
+	      || __m == memory_order_acq_rel)
+	    atomic_thread_fence (__m);
+	  return __sync_lock_test_and_set (&_M_i, 1);
+	}
     }
 
     void
@@ -277,7 +305,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_assert(__m != memory_order_acquire);
       __glibcxx_assert(__m != memory_order_acq_rel);
 
-      __atomic_store_n(&_M_i, 0, __m);
+      /* The standard *requires* this to be lock free.  If store is not always
+	 lock free, the resort to the old style __sync_lock_release.  */
+      if (__atomic_always_lock_free (sizeof (_M_i), 0))
+	__atomic_store_n(&_M_i, 0, __m);
+      else
+        {
+	  __sync_lock_release (&_M_i, 0);
+	  /* __sync_lock_release is only guaranteed to be a release barrier.  */
+	  if (__m == memory_order_seq_cst)
+	    atomic_thread_fence (__m);
+	}
     }
 
     void
@@ -287,7 +325,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_assert(__m != memory_order_acquire);
       __glibcxx_assert(__m != memory_order_acq_rel);
 
-      __atomic_store_n(&_M_i, 0, __m);
+      /* The standard *requires* this to be lock free.  If store is not always
+	 lock free, the resort to the old style __sync_lock_release.  */
+      if (__atomic_always_lock_free (sizeof (_M_i), 0))
+	__atomic_store_n(&_M_i, 0, __m);
+      else
+        {
+	  __sync_lock_release (&_M_i, 0);
+	  /* __sync_lock_release is only guaranteed to be a release barrier.  */
+	  if (__m == memory_order_seq_cst)
+	    atomic_thread_fence (__m);
+	}
     }
   };
 
