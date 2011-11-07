@@ -1,3 +1,8 @@
+2011-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (tsubst_copy_and_build): Fix qualified_name_lookup_error
+	call in case COMPONENT_REF.
+
 2011-11-07  Jason Merrill  <jason@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
