@@ -1,3 +1,8 @@
+2011-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49313
+	* config/avr/lib1funcs.S (__divmodhi4, __divmodsi4): Tweak speed.
+
 2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (tmake_file): Correct comment.
