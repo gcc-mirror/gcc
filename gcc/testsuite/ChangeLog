@@ -1,3 +1,8 @@
+2011-11-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35688
+	* g++.dg/ext/visibility/template8.C: New.
+
 2011-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50789

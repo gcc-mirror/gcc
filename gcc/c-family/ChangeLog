@@ -1,3 +1,8 @@
+2011-11-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35688
+	* c-common.c, c-common.h: Revert yesterday's changes.
+
 2011-11-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35688

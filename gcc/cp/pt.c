@@ -8600,6 +8600,8 @@ instantiate_class_template_1 (tree type)
     {
       CLASSTYPE_VISIBILITY_SPECIFIED (type) = 1;
       CLASSTYPE_VISIBILITY (type) = CLASSTYPE_VISIBILITY (pattern);
+      /* Adjust visibility for template arguments.  */
+      determine_visibility (TYPE_MAIN_DECL (type));
     }
   CLASSTYPE_FINAL (type) = CLASSTYPE_FINAL (pattern);
 

@@ -1,5 +1,11 @@
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/35688
+	* decl2.c (constrain_visibility): Return void.  Add tmpl parm
+	which gives the constraint priority over an attribute.
+	(constrain_visibility_for_template, determine_visibility): Adjust.
+	* pt.c (instantiate_class_template_1): Call determine_visibility.
+
 	PR c++/33255
 	* decl.c (save_function_data): Clear local_typedefs.
 
