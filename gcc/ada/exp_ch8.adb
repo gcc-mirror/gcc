@@ -50,7 +50,6 @@ package body Exp_Ch8 is
 
    procedure Expand_N_Exception_Renaming_Declaration (N : Node_Id) is
       Decl : constant Node_Id := Debug_Renaming_Declaration (N);
-
    begin
       if Present (Decl) then
          Insert_Action (N, Decl);

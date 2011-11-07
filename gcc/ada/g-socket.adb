@@ -36,8 +36,8 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C.Strings;
 
-with GNAT.Sockets.Thin_Common;          use GNAT.Sockets.Thin_Common;
-with GNAT.Sockets.Thin;                 use GNAT.Sockets.Thin;
+with GNAT.Sockets.Thin_Common; use GNAT.Sockets.Thin_Common;
+with GNAT.Sockets.Thin;        use GNAT.Sockets.Thin;
 
 with GNAT.Sockets.Linker_Options;
 pragma Warnings (Off, GNAT.Sockets.Linker_Options);
@@ -246,11 +246,11 @@ package body GNAT.Sockets is
    --  Type and Stream_Socket_Stream_Type.
 
    procedure Wait_On_Socket
-     (Socket    : Socket_Type;
-      For_Read  : Boolean;
-      Timeout   : Selector_Duration;
-      Selector  : access Selector_Type := null;
-      Status    : out Selector_Status);
+     (Socket   : Socket_Type;
+      For_Read : Boolean;
+      Timeout  : Selector_Duration;
+      Selector : access Selector_Type := null;
+      Status   : out Selector_Status);
    --  Common code for variants of socket operations supporting a timeout:
    --  block in Check_Selector on Socket for at most the indicated timeout.
    --  If For_Read is True, Socket is added to the read set for this call, else
@@ -490,8 +490,8 @@ package body GNAT.Sockets is
       --  that Fd is within range (otherwise behaviour is undefined).
 
       elsif Fd < 0 or else Fd >= SOSC.FD_SETSIZE then
-         raise Constraint_Error with "invalid value for socket set: "
-                                       & Image (Fd);
+         raise Constraint_Error
+           with "invalid value for socket set: " & Image (Fd);
       end if;
    end Check_For_Fd_Set;
 
@@ -731,11 +731,11 @@ package body GNAT.Sockets is
       --  Wait for socket to become available for writing
 
       Wait_On_Socket
-        (Socket    => Socket,
-         For_Read  => False,
-         Timeout   => Timeout,
-         Selector  => Selector,
-         Status    => Status);
+        (Socket   => Socket,
+         For_Read => False,
+         Timeout  => Timeout,
+         Selector => Selector,
+         Status   => Status);
 
       --  Reset the socket to blocking I/O
 
@@ -1580,11 +1580,11 @@ package body GNAT.Sockets is
    --------------------
 
    procedure Wait_On_Socket
-     (Socket    : Socket_Type;
-      For_Read  : Boolean;
-      Timeout   : Selector_Duration;
-      Selector  : access Selector_Type := null;
-      Status    : out Selector_Status)
+     (Socket   : Socket_Type;
+      For_Read : Boolean;
+      Timeout  : Selector_Duration;
+      Selector : access Selector_Type := null;
+      Status   : out Selector_Status)
    is
       type Local_Selector_Access is access Selector_Type;
       for Local_Selector_Access'Storage_Size use Selector_Type'Size;

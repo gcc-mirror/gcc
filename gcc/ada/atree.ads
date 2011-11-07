@@ -151,16 +151,16 @@ package Atree is
    --   it is useful to be able to do untyped traversals, and an internal
    --   package in Atree allows for direct untyped accesses in such cases.
 
-   --   Flag4         Sixteen Boolean flags (use depends on Nkind and
+   --   Flag4         Fifteen Boolean flags (use depends on Nkind and
    --   Flag5         Ekind, as described for FieldN). Again the access
    --   Flag6         is usually via subprograms in Sinfo and Einfo which
    --   Flag7         provide high-level synonyms for these flags, and
    --   Flag8         contain debugging code that checks that the values
    --   Flag9         in Nkind and Ekind are appropriate for the access.
    --   Flag10
-   --   Flag11        Note that Flag1-2 are missing from this list. For
+   --   Flag11        Note that Flag1-3 are missing from this list. For
    --   Flag12        historical reasons, these flag names are unused.
-   --   Flag13        What about Flag3???
+   --   Flag13
    --   Flag14
    --   Flag15
    --   Flag16

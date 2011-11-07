@@ -432,8 +432,8 @@ package GNAT.Sockets is
 
    Immediate : constant Duration := 0.0;
 
-   Forever         : constant Duration :=
-                       Duration'Min (Duration'Last, 1.0 * SOSC.MAX_tv_sec);
+   Forever : constant Duration :=
+               Duration'Min (Duration'Last, 1.0 * SOSC.MAX_tv_sec);
    --  Largest possible Duration that is also a valid value for struct timeval
 
    subtype Timeval_Duration is Duration range Immediate .. Forever;
@@ -1146,7 +1146,6 @@ private
             R_Sig_Socket : Socket_Type := No_Socket;
             W_Sig_Socket : Socket_Type := No_Socket;
             --  Signalling sockets used to abort a select operation
-
       end case;
    end record;
 
@@ -1234,10 +1233,10 @@ private
    end record;
 
    type Service_Entry_Type (Aliases_Length : Natural) is record
-      Official  : Name_Type;
-      Aliases   : Name_Array (1 .. Aliases_Length);
-      Port      : Port_Type;
-      Protocol  : Name_Type;
+      Official : Name_Type;
+      Aliases  : Name_Array (1 .. Aliases_Length);
+      Port     : Port_Type;
+      Protocol : Name_Type;
    end record;
 
    type Request_Flag_Type is mod 2 ** 8;
