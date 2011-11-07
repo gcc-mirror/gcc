@@ -1,3 +1,12 @@
+2011-11-07  Tristan Gingold  <gingold@adacore.com>
+
+	* common/config/alpha/alpha-common.c (alpha_option_init_struct):
+	New function.
+	(TARGET_OPTION_INIT_STRUCT): Define.
+	* config/alpha/alpha.c (TARGET_MIN_ANCHOR_OFFSET)
+	(TARGET_MAX_ANCHOR_OFFSET)
+	(TARGET_USE_BLOCKS_FOR_CONSTANT_P): Redefine.
+
 2011-11-06  Quentin Neill  <quentin.neill@amd.com>
 
 	Fix r180999, update ChangeLog
