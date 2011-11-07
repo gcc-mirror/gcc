@@ -865,7 +865,7 @@ arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	;;
-arm*-*-eabi* | arm*-*-symbianelf* )
+arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	# The BPABI long long divmod functions return a 128-bit value in
 	# registers r0-r3.  Correctly modeling that requires the use of
 	# TImode.
@@ -878,6 +878,10 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	  tm_file="$tm_file newlib-stdint.h"
 	  tmake_file="${tmake_file} arm/t-bpabi"
 	  use_gcc_stdint=wrap
+	  ;;
+	arm*-*-rtemseabi*)
+	  tm_file="${tm_file} rtems.h arm/rtems-eabi.h newlib-stdint.h"
+	  tmake_file="${tmake_file} arm/t-bpabi t-rtems arm/t-rtems-eabi"
 	  ;;
 	arm*-*-symbianelf*)
 	  tm_file="${tm_file} arm/symbian.h"

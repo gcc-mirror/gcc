@@ -1,3 +1,9 @@
+2011-11-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (arm*-*-rtemseabi*): New target.
+	* config/arm/rtems-eabi.h: New.
+	* config/arm/t-rtems-eabi: New.
+
 2011-11-06  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (UNSPEC_SHORT_LOAD): Delete.
