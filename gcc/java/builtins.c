@@ -319,9 +319,7 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			   tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (int_type_node);
-  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
-      != CODE_FOR_nothing
-      || flag_use_atomic_builtins)
+  if (can_compare_and_swap_p (mode, flag_use_atomic_builtins))
     {
       tree addr, stmt;
       enum built_in_function fncode = BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4;
@@ -342,13 +340,12 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			    tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
-  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
-      != CODE_FOR_nothing
-      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)
-	  && flag_use_atomic_builtins))
-    /* We don't trust flag_use_atomic_builtins for multi-word
-       compareAndSwap.  Some machines such as ARM have atomic libfuncs
-       but not the multi-word versions.  */
+  /* We don't trust flag_use_atomic_builtins for multi-word compareAndSwap.
+     Some machines such as ARM have atomic libfuncs but not the multi-word
+     versions.  */
+  if (can_compare_and_swap_p (mode,
+			      (flag_use_atomic_builtins
+			       && GET_MODE_SIZE (mode) <= UNITS_PER_WORD)))
     {
       tree addr, stmt;
       enum built_in_function fncode = BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8;
@@ -368,9 +365,7 @@ compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			      tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (ptr_type_node);
-  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
-      != CODE_FOR_nothing
-      || flag_use_atomic_builtins)
+  if (can_compare_and_swap_p (mode, flag_use_atomic_builtins))
   {
     tree addr, stmt;
     enum built_in_function builtin;
@@ -448,8 +443,7 @@ VMSupportsCS8_builtin (tree method_return_type,
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
   gcc_assert (method_return_type == boolean_type_node);
-  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
-      != CODE_FOR_nothing)
+  if (can_compare_and_swap_p (mode, false))
     return boolean_true_node;
   else
     return boolean_false_node;

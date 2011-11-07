@@ -5512,7 +5512,7 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
   /* Check if a compare_and_swap pattern exists for the mode which represents
      the required size.  The pattern is not allowed to fail, so the existence
      of the pattern indicates support is present.  */
-  if (can_compare_and_swap_p (mode))
+  if (can_compare_and_swap_p (mode, true))
     return integer_one_node;
   else
     return integer_zero_node;
