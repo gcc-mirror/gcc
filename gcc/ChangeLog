@@ -1,3 +1,9 @@
+2011-11-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/30282
+	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Always emit
+	blockage for ABI_V4.
+
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/50608
@@ -214,8 +220,8 @@
 
 2011-10-07  Bernd Schmidt  <bernds@codesourcery.com>
 
- 	PR target/49049
- 	* config/arm/arm.md (arm_subsi3_insn): Lose the last alternative.
+	PR target/49049
+	* config/arm/arm.md (arm_subsi3_insn): Lose the last alternative.
 
 2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
