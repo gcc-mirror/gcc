@@ -1,3 +1,8 @@
+2011-11-07  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_finish_decl): Only make_tree_vector if we're calling
+	check_initializer.
+
 2011-11-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35688
