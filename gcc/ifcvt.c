@@ -2329,11 +2329,11 @@ noce_operand_ok (const_rtx op)
 {
   /* We special-case memories, so handle any of them with
      no address side effects.  */
-  if (MEM_P (op))
-    return ! side_effects_p (XEXP (op, 0));
-
   if (side_effects_p (op))
     return FALSE;
+
+  if (MEM_P (op))
+    return ! side_effects_p (XEXP (op, 0));
 
   return ! may_trap_p (op);
 }

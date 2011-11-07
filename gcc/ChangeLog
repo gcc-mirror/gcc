@@ -1,3 +1,9 @@
+2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
+
+	PR rtl-optimization/47698
+	* ifconv.c (noce_operand_ok): prevent CMOV generation
+	for volatile mem.
+
 2011-11-07  Tristan Gingold  <gingold@adacore.com>
 
 	* common/config/alpha/alpha-common.c (alpha_option_init_struct):

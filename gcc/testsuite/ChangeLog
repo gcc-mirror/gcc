@@ -1,3 +1,9 @@
+
+2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
+
+	PR rtl-optimization/47698
+	* gcc.target/i386/47698.c: New test.
+
 2011-11-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35688
