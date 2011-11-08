@@ -1,5 +1,9 @@
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50848
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Don't crash
+	if lookup finds a non-function.
+
 	PR c++/50863
 	* parser.c (cp_parser_initializer_list): Parse C99
 	array designators tentatively.

@@ -13673,6 +13673,8 @@ tsubst_copy_and_build (tree t,
 		if (unq != function)
 		  {
 		    tree fn = unq;
+		    if (TREE_CODE (fn) == INDIRECT_REF)
+		      fn = TREE_OPERAND (fn, 0);
 		    if (TREE_CODE (fn) == COMPONENT_REF)
 		      fn = TREE_OPERAND (fn, 1);
 		    if (is_overloaded_fn (fn))
@@ -13682,7 +13684,9 @@ tsubst_copy_and_build (tree t,
 			       "and no declarations were found by "
 			       "argument-dependent lookup at the point "
 			       "of instantiation", function);
-		    if (DECL_CLASS_SCOPE_P (fn))
+		    if (!DECL_P (fn))
+		      /* Can't say anything more.  */;
+		    else if (DECL_CLASS_SCOPE_P (fn))
 		      {
 			inform (EXPR_LOC_OR_HERE (t),
 				"declarations in dependent base %qT are "
