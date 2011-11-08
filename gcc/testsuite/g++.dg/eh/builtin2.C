@@ -5,20 +5,26 @@
 
 extern "C" int printf (const char *, ...) throw();
 
-struct A { A (); ~A (); int i; };
+extern void callme (void) throw();
 
 int
-foo ()
+foo (int i)
 {
-  A a;
-  printf ("foo %d\n", a.i);
+  try {
+    printf ("foo %d\n", i);
+  } catch (...) {
+    callme();
+  }
 }
 
 int
-bar ()
+bar (int i)
 {
-  A a;
-  __builtin_printf ("foo %d\n", a.i);
+  try {
+    __builtin_printf ("foo %d\n", i);
+  } catch (...) {
+    callme();
+  }
 }
 
 /* { dg-final { scan-tree-dump-times "resx" 0 "eh" } } */

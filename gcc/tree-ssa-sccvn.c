@@ -1388,8 +1388,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
   if (maxsize == -1)
     return (void *)-1;
 
+  /* We can't deduce anything useful from clobbers.  */
+  if (gimple_clobber_p (def_stmt))
+    return (void *)-1;
+
   /* def_stmt may-defs *ref.  See if we can derive a value for *ref
-     from that defintion.
+     from that definition.
      1) Memset.  */
   if (is_gimple_reg_type (vr->type)
       && gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)

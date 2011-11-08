@@ -1643,6 +1643,14 @@ struct GTY(()) tree_vec {
 #define CONSTRUCTOR_BITFIELD_P(NODE) \
   (DECL_BIT_FIELD (FIELD_DECL_CHECK (NODE)) && DECL_MODE (NODE) != BLKmode)
 
+/* True if NODE is a clobber right hand side, an expression of indeterminate
+   value that clobbers the LHS in a copy instruction.  We use a volatile
+   empty CONSTRUCTOR for this, as it matches most of the necessary semantic.
+   In particular the volatile flag causes us to not prematurely remove
+   such clobber instructions.  */
+#define TREE_CLOBBER_P(NODE) \
+  (TREE_CODE (NODE) == CONSTRUCTOR && TREE_THIS_VOLATILE (NODE))
+
 /* A single element of a CONSTRUCTOR. VALUE holds the actual value of the
    element. INDEX can optionally design the position of VALUE: in arrays,
    it is the index where VALUE has to be placed; in structures, it is the

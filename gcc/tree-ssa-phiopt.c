@@ -1318,8 +1318,10 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 
   if (then_assign == NULL
       || !gimple_assign_single_p (then_assign)
+      || gimple_clobber_p (then_assign)
       || else_assign == NULL
-      || !gimple_assign_single_p (else_assign))
+      || !gimple_assign_single_p (else_assign)
+      || gimple_clobber_p (else_assign))
     return false;
 
   lhs = gimple_assign_lhs (then_assign);

@@ -1135,7 +1135,8 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   bool old_save_stack = gimplify_ctxp->save_stack;
   tree t;
   gimple gimple_bind;
-  gimple_seq body;
+  gimple_seq body, cleanup;
+  gimple stack_save;
 
   tree temp = voidify_wrapper_expr (bind_expr, NULL);
 
@@ -1181,22 +1182,50 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   gimplify_stmt (&BIND_EXPR_BODY (bind_expr), &body);
   gimple_bind_set_body (gimple_bind, body);
 
+  cleanup = NULL;
+  stack_save = NULL;
   if (gimplify_ctxp->save_stack)
     {
-      gimple stack_save, stack_restore, gs;
-      gimple_seq cleanup, new_body;
+      gimple stack_restore;
 
       /* Save stack on entry and restore it on exit.  Add a try_finally
 	 block to achieve this.  Note that mudflap depends on the
 	 format of the emitted code: see mx_register_decls().  */
       build_stack_save_restore (&stack_save, &stack_restore);
 
-      cleanup = new_body = NULL;
       gimplify_seq_add_stmt (&cleanup, stack_restore);
+    }
+
+  /* Add clobbers for all variables that go out of scope.  */
+  for (t = BIND_EXPR_VARS (bind_expr); t ; t = DECL_CHAIN (t))
+    {
+      if (TREE_CODE (t) == VAR_DECL
+	  && !is_global_var (t)
+	  && DECL_CONTEXT (t) == current_function_decl
+	  && !DECL_HARD_REGISTER (t)
+	  && !TREE_THIS_VOLATILE (t)
+	  && !DECL_HAS_VALUE_EXPR_P (t)
+	  /* Only care for variables that have to be in memory.  Others
+	     will be rewritten into SSA names, hence moved to the top-level.  */
+	  && needs_to_live_in_memory (t))
+	{
+	  tree clobber = build_constructor (TREE_TYPE (t), NULL);
+	  TREE_THIS_VOLATILE (clobber) = 1;
+	  gimplify_seq_add_stmt (&cleanup, gimple_build_assign (t, clobber));
+	}
+    }
+
+  if (cleanup)
+    {
+      gimple gs;
+      gimple_seq new_body;
+
+      new_body = NULL;
       gs = gimple_build_try (gimple_bind_body (gimple_bind), cleanup,
 	  		     GIMPLE_TRY_FINALLY);
 
-      gimplify_seq_add_stmt (&new_body, stack_save);
+      if (stack_save)
+	gimplify_seq_add_stmt (&new_body, stack_save);
       gimplify_seq_add_stmt (&new_body, gs);
       gimple_bind_set_body (gimple_bind, new_body);
     }

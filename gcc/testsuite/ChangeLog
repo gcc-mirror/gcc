@@ -1,3 +1,11 @@
+2011-11-08  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/tree-ssa/20031015-1.c: Adjust.
+	* g++.dg/tree-ssa/ehcleanup-1.C: Ditto.
+	* g++.dg/eh/builtin1.C: Rewrite to not use local variables.
+	* g++.dg/eh/builtin2.C: Ditto.
+	* g++.dg/eh/builtin3.C: Ditto.
+
 2011-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx-cvt-2.c: Adjust for 32-byte integer vectors

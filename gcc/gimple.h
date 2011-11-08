@@ -2053,6 +2053,14 @@ gimple_assign_cast_p (gimple s)
   return false;
 }
 
+/* Return true if S is a clobber statement.  */
+
+static inline bool
+gimple_clobber_p (gimple s)
+{
+  return gimple_assign_single_p (s)
+         && TREE_CLOBBER_P (gimple_assign_rhs1 (s));
+}
 
 /* Return true if GS is a GIMPLE_CALL.  */
 

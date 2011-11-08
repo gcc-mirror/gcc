@@ -135,7 +135,7 @@ set_rtl (tree t, rtx x)
 	  /* If we don't yet have something recorded, just record it now.  */
 	  if (!DECL_RTL_SET_P (var))
 	    SET_DECL_RTL (var, x);
-	  /* If we have it set alrady to "multiple places" don't
+	  /* If we have it set already to "multiple places" don't
 	     change this.  */
 	  else if (DECL_RTL (var) == pc_rtx)
 	    ;
@@ -184,6 +184,7 @@ struct stack_var
 static struct stack_var *stack_vars;
 static size_t stack_vars_alloc;
 static size_t stack_vars_num;
+static struct pointer_map_t *decl_to_stack_part;
 
 /* An array of indices such that stack_vars[stack_vars_sorted[i]].size
    is non-decreasing.  */
@@ -262,7 +263,11 @@ add_stack_var (tree decl)
       stack_vars
 	= XRESIZEVEC (struct stack_var, stack_vars, stack_vars_alloc);
     }
+  if (!decl_to_stack_part)
+    decl_to_stack_part = pointer_map_create ();
+
   v = &stack_vars[stack_vars_num];
+  * (size_t *)pointer_map_insert (decl_to_stack_part, decl) = stack_vars_num;
 
   v->decl = decl;
   v->size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (decl)), 1);
@@ -309,6 +314,14 @@ stack_var_conflict_p (size_t x, size_t y)
 {
   struct stack_var *a = &stack_vars[x];
   struct stack_var *b = &stack_vars[y];
+  if (x == y)
+    return false;
+  /* Partitions containing an SSA name result from gimple registers
+     with things like unsupported modes.  They are top-level and
+     hence conflict with everything else.  */
+  if (TREE_CODE (a->decl) == SSA_NAME || TREE_CODE (b->decl) == SSA_NAME)
+    return true;
+
   if (!a->conflicts || !b->conflicts)
     return false;
   return bitmap_bit_p (a->conflicts, y);
@@ -377,6 +390,163 @@ add_alias_set_conflicts (void)
 	    add_stack_var_conflict (i, j);
 	}
     }
+}
+
+/* Callback for walk_stmt_ops.  If OP is a decl touched by add_stack_var
+   enter its partition number into bitmap DATA.  */
+
+static bool
+visit_op (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+{
+  bitmap active = (bitmap)data;
+  op = get_base_address (op);
+  if (op
+      && DECL_P (op)
+      && DECL_RTL_IF_SET (op) == pc_rtx)
+    {
+      size_t *v = (size_t *) pointer_map_contains (decl_to_stack_part, op);
+      if (v)
+	bitmap_set_bit (active, *v);
+    }
+  return false;
+}
+
+/* Callback for walk_stmt_ops.  If OP is a decl touched by add_stack_var
+   record conflicts between it and all currently active other partitions
+   from bitmap DATA.  */
+
+static bool
+visit_conflict (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+{
+  bitmap active = (bitmap)data;
+  op = get_base_address (op);
+  if (op
+      && DECL_P (op)
+      && DECL_RTL_IF_SET (op) == pc_rtx)
+    {
+      size_t *v =
+	(size_t *) pointer_map_contains (decl_to_stack_part, op);
+      if (v && bitmap_set_bit (active, *v))
+	{
+	  size_t num = *v;
+	  bitmap_iterator bi;
+	  unsigned i;
+	  gcc_assert (num < stack_vars_num);
+	  EXECUTE_IF_SET_IN_BITMAP (active, 0, i, bi)
+	    add_stack_var_conflict (num, i);
+	}
+    }
+  return false;
+}
+
+/* Helper routine for add_scope_conflicts, calculating the active partitions
+   at the end of BB, leaving the result in WORK.  We're called to generate
+   conflicts when FOR_CONFLICT is true, otherwise we're just tracking
+   liveness.  */
+
+static void
+add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
+{
+  edge e;
+  edge_iterator ei;
+  gimple_stmt_iterator gsi;
+  bool (*visit)(gimple, tree, void *);
+
+  bitmap_clear (work);
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    bitmap_ior_into (work, (bitmap)e->src->aux);
+
+  if (for_conflict)
+    {
+      /* We need to add conflicts for everything life at the start of
+         this block.  Unlike classical lifeness for named objects we can't
+	 rely on seeing a def/use of the names we're interested in.
+	 There might merely be indirect loads/stores.  We'd not add any
+	 conflicts for such partitions.  */
+      bitmap_iterator bi;
+      unsigned i;
+      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
+	{
+	  unsigned j;
+	  bitmap_iterator bj;
+	  EXECUTE_IF_SET_IN_BITMAP (work, i, j, bj)
+	    add_stack_var_conflict (i, j);
+	}
+      visit = visit_conflict;
+    }
+  else
+    visit = visit_op;
+
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (!is_gimple_debug (stmt))
+	walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+    }
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+
+      if (gimple_clobber_p (stmt))
+	{
+	  tree lhs = gimple_assign_lhs (stmt);
+	  size_t *v;
+	  /* Nested function lowering might introduce LHSs
+	     that are COMPONENT_REFs.  */
+	  if (TREE_CODE (lhs) != VAR_DECL)
+	    continue;
+	  if (DECL_RTL_IF_SET (lhs) == pc_rtx
+	      && (v = (size_t *)
+		  pointer_map_contains (decl_to_stack_part, lhs)))
+	    bitmap_clear_bit (work, *v);
+	}
+      else if (!is_gimple_debug (stmt))
+	walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+    }
+}
+
+/* Generate stack partition conflicts between all partitions that are
+   simultaneously live.  */
+
+static void
+add_scope_conflicts (void)
+{
+  basic_block bb;
+  bool changed;
+  bitmap work = BITMAP_ALLOC (NULL);
+
+  /* We approximate the life range of a stack variable by taking the first
+     mention of its name as starting point(s), and by the end-of-scope
+     death clobber added by gimplify as ending point(s) of the range.
+     This overapproximates in the case we for instance moved an address-taken
+     operation upward, without also moving a dereference to it upwards.
+     But it's conservatively correct as a variable never can hold values
+     before its name is mentioned at least once.
+
+     We then do a mostly classical bitmap lifeness algorithm.  */
+
+  FOR_ALL_BB (bb)
+    bb->aux = BITMAP_ALLOC (NULL);
+
+  changed = true;
+  while (changed)
+    {
+      changed = false;
+      FOR_EACH_BB (bb)
+	{
+	  bitmap active = (bitmap)bb->aux;
+	  add_scope_conflicts_1 (bb, work, false);
+	  if (bitmap_ior_into (active, work))
+	    changed = true;
+	}
+    }
+
+  FOR_EACH_BB (bb)
+    add_scope_conflicts_1 (bb, work, true);
+
+  BITMAP_FREE (work);
+  FOR_ALL_BB (bb)
+    BITMAP_FREE (bb->aux);
 }
 
 /* A subroutine of partition_stack_vars.  A comparison function for qsort,
@@ -1095,10 +1265,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 static void
 expand_used_vars_for_block (tree block, bool toplevel)
 {
-  size_t i, j, old_sv_num, this_sv_num, new_sv_num;
   tree t;
-
-  old_sv_num = toplevel ? 0 : stack_vars_num;
 
   /* Expand all variables at this level.  */
   for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
@@ -1107,24 +1274,9 @@ expand_used_vars_for_block (tree block, bool toplevel)
 	    || !DECL_NONSHAREABLE (t)))
       expand_one_var (t, toplevel, true);
 
-  this_sv_num = stack_vars_num;
-
   /* Expand all variables at containing levels.  */
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
     expand_used_vars_for_block (t, false);
-
-  /* Since we do not track exact variable lifetimes (which is not even
-     possible for variables whose address escapes), we mirror the block
-     tree in the interference graph.  Here we cause all variables at this
-     level, and all sublevels, to conflict.  */
-  if (old_sv_num < this_sv_num)
-    {
-      new_sv_num = stack_vars_num;
-
-      for (i = old_sv_num; i < new_sv_num; ++i)
-	for (j = i < this_sv_num ? i : this_sv_num; j-- > old_sv_num ;)
-	  add_stack_var_conflict (i, j);
-    }
 }
 
 /* A subroutine of expand_used_vars.  Walk down through the BLOCK tree
@@ -1312,6 +1464,8 @@ fini_vars_expansion (void)
   XDELETEVEC (stack_vars_sorted);
   stack_vars = NULL;
   stack_vars_alloc = stack_vars_num = 0;
+  pointer_map_destroy (decl_to_stack_part);
+  decl_to_stack_part = NULL;
 }
 
 /* Make a fair guess for the size of the stack frame of the function
@@ -1466,6 +1620,7 @@ expand_used_vars (void)
 
   if (stack_vars_num > 0)
     {
+      add_scope_conflicts ();
       /* Due to the way alias sets work, no variables with non-conflicting
 	 alias sets may be assigned the same address.  Add conflicts to
 	 reflect this.  */
@@ -2008,8 +2163,13 @@ expand_gimple_stmt_1 (gimple stmt)
 			== GIMPLE_SINGLE_RHS);
 	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs))
 	      SET_EXPR_LOCATION (rhs, gimple_location (stmt));
-	    expand_assignment (lhs, rhs,
-			       gimple_assign_nontemporal_move_p (stmt));
+	    if (TREE_CLOBBER_P (rhs))
+	      /* This is a clobber to mark the going out of scope for
+		 this LHS.  */
+	      ;
+	    else
+	      expand_assignment (lhs, rhs,
+				 gimple_assign_nontemporal_move_p (stmt));
 	  }
 	else
 	  {
@@ -3199,7 +3359,9 @@ expand_debug_expr (tree exp)
       /* Fall through.  */
 
     case CONSTRUCTOR:
-      if (TREE_CODE (TREE_TYPE (exp)) == VECTOR_TYPE)
+      if (TREE_CLOBBER_P (exp))
+	return NULL;
+      else if (TREE_CODE (TREE_TYPE (exp)) == VECTOR_TYPE)
 	{
 	  unsigned i;
 	  tree val;

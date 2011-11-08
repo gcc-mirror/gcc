@@ -13,6 +13,6 @@ main(void)
   return 0;
 }
 
-/* The VDEF comes from the initial assignment and the asm.  */
-/* { dg-final { scan-tree-dump-times "DEF" 2 "alias" } } */
+/* The VDEF comes from the initial assignment, the asm, and the clobber.  */
+/* { dg-final { scan-tree-dump-times "DEF" 3 "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */

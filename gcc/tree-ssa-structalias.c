@@ -4484,7 +4484,11 @@ find_func_aliases (gimple origt)
       tree lhsop = gimple_assign_lhs (t);
       tree rhsop = (gimple_num_ops (t) == 2) ? gimple_assign_rhs1 (t) : NULL;
 
-      if (rhsop && AGGREGATE_TYPE_P (TREE_TYPE (lhsop)))
+      if (rhsop && TREE_CLOBBER_P (rhsop))
+	/* Ignore clobbers, they don't actually store anything into
+	   the LHS.  */
+	;
+      else if (rhsop && AGGREGATE_TYPE_P (TREE_TYPE (lhsop)))
 	do_structure_copy (lhsop, rhsop);
       else
 	{

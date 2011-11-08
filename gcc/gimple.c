@@ -1499,7 +1499,9 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 	{
           /* If the RHS has more than 1 operand, it is not appropriate
              for the memory.  */
-	  wi->val_only = !is_gimple_mem_rhs (gimple_assign_rhs1 (stmt))
+	  wi->val_only = !(is_gimple_mem_rhs (gimple_assign_rhs1 (stmt))
+			   || TREE_CODE (gimple_assign_rhs1 (stmt))
+			      == CONSTRUCTOR)
                          || !gimple_assign_single_p (stmt);
 	  wi->is_lhs = true;
 	}
