@@ -49,7 +49,7 @@ extern __thread gtm_thread_tls _gtm_thr_tls;
 #ifndef HAVE_ARCH_GTM_THREAD
 // If the target does not provide optimized access to the thread-local
 // data, simply access the TLS variable defined above.
-static inline gtm_thread *gtm_thr() { return &_gtm_thr_tls.thr; }
+static inline gtm_thread *gtm_thr() { return _gtm_thr_tls.thr; }
 static inline void set_gtm_thr(gtm_thread *x) { _gtm_thr_tls.thr = x; }
 #endif
 
