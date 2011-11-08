@@ -1482,6 +1482,10 @@ use @option{-finit-real=snan}; note, however, that compile-time
 optimizations may convert them into quiet NaN and that trapping
 needs to be enabled (e.g. via @option{-ffpe-trap}).
 
+Finally, note that enabling any of the @option{-finit-*} options will
+silence warnings that would have been emitted by @option{-Wuninitialized}
+for the affected local variables.
+
 @item -falign-commons
 @opindex @code{falign-commons}
 @cindex alignment of @code{COMMON} blocks
