@@ -142,10 +142,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
       constexpr _Tp 
-      real() const { return _M_real; }
+      real() { return _M_real; }
 
       constexpr _Tp 
-      imag() const { return _M_imag; }
+      imag() { return _M_imag; }
 #else
       ///  Return real part of complex number.
       _Tp& 
@@ -1062,10 +1062,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
       constexpr float 
-      real() const { return __real__ _M_value; }
+      real() { return __real__ _M_value; }
 
       constexpr float 
-      imag() const { return __imag__ _M_value; }
+      imag() { return __imag__ _M_value; }
 #else
       float& 
       real() { return __real__ _M_value; }
@@ -1211,10 +1211,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
       constexpr double 
-      real() const { return __real__ _M_value; }
+      real() { return __real__ _M_value; }
 
       constexpr double 
-      imag() const { return __imag__ _M_value; }
+      imag() { return __imag__ _M_value; }
 #else
       double& 
       real() { return __real__ _M_value; }
@@ -1361,10 +1361,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
       constexpr long double 
-      real() const { return __real__ _M_value; }
+      real() { return __real__ _M_value; }
 
       constexpr long double 
-      imag() const { return __imag__ _M_value; }
+      imag() { return __imag__ _M_value; }
 #else
       long double& 
       real() { return __real__ _M_value; }

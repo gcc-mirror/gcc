@@ -1,4 +1,9 @@
-2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2011-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/complex (complex<>::real(), complex<>::imag()):
+	Remove redundant const qualifiers.
+
+2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/ptr_traits.h (__rebind): Replace with...
 	(rebind): Implement using alias-declaration.
