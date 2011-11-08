@@ -1,3 +1,65 @@
+2011-11-08  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/tm.texi.in (MODE_CODE_BASE_REG_CLASS): Add address space
+	argument.
+	(REGNO_MODE_CODE_OK_FOR_BASE_P): Likewise.
+	* doc/tm.texi: Regenerate.
+
+	* config/cris/cris.h (MODE_CODE_BASE_REG_CLASS): Add address
+	space argument.
+	(REGNO_MODE_CODE_OK_FOR_BASE_P): Likewise.
+	* config/bfin/bfin.h (MODE_CODE_BASE_REG_CLASS): Likewise.
+	(REGNO_MODE_CODE_OK_FOR_BASE_P): Likewise.
+	* config/avr/avr.h (MODE_CODE_BASE_REG_CLASS): Add address space
+	argument.
+	(REGNO_MODE_CODE_OK_FOR_BASE_P): Ditto.
+	* config/avr/avr-protos.h (avr_mode_code_base_reg_class): Ditto.
+	(avr_regno_mode_code_ok_for_base_p): Ditto.
+	* config/avr/avr.c (avr_mode_code_base_reg_class): Ditto.
+	(avr_regno_mode_code_ok_for_base_p): Ditto.
+	(avr_reg_ok_for_addr_p): Pass AS down to
+	avr_regno_mode_code_ok_for_base_p.
+
+	* addresses.h (base_reg_class): Add address space argument.
+	Pass to MODE_CODE_BASE_REG_CLASS.
+	(ok_for_base_p_1): Add address space argument.  Pass to
+	REGNO_MODE_CODE_OK_FOR_BASE_P.
+	(regno_ok_for_base_p): Add address space argument.  Pass to
+	ok_for_base_p_1.
+
+	* regrename.c (scan_rtx_address): Add address space argument.
+	Pass address space to regno_ok_for_base_p and base_reg_class.
+	Update recursive calls.
+	(scan_rtx): Pass address space to scan_rtx_address.
+	(build_def_use): Likewise.
+	* regcprop.c (replace_oldest_value_addr): Add address space
+	argument.  Pass to regno_ok_for_base_p and base_reg_class.
+	Update recursive calls.
+	(replace_oldest_value_mem): Pass address space to
+	replace_oldest_value_addr.
+	(copyprop_hardreg_forward_1): Likewise.
+
+	* reload.c (find_reloads_address_1): Add address space argument.
+	Pass address space to base_reg_class and regno_ok_for_base_p.
+	Update recursive calls.
+	(find_reloads_address): Pass address space to base_reg_class,
+	regno_ok_for_base_p, and find_reloads_address_1.
+	(find_reloads): Pass address space to base_reg_class.
+	(find_reloads_subreg_address): Likewise.
+
+	* ira-costs.c (record_reg_classes): Update calls to base_reg_class.
+	(ok_for_base_p_nonstrict): Add address space argument.  Pass to
+	ok_for_base_p_1.
+	(record_address_regs): Add address space argument.  Pass to
+	base_reg_class and ok_for_base_p_nonstrict.  Update recursive calls.
+	(record_operand_costs): Pass address space to record_address_regs.
+	(scan_one_insn): Likewise.
+
+	* caller-save.c (init_caller_save): Update call to base_reg_class.
+	* ira-conflicts.c (ira_build_conflicts): Likewise.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+
 2011-11-08  Michael Matz  <matz@suse.de>
 
 	* gengtype.c (write_field_root): Avoid out-of-scope access of newv.

@@ -2423,12 +2423,13 @@ register address.  You should define this macro if base plus index
 addresses have different requirements than other base register uses.
 @end defmac
 
-@defmac MODE_CODE_BASE_REG_CLASS (@var{mode}, @var{outer_code}, @var{index_code})
+@defmac MODE_CODE_BASE_REG_CLASS (@var{mode}, @var{address_space}, @var{outer_code}, @var{index_code})
 A C expression whose value is the register class to which a valid
-base register must belong.  @var{outer_code} and @var{index_code} define the
-context in which the base register occurs.  @var{outer_code} is the code of
-the immediately enclosing expression (@code{MEM} for the top level of an
-address, @code{ADDRESS} for something that occurs in an
+base register for a memory reference in mode @var{mode} to address
+space @var{address_space} must belong.  @var{outer_code} and @var{index_code}
+define the context in which the base register occurs.  @var{outer_code} is
+the code of the immediately enclosing expression (@code{MEM} for the top level
+of an address, @code{ADDRESS} for something that occurs in an
 @code{address_operand}).  @var{index_code} is the code of the corresponding
 index expression if @var{outer_code} is @code{PLUS}; @code{SCRATCH} otherwise.
 @end defmac
@@ -2468,8 +2469,11 @@ Use of this macro is deprecated; please use the more general
 @code{REGNO_MODE_CODE_OK_FOR_BASE_P}.
 @end defmac
 
-@defmac REGNO_MODE_CODE_OK_FOR_BASE_P (@var{num}, @var{mode}, @var{outer_code}, @var{index_code})
-A C expression that is just like @code{REGNO_MODE_OK_FOR_BASE_P}, except
+@defmac REGNO_MODE_CODE_OK_FOR_BASE_P (@var{num}, @var{mode}, @var{address_space}, @var{outer_code}, @var{index_code})
+A C expression which is nonzero if register number @var{num} is
+suitable for use as a base register in operand addresses, accessing
+memory in mode @var{mode} in address space @var{address_space}.
+This is similar to @code{REGNO_MODE_OK_FOR_BASE_P}, except
 that that expression may examine the context in which the register
 appears in the memory reference.  @var{outer_code} is the code of the
 immediately enclosing expression (@code{MEM} if at the top level of the

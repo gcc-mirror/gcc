@@ -98,7 +98,7 @@ static rtx find_oldest_value_reg (enum reg_class, rtx, struct value_data *);
 static bool replace_oldest_value_reg (rtx *, enum reg_class, rtx,
 				      struct value_data *);
 static bool replace_oldest_value_addr (rtx *, enum reg_class,
-				       enum machine_mode, rtx,
+				       enum machine_mode, addr_space_t, rtx,
 				       struct value_data *);
 static bool replace_oldest_value_mem (rtx, rtx, struct value_data *);
 static bool copyprop_hardreg_forward_1 (basic_block, struct value_data *);
@@ -515,8 +515,8 @@ replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx insn,
 
 static bool
 replace_oldest_value_addr (rtx *loc, enum reg_class cl,
-			   enum machine_mode mode, rtx insn,
-			   struct value_data *vd)
+			   enum machine_mode mode, addr_space_t as,
+			   rtx insn, struct value_data *vd)
 {
   rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
@@ -585,15 +585,15 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 	    unsigned regno0 = REGNO (op0), regno1 = REGNO (op1);
 
 	    if (REGNO_OK_FOR_INDEX_P (regno1)
-		&& regno_ok_for_base_p (regno0, mode, PLUS, REG))
+		&& regno_ok_for_base_p (regno0, mode, as, PLUS, REG))
 	      index_op = 1;
 	    else if (REGNO_OK_FOR_INDEX_P (regno0)
-		     && regno_ok_for_base_p (regno1, mode, PLUS, REG))
+		     && regno_ok_for_base_p (regno1, mode, as, PLUS, REG))
 	      index_op = 0;
-	    else if (regno_ok_for_base_p (regno0, mode, PLUS, REG)
+	    else if (regno_ok_for_base_p (regno0, mode, as, PLUS, REG)
 		     || REGNO_OK_FOR_INDEX_P (regno1))
 	      index_op = 1;
-	    else if (regno_ok_for_base_p (regno1, mode, PLUS, REG))
+	    else if (regno_ok_for_base_p (regno1, mode, as, PLUS, REG))
 	      index_op = 0;
 	    else
 	      index_op = 1;
@@ -616,13 +616,13 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 	  }
 
 	if (locI)
-	  changed |= replace_oldest_value_addr (locI, INDEX_REG_CLASS, mode,
-						insn, vd);
+	  changed |= replace_oldest_value_addr (locI, INDEX_REG_CLASS,
+						mode, as, insn, vd);
 	if (locB)
 	  changed |= replace_oldest_value_addr (locB,
-						base_reg_class (mode, PLUS,
+						base_reg_class (mode, as, PLUS,
 								index_code),
-						mode, insn, vd);
+						mode, as, insn, vd);
 	return changed;
       }
 
@@ -648,12 +648,12 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	changed |= replace_oldest_value_addr (&XEXP (x, i), cl, mode,
+	changed |= replace_oldest_value_addr (&XEXP (x, i), cl, mode, as,
 					      insn, vd);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  changed |= replace_oldest_value_addr (&XVECEXP (x, i, j), cl,
-						mode, insn, vd);
+						mode, as, insn, vd);
     }
 
   return changed;
@@ -669,10 +669,11 @@ replace_oldest_value_mem (rtx x, rtx insn, struct value_data *vd)
   if (DEBUG_INSN_P (insn))
     cl = ALL_REGS;
   else
-    cl = base_reg_class (GET_MODE (x), MEM, SCRATCH);
+    cl = base_reg_class (GET_MODE (x), MEM_ADDR_SPACE (x), MEM, SCRATCH);
 
   return replace_oldest_value_addr (&XEXP (x, 0), cl,
-				    GET_MODE (x), insn, vd);
+				    GET_MODE (x), MEM_ADDR_SPACE (x),
+				    insn, vd);
 }
 
 /* Apply all queued updates for DEBUG_INSNs that change some reg to
@@ -751,7 +752,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      if (!VAR_LOC_UNKNOWN_P (loc))
 		replace_oldest_value_addr (&INSN_VAR_LOCATION_LOC (insn),
 					   ALL_REGS, GET_MODE (loc),
-					   insn, vd);
+					   ADDR_SPACE_GENERIC, insn, vd);
 	    }
 
 	  if (insn == BB_END (bb))
@@ -913,7 +914,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		replaced[i]
 		  = replace_oldest_value_addr (recog_data.operand_loc[i],
 					       recog_op_alt[i][alt].cl,
-					       VOIDmode, insn, vd);
+					       VOIDmode, ADDR_SPACE_GENERIC,
+					       insn, vd);
 	      else if (REG_P (recog_data.operand[i]))
 		replaced[i]
 		  = replace_oldest_value_reg (recog_data.operand_loc[i],
