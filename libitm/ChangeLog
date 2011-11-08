@@ -1,5 +1,9 @@
 2011-11-08  Richard Henderson  <rth@redhat.com>
 
+	* local.cc (_ITM_LB): Use a normal call, not a function alias.
+
+2011-11-08  Richard Henderson  <rth@redhat.com>
+
 	* configure.tgt: Test correct directory for supported cpus.
 
 	* configure.ac: Exit if unsupported.
