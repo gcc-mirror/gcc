@@ -1,3 +1,10 @@
+2011-11-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50835
+	* typeck.c (build_x_conditional_expr): Preserve lvalue/xvalueness.
+	* tree.c (lvalue_kind) [NON_DEPENDENT_EXPR]: Return clk_ordinary
+	in C++98.
+
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51010

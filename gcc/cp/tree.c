@@ -203,10 +203,13 @@ lvalue_kind (const_tree ref)
       return lvalue_kind (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)));
 
     case NON_DEPENDENT_EXPR:
-      /* We used to just return clk_ordinary for NON_DEPENDENT_EXPR because
-	 it was safe enough for C++98, but in C++0x lvalues don't bind to
-	 rvalue references, so we get bogus errors (c++/44870).  */
-      return lvalue_kind (TREE_OPERAND (ref, 0));
+      /* We just return clk_ordinary for NON_DEPENDENT_EXPR in C++98, but
+	 in C++11 lvalues don't bind to rvalue references, so we need to
+	 work harder to avoid bogus errors (c++/44870).  */
+      if (cxx_dialect < cxx0x)
+	return clk_ordinary;
+      else
+	return lvalue_kind (TREE_OPERAND (ref, 0));
 
     default:
       if (!TREE_TYPE (ref))
