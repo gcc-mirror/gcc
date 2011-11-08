@@ -5969,10 +5969,17 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	{
 	  if (name != error_mark_node && !BASELINK_P (name) && parser->scope)
 	    {
-	      name = build_qualified_name (/*type=*/NULL_TREE,
-					   parser->scope,
-					   name,
-					   template_p);
+	      if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
+		{
+		  error_at (token->location, "%<%D::%D%> is not a class member",
+			    parser->scope, name);
+		  postfix_expression = error_mark_node;
+		}
+	      else
+		name = build_qualified_name (/*type=*/NULL_TREE,
+					     parser->scope,
+					     name,
+					     template_p);
 	      parser->scope = NULL_TREE;
 	      parser->qualifying_scope = NULL_TREE;
 	      parser->object_scope = NULL_TREE;

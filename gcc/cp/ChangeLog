@@ -1,3 +1,9 @@
+2011-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50864
+	* parser.c (cp_parser_postfix_dot_deref_expression): Reject invalid
+	uses of '->' and '.' as postfix-expression in namespace scope.
+
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50848
