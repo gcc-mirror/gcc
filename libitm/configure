@@ -17003,6 +17003,10 @@ _ACEOF
 
 # Get target configury.
 . ${srcdir}/configure.tgt
+if test -n "$UNSUPPORTED"; then
+  as_fn_error "Configuration ${target} is unsupported." "$LINENO" 5
+fi
+
 CFLAGS="$save_CFLAGS $XCFLAGS"
 
 # Check for __sync_val_compare_and_swap, but only after the target has

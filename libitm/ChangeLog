@@ -1,3 +1,10 @@
+2011-11-08  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac: Exit if unsupported.
+	* configure: Rebuild.
+	* configure.tgt: Delete boilerplate from libgomp for unsupported
+	targets.  Set UNSUPPORTED for unsupported targets.
+
 2011-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.tgt: Handle i386 like i[456]86.
