@@ -1,3 +1,12 @@
+2011-11-08  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix context handling of alias-declaration
+	* decl.c (start_decl): Update comment.
+	* error.c (dump_alias_template_specialization): Dump the context
+	of the specialization.
+	* parser.c (cp_parser_alias_declaration): Call pop_scope on the
+	pushed scope yielded by start_decl.
+
 2011-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50864

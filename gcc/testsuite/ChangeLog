@@ -1,3 +1,8 @@
+2011-11-08  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix context handling of alias-declaration
+	* g++.dg/cpp0x/alias-decl-11.C: New test.
+
 2011-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50864

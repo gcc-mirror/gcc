@@ -4295,8 +4295,11 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
    deleted function, but 0 (SD_UNINITIALIZED) if this is a variable
    implicitly initialized via a default constructor.  ATTRIBUTES and
    PREFIX_ATTRIBUTES are GNU attributes associated with this declaration.
-   *PUSHED_SCOPE_P is set to the scope entered in this function, if any; if
-   set, the caller is responsible for calling pop_scope.  */
+
+   The scope represented by the context of the returned DECL is pushed
+   (if it is not the global namespace) and is assigned to
+   *PUSHED_SCOPE_P.  The caller is then responsible for calling
+   pop_scope on *PUSHED_SCOPE_P if it is set.  */
 
 tree
 start_decl (const cp_declarator *declarator,
