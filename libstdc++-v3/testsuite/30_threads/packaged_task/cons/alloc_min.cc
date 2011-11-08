@@ -1,7 +1,10 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
+// { dg-require-gthreads "" }
+// { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2010, 2011 Free Software Foundation
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,23 +21,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.9.11.2 Template class shared_ptr [util.smartptr.shared]
+// Test that packaged_task can use a minimal C++11 allocator
+// and doesn't rely on C++98 allocator interface.
 
-#include <memory>
+#include <future>
+#include <testsuite_allocator.h>
 
-// incomplete type
-struct X;
+using std::packaged_task;
+using std::allocator_arg;
 
-// get an auto_ptr rvalue
-std::auto_ptr<X>&& ap();
-
-void test01()
-{
-  X* px = 0;
-  std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 771 }
-
-  std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 865 }
-
-}
+__gnu_test::SimpleAllocator<int> a;
+packaged_task<int()> p(allocator_arg, a, []() { return 1; });

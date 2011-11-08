@@ -281,7 +281,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Counted ptr with no deleter or allocator support
   template<typename _Ptr, _Lock_policy _Lp>
-    class _Sp_counted_ptr : public _Sp_counted_base<_Lp>
+    class _Sp_counted_ptr final : public _Sp_counted_base<_Lp>
     {
     public:
       explicit
@@ -321,20 +321,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Support for custom deleter and/or allocator
   template<typename _Ptr, typename _Deleter, typename _Alloc, _Lock_policy _Lp>
-    class _Sp_counted_deleter : public _Sp_counted_base<_Lp>
+    class _Sp_counted_deleter final : public _Sp_counted_base<_Lp>
     {
-      typedef typename _Alloc::template
-	  rebind<_Sp_counted_deleter>::other _My_alloc_type;
-
       // Helper class that stores the Deleter and also acts as an allocator.
       // Used to dispose of the owned pointer and the internal refcount
       // Requires that copies of _Alloc can free each other's memory.
       struct _My_Deleter
-      : public _My_alloc_type    // copy constructor must not throw
+      : public _Alloc           // copy constructor must not throw
       {
-	_Deleter _M_del;         // copy constructor must not throw
+	_Deleter _M_del;        // copy constructor must not throw
 	_My_Deleter(_Deleter __d, const _Alloc& __a)
-	: _My_alloc_type(__a), _M_del(__d) { }
+	: _Alloc(__a), _M_del(__d) { }
       };
 
     public:
@@ -353,9 +350,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void
       _M_destroy() noexcept
       {
-	_My_alloc_type __a(_M_del);
-	this->~_Sp_counted_deleter();
-	__a.deallocate(this, 1);
+	typedef typename allocator_traits<_Alloc>::template
+	  rebind_traits<_Sp_counted_deleter> _Alloc_traits;
+	typename _Alloc_traits::allocator_type __a(_M_del);
+	_Alloc_traits::destroy(__a, this);
+	_Alloc_traits::deallocate(__a, this, 1);
       }
 
       virtual void*
@@ -375,51 +374,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // helpers for make_shared / allocate_shared
 
-  template<typename _Tp>
-    struct _Sp_destroy_inplace
-    {
-      void operator()(_Tp* __p) const { if (__p) __p->~_Tp(); }
-    };
-
   struct _Sp_make_shared_tag { };
 
   template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
-    class _Sp_counted_ptr_inplace
-    : public _Sp_counted_deleter<_Tp*, _Sp_destroy_inplace<_Tp>, _Alloc, _Lp>
+    class _Sp_counted_ptr_inplace final : public _Sp_counted_base<_Lp>
     {
-      typedef _Sp_counted_deleter<_Tp*, _Sp_destroy_inplace<_Tp>, _Alloc, _Lp>
-	_Base_type;
+      // Helper class that stores the pointer and also acts as an allocator.
+      // Used to dispose of the owned pointer and the internal refcount
+      // Requires that copies of _Alloc can free each other's memory.
+      struct _Impl
+      : public _Alloc           // copy constructor must not throw
+      {
+	_Impl(_Alloc __a) : _Alloc(__a), _M_ptr() { }
+	_Tp* _M_ptr;
+      };
 
     public:
-      explicit
-      _Sp_counted_ptr_inplace(_Alloc __a)
-      : _Base_type(static_cast<_Tp*>(0), _Sp_destroy_inplace<_Tp>(), __a)
-      , _M_storage()
-      {
-	void* __p = &_M_storage;
-	::new (__p) _Tp();  // might throw
-	_Base_type::_M_ptr = static_cast<_Tp*>(__p);
-      }
-
       template<typename... _Args>
 	_Sp_counted_ptr_inplace(_Alloc __a, _Args&&... __args)
-	: _Base_type(static_cast<_Tp*>(0), _Sp_destroy_inplace<_Tp>(), __a)
-	, _M_storage()
+	: _M_impl(__a), _M_storage()
 	{
-	  void* __p = &_M_storage;
-	  ::new (__p) _Tp(std::forward<_Args>(__args)...);  // might throw
-	  _Base_type::_M_ptr = static_cast<_Tp*>(__p);
+	  _M_impl._M_ptr = static_cast<_Tp*>(static_cast<void*>(&_M_storage));
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 2070.  allocate_shared should use allocator_traits<A>::construct
+	  allocator_traits<_Alloc>::construct(__a, _M_impl._M_ptr,
+	      std::forward<_Args>(__args)...); // might throw
 	}
+
+      virtual void
+      _M_dispose() noexcept
+      { allocator_traits<_Alloc>::destroy(_M_impl, _M_impl._M_ptr); }
 
       // Override because the allocator needs to know the dynamic type
       virtual void
       _M_destroy() noexcept
       {
-	typedef typename _Alloc::template
-	    rebind<_Sp_counted_ptr_inplace>::other _My_alloc_type;
-	_My_alloc_type __a(_Base_type::_M_del);
-	this->~_Sp_counted_ptr_inplace();
-	__a.deallocate(this, 1);
+	typedef typename allocator_traits<_Alloc>::template
+	  rebind_traits<_Sp_counted_ptr_inplace> _Alloc_traits;
+	typename _Alloc_traits::allocator_type __a(_M_impl);
+	_Alloc_traits::destroy(__a, this);
+	_Alloc_traits::deallocate(__a, this, 1);
       }
 
       // Sneaky trick so __shared_ptr can get the managed pointer
@@ -429,13 +423,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_RTTI
 	return __ti == typeid(_Sp_make_shared_tag)
 	       ? static_cast<void*>(&_M_storage)
-	       : _Base_type::_M_get_deleter(__ti);
+	       : 0;
 #else
         return 0;
 #endif
       }
 
     private:
+      _Impl _M_impl;
       typename aligned_storage<sizeof(_Tp), alignment_of<_Tp>::value>::type
 	_M_storage;
     };
@@ -468,18 +463,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // The allocator's value_type doesn't matter, will rebind it anyway.
 	  typedef std::allocator<int> _Alloc;
 	  typedef _Sp_counted_deleter<_Ptr, _Deleter, _Alloc, _Lp> _Sp_cd_type;
-	  typedef std::allocator<_Sp_cd_type> _Alloc2;
-	  _Alloc2 __a2;
+	  typedef typename allocator_traits<_Alloc>::template
+	    rebind_traits<_Sp_cd_type> _Alloc_traits;
+	  typename _Alloc_traits::allocator_type __a;
+	  _Sp_cd_type* __mem = 0;
 	  __try
 	    {
-	      _M_pi = __a2.allocate(1);
-	      ::new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d);
+	      __mem = _Alloc_traits::allocate(__a, 1);
+	      _Alloc_traits::construct(__a, __mem, __p, std::move(__d));
+	      _M_pi = __mem;
 	    }
 	  __catch(...)
 	    {
 	      __d(__p); // Call _Deleter on __p.
-	      if (_M_pi)
-		__a2.deallocate(static_cast<_Sp_cd_type*>(_M_pi), 1);
+	      if (__mem)
+	        _Alloc_traits::deallocate(__a, __mem, 1);
 	      __throw_exception_again;
 	    }
 	}
@@ -488,18 +486,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_count(_Ptr __p, _Deleter __d, _Alloc __a) : _M_pi(0)
 	{
 	  typedef _Sp_counted_deleter<_Ptr, _Deleter, _Alloc, _Lp> _Sp_cd_type;
-	  typedef typename _Alloc::template rebind<_Sp_cd_type>::other _Alloc2;
-	  _Alloc2 __a2(__a);
+	  typedef typename allocator_traits<_Alloc>::template
+	    rebind_traits<_Sp_cd_type> _Alloc_traits;
+	  typename _Alloc_traits::allocator_type __a2(__a);
+	  _Sp_cd_type* __mem = 0;
 	  __try
 	    {
-	      _M_pi = __a2.allocate(1);
-	      ::new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d, __a);
+	      __mem = _Alloc_traits::allocate(__a2, 1);
+	      _Alloc_traits::construct(__a2, __mem,
+		  __p, std::move(__d), std::move(__a));
+	      _M_pi = __mem;
 	    }
 	  __catch(...)
 	    {
 	      __d(__p); // Call _Deleter on __p.
-	      if (_M_pi)
-		__a2.deallocate(static_cast<_Sp_cd_type*>(_M_pi), 1);
+	      if (__mem)
+	        _Alloc_traits::deallocate(__a2, __mem, 1);
 	      __throw_exception_again;
 	    }
 	}
@@ -510,18 +512,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_pi(0)
 	{
 	  typedef _Sp_counted_ptr_inplace<_Tp, _Alloc, _Lp> _Sp_cp_type;
-	  typedef typename _Alloc::template rebind<_Sp_cp_type>::other _Alloc2;
-	  _Alloc2 __a2(__a);
+	  typedef typename allocator_traits<_Alloc>::template
+	    rebind_traits<_Sp_cp_type> _Alloc_traits;
+	  typename _Alloc_traits::allocator_type __a2(__a);
+	  _Sp_cp_type* __mem = _Alloc_traits::allocate(__a2, 1);
 	  __try
 	    {
-	      _M_pi = __a2.allocate(1);
-	      ::new(static_cast<void*>(_M_pi)) _Sp_cp_type(__a,
+	      _Alloc_traits::construct(__a2, __mem, std::move(__a),
 		    std::forward<_Args>(__args)...);
+	      _M_pi = __mem;
 	    }
 	  __catch(...)
 	    {
-	      if (_M_pi)
-		__a2.deallocate(static_cast<_Sp_cp_type*>(_M_pi), 1);
+	      _Alloc_traits::deallocate(__a2, __mem, 1);
 	      __throw_exception_again;
 	    }
 	}
@@ -1001,8 +1004,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
           void operator()(_Tp* __ptr)
           {
-            _M_alloc.destroy(__ptr);
-            _M_alloc.deallocate(__ptr, 1);
+	    typedef allocator_traits<_Alloc> _Alloc_traits;
+	    _Alloc_traits::destroy(_M_alloc, __ptr);
+	    _Alloc_traits::deallocate(_M_alloc, __ptr, 1);
           }
           _Alloc _M_alloc;
         };
@@ -1014,14 +1018,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
 	  typedef typename _Alloc::template rebind<_Tp>::other _Alloc2;
           _Deleter<_Alloc2> __del = { _Alloc2(__a) };
-          _M_ptr = __del._M_alloc.allocate(1);
+	  typedef allocator_traits<_Alloc2> __traits;
+          _M_ptr = __traits::allocate(__del._M_alloc, 1);
 	  __try
 	    {
-              __del._M_alloc.construct(_M_ptr, std::forward<_Args>(__args)...);
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 2070. allocate_shared should use allocator_traits<A>::construct
+	      __traits::construct(__del._M_alloc, _M_ptr,
+		                  std::forward<_Args>(__args)...);
 	    }
 	  __catch(...)
 	    {
-              __del._M_alloc.deallocate(_M_ptr, 1);
+	      __traits::deallocate(__del._M_alloc, _M_ptr, 1);
 	      __throw_exception_again;
 	    }
           __shared_count<_Lp> __count(_M_ptr, __del, __del._M_alloc);

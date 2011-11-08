@@ -1,3 +1,23 @@
+2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr_base.h (_Sp_counted_ptr): Make 'final'.
+	(_Sp_counted_deleter): Make 'final'. Use allocator_traits.
+	(_Sp_counted_ptr_inplace): Make 'final'. Use allocator_traits.
+	Derive from _Sp_counted_ptr instead of _Sp_counted_deleter to use EBO
+	for the allocator.
+	(__shared_count, __shared_ptr): Use allocator_traits.
+	* include/std/future (__future_base::_Result_alloc): Make 'final'. Use
+	allocator traits.
+	(__future_base::_Task_state): Make 'final'.
+	(__future_base::_Deferred_state): Likewise.
+	(__future_base::_Async_state): Likewise.
+	* testsuite/20_util/shared_ptr/cons/alloc_min.cc: New.
+	* testsuite/20_util/shared_ptr/creation/alloc_min.cc: New.
+	* testsuite/20_util/shared_ptr/creation/private.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/30_threads/packaged_task/cons/alloc_min.cc: New.
+	* testsuite/30_threads/promise/cons/alloc_min.cc: New.
+
 2011-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* acinclude.m4 ([GLIBCXX_ENABLE_VISIBILITY]): Rename to

@@ -1,7 +1,6 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
 
-// Copyright (C) 2010, 2011 Free Software Foundation
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,23 +17,36 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.9.11.2 Template class shared_ptr [util.smartptr.shared]
-
 #include <memory>
+#include <new>
 
-// incomplete type
-struct X;
+// The behaviour tested here relies on the resolution of LWG issue 2070
 
-// get an auto_ptr rvalue
-std::auto_ptr<X>&& ap();
+template<typename T> struct MyAlloc;
 
-void test01()
+class Private
 {
-  X* px = 0;
-  std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 771 }
+  Private() = default;
+  Private(const Private&) = default;
+  ~Private() = default;
 
-  std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 865 }
+  friend class MyAlloc<Private>;
 
+public:
+  int get() const { return 0; }
+};
+
+template<typename T>
+struct MyAlloc : std::allocator<Private>
+{
+  void construct(T* p) { ::new((void*)p) T(); }
+  void destroy(T* p) { p->~T(); }
+};
+
+int main()
+{
+  MyAlloc<Private> a;
+  auto p = std::allocate_shared<Private>(a);
+  return p->get();
 }
+
