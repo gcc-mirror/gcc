@@ -1,3 +1,15 @@
+2011-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_call_sqrtf,
+	check_effective_target_vect_call_copysignf,
+	check_effective_target_vect_call_lrint): New procedures.
+	* gcc.dg/vect/vect.exp: Run fast-math-bb-slp* tests using
+	$VECT_SLP_CFLAGS with -ffast-math.
+	* gcc.dg/vect/fast-math-vect-call-1.c: New test.
+	* gcc.dg/vect/fast-math-vect-call-2.c: New test.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: New test.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: New test.
+
 2011-11-07  Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 	    Torvald Riegel  <triegel@redhat.com>

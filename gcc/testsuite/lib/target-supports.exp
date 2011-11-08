@@ -3520,6 +3520,58 @@ proc check_effective_target_vect64 { } {
     return $et_vect64_saved
 }
 
+# Return 1 if the target supports vector copysignf calls.
+
+proc check_effective_target_vect_call_copysignf { } {
+    global et_vect_call_copysignf_saved
+
+    if [info exists et_vect_call_copysignf_saved] {
+	verbose "check_effective_target_vect_call_copysignf: using cached result" 2
+    } else {
+	set et_vect_call_copysignf_saved 0
+	if { [istarget i?86-*-*]
+	     || [istarget x86_64-*-*]
+	     || [istarget powerpc*-*-*] } {
+	   set et_vect_call_copysignf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_copysignf: returning $et_vect_call_copysignf_saved" 2
+    return $et_vect_call_copysignf_saved
+}
+
+# Return 1 if the target supports vector sqrtf calls.
+
+proc check_effective_target_vect_call_sqrtf { } {
+    global et_vect_call_sqrtf_saved
+
+    if [info exists et_vect_call_sqrtf_saved] {
+	verbose "check_effective_target_vect_call_sqrtf: using cached result" 2
+    } else {
+	set et_vect_call_sqrtf_saved 0
+	if { [istarget i?86-*-*]
+	     || [istarget x86_64-*-*]
+	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available]) } {
+	    set et_vect_call_sqrtf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_sqrtf: returning $et_vect_call_sqrtf_saved" 2
+    return $et_vect_call_sqrtf_saved
+}
+
+# Return 1 if the target supports vector lrint calls.
+
+proc check_effective_target_vect_call_lrint { } {
+    set et_vect_call_lrint 0
+    if { ([istarget i?86-*-*] || [istarget x86_64-*-*]) && [check_effective_target_ilp32] } {
+	set et_vect_call_lrint 1
+    }
+
+    verbose "check_effective_target_vect_call_lrint: returning $et_vect_call_lrint" 2
+    return $et_vect_call_lrint
+}
+
 # Return 1 if the target supports section-anchors
 
 proc check_effective_target_section_anchors { } {

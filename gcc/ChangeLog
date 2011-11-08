@@ -1,3 +1,14 @@
+2011-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (vectorizable_call): Add SLP_NODE argument.
+	Handle vectorization of SLP calls.
+	(vect_analyze_stmt): Adjust caller, add call to it for SLP too.
+	(vect_transform_stmt): Adjust vectorizable_call caller, remove
+	assertion.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): For calls start
+	with op_idx 3.
+	(vect_build_slp_tree): Allow CALL_EXPR.
+
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	* gimple-fold.c (canonicalize_constructor_val): Make sure

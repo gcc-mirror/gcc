@@ -104,8 +104,14 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-vfa-*.\[cS\]]]  \
 # -ffast-math tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-ffast-math"
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-*.\[cS\]]]  \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-\[ipsv\]*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
+
+# -ffast-math SLP tests
+set VECT_SLP_CFLAGS $SAVED_VECT_SLP_CFLAGS
+lappend VECT_SLP_CFLAGS "-ffast-math"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-bb-slp-*.\[cS\]]]  \
+        "" $VECT_SLP_CFLAGS
 
 # -fno-fast-math tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS

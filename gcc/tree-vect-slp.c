@@ -202,7 +202,10 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
     loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   if (is_gimple_call (stmt))
-    number_of_oprnds = gimple_call_num_args (stmt);
+    {
+      number_of_oprnds = gimple_call_num_args (stmt);
+      op_idx = 3;
+    }
   else if (is_gimple_assign (stmt))
     {
       number_of_oprnds = gimple_num_ops (stmt) - 1;
@@ -558,7 +561,25 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       ncopies = vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
 
       if (is_gimple_call (stmt))
-	rhs_code = CALL_EXPR;
+	{
+	  rhs_code = CALL_EXPR;
+	  if (gimple_call_internal_p (stmt)
+	      || gimple_call_tail_p (stmt)
+	      || gimple_call_noreturn_p (stmt)
+	      || !gimple_call_nothrow_p (stmt)
+	      || gimple_call_chain (stmt))
+	    {
+	      if (vect_print_dump_info (REPORT_SLP))
+		{
+		  fprintf (vect_dump,
+			   "Build SLP failed: unsupported call type ");
+		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		}
+
+	      vect_free_oprnd_info (&oprnds_info, true);
+	      return false;
+	    }
+	}
       else
 	rhs_code = gimple_assign_rhs_code (stmt);
 
@@ -652,6 +673,27 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
 	      vect_free_oprnd_info (&oprnds_info, true);
 	      return false;
+	    }
+
+	  if (rhs_code == CALL_EXPR)
+	    {
+	      gimple first_stmt = VEC_index (gimple, stmts, 0);
+	      if (gimple_call_num_args (stmt) != nops
+		  || !operand_equal_p (gimple_call_fn (first_stmt),
+				       gimple_call_fn (stmt), 0)
+		  || gimple_call_fntype (first_stmt)
+		     != gimple_call_fntype (stmt))
+		{
+		  if (vect_print_dump_info (REPORT_SLP))
+		    {
+		      fprintf (vect_dump,
+			       "Build SLP failed: different calls in ");
+		      print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		    }
+
+		  vect_free_oprnd_info (&oprnds_info, true);
+		  return false;
+		}
 	    }
 	}
 
@@ -786,7 +828,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  /* Not memory operation.  */
 	  if (TREE_CODE_CLASS (rhs_code) != tcc_binary
 	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
-              && rhs_code != COND_EXPR)
+	      && rhs_code != COND_EXPR
+	      && rhs_code != CALL_EXPR)
 	    {
 	      if (vect_print_dump_info (REPORT_SLP))
 		{
