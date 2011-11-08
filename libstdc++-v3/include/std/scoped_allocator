@@ -267,9 +267,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template <class _Tp>
         struct rebind
         {
-          // TODO: use rebind_alloc<Tp> instead of __rebind_alloc<Tp>::__type
           typedef scoped_allocator_adaptor<
-            typename __traits::template __rebind_alloc<_Tp>::__type,
+            typename __traits::template rebind_alloc<_Tp>,
             _InnerAllocs...> other;
         };
 

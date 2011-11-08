@@ -86,46 +86,19 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
       static const bool __value = _S_chk<_Ptr, _Up>(nullptr);
     };
 
-  // hack to use _Tp::__rebind<_Up>::__type instead if that exists
-  template<typename _Ptr, typename _Up>
-    class __ptrtr_rebind_helper2
-    {
-      template<typename _Ptr2, typename _Up2>
-	static constexpr bool
-       	_S_chk(typename _Ptr2::template __rebind<_Up2>::__type*)
-	{ return true; }
-
-      template<typename, typename>
-        static constexpr bool
-       	_S_chk(...)
-       	{ return false; }
-
-    public:
-      static const bool __value = _S_chk<_Ptr, _Up>(nullptr);
-    };
-
-  /* TODO: remove second bool when alias templates are supported */
   template<typename _Tp, typename _Up,
-           bool = __ptrtr_rebind_helper<_Tp, _Up>::__value,
-           bool = __ptrtr_rebind_helper2<_Tp, _Up>::__value>
+           bool = __ptrtr_rebind_helper<_Tp, _Up>::__value>
     struct __ptrtr_rebind;
 
-  template<typename _Tp, typename _Up, bool _B2>
-    struct __ptrtr_rebind<_Tp, _Up, true, _B2>
+  template<typename _Tp, typename _Up>
+    struct __ptrtr_rebind<_Tp, _Up, true>
     {
       typedef typename _Tp::template rebind<_Up> __type;
     };
 
-  /* TODO: remove this when alias templates are supported */
-  template<typename _Tp, typename _Up>
-    struct __ptrtr_rebind<_Tp, _Up, false, true>
-    {
-      typedef typename _Tp::template __rebind<_Up>::__type __type;
-    };
-
   template<template<typename, typename...> class _SomePtr, typename _Up,
             typename _Tp, typename... _Args>
-    struct __ptrtr_rebind<_SomePtr<_Tp, _Args...>, _Up, false, false>
+    struct __ptrtr_rebind<_SomePtr<_Tp, _Args...>, _Up, false>
     {
       typedef _SomePtr<_Up, _Args...> __type;
     };
@@ -168,14 +141,8 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
       typedef typename __ptrtr_diff_type<_Ptr>::__type  difference_type;
 
     private:
-      /* TODO: replace __rebind<U> with alias template rebind<U> */
-      /*
       template<typename _Up>
-        using rebind<_Up> = typename __ptrtr_rebind<_Ptr, _Up>::__type;
-      */
-      template<typename _Up>
-       	struct __rebind
-        { typedef typename __ptrtr_rebind<_Ptr, _Up>::__type __type; };
+        using rebind = typename __ptrtr_rebind<_Ptr, _Up>::__type;
 
       // allocator_traits needs to use __rebind
       template<typename> friend struct allocator_traits;
@@ -197,13 +164,8 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
       /// Type used to represent the difference between two pointers
       typedef ptrdiff_t difference_type;
 
-      /* TODO: replace __rebind<U> with alias template rebind<U> */
-      /*
       template<typename _Up>
-        using rebind<_Up> = U*;
-      */
-      template<typename U>
-       	struct __rebind { typedef U* __type; };
+        using rebind = _Up*;
 
       /**
        *  @brief  Obtain a pointer to an object

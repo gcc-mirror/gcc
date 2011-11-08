@@ -102,10 +102,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(pointer, value_type*)
       */
       typedef __pointer pointer;
 
-// TODO: Use pointer_traits::rebind alias template.
-
 _GLIBCXX_ALLOC_TR_NESTED_TYPE(const_pointer,
-  typename pointer_traits<pointer>::template __rebind<const value_type>::__type)
+  typename pointer_traits<pointer>::template rebind<const value_type>)
 
       /**
        * @brief   The allocator's const pointer type.
@@ -116,7 +114,7 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(const_pointer,
       typedef __const_pointer const_pointer;
 
 _GLIBCXX_ALLOC_TR_NESTED_TYPE(void_pointer,
-  typename pointer_traits<pointer>::template __rebind<void>::__type)
+  typename pointer_traits<pointer>::template rebind<void>)
 
       /**
        * @brief   The allocator's void pointer type.
@@ -127,7 +125,7 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(void_pointer,
       typedef __void_pointer void_pointer;
 
 _GLIBCXX_ALLOC_TR_NESTED_TYPE(const_void_pointer,
-  typename pointer_traits<pointer>::template __rebind<const void>::__type)
+  typename pointer_traits<pointer>::template rebind<const void>)
 
       /**
        * @brief   The allocator's const void pointer type.
@@ -196,23 +194,10 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 
 #undef _GLIBCXX_ALLOC_TR_NESTED_TYPE
 
-      /* TODO: use template alias 
       template<typename _Tp>
-        using rebind_alloc = __alloctr_rebind<_Alloc, _Tp>::__type;
+        using rebind_alloc = typename __alloctr_rebind<_Alloc, _Tp>::__type;
       template<typename _Tp>
         using rebind_traits = allocator_traits<rebind_alloc<_Tp>>;
-      */
-      template<typename _Tp>
-        struct __rebind_alloc
-	{
-  	  typedef typename __alloctr_rebind<_Alloc, _Tp>::__type __type;
-       	};
-
-      template<typename _Tp>
-        struct __rebind_traits
-	{
-	  typedef allocator_traits<typename __rebind_alloc<_Tp>::__type> __type;
-	};
 
     private:
       template<typename _Alloc2>

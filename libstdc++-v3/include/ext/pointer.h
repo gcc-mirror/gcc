@@ -577,21 +577,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Type used to represent the difference between two pointers
       typedef typename pointer::difference_type         difference_type;
 
-      /* TODO: replace __rebind<U> with alias template rebind<U> */
-      /*
       template<typename _Up>
-        using rebind<_Up> = typename __gnu_cxx::_Pointer_adapter<
+        using rebind = typename __gnu_cxx::_Pointer_adapter<
           typename pointer_traits<_Storage_policy>::rebind<_Up>>
-      */
-      template<typename _Up>
-        class __rebind
-        {
-          typedef pointer_traits<_Storage_policy> _Policy_traits;
-          typedef typename _Policy_traits::template __rebind<_Up>::__type
-            _Rebound_policy;
-        public:
-          typedef typename __gnu_cxx::_Pointer_adapter<_Rebound_policy> __type;
-        };
 
       static pointer pointer_to(typename pointer::reference __r) noexcept
       { return pointer(std::addressof(__r)); }
