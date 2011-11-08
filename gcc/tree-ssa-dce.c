@@ -351,6 +351,12 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 	mark_stmt_necessary (stmt, true);
       break;
 
+    case GIMPLE_ASSIGN:
+      if (TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
+	  && TREE_CLOBBER_P (gimple_assign_rhs1 (stmt)))
+	return;
+      break;
+
     default:
       break;
     }
@@ -917,19 +923,17 @@ propagate_necessity (struct edge_list *el)
 	  else if (gimple_assign_single_p (stmt))
 	    {
 	      tree rhs;
-	      bool rhs_aliased = false;
 	      /* If this is a load mark things necessary.  */
 	      rhs = gimple_assign_rhs1 (stmt);
 	      if (TREE_CODE (rhs) != SSA_NAME
-		  && !is_gimple_min_invariant (rhs))
+		  && !is_gimple_min_invariant (rhs)
+		  && TREE_CODE (rhs) != CONSTRUCTOR)
 		{
 		  if (!ref_may_be_aliased (rhs))
 		    mark_aliased_reaching_defs_necessary (stmt, rhs);
 		  else
-		    rhs_aliased = true;
+		    mark_all_reaching_defs_necessary (stmt);
 		}
-	      if (rhs_aliased)
-		mark_all_reaching_defs_necessary (stmt);
 	    }
 	  else if (gimple_code (stmt) == GIMPLE_RETURN)
 	    {
@@ -937,7 +941,8 @@ propagate_necessity (struct edge_list *el)
 	      /* A return statement may perform a load.  */
 	      if (rhs
 		  && TREE_CODE (rhs) != SSA_NAME
-		  && !is_gimple_min_invariant (rhs))
+		  && !is_gimple_min_invariant (rhs)
+		  && TREE_CODE (rhs) != CONSTRUCTOR)
 		{
 		  if (!ref_may_be_aliased (rhs))
 		    mark_aliased_reaching_defs_necessary (stmt, rhs);
@@ -955,6 +960,7 @@ propagate_necessity (struct edge_list *el)
 		  tree op = TREE_VALUE (gimple_asm_input_op (stmt, i));
 		  if (TREE_CODE (op) != SSA_NAME
 		      && !is_gimple_min_invariant (op)
+		      && TREE_CODE (op) != CONSTRUCTOR
 		      && !ref_may_be_aliased (op))
 		    mark_aliased_reaching_defs_necessary (stmt, op);
 		}

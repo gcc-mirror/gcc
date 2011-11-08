@@ -872,8 +872,11 @@ execute_optimize_stdarg (void)
 		  if (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
 		      == GIMPLE_SINGLE_RHS)
 		    {
+		      /* Check for ap ={v} {}.  */
+		      if (TREE_CLOBBER_P (rhs))
+			continue;
 		      /* Check for ap[0].field = temp.  */
-		      if (va_list_counter_struct_op (&si, lhs, rhs, true))
+		      else if (va_list_counter_struct_op (&si, lhs, rhs, true))
 			continue;
 
 		      /* Check for temp = ap[0].field.  */

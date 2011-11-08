@@ -688,6 +688,7 @@ remove_unused_locals (void)
   referenced_var_iterator rvi;
   bitmap global_unused_vars = NULL;
   unsigned srcidx, dstidx, num;
+  bool have_local_clobbers = false;
 
   /* Removing declarations from lexical blocks when not optimizing is
      not only a waste of time, it actually causes differences in stack
@@ -719,6 +720,12 @@ remove_unused_locals (void)
 
 	  if (is_gimple_debug (stmt))
 	    continue;
+
+	  if (gimple_clobber_p (stmt))
+	    {
+	      have_local_clobbers = true;
+	      continue;
+	    }
 
 	  if (b)
 	    TREE_USED (b) = true;
@@ -752,6 +759,41 @@ remove_unused_locals (void)
 	if (e->goto_locus)
 	  TREE_USED (e->goto_block) = true;
     }
+
+  /* We do a two-pass approach about the out-of-scope clobbers.  We want
+     to remove them if they are the only references to a local variable,
+     but we want to retain them when there's any other.  So the first pass
+     ignores them, and the second pass (if there were any) tries to remove
+     them.  */
+  if (have_local_clobbers)
+    FOR_EACH_BB (bb)
+      {
+	gimple_stmt_iterator gsi;
+
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+	  {
+	    gimple stmt = gsi_stmt (gsi);
+	    tree b = gimple_block (stmt);
+
+	    if (gimple_clobber_p (stmt))
+	      {
+		tree lhs = gimple_assign_lhs (stmt);
+		lhs = get_base_address (lhs);
+		if (TREE_CODE (lhs) == SSA_NAME)
+		  lhs = SSA_NAME_VAR (lhs);
+		if (DECL_P (lhs) && (!var_ann (lhs) || !is_used_p (lhs)))
+		  {
+		    unlink_stmt_vdef (stmt);
+		    gsi_remove (&gsi, true);
+		    release_defs (stmt);
+		    continue;
+		  }
+		if (b)
+		  TREE_USED (b) = true;
+	      }
+	    gsi_next (&gsi);
+	  }
+      }
 
   cfun->has_local_explicit_reg_vars = false;
 

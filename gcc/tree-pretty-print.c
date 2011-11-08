@@ -1271,8 +1271,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	bool is_array_init = false;
 	double_int curidx = double_int_zero;
 	pp_character (buffer, '{');
-	if (TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
-	    || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
+	if (TREE_CLOBBER_P (node))
+	  pp_string (buffer, "CLOBBER");
+	else if (TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
+		 || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
 	  is_struct_init = true;
         else if (TREE_CODE (TREE_TYPE (node)) == ARRAY_TYPE
 		 && TYPE_DOMAIN (TREE_TYPE (node))

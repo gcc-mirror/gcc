@@ -1,3 +1,42 @@
+2011-11-08  Michael Matz  <matz@suse.de>
+
+	* gengtype.c (write_field_root): Avoid out-of-scope access of newv.
+
+	* tree-stdarg.c (execute_optimize_stdarg): Accept clobbers.
+
+	* tree.h (TREE_CLOBBER_P): New macro.
+	* gimple.h (gimple_clobber_p): New inline function.
+	* gimplify.c (gimplify_bind_expr): Add clobbers for all variables
+	that go out of scope and live in memory.
+	* tree-ssa-operands.c (get_expr_operands): Transfer volatility also
+	for constructors.
+	* cfgexpand.c (decl_to_stack_part): New static variable.
+	(add_stack_var): Allocate it, and remember mapping.
+	(fini_vars_expansion): Deallocate it.
+	(stack_var_conflict_p): Add early outs.
+	(visit_op, visit_conflict, add_scope_conflicts_1,
+	add_scope_conflicts): New static functions.
+	(expand_used_vars_for_block): Don't call add_stack_var_conflict, tidy.
+	(expand_used_vars): Add scope conflicts.
+	(expand_gimple_stmt_1): Expand clobbers to nothing.
+	(expand_debug_expr): Ditto.
+
+	* tree-pretty-print.c (dump_generic_node): Dump clobbers nicely.
+	* tree-ssa-live.c (remove_unused_locals): Remove clobbers that
+	refer to otherwise unused locals.
+	* tree-sra.c (build_accesses_from_assign): Ignore clobbers.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Clobbers of
+	SSA names aren't necessary.
+	(propagate_necessity): Accept and ignore constructors on the rhs,
+	tidy.
+	* gimple.c (walk_gimple_op): Accept constructors like mem_rhs.
+	* tree-ssa-structalias.c (find_func_aliases): Clobbers don't store
+	any known value.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Ditto, in particular they
+	don't zero-initialize something.
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement_1): Ignore
+	clobber RHS, we don't want PHI nodes with those.
+
 2011-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_preferred_simd_mode): Even for TARGET_AVX
