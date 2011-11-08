@@ -35,6 +35,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "toplev.h"
 
+/* Append the option piece OPT to the COLLECT_GCC_OPTIONS string
+   set up by OB, appropriately quoted and separated by spaces
+   (if !*FIRST_P).  */
+
+static void
+append_to_collect_gcc_options (struct obstack *ob,
+			       bool *first_p, const char *opt)
+{
+  const char *p, *q = opt;
+  if (!first_p)
+    obstack_grow (ob, " ", 1);
+  obstack_grow (ob, "'", 1);
+  while ((p = strchr (q, '\'')))
+    {
+      obstack_grow (ob, q, p - q);
+      obstack_grow (ob, "'\\''", 4);
+      q = ++p;
+    }
+  obstack_grow (ob, q, strlen (q));
+  obstack_grow (ob, "'", 1);
+  *first_p = false;
+}
+
 /* Write currently held options to an LTO IL section.  */
 
 void
@@ -45,16 +68,30 @@ lto_write_options (void)
   struct obstack temporary_obstack;
   unsigned int i, j;
   char *args;
+  bool first_p = true;
 
   section_name = lto_get_section_name (LTO_section_opts, NULL, NULL);
   lto_begin_section (section_name, false);
   memset (&stream, 0, sizeof (stream));
 
   obstack_init (&temporary_obstack);
+
+  /* Output options that affect GIMPLE IL semantics and are implicitely
+     enabled by the frontend.
+     This for now includes an explicit set of options that we also handle
+     explicitly in lto-wrapper.c.  In the end the effects on GIMPLE IL
+     semantics should be explicitely encoded in the IL or saved per
+     function rather than per compilation unit.  */
+  /* -fexceptions causes the EH machinery to be initialized, enabling
+     generation of unwind data so that explicit throw() calls work.  */
+  if (global_options.x_flag_exceptions)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				   "-fexceptions");
+
+  /* Output explicitely passed options.  */
   for (i = 1; i < save_decoded_options_count; ++i)
     {
       struct cl_decoded_option *option = &save_decoded_options[i];
-      const char *q, *p;
 
       /* Skip frontend and driver specific options here.  */
       if (!(cl_options[option->opt_index].flags & (CL_COMMON|CL_TARGET|CL_LTO)))
@@ -82,32 +119,9 @@ lto_write_options (void)
 	  break;
 	}
 
-      if (i != 1)
-	obstack_grow (&temporary_obstack, " ", 1);
-      obstack_grow (&temporary_obstack, "'", 1);
-      q = option->canonical_option[0];
-      while ((p = strchr (q, '\'')))
-	{
-	  obstack_grow (&temporary_obstack, q, p - q);
-	  obstack_grow (&temporary_obstack, "'\\''", 4);
-	  q = ++p;
-	}
-      obstack_grow (&temporary_obstack, q, strlen (q));
-      obstack_grow (&temporary_obstack, "'", 1);
-
-      for (j = 1; j < option->canonical_option_num_elements; ++j)
-	{
-	  obstack_grow (&temporary_obstack, " '", 2);
-	  q = option->canonical_option[j];
-	  while ((p = strchr (q, '\'')))
-	    {
-	      obstack_grow (&temporary_obstack, q, p - q);
-	      obstack_grow (&temporary_obstack, "'\\''", 4);
-	      q = ++p;
-	    }
-	  obstack_grow (&temporary_obstack, q, strlen (q));
-	  obstack_grow (&temporary_obstack, "'", 1);
-	}
+      for (j = 0; j < option->canonical_option_num_elements; ++j)
+	append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				       option->canonical_option[j]);
     }
   obstack_grow (&temporary_obstack, "\0", 1);
   args = XOBFINISH (&temporary_obstack, char *);

@@ -1,3 +1,9 @@
+2011-11-08  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/50999
+	* lto-opts.c (append_to_collect_gcc_options): Split out from...
+	(lto_write_options): ... here.  Prepend frontend specific flags.
+
 2011-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (*avx_vperm2f128<mode>3_nozero): Emit mask
