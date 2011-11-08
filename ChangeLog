@@ -1,5 +1,7 @@
 2011-11-08  Richard Henderson  <rth@redhat.com>
 
+	* configure.ac: Test for libitm directory present first.
+
 	* configure.ac: Adjust srcdir for running libitm/configure.tgt.
 
 	* configure.ac: Test libitm/configure.tgt to disable libitm.
