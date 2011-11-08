@@ -1,3 +1,9 @@
+2011-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/29_atomics/headers/atomic/macros.cc: Avoid -Wall
+	warnings.
+	* testsuite/29_atomics/atomic/cons/user_pod.cc: Likewise.
+
 2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51018
