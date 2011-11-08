@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2010, 2011 Free Software Foundation
+// Copyright (C) 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,23 +18,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.9.11.2 Template class shared_ptr [util.smartptr.shared]
+// 20.7.2.2 Class template shared_ptr [util.smartptr.shared]
 
 #include <memory>
+#include <testsuite_allocator.h>
 
-// incomplete type
-struct X;
+struct X { };
 
-// get an auto_ptr rvalue
-std::auto_ptr<X>&& ap();
+// 20.7.2.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
-void test01()
-{
-  X* px = 0;
-  std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 771 }
+// test shared_ptr with minimal allocator
 
-  std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 865 }
+__gnu_test::SimpleAllocator<X> alloc;
+auto deleter = [](X* p) { delete p; };
+std::shared_ptr<X> p(new X, deleter, alloc);
 
-}

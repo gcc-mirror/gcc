@@ -264,10 +264,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Result_alloc.
     template<typename _Res, typename _Alloc>
-      struct _Result_alloc : _Result<_Res>, _Alloc
+      struct _Result_alloc final : _Result<_Res>, _Alloc
       {
-        typedef typename _Alloc::template rebind<_Result_alloc>::other
-          __allocator_type;
+        typedef typename allocator_traits<_Alloc>::template
+          rebind_alloc<_Result_alloc> __allocator_type;
 
         explicit
 	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _Alloc(__a)
@@ -276,9 +276,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private:
 	void _M_destroy()
         {
+	  typedef allocator_traits<__allocator_type> __traits;
           __allocator_type __a(*this);
-          __a.destroy(this);
-          __a.deallocate(this, 1);
+	  __traits::destroy(__a, this);
+	  __traits::deallocate(__a, this, 1);
         }
       };
 
@@ -287,15 +288,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_allocate_result(const _Allocator& __a)
       {
         typedef _Result_alloc<_Res, _Allocator>	__result_type;
-        typename __result_type::__allocator_type __a2(__a);
-        __result_type* __p = __a2.allocate(1);
+	typedef allocator_traits<typename __result_type::__allocator_type>
+	  __traits;
+        typename __traits::allocator_type __a2(__a);
+        __result_type* __p = __traits::allocate(__a2, 1);
         __try
 	{
-          __a2.construct(__p, __a);
+	  __traits::construct(__a2, __p, __a);
         }
         __catch(...)
         {
-          __a2.deallocate(__p, 1);
+	  __traits::deallocate(__a2, __p, 1);
           __throw_exception_again;
         }
         return _Ptr<__result_type>(__p);
@@ -1239,7 +1242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Res, typename... _Args>
-    struct __future_base::_Task_state<_Res(_Args...)>
+    struct __future_base::_Task_state<_Res(_Args...)> final
     : __future_base::_State_base
     {
       typedef _Res _Res_type;
@@ -1393,7 +1396,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   template<typename _BoundFn, typename _Res>
-    class __future_base::_Deferred_state : public __future_base::_State_base
+    class __future_base::_Deferred_state final
+    : public __future_base::_State_base
     {
     public:
       explicit
@@ -1415,7 +1419,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _BoundFn, typename _Res>
-    class __future_base::_Async_state : public __future_base::_State_base
+    class __future_base::_Async_state final
+    : public __future_base::_State_base
     {
     public:
       explicit
