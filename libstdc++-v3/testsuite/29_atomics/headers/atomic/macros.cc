@@ -63,7 +63,7 @@
 
 extern void abort(void);
 
-main ()
+int main ()
 {
  if (ATOMIC_CHAR_LOCK_FREE != 0 && ATOMIC_CHAR_LOCK_FREE != 1
      && ATOMIC_CHAR_LOCK_FREE != 2)

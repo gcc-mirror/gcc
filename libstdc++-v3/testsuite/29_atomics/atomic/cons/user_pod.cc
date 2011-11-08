@@ -29,7 +29,7 @@ struct dwordp
 void atomics()
 {
   std::atomic<dwordp> a;
-  bool b = a.is_lock_free();
+  bool b __attribute__((unused)) = a.is_lock_free();
 }
 
 int main()
