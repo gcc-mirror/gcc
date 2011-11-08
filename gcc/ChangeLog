@@ -1,3 +1,10 @@
+2011-11-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51012
+	* ipa-prop.c (update_indirect_edges_after_inlining): Fixup
+	non-inlinable state.
+	* cgraph.c (cgraph_make_edge_direct): Likewise.
+
 2011-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/47698
