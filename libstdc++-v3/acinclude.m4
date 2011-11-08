@@ -3031,15 +3031,15 @@ EOF
 dnl
 dnl Allow visibility attributes to be used on namespaces, objects, etc.
 dnl
-dnl --enable-visibility enables attempt to use visibility attributes.
-dnl --disable-visibility turns off all use of visibility attributes.
-dnl  +  Usage:  GLIBCXX_ENABLE_VISIBILITY[(DEFAULT)]
+dnl --enable-libstdcxx-visibility enables attempt to use visibility attributes.
+dnl --disable-libstdcxx-visibility turns off all use of visibility attributes.
+dnl  +  Usage:  GLIBCXX_ENABLE_LIBSTDCXX_VISIBILITY[(DEFAULT)]
 dnl       Where DEFAULT is 'yes'.
 dnl
-AC_DEFUN([GLIBCXX_ENABLE_VISIBILITY], [
-GLIBCXX_ENABLE(visibility,$1,,[enables visibility safe usage])
+AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_VISIBILITY], [
+GLIBCXX_ENABLE(libstdcxx-visibility,$1,,[enables visibility safe usage])
 
-if test x$enable_visibility = xyes ; then
+if test x$enable_libstdcxx_visibility = xyes ; then
   dnl all hail libgfortran
   dnl Check whether the target supports hidden visibility.
   AC_CACHE_CHECK([whether the target supports hidden visibility],
@@ -3051,12 +3051,12 @@ if test x$enable_visibility = xyes ; then
 		 glibcxx_cv_have_attribute_visibility=no)
   CFLAGS="$save_CFLAGS"])
   if test $glibcxx_cv_have_attribute_visibility = no; then
-    enable_visibility=no
+    enable_libstdcxx_visibility=no
   fi
 fi
 
-GLIBCXX_CONDITIONAL(ENABLE_VISIBILITY, test $enable_visibility = yes)
-AC_MSG_NOTICE([visibility supported: $enable_visibility])
+GLIBCXX_CONDITIONAL(ENABLE_VISIBILITY, test $enable_libstdcxx_visibility = yes)
+AC_MSG_NOTICE([visibility supported: $enable_libstdcxx_visibility])
 ])
 
 

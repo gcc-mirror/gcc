@@ -311,7 +311,7 @@ GCC_HEADER_STDINT(include/gstdint.h)
 GLIBCXX_ENABLE_SYMVERS([yes])
 AC_SUBST(libtool_VERSION)
 
-GLIBCXX_ENABLE_VISIBILITY([yes])
+GLIBCXX_ENABLE_LIBSTDCXX_VISIBILITY([yes])
 
 ac_ldbl_compat=no
 case "$target" in
