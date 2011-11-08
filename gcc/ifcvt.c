@@ -2327,11 +2327,11 @@ noce_get_condition (rtx jump, rtx *earliest, bool then_else_reversed)
 static int
 noce_operand_ok (const_rtx op)
 {
-  /* We special-case memories, so handle any of them with
-     no address side effects.  */
   if (side_effects_p (op))
     return FALSE;
 
+  /* We special-case memories, so handle any of them with
+     no address side effects.  */
   if (MEM_P (op))
     return ! side_effects_p (XEXP (op, 0));
 
