@@ -1,3 +1,8 @@
+2011-11-08  Richard Guenther  <rguenther@suse.de>
+
+	* gimple-fold.c (canonicalize_constructor_val): Make sure
+	we have referenced vars setup before adding to them.
+
 2011-11-07  Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
