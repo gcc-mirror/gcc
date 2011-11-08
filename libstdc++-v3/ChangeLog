@@ -1,3 +1,7 @@
+2011-11-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/precompiled/stdc++.h: Add cstdalign.
+
 2011-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/complex (complex<>::real(), complex<>::imag()):
