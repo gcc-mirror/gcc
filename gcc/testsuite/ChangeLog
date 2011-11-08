@@ -1,5 +1,8 @@
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50848
+	* g++.dg/template/lookup9.C: New.
+
 	PR c++/50863
 	* g++.dg/cpp0x/lambda/lambda-initlist1.C: New.
 
