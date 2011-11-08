@@ -77,7 +77,7 @@ case "${target_cpu}" in
 esac
 
 # For the benefit of top-level configure, determine if the cpu is supported.
-test -d ${srcdir}/$ARCH || UNSUPPORTED=1
+test -d ${srcdir}/config/$ARCH || UNSUPPORTED=1
 
 # Since we require POSIX threads, assume a POSIX system by default.
 config_path="$ARCH posix generic"
