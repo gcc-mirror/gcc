@@ -1,3 +1,16 @@
+2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/ptr_traits.h (__rebind): Replace with...
+	(rebind): Implement using alias-declaration.
+	* include/ext/pointer.h (__rebind): Replace with...
+	(rebind): Implement using alias-declaration.
+	* include/bits/alloc_traits.h (__rebind_alloc, __rebind_traits):
+	Replace with...
+	(rebind_alloc, rebind_traits): Implement using alias-declaration.
+	* include/ext/alloc_traits.h (rebind): Use rebind_alloc instead of
+	__rebind_alloc.
+	* include/std/scoped_allocator (rebind): Likewise.
+
 2011-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/mutex (call_once): Store closure in __once_functor
