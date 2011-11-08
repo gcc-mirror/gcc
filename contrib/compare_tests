@@ -2,13 +2,35 @@
 # This script automatically test the given tool with the tool's test cases,
 # reporting anything of interest.
 
-# exits with 0 if there is nothing of interest
-# exits with 1 if there is something interesting
-# exits with 2 if an error occurred
+usage()
+{
+	if [ -n "$1" ] ; then
+		echo "$0: Error: $1" >&2
+		echo >&2
+	fi
+	cat >&2 <<EOUSAGE
+Usage: $0 [-strict] PREVIOUS CURRENT
 
-# Give two .sum files to compare them
+Compare the PREVIOUS and CURRENT test case .sum files, reporting anything of interest.
+
+	If PREVIOUS and CURRENT are directories, find and compare any *.sum files.
+
+	Unless -strict is given, these discrepancies are not counted as errors:
+		missing/extra .sum files when comparing directories
+		tests that failed in PREVIOUS but pass in CURRENT
+		tests that were not in PREVIOUS but appear in CURRENT
+		tests in PREVIOUS that are missing in CURRENT
+
+	Exit with the following values:
+		0 if there is nothing of interest
+		1 if there are errors when comparing single test case files
+		N for the number of errors found when comparing directories
+EOUSAGE
+	exit 2
+}
 
 # Written by Mike Stump <mrs@cygnus.com>
+# Subdir comparison added by Quentin Neill <quentin.neill@amd.com>
 
 tool=gxx
 
@@ -16,10 +38,69 @@ tmp1=/tmp/$tool-testing.$$a
 tmp2=/tmp/$tool-testing.$$b
 now_s=/tmp/$tool-testing.$$d
 before_s=/tmp/$tool-testing.$$e
+lst1=/tmp/$tool-lst1.$$
+lst2=/tmp/$tool-lst2.$$
+lst3=/tmp/$tool-lst3.$$
+lst4=/tmp/$tool-lst4.$$
+lst5=/tmp/$tool-lst5.$$
+tmps="$tmp1 $tmp2 $now_s $before_s $lst1 $lst2 $lst3 $lst4 $lst5"
 
-if [ "$2" = "" ]; then
-	echo "Usage: $0 previous current" >&2
-	exit 2
+[ "$1" = "-strict" ] && strict=$1 && shift
+[ "$1" = "-?" ] && usage
+[ "$2" = "" ] && usage "Must specify both PREVIOUS and CURRENT"
+
+trap "rm -f $tmps" 0 1 2 3 5 9 13 15
+exit_status=0
+
+if [ -d "$1" -a -d "$2" ] ; then
+	find "$1" -name '*.sum' >$lst1
+	find "$2" -name '*.sum' >$lst2
+	echo "# Comparing directories"
+	echo "## Dir1=$1: `cat $lst1 | wc -l` sum files"
+	echo "## Dir2=$2: `cat $lst2 | wc -l` sum files"
+	echo
+	# remove leading directory components to compare
+	sed -e "s|^$1/||" $lst1 | sort >$lst3
+	sed -e "s|^$2/||" $lst2 | sort >$lst4
+	comm -23 $lst3 $lst4 >$lst5
+	if [ -s $lst5 ] ; then
+		echo "# Extra sum files in Dir1=$1"
+		sed -e "s|^|< $1/|" $lst5
+		echo
+		[ -n "$strict" ] && exit_status=`expr $exit_status + 1`
+	fi
+	comm -13 $lst3 $lst4 >$lst5
+	if [ -s $lst5 ] ; then
+		echo "# Extra sum files in Dir2=$2"
+		sed -e "s|^|> $2/|" $lst5
+		echo
+		[ -n "$strict" ] && exit_status=`expr $exit_status + 1`
+	fi
+	comm -12 $lst3 $lst4 | sort -u >$lst5
+	if [ ! -s $lst5 ] ; then
+		echo "# No common sum files"
+		exit_status=`expr $exit_status + 1`
+		exit $exit_status
+	fi
+	cmnsums=`cat $lst5 | wc -l`
+	echo "# Comparing $cmnsums common sum files"
+	( for fname in `cat $lst5`; do cat $1/$fname; done ) >$sum1
+	( for fname in `cat $lst5`; do cat $2/$fname; done ) >$sum2
+	echo "## ${CONFIG_SHELL-/bin/sh} $0 $strict $sum1 $sum2"
+	${CONFIG_SHELL-/bin/sh} $0 $strict $sum1 $sum2
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		exit_status=`expr $exit_status + 1`
+		echo "## Differences found: $fname"
+	fi
+	if [ $exit_status -ne 0 ]; then
+		echo "# $exit_status differences in $cmnsums common sum files found"
+	else
+		echo "# No differences found in $cmnsums common sum files"
+	fi
+	exit $exit_status
+elif [ -d "$1" -o -d "$2" ] ; then
+	usage "Must specify either two directories or two files"
 fi
 
 sed 's/^XFAIL/FAIL/; s/^XPASS/PASS/' < "$1" | awk '/^Running target / {target = $3} { if (target != "unix") { sub(/: /, "&"target": " ); }; print $0; }' >$tmp1
@@ -28,8 +109,6 @@ sed 's/^XFAIL/FAIL/; s/^XPASS/PASS/' < "$2" | awk '/^Running target / {target = 
 before=$tmp1
 now=$tmp2
 
-exit_status=0
-trap "rm -f $tmp1 $tmp2 $now_s $before_s" 0 1 2 3 5 9 13 15
 
 if sort -k 2 </dev/null >/dev/null 2>&1; then
   skip1='-k 2'
@@ -60,6 +139,7 @@ if [ $? = 0 ]; then
 	echo "Tests that now work, but didn't before:"
 	echo
 	cat $tmp2
+	[ -n "$strict" ] && echo "Strict test fails" && exit_status=1
 	echo
 fi
 
@@ -83,6 +163,7 @@ if [ $? = 0 ]; then
 	echo "New tests that PASS:"
 	echo
 	cat $tmp2
+	[ -n "$strict" ] && echo "Strict test fails" && exit_status=1
 	echo
 fi
 
@@ -94,6 +175,7 @@ if [ $? = 0 ]; then
 	echo "Old tests that passed, that have disappeared: (Eeek!)"
 	echo
 	cat $tmp2
+	[ -n "$strict" ] && echo "Strict test fails" && exit_status=1
 	echo
 fi
 
@@ -105,6 +187,7 @@ if [ $? = 0 ]; then
 	echo "Old tests that failed, that have disappeared: (Eeek!)"
 	echo
 	cat $tmp2
+	[ -n "$strict" ] && echo "Strict test fails" && exit_status=1
 	echo
 fi
 
