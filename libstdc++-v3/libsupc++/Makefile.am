@@ -68,6 +68,7 @@ sources = \
 	eh_ptr.cc \
 	eh_term_handler.cc \
 	eh_terminate.cc \
+	eh_tm.cc \
 	eh_throw.cc \
 	eh_type.cc \
 	eh_unex_handler.cc \

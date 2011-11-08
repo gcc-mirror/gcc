@@ -606,6 +606,10 @@ extern bool unlikely_text_section_p (section *);
 extern void switch_to_section (section *);
 extern void output_section_asm_op (const void *);
 
+extern void record_tm_clone_pair (tree, tree);
+extern void finish_tm_clone_pairs (void);
+extern tree get_tm_clone_pair (tree);
+
 extern void default_asm_output_source_filename (FILE *, const char *);
 extern void output_file_directive (FILE *, const char *);
 

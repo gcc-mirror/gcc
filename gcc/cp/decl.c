@@ -4001,6 +4001,8 @@ push_cp_library_fn (enum tree_code operator_code, tree type)
 				 operator_code,
 				 type);
   pushdecl (fn);
+  if (flag_tm)
+    apply_tm_attr (fn, get_identifier ("transaction_safe"));
   return fn;
 }
 

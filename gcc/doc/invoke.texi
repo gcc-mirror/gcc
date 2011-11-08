@@ -1723,6 +1723,19 @@ Program Interface v3.0 @w{@uref{http://www.openmp.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
+@item -fgnu-tm
+@opindex fgnu-tm
+When the option @option{-fgnu-tm} is specified, the compiler will
+generate code for the Linux variant of Intel's current Transactional
+Memory ABI specification document (Revision 1.1, May 6 2009).  This is
+an experimental feature whose interface may change in future versions
+of GCC, as the official specification changes.  Please note that not
+all architectures are supported for this feature.
+
+For more information on GCC's support for transactional memory,
+@xref{Enabling libitm,,The GNU Transactional Memory Library,libitm,GNU
+Transactional Memory Library}.
+
 @item -fms-extensions
 @opindex fms-extensions
 Accept some non-standard constructs used in Microsoft header files.
@@ -9112,6 +9125,13 @@ IPA-SRA will replace a pointer to an aggregate with one or more new
 parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
+
+@item tm-max-aggregate-size
+When making copies of thread-local variables in a transaction, this
+parameter specifies the size in bytes after which variables will be
+saved with the logging functions as opposed to save/restore code
+sequence pairs.  This option only applies when using
+@option{-fgnu-tm}.
 
 @item graphite-max-nb-scop-params
 To avoid exponential effects in the Graphite loop transforms, the

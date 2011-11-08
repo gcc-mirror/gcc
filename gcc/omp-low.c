@@ -139,6 +139,7 @@ static tree scan_omp_1_op (tree *, int *, void *);
     case GIMPLE_TRY: \
     case GIMPLE_CATCH: \
     case GIMPLE_EH_FILTER: \
+    case GIMPLE_TRANSACTION: \
       /* The sub-statements for these should be walked.  */ \
       *handled_ops_p = false; \
       break;

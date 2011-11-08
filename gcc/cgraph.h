@@ -98,6 +98,9 @@ struct GTY(()) cgraph_local_info {
   /* True when the function has been originally extern inline, but it is
      redefined now.  */
   unsigned redefined_extern_inline : 1;
+
+  /* True if the function may enter serial irrevocable mode.  */
+  unsigned tm_may_enter_irr : 1;
 };
 
 /* Information about the function that needs to be computed globally
@@ -245,6 +248,11 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   unsigned only_called_at_startup : 1;
   /* True when function can only be called at startup (from static dtor).  */
   unsigned only_called_at_exit : 1;
+  /* True when function is the transactional clone of a function which
+     is called only from inside transactions.  */
+  /* ?? We should be able to remove this.  We have enough bits in
+     cgraph to calculate it.  */
+  unsigned tm_clone : 1;
 };
 
 typedef struct cgraph_node *cgraph_node_ptr;
@@ -565,6 +573,8 @@ void verify_cgraph_node (struct cgraph_node *);
 void cgraph_build_static_cdtor (char which, tree body, int priority);
 void cgraph_reset_static_var_maps (void);
 void init_cgraph (void);
+struct cgraph_node * cgraph_copy_node_for_versioning (struct cgraph_node *,
+		tree, VEC(cgraph_edge_p,heap)*, bitmap);
 struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 						VEC(cgraph_edge_p,heap)*,
 						VEC(ipa_replace_map_p,gc)*,
@@ -1081,5 +1091,15 @@ cgraph_edge_recursive_p (struct cgraph_edge *e)
     return e->caller->global.inlined_to->decl == callee->decl;
   else
     return e->caller->decl == callee->decl;
+}
+
+/* Return true if the TM_CLONE bit is set for a given FNDECL.  */
+static inline bool
+decl_is_tm_clone (const_tree fndecl)
+{
+  struct cgraph_node *n = cgraph_get_node (fndecl);
+  if (n)
+    return n->tm_clone;
+  return false;
 }
 #endif  /* GCC_CGRAPH_H  */

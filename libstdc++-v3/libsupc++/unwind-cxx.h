@@ -167,6 +167,9 @@ extern "C" bool __cxa_begin_cleanup (_Unwind_Exception*);
 extern "C" void __cxa_end_cleanup (void);
 #endif
 
+// Handles cleanup from transactional memory restart.
+extern "C" void __cxa_tm_cleanup (void *, void *, unsigned int) throw();
+
 // Invokes given handler, dying appropriately if the user handler was
 // so inconsiderate as to return.
 extern void __terminate(std::terminate_handler) throw () 

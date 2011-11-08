@@ -2272,7 +2272,7 @@ update_call_expr (struct cgraph_node *new_version)
    was copied to prevent duplications of calls that are dead
    in the clone.  */
 
-static struct cgraph_node *
+struct cgraph_node *
 cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 				 tree new_decl,
 				 VEC(cgraph_edge_p,heap) *redirect_callers,
@@ -2286,7 +2286,7 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 
    new_version = cgraph_create_node (new_decl);
 
-   new_version->analyzed = true;
+   new_version->analyzed = old_version->analyzed;
    new_version->local = old_version->local;
    new_version->local.externally_visible = false;
    new_version->local.local = true;

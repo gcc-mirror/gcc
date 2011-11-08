@@ -1840,6 +1840,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " only_called_at_exit");
   else if (node->alias)
     fprintf (f, " alias");
+  if (node->tm_clone)
+    fprintf (f, " tm_clone");
 
   fprintf (f, "\n");
 

@@ -3826,6 +3826,9 @@ build_new_function_call (tree fn, VEC(tree,gc) **args, bool koenig_p,
 	return error_mark_node;
     }
 
+  if (flag_tm)
+    tm_malloc_replacement (fn);
+
   /* If this function was found without using argument dependent
      lookup, then we want to ignore any undeclared friend
      functions.  */

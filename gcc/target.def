@@ -1003,6 +1003,24 @@ DEFHOOK
  (enum machine_mode mode, const_tree type, int misalignment, bool is_packed),
  default_builtin_support_vector_misalignment)
 
+/* Return the builtin decl needed to load a vector of TYPE.  */
+DEFHOOK
+(builtin_tm_load,
+ "This hook should return the built-in decl needed to load a vector of the "
+ "given type within a transaction.",
+ tree,
+ (tree),
+ default_builtin_tm_load_store)
+
+/* Return the builtin decl needed to store a vector of TYPE.  */
+DEFHOOK
+(builtin_tm_store,
+ "This hook should return the built-in decl needed to store a vector of the "
+ "given type within a transaction.",
+ tree,
+ (tree),
+ default_builtin_tm_load_store)
+
 /* Returns the preferred mode for SIMD operations for the specified
    scalar mode.  */
 DEFHOOK

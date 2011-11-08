@@ -594,7 +594,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
@@ -611,6 +611,10 @@ TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
 @if target-libgomp
 TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
 @endif target-libgomp
+
+@if target-libitm
+TARGET_LIB_PATH_libitm = $$r/$(TARGET_SUBDIR)/libitm/.libs:
+@endif target-libitm
 
 
 
@@ -947,7 +951,8 @@ configure-target:  \
     maybe-configure-target-boehm-gc \
     maybe-configure-target-rda \
     maybe-configure-target-libada \
-    maybe-configure-target-libgomp
+    maybe-configure-target-libgomp \
+    maybe-configure-target-libitm
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
@@ -1094,6 +1099,7 @@ all-target: maybe-all-target-libada
 @if target-libgomp-no-bootstrap
 all-target: maybe-all-target-libgomp
 @endif target-libgomp-no-bootstrap
+all-target: maybe-all-target-libitm
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -1176,6 +1182,7 @@ info-target: maybe-info-target-boehm-gc
 info-target: maybe-info-target-rda
 info-target: maybe-info-target-libada
 info-target: maybe-info-target-libgomp
+info-target: maybe-info-target-libitm
 
 .PHONY: do-dvi
 do-dvi:
@@ -1253,6 +1260,7 @@ dvi-target: maybe-dvi-target-boehm-gc
 dvi-target: maybe-dvi-target-rda
 dvi-target: maybe-dvi-target-libada
 dvi-target: maybe-dvi-target-libgomp
+dvi-target: maybe-dvi-target-libitm
 
 .PHONY: do-pdf
 do-pdf:
@@ -1330,6 +1338,7 @@ pdf-target: maybe-pdf-target-boehm-gc
 pdf-target: maybe-pdf-target-rda
 pdf-target: maybe-pdf-target-libada
 pdf-target: maybe-pdf-target-libgomp
+pdf-target: maybe-pdf-target-libitm
 
 .PHONY: do-html
 do-html:
@@ -1407,6 +1416,7 @@ html-target: maybe-html-target-boehm-gc
 html-target: maybe-html-target-rda
 html-target: maybe-html-target-libada
 html-target: maybe-html-target-libgomp
+html-target: maybe-html-target-libitm
 
 .PHONY: do-TAGS
 do-TAGS:
@@ -1484,6 +1494,7 @@ TAGS-target: maybe-TAGS-target-boehm-gc
 TAGS-target: maybe-TAGS-target-rda
 TAGS-target: maybe-TAGS-target-libada
 TAGS-target: maybe-TAGS-target-libgomp
+TAGS-target: maybe-TAGS-target-libitm
 
 .PHONY: do-install-info
 do-install-info:
@@ -1561,6 +1572,7 @@ install-info-target: maybe-install-info-target-boehm-gc
 install-info-target: maybe-install-info-target-rda
 install-info-target: maybe-install-info-target-libada
 install-info-target: maybe-install-info-target-libgomp
+install-info-target: maybe-install-info-target-libitm
 
 .PHONY: do-install-pdf
 do-install-pdf:
@@ -1638,6 +1650,7 @@ install-pdf-target: maybe-install-pdf-target-boehm-gc
 install-pdf-target: maybe-install-pdf-target-rda
 install-pdf-target: maybe-install-pdf-target-libada
 install-pdf-target: maybe-install-pdf-target-libgomp
+install-pdf-target: maybe-install-pdf-target-libitm
 
 .PHONY: do-install-html
 do-install-html:
@@ -1715,6 +1728,7 @@ install-html-target: maybe-install-html-target-boehm-gc
 install-html-target: maybe-install-html-target-rda
 install-html-target: maybe-install-html-target-libada
 install-html-target: maybe-install-html-target-libgomp
+install-html-target: maybe-install-html-target-libitm
 
 .PHONY: do-installcheck
 do-installcheck:
@@ -1792,6 +1806,7 @@ installcheck-target: maybe-installcheck-target-boehm-gc
 installcheck-target: maybe-installcheck-target-rda
 installcheck-target: maybe-installcheck-target-libada
 installcheck-target: maybe-installcheck-target-libgomp
+installcheck-target: maybe-installcheck-target-libitm
 
 .PHONY: do-mostlyclean
 do-mostlyclean:
@@ -1869,6 +1884,7 @@ mostlyclean-target: maybe-mostlyclean-target-boehm-gc
 mostlyclean-target: maybe-mostlyclean-target-rda
 mostlyclean-target: maybe-mostlyclean-target-libada
 mostlyclean-target: maybe-mostlyclean-target-libgomp
+mostlyclean-target: maybe-mostlyclean-target-libitm
 
 .PHONY: do-clean
 do-clean:
@@ -1946,6 +1962,7 @@ clean-target: maybe-clean-target-boehm-gc
 clean-target: maybe-clean-target-rda
 clean-target: maybe-clean-target-libada
 clean-target: maybe-clean-target-libgomp
+clean-target: maybe-clean-target-libitm
 
 .PHONY: do-distclean
 do-distclean:
@@ -2023,6 +2040,7 @@ distclean-target: maybe-distclean-target-boehm-gc
 distclean-target: maybe-distclean-target-rda
 distclean-target: maybe-distclean-target-libada
 distclean-target: maybe-distclean-target-libgomp
+distclean-target: maybe-distclean-target-libitm
 
 .PHONY: do-maintainer-clean
 do-maintainer-clean:
@@ -2100,6 +2118,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-boehm-gc
 maintainer-clean-target: maybe-maintainer-clean-target-rda
 maintainer-clean-target: maybe-maintainer-clean-target-libada
 maintainer-clean-target: maybe-maintainer-clean-target-libgomp
+maintainer-clean-target: maybe-maintainer-clean-target-libitm
 
 
 # Here are the targets which correspond to the do-X targets.
@@ -2231,7 +2250,8 @@ check-target:  \
     maybe-check-target-boehm-gc \
     maybe-check-target-rda \
     maybe-check-target-libada \
-    maybe-check-target-libgomp
+    maybe-check-target-libgomp \
+    maybe-check-target-libitm
 
 do-check:
 	@: $(MAKE); $(unstage)
@@ -2380,7 +2400,8 @@ install-target:  \
     maybe-install-target-boehm-gc \
     maybe-install-target-rda \
     maybe-install-target-libada \
-    maybe-install-target-libgomp
+    maybe-install-target-libgomp \
+    maybe-install-target-libitm
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -2476,7 +2497,8 @@ install-strip-target:  \
     maybe-install-strip-target-boehm-gc \
     maybe-install-strip-target-rda \
     maybe-install-strip-target-libada \
-    maybe-install-strip-target-libgomp
+    maybe-install-strip-target-libgomp \
+    maybe-install-strip-target-libitm
 
 
 ### other supporting targets
@@ -40142,6 +40164,463 @@ maintainer-clean-target-libgomp:
 
 
 
+
+
+.PHONY: configure-target-libitm maybe-configure-target-libitm
+maybe-configure-target-libitm:
+@if gcc-bootstrap
+configure-target-libitm: stage_current
+@endif gcc-bootstrap
+@if target-libitm
+maybe-configure-target-libitm: configure-target-libitm
+configure-target-libitm: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libitm..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libitm ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libitm/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libitm/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libitm/multilib.tmp $(TARGET_SUBDIR)/libitm/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libitm/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libitm/Makefile; \
+	    mv $(TARGET_SUBDIR)/libitm/multilib.tmp $(TARGET_SUBDIR)/libitm/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libitm/multilib.tmp $(TARGET_SUBDIR)/libitm/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libitm/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libitm ; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libitm; \
+	cd "$(TARGET_SUBDIR)/libitm" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libitm/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libitm"; \
+	libsrcdir="$$s/libitm"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif target-libitm
+
+
+
+
+
+.PHONY: all-target-libitm maybe-all-target-libitm
+maybe-all-target-libitm:
+@if gcc-bootstrap
+all-target-libitm: stage_current
+@endif gcc-bootstrap
+@if target-libitm
+TARGET-target-libitm=all
+maybe-all-target-libitm: all-target-libitm
+all-target-libitm: configure-target-libitm
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+		$(TARGET-target-libitm))
+@endif target-libitm
+
+
+
+
+
+.PHONY: check-target-libitm maybe-check-target-libitm
+maybe-check-target-libitm:
+@if target-libitm
+maybe-check-target-libitm: check-target-libitm
+
+check-target-libitm:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libitm
+
+.PHONY: install-target-libitm maybe-install-target-libitm
+maybe-install-target-libitm:
+@if target-libitm
+maybe-install-target-libitm: install-target-libitm
+
+install-target-libitm: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libitm
+
+.PHONY: install-strip-target-libitm maybe-install-strip-target-libitm
+maybe-install-strip-target-libitm:
+@if target-libitm
+maybe-install-strip-target-libitm: install-strip-target-libitm
+
+install-strip-target-libitm: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libitm
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libitm info-target-libitm
+maybe-info-target-libitm:
+@if target-libitm
+maybe-info-target-libitm: info-target-libitm
+
+info-target-libitm: \
+    configure-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-dvi-target-libitm dvi-target-libitm
+maybe-dvi-target-libitm:
+@if target-libitm
+maybe-dvi-target-libitm: dvi-target-libitm
+
+dvi-target-libitm: \
+    configure-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-pdf-target-libitm pdf-target-libitm
+maybe-pdf-target-libitm:
+@if target-libitm
+maybe-pdf-target-libitm: pdf-target-libitm
+
+pdf-target-libitm: \
+    configure-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-html-target-libitm html-target-libitm
+maybe-html-target-libitm:
+@if target-libitm
+maybe-html-target-libitm: html-target-libitm
+
+html-target-libitm: \
+    configure-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-TAGS-target-libitm TAGS-target-libitm
+maybe-TAGS-target-libitm:
+@if target-libitm
+maybe-TAGS-target-libitm: TAGS-target-libitm
+
+TAGS-target-libitm: \
+    configure-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-install-info-target-libitm install-info-target-libitm
+maybe-install-info-target-libitm:
+@if target-libitm
+maybe-install-info-target-libitm: install-info-target-libitm
+
+install-info-target-libitm: \
+    configure-target-libitm \
+    info-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-install-pdf-target-libitm install-pdf-target-libitm
+maybe-install-pdf-target-libitm:
+@if target-libitm
+maybe-install-pdf-target-libitm: install-pdf-target-libitm
+
+install-pdf-target-libitm: \
+    configure-target-libitm \
+    pdf-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-install-html-target-libitm install-html-target-libitm
+maybe-install-html-target-libitm:
+@if target-libitm
+maybe-install-html-target-libitm: install-html-target-libitm
+
+install-html-target-libitm: \
+    configure-target-libitm \
+    html-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-installcheck-target-libitm installcheck-target-libitm
+maybe-installcheck-target-libitm:
+@if target-libitm
+maybe-installcheck-target-libitm: installcheck-target-libitm
+
+installcheck-target-libitm: \
+    configure-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-mostlyclean-target-libitm mostlyclean-target-libitm
+maybe-mostlyclean-target-libitm:
+@if target-libitm
+maybe-mostlyclean-target-libitm: mostlyclean-target-libitm
+
+mostlyclean-target-libitm: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-clean-target-libitm clean-target-libitm
+maybe-clean-target-libitm:
+@if target-libitm
+maybe-clean-target-libitm: clean-target-libitm
+
+clean-target-libitm: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-distclean-target-libitm distclean-target-libitm
+maybe-distclean-target-libitm:
+@if target-libitm
+maybe-distclean-target-libitm: distclean-target-libitm
+
+distclean-target-libitm: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libitm
+
+.PHONY: maybe-maintainer-clean-target-libitm maintainer-clean-target-libitm
+maybe-maintainer-clean-target-libitm:
+@if target-libitm
+maybe-maintainer-clean-target-libitm: maintainer-clean-target-libitm
+
+maintainer-clean-target-libitm: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libitm" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libitm
+
+
+
 @if target-libmudflap
 .PHONY: check-target-libmudflap-c++
 check-target-libmudflap-c++:
@@ -42233,6 +42712,7 @@ configure-stage3-target-libgomp: maybe-all-stage3-gcc
 configure-stage4-target-libgomp: maybe-all-stage4-gcc
 configure-stageprofile-target-libgomp: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libgomp: maybe-all-stagefeedback-gcc
+configure-target-libitm: stage_last
 @endif gcc-bootstrap
 
 @if gcc-no-bootstrap
@@ -42255,6 +42735,7 @@ configure-target-boehm-gc: maybe-all-gcc
 configure-target-rda: maybe-all-gcc
 configure-target-libada: maybe-all-gcc
 configure-target-libgomp: maybe-all-gcc
+configure-target-libitm: maybe-all-gcc
 @endif gcc-no-bootstrap
 
 
@@ -43028,6 +43509,7 @@ configure-target-boehm-gc: maybe-all-target-libgcc
 configure-target-rda: maybe-all-target-libgcc
 configure-target-libada: maybe-all-target-libgcc
 configure-target-libgomp: maybe-all-target-libgcc
+configure-target-libitm: maybe-all-target-libgcc
 @endif gcc-no-bootstrap
 
 
@@ -43066,6 +43548,9 @@ configure-target-rda: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libada: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libgomp: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libitm: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-libitm: maybe-all-target-libstdc++-v3
 
 
 CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@

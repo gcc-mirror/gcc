@@ -2246,6 +2246,8 @@ purge_dead_edges (basic_block bb)
 	    ;
 	  else if ((e->flags & EDGE_EH) && can_throw_internal (insn))
 	    ;
+	  else if (flag_tm && find_reg_note (insn, REG_TM, NULL))
+	    ;
 	  else
 	    remove = true;
 	}

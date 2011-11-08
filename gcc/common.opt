@@ -1194,6 +1194,10 @@ floop-block
 Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
 
+fgnu-tm
+Common Report Var(flag_tm)
+Enable support for GNU transactional memory
+
 floop-flatten
 Common Report Var(flag_loop_flatten) Optimization
 Enable Loop Flattening transformation

@@ -396,6 +396,11 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
       lower_sequence (gimple_eh_filter_failure (stmt), data);
       break;
 
+    case GIMPLE_EH_ELSE:
+      lower_sequence (gimple_eh_else_n_body (stmt), data);
+      lower_sequence (gimple_eh_else_e_body (stmt), data);
+      break;
+
     case GIMPLE_NOP:
     case GIMPLE_ASM:
     case GIMPLE_ASSIGN:
@@ -445,6 +450,10 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
       lower_omp_directive (gsi, data);
       data->cannot_fallthru = false;
       return;
+
+    case GIMPLE_TRANSACTION:
+      lower_sequence (gimple_transaction_body (stmt), data);
+      break;
 
     default:
       gcc_unreachable ();
@@ -726,6 +735,10 @@ gimple_stmt_may_fallthru (gimple stmt)
 	 clause and the finally clause fall through.  */
       return (gimple_seq_may_fallthru (gimple_try_eval (stmt))
 	      && gimple_seq_may_fallthru (gimple_try_cleanup (stmt)));
+
+    case GIMPLE_EH_ELSE:
+      return (gimple_seq_may_fallthru (gimple_eh_else_n_body (stmt))
+	      || gimple_seq_may_fallthru (gimple_eh_else_e_body (stmt)));
 
     case GIMPLE_CALL:
       /* Functions that do not return do not fall through.  */

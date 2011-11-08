@@ -5859,6 +5859,162 @@ assemble_alias (tree decl, tree target)
     }
 }
 
+/* Record and output a table of translations from original function
+   to its transaction aware clone.  Note that tm_pure functions are
+   considered to be their own clone.  */
+
+static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
+     htab_t tm_clone_hash;
+
+void
+record_tm_clone_pair (tree o, tree n)
+{
+  struct tree_map **slot, *h;
+
+  if (tm_clone_hash == NULL)
+    tm_clone_hash = htab_create_ggc (32, tree_map_hash, tree_map_eq, 0);
+
+  h = ggc_alloc_tree_map ();
+  h->hash = htab_hash_pointer (o);
+  h->base.from = o;
+  h->to = n;
+
+  slot = (struct tree_map **)
+    htab_find_slot_with_hash (tm_clone_hash, h, h->hash, INSERT);
+  *slot = h;
+}
+
+tree
+get_tm_clone_pair (tree o)
+{
+  if (tm_clone_hash)
+    {
+      struct tree_map *h, in;
+
+      in.base.from = o;
+      in.hash = htab_hash_pointer (o);
+      h = (struct tree_map *) htab_find_with_hash (tm_clone_hash,
+						   &in, in.hash);
+      if (h)
+	return h->to;
+    }
+  return NULL_TREE;
+}
+
+typedef struct tm_alias_pair
+{
+  unsigned int uid;
+  tree from;
+  tree to;
+} tm_alias_pair;
+
+DEF_VEC_O(tm_alias_pair);
+DEF_VEC_ALLOC_O(tm_alias_pair,heap);
+
+/* Helper function for finish_tm_clone_pairs.  Dump a hash table entry
+   into a VEC in INFO.  */
+
+static int
+dump_tm_clone_to_vec (void **slot, void *info)
+{
+  struct tree_map *map = (struct tree_map *) *slot;
+  VEC(tm_alias_pair,heap) **tm_alias_pairs
+    = (VEC(tm_alias_pair, heap) **) info;
+  tm_alias_pair *p;
+
+  p = VEC_safe_push (tm_alias_pair, heap, *tm_alias_pairs, NULL);
+  p->from = map->base.from;
+  p->to = map->to;
+  p->uid = DECL_UID (p->from);
+  return 1;
+}
+
+/* Dump the actual pairs to the .tm_clone_table section.  */
+
+static void
+dump_tm_clone_pairs (VEC(tm_alias_pair,heap) *tm_alias_pairs)
+{
+  unsigned i;
+  tm_alias_pair *p;
+  bool switched = false;
+
+  FOR_EACH_VEC_ELT (tm_alias_pair, tm_alias_pairs, i, p)
+    {
+      tree src = p->from;
+      tree dst = p->to;
+      struct cgraph_node *src_n = cgraph_get_node (src);
+      struct cgraph_node *dst_n = cgraph_get_node (dst);
+
+      /* The function ipa_tm_create_version() marks the clone as needed if
+	 the original function was needed.  But we also mark the clone as
+	 needed if we ever called the clone indirectly through
+	 TM_GETTMCLONE.  If neither of these are true, we didn't generate
+	 a clone, and we didn't call it indirectly... no sense keeping it
+	 in the clone table.  */
+      if (!dst_n || !dst_n->needed)
+	continue;
+
+      /* This covers the case where we have optimized the original
+	 function away, and only access the transactional clone.  */
+      if (!src_n || !src_n->needed)
+	continue;
+
+      if (!switched)
+	{
+	  switch_to_section (get_named_section (NULL, ".tm_clone_table", 3));
+	  assemble_align (POINTER_SIZE);
+	  switched = true;
+	}
+
+      assemble_integer (XEXP (DECL_RTL (src), 0),
+			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+      assemble_integer (XEXP (DECL_RTL (dst), 0),
+			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+    }
+}
+
+/* Helper comparison function for qsorting by the DECL_UID stored in
+   alias_pair->emitted_diags.  */
+
+static int
+tm_alias_pair_cmp (const void *x, const void *y)
+{
+  const tm_alias_pair *p1 = (const tm_alias_pair *) x;
+  const tm_alias_pair *p2 = (const tm_alias_pair *) y;
+  if (p1->uid < p2->uid)
+    return -1;
+  if (p1->uid > p2->uid)
+    return 1;
+  return 0;
+}
+
+void
+finish_tm_clone_pairs (void)
+{
+  VEC(tm_alias_pair,heap) *tm_alias_pairs = NULL;
+
+  if (tm_clone_hash == NULL)
+    return;
+
+  /* We need a determenistic order for the .tm_clone_table, otherwise
+     we will get bootstrap comparison failures, so dump the hash table
+     to a vector, sort it, and dump the vector.  */
+
+  /* Dump the hashtable to a vector.  */
+  htab_traverse_noresize (tm_clone_hash, dump_tm_clone_to_vec,
+			  (void *) &tm_alias_pairs);
+  /* Sort it.  */
+  VEC_qsort (tm_alias_pair, tm_alias_pairs, tm_alias_pair_cmp);
+
+  /* Dump it.  */
+  dump_tm_clone_pairs (tm_alias_pairs);
+
+  htab_delete (tm_clone_hash);
+  tm_clone_hash = NULL;
+  VEC_free (tm_alias_pair, heap, tm_alias_pairs);
+}
+
+
 /* Emit an assembler directive to set symbol for DECL visibility to
    the visibility type VIS, which must not be VISIBILITY_DEFAULT.  */
 

@@ -1,3 +1,14 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
+
+	Merged from transactional-memory.
+
+	* g++.dg/dg.exp: Run transactional memory tests.
+	* g++.dg/tm: New directory with new tests.
+	* gcc.dg/tm: New directory with new tests.
+	* c-c++-common/tm: New directory with new tests.
+
 2011-11-08  Dodji Seketeli  <dodji@redhat.com>
 
 	Fix context handling of alias-declaration

@@ -117,6 +117,7 @@ static int gimple_verify_flow_info (void);
 static void gimple_make_forwarder_block (edge);
 static void gimple_cfg2vcg (FILE *);
 static gimple first_non_label_stmt (basic_block);
+static bool verify_gimple_transaction (gimple);
 
 /* Flowgraph optimization and cleanup.  */
 static void gimple_merge_blocks (basic_block, basic_block);
@@ -666,6 +667,15 @@ make_edges (void)
 		}
 	      break;
 
+	    case GIMPLE_TRANSACTION:
+	      {
+		tree abort_label = gimple_transaction_label (last);
+		if (abort_label)
+		  make_edge (bb, label_to_block (abort_label), 0);
+		fallthru = true;
+	      }
+	      break;
+
 	    default:
 	      gcc_assert (!stmt_ends_bb_p (last));
 	      fallthru = true;
@@ -1196,22 +1206,30 @@ cleanup_dead_labels (void)
   FOR_EACH_BB (bb)
     {
       gimple stmt = last_stmt (bb);
+      tree label, new_label;
+
       if (!stmt)
 	continue;
 
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_COND:
-	  {
-	    tree true_label = gimple_cond_true_label (stmt);
-	    tree false_label = gimple_cond_false_label (stmt);
+	  label = gimple_cond_true_label (stmt);
+	  if (label)
+	    {
+	      new_label = main_block_label (label);
+	      if (new_label != label)
+		gimple_cond_set_true_label (stmt, new_label);
+	    }
 
-	    if (true_label)
-	      gimple_cond_set_true_label (stmt, main_block_label (true_label));
-	    if (false_label)
-	      gimple_cond_set_false_label (stmt, main_block_label (false_label));
-	    break;
-	  }
+	  label = gimple_cond_false_label (stmt);
+	  if (label)
+	    {
+	      new_label = main_block_label (label);
+	      if (new_label != label)
+		gimple_cond_set_false_label (stmt, new_label);
+	    }
+	  break;
 
 	case GIMPLE_SWITCH:
 	  {
@@ -1221,8 +1239,10 @@ cleanup_dead_labels (void)
 	    for (i = 0; i < n; ++i)
 	      {
 		tree case_label = gimple_switch_label (stmt, i);
-		tree label = main_block_label (CASE_LABEL (case_label));
-		CASE_LABEL (case_label) = label;
+		label = CASE_LABEL (case_label);
+		new_label = main_block_label (label);
+		if (new_label != label)
+		  CASE_LABEL (case_label) = new_label;
 	      }
 	    break;
 	  }
@@ -1243,11 +1263,25 @@ cleanup_dead_labels (void)
 	/* We have to handle gotos until they're removed, and we don't
 	   remove them until after we've created the CFG edges.  */
 	case GIMPLE_GOTO:
-          if (!computed_goto_p (stmt))
+	  if (!computed_goto_p (stmt))
 	    {
-	      tree new_dest = main_block_label (gimple_goto_dest (stmt));
-	      gimple_goto_set_dest (stmt, new_dest);
+	      label = gimple_goto_dest (stmt);
+	      new_label = main_block_label (label);
+	      if (new_label != label)
+		gimple_goto_set_dest (stmt, new_label);
 	    }
+	  break;
+
+	case GIMPLE_TRANSACTION:
+	  {
+	    tree label = gimple_transaction_label (stmt);
+	    if (label)
+	      {
+		tree new_label = main_block_label (label);
+		if (new_label != label)
+		  gimple_transaction_set_label (stmt, new_label);
+	      }
+	  }
 	  break;
 
 	default:
@@ -2272,6 +2306,13 @@ is_ctrl_altering_stmt (gimple t)
 	if (flags & ECF_NORETURN)
 	  return true;
 
+	/* TM ending statements have backedges out of the transaction.
+	   Return true so we split the basic block containing them.
+	   Note that the TM_BUILTIN test is merely an optimization.  */
+	if ((flags & ECF_TM_BUILTIN)
+	    && is_tm_ending_fndecl (gimple_call_fndecl (t)))
+	  return true;
+
 	/* BUILT_IN_RETURN call is same as return statement.  */
 	if (gimple_call_builtin_p (t, BUILT_IN_RETURN))
 	  return true;
@@ -2291,6 +2332,10 @@ is_ctrl_altering_stmt (gimple t)
 
     CASE_GIMPLE_OMP:
       /* OpenMP directives alter control flow.  */
+      return true;
+
+    case GIMPLE_TRANSACTION:
+      /* A transaction start alters control flow.  */
       return true;
 
     default:
@@ -4063,7 +4108,6 @@ verify_gimple_switch (gimple stmt)
   return false;
 }
 
-
 /* Verify a gimple debug statement STMT.
    Returns true if anything is wrong.  */
 
@@ -4163,6 +4207,9 @@ verify_gimple_stmt (gimple stmt)
 
     case GIMPLE_ASM:
       return false;
+
+    case GIMPLE_TRANSACTION:
+      return verify_gimple_transaction (stmt);
 
     /* Tuples that do not have tree operands.  */
     case GIMPLE_NOP:
@@ -4280,8 +4327,17 @@ verify_gimple_in_seq_2 (gimple_seq stmts)
 	  err |= verify_gimple_in_seq_2 (gimple_eh_filter_failure (stmt));
 	  break;
 
+	case GIMPLE_EH_ELSE:
+	  err |= verify_gimple_in_seq_2 (gimple_eh_else_n_body (stmt));
+	  err |= verify_gimple_in_seq_2 (gimple_eh_else_e_body (stmt));
+	  break;
+
 	case GIMPLE_CATCH:
 	  err |= verify_gimple_in_seq_2 (gimple_catch_handler (stmt));
+	  break;
+
+	case GIMPLE_TRANSACTION:
+	  err |= verify_gimple_transaction (stmt);
 	  break;
 
 	default:
@@ -4295,6 +4351,18 @@ verify_gimple_in_seq_2 (gimple_seq stmts)
     }
 
   return err;
+}
+
+/* Verify the contents of a GIMPLE_TRANSACTION.  Returns true if there
+   is a problem, otherwise false.  */
+
+static bool
+verify_gimple_transaction (gimple stmt)
+{
+  tree lab = gimple_transaction_label (stmt);
+  if (lab != NULL && TREE_CODE (lab) != LABEL_DECL)
+    return true;
+  return verify_gimple_in_seq_2 (gimple_transaction_body (stmt));
 }
 
 
@@ -5059,6 +5127,13 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
     case GIMPLE_EH_DISPATCH:
       if (!(e->flags & EDGE_FALLTHRU))
 	redirect_eh_dispatch_edge (stmt, e, dest);
+      break;
+
+    case GIMPLE_TRANSACTION:
+      /* The ABORT edge has a stored label associated with it, otherwise
+	 the edges are simply redirectable.  */
+      if (e->flags == 0)
+	gimple_transaction_set_label (stmt, gimple_block_label (dest));
       break;
 
     default:
@@ -6443,8 +6518,10 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   bool ignore_topmost_bind = false, any_var = false;
   basic_block bb;
   tree chain;
+  bool tmclone = TREE_CODE (fn) == FUNCTION_DECL && decl_is_tm_clone (fn);
 
-  fprintf (file, "%s (", lang_hooks.decl_printable_name (fn, 2));
+  fprintf (file, "%s %s(", lang_hooks.decl_printable_name (fn, 2),
+	   tmclone ? "[tm-clone] " : "");
 
   arg = DECL_ARGUMENTS (fn);
   while (arg)

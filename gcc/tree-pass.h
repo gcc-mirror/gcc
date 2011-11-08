@@ -447,6 +447,12 @@ extern struct gimple_opt_pass pass_build_cgraph_edges;
 extern struct gimple_opt_pass pass_local_pure_const;
 extern struct gimple_opt_pass pass_tracer;
 extern struct gimple_opt_pass pass_warn_unused_result;
+extern struct gimple_opt_pass pass_diagnose_tm_blocks;
+extern struct gimple_opt_pass pass_lower_tm;
+extern struct gimple_opt_pass pass_tm_init;
+extern struct gimple_opt_pass pass_tm_mark;
+extern struct gimple_opt_pass pass_tm_memopt;
+extern struct gimple_opt_pass pass_tm_edges;
 extern struct gimple_opt_pass pass_split_functions;
 extern struct gimple_opt_pass pass_feedback_split_functions;
 
@@ -469,6 +475,7 @@ extern struct ipa_opt_pass_d pass_ipa_pure_const;
 extern struct simple_ipa_opt_pass pass_ipa_pta;
 extern struct ipa_opt_pass_d pass_ipa_lto_wpa_fixup;
 extern struct ipa_opt_pass_d pass_ipa_lto_finish_out;
+extern struct simple_ipa_opt_pass pass_ipa_tm;
 extern struct ipa_opt_pass_d pass_ipa_profile;
 extern struct ipa_opt_pass_d pass_ipa_cdtor_merge;
 

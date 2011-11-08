@@ -1,3 +1,19 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
+
+	Merged from transactional-memory.
+
+	* c-common.c (handle_tm_wrap_attribute,
+	handle_tm_attribute, ignore_attribute, parse_tm_stmt_attr): New.
+	(struct c_common_reswords): Added __transaction* keywords.
+	(struct c_common_attribute_table): Added transaction* and tm_regparm
+	attributes.
+	* c-common.h: Added RID_TRANSACTION*. Added TM_ATTR* and TM_STMT*
+	masks.
+	(parse_tm_stmt_attr, tm_attr_to_mask, tm_mask_to_attr,
+	find_tm_attribute): Declare.
+
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35688

@@ -3287,6 +3287,7 @@ peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
 	  {
 	  case REG_NORETURN:
 	  case REG_SETJMP:
+	  case REG_TM:
 	    add_reg_note (new_insn, REG_NOTE_KIND (note),
 			  XEXP (note, 0));
 	    break;

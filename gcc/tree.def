@@ -1076,6 +1076,10 @@ DEFTREECODE (OMP_ATOMIC_CAPTURE_NEW, "omp_atomic_capture_new", tcc_statement, 2)
 /* OpenMP clauses.  */
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 
+/* TRANSACTION_EXPR tree code.
+   Operand 0: BODY: contains body of the transaction.  */
+DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
+
 /* Reduction operations.
    Operations that take a vector of elements and "reduce" it to a scalar
    result (e.g. summing the elements of the vector, finding the minimum over

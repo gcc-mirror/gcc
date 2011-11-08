@@ -329,6 +329,10 @@ typedef struct GTY(()) cp_parser {
      a local class.  */
   bool in_function_body;
 
+  /* Nonzero if we're processing a __transaction_atomic or
+     __transaction_relaxed statement.  */
+  unsigned char in_transaction;
+
   /* TRUE if we can auto-correct a colon to a scope operator.  */
   bool colon_corrects_to_scope_p;
 

@@ -1,3 +1,40 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
+
+	Merged from transactional-memory.
+
+	* call.c (build_new_function_call): Call tm_malloc_replacement.
+	* class.c (check_bases): Compute transaction attributes for the
+	class based on its base classes.
+	(look_for_tm_attr_overrides, set_one_vmethod_tm_attributes,
+	set_method_tm_attributes): New.
+	(finish_struct_1): Call set_method_tm_attributes.
+	* cp-tree.h (begin_transaction_stmt, finish_transaction_stmt,
+	build_transaction_expr): Declare.
+	(TRANSACTION_EXPR_IS_STMT): New.
+	* decl.c (push_cp_library_fn): Set attribute to transaction_safe.
+	* except.c (do_get_exception_ptr): Apply transaction_pure.
+	(do_begin_catch): Mark _ITM_cxa_begin_catch transaction_pure and
+	record as transactional-memory wrapper.
+	(do_end_catch): Similarly for _ITM_cxa_end_catch.
+	(do_allocate_exception): Similarly for _ITM_cxa_allocate_exception.
+	(build_throw): Similarly for _ITM_cxa_throw. Make __cxa_rethrow pure.
+	* parser.h (struct cp_parser): Add in_transaction flag.
+	* parser.c (enum non_integral_constant): Add NIC_TRANSACTION.
+	(cp_parser_non_integral_constant_expression): Handle NIC_TRANSACTION.
+	(enum required_token): Add transaction tokens.
+	(cp_parser_transaction, cp_parser_transaction_expression,
+	cp_parser_function_transaction, cp_parser_transaction_cancel,
+	cp_parser_txn_attribute_opt): New.
+	(cp_parser_unary_expression): Handle RID_TRANSACTION*.
+	(cp_parser_statement, cp_parser_function_definition_after_declarator,
+	cp_parser_token_starts_function_definition_p): Same.
+	(cp_parser_required_error): Handle RT_TRANSACTION*.
+	* pt.c (tsubst_expr): Handle TRANSACTION_EXPR.
+	* semantics.c (begin_transaction_stmt, finish_transaction_stmt,
+	build_transaction_expr): New.
+
 2011-11-08  Dodji Seketeli  <dodji@redhat.com>
 
 	Fix context handling of alias-declaration
