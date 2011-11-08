@@ -1281,12 +1281,12 @@ avr_cannot_modify_jumps_p (void)
 /* Helper function for `avr_legitimate_address_p'.  */
 
 static inline bool
-avr_reg_ok_for_addr_p (rtx reg, addr_space_t as ATTRIBUTE_UNUSED,
+avr_reg_ok_for_addr_p (rtx reg, addr_space_t as,
                        RTX_CODE outer_code, bool strict)
 {
   return (REG_P (reg)
-          && (avr_regno_mode_code_ok_for_base_p (REGNO (reg),
-                                                 QImode, outer_code, UNKNOWN)
+          && (avr_regno_mode_code_ok_for_base_p (REGNO (reg), QImode,
+                                                 as, outer_code, UNKNOWN)
               || (!strict
                   && REGNO (reg) >= FIRST_PSEUDO_REGISTER)));
 }
@@ -8049,6 +8049,7 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 
 reg_class_t
 avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
+                              addr_space_t as ATTRIBUTE_UNUSED,
                               RTX_CODE outer_code,
                               RTX_CODE index_code ATTRIBUTE_UNUSED)
 {
@@ -8064,6 +8065,7 @@ avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
 bool
 avr_regno_mode_code_ok_for_base_p (int regno,
                                    enum machine_mode mode ATTRIBUTE_UNUSED,
+                                   addr_space_t as ATTRIBUTE_UNUSED,
                                    RTX_CODE outer_code,
                                    RTX_CODE index_code ATTRIBUTE_UNUSED)
 {
