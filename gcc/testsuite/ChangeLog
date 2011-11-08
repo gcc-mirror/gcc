@@ -1,3 +1,9 @@
+2011-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx-cvt-2.c: Adjust for 32-byte integer vectors
+	being prefered even for -mavx.
+	* gcc.target/i386/avx-cvt-3.c: New test.
+
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51012

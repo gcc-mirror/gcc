@@ -38076,13 +38076,13 @@ ix86_preferred_simd_mode (enum machine_mode mode)
   switch (mode)
     {
     case QImode:
-      return TARGET_AVX2 ? V32QImode : V16QImode;
+      return (TARGET_AVX && !TARGET_PREFER_AVX128) ? V32QImode : V16QImode;
     case HImode:
-      return TARGET_AVX2 ? V16HImode : V8HImode;
+      return (TARGET_AVX && !TARGET_PREFER_AVX128) ? V16HImode : V8HImode;
     case SImode:
-      return TARGET_AVX2 ? V8SImode : V4SImode;
+      return (TARGET_AVX && !TARGET_PREFER_AVX128) ? V8SImode : V4SImode;
     case DImode:
-      return TARGET_AVX2 ? V4DImode : V2DImode;
+      return (TARGET_AVX && !TARGET_PREFER_AVX128) ? V4DImode : V2DImode;
 
     case SFmode:
       if (TARGET_AVX && !TARGET_PREFER_AVX128)
