@@ -5498,8 +5498,16 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2,
 
   expr = build_conditional_expr (ifexp, op1, op2, complain);
   if (processing_template_decl && expr != error_mark_node)
-    return build_min_non_dep (COND_EXPR, expr,
-			      orig_ifexp, orig_op1, orig_op2);
+    {
+      tree min = build_min_non_dep (COND_EXPR, expr,
+				    orig_ifexp, orig_op1, orig_op2);
+      /* Remember that the result is an lvalue or xvalue.  */
+      if (lvalue_or_rvalue_with_address_p (expr)
+	  && !lvalue_or_rvalue_with_address_p (min))
+	TREE_TYPE (min) = cp_build_reference_type (TREE_TYPE (min),
+						   !real_lvalue_p (expr));
+      expr = convert_from_reference (min);
+    }
   return expr;
 }
 
