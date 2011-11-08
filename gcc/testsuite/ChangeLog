@@ -1,3 +1,8 @@
+2011-11-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51010
+	* c-c++-common/uninit-pr51010.c: New testcase.
+
 2011-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_call_sqrtf,
