@@ -28,7 +28,7 @@
 #  XLDFLAGS		Add extra link flags to use.
 
 # Optimize TLS usage by avoiding the overhead of dynamic allocation.
-if test $gcc_cv_have_tls = yes ; then
+if test "$gcc_cv_have_tls" = yes ; then
   case "${target}" in
 
     # For x86, we use slots in the TCB head for most of our TLS.
@@ -47,10 +47,6 @@ fi
 # work out any special compilation flags as necessary.
 case "${target_cpu}" in
   alpha*)	ARCH=alpha ;;
-  ia64*)	ARCH=ia64 ;;
-  mips*)	ARCH=mips ;;
-  powerpc*)	ARCH=powerpc ;;
-  s390*)	ARCH=s390 ;;
 
   i[3456]86)
 	case " ${CC} ${CFLAGS} " in
@@ -75,57 +71,33 @@ case "${target_cpu}" in
 	ARCH=x86
 	;;
 
-  sparcv9 | sparc64)
-	# Note that sparcv7 and sparcv8 is not included here.  We need cas.
-	echo "int i;" > conftestx.c
-	if ${CC} ${CFLAGS} -c -o conftestx.o conftestx.c > /dev/null 2>&1; then
-	  case "`/usr/bin/file conftestx.o`" in
-	    *32-bit*)
-	      case " ${CC} ${CFLAGS}" in
-		*" -mcpu=ultrasparc"*)
-		  ;;
-		*)
-		  XCFLAGS="${XCFLAGS} -mcpu=v9"
-		  ;;
-	      esac
-	      ;;
-	  esac
-	fi
-	rm -f conftestx.c conftestx.o
-	ARCH=sparc
-	;;
-
   *)
 	ARCH="${target_cpu}"
 	;;
 esac
-  
+
+# For the benefit of top-level configure, determine if the cpu is supported.
+test -d ${srcdir}/$ARCH || UNSUPPORTED=1
+
 # Since we require POSIX threads, assume a POSIX system by default.
 config_path="$ARCH posix generic"
 
 # Other system configury
 case "${target}" in
   *-*-linux*)
-	if test $enable_linux_futex = yes; then
+	if test "$enable_linux_futex" = yes; then
 	  config_path="linux/$ARCH linux $config_path"
 	fi
 	;;
 
-  *-*-hpux11*)
-	# HPUX v11.x requires -lrt to resolve sem_init in libgomp.la
-	XLDFLAGS="${XLDFLAGS} -lrt"
+  *-*-gnu* | *-*-k*bsd*-gnu \
+  | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* \
+  | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \
+  | *-*-darwin* | *-*-aix*)
+	# POSIX system.  The OS is supported.
 	;;
 
-  *-*-mingw32*)
-	config_path="$ARCH mingw32 posix generic"
-	;;
-
-  *-*-solaris2.[56]*)
-	config_path="$ARCH posix95 posix generic"
-	XLDFLAGS="${XLDFLAGS} -lposix4"
-	;;
-
-  *-*-darwin*)
-	config_path="$ARCH bsd posix generic"
+  *)	# Non-POSIX, or embedded system
+	UNSUPPORTED=1
 	;;
 esac

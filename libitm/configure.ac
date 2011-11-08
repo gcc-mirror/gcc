@@ -224,6 +224,10 @@ LIBITM_CHECK_SIZE_T_MANGLING
 
 # Get target configury.
 . ${srcdir}/configure.tgt
+if test -n "$UNSUPPORTED"; then
+  AC_MSG_ERROR([Configuration ${target} is unsupported.])
+fi
+
 CFLAGS="$save_CFLAGS $XCFLAGS"
 
 # Check for __sync_val_compare_and_swap, but only after the target has

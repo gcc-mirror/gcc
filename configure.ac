@@ -493,22 +493,15 @@ if test x$enable_libgomp = x ; then
     esac
 fi
 
-# Disable libitm on non POSIX hosted systems.
-if test x$enable_libitm = x ; then
-    # Enable libitm by default on hosted POSIX systems.
-    case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
-	;;
-    *-*-netbsd* | *-*-freebsd* | *-*-openbsd*)
-	;;
-    *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
-	;;
-    *-*-darwin* | *-*-aix*)
-	;;
-    *)
+# Disable libitm on unsupported hosted systems.
+if test x$enable_libitm = x; then
+   AC_MSG_CHECKING([for libitm support])
+   if (. ${srcdir}/libitm/configure.tgt; test -n "$UNSUPPORTED"); then
+	AC_MSG_RESULT([no])
 	noconfigdirs="$noconfigdirs target-libitm"
-	;;
-    esac
+   else
+	AC_MSG_RESULT([yes])
+   fi
 fi
 
 # Disable libssp for some systems.
