@@ -1,3 +1,8 @@
+2011-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/47698
+	* ifcvt.c (noce_operand_ok): Move around comment.
+
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/50999
@@ -479,7 +484,7 @@
 2011-11-07  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	PR rtl-optimization/47698
-	* ifconv.c (noce_operand_ok): prevent CMOV generation for volatile mem.
+	* ifcvt.c (noce_operand_ok): Return false for mems with side effects.
 
 2011-11-07  Tristan Gingold  <gingold@adacore.com>
 
