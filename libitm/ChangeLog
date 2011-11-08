@@ -1,3 +1,11 @@
+2011-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt: Handle i386 like i[456]86.
+	* config/generic/tls.h [!HAVE_ARCH_GTM_THREAD] (gtm_thr): Don't
+	take address.
+	* config/generic/tls.cc [!HAVE_ARCH_GTM_THREAD ||
+	!HAVE_ARCH_GTM_THREAD_DISP] (_gtm_thr_tls): New variable.
+
 2011-11-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* method-wbetl.cc: Update copyright notice.
