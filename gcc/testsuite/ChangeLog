@@ -1,3 +1,9 @@
+2011-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50864
+	* g++.dg/parse/template26.C: New.
+	* g++.dg/template/crash45.C: Adjust dg-error string.
+
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50848
