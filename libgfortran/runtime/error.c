@@ -219,19 +219,13 @@ gf_strerror (int errnum,
 	     size_t buflen __attribute__((unused)))
 {
 #ifdef HAVE_STRERROR_R
-  /* TODO: How to prevent the compiler warning due to strerror_r of
-     the untaken branch having the wrong return type?  */
-  if (__builtin_classify_type (strerror_r (0, buf, 0)) == 5)
-    {
-      /* GNU strerror_r()  */
-      return strerror_r (errnum, buf, buflen);
-    }
-  else
-    {
-      /* POSIX strerror_r ()  */
-      strerror_r (errnum, buf, buflen);
-      return buf;
-    }
+  return
+    __builtin_choose_expr (__builtin_classify_type (strerror_r (0, buf, 0))
+			   == 5,
+			   /* GNU strerror_r()  */
+			   strerror_r (errnum, buf, buflen),
+			   /* POSIX strerror_r ()  */
+			   (strerror_r (errnum, buf, buflen), buf));
 #else
   /* strerror () is not necessarily thread-safe, but should at least
      be available everywhere.  */
