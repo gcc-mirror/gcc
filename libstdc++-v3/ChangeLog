@@ -1,3 +1,9 @@
+2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51018
+	* testsuite/30_threads/thread/native_handle/typesizes.cc: Do not run
+	on netbsd.
+
 2011-11-07  Aldy Hernandez  <aldyh@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
