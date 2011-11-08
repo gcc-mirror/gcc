@@ -110,8 +110,14 @@ GTM_LB (const void *ptr, size_t len)
 
 using namespace GTM;
 
-void _ITM_LB (const void *ptr, size_t len) ITM_REGPARM
-	__attribute__((alias("GTM_LB")));
+/* ??? Use configure to determine if aliases are supported.  Or convince
+   the compiler to not just tail call this, but actually generate the
+   same_body_alias itself.  */
+void ITM_REGPARM
+_ITM_LB (const void *ptr, size_t len)
+{
+  GTM_LB (ptr, len);
+}
 
 #define ITM_LOG_DEF(T) \
 void ITM_REGPARM _ITM_L##T (const _ITM_TYPE_##T *ptr) \
