@@ -14891,7 +14891,7 @@ cp_parser_using_declaration (cp_parser* parser,
 static tree
 cp_parser_alias_declaration (cp_parser* parser)
 {
-  tree id, type, decl, dummy, attributes;
+  tree id, type, decl, pushed_scope = NULL_TREE, attributes;
   location_t id_location;
   cp_declarator *declarator;
   cp_decl_specifier_seq decl_specs;
@@ -14925,11 +14925,14 @@ cp_parser_alias_declaration (cp_parser* parser)
 		      NULL_TREE, attributes);
   else
     decl = start_decl (declarator, &decl_specs, 0,
-		       attributes, NULL_TREE, &dummy);
+		       attributes, NULL_TREE, &pushed_scope);
   if (decl == error_mark_node)
     return decl;
 
   cp_finish_decl (decl, NULL_TREE, 0, NULL_TREE, 0);
+
+  if (pushed_scope)
+    pop_scope (pushed_scope);
 
   /* If decl is a template, return its TEMPLATE_DECL so that it gets
      added into the symbol table; otherwise, return the TYPE_DECL.  */

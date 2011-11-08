@@ -341,6 +341,8 @@ dump_alias_template_specialization (tree t, int flags)
 
   gcc_assert (alias_template_specialization_p (t));
 
+  if (!(flags & TFF_UNQUALIFIED_NAME))
+    dump_scope (CP_DECL_CONTEXT (TYPE_NAME (t)), flags);
   name = TYPE_IDENTIFIER (t);
   pp_cxx_tree_identifier (cxx_pp, name);
   dump_template_parms (TYPE_TEMPLATE_INFO (t),
