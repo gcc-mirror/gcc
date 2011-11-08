@@ -139,6 +139,7 @@ target_modules = { module= boehm-gc; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
+target_modules = { module= libitm; lib_path=.libs; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.
@@ -470,6 +471,7 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // environment (e.g. on libstdc++).  By default target modules depend
 // on libgcc and newlib/libgloss.
 lang_env_dependencies = { module=libjava; cxx=true; };
+lang_env_dependencies = { module=libitm; cxx=true; };
 lang_env_dependencies = { module=newlib; no_c=true; };
 lang_env_dependencies = { module=libgloss; no_c=true; };
 lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };

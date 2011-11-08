@@ -144,6 +144,9 @@ typedef struct eni_weights_d
   /* Cost for omp construct.  */
   unsigned omp_cost;
 
+  /* Cost for tm transaction.  */
+  unsigned tm_cost;
+
   /* Cost of return.  */
   unsigned return_cost;
 

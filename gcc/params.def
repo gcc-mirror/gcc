@@ -872,6 +872,13 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "a pointer to an aggregate with",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_TM_MAX_AGGREGATE_SIZE,
+	  "tm-max-aggregate-size",
+	  "Size in bytes after which thread-local aggregates should be "
+	  "instrumented with the logging functions instead of save/restore "
+	  "pairs",
+	  9, 0, 0)
+
 DEFPARAM (PARAM_IPA_CP_VALUE_LIST_SIZE,
 	  "ipa-cp-value-list-size",
 	  "Maximum size of a list of values associated with each parameter for "

@@ -113,6 +113,9 @@ enum rid
      as a normal identifier.  */
   RID_CXX_COMPAT_WARN,
 
+  /* GNU transactional memory extension */
+  RID_TRANSACTION_ATOMIC, RID_TRANSACTION_RELAXED, RID_TRANSACTION_CANCEL,
+
   /* Too many ways of getting the name of a function as a string */
   RID_FUNCTION_NAME, RID_PRETTY_FUNCTION_NAME, RID_C99_FUNCTION_NAME,
 
@@ -1072,6 +1075,28 @@ c_tree_chain_next (tree t)
     return TREE_CHAIN (t);
   return NULL;
 }
+
+/* Mask used by tm_stmt_attr.  */
+#define TM_STMT_ATTR_OUTER	2
+#define TM_STMT_ATTR_ATOMIC	4
+#define TM_STMT_ATTR_RELAXED	8
+
+extern int parse_tm_stmt_attr (tree, int);
+
+/* Mask used by tm_attr_to_mask and tm_mask_to_attr.  Note that these
+   are ordered specifically such that more restrictive attributes are
+   at lower bit positions.  This fact is known by the C++ tm attribute
+   inheritance code such that least bit extraction (mask & -mask) results
+   in the most restrictive attribute.  */
+#define TM_ATTR_SAFE			1
+#define TM_ATTR_CALLABLE		2
+#define TM_ATTR_PURE			4
+#define TM_ATTR_IRREVOCABLE		8
+#define TM_ATTR_MAY_CANCEL_OUTER	16
+
+extern int tm_attr_to_mask (tree);
+extern tree tm_mask_to_attr (int);
+extern tree find_tm_attribute (tree);
 
 /* A suffix-identifier value doublet that represents user-defined literals
    for C++-0x.  */

@@ -1802,6 +1802,38 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   return new_bb;
 }
 
+/* Mark all calls that can have a transaction restart.  */
+
+static void
+mark_transaction_restart_calls (gimple stmt)
+{
+  struct tm_restart_node dummy;
+  void **slot;
+
+  if (!cfun->gimple_df->tm_restart)
+    return;
+
+  dummy.stmt = stmt;
+  slot = htab_find_slot (cfun->gimple_df->tm_restart, &dummy, NO_INSERT);
+  if (slot)
+    {
+      struct tm_restart_node *n = (struct tm_restart_node *) *slot;
+      tree list = n->label_or_list;
+      rtx insn;
+
+      for (insn = next_real_insn (get_last_insn ());
+	   !CALL_P (insn);
+	   insn = next_real_insn (insn))
+	continue;
+
+      if (TREE_CODE (list) == LABEL_DECL)
+	add_reg_note (insn, REG_TM, label_rtx (list));
+      else
+	for (; list ; list = TREE_CHAIN (list))
+	  add_reg_note (insn, REG_TM, label_rtx (TREE_VALUE (list)));
+    }
+}
+
 /* A subroutine of expand_gimple_stmt_1, expanding one GIMPLE_CALL
    statement STMT.  */
 
@@ -1888,6 +1920,8 @@ expand_call_stmt (gimple stmt)
     expand_assignment (lhs, exp, false);
   else
     expand_expr_real_1 (exp, const0_rtx, VOIDmode, EXPAND_NORMAL, NULL);
+
+  mark_transaction_restart_calls (stmt);
 }
 
 /* A subroutine of expand_gimple_stmt, expanding one gimple statement
@@ -4455,6 +4489,14 @@ gimple_expand_cfg (void)
   /* After expanding, the return labels are no longer needed. */
   return_label = NULL;
   naked_return_label = NULL;
+
+  /* After expanding, the tm_restart map is no longer needed.  */
+  if (cfun->gimple_df->tm_restart)
+    {
+      htab_delete (cfun->gimple_df->tm_restart);
+      cfun->gimple_df->tm_restart = NULL;
+    }
+
   /* Tag the blocks with a depth number so that change_scope can find
      the common parent easily.  */
   set_block_levels (DECL_INITIAL (cfun->decl), 0);

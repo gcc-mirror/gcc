@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "gimple.h"
 #include "value-prof.h"
+#include "trans-mem.h"
 
 #define INDENT(SPACE)							\
   do { int i; for (i = 0; i < SPACE; i++) pp_space (buffer); } while (0)
@@ -162,6 +163,7 @@ debug_gimple_seq (gimple_seq seq)
      'd' - outputs an int as a decimal,
      's' - outputs a string,
      'n' - outputs a newline,
+     'x' - outputs an int as hexadecimal,
      '+' - increases indent by 2 then outputs a newline,
      '-' - decreases indent by 2 then outputs a newline.   */
 
@@ -215,6 +217,10 @@ dump_gimple_fmt (pretty_printer *buffer, int spc, int flags,
               case 'n':
                 newline_and_indent (buffer, spc);
                 break;
+
+	      case 'x':
+		pp_scalar (buffer, "%x", va_arg (args, int));
+		break;
 
               case '+':
                 spc += 2;
@@ -622,6 +628,7 @@ static void
 dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   tree lhs = gimple_call_lhs (gs);
+  tree fn = gimple_call_fn (gs);
 
   if (flags & TDF_ALIAS)
     {
@@ -648,8 +655,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 	dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T", gs,
 			 internal_fn_name (gimple_call_internal_fn (gs)), lhs);
       else
-	dump_gimple_fmt (buffer, spc, flags, "%G <%T, %T",
-			 gs, gimple_call_fn (gs), lhs);
+	dump_gimple_fmt (buffer, spc, flags, "%G <%T, %T", gs, fn, lhs);
       if (gimple_call_num_args (gs) > 0)
         {
           pp_string (buffer, ", ");
@@ -672,7 +678,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
       if (gimple_call_internal_p (gs))
 	pp_string (buffer, internal_fn_name (gimple_call_internal_fn (gs)));
       else
-	print_call_name (buffer, gimple_call_fn (gs), flags);
+	print_call_name (buffer, fn, flags);
       pp_string (buffer, " (");
       dump_gimple_call_args (buffer, gs, flags);
       pp_character (buffer, ')');
@@ -689,9 +695,59 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 
   if (gimple_call_return_slot_opt_p (gs))
     pp_string (buffer, " [return slot optimization]");
-
   if (gimple_call_tail_p (gs))
     pp_string (buffer, " [tail call]");
+
+  /* Dump the arguments of _ITM_beginTransaction sanely.  */
+  if (TREE_CODE (fn) == ADDR_EXPR)
+    fn = TREE_OPERAND (fn, 0);
+  if (TREE_CODE (fn) == FUNCTION_DECL && decl_is_tm_clone (fn))
+    pp_string (buffer, " [tm-clone]");
+  if (TREE_CODE (fn) == FUNCTION_DECL
+      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (fn) == BUILT_IN_TM_START
+      && gimple_call_num_args (gs) > 0)
+    {
+      tree t = gimple_call_arg (gs, 0);
+      unsigned HOST_WIDE_INT props;
+      gcc_assert (TREE_CODE (t) == INTEGER_CST);
+
+      pp_string (buffer, " [ ");
+
+      /* Get the transaction code properties.  */
+      props = TREE_INT_CST_LOW (t);
+
+      if (props & PR_INSTRUMENTEDCODE)
+	pp_string (buffer, "instrumentedCode ");
+      if (props & PR_UNINSTRUMENTEDCODE)
+	pp_string (buffer, "uninstrumentedCode ");
+      if (props & PR_HASNOXMMUPDATE)
+	pp_string (buffer, "hasNoXMMUpdate ");
+      if (props & PR_HASNOABORT)
+	pp_string (buffer, "hasNoAbort ");
+      if (props & PR_HASNOIRREVOCABLE)
+	pp_string (buffer, "hasNoIrrevocable ");
+      if (props & PR_DOESGOIRREVOCABLE)
+	pp_string (buffer, "doesGoIrrevocable ");
+      if (props & PR_HASNOSIMPLEREADS)
+	pp_string (buffer, "hasNoSimpleReads ");
+      if (props & PR_AWBARRIERSOMITTED)
+	pp_string (buffer, "awBarriersOmitted ");
+      if (props & PR_RARBARRIERSOMITTED)
+	pp_string (buffer, "RaRBarriersOmitted ");
+      if (props & PR_UNDOLOGCODE)
+	pp_string (buffer, "undoLogCode ");
+      if (props & PR_PREFERUNINSTRUMENTED)
+	pp_string (buffer, "preferUninstrumented ");
+      if (props & PR_EXCEPTIONBLOCK)
+	pp_string (buffer, "exceptionBlock ");
+      if (props & PR_HASELSE)
+	pp_string (buffer, "hasElse ");
+      if (props & PR_READONLY)
+	pp_string (buffer, "readOnly ");
+
+      pp_string (buffer, "]");
+    }
 }
 
 
@@ -944,6 +1000,24 @@ dump_gimple_eh_must_not_throw (pretty_printer *buffer, gimple gs,
   else
     dump_gimple_fmt (buffer, spc, flags, "<<<eh_must_not_throw (%T)>>>",
 		     gimple_eh_must_not_throw_fndecl (gs));
+}
+
+
+/* Dump a GIMPLE_EH_ELSE tuple on the pretty_printer BUFFER, SPC spaces of
+   indent.  FLAGS specifies details to show in the dump (see TDF_* in
+   tree-pass.h).  */
+
+static void
+dump_gimple_eh_else (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  if (flags & TDF_RAW)
+    dump_gimple_fmt (buffer, spc, flags,
+		     "%G <%+N_BODY <%S>%nE_BODY <%S>%->", gs,
+		     gimple_eh_else_n_body (gs), gimple_eh_else_e_body (gs));
+  else
+    dump_gimple_fmt (buffer, spc, flags,
+		    "<<<if_normal_exit>>>%+{%S}%-<<<else_eh_exit>>>%+{%S}",
+		     gimple_eh_else_n_body (gs), gimple_eh_else_e_body (gs));
 }
 
 
@@ -1266,6 +1340,86 @@ dump_gimple_omp_return (pretty_printer *buffer, gimple gs, int spc, int flags)
       pp_string (buffer, "#pragma omp return");
       if (gimple_omp_return_nowait_p (gs))
 	pp_string (buffer, "(nowait)");
+    }
+}
+
+/* Dump a GIMPLE_TRANSACTION tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_transaction (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  unsigned subcode = gimple_transaction_subcode (gs);
+
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags,
+		       "%G [SUBCODE=%x,LABEL=%T] <%+BODY <%S> >",
+		       gs, subcode, gimple_transaction_label (gs),
+		       gimple_transaction_body (gs));
+    }
+  else
+    {
+      if (subcode & GTMA_IS_OUTER)
+	pp_string (buffer, "__transaction_atomic [[outer]]");
+      else if (subcode & GTMA_IS_RELAXED)
+	pp_string (buffer, "__transaction_relaxed");
+      else
+	pp_string (buffer, "__transaction_atomic");
+      subcode &= ~GTMA_DECLARATION_MASK;
+
+      if (subcode || gimple_transaction_label (gs))
+	{
+	  pp_string (buffer, "  //");
+	  if (gimple_transaction_label (gs))
+	    {
+	      pp_string (buffer, " LABEL=");
+	      dump_generic_node (buffer, gimple_transaction_label (gs),
+				 spc, flags, false);
+	    }
+	  if (subcode)
+	    {
+	      pp_string (buffer, " SUBCODE=[ ");
+	      if (subcode & GTMA_HAVE_ABORT)
+		{
+		  pp_string (buffer, "GTMA_HAVE_ABORT ");
+		  subcode &= ~GTMA_HAVE_ABORT;
+		}
+	      if (subcode & GTMA_HAVE_LOAD)
+		{
+		  pp_string (buffer, "GTMA_HAVE_LOAD ");
+		  subcode &= ~GTMA_HAVE_LOAD;
+		}
+	      if (subcode & GTMA_HAVE_STORE)
+		{
+		  pp_string (buffer, "GTMA_HAVE_STORE ");
+		  subcode &= ~GTMA_HAVE_STORE;
+		}
+	      if (subcode & GTMA_MAY_ENTER_IRREVOCABLE)
+		{
+		  pp_string (buffer, "GTMA_MAY_ENTER_IRREVOCABLE ");
+		  subcode &= ~GTMA_MAY_ENTER_IRREVOCABLE;
+		}
+	      if (subcode & GTMA_DOES_GO_IRREVOCABLE)
+		{
+		  pp_string (buffer, "GTMA_DOES_GO_IRREVOCABLE ");
+		  subcode &= ~GTMA_DOES_GO_IRREVOCABLE;
+		}
+	      if (subcode)
+		pp_printf (buffer, "0x%x ", subcode);
+	      pp_string (buffer, "]");
+	    }
+	}
+
+      if (!gimple_seq_empty_p (gimple_transaction_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '{');
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_transaction_body (gs),
+			   spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '}');
+	}
     }
 }
 
@@ -1855,6 +2009,10 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_gimple_eh_must_not_throw (buffer, gs, spc, flags);
       break;
 
+    case GIMPLE_EH_ELSE:
+      dump_gimple_eh_else (buffer, gs, spc, flags);
+      break;
+
     case GIMPLE_RESX:
       dump_gimple_resx (buffer, gs, spc, flags);
       break;
@@ -1875,6 +2033,10 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
 	pp_string (buffer, "unlikely by ");
       pp_string (buffer, predictor_name (gimple_predict_predictor (gs)));
       pp_string (buffer, " predictor.");
+      break;
+
+    case GIMPLE_TRANSACTION:
+      dump_gimple_transaction (buffer, gs, spc, flags);
       break;
 
     default:

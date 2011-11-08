@@ -203,6 +203,11 @@ REG_NOTE (CROSSING_JUMP)
    functions that can return twice.  */
 REG_NOTE (SETJMP)
 
+/* This kind of note is generated at each transactional memory
+   builtin, to indicate we need to generate transaction restart
+   edges for this insn.  */
+REG_NOTE (TM)
+
 /* Indicates the cumulative offset of the stack pointer accounting
    for pushed arguments.  This will only be generated when
    ACCUMULATE_OUTGOING_ARGS is false.  */

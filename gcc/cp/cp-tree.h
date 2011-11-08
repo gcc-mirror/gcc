@@ -73,6 +73,7 @@ c-common.h, not after.
       VEC_INIT_EXPR_IS_CONSTEXPR (in VEC_INIT_EXPR)
       DECL_OVERRIDE_P (in FUNCTION_DECL)
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
+      TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -3890,6 +3891,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   TREE_TYPE (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_PRIVATE, \
 				     OMP_CLAUSE_COPYPRIVATE))
 
+/* Nonzero if this transaction expression's body contains statements.  */
+#define TRANSACTION_EXPR_IS_STMT(NODE) \
+   TREE_LANG_FLAG_0 (TRANSACTION_EXPR_CHECK (NODE))
+
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
 #define TRY_STMTS(NODE)		TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 0)
@@ -5556,6 +5561,9 @@ extern void finish_omp_atomic			(enum tree_code, enum tree_code,
 extern void finish_omp_barrier			(void);
 extern void finish_omp_flush			(void);
 extern void finish_omp_taskwait			(void);
+extern tree begin_transaction_stmt		(location_t, tree *, int);
+extern void finish_transaction_stmt		(tree, tree, int);
+extern tree build_transaction_expr		(location_t, tree, int);
 extern void finish_omp_taskyield		(void);
 extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool, bool);
 extern tree baselink_for_fns                    (tree);

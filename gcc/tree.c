@@ -9428,6 +9428,8 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
   if (ecf_flags & ECF_LEAF)
     DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
 					NULL, DECL_ATTRIBUTES (decl));
+  if ((ecf_flags & ECF_TM_PURE) && flag_tm)
+    apply_tm_attr (decl, get_identifier ("transaction_pure"));
 
   set_builtin_decl (code, decl, true);
 }
@@ -9593,7 +9595,8 @@ build_common_builtin_nodes (void)
   ftype = build_function_type_list (ptr_type_node,
 				    integer_type_node, NULL_TREE);
   local_define_builtin ("__builtin_eh_pointer", ftype, BUILT_IN_EH_POINTER,
-			"__builtin_eh_pointer", ECF_PURE | ECF_NOTHROW | ECF_LEAF);
+			"__builtin_eh_pointer",
+			ECF_PURE | ECF_NOTHROW | ECF_LEAF | ECF_TM_PURE);
 
   tmp = lang_hooks.types.type_for_mode (targetm.eh_return_filter_mode (), 0);
   ftype = build_function_type_list (tmp, integer_type_node, NULL_TREE);
@@ -11140,6 +11143,37 @@ tree_strip_sign_nop_conversions (tree exp)
   while (tree_sign_nop_conversion (exp))
     exp = TREE_OPERAND (exp, 0);
   return exp;
+}
+
+/* Strip out all handled components that produce invariant
+   offsets.  */
+
+const_tree
+strip_invariant_refs (const_tree op)
+{
+  while (handled_component_p (op))
+    {
+      switch (TREE_CODE (op))
+	{
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  if (!is_gimple_constant (TREE_OPERAND (op, 1))
+	      || TREE_OPERAND (op, 2) != NULL_TREE
+	      || TREE_OPERAND (op, 3) != NULL_TREE)
+	    return NULL;
+	  break;
+
+	case COMPONENT_REF:
+	  if (TREE_OPERAND (op, 2) != NULL_TREE)
+	    return NULL;
+	  break;
+
+	default:;
+	}
+      op = TREE_OPERAND (op, 0);
+    }
+
+  return op;
 }
 
 static GTY(()) tree gcc_eh_personality_decl;

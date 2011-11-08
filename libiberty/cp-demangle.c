@@ -585,6 +585,12 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
       printf ("hidden alias\n");
       break;
+    case DEMANGLE_COMPONENT_TRANSACTION_CLONE:
+      printf ("transaction clone\n");
+      break;
+    case DEMANGLE_COMPONENT_NONTRANSACTION_CLONE:
+      printf ("non-transaction clone\n");
+      break;
     case DEMANGLE_COMPONENT_RESTRICT:
       printf ("restrict\n");
       break;
@@ -732,7 +738,7 @@ cplus_demangle_fill_ctor (struct demangle_component *p,
   if (p == NULL
       || name == NULL
       || (int) kind < gnu_v3_complete_object_ctor
-      || (int) kind > gnu_v3_complete_object_allocating_ctor)
+      || (int) kind > gnu_v3_object_ctor_group)
     return 0;
   p->type = DEMANGLE_COMPONENT_CTOR;
   p->u.s_ctor.kind = kind;
@@ -751,7 +757,7 @@ cplus_demangle_fill_dtor (struct demangle_component *p,
   if (p == NULL
       || name == NULL
       || (int) kind < gnu_v3_deleting_dtor
-      || (int) kind > gnu_v3_base_object_dtor)
+      || (int) kind > gnu_v3_object_dtor_group)
     return 0;
   p->type = DEMANGLE_COMPONENT_DTOR;
   p->u.s_dtor.kind = kind;
@@ -823,6 +829,8 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_GUARD:
     case DEMANGLE_COMPONENT_REFTEMP:
     case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
+    case DEMANGLE_COMPONENT_TRANSACTION_CLONE:
+    case DEMANGLE_COMPONENT_NONTRANSACTION_CLONE:
     case DEMANGLE_COMPONENT_POINTER:
     case DEMANGLE_COMPONENT_REFERENCE:
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
@@ -1762,6 +1770,8 @@ d_java_resource (struct d_info *di)
                   ::= GR <name>
 		  ::= GA <encoding>
 		  ::= Gr <resource name>
+		  ::= GTt <encoding>
+		  ::= GTn <encoding>
 */
 
 static struct demangle_component *
@@ -1856,6 +1866,23 @@ d_special_name (struct d_info *di)
 	  return d_make_comp (di, DEMANGLE_COMPONENT_HIDDEN_ALIAS,
 			      d_encoding (di, 0), NULL);
 
+	case 'T':
+	  switch (d_next_char (di))
+	    {
+	    case 'n':
+	      return d_make_comp (di, DEMANGLE_COMPONENT_NONTRANSACTION_CLONE,
+				  d_encoding (di, 0), NULL);
+	    default:
+	      /* ??? The proposal is that other letters (such as 'h') stand
+		 for different variants of transaction cloning, such as
+		 compiling directly for hardware transaction support.  But
+		 they still should all be transactional clones of some sort
+		 so go ahead and call them that.  */
+	    case 't':
+	      return d_make_comp (di, DEMANGLE_COMPONENT_TRANSACTION_CLONE,
+				  d_encoding (di, 0), NULL);
+	    }
+
 	case 'r':
 	  return d_java_resource (di);
 
@@ -1939,6 +1966,9 @@ d_ctor_dtor_name (struct d_info *di)
 	  case '3':
 	    kind = gnu_v3_complete_object_allocating_ctor;
 	    break;
+	  case '5':
+	    kind = gnu_v3_object_ctor_group;
+	    break;
 	  default:
 	    return NULL;
 	  }
@@ -1960,6 +1990,9 @@ d_ctor_dtor_name (struct d_info *di)
 	    break;
 	  case '2':
 	    kind = gnu_v3_base_object_dtor;
+	    break;
+	  case '5':
+	    kind = gnu_v3_object_dtor_group;
 	    break;
 	  default:
 	    return NULL;
@@ -3932,6 +3965,16 @@ d_print_comp (struct d_print_info *dpi, int options,
 
     case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
       d_append_string (dpi, "hidden alias for ");
+      d_print_comp (dpi, options, d_left (dc));
+      return;
+
+    case DEMANGLE_COMPONENT_TRANSACTION_CLONE:
+      d_append_string (dpi, "transaction clone for ");
+      d_print_comp (dpi, options, d_left (dc));
+      return;
+
+    case DEMANGLE_COMPONENT_NONTRANSACTION_CLONE:
+      d_append_string (dpi, "non-transaction clone for ");
       d_print_comp (dpi, options, d_left (dc));
       return;
 

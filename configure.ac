@@ -154,6 +154,7 @@ target_libraries="target-libgcc \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
+		target-libitm \
 		target-libstdc++-v3 \
 		target-libmudflap \
 		target-libssp \
@@ -488,6 +489,24 @@ if test x$enable_libgomp = x ; then
 	;;
     *)
 	noconfigdirs="$noconfigdirs target-libgomp"
+	;;
+    esac
+fi
+
+# Disable libitm on non POSIX hosted systems.
+if test x$enable_libitm = x ; then
+    # Enable libitm by default on hosted POSIX systems.
+    case "${target}" in
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
+	;;
+    *-*-netbsd* | *-*-freebsd* | *-*-openbsd*)
+	;;
+    *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
+	;;
+    *-*-darwin* | *-*-aix*)
+	;;
+    *)
+	noconfigdirs="$noconfigdirs target-libitm"
 	;;
     esac
 fi

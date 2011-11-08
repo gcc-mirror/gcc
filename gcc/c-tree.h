@@ -603,6 +603,7 @@ extern tree c_begin_omp_task (void);
 extern tree c_finish_omp_task (location_t, tree, tree);
 extern tree c_finish_omp_clauses (tree);
 extern tree c_build_va_arg (location_t, tree, tree);
+extern tree c_finish_transaction (location_t, tree, int);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if

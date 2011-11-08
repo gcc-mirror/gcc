@@ -338,18 +338,30 @@ make_edges (basic_block min, basic_block max, int update_p)
 	  /* Add any appropriate EH edges.  */
 	  rtl_make_eh_edge (edge_cache, bb, insn);
 
-	  if (code == CALL_INSN && nonlocal_goto_handler_labels)
+	  if (code == CALL_INSN)
 	    {
-	      /* ??? This could be made smarter: in some cases it's possible
-		 to tell that certain calls will not do a nonlocal goto.
-		 For example, if the nested functions that do the nonlocal
-		 gotos do not have their addresses taken, then only calls to
-		 those functions or to other nested functions that use them
-		 could possibly do nonlocal gotos.  */
 	      if (can_nonlocal_goto (insn))
-		for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
-		  make_label_edge (edge_cache, bb, XEXP (x, 0),
-				   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
+		{
+		  /* ??? This could be made smarter: in some cases it's
+		     possible to tell that certain calls will not do a
+		     nonlocal goto.  For example, if the nested functions
+		     that do the nonlocal gotos do not have their addresses
+		     taken, then only calls to those functions or to other
+		     nested functions that use them could possibly do
+		     nonlocal gotos.  */
+		  for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
+		    make_label_edge (edge_cache, bb, XEXP (x, 0),
+				     EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
+		}
+
+	      if (flag_tm)
+		{
+		  rtx note;
+		  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+		    if (REG_NOTE_KIND (note) == REG_TM)
+		      make_label_edge (edge_cache, bb, XEXP (note, 0),
+				       EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
+		}
 	    }
 	}
 

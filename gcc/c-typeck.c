@@ -2716,6 +2716,9 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 	return tem;
 
       name = DECL_NAME (function);
+
+      if (flag_tm)
+	tm_malloc_replacement (function);
       fundecl = function;
       /* Atomic functions have type checking/casting already done.  They are 
 	 often rewritten and don't match the original parameter list.  */
@@ -10920,6 +10923,19 @@ c_finish_omp_clauses (tree clauses)
 
   bitmap_obstack_release (NULL);
   return clauses;
+}
+
+/* Create a transaction node.  */
+
+tree
+c_finish_transaction (location_t loc, tree block, int flags)
+{
+  tree stmt = build_stmt (loc, TRANSACTION_EXPR, block);
+  if (flags & TM_STMT_ATTR_OUTER)
+    TRANSACTION_EXPR_OUTER (stmt) = 1;
+  if (flags & TM_STMT_ATTR_RELAXED)
+    TRANSACTION_EXPR_RELAXED (stmt) = 1;
+  return add_stmt (stmt);
 }
 
 /* Make a variant type in the proper way for C/C++, propagating qualifiers

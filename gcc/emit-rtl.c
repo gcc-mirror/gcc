@@ -3595,6 +3595,7 @@ try_split (rtx pat, rtx trial, int last)
 
 	case REG_NORETURN:
 	case REG_SETJMP:
+	case REG_TM:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (CALL_P (insn))

@@ -1918,6 +1918,7 @@ alloc_reg_note (enum reg_note kind, rtx datum, rtx list)
     case REG_CC_USER:
     case REG_LABEL_TARGET:
     case REG_LABEL_OPERAND:
+    case REG_TM:
       /* These types of register notes use an INSN_LIST rather than an
 	 EXPR_LIST, so that copying is done right and dumps look
 	 better.  */

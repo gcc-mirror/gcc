@@ -1,3 +1,16 @@
+2011-11-07  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	Merged from transactional-memory.
+
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_TM_1.
+	* libsupc++/eh_tm.cc: New file.
+	* libsupc++/unwind-cxx.h (__cxa_tm_cleanup): Declare.
+	* config/abi/pre/gnu.ver: Export __cxa_tm_cleanup.
+	* config/abi/pre/gnu-versioned-namespace.ver: Likewise.
+	* libsupc++/Makefile.am (sources): Add eh_tm.cc.
+	* libsupc++/Makefile.in: Rebuild.
+
 2011-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51018

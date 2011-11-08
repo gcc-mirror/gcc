@@ -4024,6 +4024,8 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_STPCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
+      case BUILT_IN_TM_MEMCPY:
+      case BUILT_IN_TM_MEMMOVE:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
@@ -4056,6 +4058,7 @@ find_func_aliases_for_builtin_call (gimple t)
 	}
       case BUILT_IN_MEMSET:
       case BUILT_IN_MEMSET_CHK:
+      case BUILT_IN_TM_MEMSET:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, 0);
@@ -4195,6 +4198,50 @@ find_func_aliases_for_builtin_call (gimple t)
 	      VEC_free (ce_s, heap, rhsc);
 	      VEC_free (ce_s, heap, lhsc);
 	    }
+	  return true;
+	}
+      CASE_BUILT_IN_TM_STORE (1):
+      CASE_BUILT_IN_TM_STORE (2):
+      CASE_BUILT_IN_TM_STORE (4):
+      CASE_BUILT_IN_TM_STORE (8):
+      CASE_BUILT_IN_TM_STORE (FLOAT):
+      CASE_BUILT_IN_TM_STORE (DOUBLE):
+      CASE_BUILT_IN_TM_STORE (LDOUBLE):
+      CASE_BUILT_IN_TM_STORE (M64):
+      CASE_BUILT_IN_TM_STORE (M128):
+      CASE_BUILT_IN_TM_STORE (M256):
+	{
+	  tree addr = gimple_call_arg (t, 0);
+	  tree src = gimple_call_arg (t, 1);
+
+	  get_constraint_for (addr, &lhsc);
+	  do_deref (&lhsc);
+	  get_constraint_for (src, &rhsc);
+	  process_all_all_constraints (lhsc, rhsc);
+	  VEC_free (ce_s, heap, lhsc);
+	  VEC_free (ce_s, heap, rhsc);
+	  return true;
+	}
+      CASE_BUILT_IN_TM_LOAD (1):
+      CASE_BUILT_IN_TM_LOAD (2):
+      CASE_BUILT_IN_TM_LOAD (4):
+      CASE_BUILT_IN_TM_LOAD (8):
+      CASE_BUILT_IN_TM_LOAD (FLOAT):
+      CASE_BUILT_IN_TM_LOAD (DOUBLE):
+      CASE_BUILT_IN_TM_LOAD (LDOUBLE):
+      CASE_BUILT_IN_TM_LOAD (M64):
+      CASE_BUILT_IN_TM_LOAD (M128):
+      CASE_BUILT_IN_TM_LOAD (M256):
+	{
+	  tree dest = gimple_call_lhs (t);
+	  tree addr = gimple_call_arg (t, 0);
+
+	  get_constraint_for (dest, &lhsc);
+	  get_constraint_for (addr, &rhsc);
+	  do_deref (&rhsc);
+	  process_all_all_constraints (lhsc, rhsc);
+	  VEC_free (ce_s, heap, lhsc);
+	  VEC_free (ce_s, heap, rhsc);
 	  return true;
 	}
       /* Variadic argument handling needs to be handled in IPA

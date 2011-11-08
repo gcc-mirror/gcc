@@ -1,4 +1,202 @@
 2011-11-07  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
+
+	Merged from transactional-memory.
+
+	* gtm-builtins.def: New file.
+	* trans-mem.c: New file.
+	* trans-mem.h: New file.
+
+	* opts.c (finish_options): Error out when using -flto and
+	-fgnu-tm.
+
+	* config/i386/i386.c: Define TARGET_VECTORIZE* transactional variants.
+	(ix86_handle_tm_regparm_attribute, struct bdesc_tm,
+	ix86_builtin_tm_load, ix86_builtin_tm_store,
+	ix86_init_tm_builtins): New.
+	(ix86_init_builtins): Initialize TM builtins.
+	(struct ix86_attribute_table): Add "*tm regparm".
+	* config/i386/i386-builtin-types.def (PV2SI): Define.
+	(PCV2SI): Define.
+	Define V2SI_FTYPE_PCV2SI.
+	Define V4SF_FTYPE_PCV4SF.
+	Define V8SF_FTYPE_PCV8SF.
+	Define VOID_PV2SI_V2SI.
+
+	* doc/invoke.texi (C Dialect Options): Document -fgnu-tm and
+	tm-max-aggregate-size.
+	* doc/tm.texi.in: Add TARGET_VECTORIZE_BUILTIN_TM_LOAD and
+	TARGET_VECTORIZE_BUILTIN_TM_STORE hooks.
+	* doc/tm.texi: Regenerate.
+
+	* attribs.c (apply_tm_attr): New.
+	(init_attributes): Allow '*' prefix for overrides.
+	(register_attribute): Likewise.
+	* builtin-attrs.def (ATTR_TM_TMPURE, ATTR_TM_REGPARM): New.
+	(ATTR_TM_NOTHROW_LIST, ATTR_TM_TMPURE_NOTHROW_LIST,
+	ATTR_TM_PURE_TMPURE_NOTHROW_LIST, ATTR_TM_NORETURN_NOTHROW_LIST,
+	ATTR_TM_CONST_NOTHROW_LIST, ATTR_TMPURE_MALLOC_NOTHROW_LIST,
+	ATTR_TMPURE_NOTHROW_LIST): New.
+	* builtin-types.def (BT_FN_I[1248]_VPTR, BT_FN_FLOAT_VPTR,
+	BT_FN_DOUBLE_VPTR, BT_FN_LDOUBLE_VPTR, BT_FN_VOID_VPTR_I[1248],
+	BT_FN_VOID_VPTR_FLOAT, BT_FN_VOID_VPTR_DOUBLE,
+	BT_FN_VOID_VPTR_LDOUBLE, BT_FN_VOID_VPTR_SIZE): New.
+	* builtins.def: Include gtm-builtins.def. Add comments regarding
+	transactional memory synchronization.
+	(DEF_TM_BUILTIN): New.
+	* c-parser.c (struct c_parser): Add in_transaction.
+	(c_parser_transaction, c_parser_transaction_expression,
+	c_parser_transaction_cancel, c_parser_transaction_attributes): New.
+	(c_parser_attribute_any_word): Split out from c_parser_attributes.
+	(c_parser_statement_after_labels): Handle RID_TRANSACTION*.
+	(c_parser_unary_expression): Same.
+	* c-tree.h (c_finish_transaction): Declare.
+	* c-typeck.c (c_finish_transaction): New.
+	(build_function_call_vec): Call tm_malloc_replacement.
+	* calls.c (is_tm_builtin): New.
+	(flags_from_decl_or_type): Add ECF_TM_BUILTIN and ECF_TM_PURE.
+	* cfgbuild.c (make_edges): Add edges for REG_TM notes.
+	* cfgexpand.c (expand_call_stmt): Call
+	mark_transaction_restart_calls.
+	(gimple_expand_cfg): Free the tm_restart map.
+	(mark_transaction_restart_calls): New.
+	* cfgrtl.c (purge_dead_edges): Look for REG_TM notes.
+	* cgraph.c (dump_cgraph_node): Handle tm_clone.
+	* cgraph.h (struct cgraph_node): Add tm_clone field.
+	(decl_is_tm_clone): New.
+	(struct cgraph_local_info): Add tm_may_enter_irr.
+	(cgraph_copy_node_for_versioning): Declare.
+	* cgraphunit.c (cgraph_copy_node_for_versioning): Export;
+	copy analyzed from old version.
+	* combine.c (distribute_notes): Handle REG_TM notes.
+	* common.opt: Add -fgnu-tm.
+	* crtstuff.c (__TMC_LIST__, __TMC_END__): New.
+	(__do_global_dtors_aux): Deregister clone table.
+	(frame_dummy): Register clone table.
+	* emit-rtl.c (try_split): Handle REG_TM. Early return if no function
+	body.
+	* gimple-low.c (lower_stmt): Handle GIMPLE_EH_ELSE and
+	GIMPLE_TRANSACTION.
+	(gimple_stmt_may_fallthru): Handle GIMPLE_EH_ELSE.
+	* gimple-pretty-print.c: Include trans-mem.h.
+	(dump_gimple_fmt): Add %x.
+	(dump_gimple_call): Dump arguments for calls to _ITM_beginTransaction.
+	(dump_gimple_eh_else, dump_gimple_transaction): New.
+	(dump_gimple_stmt): Handle GIMPLE_EH_ELSE and GIMPLE_TRANSACTION.
+	* gimple.c (gimple_build_eh_else, gimple_build_transaction): New.
+	(walk_gimple_seq): Honor removed_stmt. Document usage of removed_stmt
+	field.
+	(walk_gimple_op): Handle GIMPLE_TRANSACTION.
+	(walk_gimple_stmt): Initialize and honor removed_stmt.
+	Handle GIMPLE_EH_ELSE and GIMPLE_TRANSACTION.
+	(gimple_copy): Handle GIMPLE_EH_ELSE and GIMPLE_TRANSACTION.
+	* gimple.def (GIMPLE_TRANSACTION, GIMPLE_EH_ELSE): New.
+	* gimple.h (struct gimple_statement_eh_else,
+	gimple_statement_transaction, GTMA_*): New.
+	(gimple_statement_d): Add gimple_statement_eh_else and
+	gimple_transaction.
+	(gimple_build_eh_else, gimple_build_transaction,
+	gimple_fold_call, diagnose_tm_safe_errors): Declare.
+	(get_call_expr_in): Remove prototype.
+	(gimple_has_substatements): Add GIMPLE_EH_ELSE and GIMPLE_TRANSACTION.
+	(gimple_eh_else_n_body, gimple_eh_else_e_body,
+	gimple_eh_else_set_n_body, gimple_eh_else_set_e_body,
+	gimple_transaction_body, gimple_transaction_label,
+	gimple_transaction_label_ptr, gimple_transaction_subcode,
+	gimple_transaction_set_body, gimple_transaction_set_label,
+	gimple_transaction_set_subcode): New.
+	(struct walk_stmt_info): Use BOOL_BITFIELD; add removed_stmt.
+	* gimplify.c (create_tmp_var_name): Use clean_symbol_name.
+	(voidify_wrapper_expr): Handle TRANSACTION_EXPR.
+	(gimplify_transaction): New.
+	(gimplify_expr): Handle TRANSACTION_EXPR.
+	* gsstruct.def (GSS_EH_ELSE, GSS_TRANSACTION): New.
+	* ipa-inline.c (can_inline_edge_p): Do not inline TM safe calling
+	TM pure functions.
+	* Makefile.in: Add trans-mem.o and dependencies.
+	(BUILTINS_DEF): Add gtm-builtins.def.
+	(gimple-pretty-print.o): Depend on TRANS_MEM_H.
+	(GTFILES): Add trans-mem.c.
+	* omp-low.c (WALK_SUBSTMTS): Add GIMPLE_TRANSACTION.
+	* output.h (record_tm_clone_pair, finish_tm_clone_pairs,
+	get_tm_clone_pair): Declare.
+	* params.def (PARAM_TM_MAX_AGGREGATE_SIZE): New.
+	* passes.c (init_optimization_passes): Place transactional memory
+	passes.
+	* print-tree.c (print_node): Dump tm-clone.
+	* recog.c (peep2_attempt): Handle REG_TM.
+	* reg-notes.def (TM): New.
+	* rtlanal.c (alloc_reg_note): Handle REG_TM.
+	* target.def (builtin_tm_load, builtin_tm_store): New.
+	* targhooks.c (default_builtin_tm_load_store): New.
+	* targhooks.h (default_builtin_tm_load_store): Declare.
+	* timevar.def (TV_TRANS_MEM): New.
+	* toplev.c (compile_file): Call finish_tm_clone_pairs.
+	* tree-cfg.c (make_edges): Handle GIMPLE_TRANSACTION.
+	(cleanup_dead_labels): Handle GIMPLE_TRANSACTION. Avoid unnecessary
+	writes into the statements to update labels.
+	(is_ctrl_altering_stmt): Add TM ending statements. Handle
+	GIMPLE_TRANSACTION.
+	(verify_gimple_transaction): New.
+	(verify_gimple_stmt): Handle GIMPLE_TRANSACTION.
+	(verify_gimple_in_seq_2): Handle GIMPLE_EH_ELSE and GIMPLE_TRANSACTION.
+	(gimple_redirect_edge_and_branch): Handle TM_TRANSACTION.
+	(dump_function_to_file): Display [tm-clone] if applicable.
+	* tree-eh.c (struct_ptr_eq): Make inline and move to tree.h.
+	(struct_ptr_hash): Same.
+	(collect_finally_tree): Handle GIMPLE_EH_ELSE.
+	(replace_goto_queue_1): Likewise.
+	(get_eh_else): New.
+	(honor_protect_cleanup_actions): Handle GIMPLE_EH_ELSE.
+	(lower_try_finally_nofallthru): Likewise.
+	(lower_try_finally_onedest): Likewise.
+	(lower_try_finally_copy): Likewise.
+	(lower_try_finally_switch): Likewise.
+	(lower_try_finally): Likewise.
+	(decide_copy_try_finally): Likewise.
+	(lower_eh_constructs_2): Likewise.
+	(refactor_eh_r): Likewise.
+	* tree-flow.h (struct gimple_df): Add tm_restart field.
+	Define tm_restart_node.
+	* tree-inline.c (remap_gimple_stmt): Handle GIMPLE_TRANSACTION.
+	(estimate_num_insns): Likewise.
+	(init_inline_once): Init tm_cost.
+	* tree-inline.h (struct eni_weights_d): Add tm_cost.
+	* tree-pass.h (pass_diagnose_tm_blocks, pass_lower_tm, pass_tm_init,
+	pass_tm_mark, pass_tm_memopt, pass_tm_edges, pass_ipa_tm): Declare.
+	* tree-pretty-print.c (dump_generic_node): Handle TRANSACTION_EXPR.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	BUILT_IN_TM_MEMSET, BUILT_IN_TM_MEMCPY, BUILT_IN_TM_MEMMOVE.
+	Add support for TM vector loads.  Add support for TM logging builtins.
+	(call_may_clobber_ref_p_1): Add support for vector stores.
+	* tree-ssa-structalias.c (find_func_aliases): Add support for TM
+	vector stores and loads. Handle BUILT_IN_TM_MEMSET,
+	BUILT_IN_TM_MEMCPY, BUILT_IN_TM_MEMMOVE.
+	* tree.c (strip_invariant_refs): Moved from gimple.c to here.
+	(local_define_builtin): Handle ECF_TM_PURE.
+	(build_common_builtin_nodes): Set __builtin_eh_pointer to ECF_TM_PURE.
+	* tree.def (TRANSACTION_EXPR): New.
+	* tree.h (strip_invariant_refs): Moved from gimple.h to here.
+	(TRANSACTION_EXPR_BODY, TRANSACTION_EXPR_CHECK,
+	TRANSACTION_EXPR_OUTER, TRANSACTION_EXPR_RELAXED,
+	BUILTIN_TM_LOAD_STORE_P, BUILTIN_TM_LOAD_P, BUILTIN_TM_STORE_P,
+	CASE_BUILT_IN_TM_LOAD, CASE_BUILT_IN_TM_STORE): New.
+	(ECF_TM_PURE, ECF_TM_BUILTIN): New.
+	(struct tree_function_decl): Add tm_clone_flag.
+	(struct_ptr_eq, struct_ptr_hash): New.
+	(apply_tm_attr): Declare.
+	(is_tm_safe_or_pure): New.
+	(build_tm_abort_call, is_tm_safe, is_tm_pure,
+	is_tm_may_cancel_outer, is_tm_ending_fndecl, record_tm_replacement,
+	tm_malloc_replacement): Declare.
+	* varasm.c (tm_clone_hash): New.
+	(record_tm_clone_pair, finish_tm_clone_pairs, get_tm_clone_pair,
+	dump_tm_clone_to_vec, dump_tm_clone_pairs, tm_alias_pair_cmp): New.
+	(struct tm_alias_pair): New.  Declare VEC types for object.
+
+2011-11-07  Richard Henderson  <rth@redhat.com>
 
 	* optabs.h (OTI_sync_compare_and_swap, OTI_sync_lock_test_and_set,
 	OTI_sync_old_add, OTI_sync_old_sub, OTI_sync_old_ior,

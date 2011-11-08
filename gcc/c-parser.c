@@ -195,6 +195,9 @@ typedef struct GTY(()) c_parser {
      undesirable to bind an identifier to an Objective-C class, even
      if a class with that name exists.  */
   BOOL_BITFIELD objc_need_raw_identifier : 1;
+  /* Nonzero if we're processing a __transaction statement.  The value
+     is 1 | TM_STMT_ATTR_*.  */
+  unsigned int in_transaction : 4;
   /* True if we are in a context where the Objective-C "Property attribute"
      keywords are valid.  */
   BOOL_BITFIELD objc_property_attr_context : 1;
@@ -1171,6 +1174,9 @@ static struct c_expr c_parser_postfix_expression_after_paren_type (c_parser *,
 static struct c_expr c_parser_postfix_expression_after_primary (c_parser *,
 								location_t loc,
 								struct c_expr);
+static tree c_parser_transaction (c_parser *, enum rid);
+static struct c_expr c_parser_transaction_expression (c_parser *, enum rid);
+static tree c_parser_transaction_cancel (c_parser *);
 static struct c_expr c_parser_expression (c_parser *);
 static struct c_expr c_parser_expression_conv (c_parser *);
 static VEC(tree,gc) *c_parser_expr_list (c_parser *, bool, bool,
@@ -3413,6 +3419,66 @@ c_parser_simple_asm_expr (c_parser *parser)
   return str;
 }
 
+static tree
+c_parser_attribute_any_word (c_parser *parser)
+{
+  tree attr_name = NULL_TREE;
+
+  if (c_parser_next_token_is (parser, CPP_KEYWORD))
+    {
+      /* ??? See comment above about what keywords are accepted here.  */
+      bool ok;
+      switch (c_parser_peek_token (parser)->keyword)
+	{
+	case RID_STATIC:
+	case RID_UNSIGNED:
+	case RID_LONG:
+	case RID_INT128:
+	case RID_CONST:
+	case RID_EXTERN:
+	case RID_REGISTER:
+	case RID_TYPEDEF:
+	case RID_SHORT:
+	case RID_INLINE:
+	case RID_NORETURN:
+	case RID_VOLATILE:
+	case RID_SIGNED:
+	case RID_AUTO:
+	case RID_RESTRICT:
+	case RID_COMPLEX:
+	case RID_THREAD:
+	case RID_INT:
+	case RID_CHAR:
+	case RID_FLOAT:
+	case RID_DOUBLE:
+	case RID_VOID:
+	case RID_DFLOAT32:
+	case RID_DFLOAT64:
+	case RID_DFLOAT128:
+	case RID_BOOL:
+	case RID_FRACT:
+	case RID_ACCUM:
+	case RID_SAT:
+	case RID_TRANSACTION_ATOMIC:
+	case RID_TRANSACTION_CANCEL:
+	  ok = true;
+	  break;
+	default:
+	  ok = false;
+	  break;
+	}
+      if (!ok)
+	return NULL_TREE;
+
+      /* Accept __attribute__((__const)) as __attribute__((const)) etc.  */
+      attr_name = ridpointers[(int) c_parser_peek_token (parser)->keyword];
+    }
+  else if (c_parser_next_token_is (parser, CPP_NAME))
+    attr_name = c_parser_peek_token (parser)->value;
+
+  return attr_name;
+}
+
 /* Parse (possibly empty) attributes.  This is a GNU extension.
 
    attributes:
@@ -3473,57 +3539,10 @@ c_parser_attributes (c_parser *parser)
 	      c_parser_consume_token (parser);
 	      continue;
 	    }
-	  if (c_parser_next_token_is (parser, CPP_KEYWORD))
-	    {
-	      /* ??? See comment above about what keywords are
-		 accepted here.  */
-	      bool ok;
-	      switch (c_parser_peek_token (parser)->keyword)
-		{
-		case RID_STATIC:
-		case RID_UNSIGNED:
-		case RID_LONG:
-		case RID_INT128:
-		case RID_CONST:
-		case RID_EXTERN:
-		case RID_REGISTER:
-		case RID_TYPEDEF:
-		case RID_SHORT:
-		case RID_INLINE:
-		case RID_NORETURN:
-		case RID_VOLATILE:
-		case RID_SIGNED:
-		case RID_AUTO:
-		case RID_RESTRICT:
-		case RID_COMPLEX:
-		case RID_THREAD:
-		case RID_INT:
-		case RID_CHAR:
-		case RID_FLOAT:
-		case RID_DOUBLE:
-		case RID_VOID:
-		case RID_DFLOAT32:
-		case RID_DFLOAT64:
-		case RID_DFLOAT128:
-		case RID_BOOL:
-		case RID_FRACT:
-		case RID_ACCUM:
-		case RID_SAT:
-		  ok = true;
-		  break;
-		default:
-		  ok = false;
-		  break;
-		}
-	      if (!ok)
-		break;
-	      /* Accept __attribute__((__const)) as __attribute__((const))
-		 etc.  */
-	      attr_name
-		= ridpointers[(int) c_parser_peek_token (parser)->keyword];
-	    }
-	  else
-	    attr_name = c_parser_peek_token (parser)->value;
+
+	  attr_name = c_parser_attribute_any_word (parser);
+	  if (attr_name == NULL)
+	    break;
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
 	    {
@@ -4394,7 +4413,14 @@ c_parser_label (c_parser *parser)
      atomic-directive expression-statement
 
    ordered-construct:
-     ordered-directive structured-block  */
+     ordered-directive structured-block
+
+   Transactional Memory:
+
+   statement:
+     transaction-statement
+     transaction-cancel-statement
+*/
 
 static void
 c_parser_statement (c_parser *parser)
@@ -4485,6 +4511,14 @@ c_parser_statement_after_labels (c_parser *parser)
 	case RID_ASM:
 	  stmt = c_parser_asm_statement (parser);
 	  break;
+	case RID_TRANSACTION_ATOMIC:
+	case RID_TRANSACTION_RELAXED:
+	  stmt = c_parser_transaction (parser,
+	      c_parser_peek_token (parser)->keyword);
+	  break;
+	case RID_TRANSACTION_CANCEL:
+	  stmt = c_parser_transaction_cancel (parser);
+	  goto expect_semicolon;
 	case RID_AT_THROW:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_consume_token (parser);
@@ -5812,6 +5846,11 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
    unary-operator: one of
      __extension__ __real__ __imag__
 
+   Transactional Memory:
+
+   unary-expression:
+     transaction-expression
+
    In addition, the GNU syntax treats ++ and -- as unary operators, so
    they may be applied to cast expressions with errors for non-lvalues
    given later.  */
@@ -5919,6 +5958,10 @@ c_parser_unary_expression (c_parser *parser)
 	  op = c_parser_cast_expression (parser, NULL);
 	  op = default_function_array_conversion (exp_loc, op);
 	  return parser_build_unary_op (op_loc, IMAGPART_EXPR, op);
+	case RID_TRANSACTION_ATOMIC:
+	case RID_TRANSACTION_RELAXED:
+	  return c_parser_transaction_expression (parser,
+	      c_parser_peek_token (parser)->keyword);
 	default:
 	  return c_parser_postfix_expression (parser);
 	}
@@ -10535,6 +10578,212 @@ c_parser_omp_threadprivate (c_parser *parser)
   c_parser_skip_to_pragma_eol (parser);
 }
 
+/* Parse a transaction attribute (GCC Extension).
+
+   transaction-attribute:
+     attributes
+     [ [ any-word ] ]
+
+   The transactional memory language description is written for C++,
+   and uses the C++0x attribute syntax.  For compatibility, allow the
+   bracket style for transactions in C as well.  */
+
+static tree
+c_parser_transaction_attributes (c_parser *parser)
+{
+  tree attr_name, attr = NULL;
+
+  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
+    return c_parser_attributes (parser);
+
+  if (!c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
+    return NULL_TREE;
+  c_parser_consume_token (parser);
+  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
+    goto error1;
+
+  attr_name = c_parser_attribute_any_word (parser);
+  if (attr_name)
+    {
+      c_parser_consume_token (parser);
+      attr = build_tree_list (attr_name, NULL_TREE);
+    }
+  else
+    c_parser_error (parser, "expected identifier");
+
+  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+ error1:
+  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+  return attr;
+}
+
+/* Parse a __transaction_atomic or __transaction_relaxed statement
+   (GCC Extension).
+
+   transaction-statement:
+     __transaction_atomic transaction-attribute[opt] compound-statement
+     __transaction_relaxed compound-statement
+
+   Note that the only valid attribute is: "outer".
+*/
+
+static tree
+c_parser_transaction (c_parser *parser, enum rid keyword)
+{
+  unsigned int old_in = parser->in_transaction;
+  unsigned int this_in = 1, new_in;
+  location_t loc = c_parser_peek_token (parser)->location;
+  tree stmt, attrs;
+
+  gcc_assert ((keyword == RID_TRANSACTION_ATOMIC
+      || keyword == RID_TRANSACTION_RELAXED)
+      && c_parser_next_token_is_keyword (parser, keyword));
+  c_parser_consume_token (parser);
+
+  if (keyword == RID_TRANSACTION_RELAXED)
+    this_in |= TM_STMT_ATTR_RELAXED;
+  else
+    {
+      attrs = c_parser_transaction_attributes (parser);
+      if (attrs)
+	this_in |= parse_tm_stmt_attr (attrs, TM_STMT_ATTR_OUTER);
+    }
+
+  /* Keep track if we're in the lexical scope of an outer transaction.  */
+  new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
+
+  parser->in_transaction = new_in;
+  stmt = c_parser_compound_statement (parser);
+  parser->in_transaction = old_in;
+
+  if (flag_tm)
+    stmt = c_finish_transaction (loc, stmt, this_in);
+  else
+    error_at (loc, (keyword == RID_TRANSACTION_ATOMIC ?
+	"%<__transaction_atomic%> without transactional memory support enabled"
+	: "%<__transaction_relaxed %> "
+	"without transactional memory support enabled"));
+
+  return stmt;
+}
+
+/* Parse a __transaction_atomic or __transaction_relaxed expression
+   (GCC Extension).
+
+   transaction-expression:
+     __transaction_atomic ( expression )
+     __transaction_relaxed ( expression )
+*/
+
+static struct c_expr
+c_parser_transaction_expression (c_parser *parser, enum rid keyword)
+{
+  struct c_expr ret;
+  unsigned int old_in = parser->in_transaction;
+  unsigned int this_in = 1;
+  location_t loc = c_parser_peek_token (parser)->location;
+  tree attrs;
+
+  gcc_assert ((keyword == RID_TRANSACTION_ATOMIC
+      || keyword == RID_TRANSACTION_RELAXED)
+      && c_parser_next_token_is_keyword (parser, keyword));
+  c_parser_consume_token (parser);
+
+  if (keyword == RID_TRANSACTION_RELAXED)
+    this_in |= TM_STMT_ATTR_RELAXED;
+  else
+    {
+      attrs = c_parser_transaction_attributes (parser);
+      if (attrs)
+	this_in |= parse_tm_stmt_attr (attrs, 0);
+    }
+
+  parser->in_transaction = this_in;
+  if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+    {
+      tree expr = c_parser_expression (parser).value;
+      ret.original_type = TREE_TYPE (expr);
+      ret.value = build1 (TRANSACTION_EXPR, ret.original_type, expr);
+      if (this_in & TM_STMT_ATTR_RELAXED)
+	TRANSACTION_EXPR_RELAXED (ret.value) = 1;
+      SET_EXPR_LOCATION (ret.value, loc);
+      ret.original_code = TRANSACTION_EXPR;
+    }
+  else
+    {
+      c_parser_error (parser, "expected %<(%>");
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
+    }
+  parser->in_transaction = old_in;
+
+  if (!flag_tm)
+    error_at (loc, (keyword == RID_TRANSACTION_ATOMIC ?
+	"%<__transaction_atomic%> without transactional memory support enabled"
+	: "%<__transaction_relaxed %> "
+	"without transactional memory support enabled"));
+
+  return ret;
+}
+
+/* Parse a __transaction_cancel statement (GCC Extension).
+
+   transaction-cancel-statement:
+     __transaction_cancel transaction-attribute[opt] ;
+
+   Note that the only valid attribute is "outer".
+*/
+
+static tree
+c_parser_transaction_cancel(c_parser *parser)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  tree attrs;
+  bool is_outer = false;
+
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_TRANSACTION_CANCEL));
+  c_parser_consume_token (parser);
+
+  attrs = c_parser_transaction_attributes (parser);
+  if (attrs)
+    is_outer = (parse_tm_stmt_attr (attrs, TM_STMT_ATTR_OUTER) != 0);
+
+  if (!flag_tm)
+    {
+      error_at (loc, "%<__transaction_cancel%> without "
+		"transactional memory support enabled");
+      goto ret_error;
+    }
+  else if (parser->in_transaction & TM_STMT_ATTR_RELAXED)
+    {
+      error_at (loc, "%<__transaction_cancel%> within a "
+		"%<__transaction_relaxed%>");
+      goto ret_error;
+    }
+  else if (is_outer)
+    {
+      if ((parser->in_transaction & TM_STMT_ATTR_OUTER) == 0
+	  && !is_tm_may_cancel_outer (current_function_decl))
+	{
+	  error_at (loc, "outer %<__transaction_cancel%> not "
+		    "within outer %<__transaction_atomic%>");
+	  error_at (loc, "  or a %<transaction_may_cancel_outer%> function");
+	  goto ret_error;
+	}
+    }
+  else if (parser->in_transaction == 0)
+    {
+      error_at (loc, "%<__transaction_cancel%> not within "
+		"%<__transaction_atomic%>");
+      goto ret_error;
+    }
+
+  return add_stmt (build_tm_abort_call (loc, is_outer));
+
+ ret_error:
+  return build1 (NOP_EXPR, void_type_node, error_mark_node);
+}
 
 /* Parse a single source file.  */
 

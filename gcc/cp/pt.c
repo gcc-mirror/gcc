@@ -13108,6 +13108,28 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	}
       break;
 
+    case TRANSACTION_EXPR:
+      {
+	int flags = 0;
+	flags |= (TRANSACTION_EXPR_OUTER (t) ? TM_STMT_ATTR_OUTER : 0);
+	flags |= (TRANSACTION_EXPR_RELAXED (t) ? TM_STMT_ATTR_RELAXED : 0);
+
+        if (TRANSACTION_EXPR_IS_STMT (t))
+          {
+            stmt = begin_transaction_stmt (input_location, NULL, flags);
+            RECUR (TRANSACTION_EXPR_BODY (t));
+            finish_transaction_stmt (stmt, NULL, flags);
+          }
+        else
+          {
+            stmt = build_transaction_expr (EXPR_LOCATION (t),
+					   RECUR (TRANSACTION_EXPR_BODY (t)),
+					   flags);
+            return stmt;
+          }
+      }
+      break;
+
     case EXPR_PACK_EXPANSION:
       error ("invalid use of pack expansion expression");
       return error_mark_node;

@@ -1174,9 +1174,11 @@ init_optimization_passes (void)
   p = &all_lowering_passes;
   NEXT_PASS (pass_warn_unused_result);
   NEXT_PASS (pass_diagnose_omp_blocks);
+  NEXT_PASS (pass_diagnose_tm_blocks);
   NEXT_PASS (pass_mudflap_1);
   NEXT_PASS (pass_lower_omp);
   NEXT_PASS (pass_lower_cf);
+  NEXT_PASS (pass_lower_tm);
   NEXT_PASS (pass_refactor_eh);
   NEXT_PASS (pass_lower_eh);
   NEXT_PASS (pass_build_cfg);
@@ -1241,6 +1243,7 @@ init_optimization_passes (void)
     }
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_matrix_reorg);
+  NEXT_PASS (pass_ipa_tm);
   NEXT_PASS (pass_ipa_lower_emutls);
   *p = NULL;
 
@@ -1399,6 +1402,13 @@ init_optimization_passes (void)
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
+    }
+  NEXT_PASS (pass_tm_init);
+    {
+      struct opt_pass **p = &pass_tm_init.pass.sub;
+      NEXT_PASS (pass_tm_mark);
+      NEXT_PASS (pass_tm_memopt);
+      NEXT_PASS (pass_tm_edges);
     }
   NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_cleanup_eh);

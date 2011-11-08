@@ -413,6 +413,8 @@ create_tmp_var_name (const char *prefix)
       char *preftmp = ASTRDUP (prefix);
 
       remove_suffix (preftmp, strlen (preftmp));
+      clean_symbol_name (preftmp);
+
       prefix = preftmp;
     }
 
@@ -1070,6 +1072,12 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 		  TREE_SIDE_EFFECTS (*p) = 1;
 		  TREE_TYPE (*p) = void_type_node;
 		}
+	      break;
+
+	    case TRANSACTION_EXPR:
+	      TREE_SIDE_EFFECTS (*p) = 1;
+	      TREE_TYPE (*p) = void_type_node;
+	      p = &TRANSACTION_EXPR_BODY (*p);
 	      break;
 
 	    default:
@@ -6527,6 +6535,53 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
    return GS_ALL_DONE;
 }
 
+/* Gimplify a TRANSACTION_EXPR.  This involves gimplification of the
+   body, and adding some EH bits.  */
+
+static enum gimplify_status
+gimplify_transaction (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p, temp, tbody = TRANSACTION_EXPR_BODY (expr);
+  gimple g;
+  gimple_seq body = NULL;
+  struct gimplify_ctx gctx;
+  int subcode = 0;
+
+  /* Wrap the transaction body in a BIND_EXPR so we have a context
+     where to put decls for OpenMP.  */
+  if (TREE_CODE (tbody) != BIND_EXPR)
+    {
+      tree bind = build3 (BIND_EXPR, void_type_node, NULL, tbody, NULL);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      SET_EXPR_LOCATION (bind, EXPR_LOCATION (tbody));
+      TRANSACTION_EXPR_BODY (expr) = bind;
+    }
+
+  push_gimplify_context (&gctx);
+  temp = voidify_wrapper_expr (*expr_p, NULL);
+
+  g = gimplify_and_return_first (TRANSACTION_EXPR_BODY (expr), &body);
+  pop_gimplify_context (g);
+
+  g = gimple_build_transaction (body, NULL);
+  if (TRANSACTION_EXPR_OUTER (expr))
+    subcode = GTMA_IS_OUTER;
+  else if (TRANSACTION_EXPR_RELAXED (expr))
+    subcode = GTMA_IS_RELAXED;
+  gimple_transaction_set_subcode (g, subcode);
+
+  gimplify_seq_add_stmt (pre_p, g);
+
+  if (temp)
+    {
+      *expr_p = temp;
+      return GS_OK;
+    }
+
+  *expr_p = NULL_TREE;
+  return GS_ALL_DONE;
+}
+
 /* Convert the GENERIC expression tree *EXPR_P to GIMPLE.  If the
    expression produces a value to be used as an operand inside a GIMPLE
    statement, the value will be stored back in *EXPR_P.  This value will
@@ -7249,6 +7304,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_ATOMIC_CAPTURE_OLD:
 	case OMP_ATOMIC_CAPTURE_NEW:
 	  ret = gimplify_omp_atomic (expr_p, pre_p);
+	  break;
+
+	case TRANSACTION_EXPR:
+	  ret = gimplify_transaction (expr_p, pre_p);
 	  break;
 
 	case TRUTH_AND_EXPR:

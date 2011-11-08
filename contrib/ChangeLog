@@ -1,3 +1,9 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+
+	Merged from transactional-memory.
+
+	* gcc_update: Add libitm to touch data.
+
 2011-11-07   Quentin Neill  <quentin.neill@amd.com>
 
 	* compare_tests: Add ability to compare all .sum

@@ -5758,6 +5758,14 @@ mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_TM_LOAD (tree)
+This hook should return the built-in decl needed to load a vector of the given type within a transaction.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_TM_STORE (tree)
+This hook should return the built-in decl needed to store a vector of the given type within a transaction.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_GATHER (const_tree @var{mem_vectype}, const_tree @var{index_type}, int @var{scale})
 Target builtin that implements vector gather operation.  @var{mem_vectype}
 is the vector type of the load and @var{index_type} is scalar type of

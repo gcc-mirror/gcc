@@ -1,3 +1,12 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+
+	Merged from transactional-memory.
+
+	* demangle.h (enum gnu_v3_ctor_kinds): Add gnu_v3_object_ctor_group.
+	(enum gnu_v3_dtor_kinds): Add gnu_v3_object_dtor_group.
+	(DEMANGLE_COMPONENT_TRANSACTION_CLONE): New.
+	(DEMANGLE_COMPONENT_NONTRANSACTION_CLONE): New.
+
 2011-10-21  Ulrich Drepper  <drepper@gmail.com>
 
 	* obstack.h [!GNUC] (obstack_free): Avoid cast to int.

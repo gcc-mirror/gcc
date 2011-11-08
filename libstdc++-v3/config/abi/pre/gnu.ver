@@ -1463,6 +1463,15 @@ CXXABI_1.3.3 {
 
 } CXXABI_1.3.2;
 
+# Symbols in the support library (libsupc++) supporting trans-mem.
+CXXABI_TM_1 {
+  global:
+    __cxa_tm_cleanup;
+
+  local:
+    *;
+};
+
 CXXABI_1.3.4 {
 
     # typeinfo for decimal floating point types

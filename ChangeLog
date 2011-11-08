@@ -1,3 +1,15 @@
+2011-11-07  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	Merged from transactional-memory.
+
+	* Makefile.def (lang_env_dependencies): libitm is c++.
+	Add libitm target module.
+	* configure.ac: Likewise.
+	* config/mmap.m4: New file.
+	* contrib/gcc_update: Add libitm to touch data.
+	* Makefile.in, configure: Rebuild.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.tpl (EXTRA_GCC_FLAGS): Remove LIBGCC2_CFLAGS,

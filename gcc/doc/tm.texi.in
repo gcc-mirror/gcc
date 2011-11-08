@@ -5696,6 +5696,10 @@ mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
 @end deftypefn
 
+@hook TARGET_VECTORIZE_BUILTIN_TM_LOAD
+
+@hook TARGET_VECTORIZE_BUILTIN_TM_STORE
+
 @hook TARGET_VECTORIZE_BUILTIN_GATHER
 Target builtin that implements vector gather operation.  @var{mem_vectype}
 is the vector type of the load and @var{index_type} is scalar type of
