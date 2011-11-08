@@ -1,5 +1,8 @@
 2011-11-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (*avx_vperm2f128<mode>3_nozero): Emit mask
+	0x12 and 0x20 as vinsert[fi]128 instead of vperm2[fi]128.
+
 	* tree-vect-stmts.c (vectorizable_call): Add SLP_NODE argument.
 	Handle vectorization of SLP calls.
 	(vect_analyze_stmt): Adjust caller, add call to it for SLP too.

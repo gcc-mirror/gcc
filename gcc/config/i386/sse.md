@@ -12065,6 +12065,10 @@
    && avx_vperm2f128_parallel (operands[3], <MODE>mode)"
 {
   int mask = avx_vperm2f128_parallel (operands[3], <MODE>mode) - 1;
+  if (mask == 0x12)
+    return "vinsert<i128>\t{$0, %x2, %1, %0|%0, %1, %x2, 0}";
+  if (mask == 0x20)
+    return "vinsert<i128>\t{$1, %x2, %1, %0|%0, %1, %x2, 1}";
   operands[3] = GEN_INT (mask);
   return "vperm2<i128>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
 }
