@@ -137,7 +137,8 @@ canonicalize_constructor_val (tree cval)
 	      || TREE_CODE (base) == FUNCTION_DECL)
 	  && !can_refer_decl_in_current_unit_p (base))
 	return NULL_TREE;
-      if (cfun && base && TREE_CODE (base) == VAR_DECL)
+      if (cfun && gimple_referenced_vars (cfun)
+	  && base && TREE_CODE (base) == VAR_DECL)
 	add_referenced_var (base);
       /* Fixup types in global initializers.  */
       if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
