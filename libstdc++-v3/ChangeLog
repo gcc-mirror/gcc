@@ -1,3 +1,9 @@
+2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future (__future_base::_Ptr): Use alias-declaration.
+	(__is_same_pkgdtask): Rename to __constrain_pkgdtask and use decay
+	instead of remove_reference so that cv-quals are removed.
+
 2011-11-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/precompiled/stdc++.h: Add cstdalign.

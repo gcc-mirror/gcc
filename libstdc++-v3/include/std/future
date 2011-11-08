@@ -258,17 +258,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void* _M_addr() noexcept { return static_cast<void*>(&_M_storage); }
     };
 
-    // TODO: use template alias when available
-    /*
-      template<typename _Res>
-      using _Ptr = unique_ptr<_Res, _Result_base::_Deleter>;
-    */
     /// A unique_ptr based on the instantiating type.
     template<typename _Res>
-      struct _Ptr
-      {
-	typedef unique_ptr<_Res, _Result_base::_Deleter> type;
-      };
+      using _Ptr = unique_ptr<_Res, _Result_base::_Deleter>;
 
     /// Result_alloc.
     template<typename _Res, typename _Alloc>
@@ -291,7 +283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _Res, typename _Allocator>
-      static typename _Ptr<_Result_alloc<_Res, _Allocator>>::type
+      static _Ptr<_Result_alloc<_Res, _Allocator>>
       _S_allocate_result(const _Allocator& __a)
       {
         typedef _Result_alloc<_Res, _Allocator>	__result_type;
@@ -306,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           __a2.deallocate(__p, 1);
           __throw_exception_again;
         }
-        return typename _Ptr<__result_type>::type(__p);
+        return _Ptr<__result_type>(__p);
       }
 
 
@@ -314,7 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// associated futures.
     class _State_base
     {
-      typedef _Ptr<_Result_base>::type _Ptr_type;
+      typedef _Ptr<_Result_base> _Ptr_type;
 
       _Ptr_type			_M_result;
       mutex               	_M_mutex;
@@ -930,9 +922,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res>
     class promise
     {
-      typedef __future_base::_State_base 			_State;
-      typedef __future_base::_Result<_Res>			_Res_type;
-      typedef typename __future_base::_Ptr<_Res_type>::type	_Ptr_type;
+      typedef __future_base::_State_base 	_State;
+      typedef __future_base::_Result<_Res>	_Res_type;
+      typedef __future_base::_Ptr<_Res_type>	_Ptr_type;
       template<typename, typename> friend class _State::_Setter;
 
       shared_ptr<_State>                        _M_future;
@@ -1028,9 +1020,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res>
     class promise<_Res&>
     {
-      typedef __future_base::_State_base			_State;
-      typedef __future_base::_Result<_Res&>			_Res_type;
-      typedef typename __future_base::_Ptr<_Res_type>::type 	_Ptr_type;
+      typedef __future_base::_State_base	_State;
+      typedef __future_base::_Result<_Res&>	_Res_type;
+      typedef __future_base::_Ptr<_Res_type> 	_Ptr_type;
       template<typename, typename> friend class _State::_Setter;
 
       shared_ptr<_State>                        _M_future;
@@ -1109,9 +1101,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     class promise<void>
     {
-      typedef __future_base::_State_base			_State;
-      typedef __future_base::_Result<void>			_Res_type;
-      typedef typename __future_base::_Ptr<_Res_type>::type 	_Ptr_type;
+      typedef __future_base::_State_base	_State;
+      typedef __future_base::_Result<void>	_Res_type;
+      typedef __future_base::_Ptr<_Res_type> 	_Ptr_type;
       template<typename, typename> friend class _State::_Setter;
 
       shared_ptr<_State>                        _M_future;
@@ -1272,7 +1264,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _M_set_result(std::move(__setter));
       }
 
-      typedef typename __future_base::_Ptr<_Result<_Res>>::type _Ptr_type;
+      typedef __future_base::_Ptr<_Result<_Res>> _Ptr_type;
       _Ptr_type _M_result;
       std::function<_Res(_Args...)> _M_task;
 
@@ -1289,12 +1281,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Task, typename _Fn, bool
-           = is_same<_Task, typename remove_reference<_Fn>::type>::value>
-    struct __is_same_pkgdtask
+           = is_same<_Task, typename decay<_Fn>::type>::value>
+    struct __constrain_pkgdtask
     { typedef void __type; };
 
   template<typename _Task, typename _Fn>
-    struct __is_same_pkgdtask<_Task, _Fn, true>
+    struct __constrain_pkgdtask<_Task, _Fn, true>
     { };
 
   /// packaged_task
@@ -1314,14 +1306,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { }
 
       template<typename _Fn, typename = typename
-               __is_same_pkgdtask<packaged_task, _Fn>::__type>
+               __constrain_pkgdtask<packaged_task, _Fn>::__type>
         explicit
         packaged_task(_Fn&& __fn)
         : _M_state(std::make_shared<_State_type>(std::forward<_Fn>(__fn)))
         { }
 
       template<typename _Fn, typename _Allocator, typename = typename
-               __is_same_pkgdtask<packaged_task, _Fn>::__type>
+               __constrain_pkgdtask<packaged_task, _Fn>::__type>
         explicit
         packaged_task(allocator_arg_t, const _Allocator& __a, _Fn&& __fn)
         : _M_state(std::allocate_shared<_State_type>(__a,
@@ -1410,7 +1402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
     private:
-      typedef typename __future_base::_Ptr<_Result<_Res>>::type _Ptr_type;
+      typedef __future_base::_Ptr<_Result<_Res>> _Ptr_type;
       _Ptr_type _M_result;
       _BoundFn _M_fn;
 
@@ -1440,7 +1432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _M_set_result(_S_task_setter(_M_result, _M_fn));
       }
 
-      typedef typename __future_base::_Ptr<_Result<_Res>>::type _Ptr_type;
+      typedef __future_base::_Ptr<_Result<_Res>> _Ptr_type;
       _Ptr_type _M_result;
       _BoundFn _M_fn;
       thread _M_thread;
