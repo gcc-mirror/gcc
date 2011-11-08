@@ -3057,20 +3057,23 @@ if test x$enable_libgomp = x ; then
     esac
 fi
 
-# Disable libitm on unsupported hosted systems.
-if test x$enable_libitm = x; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libitm support" >&5
+# Disable libitm on unsupported systems.
+if test -d ${srcdir}/libitm; then
+    if test x$enable_libitm = x; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libitm support" >&5
 $as_echo_n "checking for libitm support... " >&6; }
-   if (srcdir=${srcdir}/libitm; \
-       . ${srcdir}/configure.tgt; \
-       test -n "$UNSUPPORTED"); then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+	if (srcdir=${srcdir}/libitm; \
+		. ${srcdir}/configure.tgt; \
+		test -n "$UNSUPPORTED")
+	then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	noconfigdirs="$noconfigdirs target-libitm"
-   else
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+	    noconfigdirs="$noconfigdirs target-libitm"
+	else
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-   fi
+	fi
+    fi
 fi
 
 # Disable libssp for some systems.

@@ -493,17 +493,20 @@ if test x$enable_libgomp = x ; then
     esac
 fi
 
-# Disable libitm on unsupported hosted systems.
-if test x$enable_libitm = x; then
-   AC_MSG_CHECKING([for libitm support])
-   if (srcdir=${srcdir}/libitm; \
-       . ${srcdir}/configure.tgt; \
-       test -n "$UNSUPPORTED"); then
-	AC_MSG_RESULT([no])
-	noconfigdirs="$noconfigdirs target-libitm"
-   else
-	AC_MSG_RESULT([yes])
-   fi
+# Disable libitm on unsupported systems.
+if test -d ${srcdir}/libitm; then
+    if test x$enable_libitm = x; then
+	AC_MSG_CHECKING([for libitm support])
+	if (srcdir=${srcdir}/libitm; \
+		. ${srcdir}/configure.tgt; \
+		test -n "$UNSUPPORTED")
+	then
+	    AC_MSG_RESULT([no])
+	    noconfigdirs="$noconfigdirs target-libitm"
+	else
+	    AC_MSG_RESULT([yes])
+	fi
+    fi
 fi
 
 # Disable libssp for some systems.
