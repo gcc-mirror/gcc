@@ -26,6 +26,10 @@
 
 namespace GTM HIDDEN {
 
+#if !defined(HAVE_ARCH_GTM_THREAD) || !defined(HAVE_ARCH_GTM_THREAD_DISP)
+__thread gtm_thread_tls _gtm_thr_tls;
+#endif
+
 // Filter out any updates that overlap the libitm stack, as defined by
 // TOP (entry point to library) and BOT (below current function).  This
 // definition should be fine for all stack-grows-down architectures.

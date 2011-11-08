@@ -52,7 +52,7 @@ case "${target_cpu}" in
   powerpc*)	ARCH=powerpc ;;
   s390*)	ARCH=s390 ;;
 
-  i[456]86)
+  i[3456]86)
 	case " ${CC} ${CFLAGS} " in
 	  *" -m64 "*)
 	    ;;
