@@ -1,7 +1,12 @@
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/50404
+	* gfortran.dg/io_constraints_3.f90: Improve testcase.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/50409
-	* gcc/testsuite/gfortran.dg/string_5.f90: Improve testcase.
+	* gfortran.dg/string_5.f90: Improve testcase.
 
 2011-10-23  Jason Merrill  <jason@redhat.com>
 

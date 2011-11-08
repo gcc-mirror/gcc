@@ -1,5 +1,10 @@
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/50404
+	* io.c (gfc_resolve_close): CLOSE requires a UNIT.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/50409
 	* expr.c (gfc_simplify_expr): Substrings can't have negative
 	length.

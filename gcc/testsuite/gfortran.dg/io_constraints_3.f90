@@ -66,6 +66,7 @@
   close(10, iostat=u,status="keep")
   close(10, iostat=u,status="delete")
   close(10, iostat=u,status=foo) ! { dg-warning "STATUS specifier in CLOSE statement" }
+  close(iostat=u) ! { dg-error "requires a UNIT number" }
 
 
 
