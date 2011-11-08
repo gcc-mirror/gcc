@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -102,10 +102,10 @@ namespace __gnu_profile
       if (!__s) 
 	return 0;
 
-      __UINTPTR_TYPE__ __index = 0;
+      std::size_t __index = 0;
       __stack_npt::const_iterator __it;
       for (__it = __s->begin(); __it != __s->end(); ++__it)
-	__index += reinterpret_cast<__UINTPTR_TYPE__>(*__it);
+	__index += reinterpret_cast<std::size_t>(*__it);
       return __index;
     }
 
