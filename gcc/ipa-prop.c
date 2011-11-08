@@ -1905,6 +1905,13 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       if (new_direct_edge)
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
+	  if (new_direct_edge->call_stmt
+	      && !gimple_check_call_matching_types (new_direct_edge->call_stmt,
+						    new_direct_edge->callee->decl))
+	    {
+	      gimple_call_set_cannot_inline (new_direct_edge->call_stmt, true);
+	      new_direct_edge->call_stmt_cannot_inline_p = true;
+	    }
 	  if (new_edges)
 	    {
 	      VEC_safe_push (cgraph_edge_p, heap, *new_edges,

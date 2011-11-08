@@ -1,5 +1,11 @@
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/51012
+	* gcc.dg/pr51012-1.c: New testcase.
+	* gcc.dg/pr51012-2.c: Likewise.
+
+2011-11-08  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/51010
 	* c-c++-common/uninit-pr51010.c: New testcase.
 
