@@ -1,3 +1,8 @@
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47970
+	* intrinsics/c99_functions.c (round): Move higher in the file.
+
 2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/45723
