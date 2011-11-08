@@ -1,3 +1,8 @@
+2011-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_preferred_simd_mode): Even for TARGET_AVX
+	if not TARGET_PREFER_AVX128 return 32-byte integer vectors.
+
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51012
