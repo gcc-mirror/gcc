@@ -1,3 +1,10 @@
+2011-11-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50870
+	* pt.c (tsubst_copy): Handle NAMESPACE_DECL.
+	(tsubst_copy_and_build) [COMPONENT_REF]: Handle a still-dependent
+	object.
+
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/50608
