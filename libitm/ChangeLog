@@ -1,5 +1,7 @@
 2011-11-08  Richard Henderson  <rth@redhat.com>
 
+	* configure.tgt: Test correct directory for supported cpus.
+
 	* configure.ac: Exit if unsupported.
 	* configure: Rebuild.
 	* configure.tgt: Delete boilerplate from libgomp for unsupported
