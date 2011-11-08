@@ -1,5 +1,11 @@
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/50409
+	* expr.c (gfc_simplify_expr): Substrings can't have negative
+	length.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/50334
 	* invoke.texi (-finit-*): Document interaction with
 	-Wuninitialized.
