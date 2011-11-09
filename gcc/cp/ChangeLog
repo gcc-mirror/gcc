@@ -1,5 +1,8 @@
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51046
+	* parser.c (cp_parser_range_for): check_for_bare_parameter_packs.
+
 	PR c++/51029
 	* class.c (build_base_path): Don't ICE in fold_non_dependent_expr.
 
