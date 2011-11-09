@@ -1,5 +1,8 @@
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (convert_nontype_argument): Only integral arguments
+	get early folding.
+
 	* parser.c (cp_parser_alias_declaration): Don't do semantic
 	processing if parsing failed.
 

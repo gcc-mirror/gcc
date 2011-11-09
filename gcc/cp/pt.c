@@ -5681,10 +5681,24 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       && (TYPE_PTR_P (type) || TYPE_PTR_TO_MEMBER_P (type)))
     expr = convert (type, expr);
 
-  /* In C++11, non-type template arguments can be arbitrary constant
-     expressions.  But don't fold a PTRMEM_CST to a CONSTRUCTOR yet.  */
-  if (cxx_dialect >= cxx0x && TREE_CODE (expr) != PTRMEM_CST)
-    expr = maybe_constant_value (expr);
+  /* In C++11, integral or enumeration non-type template arguments can be
+     arbitrary constant expressions.  Pointer and pointer to
+     member arguments can be general constant expressions that evaluate
+     to a null value, but otherwise still need to be of a specific form.  */
+  if (cxx_dialect >= cxx0x)
+    {
+      if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+	expr = maybe_constant_value (expr);
+      else if (TYPE_PTR_P (type)
+	       || (TYPE_PTR_TO_MEMBER_P (type)
+		   && TREE_CODE (expr) != PTRMEM_CST))
+	{
+	  tree folded = maybe_constant_value (expr);
+	  if (TYPE_PTR_P (type) ? integer_zerop (folded)
+	      : null_member_pointer_value_p (folded))
+	    expr = folded;
+	}
+    }
 
   /* HACK: Due to double coercion, we can get a
      NOP_EXPR<REFERENCE_TYPE>(ADDR_EXPR<POINTER_TYPE> (arg)) here,
