@@ -1,4 +1,4 @@
-// { dg-do assemble  }
+// { dg-do assemble { target c++98 } }
 // GROUPS passed old-abort
 typedef __SIZE_TYPE__ size_t;
 typedef void (*RF_Ptr)(void *);

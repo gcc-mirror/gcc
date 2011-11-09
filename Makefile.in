@@ -40661,7 +40661,7 @@ check-gcc-c++:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++ check-c++0x);
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++);
 check-c++: check-gcc-c++ check-target-libstdc++-v3 check-target-libmudflap-c++
 
 .PHONY: check-gcc-fortran check-fortran

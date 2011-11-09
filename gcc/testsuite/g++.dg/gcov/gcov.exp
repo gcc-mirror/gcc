@@ -39,6 +39,6 @@ if { $files != "" } {
 }
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" ""
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] ""
 
 dg-finish

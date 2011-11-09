@@ -4266,6 +4266,24 @@ proc check_effective_target_c++ { } {
  return 0
 }
 
+# Check which language standard is active by checking for the presence of
+# one of the C++11 -std flags.  This assumes that the default for the
+# compiler is C++98, and that there will never be multiple -std= arguments
+# on the command line.
+proc check_effective_target_c++11 { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [check-flags { { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }]
+}
+
+proc check_effective_target_c++98 { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [check-flags { { } { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }]
+}
+
 # Return 1 if expensive testcases should be run.
 
 proc check_effective_target_run_expensive_tests { } {

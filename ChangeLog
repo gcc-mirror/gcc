@@ -1,3 +1,8 @@
+2011-11-09  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.def (language=c++): Remove check-c++0x.
+	* Makefile.in (check-gcc-c++): Regenerate.
+
 2011-11-08  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac: Test for libitm directory present first.

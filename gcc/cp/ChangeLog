@@ -1,5 +1,8 @@
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
+	* Make-lang.in (check_g++_parallelize): Add dg-torture.exp.
+	(check-c++0x): Obsolete.
+
 	* pt.c (invalid_nontype_parm_type_p): Avoid printing "<type error>".
 
 	* pt.c (convert_nontype_argument): Only integral arguments
