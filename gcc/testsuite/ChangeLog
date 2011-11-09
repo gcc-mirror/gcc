@@ -1,3 +1,8 @@
+2011-11-08  David S. Miller  <davem@davemloft.net>
+
+	* lib/target-supports.exp (check_effective_target_sparc_vis): New.
+	(check_effective_target_vect_cmdline_needed): Use it when sparc*-*-*
+
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/50404
