@@ -1155,7 +1155,8 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
    If nothing can be found return NULL_TREE and do not issue an error.  */
 
 tree
-lookup_member (tree xbasetype, tree name, int protect, bool want_type)
+lookup_member (tree xbasetype, tree name, int protect, bool want_type,
+	       tsubst_flags_t complain)
 {
   tree rval, rval_binfo = NULL_TREE;
   tree type = NULL_TREE, basetype_path = NULL_TREE;
@@ -1250,9 +1251,12 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 
   if (errstr && protect)
     {
-      error (errstr, name, type);
-      if (lfi.ambiguous)
-	print_candidates (lfi.ambiguous);
+      if (complain & tf_error)
+	{
+	  error (errstr, name, type);
+	  if (lfi.ambiguous)
+	    print_candidates (lfi.ambiguous);
+	}
       rval = error_mark_node;
     }
 
@@ -1269,7 +1273,8 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 tree
 lookup_field (tree xbasetype, tree name, int protect, bool want_type)
 {
-  tree rval = lookup_member (xbasetype, name, protect, want_type);
+  tree rval = lookup_member (xbasetype, name, protect, want_type,
+			     tf_warning_or_error);
 
   /* Ignore functions, but propagate the ambiguity list.  */
   if (!error_operand_p (rval)
@@ -1285,7 +1290,8 @@ lookup_field (tree xbasetype, tree name, int protect, bool want_type)
 tree
 lookup_fnfields (tree xbasetype, tree name, int protect)
 {
-  tree rval = lookup_member (xbasetype, name, protect, /*want_type=*/false);
+  tree rval = lookup_member (xbasetype, name, protect, /*want_type=*/false,
+			     tf_warning_or_error);
 
   /* Ignore non-functions, but propagate the ambiguity list.  */
   if (!error_operand_p (rval)

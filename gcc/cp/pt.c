@@ -19861,7 +19861,8 @@ resolve_typename_type (tree type, bool only_current_p)
      longer be considered a dependent type.  */
   pushed_scope = push_scope (scope);
   /* Look up the declaration.  */
-  decl = lookup_member (scope, name, /*protect=*/0, /*want_type=*/true);
+  decl = lookup_member (scope, name, /*protect=*/0, /*want_type=*/true,
+			tf_warning_or_error);
 
   result = NULL_TREE;
   

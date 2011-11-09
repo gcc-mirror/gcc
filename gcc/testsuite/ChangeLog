@@ -1,3 +1,8 @@
+2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51047
+	* g++.dg/cpp0x/sfinae29.C: New.
+
 2011-11-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50960
