@@ -2574,14 +2574,21 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       && value != error_mark_node
       && !useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value)))
     {
+      /* If we can match up types by promotion/demotion do so.  */
       if (fold_convertible_p (TREE_TYPE (p), value))
-	rhs = fold_build1 (NOP_EXPR, TREE_TYPE (p), value);
+	rhs = fold_convert (TREE_TYPE (p), value);
       else
-	/* ???  For valid (GIMPLE) programs we should not end up here.
-	   Still if something has gone wrong and we end up with truly
-	   mismatched types here, fall back to using a VIEW_CONVERT_EXPR
-	   to not leak invalid GIMPLE to the following passes.  */
-	rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (p), value);
+	{
+	  /* ???  For valid programs we should not end up here.
+	     Still if we end up with truly mismatched types here, fall back
+	     to using a VIEW_CONVERT_EXPR or a literal zero to not leak invalid
+	     GIMPLE to the following passes.  */
+	  if (!is_gimple_reg_type (TREE_TYPE (value))
+	      || TYPE_SIZE (TREE_TYPE (p)) == TYPE_SIZE (TREE_TYPE (value)))
+	    rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (p), value);
+	  else
+	    rhs = build_zero_cst (TREE_TYPE (p));
+	}
     }
 
   /* Make an equivalent VAR_DECL.  Note that we must NOT remap the type
@@ -2912,7 +2919,27 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
      promoted, convert it back to the expected type.  */
   use = var;
   if (!useless_type_conversion_p (caller_type, TREE_TYPE (var)))
-    use = fold_convert (caller_type, var);
+    {
+      /* If we can match up types by promotion/demotion do so.  */
+      if (fold_convertible_p (caller_type, var))
+	use = fold_convert (caller_type, var);
+      else
+	{
+	  /* ???  For valid programs we should not end up here.
+	     Still if we end up with truly mismatched types here, fall back
+	     to using a MEM_REF to not leak invalid GIMPLE to the following
+	     passes.  */
+	  /* Prevent var from being written into SSA form.  */
+	  if (TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE
+	      || TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE)
+	    DECL_GIMPLE_REG_P (var) = false;
+	  else if (is_gimple_reg_type (TREE_TYPE (var)))
+	    TREE_ADDRESSABLE (var) = true;
+	  use = fold_build2 (MEM_REF, caller_type,
+			     build_fold_addr_expr (var),
+			     build_int_cst (ptr_type_node, 0));
+	}
+    }
 
   STRIP_USELESS_TYPE_CONVERSION (use);
 
