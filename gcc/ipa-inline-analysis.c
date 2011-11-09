@@ -1961,20 +1961,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      es->call_stmt_time = this_time;
 	      es->loop_depth = bb->loop_depth;
 	      edge_set_predicate (edge, &bb_predicate);
-
-	      /* Do not inline calls where we cannot triviall work around
-		 mismatches in argument or return types.  */
-	      if (edge->callee
-		  && cgraph_function_or_thunk_node (edge->callee, NULL)
-		  && !gimple_check_call_matching_types
-		       (stmt, cgraph_function_or_thunk_node (edge->callee,
-			NULL)->decl))
-		{
-		  edge->call_stmt_cannot_inline_p = true;
-		  gimple_call_set_cannot_inline (stmt, true);
-		}
-	      else
-		gcc_assert (!gimple_call_cannot_inline_p (stmt));
 	    }
 
 	  /* TODO: When conditional jump or swithc is known to be constant, but
