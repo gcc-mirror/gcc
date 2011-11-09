@@ -1,5 +1,7 @@
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (invalid_nontype_parm_type_p): Avoid printing "<type error>".
+
 	* pt.c (convert_nontype_argument): Only integral arguments
 	get early folding.
 
