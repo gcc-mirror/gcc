@@ -939,6 +939,21 @@ gfc_simplify_dint (gfc_expr *e)
 
 
 gfc_expr *
+gfc_simplify_dreal (gfc_expr *e)
+{
+  gfc_expr *result = NULL;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_REAL, e->ts.kind, &e->where);
+  mpc_real (result->value.real, e->value.complex, GFC_RND_MODE);
+
+  return range_check (result, "DREAL");
+}
+
+
+gfc_expr *
 gfc_simplify_anint (gfc_expr *e, gfc_expr *k)
 {
   gfc_expr *result;

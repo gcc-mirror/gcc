@@ -1,3 +1,8 @@
+2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38718
+	* gfortran.dg/initialization_29.f90: Expand test.
+
 2011-11-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51027
