@@ -1,5 +1,12 @@
 2011-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/50911
+	* gcc.dg/torture/vshuf-16.inc: Add interleave low and high
+	permutations.
+	* gcc.dg/torture/vshuf-32.inc: Likewise.
+	* gcc.dg/torture/vshuf-4.inc: Likewise.
+	* gcc.dg/torture/vshuf-8.inc: Likewise.
+
 	* gcc.dg/tm/memopt-1.c: Fix up regexp.
 
 2011-11-09  Ian Lance Taylor  <iant@google.com>
