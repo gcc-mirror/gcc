@@ -41,6 +41,10 @@
 
 2011-11-09  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/51043
+	* cp-tree.h (TYPE_ALIAS_P, TYPE_TEMPLATE_INFO): Don't crash on
+	NULL TYPE_NAME.
+
 	PR c++/51027
 	* parser.c (cp_parser_alias_declaration): Require ';' at the end
     	of the declaration.
