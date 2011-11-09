@@ -1,5 +1,11 @@
 2011-11-09  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/51027
+	* parser.c (cp_parser_alias_declaration): Require ';' at the end
+    	of the declaration.
+
+2011-11-09  Dodji Seketeli  <dodji@redhat.com>
+
 	PR debug/51032
 	* decl2.c (check_member_template): Accept alias templates and ...
     	* parser.c (cp_parser_alias_declaration): ... use it here.

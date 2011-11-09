@@ -1,5 +1,11 @@
 2011-11-09  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/51027
+	* g++.dg/cpp0x/alias-decl-12.C: New test.
+	* g++.dg/ext/alias-decl-attr4.C: Append missing ';'.
+
+2011-11-09  Dodji Seketeli  <dodji@redhat.com>
+
 	PR debug/51032
 	* g++.dg/cpp0x/alias-decl-debug-0.C: New test.
 
