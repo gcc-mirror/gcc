@@ -26,8 +26,8 @@ torture-init
 set-torture-options [list \
 	{ -O0 -g } \
 	{ -O1 -g } \
-	{ -O2 -g } \
-	{ -O3 -g } \
+	{ -O2 -g -std=c++98 } \
+	{ -O3 -g -std=c++11 } \
 	{ -Os -g } ]
 
 if [gdb-exists] {

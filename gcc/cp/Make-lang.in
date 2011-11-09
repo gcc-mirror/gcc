@@ -152,8 +152,7 @@ c++.srcman: doc/g++.1
 check-c++ : check-g++
 # Run the testsute in C++0x mode.
 check-c++0x:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --extra_opts,-std=gnu++0x" \
-	  TESTSUITEDIR="$(TESTSUITEDIR).c++0x" check-g++
+	@echo Normal 'make check' now runs the testsuite in C++11 mode as well as C++98.
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:
 	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --extra_opts,--param,ggc-min-heapsize=0,--param,ggc-min-expand=0" \
@@ -163,7 +162,7 @@ check-c++-subtargets : check-g++-subtargets
 lang_checks += check-g++
 lang_checks_parallelized += check-g++
 # For description see comment above check_gcc_parallelize in gcc/Makefile.in.
-check_g++_parallelize = old-deja.exp dg.exp
+check_g++_parallelize = old-deja.exp dg.exp dg-torture.exp
 
 #
 # Install hooks:

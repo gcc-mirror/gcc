@@ -22,7 +22,7 @@ load_lib g++-dg.exp
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS
 if ![info exists DEFAULT_CXXFLAGS] then {
-    set DEFAULT_CXXFLAGS " -ansi -pedantic-errors -Wno-long-long"
+    set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 
 # Initialize `dg'.
@@ -52,14 +52,14 @@ set tests [prune $tests $srcdir/$subdir/guality/*]
 set tests [prune $tests $srcdir/$subdir/simulate-thread/*]
 
 # Main loop.
-dg-runtest $tests "" $DEFAULT_CXXFLAGS
+g++-dg-runtest $tests $DEFAULT_CXXFLAGS
 
 # C/C++ common tests.
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/*.\[cSi\]]] \
-	"" ""
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/*.\[cSi\]]] \
+	""
 
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cpp/*.\[cS\]]] \
-	"" ""
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cpp/*.\[cS\]]] \
+	""
 
 
 # All done.

@@ -1,4 +1,53 @@
-2011-11-09  Jason Merrill  <jason@redhat.com>
+2011-11-08  Jason Merrill  <jason@redhat.com>
+
+	Run most C++ tests in both C++98 and C++11 modes.
+	* lib/target-supports.exp (check_effective_target_c++11): New.
+	(check_effective_target_c++98): New.
+	* lib/g++-dg.exp (g++-dg-runtest): New.
+	* g++.dg/dg.exp: Use g++-dg-runtest.
+	* g++.dg/charset/charset.exp: Likewise.
+	* g++.dg/debug/dwarf2/dwarf2.exp: Likewise.
+	* g++.dg/dfp/dfp.exp: Likewise.
+	* g++.dg/gcov/gcov.exp: Likewise.
+	* g++.dg/gomp/gomp.exp: Likewise.
+	* g++.dg/graphite/graphite.exp: Likewise.
+	* g++.dg/tls/tls.exp: Likewise.
+	* g++.dg/tm/tm.exp: Likewise.
+	* g++.dg/vect/vect.exp: Likewise.
+	* g++.old-deja/old-deja.exp: Likewise.
+	* g++.dg/simulate-thread/simulate-thread.exp: Pass -std flags
+	with some of the torture options.
+	* g++.dg/abi/mangle4.C: Move to template/nontype25.C.
+	* g++.dg/template/sfinae6_neg.C: Add C++11 error.
+	* g++.dg/init/null1.C: Only run in C++98.
+	* g++.dg/warn/Wconversion-null-3.C: Likewise.
+	* g++.old-deja/g++.benjamin/p12475.C: Likewise.
+	* g++.old-deja/g++.brendan/crash64.C: Likewise.
+	* g++.old-deja/g++.other/anon9.C: Likewise.
+	* g++.old-deja/g++.other/linkage1.C: Likewise.
+	* g++.old-deja/g++.other/linkage2.C: Likewise.
+	* g++.old-deja/g++.pt/t29.C: Likewise.
+	* g++.old-deja/g++.pt/t30.C: Likewise.
+	* g++.dg/cpp0x/variadic60.C: Only error in C++98.
+	* g++.dg/ext/anon-struct4.C: Likewise.
+	* g++.dg/init/brace2.C: Likewise.
+	* g++.dg/init/brace6.C: Likewise.
+	* g++.dg/other/anon3.C: Likewise.
+	* g++.dg/template/arg2.C: Likewise.
+	* g++.old-deja/g++.brendan/cvt1.C: Likewise.
+	* g++.old-deja/g++.brendan/enum11.C: Likewise.
+	* g++.old-deja/g++.brendan/enum8.C: Likewise.
+	* g++.old-deja/g++.brendan/enum9.C: Likewise.
+	* g++.old-deja/g++.brendan/friend3.C: Likewise.
+	* g++.old-deja/g++.brendan/init2.C: Likewise.
+	* g++.old-deja/g++.brendan/init4.C: Likewise.
+	* g++.old-deja/g++.brendan/misc14.C: Likewise.
+	* g++.old-deja/g++.jason/cond.C: Likewise.
+	* g++.old-deja/g++.law/init1.C: Likewise.
+	* g++.old-deja/g++.law/operators32.C: Likewise.
+	* g++.old-deja/g++.pt/enum6.C: Likewise.
+	* g++.old-deja/g++.pt/explicit70.C: Likewise.
+	* g++.old-deja/g++.pt/ptrmem6.C: Likewise.
 
 	* g++.dg/eh/new1.C: Adjust for C++11 mode.
 	* g++.dg/init/new11.C: Likewise.

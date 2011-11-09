@@ -21,7 +21,7 @@ load_lib g++-dg.exp
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS
 if ![info exists DEFAULT_CXXFLAGS] then {
-    set DEFAULT_CXXFLAGS " -ansi -pedantic-errors -Wno-long-long"
+    set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 
 # Initialize `dg'.
@@ -32,7 +32,7 @@ dg-init
 set tests [lsort [find $srcdir/$subdir *.C]]
 
 # Main loop.
-dg-runtest $tests "" $DEFAULT_CXXFLAGS
+g++-dg-runtest $tests $DEFAULT_CXXFLAGS
 
 # All done.
 dg-finish

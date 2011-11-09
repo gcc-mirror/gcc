@@ -1,4 +1,4 @@
-// { dg-do assemble  }
+// { dg-do assemble { target c++98 } }
 typedef struct {
   int i;
 } *p;

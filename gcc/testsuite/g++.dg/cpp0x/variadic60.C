@@ -1,1 +1,1 @@
-template<typename... Args> class tuple; // { dg-error "variadic templates" }
+template<typename... Args> class tuple; // { dg-error "variadic templates" "" { target c++98 } }

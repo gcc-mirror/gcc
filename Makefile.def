@@ -513,7 +513,7 @@ dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
-languages = { language=c++;	gcc-check-target="check-c++ check-c++0x";
+languages = { language=c++;	gcc-check-target=check-c++;
 				lib-check-target=check-target-libstdc++-v3;
 				lib-check-target=check-target-libmudflap-c++; };
 languages = { language=fortran;	gcc-check-target=check-fortran;

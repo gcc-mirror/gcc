@@ -26,3 +26,36 @@ proc g++-dg-test { prog do_what extra_tool_flags } {
 proc g++-dg-prune { system text } {
     return [gcc-dg-prune $system $text]
 }
+
+# Modified dg-runtest that runs tests in both C++98 and C++11 modes
+# unless they specifically specify one or the other.
+proc g++-dg-runtest { testcases default-extra-flags } {
+    global runtests
+
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+	}
+
+	# If the testcase specifies a standard, use that one.
+	# If not, run it under both standards, allowing GNU extensions
+	# if there's a dg-options line.
+	if ![search_for $test "-std=*++"] {
+	    if [search_for $test "dg-options"] {
+		set option_list { -std=gnu++98 -std=gnu++11 }
+	    } else {
+		set option_list { -std=c++98 -std=c++11 }
+	    }
+	} else {
+	    set option_list { "" }
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags $option_list {
+	    verbose "Testing $nshort, $flags" 1
+	    dg-test $test $flags ${default-extra-flags}
+	}
+    }
+}
