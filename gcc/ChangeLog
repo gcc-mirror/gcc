@@ -1,5 +1,10 @@
 2011-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/50911
+	* config/i386/i386.c (expand_vec_perm_interleave2): If d->vmode is
+	V4SImode, !TARGET_SSE2 and punpck[lh]* is needed, change dremap.vmode
+	to V4SFmode.
+
 	* function.h (requires_stack_frame_p): New prototype.
 	* function.c (requires_stack_frame_p): No longer static.
 	* config/i386/i386.c (ix86_finalize_stack_realign_flags): If

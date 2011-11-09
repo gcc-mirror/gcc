@@ -35877,6 +35877,8 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
 	      dremap.perm[i * 2] = i;
 	      dremap.perm[i * 2 + 1] = i + nelt;
 	    }
+	  if (!TARGET_SSE2 && d->vmode == V4SImode)
+	    dremap.vmode = V4SFmode;
 	}
       else if ((contents & (h2 | h4)) == contents)
 	{
@@ -35888,6 +35890,8 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
 	      dremap.perm[i * 2] = i + nelt2;
 	      dremap.perm[i * 2 + 1] = i + nelt + nelt2;
 	    }
+	  if (!TARGET_SSE2 && d->vmode == V4SImode)
+	    dremap.vmode = V4SFmode;
 	}
       else if ((contents & (h1 | h4)) == contents)
 	{
