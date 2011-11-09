@@ -213,9 +213,8 @@ gf_gettime (time_t * secs, long * usecs)
   *usecs = tv.tv_usec;
   return err;
 #else
-  time_t t, t2;
-  t = time (&t2);
-  *secs = t2;
+  time_t t = time (NULL);
+  *secs = t;
   *usecs = 0;
   if (t == ((time_t)-1))
     return -1;

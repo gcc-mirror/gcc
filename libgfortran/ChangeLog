@@ -1,5 +1,9 @@
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* intrinsics/time_1.h (gf_gettime): Simplify time() usage.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* configure.ac (AC_STDC_HEADERS): Remove.
 	(AC_HEADER_TIME): Remove.
 	(AC_HAVE_HEADERS, AC_CHECK_HEADERS): Move into a single invocation
