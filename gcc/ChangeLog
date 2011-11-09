@@ -1,5 +1,14 @@
 2011-11-09  Richard Guenther  <rguenther@suse.de>
 
+	Revert
+	2011-11-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_call): Verify that
+	gimple_call_cannot_inline_p is returning a conservative
+	correct result according to gimple_check_call_matching_types.
+
+2011-11-09  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51039
 	* tree-cfg.c (verify_gimple_call): Verify that
 	gimple_call_cannot_inline_p is returning a conservative

@@ -3227,16 +3227,6 @@ verify_gimple_call (gimple stmt)
 	}
     }
 
-  /* Verify that if we have a direct call and the argument/return
-     types have mismatches the call is properly marked as noninlinable.  */
-  if (fndecl
-      && !gimple_call_cannot_inline_p (stmt)
-      && !gimple_check_call_matching_types (stmt, fndecl))
-    {
-      error ("gimple call cannot be inlined but is not marked so");
-      return true;
-    }
-
   return false;
 }
 
