@@ -7,3 +7,5 @@ struct S {
     }
 };
 
+// It's OK to error or not on line 6.
+// { dg-prune-output ":6:" }

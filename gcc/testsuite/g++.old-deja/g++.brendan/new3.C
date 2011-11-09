@@ -12,7 +12,11 @@
 
 int pass = 0;
 
-void *operator new(size_t sz) throw (std::bad_alloc) {
+void *operator new(size_t sz)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
+{
 
   void *p;
 

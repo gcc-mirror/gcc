@@ -1,5 +1,26 @@
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/eh/new1.C: Adjust for C++11 mode.
+	* g++.dg/init/new11.C: Likewise.
+	* g++.dg/init/pr29571.C: Likewise.
+	* g++.dg/lookup/forscope2.C: Likewise.
+	* g++.dg/parse/linkage1.C: Likewise.
+	* g++.dg/parse/typedef8.C: Likewise.
+	* g++.dg/template/error44.C: Likewise.
+	* g++.dg/tls/diag-2.C: Likewise.
+	* g++.dg/tls/diag-4.C: Likewise.
+	* g++.dg/warn/anonymous-namespace-3.C: Likewise.
+	* g++.old-deja/g++.abi/arraynew.C: Likewise.
+	* g++.old-deja/g++.abi/cxa_vec.C: Likewise.
+	* g++.old-deja/g++.brendan/new3.C: Likewise.
+	* g++.old-deja/g++.eh/new1.C: Likewise.
+	* g++.old-deja/g++.eh/new2.C: Likewise.
+	* g++.old-deja/g++.jason/new.C: Likewise.
+	* g++.old-deja/g++.law/friend1.C: Likewise.
+	* g++.old-deja/g++.mike/net46.C: Likewise.
+	* g++.old-deja/g++.mike/p755.C: Likewise.
+	* g++.old-deja/g++.other/new6.C: Likewise.
+
 	* g++.dg/cpp0x/variadic74.C: Adjust diags.
 	* g++.dg/template/crash53.C: Likewise.
 	* g++.dg/template/void9.C: Likewise.

@@ -8,7 +8,11 @@ int fail = 1;
 
 int in_main = 0;
 
-void *operator new(size_t size) throw (std::bad_alloc) {
+void *operator new(size_t size)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
+{
   if (!in_main) return malloc (size);
   --fail;
   return (void*) 0;
