@@ -18166,17 +18166,22 @@ maybe_instantiate_noexcept (tree fn)
 
   if (TREE_CODE (noex) == DEFERRED_NOEXCEPT)
     {
-      push_tinst_level (fn);
-      push_access_scope (fn);
-      input_location = DECL_SOURCE_LOCATION (fn);
-      noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
-				    DEFERRED_NOEXCEPT_ARGS (noex),
-				    tf_warning_or_error, fn, /*function_p=*/false,
-				    /*integral_constant_expression_p=*/true);
-      pop_access_scope (fn);
-      pop_tinst_level ();
-      spec = build_noexcept_spec (noex, tf_warning_or_error);
-      if (spec == error_mark_node)
+      if (push_tinst_level (fn))
+	{
+	  push_access_scope (fn);
+	  input_location = DECL_SOURCE_LOCATION (fn);
+	  noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
+					DEFERRED_NOEXCEPT_ARGS (noex),
+					tf_warning_or_error, fn,
+					/*function_p=*/false,
+					/*integral_constant_expression_p=*/true);
+	  pop_access_scope (fn);
+	  pop_tinst_level ();
+	  spec = build_noexcept_spec (noex, tf_warning_or_error);
+	  if (spec == error_mark_node)
+	    spec = noexcept_false_spec;
+	}
+      else
 	spec = noexcept_false_spec;
     }
   else

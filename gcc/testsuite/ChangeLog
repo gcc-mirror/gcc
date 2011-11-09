@@ -1,5 +1,8 @@
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50972
+	* g++.dg/cpp0x/noexcept16.C: New.
+
 	PR c++/51046
 	* g++.dg/cpp0x/variadic119.C: New.
 
