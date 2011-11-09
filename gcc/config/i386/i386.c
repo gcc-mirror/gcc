@@ -9928,12 +9928,68 @@ ix86_finalize_stack_realign_flags (void)
       /* After stack_realign_needed is finalized, we can't no longer
 	 change it.  */
       gcc_assert (crtl->stack_realign_needed == stack_realign);
+      return;
     }
-  else
+
+  /* If the only reason for frame_pointer_needed is that we conservatively
+     assumed stack realignment might be needed, but in the end nothing that
+     needed the stack alignment had been spilled, clear frame_pointer_needed
+     and say we don't need stack realignment.  */
+  if (stack_realign
+      && !crtl->need_drap
+      && frame_pointer_needed
+      && current_function_is_leaf
+      && flag_omit_frame_pointer
+      && current_function_sp_is_unchanging
+      && !ix86_current_function_calls_tls_descriptor
+      && !crtl->accesses_prior_frames
+      && !cfun->calls_alloca
+      && !crtl->calls_eh_return
+      && !(flag_stack_check && STACK_CHECK_MOVING_SP)
+      && !ix86_frame_pointer_required ()
+      && get_frame_size () == 0
+      && ix86_nsaved_sseregs () == 0
+      && ix86_varargs_gpr_size + ix86_varargs_fpr_size == 0)
     {
-      crtl->stack_realign_needed = stack_realign;
-      crtl->stack_realign_finalized = true;
+      HARD_REG_SET set_up_by_prologue, prologue_used;
+      basic_block bb;
+
+      CLEAR_HARD_REG_SET (prologue_used);
+      CLEAR_HARD_REG_SET (set_up_by_prologue);
+      add_to_hard_reg_set (&set_up_by_prologue, Pmode, STACK_POINTER_REGNUM);
+      add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
+      add_to_hard_reg_set (&set_up_by_prologue, Pmode,
+			   HARD_FRAME_POINTER_REGNUM);
+      FOR_EACH_BB (bb)
+        {
+          rtx insn;
+	  FOR_BB_INSNS (bb, insn)
+	    if (NONDEBUG_INSN_P (insn)
+		&& requires_stack_frame_p (insn, prologue_used,
+					   set_up_by_prologue))
+	      {
+		crtl->stack_realign_needed = stack_realign;
+		crtl->stack_realign_finalized = true;
+		return;
+	      }
+	}
+
+      frame_pointer_needed = false;
+      stack_realign = false;
+      crtl->max_used_stack_slot_alignment = incoming_stack_boundary;
+      crtl->stack_alignment_needed = incoming_stack_boundary;
+      crtl->stack_alignment_estimated = incoming_stack_boundary;
+      if (crtl->preferred_stack_boundary > incoming_stack_boundary)
+	crtl->preferred_stack_boundary = incoming_stack_boundary;
+      df_finish_pass (true);
+      df_scan_alloc (NULL);
+      df_scan_blocks ();
+      df_compute_regs_ever_live (true);
+      df_analyze ();
     }
+
+  crtl->stack_realign_needed = stack_realign;
+  crtl->stack_realign_finalized = true;
 }
 
 /* Expand the prologue into a bunch of separate insns.  */
