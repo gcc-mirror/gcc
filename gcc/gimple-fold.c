@@ -137,9 +137,12 @@ canonicalize_constructor_val (tree cval)
 	      || TREE_CODE (base) == FUNCTION_DECL)
 	  && !can_refer_decl_in_current_unit_p (base))
 	return NULL_TREE;
-      if (cfun && gimple_referenced_vars (cfun)
-	  && base && TREE_CODE (base) == VAR_DECL)
-	add_referenced_var (base);
+      if (base && TREE_CODE (base) == VAR_DECL)
+	{
+	  TREE_ADDRESSABLE (base) = 1;
+	  if (cfun && gimple_referenced_vars (cfun))
+	    add_referenced_var (base);
+	}
       /* Fixup types in global initializers.  */
       if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
 	cval = build_fold_addr_expr (TREE_OPERAND (cval, 0));
