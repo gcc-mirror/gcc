@@ -1,5 +1,25 @@
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR fortran/46686
+	* configure.ac: Don't check execinfo.h, backtrace,
+	backtrace_symbols_fd. Check execve instead of execvp. Call
+	GCC_CHECK_UNWIND_GETIPINFO.
+	* runtime/backtrace.c: Don't include unused headers, include
+	limits.h and unwind.h.
+	(CAN_FORK): Check execve instead of execvp.
+	(GLIBC_BACKTRACE): Remove.
+	(bt_header): Conform to gdb backtrace format.
+	(struct bt_state): New struct.
+	(trace_function): New function.
+	(show_backtrace): Use _Unwind_Backtrace from libgcc instead of
+	glibc backtrace functions.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
         PR libfortran/50016
         * io/inquire.c (inquire_via_unit): Flush the unit and use ssize.
         * io/unix.c (buf_flush): Don't call _commit.

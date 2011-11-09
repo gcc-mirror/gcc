@@ -81,12 +81,6 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
-/* Define to 1 if you have the `backtrace' function. */
-#undef HAVE_BACKTRACE
-
-/* Define to 1 if you have the `backtrace_symbols_fd' function. */
-#undef HAVE_BACKTRACE_SYMBOLS_FD
-
 /* Define if powf is broken. */
 #undef HAVE_BROKEN_POWF
 
@@ -348,14 +342,11 @@
 /* libm includes erfl */
 #undef HAVE_ERFL
 
-/* Define to 1 if you have the <execinfo.h> header file. */
-#undef HAVE_EXECINFO_H
-
 /* Define to 1 if you have the `execl' function. */
 #undef HAVE_EXECL
 
-/* Define to 1 if you have the `execvp' function. */
-#undef HAVE_EXECVP
+/* Define to 1 if you have the `execve' function. */
+#undef HAVE_EXECVE
 
 /* libm includes exp */
 #undef HAVE_EXP
@@ -452,6 +443,9 @@
 
 /* Define to 1 if you have the `gethostname' function. */
 #undef HAVE_GETHOSTNAME
+
+/* Define if _Unwind_GetIPInfo is available. */
+#undef HAVE_GETIPINFO
 
 /* Define to 1 if you have the `getlogin' function. */
 #undef HAVE_GETLOGIN

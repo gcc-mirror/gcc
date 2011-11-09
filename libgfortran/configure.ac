@@ -249,7 +249,7 @@ AC_HEADER_TIME
 AC_HAVE_HEADERS(stdio.h stdlib.h string.h unistd.h signal.h stdarg.h)
 AC_CHECK_HEADERS(time.h sys/time.h sys/times.h sys/resource.h)
 AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h)
-AC_CHECK_HEADERS(fenv.h fptrap.h float.h execinfo.h pwd.h)
+AC_CHECK_HEADERS(fenv.h fptrap.h float.h pwd.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
 GCC_HEADER_STDINT(gstdint.h)
 
@@ -261,13 +261,10 @@ AC_CHECK_MEMBERS([struct stat.st_rdev])
 AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
 AC_CHECK_FUNCS(sleep time ttyname signal alarm clock access fork execl)
-AC_CHECK_FUNCS(wait setmode execvp pipe dup2 close fdopen strcasestr getrlimit)
+AC_CHECK_FUNCS(wait setmode execve pipe dup2 close fdopen strcasestr getrlimit)
 AC_CHECK_FUNCS(gettimeofday stat fstat lstat getpwuid vsnprintf dup getcwd)
 AC_CHECK_FUNCS(localtime_r gmtime_r strerror_r getpwuid_r ttyname_r)
 AC_CHECK_FUNCS(clock_gettime strftime readlink)
-
-# Check for glibc backtrace functions
-AC_CHECK_FUNCS(backtrace backtrace_symbols_fd)
 
 # Check libc for getgid, getpid, getuid
 AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])
@@ -558,6 +555,9 @@ LIBGFOR_CHECK_UNLINK_OPEN_FILE
 
 # Check whether line terminator is LF or CRLF
 LIBGFOR_CHECK_CRLF
+
+# Check whether we have _Unwind_GetIPInfo for backtrace
+GCC_CHECK_UNWIND_GETIPINFO
 
 AC_CACHE_SAVE
 
