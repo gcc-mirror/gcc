@@ -1,5 +1,5 @@
 /* Handling of compile-time options that influence the library.
-   Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -23,10 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 
 
 /* Useful compile-time options will be stored in here.  */
@@ -94,32 +91,17 @@ set_options (int num, int options[])
 
   /* If backtrace is required, we set signal handlers on the POSIX
      2001 signals with core action.  */
-#if defined(HAVE_SIGNAL) && (defined(SIGQUIT) || defined(SIGILL) \
-			     || defined(SIGABRT) || defined(SIGFPE) \
-			     || defined(SIGSEGV) || defined(SIGBUS) \
-			     || defined(SIGSYS) || defined(SIGTRAP) \
-			     || defined(SIGXCPU) || defined(SIGXFSZ))
   if (compile_options.backtrace)
     {
 #if defined(SIGQUIT)
       signal (SIGQUIT, backtrace_handler);
 #endif
 
-#if defined(SIGILL)
+      /* The following 4 signals are defined by C89.  */
       signal (SIGILL, backtrace_handler);
-#endif
-
-#if defined(SIGABRT)
       signal (SIGABRT, backtrace_handler);
-#endif
-
-#if defined(SIGFPE)
       signal (SIGFPE, backtrace_handler);
-#endif
-
-#if defined(SIGSEGV)
       signal (SIGSEGV, backtrace_handler);
-#endif
 
 #if defined(SIGBUS)
       signal (SIGBUS, backtrace_handler);
@@ -143,8 +125,6 @@ set_options (int num, int options[])
 
       maybe_find_addr2line ();
     }
-#endif
-
 }
 
 

@@ -28,18 +28,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
-
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -172,9 +167,7 @@ sys_abort (void)
       || (options.backtrace == -1 && compile_options.backtrace == 1))
     {
       show_backtrace ();
-#if defined(HAVE_SIGNAL) && defined(SIGABRT)
       signal (SIGABRT, SIG_DFL);
-#endif
     }
 
   abort();

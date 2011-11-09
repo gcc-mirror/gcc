@@ -597,6 +597,8 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
+ac_header_list=
+ac_func_list=
 ac_c_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
@@ -2528,6 +2530,68 @@ $as_echo "$as_me: creating cache $cache_file" >&6;}
   >$cache_file
 fi
 
+as_fn_append ac_header_list " unistd.h"
+as_fn_append ac_header_list " sys/time.h"
+as_fn_append ac_header_list " sys/times.h"
+as_fn_append ac_header_list " sys/resource.h"
+as_fn_append ac_header_list " sys/types.h"
+as_fn_append ac_header_list " sys/stat.h"
+as_fn_append ac_header_list " sys/wait.h"
+as_fn_append ac_header_list " floatingpoint.h"
+as_fn_append ac_header_list " ieeefp.h"
+as_fn_append ac_header_list " fenv.h"
+as_fn_append ac_header_list " fptrap.h"
+as_fn_append ac_header_list " pwd.h"
+as_fn_append ac_header_list " complex.h"
+as_fn_append ac_func_list " getrusage"
+as_fn_append ac_func_list " times"
+as_fn_append ac_func_list " mkstemp"
+as_fn_append ac_func_list " strtof"
+as_fn_append ac_func_list " strtold"
+as_fn_append ac_func_list " snprintf"
+as_fn_append ac_func_list " ftruncate"
+as_fn_append ac_func_list " chsize"
+as_fn_append ac_func_list " chdir"
+as_fn_append ac_func_list " getlogin"
+as_fn_append ac_func_list " gethostname"
+as_fn_append ac_func_list " kill"
+as_fn_append ac_func_list " link"
+as_fn_append ac_func_list " symlink"
+as_fn_append ac_func_list " sleep"
+as_fn_append ac_func_list " ttyname"
+as_fn_append ac_func_list " alarm"
+as_fn_append ac_func_list " access"
+as_fn_append ac_func_list " fork"
+as_fn_append ac_func_list " execl"
+as_fn_append ac_func_list " wait"
+as_fn_append ac_func_list " setmode"
+as_fn_append ac_func_list " execve"
+as_fn_append ac_func_list " pipe"
+as_fn_append ac_func_list " dup2"
+as_fn_append ac_func_list " close"
+as_fn_append ac_func_list " fdopen"
+as_fn_append ac_func_list " strcasestr"
+as_fn_append ac_func_list " getrlimit"
+as_fn_append ac_func_list " gettimeofday"
+as_fn_append ac_func_list " stat"
+as_fn_append ac_func_list " fstat"
+as_fn_append ac_func_list " lstat"
+as_fn_append ac_func_list " getpwuid"
+as_fn_append ac_func_list " vsnprintf"
+as_fn_append ac_func_list " dup"
+as_fn_append ac_func_list " getcwd"
+as_fn_append ac_func_list " localtime_r"
+as_fn_append ac_func_list " gmtime_r"
+as_fn_append ac_func_list " strerror_r"
+as_fn_append ac_func_list " getpwuid_r"
+as_fn_append ac_func_list " ttyname_r"
+as_fn_append ac_func_list " clock_gettime"
+as_fn_append ac_func_list " readlink"
+as_fn_append ac_func_list " getgid"
+as_fn_append ac_func_list " getpid"
+as_fn_append ac_func_list " getppid"
+as_fn_append ac_func_list " getuid"
+as_fn_append ac_func_list " geteuid"
 # Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false
@@ -12254,7 +12318,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12257 "configure"
+#line 12321 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12360,7 +12424,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12363 "configure"
+#line 12427 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15871,158 +15935,15 @@ _ACEOF
 fi
 
 
-# check header files
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
-$as_echo_n "checking for ANSI C header files... " >&6; }
-if test "${ac_cv_header_stdc+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <float.h>
+# check header files (we assume C89 is available, so don't check for that)
 
-int
-main ()
-{
 
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_header_stdc=yes
-else
-  ac_cv_header_stdc=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-if test $ac_cv_header_stdc = yes; then
-  # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <string.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "memchr" >/dev/null 2>&1; then :
-
-else
-  ac_cv_header_stdc=no
-fi
-rm -f conftest*
-
-fi
-
-if test $ac_cv_header_stdc = yes; then
-  # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "free" >/dev/null 2>&1; then :
-
-else
-  ac_cv_header_stdc=no
-fi
-rm -f conftest*
-
-fi
-
-if test $ac_cv_header_stdc = yes; then
-  # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
-  if test "$cross_compiling" = yes; then :
-  :
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <ctype.h>
-#include <stdlib.h>
-#if ((' ' & 0x0FF) == 0x020)
-# define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
-# define TOUPPER(c) (ISLOWER(c) ? 'A' + ((c) - 'a') : (c))
-#else
-# define ISLOWER(c) \
-		   (('a' <= (c) && (c) <= 'i') \
-		     || ('j' <= (c) && (c) <= 'r') \
-		     || ('s' <= (c) && (c) <= 'z'))
-# define TOUPPER(c) (ISLOWER(c) ? ((c) | 0x40) : (c))
-#endif
-
-#define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
-int
-main ()
-{
-  int i;
-  for (i = 0; i < 256; i++)
-    if (XOR (islower (i), ISLOWER (i))
-	|| toupper (i) != TOUPPER (i))
-      return 2;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-
-else
-  ac_cv_header_stdc=no
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_stdc" >&5
-$as_echo "$ac_cv_header_stdc" >&6; }
-if test $ac_cv_header_stdc = yes; then
-
-$as_echo "#define STDC_HEADERS 1" >>confdefs.h
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether time.h and sys/time.h may both be included" >&5
-$as_echo_n "checking whether time.h and sys/time.h may both be included... " >&6; }
-if test "${ac_cv_header_time+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
-
-int
-main ()
-{
-if ((struct tm *) 0)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_header_time=yes
-else
-  ac_cv_header_time=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_time" >&5
-$as_echo "$ac_cv_header_time" >&6; }
-if test $ac_cv_header_time = yes; then
-
-$as_echo "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
-
-fi
-
-for ac_header in stdio.h stdlib.h string.h unistd.h signal.h stdarg.h
+  for ac_header in $ac_header_list
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default
+"
 eval as_val=\$$as_ac_Header
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
@@ -16033,54 +15954,32 @@ fi
 
 done
 
-for ac_header in time.h sys/time.h sys/times.h sys/resource.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-eval as_val=\$$as_ac_Header
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
 
-fi
 
-done
 
-for ac_header in sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-eval as_val=\$$as_ac_Header
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
 
-fi
 
-done
 
-for ac_header in fenv.h fptrap.h float.h pwd.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-eval as_val=\$$as_ac_Header
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
 
-fi
 
-done
 
-ac_fn_c_check_header_mongrel "$LINENO" "complex.h" "ac_cv_header_complex_h" "$ac_includes_default"
-if test "x$ac_cv_header_complex_h" = x""yes; then :
 
-$as_echo "#define HAVE_COMPLEX_H 1" >>confdefs.h
 
-fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -16499,7 +16398,6 @@ _ACEOF
 
 
 fi
-
 ac_fn_c_check_member "$LINENO" "struct stat" "st_blocks" "ac_cv_member_struct_stat_st_blocks" "$ac_includes_default"
 if test "x$ac_cv_member_struct_stat_st_blocks" = x""yes; then :
 
@@ -16509,7 +16407,6 @@ _ACEOF
 
 
 fi
-
 ac_fn_c_check_member "$LINENO" "struct stat" "st_rdev" "ac_cv_member_struct_stat_st_rdev" "$ac_includes_default"
 if test "x$ac_cv_member_struct_stat_st_rdev" = x""yes; then :
 
@@ -16522,85 +16419,10 @@ fi
 
 
 # Check for library functions.
-for ac_func in getrusage times mkstemp strtof strtold snprintf ftruncate chsize
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
 
-fi
-done
 
-for ac_func in chdir strerror getlogin gethostname kill link symlink perror
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
 
-fi
-done
-
-for ac_func in sleep time ttyname signal alarm clock access fork execl
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
-for ac_func in wait setmode execve pipe dup2 close fdopen strcasestr getrlimit
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
-for ac_func in gettimeofday stat fstat lstat getpwuid vsnprintf dup getcwd
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
-for ac_func in localtime_r gmtime_r strerror_r getpwuid_r ttyname_r
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
-for ac_func in clock_gettime strftime readlink
+  for ac_func in $ac_func_list
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -16614,231 +16436,103 @@ fi
 done
 
 
-# Check libc for getgid, getpid, getuid
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for getgid in -lc" >&5
-$as_echo_n "checking for getgid in -lc... " >&6; }
-if test "${ac_cv_lib_c_getgid+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lc  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char getgid ();
-int
-main ()
-{
-return getgid ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_c_getgid=yes
-else
-  ac_cv_lib_c_getgid=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_getgid" >&5
-$as_echo "$ac_cv_lib_c_getgid" >&6; }
-if test "x$ac_cv_lib_c_getgid" = x""yes; then :
 
-$as_echo "#define HAVE_GETGID 1" >>confdefs.h
 
-fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for getpid in -lc" >&5
-$as_echo_n "checking for getpid in -lc... " >&6; }
-if test "${ac_cv_lib_c_getpid+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lc  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char getpid ();
-int
-main ()
-{
-return getpid ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_c_getpid=yes
-else
-  ac_cv_lib_c_getpid=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_getpid" >&5
-$as_echo "$ac_cv_lib_c_getpid" >&6; }
-if test "x$ac_cv_lib_c_getpid" = x""yes; then :
 
-$as_echo "#define HAVE_GETPID 1" >>confdefs.h
 
-fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for getppid in -lc" >&5
-$as_echo_n "checking for getppid in -lc... " >&6; }
-if test "${ac_cv_lib_c_getppid+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lc  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char getppid ();
-int
-main ()
-{
-return getppid ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_c_getppid=yes
-else
-  ac_cv_lib_c_getppid=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_getppid" >&5
-$as_echo "$ac_cv_lib_c_getppid" >&6; }
-if test "x$ac_cv_lib_c_getppid" = x""yes; then :
 
-$as_echo "#define HAVE_GETPPID 1" >>confdefs.h
 
-fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for getuid in -lc" >&5
-$as_echo_n "checking for getuid in -lc... " >&6; }
-if test "${ac_cv_lib_c_getuid+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lc  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char getuid ();
-int
-main ()
-{
-return getuid ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_c_getuid=yes
-else
-  ac_cv_lib_c_getuid=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_getuid" >&5
-$as_echo "$ac_cv_lib_c_getuid" >&6; }
-if test "x$ac_cv_lib_c_getuid" = x""yes; then :
 
-$as_echo "#define HAVE_GETUID 1" >>confdefs.h
 
-fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for geteuid in -lc" >&5
-$as_echo_n "checking for geteuid in -lc... " >&6; }
-if test "${ac_cv_lib_c_geteuid+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lc  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char geteuid ();
-int
-main ()
-{
-return geteuid ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_c_geteuid=yes
-else
-  ac_cv_lib_c_geteuid=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_geteuid" >&5
-$as_echo "$ac_cv_lib_c_geteuid" >&6; }
-if test "x$ac_cv_lib_c_geteuid" = x""yes; then :
 
-$as_echo "#define HAVE_GETEUID 1" >>confdefs.h
 
-fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Check for C99 (and other IEEE) math functions

@@ -27,12 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "io.h"
 #include "fbuf.h"
 #include "unix.h"
-
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
-
 #include <string.h>
+
 
 static const int five = 5;
 static const int six = 6;
