@@ -44,6 +44,11 @@
 
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR libfortran/47972
+	* runtime/error.c (gf_strerror): Silence warning.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR libfortran/47970
 	* intrinsics/c99_functions.c (round): Move higher in the file.
 
