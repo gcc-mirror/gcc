@@ -1,3 +1,11 @@
+2011-11-07  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/arm-cores.def: Add -mcpu=cortex-a7.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add Cortex A-7.
+	* doc/invoke.texi: Document -mcpu=cortex-a7.
+
 2011-11-09  Richard Guenther  <rguenther@suse.de>
 
 	Revert
