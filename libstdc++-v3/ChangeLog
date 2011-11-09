@@ -1,3 +1,8 @@
+2011-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/profile/unordered_map: Add missing copy constructors.
+	* include/profile/unordered_set: Likewise.
+
 2011-11-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51027

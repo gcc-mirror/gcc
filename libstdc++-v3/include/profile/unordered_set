@@ -95,6 +95,13 @@ namespace __profile
         __profcxx_hashtable_construct2(this);
       }
 
+      unordered_set(const unordered_set& __x)
+      : _Base(__x) 
+      { 
+        __profcxx_hashtable_construct(this, _Base::bucket_count());
+        __profcxx_hashtable_construct2(this);
+      }
+
       unordered_set(const _Base& __x)
       : _Base(__x) 
       { 
@@ -335,6 +342,12 @@ namespace __profile
 			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
       : _Base(__f, __l, __n, __hf, __eql, __a)
+      {
+        __profcxx_hashtable_construct(this, _Base::bucket_count());
+      }
+
+      unordered_multiset(const unordered_multiset& __x)
+      : _Base(__x)
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
       }
