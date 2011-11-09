@@ -1,3 +1,9 @@
+2011-11-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/variadic74.C: Adjust diags.
+	* g++.dg/template/crash53.C: Likewise.
+	* g++.dg/template/void9.C: Likewise.
+
 2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51045

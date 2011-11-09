@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-do compile { target c++11 } }
 template <class... Types> class A
 {
 public:
-  template <Types... Values> class X { /* ... */ }; // { dg-error "not a valid type for a template constant parameter" }
+  template <Types... Values> class X { /* ... */ }; // { dg-error "not a valid type for a template non-type parameter" }
 };
 
 template<class... Types> class B

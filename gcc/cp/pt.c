@@ -18976,7 +18976,13 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return 0;
 
   if (complain & tf_error)
-    error ("%q#T is not a valid type for a template constant parameter", type);
+    {
+      if (type == error_mark_node)
+	inform (input_location, "invalid template non-type parameter");
+      else
+	error ("%q#T is not a valid type for a template non-type parameter",
+	       type);
+    }
   return 1;
 }
 
