@@ -7,5 +7,5 @@ static typedef int a;   // { dg-error "conflicting" }
 
 int foo()
 {
-  typedef auto int bar; // { dg-error "conflicting" }
+  typedef auto int bar; // { dg-error "conflicting|two or more data types" }
 }

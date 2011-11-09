@@ -11,3 +11,5 @@ struct C		   // { dg-warning "uses the anonymous namespace" }
 {
   std::auto_ptr<A> p;
 };
+
+// { dg-prune-output "auto_ptr. is deprecated" }

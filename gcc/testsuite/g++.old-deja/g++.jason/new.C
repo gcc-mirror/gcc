@@ -6,7 +6,11 @@ extern "C" int printf (const char *, ...);
 extern "C" void *malloc (std::size_t);
 std::size_t s;
 
-void * operator new (std::size_t siz) throw (std::bad_alloc) {
+void * operator new (std::size_t siz)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
+{
   if (s == 0)
     s = siz;
   else
