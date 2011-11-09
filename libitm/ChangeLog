@@ -1,5 +1,28 @@
 2011-11-09  Richard Henderson  <rth@redhat.com>
 
+	* barrier.tpl, memcpy.cc, memset.cc, method-wbetl.cc: Remove file.
+	* config/alpha/unaligned.h: Remove file.
+	* config/generic/unaligned.h: Remove file.
+	* config/x86/unaligned.h: Remove file.
+	* config/generic/cachepage.h: Remove file.
+	* config/posix/cachepage.cc: Remove file.
+	* config/generic/cacheline.cc: Remove file.
+	* config/x86/cacheline.cc: Remove file.
+	* config/generic/cacheline.h (gtm_cacheline): Remove the
+	store_mask, copy_mask, copy_mask_wb methods.
+	* config/x86/cacheline.h: Likewise.
+	* config/alpha/cacheline.h: Fall back to generic after setting size.
+	* config/generic/tls.cc (gtm_mask_stack): Remove.
+	* config/x86/x86_avx.cc (GTM_vpperm_shift): Remove.
+	(GTM_vpalignr_table): Remove.
+	* config/x86/x86_sse.cc (GTM_palignr_table): Remove.
+	(GTM_pshift_table): Remove.
+	* config/libitm_i.h: Don't include cachepage.h.
+	* Makefile.am (libitm_la_SOURCES): Remove cacheline.cc, cachepage.cc
+	* Makefile.in, testsuite/Makefile.in: Rebuild.
+
+2011-11-09  Richard Henderson  <rth@redhat.com>
+
 	* config/x86/cacheline.h (gtm_cacheline::store_mask): Use .byte
 	to emit branch prediction hint.
 

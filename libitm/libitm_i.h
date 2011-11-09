@@ -78,7 +78,6 @@ enum gtm_restart_reason
 #include "rwlock.h"
 #include "aatree.h"
 #include "cacheline.h"
-#include "cachepage.h"
 #include "stmlock.h"
 #include "dispatch.h"
 #include "containers.h"
