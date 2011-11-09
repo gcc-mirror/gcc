@@ -1,3 +1,8 @@
+2011-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51039
+	* gcc.dg/pr51039.c: New testcase.
+
 2011-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_cond_mixed):

@@ -1,6 +1,17 @@
 2011-11-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51039
+	* tree-cfg.c (verify_gimple_call): Verify that
+	gimple_call_cannot_inline_p is returning a conservative
+	correct result according to gimple_check_call_matching_types.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Remove
+	code dealing with un-inlinablility.
+	* gimple-streamer-in.c (input_gimple_stmt): Update the
+	non-inlinable flag.
+
+2011-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51039
 	* tree-inline.c (setup_one_parameter): Always perform a
 	valid gimple type change.
 	(declare_return_variable): Likewise.
