@@ -1,3 +1,9 @@
+2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/21881
+	* trans-types.c (gfc_get_dtype): Issue a fatal error instead of
+	an internal error.
+
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/50404
