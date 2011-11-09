@@ -470,6 +470,7 @@ sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
 target_cpu = @target_cpu@
+target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_subdir = @target_subdir@
 target_vendor = @target_vendor@

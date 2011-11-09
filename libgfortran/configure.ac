@@ -51,7 +51,10 @@ AC_SUBST(onestep)
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 AC_CANONICAL_SYSTEM
+ACX_NONCANONICAL_TARGET
+
 target_alias=${target_alias-$host_alias}
+AC_SUBST(target_alias)
 
 # Sets up automake.  Must come after AC_CANONICAL_SYSTEM.  Each of the
 # following is magically included in AUTOMAKE_OPTIONS in each Makefile.am.
@@ -117,6 +120,7 @@ AC_SUBST(toolexeclibdir)
 # Create a spec file, so that compile/link tests don't fail
 test -f libgfortran.spec || touch libgfortran.spec
 
+AC_LANG_C
 # Check the compiler.
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise
@@ -127,6 +131,10 @@ m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
 m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AC_SUBST(CFLAGS)
+
+AM_PROG_CC_C_O
 
 # Add -Wall -fno-repack-arrays -fno-underscoring if we are using GCC.
 if test "x$GCC" = "xyes"; then
