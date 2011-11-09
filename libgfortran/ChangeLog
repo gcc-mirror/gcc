@@ -1,5 +1,48 @@
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* configure.ac (AC_STDC_HEADERS): Remove.
+	(AC_HEADER_TIME): Remove.
+	(AC_HAVE_HEADERS, AC_CHECK_HEADERS): Move into a single invocation
+	of AC_CHECK_HEADERS_ONCE, don't check for presence of C89 headers.
+	(AC_CHECK_MEMBERS): Use single invocation.
+	(AC_CHECK_FUNCS): Move into single invocation of
+	AC_CHEC_FUNCS_ONCE, don't check for presence of C89 functions.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* intrinsics/clock.c: Include time.h.
+	(mclock): Assume clock() is present.
+	(mclock8): Likewise.
+	* intrinsics/ctime.c (strctime): Assume strftime is present.
+	(fdate): Assume time() is present.
+	(fdate_sub): Likewise.
+	(ctime): Likewise.
+	* intrinsics/date_and_time.c: Don't provide abs macro.
+	(HAVE_NO_DATE_TIME): Remove code related to macro which is never
+	set.
+	* intrinsics/execute_command_line.c: Assume stdlib.h is present.
+	* intrinsics/exit.c: Likewise.
+	* intrinsics/extends_type_of.c: Likewise.
+	* intrinsics/gerror.c: Assume strerror() is present.
+	* intrinsics/kill.c: Assume signal.h is present.
+	* intrinsics/malloc.c: Assume stdlib.h is present.
+	* intrinsics/move_alloc.c: Likewise.
+	* intrinsics/perror.c: Assume perror() is present.
+	* intrinsics/signal.c: Assume signal.h is present.
+	* intrinsics/stat.c: Assume stdlib.h is present.
+	* intrinsics/system.c: Likewise.
+	* intrinsics/time.c: Include time.h, assume time() is present.
+	* intrinsics/time_1.h: Conditionally include sys/time.h,
+	unconditionally time.h.
+	(gf_cputime): Do division in double, fallback using clock().
+	(gf_gettime): Assume time() is present.
+	* intrinsics/umask.c: Assume stdlib.h is present.
+	* runtime/backtrace.c: Likewise.
+	* runtime/compile_options.c: Assume signal.h is present, assume
+	C89 signals are present.
+	* runtime/error.c: Assume signal.h and stdlib.h are present.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/46686
 	* runtime/backtrace.c (show_backtrace): Fix incorrect comment.
 

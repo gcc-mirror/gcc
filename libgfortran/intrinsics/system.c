@@ -1,8 +1,8 @@
 /* Implementation of the SYSTEM intrinsic.
-   Copyright (C) 2004, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Tobias Schlüter.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -25,10 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 #include <string.h>
-
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 
 extern void system_sub (const char *fcmd, GFC_INTEGER_4 * status,
 			gfc_charlen_type cmd_len);

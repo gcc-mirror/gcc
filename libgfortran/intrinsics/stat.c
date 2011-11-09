@@ -1,8 +1,9 @@
 /* Implementation of the STAT and FSTAT intrinsics.
-   Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2009, 2011 
+   Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -32,9 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/stat.h>
 #endif
 
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 
 
 #ifdef HAVE_STAT

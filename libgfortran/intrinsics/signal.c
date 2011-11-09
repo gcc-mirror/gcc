@@ -1,8 +1,8 @@
 /* Implementation of the SIGNAL and ALARM g77 intrinsics
-   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -29,9 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <unistd.h>
 #endif
 
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
@@ -46,7 +44,6 @@ iexport_proto(signal_sub);
 void
 signal_sub (int *number, void (*handler)(int), int *status)
 {
-#ifdef HAVE_SIGNAL
   intptr_t ret;
 
   if (status != NULL)
@@ -56,11 +53,6 @@ signal_sub (int *number, void (*handler)(int), int *status)
     }
   else
     signal (*number, handler);
-#else
-  errno = ENOSYS;
-  if (status != NULL)
-    *status = -1;
-#endif
 }
 iexport(signal_sub);
 
@@ -72,7 +64,6 @@ iexport_proto(signal_sub_int);
 void
 signal_sub_int (int *number, int *handler, int *status)
 {
-#ifdef HAVE_SIGNAL
   intptr_t ptr = *handler, ret;
 
   if (status != NULL)
@@ -82,11 +73,6 @@ signal_sub_int (int *number, int *handler, int *status)
     }
   else
     signal (*number, (void (*)(int)) ptr);
-#else
-  errno = ENOSYS;
-  if (status != NULL)
-    *status = -1;
-#endif
 }
 iexport(signal_sub_int);
 
@@ -129,7 +115,7 @@ alarm_sub_i4 (int * seconds __attribute__ ((unused)),
 	      void (*handler)(int) __attribute__ ((unused)),
 	      GFC_INTEGER_4 *status)
 {
-#if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
+#if defined (SIGALRM) && defined (HAVE_ALARM) 
   if (status != NULL)
     {
       if (signal (SIGALRM, handler) == SIG_ERR)
@@ -159,7 +145,7 @@ alarm_sub_i8 (int *seconds __attribute__ ((unused)),
 	      void (*handler)(int) __attribute__ ((unused)),
 	      GFC_INTEGER_8 *status)
 {
-#if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
+#if defined (SIGALRM) && defined (HAVE_ALARM)
   if (status != NULL)
     {
       if (signal (SIGALRM, handler) == SIG_ERR)
@@ -190,7 +176,7 @@ alarm_sub_int_i4 (int *seconds __attribute__ ((unused)),
 		  int *handler __attribute__ ((unused)),
 		  GFC_INTEGER_4 *status)
 {
-#if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
+#if defined (SIGALRM) && defined (HAVE_ALARM)
   if (status != NULL)
     {
       if (signal (SIGALRM, (void (*)(int)) (intptr_t) *handler) == SIG_ERR)
@@ -220,7 +206,7 @@ alarm_sub_int_i8 (int *seconds __attribute__ ((unused)),
 		  int *handler __attribute__ ((unused)),
 		  GFC_INTEGER_8 *status)
 {
-#if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
+#if defined (SIGALRM) && defined (HAVE_ALARM)
   if (status != NULL)
     {
       if (signal (SIGALRM, (void (*)(int)) (intptr_t) *handler) == SIG_ERR)

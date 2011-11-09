@@ -39,7 +39,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static size_t
 strctime (char *s, size_t max, const time_t *timep)
 {
-#ifdef HAVE_STRFTIME
   struct tm ltm;
   int failed;
   /* Some targets provide a localtime_r based on a draft of the POSIX
@@ -52,9 +51,6 @@ strctime (char *s, size_t max, const time_t *timep)
   if (failed)
     return 0;
   return strftime (s, max, "%c", &ltm);
-#else
-  return 0;
-#endif
 }
 
 /* In the default locale, the date and time representation fits in 26
@@ -67,15 +63,9 @@ export_proto(fdate);
 void
 fdate (char ** date, gfc_charlen_type * date_len)
 {
-#if defined(HAVE_TIME)
   time_t now = time(NULL);
   *date = get_mem (CSZ);
   *date_len = strctime (*date, CSZ, &now);
-#else
-
-  *date = NULL;
-  *date_len = 0;
-#endif
 }
 
 
@@ -85,15 +75,11 @@ export_proto(fdate_sub);
 void
 fdate_sub (char * date, gfc_charlen_type date_len)
 {
-#if defined(HAVE_TIME)
   time_t now = time(NULL);
   char *s = get_mem (date_len + 1);
   size_t n = strctime (s, date_len + 1, &now);
   fstrcpy (date, date_len, s, n);
   free (s);
-#else
-  memset (date, ' ', date_len);
-#endif
 }
 
 
@@ -104,15 +90,9 @@ export_proto_np(PREFIX(ctime));
 void
 PREFIX(ctime) (char ** date, gfc_charlen_type * date_len, GFC_INTEGER_8 t)
 {
-#if defined(HAVE_TIME)
   time_t now = t;
   *date = get_mem (CSZ);
   *date_len = strctime (*date, CSZ, &now);
-#else
-
-  *date = NULL;
-  *date_len = 0;
-#endif
 }
 
 

@@ -1,8 +1,8 @@
 /* Implementation of the GERROR g77 intrinsic.
-   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -33,7 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    message corresponding to the last system error (C errno).
    CHARACTER(len=*), INTENT(OUT) :: MESSAGE  */
 
-#ifdef HAVE_STRERROR
 void PREFIX(gerror) (char *, gfc_charlen_type);
 export_proto_np(PREFIX(gerror));
 
@@ -56,4 +55,3 @@ PREFIX(gerror) (char * msg, gfc_charlen_type msg_len)
   if (msg_len > p_len)
     memset (&msg[p_len], ' ', msg_len - p_len);
 }
-#endif
