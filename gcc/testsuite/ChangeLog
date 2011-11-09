@@ -1,3 +1,8 @@
+2011-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_cond_mixed):
+	Enable also for powerpc*-*-*.
+
 2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/50540

@@ -16775,6 +16775,7 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
 			      rtx cond, rtx cc_op0, rtx cc_op1)
 {
   enum machine_mode dest_mode = GET_MODE (dest);
+  enum machine_mode mask_mode = GET_MODE (cc_op0);
   enum rtx_code rcode = GET_CODE (cond);
   enum machine_mode cc_mode = CCmode;
   rtx mask;
@@ -16784,6 +16785,9 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
 
   if (VECTOR_UNIT_NONE_P (dest_mode))
     return 0;
+
+  gcc_assert (GET_MODE_SIZE (dest_mode) == GET_MODE_SIZE (mask_mode)
+	      && GET_MODE_NUNITS (dest_mode) == GET_MODE_NUNITS (mask_mode));
 
   switch (rcode)
     {
@@ -16815,7 +16819,7 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
     }
 
   /* Get the vector mask for the given relational operations.  */
-  mask = rs6000_emit_vector_compare (rcode, cc_op0, cc_op1, dest_mode);
+  mask = rs6000_emit_vector_compare (rcode, cc_op0, cc_op1, mask_mode);
 
   if (!mask)
     return 0;
@@ -16827,7 +16831,8 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
       op_false = tmp;
     }
 
-  cond2 = gen_rtx_fmt_ee (NE, cc_mode, mask, CONST0_RTX (dest_mode));
+  cond2 = gen_rtx_fmt_ee (NE, cc_mode, gen_lowpart (dest_mode, mask),
+			  CONST0_RTX (dest_mode));
   emit_insn (gen_rtx_SET (VOIDmode,
 			  dest,
 			  gen_rtx_IF_THEN_ELSE (dest_mode,
