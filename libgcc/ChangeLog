@@ -1,3 +1,9 @@
+2011-11-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (i[34567]86-*-cygwin*): Move i386/t-mingw-pthread ...
+	(i[34567]86-*-mingw*): ... here.
+	(x86_64-*-mingw*): ... here.
+
 2011-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/c6x/t-elf (LIB2ADD): Add instead of assigning.
