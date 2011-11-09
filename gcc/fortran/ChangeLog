@@ -1,3 +1,10 @@
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38718
+	* intrinsic.c (add_functions): Allow dreal simplification.
+	* intrinsic.h (gfc_simplify_dreal): New prototype.
+	* simplify.c (gfc_simplify_dreal): New function.
+
 2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/21881

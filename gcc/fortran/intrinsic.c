@@ -1557,8 +1557,8 @@ add_functions (void)
 
   make_generic ("dprod", GFC_ISYM_DPROD, GFC_STD_F77);
 
-  add_sym_1 ("dreal", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     NULL, NULL, NULL,
+  add_sym_1 ("dreal", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_REAL, dd, GFC_STD_GNU, NULL, gfc_simplify_dreal, NULL,
 	     a, BT_COMPLEX, dd, REQUIRED);
 
   make_generic ("dreal", GFC_ISYM_REAL, GFC_STD_GNU);
