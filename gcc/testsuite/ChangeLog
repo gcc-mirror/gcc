@@ -1,3 +1,8 @@
+2011-11-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/51032
+	* g++.dg/cpp0x/alias-decl-debug-0.C: New test.
+
 2011-11-09  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/51015
