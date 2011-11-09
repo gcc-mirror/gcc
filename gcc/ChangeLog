@@ -1,3 +1,8 @@
+2011-11-09  Richard Guenther  <rguenther@suse.de>
+
+	* gimple-fold.c (canonicalize_constructor_val): Mark
+	address-taken variables addressable.
+
 2011-11-09  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/51015
