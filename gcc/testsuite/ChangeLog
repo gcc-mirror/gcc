@@ -1,3 +1,8 @@
+2011-11-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50960
+	* gfortran.dg/typebound_call_22.f03: New test case.
+
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/50016
