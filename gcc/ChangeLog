@@ -1,3 +1,9 @@
+2011-11-09  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/51015
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Expect
+	vectype to be set for pattern def stmts.
+
 2011-11-09  Alan Modra  <amodra@gmail.com>
 
 	* function.c (bb_active_p): Delete.
