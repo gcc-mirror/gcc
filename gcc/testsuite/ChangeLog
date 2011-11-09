@@ -1,5 +1,10 @@
 2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/51045
+	* g++.dg/warn/Wzero-as-null-pointer-constant-2.C: New.
+
+2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51047
 	* g++.dg/cpp0x/sfinae29.C: New.
 
