@@ -14942,6 +14942,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   cp_parser_require (parser, CPP_EQ, RT_EQ);
 
   type = cp_parser_type_id (parser);
+  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
   /* A typedef-name can also be introduced by an alias-declaration. The
      identifier following the using keyword becomes a typedef-name. It has

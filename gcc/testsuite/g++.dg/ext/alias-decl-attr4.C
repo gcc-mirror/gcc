@@ -11,7 +11,7 @@ template <class T> struct A
 template < typename Val > struct S
 {
     using vector_type __attribute__((vector_size(16))) =
-        typename A<Val>::type
+        typename A<Val>::type;
         typedef Val vector_type2 __attribute__((vector_size(16)));
     int pr_size() { return sizeof(vector_type); }
     int pr_size2() { return sizeof(vector_type2); }
