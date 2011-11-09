@@ -14932,6 +14932,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   location_t id_location;
   cp_declarator *declarator;
   cp_decl_specifier_seq decl_specs;
+  bool member_p;
 
   /* Look for the `using' keyword.  */
   cp_parser_require_keyword (parser, RID_USING, RT_USING);
@@ -14957,7 +14958,8 @@ cp_parser_alias_declaration (cp_parser* parser)
   declarator = make_id_declarator (NULL_TREE, id, sfk_none);
   declarator->id_loc = id_location;
 
-  if (at_class_scope_p ())
+  member_p = at_class_scope_p ();
+  if (member_p)
     decl = grokfield (declarator, &decl_specs, NULL_TREE, false,
 		      NULL_TREE, attributes);
   else
@@ -14976,7 +14978,12 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (DECL_LANG_SPECIFIC (decl)
       && DECL_TEMPLATE_INFO (decl)
       && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl)))
-    decl = DECL_TI_TEMPLATE (decl);
+    {
+      decl = DECL_TI_TEMPLATE (decl);
+      if (member_p)
+	check_member_template (decl);
+    }
+
   return decl;
 }
 
