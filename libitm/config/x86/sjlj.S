@@ -26,9 +26,9 @@
 #include "asmcfi.h"
 
 	.text
-	.p2align 4
+
+	.align 4
 	.globl	_ITM_beginTransaction
-	.type	_ITM_beginTransaction, @function
 
 _ITM_beginTransaction:
 	cfi_startproc
@@ -66,12 +66,14 @@ _ITM_beginTransaction:
 	ret
 #endif
 	cfi_endproc
-	.size	_ITM_beginTransaction, .-_ITM_beginTransaction
 
-	.p2align 4
+#ifdef __ELF__
+	.type	_ITM_beginTransaction, @function
+	.size	_ITM_beginTransaction, .-_ITM_beginTransaction
+#endif
+
+	.align 4
 	.globl	GTM_longjmp
-	.type	GTM_longjmp, @function
-	.hidden	GTM_longjmp
 
 GTM_longjmp:
 	cfi_startproc
@@ -103,6 +105,13 @@ GTM_longjmp:
 	jmp	*%edx
 #endif
 	cfi_endproc
-	.size	GTM_longjmp, .-GTM_longjmp
 
+#ifdef __ELF__
+	.type	GTM_longjmp, @function
+	.hidden	GTM_longjmp
+	.size	GTM_longjmp, .-GTM_longjmp
+#endif
+
+#ifdef __linux__
 .section .note.GNU-stack, "", @progbits
+#endif

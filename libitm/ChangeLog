@@ -1,5 +1,8 @@
 2011-11-09  Richard Henderson  <rth@redhat.com>
 
+	* config/x86/sjlj.S: Protect elf directives with __ELF__.
+	Protect .note.GNU-stack with __linux__.
+
 	* configure.ac (GCC_AS_CFI_PSEUDO_OP): Test it.
 	* configure, aclocal.m4, config.h.in: Rebuild.
 	* config/generic/asmcfi.h: New file.
