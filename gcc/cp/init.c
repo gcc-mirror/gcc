@@ -2646,7 +2646,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  tree ifexp = cp_build_binary_op (input_location,
 					   NE_EXPR, alloc_node,
-					   integer_zero_node,
+					   nullptr_node,
 					   complain);
 	  rval = build_conditional_expr (ifexp, rval, alloc_node, 
                                          complain);
@@ -2958,7 +2958,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 		      fold_build2_loc (input_location,
 				   NE_EXPR, boolean_type_node, base,
 				   convert (TREE_TYPE (base),
-					    integer_zero_node)),
+					    nullptr_node)),
 		      body, integer_zero_node);
   body = build1 (NOP_EXPR, void_type_node, body);
 
@@ -3685,7 +3685,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	{
 	  /* Handle deleting a null pointer.  */
 	  ifexp = fold (cp_build_binary_op (input_location,
-					    NE_EXPR, addr, integer_zero_node,
+					    NE_EXPR, addr, nullptr_node,
 					    complain));
 	  if (ifexp == error_mark_node)
 	    return error_mark_node;

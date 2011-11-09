@@ -1,3 +1,28 @@
+2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51045
+	* init.c (build_new_1, build_vec_delete_1, build_delete):
+	Use nullptr_node.
+
+2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51047
+	* search.c (lookup_member): Change to take also a tsubst_flags_t
+	parameter.
+	(lookup_field, lookup_fnfields): Adjust calls.
+	* typeck.c (lookup_destructor, finish_class_member_access_expr,
+	build_ptrmemfunc_access_expr): Likewise.
+	* class.c (handle_using_decl, maybe_note_name_used_in_class):
+	Likewise.
+	* pt.c (resolve_typename_type): Likewise.
+	* semantics.c (lambda_function): Likewise.
+	* parser.c (cp_parser_perform_range_for_lookup,
+	cp_parser_lookup_name): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	* name-lookup.c (pushdecl_maybe_friend_1, get_class_binding,
+	do_class_using_decl, lookup_qualified_name): Likewise.
+	* cp-tree.h (lookup_member): Adjust declaration.
+
 2011-11-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51027

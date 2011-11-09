@@ -200,7 +200,7 @@ in the following sections.
 -Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
--Wsign-promo}
+-Wsign-promo -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
