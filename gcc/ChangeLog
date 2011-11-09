@@ -720,7 +720,6 @@
 	* Makefile.in (USER_H): Add stdalign.h.
 
 2011-11-06  Joern Rennecke  <joern.rennecke@embecosm.com>
-	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* regset.h (fixed_reg_set_regset): Declare.
 	* dse.c: Include regset.h .
