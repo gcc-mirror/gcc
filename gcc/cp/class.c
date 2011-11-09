@@ -359,6 +359,11 @@ build_base_path (enum tree_code code,
 	 V_BINFO.  That offset is an entry in D_BINFO's vtable.  */
       tree v_offset;
 
+      /* In a constructor template, current_in_charge_parm isn't set,
+	 and we might end up here via fold_non_dependent_expr.  */
+      if (fixed_type_p < 0 && !(cfun && current_in_charge_parm))
+	fixed_type_p = 0;
+
       if (fixed_type_p < 0 && in_base_initializer)
 	{
 	  /* In a base member initializer, we cannot rely on the

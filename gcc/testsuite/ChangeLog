@@ -1,3 +1,8 @@
+2011-11-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51029
+	* g++.dg/template/virtual1.C: New.
+
 2011-11-08  Jason Merrill  <jason@redhat.com>
 
 	Run most C++ tests in both C++98 and C++11 modes.
