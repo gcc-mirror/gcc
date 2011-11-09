@@ -210,7 +210,7 @@ show_backtrace (void)
     int f[2], pid, inp[2];
 
     /* Don't output an error message if something goes wrong, we'll simply
-       fall back to the pstack and glibc backtraces.  */
+       fall back to printing the addresses.  */
     if (pipe (f) != 0)
       break;
     if (pipe (inp) != 0)
