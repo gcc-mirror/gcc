@@ -1,3 +1,28 @@
+2011-11-09  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.c: Include <string.h>.
+	(uintptr_type): Define.
+	(struct initial_sp): Add dont_block_signals field.  Reduce size of
+	extra array by 1.
+	(allocate_segment): Set prev field to NULL.  Don't set
+	__morestack_current_segment or __morestack_segments.
+	(__generic_morestack): Update current->prev and *pp after calling
+	allocate_segment.
+	(__morestack_block_signals): Don't do anything if
+	dont_block_signals is set.
+	(__morestack_unblock_signals): Likewise.
+	(__generic_findstack): Check for initial_sp == NULL.  Add casts to
+	uintptr_type.
+	(__splitstack_block_signals): New function.
+	(enum __splitstack_content_offsets): Define.
+	(__splitstack_getcontext, __splitstack_setcontext): New functions.
+	(__splitstack_makecontext): New function.
+	(__splitstack_block_signals_context): New function.
+	(__splitstack_find_context): New function.
+	* config/i386/morestack.S (__morestack_get_guard): New function.
+	(__morestack_set_guard, __morestack_make_guard): New functions.
+	* libgcc-std.ver.in: Add new functions to GCC_4.7.0.
+
 2011-11-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (i[34567]86-*-cygwin*): Move i386/t-mingw-pthread ...

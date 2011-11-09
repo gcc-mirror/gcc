@@ -1,3 +1,9 @@
+2011-11-09  Ian Lance Taylor  <iant@google.com>
+
+	* lib/target-supports.exp (check_effective_target_ucontext_h): New
+	procedure.
+	* gcc.dg/split-5.c: New test.
+
 2011-11-09  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	* gcc.dg/tm/memopt-1.c:  Adjust regexp. 

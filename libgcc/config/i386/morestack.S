@@ -1,5 +1,5 @@
 # x86/x86_64 support for -fsplit-stack.
-# Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 # Contributed by Ian Lance Taylor <iant@google.com>.
 
 # This file is part of GCC.
@@ -620,6 +620,82 @@ __stack_split_initialize:
 	.size	__stack_split_initialize, . - __stack_split_initialize
 #endif
 
+# Routines to get and set the guard, for __splitstack_getcontext,
+# __splitstack_setcontext, and __splitstack_makecontext.
+
+# void *__morestack_get_guard (void) returns the current stack guard.
+	.text
+	.global	__morestack_get_guard
+	.hidden	__morestack_get_guard
+
+#ifdef __ELF__
+	.type	__morestack_get_guard,@function
+#endif
+
+__morestack_get_guard:
+
+#ifndef __x86_64__
+	movl	%gs:0x30,%eax
+#else
+#ifdef __LP64__
+	movq	%fs:0x70,%rax
+#else
+	movl	%fs:0x40,%eax
+#endif
+#endif
+	ret
+
+#ifdef __ELF__
+	.size	__morestack_get_guard, . - __morestack_get_guard
+#endif
+
+# void __morestack_set_guard (void *) sets the stack guard.
+	.global	__morestack_set_guard
+	.hidden	__morestack_set_guard
+
+#ifdef __ELF__
+	.type	__morestack_set_guard,@function
+#endif
+
+__morestack_set_guard:
+
+#ifndef __x86_64__
+	movl	4(%esp),%eax
+	movl	%eax,%gs:0x30
+#else
+	X86_64_SAVE_NEW_STACK_BOUNDARY (di)
+#endif
+	ret
+
+#ifdef __ELF__
+	.size	__morestack_set_guard, . - __morestack_set_guard
+#endif
+
+# void *__morestack_make_guard (void *, size_t) returns the stack
+# guard value for a stack.
+	.global	__morestack_make_guard
+	.hidden	__morestack_make_guard
+
+#ifdef __ELF__
+	.type	__morestack_make_guard,@function
+#endif
+
+__morestack_make_guard:
+
+#ifndef __x86_64__
+	movl	4(%esp),%eax
+	subl	8(%esp),%eax
+	addl	$BACKOFF,%eax
+#else
+	subq	%rsi,%rdi
+	addq	$BACKOFF,%rdi
+	movq	%rdi,%rax
+#endif
+	ret
+
+#ifdef __ELF__
+	.size	__morestack_make_guard, . - __morestack_make_guard
+#endif
 
 # Make __stack_split_initialize a high priority constructor.  FIXME:
 # This is ELF specific.

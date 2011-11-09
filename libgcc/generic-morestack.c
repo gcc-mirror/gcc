@@ -41,11 +41,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/uio.h>
 
 #include "generic-morestack.h"
+
+typedef unsigned uintptr_type __attribute__ ((mode (pointer)));
 
 /* This file contains subroutines that are used by code compiled with
    -fsplit-stack.  */
@@ -88,13 +91,49 @@ extern void *
 __morestack_allocate_stack_space (size_t size)
   __attribute__ ((visibility ("hidden")));
 
-/* This is a function which -fsplit-stack code can call to get a list
-   of the stacks.  Since it is not called only by the compiler, it is
-   not hidden.  */
+/* These are functions which -fsplit-stack code can call.  These are
+   not called by the compiler, and are not hidden.  FIXME: These
+   should be in some header file somewhere, somehow.  */
 
 extern void *
 __splitstack_find (void *, void *, size_t *, void **, void **, void **)
   __attribute__ ((visibility ("default")));
+
+extern void
+__splitstack_block_signals (int *, int *)
+  __attribute__ ((visibility ("default")));
+
+extern void
+__splitstack_getcontext (void *context[10])
+  __attribute__ ((no_split_stack, visibility ("default")));
+
+extern void
+__splitstack_setcontext (void *context[10])
+  __attribute__ ((no_split_stack, visibility ("default")));
+
+extern void *
+__splitstack_makecontext (size_t, void *context[10], size_t *)
+  __attribute__ ((visibility ("default")));
+
+extern void
+__splitstack_block_signals_context (void *context[10], int *, int *)
+  __attribute__ ((visibility ("default")));
+
+extern void *
+__splitstack_find_context (void *context[10], size_t *, void **, void **,
+			   void **)
+  __attribute__ ((visibility ("default")));
+
+/* These functions must be defined by the processor specific code.  */
+
+extern void *__morestack_get_guard (void)
+  __attribute__ ((no_split_stack, visibility ("hidden")));
+
+extern void __morestack_set_guard (void *)
+  __attribute__ ((no_split_stack, visibility ("hidden")));
+
+extern void *__morestack_make_guard (void *, size_t)
+  __attribute__ ((no_split_stack, visibility ("hidden")));
 
 /* When we allocate a stack segment we put this header at the
    start.  */
@@ -138,8 +177,13 @@ struct initial_sp
   /* A signal mask, put here so that the thread can use it without
      needing stack space.  */
   sigset_t mask;
+  /* Non-zero if we should not block signals.  This is a reversed flag
+     so that the default zero value is the safe value.  The type is
+     uintptr_type because it replaced one of the void * pointers in
+     extra.  */
+  uintptr_type dont_block_signals;
   /* Some extra space for later extensibility.  */
-  void *extra[5];
+  void *extra[4];
 };
 
 /* A list of memory blocks allocated by dynamic stack allocation.
@@ -339,17 +383,12 @@ allocate_segment (size_t frame_size)
 
   pss = (struct stack_segment *) space;
 
-  pss->prev = __morestack_current_segment;
+  pss->prev = NULL;
   pss->next = NULL;
   pss->size = allocate - overhead;
   pss->dynamic_allocation = NULL;
   pss->free_dynamic_allocation = NULL;
   pss->extra = NULL;
-
-  if (__morestack_current_segment != NULL)
-    __morestack_current_segment->next = pss;
-  else
-    __morestack_segments = pss;
 
   return pss;
 }
@@ -513,7 +552,11 @@ __generic_morestack (size_t *pframe_size, void *old_stack, size_t param_size)
   current = *pp;
 
   if (current == NULL)
-    current = allocate_segment (frame_size + param_size);
+    {
+      current = allocate_segment (frame_size + param_size);
+      current->prev = __morestack_current_segment;
+      *pp = current;
+    }
 
   current->old_stack = old_stack;
 
@@ -614,7 +657,9 @@ extern int pthread_sigmask (int, const sigset_t *, sigset_t *)
 void
 __morestack_block_signals (void)
 {
-  if (pthread_sigmask)
+  if (__morestack_initial_sp.dont_block_signals)
+    ;
+  else if (pthread_sigmask)
     pthread_sigmask (SIG_BLOCK, &__morestack_fullmask,
 		     &__morestack_initial_sp.mask);
   else
@@ -627,7 +672,9 @@ __morestack_block_signals (void)
 void
 __morestack_unblock_signals (void)
 {
-  if (pthread_sigmask)
+  if (__morestack_initial_sp.dont_block_signals)
+    ;
+  else if (pthread_sigmask)
     pthread_sigmask (SIG_SETMASK, &__morestack_initial_sp.mask, NULL);
   else
     sigprocmask (SIG_SETMASK, &__morestack_initial_sp.mask, NULL);
@@ -727,6 +774,10 @@ __generic_findstack (void *stack)
     }
 
   /* We have popped back to the original stack.  */
+
+  if (__morestack_initial_sp.sp == NULL)
+    return 0;
+
 #ifdef STACK_GROWS_DOWNWARD
   if ((char *) stack >= (char *) __morestack_initial_sp.sp)
     used = 0;
@@ -796,11 +847,14 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
   void *ret;
   char *nsp;
 
-  if (segment_arg == (void *) 1)
+  if (segment_arg == (void *) (uintptr_type) 1)
     {
       char *isp = (char *) *initial_sp;
 
-      *next_segment = (void *) 2;
+      if (isp == NULL)
+	return NULL;
+
+      *next_segment = (void *) (uintptr_type) 2;
       *next_sp = NULL;
 #ifdef STACK_GROWS_DOWNWARD
       if ((char *) sp >= isp)
@@ -814,7 +868,7 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
       return (void *) isp;
 #endif
     }
-  else if (segment_arg == (void *) 2)
+  else if (segment_arg == (void *) (uintptr_type) 2)
     return NULL;
   else if (segment_arg != NULL)
     segment = (struct stack_segment *) segment_arg;
@@ -826,8 +880,8 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
       while (1)
 	{
 	  if (segment == NULL)
-	    return __splitstack_find ((void *) 1, sp, len, next_segment,
-				      next_sp, initial_sp);
+	    return __splitstack_find ((void *) (uintptr_type) 1, sp, len,
+				      next_segment, next_sp, initial_sp);
 	  if ((char *) sp >= (char *) (segment + 1)
 	      && (char *) sp <= (char *) (segment + 1) + segment->size)
 	    break;
@@ -836,7 +890,7 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
     }
 
   if (segment->prev == NULL)
-    *next_segment = (void *) 1;
+    *next_segment = (void *) (uintptr_type) 1;
   else
     *next_segment = segment->prev;
 
@@ -876,6 +930,166 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
 #endif
 
   return ret;
+}
+
+/* Tell the split stack code whether it has to block signals while
+   manipulating the stack.  This is for programs in which some threads
+   block all signals.  If a thread already blocks signals, there is no
+   need for the split stack code to block them as well.  If NEW is not
+   NULL, then if *NEW is non-zero signals will be blocked while
+   splitting the stack, otherwise they will not.  If OLD is not NULL,
+   *OLD will be set to the old value.  */
+
+void
+__splitstack_block_signals (int *new, int *old)
+{
+  if (old != NULL)
+    *old = __morestack_initial_sp.dont_block_signals ? 0 : 1;
+  if (new != NULL)
+    __morestack_initial_sp.dont_block_signals = *new ? 0 : 1;
+}
+
+/* The offsets into the arrays used by __splitstack_getcontext and
+   __splitstack_setcontext.  */
+
+enum __splitstack_context_offsets
+{
+  MORESTACK_SEGMENTS = 0,
+  CURRENT_SEGMENT = 1,
+  CURRENT_STACK = 2,
+  STACK_GUARD = 3,
+  INITIAL_SP = 4,
+  INITIAL_SP_LEN = 5,
+  BLOCK_SIGNALS = 6,
+
+  NUMBER_OFFSETS = 10
+};
+
+/* Get the current split stack context.  This may be used for
+   coroutine switching, similar to getcontext.  The argument should
+   have at least 10 void *pointers for extensibility, although we
+   don't currently use all of them.  This would normally be called
+   immediately before a call to getcontext or swapcontext or
+   setjmp.  */
+
+void
+__splitstack_getcontext (void *context[NUMBER_OFFSETS])
+{
+  memset (context, 0, NUMBER_OFFSETS * sizeof (void *));
+  context[MORESTACK_SEGMENTS] = (void *) __morestack_segments;
+  context[CURRENT_SEGMENT] = (void *) __morestack_current_segment;
+  context[CURRENT_STACK] = (void *) &context;
+  context[STACK_GUARD] = __morestack_get_guard ();
+  context[INITIAL_SP] = (void *) __morestack_initial_sp.sp;
+  context[INITIAL_SP_LEN] = (void *) (uintptr_type) __morestack_initial_sp.len;
+  context[BLOCK_SIGNALS] = (void *) __morestack_initial_sp.dont_block_signals;
+}
+
+/* Set the current split stack context.  The argument should be a
+   context previously passed to __splitstack_getcontext.  This would
+   normally be called immediately after a call to getcontext or
+   swapcontext or setjmp if something jumped to it.  */
+
+void
+__splitstack_setcontext (void *context[NUMBER_OFFSETS])
+{
+  __morestack_segments = (struct stack_segment *) context[MORESTACK_SEGMENTS];
+  __morestack_current_segment =
+    (struct stack_segment *) context[CURRENT_SEGMENT];
+  __morestack_set_guard (context[STACK_GUARD]);
+  __morestack_initial_sp.sp = context[INITIAL_SP];
+  __morestack_initial_sp.len = (size_t) context[INITIAL_SP_LEN];
+  __morestack_initial_sp.dont_block_signals =
+    (uintptr_type) context[BLOCK_SIGNALS];
+}
+
+/* Create a new split stack context.  This will allocate a new stack
+   segment which may be used by a coroutine.  STACK_SIZE is the
+   minimum size of the new stack.  The caller is responsible for
+   actually setting the stack pointer.  This would normally be called
+   before a call to makecontext, and the returned stack pointer and
+   size would be used to set the uc_stack field.  A function called
+   via makecontext on a stack created by __splitstack_makecontext may
+   not return.  Note that the returned pointer points to the lowest
+   address in the stack space, and thus may not be the value to which
+   to set the stack pointer.  */
+
+void *
+__splitstack_makecontext (size_t stack_size, void *context[NUMBER_OFFSETS],
+			  size_t *size)
+{
+  struct stack_segment *segment;
+  void *initial_sp;
+
+  memset (context, 0, NUMBER_OFFSETS * sizeof (void *));
+  segment = allocate_segment (stack_size);
+  context[MORESTACK_SEGMENTS] = segment;
+  context[CURRENT_SEGMENT] = segment;
+#ifdef STACK_GROWS_DOWNWARD
+  initial_sp = (void *) ((char *) (segment + 1) + segment->size);
+#else
+  initial_sp = (void *) (segment + 1);
+#endif
+  context[STACK_GUARD] = __morestack_make_guard (initial_sp, segment->size);
+  context[INITIAL_SP] = NULL;
+  context[INITIAL_SP_LEN] = 0;
+  *size = segment->size;
+  return (void *) (segment + 1);
+}
+
+/* Like __splitstack_block_signals, but operating on CONTEXT, rather
+   than on the current state.  */
+
+void
+__splitstack_block_signals_context (void *context[NUMBER_OFFSETS], int *new,
+				    int *old)
+{
+  if (old != NULL)
+    *old = ((uintptr_type) context[BLOCK_SIGNALS]) != 0 ? 0 : 1;
+  if (new != NULL)
+    context[BLOCK_SIGNALS] = (void *) (uintptr_type) (*new ? 0 : 1);
+}
+
+/* Find the stack segments associated with a split stack context.
+   This will return the address of the first stack segment and set
+   *STACK_SIZE to its size.  It will set next_segment, next_sp, and
+   initial_sp which may be passed to __splitstack_find to find the
+   remaining segments.  */
+
+void *
+__splitstack_find_context (void *context[NUMBER_OFFSETS], size_t *stack_size,
+			   void **next_segment, void **next_sp,
+			   void **initial_sp)
+{
+  void *sp;
+  struct stack_segment *segment;
+
+  *initial_sp = context[INITIAL_SP];
+
+  sp = context[CURRENT_STACK];
+  if (sp == NULL)
+    {
+      /* Most likely this context was created but was never used.  The
+	 value 2 is a code used by __splitstack_find to mean that we
+	 have reached the end of the list of stacks.  */
+      *next_segment = (void *) (uintptr_type) 2;
+      *next_sp = NULL;
+      *initial_sp = NULL;
+      return NULL;
+    }
+
+  segment = context[CURRENT_SEGMENT];
+  if (segment == NULL)
+    {
+      /* Most likely this context was saved by a thread which was not
+	 created using __splistack_makecontext and which has never
+	 split the stack.  The value 1 is a code used by
+	 __splitstack_find to look at the initial stack.  */
+      segment = (struct stack_segment *) (uintptr_type) 1;
+    }
+
+  return __splitstack_find (segment, sp, stack_size, next_segment, next_sp,
+			    initial_sp);
 }
 
 #endif /* !defined (inhibit_libc) */
