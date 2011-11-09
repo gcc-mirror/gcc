@@ -1,3 +1,10 @@
+2011-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/vector.md (vcondv4sfv4si, vcondv4siv4sf,
+	vconduv4sfv4si): New patterns.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_cond_expr): Handle
+	different dest_mode from comparison mode.
+
 2011-11-09  Richard Guenther  <rguenther@suse.de>
 
 	* gimple-fold.c (canonicalize_constructor_val): Mark
