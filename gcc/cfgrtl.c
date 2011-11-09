@@ -322,9 +322,9 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
 }
 
 /* Create new basic block consisting of instructions in between HEAD and END
-   and place it to the BB chain after block AFTER.  END can be NULL in to
-   create new empty basic block before HEAD.  Both END and HEAD can be NULL to
-   create basic block at the end of INSN chain.  */
+   and place it to the BB chain after block AFTER.  END can be NULL to
+   create a new empty basic block before HEAD.  Both END and HEAD can be
+   NULL to create basic block at the end of INSN chain.  */
 
 static basic_block
 rtl_create_basic_block (void *headp, void *endp, basic_block after)
@@ -1411,8 +1411,8 @@ rtl_split_edge (edge edge_in)
     before = NULL_RTX;
 
   /* If this is a fall through edge to the exit block, the blocks might be
-     not adjacent, and the right place is the after the source.  */
-  if (edge_in->flags & EDGE_FALLTHRU && edge_in->dest == EXIT_BLOCK_PTR)
+     not adjacent, and the right place is after the source.  */
+  if ((edge_in->flags & EDGE_FALLTHRU) && edge_in->dest == EXIT_BLOCK_PTR)
     {
       before = NEXT_INSN (BB_END (edge_in->src));
       bb = create_basic_block (before, NULL, edge_in->src);
@@ -3177,6 +3177,21 @@ rtl_can_remove_branch_p (const_edge e)
   return true;
 }
 
+/* We do not want to declare these functions in a header file, since they
+   should only be used through the cfghooks interface, and we do not want to
+   move them here since it would require also moving quite a lot of related
+   code.  They are in cfglayout.c.  */
+extern bool cfg_layout_can_duplicate_bb_p (const_basic_block);
+extern basic_block cfg_layout_duplicate_bb (basic_block);
+
+static basic_block
+rtl_duplicate_bb (basic_block bb)
+{
+  bb = cfg_layout_duplicate_bb (bb);
+  bb->aux = NULL;
+  return bb;
+}
+
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
   "rtl",
@@ -3193,8 +3208,8 @@ struct cfg_hooks rtl_cfg_hooks = {
   rtl_merge_blocks,
   rtl_predict_edge,
   rtl_predicted_by_p,
-  NULL, /* can_duplicate_block_p */
-  NULL, /* duplicate_block */
+  cfg_layout_can_duplicate_bb_p,
+  rtl_duplicate_bb,
   rtl_split_edge,
   rtl_make_forwarder_block,
   rtl_tidy_fallthru_edge,
@@ -3215,13 +3230,6 @@ struct cfg_hooks rtl_cfg_hooks = {
    basic block connected via fallthru edges does not have to be adjacent.
    This representation will hopefully become the default one in future
    version of the compiler.  */
-
-/* We do not want to declare these functions in a header file, since they
-   should only be used through the cfghooks interface, and we do not want to
-   move them here since it would require also moving quite a lot of related
-   code.  They are in cfglayout.c.  */
-extern bool cfg_layout_can_duplicate_bb_p (const_basic_block);
-extern basic_block cfg_layout_duplicate_bb (basic_block);
 
 struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   "cfglayout mode",

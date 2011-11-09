@@ -4167,13 +4167,14 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	if (NONDEBUG_INSN_P (insn))
 	  df_simulate_find_defs (insn, merge_set);
 
+#ifdef HAVE_simple_return
       /* If shrink-wrapping, disable this optimization when test_bb is
 	 the first basic block and merge_bb exits.  The idea is to not
 	 move code setting up a return register as that may clobber a
 	 register used to pass function parameters, which then must be
 	 saved in caller-saved regs.  A caller-saved reg requires the
 	 prologue, killing a shrink-wrap opportunity.  */
-      if ((flag_shrink_wrap && !epilogue_completed)
+      if ((flag_shrink_wrap && HAVE_simple_return && !epilogue_completed)
 	  && ENTRY_BLOCK_PTR->next_bb == test_bb
 	  && single_succ_p (new_dest)
 	  && single_succ (new_dest) == EXIT_BLOCK_PTR
@@ -4224,6 +4225,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	    }
 	  BITMAP_FREE (return_regs);
 	}
+#endif
     }
 
  no_body:
