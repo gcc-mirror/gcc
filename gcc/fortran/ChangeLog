@@ -1,3 +1,9 @@
+2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/50540
+	* resolve.c (resolve_forall_iterators): Transform internal errors
+	to normal errors.
+
 2011-11-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/50960
@@ -8,7 +14,7 @@
 	be resolved again.
 	(resolve_fl_parameter): Make sure the symbol has a value.
 
-2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/38718
 	* intrinsic.c (add_functions): Allow dreal simplification.

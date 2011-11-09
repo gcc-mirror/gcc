@@ -6427,14 +6427,14 @@ resolve_forall_iterators (gfc_forall_iterator *it)
 	gfc_error ("FORALL start expression at %L must be a scalar INTEGER",
 		   &iter->start->where);
       if (iter->var->ts.kind != iter->start->ts.kind)
-	gfc_convert_type (iter->start, &iter->var->ts, 2);
+	gfc_convert_type (iter->start, &iter->var->ts, 1);
 
       if (gfc_resolve_expr (iter->end) == SUCCESS
 	  && (iter->end->ts.type != BT_INTEGER || iter->end->rank != 0))
 	gfc_error ("FORALL end expression at %L must be a scalar INTEGER",
 		   &iter->end->where);
       if (iter->var->ts.kind != iter->end->ts.kind)
-	gfc_convert_type (iter->end, &iter->var->ts, 2);
+	gfc_convert_type (iter->end, &iter->var->ts, 1);
 
       if (gfc_resolve_expr (iter->stride) == SUCCESS)
 	{
@@ -6448,7 +6448,7 @@ resolve_forall_iterators (gfc_forall_iterator *it)
 		       &iter->stride->where);
 	}
       if (iter->var->ts.kind != iter->stride->ts.kind)
-	gfc_convert_type (iter->stride, &iter->var->ts, 2);
+	gfc_convert_type (iter->stride, &iter->var->ts, 1);
     }
 
   for (iter = it; iter; iter = iter->next)
