@@ -1,3 +1,8 @@
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/46686
+	* runtime/backtrace.c (show_backtrace): Fix incorrect comment.
+
 2011-11-09  Tobias Burnus  <burnus@net-b.de>
 
 	* configure.ac: Make more cross-compile friendly.
