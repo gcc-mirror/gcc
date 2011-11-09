@@ -1,3 +1,7 @@
+2011-11-09  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* gcc.dg/tm/memopt-1.c:  Adjust regexp. 
+
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51029
