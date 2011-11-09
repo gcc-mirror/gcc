@@ -1,3 +1,7 @@
+2011-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tm/memopt-1.c: Fix up regexp.
+
 2011-11-09  Ian Lance Taylor  <iant@google.com>
 
 	* lib/target-supports.exp (check_effective_target_ucontext_h): New
