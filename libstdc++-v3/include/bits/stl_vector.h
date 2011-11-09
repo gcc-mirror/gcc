@@ -214,11 +214,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       
       typedef _Vector_base<_Tp, _Alloc>			 _Base;
       typedef typename _Base::_Tp_alloc_type		 _Tp_alloc_type;
+      typedef __gnu_cxx::__alloc_traits<_Tp_alloc_type>  _Alloc_traits;
 
     public:
       typedef _Tp					 value_type;
       typedef typename _Base::pointer                    pointer;
-      typedef __gnu_cxx::__alloc_traits<_Tp_alloc_type>  _Alloc_traits;
       typedef typename _Alloc_traits::const_pointer      const_pointer;
       typedef typename _Alloc_traits::reference          reference;
       typedef typename _Alloc_traits::const_reference    const_reference;

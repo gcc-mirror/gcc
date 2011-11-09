@@ -50,6 +50,10 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::vector<_Tp, _Allocator> _Base;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      typedef __gnu_cxx::__alloc_traits<_Allocator>  _Alloc_traits;
+#endif
+
     public:
       typedef typename _Base::reference             reference;
       typedef typename _Base::const_reference       const_reference;
@@ -143,6 +147,20 @@ namespace __profile
         __profcxx_vector_construct2(this);
       }
 
+      vector(const _Base& __x, const _Allocator& __a)
+      : _Base(__x) 
+      { 
+        __profcxx_vector_construct(this, this->capacity());
+        __profcxx_vector_construct2(this);
+      }
+
+      vector(vector&& __x, const _Allocator& __a) noexcept
+      : _Base(std::move(__x), __a)
+      {
+        __profcxx_vector_construct(this, this->capacity());
+        __profcxx_vector_construct2(this);
+      }
+
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
       : _Base(__l, __a) { }
@@ -163,12 +181,11 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       vector&
-      operator=(vector&& __x)
+      operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
+	__profcxx_vector_destruct(this, this->capacity(), this->size());
+	__profcxx_vector_destruct2(this);
+	static_cast<_Base&>(*this) = std::move(__x);
 	return *this;
       }
 
@@ -329,7 +346,7 @@ namespace __profile
       push_back(_Tp&& __x)
       {
         size_type __old_size = this->capacity();
-        _Base::push_back(__x);
+        _Base::push_back(std::move(__x));
         _M_profile_resize(this, __old_size, this->capacity());
       }
 
@@ -373,6 +390,9 @@ namespace __profile
 
       void
       swap(vector& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+			noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       {
         _Base::swap(__x);
       }

@@ -52,6 +52,10 @@ namespace __debug
       typedef typename _Base::const_iterator _Base_const_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      typedef __gnu_cxx::__alloc_traits<_Allocator>  _Alloc_traits;
+#endif
+
     public:
       typedef typename _Base::reference             reference;
       typedef typename _Base::const_reference       const_reference;
@@ -116,6 +120,17 @@ namespace __debug
 	__x._M_guaranteed_capacity = 0;
       }
 
+      vector(const vector& __x, const allocator_type& __a)
+      : _Base(__x, __a), _M_guaranteed_capacity(__x.size()) { }
+
+      vector(vector&& __x, const allocator_type& __a)
+      : _Base(std::move(__x), __a),
+        _M_guaranteed_capacity(this->size())
+      {
+	__x._M_invalidate_all();
+	__x._M_guaranteed_capacity = 0;
+      }
+
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
       : _Base(__l, __a),
@@ -135,12 +150,13 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       vector&
-      operator=(vector&& __x)
+      operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
-	clear();
-	swap(__x);
+	_Base::operator=(std::move(__x));
+	this->_M_invalidate_all();
+	_M_update_guaranteed_capacity();
+	__x._M_invalidate_all();
+	__x._M_guaranteed_capacity = 0;
 	return *this;
       }
 
@@ -513,6 +529,9 @@ namespace __debug
 
       void
       swap(vector& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+			noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
