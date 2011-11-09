@@ -26,38 +26,30 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif
-
-#ifdef HAVE_EXECINFO_H
-#include <execinfo.h>
 #endif
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
 
-#include <ctype.h>
+#include <limits.h>
+
+#include "unwind.h"
 
 
 /* Macros for common sets of capabilities: can we fork and exec, can
    we use glibc-style backtrace functions, and can we use pipes.  */
-#define CAN_FORK (defined(HAVE_FORK) && defined(HAVE_EXECVP) \
+#define CAN_FORK (defined(HAVE_FORK) && defined(HAVE_EXECVE) \
 		  && defined(HAVE_WAIT))
-#define GLIBC_BACKTRACE (defined(HAVE_BACKTRACE) \
-			 && defined(HAVE_BACKTRACE_SYMBOLS_FD))
 #define CAN_PIPE (CAN_FORK && defined(HAVE_PIPE) \
 		  && defined(HAVE_DUP2) && defined(HAVE_FDOPEN) \
 		  && defined(HAVE_CLOSE))
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 
 /* GDB style #NUM index for each stack frame.  */
@@ -65,7 +57,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static void 
 bt_header (int num)
 {
-  st_printf (" #%d  ", num);
+  st_printf ("#%d  ", num);
 }
 
 
@@ -106,24 +98,105 @@ fd_gets (char *s, int size, int fd)
 
 extern char *addr2line_path;
 
+/* Struct containing backtrace state.  */
+typedef struct
+{
+  int frame_number;
+  int direct_output;
+  int outfd;
+  int infd;
+  int error;
+}
+bt_state;
 
-/* show_backtrace displays the backtrace, currently obtained by means of
-   the glibc backtrace* functions.  */
+static _Unwind_Reason_Code
+trace_function (struct _Unwind_Context *context, void *state_ptr)
+{
+  bt_state* state = (bt_state*) state_ptr;
+  _Unwind_Ptr ip;
+#ifdef HAVE_GETIPINFO
+  int ip_before_insn = 0;
+  ip = _Unwind_GetIPInfo (context, &ip_before_insn);
+  
+  /* If the unwinder gave us a 'return' address, roll it back a little
+     to ensure we get the correct line number for the call itself.  */
+  if (! ip_before_insn)
+    --ip;
+#else  
+  ip = _Unwind_GetIP (context);
+#endif
+
+  if (state->direct_output)
+    {
+      bt_header(state->frame_number);
+      st_printf ("%p\n", (void*) ip);
+    }
+  else
+    {
+      char addr_buf[GFC_XTOA_BUF_SIZE], func[1024], file[PATH_MAX];
+      char *p;
+      const char* addr = gfc_xtoa (ip, addr_buf, sizeof (addr_buf));
+      write (state->outfd, addr, strlen (addr));
+      write (state->outfd, "\n", 1);
+
+      if (! fd_gets (func, sizeof(func), state->infd))
+	{
+	  state->error = 1;
+	  goto done;
+	}
+      if (! fd_gets (file, sizeof(file), state->infd))
+	{
+	  state->error = 1;
+	  goto done;
+	}
+	    
+	for (p = func; *p != '\n' && *p != '\r'; p++)
+	  ;
+	*p = '\0';
+	
+	/* _start is a setup routine that calls main(), and main() is
+	   the frontend routine that calls some setup stuff and then
+	   calls MAIN__, so at this point we should stop.  */
+	if (strcmp (func, "_start") == 0 || strcmp (func, "main") == 0)
+	  return _URC_END_OF_STACK;
+	
+	bt_header (state->frame_number);
+	estr_write ("0x");
+	estr_write (addr);
+
+	if (func[0] != '?' && func[1] != '?')
+	  {
+	    estr_write (" in ");
+	    estr_write (func);
+	  }
+	
+	if (strncmp (file, "??", 2) == 0)
+	  estr_write ("\n");
+	else
+	  {
+	    estr_write (" at ");
+	    estr_write (file);
+	  }
+    }
+
+ done:
+
+  state->frame_number++;
+  
+  return _URC_NO_REASON;
+}
+
+
+/* Display the backtrace.  */
 
 void
 show_backtrace (void)
 {
-#if GLIBC_BACKTRACE
+  bt_state state;
+  state.frame_number = 0;
+  state.error = 0;
 
-#define DEPTH 50
-#define BUFSIZE 1024
-
-  void *trace[DEPTH];
-  int depth;
-
-  depth = backtrace (trace, DEPTH);
-  if (depth <= 0)
-    return;
+  estr_write ("\nA fatal error occurred! Backtrace for this error:\n");
 
 #if CAN_PIPE
 
@@ -134,9 +207,7 @@ show_backtrace (void)
   do
   {
     /* Local variables.  */
-    int f[2], pid, bt[2], inp[2];
-    char addr_buf[GFC_XTOA_BUF_SIZE], func[BUFSIZE], file[BUFSIZE];
-    char *p;
+    int f[2], pid, inp[2];
 
     /* Don't output an error message if something goes wrong, we'll simply
        fall back to the pstack and glibc backtraces.  */
@@ -182,139 +253,27 @@ show_backtrace (void)
     /* Father process.  */
     close (f[1]);
     close (inp[0]);
-    if (pipe (bt) != 0)
-      break;
-    backtrace_symbols_fd (trace, depth, bt[1]);
-    close (bt[1]);
 
-    estr_write ("\nBacktrace for this error:\n");
-    for (int j = 0; j < depth; j++)
-      {
-	const char *addr = gfc_xtoa 
-	  ((GFC_UINTEGER_LARGEST) (intptr_t) trace[j], 
-	   addr_buf, sizeof (addr_buf));
-
-	write (inp[1], addr, strlen (addr));
-	write (inp[1], "\n", 1);
-	
-	if (! fd_gets (func, sizeof(func), f[0]))
-	  goto fallback;
-	if (! fd_gets (file, sizeof(file), f[0]))
-	  goto fallback;
-	    
-	for (p = func; *p != '\n' && *p != '\r'; p++)
-	  ;
-	*p = '\0';
-	
-	/* If we only have the address, use the glibc backtrace.  */
-	if (func[0] == '?' && func[1] == '?' && file[0] == '?'
-	    && file[1] == '?')
-	  {
-	    bt_header (j);
-	    while (1)
-	      {
-		char bc;
-		ssize_t nread = read (bt[0], &bc, 1);
-		if (nread != 1 || bc == '\n')
-		  break;
-		write (STDERR_FILENO, &bc, 1);
-	      }
-	    estr_write ("\n");
-	    continue;
-	  }
-	else
-	  {
-	    /* Forward to the next entry in the backtrace. */
-	    while (1)
-	      {
-		char bc;
-		ssize_t nread = read (bt[0], &bc, 1);
-		if (nread != 1 || bc == '\n')
-		  break;
-	      }
-	  }
-
-	/* _start is a setup routine that calls main(), and main() is
-	   the frontend routine that calls some setup stuff and then
-	   calls MAIN__, so at this point we should stop.  */
-	if (strcmp (func, "_start") == 0 || strcmp (func, "main") == 0)
-	  break;
-	
-	bt_header (j);
-	estr_write (full_exe_path ());
-	estr_write ("[0x");
-	estr_write (addr);
-	estr_write ("] in ");
-	estr_write (func);
-	
-	if (strncmp (file, "??", 2) == 0)
-	  estr_write ("\n");
-	else
-	  {
-	    estr_write (" at ");
-	    estr_write (file);
-	  }
-      } /* Loop over each hex address.  */
+    state.outfd = inp[1];
+    state.infd = f[0];
+    state.direct_output = 0;
+    _Unwind_Backtrace (trace_function, &state);
+    if (state.error)
+      goto fallback;
     close (inp[1]);
-    close (bt[0]);
     wait (NULL);
     return;
 
 fallback:
     estr_write ("** Something went wrong while running addr2line. **\n"
-		"** Falling back  to a simpler  backtrace scheme. **\n");
+		"** Falling back to a simpler backtrace scheme. **\n");
   }
   while (0);
-
-#undef DEPTH
-#undef BUFSIZE
 
 #endif /* CAN_PIPE */
 
 fallback_noerr:
-  /* Fallback to the glibc backtrace.  */
-  estr_write ("\nBacktrace for this error:\n");
-  backtrace_symbols_fd (trace, depth, STDERR_FILENO);
-  return;
-
-#elif defined(CAN_FORK) && defined(HAVE_GETPPID)
-  /* Try to call pstack.  */
-  do
-  {
-    /* Local variables.  */
-    int pid;
-
-    /* Don't output an error message if something goes wrong, we'll simply
-       fall back to the pstack and glibc backtraces.  */
-    if ((pid = fork ()) == -1)
-      break;
-
-    if (pid == 0)
-      {
-	/* Child process.  */
-#define NUM_ARGS 2
-	char *arg[NUM_ARGS+1];
-	char buf[20];
-
-	estr_write ("\nBacktrace for this error:\n");
-	arg[0] = (char *) "pstack";
-	snprintf (buf, sizeof(buf), "%d", (int) getppid ());
-	arg[1] = buf;
-	arg[2] = NULL;
-	execvp (arg[0], arg);
-#undef NUM_ARGS
-
-	/* pstack didn't work.  */
-	estr_write ("  unable to produce a backtrace, sorry!\n");
-	_exit (1);
-      }
-
-    /* Father process.  */
-    wait (NULL);
-    return;
-  }
-  while(0);
-#else
-  estr_write ("\nBacktrace not yet available on this platform, sorry!\n");
-#endif
+  /* Fallback to the simple backtrace without addr2line.  */
+  state.direct_output = 1;
+  _Unwind_Backtrace (trace_function, &state);
 }
