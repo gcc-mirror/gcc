@@ -9495,9 +9495,11 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
       id_begin = get_identifier ("begin");
       id_end = get_identifier ("end");
       member_begin = lookup_member (TREE_TYPE (range), id_begin,
-				    /*protect=*/2, /*want_type=*/false);
+				    /*protect=*/2, /*want_type=*/false,
+				    tf_warning_or_error);
       member_end = lookup_member (TREE_TYPE (range), id_end,
-				  /*protect=*/2, /*want_type=*/false);
+				  /*protect=*/2, /*want_type=*/false,
+				  tf_warning_or_error);
 
       if (member_begin != NULL_TREE || member_end != NULL_TREE)
 	{
@@ -20398,7 +20400,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	object_decl = lookup_member (object_type,
 				     name,
 				     /*protect=*/0,
-				     tag_type != none_type);
+				     tag_type != none_type,
+				     tf_warning_or_error);
       /* Look it up in the enclosing context, too.  */
       decl = lookup_name_real (name, tag_type != none_type,
 			       /*nonclass=*/0,

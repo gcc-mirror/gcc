@@ -1121,7 +1121,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		member = lookup_member (current_class_type,
 					name,
 					/*protect=*/0,
-					/*want_type=*/false);
+					/*want_type=*/false,
+					tf_warning_or_error);
 	      else
 		member = NULL_TREE;
 
@@ -2891,10 +2892,12 @@ get_class_binding (tree name, cp_binding_level *scope)
 
   /* Get the type binding.  */
   type_binding = lookup_member (class_type, name,
-				/*protect=*/2, /*want_type=*/true);
+				/*protect=*/2, /*want_type=*/true,
+				tf_warning_or_error);
   /* Get the value binding.  */
   value_binding = lookup_member (class_type, name,
-				 /*protect=*/2, /*want_type=*/false);
+				 /*protect=*/2, /*want_type=*/false,
+				 tf_warning_or_error);
 
   if (value_binding
       && (TREE_CODE (value_binding) == TYPE_DECL
@@ -3193,7 +3196,7 @@ do_class_using_decl (tree scope, tree name)
 	}
       else if (!name_dependent_p)
 	{
-	  decl = lookup_member (binfo, name, 0, false);
+	  decl = lookup_member (binfo, name, 0, false, tf_warning_or_error);
 	  if (!decl)
 	    {
 	      error ("no members matching %<%T::%D%> in %q#T", scope, name,
@@ -4258,7 +4261,7 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
   else if (is_class_type (scope, complain))
-    t = lookup_member (scope, name, 2, is_type_p);
+    t = lookup_member (scope, name, 2, is_type_p, tf_warning_or_error);
 
   if (!t)
     return error_mark_node;

@@ -8621,7 +8621,8 @@ lambda_function (tree lambda)
       && !COMPLETE_OR_OPEN_TYPE_P (type))
     return NULL_TREE;
   lambda = lookup_member (type, ansi_opname (CALL_EXPR),
-			  /*protect=*/0, /*want_type=*/false);
+			  /*protect=*/0, /*want_type=*/false,
+			  tf_warning_or_error);
   if (lambda)
     lambda = BASELINK_FUNCTIONS (lambda);
   return lambda;

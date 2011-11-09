@@ -2397,7 +2397,8 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
       return error_mark_node;
     }
   expr = lookup_member (dtor_type, complete_dtor_identifier,
-			/*protect=*/1, /*want_type=*/false);
+			/*protect=*/1, /*want_type=*/false,
+			tf_warning_or_error);
   expr = (adjust_result_of_qualified_name_lookup
 	  (expr, dtor_type, object_type));
   return expr;
@@ -2607,7 +2608,7 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	{
 	  /* Look up the member.  */
 	  member = lookup_member (access_path, name, /*protect=*/1,
-				  /*want_type=*/false);
+				  /*want_type=*/false, complain);
 	  if (member == NULL_TREE)
 	    {
 	      if (complain & tf_error)
@@ -2681,7 +2682,7 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
   ptrmem_type = TREE_TYPE (ptrmem);
   gcc_assert (TYPE_PTRMEMFUNC_P (ptrmem_type));
   member = lookup_member (ptrmem_type, member_name, /*protect=*/0,
-			  /*want_type=*/false);
+			  /*want_type=*/false, tf_warning_or_error);
   member_type = cp_build_qualified_type (TREE_TYPE (member),
 					 cp_type_quals (ptrmem_type));
   return fold_build3_loc (input_location,
