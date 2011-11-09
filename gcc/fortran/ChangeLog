@@ -1,3 +1,13 @@
+2011-11-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50960
+	* class.c (gfc_find_derived_vtab): Make the vtab symbols FL_PARAMETER.
+	* expr.c (gfc_simplify_expr): Prevent vtabs from being replaced with
+	their value.
+	* resolve.c (resolve_values): Use-associated symbols do not need to
+	be resolved again.
+	(resolve_fl_parameter): Make sure the symbol has a value.
+
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/38718
