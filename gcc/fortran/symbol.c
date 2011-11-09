@@ -3310,46 +3310,81 @@ gfc_symbol_done_2 (void)
 }
 
 
-/* Clear mark bits from symbol nodes associated with a symtree node.  */
+/* Count how many nodes a symtree has.  */
+
+static unsigned
+count_st_nodes (const gfc_symtree *st)
+{
+  unsigned nodes;
+  if (!st)
+    return 0;
+
+  nodes = count_st_nodes (st->left);
+  nodes++;
+  nodes += count_st_nodes (st->right);
+
+  return nodes;
+}
+
+
+/* Convert symtree tree into symtree vector.  */
+
+static unsigned
+fill_st_vector (gfc_symtree *st, gfc_symtree **st_vec, unsigned node_cntr)
+{
+  if (!st)
+    return node_cntr;
+
+  node_cntr = fill_st_vector (st->left, st_vec, node_cntr);
+  st_vec[node_cntr++] = st;
+  node_cntr = fill_st_vector (st->right, st_vec, node_cntr);
+
+  return node_cntr;
+}
+
+
+/* Traverse namespace.  As the functions might modify the symtree, we store the
+   symtree as a vector and operate on this vector.  Note: We assume that
+   sym_func or st_func never deletes nodes from the symtree - only adding is
+   allowed. Additionally, newly added nodes are not traversed.  */
 
 static void
-clear_sym_mark (gfc_symtree *st)
+do_traverse_symtree (gfc_symtree *st, void (*st_func) (gfc_symtree *),
+		     void (*sym_func) (gfc_symbol *))
 {
+  gfc_symtree **st_vec;
+  unsigned nodes, i, node_cntr;
 
-  st->n.sym->mark = 0;
+  gcc_assert ((st_func && !sym_func) || (!st_func && sym_func));
+  nodes = count_st_nodes (st);
+  st_vec = XALLOCAVEC (gfc_symtree *, nodes);
+  node_cntr = 0; 
+  fill_st_vector (st, st_vec, node_cntr);
+
+  if (sym_func)
+    {
+      /* Clear marks.  */
+      for (i = 0; i < nodes; i++)
+	st_vec[i]->n.sym->mark = 0;
+      for (i = 0; i < nodes; i++)
+	if (!st_vec[i]->n.sym->mark)
+	  {
+	    (*sym_func) (st_vec[i]->n.sym);
+	    st_vec[i]->n.sym->mark = 1;
+	  }
+     }
+   else
+      for (i = 0; i < nodes; i++)
+	(*st_func) (st_vec[i]);
 }
 
 
 /* Recursively traverse the symtree nodes.  */
 
 void
-gfc_traverse_symtree (gfc_symtree *st, void (*func) (gfc_symtree *))
+gfc_traverse_symtree (gfc_symtree *st, void (*st_func) (gfc_symtree *))
 {
-  if (!st)
-    return;
-
-  gfc_traverse_symtree (st->left, func);
-  (*func) (st);
-  gfc_traverse_symtree (st->right, func);
-}
-
-
-/* Recursive namespace traversal function.  */
-
-static void
-traverse_ns (gfc_symtree *st, void (*func) (gfc_symbol *))
-{
-
-  if (st == NULL)
-    return;
-
-  traverse_ns (st->left, func);
-
-  if (st->n.sym->mark == 0)
-    (*func) (st->n.sym);
-  st->n.sym->mark = 1;
-
-  traverse_ns (st->right, func);
+  do_traverse_symtree (st, st_func, NULL);
 }
 
 
@@ -3357,12 +3392,9 @@ traverse_ns (gfc_symtree *st, void (*func) (gfc_symbol *))
    care that each gfc_symbol node is called exactly once.  */
 
 void
-gfc_traverse_ns (gfc_namespace *ns, void (*func) (gfc_symbol *))
+gfc_traverse_ns (gfc_namespace *ns, void (*sym_func) (gfc_symbol *))
 {
-
-  gfc_traverse_symtree (ns->sym_root, clear_sym_mark);
-
-  traverse_ns (ns->sym_root, func);
+  do_traverse_symtree (ns->sym_root, NULL, sym_func);
 }
 
 

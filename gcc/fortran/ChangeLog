@@ -1,7 +1,13 @@
+2011-11-09  Tobias Burnus  <burnus@net-b.de>
+
+	* symbol.c (clear_sym_mark, traverse_ns): Remove functions.
+	(count_st_nodes, do_traverse_symtree, fill_st_vector): New functions.
+	(gfc_traverse_symtree, gfc_traverse_ns): Call do_traverse_symtree.
+
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/50016
-        * gfortran.texi (Data consistency and durability): New section.
+	PR libfortran/50016
+	* gfortran.texi (Data consistency and durability): New section.
 
 2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -638,7 +644,7 @@
 2011-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* simplify.c (simplify_transformation_to_array): Fix memory leak.
- 
+
 2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/50821
