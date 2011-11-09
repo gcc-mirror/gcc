@@ -571,6 +571,7 @@ RAW_CXX_FOR_TARGET
 WINDMC_FOR_TARGET
 WINDRES_FOR_TARGET
 STRIP_FOR_TARGET
+READELF_FOR_TARGET
 RANLIB_FOR_TARGET
 OBJDUMP_FOR_TARGET
 NM_FOR_TARGET
@@ -585,6 +586,7 @@ GCJ_FOR_TARGET
 GCC_FOR_TARGET
 CXX_FOR_TARGET
 CC_FOR_TARGET
+READELF
 OBJDUMP
 OBJCOPY
 WINDMC
@@ -815,6 +817,7 @@ WINDRES
 WINDMC
 OBJCOPY
 OBJDUMP
+READELF
 CC_FOR_TARGET
 CXX_FOR_TARGET
 GCC_FOR_TARGET
@@ -829,6 +832,7 @@ LIPO_FOR_TARGET
 NM_FOR_TARGET
 OBJDUMP_FOR_TARGET
 RANLIB_FOR_TARGET
+READELF_FOR_TARGET
 STRIP_FOR_TARGET
 WINDRES_FOR_TARGET
 WINDMC_FOR_TARGET'
@@ -1577,6 +1581,7 @@ Some influential environment variables:
   WINDMC      WINDMC for the host
   OBJCOPY     OBJCOPY for the host
   OBJDUMP     OBJDUMP for the host
+  READELF     READELF for the host
   CC_FOR_TARGET
               CC for the target
   CXX_FOR_TARGET
@@ -1605,6 +1610,8 @@ Some influential environment variables:
               OBJDUMP for the target
   RANLIB_FOR_TARGET
               RANLIB for the target
+  READELF_FOR_TARGET
+              READELF for the target
   STRIP_FOR_TARGET
               STRIP for the target
   WINDRES_FOR_TARGET
@@ -9608,6 +9615,147 @@ fi
 
 
 
+if test -n "$READELF"; then
+  ac_cv_prog_READELF=$READELF
+elif test -n "$ac_cv_prog_READELF"; then
+  READELF=$ac_cv_prog_READELF
+fi
+
+if test -n "$ac_cv_prog_READELF"; then
+  for ncn_progname in readelf; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_READELF+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$READELF"; then
+  ac_cv_prog_READELF="$READELF" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_READELF="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+READELF=$ac_cv_prog_READELF
+if test -n "$READELF"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $READELF" >&5
+$as_echo "$READELF" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+for ncn_progname in readelf; do
+  if test -n "$ncn_tool_prefix"; then
+    # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_READELF+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$READELF"; then
+  ac_cv_prog_READELF="$READELF" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_READELF="${ncn_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+READELF=$ac_cv_prog_READELF
+if test -n "$READELF"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $READELF" >&5
+$as_echo "$READELF" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+  if test -z "$ac_cv_prog_READELF" && test $build = $host ; then
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_READELF+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$READELF"; then
+  ac_cv_prog_READELF="$READELF" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_READELF="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+READELF=$ac_cv_prog_READELF
+if test -n "$READELF"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $READELF" >&5
+$as_echo "$READELF" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+  test -n "$ac_cv_prog_READELF" && break
+done
+
+if test -z "$ac_cv_prog_READELF" ; then
+  set dummy readelf
+  if test $build = $host ; then
+    READELF="$2"
+  else
+    READELF="${ncn_tool_prefix}$2"
+  fi
+fi
+
+
+
 
 
 
@@ -12447,6 +12595,236 @@ fi
 
 
 
+if test -z "$ac_cv_path_READELF_FOR_TARGET" ; then
+  if test -n "$with_build_time_tools"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for readelf in $with_build_time_tools" >&5
+$as_echo_n "checking for readelf in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/readelf; then
+      READELF_FOR_TARGET=`cd $with_build_time_tools && pwd`/readelf
+      ac_cv_path_READELF_FOR_TARGET=$READELF_FOR_TARGET
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_READELF_FOR_TARGET" >&5
+$as_echo "$ac_cv_path_READELF_FOR_TARGET" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  elif test $build != $host && test $have_gcc_for_target = yes; then
+    READELF_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=readelf`
+    test $READELF_FOR_TARGET = readelf && READELF_FOR_TARGET=
+    test -n "$READELF_FOR_TARGET" && ac_cv_path_READELF_FOR_TARGET=$READELF_FOR_TARGET
+  fi
+fi
+if test -z "$ac_cv_path_READELF_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
+  # Extract the first word of "readelf", so it can be a program name with args.
+set dummy readelf; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_READELF_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $READELF_FOR_TARGET in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_READELF_FOR_TARGET="$READELF_FOR_TARGET" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $gcc_cv_tool_dirs
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_READELF_FOR_TARGET="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+READELF_FOR_TARGET=$ac_cv_path_READELF_FOR_TARGET
+if test -n "$READELF_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $READELF_FOR_TARGET" >&5
+$as_echo "$READELF_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_READELF_FOR_TARGET" ; then
+
+
+if test -n "$READELF_FOR_TARGET"; then
+  ac_cv_prog_READELF_FOR_TARGET=$READELF_FOR_TARGET
+elif test -n "$ac_cv_prog_READELF_FOR_TARGET"; then
+  READELF_FOR_TARGET=$ac_cv_prog_READELF_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_READELF_FOR_TARGET"; then
+  for ncn_progname in readelf; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_READELF_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$READELF_FOR_TARGET"; then
+  ac_cv_prog_READELF_FOR_TARGET="$READELF_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_READELF_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+READELF_FOR_TARGET=$ac_cv_prog_READELF_FOR_TARGET
+if test -n "$READELF_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $READELF_FOR_TARGET" >&5
+$as_echo "$READELF_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+if test -z "$ac_cv_prog_READELF_FOR_TARGET" && test -n "$with_build_time_tools"; then
+  for ncn_progname in readelf; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
+$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/${ncn_progname}; then
+      ac_cv_prog_READELF_FOR_TARGET=$with_build_time_tools/${ncn_progname}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      break
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  done
+fi
+
+if test -z "$ac_cv_prog_READELF_FOR_TARGET"; then
+  for ncn_progname in readelf; do
+    if test -n "$ncn_target_tool_prefix"; then
+      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_READELF_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$READELF_FOR_TARGET"; then
+  ac_cv_prog_READELF_FOR_TARGET="$READELF_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_READELF_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+READELF_FOR_TARGET=$ac_cv_prog_READELF_FOR_TARGET
+if test -n "$READELF_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $READELF_FOR_TARGET" >&5
+$as_echo "$READELF_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    if test -z "$ac_cv_prog_READELF_FOR_TARGET" && test $build = $target ; then
+      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_READELF_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$READELF_FOR_TARGET"; then
+  ac_cv_prog_READELF_FOR_TARGET="$READELF_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_READELF_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+READELF_FOR_TARGET=$ac_cv_prog_READELF_FOR_TARGET
+if test -n "$READELF_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $READELF_FOR_TARGET" >&5
+$as_echo "$READELF_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    test -n "$ac_cv_prog_READELF_FOR_TARGET" && break
+  done
+fi
+
+if test -z "$ac_cv_prog_READELF_FOR_TARGET" ; then
+  set dummy readelf
+  if test $build = $target ; then
+    READELF_FOR_TARGET="$2"
+  else
+    READELF_FOR_TARGET="${ncn_target_tool_prefix}$2"
+  fi
+else
+  READELF_FOR_TARGET="$ac_cv_prog_READELF_FOR_TARGET"
+fi
+
+else
+  READELF_FOR_TARGET=$ac_cv_path_READELF_FOR_TARGET
+fi
+
+
+
+
 if test -z "$ac_cv_path_STRIP_FOR_TARGET" ; then
   if test -n "$with_build_time_tools"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strip in $with_build_time_tools" >&5
@@ -13762,6 +14140,48 @@ $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     RANLIB_FOR_TARGET='$(RANLIB)'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+$as_echo "host tool" >&6; }
+  else
+    # We need a cross tool
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target readelf" >&5
+$as_echo_n "checking where to find the target readelf... " >&6; }
+if test "x${build}" != "x${host}" ; then
+  if expr "x$READELF_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $READELF_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  else
+    # Canadian cross, just use what we found
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+else
+  ok=yes
+  case " ${configdirs} " in
+    *" binutils "*) ;;
+    *) ok=no ;;
+  esac
+
+  if test $ok = yes; then
+    # An in-tree tool is available and we can use it
+    READELF_FOR_TARGET='$$r/$(HOST_SUBDIR)/binutils/readelf'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
+$as_echo "just compiled" >&6; }
+  elif expr "x$READELF_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $READELF_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    READELF_FOR_TARGET='$(READELF)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else
