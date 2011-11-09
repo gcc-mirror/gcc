@@ -219,6 +219,9 @@ if test $enable_symvers = gnu; then
 	    [Define to 1 if GNU symbol versioning is used for libitm.])
 fi
 
+# See if we can emit unwind info in the sjlj stub.
+GCC_AS_CFI_PSEUDO_OP
+
 # Determine the proper ABI type for size_t.
 LIBITM_CHECK_SIZE_T_MANGLING
 
