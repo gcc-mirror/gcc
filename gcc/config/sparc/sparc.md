@@ -5649,7 +5649,7 @@
 		   (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
-  "* return output_v8plus_shift (operands, insn, \"sllx\");"
+  "* return output_v8plus_shift (insn ,operands, \"sllx\");"
   [(set_attr "type" "multi")
    (set_attr "length" "5,5,6")])
 
@@ -5759,7 +5759,7 @@
 		     (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
-  "* return output_v8plus_shift (operands, insn, \"srax\");"
+  "* return output_v8plus_shift (insn, operands, \"srax\");"
   [(set_attr "type" "multi")
    (set_attr "length" "5,5,6")])
 
@@ -5849,7 +5849,7 @@
 		     (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
-  "* return output_v8plus_shift (operands, insn, \"srlx\");"
+  "* return output_v8plus_shift (insn, operands, \"srlx\");"
   [(set_attr "type" "multi")
    (set_attr "length" "5,5,6")])
 

@@ -576,7 +576,8 @@ static bool sparc_print_operand_punct_valid_p (unsigned char);
 static void sparc_print_operand (FILE *, rtx, int);
 static void sparc_print_operand_address (FILE *, rtx);
 static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
-					   enum machine_mode, secondary_reload_info *);
+					   enum machine_mode,
+					   secondary_reload_info *);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -9120,10 +9121,11 @@ sparc_check_64 (rtx x, rtx insn)
   return 0;
 }
 
-/* Returns assembly code to perform a DImode shift using
-   a 64-bit global or out register on SPARC-V8+.  */
+/* Output a wide shift instruction in V8+ mode.  INSN is the instruction,
+   OPERANDS are its operands and OPCODE is the mnemonic to be used.  */
+
 const char *
-output_v8plus_shift (rtx *operands, rtx insn, const char *opcode)
+output_v8plus_shift (rtx insn, rtx *operands, const char *opcode)
 {
   static char asm_code[60];
 
@@ -9148,12 +9150,13 @@ output_v8plus_shift (rtx *operands, rtx insn, const char *opcode)
       output_asm_insn ("or\t%L1, %3, %3", operands);
     }
 
-  strcpy(asm_code, opcode);
+  strcpy (asm_code, opcode);
 
   if (which_alternative != 2)
     return strcat (asm_code, "\t%0, %2, %L0\n\tsrlx\t%L0, 32, %H0");
   else
-    return strcat (asm_code, "\t%3, %2, %3\n\tsrlx\t%3, 32, %H0\n\tmov\t%3, %L0");
+    return
+      strcat (asm_code, "\t%3, %2, %3\n\tsrlx\t%3, 32, %H0\n\tmov\t%3, %L0");
 }
 
 /* Output rtl to increment the profiler label LABELNO
@@ -11156,7 +11159,7 @@ sparc_conditional_register_usage (void)
     global_regs[SPARC_GSR_REG] = 1;
 }
 
-/* Implement TARGET_PREFERRED_RELOAD_CLASS
+/* Implement TARGET_PREFERRED_RELOAD_CLASS:
 
    - We can't load constants into FP registers.
    - We can't load FP constants into integer registers when soft-float,
@@ -11206,8 +11209,11 @@ sparc_preferred_reload_class (rtx x, reg_class_t rclass)
   return rclass;
 }
 
+/* Output a wide multiply instruction in V8+ mode.  INSN is the instruction,
+   OPERANDS are its operands and OPCODE is the mnemonic to be used.  */
+
 const char *
-output_v8plus_mult (rtx insn, rtx *operands, const char *name)
+output_v8plus_mult (rtx insn, rtx *operands, const char *opcode)
 {
   char mulstr[32];
 
@@ -11222,7 +11228,7 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
       if (which_alternative == 1)
 	{
 	  output_asm_insn ("or\t%L1, %H1, %H1", operands);
-	  sprintf (mulstr, "%s\t%%H1, %%2, %%L0", name);
+	  sprintf (mulstr, "%s\t%%H1, %%2, %%L0", opcode);
 	  output_asm_insn (mulstr, operands);
 	  return "srlx\t%L0, 32, %H0";
 	}
@@ -11230,7 +11236,7 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
 	{
 	  output_asm_insn ("sllx\t%H1, 32, %3", operands);
           output_asm_insn ("or\t%L1, %3, %3", operands);
-          sprintf (mulstr, "%s\t%%3, %%2, %%3", name);
+          sprintf (mulstr, "%s\t%%3, %%2, %%3", opcode);
 	  output_asm_insn (mulstr, operands);
 	  output_asm_insn ("srlx\t%3, 32, %H0", operands);
           return "mov\t%3, %L0";
@@ -11241,7 +11247,7 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
       if (which_alternative == 1)
 	{
 	  output_asm_insn ("or\t%L1, %H1, %H1", operands);
-          sprintf (mulstr, "%s\t%%H1, %%H1, %%L0", name);
+          sprintf (mulstr, "%s\t%%H1, %%H1, %%L0", opcode);
 	  output_asm_insn (mulstr, operands);
 	  return "srlx\t%L0, 32, %H0";
 	}
@@ -11249,7 +11255,7 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
 	{
 	  output_asm_insn ("sllx\t%H1, 32, %3", operands);
           output_asm_insn ("or\t%L1, %3, %3", operands);
-	  sprintf (mulstr, "%s\t%%3, %%3, %%3", name);
+	  sprintf (mulstr, "%s\t%%3, %%3, %%3", opcode);
 	  output_asm_insn (mulstr, operands);
 	  output_asm_insn ("srlx\t%3, 32, %H0", operands);
           return "mov\t%3, %L0";
@@ -11262,7 +11268,7 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
       output_asm_insn ("or\t%L1, %H1, %H1", operands);
       output_asm_insn ("sllx\t%H2, 32, %L1", operands);
       output_asm_insn ("or\t%L2, %L1, %L1", operands);
-      sprintf (mulstr, "%s\t%%H1, %%L1, %%L0", name);
+      sprintf (mulstr, "%s\t%%H1, %%L1, %%L0", opcode);
       output_asm_insn (mulstr, operands);
       return "srlx\t%L0, 32, %H0";
     }
@@ -11272,15 +11278,20 @@ output_v8plus_mult (rtx insn, rtx *operands, const char *name)
       output_asm_insn ("sllx\t%H2, 32, %4", operands);
       output_asm_insn ("or\t%L1, %3, %3", operands);
       output_asm_insn ("or\t%L2, %4, %4", operands);
-      sprintf (mulstr, "%s\t%%3, %%4, %%3", name);
+      sprintf (mulstr, "%s\t%%3, %%4, %%3", opcode);
       output_asm_insn (mulstr, operands);
       output_asm_insn ("srlx\t%3, 32, %H0", operands);
       return "mov\t%3, %L0";
     }
 }
 
+/* Subroutine of sparc_expand_vector_init.  Emit code to initialize TARGET to
+   the N_ELTS values for individual fields contained in LOCS by means of VIS2
+   BSHUFFLE insn.  MODE and INNER_MODE are the modes describing TARGET.  */
+
 static void
-vector_init_bshuffle (rtx target, rtx *locs, int n_elts, enum machine_mode mode,
+vector_init_bshuffle (rtx target, rtx *locs, int n_elts,
+		      enum machine_mode mode,
 		      enum machine_mode inner_mode)
 {
   rtx mid_target, r0_high, r0_low, r1_high, r1_low;
@@ -11394,6 +11405,11 @@ vector_init_bshuffle (rtx target, rtx *locs, int n_elts, enum machine_mode mode,
     emit_move_insn (target, gen_lowpart (partial_mode, mid_target));
 }
 
+/* Subroutine of sparc_expand_vector_init.  Emit code to initialize TARGET to
+   values for individual fields VALS by means of simple word moves if this is
+   possible.  MODE and INNER_MODE are the modes describing TARGET.  Return true
+   on success.  */
+
 static bool
 vector_init_move_words (rtx target, rtx vals, enum machine_mode mode,
 			enum machine_mode inner_mode)
@@ -11417,11 +11433,13 @@ vector_init_move_words (rtx target, rtx vals, enum machine_mode mode,
   return false;
 }
 
-/* Move the elements in rtvec VALS into registers compatible with MODE.
-   Store the rtx for these regs into the corresponding array entry of
-   LOCS.  */
+/* Subroutine of sparc_expand_vector_init.  Move the N_ELTS elements in VALS
+   into registers compatible with MODE and INNER_MODE.  Store the RTX for
+   these regs into the corresponding array entry of LOCS.  */
+
 static void
-vector_init_prepare_elts (rtx vals, int n_elts, rtx *locs, enum machine_mode mode,
+vector_init_prepare_elts (rtx *locs, rtx vals, int n_elts,
+			  enum machine_mode mode,
 			  enum machine_mode inner_mode)
 {
   enum machine_mode loc_mode;
@@ -11494,7 +11512,9 @@ vector_init_prepare_elts (rtx vals, int n_elts, rtx *locs, enum machine_mode mod
 		}
 	      else if (code != MEM)
 		{
-		  rtx stk = assign_stack_temp (inner_mode, GET_MODE_SIZE(inner_mode), 0);
+		  rtx stk
+		    = assign_stack_temp (inner_mode, GET_MODE_SIZE(inner_mode),
+					 0);
 		  emit_move_insn (stk, elt);
 		  m = stk;
 		}
@@ -11515,6 +11535,11 @@ vector_init_prepare_elts (rtx vals, int n_elts, rtx *locs, enum machine_mode mod
       locs[i] = dst;
     }
 }
+
+/* Subroutine of sparc_expand_vector_init.  Emit code to initialize TARGET to
+   the N_ELTS values for individual fields contained in LOCS by means of VIS2
+   instructions, among which N_UNIQUE are unique.  MODE and INNER_MODE are the
+   modes describing TARGET.  */
 
 static void
 sparc_expand_vector_init_vis2 (rtx target, rtx *locs, int n_elts, int n_unique,
@@ -11540,6 +11565,10 @@ sparc_expand_vector_init_vis2 (rtx target, rtx *locs, int n_elts, int n_unique,
 	emit_insn (gen_faligndatav8qi_vis (target, locs[i], target));
     }
 }
+
+/* Subroutine of sparc_expand_vector_init.  Emit code to initialize TARGET to
+   the N_ELTS values for individual fields contained in LOCS by means of VIS1
+   instructions, among which N_UNIQUE are unique.  MODE is TARGET's mode.  */
 
 static void
 sparc_expand_vector_init_vis1 (rtx target, rtx *locs, int n_elts, int n_unique,
@@ -11609,6 +11638,8 @@ sparc_expand_vector_init_vis1 (rtx target, rtx *locs, int n_elts, int n_unique,
     emit_move_insn (target, gen_highpart (mode, tmp));
 }
 
+/* Emit code to initialize TARGET to values for individual fields VALS.  */
+
 void
 sparc_expand_vector_init (rtx target, rtx vals)
 {
@@ -11650,7 +11681,7 @@ sparc_expand_vector_init (rtx target, rtx vals)
   if (vector_init_move_words (target, vals, mode, inner_mode))
     return;
 
-  vector_init_prepare_elts (vals, n_elts, locs, mode, inner_mode);
+  vector_init_prepare_elts (locs, vals, n_elts, mode, inner_mode);
 
   if (TARGET_VIS2)
     sparc_expand_vector_init_vis2 (target, locs, n_elts, n_unique,
@@ -11658,6 +11689,8 @@ sparc_expand_vector_init (rtx target, rtx vals)
   else
     sparc_expand_vector_init_vis1 (target, locs, n_elts, n_unique, mode);
 }
+
+/* Implement TARGET_SECONDARY_RELOAD.  */
 
 static reg_class_t
 sparc_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
@@ -11722,6 +11755,9 @@ sparc_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   return NO_REGS;
 }
 
+/* Emit code to conditionally move either OPERANDS[2] or OPERANDS[3] into
+   OPERANDS[0] in MODE.  OPERANDS[1] is the operator of the condition.  */
+
 bool
 sparc_expand_conditional_move (enum machine_mode mode, rtx *operands)
 {
@@ -11776,6 +11812,12 @@ sparc_expand_conditional_move (enum machine_mode mode, rtx *operands)
 
   return true;
 }
+
+/* Emit code to conditionally move a combination of OPERANDS[1] and OPERANDS[2]
+   into OPERANDS[0] in MODE, depending on the outcome of the comparison of
+   OPERANDS[4] and OPERANDS[5].  OPERANDS[3] is the operator of the condition.
+   FCODE is the machine code to be used for OPERANDS[3] and CCODE the machine
+   code to be used for the condition mask.  */
 
 void
 sparc_expand_vcond (enum machine_mode mode, rtx *operands, int ccode, int fcode)
