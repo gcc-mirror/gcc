@@ -1,3 +1,15 @@
+2011-11-09  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.ac: Add tool checks for READELF and READELF_FOR_TARGET.
+	* configure: Rebuild.
+	* Makefile.def (flags_to_pass): Add READELF_FOR_TARGET.
+	* Makefile.tpl (READELF, READELF_FOR_TARGET): New variables.
+	(HOST_EXPORTS): Add READELF, READELF_FOR_TARGET.
+	(BASE_FLAGS_TO_PASS): Add READELF_FOR_TARGET.
+	(BASE_TARGET_EXPORTS, EXTRA_HOST_FLAGS, EXTRA_TARGET_FLAGS):
+	Add READELF.
+	* Makefile.in: Rebuild.
+
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.def (language=c++): Remove check-c++0x.
