@@ -1775,6 +1775,7 @@ proc check_effective_target_vect_cmdline_needed { } {
 	     || ([istarget powerpc*-*-*]
 		 && ([check_effective_target_powerpc_spe]
 		     || [check_effective_target_powerpc_altivec]))
+	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_vis])
              || [istarget spu-*-*]
 	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
 	   set et_vect_cmdline_needed_saved 0
@@ -2487,6 +2488,22 @@ proc check_effective_target_ultrasparc_vis3_hw { } {
     return [check_runtime ultrasparc_hw {
 	int main() { __asm__(".word 0x81b00220"); return 0; }
     } "-mcpu=niagara3"]
+}
+
+# Return 1 if this is a Sparc target with VIS enabled.
+
+proc check_effective_target_sparc_vis { } {
+    if { [istarget sparc*-*-*] } {
+	return [check_no_compiler_messages sparc_vis object {
+	    #ifndef __VIS__
+	    #error not VIS
+	    #else
+	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
 }
 
 # Return 1 if the target supports hardware vector shift operation.
