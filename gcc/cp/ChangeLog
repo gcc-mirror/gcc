@@ -1,5 +1,9 @@
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50972
+	* pt.c (maybe_instantiate_noexcept): Check the return value of
+	push_tinst_level.
+
 	PR c++/51046
 	* parser.c (cp_parser_range_for): check_for_bare_parameter_packs.
 
