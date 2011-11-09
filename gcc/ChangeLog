@@ -1,3 +1,12 @@
+2011-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.h (requires_stack_frame_p): New prototype.
+	* function.c (requires_stack_frame_p): No longer static.
+	* config/i386/i386.c (ix86_finalize_stack_realign_flags): If
+	stack_realign_fp was just a conservative guess for a function
+	which doesn't use sp/fp/argp at all, clear frame_pointer_needed
+	and stack realignment.
+
 2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR preprocessor/51061
