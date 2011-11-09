@@ -1,3 +1,10 @@
+2011-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51039
+	* tree-inline.c (setup_one_parameter): Always perform a
+	valid gimple type change.
+	(declare_return_variable): Likewise.
+
 2011-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/vector.md (vcondv4sfv4si, vcondv4siv4sf,
