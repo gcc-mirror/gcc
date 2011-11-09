@@ -9514,7 +9514,7 @@ resolve_values (gfc_symbol *sym)
 {
   gfc_try t;
 
-  if (sym->value == NULL)
+  if (sym->value == NULL || sym->attr.use_assoc)
     return;
 
   if (sym->value->expr_type == EXPR_STRUCTURE)
@@ -11982,7 +11982,7 @@ resolve_fl_parameter (gfc_symbol *sym)
   /* Make sure the types of derived parameters are consistent.  This
      type checking is deferred until resolution because the type may
      refer to a derived type from the host.  */
-  if (sym->ts.type == BT_DERIVED
+  if (sym->ts.type == BT_DERIVED && sym->value
       && !gfc_compare_types (&sym->ts, &sym->value->ts))
     {
       gfc_error ("Incompatible derived type in PARAMETER at %L",
