@@ -1,3 +1,26 @@
+2011-11-09  Alan Modra  <amodra@gmail.com>
+
+	* function.c (bb_active_p): Delete.
+	(dup_block_and_redirect, active_insn_between): New functions.
+	(convert_jumps_to_returns, emit_return_for_exit): New functions,
+	split out from..
+	(thread_prologue_and_epilogue_insns): ..here.  Delete
+	shadowing variables.  Don't do prologue register clobber tests
+	when shrink wrapping already failed.  Delete all last_bb_active
+	code.  Instead compute tail block candidates for duplicating
+	exit path.  Remove these from antic set.  Duplicate tails when
+	reached from both blocks needing a prologue/epilogue and
+	blocks not needing such.
+	* ifcvt.c (dead_or_predicable): Test both flag_shrink_wrap and
+	HAVE_simple_return.
+	* bb-reorder.c (get_uncond_jump_length): Make global.
+	* bb-reorder.h (get_uncond_jump_length): Declare.
+	* cfgrtl.c (rtl_create_basic_block): Comment typo fix.
+	(rtl_split_edge): Likewise.  Warning fix.
+	(rtl_duplicate_bb): New function.
+	(rtl_cfg_hooks): Enable can_duplicate_block_p and duplicate_block.
+	* Makefile.in (function.o): Update dependencies.
+
 2011-11-08  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 	    Georg-Johann Lay  <avr@gjlay.de>
 
