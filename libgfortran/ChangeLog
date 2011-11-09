@@ -1,3 +1,11 @@
+2011-11-09  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Make more cross-compile friendly.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/46686
@@ -20,9 +28,9 @@
 
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/50016
-        * io/inquire.c (inquire_via_unit): Flush the unit and use ssize.
-        * io/unix.c (buf_flush): Don't call _commit.
+	PR libfortran/50016
+	* io/inquire.c (inquire_via_unit): Flush the unit and use ssize.
+	* io/unix.c (buf_flush): Don't call _commit.
 
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -36,9 +44,9 @@
 
 2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/45723
-        * io/open.c (new_unit): Don't check file size before attempting
-        seek.
+	PR libfortran/45723
+	* io/open.c (new_unit): Don't check file size before attempting
+	seek.
 
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -538,9 +546,9 @@
 
 2011-06-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/49296
-        * io/list_read.c (read_character): Accept EOF as a separator when
-        reading string.
+	PR libfortran/49296
+	* io/list_read.c (read_character): Accept EOF as a separator when
+	reading string.
 
 2011-06-17  Daniel Carrera  <dcarrera@gmail.com>
 
