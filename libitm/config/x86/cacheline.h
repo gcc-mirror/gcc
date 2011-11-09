@@ -40,8 +40,6 @@ namespace GTM HIDDEN {
 // in the cacheline with which it is associated.
 typedef sized_integral<CACHELINE_SIZE / 8>::type gtm_cacheline_mask;
 
-extern uint32_t const gtm_bit_to_byte_mask[16];
-
 union gtm_cacheline
 {
   // Byte access to the cacheline.
@@ -67,37 +65,12 @@ union gtm_cacheline
   __m256i m256i[CACHELINE_SIZE / sizeof(__m256i)];
 #endif
 
-  // Store S into D, but only the bytes specified by M.
-  static void store_mask (uint32_t *d, uint32_t s, uint8_t m);
-  static void store_mask (uint64_t *d, uint64_t s, uint8_t m);
-#ifdef __SSE2__
-  static void store_mask (__m128i *d, __m128i s, uint16_t m);
-#endif
-
-  // Copy S to D, but only the bytes specified by M.
-  static void copy_mask (gtm_cacheline * __restrict d,
-			 const gtm_cacheline * __restrict s,
-			 gtm_cacheline_mask m);
-
-  // A write barrier to emit after (a series of) copy_mask.
-  // When we're emitting non-temporal stores, the normal strong
-  // ordering of the machine doesn't apply.
-  static void copy_mask_wb ();
-
 #if defined(__SSE__) || defined(__AVX__)
   // Copy S to D; only bother defining if we can do this more efficiently
   // than the compiler-generated default implementation.
   gtm_cacheline& operator= (const gtm_cacheline &s);
 #endif // SSE, AVX
 };
-
-inline void
-gtm_cacheline::copy_mask_wb ()
-{
-#ifdef __SSE2__
-  _mm_sfence ();
-#endif
-}
 
 #if defined(__SSE__) || defined(__AVX__)
 inline gtm_cacheline& ALWAYS_INLINE
@@ -141,103 +114,11 @@ gtm_cacheline::operator= (const gtm_cacheline & __restrict s)
     }
 
   return *this;
+
+#undef CP
+#undef TYPE
 }
 #endif
-
-// Support masked integer stores more efficiently with an unlocked cmpxchg
-// insn.  My reasoning is that while we write to locations that we do not wish
-// to modify, we do it in an uninterruptable insn, and so we either truely
-// write back the original data or the insn fails -- unlike with a
-// load/and/or/write sequence which can be interrupted either by a kernel
-// task switch or an unlucky cacheline steal by another processor.  Avoiding
-// the LOCK prefix improves performance by a factor of 10, and we don't need
-// the memory barrier semantics implied by that prefix.
-
-inline void ALWAYS_INLINE
-gtm_cacheline::store_mask (uint32_t *d, uint32_t s, uint8_t m)
-{
-  gtm_cacheline_mask tm = (1 << sizeof (s)) - 1;
-  if (__builtin_expect (m & tm, tm))
-    {
-      if (__builtin_expect ((m & tm) == tm, 1))
-	*d = s;
-      else
-	{
-	  gtm_cacheline_mask bm = gtm_bit_to_byte_mask[m & 15];
-	  gtm_word n, o = *d;
-
-	  __asm("\n0:\t"
-		"mov	%[o], %[n]\n\t"
-		"and	%[m], %[n]\n\t"
-		"or	%[s], %[n]\n\t"
-		"cmpxchg %[n], %[d]\n\t"
-		".byte	0x2e\n\t"	// predict not-taken, aka jnz,pn
-		"jnz	0b"
-		: [d] "+m"(*d), [n] "=&r" (n), [o] "+a"(o)
-		: [s] "r" (s & bm), [m] "r" (~bm));
-	}
-    }
-}
-
-inline void ALWAYS_INLINE
-gtm_cacheline::store_mask (uint64_t *d, uint64_t s, uint8_t m)
-{
-  gtm_cacheline_mask tm = (1 << sizeof (s)) - 1;
-  if (__builtin_expect (m & tm, tm))
-    {
-      if (__builtin_expect ((m & tm) == tm, 1))
-	*d = s;
-      else
-	{
-#ifdef __x86_64__
-	  uint32_t bl = gtm_bit_to_byte_mask[m & 15];
-	  uint32_t bh = gtm_bit_to_byte_mask[(m >> 4) & 15];
-	  gtm_cacheline_mask bm = bl | ((gtm_cacheline_mask)bh << 31 << 1);
-	  uint64_t n, o = *d;
-	  __asm("\n0:\t"
-		"mov	%[o], %[n]\n\t"
-		"and	%[m], %[n]\n\t"
-		"or	%[s], %[n]\n\t"
-		"cmpxchg %[n], %[d]\n\t"
-		".byte	0x2e\n\t"	// predict not-taken, aka jnz,pn
-		"jnz	0b"
-		: [d] "+m"(*d), [n] "=&r" (n), [o] "+a"(o)
-		: [s] "r" (s & bm), [m] "r" (~bm));
-#else
-	  /* ??? While it's possible to perform this operation with
-	     cmpxchg8b, the sequence requires all 7 general registers
-	     and thus cannot be performed with -fPIC.  Don't even try.  */
-	  uint32_t *d32 = reinterpret_cast<uint32_t *>(d);
-	  store_mask (d32, s, m);
-	  store_mask (d32 + 1, s >> 32, m >> 4);
-#endif
-	}
-    }
-}
-
-#ifdef __SSE2__
-inline void ALWAYS_INLINE
-gtm_cacheline::store_mask (__m128i *d, __m128i s, uint16_t m)
-{
-  if (__builtin_expect (m == 0, 0))
-    return;
-  if (__builtin_expect (m == 0xffff, 1))
-    *d = s;
-  else
-    {
-      __m128i bm0, bm1, bm2, bm3;
-      bm0 = _mm_set_epi32 (0, 0, 0, gtm_bit_to_byte_mask[m & 15]); m >>= 4;
-      bm1 = _mm_set_epi32 (0, 0, 0, gtm_bit_to_byte_mask[m & 15]); m >>= 4;
-      bm2 = _mm_set_epi32 (0, 0, 0, gtm_bit_to_byte_mask[m & 15]); m >>= 4;
-      bm3 = _mm_set_epi32 (0, 0, 0, gtm_bit_to_byte_mask[m & 15]); m >>= 4;
-      bm0 = _mm_unpacklo_epi32 (bm0, bm1);
-      bm2 = _mm_unpacklo_epi32 (bm2, bm3);
-      bm0 = _mm_unpacklo_epi64 (bm0, bm2);
-
-      _mm_maskmoveu_si128 (s, bm0, (char *)d);
-    }
-}
-#endif // SSE2
 
 } // namespace GTM
 

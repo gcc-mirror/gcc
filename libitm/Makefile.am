@@ -41,7 +41,7 @@ libitm_la_LDFLAGS = $(libitm_version_info) $(libitm_version_script) \
 
 libitm_la_SOURCES = \
 	aatree.cc alloc.cc alloc_c.cc alloc_cpp.cc barrier.cc beginend.cc \
-	clone.cc cacheline.cc cachepage.cc eh_cpp.cc local.cc \
+	clone.cc eh_cpp.cc local.cc \
 	query.cc retry.cc rwlock.cc useraction.cc util.cc \
 	sjlj.S tls.cc method-serial.cc method-gl.cc
 
