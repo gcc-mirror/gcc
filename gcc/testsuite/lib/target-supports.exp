@@ -4401,3 +4401,11 @@ proc check_effective_target_non_strict_align {} {
 	void foo(void) { z = (c *) y; }
     } "-Wcast-align"]
 }
+
+# Return 1 if the target has <ucontext.h>.
+
+proc check_effective_target_ucontext_h { } {
+    return [check_no_compiler_messages ucontext_h assembly {
+	#include <ucontext.h>
+    }]
+}
