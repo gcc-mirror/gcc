@@ -1,5 +1,11 @@
 2011-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/allocator.h (__shrink_to_fit_aux::_S_do_it): Create
+	the new object with the same allocator.
+	* testsuite/23_containers/vector/capacity/shrink_to_fit2.cc: New.
+
+2011-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/profile/unordered_map: Add missing copy constructors.
 	* include/profile/unordered_set: Likewise.
 

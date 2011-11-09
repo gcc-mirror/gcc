@@ -198,7 +198,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__try
 	  {
 	    _Tp(__make_move_if_noexcept_iterator(__c.begin()),
-		__make_move_if_noexcept_iterator(__c.end())).swap(__c);
+		__make_move_if_noexcept_iterator(__c.end()),
+		__c.get_allocator()).swap(__c);
 	    return true;
 	  }
 	__catch(...)
