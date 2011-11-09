@@ -1,3 +1,16 @@
+2011-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_vector.h (vector::_Alloc_traits): Make private.
+	* include/debug/vector: Add allocator-extended constructors, ensure
+	move assignment and swap have same allocator propagation semantics
+	and exceptions specification as base class.
+	* include/profile/vector: Likewise.
+	(vector::push_back(_Tp&&)): Forward argument as rvalue.
+	* testsuite/23_containers/vector/debug/alloc_prop.cc: New.
+	* doc/xml/manual/status_cxx2011.xml: Clarify status of container
+	requirements with respect to allocators.
+	(status.iso.200x): Add anchor for old ID to preserve existing links.
+
 2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/shared_ptr_base.h (_Sp_counted_ptr): Make 'final'.
