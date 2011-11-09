@@ -22,18 +22,21 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+
+#include "asmcfi.h"
+
 	.text
 	.p2align 4
 	.globl	_ITM_beginTransaction
 	.type	_ITM_beginTransaction, @function
 
 _ITM_beginTransaction:
-	.cfi_startproc
+	cfi_startproc
 #ifdef __x86_64__
 	leaq	8(%rsp), %rax
 	movq	(%rsp), %r8
 	subq	$72, %rsp
-	.cfi_def_cfa_offset 80
+	cfi_def_cfa_offset(80)
 	movq	%rax, (%rsp)
 	movq	%r8, 8(%rsp)
 	movq	%rbx, 16(%rsp)
@@ -45,12 +48,12 @@ _ITM_beginTransaction:
 	movq	%rsp, %rsi
 	call	GTM_begin_transaction
 	addq	$72, %rsp
-	.cfi_def_cfa_offset 8
+	cfi_def_cfa_offset(8)
 	ret
 #else
 	leal	4(%esp), %ecx
 	subl	$28, %esp
-	.cfi_def_cfa_offset 32
+	cfi_def_cfa_offset(32)
 	movl	%ecx, 8(%esp)
 	movl	%ebx, 12(%esp)
 	movl	%esi, 16(%esp)
@@ -59,10 +62,10 @@ _ITM_beginTransaction:
 	leal	8(%esp), %edx
 	call	GTM_begin_transaction
 	addl	$28, %esp
-	.cfi_def_cfa_offset 4
+	cfi_def_cfa_offset(4)
 	ret
 #endif
-	.cfi_endproc
+	cfi_endproc
 	.size	_ITM_beginTransaction, .-_ITM_beginTransaction
 
 	.p2align 4
@@ -71,7 +74,7 @@ _ITM_beginTransaction:
 	.hidden	GTM_longjmp
 
 GTM_longjmp:
-	.cfi_startproc
+	cfi_startproc
 #ifdef __x86_64__
 	movq	(%rdi), %rcx
 	movq	8(%rdi), %rdx
@@ -82,8 +85,8 @@ GTM_longjmp:
 	movq	48(%rdi), %r14
 	movq	56(%rdi), %r15
 	movl	%esi, %eax
-	.cfi_def_cfa %rcx, 0
-	.cfi_register %rip, %rdx
+	cfi_def_cfa(%rcx, 0)
+	cfi_register(%rip, %rdx)
 	movq	%rcx, %rsp
 	jmp	*%rdx
 #else
@@ -94,12 +97,12 @@ GTM_longjmp:
 	movl	12(%edx), %edi
 	movl	16(%edx), %ebp
 	movl	20(%edx), %edx
-	.cfi_def_cfa %ecx, 0
-	.cfi_register %eip, %edx
+	cfi_def_cfa(%ecx, 0)
+	cfi_register(%eip, %edx)
 	movl	%ecx, %esp
 	jmp	*%edx
 #endif
-	.cfi_endproc
+	cfi_endproc
 	.size	GTM_longjmp, .-GTM_longjmp
 
 .section .note.GNU-stack, "", @progbits

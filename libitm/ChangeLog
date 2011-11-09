@@ -1,3 +1,10 @@
+2011-11-09  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (GCC_AS_CFI_PSEUDO_OP): Test it.
+	* configure, aclocal.m4, config.h.in: Rebuild.
+	* config/generic/asmcfi.h: New file.
+	* config/x86/sjlj.S: Use it.
+
 2011-11-08  Richard Henderson  <rth@redhat.com>
 
 	* local.cc (_ITM_LB): Use a normal call, not a function alias.
