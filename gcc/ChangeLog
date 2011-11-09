@@ -1,5 +1,11 @@
 2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR preprocessor/51061
+	* incpath.c (merge_include_chains): Make sure to not pass null
+	pointers to free_path.
+
+2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* doc/invoke.texi ([Option Summary, C++ Language Options]):
 	Add -Wzero-as-null-pointer-constant.
 
