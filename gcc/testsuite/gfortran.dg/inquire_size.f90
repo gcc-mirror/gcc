@@ -8,7 +8,9 @@ open(25, file="testfile", status="replace", access="stream", form="unformatted")
 do i=1,100
   write(25) i, "abcdefghijklmnopqrstuvwxyz"
 enddo
-flush(25)
+! Gfortran implicitly flushes the buffer when doing a file size
+! inquire on an open file.
+! flush(25)
 
 inquire(unit=25, named=is_named, name=aname, size=i)
 if (.not.is_named) call abort

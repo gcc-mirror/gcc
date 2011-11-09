@@ -1,3 +1,8 @@
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/50016
+        * gfortran.dg/inquire_size.f90: Don't flush the unit.
+
 2011-11-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51039

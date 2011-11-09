@@ -1,3 +1,9 @@
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/50016
+        * io/inquire.c (inquire_via_unit): Flush the unit and use ssize.
+        * io/unix.c (buf_flush): Don't call _commit.
+
 2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/47972
