@@ -1,5 +1,8 @@
 2011-11-09  Richard Henderson  <rth@redhat.com>
 
+	* config/x86/cacheline.h (gtm_cacheline::store_mask): Use .byte
+	to emit branch prediction hint.
+
 	* config/x86/sjlj.S: Protect elf directives with __ELF__.
 	Protect .note.GNU-stack with __linux__.
 

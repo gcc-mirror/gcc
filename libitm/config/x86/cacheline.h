@@ -144,7 +144,7 @@ gtm_cacheline::operator= (const gtm_cacheline & __restrict s)
 }
 #endif
 
-// ??? Support masked integer stores more efficiently with an unlocked cmpxchg
+// Support masked integer stores more efficiently with an unlocked cmpxchg
 // insn.  My reasoning is that while we write to locations that we do not wish
 // to modify, we do it in an uninterruptable insn, and so we either truely
 // write back the original data or the insn fails -- unlike with a
@@ -171,7 +171,8 @@ gtm_cacheline::store_mask (uint32_t *d, uint32_t s, uint8_t m)
 		"and	%[m], %[n]\n\t"
 		"or	%[s], %[n]\n\t"
 		"cmpxchg %[n], %[d]\n\t"
-		"jnz,pn	0b"
+		".byte	0x2e\n\t"	// predict not-taken, aka jnz,pn
+		"jnz	0b"
 		: [d] "+m"(*d), [n] "=&r" (n), [o] "+a"(o)
 		: [s] "r" (s & bm), [m] "r" (~bm));
 	}
@@ -198,7 +199,8 @@ gtm_cacheline::store_mask (uint64_t *d, uint64_t s, uint8_t m)
 		"and	%[m], %[n]\n\t"
 		"or	%[s], %[n]\n\t"
 		"cmpxchg %[n], %[d]\n\t"
-		"jnz,pn	0b"
+		".byte	0x2e\n\t"	// predict not-taken, aka jnz,pn
+		"jnz	0b"
 		: [d] "+m"(*d), [n] "=&r" (n), [o] "+a"(o)
 		: [s] "r" (s & bm), [m] "r" (~bm));
 #else
