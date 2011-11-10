@@ -1,5 +1,12 @@
 2011-11-10  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/51030
+	* tree-ssa-phiopt.c (jump_function_from_stmt): New function.
+	(value_replacement): Use it to handle trivial non-empty
+	intermediate blocks.
+
+2011-11-10  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/51071
 	* gimple.c (gimple_has_side_effects): Remove checking code
 	that doesn't belong here.
