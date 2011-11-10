@@ -1,3 +1,10 @@
+2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50837
+	* pt.c (tsubst_copy_and_build) [IDENTIFIER_NODE]: In C++11 mode
+	pass allow_non_integral_constant_expression_p = true to
+	finish_id_expression.
+
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50972
