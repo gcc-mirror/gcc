@@ -1,3 +1,9 @@
+2011-11-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51071
+	* gimple.c (gimple_has_side_effects): Remove checking code
+	that doesn't belong here.
+
 2011-11-10  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/51058

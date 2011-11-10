@@ -2457,8 +2457,6 @@ gimple_set_modified (gimple s, bool modifiedp)
 bool
 gimple_has_side_effects (const_gimple s)
 {
-  unsigned i;
-
   if (is_gimple_debug (s))
     return false;
 
@@ -2474,46 +2472,14 @@ gimple_has_side_effects (const_gimple s)
 
   if (is_gimple_call (s))
     {
-      unsigned nargs = gimple_call_num_args (s);
-      tree fn;
+      int flags = gimple_call_flags (s);
 
-      if (!(gimple_call_flags (s) & (ECF_CONST | ECF_PURE)))
-        return true;
-      else if (gimple_call_flags (s) & ECF_LOOPING_CONST_OR_PURE)
-	/* An infinite loop is considered a side effect.  */
+      /* An infinite loop is considered a side effect.  */
+      if (!(flags & (ECF_CONST | ECF_PURE))
+	  || (flags & ECF_LOOPING_CONST_OR_PURE))
 	return true;
 
-      if (gimple_call_lhs (s)
-          && TREE_SIDE_EFFECTS (gimple_call_lhs (s)))
-	{
-	  gcc_checking_assert (gimple_has_volatile_ops (s));
-	  return true;
-	}
-
-      fn = gimple_call_fn (s);
-      if (fn && TREE_SIDE_EFFECTS (fn))
-        return true;
-
-      for (i = 0; i < nargs; i++)
-        if (TREE_SIDE_EFFECTS (gimple_call_arg (s, i)))
-	  {
-	    gcc_checking_assert (gimple_has_volatile_ops (s));
-	    return true;
-	  }
-
       return false;
-    }
-  else
-    {
-      for (i = 0; i < gimple_num_ops (s); i++)
-	{
-	  tree op = gimple_op (s, i);
-	  if (op && TREE_SIDE_EFFECTS (op))
-	    {
-	      gcc_checking_assert (gimple_has_volatile_ops (s));
-	      return true;
-	    }
-	}
     }
 
   return false;
