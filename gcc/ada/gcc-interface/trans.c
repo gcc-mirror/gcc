@@ -3300,6 +3300,60 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   mark_out_of_scope (Defining_Unit_Name (Specification (gnat_node)));
 }
 
+/* Return true if GNAT_NODE requires atomic synchronization.  */
+
+static bool
+atomic_sync_required_p (Node_Id gnat_node)
+{
+  const Node_Id gnat_parent = Parent (gnat_node);
+  Node_Kind kind;
+  unsigned char attr_id;
+
+  /* First, scan the node to find the Atomic_Sync_Required flag.  */
+  kind = Nkind (gnat_node);
+  if (kind == N_Type_Conversion || kind == N_Unchecked_Type_Conversion)
+    {
+      gnat_node = Expression (gnat_node);
+      kind = Nkind (gnat_node);
+    }
+
+  switch (kind)
+    {
+    case N_Expanded_Name:
+    case N_Explicit_Dereference:
+    case N_Identifier:
+    case N_Indexed_Component:
+    case N_Selected_Component:
+      if (!Atomic_Sync_Required (gnat_node))
+	return false;
+      break;
+
+    default:
+      return false;
+    }
+
+  /* Then, scan the parent to find out cases where the flag is irrelevant.  */
+  kind = Nkind (gnat_parent);
+  switch (kind)
+    {
+    case N_Attribute_Reference:
+      attr_id = Get_Attribute_Id (Attribute_Name (gnat_parent));
+      /* Do not mess up machine code insertions.  */
+      if (attr_id == Attr_Asm_Input || attr_id == Attr_Asm_Output)
+	return false;
+      break;
+
+    case N_Object_Renaming_Declaration:
+      /* Do not generate a function call as a renamed object.  */
+      return false;
+
+    default:
+      break;
+    }
+
+  return true;
+}
+
 /* Create a temporary variable with PREFIX and TYPE, and return it.  */
 
 static tree
@@ -3334,10 +3388,13 @@ create_init_temporary (const char *prefix, tree gnu_init, tree *gnu_init_stmt,
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
    If GNU_TARGET is non-null, this must be a function call on the RHS of a
-   N_Assignment_Statement and the result is to be placed into that object.  */
+   N_Assignment_Statement and the result is to be placed into that object.
+   If, in addition, ATOMIC_SYNC is true, then the assignment to GNU_TARGET
+   requires atomic synchronization.  */
 
 static tree
-call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
+call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
+	     bool atomic_sync)
 {
   const bool function_call = (Nkind (gnat_node) == N_Function_Call);
   const bool returning_value = (function_call && !gnu_target);
@@ -3433,6 +3490,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       tree gnu_formal_type = gnat_to_gnu_type (Etype (gnat_formal));
       const bool is_true_formal_parm
 	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
+      const bool is_by_ref_formal_parm
+ 	= is_true_formal_parm
+ 	  && (DECL_BY_REF_P (gnu_formal)
+	      || DECL_BY_COMPONENT_PTR_P (gnu_formal)
+	      || DECL_BY_DESCRIPTOR_P (gnu_formal));
       /* In the Out or In Out case, we must suppress conversions that yield
 	 an lvalue but can nevertheless cause the creation of a temporary,
 	 because we need the real object in this case, either to pass its
@@ -3462,10 +3524,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       /* If we are passing a non-addressable parameter by reference, pass the
 	 address of a copy.  In the Out or In Out case, set up to copy back
 	 out after the call.  */
-      if (is_true_formal_parm
-	  && (DECL_BY_REF_P (gnu_formal)
-	      || DECL_BY_COMPONENT_PTR_P (gnu_formal)
-	      || DECL_BY_DESCRIPTOR_P (gnu_formal))
+      if (is_by_ref_formal_parm
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
 	  && !addressable_p (gnu_name, gnu_name_type))
 	{
@@ -3568,6 +3627,14 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
       /* Start from the real object and build the actual.  */
       gnu_actual = gnu_name;
+
+      /* If this is an atomic access of an In or In Out parameter for which
+	 synchronization is required, build the atomic load.  */
+      if (is_true_formal_parm
+	  && !is_by_ref_formal_parm
+	  && Ekind (gnat_formal) != E_Out_Parameter
+	  && atomic_sync_required_p (gnat_actual))
+	gnu_actual = build_atomic_load (gnu_actual);
 
       /* If this was a procedure call, we may not have removed any padding.
 	 So do it here for the part we will use as an input, if any.  */
@@ -3865,8 +3932,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 		  gnu_result = convert (TREE_TYPE (gnu_actual), gnu_result);
 	      }
 
-	    gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
-					  gnu_actual, gnu_result);
+	    if (atomic_sync_required_p (gnat_actual))
+	      gnu_result = build_atomic_store (gnu_actual, gnu_result);
+	    else
+	      gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
+					    gnu_actual, gnu_result);
 	    set_expr_location_from_node (gnu_result, gnat_node);
 	    append_to_statement_list (gnu_result, &gnu_stmt_list);
 	    gnu_cico_list = TREE_CHAIN (gnu_cico_list);
@@ -3919,8 +3989,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  else
 	    op_code = MODIFY_EXPR;
 
-	  gnu_call
-	    = build_binary_op (op_code, NULL_TREE, gnu_target, gnu_call);
+	  if (atomic_sync)
+	    gnu_call = build_atomic_store (gnu_target, gnu_call);
+	  else
+	    gnu_call
+	      = build_binary_op (op_code, NULL_TREE, gnu_target, gnu_call);
 	  set_expr_location_from_node (gnu_call, gnat_parent);
 	  append_to_statement_list (gnu_call, &gnu_stmt_list);
 	}
@@ -4494,6 +4567,26 @@ lhs_or_actual_p (Node_Id gnat_node)
   return false;
 }
 
+/* Return true if either GNAT_NODE or a view of GNAT_NODE is on the LHS
+   of an assignment or an actual parameter of a call.  */
+
+static bool
+present_in_lhs_or_actual_p (Node_Id gnat_node)
+{
+  Node_Kind kind;
+
+  if (lhs_or_actual_p (gnat_node))
+    return true;
+
+  kind = Nkind (Parent (gnat_node));
+
+  if ((kind == N_Type_Conversion || kind == N_Unchecked_Type_Conversion)
+      && lhs_or_actual_p (Parent (gnat_node)))
+    return true;
+
+  return false;
+}
+
 /* Return true if GNAT_NODE, an unchecked type conversion, is a no-op as far
    as gigi is concerned.  This is used to avoid conversions on the LHS.  */
 
@@ -4613,6 +4706,12 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Operator_Symbol:
     case N_Defining_Identifier:
       gnu_result = Identifier_to_gnu (gnat_node, &gnu_result_type);
+
+      /* If this is an atomic access on the RHS for which synchronization is
+	 required, build the atomic load.  */
+      if (atomic_sync_required_p (gnat_node)
+	  && !present_in_lhs_or_actual_p (gnat_node))
+	gnu_result = build_atomic_load (gnu_result);
       break;
 
     case N_Integer_Literal:
@@ -4897,6 +4996,12 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = gnat_to_gnu (Prefix (gnat_node));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
       gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+
+      /* If this is an atomic access on the RHS for which synchronization is
+	 required, build the atomic load.  */
+      if (atomic_sync_required_p (gnat_node)
+	  && !present_in_lhs_or_actual_p (gnat_node))
+	gnu_result = build_atomic_load (gnu_result);
       break;
 
     case N_Indexed_Component:
@@ -4963,9 +5068,15 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_result = build_binary_op (ARRAY_REF, NULL_TREE,
 					  gnu_result, gnu_expr);
 	  }
-      }
 
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
+	/* If this is an atomic access on the RHS for which synchronization is
+	   required, build the atomic load.  */
+	if (atomic_sync_required_p (gnat_node)
+	    && !present_in_lhs_or_actual_p (gnat_node))
+	  gnu_result = build_atomic_load (gnu_result);
+      }
       break;
 
     case N_Slice:
@@ -5110,8 +5221,13 @@ gnat_to_gnu (Node_Id gnat_node)
 					(Parent (gnat_node)));
 	  }
 
-	gcc_assert (gnu_result);
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
+	/* If this is an atomic access on the RHS for which synchronization is
+	   required, build the atomic load.  */
+	if (atomic_sync_required_p (gnat_node)
+	    && !present_in_lhs_or_actual_p (gnat_node))
+	  gnu_result = build_atomic_load (gnu_result);
       }
       break;
 
@@ -5618,7 +5734,8 @@ gnat_to_gnu (Node_Id gnat_node)
 				       N_Raise_Storage_Error);
       else if (Nkind (Expression (gnat_node)) == N_Function_Call)
 	gnu_result
-	  = call_to_gnu (Expression (gnat_node), &gnu_result_type, gnu_lhs);
+	  = call_to_gnu (Expression (gnat_node), &gnu_result_type, gnu_lhs,
+			 atomic_sync_required_p (Name (gnat_node)));
       else
 	{
 	  gnu_rhs
@@ -5629,8 +5746,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_rhs = emit_range_check (gnu_rhs, Etype (Name (gnat_node)),
 					gnat_node);
 
-	  gnu_result
-	    = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
+	  if (atomic_sync_required_p (Name (gnat_node)))
+	    gnu_result = build_atomic_store (gnu_lhs, gnu_rhs);
+	  else
+	    gnu_result
+	      = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
 
 	  /* If the type being assigned is an array type and the two sides are
 	     not completely disjoint, play safe and use memmove.  But don't do
@@ -5880,7 +6000,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Function_Call:
     case N_Procedure_Call_Statement:
-      gnu_result = call_to_gnu (gnat_node, &gnu_result_type, NULL_TREE);
+      gnu_result = call_to_gnu (gnat_node, &gnu_result_type, NULL_TREE, false);
       break;
 
     /************************/
