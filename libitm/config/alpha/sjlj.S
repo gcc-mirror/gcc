@@ -74,7 +74,9 @@ _ITM_beginTransaction:
 
 	.align 4
 	.globl	GTM_longjmp
+#ifdef __ELF__
 	.hidden	GTM_longjmp
+#endif
 	.ent	GTM_longjmp
 
 GTM_longjmp:
@@ -105,4 +107,6 @@ GTM_longjmp:
 	ret
 .end GTM_longjmp
 
+#ifdef __linux__
 .section .note.GNU-stack, "", @progbits
+#endif

@@ -1,5 +1,7 @@
 /* Simplest test involving real threads.  Verify we get the correct answer.  */
 
+/* { dg-options "-pthread" } */
+
 #include <stdlib.h>
 #include <pthread.h>
 

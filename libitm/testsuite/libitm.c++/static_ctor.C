@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-pthread" } */
 /* { dg-xfail-if "" { *-*-* } { "*" } { "" } } */
 /* Tests static constructors inside of transactional code.  */
 
