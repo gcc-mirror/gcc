@@ -1,3 +1,11 @@
+2011-11-09  Nenad Vukicevic <nenad@intrepid.com>
+
+	* config/default/upc-crtstuff.mak (ALL_CRT_CFLAGS): Remove
+	$(INCLUDES) as it might contain relative include paths that 
+	are not correct for current build directory.
+	(GCC_SRCDIR_CONF_INC): Rename to GCC_SRCDIR_INC. Added necessary
+	include paths to build in the current libgupc build directory.
+
 2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
 
 	* smp/upc_sup.h (__upc_sptr_to_addr): Fixed the warning where

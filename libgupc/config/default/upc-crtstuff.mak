@@ -1,10 +1,10 @@
-
-ALL_CRT_CFLAGS = $(CFLAGS) $(CRTSTUFF_CFLAGS) $(INCLUDES) $(UPC_CRTSTUFF_CFLAGS)
-GCC_SRCDIR_CONF_INC = -I$(srcdir)/../gcc/config
+ALL_CRT_CFLAGS = $(CFLAGS) $(CRTSTUFF_CFLAGS) $(UPC_CRTSTUFF_CFLAGS)
+GCC_SRCDIR_INC = -I$(srcdir)/../gcc -I$(srcdir)/../gcc/include \
+		 -I$(srcdir)/../include -I$(srcdir)/../gcc/config
 GCC_OBJDIR_INC = -I$(gcc_objdir)
 
 crt_compile = $(CC) $(ALL_CRT_CFLAGS) $(AM_CPPFLAGS) \
-              $(GCC_SRCDIR_CONF_INC) $(GCC_OBJDIR_INC) 
+              $(GCC_SRCDIR_INC) $(GCC_OBJDIR_INC) 
 
 upc_crtstuff_src = $(top_srcdir)/upc-crtstuff.c
 

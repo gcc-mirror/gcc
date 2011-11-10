@@ -1,3 +1,9 @@
+2011-11-09  Nenad Vukicevic <nenad@intrepid.com>
+
+	* Makefile.in (CRTSTUFF_CFLAGS): Taking out the previous
+	change that converted relative include paths into absolute
+	ones, as it does not work with previous version of make (3.80).
+
 2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
 
 	Apply patch for Darwin build - PR49992.
