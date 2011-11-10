@@ -1,3 +1,7 @@
+2011-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization9.ad[sb]: New test.
+
 2011-11-10  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/51058
