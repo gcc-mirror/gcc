@@ -603,6 +603,8 @@ LTLIBOBJS
 LIBOBJS
 ARCH_FUTEX_FALSE
 ARCH_FUTEX_TRUE
+ARCH_X86_AVX_FALSE
+ARCH_X86_AVX_TRUE
 ARCH_X86_FALSE
 ARCH_X86_TRUE
 link_itm
@@ -11714,7 +11716,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11717 "configure"
+#line 11719 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11820,7 +11822,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11823 "configure"
+#line 11825 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17265,6 +17267,14 @@ else
   ARCH_X86_FALSE=
 fi
 
+ if test "$libitm_cv_as_avx" = yes; then
+  ARCH_X86_AVX_TRUE=
+  ARCH_X86_AVX_FALSE='#'
+else
+  ARCH_X86_AVX_TRUE='#'
+  ARCH_X86_AVX_FALSE=
+fi
+
  if test $enable_linux_futex = yes; then
   ARCH_FUTEX_TRUE=
   ARCH_FUTEX_FALSE='#'
@@ -17416,6 +17426,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_X86_TRUE}" && test -z "${ARCH_X86_FALSE}"; then
   as_fn_error "conditional \"ARCH_X86\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_X86_AVX_TRUE}" && test -z "${ARCH_X86_AVX_FALSE}"; then
+  as_fn_error "conditional \"ARCH_X86_AVX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_FUTEX_TRUE}" && test -z "${ARCH_FUTEX_FALSE}"; then

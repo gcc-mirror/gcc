@@ -24,24 +24,20 @@
 
 #include "config.h"
 
-// ??? This is pretty gross, but we're going to frob types of the functions.
-// Is this better or worse than just admitting we need to do this in pure
-// assembly?
-
-#ifndef HAVE_AS_AVX
-#undef __AVX__
-#endif
-
 #include "libitm_i.h"
 #include "dispatch.h"
 
 extern "C" {
 
 #ifndef HAVE_AS_AVX
+// If we don't have an AVX capable assembler, we didn't set -mavx on the
+// command-line either, which means that libitm.h defined neither this type
+// nor the functions in this file.  Define the type and unconditionally
+// wrap the file in extern "C" to make up for the lack of pre-declaration.
 typedef float _ITM_TYPE_M256 __attribute__((vector_size(32), may_alias));
 #endif
 
-// ??? Re-define the memcpy implementations so that we can frob the
+// Re-define the memcpy implementations so that we can frob the
 // interface to deal with possibly missing AVX instruction set support.
 
 #ifdef HAVE_AS_AVX
@@ -52,10 +48,10 @@ typedef float _ITM_TYPE_M256 __attribute__((vector_size(32), may_alias));
 #else
 /* Emit vmovaps (%rax),%ymm0.  */
 #define RETURN(X) \
-  asm volatile(".byte 0xc5,0xfc,0x28,0x00" : "=m"(X) : "a"(&X));
+  asm volatile(".byte 0xc5,0xfc,0x28,0x00" : "=m"(X) : "a"(&X))
 /* Emit vmovaps %ymm0,(%rax); vzeroupper.  */
 #define STORE(X,Y) \
-  asm volatile(".byte 0xc5,0xfc,0x29,0x00,0xc5,0xf8,0x77" : "=m"(X) : "a"(&X));
+  asm volatile(".byte 0xc5,0xfc,0x29,0x00,0xc5,0xf8,0x77" : "=m"(X) : "a"(&X))
 #define OUTPUT(T)	void
 #define INPUT(T,X)
 #endif
@@ -92,4 +88,4 @@ _ITM_LM256 (const _ITM_TYPE_M256 *ptr)
   GTM::GTM_LB (ptr, sizeof (*ptr));
 }
 
-}
+} // extern "C"

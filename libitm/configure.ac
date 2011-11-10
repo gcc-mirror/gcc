@@ -272,6 +272,7 @@ fi
 AC_SUBST(link_itm)
 
 AM_CONDITIONAL([ARCH_X86], [test "$ARCH" = x86])
+AM_CONDITIONAL([ARCH_X86_AVX], [test "$libitm_cv_as_avx" = yes])
 AM_CONDITIONAL([ARCH_FUTEX], [test $enable_linux_futex = yes])
 
 AC_CONFIG_FILES(Makefile testsuite/Makefile libitm.spec)

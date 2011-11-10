@@ -48,6 +48,8 @@ libitm_la_SOURCES = \
 if ARCH_X86
 libitm_la_SOURCES += x86_sse.cc x86_avx.cc
 x86_sse.lo : XCFLAGS += -msse
+endif
+if ARCH_X86_AVX
 x86_avx.lo : XCFLAGS += -mavx
 endif
 
