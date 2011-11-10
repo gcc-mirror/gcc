@@ -29,6 +29,7 @@
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
+#include "toplev.h"
 #include "ggc.h"
 #include "output.h"
 #include "tree-inline.h"
@@ -588,6 +589,112 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
     }
 
   return convert (type, result);
+}
+
+/* This page contains routines that implement the Ada semantics with regard
+   to atomic objects.  They are fully piggybacked on the middle-end support
+   for atomic loads and stores.
+
+   *** Memory barriers and volatile objects ***
+
+   We implement the weakened form of the C.6(16) clause that was introduced
+   in Ada 2012 (AI05-117).  Earlier forms of this clause wouldn't have been
+   implementable without significant performance hits on modern platforms.
+
+   We also take advantage of the requirements imposed on shared variables by
+   9.10 (conditions for sequential actions) to have non-erroneous execution
+   and consider that C.6(16) and C.6(17) only prescribe an uniform order of
+   volatile updates with regard to sequential actions, i.e. with regard to
+   reads or updates of atomic objects.
+
+   As such, an update of an atomic object by a task requires that all earlier
+   accesses to volatile objects have completed.  Similarly, later accesses to
+   volatile objects cannot be reordered before the update of the atomic object.
+   So, memory barriers both before and after the atomic update are needed.
+
+   For a read of an atomic object, to avoid seeing writes of volatile objects
+   by a task earlier than by the other tasks, a memory barrier is needed before
+   the atomic read.  Finally, to avoid reordering later reads or updates of
+   volatile objects to before the atomic read, a barrier is needed after the
+   atomic read.
+
+   So, memory barriers are needed before and after atomic reads and updates.
+   And, in order to simplify the implementation, we use full memory barriers
+   in all cases, i.e. we enforce sequential consistency for atomic accesses.  */
+
+/* Return the size of TYPE, which must be a positive power of 2.  */
+
+static unsigned int
+resolve_atomic_size (tree type)
+{
+  unsigned HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+
+  if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
+    return size;
+
+  /* We shouldn't reach here without having already detected that the size
+     isn't compatible with an atomic access.  */
+  gcc_assert (Serious_Errors_Detected);
+
+  return 0;
+}
+
+/* Build an atomic load for the underlying atomic object in SRC.  */
+
+tree
+build_atomic_load (tree src)
+{
+  tree ptr_type
+    = build_pointer_type
+      (build_qualified_type (void_type_node, TYPE_QUAL_VOLATILE));
+  tree mem_model = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
+  tree orig_src = src;
+  tree type = TREE_TYPE (src);
+  tree t, val;
+  unsigned int size;
+  int fncode;
+
+  src = remove_conversions (src, false);
+  size = resolve_atomic_size (TREE_TYPE (src));
+  if (size == 0)
+    return orig_src;
+
+  fncode = (int) BUILT_IN_ATOMIC_LOAD_N + exact_log2 (size) + 1;
+  t = builtin_decl_implicit ((enum built_in_function) fncode);
+
+  src = build_unary_op (ADDR_EXPR, ptr_type, src);
+  val = build_call_expr (t, 2, src, mem_model);
+
+  return unchecked_convert (type, val, true);
+}
+
+/* Build an atomic store from SRC to the underlying atomic object in DEST.  */
+
+tree
+build_atomic_store (tree dest, tree src)
+{
+  tree ptr_type
+    = build_pointer_type
+      (build_qualified_type (void_type_node, TYPE_QUAL_VOLATILE));
+  tree mem_model = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
+  tree orig_dest = dest;
+  tree t, int_type;
+  unsigned int size;
+  int fncode;
+
+  dest = remove_conversions (dest, false);
+  size = resolve_atomic_size (TREE_TYPE (dest));
+  if (size == 0)
+    return build_binary_op (MODIFY_EXPR, NULL_TREE, orig_dest, src);
+
+  fncode = (int) BUILT_IN_ATOMIC_STORE_N + exact_log2 (size) + 1;
+  t = builtin_decl_implicit ((enum built_in_function) fncode);
+  int_type = gnat_type_for_size (BITS_PER_UNIT * size, 1);
+
+  dest = build_unary_op (ADDR_EXPR, ptr_type, dest);
+  src = unchecked_convert (int_type, src, true);
+
+  return build_call_expr (t, 3, dest, src, mem_model);
 }
 
 /* Make a binary operation of kind OP_CODE.  RESULT_TYPE is the type

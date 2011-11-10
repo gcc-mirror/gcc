@@ -1,3 +1,15 @@
+2011-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/atomic6_1.adb: New test.
+	* gnat.dg/atomic6_2.adb: Likewise.
+	* gnat.dg/atomic6_3.adb: Likewise.
+	* gnat.dg/atomic6_4.adb: Likewise.
+	* gnat.dg/atomic6_5.adb: Likewise.
+	* gnat.dg/atomic6_6.adb: Likewise.
+	* gnat.dg/atomic6_7.adb: Likewise.
+	* gnat.dg/atomic6_8.adb: Likewise.
+	* gnat.dg/atomic6_pkg.ads: New helper.
+
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51077

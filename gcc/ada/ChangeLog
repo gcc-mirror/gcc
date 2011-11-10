@@ -1,3 +1,27 @@
+2011-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Serious_Errors_Detected): New macro.
+	* gcc-interface/gigi.h (build_atomic_load): Declare.
+	(build_atomic_store): Likewise.
+	* gcc-interface/trans.c (atomic_sync_required_p): New predicate.
+	(call_to_gnu): Add ATOMIC_SYNC parameter.  Use local variable.
+	Build an atomic load for an In or In Out parameter if needed.
+	Build an atomic store for the assignment of an Out parameter if needed.
+	Build an atomic store to the target if ATOMIC_SYNC is true.
+	(present_in_lhs_or_actual_p): New predicate.
+	(gnat_to_gnu) <N_Identifier>: Build an atomic load if needed.
+	<N_Explicit_Dereference>: Likewise.
+	<N_Indexed_Component>: Likewise.
+	<N_Selected_Component>: Likewise.
+	<N_Assignment_Statement>: Adjust call to call_to_gnu.
+	Build an atomic store to the LHS if needed.
+	<N_Function_Call>:  Adjust call to call_to_gnu.
+	* gcc-interface/utils2.c: Include toplev.h.
+	(resolve_atomic_size): New static function.
+	(build_atomic_load): New function.
+	(build_atomic_store): Likewise.
+	* gcc-interface/Make-lang.in (ada/utils2.o): Add toplev.h.
+
 2011-11-07  Olivier Hainque  <hainque@adacore.com>
 
 	* sigtramp-ppcvxw.c: Add general comments.

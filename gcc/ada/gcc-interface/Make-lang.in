@@ -1297,7 +1297,7 @@ ada/utils.o : ada/gcc-interface/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/utils2.o : ada/gcc-interface/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(FLAGS_H) output.h $(TREE_INLINE_H) \
+   $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h output.h $(TREE_INLINE_H) \
    ada/gcc-interface/ada.h ada/types.h ada/atree.h ada/elists.h ada/namet.h \
    ada/nlists.h ada/snames.h ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h \
    ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h
