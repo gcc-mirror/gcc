@@ -591,6 +591,38 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   return true;
 }
 
+/* Update *ARG which is defined in STMT so that it contains the
+   computed value if that seems profitable.  Return true if the
+   statement is made dead by that rewriting.  */
+
+static bool
+jump_function_from_stmt (tree *arg, gimple stmt)
+{
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  if (code == ADDR_EXPR)
+    {
+      /* For arg = &p->i transform it to p, if possible.  */
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      HOST_WIDE_INT offset;
+      tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (rhs1, 0),
+						&offset);
+      if (tem
+	  && TREE_CODE (tem) == MEM_REF
+	  && double_int_zero_p
+	       (double_int_add (mem_ref_offset (tem),
+				shwi_to_double_int (offset))))
+	{
+	  *arg = TREE_OPERAND (tem, 0);
+	  return true;
+	}
+    }
+  /* TODO: Much like IPA-CP jump-functions we want to handle constant
+     additions symbolically here, and we'd need to update the comparison
+     code that compares the arg + cst tuples in our caller.  For now the
+     code above exactly handles the VEC_BASE pattern from vec.h.  */
+  return false;
+}
+
 /*  The function value_replacement does the main work of doing the value
     replacement.  Return true if the replacement is done.  Otherwise return
     false.
@@ -602,6 +634,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		   edge e0, edge e1, gimple phi,
 		   tree arg0, tree arg1)
 {
+  gimple_stmt_iterator gsi;
   gimple cond;
   edge true_edge, false_edge;
   enum tree_code code;
@@ -611,8 +644,32 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
     return false;
 
-  if (!empty_block_p (middle_bb))
-    return false;
+  /* Allow a single statement in MIDDLE_BB that defines one of the PHI
+     arguments.  */
+  gsi = gsi_after_labels (middle_bb);
+  if (!gsi_end_p (gsi))
+    {
+      if (is_gimple_debug (gsi_stmt (gsi)))
+	gsi_next_nondebug (&gsi);
+      if (!gsi_end_p (gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  tree lhs;
+	  gsi_next_nondebug (&gsi);
+	  if (!gsi_end_p (gsi))
+	    return false;
+	  if (!is_gimple_assign (stmt))
+	    return false;
+	  /* Now try to adjust arg0 or arg1 according to the computation
+	     in the single statement.  */
+	  lhs = gimple_assign_lhs (stmt);
+	  if (!((lhs == arg0
+		 && jump_function_from_stmt (&arg0, stmt))
+		|| (lhs == arg1
+		    && jump_function_from_stmt (&arg1, stmt))))
+	    return false;
+	}
+    }
 
   cond = last_stmt (cond_bb);
   code = gimple_cond_code (cond);
