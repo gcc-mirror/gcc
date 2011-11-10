@@ -1,3 +1,9 @@
+2011-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51077
+	* tree-object-size.c (addr_object_size): Check TREE_CODE of
+	MEM_REF's operand rather than code of the MEM_REF itself.
+
 2011-11-07  Alan Modra  <amodra@gmail.com>
 
 	PR target/30282

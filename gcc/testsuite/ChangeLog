@@ -1,3 +1,8 @@
+2011-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51077
+	* gcc.c-torture/compile/pr51077.c: New test.
+
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50870
