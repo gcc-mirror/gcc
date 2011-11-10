@@ -1,3 +1,13 @@
+2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR rtl-optimization/51040
+	* optabs.c (expand_atomic_fetch_op): Patchup code for NAND should be AND
+	followed by NOT.
+	* builtins.c (expand_builtin_atomic_fetch_op): Patchup code for NAND
+	should be AND followed by NOT.
+	* testsuite/gcc.dg/atomic-noinline[-aux].c: Test no-inline NAND and
+	patchup code.
+
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* vec.h (VEC_BASE): If base is at offset 0 in the structure,
