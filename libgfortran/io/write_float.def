@@ -774,7 +774,7 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 /* Returns the value of 10**d.  */
 
 #define CALCULATE_EXP(x) \
-inline static GFC_REAL_ ## x \
+static GFC_REAL_ ## x \
 calculate_exp_ ## x  (int d)\
 {\
   int i;\

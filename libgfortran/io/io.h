@@ -801,5 +801,14 @@ dec_waiting_unlocked (gfc_unit *u)
 #endif
 }
 
+
+static inline void
+memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
+{
+  int j;
+  for (j = 0; j < k; j++)
+    *p++ = c;
+}
+
 #endif
 

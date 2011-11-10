@@ -2877,7 +2877,7 @@ next_record_r_unf (st_parameter_dt *dtp, int complete_record)
 }
 
 
-static inline gfc_offset
+static gfc_offset
 min_off (gfc_offset a, gfc_offset b)
 {
   return (a < b ? a : b);
@@ -3136,13 +3136,6 @@ sset (stream * s, int c, ssize_t nbyte)
   return nbyte - bytes_left;
 }
 
-static inline void
-memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
-{
-  int j;
-  for (j = 0; j < k; j++)
-    *p++ = c;
-}
 
 /* Position to the next record in write mode.  */
 

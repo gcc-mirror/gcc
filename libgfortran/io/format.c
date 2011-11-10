@@ -116,8 +116,8 @@ reset_fnode_counters (st_parameter_dt *dtp)
 
 /* A simple hashing function to generate an index into the hash table.  */
 
-static inline
-uint32_t format_hash (st_parameter_dt *dtp)
+static uint32_t
+format_hash (st_parameter_dt *dtp)
 {
   char *key;
   gfc_charlen_type key_len;
