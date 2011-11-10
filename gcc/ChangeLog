@@ -1,3 +1,23 @@
+2011-11-10  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov.c (struct function_info): Make src an index, not a pointer.
+	(struct source_info): Remove index and next source fields.
+	(fn_end): New static var.
+	(sources_index): Remove.
+	(sources): Now a pointer to an array, not a list.
+	(n_sources, a_sources): New.
+	(process_file): Adjust for changes to read_graph_file. Insert
+	functions into source lists and check line numbers here.
+	(generate_results): Only allocate lines for sources with
+	contents.  Adjust for source array.
+	(release_structures): Likewise.
+	(find_source): Return source index, adjust for source array.
+	(read_graph_file): Return function list.  Don't insert into source
+	lists here.
+	(read_count_file): Take list of functions.
+	(solve_flow_graph): Reverse the arc lists here.
+	(add_line_counts): Adjust for source array.
+
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51077
@@ -7,8 +27,8 @@
 2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR rtl-optimization/51040
-	* optabs.c (expand_atomic_fetch_op): Patchup code for NAND should be AND
-	followed by NOT.
+	* optabs.c (expand_atomic_fetch_op): Patchup code for NAND should
+	be AND followed by NOT.
 	* builtins.c (expand_builtin_atomic_fetch_op): Patchup code for NAND
 	should be AND followed by NOT.
 	* testsuite/gcc.dg/atomic-noinline[-aux].c: Test no-inline NAND and

@@ -181,9 +181,9 @@ typedef struct function_info
   gcov_type *counts;
   unsigned num_counts;
 
-  /* First line number.  */
+  /* First line number & file.  */
   unsigned line;
-  struct source_info *src;
+  unsigned src;
 
   /* Next function in same source file.  */
   struct function_info *line_next;
@@ -233,7 +233,6 @@ typedef struct source_info
 {
   /* Name of source file.  */
   char *name;
-  unsigned index;
   time_t file_time;
 
   /* Array of line information.  */
@@ -245,23 +244,16 @@ typedef struct source_info
   /* Functions in this source file.  These are in ascending line
      number order.  */
   function_t *functions;
-
-  /* Next source file.  */
-  struct source_info *next;
 } source_t;
 
 /* Holds a list of function basic block graphs.  */
 
 static function_t *functions;
+static function_t **fn_end = &functions;
 
-/* This points to the head of the sourcefile structure list.  New elements
-   are always prepended.  */
-
-static source_t *sources;
-
-/* Next index for a source file.  */
-
-static unsigned source_index;
+static source_t *sources;   /* Array of source files  */
+static unsigned n_sources;  /* Number of sources */
+static unsigned a_sources;  /* Allocated sources */
 
 /* This holds data summary information.  */
 
@@ -349,9 +341,9 @@ static void print_version (void) ATTRIBUTE_NORETURN;
 static void process_file (const char *);
 static void generate_results (const char *);
 static void create_file_names (const char *);
-static source_t *find_source (const char *);
-static int read_graph_file (void);
-static int read_count_file (void);
+static unsigned find_source (const char *);
+static function_t *read_graph_file (void);
+static int read_count_file (function_t *);
 static void solve_flow_graph (function_t *);
 static void add_branch_counts (coverage_t *, const arc_t *);
 static void add_line_counts (coverage_t *, function_t *);
@@ -537,57 +529,85 @@ process_args (int argc, char **argv)
 static void
 process_file (const char *file_name)
 {
-  function_t *fn;
-  function_t **fn_p;
-  function_t *old_functions;
-
-  /* Save and clear the list of current functions.  They will be appended
-     later.  */
-  old_functions = functions;
-  functions = NULL;
+  function_t *fns;
 
   create_file_names (file_name);
-  if (read_graph_file ())
+  fns = read_graph_file ();
+  if (!fns)
     return;
-
-  if (!functions)
+  
+  read_count_file (fns);
+  while (fns)
     {
-      fnotice (stderr, "%s:no functions found\n", bbg_file_name);
-      return;
-    }
+      function_t *fn = fns;
 
-  if (read_count_file ())
-    return;
-
-  fn_p = &functions;
-  while ((fn = *fn_p) != NULL)
-    {
+      fns = fn->next;
+      fn->next = NULL;
       if (fn->counts)
 	{
+	  unsigned src = fn->src;
+	  unsigned line = fn->line;
+	  unsigned block_no;
+	  function_t *probe, **prev;
+	  
+	  /* Now insert it into the source file's list of
+	     functions. Normally functions will be encountered in
+	     ascending order, so a simple scan is quick.  Note we're
+	     building this list in reverse order.  */
+	  for (prev = &sources[src].functions;
+	       (probe = *prev); prev = &probe->line_next)
+	    if (probe->line <= line)
+	      break;
+	  fn->line_next = probe;
+	  *prev = fn;
+
+	  /* Mark last line in files touched by function.  */
+	  for (block_no = 0; block_no != fn->num_blocks; block_no++)
+	    {
+	      unsigned *enc = fn->blocks[block_no].u.line.encoding;
+	      unsigned num = fn->blocks[block_no].u.line.num;
+
+	      for (; num--; enc++)
+		if (!*enc)
+		  {
+		    if (enc[1] != src)
+		      {
+			if (line >= sources[src].num_lines)
+			  sources[src].num_lines = line + 1;
+			line = 0;
+			src = enc[1];
+		      }
+		    enc++;
+		    num--;
+		  }
+		else if (*enc > line)
+		  line = *enc;
+	    }
+	  if (line >= sources[src].num_lines)
+	    sources[src].num_lines = line + 1;
+	  
 	  solve_flow_graph (fn);
-	  fn_p = &fn->next;
+	  *fn_end = fn;
+	  fn_end = &fn->next;
 	}
       else
-	{
-	  /* The function was not in the executable -- some other
-	     instance must have been selected.  */
-	  function_t *next = fn->next;
-	  release_function (fn);
-	  *fn_p = next;
-	}
+	/* The function was not in the executable -- some other
+	   instance must have been selected.  */
+	release_function (fn);
     }
-
-  *fn_p = old_functions;
 }
 
 static void
 generate_results (const char *file_name)
 {
+  unsigned ix;
   source_t *src;
   function_t *fn;
 
-  for (src = sources; src; src = src->next)
-    src->lines = XCNEWVEC (line_t, src->num_lines);
+  for (ix = n_sources, src = sources; ix--; src++)
+    if (src->num_lines)
+      src->lines = XCNEWVEC (line_t, src->num_lines);
+
   for (fn = functions; fn; fn = fn->next)
     {
       coverage_t coverage;
@@ -602,7 +622,7 @@ generate_results (const char *file_name)
 	}
     }
 
-  for (src = sources; src; src = src->next)
+  for (ix = n_sources, src = sources; ix--; src++)
     {
       accumulate_line_counts (src);
       function_summary (&src->coverage, "File");
@@ -657,15 +677,13 @@ release_function (function_t *fn)
 static void
 release_structures (void)
 {
+  unsigned ix;
   function_t *fn;
-  source_t *src;
 
-  while ((src = sources))
+  for (ix = n_sources; ix--;)
     {
-      sources = src->next;
-
-      free (src->name);
-      free (src->lines);
+      free (sources[ix].name);
+      free (sources[ix].lines);
     }
 
   while ((fn = functions))
@@ -746,28 +764,40 @@ create_file_names (const char *file_name)
 /* Find or create a source file structure for FILE_NAME. Copies
    FILE_NAME on creation */
 
-static source_t *
+static unsigned
 find_source (const char *file_name)
 {
-  source_t *src;
+  unsigned ix;
+  source_t *src = 0;
   struct stat status;
 
   if (!file_name)
     file_name = "<unknown>";
 
-  for (src = sources; src; src = src->next)
-    if (!filename_cmp (file_name, src->name))
-      break;
+  for (ix = n_sources; ix--;)
+    if (!filename_cmp (file_name, sources[ix].name))
+      {
+	src = &sources[ix];
+	break;
+      }
 
   if (!src)
     {
-      src = XCNEW (source_t);
+      if (n_sources == a_sources)
+	{
+	  if (!a_sources)
+	    a_sources = 10;
+	  a_sources *= 2;
+	  src = XNEWVEC (source_t, a_sources);
+	  memcpy (src, sources, n_sources * sizeof (*sources));
+	  free (sources);
+	  sources = src;
+	}
+      ix = n_sources;
+      src = &sources[ix];
       src->name = xstrdup (file_name);
       src->coverage.name = src->name;
-      src->index = source_index++;
-      src->next = sources;
-      sources = src;
-
+      n_sources++;
       if (!stat (file_name, &status))
 	src->file_time = status.st_mtime;
     }
@@ -787,33 +817,34 @@ find_source (const char *file_name)
       src->file_time = 0;
     }
 
-  return src;
+  return ix;
 }
 
-/* Read the graph file. Return nonzero on fatal error.  */
+/* Read the graph file.  Return list of functions read -- in reverse order.  */
 
-static int
+static function_t *
 read_graph_file (void)
 {
   unsigned version;
   unsigned current_tag = 0;
-  struct function_info *fn = NULL;
-  function_t *old_functions_head = functions;
-  source_t *src = NULL;
+  function_t *fn = NULL;
+  function_t *fns = NULL;
+  function_t **fns_end = &fns;
+  unsigned src_idx = 0;
   unsigned ix;
   unsigned tag;
 
   if (!gcov_open (bbg_file_name, 1))
     {
       fnotice (stderr, "%s:cannot open graph file\n", bbg_file_name);
-      return 1;
+      return fns;
     }
   bbg_file_time = gcov_time ();
   if (!gcov_magic (gcov_read_unsigned (), GCOV_NOTE_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov graph file\n", bbg_file_name);
       gcov_close ();
-      return 1;
+      return fns;
     }
 
   version = gcov_read_unsigned ();
@@ -839,14 +870,12 @@ read_graph_file (void)
 	  char *function_name;
 	  unsigned ident, lineno;
 	  unsigned lineno_checksum, cfg_checksum;
-	  source_t *src;
-	  function_t *probe, *prev;
 
 	  ident = gcov_read_unsigned ();
 	  lineno_checksum = gcov_read_unsigned ();
 	  cfg_checksum = gcov_read_unsigned ();
 	  function_name = xstrdup (gcov_read_string ());
-	  src = find_source (gcov_read_string ());
+	  src_idx = find_source (gcov_read_string ());
 	  lineno = gcov_read_unsigned ();
 
 	  fn = XCNEW (function_t);
@@ -854,27 +883,14 @@ read_graph_file (void)
 	  fn->ident = ident;
 	  fn->lineno_checksum = lineno_checksum;
 	  fn->cfg_checksum = cfg_checksum;
-	  fn->src = src;
+	  fn->src = src_idx;
 	  fn->line = lineno;
 
-	  fn->next = functions;
-	  functions = fn;
+	  fn->line_next = NULL;
+	  fn->next = NULL;
+	  *fns_end = fn;
+	  fns_end = &fn->next;
 	  current_tag = tag;
-
-	  if (lineno >= src->num_lines)
-	    src->num_lines = lineno + 1;
-	  /* Now insert it into the source file's list of
-	     functions. Normally functions will be encountered in
-	     ascending order, so a simple scan is quick.  */
-	  for (probe = src->functions, prev = NULL;
-	       probe && probe->line > lineno;
-	       prev = probe, probe = probe->line_next)
-	    continue;
-	  fn->line_next = probe;
-	  if (prev)
-	    prev->line_next = fn;
-	  else
-	    src->functions = fn;
 	}
       else if (fn && tag == GCOV_TAG_BLOCKS)
 	{
@@ -966,11 +982,9 @@ read_graph_file (void)
 		  if (!ix)
 		    {
 		      line_nos[ix++] = 0;
-		      line_nos[ix++] = src->index;
+		      line_nos[ix++] = src_idx;
 		    }
 		  line_nos[ix++] = lineno;
-		  if (lineno >= src->num_lines)
-		    src->num_lines = lineno + 1;
 		}
 	      else
 		{
@@ -978,10 +992,9 @@ read_graph_file (void)
 
 		  if (!file_name)
 		    break;
-		  src = find_source (file_name);
-
+		  src_idx = find_source (file_name);
 		  line_nos[ix++] = 0;
-		  line_nos[ix++] = src->index;
+		  line_nos[ix++] = src_idx;
 		}
 	    }
 
@@ -998,72 +1011,22 @@ read_graph_file (void)
 	{
 	corrupt:;
 	  fnotice (stderr, "%s:corrupted\n", bbg_file_name);
-	  gcov_close ();
-	  return 1;
+	  break;
 	}
     }
   gcov_close ();
 
-  /* We built everything backwards, so nreverse them all.  */
+  if (!fns)
+    fnotice (stderr, "%s:no functions found\n", bbg_file_name);
 
-  /* Reverse sources. Not strictly necessary, but we'll then process
-     them in the 'expected' order.  */
-  {
-    source_t *src, *src_p, *src_n;
-
-    for (src_p = NULL, src = sources; src; src_p = src, src = src_n)
-      {
-	src_n = src->next;
-	src->next = src_p;
-      }
-    sources =  src_p;
-  }
-
-  /* Reverse functions.  */
-  {
-    function_t *fn, *fn_p, *fn_n;
-
-    for (fn_p = old_functions_head, fn = functions;
-	 fn != old_functions_head;
-	 fn_p = fn, fn = fn_n)
-      {
-	unsigned ix;
-
-	fn_n = fn->next;
-	fn->next = fn_p;
-
-	/* Reverse the arcs.  */
-	for (ix = fn->num_blocks; ix--;)
-	  {
-	    arc_t *arc, *arc_p, *arc_n;
-
-	    for (arc_p = NULL, arc = fn->blocks[ix].succ; arc;
-		 arc_p = arc, arc = arc_n)
-	      {
-		arc_n = arc->succ_next;
-		arc->succ_next = arc_p;
-	      }
-	    fn->blocks[ix].succ = arc_p;
-
-	    for (arc_p = NULL, arc = fn->blocks[ix].pred; arc;
-		 arc_p = arc, arc = arc_n)
-	      {
-		arc_n = arc->pred_next;
-		arc->pred_next = arc_p;
-	      }
-	    fn->blocks[ix].pred = arc_p;
-	  }
-      }
-    functions = fn_p;
-  }
-  return 0;
+  return fns;
 }
 
 /* Reads profiles from the count file and attach to each
    function. Return nonzero if fatal error.  */
 
 static int
-read_count_file (void)
+read_count_file (function_t *fns)
 {
   unsigned ix;
   unsigned version;
@@ -1125,7 +1088,7 @@ read_count_file (void)
 	  /* Try to find the function in the list.  To speed up the
 	     search, first start from the last function found.  */
 	  ident = gcov_read_unsigned ();
-	  fn_n = functions;
+	  fn_n = fns;
 	  for (fn = fn ? fn->next : NULL; ; fn = fn->next)
 	    {
 	      if (fn)
@@ -1189,6 +1152,28 @@ solve_flow_graph (function_t *fn)
   block_t *blk;
   block_t *valid_blocks = NULL;    /* valid, but unpropagated blocks.  */
   block_t *invalid_blocks = NULL;  /* invalid, but inferable blocks.  */
+
+  /* The arcs were built in reverse order.  Fix that now.  */
+  for (ix = fn->num_blocks; ix--;)
+    {
+      arc_t *arc_p, *arc_n;
+
+      for (arc_p = NULL, arc = fn->blocks[ix].succ; arc;
+	   arc_p = arc, arc = arc_n)
+	{
+	  arc_n = arc->succ_next;
+	  arc->succ_next = arc_p;
+	}
+      fn->blocks[ix].succ = arc_p;
+
+      for (arc_p = NULL, arc = fn->blocks[ix].pred; arc;
+	   arc_p = arc, arc = arc_n)
+	{
+	  arc_n = arc->pred_next;
+	  arc->pred_next = arc_p;
+	}
+      fn->blocks[ix].pred = arc_p;
+    }
 
   if (fn->num_blocks < 2)
     fnotice (stderr, "%s:'%s' lacks entry and/or exit blocks\n",
@@ -1643,10 +1628,7 @@ add_line_counts (coverage_t *coverage, function_t *fn)
 	   jx != block->u.line.num; jx++, encoding++)
 	if (!*encoding)
 	  {
-	    unsigned src_n = *++encoding;
-
-	    for (src = sources; src->index != src_n; src = src->next)
-	      continue;
+	    src = &sources[*++encoding];
 	    jx++;
 	  }
 	else
@@ -1671,7 +1653,10 @@ add_line_counts (coverage_t *coverage, function_t *fn)
 	/* Entry or exit block */;
       else if (flag_all_blocks)
 	{
-	  line_t *block_line = line ? line : &fn->src->lines[fn->line];
+	  line_t *block_line = line;
+
+	  if (!block_line)
+	    block_line = &sources[fn->src].lines[fn->line];
 
 	  block->chain = block_line->u.blocks;
 	  block_line->u.blocks = block;
