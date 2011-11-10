@@ -1,5 +1,13 @@
 2011-11-10  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/51070
+	* tree-loop-distribution.c (generate_builtin): Do not replace
+	the loop with a builtin if the partition contains statements which
+	results are used outside of the loop.
+	(pass_loop_distribution): Verify and collect.
+
+2011-11-10  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51030
 	* tree-ssa-phiopt.c (jump_function_from_stmt): New function.
 	(value_replacement): Use it to handle trivial non-empty

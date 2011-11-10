@@ -1,5 +1,10 @@
 2011-11-10  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/51070
+	* gcc.dg/torture/pr51070.c: New testcase.
+
+2011-11-10  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51030
 	* gcc.dg/tree-ssa/phi-opt-6.c: New testcase.
 
