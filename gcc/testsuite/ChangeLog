@@ -1,5 +1,8 @@
 2011-11-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51079
+	* g++.dg/template/conv12.C: New.
+
 	PR debug/50983
 	* gcc.dg/debug/dwarf2/asm-line1.c: New.
 

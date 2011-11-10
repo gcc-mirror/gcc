@@ -1,3 +1,9 @@
+2011-11-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51079, DR 495
+	* call.c (joust): Check the second conversion sequence
+	before checking templates.
+
 2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50837
