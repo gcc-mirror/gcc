@@ -7002,6 +7002,27 @@ All memory models are valid.
 
 @end deftypefn
 
+@deftypefn {Built-in Function} bool __atomic_test_and_set (bool *ptr, int memmodel)
+
+This built-in function performs an atomic test-and-set operation on
+@code{*@var{ptr}}.  @code{*@var{ptr}} is set to the value 1 and
+the previous contents are returned.
+
+All memory models are valid.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __atomic_clear (bool *ptr, int memmodel)
+
+This built-in function performs an atomic clear operation on
+@code{*@var{ptr}}.  After the operation, @code{*@var{ptr}} will contain 0.
+
+The valid memory model variants are
+@code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, and
+@code{__ATOMIC_RELEASE}.
+
+@end deftypefn
+
 @deftypefn {Built-in Function} void __atomic_thread_fence (int memmodel)
 
 This built-in function acts as a synchronization fence between threads

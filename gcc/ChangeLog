@@ -1,5 +1,9 @@
 2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
 
+	* doc/extend.texi: Document __atomic_test_and_set and __atomic_clear.
+
+2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
 	PR middle-end/51038
 	* builtins.c (expand_builtin_atomic_clear): New.  Expand atomic_clear.
 	(expand_builtin_atomic_test_and_set): New.  Expand atomic test_and_set.
