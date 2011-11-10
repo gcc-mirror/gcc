@@ -2041,7 +2041,8 @@ vect_recog_bool_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   rhs_code = gimple_assign_rhs_code (last_stmt);
   if (CONVERT_EXPR_CODE_P (rhs_code))
     {
-      if (TREE_CODE (TREE_TYPE (lhs)) != INTEGER_TYPE)
+      if (TREE_CODE (TREE_TYPE (lhs)) != INTEGER_TYPE
+	  || TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
 	return NULL;
       vectype = get_vectype_for_scalar_type (TREE_TYPE (lhs));
       if (vectype == NULL_TREE)
@@ -2096,6 +2097,7 @@ vect_recog_bool_pattern (VEC (gimple, heap) **stmts, tree *type_in,
       STMT_VINFO_DR_STEP (pattern_stmt_info) = STMT_VINFO_DR_STEP (stmt_vinfo);
       STMT_VINFO_DR_ALIGNED_TO (pattern_stmt_info)
 	= STMT_VINFO_DR_ALIGNED_TO (stmt_vinfo);
+      DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
       *type_out = vectype;
       *type_in = vectype;
       VEC_safe_push (gimple, heap, *stmts, last_stmt);
