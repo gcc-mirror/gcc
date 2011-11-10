@@ -1,3 +1,8 @@
+2011-11-10  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (GCC_AS_CFI_PSEUDO_OP): Use it instead of inline check.
+	* configure, aclocal.m4: Rebuild.
+
 2011-09-04  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR libffi/49594
