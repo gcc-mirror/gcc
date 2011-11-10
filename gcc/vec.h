@@ -549,7 +549,12 @@ typedef struct VEC(T,A)							  \
 } VEC(T,A)
 
 /* Convert to base type.  */
+#if GCC_VERSION >= 4000
+#define VEC_BASE(P) \
+  ((offsetof (__typeof (*P), base) == 0 || (P)) ? &(P)->base : 0)
+#else
 #define VEC_BASE(P)  ((P) ? &(P)->base : 0)
+#endif
 
 /* Vector of integer-like object.  */
 #define DEF_VEC_I(T)							  \

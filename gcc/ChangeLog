@@ -1,5 +1,8 @@
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* vec.h (VEC_BASE): If base is at offset 0 in the structure,
+	use &(P)->base even if P is NULL.
+
 	PR rtl-optimization/51023
 	* combine.c (simplify_comparison) <case SIGN_EXTEND>: Don't use
 	val_signbit_known_clear_p for signed comparison narrowing
