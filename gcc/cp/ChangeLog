@@ -1,5 +1,10 @@
 2011-11-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50973
+	* decl2.c (mark_used): Defer synthesis of virtual functions.
+	* method.c (use_thunk): Make sure the target function has
+	DECL_INTERFACE_KNOWN.
+
 	PR c++/51079, DR 495
 	* call.c (joust): Check the second conversion sequence
 	before checking templates.

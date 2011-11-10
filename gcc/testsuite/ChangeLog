@@ -1,3 +1,8 @@
+2011-11-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50973
+	* g++.dg/cpp0x/defaulted33.C: New.
+
 2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR middle-end/51038

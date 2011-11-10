@@ -4347,6 +4347,14 @@ mark_used (tree decl)
       && !DECL_DEFAULTED_OUTSIDE_CLASS_P (decl)
       && ! DECL_INITIAL (decl))
     {
+      /* Defer virtual destructors so that thunks get the right
+	 linkage.  */
+      if (DECL_VIRTUAL_P (decl) && !at_eof)
+	{
+	  note_vague_linkage_fn (decl);
+	  return true;
+	}
+
       /* Remember the current location for a function we will end up
 	 synthesizing.  Then we can inform the user where it was
 	 required in the case of error.  */
@@ -4358,7 +4366,7 @@ mark_used (tree decl)
 	 on the stack (such as overload resolution candidates).
 
          We could just let cp_write_global_declarations handle synthesizing
-         this function, since we just added it to deferred_fns, but doing
+         this function by adding it to deferred_fns, but doing
          it at the use site produces better error messages.  */
       ++function_depth;
       synthesize_method (decl);
