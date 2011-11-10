@@ -11397,9 +11397,10 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     later on, and then we wouldn't know whether to sign- or
 	     zero-extend.  */
 	  mode = GET_MODE (XEXP (op0, 0));
-	  if (mode != VOIDmode && GET_MODE_CLASS (mode) == MODE_INT
+	  if (GET_MODE_CLASS (mode) == MODE_INT
 	      && ! unsigned_comparison_p
-	      && val_signbit_known_clear_p (mode, const_op)
+	      && HWI_COMPUTABLE_MODE_P (mode)
+	      && trunc_int_for_mode (const_op, mode) == const_op
 	      && have_insn_for (COMPARE, mode))
 	    {
 	      op0 = XEXP (op0, 0);
@@ -11477,10 +11478,11 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	case ZERO_EXTEND:
 	  mode = GET_MODE (XEXP (op0, 0));
-	  if (mode != VOIDmode && GET_MODE_CLASS (mode) == MODE_INT
+	  if (GET_MODE_CLASS (mode) == MODE_INT
 	      && (unsigned_comparison_p || equality_comparison_p)
 	      && HWI_COMPUTABLE_MODE_P (mode)
-	      && ((unsigned HOST_WIDE_INT) const_op < GET_MODE_MASK (mode))
+	      && (unsigned HOST_WIDE_INT) const_op <= GET_MODE_MASK (mode)
+	      && const_op >= 0
 	      && have_insn_for (COMPARE, mode))
 	    {
 	      op0 = XEXP (op0, 0);

@@ -1,3 +1,14 @@
+2011-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51023
+	* combine.c (simplify_comparison) <case SIGN_EXTEND>: Don't use
+	val_signbit_known_clear_p for signed comparison narrowing
+	optimization.  Don't check for non-VOIDmode, use
+	HWI_COMPUTABLE_MODE_P macro.
+	<case ZERO_EXTEND>: Don't check for non-VOIDmode.
+	Optimize even when const_op is equal to GET_MODE_MASK (mode),
+	don't optimize if const_op is negative.
+
 2011-11-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51042

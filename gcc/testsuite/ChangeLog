@@ -1,3 +1,8 @@
+2011-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51023
+	* gcc.c-torture/execute/pr51023.c: New test.
+
 2011-11-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51042
