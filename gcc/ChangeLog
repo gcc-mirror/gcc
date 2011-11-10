@@ -1,3 +1,19 @@
+2011-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51000
+	* tree-vect-patterns.c (vect_recog_bool_pattern): If adding
+	a pattern stmt for a bool store, adjust DR_STMT too.
+	Don't handle bool conversions to single bit precision lhs.
+	* tree-vect-stmts.c (vect_remove_stores): If next is a pattern
+	stmt, remove its related stmt and free its stmt_vinfo.
+	(free_stmt_vec_info): Free also pattern stmt's vinfo and
+	pattern def stmt's vinfo.
+	* tree-vect-loop.c (destroy_loop_vec_info): Don't try to
+	free pattern stmt's vinfo here.
+	(vect_transform_loop): When calling vect_remove_stores,
+	do gsi_next first and don't call gsi_remove.  If not strided
+	store, free stmt vinfo for gsi_stmt (si) rather than stmt.
+
 2011-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50911

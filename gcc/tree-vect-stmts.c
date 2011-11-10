@@ -5567,10 +5567,14 @@ vect_remove_stores (gimple first_stmt)
 
   while (next)
     {
+      stmt_vec_info stmt_info = vinfo_for_stmt (next);
+
+      tmp = GROUP_NEXT_ELEMENT (stmt_info);
+      if (is_pattern_stmt_p (stmt_info))
+	next = STMT_VINFO_RELATED_STMT (stmt_info);
       /* Free the attached stmt_vec_info and remove the stmt.  */
       next_si = gsi_for_stmt (next);
       gsi_remove (&next_si, true);
-      tmp = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
       free_stmt_vec_info (next);
       next = tmp;
     }
@@ -5659,6 +5663,22 @@ free_stmt_vec_info (gimple stmt)
 
   if (!stmt_info)
     return;
+
+  /* Check if this statement has a related "pattern stmt"
+     (introduced by the vectorizer during the pattern recognition
+     pass).  Free pattern's stmt_vec_info and def stmt's stmt_vec_info
+     too.  */
+  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+    {
+      stmt_vec_info patt_info
+	= vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+      if (patt_info)
+	{
+	  if (STMT_VINFO_PATTERN_DEF_STMT (patt_info))
+	    free_stmt_vec_info (STMT_VINFO_PATTERN_DEF_STMT (patt_info));
+	  free_stmt_vec_info (STMT_VINFO_RELATED_STMT (stmt_info));
+	}
+    }
 
   VEC_free (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmt_info));
   set_vinfo_for_stmt (stmt, NULL);

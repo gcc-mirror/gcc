@@ -872,21 +872,8 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); )
         {
           gimple stmt = gsi_stmt (si);
-          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-          if (stmt_info)
-            {
-              /* Check if this statement has a related "pattern stmt"
-                 (introduced by the vectorizer during the pattern recognition
-                 pass).  Free pattern's stmt_vec_info.  */
-              if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-                  && vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info)))
-                free_stmt_vec_info (STMT_VINFO_RELATED_STMT (stmt_info));
-
-              /* Free stmt_vec_info.  */
-              free_stmt_vec_info (stmt);
-            }
-
+	  /* Free stmt_vec_info.  */
+	  free_stmt_vec_info (stmt);
           gsi_next (&si);
         }
     }
@@ -5349,14 +5336,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  /* Interleaving. If IS_STORE is TRUE, the vectorization of the
 		     interleaving chain was completed - free all the stores in
 		     the chain.  */
+		  gsi_next (&si);
 		  vect_remove_stores (GROUP_FIRST_ELEMENT (stmt_info));
-		  gsi_remove (&si, true);
  		  continue;
 		}
 	      else
 		{
 		  /* Free the attached stmt_vec_info and remove the stmt.  */
-		  free_stmt_vec_info (stmt);
+		  free_stmt_vec_info (gsi_stmt (si));
 		  gsi_remove (&si, true);
 		  continue;
 		}
