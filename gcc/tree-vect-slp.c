@@ -2191,7 +2191,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   VEC (tree, heap) *voprnds = VEC_alloc (tree, heap, number_of_vectors);
   bool constant_p, is_store;
   tree neutral_op = NULL;
-  enum tree_code code = gimple_assign_rhs_code (stmt);
+  enum tree_code code = gimple_expr_code (stmt);
   gimple def_stmt;
   struct loop *loop;
 
@@ -2287,21 +2287,31 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
         {
           if (is_store)
             op = gimple_assign_rhs1 (stmt);
-          else if (gimple_assign_rhs_code (stmt) != COND_EXPR)
-            op = gimple_op (stmt, op_num + 1);
-	  else
+          else
 	    {
-	      if (op_num == 0 || op_num == 1)
+	      switch (code)
 		{
-		  tree cond = gimple_assign_rhs1 (stmt);
-		  op = TREE_OPERAND (cond, op_num);
-		}
-	      else
-		{
-		  if (op_num == 2)
-		    op = gimple_assign_rhs2 (stmt);
-		  else
-		    op = gimple_assign_rhs3 (stmt);
+		  case COND_EXPR:
+		    if (op_num == 0 || op_num == 1)
+		      {
+			tree cond = gimple_assign_rhs1 (stmt);
+			op = TREE_OPERAND (cond, op_num);
+		      }
+		    else
+		      {
+			if (op_num == 2)
+			  op = gimple_assign_rhs2 (stmt);
+			else
+			  op = gimple_assign_rhs3 (stmt);
+		      }
+		    break;
+
+		  case CALL_EXPR:
+		    op = gimple_call_arg (stmt, op_num);
+		    break;
+
+		  default:
+		    op = gimple_op (stmt, op_num + 1);
 		}
 	    }
 
