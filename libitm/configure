@@ -17115,6 +17115,43 @@ $as_echo "#define HAVE_64BIT_SYNC_BUILTINS 1" >>confdefs.h
 
   fi
 
+case "${target_cpu}" in
+i345686 | x86_64)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the assembler supports AVX" >&5
+$as_echo_n "checking if the assembler supports AVX... " >&6; }
+if test "${libitm_cv_as_avx+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm("vzeroupper");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libitm_cv_as_avx=yes
+else
+  libitm_cv_as_avx=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libitm_cv_as_avx" >&5
+$as_echo "$libitm_cv_as_avx" >&6; }
+  if test x$libitm_cv_as_avx = xyes; then
+
+$as_echo "#define HAVE_AS_AVX 1" >>confdefs.h
+
+  fi
+  ;;
+esac
+
 # Cleanup and exit.
 CFLAGS="$save_CFLAGS"
 cat >confcache <<\_ACEOF
