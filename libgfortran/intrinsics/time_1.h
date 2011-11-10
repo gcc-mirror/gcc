@@ -97,14 +97,6 @@ localtime_r (const time_t * timep, struct tm * result)
 #endif
 
 
-#if defined (__GNUC__) && (__GNUC__ >= 3)
-#  define ATTRIBUTE_ALWAYS_INLINE __attribute__ ((__always_inline__))
-#else
-#  define ATTRIBUTE_ALWAYS_INLINE
-#endif
-
-static inline int gf_cputime (long *, long *, long *, long *) ATTRIBUTE_ALWAYS_INLINE;
-
 /* Helper function for the actual implementation of the DTIME, ETIME and
    CPU_TIME intrinsics.  Returns 0 for success or -1 if no
    CPU time could be computed.  */
@@ -114,7 +106,7 @@ static inline int gf_cputime (long *, long *, long *, long *) ATTRIBUTE_ALWAYS_I
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-static int
+static inline int
 gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec)
 {
   union {

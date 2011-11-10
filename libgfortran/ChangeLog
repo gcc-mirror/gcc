@@ -1,3 +1,20 @@
+2011-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/cpu_time.c (__cpu_time_1): Don't force inlining.
+	* intrinsics/random.c (rnumber_4): Remove inline attribute.
+	(rnumber_8, rnumber_10, rnumber_16): Likewise.
+	* intrinsics/system_clock.c (gf_gettime_mono): Likewise.
+	* intrinsics/time_1.h (ATTRIBUTE_ALWAYS_INLINE): Remove macro.
+	(gf_cputime): Add inline attribute for MingW version.
+	* io/format.c (format_hash): Remove inline attribute.
+	* io/io.h (memset4): Inline function from transfer.c and write.c
+	moved here.
+	* io/transfer.c (min_off): Remove inline attribute.
+	(memset4): Move to io.h.
+	* io/write.c (memset4): Likewise.
+	(memcpy4): Remove inline attribute.
+	* io/write_float.def (calculate_exp): Likewise.
+
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/time_1.h (gf_gettime): Simplify time() usage.
