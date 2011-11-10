@@ -1,3 +1,9 @@
+2011-11-10  Roberto Agostino Vitillo  <ravitillo@lbl.gov>
+
+	PR debug/50983
+	* dwarf2out.c (set_cur_line_info_table): Restore the last is_stmt
+	value in the current line table.
+
 2011-11-10  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov.c (struct function_info): Make src an index, not a pointer.

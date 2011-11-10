@@ -20371,6 +20371,10 @@ set_cur_line_info_table (section *sec)
       VEC_safe_push (dw_line_info_table_p, gc, separate_line_info, table);
     }
 
+  if (DWARF2_ASM_LINE_DEBUG_INFO)
+    table->is_stmt = (cur_line_info_table
+		      ? cur_line_info_table->is_stmt
+		      : DWARF_LINE_DEFAULT_IS_STMT_START);
   cur_line_info_table = table;
 }
 
