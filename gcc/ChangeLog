@@ -1,3 +1,12 @@
+2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR middle-end/51038
+	* builtins.c (expand_builtin_atomic_clear): New.  Expand atomic_clear.
+	(expand_builtin_atomic_test_and_set): New.  Expand atomic test_and_set.
+	(expand_builtin): Add cases for test_and_set and clear.
+	* sync-builtins.def (BUILT_IN_ATOMIC_TEST_AND_SET): New.
+	(BUILT_IN_ATOMIC_CLEAR): New.
+
 2011-11-10  Roberto Agostino Vitillo  <ravitillo@lbl.gov>
 
 	PR debug/50983
@@ -37,8 +46,6 @@
 	be AND followed by NOT.
 	* builtins.c (expand_builtin_atomic_fetch_op): Patchup code for NAND
 	should be AND followed by NOT.
-	* testsuite/gcc.dg/atomic-noinline[-aux].c: Test no-inline NAND and
-	patchup code.
 
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 

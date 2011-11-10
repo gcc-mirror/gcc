@@ -1,3 +1,16 @@
+2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR middle-end/51038
+	* gcc.dg/atomic-invalid.c: Add test for invalid __atomic_clear models.
+	* gcc.dg/atomic-flag.c: New.  Test __atomic_test_and_set and
+	__atomic_clear.
+
+2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR rtl-optimization/51040
+	* testsuite/gcc.dg/atomic-noinline[-aux].c: Test no-inline NAND and
+	patchup code.
+
 2011-11-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51079
