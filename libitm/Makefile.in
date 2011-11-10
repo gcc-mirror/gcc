@@ -1259,7 +1259,7 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 
 vpath % $(strip $(search_path))
 @ARCH_X86_TRUE@x86_sse.lo : XCFLAGS += -msse
-@ARCH_X86_TRUE@x86_avx.lo : XCFLAGS += -mavx
+@ARCH_X86_AVX_TRUE@x86_avx.lo : XCFLAGS += -mavx
 
 all-local: $(STAMP_GENINSRC)
 
