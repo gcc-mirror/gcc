@@ -1,5 +1,8 @@
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/51077
+	* gcc.c-torture/compile/pr51077.c: New test.
+
 	PR rtl-optimization/51023
 	* gcc.c-torture/execute/pr51023.c: New test.
 
