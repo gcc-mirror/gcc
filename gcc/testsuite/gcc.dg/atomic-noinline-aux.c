@@ -40,9 +40,22 @@ char __atomic_fetch_add_1 (char *p, char v, int i)
   *p = 1;
 }
 
-short __atomic_fetch_add_2 (short *p, short v, short i)
+short __atomic_fetch_add_2 (short *p, short v, int i)
 {
   *p = 1;
+}
+
+/* Really perform a NAND.  PR51040 showed incorrect calculation of a 
+   non-inlined fetch_nand.  */
+unsigned char 
+__atomic_fetch_nand_1 (unsigned char *p, unsigned char v, int i)
+{
+  unsigned char ret;
+
+  ret = *p;
+  *p = ~(*p & v);
+
+  return ret;
 }
 
 int __atomic_is_lock_free (int i, void *p)

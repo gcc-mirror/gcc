@@ -5460,8 +5460,17 @@ expand_builtin_atomic_fetch_op (enum machine_mode mode, tree exp, rtx target,
 
   /* Then issue the arithmetic correction to return the right result.  */
   if (!ignore)
-    ret = expand_simple_binop (mode, code, ret, val, NULL_RTX, true,
-			       OPTAB_LIB_WIDEN);
+    {
+      if (code == NOT)
+	{
+	  ret = expand_simple_binop (mode, AND, ret, val, NULL_RTX, true,
+				     OPTAB_LIB_WIDEN);
+	  ret = expand_simple_unop (mode, NOT, ret, target, true);
+	}
+      else
+	ret = expand_simple_binop (mode, code, ret, val, target, true,
+				   OPTAB_LIB_WIDEN);
+    }
   return ret;
 }
 

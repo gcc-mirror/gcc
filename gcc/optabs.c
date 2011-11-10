@@ -7875,8 +7875,15 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	     Fetch_before == after REVERSE_OP val.  */
 	  if (!after)
 	    code = optab.reverse_code;
-	  result = expand_simple_binop (mode, code, result, val, target, true,
-					OPTAB_LIB_WIDEN);
+	  if (code == NOT)
+	    {
+	      result = expand_simple_binop (mode, AND, result, val, NULL_RTX,
+					    true, OPTAB_LIB_WIDEN);
+	      result = expand_simple_unop (mode, NOT, result, target, true);
+	    }
+	  else
+	    result = expand_simple_binop (mode, code, result, val, target,
+					  true, OPTAB_LIB_WIDEN);
 	  return result;
 	}
     }
