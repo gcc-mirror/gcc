@@ -4,9 +4,11 @@
 /* { dg-require-effective-target sync_int_long } */
 
 #include <stddef.h>
+#include <stdbool.h>
 
 int i, e, b;
 size_t s;
+bool x;
 
 main ()
 {
@@ -26,4 +28,9 @@ main ()
   i = __atomic_always_lock_free (s, NULL); /* { dg-error "non-constant argument" } */
 
   __atomic_load_n (&i, 44); /* { dg-warning "invalid memory model" } */
+
+  __atomic_clear (&x, __ATOMIC_ACQUIRE); /* { dg-error "invalid memory model" } */
+
+  __atomic_clear (&x, __ATOMIC_ACQ_REL); /* { dg-error "invalid memory model" } */
+
 }

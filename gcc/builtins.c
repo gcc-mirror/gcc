@@ -5474,6 +5474,71 @@ expand_builtin_atomic_fetch_op (enum machine_mode mode, tree exp, rtx target,
   return ret;
 }
 
+
+/* Expand an atomic clear operation.
+	void _atomic_clear (BOOL *obj, enum memmodel)
+   EXP is the call expression.  */
+
+static rtx
+expand_builtin_atomic_clear (tree exp) 
+{
+  enum machine_mode mode;
+  rtx mem, ret;
+  enum memmodel model;
+
+  mode = mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0);
+  mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
+  model = get_memmodel (CALL_EXPR_ARG (exp, 1));
+
+  if (model == MEMMODEL_ACQUIRE || model == MEMMODEL_ACQ_REL)
+    {
+      error ("invalid memory model for %<__atomic_store%>");
+      return const0_rtx;
+    }
+
+  /* Try issuing an __atomic_store, and allow fallback to __sync_lock_release.
+     Failing that, a store is issued by __atomic_store.  The only way this can
+     fail is if the bool type is larger than a word size.  Unlikely, but
+     handle it anyway for completeness.  Assume a single threaded model since
+     there is no atomic support in this case, and no barriers are required.  */
+  ret = expand_atomic_store (mem, const0_rtx, model, true);
+  if (!ret)
+    emit_move_insn (mem, const0_rtx);
+  return const0_rtx;
+}
+
+/* Expand an atomic test_and_set operation.
+	bool _atomic_test_and_set (BOOL *obj, enum memmodel)
+   EXP is the call expression.  */
+
+static rtx
+expand_builtin_atomic_test_and_set (tree exp)
+{
+  rtx mem, ret;
+  enum memmodel model;
+  enum machine_mode mode;
+
+  mode = mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0);
+  mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
+  model = get_memmodel (CALL_EXPR_ARG (exp, 1));
+
+  /* Try issuing an exchange.  If it is lock free, or if there is a limited
+     functionality __sync_lock_test_and_set, this will utilize it.  */
+  ret = expand_atomic_exchange (NULL_RTX, mem, const1_rtx, model, true);
+  if (ret)
+    return ret;
+
+  /* Otherwise, there is no lock free support for test and set.  Simply
+     perform a load and a store.  Since this presumes a non-atomic architecture,
+     also assume single threadedness and don't issue barriers either. */
+
+  ret = gen_reg_rtx (mode);
+  emit_move_insn (ret, mem);
+  emit_move_insn (mem, const1_rtx);
+  return ret;
+}
+
+
 /* Return true if (optional) argument ARG1 of size ARG0 is always lock free on
    this architecture.  If ARG1 is NULL, use typical alignment for size ARG0.  */
 
@@ -6702,6 +6767,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (target)
 	return target;
       break;
+
+    case BUILT_IN_ATOMIC_TEST_AND_SET:
+      return expand_builtin_atomic_test_and_set (exp);
+
+    case BUILT_IN_ATOMIC_CLEAR:
+      return expand_builtin_atomic_clear (exp);
  
     case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
       return expand_builtin_atomic_always_lock_free (exp);

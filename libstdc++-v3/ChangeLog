@@ -1,3 +1,10 @@
+2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR middle-end/51038
+	* include/bits/atomic_base.h (atomic_thread_fence): Call built-in.
+	(atomic_signal_fence): Call built-in.
+	(test_and_set, clear): Call new atomic built-ins.
+
 2011-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/allocator.h (__shrink_to_fit_aux::_S_do_it): Create
