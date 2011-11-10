@@ -1,3 +1,8 @@
+2011-11-10  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/51058
+	* tree-vect-slp.c (vect_get_constant_vectors): Handle CALL_EXPR.
+
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51000
