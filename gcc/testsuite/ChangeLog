@@ -1,3 +1,9 @@
+2011-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50837
+	* g++.dg/cpp0x/static_assert5.C: New.
+	* g++.dg/template/nontype13.C: Tweak.
+
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50972
@@ -25,7 +31,7 @@
 
 2011-11-09  Patrick Marlier  <patrick.marlier@gmail.com>
 
-	* gcc.dg/tm/memopt-1.c:  Adjust regexp. 
+	* gcc.dg/tm/memopt-1.c:  Adjust regexp.
 
 2011-11-09  Jason Merrill  <jason@redhat.com>
 
