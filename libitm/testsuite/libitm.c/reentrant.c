@@ -1,4 +1,5 @@
 /* { dg-do run { xfail *-*-* } }
+/* { dg-options "-pthread" } */
 
 /* Tests that new transactions can be started from both transaction_pure and
    transaction_unsafe code. This also requires proper handling of reentrant

@@ -1,3 +1,15 @@
+2011-11-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/sjlj.S (_ITM_beginTransaction) [!__ELF__]: Don't use
+	.hidden.
+	(.note.GNU-stack): Only use if __linux__.
+	* alloc_cpp.cc [!__osf__] (_ZnaXRKSt9nothrow_t): Dummy function.
+	* testsuite/libitm.c/notx.c: Use dg-options "-pthread".
+	* testsuite/libitm.c/reentrant.c: Likewise.
+	* testsuite/libitm.c/simple-2.c: Likewise.
+	* testsuite/libitm.c/txrelease.c: Likewise.
+	* testsuite/libitm.c++/static_ctor.C: Likewise.
+
 2011-11-10  Richard Henderson  <rth@redhat.com>
 
 	* config/x86/x86_avx.cc: Remove #undef __AVX__ hack.  Tidy comments.

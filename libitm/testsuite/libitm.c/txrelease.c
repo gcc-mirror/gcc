@@ -2,6 +2,8 @@
    transaction data when a thread exists, potentially repeatedly. However,
    we currently cannot check whether the data has indeed been released.  */
 
+/* { dg-options "-pthread" } */
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <pthread.h>

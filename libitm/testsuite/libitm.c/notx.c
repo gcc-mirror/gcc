@@ -1,5 +1,8 @@
 /* These tests all check whether initialization happens properly even if no
    transaction has been used in the current thread yet.  */
+
+/* { dg-options "-pthread" } */
+
 #include <stdlib.h>
 #include <pthread.h>
 #include <libitm.h>
