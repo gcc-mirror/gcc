@@ -1,5 +1,8 @@
 2011-11-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* opts-common.c (generate_canonical_option): Free opt_text
+	it it has been allocated here and not stored anywhere.
+
 	* tree-vect-slp.c (vect_free_slp_tree): Also free SLP_TREE_CHILDREN
 	vector.
 	(vect_create_new_slp_node): Don't allocate node before checking stmt
