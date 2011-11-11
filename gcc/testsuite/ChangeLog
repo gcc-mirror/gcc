@@ -1,5 +1,9 @@
 2011-11-10  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/linkage1.C: New.
+	* g++.dg/ext/visibility/anon8.C: Adjust for C++11.
+	* g++.old-deja/g++.other/linkage4.C: Likewise.
+
 	PR c++/50973
 	* g++.dg/cpp0x/defaulted33.C: New.
 
