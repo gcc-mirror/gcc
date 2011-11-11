@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "runtime.h"
 #include "go-panic.h"
 #include "go-defer.h"
 
@@ -78,9 +79,7 @@
 struct __go_empty_interface
 __go_deferred_recover ()
 {
-  if (__go_panic_defer == NULL
-      || __go_panic_defer->__defer == NULL
-      || __go_panic_defer->__defer->__panic != __go_panic_defer->__panic)
+  if (g->defer == NULL || g->defer->__panic != g->panic)
     {
       struct __go_empty_interface ret;
 

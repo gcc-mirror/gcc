@@ -4,6 +4,7 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include "runtime.h"
 #include "interface.h"
 #include "go-panic.h"
 #include "go-defer.h"
@@ -21,9 +22,7 @@ __go_can_recover (const void* retaddr)
   const char* ret;
   const char* dret;
 
-  if (__go_panic_defer == NULL)
-    return 0;
-  d = __go_panic_defer->__defer;
+  d = g->defer;
   if (d == NULL)
     return 0;
 
@@ -31,7 +30,7 @@ __go_can_recover (const void* retaddr)
      of the panic stack.  We do not want to recover it if that panic
      was on the top of the panic stack when this function was
      deferred.  */
-  if (d->__panic == __go_panic_defer->__panic)
+  if (d->__panic == g->panic)
     return 0;
 
   /* D->__RETADDR is the address of a label immediately following the
@@ -53,9 +52,7 @@ __go_recover ()
 {
   struct __go_panic_stack *p;
 
-  if (__go_panic_defer == NULL
-      || __go_panic_defer->__panic == NULL
-      || __go_panic_defer->__panic->__was_recovered)
+  if (g->panic == NULL || g->panic->__was_recovered)
     {
       struct __go_empty_interface ret;
 
@@ -63,7 +60,7 @@ __go_recover ()
       ret.__object = NULL;
       return ret;
     }
-  p = __go_panic_defer->__panic;
+  p = g->panic;
   p->__was_recovered = 1;
   return p->__arg;
 }

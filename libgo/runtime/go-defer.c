@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-panic.h"
 #include "go-defer.h"
@@ -17,18 +18,14 @@ __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
 {
   struct __go_defer_stack *n;
 
-  if (__go_panic_defer == NULL)
-    __go_panic_defer = ((struct __go_panic_defer_struct *)
-			__go_alloc (sizeof (struct __go_panic_defer_struct)));
-
   n = (struct __go_defer_stack *) __go_alloc (sizeof (struct __go_defer_stack));
-  n->__next = __go_panic_defer->__defer;
+  n->__next = g->defer;
   n->__frame = frame;
-  n->__panic = __go_panic_defer->__panic;
+  n->__panic = g->panic;
   n->__pfn = pfn;
   n->__arg = arg;
   n->__retaddr = NULL;
-  __go_panic_defer->__defer = n;
+  g->defer = n;
 }
 
 /* This function is called when we want to undefer the stack.  */
@@ -36,22 +33,19 @@ __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
 void
 __go_undefer (_Bool *frame)
 {
-  if (__go_panic_defer == NULL)
-    return;
-  while (__go_panic_defer->__defer != NULL
-	 && __go_panic_defer->__defer->__frame == frame)
+  while (g->defer != NULL && g->defer->__frame == frame)
     {
       struct __go_defer_stack *d;
       void (*pfn) (void *);
 
-      d = __go_panic_defer->__defer;
+      d = g->defer;
       pfn = d->__pfn;
       d->__pfn = NULL;
 
       if (pfn != NULL)
 	(*pfn) (d->__arg);
 
-      __go_panic_defer->__defer = d->__next;
+      g->defer = d->__next;
       __go_free (d);
 
       /* Since we are executing a defer function here, we know we are
@@ -69,7 +63,7 @@ __go_undefer (_Bool *frame)
 _Bool
 __go_set_defer_retaddr (void *retaddr)
 {
-  if (__go_panic_defer != NULL && __go_panic_defer->__defer != NULL)
-    __go_panic_defer->__defer->__retaddr = retaddr;
+  if (g->defer != NULL)
+    g->defer->__retaddr = retaddr;
   return 0;
 }

@@ -434,7 +434,6 @@ runtime_files = \
 	runtime/go-new.c \
 	runtime/go-note.c \
 	runtime/go-panic.c \
-	runtime/go-panic-defer.c \
 	runtime/go-print.c \
 	runtime/go-rand.c \
 	runtime/go-rec-big.c \
