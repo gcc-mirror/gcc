@@ -2902,6 +2902,46 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   return is_store;
 }
 
+/* Replace scalar calls from SLP node NODE with setting of their lhs to zero.
+   For loop vectorization this is done in vectorizable_call, but for SLP
+   it needs to be deferred until end of vect_schedule_slp, because multiple
+   SLP instances may refer to the same scalar stmt.  */
+
+static void
+vect_remove_slp_scalar_calls (slp_tree node)
+{
+  gimple stmt, new_stmt;
+  gimple_stmt_iterator gsi;
+  int i;
+  slp_void_p child;
+  tree lhs;
+  stmt_vec_info stmt_info;
+
+  if (!node)
+    return;
+
+  FOR_EACH_VEC_ELT (slp_void_p, SLP_TREE_CHILDREN (node), i, child)
+    vect_remove_slp_scalar_calls ((slp_tree) child);
+
+  FOR_EACH_VEC_ELT (gimple, SLP_TREE_SCALAR_STMTS (node), i, stmt)
+    {
+      if (!is_gimple_call (stmt) || gimple_bb (stmt) == NULL)
+	continue;
+      stmt_info = vinfo_for_stmt (stmt);
+      if (stmt_info == NULL
+	  || is_pattern_stmt_p (stmt_info)
+	  || !PURE_SLP_STMT (stmt_info))
+	continue;
+      lhs = gimple_call_lhs (stmt);
+      new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+      set_vinfo_for_stmt (new_stmt, stmt_info);
+      set_vinfo_for_stmt (stmt, NULL);
+      STMT_VINFO_STMT (stmt_info) = new_stmt;
+      gsi = gsi_for_stmt (stmt);
+      gsi_replace (&gsi, new_stmt, false);
+      SSA_NAME_DEF_STMT (gimple_assign_lhs (new_stmt)) = new_stmt;
+    }
+}
 
 /* Generate vector code for all SLP instances in the loop/basic block.  */
 
@@ -2940,6 +2980,8 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       gimple store;
       unsigned int j;
       gimple_stmt_iterator gsi;
+
+      vect_remove_slp_scalar_calls (root);
 
       for (j = 0; VEC_iterate (gimple, SLP_TREE_SCALAR_STMTS (root), j, store)
                   && j < SLP_INSTANCE_GROUP_SIZE (instance); j++)

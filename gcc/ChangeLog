@@ -1,5 +1,11 @@
 2011-11-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51058
+	* tree-vect-slp.c (vect_remove_slp_scalar_calls): New function.
+	(vect_schedule_slp): Call it.
+	* tree-vect-stmts.c (vectorizable_call): If slp_node != NULL,
+	don't replace scalar calls with setting of their lhs to zero here.
+
 	PR tree-optimization/51074
 	* fold-const.c (vec_cst_ctor_to_array, fold_vec_perm): New functions.
 	(fold_binary_loc): Handle VEC_EXTRACT_EVEN_EXPR,

@@ -1886,6 +1886,9 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
      it defines is mapped to the new definition.  So just replace
      rhs of the statement with something harmless.  */
 
+  if (slp_node)
+    return true;
+
   type = TREE_TYPE (scalar_dest);
   if (is_pattern_stmt_p (stmt_info))
     lhs = gimple_call_lhs (STMT_VINFO_RELATED_STMT (stmt_info));
@@ -1893,8 +1896,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     lhs = gimple_call_lhs (stmt);
   new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
   set_vinfo_for_stmt (new_stmt, stmt_info);
-  if (!slp_node)
-    set_vinfo_for_stmt (stmt, NULL);
+  set_vinfo_for_stmt (stmt, NULL);
   STMT_VINFO_STMT (stmt_info) = new_stmt;
   gsi_replace (gsi, new_stmt, false);
   SSA_NAME_DEF_STMT (gimple_assign_lhs (new_stmt)) = new_stmt;
