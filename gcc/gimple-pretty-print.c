@@ -1768,6 +1768,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, gimple gs, int spc,
   else
     {
       pp_string (buffer, "#pragma omp atomic_load");
+      if (gimple_omp_atomic_need_value_p (gs))
+	pp_string (buffer, " [needed]");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, gimple_omp_atomic_load_lhs (gs),
 	  		 spc, flags, false);
@@ -1795,7 +1797,10 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer, gimple gs, int spc,
     }
   else
     {
-      pp_string (buffer, "#pragma omp atomic_store (");
+      pp_string (buffer, "#pragma omp atomic_store ");
+      if (gimple_omp_atomic_need_value_p (gs))
+	pp_string (buffer, "[needed] ");
+      pp_character (buffer, '(');
       dump_generic_node (buffer, gimple_omp_atomic_store_val (gs),
 	  		 spc, flags, false);
       pp_character (buffer, ')');

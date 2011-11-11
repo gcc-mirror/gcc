@@ -4977,25 +4977,125 @@ expand_omp_synch (struct omp_region *region)
    operation as a normal volatile load.  */
 
 static bool
-expand_omp_atomic_load (basic_block load_bb, tree addr, tree loaded_val)
+expand_omp_atomic_load (basic_block load_bb, tree addr,
+			tree loaded_val, int index)
 {
-  /* FIXME */
-  (void) load_bb;
-  (void) addr;
-  (void) loaded_val;
-  return false;
+  enum built_in_function tmpbase;
+  gimple_stmt_iterator gsi;
+  basic_block store_bb;
+  location_t loc;
+  gimple stmt;
+  tree decl, call, type, itype;
+
+  gsi = gsi_last_bb (load_bb);
+  stmt = gsi_stmt (gsi);
+  gcc_assert (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD);
+  loc = gimple_location (stmt);
+
+  /* ??? If the target does not implement atomic_load_optab[mode], and mode
+     is smaller than word size, then expand_atomic_load assumes that the load
+     is atomic.  We could avoid the builtin entirely in this case.  */
+
+  tmpbase = (enum built_in_function) (BUILT_IN_ATOMIC_LOAD_N + index + 1);
+  decl = builtin_decl_explicit (tmpbase);
+  if (decl == NULL_TREE)
+    return false;
+
+  type = TREE_TYPE (loaded_val);
+  itype = TREE_TYPE (TREE_TYPE (decl));
+
+  call = build_call_expr_loc (loc, decl, 2, addr,
+			      build_int_cst (NULL, MEMMODEL_RELAXED));
+  if (!useless_type_conversion_p (type, itype))
+    call = fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, call);
+  call = build2_loc (loc, MODIFY_EXPR, void_type_node, loaded_val, call);
+
+  force_gimple_operand_gsi (&gsi, call, true, NULL_TREE, true, GSI_SAME_STMT);
+  gsi_remove (&gsi, true);
+
+  store_bb = single_succ (load_bb);
+  gsi = gsi_last_bb (store_bb);
+  gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_ATOMIC_STORE);
+  gsi_remove (&gsi, true);
+
+  if (gimple_in_ssa_p (cfun))
+    update_ssa (TODO_update_ssa_no_phi);
+
+  return true;
 }
 
 /* A subroutine of expand_omp_atomic.  Attempt to implement the atomic
    operation as a normal volatile store.  */
 
 static bool
-expand_omp_atomic_store (basic_block load_bb, tree addr)
+expand_omp_atomic_store (basic_block load_bb, tree addr,
+			 tree loaded_val, tree stored_val, int index)
 {
-  /* FIXME */
-  (void) load_bb;
-  (void) addr;
-  return false;
+  enum built_in_function tmpbase;
+  gimple_stmt_iterator gsi;
+  basic_block store_bb = single_succ (load_bb);
+  location_t loc;
+  gimple stmt;
+  tree decl, call, type, itype;
+  enum machine_mode imode;
+  bool exchange;
+
+  gsi = gsi_last_bb (load_bb);
+  stmt = gsi_stmt (gsi);
+  gcc_assert (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD);
+
+  /* If the load value is needed, then this isn't a store but an exchange.  */
+  exchange = gimple_omp_atomic_need_value_p (stmt);
+
+  gsi = gsi_last_bb (store_bb);
+  stmt = gsi_stmt (gsi);
+  gcc_assert (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE);
+  loc = gimple_location (stmt);
+
+  /* ??? If the target does not implement atomic_store_optab[mode], and mode
+     is smaller than word size, then expand_atomic_store assumes that the store
+     is atomic.  We could avoid the builtin entirely in this case.  */
+
+  tmpbase = (exchange ? BUILT_IN_ATOMIC_EXCHANGE_N : BUILT_IN_ATOMIC_STORE_N);
+  tmpbase = (enum built_in_function) ((int) tmpbase + index + 1);
+  decl = builtin_decl_explicit (tmpbase);
+  if (decl == NULL_TREE)
+    return false;
+
+  type = TREE_TYPE (stored_val);
+
+  /* Dig out the type of the function's second argument.  */
+  itype = TREE_TYPE (decl);
+  itype = TYPE_ARG_TYPES (itype);
+  itype = TREE_CHAIN (itype);
+  itype = TREE_VALUE (itype);
+  imode = TYPE_MODE (itype);
+
+  if (exchange && !can_atomic_exchange_p (imode, true))
+    return false;
+
+  if (!useless_type_conversion_p (itype, type))
+    stored_val = fold_build1_loc (loc, VIEW_CONVERT_EXPR, itype, stored_val);
+  call = build_call_expr_loc (loc, decl, 3, addr, stored_val,
+			      build_int_cst (NULL, MEMMODEL_RELAXED));
+  if (exchange)
+    {
+      if (!useless_type_conversion_p (type, itype))
+	call = build1_loc (loc, VIEW_CONVERT_EXPR, type, call);
+      call = build2_loc (loc, MODIFY_EXPR, void_type_node, loaded_val, call);
+    }
+
+  force_gimple_operand_gsi (&gsi, call, true, NULL_TREE, true, GSI_SAME_STMT);
+  gsi_remove (&gsi, true);
+
+  /* Remove the GIMPLE_OMP_ATOMIC_LOAD that we verified above.  */
+  gsi = gsi_last_bb (load_bb);
+  gsi_remove (&gsi, true);
+
+  if (gimple_in_ssa_p (cfun))
+    update_ssa (TODO_update_ssa_no_phi);
+
+  return true;
 }
 
 /* A subroutine of expand_omp_atomic.  Attempt to implement the atomic
@@ -5335,7 +5435,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
    loaded_val = *addr;
 
    and replace
-   GIMPLE_OMP_ATOMIC_ATORE (stored_val)  with
+   GIMPLE_OMP_ATOMIC_STORE (stored_val)  with
    *addr = stored_val;
 */
 
@@ -5403,33 +5503,30 @@ expand_omp_atomic (struct omp_region *region)
       /* __sync builtins require strict data alignment.  */
       if (exact_log2 (align) >= index)
 	{
-	  /* Atomic load.  FIXME: have some target hook signalize what loads
-	     are actually atomic?  */
+	  /* Atomic load.  */
 	  if (loaded_val == stored_val
 	      && (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
 		  || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
 	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
-	      && expand_omp_atomic_load (load_bb, addr, loaded_val))
+	      && expand_omp_atomic_load (load_bb, addr, loaded_val, index))
 	    return;
 
-	  /* Atomic store.  FIXME: have some target hook signalize what
-	     stores are actually atomic?  */
+	  /* Atomic store.  */
 	  if ((GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
 	       || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
 	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
 	      && store_bb == single_succ (load_bb)
 	      && first_stmt (store_bb) == store
-	      && expand_omp_atomic_store (load_bb, addr))
+	      && expand_omp_atomic_store (load_bb, addr, loaded_val,
+					  stored_val, index))
 	    return;
 
 	  /* When possible, use specialized atomic update functions.  */
 	  if ((INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
-	      && store_bb == single_succ (load_bb))
-	    {
-	      if (expand_omp_atomic_fetch_op (load_bb, addr,
-					      loaded_val, stored_val, index))
-		return;
-	    }
+	      && store_bb == single_succ (load_bb)
+	      && expand_omp_atomic_fetch_op (load_bb, addr,
+					     loaded_val, stored_val, index))
+	    return;
 
 	  /* If we don't have specialized __sync builtins, try and implement
 	     as a compare and swap loop.  */
