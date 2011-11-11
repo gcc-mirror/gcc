@@ -10614,6 +10614,17 @@ ix86_emit_restore_sse_regs_using_mov (HOST_WIDE_INT cfa_offset,
       }
 }
 
+/* Emit vzeroupper if needed.  */
+
+void
+ix86_maybe_emit_epilogue_vzeroupper (void)
+{
+  if (TARGET_VZEROUPPER
+      && !TREE_THIS_VOLATILE (cfun->decl)
+      && !cfun->machine->caller_return_avx256_p)
+    emit_insn (gen_avx_vzeroupper (GEN_INT (call_no_avx256)));
+}
+
 /* Restore function stack, frame, and registers.  */
 
 void
@@ -10911,10 +10922,7 @@ ix86_expand_epilogue (int style)
     }
 
   /* Emit vzeroupper if needed.  */
-  if (TARGET_VZEROUPPER
-      && !TREE_THIS_VOLATILE (cfun->decl)
-      && !cfun->machine->caller_return_avx256_p)
-    emit_insn (gen_avx_vzeroupper (GEN_INT (call_no_avx256)));
+  ix86_maybe_emit_epilogue_vzeroupper ();
 
   if (crtl->args.pops_args && crtl->args.size)
     {

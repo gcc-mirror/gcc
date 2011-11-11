@@ -32,6 +32,7 @@ extern void ix86_setup_frame_addresses (void);
 
 extern HOST_WIDE_INT ix86_initial_elimination_offset (int, int);
 extern void ix86_expand_prologue (void);
+extern void ix86_maybe_emit_epilogue_vzeroupper (void);
 extern void ix86_expand_epilogue (int);
 extern void ix86_expand_split_stack_prologue (void);
 
