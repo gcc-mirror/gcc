@@ -286,6 +286,7 @@ Plugin			Le-Chun Wu		lcwu@google.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
 register allocation	Kenneth Zadeck		zadeck@naturalbridge.com
 register allocation	Seongbae Park		seongbae.park@gmail.com
+Selective Scheduling	Andrey Belevantsev	abel@ispras.ru
 LTO			Diego Novillo		dnovillo@google.com
 LTO			Richard Guenther	rguenther@suse.de
 LTO plugin		Cary Coutant		ccoutant@google.com

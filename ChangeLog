@@ -1,3 +1,7 @@
+2011-11-11  Andrey Belevantsev  <abel@ispras.ru>
+
+	* MAINTAINERS (Selective Scheduling): Add myself as a reviewer.
+
 2011-11-09  Roland McGrath  <mcgrathr@google.com>
 
 	* configure.ac: Add tool checks for READELF and READELF_FOR_TARGET.
