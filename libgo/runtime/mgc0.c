@@ -652,7 +652,8 @@ mark(void (*scan)(byte*, int64))
 		}
 	}
 
-	scan((byte*)&m0, sizeof m0);
+	scan((byte*)&runtime_m0, sizeof runtime_m0);
+	scan((byte*)&runtime_g0, sizeof runtime_g0);
 	scan((byte*)&finq, sizeof finq);
 	runtime_MProf_Mark(scan);
 

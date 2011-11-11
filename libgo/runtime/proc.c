@@ -8,13 +8,15 @@
 
 typedef struct Sched Sched;
 
-M	m0;
+G	runtime_g0;
+M	runtime_m0;
 
 #ifdef __rtems__
 #define __thread
 #endif
 
-__thread M *m = &m0;
+__thread G *g;
+__thread M *m;
 
 static struct {
 	Lock;

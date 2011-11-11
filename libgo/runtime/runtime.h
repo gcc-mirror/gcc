@@ -48,10 +48,14 @@ typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 
 typedef	uint8			bool;
 typedef	uint8			byte;
+typedef	struct	G		G;
 typedef	struct	M		M;
 typedef	struct	MCache		MCache;
 typedef struct	FixAlloc	FixAlloc;
 typedef	struct	Lock		Lock;
+
+typedef	struct	__go_defer_stack	Defer;
+typedef	struct	__go_panic_stack	Panic;
 
 /* We use mutexes for locks.  6g uses futexes directly, and perhaps
    someday we will do that too.  */
@@ -76,9 +80,11 @@ struct Note {
 #define __thread
 #endif
 
+extern __thread		G*	g;
 extern __thread		M* 	m;
 
-extern M	m0;
+extern M	runtime_m0;
+extern G	runtime_g0;
 
 #ifdef __rtems__
 #undef __thread
@@ -94,8 +100,34 @@ enum
 
 /* Structures.  */
 
+struct	G
+{
+	Defer*	defer;
+	Panic*	panic;
+	void*	exception;	// current exception being thrown
+	bool	is_foreign;	// whether current exception from other language
+	byte*	entry;		// initial function
+	G*	alllink;	// on allg
+	void*	param;		// passed parameter on wakeup
+	int16	status;
+	int32	goid;
+	int8*	waitreason;	// if status==Gwaiting
+	G*	schedlink;
+	bool	readyonstop;
+	bool	ispanic;
+	M*	m;		// for debuggers, but offset not hard-coded
+	M*	lockedm;
+	M*	idlem;
+	// int32	sig;
+	// uintptr	sigcode0;
+	// uintptr	sigcode1;
+	// uintptr	sigpc;
+	// uintptr	gopc;	// pc of go statement that created this goroutine
+};
+
 struct	M
 {
+	G*	curg;		// current running goroutine
 	int32	id;
 	int32	mallocing;
 	int32	gcing;
@@ -117,7 +149,6 @@ struct	M
 	void	*gc_next_segment;
 	void	*gc_next_sp;
 	void	*gc_initial_sp;
-	struct __go_panic_defer_struct *gc_panic_defer;
 };
 
 /* Macros.  */

@@ -13,6 +13,7 @@
 #define NO_SIZE_OF_ENCODED_VALUE
 #include "unwind-pe.h"
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-defer.h"
 #include "go-panic.h"
@@ -48,12 +49,12 @@ __go_check_defer (_Bool *frame)
 {
   struct _Unwind_Exception *hdr;
 
-  if (__go_panic_defer == NULL)
+  if (g == NULL)
     {
       /* Some other language has thrown an exception.  We know there
 	 are no defer handlers, so there is nothing to do.  */
     }
-  else if (__go_panic_defer->__is_foreign)
+  else if (g->is_foreign)
     {
       struct __go_panic_stack *n;
       _Bool was_recovered;
@@ -69,20 +70,20 @@ __go_check_defer (_Bool *frame)
       n->__arg.__object = NULL;
       n->__was_recovered = 0;
       n->__is_foreign = 1;
-      n->__next = __go_panic_defer->__panic;
-      __go_panic_defer->__panic = n;
+      n->__next = g->panic;
+      g->panic = n;
 
       while (1)
 	{
 	  struct __go_defer_stack *d;
 	  void (*pfn) (void *);
 
-	  d = __go_panic_defer->__defer;
+	  d = g->defer;
 	  if (d == NULL || d->__frame != frame || d->__pfn == NULL)
 	    break;
 
 	  pfn = d->__pfn;
-	  __go_panic_defer->__defer = d->__next;
+	  g->defer = d->__next;
 
 	  (*pfn) (d->__arg);
 
@@ -97,7 +98,7 @@ __go_check_defer (_Bool *frame)
 	}
 
       was_recovered = n->__was_recovered;
-      __go_panic_defer->__panic = n->__next;
+      g->panic = n->__next;
       __go_free (n);
 
       if (was_recovered)
@@ -110,17 +111,17 @@ __go_check_defer (_Bool *frame)
       /* We are panicing through this function.  */
       *frame = 0;
     }
-  else if (__go_panic_defer->__defer != NULL
-	   && __go_panic_defer->__defer->__pfn == NULL
-	   && __go_panic_defer->__defer->__frame == frame)
+  else if (g->defer != NULL
+	   && g->defer->__pfn == NULL
+	   && g->defer->__frame == frame)
     {
       struct __go_defer_stack *d;
 
       /* This is the defer function which called recover.  Simply
 	 return to stop the stack unwind, and let the Go code continue
 	 to execute.  */
-      d = __go_panic_defer->__defer;
-      __go_panic_defer->__defer = d->__next;
+      d = g->defer;
+      g->defer = d->__next;
       __go_free (d);
 
       /* We are returning from this function.  */
@@ -132,7 +133,7 @@ __go_check_defer (_Bool *frame)
   /* This is some other defer function.  It was already run by the
      call to panic, or just above.  Rethrow the exception.  */
 
-  hdr = (struct _Unwind_Exception *) __go_panic_defer->__exception;
+  hdr = (struct _Unwind_Exception *) g->exception;
 
 #ifdef LIBGO_SJLJ_EXCEPTIONS
   _Unwind_SjLj_Resume_or_Rethrow (hdr);
@@ -163,7 +164,7 @@ __go_unwind_stack ()
 		    sizeof hdr->exception_class);
   hdr->exception_cleanup = NULL;
 
-  __go_panic_defer->__exception = hdr;
+  g->exception = hdr;
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_RaiseException (hdr);
@@ -413,17 +414,17 @@ PERSONALITY_FUNCTION (int version,
       return _URC_HANDLER_FOUND;
     }
 
-  /* It's possible for __go_panic_defer to be NULL here for an
-     exception thrown by a language other than Go.  */
-  if (__go_panic_defer == NULL)
+  /* It's possible for g to be NULL here for an exception thrown by a
+     language other than Go.  */
+  if (g == NULL)
     {
       if (!is_foreign)
 	abort ();
     }
   else
     {
-      __go_panic_defer->__exception = ue_header;
-      __go_panic_defer->__is_foreign = is_foreign;
+      g->exception = ue_header;
+      g->is_foreign = is_foreign;
     }
 
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),

@@ -48,6 +48,10 @@ main (int argc, char **argv)
   int i;
   struct __go_string *values;
 
+  m = &runtime_m0;
+  g = &runtime_g0;
+  m->curg = g;
+  g->m = m;
   runtime_mallocinit ();
   runtime_cpuprofinit ();
   __go_gc_goroutine_init (&argc);
