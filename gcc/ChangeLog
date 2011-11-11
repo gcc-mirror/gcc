@@ -1,3 +1,23 @@
+2011-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cprop.c: Adjust outdated comments throughout.
+	(hash_scan_set): Rename PAT parameter into SET.
+	(cprop_pavloc): Rename into...
+	(cprop_avloc): ...this.
+	(cprop_absaltered): Rename into...
+	(cprop_kill): ...this.
+	(alloc_cprop_mem): Adjust for above renaming.
+	(free_cprop_mem): Likewise.
+	(compute_cprop_data): Likewise.
+	(compute_local_properties): Rename TRANSP parameter into KILL and
+	adjust throughout.  Rework comments.
+	(try_replace_reg): Fix long line.
+	(cprop_jump): Likewise.
+	(constprop_register): Fix prototype and take INSN last.
+	(cprop_insn): Adjust calls to above function.  Fix long lines.
+	(bypass_block): Likewise.
+	(one_cprop_pass): Likewise.
+
 2011-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/elf.h (ELF_ASCII_ESCAPES): Rename from ESCAPES.
@@ -22,6 +42,18 @@
 
 	Revert
 	2011-11-05  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (UNSPEC_SHORT_LOAD): New unspec.
+	(zero-extend_v8qi_vis, zero_extend_v4hi_vis): New expanders.
+	(*zero_extend_v8qi_<P:mode>_insn,
+	*zero_extend_v4hi_<P:mode>_insn): New insns.
+	* config/sparc/sparc.c (vector_init_move_words,
+	vector_init_prepare_elts, sparc_expand_vector_init_vis2,
+	sparc_expand_vector_init_vis1): New functions.
+	(vector_init_bshuffle): Rewrite to handle more cases and make use
+	of locs[] array prepared by vector_init_prepare_elts.
+	(vector_init_fpmerge, vector_init_faligndata): Delete.
+	(sparc_expand_vector_init): Rewrite using new infrastructure.
 
 2011-11-11  Jakub Jelinek  <jakub@redhat.com>
 
