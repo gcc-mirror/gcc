@@ -5,7 +5,7 @@ CRTSTUFF_T_CFLAGS =
 # We exclude those because the libgcc2.c default versions do not support
 # the SPU single-precision format (round towards zero).  We provide our
 # own versions below and/or via direct expansion.
-LIB2ADD = _floatdisf _floatundisf _floattisf _floatunstisf
+LIB2FUNCS_EXCLUDE = _floatdisf _floatundisf _floattisf _floatunstisf
 
 LIB2ADD_ST = $(srcdir)/config/spu/float_unssidf.c \
 	     $(srcdir)/config/spu/float_unsdidf.c \

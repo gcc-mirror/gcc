@@ -1,3 +1,7 @@
+2011-11-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/spu/t-elf (LIB2ADD): Use LIB2FUNCS_EXCLUDE instead.
+
 2011-11-09  Ian Lance Taylor  <iant@google.com>
 
 	* generic-morestack.c: Include <string.h>.
