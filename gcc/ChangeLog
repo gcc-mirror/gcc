@@ -1,3 +1,12 @@
+2011-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50762
+	* config/i386/constraints.md (j): New address constraint.
+	* config/i386/predicates.md (lea_address_operand): Redefine as
+	special predicate.
+	* config/i386/i386.md (*lea_3_zext): Use "j" constraint for operand 1.
+	(*lea_4_zext): Ditto.
+
 2011-11-11  David S. Miller  <davem@davemloft.net>
 
 	Revert
@@ -361,8 +370,7 @@
 	* tree-sra.c (build_accesses_from_assign): Ignore clobbers.
 	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Clobbers of
 	SSA names aren't necessary.
-	(propagate_necessity): Accept and ignore constructors on the rhs,
-	tidy.
+	(propagate_necessity): Accept and ignore constructors on the rhs, tidy.
 	* gimple.c (walk_gimple_op): Accept constructors like mem_rhs.
 	* tree-ssa-structalias.c (find_func_aliases): Clobbers don't store
 	any known value.
@@ -424,8 +432,7 @@
 	* trans-mem.c: New file.
 	* trans-mem.h: New file.
 
-	* opts.c (finish_options): Error out when using -flto and
-	-fgnu-tm.
+	* opts.c (finish_options): Error out when using -flto and -fgnu-tm.
 
 	* config/i386/i386.c: Define TARGET_VECTORIZE* transactional variants.
 	(ix86_handle_tm_regparm_attribute, struct bdesc_tm,
@@ -767,8 +774,7 @@
 2011-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* dwarf2cfi.c (dwarf2out_frame_debug_expr): Check
-	HARD_FRAME_POINTER_REGNUM instead of hard_frame_pointer_rtx
-	in Rule 18.
+	HARD_FRAME_POINTER_REGNUM instead of hard_frame_pointer_rtx in Rule 18.
 
 2011-11-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -801,8 +807,7 @@
 	* tree-data-ref.h (initialize_data_dependence_relation,
 	compute_self_dependence): New prototypes.
 	* tree-vect-data-refs.c (vect_check_gather): New function.
-	(vect_analyze_data_refs): Detect possible gather load data
-	refs.
+	(vect_analyze_data_refs): Detect possible gather load data refs.
 	* tree-vectorizer.h (struct _stmt_vec_info): Add gather_p field.
 	(STMT_VINFO_GATHER_P): Define.
 	(vect_check_gather): New prototype.
@@ -815,7 +820,7 @@
 	(avx2_gathersi<mode>, *avx2_gathersi<mode>): Use <VEC_GATHER_IDXSI>
 	instead of <VEC_GATHER_MODE>.
 	(avx2_gatherdi<mode>): Use <VEC_GATHER_IDXDI> instead of
-	<<AVXMODE48P_DI> and <VEC_GATHER_SRCDI> instead of VEC_GATHER_MODE
+	<AVXMODE48P_DI> and <VEC_GATHER_SRCDI> instead of VEC_GATHER_MODE
 	on src and mask operands.
 	(*avx2_gatherdi<mode>): Likewise.  Use VEC_GATHER_MODE iterator
 	instead of AVXMODE48P_DI.
@@ -831,7 +836,7 @@
 
 2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/f16cintrin: Remove extra _X86INTRIN_H_INCLUDED check.
+	* config/i386/f16cintrin.h: Remove extra _X86INTRIN_H_INCLUDED check.
 
 2011-11-07  Tristan Gingold  <gingold@adacore.com>
 
@@ -1104,8 +1109,7 @@
 
 2011-11-6  Richard Guenther  <rguenther@suse.de>
 
-	* ipa-prop.c (ipa_modify_call_arguments): Re-compute
-	inlinable flag.
+	* ipa-prop.c (ipa_modify_call_arguments): Re-compute inlinable flag.
 
 2011-11-06  Ira Rosen  <ira.rosen@linaro.org>
 
