@@ -150,7 +150,7 @@ find_addr2line (void)
 #define A2L_LEN 10
   char *path = getenv ("PATH");
   if (!path)
-      return;
+    return;
   size_t n = strlen (path);
   char ap[n + 1 + A2L_LEN];
   size_t ai = 0;
