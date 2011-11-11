@@ -8425,9 +8425,6 @@ check_literal_operator_args (const_tree decl,
       tree argtype;
       int arity;
       int max_arity = 2;
-      bool found_string_p = false;
-      bool maybe_raw_p = false;
-      bool found_size_p = false;
 
       *long_long_unsigned_p = false;
       *long_double_p = false;
@@ -8442,29 +8439,30 @@ check_literal_operator_args (const_tree decl,
 
 	  if (TREE_CODE (t) == POINTER_TYPE)
 	    {
+	      bool maybe_raw_p = false;
 	      t = TREE_TYPE (t);
 	      if (cp_type_quals (t) != TYPE_QUAL_CONST)
 		return false;
 	      t = TYPE_MAIN_VARIANT (t);
-	      if (same_type_p (t, char_type_node))
+	      if ((maybe_raw_p = same_type_p (t, char_type_node))
+		  || same_type_p (t, wchar_type_node)
+		  || same_type_p (t, char16_type_node)
+		  || same_type_p (t, char32_type_node))
 		{
-		  found_string_p = true;
-		  maybe_raw_p = true;
+		  argtype = TREE_CHAIN (argtype);
+		  if (!argtype)
+		    return false;
+		  t = TREE_VALUE (argtype);
+		  if (maybe_raw_p && argtype == void_list_node)
+		    return true;
+		  else if (same_type_p (t, size_type_node))
+		    {
+		      ++arity;
+		      continue;
+		    }
+		  else
+		    return false;
 		}
-	      else if (same_type_p (t, wchar_type_node))
-		found_string_p = true;
-	      else if (same_type_p (t, char16_type_node))
-		found_string_p = true;
-	      else if (same_type_p (t, char32_type_node))
-		found_string_p = true;
-	      else
-		return false;
-	    }
-	  else if (same_type_p (t, size_type_node))
-	    {
-	      if (!found_string_p)
-		return false;
-	      found_size_p = true;
 	    }
 	  else if (same_type_p (t, long_long_unsigned_type_node))
 	    {
@@ -8491,9 +8489,6 @@ check_literal_operator_args (const_tree decl,
 	return false; /* Found ellipsis.  */
 
       if (arity > max_arity)
-	return false;
-
-      if (found_string_p && !maybe_raw_p && !found_size_p)
 	return false;
 
       return true;
