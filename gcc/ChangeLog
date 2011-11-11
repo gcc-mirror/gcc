@@ -1,3 +1,16 @@
+2011-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-slp.c (vect_free_slp_tree): Also free SLP_TREE_CHILDREN
+	vector.
+	(vect_create_new_slp_node): Don't allocate node before checking stmt
+	type.
+	(vect_free_oprnd_info): Remove FREE_DEF_STMTS argument, always
+	free def_stmts vectors and additionally free oprnd_info.
+	(vect_build_slp_tree): Adjust callers.  Call it even if
+	stop_recursion.  If vect_create_new_slp_node or
+	vect_build_slp_tree fails, properly handle freeing memory.
+	If it succeeded, clear def_stmts in oprnd_info.
+
 2011-08-12  Dimitrios Apostolou  <jimis@gmx.net>
 
 	* final.c, output.h (fprint_whex, fprint_w, fprint_ul, sprint_ul):
