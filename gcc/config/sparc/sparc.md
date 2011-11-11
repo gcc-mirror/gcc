@@ -7830,60 +7830,6 @@
   DONE;
 })
 
-(define_expand "zero_extend_v8qi_vis"
-  [(set (match_operand:V8QI 0 "register_operand" "")
-        (vec_merge:V8QI
-          (vec_duplicate:V8QI
-            (match_operand:QI 1 "memory_operand" ""))
-          (match_dup 2)
-          (const_int 254)))]
-  "TARGET_VIS"
-{
-  if (! REG_P (XEXP (operands[1], 0)))
-    {
-      rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
-      operands[1] = replace_equiv_address (operands[1], addr);
-    }
-  operands[2] = CONST0_RTX (V8QImode);
-})
-
-(define_expand "zero_extend_v4hi_vis"
-  [(set (match_operand:V4HI 0 "register_operand" "")
-        (vec_merge:V4HI
-          (vec_duplicate:V4HI
-            (match_operand:HI 1 "memory_operand" ""))
-          (match_dup 2)
-          (const_int 14)))]
-  "TARGET_VIS"
-{
-  if (! REG_P (XEXP (operands[1], 0)))
-    {
-      rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
-      operands[1] = replace_equiv_address (operands[1], addr);
-    }
-  operands[2] = CONST0_RTX (V4HImode);
-})
-
-(define_insn "*zero_extend_v8qi_<P:mode>_insn"
-  [(set (match_operand:V8QI 0 "register_operand" "=e")
-        (vec_merge:V8QI
-          (vec_duplicate:V8QI
-            (mem:QI (match_operand:P 1 "register_operand" "r")))
-          (match_operand:V8QI 2 "const_zero_operand" "Y")
-          (const_int 254)))]
-  "TARGET_VIS"
-  "ldda\t[%1] 0xd0, %0")
-
-(define_insn "*zero_extend_v4hi_<P:mode>_insn"
-  [(set (match_operand:V4HI 0 "register_operand" "=e")
-        (vec_merge:V4HI
-          (vec_duplicate:V4HI
-            (mem:HI (match_operand:P 1 "register_operand" "r")))
-          (match_operand:V4HI 2 "const_zero_operand" "Y")
-          (const_int 14)))]
-  "TARGET_VIS"
-  "ldda\t[%1] 0xd2, %0")
-
 (define_expand "vec_init<mode>"
   [(match_operand:VMALL 0 "register_operand" "")
    (match_operand:VMALL 1 "" "")]

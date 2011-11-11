@@ -1,3 +1,8 @@
+2011-11-11  David S. Miller  <davem@davemloft.net>
+
+	Revert
+	2011-11-05  David S. Miller  <davem@davemloft.net>
+
 2011-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* opts-common.c (generate_canonical_option): Free opt_text
