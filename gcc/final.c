@@ -3585,7 +3585,7 @@ output_addr_const (FILE *file, rtx x)
       break;
 
     case CONST_INT:
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+      fprint_w (file, INTVAL (x));
       break;
 
     case CONST:
@@ -3699,6 +3699,124 @@ output_quoted_string (FILE *asm_file, const char *string)
 #endif
 }
 
+/* Write a HOST_WIDE_INT number in hex form 0x1234, fast. */
+
+void
+fprint_whex (FILE *f, unsigned HOST_WIDE_INT value)
+{
+  char buf[2 + CHAR_BIT * sizeof (value) / 4];
+  if (value == 0)
+    putc ('0', f);
+  else
+    {
+      char *p = buf + sizeof (buf);
+      do
+        *--p = "0123456789abcdef"[value % 16];
+      while ((value /= 16) != 0);
+      *--p = 'x';
+      *--p = '0';
+      fwrite (p, 1, buf + sizeof (buf) - p, f);
+    }
+}
+
+/* Internal function that prints an unsigned long in decimal in reverse.
+   The output string IS NOT null-terminated. */
+
+static int
+sprint_ul_rev (char *s, unsigned long value)
+{
+  int i = 0;
+  do
+    {
+      s[i] = "0123456789"[value % 10];
+      value /= 10;
+      i++;
+      /* alternate version, without modulo */
+      /* oldval = value; */
+      /* value /= 10; */
+      /* s[i] = "0123456789" [oldval - 10*value]; */
+      /* i++ */
+    }
+  while (value != 0);
+  return i;
+}
+
+/* Write a signed HOST_WIDE_INT as decimal to a file, fast. */
+
+void
+fprint_w (FILE *f, HOST_WIDE_INT value)
+{
+  /* python says: len(str(2**64)) == 20 */
+  char s[20];
+  int i;
+
+  if (value >= 0)
+    i = sprint_ul_rev (s, (unsigned long) value);
+  else
+    {
+      /* Cast to long long to output max negative correctly! */
+      i = sprint_ul_rev (s, ((unsigned long long) value) * -1);
+      putc('-', f);
+    }
+
+  /* It's probably too small to bother with string reversal and fputs. */
+  do
+    {
+      i--;
+      putc (s[i], f);
+    }
+  while (i != 0);
+}
+
+/* Write an unsigned long as decimal to a file, fast. */
+
+void
+fprint_ul (FILE *f, unsigned long value)
+{
+  /* python says: len(str(2**64)) == 20 */
+  char s[20];
+  int i;
+
+  i = sprint_ul_rev (s, value);
+
+  /* It's probably too small to bother with string reversal and fputs. */
+  do
+    {
+      i--;
+      putc (s[i], f);
+    }
+  while (i != 0);
+}
+
+/* Write an unsigned long as decimal to a string, fast.
+   s must be wide enough to not overflow, at least 21 chars.
+   Returns the length of the string (without terminating '\0'). */
+
+int
+sprint_ul (char *s, unsigned long value)
+{
+  int len;
+  char tmp_c;
+  int i;
+  int j;
+
+  len = sprint_ul_rev (s, value);
+  s[len] = '\0';
+
+  /* Reverse the string. */
+  i = 0;
+  j = len - 1;
+  while (i < j)
+    {
+      tmp_c = s[i];
+      s[i] = s[j];
+      s[j] = tmp_c;
+      i++; j--;
+    }
+
+  return len;
+}
+
 /* A poor man's fprintf, with the added features of %I, %R, %L, and %U.
    %R prints the value of REGISTER_PREFIX.
    %L prints the value of LOCAL_LABEL_PREFIX.

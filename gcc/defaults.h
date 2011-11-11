@@ -142,7 +142,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef ASM_OUTPUT_LABEL
 #define ASM_OUTPUT_LABEL(FILE,NAME) \
-  do { assemble_name ((FILE), (NAME)); fputs (":\n", (FILE)); } while (0)
+  do {						\
+    assemble_name ((FILE), (NAME));		\
+    fputs (":\n", (FILE));			\
+  } while (0)
 #endif
 
 /* This is how to output the definition of a user-level label named
@@ -165,7 +168,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* This is how to output a reference to a user-level label named NAME.  */
 
 #ifndef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  asm_fprintf ((FILE), "%U%s", (NAME))
+#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
+  do {							\
+    fputs (user_label_prefix, (FILE));			\
+    fputs ((NAME), (FILE));				\
+  } while (0);
 #endif
 
 /* Allow target to print debug info labels specially.  This is useful for

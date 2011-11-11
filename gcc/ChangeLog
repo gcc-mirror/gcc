@@ -1,3 +1,38 @@
+2011-08-12  Dimitrios Apostolou  <jimis@gmx.net>
+
+	* final.c, output.h (fprint_whex, fprint_w, fprint_ul, sprint_ul):
+	New functions serving as fast replacements for fprintf() integer
+	to string conversions. They were used in the following changes.
+	* final.c (sprint_ul_rev): Internal helper for the above.
+	(output_addr_const): case CONST_INT: don't use fprintf().
+	* elfos.h (ASM_GENERATE_INTERNAL_LABEL): Don't use sprintf("%u"),
+	use sprint_ul() and stpcpy() which are much faster.
+	(TARGET_ASM_INTERNAL_LABEL): Define as default_elf_internal_label.
+	(ELF_ASCII_ESCAPES, ELF_STRING_LIMIT): Are the old ESCAPES and
+	STRING_LIMIT macros.
+	(ASM_OUTPUT_LIMITED_STRING, ASM_OUTPUT_ASCII): Macros now just
+	call respective functions that provide the same
+	functionality. Those are default_elf_asm_output_limited_string()
+	and default_elf_asm_output_ascii() in varasm.c.
+	* varasm.c: Fixed some whitespace inconsistencies.
+	(default_elf_asm_output_limited_string)
+	(default_elf_asm_output_ascii): The above macros from elfos.h are
+	implemented here as these functions, avoiding superfluous calls to
+	fprintf().
+	(default_elf_internal_label): Hook for
+	targetm.asm_out.internal_label and ASM_OUTPUT_DEBUG_LABEL.
+	* i386.c: Don't call fprintf("%u") but fprint_ul() instead.
+	* defaults.h (ASM_OUTPUT_LABEL, ASM_OUTPUT_INTERNAL_LABEL):
+	Expanded the macros on multiple lines for readability.
+	(ASM_OUTPUT_LABELREF): Have two calls to fputs() instead of one to
+	asm_fprintf().
+	* dwarf2asm.c (dw2_assemble_integer, dw2_asm_output_data)
+	(dw2_asm_data_uleb128, dw2_asm_delta_uleb128)
+	(dw2_asm_delta_sleb128): Convert fprintf() calls to the new
+	faster functions.
+	* dwarf2out.c (dwarf2out_source_line): Convert fprintf() calls to
+	the new faster functions.
+
 2011-11-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	* doc/extend.texi: Document __atomic_test_and_set and __atomic_clear.

@@ -20472,12 +20472,27 @@ dwarf2out_source_line (unsigned int line, const char *filename,
   if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
       /* Emit the .loc directive understood by GNU as.  */
-      fprintf (asm_out_file, "\t.loc %d %d 0", file_num, line);
+      /* "\t.loc %u %u 0 is_stmt %u discriminator %u",
+	 file_num, line, is_stmt, discriminator */
+      fputs ("\t.loc ", asm_out_file);
+      fprint_ul (asm_out_file, file_num);
+      putc (' ', asm_out_file);
+      fprint_ul (asm_out_file, line);
+      putc (' ', asm_out_file);
+      putc ('0', asm_out_file);
+
       if (is_stmt != table->is_stmt)
-	fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
+	{
+	  fputs (" is_stmt ", asm_out_file);
+	  putc (is_stmt ? '1' : '0', asm_out_file);
+	}
       if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
-	fprintf (asm_out_file, " discriminator %d", discriminator);
-      fputc ('\n', asm_out_file);
+	{
+	  gcc_assert (discriminator > 0);
+	  fputs (" discriminator ", asm_out_file);
+	  fprint_ul (asm_out_file, (unsigned long) discriminator);
+	}
+      putc ('\n', asm_out_file);
     }
   else
     {

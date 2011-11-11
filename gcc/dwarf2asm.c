@@ -47,8 +47,7 @@ dw2_assemble_integer (int size, rtx x)
     {
       fputs (op, asm_out_file);
       if (CONST_INT_P (x))
-	fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX,
-		 (unsigned HOST_WIDE_INT) INTVAL (x));
+	fprint_whex (asm_out_file, (unsigned HOST_WIDE_INT) INTVAL (x));
       else
 	output_addr_const (asm_out_file, x);
     }
@@ -100,16 +99,19 @@ dw2_asm_output_data (int size, unsigned HOST_WIDE_INT value,
     value &= ~(~(unsigned HOST_WIDE_INT) 0 << (size * 8));
 
   if (op)
-    fprintf (asm_out_file, "%s" HOST_WIDE_INT_PRINT_HEX, op, value);
+    {
+      fputs (op, asm_out_file);
+      fprint_whex (asm_out_file, value);
+    }
   else
     assemble_integer (GEN_INT (value), size, BITS_PER_UNIT, 1);
 
   if (flag_debug_asm && comment)
     {
-      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
+      fputs ("\t" ASM_COMMENT_START " ", asm_out_file);
       vfprintf (asm_out_file, comment, ap);
     }
-  fputc ('\n', asm_out_file);
+  putc ('\n', asm_out_file);
 
   va_end (ap);
 }
@@ -590,7 +592,8 @@ dw2_asm_output_data_uleb128 (unsigned HOST_WIDE_INT value,
   va_start (ap, comment);
 
 #ifdef HAVE_AS_LEB128
-  fprintf (asm_out_file, "\t.uleb128 " HOST_WIDE_INT_PRINT_HEX , value);
+  fputs ("\t.uleb128 ", asm_out_file);
+  fprint_whex (asm_out_file, value);
 
   if (flag_debug_asm && comment)
     {
@@ -635,7 +638,7 @@ dw2_asm_output_data_uleb128 (unsigned HOST_WIDE_INT value,
     }
   }
 #endif
-  fputc ('\n', asm_out_file);
+  putc ('\n', asm_out_file);
 
   va_end (ap);
 }
@@ -739,7 +742,7 @@ dw2_asm_output_delta_uleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 #ifdef HAVE_AS_LEB128
   fputs ("\t.uleb128 ", asm_out_file);
   assemble_name (asm_out_file, lab1);
-  fputc ('-', asm_out_file);
+  putc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
 #else
   gcc_unreachable ();
@@ -769,7 +772,7 @@ dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 #ifdef HAVE_AS_LEB128
   fputs ("\t.sleb128 ", asm_out_file);
   assemble_name (asm_out_file, lab1);
-  fputc ('-', asm_out_file);
+  putc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
 #else
   gcc_unreachable ();

@@ -13539,26 +13539,28 @@ print_reg (rtx x, int code, FILE *file)
     code = GET_MODE_SIZE (GET_MODE (x));
 
   /* Irritatingly, AMD extended registers use different naming convention
-     from the normal registers.  */
+     from the normal registers: "r%d[bwd]"  */
   if (REX_INT_REG_P (x))
     {
       gcc_assert (TARGET_64BIT);
+      putc ('r', file);
+      fprint_ul (file, REGNO (x) - FIRST_REX_INT_REG + 8);
       switch (code)
 	{
 	  case 0:
 	    error ("extended registers have no high halves");
 	    break;
 	  case 1:
-	    fprintf (file, "r%ib", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    putc ('b', file);
 	    break;
 	  case 2:
-	    fprintf (file, "r%iw", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    putc ('w', file);
 	    break;
 	  case 4:
-	    fprintf (file, "r%id", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    putc ('d', file);
 	    break;
 	  case 8:
-	    fprintf (file, "r%i", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    /* no suffix */
 	    break;
 	  default:
 	    error ("unsupported operand size for extended register");
