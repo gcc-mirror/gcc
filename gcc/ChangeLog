@@ -1,5 +1,9 @@
 2011-11-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51091
+	* tree-stdarg.c (execute_optimize_stdarg): Ignore TREE_CLOBBER_P
+	rhs also in the va_list_simple_ptr case.
+
 	PR tree-optimization/51058
 	* tree-vect-slp.c (vect_remove_slp_scalar_calls): New function.
 	(vect_schedule_slp): Call it.
