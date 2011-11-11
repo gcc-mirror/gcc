@@ -344,8 +344,8 @@ do {									\
    the i386) don't know about that.  Also, we don't use \v
    since some versions of gas, such as 2.2 did not accept it.  */
 
-#undef  ESCAPES
-#define ESCAPES \
+#undef  ELF_ASCII_ESCAPES
+#define ELF_ASCII_ESCAPES \
 "\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
 \0\0\"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
 \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\\\0\0\0\
@@ -366,8 +366,9 @@ do {									\
    If your target assembler doesn't support the .string directive, you
    should define this to zero.  */
 
-#undef  STRING_LIMIT
-#define STRING_LIMIT	((unsigned) 256)
+#undef  ELF_STRING_LIMIT
+#define ELF_STRING_LIMIT	((unsigned) 256)
+
 #undef  STRING_ASM_OP
 #define STRING_ASM_OP	"\t.string\t"
 

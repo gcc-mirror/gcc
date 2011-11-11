@@ -1,3 +1,8 @@
+2011-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/elf.h (ELF_ASCII_ESCAPES): Rename from ESCAPES.
+	(ELF_STRING_LIMIT): Rename from STRING_LIMIT.
+
 2011-11-11  Jason Merrill  <jason@redhat.com>
 
 	* varasm.c (default_elf_asm_output_limited_string): #ifdef
