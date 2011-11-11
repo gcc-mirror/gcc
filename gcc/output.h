@@ -129,6 +129,11 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 #define ATTRIBUTE_ASM_FPRINTF(m, n) ATTRIBUTE_NONNULL(m)
 #endif
 
+extern void fprint_w (FILE *, HOST_WIDE_INT);
+extern void fprint_whex (FILE *, unsigned HOST_WIDE_INT);
+extern void fprint_ul (FILE *, unsigned long);
+extern int sprint_ul (char *, unsigned long);
+
 extern void asm_fprintf (FILE *file, const char *p, ...)
      ATTRIBUTE_ASM_FPRINTF(2, 3);
 
@@ -659,6 +664,10 @@ extern void file_end_indicate_split_stack (void);
 
 extern void default_elf_asm_output_external (FILE *file, tree,
 					     const char *);
+extern void default_elf_asm_output_limited_string (FILE *, const char *);
+extern void default_elf_asm_output_ascii (FILE *, const char *, unsigned int);
+extern void default_elf_internal_label (FILE *, const char *, unsigned long);
+
 extern void default_elf_init_array_asm_out_constructor (rtx, int);
 extern void default_elf_fini_array_asm_out_destructor (rtx, int);
 extern int maybe_assemble_visibility (tree);

@@ -564,7 +564,7 @@ default_function_section (tree decl, enum node_frequency freq,
 /* Return the section for function DECL.
 
    If DECL is NULL_TREE, return the text section.  We can be passed
-   NULL_TREE under some circumstances by dbxout.c at least. 
+   NULL_TREE under some circumstances by dbxout.c at least.
 
    If FORCE_COLD is true, return cold function section ignoring
    the frequency info of cgraph_node.  */
@@ -1928,7 +1928,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   /* Emulated TLS had better not get this far.  */
   gcc_checking_assert (targetm.have_tls || !DECL_THREAD_LOCAL_P (decl));
-              
+
   last_assemble_variable_decl = 0;
 
   /* Normally no need to say anything here for external references,
@@ -2852,7 +2852,7 @@ compare_constant (const tree t1, const tree t2)
 	      return 0;
 	    link2 = TREE_CHAIN (link2);
 	  }
-	
+
 	return 1;
       }
 
@@ -5754,7 +5754,7 @@ finish_aliases_1 (void)
 	       && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
 	{
 	  error ("%q+D aliased to external symbol %qE",
-		 p->decl, p->target);	  
+		 p->decl, p->target);
 	  p->emitted_diags |= ALIAS_DIAG_TO_EXTERN;
 	}
     }
@@ -5820,7 +5820,7 @@ assemble_alias (tree decl, tree target)
 	  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "ifunc is not supported in this configuration");
-	  else	
+	  else
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "only weak aliases are supported in this configuration");
 	  return;
@@ -6019,7 +6019,7 @@ finish_tm_clone_pairs (void)
    the visibility type VIS, which must not be VISIBILITY_DEFAULT.  */
 
 void
-default_assemble_visibility (tree decl ATTRIBUTE_UNUSED, 
+default_assemble_visibility (tree decl ATTRIBUTE_UNUSED,
 			     int vis ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_GAS_HIDDEN
@@ -7517,6 +7517,130 @@ make_debug_expr_from_rtl (const_rtx exp)
   DEBUG_EXPR_TREE_DECL (dval) = ddecl;
   SET_DECL_RTL (ddecl, dval);
   return dval;
+}
+
+/* Default ASM_OUTPUT_LIMITED_STRING for ELF targets.  */
+
+void
+default_elf_asm_output_limited_string (FILE *f, const char *s)
+{
+  int escape;
+  unsigned char c;
+
+  fputs ("\t.string\t\"", f);
+  while (*s != '\0')
+    {
+      c = *s;
+      escape = ELF_ASCII_ESCAPES[c];
+      switch (escape)
+	{
+	case 0:
+	  putc (c, f);
+	  break;
+	case 1:
+	  /* TODO: Print in hex with fast function, important for -flto. */
+	  fprintf (f, "\\%03o", c);
+	  break;
+	default:
+	  putc ('\\', f);
+	  putc (escape, f);
+	  break;
+	}
+      s++;
+    }
+  putc ('\"', f);
+  putc ('\n', f);
+}
+
+/* Default ASM_OUTPUT_ASCII for ELF targets.  */
+
+void
+default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
+{
+  const char *limit = s + len;
+  const char *last_null = NULL;
+  unsigned bytes_in_chunk = 0;
+  unsigned char c;
+  int escape;
+
+  for (; s < limit; s++)
+    {
+      const char *p;
+
+      if (bytes_in_chunk >= 60)
+	{
+	  putc ('\"', f);
+	  putc ('\n', f);
+	  bytes_in_chunk = 0;
+	}
+
+      if (s > last_null)
+	{
+	  for (p = s; p < limit && *p != '\0'; p++)
+	    continue;
+	  last_null = p;
+	}
+      else
+	p = last_null;
+
+      if (p < limit && (p - s) <= (long) ELF_STRING_LIMIT)
+	{
+	  if (bytes_in_chunk > 0)
+	    {
+	      putc ('\"', f);
+	      putc ('\n', f);
+	      bytes_in_chunk = 0;
+	    }
+
+	  default_elf_asm_output_limited_string (f, s);
+	  s = p;
+	}
+      else
+	{
+	  if (bytes_in_chunk == 0)
+	    fputs (ASCII_DATA_ASM_OP "\"", f);
+
+	  c = *s;
+	  escape = ELF_ASCII_ESCAPES[c];
+	  switch (escape)
+	    {
+	    case 0:
+	      putc (c, f);
+	      bytes_in_chunk++;
+	      break;
+	    case 1:
+	      /* TODO: Print in hex with fast function, important for -flto. */
+	      fprintf (f, "\\%03o", c);
+	      bytes_in_chunk += 4;
+	      break;
+	    default:
+	      putc ('\\', f);
+	      putc (escape, f);
+	      bytes_in_chunk += 2;
+	      break;
+	    }
+
+	}
+    }
+
+  if (bytes_in_chunk > 0)
+    {
+      putc ('\"', f);
+      putc ('\n', f);
+    }
+}
+
+/* Default TARGET_ASM_INTERNAL_LABEL for ELF targets.  */
+
+void
+default_elf_internal_label (FILE *f, const char *prefix,
+			    unsigned long labelno)
+{
+  putc ('.', f);
+  fputs (prefix, f);
+  fprint_ul (f, labelno);
+  putc (':', f);
+  putc ('\n', f);
 }
 
 static GTY(()) section *elf_init_array_section;
