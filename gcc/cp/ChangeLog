@@ -1,5 +1,10 @@
 2011-11-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50372
+	* pt.c (convert_nontype_argument_function): Allow decls with
+	internal linkage in C++11.
+	(convert_nontype_argument): Likewise.
+
 	PR c++/50973
 	* decl2.c (mark_used): Defer synthesis of virtual functions.
 	* method.c (use_thunk): Make sure the target function has

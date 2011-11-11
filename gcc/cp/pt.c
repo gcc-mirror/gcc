@@ -5324,6 +5324,7 @@ convert_nontype_argument_function (tree type, tree expr)
 {
   tree fns = expr;
   tree fn, fn_no_ptr;
+  linkage_kind linkage;
 
   fn = instantiate_type (type, fns, tf_none);
   if (fn == error_mark_node)
@@ -5340,12 +5341,19 @@ convert_nontype_argument_function (tree type, tree expr)
      A template-argument for a non-type, non-template template-parameter
      shall be one of:
      [...]
-     -- the address of an object or function with external linkage.  */
-  if (!DECL_EXTERNAL_LINKAGE_P (fn_no_ptr))
+     -- the address of an object or function with external [C++11: or
+        internal] linkage.  */
+  linkage = decl_linkage (fn_no_ptr);
+  if (cxx_dialect >= cxx0x ? linkage == lk_none : linkage != lk_external)
     {
-      error ("%qE is not a valid template argument for type %qT "
-	     "because function %qD has not external linkage",
-	     expr, type, fn_no_ptr);
+      if (cxx_dialect >= cxx0x)
+	error ("%qE is not a valid template argument for type %qT "
+	       "because %qD has no linkage",
+	       expr, type, fn_no_ptr);
+      else
+	error ("%qE is not a valid template argument for type %qT "
+	       "because %qD does not have external linkage",
+	       expr, type, fn_no_ptr);
       return NULL_TREE;
     }
 
@@ -5838,10 +5846,17 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		     expr, type, decl);
 	      return NULL_TREE;
 	    }
-	  else if (!DECL_EXTERNAL_LINKAGE_P (decl))
+	  else if (cxx_dialect < cxx0x && !DECL_EXTERNAL_LINKAGE_P (decl))
 	    {
 	      error ("%qE is not a valid template argument of type %qT "
 		     "because %qD does not have external linkage",
+		     expr, type, decl);
+	      return NULL_TREE;
+	    }
+	  else if (cxx_dialect >= cxx0x && decl_linkage (decl) == lk_none)
+	    {
+	      error ("%qE is not a valid template argument of type %qT "
+		     "because %qD has no linkage",
 		     expr, type, decl);
 	      return NULL_TREE;
 	    }
