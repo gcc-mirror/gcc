@@ -1,3 +1,17 @@
+2011-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51074
+	* fold-const.c (vec_cst_ctor_to_array, fold_vec_perm): New functions.
+	(fold_binary_loc): Handle VEC_EXTRACT_EVEN_EXPR,
+	VEC_EXTRACT_ODD_EXPR, VEC_INTERLEAVE_HIGH_EXPR and
+	VEC_INTERLEAVE_LOW_EXPR with VECTOR_CST or CONSTRUCTOR operands.
+	(fold_ternary_loc): Handle VEC_PERM_EXPR with VECTOR_CST or
+	CONSTRUCTOR operands.
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Handle ternary
+	expressions.
+	* tree-vect-generic.c (lower_vec_perm): Mask sel_int elements
+	to 0 .. 2 * elements - 1.
+
 2011-11-11  Richard Henderson  <rth@redhat.com>
 
 	* gimple-pretty-print.c (dump_gimple_omp_atomic_load): Dump needed.

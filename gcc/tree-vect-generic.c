@@ -649,7 +649,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
       tree vals = TREE_VECTOR_CST_ELTS (mask);
 
       for (i = 0; i < elements; ++i, vals = TREE_CHAIN (vals))
-	sel_int[i] = TREE_INT_CST_LOW (TREE_VALUE (vals));
+	sel_int[i] = TREE_INT_CST_LOW (TREE_VALUE (vals)) & (2 * elements - 1);
 
       if (can_vec_perm_p (TYPE_MODE (vect_type), false, sel_int))
 	return;
