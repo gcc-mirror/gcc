@@ -971,6 +971,9 @@ enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
 /* Return true if there is an inline compare and swap pattern.  */
 extern bool can_compare_and_swap_p (enum machine_mode, bool);
 
+/* Return true if there is an inline atomic exchange pattern.  */
+extern bool can_atomic_exchange_p (enum machine_mode, bool);
+
 /* Generate code for a compare and swap.  */
 extern bool expand_atomic_compare_and_swap (rtx *, rtx *, rtx, rtx, rtx, bool,
 					    enum memmodel, enum memmodel);

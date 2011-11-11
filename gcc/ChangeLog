@@ -1,3 +1,13 @@
+2011-11-11  Richard Henderson  <rth@redhat.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_atomic_load): Dump needed.
+	(dump_gimple_omp_atomic_store): Likewise.
+	* optabs.c (can_atomic_exchange_p): New.
+	* optabs.h (can_atomic_exchange_p): Declare.
+	* omp-low.c (expand_omp_atomic_load): Implement.
+	(expand_omp_atomic_store): Likewise.
+	(expand_omp_atomic): Update for new arguments to load/store.
+
 2011-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cprop.c: Adjust outdated comments throughout.

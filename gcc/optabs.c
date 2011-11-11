@@ -7236,6 +7236,26 @@ can_compare_and_swap_p (enum machine_mode mode, bool allow_libcall)
   return false;
 }
 
+/* Return true if an atomic exchange can be performed.  */
+
+bool
+can_atomic_exchange_p (enum machine_mode mode, bool allow_libcall)
+{
+  enum insn_code icode;
+
+  /* Check for __atomic_exchange.  */
+  icode = direct_optab_handler (atomic_exchange_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    return true;
+
+  /* Don't check __sync_test_and_set, as on some platforms that
+     has reduced functionality.  Targets that really do support
+     a proper exchange should simply be updated to the __atomics.  */
+
+  return can_compare_and_swap_p (mode, allow_libcall);
+}
+
+
 /* Helper function to find the MODE_CC set in a sync_compare_and_swap
    pattern.  */
 
