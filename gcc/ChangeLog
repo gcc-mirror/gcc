@@ -1,3 +1,9 @@
+2011-11-11  Jason Merrill  <jason@redhat.com>
+
+	* varasm.c (default_elf_asm_output_limited_string): #ifdef
+	ELF_ASCII_ESCAPES.
+	(default_elf_asm_output_ascii): Likewise.
+
 2011-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50762

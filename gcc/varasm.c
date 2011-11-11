@@ -7519,6 +7519,7 @@ make_debug_expr_from_rtl (const_rtx exp)
   return dval;
 }
 
+#ifdef ELF_ASCII_ESCAPES
 /* Default ASM_OUTPUT_LIMITED_STRING for ELF targets.  */
 
 void
@@ -7629,6 +7630,7 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
       putc ('\n', f);
     }
 }
+#endif
 
 /* Default TARGET_ASM_INTERNAL_LABEL for ELF targets.  */
 
