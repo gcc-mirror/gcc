@@ -808,8 +808,9 @@
        (match_operand 0 "const0_operand")))
 
 ;; Return true if op if a valid address for LEA, and does not contain
-;; a segment override.
-(define_predicate "lea_address_operand"
+;; a segment override.  Defined as a special predicate to allow
+;; mode-less const_int operands pass to address_operand.
+(define_special_predicate "lea_address_operand"
   (match_operand 0 "address_operand")
 {
   struct ix86_address parts;
