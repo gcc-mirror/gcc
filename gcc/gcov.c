@@ -231,7 +231,7 @@ typedef struct line_info
 
 typedef struct source_info
 {
-  /* Name of source file.  */
+  /* Canonical name of source file.  */
   char *name;
   time_t file_time;
 
@@ -246,6 +246,12 @@ typedef struct source_info
   function_t *functions;
 } source_t;
 
+typedef struct name_map
+{
+  char *name;  /* Source file name */
+  unsigned src;  /* Source file */
+} name_map_t;
+
 /* Holds a list of function basic block graphs.  */
 
 static function_t *functions;
@@ -254,6 +260,10 @@ static function_t **fn_end = &functions;
 static source_t *sources;   /* Array of source files  */
 static unsigned n_sources;  /* Number of sources */
 static unsigned a_sources;  /* Allocated sources */
+
+static name_map_t *names;   /* Mapping of file names to sources */
+static unsigned n_names;    /* Number of names */
+static unsigned a_names;    /* Allocated names */
 
 /* This holds data summary information.  */
 
@@ -341,6 +351,9 @@ static void print_version (void) ATTRIBUTE_NORETURN;
 static void process_file (const char *);
 static void generate_results (const char *);
 static void create_file_names (const char *);
+static int name_search (const void *, const void *);
+static int name_sort (const void *, const void *);
+static char *canonicalize_name (const char *);
 static unsigned find_source (const char *);
 static function_t *read_graph_file (void);
 static int read_count_file (function_t *);
@@ -353,6 +366,7 @@ static void accumulate_line_counts (source_t *);
 static int output_branch_count (FILE *, int, const arc_t *);
 static void output_lines (FILE *, const source_t *);
 static char *make_gcov_file_name (const char *, const char *);
+static char *mangle_name (const char *, char *);
 static void release_structures (void);
 static void release_function (function_t *);
 extern int main (int, char **);
@@ -414,7 +428,7 @@ print_usage (int error_p)
   FILE *file = error_p ? stderr : stdout;
   int status = error_p ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
 
-  fnotice (file, "Usage: gcov [OPTION]... SOURCEFILE...\n\n");
+  fnotice (file, "Usage: gcov [OPTION]... SOURCE|OBJ...\n\n");
   fnotice (file, "Print code coverage information.\n\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
   fnotice (file, "  -v, --version                   Print version number, then exit\n");
@@ -524,7 +538,7 @@ process_args (int argc, char **argv)
   return optind;
 }
 
-/* Process a single source file.  */
+/* Process a single input file.  */
 
 static void
 process_file (const char *file_name)
@@ -622,6 +636,16 @@ generate_results (const char *file_name)
 	}
     }
 
+  if (file_name)
+    {
+      name_map_t *name_map = (name_map_t *)bsearch
+	(file_name, names, n_names, sizeof (*names), name_search);
+      if (name_map)
+	file_name = sources[name_map->src].name;
+      else
+	file_name = canonicalize_name (file_name);
+    }
+  
   for (ix = n_sources, src = sources; ix--; src++)
     {
       accumulate_line_counts (src);
@@ -681,10 +705,12 @@ release_structures (void)
   function_t *fn;
 
   for (ix = n_sources; ix--;)
-    {
-      free (sources[ix].name);
-      free (sources[ix].lines);
-    }
+    free (sources[ix].lines);
+  free (sources);
+  
+  for (ix = n_names; ix--;)
+    free (names[ix].name);
+  free (names);
 
   while ((fn = functions))
     {
@@ -761,28 +787,75 @@ create_file_names (const char *file_name)
   return;
 }
 
+/* A is a string and B is a pointer to name_map_t.  Compare for file
+   name orderability.  */
+
+static int
+name_search (const void *a_, const void *b_)
+{
+  const char *a = (const char *)a_;
+  const name_map_t *b = (const name_map_t *)b_;
+
+#if HAVE_DOS_BASED_FILE_SYSTEM
+  return strcasecmp (a, b->name);
+#else
+  return strcmp (a, b->name);
+#endif
+}
+
+/* A and B are a pointer to name_map_t.  Compare for file name
+   orderability.  */
+
+static int
+name_sort (const void *a_, const void *b_)
+{
+  const name_map_t *a = (const name_map_t *)a_;
+  return name_search (a->name, b_);
+}
+
 /* Find or create a source file structure for FILE_NAME. Copies
    FILE_NAME on creation */
 
 static unsigned
 find_source (const char *file_name)
 {
-  unsigned ix;
-  source_t *src = 0;
+  name_map_t *name_map;
+  char *canon;
+  unsigned idx;
   struct stat status;
 
   if (!file_name)
     file_name = "<unknown>";
-
-  for (ix = n_sources; ix--;)
-    if (!filename_cmp (file_name, sources[ix].name))
-      {
-	src = &sources[ix];
-	break;
-      }
-
-  if (!src)
+  name_map = (name_map_t *)bsearch
+    (file_name, names, n_names, sizeof (*names), name_search);
+  if (name_map)
     {
+      idx = name_map->src;
+      goto check_date;
+    }
+
+  if (n_names + 2 > a_names)
+    {
+      /* Extend the name map array -- we'll be inserting one or two
+	 entries.  */
+      if (!a_names)
+	a_names = 10;
+      a_names *= 2;
+      name_map = XNEWVEC (name_map_t, a_names);
+      memcpy (name_map, names, n_names * sizeof (*names));
+      free (names);
+      names = name_map;
+    }
+  
+  /* Not found, try the canonical name. */
+  canon = canonicalize_name (file_name);
+  name_map = (name_map_t *)bsearch
+    (canon, names, n_names, sizeof (*names), name_search);
+  if (!name_map)
+    {
+      /* Not found with canonical name, create a new source.  */
+      source_t *src;
+      
       if (n_sources == a_sources)
 	{
 	  if (!a_sources)
@@ -793,31 +866,51 @@ find_source (const char *file_name)
 	  free (sources);
 	  sources = src;
 	}
-      ix = n_sources;
-      src = &sources[ix];
-      src->name = xstrdup (file_name);
+
+      idx = n_sources;
+
+      name_map = &names[n_names++];
+      name_map->name = canon;
+      name_map->src = idx;
+
+      src = &sources[n_sources++];
+      memset (src, 0, sizeof (*src));
+      src->name = canon;
       src->coverage.name = src->name;
-      n_sources++;
-      if (!stat (file_name, &status))
+      if (!stat (src->name, &status))
 	src->file_time = status.st_mtime;
     }
+  else
+    idx = name_map->src;
 
-  if (src->file_time > bbg_file_time)
+  if (name_search (file_name, name_map))
+    {
+      /* Append the non-canonical name.  */
+      name_map = &names[n_names++];
+      name_map->name = xstrdup (file_name);
+      name_map->src = idx;
+    }
+
+  /* Resort the name map.  */
+  qsort (names, n_names, sizeof (*names), name_sort);
+  
+ check_date:
+  if (sources[idx].file_time > bbg_file_time)
     {
       static int info_emitted;
 
       fnotice (stderr, "%s:source file is newer than graph file '%s'\n",
-	       src->name, bbg_file_name);
+	       file_name, bbg_file_name);
       if (!info_emitted)
 	{
 	  fnotice (stderr,
 		   "(the message is only displayed one per source file)\n");
 	  info_emitted = 1;
 	}
-      src->file_time = 0;
+      sources[idx].file_time = 0;
     }
 
-  return ix;
+  return idx;
 }
 
 /* Read the graph file.  Return list of functions read -- in reverse order.  */
@@ -1510,97 +1603,169 @@ function_summary (const coverage_t *coverage, const char *title)
     }
 }
 
-/* Generate an output file name. LONG_OUTPUT_NAMES and PRESERVE_PATHS
-   affect name generation. With preserve_paths we create a filename
-   from all path components of the source file, replacing '/' with
-   '#', without it we simply take the basename component. With
+/* Canonicalize the filename NAME by canonicalizing directory
+   separators, eliding . components and resolving .. components
+   appropriately.  Always returns a unique string.  */
+
+static char *
+canonicalize_name (const char *name)
+{
+  /* The canonical name cannot be longer than the incoming name.  */
+  char *result = XNEWVEC (char, strlen (name) + 1);
+  const char *base = name, *probe;
+  char *ptr = result;
+  char *dd_base;
+  int slash = 0;
+
+#if HAVE_DOS_BASED_FILE_SYSTEM
+  if (base[0] && base[1] == ':')
+    {
+      result[0] = base[0];
+      result[1] = ':';
+      base += 2;
+      ptr += 2;
+    }
+#endif
+  for (dd_base = ptr; *base; base = probe)
+    {
+      size_t len;
+      
+      for (probe = base; *probe; probe++)
+	if (IS_DIR_SEPARATOR (*probe))
+	  break;
+
+      len = probe - base;
+      if (len == 1 && base[0] == '.')
+	/* Elide a '.' directory */
+	;
+      else if (len == 2 && base[0] == '.' && base[1] == '.')
+	{
+	  /* '..', we can only elide it and the previous directory, if
+	     we're not a symlink.  */
+	  struct stat buf;
+	  
+	  *ptr = 0;
+	  if (dd_base == ptr || stat (result, &buf) || S_ISLNK (buf.st_mode))
+	    {
+	      /* Cannot elide, or unreadable or a symlink.  */
+	      dd_base = ptr + 2 + slash;
+	      goto regular;
+	    }
+	  while (ptr != dd_base && *ptr != '/')
+	    ptr--;
+	  slash = ptr != result;
+	}
+      else
+	{
+	regular:
+	  /* Regular pathname component.  */
+	  if (slash)
+	    *ptr++ = '/';
+	  memcpy (ptr, base, len);
+	  ptr += len;
+	  slash = 1;
+	}
+
+      for (; IS_DIR_SEPARATOR (*probe); probe++)
+	continue;
+    }
+  *ptr = 0;
+
+  return result;
+}
+
+/* Generate an output file name. INPUT_NAME is the canonicalized main
+   input file and SRC_NAME is the canonicalized file name.
+   LONG_OUTPUT_NAMES and PRESERVE_PATHS affect name generation.  With
    long_output_names we prepend the processed name of the input file
    to each output name (except when the current source file is the
    input file, so you don't get a double concatenation). The two
-   components are separated by '##'. Also '.' filename components are
-   removed and '..'  components are renamed to '^'.  */
+   components are separated by '##'.  With preserve_paths we create a
+   filename from all path components of the source file, replacing '/'
+   with '#', and .. with '^', without it we simply take the basename
+   component.  (Remember, the canonicalized name will already have
+   elided '.' components and converted \\ separators.)  */
 
 static char *
 make_gcov_file_name (const char *input_name, const char *src_name)
 {
-  const char *cptr;
-  char *name;
+  char *ptr;
+  char *result;
 
   if (flag_long_names && input_name && strcmp (src_name, input_name))
     {
-      name = XNEWVEC (char, strlen (src_name) + strlen (input_name) + 10);
-      name[0] = 0;
       /* Generate the input filename part.  */
-      cptr = flag_preserve_paths ? NULL : lbasename (input_name);
-      strcat (name, cptr ? cptr : input_name);
-      strcat (name, "##");
+      result = XNEWVEC (char, strlen (input_name) + strlen (src_name) + 10);
+  
+      ptr = result;
+      ptr = mangle_name (input_name, ptr);
+      ptr[0] = ptr[1] = '#';
+      ptr += 2;
     }
   else
     {
-      name = XNEWVEC (char, strlen (src_name) + 10);
-      name[0] = 0;
+      result = XNEWVEC (char, strlen (src_name) + 10);
+      ptr = result;
     }
 
+  ptr = mangle_name (src_name, ptr);
+  strcpy (ptr, ".gcov");
+  
+  return result;
+}
+
+static char *
+mangle_name (char const *base, char *ptr)
+{
+  size_t len;
+  
   /* Generate the source filename part.  */
-
-  cptr = flag_preserve_paths ? NULL : lbasename (src_name);
-  strcat (name, cptr ? cptr : src_name);
-
-  if (flag_preserve_paths)
+  if (!flag_preserve_paths)
     {
-      /* Convert '/' and '\' to '#', remove '/./', convert '/../' to '#^#',
-	 convert ':' to '~' on DOS based file system.  */
-      char *pnew = name, *pold = name;
-
-      /* First check for leading drive separator.  */
-
-      while (*pold != '\0')
-	{
-#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-	  if (*pold == ':')
-	    {
-	      *pnew++ = '~';
-	      pold++;
-	    }
-	  else
-#endif
-	  if ((*pold == '/'
-		    && (strstr (pold, "/./") == pold
-		        || strstr (pold, "/.\\") == pold))
-		   || (*pold == '\\'
-		       && (strstr (pold, "\\.\\") == pold
-		           || strstr (pold, "\\./") == pold)))
-	      pold += 3;
-	  else if (*pold == '/'
-		   && (strstr (pold, "/../") == pold
-		       || strstr (pold, "/..\\") == pold))
-	    {
-	      strcpy (pnew, "#^#");
-	      pnew += 3;
-	      pold += 4;
-	    }
-	  else if (*pold == '\\'
-		   && (strstr (pold, "\\..\\") == pold
-		       || strstr (pold, "\\../") == pold))
-	    {
-	      strcpy (pnew, "#^#");
-	      pnew += 3;
-	      pold += 4;
-	    }
-	  else if (*pold == '/' || *pold == '\\')
-	    {
-	      *pnew++ = '#';
-	      pold++;
-	    }
-	  else
-	    *pnew++ = *pold++;
-	}
-
-      *pnew = '\0';
+      base = lbasename (base);
+      len = strlen (base);
+      memcpy (ptr, base, len);
+      ptr += len;
     }
+  else
+    {
+      /* Convert '/' to '#', convert '..' to '^',
+	 convert ':' to '~' on DOS based file system.  */
+      const char *probe;
 
-  strcat (name, ".gcov");
-  return name;
+#if HAVE_DOS_BASED_FILE_SYSTEM
+      if (base[0] && base[1] == ':')
+	{
+	  ptr[0] = base[0];
+	  ptr[1] = '~';
+	  ptr += 2;
+	  base += 2;
+	}
+#endif
+      for (; *base; base = probe)
+	{
+	  size_t len;
+
+	  for (probe = base; *probe; probe++)
+	    if (*probe == '/')
+	      break;
+	  len = probe - base;
+	  if (len == 2 && base[0] == '.' && base[1] == '.')
+	    *ptr++ = '^';
+	  else
+	    {
+	      memcpy (ptr, base, len);
+	      ptr += len;
+	    }
+	  if (*probe)
+	    {
+	      *ptr++ = '#';
+	      probe++;
+	    }
+	}
+    }
+  
+  return ptr;
 }
 
 /* Scan through the bb_data for each line in the block, increment
