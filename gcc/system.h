@@ -442,6 +442,10 @@ extern void *sbrk (int);
 extern char *strstr (const char *, const char *);
 #endif
 
+#if defined (HAVE_DECL_STPCPY) && !HAVE_DECL_STPCPY
+extern char *stpcpy (char *, const char *);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
