@@ -5587,6 +5587,9 @@ pa_init_libfuncs (void)
       set_conv_libfunc (ufloat_optab, TFmode, DImode,
 			"_U_Qfcnvxf_udbl_to_quad");
     }
+
+  if (TARGET_SYNC_LIBCALL)
+    init_sync_libfuncs (UNITS_PER_WORD);
 }
 
 /* HP's millicode routines mean something special to the assembler.

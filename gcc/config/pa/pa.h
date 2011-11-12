@@ -74,6 +74,11 @@ extern unsigned long total_code_bytes;
 #define HPUX_LONG_DOUBLE_LIBRARY 0
 #endif
 
+/* Linux kernel atomic operation support.  */
+#ifndef TARGET_SYNC_LIBCALL
+#define TARGET_SYNC_LIBCALL 0
+#endif
+
 /* The following three defines are potential target switches.  The current
    defines are optimal given the current capabilities of GAS and GNU ld.  */
 
