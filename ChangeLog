@@ -1,3 +1,7 @@
+2011-11-12  Andrey Belevantsev  <abel@ispras.ru>
+
+	* MAINTAINERS (Reviewers): Keep the list sorted.
+
 2011-11-11  Andrey Belevantsev  <abel@ispras.ru>
 
 	* MAINTAINERS (Selective Scheduling): Add myself as a reviewer.
