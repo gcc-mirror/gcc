@@ -1,3 +1,15 @@
+2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc-interface/Makefile.in (stamp-gnatlib-$(RTSDIR)): Don't link
+	s-oscons.ads.
+	(OSCONS_CPP, OSCONS_EXTRACT): New.
+	(./bldtools/oscons/xoscons): New Target.
+	($(RTSDIR)/s-oscons.ads): New Target.
+	(gnatlib): Depend on  $(RTSDIR)/s-oscons.ads.
+	* gcc-interface/Make-lang.in (ada/s-oscons.ads) Remove as dependency.
+	* Make-generated.in: Remove machinery to generate xoscons and
+	ada/s-oscons.ads.
+
 2011-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Serious_Errors_Detected): New macro.

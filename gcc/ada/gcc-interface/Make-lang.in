@@ -568,7 +568,7 @@ canadian-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 
-gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: ada/s-oscons.ads force
+gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 	$(MAKE) -C ada $(COMMON_FLAGS_TO_PASS)  \
 	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
