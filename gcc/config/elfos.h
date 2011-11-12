@@ -402,6 +402,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define ELF_STRING_LIMIT	((unsigned) 256)
 
+#define STRING_ASM_OP	"\t.string\t"
+
 /* The routine used to output NUL terminated strings.  We use a special
    version of this for most svr4 targets because doing so makes the
    generated assembly code more compact (and thus faster to assemble)

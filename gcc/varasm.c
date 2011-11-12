@@ -7528,7 +7528,8 @@ default_elf_asm_output_limited_string (FILE *f, const char *s)
   int escape;
   unsigned char c;
 
-  fputs ("\t.string\t\"", f);
+  fputs (STRING_ASM_OP, f);
+  putc ('"', f);
   while (*s != '\0')
     {
       c = *s;
