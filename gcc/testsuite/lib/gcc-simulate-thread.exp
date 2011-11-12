@@ -22,6 +22,11 @@
 # Call 'fail' if a given test printed "FAIL:", otherwise call 'pass'.
 
 proc simulate-thread { args } {
+
+    # ??? Exit immediately if this is alpha*-*-linux* target, single-stepping
+    # executable between ldl_l and stl_c insns in gdb breaks LL/SC chaining.
+    if { [istarget alpha*-*-linux*] } { return }
+
     if { ![isnative] || [is_remote target] } { return }
 
     if { [llength $args] == 1 } {

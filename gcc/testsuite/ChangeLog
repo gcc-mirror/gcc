@@ -1,3 +1,8 @@
+2011-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-simulate-thread.exp (simulate-thread): Do not run on
+	alpha*-*-linux* targets.
+
 2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR testsuite/51059
