@@ -1,3 +1,10 @@
+2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/45233
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address):
+	Only expand a symbol ref. into an access when the entity is defined
+	in the TU.
+
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51077
