@@ -1,6 +1,10 @@
 2011-11-12  Dimitrios Apostolou  <jimis@gmx.net>
 
 	PR bootstrap/51094
+	* config/elfos.h (STRING_ASM_OP): Define.
+	* varasm.c (default_elf_asm_output_limited_string): Use it.
+
+	PR bootstrap/51094
 	* gcc/configure.ac: Check for stpcpy declaration.
 	* system.h: Declare it if not.
 	* config.in, configure: Regenerate.
