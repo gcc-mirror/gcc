@@ -1,5 +1,9 @@
 2011-11-12  Richard Henderson  <rth@redhat.com>
 
+	* builtins.c (expand_builtin_compare_and_swap): If target is const0,
+	don't pass the target to expand_atomic_compare_and_swap.
+	(expand_builtin_atomic_compare_exchange): Likewise.
+
 	* config/sh/linux.h (TARGET_INIT_LIBFUNCS): New.
 	* config/sh/sh.c (sh_init_sync_libfuncs): New.
 
