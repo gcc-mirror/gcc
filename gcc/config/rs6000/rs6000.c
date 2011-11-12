@@ -6169,6 +6169,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 #if TARGET_MACHO
       && DEFAULT_ABI == ABI_DARWIN
       && (flag_pic || MACHO_DYNAMIC_NO_PIC_P)
+      && machopic_symbol_defined_p (x)
 #else
       && DEFAULT_ABI == ABI_V4
       && !flag_pic
