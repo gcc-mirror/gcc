@@ -113,7 +113,7 @@ compatible with any other profiling or test coverage mechanism.
 @section Invoking @command{gcov}
 
 @smallexample
-gcov @r{[}@var{options}@r{]} @var{sourcefiles}
+gcov @r{[}@var{options}@r{]} @var{files}
 @end smallexample
 
 @command{gcov} accepts the following options:
@@ -176,11 +176,12 @@ Do not create the @command{gcov} output file.
 @itemx --long-file-names
 Create long file names for included source files.  For example, if the
 header file @file{x.h} contains code, and was included in the file
-@file{a.c}, then running @command{gcov} on the file @file{a.c} will produce
-an output file called @file{a.c##x.h.gcov} instead of @file{x.h.gcov}.
-This can be useful if @file{x.h} is included in multiple source
-files.  If you use the @samp{-p} option, both the including and
-included file names will be complete path names.
+@file{a.c}, then running @command{gcov} on the file @file{a.c} will
+produce an output file called @file{a.c##x.h.gcov} instead of
+@file{x.h.gcov}.  This can be useful if @file{x.h} is included in
+multiple source files and you want to see the individual
+contributions.  If you use the @samp{-p} option, both the including
+and included file names will be complete path names.
 
 @item -p
 @itemx --preserve-paths
@@ -188,9 +189,9 @@ Preserve complete path information in the names of generated
 @file{.gcov} files.  Without this option, just the filename component is
 used.  With this option, all directories are used, with @samp{/} characters
 translated to @samp{#} characters, @file{.} directory components
-removed and @file{..}
+removed and unremoveable @file{..}
 components renamed to @samp{^}.  This is useful if sourcefiles are in several
-different directories.  It also affects the @samp{-l} option.
+different directories.
 
 @item -f
 @itemx --function-summaries
@@ -203,9 +204,8 @@ Specify either the directory containing the gcov data files, or the
 object path name.  The @file{.gcno}, and
 @file{.gcda} data files are searched for using this option.  If a directory
 is specified, the data files are in that directory and named after the
-source file name, without its extension.  If a file is specified here,
-the data files are named after that file, without its extension.  If this
-option is not supplied, it defaults to the current directory.
+input file name, without its extension.  If a file is specified here,
+the data files are named after that file, without its extension.
 
 @item -u
 @itemx --unconditional-branches
@@ -223,11 +223,16 @@ when you invoked the compiler.  Otherwise it will not be able to locate
 the source files.  @command{gcov} produces files called
 @file{@var{mangledname}.gcov} in the current directory.  These contain
 the coverage information of the source file they correspond to.
-One @file{.gcov} file is produced for each source file containing code,
+One @file{.gcov} file is produced for each source (or header) file
+containing code,
 which was compiled to produce the data files.  The @var{mangledname} part
 of the output file name is usually simply the source file name, but can
 be something more complicated if the @samp{-l} or @samp{-p} options are
 given.  Refer to those options for details.
+
+If you invoke @command{gcov} with multiple input files, the
+contributions from each input file are summed.  Typically you would
+invoke it with the same list of files as the final link of your executable.
 
 The @file{.gcov} files contain the @samp{:} separated fields along with
 program source code.  The format is

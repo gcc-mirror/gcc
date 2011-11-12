@@ -1,3 +1,17 @@
+2011-11-12  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov.c (struct name_map): New.
+	(names, n_names, a_names): New global vars.
+	(print_usage): Adjust usage.
+	(generate_results): Canonicalize main file name.
+	(release_structures): Adjust.
+	(name_search, name_sort): New callbacks.
+	(find_source): Look for and create a canonical name.
+	(canonicalize_name): New.
+	(make_gcov_file_name): Reimplement and fix mangling.
+	(mangle_name): New.
+	* doc/gcov.texi: Update documentation about path preservation.
+
 2011-11-11  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/linux.h (ASM_GENERATE_INTERNAL_LABEL): Delete.
