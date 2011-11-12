@@ -236,15 +236,6 @@ do {									\
 #undef  LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX  "."
 
-/* This is how to store into the string LABEL
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  */
-
-#undef  ASM_GENERATE_INTERNAL_LABEL
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*.L%s%ld", PREFIX, (long)(NUM))
-
 /* DWARF bits.  */
 
 /* Follow Irix 6 and not the Dwarf2 draft in using 64-bit offsets. 
