@@ -1,3 +1,8 @@
+2011-11-11  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/linux.h (ASM_GENERATE_INTERNAL_LABEL): Delete.
+	* config/sparc/linux64.h (ASM_GENERATE_INTERNAL_LABEL): Delete.
+
 2011-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386-protos.h (ix86_maybe_emit_epilogue_vzeroupper):
