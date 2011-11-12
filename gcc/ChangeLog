@@ -1,3 +1,9 @@
+2011-11-12  Richard Henderson  <rth@redhat.com>
+
+	* config/pa/pa-linux.h (TARGET_SYNC_LIBCALL): New.
+	* config/pa/pa.h (TARGET_SYNC_LIBCALL): New default.
+	* config/pa/pa.c (pa_init_libfuncs): Use init_sync_libfuncs.
+
 2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/45233

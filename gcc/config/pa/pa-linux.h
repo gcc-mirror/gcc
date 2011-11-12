@@ -136,3 +136,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Linux always uses gas.  */
 #undef TARGET_GAS
 #define TARGET_GAS 1
+
+#undef TARGET_SYNC_LIBCALL
+#define TARGET_SYNC_LIBCALL 1
