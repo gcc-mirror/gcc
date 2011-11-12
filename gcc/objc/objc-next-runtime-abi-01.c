@@ -2871,12 +2871,15 @@ make_err_class:
   return eh_id;
 }
 
+/* For NeXT ABI 0 and 1, the personality routines are just those of the 
+   underlying language.  */
+
 static tree
 objc_eh_personality (void)
 {
   if (!objc_eh_personality_decl)
 #ifndef OBJCPLUS
-    objc_eh_personality_decl = build_personality_function ("objc");
+    objc_eh_personality_decl = build_personality_function ("gcc");
 #else
     objc_eh_personality_decl = build_personality_function ("gxx");
 #endif
