@@ -1,3 +1,9 @@
+2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR testsuite/51059
+	* gcc.misc-tests/gcov-14.c (dg-options): Force flat namespace for
+	Darwin targets and allow external symbols to be undefined.
+
 2011-11-12  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.misc-tests/gcov-15.c: New.

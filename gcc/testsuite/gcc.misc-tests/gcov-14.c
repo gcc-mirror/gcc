@@ -1,6 +1,8 @@
 /* Test gcov extern inline.  */
 
 /* { dg-options "-O2 -fprofile-arcs -ftest-coverage" } */
+/* The following line arranges that Darwin has behavior like elf weak import.  */
+/* { dg-options "-O2 -fprofile-arcs -ftest-coverage  -flat_namespace -undefined suppress" { target *-*-darwin* }  } */
 /* { dg-require-weak "" } */
 /* { dg-do run { target native } } */
 
