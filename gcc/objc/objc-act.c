@@ -3136,9 +3136,8 @@ objc_build_string_object (tree string)
   struct string_descriptor *desc, key;
   void **loc;
 
-  /* Prep the string argument.  */
-  string = fix_string_type (string);
-  TREE_SET_CODE (string, STRING_CST);
+  /* We should be passed a STRING_CST.  */
+  gcc_checking_assert (TREE_CODE (string) == STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;
 
   /* The target may have different ideas on how to construct an ObjC string 
