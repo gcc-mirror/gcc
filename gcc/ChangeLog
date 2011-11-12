@@ -1,3 +1,8 @@
+2011-11-12  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/50822
+	* cgraphunit.c (output_weakrefs): Output really only weakrefs.
+
 2011-11-12  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov.c (struct name_map): New.

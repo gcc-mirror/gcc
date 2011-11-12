@@ -2101,13 +2101,15 @@ output_weakrefs (void)
   struct varpool_node *vnode;
   for (node = cgraph_nodes; node; node = node->next)
     if (node->alias && DECL_EXTERNAL (node->decl)
-        && !TREE_ASM_WRITTEN (node->decl))
+        && !TREE_ASM_WRITTEN (node->decl)
+	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->decl)))
       assemble_alias (node->decl,
 		      node->thunk.alias ? DECL_ASSEMBLER_NAME (node->thunk.alias)
 		      : get_alias_symbol (node->decl));
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     if (vnode->alias && DECL_EXTERNAL (vnode->decl)
-        && !TREE_ASM_WRITTEN (vnode->decl))
+        && !TREE_ASM_WRITTEN (vnode->decl)
+	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->decl)))
       assemble_alias (vnode->decl,
 		      vnode->alias_of ? DECL_ASSEMBLER_NAME (vnode->alias_of)
 		      : get_alias_symbol (vnode->decl));
