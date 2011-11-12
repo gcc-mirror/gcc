@@ -1,5 +1,9 @@
 2011-11-12  Richard Henderson  <rth@redhat.com>
 
+	* config/rs6000/rs6000.md (fix_trunc<SFDF>si2_stfiwx): Use 
+	nonimmediate_operand for the destination.
+	(fixuns_trunc<SFDF>si2_stfiwx): Likewise.
+
 	* builtins.c (expand_builtin_compare_and_swap): If target is const0,
 	don't pass the target to expand_atomic_compare_and_swap.
 	(expand_builtin_atomic_compare_exchange): Likewise.
