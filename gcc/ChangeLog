@@ -1,5 +1,8 @@
 2011-11-12  Richard Henderson  <rth@redhat.com>
 
+	* config/sh/linux.h (TARGET_INIT_LIBFUNCS): New.
+	* config/sh/sh.c (sh_init_sync_libfuncs): New.
+
 	* config/pa/pa-linux.h (TARGET_SYNC_LIBCALL): New.
 	* config/pa/pa.h (TARGET_SYNC_LIBCALL): New default.
 	* config/pa/pa.c (pa_init_libfuncs): Use init_sync_libfuncs.
