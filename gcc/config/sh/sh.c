@@ -302,6 +302,8 @@ static void sh_trampoline_init (rtx, tree, rtx);
 static rtx sh_trampoline_adjust_address (rtx);
 static void sh_conditional_register_usage (void);
 static bool sh_legitimate_constant_p (enum machine_mode, rtx);
+
+static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
 static const struct attribute_spec sh_attribute_table[] =
 {
@@ -12498,5 +12500,11 @@ sh_legitimate_constant_p (enum machine_mode mode, rtx x)
 }
 
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;
+
+static void
+sh_init_sync_libfuncs (void)
+{
+  init_sync_libfuncs (UNITS_PER_WORD);
+}
 
 #include "gt-sh.h"
