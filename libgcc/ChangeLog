@@ -1,3 +1,8 @@
+2011-11-12  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/linux-unwind.h (frob_update_context): Properly
+	cast the pointer argument to _Unwind_SetGRPtr.
+
 2011-11-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/spu/t-elf (LIB2ADD): Use LIB2FUNCS_EXCLUDE instead.
