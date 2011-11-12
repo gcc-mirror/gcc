@@ -5144,7 +5144,6 @@ expand_builtin_sync_operation (enum machine_mode mode, tree exp,
 	case BUILT_IN_SYNC_FETCH_AND_NAND_4:
 	case BUILT_IN_SYNC_FETCH_AND_NAND_8:
 	case BUILT_IN_SYNC_FETCH_AND_NAND_16:
-
 	  if (warned_f_a_n)
 	    break;
 
@@ -5158,7 +5157,6 @@ expand_builtin_sync_operation (enum machine_mode mode, tree exp,
 	case BUILT_IN_SYNC_NAND_AND_FETCH_4:
 	case BUILT_IN_SYNC_NAND_AND_FETCH_8:
 	case BUILT_IN_SYNC_NAND_AND_FETCH_16:
-
 	  if (warned_n_a_f)
 	    break;
 
@@ -5190,16 +5188,24 @@ expand_builtin_compare_and_swap (enum machine_mode mode, tree exp,
 				 bool is_bool, rtx target)
 {
   rtx old_val, new_val, mem;
+  rtx *pbool, *poval;
 
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   old_val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 1), mode);
   new_val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 2), mode);
 
-  if (!expand_atomic_compare_and_swap ((is_bool ? &target : NULL),
-				       (is_bool ? NULL : &target),
-				       mem, old_val, new_val, false,
-				       MEMMODEL_SEQ_CST, MEMMODEL_SEQ_CST))
+  pbool = poval = NULL;
+  if (target != const0_rtx)
+    {
+      if (is_bool)
+	pbool = &target;
+      else
+	poval = &target;
+    }
+  if (!expand_atomic_compare_and_swap (pbool, poval, mem, old_val, new_val,
+				       false, MEMMODEL_SEQ_CST,
+				       MEMMODEL_SEQ_CST))
     return NULL_RTX;
 
   return target;
@@ -5338,8 +5344,9 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
 
   oldval = copy_to_reg (gen_rtx_MEM (mode, expect));
 
-  if (!expand_atomic_compare_and_swap (&target, &oldval, mem, oldval,
-				       desired, is_weak, success, failure))
+  if (!expand_atomic_compare_and_swap ((target == const0_rtx ? NULL : &target),
+				       &oldval, mem, oldval, desired,
+				       is_weak, success, failure))
     return NULL_RTX;
 
   emit_move_insn (gen_rtx_MEM (mode, expect), oldval);
