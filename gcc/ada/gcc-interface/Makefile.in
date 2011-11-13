@@ -2447,13 +2447,44 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	$(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	          $(LN_S) $(fsrcpfx)ada/$(word 2,$(subst <, ,$(PAIR))) \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
-# Copy generated target dependent sources
-	$(RM) $(RTSDIR)/s-oscons.ads
-	(cd $(RTSDIR); $(LN_S) ../s-oscons.ads s-oscons.ads)
+# Copy tsystem.h
+	$(CP) $(srcdir)/tsystem.h $(RTSDIR)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 	touch ../stamp-gnatlib1-$(RTSDIR)
 
 # GNULLI End #############################################################
+
+ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
+OSCONS_CPP=../../$(DECC) -E /comment=as_is -DNATIVE \
+             -DTARGET='""$(target)""' $(fsrcpfx)ada/s-oscons-tmplt.c
+
+OSCONS_EXTRACT=../../$(DECC) -DNATIVE \
+                 -DTARGET='""$(target)""' $(fsrcpfx)ada/s-oscons-tmplt.c ; \
+  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
+  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
+
+else
+# GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
+# for running it from $(RTSDIR)
+OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
+  | sed -e 's^\./xgcc^../../xgcc^' -e 's^-B./^-B../../^'`
+OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
+  -DTARGET=\"$(target)\" $(fsrcpfx)ada/s-oscons-tmplt.c > s-oscons-tmplt.i
+OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
+endif
+
+./bldtools/oscons/xoscons: xoscons.adb xutil.ads xutil.adb
+	-$(MKDIR) ./bldtools/oscons
+	$(RM) $(addprefix ./bldtools/oscons/,$(notdir $^))
+	$(CP) $^ ./bldtools/oscons
+	(cd ./bldtools/oscons ; gnatmake -q xoscons)
+
+$(RTSDIR)/s-oscons.ads: ../stamp-gnatlib1-$(RTSDIR) s-oscons-tmplt.c gsocket.h ./bldtools/oscons/xoscons
+	$(RM) $(RTSDIR)/s-oscons-tmplt.i $(RTSDIR)/s-oscons-tmplt.s
+	(cd $(RTSDIR) ; \
+	    $(OSCONS_CPP) ; \
+	    $(OSCONS_EXTRACT) ; \
+	    ../bldtools/oscons/xoscons)
 
 # Don't use semicolon separated shell commands that involve list expansions.
 # The semicolon triggers a call to DCL on VMS and DCL can't handle command
@@ -2461,7 +2492,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 # Example: cd $(RTSDIR); ar rc libfoo.a $(LONG_LIST_OF_OBJS)
 # is guaranteed to overflow the buffer.
 
-gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR)
+gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR) $(RTSDIR)/s-oscons.ads
 	$(MAKE) -C $(RTSDIR) \
 		CC="`echo \"$(GCC_FOR_TARGET)\" \
 		| sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'`" \

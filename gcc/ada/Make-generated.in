@@ -64,37 +64,6 @@ $(ADA_GEN_SUBDIR)/nmake.ads :  $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nma
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/nmake_s
 	(cd $(ADA_GEN_SUBDIR)/bldtools/nmake_s; gnatmake -q xnmake ; ./xnmake -s ../../nmake.ads )
 
-ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
-OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
-             -DTARGET='""$(target)""' s-oscons-tmplt.c
-
-OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
-                 -DTARGET='""$(target)""' s-oscons-tmplt.c ; \
-  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
-  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
-
-else
-# GCC_FOR_TARGET has paths relative to the gcc directory, so we need to ajust
-# for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons
-OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
-  | sed -e 's^\./xgcc^../../../xgcc^' -e 's^-B./^-B../../../^'`
-OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
-  -DTARGET=\"$(target)\" s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
-endif
-
-$(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/gsocket.h $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
-	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/oscons
-	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/oscons/,$(notdir $^))
-	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/oscons
-	(cd $(ADA_GEN_SUBDIR)/bldtools/oscons ; gnatmake -q xoscons ; \
-		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
-		$(OSCONS_CPP) ; \
-		$(OSCONS_EXTRACT) ; \
-		./xoscons ; \
-		$(RM) ../../s-oscons.ads ; \
-		$(CP) s-oscons.ads s-oscons.h ../../)
-
 $(ADA_GEN_SUBDIR)/sdefault.adb: $(ADA_GEN_SUBDIR)/stamp-sdefault ; @true
 $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb

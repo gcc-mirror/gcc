@@ -1,3 +1,9 @@
+2011-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Backport from mainline r181319
+	Makefile.in: Change dependency on oscons to depend on the generator
+	tool.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.

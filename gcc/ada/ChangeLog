@@ -1,3 +1,15 @@
+2011-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Backport from mainline r181319
+	* gcc-interface/Makefile.in (stamp-gnatlib-$(RTSDIR)): Don't link
+	s-oscons.ads.
+	(OSCONS_CPP, OSCONS_EXTRACT): New.
+	(./bldtools/oscons/xoscons): New Target.
+	($(RTSDIR)/s-oscons.ads): New Target.
+	(gnatlib): Depend on  $(RTSDIR)/s-oscons.ads.
+	* Make-generated.in: Remove machinery to generate xoscons and
+	ada/s-oscons.ads.
+	
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.
