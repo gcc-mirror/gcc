@@ -173,10 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Up>
     inline _GLIBCXX_CONSTEXPR
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     atan2(_Tp __y, _Up __x)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -311,10 +308,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Up>
     inline _GLIBCXX_CONSTEXPR
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     fmod(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -439,10 +433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Up>
     inline _GLIBCXX_CONSTEXPR
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     pow(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -1256,11 +1247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_copysignl(__x, __y); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     copysign(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -1332,11 +1319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fdiml(__x, __y); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     fdim(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -1352,12 +1335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fmal(__x, __y, __z); }
 
   template<typename _Tp, typename _Up, typename _Vp>
-    constexpr
-    typename __gnu_cxx::__promote_3<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value
-				    && __is_arithmetic<_Vp>::__value,
-				    _Tp>::__type, _Up, _Vp>::__type
+    constexpr typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type
     fma(_Tp __x, _Up __y, _Vp __z)
     {
       typedef typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type __type;
@@ -1373,11 +1351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fmaxl(__x, __y); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     fmax(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -1393,11 +1367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fminl(__x, __y); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     fmin(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -1413,12 +1383,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_hypotl(__x, __y); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
-     hypot(_Tp __x, _Up __y)
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    hypot(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return hypot(__type(__x), __type(__y));
@@ -1575,11 +1541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_nextafterl(__x, __y); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     nextafter(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -1609,11 +1571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_remainderl(__x, __y); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     remainder(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -1629,11 +1587,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_remquol(__x, __y, __pquo); }
 
   template<typename _Tp, typename _Up>
-    constexpr
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     remquo(_Tp __x, _Up __y, int* __pquo)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
