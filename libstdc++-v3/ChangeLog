@@ -1,3 +1,10 @@
+2011-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51060
+	* testsuite/25_algorithms/max/1.cc (test01): Drop references.
+	* testsuite/25_algorithms/min/1.cc (test01): Drop references.
+	* testsuite/25_algorithms/minmax/1.cc (test01): Drop references.
+
 2011-11-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51083

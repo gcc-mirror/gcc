@@ -25,13 +25,13 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  const int& x = std::max(1, 2);
-  const int& y = std::max(4, 3);
+  const int x = std::max(1, 2);
+  const int y = std::max(4, 3);
   VERIFY( x == 2 );
   VERIFY( y == 4 );
 
-  const int& xc = std::max(1, 2, std::greater<int>());
-  const int& yc = std::max(4, 3, std::greater<int>());
+  const int xc = std::max(1, 2, std::greater<int>());
+  const int yc = std::max(4, 3, std::greater<int>());
   VERIFY( xc == 1 );
   VERIFY( yc == 3 );
 }
