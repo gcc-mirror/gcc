@@ -1,5 +1,8 @@
 2011-11-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/986
+	* g++.dg/warn/ref-temp1.C: New.
+
 	PR c++/51060
 	* g++.dg/opt/stack2.C: New.
 

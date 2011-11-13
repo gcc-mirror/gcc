@@ -1,5 +1,10 @@
 2011-11-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/986
+	* call.c (set_up_extended_ref_temp): Warn about references
+	bound to non-static reference members.
+	* init.c (perform_member_init): Pass in the member.
+
 	PR c++/51060
 	* cp-gimplify.c (cp_gimplify_expr): Leave clobbers alone.
 
