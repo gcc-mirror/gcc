@@ -1,3 +1,10 @@
+2011-11-13  Oleg Endo  <oleg.endo@t-online.de>
+
+	* gcc.target/sh/pr21255-2-ml.c: Skip if -mb or -m5* is
+	specified.  Remove redundant runtime checks.
+	* gcc.target/sh/20080410-1.c: Skip if -mb is specified.
+	Allow for other than -m4.  Fix typos in comments.
+
 2011-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/986

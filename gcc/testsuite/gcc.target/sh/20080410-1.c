@@ -1,8 +1,9 @@
 /* { dg-do compile { target "sh-*-*" } } */
-/* { dg-options "-O0 -m4 -ml" } */
+/* { dg-options "-O0" } */
+/* { dg-skip-if "" { "sh*-*-*" } "-mb" "" }  */
 /* { dg-final { scan-assembler-not "add\tr0,r0" } } */
 
-/* This test checks that chain reloads conflict.  I they don't
+/* This test checks chain reloads conflicts.  If they don't
    conflict, the same hard register R0 is used for the both reloads
    but in this case the second reload needs an intermediate register
    (which is the reload register).  As the result we have the

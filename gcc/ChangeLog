@@ -1,3 +1,12 @@
+2011-11-13  Oleg Endo  <oleg.endo@t-online.de>
+
+	PR target/50694
+	* config/sh/sh.h (IS_LITTLE_ENDIAN_OPTION, UNSUPPORTED_SH2A):
+	New macros.
+	(DRIVER_SELF_SPECS): Use new macros to filter out
+	unsupported options taking the default configuration into
+	account.
+
 2011-11-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/install.texi (Specific): Fix anchor for
