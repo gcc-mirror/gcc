@@ -1177,7 +1177,7 @@ A quick read of the relevant part of the GCC
 	<itemizedlist>
 	  <listitem>
 	    <para>
-	      GNU ld (default on Linux):
+	      GNU ld (default on GNU/Linux):
               <literal>-Wl,-rpath,</literal><filename class="directory">destdir/lib</filename>
 	    </para>
 	  </listitem>
@@ -1207,7 +1207,7 @@ A quick read of the relevant part of the GCC
 	  On some platforms the system administrator can configure the
 	  dynamic linker to always look for libraries in
 	  <filename class="directory">destdir/lib</filename>, for example
-	  by using the <command>ldconfig</command> utility on Linux
+	  by using the <command>ldconfig</command> utility on GNU/Linux
 	  or the <command>crle</command> utility on Solaris. This is a
 	  system-wide change which can make the system unusable so if you
 	  are unsure then use one of the other methods described above.
@@ -1269,7 +1269,7 @@ A quick read of the relevant part of the GCC
       to display how ad hoc this is: On Solaris, both -pthreads and
       -threads (with subtly different meanings) are honored.  On OSF,
       -pthread and -threads (with subtly different meanings) are
-      honored.  On Linux/i386, -pthread is honored.  On FreeBSD,
+      honored.  On GNU/Linux i386, -pthread is honored.  On FreeBSD,
       -pthread is honored.  Some other ports use other switches.
       AFAIK, none of this is properly documented anywhere other than
       in ``gcc -dumpspecs'' (look at lib and cpp entries).

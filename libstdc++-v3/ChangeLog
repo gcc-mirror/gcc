@@ -1,3 +1,7 @@
+2011-11-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* using.xml: Use GNU/Linux.
+
 2011-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51060
