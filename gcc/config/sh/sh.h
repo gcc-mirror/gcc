@@ -417,7 +417,23 @@ do { \
 #define SH_DIV_STR_FOR_SIZE "call"
 #endif
 
-#define DRIVER_SELF_SPECS "%{m2a:%{ml:%eSH2a does not support little-endian}}"
+/* SH2A does not support little-endian.  Catch such combinations
+   taking into account the default configuration.  */
+#if TARGET_ENDIAN_DEFAULT == MASK_BIG_ENDIAN
+#define IS_LITTLE_ENDIAN_OPTION "%{ml:"
+#else
+#define IS_LITTLE_ENDIAN_OPTION "%{!mb:"
+#endif
+ 
+#if TARGET_CPU_DEFAULT & MASK_HARD_SH2A
+#define UNSUPPORTED_SH2A IS_LITTLE_ENDIAN_OPTION \
+"%{m2a*|!m1:%{!m2*:%{!m3*:%{!m4*:{!m5*:%eSH2a does not support little-endian}}}}}}"
+#else
+#define UNSUPPORTED_SH2A IS_LITTLE_ENDIAN_OPTION \
+"%{m2a*:%eSH2a does not support little-endian}}"
+#endif
+
+#define DRIVER_SELF_SPECS UNSUPPORTED_SH2A
 
 #define ASSEMBLER_DIALECT assembler_dialect
 
