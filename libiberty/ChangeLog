@@ -1,3 +1,17 @@
+2011-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/48108
+	Backport from mainline r180523
+	* simple-object-mach-o.c  (GNU_WRAPPER_SECTS, GNU_WRAPPER_INDEX,
+	GNU_WRAPPER_NAMES): New macros.
+	(simple_object_mach_o_segment): Handle wrapper scheme.
+	(simple_object_mach_o_write_section_header): Allow the segment name
+	to be supplied.
+	(simple_object_mach_o_write_segment): Handle wrapper scheme.  Ensure
+	that the top-level segment name in the load command is empty.
+	(simple_object_mach_o_write_to_file): Determine the number of
+	sections during segment output, use that in writing the header.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.

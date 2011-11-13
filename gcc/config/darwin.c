@@ -1753,19 +1753,51 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
   return (!strncmp ((const char *)p, "_OBJC_", 6));
 }
 
-/* LTO support for Mach-O.  */
+/* LTO support for Mach-O.
 
-/* Section names for LTO sections.  */
-static unsigned int lto_section_names_offset = 0;
+   This version uses three mach-o sections to encapsulate the (unlimited
+   number of) lto sections.
 
-/* This is the obstack which we use to allocate the many strings.  */
-static struct obstack lto_section_names_obstack;
+   __GNU_LTO, __lto_sections  contains the concatented GNU LTO section data.
+   __GNU_LTO, __section_names contains the GNU LTO section names.
+   __GNU_LTO, __section_index contains an array of values that index these.
 
-/* Segment name for LTO sections.  */
+   Indexed thus:
+     <section offset from the start of __GNU_LTO, __lto_sections>,
+     <section length>
+     <name offset from the start of __GNU_LTO, __section_names,
+     <name length>.
+
+   At present, for both m32 and m64 mach-o files each of these fields is
+   represented  by a uint32_t.  This is because, AFAICT, a mach-o object
+   cannot exceed 4Gb because the section_64 offset field (see below) is 32bits.
+
+    uint32_t offset;
+   "offset  An integer specifying the offset to this section in the file."  */
+
+/* Count lto section numbers.  */
+static unsigned int lto_section_num = 0;
+
+/* A vector of information about LTO sections, at present, we only have
+   the name.  TODO: see if we can get the data length somehow.  */
+typedef struct GTY (()) darwin_lto_section_e {
+  const char *sectname;
+} darwin_lto_section_e ;
+DEF_VEC_O(darwin_lto_section_e);
+DEF_VEC_ALLOC_O(darwin_lto_section_e, gc);
+
+static GTY (()) VEC (darwin_lto_section_e, gc) * lto_section_names;
+
+/* Segment for LTO data.  */
 #define LTO_SEGMENT_NAME "__GNU_LTO"
 
-/* Section name for LTO section names section.  */
-#define LTO_NAMES_SECTION "__section_names"
+/* Section wrapper scheme (used here to wrap the unlimited number of LTO
+   sections into three Mach-O ones).
+   NOTE: These names MUST be kept in sync with those in
+	 libiberty/simple-object-mach-o.  */
+#define LTO_SECTS_SECTION "__wrapper_sects"
+#define LTO_NAMES_SECTION "__wrapper_names"
+#define LTO_INDEX_SECTION "__wrapper_index"
 
 /* File to temporarily store LTO data.  This is appended to asm_out_file
    in darwin_end_file.  */
@@ -1808,37 +1840,38 @@ darwin_asm_named_section (const char *name,
 			  unsigned int flags,
 			  tree decl ATTRIBUTE_UNUSED)
 {
-  /* LTO sections go in a special segment __GNU_LTO.  We want to replace the
-     section name with something we can use to represent arbitrary-length
-     names (section names in Mach-O are at most 16 characters long).  */
+  /* LTO sections go in a special section that encapsulates the (unlimited)
+     number of GNU LTO sections within a single mach-o one.  */
   if (strncmp (name, LTO_SECTION_NAME_PREFIX,
 	       strlen (LTO_SECTION_NAME_PREFIX)) == 0)
     {
+      darwin_lto_section_e e;
       /* We expect certain flags to be set...  */
       gcc_assert ((flags & (SECTION_DEBUG | SECTION_NAMED))
 		  == (SECTION_DEBUG | SECTION_NAMED));
 
-      /* Add the section name to the things to output when we end the
-	 current assembler output file.
-	 This is all not very efficient, but that doesn't matter -- this
-	 shouldn't be a hot path in the compiler...  */
-      obstack_1grow (&lto_section_names_obstack, '\t');
-      obstack_grow (&lto_section_names_obstack, ".ascii ", 7);
-      obstack_1grow (&lto_section_names_obstack, '"');
-      obstack_grow (&lto_section_names_obstack, name, strlen (name));
-      obstack_grow (&lto_section_names_obstack, "\\0\"\n", 4);
-
-      /* Output the dummy section name.  */
-      fprintf (asm_out_file, "\t# %s\n", name);
-      fprintf (asm_out_file, "\t.section %s,__%08X,regular,debug\n",
-	       LTO_SEGMENT_NAME, lto_section_names_offset);
-
-      /* Update the offset for the next section name.  Make sure we stay
-	 within reasonable length.  */  
-      lto_section_names_offset += strlen (name) + 1;
-      gcc_assert (lto_section_names_offset > 0
-		  && lto_section_names_offset < ((unsigned) 1 << 31));
-    }
+      /* Switch to our combined section.  */
+      fprintf (asm_out_file, "\t.section %s,%s,regular,debug\n",
+	       LTO_SEGMENT_NAME, LTO_SECTS_SECTION);
+      /* Output a label for the start of this sub-section.  */
+      fprintf (asm_out_file, "L_GNU_LTO%d:\t;# %s\n",
+	       lto_section_num, name);
+      /* We have to jump through hoops to get the values of the intra-section
+         offsets... */
+      fprintf (asm_out_file, "\t.set L$gnu$lto$offs%d,L_GNU_LTO%d-L_GNU_LTO0\n",
+	       lto_section_num, lto_section_num);
+      fprintf (asm_out_file,
+	       "\t.set L$gnu$lto$size%d,L_GNU_LTO%d-L_GNU_LTO%d\n",
+	       lto_section_num, lto_section_num+1, lto_section_num);
+      lto_section_num++;
+      e.sectname = xstrdup (name);
+      /* Keep the names, we'll need to make a table later.
+         TODO: check that we do not revisit sections, that would break
+         the assumption of how this is done.  */
+      if (lto_section_names == NULL)
+        lto_section_names = VEC_alloc (darwin_lto_section_e, gc, 16);
+      VEC_safe_push (darwin_lto_section_e, gc, lto_section_names, &e);
+   }
   else if (strncmp (name, "__DWARF,", 8) == 0)
     darwin_asm_dwarf_section (name, flags, decl);
   else
@@ -2711,16 +2744,12 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
   darwin_asm_output_dwarf_delta (file, size, lab, sname);
 }
 
-/* Called from the within the TARGET_ASM_FILE_START for each target. 
-  Initialize the stuff we need for LTO long section names support.  */
+/* Called from the within the TARGET_ASM_FILE_START for each target.  */
 
 void
 darwin_file_start (void)
 {
-  /* We fill this obstack with the complete section text for the lto section
-     names to write in darwin_file_end.  */
-  obstack_init (&lto_section_names_obstack);
-  lto_section_names_offset = 0;
+  /* Nothing to do.  */
 }
 
 /* Called for the TARGET_ASM_FILE_END hook.
@@ -2731,8 +2760,6 @@ darwin_file_start (void)
 void
 darwin_file_end (void)
 {
-  const char *lto_section_names;
-
   machopic_finish (asm_out_file);
   if (strcmp (lang_hooks.name, "GNU C++") == 0)
     {
@@ -2762,6 +2789,13 @@ darwin_file_end (void)
 	  lto_asm_txt = buf = (char *) xmalloc (n + 1);
 	  while (fgets (lto_asm_txt, n, lto_asm_out_file))
 	    fputs (lto_asm_txt, asm_out_file);
+	  /* Put a termination label.  */
+	  fprintf (asm_out_file, "\t.section %s,%s,regular,debug\n",
+		   LTO_SEGMENT_NAME, LTO_SECTS_SECTION);
+	  fprintf (asm_out_file, "L_GNU_LTO%d:\t;# end of lto\n",
+		   lto_section_num);
+	  /* Make sure our termination label stays in this section.  */
+	  fputs ("\t.space\t1\n", asm_out_file);
 	}
 
       /* Remove the temporary file.  */
@@ -2770,21 +2804,50 @@ darwin_file_end (void)
       free (lto_asm_out_name);
     }
 
-  /* Finish the LTO section names obstack.  Don't output anything if
-     there are no recorded section names.  */
-  obstack_1grow (&lto_section_names_obstack, '\0');
-  lto_section_names = XOBFINISH (&lto_section_names_obstack, const char *);
-  if (strlen (lto_section_names) > 0)
+  /* Output the names and indices.  */
+  if (lto_section_names && VEC_length (darwin_lto_section_e, lto_section_names))
     {
-      fprintf (asm_out_file,
-	       "\t.section %s,%s,regular,debug\n",
+      int count;
+      darwin_lto_section_e *ref;
+      /* For now, we'll make the offsets 4 bytes and unaligned - we'll fix
+         the latter up ourselves.  */
+      const char *op = integer_asm_op (4,0);
+
+      /* Emit the names.  */
+      fprintf (asm_out_file, "\t.section %s,%s,regular,debug\n",
 	       LTO_SEGMENT_NAME, LTO_NAMES_SECTION);
-      fprintf (asm_out_file,
-	       "\t# Section names in %s are offsets into this table\n",
-	       LTO_SEGMENT_NAME);
-      fprintf (asm_out_file, "%s\n", lto_section_names);
+      FOR_EACH_VEC_ELT (darwin_lto_section_e, lto_section_names, count, ref)
+	{
+	  fprintf (asm_out_file, "L_GNU_LTO_NAME%d:\n", count);
+         /* We have to jump through hoops to get the values of the intra-section
+            offsets... */
+	  fprintf (asm_out_file,
+		   "\t.set L$gnu$lto$noff%d,L_GNU_LTO_NAME%d-L_GNU_LTO_NAME0\n",
+		   count, count);
+	  fprintf (asm_out_file,
+		   "\t.set L$gnu$lto$nsiz%d,L_GNU_LTO_NAME%d-L_GNU_LTO_NAME%d\n",
+		   count, count+1, count);
+	  fprintf (asm_out_file, "\t.asciz\t\"%s\"\n", ref->sectname);
+	}
+      fprintf (asm_out_file, "L_GNU_LTO_NAME%d:\t;# end\n", lto_section_num);
+      /* make sure our termination label stays in this section.  */
+      fputs ("\t.space\t1\n", asm_out_file);
+
+      /* Emit the Index.  */
+      fprintf (asm_out_file, "\t.section %s,%s,regular,debug\n",
+	       LTO_SEGMENT_NAME, LTO_INDEX_SECTION);
+      fputs ("\t.align\t2\n", asm_out_file);
+      fputs ("# Section offset, Section length, Name offset, Name length\n",
+	     asm_out_file);
+      FOR_EACH_VEC_ELT (darwin_lto_section_e, lto_section_names, count, ref)
+	{
+	  fprintf (asm_out_file, "%s L$gnu$lto$offs%d\t;# %s\n",
+		   op, count, ref->sectname);
+	  fprintf (asm_out_file, "%s L$gnu$lto$size%d\n", op, count);
+	  fprintf (asm_out_file, "%s L$gnu$lto$noff%d\n", op, count);
+	  fprintf (asm_out_file, "%s L$gnu$lto$nsiz%d\n", op, count);
+	}
     }
-  obstack_free (&lto_section_names_obstack, NULL);
 
   /* If we have section anchors, then we must prevent the linker from
      re-arranging data.  */
