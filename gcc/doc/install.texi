@@ -4476,7 +4476,7 @@ both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 @html
 <hr />
 @end html
-@heading @anchor{x86-64-x-solaris2.10}x86_64-*-solaris2.1[0-9]*
+@heading @anchor{x86-64-x-solaris210}x86_64-*-solaris2.1[0-9]*
 
 GCC also supports the x86-64 architecture implemented by the AMD64
 processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}) on
