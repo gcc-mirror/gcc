@@ -1,3 +1,14 @@
+2011-11-13  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov.c (source_prefix, source_length): New globals.
+	(flag_relative_only): Likewise.
+	(print_usage, options, process_args): Update.
+	(generate_results): Use coverage.name, check
+	flag_relative_only. Adjust messages.
+	(find_source): Check source_prefix.
+	(output_lines): Use coverage.name, adjust messages.
+	* doc/gcov.texi (Invoking Gcov): Document new options.
+
 2011-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51060

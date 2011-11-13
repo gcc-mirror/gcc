@@ -333,6 +333,17 @@ static int flag_function_summary = 0;
 
 static char *object_directory = 0;
 
+/* Source directory prefix.  This is removed from source pathnames
+   that match, when generating the output file name.  */
+
+static char *source_prefix = 0;
+static size_t source_length = 0;
+
+/* Only show data for sources with relative pathnames.  Absolute ones
+   usually indicate a system header file, which although it may
+   contain inline functions, is usually uninteresting.  */
+static int flag_relative_only = 0;
+
 /* Preserve all pathname components. Needed when object files and
    source files are in subdirectories. '/' is mangled as '#', '.' is
    elided and '..' mangled to '^'.  */
@@ -441,6 +452,8 @@ print_usage (int error_p)
                                     source files\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n");
+  fnotice (file, "  -s, --source-prefix DIR         Source prefix to elide\n");
+  fnotice (file, "  -r, --relative-only             Only show data for relative sources\n");
   fnotice (file, "  -p, --preserve-paths            Preserve all pathname components\n");
   fnotice (file, "  -u, --unconditional-branches    Show unconditional branch counts too\n");
   fnotice (file, "  -d, --display-progress          Display progress information\n");
@@ -475,8 +488,10 @@ static const struct option options[] =
   { "long-file-names",      no_argument,       NULL, 'l' },
   { "function-summaries",   no_argument,       NULL, 'f' },
   { "preserve-paths",       no_argument,       NULL, 'p' },
+  { "relative-only",        no_argument,       NULL, 'r' },
   { "object-directory",     required_argument, NULL, 'o' },
   { "object-file",          required_argument, NULL, 'o' },
+  { "source-prefix",        required_argument, NULL, 's' },
   { "unconditional-branches", no_argument,     NULL, 'u' },
   { "display-progress",     no_argument,       NULL, 'd' },
   { 0, 0, 0, 0 }
@@ -489,7 +504,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  while ((opt = getopt_long (argc, argv, "abcdfhlno:puv", options, NULL)) != -1)
+  while ((opt = getopt_long (argc, argv, "abcdfhlno:s:pruv", options, NULL)) != -1)
     {
       switch (opt)
 	{
@@ -516,6 +531,13 @@ process_args (int argc, char **argv)
 	  break;
 	case 'o':
 	  object_directory = optarg;
+	  break;
+	case 's':
+	  source_prefix = optarg;
+	  source_length = strlen (source_prefix);
+	  break;
+	case 'r':
+	  flag_relative_only = 1;
 	  break;
 	case 'p':
 	  flag_preserve_paths = 1;
@@ -641,33 +663,47 @@ generate_results (const char *file_name)
       name_map_t *name_map = (name_map_t *)bsearch
 	(file_name, names, n_names, sizeof (*names), name_search);
       if (name_map)
-	file_name = sources[name_map->src].name;
+	file_name = sources[name_map->src].coverage.name;
       else
 	file_name = canonicalize_name (file_name);
     }
   
   for (ix = n_sources, src = sources; ix--; src++)
     {
+      if (flag_relative_only)
+	{
+	  /* Ignore this source, if it is an absolute path (after
+	     source prefix removal).  */
+	  char first = src->coverage.name[0];
+      
+#if HAVE_DOS_BASED_FILE_SYSTEM
+	  if (first && src->coverage.name[1] == ':')
+	    first = src->coverage.name[2]
+#endif
+	    if (IS_DIR_SEPARATOR (first))
+	      continue;
+	}
+      
       accumulate_line_counts (src);
       function_summary (&src->coverage, "File");
       if (flag_gcov_file && src->coverage.lines)
 	{
-	  char *gcov_file_name = make_gcov_file_name (file_name, src->name);
+	  char *gcov_file_name
+	    = make_gcov_file_name (file_name, src->coverage.name);
 	  FILE *gcov_file = fopen (gcov_file_name, "w");
 
 	  if (gcov_file)
 	    {
-	      fnotice (stdout, "%s:creating '%s'\n",
-		       src->name, gcov_file_name);
+	      fnotice (stdout, "Creating '%s'\n", gcov_file_name);
 	      output_lines (gcov_file, src);
 	      if (ferror (gcov_file))
-		    fnotice (stderr, "%s:error writing output file '%s'\n",
-			     src->name, gcov_file_name);
+		    fnotice (stderr, "Error writing output file '%s'\n",
+			     gcov_file_name);
 	      fclose (gcov_file);
 	    }
 	  else
-	    fnotice (stderr, "%s:could not open output file '%s'\n",
-		     src->name, gcov_file_name);
+	    fnotice (stderr, "Could not open output file '%s'\n",
+		     gcov_file_name);
 	  free (gcov_file_name);
 	}
       fnotice (stdout, "\n");
@@ -877,6 +913,16 @@ find_source (const char *file_name)
       memset (src, 0, sizeof (*src));
       src->name = canon;
       src->coverage.name = src->name;
+      if (source_length
+#if HAVE_DOS_BASED_FILE_SYSTEM
+	  /* You lose if separators don't match exactly in the
+	     prefix.  */
+	  && !strncasecmp (source_prefix, src->coverage.name, source_length)
+#else
+	  && !strncmp (source_prefix, src->coverage.name, source_length)
+#endif
+	  && IS_DIR_SEPARATOR (src->coverage.name[source_length]))
+	src->coverage.name += source_length + 1;
       if (!stat (src->name, &status))
 	src->file_time = status.st_mtime;
     }
@@ -2079,7 +2125,7 @@ output_lines (FILE *gcov_file, const source_t *src)
   char const *retval = "";	/* status of source file reading.  */
   function_t *fn = NULL;
 
-  fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, src->name);
+  fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, src->coverage.name);
   if (!multiple_files)
     {
       fprintf (gcov_file, "%9s:%5d:Graph:%s\n", "-", 0, bbg_file_name);
@@ -2092,7 +2138,7 @@ output_lines (FILE *gcov_file, const source_t *src)
   source_file = fopen (src->name, "r");
   if (!source_file)
     {
-      fnotice (stderr, "%s:cannot open source file\n", src->name);
+      fnotice (stderr, "Cannot open source file %s\n", src->name);
       retval = NULL;
     }
   else if (src->file_time == 0)

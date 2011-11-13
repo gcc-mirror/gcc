@@ -124,13 +124,16 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-a}|@option{--all-blocks}]
      [@option{-b}|@option{--branch-probabilities}]
      [@option{-c}|@option{--branch-counts}]
+     [@option{-u}|@option{--unconditional-branches}]
      [@option{-n}|@option{--no-output}]
      [@option{-l}|@option{--long-file-names}]
      [@option{-p}|@option{--preserve-paths}]
+     [@option{-r}|@option{--relative-only}]
      [@option{-f}|@option{--function-summaries}]
-     [@option{-o}|@option{--object-directory} @var{directory|file}] @var{sourcefiles}
-     [@option{-u}|@option{--unconditional-branches}]
+     [@option{-o}|@option{--object-directory} @var{directory|file}]
+     [@option{-s}|@option{--source-prefix} @var{directory}]
      [@option{-d}|@option{--display-progress}]
+     @var{files}
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7), gcc(1) and the Info entry for @file{gcc}.
@@ -193,6 +196,13 @@ removed and unremoveable @file{..}
 components renamed to @samp{^}.  This is useful if sourcefiles are in several
 different directories.
 
+@item -r
+@itemx --relative-only
+Only output information about source files with a relative pathname
+(after source prefix elision).  Absolute paths are usually system
+header files and coverage of any inline functions therein is normally
+uninteresting.
+
 @item -f
 @itemx --function-summaries
 Output summaries for each function in addition to the file level summary.
@@ -206,6 +216,14 @@ object path name.  The @file{.gcno}, and
 is specified, the data files are in that directory and named after the
 input file name, without its extension.  If a file is specified here,
 the data files are named after that file, without its extension.
+
+@item -s @var{directory}
+@itemx --source-prefix @var{directory}
+A prefix for source file names to remove when generating the output
+coverage files.  This option is useful when building in a separate
+directory, and the pathname to the source directory is not wanted when
+determining the output file names.  Note that this prefix detection is
+applied before determining whether the source file is absolute.
 
 @item -u
 @itemx --unconditional-branches
