@@ -1,3 +1,11 @@
+2011-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cmath (atan2, fmod, pow, copysign, fdim,
+	fma, fmax, fmin, hypot, nextafter, remainder, remquo): Simplify
+	constraining on the return type.
+	* include/tr1/cmath (copysign, fdim, fma, fmax, fmin, hypot,
+	nextafter, remainder, remquo): Likewise.
+
 2011-11-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* using.xml: Use GNU/Linux.
