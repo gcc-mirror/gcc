@@ -486,7 +486,7 @@ hppa[12]*-*-hpux10*)
 	md_unwind_header=pa/hpux-unwind.h
 	;;
 hppa*64*-*-hpux11*)
-	tmake_file="$tmake_file pa/t-hpux pa/t-pa64 pa/t-stublib pa/t-stublib64 t-libgcc-pic t-slibgcc"
+	tmake_file="$tmake_file pa/t-hpux pa/t-pa64 pa/t-stublib t-libgcc-pic t-slibgcc"
 	# Set the libgcc version number
 	if test x$enable_sjlj_exceptions = xyes; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"

@@ -1,3 +1,10 @@
+2011-11-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.host (hppa*64*-*-hpux11*): Remove pa/t-stublib64 from
+	tmake_file list.
+	* config/pa/t-stublib: Merge rules from config/pa/t-stublib64.
+	* config/pa/t-stublib64: Delete.
+
 2011-11-12  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/linux-unwind.h (frob_update_context): Properly
