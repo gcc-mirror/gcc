@@ -599,7 +599,7 @@ perform_member_init (tree member, tree init)
       if (init == error_mark_node)
 	return;
       /* Use 'this' as the decl, as it has the lifetime we want.  */
-      init = extend_ref_init_temps (current_class_ptr, init, &cleanups);
+      init = extend_ref_init_temps (member, init, &cleanups);
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))
 	init = build_vec_init_expr (type, init, tf_warning_or_error);

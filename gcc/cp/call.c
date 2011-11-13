@@ -8607,6 +8607,14 @@ set_up_extended_ref_temp (tree decl, tree expr, VEC(tree,gc) **cleanups,
   if (TREE_CODE (expr) != TARGET_EXPR)
     expr = get_target_expr (expr);
 
+  if (TREE_CODE (decl) == FIELD_DECL
+      && extra_warnings && !TREE_NO_WARNING (decl))
+    {
+      warning (OPT_Wextra, "a temporary bound to %qD only persists "
+	       "until the constructor exits", decl);
+      TREE_NO_WARNING (decl) = true;
+    }
+
   /* Recursively extend temps in this initializer.  */
   TARGET_EXPR_INITIAL (expr)
     = extend_ref_init_temps (decl, TARGET_EXPR_INITIAL (expr), cleanups);
