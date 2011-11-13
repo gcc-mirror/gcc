@@ -1,3 +1,9 @@
+2011-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51060
+	* gimplify.c (gimplify_target_expr): Add a clobber to the cleanup.
+	(gimplify_modify_expr): Don't try to simplify it.
+
 2011-11-12  Dimitrios Apostolou  <jimis@gmx.net>
 
 	PR bootstrap/51094

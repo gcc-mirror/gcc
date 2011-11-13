@@ -4554,6 +4554,16 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
 
+  /* Trying to simplify a clobber using normal logic doesn't work,
+     so handle it here.  */
+  if (TREE_CLOBBER_P (*from_p))
+    {
+      gcc_assert (!want_value && TREE_CODE (*to_p) == VAR_DECL);
+      gimplify_seq_add_stmt (pre_p, gimple_build_assign (*to_p, *from_p));
+      *expr_p = NULL;
+      return GS_ALL_DONE;
+    }
+
   /* Insert pointer conversions required by the middle-end that are not
      required by the frontend.  This fixes middle-end type checking for
      for example gcc.dg/redecl-6.c.  */
@@ -5335,6 +5345,8 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
   if (init)
     {
+      tree cleanup = NULL_TREE;
+
       /* TARGET_EXPR temps aren't part of the enclosing block, so add it
 	 to the temps list.  Handle also variable length TARGET_EXPRs.  */
       if (TREE_CODE (DECL_SIZE (temp)) != INTEGER_CST)
@@ -5369,8 +5381,30 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* If needed, push the cleanup for the temp.  */
       if (TARGET_EXPR_CLEANUP (targ))
-	gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ),
-			     CLEANUP_EH_ONLY (targ), pre_p);
+	{
+	  if (CLEANUP_EH_ONLY (targ))
+	    gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ),
+				 CLEANUP_EH_ONLY (targ), pre_p);
+	  else
+	    cleanup = TARGET_EXPR_CLEANUP (targ);
+	}
+
+      /* Add a clobber for the temporary going out of scope, like
+	 gimplify_bind_expr.  */
+      if (needs_to_live_in_memory (temp))
+	{
+	  tree clobber = build_constructor (TREE_TYPE (temp), NULL);
+	  TREE_THIS_VOLATILE (clobber) = true;
+	  clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
+	  if (cleanup)
+	    cleanup = build2 (COMPOUND_EXPR, void_type_node, cleanup,
+			      clobber);
+	  else
+	    cleanup = clobber;
+	}
+
+      if (cleanup)
+	gimple_push_cleanup (temp, cleanup, false, pre_p);
 
       /* Only expand this once.  */
       TREE_OPERAND (targ, 3) = init;

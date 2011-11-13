@@ -1,3 +1,8 @@
+2011-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51060
+	* g++.dg/opt/stack2.C: New.
+
 2011-11-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-simulate-thread.exp (simulate-thread): Do not run on

@@ -1,3 +1,8 @@
+2011-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51060
+	* cp-gimplify.c (cp_gimplify_expr): Leave clobbers alone.
+
 2011-11-11  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/50976
