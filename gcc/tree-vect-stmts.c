@@ -4968,7 +4968,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   tree cond_expr, then_clause, else_clause;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  tree comp_vectype;
+  tree comp_vectype = NULL_TREE;
   tree vec_cond_lhs = NULL_TREE, vec_cond_rhs = NULL_TREE;
   tree vec_then_clause = NULL_TREE, vec_else_clause = NULL_TREE;
   tree vec_compare, vec_cond_expr;
