@@ -1,3 +1,58 @@
+2011-11-14  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.c (emit_load_locked): Assert the mode is handled.
+	(emit_store_conditional): Likewise.
+	(rs6000_pre_atomic_barrier, rs6000_post_atomic_barrier): New.
+	(rs6000_adjust_atomic_subword): New.
+	(rs6000_mask_atomic_subword, rs6000_finish_atomic_subword): New.
+	(rs6000_expand_atomic_op): Rename from rs6000_emit_sync; rewrite
+	for pre-reload expansion.
+	(rs6000_split_compare_and_swap, rs6000_split_compare_and_swapqhi,
+	rs6000_expand_compare_and_swapqhi): Merge into ...
+	(rs6000_expand_atomic_compare_and_swap): ... here.  New function.
+	rs6000_split_lock_test_and_set; expand immediately.  Handle
+	QImode and HImode.
+	* config/rs6000/rs6000.md (UNSPEC_LWSYNC): Move and rename
+	from UNSPECV_LWSYNC.
+	* config/rs6000/sync.md (fetchopsi_constr, fetchopdi_constr): Remove.
+	(mem_thread_fence): New.
+	(hwsync): Rename from memory_barrier.
+	(*hwsync): Rename from *sync_internal.
+	(lwsync, *lwsync): Mirror hwsync implementation.
+	(isync): Don't reference memory.
+	(loadsync): New.
+	(atomic_load<INT>, atomic_store<INT>): New.
+	(ATOMIC): New mode iterator.
+	(load_locked<ATOMIC>): Rename from load_locked_<GPR>.
+	(store_conditional<ATOMIC>): Rename from store_conditional_<GPR>.
+	(sync_compare_and_swap<GPR>): Remove.
+	(sync_compare_and_swaphi, sync_compare_and_swapqi): Remove.
+	(sync_compare_and_swapqhi_internal): Remove.
+	(sync_lock_test_and_set<GPR>): Remove.
+	(sync_<FETCHOP><INT1>): Remove.
+	(*sync_<FETCHOP>si_internal, *sync_<FETCHOP>di_internal): Remove.
+	(sync_nand<INT1>, *sync_nand<GPR>_internal): Remove.
+	(sync_old_<FETCHOP><GPR>): Remove.
+	(*sync_old_<FETCHOP>si_internal): Remove.
+	(*sync_old_<FETCHOP>di_internal): Remove.
+	(sync_old_nand<INT1>): Remove.
+	(*sync_old_nand<GPR>_internal): Remove.
+	(sync_new_<FETCHOP><GPR>): Remove.
+	(*sync_new_<FETCHOP>si_internal): Remove.
+	(*sync_new_<FETCHOP>di_internal): Remove.
+	(sync_new_nand<INT1>): Remove.
+	(*sync_new_nand<GPR>_internal): Remove.
+	(*atomic_andsi, *atomic_anddi): Remove.
+	(*sync_addshort_internal, *sync_subshort_internal): Remove.
+	(*sync_andsi_internal, *sync_boolsi_internal): Remove.
+	(*sync_boolcshort_internal): Remove.
+	(sync_lock_release<INT1>): Remove.
+	(atomic_compare_and_swap<INT1>): New.
+	(atomic_exchange<INT1>): New.
+	(atomic_<FETCHOP><INT1>, atomic_nand<INT1>): New.
+	(atomic_fetch_<FETCHOP><INT1>, atomic_fetch_nand<INT1>): New.
+	(atomic_<FETCHOP>_fetch<INT1>, atomic_nand_fetch<INT1>): New.
+
 2011-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (round<mode>2): Use register_operand for
