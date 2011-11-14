@@ -1,3 +1,7 @@
+2011-11-14  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov.c (canonicalize_name): Protect use of S_ISLNK.
+
 2011-11-14  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.c (core cost model): Correct pasto.
