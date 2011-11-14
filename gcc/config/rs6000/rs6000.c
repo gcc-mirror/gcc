@@ -17133,199 +17133,6 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
     emit_move_insn (dest, target);
 }
 
-/* Emit instructions to perform a load-reserved/store-conditional operation.
-   The operation performed is an atomic
-   (set M (CODE:MODE M OP))
-   If not NULL, BEFORE is atomically set to M before the operation, and
-   AFTER is set to M after the operation (that is, (CODE:MODE M OP)).
-   If SYNC_P then a memory barrier is emitted before the operation.
-   Either OP or M may be wrapped in a NOT operation.  */
-
-void
-rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
-		  rtx m, rtx op, rtx before_param, rtx after_param,
-		  bool sync_p)
-{
-  enum machine_mode used_mode;
-  rtx the_op, set_before, set_after, set_atomic, cc_scratch, before, after;
-  rtx used_m;
-  rtvec vec;
-  HOST_WIDE_INT imask = GET_MODE_MASK (mode);
-  rtx shift = NULL_RTX;
-
-  if (sync_p)
-    emit_insn (gen_lwsync ());
-
-    used_m = m;
-
-  /* If this is smaller than SImode, we'll have to use SImode with
-     adjustments.  */
-  if (mode == QImode || mode == HImode)
-    {
-      rtx newop, oldop;
-
-      if (MEM_ALIGN (used_m) >= 32)
-	{
-	  int ishift = 0;
-	  if (BYTES_BIG_ENDIAN)
-	    ishift = GET_MODE_BITSIZE (SImode) - GET_MODE_BITSIZE (mode);
-
-	  shift = GEN_INT (ishift);
-	  used_m = change_address (used_m, SImode, 0);
-	}
-      else
-	{
-	  rtx addrSI, aligned_addr;
-	  int shift_mask = mode == QImode ? 0x18 : 0x10;
-
-	  addrSI = gen_lowpart_common (SImode,
-				       force_reg (Pmode, XEXP (used_m, 0)));
-	  addrSI = force_reg (SImode, addrSI);
-	  shift = gen_reg_rtx (SImode);
-
-	  emit_insn (gen_rlwinm (shift, addrSI, GEN_INT (3),
-				 GEN_INT (shift_mask)));
-	  emit_insn (gen_xorsi3 (shift, shift, GEN_INT (shift_mask)));
-
-	  aligned_addr = expand_binop (Pmode, and_optab,
-				       XEXP (used_m, 0),
-				       GEN_INT (-4), NULL_RTX,
-				       1, OPTAB_LIB_WIDEN);
-	  used_m = change_address (used_m, SImode, aligned_addr);
-	  set_mem_align (used_m, 32);
-	}
-      /* It's safe to keep the old alias set of USED_M, because
-	 the operation is atomic and only affects the original
-	 USED_M.  */
-      m = used_m;
-
-      if (GET_CODE (op) == NOT)
-	{
-	  oldop = lowpart_subreg (SImode, XEXP (op, 0), mode);
-	  oldop = gen_rtx_NOT (SImode, oldop);
-	}
-      else
-	oldop = lowpart_subreg (SImode, op, mode);
-
-      switch (code)
-	{
-	case IOR:
-	case XOR:
-	  newop = expand_binop (SImode, and_optab,
-				oldop, GEN_INT (imask), NULL_RTX,
-				1, OPTAB_LIB_WIDEN);
-	  emit_insn (gen_ashlsi3 (newop, newop, shift));
-	  break;
-
-	case NOT: /* NAND */
-	  newop = expand_binop (SImode, ior_optab,
-				oldop, GEN_INT (~imask), NULL_RTX,
-				1, OPTAB_LIB_WIDEN);
-	  emit_insn (gen_rotlsi3 (newop, newop, shift));
-	  break;
-
-	case AND:
-	  newop = expand_binop (SImode, ior_optab,
-				oldop, GEN_INT (~imask), NULL_RTX,
-				1, OPTAB_LIB_WIDEN);
-	  emit_insn (gen_rotlsi3 (newop, newop, shift));
-	  break;
-
-	case PLUS:
-	case MINUS:
-	  {
-	    rtx mask;
-
-	    newop = expand_binop (SImode, and_optab,
-				  oldop, GEN_INT (imask), NULL_RTX,
-				  1, OPTAB_LIB_WIDEN);
-	    emit_insn (gen_ashlsi3 (newop, newop, shift));
-
-	    mask = gen_reg_rtx (SImode);
-	    emit_move_insn (mask, GEN_INT (imask));
-	    emit_insn (gen_ashlsi3 (mask, mask, shift));
-
-	    if (code == PLUS)
-	      newop = gen_rtx_PLUS (SImode, m, newop);
-	    else
-	      newop = gen_rtx_MINUS (SImode, m, newop);
-	    newop = gen_rtx_AND (SImode, newop, mask);
-	    newop = gen_rtx_IOR (SImode, newop,
-				 gen_rtx_AND (SImode,
-					      gen_rtx_NOT (SImode, mask),
-					      m));
-	    break;
-	  }
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      op = newop;
-      used_mode = SImode;
-      before = gen_reg_rtx (used_mode);
-      after = gen_reg_rtx (used_mode);
-    }
-  else
-    {
-      used_mode = mode;
-      before = before_param;
-      after = after_param;
-
-      if (before == NULL_RTX)
-	before = gen_reg_rtx (used_mode);
-      if (after == NULL_RTX)
-	after = gen_reg_rtx (used_mode);
-    }
-
-  if ((code == PLUS || code == MINUS)
-      && used_mode != mode)
-    the_op = op;  /* Computed above.  */
-  else if (GET_CODE (op) == NOT && GET_CODE (m) != NOT)
-    the_op = gen_rtx_fmt_ee (code, used_mode, op, m);
-  else if (code == NOT)
-    the_op = gen_rtx_fmt_ee (IOR, used_mode,
-			     gen_rtx_NOT (used_mode, m),
-			     gen_rtx_NOT (used_mode, op));
-  else
-    the_op = gen_rtx_fmt_ee (code, used_mode, m, op);
-
-  set_after = gen_rtx_SET (VOIDmode, after, the_op);
-  set_before = gen_rtx_SET (VOIDmode, before, used_m);
-  set_atomic = gen_rtx_SET (VOIDmode, used_m,
-			    gen_rtx_UNSPEC (used_mode,
-					    gen_rtvec (1, the_op),
-					    UNSPEC_SYNC_OP));
-  cc_scratch = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (CCmode));
-
-  if ((code == PLUS || code == MINUS) && used_mode != mode)
-    vec = gen_rtvec (5, set_after, set_before, set_atomic, cc_scratch,
-		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (SImode)));
-  else
-    vec = gen_rtvec (4, set_after, set_before, set_atomic, cc_scratch);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode, vec));
-
-  /* Shift and mask the return values properly.  */
-  if (used_mode != mode && before_param)
-    {
-      emit_insn (gen_lshrsi3 (before, before, shift));
-      convert_move (before_param, before, 1);
-    }
-
-  if (used_mode != mode && after_param)
-    {
-      emit_insn (gen_lshrsi3 (after, after, shift));
-      convert_move (after_param, after, 1);
-    }
-
-  /* The previous sequence will end with a branch that's dependent on
-     the conditional store, so placing an isync will ensure that no
-     other instructions (especially, no load or store instructions)
-     can start before the atomic operation completes.  */
-  if (sync_p)
-    emit_insn (gen_isync ());
-}
-
 /* A subroutine of the atomic operation splitters.  Jump to LABEL if
    COND is true.  Mark the jump as unlikely to be taken.  */
 
@@ -17347,10 +17154,18 @@ static void
 emit_load_locked (enum machine_mode mode, rtx reg, rtx mem)
 {
   rtx (*fn) (rtx, rtx) = NULL;
-  if (mode == SImode)
-    fn = gen_load_locked_si;
-  else if (mode == DImode)
-    fn = gen_load_locked_di;
+
+  switch (mode)
+    {
+    case SImode:
+      fn = gen_load_lockedsi;
+      break;
+    case DImode:
+      fn = gen_load_lockeddi;
+      break;
+    default:
+      gcc_unreachable ();
+    }
   emit_insn (fn (reg, mem));
 }
 
@@ -17361,214 +17176,404 @@ static void
 emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
 {
   rtx (*fn) (rtx, rtx, rtx) = NULL;
-  if (mode == SImode)
-    fn = gen_store_conditional_si;
-  else if (mode == DImode)
-    fn = gen_store_conditional_di;
+
+  switch (mode)
+    {
+    case SImode:
+      fn = gen_store_conditionalsi;
+      break;
+    case DImode:
+      fn = gen_store_conditionaldi;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   /* Emit sync before stwcx. to address PPC405 Erratum.  */
   if (PPC405_ERRATUM77)
-    emit_insn (gen_memory_barrier ());
+    emit_insn (gen_hwsync ());
 
   emit_insn (fn (res, mem, val));
+}
+
+/* Expand barriers before and after a load_locked/store_cond sequence.  */
+
+static void
+rs6000_pre_atomic_barrier (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_ACQUIRE:
+      break;
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_ACQ_REL:
+      emit_insn (gen_lwsync ());
+      break;
+    case MEMMODEL_SEQ_CST:
+      emit_insn (gen_hwsync ());
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+rs6000_post_atomic_barrier (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_RELEASE:
+      break;
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      emit_insn (gen_isync ());
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* A subroutine of the various atomic expanders.  For sub-word operations,
+   we must adjust things to operate on SImode.  Given the original MEM,
+   return a new aligned memory.  Also build and return the quantities by
+   which to shift and mask.  */
+
+static rtx
+rs6000_adjust_atomic_subword (rtx mem, rtx *pshift, rtx *pmask)
+{
+  rtx addr, align, shift, mask;
+  HOST_WIDE_INT shift_mask;
+  enum machine_mode mode = GET_MODE (mem);
+
+  /* For smaller modes, we have to implement this via SImode.  */
+  shift_mask = (mode == QImode ? 0x18 : 0x10);
+
+  addr = XEXP (mem, 0);
+  addr = force_reg (GET_MODE (addr), addr);
+
+  /* Aligned memory containing subword.  Generate a new memory.  We
+     do not want any of the existing MEM_ATTR data, as we're now
+     accessing memory outside the original object.  */
+  align = expand_simple_binop (Pmode, AND, addr, GEN_INT (-4),
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  mem = gen_rtx_MEM (SImode, align);
+  MEM_VOLATILE_P (mem) = 1;
+
+  /* Shift amount for subword relative to aligned word.  */
+  shift = gen_reg_rtx (SImode);
+  addr = gen_lowpart (SImode, addr);
+  emit_insn (gen_rlwinm (shift, addr, GEN_INT (3), GEN_INT (shift_mask)));
+  shift = expand_simple_binop (SImode, XOR, shift, GEN_INT (shift_mask),
+			       shift, 1, OPTAB_LIB_WIDEN);
+  *pshift = shift;
+
+  /* Mask for insertion.  */
+  mask = expand_simple_binop (SImode, ASHIFT, GEN_INT (GET_MODE_MASK (mode)),
+			      shift, NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  *pmask = mask;
+
+  return mem;
+}
+
+/* A subroutine of the various atomic expanders.  For sub-word operands,
+   combine OLDVAL and NEWVAL via MASK.  Returns a new pseduo.  */
+
+static rtx
+rs6000_mask_atomic_subword (rtx oldval, rtx newval, rtx mask)
+{
+  rtx x;
+
+  x = gen_reg_rtx (SImode);
+  emit_insn (gen_rtx_SET (VOIDmode, x,
+			  gen_rtx_AND (SImode,
+				       gen_rtx_NOT (SImode, mask),
+				       oldval)));
+
+  x = expand_simple_binop (SImode, IOR, newval, x, x, 1, OPTAB_LIB_WIDEN);
+
+  return x;
+}
+
+/* A subroutine of the various atomic expanders.  For sub-word operands,
+   extract WIDE to NARROW via SHIFT.  */
+
+static void
+rs6000_finish_atomic_subword (rtx narrow, rtx wide, rtx shift)
+{
+  wide = expand_simple_binop (SImode, LSHIFTRT, wide, shift,
+			      wide, 1, OPTAB_LIB_WIDEN);
+  emit_move_insn (narrow, gen_lowpart (GET_MODE (narrow), wide));
+}
+
+/* Expand an atomic compare and swap operation.  */
+
+void
+rs6000_expand_atomic_compare_and_swap (rtx operands[])
+{
+  rtx boolval, retval, mem, oldval, newval, cond;
+  rtx label1, label2, x, mask, shift;
+  enum machine_mode mode;
+  enum memmodel mod_s, mod_f;
+  bool is_weak;
+
+  boolval = operands[0];
+  retval = operands[1];
+  mem = operands[2];
+  oldval = operands[3];
+  newval = operands[4];
+  is_weak = (INTVAL (operands[5]) != 0);
+  mod_s = (enum memmodel) INTVAL (operands[6]);
+  mod_f = (enum memmodel) INTVAL (operands[7]);
+  mode = GET_MODE (mem);
+
+  mask = shift = NULL_RTX;
+  if (mode == QImode || mode == HImode)
+    {
+      mem = rs6000_adjust_atomic_subword (mem, &shift, &mask);
+
+      /* Shift and mask OLDVAL into position with the word.  */
+      oldval = convert_modes (SImode, mode, oldval, 1);
+      oldval = expand_simple_binop (SImode, ASHIFT, oldval, shift,
+				    oldval, 1, OPTAB_LIB_WIDEN);
+
+      /* Shift and mask NEWVAL into position within the word.  */
+      newval = convert_modes (SImode, mode, newval, 1);
+      newval = expand_simple_binop (SImode, ASHIFT, newval, shift,
+				    newval, 1, OPTAB_LIB_WIDEN);
+
+      /* Prepare to adjust the return value.  */
+      retval = gen_reg_rtx (SImode);
+      mode = SImode;
+    }
+
+  rs6000_pre_atomic_barrier (mod_s);
+
+  emit_move_insn (boolval, const0_rtx);
+
+  label1 = NULL_RTX;
+  if (!is_weak)
+    {
+      label1 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+      emit_label (XEXP (label1, 0));
+    }
+  label2 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+
+  emit_load_locked (mode, retval, mem);
+
+  x = retval;
+  if (mask)
+    {
+      x = expand_simple_binop (SImode, AND, retval, mask,
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  x = gen_rtx_NE (VOIDmode, x, oldval);
+  x = rs6000_generate_compare (x, mode);
+  emit_unlikely_jump (x, label2);
+
+  x = newval;
+  if (mask)
+    x = rs6000_mask_atomic_subword (retval, newval, mask);
+
+  cond = gen_reg_rtx (CCmode);
+  emit_store_conditional (mode, cond, mem, x);
+
+  if (is_weak)
+    {
+      /* ??? It's either this or an unlikely jump over (set bool 1).  */
+      x = gen_rtx_EQ (SImode, cond, const0_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, boolval, x));
+    }
+  else
+    {
+      x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+      emit_unlikely_jump (x, label1);
+      emit_move_insn (boolval, const1_rtx);
+    }
+
+  if (mod_f != MEMMODEL_RELAXED)
+    emit_label (XEXP (label2, 0));
+
+  rs6000_post_atomic_barrier (mod_s);
+
+  if (mod_f == MEMMODEL_RELAXED)
+    emit_label (XEXP (label2, 0));
+
+  if (shift)
+    rs6000_finish_atomic_subword (operands[1], retval, shift);
+}
+
+/* Expand an atomic exchange operation.  */
+
+void
+rs6000_expand_atomic_exchange (rtx operands[])
+{
+  rtx retval, mem, val, cond;
+  enum machine_mode mode;
+  enum memmodel model;
+  rtx label, x, mask, shift;
+
+  retval = operands[0];
+  mem = operands[1];
+  val = operands[2];
+  model = (enum memmodel) INTVAL (operands[3]);
+  mode = GET_MODE (mem);
+
+  mask = shift = NULL_RTX;
+  if (mode == QImode || mode == HImode)
+    {
+      mem = rs6000_adjust_atomic_subword (mem, &shift, &mask);
+
+      /* Shift and mask VAL into position with the word.  */
+      val = convert_modes (SImode, mode, val, 1);
+      val = expand_simple_binop (SImode, ASHIFT, val, shift,
+				 val, 1, OPTAB_LIB_WIDEN);
+
+      /* Prepare to adjust the return value.  */
+      retval = gen_reg_rtx (SImode);
+      mode = SImode;
+    }
+
+  rs6000_pre_atomic_barrier (model);
+
+  label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+  emit_label (XEXP (label, 0));
+
+  emit_load_locked (mode, retval, mem);
+
+  x = val;
+  if (mask)
+    x = rs6000_mask_atomic_subword (retval, val, mask);
+
+  cond = gen_reg_rtx (CCmode);
+  emit_store_conditional (mode, cond, mem, x);
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  emit_unlikely_jump (x, label);
+
+  rs6000_post_atomic_barrier (model);
+
+  if (shift)
+    rs6000_finish_atomic_subword (operands[0], retval, shift);
 }
 
 /* Expand an atomic fetch-and-operate pattern.  CODE is the binary operation
    to perform.  MEM is the memory on which to operate.  VAL is the second
    operand of the binary operator.  BEFORE and AFTER are optional locations to
-   return the value of MEM either before of after the operation.  SCRATCH is
-   a scratch register.  */
+   return the value of MEM either before of after the operation.  MODEL_RTX
+   is a CONST_INT containing the memory model to use.  */
 
 void
-rs6000_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
-                       rtx before, rtx after, rtx scratch)
+rs6000_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
+			 rtx orig_before, rtx orig_after, rtx model_rtx)
 {
+  enum memmodel model = (enum memmodel) INTVAL (model_rtx);
   enum machine_mode mode = GET_MODE (mem);
-  rtx label, x, cond = gen_rtx_REG (CCmode, CR0_REGNO);
+  rtx label, x, cond, mask, shift;
+  rtx before = orig_before, after = orig_after;
 
-  emit_insn (gen_lwsync ());
+  mask = shift = NULL_RTX;
+  if (mode == QImode || mode == HImode)
+    {
+      mem = rs6000_adjust_atomic_subword (mem, &shift, &mask);
+
+      /* Shift and mask VAL into position with the word.  */
+      val = convert_modes (SImode, mode, val, 1);
+      val = expand_simple_binop (SImode, ASHIFT, val, shift,
+				 val, 1, OPTAB_LIB_WIDEN);
+
+      switch (code)
+	{
+	case IOR:
+	case XOR:
+	  /* We've already zero-extended VAL.  That is sufficient to
+	     make certain that it does not affect other bits.  */
+	  mask = NULL;
+	  break;
+
+	case AND:
+	  /* If we make certain that all of the other bits in VAL are
+	     set, that will be sufficient to not affect other bits.  */
+	  x = gen_rtx_NOT (SImode, mask);
+	  x = gen_rtx_IOR (SImode, x, val);
+	  emit_insn (gen_rtx_SET (VOIDmode, val, x));
+	  mask = NULL;
+	  break;
+
+	case NOT:
+	case PLUS:
+	case MINUS:
+	  /* These will all affect bits outside the field and need
+	     adjustment via MASK within the loop.  */
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      /* Prepare to adjust the return value.  */
+      before = gen_reg_rtx (SImode);
+      if (after)
+	after = gen_reg_rtx (SImode);
+      mode = SImode;
+    }
+
+  rs6000_pre_atomic_barrier (model);
 
   label = gen_label_rtx ();
   emit_label (label);
   label = gen_rtx_LABEL_REF (VOIDmode, label);
 
   if (before == NULL_RTX)
-    before = scratch;
+    before = gen_reg_rtx (mode);
+
   emit_load_locked (mode, before, mem);
 
   if (code == NOT)
-    x = gen_rtx_IOR (mode,
-		     gen_rtx_NOT (mode, before),
-		     gen_rtx_NOT (mode, val));
-  else if (code == AND)
-    x = gen_rtx_UNSPEC (mode, gen_rtvec (2, before, val), UNSPEC_AND);
+    {
+      x = expand_simple_binop (mode, AND, before, val,
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      after = expand_simple_unop (mode, NOT, x, after, 1);
+    }
   else
-    x = gen_rtx_fmt_ee (code, mode, before, val);
+    {
+      after = expand_simple_binop (mode, code, before, val,
+				   after, 1, OPTAB_LIB_WIDEN);
+    }
 
-  if (after != NULL_RTX)
-    emit_insn (gen_rtx_SET (VOIDmode, after, copy_rtx (x)));
-  emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
+  x = after;
+  if (mask)
+    {
+      x = expand_simple_binop (SImode, AND, after, mask,
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      x = rs6000_mask_atomic_subword (before, x, mask);
+    }
 
-  emit_store_conditional (mode, cond, mem, scratch);
-
-  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label);
-
-  emit_insn (gen_isync ());
-}
-
-/* Expand an atomic compare and swap operation.  MEM is the memory on which
-   to operate.  OLDVAL is the old value to be compared.  NEWVAL is the new
-   value to be stored.  SCRATCH is a scratch GPR.  */
-
-void
-rs6000_split_compare_and_swap (rtx retval, rtx mem, rtx oldval, rtx newval,
-			       rtx scratch)
-{
-  enum machine_mode mode = GET_MODE (mem);
-  rtx label1, label2, x, cond = gen_rtx_REG (CCmode, CR0_REGNO);
-
-  emit_insn (gen_lwsync ());
-
-  label1 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  label2 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label1, 0));
-
-  emit_load_locked (mode, retval, mem);
-
-  x = gen_rtx_COMPARE (CCmode, retval, oldval);
-  emit_insn (gen_rtx_SET (VOIDmode, cond, x));
-
-  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label2);
-
-  emit_move_insn (scratch, newval);
-  emit_store_conditional (mode, cond, mem, scratch);
-
-  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label1);
-
-  emit_insn (gen_isync ());
-  emit_label (XEXP (label2, 0));
-}
-
-/* Expand an atomic test and set operation.  MEM is the memory on which
-   to operate.  VAL is the value set.  SCRATCH is a scratch GPR.  */
-
-void
-rs6000_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
-{
-  enum machine_mode mode = GET_MODE (mem);
-  rtx label, x, cond = gen_rtx_REG (CCmode, CR0_REGNO);
-
-  label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
-
-  emit_load_locked (mode, retval, mem);
-  emit_move_insn (scratch, val);
-  emit_store_conditional (mode, cond, mem, scratch);
+  cond = gen_reg_rtx (CCmode);
+  emit_store_conditional (mode, cond, mem, x);
 
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
   emit_unlikely_jump (x, label);
 
-  emit_insn (gen_isync ());
+  rs6000_post_atomic_barrier (model);
+
+  if (shift)
+    {
+      if (orig_before)
+	rs6000_finish_atomic_subword (orig_before, before, shift);
+      if (orig_after)
+	rs6000_finish_atomic_subword (orig_after, after, shift);
+    }
+  else if (orig_after && after != orig_after)
+    emit_move_insn (orig_after, after);
 }
 
-void
-rs6000_expand_compare_and_swapqhi (rtx dst, rtx mem, rtx oldval, rtx newval)
-{
-  enum machine_mode mode = GET_MODE (mem);
-  rtx addrSI, align, wdst, shift, mask;
-  HOST_WIDE_INT shift_mask = mode == QImode ? 0x18 : 0x10;
-  HOST_WIDE_INT imask = GET_MODE_MASK (mode);
-
-  /* Shift amount for subword relative to aligned word.  */
-  addrSI = force_reg (GET_MODE (XEXP (mem, 0)), XEXP (mem, 0));
-  addrSI = force_reg (SImode, gen_lowpart_common (SImode, addrSI));
-  shift = gen_reg_rtx (SImode);
-  emit_insn (gen_rlwinm (shift, addrSI, GEN_INT (3),
-			 GEN_INT (shift_mask)));
-  emit_insn (gen_xorsi3 (shift, shift, GEN_INT (shift_mask)));
-
-  /* Shift and mask old value into position within word.  */
-  oldval = convert_modes (SImode, mode, oldval, 1);
-  oldval = expand_binop (SImode, and_optab,
-			 oldval, GEN_INT (imask), NULL_RTX,
-			 1, OPTAB_LIB_WIDEN);
-  emit_insn (gen_ashlsi3 (oldval, oldval, shift));
-
-  /* Shift and mask new value into position within word.  */
-  newval = convert_modes (SImode, mode, newval, 1);
-  newval = expand_binop (SImode, and_optab,
-			 newval, GEN_INT (imask), NULL_RTX,
-			 1, OPTAB_LIB_WIDEN);
-  emit_insn (gen_ashlsi3 (newval, newval, shift));
-
-  /* Mask for insertion.  */
-  mask = gen_reg_rtx (SImode);
-  emit_move_insn (mask, GEN_INT (imask));
-  emit_insn (gen_ashlsi3 (mask, mask, shift));
-
-  /* Address of aligned word containing subword.  */
-  align = expand_binop (Pmode, and_optab, XEXP (mem, 0), GEN_INT (-4),
-			NULL_RTX, 1, OPTAB_LIB_WIDEN);
-  mem = change_address (mem, SImode, align);
-  set_mem_align (mem, 32);
-  MEM_VOLATILE_P (mem) = 1;
-
-  wdst = gen_reg_rtx (SImode);
-  emit_insn (gen_sync_compare_and_swapqhi_internal (wdst, mask,
-						    oldval, newval, mem));
-
-  /* Shift the result back.  */
-  emit_insn (gen_lshrsi3 (wdst, wdst, shift));
-
-  emit_move_insn (dst, gen_lowpart (mode, wdst));
-}
-
-void
-rs6000_split_compare_and_swapqhi (rtx dest, rtx mask,
-				  rtx oldval, rtx newval, rtx mem,
-				  rtx scratch)
-{
-  rtx label1, label2, x, cond = gen_rtx_REG (CCmode, CR0_REGNO);
-
-  emit_insn (gen_lwsync ());
-  label1 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  label2 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label1, 0));
-
-  emit_load_locked (SImode, scratch, mem);
-
-  /* Mask subword within loaded value for comparison with oldval.
-     Use UNSPEC_AND to avoid clobber.*/
-  emit_insn (gen_rtx_SET (SImode, dest,
-			  gen_rtx_UNSPEC (SImode,
-					  gen_rtvec (2, scratch, mask),
-					  UNSPEC_AND)));
-
-  x = gen_rtx_COMPARE (CCmode, dest, oldval);
-  emit_insn (gen_rtx_SET (VOIDmode, cond, x));
-
-  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label2);
-
-  /* Clear subword within loaded value for insertion of new value.  */
-  emit_insn (gen_rtx_SET (SImode, scratch,
-			  gen_rtx_AND (SImode,
-				       gen_rtx_NOT (SImode, mask), scratch)));
-  emit_insn (gen_iorsi3 (scratch, scratch, newval));
-  emit_store_conditional (SImode, cond, mem, scratch);
-
-  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label1);
-
-  emit_insn (gen_isync ());
-  emit_label (XEXP (label2, 0));
-}
-
-
-  /* Emit instructions to move SRC to DST.  Called by splitters for
+/* Emit instructions to move SRC to DST.  Called by splitters for
    multi-register moves.  It will emit at most one instruction for
    each register that is accessed; that is, it won't emit li/lis pairs
    (or equivalent for 64-bit code).  One of SRC or DST must be a hard
