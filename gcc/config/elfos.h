@@ -125,9 +125,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     }								\
   while (0)
 
-#undef TARGET_ASM_INTERNAL_LABEL
-#define TARGET_ASM_INTERNAL_LABEL default_elf_internal_label
-
 /* Output the label which precedes a jumptable.  Note that for all svr4
    systems where we actually generate jumptables (which is to say every
    svr4 target except i386, where we use casesi instead) we put the jump-
