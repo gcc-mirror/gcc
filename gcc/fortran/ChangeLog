@@ -1,3 +1,8 @@
+2011-11-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51073
+	* trans-decl.c (generate_coarray_sym_init): Handle zero-sized arrays.
+
 2011-11-09  Tobias Burnus  <burnus@net-b.de>
 
 	* symbol.c (clear_sym_mark, traverse_ns): Remove functions.
