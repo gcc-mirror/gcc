@@ -1,3 +1,29 @@
+2011-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (round<mode>2_sfix): New expander.
+	(round<mode>2_vec_pack_sfix): Ditto.
+	(<sse4_1>_round<ssemodesuffix>_sfix<avxsizesuffix>): Ditto.
+	(<sse4_1>_round<ssemodesuffix>_vec_pack_sfix<avxsizesuffix>): Ditto.
+	* config/i386/builtin-types.def (V4SI_FTYPE_V4SF_ROUND,
+	V8SI_FTYPE_V8SF_ROUND, V4SI_FTYPE_V2DF_V2DF_ROUND,
+	V8SI_FTYPE_V4DF_V4DF_ROUND): New builtin types.
+	* config/i386/i386.c (ix86_builtins): Add
+	IX86_BUILTIN_{FLOORPD,CEILPD,ROUNDPD_AZ}_VEC_PACK_SFIX{,256} and
+	IX86_BUILTIN_{FLOORPS,CEILPS,ROUNDPS_AZ}_SFIX{,256} defines.
+	(bdesc_args): Add __builtin_ia32_{floorpd,ceilpd}_vec_pack_sfix{,256},
+	__builtin_ia32_roundpd_az_vec_pack_sfix{,256},
+	__builtin_ia32_{floorps,ceilps}_sfix{,256}and
+	__builtin_ia32_roundps_az_sfix{,256} descriptions.
+	(ix86_expand_sse_round_vec_pack_sfix): New.
+	(ix86_expand_args_builtin): Handle V4SI_FTYPE_V4SF_ROUND,
+	V8SI_FTYPE_V8SF_ROUND, V4SI_FTYPE_V2DF_V2DF_ROUND and
+	V8SI_FTYPE_V4DF_V4DF_ROUND types.  Check last argument of
+	CODE_FOR_sse4_1_roundpd_vec_pack_sfix, CODE_FOR_sse4_1_roundps_sfix,
+	CODE_FOR_avx_roundpd_vec_pack_sfix256 and CODE_FOR_avx_roundps_sfix256.
+	(ix86_builtin_vectorized_function): Handle
+	BUILT_IN_{I,L,LL}FLOOR{,F}, BUILT_IN_{I,L,LL}CEIL{,F} and
+	BUILT_IN_{I,L,LL}ROUND{,F}
+
 2011-11-14  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/50598
@@ -11,38 +37,38 @@
 2011-11-14  Zolotukhin Michael  <michael.v.zolotukhin@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
 
-        * config/i386/i386.h (processor_costs): Add second dimension to
-        stringop_algs array.
-        * config/i386/i386.c (cost models): Initialize second dimension of
-        stringop_algs arrays.
+	* config/i386/i386.h (processor_costs): Add second dimension to
+	stringop_algs array.
+	* config/i386/i386.c (cost models): Initialize second dimension of
+	stringop_algs arrays.
 	(core_cost): New costs based on generic64 costs with updated stringop
 	values.
-        (promote_duplicated_reg): Add support for vector modes, add
-        declaration.
-        (promote_duplicated_reg_to_size): Likewise.
+	(promote_duplicated_reg): Add support for vector modes, add
+	declaration.
+	(promote_duplicated_reg_to_size): Likewise.
 	(processor_target): Set core costs for core variants.
-        (expand_set_or_movmem_via_loop_with_iter): New function.
-        (expand_set_or_movmem_via_loop): Enable reuse of the same iters in
-        different loops, produced by this function.
-        (emit_strset): New function.
-        (expand_movmem_epilogue): Add epilogue generation for bigger sizes,
-        use SSE-moves where possible.
-        (expand_setmem_epilogue): Likewise.
-        (expand_movmem_prologue): Likewise for prologue.
-        (expand_setmem_prologue): Likewise.
-        (expand_constant_movmem_prologue): Likewise.
-        (expand_constant_setmem_prologue): Likewise.
-        (decide_alg): Add new argument align_unknown.  Fix algorithm of
-        strategy selection if TARGET_INLINE_ALL_STRINGOPS is set; Skip sse_loop
-        (decide_alignment): Update desired alignment according to chosen move
-        mode.
-        (ix86_expand_movmem): Change unrolled_loop strategy to use SSE-moves.
-        (ix86_expand_setmem): Likewise.
-        (ix86_slow_unaligned_access): Implementation of new hook
-        slow_unaligned_access.
-        * config/i386/i386.md (strset): Enable half-SSE moves.
-        * config/i386/sse.md (vec_dupv4si): Add expand for vec_dupv4si.
-        (vec_dupv2di): Add expand for vec_dupv2di.
+	(expand_set_or_movmem_via_loop_with_iter): New function.
+	(expand_set_or_movmem_via_loop): Enable reuse of the same iters in
+	different loops, produced by this function.
+	(emit_strset): New function.
+	(expand_movmem_epilogue): Add epilogue generation for bigger sizes,
+	use SSE-moves where possible.
+	(expand_setmem_epilogue): Likewise.
+	(expand_movmem_prologue): Likewise for prologue.
+	(expand_setmem_prologue): Likewise.
+	(expand_constant_movmem_prologue): Likewise.
+	(expand_constant_setmem_prologue): Likewise.
+	(decide_alg): Add new argument align_unknown.  Fix algorithm of
+	strategy selection if TARGET_INLINE_ALL_STRINGOPS is set; Skip sse_loop
+	(decide_alignment): Update desired alignment according to chosen move
+	mode.
+	(ix86_expand_movmem): Change unrolled_loop strategy to use SSE-moves.
+	(ix86_expand_setmem): Likewise.
+	(ix86_slow_unaligned_access): Implementation of new hook
+	slow_unaligned_access.
+	* config/i386/i386.md (strset): Enable half-SSE moves.
+	* config/i386/sse.md (vec_dupv4si): Add expand for vec_dupv4si.
+	(vec_dupv2di): Add expand for vec_dupv2di.
 
 2011-11-14  Dimitrios Apostolou  <jimis@gmx.net>
 
@@ -53,8 +79,7 @@
 
 2011-11-14  Kai Tietz  <ktietz@redhat.com>
 
-	* gcov.c (generate_results): Add missing semicolon and
-	correct indent.
+	* gcov.c (generate_results): Add missing semicolon and correct indent.
 
 2011-11-14  Ira Rosen  <ira.rosen@linaro.org>
 
@@ -71,9 +96,8 @@
 	PR target/50694
 	* config/sh/sh.h (IS_LITTLE_ENDIAN_OPTION, UNSUPPORTED_SH2A):
 	New macros.
-	(DRIVER_SELF_SPECS): Use new macros to filter out
-	unsupported options taking the default configuration into
-	account.
+	(DRIVER_SELF_SPECS): Use new macros to filter out unsupported options
+	taking the default configuration into account.
 
 2011-11-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -110,7 +134,7 @@
 
 2011-11-12  Richard Henderson  <rth@redhat.com>
 
-	* config/rs6000/rs6000.md (fix_trunc<SFDF>si2_stfiwx): Use 
+	* config/rs6000/rs6000.md (fix_trunc<SFDF>si2_stfiwx): Use
 	nonimmediate_operand for the destination.
 	(fixuns_trunc<SFDF>si2_stfiwx): Likewise.
 
