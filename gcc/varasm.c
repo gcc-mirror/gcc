@@ -7633,19 +7633,6 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 }
 #endif
 
-/* Default TARGET_ASM_INTERNAL_LABEL for ELF targets.  */
-
-void
-default_elf_internal_label (FILE *f, const char *prefix,
-			    unsigned long labelno)
-{
-  putc ('.', f);
-  fputs (prefix, f);
-  fprint_ul (f, labelno);
-  putc (':', f);
-  putc ('\n', f);
-}
-
 static GTY(()) section *elf_init_array_section;
 static GTY(()) section *elf_fini_array_section;
 

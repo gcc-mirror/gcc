@@ -1,3 +1,10 @@
+2011-11-14  Dimitrios Apostolou  <jimis@gmx.net>
+
+	PR bootstrap/51094
+	PR middle-end/51116
+	* config/elfos.h (TARGET_ASM_INTERNAL_LABEL): Remove.
+	* varasm.c (default_elf_internal_label): Remove.
+
 2011-11-14  Kai Tietz  <ktietz@redhat.com>
 
 	* gcov.c (generate_results): Add missing semicolon and
