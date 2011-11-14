@@ -9965,7 +9965,7 @@
 (define_expand "round<mode>2"
   [(set (match_dup 4)
 	(plus:VF
-	  (match_operand:VF 1 "nonimmediate_operand" "")
+	  (match_operand:VF 1 "register_operand" "")
 	  (match_dup 3)))
    (set (match_operand:VF 0 "register_operand" "")
 	(unspec:VF
@@ -9998,7 +9998,7 @@
 
 (define_expand "round<mode>2_sfix"
   [(match_operand:<sseintvecmode> 0 "register_operand" "")
-   (match_operand:VF1 1 "nonimmediate_operand" "")]
+   (match_operand:VF1 1 "register_operand" "")]
   "TARGET_ROUND && !flag_trapping_math"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
@@ -10012,8 +10012,8 @@
 
 (define_expand "round<mode>2_vec_pack_sfix"
   [(match_operand:<ssepackfltmode> 0 "register_operand" "")
-   (match_operand:VF2 1 "nonimmediate_operand" "")
-   (match_operand:VF2 2 "nonimmediate_operand" "")]
+   (match_operand:VF2 1 "register_operand" "")
+   (match_operand:VF2 2 "register_operand" "")]
   "TARGET_ROUND && !flag_trapping_math"
 {
   rtx tmp0, tmp1;
