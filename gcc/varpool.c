@@ -414,6 +414,20 @@ varpool_finalize_decl (tree decl)
     varpool_assemble_pending_decls ();
 }
 
+/* Add the variable DECL to the varpool.
+   Unlike varpool_finalize_decl function is intended to be used
+   by middle end and allows insertion of new variable at arbitrary point
+   of compilation.  */
+void
+varpool_add_new_variable (tree decl)
+{
+  struct varpool_node *node;
+  varpool_finalize_decl (decl);
+  node = varpool_node (decl);
+  if (varpool_externally_visible_p (node, false))
+    node->externally_visible = true;
+}
+
 /* Return variable availability.  See cgraph.h for description of individual
    return values.  */
 enum availability

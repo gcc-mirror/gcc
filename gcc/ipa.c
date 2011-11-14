@@ -647,7 +647,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 
 /* Return true when variable VNODE should be considered externally visible.  */
 
-static bool
+bool
 varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 {
   if (!DECL_COMDAT (vnode->decl) && !TREE_PUBLIC (vnode->decl))

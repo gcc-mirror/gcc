@@ -7501,6 +7501,16 @@
    (set_attr "prefix" "maybe_vex,orig,vex,maybe_vex,orig,orig")
    (set_attr "mode" "V2SF,TI,TI,TI,V4SF,V2SF")])
 
+(define_expand "vec_dupv4si"
+  [(set (match_operand:V4SI 0 "register_operand" "")
+	(vec_duplicate:V4SI
+	  (match_operand:SI 1 "nonimmediate_operand" "")))]
+  "TARGET_SSE"
+{
+  if (!TARGET_AVX)
+    operands[1] = force_reg (V4SImode, operands[1]);
+})
+
 (define_insn "*vec_dupv4si"
   [(set (match_operand:V4SI 0 "register_operand"     "=x,x,x")
 	(vec_duplicate:V4SI
@@ -7516,6 +7526,16 @@
    (set_attr "prefix_extra" "0,1,*")
    (set_attr "prefix" "maybe_vex,vex,orig")
    (set_attr "mode" "TI,V4SF,V4SF")])
+
+(define_expand "vec_dupv2di"
+  [(set (match_operand:V2DI 0 "register_operand" "")
+	(vec_duplicate:V2DI
+	  (match_operand:DI 1 "nonimmediate_operand" "")))]
+  "TARGET_SSE"
+{
+  if (!TARGET_AVX)
+    operands[1] = force_reg (V2DImode, operands[1]);
+})
 
 (define_insn "*vec_dupv2di"
   [(set (match_operand:V2DI 0 "register_operand"     "=x,x,x,x")

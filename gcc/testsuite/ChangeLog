@@ -1,3 +1,8 @@
+2011-11-14  Zolotukhin Michael  <michael.v.zolotukhin@gmail.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/sw-1.c: Force rep;movsb.
+
 2011-11-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR testsuite/51059

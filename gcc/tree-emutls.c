@@ -262,7 +262,7 @@ get_emutls_init_templ_addr (tree decl)
   if (DECL_EXTERNAL (to))
     varpool_node (to);
   else
-    varpool_finalize_decl (to);
+    varpool_add_new_variable (to);
   return build_fold_addr_expr (to);
 }
 
@@ -334,7 +334,7 @@ new_emutls_decl (tree decl, tree alias_of)
   if (DECL_EXTERNAL (to))
     varpool_node (to);
   else if (!alias_of)
-    varpool_finalize_decl (to);
+    varpool_add_new_variable (to);
   else 
     varpool_create_variable_alias (to,
 				   varpool_node_for_asm
