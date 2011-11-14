@@ -561,10 +561,14 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (2),			/* cost of FABS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FCHS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FSQRT instruction.  */
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+  {{{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}}},
+  {{{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
+   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -632,10 +636,14 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (22),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (24),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (122),			/* cost of FSQRT instruction.  */
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+  {{{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    DUMMY_STRINGOP_ALGS},
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+   DUMMY_STRINGOP_ALGS}},
+  {{{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    DUMMY_STRINGOP_ALGS},
+   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -704,10 +712,14 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (83),			/* cost of FSQRT instruction.  */
-  {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
+  {{{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
    DUMMY_STRINGOP_ALGS},
-  {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
+   {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
+   DUMMY_STRINGOP_ALGS}},
+  {{{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
    DUMMY_STRINGOP_ALGS},
+   {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -774,10 +786,14 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{-1, rep_prefix_4_byte}}},
+   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
+  {{{libcall, {{-1, rep_prefix_4_byte}}},
    DUMMY_STRINGOP_ALGS},
+   {{libcall, {{-1, rep_prefix_4_byte}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -849,12 +865,18 @@ struct processor_costs pentiumpro_cost = {
      noticeable win, for bigger blocks either rep movsl or rep movsb is
      way to go.  Rep movsb has apparently more expensive startup time in CPU,
      but after 4K the difference is down in the noise.  */
-  {{rep_prefix_4_byte, {{128, loop}, {1024, unrolled_loop},
+  {{{rep_prefix_4_byte, {{128, loop}, {1024, unrolled_loop},
 			{8192, rep_prefix_4_byte}, {-1, rep_prefix_1_byte}}},
    DUMMY_STRINGOP_ALGS},
-  {{rep_prefix_4_byte, {{1024, unrolled_loop},
-  			{8192, rep_prefix_4_byte}, {-1, libcall}}},
+   {{rep_prefix_4_byte, {{128, loop}, {1024, unrolled_loop},
+			{8192, rep_prefix_4_byte}, {-1, rep_prefix_1_byte}}},
+   DUMMY_STRINGOP_ALGS}},
+  {{{rep_prefix_4_byte, {{1024, unrolled_loop},
+			{8192, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+   {{rep_prefix_4_byte, {{1024, unrolled_loop},
+			{8192, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -922,10 +944,14 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (54),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
+  {{{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -995,10 +1021,14 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
+  {{{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1068,10 +1098,14 @@ struct processor_costs athlon_cost = {
   /* For some reason, Athlon deals better with REP prefix (relative to loops)
      compared to K8. Alignment becomes important after 8 bytes for memcpy and
      128 bytes for memset.  */
-  {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
+  {{{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
+  {{{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+   {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1146,11 +1180,16 @@ struct processor_costs k8_cost = {
   /* K8 has optimized REP instruction for medium sized blocks, but for very
      small blocks it is better to use loop. For large blocks, libcall can
      do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+  {{{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
+   {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
+  {{{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
   4,					/* scalar_stmt_cost.  */
   2,					/* scalar load_cost.  */
   2,					/* scalar_store_cost.  */
@@ -1233,11 +1272,16 @@ struct processor_costs amdfam10_cost = {
   /* AMDFAM10 has optimized REP instruction for medium sized blocks, but for
      very small blocks it is better to use loop. For large blocks, libcall can
      do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
+  {{{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {512, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {512, rep_prefix_8_byte}, {-1, libcall}}}}},
+  {{{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
   4,					/* scalar_stmt_cost.  */
   2,					/* scalar load_cost.  */
   2,					/* scalar_store_cost.  */
@@ -1320,11 +1364,16 @@ struct processor_costs bdver1_cost = {
   /*  BDVER1 has optimized REP instruction for medium sized blocks, but for
       very small blocks it is better to use loop. For large blocks, libcall
       can do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+  {{{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
+   {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
+  {{{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
   6,					/* scalar_stmt_cost.  */
   4,					/* scalar load_cost.  */
   4,					/* scalar_store_cost.  */
@@ -1407,11 +1456,16 @@ struct processor_costs bdver2_cost = {
   /*  BDVER2 has optimized REP instruction for medium sized blocks, but for
       very small blocks it is better to use loop. For large blocks, libcall
       can do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+  {{{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
+  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
+  {{{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
   6,					/* scalar_stmt_cost.  */
   4,					/* scalar load_cost.  */
   4,					/* scalar_store_cost.  */
@@ -1489,11 +1543,16 @@ struct processor_costs btver1_cost = {
   /* BTVER1 has optimized REP instruction for medium sized blocks, but for
      very small blocks it is better to use loop. For large blocks, libcall can
      do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+  {{{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
+   {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
+  {{{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
   4,					/* scalar_stmt_cost.  */
   2,					/* scalar load_cost.  */
   2,					/* scalar_store_cost.  */
@@ -1560,11 +1619,18 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (43),			/* cost of FSQRT instruction.  */
-  {{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
+
+  {{{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
+   {{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
+   DUMMY_STRINGOP_ALGS}},
+
+  {{{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
    {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+   {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
+   {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1631,13 +1697,22 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (44),			/* cost of FSQRT instruction.  */
-  {{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
+
+  {{{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
    {libcall, {{32, loop}, {20000, rep_prefix_8_byte},
 	      {100000, unrolled_loop}, {-1, libcall}}}},
-  {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
+   {{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{32, loop}, {20000, rep_prefix_8_byte},
+	      {100000, unrolled_loop}, {-1, libcall}}}}},
+
+  {{{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
    {-1, libcall}}},
    {libcall, {{24, loop}, {64, unrolled_loop},
 	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
+   {-1, libcall}}},
+   {libcall, {{24, loop}, {64, unrolled_loop},
+	      {8192, rep_prefix_8_byte}, {-1, libcall}}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1704,13 +1779,23 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  {{libcall, {{11, loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{32, loop}, {64, rep_prefix_4_byte},
-	  {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {15, unrolled_loop},
-	  {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{24, loop}, {32, unrolled_loop},
-	  {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+
+  /* stringop_algs for memcpy.  
+     SSE loops works best on Atom, but fall back into non-SSE unrolled loop variant
+     if that fails.  */
+  {{{libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}, /* Known alignment.  */
+    {libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}},
+   {{libcall, {{-1, libcall}}},			       /* Unknown alignment.  */
+    {libcall, {{2048, sse_loop}, {2048, unrolled_loop},
+	       {-1, libcall}}}}},
+
+  /* stringop_algs for memset.  */
+  {{{libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}, /* Known alignment.  */
+    {libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}},
+   {{libcall, {{1024, sse_loop}, {1024, unrolled_loop},	 /* Unknown alignment.  */
+	       {-1, libcall}}},
+    {libcall, {{2048, sse_loop}, {2048, unrolled_loop},
+	       {-1, libcall}}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1724,7 +1809,92 @@ struct processor_costs atom_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
-/* Generic64 should produce code tuned for Nocona and K8.  */
+/* Core should produce code tuned for core variants.  */
+static const
+struct processor_costs core_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  /* On all chips taken into consideration lea is 2 cycles and more.  With
+     this cost however our current implementation of synth_mult results in
+     use of unnecessary temporary registers causing regression on several
+     SPECfp benchmarks.  */
+  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (2)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  17,					/* MOVE_RATIO */
+  4,				     /* cost for loading QImode using movzbl */
+  {4, 4, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {4, 4, 4},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {12, 12, 12},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {8, 8},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {8, 8},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {8, 8, 8},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {8, 8, 8},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  5,					/* MMX or SSE register to integer */
+  32,					/* size of l1 cache.  */
+  512,					/* size of l2 cache.  */
+  64,					/* size of prefetch block */
+  6,					/* number of parallel prefetches */
+  /* Benchmarks shows large regressions on K8 sixtrack benchmark when this
+     value is increased to perhaps more appropriate value of 5.  */
+  3,					/* Branch cost */
+  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+
+  /* stringop_algs for memcpy.  */
+  {{{libcall, {{16, loop}, {24, unrolled_loop}, {1024, rep_prefix_4_byte}, {-1, libcall}}}, /* Known alignment.  */
+    {libcall, {{16, loop}, {24, unrolled_loop}, {1024, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{16, loop}, {24, unrolled_loop}, {1024, rep_prefix_4_byte}, {-1, libcall}}}, /* Unknown alignment.  */
+    {libcall, {{16, loop}, {24, unrolled_loop}, {1024, rep_prefix_8_byte}, {-1, libcall}}}}},
+
+  /* stringop_algs for memset.  */
+  {{{libcall, {{256, rep_prefix_4_byte}}}, /* Known alignment.  */
+    {libcall, {{256, rep_prefix_8_byte}}}},
+   {{libcall, {{256, rep_prefix_4_byte}}}, /* Unknown alignment.  */
+    {libcall, {{256, rep_prefix_8_byte}}}}},
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
+};
+
+/* Generic64 should produce code tuned for Nocona, Core,  K8, Amdfam10 and buldozer.  */
 static const
 struct processor_costs generic64_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
@@ -1784,10 +1954,16 @@ struct processor_costs generic64_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  {DUMMY_STRINGOP_ALGS,
-   {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {DUMMY_STRINGOP_ALGS,
-   {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+
+  {{DUMMY_STRINGOP_ALGS,
+    {libcall, {{16, rep_prefix_4_byte}, {128, rep_prefix_8_byte}, {4096, rep_prefix_1_byte}, {-1, libcall}}}},
+   {DUMMY_STRINGOP_ALGS,
+    {libcall, {{128, rep_prefix_4_byte}, {4096, rep_prefix_1_byte}, {-1, libcall}}}}},
+
+  {{DUMMY_STRINGOP_ALGS,
+    {libcall, {{16, rep_prefix_4_byte}, {512, unrolled_loop}, {4096, rep_prefix_1_byte}, {-1, libcall}}}},
+   {DUMMY_STRINGOP_ALGS,
+    {libcall, {{16, rep_prefix_4_byte}, {512, unrolled_loop}, {4096, rep_prefix_1_byte}, {-1, libcall}}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1801,8 +1977,8 @@ struct processor_costs generic64_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
-/* Generic32 should produce code tuned for PPro, Pentium4, Nocona,
-   Athlon and K8.  */
+/* Generic32 should produce code tuned for PPro, Pentium4, Nocona, Core
+   Athlon, K8, amdfam10, buldozer.  */
 static const
 struct processor_costs generic32_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
@@ -1856,10 +2032,16 @@ struct processor_costs generic32_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
+  /* stringop_algs for memcpy.  */
+  {{{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
+   {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
+  /* stringop_algs for memset.  */
+  {{{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+   {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -2536,6 +2718,8 @@ static void ix86_set_current_function (tree);
 static unsigned int ix86_minimum_incoming_stack_boundary (bool);
 
 static enum calling_abi ix86_function_abi (const_tree);
+static rtx promote_duplicated_reg (enum machine_mode, rtx);
+static rtx promote_duplicated_reg_to_size (rtx, int, int, int);
 
 
 #ifndef SUBTARGET32_DEFAULT_CPU
@@ -2582,13 +2766,13 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&k8_cost, 16, 7, 16, 7, 16},
   {&nocona_cost, 0, 0, 0, 0, 0},
   /* Core 2 32-bit.  */
-  {&generic32_cost, 16, 10, 16, 10, 16},
+  {&core_cost, 16, 10, 16, 10, 16},
   /* Core 2 64-bit.  */
-  {&generic64_cost, 16, 10, 16, 10, 16},
+  {&core_cost, 16, 10, 16, 10, 16},
   /* Core i7 32-bit.  */
-  {&generic32_cost, 16, 10, 16, 10, 16},
+  {&core_cost, 16, 10, 16, 10, 16},
   /* Core i7 64-bit.  */
-  {&generic64_cost, 16, 10, 16, 10, 16},
+  {&core_cost, 16, 10, 16, 10, 16},
   {&generic32_cost, 16, 7, 16, 7, 16},
   {&generic64_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
@@ -20923,22 +21107,37 @@ counter_mode (rtx count_exp)
   return SImode;
 }
 
-/* When SRCPTR is non-NULL, output simple loop to move memory
+/* Helper function for expand_set_or_movmem_via_loop.
+
+   When SRCPTR is non-NULL, output simple loop to move memory
    pointer to SRCPTR to DESTPTR via chunks of MODE unrolled UNROLL times,
    overall size is COUNT specified in bytes.  When SRCPTR is NULL, output the
    equivalent loop to set memory by VALUE (supposed to be in MODE).
 
    The size is rounded down to whole number of chunk size moved at once.
-   SRCMEM and DESTMEM provide MEMrtx to feed proper aliasing info.  */
+   SRCMEM and DESTMEM provide MEMrtx to feed proper aliasing info.
 
+   If ITER isn't NULL, than it'll be used in the generated loop without
+   initialization (that allows to generate several consequent loops using the
+   same iterator).
+   If CHANGE_PTRS is specified, DESTPTR and SRCPTR would be increased by
+   iterator value at the end of the function (as if they iterate in the loop).
+   Otherwise, their vaules'll stay unchanged.
 
-static void
-expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
-			       rtx destptr, rtx srcptr, rtx value,
-			       rtx count, enum machine_mode mode, int unroll,
-			       int expected_size)
+   If EXPECTED_SIZE isn't -1, than it's used to compute branch-probabilities on
+   the loop backedge.  When expected size is unknown (it's -1), the probability
+   is set to 80%.
+
+   Return value is rtx of iterator, used in the loop - it could be reused in
+   consequent calls of this function.  */
+static rtx
+expand_set_or_movmem_via_loop_with_iter (rtx destmem, rtx srcmem,
+					 rtx destptr, rtx srcptr, rtx value,
+					 rtx count, rtx iter,
+					 enum machine_mode mode, int unroll,
+					 int expected_size, bool change_ptrs)
 {
-  rtx out_label, top_label, iter, tmp;
+  rtx out_label, top_label, tmp;
   enum machine_mode iter_mode = counter_mode (count);
   rtx piece_size = GEN_INT (GET_MODE_SIZE (mode) * unroll);
   rtx piece_size_mask = GEN_INT (~((GET_MODE_SIZE (mode) * unroll) - 1));
@@ -20946,10 +21145,12 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
   rtx x_addr;
   rtx y_addr;
   int i;
+  bool reuse_iter = (iter != NULL_RTX);
 
   top_label = gen_label_rtx ();
   out_label = gen_label_rtx ();
-  iter = gen_reg_rtx (iter_mode);
+  if (!reuse_iter)
+    iter = gen_reg_rtx (iter_mode);
 
   size = expand_simple_binop (iter_mode, AND, count, piece_size_mask,
 			      NULL, 1, OPTAB_DIRECT);
@@ -20960,18 +21161,21 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
 			       true, out_label);
       predict_jump (REG_BR_PROB_BASE * 10 / 100);
     }
-  emit_move_insn (iter, const0_rtx);
+  if (!reuse_iter)
+    emit_move_insn (iter, const0_rtx);
 
   emit_label (top_label);
 
   tmp = convert_modes (Pmode, iter_mode, iter, true);
   x_addr = gen_rtx_PLUS (Pmode, destptr, tmp);
-  destmem = change_address (destmem, mode, x_addr);
+  destmem =
+    adjust_automodify_address_nv (copy_rtx (destmem), mode, x_addr, 0);
 
   if (srcmem)
     {
       y_addr = gen_rtx_PLUS (Pmode, srcptr, copy_rtx (tmp));
-      srcmem = change_address (srcmem, mode, y_addr);
+      srcmem =
+	adjust_automodify_address_nv (copy_rtx (srcmem), mode, y_addr, 0);
 
       /* When unrolling for chips that reorder memory reads and writes,
 	 we can save registers by using single temporary.
@@ -21043,19 +21247,43 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
     }
   else
     predict_jump (REG_BR_PROB_BASE * 80 / 100);
-  iter = ix86_zero_extend_to_Pmode (iter);
-  tmp = expand_simple_binop (Pmode, PLUS, destptr, iter, destptr,
-			     true, OPTAB_LIB_WIDEN);
-  if (tmp != destptr)
-    emit_move_insn (destptr, tmp);
-  if (srcptr)
+  if (change_ptrs)
     {
-      tmp = expand_simple_binop (Pmode, PLUS, srcptr, iter, srcptr,
+      iter = ix86_zero_extend_to_Pmode (iter);
+      tmp = expand_simple_binop (Pmode, PLUS, destptr, iter, destptr,
 				 true, OPTAB_LIB_WIDEN);
-      if (tmp != srcptr)
-	emit_move_insn (srcptr, tmp);
+      if (tmp != destptr)
+	emit_move_insn (destptr, tmp);
+      if (srcptr)
+	{
+	  tmp = expand_simple_binop (Pmode, PLUS, srcptr, iter, srcptr,
+				     true, OPTAB_LIB_WIDEN);
+	  if (tmp != srcptr)
+	    emit_move_insn (srcptr, tmp);
+	}
     }
   emit_label (out_label);
+  return iter;
+}
+
+/* When SRCPTR is non-NULL, output simple loop to move memory
+   pointer to SRCPTR to DESTPTR via chunks of MODE unrolled UNROLL times,
+   overall size is COUNT specified in bytes.  When SRCPTR is NULL, output the
+   equivalent loop to set memory by VALUE (supposed to be in MODE).
+
+   The size is rounded down to whole number of chunk size moved at once.
+   SRCMEM and DESTMEM provide MEMrtx to feed proper aliasing info.  */
+
+static void
+expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
+			       rtx destptr, rtx srcptr, rtx value,
+			       rtx count, enum machine_mode mode, int unroll,
+			       int expected_size)
+{
+  expand_set_or_movmem_via_loop_with_iter (destmem, srcmem,
+				 destptr, srcptr, value,
+				 count, NULL_RTX, mode, unroll,
+				 expected_size, true);
 }
 
 /* Output "rep; mov" instruction.
@@ -21159,7 +21387,18 @@ emit_strmov (rtx destmem, rtx srcmem,
   emit_insn (gen_strmov (destptr, dest, srcptr, src));
 }
 
-/* Output code to copy at most count & (max_size - 1) bytes from SRC to DEST.  */
+/* Emit strset instuction.  If RHS is constant, and vector mode will be used,
+   then move this constant to a vector register before emitting strset.  */
+static void
+emit_strset (rtx destmem, rtx value,
+	     rtx destptr, enum machine_mode mode, int offset)
+{
+  rtx dest = adjust_automodify_address_nv (destmem, mode, destptr, offset);
+  emit_insn (gen_strset (destptr, dest, value));
+}
+
+/* Output code to copy (COUNT % MAX_SIZE) bytes from SRCPTR to DESTPTR.
+   SRCMEM and DESTMEM provide MEMrtx to feed proper aliasing info.  */
 static void
 expand_movmem_epilogue (rtx destmem, rtx srcmem,
 			rtx destptr, rtx srcptr, rtx count, int max_size)
@@ -21170,43 +21409,55 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
       HOST_WIDE_INT countval = INTVAL (count);
       int offset = 0;
 
-      if ((countval & 0x10) && max_size > 16)
+      int remainder_size = countval % max_size;
+      enum machine_mode move_mode = Pmode;
+
+      /* Firstly, try to move data with the widest possible mode.
+	 Remaining part we'll move using Pmode and narrower modes.  */
+      if (TARGET_SSE)
 	{
-	  if (TARGET_64BIT)
-	    {
-	      emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset);
-	      emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset + 8);
-	    }
-	  else
-	    gcc_unreachable ();
-	  offset += 16;
+	  if (max_size >= GET_MODE_SIZE (V4SImode))
+	    move_mode = V4SImode;
+	  else if (max_size >= GET_MODE_SIZE (DImode))
+	    move_mode = DImode;
 	}
-      if ((countval & 0x08) && max_size > 8)
+
+      while (remainder_size >= GET_MODE_SIZE (move_mode))
 	{
-	  if (TARGET_64BIT)
-	    emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset);
-	  else
-	    {
-	      emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset);
-	      emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset + 4);
-	    }
-	  offset += 8;
+	  emit_strmov (destmem, srcmem, destptr, srcptr, move_mode, offset);
+	  offset += GET_MODE_SIZE (move_mode);
+	  remainder_size -= GET_MODE_SIZE (move_mode);
 	}
-      if ((countval & 0x04) && max_size > 4)
+
+      /* Move the remaining part of epilogue - its size might be
+	 a size of the widest mode.  */
+      move_mode = Pmode;
+      while (remainder_size >= GET_MODE_SIZE (move_mode))
 	{
-          emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset);
+	  emit_strmov (destmem, srcmem, destptr, srcptr, move_mode, offset);
+	  offset += GET_MODE_SIZE (move_mode);
+	  remainder_size -= GET_MODE_SIZE (move_mode);
+	}
+
+      if (remainder_size >= 4)
+	{
+	  emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset);
 	  offset += 4;
+	  remainder_size -= 4;
 	}
-      if ((countval & 0x02) && max_size > 2)
+      if (remainder_size >= 2)
 	{
-          emit_strmov (destmem, srcmem, destptr, srcptr, HImode, offset);
+	  emit_strmov (destmem, srcmem, destptr, srcptr, HImode, offset);
 	  offset += 2;
+	  remainder_size -= 2;
 	}
-      if ((countval & 0x01) && max_size > 1)
+      if (remainder_size >= 1)
 	{
-          emit_strmov (destmem, srcmem, destptr, srcptr, QImode, offset);
+	  emit_strmov (destmem, srcmem, destptr, srcptr, QImode, offset);
 	  offset += 1;
+	  remainder_size -= 1;
 	}
+      gcc_assert (remainder_size == 0);
       return;
     }
   if (max_size > 8)
@@ -21312,87 +21563,121 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 				 1, max_size / 2);
 }
 
-/* Output code to set at most count & (max_size - 1) bytes starting by DEST.  */
+/* Output code to set with VALUE at most (COUNT % MAX_SIZE) bytes starting from
+   DESTPTR.
+   DESTMEM provides MEMrtx to feed proper aliasing info.
+   PROMOTED_TO_GPR_VALUE is rtx representing a GPR containing broadcasted VALUE.
+   PROMOTED_TO_VECTOR_VALUE is rtx representing a vector register containing
+   broadcasted VALUE.
+   PROMOTED_TO_GPR_VALUE and PROMOTED_TO_VECTOR_VALUE could be NULL if the
+   promotion hasn't been generated before.  */
 static void
-expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx count, int max_size)
+expand_setmem_epilogue (rtx destmem, rtx destptr, rtx promoted_to_vector_value,
+			rtx promoted_to_gpr_value, rtx value, rtx count,
+			int max_size)
 {
-  rtx dest;
-
   if (CONST_INT_P (count))
     {
       HOST_WIDE_INT countval = INTVAL (count);
       int offset = 0;
 
-      if ((countval & 0x10) && max_size > 16)
+      int remainder_size = countval % max_size;
+      enum machine_mode move_mode = Pmode;
+
+      /* Firstly, try to move data with the widest possible mode.
+	 Remaining part we'll move using Pmode and narrower modes.  */
+
+      if (promoted_to_vector_value)
+	while (remainder_size >= 16)
+	  {
+	    if (GET_MODE (destmem) != move_mode)
+	      destmem = adjust_automodify_address_nv (destmem, move_mode,
+						      destptr, offset);
+	    emit_strset (destmem, promoted_to_vector_value, destptr,
+			 move_mode, offset);
+
+	    offset += 16;
+	    remainder_size -= 16;
+	  }
+
+      /* Move the remaining part of epilogue - its size might be
+	 a size of the widest mode.  */
+      while (remainder_size >= GET_MODE_SIZE (Pmode))
 	{
-	  if (TARGET_64BIT)
-	    {
-	      dest = adjust_automodify_address_nv (destmem, DImode, destptr, offset);
-	      emit_insn (gen_strset (destptr, dest, value));
-	      dest = adjust_automodify_address_nv (destmem, DImode, destptr, offset + 8);
-	      emit_insn (gen_strset (destptr, dest, value));
-	    }
-	  else
-	    gcc_unreachable ();
-	  offset += 16;
+	  if (!promoted_to_gpr_value)
+	    promoted_to_gpr_value = promote_duplicated_reg (Pmode, value);
+	  emit_strset (destmem, promoted_to_gpr_value, destptr, Pmode, offset);
+	  offset += GET_MODE_SIZE (Pmode);
+	  remainder_size -= GET_MODE_SIZE (Pmode);
 	}
-      if ((countval & 0x08) && max_size > 8)
+
+      if (!promoted_to_gpr_value && remainder_size > 1)
+	promoted_to_gpr_value = promote_duplicated_reg (remainder_size >= 4
+							? SImode : HImode, value);
+      if (remainder_size >= 4)
 	{
-	  if (TARGET_64BIT)
-	    {
-	      dest = adjust_automodify_address_nv (destmem, DImode, destptr, offset);
-	      emit_insn (gen_strset (destptr, dest, value));
-	    }
-	  else
-	    {
-	      dest = adjust_automodify_address_nv (destmem, SImode, destptr, offset);
-	      emit_insn (gen_strset (destptr, dest, value));
-	      dest = adjust_automodify_address_nv (destmem, SImode, destptr, offset + 4);
-	      emit_insn (gen_strset (destptr, dest, value));
-	    }
-	  offset += 8;
-	}
-      if ((countval & 0x04) && max_size > 4)
-	{
-	  dest = adjust_automodify_address_nv (destmem, SImode, destptr, offset);
-	  emit_insn (gen_strset (destptr, dest, gen_lowpart (SImode, value)));
+	  emit_strset (destmem, gen_lowpart (SImode, promoted_to_gpr_value), destptr,
+		       SImode, offset);
 	  offset += 4;
+	  remainder_size -= 4;
 	}
-      if ((countval & 0x02) && max_size > 2)
+      if (remainder_size >= 2)
 	{
-	  dest = adjust_automodify_address_nv (destmem, HImode, destptr, offset);
-	  emit_insn (gen_strset (destptr, dest, gen_lowpart (HImode, value)));
-	  offset += 2;
+	  emit_strset (destmem, gen_lowpart (HImode, promoted_to_gpr_value), destptr,
+		       HImode, offset);
+	  offset +=2;
+	  remainder_size -= 2;
 	}
-      if ((countval & 0x01) && max_size > 1)
+      if (remainder_size >= 1)
 	{
-	  dest = adjust_automodify_address_nv (destmem, QImode, destptr, offset);
-	  emit_insn (gen_strset (destptr, dest, gen_lowpart (QImode, value)));
+	  emit_strset (destmem,
+		       promoted_to_gpr_value ? gen_lowpart (QImode, promoted_to_gpr_value) : value,
+		        destptr,
+		       QImode, offset);
 	  offset += 1;
+	  remainder_size -= 1;
 	}
+      gcc_assert (remainder_size == 0);
       return;
     }
+
+  /* count isn't const.  */
   if (max_size > 32)
     {
-      expand_setmem_epilogue_via_loop (destmem, destptr, value, count, max_size);
+      expand_setmem_epilogue_via_loop (destmem, destptr, value, count,
+				       max_size);
       return;
     }
+
+  if (!promoted_to_gpr_value)
+    promoted_to_gpr_value = promote_duplicated_reg_to_size (value,
+						   GET_MODE_SIZE (Pmode),
+						   GET_MODE_SIZE (Pmode),
+						   GET_MODE_SIZE (Pmode));
+
   if (max_size > 16)
     {
       rtx label = ix86_expand_aligntest (count, 16, true);
-      if (TARGET_64BIT)
+      if (TARGET_SSE && promoted_to_vector_value)
 	{
-	  dest = change_address (destmem, DImode, destptr);
-	  emit_insn (gen_strset (destptr, dest, value));
-	  emit_insn (gen_strset (destptr, dest, value));
+	  destmem = change_address (destmem,
+				    GET_MODE (promoted_to_vector_value),
+				    destptr);
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_vector_value));
+	}
+      else if (TARGET_64BIT)
+	{
+	  destmem = change_address (destmem, DImode, destptr);
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
 	}
       else
 	{
-	  dest = change_address (destmem, SImode, destptr);
-	  emit_insn (gen_strset (destptr, dest, value));
-	  emit_insn (gen_strset (destptr, dest, value));
-	  emit_insn (gen_strset (destptr, dest, value));
-	  emit_insn (gen_strset (destptr, dest, value));
+	  destmem = change_address (destmem, SImode, destptr);
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
 	}
       emit_label (label);
       LABEL_NUSES (label) = 1;
@@ -21402,14 +21687,22 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx count, int max_
       rtx label = ix86_expand_aligntest (count, 8, true);
       if (TARGET_64BIT)
 	{
-	  dest = change_address (destmem, DImode, destptr);
-	  emit_insn (gen_strset (destptr, dest, value));
+	  destmem = change_address (destmem, DImode, destptr);
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
+	}
+      /* FIXME: When this hunk it output, IRA classifies promoted_to_vector_value
+         as NO_REGS.  */
+      else if (TARGET_SSE && promoted_to_vector_value && 0)
+	{
+	  destmem = change_address (destmem, V2SImode, destptr);
+	  emit_insn (gen_strset (destptr, destmem,
+				 gen_lowpart (V2SImode, promoted_to_vector_value)));
 	}
       else
 	{
-	  dest = change_address (destmem, SImode, destptr);
-	  emit_insn (gen_strset (destptr, dest, value));
-	  emit_insn (gen_strset (destptr, dest, value));
+	  destmem = change_address (destmem, SImode, destptr);
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
+	  emit_insn (gen_strset (destptr, destmem, promoted_to_gpr_value));
 	}
       emit_label (label);
       LABEL_NUSES (label) = 1;
@@ -21417,24 +21710,27 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx count, int max_
   if (max_size > 4)
     {
       rtx label = ix86_expand_aligntest (count, 4, true);
-      dest = change_address (destmem, SImode, destptr);
-      emit_insn (gen_strset (destptr, dest, gen_lowpart (SImode, value)));
+      destmem = change_address (destmem, SImode, destptr);
+      emit_insn (gen_strset (destptr, destmem,
+			     gen_lowpart (SImode, promoted_to_gpr_value)));
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
   if (max_size > 2)
     {
       rtx label = ix86_expand_aligntest (count, 2, true);
-      dest = change_address (destmem, HImode, destptr);
-      emit_insn (gen_strset (destptr, dest, gen_lowpart (HImode, value)));
+      destmem = change_address (destmem, HImode, destptr);
+      emit_insn (gen_strset (destptr, destmem,
+			     gen_lowpart (HImode, promoted_to_gpr_value)));
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
   if (max_size > 1)
     {
       rtx label = ix86_expand_aligntest (count, 1, true);
-      dest = change_address (destmem, QImode, destptr);
-      emit_insn (gen_strset (destptr, dest, gen_lowpart (QImode, value)));
+      destmem = change_address (destmem, QImode, destptr);
+      emit_insn (gen_strset (destptr, destmem,
+			     gen_lowpart (QImode, promoted_to_gpr_value)));
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
@@ -21450,8 +21746,8 @@ expand_movmem_prologue (rtx destmem, rtx srcmem,
   if (align <= 1 && desired_alignment > 1)
     {
       rtx label = ix86_expand_aligntest (destptr, 1, false);
-      srcmem = change_address (srcmem, QImode, srcptr);
-      destmem = change_address (destmem, QImode, destptr);
+      srcmem = adjust_automodify_address_nv (srcmem, QImode, srcptr, 0);
+      destmem = adjust_automodify_address_nv (destmem, QImode, destptr, 0);
       emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
       ix86_adjust_counter (count, 1);
       emit_label (label);
@@ -21460,8 +21756,8 @@ expand_movmem_prologue (rtx destmem, rtx srcmem,
   if (align <= 2 && desired_alignment > 2)
     {
       rtx label = ix86_expand_aligntest (destptr, 2, false);
-      srcmem = change_address (srcmem, HImode, srcptr);
-      destmem = change_address (destmem, HImode, destptr);
+      srcmem = adjust_automodify_address_nv (srcmem, HImode, srcptr, 0);
+      destmem = adjust_automodify_address_nv (destmem, HImode, destptr, 0);
       emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
       ix86_adjust_counter (count, 2);
       emit_label (label);
@@ -21470,14 +21766,34 @@ expand_movmem_prologue (rtx destmem, rtx srcmem,
   if (align <= 4 && desired_alignment > 4)
     {
       rtx label = ix86_expand_aligntest (destptr, 4, false);
-      srcmem = change_address (srcmem, SImode, srcptr);
-      destmem = change_address (destmem, SImode, destptr);
+      srcmem = adjust_automodify_address_nv (srcmem, SImode, srcptr, 0);
+      destmem = adjust_automodify_address_nv (destmem, SImode, destptr, 0);
       emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
       ix86_adjust_counter (count, 4);
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
-  gcc_assert (desired_alignment <= 8);
+  if (align <= 8 && desired_alignment > 8)
+    {
+      rtx label = ix86_expand_aligntest (destptr, 8, false);
+      if (TARGET_64BIT || TARGET_SSE)
+	{
+	  srcmem = adjust_automodify_address_nv (srcmem, DImode, srcptr, 0);
+	  destmem = adjust_automodify_address_nv (destmem, DImode, destptr, 0);
+	  emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
+	}
+      else
+	{
+	  srcmem = adjust_automodify_address_nv (srcmem, SImode, srcptr, 0);
+	  destmem = adjust_automodify_address_nv (destmem, SImode, destptr, 0);
+	  emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
+	  emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
+	}
+      ix86_adjust_counter (count, 8);
+      emit_label (label);
+      LABEL_NUSES (label) = 1;
+    }
+  gcc_assert (desired_alignment <= 16);
 }
 
 /* Copy enough from DST to SRC to align DST known to DESIRED_ALIGN.
@@ -21532,6 +21848,37 @@ expand_constant_movmem_prologue (rtx dst, rtx *srcp, rtx destreg, rtx srcreg,
       off = 4;
       emit_insn (gen_strmov (destreg, dst, srcreg, src));
     }
+  if (align_bytes & 8)
+    {
+      if (TARGET_64BIT || TARGET_SSE)
+	{
+	  dst = adjust_automodify_address_nv (dst, DImode, destreg, off);
+	  src = adjust_automodify_address_nv (src, DImode, srcreg, off);
+	  emit_insn (gen_strmov (destreg, dst, srcreg, src));
+	}
+      else
+	{
+	  dst = adjust_automodify_address_nv (dst, SImode, destreg, off);
+	  src = adjust_automodify_address_nv (src, SImode, srcreg, off);
+	  emit_insn (gen_strmov (destreg, dst, srcreg, src));
+	  emit_insn (gen_strmov (destreg, dst, srcreg, src));
+	}
+      if (MEM_ALIGN (dst) < 8 * BITS_PER_UNIT)
+	set_mem_align (dst, 8 * BITS_PER_UNIT);
+      if (src_align_bytes >= 0)
+	{
+	  unsigned int src_align = 0;
+	  if ((src_align_bytes & 7) == (align_bytes & 7))
+	    src_align = 8;
+	  else if ((src_align_bytes & 3) == (align_bytes & 3))
+	    src_align = 4;
+	  else if ((src_align_bytes & 1) == (align_bytes & 1))
+	    src_align = 2;
+	  if (MEM_ALIGN (src) < src_align * BITS_PER_UNIT)
+	    set_mem_align (src, src_align * BITS_PER_UNIT);
+	}
+      off = 8;
+    }
   dst = adjust_automodify_address_nv (dst, BLKmode, destreg, off);
   src = adjust_automodify_address_nv (src, BLKmode, srcreg, off);
   if (MEM_ALIGN (dst) < (unsigned int) desired_align * BITS_PER_UNIT)
@@ -21539,7 +21886,9 @@ expand_constant_movmem_prologue (rtx dst, rtx *srcp, rtx destreg, rtx srcreg,
   if (src_align_bytes >= 0)
     {
       unsigned int src_align = 0;
-      if ((src_align_bytes & 7) == (align_bytes & 7))
+      if ((src_align_bytes & 15) == (align_bytes & 15))
+	src_align = 16;
+      else if ((src_align_bytes & 7) == (align_bytes & 7))
 	src_align = 8;
       else if ((src_align_bytes & 3) == (align_bytes & 3))
 	src_align = 4;
@@ -21567,7 +21916,7 @@ expand_setmem_prologue (rtx destmem, rtx destptr, rtx value, rtx count,
   if (align <= 1 && desired_alignment > 1)
     {
       rtx label = ix86_expand_aligntest (destptr, 1, false);
-      destmem = change_address (destmem, QImode, destptr);
+      destmem = adjust_automodify_address_nv (destmem, QImode, destptr, 0);
       emit_insn (gen_strset (destptr, destmem, gen_lowpart (QImode, value)));
       ix86_adjust_counter (count, 1);
       emit_label (label);
@@ -21576,7 +21925,7 @@ expand_setmem_prologue (rtx destmem, rtx destptr, rtx value, rtx count,
   if (align <= 2 && desired_alignment > 2)
     {
       rtx label = ix86_expand_aligntest (destptr, 2, false);
-      destmem = change_address (destmem, HImode, destptr);
+      destmem = adjust_automodify_address_nv (destmem, HImode, destptr, 0);
       emit_insn (gen_strset (destptr, destmem, gen_lowpart (HImode, value)));
       ix86_adjust_counter (count, 2);
       emit_label (label);
@@ -21585,13 +21934,23 @@ expand_setmem_prologue (rtx destmem, rtx destptr, rtx value, rtx count,
   if (align <= 4 && desired_alignment > 4)
     {
       rtx label = ix86_expand_aligntest (destptr, 4, false);
-      destmem = change_address (destmem, SImode, destptr);
+      destmem = adjust_automodify_address_nv (destmem, SImode, destptr, 0);
       emit_insn (gen_strset (destptr, destmem, gen_lowpart (SImode, value)));
       ix86_adjust_counter (count, 4);
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
-  gcc_assert (desired_alignment <= 8);
+  if (align <= 8 && desired_alignment > 8)
+    {
+      rtx label = ix86_expand_aligntest (destptr, 8, false);
+      destmem = adjust_automodify_address_nv (destmem, SImode, destptr, 0);
+      emit_insn (gen_strset (destptr, destmem, gen_lowpart (SImode, value)));
+      emit_insn (gen_strset (destptr, destmem, gen_lowpart (SImode, value)));
+      ix86_adjust_counter (count, 8);
+      emit_label (label);
+      LABEL_NUSES (label) = 1;
+    }
+  gcc_assert (desired_alignment <= 16);
 }
 
 /* Set enough from DST to align DST known to by aligned by ALIGN to
@@ -21627,6 +21986,19 @@ expand_constant_setmem_prologue (rtx dst, rtx destreg, rtx value,
       emit_insn (gen_strset (destreg, dst,
 			     gen_lowpart (SImode, value)));
     }
+  if (align_bytes & 8)
+    {
+      dst = adjust_automodify_address_nv (dst, SImode, destreg, off);
+      emit_insn (gen_strset (destreg, dst,
+	    gen_lowpart (SImode, value)));
+      off = 4;
+      dst = adjust_automodify_address_nv (dst, SImode, destreg, off);
+      emit_insn (gen_strset (destreg, dst,
+	    gen_lowpart (SImode, value)));
+      if (MEM_ALIGN (dst) < 8 * BITS_PER_UNIT)
+	set_mem_align (dst, 8 * BITS_PER_UNIT);
+      off = 4;
+    }
   dst = adjust_automodify_address_nv (dst, BLKmode, destreg, off);
   if (MEM_ALIGN (dst) < (unsigned int) desired_align * BITS_PER_UNIT)
     set_mem_align (dst, desired_align * BITS_PER_UNIT);
@@ -21638,7 +22010,7 @@ expand_constant_setmem_prologue (rtx dst, rtx destreg, rtx value,
 /* Given COUNT and EXPECTED_SIZE, decide on codegen of string operation.  */
 static enum stringop_alg
 decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
-	    int *dynamic_check)
+	    int *dynamic_check, bool align_unknown)
 {
   const struct stringop_algs * algs;
   bool optimize_for_speed;
@@ -21647,7 +22019,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
      consider such algorithms if the user has appropriated those
      registers for their own purposes.	*/
   bool rep_prefix_usable = !(fixed_regs[CX_REG] || fixed_regs[DI_REG]
-                             || (memset
+			     || (memset
 				 ? fixed_regs[AX_REG] : fixed_regs[SI_REG]));
 
 #define ALG_USABLE_P(alg) (rep_prefix_usable			\
@@ -21660,7 +22032,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
      of time processing large blocks.  */
   if (optimize_function_for_size_p (cfun)
       || (optimize_insn_for_size_p ()
-          && expected_size != -1 && expected_size < 256))
+	  && expected_size != -1 && expected_size < 256))
     optimize_for_speed = false;
   else
     optimize_for_speed = true;
@@ -21669,9 +22041,9 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 
   *dynamic_check = -1;
   if (memset)
-    algs = &cost->memset[TARGET_64BIT != 0];
+    algs = &cost->memset[align_unknown][TARGET_64BIT != 0];
   else
-    algs = &cost->memcpy[TARGET_64BIT != 0];
+    algs = &cost->memcpy[align_unknown][TARGET_64BIT != 0];
   if (ix86_stringop_alg != no_stringop && ALG_USABLE_P (ix86_stringop_alg))
     return ix86_stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */
@@ -21735,29 +22107,33 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
       enum stringop_alg alg;
       int i;
       bool any_alg_usable_p = true;
+      bool only_libcall_fits = true;
 
       for (i = 0; i < MAX_STRINGOP_ALGS; i++)
-        {
-          enum stringop_alg candidate = algs->size[i].alg;
-          any_alg_usable_p = any_alg_usable_p && ALG_USABLE_P (candidate);
+	{
+	  enum stringop_alg candidate = algs->size[i].alg;
+	  any_alg_usable_p = any_alg_usable_p && ALG_USABLE_P (candidate);
 
-          if (candidate != libcall && candidate
-              && ALG_USABLE_P (candidate))
-              max = algs->size[i].max;
-        }
+	  if (candidate != libcall && candidate
+	      && ALG_USABLE_P (candidate))
+	    {
+	      max = algs->size[i].max;
+	      only_libcall_fits = false;
+	    }
+	}
       /* If there aren't any usable algorithms, then recursing on
-         smaller sizes isn't going to find anything.  Just return the
-         simple byte-at-a-time copy loop.  */
-      if (!any_alg_usable_p)
-        {
-          /* Pick something reasonable.  */
-          if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
-            *dynamic_check = 128;
-          return loop_1_byte;
-        }
+	 smaller sizes isn't going to find anything.  Just return the
+	 simple byte-at-a-time copy loop.  */
+      if (!any_alg_usable_p || only_libcall_fits)
+	{
+	  /* Pick something reasonable.  */
+	  if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
+	    *dynamic_check = 128;
+	  return loop_1_byte;
+	}
       if (max == -1)
 	max = 4096;
-      alg = decide_alg (count, max / 2, memset, dynamic_check);
+      alg = decide_alg (count, max / 2, memset, dynamic_check, align_unknown);
       gcc_assert (*dynamic_check == -1);
       gcc_assert (alg != libcall);
       if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
@@ -21781,8 +22157,13 @@ decide_alignment (int align,
       case no_stringop:
 	gcc_unreachable ();
       case loop:
+	desired_align = GET_MODE_SIZE (Pmode);
+	break;
       case unrolled_loop:
 	desired_align = GET_MODE_SIZE (Pmode);
+	break;
+      case sse_loop:
+	desired_align = 16;
 	break;
       case rep_prefix_8_byte:
 	desired_align = 8;
@@ -21871,6 +22252,11 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   enum stringop_alg alg;
   int dynamic_check;
   bool need_zero_guard = false;
+  bool align_unknown;
+  int unroll_factor;
+  enum machine_mode move_mode;
+  rtx loop_iter = NULL_RTX;
+  int dst_offset, src_offset;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -21894,9 +22280,17 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
-
-  alg = decide_alg (count, expected_size, false, &dynamic_check);
+  dst_offset = get_mem_align_offset (dst, MOVE_MAX*BITS_PER_UNIT);
+  src_offset = get_mem_align_offset (src, MOVE_MAX*BITS_PER_UNIT);
+  align_unknown = (dst_offset < 0
+		   || src_offset < 0
+		   || src_offset != dst_offset);
+  alg = decide_alg (count, expected_size, false, &dynamic_check, align_unknown);
   desired_align = decide_alignment (align, alg, expected_size);
+  if (align_unknown)
+    desired_align = align;
+  unroll_factor = 1;
+  move_mode = Pmode;
 
   if (!TARGET_ALIGN_STRINGOPS)
     align = desired_align;
@@ -21915,11 +22309,22 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       gcc_unreachable ();
     case loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode);
+      move_mode = Pmode;
+      unroll_factor = 1;
+      size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
       break;
     case unrolled_loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode) * (TARGET_64BIT ? 4 : 2);
+      move_mode = Pmode;
+      unroll_factor = TARGET_64BIT ? 4 : 2;
+      size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
+      break;
+    case sse_loop:
+      need_zero_guard = true;
+      /* Use SSE instructions, if possible.  */
+      move_mode = align_unknown ? DImode : V4SImode;
+      unroll_factor = TARGET_64BIT ? 4 : 2;
+      size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
       break;
     case rep_prefix_8_byte:
       size_needed = 8;
@@ -21980,6 +22385,12 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	}
       else
 	{
+	  /* SSE and unrolled algs re-use iteration counter in the epilogue.  */
+	  if (alg == sse_loop || alg == unrolled_loop)
+	    {
+	      loop_iter = gen_reg_rtx (counter_mode (count_exp));
+              emit_move_insn (loop_iter, const0_rtx);
+	    }
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp,
 				   GEN_INT (epilogue_size_needed),
@@ -22031,6 +22442,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	  dst = change_address (dst, BLKmode, destreg);
 	  expand_movmem_prologue (dst, src, destreg, srcreg, count_exp, align,
 				  desired_align);
+	  set_mem_align (src, desired_align*BITS_PER_UNIT);
+	  set_mem_align (dst, desired_align*BITS_PER_UNIT);
 	}
       else
 	{
@@ -22087,12 +22500,16 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, NULL,
 				     count_exp, Pmode, 1, expected_size);
       break;
+    case sse_loop:
     case unrolled_loop:
-      /* Unroll only by factor of 2 in 32bit mode, since we don't have enough
-	 registers for 4 temporaries anyway.  */
-      expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, NULL,
-				     count_exp, Pmode, TARGET_64BIT ? 4 : 2,
-				     expected_size);
+      /* In some cases we want to use the same iterator in several adjacent
+	 loops, so here we save loop iterator rtx and don't update addresses.  */
+      loop_iter = expand_set_or_movmem_via_loop_with_iter (dst, src, destreg,
+							   srcreg, NULL,
+							   count_exp, loop_iter,
+							   move_mode,
+							   unroll_factor,
+							   expected_size, false);
       break;
     case rep_prefix_8_byte:
       expand_movmem_via_rep_mov (dst, src, destreg, srcreg, count_exp,
@@ -22143,9 +22560,41 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       LABEL_NUSES (label) = 1;
     }
 
+  /* We haven't updated addresses, so we'll do it now.
+     Also, if the epilogue seems to be big, we'll generate a loop (not
+     unrolled) in it.  We'll do it only if alignment is unknown, because in
+     this case in epilogue we have to perform memmove by bytes, which is very
+     slow.  */
+  if (alg == sse_loop || alg == unrolled_loop)
+    {
+      rtx tmp;
+      if (align_unknown && unroll_factor > 1)
+	{
+	  /* Reduce epilogue's size by creating not-unrolled loop.  If we won't
+	     do this, we can have very big epilogue - when alignment is statically
+	     unknown we'll have the epilogue byte by byte which may be very slow.  */
+	  loop_iter = expand_set_or_movmem_via_loop_with_iter (dst, src, destreg,
+	      srcreg, NULL, count_exp,
+	      loop_iter, move_mode, 1,
+	      expected_size, false);
+	  src = change_address (src, BLKmode, srcreg);
+	  dst = change_address (dst, BLKmode, destreg);
+	  epilogue_size_needed = GET_MODE_SIZE (move_mode);
+	}
+      tmp = expand_simple_binop (Pmode, PLUS, destreg, loop_iter, destreg,
+			       true, OPTAB_LIB_WIDEN);
+      if (tmp != destreg)
+	emit_move_insn (destreg, tmp);
+
+      tmp = expand_simple_binop (Pmode, PLUS, srcreg, loop_iter, srcreg,
+			       true, OPTAB_LIB_WIDEN);
+      if (tmp != srcreg)
+	emit_move_insn (srcreg, tmp);
+    }
   if (count_exp != const0_rtx && epilogue_size_needed > 1)
     expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
 			    epilogue_size_needed);
+
   if (jump_around_label)
     emit_label (jump_around_label);
   return true;
@@ -22163,7 +22612,37 @@ promote_duplicated_reg (enum machine_mode mode, rtx val)
   rtx tmp;
   int nops = mode == DImode ? 3 : 2;
 
+  if (VECTOR_MODE_P (mode))
+    {
+      enum machine_mode inner = GET_MODE_INNER (mode);
+      rtx promoted_val, vec_reg;
+      if (CONST_INT_P (val))
+	return ix86_build_const_vector (mode, true, val);
+
+      promoted_val = promote_duplicated_reg (inner, val);
+      vec_reg = gen_reg_rtx (mode);
+      switch (mode)
+	{
+	case V2DImode:
+	  emit_insn (gen_vec_dupv2di (vec_reg, promoted_val));
+	  break;
+	case V4SImode:
+	  emit_insn (gen_vec_dupv4si (vec_reg, promoted_val));
+	  break;
+	default:
+	  gcc_unreachable ();
+	  break;
+	}
+
+      return vec_reg;
+    }
   gcc_assert (mode == SImode || mode == DImode);
+  if (mode == DImode && !TARGET_64BIT)
+    {
+      rtx vec_reg = promote_duplicated_reg (V4SImode, val);
+      vec_reg = convert_to_mode (V2DImode, vec_reg, 1);
+      return vec_reg;
+    }
   if (val == const0_rtx)
     return copy_to_mode_reg (mode, const0_rtx);
   if (CONST_INT_P (val))
@@ -22229,11 +22708,27 @@ promote_duplicated_reg (enum machine_mode mode, rtx val)
 static rtx
 promote_duplicated_reg_to_size (rtx val, int size_needed, int desired_align, int align)
 {
-  rtx promoted_val;
+  rtx promoted_val = NULL_RTX;
 
-  if (TARGET_64BIT
-      && (size_needed > 4 || (desired_align > align && desired_align > 4)))
-    promoted_val = promote_duplicated_reg (DImode, val);
+  if (size_needed > 8 || (desired_align > align && desired_align > 8))
+    {
+      /* We want to promote to vector register, so we expect that at least SSE
+	 is available.  */
+      gcc_assert (TARGET_SSE);
+
+      /* In case of promotion to vector register, we expect that val is a
+	 constant or already promoted to GPR value.  */
+      gcc_assert (GET_MODE (val) == Pmode || CONSTANT_P (val));
+      if (TARGET_64BIT)
+	promoted_val = promote_duplicated_reg (V2DImode, val);
+      else
+	promoted_val = promote_duplicated_reg (V4SImode, val);
+    }
+  else if (size_needed > 4 || (desired_align > align && desired_align > 4))
+    {
+      gcc_assert (TARGET_64BIT);
+      promoted_val = promote_duplicated_reg (DImode, val);
+    }
   else if (size_needed > 2 || (desired_align > align && desired_align > 2))
     promoted_val = promote_duplicated_reg (SImode, val);
   else if (size_needed > 1 || (desired_align > align && desired_align > 1))
@@ -22261,10 +22756,14 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   int size_needed = 0, epilogue_size_needed;
   int desired_align = 0, align_bytes = 0;
   enum stringop_alg alg;
-  rtx promoted_val = NULL;
-  bool force_loopy_epilogue = false;
+  rtx gpr_promoted_val = NULL;
+  rtx vec_promoted_val = NULL;
   int dynamic_check;
   bool need_zero_guard = false;
+  bool align_unknown;
+  unsigned int unroll_factor;
+  enum machine_mode move_mode;
+  rtx loop_iter = NULL_RTX;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -22284,8 +22783,11 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
 
-  alg = decide_alg (count, expected_size, true, &dynamic_check);
+  align_unknown = CONST_INT_P (align_exp) && INTVAL (align_exp) > 0;
+  alg = decide_alg (count, expected_size, true, &dynamic_check, align_unknown);
   desired_align = decide_alignment (align, alg, expected_size);
+  unroll_factor = 1;
+  move_mode = Pmode;
 
   if (!TARGET_ALIGN_STRINGOPS)
     align = desired_align;
@@ -22303,11 +22805,28 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       gcc_unreachable ();
     case loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode);
+      move_mode = Pmode;
+      size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
       break;
     case unrolled_loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode) * 4;
+      move_mode = Pmode;
+      unroll_factor = 1;
+      /* Select maximal available 1,2 or 4 unroll factor.  */
+      while (GET_MODE_SIZE (move_mode) * unroll_factor * 2 < count
+	     && unroll_factor < 4)
+	unroll_factor *= 2;
+      size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
+      break;
+    case sse_loop:
+      need_zero_guard = true;
+      move_mode = TARGET_64BIT ? V2DImode : V4SImode;
+      unroll_factor = 1;
+      /* Select maximal available 1,2 or 4 unroll factor.  */
+      while (GET_MODE_SIZE (move_mode) * unroll_factor * 2 < count
+	     && unroll_factor < 4)
+	unroll_factor *= 2;
+      size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
       break;
     case rep_prefix_8_byte:
       size_needed = 8;
@@ -22352,8 +22871,10 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
      main loop and epilogue (ie one load of the big constant in the
      front of all code.  */
   if (CONST_INT_P (val_exp))
-    promoted_val = promote_duplicated_reg_to_size (val_exp, size_needed,
-						   desired_align, align);
+    gpr_promoted_val = promote_duplicated_reg_to_size (val_exp,
+						   GET_MODE_SIZE (Pmode),
+						   GET_MODE_SIZE (Pmode),
+						   align);
   /* Ensure that alignment prologue won't copy past end of block.  */
   if (size_needed > 1 || (desired_align > 1 && desired_align > align))
     {
@@ -22362,12 +22883,6 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	 Make sure it is power of 2.  */
       epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
 
-      /* To improve performance of small blocks, we jump around the VAL
-	 promoting mode.  This mean that if the promoted VAL is not constant,
-	 we might not use it in the epilogue and have to use byte
-	 loop variant.  */
-      if (epilogue_size_needed > 2 && !promoted_val)
-        force_loopy_epilogue = true;
       if (count)
 	{
 	  if (count < (unsigned HOST_WIDE_INT)epilogue_size_needed)
@@ -22382,6 +22897,12 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	}
       else
 	{
+	  /* SSE and unrolled_lopo algs re-use iteration counter in the epilogue.  */
+	  if (alg == sse_loop || alg == unrolled_loop)
+	    {
+	      loop_iter = gen_reg_rtx (counter_mode (count_exp));
+              emit_move_insn (loop_iter, const0_rtx);
+	    }
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp,
 				   GEN_INT (epilogue_size_needed),
@@ -22407,9 +22928,11 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   /* Step 2: Alignment prologue.  */
 
   /* Do the expensive promotion once we branched off the small blocks.  */
-  if (!promoted_val)
-    promoted_val = promote_duplicated_reg_to_size (val_exp, size_needed,
-						   desired_align, align);
+  if (!gpr_promoted_val)
+    gpr_promoted_val = promote_duplicated_reg_to_size (val_exp,
+						   GET_MODE_SIZE (Pmode),
+						   GET_MODE_SIZE (Pmode),
+						   align);
   gcc_assert (desired_align >= 1 && align >= 1);
 
   if (desired_align > align)
@@ -22421,17 +22944,20 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	     the pain to maintain it for the first move, so throw away
 	     the info early.  */
 	  dst = change_address (dst, BLKmode, destreg);
-	  expand_setmem_prologue (dst, destreg, promoted_val, count_exp, align,
+	  expand_setmem_prologue (dst, destreg, gpr_promoted_val, count_exp, align,
 				  desired_align);
+	  set_mem_align (dst, desired_align*BITS_PER_UNIT);
 	}
       else
 	{
 	  /* If we know how many bytes need to be stored before dst is
 	     sufficiently aligned, maintain aliasing info accurately.  */
-	  dst = expand_constant_setmem_prologue (dst, destreg, promoted_val,
+	  dst = expand_constant_setmem_prologue (dst, destreg, gpr_promoted_val,
 						 desired_align, align_bytes);
 	  count_exp = plus_constant (count_exp, -align_bytes);
 	  count -= align_bytes;
+	  if (count < (unsigned HOST_WIDE_INT) size_needed)
+	    goto epilogue;
 	}
       if (need_zero_guard
 	  && (count < (unsigned HOST_WIDE_INT) size_needed
@@ -22459,7 +22985,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       emit_label (label);
       LABEL_NUSES (label) = 1;
       label = NULL;
-      promoted_val = val_exp;
+      gpr_promoted_val = val_exp;
       epilogue_size_needed = 1;
     }
   else if (label == NULL_RTX)
@@ -22473,27 +22999,40 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     case no_stringop:
       gcc_unreachable ();
     case loop_1_byte:
-      expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
+      expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, val_exp,
 				     count_exp, QImode, 1, expected_size);
       break;
     case loop:
-      expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
+      expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, gpr_promoted_val,
 				     count_exp, Pmode, 1, expected_size);
       break;
     case unrolled_loop:
-      expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
-				     count_exp, Pmode, 4, expected_size);
+      loop_iter = expand_set_or_movmem_via_loop_with_iter (dst, NULL, destreg,
+				     NULL, gpr_promoted_val, count_exp,
+				     loop_iter, move_mode, unroll_factor,
+				     expected_size, false);
+      break;
+    case sse_loop:
+      vec_promoted_val =
+	promote_duplicated_reg_to_size (gpr_promoted_val,
+					GET_MODE_SIZE (move_mode),
+					desired_align, align);
+      loop_iter = expand_set_or_movmem_via_loop_with_iter (dst, NULL, destreg,
+				     NULL, vec_promoted_val, count_exp,
+				     loop_iter, move_mode, unroll_factor,
+				     expected_size, false);
       break;
     case rep_prefix_8_byte:
-      expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
+      gcc_assert (TARGET_64BIT);
+      expand_setmem_via_rep_stos (dst, destreg, gpr_promoted_val, count_exp,
 				  DImode, val_exp);
       break;
     case rep_prefix_4_byte:
-      expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
+      expand_setmem_via_rep_stos (dst, destreg, gpr_promoted_val, count_exp,
 				  SImode, val_exp);
       break;
     case rep_prefix_1_byte:
-      expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
+      expand_setmem_via_rep_stos (dst, destreg, gpr_promoted_val, count_exp,
 				  QImode, val_exp);
       break;
     }
@@ -22524,16 +23063,43 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	}
       emit_label (label);
       LABEL_NUSES (label) = 1;
+      /* We can not rely on fact that promoved value is known.  */
+      vec_promoted_val = 0;
+      gpr_promoted_val = 0;
     }
  epilogue:
-  if (count_exp != const0_rtx && epilogue_size_needed > 1)
+  if (alg == unrolled_loop || alg == sse_loop)
     {
-      if (force_loopy_epilogue)
-	expand_setmem_epilogue_via_loop (dst, destreg, val_exp, count_exp,
-					 epilogue_size_needed);
-      else
-	expand_setmem_epilogue (dst, destreg, promoted_val, count_exp,
-				epilogue_size_needed);
+      rtx tmp;
+      if (align_unknown && unroll_factor > 1
+	  && epilogue_size_needed >= GET_MODE_SIZE (move_mode)
+	  && vec_promoted_val)
+	{
+	  /* Reduce epilogue's size by creating not-unrolled loop.  If we won't
+	     do this, we can have very big epilogue - when alignment is statically
+	     unknown we'll have the epilogue byte by byte which may be very slow.  */
+	  loop_iter = expand_set_or_movmem_via_loop_with_iter (dst, NULL, destreg,
+	      NULL, vec_promoted_val, count_exp,
+	      loop_iter, move_mode, 1,
+	      expected_size, false);
+	  dst = change_address (dst, BLKmode, destreg);
+	  epilogue_size_needed = GET_MODE_SIZE (move_mode);
+	}
+      tmp = expand_simple_binop (Pmode, PLUS, destreg, loop_iter, destreg,
+			       true, OPTAB_LIB_WIDEN);
+      if (tmp != destreg)
+	emit_move_insn (destreg, tmp);
+    }
+  if (count_exp == const0_rtx)
+    ;
+  else if (!gpr_promoted_val && epilogue_size_needed > 1)
+    expand_setmem_epilogue_via_loop (dst, destreg, val_exp, count_exp,
+				     epilogue_size_needed);
+  else
+    {
+      if (epilogue_size_needed > 1)
+	expand_setmem_epilogue (dst, destreg, vec_promoted_val, gpr_promoted_val,
+				val_exp, count_exp, epilogue_size_needed);
     }
   if (jump_around_label)
     emit_label (jump_around_label);

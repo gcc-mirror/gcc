@@ -641,6 +641,7 @@ void debug_varpool_node_set (varpool_node_set);
 void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
 bool cgraph_comdat_can_be_unshared_p (struct cgraph_node *);
+bool varpool_externally_visible_p (struct varpool_node *, bool);
 
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
@@ -681,6 +682,7 @@ bool const_value_known_p (tree);
 bool varpool_for_node_and_aliases (struct varpool_node *,
 		                   bool (*) (struct varpool_node *, void *),
 			           void *, bool);
+void varpool_add_new_variable (tree);
 
 /* Walk all reachable static variables.  */
 #define FOR_EACH_STATIC_VARIABLE(node) \

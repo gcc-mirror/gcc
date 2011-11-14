@@ -1,3 +1,39 @@
+2011-11-14  Zolotukhin Michael  <michael.v.zolotukhin@gmail.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+        * config/i386/i386.h (processor_costs): Add second dimension to
+        stringop_algs array.
+        * config/i386/i386.c (cost models): Initialize second dimension of
+        stringop_algs arrays.
+	(core_cost): New costs based on generic64 costs with updated stringop
+	values.
+        (promote_duplicated_reg): Add support for vector modes, add
+        declaration.
+        (promote_duplicated_reg_to_size): Likewise.
+	(processor_target): Set core costs for core variants.
+        (expand_set_or_movmem_via_loop_with_iter): New function.
+        (expand_set_or_movmem_via_loop): Enable reuse of the same iters in
+        different loops, produced by this function.
+        (emit_strset): New function.
+        (expand_movmem_epilogue): Add epilogue generation for bigger sizes,
+        use SSE-moves where possible.
+        (expand_setmem_epilogue): Likewise.
+        (expand_movmem_prologue): Likewise for prologue.
+        (expand_setmem_prologue): Likewise.
+        (expand_constant_movmem_prologue): Likewise.
+        (expand_constant_setmem_prologue): Likewise.
+        (decide_alg): Add new argument align_unknown.  Fix algorithm of
+        strategy selection if TARGET_INLINE_ALL_STRINGOPS is set; Skip sse_loop
+        (decide_alignment): Update desired alignment according to chosen move
+        mode.
+        (ix86_expand_movmem): Change unrolled_loop strategy to use SSE-moves.
+        (ix86_expand_setmem): Likewise.
+        (ix86_slow_unaligned_access): Implementation of new hook
+        slow_unaligned_access.
+        * config/i386/i386.md (strset): Enable half-SSE moves.
+        * config/i386/sse.md (vec_dupv4si): Add expand for vec_dupv4si.
+        (vec_dupv2di): Add expand for vec_dupv2di.
+
 2011-11-14  Dimitrios Apostolou  <jimis@gmx.net>
 
 	PR bootstrap/51094
