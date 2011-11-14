@@ -1,3 +1,9 @@
+2011-11-14  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/51107
+	* typeck.c (check_literal_operator_args): Add processing_specialization
+	to check for void template fn. Test for exact arity for non-template fn.
+
 2011-11-14  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/6936
