@@ -32,10 +32,6 @@
 
 extern char **environ;
 
-extern struct __go_open_array Args asm ("libgo_os.os.Args");
-
-extern struct __go_open_array Envs asm ("libgo_os.os.Envs");
-
 /* These functions are created for the main package.  */
 extern void __go_init_main (void);
 extern void real_main (void) asm ("main.main");
@@ -45,38 +41,19 @@ extern void real_main (void) asm ("main.main");
 int
 main (int argc, char **argv)
 {
-  int i;
-  struct __go_string *values;
+  runtime_args (argc, (byte **) argv);
 
   m = &runtime_m0;
   g = &runtime_g0;
   m->curg = g;
   g->m = m;
+  runtime_initpanic ();
   runtime_mallocinit ();
   runtime_cpuprofinit ();
   __go_gc_goroutine_init (&argc);
 
-  Args.__count = argc;
-  Args.__capacity = argc;
-  values = __go_alloc (argc * sizeof (struct __go_string));
-  for (i = 0; i < argc; ++i)
-    {
-      values[i].__data = (unsigned char *) argv[i];
-      values[i].__length = __builtin_strlen (argv[i]);
-    }
-  Args.__values = values;
-
-  for (i = 0; environ[i] != NULL; ++i)
-    ;
-  Envs.__count = i;
-  Envs.__capacity = i;
-  values = __go_alloc (i * sizeof (struct __go_string));
-  for (i = 0; environ[i] != NULL; ++i)
-    {
-      values[i].__data = (unsigned char *) environ[i];
-      values[i].__length = __builtin_strlen (environ[i]);
-    }
-  Envs.__values = values;
+  runtime_goargs();
+  runtime_goenvs();
 
   __initsig ();
 
