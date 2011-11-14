@@ -1,3 +1,9 @@
+2011-11-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/51051
+	* cfgrtl.c (cfg_layout_can_merge_blocks_p): Return FALSE if the
+	move would cause fallthrough into the exit block.
+
 2011-11-14  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c (emit_load_locked): Assert the mode is handled.
