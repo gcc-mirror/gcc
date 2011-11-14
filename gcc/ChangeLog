@@ -1,3 +1,8 @@
+2011-11-14  Kai Tietz  <ktietz@redhat.com>
+
+	* gcov.c (generate_results): Add missing semicolon and
+	correct indent.
+
 2011-11-14  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR bootstrap/51112

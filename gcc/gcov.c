@@ -678,10 +678,10 @@ generate_results (const char *file_name)
       
 #if HAVE_DOS_BASED_FILE_SYSTEM
 	  if (first && src->coverage.name[1] == ':')
-	    first = src->coverage.name[2]
+	    first = src->coverage.name[2];
 #endif
-	    if (IS_DIR_SEPARATOR (first))
-	      continue;
+	  if (IS_DIR_SEPARATOR (first))
+	    continue;
 	}
       
       accumulate_line_counts (src);
