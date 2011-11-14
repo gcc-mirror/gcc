@@ -8423,9 +8423,8 @@ check_literal_operator_args (const_tree decl,
 			     bool *long_long_unsigned_p, bool *long_double_p)
 {
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
-  if (processing_template_decl)
-    return (argtypes == NULL_TREE
-	    || same_type_p (TREE_VALUE (argtypes), void_type_node));
+  if (processing_template_decl || processing_specialization)
+    return argtypes == void_list_node;
   else
     {
       tree argtype;
@@ -8494,7 +8493,7 @@ check_literal_operator_args (const_tree decl,
       if (!argtype)
 	return false; /* Found ellipsis.  */
 
-      if (arity > max_arity)
+      if (arity != max_arity)
 	return false;
 
       return true;

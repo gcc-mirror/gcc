@@ -4,6 +4,9 @@
 
 class Foo { };
 
+int
+operator"" _Foo();	// { dg-error "has invalid argument list" }
+
 Foo
 operator"" _Foo(int *);	// { dg-error "has invalid argument list" }
 
