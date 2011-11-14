@@ -98,10 +98,9 @@ __go_panic (struct __go_empty_interface arg)
 
   /* The panic was not recovered.  */
 
+  runtime_startpanic ();
   __printpanics (g->panic);
-
-  /* FIXME: We should dump a call stack here.  */
-  abort ();
+  runtime_dopanic (0);
 }
 
 /* This is used by the runtime library.  */

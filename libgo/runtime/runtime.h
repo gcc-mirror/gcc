@@ -22,11 +22,10 @@
 #include <sys/mman.h>
 #endif
 
+#include "array.h"
 #include "go-alloc.h"
 #include "go-panic.h"
 #include "go-string.h"
-
-typedef struct __go_string String;
 
 /* This file supports C files copied from the 6g runtime library.
    This is a version of the 6g runtime.h rewritten for gccgo's version
@@ -56,6 +55,8 @@ typedef	struct	Lock		Lock;
 
 typedef	struct	__go_defer_stack	Defer;
 typedef	struct	__go_panic_stack	Panic;
+typedef	struct	__go_open_array		Slice;
+typedef	struct	__go_string		String;
 
 /* We use mutexes for locks.  6g uses futexes directly, and perhaps
    someday we will do that too.  */
@@ -136,6 +137,7 @@ struct	M
 	int32	gcing_for_prof;
 	int32	holds_finlock;
 	int32	gcing_for_finlock;
+	int32	dying;
 	int32	profilehz;
 	uint32	fastrand;
 	MCache	*mcache;
@@ -152,14 +154,40 @@ struct	M
 };
 
 /* Macros.  */
+
+#ifdef __WINDOWS__
+enum {
+   Windows = 1
+};
+#else
+enum {
+   Windows = 0
+};
+#endif
+
 #define	nelem(x)	(sizeof(x)/sizeof((x)[0]))
 #define	nil		((void*)0)
 #define USED(v)		((void) v)
 
-/* We map throw to assert.  */
-#define runtime_throw(s) __go_assert(s == 0)
+/*
+ * external data
+ */
+extern	uint32	runtime_panicking;
 
+/*
+ * common functions and data
+ */
+int32	runtime_findnull(const byte*);
+
+/*
+ * very low level c-called
+ */
+void	runtime_args(int32, byte**);
+void	runtime_goargs(void);
+void	runtime_goenvs(void);
+void	runtime_throw(const char*);
 void*	runtime_mal(uintptr);
+String	runtime_gostringnocopy(byte*);
 void	runtime_mallocinit(void);
 void	runtime_initfintab(void);
 void	siginit(void);
@@ -208,10 +236,9 @@ void	runtime_notewakeup(Note*);
 #define runtime_free(p) __go_free(p)
 #define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
 #define runtime_strcmp(s1, s2) __builtin_strcmp((s1), (s2))
-#define runtime_getenv(s) getenv(s)
-#define runtime_atoi(s) atoi(s)
 #define runtime_mcmp(a, b, s) __builtin_memcmp((a), (b), (s))
 #define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
+#define runtime_exit(s) _exit(s)
 MCache*	runtime_allocmcache(void);
 void	free(void *v);
 struct __go_func_type;
@@ -222,6 +249,11 @@ bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
 
+void	runtime_initpanic(void);
+void	runtime_dopanic(int32) __attribute__ ((noreturn));
+void	runtime_startpanic(void);
+const byte*	runtime_getenv(const char*);
+int32	runtime_atoi(const byte*);
 void	runtime_sigprof(uint8 *pc, uint8 *sp, uint8 *lr);
 void	runtime_cpuprofinit(void);
 void	runtime_resetcpuprofiler(int32);

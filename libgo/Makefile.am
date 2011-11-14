@@ -435,7 +435,6 @@ runtime_files = \
 	runtime/go-note.c \
 	runtime/go-panic.c \
 	runtime/go-print.c \
-	runtime/go-rand.c \
 	runtime/go-rec-big.c \
 	runtime/go-rec-nb-big.c \
 	runtime/go-rec-nb-small.c \
@@ -484,6 +483,7 @@ runtime_files = \
 	runtime/mheap.c \
 	runtime/msize.c \
 	runtime/proc.c \
+	runtime/runtime.c \
 	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \

@@ -6,6 +6,24 @@ package runtime
 #include "runtime.h"
 #define charntorune(pv, str, len) __go_get_rune(str, len, pv)
 
+int32
+runtime_findnull(const byte *s)
+{
+	if(s == nil)
+		return 0;
+	return __builtin_strlen((const char*) s);
+}
+
+String
+runtime_gostringnocopy(byte *str)
+{
+	String s;
+	
+	s.__data = (const unsigned char *) str;
+	s.__length = runtime_findnull(str);
+	return s;
+}
+
 enum
 {
 	Runeself	= 0x80,
