@@ -2,7 +2,15 @@
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -msse -mfpmath=sse -mrecip" } */
 /* { dg-require-effective-target sse } */
 
-#include "sse-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse_test
+#endif
+
+#include CHECK_H
 
 extern float sqrtf (float);
 extern float fabsf (float);
@@ -16,7 +24,7 @@ float r[N];
 float rc[N] = { 0.f, 3.f, 6.f, 9.f, 12.f, 18.f, 21.f, 27.f };
 
 static void
-sse_test (void)
+TEST (void)
 {
   int i;
 
