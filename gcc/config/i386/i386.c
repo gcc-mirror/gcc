@@ -1877,10 +1877,10 @@ struct processor_costs core_cost = {
     {libcall, {{16, loop}, {24, unrolled_loop}, {1024, rep_prefix_8_byte}, {-1, libcall}}}}},
 
   /* stringop_algs for memset.  */
-  {{{libcall, {{256, rep_prefix_4_byte}}}, /* Known alignment.  */
-    {libcall, {{256, rep_prefix_8_byte}}}},
-   {{libcall, {{256, rep_prefix_4_byte}}}, /* Unknown alignment.  */
-    {libcall, {{256, rep_prefix_8_byte}}}}},
+  {{{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}}, /* Known alignment.  */
+    {libcall, {{256, rep_prefix_8_byte}, {-1, libcall}}}},
+   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}}, /* Unknown alignment.  */
+    {libcall, {{256, rep_prefix_8_byte}, {-1, libcall}}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */

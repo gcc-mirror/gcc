@@ -1,3 +1,7 @@
+2011-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.c (core cost model): Correct pasto.
+
 2011-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (round<mode>2_sfix): New expander.
