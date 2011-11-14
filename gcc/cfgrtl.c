@@ -2735,6 +2735,16 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
   if (BB_PARTITION (a) != BB_PARTITION (b))
     return false;
 
+  /* If we would end up moving B's instructions, make sure it doesn't fall
+     through into the exit block, since we cannot recover from a fallthrough
+     edge into the exit block occurring in the middle of a function.  */
+  if (NEXT_INSN (BB_END (a)) != BB_HEAD (b))
+    {
+      edge e = find_fallthru_edge (b->succs);
+      if (e && e->dest == EXIT_BLOCK_PTR)
+	return false;
+    }
+
   /* There must be exactly one edge in between the blocks.  */
   return (single_succ_p (a)
 	  && single_succ (a) == b
