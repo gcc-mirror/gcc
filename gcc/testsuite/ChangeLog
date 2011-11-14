@@ -1,3 +1,7 @@
+2011-11-14  Torvald Riegel  <triegel@redhat.com>
+
+	* g++.dg/tm/template-1.C: Add cleanup-tree-dump. Fix typo in comment.
+
 2011-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx-recip-vec.c: New test.
