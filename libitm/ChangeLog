@@ -1,3 +1,7 @@
+2011-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/lib/libitm.exp: Check ia32 instead of ilp32.
+
 2011-11-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/sjlj.S (_ITM_beginTransaction) [!__ELF__]: Don't use
