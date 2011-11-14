@@ -30,6 +30,7 @@ int f1()
   return foo<TrueFalse>() + bar<TrueFalse>();
 }
 
-/* 4 transactions overall, two of the write to global:  */
+/* 4 transactions overall, two of them write to global:  */
 /* { dg-final { scan-tree-dump-times "ITM_RU4\\s*\\(&global" 4 "tmmark" } } */
 /* { dg-final { scan-tree-dump-times "ITM_WU4\\s*\\(&global" 2 "tmmark" } } */
+/* { dg-final { cleanup-tree-dump "tmmark" } } */
