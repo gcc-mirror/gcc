@@ -2,7 +2,15 @@
 /* { dg-options "-O2 -ftree-vectorize -msse2" } */
 /* { dg-require-effective-target sse2 } */
 
-#include "sse2-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse2-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse2_test
+#endif
+
+#include CHECK_H
 
 extern double copysign (double, double);
 
@@ -13,7 +21,7 @@ double b[N] = {-1.2,3.4,-5.6,7.8,-9.0,1.0,-2.0,3.0,-4.0,-5.0,6.0,7.0,-8.0,-9.0,1
 double r[N];
 
 static void
-sse2_test (void)
+TEST (void)
 {  
   int i;
 

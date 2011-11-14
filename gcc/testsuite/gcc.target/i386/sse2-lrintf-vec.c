@@ -2,7 +2,15 @@
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -msse2" } */
 /* { dg-require-effective-target sse2 } */
 
-#include "sse2-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse2-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse2_test
+#endif
+
+#include CHECK_H
 
 extern long lrintf (float);
 
@@ -12,7 +20,7 @@ float a[N] = {0.4,3.5,6.6,9.4,12.5,15.6,18.4,21.5,24.6,27.4,30.5,33.6,36.4,39.5,
 long r[N];
 
 static void
-sse2_test (void)
+TEST (void)
 {
   int i;
 

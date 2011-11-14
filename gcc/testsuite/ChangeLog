@@ -1,8 +1,26 @@
+2011-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-recip-vec.c: New test.
+	* gcc.target/i386/avx-lrintf-vec.c: Ditto.
+	* gcc.target/i386/avx-lrint-vec.c: Ditto.
+	* gcc.target/i386/avx-ceilf-vec.c: Include sse4_1-ceilf-vec.c.
+	* gcc.target/i386/avx-ceil-vec.c: Include sse4_1-ceil-vec.c.
+	* gcc.target/i386/avx-floorf-vec.c: Include sse4_1-floorf-vec.c.
+	* gcc.target/i386/avx-floor-vec.c: Include sse4_1-floor-vec.c.
+	* gcc.target/i386/avx-rintf-vec.c: Include sse4_1-rintf-vec.c.
+	* gcc.target/i386/avx-rint-vec.c: Include sse4_1-rint-vec.c.
+	* gcc.target/i386/avx-roundf-vec.c: Include sse4_1-roundf-vec.c.
+	* gcc.target/i386/avx-round-vec.c: Include sse4_1-round-vec.c.
+	* gcc.target/i386/avx-truncf-vec.c: Include sse4_1-truncf-vec.c.
+	* gcc.target/i386/avx-trunc-vec.c: Include sse4_1-trunc-vec.c.
+	* gcc.target/i386/avx-copysignf-vec.c: Include sse-copysignf-vec.c.
+	* gcc.target/i386/avx-copysign-vec.c: Include sse2-copysign-vec.c.
+
 2011-11-14  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/51107
-	* g++.dg/cpp0x/udlit-args-neg.C: Add check for void argument non-
-	template literal operator.
+	* g++.dg/cpp0x/udlit-args-neg.C: Add check for void argument
+	non-template literal operator.
 
 2011-11-14  Uros Bizjak  <ubizjak@gmail.com>
 

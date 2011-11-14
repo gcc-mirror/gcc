@@ -2,7 +2,15 @@
 /* { dg-options "-O2 -ftree-vectorize -msse" } */
 /* { dg-require-effective-target sse } */
 
-#include "sse-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse_test
+#endif
+
+#include CHECK_H
 
 extern float copysignf (float, float);
 
@@ -13,7 +21,7 @@ float b[N] = {-1.2f,3.4f,-5.6f,7.8f,-9.0f,1.0f,-2.0f,3.0f,-4.0f,-5.0f,6.0f,7.0f,
 float r[N];
 
 static void
-sse_test (void)
+TEST (void)
 {  
   int i;
 
