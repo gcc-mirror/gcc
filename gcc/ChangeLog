@@ -1,3 +1,8 @@
+2011-11-14  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR bootstrap/51112
+	* tree-vect-stmts.c (vectorizable_condition): Initialize comp_vectype.
+
 2011-11-14  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* doc/invoke.texi (Wunused-result): Change @pxref{Variable Attributes}
