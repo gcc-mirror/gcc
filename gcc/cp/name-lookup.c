@@ -53,6 +53,7 @@ static bool qualified_lookup_using_namespace (tree, tree,
 static tree lookup_type_current_level (tree);
 static tree push_using_directive (tree);
 static tree lookup_extern_c_fun_in_all_ns (tree);
+static void diagnose_name_conflict (tree, tree);
 
 /* The :: namespace.  */
 
@@ -394,6 +395,16 @@ pop_binding (tree id, tree decl)
     }
 }
 
+/* Strip non dependent using declarations.  */
+
+tree
+strip_using_decl (tree decl)
+{
+  while (TREE_CODE (decl) == USING_DECL && !DECL_DEPENDENT_P (decl))
+    decl = USING_DECL_DECLS (decl);
+  return decl;
+}
+
 /* BINDING records an existing declaration for a name in the current scope.
    But, DECL is another declaration for that same identifier in the
    same scope.  This is the `struct stat' hack whereby a non-typedef
@@ -417,29 +428,46 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 {
   tree bval = binding->value;
   bool ok = true;
+  tree target_bval = strip_using_decl (bval);
+  tree target_decl = strip_using_decl (decl);
 
-  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+  if (TREE_CODE (target_decl) == TYPE_DECL && DECL_ARTIFICIAL (target_decl)
+      && target_decl != target_bval
+      && (TREE_CODE (target_bval) != TYPE_DECL
+	  /* We allow pushing an enum multiple times in a class
+	     template in order to handle late matching of underlying
+	     type on an opaque-enum-declaration followed by an
+	     enum-specifier.  */
+	  || (TREE_CODE (TREE_TYPE (target_decl)) == ENUMERAL_TYPE
+	      && TREE_CODE (TREE_TYPE (target_bval)) == ENUMERAL_TYPE
+	      && (dependent_type_p (ENUM_UNDERLYING_TYPE
+				    (TREE_TYPE (target_decl)))
+		  || dependent_type_p (ENUM_UNDERLYING_TYPE
+				       (TREE_TYPE (target_bval)))))))
     /* The new name is the type name.  */
     binding->type = decl;
-  else if (/* BVAL is null when push_class_level_binding moves an
-	      inherited type-binding out of the way to make room for a
-	      new value binding.  */
-	   !bval
-	   /* BVAL is error_mark_node when DECL's name has been used
-	      in a non-class scope prior declaration.  In that case,
-	      we should have already issued a diagnostic; for graceful
-	      error recovery purpose, pretend this was the intended
-	      declaration for that name.  */
-	   || bval == error_mark_node
-	   /* If BVAL is anticipated but has not yet been declared,
-	      pretend it is not there at all.  */
-	   || (TREE_CODE (bval) == FUNCTION_DECL
-	       && DECL_ANTICIPATED (bval)
-	       && !DECL_HIDDEN_FRIEND_P (bval)))
+  else if (/* TARGET_BVAL is null when push_class_level_binding moves
+	      an inherited type-binding out of the way to make room
+	      for a new value binding.  */
+	   !target_bval
+	   /* TARGET_BVAL is error_mark_node when TARGET_DECL's name
+	      has been used in a non-class scope prior declaration.
+	      In that case, we should have already issued a
+	      diagnostic; for graceful error recovery purpose, pretend
+	      this was the intended declaration for that name.  */
+	   || target_bval == error_mark_node
+	   /* If TARGET_BVAL is anticipated but has not yet been
+	      declared, pretend it is not there at all.  */
+	   || (TREE_CODE (target_bval) == FUNCTION_DECL
+	       && DECL_ANTICIPATED (target_bval)
+	       && !DECL_HIDDEN_FRIEND_P (target_bval)))
     binding->value = decl;
-  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval)
-	   && (TREE_CODE (decl) != TYPE_DECL
-	       || same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))))
+  else if (TREE_CODE (target_bval) == TYPE_DECL
+	   && DECL_ARTIFICIAL (target_bval)
+	   && target_decl != target_bval
+	   && (TREE_CODE (target_decl) != TYPE_DECL
+	       || same_type_p (TREE_TYPE (target_decl),
+			       TREE_TYPE (target_bval))))
     {
       /* The old binding was a type name.  It was placed in
 	 VALUE field because it was thought, at the point it was
@@ -450,15 +478,15 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
       binding->value = decl;
       binding->value_is_inherited = false;
     }
-  else if (TREE_CODE (bval) == TYPE_DECL
-	   && TREE_CODE (decl) == TYPE_DECL
-	   && DECL_NAME (decl) == DECL_NAME (bval)
+  else if (TREE_CODE (target_bval) == TYPE_DECL
+	   && TREE_CODE (target_decl) == TYPE_DECL
+	   && DECL_NAME (target_decl) == DECL_NAME (target_bval)
 	   && binding->scope->kind != sk_class
-	   && (same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))
+	   && (same_type_p (TREE_TYPE (target_decl), TREE_TYPE (target_bval))
 	       /* If either type involves template parameters, we must
 		  wait until instantiation.  */
-	       || uses_template_parms (TREE_TYPE (decl))
-	       || uses_template_parms (TREE_TYPE (bval))))
+	       || uses_template_parms (TREE_TYPE (target_decl))
+	       || uses_template_parms (TREE_TYPE (target_bval))))
     /* We have two typedef-names, both naming the same type to have
        the same name.  In general, this is OK because of:
 
@@ -480,9 +508,10 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 
        A member shall not be declared twice in the
        member-specification.  */
-  else if (TREE_CODE (decl) == VAR_DECL && TREE_CODE (bval) == VAR_DECL
-	   && DECL_EXTERNAL (decl) && DECL_EXTERNAL (bval)
-	   && !DECL_CLASS_SCOPE_P (decl))
+  else if (TREE_CODE (target_decl) == VAR_DECL
+	   && TREE_CODE (target_bval) == VAR_DECL
+	   && DECL_EXTERNAL (target_decl) && DECL_EXTERNAL (target_bval)
+	   && !DECL_CLASS_SCOPE_P (target_decl))
     {
       duplicate_decls (decl, binding->value, /*newdecl_is_friend=*/false);
       ok = false;
@@ -501,12 +530,28 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
     ok = false;
   else
     {
-      error ("declaration of %q#D", decl);
-      error ("conflicts with previous declaration %q+#D", bval);
+      diagnose_name_conflict (decl, bval);
       ok = false;
     }
 
   return ok;
+}
+
+/* Diagnose a name conflict between DECL and BVAL.  */
+
+static void
+diagnose_name_conflict (tree decl, tree bval)
+{
+  if (TREE_CODE (decl) == TREE_CODE (bval)
+      && (TREE_CODE (decl) != TYPE_DECL
+	  || (DECL_ARTIFICIAL (decl) && DECL_ARTIFICIAL (bval))
+	  || (!DECL_ARTIFICIAL (decl) && !DECL_ARTIFICIAL (bval)))
+      && !is_overloaded_fn (decl))
+    error ("redeclaration of %q#D", decl);
+  else
+    error ("%q#D conflicts with a previous declaration", decl);
+
+  inform (input_location, "previous declaration %q+#D", bval);
 }
 
 /* Wrapper for supplement_binding_1.  */
@@ -3028,6 +3073,8 @@ push_class_level_binding_1 (tree name, tree x)
     {
       tree bval = binding->value;
       tree old_decl = NULL_TREE;
+      tree target_decl = strip_using_decl (decl);
+      tree target_bval = strip_using_decl (bval);
 
       if (INHERITED_VALUE_BINDING_P (binding))
 	{
@@ -3035,8 +3082,10 @@ push_class_level_binding_1 (tree name, tree x)
 	     tag name, slide it over to make room for the new binding.
 	     The old binding is still visible if explicitly qualified
 	     with a class-key.  */
-	  if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval)
-	      && !(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)))
+	  if (TREE_CODE (target_bval) == TYPE_DECL
+	      && DECL_ARTIFICIAL (target_bval)
+	      && !(TREE_CODE (target_decl) == TYPE_DECL
+		   && DECL_ARTIFICIAL (target_decl)))
 	    {
 	      old_decl = binding->type;
 	      binding->type = bval;
@@ -3048,17 +3097,31 @@ push_class_level_binding_1 (tree name, tree x)
 	      old_decl = bval;
 	      /* Any inherited type declaration is hidden by the type
 		 declaration in the derived class.  */
-	      if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x))
+	      if (TREE_CODE (target_decl) == TYPE_DECL
+		  && DECL_ARTIFICIAL (target_decl))
 		binding->type = NULL_TREE;
 	    }
 	}
-      else if (TREE_CODE (x) == OVERLOAD && is_overloaded_fn (bval))
+      else if (TREE_CODE (target_decl) == OVERLOAD
+	       && is_overloaded_fn (target_bval))
 	old_decl = bval;
-      else if (TREE_CODE (x) == USING_DECL && TREE_CODE (bval) == USING_DECL)
+      else if (TREE_CODE (decl) == USING_DECL
+	       && TREE_CODE (bval) == USING_DECL
+	       && same_type_p (USING_DECL_SCOPE (decl),
+			       USING_DECL_SCOPE (bval)))
+	/* This is a using redeclaration that will be diagnosed later
+	   in supplement_binding */
+	;
+      else if (TREE_CODE (decl) == USING_DECL
+	       && TREE_CODE (bval) == USING_DECL
+	       && DECL_DEPENDENT_P (decl)
+	       && DECL_DEPENDENT_P (bval))
 	return true;
-      else if (TREE_CODE (x) == USING_DECL && is_overloaded_fn (bval))
+      else if (TREE_CODE (decl) == USING_DECL
+	       && is_overloaded_fn (target_bval))
 	old_decl = bval;
-      else if (TREE_CODE (bval) == USING_DECL && is_overloaded_fn (x))
+      else if (TREE_CODE (bval) == USING_DECL
+	       && is_overloaded_fn (target_decl))
 	return true;
 
       if (old_decl && binding->scope == class_binding_level)

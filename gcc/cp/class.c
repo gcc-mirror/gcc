@@ -1058,11 +1058,6 @@ add_method (tree type, tree method, tree using_decl)
 	      if (DECL_CONTEXT (fn) == type)
 		/* Defer to the local function.  */
 		return false;
-	      if (DECL_CONTEXT (fn) == DECL_CONTEXT (method))
-		error ("repeated using declaration %q+D", using_decl);
-	      else
-		error ("using declaration %q+D conflicts with a previous using declaration",
-		       using_decl);
 	    }
 	  else
 	    {
@@ -3039,15 +3034,8 @@ check_field_decls (tree t, tree *access_decls,
 
       if (TREE_CODE (x) == USING_DECL)
 	{
-	  /* Prune the access declaration from the list of fields.  */
-	  *field = DECL_CHAIN (x);
-
 	  /* Save the access declarations for our caller.  */
 	  *access_decls = tree_cons (NULL_TREE, x, *access_decls);
-
-	  /* Since we've reset *FIELD there's no reason to skip to the
-	     next field.  */
-	  next = field;
 	  continue;
 	}
 

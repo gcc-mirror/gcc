@@ -8,13 +8,13 @@ typedef int I;
 // invalid.
 
 struct A {
-  typedef int I; // { dg-error "" }
+  typedef int I; // { dg-message "" }
   typedef int I; // { dg-error "" }
 };
 
 template <class T>
 struct S {
-  typedef int I;  // { dg-error "" }
+  typedef int I;  // { dg-message "" }
   typedef int I;  // { dg-error "" }
 };
 

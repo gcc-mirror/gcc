@@ -1,3 +1,37 @@
+2011-11-14  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/6936
+	PR c++/25994
+	PR c++/26256
+	PR c++/30195
+	* search.c (lookup_field_1): Look through USING_DECL.
+	(lookup_field_r): Call lookup_fnfields_slot instead of
+	lookup_fnfields_1.
+	* semantics.c (finish_member_declaration): Remove the check that
+	prevents USING_DECLs from being verified by
+	pushdecl_class_level. Call add_method for using declarations that
+	designates functions if the using declaration is in a template
+	class. Set DECL_IGNORED_P on class-scope using declarations.
+	* typeck.c (build_class_member_access_expr): Handle USING_DECLs.
+	* class.c (check_field_decls): Keep using declarations.
+	(add_method): Remove two diagnostics about conflicting using
+	declarations.
+	* parser.c (cp_parser_nonclass_name): Handle USING_DECLs.
+	* decl.c (start_enum): Call xref_tag whenever possible.
+	* cp-tree.h (strip_using_decl): Declare, and reident the previous
+	function.
+	* name-lookup.c (strip_using_decl): New function.
+	(supplement_binding_1): Call strip_using_decl on decl and
+	bval. Perform most of the checks with USING_DECLs stripped.  Also
+	check that the target decl and the target bval does not refer to
+	the same declaration. Allow pushing an enum multiple times in a
+	template class. Adjustment to diagnose using redeclarations. Call
+	diagnose_name_conflict.
+	(push_class_level_binding): Call strip_using_decl on decl and
+	bval. Perform most of the checks with USING_DECLs stripped. Return
+	true if both decl and bval refer to USING_DECLs and are dependent.
+	(diagnose_name_conflict): New function.
+
 2011-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/986

@@ -23,12 +23,12 @@ int global1 ();			// { dg-error "" } xref for below
 int global1;			// { dg-error "" } caught
 
 struct struct_0 {
-  int class_local ();		// { dg-error "" } 
+  int class_local ();		// { dg-message "" }
   int class_local;		// { dg-error "" } 
 };
 
 struct struct_1 {
-  int class_local;		// { dg-error "" } 
+  int class_local;		// { dg-message "" }
   int class_local ();		// { dg-error "" } 
 };
 

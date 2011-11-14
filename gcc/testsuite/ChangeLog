@@ -1,3 +1,50 @@
+2011-11-14  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/6936
+	PR c++/25994
+	PR c++/26256
+	PR c++/30195
+	* g++.old-deja/g++.brendan/misc14.C: Adjust.
+	* g++.old-deja/g++.jason/scoping16.C: Likewise.
+	* g++.old-deja/g++.other/anon7.C: Likewise.
+	* g++.old-deja/g++.other/using1.C: Likewise.
+	* g++.old-deja/g++.other/redecl1.C: Likewise.
+	* g++.old-deja/g++.other/typedef7.C: Likewise.
+	* g++.old-deja/g++.bugs/900127_02.C: Likewise.
+	* g++.dg/template/using2.C: Likewise.
+	* g++.dg/template/static4.C: Likewise.
+	* g++.dg/template/typedef1.C: Likewise.
+	* g++.dg/lookup/name-clash9.C: Likewise.
+	* g++.dg/abi/mangle41.C: Likewise.
+	* g++.dg/parse/ctor5.C: Likewise.
+	* g++.dg/inherit/using4.C: Likewise.
+	* g++.dg/lookup/using24.C: New.
+	* g++.dg/lookup/using25.C: New.
+	* g++.dg/lookup/using26.C: New.
+	* g++.dg/lookup/using27.C: New.
+	* g++.dg/lookup/using28.C: New.
+	* g++.dg/lookup/using29.C: New.
+	* g++.dg/lookup/using30.C: New.
+	* g++.dg/lookup/using31.C: New.
+	* g++.dg/lookup/using32.C: New.
+	* g++.dg/lookup/using33.C: New.
+	* g++.dg/lookup/using34.C: New.
+	* g++.dg/lookup/using35.C: New.
+	* g++.dg/lookup/using36.C: New.
+	* g++.dg/lookup/using37.C: New.
+	* g++.dg/lookup/using38.C: New.
+	* g++.dg/lookup/using39.C: New.
+	* g++.dg/lookup/using40.C: New.
+	* g++.dg/lookup/using41.C: New.
+	* g++.dg/lookup/using42.C: New.
+	* g++.dg/lookup/using43.C: New.
+	* g++.dg/lookup/using44.C: New.
+	* g++.dg/lookup/using45.C: New.
+	* g++.dg/lookup/pr6936.C: New.
+	* g++.dg/debug/using4.C: New.
+	* g++.dg/debug/using5.C: New.
+	* g++.dg/cpp0x/forw_enum10.C: New.
+
 2011-11-14  Zolotukhin Michael  <michael.v.zolotukhin@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
 

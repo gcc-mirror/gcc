@@ -16,12 +16,12 @@ public:
   using B::b;
 };
 
-class D2 : public B { // { dg-error "" } conflicting access specifications
+class D2 : public B {
 public:
   using B::a;
-  using B::b;
+  using B::b; // { dg-message "" } conflicting declaration
 
 private:
-  using B::b; 
+  using B::b; // { dg-error "" } conflicts
 };
  

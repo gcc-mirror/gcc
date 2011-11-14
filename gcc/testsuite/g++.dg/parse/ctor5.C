@@ -2,7 +2,7 @@
 
 struct A
 {
-  int i; // { dg-error "conflicts" }
+  int i; // { dg-message "previous" }
   A() i() {}  // { dg-error "declaration" }
 };
 

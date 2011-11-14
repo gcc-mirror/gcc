@@ -9,6 +9,6 @@ struct B {
 }; 
  
 struct D : B { 
-  using B::f; 
-  using B::f;  // { dg-error "repeated" }
+  using B::f; // { dg-message "previous declaration" }
+  using B::f; // { dg-error "redeclaration" }
 }; 
