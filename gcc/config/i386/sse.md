@@ -9902,6 +9902,45 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "<sse4_1>_round<ssemodesuffix>_sfix<avxsizesuffix>"
+  [(match_operand:<sseintvecmode> 0 "register_operand" "")
+   (match_operand:VF1 1 "nonimmediate_operand" "")
+   (match_operand:SI 2 "const_0_to_15_operand" "")]
+  "TARGET_ROUND"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+
+  emit_insn
+    (gen_<sse4_1>_round<ssemodesuffix><avxsizesuffix> (tmp, operands[1],
+						       operands[2]));
+  emit_insn
+    (gen_fix_trunc<mode><sseintvecmodelower>2 (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "<sse4_1>_round<ssemodesuffix>_vec_pack_sfix<avxsizesuffix>"
+  [(match_operand:<ssepackfltmode> 0 "register_operand" "")
+   (match_operand:VF2 1 "nonimmediate_operand" "")
+   (match_operand:VF2 2 "nonimmediate_operand" "")
+   (match_operand:SI 3 "const_0_to_15_operand" "")]
+  "TARGET_ROUND"
+{
+  rtx tmp0, tmp1;
+
+  tmp0 = gen_reg_rtx (<MODE>mode);
+  tmp1 = gen_reg_rtx (<MODE>mode);
+
+  emit_insn
+    (gen_<sse4_1>_round<ssemodesuffix><avxsizesuffix> (tmp0, operands[1],
+						       operands[3]));
+  emit_insn
+    (gen_<sse4_1>_round<ssemodesuffix><avxsizesuffix> (tmp1, operands[2],
+						       operands[3]));
+  emit_insn
+    (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp0, tmp1));
+  DONE;
+})
+
 (define_insn "sse4_1_round<ssescalarmodesuffix>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,x")
 	(vec_merge:VF_128
@@ -9955,6 +9994,39 @@
 
   operands[4] = gen_reg_rtx (<MODE>mode);
   operands[5] = GEN_INT (ROUND_TRUNC);
+})
+
+(define_expand "round<mode>2_sfix"
+  [(match_operand:<sseintvecmode> 0 "register_operand" "")
+   (match_operand:VF1 1 "nonimmediate_operand" "")]
+  "TARGET_ROUND && !flag_trapping_math"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_round<mode>2 (tmp, operands[1]));
+
+  emit_insn
+    (gen_fix_trunc<mode><sseintvecmodelower>2 (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "round<mode>2_vec_pack_sfix"
+  [(match_operand:<ssepackfltmode> 0 "register_operand" "")
+   (match_operand:VF2 1 "nonimmediate_operand" "")
+   (match_operand:VF2 2 "nonimmediate_operand" "")]
+  "TARGET_ROUND && !flag_trapping_math"
+{
+  rtx tmp0, tmp1;
+
+  tmp0 = gen_reg_rtx (<MODE>mode);
+  tmp1 = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_round<mode>2 (tmp0, operands[1]));
+  emit_insn (gen_round<mode>2 (tmp1, operands[2]));
+
+  emit_insn
+    (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp0, tmp1));
+  DONE;
 })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

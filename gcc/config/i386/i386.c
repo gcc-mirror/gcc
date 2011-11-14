@@ -25457,21 +25457,31 @@ enum ix86_builtins
   IX86_BUILTIN_PMULDQ128,
   IX86_BUILTIN_PMULLD128,
 
-  IX86_BUILTIN_ROUNDPD,
-  IX86_BUILTIN_ROUNDPS,
   IX86_BUILTIN_ROUNDSD,
   IX86_BUILTIN_ROUNDSS,
+
+  IX86_BUILTIN_ROUNDPD,
+  IX86_BUILTIN_ROUNDPS,
 
   IX86_BUILTIN_FLOORPD,
   IX86_BUILTIN_CEILPD,
   IX86_BUILTIN_TRUNCPD,
   IX86_BUILTIN_RINTPD,
   IX86_BUILTIN_ROUNDPD_AZ,
+
+  IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX,
+  IX86_BUILTIN_CEILPD_VEC_PACK_SFIX,
+  IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX,
+
   IX86_BUILTIN_FLOORPS,
   IX86_BUILTIN_CEILPS,
   IX86_BUILTIN_TRUNCPS,
   IX86_BUILTIN_RINTPS,
   IX86_BUILTIN_ROUNDPS_AZ,
+
+  IX86_BUILTIN_FLOORPS_SFIX,
+  IX86_BUILTIN_CEILPS_SFIX,
+  IX86_BUILTIN_ROUNDPS_AZ_SFIX,
 
   IX86_BUILTIN_PTESTZ,
   IX86_BUILTIN_PTESTC,
@@ -25646,11 +25656,20 @@ enum ix86_builtins
   IX86_BUILTIN_TRUNCPD256,
   IX86_BUILTIN_RINTPD256,
   IX86_BUILTIN_ROUNDPD_AZ256,
+
+  IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX256,
+  IX86_BUILTIN_CEILPD_VEC_PACK_SFIX256,
+  IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX256,
+
   IX86_BUILTIN_FLOORPS256,
   IX86_BUILTIN_CEILPS256,
   IX86_BUILTIN_TRUNCPS256,
   IX86_BUILTIN_RINTPS256,
   IX86_BUILTIN_ROUNDPS_AZ256,
+
+  IX86_BUILTIN_FLOORPS_SFIX256,
+  IX86_BUILTIN_CEILPS_SFIX256,
+  IX86_BUILTIN_ROUNDPS_AZ_SFIX256,
 
   IX86_BUILTIN_UNPCKHPD256,
   IX86_BUILTIN_UNPCKLPD256,
@@ -26856,14 +26875,22 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundpd, "__builtin_ia32_truncpd", IX86_BUILTIN_TRUNCPD, (enum rtx_code) ROUND_TRUNC, (int) V2DF_FTYPE_V2DF_ROUND },
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundpd, "__builtin_ia32_rintpd", IX86_BUILTIN_RINTPD, (enum rtx_code) ROUND_MXCSR, (int) V2DF_FTYPE_V2DF_ROUND },
 
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundpd_vec_pack_sfix, "__builtin_ia32_floorpd_vec_pack_sfix", IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX, (enum rtx_code) ROUND_FLOOR, (int) V4SI_FTYPE_V2DF_V2DF_ROUND },
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundpd_vec_pack_sfix, "__builtin_ia32_ceilpd_vec_pack_sfix", IX86_BUILTIN_CEILPD_VEC_PACK_SFIX, (enum rtx_code) ROUND_CEIL, (int) V4SI_FTYPE_V2DF_V2DF_ROUND },
+
   { OPTION_MASK_ISA_ROUND, CODE_FOR_roundv2df2, "__builtin_ia32_roundpd_az", IX86_BUILTIN_ROUNDPD_AZ, UNKNOWN, (int) V2DF_FTYPE_V2DF },
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_roundv2df2_vec_pack_sfix, "__builtin_ia32_roundpd_az_vec_pack_sfix", IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX, UNKNOWN, (int) V4SI_FTYPE_V2DF_V2DF },
 
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundps, "__builtin_ia32_floorps", IX86_BUILTIN_FLOORPS, (enum rtx_code) ROUND_FLOOR, (int) V4SF_FTYPE_V4SF_ROUND },
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundps, "__builtin_ia32_ceilps", IX86_BUILTIN_CEILPS, (enum rtx_code) ROUND_CEIL, (int) V4SF_FTYPE_V4SF_ROUND },
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundps, "__builtin_ia32_truncps", IX86_BUILTIN_TRUNCPS, (enum rtx_code) ROUND_TRUNC, (int) V4SF_FTYPE_V4SF_ROUND },
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundps, "__builtin_ia32_rintps", IX86_BUILTIN_RINTPS, (enum rtx_code) ROUND_MXCSR, (int) V4SF_FTYPE_V4SF_ROUND },
 
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundps_sfix, "__builtin_ia32_floorps_sfix", IX86_BUILTIN_FLOORPS_SFIX, (enum rtx_code) ROUND_FLOOR, (int) V4SI_FTYPE_V4SF_ROUND },
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundps_sfix, "__builtin_ia32_ceilps_sfix", IX86_BUILTIN_CEILPS_SFIX, (enum rtx_code) ROUND_CEIL, (int) V4SI_FTYPE_V4SF_ROUND },
+
   { OPTION_MASK_ISA_ROUND, CODE_FOR_roundv4sf2, "__builtin_ia32_roundps_az", IX86_BUILTIN_ROUNDPS_AZ, UNKNOWN, (int) V4SF_FTYPE_V4SF },
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_roundv4sf2_sfix, "__builtin_ia32_roundps_az_sfix", IX86_BUILTIN_ROUNDPS_AZ_SFIX, UNKNOWN, (int) V4SI_FTYPE_V4SF },
 
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_ptest, "__builtin_ia32_ptestz128", IX86_BUILTIN_PTESTZ, EQ, (int) INT_FTYPE_V2DI_V2DI_PTEST },
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_ptest, "__builtin_ia32_ptestc128", IX86_BUILTIN_PTESTC, LTU, (int) INT_FTYPE_V2DI_V2DI_PTEST },
@@ -26983,13 +27010,21 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundpd256, "__builtin_ia32_rintpd256", IX86_BUILTIN_RINTPD256, (enum rtx_code) ROUND_MXCSR, (int) V4DF_FTYPE_V4DF_ROUND },
 
   { OPTION_MASK_ISA_AVX, CODE_FOR_roundv4df2, "__builtin_ia32_roundpd_az256", IX86_BUILTIN_ROUNDPD_AZ256, UNKNOWN, (int) V4DF_FTYPE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_roundv4df2_vec_pack_sfix, "__builtin_ia32_roundpd_az_vec_pack_sfix256", IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX256, UNKNOWN, (int) V8SI_FTYPE_V4DF_V4DF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundpd_vec_pack_sfix256, "__builtin_ia32_floorpd_vec_pack_sfix256", IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX256, (enum rtx_code) ROUND_FLOOR, (int) V8SI_FTYPE_V4DF_V4DF_ROUND },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundpd_vec_pack_sfix256, "__builtin_ia32_ceilpd_vec_pack_sfix256", IX86_BUILTIN_CEILPD_VEC_PACK_SFIX256, (enum rtx_code) ROUND_CEIL, (int) V8SI_FTYPE_V4DF_V4DF_ROUND },
 
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundps256, "__builtin_ia32_floorps256", IX86_BUILTIN_FLOORPS256, (enum rtx_code) ROUND_FLOOR, (int) V8SF_FTYPE_V8SF_ROUND },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundps256, "__builtin_ia32_ceilps256", IX86_BUILTIN_CEILPS256, (enum rtx_code) ROUND_CEIL, (int) V8SF_FTYPE_V8SF_ROUND },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundps256, "__builtin_ia32_truncps256", IX86_BUILTIN_TRUNCPS256, (enum rtx_code) ROUND_TRUNC, (int) V8SF_FTYPE_V8SF_ROUND },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundps256, "__builtin_ia32_rintps256", IX86_BUILTIN_RINTPS256, (enum rtx_code) ROUND_MXCSR, (int) V8SF_FTYPE_V8SF_ROUND },
 
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundps_sfix256, "__builtin_ia32_floorps_sfix256", IX86_BUILTIN_FLOORPS_SFIX256, (enum rtx_code) ROUND_FLOOR, (int) V8SI_FTYPE_V8SF_ROUND },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundps_sfix256, "__builtin_ia32_ceilps_sfix256", IX86_BUILTIN_CEILPS_SFIX256, (enum rtx_code) ROUND_CEIL, (int) V8SI_FTYPE_V8SF_ROUND },
+
   { OPTION_MASK_ISA_AVX, CODE_FOR_roundv8sf2, "__builtin_ia32_roundps_az256", IX86_BUILTIN_ROUNDPS_AZ256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_roundv8sf2_sfix, "__builtin_ia32_roundps_az_sfix256", IX86_BUILTIN_ROUNDPS_AZ_SFIX256, UNKNOWN, (int) V8SI_FTYPE_V8SF },
 
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_unpckhpd256,  "__builtin_ia32_unpckhpd256", IX86_BUILTIN_UNPCKHPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_unpcklpd256,  "__builtin_ia32_unpcklpd256", IX86_BUILTIN_UNPCKLPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
@@ -28430,7 +28465,7 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
   return SUBREG_REG (target);
 }
 
-/* Subroutine of ix86_expand_args_builtin to take care of round insns.  */
+/* Subroutines of ix86_expand_args_builtin to take care of round insns.  */
 
 static rtx
 ix86_expand_sse_round (const struct builtin_description *d, tree exp,
@@ -28457,6 +28492,44 @@ ix86_expand_sse_round (const struct builtin_description *d, tree exp,
   op1 = GEN_INT (d->comparison);
 
   pat = GEN_FCN (d->icode) (target, op0, op1);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+static rtx
+ix86_expand_sse_round_vec_pack_sfix (const struct builtin_description *d,
+				     tree exp, rtx target)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx op2;
+  enum machine_mode tmode = insn_data[d->icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[d->icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[d->icode].operand[2].mode;
+
+  if (optimize || target == 0
+      || GET_MODE (target) != tmode
+      || !insn_data[d->icode].operand[0].predicate (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  op0 = safe_vector_operand (op0, mode0);
+  op1 = safe_vector_operand (op1, mode1);
+
+  if ((optimize && !register_operand (op0, mode0))
+      || !insn_data[d->icode].operand[0].predicate (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if ((optimize && !register_operand (op1, mode1))
+      || !insn_data[d->icode].operand[1].predicate (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
+  op2 = GEN_INT (d->comparison);
+
+  pat = GEN_FCN (d->icode) (target, op0, op1, op2);
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -28736,7 +28809,12 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4DF_FTYPE_V4DF_ROUND:
     case V4SF_FTYPE_V4SF_ROUND:
     case V8SF_FTYPE_V8SF_ROUND:
+    case V4SI_FTYPE_V4SF_ROUND:
+    case V8SI_FTYPE_V8SF_ROUND:
       return ix86_expand_sse_round (d, exp, target);
+    case V4SI_FTYPE_V2DF_V2DF_ROUND:
+    case V8SI_FTYPE_V4DF_V4DF_ROUND:
+      return ix86_expand_sse_round_vec_pack_sfix (d, exp, target);
     case INT_FTYPE_V8SF_V8SF_PTEST:
     case INT_FTYPE_V4DI_V4DI_PTEST:
     case INT_FTYPE_V4DF_V4DF_PTEST:
@@ -29053,15 +29131,22 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 		error ("the last argument must be an 1-bit immediate");
 		return const0_rtx;
 
-	      case CODE_FOR_sse4_1_roundpd:
-	      case CODE_FOR_sse4_1_roundps:
 	      case CODE_FOR_sse4_1_roundsd:
 	      case CODE_FOR_sse4_1_roundss:
+
+	      case CODE_FOR_sse4_1_roundpd:
+	      case CODE_FOR_sse4_1_roundps:
+	      case CODE_FOR_avx_roundpd256:
+	      case CODE_FOR_avx_roundps256:
+
+	      case CODE_FOR_sse4_1_roundpd_vec_pack_sfix:
+	      case CODE_FOR_sse4_1_roundps_sfix:
+	      case CODE_FOR_avx_roundpd_vec_pack_sfix256:
+	      case CODE_FOR_avx_roundps_sfix256:
+
 	      case CODE_FOR_sse4_1_blendps:
 	      case CODE_FOR_avx_blendpd256:
 	      case CODE_FOR_avx_vpermilv4df:
-	      case CODE_FOR_avx_roundpd256:
-	      case CODE_FOR_avx_roundps256:
 		error ("the last argument must be a 4-bit immediate");
 		return const0_rtx;
 
@@ -30087,6 +30172,70 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
+    case BUILT_IN_IFLOOR:
+    case BUILT_IN_LFLOOR:
+    case BUILT_IN_LLFLOOR:
+      /* The round insn does not trap on denormals.  */
+      if (flag_trapping_math || !TARGET_ROUND)
+	break;
+
+      if (out_mode == SImode && in_mode == DFmode)
+	{
+	  if (out_n == 4 && in_n == 2)
+	    return ix86_builtins[IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX];
+	  else if (out_n == 8 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX256];
+	}
+      break;
+
+    case BUILT_IN_IFLOORF:
+    case BUILT_IN_LFLOORF:
+    case BUILT_IN_LLFLOORF:
+      /* The round insn does not trap on denormals.  */
+      if (flag_trapping_math || !TARGET_ROUND)
+	break;
+
+      if (out_mode == SImode && in_mode == SFmode)
+	{
+	  if (out_n == 4 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_FLOORPS_SFIX];
+	  else if (out_n == 8 && in_n == 8)
+	    return ix86_builtins[IX86_BUILTIN_FLOORPS_SFIX256];
+	}
+      break;
+
+    case BUILT_IN_ICEIL:
+    case BUILT_IN_LCEIL:
+    case BUILT_IN_LLCEIL:
+      /* The round insn does not trap on denormals.  */
+      if (flag_trapping_math || !TARGET_ROUND)
+	break;
+
+      if (out_mode == SImode && in_mode == DFmode)
+	{
+	  if (out_n == 4 && in_n == 2)
+	    return ix86_builtins[IX86_BUILTIN_CEILPD_VEC_PACK_SFIX];
+	  else if (out_n == 8 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_CEILPD_VEC_PACK_SFIX256];
+	}
+      break;
+
+    case BUILT_IN_ICEILF:
+    case BUILT_IN_LCEILF:
+    case BUILT_IN_LLCEILF:
+      /* The round insn does not trap on denormals.  */
+      if (flag_trapping_math || !TARGET_ROUND)
+	break;
+
+      if (out_mode == SImode && in_mode == SFmode)
+	{
+	  if (out_n == 4 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_CEILPS_SFIX];
+	  else if (out_n == 8 && in_n == 8)
+	    return ix86_builtins[IX86_BUILTIN_CEILPS_SFIX256];
+	}
+      break;
+
     case BUILT_IN_IRINT:
     case BUILT_IN_LRINT:
     case BUILT_IN_LLRINT:
@@ -30108,6 +30257,38 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	    return ix86_builtins[IX86_BUILTIN_CVTPS2DQ];
 	  else if (out_n == 8 && in_n == 8)
 	    return ix86_builtins[IX86_BUILTIN_CVTPS2DQ256];
+	}
+      break;
+
+    case BUILT_IN_IROUND:
+    case BUILT_IN_LROUND:
+    case BUILT_IN_LLROUND:
+      /* The round insn does not trap on denormals.  */
+      if (flag_trapping_math || !TARGET_ROUND)
+	break;
+
+      if (out_mode == SImode && in_mode == DFmode)
+	{
+	  if (out_n == 4 && in_n == 2)
+	    return ix86_builtins[IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX];
+	  else if (out_n == 8 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX256];
+	}
+      break;
+
+    case BUILT_IN_IROUNDF:
+    case BUILT_IN_LROUNDF:
+    case BUILT_IN_LLROUNDF:
+      /* The round insn does not trap on denormals.  */
+      if (flag_trapping_math || !TARGET_ROUND)
+	break;
+
+      if (out_mode == SImode && in_mode == SFmode)
+	{
+	  if (out_n == 4 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_ROUNDPS_AZ_SFIX];
+	  else if (out_n == 8 && in_n == 8)
+	    return ix86_builtins[IX86_BUILTIN_ROUNDPS_AZ_SFIX256];
 	}
       break;
 

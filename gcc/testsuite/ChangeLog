@@ -1,3 +1,18 @@
+2011-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse4_1-floor-sfix-vec.c: New test.
+	* gcc.target/i386/sse4_1-floorf-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-floor-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-floorf-sfix-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-ceil-sfix-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-ceilf-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-ceil-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-ceilf-sfix-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-round-sfix-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-roundf-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-round-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-roundf-sfix-vec.c: Ditto.
+
 2011-11-14  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/6936
@@ -309,8 +324,8 @@
 
 2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/50016
-        * gfortran.dg/inquire_size.f90: Don't flush the unit.
+	PR libfortran/50016
+	* gfortran.dg/inquire_size.f90: Don't flush the unit.
 
 2011-11-09  Richard Guenther  <rguenther@suse.de>
 
@@ -495,8 +510,8 @@
 
 2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/45723
-        * gfortran.dg/open_dev_null.f90: Remove testcase.
+	PR libfortran/45723
+	* gfortran.dg/open_dev_null.f90: Remove testcase.
 
 2011-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
