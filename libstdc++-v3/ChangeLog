@@ -1,3 +1,8 @@
+2011-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cmath (frexp, modf, remquo): Do not mark constexpr,
+	not viable anyway due to the pointer parameter.
+
 2011-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_global/cmath (atan2, fmod, pow, copysign, fdim,

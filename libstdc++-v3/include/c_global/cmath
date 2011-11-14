@@ -318,11 +318,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::frexp;
 
 #ifndef __CORRECT_ISO_CPP_MATH_H_PROTO1
-  inline _GLIBCXX_CONSTEXPR float
+  inline float
   frexp(float __x, int* __exp)
   { return __builtin_frexpf(__x, __exp); }
 
-  inline _GLIBCXX_CONSTEXPR long double
+  inline long double
   frexp(long double __x, int* __exp)
   { return __builtin_frexpl(__x, __exp); }
 #endif
@@ -394,11 +394,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::modf;
 
 #ifndef __CORRECT_ISO_CPP_MATH_H_PROTO1
-  inline _GLIBCXX_CONSTEXPR float
+  inline float
   modf(float __x, float* __iptr)
   { return __builtin_modff(__x, __iptr); }
 
-  inline _GLIBCXX_CONSTEXPR long double
+  inline long double
   modf(long double __x, long double* __iptr)
   { return __builtin_modfl(__x, __iptr); }
 #endif
@@ -1578,16 +1578,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return remainder(__type(__x), __type(__y));
     }
 
-  constexpr float
+  inline float
   remquo(float __x, float __y, int* __pquo)
   { return __builtin_remquof(__x, __y, __pquo); }
 
-  constexpr long double
+  inline long double
   remquo(long double __x, long double __y, int* __pquo)
   { return __builtin_remquol(__x, __y, __pquo); }
 
   template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    inline typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     remquo(_Tp __x, _Up __y, int* __pquo)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
