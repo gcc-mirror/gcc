@@ -5886,7 +5886,8 @@ extern void cxx_omp_finish_clause		(tree);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
 
 /* in name-lookup.c */
-extern void suggest_alternatives_for (location_t, tree);
+extern void suggest_alternatives_for            (location_t, tree);
+extern tree strip_using_decl                    (tree);
 
 /* -- end of C++ */
 

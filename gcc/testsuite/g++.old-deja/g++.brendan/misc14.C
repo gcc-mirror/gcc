@@ -3,11 +3,11 @@
 class X {
 public:
     enum e {
-	New // { dg-error "conflicts with previous" }
+	New // { dg-message "previous" }
 	,   // { dg-error "comma at end" "" { target c++98 } }
     };
 
-    static int New(int); // { dg-error "declaration of" }
+    static int New(int); // { dg-error "conflicts with a previous" }
 };
 
 int main() {}
