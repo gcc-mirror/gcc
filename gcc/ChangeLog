@@ -1,3 +1,8 @@
+2011-11-14  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* doc/invoke.texi (Wunused-result): Change @pxref{Variable Attributes}
+	to @pxref{Function Attributes}.
+
 2011-11-13  Oleg Endo  <oleg.endo@t-online.de>
 
 	PR target/50694

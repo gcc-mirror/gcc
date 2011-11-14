@@ -3556,7 +3556,7 @@ To suppress this warning use the @samp{unused} attribute
 @opindex Wunused-result
 @opindex Wno-unused-result
 Do not warn if a caller of a function marked with attribute
-@code{warn_unused_result} (@pxref{Variable Attributes}) does not use
+@code{warn_unused_result} (@pxref{Function Attributes}) does not use
 its return value. The default is @option{-Wunused-result}.
 
 @item -Wunused-variable
