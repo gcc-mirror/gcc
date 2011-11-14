@@ -1,3 +1,13 @@
+2011-11-14  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/50598
+	* cgraph.h (varpool_externally_visible_p): Declare.
+	(varpool_add_new_variable): Declare.
+	* tree-emultls.c (get_emutls_init_templ_addr,
+	new_emutls_decl): Use varpool_add_new_variable.
+	* ipa.c (varpool_externally_visible_p): Export.
+	* varpool.c (varpool_add_new_variable): New function.
+
 2011-11-14  Zolotukhin Michael  <michael.v.zolotukhin@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
 
