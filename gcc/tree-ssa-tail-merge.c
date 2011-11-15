@@ -1396,6 +1396,11 @@ replace_block_by (basic_block bb1, basic_block bb2)
 		   pred_edge, UNKNOWN_LOCATION);
     }
 
+  bb2->frequency += bb1->frequency;
+  if (bb2->frequency > BB_FREQ_MAX)
+    bb2->frequency = BB_FREQ_MAX;
+  bb1->frequency = 0;
+
   /* Do updates that use bb1, before deleting bb1.  */
   release_last_vdef (bb1);
   same_succ_flush_bb (bb1);
