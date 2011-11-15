@@ -1,3 +1,13 @@
+2011-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vec_pack_trunc_v2df): Optimize sequence for AVX.
+	(vec_pack_sfix_trunc_v2df): Ditto.
+	(vec_pack_sfix_v2df): Ditto.
+	(vec_pack_sfix_trunc_v4df): Generate fix_truncv4dfv4si2 and
+	avx_vec_concatv8si patterns.
+	(vec_pack_sfix_v4df): Generate avx_cvtpd2dq256 and
+	avx_vec_concatv8si patterns.
+
 2011-11-15  Torvald Riegel  <triegel@redhat.com>
 
 	* c-parser.c (c_parser_transaction_expression): Require parentheses
@@ -35,7 +45,7 @@
 	(avr_register_target_pragmas): New function. Register address
 	space __pgm.
 	(avr_cpu_cpp_builtins): Add built-in define __PGM.
-	
+
 	* config/avr/avr.c: Include "c-family/c-common.h".
 	(TARGET_LEGITIMATE_ADDRESS_P): Remove define.
 	(TARGET_LEGITIMIZE_ADDRESS): Remove define.
@@ -71,7 +81,7 @@
 	cause (progmem or address space) when code wants to write to flash.
 	(avr_section_type_flags): Unset section flag SECTION_BSS for
 	data in progmem.
-	
+
 	* config/avr/predicates.md (nop_general_operand): New predicate.
 	(nox_general_operand): New predicate.
 	* config/avr/avr.md (LPM_REGNO): New define_constant.
@@ -82,7 +92,8 @@
 	created MEM.
 	(movqi_insn, *movhi, *movpsi, *movsi, *movsf): Change predicate #1
 	to nox_general_operand.
-	(ashrqi3, ashrhi3, ashrsi3): Change predicate #1 to nop_general_operand.
+	(ashrqi3, ashrhi3, ashrsi3): Change predicate #1 to
+	nop_general_operand.
 	(ashlqi3, *ashlqi3, ashlhi3, ashlsi3): Ditto.
 	(lshrqi3, *lshrqi3, lshrhi3, lshrsi3): Ditto.
 	(split-lpmx): New split.
@@ -137,7 +148,8 @@
 
 2011-11-14  Richard Henderson  <rth@redhat.com>
 
-	* config/rs6000/rs6000.c (emit_load_locked): Assert the mode is handled.
+	* config/rs6000/rs6000.c (emit_load_locked): Assert the mode is
+	handled.
 	(emit_store_conditional): Likewise.
 	(rs6000_pre_atomic_barrier, rs6000_post_atomic_barrier): New.
 	(rs6000_adjust_atomic_subword): New.

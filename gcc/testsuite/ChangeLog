@@ -1,3 +1,10 @@
+2011-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-floor-sfix-2-vec.c: New test.
+	* gcc.target/i386/avx-ceil-sfix-2-vec.c: Ditto.
+	* gcc.target/i386/avx-rint-sfix-2-vec.c: Ditto.
+	* gcc.target/i386/avx-round-sfix-2-vec.c: Ditto.
+
 2011-11-15  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* lib/gcc-simulate-thread.exp (simulate-thread): Do not run on
@@ -16,10 +23,10 @@
 	* gcc.target/i386/avx-recip-vec.c: New test.
 	* gcc.target/i386/avx-lrintf-vec.c: Ditto.
 	* gcc.target/i386/avx-lrint-vec.c: Ditto.
-	* gcc.target/i386/avx-ceilf-vec.c: Include sse4_1-ceilf-vec.c.
-	* gcc.target/i386/avx-ceil-vec.c: Include sse4_1-ceil-vec.c.
 	* gcc.target/i386/avx-floorf-vec.c: Include sse4_1-floorf-vec.c.
 	* gcc.target/i386/avx-floor-vec.c: Include sse4_1-floor-vec.c.
+	* gcc.target/i386/avx-ceilf-vec.c: Include sse4_1-ceilf-vec.c.
+	* gcc.target/i386/avx-ceil-vec.c: Include sse4_1-ceil-vec.c.
 	* gcc.target/i386/avx-rintf-vec.c: Include sse4_1-rintf-vec.c.
 	* gcc.target/i386/avx-rint-vec.c: Include sse4_1-rint-vec.c.
 	* gcc.target/i386/avx-roundf-vec.c: Include sse4_1-roundf-vec.c.
@@ -45,6 +52,10 @@
 	* gcc.target/i386/sse4_1-ceilf-sfix-vec.c: Ditto.
 	* gcc.target/i386/avx-ceil-sfix-vec.c: Ditto.
 	* gcc.target/i386/avx-ceilf-sfix-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-rint-sfix-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-rintf-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-rint-sfix-vec.c: Ditto.
+	* gcc.target/i386/avx-rintf-sfix-vec.c: Ditto.
 	* gcc.target/i386/sse4_1-round-sfix-vec.c: Ditto.
 	* gcc.target/i386/sse4_1-roundf-sfix-vec.c: Ditto.
 	* gcc.target/i386/avx-round-sfix-vec.c: Ditto.

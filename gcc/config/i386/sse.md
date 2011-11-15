@@ -3038,14 +3038,25 @@
    (match_operand:V2DF 2 "nonimmediate_operand" "")]
   "TARGET_SSE2"
 {
-  rtx r1, r2;
+  rtx tmp0, tmp1;
 
-  r1 = gen_reg_rtx (V4SFmode);
-  r2 = gen_reg_rtx (V4SFmode);
+  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+    {
+      tmp0 = gen_reg_rtx (V4DFmode);
+      tmp1 = force_reg (V2DFmode, operands[1]);
 
-  emit_insn (gen_sse2_cvtpd2ps (r1, operands[1]));
-  emit_insn (gen_sse2_cvtpd2ps (r2, operands[2]));
-  emit_insn (gen_sse_movlhps (operands[0], r1, r2));
+      emit_insn (gen_avx_vec_concatv4df (tmp0, tmp1, operands[2]));
+      emit_insn (gen_avx_cvtpd2ps256 (operands[0], tmp0));
+    }
+  else
+    {
+      tmp0 = gen_reg_rtx (V4SFmode);
+      tmp1 = gen_reg_rtx (V4SFmode);
+
+      emit_insn (gen_sse2_cvtpd2ps (tmp0, operands[1]));
+      emit_insn (gen_sse2_cvtpd2ps (tmp1, operands[2]));
+      emit_insn (gen_sse_movlhps (operands[0], tmp0, tmp1));
+    }
   DONE;
 })
 
@@ -3057,12 +3068,12 @@
 {
   rtx r1, r2;
 
-  r1 = gen_reg_rtx (V8SImode);
-  r2 = gen_reg_rtx (V8SImode);
+  r1 = gen_reg_rtx (V4SImode);
+  r2 = gen_reg_rtx (V4SImode);
 
-  emit_insn (gen_avx_cvttpd2dq256_2 (r1, operands[1]));
-  emit_insn (gen_avx_cvttpd2dq256_2 (r2, operands[2]));
-  emit_insn (gen_avx_vperm2f128v8si3 (operands[0], r1, r2, GEN_INT (0x20)));
+  emit_insn (gen_fix_truncv4dfv4si2 (r1, operands[1]));
+  emit_insn (gen_fix_truncv4dfv4si2 (r2, operands[2]));
+  emit_insn (gen_avx_vec_concatv8si (operands[0], r1, r2));
   DONE;
 })
 
@@ -3072,16 +3083,28 @@
    (match_operand:V2DF 2 "nonimmediate_operand" "")]
   "TARGET_SSE2"
 {
-  rtx r1, r2;
+  rtx tmp0, tmp1;
 
-  r1 = gen_reg_rtx (V4SImode);
-  r2 = gen_reg_rtx (V4SImode);
+  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+    {
+      tmp0 = gen_reg_rtx (V4DFmode);
+      tmp1 = force_reg (V2DFmode, operands[1]);
 
-  emit_insn (gen_sse2_cvttpd2dq (r1, operands[1]));
-  emit_insn (gen_sse2_cvttpd2dq (r2, operands[2]));
-  emit_insn (gen_vec_interleave_lowv2di (gen_lowpart (V2DImode, operands[0]),
-					 gen_lowpart (V2DImode, r1),
-					 gen_lowpart (V2DImode, r2)));
+      emit_insn (gen_avx_vec_concatv4df (tmp0, tmp1, operands[2]));
+      emit_insn (gen_fix_truncv4dfv4si2 (operands[0], tmp0));
+    }
+  else
+    {
+      tmp0 = gen_reg_rtx (V4SImode);
+      tmp1 = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_sse2_cvttpd2dq (tmp0, operands[1]));
+      emit_insn (gen_sse2_cvttpd2dq (tmp1, operands[2]));
+      emit_insn
+       (gen_vec_interleave_lowv2di (gen_lowpart (V2DImode, operands[0]),
+				    gen_lowpart (V2DImode, tmp0),
+				    gen_lowpart (V2DImode, tmp1)));
+    }
   DONE;
 })
 
@@ -3126,12 +3149,12 @@
 {
   rtx r1, r2;
 
-  r1 = gen_reg_rtx (V8SImode);
-  r2 = gen_reg_rtx (V8SImode);
+  r1 = gen_reg_rtx (V4SImode);
+  r2 = gen_reg_rtx (V4SImode);
 
-  emit_insn (gen_avx_cvtpd2dq256_2 (r1, operands[1]));
-  emit_insn (gen_avx_cvtpd2dq256_2 (r2, operands[2]));
-  emit_insn (gen_avx_vperm2f128v8si3 (operands[0], r1, r2, GEN_INT (0x20)));
+  emit_insn (gen_avx_cvtpd2dq256 (r1, operands[1]));
+  emit_insn (gen_avx_cvtpd2dq256 (r2, operands[2]));
+  emit_insn (gen_avx_vec_concatv8si (operands[0], r1, r2));
   DONE;
 })
 
@@ -3141,16 +3164,28 @@
    (match_operand:V2DF 2 "nonimmediate_operand" "")]
   "TARGET_SSE2"
 {
-  rtx r1, r2;
+  rtx tmp0, tmp1;
 
-  r1 = gen_reg_rtx (V4SImode);
-  r2 = gen_reg_rtx (V4SImode);
+  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+    {
+      tmp0 = gen_reg_rtx (V4DFmode);
+      tmp1 = force_reg (V2DFmode, operands[1]);
 
-  emit_insn (gen_sse2_cvtpd2dq (r1, operands[1]));
-  emit_insn (gen_sse2_cvtpd2dq (r2, operands[2]));
-  emit_insn (gen_vec_interleave_lowv2di (gen_lowpart (V2DImode, operands[0]),
-					 gen_lowpart (V2DImode, r1),
-					 gen_lowpart (V2DImode, r2)));
+      emit_insn (gen_avx_vec_concatv4df (tmp0, tmp1, operands[2]));
+      emit_insn (gen_avx_cvtpd2dq256 (operands[0], tmp0));
+    }
+  else
+    {
+      tmp0 = gen_reg_rtx (V4SImode);
+      tmp1 = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_sse2_cvtpd2dq (tmp0, operands[1]));
+      emit_insn (gen_sse2_cvtpd2dq (tmp1, operands[2]));
+      emit_insn
+       (gen_vec_interleave_lowv2di (gen_lowpart (V2DImode, operands[0]),
+				    gen_lowpart (V2DImode, tmp0),
+				    gen_lowpart (V2DImode, tmp1)));
+    }
   DONE;
 })
 
