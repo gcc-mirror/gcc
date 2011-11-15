@@ -1,3 +1,21 @@
+2011-11-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/51005
+	* tree-ssa-tail-merge.c (delete_basic_block_same_succ): Rename to
+	mark_basic_block_deleted.
+	(update_worklist): Inline purge_bbs.
+	(purge_bbs, unlink_virtual_phi, update_vuses, vop_at_entry)
+	(delete_block_update_dominator_info): Remove.
+	(replace_block_by): Remove update_vops parameter.  Partially evaluate
+	for update_vops == false.
+	(apply_clusters): Remove update_vops parameter.  Remove update_vops
+	argument in replace_block_by call.
+	(update_debug_stmts): Remove MAY_HAVE_DEBUG_STMTS test.
+	(tail_merge_optimize): Remove update_vops argument to apply_clusters.
+	Remove call to purge_bbs.  Add calls to calculate_dominance_info and
+	free_dominance_info.  Add MAY_HAVE_DEBUG_STMTS	before calling
+	update_debug_stmts.  Mark vop var for renaming, if necessary.
+
 2011-11-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/51051
