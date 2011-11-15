@@ -254,6 +254,10 @@ namespace __debug
 	this->_M_invalidate_if(_Equal(__position.base()));
 	return iterator(_Base::erase(__position.base()), this);
       }
+
+      iterator
+      erase(iterator __position)
+      { return erase(const_iterator(__position)); }
 #else
       void
       erase(iterator __position)
