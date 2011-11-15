@@ -1,3 +1,8 @@
+2011-11-15  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* lib/gcc-simulate-thread.exp (simulate-thread): Do not run on
+	powerpc*-*-darwin* targets.
+
 2011-11-15  Torvald Riegel  <triegel@redhat.com>
 
 	* c-c++-common/tm/trxn-expr-3.c: New test.
