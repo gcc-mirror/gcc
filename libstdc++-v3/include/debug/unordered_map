@@ -334,6 +334,10 @@ namespace __debug
       }
 
       iterator
+      erase(iterator __it)
+      { return erase(const_iterator(__it)); }
+
+      iterator
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
@@ -707,6 +711,10 @@ namespace __debug
 	_M_check_rehashed(__bucket_count);
 	return iterator(__next, this);
       }
+
+      iterator
+      erase(iterator __it)
+      { return erase(const_iterator(__it)); }
 
       iterator
       erase(const_iterator __first, const_iterator __last)
