@@ -1,3 +1,9 @@
+2011-11-15  Jason Dick  <dickphd@gmail.com>
+
+	PR libstdc++/51133
+	* include/tr1/poly_hermite.tcc (__poly_hermite_recursion): Fix
+	wrong sign in recursion relation.
+
 2011-11-02  Richard B. Kreckel  <kreckel@ginac.de>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
