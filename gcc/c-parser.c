@@ -10699,7 +10699,7 @@ c_parser_transaction_expression (c_parser *parser, enum rid keyword)
     }
 
   parser->in_transaction = this_in;
-  if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+  if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       tree expr = c_parser_expression (parser).value;
       ret.original_type = TREE_TYPE (expr);
@@ -10708,10 +10708,15 @@ c_parser_transaction_expression (c_parser *parser, enum rid keyword)
 	TRANSACTION_EXPR_RELAXED (ret.value) = 1;
       SET_EXPR_LOCATION (ret.value, loc);
       ret.original_code = TRANSACTION_EXPR;
+      if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
+	{
+	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	  goto error;
+	}
     }
   else
     {
-      c_parser_error (parser, "expected %<(%>");
+     error:
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
