@@ -169,6 +169,7 @@ int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					VEC (tree, heap) *known_vals,
+					VEC (tree, heap) *known_binfos,
 					int *, int *);
 int do_estimate_growth (struct cgraph_node *);
 void inline_merge_summary (struct cgraph_edge *edge);

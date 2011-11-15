@@ -1,3 +1,25 @@
+2011-11-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* ipa-cp.c (ipa_value_from_jfunc): Make global.
+	(ipa_cst_from_jfunc): Remove, use ipa_value_from_jfunc instead.
+	(get_indirect_edge_target): Rename, make global.
+	(devirtualization_time_bonus, estimate_local_effects,)
+	(ipcp_discover_new_direct_edges): Update.
+	* ipa-inline-analysis.c (evaluate_conditions_for_edge):
+	Generalize to also handle types.  Rename to ...
+	(evaluate_properties_for_edge): Use instead of
+	evaluate_conditions_for_edge.
+	(estimate_edge_devirt_benefit): New function.
+	(estimate_calls_size_and_time): Use it.
+	(estimate_node_size_and_time, estimate_ipcp_clone_size_and_time,)
+	(inline_merge_summary):	Update.
+	(do_estimate_edge_time, do_estimate_edge_growth): Update.  Calculate
+	parameter information at the call site and pass it on to subroutines.
+	* tree-inline.c (estimate_num_insns): Distinguish between direct and
+	indirect calls.
+	(init_inline_once): Set size and time costs or indirect calls.
+	* tree-inline.h (eni_weights): Add indirect_call_cost.
+
 2011-11-15  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/51005
