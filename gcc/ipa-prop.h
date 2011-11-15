@@ -346,6 +346,9 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					VEC (cgraph_edge_p, heap) **new_edges);
 
 /* Indirect edge and binfo processing.  */
+tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
+				   VEC (tree, heap) *known_csts,
+				   VEC (tree, heap) *known_binfs);
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree);
 
 /* Functions related to both.  */
@@ -437,8 +440,8 @@ void ipa_prop_write_jump_functions (cgraph_node_set set);
 void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
 int ipa_get_param_decl_index (struct ipa_node_params *, tree);
-tree ipa_cst_from_jfunc (struct ipa_node_params *info,
-			 struct ipa_jump_func *jfunc);
+tree ipa_value_from_jfunc (struct ipa_node_params *info,
+			   struct ipa_jump_func *jfunc);
 
 
 /* From tree-sra.c:  */
