@@ -227,6 +227,42 @@ vms_pragma_message (cpp_reader *pfile ATTRIBUTE_UNUSED)
 #endif
 }
 
+/* Handle '#pragma __extern_prefix'  */
+
+static GTY(()) tree saved_extern_prefix;
+
+static void
+vms_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
+{
+  enum cpp_ttype tok;
+  tree x;
+
+  tok = pragma_lex (&x);
+  if (tok == CPP_NAME)
+    {
+      const char *op = IDENTIFIER_POINTER (x);
+
+      if (!strcmp (op, "__save"))
+        saved_extern_prefix = pragma_extern_prefix;
+      else if (!strcmp (op, "__restore"))
+        pragma_extern_prefix = saved_extern_prefix;
+      else
+        warning (OPT_Wpragmas,
+                 "malformed '#pragma __extern_prefix', ignoring");
+      return;
+    }
+  else if (tok != CPP_STRING)
+    {
+      warning (OPT_Wpragmas,
+               "malformed '#pragma __extern_prefix', ignoring");
+    }
+  else
+    {
+      /* Note that the length includes the null terminator.  */
+      pragma_extern_prefix = (TREE_STRING_LENGTH (x) > 1 ? x : NULL);
+    }
+}
+
 /* Add vms-specific pragma.  */
 
 void
@@ -245,4 +281,5 @@ vms_c_register_pragma (void)
   c_register_pragma (NULL, "__extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "__message", vms_pragma_message);
+  c_register_pragma (NULL, "__extern_prefix", vms_pragma_extern_prefix);
 }
