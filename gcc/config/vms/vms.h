@@ -34,6 +34,9 @@ along with GCC; see the file COPYING3.  If not see
       }                                              \
   } while (0)
 
+extern void vms_c_register_includes (const char *, const char *, int);
+#define TARGET_EXTRA_INCLUDES vms_c_register_includes
+
 /* Tell compiler we want to support VMS pragmas */
 #define REGISTER_TARGET_PRAGMAS() vms_c_register_pragma ()
 
