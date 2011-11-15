@@ -6230,7 +6230,8 @@ thread_prologue_and_epilogue_insns (void)
 	      && !active_insn_between (BB_HEAD (last_bb), BB_END (last_bb)))
 	    convert_jumps_to_returns (last_bb, false, NULL);
 
-	  if (EDGE_COUNT (exit_fallthru_edge->src->preds) != 0)
+	  if (EDGE_COUNT (last_bb->preds) != 0
+	      && single_succ_p (last_bb))
 	    {
 	      last_bb = emit_return_for_exit (exit_fallthru_edge, false);
 	      epilogue_end = returnjump = BB_END (last_bb);
