@@ -1,3 +1,7 @@
+2011-11-16  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-tail-merge.c (replace_block_by): Add frequency of bb2 to bb1.
+
 2011-11-16  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/51051
