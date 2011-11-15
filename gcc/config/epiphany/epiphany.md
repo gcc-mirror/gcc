@@ -1711,7 +1711,7 @@
 
   cmp_in_mode = GET_MODE (cmp_op0);
   if (cmp_in_mode == VOIDmode)
-    cmp_in_mode = GET_MODE (cmp_op0);
+    cmp_in_mode = GET_MODE (cmp_op1);
   if (cmp_in_mode == VOIDmode)
     cmp_in_mode = SImode;
   /* If the operands are a better match when reversed, swap them now.

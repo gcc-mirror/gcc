@@ -1,3 +1,8 @@
+2011-11-15  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.md (mov<mode>cc): Fix code to
+	get mode from CMP_OP1 if CMP_OP0 is VOIDmode.
+
 2011-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (vec_pack_trunc_v2df): Optimize sequence for AVX.
