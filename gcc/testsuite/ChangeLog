@@ -1,3 +1,10 @@
+2011-11-16  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr43864.c: Check for absence of 'Invalid sum' in pre tree-dump.
+	* gcc.dg/pr43864-2.c: Same.
+	* gcc.dg/pr43864-3.c: Same.
+	* gcc.dg/pr43864-4.c: Same.
+
 2011-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse2-cvt-vec.c: New test.
