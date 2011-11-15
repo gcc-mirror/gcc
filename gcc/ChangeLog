@@ -1,3 +1,11 @@
+2011-11-15  Tristan Gingold  <gingold@adacore.com>
+
+	* c-family/c-pragma.h (pragma_extern_prefix): Declare.
+	* c-family/c-pragma.c (pragma_extern_prefix): Make it public.
+	* config/vms/vms-c.c (saved_extern_prefix): New variable.
+	(vms_pragma_extern_prefix): New function.
+	(vms_c_register_pragma): Register vms_pragma_extern_prefix.
+
 2011-11-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868

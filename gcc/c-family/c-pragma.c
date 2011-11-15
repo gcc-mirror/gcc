@@ -494,7 +494,8 @@ add_to_renaming_pragma_list (tree oldname, tree newname)
   p->newname = newname;
 }
 
-static GTY(()) tree pragma_extern_prefix;
+/* The current prefix set by #pragma extern_prefix.  */
+GTY(()) tree pragma_extern_prefix;
 
 /* #pragma extern_prefix "prefix" */
 static void

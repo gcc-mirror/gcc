@@ -146,4 +146,6 @@ extern enum cpp_ttype c_lex_with_flags (tree *, location_t *, unsigned char *,
 
 extern void c_pp_lookup_pragma (unsigned int, const char **, const char **);
 
+extern GTY(()) tree pragma_extern_prefix;
+
 #endif /* GCC_C_PRAGMA_H */
