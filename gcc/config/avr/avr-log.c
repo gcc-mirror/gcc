@@ -59,6 +59,8 @@
   F: caller (via __FUNCTION__)
   P: Pass name and number
   ?: Print caller, current function and pass info
+  !: Ditto, but only print if in a pass with static pass number,
+     else return.
 
   == same as printf ==
   
@@ -318,12 +320,13 @@ avr_log_set_avr_log (void)
                    || NULL != strstr (str, "," #S ",")                  \
                    || NULL != strstr (str, ",all,"))
 
-      SET_DUMP_DETAIL (rtx_costs);
+      SET_DUMP_DETAIL (address_cost);
+      SET_DUMP_DETAIL (constraints);
       SET_DUMP_DETAIL (legitimate_address_p);
       SET_DUMP_DETAIL (legitimize_address);
       SET_DUMP_DETAIL (legitimize_reload_address);
-      SET_DUMP_DETAIL (constraints);
-      SET_DUMP_DETAIL (address_cost);
+      SET_DUMP_DETAIL (progmem);
+      SET_DUMP_DETAIL (rtx_costs);
 
 #undef SET_DUMP_DETAIL
     }

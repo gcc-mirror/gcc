@@ -1,3 +1,72 @@
+2011-11-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* config/avr/avr.h (ADDR_SPACE_PGM): New address spaces.
+	(REGISTER_TARGET_PRAGMAS): New define.
+	* config/avr/avr-protos.h (avr_mem_pgm_p): New.
+	(avr_load_libgcc_p): New.
+	(avr_register_target_pragmas): New.
+	(asm_output_external_libcall): Remove.
+	(avr_log_t): Add field "progmem".  Order alphabetically.
+	* config/avr/avr-log.c (avr_log_set_avr_log): Set avr_log.progmem.
+	* config/avr/avr-c.c (langhooks.h): New include.
+	(avr_register_target_pragmas): New function. Register address
+	space __pgm.
+	(avr_cpu_cpp_builtins): Add built-in define __PGM.
+	
+	* config/avr/avr.c: Include "c-family/c-common.h".
+	(TARGET_LEGITIMATE_ADDRESS_P): Remove define.
+	(TARGET_LEGITIMIZE_ADDRESS): Remove define.
+	(TARGET_ADDR_SPACE_SUBSET_P): Define to...
+	(avr_addr_space_subset_p): ...this new static function.
+	(TARGET_ADDR_SPACE_CONVERT): Define to...
+	(avr_addr_space_convert): ...this new static function.
+	(TARGET_ADDR_SPACE_ADDRESS_MODE): Define to...
+	(avr_addr_space_address_mode): ...this new static function.
+	(TARGET_ADDR_SPACE_POINTER_MODE): Define to...
+	(avr_addr_space_pointer_mode): ...this new static function.
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Define to...
+	(avr_addr_space_legitimate_address_p): ...this new static function.
+	(TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS): Define to...
+	(avr_addr_space_legitimize_address): ...this new static function.
+	(avr_mode_code_base_reg_class): Handle address spaces.
+	(avr_regno_mode_code_ok_for_base_p): Ditto.
+	(lpm_addr_reg_rtx, lpm_reg_rtx, all_regs_rtx): New static variables.
+	(avr_option_override): Initialize them.
+	(output_reload_in_const): Use all_regs_rtx. Fix signedness of loop
+	variables.
+	(avr_pgm_segment): New static function.
+	(avr_decl_pgm_p, avr_mem_pgm_p): New static functions.
+	(avr_out_lpm, avr_out_lpm_no_lpmx): New static functions.
+	(output_movqi, output_movhi, output_movsisf, avr_out_movpsi): Call
+	avr_out_lpm to handle loads from progmem.
+	(avr_load_libgcc_p): New static function.
+	(avr_progmem_p): Test if decl is in flash.
+	(avr_pgm_pointer_const_p): New static function.
+	(avr_nonconst_pointer_addrspace): New static function.
+	(avr_pgm_check_var_decl): New static function.
+	(avr_insert_attributes): Use it.  Change error message to report
+	cause (progmem or address space) when code wants to write to flash.
+	(avr_section_type_flags): Unset section flag SECTION_BSS for
+	data in progmem.
+	
+	* config/avr/predicates.md (nop_general_operand): New predicate.
+	(nox_general_operand): New predicate.
+	* config/avr/avr.md (LPM_REGNO): New define_constant.
+	(load<mode>_libgcc): New expander.
+	(*load.<mode>.libgcc): New insn.
+	(mov<mode>): Handle loads from non-generic AS.
+	(movmemhi): Ditto.  Propagate address space information to newly
+	created MEM.
+	(movqi_insn, *movhi, *movpsi, *movsi, *movsf): Change predicate #1
+	to nox_general_operand.
+	(ashrqi3, ashrhi3, ashrsi3): Change predicate #1 to nop_general_operand.
+	(ashlqi3, *ashlqi3, ashlhi3, ashlsi3): Ditto.
+	(lshrqi3, *lshrqi3, lshrhi3, lshrsi3): Ditto.
+	(split-lpmx): New split.
+	(*ashlhi3_const, *ashlsi3_const, *ashrhi3_const, *ashrsi3_const,
+	*lshrhi3_const, *lshrsi3_const): Indent, unquote C.
+
 2011-11-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* ipa-cp.c (ipa_value_from_jfunc): Make global.

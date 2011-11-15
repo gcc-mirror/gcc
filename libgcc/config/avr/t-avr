@@ -21,6 +21,7 @@ LIB1ASMFUNCS = \
 	_cleanup \
 	_tablejump \
 	_tablejump_elpm \
+	_load_3 _load_4 \
 	_copy_data \
 	_clear_bss \
 	_ctors \

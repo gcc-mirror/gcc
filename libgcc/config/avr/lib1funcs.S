@@ -1181,6 +1181,52 @@ DEFUN __tablejump_elpm__
 ENDF __tablejump_elpm__
 #endif /* defined (L_tablejump_elpm) */
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Loading n bytes from Flash; n = 3,4
+;; R22... = Flash[Z]
+;; Clobbers: __tmp_reg__
+
+#if (defined (L_load_3)        \
+     || defined (L_load_4))    \
+    && !defined (__AVR_HAVE_LPMX__)
+
+;; Destination
+#define D0  22
+#define D1  D0+1
+#define D2  D0+2
+#define D3  D0+3
+
+.macro  .load dest, n
+    lpm
+    mov     \dest, r0
+.if \dest != D0+\n-1
+    adiw    r30, 1
+.else
+    sbiw    r30, \n-1
+.endif
+.endm
+
+#if defined (L_load_3)
+DEFUN __load_3
+    push  D3
+    XCALL __load_4
+    pop   D3
+    ret
+ENDF __load_3
+#endif /* L_load_3 */
+
+#if defined (L_load_4)
+DEFUN __load_4
+    .load D0, 4
+    .load D1, 4
+    .load D2, 4
+    .load D3, 4
+    ret
+ENDF __load_4
+#endif /* L_load_4 */
+
+#endif /* L_load_3 || L_load_3 */
+
 
 .section .text.libgcc.builtins, "ax", @progbits
 
