@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -84,7 +84,7 @@ namespace tr1
       unsigned int __i;
       for  (__H_nm2 = __H_0, __H_nm1 = __H_1, __i = 2; __i <= __n; ++__i)
         {
-          __H_n = 2 * (__x * __H_nm1 + (__i - 1) * __H_nm2);
+          __H_n = 2 * (__x * __H_nm1 - (__i - 1) * __H_nm2);
           __H_nm2 = __H_nm1;
           __H_nm1 = __H_n;
         }
