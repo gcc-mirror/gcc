@@ -1,6 +1,9 @@
 2011-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
-	* gcc.target/i386/avx-floor-sfix-2-vec.c: New test.
+	* gcc.target/i386/sse2-cvt-vec.c: New test.
+	* gcc.target/i386/avx-cvt-vec.c: Ditto.
+	* gcc.target/i386/avx-cvt-2-vec.c: Ditto.
+	* gcc.target/i386/avx-floor-sfix-2-vec.c: Ditto.
 	* gcc.target/i386/avx-ceil-sfix-2-vec.c: Ditto.
 	* gcc.target/i386/avx-rint-sfix-2-vec.c: Ditto.
 	* gcc.target/i386/avx-round-sfix-2-vec.c: Ditto.
