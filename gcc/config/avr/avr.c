@@ -35,6 +35,7 @@
 #include "tree.h"
 #include "output.h"
 #include "expr.h"
+#include "c-family/c-common.h"
 #include "diagnostic-core.h"
 #include "obstack.h"
 #include "function.h"
@@ -84,11 +85,20 @@ static bool avr_rtx_costs (rtx, int, int, int, int *, bool);
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
 
+/* Implicit target register of LPM instruction (R0) */
+static GTY(()) rtx lpm_reg_rtx;
+
+/* (Implicit) address register of LPM instruction (R31:R30 = Z) */
+static GTY(()) rtx lpm_addr_reg_rtx;
+
 /* Temporary register RTX (gen_rtx_REG (QImode, TMP_REGNO)) */
 static GTY(()) rtx tmp_reg_rtx;
 
 /* Zeroed register RTX (gen_rtx_REG (QImode, ZERO_REGNO)) */
 static GTY(()) rtx zero_reg_rtx;
+
+/* RTXs for all general purpose registers as QImode */
+static GTY(()) rtx all_regs_rtx[32];
 
 /* AVR register names {"r0", "r1", ..., "r31"} */
 static const char *const avr_regnames[] = REGISTER_NAMES;
@@ -172,9 +182,6 @@ bool avr_need_copy_data_p = false;
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE avr_function_arg_advance
 
-#undef TARGET_LEGITIMIZE_ADDRESS
-#define TARGET_LEGITIMIZE_ADDRESS avr_legitimize_address
-
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY avr_return_in_memory
 
@@ -188,9 +195,6 @@ bool avr_need_copy_data_p = false;
 #define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD avr_case_values_threshold
-
-#undef TARGET_LEGITIMATE_ADDRESS_P
-#define TARGET_LEGITIMATE_ADDRESS_P avr_legitimate_address_p
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
@@ -220,6 +224,24 @@ bool avr_need_copy_data_p = false;
 
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P avr_scalar_mode_supported_p
+
+#undef  TARGET_ADDR_SPACE_SUBSET_P
+#define TARGET_ADDR_SPACE_SUBSET_P avr_addr_space_subset_p
+
+#undef  TARGET_ADDR_SPACE_CONVERT
+#define TARGET_ADDR_SPACE_CONVERT avr_addr_space_convert
+
+#undef  TARGET_ADDR_SPACE_ADDRESS_MODE
+#define TARGET_ADDR_SPACE_ADDRESS_MODE avr_addr_space_address_mode
+
+#undef  TARGET_ADDR_SPACE_POINTER_MODE
+#define TARGET_ADDR_SPACE_POINTER_MODE avr_addr_space_pointer_mode
+
+#undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P avr_addr_space_legitimate_address_p
+
+#undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
+#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS avr_addr_space_legitimize_address
 
 
 
@@ -295,6 +317,8 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 static void
 avr_option_override (void)
 {
+  int regno;
+  
   flag_delete_null_pointer_checks = 0;
 
   /* caller-save.c looks for call-clobbered hard registers that are assigned
@@ -323,8 +347,14 @@ avr_option_override (void)
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
   avr_extra_arch_macro = avr_current_device->macro;
 
-  tmp_reg_rtx  = gen_rtx_REG (QImode, TMP_REGNO);
-  zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
+  for (regno = 0; regno < 32; regno ++)
+    all_regs_rtx[regno] = gen_rtx_REG (QImode, regno);
+
+  lpm_reg_rtx  = all_regs_rtx[LPM_REGNO];
+  tmp_reg_rtx  = all_regs_rtx[TMP_REGNO];
+  zero_reg_rtx = all_regs_rtx[ZERO_REGNO];
+
+  lpm_addr_reg_rtx = gen_rtx_REG (HImode, REG_Z);
 
   init_machine_status = avr_init_machine_status;
 
@@ -381,6 +411,28 @@ avr_scalar_mode_supported_p (enum machine_mode mode)
     return true;
 
   return default_scalar_mode_supported_p (mode);
+}
+
+
+/* Return TRUE if DECL is a VAR_DECL located in Flash and FALSE, otherwise.  */
+
+static bool
+avr_decl_pgm_p (tree decl)
+{
+  if (TREE_CODE (decl) != VAR_DECL)
+    return false;
+
+  return !ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (decl)));
+}
+
+
+/* Return TRUE if X is a MEM rtx located in Flash and FALSE, otherwise.  */
+
+bool
+avr_mem_pgm_p (rtx x)
+{
+  return (MEM_P (x)
+          && !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x)));
 }
 
 
@@ -1379,6 +1431,9 @@ avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
   return ok;
 }
 
+
+/* Former implementation of TARGET_LEGITIMIZE_ADDRESS,
+   now only a helper for avr_addr_space_legitimize_address.  */
 /* Attempts to replace X with a valid
    memory address for an operand of mode MODE  */
 
@@ -2177,6 +2232,231 @@ avr_function_ok_for_sibcall (tree decl_callee, tree exp_callee)
 /***********************************************************************
   Functions for outputting various mov's for a various modes
 ************************************************************************/
+
+/* Return true if a value of mode MODE is read from flash by
+   __load_* function from libgcc.  */
+
+bool
+avr_load_libgcc_p (rtx op)
+{
+  enum machine_mode mode = GET_MODE (op);
+  int n_bytes = GET_MODE_SIZE (mode);
+        
+  return (n_bytes > 2
+          && !AVR_HAVE_LPMX
+          && avr_mem_pgm_p (op));
+}
+
+
+/* Helper function for the next function in the case where only restricted
+   version of LPM instruction is available.  */
+
+static const char*
+avr_out_lpm_no_lpmx (rtx insn, rtx *xop, int *plen)
+{
+  rtx dest = xop[0];
+  rtx addr = xop[1];
+  int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
+  int regno_dest;
+
+  regno_dest = REGNO (dest);
+
+  /* The implicit target register of LPM.  */
+  xop[3] = lpm_reg_rtx;
+
+  switch (GET_CODE (addr))
+    {
+    default:
+      gcc_unreachable();
+
+    case REG:
+
+      gcc_assert (REG_Z == REGNO (addr));
+
+      switch (n_bytes)
+        {
+        default:
+          gcc_unreachable();
+
+        case 1:
+          return avr_asm_len ("lpm" CR_TAB
+                              "mov %0,%3", xop, plen, 2);
+
+        case 2:
+          if (REGNO (dest) == REG_Z)
+            return avr_asm_len ("lpm"        CR_TAB
+                                "push %3"    CR_TAB
+                                "adiw %2,1"  CR_TAB
+                                "lpm"        CR_TAB
+                                "mov %B0,%3" CR_TAB
+                                "pop %A0", xop, plen, 6);
+          else
+            {
+              avr_asm_len ("lpm"        CR_TAB
+                           "mov %A0,%3" CR_TAB
+                           "adiw %2,1"  CR_TAB
+                           "lpm"        CR_TAB
+                           "mov %B0,%3", xop, plen, 5);
+                
+              if (!reg_unused_after (insn, addr))
+                avr_asm_len ("sbiw %2,1", xop, plen, 1);
+            }
+          
+          break; /* 2 */
+        }
+      
+      break; /* REG */
+
+    case POST_INC:
+
+      gcc_assert (REG_Z == REGNO (XEXP (addr, 0))
+                  && n_bytes <= 2);
+
+      avr_asm_len ("lpm"        CR_TAB
+                   "mov %A0,%3" CR_TAB
+                   "adiw %2,1", xop, plen, 3);
+
+      if (n_bytes >= 2)
+        avr_asm_len ("lpm"        CR_TAB
+                     "mov %B0,%3" CR_TAB
+                     "adiw %2,1", xop, plen, 3);
+
+      break; /* POST_INC */
+      
+    } /* switch CODE (addr) */
+      
+  return "";
+}
+
+
+/* If PLEN == NULL: Ouput instructions to load a value from a memory location
+   OP[1] in AS1 to register OP[0].
+   If PLEN != 0 set *PLEN to the length in words of the instruction sequence.
+   Return "".  */
+
+static const char*
+avr_out_lpm (rtx insn, rtx *op, int *plen)
+{
+  rtx xop[5];
+  rtx dest = op[0];
+  rtx src = SET_SRC (single_set (insn));
+  rtx addr;
+  int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
+  int regno_dest;
+
+  if (plen)
+    *plen = 0;
+  
+  if (MEM_P (dest))
+    {
+      warning (0, "writing to address space %qs not supported",
+               c_addr_space_name (MEM_ADDR_SPACE (dest)));
+      
+      return "";
+    }
+
+  addr = XEXP (src, 0);
+
+  gcc_assert (!avr_load_libgcc_p (src)
+              && REG_P (dest)
+              && (REG_P (addr) || POST_INC == GET_CODE (addr)));
+
+  xop[0] = dest;
+  xop[1] = addr;
+  xop[2] = lpm_addr_reg_rtx;
+
+  regno_dest = REGNO (dest);
+
+  if (!AVR_HAVE_LPMX)
+    {
+      return avr_out_lpm_no_lpmx (insn, xop, plen);
+    }
+
+  switch (GET_CODE (addr))
+    {
+    default:
+      gcc_unreachable();
+
+    case REG:
+
+      gcc_assert (REG_Z == REGNO (addr));
+
+      switch (n_bytes)
+        {
+        default:
+          gcc_unreachable();
+
+        case 1:
+          return avr_asm_len ("lpm %0,%a2", xop, plen, -1);
+
+        case 2:
+          if (REGNO (dest) == REG_Z)
+            return avr_asm_len ("lpm __tmp_reg__,%a2+" CR_TAB
+                                "lpm %B0,%a2"          CR_TAB
+                                "mov %A0,__tmp_reg__", xop, plen, -3);
+          else
+            {
+              avr_asm_len ("lpm %A0,%a2+" CR_TAB
+                           "lpm %B0,%a2", xop, plen, -2);
+                
+              if (!reg_unused_after (insn, addr))
+                avr_asm_len ("sbiw %2,1", xop, plen, 1);
+            }
+          
+          break; /* 2 */
+
+        case 3:
+
+          avr_asm_len ("lpm %A0,%a2+" CR_TAB
+                       "lpm %B0,%a2+" CR_TAB
+                       "lpm %C0,%a2", xop, plen, -3);
+                
+          if (!reg_unused_after (insn, addr))
+            avr_asm_len ("sbiw %2,2", xop, plen, 1);
+
+          break; /* 3 */
+      
+        case 4:
+
+          avr_asm_len ("lpm %A0,%a2+" CR_TAB
+                       "lpm %B0,%a2+", xop, plen, -2);
+          
+          if (REGNO (dest) == REG_Z - 2)
+            return avr_asm_len ("lpm __tmp_reg__,%a2+" CR_TAB
+                                "lpm %C0,%a2"          CR_TAB
+                                "mov %D0,__tmp_reg__", xop, plen, 3);
+          else
+            {
+              avr_asm_len ("lpm %C0,%a2+" CR_TAB
+                           "lpm %D0,%a2", xop, plen, 2);
+                
+              if (!reg_unused_after (insn, addr))
+                avr_asm_len ("sbiw %2,3", xop, plen, 1);
+            }
+
+          break; /* 4 */
+        } /* n_bytes */
+      
+      break; /* REG */
+
+    case POST_INC:
+
+      gcc_assert (REG_Z == REGNO (XEXP (addr, 0))
+                  && n_bytes <= 4);
+
+      avr_asm_len                    ("lpm %A0,%a2+", xop, plen, -1);
+      if (n_bytes >= 2)  avr_asm_len ("lpm %B0,%a2+", xop, plen, 1);
+      if (n_bytes >= 3)  avr_asm_len ("lpm %C0,%a2+", xop, plen, 1);
+      if (n_bytes >= 4)  avr_asm_len ("lpm %D0,%a2+", xop, plen, 1);
+
+      break; /* POST_INC */
+
+    } /* switch CODE (addr) */
+      
+  return "";
+}
+
+
 const char *
 output_movqi (rtx insn, rtx operands[], int *l)
 {
@@ -2185,6 +2465,12 @@ output_movqi (rtx insn, rtx operands[], int *l)
   rtx src = operands[1];
   int *real_l = l;
   
+  if (avr_mem_pgm_p (src)
+      || avr_mem_pgm_p (dest))
+    {
+      return avr_out_lpm (insn, operands, real_l);
+    }
+
   if (!l)
     l = &dummy;
 
@@ -2235,6 +2521,12 @@ output_movhi (rtx insn, rtx operands[], int *l)
   rtx src = operands[1];
   int *real_l = l;
   
+  if (avr_mem_pgm_p (src)
+      || avr_mem_pgm_p (dest))
+    {
+      return avr_out_lpm (insn, operands, real_l);
+    }
+
   if (!l)
     l = &dummy;
   
@@ -2848,6 +3140,12 @@ output_movsisf (rtx insn, rtx operands[], int *l)
   rtx src = operands[1];
   int *real_l = l;
   
+  if (avr_mem_pgm_p (src)
+      || avr_mem_pgm_p (dest))
+    {
+      return avr_out_lpm (insn, operands, real_l);
+    }
+
   if (!l)
     l = &dummy;
   
@@ -3166,6 +3464,12 @@ avr_out_movpsi (rtx insn, rtx *op, int *plen)
 {
   rtx dest = op[0];
   rtx src = op[1];
+  
+  if (avr_mem_pgm_p (src)
+      || avr_mem_pgm_p (dest))
+    {
+      return avr_out_lpm (insn, op, plen);
+    }
   
   if (register_operand (dest, VOIDmode))
     {
@@ -3764,9 +4068,10 @@ out_shift_with_cnt (const char *templ, rtx insn, rtx operands[],
   if (len)
     *len = 1;
 
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (CONST_INT_P (operands[2]))
     {
-      int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL);
+      bool scratch = (GET_CODE (PATTERN (insn)) == PARALLEL
+                      && REG_P (operands[3]));
       int count = INTVAL (operands[2]);
       int max_len = 10;  /* If larger than this, always use a loop.  */
 
@@ -3819,8 +4124,7 @@ out_shift_with_cnt (const char *templ, rtx insn, rtx operands[],
 	  /* No scratch register available, use one from LD_REGS (saved in
 	     __tmp_reg__) that doesn't overlap with registers to shift.  */
 
-	  op[3] = gen_rtx_REG (QImode,
-			   ((true_regnum (operands[0]) - 1) & 15) + 16);
+	  op[3] = all_regs_rtx[((REGNO (operands[0]) - 1) & 15) + 16];
 	  op[4] = tmp_reg_rtx;
 	  saved_in_tmp = 1;
 
@@ -6208,8 +6512,15 @@ avr_attribute_table[] =
   { NULL,        0, 0, false, false, false, NULL, false }
 };
 
-/* Look for attribute `progmem' in DECL
-   if found return 1, otherwise 0.  */
+
+/* Look if DECL shall be placed in program memory space by
+   means of attribute `progmem' or some address-space qualifier.
+   Return non-zero if DECL is data that must end up in Flash and
+   zero if the data lives in RAM (.bss, .data, .rodata, ...).
+   
+   Return 1   if DECL is located in 16-bit flash address-space
+   Return -1  if attribute `progmem' occurs in DECL or ATTRIBUTES
+   Return 0   otherwise  */
 
 int
 avr_progmem_p (tree decl, tree attributes)
@@ -6219,11 +6530,15 @@ avr_progmem_p (tree decl, tree attributes)
   if (TREE_CODE (decl) != VAR_DECL)
     return 0;
 
-  if (NULL_TREE
-      != lookup_attribute ("progmem", attributes))
+  if (avr_decl_pgm_p (decl))
     return 1;
 
-  a=decl;
+  if (NULL_TREE
+      != lookup_attribute ("progmem", attributes))
+    return -1;
+
+  a = decl;
+ 
   do
     a = TREE_TYPE(a);
   while (TREE_CODE (a) == ARRAY_TYPE);
@@ -6232,16 +6547,123 @@ avr_progmem_p (tree decl, tree attributes)
     return 0;
 
   if (NULL_TREE != lookup_attribute ("progmem", TYPE_ATTRIBUTES (a)))
-    return 1;
+    return -1;
   
   return 0;
 }
+
+
+/* Scan type TYP for pointer references to address space ASn.
+   Return ADDR_SPACE_GENERIC (i.e. 0) if all pointers targeting
+   the AS are also declared to be CONST.
+   Otherwise, return the respective addres space, i.e. a value != 0.  */
+   
+static addr_space_t
+avr_nonconst_pointer_addrspace (tree typ)
+{
+  while (ARRAY_TYPE == TREE_CODE (typ))
+    typ = TREE_TYPE (typ);
+
+  if (POINTER_TYPE_P (typ))
+    {
+      tree target = TREE_TYPE (typ);
+
+      /* Pointer to function: Test the function's return type.  */
+      
+      if (FUNCTION_TYPE == TREE_CODE (target))
+        return avr_nonconst_pointer_addrspace (TREE_TYPE (target));
+
+      /* "Ordinary" pointers... */
+
+      while (TREE_CODE (target) == ARRAY_TYPE)
+        target = TREE_TYPE (target);
+
+      if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (target))
+          && !TYPE_READONLY (target))
+        {
+          /* Pointers to non-generic address space must be const.  */
+          
+          return TYPE_ADDR_SPACE (target);
+        }
+
+      /* Scan pointer's target type.  */
+      
+      return avr_nonconst_pointer_addrspace (target);
+    }
+
+  return ADDR_SPACE_GENERIC;
+}
+
+
+/* Sanity check NODE so that all pointers targeting address space AS1
+   go along with CONST qualifier.  Writing to this address space should
+   be detected and complained about as early as possible.  */
+
+static bool
+avr_pgm_check_var_decl (tree node)
+{
+  const char *reason = NULL;
+  
+  addr_space_t as = ADDR_SPACE_GENERIC;
+
+  gcc_assert (as == 0);
+  
+  if (avr_log.progmem)
+    avr_edump ("%?: %t\n", node);
+  
+  switch (TREE_CODE (node))
+    {
+    default:
+      break;
+
+    case VAR_DECL:
+      if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
+        reason = "variable";
+      break;
+
+    case PARM_DECL:
+      if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
+        reason = "function parameter";
+      break;
+        
+    case FIELD_DECL:
+      if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
+        reason = "structure field";
+      break;
+        
+    case FUNCTION_DECL:
+      if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (TREE_TYPE (node))),
+          as)
+        reason = "return type of function";
+      break;
+
+    case POINTER_TYPE:
+      if (as = avr_nonconst_pointer_addrspace (node), as)
+        reason = "pointer";
+      break;
+    }
+
+  if (reason)
+    {
+      if (TYPE_P (node))
+        error ("pointer targeting address space %qs must be const in %qT",
+               c_addr_space_name (as), node);
+      else
+        error ("pointer targeting address space %qs must be const in %s %q+D",
+               c_addr_space_name (as), reason, node);
+    }
+
+  return reason == NULL;
+}
+
 
 /* Add the section attribute if the variable is in progmem.  */
 
 static void
 avr_insert_attributes (tree node, tree *attributes)
 {
+  avr_pgm_check_var_decl (node);
+
   if (TREE_CODE (node) == VAR_DECL
       && (TREE_STATIC (node) || DECL_EXTERNAL (node))
       && avr_progmem_p (node, *attributes))
@@ -6258,11 +6680,20 @@ avr_insert_attributes (tree node, tree *attributes)
       if (error_mark_node == node0)
         return;
       
-      if (!TYPE_READONLY (node0))
+      if (!TYPE_READONLY (node0)
+          && !TREE_READONLY (node))
         {
+          addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (node));
+          const char *reason = "__attribute__((progmem))";
+
+          if (!ADDR_SPACE_GENERIC_P (as))
+            reason = c_addr_space_name (as);
+          
+          if (avr_log.progmem)
+            avr_edump ("\n%?: %t\n%t\n", node, node0);
+          
           error ("variable %q+D must be const in order to be put into"
-                 " read-only section by means of %<__attribute__((progmem))%>",
-                 node);
+                 " read-only section by means of %qs", node, reason);
         }
     }
 }
@@ -6462,6 +6893,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
       && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
       flags &= ~SECTION_WRITE;
+      flags &= ~SECTION_BSS;
       flags |= AVR_SECTION_PROGMEM;
     }
   
@@ -8049,10 +8481,14 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 
 reg_class_t
 avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
-                              addr_space_t as ATTRIBUTE_UNUSED,
-                              RTX_CODE outer_code,
+                              addr_space_t as, RTX_CODE outer_code,
                               RTX_CODE index_code ATTRIBUTE_UNUSED)
 {
+  if (!ADDR_SPACE_GENERIC_P (as))
+    {
+      return POINTER_Z_REGS;
+    }
+ 
   if (!avr_strict_X)
     return reload_completed ? BASE_POINTER_REGS : POINTER_REGS;
 
@@ -8071,6 +8507,27 @@ avr_regno_mode_code_ok_for_base_p (int regno,
 {
   bool ok = false;
   
+  if (!ADDR_SPACE_GENERIC_P (as))
+    {
+      if (regno < FIRST_PSEUDO_REGISTER
+          && regno == REG_Z)
+        {
+          return true;
+        }
+      
+      if (reg_renumber)
+        {
+          regno = reg_renumber[regno];
+          
+          if (regno == REG_Z)
+            {
+              return true;
+            }
+        }
+      
+      return false;
+    }
+
   if (regno < FIRST_PSEUDO_REGISTER
       && (regno == REG_X
           || regno == REG_Y
@@ -8122,9 +8579,8 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   int clobber_val = 1234;
   bool cooked_clobber_p = false;
   bool set_p = false;
-  unsigned int n;
   enum machine_mode mode = GET_MODE (dest);
-  int n_bytes = GET_MODE_SIZE (mode);
+  int n, n_bytes = GET_MODE_SIZE (mode);
   
   gcc_assert (REG_P (dest)
               && CONSTANT_P (src));
@@ -8138,7 +8594,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   if (REGNO (dest) < 16
       && REGNO (dest) + GET_MODE_SIZE (mode) > 16)
     {
-      clobber_reg = gen_rtx_REG (QImode, REGNO (dest) + n_bytes - 1);
+      clobber_reg = all_regs_rtx[REGNO (dest) + n_bytes - 1];
     }
 
   /* We might need a clobber reg but don't have one.  Look at the value to
@@ -8155,7 +8611,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
          That's cheaper than loading from constant pool.  */
       
       cooked_clobber_p = true;
-      clobber_reg = gen_rtx_REG (QImode, REG_Z + 1);
+      clobber_reg = all_regs_rtx[REG_Z + 1];
       avr_asm_len ("mov __tmp_reg__,%0", &clobber_reg, len, 1);
     }
 
@@ -8165,7 +8621,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
     {
       int ldreg_p;
       bool done_byte = false;
-      unsigned int j;
+      int j;
       rtx xop[3];
 
       /* Crop the n-th destination byte.  */
@@ -8594,6 +9050,150 @@ avr_case_values_threshold (void)
 {
   return (!AVR_HAVE_JMP_CALL || TARGET_CALL_PROLOGUES) ? 8 : 17;
 }
+
+
+/* Implement `TARGET_ADDR_SPACE_ADDRESS_MODE'.  */
+
+static enum machine_mode
+avr_addr_space_address_mode (addr_space_t as ATTRIBUTE_UNUSED)
+{
+  return HImode;
+}
+
+
+/* Implement `TARGET_ADDR_SPACE_POINTER_MODE'.  */
+
+static enum machine_mode
+avr_addr_space_pointer_mode (addr_space_t as ATTRIBUTE_UNUSED)
+{
+  return HImode;
+}
+
+
+/* Helper for following function.  */
+
+static bool
+avr_reg_ok_for_pgm_addr (rtx reg, bool strict)
+{
+  gcc_assert (REG_P (reg));
+
+  if (strict)
+    {
+      return REGNO (reg) == REG_Z;
+    }
+  
+  /* Avoid combine to propagate hard regs.  */
+  
+  if (can_create_pseudo_p()
+      && REGNO (reg) < REG_Z)
+    {
+      return false;
+    }
+  
+  return true;
+}
+
+
+/* Implement `TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P'.  */
+
+static bool
+avr_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
+                                     bool strict, addr_space_t as)
+{
+  bool ok = false;
+
+  switch (as)
+    {
+    default:
+      gcc_unreachable();
+      
+    case ADDR_SPACE_GENERIC:
+      return avr_legitimate_address_p (mode, x, strict);
+
+    case ADDR_SPACE_PGM:
+
+      switch (GET_CODE (x))
+        {
+        case REG:
+          ok = avr_reg_ok_for_pgm_addr (x, strict);
+          break;
+          
+        case POST_INC:
+          ok = (!avr_load_libgcc_p (x)
+                && avr_reg_ok_for_pgm_addr (XEXP (x, 0), strict));
+          break;
+          
+        default:
+          break;
+        }
+
+      break; /* PGM */
+    }
+
+  if (avr_log.legitimate_address_p)
+    {
+      avr_edump ("\n%?: ret=%b, mode=%m strict=%d "
+                 "reload_completed=%d reload_in_progress=%d %s:",
+                 ok, mode, strict, reload_completed, reload_in_progress,
+                 reg_renumber ? "(reg_renumber)" : "");
+      
+      if (GET_CODE (x) == PLUS
+          && REG_P (XEXP (x, 0))
+          && CONST_INT_P (XEXP (x, 1))
+          && IN_RANGE (INTVAL (XEXP (x, 1)), 0, MAX_LD_OFFSET (mode))
+          && reg_renumber)
+        {
+          avr_edump ("(r%d ---> r%d)", REGNO (XEXP (x, 0)),
+                     true_regnum (XEXP (x, 0)));
+        }
+      
+      avr_edump ("\n%r\n", x);
+    }
+
+  return ok;
+}
+
+
+/* Implement `TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS'.  */
+
+static rtx
+avr_addr_space_legitimize_address (rtx x, rtx old_x,
+                                   enum machine_mode mode, addr_space_t as)
+{
+  if (ADDR_SPACE_GENERIC_P (as))
+    return avr_legitimize_address (x, old_x, mode);
+
+  if (avr_log.legitimize_address)
+    {
+      avr_edump ("\n%?: mode=%m\n %r\n", mode, old_x);
+    }
+
+  return old_x;
+}
+
+
+/* Implement `TARGET_ADDR_SPACE_CONVERT'.  */
+
+static rtx
+avr_addr_space_convert (rtx src, tree type_from, tree type_to)
+{
+  if (avr_log.progmem)
+    avr_edump ("\n%!: op = %r\nfrom = %t\nto = %t\n",
+               src, type_from, type_to);
+
+  return src;
+}
+
+
+/* Implement `TARGET_ADDR_SPACE_SUBSET_P'.  */
+
+static bool
+avr_addr_space_subset_p (addr_space_t subset ATTRIBUTE_UNUSED,
+                         addr_space_t superset ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 
 /* Helper for __builtin_avr_delay_cycles */
 

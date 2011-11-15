@@ -42,6 +42,7 @@
    (REG_Z	30)
    (REG_W	24)
    (REG_SP	32)
+   (LPM_REGNO	0)	; implicit target register of LPM
    (TMP_REGNO	0)	; temporary register r0
    (ZERO_REGNO	1)	; zero register r1
    
@@ -315,6 +316,39 @@
   "")
 
 ;;========================================================================
+;; Move stuff around
+
+(define_expand "load<mode>_libgcc"
+  [(set (match_dup 3)
+        (match_dup 2))
+   (set (reg:MOVMODE 22)
+        (match_operand:MOVMODE 1 "memory_operand" ""))
+   (set (match_operand:MOVMODE 0 "register_operand" "")
+        (reg:MOVMODE 22))]
+  "avr_load_libgcc_p (operands[1])"
+  {
+    operands[3] = gen_rtx_REG (HImode, REG_Z);
+    operands[2] = force_operand (XEXP (operands[1], 0), NULL_RTX);
+    operands[1] = replace_equiv_address (operands[1], operands[3]);
+    set_mem_addr_space (operands[1], ADDR_SPACE_PGM);
+  })
+    
+(define_insn "*load.<mode>.libgcc"
+  [(set (reg:MOVMODE 22)
+        (match_operand:MOVMODE 0 "memory_operand" "m,m"))]
+  "avr_load_libgcc_p (operands[0])
+   && REG_P (XEXP (operands[0], 0))
+   && REG_Z == REGNO (XEXP (operands[0], 0))"
+  {
+    operands[0] = GEN_INT (GET_MODE_SIZE (<MODE>mode));
+    return "%~call __load_%0";
+  }
+  [(set_attr "length" "1,2")
+   (set_attr "isa" "rjmp,jmp")
+   (set_attr "cc" "clobber")])
+
+
+;; General move expanders
 
 ;; "movqi"
 ;; "movhi"
@@ -327,12 +361,25 @@
         (match_operand:MOVMODE 1 "general_operand" ""))]
   ""
   {
-    /* One of the ops has to be in a register.  */
-    if (!register_operand (operands[0], <MODE>mode)
-        && !(register_operand (operands[1], <MODE>mode)
-             || CONST0_RTX (<MODE>mode) == operands[1]))
+    rtx dest = operands[0];
+    rtx src  = operands[1]; 
+    
+    if (avr_mem_pgm_p (dest))
+      DONE;
+  
+    /* One of the operands has to be in a register.  */
+    if (!register_operand (dest, <MODE>mode)
+        && !(register_operand (src, <MODE>mode)
+             || src == CONST0_RTX (<MODE>mode)))
       {
-        operands[1] = copy_to_mode_reg (<MODE>mode, operands[1]);
+        operands[1] = src = copy_to_mode_reg (<MODE>mode, src);
+      }
+
+    if (avr_load_libgcc_p (src))
+      {
+        /* For the small devices, do loads per libgcc call.  */
+        emit_insn (gen_load<mode>_libgcc (dest, src));
+        DONE;
       }
   })
 
@@ -346,11 +393,14 @@
 ;; so this may still be a win for registers live across function calls.
 
 (define_insn "movqi_insn"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,d,Qm,r,q,r,*r")
-	(match_operand:QI 1 "general_operand"       "rL,i,rL,Qm,r,q,i"))]
-  "(register_operand (operands[0],QImode)
-    || register_operand (operands[1], QImode) || const0_rtx == operands[1])"
-  "* return output_movqi (insn, operands, NULL);"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r ,d,Qm,r ,q,r,*r")
+        (match_operand:QI 1 "nox_general_operand"   "rL,i,rL,Qm,r,q,i"))]
+  "register_operand (operands[0], QImode)
+   || register_operand (operands[1], QImode)
+   || const0_rtx == operands[1]"
+  {
+    return output_movqi (insn, operands, NULL);
+  }
   [(set_attr "length" "1,1,5,5,1,1,4")
    (set_attr "adjust_len" "mov8")
    (set_attr "cc" "none,none,clobber,clobber,none,none,clobber")])
@@ -425,11 +475,14 @@
    (set_attr "cc" "none")])
 
 (define_insn "*movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m,d,*r,q,r")
-        (match_operand:HI 1 "general_operand"       "r,L,m,rL,i,i,r,q"))]
-  "(register_operand (operands[0],HImode)
-    || register_operand (operands[1],HImode) || const0_rtx == operands[1])"
-  "* return output_movhi (insn, operands, NULL);"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m ,d,*r,q,r")
+        (match_operand:HI 1 "nox_general_operand"   "r,L,m,rL,i,i ,r,q"))]
+  "register_operand (operands[0], HImode)
+   || register_operand (operands[1], HImode)
+   || const0_rtx == operands[1]"
+  {
+    return output_movhi (insn, operands, NULL);
+  }
   [(set_attr "length" "2,2,6,7,2,6,5,2")
    (set_attr "adjust_len" "mov16")
    (set_attr "cc" "none,clobber,clobber,clobber,none,clobber,none,none")])
@@ -462,6 +515,40 @@
     operands[5] = gen_rtx_REG (HImode, REGNO (operands[3]));
   })
 
+;; For LPM loads from AS1 we split 
+;;    R = *Z
+;; to
+;;    R = *Z++
+;;    Z = Z - sizeof (R)
+;;
+;; so that the second instruction can be optimized out.
+
+(define_split ; "split-lpmx"
+  [(set (match_operand:HISI 0 "register_operand" "")
+        (match_operand:HISI 1 "memory_operand" ""))]
+  "reload_completed
+   && AVR_HAVE_LPMX"
+  [(set (match_dup 0)
+        (match_dup 2))
+   (set (match_dup 3)
+        (plus:HI (match_dup 3)
+                 (match_dup 4)))]
+  {
+     rtx addr = XEXP (operands[1], 0);
+
+     if (!avr_mem_pgm_p (operands[1])
+         || !REG_P (addr)
+         || reg_overlap_mentioned_p (addr, operands[0]))
+       {
+         FAIL;
+       }
+
+    operands[2] = replace_equiv_address (operands[1],
+                                         gen_rtx_POST_INC (Pmode, addr));
+    operands[3] = addr;
+    operands[4] = gen_int_mode (-GET_MODE_SIZE (<MODE>mode), HImode);
+  })
+
 ;;==========================================================================
 ;; xpointer move (24 bit)
   
@@ -492,7 +579,7 @@
 
 (define_insn "*movpsi"
   [(set (match_operand:PSI 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
-        (match_operand:PSI 1 "general_operand"       "r,L,Qm,rL,i ,i"))]
+        (match_operand:PSI 1 "nox_general_operand"   "r,L,Qm,rL,i ,i"))]
   "register_operand (operands[0], PSImode)
    || register_operand (operands[1], PSImode)
    || const0_rtx == operands[1]"
@@ -532,10 +619,11 @@
 
 
 (define_insn "*movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,Qm,!d,r")
-        (match_operand:SI 1 "general_operand"       "r,L,Qm,rL,i,i"))]
-  "(register_operand (operands[0],SImode)
-    || register_operand (operands[1],SImode) || const0_rtx == operands[1])"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
+        (match_operand:SI 1 "nox_general_operand"   "r,L,Qm,rL,i ,i"))]
+  "register_operand (operands[0], SImode)
+   || register_operand (operands[1], SImode)
+   || const0_rtx == operands[1]"
   {
     return output_movsisf (insn, operands, NULL);
   }
@@ -547,8 +635,8 @@
 ;; move floating point numbers (32 bit)
 
 (define_insn "*movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r,Qm,!d,r")
-        (match_operand:SF 1 "general_operand"       "r,G,Qm,rG,F,F"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
+        (match_operand:SF 1 "nox_general_operand"   "r,G,Qm,rG,F ,F"))]
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)
    || operands[1] == CONST0_RTX (SFmode)"
@@ -599,7 +687,7 @@
   enum machine_mode mode;
   rtx label = gen_label_rtx ();
   rtx loop_reg;
-  rtx jump;
+  rtx jump, src;
 
   /* Copy pointers into new psuedos - they will be changed.  */
   rtx addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
@@ -607,6 +695,9 @@
 
   /* Create rtx for tmp register - we use this as scratch.  */
   rtx tmp_reg_rtx  = gen_rtx_REG (QImode, TMP_REGNO);
+
+  if (avr_mem_pgm_p (operands[0]))
+    DONE;
 
   if (GET_CODE (operands[2]) != CONST_INT)
     FAIL;
@@ -628,7 +719,9 @@
   emit_label (label);
 
   /* Move one byte into scratch and inc pointer.  */
-  emit_move_insn (tmp_reg_rtx, gen_rtx_MEM (QImode, addr1));
+  src = gen_rtx_MEM (QImode, addr1);
+  set_mem_addr_space (src, MEM_ADDR_SPACE (operands[1]));
+  emit_move_insn (tmp_reg_rtx, src);
   emit_move_insn (addr1, gen_rtx_PLUS (Pmode, addr1, const1_rtx));
 
   /* Move to mem and inc pointer.  */
@@ -2868,10 +2961,8 @@
 
 (define_expand "ashlqi3"
   [(set (match_operand:QI 0 "register_operand"            "")
-	(ashift:QI (match_operand:QI 1 "register_operand" "")
-		   (match_operand:QI 2 "general_operand"  "")))]
-  ""
-  "")
+        (ashift:QI (match_operand:QI 1 "register_operand" "")
+                   (match_operand:QI 2 "nop_general_operand" "")))])
 
 (define_split ; ashlqi3_const4
   [(set (match_operand:QI 0 "d_register_operand" "")
@@ -2903,21 +2994,25 @@
   "")
 
 (define_insn "*ashlqi3"
-  [(set (match_operand:QI 0 "register_operand"           "=r,r,r,r,!d,r,r")
-	(ashift:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0,0,0")
-		   (match_operand:QI 2 "general_operand"  "r,L,P,K,n,n,Qm")))]
+  [(set (match_operand:QI 0 "register_operand"              "=r,r,r,r,!d,r,r")
+        (ashift:QI (match_operand:QI 1 "register_operand"    "0,0,0,0,0 ,0,0")
+                   (match_operand:QI 2 "nop_general_operand" "r,L,P,K,n ,n,Qm")))]
   ""
-  "* return ashlqi3_out (insn, operands, NULL);"
+  {
+    return ashlqi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "5,0,1,2,4,6,9")
    (set_attr "adjust_len" "ashlqi")
    (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,set_czn,clobber")])
 
 (define_insn "ashlhi3"
-  [(set (match_operand:HI 0 "register_operand"           "=r,r,r,r,r,r,r")
-	(ashift:HI (match_operand:HI 1 "register_operand" "0,0,0,r,0,0,0")
-		   (match_operand:QI 2 "general_operand"  "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:HI 0 "register_operand"              "=r,r,r,r,r,r,r")
+        (ashift:HI (match_operand:HI 1 "register_operand"    "0,0,0,r,0,0,0")
+                   (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
-  "* return ashlhi3_out (insn, operands, NULL);"
+  {
+    return ashlhi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "6,0,2,2,4,10,10")
    (set_attr "adjust_len" "ashlhi")
    (set_attr "cc" "clobber,none,set_n,clobber,set_n,clobber,clobber")])
@@ -3005,11 +3100,13 @@
 
 
 (define_insn "ashlsi3"
-  [(set (match_operand:SI 0 "register_operand"           "=r,r,r,r,r,r,r")
-	(ashift:SI (match_operand:SI 1 "register_operand" "0,0,0,r,0,0,0")
-		   (match_operand:QI 2 "general_operand"  "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:SI 0 "register_operand"              "=r,r,r,r,r,r,r")
+        (ashift:SI (match_operand:SI 1 "register_operand"    "0,0,0,r,0,0,0")
+                   (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
-  "* return ashlsi3_out (insn, operands, NULL);"
+  {
+    return ashlsi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "8,0,4,4,8,10,12")
    (set_attr "adjust_len" "ashlsi")
    (set_attr "cc" "clobber,none,set_n,clobber,set_n,clobber,clobber")])
@@ -3063,11 +3160,13 @@
 
 (define_insn "*ashlhi3_const"
   [(set (match_operand:HI 0 "register_operand"            "=r,r,r,r,r")
-	(ashift:HI (match_operand:HI 1 "register_operand"  "0,0,r,0,0")
-		   (match_operand:QI 2 "const_int_operand" "L,P,O,K,n")))
-   (clobber (match_scratch:QI 3 "=X,X,X,X,&d"))]
+        (ashift:HI (match_operand:HI 1 "register_operand"  "0,0,r,0,0")
+                   (match_operand:QI 2 "const_int_operand" "L,P,O,K,n")))
+   (clobber (match_scratch:QI 3                           "=X,X,X,X,&d"))]
   "reload_completed"
-  "* return ashlhi3_out (insn, operands, NULL);"
+  {
+    return ashlhi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "0,2,2,4,10")
    (set_attr "adjust_len" "ashlhi")
    (set_attr "cc" "none,set_n,clobber,set_n,clobber")])
@@ -3084,11 +3183,13 @@
 
 (define_insn "*ashlsi3_const"
   [(set (match_operand:SI 0 "register_operand"            "=r,r,r,r")
-	(ashift:SI (match_operand:SI 1 "register_operand"  "0,0,r,0")
-		   (match_operand:QI 2 "const_int_operand" "L,P,O,n")))
-   (clobber (match_scratch:QI 3 "=X,X,X,&d"))]
+        (ashift:SI (match_operand:SI 1 "register_operand"  "0,0,r,0")
+                   (match_operand:QI 2 "const_int_operand" "L,P,O,n")))
+   (clobber (match_scratch:QI 3                           "=X,X,X,&d"))]
   "reload_completed"
-  "* return ashlsi3_out (insn, operands, NULL);"
+  {
+    return ashlsi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "0,4,4,10")
    (set_attr "adjust_len" "ashlsi")
    (set_attr "cc" "none,set_n,clobber,clobber")])
@@ -3109,21 +3210,25 @@
 ;; arithmetic shift right
 
 (define_insn "ashrqi3"
-  [(set (match_operand:QI 0 "register_operand"             "=r,r,r,r,r          ,r      ,r")
-        (ashiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0          ,0      ,0")
-                     (match_operand:QI 2 "general_operand"  "r,L,P,K,C03 C04 C05,C06 C07,Qm")))]
+  [(set (match_operand:QI 0 "register_operand"                "=r,r,r,r,r          ,r      ,r")
+        (ashiftrt:QI (match_operand:QI 1 "register_operand"    "0,0,0,0,0          ,0      ,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,K,C03 C04 C05,C06 C07,Qm")))]
   ""
-  "* return ashrqi3_out (insn, operands, NULL);"
+  {
+    return ashrqi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "5,0,1,2,5,4,9")
    (set_attr "adjust_len" "ashrqi")
    (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,clobber,clobber")])
 
 (define_insn "ashrhi3"
-  [(set (match_operand:HI 0 "register_operand"             "=r,r,r,r,r,r,r")
-	(ashiftrt:HI (match_operand:HI 1 "register_operand" "0,0,0,r,0,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:HI 0 "register_operand"                "=r,r,r,r,r,r,r")
+        (ashiftrt:HI (match_operand:HI 1 "register_operand"    "0,0,0,r,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
-  "* return ashrhi3_out (insn, operands, NULL);"
+  {
+    return ashrhi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "6,0,2,4,4,10,10")
    (set_attr "adjust_len" "ashrhi")
    (set_attr "cc" "clobber,none,clobber,set_n,clobber,clobber,clobber")])
@@ -3141,11 +3246,13 @@
    (set_attr "cc" "clobber")])
 
 (define_insn "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r,r,r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0,0,0,r,0,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:SI 0 "register_operand"                "=r,r,r,r,r,r,r")
+        (ashiftrt:SI (match_operand:SI 1 "register_operand"    "0,0,0,r,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
-  "* return ashrsi3_out (insn, operands, NULL);"
+  {
+    return ashrsi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "8,0,4,6,8,10,12")
    (set_attr "adjust_len" "ashrsi")
    (set_attr "cc" "clobber,none,clobber,set_n,clobber,clobber,clobber")])
@@ -3164,11 +3271,13 @@
 
 (define_insn "*ashrhi3_const"
   [(set (match_operand:HI 0 "register_operand"              "=r,r,r,r,r")
-	(ashiftrt:HI (match_operand:HI 1 "register_operand"  "0,0,r,0,0")
-		     (match_operand:QI 2 "const_int_operand" "L,P,O,K,n")))
-   (clobber (match_scratch:QI 3 "=X,X,X,X,&d"))]
+        (ashiftrt:HI (match_operand:HI 1 "register_operand"  "0,0,r,0,0")
+                     (match_operand:QI 2 "const_int_operand" "L,P,O,K,n")))
+   (clobber (match_scratch:QI 3                             "=X,X,X,X,&d"))]
   "reload_completed"
-  "* return ashrhi3_out (insn, operands, NULL);"
+  {
+    return ashrhi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "0,2,4,4,10")
    (set_attr "adjust_len" "ashrhi")
    (set_attr "cc" "none,clobber,set_n,clobber,clobber")])
@@ -3185,11 +3294,13 @@
 
 (define_insn "*ashrsi3_const"
   [(set (match_operand:SI 0 "register_operand"              "=r,r,r,r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r,0")
-		     (match_operand:QI 2 "const_int_operand" "L,P,O,n")))
-   (clobber (match_scratch:QI 3 "=X,X,X,&d"))]
+        (ashiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r,0")
+                     (match_operand:QI 2 "const_int_operand" "L,P,O,n")))
+   (clobber (match_scratch:QI 3                             "=X,X,X,&d"))]
   "reload_completed"
-  "* return ashrsi3_out (insn, operands, NULL);"
+  {
+    return ashrsi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "0,4,4,10")
    (set_attr "adjust_len" "ashrsi")
    (set_attr "cc" "none,clobber,set_n,clobber")])
@@ -3198,11 +3309,9 @@
 ;; logical shift right
 
 (define_expand "lshrqi3"
-  [(set (match_operand:QI 0 "register_operand"              "")
-	(lshiftrt:QI (match_operand:QI 1 "register_operand" "")
-		     (match_operand:QI 2 "general_operand"  "")))]
-  ""
-  "")
+  [(set (match_operand:QI 0 "register_operand" "")
+        (lshiftrt:QI (match_operand:QI 1 "register_operand" "")
+                     (match_operand:QI 2 "nop_general_operand" "")))])
 
 (define_split	; lshrqi3_const4
   [(set (match_operand:QI 0 "d_register_operand" "")
@@ -3234,21 +3343,25 @@
   "")
 
 (define_insn "*lshrqi3"
-  [(set (match_operand:QI 0 "register_operand"             "=r,r,r,r,!d,r,r")
-	(lshiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,L,P,K,n,n,Qm")))]
+  [(set (match_operand:QI 0 "register_operand"                "=r,r,r,r,!d,r,r")
+        (lshiftrt:QI (match_operand:QI 1 "register_operand"    "0,0,0,0,0 ,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,K,n ,n,Qm")))]
   ""
-  "* return lshrqi3_out (insn, operands, NULL);"
+  {
+    return lshrqi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "5,0,1,2,4,6,9")
    (set_attr "adjust_len" "lshrqi")
    (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,set_czn,clobber")])
 
 (define_insn "lshrhi3"
-  [(set (match_operand:HI 0 "register_operand"             "=r,r,r,r,r,r,r")
-	(lshiftrt:HI (match_operand:HI 1 "register_operand" "0,0,0,r,0,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:HI 0 "register_operand"                "=r,r,r,r,r,r,r")
+        (lshiftrt:HI (match_operand:HI 1 "register_operand"    "0,0,0,r,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
-  "* return lshrhi3_out (insn, operands, NULL);"
+  {
+    return lshrhi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "6,0,2,2,4,10,10")
    (set_attr "adjust_len" "lshrhi")
    (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
@@ -3266,11 +3379,13 @@
    (set_attr "cc" "clobber")])
 
 (define_insn "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r,r,r")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0,0,0,r,0,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:SI 0 "register_operand"                "=r,r,r,r,r,r,r")
+        (lshiftrt:SI (match_operand:SI 1 "register_operand"    "0,0,0,r,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
-  "* return lshrsi3_out (insn, operands, NULL);"
+  {
+    return lshrsi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "8,0,4,4,8,10,12")
    (set_attr "adjust_len" "lshrsi")
    (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
@@ -3324,11 +3439,13 @@
 
 (define_insn "*lshrhi3_const"
   [(set (match_operand:HI 0 "register_operand"              "=r,r,r,r,r")
-	(lshiftrt:HI (match_operand:HI 1 "register_operand"  "0,0,r,0,0")
-		     (match_operand:QI 2 "const_int_operand" "L,P,O,K,n")))
-   (clobber (match_scratch:QI 3 "=X,X,X,X,&d"))]
+        (lshiftrt:HI (match_operand:HI 1 "register_operand"  "0,0,r,0,0")
+                     (match_operand:QI 2 "const_int_operand" "L,P,O,K,n")))
+   (clobber (match_scratch:QI 3                             "=X,X,X,X,&d"))]
   "reload_completed"
-  "* return lshrhi3_out (insn, operands, NULL);"
+  {
+    return lshrhi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "0,2,2,4,10")
    (set_attr "adjust_len" "lshrhi")
    (set_attr "cc" "none,clobber,clobber,clobber,clobber")])
@@ -3345,11 +3462,13 @@
 
 (define_insn "*lshrsi3_const"
   [(set (match_operand:SI 0 "register_operand"              "=r,r,r,r")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r,0")
-		     (match_operand:QI 2 "const_int_operand" "L,P,O,n")))
-   (clobber (match_scratch:QI 3 "=X,X,X,&d"))]
+        (lshiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r,0")
+                     (match_operand:QI 2 "const_int_operand" "L,P,O,n")))
+   (clobber (match_scratch:QI 3                             "=X,X,X,&d"))]
   "reload_completed"
-  "* return lshrsi3_out (insn, operands, NULL);"
+  {
+    return lshrsi3_out (insn, operands, NULL);
+  }
   [(set_attr "length" "0,4,4,10")
    (set_attr "adjust_len" "lshrsi")
    (set_attr "cc" "none,clobber,clobber,clobber")])
@@ -3613,6 +3732,27 @@
   {
     operands[2] = simplify_gen_subreg (HImode, operands[0], PSImode, 0);
     operands[3] = simplify_gen_subreg (QImode, operands[0], PSImode, 2);
+  })
+
+(define_insn_and_split "n_extendhipsi2"
+  [(set (match_operand:PSI 0 "register_operand"            "=r,r,d,r")
+        (lo_sum:PSI (match_operand:QI 1 "const_int_operand" "L,P,n,n")
+                    (match_operand:HI 2 "register_operand"  "r,r,r,r")))
+   (clobber (match_scratch:QI 3                            "=X,X,X,&d"))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 4) (match_dup 2))
+   (set (match_dup 3) (match_dup 6))
+   ; no-op move in the case where no scratch is needed
+   (set (match_dup 5) (match_dup 3))]
+  {
+    operands[4] = simplify_gen_subreg (HImode, operands[0], PSImode, 0);
+    operands[5] = simplify_gen_subreg (QImode, operands[0], PSImode, 2);
+    operands[6] = operands[1];
+
+    if (GET_CODE (operands[3]) == SCRATCH)
+      operands[3] = operands[5];
   })
 
 (define_insn_and_split "zero_extendhisi2"

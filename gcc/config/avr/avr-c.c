@@ -18,6 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* Not included in avr.c since this requires C front end.  */
 
 #include "config.h"
 #include "system.h"
@@ -27,8 +28,17 @@
 #include "cpplib.h"
 #include "tree.h"
 #include "c-family/c-common.h"
+#include "langhooks.h"
 
-/* Not included in avr.c since this requires C front end.  */
+
+/* Implement `REGISTER_TARGET_PRAGMAS'.  */
+
+void
+avr_register_target_pragmas (void)
+{
+  c_register_addr_space ("__pgm", ADDR_SPACE_PGM);
+}
+
 
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
@@ -88,6 +98,17 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       
       if (avr_current_arch->have_jmp_call)
         cpp_define (pfile, "__AVR_ERRATA_SKIP_JMP_CALL__");
+    }
+
+  /* Define builtin macros so that the user can easily query if or if not
+     non-generic address spaces (and which) are supported.
+     This is only supported for C.  For C++, a language extension is needed
+     (as mentioned in ISO/IEC DTR 18037; Annex F.2) which is not
+     implemented in GCC up to now.  */
+  
+  if (!strcmp (lang_hooks.name, "GNU C"))
+    {
+      cpp_define (pfile, "__PGM=__pgm");
     }
 
   /* Define builtin macros so that the user can

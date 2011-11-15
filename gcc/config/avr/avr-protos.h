@@ -32,6 +32,7 @@ extern int avr_initial_elimination_offset (int from, int to);
 extern int avr_simple_epilogue (void);
 extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
 extern rtx avr_return_addr_rtx (int count, rtx tem);
+extern void avr_register_target_pragmas (void);
 extern bool avr_accumulate_outgoing_args (void);
 
 #ifdef TREE_CODE
@@ -47,7 +48,6 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
-extern void asm_output_external_libcall (FILE *file, rtx symref);
 extern const char *output_movqi (rtx insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx insn, rtx operands[], int *l);
 extern const char *out_movqi_r_mr (rtx insn, rtx op[], int *l);
@@ -121,6 +121,8 @@ extern reg_class_t avr_mode_code_base_reg_class (enum machine_mode, addr_space_t
 extern bool avr_regno_mode_code_ok_for_base_p (int, enum machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
 extern rtx avr_incoming_return_addr_rtx (void);
 extern rtx avr_legitimize_reload_address (rtx*, enum machine_mode, int, int, int, int, rtx (*)(rtx,int));
+extern bool avr_mem_pgm_p (rtx);
+extern bool avr_load_libgcc_p (rtx);
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE
@@ -139,12 +141,13 @@ extern void avr_log_set_avr_log (void);
 
 typedef struct
 {
-  unsigned rtx_costs :1;
+  unsigned address_cost :1;
+  unsigned constraints :1;
   unsigned legitimate_address_p :1;
   unsigned legitimize_address :1;
   unsigned legitimize_reload_address :1;
-  unsigned constraints :1;
-  unsigned address_cost :1;
+  unsigned progmem :1;
+  unsigned rtx_costs :1;
 } avr_log_t;
 
 extern avr_log_t avr_log;

@@ -1,3 +1,9 @@
+2011-11-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _load_3,  _load_4.
+	* config/avr/lib1funcs.S (__load_3, __load_4, __xload_2): New functions.
+
 2011-11-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.host (hppa*64*-*-hpux11*): Remove pa/t-stublib64 from

@@ -391,6 +391,14 @@ typedef struct avr_args {
 
 #define NO_FUNCTION_CSE
 
+
+#define ADDR_SPACE_PGM  1
+
+#define REGISTER_TARGET_PRAGMAS()                                       \
+  do {                                                                  \
+    avr_register_target_pragmas();                                      \
+  } while (0)
+
 #define TEXT_SECTION_ASM_OP "\t.text"
 
 #define DATA_SECTION_ASM_OP "\t.data"
