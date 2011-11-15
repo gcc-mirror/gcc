@@ -1,3 +1,29 @@
+2011-11-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_pre_atomic_barrier): New.
+	(alpha_post_atomic_barrier): New.
+	(alpha_split_atomic_op): New memmodel argument; honor it.
+	(alpha_split_compare_and_swap): Take array of operands.  Honor
+	memmodel; always set bool output
+	(alpha_expand_compare_and_swap_12): Similarly.
+	(alpha_split_compare_and_swap_12): Similarly.
+	(alpha_split_atomic_exchange): Similarly.  Rename from
+	alpha_split_lock_test_and_set.
+	(alpha_expand_atomic_exchange_12): Similarly.  Rename from
+	alpha_expand_lock_test_and_set_12.
+	(alpha_split_atomic_exchange_12): Similarly.  Rename from
+	alpha_split_lock_test_and_set_12.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.md (UNSPECV_CMPXCHG): New.
+	* config/alpha/constraints.md ("w"): New.
+	* config/alpha/predicates.md (mem_noofs_operand): New.
+	* config/alpha/sync.md (atomic_compare_and_swap<mode>): Rename from
+	sync_compare_and_swap<mode>; add the new parameters.
+	(atomic_exchange<mode>): Update from sync_test_and_set<mode>.
+	(atomic_fetch_<op><mode>): Update from sync_old_<op><mode>.
+	(atomic_<op>_fetch<mode>): Update from sync_new_<op><mode>.
+	(atomic_<op><mode>): Update from sync_<op><mode>.
+
 2011-11-16  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-tail-merge.c (replace_block_by): Add frequency of bb2 to bb1.
