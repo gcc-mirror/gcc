@@ -1,3 +1,8 @@
+2011-11-15  Torvald Riegel  <triegel@redhat.com>
+
+	* c-parser.c (c_parser_transaction_expression): Require parentheses
+	when parsing transaction expressions.
+
 2011-11-15  Tristan Gingold  <gingold@adacore.com>
 
 	* incpath.c (get_added_cpp_dirs): New function.
