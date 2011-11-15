@@ -1,5 +1,14 @@
 2011-11-15  Tristan Gingold  <gingold@adacore.com>
 
+	* incpath.c (get_added_cpp_dirs): New function.
+	* incpath.h (get_added_cpp_dirs): Declare.
+	* config/vms/vms-c.c (vms_c_register_includes): New function.
+	(vms_std_modules): New variable.
+	* config/vms/vms.h (TARGET_EXTRA_INCLUDES): Define.
+	(vms_c_register_includes): Declare.
+
+2011-11-15  Tristan Gingold  <gingold@adacore.com>
+
 	* c-family/c-pragma.h (pragma_extern_prefix): Declare.
 	* c-family/c-pragma.c (pragma_extern_prefix): Make it public.
 	* config/vms/vms-c.c (saved_extern_prefix): New variable.
