@@ -1,3 +1,10 @@
+2011-11-16  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/51051
+	PR bootstrap/51086
+	* function.c (thread_prologue_and_epilogue_insns): Guard
+	emitting return with single_succ_p test.
+
 2011-11-15  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.md (mov<mode>cc): Fix code to
