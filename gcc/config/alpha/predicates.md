@@ -623,3 +623,8 @@
   (ior (match_operand 0 "register_operand")
        (and (match_test "TARGET_BWX")
 	    (match_operand 0 "memory_operand"))))
+
+;; Accept a memory whose address is only a register.
+(define_predicate "mem_noofs_operand"
+  (and (match_code "mem")
+       (match_code "reg" "0")))

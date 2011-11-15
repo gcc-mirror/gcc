@@ -81,6 +81,7 @@
   UNSPECV_SETJMPR_ER	; builtin_setjmp_receiver fragment
   UNSPECV_LL		; load-locked
   UNSPECV_SC		; store-conditional
+  UNSPECV_CMPXCHG
 ])
 
 ;; On non-BWX targets, CQImode must be handled the similarly to HImode

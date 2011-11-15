@@ -88,15 +88,14 @@ extern bool alpha_emit_setcc (rtx[], enum machine_mode);
 extern int alpha_split_conditional_move (enum rtx_code, rtx, rtx, rtx, rtx);
 extern void alpha_emit_xfloating_arith (enum rtx_code, rtx[]);
 extern void alpha_emit_xfloating_cvt (enum rtx_code, rtx[]);
-extern void alpha_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
-extern void alpha_split_compare_and_swap (rtx, rtx, rtx, rtx, rtx);
-extern void alpha_expand_compare_and_swap_12 (rtx, rtx, rtx, rtx);
-extern void alpha_split_compare_and_swap_12 (enum machine_mode, rtx, rtx,
-					     rtx, rtx, rtx, rtx, rtx);
-extern void alpha_split_lock_test_and_set (rtx, rtx, rtx, rtx);
-extern void alpha_expand_lock_test_and_set_12 (rtx, rtx, rtx);
-extern void alpha_split_lock_test_and_set_12 (enum machine_mode, rtx, rtx,
-					      rtx, rtx, rtx);
+extern void alpha_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx,
+				   enum memmodel);
+extern void alpha_split_compare_and_swap (rtx op[]);
+extern void alpha_expand_compare_and_swap_12 (rtx op[]);
+extern void alpha_split_compare_and_swap_12 (rtx op[]);
+extern void alpha_split_atomic_exchange (rtx op[]);
+extern void alpha_expand_atomic_exchange_12 (rtx op[]);
+extern void alpha_split_atomic_exchange_12 (rtx op[]);
 #endif
 
 extern rtx alpha_use_linkage (rtx, bool, bool);

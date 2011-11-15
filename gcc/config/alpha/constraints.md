@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;    ABCDEF               V  YZ
-;;;       de ghijklmnopq stu wxyz
+;;;       de ghijkl   pq  tu wxyz
 
 ;; Integer register constraints.
 
@@ -37,6 +37,10 @@
 
 (define_register_constraint "v" "R0_REG"
  "General register 0, function value return address")
+
+(define_memory_constraint "w"
+ "A memory whose address is only a register"
+ (match_operand 0 "mem_noofs_operand"))
 
 ;; Integer constant constraints.
 (define_constraint "I"
