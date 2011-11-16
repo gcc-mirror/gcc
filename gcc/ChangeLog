@@ -1,3 +1,13 @@
+2011-11-16  Razya Ladelsky  <razya@il.ibm.com>
+	
+	PR tree-optimization/49960
+	* tree-data-ref.c (initialize_data_dependence_relation): Add initializations. 
+	Remove call to compute_self_dependence.
+	(compute_affine_dependence): Remove the !DDR_SELF_REFERENCE condition.
+	(compute_self_dependence): Remove old code. Add call to compute_affine_dependence.
+	(compute_all_dependences): Remove call to compute_self_dependence. 
+	Add call to compute_affine_dependence.
+
 2011-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR middle-end/50325
