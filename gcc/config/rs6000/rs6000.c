@@ -25782,7 +25782,7 @@ rs6000_xcoff_section_type_flags (tree decl, const char *name, int reloc)
   unsigned int flags = default_section_type_flags (decl, name, reloc);
 
   /* Align to at least UNIT size.  */
-  if (flags & SECTION_CODE)
+  if (flags & SECTION_CODE || !decl)
     align = MIN_UNITS_PER_WORD;
   else
     /* Increase alignment of large objects if not already stricter.  */

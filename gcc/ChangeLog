@@ -1,3 +1,8 @@
+2011-11-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_section_type_flags):
+	Default to minimum alignment if decl is NULL.
+
 2011-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (round<mode>2_vec_pack_sfix): Optimize V2DFmode
