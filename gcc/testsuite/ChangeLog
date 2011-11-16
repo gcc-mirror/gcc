@@ -1,3 +1,10 @@
+2011-11-16  Razya Ladelsky  <razya@il.ibm.com>
+
+        PR tree-optimization/49960
+	* gcc.dg/autopar/pr49960.c: New test.
+	* gcc.dg/autopar/pr49960-1.c: New test.
+
+
 2011-11-16  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/pr43864.c: Check for absence of 'Invalid sum' in pre tree-dump.
