@@ -543,7 +543,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 is not allowed.  */
       fieldmode = GET_MODE (value);
       if (fieldmode == VOIDmode)
-	fieldmode = smallest_mode_for_size (nwords * BITS_PER_WORD, MODE_INT);
+	fieldmode = smallest_mode_for_size (nwords *
+					    BITS_PER_WORD, MODE_INT);
 
       last = get_last_insn ();
       for (i = 0; i < nwords; i++)
@@ -557,9 +558,18 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 					    0)
 				     : (int) i * BITS_PER_WORD);
 	  rtx value_word = operand_subword_force (value, wordnum, fieldmode);
+	  unsigned HOST_WIDE_INT new_bitsize =
+	    MIN (BITS_PER_WORD, bitsize - i * BITS_PER_WORD);
 
-	  if (!store_bit_field_1 (op0, MIN (BITS_PER_WORD,
-					    bitsize - i * BITS_PER_WORD),
+	  /* If the remaining chunk doesn't have full wordsize we have
+	     to make sure that for big endian machines the higher order
+	     bits are used.  */
+	  if (new_bitsize < BITS_PER_WORD && BYTES_BIG_ENDIAN)
+	    value_word = extract_bit_field (value_word, new_bitsize, 0,
+					    true, false, NULL_RTX,
+					    BLKmode, word_mode);
+
+	  if (!store_bit_field_1 (op0, new_bitsize,
 				  bitnum + bit_offset,
 				  bitregion_start, bitregion_end,
 				  word_mode,
