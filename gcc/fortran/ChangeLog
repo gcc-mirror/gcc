@@ -1,3 +1,49 @@
+2011-11-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39427
+	PR fortran/37829
+	* decl.c (match_data_constant, match_data_constant, variable_decl,
+	gfc_match_decl_type_spec, access_attr_decl,
+	check_extended_derived_type, gfc_match_derived_decl,
+	gfc_match_derived_decl, gfc_match_derived_decl) Modified to deal
+	with DT constructors.
+	* gfortran.h (gfc_find_dt_in_generic,
+	gfc_convert_to_structure_constructor): New function prototypes.
+	* interface.c (check_interface0, check_interface1,
+	gfc_search_interface): Ignore DT constructors in generic list.
+	* match.h (gfc_match_structure_constructor): Update prototype.
+	* match.c (match_derived_type_spec): Ensure that one uses the DT
+	not the generic function.
+	* module.c (MOD_VERSION): Bump.
+	(dt_lower_string, dt_upper_string): New functions.
+	(find_use_name_n, find_use_operator, compare_true_names,
+	find_true_name, add_true_name, fix_mio_expr, load_needed,
+	read_module, write_dt_extensions, write_symbol): Changes to deal with
+	different symtree vs. sym names.
+	(create_derived_type): Create also generic procedure.
+	* parse.c (gfc_fixup_sibling_symbols): Don't regard DT and generic
+	function as the same.
+	* primary.c (gfc_convert_to_structure_constructor): New function.
+	(gfc_match_structure_constructor): Restructured; calls
+	gfc_convert_to_structure_constructor.
+	(build_actual_constructor, gfc_match_rvalue): Update for DT generic
+	functions.
+	* resolve.c (resolve_formal_arglist, resolve_structure_cons,
+	is_illegal_recursion, resolve_generic_f, resolve_variable,
+	resolve_fl_variable_derived, resolve_fl_derived0,
+	resolve_symbol): Handle DT and DT generic constructors.
+	* symbol.c (gfc_use_derived, gfc_undo_symbols,
+	gen_special_c_interop_ptr, gen_cptr_param,
+	generate_isocbinding_symbol, gfc_get_derived_super_type): Handle
+	derived-types, which are hidden in the generic type.
+	(gfc_find_dt_in_generic): New function
+	* trans-array.c (gfc_conv_array_initializer): Replace FL_PARAMETER
+	expr by actual value.
+	* trans-decl.c (gfc_get_module_backend_decl, gfc_trans_use_stmts):
+	Ensure that we use the DT and not the generic function.
+	* trans-types.c (gfc_get_derived_type): Ensure that we use the DT
+	and not the generic procedure.
+
 2011-11-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51073

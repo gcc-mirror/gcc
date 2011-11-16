@@ -1262,8 +1262,9 @@ check_interface0 (gfc_interface *p, const char *interface_name)
     {
       /* Make sure all symbols in the interface have been defined as
 	 functions or subroutines.  */
-      if ((!p->sym->attr.function && !p->sym->attr.subroutine)
-	  || !p->sym->attr.if_source)
+      if (((!p->sym->attr.function && !p->sym->attr.subroutine)
+	   || !p->sym->attr.if_source)
+	  && p->sym->attr.flavor != FL_DERIVED)
 	{
 	  if (p->sym->attr.external)
 	    gfc_error ("Procedure '%s' in %s at %L has no explicit interface",
@@ -1276,11 +1277,18 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 	}
 
       /* Verify that procedures are either all SUBROUTINEs or all FUNCTIONs.  */
-      if ((psave->sym->attr.function && !p->sym->attr.function)
+      if ((psave->sym->attr.function && !p->sym->attr.function
+	   && p->sym->attr.flavor != FL_DERIVED)
 	  || (psave->sym->attr.subroutine && !p->sym->attr.subroutine))
 	{
-	  gfc_error ("In %s at %L procedures must be either all SUBROUTINEs"
-		     " or all FUNCTIONs", interface_name, &p->sym->declared_at);
+	  if (p->sym->attr.flavor != FL_DERIVED)
+	    gfc_error ("In %s at %L procedures must be either all SUBROUTINEs"
+		       " or all FUNCTIONs", interface_name,
+		       &p->sym->declared_at);
+	  else
+	    gfc_error ("In %s at %L procedures must be all FUNCTIONs as the "
+		       "generic name is also the name of a derived type",
+		       interface_name, &p->sym->declared_at);
 	  return 1;
 	}
 
@@ -1336,8 +1344,10 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 	if (p->sym->name == q->sym->name && p->sym->module == q->sym->module)
 	  continue;
 
-	if (gfc_compare_interfaces (p->sym, q->sym, q->sym->name, generic_flag,
-				    0, NULL, 0))
+	if (p->sym->attr.flavor != FL_DERIVED
+	    && q->sym->attr.flavor != FL_DERIVED
+	    && gfc_compare_interfaces (p->sym, q->sym, q->sym->name,
+				       generic_flag, 0, NULL, 0))
 	  {
 	    if (referenced)
 	      gfc_error ("Ambiguous interfaces '%s' and '%s' in %s at %L",
@@ -3019,6 +3029,8 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 
   for (; intr; intr = intr->next)
     {
+      if (intr->sym->attr.flavor == FL_DERIVED)
+	continue;
       if (sub_flag && intr->sym->attr.function)
 	continue;
       if (!sub_flag && intr->sym->attr.subroutine)

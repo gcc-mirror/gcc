@@ -1920,6 +1920,9 @@ match_derived_type_spec (gfc_typespec *ts)
 
   gfc_find_symbol (name, NULL, 1, &derived);
 
+  if (derived && derived->attr.flavor == FL_PROCEDURE && derived->attr.generic)
+    derived = gfc_find_dt_in_generic (derived);
+
   if (derived && derived->attr.flavor == FL_DERIVED)
     {
       ts->type = BT_DERIVED;

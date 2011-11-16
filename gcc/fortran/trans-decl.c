@@ -699,6 +699,18 @@ gfc_get_module_backend_decl (gfc_symbol *sym)
 	}
       else if (sym->attr.flavor == FL_DERIVED)
 	{
+	  if (s && s->attr.flavor == FL_PROCEDURE)
+	    {
+	      gfc_interface *intr;
+	      gcc_assert (s->attr.generic);
+	      for (intr = s->generic; intr; intr = intr->next)
+		if (intr->sym->attr.flavor == FL_DERIVED)
+		  {
+		    s = intr->sym;
+		    break;
+		  }
+    	    }
+
 	  if (!s->backend_decl)
 	    s->backend_decl = gfc_get_derived_type (s);
 	  gfc_copy_dt_decls_ifequal (s, sym, true);
@@ -4035,7 +4047,18 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	      st = gfc_find_symtree (ns->sym_root,
 				     rent->local_name[0]
 				     ? rent->local_name : rent->use_name);
-	      gcc_assert (st);
+
+	      /* The following can happen if a derived type is renamed.  */
+	      if (!st)
+		{
+		  char *name;
+		  name = xstrdup (rent->local_name[0]
+				  ? rent->local_name : rent->use_name);
+		  name[0] = (char) TOUPPER ((unsigned char) name[0]);
+		  st = gfc_find_symtree (ns->sym_root, name);
+		  free (name);
+		  gcc_assert (st);
+		}
 
 	      /* Sometimes, generic interfaces wind up being over-ruled by a
 		 local symbol (see PR41062).  */
