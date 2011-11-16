@@ -951,6 +951,17 @@ LSYM(udivsi3_skip_div0_test):
 	pop	{ work }
 	RET
 
+#elif defined(__ARM_ARCH_EXT_IDIV__)
+
+	ARM_FUNC_START udivsi3
+	ARM_FUNC_ALIAS aeabi_uidiv udivsi3
+
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
+
+	udiv	r0, r0, r1
+	RET
+
 #else /* ARM version/Thumb-2.  */
 
 	ARM_FUNC_START udivsi3
@@ -997,6 +1008,14 @@ FUNC_START aeabi_uidivmod
 	mul	r2, r0
 	sub	r1, r1, r2
 	bx	r3
+#elif defined(__ARM_ARCH_EXT_IDIV__)
+ARM_FUNC_START aeabi_uidivmod
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
+	mov     r2, r0 
+	udiv	r0, r0, r1
+	mls     r1, r0, r1, r2
+	RET
 #else
 ARM_FUNC_START aeabi_uidivmod
 	cmp	r1, #0
@@ -1014,9 +1033,19 @@ ARM_FUNC_START aeabi_uidivmod
 /* ------------------------------------------------------------------------ */
 #ifdef L_umodsi3
 
-	FUNC_START umodsi3
+#ifdef __ARM_ARCH_EXT_IDIV__
 
-#ifdef __thumb__
+	ARM_FUNC_START umodsi3
+
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
+	udiv	r2, r0, r1
+	mls     r0, r1, r2, r0
+	RET
+
+#elif defined(__thumb__)
+
+	FUNC_START umodsi3
 
 	cmp	divisor, #0
 	beq	LSYM(Ldiv0)
@@ -1035,6 +1064,8 @@ LSYM(Lover10):
 	
 #else  /* ARM version.  */
 	
+	FUNC_START umodsi3
+
 	subs	r2, r1, #1			@ compare divisor with 1
 	bcc	LSYM(Ldiv0)
 	cmpne	r0, r1				@ compare dividend with divisor
@@ -1089,6 +1120,16 @@ LSYM(Lover11):
 	neg	r0, r0
 LSYM(Lover12):
 	pop	{ work }
+	RET
+
+#elif defined(__ARM_ARCH_EXT_IDIV__)
+
+	ARM_FUNC_START divsi3
+	ARM_FUNC_ALIAS aeabi_idiv divsi3
+
+	cmp 	r1, #0
+	beq	LSYM(Ldiv0)
+	sdiv	r0, r0, r1
 	RET
 
 #else /* ARM/Thumb-2 version.  */
@@ -1153,6 +1194,14 @@ FUNC_START aeabi_idivmod
 	mul	r2, r0
 	sub	r1, r1, r2
 	bx	r3
+#elif defined(__ARM_ARCH_EXT_IDIV__)
+ARM_FUNC_START aeabi_idivmod
+	cmp 	r1, #0
+	beq	LSYM(Ldiv0)
+	mov     r2, r0
+	sdiv	r0, r0, r1
+	mls     r1, r0, r1, r2
+	RET
 #else
 ARM_FUNC_START aeabi_idivmod
 	cmp	r1, #0
@@ -1170,9 +1219,20 @@ ARM_FUNC_START aeabi_idivmod
 /* ------------------------------------------------------------------------ */
 #ifdef L_modsi3
 
-	FUNC_START modsi3
+#if defined(__ARM_ARCH_EXT_IDIV__)
 
-#ifdef __thumb__
+	ARM_FUNC_START modsi3
+
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
+
+	sdiv	r2, r0, r1
+	mls     r0, r1, r2, r0
+	RET
+
+#elif defined(__thumb__)
+
+	FUNC_START modsi3
 
 	mov	curbit, #1
 	cmp	divisor, #0
@@ -1204,6 +1264,8 @@ LSYM(Lover12):
 
 #else /* ARM version.  */
 	
+	FUNC_START modsi3
+
 	cmp	r1, #0
 	beq	LSYM(Ldiv0)
 	rsbmi	r1, r1, #0			@ loops below use unsigned.

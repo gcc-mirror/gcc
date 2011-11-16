@@ -1,3 +1,13 @@
+2011-11-16  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/lib1funcs.asm (udivsi3): Add support for divide
+	functions.
+	(aeabi_uidivmod): Likewise.	
+	(umodsi3): Likewise.
+	(divsi3): Likewise.
+	(aeabi_idivmod): Likewise.
+	(modsi3): Likewise.
+
 2011-11-16  Tristan Gingold  <gingold@adacore.com>
 
 	* config/alpha/qrnnd.S: Use specific pseudos for VMS.
