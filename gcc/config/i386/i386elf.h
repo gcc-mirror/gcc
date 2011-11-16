@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
    generated assembly code more compact (and thus faster to assemble)
    as well as more readable.  Note that if we find subparts of the
    character sequence which end with NUL (and which are shorter than
-   STRING_LIMIT) we output those using ASM_OUTPUT_LIMITED_STRING.  */
+   ELF_STRING_LIMIT) we output those using ASM_OUTPUT_LIMITED_STRING.  */
 
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 	    }								\
 	  for (p = _ascii_bytes; p < limit && *p != '\0'; p++)		\
 	    continue;							\
-	  if (p < limit && (p - _ascii_bytes) <= (long) STRING_LIMIT)	\
+	  if (p < limit && (p - _ascii_bytes) <= (long) ELF_STRING_LIMIT) \
 	    {								\
 	      if (bytes_in_chunk > 0)					\
 		{							\
