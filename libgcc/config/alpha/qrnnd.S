@@ -33,9 +33,15 @@
 
 	.globl __udiv_qrnnd
 	.ent __udiv_qrnnd
+#ifdef __VMS__
+__udiv_qrnnd..en:
+	.frame $29,0,$26,0
+	.prologue
+#else
 __udiv_qrnnd:
 	.frame $30,0,$26,0
 	.prologue 0
+#endif
 
 #define cnt	$2
 #define tmp	$3
@@ -160,4 +166,10 @@ $Odd:
 	bis	$31,n0,$0
 	ret	$31,($26),1
 
+#ifdef __VMS__
+	.link
+	.align 3
+__udiv_qrnnd:
+	.pdesc	__udiv_qrnnd..en,null
+#endif
 	.end	__udiv_qrnnd
