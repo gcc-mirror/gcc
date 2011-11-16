@@ -1,3 +1,8 @@
+2011-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386elf.h (ASM_OUTPUT_ASCII): Change STRING_LIMIT to
+	ELF_STRING_LIMIT.
+
 2011-11-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_pre_atomic_barrier): New.
