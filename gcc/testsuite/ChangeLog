@@ -1,3 +1,8 @@
+2011-10-16  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* gcc.dg/vect/pr30858.c: Update expected output for
+	architectures with multiple vector sizes.
+
 2011-11-16  Richard Earnshaw  <rearnsha@arm.com>
 	    Bernd Schmidt <bernds@coudesourcery.com>
 	    Sebastian Huber <sebastian.huber@embedded-brains.de>
