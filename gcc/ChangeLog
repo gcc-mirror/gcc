@@ -308,7 +308,7 @@
 	* ipa.c (varpool_externally_visible_p): Export.
 	* varpool.c (varpool_add_new_variable): New function.
 
-2011-11-14  Zolotukhin Michael  <michael.v.zolotukhin@gmail.com>
+2011-11-14  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.h (processor_costs): Add second dimension to
