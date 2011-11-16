@@ -1389,13 +1389,30 @@ initialize_data_dependence_relation (struct data_reference *a,
      the data dependence tests, just initialize the ddr and return.  */
   if (operand_equal_p (DR_REF (a), DR_REF (b), 0))
     {
+     if (loop_nest
+        && !object_address_invariant_in_loop_p (VEC_index (loop_p, loop_nest, 0),
+       					        DR_BASE_OBJECT (a)))
+      {
+        DDR_ARE_DEPENDENT (res) = chrec_dont_know;
+        return res;
+      }
       DDR_AFFINE_P (res) = true;
       DDR_ARE_DEPENDENT (res) = NULL_TREE;
       DDR_SUBSCRIPTS (res) = VEC_alloc (subscript_p, heap, DR_NUM_DIMENSIONS (a));
       DDR_LOOP_NEST (res) = loop_nest;
       DDR_INNER_LOOP (res) = 0;
       DDR_SELF_REFERENCE (res) = true;
-      compute_self_dependence (res);
+      for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
+       {
+         struct subscript *subscript;
+
+         subscript = XNEW (struct subscript);
+         SUB_CONFLICTS_IN_A (subscript) = conflict_fn_not_known ();
+         SUB_CONFLICTS_IN_B (subscript) = conflict_fn_not_known ();
+         SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
+         SUB_DISTANCE (subscript) = chrec_dont_know;
+         VEC_safe_push (subscript_p, heap, DDR_SUBSCRIPTS (res), subscript);
+       }
       return res;
     }
 
@@ -4040,8 +4057,7 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
     }
 
   /* Analyze only when the dependence relation is not yet known.  */
-  if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
-      && !DDR_SELF_REFERENCE (ddr))
+  if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
     {
       dependence_stats.num_dependence_tests++;
 
@@ -4122,31 +4138,11 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
 void
 compute_self_dependence (struct data_dependence_relation *ddr)
 {
-  unsigned int i;
-  struct subscript *subscript;
-
   if (DDR_ARE_DEPENDENT (ddr) != NULL_TREE)
     return;
 
-  for (i = 0; VEC_iterate (subscript_p, DDR_SUBSCRIPTS (ddr), i, subscript);
-       i++)
-    {
-      if (SUB_CONFLICTS_IN_A (subscript))
-	free_conflict_function (SUB_CONFLICTS_IN_A (subscript));
-      if (SUB_CONFLICTS_IN_B (subscript))
-	free_conflict_function (SUB_CONFLICTS_IN_B (subscript));
-
-      /* The accessed index overlaps for each iteration.  */
-      SUB_CONFLICTS_IN_A (subscript)
-	= conflict_fn (1, affine_fn_cst (integer_zero_node));
-      SUB_CONFLICTS_IN_B (subscript)
-	= conflict_fn (1, affine_fn_cst (integer_zero_node));
-      SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
-    }
-
-  /* The distance vector is the zero vector.  */
-  save_dist_v (ddr, lambda_vector_new (DDR_NB_LOOPS (ddr)));
-  save_dir_v (ddr, lambda_vector_new (DDR_NB_LOOPS (ddr)));
+  if (DDR_LOOP_NEST (ddr))
+    compute_affine_dependence (ddr, VEC_index (loop_p, DDR_LOOP_NEST (ddr), 0));
 }
 
 /* Compute in DEPENDENCE_RELATIONS the data dependence graph for all
@@ -4179,7 +4175,8 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
       {
 	ddr = initialize_data_dependence_relation (a, a, loop_nest);
 	VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
-	compute_self_dependence (ddr);
+        if (loop_nest)
+   	  compute_affine_dependence (ddr, VEC_index (loop_p, loop_nest, 0));
       }
 }
 
