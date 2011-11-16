@@ -1,3 +1,9 @@
+2011-11-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR libstdc++/51102
+	* include/bits/atomic_base.h (ATOMIC_BOOL_LOCK_FREE,
+	ATOMIC_POINTER_LOCK_FREE): New. Add missing macros.
+
 2011-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51142
