@@ -612,6 +612,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       erase(const_iterator __position)
       { return _M_t.erase(__position); }
+
+      // LWG 2059.
+      iterator
+      erase(iterator __position)
+      { return _M_t.erase(__position); }
 #else
       /**
        *  @brief Erases an element from a %map.

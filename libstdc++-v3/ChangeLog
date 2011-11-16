@@ -1,3 +1,28 @@
+2011-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/51142
+	* include/debug/unordered_map (unordered_map<>::erase(iterator),
+	unordered_multimap<>::erase(iterator)): Add, consistently with
+	LWG 2059.
+	* include/debug/unordered_set (unordered_set<>::erase(iterator),
+	unordered_multiset<>::erase(iterator)): Likewise.
+	* include/debug/map.h (map<>::erase(iterator)): Likewise.
+	* include/debug/multimap.h (multimap<>::erase(iterator)): Likewise.
+	* include/profile/map.h (map<>::erase(iterator)): Likewise.
+	* include/profile/multimap.h (multimap<>::erase(iterator)): Likewise.
+	* include/bits/hashtable.h (_Hashtable<>::erase(iterator)): Likewise.
+	* include/bits/stl_map.h (map<>::erase(iterator)): Likewise.
+	* include/bits/stl_multimap.h (multimap<>::erase(iterator)): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree<>::erase(iterator)): Likewise.
+	* testsuite/23_containers/unordered_map/erase/51142.cc: New.
+	* testsuite/23_containers/multimap/modifiers/erase/51142.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/erase/51142.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/51142.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erase/51142.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/erase/51142.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/51142.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/erase/51142.cc: Likewise.
+
 2011-11-15  Jason Dick  <dickphd@gmail.com>
 
 	PR libstdc++/51133

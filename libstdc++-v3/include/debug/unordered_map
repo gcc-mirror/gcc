@@ -276,6 +276,10 @@ namespace __debug
       }
 
       iterator
+      erase(iterator __it)
+      { return erase(const_iterator(__it)); }
+
+      iterator
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
@@ -556,6 +560,10 @@ namespace __debug
 	this->_M_invalidate_if(_Equal(__it.base()));
 	return iterator(_Base::erase(__it.base()), this);
       }
+
+      iterator
+      erase(iterator __it)
+      { return erase(const_iterator(__it)); }
 
       iterator
       erase(const_iterator __first, const_iterator __last)

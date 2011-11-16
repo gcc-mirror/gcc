@@ -440,6 +440,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       erase(const_iterator);
 
+      // LWG 2059.
+      iterator
+      erase(iterator __it)
+      { return erase(const_iterator(__it)); }
+
       size_type
       erase(const key_type&);
 

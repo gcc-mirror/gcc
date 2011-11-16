@@ -760,6 +760,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_erase_aux(__position);
 	return __result._M_const_cast();
       }
+
+      // LWG 2059.
+      iterator
+      erase(iterator __position)
+      {
+	iterator __result = __position;
+	++__result;
+	_M_erase_aux(__position);
+	return __result;
+      }
 #else
       void
       erase(iterator __position)

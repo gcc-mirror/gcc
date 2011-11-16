@@ -225,6 +225,10 @@ namespace __profile
       iterator
       erase(const_iterator __position)
       { return iterator(_Base::erase(__position)); }
+
+      iterator
+      erase(iterator __position)
+      { return iterator(_Base::erase(__position)); }
 #else
       void
       erase(iterator __position)
