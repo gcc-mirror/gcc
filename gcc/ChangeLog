@@ -1,3 +1,7 @@
+2011-11-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386elf.h (PREFERRED_DEBUGGING_TYPE): Remove.
+
 2011-11-16  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_xcoff_section_type_flags):
