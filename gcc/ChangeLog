@@ -1,3 +1,10 @@
+2011-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR middle-end/50325
+	* expmed.c (store_bit_field_1): Use extract_bit_field on big
+	endian targets if the source cannot be exactly covered by word
+	mode chunks.
+
 2011-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386elf.h (ASM_OUTPUT_ASCII): Change STRING_LIMIT to
