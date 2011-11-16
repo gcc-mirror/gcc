@@ -18,3 +18,4 @@ int f()
 }
 
 /* { dg-final { scan-tree-dump-times "memmoveRtWt \\\(&lala, &lacopy" 1 "tmedge" } } */
+/* { dg-final { cleanup-tree-dump "tmedge" } } */

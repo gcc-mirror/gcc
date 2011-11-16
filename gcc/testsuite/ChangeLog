@@ -1,3 +1,9 @@
+2011-10-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tm/memopt-6.c: Cleanup tmedge tree dump.
+	* gcc.dg/tm/memopt-13.c: Cleanup tmmark tree dump.
+	* g++.dg/eh/array1.C: Cleanup gimple tree dump.
+
 2011-11-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39427
