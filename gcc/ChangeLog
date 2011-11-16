@@ -1,3 +1,7 @@
+2011-11-16  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* doc/invoke.texi: Document AMD bdver1 and btver1.
+
 2011-11-16  Richard Earnshaw  <rearnsha@arm.com>
 	    Bernd Schmidt <bernds@coudesourcery.com>
 	    Sebastian Huber <sebastian.huber@embedded-brains.de>
