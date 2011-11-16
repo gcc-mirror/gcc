@@ -20,10 +20,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Use stabs instead of DWARF debug format.  */
-#undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
 /* The ELF ABI for the i386 says that records and unions are returned
    in memory.  */
 
