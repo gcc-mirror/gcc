@@ -9962,17 +9962,32 @@
 {
   rtx tmp0, tmp1;
 
-  tmp0 = gen_reg_rtx (<MODE>mode);
-  tmp1 = gen_reg_rtx (<MODE>mode);
+  if (<MODE>mode == V2DFmode
+      && TARGET_AVX && !TARGET_PREFER_AVX128)
+    {
+      rtx tmp2 = gen_reg_rtx (V4DFmode);
 
-  emit_insn
-    (gen_<sse4_1>_round<ssemodesuffix><avxsizesuffix> (tmp0, operands[1],
-						       operands[3]));
-  emit_insn
-    (gen_<sse4_1>_round<ssemodesuffix><avxsizesuffix> (tmp1, operands[2],
-						       operands[3]));
-  emit_insn
-    (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp0, tmp1));
+      tmp0 = gen_reg_rtx (V4DFmode);
+      tmp1 = force_reg (V2DFmode, operands[1]);
+
+      emit_insn (gen_avx_vec_concatv4df (tmp0, tmp1, operands[2]));
+      emit_insn (gen_avx_roundpd256 (tmp2, tmp0, operands[3]));
+      emit_insn (gen_fix_truncv4dfv4si2 (operands[0], tmp2));
+    }
+  else
+    {
+      tmp0 = gen_reg_rtx (<MODE>mode);
+      tmp1 = gen_reg_rtx (<MODE>mode);
+
+      emit_insn
+       (gen_<sse4_1>_round<ssemodesuffix><avxsizesuffix> (tmp0, operands[1],
+							  operands[3]));
+      emit_insn
+       (gen_<sse4_1>_round<ssemodesuffix><avxsizesuffix> (tmp1, operands[2],
+							  operands[3]));
+      emit_insn
+       (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp0, tmp1));
+    }
   DONE;
 })
 
@@ -10053,14 +10068,29 @@
 {
   rtx tmp0, tmp1;
 
-  tmp0 = gen_reg_rtx (<MODE>mode);
-  tmp1 = gen_reg_rtx (<MODE>mode);
+  if (<MODE>mode == V2DFmode
+      && TARGET_AVX && !TARGET_PREFER_AVX128)
+    {
+      rtx tmp2 = gen_reg_rtx (V4DFmode);
 
-  emit_insn (gen_round<mode>2 (tmp0, operands[1]));
-  emit_insn (gen_round<mode>2 (tmp1, operands[2]));
+      tmp0 = gen_reg_rtx (V4DFmode);
+      tmp1 = force_reg (V2DFmode, operands[1]);
 
-  emit_insn
-    (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp0, tmp1));
+      emit_insn (gen_avx_vec_concatv4df (tmp0, tmp1, operands[2]));
+      emit_insn (gen_roundv4df2 (tmp2, tmp0));
+      emit_insn (gen_fix_truncv4dfv4si2 (operands[0], tmp2));
+    }
+  else
+    {
+      tmp0 = gen_reg_rtx (<MODE>mode);
+      tmp1 = gen_reg_rtx (<MODE>mode);
+
+      emit_insn (gen_round<mode>2 (tmp0, operands[1]));
+      emit_insn (gen_round<mode>2 (tmp1, operands[2]));
+
+      emit_insn
+       (gen_vec_pack_sfix_trunc_<mode> (operands[0], tmp0, tmp1));
+    }
   DONE;
 })
 

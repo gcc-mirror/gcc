@@ -1,3 +1,9 @@
+2011-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (round<mode>2_vec_pack_sfix): Optimize V2DFmode
+	sequence for AVX.
+	(<sse4_1>_round<ssemodesuffix>_vec_pack_sfix<avxsizesuffix>): Ditto.
+
 2011-11-16  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* doc/invoke.texi: Document AMD bdver1 and btver1.
@@ -11,13 +17,15 @@
 	the base reg is stored iff compiling for Thumb1.
 
 2011-11-16  Razya Ladelsky  <razya@il.ibm.com>
-	
+
 	PR tree-optimization/49960
-	* tree-data-ref.c (initialize_data_dependence_relation): Add initializations. 
+	* tree-data-ref.c (initialize_data_dependence_relation): Add
+	initializations.
 	Remove call to compute_self_dependence.
 	(compute_affine_dependence): Remove the !DDR_SELF_REFERENCE condition.
-	(compute_self_dependence): Remove old code. Add call to compute_affine_dependence.
-	(compute_all_dependences): Remove call to compute_self_dependence. 
+	(compute_self_dependence): Remove old code. Add call to
+	compute_affine_dependence.
+	(compute_all_dependences): Remove call to compute_self_dependence.
 	Add call to compute_affine_dependence.
 
 2011-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
