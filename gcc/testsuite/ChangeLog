@@ -1,3 +1,10 @@
+2011-11-16  Richard Earnshaw  <rearnsha@arm.com>
+	    Bernd Schmidt <bernds@coudesourcery.com>
+	    Sebastian Huber <sebastian.huber@embedded-brains.de>
+
+	PR target/49641
+	* gcc.target/arm/pr49641.c: New test.
+
 2011-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51077
