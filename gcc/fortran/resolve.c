@@ -454,7 +454,8 @@ resolve_formal_arglist (gfc_symbol *proc)
 static void
 find_arglists (gfc_symbol *sym)
 {
-  if (sym->attr.if_source == IFSRC_UNKNOWN || sym->ns != gfc_current_ns)
+  if (sym->attr.if_source == IFSRC_UNKNOWN || sym->ns != gfc_current_ns
+      || sym->attr.flavor == FL_DERIVED)
     return;
 
   resolve_formal_arglist (sym);
@@ -967,13 +968,6 @@ resolve_structure_cons (gfc_expr *expr, int init)
     resolve_fl_derived0 (expr->ts.u.derived);
 
   cons = gfc_constructor_first (expr->value.constructor);
-  /* A constructor may have references if it is the result of substituting a
-     parameter variable.  In this case we just pull out the component we
-     want.  */
-  if (expr->ref)
-    comp = expr->ref->u.c.sym->components;
-  else
-    comp = expr->ts.u.derived->components;
 
   /* See if the user is trying to invoke a structure constructor for one of
      the iso_c_binding derived types.  */
@@ -991,6 +985,14 @@ resolve_structure_cons (gfc_expr *expr, int init)
       && expr->ts.u.derived->ts.is_iso_c && cons
       && cons->expr && cons->expr->expr_type == EXPR_NULL)
     return SUCCESS;
+
+  /* A constructor may have references if it is the result of substituting a
+     parameter variable.  In this case we just pull out the component we
+     want.  */
+  if (expr->ref)
+    comp = expr->ref->u.c.sym->components;
+  else
+    comp = expr->ts.u.derived->components;
 
   for (; comp && cons; comp = comp->next, cons = gfc_constructor_next (cons))
     {
@@ -1401,7 +1403,8 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
   gfc_symbol* context_proc;
   gfc_namespace* real_context;
 
-  if (sym->attr.flavor == FL_PROGRAM)
+  if (sym->attr.flavor == FL_PROGRAM
+      || sym->attr.flavor == FL_DERIVED)
     return false;
 
   gcc_assert (sym->attr.flavor == FL_PROCEDURE);
@@ -2323,6 +2326,7 @@ resolve_generic_f (gfc_expr *expr)
 {
   gfc_symbol *sym;
   match m;
+  gfc_interface *intr = NULL;
 
   sym = expr->symtree->n.sym;
 
@@ -2335,6 +2339,11 @@ resolve_generic_f (gfc_expr *expr)
 	return FAILURE;
 
 generic:
+      if (!intr)
+	for (intr = sym->generic; intr; intr = intr->next)
+	  if (intr->sym->attr.flavor == FL_DERIVED)
+	    break;
+
       if (sym->ns->parent == NULL)
 	break;
       gfc_find_symbol (sym->name, sym->ns->parent, 1, &sym);
@@ -2347,16 +2356,25 @@ generic:
 
   /* Last ditch attempt.  See if the reference is to an intrinsic
      that possesses a matching interface.  14.1.2.4  */
-  if (sym && !gfc_is_intrinsic (sym, 0, expr->where))
+  if (sym  && !intr && !gfc_is_intrinsic (sym, 0, expr->where))
     {
-      gfc_error ("There is no specific function for the generic '%s' at %L",
-		 expr->symtree->n.sym->name, &expr->where);
+      gfc_error ("There is no specific function for the generic '%s' "
+		 "at %L", expr->symtree->n.sym->name, &expr->where);
       return FAILURE;
+    }
+
+  if (intr)
+    {
+      if (gfc_convert_to_structure_constructor (expr, intr->sym, NULL, NULL,
+						false) != SUCCESS)
+	return FAILURE;
+      return resolve_structure_cons (expr, 0);
     }
 
   m = gfc_intrinsic_func_interface (expr, 0);
   if (m == MATCH_YES)
     return SUCCESS;
+
   if (m == MATCH_NO)
     gfc_error ("Generic function '%s' at %L is not consistent with a "
 	       "specific intrinsic interface", expr->symtree->n.sym->name,
@@ -5052,6 +5070,9 @@ resolve_variable (gfc_expr *e)
      in error even though the target is scalar.  Fail directly in this case.  */
   if (sym->assoc && !sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
     return FAILURE;
+
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.generic)
+    sym->ts.u.derived = gfc_find_dt_in_generic (sym->ts.u.derived);
 
   /* On the other hand, the parser may not have known this is an array;
      in this case, we have to add a FULL reference.  */
@@ -10152,6 +10173,8 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
     {
       gfc_symbol *s;
       gfc_find_symbol (sym->ts.u.derived->name, sym->ns, 0, &s);
+      if (s && s->attr.generic)
+	s = gfc_find_dt_in_generic (s);
       if (s && s->attr.flavor != FL_DERIVED)
 	{
 	  gfc_error ("The type '%s' cannot be host associated at %L "
@@ -11718,6 +11741,13 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	    }
 	}
 
+      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.generic)
+	c->ts.u.derived = gfc_find_dt_in_generic (c->ts.u.derived);
+      else if (c->ts.type == BT_CLASS && c->attr.class_ok
+	       && CLASS_DATA (c)->ts.u.derived->attr.generic)
+	CLASS_DATA (c)->ts.u.derived
+			= gfc_find_dt_in_generic (CLASS_DATA (c)->ts.u.derived);
+
       if (!sym->attr.is_class && c->ts.type == BT_DERIVED && !sym->attr.vtype
 	  && c->attr.pointer && c->ts.u.derived->components == NULL
 	  && !c->ts.u.derived->attr.zero_comp)
@@ -11788,6 +11818,23 @@ resolve_fl_derived0 (gfc_symbol *sym)
 static gfc_try
 resolve_fl_derived (gfc_symbol *sym)
 {
+  gfc_symbol *gen_dt = NULL;
+
+  if (!sym->attr.is_class)
+    gfc_find_symbol (sym->name, sym->ns, 0, &gen_dt);
+  if (gen_dt && gen_dt->generic && gen_dt->generic->next
+      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Generic name '%s' of "
+			 "function '%s' at %L being the same name as derived "
+			 "type at %L", sym->name,
+			 gen_dt->generic->sym == sym
+			   ? gen_dt->generic->next->sym->name
+			   : gen_dt->generic->sym->name,
+			 gen_dt->generic->sym == sym
+			   ? &gen_dt->generic->next->sym->declared_at
+			   : &gen_dt->generic->sym->declared_at,
+			 &sym->declared_at) == FAILURE)
+    return FAILURE;
+
   if (sym->attr.is_class && sym->ts.u.derived == NULL)
     {
       /* Fix up incomplete CLASS symbols.  */
@@ -12191,6 +12238,20 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
+  if (sym->ts.type == BT_DERIVED && !sym->attr.is_iso_c
+      && sym->ts.u.derived->attr.generic)
+    {
+      sym->ts.u.derived = gfc_find_dt_in_generic (sym->ts.u.derived);
+      if (!sym->ts.u.derived)
+	{
+	  gfc_error ("The derived type '%s' at %L is of type '%s', "
+		     "which has not been defined", sym->name,
+		     &sym->declared_at, sym->ts.u.derived->name);
+	  sym->ts.type = BT_UNKNOWN;
+	  return;
+	}
+    }
+
   /* If the symbol is marked as bind(c), verify it's type and kind.  Do not
      do this for something that was implicitly typed because that is handled
      in gfc_set_default_type.  Handle dummy arguments and procedure
@@ -12260,7 +12321,8 @@ resolve_symbol (gfc_symbol *sym)
      the type is not declared in the scope of the implicit
      statement. Change the type to BT_UNKNOWN, both because it is so
      and to prevent an ICE.  */
-  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->components == NULL
+  if (sym->ts.type == BT_DERIVED && !sym->attr.is_iso_c
+      && sym->ts.u.derived->components == NULL
       && !sym->ts.u.derived->attr.zero_comp)
     {
       gfc_error ("The derived type '%s' at %L is of type '%s', "
@@ -12276,22 +12338,9 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->ts.type == BT_DERIVED
 	&& sym->ts.u.derived->attr.use_assoc
 	&& sym->ns->proc_name
-	&& sym->ns->proc_name->attr.flavor == FL_MODULE)
-    {
-      gfc_symbol *ds;
-
-      if (resolve_fl_derived (sym->ts.u.derived) == FAILURE)
-	return;
-
-      gfc_find_symbol (sym->ts.u.derived->name, sym->ns, 1, &ds);
-      if (!ds && sym->attr.function && gfc_check_symbol_access (sym))
-	{
-	  symtree = gfc_new_symtree (&sym->ns->sym_root,
-				     sym->ts.u.derived->name);
-	  symtree->n.sym = sym->ts.u.derived;
-	  sym->ts.u.derived->refs++;
-	}
-    }
+	&& sym->ns->proc_name->attr.flavor == FL_MODULE
+        && resolve_fl_derived (sym->ts.u.derived) == FAILURE)
+    return;
 
   /* Unless the derived-type declaration is use associated, Fortran 95
      does not allow public entries of private derived types.

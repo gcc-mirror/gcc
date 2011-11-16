@@ -13,6 +13,6 @@ PROGRAM test
 
   TYPE(basics_t) :: basics
 
-  basics = basics_t (i=42, 1.5) ! { dg-error "without name after" }
+  basics = basics_t (i=42, 1.5) ! { dg-error "Missing keyword name" }
 
 END PROGRAM test

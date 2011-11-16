@@ -2257,6 +2257,10 @@ gfc_get_derived_type (gfc_symbol * derived)
   gfc_dt_list *dt;
   gfc_namespace *ns;
 
+  if (derived && derived->attr.flavor == FL_PROCEDURE
+      && derived->attr.generic)
+    derived = gfc_find_dt_in_generic (derived);
+
   gcc_assert (derived && derived->attr.flavor == FL_DERIVED);
 
   /* See if it's one of the iso_c_binding derived types.  */

@@ -2630,6 +2630,7 @@ gfc_try gfc_check_symbol_typed (gfc_symbol*, gfc_namespace*, bool, locus);
 gfc_namespace* gfc_find_proc_namespace (gfc_namespace*);
 
 bool gfc_is_associate_pointer (gfc_symbol*);
+gfc_symbol * gfc_find_dt_in_generic (gfc_symbol *);
 
 /* intrinsic.c -- true if working in an init-expr, false otherwise.  */
 extern bool gfc_init_expr_flag;
@@ -2874,6 +2875,9 @@ match gfc_match_rvalue (gfc_expr **);
 match gfc_match_varspec (gfc_expr*, int, bool, bool);
 int gfc_check_digit (char, int);
 bool gfc_is_function_return_value (gfc_symbol *, gfc_namespace *);
+gfc_try gfc_convert_to_structure_constructor (gfc_expr *, gfc_symbol *,
+					      gfc_expr **,
+					      gfc_actual_arglist **, bool);
 
 /* trans.c */
 void gfc_generate_code (gfc_namespace *);

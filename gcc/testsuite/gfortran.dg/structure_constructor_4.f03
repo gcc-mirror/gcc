@@ -14,6 +14,6 @@ PROGRAM test
   TYPE(basics_t) :: basics
 
   basics = basics_t (42, r=1.5, i=15) ! { dg-error "'i' is initialized twice" }
-  basics = basics_t (42, r=1., r=-2.) ! { dg-error "'r' is initialized twice" }
+  basics = basics_t (42, r=1., r=-2.) ! { dg-error "has already appeared in the current argument list" }
 
 END PROGRAM test

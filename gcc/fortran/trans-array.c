@@ -5027,6 +5027,11 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
   tree index, range;
   VEC(constructor_elt,gc) *v = NULL;
 
+  if (expr->expr_type == EXPR_VARIABLE
+      && expr->symtree->n.sym->attr.flavor == FL_PARAMETER
+      && expr->symtree->n.sym->value)
+    expr = expr->symtree->n.sym->value;
+
   switch (expr->expr_type)
     {
     case EXPR_CONSTANT:
