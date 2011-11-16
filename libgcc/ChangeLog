@@ -1,3 +1,7 @@
+2011-11-16  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/qrnnd.S: Use specific pseudos for VMS.
+
 2011-11-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868
