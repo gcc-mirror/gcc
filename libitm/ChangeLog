@@ -1,3 +1,9 @@
+2011-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/51098
+	* acinclude.m4 (LIBITM_CHECK_AS_AVX): Fix target selector.
+	* configure: Regenerate.
+
 2011-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* testsuite/lib/libitm.exp: Check ia32 instead of ilp32.
