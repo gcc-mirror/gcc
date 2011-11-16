@@ -17118,7 +17118,7 @@ $as_echo "#define HAVE_64BIT_SYNC_BUILTINS 1" >>confdefs.h
   fi
 
 case "${target_cpu}" in
-i345686 | x86_64)
+i[34567]86 | x86_64)
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the assembler supports AVX" >&5
 $as_echo_n "checking if the assembler supports AVX... " >&6; }
 if test "${libitm_cv_as_avx+set}" = set; then :
