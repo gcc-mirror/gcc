@@ -93,6 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define LOCKFREE_PROP(T) (__atomic_always_lock_free (sizeof (T), 0) ? 2 : 1)
 
+#define ATOMIC_BOOL_LOCK_FREE		LOCKFREE_PROP (bool)
 #define ATOMIC_CHAR_LOCK_FREE 		LOCKFREE_PROP (char)
 #define ATOMIC_CHAR16_T_LOCK_FREE	LOCKFREE_PROP (char16_t)
 #define ATOMIC_CHAR32_T_LOCK_FREE	LOCKFREE_PROP (char32_t)
@@ -101,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define ATOMIC_INT_LOCK_FREE		LOCKFREE_PROP (int)
 #define ATOMIC_LONG_LOCK_FREE		LOCKFREE_PROP (long)
 #define ATOMIC_LLONG_LOCK_FREE		LOCKFREE_PROP (long long)
-
+#define ATOMIC_POINTER_LOCK_FREE	LOCKFREE_PROP (void *)
 
   // Base types for atomics.
   template<typename _IntTp>
