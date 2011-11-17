@@ -31,6 +31,7 @@ class tstring : public std::basic_string<char>
 public:
   tstring() : std::basic_string<char>() {}
   tstring(tstring&& s) : std::basic_string<char>(std::move(s)) {}
+  tstring& operator=(tstring&& s) = default;
 };
 
 void test01()

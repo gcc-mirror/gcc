@@ -2721,6 +2721,13 @@ add_implicitly_declared_members (tree t,
 				 int cant_have_const_cctor,
 				 int cant_have_const_assignment)
 {
+  bool move_ok = false;
+
+  if (cxx_dialect >= cxx0x && !CLASSTYPE_DESTRUCTORS (t)
+      && !TYPE_HAS_COPY_CTOR (t) && !TYPE_HAS_COPY_ASSIGN (t)
+      && !type_has_move_constructor (t) && !type_has_move_assign (t))
+    move_ok = true;
+
   /* Destructor.  */
   if (!CLASSTYPE_DESTRUCTORS (t))
     {
@@ -2758,7 +2765,7 @@ add_implicitly_declared_members (tree t,
       TYPE_HAS_COPY_CTOR (t) = 1;
       TYPE_HAS_CONST_COPY_CTOR (t) = !cant_have_const_cctor;
       CLASSTYPE_LAZY_COPY_CTOR (t) = 1;
-      if (cxx_dialect >= cxx0x && !type_has_move_constructor (t))
+      if (move_ok)
 	CLASSTYPE_LAZY_MOVE_CTOR (t) = 1;
     }
 
@@ -2771,7 +2778,7 @@ add_implicitly_declared_members (tree t,
       TYPE_HAS_COPY_ASSIGN (t) = 1;
       TYPE_HAS_CONST_COPY_ASSIGN (t) = !cant_have_const_assignment;
       CLASSTYPE_LAZY_COPY_ASSIGN (t) = 1;
-      if (cxx_dialect >= cxx0x && !type_has_move_assign (t))
+      if (move_ok)
 	CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 1;
     }
 

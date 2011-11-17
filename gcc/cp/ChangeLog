@@ -1,5 +1,9 @@
 2011-11-17  Jason Merrill  <jason@redhat.com>
 
+	N3203
+	* class.c (add_implicitly_declared_members): Update move
+	conditions.
+
 	PR c++/51137
 	* class.c (build_base_path): Don't do calculation in templates.
 
