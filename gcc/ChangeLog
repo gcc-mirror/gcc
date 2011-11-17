@@ -1,3 +1,11 @@
+2011-11-17  Michael Matz  <matz@suse.de>
+
+	PR middle-end/50644
+	PR middle-end/50741
+	* tree-ssa-live.c (mark_all_vars_used_1): Recurse only for decls of
+	current function.
+	(remove_unused_locals): Ditto.
+
 2011-11-16  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_split_compare_and_swap_12): Copy

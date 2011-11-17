@@ -1,3 +1,9 @@
+2011-11-17  Michael Matz  <matz@suse.de>
+
+	PR middle-end/50644
+	PR middle-end/50741
+	* g++.dg/tree-ssa/pr50741.C: New.
+
 2011-11-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gcc-simulate-thread.exp (simulate-thread): Skip on

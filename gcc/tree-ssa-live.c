@@ -374,7 +374,8 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
      eliminated as unused.  */
   if (TREE_CODE (t) == VAR_DECL)
     {
-      if (data != NULL && bitmap_clear_bit ((bitmap) data, DECL_UID (t)))
+      if (data != NULL && bitmap_clear_bit ((bitmap) data, DECL_UID (t))
+	  && DECL_CONTEXT (t) == current_function_decl)
 	mark_all_vars_used (&DECL_INITIAL (t), data);
       set_is_used (t);
     }
@@ -836,7 +837,8 @@ remove_unused_locals (void)
 	if (TREE_CODE (var) == VAR_DECL
 	    && is_global_var (var)
 	    && var_ann (var) != NULL
-	    && is_used_p (var))
+	    && is_used_p (var)
+	    && DECL_CONTEXT (var) == current_function_decl)
 	  mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
 
       num = VEC_length (tree, cfun->local_decls);
