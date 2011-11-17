@@ -1,3 +1,20 @@
+2011-11-17  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (expand_builtin_mem_thread_fence): Remove.
+	(expand_builtin_mem_signal_fence): Remove.
+	(expand_builtin_atomic_thread_fence): Use expand_mem_thread_fence.
+	(expand_builtin_sync_synchronize): Likewise.
+	(expand_builtin_atomic_signal_fence): Use expand_mem_signal_fence.
+	* optabs.c (expand_asm_memory_barrier): Split out from
+	expand_builtin_mem_signal_fence.
+	(expand_mem_thread_fence): New, a combination of code from
+	expand_builtin_mem_thread_fence and expand_builtin_sync_synchronize.
+	(expand_mem_signal_fence): Moved and renamed from
+	expand_builtin_mem_signal_fence.
+	(expand_atomic_exchange): Use expand_mem_thread_fence.
+	(expand_atomic_load, expand_atomic_store): Likewise.
+	* expr.h, optabs.h: Update decls.
+
 2011-11-17  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/50663

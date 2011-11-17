@@ -7378,7 +7378,7 @@ expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model,
 	  if (model == MEMMODEL_SEQ_CST
 	      || model == MEMMODEL_RELEASE
 	      || model == MEMMODEL_ACQ_REL)
-	    expand_builtin_mem_thread_fence (model);
+	    expand_mem_thread_fence (model);
 
 	  create_output_operand (&ops[0], target, mode);
 	  create_fixed_operand (&ops[1], mem);
@@ -7403,7 +7403,7 @@ expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model,
 	      if (model == MEMMODEL_SEQ_CST
 		  || model == MEMMODEL_RELEASE
 		  || model == MEMMODEL_ACQ_REL)
-		expand_builtin_mem_thread_fence (model);
+		expand_mem_thread_fence (model);
 
 	      addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
 	      return emit_library_call_value (libfunc, target, LCT_NORMAL,
@@ -7556,6 +7556,76 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   return true;
 }
 
+/* Generate asm volatile("" : : : "memory") as the memory barrier.  */
+
+static void
+expand_asm_memory_barrier (void)
+{
+  rtx asm_op, clob;
+
+  asm_op = gen_rtx_ASM_OPERANDS (VOIDmode, empty_string, empty_string, 0,
+				 rtvec_alloc (0), rtvec_alloc (0),
+				 rtvec_alloc (0), UNKNOWN_LOCATION);
+  MEM_VOLATILE_P (asm_op) = 1;
+
+  clob = gen_rtx_SCRATCH (VOIDmode);
+  clob = gen_rtx_MEM (BLKmode, clob);
+  clob = gen_rtx_CLOBBER (VOIDmode, clob);
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, asm_op, clob)));
+}
+
+/* This routine will either emit the mem_thread_fence pattern or issue a 
+   sync_synchronize to generate a fence for memory model MEMMODEL.  */
+
+#ifndef HAVE_mem_thread_fence
+# define HAVE_mem_thread_fence 0
+# define gen_mem_thread_fence(x) (gcc_unreachable (), NULL_RTX)
+#endif
+#ifndef HAVE_memory_barrier
+# define HAVE_memory_barrier 0
+# define gen_memory_barrier()  (gcc_unreachable (), NULL_RTX)
+#endif
+
+void
+expand_mem_thread_fence (enum memmodel model)
+{
+  if (HAVE_mem_thread_fence)
+    emit_insn (gen_mem_thread_fence (GEN_INT (model)));
+  else if (model != MEMMODEL_RELAXED)
+    {
+      if (HAVE_memory_barrier)
+	emit_insn (gen_memory_barrier ());
+      else if (synchronize_libfunc != NULL_RTX)
+	emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode, 0);
+      else
+	expand_asm_memory_barrier ();
+    }
+}
+
+/* This routine will either emit the mem_signal_fence pattern or issue a 
+   sync_synchronize to generate a fence for memory model MEMMODEL.  */
+
+#ifndef HAVE_mem_signal_fence
+# define HAVE_mem_signal_fence 0
+# define gen_mem_signal_fence(x) (gcc_unreachable (), NULL_RTX)
+#endif
+
+void
+expand_mem_signal_fence (enum memmodel model)
+{
+  if (HAVE_mem_signal_fence)
+    emit_insn (gen_mem_signal_fence (GEN_INT (model)));
+  else if (model != MEMMODEL_RELAXED)
+    {
+      /* By default targets are coherent between a thread and the signal
+	 handler running on the same thread.  Thus this really becomes a
+	 compiler barrier, in that stores must not be sunk past
+	 (or raised above) a given point.  */
+      expand_asm_memory_barrier ();
+    }
+}
+
 /* This function expands the atomic load operation:
    return the atomically loaded value in MEM.
 
@@ -7598,13 +7668,13 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
     target = gen_reg_rtx (mode);
 
   /* Emit the appropriate barrier before the load.  */
-  expand_builtin_mem_thread_fence (model);
+  expand_mem_thread_fence (model);
 
   emit_move_insn (target, mem);
 
   /* For SEQ_CST, also emit a barrier after the load.  */
   if (model == MEMMODEL_SEQ_CST)
-    expand_builtin_mem_thread_fence (model);
+    expand_mem_thread_fence (model);
 
   return target;
 }
@@ -7645,7 +7715,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 	    {
 	      /* lock_release is only a release barrier.  */
 	      if (model == MEMMODEL_SEQ_CST)
-		expand_builtin_mem_thread_fence (model);
+		expand_mem_thread_fence (model);
 	      return const0_rtx;
 	    }
 	}
@@ -7665,13 +7735,13 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 
   /* If there is no mem_store, default to a move with barriers */
   if (model == MEMMODEL_SEQ_CST || model == MEMMODEL_RELEASE)
-    expand_builtin_mem_thread_fence (model);
+    expand_mem_thread_fence (model);
 
   emit_move_insn (mem, val);
 
   /* For SEQ_CST, also emit a barrier after the load.  */
   if (model == MEMMODEL_SEQ_CST)
-    expand_builtin_mem_thread_fence (model);
+    expand_mem_thread_fence (model);
 
   return const0_rtx;
 }
