@@ -1,3 +1,16 @@
+2011-11-17  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/50663
+	* cprop.c (implicit_set_indexes): New global variable.
+	(insert_set_in_table): Add additional parameter and record implicit
+	set information.
+	(hash_scan_set): Add additional parameter and pass it to above.
+	(hash_scan_insn): Pass false to hash_scan_set.
+	(compute_hash_table_work): Pass true to hash_scan_set.
+	(compute_cprop_data): Add implicit set to AVIN of block which the
+	implicit set is recorded for.
+	(one_cprop_pass): Handle implicit_set_indexes array.
+
 2011-11-17  Michael Matz  <matz@suse.de>
 
 	PR middle-end/50644
