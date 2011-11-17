@@ -978,6 +978,10 @@ extern bool can_atomic_exchange_p (enum machine_mode, bool);
 extern bool expand_atomic_compare_and_swap (rtx *, rtx *, rtx, rtx, rtx, bool,
 					    enum memmodel, enum memmodel);
 
+/* Generate memory barriers.  */
+extern void expand_mem_thread_fence (enum memmodel);
+extern void expand_mem_signal_fence (enum memmodel);
+
 /* Check whether an operation represented by the code CODE is a
    convert operation that is supported by the target platform in
    vector form */
