@@ -45,7 +45,7 @@ proc simulate-thread { args } {
 	return
     }
 
-    set message "(thread simulation test)"
+    set message "thread simulation test"
 
     send_log "Spawning: $gdb_name -nx -nw -quiet -x $cmd_file ./$exec_file\n"
     set res [remote_spawn target "$gdb_name -nx -nw  -x $cmd_file ./$exec_file"]
