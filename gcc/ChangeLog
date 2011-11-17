@@ -1,3 +1,10 @@
+2011-11-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/51144
+	* output.h (fprint_w): Remove.
+	* final.c (fprint_w): Remove.
+	(output_addr_const): Change fprint_w back to fprintf.
+
 2011-11-17  Andrew Pinski  <apinski@cavium.com>
 
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for MIPS.

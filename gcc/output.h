@@ -129,7 +129,6 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 #define ATTRIBUTE_ASM_FPRINTF(m, n) ATTRIBUTE_NONNULL(m)
 #endif
 
-extern void fprint_w (FILE *, HOST_WIDE_INT);
 extern void fprint_whex (FILE *, unsigned HOST_WIDE_INT);
 extern void fprint_ul (FILE *, unsigned long);
 extern int sprint_ul (char *, unsigned long);
