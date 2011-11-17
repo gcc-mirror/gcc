@@ -9126,12 +9126,12 @@ grokdeclarator (const cp_declarator *declarator,
 		    if (!declarator->u.function.late_return_type)
 		      {
 			error ("%qs function uses %<auto%> type specifier without"
-			       " late return type", name);
+			       " trailing return type", name);
 			return error_mark_node;
 		      }
 		    else if (!is_auto (type))
 		      {
-			error ("%qs function with late return type has"
+			error ("%qs function with trailing return type has"
 			       " %qT as its type rather than plain %<auto%>",
 			       name, type);
 			return error_mark_node;
@@ -9139,8 +9139,14 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 		else if (declarator->u.function.late_return_type)
 		  {
-		    error ("%qs function with late return type not declared"
-			   " with %<auto%> type specifier", name);
+		    if (cxx_dialect < cxx0x)
+		      /* Not using maybe_warn_cpp0x because this should
+			 always be an error.  */
+		      error ("trailing return type only available with "
+			     "-std=c++11 or -std=gnu++11");
+		    else
+		      error ("%qs function with trailing return type not "
+			     "declared with %<auto%> type specifier", name);
 		    return error_mark_node;
 		  }
 	      }
