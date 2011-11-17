@@ -1,5 +1,8 @@
 2011-11-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51186
+	* decl.c (grokdeclarator): Improve C++98 trailing return diagnostic.
+
 	N3203
 	* class.c (add_implicitly_declared_members): Update move
 	conditions.

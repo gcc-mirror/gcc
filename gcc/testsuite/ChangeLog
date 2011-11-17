@@ -1,3 +1,9 @@
+2011-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51186
+	* g++.dg/cpp0x/auto27.C: New.
+	* g++.dg/cpp0x/trailing2.C: Adjust messages.
+
 2011-11-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/atomic-generic-aux.c (__atomic_compare_exchange): Fail if 
