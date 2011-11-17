@@ -1,3 +1,7 @@
+2011-11-17  Andrew Pinski  <apinski@cavium.com>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for MIPS.
+
 2011-11-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c (expand_builtin): Remove 4th parameter representing 
