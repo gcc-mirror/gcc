@@ -31,7 +31,7 @@ main ()
   if (ac != 1)
     abort ();
 
-  __atomic_compare_exchange_n (&as, &bs, cs, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+  __atomic_compare_exchange_n (&as, &bs, cs, 0, __ATOMIC_SEQ_CST, __ATOMIC_ACQUIRE);
   if (as != 1)
     abort ();
 

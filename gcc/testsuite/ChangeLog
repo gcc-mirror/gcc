@@ -1,3 +1,14 @@
+2011-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/atomic-generic-aux.c (__atomic_compare_exchange): Fail if 
+	memory model parameters don't match expected values.
+	* gcc.dg/atomic-generic.c: Pass specific memory model parameters to
+	__atomic_compare_exchange.
+	* gcc.dg/atomic-noinline.c: Pass specific memory model parameters to
+	__atomic_compare_exchange_n.
+	* gcc.dg/atomic-noinline-aux.c (__atomic_compare_exchange_2): Remove
+	weak/strong parameter and fail if memory models aren't correct.
+
 2011-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-simulate-thread.exp (simulate-thread): Run on all targets.

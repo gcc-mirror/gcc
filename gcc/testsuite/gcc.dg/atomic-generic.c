@@ -41,12 +41,12 @@ main ()
   if (memcmp (&b, &ones, size))
     abort ();
 
-  if (!__atomic_compare_exchange (&a, &b, &zero, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED))
+  if (!__atomic_compare_exchange (&a, &b, &zero, false, __ATOMIC_SEQ_CST, __ATOMIC_ACQUIRE))
     abort();
   if (memcmp (&a, &zero, size))
     abort ();
 
-  if (__atomic_compare_exchange (&a, &b, &ones, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED))
+  if (__atomic_compare_exchange (&a, &b, &ones, false, __ATOMIC_SEQ_CST, __ATOMIC_ACQUIRE))
     abort();
   if (memcmp (&b, &zero, size))
     abort ();
