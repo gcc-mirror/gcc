@@ -128,12 +128,6 @@
 
 2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* doc/xml/manual/status_cxx2011.xml: Clarify status of container
-	requirements with respect to allocators.
-	(status.iso.200x): Add anchor for old ID to preserve existing links.
-
-2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
-
 	* include/bits/shared_ptr_base.h (_Sp_counted_ptr): Make 'final'.
 	(_Sp_counted_deleter): Make 'final'. Use allocator_traits.
 	(_Sp_counted_ptr_inplace): Make 'final'. Use allocator_traits.
