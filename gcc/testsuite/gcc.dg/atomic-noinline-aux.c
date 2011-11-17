@@ -30,9 +30,15 @@ __atomic_store_1 (char *p, char v, int i)
   *p = 1;
 }
 
-int __atomic_compare_exchange_2 (short *p, short *a, short b, int x, int y, int z)
+int __atomic_compare_exchange_2 (short *p, short *a, short b, int y, int z)
 {
-  *p = 1;
+  /* Fail if the memory models aren't correct as that will indicate the external
+     call has failed to remove the weak/strong parameter as required by the
+     library.  */
+  if (y != __ATOMIC_SEQ_CST || z != __ATOMIC_ACQUIRE)
+    *p = 0;
+  else
+    *p = 1;
 }
 
 char __atomic_fetch_add_1 (char *p, char v, int i)

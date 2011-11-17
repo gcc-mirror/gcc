@@ -19,17 +19,30 @@ __atomic_exchange (size_t size, void *obj, void *val, void *ret, int model)
 }
 
 
+/* Note that the external version of this routine has the boolean weak/strong
+   parameter removed.  This is required by teh external library.  */
 bool
-__atomic_compare_exchange (size_t size, void *obj, void *expected, 
+__atomic_compare_exchange (size_t size, void *obj, void *expected,
 			   void *desired, int model1, int model2)
 {
+  bool ret;
   if (!memcmp (obj, expected, size))
     {
       memcpy (obj, desired, size);
-      return true;
+      ret = true;
     }
-  memcpy (expected, obj, size);
-  return false;
+  else
+    {
+      memcpy (expected, obj, size);
+      ret = false;
+    }
+
+  /* Make sure the parameters have been properly adjusted for the external
+     function call (no weak/strong parameter.  */
+  if (model1 != __ATOMIC_SEQ_CST || model2 != __ATOMIC_ACQUIRE)
+    ret = !ret;
+
+  return ret;
 }
 
 

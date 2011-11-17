@@ -1,3 +1,8 @@
+2011-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.c (expand_builtin): Remove 4th parameter representing 
+	weak/strong mode when __atomic_compare_exchange becomes a library call.
+
 2011-11-17  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (expand_builtin_mem_thread_fence): Remove.
