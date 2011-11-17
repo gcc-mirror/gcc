@@ -23,9 +23,9 @@
 
 proc simulate-thread { args } {
 
-    # ??? Exit immediately if this is alpha*-*-linux* target, single-stepping
+    # ??? Exit immediately if this is alpha*-*-* target, single-stepping
     # executable between ldl_l and stl_c insns in gdb breaks LL/SC chaining.
-    if { [istarget alpha*-*-linux*] } { return }
+    if { [istarget alpha*-*-*] } { return }
     
     # GNU gdb 6.3 on powerpc-darwin also  on these (and expect does not appear
     # to be able to terminate them).
