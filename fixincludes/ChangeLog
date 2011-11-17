@@ -1,3 +1,9 @@
+2011-11-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_once_init_[12]): New fixes.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h: Update.
+
 2011-10-25  Mike Stump  <mikestump@comcast.net>
 
 	PR target/48851

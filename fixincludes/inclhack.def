@@ -384,6 +384,35 @@ fix = {
 };
 
 /*
+ *  pthread.h on AIX defines PTHREAD_ONCE_INIT without enough braces.
+ */
+fix = {
+    hackname  = aix_once_init_1;
+    mach      = "*-*-aix*";
+    files     = "pthread.h";
+    select    = "#define[ \t]PTHREAD_ONCE_INIT \\\\\n"
+		"\\{ \\\\\n";
+    c_fix     = format;
+    c_fix_arg = "#define PTHREAD_ONCE_INIT \\\n"
+		"{{ \\\n";
+    test_text = "#define PTHREAD_ONCE_INIT \\\\\n"
+		"{ \\\\\n";
+};
+
+fix = {
+    hackname  = aix_once_init_2;
+    mach      = "*-*-aix*";
+    files     = "pthread.h";
+    select    = "[ \t]0 \\\\\n"
+		"\\}\n";
+    c_fix     = format;
+    c_fix_arg = "	0 \\\n"
+		"}}\n";
+    test_text = "	0 \\\\\n"
+		"}\n";
+};
+
+/*
  *  pthread.h on AIX 4.3.3 tries to define a macro without whitspace
  *  which violates a requirement of ISO C.
  */
