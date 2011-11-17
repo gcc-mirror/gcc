@@ -1163,11 +1163,11 @@ AC_DEFUN([AC_HEADER_STDCXX_11], [
     #include &lt;fstream&gt;
     #include &lt;functional&gt;
     #include &lt;future&gt;
+    #include &lt;initializer_list&gt;
     #include &lt;iomanip&gt;
     #include &lt;ios&gt;
     #include &lt;iosfwd&gt;
     #include &lt;iostream&gt;
-    #include &lt;initializer_list&gt;
     #include &lt;istream&gt;
     #include &lt;iterator&gt;
     #include &lt;limits&gt;

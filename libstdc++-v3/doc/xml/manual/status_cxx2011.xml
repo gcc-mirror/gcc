@@ -384,10 +384,12 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.3.2</entry>
       <entry>Class template <code>pair</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Piecewise construction requires an accessible copy/move
+             constructor.</entry>
     </row>
     <row>
       <entry>20.3.3</entry>
@@ -2136,8 +2138,9 @@ particular release.
       <entry>Iostreams base classes</entry>
       <entry>Partial</entry>
       <entry>
-        Missing move and swap operations on <code>basic_ios</code>. Missing
-       	<code>make_error_code</code> and <code>make_error_condition</code>.
+        Missing move and swap operations on <code>basic_ios</code>.
+        Missing <code>io_errc</code> and <code>iostream_category</code>.
+        <code>ios_base::failure</code> is not derived from <code>system_error</code>.
       </entry>
     </row>
     <row>
