@@ -4444,6 +4444,8 @@ alpha_split_compare_and_swap_12 (rtx operands[])
 
   mem = gen_rtx_MEM (DImode, align);
   MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
+  if (MEM_ALIAS_SET (orig_mem) == ALIAS_SET_MEMORY_BARRIER)
+    set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
 
   alpha_pre_atomic_barrier (mod_s);
 
@@ -4583,6 +4585,8 @@ alpha_split_atomic_exchange_12 (rtx operands[])
 
   mem = gen_rtx_MEM (DImode, align);
   MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
+  if (MEM_ALIAS_SET (orig_mem) == ALIAS_SET_MEMORY_BARRIER)
+    set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
 
   alpha_pre_atomic_barrier (model);
 
