@@ -1,3 +1,10 @@
+2011-11-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Status of piecewise construction
+	and ios_base::failure.
+	* doc/xml/manual/backwards_compatibility.xml: List headers in
+	alphabetical order.
+
 2011-11-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR libstdc++/51102
@@ -105,6 +112,12 @@
 	* include/profile/vector: Likewise.
 	(vector::push_back(_Tp&&)): Forward argument as rvalue.
 	* testsuite/23_containers/vector/debug/alloc_prop.cc: New.
+	* doc/xml/manual/status_cxx2011.xml: Clarify status of container
+	requirements with respect to allocators.
+	(status.iso.200x): Add anchor for old ID to preserve existing links.
+
+2011-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/status_cxx2011.xml: Clarify status of container
 	requirements with respect to allocators.
 	(status.iso.200x): Add anchor for old ID to preserve existing links.
