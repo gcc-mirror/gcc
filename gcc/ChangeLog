@@ -1,3 +1,10 @@
+2011-11-16  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_split_compare_and_swap_12): Copy
+	ALIAS_SET_MEMORY_BARRIER when creating a new memory.
+	(alpha_split_atomic_exchange_12): Likewise.
+	* config/rs6000/rs6000.c (rs6000_adjust_atomic_subword): Likewise.
+
 2011-11-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386elf.h (PREFERRED_DEBUGGING_TYPE): Remove.
