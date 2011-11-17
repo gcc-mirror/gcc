@@ -31,6 +31,7 @@ class twstring : public std::basic_string<wchar_t>
 public:
   twstring() : std::basic_string<wchar_t>() {}
   twstring(twstring&& s) : std::basic_string<wchar_t>(std::move(s)) {}
+  twstring& operator=(twstring&&) = default;
 };
 
 void test01()
