@@ -22,15 +22,6 @@
 # Call 'fail' if a given test printed "FAIL:", otherwise call 'pass'.
 
 proc simulate-thread { args } {
-
-    # ??? Exit immediately if this is alpha*-*-* target, single-stepping
-    # executable between ldl_l and stl_c insns in gdb breaks LL/SC chaining.
-    if { [istarget alpha*-*-*] } { return }
-    
-    # GNU gdb 6.3 on powerpc-darwin also  on these (and expect does not appear
-    # to be able to terminate them).
-    if { [istarget powerpc*-*-darwin*] } { return }
-
     if { ![isnative] || [is_remote target] } { return }
 
     if { [llength $args] == 1 } {
@@ -54,35 +45,39 @@ proc simulate-thread { args } {
 	return
     }
 
+    set message "(thread simulation test)"
+
     send_log "Spawning: $gdb_name -nx -nw -quiet -x $cmd_file ./$exec_file\n"
     set res [remote_spawn target "$gdb_name -nx -nw  -x $cmd_file ./$exec_file"]
     if { $res < 0 || $res == "" } {
-	unsupported "$testcase"
+	unsupported "$testcase $message"
 	return
     }
 
     set gdb_worked 0
-    remote_expect target [timeout_value] {
+
+    # Set timeout to 10 seconds due to huge amount of generated log.
+    remote_expect target 10 {
 	# Too old GDB
 	-re "Unhandled dwarf expression|Error in sourced command file" {
-	    unsupported "$testcase"
+	    unsupported "$testcase $message"
 	    remote_close target
 	    return
 	}
 	-re "FAIL:" {
-	    fail "$testcase"
+	    fail "$testcase $message"
 	    remote_close target
 	    return
 	}
-	# If the gdb output contained simulate_thread_main, assume
+	# If the gdb output contained simulate_thread_done, assume
 	# that at the very least, we had a working gdb that was able
-	# to break in simulate_thread_main.
-	-re "simulate_thread_main" {
+	# to break in simulate_thread_done.
+	-re "simulate_thread_done" {
 	    set gdb_worked 1
 	    exp_continue
 	}
 	timeout {
-	    unsupported "$testcase"
+	    fail "$testcase $message"
 	    remote_close target
 	    return
 	}
@@ -90,10 +85,10 @@ proc simulate-thread { args } {
 
     remote_close target
     if {$gdb_worked} {
-	pass "$testcase"
+	pass "$testcase $message"
     } else {
-	# Fail in the absence of a sane GDB.
-	fail "$testcase"
+	# Unsupported in the absence of a sane GDB.
+	unsupported "$testcase $message"
     }
     return
 }

@@ -1,3 +1,9 @@
+2011-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-simulate-thread.exp (simulate-thread): Run on all targets.
+	Look for simulate_thread_done to determine working gdb.  Reduce timeout
+	to 10 seconds and fail when timeout occurs.  Improve error messages.
+
 2011-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51137
@@ -11,8 +17,7 @@
 
 2011-11-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* lib/gcc-simulate-thread.exp (simulate-thread): Skip on
-	alpha*-*-*.
+	* lib/gcc-simulate-thread.exp (simulate-thread): Skip on alpha*-*-*.
 
 2011-10-16  Uros Bizjak  <ubizjak@gmail.com>
 
