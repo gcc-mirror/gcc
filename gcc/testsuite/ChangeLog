@@ -1,3 +1,8 @@
+2011-11-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gcc-simulate-thread.exp (simulate-thread): Skip on
+	alpha*-*-*.
+
 2011-10-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tm/memopt-6.c: Cleanup tmedge tree dump.
