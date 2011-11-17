@@ -304,8 +304,13 @@ build_base_path (enum tree_code code,
   virtual_access = (v_binfo && fixed_type_p <= 0);
 
   /* Don't bother with the calculations inside sizeof; they'll ICE if the
-     source type is incomplete and the pointer value doesn't matter.  */
-  if (cp_unevaluated_operand != 0)
+     source type is incomplete and the pointer value doesn't matter.  In a
+     template (even in fold_non_dependent_expr), we don't have vtables set
+     up properly yet, and the value doesn't matter there either; we're just
+     interested in the result of overload resolution.  */
+  if (cp_unevaluated_operand != 0
+      || (current_function_decl
+	  && uses_template_parms (current_function_decl)))
     {
       expr = build_nop (ptr_target_type, expr);
       if (!want_pointer)
@@ -358,11 +363,6 @@ build_base_path (enum tree_code code,
 	 from V_BINFO to BINFO, and the dynamic offset from D_BINFO to
 	 V_BINFO.  That offset is an entry in D_BINFO's vtable.  */
       tree v_offset;
-
-      /* In a constructor template, current_in_charge_parm isn't set,
-	 and we might end up here via fold_non_dependent_expr.  */
-      if (fixed_type_p < 0 && !(cfun && current_in_charge_parm))
-	fixed_type_p = 0;
 
       if (fixed_type_p < 0 && in_base_initializer)
 	{
