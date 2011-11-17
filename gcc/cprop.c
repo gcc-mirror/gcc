@@ -116,6 +116,11 @@ static struct hash_table_d set_hash_table;
 /* Array of implicit set patterns indexed by basic block index.  */
 static rtx *implicit_sets;
 
+/* Array of indexes of expressions for implicit set patterns indexed by basic
+   block index.  In other words, implicit_set_indexes[i] is the bitmap_index
+   of the expression whose RTX is implicit_sets[i].  */
+static int *implicit_set_indexes;
+
 /* Bitmap containing one bit for each register in the program.
    Used when performing GCSE to track which registers have been set since
    the start or end of the basic block while traversing that block.  */
@@ -177,10 +182,12 @@ hash_set (int regno, int hash_table_size)
 /* Insert assignment DEST:=SET from INSN in the hash table.
    DEST is a register and SET is a register or a suitable constant.
    If the assignment is already present in the table, record it as
-   the last occurrence in INSN's basic block.  */
+   the last occurrence in INSN's basic block.
+   IMPLICIT is true if it's an implicit set, false otherwise.  */
 
 static void
-insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table)
+insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table,
+		     bool implicit)
 {
   bool found = false;
   unsigned int hash;
@@ -243,6 +250,10 @@ insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table)
       cur_occr->next = cur_expr->avail_occr;
       cur_expr->avail_occr = cur_occr;
     }
+
+  /* Record bitmap_index of the implicit set in implicit_set_indexes.  */
+  if (implicit)
+    implicit_set_indexes[BLOCK_FOR_INSN(insn)->index] = cur_expr->bitmap_index;
 }
 
 /* Determine whether the rtx X should be treated as a constant for CPROP.
@@ -255,10 +266,11 @@ cprop_constant_p (const_rtx x)
   return CONSTANT_P (x) && (GET_CODE (x) != CONST || shared_const_p (x));
 }
 
-/* Scan SET present in INSN and add an entry to the hash TABLE.  */
+/* Scan SET present in INSN and add an entry to the hash TABLE.
+   IMPLICIT is true if it's an implicit set, false otherwise.  */
 
 static void
-hash_scan_set (rtx set, rtx insn, struct hash_table_d *table)
+hash_scan_set (rtx set, rtx insn, struct hash_table_d *table, bool implicit)
 {
   rtx src = SET_SRC (set);
   rtx dest = SET_DEST (set);
@@ -294,7 +306,7 @@ hash_scan_set (rtx set, rtx insn, struct hash_table_d *table)
 	   && ! HARD_REGISTER_P (src)
 	   && reg_available_p (src, insn))
 	  || cprop_constant_p (src))
-	insert_set_in_table (dest, src, insn, table);
+	insert_set_in_table (dest, src, insn, table, implicit);
     }
 }
 
@@ -310,14 +322,14 @@ hash_scan_insn (rtx insn, struct hash_table_d *table)
      what's been modified.  */
 
   if (GET_CODE (pat) == SET)
-    hash_scan_set (pat, insn, table);
+    hash_scan_set (pat, insn, table, false);
   else if (GET_CODE (pat) == PARALLEL)
     for (i = 0; i < XVECLEN (pat, 0); i++)
       {
 	rtx x = XVECEXP (pat, 0, i);
 
 	if (GET_CODE (x) == SET)
-	  hash_scan_set (x, insn, table);
+	  hash_scan_set (x, insn, table, false);
       }
 }
 
@@ -421,7 +433,7 @@ compute_hash_table_work (struct hash_table_d *table)
       /* Insert implicit sets in the hash table, pretending they appear as
 	 insns at the head of the basic block.  */
       if (implicit_sets[bb->index] != NULL_RTX)
-	hash_scan_set (implicit_sets[bb->index], BB_HEAD (bb), table);
+	hash_scan_set (implicit_sets[bb->index], BB_HEAD (bb), table, true);
     }
 
   FREE_REG_SET (reg_set_bitmap);
@@ -633,8 +645,22 @@ compute_local_properties (sbitmap *kill, sbitmap *comp,
 static void
 compute_cprop_data (void)
 {
+  basic_block bb;
+
   compute_local_properties (cprop_kill, cprop_avloc, &set_hash_table);
   compute_available (cprop_avloc, cprop_kill, cprop_avout, cprop_avin);
+
+  /* Merge implicit sets into CPROP_AVIN.  They are always available at the
+     entry of their basic block.  We need to do this because 1) implicit sets
+     aren't recorded for the local pass so they cannot be propagated within
+     their basic block by this pass and 2) the global pass would otherwise
+     propagate them only in the successors of their basic block.  */
+  FOR_EACH_BB (bb)
+    {
+      int index = implicit_set_indexes[bb->index];
+      if (index != -1)
+	SET_BIT (cprop_avin[bb->index], index);
+    }
 }
 
 /* Copy/constant propagation.  */
@@ -1727,6 +1753,7 @@ is_too_expensive (const char *pass)
 static int
 one_cprop_pass (void)
 {
+  int i;
   int changed = 0;
 
   /* Return if there's nothing to do, or it is too expensive.  */
@@ -1774,6 +1801,11 @@ one_cprop_pass (void)
   if (changed)
     df_analyze ();
 
+  /* Initialize implicit_set_indexes array.  */
+  implicit_set_indexes = XNEWVEC (int, last_basic_block);
+  for (i = 0; i < last_basic_block; i++)
+    implicit_set_indexes[i] = -1;
+
   alloc_hash_table (&set_hash_table);
   compute_hash_table (&set_hash_table);
 
@@ -1790,6 +1822,9 @@ one_cprop_pass (void)
 
       alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
       compute_cprop_data ();
+
+      free (implicit_set_indexes);
+      implicit_set_indexes = NULL;
 
       /* Allocate vars to track sets of regs.  */
       reg_set_bitmap = ALLOC_REG_SET (NULL);
@@ -1819,6 +1854,11 @@ one_cprop_pass (void)
 
       FREE_REG_SET (reg_set_bitmap);
       free_cprop_mem ();
+    }
+  else
+    {
+      free (implicit_set_indexes);
+      implicit_set_indexes = NULL;
     }
 
   free_hash_table (&set_hash_table);
