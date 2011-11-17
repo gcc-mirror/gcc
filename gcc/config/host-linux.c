@@ -86,6 +86,10 @@
 # define TRY_EMPTY_VM_SPACE	0x40000000
 #elif defined(__ARM_EABI__)
 # define TRY_EMPTY_VM_SPACE     0x60000000
+#elif defined(__mips__) && defined(__LP64__)
+# define TRY_EMPTY_VM_SPACE	0x8000000000
+#elif defined(__mips__)
+# define TRY_EMPTY_VM_SPACE	0x60000000
 #else
 # define TRY_EMPTY_VM_SPACE	0
 #endif
