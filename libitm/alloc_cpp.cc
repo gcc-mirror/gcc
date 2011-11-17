@@ -61,11 +61,15 @@ extern void *_ZnaXRKSt9nothrow_t (size_t, c_nothrow_p) __attribute__((weak));
 extern void _ZdaPvRKSt9nothrow_t (void *, c_nothrow_p) __attribute__((weak));
 
 #ifdef __osf__ /* Really: !HAVE_WEAKDEF  */
-void *
-_ZnaXRKSt9nothrow_t (size_t, c_nothrow_p)
-{
-  return NULL;
-}
+void *_ZnwX (size_t) { return NULL; }
+void _ZdlPv (void *) { return; }
+void *_ZnaX (size_t) { return NULL; }
+void _ZdaPv (void *) { return; }
+
+void *_ZnwXRKSt9nothrow_t (size_t, c_nothrow_p) { return NULL; }
+void _ZdlPvRKSt9nothrow_t (void *, c_nothrow_p) { return; }
+void *_ZnaXRKSt9nothrow_t (size_t, c_nothrow_p) { return NULL; }
+void _ZdaPvRKSt9nothrow_t (void *, c_nothrow_p) { return; }
 #endif /* __osf__ */
 
 /* Wrap the delete nothrow symbols for usage with a single argument.

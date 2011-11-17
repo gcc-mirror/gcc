@@ -1,3 +1,11 @@
+2011-11-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* alloc_cpp.cc [__osf__] (_ZnwX, _ZdlPv, _ZnaX, _ZdaPv,
+	_ZnwXRKSt9nothrow_t, _ZdlPvRKSt9nothrow_t, _ZdaPvRKSt9nothrow_t):
+	Dummy functions.
+	* eh_cpp.cc [__osf__] (__cxa_allocate_exception, __cxa_throw,
+	__cxa_begin_catch, __cxa_end_catch, __cxa_tm_cleanup): Likewise.
+
 2011-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/51098
