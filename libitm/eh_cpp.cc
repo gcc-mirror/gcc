@@ -39,6 +39,14 @@ extern void *__cxa_begin_catch (void *) WEAK;
 extern void *__cxa_end_catch (void) WEAK;
 extern void __cxa_tm_cleanup (void *, void *, unsigned int) WEAK;
 
+#ifdef __osf__ /* Really: !HAVE_WEAKDEF  */
+void *__cxa_allocate_exception (size_t) { return NULL; }
+void __cxa_throw (void *, void *, void *) { return; }
+void *__cxa_begin_catch (void *) { return NULL; }
+void *__cxa_end_catch (void) { return NULL; }
+void __cxa_tm_cleanup (void *, void *, unsigned int) { return; }
+#endif
+
 }
 
 
