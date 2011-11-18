@@ -63,10 +63,11 @@
        (match_test "!avr_mem_pgm_p (op)")))
 
 ;; Return 1 if OP is an "ordinary" general operand, i.e. a general
-;; operand whose load is not handled by a libgcc call.
+;; operand whose load is not handled by a libgcc call or ELPM.
 (define_predicate "nox_general_operand"
   (and (match_operand 0 "general_operand")
-       (match_test "!avr_load_libgcc_p (op)")))
+       (not (match_test "avr_load_libgcc_p (op)"))
+       (not (match_test "avr_mem_pgmx_p (op)"))))
 
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"

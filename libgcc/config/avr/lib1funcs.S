@@ -1227,6 +1227,73 @@ ENDF __load_4
 
 #endif /* L_load_3 || L_load_3 */
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Loading n bytes from Flash; n = 2,3,4
+;; R22... = Flash[R21:Z]
+;; Clobbers: __tmp_reg__, R21, R30, R31
+
+#if (defined (L_xload_2)            \
+     || defined (L_xload_3)         \
+     || defined (L_xload_4))        \
+    && defined (__AVR_HAVE_ELPM__)  \
+    && !defined (__AVR_HAVE_ELPMX__)
+
+#if !defined (__AVR_HAVE_RAMPZ__)
+#error Need RAMPZ
+#endif /* have RAMPZ */
+
+;; Destination
+#define D0  22
+#define D1  D0+1
+#define D2  D0+2
+#define D3  D0+3
+
+;; Register containing bits 16+ of the address
+
+#define HHI8  21
+
+.macro  .xload dest, n
+    elpm
+    mov     \dest, r0
+.if \dest != D0+\n-1
+    adiw    r30, 1
+    adc     HHI8, __zero_reg__
+    out     __RAMPZ__, HHI8
+.endif
+.endm
+
+#if defined (L_xload_2)
+DEFUN __xload_2
+    out     __RAMPZ__, HHI8
+    .xload D0, 2
+    .xload D1, 2
+    ret
+ENDF __xload_2
+#endif /* L_xload_2 */
+
+#if defined (L_xload_3)
+DEFUN __xload_3
+    out     __RAMPZ__, HHI8
+    .xload D0, 3
+    .xload D1, 3
+    .xload D2, 3
+    ret
+ENDF __xload_3
+#endif /* L_xload_3 */
+
+#if defined (L_xload_4)
+DEFUN __xload_4
+    out     __RAMPZ__, HHI8
+    .xload D0, 4
+    .xload D1, 4
+    .xload D2, 4
+    .xload D3, 4
+    ret
+ENDF __xload_4
+#endif /* L_xload_4 */
+
+#endif /* L_xload_{2|3|4} && ELPM */
+
 
 .section .text.libgcc.builtins, "ax", @progbits
 

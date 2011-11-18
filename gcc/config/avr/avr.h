@@ -54,6 +54,9 @@ struct base_arch_s {
   /* Default start of data section address for architecture.  */
   int default_data_section_start;
 
+  /* Number of 64k segments in the flash.  */
+  int n_segments;
+
   const char *const macro;
   
   /* Architecture name.  */
@@ -131,6 +134,8 @@ extern const struct base_arch_s avr_arch_types[];
 #define AVR_HAVE_MUL (avr_current_arch->have_mul)
 #define AVR_HAVE_MOVW (avr_current_arch->have_movw_lpmx)
 #define AVR_HAVE_LPMX (avr_current_arch->have_movw_lpmx)
+#define AVR_HAVE_ELPM (avr_current_arch->have_elpm)
+#define AVR_HAVE_ELPMX (avr_current_arch->have_elpmx)
 #define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm)
 #define AVR_HAVE_EIJMP_EICALL (avr_current_arch->have_eijmp_eicall)
 #define AVR_HAVE_8BIT_SP (avr_current_device->short_sp || TARGET_TINY_STACK)
@@ -393,6 +398,12 @@ typedef struct avr_args {
 
 
 #define ADDR_SPACE_PGM  1
+#define ADDR_SPACE_PGM1 2
+#define ADDR_SPACE_PGM2 3
+#define ADDR_SPACE_PGM3 4
+#define ADDR_SPACE_PGM4 5
+#define ADDR_SPACE_PGM5 6
+#define ADDR_SPACE_PGMX 7
 
 #define REGISTER_TARGET_PRAGMAS()                                       \
   do {                                                                  \
@@ -645,3 +656,5 @@ struct GTY(()) machine_function
 #define PUSH_ROUNDING(X)	(X)
 
 #define ACCUMULATE_OUTGOING_ARGS avr_accumulate_outgoing_args()
+
+#define INIT_EXPANDERS avr_init_expanders()

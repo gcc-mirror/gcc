@@ -1,3 +1,71 @@
+2011-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* config/avr/avr.h (base_arch_s): Add field n_segments.
+	(ADDR_SPACE_PGM1, ADDR_SPACE_PGM2, ADDR_SPACE_PGM3,
+	ADDR_SPACE_PGM4, ADDR_SPACE_PGM5, ADDR_SPACE_PGMX): New address spaces.
+	(AVR_HAVE_ELPM, AVR_HAVE_ELPMX): New defines.
+	(INIT_EXPANDERS): New define.
+	* config/avr/avr-protos.h (avr_mem_pgmx_p): New.
+	(avr_init_expanders): New.
+	(avr_emit_movmemhi, avr_out_movmem): New.
+	(avr_xload_libgcc_p): New.
+	* config/avr/avr-c.c (avr_register_target_pragmas): Register
+	address spaces __pgm1, __pgm2,  __pgm3,  __pgm4  __pgm5,  __pgmx.
+	(avr_cpu_cpp_builtins): Add built-in defines __PGM1,
+	__PGM2, __PGM3, __PGM4, __PGM5, __PGMX.
+	* config/avr/avr-devices.c (avr_arch_types): Set field n_segments.
+
+	* config/avr/avr.c (AVR_SECTION_PROGMEM): Change define to cover
+	3 bits instead of just 1.
+	(xstring_empty, xstring_e, rampz_rtx): New static GTYed variables.
+	(progmem_section): Change from section to array of sections.
+	(progmem_section_prefix): New static variable.
+	(avr_file_start): Print set for __RAMPZ__
+	(avr_option_override): Move initialization of RTXes from here...
+	(avr_init_expanders): ...to this new function.
+	(avr_pgm_segment): New static function.
+	(avr_decl_pgm_p): Handle error_mark_node.
+	(avr_mem_pgmx_p, avr_decl_pgmx_p): New static functions.
+	(avr_out_xload,	avr_find_unused_d_reg): New static functions.
+	(expand_prologue, expand_epilogue): Use rampz_rtx.
+	(print_operand): Hande CONST_STRING.
+	(avr_xload_libgcc_p): New static function.
+	(avr_out_lpm_no_lpmx, avr_out_lpm): Handle ELPM.
+	(avr_progmem_p): Return 2 for 24-bit flash address space.
+	(avr_out_sbxx_branch): Clean-up code from ASn macros.
+	(out_movqi_r_mr, out_movqi_mr_r): Ditto. And recognize RAMPZ's
+	address and print symbolically.
+	(avr_asm_named_section, avr_section_type_flags,
+	avr_encode_section_info, avr_asm_select_section,
+	avr_addr_space_address_mode, avr_addr_space_pointer_mode,
+	avr_addr_space_legitimate_address_p, avr_addr_space_convert,
+	avr_addr_space_legitimize_address): Handle new address spaces.
+	(avr_output_progmem_section_asm_op): New static function.
+	(avr_asm_init_sections): Initialize progmem_section[].
+	(adjust_insn_length): Handle ADJUST_LEN_XLOAD, ADJUST_LEN_MOVMEM.
+	(avr_const_address_lo16): New static function.
+	(avr_assemble_integer): Use it to handle 3-byte integers.
+	(avr_emit_movmemhi, avr_out_movmem): New functions.
+	
+	* config/avr/predicates.md (nox_general_operand): Handle new
+	address spaces.
+	* config/avr/avr.md (unspec): Add UNSPEC_MOVMEM.
+	(adjust_len): Add xload, movmem.
+	(SP_ADDR): New define_constants.
+	(isa): Add "lpm", "lpmx", "elpm", "elpmx".
+	(enabled): Handle them.
+	(load<mode>_libgcc): New expander.
+	(*load.<mode>.libgcc): Rename to load_<mode>_libgcc.
+	(xload8_A, xload<mode>_A): New insn-and-splits.
+	(xload_8, xload_<mode>_libgcc, xload_<mode>, loadmem_elpm): New insns.
+	(mov<mode>): Handle new address spaces.
+	(movmemhi): Rewrite using avr_emit_movmemhi.
+	(MOVMEM_r_d): New mode attribute.
+	(movmem_<mode>, movmem_qi_elpm): New insns.
+	(setmemhi, *clrmemqi, *clrmemhi, strlenhi, *strlenhi): Unquote
+	C-code.  Use label instead of hard-coded instrunction lengths.
+
 2011-11-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50605
