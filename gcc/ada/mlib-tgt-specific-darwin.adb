@@ -36,8 +36,6 @@ package body MLib.Tgt.Specific is
 
    --  Non default subprograms
 
-   function Archive_Indexer_Options return String_List_Access;
-
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
       Options      : Argument_List;
@@ -61,15 +59,6 @@ package body MLib.Tgt.Specific is
 
    Shared_Options : constant Argument_List :=
                       (1 => Shared_Libgcc'Access);
-
-   -----------------------------
-   -- Archive_Indexer_Options --
-   -----------------------------
-
-   function Archive_Indexer_Options return String_List_Access is
-   begin
-      return new String_List'(1 => new String'("-c"));
-   end Archive_Indexer_Options;
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -175,7 +164,6 @@ package body MLib.Tgt.Specific is
    end Is_Archive_Ext;
 
 begin
-   Archive_Indexer_Options_Ptr := Archive_Indexer_Options'Access;
    Build_Dynamic_Library_Ptr := Build_Dynamic_Library'Access;
    DLL_Ext_Ptr := DLL_Ext'Access;
    Dynamic_Option_Ptr := Dynamic_Option'Access;
