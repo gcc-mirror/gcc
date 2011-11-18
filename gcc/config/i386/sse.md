@@ -573,15 +573,15 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "sse2_movntsi"
-  [(set (match_operand:SI 0 "memory_operand" "=m")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "r")]
-		   UNSPEC_MOVNT))]
+(define_insn "sse2_movnti<mode>"
+  [(set (match_operand:SWI48 0 "memory_operand" "=m")
+	(unspec:SWI48 [(match_operand:SWI48 1 "register_operand" "r")]
+		      UNSPEC_MOVNTI))]
   "TARGET_SSE2"
   "movnti\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_data16" "0")
-   (set_attr "mode" "V2DF")])
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "<sse>_movnt<mode>"
   [(set (match_operand:VF 0 "memory_operand" "=m")
