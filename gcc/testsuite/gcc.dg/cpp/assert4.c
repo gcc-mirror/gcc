@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2006, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2003, 2006, 2008, 2009, 2011 Free Software Foundation, Inc.
    Test builtin preprocessor assertions.
    By Kaveh Ghazi <ghazi@caip.rutgers.edu>.  */
 
@@ -7,7 +7,7 @@
 
 /* Check for #system assertions.  */
 
-#if defined __gnu_linux__
+#if defined __linux__
 # if !#system(linux) || !#system(unix) || !#system(posix)
 #  error
 # endif
