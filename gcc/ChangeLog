@@ -1,3 +1,20 @@
+2011-11-17  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/51134
+	* i386.c (atom_cost): Fix 32bit memset description.
+	(expand_set_or_movmem_via_loop_with_iter): Output proper bounds check for epilogue loops.
+	(expand_movmem_epilogue): Handle epilogues up to size 15 w/o producing byte loop.
+	(decide_alg): sse_loop is not useable wthen SSE2 is disabled; when not optimizing always
+	use rep movsb or lincall; do not produce word sized loops when optimizing memset for
+	size (to avoid need for large constants).
+	(ix86_expand_movmem): Get into sync with ix86_expand_setmem; choose unroll factors
+	better; always do 128bit moves when producing SSE loops; do not produce loopy epilogue
+	when size is too small.
+	(promote_duplicated_reg_to_size): Do not look into desired alignments when
+	doing vector expansion.
+	(ix86_expand_setmem): Track better when promoted value is available; choose unroll factors
+	more sanely.; output loopy epilogue only when needed.
+
 2011-11-17  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/51144
