@@ -2870,7 +2870,7 @@ primary_template_instantiation_p (const_tree t)
     return DECL_LANG_SPECIFIC (t)
 	   && DECL_TEMPLATE_INSTANTIATION (t)
 	   && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t));
-  else if (CLASS_TYPE_P (t))
+  else if (CLASS_TYPE_P (t) && !TYPE_DECL_ALIAS_P (TYPE_NAME (t)))
     return CLASSTYPE_TEMPLATE_INSTANTIATION (t)
 	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t));
   else if (TYPE_P (t)
