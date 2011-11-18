@@ -1,3 +1,11 @@
+2011-11-18  Harti Brandt  <hartmut.brandt@dlr.de>
+
+	PR libstdc++/51209
+	* include/bits/hashtable.h (_Hashtable<>::_M_find_node): Return
+	nullptr when no node is found.
+	* include/tr1/hashtable.h (_Hashtable<>::_M_find_node): Return
+	zero when no node is found.
+
 2011-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/hash-long-double-aux.cc: Rename to...

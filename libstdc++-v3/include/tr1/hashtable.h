@@ -813,7 +813,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // Find the node whose key compares equal to k, beginning the search
-  // at p (usually the head of a bucket).  Return nil if no node is found.
+  // at p (usually the head of a bucket).  Return zero if no node is found.
   template<typename _Key, typename _Value,
 	   typename _Allocator, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
@@ -829,7 +829,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (; __p; __p = __p->_M_next)
 	if (this->_M_compare(__k, __code, __p))
 	  return __p;
-      return false;
+      return 0;
     }
 
   // Insert v in bucket n (assumes no element with its key already present).
