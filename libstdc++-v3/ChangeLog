@@ -1,3 +1,8 @@
+2011-11-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/30_threads/thread/native_handle/typesizes.cc: Do not run
+	on darwin.
+
 2011-11-17  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/21_strings/basic_string/cons/char/moveable2.cc
