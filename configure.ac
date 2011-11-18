@@ -2428,10 +2428,6 @@ case "${target}" in
     extra_arflags_for_target=" -X32_64"
     extra_nmflags_for_target=" -B -X32_64"
     ;;
-  *-*-darwin[[3-9]]*)
-    # ranlib before Darwin10 requires the -c flag to look at common symbols.
-    extra_ranlibflags_for_target=" -c"
-    ;;
   mips*-*-pe | sh*-*-pe | *arm-wince-pe)
     target_makefile_frag="config/mt-wince"
     ;;

@@ -807,17 +807,7 @@ esac
 gcc_AC_PROG_LN_S
 ACX_PROG_LN($LN_S)
 AC_PROG_RANLIB
-case "${host}" in
-*-*-darwin*)
-  # By default, the Darwin ranlib will not treat common symbols as
-  # definitions when  building the archive table of contents.  Other 
-  # ranlibs do that; pass an option to the Darwin ranlib that makes
-  # it behave similarly.
-  ranlib_flags="-c" 
-  ;;
-*)
-  ranlib_flags=""
-esac
+ranlib_flags=""
 AC_SUBST(ranlib_flags)
      
 gcc_AC_PROG_INSTALL
