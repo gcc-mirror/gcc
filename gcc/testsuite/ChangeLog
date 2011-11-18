@@ -1,3 +1,8 @@
+2011-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51150
+	* g++.dg/cpp0x/pr51150.C: New.
+
 2011-11-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50605
@@ -16,7 +21,7 @@
 
 2011-11-17  Andrew MacLeod  <amacleod@redhat.com>
 
-	* gcc.dg/atomic-generic-aux.c (__atomic_compare_exchange): Fail if 
+	* gcc.dg/atomic-generic-aux.c (__atomic_compare_exchange): Fail if
 	memory model parameters don't match expected values.
 	* gcc.dg/atomic-generic.c: Pass specific memory model parameters to
 	__atomic_compare_exchange.
