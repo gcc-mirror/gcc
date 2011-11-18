@@ -1,6 +1,6 @@
 2011-11-18  Fabien Chêne  <fabien@gcc.gnu.org>
 
-	PR c++/51141
+	PR c++/51188
 	* g++.dg/lookup/using46.C: New.
 	* g++.dg/lookup/using47.C: New.
 	* g++.dg/lookup/using48.C: New.
