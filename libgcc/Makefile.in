@@ -827,9 +827,10 @@ include $(iterator)
 
 endif
 
-# Build LIBUNWIND.
+# Build LIBUNWIND. Use -fno-exceptions so that the unwind library does
+# not generate calls to __gcc_personality_v0.
 
-c_flags := -fexceptions
+c_flags := -fno-exceptions
 
 libunwind-objects += $(addsuffix $(objext),$(basename $(notdir $(LIBUNWIND))))
 
