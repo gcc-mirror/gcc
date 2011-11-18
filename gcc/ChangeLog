@@ -1,3 +1,23 @@
+2011-11-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/33944
+	* doc/extend.texi: Document __builtin_ia32_movnti64.
+
+	* config/i386/emmintrin.h (_mm_stream_si64): New.
+
+	* config/i386/i386-builtin-types.def: Add VOID_FTYPE_PLONGLONG_LONGLONG.
+
+	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_MOVNTI64.
+	(bdesc_special_args): Update __builtin_ia32_movnti.  Add
+	__builtin_ia32_movnti64.
+	(ix86_expand_special_args_builtin): Handle
+	VOID_FTYPE_PLONGLONG_LONGLONG.
+
+	* config/i386/i386.md (UNSPEC_MOVNTI): New.
+
+	* config/i386/sse.md (sse2_movntsi): Renamed to ...
+	(sse2_movnti<mode>): This.
+
 2011-11-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868
