@@ -712,12 +712,6 @@ struct cum_args {int regs;};
   && (REGNO) < CRIS_FIRST_ARG_REG + (CRIS_MAX_ARGS_IN_REGS))
 
 
-/* Node: Scalar Return */
-
-#define FUNCTION_VALUE_REGNO_P(N) cris_function_value_regno_p (N)
-
-
-
 /* Node: Aggregate Return */
 
 #define CRIS_STRUCT_VALUE_REGNUM ((CRIS_FIRST_ARG_REG) - 1)

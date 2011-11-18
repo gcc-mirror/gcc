@@ -153,6 +153,7 @@ static void cris_trampoline_init (rtx, tree, rtx);
 
 static rtx cris_function_value(const_tree, const_tree, bool);
 static rtx cris_libcall_value (enum machine_mode, const_rtx);
+static bool cris_function_value_regno_p (const unsigned int);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
@@ -252,6 +253,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_FUNCTION_VALUE cris_function_value
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE cris_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P cris_function_value_regno_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3931,7 +3934,7 @@ cris_libcall_value (enum machine_mode mode,
 /* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
    time being.  */
 
-bool
+static bool
 cris_function_value_regno_p (const unsigned int regno)
 {
   return (regno == CRIS_FIRST_ARG_REG);
