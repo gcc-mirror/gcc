@@ -1,3 +1,8 @@
+2011-11-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50605
+	* g++.dg/ipa/pr50605.C: New test.
+
 2011-11-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51191

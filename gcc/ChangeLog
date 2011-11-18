@@ -1,3 +1,9 @@
+2011-11-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50605
+	* gimple.c (is_gimple_ip_invariant_address): Also handle MEM_REFs
+	of IPA invariant decls.
+
 2011-11-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* tree-outof-ssa.c (insert_back_edge_copies):  Add call to

@@ -2858,8 +2858,18 @@ is_gimple_ip_invariant_address (const_tree t)
     return false;
 
   op = strip_invariant_refs (TREE_OPERAND (t, 0));
+  if (!op)
+    return false;
 
-  return op && (CONSTANT_CLASS_P (op) || decl_address_ip_invariant_p (op));
+  if (TREE_CODE (op) == MEM_REF)
+    {
+      const_tree op0 = TREE_OPERAND (op, 0);
+      return (TREE_CODE (op0) == ADDR_EXPR
+	      && (CONSTANT_CLASS_P (TREE_OPERAND (op0, 0))
+		  || decl_address_ip_invariant_p (TREE_OPERAND (op0, 0))));
+    }
+
+  return CONSTANT_CLASS_P (op) || decl_address_ip_invariant_p (op);
 }
 
 /* Return true if T is a GIMPLE minimal invariant.  It's a restricted
