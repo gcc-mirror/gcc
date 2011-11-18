@@ -1,3 +1,7 @@
+2011-11-18  Steve Ellcey  <sje@cup.hp.com>
+
+	* Makefile.in (c_flags): Set to -fno-exceptions to build libunwind.
+
 2011-11-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868
