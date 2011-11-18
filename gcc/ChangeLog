@@ -1,3 +1,10 @@
+2011-11-18  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/cris/cris.c (cris_function_value_regno_p): Make static.
+	(TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	* config/cris/cris.h (FUNCTION_VALUE_REGNO_P): Remove.
+	* config/cris/cris-protos.h (cris_function_value_regno_p): Remove.
+
 2011-11-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/33944

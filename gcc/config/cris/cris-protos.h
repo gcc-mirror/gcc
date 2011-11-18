@@ -65,5 +65,3 @@ extern int cris_fatal (char *);
 extern int cris_initial_elimination_offset (int, int);
 
 extern void cris_init_expanders (void);
-
-extern bool cris_function_value_regno_p (const unsigned int);
