@@ -14157,7 +14157,8 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx, htab_t ht)
 	}
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
-  fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
   if (TREE_CODE_CLASS (code) != tcc_type
       && TREE_CODE_CLASS (code) != tcc_declaration
       && code != TREE_LIST
