@@ -7597,17 +7597,7 @@ else
   RANLIB="$ac_cv_prog_RANLIB"
 fi
 
-case "${host}" in
-*-*-darwin*)
-  # By default, the Darwin ranlib will not treat common symbols as
-  # definitions when  building the archive table of contents.  Other
-  # ranlibs do that; pass an option to the Darwin ranlib that makes
-  # it behave similarly.
-  ranlib_flags="-c"
-  ;;
-*)
-  ranlib_flags=""
-esac
+ranlib_flags=""
 
 
 # Find a good install program.  We prefer a C program (faster),
@@ -18087,7 +18077,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18090 "configure"
+#line 18080 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18193,7 +18183,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18196 "configure"
+#line 18186 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
