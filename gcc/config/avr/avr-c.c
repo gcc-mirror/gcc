@@ -37,6 +37,12 @@ void
 avr_register_target_pragmas (void)
 {
   c_register_addr_space ("__pgm", ADDR_SPACE_PGM);
+  c_register_addr_space ("__pgm1", ADDR_SPACE_PGM1);
+  c_register_addr_space ("__pgm2", ADDR_SPACE_PGM2);
+  c_register_addr_space ("__pgm3", ADDR_SPACE_PGM3);
+  c_register_addr_space ("__pgm4", ADDR_SPACE_PGM4);
+  c_register_addr_space ("__pgm5", ADDR_SPACE_PGM5);
+  c_register_addr_space ("__pgmx", ADDR_SPACE_PGMX);
 }
 
 
@@ -109,6 +115,12 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (!strcmp (lang_hooks.name, "GNU C"))
     {
       cpp_define (pfile, "__PGM=__pgm");
+      cpp_define (pfile, "__PGM1=__pgm1");
+      cpp_define (pfile, "__PGM2=__pgm2");
+      cpp_define (pfile, "__PGM3=__pgm3");
+      cpp_define (pfile, "__PGM4=__pgm4");
+      cpp_define (pfile, "__PGM5=__pgm5");
+      cpp_define (pfile, "__PGMX=__pgmx");
     }
 
   /* Define builtin macros so that the user can

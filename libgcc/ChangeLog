@@ -1,3 +1,10 @@
+2011-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _xload_2 _xload_3 _xload_4.
+	* config/avr/lib1funcs.S (__xload_2, __xload_3, __xload_4):
+	New functions.
+
 2011-11-16  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/lib1funcs.asm (udivsi3): Add support for divide
