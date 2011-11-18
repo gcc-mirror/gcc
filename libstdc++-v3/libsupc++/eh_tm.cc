@@ -45,7 +45,9 @@ free_any_cxa_exception (_Unwind_Exception *eo)
       __cxa_free_dependent_exception (dep);
     }
 
+#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
   if (__sync_sub_and_fetch (&h->referenceCount, 1) == 0)
+#endif
     __cxa_free_exception (h + 1);
 }
 

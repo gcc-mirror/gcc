@@ -1,3 +1,9 @@
+2011-11-17  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/51181
+	* libsupc++/eh_tm.cc (free_any_cxa_exception): Protect the use
+	of __sync_sub_and_fetch with _GLIBCXX_ATOMIC_BUILTINS_4.
+
 2011-11-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/30_threads/thread/native_handle/typesizes.cc: Do not run
