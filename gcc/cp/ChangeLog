@@ -1,3 +1,9 @@
+2011-11-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51191
+	* pt.c (primary_template_instantiation_p): Don't forget to
+	consider alias declarations.
+
 2011-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51186
