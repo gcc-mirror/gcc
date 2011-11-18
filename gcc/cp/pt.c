@@ -12707,6 +12707,10 @@ tsubst_copy_and_build (tree t,
       return build_x_unary_op (TREE_CODE (t), RECUR (TREE_OPERAND (t, 0)),
                                complain);
 
+    case FIX_TRUNC_EXPR:
+      return cp_build_unary_op (FIX_TRUNC_EXPR, RECUR (TREE_OPERAND (t, 0)),
+				0, complain);
+
     case ADDR_EXPR:
       op1 = TREE_OPERAND (t, 0);
       if (TREE_CODE (op1) == LABEL_DECL)

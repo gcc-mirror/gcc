@@ -1,3 +1,8 @@
+2011-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51150
+	* pt.c (tsubst_copy_and_build): Handle FIX_TRUNC_EXPR.
+
 2011-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50870
