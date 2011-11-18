@@ -1,3 +1,11 @@
+2011-11-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/generic/asmcfi.h: Fix comment.
+	* config/x86/sjlj.S (_ITM_beginTransaction): Provide ELF PIC code
+	sequence without .hidden support, error for non-ELF targets.
+	(GTM_longjmp) [__ELF__]: Only use .hidden if
+	HAVE_ATTRIBUTE_VISIBILITY.
+
 2011-11-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* alloc_cpp.cc [__osf__] (_ZnwX, _ZdlPv, _ZnaX, _ZdaPv,

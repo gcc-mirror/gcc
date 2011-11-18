@@ -60,7 +60,17 @@ _ITM_beginTransaction:
 	movl	%edi, 20(%esp)
 	movl	%ebp, 24(%esp)
 	leal	8(%esp), %edx
+#if defined HAVE_ATTRIBUTE_VISIBILITY || !defined __PIC__
 	call	GTM_begin_transaction
+#elif defined __ELF__
+	call	1f
+1:	popl	%ebx
+	addl	$_GLOBAL_OFFSET_TABLE_+[.-1b], %ebx
+	call	GTM_begin_transaction@PLT
+	movl	12(%esp), %ebx
+#else
+# error "Unsupported PIC sequence"
+#endif
 	addl	$28, %esp
 	cfi_def_cfa_offset(4)
 	ret
@@ -108,7 +118,9 @@ GTM_longjmp:
 
 #ifdef __ELF__
 	.type	GTM_longjmp, @function
+#ifdef HAVE_ATTRIBUTE_VISIBILITY
 	.hidden	GTM_longjmp
+#endif
 	.size	GTM_longjmp, .-GTM_longjmp
 #endif
 
