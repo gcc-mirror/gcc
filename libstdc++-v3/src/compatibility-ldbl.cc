@@ -1,6 +1,6 @@
 // Compatibility symbols for -mlong-double-64 compatibility -*- C++ -*-
 
-// Copyright (C) 2006, 2008, 2009, 2010
+// Copyright (C) 2006, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -69,14 +69,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 // For std::tr1::hash<long double>::operator()
 #define _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-  namespace tr1 
-  {
-#include "hash-long-double-aux.cc"
-  }
-}
+#include "hash-long-double-tr1-aux.cc"
 
 // std::tr1::hash<long double>::operator()
 // and std::hash<long double>::operator()

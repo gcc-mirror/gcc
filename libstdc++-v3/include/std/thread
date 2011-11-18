@@ -221,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __hash_base<size_t, thread::id>
     {
       size_t
-      operator()(const thread::id& __id) const
+      operator()(const thread::id& __id) const noexcept
       { return std::_Hash_impl::hash(__id._M_thread); }
     };
 

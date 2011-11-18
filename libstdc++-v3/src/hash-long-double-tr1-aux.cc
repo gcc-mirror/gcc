@@ -1,6 +1,6 @@
-// std::tr1::hash definitions -*- C++ -*-
+// std::tr1::hash definitions, long double bits -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,37 +22,35 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <string>
-#include <tr1/functional>
-
-#include "hash-long-double-tr1-aux.cc"
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace tr1 
   {
-#ifndef _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
-  template<>
-    size_t
-    hash<string>::operator()(string __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length()); }
+    // For long double, careful with random padding bits (e.g., on x86,
+    // 10 bytes -> 12 bytes) and resort to frexp.
+    template<>
+      size_t
+      hash<long double>::operator()(long double __val) const
+      {
+	// 0 and -0 both hash to zero.
+	if (__val == 0.0L)
+	  return 0;
 
-  template<>
-    size_t
-    hash<const string&>::operator()(const string& __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length()); }
+	int __exponent;
+	__val = __builtin_frexpl(__val, &__exponent);
+	__val = __val < 0.0l ? -(__val + 0.5l) : __val;
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<>
-    size_t
-    hash<wstring>::operator()(wstring __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
+	const long double __mult = __SIZE_MAX__ + 1.0l;
+	__val *= __mult;
 
-  template<>
-    size_t
-    hash<const wstring&>::operator()(const wstring& __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
-#endif
-#endif
+	// Try to use all the bits of the mantissa (really necessary only
+	// on 32-bit targets, at least for 80-bit floating point formats).
+	const size_t __hibits = (size_t)__val;
+	__val = (__val - (long double)__hibits) * __mult;
+
+	const size_t __coeff = __SIZE_MAX__ / __LDBL_MAX_EXP__;
+
+	return __hibits + (size_t)__val + __coeff * __exponent;
+      }
   }
 }

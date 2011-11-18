@@ -361,7 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __hash_base<size_t, error_code>
     {
       size_t
-      operator()(const error_code& __e) const
+      operator()(const error_code& __e) const noexcept
       {
 	const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
 	return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
