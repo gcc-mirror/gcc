@@ -41,4 +41,4 @@
 #define cfi_def_cfa(r,n)
 #define cfi_register(o,n)
 
-#endif /* HAVE_ASM_CFI */
+#endif /* HAVE_AS_CFI_PSEUDO_OP */
