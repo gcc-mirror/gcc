@@ -414,7 +414,7 @@ namespace __debug
     : public __hash_base<size_t, __debug::bitset<_Nb>>
     {
       size_t
-      operator()(const __debug::bitset<_Nb>& __b) const
+      operator()(const __debug::bitset<_Nb>& __b) const noexcept
       { return std::hash<_GLIBCXX_STD_C::bitset<_Nb>>()(__b._M_base()); }
     };
 #endif

@@ -1,3 +1,38 @@
+2011-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/hash-long-double-aux.cc: Rename to...
+	* src/hash-long-double-tr1-aux.cc: ... this.
+	* src/compatibility-ldbl.cc: Adjust.
+	* src/hash_tr1.cc: Likewise.
+	* src/hash_c++0x.cc: Don't use src/hash-long-double-aux.cc.
+	* include/bits/functional_hash.h (hash<_Tp*>::operator(), specs
+	for integer types, hash<float>::operator(), hash<double>::operator(),
+	hash<long double>::operator()): Declare noexcept.
+	* include/debug/bitset (hash<__debug::bitset>::operator()): Likewise.
+	* include/debug/vector (hash<__debug::vector>::operator()): Likewise.
+	* include/std/system_error (hash<error_code>::operator()): Likewise.
+	* include/std/thread (hash<thread::id>::operator()): Likewise.
+	* include/std/bitset (hash<bitset>::operator()): Likewise.
+	* include/std/typeindex (hash<type_index>::operator()): Likewise.
+	* include/profile/bitset (hash<__profile::vector>::operator()):
+	Likewise.
+	* include/profile/vector (hash<__profile::vector>::operator()):
+	Likewise.
+	* include/ext/vstring.h (hash<__vstring>::operator(),
+	hash<__wvstring>::operator(), hash<__u16vstring>::operator(),
+	hash<__u32vstring>::operator()): Likewise.
+	* include/bits/shared_ptr.h (hash<shared_ptr>::operator()): Likewise.
+	* include/bits/shared_ptr_base.h (hash<__shared_ptr>::operator()):
+	Likewise.
+	* include/bits/unique_ptr.h (hash<unique_ptr>::operator()): Likewise.
+	* include/bits/basic_string.h (hash<string>::operator(),
+	hash<wstring>::operator(), hash<u16string>::operator(),
+	hash<u32string>::operator()): Likewise.
+	* include/bits/vector.tcc (hash<vector>::operator()): Likewise.
+	* include/bits/stl_bvector.h (hash<vector>::operator()): Likewise.
+	* libsupc++/typeinfo (type_info::hash_code): Use noexcept instead of
+	throw().
+
 2011-11-17  Richard Henderson  <rth@redhat.com>
 
 	PR libstdc++/51181

@@ -66,61 +66,64 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct hash<_Tp*> : public __hash_base<size_t, _Tp*>
     {
       size_t
-      operator()(_Tp* __p) const
+      operator()(_Tp* __p) const noexcept
       { return reinterpret_cast<size_t>(__p); }
     };
 
   // Explicit specializations for integer types.
 #define _Cxx_hashtable_define_trivial_hash(_Tp) 	\
   template<>						\
-    inline size_t					\
-    hash<_Tp>::operator()(_Tp __val) const		\
-    { return static_cast<size_t>(__val); }
+    struct hash<_Tp> : public __hash_base<size_t, _Tp>  \
+    {                                                   \
+      size_t                                            \
+      operator()(_Tp __val) const noexcept              \
+      { return static_cast<size_t>(__val); }            \
+    };
 
   /// Explicit specialization for bool.
-  _Cxx_hashtable_define_trivial_hash(bool);
+  _Cxx_hashtable_define_trivial_hash(bool)
 
   /// Explicit specialization for char.
-  _Cxx_hashtable_define_trivial_hash(char);
+  _Cxx_hashtable_define_trivial_hash(char)
 
   /// Explicit specialization for signed char.
-  _Cxx_hashtable_define_trivial_hash(signed char);
+  _Cxx_hashtable_define_trivial_hash(signed char)
 
   /// Explicit specialization for unsigned char.
-  _Cxx_hashtable_define_trivial_hash(unsigned char);
+  _Cxx_hashtable_define_trivial_hash(unsigned char)
 
   /// Explicit specialization for wchar_t.
-  _Cxx_hashtable_define_trivial_hash(wchar_t);
+  _Cxx_hashtable_define_trivial_hash(wchar_t)
 
   /// Explicit specialization for char16_t.
-  _Cxx_hashtable_define_trivial_hash(char16_t);
+  _Cxx_hashtable_define_trivial_hash(char16_t)
 
   /// Explicit specialization for char32_t.
-  _Cxx_hashtable_define_trivial_hash(char32_t);
+  _Cxx_hashtable_define_trivial_hash(char32_t)
 
   /// Explicit specialization for short.
-  _Cxx_hashtable_define_trivial_hash(short);
+  _Cxx_hashtable_define_trivial_hash(short)
 
   /// Explicit specialization for int.
-  _Cxx_hashtable_define_trivial_hash(int);
+  _Cxx_hashtable_define_trivial_hash(int)
 
   /// Explicit specialization for long.
-  _Cxx_hashtable_define_trivial_hash(long);
+  _Cxx_hashtable_define_trivial_hash(long)
 
   /// Explicit specialization for long long.
-  _Cxx_hashtable_define_trivial_hash(long long);
+  _Cxx_hashtable_define_trivial_hash(long long)
 
   /// Explicit specialization for unsigned short.
-  _Cxx_hashtable_define_trivial_hash(unsigned short);
+  _Cxx_hashtable_define_trivial_hash(unsigned short)
 
   /// Explicit specialization for unsigned int.
-  _Cxx_hashtable_define_trivial_hash(unsigned int);
+  _Cxx_hashtable_define_trivial_hash(unsigned int)
 
   /// Explicit specialization for unsigned long.
-  _Cxx_hashtable_define_trivial_hash(unsigned long);
+  _Cxx_hashtable_define_trivial_hash(unsigned long)
 
   /// Explicit specialization for unsigned long long.
-  _Cxx_hashtable_define_trivial_hash(unsigned long long);
+  _Cxx_hashtable_define_trivial_hash(unsigned long long)
 
 #undef _Cxx_hashtable_define_trivial_hash
 
@@ -162,26 +165,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Specialization for float.
   template<>
-    inline size_t
-    hash<float>::operator()(float __val) const
+    struct hash<float> : public __hash_base<size_t, float>
     {
-      // 0 and -0 both hash to zero.
-      return __val != 0.0f ? std::_Hash_impl::hash(__val) : 0;
-    }
+      size_t
+      operator()(float __val) const noexcept
+      {
+	// 0 and -0 both hash to zero.
+	return __val != 0.0f ? std::_Hash_impl::hash(__val) : 0;
+      }
+    };
 
   /// Specialization for double.
   template<>
-    inline size_t
-    hash<double>::operator()(double __val) const
+    struct hash<double> : public __hash_base<size_t, double>
     {
-      // 0 and -0 both hash to zero.
-      return __val != 0.0 ? std::_Hash_impl::hash(__val) : 0;
-    }
+      size_t
+      operator()(double __val) const noexcept
+      {
+	// 0 and -0 both hash to zero.
+	return __val != 0.0 ? std::_Hash_impl::hash(__val) : 0;
+      }
+    };
 
   /// Specialization for long double.
   template<>
-    _GLIBCXX_PURE size_t
-    hash<long double>::operator()(long double __val) const;
+    struct hash<long double>
+    : public __hash_base<size_t, long double>
+    {
+      _GLIBCXX_PURE size_t
+      operator()(long double __val) const noexcept;
+    };
 
   // @} group hashes
 

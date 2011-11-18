@@ -1075,7 +1075,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __hash_base<size_t, _GLIBCXX_STD_C::vector<bool, _Alloc>>
     {
       size_t
-      operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>& __b) const;
+      operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>&) const noexcept;
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION

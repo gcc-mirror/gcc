@@ -818,7 +818,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc>
     size_t
     hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>::
-    operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>& __b) const
+    operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>& __b) const noexcept
     {
       size_t __hash = 0;
       using _GLIBCXX_STD_C::_S_word_bit;

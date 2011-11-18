@@ -372,7 +372,7 @@ namespace __profile
     : public __hash_base<size_t, __profile::bitset<_Nb>>
     {
       size_t
-      operator()(const __profile::bitset<_Nb>& __b) const
+      operator()(const __profile::bitset<_Nb>& __b) const noexcept
       { return std::hash<_GLIBCXX_STD_C::bitset<_Nb>>()(__b._M_base()); }
     };
 #endif

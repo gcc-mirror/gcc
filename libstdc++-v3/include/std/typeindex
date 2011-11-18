@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !_M_target->before(*__rhs._M_target); }
 
     size_t
-    hash_code() const
+    hash_code() const noexcept
     { return _M_target->hash_code(); }
 
     const char*
@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef type_index  argument_type;
 
       size_t
-      operator()(const type_index& __ti) const
+      operator()(const type_index& __ti) const noexcept
       { return __ti.hash_code(); }
     };
 

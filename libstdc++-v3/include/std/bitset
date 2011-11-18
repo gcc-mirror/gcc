@@ -1555,7 +1555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __hash_base<size_t, _GLIBCXX_STD_C::bitset<_Nb>>
     {
       size_t
-      operator()(const _GLIBCXX_STD_C::bitset<_Nb>& __b) const
+      operator()(const _GLIBCXX_STD_C::bitset<_Nb>& __b) const noexcept
       {
 	const size_t __clength = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
 	return std::_Hash_impl::hash(__b._M_getdata(), __clength);
@@ -1567,7 +1567,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __hash_base<size_t, _GLIBCXX_STD_C::bitset<0>>
     {
       size_t
-      operator()(const _GLIBCXX_STD_C::bitset<0>&) const
+      operator()(const _GLIBCXX_STD_C::bitset<0>&) const noexcept
       { return 0; }
     };
 
