@@ -1,3 +1,9 @@
+2011-11-18  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51141
+	* search.c (lookup_field_1): Handle USING_DECLs for the storted
+	case.
+
 2011-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51150

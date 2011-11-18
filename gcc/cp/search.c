@@ -436,6 +436,14 @@ lookup_field_1 (tree type, tree name, bool want_type)
 		    field = fields[i++];
 		  while (i < hi && DECL_NAME (fields[i]) == name);
 		}
+
+	      if (field)
+	      	{
+	      	  field = strip_using_decl (field);
+	      	  if (is_overloaded_fn (field))
+	      	    field = NULL_TREE;
+	      	}
+
 	      return field;
 	    }
 	}

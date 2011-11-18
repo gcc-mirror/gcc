@@ -1,3 +1,12 @@
+2011-11-18  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51141
+	* g++.dg/lookup/using46.C: New.
+	* g++.dg/lookup/using47.C: New.
+	* g++.dg/lookup/using48.C: New.
+	* g++.dg/lookup/using49.C: New.
+	* g++.dg/lookup/using50.C: New.
+
 2011-11-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.c-torture/compile/pr44707.c: Do not assume assembler
