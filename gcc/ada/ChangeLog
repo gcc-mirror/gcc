@@ -1,28 +1,26 @@
 2011-11-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/50678
-	* init.c (__gnat_error_handler) [Darwin]: Move work-around to the
-	bug filed as radar #10302855 from __gnat_error_handler ...
-	... to (__gnat_adjust_context_for_raise) [Darwin]: New.
+	* init.c (__gnat_error_handler) [Darwin]: Move workaround to the
+	bug filed as radar #10302855 from __gnat_error_handler to...
+	(__gnat_adjust_context_for_raise) [Darwin]: ...here.  New function.
 	(HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE) [Darwin]: Define.
-	(__gnat_error_handler) [Darwin]: Use __gnat_adjust_context_for_raise.
 
 2011-11-18  Tristan Gingold  <gingold@adacore.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/49992
 	* mlib-tgt-specific-darwin.adb (Archive_Indexer_Options): Remove.
-	* gcc-interface/Makefile.in (darwin): Remove ranlib special-casing
-	for Darwin.
+	* gcc-interface/Makefile.in (darwin): Remove ranlib special-casing.
 
 2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* gcc-interface/Makefile.in (stamp-gnatlib-$(RTSDIR)): Don't link
 	s-oscons.ads.
 	(OSCONS_CPP, OSCONS_EXTRACT): New.
-	(./bldtools/oscons/xoscons): New Target.
-	($(RTSDIR)/s-oscons.ads): New Target.
-	(gnatlib): Depend on  $(RTSDIR)/s-oscons.ads.
+	(./bldtools/oscons/xoscons): New target.
+	($(RTSDIR)/s-oscons.ads): Likewise.
+	(gnatlib): Depend on $(RTSDIR)/s-oscons.ads.
 	* gcc-interface/Make-lang.in (ada/s-oscons.ads) Remove as dependency.
 	* Make-generated.in: Remove machinery to generate xoscons and
 	ada/s-oscons.ads.
