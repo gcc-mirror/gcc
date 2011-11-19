@@ -1,8 +1,14 @@
+2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/51187
+	* reorg.c (relax_delay_slots): Do not consider a jump useless if there
+	is a barrier between the jump and its target label.
+
 2011-11-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/50493
-	* arm.c (neon_disambiguate_copy): Correctly handle partial overlap
-	of src and dest operands.
+	* config/arm/arm.c (neon_disambiguate_copy): Correctly handle partial
+	overlap of src and dest operands.
 
 2011-11-18  Iain Sandoe  <iains@gcc.gnu.org>
 
