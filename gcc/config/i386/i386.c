@@ -1783,18 +1783,18 @@ struct processor_costs atom_cost = {
   /* stringop_algs for memcpy.  
      SSE loops works best on Atom, but fall back into non-SSE unrolled loop variant
      if that fails.  */
-  {{{libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}, /* Known alignment.  */
-    {libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}},
-   {{libcall, {{2048, sse_loop}, {2048, unrolled_loop}, {-1, libcall}}}, /* Unknown alignment.  */
-    {libcall, {{2048, sse_loop}, {2048, unrolled_loop},
+  {{{libcall, {{4096, unrolled_loop}, {-1, libcall}}}, /* Known alignment.  */
+    {libcall, {{4096, unrolled_loop}, {-1, libcall}}}},
+   {{libcall, {{2048, unrolled_loop}, {-1, libcall}}}, /* Unknown alignment.  */
+    {libcall, {{2048, unrolled_loop},
 	       {-1, libcall}}}}},
 
   /* stringop_algs for memset.  */
-  {{{libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}, /* Known alignment.  */
-    {libcall, {{4096, sse_loop}, {4096, unrolled_loop}, {-1, libcall}}}},
-   {{libcall, {{1024, sse_loop}, {1024, unrolled_loop},	 /* Unknown alignment.  */
+  {{{libcall, {{4096, unrolled_loop}, {-1, libcall}}}, /* Known alignment.  */
+    {libcall, {{4096, unrolled_loop}, {-1, libcall}}}},
+   {{libcall, {{1024, unrolled_loop},	 /* Unknown alignment.  */
 	       {-1, libcall}}},
-    {libcall, {{2048, sse_loop}, {2048, unrolled_loop},
+    {libcall, {{2048, unrolled_loop},
 	       {-1, libcall}}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */

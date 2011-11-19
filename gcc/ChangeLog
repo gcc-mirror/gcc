@@ -1,3 +1,8 @@
+2011-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.c (atom_cost): Disable SSE loop until alignment
+	issues are fixed.
+
 2011-11-18  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/cris/cris.c (cris_function_value_regno_p): Make static.
