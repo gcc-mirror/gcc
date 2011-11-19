@@ -522,7 +522,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  def_init->attr.target = 1;
 		  def_init->attr.save = SAVE_IMPLICIT;
 		  def_init->attr.access = ACCESS_PUBLIC;
-		  def_init->attr.flavor = FL_VARIABLE;
+		  def_init->attr.flavor = FL_PARAMETER;
 		  gfc_set_sym_referenced (def_init);
 		  def_init->ts.type = BT_DERIVED;
 		  def_init->ts.u.derived = derived;
@@ -552,6 +552,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  gfc_get_symbol (name, sub_ns, &copy);
 		  sub_ns->proc_name = copy;
 		  copy->attr.flavor = FL_PROCEDURE;
+		  copy->attr.subroutine = 1;
 		  copy->attr.if_source = IFSRC_DECL;
 		  if (ns->proc_name->attr.flavor == FL_MODULE)
 		    copy->module = ns->proc_name->name;
